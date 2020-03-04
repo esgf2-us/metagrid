@@ -7,7 +7,7 @@ backend:
 
 frontend:
   only:
-  changes:
-    - frontend/*
+    changes:
+      - frontend/*
   trigger:
     include: frontend/.gitlab-ci.yml
