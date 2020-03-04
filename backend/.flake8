@@ -1,0 +1,13 @@
+[flake8]
+ignore = E203,E501,F,W
+;ignore = E203,E501,F405,W503
+max-line-length = 92
+max-complexity = 18
+exclude =
+    .idea
+    .git
+    .mypy_cache
+    .pytest_cache
+    scripts
+    venv
+    *__init__.py
