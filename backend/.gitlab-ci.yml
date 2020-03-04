@@ -3,9 +3,9 @@ stages:
   - test
 
 variables:
-  POSTGRES_USER: 'metagrid'
-  POSTGRES_PASSWORD: ''
-  POSTGRES_DB: 'test_metagrid'
+  POSTGRES_USER: "metagrid"
+  POSTGRES_PASSWORD: ""
+  POSTGRES_DB: "test_metagrid"
 
 flake8:
   stage: lint
@@ -30,4 +30,3 @@ pytest:
 
   script:
     - pytest
-
