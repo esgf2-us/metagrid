@@ -1,0 +1,21 @@
+# https://hub.docker.com/r/library/node/tags/
+image: node:latest
+# This folder is cached between builds
+# http://docs.gitlab.com/ce/ci/yaml/README.html#cache
+#This declares the pipeline stages
+stages:
+  - build
+  - test
+  - deploy
+cache:
+  paths:
+    - node_modules/
+build:
+  stage: build
+  script:
+    - npm install
+    - npm run build
+test:
+  stage: test
+  script:
+    - echo "Running react test suite......"
