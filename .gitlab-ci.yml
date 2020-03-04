@@ -4,6 +4,7 @@ backend:
       - backend/*
   trigger:
     include: backend/.gitlab-ci.yml
+    strategy: depend
 
 frontend:
   only:
@@ -11,3 +12,4 @@ frontend:
       - frontend/*
   trigger:
     include: frontend/.gitlab-ci.yml
+    strategy: depend
