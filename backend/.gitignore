@@ -79,6 +79,8 @@ ENV/
 # mypy
 .mypy_cache/
 
+# pytest
+.pytest_cache/
 
 ### Node template
 # Logs
@@ -324,9 +326,8 @@ tags
 
 metagrid/media/
 
-.pytest_cache/
 
-
+# Local environment
 .ipython/
 .env
 .envs/*
