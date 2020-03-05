@@ -26,7 +26,7 @@ pytest:
     DATABASE_URL: pgsql://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres/$POSTGRES_DB
 
   before_script:
-    - pip install -r requirements/local.txt
+    - pip install -r backend/requirements/local.txt
 
   script:
     - pytest
