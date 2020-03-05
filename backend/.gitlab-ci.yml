@@ -25,6 +25,7 @@ before_script:
 - pip install virtualenv
 - virtualenv venv
 - source venv/bin/activate
+- cd backend              # This is necessary since folders are nested
 
 variables:
   POSTGRES_USER: "metagrid"
@@ -39,7 +40,7 @@ flake8:
   before_script:
     - pip install -q flake8
   script:
-    - flake8 --config=backend/setup.cfg
+    - flake8 --config=setup.cfg
 
 pytest:
   stage: test
@@ -53,7 +54,7 @@ pytest:
     CELERY_BROKER_URL: redis://redis:6379/0
 
   before_script:
-    - pip install -r backend/requirements/local.txt
+    - pip install -r requirements/local.txt
 
   script:
-    - pytest backend/
+    - pytest

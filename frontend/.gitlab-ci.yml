@@ -7,9 +7,17 @@ stages:
   - deploy
 # This folder is cached between builds
 # http://docs.gitlab.com/ce/ci/yaml/README.html#cache
+# Cache modules in between jobs
 cache:
+  key: ${CI_COMMIT_REF_SLUG}
   paths:
-    - node_modules/
+    - .npm/
+
+before_script:
+  # This is necessary since folders are nested
+  - cd frontend
+  - npm ci --cache .npm --prefer-offline
+
 build:
   stage: build
   script:
