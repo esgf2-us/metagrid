@@ -1,30 +1,39 @@
-exclude: 'docs|node_modules|migrations|.git|.tox'
+exclude: "docs|node_modules|migrations|.git|.tox"
 default_stages: [commit]
 fail_fast: true
 
+# BACKEND
+# ------------------------------------------------------------------------------
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: master
     hooks:
       - id: trailing-whitespace
         files: (^|/)a/.+\.(py|html|sh|css|js)$
 
--   repo: local
+  - repo: local
     hooks:
       - id: flake8
         name: flake8
         entry: flake8
         language: python
         types: [python]
-        args: ['--config=backend/setup.cfg']
+        args: ["--config=backend/setup.cfg"]
 
--   repo: https://github.com/psf/black
+  - repo: https://github.com/psf/black
     rev: stable
     hooks:
       - id: black
         language_version: python3.7
 
--   repo: https://github.com/pre-commit/mirrors-mypy
+  - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v0.730
     hooks:
       - id: mypy
+
+  # FRONTEND
+  # ------------------------------------------------------------------------------
+  - repo: https://github.com/prettier/prettier
+    rev: "" # Use the sha or tag you want to point at
+    hooks:
+      - id: prettier
