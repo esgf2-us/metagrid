@@ -1,12 +1,12 @@
 # https://hub.docker.com/r/library/node/tags/
 image: node:latest
-# This folder is cached between builds
-# http://docs.gitlab.com/ce/ci/yaml/README.html#cache
 #This declares the pipeline stages
 stages:
   - build
   - test
   - deploy
+# This folder is cached between builds
+# http://docs.gitlab.com/ce/ci/yaml/README.html#cache
 cache:
   paths:
     - node_modules/
