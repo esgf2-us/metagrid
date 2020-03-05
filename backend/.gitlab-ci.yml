@@ -13,7 +13,7 @@ flake8:
   before_script:
     - pip install -q flake8
   script:
-    - flake8
+    - flake8 --max-line-length=120 --ignore=E203,E501,F,W --max-complexity=18 --exclude=.tox,.git,*/migrations/*,*/static/CACHE/*,docs,node_modules,.idea,.mypy_cache,.pytest_cache,*__init__.py
 
 pytest:
   stage: test
