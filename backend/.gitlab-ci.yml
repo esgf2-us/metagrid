@@ -24,6 +24,7 @@ pytest:
     - postgres:11
   variables:
     DATABASE_URL: pgsql://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres/$POSTGRES_DB
+    CELERY_BROKER_URL: redis://redis:6379/0
 
   before_script:
     - pip install -r backend/requirements/local.txt
