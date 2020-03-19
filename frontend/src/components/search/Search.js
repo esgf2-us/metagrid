@@ -1,5 +1,11 @@
-import React from 'react';
+import React, { Component } from 'react';
 
-export default function Search() {
-  return <div></div>;
+export default class Search extends Component {
+  state = {
+    facets: {}
+  };
+
+  render() {
+    return <div></div>;
+  }
 }
