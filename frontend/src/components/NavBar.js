@@ -1,67 +1,70 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import { Form, Input, Row, Col, Select } from "antd";
-
 import esgf_logo from "../assets/img/esgf_logo.png";
 
 const { Search } = Input;
 const { Option } = Select;
 
-const projects = ["CMIP6", "CMIP5", "E3SM", "CMIP3", "input4MIPs", "obs4MIPs"];
+function NavBar({ onSearch, onProjectChange }) {
+  const [text, setText] = useState(null);
+  const [projects, setProjects] = useState([]);
 
-export class NavBar extends Component {
-  state = {
-    text: null,
-    project: projects[0]
+  const fetchProjects = async () => {
+    // TODO: Fetch projects using an API
+    const res = ["CMIP6", "CMIP5", "E3SM", "CMIP3", "input4MIPs", "obs4MIPs"];
+    setProjects(res);
   };
 
-  handleChange = e => {
-    this.setState({ text: e.target.value });
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const handleChange = e => {
+    setText(e.target.value);
   };
 
-  handleSearch = value => {
-    this.props.onSearch(value);
-    this.setState({ text: null });
+  const handleSearch = value => {
+    onSearch(value);
+    setText(null);
   };
 
-  render() {
-    return (
-      <div>
-        <Row align="middle">
-          <Col span={6}>
-            <img src={esgf_logo} />
-          </Col>
-          <Col span={12}>
-            <Form layout="inline">
-              <Form.Item>
-                <Select
-                  defaultValue={this.state.project}
-                  style={{ width: 120 }}
-                  onChange={this.props.onProjectChange}
-                >
-                  {projects.map(project => (
-                    <Option key={project} value={project}>
-                      {project}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-              <Form.Item>
-                <Search
-                  placeholder="Search..."
-                  onChange={this.handleChange}
-                  onSearch={e => this.handleSearch(e)}
-                  value={this.state.text}
-                  enterButton
-                  allowClear
-                />
-              </Form.Item>
-            </Form>
-          </Col>
-          <Col span={6}></Col>
-        </Row>
-      </div>
-    );
-  }
+  return (
+    <div>
+      <Row align="middle">
+        <Col span={6}>
+          <img src={esgf_logo} alt="ESGF Logo" />
+        </Col>
+        <Col span={12}>
+          <Form layout="inline">
+            <Form.Item>
+              <Select
+                placeholder="Project"
+                style={{ width: 120 }}
+                onChange={onProjectChange}
+              >
+                {projects.map(project => (
+                  <Option key={project} value={project}>
+                    {project}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Form.Item>
+              <Search
+                placeholder="Search..."
+                onChange={handleChange}
+                onSearch={e => handleSearch(e)}
+                value={text}
+                enterButton
+                allowClear
+              />
+            </Form.Item>
+          </Form>
+        </Col>
+        <Col span={6}></Col>
+      </Row>
+    </div>
+  );
 }
 
 export default NavBar;
