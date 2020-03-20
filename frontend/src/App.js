@@ -6,7 +6,7 @@ import Search from "./components/search/Search";
 
 export default class App extends Component {
   state = {
-    text: "",
+    text: [],
     project: ""
   };
 
