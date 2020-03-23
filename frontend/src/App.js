@@ -6,30 +6,39 @@ import Search from "./components/search/Search";
 
 export default class App extends Component {
   state = {
-    text: [],
-    project: ""
-  };
-
-  handleSubmitText = text => {
-    this.setState({
-      text: [...this.state.text, text]
-    });
+    project: "",
+    textInputs: []
   };
 
   handleProjectChange = value => {
     this.setState({ project: value });
+  };
+  handleSubmitText = text => {
+    this.setState({
+      textInputs: [...this.state.textInputs, text]
+    });
+  };
+
+  handleRemoveTag = removedTag => {
+    this.setState(() => {
+      return {
+        textInputs: this.state.textInputs.filter(input => input !== removedTag)
+      };
+    });
   };
 
   render() {
     return (
       <div>
         <NavBar
-          text={this.state.text}
-          project={this.state.project}
           onProjectChange={this.handleProjectChange}
           onSearch={text => this.handleSubmitText(text)}
         ></NavBar>
-        <Search text={this.state.text} project={this.state.project}></Search>
+        <Search
+          project={this.state.project}
+          textInputs={this.state.textInputs}
+          onRemoveTag={removedTag => this.handleRemoveTag(removedTag)}
+        ></Search>
       </div>
     );
   }

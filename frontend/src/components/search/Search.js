@@ -1,15 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
+import React, { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { Row, Col } from "antd";
 
-import { Row, Col } from 'antd';
+import SearchTag from "./SearchTag";
+import SearchResultsTable from "./SearchResultsTable";
+import jsonData from "../../mock.json";
 
-import SearchResultsTable from './SearchResultsTable';
-import jsonData from '../../mock.json';
 
-function Search({ text, project }) {
+function Search({ project, textInputs, onRemoveTag }) {
   Search.propTypes = {
-    text: PropTypes.array,
-    project: PropTypes.string
+    project: PropTypes.string.isRequired,
+    textInputs: PropTypes.array.isRequired,
+    onRemoveTag: PropTypes.func.isRequired
   };
 
   const [facets, setFacets] = useState({});
@@ -21,17 +23,32 @@ function Search({ text, project }) {
   };
 
   useEffect(() => {
-    if (text.length !== 0 || project !== '') {
+    if (textInputs.length !== 0 && project !== "") {
       fetchResults();
     }
-  }, [text, project]);
+  }, [project, textInputs]);
 
   const handleSubmitFacet = facet => {
+    // TODO: Implement this method
     setFacets({ ...facets, ...facet });
   };
 
   return (
     <div>
+      {/* Top bar */}
+      <Row>
+        {project !== "" && <SearchTag input={project}></SearchTag>}
+        {textInputs.length !== 0 &&
+          textInputs.map((input, index) => {
+            return (
+              <SearchTag
+                key={index}
+                input={input}
+                onClose={onRemoveTag}
+              ></SearchTag>
+            );
+          })}
+      </Row>
       <Row gutter={[24, 16]} justify="space-around">
         {/* Side bar */}
         <Col lg={4}></Col>
