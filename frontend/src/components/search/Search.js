@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { Row, Col } from "antd";
+import { Button, Row, Col } from "antd";
 
 import SearchTag from "./SearchTag";
 import SearchResultsTable from "./SearchResultsTable";
 import jsonData from "../../mock.json";
 
-
-function Search({ project, textInputs, onRemoveTag }) {
+function Search({ project, textInputs, onRemoveTag, onClearTags }) {
   Search.propTypes = {
     project: PropTypes.string.isRequired,
     textInputs: PropTypes.array.isRequired,
-    onRemoveTag: PropTypes.func.isRequired
+    onRemoveTag: PropTypes.func.isRequired,
+    onClearTags: PropTypes.func.isRequired
   };
 
   const [facets, setFacets] = useState({});
@@ -37,6 +37,7 @@ function Search({ project, textInputs, onRemoveTag }) {
     <div>
       {/* Top bar */}
       <Row>
+        <h4>Applied Constraints: </h4>
         {project !== "" && <SearchTag input={project}></SearchTag>}
         {textInputs.length !== 0 &&
           textInputs.map((input, index) => {
@@ -49,15 +50,16 @@ function Search({ project, textInputs, onRemoveTag }) {
             );
           })}
       </Row>
+      <Button type="link" onClick={() => onClearTags()}>
+        Clear All
+      </Button>
+
       <Row gutter={[24, 16]} justify="space-around">
-        {/* Side bar */}
-        <Col lg={4}></Col>
-        {/* Body */}
-        <Col lg={20}>
+        <Col lg={24}>
           {results.length !== 0 ? (
             <SearchResultsTable results={results} />
           ) : (
-            <p>No results!</p>
+            <SearchResultsTable />
           )}
         </Col>
       </Row>

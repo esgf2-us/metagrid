@@ -13,7 +13,7 @@ const downloadOptions = ["HTTP", "WGET Script", "Globus"];
 const tableConfig = {
   bordered: false,
   loading: false,
-  pagination: { position: "bottom-center" },
+  pagination: { position: "bottom" },
   size: "small",
   expandable: { expandedRowRender: record => <p>{record.description}</p> },
   title: undefined,
@@ -75,6 +75,7 @@ const columns = [
     )
   }
 ];
+
 function SearchResultsTable({ results }) {
   SearchResultsTable.propTypes = {
     results: PropTypes.array.isRequired
