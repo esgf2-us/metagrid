@@ -1,38 +1,12 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import { Button, Input, Row, Col, Select, Menu } from "antd";
-import { ShoppingCartOutlined } from "@ant-design/icons";
+import { Button, Form, Input, Row, Col, Select, Menu } from "antd";
+import { SearchOutlined, ShoppingCartOutlined } from "@ant-design/icons";
 
 import esgf_logo from "../assets/img/esgf_logo.png";
 
 const { SubMenu } = Menu;
-const { Search } = Input;
 const { Option } = Select;
-
-const menu = (
-  <Menu>
-    <Menu.Item key="0">Documentation</Menu.Item>
-    <Menu.Divider />
-    <Menu.Item key="1">
-      <a
-        target="_blank"
-        rel="noopener noreferrer"
-        href="http://www.alipay.com/"
-      >
-        Guide
-      </a>
-    </Menu.Item>
-    <Menu.Item key="2">
-      <a
-        target="_blank"
-        rel="noopener noreferrer"
-        href="http://www.taobao.com/"
-      >
-        API
-      </a>
-    </Menu.Item>
-  </Menu>
-);
 
 function NavBar({ onSearch, onProjectChange }) {
   NavBar.propTypes = {
@@ -43,12 +17,17 @@ function NavBar({ onSearch, onProjectChange }) {
   const [text, setText] = useState(null);
   const [projects, setProjects] = useState([]);
 
-  const [current, setCurrent] = useState(null);
-  const [visible, setVisible] = useState(false);
-
   const fetchProjects = async () => {
     // TODO: Fetch projects using an API
-    const res = ["CMIP6", "CMIP5", "E3SM", "CMIP3", "input4MIPs", "obs4MIPs"];
+    const res = [
+      "CMIP6",
+      "CMIP5",
+      "E3SM",
+      "CMIP3",
+      "input4MIPs",
+      "obs4MIPs",
+      "All (excl. CMIP6)"
+    ];
     setProjects(res);
   };
 
@@ -60,8 +39,9 @@ function NavBar({ onSearch, onProjectChange }) {
     setText(e.target.value);
   };
 
-  const handleSearch = value => {
-    onSearch(value);
+  const onFinish = values => {
+    onSearch(values.text);
+    onProjectChange(values.project);
     setText(null);
   };
 
@@ -76,29 +56,38 @@ function NavBar({ onSearch, onProjectChange }) {
           />
         </Col>
         <Col span={15}>
-          <Input.Group compact>
-            <Select
-              placeholder="Project"
-              style={{ width: "15%" }}
-              onChange={onProjectChange}
-            >
-              {projects.map(project => (
-                <Option key={project} value={project}>
-                  {project}
-                </Option>
-              ))}
-            </Select>
-            <Search
-              placeholder="Search..."
-              onChange={handleChange}
-              onSearch={e => handleSearch(e)}
-              value={text}
-              enterButton
-              allowClear
-              required
-              style={{ width: "85%" }}
-            />
-          </Input.Group>
+          <Form onFinish={onFinish}>
+            <Input.Group compact>
+              <Form.Item
+                name="project"
+                rules={[{ required: true, message: "Project is required" }]}
+                style={{ width: "15%" }}
+              >
+                <Select placeholder="Project">
+                  {projects.map(project => (
+                    <Option key={project} value={project}>
+                      {project}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+              <Form.Item
+                name="text"
+                wrapperCol={{ sm: 24 }}
+                rules={[{ required: true, message: "Text is required" }]}
+                style={{ width: "75%" }}
+              >
+                <Input
+                  onChange={handleChange}
+                  value={text}
+                  placeholder="Search..."
+                />
+              </Form.Item>
+              <Button type="primary" htmlType="submit">
+                <SearchOutlined />
+              </Button>
+            </Input.Group>
+          </Form>
         </Col>
         <Col span={6}>
           <Row>
