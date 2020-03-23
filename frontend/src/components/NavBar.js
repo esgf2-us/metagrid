@@ -68,18 +68,18 @@ function NavBar({ onSearch, onProjectChange }) {
   return (
     <nav style={menuBar}>
       <Row align="middle">
-        <Col span={2}>
+        <Col span={3}>
           <img
             style={{ maxWidth: "100%", height: "auto" }}
             src={esgf_logo}
             alt="ESGF Logo"
           />
         </Col>
-        <Col span={16}>
+        <Col span={15}>
           <Input.Group compact>
             <Select
               placeholder="Project"
-              style={{ width: 120 }}
+              style={{ width: "15%" }}
               onChange={onProjectChange}
             >
               {projects.map(project => (
@@ -96,11 +96,11 @@ function NavBar({ onSearch, onProjectChange }) {
               enterButton
               allowClear
               required
-              style={{ width: "80%" }}
+              style={{ width: "85%" }}
             />
           </Input.Group>
         </Col>
-        <Col>
+        <Col span={6}>
           <Row>
             <Menu
               // onClick={this.handleClick}
