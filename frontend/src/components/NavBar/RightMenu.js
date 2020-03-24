@@ -1,10 +1,15 @@
 import React from "react";
+import PropTypes from "prop-types";
 import { Button, Row, Menu } from "antd";
 import { ShoppingCartOutlined } from "@ant-design/icons";
 
 const { SubMenu } = Menu;
 
-function RightMenu() {
+function RightMenu({ cartItems }) {
+  RightMenu.propTypes = {
+    cartItems: PropTypes.number.isRequired
+  };
+
   return (
     <div>
       <Row>
@@ -27,6 +32,7 @@ function RightMenu() {
         </Button>
         <Button type="link">
           <ShoppingCartOutlined style={{ fontSize: "32px" }} />
+          {cartItems}
         </Button>
       </Row>
     </div>

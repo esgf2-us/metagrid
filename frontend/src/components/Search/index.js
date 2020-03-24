@@ -6,16 +6,18 @@ import SearchTag from "./SearchTag";
 import SearchResultsTable from "./SearchResultsTable";
 import jsonData from "../../mock.json";
 
-function Search({ project, textInputs, onRemoveTag, onClearTags }) {
+function Search({ project, textInputs, onRemoveTag, onClearTags, onAddCart }) {
   Search.propTypes = {
     project: PropTypes.string.isRequired,
     textInputs: PropTypes.array.isRequired,
     onRemoveTag: PropTypes.func.isRequired,
-    onClearTags: PropTypes.func.isRequired
+    onClearTags: PropTypes.func.isRequired,
+    onAddCart: PropTypes.func.isRequired
   };
 
   const [facets, setFacets] = useState({});
   const [results, setResults] = useState([]);
+  const [selected, setSelected] = useState([]);
 
   const fetchResults = () => {
     const data = JSON.parse(JSON.stringify(jsonData));
@@ -31,6 +33,14 @@ function Search({ project, textInputs, onRemoveTag, onClearTags }) {
   const handleSubmitFacet = facet => {
     // TODO: Implement this method
     setFacets({ ...facets, ...facet });
+  };
+
+  const handleSelect = (record, selected, selectedRows, nativeEvent) => {
+    setSelected(selectedRows);
+  };
+
+  const handleSelectAll = (selected, selectedRows, changeRows) => {
+    setSelected(selectedRows);
   };
 
   return (
@@ -50,13 +60,26 @@ function Search({ project, textInputs, onRemoveTag, onClearTags }) {
             );
           })}
       </Row>
-      <Button type="link" onClick={() => onClearTags()}>
-        Clear All
-      </Button>
+      {results.length !== 0 && (
+        <Button type="link" onClick={() => onClearTags()}>
+          Clear All
+        </Button>
+      )}
+
+      {results.length !== 0 && (
+        <Button onClick={() => onAddCart(selected)}>
+          Add Selected to Cart
+        </Button>
+      )}
 
       <Row gutter={[24, 16]} justify="space-around">
         <Col lg={24}>
-          <SearchResultsTable results={results} />
+          <SearchResultsTable
+            results={results}
+            selected={selected}
+            onSelect={handleSelect}
+            onSelectAll={handleSelectAll}
+          />
         </Col>
       </Row>
     </div>

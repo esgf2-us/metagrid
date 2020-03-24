@@ -9,7 +9,8 @@ const { Content, Sider } = Layout;
 export default class App extends Component {
   state = {
     project: "",
-    textInputs: []
+    textInputs: [],
+    cart: []
   };
 
   handleProjectChange = value => {
@@ -35,12 +36,21 @@ export default class App extends Component {
     this.setState({ project: "", textInputs: [] });
   };
 
+  handleAddCart = items => {
+    console.log(items);
+    this.setState(() => {
+      return {
+        cart: [...this.state.cart, ...items]
+      };
+    });
+  };
   render() {
     return (
       <div>
         <NavBar
           onProjectChange={this.handleProjectChange}
           onSearch={text => this.handleSubmitText(text)}
+          cartItems={this.state.cart.length}
         ></NavBar>
         <Layout style={{ padding: "24px 0" }}>
           <Content>
@@ -52,6 +62,7 @@ export default class App extends Component {
                   textInputs={this.state.textInputs}
                   onRemoveTag={removedTag => this.handleRemoveTag(removedTag)}
                   onClearTags={() => this.handleClearTags()}
+                  onAddCart={this.handleAddCart}
                 ></Search>
               </Content>
             </Layout>
