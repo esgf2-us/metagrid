@@ -6,10 +6,11 @@ import esgf_logo from "../../assets/img/esgf_logo.png";
 import LeftMenu from "./LeftMenu";
 import RightMenu from "./RightMenu";
 
-function NavBar({ onSearch, onProjectChange }) {
+function NavBar({ cartItems, onSearch, onProjectChange }) {
   NavBar.propTypes = {
-    onSearch: PropTypes.func,
-    onProjectChange: PropTypes.func
+    cartItems: PropTypes.number.isRequired,
+    onSearch: PropTypes.func.isRequired,
+    onProjectChange: PropTypes.func.isRequired
   };
 
   const [text, setText] = useState(null);
@@ -62,7 +63,7 @@ function NavBar({ onSearch, onProjectChange }) {
           ></LeftMenu>
         </Col>
         <Col span={6}>
-          <RightMenu></RightMenu>
+          <RightMenu cartItems={cartItems}></RightMenu>
         </Col>
       </Row>
     </nav>
