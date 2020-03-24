@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Button, Form, Select, Table } from "antd";
 import {
   DownloadOutlined,
@@ -23,12 +23,13 @@ const tableConfig = {
   hasData: true,
   tableLayout: undefined
 };
+
 const columns = [
   {
     title: "Dataset Title",
     dataIndex: "title",
     key: "title",
-    render: title => <a>{title}</a>
+    render: title => <a href={title}>{title}</a>
   },
   {
     title: "Node",

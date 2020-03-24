@@ -56,11 +56,7 @@ function Search({ project, textInputs, onRemoveTag, onClearTags }) {
 
       <Row gutter={[24, 16]} justify="space-around">
         <Col lg={24}>
-          {results.length !== 0 ? (
-            <SearchResultsTable results={results} />
-          ) : (
-            <SearchResultsTable />
-          )}
+          <SearchResultsTable results={results} />
         </Col>
       </Row>
     </div>

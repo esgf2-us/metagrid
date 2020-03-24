@@ -1,10 +1,10 @@
 import React, { Component } from "react";
 import { Layout } from "antd";
 import "./App.css";
-import NavBar from "./components/NavBar";
-import Search from "./components/search/Search";
+import NavBar from "./components/NavBar/index";
+import Search from "./components/Search/index";
 
-const { Header, Content, Sider } = Layout;
+const { Content, Sider } = Layout;
 
 export default class App extends Component {
   state = {
@@ -45,7 +45,7 @@ export default class App extends Component {
         <Layout style={{ padding: "24px 0" }}>
           <Content>
             <Layout>
-              <Sider style={layoutDefaults} width={200}></Sider>
+              <Sider style={styles.sider} width={200}></Sider>
               <Content style={{ padding: "0 24px", minHeight: 280 }}>
                 <Search
                   project={this.state.project}
@@ -62,6 +62,6 @@ export default class App extends Component {
   }
 }
 
-const layoutDefaults = {
-  background: "#fff"
+const styles = {
+  sider: { background: "#fff" }
 };
