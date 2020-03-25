@@ -64,9 +64,7 @@ function Facets({ onAddFacet }) {
 
             <Form.Item name="sourceid" label="Source ID">
               <CheckboxGroup
-                options={facets.so
-                  To ignore, add // eslint-disable-next-line to the line before.
-                  To ignore, add // eslint-disable-next-line to the line before.urce_ids}
+                options={facets.source_ids}
                 value={checkedList}
                 onChange={onChange}
               />
