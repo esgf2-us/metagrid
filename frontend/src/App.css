@@ -1,4 +1,4 @@
-@import '~antd/dist/antd.css';
+@import "~antd/dist/antd.css";
 
 .App {
   text-align: center;
@@ -37,4 +37,9 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.ant-checkbox-group-item {
+  display: block;
+  margin-right: 0;
 }
