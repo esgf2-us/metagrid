@@ -1,8 +1,9 @@
 import React, { Component } from "react";
 import { Layout } from "antd";
 import "./App.css";
-import NavBar from "./components/NavBar/index";
-import Search from "./components/Search/index";
+import NavBar from "./components/NavBar";
+import Facets from "./components/Facets";
+import Search from "./components/Search";
 
 const { Content, Sider } = Layout;
 
@@ -10,6 +11,7 @@ export default class App extends Component {
   state = {
     project: "",
     textInputs: [],
+    appliedFacets: {},
     cart: []
   };
 
@@ -44,6 +46,9 @@ export default class App extends Component {
       };
     });
   };
+
+  handleAddFacet = facet => {};
+
   render() {
     return (
       <div>
@@ -55,7 +60,9 @@ export default class App extends Component {
         <Layout style={{ padding: "24px 0" }}>
           <Content>
             <Layout>
-              <Sider style={styles.sider} width={200}></Sider>
+              <Sider style={styles.sider} width={250}>
+                <Facets onAddFacet={facet => this.handleAddFacet(facet)} />
+              </Sider>
               <Content style={{ padding: "0 24px", minHeight: 280 }}>
                 <Search
                   project={this.state.project}
