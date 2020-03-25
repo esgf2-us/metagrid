@@ -10,19 +10,18 @@ import PropTypes from "prop-types";
 const { Option } = Select;
 const downloadOptions = ["HTTP", "WGET Script", "Globus"];
 
-function SearchResultsTable({ results, selected, onSelect, onSelectAll }) {
+function SearchResultsTable({ loading, results, onSelect, onSelectAll }) {
   SearchResultsTable.propTypes = {
+    loading: PropTypes.bool.isRequired,
     results: PropTypes.array.isRequired,
-    selected: PropTypes.array.isRequired,
     onSelect: PropTypes.func.isRequired,
-    onRemove: PropTypes.func.isRequired
+    onSelec: PropTypes.func.isRequired
   };
 
   const tableConfig = {
-    bordered: false,
-    loading: false,
-    pagination: { position: "bottom" },
     size: "small",
+    loading: loading,
+    pagination: { position: "bottom" },
     expandable: {
       expandedRowRender: record => {
         return (
@@ -33,12 +32,8 @@ function SearchResultsTable({ results, selected, onSelect, onSelectAll }) {
         );
       }
     },
-    title: undefined,
-    showHeader: true,
     rowSelection: { onSelect: onSelect, onSelectAll: onSelectAll },
-    scroll: undefined,
-    hasData: true,
-    tableLayout: undefined
+    hasData: results.length > 0 ? true : false,
   };
 
   const columns = [
