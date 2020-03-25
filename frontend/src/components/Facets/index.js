@@ -26,8 +26,15 @@ function Facets({ onAddFacet }) {
   const [form] = Form.useForm();
 
   React.useEffect(() => {
-    setFacets(() => fetchFacets());
-    setLoading(false);
+    const id = window.setTimeout(() => {
+      setFacets(() => fetchFacets());
+      setLoading(false);
+    }, 1000);
+    return () => {
+      window.clearTimeout(id);
+      setLoading(true);
+    };
+
   }, []);
 
   const handleChange = value => {
