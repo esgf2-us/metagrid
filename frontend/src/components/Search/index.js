@@ -6,6 +6,11 @@ import SearchTag from "./SearchTag";
 import SearchResultsTable from "./SearchResultsTable";
 import jsonData from "../../mock.json";
 
+function fetchResults() {
+  // TODO: Call an API instead of mock data
+  return JSON.parse(JSON.stringify(jsonData));
+}
+
 function Search({ project, textInputs, onRemoveTag, onClearTags, onAddCart }) {
   Search.propTypes = {
     project: PropTypes.string.isRequired,
@@ -17,17 +22,21 @@ function Search({ project, textInputs, onRemoveTag, onClearTags, onAddCart }) {
 
   const [facets, setFacets] = useState({});
   const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState([]);
 
-  const fetchResults = () => {
-    const data = JSON.parse(JSON.stringify(jsonData));
-    setResults(data);
-  };
-
   useEffect(() => {
-    if (textInputs.length !== 0 && project !== "") {
-      fetchResults();
-    }
+    setLoading(true);
+
+    const id = window.setTimeout(() => {
+      setResults(fetchResults());
+      setLoading(false);
+    }, 1000);
+
+    return () => {
+      window.clearTimeout(id);
+      setLoading(true);
+    };
   }, [project, textInputs]);
 
   const handleSubmitFacet = facet => {
@@ -75,8 +84,8 @@ function Search({ project, textInputs, onRemoveTag, onClearTags, onAddCart }) {
       <Row gutter={[24, 16]} justify="space-around">
         <Col lg={24}>
           <SearchResultsTable
+            loading={loading}
             results={results}
-            selected={selected}
             onSelect={handleSelect}
             onSelectAll={handleSelectAll}
           />
