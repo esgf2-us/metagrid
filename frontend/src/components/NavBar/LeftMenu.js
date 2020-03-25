@@ -7,8 +7,8 @@ const { Option } = Select;
 
 function LeftMenu({ projects, text, onFinish, handleChange }) {
   LeftMenu.propTypes = {
-    projects: PropTypes.string.isRequired,
-    text: PropTypes.array.isRequired,
+    projects: PropTypes.array.isRequired,
+    text: PropTypes.string,
     onFinish: PropTypes.func.isRequired,
     handleChange: PropTypes.func.isRequired
   };
