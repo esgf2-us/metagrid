@@ -15,7 +15,7 @@ function SearchTable({ loading, results, onSelect, onSelectAll }) {
     loading: PropTypes.bool.isRequired,
     results: PropTypes.array.isRequired,
     onSelect: PropTypes.func.isRequired,
-    onSelec: PropTypes.func.isRequired
+    onSelectAll: PropTypes.func.isRequired
   };
 
   const tableConfig = {
