@@ -63,7 +63,7 @@ export default class App extends Component {
               <Sider style={styles.sider} width={250}>
                 <Facets onAddFacet={facet => this.handleAddFacet(facet)} />
               </Sider>
-              <Content style={{ padding: "0 24px", minHeight: 280 }}>
+              <Content style={styles.bodyContent}>
                 <Search
                   project={this.state.project}
                   textInputs={this.state.textInputs}
@@ -81,5 +81,6 @@ export default class App extends Component {
 }
 
 const styles = {
-  sider: { background: "#fff" }
+  sider: { background: "#fff", padding: "25px 25px 25px 25px", marginLeft: "25px" },
+  bodyContent: { padding: "0 24px", minHeight: 280 }
 };
