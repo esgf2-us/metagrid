@@ -10,8 +10,8 @@ import PropTypes from "prop-types";
 const { Option } = Select;
 const downloadOptions = ["HTTP", "WGET Script", "Globus"];
 
-function SearchResultsTable({ loading, results, onSelect, onSelectAll }) {
-  SearchResultsTable.propTypes = {
+function SearchTable({ loading, results, onSelect, onSelectAll }) {
+  SearchTable.propTypes = {
     loading: PropTypes.bool.isRequired,
     results: PropTypes.array.isRequired,
     onSelect: PropTypes.func.isRequired,
@@ -107,4 +107,4 @@ function SearchResultsTable({ loading, results, onSelect, onSelectAll }) {
   );
 }
 
-export default SearchResultsTable;
+export default SearchTable;
