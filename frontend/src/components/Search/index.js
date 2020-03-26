@@ -4,7 +4,7 @@ import { Button, Row, Col } from "antd";
 
 import SearchTag from "./SearchTag";
 import SearchTable from "./SearchTable";
-import jsonData from "../../mock.json";
+import jsonData from "../../mocks/mock.json";
 
 function fetchResults() {
   // TODO: Call an API instead of mock data
