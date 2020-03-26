@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { Form, Button, Checkbox, Select, Row, Col, Spin } from "antd";
+import { Form, Button, Checkbox, Divider, Select, Row, Col, Spin } from "antd";
 import { FilterOutlined } from "@ant-design/icons";
 
 import facetsJson from "../../facets.json";
@@ -8,10 +8,10 @@ import facetsJson from "../../facets.json";
 const { Option } = Select;
 const CheckboxGroup = Checkbox.Group;
 
-function fetchFacets() {
+const fetchFacets = async () => {
   // TODO: Call an API instead of mock data
   return JSON.parse(JSON.stringify(facetsJson));
-}
+};
 
 function Facets({ onAddFacet }) {
   Facets.propTypes = {
@@ -27,14 +27,20 @@ function Facets({ onAddFacet }) {
 
   React.useEffect(() => {
     const id = window.setTimeout(() => {
-      setFacets(() => fetchFacets());
-      setLoading(false);
+      fetchFacets()
+        .then(res => {
+          setFacets(res);
+          setLoading(false);
+        })
+        .catch(e => {
+          console.warn("Error fetching data");
+          setLoading(false);
+        });
     }, 1000);
     return () => {
       window.clearTimeout(id);
       setLoading(true);
     };
-
   }, []);
 
   const handleChange = value => {
@@ -55,6 +61,7 @@ function Facets({ onAddFacet }) {
       <Row>
         <Col>
           <Form form={form} layout="vertical">
+            <Divider />
             <Form.Item name="sourceid" label="Source ID">
               <Select
                 mode="tags"

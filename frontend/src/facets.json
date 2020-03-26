@@ -1,1 +1,12 @@
-{ "source_ids": ["ACCESS-ESM1-5", "BCC-CSM2-MR", "CESM2"] }
+{
+  "projects": [
+    "CMIP6",
+    "CMIP5",
+    "E3SM",
+    "CMIP3",
+    "input4MIPs",
+    "obs4MIPs",
+    "All (excl. CMIP6)"
+  ],
+  "source_ids": ["ACCESS-ESM1-5", "BCC-CSM2-MR", "CESM2"]
+}

@@ -5,6 +5,7 @@ import { Row, Col } from "antd";
 import esgf_logo from "../../assets/img/esgf_logo.png";
 import LeftMenu from "./LeftMenu";
 import RightMenu from "./RightMenu";
+import facetsJson from "../../facets.json";
 
 function NavBar({ cartItems, onSearch, onProjectChange }) {
   NavBar.propTypes = {
@@ -18,20 +19,17 @@ function NavBar({ cartItems, onSearch, onProjectChange }) {
 
   const fetchProjects = async () => {
     // TODO: Fetch projects using an API
-    const res = [
-      "CMIP6",
-      "CMIP5",
-      "E3SM",
-      "CMIP3",
-      "input4MIPs",
-      "obs4MIPs",
-      "All (excl. CMIP6)"
-    ];
-    setProjects(res);
+    return JSON.parse(JSON.stringify(facetsJson.projects));
   };
 
   useEffect(() => {
-    fetchProjects();
+    fetchProjects()
+      .then(res => {
+        setProjects(res);
+      })
+      .catch(e => {
+        console.warn("Error fetching data");
+      });
   }, []);
 
   const handleChange = e => {
