@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { Button, Row, Col } from "antd";
 
 import SearchTag from "./SearchTag";
-import SearchResultsTable from "./SearchResultsTable";
+import SearchTable from "./SearchTable";
 import jsonData from "../../mock.json";
 
 function fetchResults() {
@@ -83,7 +83,7 @@ function Search({ project, textInputs, onRemoveTag, onClearTags, onAddCart }) {
 
       <Row gutter={[24, 16]} justify="space-around">
         <Col lg={24}>
-          <SearchResultsTable
+          <SearchTable
             loading={loading}
             results={results}
             onSelect={handleSelect}
