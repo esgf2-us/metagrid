@@ -2,25 +2,19 @@ import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { Row, Col } from "antd";
 
-import esgf_logo from "../../assets/img/esgf_logo.png";
 import LeftMenu from "./LeftMenu";
 import RightMenu from "./RightMenu";
-import facetsJson from "../../facets.json";
 
-function NavBar({ cartItems, onSearch, onProjectChange }) {
-  NavBar.propTypes = {
-    cartItems: PropTypes.number.isRequired,
-    onSearch: PropTypes.func.isRequired,
-    onProjectChange: PropTypes.func.isRequired
-  };
+import esgf_logo from "../../assets/img/esgf_logo.png";
+import dbJson from "../../mocks/db.json";
 
-  const [text, setText] = useState(null);
+const fetchProjects = async () => {
+  // TODO: Fetch projects using an API
+  return JSON.parse(JSON.stringify(dbJson.projects));
+};
+
+export function useProjects() {
   const [projects, setProjects] = useState([]);
-
-  const fetchProjects = async () => {
-    // TODO: Fetch projects using an API
-    return JSON.parse(JSON.stringify(facetsJson.projects));
-  };
 
   useEffect(() => {
     fetchProjects()
@@ -31,6 +25,18 @@ function NavBar({ cartItems, onSearch, onProjectChange }) {
         console.warn("Error fetching data");
       });
   }, []);
+  return projects;
+}
+
+function NavBar({ cartItems, onSearch, onProjectChange }) {
+  NavBar.propTypes = {
+    cartItems: PropTypes.number.isRequired,
+    onSearch: PropTypes.func.isRequired,
+    onProjectChange: PropTypes.func.isRequired
+  };
+
+  const [text, setText] = useState(null);
+  const projects = useProjects();
 
   const handleChange = e => {
     setText(e.target.value);
@@ -41,7 +47,6 @@ function NavBar({ cartItems, onSearch, onProjectChange }) {
     onProjectChange(values.project);
     setText(null);
   };
-
   return (
     <nav style={styles.menuBar}>
       <Row align="middle">
