@@ -14,30 +14,27 @@ const fetchFacets = async project => {
   return JSON.parse(JSON.stringify(dbJson[project].facet_counts.facet_fields));
 };
 
-function Facets({ project, onProjectChange, onAddFacet }) {
+function Facets({ project, onProjectChange, onSetFacets }) {
   Facets.propTypes = {
     project: PropTypes.string.isRequired,
     onProjectChange: PropTypes.func.isRequired,
-    onAddFacet: PropTypes.func.isRequired
+    onSetFacets: PropTypes.func.isRequired
   };
 
   const [facets, setFacets] = React.useState({});
 
-  // TODO: Rename project from parent to currentProject. The facets component
-  // should keep it's own project state so that facets dynamically render in the
-  // component
-  const [currentProject, setCurrentProject] = React.useState(project);
+  const [selectedProject, setSelectedProject] = React.useState(project);
   const [loading, setLoading] = React.useState(true);
   const projects = useProjects();
   const [form] = Form.useForm();
 
   React.useEffect(() => {
-    setCurrentProject(project);
+    setSelectedProject(project);
   }, [project]);
 
   React.useEffect(() => {
     const id = window.setTimeout(() => {
-      fetchFacets(currentProject)
+      fetchFacets(selectedProject)
         .then(res => {
           setFacets(res);
           setLoading(false);
@@ -51,16 +48,19 @@ function Facets({ project, onProjectChange, onAddFacet }) {
       window.clearTimeout(id);
       setLoading(true);
     };
-  }, [currentProject]);
+  }, [selectedProject]);
 
   const handleChangeProject = value => {
-    setCurrentProject(projects[value]);
+    setSelectedProject(projects[value]);
   };
 
-  const handleSubmitFacets = () => {
+  const onFinishForm = obj => {
     // TODO: Implement function to update object of applied facets that will
     // be used to run queries
-    onProjectChange(currentProject);
+    onProjectChange(selectedProject);
+
+    Object.keys(obj).forEach(key => obj[key] === undefined && delete obj[key]);
+    onSetFacets(obj);
   };
 
   if (loading) {
@@ -71,10 +71,14 @@ function Facets({ project, onProjectChange, onAddFacet }) {
     <div>
       <Row>
         <Col>
-          <Form form={form} layout="vertical">
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={values => onFinishForm(values)}
+          >
             <Form.Item name="project" label="Project">
               <Select
-                defaultValue={currentProject}
+                defaultValue={selectedProject}
                 style={{ width: "100%" }}
                 onChange={handleChangeProject}
                 tokenSeparators={[","]}
@@ -106,9 +110,7 @@ function Facets({ project, onProjectChange, onAddFacet }) {
                 })}
               </Select>
             </Form.Item>
-          </Form>
-          <Divider />
-          <Form form={form} layout="vertical">
+            <Divider />
             {Object.keys(facets).map((key, value) => {
               return (
                 <Form.Item key={value} name={key} label={humanize(key)}>
@@ -118,18 +120,18 @@ function Facets({ project, onProjectChange, onAddFacet }) {
                     tokenSeparators={[","]}
                     showArrow={true}
                   >
-                    {facets[key].map((child, index) => {
-                      return <Option key={index}>{child}</Option>;
+                    {facets[key].map((value, index) => {
+                      return (
+                        <Option key={index} value={value}>
+                          {value}
+                        </Option>
+                      );
                     })}
                   </Select>
                 </Form.Item>
               );
             })}
-            <Button
-              type="primary"
-              htmlType="submit"
-              onClick={() => handleSubmitFacets()}
-            >
+            <Button type="primary" htmlType="submit">
               <FilterOutlined /> Apply Facets
             </Button>
           </Form>

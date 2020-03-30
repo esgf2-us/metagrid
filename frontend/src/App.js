@@ -39,7 +39,6 @@ export default class App extends Component {
   };
 
   handleAddCart = items => {
-    console.log(items);
     this.setState(() => {
       return {
         cart: [...this.state.cart, ...items]
@@ -47,7 +46,9 @@ export default class App extends Component {
     });
   };
 
-  handleAddFacet = facet => {};
+  handleSetFacets = facets => {
+    this.setState({ appliedFacets: facets });
+  };
 
   render() {
     return (
@@ -64,13 +65,14 @@ export default class App extends Component {
                 <Facets
                   project={this.state.project}
                   onProjectChange={this.handleProjectChange}
-                  onAddFacet={facet => this.handleAddFacet(facet)}
+                  onSetFacets={facets => this.handleSetFacets(facets)}
                 />
               </Sider>
               <Content style={styles.bodyContent}>
                 <Search
                   project={this.state.project}
                   textInputs={this.state.textInputs}
+                  appliedFacets={this.state.appliedFacets}
                   onRemoveTag={removedTag => this.handleRemoveTag(removedTag)}
                   onClearTags={() => this.handleClearTags()}
                   onAddCart={this.handleAddCart}

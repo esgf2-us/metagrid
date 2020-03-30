@@ -11,16 +11,23 @@ function fetchResults() {
   return JSON.parse(JSON.stringify(jsonData));
 }
 
-function Search({ project, textInputs, onRemoveTag, onClearTags, onAddCart }) {
+function Search({
+  project,
+  textInputs,
+  appliedFacets,
+  onRemoveTag,
+  onClearTags,
+  onAddCart
+}) {
   Search.propTypes = {
     project: PropTypes.string.isRequired,
     textInputs: PropTypes.array.isRequired,
+    appliedFacets: PropTypes.object.isRequired,
     onRemoveTag: PropTypes.func.isRequired,
     onClearTags: PropTypes.func.isRequired,
     onAddCart: PropTypes.func.isRequired
   };
 
-  const [facets, setFacets] = useState({});
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState([]);
@@ -39,11 +46,6 @@ function Search({ project, textInputs, onRemoveTag, onClearTags, onAddCart }) {
     };
   }, [project, textInputs]);
 
-  const handleSubmitFacet = facet => {
-    // TODO: Implement this method
-    setFacets({ ...facets, ...facet });
-  };
-
   const handleSelect = (record, selected, selectedRows, nativeEvent) => {
     setSelected(selectedRows);
   };
@@ -58,6 +60,20 @@ function Search({ project, textInputs, onRemoveTag, onClearTags, onAddCart }) {
       <Row>
         <h4>Applied Constraints: </h4>
         {project !== "" && <SearchTag input={project}></SearchTag>}
+
+        {appliedFacets !== {} &&
+          Object.keys(appliedFacets).map((key, value) => {
+            return appliedFacets[key].map((value, index) => {
+              return (
+                <SearchTag
+                  key={index}
+                  input={value}
+                  onClose={onRemoveTag}
+                ></SearchTag>
+              );
+            });
+          })}
+
         {textInputs.length !== 0 &&
           textInputs.map((input, index) => {
             return (
