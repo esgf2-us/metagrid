@@ -8,7 +8,7 @@ stages:
 # Change pip's cache directory to be inside the project directory since we can
 # only cache local items.
 variables:
-  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/backend/.cache/pip"
 
 # Pip's cache doesn't store the python packages
 # https://pip.pypa.io/en/stable/reference/pip_install/#caching
@@ -18,13 +18,7 @@ variables:
 cache:
   paths:
     - .cache/pip
-    - venv/
-
-before_script:
-- python -V               # Print out python version for debugging
-- pip install virtualenv
-- virtualenv venv
-- source venv/bin/activate
+    - backend/venv
 
 variables:
   POSTGRES_USER: "metagrid"
@@ -37,9 +31,13 @@ flake8:
   stage: lint
   image: python:3.7-alpine
   before_script:
-    - pip install -q flake8
+    - pip install virtualenv
+    - cd backend
+    - virtualenv venv
+    - source venv/bin/activate
+    - pip --cache-dir=$PIP_CACHE_DIR install -q flake8
   script:
-    - flake8 --config=backend/setup.cfg
+    - flake8 --config=setup.cfg
 
 pytest:
   stage: test
@@ -51,9 +49,12 @@ pytest:
   variables:
     DATABASE_URL: pgsql://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres/$POSTGRES_DB
     CELERY_BROKER_URL: redis://redis:6379/0
-
   before_script:
-    - pip install -r backend/requirements/local.txt
+    - pip install virtualenv
+    - cd backend
+    - virtualenv venv
+    - source venv/bin/activate
+    - pip --cache-dir=$PIP_CACHE_DIR install -r requirements/local.txt
 
   script:
-    - pytest backend
+    - pytest
