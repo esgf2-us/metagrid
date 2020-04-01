@@ -1910,7 +1910,7 @@ ansi-styles@^4.0.0, ansi-styles@^4.1.0:
     "@types/color-name" "^1.1.1"
     color-convert "^2.0.1"
 
-antd@^4.0.1:
+antd@^4.0.3:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/antd/-/antd-4.1.0.tgz#1e0b07a19d4887e09d47bdd50a3b483bb2c372c4"
   integrity sha512-xj/GhuSlvWouZ6L3/qdZ6I9b4IWaDeNaGVlm5D18cNY0pNZTK2zh5ov130KDb6YERtAnA5BLU+5U+cvfbvJUcw==
