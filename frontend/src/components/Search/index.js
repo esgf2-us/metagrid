@@ -30,7 +30,7 @@ function Search({
 
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [selected, setSelected] = useState([]);
+  const [itemsToCart, setItemsToCart] = useState([]);
 
   useEffect(() => {
     setLoading(true);
@@ -46,12 +46,12 @@ function Search({
     };
   }, [project, textInputs]);
 
-  const handleSelect = (record, selected, selectedRows, nativeEvent) => {
-    setSelected(selectedRows);
+  const handleSelect = (record, selected, selectedRows) => {
+    setItemsToCart(selectedRows);
   };
 
-  const handleSelectAll = (selected, selectedRows, changeRows) => {
-    setSelected(selectedRows);
+  const handleSelectAll = (selected, selectedRows) => {
+    setItemsToCart(selectedRows);
   };
 
   return (
@@ -62,11 +62,11 @@ function Search({
         {project !== '' && <SearchTag input={project}></SearchTag>}
 
         {appliedFacets !== {} &&
-          Object.keys(appliedFacets).map((key, value) => {
-            return appliedFacets[key].map((value, index) => {
+          Object.keys(appliedFacets).map((key, facet) => {
+            return appliedFacets[facet].map((value) => {
               return (
                 <SearchTag
-                  key={index}
+                  key={value}
                   input={value}
                   onClose={onRemoveTag}
                 ></SearchTag>
@@ -75,10 +75,10 @@ function Search({
           })}
 
         {textInputs.length !== 0 &&
-          textInputs.map((input, index) => {
+          textInputs.map((input) => {
             return (
               <SearchTag
-                key={index}
+                key={input}
                 input={input}
                 onClose={onRemoveTag}
               ></SearchTag>
@@ -92,7 +92,7 @@ function Search({
       )}
 
       {results.length !== 0 && (
-        <Button onClick={() => onAddCart(selected)}>
+        <Button onClick={() => onAddCart(itemsToCart)}>
           Add Selected to Cart
         </Button>
       )}
