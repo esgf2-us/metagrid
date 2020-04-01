@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
-import PropTypes from "prop-types";
-import { Button, Row, Col } from "antd";
+import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
+import { Button, Row, Col } from 'antd';
 
-import SearchTag from "./SearchTag";
-import SearchTable from "./SearchTable";
-import jsonData from "../../mocks/mock.json";
+import SearchTag from './SearchTag';
+import SearchTable from './SearchTable';
+import jsonData from '../../mocks/mock.json';
 
 function fetchResults() {
   // TODO: Call an API instead of mock data
@@ -17,15 +17,15 @@ function Search({
   appliedFacets,
   onRemoveTag,
   onClearTags,
-  onAddCart
+  onAddCart,
 }) {
   Search.propTypes = {
     project: PropTypes.string.isRequired,
-    textInputs: PropTypes.array.isRequired,
-    appliedFacets: PropTypes.object.isRequired,
+    textInputs: PropTypes.arrayOf(PropTypes.string).isRequired,
+    appliedFacets: PropTypes.arrayOf(PropTypes.object).isRequired,
     onRemoveTag: PropTypes.func.isRequired,
     onClearTags: PropTypes.func.isRequired,
-    onAddCart: PropTypes.func.isRequired
+    onAddCart: PropTypes.func.isRequired,
   };
 
   const [results, setResults] = useState([]);
@@ -59,7 +59,7 @@ function Search({
       {/* Top bar */}
       <Row>
         <h4>Applied Constraints: </h4>
-        {project !== "" && <SearchTag input={project}></SearchTag>}
+        {project !== '' && <SearchTag input={project}></SearchTag>}
 
         {appliedFacets !== {} &&
           Object.keys(appliedFacets).map((key, value) => {
