@@ -1,15 +1,15 @@
-import React from "react";
-import PropTypes from "prop-types";
-import { Alert, Form, Button, Divider, Select, Row, Col, Spin } from "antd";
-import { FilterOutlined } from "@ant-design/icons";
+import React from 'react';
+import PropTypes from 'prop-types';
+import { Alert, Form, Button, Divider, Select, Row, Col, Spin } from 'antd';
+import { FilterOutlined } from '@ant-design/icons';
 
-import { useProjects } from "../NavBar/index";
-import { humanize } from "../../utils/utils";
-import dbJson from "../../mocks/db.json";
+import { useProjects } from '../NavBar/index';
+import { humanize } from '../../utils/utils';
+import dbJson from '../../mocks/db.json';
 
 const { Option } = Select;
 
-const fetchFacets = async project => {
+const fetchFacets = async (project) => {
   // TODO: Call an API instead of mock data
   return JSON.parse(JSON.stringify(dbJson[project].facet_counts.facet_fields));
 };
@@ -18,7 +18,7 @@ function Facets({ project, onProjectChange, onSetFacets }) {
   Facets.propTypes = {
     project: PropTypes.string.isRequired,
     onProjectChange: PropTypes.func.isRequired,
-    onSetFacets: PropTypes.func.isRequired
+    onSetFacets: PropTypes.func.isRequired,
   };
 
   const [facets, setFacets] = React.useState({});
@@ -35,12 +35,12 @@ function Facets({ project, onProjectChange, onSetFacets }) {
   React.useEffect(() => {
     const id = window.setTimeout(() => {
       fetchFacets(selectedProject)
-        .then(res => {
+        .then((res) => {
           setFacets(res);
           setLoading(false);
         })
-        .catch(e => {
-          console.warn("Error fetching data");
+        .catch((e) => {
+          console.warn('Error fetching data');
           setLoading(false);
         });
     }, 1000);
@@ -50,16 +50,18 @@ function Facets({ project, onProjectChange, onSetFacets }) {
     };
   }, [selectedProject]);
 
-  const handleChangeProject = value => {
+  const handleChangeProject = (value) => {
     setSelectedProject(projects[value]);
   };
 
-  const onFinishForm = obj => {
+  const onFinishForm = (obj) => {
     // TODO: Implement function to update object of applied facets that will
     // be used to run queries
     onProjectChange(selectedProject);
 
-    Object.keys(obj).forEach(key => obj[key] === undefined && delete obj[key]);
+    Object.keys(obj).forEach(
+      (key) => obj[key] === undefined && delete obj[key]
+    );
     onSetFacets(obj);
   };
 
@@ -74,14 +76,14 @@ function Facets({ project, onProjectChange, onSetFacets }) {
           <Form
             form={form}
             layout="vertical"
-            onFinish={values => onFinishForm(values)}
+            onFinish={(values) => onFinishForm(values)}
           >
             <Form.Item name="project" label="Project">
               <Select
                 defaultValue={selectedProject}
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
                 onChange={handleChangeProject}
-                tokenSeparators={[","]}
+                tokenSeparators={[',']}
                 showArrow={true}
               >
                 {projects.map((project, index) => {
@@ -97,8 +99,8 @@ function Facets({ project, onProjectChange, onSetFacets }) {
             <Form.Item name="perPage" label="Results Per Page">
               <Select
                 defaultValue={10}
-                style={{ width: "100%" }}
-                tokenSeparators={[","]}
+                style={{ width: '100%' }}
+                tokenSeparators={[',']}
                 showArrow={true}
               >
                 {[10, 20, 30, 40, 50].map((project, index) => {
@@ -116,8 +118,8 @@ function Facets({ project, onProjectChange, onSetFacets }) {
                 <Form.Item key={value} name={key} label={humanize(key)}>
                   <Select
                     mode="multiple"
-                    style={{ width: "100%" }}
-                    tokenSeparators={[","]}
+                    style={{ width: '100%' }}
+                    tokenSeparators={[',']}
                     showArrow={true}
                   >
                     {facets[key].map((value, index) => {
