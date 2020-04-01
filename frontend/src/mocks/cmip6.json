@@ -1,0 +1,1883 @@
+{
+  "responseHeader": {
+    "status": 0,
+    "QTime": 4059,
+    "params": {
+      "facet.field": [
+        "mip_era",
+        "activity_id",
+        "model_cohort",
+        "product",
+        "source_id",
+        "institution_id",
+        "source_type",
+        "nominal_resolution",
+        "experiment_id",
+        "sub_experiment_id",
+        "variant_label",
+        "grid_label",
+        "table_id",
+        "frequency",
+        "realm",
+        "variable_id",
+        "cf_standard_name",
+        "data_node"
+      ],
+      "df": "text",
+      "q.alt": "*:*",
+      "indent": "true",
+      "echoParams": "all",
+      "fl": "*,score",
+      "start": "0",
+      "fq": [
+        "type:Dataset",
+        "replica:false",
+        "latest:true",
+        "project:\"CMIP6\"",
+        "variable_id:\"ua\" || variable_id:\"va\" || variable_id:\"zg\"",
+        "frequency:\"mon\"",
+        "variant_label:\"r1i1p1f1\"",
+        "experiment_id:\"1pctCO2-bgc\""
+      ],
+      "rows": "50",
+      "q": "*:*",
+      "shards": "localhost:8983/solr/datasets,localhost:8985/solr/datasets,localhost:8987/solr/datasets,localhost:8988/solr/datasets,localhost:8990/solr/datasets,localhost:8991/solr/datasets,localhost:8993/solr/datasets,localhost:8994/solr/datasets,localhost:8995/solr/datasets,localhost:8996/solr/datasets,localhost:8997/solr/datasets",
+      "tie": "0.01",
+      "facet.limit": "-1",
+      "qf": "text",
+      "facet.method": "enum",
+      "facet.mincount": "1",
+      "facet": "true",
+      "wt": "json",
+      "facet.sort": "lex"
+    }
+  },
+  "response": {
+    "numFound": 21,
+    "start": 0,
+    "maxScore": 1.0,
+    "docs": [
+      {
+        "id": "CMIP6.C4MIP.NCAR.CESM2.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20190724|esgf-data.ucar.edu",
+        "version": "20190724",
+        "access": ["HTTPServer", "GridFTP", "OPENDAP", "Globus"],
+        "activity_drs": ["C4MIP"],
+        "activity_id": ["C4MIP"],
+        "cf_standard_name": ["geopotential_height"],
+        "citation_url": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.NCAR.CESM2.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20190724.json"
+        ],
+        "data_node": "esgf-data.ucar.edu",
+        "data_specs_version": ["01.00.29"],
+        "dataset_id_template_": [
+          "%(mip_era)s.%(activity_drs)s.%(institution_id)s.%(source_id)s.%(experiment_id)s.%(member_id)s.%(table_id)s.%(variable_id)s.%(grid_label)s"
+        ],
+        "datetime_start": "0001-01-15T12:00:00Z",
+        "datetime_stop": "0150-12-15T12:00:00Z",
+        "directory_format_template_": [
+          "%(root)s/%(mip_era)s/%(activity_drs)s/%(institution_id)s/%(source_id)s/%(experiment_id)s/%(member_id)s/%(table_id)s/%(variable_id)s/%(grid_label)s/%(version)s"
+        ],
+        "east_degrees": 358.75,
+        "experiment_id": ["1pctCO2-bgc"],
+        "experiment_title": [
+          "biogeochemically-coupled version of 1 percent per year increasing CO2 experiment"
+        ],
+        "frequency": ["mon"],
+        "further_info_url": [
+          "https://furtherinfo.es-doc.org/CMIP6.NCAR.CESM2.1pctCO2-bgc.none.r1i1p1f1"
+        ],
+        "geo": [
+          "ENVELOPE(-180.0, -1.25, 90.0, -90.0)",
+          "ENVELOPE(0.0, 180.0, 90.0, -90.0)"
+        ],
+        "geo_units": ["degrees_east"],
+        "grid": ["native 0.9x1.25 finite volume grid (192x288 latxlon)"],
+        "grid_label": ["gn"],
+        "height_bottom": 100000.0,
+        "height_top": 100.0,
+        "height_units": "Pa",
+        "index_node": "esgf-node.llnl.gov",
+        "instance_id": "CMIP6.C4MIP.NCAR.CESM2.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20190724",
+        "institution_id": ["NCAR"],
+        "latest": true,
+        "master_id": "CMIP6.C4MIP.NCAR.CESM2.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn",
+        "member_id": ["r1i1p1f1"],
+        "mip_era": ["CMIP6"],
+        "model_cohort": ["Registered"],
+        "nominal_resolution": ["100 km"],
+        "north_degrees": 90.0,
+        "number_of_aggregations": 2,
+        "number_of_files": 3,
+        "pid": ["hdl:21.14100/4a17ceec-9c75-3b1e-8965-414e3eff6a41"],
+        "product": ["model-output"],
+        "project": ["CMIP6"],
+        "realm": ["atmos"],
+        "replica": false,
+        "size": 3467624092,
+        "source_id": ["CESM2"],
+        "source_type": ["AOGCM", "BGC", "AER"],
+        "south_degrees": -90.0,
+        "sub_experiment_id": ["none"],
+        "table_id": ["Amon"],
+        "title": "CMIP6.C4MIP.NCAR.CESM2.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn",
+        "type": "Dataset",
+        "url": [
+          "http://esgf-data.ucar.edu/thredds/catalog/esgcet/176/CMIP6.C4MIP.NCAR.CESM2.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20190724.xml#CMIP6.C4MIP.NCAR.CESM2.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20190724|application/xml+thredds|THREDDS"
+        ],
+        "variable": ["zg"],
+        "variable_id": ["zg"],
+        "variable_long_name": ["Geopotential Height"],
+        "variable_units": ["m"],
+        "variant_label": ["r1i1p1f1"],
+        "west_degrees": 0.0,
+        "xlink": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.NCAR.CESM2.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20190724.json|Citation|citation",
+          "http://hdl.handle.net/hdl:21.14100/4a17ceec-9c75-3b1e-8965-414e3eff6a41|PID|pid"
+        ],
+        "_version_": 1640152348733997056,
+        "retracted": false,
+        "_timestamp": "2019-07-26T19:59:29.981Z",
+        "score": 1.0
+      },
+      {
+        "id": "CMIP6.C4MIP.NCAR.CESM2.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20190724|esgf-data.ucar.edu",
+        "version": "20190724",
+        "access": ["HTTPServer", "GridFTP", "OPENDAP", "Globus"],
+        "activity_drs": ["C4MIP"],
+        "activity_id": ["C4MIP"],
+        "cf_standard_name": ["northward_wind"],
+        "citation_url": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.NCAR.CESM2.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20190724.json"
+        ],
+        "data_node": "esgf-data.ucar.edu",
+        "data_specs_version": ["01.00.29"],
+        "dataset_id_template_": [
+          "%(mip_era)s.%(activity_drs)s.%(institution_id)s.%(source_id)s.%(experiment_id)s.%(member_id)s.%(table_id)s.%(variable_id)s.%(grid_label)s"
+        ],
+        "datetime_start": "0001-01-15T12:00:00Z",
+        "datetime_stop": "0150-12-15T12:00:00Z",
+        "directory_format_template_": [
+          "%(root)s/%(mip_era)s/%(activity_drs)s/%(institution_id)s/%(source_id)s/%(experiment_id)s/%(member_id)s/%(table_id)s/%(variable_id)s/%(grid_label)s/%(version)s"
+        ],
+        "east_degrees": 358.75,
+        "experiment_id": ["1pctCO2-bgc"],
+        "experiment_title": [
+          "biogeochemically-coupled version of 1 percent per year increasing CO2 experiment"
+        ],
+        "frequency": ["mon"],
+        "further_info_url": [
+          "https://furtherinfo.es-doc.org/CMIP6.NCAR.CESM2.1pctCO2-bgc.none.r1i1p1f1"
+        ],
+        "geo": [
+          "ENVELOPE(-180.0, -1.25, 90.0, -90.0)",
+          "ENVELOPE(0.0, 180.0, 90.0, -90.0)"
+        ],
+        "geo_units": ["degrees_east"],
+        "grid": ["native 0.9x1.25 finite volume grid (192x288 latxlon)"],
+        "grid_label": ["gn"],
+        "height_bottom": 100000.0,
+        "height_top": 100.0,
+        "height_units": "Pa",
+        "index_node": "esgf-node.llnl.gov",
+        "instance_id": "CMIP6.C4MIP.NCAR.CESM2.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20190724",
+        "institution_id": ["NCAR"],
+        "latest": true,
+        "master_id": "CMIP6.C4MIP.NCAR.CESM2.1pctCO2-bgc.r1i1p1f1.Amon.va.gn",
+        "member_id": ["r1i1p1f1"],
+        "mip_era": ["CMIP6"],
+        "model_cohort": ["Registered"],
+        "nominal_resolution": ["100 km"],
+        "north_degrees": 90.0,
+        "number_of_aggregations": 2,
+        "number_of_files": 3,
+        "pid": ["hdl:21.14100/c0645bfd-8e9a-3fcb-8de0-9d518df732a5"],
+        "product": ["model-output"],
+        "project": ["CMIP6"],
+        "realm": ["atmos"],
+        "replica": false,
+        "size": 5633327855,
+        "source_id": ["CESM2"],
+        "source_type": ["AOGCM", "BGC", "AER"],
+        "south_degrees": -90.0,
+        "sub_experiment_id": ["none"],
+        "table_id": ["Amon"],
+        "title": "CMIP6.C4MIP.NCAR.CESM2.1pctCO2-bgc.r1i1p1f1.Amon.va.gn",
+        "type": "Dataset",
+        "url": [
+          "http://esgf-data.ucar.edu/thredds/catalog/esgcet/176/CMIP6.C4MIP.NCAR.CESM2.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20190724.xml#CMIP6.C4MIP.NCAR.CESM2.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20190724|application/xml+thredds|THREDDS"
+        ],
+        "variable": ["va"],
+        "variable_id": ["va"],
+        "variable_long_name": ["Northward Wind"],
+        "variable_units": ["m s-1"],
+        "variant_label": ["r1i1p1f1"],
+        "west_degrees": 0.0,
+        "xlink": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.NCAR.CESM2.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20190724.json|Citation|citation",
+          "http://hdl.handle.net/hdl:21.14100/c0645bfd-8e9a-3fcb-8de0-9d518df732a5|PID|pid"
+        ],
+        "_version_": 1640152339436273664,
+        "retracted": false,
+        "_timestamp": "2019-07-26T19:59:21.114Z",
+        "score": 1.0
+      },
+      {
+        "id": "CMIP6.C4MIP.NCAR.CESM2.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20190724|esgf-data.ucar.edu",
+        "version": "20190724",
+        "access": ["HTTPServer", "GridFTP", "OPENDAP", "Globus"],
+        "activity_drs": ["C4MIP"],
+        "activity_id": ["C4MIP"],
+        "cf_standard_name": ["eastward_wind"],
+        "citation_url": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.NCAR.CESM2.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20190724.json"
+        ],
+        "data_node": "esgf-data.ucar.edu",
+        "data_specs_version": ["01.00.29"],
+        "dataset_id_template_": [
+          "%(mip_era)s.%(activity_drs)s.%(institution_id)s.%(source_id)s.%(experiment_id)s.%(member_id)s.%(table_id)s.%(variable_id)s.%(grid_label)s"
+        ],
+        "datetime_start": "0001-01-15T12:00:00Z",
+        "datetime_stop": "0150-12-15T12:00:00Z",
+        "directory_format_template_": [
+          "%(root)s/%(mip_era)s/%(activity_drs)s/%(institution_id)s/%(source_id)s/%(experiment_id)s/%(member_id)s/%(table_id)s/%(variable_id)s/%(grid_label)s/%(version)s"
+        ],
+        "east_degrees": 358.75,
+        "experiment_id": ["1pctCO2-bgc"],
+        "experiment_title": [
+          "biogeochemically-coupled version of 1 percent per year increasing CO2 experiment"
+        ],
+        "frequency": ["mon"],
+        "further_info_url": [
+          "https://furtherinfo.es-doc.org/CMIP6.NCAR.CESM2.1pctCO2-bgc.none.r1i1p1f1"
+        ],
+        "geo": [
+          "ENVELOPE(-180.0, -1.25, 90.0, -90.0)",
+          "ENVELOPE(0.0, 180.0, 90.0, -90.0)"
+        ],
+        "geo_units": ["degrees_east"],
+        "grid": ["native 0.9x1.25 finite volume grid (192x288 latxlon)"],
+        "grid_label": ["gn"],
+        "height_bottom": 100000.0,
+        "height_top": 100.0,
+        "height_units": "Pa",
+        "index_node": "esgf-node.llnl.gov",
+        "instance_id": "CMIP6.C4MIP.NCAR.CESM2.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20190724",
+        "institution_id": ["NCAR"],
+        "latest": true,
+        "master_id": "CMIP6.C4MIP.NCAR.CESM2.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn",
+        "member_id": ["r1i1p1f1"],
+        "mip_era": ["CMIP6"],
+        "model_cohort": ["Registered"],
+        "nominal_resolution": ["100 km"],
+        "north_degrees": 90.0,
+        "number_of_aggregations": 2,
+        "number_of_files": 3,
+        "pid": ["hdl:21.14100/d6f89cce-8d65-348c-b606-a35cfc7f8c65"],
+        "product": ["model-output"],
+        "project": ["CMIP6"],
+        "realm": ["atmos"],
+        "replica": false,
+        "size": 5101004233,
+        "source_id": ["CESM2"],
+        "source_type": ["AOGCM", "BGC", "AER"],
+        "south_degrees": -90.0,
+        "sub_experiment_id": ["none"],
+        "table_id": ["Amon"],
+        "title": "CMIP6.C4MIP.NCAR.CESM2.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn",
+        "type": "Dataset",
+        "url": [
+          "http://esgf-data.ucar.edu/thredds/catalog/esgcet/176/CMIP6.C4MIP.NCAR.CESM2.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20190724.xml#CMIP6.C4MIP.NCAR.CESM2.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20190724|application/xml+thredds|THREDDS"
+        ],
+        "variable": ["ua"],
+        "variable_id": ["ua"],
+        "variable_long_name": ["Eastward Wind"],
+        "variable_units": ["m s-1"],
+        "variant_label": ["r1i1p1f1"],
+        "west_degrees": 0.0,
+        "xlink": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.NCAR.CESM2.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20190724.json|Citation|citation",
+          "http://hdl.handle.net/hdl:21.14100/d6f89cce-8d65-348c-b606-a35cfc7f8c65|PID|pid"
+        ],
+        "_version_": 1640152334405206016,
+        "retracted": false,
+        "_timestamp": "2019-07-26T19:59:16.315Z",
+        "score": 1.0
+      },
+      {
+        "id": "CMIP6.C4MIP.BCC.BCC-CSM2-MR.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20190321|cmip.bcc.cma.cn",
+        "version": "20190321",
+        "access": ["HTTPServer", "GridFTP", "OPENDAP", "Globus", "LAS"],
+        "activity_drs": ["C4MIP"],
+        "activity_id": ["C4MIP"],
+        "branch_method": ["branch"],
+        "cf_standard_name": ["northward_wind"],
+        "citation_url": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.BCC.BCC-CSM2-MR.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20190321.json"
+        ],
+        "data_node": "cmip.bcc.cma.cn",
+        "data_specs_version": ["01.00.27"],
+        "dataset_id_template_": [
+          "%(mip_era)s.%(activity_drs)s.%(institution_id)s.%(source_id)s.%(experiment_id)s.%(member_id)s.%(table_id)s.%(variable_id)s.%(grid_label)s"
+        ],
+        "datetime_start": "1850-01-16T12:00:00Z",
+        "datetime_stop": "2000-12-16T12:00:00Z",
+        "directory_format_template_": [
+          "%(root)s/%(mip_era)s/%(activity_drs)s/%(institution_id)s/%(source_id)s/%(experiment_id)s/%(member_id)s/%(table_id)s/%(variable_id)s/%(grid_label)s/%(version)s"
+        ],
+        "east_degrees": 358.875,
+        "experiment_id": ["1pctCO2-bgc"],
+        "experiment_title": [
+          "biogeochemically-coupled version of 1 percent per year increasing CO2 experiment"
+        ],
+        "frequency": ["mon"],
+        "further_info_url": [
+          "https://furtherinfo.es-doc.org/CMIP6.BCC.BCC-CSM2-MR.1pctCO2-bgc.none.r1i1p1f1"
+        ],
+        "geo": [
+          "ENVELOPE(-180.0, -1.125, 89.14152, -89.14152)",
+          "ENVELOPE(0.0, 180.0, 89.14152, -89.14152)"
+        ],
+        "geo_units": ["degrees_east"],
+        "grid": ["T106"],
+        "grid_label": ["gn"],
+        "height_bottom": 100000.0,
+        "height_top": 100.0,
+        "height_units": "Pa",
+        "index_node": "esgf-node.llnl.gov",
+        "instance_id": "CMIP6.C4MIP.BCC.BCC-CSM2-MR.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20190321",
+        "institution_id": ["BCC"],
+        "latest": true,
+        "master_id": "CMIP6.C4MIP.BCC.BCC-CSM2-MR.1pctCO2-bgc.r1i1p1f1.Amon.va.gn",
+        "member_id": ["r1i1p1f1"],
+        "mip_era": ["CMIP6"],
+        "model_cohort": ["Registered"],
+        "nominal_resolution": ["100 km"],
+        "north_degrees": 89.14152,
+        "number_of_aggregations": 2,
+        "number_of_files": 4,
+        "pid": ["hdl:21.14100/c7d0a799-547f-32ee-abd4-3f1a95d9e5f3"],
+        "product": ["model-output"],
+        "project": ["CMIP6"],
+        "realm": ["atmos"],
+        "replica": false,
+        "size": 7051003152,
+        "source_id": ["BCC-CSM2-MR"],
+        "source_type": ["AOGCM", "BGC"],
+        "south_degrees": -89.14152,
+        "sub_experiment_id": ["none"],
+        "table_id": ["Amon"],
+        "title": "CMIP6.C4MIP.BCC.BCC-CSM2-MR.1pctCO2-bgc.r1i1p1f1.Amon.va.gn",
+        "type": "Dataset",
+        "url": [
+          "http://cmip.bcc.cma.cn/thredds/catalog/esgcet/10/CMIP6.C4MIP.BCC.BCC-CSM2-MR.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20190321.xml#CMIP6.C4MIP.BCC.BCC-CSM2-MR.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20190321|application/xml+thredds|THREDDS",
+          "http://cmip.bcc.cma.cn/las/getUI.do?catid=EB786448FBF51A03B90A8DE0356CDAF5_ns_CMIP6.C4MIP.BCC.BCC-CSM2-MR.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20190321|application/las|LAS"
+        ],
+        "variable": ["va"],
+        "variable_id": ["va"],
+        "variable_long_name": ["Northward Wind"],
+        "variable_units": ["m s-1"],
+        "variant_label": ["r1i1p1f1"],
+        "west_degrees": 0.0,
+        "xlink": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.BCC.BCC-CSM2-MR.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20190321.json|Citation|citation",
+          "http://hdl.handle.net/hdl:21.14100/c7d0a799-547f-32ee-abd4-3f1a95d9e5f3|PID|pid"
+        ],
+        "_version_": 1634229481819340800,
+        "retracted": false,
+        "_timestamp": "2019-05-22T10:58:03.925Z",
+        "score": 1.0
+      },
+      {
+        "id": "CMIP6.C4MIP.BCC.BCC-CSM2-MR.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20190321|cmip.bcc.cma.cn",
+        "version": "20190321",
+        "access": ["HTTPServer", "GridFTP", "OPENDAP", "Globus", "LAS"],
+        "activity_drs": ["C4MIP"],
+        "activity_id": ["C4MIP"],
+        "branch_method": ["branch"],
+        "cf_standard_name": ["eastward_wind"],
+        "citation_url": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.BCC.BCC-CSM2-MR.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20190321.json"
+        ],
+        "data_node": "cmip.bcc.cma.cn",
+        "data_specs_version": ["01.00.27"],
+        "dataset_id_template_": [
+          "%(mip_era)s.%(activity_drs)s.%(institution_id)s.%(source_id)s.%(experiment_id)s.%(member_id)s.%(table_id)s.%(variable_id)s.%(grid_label)s"
+        ],
+        "datetime_start": "1850-01-16T12:00:00Z",
+        "datetime_stop": "2000-12-16T12:00:00Z",
+        "directory_format_template_": [
+          "%(root)s/%(mip_era)s/%(activity_drs)s/%(institution_id)s/%(source_id)s/%(experiment_id)s/%(member_id)s/%(table_id)s/%(variable_id)s/%(grid_label)s/%(version)s"
+        ],
+        "east_degrees": 358.875,
+        "experiment_id": ["1pctCO2-bgc"],
+        "experiment_title": [
+          "biogeochemically-coupled version of 1 percent per year increasing CO2 experiment"
+        ],
+        "frequency": ["mon"],
+        "further_info_url": [
+          "https://furtherinfo.es-doc.org/CMIP6.BCC.BCC-CSM2-MR.1pctCO2-bgc.none.r1i1p1f1"
+        ],
+        "geo": [
+          "ENVELOPE(-180.0, -1.125, 89.14152, -89.14152)",
+          "ENVELOPE(0.0, 180.0, 89.14152, -89.14152)"
+        ],
+        "geo_units": ["degrees_east"],
+        "grid": ["T106"],
+        "grid_label": ["gn"],
+        "height_bottom": 100000.0,
+        "height_top": 100.0,
+        "height_units": "Pa",
+        "index_node": "esgf-node.llnl.gov",
+        "instance_id": "CMIP6.C4MIP.BCC.BCC-CSM2-MR.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20190321",
+        "institution_id": ["BCC"],
+        "latest": true,
+        "master_id": "CMIP6.C4MIP.BCC.BCC-CSM2-MR.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn",
+        "member_id": ["r1i1p1f1"],
+        "mip_era": ["CMIP6"],
+        "model_cohort": ["Registered"],
+        "nominal_resolution": ["100 km"],
+        "north_degrees": 89.14152,
+        "number_of_aggregations": 2,
+        "number_of_files": 4,
+        "pid": ["hdl:21.14100/a3f47e9e-976f-32d9-aaec-63a1d4f471ff"],
+        "product": ["model-output"],
+        "project": ["CMIP6"],
+        "realm": ["atmos"],
+        "replica": false,
+        "size": 7051003136,
+        "source_id": ["BCC-CSM2-MR"],
+        "source_type": ["AOGCM", "BGC"],
+        "south_degrees": -89.14152,
+        "sub_experiment_id": ["none"],
+        "table_id": ["Amon"],
+        "title": "CMIP6.C4MIP.BCC.BCC-CSM2-MR.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn",
+        "type": "Dataset",
+        "url": [
+          "http://cmip.bcc.cma.cn/thredds/catalog/esgcet/10/CMIP6.C4MIP.BCC.BCC-CSM2-MR.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20190321.xml#CMIP6.C4MIP.BCC.BCC-CSM2-MR.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20190321|application/xml+thredds|THREDDS",
+          "http://cmip.bcc.cma.cn/las/getUI.do?catid=EB786448FBF51A03B90A8DE0356CDAF5_ns_CMIP6.C4MIP.BCC.BCC-CSM2-MR.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20190321|application/las|LAS"
+        ],
+        "variable": ["ua"],
+        "variable_id": ["ua"],
+        "variable_long_name": ["Eastward Wind"],
+        "variable_units": ["m s-1"],
+        "variant_label": ["r1i1p1f1"],
+        "west_degrees": 0.0,
+        "xlink": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.BCC.BCC-CSM2-MR.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20190321.json|Citation|citation",
+          "http://hdl.handle.net/hdl:21.14100/a3f47e9e-976f-32d9-aaec-63a1d4f471ff|PID|pid"
+        ],
+        "_version_": 1634229469659004928,
+        "retracted": false,
+        "_timestamp": "2019-05-22T10:57:52.328Z",
+        "score": 1.0
+      },
+      {
+        "id": "CMIP6.C4MIP.BCC.BCC-CSM2-MR.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20190321|cmip.bcc.cma.cn",
+        "version": "20190321",
+        "access": ["HTTPServer", "GridFTP", "OPENDAP", "Globus", "LAS"],
+        "activity_drs": ["C4MIP"],
+        "activity_id": ["C4MIP"],
+        "branch_method": ["branch"],
+        "cf_standard_name": ["geopotential_height"],
+        "citation_url": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.BCC.BCC-CSM2-MR.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20190321.json"
+        ],
+        "data_node": "cmip.bcc.cma.cn",
+        "data_specs_version": ["01.00.27"],
+        "dataset_id_template_": [
+          "%(mip_era)s.%(activity_drs)s.%(institution_id)s.%(source_id)s.%(experiment_id)s.%(member_id)s.%(table_id)s.%(variable_id)s.%(grid_label)s"
+        ],
+        "datetime_start": "1850-01-16T12:00:00Z",
+        "datetime_stop": "2000-12-16T12:00:00Z",
+        "directory_format_template_": [
+          "%(root)s/%(mip_era)s/%(activity_drs)s/%(institution_id)s/%(source_id)s/%(experiment_id)s/%(member_id)s/%(table_id)s/%(variable_id)s/%(grid_label)s/%(version)s"
+        ],
+        "east_degrees": 358.875,
+        "experiment_id": ["1pctCO2-bgc"],
+        "experiment_title": [
+          "biogeochemically-coupled version of 1 percent per year increasing CO2 experiment"
+        ],
+        "frequency": ["mon"],
+        "further_info_url": [
+          "https://furtherinfo.es-doc.org/CMIP6.BCC.BCC-CSM2-MR.1pctCO2-bgc.none.r1i1p1f1"
+        ],
+        "geo": [
+          "ENVELOPE(-180.0, -1.125, 89.14152, -89.14152)",
+          "ENVELOPE(0.0, 180.0, 89.14152, -89.14152)"
+        ],
+        "geo_units": ["degrees_east"],
+        "grid": ["T106"],
+        "grid_label": ["gn"],
+        "height_bottom": 100000.0,
+        "height_top": 100.0,
+        "height_units": "Pa",
+        "index_node": "esgf-node.llnl.gov",
+        "instance_id": "CMIP6.C4MIP.BCC.BCC-CSM2-MR.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20190321",
+        "institution_id": ["BCC"],
+        "latest": true,
+        "master_id": "CMIP6.C4MIP.BCC.BCC-CSM2-MR.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn",
+        "member_id": ["r1i1p1f1"],
+        "mip_era": ["CMIP6"],
+        "model_cohort": ["Registered"],
+        "nominal_resolution": ["100 km"],
+        "north_degrees": 89.14152,
+        "number_of_aggregations": 2,
+        "number_of_files": 4,
+        "pid": ["hdl:21.14100/1bca561a-5250-3a59-91a8-2e88b503b224"],
+        "product": ["model-output"],
+        "project": ["CMIP6"],
+        "realm": ["atmos"],
+        "replica": false,
+        "size": 7051003568,
+        "source_id": ["BCC-CSM2-MR"],
+        "source_type": ["AOGCM", "BGC"],
+        "south_degrees": -89.14152,
+        "sub_experiment_id": ["none"],
+        "table_id": ["Amon"],
+        "title": "CMIP6.C4MIP.BCC.BCC-CSM2-MR.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn",
+        "type": "Dataset",
+        "url": [
+          "http://cmip.bcc.cma.cn/thredds/catalog/esgcet/10/CMIP6.C4MIP.BCC.BCC-CSM2-MR.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20190321.xml#CMIP6.C4MIP.BCC.BCC-CSM2-MR.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20190321|application/xml+thredds|THREDDS",
+          "http://cmip.bcc.cma.cn/las/getUI.do?catid=EB786448FBF51A03B90A8DE0356CDAF5_ns_CMIP6.C4MIP.BCC.BCC-CSM2-MR.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20190321|application/las|LAS"
+        ],
+        "variable": ["zg"],
+        "variable_id": ["zg"],
+        "variable_long_name": ["Geopotential Height"],
+        "variable_units": ["m"],
+        "variant_label": ["r1i1p1f1"],
+        "west_degrees": 0.0,
+        "xlink": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.BCC.BCC-CSM2-MR.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20190321.json|Citation|citation",
+          "http://hdl.handle.net/hdl:21.14100/1bca561a-5250-3a59-91a8-2e88b503b224|PID|pid"
+        ],
+        "_version_": 1634229508496162816,
+        "retracted": false,
+        "_timestamp": "2019-05-22T10:58:29.366Z",
+        "score": 1.0
+      },
+      {
+        "id": "CMIP6.C4MIP.CCCma.CanESM5.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20190429|crd-esgf-drc.ec.gc.ca",
+        "version": "20190429",
+        "access": ["HTTPServer", "GridFTP", "OPENDAP", "LAS"],
+        "activity_drs": ["C4MIP"],
+        "activity_id": ["C4MIP"],
+        "cf_standard_name": ["eastward_wind"],
+        "citation_url": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.CCCma.CanESM5.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20190429.json"
+        ],
+        "data_node": "crd-esgf-drc.ec.gc.ca",
+        "data_specs_version": ["01.00.29"],
+        "dataset_id_template_": [
+          "%(mip_era)s.%(activity_drs)s.%(institution_id)s.%(source_id)s.%(experiment_id)s.%(member_id)s.%(table_id)s.%(variable_id)s.%(grid_label)s"
+        ],
+        "datetime_start": "1850-01-16T12:00:00Z",
+        "datetime_stop": "2000-12-16T12:00:00Z",
+        "directory_format_template_": [
+          "%(root)s/%(mip_era)s/%(activity_drs)s/%(institution_id)s/%(source_id)s/%(experiment_id)s/%(member_id)s/%(table_id)s/%(variable_id)s/%(grid_label)s/%(version)s"
+        ],
+        "east_degrees": 357.1875,
+        "experiment_id": ["1pctCO2-bgc"],
+        "experiment_title": [
+          "biogeochemically-coupled version of 1 percent per year increasing CO2 experiment"
+        ],
+        "frequency": ["mon"],
+        "further_info_url": [
+          "https://furtherinfo.es-doc.org/CMIP6.CCCma.CanESM5.1pctCO2-bgc.none.r1i1p1f1"
+        ],
+        "geo": [
+          "ENVELOPE(-180.0, -2.8125, 87.8638, -87.8638)",
+          "ENVELOPE(0.0, 180.0, 87.8638, -87.8638)"
+        ],
+        "geo_units": ["degrees_east"],
+        "grid": [
+          "T63L49 native atmosphere, T63 Linear Gaussian Grid; 128 x 64 longitude/latitude; 49 levels; top level 1 hPa"
+        ],
+        "grid_label": ["gn"],
+        "height_bottom": 100000.0,
+        "height_top": 100.0,
+        "height_units": "Pa",
+        "index_node": "esgf-node.llnl.gov",
+        "instance_id": "CMIP6.C4MIP.CCCma.CanESM5.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20190429",
+        "institution_id": ["CCCma"],
+        "latest": true,
+        "master_id": "CMIP6.C4MIP.CCCma.CanESM5.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn",
+        "member_id": ["r1i1p1f1"],
+        "mip_era": ["CMIP6"],
+        "model_cohort": ["Registered"],
+        "nominal_resolution": ["500 km"],
+        "north_degrees": 87.8638,
+        "number_of_aggregations": 2,
+        "number_of_files": 1,
+        "pid": ["hdl:21.14100/41f73493-a0f8-3df0-9a5e-f8bf32ac7208"],
+        "product": ["model-output"],
+        "project": ["CMIP6"],
+        "realm": ["atmos"],
+        "replica": false,
+        "size": 1037240179,
+        "source_id": ["CanESM5"],
+        "source_type": ["AOGCM"],
+        "south_degrees": -87.8638,
+        "sub_experiment_id": ["none"],
+        "table_id": ["Amon"],
+        "title": "CMIP6.C4MIP.CCCma.CanESM5.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn",
+        "type": "Dataset",
+        "url": [
+          "http://crd-esgf-drc.ec.gc.ca/thredds/catalog/esgcet/95/CMIP6.C4MIP.CCCma.CanESM5.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20190429.xml#CMIP6.C4MIP.CCCma.CanESM5.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20190429|application/xml+thredds|THREDDS",
+          "http://crd-esgf-drc.ec.gc.ca/las/getUI.do?catid=2D7D52D9ABAF43CDC673C1D95DCBF3BC_ns_CMIP6.C4MIP.CCCma.CanESM5.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20190429|application/las|LAS"
+        ],
+        "variable": ["ua"],
+        "variable_id": ["ua"],
+        "variable_long_name": ["Eastward Wind"],
+        "variable_units": ["m s-1"],
+        "variant_label": ["r1i1p1f1"],
+        "west_degrees": 0.0,
+        "xlink": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.CCCma.CanESM5.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20190429.json|Citation|citation",
+          "http://hdl.handle.net/hdl:21.14100/41f73493-a0f8-3df0-9a5e-f8bf32ac7208|PID|pid"
+        ],
+        "_version_": 1635662290633097216,
+        "retracted": false,
+        "_timestamp": "2019-06-07T06:31:56.891Z",
+        "score": 1.0
+      },
+      {
+        "id": "CMIP6.C4MIP.CCCma.CanESM5.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20190429|crd-esgf-drc.ec.gc.ca",
+        "version": "20190429",
+        "access": ["HTTPServer", "GridFTP", "OPENDAP", "LAS"],
+        "activity_drs": ["C4MIP"],
+        "activity_id": ["C4MIP"],
+        "cf_standard_name": ["geopotential_height"],
+        "citation_url": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.CCCma.CanESM5.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20190429.json"
+        ],
+        "data_node": "crd-esgf-drc.ec.gc.ca",
+        "data_specs_version": ["01.00.29"],
+        "dataset_id_template_": [
+          "%(mip_era)s.%(activity_drs)s.%(institution_id)s.%(source_id)s.%(experiment_id)s.%(member_id)s.%(table_id)s.%(variable_id)s.%(grid_label)s"
+        ],
+        "datetime_start": "1850-01-16T12:00:00Z",
+        "datetime_stop": "2000-12-16T12:00:00Z",
+        "directory_format_template_": [
+          "%(root)s/%(mip_era)s/%(activity_drs)s/%(institution_id)s/%(source_id)s/%(experiment_id)s/%(member_id)s/%(table_id)s/%(variable_id)s/%(grid_label)s/%(version)s"
+        ],
+        "east_degrees": 357.1875,
+        "experiment_id": ["1pctCO2-bgc"],
+        "experiment_title": [
+          "biogeochemically-coupled version of 1 percent per year increasing CO2 experiment"
+        ],
+        "frequency": ["mon"],
+        "further_info_url": [
+          "https://furtherinfo.es-doc.org/CMIP6.CCCma.CanESM5.1pctCO2-bgc.none.r1i1p1f1"
+        ],
+        "geo": [
+          "ENVELOPE(-180.0, -2.8125, 87.8638, -87.8638)",
+          "ENVELOPE(0.0, 180.0, 87.8638, -87.8638)"
+        ],
+        "geo_units": ["degrees_east"],
+        "grid": [
+          "T63L49 native atmosphere, T63 Linear Gaussian Grid; 128 x 64 longitude/latitude; 49 levels; top level 1 hPa"
+        ],
+        "grid_label": ["gn"],
+        "height_bottom": 100000.0,
+        "height_top": 100.0,
+        "height_units": "Pa",
+        "index_node": "esgf-node.llnl.gov",
+        "instance_id": "CMIP6.C4MIP.CCCma.CanESM5.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20190429",
+        "institution_id": ["CCCma"],
+        "latest": true,
+        "master_id": "CMIP6.C4MIP.CCCma.CanESM5.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn",
+        "member_id": ["r1i1p1f1"],
+        "mip_era": ["CMIP6"],
+        "model_cohort": ["Registered"],
+        "nominal_resolution": ["500 km"],
+        "north_degrees": 87.8638,
+        "number_of_aggregations": 2,
+        "number_of_files": 1,
+        "pid": ["hdl:21.14100/9ecabc8b-8bd0-301c-af98-af61c4ca3ae2"],
+        "product": ["model-output"],
+        "project": ["CMIP6"],
+        "realm": ["atmos"],
+        "replica": false,
+        "size": 852164542,
+        "source_id": ["CanESM5"],
+        "source_type": ["AOGCM"],
+        "south_degrees": -87.8638,
+        "sub_experiment_id": ["none"],
+        "table_id": ["Amon"],
+        "title": "CMIP6.C4MIP.CCCma.CanESM5.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn",
+        "type": "Dataset",
+        "url": [
+          "http://crd-esgf-drc.ec.gc.ca/thredds/catalog/esgcet/95/CMIP6.C4MIP.CCCma.CanESM5.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20190429.xml#CMIP6.C4MIP.CCCma.CanESM5.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20190429|application/xml+thredds|THREDDS",
+          "http://crd-esgf-drc.ec.gc.ca/las/getUI.do?catid=2D7D52D9ABAF43CDC673C1D95DCBF3BC_ns_CMIP6.C4MIP.CCCma.CanESM5.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20190429|application/las|LAS"
+        ],
+        "variable": ["zg"],
+        "variable_id": ["zg"],
+        "variable_long_name": ["Geopotential Height"],
+        "variable_units": ["m"],
+        "variant_label": ["r1i1p1f1"],
+        "west_degrees": 0.0,
+        "xlink": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.CCCma.CanESM5.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20190429.json|Citation|citation",
+          "http://hdl.handle.net/hdl:21.14100/9ecabc8b-8bd0-301c-af98-af61c4ca3ae2|PID|pid"
+        ],
+        "_version_": 1635662297405849600,
+        "retracted": false,
+        "_timestamp": "2019-06-07T06:32:03.350Z",
+        "score": 1.0
+      },
+      {
+        "id": "CMIP6.C4MIP.CCCma.CanESM5.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20190429|crd-esgf-drc.ec.gc.ca",
+        "version": "20190429",
+        "access": ["HTTPServer", "GridFTP", "OPENDAP", "LAS"],
+        "activity_drs": ["C4MIP"],
+        "activity_id": ["C4MIP"],
+        "cf_standard_name": ["northward_wind"],
+        "citation_url": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.CCCma.CanESM5.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20190429.json"
+        ],
+        "data_node": "crd-esgf-drc.ec.gc.ca",
+        "data_specs_version": ["01.00.29"],
+        "dataset_id_template_": [
+          "%(mip_era)s.%(activity_drs)s.%(institution_id)s.%(source_id)s.%(experiment_id)s.%(member_id)s.%(table_id)s.%(variable_id)s.%(grid_label)s"
+        ],
+        "datetime_start": "1850-01-16T12:00:00Z",
+        "datetime_stop": "2000-12-16T12:00:00Z",
+        "directory_format_template_": [
+          "%(root)s/%(mip_era)s/%(activity_drs)s/%(institution_id)s/%(source_id)s/%(experiment_id)s/%(member_id)s/%(table_id)s/%(variable_id)s/%(grid_label)s/%(version)s"
+        ],
+        "east_degrees": 357.1875,
+        "experiment_id": ["1pctCO2-bgc"],
+        "experiment_title": [
+          "biogeochemically-coupled version of 1 percent per year increasing CO2 experiment"
+        ],
+        "frequency": ["mon"],
+        "further_info_url": [
+          "https://furtherinfo.es-doc.org/CMIP6.CCCma.CanESM5.1pctCO2-bgc.none.r1i1p1f1"
+        ],
+        "geo": [
+          "ENVELOPE(-180.0, -2.8125, 87.8638, -87.8638)",
+          "ENVELOPE(0.0, 180.0, 87.8638, -87.8638)"
+        ],
+        "geo_units": ["degrees_east"],
+        "grid": [
+          "T63L49 native atmosphere, T63 Linear Gaussian Grid; 128 x 64 longitude/latitude; 49 levels; top level 1 hPa"
+        ],
+        "grid_label": ["gn"],
+        "height_bottom": 100000.0,
+        "height_top": 100.0,
+        "height_units": "Pa",
+        "index_node": "esgf-node.llnl.gov",
+        "instance_id": "CMIP6.C4MIP.CCCma.CanESM5.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20190429",
+        "institution_id": ["CCCma"],
+        "latest": true,
+        "master_id": "CMIP6.C4MIP.CCCma.CanESM5.1pctCO2-bgc.r1i1p1f1.Amon.va.gn",
+        "member_id": ["r1i1p1f1"],
+        "mip_era": ["CMIP6"],
+        "model_cohort": ["Registered"],
+        "nominal_resolution": ["500 km"],
+        "north_degrees": 87.8638,
+        "number_of_aggregations": 2,
+        "number_of_files": 1,
+        "pid": ["hdl:21.14100/580a2c3f-be1b-38ac-a938-69bb235b1d38"],
+        "product": ["model-output"],
+        "project": ["CMIP6"],
+        "realm": ["atmos"],
+        "replica": false,
+        "size": 1055199800,
+        "source_id": ["CanESM5"],
+        "source_type": ["AOGCM"],
+        "south_degrees": -87.8638,
+        "sub_experiment_id": ["none"],
+        "table_id": ["Amon"],
+        "title": "CMIP6.C4MIP.CCCma.CanESM5.1pctCO2-bgc.r1i1p1f1.Amon.va.gn",
+        "type": "Dataset",
+        "url": [
+          "http://crd-esgf-drc.ec.gc.ca/thredds/catalog/esgcet/95/CMIP6.C4MIP.CCCma.CanESM5.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20190429.xml#CMIP6.C4MIP.CCCma.CanESM5.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20190429|application/xml+thredds|THREDDS",
+          "http://crd-esgf-drc.ec.gc.ca/las/getUI.do?catid=2D7D52D9ABAF43CDC673C1D95DCBF3BC_ns_CMIP6.C4MIP.CCCma.CanESM5.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20190429|application/las|LAS"
+        ],
+        "variable": ["va"],
+        "variable_id": ["va"],
+        "variable_long_name": ["Northward Wind"],
+        "variable_units": ["m s-1"],
+        "variant_label": ["r1i1p1f1"],
+        "west_degrees": 0.0,
+        "xlink": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.CCCma.CanESM5.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20190429.json|Citation|citation",
+          "http://hdl.handle.net/hdl:21.14100/580a2c3f-be1b-38ac-a938-69bb235b1d38|PID|pid"
+        ],
+        "_version_": 1635662294545334272,
+        "retracted": false,
+        "_timestamp": "2019-06-07T06:32:00.622Z",
+        "score": 1.0
+      },
+      {
+        "id": "CMIP6.C4MIP.MPI-M.MPI-ESM1-2-LR.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20190710|esgf3.dkrz.de",
+        "version": "20190710",
+        "access": ["HTTPServer", "GridFTP", "OPENDAP", "Globus", "LAS"],
+        "activity_drs": ["C4MIP"],
+        "activity_id": ["C4MIP"],
+        "cf_standard_name": ["geopotential_height"],
+        "citation_url": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.MPI-M.MPI-ESM1-2-LR.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20190710.json"
+        ],
+        "data_node": "esgf3.dkrz.de",
+        "data_specs_version": ["01.00.30"],
+        "dataset_id_template_": [
+          "%(mip_era)s.%(activity_drs)s.%(institution_id)s.%(source_id)s.%(experiment_id)s.%(member_id)s.%(table_id)s.%(variable_id)s.%(grid_label)s"
+        ],
+        "datetime_start": "1850-01-16T12:00:00Z",
+        "datetime_stop": "1989-12-16T12:00:00Z",
+        "directory_format_template_": [
+          "%(root)s/%(mip_era)s/%(activity_drs)s/%(institution_id)s/%(source_id)s/%(experiment_id)s/%(member_id)s/%(table_id)s/%(variable_id)s/%(grid_label)s/%(version)s"
+        ],
+        "east_degrees": 358.125,
+        "experiment_id": ["1pctCO2-bgc"],
+        "experiment_title": [
+          "biogeochemically-coupled version of 1 percent per year increasing CO2 experiment"
+        ],
+        "frequency": ["mon"],
+        "further_info_url": [
+          "https://furtherinfo.es-doc.org/CMIP6.MPI-M.MPI-ESM1-2-LR.1pctCO2-bgc.none.r1i1p1f1"
+        ],
+        "geo": [
+          "ENVELOPE(-180.0, -1.875, 88.57217, -88.57217)",
+          "ENVELOPE(0.0, 180.0, 88.57217, -88.57217)"
+        ],
+        "geo_units": ["degrees_east"],
+        "grid": ["gn"],
+        "grid_label": ["gn"],
+        "height_bottom": 100000.0,
+        "height_top": 100.0,
+        "height_units": "Pa",
+        "index_node": "esgf-data.dkrz.de",
+        "instance_id": "CMIP6.C4MIP.MPI-M.MPI-ESM1-2-LR.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20190710",
+        "institution_id": ["MPI-M"],
+        "latest": true,
+        "master_id": "CMIP6.C4MIP.MPI-M.MPI-ESM1-2-LR.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn",
+        "member_id": ["r1i1p1f1"],
+        "mip_era": ["CMIP6"],
+        "model_cohort": ["Registered"],
+        "nominal_resolution": ["250 km"],
+        "north_degrees": 88.57217,
+        "number_of_aggregations": 2,
+        "number_of_files": 7,
+        "pid": ["hdl:21.14100/90501a51-ef67-3a43-9b03-12d0a4b17fff"],
+        "product": ["model-output"],
+        "project": ["CMIP6"],
+        "realm": ["atmos"],
+        "replica": false,
+        "size": 905312688,
+        "source_id": ["MPI-ESM1-2-LR"],
+        "source_type": ["AOGCM", "BGC"],
+        "south_degrees": -88.57217,
+        "sub_experiment_id": ["none"],
+        "table_id": ["Amon"],
+        "title": "CMIP6.C4MIP.MPI-M.MPI-ESM1-2-LR.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn",
+        "type": "Dataset",
+        "url": [
+          "http://esgf3.dkrz.de/thredds/catalog/esgcet/843/CMIP6.C4MIP.MPI-M.MPI-ESM1-2-LR.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20190710.xml#CMIP6.C4MIP.MPI-M.MPI-ESM1-2-LR.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20190710|application/xml+thredds|THREDDS",
+          "http://esgf3.dkrz.de/las/getUI.do?catid=649F6BBCDD98B0633CF0042D119CC69D_ns_CMIP6.C4MIP.MPI-M.MPI-ESM1-2-LR.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20190710|application/las|LAS"
+        ],
+        "variable": ["zg"],
+        "variable_id": ["zg"],
+        "variable_long_name": ["Geopotential Height"],
+        "variable_units": ["m"],
+        "variant_label": ["r1i1p1f1"],
+        "west_degrees": 0.0,
+        "xlink": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.MPI-M.MPI-ESM1-2-LR.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20190710.json|Citation|citation",
+          "http://hdl.handle.net/hdl:21.14100/90501a51-ef67-3a43-9b03-12d0a4b17fff|PID|pid"
+        ],
+        "_version_": 1661024749927530496,
+        "retracted": false,
+        "_timestamp": "2020-03-13T05:17:22.920Z",
+        "score": 1.0
+      },
+      {
+        "id": "CMIP6.C4MIP.MPI-M.MPI-ESM1-2-LR.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20190710|esgf3.dkrz.de",
+        "version": "20190710",
+        "access": ["HTTPServer", "GridFTP", "OPENDAP", "Globus", "LAS"],
+        "activity_drs": ["C4MIP"],
+        "activity_id": ["C4MIP"],
+        "cf_standard_name": ["eastward_wind"],
+        "citation_url": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.MPI-M.MPI-ESM1-2-LR.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20190710.json"
+        ],
+        "data_node": "esgf3.dkrz.de",
+        "data_specs_version": ["01.00.30"],
+        "dataset_id_template_": [
+          "%(mip_era)s.%(activity_drs)s.%(institution_id)s.%(source_id)s.%(experiment_id)s.%(member_id)s.%(table_id)s.%(variable_id)s.%(grid_label)s"
+        ],
+        "datetime_start": "1850-01-16T12:00:00Z",
+        "datetime_stop": "1989-12-16T12:00:00Z",
+        "directory_format_template_": [
+          "%(root)s/%(mip_era)s/%(activity_drs)s/%(institution_id)s/%(source_id)s/%(experiment_id)s/%(member_id)s/%(table_id)s/%(variable_id)s/%(grid_label)s/%(version)s"
+        ],
+        "east_degrees": 358.125,
+        "experiment_id": ["1pctCO2-bgc"],
+        "experiment_title": [
+          "biogeochemically-coupled version of 1 percent per year increasing CO2 experiment"
+        ],
+        "frequency": ["mon"],
+        "further_info_url": [
+          "https://furtherinfo.es-doc.org/CMIP6.MPI-M.MPI-ESM1-2-LR.1pctCO2-bgc.none.r1i1p1f1"
+        ],
+        "geo": [
+          "ENVELOPE(-180.0, -1.875, 88.57217, -88.57217)",
+          "ENVELOPE(0.0, 180.0, 88.57217, -88.57217)"
+        ],
+        "geo_units": ["degrees_east"],
+        "grid": ["gn"],
+        "grid_label": ["gn"],
+        "height_bottom": 100000.0,
+        "height_top": 100.0,
+        "height_units": "Pa",
+        "index_node": "esgf-data.dkrz.de",
+        "instance_id": "CMIP6.C4MIP.MPI-M.MPI-ESM1-2-LR.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20190710",
+        "institution_id": ["MPI-M"],
+        "latest": true,
+        "master_id": "CMIP6.C4MIP.MPI-M.MPI-ESM1-2-LR.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn",
+        "member_id": ["r1i1p1f1"],
+        "mip_era": ["CMIP6"],
+        "model_cohort": ["Registered"],
+        "nominal_resolution": ["250 km"],
+        "north_degrees": 88.57217,
+        "number_of_aggregations": 2,
+        "number_of_files": 7,
+        "pid": ["hdl:21.14100/0fc50ea7-65f2-30ff-bae1-77d6cb953058"],
+        "product": ["model-output"],
+        "project": ["CMIP6"],
+        "realm": ["atmos"],
+        "replica": false,
+        "size": 1176731726,
+        "source_id": ["MPI-ESM1-2-LR"],
+        "source_type": ["AOGCM", "BGC"],
+        "south_degrees": -88.57217,
+        "sub_experiment_id": ["none"],
+        "table_id": ["Amon"],
+        "title": "CMIP6.C4MIP.MPI-M.MPI-ESM1-2-LR.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn",
+        "type": "Dataset",
+        "url": [
+          "http://esgf3.dkrz.de/thredds/catalog/esgcet/843/CMIP6.C4MIP.MPI-M.MPI-ESM1-2-LR.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20190710.xml#CMIP6.C4MIP.MPI-M.MPI-ESM1-2-LR.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20190710|application/xml+thredds|THREDDS",
+          "http://esgf3.dkrz.de/las/getUI.do?catid=649F6BBCDD98B0633CF0042D119CC69D_ns_CMIP6.C4MIP.MPI-M.MPI-ESM1-2-LR.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20190710|application/las|LAS"
+        ],
+        "variable": ["ua"],
+        "variable_id": ["ua"],
+        "variable_long_name": ["Eastward Wind"],
+        "variable_units": ["m s-1"],
+        "variant_label": ["r1i1p1f1"],
+        "west_degrees": 0.0,
+        "xlink": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.MPI-M.MPI-ESM1-2-LR.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20190710.json|Citation|citation",
+          "http://hdl.handle.net/hdl:21.14100/0fc50ea7-65f2-30ff-bae1-77d6cb953058|PID|pid"
+        ],
+        "_version_": 1661024741913264128,
+        "retracted": false,
+        "_timestamp": "2020-03-13T05:17:15.278Z",
+        "score": 1.0
+      },
+      {
+        "id": "CMIP6.C4MIP.MPI-M.MPI-ESM1-2-LR.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20190710|esgf3.dkrz.de",
+        "version": "20190710",
+        "access": ["HTTPServer", "GridFTP", "OPENDAP", "Globus", "LAS"],
+        "activity_drs": ["C4MIP"],
+        "activity_id": ["C4MIP"],
+        "cf_standard_name": ["northward_wind"],
+        "citation_url": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.MPI-M.MPI-ESM1-2-LR.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20190710.json"
+        ],
+        "data_node": "esgf3.dkrz.de",
+        "data_specs_version": ["01.00.30"],
+        "dataset_id_template_": [
+          "%(mip_era)s.%(activity_drs)s.%(institution_id)s.%(source_id)s.%(experiment_id)s.%(member_id)s.%(table_id)s.%(variable_id)s.%(grid_label)s"
+        ],
+        "datetime_start": "1850-01-16T12:00:00Z",
+        "datetime_stop": "1989-12-16T12:00:00Z",
+        "directory_format_template_": [
+          "%(root)s/%(mip_era)s/%(activity_drs)s/%(institution_id)s/%(source_id)s/%(experiment_id)s/%(member_id)s/%(table_id)s/%(variable_id)s/%(grid_label)s/%(version)s"
+        ],
+        "east_degrees": 358.125,
+        "experiment_id": ["1pctCO2-bgc"],
+        "experiment_title": [
+          "biogeochemically-coupled version of 1 percent per year increasing CO2 experiment"
+        ],
+        "frequency": ["mon"],
+        "further_info_url": [
+          "https://furtherinfo.es-doc.org/CMIP6.MPI-M.MPI-ESM1-2-LR.1pctCO2-bgc.none.r1i1p1f1"
+        ],
+        "geo": [
+          "ENVELOPE(-180.0, -1.875, 88.57217, -88.57217)",
+          "ENVELOPE(0.0, 180.0, 88.57217, -88.57217)"
+        ],
+        "geo_units": ["degrees_east"],
+        "grid": ["gn"],
+        "grid_label": ["gn"],
+        "height_bottom": 100000.0,
+        "height_top": 100.0,
+        "height_units": "Pa",
+        "index_node": "esgf-data.dkrz.de",
+        "instance_id": "CMIP6.C4MIP.MPI-M.MPI-ESM1-2-LR.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20190710",
+        "institution_id": ["MPI-M"],
+        "latest": true,
+        "master_id": "CMIP6.C4MIP.MPI-M.MPI-ESM1-2-LR.1pctCO2-bgc.r1i1p1f1.Amon.va.gn",
+        "member_id": ["r1i1p1f1"],
+        "mip_era": ["CMIP6"],
+        "model_cohort": ["Registered"],
+        "nominal_resolution": ["250 km"],
+        "north_degrees": 88.57217,
+        "number_of_aggregations": 2,
+        "number_of_files": 7,
+        "pid": ["hdl:21.14100/01c2ed88-9ab4-382f-81ed-c1709c63009a"],
+        "product": ["model-output"],
+        "project": ["CMIP6"],
+        "realm": ["atmos"],
+        "replica": false,
+        "size": 1346362607,
+        "source_id": ["MPI-ESM1-2-LR"],
+        "source_type": ["AOGCM", "BGC"],
+        "south_degrees": -88.57217,
+        "sub_experiment_id": ["none"],
+        "table_id": ["Amon"],
+        "title": "CMIP6.C4MIP.MPI-M.MPI-ESM1-2-LR.1pctCO2-bgc.r1i1p1f1.Amon.va.gn",
+        "type": "Dataset",
+        "url": [
+          "http://esgf3.dkrz.de/thredds/catalog/esgcet/843/CMIP6.C4MIP.MPI-M.MPI-ESM1-2-LR.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20190710.xml#CMIP6.C4MIP.MPI-M.MPI-ESM1-2-LR.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20190710|application/xml+thredds|THREDDS",
+          "http://esgf3.dkrz.de/las/getUI.do?catid=649F6BBCDD98B0633CF0042D119CC69D_ns_CMIP6.C4MIP.MPI-M.MPI-ESM1-2-LR.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20190710|application/las|LAS"
+        ],
+        "variable": ["va"],
+        "variable_id": ["va"],
+        "variable_long_name": ["Northward Wind"],
+        "variable_units": ["m s-1"],
+        "variant_label": ["r1i1p1f1"],
+        "west_degrees": 0.0,
+        "xlink": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.MPI-M.MPI-ESM1-2-LR.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20190710.json|Citation|citation",
+          "http://hdl.handle.net/hdl:21.14100/01c2ed88-9ab4-382f-81ed-c1709c63009a|PID|pid"
+        ],
+        "_version_": 1661024745094643712,
+        "retracted": false,
+        "_timestamp": "2020-03-13T05:17:18.312Z",
+        "score": 1.0
+      },
+      {
+        "id": "CMIP6.C4MIP.IPSL.IPSL-CM6A-LR.1pctCO2-bgc.r1i1p1f1.Amon.zg.gr.v20180914|vesg.ipsl.upmc.fr",
+        "version": "20180914",
+        "access": ["HTTPServer", "GridFTP", "OPENDAP", "Globus"],
+        "activity_drs": ["C4MIP"],
+        "activity_id": ["C4MIP"],
+        "cf_standard_name": ["geopotential_height"],
+        "citation_url": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.IPSL.IPSL-CM6A-LR.1pctCO2-bgc.r1i1p1f1.Amon.zg.gr.v20180914.json"
+        ],
+        "data_node": "vesg.ipsl.upmc.fr",
+        "data_specs_version": ["01.00.21"],
+        "dataset_id_template_": [
+          "%(mip_era)s.%(activity_drs)s.%(institution_id)s.%(source_id)s.%(experiment_id)s.%(member_id)s.%(table_id)s.%(variable_id)s.%(grid_label)s"
+        ],
+        "datetime_start": "1850-01-16T12:00:00Z",
+        "datetime_stop": "1999-12-16T12:00:00Z",
+        "directory_format_template_": [
+          "%(root)s/%(mip_era)s/%(activity_drs)s/%(institution_id)s/%(source_id)s/%(experiment_id)s/%(member_id)s/%(table_id)s/%(variable_id)s/%(grid_label)s/%(version)s"
+        ],
+        "east_degrees": 357.5,
+        "experiment_id": ["1pctCO2-bgc"],
+        "experiment_title": [
+          "biogeochemically-coupled version of 1 percent per year increasing CO2 experiment"
+        ],
+        "frequency": ["mon"],
+        "further_info_url": [
+          "https://furtherinfo.es-doc.org/CMIP6.IPSL.IPSL-CM6A-LR.1pctCO2-bgc.none.r1i1p1f1"
+        ],
+        "geo": [
+          "ENVELOPE(-180.0, -2.5, 90.0, -90.0)",
+          "ENVELOPE(0.0, 180.0, 90.0, -90.0)"
+        ],
+        "geo_units": ["degrees_east"],
+        "grid": ["LMDZ grid"],
+        "grid_label": ["gr"],
+        "index_node": "esgf-node.ipsl.upmc.fr",
+        "instance_id": "CMIP6.C4MIP.IPSL.IPSL-CM6A-LR.1pctCO2-bgc.r1i1p1f1.Amon.zg.gr.v20180914",
+        "institution_id": ["IPSL"],
+        "latest": true,
+        "master_id": "CMIP6.C4MIP.IPSL.IPSL-CM6A-LR.1pctCO2-bgc.r1i1p1f1.Amon.zg.gr",
+        "member_id": ["r1i1p1f1"],
+        "mip_era": ["CMIP6"],
+        "model_cohort": ["Registered"],
+        "nominal_resolution": ["250 km"],
+        "north_degrees": 90.0,
+        "number_of_aggregations": 2,
+        "number_of_files": 1,
+        "pid": ["hdl:21.14100/bb3d3569-c055-3a93-b73f-230a40a7ddd8"],
+        "product": ["model-output"],
+        "project": ["CMIP6"],
+        "realm": ["atmos"],
+        "replica": false,
+        "size": 1383326130,
+        "source_id": ["IPSL-CM6A-LR"],
+        "source_type": ["AOGCM", "BGC"],
+        "south_degrees": -90.0,
+        "sub_experiment_id": ["none"],
+        "table_id": ["Amon"],
+        "title": "CMIP6.C4MIP.IPSL.IPSL-CM6A-LR.1pctCO2-bgc.r1i1p1f1.Amon.zg.gr",
+        "type": "Dataset",
+        "url": [
+          "http://vesg.ipsl.upmc.fr/thredds/catalog/esgcet/488/CMIP6.C4MIP.IPSL.IPSL-CM6A-LR.1pctCO2-bgc.r1i1p1f1.Amon.zg.gr.v20180914.xml#CMIP6.C4MIP.IPSL.IPSL-CM6A-LR.1pctCO2-bgc.r1i1p1f1.Amon.zg.gr.v20180914|application/xml+thredds|THREDDS"
+        ],
+        "variable": ["zg"],
+        "variable_id": ["zg"],
+        "variable_long_name": ["Geopotential Height"],
+        "variable_units": ["m"],
+        "variant_label": ["r1i1p1f1"],
+        "west_degrees": 0.0,
+        "xlink": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.IPSL.IPSL-CM6A-LR.1pctCO2-bgc.r1i1p1f1.Amon.zg.gr.v20180914.json|Citation|citation",
+          "http://hdl.handle.net/hdl:21.14100/bb3d3569-c055-3a93-b73f-230a40a7ddd8|PID|pid"
+        ],
+        "_version_": 1651086294916268032,
+        "retracted": false,
+        "_timestamp": "2019-11-24T12:29:53.631Z",
+        "score": 1.0
+      },
+      {
+        "id": "CMIP6.C4MIP.IPSL.IPSL-CM6A-LR.1pctCO2-bgc.r1i1p1f1.Amon.va.gr.v20180914|vesg.ipsl.upmc.fr",
+        "version": "20180914",
+        "access": ["HTTPServer", "GridFTP", "OPENDAP", "Globus"],
+        "activity_drs": ["C4MIP"],
+        "activity_id": ["C4MIP"],
+        "cf_standard_name": ["northward_wind"],
+        "citation_url": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.IPSL.IPSL-CM6A-LR.1pctCO2-bgc.r1i1p1f1.Amon.va.gr.v20180914.json"
+        ],
+        "data_node": "vesg.ipsl.upmc.fr",
+        "data_specs_version": ["01.00.21"],
+        "dataset_id_template_": [
+          "%(mip_era)s.%(activity_drs)s.%(institution_id)s.%(source_id)s.%(experiment_id)s.%(member_id)s.%(table_id)s.%(variable_id)s.%(grid_label)s"
+        ],
+        "datetime_start": "1850-01-16T12:00:00Z",
+        "datetime_stop": "1999-12-16T12:00:00Z",
+        "directory_format_template_": [
+          "%(root)s/%(mip_era)s/%(activity_drs)s/%(institution_id)s/%(source_id)s/%(experiment_id)s/%(member_id)s/%(table_id)s/%(variable_id)s/%(grid_label)s/%(version)s"
+        ],
+        "east_degrees": 357.5,
+        "experiment_id": ["1pctCO2-bgc"],
+        "experiment_title": [
+          "biogeochemically-coupled version of 1 percent per year increasing CO2 experiment"
+        ],
+        "frequency": ["mon"],
+        "further_info_url": [
+          "https://furtherinfo.es-doc.org/CMIP6.IPSL.IPSL-CM6A-LR.1pctCO2-bgc.none.r1i1p1f1"
+        ],
+        "geo": [
+          "ENVELOPE(-180.0, -2.5, 90.0, -90.0)",
+          "ENVELOPE(0.0, 180.0, 90.0, -90.0)"
+        ],
+        "geo_units": ["degrees_east"],
+        "grid": ["LMDZ grid"],
+        "grid_label": ["gr"],
+        "index_node": "esgf-node.ipsl.upmc.fr",
+        "instance_id": "CMIP6.C4MIP.IPSL.IPSL-CM6A-LR.1pctCO2-bgc.r1i1p1f1.Amon.va.gr.v20180914",
+        "institution_id": ["IPSL"],
+        "latest": true,
+        "master_id": "CMIP6.C4MIP.IPSL.IPSL-CM6A-LR.1pctCO2-bgc.r1i1p1f1.Amon.va.gr",
+        "member_id": ["r1i1p1f1"],
+        "mip_era": ["CMIP6"],
+        "model_cohort": ["Registered"],
+        "nominal_resolution": ["250 km"],
+        "north_degrees": 90.0,
+        "number_of_aggregations": 2,
+        "number_of_files": 1,
+        "pid": ["hdl:21.14100/ff33d5d2-9052-3a03-bdb7-fa3f431273c0"],
+        "product": ["model-output"],
+        "project": ["CMIP6"],
+        "realm": ["atmos"],
+        "replica": false,
+        "size": 2186415590,
+        "source_id": ["IPSL-CM6A-LR"],
+        "source_type": ["AOGCM", "BGC"],
+        "south_degrees": -90.0,
+        "sub_experiment_id": ["none"],
+        "table_id": ["Amon"],
+        "title": "CMIP6.C4MIP.IPSL.IPSL-CM6A-LR.1pctCO2-bgc.r1i1p1f1.Amon.va.gr",
+        "type": "Dataset",
+        "url": [
+          "http://vesg.ipsl.upmc.fr/thredds/catalog/esgcet/488/CMIP6.C4MIP.IPSL.IPSL-CM6A-LR.1pctCO2-bgc.r1i1p1f1.Amon.va.gr.v20180914.xml#CMIP6.C4MIP.IPSL.IPSL-CM6A-LR.1pctCO2-bgc.r1i1p1f1.Amon.va.gr.v20180914|application/xml+thredds|THREDDS"
+        ],
+        "variable": ["va"],
+        "variable_id": ["va"],
+        "variable_long_name": ["Northward Wind"],
+        "variable_units": ["m s-1"],
+        "variant_label": ["r1i1p1f1"],
+        "west_degrees": 0.0,
+        "xlink": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.IPSL.IPSL-CM6A-LR.1pctCO2-bgc.r1i1p1f1.Amon.va.gr.v20180914.json|Citation|citation",
+          "http://hdl.handle.net/hdl:21.14100/ff33d5d2-9052-3a03-bdb7-fa3f431273c0|PID|pid"
+        ],
+        "_version_": 1651086293230157824,
+        "retracted": false,
+        "_timestamp": "2019-11-24T12:29:52.024Z",
+        "score": 1.0
+      },
+      {
+        "id": "CMIP6.C4MIP.IPSL.IPSL-CM6A-LR.1pctCO2-bgc.r1i1p1f1.Amon.ua.gr.v20180914|vesg.ipsl.upmc.fr",
+        "version": "20180914",
+        "access": ["HTTPServer", "GridFTP", "OPENDAP", "Globus"],
+        "activity_drs": ["C4MIP"],
+        "activity_id": ["C4MIP"],
+        "cf_standard_name": ["eastward_wind"],
+        "citation_url": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.IPSL.IPSL-CM6A-LR.1pctCO2-bgc.r1i1p1f1.Amon.ua.gr.v20180914.json"
+        ],
+        "data_node": "vesg.ipsl.upmc.fr",
+        "data_specs_version": ["01.00.21"],
+        "dataset_id_template_": [
+          "%(mip_era)s.%(activity_drs)s.%(institution_id)s.%(source_id)s.%(experiment_id)s.%(member_id)s.%(table_id)s.%(variable_id)s.%(grid_label)s"
+        ],
+        "datetime_start": "1850-01-16T12:00:00Z",
+        "datetime_stop": "1999-12-16T12:00:00Z",
+        "directory_format_template_": [
+          "%(root)s/%(mip_era)s/%(activity_drs)s/%(institution_id)s/%(source_id)s/%(experiment_id)s/%(member_id)s/%(table_id)s/%(variable_id)s/%(grid_label)s/%(version)s"
+        ],
+        "east_degrees": 357.5,
+        "experiment_id": ["1pctCO2-bgc"],
+        "experiment_title": [
+          "biogeochemically-coupled version of 1 percent per year increasing CO2 experiment"
+        ],
+        "frequency": ["mon"],
+        "further_info_url": [
+          "https://furtherinfo.es-doc.org/CMIP6.IPSL.IPSL-CM6A-LR.1pctCO2-bgc.none.r1i1p1f1"
+        ],
+        "geo": [
+          "ENVELOPE(-180.0, -2.5, 90.0, -90.0)",
+          "ENVELOPE(0.0, 180.0, 90.0, -90.0)"
+        ],
+        "geo_units": ["degrees_east"],
+        "grid": ["LMDZ grid"],
+        "grid_label": ["gr"],
+        "index_node": "esgf-node.ipsl.upmc.fr",
+        "instance_id": "CMIP6.C4MIP.IPSL.IPSL-CM6A-LR.1pctCO2-bgc.r1i1p1f1.Amon.ua.gr.v20180914",
+        "institution_id": ["IPSL"],
+        "latest": true,
+        "master_id": "CMIP6.C4MIP.IPSL.IPSL-CM6A-LR.1pctCO2-bgc.r1i1p1f1.Amon.ua.gr",
+        "member_id": ["r1i1p1f1"],
+        "mip_era": ["CMIP6"],
+        "model_cohort": ["Registered"],
+        "nominal_resolution": ["250 km"],
+        "north_degrees": 90.0,
+        "number_of_aggregations": 2,
+        "number_of_files": 1,
+        "pid": ["hdl:21.14100/d1a292a3-84b5-3c33-8981-bcc7bf2607af"],
+        "product": ["model-output"],
+        "project": ["CMIP6"],
+        "realm": ["atmos"],
+        "replica": false,
+        "size": 2020588377,
+        "source_id": ["IPSL-CM6A-LR"],
+        "source_type": ["AOGCM", "BGC"],
+        "south_degrees": -90.0,
+        "sub_experiment_id": ["none"],
+        "table_id": ["Amon"],
+        "title": "CMIP6.C4MIP.IPSL.IPSL-CM6A-LR.1pctCO2-bgc.r1i1p1f1.Amon.ua.gr",
+        "type": "Dataset",
+        "url": [
+          "http://vesg.ipsl.upmc.fr/thredds/catalog/esgcet/488/CMIP6.C4MIP.IPSL.IPSL-CM6A-LR.1pctCO2-bgc.r1i1p1f1.Amon.ua.gr.v20180914.xml#CMIP6.C4MIP.IPSL.IPSL-CM6A-LR.1pctCO2-bgc.r1i1p1f1.Amon.ua.gr.v20180914|application/xml+thredds|THREDDS"
+        ],
+        "variable": ["ua"],
+        "variable_id": ["ua"],
+        "variable_long_name": ["Eastward Wind"],
+        "variable_units": ["m s-1"],
+        "variant_label": ["r1i1p1f1"],
+        "west_degrees": 0.0,
+        "xlink": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.IPSL.IPSL-CM6A-LR.1pctCO2-bgc.r1i1p1f1.Amon.ua.gr.v20180914.json|Citation|citation",
+          "http://hdl.handle.net/hdl:21.14100/d1a292a3-84b5-3c33-8981-bcc7bf2607af|PID|pid"
+        ],
+        "_version_": 1651086292142784512,
+        "retracted": false,
+        "_timestamp": "2019-11-24T12:29:50.987Z",
+        "score": 1.0
+      },
+      {
+        "id": "CMIP6.C4MIP.CSIRO.ACCESS-ESM1-5.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20191118|esgf.nci.org.au",
+        "version": "20191118",
+        "access": ["HTTPServer", "GridFTP", "OPENDAP", "Globus"],
+        "activity_drs": ["C4MIP"],
+        "activity_id": ["C4MIP"],
+        "cf_standard_name": ["geopotential_height"],
+        "citation_url": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.CSIRO.ACCESS-ESM1-5.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20191118.json"
+        ],
+        "data_node": "esgf.nci.org.au",
+        "data_specs_version": ["01.00.30"],
+        "dataset_id_template_": [
+          "%(mip_era)s.%(activity_drs)s.%(institution_id)s.%(source_id)s.%(experiment_id)s.%(member_id)s.%(table_id)s.%(variable_id)s.%(grid_label)s"
+        ],
+        "datetime_start": "0101-01-16T12:00:00Z",
+        "datetime_stop": "0250-12-16T12:00:00Z",
+        "directory_format_template_": [
+          "%(root)s/%(mip_era)s/%(activity_drs)s/%(institution_id)s/%(source_id)s/%(experiment_id)s/%(member_id)s/%(table_id)s/%(variable_id)s/%(grid_label)s/%(version)s"
+        ],
+        "east_degrees": 359.0625,
+        "experiment_id": ["1pctCO2-bgc"],
+        "experiment_title": [
+          "biogeochemically-coupled version of 1 percent per year increasing CO2 experiment"
+        ],
+        "frequency": ["mon"],
+        "further_info_url": [
+          "https://furtherinfo.es-doc.org/CMIP6.CSIRO.ACCESS-ESM1-5.1pctCO2-bgc.none.r1i1p1f1"
+        ],
+        "geo": [
+          "ENVELOPE(-180.0, -0.9375, 89.375, -89.375)",
+          "ENVELOPE(0.9375, 180.0, 89.375, -89.375)"
+        ],
+        "geo_units": ["degrees_east"],
+        "grid": ["native atmosphere N96 grid (145x192 latxlon)"],
+        "grid_label": ["gn"],
+        "height_bottom": 100000.0,
+        "height_top": 100.0,
+        "height_units": "Pa",
+        "index_node": "esgf.nci.org.au",
+        "instance_id": "CMIP6.C4MIP.CSIRO.ACCESS-ESM1-5.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20191118",
+        "institution_id": ["CSIRO"],
+        "latest": true,
+        "master_id": "CMIP6.C4MIP.CSIRO.ACCESS-ESM1-5.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn",
+        "member_id": ["r1i1p1f1"],
+        "mip_era": ["CMIP6"],
+        "model_cohort": ["Registered"],
+        "nominal_resolution": ["250 km"],
+        "north_degrees": 89.375,
+        "number_of_aggregations": 2,
+        "number_of_files": 2,
+        "pid": ["hdl:21.14100/48337015-aa44-3bde-9422-a06f7710bd22"],
+        "product": ["model-output"],
+        "project": ["CMIP6"],
+        "realm": ["atmos"],
+        "replica": false,
+        "size": 2538187145,
+        "source_id": ["ACCESS-ESM1-5"],
+        "source_type": ["AOGCM", "BGC"],
+        "south_degrees": -89.375,
+        "sub_experiment_id": ["none"],
+        "table_id": ["Amon"],
+        "title": "CMIP6.C4MIP.CSIRO.ACCESS-ESM1-5.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn",
+        "type": "Dataset",
+        "url": [
+          "http://esgf.nci.org.au/thredds/catalog/esgcet/CMIP6/C4MIP/CSIRO/ACCESS-ESM1-5/1pctCO2-bgc/r1i1p1f1/Amon/zg/gn/CMIP6.C4MIP.CSIRO.ACCESS-ESM1-5.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20191118.xml#CMIP6.C4MIP.CSIRO.ACCESS-ESM1-5.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20191118|application/xml+thredds|THREDDS"
+        ],
+        "variable": ["zg"],
+        "variable_id": ["zg"],
+        "variable_long_name": ["Geopotential Height"],
+        "variable_units": ["m"],
+        "variant_label": ["r1i1p1f1"],
+        "west_degrees": 0.9375,
+        "xlink": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.CSIRO.ACCESS-ESM1-5.1pctCO2-bgc.r1i1p1f1.Amon.zg.gn.v20191118.json|Citation|citation",
+          "http://hdl.handle.net/hdl:21.14100/48337015-aa44-3bde-9422-a06f7710bd22|PID|pid"
+        ],
+        "_version_": 1657307269258280960,
+        "retracted": false,
+        "_timestamp": "2020-02-01T04:29:37.085Z",
+        "score": 1.0
+      },
+      {
+        "id": "CMIP6.C4MIP.CSIRO.ACCESS-ESM1-5.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20191118|esgf.nci.org.au",
+        "version": "20191118",
+        "access": ["HTTPServer", "GridFTP", "OPENDAP", "Globus"],
+        "activity_drs": ["C4MIP"],
+        "activity_id": ["C4MIP"],
+        "cf_standard_name": ["northward_wind"],
+        "citation_url": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.CSIRO.ACCESS-ESM1-5.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20191118.json"
+        ],
+        "data_node": "esgf.nci.org.au",
+        "data_specs_version": ["01.00.30"],
+        "dataset_id_template_": [
+          "%(mip_era)s.%(activity_drs)s.%(institution_id)s.%(source_id)s.%(experiment_id)s.%(member_id)s.%(table_id)s.%(variable_id)s.%(grid_label)s"
+        ],
+        "datetime_start": "0101-01-16T12:00:00Z",
+        "datetime_stop": "0250-12-16T12:00:00Z",
+        "directory_format_template_": [
+          "%(root)s/%(mip_era)s/%(activity_drs)s/%(institution_id)s/%(source_id)s/%(experiment_id)s/%(member_id)s/%(table_id)s/%(variable_id)s/%(grid_label)s/%(version)s"
+        ],
+        "east_degrees": 359.0625,
+        "experiment_id": ["1pctCO2-bgc"],
+        "experiment_title": [
+          "biogeochemically-coupled version of 1 percent per year increasing CO2 experiment"
+        ],
+        "frequency": ["mon"],
+        "further_info_url": [
+          "https://furtherinfo.es-doc.org/CMIP6.CSIRO.ACCESS-ESM1-5.1pctCO2-bgc.none.r1i1p1f1"
+        ],
+        "geo": [
+          "ENVELOPE(-180.0, -0.9375, 89.375, -89.375)",
+          "ENVELOPE(0.9375, 180.0, 89.375, -89.375)"
+        ],
+        "geo_units": ["degrees_east"],
+        "grid": ["native atmosphere N96 grid (145x192 latxlon)"],
+        "grid_label": ["gn"],
+        "height_bottom": 100000.0,
+        "height_top": 100.0,
+        "height_units": "Pa",
+        "index_node": "esgf.nci.org.au",
+        "instance_id": "CMIP6.C4MIP.CSIRO.ACCESS-ESM1-5.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20191118",
+        "institution_id": ["CSIRO"],
+        "latest": true,
+        "master_id": "CMIP6.C4MIP.CSIRO.ACCESS-ESM1-5.1pctCO2-bgc.r1i1p1f1.Amon.va.gn",
+        "member_id": ["r1i1p1f1"],
+        "mip_era": ["CMIP6"],
+        "model_cohort": ["Registered"],
+        "nominal_resolution": ["250 km"],
+        "north_degrees": 89.375,
+        "number_of_aggregations": 2,
+        "number_of_files": 2,
+        "pid": ["hdl:21.14100/16353780-b3e7-30d2-bc45-743c13482c18"],
+        "product": ["model-output"],
+        "project": ["CMIP6"],
+        "realm": ["atmos"],
+        "replica": false,
+        "size": 3339954245,
+        "source_id": ["ACCESS-ESM1-5"],
+        "source_type": ["AOGCM", "BGC"],
+        "south_degrees": -89.375,
+        "sub_experiment_id": ["none"],
+        "table_id": ["Amon"],
+        "title": "CMIP6.C4MIP.CSIRO.ACCESS-ESM1-5.1pctCO2-bgc.r1i1p1f1.Amon.va.gn",
+        "type": "Dataset",
+        "url": [
+          "http://esgf.nci.org.au/thredds/catalog/esgcet/CMIP6/C4MIP/CSIRO/ACCESS-ESM1-5/1pctCO2-bgc/r1i1p1f1/Amon/va/gn/CMIP6.C4MIP.CSIRO.ACCESS-ESM1-5.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20191118.xml#CMIP6.C4MIP.CSIRO.ACCESS-ESM1-5.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20191118|application/xml+thredds|THREDDS"
+        ],
+        "variable": ["va"],
+        "variable_id": ["va"],
+        "variable_long_name": ["Northward Wind"],
+        "variable_units": ["m s-1"],
+        "variant_label": ["r1i1p1f1"],
+        "west_degrees": 0.9375,
+        "xlink": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.CSIRO.ACCESS-ESM1-5.1pctCO2-bgc.r1i1p1f1.Amon.va.gn.v20191118.json|Citation|citation",
+          "http://hdl.handle.net/hdl:21.14100/16353780-b3e7-30d2-bc45-743c13482c18|PID|pid"
+        ],
+        "_version_": 1657307263177588736,
+        "retracted": false,
+        "_timestamp": "2020-02-01T04:29:31.285Z",
+        "score": 1.0
+      },
+      {
+        "id": "CMIP6.C4MIP.CSIRO.ACCESS-ESM1-5.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20191118|esgf.nci.org.au",
+        "version": "20191118",
+        "access": ["HTTPServer", "GridFTP", "OPENDAP", "Globus"],
+        "activity_drs": ["C4MIP"],
+        "activity_id": ["C4MIP"],
+        "cf_standard_name": ["eastward_wind"],
+        "citation_url": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.CSIRO.ACCESS-ESM1-5.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20191118.json"
+        ],
+        "data_node": "esgf.nci.org.au",
+        "data_specs_version": ["01.00.30"],
+        "dataset_id_template_": [
+          "%(mip_era)s.%(activity_drs)s.%(institution_id)s.%(source_id)s.%(experiment_id)s.%(member_id)s.%(table_id)s.%(variable_id)s.%(grid_label)s"
+        ],
+        "datetime_start": "0101-01-16T12:00:00Z",
+        "datetime_stop": "0250-12-16T12:00:00Z",
+        "directory_format_template_": [
+          "%(root)s/%(mip_era)s/%(activity_drs)s/%(institution_id)s/%(source_id)s/%(experiment_id)s/%(member_id)s/%(table_id)s/%(variable_id)s/%(grid_label)s/%(version)s"
+        ],
+        "east_degrees": 359.0625,
+        "experiment_id": ["1pctCO2-bgc"],
+        "experiment_title": [
+          "biogeochemically-coupled version of 1 percent per year increasing CO2 experiment"
+        ],
+        "frequency": ["mon"],
+        "further_info_url": [
+          "https://furtherinfo.es-doc.org/CMIP6.CSIRO.ACCESS-ESM1-5.1pctCO2-bgc.none.r1i1p1f1"
+        ],
+        "geo": [
+          "ENVELOPE(-180.0, -0.9375, 89.375, -89.375)",
+          "ENVELOPE(0.9375, 180.0, 89.375, -89.375)"
+        ],
+        "geo_units": ["degrees_east"],
+        "grid": ["native atmosphere N96 grid (145x192 latxlon)"],
+        "grid_label": ["gn"],
+        "height_bottom": 100000.0,
+        "height_top": 100.0,
+        "height_units": "Pa",
+        "index_node": "esgf.nci.org.au",
+        "instance_id": "CMIP6.C4MIP.CSIRO.ACCESS-ESM1-5.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20191118",
+        "institution_id": ["CSIRO"],
+        "latest": true,
+        "master_id": "CMIP6.C4MIP.CSIRO.ACCESS-ESM1-5.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn",
+        "member_id": ["r1i1p1f1"],
+        "mip_era": ["CMIP6"],
+        "model_cohort": ["Registered"],
+        "nominal_resolution": ["250 km"],
+        "north_degrees": 89.375,
+        "number_of_aggregations": 2,
+        "number_of_files": 2,
+        "pid": ["hdl:21.14100/741efdb7-0dff-3d08-a5b7-d34495d5b92b"],
+        "product": ["model-output"],
+        "project": ["CMIP6"],
+        "realm": ["atmos"],
+        "replica": false,
+        "size": 3251604149,
+        "source_id": ["ACCESS-ESM1-5"],
+        "source_type": ["AOGCM", "BGC"],
+        "south_degrees": -89.375,
+        "sub_experiment_id": ["none"],
+        "table_id": ["Amon"],
+        "title": "CMIP6.C4MIP.CSIRO.ACCESS-ESM1-5.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn",
+        "type": "Dataset",
+        "url": [
+          "http://esgf.nci.org.au/thredds/catalog/esgcet/CMIP6/C4MIP/CSIRO/ACCESS-ESM1-5/1pctCO2-bgc/r1i1p1f1/Amon/ua/gn/CMIP6.C4MIP.CSIRO.ACCESS-ESM1-5.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20191118.xml#CMIP6.C4MIP.CSIRO.ACCESS-ESM1-5.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20191118|application/xml+thredds|THREDDS"
+        ],
+        "variable": ["ua"],
+        "variable_id": ["ua"],
+        "variable_long_name": ["Eastward Wind"],
+        "variable_units": ["m s-1"],
+        "variant_label": ["r1i1p1f1"],
+        "west_degrees": 0.9375,
+        "xlink": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.CSIRO.ACCESS-ESM1-5.1pctCO2-bgc.r1i1p1f1.Amon.ua.gn.v20191118.json|Citation|citation",
+          "http://hdl.handle.net/hdl:21.14100/741efdb7-0dff-3d08-a5b7-d34495d5b92b|PID|pid"
+        ],
+        "_version_": 1657307259332460544,
+        "retracted": false,
+        "_timestamp": "2020-02-01T04:29:27.619Z",
+        "score": 1.0
+      },
+      {
+        "id": "CMIP6.C4MIP.NOAA-GFDL.GFDL-ESM4.1pctCO2-bgc.r1i1p1f1.Amon.zg.gr1.v20190920|esgdata.gfdl.noaa.gov",
+        "version": "20190920",
+        "access": ["HTTPServer", "GridFTP", "OPENDAP", "Globus", "LAS"],
+        "activity_drs": ["C4MIP"],
+        "activity_id": ["C4MIP"],
+        "branch_method": ["standard"],
+        "cf_standard_name": ["geopotential_height"],
+        "citation_url": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.NOAA-GFDL.GFDL-ESM4.1pctCO2-bgc.r1i1p1f1.Amon.zg.gr1.v20190920.json"
+        ],
+        "data_node": "esgdata.gfdl.noaa.gov",
+        "data_specs_version": ["01.00.27"],
+        "dataset_id_template_": [
+          "%(mip_era)s.%(activity_drs)s.%(institution_id)s.%(source_id)s.%(experiment_id)s.%(member_id)s.%(table_id)s.%(variable_id)s.%(grid_label)s"
+        ],
+        "datetime_start": "0001-01-16T12:00:00Z",
+        "datetime_stop": "0150-12-16T12:00:00Z",
+        "directory_format_template_": [
+          "%(root)s/%(mip_era)s/%(activity_drs)s/%(institution_id)s/%(source_id)s/%(experiment_id)s/%(member_id)s/%(table_id)s/%(variable_id)s/%(grid_label)s/%(version)s"
+        ],
+        "east_degrees": 359.375,
+        "experiment_id": ["1pctCO2-bgc"],
+        "experiment_title": [
+          "biogeochemically-coupled version of 1 percent per year increasing CO2 experiment"
+        ],
+        "frequency": ["mon"],
+        "further_info_url": [
+          "https://furtherinfo.es-doc.org/CMIP6.NOAA-GFDL.GFDL-ESM4.1pctCO2-bgc.none.r1i1p1f1"
+        ],
+        "geo": [
+          "ENVELOPE(-180.0, -0.625, 89.5, -89.5)",
+          "ENVELOPE(0.625, 180.0, 89.5, -89.5)"
+        ],
+        "geo_units": ["degrees_east"],
+        "grid": [
+          "atmos data regridded from Cubed-sphere (c96) to 180,288; interpolation method: conserve_order2"
+        ],
+        "grid_label": ["gr1"],
+        "height_bottom": 100000.0,
+        "height_top": 100.0,
+        "height_units": "Pa",
+        "index_node": "esgdata.gfdl.noaa.gov",
+        "instance_id": "CMIP6.C4MIP.NOAA-GFDL.GFDL-ESM4.1pctCO2-bgc.r1i1p1f1.Amon.zg.gr1.v20190920",
+        "institution_id": ["NOAA-GFDL"],
+        "latest": true,
+        "master_id": "CMIP6.C4MIP.NOAA-GFDL.GFDL-ESM4.1pctCO2-bgc.r1i1p1f1.Amon.zg.gr1",
+        "member_id": ["r1i1p1f1"],
+        "mip_era": ["CMIP6"],
+        "model_cohort": ["Registered"],
+        "nominal_resolution": ["100 km"],
+        "north_degrees": 89.5,
+        "number_of_aggregations": 2,
+        "number_of_files": 2,
+        "pid": ["hdl:21.14100/160a3b77-0448-3dbd-945a-40f11b21c277"],
+        "product": ["model-output"],
+        "project": ["CMIP6"],
+        "realm": ["atmos"],
+        "replica": false,
+        "size": 3289958499,
+        "source_id": ["GFDL-ESM4"],
+        "source_type": ["AOGCM", "AER", "CHEM", "BGC"],
+        "south_degrees": -89.5,
+        "sub_experiment_id": ["none"],
+        "table_id": ["Amon"],
+        "title": "CMIP6.C4MIP.NOAA-GFDL.GFDL-ESM4.1pctCO2-bgc.r1i1p1f1.Amon.zg.gr1",
+        "type": "Dataset",
+        "url": [
+          "http://esgdata.gfdl.noaa.gov/thredds/catalog/esgcet/51/CMIP6.C4MIP.NOAA-GFDL.GFDL-ESM4.1pctCO2-bgc.r1i1p1f1.Amon.zg.gr1.v20190920.xml#CMIP6.C4MIP.NOAA-GFDL.GFDL-ESM4.1pctCO2-bgc.r1i1p1f1.Amon.zg.gr1.v20190920|application/xml+thredds|THREDDS",
+          "http://esgdata.gfdl.noaa.gov/las/getUI.do?catid=55B48299F30BC9828F9E93A18AFAA2FC_ns_CMIP6.C4MIP.NOAA-GFDL.GFDL-ESM4.1pctCO2-bgc.r1i1p1f1.Amon.zg.gr1.v20190920|application/las|LAS"
+        ],
+        "variable": ["zg"],
+        "variable_id": ["zg"],
+        "variable_long_name": ["Geopotential Height"],
+        "variable_units": ["m"],
+        "variant_label": ["r1i1p1f1"],
+        "west_degrees": 0.625,
+        "xlink": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.NOAA-GFDL.GFDL-ESM4.1pctCO2-bgc.r1i1p1f1.Amon.zg.gr1.v20190920.json|Citation|citation",
+          "http://hdl.handle.net/hdl:21.14100/160a3b77-0448-3dbd-945a-40f11b21c277|PID|pid"
+        ],
+        "_version_": 1655815124882030592,
+        "retracted": false,
+        "_timestamp": "2020-01-15T17:12:37.316Z",
+        "score": 1.0
+      },
+      {
+        "id": "CMIP6.C4MIP.NOAA-GFDL.GFDL-ESM4.1pctCO2-bgc.r1i1p1f1.Amon.va.gr1.v20190920|esgdata.gfdl.noaa.gov",
+        "version": "20190920",
+        "access": ["HTTPServer", "GridFTP", "OPENDAP", "Globus", "LAS"],
+        "activity_drs": ["C4MIP"],
+        "activity_id": ["C4MIP"],
+        "branch_method": ["standard"],
+        "cf_standard_name": ["northward_wind"],
+        "citation_url": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.NOAA-GFDL.GFDL-ESM4.1pctCO2-bgc.r1i1p1f1.Amon.va.gr1.v20190920.json"
+        ],
+        "data_node": "esgdata.gfdl.noaa.gov",
+        "data_specs_version": ["01.00.27"],
+        "dataset_id_template_": [
+          "%(mip_era)s.%(activity_drs)s.%(institution_id)s.%(source_id)s.%(experiment_id)s.%(member_id)s.%(table_id)s.%(variable_id)s.%(grid_label)s"
+        ],
+        "datetime_start": "0001-01-16T12:00:00Z",
+        "datetime_stop": "0150-12-16T12:00:00Z",
+        "directory_format_template_": [
+          "%(root)s/%(mip_era)s/%(activity_drs)s/%(institution_id)s/%(source_id)s/%(experiment_id)s/%(member_id)s/%(table_id)s/%(variable_id)s/%(grid_label)s/%(version)s"
+        ],
+        "east_degrees": 359.375,
+        "experiment_id": ["1pctCO2-bgc"],
+        "experiment_title": [
+          "biogeochemically-coupled version of 1 percent per year increasing CO2 experiment"
+        ],
+        "frequency": ["mon"],
+        "further_info_url": [
+          "https://furtherinfo.es-doc.org/CMIP6.NOAA-GFDL.GFDL-ESM4.1pctCO2-bgc.none.r1i1p1f1"
+        ],
+        "geo": [
+          "ENVELOPE(-180.0, -0.625, 89.5, -89.5)",
+          "ENVELOPE(0.625, 180.0, 89.5, -89.5)"
+        ],
+        "geo_units": ["degrees_east"],
+        "grid": [
+          "atmos data regridded from Cubed-sphere (c96) to 180,288; interpolation method: conserve_order2"
+        ],
+        "grid_label": ["gr1"],
+        "height_bottom": 100000.0,
+        "height_top": 100.0,
+        "height_units": "Pa",
+        "index_node": "esgdata.gfdl.noaa.gov",
+        "instance_id": "CMIP6.C4MIP.NOAA-GFDL.GFDL-ESM4.1pctCO2-bgc.r1i1p1f1.Amon.va.gr1.v20190920",
+        "institution_id": ["NOAA-GFDL"],
+        "latest": true,
+        "master_id": "CMIP6.C4MIP.NOAA-GFDL.GFDL-ESM4.1pctCO2-bgc.r1i1p1f1.Amon.va.gr1",
+        "member_id": ["r1i1p1f1"],
+        "mip_era": ["CMIP6"],
+        "model_cohort": ["Registered"],
+        "nominal_resolution": ["100 km"],
+        "north_degrees": 89.5,
+        "number_of_aggregations": 2,
+        "number_of_files": 2,
+        "pid": ["hdl:21.14100/d2d8da50-61d3-38ba-a2a3-116bbca96e5f"],
+        "product": ["model-output"],
+        "project": ["CMIP6"],
+        "realm": ["atmos"],
+        "replica": false,
+        "size": 5393010332,
+        "source_id": ["GFDL-ESM4"],
+        "source_type": ["AOGCM", "AER", "CHEM", "BGC"],
+        "south_degrees": -89.5,
+        "sub_experiment_id": ["none"],
+        "table_id": ["Amon"],
+        "title": "CMIP6.C4MIP.NOAA-GFDL.GFDL-ESM4.1pctCO2-bgc.r1i1p1f1.Amon.va.gr1",
+        "type": "Dataset",
+        "url": [
+          "http://esgdata.gfdl.noaa.gov/thredds/catalog/esgcet/51/CMIP6.C4MIP.NOAA-GFDL.GFDL-ESM4.1pctCO2-bgc.r1i1p1f1.Amon.va.gr1.v20190920.xml#CMIP6.C4MIP.NOAA-GFDL.GFDL-ESM4.1pctCO2-bgc.r1i1p1f1.Amon.va.gr1.v20190920|application/xml+thredds|THREDDS",
+          "http://esgdata.gfdl.noaa.gov/las/getUI.do?catid=55B48299F30BC9828F9E93A18AFAA2FC_ns_CMIP6.C4MIP.NOAA-GFDL.GFDL-ESM4.1pctCO2-bgc.r1i1p1f1.Amon.va.gr1.v20190920|application/las|LAS"
+        ],
+        "variable": ["va"],
+        "variable_id": ["va"],
+        "variable_long_name": ["Northward Wind"],
+        "variable_units": ["m s-1"],
+        "variant_label": ["r1i1p1f1"],
+        "west_degrees": 0.625,
+        "xlink": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.NOAA-GFDL.GFDL-ESM4.1pctCO2-bgc.r1i1p1f1.Amon.va.gr1.v20190920.json|Citation|citation",
+          "http://hdl.handle.net/hdl:21.14100/d2d8da50-61d3-38ba-a2a3-116bbca96e5f|PID|pid"
+        ],
+        "_version_": 1655815081310552064,
+        "retracted": false,
+        "_timestamp": "2020-01-15T17:11:55.764Z",
+        "score": 1.0
+      },
+      {
+        "id": "CMIP6.C4MIP.NOAA-GFDL.GFDL-ESM4.1pctCO2-bgc.r1i1p1f1.Amon.ua.gr1.v20190920|esgdata.gfdl.noaa.gov",
+        "version": "20190920",
+        "access": ["HTTPServer", "GridFTP", "OPENDAP", "Globus", "LAS"],
+        "activity_drs": ["C4MIP"],
+        "activity_id": ["C4MIP"],
+        "branch_method": ["standard"],
+        "cf_standard_name": ["eastward_wind"],
+        "citation_url": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.NOAA-GFDL.GFDL-ESM4.1pctCO2-bgc.r1i1p1f1.Amon.ua.gr1.v20190920.json"
+        ],
+        "data_node": "esgdata.gfdl.noaa.gov",
+        "data_specs_version": ["01.00.27"],
+        "dataset_id_template_": [
+          "%(mip_era)s.%(activity_drs)s.%(institution_id)s.%(source_id)s.%(experiment_id)s.%(member_id)s.%(table_id)s.%(variable_id)s.%(grid_label)s"
+        ],
+        "datetime_start": "0001-01-16T12:00:00Z",
+        "datetime_stop": "0150-12-16T12:00:00Z",
+        "directory_format_template_": [
+          "%(root)s/%(mip_era)s/%(activity_drs)s/%(institution_id)s/%(source_id)s/%(experiment_id)s/%(member_id)s/%(table_id)s/%(variable_id)s/%(grid_label)s/%(version)s"
+        ],
+        "east_degrees": 359.375,
+        "experiment_id": ["1pctCO2-bgc"],
+        "experiment_title": [
+          "biogeochemically-coupled version of 1 percent per year increasing CO2 experiment"
+        ],
+        "frequency": ["mon"],
+        "further_info_url": [
+          "https://furtherinfo.es-doc.org/CMIP6.NOAA-GFDL.GFDL-ESM4.1pctCO2-bgc.none.r1i1p1f1"
+        ],
+        "geo": [
+          "ENVELOPE(-180.0, -0.625, 89.5, -89.5)",
+          "ENVELOPE(0.625, 180.0, 89.5, -89.5)"
+        ],
+        "geo_units": ["degrees_east"],
+        "grid": [
+          "atmos data regridded from Cubed-sphere (c96) to 180,288; interpolation method: conserve_order2"
+        ],
+        "grid_label": ["gr1"],
+        "height_bottom": 100000.0,
+        "height_top": 100.0,
+        "height_units": "Pa",
+        "index_node": "esgdata.gfdl.noaa.gov",
+        "instance_id": "CMIP6.C4MIP.NOAA-GFDL.GFDL-ESM4.1pctCO2-bgc.r1i1p1f1.Amon.ua.gr1.v20190920",
+        "institution_id": ["NOAA-GFDL"],
+        "latest": true,
+        "master_id": "CMIP6.C4MIP.NOAA-GFDL.GFDL-ESM4.1pctCO2-bgc.r1i1p1f1.Amon.ua.gr1",
+        "member_id": ["r1i1p1f1"],
+        "mip_era": ["CMIP6"],
+        "model_cohort": ["Registered"],
+        "nominal_resolution": ["100 km"],
+        "north_degrees": 89.5,
+        "number_of_aggregations": 2,
+        "number_of_files": 2,
+        "pid": ["hdl:21.14100/5a8abf76-3f35-3599-8204-d2fa3fe7db68"],
+        "product": ["model-output"],
+        "project": ["CMIP6"],
+        "realm": ["atmos"],
+        "replica": false,
+        "size": 4888881206,
+        "source_id": ["GFDL-ESM4"],
+        "source_type": ["AOGCM", "AER", "CHEM", "BGC"],
+        "south_degrees": -89.5,
+        "sub_experiment_id": ["none"],
+        "table_id": ["Amon"],
+        "title": "CMIP6.C4MIP.NOAA-GFDL.GFDL-ESM4.1pctCO2-bgc.r1i1p1f1.Amon.ua.gr1",
+        "type": "Dataset",
+        "url": [
+          "http://esgdata.gfdl.noaa.gov/thredds/catalog/esgcet/51/CMIP6.C4MIP.NOAA-GFDL.GFDL-ESM4.1pctCO2-bgc.r1i1p1f1.Amon.ua.gr1.v20190920.xml#CMIP6.C4MIP.NOAA-GFDL.GFDL-ESM4.1pctCO2-bgc.r1i1p1f1.Amon.ua.gr1.v20190920|application/xml+thredds|THREDDS",
+          "http://esgdata.gfdl.noaa.gov/las/getUI.do?catid=55B48299F30BC9828F9E93A18AFAA2FC_ns_CMIP6.C4MIP.NOAA-GFDL.GFDL-ESM4.1pctCO2-bgc.r1i1p1f1.Amon.ua.gr1.v20190920|application/las|LAS"
+        ],
+        "variable": ["ua"],
+        "variable_id": ["ua"],
+        "variable_long_name": ["Eastward Wind"],
+        "variable_units": ["m s-1"],
+        "variant_label": ["r1i1p1f1"],
+        "west_degrees": 0.625,
+        "xlink": [
+          "http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.C4MIP.NOAA-GFDL.GFDL-ESM4.1pctCO2-bgc.r1i1p1f1.Amon.ua.gr1.v20190920.json|Citation|citation",
+          "http://hdl.handle.net/hdl:21.14100/5a8abf76-3f35-3599-8204-d2fa3fe7db68|PID|pid"
+        ],
+        "_version_": 1655815028655259648,
+        "retracted": false,
+        "_timestamp": "2020-01-15T17:11:05.548Z",
+        "score": 1.0
+      }
+    ]
+  },
+  "facet_counts": {
+    "facet_queries": {},
+    "facet_fields": {
+      "mip_era": ["CMIP6", 21],
+      "activity_id": ["C4MIP", 21],
+      "model_cohort": ["Registered", 21],
+      "product": ["model-output", 21],
+      "source_id": [
+        "ACCESS-ESM1-5",
+        3,
+        "BCC-CSM2-MR",
+        3,
+        "CESM2",
+        3,
+        "CanESM5",
+        3,
+        "GFDL-ESM4",
+        3,
+        "IPSL-CM6A-LR",
+        3,
+        "MPI-ESM1-2-LR",
+        3
+      ],
+      "institution_id": [
+        "BCC",
+        3,
+        "CCCma",
+        3,
+        "CSIRO",
+        3,
+        "IPSL",
+        3,
+        "MPI-M",
+        3,
+        "NCAR",
+        3,
+        "NOAA-GFDL",
+        3
+      ],
+      "source_type": ["AER", 6, "AOGCM", 21, "BGC", 18, "CHEM", 3],
+      "nominal_resolution": ["100 km", 9, "250 km", 9, "500 km", 3],
+      "experiment_id": ["1pctCO2-bgc", 21],
+      "sub_experiment_id": ["none", 21],
+      "variant_label": ["r1i1p1f1", 21],
+      "grid_label": ["gn", 15, "gr", 3, "gr1", 3],
+      "table_id": ["Amon", 21],
+      "frequency": ["mon", 21],
+      "realm": ["atmos", 21],
+      "variable_id": ["ua", 7, "va", 7, "zg", 7],
+      "cf_standard_name": [
+        "eastward_wind",
+        7,
+        "geopotential_height",
+        7,
+        "northward_wind",
+        7
+      ],
+      "data_node": [
+        "cmip.bcc.cma.cn",
+        3,
+        "crd-esgf-drc.ec.gc.ca",
+        3,
+        "esgdata.gfdl.noaa.gov",
+        3,
+        "esgf-data.ucar.edu",
+        3,
+        "esgf.nci.org.au",
+        3,
+        "esgf3.dkrz.de",
+        3,
+        "vesg.ipsl.upmc.fr",
+        3
+      ]
+    },
+    "facet_ranges": {},
+    "facet_intervals": {},
+    "facet_heatmaps": {}
+  }
+}
