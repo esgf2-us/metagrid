@@ -96,35 +96,24 @@ function Facets({ project, onProjectChange, onSetFacets }) {
                 showIcon
               />
             </Form.Item>
-            <Form.Item name="perPage" label="Results Per Page">
-              <Select
-                defaultValue={10}
-                style={{ width: '100%' }}
-                tokenSeparators={[',']}
-                showArrow={true}
-              >
-                {[10, 20, 30, 40, 50].map((project, index) => {
-                  return (
-                    <Option key={index} value={project}>
-                      {project}
-                    </Option>
-                  );
-                })}
-              </Select>
-            </Form.Item>
             <Divider />
-            {Object.keys(facets).map((key, value) => {
+            {Object.keys(facets).map((key) => {
               return (
-                <Form.Item key={value} name={key} label={humanize(key)}>
+                <Form.Item
+                  style={{ marginBottom: '4px' }}
+                  key={key}
+                  name={key}
+                  label={humanize(key)}
+                >
                   <Select
                     mode="multiple"
                     style={{ width: '100%' }}
                     tokenSeparators={[',']}
-                    showArrow={true}
+                    showArrow
                   >
-                    {facets[key].map((value, index) => {
+                    {facets[key].map((value) => {
                       return (
-                        <Option key={index} value={value}>
+                        <Option key={value} value={value}>
                           {value}
                         </Option>
                       );
