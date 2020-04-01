@@ -4,11 +4,11 @@ import { Button, Row, Col } from 'antd';
 
 import SearchTag from './SearchTag';
 import SearchTable from './SearchTable';
-import jsonData from '../../mocks/mock.json';
+import jsonData from '../../mocks/cmip6.json';
 
 function fetchResults() {
   // TODO: Call an API instead of mock data
-  return JSON.parse(JSON.stringify(jsonData));
+  return JSON.parse(JSON.stringify(jsonData.response.docs));
 }
 
 function Search({
