@@ -2,6 +2,8 @@ import React from 'react';
 import axios from 'axios';
 import { Button, Collapse, Form, Select, Table } from 'antd';
 import {
+  RightCircleOutlined,
+  DownCircleOutlined,
   DownloadOutlined,
   PlusSquareOutlined,
   ShoppingCartOutlined,
@@ -12,8 +14,20 @@ const { Panel } = Collapse;
 const { Option } = Select;
 const downloadOptions = ['HTTP', 'WGET Script', 'Globus'];
 
+/**
+ * Parses urls to remove characters following '|'
+ * @param {string} url
+ */
+function parseUrl(url) {
+  return url.split('|')[0];
+}
+
+/**
+ * Fetches citation data using a dataset's citation url
+ * @param {string} url
+ * TODO: Get proxy to connect server hosting Citation data using localhost
+ */
 function fetchCitation(url) {
-  // TODO: Get proxy to connect to Search API using localhost
   axios
     .get(url)
     .then((res) => {
@@ -44,7 +58,7 @@ function SearchTable({ loading, results, onSelect, onSelectAll }) {
               <Panel header="Citation" key="citation">
                 <Button
                   type="link"
-                  href={record.xlink[0].split('|')[0]}
+                  href={parseUrl(record.xlink[0])}
                   target="_blank"
                 >
                   Data Citation Page
@@ -70,6 +84,12 @@ function SearchTable({ loading, results, onSelect, onSelectAll }) {
           </>
         );
       },
+      expandIcon: ({ expanded, onExpand, record }) =>
+        expanded ? (
+          <DownCircleOutlined onClick={(e) => onExpand(record, e)} />
+        ) : (
+          <RightCircleOutlined onClick={(e) => onExpand(record, e)} />
+        ),
     },
     rowSelection: { onSelect, onSelectAll },
     hasData: results.length > 0,
@@ -132,7 +152,11 @@ function SearchTable({ loading, results, onSelect, onSelectAll }) {
       render: (record) => {
         return (
           <>
-            <Button type="link" href={record.xlink[1]} target="_blank">
+            <Button
+              type="link"
+              href={parseUrl(record.xlink[1])}
+              target="_blank"
+            >
               PID
             </Button>
             <Button
