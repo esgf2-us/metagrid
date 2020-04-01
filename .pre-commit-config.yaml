@@ -30,10 +30,3 @@ repos:
     rev: v0.730
     hooks:
       - id: mypy
-
-  # FRONTEND
-  # ------------------------------------------------------------------------------
-  - repo: https://github.com/prettier/prettier
-    rev: "" # Use the sha or tag you want to point at
-    hooks:
-      - id: prettier
