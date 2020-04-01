@@ -1,4 +1,5 @@
 import React from 'react';
+import axios from 'axios';
 import { Button, Collapse, Form, Select, Table } from 'antd';
 import {
   DownloadOutlined,
@@ -10,6 +11,18 @@ import PropTypes from 'prop-types';
 const { Panel } = Collapse;
 const { Option } = Select;
 const downloadOptions = ['HTTP', 'WGET Script', 'Globus'];
+
+function fetchCitation(url) {
+  // TODO: Get proxy to connect to Search API using localhost
+  axios
+    .get(url)
+    .then((res) => {
+      return res.data;
+    })
+    .catch((error) => {
+      return error;
+    });
+}
 
 function SearchTable({ loading, results, onSelect, onSelectAll }) {
   SearchTable.propTypes = {
@@ -28,6 +41,16 @@ function SearchTable({ loading, results, onSelect, onSelectAll }) {
         return (
           <>
             <Collapse>
+              <Panel header="Citation" key="citation">
+                <Button
+                  type="link"
+                  href={record.xlink[0].split('|')[0]}
+                  target="_blank"
+                >
+                  Data Citation Page
+                </Button>
+                {JSON.stringify(fetchCitation(record.citation_url))}
+              </Panel>
               <Panel header="Metadata" key="metadata">
                 {Object.keys(record).map((key) => {
                   return (
@@ -109,9 +132,6 @@ function SearchTable({ loading, results, onSelect, onSelectAll }) {
       render: (record) => {
         return (
           <>
-            <Button type="link" href={record.xlink[0]} target="_blank">
-              Citation
-            </Button>
             <Button type="link" href={record.xlink[1]} target="_blank">
               PID
             </Button>
