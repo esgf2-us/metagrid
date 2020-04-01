@@ -1,52 +1,54 @@
-import React, { Component } from "react";
-import { Layout } from "antd";
-import "./App.css";
-import NavBar from "./components/NavBar";
-import Facets from "./components/Facets";
-import Search from "./components/Search";
+import React, { Component } from 'react';
+import { Layout } from 'antd';
+import './App.css';
+import NavBar from './components/NavBar';
+import Facets from './components/Facets';
+import Search from './components/Search';
 
 const { Content, Sider } = Layout;
 
 export default class App extends Component {
   state = {
-    project: "",
+    project: '',
     textInputs: [],
     appliedFacets: {},
-    cart: []
+    cart: [],
   };
 
-  handleProjectChange = value => {
+  handleProjectChange = (value) => {
     this.setState({ project: value });
   };
 
-  handleSubmitText = text => {
+  handleSubmitText = (text) => {
     this.setState({
-      textInputs: [...this.state.textInputs, text]
+      textInputs: [...this.state.textInputs, text],
     });
   };
 
-  handleRemoveTag = removedTag => {
+  handleRemoveTag = (removedTag) => {
     this.setState(() => {
       return {
-        textInputs: this.state.textInputs.filter(input => input !== removedTag)
+        textInputs: this.state.textInputs.filter(
+          (input) => input !== removedTag
+        ),
       };
     });
   };
 
   handleClearTags = () => {
     // TODO: Implement method
-    this.setState({ project: "", textInputs: [] });
+    this.setState({ project: '', textInputs: [] });
   };
 
-  handleAddCart = items => {
+  handleAddCart = (items) => {
     this.setState(() => {
       return {
-        cart: [...this.state.cart, ...items]
+        cart: [...this.state.cart, ...items],
       };
     });
   };
 
-  handleSetFacets = facets => {
+  handleSetFacets = (facets) => {
     this.setState({ appliedFacets: facets });
   };
 
@@ -55,17 +57,17 @@ export default class App extends Component {
       <div>
         <NavBar
           onProjectChange={this.handleProjectChange}
-          onSearch={text => this.handleSubmitText(text)}
+          onSearch={(text) => this.handleSubmitText(text)}
           cartItems={this.state.cart.length}
         ></NavBar>
-        <Layout style={{ padding: "24px 0" }}>
+        <Layout style={{ padding: '24px 0' }}>
           <Content>
             <Layout>
               <Sider style={styles.sider} width={250}>
                 <Facets
                   project={this.state.project}
                   onProjectChange={this.handleProjectChange}
-                  onSetFacets={facets => this.handleSetFacets(facets)}
+                  onSetFacets={(facets) => this.handleSetFacets(facets)}
                 />
               </Sider>
               <Content style={styles.bodyContent}>
@@ -73,7 +75,7 @@ export default class App extends Component {
                   project={this.state.project}
                   textInputs={this.state.textInputs}
                   appliedFacets={this.state.appliedFacets}
-                  onRemoveTag={removedTag => this.handleRemoveTag(removedTag)}
+                  onRemoveTag={(removedTag) => this.handleRemoveTag(removedTag)}
                   onClearTags={() => this.handleClearTags()}
                   onAddCart={this.handleAddCart}
                 ></Search>
@@ -88,9 +90,9 @@ export default class App extends Component {
 
 const styles = {
   sider: {
-    background: "#fff",
-    padding: "25px 25px 25px 25px",
-    marginLeft: "25px"
+    background: '#fff',
+    padding: '25px 25px 25px 25px',
+    marginLeft: '25px',
   },
-  bodyContent: { padding: "0 24px", minHeight: 280 }
+  bodyContent: { padding: '0 24px', minHeight: 280 },
 };
