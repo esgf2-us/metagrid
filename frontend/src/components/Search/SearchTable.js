@@ -22,7 +22,7 @@ function SearchTable({ loading, results, onSelect, onSelectAll }) {
   const tableConfig = {
     size: 'small',
     loading,
-    pagination: { position: ['bottomCenter'] },
+    pagination: { position: ['bottomCenter'], showSizeChanger: true },
     expandable: {
       expandedRowRender: (record) => {
         return (
