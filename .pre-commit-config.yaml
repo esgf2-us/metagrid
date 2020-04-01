@@ -11,8 +11,7 @@ repos:
       - id: trailing-whitespace
         files: (^|/)a/.+\.(py|html|sh|css|js)$
 
-  - repo: https://gitlab.com/pycqa/flake8
-    rev: 3.7.9
+  - repo: local
     hooks:
       - id: flake8
         name: flake8
@@ -20,7 +19,6 @@ repos:
         language: python
         types: [python]
         args: ["--config=backend/setup.cfg"]
-        additional_dependencies: [flake8-isort==2.9.1]
 
   - repo: https://github.com/psf/black
     rev: stable
