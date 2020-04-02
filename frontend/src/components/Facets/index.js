@@ -84,7 +84,7 @@ function Facets({ project, onProjectChange, onSetFacets }) {
                 style={{ width: '100%' }}
                 onChange={handleChangeProject}
                 tokenSeparators={[',']}
-                showArrow={true}
+                showArrow
               >
                 {projects.map((project, index) => {
                   return <Option key={index}>{project}</Option>;
