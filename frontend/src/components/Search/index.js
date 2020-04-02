@@ -4,11 +4,17 @@ import { Button, Row, Col } from 'antd';
 
 import SearchTag from './SearchTag';
 import SearchTable from './SearchTable';
-import jsonData from '../../mocks/cmip6.json';
+import jsonData from '../../mocks/db.json';
 
-function fetchResults() {
-  // TODO: Call an API instead of mock data
-  return JSON.parse(JSON.stringify(jsonData.response.docs));
+/**
+ * Fetch the results based on the project and user's applied free-text and facets
+ * TODO: Call an API instead of mock data
+ * @param {string} project - The selected project
+ * @param {arrayOf(string)} textInputs - The free-text inputs
+ * @param {arrayOf(objectOf(*))} appliedFacets - The applied facets
+ */
+function fetchResults(project, textInputs, appliedFacets) {
+  return JSON.parse(JSON.stringify(jsonData[project].response.docs));
 }
 
 function Search({
@@ -24,7 +30,7 @@ function Search({
     project: PropTypes.string.isRequired,
     textInputs: PropTypes.arrayOf(PropTypes.string).isRequired,
     appliedFacets: PropTypes.objectOf(PropTypes.string).isRequired,
-    cart: PropTypes.arrayOf(PropTypes.object).isRequired,
+    cart: PropTypes.arrayOf(PropTypes.objectOf(PropTypes.any)).isRequired,
     onRemoveTag: PropTypes.func.isRequired,
     onClearTags: PropTypes.func.isRequired,
     onAddCart: PropTypes.func.isRequired,
@@ -38,7 +44,9 @@ function Search({
     setLoading(true);
 
     const id = window.setTimeout(() => {
-      setResults(fetchResults());
+      if (project) {
+        setResults(fetchResults(project, textInputs, appliedFacets));
+      }
       setLoading(false);
     }, 1000);
 
@@ -46,15 +54,15 @@ function Search({
       window.clearTimeout(id);
       setLoading(true);
     };
-  }, [project, textInputs]);
+  }, [project, textInputs, appliedFacets]);
 
   /**
    * Handles when the user selectes individual items and adds to the cart
    * This function filters out items that have been already added to the cart,
    * which is indicated as disabled on the UI.
-   * @param {*} record
-   * @param {*} selected
-   * @param {*} selectedRows
+   * @param {object} record - individual dataset object
+   * @param {objectOf(*)} selected - the selected row corresponding to the dataset object
+   * @param {arrayOf(objectOf(*))} selectedRows - the selected rows
    */
   const handleSelect = (record, selected, selectedRows) => {
     setItemsToCart(() => {
@@ -64,17 +72,15 @@ function Search({
 
   return (
     <div>
-      {/* Top bar */}
       <Row>
         <h4>Applied Constraints: </h4>
         {project !== '' && <SearchTag input={project}></SearchTag>}
-
         {appliedFacets !== {} &&
-          Object.keys(appliedFacets).map((key, facet) => {
-            return appliedFacets[facet].map((value) => {
+          Object.keys(appliedFacets).map((key) => {
+            return appliedFacets[key].map((value) => {
               return (
                 <SearchTag
-                  key={value}
+                  key={key}
                   input={value}
                   onClose={onRemoveTag}
                 ></SearchTag>
