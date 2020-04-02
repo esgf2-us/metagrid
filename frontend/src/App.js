@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
-import { Layout, message } from 'antd';
+import { Layout } from 'antd';
 import './App.css';
 import NavBar from './components/NavBar';
 import Facets from './components/Facets';
 import Search from './components/Search';
 
-const { Content, Sider } = Layout;
+const { Content, Sider, Footer } = Layout;
 
 export default class App extends Component {
   state = {
@@ -71,40 +71,40 @@ export default class App extends Component {
           onSearch={(text) => this.handleSubmitText(text)}
           cartItems={this.state.cart.length}
         ></NavBar>
-        <Layout style={{ padding: '24px 0' }}>
-          <Content>
-            <Layout>
-              <Sider style={styles.sider} width={250}>
-                <Facets
-                  project={this.state.project}
-                  onProjectChange={this.handleProjectChange}
-                  onSetFacets={(facets) => this.handleSetFacets(facets)}
-                />
-              </Sider>
-              <Content style={styles.bodyContent}>
-                <Search
-                  project={this.state.project}
-                  textInputs={this.state.textInputs}
-                  appliedFacets={this.state.appliedFacets}
-                  cart={this.state.cart}
-                  onRemoveTag={(removedTag) => this.handleRemoveTag(removedTag)}
-                  onClearTags={() => this.handleClearTags()}
-                  onAddCart={this.handleAddCart}
-                ></Search>
-              </Content>
-            </Layout>
+        <Layout id="body-layout" style={styles.bodyLayout}>
+          <Sider style={styles.bodySider} width={250}>
+            <Facets
+              project={this.state.project}
+              onProjectChange={this.handleProjectChange}
+              onSetFacets={(facets) => this.handleSetFacets(facets)}
+            />
+          </Sider>
+          <Content style={styles.bodyContent}>
+            <Search
+              project={this.state.project}
+              textInputs={this.state.textInputs}
+              appliedFacets={this.state.appliedFacets}
+              cart={this.state.cart}
+              onRemoveTag={(removedTag) => this.handleRemoveTag(removedTag)}
+              onClearTags={() => this.handleClearTags()}
+              onAddCart={this.handleAddCart}
+            ></Search>
           </Content>
         </Layout>
+        <Footer style={styles.footer}>ESGF Search UI ©2020</Footer>
       </div>
     );
   }
 }
 
 const styles = {
-  sider: {
+  bodyLayout: { padding: '24px 0' },
+  bodySider: {
     background: '#fff',
     padding: '25px 25px 25px 25px',
     marginLeft: '25px',
+    overflowY: 'scroll',
   },
-  bodyContent: { padding: '0 24px', minHeight: 280 },
+  bodyContent: { padding: '0 24px' },
+  footer: { textAlign: 'center' },
 };
