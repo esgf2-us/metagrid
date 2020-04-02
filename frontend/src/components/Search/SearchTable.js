@@ -1,6 +1,14 @@
 import React from 'react';
 import axios from 'axios';
-import { Button, Collapse, Form, Select, Table } from 'antd';
+import {
+  Button,
+  AutoComplete,
+  Collapse,
+  Divider,
+  Form,
+  Select,
+  Table,
+} from 'antd';
 import {
   RightCircleOutlined,
   DownCircleOutlined,
@@ -11,9 +19,10 @@ import {
 } from '@ant-design/icons';
 import PropTypes from 'prop-types';
 
+import './Search.css';
+
 const { Panel } = Collapse;
 const { Option } = Select;
-const downloadOptions = ['HTTP', 'WGET Script', 'Globus'];
 
 /**
  * Parses urls to remove characters following '|'
@@ -23,6 +32,14 @@ function parseUrl(url) {
   return url.split('|')[0];
 }
 
+/**
+ * Checks if the specified key is in the object
+ * @param {object} object
+ * @param {string} key
+ */
+function hasKey(object, key) {
+  return object ? hasOwnProperty.call(object, key) : false;
+}
 /**
  * Fetches citation data using a dataset's citation url
  * @param {string} url
@@ -55,20 +72,39 @@ function SearchTable({ loading, results, cart, onSelect }) {
     pagination: { position: ['bottomCenter'], showSizeChanger: true },
     expandable: {
       expandedRowRender: (record) => {
+        const recordArray = Object.entries(record).map(([k, v]) => ({
+          value: `${k}: ${v}`,
+        }));
         return (
           <>
             <Collapse>
-              <Panel header="Citation" key="citation">
-                <Button
-                  type="link"
-                  href={parseUrl(record.xlink[0])}
-                  target="_blank"
-                >
-                  Data Citation Page
-                </Button>
-                {JSON.stringify(fetchCitation(record.citation_url))}
-              </Panel>
-              <Panel header="Metadata" key="metadata">
+              {hasKey(record, 'citation') && (
+                <Panel header="Citation" key="citation">
+                  <Button
+                    type="link"
+                    href={parseUrl(record.xlink[0])}
+                    target="_blank"
+                  >
+                    Data Citation Page
+                  </Button>
+                  {/* TODO: Add proper display of citation once API is resolved */}
+                  {JSON.stringify(fetchCitation(record.citation_url))}
+                </Panel>
+              )}
+
+              <Panel className="metadata" header="Metadata" key="metadata">
+                <h4>Displaying {Object.keys(record).length} keys</h4>
+                <AutoComplete
+                  style={{ width: '100%' }}
+                  options={recordArray}
+                  placeholder="Lookup a key..."
+                  filterOption={(inputValue, option) =>
+                    option.value
+                      .toUpperCase()
+                      .indexOf(inputValue.toUpperCase()) !== -1
+                  }
+                />
+                <Divider />
                 {Object.keys(record).map((key) => {
                   return (
                     <p key={key} style={{ margin: 0 }}>
@@ -132,12 +168,12 @@ function SearchTable({ loading, results, cart, onSelect }) {
     {
       title: 'Download',
       key: 'download',
-      render: () => (
+      render: (record) => (
         <span>
           <Form layout="inline">
             <Form.Item>
-              <Select defaultValue="HTTP" style={{ width: 120 }}>
-                {downloadOptions.map((option) => (
+              <Select defaultValue={record.access[0]} style={{ width: 120 }}>
+                {record.access.map((option) => (
                   <Option key={option} value={option}>
                     {option}
                   </Option>
@@ -145,9 +181,11 @@ function SearchTable({ loading, results, cart, onSelect }) {
               </Select>
             </Form.Item>
             <Form.Item>
-              <Button type="primary" icon={<DownloadOutlined />} size={12}>
-                Download
-              </Button>
+              <Button
+                type="primary"
+                icon={<DownloadOutlined />}
+                size={12}
+              ></Button>
             </Form.Item>
           </Form>
         </span>
@@ -159,20 +197,24 @@ function SearchTable({ loading, results, cart, onSelect }) {
       render: (record) => {
         return (
           <>
-            <Button
-              type="link"
-              href={parseUrl(record.xlink[1])}
-              target="_blank"
-            >
-              PID
-            </Button>
-            <Button
-              type="link"
-              href={record.further_info_url[0]}
-              target="_blank"
-            >
-              Further Info
-            </Button>
+            {hasKey(record, 'xlink') && (
+              <Button
+                type="link"
+                href={parseUrl(record.xlink[1])}
+                target="_blank"
+              >
+                PID
+              </Button>
+            )}
+            {hasKey(record, 'further_info_url') && (
+              <Button
+                type="link"
+                href={record.further_info_url[0]}
+                target="_blank"
+              >
+                Further Info
+              </Button>
+            )}
           </>
         );
       },
