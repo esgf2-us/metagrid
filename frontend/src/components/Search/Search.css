@@ -1,0 +1,10 @@
+.metadata .ant-collapse-content {
+  overflow-y: scroll;
+  width: 100%;
+  max-height: 500px;
+}
+
+.metadata .ant-collapse-content p {
+  width: 500px;
+  max-width: 100%;
+}
