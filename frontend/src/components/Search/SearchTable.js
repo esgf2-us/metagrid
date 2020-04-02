@@ -5,7 +5,8 @@ import {
   RightCircleOutlined,
   DownCircleOutlined,
   DownloadOutlined,
-  PlusSquareOutlined,
+  MinusOutlined,
+  PlusOutlined,
   ShoppingCartOutlined,
 } from '@ant-design/icons';
 import PropTypes from 'prop-types';
@@ -38,14 +39,16 @@ function fetchCitation(url) {
     });
 }
 
-function SearchTable({ loading, results, onSelect, onSelectAll }) {
+function SearchTable({ loading, results, cart, onSelect }) {
   SearchTable.propTypes = {
     loading: PropTypes.bool.isRequired,
     results: PropTypes.arrayOf(PropTypes.object).isRequired,
+    cart: PropTypes.arrayOf(PropTypes.object).isRequired,
     onSelect: PropTypes.func.isRequired,
-    onSelectAll: PropTypes.func.isRequired,
   };
 
+  // Table Component configuration
+  // TODO: Refactor Collapse and Panel into separate components
   const tableConfig = {
     size: 'small',
     loading,
@@ -91,7 +94,11 @@ function SearchTable({ loading, results, onSelect, onSelectAll }) {
           <RightCircleOutlined onClick={(e) => onExpand(record, e)} />
         ),
     },
-    rowSelection: { onSelect, onSelectAll },
+    rowSelection: {
+      getCheckboxProps: (record) =>
+        cart.includes(record, 0) ? { disabled: true } : { disabled: false },
+      onSelect,
+    },
     hasData: results.length > 0,
   };
 
@@ -171,14 +178,25 @@ function SearchTable({ loading, results, onSelect, onSelectAll }) {
       },
     },
     {
-      title: 'Add to Cart',
-      key: 'add',
-      render: () => (
-        <span>
-          <PlusSquareOutlined style={{ fontSize: '18px', color: '#08c' }} />
-          <ShoppingCartOutlined style={{ fontSize: '32px', color: '#08c' }} />
-        </span>
-      ),
+      title: 'Cart',
+      key: 'cart',
+      render: (record) => {
+        if (cart.includes(record, 0)) {
+          return (
+            <>
+              <MinusOutlined style={{ fontSize: '14px' }} />
+              <ShoppingCartOutlined style={{ fontSize: '18px' }} />
+            </>
+          );
+        }
+
+        return (
+          <>
+            <PlusOutlined style={{ fontSize: '14px' }} />
+            <ShoppingCartOutlined style={{ fontSize: '18px' }} />
+          </>
+        );
+      },
     },
   ];
 

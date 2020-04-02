@@ -15,6 +15,7 @@ function Search({
   project,
   textInputs,
   appliedFacets,
+  cart,
   onRemoveTag,
   onClearTags,
   onAddCart,
@@ -22,7 +23,8 @@ function Search({
   Search.propTypes = {
     project: PropTypes.string.isRequired,
     textInputs: PropTypes.arrayOf(PropTypes.string).isRequired,
-    appliedFacets: PropTypes.arrayOf(PropTypes.object).isRequired,
+    appliedFacets: PropTypes.objectOf(PropTypes.string).isRequired,
+    cart: PropTypes.arrayOf(PropTypes.object).isRequired,
     onRemoveTag: PropTypes.func.isRequired,
     onClearTags: PropTypes.func.isRequired,
     onAddCart: PropTypes.func.isRequired,
@@ -30,7 +32,7 @@ function Search({
 
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [itemsToCart, setItemsToCart] = useState([]);
+  const [selectedItems, setItemsToCart] = useState([]);
 
   useEffect(() => {
     setLoading(true);
@@ -46,12 +48,18 @@ function Search({
     };
   }, [project, textInputs]);
 
+  /**
+   * Handles when the user selectes individual items and adds to the cart
+   * This function filters out items that have been already added to the cart,
+   * which is indicated as disabled on the UI.
+   * @param {*} record
+   * @param {*} selected
+   * @param {*} selectedRows
+   */
   const handleSelect = (record, selected, selectedRows) => {
-    setItemsToCart(selectedRows);
-  };
-
-  const handleSelectAll = (selected, selectedRows) => {
-    setItemsToCart(selectedRows);
+    setItemsToCart(() => {
+      return selectedRows;
+    });
   };
 
   return (
@@ -92,7 +100,7 @@ function Search({
       )}
 
       {results.length !== 0 && (
-        <Button onClick={() => onAddCart(itemsToCart)}>
+        <Button onClick={() => onAddCart(selectedItems)}>
           Add Selected to Cart
         </Button>
       )}
@@ -102,8 +110,8 @@ function Search({
           <SearchTable
             loading={loading}
             results={results}
+            cart={cart}
             onSelect={handleSelect}
-            onSelectAll={handleSelectAll}
           />
         </Col>
       </Row>

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Layout } from 'antd';
+import { Layout, message } from 'antd';
 import './App.css';
 import NavBar from './components/NavBar';
 import Facets from './components/Facets';
@@ -40,10 +40,21 @@ export default class App extends Component {
     this.setState({ project: '', textInputs: [] });
   };
 
-  handleAddCart = (items) => {
+  /**
+   * Handles adding to the cart.
+   * It only adds selected items if they are not already in the cart.
+   * The Ant Design API returns all of the selected rows, regardless of whether
+   * they are checked and disabled so they must be filtered out or duplicates
+   * will appear.
+   *
+   */
+  handleAddCart = (selectedItems) => {
     this.setState(() => {
+      const itemsNotInCart = selectedItems.filter((item) => {
+        return !this.state.cart.includes(item);
+      });
       return {
-        cart: [...this.state.cart, ...items],
+        cart: [...this.state.cart, ...itemsNotInCart],
       };
     });
   };
@@ -75,6 +86,7 @@ export default class App extends Component {
                   project={this.state.project}
                   textInputs={this.state.textInputs}
                   appliedFacets={this.state.appliedFacets}
+                  cart={this.state.cart}
                   onRemoveTag={(removedTag) => this.handleRemoveTag(removedTag)}
                   onClearTags={() => this.handleClearTags()}
                   onAddCart={this.handleAddCart}
