@@ -36,7 +36,7 @@ export function useProjects() {
         setProjects(res);
       })
       .catch(() => {
-        console.warn('Error fetching data');
+        // TODO: Handle catching errors
       });
   }, []);
   return projects;

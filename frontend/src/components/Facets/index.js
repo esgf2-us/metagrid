@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Alert, Form, Button, Divider, Select, Row, Col, Spin } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
 
-import { humanize } from '../../utils/utils';
+import humanize from '../../utils/utils';
 import dbJson from '../../mocks/db.json';
 
 const { Option } = Select;
