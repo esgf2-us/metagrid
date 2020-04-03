@@ -1,16 +1,16 @@
-import React from "react";
-import { Button, Form, Input, Select } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
-import PropTypes from "prop-types";
+import React from 'react';
+import { Button, Form, Input, Select } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
+import PropTypes from 'prop-types';
 
 const { Option } = Select;
 
 function LeftMenu({ projects, text, onFinish, handleChange }) {
   LeftMenu.propTypes = {
-    projects: PropTypes.array.isRequired,
-    text: PropTypes.string,
+    projects: PropTypes.arrayOf(PropTypes.string).isRequired,
+    text: PropTypes.string.isRequired,
     onFinish: PropTypes.func.isRequired,
-    handleChange: PropTypes.func.isRequired
+    handleChange: PropTypes.func.isRequired,
   };
 
   return (
@@ -19,11 +19,11 @@ function LeftMenu({ projects, text, onFinish, handleChange }) {
         <Input.Group compact>
           <Form.Item
             name="project"
-            rules={[{ required: true, message: "Project is required" }]}
-            style={{ width: "15%" }}
+            rules={[{ required: true, message: 'Project is required' }]}
+            style={{ width: '15%' }}
           >
             <Select placeholder="Project">
-              {projects.map(project => (
+              {projects.map((project) => (
                 <Option key={project} value={project}>
                   {project}
                 </Option>
@@ -33,8 +33,8 @@ function LeftMenu({ projects, text, onFinish, handleChange }) {
           <Form.Item
             name="text"
             wrapperCol={{ sm: 24 }}
-            rules={[{ required: true, message: "Text is required" }]}
-            style={{ width: "75%" }}
+            rules={[{ required: true, message: 'Text is required' }]}
+            style={{ width: '75%' }}
           >
             <Input
               onChange={handleChange}

@@ -1,19 +1,19 @@
-import React from "react";
-import PropTypes from "prop-types";
-import { Button, Row, Menu } from "antd";
-import { ShoppingCartOutlined } from "@ant-design/icons";
+import React from 'react';
+import PropTypes from 'prop-types';
+import { Button, Row, Menu } from 'antd';
+import { ShoppingCartOutlined } from '@ant-design/icons';
 
 const { SubMenu } = Menu;
 
 function RightMenu({ cartItems }) {
   RightMenu.propTypes = {
-    cartItems: PropTypes.number.isRequired
+    cartItems: PropTypes.number.isRequired,
   };
 
   return (
     <div>
       <Row>
-        <Menu mode="horizontal" style={{ borderBottom: "none" }}>
+        <Menu mode="horizontal" style={{ borderBottom: 'none' }}>
           <SubMenu title={<span className="submenu-title-wrapper">Learn</span>}>
             <Menu.ItemGroup title="Documentation">
               <Menu.Item key="guide">Guide</Menu.Item>
@@ -27,11 +27,11 @@ function RightMenu({ cartItems }) {
             Resources
           </Menu.Item>
         </Menu>
-        <Button type="link" style={{ fontSize: "24px", fontStyle: "bold" }}>
+        <Button type="link" style={{ fontSize: '24px', fontStyle: 'bold' }}>
           Log In
         </Button>
         <Button type="link">
-          <ShoppingCartOutlined style={{ fontSize: "32px" }} />
+          <ShoppingCartOutlined style={{ fontSize: '32px' }} />
           {cartItems}
         </Button>
       </Row>
