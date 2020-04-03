@@ -2,9 +2,18 @@ exclude: "docs|node_modules|migrations|.git|.tox"
 default_stages: [commit]
 fail_fast: true
 
-# BACKEND
-# ------------------------------------------------------------------------------
 repos:
+  # FRONTEND
+  # ------------------------------------------------------------------------------
+  - repo: local
+    hooks:
+      - id: frontend-precommit
+        name: frontend-precommit
+        language: system
+        entry: yarn --cwd frontend precommit
+
+  # BACKEND
+  # ------------------------------------------------------------------------------
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: master
     hooks:
