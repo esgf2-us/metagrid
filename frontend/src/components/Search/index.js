@@ -13,7 +13,7 @@ import jsonData from '../../mocks/db.json';
  * @param {arrayOf(string)} textInputs - The free-text inputs
  * @param {arrayOf(objectOf(*))} appliedFacets - The applied facets
  */
-function fetchResults(project, textInputs, appliedFacets) {
+function fetchResults(project) {
   return JSON.parse(JSON.stringify(jsonData[project].response.docs));
 }
 
@@ -45,7 +45,7 @@ function Search({
 
     const id = window.setTimeout(() => {
       if (project) {
-        setResults(fetchResults(project, textInputs, appliedFacets));
+        setResults(fetchResults(project));
       }
       setLoading(false);
     }, 1000);
@@ -71,7 +71,7 @@ function Search({
   };
 
   return (
-    <div>
+    <div data-testid="search">
       <Row>
         <h4>Applied Constraints: </h4>
         {project !== '' && <SearchTag input={project}></SearchTag>}
