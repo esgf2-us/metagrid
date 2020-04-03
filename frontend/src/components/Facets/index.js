@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { Alert, Form, Button, Divider, Select, Row, Col, Spin } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
 
-import { useProjects } from '../NavBar/index';
 import { humanize } from '../../utils/utils';
 import dbJson from '../../mocks/db.json';
 
@@ -14,8 +13,9 @@ const fetchFacets = async (project) => {
   return JSON.parse(JSON.stringify(dbJson[project].facet_counts.facet_fields));
 };
 
-function Facets({ project, onProjectChange, onSetFacets }) {
+function Facets({ projects, project, onProjectChange, onSetFacets }) {
   Facets.propTypes = {
+    projects: PropTypes.arrayOf(PropTypes.string).isRequired,
     project: PropTypes.string.isRequired,
     onProjectChange: PropTypes.func.isRequired,
     onSetFacets: PropTypes.func.isRequired,
@@ -25,7 +25,6 @@ function Facets({ project, onProjectChange, onSetFacets }) {
 
   const [selectedProject, setSelectedProject] = React.useState(project);
   const [loading, setLoading] = React.useState(true);
-  const projects = useProjects();
   const [form] = Form.useForm();
 
   React.useEffect(() => {
@@ -39,8 +38,7 @@ function Facets({ project, onProjectChange, onSetFacets }) {
           setFacets(res);
           setLoading(false);
         })
-        .catch((e) => {
-          console.warn('Error fetching data');
+        .catch(() => {
           setLoading(false);
         });
     }, 1000);
@@ -60,6 +58,7 @@ function Facets({ project, onProjectChange, onSetFacets }) {
     onProjectChange(selectedProject);
 
     Object.keys(obj).forEach(
+      // eslint-disable-next-line no-param-reassign
       (key) => obj[key] === undefined && delete obj[key]
     );
     onSetFacets(obj);
@@ -86,8 +85,8 @@ function Facets({ project, onProjectChange, onSetFacets }) {
                 tokenSeparators={[',']}
                 showArrow
               >
-                {projects.map((project, index) => {
-                  return <Option key={index}>{project}</Option>;
+                {projects.map((projectName) => {
+                  return <Option key={projectName}>{project}</Option>;
                 })}
               </Select>
               <Alert

@@ -1,49 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { Row, Col } from 'antd';
 
 import LeftMenu from './LeftMenu';
 import RightMenu from './RightMenu';
 
-import esgf_logo from '../../assets/img/esgf_logo.png';
-import dbJson from '../../mocks/db.json';
+import esgfLogo from '../../assets/img/esgf_logo.png';
 
-const styles = {
-  menuBar: {},
-};
-
-/**
- * Fetch list of projects
- * TODO: Call an API instead of mock data
- */
-const fetchProjects = async () => {
-  return JSON.parse(JSON.stringify(dbJson.projects));
-};
-
-export function useProjects() {
-  const [projects, setProjects] = useState([]);
-
-  useEffect(() => {
-    fetchProjects()
-      .then((res) => {
-        setProjects(res);
-      })
-      .catch((e) => {
-        console.warn('Error fetching data');
-      });
-  }, []);
-  return projects;
-}
-
-function NavBar({ cartItems, onSearch, onProjectChange }) {
+function NavBar({ projects, cartItems, onSearch, onProjectChange }) {
   NavBar.propTypes = {
+    projects: PropTypes.arrayOf(PropTypes.string).isRequired,
     cartItems: PropTypes.number.isRequired,
     onSearch: PropTypes.func.isRequired,
     onProjectChange: PropTypes.func.isRequired,
   };
 
-  const [text, setText] = useState(null);
-  const projects = useProjects();
+  const [text, setText] = React.useState(null);
 
   const handleChange = (e) => {
     setText(e.target.value);
@@ -55,12 +27,12 @@ function NavBar({ cartItems, onSearch, onProjectChange }) {
     setText(null);
   };
   return (
-    <nav style={styles.menuBar}>
+    <nav data-testid="nav-bar">
       <Row align="middle">
         <Col span={3}>
           <img
             style={{ maxWidth: '100%', height: 'auto' }}
-            src={esgf_logo}
+            src={esgfLogo}
             alt="ESGF Logo"
           />
         </Col>
