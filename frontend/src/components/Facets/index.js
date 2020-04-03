@@ -69,7 +69,7 @@ function Facets({ projects, project, onProjectChange, onSetFacets }) {
   }
 
   return (
-    <div>
+    <div data-testid="facets">
       <Row>
         <Col>
           <Form
@@ -77,7 +77,7 @@ function Facets({ projects, project, onProjectChange, onSetFacets }) {
             layout="vertical"
             onFinish={(values) => onFinishForm(values)}
           >
-            <Form.Item name="project" label="Project">
+            <Form.Item label="Project">
               <Select
                 defaultValue={selectedProject}
                 style={{ width: '100%' }}
@@ -101,7 +101,6 @@ function Facets({ projects, project, onProjectChange, onSetFacets }) {
                 <Form.Item
                   style={{ marginBottom: '4px' }}
                   key={key}
-                  name={key}
                   label={humanize(key)}
                 >
                   <Select
