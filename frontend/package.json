@@ -13,7 +13,6 @@
     "@types/react-dom": "^16.9.5",
     "antd": "^4.0.3",
     "axios": "^0.19.2",
-    "husky": "^4.2.3",
     "lint-staged": "^10.1.0",
     "prop-types": "^15.7.2",
     "react": "^16.13.0",
@@ -54,10 +53,5 @@
     "eslint-plugin-react": "^7.19.0",
     "eslint-plugin-react-hooks": "^2.5.0",
     "prettier": "2.0.2"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "yarn precommit"
-    }
   }
 }
