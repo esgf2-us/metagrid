@@ -74,7 +74,9 @@ function Search({
     <div data-testid="search">
       <Row>
         <h4>Applied Constraints: </h4>
-        {project !== '' && <SearchTag input={project}></SearchTag>}
+        {project !== '' && (
+          <SearchTag input={project} onClose={onRemoveTag}></SearchTag>
+        )}
         {appliedFacets !== {} &&
           Object.keys(appliedFacets).map((key) => {
             return appliedFacets[key].map((value) => {
