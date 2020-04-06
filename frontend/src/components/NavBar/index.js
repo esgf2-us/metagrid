@@ -15,16 +15,12 @@ function NavBar({ projects, cartItems, onSearch, onProjectChange }) {
     onProjectChange: PropTypes.func.isRequired,
   };
 
-  const [text, setText] = React.useState(null);
-
-  const handleChange = (e) => {
-    setText(e.target.value);
-  };
+  const [text, setText] = React.useState('');
 
   const onFinish = (values) => {
     onSearch(values.text);
     onProjectChange(values.project);
-    setText(null);
+    setText('');
   };
   return (
     <nav data-testid="nav-bar">
@@ -41,7 +37,7 @@ function NavBar({ projects, cartItems, onSearch, onProjectChange }) {
             projects={projects}
             text={text}
             onFinish={onFinish}
-            handleChange={handleChange}
+            handleChange={(e) => setText(e.target.value)}
           ></LeftMenu>
         </Col>
         <Col span={6}>

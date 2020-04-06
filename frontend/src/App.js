@@ -20,13 +20,16 @@ const styles = {
 };
 
 /**
- * Fetch list of projects
+ * Fetches list of projects.
  * TODO: Call an API instead of mock data
  */
 const fetchProjects = async () => {
   return JSON.parse(JSON.stringify(dbJson.projects));
 };
 
+/**
+ * Custom hooks for returning list of projects based on its state.
+ */
 export function useProjects() {
   const [projects, setProjects] = React.useState([]);
 
@@ -49,18 +52,17 @@ function App() {
   const [appliedFacets, setAppliedFacets] = React.useState({});
   const [cart, setCart] = React.useState([]);
 
-  const handleProjectChange = (value) => {
-    setProject(value);
-  };
-
-  const handleSubmitText = (text) => {
-    setTextInputs([...textInputs, text]);
-  };
-
+  /**
+   * Handles removing applied tags.
+   * @param {string} removedTag
+   */
   const handleRemoveTag = (removedTag) => {
     setTextInputs(() => textInputs.filter((input) => input !== removedTag));
   };
 
+  /**
+   * Handles clearing all of the constraints applied by the user.
+   */
   const handleClearTags = () => {
     // TODO: Implement method
     setProject('');
@@ -68,11 +70,11 @@ function App() {
   };
 
   /**
-@@ -48,63 75,53 @@ export default class App extends Component {
-    * will appear.
-    *
-    */
-
+   * Handles adding items in the cart.
+   * This function filters out items in the selectedItems array that is not in
+   * the cart and adds the items to the cart.
+   * @param {arrayOf(objectOf(any))} selectedItems
+   */
   const handleAddCart = (selectedItems) => {
     setCart(() => {
       const itemsNotInCart = selectedItems.filter((item) => {
@@ -84,25 +86,21 @@ function App() {
     });
   };
 
-  const handleSetFacets = (facets) => {
-    setAppliedFacets(facets);
-  };
-
   return (
     <div>
       <NavBar
         projects={projects}
-        onProjectChange={handleProjectChange}
-        onSearch={(text) => handleSubmitText(text)}
         cartItems={cart.length}
+        onProjectChange={(value) => setProject(value)}
+        onSearch={(text) => setTextInputs([...textInputs, text])}
       ></NavBar>
       <Layout id="body-layout" style={styles.bodyLayout}>
         <Sider style={styles.bodySider} width={250}>
           <Facets
             projects={projects}
             project={project}
-            onProjectChange={handleProjectChange}
-            onSetFacets={(facets) => handleSetFacets(facets)}
+            onProjectChange={(value) => setProject(value)}
+            onSetFacets={(facets) => setAppliedFacets(facets)}
           />
         </Sider>
         <Content style={styles.bodyContent}>
