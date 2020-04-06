@@ -29,7 +29,8 @@ function Search({
   Search.propTypes = {
     project: PropTypes.string.isRequired,
     textInputs: PropTypes.arrayOf(PropTypes.string).isRequired,
-    appliedFacets: PropTypes.objectOf(PropTypes.string).isRequired,
+    appliedFacets: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.any))
+      .isRequired,
     cart: PropTypes.arrayOf(PropTypes.objectOf(PropTypes.any)).isRequired,
     onRemoveTag: PropTypes.func.isRequired,
     onClearTags: PropTypes.func.isRequired,
