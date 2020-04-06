@@ -11,7 +11,7 @@ function RightMenu({ cartItems }) {
   };
 
   return (
-    <div>
+    <div data-testid="right-menu">
       <Row>
         <Menu mode="horizontal" style={{ borderBottom: 'none' }}>
           <SubMenu title={<span className="submenu-title-wrapper">Learn</span>}>
