@@ -21,7 +21,7 @@ function Facets({ projects, project, onProjectChange, onSetFacets }) {
     onSetFacets: PropTypes.func.isRequired,
   };
 
-  const [facets, setFacets] = React.useState({});
+  const [loadedFacets, setLoadedFacets] = React.useState({});
 
   const [selectedProject, setSelectedProject] = React.useState(project);
   const [loading, setLoading] = React.useState(true);
@@ -35,7 +35,7 @@ function Facets({ projects, project, onProjectChange, onSetFacets }) {
     const id = window.setTimeout(() => {
       fetchFacets(selectedProject)
         .then((res) => {
-          setFacets(res);
+          setLoadedFacets(res);
           setLoading(false);
         })
         .catch(() => {
@@ -48,11 +48,7 @@ function Facets({ projects, project, onProjectChange, onSetFacets }) {
     };
   }, [selectedProject]);
 
-  const handleChangeProject = (value) => {
-    setSelectedProject(projects[value]);
-  };
-
-  const onFinishForm = (obj) => {
+  const handleOnFinish = (obj) => {
     // TODO: Implement function to update object of applied facets that will
     // be used to run queries
     onProjectChange(selectedProject);
@@ -75,18 +71,18 @@ function Facets({ projects, project, onProjectChange, onSetFacets }) {
           <Form
             form={form}
             layout="vertical"
-            onFinish={(values) => onFinishForm(values)}
+            onFinish={(values) => handleOnFinish(values)}
           >
             <Form.Item label="Project">
               <Select
                 defaultValue={selectedProject}
                 style={{ width: '100%' }}
-                onChange={handleChangeProject}
+                onChange={(value) => setSelectedProject(value)}
                 tokenSeparators={[',']}
                 showArrow
               >
                 {projects.map((projectName) => {
-                  return <Option key={projectName}>{project}</Option>;
+                  return <Option key={projectName}>{projectName}</Option>;
                 })}
               </Select>
               <Alert
@@ -96,11 +92,12 @@ function Facets({ projects, project, onProjectChange, onSetFacets }) {
               />
             </Form.Item>
             <Divider />
-            {Object.keys(facets).map((key) => {
+            {Object.keys(loadedFacets).map((key) => {
               return (
                 <Form.Item
                   style={{ marginBottom: '4px' }}
                   key={key}
+                  name={key}
                   label={humanize(key)}
                 >
                   <Select
@@ -109,7 +106,7 @@ function Facets({ projects, project, onProjectChange, onSetFacets }) {
                     tokenSeparators={[',']}
                     showArrow
                   >
-                    {facets[key].map((value) => {
+                    {loadedFacets[key].map((value) => {
                       return (
                         <Option key={value} value={value}>
                           {value}
