@@ -14,7 +14,7 @@ function LeftMenu({ projects, text, onFinish, handleChange }) {
   };
 
   return (
-    <div>
+    <div data-testid="left-menu">
       <Form onFinish={onFinish}>
         <Input.Group compact>
           <Form.Item
@@ -22,9 +22,13 @@ function LeftMenu({ projects, text, onFinish, handleChange }) {
             rules={[{ required: true, message: 'Project is required' }]}
             style={{ width: '15%' }}
           >
-            <Select placeholder="Project">
+            <Select data-testid="project-select" placeholder="Project">
               {projects.map((project) => (
-                <Option key={project} value={project}>
+                <Option
+                  data-testid="project-option"
+                  key={project}
+                  value={project}
+                >
                   {project}
                 </Option>
               ))}
