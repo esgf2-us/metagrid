@@ -85,7 +85,6 @@ function App() {
    * For removing, it only includes items in the cart that aren't in the
    * selectedItems
    * @param {arrayOf(objectOf(any))} selectedItems
-   * @param {arrayOf(objectOf(any))} selectedItems
    */
   const handleCart = (selectedItems, operation) => {
     if (operation === 'add') {
@@ -95,14 +94,14 @@ function App() {
         });
         return [...cart, ...itemsNotInCart];
       });
-      message.success('Added to the cart');
+      message.success('Added items to the cart');
     } else if (operation === 'remove') {
       setCart(
         cart.filter((item) => {
           return !selectedItems.includes(item);
         })
       );
-      message.error('Removed from the cart');
+      message.error('Removed items from the cart');
     }
   };
 
