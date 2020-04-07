@@ -24,7 +24,7 @@ function Search({
   cart,
   onRemoveTag,
   onClearTags,
-  onAddCart,
+  handleCart,
 }) {
   Search.propTypes = {
     project: PropTypes.string.isRequired,
@@ -34,7 +34,7 @@ function Search({
     cart: PropTypes.arrayOf(PropTypes.objectOf(PropTypes.any)).isRequired,
     onRemoveTag: PropTypes.func.isRequired,
     onClearTags: PropTypes.func.isRequired,
-    onAddCart: PropTypes.func.isRequired,
+    handleCart: PropTypes.func.isRequired,
   };
 
   const [results, setResults] = useState([]);
@@ -107,7 +107,7 @@ function Search({
       )}
 
       {results.length !== 0 && (
-        <Button onClick={() => onAddCart(selectedItems)}>
+        <Button onClick={() => handleCart(selectedItems, 'add')}>
           Add Selected to Cart
         </Button>
       )}
@@ -118,8 +118,8 @@ function Search({
             loading={loading}
             results={results}
             cart={cart}
+            handleCart={handleCart}
             onSelect={handleSelect}
-            onAddCart={onAddCart}
           />
         </Col>
       </Row>
