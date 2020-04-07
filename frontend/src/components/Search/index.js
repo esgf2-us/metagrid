@@ -72,11 +72,20 @@ function Search({
   return (
     <div data-testid="search">
       <Row>
-        <h4>Applied Constraints: </h4>
-        {project !== '' && (
-          <SearchTag input={project} onClose={onRemoveTag}></SearchTag>
+        <h4>Selected Project:</h4>
+
+        {project !== '' ? (
+          <SearchTag
+            input={project}
+            onClose={() => onRemoveTag(project, 'project')}
+          ></SearchTag>
+        ) : (
+          <p>N/A</p>
         )}
-        {appliedFacets !== {} &&
+      </Row>
+      <Row>
+        <h4>Applied Constraints: </h4>
+        {Object.keys(appliedFacets).length !== 0 ? (
           Object.keys(appliedFacets).map((key) => {
             return appliedFacets[key].map((value) => {
               return (
@@ -87,8 +96,10 @@ function Search({
                 ></SearchTag>
               );
             });
-          })}
-
+          })
+        ) : (
+          <p></p>
+        )}
         {textInputs.length !== 0 &&
           textInputs.map((input) => {
             return (
