@@ -15,7 +15,6 @@ import {
   DownloadOutlined,
   MinusOutlined,
   PlusOutlined,
-  ShoppingCartOutlined,
 } from '@ant-design/icons';
 import PropTypes from 'prop-types';
 
@@ -25,7 +24,7 @@ const { Panel } = Collapse;
 const { Option } = Select;
 
 /**
- * Parses urls to remove characters following the specified character
+Apr 11, 2020 * Parses urls to remove characters following the specified character
  * @param {string} url
  * @param {string} char
  */
@@ -57,13 +56,13 @@ function fetchCitation(url) {
     });
 }
 
-function SearchTable({ loading, results, cart, onSelect, onAddCart }) {
+function SearchTable({ loading, results, cart, handleCart, onSelect }) {
   SearchTable.propTypes = {
     loading: PropTypes.bool.isRequired,
     results: PropTypes.arrayOf(PropTypes.object).isRequired,
     cart: PropTypes.arrayOf(PropTypes.object).isRequired,
+    handleCart: PropTypes.func.isRequired,
     onSelect: PropTypes.func.isRequired,
-    onAddCart: PropTypes.func.isRequired,
   };
 
   // Table Component configuration
@@ -230,7 +229,12 @@ function SearchTable({ loading, results, cart, onSelect, onAddCart }) {
         if (cart.includes(record, 0)) {
           return (
             <>
-              <Button type="danger" icon={<MinusOutlined />} size={12} />
+              <Button
+                type="danger"
+                icon={<MinusOutlined />}
+                size={12}
+                onClick={() => handleCart([record], 'remove')}
+              />
             </>
           );
         }
@@ -240,7 +244,7 @@ function SearchTable({ loading, results, cart, onSelect, onAddCart }) {
               type="default"
               icon={<PlusOutlined />}
               size={12}
-              onClick={() => onAddCart([record])}
+              onClick={() => handleCart([record], 'add')}
             />
           </>
         );

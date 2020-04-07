@@ -70,20 +70,29 @@ function App() {
   };
 
   /**
-   * Handles adding items in the cart.
-   * This function filters out items in the selectedItems array that is not in
+   * Handles adding or removing items from the cart.
+   * For adding, it filters out items in the selectedItems array that is not in
    * the cart and adds the items to the cart.
+   * For removing, it only includes items in the cart that aren't in the
+   * selectedItems
+   * @param {arrayOf(objectOf(any))} selectedItems
    * @param {arrayOf(objectOf(any))} selectedItems
    */
-  const handleAddCart = (selectedItems) => {
-    setCart(() => {
-      const itemsNotInCart = selectedItems.filter((item) => {
-        return !cart.includes(item);
+  const handleCart = (selectedItems, operation) => {
+    if (operation === 'add') {
+      setCart(() => {
+        const itemsNotInCart = selectedItems.filter((item) => {
+          return !cart.includes(item);
+        });
+        return [...cart, ...itemsNotInCart];
       });
-      return {
-        cart: [...cart, ...itemsNotInCart],
-      };
-    });
+    } else if (operation === 'remove') {
+      setCart(
+        cart.filter((item) => {
+          return !selectedItems.includes(item);
+        })
+      );
+    }
   };
 
   return (
@@ -109,9 +118,9 @@ function App() {
             textInputs={textInputs}
             appliedFacets={appliedFacets}
             cart={cart}
+            handleCart={handleCart}
             onRemoveTag={(removedTag) => handleRemoveTag(removedTag)}
             onClearTags={() => handleClearTags()}
-            onAddCart={handleAddCart}
           ></Search>
         </Content>
       </Layout>
