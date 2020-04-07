@@ -23,8 +23,7 @@ import './Search.css';
 const { Panel } = Collapse;
 const { Option } = Select;
 
-/**
-Apr 11, 2020 * Parses urls to remove characters following the specified character
+/** Parses urls to remove characters following the specified character
  * @param {string} url
  * @param {string} char
  */
