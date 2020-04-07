@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layout } from 'antd';
+import { Layout, message } from 'antd';
 import './App.css';
 import NavBar from './components/NavBar';
 import Facets from './components/Facets';
@@ -53,20 +53,29 @@ function App() {
   const [cart, setCart] = React.useState([]);
 
   /**
-   * Handles removing applied tags.
-   * @param {string} removedTag
-   */
-  const handleRemoveTag = (removedTag) => {
-    setTextInputs(() => textInputs.filter((input) => input !== removedTag));
-  };
-
-  /**
    * Handles clearing all of the constraints applied by the user.
    */
   const handleClearTags = () => {
     // TODO: Implement method
     setProject('');
     setTextInputs([]);
+    setAppliedFacets({});
+  };
+
+  /**
+   * Handles removing applied tags.
+   * @param {string} removedTag
+   */
+  const handleRemoveTag = (removedTag, type) => {
+    if (type === 'project') {
+      handleClearTags();
+    } else if (type === 'text') {
+      setTextInputs(() => textInputs.filter((input) => input !== removedTag));
+    } else if (type === 'facets') {
+      const newAppliedFacets = appliedFacets;
+      delete newAppliedFacets[removedTag];
+      setAppliedFacets(newAppliedFacets);
+    }
   };
 
   /**
@@ -86,12 +95,14 @@ function App() {
         });
         return [...cart, ...itemsNotInCart];
       });
+      message.success('Added to the cart');
     } else if (operation === 'remove') {
       setCart(
         cart.filter((item) => {
           return !selectedItems.includes(item);
         })
       );
+      message.error('Removed from the cart');
     }
   };
 
@@ -119,7 +130,9 @@ function App() {
             appliedFacets={appliedFacets}
             cart={cart}
             handleCart={handleCart}
-            onRemoveTag={(removedTag) => handleRemoveTag(removedTag)}
+            onRemoveTag={(removedTag, type) =>
+              handleRemoveTag(removedTag, type)
+            }
             onClearTags={() => handleClearTags()}
           ></Search>
         </Content>
