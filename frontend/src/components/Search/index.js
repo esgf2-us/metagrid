@@ -39,7 +39,7 @@ function Search({
 
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [selectedItems, setItemsToCart] = useState([]);
+  const [selectedItems, setSelectedItems] = useState([]);
 
   useEffect(() => {
     setLoading(true);
@@ -66,9 +66,7 @@ function Search({
    * @param {arrayOf(objectOf(*))} selectedRows - the selected rows
    */
   const handleSelect = (record, selected, selectedRows) => {
-    setItemsToCart(() => {
-      return selectedRows;
-    });
+    setSelectedItems(selectedRows);
   };
 
   return (
@@ -121,6 +119,7 @@ function Search({
             results={results}
             cart={cart}
             onSelect={handleSelect}
+            onAddCart={onAddCart}
           />
         </Col>
       </Row>

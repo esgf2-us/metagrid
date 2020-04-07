@@ -25,20 +25,21 @@ const { Panel } = Collapse;
 const { Option } = Select;
 
 /**
- * Parses urls to remove characters following '|'
+ * Parses urls to remove characters following the specified character
  * @param {string} url
+ * @param {string} char
  */
-function parseUrl(url) {
-  return url.split('|')[0];
+function parseUrl(url, char) {
+  return url.split(char)[0];
 }
 
 /**
  * Checks if the specified key is in the object
- * @param {object} object
+ * @param {object} obj
  * @param {string} key
  */
-function hasKey(object, key) {
-  return object ? hasOwnProperty.call(object, key) : false;
+function hasKey(obj, key) {
+  return obj ? hasOwnProperty.call(obj, key) : false;
 }
 /**
  * Fetches citation data using a dataset's citation url
@@ -47,7 +48,7 @@ function hasKey(object, key) {
  */
 function fetchCitation(url) {
   axios
-    .get(url)
+    .get(`https://cors-anywhere.herokuapp.com/${url}`)
     .then((res) => {
       return res.data;
     })
@@ -56,12 +57,13 @@ function fetchCitation(url) {
     });
 }
 
-function SearchTable({ loading, results, cart, onSelect }) {
+function SearchTable({ loading, results, cart, onSelect, onAddCart }) {
   SearchTable.propTypes = {
     loading: PropTypes.bool.isRequired,
     results: PropTypes.arrayOf(PropTypes.object).isRequired,
     cart: PropTypes.arrayOf(PropTypes.object).isRequired,
     onSelect: PropTypes.func.isRequired,
+    onAddCart: PropTypes.func.isRequired,
   };
 
   // Table Component configuration
@@ -78,17 +80,16 @@ function SearchTable({ loading, results, cart, onSelect }) {
         return (
           <>
             <Collapse>
-              {hasKey(record, 'citation') && (
+              {hasKey(record, 'citation_url') && (
                 <Panel header="Citation" key="citation">
                   <Button
                     type="link"
-                    href={parseUrl(record.xlink[0])}
+                    href={parseUrl(record.citation_url[0], '.json')}
                     target="_blank"
                   >
                     Data Citation Page
                   </Button>
                   {/* TODO: Add proper display of citation once API is resolved */}
-                  {JSON.stringify(fetchCitation(record.citation_url))}
                 </Panel>
               )}
 
@@ -134,6 +135,7 @@ function SearchTable({ loading, results, cart, onSelect }) {
       getCheckboxProps: (record) =>
         cart.includes(record, 0) ? { disabled: true } : { disabled: false },
       onSelect,
+      onSelectAll: onSelect,
     },
     hasData: results.length > 0,
   };
@@ -143,17 +145,19 @@ function SearchTable({ loading, results, cart, onSelect }) {
       title: 'Dataset Title',
       dataIndex: 'title',
       key: 'title',
-      render: (title, record) => (
-        <a href={record.url} rel="noopener noreferrer" target="_blank">
-          {title}
-        </a>
-      ),
+      render: (title, record) => {
+        return (
+          <a href={record.url} rel="noopener noreferrer" target="_blank">
+            {title}
+          </a>
+        );
+      },
     },
     {
       title: '# of Files',
       dataIndex: 'number_of_files',
       key: 'number_of_files',
-      render: (number_of_files) => <p>{number_of_files}</p>,
+      render: (numberOfFiles) => <p>{numberOfFiles}</p>,
     },
     {
       title: 'Node',
@@ -200,7 +204,7 @@ function SearchTable({ loading, results, cart, onSelect }) {
             {hasKey(record, 'xlink') && (
               <Button
                 type="link"
-                href={parseUrl(record.xlink[1])}
+                href={parseUrl(record.xlink[1], '|')}
                 target="_blank"
               >
                 PID
@@ -226,16 +230,18 @@ function SearchTable({ loading, results, cart, onSelect }) {
         if (cart.includes(record, 0)) {
           return (
             <>
-              <MinusOutlined style={{ fontSize: '14px' }} />
-              <ShoppingCartOutlined style={{ fontSize: '18px' }} />
+              <Button type="danger" icon={<MinusOutlined />} size={12} />
             </>
           );
         }
-
         return (
           <>
-            <PlusOutlined style={{ fontSize: '14px' }} />
-            <ShoppingCartOutlined style={{ fontSize: '18px' }} />
+            <Button
+              type="default"
+              icon={<PlusOutlined />}
+              size={12}
+              onClick={() => onAddCart([record])}
+            />
           </>
         );
       },
