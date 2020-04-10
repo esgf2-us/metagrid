@@ -16,6 +16,7 @@
     "lint-staged": "^10.1.0",
     "prop-types": "^15.7.2",
     "react": "^16.13.0",
+    "react-async": "^10.0.1",
     "react-dom": "^16.13.0",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.4.1",
