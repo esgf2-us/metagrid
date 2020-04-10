@@ -39,21 +39,6 @@ function parseUrl(url, char) {
 function hasKey(obj, key) {
   return obj ? hasOwnProperty.call(obj, key) : false;
 }
-/**
- * Fetches citation data using a dataset's citation url
- * @param {string} url
- * TODO: Get proxy to connect server hosting Citation data using localhost
- */
-function fetchCitation(url) {
-  axios
-    .get(`https://cors-anywhere.herokuapp.com/${url}`)
-    .then((res) => {
-      return res.data;
-    })
-    .catch((error) => {
-      return error;
-    });
-}
 
 function SearchTable({ loading, results, cart, handleCart, onSelect }) {
   SearchTable.propTypes = {

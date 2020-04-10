@@ -4,41 +4,9 @@ import { Alert, Form, Button, Divider, Select, Row, Col, Spin } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
 
 import humanize from '../../utils/utils';
-import dbJson from '../../mocks/db.json';
+import { fetchFacets } from '../../utils/api';
 
 const { Option } = Select;
-/**
- * Joins adjacent elements of the facets obj into a tuple using reduce()
- * https://stackoverflow.com/questions/37270508/javascript-function-that-converts-array-to-array-of-2-tuples
- * @param {Object.<string, Array.<Array<string, number>>} facets
- */
-function parseFacets(facets) {
-  const res = facets;
-  const keys = Object.keys(facets);
-
-  keys.forEach((key) => {
-    res[key] = res[key].reduce((r, a, i) => {
-      if (i % 2) {
-        r[r.length - 1].push(a);
-      } else {
-        r.push([a]);
-      }
-      return r;
-    }, []);
-  });
-  return res;
-}
-
-/**
- * Fetch the initial facets for the project
- * TODO: Facets should update based on the returned results
- * @param {string} project - The selected project
- */
-const fetchFacets = async (project) => {
-  // TODO: Call an API instead of mock data
-  const res = parseFacets(dbJson[project].facet_counts.facet_fields);
-  return res;
-};
 
 const styles = {
   facetCount: { float: 'right' },

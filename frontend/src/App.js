@@ -4,7 +4,7 @@ import './App.css';
 import NavBar from './components/NavBar';
 import Facets from './components/Facets';
 import Search from './components/Search';
-import dbJson from './mocks/db.json';
+import { fetchProjects } from './utils/api';
 
 const { Content, Sider, Footer } = Layout;
 const styles = {
@@ -17,14 +17,6 @@ const styles = {
   },
   bodyContent: { padding: '0 24px' },
   footer: { textAlign: 'center' },
-};
-
-/**
- * Fetches list of projects.
- * TODO: Call an API instead of mock data
- */
-const fetchProjects = async () => {
-  return JSON.parse(JSON.stringify(dbJson.projects));
 };
 
 /**
