@@ -1,20 +1,22 @@
 import React from 'react';
+import { useAsync } from 'react-async';
 import PropTypes from 'prop-types';
 import { Row, Col } from 'antd';
 
 import LeftMenu from './LeftMenu';
 import RightMenu from './RightMenu';
 
+import { fetchProjects } from '../../utils/api';
 import esgfLogo from '../../assets/img/esgf_logo.png';
 
-function NavBar({ projects, cartItems, onSearch, onProjectChange }) {
+function NavBar({ cartItems, onSearch, onProjectChange }) {
   NavBar.propTypes = {
-    projects: PropTypes.arrayOf(PropTypes.string).isRequired,
     cartItems: PropTypes.number.isRequired,
     onSearch: PropTypes.func.isRequired,
     onProjectChange: PropTypes.func.isRequired,
   };
 
+  const { data, error, isPending } = useAsync({ promiseFn: fetchProjects });
   const [text, setText] = React.useState('');
 
   const onFinish = (values) => {
@@ -22,6 +24,11 @@ function NavBar({ projects, cartItems, onSearch, onProjectChange }) {
     onProjectChange(values.project);
     setText('');
   };
+
+  if (error) {
+    return 'Error!';
+  }
+
   return (
     <nav data-testid="nav-bar">
       <Row align="middle">
@@ -34,7 +41,7 @@ function NavBar({ projects, cartItems, onSearch, onProjectChange }) {
         </Col>
         <Col span={15}>
           <LeftMenu
-            projects={projects}
+            projects={isPending ? [] : data.projects}
             text={text}
             onFinish={onFinish}
             handleChange={(e) => setText(e.target.value)}
