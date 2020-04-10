@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useAsync } from 'react-async';
 import PropTypes from 'prop-types';
 import { Button, Row, Col } from 'antd';
 
 import SearchTag from './SearchTag';
 import SearchTable from './SearchTable';
-import {fetchResults} from '../../utils/api';
+import { fetchResults } from '../../utils/api';
 
 function Search({
   project,
@@ -26,26 +27,17 @@ function Search({
     handleCart: PropTypes.func.isRequired,
   };
 
-  const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedItems, setSelectedItems] = useState([]);
+  const { data: results, error, isLoading, run } = useAsync({
+    deferFn: fetchResults,
+    project,
+  });
+  const [selectedItems, setSelectedItems] = React.useState([]);
 
-  const id = React.useRef(null);
-
-  useEffect(() => {
-    setLoading(true);
-    id.current = window.setTimeout(() => {
-      if (project) {
-        setResults(fetchResults(project));
-      }
-      setLoading(false);
-    }, 1000);
-
-    return () => {
-      window.clearTimeout(id);
-      setLoading(true);
-    };
-  }, [project, textInputs, appliedFacets]);
+  React.useEffect(() => {
+    if (project !== '') {
+      run(project);
+    }
+  }, [run, project, textInputs, appliedFacets]);
 
   /**
    * Handles when the user selectes individual items and adds to the cart
@@ -58,13 +50,13 @@ function Search({
   const handleSelect = (record, selected, selectedRows) => {
     setSelectedItems(selectedRows);
   };
+  console.log(error);
 
   return (
     <div data-testid="search">
       <Row>
         <h4>Selected Project:</h4>
-
-        {project !== '' ? (
+        {project ? (
           <SearchTag
             input={project}
             onClose={() => onRemoveTag(project, 'project')}
@@ -101,13 +93,14 @@ function Search({
             );
           })}
       </Row>
-      {results.length !== 0 && (
+
+      {appliedFacets.length !== 0 && (
         <Button type="link" onClick={() => onClearTags()}>
           Clear All
         </Button>
       )}
 
-      {results.length !== 0 && (
+      {results && results.length !== 0 && (
         <Button onClick={() => handleCart(selectedItems, 'add')}>
           Add Selected to Cart
         </Button>
@@ -116,8 +109,8 @@ function Search({
       <Row gutter={[24, 16]} justify="space-around">
         <Col lg={24}>
           <SearchTable
-            loading={loading}
-            results={results}
+            loading={isLoading}
+            results={results && !error ? results.response.docs : []}
             cart={cart}
             handleCart={handleCart}
             onSelect={handleSelect}

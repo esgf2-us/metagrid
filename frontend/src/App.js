@@ -1,10 +1,10 @@
 import React from 'react';
 import { Layout, message } from 'antd';
+
 import './App.css';
 import NavBar from './components/NavBar';
 import Facets from './components/Facets';
 import Search from './components/Search';
-import { fetchProjects } from './utils/api';
 
 const { Content, Sider, Footer } = Layout;
 const styles = {
@@ -19,30 +19,17 @@ const styles = {
   footer: { textAlign: 'center' },
 };
 
-/**
- * Custom hooks for returning list of projects based on its state.
- */
-export function useProjects() {
-  const [projects, setProjects] = React.useState([]);
-
-  React.useEffect(() => {
-    fetchProjects()
-      .then((res) => {
-        setProjects(res);
-      })
-      .catch(() => {
-        // TODO: Handle catching errors
-      });
-  }, []);
-  return projects;
-}
-
 function App() {
   const [project, setProject] = React.useState('');
-  const projects = useProjects();
   const [textInputs, setTextInputs] = React.useState([]);
   const [appliedFacets, setAppliedFacets] = React.useState({});
   const [cart, setCart] = React.useState([]);
+
+  const handleProjectChange = (value) => {
+    setProject(value);
+    setTextInputs([]);
+    setAppliedFacets({});
+  };
 
   /**
    * Handles clearing all of the constraints applied by the user.
@@ -100,17 +87,15 @@ function App() {
   return (
     <div>
       <NavBar
-        projects={projects}
         cartItems={cart.length}
-        onProjectChange={(value) => setProject(value)}
+        onProjectChange={(value) => handleProjectChange(value)}
         onSearch={(text) => setTextInputs([...textInputs, text])}
       ></NavBar>
       <Layout id="body-layout" style={styles.bodyLayout}>
         <Sider style={styles.bodySider} width={250}>
           <Facets
-            projects={projects}
             project={project}
-            onProjectChange={(value) => setProject(value)}
+            onProjectChange={(value) => handleProjectChange(value)}
             onSetFacets={(facets) => setAppliedFacets(facets)}
           />
         </Sider>

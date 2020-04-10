@@ -1,0 +1,11 @@
+{
+  "projects": [
+    "CMIP6",
+    "CMIP5",
+    "E3SM",
+    "CMIP3",
+    "input4MIPs",
+    "obs4MIPs",
+    "All (excl. CMIP6)"
+  ]
+}
