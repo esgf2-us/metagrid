@@ -4,18 +4,7 @@ import { Button, Row, Col } from 'antd';
 
 import SearchTag from './SearchTag';
 import SearchTable from './SearchTable';
-import jsonData from '../../mocks/db.json';
-
-/**
- * Fetch the results based on the project and user's applied free-text and facets
- * TODO: Call an API instead of mock data
- * @param {string} project - The selected project
- * @param {arrayOf(string)} textInputs - The free-text inputs
- * @param {arrayOf(objectOf(*))} appliedFacets - The applied facets
- */
-function fetchResults(project) {
-  return JSON.parse(JSON.stringify(jsonData[project].response.docs));
-}
+import {fetchResults} from '../../utils/api';
 
 function Search({
   project,
@@ -41,10 +30,11 @@ function Search({
   const [loading, setLoading] = useState(false);
   const [selectedItems, setSelectedItems] = useState([]);
 
+  const id = React.useRef(null);
+
   useEffect(() => {
     setLoading(true);
-
-    const id = window.setTimeout(() => {
+    id.current = window.setTimeout(() => {
       if (project) {
         setResults(fetchResults(project));
       }
