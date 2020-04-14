@@ -5,17 +5,36 @@ import PropTypes from 'prop-types';
 
 const { Option } = Select;
 
-function LeftMenu({ projects, text, onFinish, handleChange }) {
+function LeftMenu({ project, projects, onSearch, onProjectChange }) {
   LeftMenu.propTypes = {
+    project: PropTypes.string.isRequired,
     projects: PropTypes.arrayOf(PropTypes.string).isRequired,
-    text: PropTypes.string.isRequired,
-    onFinish: PropTypes.func.isRequired,
-    handleChange: PropTypes.func.isRequired,
+    onSearch: PropTypes.func.isRequired,
+    onProjectChange: PropTypes.func.isRequired,
+  };
+
+  const [form] = Form.useForm();
+  const [text, setText] = React.useState('');
+
+  /**
+   * Sets the project and search value using the search form
+   * @param {*} values
+   */
+  const onFinish = (values) => {
+    if (project !== values.project) {
+      onProjectChange(values.project);
+    }
+
+    onSearch(values.text);
+
+    // Reset the controlled state and form field
+    setText('');
+    form.setFieldsValue({ text: '' });
   };
 
   return (
     <div data-testid="left-menu">
-      <Form onFinish={onFinish}>
+      <Form form={form} onFinish={onFinish}>
         <Input.Group compact>
           <Form.Item
             name="project"
@@ -40,11 +59,12 @@ function LeftMenu({ projects, text, onFinish, handleChange }) {
             style={{ width: '70%' }}
           >
             <Input
-              onChange={handleChange}
               value={text}
+              onChange={(e) => setText(e.target.value)}
               placeholder="Search..."
             />
           </Form.Item>
+
           <Form.Item style={{ width: '15%' }}>
             <Button type="primary" htmlType="submit">
               <SearchOutlined />
