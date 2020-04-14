@@ -21,7 +21,7 @@ function Facets({ project, onProjectChange, onSetFacets }) {
   };
 
   const [form] = Form.useForm();
-  const [selectedProject, setSelectedProject] = React.useState(project);
+  const [selectedProject, setSelectedProject] = React.useState('');
   const [parsedFacets, setParsedFacets] = React.useState([]);
 
   const {
@@ -42,11 +42,14 @@ function Facets({ project, onProjectChange, onSetFacets }) {
   });
 
   React.useEffect(() => {
-    setSelectedProject(project);
+    if (project !== '') {
+      setSelectedProject(project);
+    }
   }, [project]);
 
   React.useEffect(() => {
-    if (selectedProject) {
+    if (selectedProject !== '') {
+      setSelectedProject(selectedProject);
       run(selectedProject);
     }
   }, [run, selectedProject]);
