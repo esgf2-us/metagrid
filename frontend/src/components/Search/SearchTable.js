@@ -127,6 +127,7 @@ function SearchTable({ loading, results, cart, handleCart, onSelect }) {
       title: 'Dataset Title',
       dataIndex: 'title',
       key: 'title',
+      width: 500,
       render: (title, record) => {
         return (
           <a href={record.url} rel="noopener noreferrer" target="_blank">
@@ -139,21 +140,25 @@ function SearchTable({ loading, results, cart, handleCart, onSelect }) {
       title: '# of Files',
       dataIndex: 'number_of_files',
       key: 'number_of_files',
+      width: 100,
       render: (numberOfFiles) => <p>{numberOfFiles}</p>,
     },
     {
       title: 'Node',
       dataIndex: 'data_node',
       key: 'data_node',
+      width: 100,
     },
     {
       title: 'Version',
       dataIndex: 'version',
       key: 'version',
+      width: 100,
     },
     {
       title: 'Download',
       key: 'download',
+      width: 200,
       render: (record) => (
         <span>
           <Form layout="inline">
@@ -180,6 +185,7 @@ function SearchTable({ loading, results, cart, handleCart, onSelect }) {
     {
       title: 'Additional',
       key: 'additional',
+      width: 200,
       render: (record) => {
         return (
           <>
@@ -208,6 +214,7 @@ function SearchTable({ loading, results, cart, handleCart, onSelect }) {
     {
       title: 'Cart',
       key: 'cart',
+      width: 50,
       render: (record) => {
         if (cart.includes(record, 0)) {
           return (
@@ -243,6 +250,7 @@ function SearchTable({ loading, results, cart, handleCart, onSelect }) {
         columns={columns}
         dataSource={tableConfig.hasData ? results : null}
         rowKey="id"
+        scroll={{ y: 500 }}
       />
     </div>
   );
