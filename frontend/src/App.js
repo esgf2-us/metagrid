@@ -41,11 +41,9 @@ function App() {
   };
 
   /**
-   * Handles clearing all of the constraints applied by the user.
+   * Handles clearing constraints for a selected project.
    */
   const handleClearTags = () => {
-    // TODO: Implement method
-    setProject('');
     setTextInputs([]);
     setAppliedFacets({});
   };
