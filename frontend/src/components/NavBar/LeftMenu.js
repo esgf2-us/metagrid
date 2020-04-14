@@ -36,9 +36,8 @@ function LeftMenu({ projects, text, onFinish, handleChange }) {
           </Form.Item>
           <Form.Item
             name="text"
-            wrapperCol={{ sm: 24 }}
             rules={[{ required: true, message: 'Text is required' }]}
-            style={{ width: '75%' }}
+            style={{ width: '70%' }}
           >
             <Input
               onChange={handleChange}
@@ -46,9 +45,11 @@ function LeftMenu({ projects, text, onFinish, handleChange }) {
               placeholder="Search..."
             />
           </Form.Item>
-          <Button type="primary" htmlType="submit">
-            <SearchOutlined />
-          </Button>
+          <Form.Item style={{ width: '15%' }}>
+            <Button type="primary" htmlType="submit">
+              <SearchOutlined />
+            </Button>
+          </Form.Item>
         </Input.Group>
       </Form>
     </div>
