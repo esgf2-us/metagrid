@@ -1,3 +1,15 @@
+/**
+ * Checks if an object is empty.
+ * @param {*} obj
+ */
+export function isEmpty(obj) {
+  return !obj || Object.keys(obj).length === 0;
+}
+
+/**
+ * Makes a string human-readable rather than underscore separated and lowercase.
+ * @param {*} str
+ */
 export function humanize(str) {
   const frags = str.split('_');
   for (let i = 0; i < frags.length; i += 1) {
@@ -7,7 +19,7 @@ export function humanize(str) {
 }
 
 /**
- * Joins adjacent elements of the facets obj into a tuple using reduce()
+ * Joins adjacent elements of the facets obj into a tuple using reduce().
  * https://stackoverflow.com/questions/37270508/javascript-function-that-converts-array-to-array-of-2-tuples
  * @param {Object.<string, Array.<Array<string, number>>} facets
  */

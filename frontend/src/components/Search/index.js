@@ -6,6 +6,7 @@ import { Button, Row, Col } from 'antd';
 import SearchTag from './SearchTag';
 import SearchTable from './SearchTable';
 import { fetchResults } from '../../utils/api';
+import { isEmpty } from '../../utils/utils';
 
 function Search({
   project,
@@ -50,7 +51,6 @@ function Search({
   const handleSelect = (record, selected, selectedRows) => {
     setSelectedItems(selectedRows);
   };
-  console.log(error);
 
   return (
     <div data-testid="search">
@@ -62,11 +62,14 @@ function Search({
             onClose={() => onRemoveTag(project, 'project')}
           ></SearchTag>
         ) : (
-          <p>N/A</p>
+          <p>No project selected</p>
         )}
       </Row>
       <Row>
         <h4>Applied Constraints: </h4>
+        {textInputs.length === 0 && isEmpty(appliedFacets) && (
+          <p>No constraints applied</p>
+        )}
         {Object.keys(appliedFacets).length !== 0 ? (
           Object.keys(appliedFacets).map((key) => {
             return appliedFacets[key].map((value) => {
@@ -94,11 +97,12 @@ function Search({
           })}
       </Row>
 
-      {appliedFacets.length !== 0 && (
-        <Button type="link" onClick={() => onClearTags()}>
-          Clear All
-        </Button>
-      )}
+      {textInputs.length > 0 ||
+        (!isEmpty(appliedFacets) && (
+          <Button type="link" onClick={() => onClearTags()}>
+            Clear All
+          </Button>
+        ))}
 
       {results && results.length !== 0 && (
         <Button onClick={() => handleCart(selectedItems, 'add')}>
@@ -110,7 +114,9 @@ function Search({
         <Col lg={24}>
           <SearchTable
             loading={isLoading}
-            results={results && !error ? results.response.docs : []}
+            results={
+              results && !error && project !== '' ? results.response.docs : []
+            }
             cart={cart}
             handleCart={handleCart}
             onSelect={handleSelect}
