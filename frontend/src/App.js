@@ -25,10 +25,19 @@ function App() {
   const [appliedFacets, setAppliedFacets] = React.useState({});
   const [cart, setCart] = React.useState([]);
 
-  const handleProjectChange = (value) => {
-    setProject(value);
-    setTextInputs([]);
-    setAppliedFacets({});
+  /**
+   * Handles when the selected project changes.
+   *
+   * This function first checks if the current project is not an empty string
+   * to reset textInputs and appliedFacets, then updates the selected project.
+   * @param {*} selectedProject
+   */
+  const handleProjectChange = (selectedProject) => {
+    if (project !== '') {
+      setTextInputs([]);
+      setAppliedFacets({});
+    }
+    setProject(selectedProject);
   };
 
   /**
@@ -95,7 +104,9 @@ function App() {
         <Sider style={styles.bodySider} width={250}>
           <Facets
             project={project}
-            onProjectChange={(value) => handleProjectChange(value)}
+            onProjectChange={(selectedProject) =>
+              handleProjectChange(selectedProject)
+            }
             onSetFacets={(facets) => setAppliedFacets(facets)}
           />
         </Sider>
