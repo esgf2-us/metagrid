@@ -26,26 +26,27 @@ function App() {
   const [cart, setCart] = React.useState([]);
 
   /**
-   * Handles when the selected project changes.
-   *
-   * This function first checks if the current project is not an empty string
-   * to reset textInputs and appliedFacets, then updates the selected project.
-   * @param {*} selectedProject
+   * Handles clearing constraints for a selected project.
    */
-  const handleProjectChange = (selectedProject) => {
-    if (project !== '') {
-      setTextInputs([]);
-      setAppliedFacets({});
-    }
-    setProject(selectedProject);
+  const clearConstraints = () => {
+    setTextInputs([]);
+    setAppliedFacets({});
   };
 
   /**
-   * Handles clearing constraints for a selected project.
+   * Handles when the selected project changes.
+   *
+   * This functions checks if the current project is not an empty string or
+   * equal to the selected project to reset textInputs and appliedFacets, then
+   * it updates the selected project.
+   * @param {*} selectedProject
    */
-  const handleClearTags = () => {
-    setTextInputs([]);
-    setAppliedFacets({});
+  const handleProjectChange = (selectedProject) => {
+    if (project !== '' && project !== selectedProject) {
+      clearConstraints();
+    }
+
+    setProject(selectedProject);
   };
 
   /**
@@ -54,7 +55,7 @@ function App() {
    */
   const handleRemoveTag = (removedTag, type) => {
     if (type === 'project') {
-      handleClearTags();
+      clearConstraints();
     } else if (type === 'text') {
       setTextInputs(() => textInputs.filter((input) => input !== removedTag));
     } else if (type === 'facets') {
@@ -94,10 +95,12 @@ function App() {
   return (
     <div>
       <NavBar
+        project={project}
         cartItems={cart.length}
         onProjectChange={(value) => handleProjectChange(value)}
         onSearch={(text) => setTextInputs([...textInputs, text])}
       ></NavBar>
+
       <Layout id="body-layout" style={styles.bodyLayout}>
         <Sider style={styles.bodySider} width={250}>
           <Facets
@@ -118,7 +121,7 @@ function App() {
             onRemoveTag={(removedTag, type) =>
               handleRemoveTag(removedTag, type)
             }
-            onClearTags={() => handleClearTags()}
+            onClearTags={() => clearConstraints()}
           ></Search>
         </Content>
       </Layout>

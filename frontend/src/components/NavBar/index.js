@@ -11,31 +11,18 @@ import './NavBar.css';
 import { fetchProjects } from '../../utils/api';
 import esgfLogo from '../../assets/img/esgf_logo.png';
 
-function NavBar({ cartItems, onSearch, onProjectChange }) {
+function NavBar({ project, cartItems, onSearch, onProjectChange }) {
   NavBar.propTypes = {
+    project: PropTypes.string.isRequired,
     cartItems: PropTypes.number.isRequired,
     onSearch: PropTypes.func.isRequired,
     onProjectChange: PropTypes.func.isRequired,
   };
 
   const { data, error, isPending } = useAsync({ promiseFn: fetchProjects });
-  const [text, setText] = React.useState('');
-  const [visible, setVisible] = React.useState(false);
+  const [showDrawer, setShowDrawer] = React.useState(false);
 
-  const showDrawer = () => {
-    setVisible(true);
-  };
-
-  const onClose = () => {
-    setVisible(false);
-  };
-
-  const onFinish = (values) => {
-    onSearch(values.text);
-    onProjectChange(values.project);
-    setText('');
-  };
-
+  // TODO: Handle error
   if (error) {
     return 'Error!';
   }
@@ -56,11 +43,10 @@ function NavBar({ cartItems, onSearch, onProjectChange }) {
         <div className="navbar-container">
           <div className="navbar-left">
             <LeftMenu
-              mode="horizontal"
+              project={project}
               projects={isPending ? [] : data.projects}
-              text={text}
-              onFinish={onFinish}
-              handleChange={(e) => setText(e.target.value)}
+              onSearch={onSearch}
+              onProjectChange={onProjectChange}
             ></LeftMenu>
           </div>
 
@@ -70,7 +56,7 @@ function NavBar({ cartItems, onSearch, onProjectChange }) {
           <Button
             className="navbar-mobile-button"
             type="primary"
-            onClick={showDrawer}
+            onClick={() => setShowDrawer(true)}
           >
             <MenuUnfoldOutlined />
           </Button>
@@ -78,8 +64,8 @@ function NavBar({ cartItems, onSearch, onProjectChange }) {
             placement="right"
             className="navbar-drawer"
             closable={false}
-            onClose={onClose}
-            visible={visible}
+            onClose={() => setShowDrawer(false)}
+            visible={showDrawer}
           >
             <RightMenu mode="inline" cartItems={cartItems}></RightMenu>
           </Drawer>

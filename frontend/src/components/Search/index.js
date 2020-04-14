@@ -8,6 +8,8 @@ import SearchTable from './SearchTable';
 import { fetchResults } from '../../utils/api';
 import { isEmpty } from '../../utils/utils';
 
+const styles = { addButton: { marginTop: 10, marginBottom: 10 } };
+
 function Search({
   project,
   textInputs,
@@ -107,7 +109,10 @@ function Search({
       </Row>
 
       {results && results.response.numFound > 0 && (
-        <Button onClick={() => handleCart(selectedItems, 'add')}>
+        <Button
+          style={styles.addButton}
+          onClick={() => handleCart(selectedItems, 'add')}
+        >
           Add Selected to Cart
         </Button>
       )}
