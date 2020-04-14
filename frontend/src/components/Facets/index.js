@@ -49,7 +49,6 @@ function Facets({ project, onProjectChange, onSetFacets }) {
 
   React.useEffect(() => {
     if (selectedProject !== '') {
-      setSelectedProject(selectedProject);
       run(selectedProject);
     }
   }, [run, selectedProject]);
@@ -95,7 +94,7 @@ function Facets({ project, onProjectChange, onSetFacets }) {
               !projectsError && (
                 <Form.Item label="Project">
                   <Select
-                    defaultValue={selectedProject}
+                    value={selectedProject}
                     style={{ width: '100%' }}
                     onChange={(value) => setSelectedProject(value)}
                     tokenSeparators={[',']}
