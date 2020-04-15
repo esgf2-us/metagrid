@@ -1,10 +1,11 @@
 import React from 'react';
 import { Layout, message } from 'antd';
 
-import './App.css';
 import NavBar from './components/NavBar';
 import Facets from './components/Facets';
 import Search from './components/Search';
+
+import './App.css';
 
 const { Content, Sider, Footer } = Layout;
 const styles = {
