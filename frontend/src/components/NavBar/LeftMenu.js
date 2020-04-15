@@ -1,7 +1,9 @@
 import React from 'react';
-import { Button, Form, Input, Select } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
+import { Form, Input, Select } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
+
+import Button from '../General/Button';
 
 const { Option } = Select;
 
@@ -42,13 +44,9 @@ function LeftMenu({ project, projects, onSearch, onProjectChange }) {
             style={{ width: '15%' }}
           >
             <Select data-testid="project-select" placeholder="Project">
-              {projects.map((project) => (
-                <Option
-                  data-testid="project-option"
-                  key={project}
-                  value={project}
-                >
-                  {project}
+              {projects.map((title) => (
+                <Option data-testid="project-option" key={title} value={title}>
+                  {title}
                 </Option>
               ))}
             </Select>
@@ -66,9 +64,11 @@ function LeftMenu({ project, projects, onSearch, onProjectChange }) {
           </Form.Item>
 
           <Form.Item style={{ width: '15%' }}>
-            <Button type="primary" htmlType="submit">
-              <SearchOutlined />
-            </Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              icon={<SearchOutlined />}
+            ></Button>
           </Form.Item>
         </Input.Group>
       </Form>
