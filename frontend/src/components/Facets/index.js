@@ -1,10 +1,11 @@
 import React from 'react';
 import { useAsync } from 'react-async';
 import PropTypes from 'prop-types';
-import { Form, Button, Divider, Select, Row, Col } from 'antd';
+import { Form, Divider, Select, Row, Col } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
 
 import Alert from '../Feedback/Alert';
+import Button from '../General/Button';
 import Spin from '../Feedback/Spin';
 import { humanize, parseFacets } from '../../utils/utils';
 import { fetchFacets, fetchProjects } from '../../utils/api';
@@ -158,8 +159,12 @@ function Facets({ project, onProjectChange, onSetFacets }) {
               })
             )}
             {!facetsError && parsedFacets && (
-              <Button type="primary" htmlType="submit">
-                <FilterOutlined /> Apply Facets
+              <Button
+                type="primary"
+                htmlType="submit"
+                icon={<FilterOutlined />}
+              >
+                Apply Facets
               </Button>
             )}
           </Form>

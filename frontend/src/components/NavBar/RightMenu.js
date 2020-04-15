@@ -1,7 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Button, Menu } from 'antd';
+import { Menu } from 'antd';
 import { ShoppingCartOutlined } from '@ant-design/icons';
+
+import Button from '../General/Button';
 
 const { SubMenu } = Menu;
 

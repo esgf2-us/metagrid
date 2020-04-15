@@ -1,13 +1,5 @@
 import React from 'react';
-import {
-  Button,
-  AutoComplete,
-  Collapse,
-  Divider,
-  Form,
-  Select,
-  Table,
-} from 'antd';
+import { AutoComplete, Collapse, Divider, Form, Select, Table } from 'antd';
 import {
   RightCircleOutlined,
   DownCircleOutlined,
@@ -16,6 +8,8 @@ import {
   PlusOutlined,
 } from '@ant-design/icons';
 import PropTypes from 'prop-types';
+
+import Button from '../General/Button';
 
 import './Search.css';
 
