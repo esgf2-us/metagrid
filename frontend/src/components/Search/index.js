@@ -1,10 +1,12 @@
 import React from 'react';
 import { useAsync } from 'react-async';
 import PropTypes from 'prop-types';
-import { Button, Row, Col, Alert } from 'antd';
+import { Button, Row, Col } from 'antd';
 
+import Alert from '../Feedback/Alert';
 import SearchTag from './SearchTag';
 import SearchTable from './SearchTable';
+
 import { fetchResults } from '../../utils/api';
 import { isEmpty } from '../../utils/utils';
 
