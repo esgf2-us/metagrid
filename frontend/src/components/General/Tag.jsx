@@ -1,9 +1,9 @@
 import React from 'react';
-import { Tag } from 'antd';
+import { Tag as TagD } from 'antd';
 import PropTypes from 'prop-types';
 
-function SearchTag({ input, onClose }) {
-  SearchTag.propTypes = {
+function Tag({ input, onClose, closable }) {
+  Tag.propTypes = {
     input: PropTypes.oneOfType([
       PropTypes.string,
       PropTypes.arrayOf(
@@ -11,13 +11,18 @@ function SearchTag({ input, onClose }) {
       ),
     ]).isRequired,
     onClose: PropTypes.func.isRequired,
+    closable: PropTypes.bool,
+  };
+
+  Tag.defaultProps = {
+    closable: true,
   };
 
   return (
-    <Tag closable onClose={() => onClose(input)}>
+    <TagD closable={closable} onClose={() => onClose(input)}>
       {input.constructor === Array ? input[0] : input}
-    </Tag>
+    </TagD>
   );
 }
 
-export default SearchTag;
+export default Tag;
