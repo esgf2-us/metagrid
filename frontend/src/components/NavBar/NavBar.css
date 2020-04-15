@@ -1,0 +1,69 @@
+.navbar {
+  margin-top: 20px;
+  width: 100%;
+  height: 75px;
+}
+
+.navbar-logo {
+  width: 175px;
+
+  float: left;
+}
+
+.navbar-container .ant-menu-horizontal {
+  border-bottom: none;
+}
+.navbar-container {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.navbar-container .navbar-left {
+  width: 70%;
+  min-width: 350px;
+  flex-wrap: nowrap;
+}
+
+.navbar-container .navbar-right {
+  align-self: flex-end;
+  width: 30%;
+}
+
+.navbar-mobile-button {
+  display: none !important; /* use of important to overwrite ant-btn */
+  background: #3e91f7;
+}
+
+.navbar-drawer .ant-drawer-body {
+  padding: 0 !important;
+}
+
+/* align header of Drawer with header of page */
+.navbar-drawer .ant-drawer-header {
+  padding: 14px 24px !important;
+}
+
+@media (max-width: 767px) {
+  .navbar-mobile-button {
+    display: inline-flex !important;
+    margin-left: 80px;
+  }
+
+  .navbar-right {
+    display: none;
+  }
+
+  .navbar-logo a {
+    margin-left: -20px;
+  }
+
+  .navbar-container .ant-menu-item,
+  .navbar-container .ant-menu-submenu-title {
+    padding: 1px 20px;
+  }
+
+  .navbar-logo a {
+    padding: 10px 20px;
+  }
+}

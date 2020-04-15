@@ -2,9 +2,19 @@ exclude: "docs|node_modules|migrations|.git|.tox"
 default_stages: [commit]
 fail_fast: true
 
-# BACKEND
-# ------------------------------------------------------------------------------
 repos:
+  # FRONTEND
+  # ------------------------------------------------------------------------------
+  - repo: local
+    hooks:
+      - id: eslint
+        name: eslint
+        language: system
+        files: .+(js|jsx|ts|tsx|css|sass|less|json)
+        entry: yarn --cwd frontend precommit
+
+  # BACKEND
+  # ------------------------------------------------------------------------------
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: master
     hooks:

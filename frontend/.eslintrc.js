@@ -7,6 +7,7 @@ module.exports = {
   ],
   plugins: ['react', 'jsx-a11y', 'import'],
   rules: {
+    'import/no-extraneous-dependencies': ['error', { devDependencies: true }],
     'react/jsx-filename-extension': [1, { extensions: ['.js', '.jsx'] }],
     'react/self-closing-comp': 'off',
     'prettier/prettier': 'error',
