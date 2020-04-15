@@ -1,10 +1,11 @@
 import React from 'react';
 import { useAsync } from 'react-async';
 import PropTypes from 'prop-types';
-import { Form, Divider, Select, Row, Col } from 'antd';
+import { Form, Select, Row, Col } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
 
 import Alert from '../Feedback/Alert';
+import Divider from '../General/Divider';
 import Button from '../General/Button';
 import Spin from '../Feedback/Spin';
 import { humanize, parseFacets } from '../../utils/utils';
