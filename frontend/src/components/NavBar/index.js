@@ -23,11 +23,6 @@ function NavBar({ project, cartItems, onSearch, onProjectChange }) {
   const { data, error, isPending } = useAsync({ promiseFn: fetchProjects });
   const [showDrawer, setShowDrawer] = React.useState(false);
 
-  // TODO: Handle error
-  if (error) {
-    return 'Error!';
-  }
-
   return (
     <Row align="middle">
       <nav data-testid="nav-bar" className="navbar">
@@ -43,12 +38,19 @@ function NavBar({ project, cartItems, onSearch, onProjectChange }) {
 
         <div className="navbar-container">
           <div className="navbar-left">
-            <LeftMenu
-              project={project}
-              projects={isPending ? [] : data.projects}
-              onSearch={onSearch}
-              onProjectChange={onProjectChange}
-            ></LeftMenu>
+            {error ? (
+              <Alert
+                message="There was an error fetching list of projects. Please contain support or try again later."
+                type="error"
+              />
+            ) : (
+              <LeftMenu
+                project={project}
+                projects={isPending ? [] : data.projects}
+                onSearch={onSearch}
+                onProjectChange={onProjectChange}
+              ></LeftMenu>
+            )}
           </div>
 
           <div className="navbar-right">
