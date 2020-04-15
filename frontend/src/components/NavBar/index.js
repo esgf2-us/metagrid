@@ -1,9 +1,10 @@
 import React from 'react';
 import { useAsync } from 'react-async';
 import PropTypes from 'prop-types';
-import { Row, Col, Button, Drawer } from 'antd';
+import { Row, Button, Drawer } from 'antd';
 import { MenuUnfoldOutlined } from '@ant-design/icons';
 
+import Alert from '../Feedback/Alert';
 import LeftMenu from './LeftMenu';
 import RightMenu from './RightMenu';
 import './NavBar.css';
