@@ -4,9 +4,9 @@ import PropTypes from 'prop-types';
 import { Button, Row, Col } from 'antd';
 
 import Alert from '../Feedback/Alert';
-import SearchTag from './SearchTag';
 import SearchTable from './SearchTable';
 
+import Tag from '../General/Tag';
 import { fetchResults } from '../../utils/api';
 import { isEmpty } from '../../utils/utils';
 
@@ -82,24 +82,12 @@ function Search({
         {Object.keys(appliedFacets).length !== 0 &&
           Object.keys(appliedFacets).map((key) => {
             return appliedFacets[key].map((value) => {
-              return (
-                <SearchTag
-                  key={key}
-                  input={value}
-                  onClose={onRemoveTag}
-                ></SearchTag>
-              );
+              return <Tag key={key} input={value} onClose={onRemoveTag}></Tag>;
             });
           })}
         {textInputs.length !== 0 &&
           textInputs.map((input) => {
-            return (
-              <SearchTag
-                key={input}
-                input={input}
-                onClose={onRemoveTag}
-              ></SearchTag>
-            );
+            return <Tag key={input} input={input} onClose={onRemoveTag}></Tag>;
           })}
 
         {!isEmpty(appliedFacets) ||
