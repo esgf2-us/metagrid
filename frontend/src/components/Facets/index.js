@@ -1,10 +1,11 @@
 import React from 'react';
 import { useAsync } from 'react-async';
 import PropTypes from 'prop-types';
-import { Form, Button, Divider, Select, Row, Col, Spin } from 'antd';
+import { Form, Button, Divider, Select, Row, Col } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
 
 import Alert from '../Feedback/Alert';
+import Spin from '../Feedback/Spin';
 import { humanize, parseFacets } from '../../utils/utils';
 import { fetchFacets, fetchProjects } from '../../utils/api';
 
@@ -84,7 +85,7 @@ function Facets({ project, onProjectChange, onSetFacets }) {
             {projectsError && (
               <Alert
                 message="Error"
-                description="This was an issue fetching projects. Please contact support for assistance or try again later."
+                description="There was an issue fetching projects. Please contact support for assistance or try again later."
                 type="error"
                 showIcon
               />
@@ -118,7 +119,7 @@ function Facets({ project, onProjectChange, onSetFacets }) {
             {facetsError && (
               <Alert
                 message="Error"
-                description="This was an issue fetching facets for this project. Please contact support for assistance or try again later"
+                description="There was an issue fetching facets for this project. Please contact support for assistance or try again later"
                 type="error"
                 showIcon
               />

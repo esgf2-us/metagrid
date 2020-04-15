@@ -1,6 +1,6 @@
-import { Alert as AlertD } from 'antd';
-import PropTypes from 'prop-types';
 import React from 'react';
+import PropTypes from 'prop-types';
+import { Alert as AlertD } from 'antd';
 
 function Alert({ message, description, type, showIcon }) {
   Alert.propTypes = {
@@ -12,7 +12,7 @@ function Alert({ message, description, type, showIcon }) {
 
   Alert.defaultProps = {
     description: null,
-    showIcon: false,
+    showIcon: true,
   };
 
   return (
