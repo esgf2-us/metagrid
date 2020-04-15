@@ -127,7 +127,7 @@ function SearchTable({ loading, results, cart, handleCart, onSelect }) {
       title: 'Dataset Title',
       dataIndex: 'title',
       key: 'title',
-      width: 500,
+      width: 400,
       render: (title, record) => {
         return (
           <a href={record.url} rel="noopener noreferrer" target="_blank">
@@ -147,7 +147,7 @@ function SearchTable({ loading, results, cart, handleCart, onSelect }) {
       title: 'Node',
       dataIndex: 'data_node',
       key: 'data_node',
-      width: 100,
+      width: 200,
     },
     {
       title: 'Version',
