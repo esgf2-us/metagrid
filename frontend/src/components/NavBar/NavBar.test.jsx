@@ -7,6 +7,7 @@ import LeftMenu from './LeftMenu';
 import RightMenu from './RightMenu';
 
 const defaultProps = {
+  project: 'test1',
   projects: ['test1', 'test2'],
   cartItems: 0,
   onSearch: jest.fn(),
@@ -22,14 +23,14 @@ test('LeftMenu and RightMenu components render correctly', async () => {
 });
 
 const leftMenuProps = {
+  project: 'test1',
   projects: ['test1', 'test2'],
-  text: '',
-  onFinish: jest.fn(),
-  handleChange: jest.fn(),
+  onSearch: jest.fn(),
+  onProjectChange: jest.fn(),
 };
 
 test('LeftMenu renders project list and updates', async () => {
-  // NOTE:testing ant-design's select component has been proven to be
+  // NOTE: Testing ant-design's select component has been proven to be
   // tricky. Attempting to extract the value that the user selects is not
   // straight-forward, so this project does a simple test to see if the
   // DOM node exists or not.
@@ -54,8 +55,13 @@ test('LeftMenu registers search input', async () => {
   fireEvent.click(getByRole('img'));
 });
 
+const rightMenuProps = {
+  mode: 'horizontal',
+  cartItems: 4,
+};
+
 test('RightMenu displays correct number of cartItems', () => {
-  const { getByText } = render(<RightMenu cartItems={4} />);
+  const { getByText } = render(<RightMenu {...rightMenuProps} />);
   expect(getByText('4')).toBeTruthy();
 });
 
