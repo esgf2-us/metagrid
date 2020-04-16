@@ -117,6 +117,12 @@ function SearchTable({ loading, results, cart, handleCart, onSelect }) {
     hasData: results.length > 0,
   };
 
+  tableConfig.expandable.expandIcon.propTypes = {
+    expanded: PropTypes.bool.isRequired,
+    onExpand: PropTypes.func.isRequired,
+    record: PropTypes.objectOf(PropTypes.string).isRequired,
+  };
+
   const columns = [
     {
       title: 'Dataset Title',
@@ -125,6 +131,7 @@ function SearchTable({ loading, results, cart, handleCart, onSelect }) {
       width: 400,
       render: (title, record) => {
         return (
+          // eslint-disable-next-line react/prop-types
           <a href={record.url} rel="noopener noreferrer" target="_blank">
             {title}
           </a>
@@ -158,7 +165,9 @@ function SearchTable({ loading, results, cart, handleCart, onSelect }) {
         <span>
           <Form layout="inline">
             <Form.Item>
+              {/* eslint-disable-next-line react/prop-types */}
               <Select defaultValue={record.access[0]} style={{ width: 120 }}>
+                {/* eslint-disable-next-line react/prop-types */}
                 {record.access.map((option) => (
                   <Option key={option} value={option}>
                     {option}
@@ -187,6 +196,7 @@ function SearchTable({ loading, results, cart, handleCart, onSelect }) {
             {hasKey(record, 'xlink') && (
               <Button
                 type="link"
+                // eslint-disable-next-line react/prop-types
                 href={parseUrl(record.xlink[1], '|')}
                 target="_blank"
               >
@@ -196,6 +206,7 @@ function SearchTable({ loading, results, cart, handleCart, onSelect }) {
             {hasKey(record, 'further_info_url') && (
               <Button
                 type="link"
+                // eslint-disable-next-line react/prop-types
                 href={record.further_info_url[0]}
                 target="_blank"
               >
