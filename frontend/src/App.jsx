@@ -100,6 +100,19 @@ function App() {
     }
   };
 
+  /**
+   * Handles free-text search form submission.
+   *
+   * @param {string} input - free-text input to query for search results
+   */
+  const handleOnSearch = (input) => {
+    if (textInputs.includes(input)) {
+      message.error(`Input "${input}" has already been applied`);
+    } else {
+      setTextInputs([...textInputs, input]);
+    }
+  };
+
   return (
     <Router>
       <Redirect exact from="/" to="/search" />
@@ -108,7 +121,7 @@ function App() {
           project={project}
           cartItems={cart.length}
           onProjectChange={(value) => handleProjectChange(value)}
-          onSearch={(text) => setTextInputs([...textInputs, text])}
+          onSearch={(input) => handleOnSearch(input)}
         ></NavBar>
         <Layout id="body-layout" style={styles.bodyLayout}>
           <Switch>
