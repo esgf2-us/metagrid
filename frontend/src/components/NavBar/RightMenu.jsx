@@ -16,7 +16,7 @@ function RightMenu({ mode, cartItems }) {
 
   return (
     <div data-testid="right-menu">
-      <Menu mode={mode}>
+      <Menu defaultSelectedKeys={['search']} mode={mode}>
         <Menu.Item key="search">
           <Link to="/search">Search</Link>
         </Menu.Item>
@@ -30,7 +30,7 @@ function RightMenu({ mode, cartItems }) {
           Resources
         </Menu.Item>
         <Menu.Item key="login">
-          <Button type="link" style={{ fontStyle: 'bold' }}>
+          <Button type="primary" style={{ fontStyle: 'bold' }}>
             Log In
           </Button>
         </Menu.Item>

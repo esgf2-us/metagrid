@@ -117,12 +117,17 @@ function App() {
     <Router>
       <Redirect exact from="/" to="/search" />
       <div>
-        <NavBar
-          project={project}
-          cartItems={cart.length}
-          onProjectChange={(value) => handleProjectChange(value)}
-          onSearch={(input) => handleOnSearch(input)}
-        ></NavBar>
+        <Route
+          path="/"
+          render={() => (
+            <NavBar
+              project={project}
+              cartItems={cart.length}
+              onProjectChange={(value) => handleProjectChange(value)}
+              onSearch={(input) => handleOnSearch(input)}
+            ></NavBar>
+          )}
+        />
         <Layout id="body-layout" style={styles.bodyLayout}>
           <Switch>
             <Route
