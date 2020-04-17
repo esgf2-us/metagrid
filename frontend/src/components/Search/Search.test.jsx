@@ -1,10 +1,22 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
-import { render, fireEvent, act } from '@testing-library/react';
+import { render } from '@testing-library/react';
 
 import Search from './index';
 
+const defaultProps = {
+  project: '',
+  textInputs: [],
+  appliedFacets: {},
+  cart: [],
+  onRemoveTag: jest.fn(),
+  onClearTags: jest.fn(),
+  onAddCart: jest.fn(),
+};
+
 test('renders without crashing', async () => {
-  test.todo('placeholder');
+  const { getByTestId } = render(<Search {...defaultProps} />);
+  expect(getByTestId('search')).toBeTruthy();
 });
 
 test('successfully shows results', async () => {
