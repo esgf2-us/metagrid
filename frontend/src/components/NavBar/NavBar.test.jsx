@@ -1,5 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
+import { BrowserRouter as Router } from 'react-router-dom';
 import { render, fireEvent, act } from '@testing-library/react';
 
 import NavBar from './index';
@@ -7,6 +8,7 @@ import LeftMenu from './LeftMenu';
 import RightMenu from './RightMenu';
 
 const defaultProps = {
+  project: 'test1',
   projects: ['test1', 'test2'],
   cartItems: 0,
   onSearch: jest.fn(),
@@ -15,25 +17,33 @@ const defaultProps = {
 
 test('LeftMenu and RightMenu components render correctly', async () => {
   await act(async () => {
-    const { getByTestId } = render(<NavBar {...defaultProps} />);
+    const { getByTestId } = render(
+      <Router>
+        <NavBar {...defaultProps} />
+      </Router>
+    );
     expect(getByTestId('left-menu')).toBeTruthy();
     expect(getByTestId('right-menu')).toBeTruthy();
   });
 });
 
 const leftMenuProps = {
+  project: 'test1',
   projects: ['test1', 'test2'],
-  text: '',
-  onFinish: jest.fn(),
-  handleChange: jest.fn(),
+  onSearch: jest.fn(),
+  onProjectChange: jest.fn(),
 };
 
 test('LeftMenu renders project list and updates', async () => {
-  // NOTE:testing ant-design's select component has been proven to be
+  // NOTE: Testing ant-design's select component has been proven to be
   // tricky. Attempting to extract the value that the user selects is not
   // straight-forward, so this project does a simple test to see if the
   // DOM node exists or not.
-  const { getByText, getByTestId } = render(<LeftMenu {...leftMenuProps} />);
+  const { getByText, getByTestId } = render(
+    <Router>
+      <LeftMenu {...leftMenuProps} />
+    </Router>
+  );
   expect(getByTestId('left-menu')).toBeTruthy();
   expect(getByText('Project')).toBeTruthy();
   fireEvent.click(getByTestId('project-select'));
@@ -44,7 +54,9 @@ test('LeftMenu registers search input', async () => {
   // the Search form field's value changes. It does not test calling the
   // onFinish function when the user submits the form.
   const { getByPlaceholderText, getByRole } = render(
-    <LeftMenu {...leftMenuProps} />
+    <Router>
+      <LeftMenu {...leftMenuProps} />
+    </Router>
   );
 
   const search = getByPlaceholderText('Search...');
@@ -54,8 +66,17 @@ test('LeftMenu registers search input', async () => {
   fireEvent.click(getByRole('img'));
 });
 
+const rightMenuProps = {
+  mode: 'horizontal',
+  cartItems: 4,
+};
+
 test('RightMenu displays correct number of cartItems', () => {
-  const { getByText } = render(<RightMenu cartItems={4} />);
+  const { getByText } = render(
+    <Router>
+      <RightMenu {...rightMenuProps} />
+    </Router>
+  );
   expect(getByText('4')).toBeTruthy();
 });
 
