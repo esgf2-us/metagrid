@@ -6,7 +6,9 @@ import { SearchOutlined } from '@ant-design/icons';
 import Button from '../General/Button';
 
 const { Option } = Select;
-
+const styles = {
+  searchForm: { marginTop: '1em' },
+};
 function LeftMenu({ project, projects, onSearch, onProjectChange }) {
   LeftMenu.propTypes = {
     project: PropTypes.string.isRequired,
@@ -36,7 +38,7 @@ function LeftMenu({ project, projects, onSearch, onProjectChange }) {
 
   return (
     <div data-testid="left-menu">
-      <Form form={form} onFinish={onFinish}>
+      <Form style={styles.searchForm} form={form} onFinish={onFinish}>
         <Input.Group compact>
           <Form.Item
             name="project"
