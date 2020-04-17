@@ -1,4 +1,11 @@
 import React from 'react';
+import {
+  BrowserRouter as Router,
+  Route,
+  Redirect,
+  Switch,
+} from 'react-router-dom';
+
 import { Layout, message } from 'antd';
 
 import NavBar from './components/NavBar';
@@ -94,40 +101,58 @@ function App() {
   };
 
   return (
-    <div>
-      <NavBar
-        project={project}
-        cartItems={cart.length}
-        onProjectChange={(value) => handleProjectChange(value)}
-        onSearch={(text) => setTextInputs([...textInputs, text])}
-      ></NavBar>
-
-      <Layout id="body-layout" style={styles.bodyLayout}>
-        <Sider style={styles.bodySider} width={250}>
-          <Facets
-            project={project}
-            onProjectChange={(selectedProject) =>
-              handleProjectChange(selectedProject)
-            }
-            onSetFacets={(facets) => setAppliedFacets(facets)}
-          />
-        </Sider>
-        <Content style={styles.bodyContent}>
-          <Search
-            project={project}
-            textInputs={textInputs}
-            appliedFacets={appliedFacets}
-            cart={cart}
-            handleCart={handleCart}
-            onRemoveTag={(removedTag, type) =>
-              handleRemoveTag(removedTag, type)
-            }
-            onClearTags={() => clearConstraints()}
-          ></Search>
-        </Content>
-      </Layout>
-      <Footer style={styles.footer}>ESGF Search UI ©2020</Footer>
-    </div>
+    <Router>
+      <Redirect exact from="/" to="/search" />
+      <div>
+        <NavBar
+          project={project}
+          cartItems={cart.length}
+          onProjectChange={(value) => handleProjectChange(value)}
+          onSearch={(text) => setTextInputs([...textInputs, text])}
+        ></NavBar>
+        <Layout id="body-layout" style={styles.bodyLayout}>
+          <Switch>
+            <Route
+              path="/search"
+              render={() => (
+                <Sider style={styles.bodySider} width={250}>
+                  <Facets
+                    project={project}
+                    onProjectChange={(selectedProject) =>
+                      handleProjectChange(selectedProject)
+                    }
+                    onSetFacets={(facets) => setAppliedFacets(facets)}
+                  />
+                </Sider>
+              )}
+            />
+          </Switch>
+          <Content style={styles.bodyContent}>
+            <Switch>
+              <Route
+                path="/search"
+                render={() => (
+                  <Search
+                    project={project}
+                    textInputs={textInputs}
+                    appliedFacets={appliedFacets}
+                    cart={cart}
+                    handleCart={handleCart}
+                    onRemoveTag={(removedTag, type) =>
+                      handleRemoveTag(removedTag, type)
+                    }
+                    onClearTags={() => clearConstraints()}
+                  ></Search>
+                )}
+              ></Route>
+            </Switch>
+          </Content>
+        </Layout>
+        <Footer data-testid="footer" style={styles.footer}>
+          ESGF Search UI ©2020
+        </Footer>
+      </div>
+    </Router>
   );
 }
 
