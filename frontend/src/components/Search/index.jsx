@@ -57,8 +57,8 @@ function Search({
   };
 
   return (
-    <div data-testid="search">
-      <Row>
+    <div>
+      <Row data-testid="search">
         {!isEmpty(results) ? (
           <h4>
             {results.response.numFound} results found for {project}

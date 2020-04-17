@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { Menu } from 'antd';
 import { ShoppingCartOutlined } from '@ant-design/icons';
@@ -16,15 +17,15 @@ function RightMenu({ mode, cartItems }) {
   return (
     <div data-testid="right-menu">
       <Menu mode={mode}>
+        <Menu.Item key="search">
+          <Link to="/search">Search</Link>
+        </Menu.Item>
         <SubMenu title={<span className="submenu-title-wrapper">Learn</span>}>
           <Menu.ItemGroup title="Documentation">
             <Menu.Item key="guide">Guide</Menu.Item>
             <Menu.Item key="api">API</Menu.Item>
           </Menu.ItemGroup>
         </SubMenu>
-        <Menu.Item key="about" disabled>
-          About
-        </Menu.Item>
         <Menu.Item key="resources" disabled>
           Resources
         </Menu.Item>

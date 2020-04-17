@@ -1,5 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
+import { BrowserRouter as Router } from 'react-router-dom';
 import { render, fireEvent, act } from '@testing-library/react';
 
 import NavBar from './index';
@@ -16,7 +17,11 @@ const defaultProps = {
 
 test('LeftMenu and RightMenu components render correctly', async () => {
   await act(async () => {
-    const { getByTestId } = render(<NavBar {...defaultProps} />);
+    const { getByTestId } = render(
+      <Router>
+        <NavBar {...defaultProps} />
+      </Router>
+    );
     expect(getByTestId('left-menu')).toBeTruthy();
     expect(getByTestId('right-menu')).toBeTruthy();
   });
@@ -34,7 +39,11 @@ test('LeftMenu renders project list and updates', async () => {
   // tricky. Attempting to extract the value that the user selects is not
   // straight-forward, so this project does a simple test to see if the
   // DOM node exists or not.
-  const { getByText, getByTestId } = render(<LeftMenu {...leftMenuProps} />);
+  const { getByText, getByTestId } = render(
+    <Router>
+      <LeftMenu {...leftMenuProps} />
+    </Router>
+  );
   expect(getByTestId('left-menu')).toBeTruthy();
   expect(getByText('Project')).toBeTruthy();
   fireEvent.click(getByTestId('project-select'));
@@ -45,7 +54,9 @@ test('LeftMenu registers search input', async () => {
   // the Search form field's value changes. It does not test calling the
   // onFinish function when the user submits the form.
   const { getByPlaceholderText, getByRole } = render(
-    <LeftMenu {...leftMenuProps} />
+    <Router>
+      <LeftMenu {...leftMenuProps} />
+    </Router>
   );
 
   const search = getByPlaceholderText('Search...');
@@ -61,7 +72,11 @@ const rightMenuProps = {
 };
 
 test('RightMenu displays correct number of cartItems', () => {
-  const { getByText } = render(<RightMenu {...rightMenuProps} />);
+  const { getByText } = render(
+    <Router>
+      <RightMenu {...rightMenuProps} />
+    </Router>
+  );
   expect(getByText('4')).toBeTruthy();
 });
 
