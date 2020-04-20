@@ -29,13 +29,11 @@ function NavBar({ project, cartItems, onSearch, onProjectChange }) {
     <nav data-testid="nav-bar" className="navbar">
       <div className="navbar-logo">
         <Link to="/search">
-          <Button type="link" href="#">
-            <img
-              style={{ maxWidth: '100%', height: 'auto' }}
-              src={esgfLogo}
-              alt="ESGF Logo"
-            />
-          </Button>
+          <img
+            style={{ maxWidth: '100%', height: 'auto' }}
+            src={esgfLogo}
+            alt="ESGF Logo"
+          />
         </Link>
       </div>
 
