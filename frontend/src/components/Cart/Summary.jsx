@@ -1,0 +1,67 @@
+import React from 'react';
+import PropTypes from 'prop-types';
+import { Divider, Form, Select } from 'antd';
+import { DownloadOutlined, ShoppingCartOutlined } from '@ant-design/icons';
+
+import Button from '../General/Button';
+
+const { Option } = Select;
+
+function Summary({ numItems }) {
+  Summary.propTypes = {
+    numItems: PropTypes.number,
+  };
+  Summary.defaultProps = {
+    numItems: 0,
+  };
+  const [form] = Form.useForm();
+  const downloadOptions = ['HTTPServer', 'GridFTP', 'OPENDAP', 'Globus'];
+
+  /**
+   * Handles when the user selects to download their cart
+   * TODO: Implement function
+   * @param {*} values
+   */
+  const handleOnFinish = (values) => {
+    console.log(values);
+  };
+
+  return (
+    <div data-testid="summary">
+      <ShoppingCartOutlined style={{ fontSize: '4rem' }} />
+      <h1>Data Cart Summary</h1>
+      <Divider />
+      <h1>
+        Number of Files: <span style={{ float: 'right' }}>{numItems}</span>
+      </h1>
+      <h1>
+        Total File Size: <span style={{ float: 'right' }}>N/A</span>
+      </h1>
+      <Divider />
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={(values) => handleOnFinish(values)}
+      >
+        <Form.Item name="download">
+          <Select defaultValue={downloadOptions[0]} style={{ width: 120 }}>
+            {/* eslint-disable-next-line react/prop-types */}
+            {downloadOptions.map((option) => (
+              <Option key={option} value={option}>
+                {option}
+              </Option>
+            ))}
+            /
+          </Select>
+        </Form.Item>
+        <Form.Item>
+          <Button type="primary" htmlType="submit" icon={<DownloadOutlined />}>
+            Download
+          </Button>
+        </Form.Item>
+      </Form>
+    </div>
+  );
+}
+
+export default Summary;

@@ -12,6 +12,7 @@ import NavBar from './components/NavBar';
 import Facets from './components/Facets';
 import Search from './components/Search';
 import Cart from './components/Cart';
+import Summary from './components/Cart/Summary';
 
 import './App.css';
 
@@ -144,6 +145,15 @@ function App() {
                     }
                     onSetFacets={(facets) => setAppliedFacets(facets)}
                   />
+                </Sider>
+              )}
+            />
+            <Route
+              path="/cart"
+              render={() => (
+                <Sider style={styles.bodySider} width={250}>
+                  {' '}
+                  <Summary numItems={cart.length} />
                 </Sider>
               )}
             />
