@@ -23,7 +23,7 @@ const styles = {
     background: '#fff',
     padding: '25px 25px 25px 25px',
     marginLeft: '25px',
-    overflowY: 'scroll',
+    overflowY: 'auto',
   },
   bodyContent: { padding: '0 24px' },
   footer: { textAlign: 'center' },
@@ -152,7 +152,6 @@ function App() {
               path="/cart"
               render={() => (
                 <Sider style={styles.bodySider} width={250}>
-                  {' '}
                   <Summary numItems={cart.length} />
                 </Sider>
               )}
