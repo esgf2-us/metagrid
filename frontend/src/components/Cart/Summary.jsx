@@ -8,12 +8,6 @@ import Button from '../General/Button';
 const { Option } = Select;
 
 function Summary({ numItems }) {
-  Summary.propTypes = {
-    numItems: PropTypes.number,
-  };
-  Summary.defaultProps = {
-    numItems: 0,
-  };
   const [form] = Form.useForm();
   const downloadOptions = ['HTTPServer', 'GridFTP', 'OPENDAP', 'Globus'];
 
@@ -23,7 +17,7 @@ function Summary({ numItems }) {
    * @param {*} values
    */
   const handleOnFinish = (values) => {
-    console.log(values);
+    return values;
   };
 
   return (
@@ -66,5 +60,13 @@ function Summary({ numItems }) {
     </div>
   );
 }
+
+Summary.propTypes = {
+  numItems: PropTypes.number,
+};
+
+Summary.defaultProps = {
+  numItems: 0,
+};
 
 export default Summary;
