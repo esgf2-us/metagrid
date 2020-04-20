@@ -11,6 +11,7 @@ import { Layout, message } from 'antd';
 import NavBar from './components/NavBar';
 import Facets from './components/Facets';
 import Search from './components/Search';
+import Cart from './components/Cart';
 
 import './App.css';
 
@@ -164,7 +165,11 @@ function App() {
                     onClearTags={() => clearConstraints()}
                   ></Search>
                 )}
-              ></Route>
+              />
+              <Route
+                path="/cart"
+                render={() => <Cart cart={cart} handleCart={handleCart} />}
+              />
             </Switch>
           </Content>
         </Layout>
