@@ -1,10 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Col, Row } from 'antd';
+import { QuestionCircleOutlined } from '@ant-design/icons';
 
 import SearchTable from '../Search/SearchTable';
 import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
+import Popconfirm from '../Feedback/Popconfirm';
 
 const styles = {
   summary: {
@@ -34,9 +36,12 @@ function Cart({ cart, handleCart, clearCart }) {
         </div>
         <div>
           {cart.length > 0 && (
-            <Button type="danger" onClick={() => clearCart()}>
-              Remove All Items
-            </Button>
+            <Popconfirm
+              icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
+              onConfirm={() => clearCart()}
+            >
+              <Button type="danger">Remove All Items</Button>
+            </Popconfirm>
           )}
         </div>
       </div>
