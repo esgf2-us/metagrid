@@ -2,6 +2,10 @@ import React from 'react';
 import { Tag as TagD } from 'antd';
 import PropTypes from 'prop-types';
 
+const styles = {
+  tag: { height: '2em' },
+};
+
 function Tag({ input, onClose, closable }) {
   Tag.propTypes = {
     input: PropTypes.oneOfType([
@@ -19,7 +23,7 @@ function Tag({ input, onClose, closable }) {
   };
 
   return (
-    <TagD closable={closable} onClose={() => onClose(input)}>
+    <TagD style={styles.tag} closable={closable} onClose={() => onClose(input)}>
       {input.constructor === Array ? input[0] : input}
     </TagD>
   );

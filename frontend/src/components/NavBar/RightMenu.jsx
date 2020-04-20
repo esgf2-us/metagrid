@@ -35,10 +35,12 @@ function RightMenu({ mode, cartItems }) {
           </Button>
         </Menu.Item>
         <Menu.Item>
-          <Button type="link">
-            <ShoppingCartOutlined style={{ fontSize: '24px' }} />
-            {cartItems}
-          </Button>
+          <Link to="/cart">
+            <Button type="link">
+              <ShoppingCartOutlined style={{ fontSize: '24px' }} />
+              {cartItems}
+            </Button>
+          </Link>
         </Menu.Item>
       </Menu>
     </div>

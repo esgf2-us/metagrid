@@ -11,6 +11,8 @@ import { Layout, message } from 'antd';
 import NavBar from './components/NavBar';
 import Facets from './components/Facets';
 import Search from './components/Search';
+import Cart from './components/Cart';
+import Summary from './components/Cart/Summary';
 
 import './App.css';
 
@@ -21,7 +23,7 @@ const styles = {
     background: '#fff',
     padding: '25px 25px 25px 25px',
     marginLeft: '25px',
-    overflowY: 'scroll',
+    overflowY: 'auto',
   },
   bodyContent: { padding: '0 24px' },
   footer: { textAlign: 'center' },
@@ -115,7 +117,9 @@ function App() {
 
   return (
     <Router>
-      <Redirect exact from="/" to="/search" />
+      <Switch>
+        <Redirect from="/" exact to="/search" />
+      </Switch>
       <div>
         <Route
           path="/"
@@ -144,6 +148,14 @@ function App() {
                 </Sider>
               )}
             />
+            <Route
+              path="/cart"
+              render={() => (
+                <Sider style={styles.bodySider} width={250}>
+                  <Summary numItems={cart.length} />
+                </Sider>
+              )}
+            />
           </Switch>
           <Content style={styles.bodyContent}>
             <Switch>
@@ -162,7 +174,17 @@ function App() {
                     onClearTags={() => clearConstraints()}
                   ></Search>
                 )}
-              ></Route>
+              />
+              <Route
+                path="/cart"
+                render={() => (
+                  <Cart
+                    cart={cart}
+                    handleCart={handleCart}
+                    clearCart={() => setCart([])}
+                  />
+                )}
+              />
             </Switch>
           </Content>
         </Layout>
