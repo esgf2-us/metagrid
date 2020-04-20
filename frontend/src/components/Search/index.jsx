@@ -10,7 +10,17 @@ import Tag from '../General/Tag';
 import { fetchResults } from '../../utils/api';
 import { isEmpty } from '../../utils/utils';
 
-const styles = { addButton: { marginTop: 10, marginBottom: 10 } };
+const styles = {
+  summary: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    marginTop: 10,
+    marginBottom: 10,
+    leftSide: {
+      display: 'flex',
+    },
+  },
+};
 
 function Search({
   project,
@@ -21,17 +31,6 @@ function Search({
   onClearTags,
   handleCart,
 }) {
-  Search.propTypes = {
-    project: PropTypes.string.isRequired,
-    textInputs: PropTypes.arrayOf(PropTypes.string).isRequired,
-    appliedFacets: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.any))
-      .isRequired,
-    cart: PropTypes.arrayOf(PropTypes.objectOf(PropTypes.any)).isRequired,
-    onRemoveTag: PropTypes.func.isRequired,
-    onClearTags: PropTypes.func.isRequired,
-    handleCart: PropTypes.func.isRequired,
-  };
-
   const { data: results, error, isLoading, run } = useAsync({
     deferFn: fetchResults,
     project,
@@ -57,26 +56,38 @@ function Search({
   };
 
   return (
-    <div>
-      <Row data-testid="search">
-        {!isEmpty(results) ? (
-          <h4>
-            {results.response.numFound} results found for {project}
-          </h4>
-        ) : (
-          <Alert
-            message="Search for a project to display results"
-            type="info"
-            showIcon
-          />
-        )}
-      </Row>
-
+    <div data-testid="search">
+      <div style={styles.summary}>
+        <div style={styles.summary.leftSide}>
+          {!isEmpty(results) ? (
+            <h4>
+              {results.response.numFound} results found for {project}
+            </h4>
+          ) : (
+            <Alert
+              message="Search for a project to display results"
+              type="info"
+              showIcon
+            />
+          )}
+        </div>
+        <div>
+          {results && results.response.numFound > 0 && (
+            <Button
+              style={styles.addButton}
+              onClick={() => handleCart(selectedItems, 'add')}
+            >
+              Add Selected to Cart
+            </Button>
+          )}
+        </div>
+      </div>
       <Row>
-        {!isEmpty(appliedFacets) || textInputs.length > 0 ? (
-          <h4>Applied Constraints: </h4>
-        ) : (
+        {isEmpty(appliedFacets) && textInputs.length === 0 && (
           <Alert message="No constraints applied" type="info" showIcon />
+        )}
+        {(!isEmpty(appliedFacets) || textInputs.length > 0) && (
+          <h4 style={{ marginRight: '0.5em' }}>Applied Constraints: </h4>
         )}
 
         {Object.keys(appliedFacets).length !== 0 &&
@@ -98,15 +109,6 @@ function Search({
           ))}
       </Row>
 
-      {results && results.response.numFound > 0 && (
-        <Button
-          style={styles.addButton}
-          onClick={() => handleCart(selectedItems, 'add')}
-        >
-          Add Selected to Cart
-        </Button>
-      )}
-
       <Row gutter={[24, 16]} justify="space-around">
         <Col lg={24}>
           <SearchTable
@@ -123,5 +125,16 @@ function Search({
     </div>
   );
 }
+
+Search.propTypes = {
+  project: PropTypes.string.isRequired,
+  textInputs: PropTypes.arrayOf(PropTypes.string).isRequired,
+  appliedFacets: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.any))
+    .isRequired,
+  cart: PropTypes.arrayOf(PropTypes.objectOf(PropTypes.any)).isRequired,
+  onRemoveTag: PropTypes.func.isRequired,
+  onClearTags: PropTypes.func.isRequired,
+  handleCart: PropTypes.func.isRequired,
+};
 
 export default Search;

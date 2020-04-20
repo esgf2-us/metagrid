@@ -6,15 +6,10 @@ import { SearchOutlined } from '@ant-design/icons';
 import Button from '../General/Button';
 
 const { Option } = Select;
-
+const styles = {
+  searchForm: { marginTop: '1em' },
+};
 function LeftMenu({ project, projects, onSearch, onProjectChange }) {
-  LeftMenu.propTypes = {
-    project: PropTypes.string.isRequired,
-    projects: PropTypes.arrayOf(PropTypes.string).isRequired,
-    onSearch: PropTypes.func.isRequired,
-    onProjectChange: PropTypes.func.isRequired,
-  };
-
   const [form] = Form.useForm();
   const [text, setText] = React.useState('');
 
@@ -36,7 +31,7 @@ function LeftMenu({ project, projects, onSearch, onProjectChange }) {
 
   return (
     <div data-testid="left-menu">
-      <Form form={form} onFinish={onFinish}>
+      <Form style={styles.searchForm} form={form} onFinish={onFinish}>
         <Input.Group compact>
           <Form.Item
             name="project"
@@ -75,5 +70,12 @@ function LeftMenu({ project, projects, onSearch, onProjectChange }) {
     </div>
   );
 }
+
+LeftMenu.propTypes = {
+  project: PropTypes.string.isRequired,
+  projects: PropTypes.arrayOf(PropTypes.string).isRequired,
+  onSearch: PropTypes.func.isRequired,
+  onProjectChange: PropTypes.func.isRequired,
+};
 
 export default LeftMenu;
