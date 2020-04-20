@@ -42,9 +42,12 @@ function Summary({ numItems }) {
         form={form}
         layout="vertical"
         onFinish={(values) => handleOnFinish(values)}
+        initialValues={{
+          download: downloadOptions[0],
+        }}
       >
         <Form.Item name="download">
-          <Select defaultValue={downloadOptions[0]} style={{ width: 120 }}>
+          <Select style={{ width: 120 }}>
             {/* eslint-disable-next-line react/prop-types */}
             {downloadOptions.map((option) => (
               <Option key={option} value={option}>
