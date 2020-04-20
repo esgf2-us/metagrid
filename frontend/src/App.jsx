@@ -115,7 +115,9 @@ function App() {
 
   return (
     <Router>
-      <Redirect exact from="/" to="/search" />
+      <Switch>
+        <Redirect from="/" exact to="/search" />
+      </Switch>
       <div>
         <Route
           path="/"
