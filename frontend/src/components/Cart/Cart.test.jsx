@@ -178,6 +178,7 @@ const defaultProps = {
     },
   ],
   handleCart: jest.fn(),
+  clearCart: jest.fn(),
 };
 test('renders without crashing', async () => {
   const { getByTestId } = render(

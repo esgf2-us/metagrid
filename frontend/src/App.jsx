@@ -177,7 +177,13 @@ function App() {
               />
               <Route
                 path="/cart"
-                render={() => <Cart cart={cart} handleCart={handleCart} />}
+                render={() => (
+                  <Cart
+                    cart={cart}
+                    handleCart={handleCart}
+                    clearCart={() => setCart([])}
+                  />
+                )}
               />
             </Switch>
           </Content>
