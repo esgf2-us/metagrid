@@ -10,13 +10,6 @@ const styles = {
   searchForm: { marginTop: '1em' },
 };
 function LeftMenu({ project, projects, onSearch, onProjectChange }) {
-  LeftMenu.propTypes = {
-    project: PropTypes.string.isRequired,
-    projects: PropTypes.arrayOf(PropTypes.string).isRequired,
-    onSearch: PropTypes.func.isRequired,
-    onProjectChange: PropTypes.func.isRequired,
-  };
-
   const [form] = Form.useForm();
   const [text, setText] = React.useState('');
 
@@ -77,5 +70,12 @@ function LeftMenu({ project, projects, onSearch, onProjectChange }) {
     </div>
   );
 }
+
+LeftMenu.propTypes = {
+  project: PropTypes.string.isRequired,
+  projects: PropTypes.arrayOf(PropTypes.string).isRequired,
+  onSearch: PropTypes.func.isRequired,
+  onProjectChange: PropTypes.func.isRequired,
+};
 
 export default LeftMenu;

@@ -20,12 +20,6 @@ const styles = {
   },
 };
 function Cart({ cart, handleCart, clearCart }) {
-  Cart.propTypes = {
-    cart: PropTypes.arrayOf(PropTypes.objectOf(PropTypes.any)).isRequired,
-    handleCart: PropTypes.func.isRequired,
-    clearCart: PropTypes.func.isRequired,
-  };
-
   return (
     <div data-testid="cart">
       <div style={styles.summary}>
@@ -58,5 +52,11 @@ function Cart({ cart, handleCart, clearCart }) {
     </div>
   );
 }
+
+Cart.propTypes = {
+  cart: PropTypes.arrayOf(PropTypes.objectOf(PropTypes.any)).isRequired,
+  handleCart: PropTypes.func.isRequired,
+  clearCart: PropTypes.func.isRequired,
+};
 
 export default Cart;

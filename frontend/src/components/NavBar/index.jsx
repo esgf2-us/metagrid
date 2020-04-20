@@ -15,13 +15,6 @@ import { fetchProjects } from '../../utils/api';
 import esgfLogo from '../../assets/img/esgf_logo.png';
 
 function NavBar({ project, cartItems, onSearch, onProjectChange }) {
-  NavBar.propTypes = {
-    project: PropTypes.string.isRequired,
-    cartItems: PropTypes.number.isRequired,
-    onSearch: PropTypes.func.isRequired,
-    onProjectChange: PropTypes.func.isRequired,
-  };
-
   const { data, error, isPending } = useAsync({ promiseFn: fetchProjects });
   const [showDrawer, setShowDrawer] = React.useState(false);
 
@@ -77,5 +70,12 @@ function NavBar({ project, cartItems, onSearch, onProjectChange }) {
     </nav>
   );
 }
+
+NavBar.propTypes = {
+  project: PropTypes.string.isRequired,
+  cartItems: PropTypes.number.isRequired,
+  onSearch: PropTypes.func.isRequired,
+  onProjectChange: PropTypes.func.isRequired,
+};
 
 export default NavBar;

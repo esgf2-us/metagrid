@@ -18,12 +18,6 @@ const styles = {
 };
 
 function Facets({ project, onProjectChange, onSetFacets }) {
-  Facets.propTypes = {
-    project: PropTypes.string.isRequired,
-    onProjectChange: PropTypes.func.isRequired,
-    onSetFacets: PropTypes.func.isRequired,
-  };
-
   const [form] = Form.useForm();
   const [selectedProject, setSelectedProject] = React.useState('');
   const [parsedFacets, setParsedFacets] = React.useState([]);
@@ -174,5 +168,11 @@ function Facets({ project, onProjectChange, onSetFacets }) {
     </div>
   );
 }
+
+Facets.propTypes = {
+  project: PropTypes.string.isRequired,
+  onProjectChange: PropTypes.func.isRequired,
+  onSetFacets: PropTypes.func.isRequired,
+};
 
 export default Facets;
