@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useAsync } from 'react-async';
 import PropTypes from 'prop-types';
 import { Drawer } from 'antd';
@@ -27,13 +28,15 @@ function NavBar({ project, cartItems, onSearch, onProjectChange }) {
   return (
     <nav data-testid="nav-bar" className="navbar">
       <div className="navbar-logo">
-        <Button type="link" href="#">
-          <img
-            style={{ maxWidth: '100%', height: 'auto' }}
-            src={esgfLogo}
-            alt="ESGF Logo"
-          />
-        </Button>
+        <Link to="/search">
+          <Button type="link" href="#">
+            <img
+              style={{ maxWidth: '100%', height: 'auto' }}
+              src={esgfLogo}
+              alt="ESGF Logo"
+            />
+          </Button>
+        </Link>
       </div>
 
       <div className="navbar-container">
