@@ -40,7 +40,11 @@ function SearchTable({ loading, results, cart, handleCart, onSelect }) {
     results: PropTypes.arrayOf(PropTypes.object).isRequired,
     cart: PropTypes.arrayOf(PropTypes.object).isRequired,
     handleCart: PropTypes.func.isRequired,
-    onSelect: PropTypes.func.isRequired,
+    onSelect: PropTypes.func,
+  };
+
+  SearchTable.defaultProps = {
+    onSelect: undefined,
   };
 
   // Table Component configuration
