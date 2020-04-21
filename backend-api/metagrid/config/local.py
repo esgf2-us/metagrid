@@ -1,27 +1,19 @@
-import os
+from .base import *  # noqa
+from .base import env
 
-from .common import Common
+# GENERAL
+# ------------------------------------------------------------------------------
+# https://docs.djangoproject.com/en/dev/ref/settings/#debug
+DEBUG = True
+# https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
+SECRET_KEY = env(
+    "DJANGO_SECRET_KEY",
+    default="7LynCTKfcjH6p2Nz77YM9XzSnTSvpPVUNz4bHEScGJ6flWcOslxGNMdAhsDioJFJ",
+)
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-
-class Local(Common):
-    DEBUG = True
-
-    # Testing
-    INSTALLED_APPS = Common.INSTALLED_APPS
-    INSTALLED_APPS += ("django_nose",)
-    TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
-    NOSE_ARGS = [
-        BASE_DIR,
-        "-s",
-        "--nologcapture",
-        "--with-coverage",
-        "--with-progressive",
-        "--cover-package=metagrid",
-    ]
-
-    # Mail
-    EMAIL_HOST = "localhost"
-    EMAIL_PORT = 1025
-    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+# EMAIL
+# ------------------------------------------------------------------------------
+# https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
+EMAIL_BACKEND = env(
+    "DJANGO_EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend"
+)
