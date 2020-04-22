@@ -1,7 +1,7 @@
 """
 Base settings to build other settings files upon.
 """
-from typing import List
+from typing import List  # noqa
 
 import environ
 
