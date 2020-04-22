@@ -1,4 +1,6 @@
 # http://editorconfig.org
+# This file is for unifying the coding style for different editors and IDEs.
+# More information at http://EditorConfig.org
 
 root = true
 
@@ -33,7 +35,3 @@ trim_trailing_whitespace = false
 
 [Makefile]
 indent_style = tab
-
-[nginx.conf]
-indent_style = space
-indent_size = 2

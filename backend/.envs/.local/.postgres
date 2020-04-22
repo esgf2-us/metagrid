@@ -1,7 +1,0 @@
-# PostgreSQL
-# ------------------------------------------------------------------------------
-POSTGRES_HOST=postgres
-POSTGRES_PORT=5432
-POSTGRES_DB=metagrid
-POSTGRES_USER=TYeUqQMPaKyJAWAoxpooumgrsehyfrNk
-POSTGRES_PASSWORD=kIf4NLILwEEl3il6hY9Aen3uQEaZvr2pZ2pjE6dTbe2RO9WycnVgf5EZKnTeUiSL
