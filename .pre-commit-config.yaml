@@ -28,7 +28,7 @@ repos:
         entry: flake8
         language: python
         types: [python]
-        args: ["--config=backend-api/setup.cfg"]
+        args: ["--config=backend/setup.cfg"]
 
   - repo: https://github.com/psf/black
     rev: stable
