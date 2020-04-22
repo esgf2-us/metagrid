@@ -1,3 +1,6 @@
+# This script makes docker-compose wait for the Postgresql container to
+# be ready before starting a dependent docker application container.
+
 import logging
 import os
 from time import sleep, time
