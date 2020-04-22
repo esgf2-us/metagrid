@@ -1,5 +1,6 @@
 # MetaGrid
 
+<a href="http://www.djangoproject.com/"><img src="https://www.djangoproject.com/m/img/badges/djangomade124x25.gif" border="0" alt="Made with Django." title="Made with Django." /></a>
 [![Black code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -11,19 +12,22 @@ ESGF Search UI. Check out the project's [documentation](http://aims-group.github
 
 # Local Development
 ## Getting Started
-This repo has default integration with pre-commit for identifying simple issues before submission to code review.
 
-The linters and stylers include:
+1. Configure the .env template (used in metagrid/config)
 
-- Code styling: black
-- Linting: flake8
-- Static Type Checking: mypy
+2. Setup pre-commit
+    ```bash
+    pre-commit install
+    ```
+- This repo has default integration with pre-commit for identifying simple issues before submission to code review.
 
-Before being able to push code, make sure to have pre-commit installed with git.
 
-```bash
-pre-commit install
-```
+- The linters and stylers include:
+  - Code styling: black
+  - Linting: flake8
+  - Static Type Checking: mypy
+
+
 
 ## Run the Stack
 
@@ -44,13 +48,10 @@ docker-compose run --rm web [command]
 
 # Basic Commands
 ## Setting Up Users
-- To create a normal user account, just go to Sign Up and fill out the form. Once you submit it, you'll see a "Verify Your E-mail Address" page. Go to your console to see a simulated email verification message. Copy the link into your browser. Now the user's email should be verified and ready to go.
-
 - To create an superuser account, use this command:
 ```bash
 python manage.py createsuperuser
 ```
-
 
 ## Type checks
 
