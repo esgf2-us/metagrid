@@ -18,17 +18,15 @@ if READ_DOT_ENV_FILE:
 
 # GENERAL
 # ------------------------------------------------------------------------------
-# https://docs.djangoproject.com/en/dev/ref/settings/#debug
-
 # Set DEBUG to False as a default for safety
 # https://docs.djangoproject.com/en/dev/ref/settings/#debug
 DEBUG = env.bool("DJANGO_DEBUG", default=False)
-
 APPEND_SLASH = False
 TIME_ZONE = "UTC"
 LANGUAGE_CODE = "en-us"
-# If you set this to False, Django will make some optimizations so as not
-# to load the internationalization machinery.
+
+# If you set USE_I18N to False, Django will make some optimizations so
+# as not to load the internationalization machinery.
 USE_I18N = False
 USE_L10N = True
 USE_TZ = True
@@ -47,6 +45,7 @@ INSTALLED_APPS = [
     "rest_framework",  # utilities for rest apis
     "rest_framework.authtoken",  # token authentication
     "django_filters",  # for filtering rest endpoints
+    "corsheaders",
     # Your apps
     "metagrid.users",
 ]
@@ -55,6 +54,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = (
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
