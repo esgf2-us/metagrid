@@ -3,7 +3,7 @@ import os
 import sys
 
 if __name__ == "__main__":
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "metagrid.config.local")
 
     try:
         from django.core.management import execute_from_command_line
@@ -21,10 +21,5 @@ if __name__ == "__main__":
             )
 
         raise
-
-    # This allows easy placement of apps within the interior
-    # metagrid directory.
-    current_path = os.path.dirname(os.path.abspath(__file__))
-    sys.path.append(os.path.join(current_path, "metagrid"))
 
     execute_from_command_line(sys.argv)
