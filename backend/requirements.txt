@@ -45,7 +45,7 @@ django_unique_upload==0.2.1   # https://pypi.org/project/django-unique-upload/
 # ------------------------------------------------------------------------------
 ipdb==0.13.2  # https://github.com/gotcha/ipdb
 ipython==7.11.1  # https://github.com/ipython/ipython
-mkdocs==1.0.4  # https://www.mkdocs.org/
+mkdocs==1.1  # https://www.mkdocs.org/
 
 # Static and Media Tools
 # ------------------------------------------------------------------------------
