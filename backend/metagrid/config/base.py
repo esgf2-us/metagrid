@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "corsheaders",
     # Your apps
     "metagrid.users",
+    "metagrid.projects",
 ]
 
 # https://docs.djangoproject.com/en/2.0/topics/http/middleware/
