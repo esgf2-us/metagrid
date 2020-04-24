@@ -6,6 +6,7 @@ django-environ==0.4.5  # https://github.com/joke2k/django-environ
 gunicorn==20.0.4  # https://github.com/benoitc/gunicorn
 newrelic==5.12.0.140  # https://pypi.org/project/newrelic/
 argon2-cffi==19.2.0  # https://github.com/hynek/argon2_cffi
+requests==2.23.0  # https://github.com/psf/requests
 
 # REST API
 # ------------------------------------------------------------------------------
@@ -24,7 +25,6 @@ flake8==3.7.9  # https://github.com/PyCQA/flake8
 flake8-isort==3.0.0  # https://github.com/gforcada/flake8-isort
 coverage==5.1  # https://github.com/nedbat/coveragepy
 black==19.10b0  # https://github.com/ambv/black
-pylint-django==2.0.15  # https://github.com/PyCQA/pylint-django
 pre-commit==2.2.0  # https://github.com/pre-commit/pre-commit
 
 # Testing
