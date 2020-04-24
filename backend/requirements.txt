@@ -49,5 +49,5 @@ mkdocs==1.0.4  # https://www.mkdocs.org/
 
 # Static and Media Tools
 # ------------------------------------------------------------------------------
-django-storages==1.8.0
+django-storages==1.9.1
 boto3==1.11.1
