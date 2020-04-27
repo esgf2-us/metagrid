@@ -65,9 +65,9 @@ MIDDLEWARE = (
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1"]
-ROOT_URLCONF = "metagrid.urls"
+ROOT_URLCONF = "metagrid.config.urls"
 
-WSGI_APPLICATION = "metagrid.wsgi.application"
+WSGI_APPLICATION = "metagrid.config.wsgi.application"
 
 # EMAIL
 # ------------------------------------------------------------------------------
