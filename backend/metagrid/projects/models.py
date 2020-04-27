@@ -29,7 +29,9 @@ class Facet(models.Model):
     """Model definition for Facet."""
 
     name = models.CharField(max_length=255, unique=True)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    project = models.ForeignKey(
+        Project, related_name="facets", on_delete=models.CASCADE
+    )
 
     class Meta:
         """Meta definition for Facet."""
