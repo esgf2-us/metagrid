@@ -1,6 +1,6 @@
 import requests
 from django.http import JsonResponse
-from rest_framework import generics
+from rest_framework import viewsets
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 
@@ -8,10 +8,11 @@ from .models import Project
 from .serializers import ProjectSerializer
 
 
-class ProjectsList(generics.ListAPIView):
+class ProjectsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     permission_classes = [AllowAny]
+    lookup_field = "name"
 
 
 class ProjectFacetsList(APIView):
