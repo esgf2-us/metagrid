@@ -1,4 +1,4 @@
-from django.db import models  # noqa
+from django.db import models
 
 
 class Project(models.Model):
@@ -20,6 +20,10 @@ class Project(models.Model):
         """Return absolute url for Project."""
         return self.name
 
+    def fetch_facets(self):
+        """Fetches facets from Search API."""
+        pass
+
 
 class Facet(models.Model):
     """Model definition for Facet."""
@@ -35,10 +39,6 @@ class Facet(models.Model):
 
     def __str__(self):
         """Unicode representation of Facet."""
-        pass
-
-    def save(self):
-        """Save method for Facet."""
         return self.name
 
     def get_absolute_url(self):
