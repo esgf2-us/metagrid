@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",  # token authentication
     "django_filters",  # for filtering rest endpoints
     "corsheaders",
+    "django_extensions",
     # Your apps
     "metagrid.users",
     "metagrid.projects",
