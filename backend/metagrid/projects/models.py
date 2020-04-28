@@ -36,6 +36,7 @@ class Facet(models.Model):
     class Meta:
         """Meta definition for Facet."""
 
+        unique_together = ["name", "project"]
         verbose_name = "Facet"
         verbose_name_plural = "Facets"
 
