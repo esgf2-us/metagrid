@@ -1,3 +1,7 @@
+import urllib.parse
+from typing import Dict, List, Union
+
+from django.core.exceptions import EmptyResultSet
 from django.db import models
 
 
@@ -20,9 +24,28 @@ class Project(models.Model):
         """Return absolute url for Project."""
         return self.name
 
-    def fetch_facets(self):
-        """Fetches facets from Search API."""
-        pass
+    @property
+    def facets_url(self):
+        """Generates a URL query for the ESG-Search API"""
+        facets = self.facets.values_list("name", flat=True)  # type: ignore
+
+        if not facets:
+            raise EmptyResultSet(f"No facets found for project: {self.name}")
+
+        base_url = "https://esgf-node.llnl.gov/esg-search/search/?"
+        params = {
+            "offset": 0,
+            "limit": 0,
+            "type": "Dataset",
+            "replica": False,
+            "latest": True,
+            "format": "application/solr+json",
+            "project": [self.name, self.name.upper(), self.name.lower()],
+            "facets": ", ".join(facets),
+        }  # type: Dict[str, Union[int, str, List[str]]]
+
+        query_string = urllib.parse.urlencode(params, True)
+        return base_url + query_string
 
 
 class Facet(models.Model):
