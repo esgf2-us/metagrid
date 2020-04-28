@@ -6,7 +6,8 @@ from faker import Faker
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from ..models import User
+from metagrid.users.models import User
+
 from .factories import UserFactory
 
 fake = Faker()
