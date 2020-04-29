@@ -34,7 +34,7 @@ class Project(models.Model):
         return self.name
 
     @property
-    def facets_url(self):
+    def facets_url(self) -> str:
         """Generates a URL query for the ESG-Search API."""
         facets = self.facets.values_list("name", flat=True)  # type: ignore
 
@@ -56,10 +56,6 @@ class Project(models.Model):
 
         query_string = urllib.parse.urlencode(params, True)
         return base_url + query_string
-
-    def update_facet_counts(self):
-        """Updates the facet counts for the project."""
-        pass
 
 
 class Facet(models.Model):
@@ -84,24 +80,3 @@ class Facet(models.Model):
     def get_absolute_url(self):
         """Return absolute url for Facet."""
         return self.name
-
-
-class FacetVariable(models.Model):
-    """Model definition for FacetVariable."""
-
-    name = models.CharField(max_length=255)
-    count = models.IntegerField()
-    facet = models.ForeignKey(
-        Facet, related_name="facet_variables", on_delete=models.CASCADE
-    )
-
-    class Meta:
-        """Meta definition for FacetVariable."""
-
-        unique_together = ["name", "facet"]
-        verbose_name = "Facet Variable"
-        verbose_name_plural = "Facet Variables"
-
-    def __str__(self):
-        """Unicode representation of FacetVariable."""
-        return (self.name, self.count)
