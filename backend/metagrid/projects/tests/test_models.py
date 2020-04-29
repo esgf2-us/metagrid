@@ -3,12 +3,13 @@ from typing import TYPE_CHECKING
 import pytest
 from django.core.exceptions import EmptyResultSet
 
-from .factories import FacetFactory, ProjectFactory
+from metagrid.projects.models import Facet
+from metagrid.projects.tests.factories import FacetFactory, ProjectFactory
 
 pytestmark = pytest.mark.django_db
 
 if TYPE_CHECKING:
-    from metagrid.projects.models import Facet, Project
+    from metagrid.projects.models import Project
 
 
 class TestProjectModel:
@@ -26,6 +27,9 @@ class TestProjectModel:
 
     def test_facets_url_property_fail(self):
         project = ProjectFactory.create(name="e3sm")  # type: Project
+
+        # Delete the facets that were automatically created
+        Facet.objects.filter(project=project).delete()
 
         # Check that an exception was raised when there are no facets
         # associated with the project
