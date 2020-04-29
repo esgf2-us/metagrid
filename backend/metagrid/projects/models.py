@@ -41,6 +41,7 @@ class Project(models.Model):
         if not facets:
             raise EmptyResultSet(f"No facets found for project: {self.name}")
 
+        # TODO: Configure base_url to be a dynamic Django setting using .env
         base_url = "https://esgf-node.llnl.gov/esg-search/search/?"
         params = {
             "offset": 0,
@@ -65,8 +66,6 @@ class Facet(models.Model):
     """Model definition for Facet."""
 
     name = models.CharField(max_length=255)
-    # TODO: update count field asynchronously using Celery
-    count = models.IntegerField(default=0)
     project = models.ForeignKey(
         Project, related_name="facets", on_delete=models.CASCADE
     )
