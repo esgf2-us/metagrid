@@ -84,3 +84,24 @@ class Facet(models.Model):
     def get_absolute_url(self):
         """Return absolute url for Facet."""
         return self.name
+
+
+class FacetVariable(models.Model):
+    """Model definition for FacetVariable."""
+
+    name = models.CharField(max_length=255)
+    count = models.IntegerField()
+    facet = models.ForeignKey(
+        Facet, related_name="facet_variables", on_delete=models.CASCADE
+    )
+
+    class Meta:
+        """Meta definition for FacetVariable."""
+
+        unique_together = ["name", "facet"]
+        verbose_name = "Facet Variable"
+        verbose_name_plural = "Facet Variables"
+
+    def __str__(self):
+        """Unicode representation of FacetVariable."""
+        return (self.name, self.count)
