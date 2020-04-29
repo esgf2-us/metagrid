@@ -14,7 +14,9 @@ if TYPE_CHECKING:
 class TestProjectModel:
     def test_facets_url_property_success(self):
         project = ProjectFactory.create(name="CMIP6")  # type: Project
-        facet = FacetFactory.create(name="mip_era", project=project)  # type: Facet
+        facet = FacetFactory.create(
+            name="mip_era", project=project
+        )  # type: Facet
 
         # Check that the project has a list of facets
         assert project.facets
