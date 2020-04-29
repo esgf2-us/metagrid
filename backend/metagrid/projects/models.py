@@ -8,7 +8,16 @@ from django.db import models
 class Project(models.Model):
     """Model definition for Project."""
 
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(
+        max_length=255, unique=True, help_text="The acronym of the project",
+    )
+    full_name = models.CharField(
+        max_length=255,
+        unique=True,
+        null=True,
+        help_text="The spelled out name of the project.",
+    )
+    description = models.TextField(null=True)
 
     class Meta:
         """Meta definition for Project."""
@@ -26,7 +35,7 @@ class Project(models.Model):
 
     @property
     def facets_url(self):
-        """Generates a URL query for the ESG-Search API"""
+        """Generates a URL query for the ESG-Search API."""
         facets = self.facets.values_list("name", flat=True)  # type: ignore
 
         if not facets:
@@ -47,11 +56,17 @@ class Project(models.Model):
         query_string = urllib.parse.urlencode(params, True)
         return base_url + query_string
 
+    def update_facet_counts(self):
+        """Updates the facet counts for the project."""
+        pass
+
 
 class Facet(models.Model):
     """Model definition for Facet."""
 
     name = models.CharField(max_length=255)
+    # TODO: update count field asynchronously using Celery
+    count = models.IntegerField(default=0)
     project = models.ForeignKey(
         Project, related_name="facets", on_delete=models.CASCADE
     )
