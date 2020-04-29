@@ -37,7 +37,9 @@ def pg_isready(host, user, password, dbname, port):
             )
             sleep(check_interval)
 
-    logger.error(f"We could not connect to Postgres within {check_timeout} seconds.")
+    logger.error(
+        f"We could not connect to Postgres within {check_timeout} seconds."
+    )
     return False
 
 
