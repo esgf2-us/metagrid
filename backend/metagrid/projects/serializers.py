@@ -5,7 +5,7 @@ from .models import Project
 
 class ProjectSerializer(serializers.ModelSerializer):
     facets = serializers.StringRelatedField(many=True)
-    facets_url = serializers.ReadOnlyField
+    facets_url = serializers.ReadOnlyField()
 
     class Meta:
         model = Project
