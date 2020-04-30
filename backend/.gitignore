@@ -92,7 +92,3 @@ metagrid/media/
 .env
 .envs/*
 !.envs/.local/
-
-### Docker
-# Postgres volume
-/postgres-data/*
