@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING
 
 import pytest
-from django.core.exceptions import EmptyResultSet
 
 from metagrid.projects.models import Facet
 from metagrid.projects.tests.factories import FacetFactory, ProjectFactory
@@ -33,5 +32,4 @@ class TestProjectModel:
 
         # Check that an exception was raised when there are no facets
         # associated with the project
-        with pytest.raises(EmptyResultSet):
-            project.facets_url
+        assert project.facets_url is None
