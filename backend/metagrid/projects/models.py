@@ -1,8 +1,11 @@
+import logging
 import urllib.parse
 from typing import Dict, List, Union
 
-from django.core.exceptions import EmptyResultSet
 from django.db import models
+
+# Get an instance of a logger
+logger = logging.getLogger(__name__)
 
 
 class Project(models.Model):
@@ -25,21 +28,22 @@ class Project(models.Model):
         verbose_name = "Project"
         verbose_name_plural = "Projects"
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Unicode representation of Project."""
         return self.name
 
-    def get_absolute_url(self):
+    def get_absolute_url(self) -> str:
         """Return absolute url for Project."""
         return self.name
 
     @property
-    def facets_url(self) -> str:
+    def facets_url(self) -> Union[None, str]:
         """Generates a URL query for the ESG-Search API."""
         facets = self.facets.values_list("name", flat=True)  # type: ignore
 
         if not facets:
-            raise EmptyResultSet(f"No facets found for project: {self.name}")
+            logger.warning(f"No facets found for project: {self.name}")
+            return None
 
         # TODO: Configure base_url to be a dynamic Django setting using .env
         base_url = "https://esgf-node.llnl.gov/esg-search/search/?"
@@ -73,10 +77,10 @@ class Facet(models.Model):
         verbose_name = "Facet"
         verbose_name_plural = "Facets"
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Unicode representation of Facet."""
         return self.name
 
-    def get_absolute_url(self):
+    def get_absolute_url(self) -> str:
         """Return absolute url for Facet."""
         return self.name
