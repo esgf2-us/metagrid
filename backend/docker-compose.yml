@@ -1,8 +1,18 @@
-version: '2'
+version: "2"
 
 services:
   postgres:
     image: postgres:11.6
+    volumes:
+      - ${HOME}/postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    expose:
+      - "5433"
+    ports:
+      - "5433:5433"
+    command: -p 5433
+
   web:
     restart: always
     environment:
@@ -19,6 +29,9 @@ services:
       - "8000:8000"
     depends_on:
       - postgres
+    env_file:
+      - .env
+
   documentation:
     restart: always
     build: ./
