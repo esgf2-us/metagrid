@@ -14,7 +14,8 @@ config = {
     "dbname": os.getenv("POSTGRES_DB", "postgres"),
     "user": os.getenv("POSTGRES_USER", "postgres"),
     "password": os.getenv("POSTGRES_PASSWORD", ""),
-    "host": os.getenv("DATABASE_URL", "postgres"),
+    "host": os.getenv("POSTGRES_HOST", "postgres"),
+    "port": os.getenv("POSTGRES_PORT", 5433),
 }
 
 start_time = time()
@@ -23,7 +24,7 @@ logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler())
 
 
-def pg_isready(host, user, password, dbname):
+def pg_isready(host, user, password, dbname, port):
     while time() - start_time < check_timeout:
         try:
             conn = psycopg2.connect(**vars())
@@ -36,7 +37,9 @@ def pg_isready(host, user, password, dbname):
             )
             sleep(check_interval)
 
-    logger.error(f"We could not connect to Postgres within {check_timeout} seconds.")
+    logger.error(
+        f"We could not connect to Postgres within {check_timeout} seconds."
+    )
     return False
 
 

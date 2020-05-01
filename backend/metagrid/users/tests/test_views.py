@@ -6,7 +6,8 @@ from faker import Faker
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from ..models import User
+from metagrid.users.models import User
+
 from .factories import UserFactory
 
 fake = Faker()
@@ -44,7 +45,9 @@ class TestUserDetailTestCase(APITestCase):
     def setUp(self):
         self.user = UserFactory()
         self.url = reverse("user-detail", kwargs={"pk": self.user.pk})
-        self.client.credentials(HTTP_AUTHORIZATION=f"Token {self.user.auth_token}")
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f"Token {self.user.auth_token}"
+        )
 
     def test_get_request_returns_a_given_user(self):
         response = self.client.get(self.url)

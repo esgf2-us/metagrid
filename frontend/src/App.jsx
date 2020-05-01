@@ -30,7 +30,7 @@ const styles = {
 };
 
 function App() {
-  const [project, setProject] = React.useState('');
+  const [project, setProject] = React.useState({});
   const [textInputs, setTextInputs] = React.useState([]);
   const [appliedFacets, setAppliedFacets] = React.useState({});
   const [cart, setCart] = React.useState([]);
