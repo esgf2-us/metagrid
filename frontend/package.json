@@ -15,6 +15,7 @@
     "axios": "^0.19.2",
     "lint-staged": "^10.1.0",
     "prop-types": "^15.7.2",
+    "query-string": "^6.12.1",
     "react": "^16.13.0",
     "react-async": "^10.0.1",
     "react-dom": "^16.13.0",
