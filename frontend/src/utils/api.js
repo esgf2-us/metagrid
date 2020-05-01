@@ -11,7 +11,7 @@ export const fetchProjects = async () => {
       return res.data;
     })
     .catch((error) => {
-      return error;
+      throw new Error(error);
     });
 };
 
@@ -26,7 +26,7 @@ export const fetchBaseFacets = async ([baseUrl]) => {
       return res.data;
     })
     .catch((error) => {
-      return error;
+      throw new Error(error);
     });
 };
 
@@ -75,7 +75,7 @@ export const fetchResults = async ([baseUrl, textInputs, appliedFacets]) => {
       return res.data;
     })
     .catch((error) => {
-      return error;
+      throw new Error(error);
     });
 };
 
@@ -91,6 +91,6 @@ export const fetchCitation = async (url) => {
       return res.data;
     })
     .catch((error) => {
-      return error;
+      throw new Error(error);
     });
 };
