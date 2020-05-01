@@ -8,8 +8,8 @@ import Alert from '../Feedback/Alert';
 import Divider from '../General/Divider';
 import Button from '../General/Button';
 import Spin from '../Feedback/Spin';
-import { humanize, parseFacets } from '../../utils/utils';
-import { fetchFacets, fetchProjects } from '../../utils/api';
+import { isEmpty, humanize, parseFacets } from '../../utils/utils';
+import { fetchFacetsApi, fetchProjects } from '../../utils/api';
 
 const { Option } = Select;
 
@@ -19,43 +19,48 @@ const styles = {
 
 function Facets({ project, onProjectChange, onSetFacets }) {
   const [form] = Form.useForm();
-  const [selectedProject, setSelectedProject] = React.useState('');
-  const [parsedFacets, setParsedFacets] = React.useState([]);
+  const [selectedProject, setSelectedProject] = React.useState({});
+  const [parsedFacets, setParsedFacets] = React.useState({});
 
   const {
-    data: loadedProjects,
+    data: projectsFetched,
     error: projectsError,
-    isLoading: projectsLoading,
+    isLoading: fetchingProjects,
   } = useAsync({
     promiseFn: fetchProjects,
   });
 
   const {
-    data: loadedFacets,
+    data: facetsFetched,
     error: facetsError,
-    isLoading: facetsLoading,
+    isLoading: fetchingFacets,
     run,
   } = useAsync({
-    deferFn: fetchFacets,
+    deferFn: fetchFacetsApi,
   });
 
+  /**
+   * Set the component's project state if project was set using the NavBar
+   */
   React.useEffect(() => {
-    if (project !== '') {
-      setSelectedProject(project);
-    }
+    setSelectedProject(project);
   }, [project]);
 
+  /**
+   * Fetch facets when the selectedProject changes
+   */
   React.useEffect(() => {
-    if (selectedProject !== '') {
-      run(selectedProject);
+    if (!isEmpty(selectedProject)) {
+      run(selectedProject.facets_url);
     }
   }, [run, selectedProject]);
 
   React.useEffect(() => {
-    if (loadedFacets) {
-      setParsedFacets(parseFacets(loadedFacets.facet_counts.facet_fields));
+    if (!isEmpty(facetsFetched)) {
+      const facetFields = facetsFetched.facet_counts.facet_fields;
+      setParsedFacets(parseFacets(facetFields));
     }
-  }, [loadedFacets]);
+  }, [facetsFetched]);
 
   const handleOnFinish = (obj) => {
     // TODO: Implement function to update object of applied facets that will
@@ -67,6 +72,17 @@ function Facets({ project, onProjectChange, onSetFacets }) {
       (key) => obj[key] === undefined && delete obj[key]
     );
     onSetFacets(obj);
+  };
+
+  /**
+   * Set the selectedProject by using the projectsFetched object
+   * @param {string} name - name of the project
+   */
+  const onProjectSelect = (name) => {
+    const selectedProj = projectsFetched.results.find(
+      (obj) => obj.name === name
+    );
+    setSelectedProject(selectedProj);
   };
 
   return (
@@ -86,20 +102,22 @@ function Facets({ project, onProjectChange, onSetFacets }) {
                 showIcon
               />
             )}
-            {projectsLoading ? (
+            {fetchingProjects ? (
               <Spin></Spin>
             ) : (
               !projectsError && (
                 <Form.Item label="Project">
                   <Select
-                    value={selectedProject}
+                    value={project.name}
                     style={{ width: '100%' }}
-                    onChange={(value) => setSelectedProject(value)}
+                    onChange={(value) => onProjectSelect(value)}
                     tokenSeparators={[',']}
                     showArrow
                   >
-                    {loadedProjects.projects.map((projectName) => {
-                      return <Option key={projectName}>{projectName}</Option>;
+                    {projectsFetched.results.map((projectObj) => {
+                      return (
+                        <Option key={projectObj.name}>{projectObj.name}</Option>
+                      );
                     })}
                   </Select>
                   <Alert
@@ -121,18 +139,18 @@ function Facets({ project, onProjectChange, onSetFacets }) {
               />
             )}
 
-            {facetsLoading ? (
+            {fetchingFacets ? (
               <Spin></Spin>
             ) : (
               !facetsError &&
               parsedFacets &&
-              Object.keys(parsedFacets).map((key) => {
+              Object.keys(parsedFacets).map((facet) => {
                 return (
                   <Form.Item
                     style={{ marginBottom: '4px' }}
-                    key={key}
-                    name={key}
-                    label={humanize(key)}
+                    key={facet}
+                    name={facet}
+                    label={humanize(facet)}
                   >
                     <Select
                       mode="multiple"
@@ -140,11 +158,13 @@ function Facets({ project, onProjectChange, onSetFacets }) {
                       tokenSeparators={[',']}
                       showArrow
                     >
-                      {parsedFacets[key].map((value) => {
+                      {parsedFacets[facet].map((variable) => {
                         return (
-                          <Option key={value} value={value}>
-                            {value[0]}
-                            <span style={styles.facetCount}>({value[1]})</span>
+                          <Option key={variable} value={variable}>
+                            {variable[0]}
+                            <span style={styles.facetCount}>
+                              ({variable[1]})
+                            </span>
                           </Option>
                         );
                       })}
@@ -153,7 +173,7 @@ function Facets({ project, onProjectChange, onSetFacets }) {
                 );
               })
             )}
-            {!facetsError && parsedFacets && (
+            {!facetsError && !fetchingFacets && (
               <Button
                 type="primary"
                 htmlType="submit"
@@ -170,7 +190,9 @@ function Facets({ project, onProjectChange, onSetFacets }) {
 }
 
 Facets.propTypes = {
-  project: PropTypes.string.isRequired,
+  project: PropTypes.objectOf(
+    PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)])
+  ).isRequired,
   onProjectChange: PropTypes.func.isRequired,
   onSetFacets: PropTypes.func.isRequired,
 };

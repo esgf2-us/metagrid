@@ -38,8 +38,8 @@ function Search({
   const [selectedItems, setSelectedItems] = React.useState([]);
 
   React.useEffect(() => {
-    if (project !== '') {
-      run(project);
+    if (!isEmpty(project)) {
+      run(project.facets_url);
     }
   }, [run, project, textInputs, appliedFacets]);
 
@@ -61,7 +61,7 @@ function Search({
         <div style={styles.summary.leftSide}>
           {!isEmpty(results) ? (
             <h4>
-              {results.response.numFound} results found for {project}
+              {results.response.numFound} results found for {project.name}
             </h4>
           ) : (
             <Alert
@@ -114,7 +114,9 @@ function Search({
           <SearchTable
             loading={isLoading}
             results={
-              results && !error && project !== '' ? results.response.docs : []
+              results && !error && !isEmpty(project)
+                ? results.response.docs
+                : []
             }
             cart={cart}
             handleCart={handleCart}
@@ -127,7 +129,9 @@ function Search({
 }
 
 Search.propTypes = {
-  project: PropTypes.string.isRequired,
+  project: PropTypes.objectOf(
+    PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)])
+  ).isRequired,
   textInputs: PropTypes.arrayOf(PropTypes.string).isRequired,
   appliedFacets: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.any))
     .isRequired,
