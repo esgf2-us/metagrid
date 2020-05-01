@@ -9,7 +9,7 @@ from .serializers import ProjectSerializer
 
 
 class ProjectsViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Project.objects.all().prefetch_related()
+    queryset = Project.objects.all().order_by("id").prefetch_related()
     serializer_class = ProjectSerializer
     permission_classes = [AllowAny]
     lookup_field = "name"
