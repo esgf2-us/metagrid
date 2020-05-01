@@ -9,7 +9,7 @@ import Divider from '../General/Divider';
 import Button from '../General/Button';
 import Spin from '../Feedback/Spin';
 import { isEmpty, humanize, parseFacets } from '../../utils/utils';
-import { fetchFacetsApi, fetchProjects } from '../../utils/api';
+import { fetchBaseFacets, fetchProjects } from '../../utils/api';
 
 const { Option } = Select;
 
@@ -36,18 +36,18 @@ function Facets({ project, onProjectChange, onSetFacets }) {
     isLoading: fetchingFacets,
     run,
   } = useAsync({
-    deferFn: fetchFacetsApi,
+    deferFn: fetchBaseFacets,
   });
 
   /**
-   * Set the component's project state if project was set using the NavBar
+   * Set the component's project state if project was set using the NavBar.
    */
   React.useEffect(() => {
     setSelectedProject(project);
   }, [project]);
 
   /**
-   * Fetch facets when the selectedProject changes
+   * Fetch facets when the selectedProject changes.
    */
   React.useEffect(() => {
     if (!isEmpty(selectedProject)) {
@@ -55,6 +55,9 @@ function Facets({ project, onProjectChange, onSetFacets }) {
     }
   }, [run, selectedProject]);
 
+  /**
+   * Parse facets UI friendly format when facetsFetched updates.
+   */
   React.useEffect(() => {
     if (!isEmpty(facetsFetched)) {
       const facetFields = facetsFetched.facet_counts.facet_fields;
@@ -62,16 +65,20 @@ function Facets({ project, onProjectChange, onSetFacets }) {
     }
   }, [facetsFetched]);
 
-  const handleOnFinish = (obj) => {
-    // TODO: Implement function to update object of applied facets that will
-    // be used to run queries
+  /**
+   * Handles when the facets form is submitted.
+   *
+   * The object of applied facets and removes facets that
+   * have a value of undefined (no variables applied).
+   * @param {Object.<string, [string, number]} appliedFacets
+   */
+  const handleOnFinish = (appliedFacets) => {
     onProjectChange(selectedProject);
-
-    Object.keys(obj).forEach(
+    Object.keys(appliedFacets).forEach(
       // eslint-disable-next-line no-param-reassign
-      (key) => obj[key] === undefined && delete obj[key]
+      (key) => appliedFacets[key] === undefined && delete appliedFacets[key]
     );
-    onSetFacets(obj);
+    onSetFacets(appliedFacets);
   };
 
   /**
@@ -160,7 +167,7 @@ function Facets({ project, onProjectChange, onSetFacets }) {
                     >
                       {parsedFacets[facet].map((variable) => {
                         return (
-                          <Option key={variable} value={variable}>
+                          <Option key={variable[0]} value={variable[0]}>
                             {variable[0]}
                             <span style={styles.facetCount}>
                               ({variable[1]})
