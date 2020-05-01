@@ -39,7 +39,7 @@ class Project(models.Model):
     @property
     def facets_url(self) -> Union[None, str]:
         """Generates a URL query for the ESG-Search API."""
-        facets = self.facets.values_list("name", flat=True)  # type: ignore
+        facets = self.facets.order_by("id").values_list("name", flat=True)  # type: ignore
 
         if not facets:
             logger.warning(f"No facets found for project: {self.name}")
