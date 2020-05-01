@@ -20,7 +20,11 @@ export function humanize(str) {
 
 /**
  * Joins adjacent elements of the facets obj into a tuple using reduce().
- * https://stackoverflow.com/questions/37270508/javascript-function-that-converts-array-to-array-of-2-tuples
+ * setParsedFacets converts an array to an array of tuples.
+ * For example, the array [var1, count1, var2, count2] turns into
+ * [[var1, count1], [var2, count2]]
+ *
+ * Source: https://stackoverflow.com/questions/37270508/javascript-function-that-converts-array-to-array-of-2-tuples
  * @param {Object.<string, Array.<Array<string, number>>} facets
  */
 export function parseFacets(facets) {

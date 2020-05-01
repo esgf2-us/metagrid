@@ -39,7 +39,7 @@ function Search({
 
   React.useEffect(() => {
     if (!isEmpty(project)) {
-      run(project.facets_url);
+      run(project.facets_url, textInputs, appliedFacets);
     }
   }, [run, project, textInputs, appliedFacets]);
 
