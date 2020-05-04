@@ -18,8 +18,10 @@ function LeftMenu({ project, projects, onSearch, onProjectChange }) {
    * @param {*} values
    */
   const onFinish = (values) => {
-    if (project !== values.project) {
-      onProjectChange(values.project);
+    // TODO: Add catch if not found
+    const selectedProj = projects.find((obj) => obj.name === values.project);
+    if (project !== selectedProj) {
+      onProjectChange(selectedProj);
     }
 
     onSearch(values.text);
@@ -39,9 +41,9 @@ function LeftMenu({ project, projects, onSearch, onProjectChange }) {
             style={{ width: '15%' }}
           >
             <Select data-testid="project-select" placeholder="Project">
-              {projects.map((title) => (
-                <Option data-testid="project-option" key={title} value={title}>
-                  {title}
+              {projects.map((projObj) => (
+                <Option data-testid="project-option" key={projObj.name}>
+                  {projObj.name}
                 </Option>
               ))}
             </Select>
@@ -72,8 +74,17 @@ function LeftMenu({ project, projects, onSearch, onProjectChange }) {
 }
 
 LeftMenu.propTypes = {
-  project: PropTypes.string.isRequired,
-  projects: PropTypes.arrayOf(PropTypes.string).isRequired,
+  project: PropTypes.objectOf(
+    PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)])
+  ).isRequired,
+  projects: PropTypes.arrayOf(
+    PropTypes.objectOf(
+      PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.arrayOf(PropTypes.string),
+      ])
+    )
+  ).isRequired,
   onSearch: PropTypes.func.isRequired,
   onProjectChange: PropTypes.func.isRequired,
 };
