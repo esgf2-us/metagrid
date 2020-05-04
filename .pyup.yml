@@ -26,7 +26,14 @@ search: True
 # default: empty
 # allowed: list
 requirements:
-  - requirements.txt:
+  - requirements/base.txt:
+      # update all dependencies and pin them
+      update: all
+      pin: True
+  - requirements/local.txt:
+      # don't update dependencies, use global 'pin' default
+      update: False
+  - requirements/production.txt:
       # update insecure only, pin all
       update: insecure
       pin: True
