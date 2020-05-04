@@ -41,7 +41,7 @@ flake8:
 
 pytest:
   stage: test
-  image: python:3.8-alpine
+  image: python:3.8
   tags:
     - docker
   services:
