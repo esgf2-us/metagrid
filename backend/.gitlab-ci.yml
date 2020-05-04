@@ -1,0 +1,63 @@
+stages:
+    - lint
+    - test
+
+# This folder is cached between builds
+# http://docs.gitlab.com/ce/ci/yaml/README.html#cache
+# https://docs.gitlab.com/ee/ci/caching/#caching-python-dependencies
+# Change pip's cache directory to be inside the project directory since we can
+# only cache local items.
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/backend/.cache/pip"
+
+# Pip's cache doesn't store the python packages
+# https://pip.pypa.io/en/stable/reference/pip_install/#caching
+#
+# If you want to also cache the installed packages, you have to install
+# them in a virtualenv and cache it as well.
+cache:
+  paths:
+    - .cache/pip
+    - backend/venv
+
+variables:
+  POSTGRES_USER: "metagrid"
+  POSTGRES_PASSWORD: ""
+  POSTGRES_DB: "test_metagrid"
+  # https://gitlab.com/gitlab-org/gitlab/issues/206944
+  POSTGRES_HOST_AUTH_METHOD: trust
+
+flake8:
+  stage: lint
+  image: python:3.8-alpine
+  before_script:
+    - pip install virtualenv
+    - cd backend
+    - virtualenv venv
+    - source venv/bin/activate
+    - pip --cache-dir=$PIP_CACHE_DIR install -q flake8
+  script:
+    - flake8 --config=setup.cfg
+
+pytest:
+  stage: test
+  image: python:3.8
+  tags:
+    - docker
+  services:
+    - postgres:11
+  variables:
+    DATABASE_URL: pgsql://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres/$POSTGRES_DB
+    CELERY_BROKER_URL: redis://redis:6379/0
+  before_script:
+    - pip install virtualenv
+    - cd backend
+    - virtualenv venv
+    - source venv/bin/activate
+    - pip --cache-dir=$PIP_CACHE_DIR install -r requirements/local.txt
+  script:
+    - pytest
+  after_script:
+    - cd backend
+    - source venv/bin/activate
+    - codecov -t $CODECOV_TOKEN
