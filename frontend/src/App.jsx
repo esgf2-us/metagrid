@@ -30,6 +30,28 @@ const styles = {
   footer: { textAlign: 'center' },
 };
 
+/**
+ * Joins adjacent elements of the facets obj into a tuple using reduce().
+ * https://stackoverflow.com/questions/37270508/javascript-function-that-converts-array-to-array-of-2-tuples
+ * @param {Object.<string, Array.<Array<string, number>>} facets
+ */
+const parseFacets = (facets) => {
+  const res = facets;
+  const keys = Object.keys(facets);
+
+  keys.forEach((key) => {
+    res[key] = res[key].reduce((r, a, i) => {
+      if (i % 2) {
+        r[r.length - 1].push(a);
+      } else {
+        r.push([a]);
+      }
+      return r;
+    }, []);
+  });
+  return res;
+};
+
 function App() {
   const [project, setProject] = React.useState({});
   const [availableFacets, setAvailableFacets] = React.useState({});
@@ -64,13 +86,14 @@ function App() {
   /**
    * Handles removing applied tags.
    * @param {string} removedTag
+   * TODO: Fix removing from applied facets by key value pair
    */
   const handleRemoveTag = (removedTag, type) => {
     if (type === 'project') {
       clearConstraints();
     } else if (type === 'text') {
       setTextInputs(() => textInputs.filter((input) => input !== removedTag));
-    } else if (type === 'facets') {
+    } else if (type === 'facet') {
       const newAppliedFacets = appliedFacets;
       delete newAppliedFacets[removedTag];
       setAppliedFacets(newAppliedFacets);
@@ -117,6 +140,10 @@ function App() {
     }
   };
 
+  const handleSetAvailableFacets = (facets) => {
+    setAvailableFacets(parseFacets(facets));
+  };
+
   return (
     <Router>
       <Switch>
@@ -139,11 +166,13 @@ function App() {
             <Route
               path="/search"
               render={() => (
-                <Sider style={styles.bodySider} width={250}>
+                <Sider style={styles.bodySider} width={275}>
                   <Facets
                     project={project}
                     availableFacets={availableFacets}
-                    setAvailableFacets={(facets) => setAvailableFacets(facets)}
+                    setAvailableFacets={(facets) =>
+                      handleSetAvailableFacets(facets)
+                    }
                     onProjectChange={(selectedProject) =>
                       handleProjectChange(selectedProject)
                     }
@@ -155,7 +184,7 @@ function App() {
             <Route
               path="/cart"
               render={() => (
-                <Sider style={styles.bodySider} width={250}>
+                <Sider style={styles.bodySider} width={275}>
                   <Summary numItems={cart.length} />
                 </Sider>
               )}
@@ -168,6 +197,9 @@ function App() {
                 render={() => (
                   <Search
                     project={project}
+                    setAvailableFacets={(facets) =>
+                      handleSetAvailableFacets(facets)
+                    }
                     textInputs={textInputs}
                     appliedFacets={appliedFacets}
                     cart={cart}
