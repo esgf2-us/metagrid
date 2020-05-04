@@ -39,4 +39,4 @@ test:
   script:
     - yarn test-coverage
   after_script:
-    - bash <(curl -s https://codecov.io/bash)
+    - ./node_modules/.bin/codecov --token="$CODECOV_TOKEN"
