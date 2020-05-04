@@ -39,4 +39,5 @@ test:
   script:
     - yarn test-coverage
   after_script:
+    - cd frontend
     - ./node_modules/.bin/codecov --token="$CODECOV_TOKEN"

@@ -58,5 +58,6 @@ pytest:
   script:
     - pytest
   after_script:
+    - cd backend
     - source venv/bin/activate
     - codecov -t $CODECOV_TOKEN
