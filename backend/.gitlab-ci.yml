@@ -57,3 +57,5 @@ pytest:
     - pip --cache-dir=$PIP_CACHE_DIR install -r requirements/local.txt
   script:
     - pytest
+  after_script:
+    - bash <(curl -s https://codecov.io/bash)
