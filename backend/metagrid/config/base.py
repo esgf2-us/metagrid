@@ -46,8 +46,10 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",  # token authentication
     "django_filters",  # for filtering rest endpoints
     "corsheaders",
+    "django_extensions",
     # Your apps
     "metagrid.users",
+    "metagrid.projects",
 ]
 
 # https://docs.djangoproject.com/en/2.0/topics/http/middleware/
@@ -64,9 +66,9 @@ MIDDLEWARE = (
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1"]
-ROOT_URLCONF = "metagrid.urls"
+ROOT_URLCONF = "metagrid.config.urls"
 
-WSGI_APPLICATION = "metagrid.wsgi.application"
+WSGI_APPLICATION = "metagrid.config.wsgi.application"
 
 # EMAIL
 # ------------------------------------------------------------------------------
