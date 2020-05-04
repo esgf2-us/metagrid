@@ -15,7 +15,7 @@ import { fetchProjects } from '../../utils/api';
 import esgfLogo from '../../assets/img/esgf_logo.png';
 
 function NavBar({ project, cartItems, onSearch, onProjectChange }) {
-  const { data, error, isPending } = useAsync({ promiseFn: fetchProjects });
+  const { data, error, isLoading } = useAsync(fetchProjects);
   const [showDrawer, setShowDrawer] = React.useState(false);
 
   return (
@@ -32,7 +32,7 @@ function NavBar({ project, cartItems, onSearch, onProjectChange }) {
 
       <div className="navbar-container">
         <div className="navbar-left">
-          {error ? (
+          {error && !isLoading ? (
             <Alert
               message="There was an error fetching list of projects. Please contain support or try again later."
               type="error"
@@ -40,7 +40,7 @@ function NavBar({ project, cartItems, onSearch, onProjectChange }) {
           ) : (
             <LeftMenu
               project={project}
-              projects={isPending ? [] : data.projects}
+              projects={isLoading || error ? [] : data.results}
               onSearch={onSearch}
               onProjectChange={onProjectChange}
             ></LeftMenu>
@@ -72,7 +72,9 @@ function NavBar({ project, cartItems, onSearch, onProjectChange }) {
 }
 
 NavBar.propTypes = {
-  project: PropTypes.string.isRequired,
+  project: PropTypes.objectOf(
+    PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)])
+  ).isRequired,
   cartItems: PropTypes.number.isRequired,
   onSearch: PropTypes.func.isRequired,
   onProjectChange: PropTypes.func.isRequired,
