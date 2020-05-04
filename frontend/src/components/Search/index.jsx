@@ -30,18 +30,24 @@ function Search({
   onRemoveTag,
   onClearTags,
   handleCart,
+  setAvailableFacets,
 }) {
   const { data: results, error, isLoading, run } = useAsync({
     deferFn: fetchResults,
     project,
   });
   const [selectedItems, setSelectedItems] = React.useState([]);
-
   React.useEffect(() => {
     if (!isEmpty(project)) {
       run(project.facets_url, textInputs, appliedFacets);
     }
   }, [run, project, textInputs, appliedFacets]);
+
+  React.useEffect(() => {
+    if (!isEmpty(results)) {
+      setAvailableFacets(results.facet_counts.facet_fields);
+    }
+  }, [results, setAvailableFacets]);
 
   /**
    * Handles when the user selectes individual items and adds to the cart
@@ -93,12 +99,26 @@ function Search({
         {Object.keys(appliedFacets).length !== 0 &&
           Object.keys(appliedFacets).map((key) => {
             return appliedFacets[key].map((value) => {
-              return <Tag key={key} input={value} onClose={onRemoveTag}></Tag>;
+              return (
+                <Tag
+                  key={key}
+                  input={value}
+                  onClose={onRemoveTag}
+                  type="facet"
+                ></Tag>
+              );
             });
           })}
         {textInputs.length !== 0 &&
           textInputs.map((input) => {
-            return <Tag key={input} input={input} onClose={onRemoveTag}></Tag>;
+            return (
+              <Tag
+                key={input}
+                input={input}
+                onClose={onRemoveTag}
+                type="text"
+              ></Tag>
+            );
           })}
 
         {!isEmpty(appliedFacets) ||
@@ -139,6 +159,7 @@ Search.propTypes = {
   onRemoveTag: PropTypes.func.isRequired,
   onClearTags: PropTypes.func.isRequired,
   handleCart: PropTypes.func.isRequired,
+  setAvailableFacets: PropTypes.func.isRequired,
 };
 
 export default Search;

@@ -18,28 +18,6 @@ const styles = {
   facetCount: { float: 'right' },
 };
 
-/**
- * Joins adjacent elements of the facets obj into a tuple using reduce().
- * https://stackoverflow.com/questions/37270508/javascript-function-that-converts-array-to-array-of-2-tuples
- * @param {Object.<string, Array.<Array<string, number>>} facets
- */
-const parseFacets = (facets) => {
-  const res = facets;
-  const keys = Object.keys(facets);
-
-  keys.forEach((key) => {
-    res[key] = res[key].reduce((r, a, i) => {
-      if (i % 2) {
-        r[r.length - 1].push(a);
-      } else {
-        r.push([a]);
-      }
-      return r;
-    }, []);
-  });
-  return res;
-};
-
 function Facets({
   project,
   availableFacets,
@@ -89,7 +67,7 @@ function Facets({
   React.useEffect(() => {
     if (!isEmpty(facetsFetched)) {
       const facetFields = facetsFetched.facet_counts.facet_fields;
-      setAvailableFacets(parseFacets(facetFields));
+      setAvailableFacets(facetFields);
     }
   }, [setAvailableFacets, facetsFetched]);
 
@@ -229,7 +207,7 @@ Facets.propTypes = {
     PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)])
   ).isRequired,
   availableFacets: PropTypes.objectOf(
-    PropTypes.arrayOf(PropTypes.oneOfType(PropTypes.string, PropTypes.number))
+    PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.any))
   ).isRequired,
   setAvailableFacets: PropTypes.func.isRequired,
   onProjectChange: PropTypes.func.isRequired,
