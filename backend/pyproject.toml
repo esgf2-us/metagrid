@@ -3,7 +3,7 @@
 # https://github.com/psf/black/issues/683#issuecomment-490236406
 
 [tool.black]
-line-length = 88
+line-length = 79
 target-version = ['py36']
 include = '\.pyi?$'
 exclude = '''
@@ -24,6 +24,7 @@ exclude = '''
     | config
   )/
   | .*/migrations/.*
-  | .*/urls\.py
+  | .*/urls\.py.
+  | .*/postgres-data/.*
 )
 '''
