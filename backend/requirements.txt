@@ -53,4 +53,4 @@ django-extensions==2.2.9 # https://github.com/django-extensions/django-extension
 # Static and Media Tools
 # ------------------------------------------------------------------------------
 django-storages==1.9.1
-boto3==1.11.1
+boto3==1.13.1
