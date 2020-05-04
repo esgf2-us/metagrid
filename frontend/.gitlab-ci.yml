@@ -37,7 +37,7 @@ test:
     - yarn config set cache-folder $YARN_CACHE_FOLDER
     - yarn install --frozen-lockfile
   script:
-    - yarn test-coverage
+    - yarn test:coverage
   after_script:
     - cd frontend
     - ./node_modules/.bin/codecov --token="$CODECOV_TOKEN"

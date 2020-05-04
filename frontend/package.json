@@ -28,7 +28,7 @@
     "build": "react-scripts build",
     "test": "CI=1 react-scripts test",
     "test:watch": "react-scripts test",
-    "test-coverage": "CI=1 react-scripts test --coverage",
+    "test:coverage": "CI=1 react-scripts test --coverage",
     "eject": "react-scripts eject",
     "precommit": "lint-staged"
   },
