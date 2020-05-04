@@ -56,7 +56,7 @@ const genUrlQuery = (baseUrl, textInputs, appliedFacets) => {
   return `https://cors-anywhere.herokuapp.com/${baseUrl.replace(
     'limit=0',
     'limit=50'
-  )}&${stringifyText}${stringifyFacets}`;
+  )}&${stringifyText}&${stringifyFacets}`;
 };
 
 /**
