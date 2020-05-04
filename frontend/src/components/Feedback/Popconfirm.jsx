@@ -13,7 +13,7 @@ function Popconfirm({ title, icon, onConfirm, children }) {
 
 Popconfirm.propTypes = {
   title: PropTypes.string,
-  icon: PropTypes.elementType,
+  icon: PropTypes.node,
   onConfirm: PropTypes.func.isRequired,
   children: PropTypes.node.isRequired,
 };
