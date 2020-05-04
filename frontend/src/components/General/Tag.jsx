@@ -6,7 +6,7 @@ const styles = {
   tag: { height: '2em' },
 };
 
-function Tag({ input, onClose, closable }) {
+function Tag({ input, onClose, closable, type }) {
   Tag.propTypes = {
     input: PropTypes.oneOfType([
       PropTypes.string,
@@ -16,6 +16,7 @@ function Tag({ input, onClose, closable }) {
     ]).isRequired,
     onClose: PropTypes.func.isRequired,
     closable: PropTypes.bool,
+    type: PropTypes.string.isRequired,
   };
 
   Tag.defaultProps = {
@@ -23,7 +24,11 @@ function Tag({ input, onClose, closable }) {
   };
 
   return (
-    <TagD style={styles.tag} closable={closable} onClose={() => onClose(input)}>
+    <TagD
+      style={styles.tag}
+      closable={closable}
+      onClose={() => onClose(input, type)}
+    >
       {input.constructor === Array ? input[0] : input}
     </TagD>
   );
