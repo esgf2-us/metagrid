@@ -1,4 +1,5 @@
 import React from 'react';
+
 import {
   BrowserRouter as Router,
   Route,
@@ -31,6 +32,7 @@ const styles = {
 
 function App() {
   const [project, setProject] = React.useState({});
+  const [availableFacets, setAvailableFacets] = React.useState({});
   const [textInputs, setTextInputs] = React.useState([]);
   const [appliedFacets, setAppliedFacets] = React.useState({});
   const [cart, setCart] = React.useState([]);
@@ -140,10 +142,12 @@ function App() {
                 <Sider style={styles.bodySider} width={250}>
                   <Facets
                     project={project}
+                    availableFacets={availableFacets}
+                    setAvailableFacets={(facets) => setAvailableFacets(facets)}
                     onProjectChange={(selectedProject) =>
                       handleProjectChange(selectedProject)
                     }
-                    onSetFacets={(facets) => setAppliedFacets(facets)}
+                    onSetAppliedFacets={(facets) => setAppliedFacets(facets)}
                   />
                 </Sider>
               )}
