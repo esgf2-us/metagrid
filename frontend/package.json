@@ -15,6 +15,7 @@
     "axios": "^0.19.2",
     "lint-staged": "^10.1.0",
     "prop-types": "^15.7.2",
+    "query-string": "^6.12.1",
     "react": "^16.13.0",
     "react-async": "^10.0.1",
     "react-dom": "^16.13.0",
@@ -25,7 +26,9 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "CI=1 react-scripts test",
+    "test:watch": "react-scripts test",
+    "test-coverage": "CI=1 react-scripts test --coverage",
     "eject": "react-scripts eject",
     "precommit": "lint-staged"
   },
@@ -45,6 +48,7 @@
     ]
   },
   "devDependencies": {
+    "codecov": "^3.6.5",
     "eslint": "^6.8.0",
     "eslint-config-airbnb": "^18.1.0",
     "eslint-config-prettier": "^6.10.1",
@@ -54,6 +58,26 @@
     "eslint-plugin-react": "^7.19.0",
     "eslint-plugin-react-hooks": "^2.5.0",
     "prettier": "2.0.2"
+  },
+  "jest": {
+    "collectCoverageFrom": [
+      "**/*.{js,jsx}",
+      "!**/node_modules/**",
+      "!**/coverage/**",
+      "!**/serviceWorker.js",
+      "!**/index.js"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 80,
+        "functions": 80,
+        "lines": 80,
+        "statements": 80
+      },
+      "./src/App.js": {
+        "lines": 100
+      }
+    }
   },
   "lint-staged": {
     "src/**/*.+(js|jsx|ts|tsx|json)": [

@@ -6,7 +6,7 @@ import { render } from '@testing-library/react';
 import Cart from './index';
 
 const defaultProps = {
-  // TODO: Replace with mock objects
+  // TODO: Replace with factory to generate mock objects
   cart: [
     {
       id:
