@@ -94,9 +94,12 @@ function App() {
     } else if (type === 'text') {
       setTextInputs(() => textInputs.filter((input) => input !== removedTag));
     } else if (type === 'facet') {
-      const newAppliedFacets = appliedFacets;
-      delete newAppliedFacets[removedTag];
-      setAppliedFacets(newAppliedFacets);
+      const updateFacet = {
+        [removedTag[0]]: appliedFacets[removedTag[0]].filter(
+          (item) => item !== removedTag[1]
+        ),
+      };
+      setAppliedFacets({ ...appliedFacets, ...updateFacet });
     }
   };
 
@@ -169,6 +172,7 @@ function App() {
                 <Sider style={styles.bodySider} width={275}>
                   <Facets
                     project={project}
+                    appliedFacets={appliedFacets}
                     availableFacets={availableFacets}
                     setAvailableFacets={(facets) =>
                       handleSetAvailableFacets(facets)

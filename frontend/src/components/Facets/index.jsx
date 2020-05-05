@@ -20,6 +20,7 @@ const styles = {
 
 function Facets({
   project,
+  appliedFacets,
   availableFacets,
   setAvailableFacets,
   onProjectChange,
@@ -44,6 +45,13 @@ function Facets({
   } = useAsync({
     deferFn: fetchBaseFacets,
   });
+
+  /**
+   * Reset the form fields based on the applied facets
+   */
+  React.useEffect(() => {
+    form.resetFields();
+  }, [form, appliedFacets]);
 
   /**
    * Set the component's project state if project was set using the NavBar.
@@ -76,15 +84,15 @@ function Facets({
    *
    * The object of applied facets and removes facets that
    * have a value of undefined (no variables applied).
-   * @param {Object.<string, [string, number]} appliedFacets
+   * @param {Object.<string, [string, number]} selectedFacets
    */
-  const handleOnFinish = (appliedFacets) => {
+  const handleOnFinish = (selectedFacets) => {
     onProjectChange(selectedProject);
-    Object.keys(appliedFacets).forEach(
+    Object.keys(selectedFacets).forEach(
       // eslint-disable-next-line no-param-reassign
-      (key) => appliedFacets[key] === undefined && delete appliedFacets[key]
+      (key) => selectedFacets[key] === undefined && delete selectedFacets[key]
     );
-    onSetAppliedFacets(appliedFacets);
+    onSetAppliedFacets(selectedFacets);
   };
 
   /**
@@ -105,6 +113,7 @@ function Facets({
           <Form
             form={form}
             layout="vertical"
+            initialValues={appliedFacets}
             onFinish={(values) => handleOnFinish(values)}
           >
             {projectsError && (
@@ -206,6 +215,8 @@ Facets.propTypes = {
   project: PropTypes.objectOf(
     PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)])
   ).isRequired,
+  appliedFacets: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.any))
+    .isRequired,
   availableFacets: PropTypes.objectOf(
     PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.any))
   ).isRequired,
