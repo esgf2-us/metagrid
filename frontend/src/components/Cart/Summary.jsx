@@ -7,7 +7,7 @@ import Button from '../General/Button';
 
 const { Option } = Select;
 
-function Summary({ numItems }) {
+function Summary({ numItems, numFiles }) {
   const [form] = Form.useForm();
   const downloadOptions = ['HTTPServer', 'GridFTP', 'OPENDAP', 'Globus'];
 
@@ -26,7 +26,10 @@ function Summary({ numItems }) {
       <h1>Data Cart Summary</h1>
       <Divider />
       <h1>
-        Number of Files: <span style={{ float: 'right' }}>{numItems}</span>
+        Number of Datasets: <span style={{ float: 'right' }}>{numItems}</span>
+      </h1>
+      <h1>
+        Number of Files: <span style={{ float: 'right' }}>{numFiles}</span>
       </h1>
       <h1>
         Total File Size: <span style={{ float: 'right' }}>N/A</span>
@@ -63,10 +66,12 @@ function Summary({ numItems }) {
 
 Summary.propTypes = {
   numItems: PropTypes.number,
+  numFiles: PropTypes.number,
 };
 
 Summary.defaultProps = {
   numItems: 0,
+  numFiles: 0,
 };
 
 export default Summary;

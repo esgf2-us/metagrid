@@ -189,7 +189,17 @@ function App() {
               path="/cart"
               render={() => (
                 <Sider style={styles.bodySider} width={275}>
-                  <Summary numItems={cart.length} />
+                  <Summary
+                    numItems={cart.length}
+                    numFiles={
+                      cart.length > 0
+                        ? cart.reduce(
+                            (acc, dataset) => acc + dataset.number_of_files,
+                            0
+                          )
+                        : 0
+                    }
+                  />
                 </Sider>
               )}
             />
