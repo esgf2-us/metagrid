@@ -18,32 +18,16 @@ const styles = {
   facetCount: { float: 'right' },
 };
 
-/**
- * Joins adjacent elements of the facets obj into a tuple using reduce().
- * https://stackoverflow.com/questions/37270508/javascript-function-that-converts-array-to-array-of-2-tuples
- * @param {Object.<string, Array.<Array<string, number>>} facets
- */
-const parseFacets = (facets) => {
-  const res = facets;
-  const keys = Object.keys(facets);
-
-  keys.forEach((key) => {
-    res[key] = res[key].reduce((r, a, i) => {
-      if (i % 2) {
-        r[r.length - 1].push(a);
-      } else {
-        r.push([a]);
-      }
-      return r;
-    }, []);
-  });
-  return res;
-};
-
-function Facets({ project, onProjectChange, onSetFacets }) {
+function Facets({
+  project,
+  appliedFacets,
+  availableFacets,
+  setAvailableFacets,
+  onProjectChange,
+  onSetAppliedFacets,
+}) {
   const [form] = Form.useForm();
   const [selectedProject, setSelectedProject] = React.useState({});
-  const [parsedFacets, setParsedFacets] = React.useState({});
 
   const {
     data: projectsFetched,
@@ -63,6 +47,13 @@ function Facets({ project, onProjectChange, onSetFacets }) {
   });
 
   /**
+   * Reset the form fields based on the applied facets
+   */
+  React.useEffect(() => {
+    form.resetFields();
+  }, [form, appliedFacets]);
+
+  /**
    * Set the component's project state if project was set using the NavBar.
    */
   React.useEffect(() => {
@@ -70,7 +61,7 @@ function Facets({ project, onProjectChange, onSetFacets }) {
   }, [project]);
 
   /**
-   * Fetch facets when the selectedProject changes.
+   * Fetch facets when the selectedProject changes and there are no results
    */
   React.useEffect(() => {
     if (!isEmpty(selectedProject)) {
@@ -84,24 +75,24 @@ function Facets({ project, onProjectChange, onSetFacets }) {
   React.useEffect(() => {
     if (!isEmpty(facetsFetched)) {
       const facetFields = facetsFetched.facet_counts.facet_fields;
-      setParsedFacets(parseFacets(facetFields));
+      setAvailableFacets(facetFields);
     }
-  }, [facetsFetched]);
+  }, [setAvailableFacets, facetsFetched]);
 
   /**
    * Handles when the facets form is submitted.
    *
    * The object of applied facets and removes facets that
    * have a value of undefined (no variables applied).
-   * @param {Object.<string, [string, number]} appliedFacets
+   * @param {Object.<string, [string, number]} selectedFacets
    */
-  const handleOnFinish = (appliedFacets) => {
+  const handleOnFinish = (selectedFacets) => {
     onProjectChange(selectedProject);
-    Object.keys(appliedFacets).forEach(
+    Object.keys(selectedFacets).forEach(
       // eslint-disable-next-line no-param-reassign
-      (key) => appliedFacets[key] === undefined && delete appliedFacets[key]
+      (key) => selectedFacets[key] === undefined && delete selectedFacets[key]
     );
-    onSetFacets(appliedFacets);
+    onSetAppliedFacets(selectedFacets);
   };
 
   /**
@@ -122,6 +113,7 @@ function Facets({ project, onProjectChange, onSetFacets }) {
           <Form
             form={form}
             layout="vertical"
+            initialValues={appliedFacets}
             onFinish={(values) => handleOnFinish(values)}
           >
             {projectsError && (
@@ -173,8 +165,8 @@ function Facets({ project, onProjectChange, onSetFacets }) {
               <Spin></Spin>
             ) : (
               !facetsError &&
-              parsedFacets &&
-              Object.keys(parsedFacets).map((facet) => {
+              availableFacets &&
+              Object.keys(availableFacets).map((facet) => {
                 return (
                   <Form.Item
                     style={{ marginBottom: '4px' }}
@@ -188,7 +180,7 @@ function Facets({ project, onProjectChange, onSetFacets }) {
                       tokenSeparators={[',']}
                       showArrow
                     >
-                      {parsedFacets[facet].map((variable) => {
+                      {availableFacets[facet].map((variable) => {
                         return (
                           <Option key={variable[0]} value={variable[0]}>
                             {variable[0]}
@@ -223,8 +215,14 @@ Facets.propTypes = {
   project: PropTypes.objectOf(
     PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)])
   ).isRequired,
+  appliedFacets: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.any))
+    .isRequired,
+  availableFacets: PropTypes.objectOf(
+    PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.any))
+  ).isRequired,
+  setAvailableFacets: PropTypes.func.isRequired,
   onProjectChange: PropTypes.func.isRequired,
-  onSetFacets: PropTypes.func.isRequired,
+  onSetAppliedFacets: PropTypes.func.isRequired,
 };
 
 export default Facets;

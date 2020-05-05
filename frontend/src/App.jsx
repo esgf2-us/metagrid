@@ -1,4 +1,5 @@
 import React from 'react';
+
 import {
   BrowserRouter as Router,
   Route,
@@ -29,8 +30,31 @@ const styles = {
   footer: { textAlign: 'center' },
 };
 
+/**
+ * Joins adjacent elements of the facets obj into a tuple using reduce().
+ * https://stackoverflow.com/questions/37270508/javascript-function-that-converts-array-to-array-of-2-tuples
+ * @param {Object.<string, Array.<Array<string, number>>} facets
+ */
+const parseFacets = (facets) => {
+  const res = facets;
+  const keys = Object.keys(facets);
+
+  keys.forEach((key) => {
+    res[key] = res[key].reduce((r, a, i) => {
+      if (i % 2) {
+        r[r.length - 1].push(a);
+      } else {
+        r.push([a]);
+      }
+      return r;
+    }, []);
+  });
+  return res;
+};
+
 function App() {
   const [project, setProject] = React.useState({});
+  const [availableFacets, setAvailableFacets] = React.useState({});
   const [textInputs, setTextInputs] = React.useState([]);
   const [appliedFacets, setAppliedFacets] = React.useState({});
   const [cart, setCart] = React.useState([]);
@@ -62,16 +86,20 @@ function App() {
   /**
    * Handles removing applied tags.
    * @param {string} removedTag
+   * TODO: Fix removing from applied facets by key value pair
    */
   const handleRemoveTag = (removedTag, type) => {
     if (type === 'project') {
       clearConstraints();
     } else if (type === 'text') {
       setTextInputs(() => textInputs.filter((input) => input !== removedTag));
-    } else if (type === 'facets') {
-      const newAppliedFacets = appliedFacets;
-      delete newAppliedFacets[removedTag];
-      setAppliedFacets(newAppliedFacets);
+    } else if (type === 'facet') {
+      const updateFacet = {
+        [removedTag[0]]: appliedFacets[removedTag[0]].filter(
+          (item) => item !== removedTag[1]
+        ),
+      };
+      setAppliedFacets({ ...appliedFacets, ...updateFacet });
     }
   };
 
@@ -115,6 +143,10 @@ function App() {
     }
   };
 
+  const handleSetAvailableFacets = (facets) => {
+    setAvailableFacets(parseFacets(facets));
+  };
+
   return (
     <Router>
       <Switch>
@@ -137,13 +169,18 @@ function App() {
             <Route
               path="/search"
               render={() => (
-                <Sider style={styles.bodySider} width={250}>
+                <Sider style={styles.bodySider} width={275}>
                   <Facets
                     project={project}
+                    appliedFacets={appliedFacets}
+                    availableFacets={availableFacets}
+                    setAvailableFacets={(facets) =>
+                      handleSetAvailableFacets(facets)
+                    }
                     onProjectChange={(selectedProject) =>
                       handleProjectChange(selectedProject)
                     }
-                    onSetFacets={(facets) => setAppliedFacets(facets)}
+                    onSetAppliedFacets={(facets) => setAppliedFacets(facets)}
                   />
                 </Sider>
               )}
@@ -151,8 +188,18 @@ function App() {
             <Route
               path="/cart"
               render={() => (
-                <Sider style={styles.bodySider} width={250}>
-                  <Summary numItems={cart.length} />
+                <Sider style={styles.bodySider} width={275}>
+                  <Summary
+                    numItems={cart.length}
+                    numFiles={
+                      cart.length > 0
+                        ? cart.reduce(
+                            (acc, dataset) => acc + dataset.number_of_files,
+                            0
+                          )
+                        : 0
+                    }
+                  />
                 </Sider>
               )}
             />
@@ -164,6 +211,9 @@ function App() {
                 render={() => (
                   <Search
                     project={project}
+                    setAvailableFacets={(facets) =>
+                      handleSetAvailableFacets(facets)
+                    }
                     textInputs={textInputs}
                     appliedFacets={appliedFacets}
                     cart={cart}
