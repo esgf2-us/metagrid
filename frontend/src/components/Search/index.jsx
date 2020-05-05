@@ -97,27 +97,26 @@ function Search({
         )}
 
         {Object.keys(appliedFacets).length !== 0 &&
-          Object.keys(appliedFacets).map((key) => {
-            return appliedFacets[key].map((value) => {
+          Object.keys(appliedFacets).map((facet) => {
+            return appliedFacets[facet].map((variable) => {
               return (
                 <Tag
-                  key={key}
-                  input={value}
+                  key={facet}
+                  value={[facet, variable]}
                   onClose={onRemoveTag}
                   type="facet"
-                ></Tag>
+                >
+                  {variable}
+                </Tag>
               );
             });
           })}
         {textInputs.length !== 0 &&
           textInputs.map((input) => {
             return (
-              <Tag
-                key={input}
-                input={input}
-                onClose={onRemoveTag}
-                type="text"
-              ></Tag>
+              <Tag key={input} value={input} onClose={onRemoveTag} type="text">
+                {input}
+              </Tag>
             );
           })}
 
