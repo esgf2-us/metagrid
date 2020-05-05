@@ -101,7 +101,7 @@ function Search({
             return appliedFacets[facet].map((variable) => {
               return (
                 <Tag
-                  key={facet}
+                  key={variable}
                   value={[facet, variable]}
                   onClose={onRemoveTag}
                   type="facet"
