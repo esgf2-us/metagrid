@@ -2,11 +2,12 @@ import React from 'react';
 import { useAsync } from 'react-async';
 import PropTypes from 'prop-types';
 import { Form, Select, Row } from 'antd';
-import { FilterOutlined } from '@ant-design/icons';
+import { FilterOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 
 import Alert from '../Feedback/Alert';
-import Divider from '../General/Divider';
 import Button from '../General/Button';
+import Divider from '../General/Divider';
+import Popconfirm from '../Feedback/Popconfirm';
 import Spin from '../Feedback/Spin';
 
 import { isEmpty, humanize } from '../../utils/utils';
@@ -140,9 +141,27 @@ function Facets({
               </Form.Item>
             )
           )}
-          <Button type="primary" htmlType="submit" icon={<FilterOutlined />}>
-            Select Project
-          </Button>
+
+          {!isEmpty(activeProject) ? (
+            <Popconfirm
+              title="Your constraints will be cleared."
+              onConfirm={() => projectForm.submit()}
+              icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
+              placement="right"
+            >
+              <Button
+                type="primary"
+                htmlType="submit"
+                icon={<FilterOutlined />}
+              >
+                Select Project
+              </Button>
+            </Popconfirm>
+          ) : (
+            <Button type="primary" htmlType="submit" icon={<FilterOutlined />}>
+              Select Project
+            </Button>
+          )}
         </Form>
         <Divider />
 
