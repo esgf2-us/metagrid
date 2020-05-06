@@ -20,9 +20,8 @@ function Facets({
   activeProject,
   activeFacets,
   availableFacets,
-  setActiveProject,
+  handleProjectChange,
   setAvailableFacets,
-  onProjectChange,
   onSetActiveFacets,
 }) {
   const [projectForm] = Form.useForm();
@@ -79,7 +78,6 @@ function Facets({
    * @param {Object.<string, [string, number]} selectedFacets
    */
   const handleFacetsForm = (selectedFacets) => {
-    onProjectChange(setActiveProject);
     Object.keys(selectedFacets).forEach(
       // eslint-disable-next-line no-param-reassign
       (key) => selectedFacets[key] === undefined && delete selectedFacets[key]
@@ -95,7 +93,7 @@ function Facets({
     const selectedProj = projectsFetched.results.find(
       (obj) => obj.name === values.project
     );
-    setActiveProject(selectedProj);
+    handleProjectChange(selectedProj);
   };
 
   return (
@@ -201,9 +199,8 @@ Facets.propTypes = {
   availableFacets: PropTypes.objectOf(
     PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.any))
   ).isRequired,
-  setActiveProject: PropTypes.func.isRequired,
+  handleProjectChange: PropTypes.func.isRequired,
   setAvailableFacets: PropTypes.func.isRequired,
-  onProjectChange: PropTypes.func.isRequired,
   onSetActiveFacets: PropTypes.func.isRequired,
 };
 
