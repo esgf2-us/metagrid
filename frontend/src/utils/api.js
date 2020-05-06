@@ -21,7 +21,7 @@ export const fetchProjects = async () => {
  */
 export const fetchBaseFacets = async ([baseUrl]) => {
   return axios
-    .get(`https://cors-anywhere.herokuapp.com/${baseUrl}`)
+    .get(`http://localhost:8080/${baseUrl}`)
     .then((res) => {
       return res.data;
     })
@@ -53,7 +53,7 @@ const genUrlQuery = (baseUrl, textInputs, appliedFacets) => {
     );
   }
 
-  return `https://cors-anywhere.herokuapp.com/${baseUrl.replace(
+  return `http://localhost:8080/${baseUrl.replace(
     'limit=0',
     'limit=50'
   )}&${stringifyText}&${stringifyFacets}`;
@@ -86,7 +86,7 @@ export const fetchResults = async ([baseUrl, textInputs, appliedFacets]) => {
  */
 export const fetchCitation = async (url) => {
   axios
-    .get(`https://cors-anywhere.herokuapp.com/${url}`)
+    .get(`http://localhost:8080/${url}`)
     .then((res) => {
       return res.data;
     })
