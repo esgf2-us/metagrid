@@ -14,7 +14,7 @@ import './NavBar.css';
 import { fetchProjects } from '../../utils/api';
 import esgfLogo from '../../assets/img/esgf_logo.png';
 
-function NavBar({ project, cartItems, onSearch, onProjectChange }) {
+function NavBar({ activeProject, cartItems, onSearch, onProjectChange }) {
   const { data, error, isLoading } = useAsync(fetchProjects);
   const [showDrawer, setShowDrawer] = React.useState(false);
 
@@ -39,7 +39,7 @@ function NavBar({ project, cartItems, onSearch, onProjectChange }) {
             />
           ) : (
             <LeftMenu
-              project={project}
+              activeProject={activeProject}
               projects={isLoading || error ? [] : data.results}
               onSearch={onSearch}
               onProjectChange={onProjectChange}
@@ -72,7 +72,7 @@ function NavBar({ project, cartItems, onSearch, onProjectChange }) {
 }
 
 NavBar.propTypes = {
-  project: PropTypes.objectOf(
+  activeProject: PropTypes.objectOf(
     PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)])
   ).isRequired,
   cartItems: PropTypes.number.isRequired,
