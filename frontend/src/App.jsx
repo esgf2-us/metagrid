@@ -173,12 +173,9 @@ function App() {
                     activeProject={activeProject}
                     activeFacets={activeFacets}
                     availableFacets={availableFacets}
-                    setActiveProject={setActiveProject}
+                    handleProjectChange={handleProjectChange}
                     setAvailableFacets={(facets) =>
                       handleSetAvailableFacets(facets)
-                    }
-                    onProjectChange={(selectedProject) =>
-                      handleProjectChange(selectedProject)
                     }
                     onSetActiveFacets={(facets) => setActiveFacets(facets)}
                   />
