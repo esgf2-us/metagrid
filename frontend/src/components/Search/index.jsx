@@ -25,7 +25,7 @@ const styles = {
 function Search({
   activeProject,
   textInputs,
-  appliedFacets,
+  activeFacets,
   cart,
   onRemoveTag,
   onClearTags,
@@ -39,9 +39,9 @@ function Search({
   const [selectedItems, setSelectedItems] = React.useState([]);
   React.useEffect(() => {
     if (!isEmpty(activeProject)) {
-      run(activeProject.facets_url, textInputs, appliedFacets);
+      run(activeProject.facets_url, textInputs, activeFacets);
     }
-  }, [run, activeProject, textInputs, appliedFacets]);
+  }, [run, activeProject, textInputs, activeFacets]);
 
   React.useEffect(() => {
     if (!isEmpty(results)) {
@@ -89,16 +89,16 @@ function Search({
         </div>
       </div>
       <Row>
-        {isEmpty(appliedFacets) && textInputs.length === 0 && (
+        {isEmpty(activeFacets) && textInputs.length === 0 && (
           <Alert message="No constraints applied" type="info" showIcon />
         )}
-        {(!isEmpty(appliedFacets) || textInputs.length > 0) && (
+        {(!isEmpty(activeFacets) || textInputs.length > 0) && (
           <h4 style={{ marginRight: '0.5em' }}>Applied Constraints: </h4>
         )}
 
-        {Object.keys(appliedFacets).length !== 0 &&
-          Object.keys(appliedFacets).map((facet) => {
-            return appliedFacets[facet].map((variable) => {
+        {Object.keys(activeFacets).length !== 0 &&
+          Object.keys(activeFacets).map((facet) => {
+            return activeFacets[facet].map((variable) => {
               return (
                 <Tag
                   key={variable}
@@ -120,7 +120,7 @@ function Search({
             );
           })}
 
-        {!isEmpty(appliedFacets) ||
+        {!isEmpty(activeFacets) ||
           (textInputs.length > 0 && (
             <Button type="link" onClick={() => onClearTags()}>
               Clear All
@@ -152,8 +152,7 @@ Search.propTypes = {
     PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)])
   ).isRequired,
   textInputs: PropTypes.arrayOf(PropTypes.string).isRequired,
-  appliedFacets: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.any))
-    .isRequired,
+  activeFacets: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.any)).isRequired,
   cart: PropTypes.arrayOf(PropTypes.objectOf(PropTypes.any)).isRequired,
   onRemoveTag: PropTypes.func.isRequired,
   onClearTags: PropTypes.func.isRequired,

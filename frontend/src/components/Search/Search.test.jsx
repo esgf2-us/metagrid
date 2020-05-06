@@ -7,7 +7,7 @@ import Search from './index';
 const defaultProps = {
   activeProject: {},
   textInputs: [],
-  appliedFacets: {},
+  activeFacets: {},
   cart: [],
   onRemoveTag: jest.fn(),
   onClearTags: jest.fn(),

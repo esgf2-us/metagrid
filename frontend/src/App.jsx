@@ -56,7 +56,7 @@ function App() {
   const [activeProject, setActiveProject] = React.useState({});
   const [availableFacets, setAvailableFacets] = React.useState({});
   const [textInputs, setTextInputs] = React.useState([]);
-  const [appliedFacets, setAppliedFacets] = React.useState({});
+  const [activeFacets, setActiveFacets] = React.useState({});
   const [cart, setCart] = React.useState([]);
 
   /**
@@ -64,14 +64,14 @@ function App() {
    */
   const clearConstraints = () => {
     setTextInputs([]);
-    setAppliedFacets({});
+    setActiveFacets({});
   };
 
   /**
    * Handles when the selected project changes.
    *
    * This functions checks if the current project is not an empty string or
-   * equal to the selected project to reset textInputs and appliedFacets, then
+   * equal to the selected project to reset textInputs and activeFacets, then
    * it updates the selected project.
    * @param {*} selectedProject
    */
@@ -95,11 +95,11 @@ function App() {
       setTextInputs(() => textInputs.filter((input) => input !== removedTag));
     } else if (type === 'facet') {
       const updateFacet = {
-        [removedTag[0]]: appliedFacets[removedTag[0]].filter(
+        [removedTag[0]]: activeFacets[removedTag[0]].filter(
           (item) => item !== removedTag[1]
         ),
       };
-      setAppliedFacets({ ...appliedFacets, ...updateFacet });
+      setActiveFacets({ ...activeFacets, ...updateFacet });
     }
   };
 
@@ -172,7 +172,7 @@ function App() {
                 <Sider style={styles.bodySider} width={275}>
                   <Facets
                     activeProject={activeProject}
-                    appliedFacets={appliedFacets}
+                    activeFacets={activeFacets}
                     availableFacets={availableFacets}
                     setAvailableFacets={(facets) =>
                       handleSetAvailableFacets(facets)
@@ -180,7 +180,7 @@ function App() {
                     onProjectChange={(selectedProject) =>
                       handleProjectChange(selectedProject)
                     }
-                    onSetAppliedFacets={(facets) => setAppliedFacets(facets)}
+                    onSetActiveFacets={(facets) => setActiveFacets(facets)}
                   />
                 </Sider>
               )}
@@ -215,7 +215,7 @@ function App() {
                       handleSetAvailableFacets(facets)
                     }
                     textInputs={textInputs}
-                    appliedFacets={appliedFacets}
+                    activeFacets={activeFacets}
                     cart={cart}
                     handleCart={handleCart}
                     onRemoveTag={(removedTag, type) =>
