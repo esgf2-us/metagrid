@@ -35,11 +35,11 @@ export const fetchBaseFacets = async ([baseUrl]) => {
  * Query string parameters use the logical OR operator, so queries are inclusive.
  * @param {string} baseUrl - Base url to perform queries
  * @param {arrayOf(string)} textInputs - Free-text user input
- * @param {arrayOf(objectOf(arrayOf(string)))} appliedFacets - User applied facets
+ * @param {arrayOf(objectOf(arrayOf(string)))} activeFacets - User applied facets
  *  TODO: Add domain to ESG Search API avoid CORS. Proxy is used for temp workaround.
  */
-const genUrlQuery = (baseUrl, textInputs, appliedFacets) => {
-  const stringifyFacets = queryString.stringify(appliedFacets, {
+const genUrlQuery = (baseUrl, textInputs, activeFacets) => {
+  const stringifyFacets = queryString.stringify(activeFacets, {
     arrayFormat: 'comma',
   });
 
@@ -64,11 +64,11 @@ const genUrlQuery = (baseUrl, textInputs, appliedFacets) => {
  * https://github.com/ESGF/esgf.github.io/wiki/ESGF_Search_REST_API
  * @param {string} param0.baseUrl - Base url to perform queries
  * @param {arrayOf(string)} param0.textInputs - Free-text user input
- * @param {arrayOf(objectOf(arrayOf(string)))} param0.appliedFacets - User applied facets
+ * @param {arrayOf(objectOf(arrayOf(string)))} param0.activeFacets - User applied facets
 
  */
-export const fetchResults = async ([baseUrl, textInputs, appliedFacets]) => {
-  const qString = genUrlQuery(baseUrl, textInputs, appliedFacets);
+export const fetchResults = async ([baseUrl, textInputs, activeFacets]) => {
+  const qString = genUrlQuery(baseUrl, textInputs, activeFacets);
   return axios
     .get(qString)
     .then((res) => {

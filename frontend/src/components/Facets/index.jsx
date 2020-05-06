@@ -20,11 +20,11 @@ const styles = {
 
 function Facets({
   activeProject,
-  appliedFacets,
+  activeFacets,
   availableFacets,
   setAvailableFacets,
   onProjectChange,
-  onSetAppliedFacets,
+  onSetActiveFacets,
 }) {
   const [form] = Form.useForm();
   const [selectedProject, setSelectedProject] = React.useState({});
@@ -51,7 +51,7 @@ function Facets({
    */
   React.useEffect(() => {
     form.resetFields();
-  }, [form, appliedFacets]);
+  }, [form, activeFacets]);
 
   /**
    * Set the component's project state if project was set using the NavBar.
@@ -92,7 +92,7 @@ function Facets({
       // eslint-disable-next-line no-param-reassign
       (key) => selectedFacets[key] === undefined && delete selectedFacets[key]
     );
-    onSetAppliedFacets(selectedFacets);
+    onSetActiveFacets(selectedFacets);
   };
 
   /**
@@ -113,7 +113,7 @@ function Facets({
           <Form
             form={form}
             layout="vertical"
-            initialValues={appliedFacets}
+            initialValues={activeFacets}
             onFinish={(values) => handleOnFinish(values)}
           >
             {projectsError && (
@@ -215,14 +215,13 @@ Facets.propTypes = {
   activeProject: PropTypes.objectOf(
     PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)])
   ).isRequired,
-  appliedFacets: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.any))
-    .isRequired,
+  activeFacets: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.any)).isRequired,
   availableFacets: PropTypes.objectOf(
     PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.any))
   ).isRequired,
   setAvailableFacets: PropTypes.func.isRequired,
   onProjectChange: PropTypes.func.isRequired,
-  onSetAppliedFacets: PropTypes.func.isRequired,
+  onSetActiveFacets: PropTypes.func.isRequired,
 };
 
 export default Facets;
