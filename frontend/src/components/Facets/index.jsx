@@ -14,6 +14,7 @@ import { isEmpty, humanize } from '../../utils/utils';
 import { fetchBaseFacets, fetchProjects } from '../../utils/api';
 
 const styles = {
+  form: { width: '100%' },
   facetCount: { float: 'right' },
 };
 
@@ -104,10 +105,49 @@ function Facets({
     handleProjectChange(selectedProj);
   };
 
+  let facetSection;
+
+  if (!isEmpty(availableFacets)) {
+    facetSection = (
+      <>
+        {Object.keys(availableFacets).map((facet) => {
+          return (
+            <Form.Item
+              style={{ marginBottom: '4px' }}
+              key={facet}
+              name={facet}
+              label={humanize(facet)}
+            >
+              <Select
+                mode="multiple"
+                style={{ width: '100%' }}
+                tokenSeparators={[',']}
+                showArrow
+              >
+                {availableFacets[facet].map((variable) => {
+                  return (
+                    <Select.Option key={variable[0]} value={variable[0]}>
+                      {variable[0]}
+                      <span style={styles.facetCount}>({variable[1]})</span>
+                    </Select.Option>
+                  );
+                })}
+              </Select>
+            </Form.Item>
+          );
+        })}
+        <Button type="primary" htmlType="submit" icon={<FilterOutlined />}>
+          Apply Facets
+        </Button>
+      </>
+    );
+  }
+
   return (
     <div data-testid="facets">
       <Row>
         <Form
+          style={styles.form}
           form={projectForm}
           layout="vertical"
           initialValues={{ project: activeProject.name }}
@@ -142,7 +182,7 @@ function Facets({
             )
           )}
 
-          {!isEmpty(activeProject) ? (
+          {!isEmpty(activeProject) && !isEmpty(activeFacets) ? (
             <Popconfirm
               title="Your constraints will be cleared."
               onConfirm={() => projectForm.submit()}
@@ -167,6 +207,7 @@ function Facets({
 
         <Form
           form={facetsForm}
+          style={styles.form}
           layout="vertical"
           initialValues={{ ...activeFacets }}
           onFinish={(values) => handleFacetsForm(values)}
@@ -179,43 +220,7 @@ function Facets({
               showIcon
             />
           )}
-          {fetchingFacets ? (
-            <Spin></Spin>
-          ) : (
-            !facetsError &&
-            availableFacets &&
-            Object.keys(availableFacets).map((facet) => {
-              return (
-                <Form.Item
-                  style={{ marginBottom: '4px' }}
-                  key={facet}
-                  name={facet}
-                  label={humanize(facet)}
-                >
-                  <Select
-                    mode="multiple"
-                    style={{ width: '100%' }}
-                    tokenSeparators={[',']}
-                    showArrow
-                  >
-                    {availableFacets[facet].map((variable) => {
-                      return (
-                        <Select.Option key={variable[0]} value={variable[0]}>
-                          {variable[0]}
-                          <span style={styles.facetCount}>({variable[1]})</span>
-                        </Select.Option>
-                      );
-                    })}
-                  </Select>
-                </Form.Item>
-              );
-            })
-          )}
-          {!facetsError && !fetchingFacets && (
-            <Button type="primary" htmlType="submit" icon={<FilterOutlined />}>
-              Apply Facets
-            </Button>
-          )}
+          {fetchingFacets ? <Spin></Spin> : facetSection}
         </Form>
       </Row>
     </div>
