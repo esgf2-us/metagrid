@@ -45,11 +45,18 @@ function Facets({
   });
 
   /**
-   * Reset the form fields based on the applied facets
+   * Reset facetsForm based on the activeFacets
    */
   React.useEffect(() => {
     facetsForm.resetFields();
   }, [facetsForm, activeFacets]);
+
+  /**
+   * Reset projectForm based on the activeProject
+   */
+  React.useEffect(() => {
+    projectForm.resetFields();
+  }, [projectForm, activeProject]);
 
   /**
    * Fetch facets when the selectedProject changes and there are no results
@@ -99,7 +106,12 @@ function Facets({
   return (
     <div data-testid="facets">
       <Row>
-        <Form form={projectForm} layout="vertical" onFinish={handleProjectForm}>
+        <Form
+          form={projectForm}
+          layout="vertical"
+          initialValues={{ project: activeProject.name }}
+          onFinish={handleProjectForm}
+        >
           {projectsError && (
             <Alert
               message="Error"
