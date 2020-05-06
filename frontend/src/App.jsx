@@ -53,7 +53,7 @@ const parseFacets = (facets) => {
 };
 
 function App() {
-  const [project, setProject] = React.useState({});
+  const [activeProject, setActiveProject] = React.useState({});
   const [availableFacets, setAvailableFacets] = React.useState({});
   const [textInputs, setTextInputs] = React.useState([]);
   const [appliedFacets, setAppliedFacets] = React.useState({});
@@ -76,11 +76,11 @@ function App() {
    * @param {*} selectedProject
    */
   const handleProjectChange = (selectedProject) => {
-    if (project !== '' && project !== selectedProject) {
+    if (activeProject !== '' && activeProject !== selectedProject) {
       clearConstraints();
     }
 
-    setProject(selectedProject);
+    setActiveProject(selectedProject);
   };
 
   /**
@@ -157,7 +157,7 @@ function App() {
           path="/"
           render={() => (
             <NavBar
-              project={project}
+              activeProject={activeProject}
               cartItems={cart.length}
               onProjectChange={(value) => handleProjectChange(value)}
               onSearch={(input) => handleOnSearch(input)}
@@ -171,7 +171,7 @@ function App() {
               render={() => (
                 <Sider style={styles.bodySider} width={275}>
                   <Facets
-                    project={project}
+                    activeProject={activeProject}
                     appliedFacets={appliedFacets}
                     availableFacets={availableFacets}
                     setAvailableFacets={(facets) =>
@@ -210,7 +210,7 @@ function App() {
                 path="/search"
                 render={() => (
                   <Search
-                    project={project}
+                    activeProject={activeProject}
                     setAvailableFacets={(facets) =>
                       handleSetAvailableFacets(facets)
                     }

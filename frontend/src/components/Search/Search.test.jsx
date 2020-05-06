@@ -5,7 +5,7 @@ import { render } from '@testing-library/react';
 import Search from './index';
 
 const defaultProps = {
-  project: {},
+  activeProject: {},
   textInputs: [],
   appliedFacets: {},
   cart: [],
@@ -13,6 +13,7 @@ const defaultProps = {
   onClearTags: jest.fn(),
   onAddCart: jest.fn(),
   handleCart: jest.fn(),
+  setAvailableFacets: jest.fn(),
 };
 
 test('renders without crashing', async () => {

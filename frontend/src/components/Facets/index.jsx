@@ -19,7 +19,7 @@ const styles = {
 };
 
 function Facets({
-  project,
+  activeProject,
   appliedFacets,
   availableFacets,
   setAvailableFacets,
@@ -57,8 +57,8 @@ function Facets({
    * Set the component's project state if project was set using the NavBar.
    */
   React.useEffect(() => {
-    setSelectedProject(project);
-  }, [project]);
+    setSelectedProject(activeProject);
+  }, [activeProject]);
 
   /**
    * Fetch facets when the selectedProject changes and there are no results
@@ -130,7 +130,7 @@ function Facets({
               !projectsError && (
                 <Form.Item label="Project">
                   <Select
-                    value={project.name}
+                    value={activeProject.name}
                     style={{ width: '100%' }}
                     onChange={(value) => onProjectSelect(value)}
                     tokenSeparators={[',']}
@@ -212,7 +212,7 @@ function Facets({
 }
 
 Facets.propTypes = {
-  project: PropTypes.objectOf(
+  activeProject: PropTypes.objectOf(
     PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)])
   ).isRequired,
   appliedFacets: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.any))
