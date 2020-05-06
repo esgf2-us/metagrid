@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAsync } from 'react-async';
 import PropTypes from 'prop-types';
-import { Form, Select, Row, Col } from 'antd';
+import { Form, Select, Row } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
 
 import Alert from '../Feedback/Alert';
@@ -12,8 +12,6 @@ import Spin from '../Feedback/Spin';
 import { isEmpty, humanize } from '../../utils/utils';
 import { fetchBaseFacets, fetchProjects } from '../../utils/api';
 
-const { Option } = Select;
-
 const styles = {
   facetCount: { float: 'right' },
 };
@@ -22,12 +20,13 @@ function Facets({
   activeProject,
   activeFacets,
   availableFacets,
+  setActiveProject,
   setAvailableFacets,
   onProjectChange,
   onSetActiveFacets,
 }) {
-  const [form] = Form.useForm();
-  const [selectedProject, setSelectedProject] = React.useState({});
+  const [projectForm] = Form.useForm();
+  const [facetsForm] = Form.useForm();
 
   const {
     data: projectsFetched,
@@ -50,24 +49,17 @@ function Facets({
    * Reset the form fields based on the applied facets
    */
   React.useEffect(() => {
-    form.resetFields();
-  }, [form, activeFacets]);
-
-  /**
-   * Set the component's project state if project was set using the NavBar.
-   */
-  React.useEffect(() => {
-    setSelectedProject(activeProject);
-  }, [activeProject]);
+    facetsForm.resetFields();
+  }, [facetsForm, activeFacets]);
 
   /**
    * Fetch facets when the selectedProject changes and there are no results
    */
   React.useEffect(() => {
-    if (!isEmpty(selectedProject)) {
-      run(selectedProject.facets_url);
+    if (!isEmpty(activeProject)) {
+      run(activeProject.facets_url);
     }
-  }, [run, selectedProject]);
+  }, [run, activeProject]);
 
   /**
    * Parse facets UI friendly format when facetsFetched updates.
@@ -86,8 +78,8 @@ function Facets({
    * have a value of undefined (no variables applied).
    * @param {Object.<string, [string, number]} selectedFacets
    */
-  const handleOnFinish = (selectedFacets) => {
-    onProjectChange(selectedProject);
+  const handleFacetsForm = (selectedFacets) => {
+    onProjectChange(setActiveProject);
     Object.keys(selectedFacets).forEach(
       // eslint-disable-next-line no-param-reassign
       (key) => selectedFacets[key] === undefined && delete selectedFacets[key]
@@ -99,113 +91,103 @@ function Facets({
    * Set the selectedProject by using the projectsFetched object
    * @param {string} name - name of the project
    */
-  const onProjectSelect = (name) => {
+  const handleProjectForm = (values) => {
     const selectedProj = projectsFetched.results.find(
-      (obj) => obj.name === name
+      (obj) => obj.name === values.project
     );
-    setSelectedProject(selectedProj);
+    setActiveProject(selectedProj);
   };
 
   return (
     <div data-testid="facets">
       <Row>
-        <Col>
-          <Form
-            form={form}
-            layout="vertical"
-            initialValues={activeFacets}
-            onFinish={(values) => handleOnFinish(values)}
-          >
-            {projectsError && (
-              <Alert
-                message="Error"
-                description="There was an issue fetching projects. Please contact support for assistance or try again later."
-                type="error"
-                showIcon
-              />
-            )}
-            {fetchingProjects ? (
-              <Spin></Spin>
-            ) : (
-              !projectsError && (
-                <Form.Item label="Project">
+        <Form form={projectForm} layout="vertical" onFinish={handleProjectForm}>
+          {projectsError && (
+            <Alert
+              message="Error"
+              description="There was an issue fetching projects. Please contact support for assistance or try again later."
+              type="error"
+              showIcon
+            />
+          )}
+          {fetchingProjects ? (
+            <Spin></Spin>
+          ) : (
+            !projectsError && (
+              <Form.Item name="project" label="Project">
+                <Select style={{ width: '100%' }} showArrow>
+                  {projectsFetched.results.map((projectObj) => {
+                    return (
+                      <Select.Option
+                        key={projectObj.name}
+                        value={projectObj.name}
+                      >
+                        {projectObj.name}
+                      </Select.Option>
+                    );
+                  })}
+                </Select>
+              </Form.Item>
+            )
+          )}
+          <Button type="primary" htmlType="submit" icon={<FilterOutlined />}>
+            Select Project
+          </Button>
+        </Form>
+        <Divider />
+
+        <Form
+          form={facetsForm}
+          layout="vertical"
+          initialValues={{ ...activeFacets }}
+          onFinish={(values) => handleFacetsForm(values)}
+        >
+          {facetsError && (
+            <Alert
+              message="Error"
+              description="There was an issue fetching facets for this project. Please contact support for assistance or try again later"
+              type="error"
+              showIcon
+            />
+          )}
+          {fetchingFacets ? (
+            <Spin></Spin>
+          ) : (
+            !facetsError &&
+            availableFacets &&
+            Object.keys(availableFacets).map((facet) => {
+              return (
+                <Form.Item
+                  style={{ marginBottom: '4px' }}
+                  key={facet}
+                  name={facet}
+                  label={humanize(facet)}
+                >
                   <Select
-                    value={activeProject.name}
+                    mode="multiple"
                     style={{ width: '100%' }}
-                    onChange={(value) => onProjectSelect(value)}
                     tokenSeparators={[',']}
                     showArrow
                   >
-                    {projectsFetched.results.map((projectObj) => {
+                    {availableFacets[facet].map((variable) => {
                       return (
-                        <Option key={projectObj.name}>{projectObj.name}</Option>
+                        <Select.Option key={variable[0]} value={variable[0]}>
+                          {variable[0]}
+                          <span style={styles.facetCount}>({variable[1]})</span>
+                        </Select.Option>
                       );
                     })}
                   </Select>
-                  <Alert
-                    message="Switching projects and applying facets will clear all applied constraints"
-                    type="warning"
-                    showIcon
-                  />
                 </Form.Item>
-              )
-            )}
-
-            <Divider />
-            {facetsError && (
-              <Alert
-                message="Error"
-                description="There was an issue fetching facets for this project. Please contact support for assistance or try again later"
-                type="error"
-                showIcon
-              />
-            )}
-
-            {fetchingFacets ? (
-              <Spin></Spin>
-            ) : (
-              !facetsError &&
-              availableFacets &&
-              Object.keys(availableFacets).map((facet) => {
-                return (
-                  <Form.Item
-                    style={{ marginBottom: '4px' }}
-                    key={facet}
-                    name={facet}
-                    label={humanize(facet)}
-                  >
-                    <Select
-                      mode="multiple"
-                      style={{ width: '100%' }}
-                      tokenSeparators={[',']}
-                      showArrow
-                    >
-                      {availableFacets[facet].map((variable) => {
-                        return (
-                          <Option key={variable[0]} value={variable[0]}>
-                            {variable[0]}
-                            <span style={styles.facetCount}>
-                              ({variable[1]})
-                            </span>
-                          </Option>
-                        );
-                      })}
-                    </Select>
-                  </Form.Item>
-                );
-              })
-            )}
-            {!facetsError && !fetchingFacets && (
-              <Button
-                type="primary"
-                htmlType="submit"
-                icon={<FilterOutlined />}
-              >
-                Apply Facets
-              </Button>
-            )}
-          </Form>
-        </Col>
+              );
+            })
+          )}
+          {!facetsError && !fetchingFacets && (
+            <Button type="primary" htmlType="submit" icon={<FilterOutlined />}>
+              Apply Facets
+            </Button>
+          )}
+        </Form>
       </Row>
     </div>
   );
@@ -219,6 +201,7 @@ Facets.propTypes = {
   availableFacets: PropTypes.objectOf(
     PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.any))
   ).isRequired,
+  setActiveProject: PropTypes.func.isRequired,
   setAvailableFacets: PropTypes.func.isRequired,
   onProjectChange: PropTypes.func.isRequired,
   onSetActiveFacets: PropTypes.func.isRequired,
