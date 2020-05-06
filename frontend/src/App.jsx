@@ -86,7 +86,6 @@ function App() {
   /**
    * Handles removing applied tags.
    * @param {string} removedTag
-   * TODO: Fix removing from applied facets by key value pair
    */
   const handleRemoveTag = (removedTag, type) => {
     if (type === 'project') {
@@ -174,6 +173,7 @@ function App() {
                     activeProject={activeProject}
                     activeFacets={activeFacets}
                     availableFacets={availableFacets}
+                    setActiveProject={setActiveProject}
                     setAvailableFacets={(facets) =>
                       handleSetAvailableFacets(facets)
                     }
