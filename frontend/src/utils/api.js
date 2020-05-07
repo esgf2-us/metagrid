@@ -3,6 +3,7 @@ import axios from '../axios';
 
 /**
  * Fetches a list of projects.
+ * NOTE: Uses the axios baseURL
  */
 export const fetchProjects = async () => {
   return axios
@@ -17,6 +18,7 @@ export const fetchProjects = async () => {
 
 /**
  * Fetches base facets for a project.
+ * NOTE: Local proxy used to bypass CORS (http://localhost:8080/)
  * @param {*} param0.baseUrl - Base URL for a project to fetch facets
  */
 export const fetchBaseFacets = async ([baseUrl]) => {
@@ -33,10 +35,10 @@ export const fetchBaseFacets = async ([baseUrl]) => {
 /**
  * Generate a URL to perform a GET request to the ESG Search API.
  * Query string parameters use the logical OR operator, so queries are inclusive.
+ * NOTE: Local proxy used to bypass CORS (http://localhost:8080/)
  * @param {string} baseUrl - Base url to perform queries
  * @param {arrayOf(string)} textInputs - Free-text user input
  * @param {arrayOf(objectOf(arrayOf(string)))} activeFacets - User applied facets
- *  TODO: Add domain to ESG Search API avoid CORS. Proxy is used for temp workaround.
  */
 const genUrlQuery = (baseUrl, textInputs, activeFacets) => {
   const stringifyFacets = queryString.stringify(activeFacets, {
@@ -80,15 +82,27 @@ export const fetchResults = async ([baseUrl, textInputs, activeFacets]) => {
 };
 
 /**
+ * Performs process on citation objects.
+ */
+const processCitation = (citation) => {
+  const newCitation = citation;
+  newCitation.identifierDOI = `http://${newCitation.identifier.identifierType}.org/${newCitation.identifier.id}`;
+  newCitation.creatorsList = newCitation.creators
+    .map((elem) => elem.creatorName)
+    .join('; ');
+  return newCitation;
+};
+/**
  * Fetches citation data using a dataset's citation url.
+ * NOTE: Local proxy used to bypass CORS (http://localhost:8080/)
  *  @param {string} url - Citation URL
- * TODO: Add domain to ESG Search API avoid CORS. Proxy is used for temp workaround.
  */
 export const fetchCitation = async (url) => {
   axios
     .get(`http://localhost:8080/${url}`)
     .then((res) => {
-      return res.data;
+      const citation = processCitation(res.data);
+      return citation;
     })
     .catch((error) => {
       throw new Error(error);
