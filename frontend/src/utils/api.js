@@ -40,7 +40,7 @@ export const fetchBaseFacets = async ([baseUrl]) => {
  * @param {arrayOf(string)} textInputs - Free-text user input
  * @param {arrayOf(objectOf(arrayOf(string)))} activeFacets - User applied facets
  */
-const genUrlQuery = (baseUrl, textInputs, activeFacets) => {
+export const genUrlQuery = (baseUrl, textInputs, activeFacets) => {
   const stringifyFacets = queryString.stringify(activeFacets, {
     arrayFormat: 'comma',
   });
@@ -84,7 +84,7 @@ export const fetchResults = async ([baseUrl, textInputs, activeFacets]) => {
 /**
  * Performs process on citation objects.
  */
-const processCitation = (citation) => {
+export const processCitation = (citation) => {
   const newCitation = citation;
   newCitation.identifierDOI = `http://${newCitation.identifier.identifierType.toLowerCase()}.org/${
     newCitation.identifier.id
