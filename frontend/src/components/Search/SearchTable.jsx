@@ -13,15 +13,9 @@ import Citation from './Citation';
 import Button from '../General/Button';
 import Divider from '../General/Divider';
 
-import './Search.css';
+import { parseUrl } from '../../utils/utils';
 
-/** Parses urls to remove characters following the specified character
- * @param {string} url
- * @param {string} char
- */
-function parseUrl(url, char) {
-  return url.split(char)[0];
-}
+import './Search.css';
 
 /**
  * Checks if the specified key is in the object

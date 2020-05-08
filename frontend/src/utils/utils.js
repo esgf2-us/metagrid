@@ -17,3 +17,11 @@ export function humanize(str) {
   }
   return frags.join(' ');
 }
+
+/** Parses urls to remove characters following the specified character
+ * @param {string} url
+ * @param {string} char
+ */
+export function parseUrl(url, char) {
+  return url.split(char)[0];
+}
