@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useAsync } from 'react-async';
 
 import Alert from '../Feedback/Alert';
-import Spin from '../Feedback/Spin';
+import Skeleton from '../Feedback/Skeleton';
 
 import { fetchCitation } from '../../utils/api';
 import { parseUrl } from '../../utils/utils';
@@ -40,7 +40,7 @@ const Citation = ({ url }) => {
         </a>
       </div>
 
-      {isLoading && <Spin></Spin>}
+      {isLoading && <Skeleton active />}
       {error && (
         <Alert
           message="Error"
