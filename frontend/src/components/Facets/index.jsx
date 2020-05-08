@@ -152,6 +152,7 @@ function Facets({
           layout="vertical"
           initialValues={{ project: activeProject.name }}
           onFinish={handleProjectForm}
+          hideRequiredMark
         >
           {projectsError && (
             <Alert
@@ -165,7 +166,11 @@ function Facets({
             <Spin></Spin>
           ) : (
             !projectsError && (
-              <Form.Item name="project" label="Project">
+              <Form.Item
+                name="project"
+                label="Project"
+                rules={[{ required: true, message: 'Project is required' }]}
+              >
                 <Select style={{ width: '100%' }} showArrow>
                   {projectsFetched.results.map((projectObj) => {
                     return (
