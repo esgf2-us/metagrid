@@ -86,10 +86,13 @@ export const fetchResults = async ([baseUrl, textInputs, activeFacets]) => {
  */
 const processCitation = (citation) => {
   const newCitation = citation;
-  newCitation.identifierDOI = `http://${newCitation.identifier.identifierType}.org/${newCitation.identifier.id}`;
+  newCitation.identifierDOI = `http://${newCitation.identifier.identifierType.toLowerCase()}.org/${
+    newCitation.identifier.id
+  }`;
   newCitation.creatorsList = newCitation.creators
     .map((elem) => elem.creatorName)
     .join('; ');
+
   return newCitation;
 };
 /**
@@ -97,8 +100,8 @@ const processCitation = (citation) => {
  * NOTE: Local proxy used to bypass CORS (http://localhost:8080/)
  *  @param {string} url - Citation URL
  */
-export const fetchCitation = async (url) => {
-  axios
+export const fetchCitation = async ({ url }) => {
+  return axios
     .get(`http://localhost:8080/${url}`)
     .then((res) => {
       const citation = processCitation(res.data);
