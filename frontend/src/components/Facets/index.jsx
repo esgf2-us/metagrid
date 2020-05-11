@@ -1,21 +1,23 @@
 import React from 'react';
 import { useAsync } from 'react-async';
 import PropTypes from 'prop-types';
-import { Form, Select, Row } from 'antd';
-import { FilterOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import { Form, Select } from 'antd';
+import { QuestionCircleOutlined, SelectOutlined } from '@ant-design/icons';
 
+import FacetsForm from './FacetsForm';
 import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
 import Divider from '../General/Divider';
 import Popconfirm from '../Feedback/Popconfirm';
 import Spin from '../Feedback/Spin';
 
-import { isEmpty, humanize } from '../../utils/utils';
+import { isEmpty } from '../../utils/utils';
 import { fetchBaseFacets, fetchProjects } from '../../utils/api';
 
 const styles = {
-  form: { width: '100%' },
-  facetCount: { float: 'right' },
+  form: {
+    width: '100%',
+  },
 };
 
 function Facets({
@@ -40,7 +42,7 @@ function Facets({
   const {
     data: facetsFetched,
     error: facetsError,
-    isLoading: fetchingFacets,
+    isLoading: facetsIsLoading,
     run,
   } = useAsync({
     deferFn: fetchBaseFacets,
@@ -105,49 +107,10 @@ function Facets({
     handleProjectChange(selectedProj);
   };
 
-  let facetSection;
-
-  if (!isEmpty(availableFacets)) {
-    facetSection = (
-      <>
-        {Object.keys(availableFacets).map((facet) => {
-          return (
-            <Form.Item
-              style={{ marginBottom: '4px' }}
-              key={facet}
-              name={facet}
-              label={humanize(facet)}
-            >
-              <Select
-                mode="multiple"
-                style={{ width: '100%' }}
-                tokenSeparators={[',']}
-                showArrow
-              >
-                {availableFacets[facet].map((variable) => {
-                  return (
-                    <Select.Option key={variable[0]} value={variable[0]}>
-                      {variable[0]}
-                      <span style={styles.facetCount}>({variable[1]})</span>
-                    </Select.Option>
-                  );
-                })}
-              </Select>
-            </Form.Item>
-          );
-        })}
-        <Button type="primary" htmlType="submit" icon={<FilterOutlined />}>
-          Apply Facets
-        </Button>
-      </>
-    );
-  }
-
   return (
-    <div data-testid="facets">
-      <Row>
+    <div data-testid="facets" style={styles.form}>
+      <div className="projectForm">
         <Form
-          style={styles.form}
           form={projectForm}
           layout="vertical"
           initialValues={{ project: activeProject.name }}
@@ -165,7 +128,7 @@ function Facets({
           {fetchingProjects ? (
             <Spin></Spin>
           ) : (
-            !projectsError && (
+            projectsFetched && (
               <Form.Item
                 name="project"
                 label="Project"
@@ -197,37 +160,27 @@ function Facets({
               <Button
                 type="primary"
                 htmlType="submit"
-                icon={<FilterOutlined />}
+                icon={<SelectOutlined />}
               >
                 Select Project
               </Button>
             </Popconfirm>
           ) : (
-            <Button type="primary" htmlType="submit" icon={<FilterOutlined />}>
+            <Button type="primary" htmlType="submit" icon={<SelectOutlined />}>
               Select Project
             </Button>
           )}
         </Form>
-        <Divider />
+      </div>
 
-        <Form
-          form={facetsForm}
-          style={styles.form}
-          layout="vertical"
-          initialValues={{ ...activeFacets }}
-          onFinish={(values) => handleFacetsForm(values)}
-        >
-          {facetsError && (
-            <Alert
-              message="Error"
-              description="There was an issue fetching facets for this project. Please contact support for assistance or try again later"
-              type="error"
-              showIcon
-            />
-          )}
-          {fetchingFacets ? <Spin></Spin> : facetSection}
-        </Form>
-      </Row>
+      <Divider />
+      <FacetsForm
+        availableFacets={availableFacets}
+        facetsForm={facetsForm}
+        facetsIsLoading={facetsIsLoading}
+        facetsError={facetsError}
+        handleFacetsForm={handleFacetsForm}
+      />
     </div>
   );
 }
