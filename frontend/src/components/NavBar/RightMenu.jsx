@@ -30,7 +30,7 @@ function RightMenu({ mode, cartItems }) {
           Resources
         </Menu.Item>
         <Menu.Item key="login">
-          <Button type="primary" style={{ fontStyle: 'bold' }}>
+          <Button type="primary" style={{ fontStyle: 'bold' }} disabled>
             Log In
           </Button>
         </Menu.Item>
