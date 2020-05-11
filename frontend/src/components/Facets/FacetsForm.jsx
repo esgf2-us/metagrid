@@ -16,45 +16,34 @@ const styles = {
 function FacetsForm({
   activeFacets,
   availableFacets,
-  facetsForm,
   facetsError,
   facetsIsLoading,
   handleFacetsForm,
 }) {
-  let facetSection;
+  const [facetsForm] = Form.useForm();
 
-  if (!isEmpty(availableFacets)) {
-    facetSection = (
-      <>
-        {Object.keys(availableFacets).map((facet) => {
-          return (
-            <Form.Item
-              style={{ marginBottom: '4px' }}
-              key={facet}
-              name={facet}
-              label={humanize(facet)}
-            >
-              <Select
-                mode="multiple"
-                style={{ width: '100%' }}
-                tokenSeparators={[',']}
-                showArrow
-              >
-                {availableFacets[facet].map((variable) => {
-                  return (
-                    <Select.Option key={variable[0]} value={variable[0]}>
-                      {variable[0]}
-                      <span style={styles.facetCount}>({variable[1]})</span>
-                    </Select.Option>
-                  );
-                })}
-              </Select>
-            </Form.Item>
-          );
-        })}
-      </>
+  /**
+   * Reset facetsForm based on the activeFacets
+   */
+  React.useEffect(() => {
+    facetsForm.resetFields();
+  }, [facetsForm, activeFacets]);
+
+  if (facetsError) {
+    return (
+      <Alert
+        message="Error"
+        description="There was an issue fetching facets for this project. Please contact support for assistance or try again later"
+        type="error"
+        showIcon
+      />
     );
   }
+
+  if (facetsIsLoading) {
+    return <Spin></Spin>;
+  }
+
   return (
     <>
       <div style={styles.facetsForm}>
@@ -64,15 +53,32 @@ function FacetsForm({
           initialValues={{ ...activeFacets }}
           onFinish={(values) => handleFacetsForm(values)}
         >
-          {facetsError && (
-            <Alert
-              message="Error"
-              description="There was an issue fetching facets for this project. Please contact support for assistance or try again later"
-              type="error"
-              showIcon
-            />
-          )}
-          {facetsIsLoading ? <Spin></Spin> : facetSection}
+          {Object.keys(availableFacets).map((facet) => {
+            return (
+              <Form.Item
+                style={{ marginBottom: '4px' }}
+                key={facet}
+                name={facet}
+                label={humanize(facet)}
+              >
+                <Select
+                  mode="multiple"
+                  style={{ width: '100%' }}
+                  tokenSeparators={[',']}
+                  showArrow
+                >
+                  {availableFacets[facet].map((variable) => {
+                    return (
+                      <Select.Option key={variable[0]} value={variable[0]}>
+                        {variable[0]}
+                        <span style={styles.facetCount}>({variable[1]})</span>
+                      </Select.Option>
+                    );
+                  })}
+                </Select>
+              </Form.Item>
+            );
+          })}{' '}
         </Form>
       </div>
       {!isEmpty(availableFacets) && !facetsIsLoading && (
@@ -94,7 +100,6 @@ FacetsForm.propTypes = {
   availableFacets: PropTypes.objectOf(
     PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.any))
   ).isRequired,
-  facetsForm: PropTypes.objectOf(PropTypes.any).isRequired,
   facetsIsLoading: PropTypes.bool,
   facetsError: PropTypes.string,
   handleFacetsForm: PropTypes.func.isRequired,
