@@ -10,6 +10,7 @@ function Button({
   icon,
   htmlType,
   onClick,
+  disabled,
   children,
 }) {
   return (
@@ -21,6 +22,7 @@ function Button({
       htmlType={htmlType}
       icon={icon}
       onClick={onClick}
+      disabled={disabled}
     >
       {children}
     </ButtonD>
@@ -35,6 +37,7 @@ Button.propTypes = {
   icon: PropTypes.node,
   htmlType: PropTypes.string,
   onClick: PropTypes.func,
+  disabled: PropTypes.bool,
   children: PropTypes.node,
 };
 
@@ -45,6 +48,7 @@ Button.defaultProps = {
   icon: undefined,
   htmlType: undefined,
   onClick: undefined,
+  disabled: false,
   children: undefined,
 };
 export default Button;
