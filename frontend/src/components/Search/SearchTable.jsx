@@ -13,18 +13,9 @@ import Citation from './Citation';
 import Button from '../General/Button';
 import Divider from '../General/Divider';
 
-import { parseUrl } from '../../utils/utils';
+import { hasKey, parseUrl } from '../../utils/utils';
 
 import './Search.css';
-
-/**
- * Checks if the specified key is in the object
- * @param {object} obj
- * @param {string} key
- */
-function hasKey(obj, key) {
-  return obj ? hasOwnProperty.call(obj, key) : false;
-}
 
 function SearchTable({ loading, results, cart, handleCart, onSelect }) {
   const tableConfig = {
