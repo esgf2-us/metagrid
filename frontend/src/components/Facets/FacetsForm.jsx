@@ -75,7 +75,7 @@ function FacetsForm({
           {facetsIsLoading ? <Spin></Spin> : facetSection}
         </Form>
       </div>
-      {!isEmpty(availableFacets) && (
+      {!isEmpty(availableFacets) && !facetsIsLoading && (
         <Button
           onClick={() => facetsForm.submit()}
           type="primary"
