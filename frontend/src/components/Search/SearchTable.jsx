@@ -226,7 +226,7 @@ function SearchTable({ loading, results, cart, handleCart, onSelect }) {
         columns={columns}
         dataSource={tableConfig.hasData ? results : null}
         rowKey="id"
-        scroll={{ y: 590 }}
+        scroll={{ y: 625 }}
       />
     </div>
   );
