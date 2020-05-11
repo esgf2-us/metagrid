@@ -25,3 +25,12 @@ export function humanize(str) {
 export function parseUrl(url, char) {
   return url.split(char)[0];
 }
+
+/**
+ * Checks if the specified key is in the object
+ * @param {object} obj
+ * @param {string} key
+ */
+export function hasKey(obj, key) {
+  return hasOwnProperty.call(obj, key);
+}

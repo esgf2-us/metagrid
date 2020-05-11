@@ -1,4 +1,4 @@
-import { isEmpty, humanize } from './utils';
+import { isEmpty, humanize, hasKey } from './utils';
 
 describe('Test isEmpty', () => {
   test('isEmpty returns true with empty object', () => {
@@ -18,5 +18,18 @@ describe('Test humanize', () => {
 
   test('humanize does not change properly formatted text ', () => {
     expect(humanize('Proper Text')).toEqual('Proper Text');
+  });
+});
+
+describe('Test hasKey', () => {
+  it('returns true if key is found', () => {
+    const testObj = { findKey: 'yup' };
+
+    expect(hasKey(testObj, 'findKey')).toBeTruthy();
+  });
+
+  it('returns false if key is not found ', () => {
+    const testObj = {};
+    expect(hasKey(testObj, 'findKey')).toBeFalsy();
   });
 });
