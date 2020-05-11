@@ -1,11 +1,9 @@
 import React from 'react';
 import { useAsync } from 'react-async';
 import PropTypes from 'prop-types';
-import { Form } from 'antd';
 
 import ProjectForm from './ProjectForm';
 import FacetsForm from './FacetsForm';
-
 import Divider from '../General/Divider';
 
 import { isEmpty } from '../../utils/utils';
@@ -25,9 +23,6 @@ function Facets({
   setAvailableFacets,
   onSetActiveFacets,
 }) {
-  const [projectForm] = Form.useForm();
-  const [facetsForm] = Form.useForm();
-
   const {
     data: projectsFetched,
     error: projectsError,
@@ -44,20 +39,6 @@ function Facets({
   } = useAsync({
     deferFn: fetchBaseFacets,
   });
-
-  /**
-   * Reset facetsForm based on the activeFacets
-   */
-  React.useEffect(() => {
-    facetsForm.resetFields();
-  }, [facetsForm, activeFacets]);
-
-  /**
-   * Reset projectForm based on the activeProject
-   */
-  React.useEffect(() => {
-    projectForm.resetFields();
-  }, [projectForm, activeProject]);
 
   /**
    * Fetch facets when the selectedProject changes and there are no results
@@ -109,7 +90,6 @@ function Facets({
       <ProjectForm
         activeProject={activeProject}
         activeFacets={activeFacets}
-        projectForm={projectForm}
         projectsFetched={projectsFetched}
         projectsIsLoading={projectsIsLoading}
         projectsError={projectsError}
@@ -118,7 +98,6 @@ function Facets({
       <Divider />
       <FacetsForm
         availableFacets={availableFacets}
-        facetsForm={facetsForm}
         facetsIsLoading={facetsIsLoading}
         facetsError={facetsError}
         handleFacetsForm={handleFacetsForm}

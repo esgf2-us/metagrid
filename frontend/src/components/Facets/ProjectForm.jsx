@@ -13,12 +13,34 @@ import { isEmpty } from '../../utils/utils';
 function ProjectsForm({
   activeProject,
   activeFacets,
-  projectForm,
   projectsFetched,
   projectsIsLoading,
   projectsError,
   handleProjectForm,
 }) {
+  const [projectForm] = Form.useForm();
+  /**
+   * Reset projectForm based on the activeProject
+   */
+  React.useEffect(() => {
+    projectForm.resetFields();
+  }, [projectForm, activeProject]);
+
+  if (projectsError) {
+    return (
+      <Alert
+        message="Error"
+        description="There was an issue fetching projects. Please contact support for assistance or try again later."
+        type="error"
+        showIcon
+      />
+    );
+  }
+
+  if (projectsIsLoading) {
+    return <Spin></Spin>;
+  }
+
   return (
     <div className="projectForm">
       <Form
@@ -28,38 +50,21 @@ function ProjectsForm({
         onFinish={handleProjectForm}
         hideRequiredMark
       >
-        {projectsError && (
-          <Alert
-            message="Error"
-            description="There was an issue fetching projects. Please contact support for assistance or try again later."
-            type="error"
-            showIcon
-          />
-        )}
-        {projectsIsLoading ? (
-          <Spin></Spin>
-        ) : (
-          projectsFetched && (
-            <Form.Item
-              name="project"
-              label="Project"
-              rules={[{ required: true, message: 'Project is required' }]}
-            >
-              <Select style={{ width: '100%' }} showArrow>
-                {projectsFetched.results.map((projectObj) => {
-                  return (
-                    <Select.Option
-                      key={projectObj.name}
-                      value={projectObj.name}
-                    >
-                      {projectObj.name}
-                    </Select.Option>
-                  );
-                })}
-              </Select>
-            </Form.Item>
-          )
-        )}
+        <Form.Item
+          name="project"
+          label="Project"
+          rules={[{ required: true, message: 'Project is required' }]}
+        >
+          <Select style={{ width: '100%' }} showArrow>
+            {projectsFetched.results.map((projectObj) => {
+              return (
+                <Select.Option key={projectObj.name} value={projectObj.name}>
+                  {projectObj.name}
+                </Select.Option>
+              );
+            })}
+          </Select>
+        </Form.Item>
 
         {!isEmpty(activeProject) && !isEmpty(activeFacets) ? (
           <Popconfirm
@@ -88,9 +93,8 @@ ProjectsForm.propTypes = {
   ).isRequired,
   activeFacets: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.any)),
   projectsFetched: PropTypes.objectOf(PropTypes.any),
-  projectForm: PropTypes.objectOf(PropTypes.any).isRequired,
   projectsIsLoading: PropTypes.bool,
-  projectsError: PropTypes.string,
+  projectsError: PropTypes.objectOf(PropTypes.any),
   handleProjectForm: PropTypes.func.isRequired,
 };
 
