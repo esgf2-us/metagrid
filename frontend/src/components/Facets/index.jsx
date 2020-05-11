@@ -1,15 +1,12 @@
 import React from 'react';
 import { useAsync } from 'react-async';
 import PropTypes from 'prop-types';
-import { Form, Select } from 'antd';
-import { QuestionCircleOutlined, SelectOutlined } from '@ant-design/icons';
+import { Form } from 'antd';
 
+import ProjectForm from './ProjectForm';
 import FacetsForm from './FacetsForm';
-import Alert from '../Feedback/Alert';
-import Button from '../General/Button';
+
 import Divider from '../General/Divider';
-import Popconfirm from '../Feedback/Popconfirm';
-import Spin from '../Feedback/Spin';
 
 import { isEmpty } from '../../utils/utils';
 import { fetchBaseFacets, fetchProjects } from '../../utils/api';
@@ -34,7 +31,7 @@ function Facets({
   const {
     data: projectsFetched,
     error: projectsError,
-    isLoading: fetchingProjects,
+    isLoading: projectsIsLoading,
   } = useAsync({
     promiseFn: fetchProjects,
   });
@@ -109,70 +106,15 @@ function Facets({
 
   return (
     <div data-testid="facets" style={styles.form}>
-      <div className="projectForm">
-        <Form
-          form={projectForm}
-          layout="vertical"
-          initialValues={{ project: activeProject.name }}
-          onFinish={handleProjectForm}
-          hideRequiredMark
-        >
-          {projectsError && (
-            <Alert
-              message="Error"
-              description="There was an issue fetching projects. Please contact support for assistance or try again later."
-              type="error"
-              showIcon
-            />
-          )}
-          {fetchingProjects ? (
-            <Spin></Spin>
-          ) : (
-            projectsFetched && (
-              <Form.Item
-                name="project"
-                label="Project"
-                rules={[{ required: true, message: 'Project is required' }]}
-              >
-                <Select style={{ width: '100%' }} showArrow>
-                  {projectsFetched.results.map((projectObj) => {
-                    return (
-                      <Select.Option
-                        key={projectObj.name}
-                        value={projectObj.name}
-                      >
-                        {projectObj.name}
-                      </Select.Option>
-                    );
-                  })}
-                </Select>
-              </Form.Item>
-            )
-          )}
-
-          {!isEmpty(activeProject) && !isEmpty(activeFacets) ? (
-            <Popconfirm
-              title="Your constraints will be cleared."
-              onConfirm={() => projectForm.submit()}
-              icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
-              placement="right"
-            >
-              <Button
-                type="primary"
-                htmlType="submit"
-                icon={<SelectOutlined />}
-              >
-                Select Project
-              </Button>
-            </Popconfirm>
-          ) : (
-            <Button type="primary" htmlType="submit" icon={<SelectOutlined />}>
-              Select Project
-            </Button>
-          )}
-        </Form>
-      </div>
-
+      <ProjectForm
+        activeProject={activeProject}
+        activeFacets={activeFacets}
+        projectForm={projectForm}
+        projectsFetched={projectsFetched}
+        projectsIsLoading={projectsIsLoading}
+        projectsError={projectsError}
+        handleProjectForm={handleProjectForm}
+      />
       <Divider />
       <FacetsForm
         availableFacets={availableFacets}
