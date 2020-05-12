@@ -55,7 +55,7 @@ function FacetsForm({ activeFacets, availableFacets, handleFacetsForm }) {
                 </Select>
               </Form.Item>
             );
-          })}{' '}
+          })}
         </Form>
       </div>
       {!isEmpty(availableFacets) && (
