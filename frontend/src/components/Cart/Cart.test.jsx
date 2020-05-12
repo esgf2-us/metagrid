@@ -189,6 +189,16 @@ test('renders without crashing', async () => {
   expect(getByTestId('cart')).toBeTruthy();
 });
 
+test('renders alert message when datacart is empty', async () => {
+  const props = { ...defaultProps, cart: [] };
+  const { getByText } = render(
+    <Router>
+      <Cart {...props} />
+    </Router>
+  );
+  expect(getByText('Your cart is empty')).toBeTruthy();
+});
+
 test('renders items in the cart', async () => {
   test.todo('placeholder');
 });

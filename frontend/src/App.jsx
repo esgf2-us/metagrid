@@ -53,10 +53,10 @@ const parseFacets = (facets) => {
 };
 
 function App() {
-  const [project, setProject] = React.useState({});
+  const [activeProject, setActiveProject] = React.useState({});
   const [availableFacets, setAvailableFacets] = React.useState({});
   const [textInputs, setTextInputs] = React.useState([]);
-  const [appliedFacets, setAppliedFacets] = React.useState({});
+  const [activeFacets, setActiveFacets] = React.useState({});
   const [cart, setCart] = React.useState([]);
 
   /**
@@ -64,29 +64,28 @@ function App() {
    */
   const clearConstraints = () => {
     setTextInputs([]);
-    setAppliedFacets({});
+    setActiveFacets({});
   };
 
   /**
    * Handles when the selected project changes.
    *
    * This functions checks if the current project is not an empty string or
-   * equal to the selected project to reset textInputs and appliedFacets, then
+   * equal to the selected project to reset textInputs and activeFacets, then
    * it updates the selected project.
    * @param {*} selectedProject
    */
   const handleProjectChange = (selectedProject) => {
-    if (project !== '' && project !== selectedProject) {
+    if (activeProject !== '' && activeProject !== selectedProject) {
       clearConstraints();
     }
 
-    setProject(selectedProject);
+    setActiveProject(selectedProject);
   };
 
   /**
    * Handles removing applied tags.
    * @param {string} removedTag
-   * TODO: Fix removing from applied facets by key value pair
    */
   const handleRemoveTag = (removedTag, type) => {
     if (type === 'project') {
@@ -95,11 +94,11 @@ function App() {
       setTextInputs(() => textInputs.filter((input) => input !== removedTag));
     } else if (type === 'facet') {
       const updateFacet = {
-        [removedTag[0]]: appliedFacets[removedTag[0]].filter(
+        [removedTag[0]]: activeFacets[removedTag[0]].filter(
           (item) => item !== removedTag[1]
         ),
       };
-      setAppliedFacets({ ...appliedFacets, ...updateFacet });
+      setActiveFacets({ ...activeFacets, ...updateFacet });
     }
   };
 
@@ -157,7 +156,7 @@ function App() {
           path="/"
           render={() => (
             <NavBar
-              project={project}
+              activeProject={activeProject}
               cartItems={cart.length}
               onProjectChange={(value) => handleProjectChange(value)}
               onSearch={(input) => handleOnSearch(input)}
@@ -171,16 +170,14 @@ function App() {
               render={() => (
                 <Sider style={styles.bodySider} width={275}>
                   <Facets
-                    project={project}
-                    appliedFacets={appliedFacets}
+                    activeProject={activeProject}
+                    activeFacets={activeFacets}
                     availableFacets={availableFacets}
+                    handleProjectChange={handleProjectChange}
                     setAvailableFacets={(facets) =>
                       handleSetAvailableFacets(facets)
                     }
-                    onProjectChange={(selectedProject) =>
-                      handleProjectChange(selectedProject)
-                    }
-                    onSetAppliedFacets={(facets) => setAppliedFacets(facets)}
+                    onSetActiveFacets={(facets) => setActiveFacets(facets)}
                   />
                 </Sider>
               )}
@@ -210,12 +207,12 @@ function App() {
                 path="/search"
                 render={() => (
                   <Search
-                    project={project}
+                    activeProject={activeProject}
                     setAvailableFacets={(facets) =>
                       handleSetAvailableFacets(facets)
                     }
                     textInputs={textInputs}
-                    appliedFacets={appliedFacets}
+                    activeFacets={activeFacets}
                     cart={cart}
                     handleCart={handleCart}
                     onRemoveTag={(removedTag, type) =>

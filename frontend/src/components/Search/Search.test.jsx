@@ -5,14 +5,15 @@ import { render } from '@testing-library/react';
 import Search from './index';
 
 const defaultProps = {
-  project: {},
+  activeProject: {},
   textInputs: [],
-  appliedFacets: {},
+  activeFacets: {},
   cart: [],
   onRemoveTag: jest.fn(),
   onClearTags: jest.fn(),
   onAddCart: jest.fn(),
   handleCart: jest.fn(),
+  setAvailableFacets: jest.fn(),
 };
 
 test('renders without crashing', async () => {

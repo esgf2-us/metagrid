@@ -23,9 +23,9 @@ const styles = {
 };
 
 function Search({
-  project,
+  activeProject,
   textInputs,
-  appliedFacets,
+  activeFacets,
   cart,
   onRemoveTag,
   onClearTags,
@@ -34,14 +34,14 @@ function Search({
 }) {
   const { data: results, error, isLoading, run } = useAsync({
     deferFn: fetchResults,
-    project,
+    project: activeProject,
   });
   const [selectedItems, setSelectedItems] = React.useState([]);
   React.useEffect(() => {
-    if (!isEmpty(project)) {
-      run(project.facets_url, textInputs, appliedFacets);
+    if (!isEmpty(activeProject)) {
+      run(activeProject.facets_url, textInputs, activeFacets);
     }
-  }, [run, project, textInputs, appliedFacets]);
+  }, [run, activeProject, textInputs, activeFacets]);
 
   React.useEffect(() => {
     if (!isEmpty(results)) {
@@ -67,7 +67,7 @@ function Search({
         <div style={styles.summary.leftSide}>
           {!isEmpty(results) ? (
             <h4>
-              {results.response.numFound} results found for {project.name}
+              {results.response.numFound} results found for {activeProject.name}
             </h4>
           ) : (
             <Alert
@@ -89,16 +89,16 @@ function Search({
         </div>
       </div>
       <Row>
-        {isEmpty(appliedFacets) && textInputs.length === 0 && (
+        {isEmpty(activeFacets) && textInputs.length === 0 && (
           <Alert message="No constraints applied" type="info" showIcon />
         )}
-        {(!isEmpty(appliedFacets) || textInputs.length > 0) && (
+        {(!isEmpty(activeFacets) || textInputs.length > 0) && (
           <h4 style={{ marginRight: '0.5em' }}>Applied Constraints: </h4>
         )}
 
-        {Object.keys(appliedFacets).length !== 0 &&
-          Object.keys(appliedFacets).map((facet) => {
-            return appliedFacets[facet].map((variable) => {
+        {Object.keys(activeFacets).length !== 0 &&
+          Object.keys(activeFacets).map((facet) => {
+            return activeFacets[facet].map((variable) => {
               return (
                 <Tag
                   key={variable}
@@ -120,7 +120,7 @@ function Search({
             );
           })}
 
-        {!isEmpty(appliedFacets) ||
+        {!isEmpty(activeFacets) ||
           (textInputs.length > 0 && (
             <Button type="link" onClick={() => onClearTags()}>
               Clear All
@@ -133,7 +133,7 @@ function Search({
           <SearchTable
             loading={isLoading}
             results={
-              results && !error && !isEmpty(project)
+              results && !error && !isEmpty(activeProject)
                 ? results.response.docs
                 : []
             }
@@ -148,12 +148,11 @@ function Search({
 }
 
 Search.propTypes = {
-  project: PropTypes.objectOf(
+  activeProject: PropTypes.objectOf(
     PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)])
   ).isRequired,
   textInputs: PropTypes.arrayOf(PropTypes.string).isRequired,
-  appliedFacets: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.any))
-    .isRequired,
+  activeFacets: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.any)).isRequired,
   cart: PropTypes.arrayOf(PropTypes.objectOf(PropTypes.any)).isRequired,
   onRemoveTag: PropTypes.func.isRequired,
   onClearTags: PropTypes.func.isRequired,

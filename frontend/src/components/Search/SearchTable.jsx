@@ -9,76 +9,42 @@ import {
 } from '@ant-design/icons';
 import PropTypes from 'prop-types';
 
+import Citation from './Citation';
 import Button from '../General/Button';
 import Divider from '../General/Divider';
 
+import { hasKey, parseUrl } from '../../utils/utils';
+
 import './Search.css';
 
-const { Panel } = Collapse;
-const { Option } = Select;
-
-/** Parses urls to remove characters following the specified character
- * @param {string} url
- * @param {string} char
- */
-function parseUrl(url, char) {
-  return url.split(char)[0];
-}
-
-/**
- * Checks if the specified key is in the object
- * @param {object} obj
- * @param {string} key
- */
-function hasKey(obj, key) {
-  return obj ? hasOwnProperty.call(obj, key) : false;
-}
-
 function SearchTable({ loading, results, cart, handleCart, onSelect }) {
-  SearchTable.propTypes = {
-    loading: PropTypes.bool.isRequired,
-    results: PropTypes.arrayOf(PropTypes.object).isRequired,
-    cart: PropTypes.arrayOf(PropTypes.object).isRequired,
-    handleCart: PropTypes.func.isRequired,
-    onSelect: PropTypes.func,
-  };
-
-  SearchTable.defaultProps = {
-    onSelect: undefined,
-  };
-
-  // Table Component configuration
-  // TODO: Refactor Collapse and Panel into separate components
   const tableConfig = {
     size: 'small',
     loading,
     pagination: { position: ['bottomCenter'], showSizeChanger: true },
     expandable: {
       expandedRowRender: (record) => {
-        const recordArray = Object.entries(record).map(([k, v]) => ({
+        const metaData = Object.entries(record).map(([k, v]) => ({
           value: `${k}: ${v}`,
         }));
         return (
           <>
             <Collapse>
               {hasKey(record, 'citation_url') && (
-                <Panel header="Citation" key="citation">
-                  <Button
-                    type="link"
-                    href={parseUrl(record.citation_url[0], '.json')}
-                    target="_blank"
-                  >
-                    Data Citation Page
-                  </Button>
-                  {/* TODO: Add proper display of citation once API is resolved */}
-                </Panel>
+                <Collapse.Panel header="Citation" key="citation">
+                  <Citation url={record.citation_url[0]} />
+                </Collapse.Panel>
               )}
 
-              <Panel className="metadata" header="Metadata" key="metadata">
+              <Collapse.Panel
+                className="metadata"
+                header="Metadata"
+                key="metadata"
+              >
                 <h4>Displaying {Object.keys(record).length} keys</h4>
                 <AutoComplete
                   style={{ width: '100%' }}
-                  options={recordArray}
+                  options={metaData}
                   placeholder="Lookup a key..."
                   filterOption={(inputValue, option) =>
                     option.value
@@ -95,12 +61,12 @@ function SearchTable({ loading, results, cart, handleCart, onSelect }) {
                     </p>
                   );
                 })}
-              </Panel>
-              <Panel header="Files" key="files">
+              </Collapse.Panel>
+              <Collapse.Panel header="Files" key="files">
                 <pre>
                   <Table></Table>
                 </pre>
-              </Panel>
+              </Collapse.Panel>
             </Collapse>
           </>
         );
@@ -173,9 +139,9 @@ function SearchTable({ loading, results, cart, handleCart, onSelect }) {
               <Select defaultValue={record.access[0]} style={{ width: 120 }}>
                 {/* eslint-disable-next-line react/prop-types */}
                 {record.access.map((option) => (
-                  <Option key={option} value={option}>
+                  <Select.Option key={option} value={option}>
                     {option}
-                  </Option>
+                  </Select.Option>
                 ))}
               </Select>
             </Form.Item>
@@ -260,10 +226,22 @@ function SearchTable({ loading, results, cart, handleCart, onSelect }) {
         columns={columns}
         dataSource={tableConfig.hasData ? results : null}
         rowKey="id"
-        scroll={{ y: 590 }}
+        scroll={{ y: 625 }}
       />
     </div>
   );
 }
+
+SearchTable.propTypes = {
+  loading: PropTypes.bool.isRequired,
+  results: PropTypes.arrayOf(PropTypes.object).isRequired,
+  cart: PropTypes.arrayOf(PropTypes.object).isRequired,
+  handleCart: PropTypes.func.isRequired,
+  onSelect: PropTypes.func,
+};
+
+SearchTable.defaultProps = {
+  onSelect: undefined,
+};
 
 export default SearchTable;
