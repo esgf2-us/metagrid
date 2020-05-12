@@ -17,22 +17,6 @@ export const fetchProjects = async () => {
 };
 
 /**
- * Fetches base facets for a project.
- * NOTE: Local proxy used to bypass CORS (http://localhost:8080/)
- * @param {*} param0.baseUrl - Base URL for a project to fetch facets
- */
-export const fetchBaseFacets = async ([baseUrl]) => {
-  return axios
-    .get(`http://localhost:8080/${baseUrl}`)
-    .then((res) => {
-      return res.data;
-    })
-    .catch((error) => {
-      throw new Error(error);
-    });
-};
-
-/**
  * Generate a URL to perform a GET request to the ESG Search API.
  * Query string parameters use the logical OR operator, so queries are inclusive.
  * NOTE: Local proxy used to bypass CORS (http://localhost:8080/)
