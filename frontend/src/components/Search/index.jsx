@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { Button, Row, Col } from 'antd';
 
 import Alert from '../Feedback/Alert';
-import SearchTable from './SearchTable';
+import Table from './Table';
 
 import Tag from '../General/Tag';
 import { fetchResults } from '../../utils/api';
@@ -130,7 +130,7 @@ function Search({
 
       <Row gutter={[24, 16]} justify="space-around">
         <Col lg={24}>
-          <SearchTable
+          <Table
             loading={isLoading}
             results={
               results && !error && !isEmpty(activeProject)
