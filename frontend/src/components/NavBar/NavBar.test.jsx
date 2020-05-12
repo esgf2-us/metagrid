@@ -8,8 +8,8 @@ import LeftMenu from './LeftMenu';
 import RightMenu from './RightMenu';
 
 const defaultProps = {
-  project: 'test1',
-  projects: ['test1', 'test2'],
+  activeProject: { name: 'test1' },
+  projects: [{ name: 'test1' }, { name: 'test2' }],
   cartItems: 0,
   onSearch: jest.fn(),
   onProjectChange: jest.fn(),
@@ -28,8 +28,8 @@ test('LeftMenu and RightMenu components render correctly', async () => {
 });
 
 const leftMenuProps = {
-  project: 'test1',
-  projects: ['test1', 'test2'],
+  activeProject: { name: 'test1' },
+  projects: [{ name: 'test1' }, { name: 'test2' }],
   onSearch: jest.fn(),
   onProjectChange: jest.fn(),
 };

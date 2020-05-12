@@ -9,7 +9,7 @@ const { Option } = Select;
 const styles = {
   searchForm: { marginTop: '1em' },
 };
-function LeftMenu({ project, projects, onSearch, onProjectChange }) {
+function LeftMenu({ activeProject, projects, onSearch, onProjectChange }) {
   const [form] = Form.useForm();
   const [text, setText] = React.useState('');
 
@@ -20,7 +20,7 @@ function LeftMenu({ project, projects, onSearch, onProjectChange }) {
   const onFinish = (values) => {
     // TODO: Add catch if not found
     const selectedProj = projects.find((obj) => obj.name === values.project);
-    if (project !== selectedProj) {
+    if (activeProject !== selectedProj) {
       onProjectChange(selectedProj);
     }
 
@@ -74,7 +74,7 @@ function LeftMenu({ project, projects, onSearch, onProjectChange }) {
 }
 
 LeftMenu.propTypes = {
-  project: PropTypes.objectOf(
+  activeProject: PropTypes.objectOf(
     PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)])
   ).isRequired,
   projects: PropTypes.arrayOf(

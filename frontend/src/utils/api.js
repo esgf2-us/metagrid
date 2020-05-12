@@ -1,8 +1,9 @@
-import axios from 'axios';
 import queryString from 'query-string';
+import axios from '../axios';
 
 /**
  * Fetches a list of projects.
+ * NOTE: Uses the axios baseURL
  */
 export const fetchProjects = async () => {
   return axios
@@ -17,6 +18,7 @@ export const fetchProjects = async () => {
 
 /**
  * Fetches base facets for a project.
+ * NOTE: Local proxy used to bypass CORS (http://localhost:8080/)
  * @param {*} param0.baseUrl - Base URL for a project to fetch facets
  */
 export const fetchBaseFacets = async ([baseUrl]) => {
@@ -33,13 +35,13 @@ export const fetchBaseFacets = async ([baseUrl]) => {
 /**
  * Generate a URL to perform a GET request to the ESG Search API.
  * Query string parameters use the logical OR operator, so queries are inclusive.
+ * NOTE: Local proxy used to bypass CORS (http://localhost:8080/)
  * @param {string} baseUrl - Base url to perform queries
  * @param {arrayOf(string)} textInputs - Free-text user input
- * @param {arrayOf(objectOf(arrayOf(string)))} appliedFacets - User applied facets
- *  TODO: Add domain to ESG Search API avoid CORS. Proxy is used for temp workaround.
+ * @param {arrayOf(objectOf(arrayOf(string)))} activeFacets - User applied facets
  */
-const genUrlQuery = (baseUrl, textInputs, appliedFacets) => {
-  const stringifyFacets = queryString.stringify(appliedFacets, {
+export const genUrlQuery = (baseUrl, textInputs, activeFacets) => {
+  const stringifyFacets = queryString.stringify(activeFacets, {
     arrayFormat: 'comma',
   });
 
@@ -64,11 +66,11 @@ const genUrlQuery = (baseUrl, textInputs, appliedFacets) => {
  * https://github.com/ESGF/esgf.github.io/wiki/ESGF_Search_REST_API
  * @param {string} param0.baseUrl - Base url to perform queries
  * @param {arrayOf(string)} param0.textInputs - Free-text user input
- * @param {arrayOf(objectOf(arrayOf(string)))} param0.appliedFacets - User applied facets
+ * @param {arrayOf(objectOf(arrayOf(string)))} param0.activeFacets - User applied facets
 
  */
-export const fetchResults = async ([baseUrl, textInputs, appliedFacets]) => {
-  const qString = genUrlQuery(baseUrl, textInputs, appliedFacets);
+export const fetchResults = async ([baseUrl, textInputs, activeFacets]) => {
+  const qString = genUrlQuery(baseUrl, textInputs, activeFacets);
   return axios
     .get(qString)
     .then((res) => {
@@ -80,15 +82,30 @@ export const fetchResults = async ([baseUrl, textInputs, appliedFacets]) => {
 };
 
 /**
- * Fetches citation data using a dataset's citation url.
- *  @param {string} url - Citation URL
- * TODO: Add domain to ESG Search API avoid CORS. Proxy is used for temp workaround.
+ * Performs process on citation objects.
  */
-export const fetchCitation = async (url) => {
-  axios
+export const processCitation = (citation) => {
+  const newCitation = citation;
+  newCitation.identifierDOI = `http://${newCitation.identifier.identifierType.toLowerCase()}.org/${
+    newCitation.identifier.id
+  }`;
+  newCitation.creatorsList = newCitation.creators
+    .map((elem) => elem.creatorName)
+    .join('; ');
+
+  return newCitation;
+};
+/**
+ * Fetches citation data using a dataset's citation url.
+ * NOTE: Local proxy used to bypass CORS (http://localhost:8080/)
+ *  @param {string} url - Citation URL
+ */
+export const fetchCitation = async ({ url }) => {
+  return axios
     .get(`http://localhost:8080/${url}`)
     .then((res) => {
-      return res.data;
+      const citation = processCitation(res.data);
+      return citation;
     })
     .catch((error) => {
       throw new Error(error);
