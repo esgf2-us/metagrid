@@ -2,6 +2,7 @@ import mockAxios from 'axios';
 
 import {
   fetchCitation,
+  fetchFiles,
   fetchProjects,
   genUrlQuery,
   fetchResults,
@@ -177,5 +178,38 @@ describe('test fetchCitation()', () => {
         url: 'http://someBaseUrl.com/?',
       })
     ).rejects.toThrow(errorMessage);
+  });
+});
+
+describe('test fetchFiles()', () => {
+  let dataset;
+  beforeEach(() => {
+    dataset = { id: 'testid' };
+  });
+
+  it('calls axios and returns files', async () => {
+    const results = ['test1', 'test2'];
+    mockAxios.get.mockImplementationOnce(() =>
+      Promise.resolve({
+        data: {
+          results,
+        },
+      })
+    );
+    const files = await fetchFiles({ id: dataset.id });
+    expect(files).toEqual({ results });
+    expect(mockAxios.get).toHaveBeenCalledTimes(1);
+    expect(mockAxios.get).toHaveBeenCalledWith(
+      `http://localhost:8080/https://esgf-node.llnl.gov/search_files/${dataset.id}//esgf-node.llnl.gov/?limit=10`
+    );
+  });
+  it('catches and throws an error', async () => {
+    const errorMessage = 'Network Error';
+
+    mockAxios.get.mockImplementationOnce(() =>
+      Promise.reject(new Error(errorMessage))
+    );
+
+    await expect(fetchFiles(dataset.id)).rejects.toThrow(errorMessage);
   });
 });
