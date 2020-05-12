@@ -79,6 +79,7 @@ export const processCitation = (citation) => {
 
   return newCitation;
 };
+
 /**
  * Fetches citation data using a dataset's citation url.
  * NOTE: Local proxy used to bypass CORS (http://localhost:8080/)
@@ -90,6 +91,23 @@ export const fetchCitation = async ({ url }) => {
     .then((res) => {
       const citation = processCitation(res.data);
       return citation;
+    })
+    .catch((error) => {
+      throw new Error(error);
+    });
+};
+
+/**
+ * Fetches files for a dataset.
+ * NOTE: Local proxy used to bypass CORS (http://localhost:8080/)
+ *  @param {string} id - ID of the dataset
+ */
+export const fetchFiles = async ({ id }) => {
+  const url = `https://esgf-node.llnl.gov/search_files/${id}//esgf-node.llnl.gov/?limit=10`;
+  return axios
+    .get(`http://localhost:8080/${url}`)
+    .then((res) => {
+      return res.data;
     })
     .catch((error) => {
       throw new Error(error);
