@@ -10,6 +10,7 @@ import {
 import PropTypes from 'prop-types';
 
 import Citation from './Citation';
+import FilesTable from './FilesTable';
 import Button from '../General/Button';
 import Divider from '../General/Divider';
 
@@ -63,9 +64,7 @@ function Table({ loading, results, cart, handleCart, onSelect }) {
                 })}
               </Collapse.Panel>
               <Collapse.Panel header="Files" key="files">
-                <pre>
-                  <Table></Table>
-                </pre>
+                <FilesTable id={record.id} />
               </Collapse.Panel>
             </Collapse>
           </>
