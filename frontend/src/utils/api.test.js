@@ -3,7 +3,6 @@ import mockAxios from 'axios';
 import {
   fetchCitation,
   fetchProjects,
-  fetchBaseFacets,
   genUrlQuery,
   fetchResults,
   processCitation,
@@ -37,49 +36,6 @@ describe('test fetchProjects()', () => {
     );
 
     await expect(fetchProjects()).rejects.toThrow(errorMessage);
-  });
-});
-
-describe('test fetchBaseFacets()', () => {
-  it('calls axios and returns base facets', async () => {
-    const results = {
-      facet1: [
-        ['var1', 1],
-        ['var2', 2],
-      ],
-      facet2: [
-        ['var3', 1],
-        ['var4', 2],
-      ],
-    };
-    mockAxios.get.mockImplementationOnce(() =>
-      Promise.resolve({
-        data: {
-          results,
-        },
-      })
-    );
-
-    const projects = await fetchBaseFacets([
-      'https://fake-esgf-search-node.com',
-    ]);
-    expect(projects).toEqual({ results });
-    expect(mockAxios.get).toHaveBeenCalledTimes(1);
-    expect(mockAxios.get).toHaveBeenCalledWith(
-      'http://localhost:8080/https://fake-esgf-search-node.com'
-    );
-  });
-
-  it('catches and throws an error', async () => {
-    const errorMessage = 'Network Error';
-
-    mockAxios.get.mockImplementationOnce(() =>
-      Promise.reject(new Error(errorMessage))
-    );
-
-    await expect(
-      fetchBaseFacets('https://fake-esgf-search-node.com')
-    ).rejects.toThrow(errorMessage);
   });
 });
 
