@@ -34,7 +34,7 @@ function NavBar({ activeProject, cartItems, onSearch, onProjectChange }) {
         <div className="navbar-left">
           {error && !isLoading ? (
             <Alert
-              message="There was an error fetching list of projects. Please contain support or try again later."
+              message="There was an issue fetching list of projects. Please contact support or try again later."
               type="error"
             />
           ) : (
