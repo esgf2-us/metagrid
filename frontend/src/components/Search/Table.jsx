@@ -242,7 +242,7 @@ function Table({
         columns={columns}
         dataSource={tableConfig.hasData ? results : null}
         rowKey="id"
-        scroll={{ y: 625 }}
+        scroll={{ y: 595 }}
       />
     </div>
   );

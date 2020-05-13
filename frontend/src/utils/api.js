@@ -44,7 +44,7 @@ export const genUrlQuery = (baseUrl, textInputs, activeFacets, pagination) => {
     .replace('limit=0', `limit=${pagination.pageSize}`)
     .replace('offset=0', `offset=${offset}`);
 
-  const url = `http://localhost:8080/${newBaseUrl}&${stringifyText}&${stringifyFacets}`;
+  const url = `${newBaseUrl}&${stringifyText}&${stringifyFacets}`;
   return url;
 };
 
@@ -56,15 +56,9 @@ export const genUrlQuery = (baseUrl, textInputs, activeFacets, pagination) => {
  * @param {arrayOf(objectOf(arrayOf(string)))} param0.activeFacets - User applied facets
 
  */
-export const fetchResults = async ([
-  baseUrl,
-  textInputs,
-  activeFacets,
-  pagination,
-]) => {
-  const qString = genUrlQuery(baseUrl, textInputs, activeFacets, pagination);
+export const fetchResults = async ([reqUrl]) => {
   return axios
-    .get(qString)
+    .get(`http://localhost:8080/${reqUrl}`)
     .then((res) => {
       return res.data;
     })
