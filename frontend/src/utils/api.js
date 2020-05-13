@@ -24,7 +24,7 @@ export const fetchProjects = async () => {
  * @param {arrayOf(string)} textInputs - Free-text user input
  * @param {arrayOf(objectOf(arrayOf(string)))} activeFacets - User applied facets
  */
-export const genUrlQuery = (baseUrl, textInputs, activeFacets) => {
+export const genUrlQuery = (baseUrl, textInputs, activeFacets, pagination) => {
   const stringifyFacets = queryString.stringify(activeFacets, {
     arrayFormat: 'comma',
   });
@@ -38,11 +38,15 @@ export const genUrlQuery = (baseUrl, textInputs, activeFacets) => {
       }
     );
   }
+  const offset =
+    pagination.page > 1 ? (pagination.page - 1) * pagination.pageSize : 0;
+  const newBaseUrl = baseUrl
+    .replace('limit=0', `limit=${pagination.pageSize}`)
+    .replace('offset=0', `offset=${offset}`);
 
-  return `http://localhost:8080/${baseUrl.replace(
-    'limit=0',
-    'limit=50'
-  )}&${stringifyText}&${stringifyFacets}`;
+  const url = `http://localhost:8080/${newBaseUrl}&${stringifyText}&${stringifyFacets}`;
+  console.log(url);
+  return url;
 };
 
 /**
@@ -53,8 +57,13 @@ export const genUrlQuery = (baseUrl, textInputs, activeFacets) => {
  * @param {arrayOf(objectOf(arrayOf(string)))} param0.activeFacets - User applied facets
 
  */
-export const fetchResults = async ([baseUrl, textInputs, activeFacets]) => {
-  const qString = genUrlQuery(baseUrl, textInputs, activeFacets);
+export const fetchResults = async ([
+  baseUrl,
+  textInputs,
+  activeFacets,
+  pagination,
+]) => {
+  const qString = genUrlQuery(baseUrl, textInputs, activeFacets, pagination);
   return axios
     .get(qString)
     .then((res) => {
