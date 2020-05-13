@@ -37,12 +37,19 @@ function Search({
     project: activeProject,
   });
   const [selectedItems, setSelectedItems] = React.useState([]);
+  const [pagination, setPagination] = React.useState({
+    page: 1,
+    pageSize: 10,
+  });
+
+  // Fetch search results
   React.useEffect(() => {
     if (!isEmpty(activeProject)) {
-      run(activeProject.facets_url, textInputs, activeFacets);
+      run(activeProject.facets_url, textInputs, activeFacets, pagination);
     }
-  }, [run, activeProject, textInputs, activeFacets]);
+  }, [run, activeProject, textInputs, activeFacets, pagination]);
 
+  // Update the available facets based on the returned results
   React.useEffect(() => {
     if (!isEmpty(results)) {
       setAvailableFacets(results.facet_counts.facet_fields);
@@ -59,6 +66,23 @@ function Search({
    */
   const handleSelect = (record, selected, selectedRows) => {
     setSelectedItems(selectedRows);
+  };
+
+  /**
+   * Handles setting the pagination options based on the Search table
+   * @param {number} page
+   * @param {number} pageSize
+   */
+  const handlePagination = (page, pageSize) => {
+    setPagination({ page, pageSize });
+  };
+
+  /**
+   * Handles pageSize changes and resets the current page back to the first
+   * @param {number} pageSize
+   */
+  const handlePageSizeChange = (pageSize) => {
+    setPagination({ page: 1, pageSize });
   };
 
   if (error) {
@@ -147,8 +171,13 @@ function Search({
                 ? results.response.docs
                 : []
             }
+            totalResults={
+              results ? results.response.numFound : pagination.pageSize
+            }
             cart={cart}
             handleCart={handleCart}
+            handlePagination={handlePagination}
+            handlePageSizeChange={handlePageSizeChange}
             onSelect={handleSelect}
           />
         </Col>
