@@ -6,8 +6,7 @@ import ProjectForm from './ProjectForm';
 import FacetsForm from './FacetsForm';
 import Divider from '../General/Divider';
 
-import { isEmpty } from '../../utils/utils';
-import { fetchBaseFacets, fetchProjects } from '../../utils/api';
+import { fetchProjects } from '../../utils/api';
 
 const styles = {
   form: {
@@ -20,7 +19,6 @@ function Facets({
   activeFacets,
   availableFacets,
   handleProjectChange,
-  setAvailableFacets,
   onSetActiveFacets,
 }) {
   const {
@@ -30,34 +28,6 @@ function Facets({
   } = useAsync({
     promiseFn: fetchProjects,
   });
-
-  const {
-    data: facetsFetched,
-    error: facetsError,
-    isLoading: facetsIsLoading,
-    run,
-  } = useAsync({
-    deferFn: fetchBaseFacets,
-  });
-
-  /**
-   * Fetch facets when the selectedProject changes and there are no results
-   */
-  React.useEffect(() => {
-    if (!isEmpty(activeProject)) {
-      run(activeProject.facets_url);
-    }
-  }, [run, activeProject]);
-
-  /**
-   * Parse facets UI friendly format when facetsFetched updates.
-   */
-  React.useEffect(() => {
-    if (!isEmpty(facetsFetched)) {
-      const facetFields = facetsFetched.facet_counts.facet_fields;
-      setAvailableFacets(facetFields);
-    }
-  }, [setAvailableFacets, facetsFetched]);
 
   /**
    * Handles when the facets form is submitted.
@@ -98,8 +68,6 @@ function Facets({
       <Divider />
       <FacetsForm
         availableFacets={availableFacets}
-        facetsIsLoading={facetsIsLoading}
-        facetsError={facetsError}
         handleFacetsForm={handleFacetsForm}
       />
     </div>
@@ -115,7 +83,6 @@ Facets.propTypes = {
     PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.any))
   ).isRequired,
   handleProjectChange: PropTypes.func.isRequired,
-  setAvailableFacets: PropTypes.func.isRequired,
   onSetActiveFacets: PropTypes.func.isRequired,
 };
 

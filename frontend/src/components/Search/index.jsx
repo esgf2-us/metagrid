@@ -3,10 +3,10 @@ import { useAsync } from 'react-async';
 import PropTypes from 'prop-types';
 import { Button, Row, Col } from 'antd';
 
+import Table from './Table';
 import Alert from '../Feedback/Alert';
-import SearchTable from './SearchTable';
-
 import Tag from '../General/Tag';
+
 import { fetchResults } from '../../utils/api';
 import { isEmpty } from '../../utils/utils';
 
@@ -61,13 +61,23 @@ function Search({
     setSelectedItems(selectedRows);
   };
 
+  if (error) {
+    return (
+      <Alert
+        message="There was an issue fetching search results. Please contact support or try again later."
+        type="error"
+      />
+    );
+  }
+
   return (
     <div data-testid="search">
       <div style={styles.summary}>
         <div style={styles.summary.leftSide}>
           {!isEmpty(results) ? (
             <h4>
-              {results.response.numFound} results found for {activeProject.name}
+              {results.response.numFound} results found for
+              {activeProject.name}
             </h4>
           ) : (
             <Alert
@@ -130,7 +140,7 @@ function Search({
 
       <Row gutter={[24, 16]} justify="space-around">
         <Col lg={24}>
-          <SearchTable
+          <Table
             loading={isLoading}
             results={
               results && !error && !isEmpty(activeProject)
