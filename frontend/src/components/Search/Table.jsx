@@ -35,8 +35,10 @@ function Table({
       total: totalResults,
       position: ['bottomCenter'],
       showSizeChanger: true,
-      onChange: (page, pageSize) => handlePagination(page, pageSize),
-      onShowSizeChange: (_current, size) => handlePageSizeChange(size),
+      onChange: (page, pageSize) =>
+        handlePagination && handlePagination(page, pageSize),
+      onShowSizeChange: (_current, size) =>
+        handlePageSizeChange && handlePageSizeChange(size),
     },
     expandable: {
       expandedRowRender: (record) => {
@@ -249,16 +251,19 @@ function Table({
 Table.propTypes = {
   loading: PropTypes.bool.isRequired,
   results: PropTypes.arrayOf(PropTypes.object).isRequired,
-  totalResults: PropTypes.number.isRequired,
+  totalResults: PropTypes.number,
   cart: PropTypes.arrayOf(PropTypes.object).isRequired,
   handleCart: PropTypes.func.isRequired,
-  handlePagination: PropTypes.func.isRequired,
-  handlePageSizeChange: PropTypes.func.isRequired,
+  handlePagination: PropTypes.func,
+  handlePageSizeChange: PropTypes.func,
   onSelect: PropTypes.func,
 };
 
 Table.defaultProps = {
   onSelect: undefined,
+  totalResults: undefined,
+  handlePagination: undefined,
+  handlePageSizeChange: undefined,
 };
 
 export default Table;
