@@ -1,12 +1,10 @@
 import React from 'react';
-
 import {
   BrowserRouter as Router,
   Route,
   Redirect,
   Switch,
 } from 'react-router-dom';
-
 import { Layout, message } from 'antd';
 
 import NavBar from './components/NavBar';
@@ -15,9 +13,9 @@ import Search from './components/Search';
 import Cart from './components/Cart';
 import Summary from './components/Cart/Summary';
 
+import { isEmpty } from './utils/utils';
 import './App.css';
 
-const { Content, Sider, Footer } = Layout;
 const styles = {
   bodyLayout: { padding: '24px 0' },
   bodySider: {
@@ -70,13 +68,13 @@ function App() {
   /**
    * Handles when the selected project changes.
    *
-   * This functions checks if the current project is not an empty string or
+   * This functions checks if the current project is not an empty object or
    * equal to the selected project to reset textInputs and activeFacets, then
    * it updates the selected project.
    * @param {*} selectedProject
    */
   const handleProjectChange = (selectedProject) => {
-    if (activeProject !== '' && activeProject !== selectedProject) {
+    if (!isEmpty(activeProject) && activeProject !== selectedProject) {
       clearConstraints();
     }
 
@@ -104,10 +102,6 @@ function App() {
 
   /**
    * Handles adding or removing items from the cart.
-   * For adding, it filters out items in the selectedItems array that is not in
-   * the cart and adds the items to the cart.
-   * For removing, it only includes items in the cart that aren't in the
-   * selectedItems
    * @param {arrayOf(objectOf(any))} selectedItems
    */
   const handleCart = (selectedItems, operation) => {
@@ -168,7 +162,7 @@ function App() {
             <Route
               path="/search"
               render={() => (
-                <Sider style={styles.bodySider} width={275}>
+                <Layout.Sider style={styles.bodySider} width={275}>
                   <Facets
                     activeProject={activeProject}
                     activeFacets={activeFacets}
@@ -179,13 +173,13 @@ function App() {
                     }
                     onSetActiveFacets={(facets) => setActiveFacets(facets)}
                   />
-                </Sider>
+                </Layout.Sider>
               )}
             />
             <Route
               path="/cart"
               render={() => (
-                <Sider style={styles.bodySider} width={275}>
+                <Layout.Sider style={styles.bodySider} width={275}>
                   <Summary
                     numItems={cart.length}
                     numFiles={
@@ -197,11 +191,11 @@ function App() {
                         : 0
                     }
                   />
-                </Sider>
+                </Layout.Sider>
               )}
             />
           </Switch>
-          <Content style={styles.bodyContent}>
+          <Layout.Content style={styles.bodyContent}>
             <Switch>
               <Route
                 path="/search"
@@ -233,11 +227,11 @@ function App() {
                 )}
               />
             </Switch>
-          </Content>
+          </Layout.Content>
         </Layout>
-        <Footer data-testid="footer" style={styles.footer}>
+        <Layout.Footer data-testid="footer" style={styles.footer}>
           ESGF Search UI ©2020
-        </Footer>
+        </Layout.Footer>
       </div>
     </Router>
   );
