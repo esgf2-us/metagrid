@@ -1,13 +1,15 @@
 import React from 'react';
 import { useAsync } from 'react-async';
 import PropTypes from 'prop-types';
-import { Button, Row, Col } from 'antd';
+import { Row, Col } from 'antd';
+import { ExportOutlined } from '@ant-design/icons';
 
 import Table from './Table';
 import Alert from '../Feedback/Alert';
+import Button from '../General/Button';
 import Tag from '../General/Tag';
 
-import { fetchResults } from '../../utils/api';
+import { fetchResults, genUrlQuery } from '../../utils/api';
 import { isEmpty } from '../../utils/utils';
 
 const styles = {
@@ -36,6 +38,7 @@ function Search({
     deferFn: fetchResults,
     project: activeProject,
   });
+  const [curReqUrl, setCurReqUrl] = React.useState(null);
   const [selectedItems, setSelectedItems] = React.useState([]);
   const [pagination, setPagination] = React.useState({
     page: 1,
@@ -45,9 +48,16 @@ function Search({
   // Fetch search results
   React.useEffect(() => {
     if (!isEmpty(activeProject)) {
-      run(activeProject.facets_url, textInputs, activeFacets, pagination);
+      const reqUrl = genUrlQuery(
+        activeProject.facets_url,
+        textInputs,
+        activeFacets,
+        pagination
+      );
+      setCurReqUrl(reqUrl);
+      run(curReqUrl);
     }
-  }, [run, activeProject, textInputs, activeFacets, pagination]);
+  }, [run, curReqUrl, activeProject, textInputs, activeFacets, pagination]);
 
   // Update the available facets based on the returned results
   React.useEffect(() => {
@@ -181,6 +191,16 @@ function Search({
             onSelect={handleSelect}
           />
         </Col>
+        {curReqUrl && (
+          <Button
+            type="primary"
+            href={curReqUrl}
+            target="_blank"
+            icon={<ExportOutlined />}
+          >
+            Open as JSON
+          </Button>
+        )}
       </Row>
     </div>
   );
