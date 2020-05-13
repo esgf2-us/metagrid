@@ -26,19 +26,27 @@ function ProjectsForm({
     projectForm.resetFields();
   }, [projectForm, activeProject]);
 
+  // Note, have to wrap Alert and Spin with Form to suppress warning about
+  // projectForm not being bound to a <Form/></Form> Instance
   if (projectsError) {
     return (
-      <Alert
-        message="Error"
-        description="There was an issue fetching projects. Please contact support for assistance or try again later."
-        type="error"
-        showIcon
-      />
+      <Form form={projectForm}>
+        <Alert
+          message="Error"
+          description="There was an issue fetching projects. Please contact support for assistance or try again later."
+          type="error"
+          showIcon
+        />
+      </Form>
     );
   }
 
   if (projectsIsLoading) {
-    return <Spin></Spin>;
+    return (
+      <Form form={projectForm}>
+        <Spin></Spin>;
+      </Form>
+    );
   }
 
   return (
