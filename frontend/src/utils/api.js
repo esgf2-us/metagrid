@@ -45,7 +45,6 @@ export const genUrlQuery = (baseUrl, textInputs, activeFacets, pagination) => {
     .replace('offset=0', `offset=${offset}`);
 
   const url = `http://localhost:8080/${newBaseUrl}&${stringifyText}&${stringifyFacets}`;
-  console.log(url);
   return url;
 };
 
