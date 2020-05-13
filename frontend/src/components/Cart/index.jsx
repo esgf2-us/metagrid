@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Col, Row } from 'antd';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 
-import SearchTable from '../Search/SearchTable';
+import Table from '../Search/Table';
 import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
 import Popconfirm from '../Feedback/Popconfirm';
@@ -41,7 +41,7 @@ function Cart({ cart, handleCart, clearCart }) {
       </div>
       <Row gutter={[24, 16]} justify="space-around">
         <Col lg={24}>
-          <SearchTable
+          <Table
             loading={false}
             results={cart}
             cart={cart}

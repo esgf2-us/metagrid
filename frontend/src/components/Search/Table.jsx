@@ -1,5 +1,5 @@
 import React from 'react';
-import { AutoComplete, Collapse, Form, Select, Table } from 'antd';
+import { AutoComplete, Collapse, Form, Select, Table as TableD } from 'antd';
 import {
   RightCircleOutlined,
   DownCircleOutlined,
@@ -10,6 +10,7 @@ import {
 import PropTypes from 'prop-types';
 
 import Citation from './Citation';
+import FilesTable from './FilesTable';
 import Button from '../General/Button';
 import Divider from '../General/Divider';
 
@@ -17,7 +18,7 @@ import { hasKey, parseUrl } from '../../utils/utils';
 
 import './Search.css';
 
-function SearchTable({ loading, results, cart, handleCart, onSelect }) {
+function Table({ loading, results, cart, handleCart, onSelect }) {
   const tableConfig = {
     size: 'small',
     loading,
@@ -63,9 +64,7 @@ function SearchTable({ loading, results, cart, handleCart, onSelect }) {
                 })}
               </Collapse.Panel>
               <Collapse.Panel header="Files" key="files">
-                <pre>
-                  <Table></Table>
-                </pre>
+                <FilesTable id={record.id} />
               </Collapse.Panel>
             </Collapse>
           </>
@@ -220,7 +219,7 @@ function SearchTable({ loading, results, cart, handleCart, onSelect }) {
 
   return (
     <div>
-      <Table
+      <TableD
         // eslint-disable-next-line react/jsx-props-no-spreading
         {...tableConfig}
         columns={columns}
@@ -232,7 +231,7 @@ function SearchTable({ loading, results, cart, handleCart, onSelect }) {
   );
 }
 
-SearchTable.propTypes = {
+Table.propTypes = {
   loading: PropTypes.bool.isRequired,
   results: PropTypes.arrayOf(PropTypes.object).isRequired,
   cart: PropTypes.arrayOf(PropTypes.object).isRequired,
@@ -240,8 +239,8 @@ SearchTable.propTypes = {
   onSelect: PropTypes.func,
 };
 
-SearchTable.defaultProps = {
+Table.defaultProps = {
   onSelect: undefined,
 };
 
-export default SearchTable;
+export default Table;

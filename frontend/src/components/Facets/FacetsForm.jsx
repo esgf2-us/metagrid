@@ -3,9 +3,7 @@ import PropTypes from 'prop-types';
 import { Form, Select } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
 
-import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
-import Spin from '../Feedback/Spin';
 
 import { isEmpty, humanize } from '../../utils/utils';
 
@@ -13,13 +11,7 @@ const styles = {
   facetCount: { float: 'right' },
 };
 
-function FacetsForm({
-  activeFacets,
-  availableFacets,
-  facetsError,
-  facetsIsLoading,
-  handleFacetsForm,
-}) {
+function FacetsForm({ activeFacets, availableFacets, handleFacetsForm }) {
   const [facetsForm] = Form.useForm();
 
   /**
@@ -28,21 +20,6 @@ function FacetsForm({
   React.useEffect(() => {
     facetsForm.resetFields();
   }, [facetsForm, activeFacets]);
-
-  if (facetsError) {
-    return (
-      <Alert
-        message="Error"
-        description="There was an issue fetching facets for this project. Please contact support for assistance or try again later"
-        type="error"
-        showIcon
-      />
-    );
-  }
-
-  if (facetsIsLoading) {
-    return <Spin></Spin>;
-  }
 
   return (
     <>
@@ -78,10 +55,10 @@ function FacetsForm({
                 </Select>
               </Form.Item>
             );
-          })}{' '}
+          })}
         </Form>
       </div>
-      {!isEmpty(availableFacets) && !facetsIsLoading && (
+      {!isEmpty(availableFacets) && (
         <Button
           onClick={() => facetsForm.submit()}
           type="primary"
@@ -100,14 +77,10 @@ FacetsForm.propTypes = {
   availableFacets: PropTypes.objectOf(
     PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.any))
   ).isRequired,
-  facetsIsLoading: PropTypes.bool,
-  facetsError: PropTypes.string,
   handleFacetsForm: PropTypes.func.isRequired,
 };
 
 FacetsForm.defaultProps = {
   activeFacets: {},
-  facetsIsLoading: undefined,
-  facetsError: undefined,
 };
 export default FacetsForm;
