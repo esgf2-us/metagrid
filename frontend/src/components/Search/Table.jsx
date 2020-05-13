@@ -18,11 +18,24 @@ import { hasKey, parseUrl } from '../../utils/utils';
 
 import './Search.css';
 
-function Table({ loading, results, cart, handleCart, onSelect }) {
+function Table({
+  loading,
+  results,
+  totalResults,
+  cart,
+  handleCart,
+  handlePagination,
+  onSelect,
+}) {
   const tableConfig = {
     size: 'small',
     loading,
-    pagination: { position: ['bottomCenter'], showSizeChanger: true },
+    pagination: {
+      total: totalResults,
+      position: ['bottomCenter'],
+      showSizeChanger: true,
+      onChange: (page, pageSize) => handlePagination(page, pageSize),
+    },
     expandable: {
       expandedRowRender: (record) => {
         const metaData = Object.entries(record).map(([k, v]) => ({
@@ -234,8 +247,10 @@ function Table({ loading, results, cart, handleCart, onSelect }) {
 Table.propTypes = {
   loading: PropTypes.bool.isRequired,
   results: PropTypes.arrayOf(PropTypes.object).isRequired,
+  totalResults: PropTypes.number.isRequired,
   cart: PropTypes.arrayOf(PropTypes.object).isRequired,
   handleCart: PropTypes.func.isRequired,
+  handlePagination: PropTypes.func.isRequired,
   onSelect: PropTypes.func,
 };
 
