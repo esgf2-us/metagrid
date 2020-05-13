@@ -41,18 +41,39 @@ describe('test fetchProjects()', () => {
 });
 
 describe('test genUrlQuery()', () => {
-  it('returns properly formatted url', () => {
-    const baseUrl = 'http://someBaseUrl.com/?';
-    const textInputs = ['input1', 'input2'];
-    const activeFacets = {
+  let baseUrl;
+  let textInputs;
+  let activeFacets;
+  beforeEach(() => {
+    baseUrl = 'http://someBaseUrl.com/?limit=0&offset=0';
+    textInputs = ['input1', 'input2'];
+    activeFacets = {
       facet1: ['var1', 'var2'],
       facet2: ['var3', 'var4'],
     };
+  });
 
-    const url = genUrlQuery(baseUrl, textInputs, activeFacets);
+  it('returns formatted url with offset of 0 on page 1', () => {
+    const pagination = {
+      page: 1,
+      pageSize: 10,
+    };
+
+    const url = genUrlQuery(baseUrl, textInputs, activeFacets, pagination);
 
     expect(url).toEqual(
-      'http://localhost:8080/http://someBaseUrl.com/?&query=input1,input2&facet1=var1,var2&facet2=var3,var4'
+      'http://localhost:8080/http://someBaseUrl.com/?limit=10&offset=0&query=input1,input2&facet1=var1,var2&facet2=var3,var4'
+    );
+  });
+  it('returns formatted url with offset of 200 and limit of 100 on page 3', () => {
+    const pagination = {
+      page: 3,
+      pageSize: 100,
+    };
+
+    const url = genUrlQuery(baseUrl, textInputs, activeFacets, pagination);
+    expect(url).toEqual(
+      'http://localhost:8080/http://someBaseUrl.com/?limit=100&offset=200&query=input1,input2&facet1=var1,var2&facet2=var3,var4'
     );
   });
 });
@@ -62,6 +83,7 @@ describe('test fetchResults()', () => {
   let baseUrl;
   let textInputs;
   let activeFacets;
+  let pagination;
 
   beforeEach(() => {
     results = ['test1', 'test2'];
@@ -71,6 +93,7 @@ describe('test fetchResults()', () => {
       facet1: ['var1', 'var2'],
       facet2: ['var3', 'var4'],
     };
+    pagination = { page: 1, pageSize: 10 };
   });
   it('calls axios and returns results', async () => {
     mockAxios.get.mockImplementationOnce(() =>
@@ -81,7 +104,12 @@ describe('test fetchResults()', () => {
       })
     );
 
-    const projects = await fetchResults([baseUrl, textInputs, activeFacets]);
+    const projects = await fetchResults([
+      baseUrl,
+      textInputs,
+      activeFacets,
+      pagination,
+    ]);
     expect(projects).toEqual({ results });
     expect(mockAxios.get).toHaveBeenCalledTimes(1);
     expect(mockAxios.get).toHaveBeenCalledWith(
@@ -99,7 +127,12 @@ describe('test fetchResults()', () => {
       })
     );
 
-    const projects = await fetchResults([baseUrl, textInputs, activeFacets]);
+    const projects = await fetchResults([
+      baseUrl,
+      textInputs,
+      activeFacets,
+      pagination,
+    ]);
     expect(projects).toEqual({ results });
     expect(mockAxios.get).toHaveBeenCalledTimes(1);
     expect(mockAxios.get).toHaveBeenCalledWith(
@@ -114,7 +147,7 @@ describe('test fetchResults()', () => {
     );
 
     await expect(
-      fetchResults([baseUrl, textInputs, activeFacets])
+      fetchResults([baseUrl, textInputs, activeFacets, pagination])
     ).rejects.toThrow(errorMessage);
   });
 });
