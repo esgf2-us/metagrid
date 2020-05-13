@@ -25,6 +25,7 @@ function Table({
   cart,
   handleCart,
   handlePagination,
+  handlePageSizeChange,
   onSelect,
 }) {
   const tableConfig = {
@@ -35,6 +36,7 @@ function Table({
       position: ['bottomCenter'],
       showSizeChanger: true,
       onChange: (page, pageSize) => handlePagination(page, pageSize),
+      onShowSizeChange: (_current, size) => handlePageSizeChange(size),
     },
     expandable: {
       expandedRowRender: (record) => {
@@ -251,6 +253,7 @@ Table.propTypes = {
   cart: PropTypes.arrayOf(PropTypes.object).isRequired,
   handleCart: PropTypes.func.isRequired,
   handlePagination: PropTypes.func.isRequired,
+  handlePageSizeChange: PropTypes.func.isRequired,
   onSelect: PropTypes.func,
 };
 

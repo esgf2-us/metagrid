@@ -77,6 +77,14 @@ function Search({
     setPagination({ page, pageSize });
   };
 
+  /**
+   * Handles pageSize changes and resets the current page back to the first
+   * @param {number} pageSize
+   */
+  const handlePageSizeChange = (pageSize) => {
+    setPagination({ page: 1, pageSize });
+  };
+
   if (error) {
     return (
       <Alert
@@ -169,6 +177,7 @@ function Search({
             cart={cart}
             handleCart={handleCart}
             handlePagination={handlePagination}
+            handlePageSizeChange={handlePageSizeChange}
             onSelect={handleSelect}
           />
         </Col>
