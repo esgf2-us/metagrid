@@ -67,6 +67,7 @@ function Facets({
       />
       <Divider />
       <FacetsForm
+        activeFacets={activeFacets}
         availableFacets={availableFacets}
         handleFacetsForm={handleFacetsForm}
       />
