@@ -47,7 +47,7 @@ function ProjectsForm({
   if (projectsIsLoading) {
     return (
       <Form form={projectForm}>
-        <Spin></Spin>;
+        <Spin></Spin>
       </Form>
     );
   }
