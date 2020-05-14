@@ -123,6 +123,7 @@ function Search({
         <div>
           {results && results.response.numFound > 0 && (
             <Button
+              type="primary"
               style={styles.addButton}
               onClick={() => handleCart(selectedItems, 'add')}
             >
