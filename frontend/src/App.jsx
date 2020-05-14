@@ -5,7 +5,7 @@ import {
   Redirect,
   Switch,
 } from 'react-router-dom';
-import { Layout, message } from 'antd';
+import { Breadcrumb, Layout, message } from 'antd';
 
 import NavBar from './components/NavBar';
 import Facets from './components/Facets';
@@ -200,30 +200,42 @@ function App() {
               <Route
                 path="/search"
                 render={() => (
-                  <Search
-                    activeProject={activeProject}
-                    setAvailableFacets={(facets) =>
-                      handleSetAvailableFacets(facets)
-                    }
-                    textInputs={textInputs}
-                    activeFacets={activeFacets}
-                    cart={cart}
-                    handleCart={handleCart}
-                    onRemoveTag={(removedTag, type) =>
-                      handleRemoveTag(removedTag, type)
-                    }
-                    onClearTags={() => clearConstraints()}
-                  ></Search>
+                  <>
+                    <Breadcrumb>
+                      <Breadcrumb.Item>Home</Breadcrumb.Item>
+                      <Breadcrumb.Item>Search</Breadcrumb.Item>
+                    </Breadcrumb>
+                    <Search
+                      activeProject={activeProject}
+                      setAvailableFacets={(facets) =>
+                        handleSetAvailableFacets(facets)
+                      }
+                      textInputs={textInputs}
+                      activeFacets={activeFacets}
+                      cart={cart}
+                      handleCart={handleCart}
+                      onRemoveTag={(removedTag, type) =>
+                        handleRemoveTag(removedTag, type)
+                      }
+                      onClearTags={() => clearConstraints()}
+                    ></Search>
+                  </>
                 )}
               />
               <Route
                 path="/cart"
                 render={() => (
-                  <Cart
-                    cart={cart}
-                    handleCart={handleCart}
-                    clearCart={() => setCart([])}
-                  />
+                  <>
+                    <Breadcrumb>
+                      <Breadcrumb.Item>Home</Breadcrumb.Item>
+                      <Breadcrumb.Item>Cart</Breadcrumb.Item>
+                    </Breadcrumb>
+                    <Cart
+                      cart={cart}
+                      handleCart={handleCart}
+                      clearCart={() => setCart([])}
+                    />
+                  </>
                 )}
               />
             </Switch>
