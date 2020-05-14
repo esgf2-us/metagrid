@@ -110,8 +110,7 @@ function Search({
         <div style={styles.summary.leftSide}>
           {!isEmpty(results) ? (
             <h4>
-              {results.response.numFound} results found for
-              {activeProject.name}
+              {results.response.numFound} results found for {activeProject.name}
             </h4>
           ) : (
             <Alert
