@@ -16,12 +16,23 @@ const styles = {
 function FacetsForm({ activeFacets, availableFacets, handleFacetsForm }) {
   const [facetsForm] = Form.useForm();
 
+  const [btnDisabled, setBtnDisabled] = React.useState(true);
+
   /**
    * Reset facetsForm based on the activeFacets
    */
   React.useEffect(() => {
     facetsForm.resetFields();
   }, [facetsForm, activeFacets]);
+
+  const handleValuesChange = (allValues) => {
+    const values = Object.values(allValues).flat();
+    if (values.length > 0) {
+      setBtnDisabled(false);
+    } else {
+      setBtnDisabled(true);
+    }
+  };
 
   return (
     <>
@@ -31,6 +42,9 @@ function FacetsForm({ activeFacets, availableFacets, handleFacetsForm }) {
           layout="vertical"
           initialValues={{ ...activeFacets }}
           onFinish={(values) => handleFacetsForm(values)}
+          onValuesChange={(_changedValues, allValues) =>
+            handleValuesChange(allValues)
+          }
         >
           <Collapse bordered={false}>
             {Object.keys(availableFacets).map((facet) => {
@@ -74,6 +88,7 @@ function FacetsForm({ activeFacets, availableFacets, handleFacetsForm }) {
             type="primary"
             htmlType="submit"
             icon={<FilterOutlined />}
+            disabled={btnDisabled}
           >
             Apply Facets
           </Button>
