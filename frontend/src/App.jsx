@@ -22,7 +22,7 @@ const styles = {
     background: '#fff',
     padding: '25px 25px 25px 25px',
     marginLeft: '25px',
-    overflowY: 'auto',
+    width: '350',
   },
   bodyContent: { padding: '0 24px' },
   footer: { textAlign: 'center' },
@@ -162,7 +162,10 @@ function App() {
             <Route
               path="/search"
               render={() => (
-                <Layout.Sider style={styles.bodySider} width={275}>
+                <Layout.Sider
+                  style={styles.bodySider}
+                  width={styles.bodySider.width}
+                >
                   <Facets
                     activeProject={activeProject}
                     activeFacets={activeFacets}
