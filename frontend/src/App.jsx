@@ -28,28 +28,6 @@ const styles = {
   footer: { textAlign: 'center' },
 };
 
-/**
- * Joins adjacent elements of the facets obj into a tuple using reduce().
- * https://stackoverflow.com/questions/37270508/javascript-function-that-converts-array-to-array-of-2-tuples
- * @param {Object.<string, Array.<Array<string, number>>} facets
- */
-const parseFacets = (facets) => {
-  const res = facets;
-  const keys = Object.keys(facets);
-
-  keys.forEach((key) => {
-    res[key] = res[key].reduce((r, a, i) => {
-      if (i % 2) {
-        r[r.length - 1].push(a);
-      } else {
-        r.push([a]);
-      }
-      return r;
-    }, []);
-  });
-  return res;
-};
-
 function App() {
   const [activeProject, setActiveProject] = React.useState({});
   const [availableFacets, setAvailableFacets] = React.useState({});
@@ -137,7 +115,7 @@ function App() {
   };
 
   const handleSetAvailableFacets = (facets) => {
-    setAvailableFacets(parseFacets(facets));
+    setAvailableFacets(facets);
   };
 
   return (
@@ -171,9 +149,6 @@ function App() {
                     activeFacets={activeFacets}
                     availableFacets={availableFacets}
                     handleProjectChange={handleProjectChange}
-                    setAvailableFacets={(facets) =>
-                      handleSetAvailableFacets(facets)
-                    }
                     onSetActiveFacets={(facets) => setActiveFacets(facets)}
                   />
                 </Layout.Sider>

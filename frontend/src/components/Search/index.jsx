@@ -23,6 +23,27 @@ const styles = {
     },
   },
 };
+/**
+ * Joins adjacent elements of the facets obj into a tuple using reduce().
+ * https://stackoverflow.com/questions/37270508/javascript-function-that-converts-array-to-array-of-2-tuples
+ * @param {Object.<string, Array.<Array<string, number>>} facets
+ */
+const parseFacets = (facets) => {
+  const res = facets;
+  const keys = Object.keys(facets);
+
+  keys.forEach((key) => {
+    res[key] = res[key].reduce((r, a, i) => {
+      if (i % 2) {
+        r[r.length - 1].push(a);
+      } else {
+        r.push([a]);
+      }
+      return r;
+    }, []);
+  });
+  return res;
+};
 
 function Search({
   activeProject,
@@ -34,18 +55,25 @@ function Search({
   handleCart,
   setAvailableFacets,
 }) {
+  // Async function to fetch results
   const { data: results, error, isLoading, run } = useAsync({
     deferFn: fetchResults,
     project: activeProject,
   });
+
+  // Parsed version of the returned facet fields
+  const [parsedFacets, setParsedFacets] = React.useState({});
+  // The current request URL generated when fetching results
   const [curReqUrl, setCurReqUrl] = React.useState(null);
+  // Items selected in the data table
   const [selectedItems, setSelectedItems] = React.useState([]);
+  // Pagination options in the data table
   const [pagination, setPagination] = React.useState({
     page: 1,
     pageSize: 10,
   });
 
-  // Fetch search results
+  // Generate the current request URL based on constraints
   React.useEffect(() => {
     if (!isEmpty(activeProject)) {
       const reqUrl = genUrlQuery(
@@ -55,16 +83,26 @@ function Search({
         pagination
       );
       setCurReqUrl(reqUrl);
+    }
+  }, [activeProject, textInputs, activeFacets, pagination]);
+
+  // Fetch search results
+  React.useEffect(() => {
+    if (!isEmpty(activeProject) && curReqUrl) {
       run(curReqUrl);
     }
-  }, [run, curReqUrl, activeProject, textInputs, activeFacets, pagination]);
+  }, [run, curReqUrl, activeProject]);
 
   // Update the available facets based on the returned results
   React.useEffect(() => {
     if (!isEmpty(results)) {
-      setAvailableFacets(results.facet_counts.facet_fields);
+      setParsedFacets(parseFacets(results.facet_counts.facet_fields));
     }
-  }, [results, setAvailableFacets]);
+  }, [results]);
+
+  React.useEffect(() => {
+    setAvailableFacets(parsedFacets);
+  }, [parsedFacets, setAvailableFacets]);
 
   /**
    * Handles when the user selectes individual items and adds to the cart
