@@ -62,7 +62,7 @@ describe('test genUrlQuery()', () => {
     const url = genUrlQuery(baseUrl, textInputs, activeFacets, pagination);
 
     expect(url).toEqual(
-      'http://localhost:8080/http://someBaseUrl.com/?limit=10&offset=0&query=input1,input2&facet1=var1,var2&facet2=var3,var4'
+      'http://someBaseUrl.com/?limit=10&offset=0&query=input1,input2&facet1=var1,var2&facet2=var3,var4'
     );
   });
   it('returns formatted url with offset of 200 and limit of 100 on page 3', () => {
@@ -73,27 +73,18 @@ describe('test genUrlQuery()', () => {
 
     const url = genUrlQuery(baseUrl, textInputs, activeFacets, pagination);
     expect(url).toEqual(
-      'http://localhost:8080/http://someBaseUrl.com/?limit=100&offset=200&query=input1,input2&facet1=var1,var2&facet2=var3,var4'
+      'http://someBaseUrl.com/?limit=100&offset=200&query=input1,input2&facet1=var1,var2&facet2=var3,var4'
     );
   });
 });
 
 describe('test fetchResults()', () => {
   let results;
-  let baseUrl;
-  let textInputs;
-  let activeFacets;
-  let pagination;
+  let reqUrl;
 
   beforeEach(() => {
     results = ['test1', 'test2'];
-    baseUrl = 'http://someBaseUrl.com/?';
-    textInputs = ['input1', 'input2'];
-    activeFacets = {
-      facet1: ['var1', 'var2'],
-      facet2: ['var3', 'var4'],
-    };
-    pagination = { page: 1, pageSize: 10 };
+    reqUrl = 'http://someBaseUrl.com/?';
   });
   it('calls axios and returns results', async () => {
     mockAxios.get.mockImplementationOnce(() =>
@@ -103,22 +94,17 @@ describe('test fetchResults()', () => {
         },
       })
     );
+    reqUrl += '&query=input1,input2&facet1=var1,var2&facet2=var3,var4';
 
-    const projects = await fetchResults([
-      baseUrl,
-      textInputs,
-      activeFacets,
-      pagination,
-    ]);
+    const projects = await fetchResults([reqUrl]);
     expect(projects).toEqual({ results });
     expect(mockAxios.get).toHaveBeenCalledTimes(1);
     expect(mockAxios.get).toHaveBeenCalledWith(
-      'http://localhost:8080/http://someBaseUrl.com/?&query=input1,input2&facet1=var1,var2&facet2=var3,var4'
+      `http://localhost:8080/${reqUrl}`
     );
   });
 
   it('calls axios and returns results without free-text', async () => {
-    textInputs = [];
     mockAxios.get.mockImplementationOnce(() =>
       Promise.resolve({
         data: {
@@ -126,17 +112,13 @@ describe('test fetchResults()', () => {
         },
       })
     );
+    reqUrl += '&query=*&facet1=var1,var2&facet2=var3,var4';
 
-    const projects = await fetchResults([
-      baseUrl,
-      textInputs,
-      activeFacets,
-      pagination,
-    ]);
+    const projects = await fetchResults([reqUrl]);
     expect(projects).toEqual({ results });
     expect(mockAxios.get).toHaveBeenCalledTimes(1);
     expect(mockAxios.get).toHaveBeenCalledWith(
-      'http://localhost:8080/http://someBaseUrl.com/?&query=*&facet1=var1,var2&facet2=var3,var4'
+      `http://localhost:8080/${reqUrl}`
     );
   });
   it('catches and throws an error', async () => {
@@ -146,9 +128,7 @@ describe('test fetchResults()', () => {
       Promise.reject(new Error(errorMessage))
     );
 
-    await expect(
-      fetchResults([baseUrl, textInputs, activeFacets, pagination])
-    ).rejects.toThrow(errorMessage);
+    await expect(fetchResults([reqUrl])).rejects.toThrow(errorMessage);
   });
 });
 
