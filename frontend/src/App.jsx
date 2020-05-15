@@ -6,6 +6,7 @@ import {
   Switch,
 } from 'react-router-dom';
 import { Breadcrumb, Layout, message } from 'antd';
+import { HomeOutlined } from '@ant-design/icons';
 
 import NavBar from './components/NavBar';
 import Facets from './components/Facets';
@@ -157,7 +158,10 @@ function App() {
             <Route
               path="/cart"
               render={() => (
-                <Layout.Sider style={styles.bodySider} width={275}>
+                <Layout.Sider
+                  style={styles.bodySider}
+                  width={styles.bodySider.width}
+                >
                   <Summary
                     numItems={cart.length}
                     numFiles={
@@ -180,7 +184,9 @@ function App() {
                 render={() => (
                   <>
                     <Breadcrumb>
-                      <Breadcrumb.Item>Home</Breadcrumb.Item>
+                      <Breadcrumb.Item>
+                        <HomeOutlined /> Home
+                      </Breadcrumb.Item>
                       <Breadcrumb.Item>Search</Breadcrumb.Item>
                     </Breadcrumb>
                     <Search
@@ -205,7 +211,9 @@ function App() {
                 render={() => (
                   <>
                     <Breadcrumb>
-                      <Breadcrumb.Item>Home</Breadcrumb.Item>
+                      <Breadcrumb.Item>
+                        <HomeOutlined /> Home
+                      </Breadcrumb.Item>
                       <Breadcrumb.Item>Cart</Breadcrumb.Item>
                     </Breadcrumb>
                     <Cart
