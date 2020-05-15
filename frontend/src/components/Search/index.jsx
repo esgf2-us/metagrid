@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAsync } from 'react-async';
 import PropTypes from 'prop-types';
-import { Row, Col, Divider } from 'antd';
+import { Row, Col } from 'antd';
 import { ExportOutlined } from '@ant-design/icons';
 
 import Table from './Table';
@@ -195,7 +195,6 @@ function Search({
                   </Tag>
                 );
               }),
-              <Divider type="vertical" />,
             ];
           })}
         {textInputs.length !== 0 &&
