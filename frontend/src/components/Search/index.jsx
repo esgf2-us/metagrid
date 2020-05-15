@@ -210,11 +210,11 @@ function Search({
           )}
         </div>
       </div>
+
       <Row>
-        {!constraintsExist && (
+        {!constraintsExist ? (
           <Alert message="No constraints applied" type="info" showIcon />
-        )}
-        {constraintsExist && (
+        ) : (
           <h4 style={{ marginRight: '0.5em' }}>Applied Constraints: </h4>
         )}
 
@@ -244,11 +244,10 @@ function Search({
               </Tag>
             );
           })}
-
         {constraintsExist && (
-          <Button type="link" onClick={() => onClearTags()}>
+          <Tag color="#f50" type="close all" onClose={() => onClearTags()}>
             Clear All
-          </Button>
+          </Tag>
         )}
       </Row>
 
