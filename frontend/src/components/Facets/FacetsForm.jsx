@@ -8,9 +8,9 @@ import Button from '../General/Button';
 import { isEmpty, humanize } from '../../utils/utils';
 
 const styles = {
-  content: { height: '650px', width: '100%', overflowY: 'auto' },
+  content: { height: '660px', width: '100%', overflowY: 'auto' },
   facetCount: { float: 'right' },
-  applyBtn: { marginTop: '5px' },
+  applyBtn: { marginBottom: '5px' },
 };
 
 function FacetsForm({ activeFacets, availableFacets, handleFacetsForm }) {
@@ -36,6 +36,19 @@ function FacetsForm({ activeFacets, availableFacets, handleFacetsForm }) {
 
   return (
     <>
+      <div style={styles.applyBtn}>
+        {!isEmpty(availableFacets) && (
+          <Button
+            onClick={() => facetsForm.submit()}
+            type="primary"
+            htmlType="submit"
+            icon={<FilterOutlined />}
+            disabled={btnDisabled}
+          >
+            Apply Facets
+          </Button>
+        )}
+      </div>
       <div style={styles.content}>
         <Form
           form={facetsForm}
@@ -80,19 +93,6 @@ function FacetsForm({ activeFacets, availableFacets, handleFacetsForm }) {
             })}
           </Collapse>
         </Form>
-      </div>
-      <div style={styles.applyBtn}>
-        {!isEmpty(availableFacets) && (
-          <Button
-            onClick={() => facetsForm.submit()}
-            type="primary"
-            htmlType="submit"
-            icon={<FilterOutlined />}
-            disabled={btnDisabled}
-          >
-            Apply Facets
-          </Button>
-        )}
       </div>
     </>
   );

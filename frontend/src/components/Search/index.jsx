@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAsync } from 'react-async';
 import PropTypes from 'prop-types';
-import { Row, Col } from 'antd';
+import { Row, Col, Divider } from 'antd';
 import { ExportOutlined } from '@ant-design/icons';
 
 import Table from './Table';
@@ -10,7 +10,7 @@ import Button from '../General/Button';
 import Tag from '../General/Tag';
 
 import { fetchResults, genUrlQuery } from '../../utils/api';
-import { isEmpty } from '../../utils/utils';
+import { isEmpty, humanize } from '../../utils/utils';
 
 const styles = {
   summary: {
@@ -22,6 +22,7 @@ const styles = {
       display: 'flex',
     },
   },
+  facetTag: { fontWeight: 'bold' },
 };
 /**
  * Joins adjacent elements of the facets obj into a tuple using reduce().
@@ -180,18 +181,22 @@ function Search({
 
         {Object.keys(activeFacets).length !== 0 &&
           Object.keys(activeFacets).map((facet) => {
-            return activeFacets[facet].map((variable) => {
-              return (
-                <Tag
-                  key={variable}
-                  value={[facet, variable]}
-                  onClose={onRemoveTag}
-                  type="facet"
-                >
-                  {variable}
-                </Tag>
-              );
-            });
+            return [
+              <p style={styles.facetTag}>{humanize(facet)}: &nbsp;</p>,
+              activeFacets[facet].map((variable) => {
+                return (
+                  <Tag
+                    key={variable}
+                    value={[facet, variable]}
+                    onClose={onRemoveTag}
+                    type="facet"
+                  >
+                    {variable}
+                  </Tag>
+                );
+              }),
+              <Divider type="vertical" />,
+            ];
           })}
         {textInputs.length !== 0 &&
           textInputs.map((input) => {
