@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAsync } from 'react-async';
 import PropTypes from 'prop-types';
-import { Row, Col } from 'antd';
+import { Row, Col, Typography } from 'antd';
 import { ExportOutlined } from '@ant-design/icons';
 
 import Table from './Table';
@@ -29,7 +29,7 @@ const styles = {
  * https://stackoverflow.com/questions/37270508/javascript-function-that-converts-array-to-array-of-2-tuples
  * @param {Object.<string, Array.<Array<string, number>>} facets
  */
-const parseFacets = (facets) => {
+export const parseFacets = (facets) => {
   const res = facets;
   const keys = Object.keys(facets);
 
@@ -44,6 +44,34 @@ const parseFacets = (facets) => {
     }, []);
   });
   return res;
+};
+
+/**
+ * Stringifies the active constraints
+ * Example of output: '(Text Input = 'Solar') AND (source_type = AER OR AOGCM OR BGC)'
+ * @param {*} activeFacets
+ * @param {*} textInputs
+ */
+export const stringifyConstraints = (activeFacets, textInputs) => {
+  const strConstraints = [];
+  if (textInputs.length > 0) {
+    strConstraints.push(`(Text Input = ${textInputs.join(' OR ')})`);
+  }
+  Object.keys(activeFacets).forEach((key) => {
+    strConstraints.push(`(${key} = ${activeFacets[key].join(' OR ')})`);
+  });
+
+  const strResult = `${strConstraints.join(' AND ')}`;
+  return strResult;
+};
+
+/**
+ * Checks if constraints exist
+ * @param {} activeFacets
+ * @param {*} textInputs
+ */
+export const checkConstraintsExist = (activeFacets, textInputs) => {
+  return !(isEmpty(activeFacets) && textInputs.length === 0);
 };
 
 function Search({
@@ -62,6 +90,7 @@ function Search({
     project: activeProject,
   });
 
+  const [constraintsExist, setConstraintsExist] = React.useState(false);
   // Parsed version of the returned facet fields
   const [parsedFacets, setParsedFacets] = React.useState({});
   // The current request URL generated when fetching results
@@ -86,6 +115,10 @@ function Search({
       setCurReqUrl(reqUrl);
     }
   }, [activeProject, textInputs, activeFacets, pagination]);
+
+  React.useEffect(() => {
+    setConstraintsExist(checkConstraintsExist(activeFacets, textInputs));
+  }, [activeFacets, textInputs]);
 
   // Fetch search results
   React.useEffect(() => {
@@ -149,7 +182,13 @@ function Search({
         <div style={styles.summary.leftSide}>
           {!isEmpty(results) ? (
             <h4>
-              {results.response.numFound} results found for {activeProject.name}
+              {results.response.numFound} results found for{' '}
+              <span style={{ fontWeight: 'bold' }}>{activeProject.name}</span>
+              {constraintsExist && (
+                <Typography.Text code>
+                  {stringifyConstraints(activeFacets, textInputs)}
+                </Typography.Text>
+              )}
             </h4>
           ) : (
             <Alert
@@ -172,10 +211,10 @@ function Search({
         </div>
       </div>
       <Row>
-        {isEmpty(activeFacets) && textInputs.length === 0 && (
+        {!constraintsExist && (
           <Alert message="No constraints applied" type="info" showIcon />
         )}
-        {(!isEmpty(activeFacets) || textInputs.length > 0) && (
+        {constraintsExist && (
           <h4 style={{ marginRight: '0.5em' }}>Applied Constraints: </h4>
         )}
 
@@ -206,12 +245,11 @@ function Search({
             );
           })}
 
-        {!isEmpty(activeFacets) ||
-          (textInputs.length > 0 && (
-            <Button type="link" onClick={() => onClearTags()}>
-              Clear All
-            </Button>
-          ))}
+        {constraintsExist && (
+          <Button type="link" onClick={() => onClearTags()}>
+            Clear All
+          </Button>
+        )}
       </Row>
 
       <Row gutter={[24, 16]} justify="space-around">
