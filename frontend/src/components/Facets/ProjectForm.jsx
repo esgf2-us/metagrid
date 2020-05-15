@@ -10,6 +10,9 @@ import Spin from '../Feedback/Spin';
 
 import { isEmpty } from '../../utils/utils';
 
+const styles = {
+  form: { width: '235px' },
+};
 function ProjectsForm({
   activeProject,
   activeFacets,
@@ -26,36 +29,43 @@ function ProjectsForm({
     projectForm.resetFields();
   }, [projectForm, activeProject]);
 
+  // Note, have to wrap Alert and Spin with Form to suppress warning about
+  // projectForm not being bound to a <Form/></Form> Instance
   if (projectsError) {
     return (
-      <Alert
-        message="Error"
-        description="There was an issue fetching projects. Please contact support for assistance or try again later."
-        type="error"
-        showIcon
-      />
+      <Form form={projectForm}>
+        <Alert
+          message="Error"
+          description="There was an issue fetching projects. Please contact support for assistance or try again later."
+          type="error"
+          showIcon
+        />
+      </Form>
     );
   }
 
   if (projectsIsLoading) {
-    return <Spin></Spin>;
+    return (
+      <Form form={projectForm}>
+        <Spin></Spin>
+      </Form>
+    );
   }
 
   return (
-    <div className="projectForm">
+    <div>
       <Form
         form={projectForm}
-        layout="vertical"
+        layout="inline"
         initialValues={{ project: activeProject.name }}
         onFinish={handleProjectForm}
         hideRequiredMark
       >
         <Form.Item
           name="project"
-          label="Project"
           rules={[{ required: true, message: 'Project is required' }]}
         >
-          <Select style={{ width: '100%' }} showArrow>
+          <Select placeholder="Select a project" style={styles.form} showArrow>
             {projectsFetched.results.map((projectObj) => {
               return (
                 <Select.Option key={projectObj.name} value={projectObj.name}>
@@ -65,23 +75,28 @@ function ProjectsForm({
             })}
           </Select>
         </Form.Item>
-
-        {!isEmpty(activeProject) && !isEmpty(activeFacets) ? (
-          <Popconfirm
-            title="Your constraints will be cleared."
-            onConfirm={() => projectForm.submit()}
-            icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
-            placement="right"
-          >
-            <Button type="primary" htmlType="submit" icon={<SelectOutlined />}>
-              Select Project
-            </Button>
-          </Popconfirm>
-        ) : (
-          <Button type="primary" htmlType="submit" icon={<SelectOutlined />}>
-            Select Project
-          </Button>
-        )}
+        <Form.Item>
+          {!isEmpty(activeProject) && !isEmpty(activeFacets) ? (
+            <Popconfirm
+              title="Your constraints will be cleared."
+              onConfirm={() => projectForm.submit()}
+              icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
+              placement="right"
+            >
+              <Button
+                type="primary"
+                htmlType="submit"
+                icon={<SelectOutlined />}
+              ></Button>
+            </Popconfirm>
+          ) : (
+            <Button
+              type="primary"
+              htmlType="submit"
+              icon={<SelectOutlined />}
+            ></Button>
+          )}
+        </Form.Item>
       </Form>
     </div>
   );

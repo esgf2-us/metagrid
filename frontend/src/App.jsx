@@ -1,13 +1,12 @@
 import React from 'react';
-
 import {
   BrowserRouter as Router,
   Route,
   Redirect,
   Switch,
 } from 'react-router-dom';
-
-import { Layout, message } from 'antd';
+import { Breadcrumb, Layout, message } from 'antd';
+import { HomeOutlined } from '@ant-design/icons';
 
 import NavBar from './components/NavBar';
 import Facets from './components/Facets';
@@ -15,41 +14,19 @@ import Search from './components/Search';
 import Cart from './components/Cart';
 import Summary from './components/Cart/Summary';
 
+import { isEmpty } from './utils/utils';
 import './App.css';
 
-const { Content, Sider, Footer } = Layout;
 const styles = {
   bodyLayout: { padding: '24px 0' },
   bodySider: {
     background: '#fff',
     padding: '25px 25px 25px 25px',
     marginLeft: '25px',
-    overflowY: 'auto',
+    width: '350',
   },
   bodyContent: { padding: '0 24px' },
   footer: { textAlign: 'center' },
-};
-
-/**
- * Joins adjacent elements of the facets obj into a tuple using reduce().
- * https://stackoverflow.com/questions/37270508/javascript-function-that-converts-array-to-array-of-2-tuples
- * @param {Object.<string, Array.<Array<string, number>>} facets
- */
-const parseFacets = (facets) => {
-  const res = facets;
-  const keys = Object.keys(facets);
-
-  keys.forEach((key) => {
-    res[key] = res[key].reduce((r, a, i) => {
-      if (i % 2) {
-        r[r.length - 1].push(a);
-      } else {
-        r.push([a]);
-      }
-      return r;
-    }, []);
-  });
-  return res;
 };
 
 function App() {
@@ -70,13 +47,13 @@ function App() {
   /**
    * Handles when the selected project changes.
    *
-   * This functions checks if the current project is not an empty string or
+   * This functions checks if the current project is not an empty object or
    * equal to the selected project to reset textInputs and activeFacets, then
    * it updates the selected project.
    * @param {*} selectedProject
    */
   const handleProjectChange = (selectedProject) => {
-    if (activeProject !== '' && activeProject !== selectedProject) {
+    if (!isEmpty(activeProject) && activeProject !== selectedProject) {
       clearConstraints();
     }
 
@@ -104,10 +81,6 @@ function App() {
 
   /**
    * Handles adding or removing items from the cart.
-   * For adding, it filters out items in the selectedItems array that is not in
-   * the cart and adds the items to the cart.
-   * For removing, it only includes items in the cart that aren't in the
-   * selectedItems
    * @param {arrayOf(objectOf(any))} selectedItems
    */
   const handleCart = (selectedItems, operation) => {
@@ -143,7 +116,7 @@ function App() {
   };
 
   const handleSetAvailableFacets = (facets) => {
-    setAvailableFacets(parseFacets(facets));
+    setAvailableFacets(facets);
   };
 
   return (
@@ -168,24 +141,27 @@ function App() {
             <Route
               path="/search"
               render={() => (
-                <Sider style={styles.bodySider} width={275}>
+                <Layout.Sider
+                  style={styles.bodySider}
+                  width={styles.bodySider.width}
+                >
                   <Facets
                     activeProject={activeProject}
                     activeFacets={activeFacets}
                     availableFacets={availableFacets}
                     handleProjectChange={handleProjectChange}
-                    setAvailableFacets={(facets) =>
-                      handleSetAvailableFacets(facets)
-                    }
                     onSetActiveFacets={(facets) => setActiveFacets(facets)}
                   />
-                </Sider>
+                </Layout.Sider>
               )}
             />
             <Route
               path="/cart"
               render={() => (
-                <Sider style={styles.bodySider} width={275}>
+                <Layout.Sider
+                  style={styles.bodySider}
+                  width={styles.bodySider.width}
+                >
                   <Summary
                     numItems={cart.length}
                     numFiles={
@@ -197,47 +173,63 @@ function App() {
                         : 0
                     }
                   />
-                </Sider>
+                </Layout.Sider>
               )}
             />
           </Switch>
-          <Content style={styles.bodyContent}>
+          <Layout.Content style={styles.bodyContent}>
             <Switch>
               <Route
                 path="/search"
                 render={() => (
-                  <Search
-                    activeProject={activeProject}
-                    setAvailableFacets={(facets) =>
-                      handleSetAvailableFacets(facets)
-                    }
-                    textInputs={textInputs}
-                    activeFacets={activeFacets}
-                    cart={cart}
-                    handleCart={handleCart}
-                    onRemoveTag={(removedTag, type) =>
-                      handleRemoveTag(removedTag, type)
-                    }
-                    onClearTags={() => clearConstraints()}
-                  ></Search>
+                  <>
+                    <Breadcrumb>
+                      <Breadcrumb.Item>
+                        <HomeOutlined /> Home
+                      </Breadcrumb.Item>
+                      <Breadcrumb.Item>Search</Breadcrumb.Item>
+                    </Breadcrumb>
+                    <Search
+                      activeProject={activeProject}
+                      setAvailableFacets={(facets) =>
+                        handleSetAvailableFacets(facets)
+                      }
+                      textInputs={textInputs}
+                      activeFacets={activeFacets}
+                      cart={cart}
+                      handleCart={handleCart}
+                      onRemoveTag={(removedTag, type) =>
+                        handleRemoveTag(removedTag, type)
+                      }
+                      onClearTags={() => clearConstraints()}
+                    ></Search>
+                  </>
                 )}
               />
               <Route
                 path="/cart"
                 render={() => (
-                  <Cart
-                    cart={cart}
-                    handleCart={handleCart}
-                    clearCart={() => setCart([])}
-                  />
+                  <>
+                    <Breadcrumb>
+                      <Breadcrumb.Item>
+                        <HomeOutlined /> Home
+                      </Breadcrumb.Item>
+                      <Breadcrumb.Item>Cart</Breadcrumb.Item>
+                    </Breadcrumb>
+                    <Cart
+                      cart={cart}
+                      handleCart={handleCart}
+                      clearCart={() => setCart([])}
+                    />
+                  </>
                 )}
               />
             </Switch>
-          </Content>
+          </Layout.Content>
         </Layout>
-        <Footer data-testid="footer" style={styles.footer}>
+        <Layout.Footer data-testid="footer" style={styles.footer}>
           ESGF Search UI ©2020
-        </Footer>
+        </Layout.Footer>
       </div>
     </Router>
   );

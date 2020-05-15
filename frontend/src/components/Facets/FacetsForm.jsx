@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Form, Select } from 'antd';
+import { Collapse, Form, Select } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
 
 import Button from '../General/Button';
@@ -8,11 +8,15 @@ import Button from '../General/Button';
 import { isEmpty, humanize } from '../../utils/utils';
 
 const styles = {
+  content: { height: '660px', width: '100%', overflowY: 'auto' },
   facetCount: { float: 'right' },
+  applyBtn: { marginBottom: '5px' },
 };
 
 function FacetsForm({ activeFacets, availableFacets, handleFacetsForm }) {
   const [facetsForm] = Form.useForm();
+
+  const [btnDisabled, setBtnDisabled] = React.useState(true);
 
   /**
    * Reset facetsForm based on the activeFacets
@@ -21,53 +25,75 @@ function FacetsForm({ activeFacets, availableFacets, handleFacetsForm }) {
     facetsForm.resetFields();
   }, [facetsForm, activeFacets]);
 
+  const handleValuesChange = (allValues) => {
+    const values = Object.values(allValues).flat();
+    if (values.length > 0) {
+      setBtnDisabled(false);
+    } else {
+      setBtnDisabled(true);
+    }
+  };
+
   return (
     <>
-      <div style={styles.facetsForm}>
+      <div style={styles.applyBtn}>
+        {!isEmpty(availableFacets) && (
+          <Button
+            onClick={() => facetsForm.submit()}
+            type="primary"
+            htmlType="submit"
+            icon={<FilterOutlined />}
+            disabled={btnDisabled}
+          >
+            Apply Facets
+          </Button>
+        )}
+      </div>
+      <div style={styles.content}>
         <Form
           form={facetsForm}
           layout="vertical"
           initialValues={{ ...activeFacets }}
           onFinish={(values) => handleFacetsForm(values)}
+          onValuesChange={(_changedValues, allValues) =>
+            handleValuesChange(allValues)
+          }
         >
-          {Object.keys(availableFacets).map((facet) => {
-            return (
-              <Form.Item
-                style={{ marginBottom: '4px' }}
-                key={facet}
-                name={facet}
-                label={humanize(facet)}
-              >
-                <Select
-                  mode="multiple"
-                  style={{ width: '100%' }}
-                  tokenSeparators={[',']}
-                  showArrow
-                >
-                  {availableFacets[facet].map((variable) => {
-                    return (
-                      <Select.Option key={variable[0]} value={variable[0]}>
-                        {variable[0]}
-                        <span style={styles.facetCount}>({variable[1]})</span>
-                      </Select.Option>
-                    );
-                  })}
-                </Select>
-              </Form.Item>
-            );
-          })}
+          <Collapse bordered={false}>
+            {Object.keys(availableFacets).map((facet) => {
+              return (
+                <Collapse.Panel header={humanize(facet)} key={facet}>
+                  <Form.Item
+                    style={{ marginBottom: '4px' }}
+                    key={facet}
+                    name={facet}
+                  >
+                    <Select
+                      size="small"
+                      placeholder="Select option(s)"
+                      mode="multiple"
+                      style={{ width: '100%' }}
+                      tokenSeparators={[',']}
+                      showArrow
+                    >
+                      {availableFacets[facet].map((variable) => {
+                        return (
+                          <Select.Option key={variable[0]} value={variable[0]}>
+                            {variable[0]}
+                            <span style={styles.facetCount}>
+                              ({variable[1]})
+                            </span>
+                          </Select.Option>
+                        );
+                      })}
+                    </Select>
+                  </Form.Item>
+                </Collapse.Panel>
+              );
+            })}
+          </Collapse>
         </Form>
       </div>
-      {!isEmpty(availableFacets) && (
-        <Button
-          onClick={() => facetsForm.submit()}
-          type="primary"
-          htmlType="submit"
-          icon={<FilterOutlined />}
-        >
-          Apply Facets
-        </Button>
-      )}
     </>
   );
 }

@@ -6,12 +6,13 @@ const styles = {
   tag: { height: '2em' },
 };
 
-function Tag({ value, onClose, closable, type, children }) {
+function Tag({ value, onClose, closable, type, color, children }) {
   return (
     <TagD
       style={styles.tag}
       closable={closable}
       onClose={() => onClose(value, type)}
+      color={color}
     >
       {children}
     </TagD>
@@ -26,14 +27,17 @@ Tag.propTypes = {
       PropTypes.oneOfType([PropTypes.number, PropTypes.string])
     ),
   ]).isRequired,
-  onClose: PropTypes.func.isRequired,
+  onClose: PropTypes.func,
   closable: PropTypes.bool,
   type: PropTypes.string.isRequired,
+  color: PropTypes.string,
   children: PropTypes.node.isRequired,
 };
 
 Tag.defaultProps = {
+  onClose: undefined,
   closable: true,
+  color: undefined,
 };
 
 export default Tag;
