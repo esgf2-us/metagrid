@@ -5,11 +5,11 @@ import { DownloadOutlined } from '@ant-design/icons';
 
 import { Form, Select, Table as TableD } from 'antd';
 
+import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
 
 import { fetchFiles } from '../../utils/api';
 import { parseUrl } from '../../utils/utils';
-import Alert from '../Feedback/Alert';
 
 /**
  * Splits the string by a delimiter and pops the last string
@@ -32,10 +32,10 @@ function FilesTable({ id }) {
 
   /**
    * Opens the selected download url in a new tab
-   * @param {} values
+   * @param {string} url - The url of the download option
    */
-  const openDownloadUrl = ({ downloadUrl }) => {
-    return window.open(downloadUrl, '_blank');
+  const openDownloadUrl = (url) => {
+    return window.open(url, '_blank');
   };
 
   if (error) {
@@ -74,12 +74,13 @@ function FilesTable({ id }) {
         width: 200,
         render: (record) => {
           const downloadUrls = genDownloadUrls(record.url);
+
           return (
             <span>
               <Form
                 layout="inline"
-                onFinish={(values) => openDownloadUrl(values)}
-                initialValues={{ download: downloadUrls[0].downloadType }}
+                onFinish={({ download }) => openDownloadUrl(download)}
+                initialValues={{ download: downloadUrls[0].downloadUrl }}
               >
                 <Form.Item name="download">
                   <Select style={{ width: 120 }}>
@@ -110,7 +111,6 @@ function FilesTable({ id }) {
 
     return (
       <TableD
-        // eslint-disable-next-line react/jsx-props-no-spreading
         size="small"
         loading={isLoading}
         pagination={{ position: ['bottomCenter'], showSizeChanger: true }}
