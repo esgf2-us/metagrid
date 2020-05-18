@@ -14,7 +14,7 @@ import { parseUrl } from '../../utils/utils';
 /**
  * Splits the string by a delimiter and pops the last string
  */
-function genDownloadUrls(urls) {
+export function genDownloadUrls(urls) {
   const newUrls = [];
   urls.forEach((url) => {
     const downloadType = url.split('|').pop();
@@ -23,20 +23,19 @@ function genDownloadUrls(urls) {
   });
   return newUrls;
 }
+/**
+ * Opens the selected download url in a new tab
+ * @param {string} url - The url of the download option
+ */
+export function openDownloadUrl(url) {
+  return window.open(url, '_blank');
+}
 
 function FilesTable({ id }) {
   const { data, error, isLoading } = useAsync({
     promiseFn: fetchFiles,
     id,
   });
-
-  /**
-   * Opens the selected download url in a new tab
-   * @param {string} url - The url of the download option
-   */
-  const openDownloadUrl = (url) => {
-    return window.open(url, '_blank');
-  };
 
   if (error) {
     return (
