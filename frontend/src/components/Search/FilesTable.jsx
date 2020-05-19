@@ -73,10 +73,10 @@ function FilesTable({ id }) {
         width: 200,
         render: (record) => {
           const downloadUrls = genDownloadUrls(record.url);
-
           return (
             <span>
               <Form
+                data-testid="download-form"
                 layout="inline"
                 onFinish={({ download }) => openDownloadUrl(download)}
                 initialValues={{ download: downloadUrls[0].downloadUrl }}
@@ -110,6 +110,7 @@ function FilesTable({ id }) {
 
     return (
       <TableD
+        data-testid="filesTable"
         size="small"
         loading={isLoading}
         pagination={{ position: ['bottomCenter'], showSizeChanger: true }}
