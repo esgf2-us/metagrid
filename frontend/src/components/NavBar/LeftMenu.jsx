@@ -18,8 +18,9 @@ function LeftMenu({ activeProject, projects, onSearch, onProjectChange }) {
    * @param {*} values
    */
   const onFinish = (values) => {
-    // TODO: Add catch if not found
     const selectedProj = projects.find((obj) => obj.name === values.project);
+
+    /* istanbul ignore else */
     if (activeProject !== selectedProj) {
       onProjectChange(selectedProj);
     }
@@ -33,16 +34,21 @@ function LeftMenu({ activeProject, projects, onSearch, onProjectChange }) {
 
   return (
     <div data-testid="left-menu">
-      <Form style={styles.searchForm} form={form} onFinish={onFinish}>
+      <Form
+        initialValues={{ project: projects[0].name }}
+        style={styles.searchForm}
+        form={form}
+        onFinish={onFinish}
+      >
         <Input.Group compact>
           <Form.Item
             name="project"
             rules={[{ required: true, message: 'Project is required' }]}
             style={{ width: '15%' }}
           >
-            <Select data-testid="project-select" placeholder="Project">
+            <Select>
               {projects.map((projObj) => (
-                <Option data-testid="project-option" key={projObj.name}>
+                <Option key={projObj.name} value={projObj.name}>
                   {projObj.name}
                 </Option>
               ))}
