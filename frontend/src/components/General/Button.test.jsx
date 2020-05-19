@@ -8,15 +8,12 @@ it('renders a button with only type prop required', () => {
   expect(getByTestId('button')).toBeTruthy();
 });
 
-it('returns string "clicked" onClick', () => {
-  const consoleSpy = jest.spyOn(console, 'log');
-  // eslint-disable-next-line no-console
-  const onClick = () => console.log('clicked');
+it('returns string "clicked" onClick', (done) => {
+  const onClick = () => done();
 
   const { getByTestId } = render(
     <Button type="primary" onClick={onClick}></Button>
   );
   const button = getByTestId('button');
   fireEvent.click(button);
-  expect(consoleSpy).toHaveBeenCalledWith('clicked');
 });
