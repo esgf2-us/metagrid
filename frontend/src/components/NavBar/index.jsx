@@ -13,10 +13,24 @@ import './NavBar.css';
 
 import { fetchProjects } from '../../utils/api';
 import esgfLogo from '../../assets/img/esgf_logo.png';
+import Spin from '../Feedback/Spin';
+
+const styles = {
+  spin: { display: 'flex', justifyContent: 'center' },
+};
 
 function NavBar({ activeProject, cartItems, onSearch, onProjectChange }) {
   const { data, error, isLoading } = useAsync(fetchProjects);
   const [showDrawer, setShowDrawer] = React.useState(false);
+
+  if (error) {
+    return (
+      <Alert
+        message="There was an issue fetching list of projects. Please contact support or try again later."
+        type="error"
+      />
+    );
+  }
 
   return (
     <nav data-testid="nav-bar" className="navbar">
@@ -32,15 +46,15 @@ function NavBar({ activeProject, cartItems, onSearch, onProjectChange }) {
 
       <div className="navbar-container">
         <div className="navbar-left">
-          {error && !isLoading ? (
-            <Alert
-              message="There was an issue fetching list of projects. Please contact support or try again later."
-              type="error"
-            />
-          ) : (
+          {isLoading && (
+            <div style={styles.spin}>
+              <Spin />
+            </div>
+          )}
+          {data && (
             <LeftMenu
               activeProject={activeProject}
-              projects={isLoading || error ? [] : data.results}
+              projects={data.results}
               onSearch={onSearch}
               onProjectChange={onProjectChange}
             ></LeftMenu>
