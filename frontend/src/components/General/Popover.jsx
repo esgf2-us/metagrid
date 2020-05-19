@@ -11,7 +11,7 @@ function Popover({ content, placement, trigger, children }) {
 }
 
 Popover.propTypes = {
-  content: PropTypes.elementType.isRequired,
+  content: PropTypes.node.isRequired,
   trigger: PropTypes.string,
   placement: PropTypes.string,
   children: PropTypes.node,
