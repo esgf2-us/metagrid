@@ -46,6 +46,7 @@ function FacetsForm({ activeFacets, availableFacets, handleFacetsForm }) {
       <div style={styles.applyBtn}>
         {!isEmpty(availableFacets) && (
           <Button
+            data-testid="facets-form-btn"
             onClick={() => facetsForm.submit()}
             type="primary"
             htmlType="submit"
