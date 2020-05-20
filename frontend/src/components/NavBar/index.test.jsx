@@ -53,10 +53,16 @@ it('opens the drawer onClick and closes with onClose', async () => {
   expect(getByTestId('right-menu')).toBeTruthy();
 
   // Open drawer
-  const drawerBtn = getByTestId('openDrawerBtn');
+  const drawerBtn = getByRole('img', { name: 'menu-unfold' });
   fireEvent.click(drawerBtn);
 
-  // Check drawer is open
-  const drawerMenu = getByRole('menu');
-  expect(drawerMenu).toBeTruthy();
+  // Close drawer by clicking on mask
+  // It is not best practice to use querySelect to query elements. However, this
+  // test case is an exception because the Ant Design Drawer API doesn't expose
+  // a way to query for the drawer mask using role, text, etc. Also, we cannot
+  // use the react-testing-library container method because the drawer renders
+  // outside of the component dynamically, so document has to be used instead.
+  // Source: https://testing-library.com/docs/guide-which-query#manual-queries
+  const drawerMask = document.querySelector('div.ant-drawer-mask');
+  fireEvent.click(drawerMask);
 });

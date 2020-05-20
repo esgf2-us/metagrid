@@ -64,15 +64,14 @@ function NavBar({ activeProject, cartItems, onSearch, onProjectChange }) {
         <div className="navbar-right">
           <RightMenu mode="horizontal" cartItems={cartItems}></RightMenu>
         </div>
-        <div data-testid="openDrawerBtn">
-          <Button
-            className="navbar-mobile-button"
-            type="primary"
-            onClick={() => setShowDrawer(true)}
-          >
-            <MenuUnfoldOutlined />
-          </Button>
-        </div>
+
+        <Button
+          className="navbar-mobile-button"
+          type="primary"
+          onClick={() => setShowDrawer(true)}
+        >
+          <MenuUnfoldOutlined />
+        </Button>
 
         <Drawer
           placement="right"
