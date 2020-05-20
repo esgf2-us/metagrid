@@ -28,16 +28,14 @@ function Cart({ cart, handleCart, clearCart }) {
             <Alert message="Your cart is empty" type="info" showIcon />
           )}
         </div>
-        <div>
-          {cart.length > 0 && (
-            <Popconfirm
-              icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
-              onConfirm={() => clearCart()}
-            >
-              <Button type="danger">Remove All Items</Button>
-            </Popconfirm>
-          )}
-        </div>
+        {cart.length > 0 && (
+          <Popconfirm
+            icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
+            onConfirm={() => clearCart()}
+          >
+            <Button type="danger">Remove All Items</Button>
+          </Popconfirm>
+        )}
       </div>
       <Row gutter={[24, 16]} justify="space-around">
         <Col lg={24}>
