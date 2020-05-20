@@ -78,7 +78,7 @@ it('handles when the project form is submitted with handleProjectsForm()', async
 });
 
 it('handles facets form submission with handleFacetsForm()', async () => {
-  const { getByTestId, getByText } = render(
+  const { getByRole, getByTestId, getByText } = render(
     <Facets {...defaultProps} activeProject={{ name: 'test1' }} />
   );
 
@@ -108,14 +108,12 @@ it('handles facets form submission with handleFacetsForm()', async () => {
 
   // Submit the form
   // NOTE: Submit button is outside of the form, so use click instead of submit
-  const facetFormBtn = within(facetsForm).getByRole('img', {
-    name: 'filter',
-  });
+  const facetFormBtn = getByRole('button', { name: 'filter Apply Facets' });
   fireEvent.click(facetFormBtn);
 });
 
 it('handles facets form submission with handleFacetsForm(), including a facet key that is undefined', async () => {
-  const { getByTestId, getByText } = render(
+  const { getByRole, getByTestId, getByText } = render(
     <Facets {...defaultProps} activeProject={{ name: 'test1' }} />
   );
 
@@ -145,9 +143,7 @@ it('handles facets form submission with handleFacetsForm(), including a facet ke
 
   // Submit the form
   // NOTE: Submit button is outside of the form, so use click instead of submit
-  const facetFormBtn = within(facetsForm).getByRole('img', {
-    name: 'filter',
-  });
+  const facetFormBtn = getByRole('button', { name: 'filter Apply Facets' });
   fireEvent.click(facetFormBtn);
 
   // Open Collapse Panel for  in Collapse component for the facet2 form to render

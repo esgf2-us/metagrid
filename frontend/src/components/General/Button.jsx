@@ -15,7 +15,6 @@ function Button({
 }) {
   return (
     <ButtonD
-      data-testid="button"
       type={type}
       className={className}
       href={href}
