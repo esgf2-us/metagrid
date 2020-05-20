@@ -38,7 +38,7 @@ it('disables submit button when there are no selected facet options', () => {
   fireEvent.change(formField, { target: { value: 'foo' } });
 
   // Check submit button is initially disabled
-  const submitBtn = within(facetsForm).getByTestId('button');
+  const submitBtn = getByRole('button', { name: 'filter Apply Facets' });
   expect(submitBtn.disabled).toBeTruthy();
 
   // Select the first facet option
