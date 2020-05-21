@@ -8,7 +8,7 @@ import Skeleton from '../Feedback/Skeleton';
 import { fetchCitation } from '../../utils/api';
 import { parseUrl } from '../../utils/utils';
 
-const CitationInfo = ({ title, children }) => {
+export const CitationInfo = ({ title, children }) => {
   return (
     <p style={{ margin: 0 }}>
       <span style={{ fontWeight: 'bold' }}>{title}: </span>
@@ -39,7 +39,6 @@ const Citation = ({ url }) => {
           Data Citation Page
         </a>
       </div>
-
       {isLoading && <Skeleton active />}
       {error && (
         <Alert
