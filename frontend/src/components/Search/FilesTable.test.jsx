@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
-import { render, wait, fireEvent } from '@testing-library/react';
+import { render, waitFor, fireEvent } from '@testing-library/react';
 
 import FilesTable, { genDownloadUrls, openDownloadUrl } from './FilesTable';
 import mockAxios from '../../__mocks__/axios';
@@ -72,7 +72,7 @@ describe('test FilesTable component', () => {
       `http://localhost:8080/https://esgf-node.llnl.gov/search_files/${id}//esgf-node.llnl.gov/?limit=10`
     );
 
-    await wait(() =>
+    await waitFor(() =>
       expect(
         queryByText(
           'There was an issue fetching files for this dataset. Please contact support for assistance or try again later.'
@@ -107,7 +107,7 @@ describe('test FilesTable component', () => {
       `http://localhost:8080/https://esgf-node.llnl.gov/search_files/${id}//esgf-node.llnl.gov/?limit=10`
     );
 
-    await wait(() => expect(getByTestId('filesTable')).toBeTruthy());
+    await waitFor(() => expect(getByTestId('filesTable')).toBeTruthy());
   });
 
   it('it returns null by default', async () => {
@@ -121,7 +121,7 @@ describe('test FilesTable component', () => {
     expect(mockAxios.get).toHaveBeenCalledTimes(0);
     const { container } = render(<FilesTable id={id} />);
 
-    await wait(() => expect(container.firstChild).toBeNull());
+    await waitFor(() => expect(container.firstChild).toBeNull());
   });
 
   it('opens up a new window when submitting form for downloading a file', async () => {
@@ -157,7 +157,7 @@ describe('test FilesTable component', () => {
     );
 
     // Check filesTable rendered
-    await wait(() => expect(getByTestId('filesTable')).toBeTruthy());
+    await waitFor(() => expect(getByTestId('filesTable')).toBeTruthy());
 
     // Check that the new window matches the url
     const originalWindow = { ...window };

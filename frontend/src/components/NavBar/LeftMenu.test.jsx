@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { render, fireEvent, wait } from '@testing-library/react';
+import { render, fireEvent, waitFor } from '@testing-library/react';
 import LeftMenu from './LeftMenu';
 
 const leftMenuProps = {
@@ -41,7 +41,7 @@ it('successfully submits search form and resets current text with onFinish', asy
   fireEvent.submit(submitBtn);
 
   // Check if the input value resets back to blank
-  await wait(() => expect(input.value).toEqual(''));
+  await waitFor(() => expect(input.value).toEqual(''));
 });
 
 it('successfully submits search form and resets current text with onFinish, and updates activeProject when activeProject !== selectedProj', async () => {
@@ -66,6 +66,6 @@ it('successfully submits search form and resets current text with onFinish, and 
   fireEvent.submit(submitBtn);
 
   // Check if the input value resets back to blank
-  await wait(() => expect(input.value).toEqual(''));
+  await waitFor(() => expect(input.value).toEqual(''));
   expect(onProjectChange).toHaveBeenCalled();
 });

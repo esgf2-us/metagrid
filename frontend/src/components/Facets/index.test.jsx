@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
-import { fireEvent, render, wait, within } from '@testing-library/react';
+import { fireEvent, render, waitFor, within } from '@testing-library/react';
 
 import Facets from './index';
 import mockAxios from '../../__mocks__/axios';
@@ -40,7 +40,7 @@ it('renders component', async () => {
 
   // Check FacetsForm component renders
   const facetsForm = getByTestId('facets-form');
-  await wait(() => expect(facetsForm).toBeTruthy());
+  await waitFor(() => expect(facetsForm).toBeTruthy());
 
   // Check ProjectForm component renders
   const projectForm = getByTestId('project-form');
@@ -52,7 +52,7 @@ it('handles when the project form is submitted with handleProjectsForm()', async
 
   // Check FacetsForm component renders
   const facetsForm = getByTestId('facets-form');
-  await wait(() => expect(facetsForm).toBeTruthy());
+  await waitFor(() => expect(facetsForm).toBeTruthy());
 
   // Check ProjectForm component renders
   const projectForm = getByTestId('project-form');
@@ -84,7 +84,7 @@ it('handles facets form submission with handleFacetsForm()', async () => {
 
   // Check FacetForm component renders
   const facetsForm = getByTestId('facets-form');
-  await wait(() => expect(facetsForm).toBeTruthy());
+  await waitFor(() => expect(facetsForm).toBeTruthy());
 
   // Check ProjectForm component renders
   const projectForm = getByTestId('project-form');
@@ -119,7 +119,7 @@ it('handles facets form submission with handleFacetsForm(), including a facet ke
 
   // Check Facetform component renders
   const facetsForm = getByTestId('facets-form');
-  await wait(() => expect(facetsForm).toBeTruthy());
+  await waitFor(() => expect(facetsForm).toBeTruthy());
 
   // Check ProjectForm component renders
   const projectForm = getByTestId('project-form');
