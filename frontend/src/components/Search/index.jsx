@@ -142,11 +142,9 @@ function Search({
    * Handles when the user selectes individual items and adds to the cart
    * This function filters out items that have been already added to the cart,
    * which is indicated as disabled on the UI.
-   * @param {object} record - individual dataset object
-   * @param {objectOf(*)} selected - the selected row corresponding to the dataset object
    * @param {arrayOf(objectOf(*))} selectedRows - the selected rows
    */
-  const handleSelect = (record, selected, selectedRows) => {
+  const handleSelect = (selectedRows) => {
     setSelectedItems(selectedRows);
   };
 
@@ -169,10 +167,12 @@ function Search({
 
   if (error) {
     return (
-      <Alert
-        message="There was an issue fetching search results. Please contact support or try again later."
-        type="error"
-      />
+      <div data-testid="alert-fetching">
+        <Alert
+          message="There was an issue fetching search results. Please contact support or try again later."
+          type="error"
+        />
+      </div>
     );
   }
 
@@ -180,7 +180,7 @@ function Search({
     <div data-testid="search">
       <div style={styles.summary}>
         <div style={styles.summary.leftSide}>
-          {!isEmpty(results) ? (
+          {results ? (
             <h4>
               {results.response.numFound} results found for{' '}
               <span style={{ fontWeight: 'bold' }}>{activeProject.name}</span>
@@ -204,6 +204,7 @@ function Search({
               type="primary"
               style={styles.addButton}
               onClick={() => handleCart(selectedItems, 'add')}
+              disabled={!(selectedItems.length > 0)}
             >
               Add Selected to Cart
             </Button>
@@ -221,7 +222,9 @@ function Search({
         {Object.keys(activeFacets).length !== 0 &&
           Object.keys(activeFacets).map((facet) => {
             return [
-              <p style={styles.facetTag}>{humanize(facet)}: &nbsp;</p>,
+              <p key={facet} style={styles.facetTag}>
+                {humanize(facet)}: &nbsp;
+              </p>,
               activeFacets[facet].map((variable) => {
                 return (
                   <Tag
@@ -245,7 +248,12 @@ function Search({
             );
           })}
         {constraintsExist && (
-          <Tag color="#f50" type="close all" onClose={() => onClearTags()}>
+          <Tag
+            value="clearAll"
+            color="#f50"
+            type="close all"
+            onClose={() => onClearTags()}
+          >
             Clear All
           </Tag>
         )}
@@ -253,22 +261,31 @@ function Search({
 
       <Row gutter={[24, 16]} justify="space-around">
         <Col lg={24}>
-          <Table
-            loading={isLoading}
-            results={
-              results && !error && !isEmpty(activeProject)
-                ? results.response.docs
-                : []
-            }
-            totalResults={
-              results ? results.response.numFound : pagination.pageSize
-            }
-            cart={cart}
-            handleCart={handleCart}
-            handlePagination={handlePagination}
-            handlePageSizeChange={handlePageSizeChange}
-            onSelect={handleSelect}
-          />
+          <div data-testid="search-table">
+            {results ? (
+              <Table
+                loading={false}
+                results={results.response.docs}
+                totalResults={results.response.numFound}
+                cart={cart}
+                handleCart={handleCart}
+                handlePagination={handlePagination}
+                handlePageSizeChange={handlePageSizeChange}
+                onSelect={handleSelect}
+              />
+            ) : (
+              <Table
+                loading={isLoading}
+                results={[]}
+                totalResults={pagination.pageSize}
+                cart={cart}
+                handleCart={handleCart}
+                handlePagination={handlePagination}
+                handlePageSizeChange={handlePageSizeChange}
+                onSelect={handleSelect}
+              />
+            )}
+          </div>
         </Col>
         {curReqUrl && (
           <Button
