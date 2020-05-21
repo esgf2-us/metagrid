@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { render, wait, fireEvent } from '@testing-library/react';
+import { render, waitFor, fireEvent } from '@testing-library/react';
 
 import NavBar from './index';
 import mockAxios from '../../__mocks__/axios';
@@ -29,7 +29,7 @@ it('renders LeftMenu and RightMenu components', async () => {
       <NavBar {...defaultProps} />
     </Router>
   );
-  await wait(() => expect(getByTestId('left-menu')).toBeTruthy());
+  await waitFor(() => expect(getByTestId('left-menu')).toBeTruthy());
   expect(getByTestId('right-menu')).toBeTruthy();
 });
 
@@ -49,7 +49,7 @@ it('opens the drawer onClick and closes with onClose', async () => {
       <NavBar {...defaultProps} />
     </Router>
   );
-  await wait(() => expect(getByTestId('left-menu')).toBeTruthy());
+  await waitFor(() => expect(getByTestId('left-menu')).toBeTruthy());
   expect(getByTestId('right-menu')).toBeTruthy();
 
   // Open drawer
