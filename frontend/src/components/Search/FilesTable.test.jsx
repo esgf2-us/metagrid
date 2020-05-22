@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
-import { render, waitFor, fireEvent } from '@testing-library/react';
+import { render, waitFor, fireEvent, within } from '@testing-library/react';
 
 import FilesTable, { genDownloadUrls, openDownloadUrl } from './FilesTable';
 import mockAxios from '../../__mocks__/axios';
@@ -51,9 +51,6 @@ describe('test openDownloadUrl()', () => {
 
     openDownloadUrl(url);
     expect(window.location.origin).toEqual('https://example.com');
-
-    // TODO Error: Not implemented: window.open
-    // expect(mockedOpen).toBeCalled();
   });
 });
 
@@ -142,13 +139,12 @@ describe('test FilesTable component', () => {
       })
     );
 
-    // Setup windowSpy mock
-    const mockedOpen = jest.fn();
-    const windowSpy = jest.spyOn(global, 'window', 'get');
-    const url = 'https://testdownload.com';
+    // Update the value of open
+    // https://stackoverflow.com/questions/58189851/mocking-a-conditional-window-open-function-call-with-jest
+    Object.defineProperty(window, 'open', { value: jest.fn() });
 
     const id = 'testid';
-    const { getByTestId } = render(<FilesTable id={id} />);
+    const { getByRole, getByTestId } = render(<FilesTable id={id} />);
 
     // Check Axios mock
     expect(mockAxios.get).toHaveBeenCalledTimes(1);
@@ -159,23 +155,19 @@ describe('test FilesTable component', () => {
     // Check filesTable rendered
     await waitFor(() => expect(getByTestId('filesTable')).toBeTruthy());
 
-    // Check that the new window matches the url
-    const originalWindow = { ...window };
-    windowSpy.mockImplementation(() => ({
-      ...originalWindow,
-      location: {
-        origin: url,
-      },
-      open: mockedOpen,
-    }));
+    // Select first cell row
+    const firstRow = getByRole('row', {
+      name: 'title checksum HTTPServer download',
+    });
+    expect(firstRow).toBeTruthy();
+
+    // Select first cell download button
+    const downloadBtn = within(firstRow).getByRole('img', {
+      name: 'download',
+    });
+    expect(downloadBtn).toBeTruthy();
 
     // Submit the download form
-    fireEvent.submit(getByTestId('download-form'));
-
-    expect(window.location.origin).toEqual(url);
-
-    // # TODO:
-    // expect(mockedOpen).toBeCalled();
-    windowSpy.mockRestore();
+    fireEvent.submit(downloadBtn);
   });
 });

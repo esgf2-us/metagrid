@@ -37,6 +37,10 @@ function FilesTable({ id }) {
     id,
   });
 
+  const handleDownload = (url) => {
+    return window.open(url, '_blank');
+  };
+
   if (error) {
     return (
       <Alert
@@ -78,7 +82,7 @@ function FilesTable({ id }) {
               <Form
                 data-testid="download-form"
                 layout="inline"
-                onFinish={({ download }) => openDownloadUrl(download)}
+                onFinish={({ download }) => handleDownload(download)}
                 initialValues={{ download: downloadUrls[0].downloadUrl }}
               >
                 <Form.Item name="download">
@@ -115,7 +119,7 @@ function FilesTable({ id }) {
         loading={isLoading}
         pagination={{ position: ['bottomCenter'], showSizeChanger: true }}
         columns={columns}
-        dataSource={data ? data.response.docs : null}
+        dataSource={data.response.docs}
         rowKey="id"
         scroll={{ y: 300 }}
       />
