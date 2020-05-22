@@ -37,10 +37,6 @@ function FilesTable({ id }) {
     id,
   });
 
-  const handleDownload = (url) => {
-    return window.open(url, '_blank');
-  };
-
   if (error) {
     return (
       <Alert
@@ -82,7 +78,7 @@ function FilesTable({ id }) {
               <Form
                 data-testid="download-form"
                 layout="inline"
-                onFinish={({ download }) => handleDownload(download)}
+                onFinish={({ download }) => openDownloadUrl(download)}
                 initialValues={{ download: downloadUrls[0].downloadUrl }}
               >
                 <Form.Item name="download">
