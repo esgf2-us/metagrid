@@ -65,6 +65,7 @@ function App() {
    * @param {string} removedTag
    */
   const handleRemoveTag = (removedTag, type) => {
+    /* istanbul ignore else */
     if (type === 'text') {
       setTextInputs(() => textInputs.filter((input) => input !== removedTag));
     } else if (type === 'facet') {
@@ -74,6 +75,10 @@ function App() {
         ),
       };
       setActiveFacets({ ...activeFacets, ...updateFacet });
+    } else {
+      throw new Error(
+        `handleRemoveTag does not support argument 'type' of value ${type}`
+      );
     }
   };
 
@@ -82,6 +87,7 @@ function App() {
    * @param {arrayOf(objectOf(any))} selectedItems
    */
   const handleCart = (selectedItems, operation) => {
+    /* istanbul ignore else */
     if (operation === 'add') {
       setCart(() => {
         const itemsNotInCart = selectedItems.filter((item) => {
@@ -97,6 +103,10 @@ function App() {
         })
       );
       message.error('Removed items from the cart');
+    } else {
+      throw new Error(
+        `handleCart does not support argument 'operation' of value ${operation}`
+      );
     }
   };
 
