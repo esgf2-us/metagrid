@@ -65,9 +65,7 @@ function App() {
    * @param {string} removedTag
    */
   const handleRemoveTag = (removedTag, type) => {
-    if (type === 'project') {
-      clearConstraints();
-    } else if (type === 'text') {
+    if (type === 'text') {
       setTextInputs(() => textInputs.filter((input) => input !== removedTag));
     } else if (type === 'facet') {
       const updateFacet = {
