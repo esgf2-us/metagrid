@@ -227,14 +227,15 @@ function Search({
               </p>,
               activeFacets[facet].map((variable) => {
                 return (
-                  <Tag
-                    key={variable}
-                    value={[facet, variable]}
-                    onClose={onRemoveTag}
-                    type="facet"
-                  >
-                    {variable}
-                  </Tag>
+                  <div key={variable} data-testid={variable}>
+                    <Tag
+                      value={[facet, variable]}
+                      onClose={onRemoveTag}
+                      type="facet"
+                    >
+                      {variable}
+                    </Tag>
+                  </div>
                 );
               }),
             ];
@@ -242,9 +243,11 @@ function Search({
         {textInputs.length !== 0 &&
           textInputs.map((input) => {
             return (
-              <Tag key={input} value={input} onClose={onRemoveTag} type="text">
-                {input}
-              </Tag>
+              <div key={input} data-testid={input}>
+                <Tag value={input} onClose={onRemoveTag} type="text">
+                  {input}
+                </Tag>
+              </div>
             );
           })}
         {constraintsExist && (
