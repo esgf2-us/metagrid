@@ -21,11 +21,7 @@ function Facets({
   handleProjectChange,
   onSetActiveFacets,
 }) {
-  const {
-    data: projectsFetched,
-    error: projectsError,
-    isLoading: projectsIsLoading,
-  } = useAsync({
+  const { data, error, isLoading } = useAsync({
     promiseFn: fetchProjects,
   });
 
@@ -49,7 +45,7 @@ function Facets({
    * @param {string} name - name of the project
    */
   const handleProjectForm = (values) => {
-    const selectedProj = projectsFetched.results.find(
+    const selectedProj = data.results.find(
       (obj) => obj.name === values.project
     );
     handleProjectChange(selectedProj);
@@ -57,14 +53,16 @@ function Facets({
 
   return (
     <div data-testid="facets" style={styles.form}>
-      <ProjectForm
-        activeProject={activeProject}
-        activeFacets={activeFacets}
-        projectsFetched={projectsFetched}
-        projectsIsLoading={projectsIsLoading}
-        projectsError={projectsError}
-        handleProjectForm={handleProjectForm}
-      />
+      <div data-testid="projectForm">
+        <ProjectForm
+          activeProject={activeProject}
+          activeFacets={activeFacets}
+          projectsFetched={data}
+          projectsIsLoading={isLoading}
+          projectsError={error}
+          handleProjectForm={handleProjectForm}
+        />
+      </div>
       <Divider />
       <FacetsForm
         activeFacets={activeFacets}
