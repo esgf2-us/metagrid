@@ -126,7 +126,7 @@ it('handles adding and removing items from the cart', async () => {
     </Router>
   );
 
-  // Check all components exist
+  // Check nav-bar component exists
   await waitFor(() => expect(getByTestId('facets')).toBeTruthy());
   await waitFor(() => expect(getByTestId('nav-bar')).toBeTruthy());
 
@@ -300,10 +300,6 @@ it('handles removing facet tags', async () => {
   await waitFor(() => expect(noConstraintsText).toBeTruthy());
 });
 
-it('displays the number of files in the cart summary', async () => {});
-
-it('handles clearing the cart when the "Remove All Items" button is selected', () => {});
-
 it('handles project changes and clearing constraints when the active project !== selected project', async () => {
   // Chain mocks based on firing events
   mockAxios.get
@@ -318,13 +314,15 @@ it('handles project changes and clearing constraints when the active project !==
     </Router>
   );
 
-  // Check all components exist
+  // Check Facets component renders
   const facets = await waitFor(() => getByTestId('facets'));
   expect(facets).toBeTruthy();
 
+  // Check projectForm renders
   const projectForm = await waitFor(() => getByTestId('projectForm'));
+  expect(projectForm).toBeTruthy();
 
-  // Change value for projectForm inside facets component
+  // Update value of projectForm combobox
   const projectFormCombo = within(projectForm).getByRole('combobox');
   expect(projectFormCombo).toBeTruthy();
   fireEvent.change(projectFormCombo, { target: { value: 'foo' } });
@@ -338,16 +336,119 @@ it('handles project changes and clearing constraints when the active project !==
   const submitBtn = within(facets).getByRole('img', { name: 'select' });
   fireEvent.submit(submitBtn);
 
-  // Select the second project option
-  fireEvent.change(projectFormCombo, { target: { value: 'bar' } });
+  // Wait for Search component to re-render
+  await waitFor(() => getByTestId('search'));
 
-  const secondOption = getByTestId('project_1');
+  // Update value of projectForm combobox again
+  const projectFormCombo2 = within(projectForm).getByRole('combobox');
+  expect(projectFormCombo2).toBeTruthy();
+  fireEvent.change(projectFormCombo2, { target: { value: 'bar' } });
+
+  // Select the second project option
+  const secondOption = await waitFor(() => getByTestId('project_1'));
   expect(secondOption).toBeTruthy();
+  fireEvent.click(secondOption);
 
   // Submit the form
   fireEvent.submit(submitBtn);
+
+  // Wait for Search component to re-render
+  await waitFor(() => getByTestId('search'));
+});
+
+it('displays the number of files in the cart summary and handles clearing the cart', async () => {
+  // Chain mocks based on firing events
+  mockAxios.get
+    .mockResolvedValueOnce({ data: { results: projectResults } })
+    .mockResolvedValueOnce({ data: { results: projectResults } })
+    .mockResolvedValueOnce({ data: searchResults })
+    .mockResolvedValueOnce({ data: searchResults });
+
+  const { getByRole, getByTestId, getByText, getByPlaceholderText } = render(
+    <Router>
+      <App />
+    </Router>
+  );
+
+  // Check nav-bar component exists
+  await waitFor(() => expect(getByTestId('facets')).toBeTruthy());
+  await waitFor(() => expect(getByTestId('nav-bar')).toBeTruthy());
+
+  // Change value for free-text input
+  const input = 'foo';
+  const freeTextInput = await waitFor(() => getByPlaceholderText('Search...'));
+  expect(freeTextInput).toBeTruthy();
+  fireEvent.change(freeTextInput, { target: { value: input } });
+
+  // Submit the form
+  const submitBtn = getByRole('img', { name: 'search' });
+  fireEvent.submit(submitBtn);
+
+  // Wait for search to re-render
   await waitFor(() => getByTestId('search'));
 
-  // TODO: For some reason the project doesn't change when selecting secondOption
-  // and the div that renders the options disappear
+  // Check first row exists
+  const firstRow = getByRole('row', {
+    name: 'right-circle 3 node.gov 1 HTTPServer download plus',
+  });
+  expect(firstRow).toBeTruthy();
+
+  // Check first row has add button and click it
+  const addBtn = within(firstRow).getByRole('img', { name: 'plus' });
+  expect(addBtn).toBeTruthy();
+  fireEvent.click(addBtn);
+
+  // Check 'Added items to the cart' message appears
+  const addText = await waitFor(() => getByText('Added items to the cart'));
+  expect(addText).toBeTruthy();
+
+  // Click on the cart link
+  const cartLink = getByRole('link', { name: 'shopping-cart 1' });
+  expect(cartLink).toBeTruthy();
+  fireEvent.click(cartLink);
+
+  // Check current route is '/cart'
+  global.window = { location: { pathname: null } };
+  expect(global.window.location.pathname).toEqual('/cart');
+
+  // Check number of files and datasets are correctly displayed
+  const cart = await waitFor(() => getByTestId('cart'));
+  expect(cart).toBeTruthy();
+  const cartSummary = await waitFor(() => getByTestId('summary'));
+  expect(cartSummary).toBeTruthy();
+
+  expect(
+    getByText((_, node) => node.textContent === 'Number of Datasets: 1')
+  ).toBeTruthy();
+  expect(
+    getByText((_, node) => node.textContent === 'Number of Files: 3')
+  ).toBeTruthy();
+
+  // Check "Remove All Items" button renders with cart > 0 items and click it
+  const clearCartBtn = within(cart).getByRole('button', {
+    name: 'Remove All Items',
+  });
+  expect(clearCartBtn).toBeTruthy();
+  fireEvent.click(clearCartBtn);
+
+  // Check confirmBtn exists in popover and click it
+  const confirmBtn = await waitFor(() =>
+    getByRole('button', {
+      name: 'OK',
+    })
+  );
+  expect(confirmBtn).toBeTruthy();
+  fireEvent.click(confirmBtn);
+
+  // Check number of datasets and files are now 0
+  expect(
+    getByText((_, node) => node.textContent === 'Number of Datasets: 0')
+  ).toBeTruthy();
+  expect(
+    getByText((_, node) => node.textContent === 'Number of Files: 0')
+  ).toBeTruthy();
+
+  // Check empty alert renders
+  const emptyAlert = getByRole('img', { name: 'info-circle' });
+  expect(emptyAlert).toBeTruthy();
 });
