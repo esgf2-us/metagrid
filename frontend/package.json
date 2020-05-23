@@ -67,7 +67,8 @@
       "!**/node_modules/**",
       "!**/coverage/**",
       "!**/serviceWorker.js",
-      "!**/index.js"
+      "!**/index.js",
+      "!**/proxy.js"
     ]
   },
   "lint-staged": {
