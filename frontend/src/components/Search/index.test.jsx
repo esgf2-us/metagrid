@@ -234,16 +234,14 @@ describe('test Search component', () => {
     fireEvent.click(addCartBtn);
   });
 
-  it('handles selecting a row"s checkbox in the table and adding to the cart', async () => {
+  it('disables the "Add Selected to Cart" button when no items are in the cart', async () => {
     mockAxios.get.mockImplementationOnce(() =>
       Promise.resolve({
         data,
       })
     );
 
-    const { getByRole, getAllByRole, getByTestId } = render(
-      <Search {...defaultProps} />
-    );
+    const { getByRole, getByTestId } = render(<Search {...defaultProps} />);
 
     // Wait for search to re-render
     await waitFor(() => getByTestId('search-table'));
@@ -252,15 +250,6 @@ describe('test Search component', () => {
     const addCartBtn = getByRole('button', { name: 'Add Selected to Cart' });
     expect(addCartBtn).toBeTruthy();
     expect(addCartBtn.disabled).toBeTruthy();
-
-    // TODO: Figure out a way to select all checkbox
-    // Select the 'select all' checkbox
-    const selectAllCheckbox = getAllByRole('cell', { name: '' })[0];
-    fireEvent.click(selectAllCheckbox);
-
-    // Check 'Add Selected to Cart' button is enabled and click it
-    // expect(addCartBtn.disabled).toBeFalsy();
-    // fireEvent.click(addCartBtn);
   });
 });
 
