@@ -26,8 +26,12 @@ it('shows the correct number of datasets and files', () => {
     </Router>
   );
   // Shows number of files
-  expect(getByText('2')).toBeTruthy();
-  expect(getByText('5')).toBeTruthy();
+  expect(
+    getByText((_, node) => node.textContent === 'Number of Datasets: 2')
+  ).toBeTruthy();
+  expect(
+    getByText((_, node) => node.textContent === 'Number of Files: 5')
+  ).toBeTruthy();
 });
 
 it('handles the download form submission with handleOnFinish()', () => {
@@ -36,7 +40,9 @@ it('handles the download form submission with handleOnFinish()', () => {
       <Summary {...defaultProps} />
     </Router>
   );
-  // Shows number of files
+
+  // Check download button renders and click it
   const downloadBtn = getByRole('img', { name: 'download' });
+  expect(downloadBtn).toBeTruthy();
   fireEvent.submit(downloadBtn);
 });
