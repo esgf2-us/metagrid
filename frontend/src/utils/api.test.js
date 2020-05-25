@@ -76,6 +76,29 @@ describe('test genUrlQuery()', () => {
       'http://someBaseUrl.com/?limit=100&offset=200&query=input1,input2&facet1=var1,var2&facet2=var3,var4'
     );
   });
+  it('returns formatted url without free-text', () => {
+    const pagination = {
+      page: 1,
+      pageSize: 10,
+    };
+
+    const url = genUrlQuery(baseUrl, [], activeFacets, pagination);
+    expect(url).toEqual(
+      'http://someBaseUrl.com/?limit=10&offset=0&query=*&facet1=var1,var2&facet2=var3,var4'
+    );
+  });
+
+  it('returns formatted url without facets', () => {
+    const pagination = {
+      page: 1,
+      pageSize: 10,
+    };
+
+    const url = genUrlQuery(baseUrl, textInputs, [], pagination);
+    expect(url).toEqual(
+      'http://someBaseUrl.com/?limit=10&offset=0&query=input1,input2&'
+    );
+  });
 });
 
 describe('test fetchResults()', () => {

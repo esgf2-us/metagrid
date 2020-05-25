@@ -3,7 +3,11 @@ import { PropTypes } from 'prop-types';
 import { Skeleton as SkeletonD } from 'antd';
 
 const Skeleton = ({ active }) => {
-  return <SkeletonD active={active} />;
+  return (
+    <div data-testid="skeleton">
+      <SkeletonD active={active} />
+    </div>
+  );
 };
 
 Skeleton.propTypes = {

@@ -25,8 +25,15 @@ function FacetsForm({ activeFacets, availableFacets, handleFacetsForm }) {
     facetsForm.resetFields();
   }, [facetsForm, activeFacets]);
 
+  /**
+   * Enables or disables the submit button if any of the facet form items change
+   * @param {*} allValues
+   */
   const handleValuesChange = (allValues) => {
-    const values = Object.values(allValues).flat();
+    const values = Object.keys(allValues).reduce((r, k) => {
+      return r.concat(allValues[k]);
+    }, []);
+
     if (values.length > 0) {
       setBtnDisabled(false);
     } else {
@@ -35,10 +42,11 @@ function FacetsForm({ activeFacets, availableFacets, handleFacetsForm }) {
   };
 
   return (
-    <>
+    <div data-testid="facets-form">
       <div style={styles.applyBtn}>
         {!isEmpty(availableFacets) && (
           <Button
+            data-testid="facets-form-btn"
             onClick={() => facetsForm.submit()}
             type="primary"
             htmlType="submit"
@@ -69,6 +77,7 @@ function FacetsForm({ activeFacets, availableFacets, handleFacetsForm }) {
                     name={facet}
                   >
                     <Select
+                      data-testid={`${facet}-form-select`}
                       size="small"
                       placeholder="Select option(s)"
                       mode="multiple"
@@ -78,7 +87,11 @@ function FacetsForm({ activeFacets, availableFacets, handleFacetsForm }) {
                     >
                       {availableFacets[facet].map((variable) => {
                         return (
-                          <Select.Option key={variable[0]} value={variable[0]}>
+                          <Select.Option
+                            data-testid={`${facet}_${variable[0]}`}
+                            key={variable[0]}
+                            value={variable[0]}
+                          >
                             {variable[0]}
                             <span style={styles.facetCount}>
                               ({variable[1]})
@@ -94,7 +107,7 @@ function FacetsForm({ activeFacets, availableFacets, handleFacetsForm }) {
           </Collapse>
         </Form>
       </div>
-    </>
+    </div>
   );
 }
 
