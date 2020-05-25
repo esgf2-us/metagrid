@@ -371,7 +371,6 @@ it('displays the number of files in the cart summary and handles clearing the ca
   );
 
   // Check nav-bar component exists
-  await waitFor(() => expect(getByTestId('facets')).toBeTruthy());
   await waitFor(() => expect(getByTestId('nav-bar')).toBeTruthy());
 
   // Change value for free-text input
