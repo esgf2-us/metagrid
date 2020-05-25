@@ -72,12 +72,13 @@ it('renders App component', async () => {
 });
 
 it('handles project changes when a new project is selected', async () => {
-  // Mock projects initially
-  mockAxios.get.mockImplementationOnce(() =>
-    Promise.resolve({
-      data: { results: projectResults },
-    })
-  );
+  // Mock axios initially with chained calls
+  mockAxios.get
+    .mockResolvedValueOnce({ data: { results: projectResults } })
+    .mockResolvedValueOnce({ data: { results: projectResults } })
+    .mockResolvedValueOnce({ data: searchResults })
+    .mockResolvedValueOnce({ data: searchResults });
+
   const { getByPlaceholderText, getByRole, getByTestId, getByText } = render(
     <Router>
       <App />
@@ -110,10 +111,13 @@ it('handles project changes when a new project is selected', async () => {
     getByText(`Input "${input}" has already been applied`)
   );
   expect(errorMsg).toBeTruthy();
+
+  // Check mockAxios.get calls
+  expect(mockAxios.get).toHaveBeenCalledTimes(4);
 });
 
 it('handles adding and removing items from the cart', async () => {
-  // Chain mocks based on firing events
+  // Mock axios initially with chained calls
   mockAxios.get
     .mockResolvedValueOnce({ data: { results: projectResults } })
     .mockResolvedValueOnce({ data: { results: projectResults } })
@@ -168,13 +172,17 @@ it('handles adding and removing items from the cart', async () => {
     getByText('Removed items from the cart')
   );
   expect(removeText).toBeTruthy();
+
+  // Check mockAxios.get calls
+  expect(mockAxios.get).toHaveBeenCalledTimes(4);
 });
 
 it('handles removing search tags and clearing all search tags', async () => {
-  // Chain mocks based on firing events
+  // Mock axios initially with chained calls
   mockAxios.get
     .mockResolvedValueOnce({ data: { results: projectResults } })
     .mockResolvedValueOnce({ data: { results: projectResults } })
+    .mockResolvedValueOnce({ data: searchResults })
     .mockResolvedValueOnce({ data: searchResults })
     .mockResolvedValueOnce({ data: searchResults })
     .mockResolvedValueOnce({ data: searchResults })
@@ -227,10 +235,13 @@ it('handles removing search tags and clearing all search tags', async () => {
 
   // Check no constraints applied
   await waitFor(() => expect(noConstraintsText).toBeTruthy());
+
+  // Check mockAxios.get calls
+  expect(mockAxios.get).toHaveBeenCalledTimes(7);
 });
 
 it('handles removing facet tags', async () => {
-  // Chain mocks based on firing events
+  // Mock axios initially with chained calls
   mockAxios.get
     .mockResolvedValueOnce({ data: { results: projectResults } })
     .mockResolvedValueOnce({ data: { results: projectResults } })
@@ -248,10 +259,12 @@ it('handles removing facet tags', async () => {
   const facets = await waitFor(() => getByTestId('facets'));
   expect(facets).toBeTruthy();
 
-  // Change value for projectForm inside facets component
-  const projectForm = within(facets).getByRole('combobox');
-  expect(projectForm).toBeTruthy();
-  fireEvent.change(projectForm, { target: { value: 'foo' } });
+  // Check project select form exists and mouseDown to expand list of options to expand options
+  const projectFormSelect = document.querySelector(
+    '[data-testid=project-form-select] > .ant-select-selector'
+  );
+  expect(projectFormSelect).toBeTruthy();
+  fireEvent.mouseDown(projectFormSelect);
 
   // Select the first project option
   const projectOption = getByTestId('project_0');
@@ -272,12 +285,12 @@ it('handles removing facet tags', async () => {
   const collapse = getByText('Facet1');
   fireEvent.click(collapse);
 
-  // Change the value of the Select (combobox) in order for the options to
-  // render on the DOM.
-  const facet1Form = await waitFor(() => getByTestId('facet1_form'));
-  const formField = within(facet1Form).getByRole('combobox');
-  expect(formField).toBeTruthy();
-  fireEvent.change(formField, { target: { value: 'foo' } });
+  // Check facet select form exists and mouseDown to expand list of options
+  const facetFormSelect = document.querySelector(
+    '[data-testid=facet1-form-select] > .ant-select-selector'
+  );
+  expect(facetFormSelect).toBeTruthy();
+  fireEvent.mouseDown(facetFormSelect);
 
   // Select the first facet option
   const facetOption = await waitFor(() => getByTestId('facet1_foo'));
@@ -298,14 +311,16 @@ it('handles removing facet tags', async () => {
 
   // Check no constraints applied
   await waitFor(() => expect(noConstraintsText).toBeTruthy());
+
+  // Check mockAxios.get calls
+  expect(mockAxios.get).toHaveBeenCalledTimes(5);
 });
 
 it('handles project changes and clearing constraints when the active project !== selected project', async () => {
-  // Chain mocks based on firing events
+  // Mock axios initially with chained calls
   mockAxios.get
     .mockResolvedValueOnce({ data: { results: projectResults } })
     .mockResolvedValueOnce({ data: { results: projectResults } })
-    .mockResolvedValueOnce({ data: searchResults })
     .mockResolvedValueOnce({ data: searchResults });
 
   const { getByTestId } = render(
@@ -315,34 +330,29 @@ it('handles project changes and clearing constraints when the active project !==
   );
 
   // Check Facets component renders
+  const navBar = await waitFor(() => getByTestId('nav-bar'));
+  expect(navBar).toBeTruthy();
+
   const facets = await waitFor(() => getByTestId('facets'));
   expect(facets).toBeTruthy();
 
-  // Check projectForm renders
-  const projectForm = await waitFor(() => getByTestId('projectForm'));
-  expect(projectForm).toBeTruthy();
-
-  // Update value of projectForm combobox
-  const projectFormCombo = within(projectForm).getByRole('combobox');
-  expect(projectFormCombo).toBeTruthy();
-  fireEvent.change(projectFormCombo, { target: { value: 'foo' } });
+  // Check project select form exists and mouseDown to expand list of options
+  const projectFormSelect = document.querySelector(
+    '[data-testid=project-form-select] > .ant-select-selector'
+  );
+  expect(projectFormSelect).toBeTruthy();
+  fireEvent.mouseDown(projectFormSelect);
 
   // Select the first project option
-  const projectOption = await waitFor(() => getByTestId('project_0'));
-  expect(projectOption).toBeTruthy();
+  const projectOption = getByTestId('project_0');
+  expect(projectOption).toBeInTheDocument();
   fireEvent.click(projectOption);
 
   // Submit the form
   const submitBtn = within(facets).getByRole('img', { name: 'select' });
   fireEvent.submit(submitBtn);
 
-  // Wait for Search component to re-render
-  await waitFor(() => getByTestId('search'));
-
-  // Update value of projectForm combobox again
-  const projectFormCombo2 = within(projectForm).getByRole('combobox');
-  expect(projectFormCombo2).toBeTruthy();
-  fireEvent.change(projectFormCombo2, { target: { value: 'bar' } });
+  fireEvent.mouseDown(projectFormSelect);
 
   // Select the second project option
   const secondOption = await waitFor(() => getByTestId('project_1'));
@@ -352,12 +362,12 @@ it('handles project changes and clearing constraints when the active project !==
   // Submit the form
   fireEvent.submit(submitBtn);
 
-  // Wait for Search component to re-render
-  await waitFor(() => getByTestId('search'));
+  // Check mockAxios.get calls
+  expect(mockAxios.get).toHaveBeenCalledTimes(3);
 });
 
 it('displays the number of files in the cart summary and handles clearing the cart', async () => {
-  // Chain mocks based on firing events
+  // Mock axios initially with chained calls
   mockAxios.get
     .mockResolvedValueOnce({ data: { results: projectResults } })
     .mockResolvedValueOnce({ data: { results: projectResults } })
@@ -371,11 +381,12 @@ it('displays the number of files in the cart summary and handles clearing the ca
   );
 
   // Check nav-bar component exists
-  await waitFor(() => expect(getByTestId('nav-bar')).toBeTruthy());
+  const navBar = await waitFor(() => getByTestId('nav-bar'));
+  expect(navBar).toBeTruthy();
 
   // Change value for free-text input
   const input = 'foo';
-  const freeTextInput = await waitFor(() => getByPlaceholderText('Search...'));
+  const freeTextInput = getByPlaceholderText('Search...');
   expect(freeTextInput).toBeTruthy();
   fireEvent.change(freeTextInput, { target: { value: input } });
 
@@ -450,4 +461,7 @@ it('displays the number of files in the cart summary and handles clearing the ca
   // Check empty alert renders
   const emptyAlert = getByRole('img', { name: 'info-circle' });
   expect(emptyAlert).toBeTruthy();
+
+  // Check mockAxios.get calls
+  expect(mockAxios.get).toBeCalledTimes(4);
 });
