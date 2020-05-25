@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, render, within } from '@testing-library/react';
+import { fireEvent, render } from '@testing-library/react';
 
 import FacetsForm from './FacetsForm';
 
@@ -30,12 +30,12 @@ it('disables submit button when there are no selected facet options', () => {
   const collapse = getByText('Facet1');
   fireEvent.click(collapse);
 
-  // Change the value of the Select (combobox) in order for the options to
-  // render on the DOM.
-  const facet1Form = getByTestId('facet1_form');
-  const formField = within(facet1Form).getByRole('combobox');
-  expect(formField).toBeTruthy();
-  fireEvent.change(formField, { target: { value: 'foo' } });
+  // Check facet select form exists and mouseDown to expand list of options
+  const facetFormSelect = document.querySelector(
+    '[data-testid=facet1-form-select] > .ant-select-selector'
+  );
+  expect(facetFormSelect).toBeTruthy();
+  fireEvent.mouseDown(facetFormSelect);
 
   // Check submit button is initially disabled
   const submitBtn = getByRole('button', { name: 'filter Apply Facets' });
