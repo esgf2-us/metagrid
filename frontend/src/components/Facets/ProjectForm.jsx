@@ -65,7 +65,12 @@ function ProjectsForm({
           name="project"
           rules={[{ required: true, message: 'Project is required' }]}
         >
-          <Select placeholder="Select a project" style={styles.form} showArrow>
+          <Select
+            data-testid="project-form-select"
+            placeholder="Select a project"
+            style={styles.form}
+            showArrow
+          >
             {projectsFetched.results.map((projectObj, index) => {
               return (
                 <Select.Option

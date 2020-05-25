@@ -72,12 +72,12 @@ function FacetsForm({ activeFacets, availableFacets, handleFacetsForm }) {
               return (
                 <Collapse.Panel header={humanize(facet)} key={facet}>
                   <Form.Item
-                    data-testid={`${facet}_form`}
                     style={{ marginBottom: '4px' }}
                     key={facet}
                     name={facet}
                   >
                     <Select
+                      data-testid={`${facet}-form-select`}
                       size="small"
                       placeholder="Select option(s)"
                       mode="multiple"
