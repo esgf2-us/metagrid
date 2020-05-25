@@ -58,11 +58,12 @@ it('handles when the project form is submitted with handleProjectsForm()', async
   const projectForm = getByTestId('project-form');
   expect(projectForm).toBeTruthy();
 
-  // Change the value of the Select component in order for the options to
-  // render on the DOM
-  const formField = within(projectForm).getByRole('combobox');
-  fireEvent.change(formField, { target: { value: 'test1' } });
-  expect(formField).toBeTruthy();
+  // Check facet select form exists and mouseDown to expand list of options
+  const projectFormSelect = document.querySelector(
+    '[data-testid=project-form-select] > .ant-select-selector'
+  );
+  expect(projectFormSelect).toBeTruthy();
+  fireEvent.mouseDown(projectFormSelect);
 
   // Select the first project option
   const projectOption = getByTestId('project_0');
@@ -94,12 +95,12 @@ it('handles facets form submission with handleFacetsForm()', async () => {
   const collapse = getByText('Facet1');
   fireEvent.click(collapse);
 
-  // Change the value of the Select (combobox) in order for the options to
-  // render on the DOM.
-  const facet1Form = getByTestId('facet1_form');
-  const formField = within(facet1Form).getByRole('combobox');
-  expect(formField).toBeTruthy();
-  fireEvent.change(formField, { target: { value: 'foo' } });
+  // Check facet select form exists and mouseDown to expand list of options
+  const facetFormSelect = document.querySelector(
+    '[data-testid=facet1-form-select] > .ant-select-selector'
+  );
+  expect(facetFormSelect).toBeTruthy();
+  fireEvent.mouseDown(facetFormSelect);
 
   // Select the first facet option
   const facetOption = getByTestId('facet1_foo');
@@ -129,12 +130,12 @@ it('handles facets form submission with handleFacetsForm(), including a facet ke
   const collapse = getByText('Facet1');
   fireEvent.click(collapse);
 
-  // Change the value of the Select (combobox) in order for the options to
-  // render on the DOM.
-  const facet1Form = getByTestId('facet1_form');
-  const formField = within(facet1Form).getByRole('combobox');
-  expect(formField).toBeTruthy();
-  fireEvent.change(formField, { target: { value: 'foo' } });
+  // Check facet select form exists and mouseDown to expand list of options
+  const facetFormSelect = document.querySelector(
+    '[data-testid=facet1-form-select] > .ant-select-selector'
+  );
+  expect(facetFormSelect).toBeTruthy();
+  fireEvent.mouseDown(facetFormSelect);
 
   // Select the first facet option
   const facetOption = getByTestId('facet1_foo');
@@ -150,11 +151,14 @@ it('handles facets form submission with handleFacetsForm(), including a facet ke
   const collapse2 = getByText('Facet2');
   fireEvent.click(collapse2);
 
-  // Click on the facet2 form but don't select an option
+  // Click on the facet2 select form but don't select an option
   // This will result in an undefined value for the form item (ant-design logic)
-  const facet2Form = getByTestId('facet2_form');
-  const formField2 = within(facet2Form).getByRole('combobox');
-  fireEvent.click(formField2);
+  // Check facet select form exists and mouseDown to expand list of options
+  const facetFormSelect2 = document.querySelector(
+    '[data-testid=facet2-form-select] > .ant-select-selector'
+  );
+  expect(facetFormSelect2).toBeTruthy();
+  fireEvent.mouseDown(facetFormSelect2);
 
   // Submit the form
   // NOTE: Submit button is outside of the form, so use click instead of submit
