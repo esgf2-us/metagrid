@@ -97,8 +97,8 @@ function Table({
     rowSelection: {
       getCheckboxProps: (record) =>
         cart.includes(record, 0) ? { disabled: true } : { disabled: false },
-      onSelect,
-      onSelectAll: onSelect,
+      onSelect: (_record, _selected, selectedRows) => onSelect(selectedRows),
+      onSelectAll: (_selected, selectedRows) => onSelect(selectedRows),
     },
     hasData: results.length > 0,
   };
@@ -235,16 +235,14 @@ function Table({
   ];
 
   return (
-    <div>
-      <TableD
-        // eslint-disable-next-line react/jsx-props-no-spreading
-        {...tableConfig}
-        columns={columns}
-        dataSource={tableConfig.hasData ? results : null}
-        rowKey="id"
-        scroll={{ y: 595 }}
-      />
-    </div>
+    <TableD
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      {...tableConfig}
+      columns={columns}
+      dataSource={tableConfig.hasData ? results : null}
+      rowKey="id"
+      scroll={{ y: 595 }}
+    />
   );
 }
 

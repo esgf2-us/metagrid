@@ -5,16 +5,16 @@ import { DownloadOutlined } from '@ant-design/icons';
 
 import { Form, Select, Table as TableD } from 'antd';
 
+import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
 
 import { fetchFiles } from '../../utils/api';
 import { parseUrl } from '../../utils/utils';
-import Alert from '../Feedback/Alert';
 
 /**
  * Splits the string by a delimiter and pops the last string
  */
-function genDownloadUrls(urls) {
+export function genDownloadUrls(urls) {
   const newUrls = [];
   urls.forEach((url) => {
     const downloadType = url.split('|').pop();
@@ -23,20 +23,19 @@ function genDownloadUrls(urls) {
   });
   return newUrls;
 }
+/**
+ * Opens the selected download url in a new tab
+ * @param {string} url - The url of the download option
+ */
+export function openDownloadUrl(url) {
+  return window.open(url, '_blank');
+}
 
 function FilesTable({ id }) {
   const { data, error, isLoading } = useAsync({
     promiseFn: fetchFiles,
     id,
   });
-
-  /**
-   * Opens the selected download url in a new tab
-   * @param {} values
-   */
-  const openDownloadUrl = ({ downloadUrl }) => {
-    return window.open(downloadUrl, '_blank');
-  };
 
   if (error) {
     return (
@@ -77,9 +76,10 @@ function FilesTable({ id }) {
           return (
             <span>
               <Form
+                data-testid="download-form"
                 layout="inline"
-                onFinish={(values) => openDownloadUrl(values)}
-                initialValues={{ download: downloadUrls[0].downloadType }}
+                onFinish={({ download }) => openDownloadUrl(download)}
+                initialValues={{ download: downloadUrls[0].downloadUrl }}
               >
                 <Form.Item name="download">
                   <Select style={{ width: 120 }}>
@@ -110,12 +110,12 @@ function FilesTable({ id }) {
 
     return (
       <TableD
-        // eslint-disable-next-line react/jsx-props-no-spreading
+        data-testid="filesTable"
         size="small"
         loading={isLoading}
         pagination={{ position: ['bottomCenter'], showSizeChanger: true }}
         columns={columns}
-        dataSource={data ? data.response.docs : null}
+        dataSource={data.response.docs}
         rowKey="id"
         scroll={{ y: 300 }}
       />

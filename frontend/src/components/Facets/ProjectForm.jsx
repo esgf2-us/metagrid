@@ -53,7 +53,7 @@ function ProjectsForm({
   }
 
   return (
-    <div>
+    <div data-testid="project-form">
       <Form
         form={projectForm}
         layout="inline"
@@ -65,10 +65,19 @@ function ProjectsForm({
           name="project"
           rules={[{ required: true, message: 'Project is required' }]}
         >
-          <Select placeholder="Select a project" style={styles.form} showArrow>
-            {projectsFetched.results.map((projectObj) => {
+          <Select
+            data-testid="project-form-select"
+            placeholder="Select a project"
+            style={styles.form}
+            showArrow
+          >
+            {projectsFetched.results.map((projectObj, index) => {
               return (
-                <Select.Option key={projectObj.name} value={projectObj.name}>
+                <Select.Option
+                  data-testid={`project_${index}`}
+                  key={projectObj.name}
+                  value={projectObj.name}
+                >
                   {projectObj.name}
                 </Select.Option>
               );

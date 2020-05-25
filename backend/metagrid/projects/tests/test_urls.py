@@ -7,7 +7,7 @@ pytestmark = pytest.mark.django_db
 
 
 def test_list():
-    assert reverse("project-list") == f"/api/v1/projects/"
+    assert reverse("project-list") == "/api/v1/projects/"
 
 
 def test_detail():
