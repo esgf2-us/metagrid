@@ -166,6 +166,7 @@ function Table({
                 type="primary"
                 icon={<DownloadOutlined />}
                 size={12}
+                disabled
               ></Button>
             </Form.Item>
           </Form>
