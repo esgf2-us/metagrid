@@ -1,15 +1,21 @@
 backend:
-  only:
-    changes:
-      - backend/*
+  rules:
+    - changes:
+        - backend/*
+      when: always
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
+      when: always
   trigger:
     include: backend/.gitlab-ci.yml
     strategy: depend
 
 frontend:
-  only:
-    changes:
-      - frontend/*
+  rules:
+    - changes:
+        - frontend/*
+      when: always
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
+      when: always
   trigger:
     include: frontend/.gitlab-ci.yml
     strategy: depend
