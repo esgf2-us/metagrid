@@ -20,7 +20,10 @@ function RightMenu({ mode, cartItems }) {
         <Menu.Item key="search">
           <Link to="/search">Search</Link>
         </Menu.Item>
-        <SubMenu title={<span className="submenu-title-wrapper">Learn</span>}>
+        <SubMenu
+          title={<span className="submenu-title-wrapper">Learn</span>}
+          disabled
+        >
           <Menu.ItemGroup title="Documentation">
             <Menu.Item key="guide">Guide</Menu.Item>
             <Menu.Item key="api">API</Menu.Item>
