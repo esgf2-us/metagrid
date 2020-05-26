@@ -7,7 +7,7 @@ flake8-isort==3.0.0  # https://github.com/gforcada/flake8-isort
 coverage==5.1  # https://github.com/nedbat/coveragepy
 black==19.10b0  # https://github.com/ambv/black
 mypy==0.770  # https://github.com/python/mypy
-codecov==2.0.22  # https://github.com/codecov/codecov-python
+codecov==2.1.0  # https://github.com/codecov/codecov-python
 
 # Testing
 # ------------------------------------------------------------------------------
