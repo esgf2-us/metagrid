@@ -23,6 +23,7 @@ const styles = {
     },
   },
   facetTag: { fontWeight: 'bold' },
+  resultsHeader: { fontWeight: 'bold' },
 };
 /**
  * Joins adjacent elements of the facets obj into a tuple using reduce().
@@ -180,22 +181,39 @@ function Search({
     <div data-testid="search">
       <div style={styles.summary}>
         <div style={styles.summary.leftSide}>
-          {results ? (
-            <h4>
-              {results.response.numFound} results found for{' '}
-              <span style={{ fontWeight: 'bold' }}>{activeProject.name}</span>
-              {constraintsExist && (
-                <Typography.Text code>
-                  {stringifyConstraints(activeFacets, textInputs)}
-                </Typography.Text>
-              )}
-            </h4>
-          ) : (
+          {isEmpty(activeProject) && (
             <Alert
               message="Search for a project to display results"
               type="info"
               showIcon
             />
+          )}
+
+          {isLoading && (
+            <h3>
+              <span style={styles.resultsHeader}>Loading </span> results for{' '}
+              <span style={styles.resultsHeader}>{activeProject.name}</span>{' '}
+              {constraintsExist && (
+                <Typography.Text code>
+                  {stringifyConstraints(activeFacets, textInputs)}
+                </Typography.Text>
+              )}
+            </h3>
+          )}
+
+          {results && !isLoading && (
+            <h3>
+              <span style={styles.resultsHeader}>
+                {results.response.numFound}{' '}
+              </span>
+              results found for{' '}
+              <span style={styles.resultsHeader}>{activeProject.name}</span>{' '}
+              {constraintsExist && (
+                <Typography.Text code>
+                  {stringifyConstraints(activeFacets, textInputs)}
+                </Typography.Text>
+              )}
+            </h3>
           )}
         </div>
         <div>
@@ -265,7 +283,7 @@ function Search({
       <Row gutter={[24, 16]} justify="space-around">
         <Col lg={24}>
           <div data-testid="search-table">
-            {results ? (
+            {results && !isLoading ? (
               <Table
                 loading={false}
                 results={results.response.docs}
