@@ -50,6 +50,9 @@ beforeEach(() => {
       },
     },
   };
+
+  // Set timeout since some tests run longer than 5000ms
+  jest.setTimeout(10000);
 });
 
 // Reset all mocks after each test
@@ -329,10 +332,7 @@ it('handles project changes and clearing constraints when the active project !==
     </Router>
   );
 
-  // Check Facets component renders
-  const navBar = await waitFor(() => getByTestId('nav-bar'));
-  expect(navBar).toBeTruthy();
-
+  // Check facet component renders
   const facets = await waitFor(() => getByTestId('facets'));
   expect(facets).toBeTruthy();
 
@@ -352,18 +352,29 @@ it('handles project changes and clearing constraints when the active project !==
   const submitBtn = within(facets).getByRole('img', { name: 'select' });
   fireEvent.submit(submitBtn);
 
-  fireEvent.mouseDown(projectFormSelect);
+  // Wait for search to re-render with results for project_0
+  await waitFor(() => getByTestId('search'));
+
+  // Check project select form exists again and mouseDown to expand list of options
+  const projectFormSelect2 = document.querySelector(
+    '[data-testid=project-form-select] > .ant-select-selector'
+  );
+  expect(projectFormSelect).toBeTruthy();
+  fireEvent.mouseDown(projectFormSelect2);
 
   // Select the second project option
-  const secondOption = await waitFor(() => getByTestId('project_1'));
-  expect(secondOption).toBeTruthy();
+  const secondOption = getByTestId('project_1');
+  expect(secondOption).toBeInTheDocument();
   fireEvent.click(secondOption);
 
   // Submit the form
   fireEvent.submit(submitBtn);
 
+  // Wait for search to re-render with results for project_1
+  await waitFor(() => getByTestId('search'));
+
   // Check mockAxios.get calls
-  expect(mockAxios.get).toHaveBeenCalledTimes(3);
+  expect(mockAxios.get).toHaveBeenCalledTimes(4);
 });
 
 it('displays the number of files in the cart summary and handles clearing the cart', async () => {
