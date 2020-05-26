@@ -50,6 +50,9 @@ beforeEach(() => {
       },
     },
   };
+
+  // Set timeout since some tests run longer than 5000ms
+  jest.setTimeout(10000);
 });
 
 // Reset all mocks after each test
