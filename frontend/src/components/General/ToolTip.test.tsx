@@ -6,7 +6,7 @@ import ToolTip from './ToolTip';
 it('returns component with required title', () => {
   const { getByText, findByText, getByRole } = render(
     <ToolTip title="foo" trigger="click">
-      Click Me
+      <p>Click Me</p>
     </ToolTip>
   );
 
