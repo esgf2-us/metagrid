@@ -75,3 +75,7 @@ typings/
 
 # Yarn Integrity file
 .yarn-integrity
+
+# TypeScript file
+# https://github.com/facebook/create-react-app/issues/6560
+src/react-app-env.d.ts
