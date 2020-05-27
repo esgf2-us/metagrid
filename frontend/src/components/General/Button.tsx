@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button as ButtonD } from 'antd';
 
-interface Props {
+type Props = {
   type?: 'link' | 'ghost' | 'default' | 'primary' | 'dashed' | undefined;
   className?: string | undefined;
   href?: string | undefined;
@@ -12,8 +12,8 @@ interface Props {
     | ((event: React.MouseEvent<HTMLElement, MouseEvent>) => void)
     | undefined;
   disabled?: boolean | undefined;
-  children: React.ReactElement;
-}
+  children?: React.ReactElement;
+};
 
 const Button: React.FC<Props> = ({
   type = 'primary',
