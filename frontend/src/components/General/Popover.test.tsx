@@ -6,7 +6,7 @@ import Popover from './Popover';
 it('returns component with required content', () => {
   const { getByText, getByRole, findByText } = render(
     <Popover content={<p>foobar</p>} trigger="click">
-      Click Me
+      <p>Click Me</p>
     </Popover>
   );
 
