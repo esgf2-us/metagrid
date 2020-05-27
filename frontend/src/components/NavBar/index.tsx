@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAsync } from 'react-async';
-import PropTypes from 'prop-types';
 import { Drawer } from 'antd';
 import { MenuUnfoldOutlined } from '@ant-design/icons';
 
@@ -19,7 +18,19 @@ const styles = {
   spin: { display: 'flex', justifyContent: 'center' },
 };
 
-function NavBar({ activeProject, cartItems, onSearch, onProjectChange }) {
+type Props = {
+  activeProject: { [key: string]: string | [string] };
+  cartItems: number;
+  onSearch: () => void;
+  onProjectChange: () => void;
+};
+
+const NavBar: React.FC<Props> = ({
+  activeProject,
+  cartItems,
+  onSearch,
+  onProjectChange,
+}) => {
   const { data, error, isLoading } = useAsync(fetchProjects);
   const [showDrawer, setShowDrawer] = React.useState(false);
 
@@ -85,15 +96,6 @@ function NavBar({ activeProject, cartItems, onSearch, onProjectChange }) {
       </div>
     </nav>
   );
-}
-
-NavBar.propTypes = {
-  activeProject: PropTypes.objectOf(
-    PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)])
-  ).isRequired,
-  cartItems: PropTypes.number.isRequired,
-  onSearch: PropTypes.func.isRequired,
-  onProjectChange: PropTypes.func.isRequired,
 };
 
 export default NavBar;
