@@ -73,12 +73,10 @@ function ProjectsForm({
           >
             {projectsFetched.results.map((projectObj, index) => {
               return (
-                <Select.Option
-                  data-testid={`project_${index}`}
-                  key={projectObj.name}
-                  value={projectObj.name}
-                >
-                  {projectObj.name}
+                <Select.Option key={projectObj.name} value={projectObj.name}>
+                  <span data-testid={`project_${index}`}>
+                    {projectObj.name}
+                  </span>
                 </Select.Option>
               );
             })}
