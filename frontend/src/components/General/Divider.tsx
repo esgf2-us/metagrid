@@ -1,8 +1,8 @@
 import React from 'react';
 import { Divider as DividerD } from 'antd';
 
-function Divider() {
+const Divider: React.FC = () => {
   return <DividerD />;
-}
+};
 
 export default Divider;
