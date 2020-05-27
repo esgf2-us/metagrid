@@ -87,14 +87,12 @@ function FacetsForm({ activeFacets, availableFacets, handleFacetsForm }) {
                     >
                       {availableFacets[facet].map((variable) => {
                         return (
-                          <Select.Option
-                            data-testid={`${facet}_${variable[0]}`}
-                            key={variable[0]}
-                            value={variable[0]}
-                          >
-                            {variable[0]}
-                            <span style={styles.facetCount}>
-                              ({variable[1]})
+                          <Select.Option key={variable[0]} value={variable[0]}>
+                            <span data-testid={`${facet}_${variable[0]}`}>
+                              {variable[0]}
+                              <span style={styles.facetCount}>
+                                ({variable[1]})
+                              </span>
                             </span>
                           </Select.Option>
                         );
