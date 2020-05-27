@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Popconfirm as PopconfirmD } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 
