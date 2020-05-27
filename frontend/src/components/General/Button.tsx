@@ -12,7 +12,7 @@ type Props = {
     | ((event: React.MouseEvent<HTMLElement, MouseEvent>) => void)
     | undefined;
   disabled?: boolean | undefined;
-  children?: React.ReactElement;
+  children?: React.ReactElement | React.ReactNode | string;
 };
 
 const Button: React.FC<Props> = ({
