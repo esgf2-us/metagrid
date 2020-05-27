@@ -4,10 +4,19 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { render } from '@testing-library/react';
 import RightMenu from './RightMenu';
 
-const rightMenuProps = {
+const rightMenuProps: {
+  mode:
+    | 'horizontal'
+    | 'vertical'
+    | 'vertical-left'
+    | 'vertical-right'
+    | 'inline';
+  cartItems: number;
+} = {
   mode: 'horizontal',
   cartItems: 4,
 };
+
 test('RightMenu displays correct number of cartItems', () => {
   const { getByText } = render(
     <Router>
@@ -15,8 +24,4 @@ test('RightMenu displays correct number of cartItems', () => {
     </Router>
   );
   expect(getByText('4')).toBeTruthy();
-});
-test('RightMenu links redirect', () => {
-  // TODO: After integrating react-router and respective links
-  test.todo('placeholder');
 });
