@@ -11,7 +11,7 @@ const leftMenuProps = {
   onProjectChange: jest.fn(),
 };
 
-it('renders search input', async () => {
+it('renders search input', () => {
   // NOTE: Since the Select component can't be set, this test only checks if
   // the Search form field's value changes. It does not test calling the
   // onFinish function when the user submits the form.
@@ -32,7 +32,7 @@ it('successfully submits search form and resets current text with onFinish', asy
   );
 
   // Change form field values
-  const input = getByPlaceholderText('Search...');
+  const input = getByPlaceholderText('Search...') as HTMLInputElement;
   fireEvent.change(input, { target: { value: 'Solar' } });
   expect(input.value).toEqual('Solar');
 
@@ -57,7 +57,7 @@ it('successfully submits search form and resets current text with onFinish, and 
   );
 
   // Change form field values
-  const input = getByPlaceholderText('Search...');
+  const input = getByPlaceholderText('Search...') as HTMLInputElement;
   fireEvent.change(input, { target: { value: 'Solar' } });
   expect(input.value).toEqual('Solar');
 

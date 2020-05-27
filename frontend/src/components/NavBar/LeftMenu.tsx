@@ -1,23 +1,33 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Form, Input, Select } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 
 import Button from '../General/Button';
 
-const { Option } = Select;
 const styles = {
   searchForm: { marginTop: '1em' },
 };
-function LeftMenu({ activeProject, projects, onSearch, onProjectChange }) {
+
+type Props = {
+  activeProject: { [key: string]: string | number | [string] | undefined };
+  projects: { [key: string]: string | number }[];
+  onSearch: (text: string) => void;
+  onProjectChange: (selectedProj?: { [key: string]: string | number }) => void;
+};
+
+const LeftMenu: React.FC<Props> = ({
+  activeProject,
+  projects,
+  onSearch,
+  onProjectChange,
+}) => {
   const [form] = Form.useForm();
   const [text, setText] = React.useState('');
 
   /**
    * Sets the project and search value using the search form
-   * @param {*} values
    */
-  const onFinish = (values) => {
+  const onFinish: (values: { [key: string]: string }) => void = (values) => {
     const selectedProj = projects.find((obj) => obj.name === values.project);
 
     /* istanbul ignore else */
@@ -48,9 +58,9 @@ function LeftMenu({ activeProject, projects, onSearch, onProjectChange }) {
           >
             <Select>
               {projects.map((projObj) => (
-                <Option key={projObj.name} value={projObj.name}>
+                <Select.Option key={projObj.name} value={projObj.name}>
                   {projObj.name}
-                </Option>
+                </Select.Option>
               ))}
             </Select>
           </Form.Item>
@@ -77,22 +87,6 @@ function LeftMenu({ activeProject, projects, onSearch, onProjectChange }) {
       </Form>
     </div>
   );
-}
-
-LeftMenu.propTypes = {
-  activeProject: PropTypes.objectOf(
-    PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)])
-  ).isRequired,
-  projects: PropTypes.arrayOf(
-    PropTypes.objectOf(
-      PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.arrayOf(PropTypes.string),
-      ])
-    )
-  ).isRequired,
-  onSearch: PropTypes.func.isRequired,
-  onProjectChange: PropTypes.func.isRequired,
 };
 
 export default LeftMenu;
