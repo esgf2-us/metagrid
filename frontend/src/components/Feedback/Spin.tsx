@@ -1,8 +1,8 @@
 import React from 'react';
 import { Spin as SpinD } from 'antd';
 
-function Spin() {
+const Spin: React.FC = () => {
   return <SpinD></SpinD>;
-}
+};
 
 export default Spin;
