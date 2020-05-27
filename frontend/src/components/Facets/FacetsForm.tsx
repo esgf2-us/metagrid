@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Collapse, Form, Select } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
 
@@ -7,13 +6,23 @@ import Button from '../General/Button';
 
 import { isEmpty, humanize } from '../../utils/utils';
 
-const styles = {
+const styles: { [key: string]: React.CSSProperties } = {
   content: { height: '660px', width: '100%', overflowY: 'auto' },
   facetCount: { float: 'right' },
   applyBtn: { marginBottom: '5px' },
 };
 
-function FacetsForm({ activeFacets, availableFacets, handleFacetsForm }) {
+type Props = {
+  activeFacets: { [key: string]: string[] } | {};
+  availableFacets: { [key: string]: [string, number][] };
+  handleFacetsForm: (allValues: { [key: string]: string[] | [] }) => void;
+};
+
+const FacetsForm: React.FC<Props> = ({
+  activeFacets,
+  availableFacets,
+  handleFacetsForm,
+}) => {
   const [facetsForm] = Form.useForm();
 
   const [btnDisabled, setBtnDisabled] = React.useState(true);
@@ -27,12 +36,14 @@ function FacetsForm({ activeFacets, availableFacets, handleFacetsForm }) {
 
   /**
    * Enables or disables the submit button if any of the facet form items change
-   * @param {*} allValues
    */
-  const handleValuesChange = (allValues) => {
-    const values = Object.keys(allValues).reduce((r, k) => {
+  const handleValuesChange: (allValues: {
+    [key: string]: string[] | [];
+  }) => void = (allValues) => {
+    // Transforms all of the string array values as a single array
+    const values: string[] = Object.keys(allValues).reduce((r, k) => {
       return r.concat(allValues[k]);
-    }, []);
+    }, [] as string[]);
 
     if (values.length > 0) {
       setBtnDisabled(false);
@@ -107,17 +118,6 @@ function FacetsForm({ activeFacets, availableFacets, handleFacetsForm }) {
       </div>
     </div>
   );
-}
-
-FacetsForm.propTypes = {
-  activeFacets: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.any)),
-  availableFacets: PropTypes.objectOf(
-    PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.any))
-  ).isRequired,
-  handleFacetsForm: PropTypes.func.isRequired,
 };
 
-FacetsForm.defaultProps = {
-  activeFacets: {},
-};
 export default FacetsForm;
