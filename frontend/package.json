@@ -66,12 +66,14 @@
   },
   "jest": {
     "collectCoverageFrom": [
-      "**/*.{js,jsx, .ts, .tsx}",
+      "**/*.{js,jsx,ts,tsx}",
       "!**/node_modules/**",
       "!**/coverage/**",
       "!**/serviceWorker.js",
       "!**/index.js",
-      "!**/proxy.js"
+      "!**/proxy.js",
+      "!**/react-app-env.d.ts",
+      "!**/custom_types/**"
     ],
     "coverageThreshold": {
       "global": {
