@@ -1,6 +1,5 @@
 import React from 'react';
 import { useAsync } from 'react-async';
-import { PropTypes } from 'prop-types';
 import { DownloadOutlined } from '@ant-design/icons';
 
 import { Form, Select, Table as TableD } from 'antd';
@@ -11,27 +10,35 @@ import Button from '../General/Button';
 import { fetchFiles } from '../../utils/api';
 import { parseUrl } from '../../utils/utils';
 
+export type DownloadUrls = {
+  downloadType: string | undefined;
+  downloadUrl: string | undefined;
+}[];
+
 /**
  * Splits the string by a delimiter and pops the last string
  */
-export function genDownloadUrls(urls) {
-  const newUrls = [];
+export const genDownloadUrls = (urls: string[]): DownloadUrls => {
+  const newUrls: DownloadUrls = [];
   urls.forEach((url) => {
     const downloadType = url.split('|').pop();
     const downloadUrl = parseUrl(url, '|');
     newUrls.push({ downloadType, downloadUrl });
   });
   return newUrls;
-}
+};
 /**
  * Opens the selected download url in a new tab
- * @param {string} url - The url of the download option
  */
-export function openDownloadUrl(url) {
+export const openDownloadUrl = (url: string): Window | null => {
   return window.open(url, '_blank');
-}
+};
 
-function FilesTable({ id }) {
+type Props = {
+  id: string;
+};
+
+const FilesTable: React.FC<Props> = ({ id }) => {
   const { data, error, isLoading } = useAsync({
     promiseFn: fetchFiles,
     id,
@@ -71,8 +78,9 @@ function FilesTable({ id }) {
         title: 'Download',
         key: 'download',
         width: 200,
-        render: (record) => {
+        render: (record: { url: string[] }) => {
           const downloadUrls = genDownloadUrls(record.url);
+
           return (
             <span>
               <Form
@@ -86,7 +94,7 @@ function FilesTable({ id }) {
                     {downloadUrls.map((option) => (
                       <Select.Option
                         key={option.downloadType}
-                        value={option.downloadUrl}
+                        value={option.downloadUrl as React.ReactText}
                       >
                         {option.downloadType}
                       </Select.Option>
@@ -98,7 +106,6 @@ function FilesTable({ id }) {
                     type="primary"
                     htmlType="submit"
                     icon={<DownloadOutlined />}
-                    size={12}
                   ></Button>
                 </Form.Item>
               </Form>
@@ -122,10 +129,6 @@ function FilesTable({ id }) {
     );
   }
   return null;
-}
-
-FilesTable.propTypes = {
-  id: PropTypes.string.isRequired,
 };
 
 export default FilesTable;
