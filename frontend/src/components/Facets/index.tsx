@@ -1,6 +1,5 @@
 import React from 'react';
 import { useAsync } from 'react-async';
-import PropTypes from 'prop-types';
 
 import ProjectForm from './ProjectForm';
 import FacetsForm from './FacetsForm';
@@ -14,25 +13,31 @@ const styles = {
   },
 };
 
-function Facets({
+type Props = {
+  activeProject: { [key: string]: string | string[] } | {};
+  activeFacets: { [key: string]: string[] } | {};
+  availableFacets: { [key: string]: [string, number][] } | {};
+  handleProjectChange: (values: { [key: string]: string }) => void;
+  onSetActiveFacets: (allValues: { [key: string]: string[] | [] }) => void;
+};
+
+const Facets: React.FC<Props> = ({
   activeProject,
   activeFacets,
   availableFacets,
   handleProjectChange,
   onSetActiveFacets,
-}) {
+}) => {
   const { data, error, isLoading } = useAsync({
     promiseFn: fetchProjects,
   });
 
   /**
    * Handles when the facets form is submitted.
-   *
-   * The object of applied facets and removes facets that
-   * have a value of undefined (no variables applied).
-   * @param {Object.<string, [string, number]} selectedFacets
    */
-  const handleFacetsForm = (selectedFacets) => {
+  const handleFacetsForm: (selectedFacets: {
+    [key: string]: string[] | [];
+  }) => void = (selectedFacets) => {
     Object.keys(selectedFacets).forEach(
       // eslint-disable-next-line no-param-reassign
       (key) => selectedFacets[key] === undefined && delete selectedFacets[key]
@@ -42,11 +47,12 @@ function Facets({
 
   /**
    * Set the selectedProject by using the projectsFetched object
-   * @param {string} name - name of the project
    */
-  const handleProjectForm = (values) => {
+  const handleProjectForm: (selectedProject: {
+    [key: string]: string;
+  }) => void = (selectedProject) => {
     const selectedProj = data.results.find(
-      (obj) => obj.name === values.project
+      (obj: { [key: string]: string }) => obj.name === selectedProject.project
     );
     handleProjectChange(selectedProj);
   };
@@ -71,18 +77,6 @@ function Facets({
       />
     </div>
   );
-}
-
-Facets.propTypes = {
-  activeProject: PropTypes.objectOf(
-    PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)])
-  ).isRequired,
-  activeFacets: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.any)).isRequired,
-  availableFacets: PropTypes.objectOf(
-    PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.any))
-  ).isRequired,
-  handleProjectChange: PropTypes.func.isRequired,
-  onSetActiveFacets: PropTypes.func.isRequired,
 };
 
 export default Facets;

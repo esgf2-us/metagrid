@@ -21,7 +21,7 @@ type Props = {
   };
   projectsIsLoading?: boolean;
   projectsError?: Error;
-  handleProjectForm: () => void;
+  handleProjectForm: (allValues: { [key: string]: string }) => void;
 };
 
 const ProjectsForm: React.FC<Props> = ({

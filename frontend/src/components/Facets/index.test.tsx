@@ -61,7 +61,7 @@ it('handles when the project form is submitted with handleProjectsForm()', async
   // Check facet select form exists and mouseDown to expand list of options
   const projectFormSelect = document.querySelector(
     '[data-testid=project-form-select] > .ant-select-selector'
-  );
+  ) as HTMLInputElement;
   expect(projectFormSelect).toBeTruthy();
   fireEvent.mouseDown(projectFormSelect);
 
@@ -98,7 +98,7 @@ it('handles facets form submission with handleFacetsForm()', async () => {
   // Check facet select form exists and mouseDown to expand list of options
   const facetFormSelect = document.querySelector(
     '[data-testid=facet1-form-select] > .ant-select-selector'
-  );
+  ) as HTMLInputElement;
   expect(facetFormSelect).toBeTruthy();
   fireEvent.mouseDown(facetFormSelect);
 
@@ -133,7 +133,7 @@ it('handles facets form submission with handleFacetsForm(), including a facet ke
   // Check facet select form exists and mouseDown to expand list of options
   const facetFormSelect = document.querySelector(
     '[data-testid=facet1-form-select] > .ant-select-selector'
-  );
+  ) as HTMLInputElement;
   expect(facetFormSelect).toBeTruthy();
   fireEvent.mouseDown(facetFormSelect);
 
@@ -156,7 +156,7 @@ it('handles facets form submission with handleFacetsForm(), including a facet ke
   // Check facet select form exists and mouseDown to expand list of options
   const facetFormSelect2 = document.querySelector(
     '[data-testid=facet2-form-select] > .ant-select-selector'
-  );
+  ) as HTMLInputElement;
   expect(facetFormSelect2).toBeTruthy();
   fireEvent.mouseDown(facetFormSelect2);
 
