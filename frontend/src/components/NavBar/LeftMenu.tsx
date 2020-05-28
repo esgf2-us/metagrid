@@ -27,7 +27,7 @@ const LeftMenu: React.FC<Props> = ({
   /**
    * Sets the project and search value using the search form
    */
-  const onFinish: (values: { [key: string]: string }) => void = (values) => {
+  const onFinish = (values: { [key: string]: string }): void => {
     const selectedProj = projects.find((obj) => obj.name === values.project);
 
     /* istanbul ignore else */
