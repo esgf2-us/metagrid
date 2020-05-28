@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { useAsync } from 'react-async';
 
 import Alert from '../Feedback/Alert';
@@ -8,7 +7,15 @@ import Skeleton from '../Feedback/Skeleton';
 import { fetchCitation } from '../../utils/api';
 import { parseUrl } from '../../utils/utils';
 
-export const CitationInfo = ({ title, children }) => {
+type CitationInfoProps = {
+  title: string;
+  children: React.ReactNode;
+};
+
+export const CitationInfo: React.FC<CitationInfoProps> = ({
+  title,
+  children,
+}) => {
   return (
     <p style={{ margin: 0 }}>
       <span style={{ fontWeight: 'bold' }}>{title}: </span>
@@ -17,12 +24,11 @@ export const CitationInfo = ({ title, children }) => {
   );
 };
 
-CitationInfo.propTypes = {
-  title: PropTypes.string.isRequired,
-  children: PropTypes.node.isRequired,
+type CitationProps = {
+  url: string;
 };
 
-const Citation = ({ url }) => {
+const Citation: React.FC<CitationProps> = ({ url }) => {
   const { data, error, isLoading } = useAsync({
     promiseFn: fetchCitation,
     url,
@@ -69,10 +75,6 @@ const Citation = ({ url }) => {
       )}
     </div>
   );
-};
-
-Citation.propTypes = {
-  url: PropTypes.string.isRequired,
 };
 
 export default Citation;
