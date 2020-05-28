@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Col, Row } from 'antd';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 
@@ -16,10 +15,20 @@ const styles = {
     marginBottom: 10,
     leftSide: {
       display: 'flex',
-    },
+    } as React.CSSProperties,
   },
 };
-function Cart({ cart, handleCart, clearCart }) {
+
+type Props = {
+  cart: { [key: string]: string | string[] | number | undefined }[] | [];
+  handleCart: (
+    item: { [key: string]: string | string[] },
+    action: string
+  ) => void;
+  clearCart: () => void;
+};
+
+const Cart: React.FC<Props> = ({ cart, handleCart, clearCart }) => {
   return (
     <div data-testid="cart">
       <div style={styles.summary}>
@@ -33,7 +42,7 @@ function Cart({ cart, handleCart, clearCart }) {
             icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
             onConfirm={() => clearCart()}
           >
-            <Button type="danger">Remove All Items</Button>
+            <Button danger>Remove All Items</Button>
           </Popconfirm>
         )}
       </div>
@@ -49,12 +58,6 @@ function Cart({ cart, handleCart, clearCart }) {
       </Row>
     </div>
   );
-}
-
-Cart.propTypes = {
-  cart: PropTypes.arrayOf(PropTypes.objectOf(PropTypes.any)).isRequired,
-  handleCart: PropTypes.func.isRequired,
-  clearCart: PropTypes.func.isRequired,
 };
 
 export default Cart;

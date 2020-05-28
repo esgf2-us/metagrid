@@ -12,6 +12,7 @@ type Props = {
     | ((event: React.MouseEvent<HTMLElement, MouseEvent>) => void)
     | undefined;
   disabled?: boolean | undefined;
+  danger?: boolean;
   children?: React.ReactElement | React.ReactNode | string;
 };
 
@@ -24,6 +25,7 @@ const Button: React.FC<Props> = ({
   htmlType,
   onClick,
   disabled = false,
+  danger = false,
   children,
 }) => {
   return (
@@ -36,6 +38,7 @@ const Button: React.FC<Props> = ({
       icon={icon}
       onClick={onClick}
       disabled={disabled}
+      danger={danger}
     >
       {children}
     </ButtonD>
