@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Divider, Form, Select } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 
@@ -11,23 +10,22 @@ import folderImg from '../../assets/img/folder.svg';
 
 const styles = {
   headerContainer: { display: 'flex', justifyContent: 'center' },
-  summaryHeader: { fontWeight: 'bold', textAlign: 'center' },
+  summaryHeader: {
+    fontWeight: 'bold',
+    textAlign: 'center',
+  } as React.CSSProperties,
   image: { margin: '1em', width: '25%' },
-  statistic: { float: 'right' },
+  statistic: { float: 'right' } as React.CSSProperties,
 };
 
-function Summary({ numItems, numFiles }) {
+type Props = {
+  numItems: number;
+  numFiles: number;
+};
+
+const Summary: React.FC<Props> = ({ numItems, numFiles }) => {
   const [form] = Form.useForm();
   const downloadOptions = ['HTTPServer', 'GridFTP', 'OPENDAP', 'Globus'];
-
-  /**
-   * Handles when the user selects to download their cart
-   * TODO: Implement function
-   * @param {*} values
-   */
-  const handleOnFinish = (values) => {
-    return values;
-  };
 
   return (
     <div data-testid="summary">
@@ -60,7 +58,6 @@ function Summary({ numItems, numFiles }) {
       <Form
         form={form}
         layout="inline"
-        onFinish={(values) => handleOnFinish(values)}
         initialValues={{
           download: downloadOptions[0],
         }}
@@ -85,16 +82,6 @@ function Summary({ numItems, numFiles }) {
       </Form>
     </div>
   );
-}
-
-Summary.propTypes = {
-  numItems: PropTypes.number,
-  numFiles: PropTypes.number,
-};
-
-Summary.defaultProps = {
-  numItems: 0,
-  numFiles: 0,
 };
 
 export default Summary;
