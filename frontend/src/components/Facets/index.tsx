@@ -35,9 +35,9 @@ const Facets: React.FC<Props> = ({
   /**
    * Handles when the facets form is submitted.
    */
-  const handleFacetsForm: (selectedFacets: {
+  const handleFacetsForm = (selectedFacets: {
     [key: string]: string[] | [];
-  }) => void = (selectedFacets) => {
+  }): void => {
     Object.keys(selectedFacets).forEach(
       // eslint-disable-next-line no-param-reassign
       (key) => selectedFacets[key] === undefined && delete selectedFacets[key]
@@ -48,9 +48,9 @@ const Facets: React.FC<Props> = ({
   /**
    * Set the selectedProject by using the projectsFetched object
    */
-  const handleProjectForm: (selectedProject: {
+  const handleProjectForm = (selectedProject: {
     [key: string]: string;
-  }) => void = (selectedProject) => {
+  }): void => {
     const selectedProj = data.results.find(
       (obj: { [key: string]: string }) => obj.name === selectedProject.project
     );

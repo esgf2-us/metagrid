@@ -37,9 +37,9 @@ const FacetsForm: React.FC<Props> = ({
   /**
    * Enables or disables the submit button if any of the facet form items change
    */
-  const handleValuesChange: (allValues: {
+  const handleValuesChange = (allValues: {
     [key: string]: string[] | [];
-  }) => void = (allValues) => {
+  }): void => {
     // Transforms all of the string array values as a single array
     const values: string[] = Object.keys(allValues).reduce((r, k) => {
       return r.concat(allValues[k]);
