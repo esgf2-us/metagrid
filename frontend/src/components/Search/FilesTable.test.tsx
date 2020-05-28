@@ -2,7 +2,11 @@
 import React from 'react';
 import { render, waitFor, fireEvent, within } from '@testing-library/react';
 
-import FilesTable, { genDownloadUrls, openDownloadUrl } from './FilesTable';
+import FilesTable, {
+  genDownloadUrls,
+  openDownloadUrl,
+  DownloadUrls,
+} from './FilesTable';
 import mockAxios from '../../__mocks__/axios';
 
 // Reset all mocks after each test
@@ -11,8 +15,8 @@ afterEach(() => {
 });
 
 describe('test genDownloadUrls()', () => {
-  let urls;
-  let result;
+  let urls: string[];
+  let result: DownloadUrls;
   beforeEach(() => {
     urls = ['http://test.com|HTTPServer', 'http://test.com|Globus'];
     result = [
@@ -28,8 +32,10 @@ describe('test genDownloadUrls()', () => {
 });
 
 describe('test openDownloadUrl()', () => {
-  let windowSpy;
-  let mockedOpen;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let windowSpy: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let mockedOpen: jest.Mock<any, any>;
 
   beforeEach(() => {
     mockedOpen = jest.fn();
