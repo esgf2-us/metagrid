@@ -1,11 +1,14 @@
 import queryString from 'query-string';
+import { PromiseFn } from 'react-async';
+
 import axios from '../axios';
 
 /**
  * Fetches a list of projects.
  * NOTE: Uses the axios baseURL
  */
-export const fetchProjects = async () => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const fetchProjects: PromiseFn<any> = async () => {
   return axios
     .get(`/api/v1/projects/`)
     .then((res) => {
@@ -20,11 +23,14 @@ export const fetchProjects = async () => {
  * Generate a URL to perform a GET request to the ESG Search API.
  * Query string parameters use the logical OR operator, so queries are inclusive.
  * NOTE: Local proxy used to bypass CORS (http://localhost:8080/)
- * @param {string} baseUrl - Base url to perform queries
- * @param {arrayOf(string)} textInputs - Free-text user input
- * @param {arrayOf(objectOf(arrayOf(string)))} activeFacets - User applied facets
+
  */
-export const genUrlQuery = (baseUrl, textInputs, activeFacets, pagination) => {
+export const genUrlQuery = (
+  baseUrl: string,
+  textInputs: string[] | [],
+  activeFacets: { [key: string]: string[] } | {},
+  pagination: { page: number; pageSize: number }
+): string => {
   const stringifyFacets = queryString.stringify(activeFacets, {
     arrayFormat: 'comma',
   });
@@ -51,12 +57,10 @@ export const genUrlQuery = (baseUrl, textInputs, activeFacets, pagination) => {
 /**
  * Fetch the search results using the ESG Search API.
  * https://github.com/ESGF/esgf.github.io/wiki/ESGF_Search_REST_API
- * @param {string} param0.baseUrl - Base url to perform queries
- * @param {arrayOf(string)} param0.textInputs - Free-text user input
- * @param {arrayOf(objectOf(arrayOf(string)))} param0.activeFacets - User applied facets
 
  */
-export const fetchResults = async ([reqUrl]) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const fetchResults: PromiseFn<any> = async (reqUrl) => {
   return axios
     .get(`http://localhost:8080/${reqUrl}`)
     .then((res) => {
@@ -70,8 +74,20 @@ export const fetchResults = async ([reqUrl]) => {
 /**
  * Performs process on citation objects.
  */
-export const processCitation = (citation) => {
+
+type Citation = {
+  identifier: { id: string; identifierType: string };
+  creators: { [key: string]: string }[];
+  titles: string;
+  publisher: string;
+  publicationYear: number;
+  identifierDOI: string;
+  creatorsList: string;
+};
+
+export const processCitation = (citation: Citation): Citation => {
   const newCitation = citation;
+
   newCitation.identifierDOI = `http://${newCitation.identifier.identifierType.toLowerCase()}.org/${
     newCitation.identifier.id
   }`;
@@ -85,9 +101,8 @@ export const processCitation = (citation) => {
 /**
  * Fetches citation data using a dataset's citation url.
  * NOTE: Local proxy used to bypass CORS (http://localhost:8080/)
- *  @param {string} url - Citation URL
  */
-export const fetchCitation = async ({ url }) => {
+export const fetchCitation: PromiseFn<Citation> = async ({ url }) => {
   return axios
     .get(`http://localhost:8080/${url}`)
     .then((res) => {
@@ -102,9 +117,9 @@ export const fetchCitation = async ({ url }) => {
 /**
  * Fetches files for a dataset.
  * NOTE: Local proxy used to bypass CORS (http://localhost:8080/)
- *  @param {string} id - ID of the dataset
  */
-export const fetchFiles = async ({ id }) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const fetchFiles: PromiseFn<any> = async ({ id }) => {
   const url = `https://esgf-node.llnl.gov/search_files/${id}//esgf-node.llnl.gov/?limit=10`;
   return axios
     .get(`http://localhost:8080/${url}`)
