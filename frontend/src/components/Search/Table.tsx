@@ -7,7 +7,8 @@ import {
   MinusOutlined,
   PlusOutlined,
 } from '@ant-design/icons';
-import PropTypes from 'prop-types';
+import { SizeType } from 'antd/lib/config-provider/SizeContext';
+import { TablePaginationConfig } from 'antd/lib/table';
 
 import Citation from './Citation';
 import FilesTable from './FilesTable';
@@ -15,42 +16,67 @@ import Button from '../General/Button';
 import Divider from '../General/Divider';
 
 import { hasKey, parseUrl } from '../../utils/utils';
-
 import './Search.css';
 
-function Table({
+// Interface for a search result object, based on the ESG Search APi
+export type SearchResult = {
+  id: string;
+  url: string[];
+  access: string[];
+  xlink?: string[] | [];
+  citation_url?: string[] | [];
+  further_info_url?: string[] | [];
+  [key: string]: string | string[] | number | undefined;
+};
+
+type Props = {
+  loading: boolean;
+  results: SearchResult[] | [];
+  totalResults?: number;
+  cart: SearchResult[] | [];
+  handleCart: (item: SearchResult[], action: string) => void;
+  handleRowSelect?: (selectedRows: SearchResult[] | []) => void;
+  handlePagination?: (page: number, pageSize: number) => void;
+  handlePageSizeChange?: (size: number) => void;
+};
+
+const Table: React.FC<Props> = ({
   loading,
   results,
   totalResults,
   cart,
   handleCart,
+  handleRowSelect,
   handlePagination,
   handlePageSizeChange,
-  onSelect,
-}) {
+}) => {
   const tableConfig = {
-    size: 'small',
+    size: 'small' as SizeType,
     loading,
     pagination: {
       total: totalResults,
       position: ['bottomCenter'],
       showSizeChanger: true,
-      onChange: (page, pageSize) =>
+      onChange: (page: number, pageSize: number) =>
         handlePagination && handlePagination(page, pageSize),
-      onShowSizeChange: (_current, size) =>
+      onShowSizeChange: (_current: number, size: number) =>
         handlePageSizeChange && handlePageSizeChange(size),
-    },
+    } as TablePaginationConfig,
     expandable: {
-      expandedRowRender: (record) => {
+      expandedRowRender: (record: SearchResult) => {
         const metaData = Object.entries(record).map(([k, v]) => ({
           value: `${k}: ${v}`,
         }));
+
         return (
           <>
             <Collapse>
               {hasKey(record, 'citation_url') && (
                 <Collapse.Panel header="Citation" key="citation">
-                  <Citation url={record.citation_url[0]} />
+                  <Citation
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    url={record.citation_url![0]}
+                  />
                 </Collapse.Panel>
               )}
 
@@ -65,9 +91,11 @@ function Table({
                   options={metaData}
                   placeholder="Lookup a key..."
                   filterOption={(inputValue, option) =>
-                    option.value
-                      .toUpperCase()
-                      .indexOf(inputValue.toUpperCase()) !== -1
+                    option
+                      ? option.value
+                          .toUpperCase()
+                          .indexOf(inputValue.toUpperCase()) !== -1
+                      : false
                   }
                 />
                 <Divider />
@@ -87,7 +115,18 @@ function Table({
           </>
         );
       },
-      expandIcon: ({ expanded, onExpand, record }) =>
+      expandIcon: ({
+        expanded,
+        onExpand,
+        record,
+      }: {
+        expanded: boolean;
+        onExpand: (
+          record: SearchResult,
+          e: React.MouseEvent<HTMLSpanElement, MouseEvent>
+        ) => void;
+        record: SearchResult;
+      }): React.ReactElement =>
         expanded ? (
           <DownCircleOutlined onClick={(e) => onExpand(record, e)} />
         ) : (
@@ -95,18 +134,25 @@ function Table({
         ),
     },
     rowSelection: {
-      getCheckboxProps: (record) =>
-        cart.includes(record, 0) ? { disabled: true } : { disabled: false },
-      onSelect: (_record, _selected, selectedRows) => onSelect(selectedRows),
-      onSelectAll: (_selected, selectedRows) => onSelect(selectedRows),
+      getCheckboxProps: (record: SearchResult) =>
+        cart.includes(record as never, 0)
+          ? { disabled: true }
+          : { disabled: false },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      onSelect: (_record: any, _selected: any, selectedRows: any) => {
+        if (handleRowSelect) {
+          handleRowSelect(selectedRows);
+        }
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      onSelectAll: (_selected: any, selectedRows: any) => {
+        if (handleRowSelect) {
+          handleRowSelect(selectedRows);
+        }
+      },
     },
-    hasData: results.length > 0,
-  };
 
-  tableConfig.expandable.expandIcon.propTypes = {
-    expanded: PropTypes.bool.isRequired,
-    onExpand: PropTypes.func.isRequired,
-    record: PropTypes.objectOf(PropTypes.string).isRequired,
+    hasData: results.length > 0,
   };
 
   const columns = [
@@ -115,21 +161,13 @@ function Table({
       dataIndex: 'title',
       key: 'title',
       width: 400,
-      render: (title, record) => {
-        return (
-          // eslint-disable-next-line react/prop-types
-          <a href={record.url} rel="noopener noreferrer" target="_blank">
-            {title}
-          </a>
-        );
-      },
     },
     {
       title: '# of Files',
       dataIndex: 'number_of_files',
       key: 'number_of_files',
       width: 100,
-      render: (numberOfFiles) => <p>{numberOfFiles}</p>,
+      render: (numberOfFiles: number) => <p>{numberOfFiles}</p>,
     },
     {
       title: 'Node',
@@ -147,7 +185,7 @@ function Table({
       title: 'Download',
       key: 'download',
       width: 200,
-      render: (record) => (
+      render: (record: SearchResult) => (
         <span>
           <Form layout="inline">
             <Form.Item>
@@ -165,7 +203,6 @@ function Table({
               <Button
                 type="primary"
                 icon={<DownloadOutlined />}
-                size={12}
                 disabled
               ></Button>
             </Form.Item>
@@ -177,14 +214,14 @@ function Table({
       title: 'Additional',
       key: 'additional',
       width: 200,
-      render: (record) => {
+      render: (record: SearchResult) => {
         return (
           <>
             {hasKey(record, 'xlink') && (
               <Button
                 type="link"
-                // eslint-disable-next-line react/prop-types
-                href={parseUrl(record.xlink[1], '|')}
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                href={parseUrl(record.xlink![1], '|')}
                 target="_blank"
               >
                 PID
@@ -193,8 +230,8 @@ function Table({
             {hasKey(record, 'further_info_url') && (
               <Button
                 type="link"
-                // eslint-disable-next-line react/prop-types
-                href={record.further_info_url[0]}
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                href={record.further_info_url![0]}
                 target="_blank"
               >
                 Further Info
@@ -208,15 +245,14 @@ function Table({
       title: 'Cart',
       key: 'cart',
       width: 50,
-      render: (record) => {
-        if (cart.includes(record, 0)) {
+      render: (record: SearchResult) => {
+        if (cart.includes(record as never, 0)) {
           return (
             <>
               <Button
-                type="danger"
                 icon={<MinusOutlined />}
-                size={12}
                 onClick={() => handleCart([record], 'remove')}
+                danger
               />
             </>
           );
@@ -226,7 +262,6 @@ function Table({
             <Button
               type="default"
               icon={<PlusOutlined />}
-              size={12}
               onClick={() => handleCart([record], 'add')}
             />
           </>
@@ -240,29 +275,11 @@ function Table({
       // eslint-disable-next-line react/jsx-props-no-spreading
       {...tableConfig}
       columns={columns}
-      dataSource={tableConfig.hasData ? results : null}
+      dataSource={results}
       rowKey="id"
       scroll={{ y: 595 }}
     />
   );
-}
-
-Table.propTypes = {
-  loading: PropTypes.bool.isRequired,
-  results: PropTypes.arrayOf(PropTypes.object).isRequired,
-  totalResults: PropTypes.number,
-  cart: PropTypes.arrayOf(PropTypes.object).isRequired,
-  handleCart: PropTypes.func.isRequired,
-  handlePagination: PropTypes.func,
-  handlePageSizeChange: PropTypes.func,
-  onSelect: PropTypes.func,
-};
-
-Table.defaultProps = {
-  onSelect: undefined,
-  totalResults: undefined,
-  handlePagination: undefined,
-  handlePageSizeChange: undefined,
 };
 
 export default Table;

@@ -9,7 +9,7 @@ const defaultProps = {
   results: [
     {
       id: 'foo',
-      url: undefined,
+      url: [],
       number_of_files: 3,
       data_node: 'node.gov',
       version: 1,
@@ -18,7 +18,7 @@ const defaultProps = {
     },
     {
       id: 'bar',
-      url: undefined,
+      url: [],
       number_of_files: 2,
       data_node: 'node.gov',
       version: 1,
@@ -89,7 +89,7 @@ it('renders record metadata in an expandable panel', () => {
   // Get the expandable row that was rendered and click on it
   const expandableRow = document.querySelector(
     'tr.ant-table-expanded-row.ant-table-expanded-row-level-1'
-  );
+  ) as HTMLElement;
   expect(expandableRow).toBeTruthy();
 
   // Get the meta data panel and click on it
