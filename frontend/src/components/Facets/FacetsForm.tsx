@@ -13,8 +13,8 @@ const styles: { [key: string]: React.CSSProperties } = {
 };
 
 type Props = {
-  activeFacets: { [key: string]: string[] } | {};
-  availableFacets: { [key: string]: [string, number][] };
+  activeFacets: ActiveFacets;
+  availableFacets: AvailableFacets;
   handleFacetsForm: (allValues: { [key: string]: string[] | [] }) => void;
 };
 

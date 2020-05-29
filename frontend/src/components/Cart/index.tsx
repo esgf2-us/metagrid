@@ -2,7 +2,7 @@ import React from 'react';
 import { Col, Row } from 'antd';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 
-import Table, { SearchResult } from '../Search/Table';
+import Table from '../Search/Table';
 import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
 import Popconfirm from '../Feedback/Popconfirm';

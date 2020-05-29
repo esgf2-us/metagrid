@@ -14,10 +14,10 @@ const styles = {
 };
 
 type Props = {
-  activeProject: { [key: string]: string | string[] };
-  activeFacets: { [key: string]: string[] } | {};
+  activeProject: Project;
+  activeFacets: ActiveFacets;
   projectsFetched?: {
-    results: { [key: string]: string | number }[];
+    results: Project[];
   };
   projectsIsLoading?: boolean;
   projectsError?: Error;
