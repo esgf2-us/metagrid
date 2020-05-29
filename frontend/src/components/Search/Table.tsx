@@ -18,22 +18,11 @@ import Divider from '../General/Divider';
 import { hasKey, parseUrl } from '../../utils/utils';
 import './Search.css';
 
-// Interface for a search result object, based on the ESG Search APi
-export type SearchResult = {
-  id: string;
-  url: string[];
-  access: string[];
-  xlink?: string[] | [];
-  citation_url?: string[] | [];
-  further_info_url?: string[] | [];
-  [key: string]: string | string[] | number | undefined;
-};
-
 type Props = {
   loading: boolean;
   results: SearchResult[] | [];
   totalResults?: number;
-  cart: SearchResult[] | [];
+  cart: Cart;
   handleCart: (item: SearchResult[], action: string) => void;
   handleRowSelect?: (selectedRows: SearchResult[] | []) => void;
   handlePagination?: (page: number, pageSize: number) => void;

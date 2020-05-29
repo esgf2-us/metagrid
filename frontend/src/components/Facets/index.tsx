@@ -14,9 +14,9 @@ const styles = {
 };
 
 type Props = {
-  activeProject: { [key: string]: string | string[] } | {};
-  activeFacets: { [key: string]: string[] } | {};
-  availableFacets: { [key: string]: [string, number][] } | {};
+  activeProject: Project;
+  activeFacets: ActiveFacets;
+  availableFacets: AvailableFacets;
   handleProjectChange: (values: { [key: string]: string }) => void;
   onSetActiveFacets: (allValues: { [key: string]: string[] | [] }) => void;
 };

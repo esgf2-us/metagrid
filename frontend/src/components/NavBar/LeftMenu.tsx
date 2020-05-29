@@ -9,8 +9,8 @@ const styles = {
 };
 
 type Props = {
-  activeProject: { [key: string]: string | number | [string] | undefined };
-  projects: { [key: string]: string | number }[];
+  activeProject: Project;
+  projects: Project[];
   onSearch: (text: string) => void;
   onProjectChange: (selectedProj?: { [key: string]: string | number }) => void;
 };
