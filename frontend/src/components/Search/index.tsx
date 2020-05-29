@@ -1,6 +1,5 @@
 import React from 'react';
 import { useAsync } from 'react-async';
-import PropTypes from 'prop-types';
 import { Row, Col, Typography } from 'antd';
 import { ExportOutlined } from '@ant-design/icons';
 
@@ -21,28 +20,27 @@ const styles = {
     leftSide: {
       display: 'flex',
     },
-  },
-  facetTag: { fontWeight: 'bold' },
-  resultsHeader: { fontWeight: 'bold' },
+  } as React.CSSProperties,
+  facetTag: { fontWeight: 'bold' } as React.CSSProperties,
+  resultsHeader: { fontWeight: 'bold' } as React.CSSProperties,
 };
 /**
  * Joins adjacent elements of the facets obj into a tuple using reduce().
  * https://stackoverflow.com/questions/37270508/javascript-function-that-converts-array-to-array-of-2-tuples
- * @param {Object.<string, Array.<Array<string, number>>} facets
  */
-export const parseFacets = (facets) => {
-  const res = facets;
-  const keys = Object.keys(facets);
+export const parseFacets = (facets: FetchedFacets): AvailableFacets => {
+  const res = (facets as unknown) as AvailableFacets;
+  const keys: string[] = Object.keys(facets);
 
   keys.forEach((key) => {
     res[key] = res[key].reduce((r, a, i) => {
       if (i % 2) {
-        r[r.length - 1].push(a);
+        r[r.length - 1].push((a as unknown) as number);
       } else {
-        r.push([a]);
+        r.push([a] as never);
       }
       return r;
-    }, []);
+    }, ([] as unknown) as [string, number][]);
   });
   return res;
 };
@@ -50,15 +48,16 @@ export const parseFacets = (facets) => {
 /**
  * Stringifies the active constraints
  * Example of output: '(Text Input = 'Solar') AND (source_type = AER OR AOGCM OR BGC)'
- * @param {*} activeFacets
- * @param {*} textInputs
  */
-export const stringifyConstraints = (activeFacets, textInputs) => {
-  const strConstraints = [];
+export const stringifyConstraints = (
+  activeFacets: ActiveFacets,
+  textInputs: TextInputs
+): string => {
+  const strConstraints: string[] = [];
   if (textInputs.length > 0) {
     strConstraints.push(`(Text Input = ${textInputs.join(' OR ')})`);
   }
-  Object.keys(activeFacets).forEach((key) => {
+  Object.keys(activeFacets).forEach((key: string) => {
     strConstraints.push(`(${key} = ${activeFacets[key].join(' OR ')})`);
   });
 
@@ -68,14 +67,26 @@ export const stringifyConstraints = (activeFacets, textInputs) => {
 
 /**
  * Checks if constraints exist
- * @param {} activeFacets
- * @param {*} textInputs
  */
-export const checkConstraintsExist = (activeFacets, textInputs) => {
+export const checkConstraintsExist = (
+  activeFacets: ActiveFacets | {},
+  textInputs: TextInputs
+): boolean => {
   return !(isEmpty(activeFacets) && textInputs.length === 0);
 };
 
-function Search({
+type Props = {
+  activeProject: Project;
+  textInputs: TextInputs | [];
+  activeFacets: ActiveFacets;
+  cart: Cart;
+  onRemoveTag: () => void;
+  onClearTags: () => void;
+  handleCart: (selectedItems: SearchResult[], action: string) => void;
+  setAvailableFacets: (parsedFacets: AvailableFacets) => void;
+};
+
+const Search: React.FC<Props> = ({
   activeProject,
   textInputs,
   activeFacets,
@@ -84,21 +95,30 @@ function Search({
   onClearTags,
   handleCart,
   setAvailableFacets,
-}) {
+}) => {
   // Async function to fetch results
   const { data: results, error, isLoading, run } = useAsync({
     deferFn: fetchResults,
   });
 
-  const [constraintsExist, setConstraintsExist] = React.useState(false);
+  const [constraintsExist, setConstraintsExist] = React.useState<boolean>(
+    false
+  );
   // Parsed version of the returned facet fields
-  const [parsedFacets, setParsedFacets] = React.useState({});
+  const [parsedFacets, setParsedFacets] = React.useState<AvailableFacets | {}>(
+    {}
+  );
   // The current request URL generated when fetching results
-  const [curReqUrl, setCurReqUrl] = React.useState(null);
+  const [curReqUrl, setCurReqUrl] = React.useState<string | null>(null);
   // Items selected in the data table
-  const [selectedItems, setSelectedItems] = React.useState([]);
+  const [selectedItems, setSelectedItems] = React.useState<SearchResult[] | []>(
+    []
+  );
   // Pagination options in the data table
-  const [pagination, setPagination] = React.useState({
+  const [pagination, setPagination] = React.useState<{
+    page: number;
+    pageSize: number;
+  }>({
     page: 1,
     pageSize: 10,
   });
@@ -130,7 +150,8 @@ function Search({
   // Update the available facets based on the returned results
   React.useEffect(() => {
     if (!isEmpty(results)) {
-      setParsedFacets(parseFacets(results.facet_counts.facet_fields));
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      setParsedFacets(parseFacets(results!.facet_counts.facet_fields));
     }
   }, [results]);
 
@@ -142,26 +163,22 @@ function Search({
    * Handles when the user selectes individual items and adds to the cart
    * This function filters out items that have been already added to the cart,
    * which is indicated as disabled on the UI.
-   * @param {arrayOf(objectOf(*))} selectedRows - the selected rows
    */
-  const handleSelect = (selectedRows) => {
+  const handleSelect = (selectedRows: SearchResult[] | []): void => {
     setSelectedItems(selectedRows);
   };
 
   /**
    * Handles setting the pagination options based on the Search table
-   * @param {number} page
-   * @param {number} pageSize
    */
-  const handlePagination = (page, pageSize) => {
+  const handlePagination = (page: number, pageSize: number): void => {
     setPagination({ page, pageSize });
   };
 
   /**
    * Handles pageSize changes and resets the current page back to the first
-   * @param {number} pageSize
    */
-  const handlePageSizeChange = (pageSize) => {
+  const handlePageSizeChange = (pageSize: number): void => {
     setPagination({ page: 1, pageSize });
   };
 
@@ -179,47 +196,44 @@ function Search({
   return (
     <div data-testid="search">
       <div style={styles.summary}>
-        <div style={styles.summary.leftSide}>
-          {isEmpty(activeProject) && (
-            <Alert
-              message="Search for a project to display results"
-              type="info"
-              showIcon
-            />
-          )}
+        {isEmpty(activeProject) && (
+          <Alert
+            message="Search for a project to display results"
+            type="info"
+            showIcon
+          />
+        )}
 
-          {isLoading && (
-            <h3>
-              <span style={styles.resultsHeader}>Loading </span> results for{' '}
-              <span style={styles.resultsHeader}>{activeProject.name}</span>{' '}
-              {constraintsExist && (
-                <Typography.Text code>
-                  {stringifyConstraints(activeFacets, textInputs)}
-                </Typography.Text>
-              )}
-            </h3>
-          )}
+        {isLoading && (
+          <h3>
+            <span style={styles.resultsHeader}>Loading </span> results for{' '}
+            <span style={styles.resultsHeader}>{activeProject.name}</span>{' '}
+            {constraintsExist && (
+              <Typography.Text code>
+                {stringifyConstraints(activeFacets, textInputs)}
+              </Typography.Text>
+            )}
+          </h3>
+        )}
 
-          {results && !isLoading && (
-            <h3>
-              <span style={styles.resultsHeader}>
-                {results.response.numFound}{' '}
-              </span>
-              results found for{' '}
-              <span style={styles.resultsHeader}>{activeProject.name}</span>{' '}
-              {constraintsExist && (
-                <Typography.Text code>
-                  {stringifyConstraints(activeFacets, textInputs)}
-                </Typography.Text>
-              )}
-            </h3>
-          )}
-        </div>
+        {results && !isLoading && (
+          <h3>
+            <span style={styles.resultsHeader}>
+              {results.response.numFound}{' '}
+            </span>
+            results found for{' '}
+            <span style={styles.resultsHeader}>{activeProject.name}</span>{' '}
+            {constraintsExist && (
+              <Typography.Text code>
+                {stringifyConstraints(activeFacets, textInputs)}
+              </Typography.Text>
+            )}
+          </h3>
+        )}
         <div>
           {results && results.response.numFound > 0 && (
             <Button
               type="primary"
-              style={styles.addButton}
               onClick={() => handleCart(selectedItems, 'add')}
               disabled={!(selectedItems.length > 0)}
             >
@@ -237,12 +251,12 @@ function Search({
         )}
 
         {Object.keys(activeFacets).length !== 0 &&
-          Object.keys(activeFacets).map((facet) => {
+          Object.keys(activeFacets).map((facet: string) => {
             return [
               <p key={facet} style={styles.facetTag}>
                 {humanize(facet)}: &nbsp;
               </p>,
-              activeFacets[facet].map((variable) => {
+              activeFacets[facet].map((variable: string) => {
                 return (
                   <div key={variable} data-testid={variable}>
                     <Tag
@@ -258,7 +272,7 @@ function Search({
             ];
           })}
         {textInputs.length !== 0 &&
-          textInputs.map((input) => {
+          (textInputs as TextInputs).map((input: string) => {
             return (
               <div key={input} data-testid={input}>
                 <Tag value={input} onClose={onRemoveTag} type="text">
@@ -317,19 +331,6 @@ function Search({
       </Row>
     </div>
   );
-}
-
-Search.propTypes = {
-  activeProject: PropTypes.objectOf(
-    PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)])
-  ).isRequired,
-  textInputs: PropTypes.arrayOf(PropTypes.string).isRequired,
-  activeFacets: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.any)).isRequired,
-  cart: PropTypes.arrayOf(PropTypes.objectOf(PropTypes.any)).isRequired,
-  onRemoveTag: PropTypes.func.isRequired,
-  onClearTags: PropTypes.func.isRequired,
-  handleCart: PropTypes.func.isRequired,
-  setAvailableFacets: PropTypes.func.isRequired,
 };
 
 export default Search;
