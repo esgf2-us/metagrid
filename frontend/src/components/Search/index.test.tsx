@@ -27,7 +27,8 @@ afterEach(() => {
 });
 
 describe('test Search component', () => {
-  let data;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let data: Record<any, any>;
   beforeEach(() => {
     data = {
       response: {
@@ -214,7 +215,9 @@ describe('test Search component', () => {
     await waitFor(() => getByTestId('search-table'));
 
     // Check the 'Add Selected to Cart' button is disabled
-    const addCartBtn = getByRole('button', { name: 'Add Selected to Cart' });
+    const addCartBtn = getByRole('button', {
+      name: 'Add Selected to Cart',
+    }) as HTMLButtonElement;
     expect(addCartBtn).toBeTruthy();
     expect(addCartBtn.disabled).toBeTruthy();
 
@@ -247,7 +250,9 @@ describe('test Search component', () => {
     await waitFor(() => getByTestId('search-table'));
 
     // Check the 'Add Selected to Cart' button is disabled
-    const addCartBtn = getByRole('button', { name: 'Add Selected to Cart' });
+    const addCartBtn = getByRole('button', {
+      name: 'Add Selected to Cart',
+    }) as HTMLButtonElement;
     expect(addCartBtn).toBeTruthy();
     expect(addCartBtn.disabled).toBeTruthy();
   });
@@ -255,7 +260,7 @@ describe('test Search component', () => {
 
 describe('test parseFacets()', () => {
   it('successfully parses an object of arrays into an array of tuples', () => {
-    const facets = {
+    const facets: FetchedFacets = {
       facet1: ['option1', 1, 'option2', 2],
       facet2: ['option1', 1, 'option2', 2],
     };
@@ -277,8 +282,8 @@ describe('test parseFacets()', () => {
 });
 
 describe('test stringifyConstraints()', () => {
-  let activeFacets;
-  let textInputs;
+  let activeFacets: ActiveFacets;
+  let textInputs: TextInputs;
 
   beforeEach(() => {
     activeFacets = {
@@ -307,8 +312,8 @@ describe('test stringifyConstraints()', () => {
 });
 
 describe('test checkConstraintsExist()', () => {
-  let activeFacets;
-  let textInputs;
+  let activeFacets: ActiveFacets;
+  let textInputs: TextInputs;
 
   beforeEach(() => {
     activeFacets = {
