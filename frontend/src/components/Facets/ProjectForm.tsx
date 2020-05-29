@@ -64,12 +64,18 @@ const ProjectsForm: React.FC<Props> = ({
   }
 
   if (projectsFetched) {
+    // Since activeProject is also typed as an empty object ({}), TypeScript forbids accessing the
+    // name attribute. In order to bypass this check, uncast activeProject for this single access.
+    // https://stackoverflow.https://stackoverflow.com/a/46530838/questions/34274487/property-does-not-exists-on-type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const initialValues = { project: (activeProject as any).name };
+
     return (
       <div data-testid="project-form">
         <Form
           form={projectForm}
           layout="inline"
-          // initialValues={{ project: activeProject.name }}
+          initialValues={initialValues}
           onFinish={handleProjectForm}
           hideRequiredMark
         >
