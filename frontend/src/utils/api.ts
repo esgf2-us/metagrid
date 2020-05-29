@@ -60,7 +60,9 @@ export const genUrlQuery = (
 
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const fetchResults: PromiseFn<any> = async (reqUrl) => {
+export const fetchResults: PromiseFn<{ [key: string]: any }> = async (
+  reqUrl
+) => {
   return axios
     .get(`http://localhost:8080/${reqUrl}`)
     .then((res) => {

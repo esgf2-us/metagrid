@@ -289,9 +289,9 @@ function Search({
                 totalResults={results.response.numFound}
                 cart={cart}
                 handleCart={handleCart}
+                handleRowSelect={handleSelect}
                 handlePagination={handlePagination}
                 handlePageSizeChange={handlePageSizeChange}
-                onSelect={handleSelect}
               />
             ) : (
               <Table
@@ -300,9 +300,6 @@ function Search({
                 totalResults={pagination.pageSize}
                 cart={cart}
                 handleCart={handleCart}
-                handlePagination={handlePagination}
-                handlePageSizeChange={handlePageSizeChange}
-                onSelect={handleSelect}
               />
             )}
           </div>

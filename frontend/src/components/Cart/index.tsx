@@ -2,7 +2,7 @@ import React from 'react';
 import { Col, Row } from 'antd';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 
-import Table from '../Search/Table';
+import Table, { SearchResult } from '../Search/Table';
 import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
 import Popconfirm from '../Feedback/Popconfirm';
@@ -20,11 +20,8 @@ const styles = {
 };
 
 type Props = {
-  cart: { [key: string]: string | string[] | number | undefined }[] | [];
-  handleCart: (
-    item: { [key: string]: string | string[] },
-    action: string
-  ) => void;
+  cart: SearchResult[] | [];
+  handleCart: (item: SearchResult[], action: string) => void;
   clearCart: () => void;
 };
 
