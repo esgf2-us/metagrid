@@ -14,8 +14,8 @@ const styles = {
 };
 
 type Props = {
-  activeProject: Project;
-  activeFacets: ActiveFacets;
+  activeProject: Project | {};
+  activeFacets: ActiveFacets | {};
   projectsFetched?: {
     results: Project[];
   };
@@ -62,13 +62,14 @@ const ProjectsForm: React.FC<Props> = ({
       </Form>
     );
   }
+
   if (projectsFetched) {
     return (
       <div data-testid="project-form">
         <Form
           form={projectForm}
           layout="inline"
-          initialValues={{ project: activeProject.name }}
+          // initialValues={{ project: activeProject.name }}
           onFinish={handleProjectForm}
           hideRequiredMark
         >
@@ -83,10 +84,7 @@ const ProjectsForm: React.FC<Props> = ({
               showArrow
             >
               {projectsFetched.results.map(
-                (
-                  projectObj: { [key: string]: string | number },
-                  index: number
-                ) => {
+                (projectObj: Project, index: number) => {
                   return (
                     <Select.Option
                       key={projectObj.name}

@@ -14,8 +14,8 @@ const styles = {
 };
 
 type Props = {
-  activeProject: Project;
-  activeFacets: ActiveFacets;
+  activeProject: Project | {};
+  activeFacets: ActiveFacets | {};
   availableFacets: AvailableFacets;
   handleProjectChange: (values: { [key: string]: string }) => void;
   onSetActiveFacets: (allValues: { [key: string]: string[] | [] }) => void;

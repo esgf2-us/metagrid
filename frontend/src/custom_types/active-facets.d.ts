@@ -1,1 +1,1 @@
-type ActiveFacets = { [key: string]: string[] } | {};
+type ActiveFacets = Record<string, string[]>;
