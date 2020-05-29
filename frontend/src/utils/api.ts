@@ -1,5 +1,5 @@
 import queryString from 'query-string';
-import { PromiseFn } from 'react-async';
+import { PromiseFn, DeferFn } from 'react-async';
 
 import axios from '../axios';
 
@@ -60,9 +60,7 @@ export const genUrlQuery = (
 
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const fetchResults: PromiseFn<{ [key: string]: any }> = async (
-  reqUrl
-) => {
+export const fetchResults: DeferFn<{ [key: string]: any }> = async (reqUrl) => {
   return axios
     .get(`http://localhost:8080/${reqUrl}`)
     .then((res) => {

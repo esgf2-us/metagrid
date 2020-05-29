@@ -9,10 +9,10 @@ const styles = {
 };
 
 type Props = {
-  activeProject: Project;
+  activeProject: Project | {};
   projects: Project[];
   onSearch: (text: string) => void;
-  onProjectChange: (selectedProj?: { [key: string]: string | number }) => void;
+  onProjectChange: (selectedProj: Project) => void;
 };
 
 const LeftMenu: React.FC<Props> = ({
@@ -28,10 +28,12 @@ const LeftMenu: React.FC<Props> = ({
    * Sets the project and search value using the search form
    */
   const onFinish = (values: { [key: string]: string }): void => {
-    const selectedProj = projects.find((obj) => obj.name === values.project);
+    const selectedProj: Project | undefined = projects.find(
+      (obj) => obj.name === values.project
+    );
 
     /* istanbul ignore else */
-    if (activeProject !== selectedProj) {
+    if (selectedProj && activeProject !== selectedProj) {
       onProjectChange(selectedProj);
     }
 

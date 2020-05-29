@@ -19,7 +19,7 @@ const styles = {
 };
 
 type Props = {
-  activeProject: Project;
+  activeProject: Project | {};
   cartItems: number;
   onSearch: () => void;
   onProjectChange: () => void;

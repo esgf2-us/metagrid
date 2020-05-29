@@ -1,1 +1,1 @@
-type AvailableFacets = { [key: string]: [string, number][] };
+type AvailableFacets = Record<string, [string, number][]>;
