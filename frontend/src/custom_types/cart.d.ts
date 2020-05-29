@@ -1,1 +1,1 @@
-type Cart = SearchResult | [];
+type Cart = SearchResult[] | [];
