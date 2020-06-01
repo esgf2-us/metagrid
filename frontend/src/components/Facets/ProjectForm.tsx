@@ -63,7 +63,6 @@ const ProjectsForm: React.FC<Props> = ({
     );
   }
 
-  /* istanbul ignore else */
   if (projectsFetched) {
     // Since activeProject is also typed as an empty object ({}), TypeScript forbids accessing the
     // name attribute. In order to bypass this check, uncast activeProject for this single access.
