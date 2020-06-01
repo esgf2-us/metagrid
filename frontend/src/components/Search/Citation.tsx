@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAsync } from 'react-async';
+import { useAsync, PromiseFn } from 'react-async';
 
 import Alert from '../Feedback/Alert';
 import Skeleton from '../Feedback/Skeleton';
@@ -30,7 +30,7 @@ type CitationProps = {
 
 const Citation: React.FC<CitationProps> = ({ url }) => {
   const { data, error, isLoading } = useAsync({
-    promiseFn: fetchCitation,
+    promiseFn: (fetchCitation as unknown) as PromiseFn<Citation>,
     url,
   });
 

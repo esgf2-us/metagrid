@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAsync } from 'react-async';
+import { useAsync, PromiseFn } from 'react-async';
 import { DownloadOutlined } from '@ant-design/icons';
 
 import { Form, Select, Table as TableD } from 'antd';
@@ -40,7 +40,8 @@ type Props = {
 
 const FilesTable: React.FC<Props> = ({ id }) => {
   const { data, error, isLoading } = useAsync({
-    promiseFn: fetchFiles,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    promiseFn: (fetchFiles as unknown) as PromiseFn<any>,
     id,
   });
 

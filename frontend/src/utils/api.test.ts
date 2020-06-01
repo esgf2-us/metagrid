@@ -1,5 +1,4 @@
-import mockAxios from 'axios';
-
+import mockAxios from '../__mocks__/axios';
 import {
   fetchCitation,
   fetchFiles,
@@ -41,9 +40,9 @@ describe('test fetchProjects()', () => {
 });
 
 describe('test genUrlQuery()', () => {
-  let baseUrl;
-  let textInputs;
-  let activeFacets;
+  let baseUrl: string;
+  let textInputs: TextInputs;
+  let activeFacets: ActiveFacets;
   beforeEach(() => {
     baseUrl = 'http://someBaseUrl.com/?limit=0&offset=0';
     textInputs = ['input1', 'input2'];
@@ -102,8 +101,8 @@ describe('test genUrlQuery()', () => {
 });
 
 describe('test fetchResults()', () => {
-  let results;
-  let reqUrl;
+  let results: string[];
+  let reqUrl: string;
 
   beforeEach(() => {
     results = ['test1', 'test2'];
@@ -119,7 +118,7 @@ describe('test fetchResults()', () => {
     );
     reqUrl += '&query=input1,input2&facet1=var1,var2&facet2=var3,var4';
 
-    const projects = await fetchResults([reqUrl]);
+    const projects = await fetchResults(reqUrl);
     expect(projects).toEqual({ results });
     expect(mockAxios.get).toHaveBeenCalledTimes(1);
     expect(mockAxios.get).toHaveBeenCalledWith(
@@ -137,7 +136,7 @@ describe('test fetchResults()', () => {
     );
     reqUrl += '&query=*&facet1=var1,var2&facet2=var3,var4';
 
-    const projects = await fetchResults([reqUrl]);
+    const projects = await fetchResults(reqUrl);
     expect(projects).toEqual({ results });
     expect(mockAxios.get).toHaveBeenCalledTimes(1);
     expect(mockAxios.get).toHaveBeenCalledWith(
@@ -151,19 +150,23 @@ describe('test fetchResults()', () => {
       Promise.reject(new Error(errorMessage))
     );
 
-    await expect(fetchResults([reqUrl])).rejects.toThrow(errorMessage);
+    await expect(fetchResults(reqUrl)).rejects.toThrow(errorMessage);
   });
 });
 
 describe('test processCitation()', () => {
   it('returns citation object with additional correct fields', () => {
-    const citation = {
+    const citation: Citation = {
       identifier: { id: 'an_id', identifierType: 'DOI' },
       creators: [{ creatorName: 'Bob' }, { creatorName: 'Tom' }],
+      identifierDOI: '',
+      creatorsList: '',
+      titles: 'title',
+      publisher: 'publisher',
+      publicationYear: 2020,
     };
-    const result = {
-      identifier: { id: 'an_id', identifierType: 'DOI' },
-      creators: [{ creatorName: 'Bob' }, { creatorName: 'Tom' }],
+    const result: Citation = {
+      ...citation,
       identifierDOI: 'http://doi.org/an_id',
       creatorsList: 'Bob; Tom',
     };
@@ -218,7 +221,7 @@ describe('test fetchCitation()', () => {
 });
 
 describe('test fetchFiles()', () => {
-  let dataset;
+  let dataset: { [key: string]: string };
   beforeEach(() => {
     dataset = { id: 'testid' };
   });
@@ -246,6 +249,6 @@ describe('test fetchFiles()', () => {
       Promise.reject(new Error(errorMessage))
     );
 
-    await expect(fetchFiles(dataset.id)).rejects.toThrow(errorMessage);
+    await expect(fetchFiles({ id: dataset.id })).rejects.toThrow(errorMessage);
   });
 });

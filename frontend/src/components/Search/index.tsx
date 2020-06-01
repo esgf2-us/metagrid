@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAsync } from 'react-async';
+import { useAsync, DeferFn } from 'react-async';
 import { Row, Col, Typography } from 'antd';
 import { ExportOutlined } from '@ant-design/icons';
 
@@ -98,7 +98,8 @@ const Search: React.FC<Props> = ({
 }) => {
   // Async function to fetch results
   const { data: results, error, isLoading, run } = useAsync({
-    deferFn: fetchResults,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    deferFn: (fetchResults as unknown) as DeferFn<{ [key: string]: any }>,
   });
 
   const [constraintsExist, setConstraintsExist] = React.useState<boolean>(
