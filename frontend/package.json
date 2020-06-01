@@ -70,7 +70,7 @@
       "!**/node_modules/**",
       "!**/coverage/**",
       "!**/serviceWorker.js",
-      "!**/index.js",
+      "!**/index.tsx",
       "!**/proxy.js",
       "!**/react-app-env.d.ts",
       "!**/custom_types/**"
