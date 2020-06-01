@@ -6,6 +6,7 @@ import FacetsForm from './FacetsForm';
 import Divider from '../General/Divider';
 
 import { fetchProjects } from '../../utils/api';
+import { isEmpty } from '../../utils/utils';
 
 const styles = {
   form: {
@@ -74,11 +75,13 @@ const Facets: React.FC<Props> = ({
         />
       </div>
       <Divider />
-      <FacetsForm
-        activeFacets={activeFacets}
-        availableFacets={availableFacets}
-        handleFacetsForm={handleFacetsForm}
-      />
+      {!isEmpty(availableFacets) && (
+        <FacetsForm
+          activeFacets={activeFacets}
+          availableFacets={availableFacets}
+          handleFacetsForm={handleFacetsForm}
+        />
+      )}
     </div>
   );
 };

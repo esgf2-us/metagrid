@@ -4,7 +4,7 @@ import { FilterOutlined } from '@ant-design/icons';
 
 import Button from '../General/Button';
 
-import { isEmpty, humanize } from '../../utils/utils';
+import { humanize } from '../../utils/utils';
 
 const styles: { [key: string]: React.CSSProperties } = {
   content: { height: '660px', width: '100%', overflowY: 'auto' },
@@ -14,7 +14,7 @@ const styles: { [key: string]: React.CSSProperties } = {
 
 export type Props = {
   activeFacets: ActiveFacets | {};
-  availableFacets: AvailableFacets | {};
+  availableFacets: AvailableFacets;
   handleFacetsForm: (allValues: { [key: string]: string[] | [] }) => void;
 };
 
@@ -24,7 +24,6 @@ const FacetsForm: React.FC<Props> = ({
   handleFacetsForm,
 }) => {
   const [facetsForm] = Form.useForm();
-
   const [btnDisabled, setBtnDisabled] = React.useState(true);
 
   /**
@@ -55,73 +54,64 @@ const FacetsForm: React.FC<Props> = ({
   return (
     <div data-testid="facets-form">
       <div style={styles.applyBtn}>
-        {!isEmpty(availableFacets) && (
-          <Button
-            data-testid="facets-form-btn"
-            onClick={() => facetsForm.submit()}
-            type="primary"
-            htmlType="submit"
-            icon={<FilterOutlined />}
-            disabled={btnDisabled}
-          >
-            Apply Facets
-          </Button>
-        )}
+        <Button
+          data-testid="facets-form-btn"
+          onClick={() => facetsForm.submit()}
+          type="primary"
+          htmlType="submit"
+          icon={<FilterOutlined />}
+          disabled={btnDisabled}
+        >
+          Apply Facets
+        </Button>
       </div>
       <div style={styles.content}>
-        {!isEmpty(availableFacets) && (
-          <Form
-            form={facetsForm}
-            layout="vertical"
-            initialValues={{ ...activeFacets }}
-            onFinish={(values) => handleFacetsForm(values)}
-            onValuesChange={(_changedValues, allValues) =>
-              handleValuesChange(allValues)
-            }
-          >
-            <Collapse bordered={false}>
-              {Object.keys(availableFacets).map((facet) => {
-                return (
-                  <Collapse.Panel header={humanize(facet)} key={facet}>
-                    <Form.Item
-                      style={{ marginBottom: '4px' }}
-                      key={facet}
-                      name={facet}
+        <Form
+          form={facetsForm}
+          layout="vertical"
+          initialValues={{ ...activeFacets }}
+          onFinish={(values) => handleFacetsForm(values)}
+          onValuesChange={(_changedValues, allValues) =>
+            handleValuesChange(allValues)
+          }
+        >
+          <Collapse bordered={false}>
+            {Object.keys(availableFacets).map((facet) => {
+              return (
+                <Collapse.Panel header={humanize(facet)} key={facet}>
+                  <Form.Item
+                    style={{ marginBottom: '4px' }}
+                    key={facet}
+                    name={facet}
+                  >
+                    <Select
+                      data-testid={`${facet}-form-select`}
+                      size="small"
+                      placeholder="Select option(s)"
+                      mode="multiple"
+                      style={{ width: '100%' }}
+                      tokenSeparators={[',']}
+                      showArrow
                     >
-                      <Select
-                        data-testid={`${facet}-form-select`}
-                        size="small"
-                        placeholder="Select option(s)"
-                        mode="multiple"
-                        style={{ width: '100%' }}
-                        tokenSeparators={[',']}
-                        showArrow
-                      >
-                        {(availableFacets as AvailableFacets)[facet].map(
-                          (variable) => {
-                            return (
-                              <Select.Option
-                                key={variable[0]}
-                                value={variable[0]}
-                              >
-                                <span data-testid={`${facet}_${variable[0]}`}>
-                                  {variable[0]}
-                                  <span style={styles.facetCount}>
-                                    ({variable[1]})
-                                  </span>
-                                </span>
-                              </Select.Option>
-                            );
-                          }
-                        )}
-                      </Select>
-                    </Form.Item>
-                  </Collapse.Panel>
-                );
-              })}
-            </Collapse>
-          </Form>
-        )}
+                      {availableFacets[facet].map((variable) => {
+                        return (
+                          <Select.Option key={variable[0]} value={variable[0]}>
+                            <span data-testid={`${facet}_${variable[0]}`}>
+                              {variable[0]}
+                              <span style={styles.facetCount}>
+                                ({variable[1]})
+                              </span>
+                            </span>
+                          </Select.Option>
+                        );
+                      })}
+                    </Select>
+                  </Form.Item>
+                </Collapse.Panel>
+              );
+            })}
+          </Collapse>
+        </Form>
       </div>
     </div>
   );
