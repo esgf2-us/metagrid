@@ -49,10 +49,12 @@ const Facets: React.FC<Props> = ({
   const handleProjectForm = (selectedProject: {
     [key: string]: string;
   }): void => {
+    /* istanbul ignore else */
     if (data) {
       const selectedProj: Project | undefined = data.results.find(
         (obj: Project) => obj.name === selectedProject.project
       );
+      /* istanbul ignore else */
       if (selectedProj) {
         handleProjectChange(selectedProj);
       }
