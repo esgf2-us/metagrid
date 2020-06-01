@@ -1,0 +1,1 @@
+type Cart = SearchResult[];
