@@ -11,6 +11,7 @@
     "@types/node": "^14.0.4",
     "@types/react": "^16.9.23",
     "@types/react-dom": "^16.9.5",
+    "@types/react-router-dom": "^5.1.5",
     "antd": "^4.0.3",
     "axios": "^0.19.2",
     "cors-anywhere": "^0.4.2",
@@ -27,10 +28,11 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "eject": "react-scripts eject",
     "test": "CI=1 react-scripts test --env=jest-environment-jsdom-sixteen",
     "test:watch": "react-scripts test --env=jest-environment-jsdom-sixteen",
     "test:coverage": "CI=1 react-scripts test --coverage --env=jest-environment-jsdom-sixteen",
-    "eject": "react-scripts eject",
+    "lint": "eslint src/**/*.{js,jsx,ts,tsx}",
     "precommit": "lint-staged"
   },
   "eslintConfig": {
@@ -49,26 +51,30 @@
     ]
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^2.34.0",
     "codecov": "^3.7.0",
     "eslint": "^6.8.0",
-    "eslint-config-airbnb": "^18.1.0",
-    "eslint-config-prettier": "^6.10.1",
+    "eslint-config-airbnb-typescript": "^7.2.1",
+    "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-import": "^2.20.1",
     "eslint-plugin-jsx-a11y": "^6.2.3",
     "eslint-plugin-prettier": "^3.1.2",
     "eslint-plugin-react": "^7.19.0",
     "eslint-plugin-react-hooks": "^2.5.0",
     "jest-environment-jsdom-sixteen": "^1.0.3",
-    "prettier": "2.0.2"
+    "prettier": "^2.0.5"
   },
   "jest": {
     "collectCoverageFrom": [
-      "**/*.{js,jsx}",
+      "**/*.{js,jsx,ts,tsx}",
       "!**/node_modules/**",
       "!**/coverage/**",
       "!**/serviceWorker.js",
-      "!**/index.js",
-      "!**/proxy.js"
+      "!**/index.tsx",
+      "!**/proxy.js",
+      "!**/react-app-env.d.ts",
+      "!**/custom_types/**",
+      "!**/axios/**"
     ],
     "coverageThreshold": {
       "global": {
@@ -77,7 +83,7 @@
         "lines": 90,
         "statements": 90
       },
-      "./src/App.js": {
+      "./src/App.tsx": {
         "lines": 100
       }
     }

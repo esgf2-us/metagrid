@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const corsProxy = require('cors-anywhere');
 
 // Listen on a specific host via the HOST environment variable
@@ -12,5 +13,6 @@ corsProxy
     removeHeaders: ['cookie', 'cookie2'],
   })
   .listen(port, host, () => {
+    // eslint-disable-next-line no-console
     console.log(`Running CORS Anywhere on ${host}:${port}`);
   });
