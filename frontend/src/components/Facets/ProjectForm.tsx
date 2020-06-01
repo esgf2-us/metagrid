@@ -114,11 +114,13 @@ const ProjectsForm: React.FC<Props> = ({
                 icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
                 placement="right"
               >
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  icon={<SelectOutlined />}
-                ></Button>
+                <span>
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    icon={<SelectOutlined />}
+                  ></Button>
+                </span>
               </Popconfirm>
             ) : (
               <Button
@@ -131,9 +133,9 @@ const ProjectsForm: React.FC<Props> = ({
         </Form>
       </div>
     );
-  } 
-    return null;
-  
+  }
+  // Return an empty form
+  return <Form form={projectForm}></Form>;
 };
 
 export default ProjectsForm;

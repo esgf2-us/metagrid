@@ -39,7 +39,9 @@ const Cart: React.FC<Props> = ({ cart, handleCart, clearCart }) => {
             icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
             onConfirm={() => clearCart()}
           >
-            <Button danger>Remove All Items</Button>
+            <span>
+              <Button danger>Remove All Items</Button>
+            </span>
           </Popconfirm>
         )}
       </div>

@@ -434,10 +434,6 @@ it('displays the number of files in the cart summary and handles clearing the ca
   expect(cartLink).toBeTruthy();
   fireEvent.click(cartLink);
 
-  // Check current route is '/cart'
-  global.window.location.pathname = '';
-  expect(global.window.location.pathname).toEqual('/cart');
-
   // Check number of files and datasets are correctly displayed
   const cart = await waitFor(() => getByTestId('cart'));
   expect(cart).toBeTruthy();
