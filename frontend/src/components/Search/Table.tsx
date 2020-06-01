@@ -22,7 +22,7 @@ type Props = {
   loading: boolean;
   results: SearchResult[] | [];
   totalResults?: number;
-  cart: Cart;
+  cart: Cart | [];
   handleCart: (item: SearchResult[], action: string) => void;
   handleRowSelect?: (selectedRows: SearchResult[] | []) => void;
   handlePagination?: (page: number, pageSize: number) => void;

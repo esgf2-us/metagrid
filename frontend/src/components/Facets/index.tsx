@@ -16,9 +16,9 @@ const styles = {
 type Props = {
   activeProject: Project | {};
   activeFacets: ActiveFacets | {};
-  availableFacets: AvailableFacets;
-  handleProjectChange: (values: { [key: string]: string }) => void;
-  onSetActiveFacets: (allValues: { [key: string]: string[] | [] }) => void;
+  availableFacets: AvailableFacets | {};
+  handleProjectChange: (selectedProj: Project) => void;
+  onSetActiveFacets: (allValues: ActiveFacets) => void;
 };
 
 const Facets: React.FC<Props> = ({

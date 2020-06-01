@@ -76,11 +76,11 @@ export const checkConstraintsExist = (
 };
 
 type Props = {
-  activeProject: Project;
+  activeProject: Project | {};
   textInputs: TextInputs | [];
   activeFacets: ActiveFacets;
-  cart: Cart;
-  onRemoveTag: () => void;
+  cart: Cart | [];
+  onRemoveTag: (removedTag: Tag, type: string) => void;
   onClearTags: () => void;
   handleCart: (selectedItems: SearchResult[], action: string) => void;
   setAvailableFacets: (parsedFacets: AvailableFacets) => void;
@@ -127,7 +127,7 @@ const Search: React.FC<Props> = ({
   React.useEffect(() => {
     if (!isEmpty(activeProject)) {
       const reqUrl = genUrlQuery(
-        activeProject.facets_url,
+        (activeProject as Project).facets_url,
         textInputs,
         activeFacets,
         pagination
@@ -206,7 +206,9 @@ const Search: React.FC<Props> = ({
         {isLoading && (
           <h3>
             <span style={styles.resultsHeader}>Loading </span> results for{' '}
-            <span style={styles.resultsHeader}>{activeProject.name}</span>{' '}
+            <span style={styles.resultsHeader}>
+              {(activeProject as Project).name}
+            </span>{' '}
             {constraintsExist && (
               <Typography.Text code>
                 {stringifyConstraints(activeFacets, textInputs)}
@@ -221,7 +223,9 @@ const Search: React.FC<Props> = ({
               {results.response.numFound}{' '}
             </span>
             results found for{' '}
-            <span style={styles.resultsHeader}>{activeProject.name}</span>{' '}
+            <span style={styles.resultsHeader}>
+              {(activeProject as Project).name}
+            </span>{' '}
             {constraintsExist && (
               <Typography.Text code>
                 {stringifyConstraints(activeFacets, textInputs)}
