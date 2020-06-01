@@ -27,3 +27,13 @@ it('renders Popconfirm component when there is an activeProject and activeFacet(
   const popOverSubmitBtn = getByText('OK');
   fireEvent.click(popOverSubmitBtn);
 });
+
+it('renders empty form', () => {
+  const { queryByRole } = render(
+    <ProjectsForm {...defaultProps} projectsFetched={undefined} />
+  );
+
+  // Check submit button does not exist
+  const submitBtn = queryByRole('img', { name: 'select' });
+  expect(submitBtn).toBeNull();
+});
