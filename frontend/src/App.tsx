@@ -18,28 +18,30 @@ import { isEmpty } from './utils/utils';
 import './App.css';
 
 const styles = {
-  bodyLayout: { padding: '24px 0' },
+  bodyLayout: { padding: '24px 0' } as React.CSSProperties,
   bodySider: {
     background: '#fff',
     padding: '25px 25px 25px 25px',
     marginLeft: '25px',
     width: '350',
-  },
-  bodyContent: { padding: '0 24px' },
-  footer: { textAlign: 'center' },
+  } as React.CSSProperties,
+  bodyContent: { padding: '0 24px' } as React.CSSProperties,
+  footer: { textAlign: 'center' } as React.CSSProperties,
 };
 
-function App() {
-  const [activeProject, setActiveProject] = React.useState({});
-  const [availableFacets, setAvailableFacets] = React.useState({});
-  const [textInputs, setTextInputs] = React.useState([]);
-  const [activeFacets, setActiveFacets] = React.useState({});
-  const [cart, setCart] = React.useState([]);
+const App: React.FC = () => {
+  const [activeProject, setActiveProject] = React.useState<Project | {}>({});
+  const [availableFacets, setAvailableFacets] = React.useState<
+    AvailableFacets | {}
+  >({});
+  const [textInputs, setTextInputs] = React.useState<TextInputs | []>([]);
+  const [activeFacets, setActiveFacets] = React.useState<ActiveFacets | {}>({});
+  const [cart, setCart] = React.useState<Cart | []>([]);
 
   /**
    * Handles clearing constraints for a selected project.
    */
-  const clearConstraints = () => {
+  const clearConstraints = (): void => {
     setTextInputs([]);
     setActiveFacets({});
   };
@@ -50,9 +52,8 @@ function App() {
    * This functions checks if the current project is not an empty object or
    * equal to the selected project to reset textInputs and activeFacets, then
    * it updates the selected project.
-   * @param {*} selectedProject
    */
-  const handleProjectChange = (selectedProject) => {
+  const handleProjectChange = (selectedProject: Project): void => {
     if (!isEmpty(activeProject) && activeProject !== selectedProject) {
       clearConstraints();
     }
@@ -62,17 +63,19 @@ function App() {
 
   /**
    * Handles removing applied tags.
-   * @param {string} removedTag
    */
-  const handleRemoveTag = (removedTag, type) => {
+  const handleRemoveTag = (removedTag: Tag, type: string): void => {
     /* istanbul ignore else */
     if (type === 'text') {
       setTextInputs(() => textInputs.filter((input) => input !== removedTag));
     } else if (type === 'facet') {
+      // Need to cast variable to type since it can be an empty object
+      const prevActiveFacets = activeFacets as ActiveFacets;
+      const facet = ([removedTag[0]] as unknown) as string;
+      const option = ([removedTag[1]] as unknown) as string;
+
       const updateFacet = {
-        [removedTag[0]]: activeFacets[removedTag[0]].filter(
-          (item) => item !== removedTag[1]
-        ),
+        facet: prevActiveFacets[facet].filter((item) => item !== option),
       };
       setActiveFacets({ ...activeFacets, ...updateFacet });
     } else {
@@ -86,12 +89,15 @@ function App() {
    * Handles adding or removing items from the cart.
    * @param {arrayOf(objectOf(any))} selectedItems
    */
-  const handleCart = (selectedItems, operation) => {
+  const handleCart = (
+    selectedItems: SearchResult[],
+    operation: string
+  ): void => {
     /* istanbul ignore else */
     if (operation === 'add') {
       setCart(() => {
         const itemsNotInCart = selectedItems.filter((item) => {
-          return !cart.includes(item);
+          return !cart.includes(item as never);
         });
         return [...cart, ...itemsNotInCart];
       });
@@ -112,18 +118,17 @@ function App() {
 
   /**
    * Handles free-text search form submission.
-   *
-   * @param {string} input - free-text input to query for search results
    */
-  const handleOnSearch = (input) => {
-    if (textInputs.includes(input)) {
-      message.error(`Input "${input}" has already been applied`);
+  const handleOnSearch = (text: string): void => {
+    if (textInputs.includes(text as never)) {
+      message.error(`Input "${text}" has already been applied`);
     } else {
-      setTextInputs([...textInputs, input]);
+      setTextInputs([...textInputs, text]);
     }
   };
 
-  const handleSetAvailableFacets = (facets) => {
+  // Handles available facets fetched from the API
+  const handleSetAvailableFacets = (facets: AvailableFacets): void => {
     setAvailableFacets(facets);
   };
 
@@ -139,8 +144,10 @@ function App() {
             <NavBar
               activeProject={activeProject}
               cartItems={cart.length}
-              onProjectChange={(value) => handleProjectChange(value)}
-              onSearch={(input) => handleOnSearch(input)}
+              onProjectChange={(selectedProj) =>
+                handleProjectChange(selectedProj)
+              }
+              onSearch={(text) => handleOnSearch(text)}
             ></NavBar>
           )}
         />
@@ -157,8 +164,12 @@ function App() {
                     activeProject={activeProject}
                     activeFacets={activeFacets}
                     availableFacets={availableFacets}
-                    handleProjectChange={handleProjectChange}
-                    onSetActiveFacets={(facets) => setActiveFacets(facets)}
+                    handleProjectChange={(selectedProj) =>
+                      handleProjectChange(selectedProj)
+                    }
+                    onSetActiveFacets={(facets: ActiveFacets) =>
+                      setActiveFacets(facets)
+                    }
                   />
                 </Layout.Sider>
               )}
@@ -174,8 +185,9 @@ function App() {
                     numItems={cart.length}
                     numFiles={
                       cart.length > 0
-                        ? cart.reduce(
-                            (acc, dataset) => acc + dataset.number_of_files,
+                        ? (cart as SearchResult[]).reduce(
+                            (acc: number, dataset: SearchResult) =>
+                              acc + dataset.number_of_files,
                             0
                           )
                         : 0
@@ -241,6 +253,6 @@ function App() {
       </div>
     </Router>
   );
-}
+};
 
 export default App;

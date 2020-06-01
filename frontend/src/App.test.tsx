@@ -5,8 +5,14 @@ import { render, waitFor, fireEvent, within } from '@testing-library/react';
 import App from './App';
 import mockAxios from './__mocks__/axios';
 
-let projectResults;
-let searchResults;
+let projectResults: Project[];
+let searchResults: {
+  response: {
+    numFound: number;
+    docs: SearchResult[];
+  };
+  facet_counts: { facet_fields: FetchedFacets };
+};
 
 beforeEach(() => {
   projectResults = [
@@ -27,7 +33,7 @@ beforeEach(() => {
       docs: [
         {
           id: 'bar',
-          url: undefined,
+          url: ['foo.bar'],
           number_of_files: 3,
           data_node: 'node.gov',
           version: 1,
@@ -35,7 +41,7 @@ beforeEach(() => {
         },
         {
           id: 'bar',
-          url: undefined,
+          url: ['foo.bar'],
           number_of_files: 2,
           data_node: 'node.gov',
           version: 1,
@@ -265,7 +271,7 @@ it('handles removing facet tags', async () => {
   // Check project select form exists and mouseDown to expand list of options to expand options
   const projectFormSelect = document.querySelector(
     '[data-testid=project-form-select] > .ant-select-selector'
-  );
+  ) as HTMLFormElement;
   expect(projectFormSelect).toBeTruthy();
   fireEvent.mouseDown(projectFormSelect);
 
@@ -291,7 +297,7 @@ it('handles removing facet tags', async () => {
   // Check facet select form exists and mouseDown to expand list of options
   const facetFormSelect = document.querySelector(
     '[data-testid=facet1-form-select] > .ant-select-selector'
-  );
+  ) as HTMLFormElement;
   expect(facetFormSelect).toBeTruthy();
   fireEvent.mouseDown(facetFormSelect);
 
@@ -339,7 +345,7 @@ it('handles project changes and clearing constraints when the active project !==
   // Check project select form exists and mouseDown to expand list of options
   const projectFormSelect = document.querySelector(
     '[data-testid=project-form-select] > .ant-select-selector'
-  );
+  ) as HTMLFormElement;
   expect(projectFormSelect).toBeTruthy();
   fireEvent.mouseDown(projectFormSelect);
 
@@ -358,7 +364,7 @@ it('handles project changes and clearing constraints when the active project !==
   // Check project select form exists again and mouseDown to expand list of options
   const projectFormSelect2 = document.querySelector(
     '[data-testid=project-form-select] > .ant-select-selector'
-  );
+  ) as HTMLFormElement;
   expect(projectFormSelect).toBeTruthy();
   fireEvent.mouseDown(projectFormSelect2);
 
@@ -429,7 +435,7 @@ it('displays the number of files in the cart summary and handles clearing the ca
   fireEvent.click(cartLink);
 
   // Check current route is '/cart'
-  global.window = { location: { pathname: null } };
+  global.window.location.pathname = '';
   expect(global.window.location.pathname).toEqual('/cart');
 
   // Check number of files and datasets are correctly displayed
