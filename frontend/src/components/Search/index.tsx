@@ -149,9 +149,8 @@ const Search: React.FC<Props> = ({
 
   // Update the available facets based on the returned results
   React.useEffect(() => {
-    if (!isEmpty(results)) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      setParsedFacets(parseFacets(results!.facet_counts.facet_fields));
+    if (results && !isEmpty(results)) {
+      setParsedFacets(parseFacets(results.facet_counts.facet_fields));
     }
   }, [results]);
 
