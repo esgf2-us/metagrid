@@ -82,7 +82,7 @@
         "lines": 90,
         "statements": 90
       },
-      "./src/App.js": {
+      "./src/App.tsx": {
         "lines": 100
       }
     }
