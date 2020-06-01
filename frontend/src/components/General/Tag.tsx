@@ -6,11 +6,8 @@ const styles = {
 };
 
 type Props = {
-  value: string | { [key: string]: string } | (number | string)[];
-  onClose?: (
-    value: string | { [key: string]: string } | (number | string)[],
-    type: string
-  ) => void;
+  value: Tag;
+  onClose?: (value: Tag, type: string) => void;
   closable?: boolean;
   type: string;
   color?: string;
