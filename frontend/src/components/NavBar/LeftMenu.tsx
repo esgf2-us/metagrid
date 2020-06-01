@@ -8,7 +8,7 @@ const styles = {
   searchForm: { marginTop: '1em' },
 };
 
-type Props = {
+export type Props = {
   activeProject: Project | {};
   projects: Project[];
   onSearch: (text: string) => void;

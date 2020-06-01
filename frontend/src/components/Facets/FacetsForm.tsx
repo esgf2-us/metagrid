@@ -12,7 +12,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   applyBtn: { marginBottom: '5px' },
 };
 
-type Props = {
+export type Props = {
   activeFacets: ActiveFacets | {};
   availableFacets: AvailableFacets | {};
   handleFacetsForm: (allValues: { [key: string]: string[] | [] }) => void;

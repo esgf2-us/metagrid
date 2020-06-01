@@ -3,13 +3,13 @@ import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { fireEvent, render } from '@testing-library/react';
 
-import Cart from './index';
+import Cart, { Props } from './index';
 
-const defaultProps = {
+const defaultProps: Props = {
   cart: [
     {
       id: 'foo',
-      url: undefined,
+      url: ['foo.bar'],
       number_of_files: 3,
       data_node: 'node.gov',
       version: 1,
@@ -17,7 +17,7 @@ const defaultProps = {
     },
     {
       id: 'bar',
-      url: undefined,
+      url: ['foo.bar'],
       number_of_files: 2,
       data_node: 'node.gov',
       version: 1,
@@ -27,6 +27,7 @@ const defaultProps = {
   handleCart: jest.fn(),
   clearCart: jest.fn(),
 };
+
 it('renders component', () => {
   const { getByTestId } = render(
     <Router>

@@ -5,7 +5,7 @@ import { ShoppingCartOutlined } from '@ant-design/icons';
 
 import Button from '../General/Button';
 
-type Props = {
+export type Props = {
   mode:
     | 'horizontal'
     | 'vertical'

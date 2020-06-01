@@ -6,17 +6,17 @@ import Search, {
   parseFacets,
   stringifyConstraints,
   checkConstraintsExist,
+  Props,
 } from './index';
 import mockAxios from '../../__mocks__/axios';
 
-const defaultProps = {
+const defaultProps: Props = {
   activeProject: { name: 'foo', facets_url: 'https://fubar.gov/?' },
   textInputs: ['foo'],
   activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
   cart: [],
   onRemoveTag: jest.fn(),
   onClearTags: jest.fn(),
-  onAddCart: jest.fn(),
   handleCart: jest.fn(),
   setAvailableFacets: jest.fn(),
 };

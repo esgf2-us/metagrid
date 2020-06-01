@@ -13,7 +13,7 @@ const styles = {
   },
 };
 
-type Props = {
+export type Props = {
   activeProject: Project | {};
   activeFacets: ActiveFacets | {};
   availableFacets: AvailableFacets | {};

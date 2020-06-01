@@ -54,6 +54,7 @@ it('opens the drawer onClick and closes with onClose', async () => {
 
   // Open drawer
   const drawerBtn = getByRole('img', { name: 'menu-unfold' });
+  expect(drawerBtn).toBeTruthy();
   fireEvent.click(drawerBtn);
 
   // Close drawer by clicking on mask
@@ -64,5 +65,8 @@ it('opens the drawer onClick and closes with onClose', async () => {
   // outside of the component dynamically, so document has to be used instead.
   // Source: https://testing-library.com/docs/guide-which-query#manual-queries
   const drawerMask = document.querySelector('div.ant-drawer-mask');
-  fireEvent.click(drawerMask);
+  expect(drawerMask).not.toBeNull();
+  if (drawerMask !== null) {
+    fireEvent.click(drawerMask);
+  }
 });

@@ -3,14 +3,22 @@ import { render, fireEvent } from '@testing-library/react';
 
 import Tag from './Tag';
 
-it('logs the value and type of the tag with onClose()', () => {
+it('renders component with and without onClose prop', () => {
   // eslint-disable-next-line no-console
-  const { getByRole } = render(
+  const { getByRole, rerender } = render(
     <Tag value="foo" type="bar" onClose={jest.fn()}>
       tag
     </Tag>
   );
 
   const closeBtn = getByRole('img', { name: 'close' });
+  fireEvent.click(closeBtn);
+
+  // Re-render the component without onClose prop
+  rerender(
+    <Tag value="foo" type="bar">
+      tag
+    </Tag>
+  );
   fireEvent.click(closeBtn);
 });

@@ -2,17 +2,9 @@
 import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { render } from '@testing-library/react';
-import RightMenu from './RightMenu';
+import RightMenu, { Props } from './RightMenu';
 
-const rightMenuProps: {
-  mode:
-    | 'horizontal'
-    | 'vertical'
-    | 'vertical-left'
-    | 'vertical-right'
-    | 'inline';
-  cartItems: number;
-} = {
+const rightMenuProps: Props = {
   mode: 'horizontal',
   cartItems: 4,
 };

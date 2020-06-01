@@ -18,7 +18,7 @@ import Divider from '../General/Divider';
 import { hasKey, parseUrl } from '../../utils/utils';
 import './Search.css';
 
-type Props = {
+export type Props = {
   loading: boolean;
   results: SearchResult[] | [];
   totalResults?: number;
@@ -80,11 +80,10 @@ const Table: React.FC<Props> = ({
                   options={metaData}
                   placeholder="Lookup a key..."
                   filterOption={(inputValue, option) =>
-                    option
-                      ? option.value
-                          .toUpperCase()
-                          .indexOf(inputValue.toUpperCase()) !== -1
-                      : false
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    option!.value
+                      .toUpperCase()
+                      .indexOf(inputValue.toUpperCase()) !== -1
                   }
                 />
                 <Divider />
@@ -129,12 +128,14 @@ const Table: React.FC<Props> = ({
           : { disabled: false },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onSelect: (_record: any, _selected: any, selectedRows: any) => {
+        /* istanbul ignore else */
         if (handleRowSelect) {
           handleRowSelect(selectedRows);
         }
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onSelectAll: (_selected: any, selectedRows: any) => {
+        /* istanbul ignore else */
         if (handleRowSelect) {
           handleRowSelect(selectedRows);
         }

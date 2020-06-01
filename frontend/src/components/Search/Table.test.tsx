@@ -2,9 +2,9 @@
 import React from 'react';
 import { fireEvent, render, within } from '@testing-library/react';
 
-import Table from './Table';
+import Table, { Props } from './Table';
 
-const defaultProps = {
+const defaultProps: Props = {
   loading: false,
   results: [
     {
@@ -29,9 +29,9 @@ const defaultProps = {
   totalResults: 2,
   cart: [],
   handleCart: jest.fn(),
+  handleRowSelect: jest.fn(),
   handlePagination: jest.fn(),
   handlePageSizeChange: jest.fn(),
-  onSelect: jest.fn(),
 };
 
 it('renders component', () => {
@@ -199,7 +199,7 @@ it('handles when clicking the select all checkbox in the table"s header', () => 
   //   renders the column and there are checkboxes for each row (no uniqueness)
   const selectAllCheckbox = document.querySelector(
     'th.ant-table-cell.ant-table-selection-column [type="checkbox"]'
-  );
+  ) as HTMLInputElement;
   expect(selectAllCheckbox).toBeTruthy();
   fireEvent.click(selectAllCheckbox);
 });

@@ -1,10 +1,12 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react';
 
-import FacetsForm from './FacetsForm';
+import FacetsForm, { Props } from './FacetsForm';
 
-it('disables submit button when there are no selected facet options', () => {
-  const availableFacets: { [key: string]: [string, number][] } = {
+const defaultProps: Props = {
+  activeFacets: {},
+  availableFacets: {
     facet1: [
       ['foo', 3],
       ['bar', 5],
@@ -13,13 +15,13 @@ it('disables submit button when there are no selected facet options', () => {
       ['baz', 2],
       ['fubar', 3],
     ],
-  };
+  },
+  handleFacetsForm: jest.fn(),
+};
+
+it('disables submit button when there are no selected facet options', () => {
   const { getByTestId, getByRole, getByText } = render(
-    <FacetsForm
-      activeFacets={{}}
-      availableFacets={availableFacets}
-      handleFacetsForm={jest.fn()}
-    />
+    <FacetsForm {...defaultProps} />
   );
 
   // Check Facetform component renders

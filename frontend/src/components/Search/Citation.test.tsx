@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, waitFor } from '@testing-library/react';
 
-import mockAxios from 'axios';
+import mockAxios from '../../__mocks__/axios';
 import Citation, { CitationInfo } from './Citation';
 
 // Reset all mocks after each test
@@ -10,15 +10,17 @@ afterEach(() => {
 });
 
 describe('test Citation component', () => {
-  let data;
+  let data: Citation;
 
   beforeEach(() => {
     data = {
       identifier: { id: 'an_id', identifierType: 'DOI' },
       creators: [{ creatorName: 'Bob' }, { creatorName: 'Tom' }],
-      titles: ['title'],
+      titles: 'title',
       publisher: 'Earth System Grid Federation',
       publicationYear: 2020,
+      identifierDOI: '',
+      creatorsList: '',
     };
   });
 

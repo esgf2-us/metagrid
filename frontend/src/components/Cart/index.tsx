@@ -19,7 +19,7 @@ const styles = {
   },
 };
 
-type Props = {
+export type Props = {
   cart: SearchResult[] | [];
   handleCart: (item: SearchResult[], action: string) => void;
   clearCart: () => void;
