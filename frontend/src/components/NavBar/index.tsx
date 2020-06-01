@@ -21,8 +21,8 @@ const styles = {
 type Props = {
   activeProject: Project | {};
   cartItems: number;
-  onSearch: () => void;
-  onProjectChange: () => void;
+  onProjectChange: (selectedProj: Project) => void;
+  onSearch: (text: string) => void;
 };
 
 const NavBar: React.FC<Props> = ({
