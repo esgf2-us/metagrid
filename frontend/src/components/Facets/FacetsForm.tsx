@@ -14,7 +14,7 @@ const styles: { [key: string]: React.CSSProperties } = {
 
 type Props = {
   activeFacets: ActiveFacets | {};
-  availableFacets: AvailableFacets;
+  availableFacets: AvailableFacets | {};
   handleFacetsForm: (allValues: { [key: string]: string[] | [] }) => void;
 };
 
@@ -69,52 +69,59 @@ const FacetsForm: React.FC<Props> = ({
         )}
       </div>
       <div style={styles.content}>
-        <Form
-          form={facetsForm}
-          layout="vertical"
-          initialValues={{ ...activeFacets }}
-          onFinish={(values) => handleFacetsForm(values)}
-          onValuesChange={(_changedValues, allValues) =>
-            handleValuesChange(allValues)
-          }
-        >
-          <Collapse bordered={false}>
-            {Object.keys(availableFacets).map((facet) => {
-              return (
-                <Collapse.Panel header={humanize(facet)} key={facet}>
-                  <Form.Item
-                    style={{ marginBottom: '4px' }}
-                    key={facet}
-                    name={facet}
-                  >
-                    <Select
-                      data-testid={`${facet}-form-select`}
-                      size="small"
-                      placeholder="Select option(s)"
-                      mode="multiple"
-                      style={{ width: '100%' }}
-                      tokenSeparators={[',']}
-                      showArrow
+        {!isEmpty(availableFacets) && (
+          <Form
+            form={facetsForm}
+            layout="vertical"
+            initialValues={{ ...activeFacets }}
+            onFinish={(values) => handleFacetsForm(values)}
+            onValuesChange={(_changedValues, allValues) =>
+              handleValuesChange(allValues)
+            }
+          >
+            <Collapse bordered={false}>
+              {Object.keys(availableFacets).map((facet) => {
+                return (
+                  <Collapse.Panel header={humanize(facet)} key={facet}>
+                    <Form.Item
+                      style={{ marginBottom: '4px' }}
+                      key={facet}
+                      name={facet}
                     >
-                      {availableFacets[facet].map((variable) => {
-                        return (
-                          <Select.Option key={variable[0]} value={variable[0]}>
-                            <span data-testid={`${facet}_${variable[0]}`}>
-                              {variable[0]}
-                              <span style={styles.facetCount}>
-                                ({variable[1]})
-                              </span>
-                            </span>
-                          </Select.Option>
-                        );
-                      })}
-                    </Select>
-                  </Form.Item>
-                </Collapse.Panel>
-              );
-            })}
-          </Collapse>
-        </Form>
+                      <Select
+                        data-testid={`${facet}-form-select`}
+                        size="small"
+                        placeholder="Select option(s)"
+                        mode="multiple"
+                        style={{ width: '100%' }}
+                        tokenSeparators={[',']}
+                        showArrow
+                      >
+                        {(availableFacets as AvailableFacets)[facet].map(
+                          (variable) => {
+                            return (
+                              <Select.Option
+                                key={variable[0]}
+                                value={variable[0]}
+                              >
+                                <span data-testid={`${facet}_${variable[0]}`}>
+                                  {variable[0]}
+                                  <span style={styles.facetCount}>
+                                    ({variable[1]})
+                                  </span>
+                                </span>
+                              </Select.Option>
+                            );
+                          }
+                        )}
+                      </Select>
+                    </Form.Item>
+                  </Collapse.Panel>
+                );
+              })}
+            </Collapse>
+          </Form>
+        )}
       </div>
     </div>
   );
