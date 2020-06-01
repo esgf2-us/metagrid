@@ -73,7 +73,8 @@
       "!**/index.tsx",
       "!**/proxy.js",
       "!**/react-app-env.d.ts",
-      "!**/custom_types/**"
+      "!**/custom_types/**",
+      "!**/axios/**"
     ],
     "coverageThreshold": {
       "global": {
