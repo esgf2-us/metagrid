@@ -2,10 +2,10 @@
 import React from 'react';
 import { fireEvent, render, waitFor, within } from '@testing-library/react';
 
-import Facets from './index';
+import Facets, { Props } from './index';
 import mockAxios from '../../__mocks__/axios';
 
-const defaultProps = {
+const defaultProps: Props = {
   activeProject: {},
   activeFacets: {},
   availableFacets: {

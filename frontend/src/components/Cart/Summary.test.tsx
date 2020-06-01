@@ -3,9 +3,9 @@ import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { fireEvent, render } from '@testing-library/react';
 
-import Summary from './Summary';
+import Summary, { Props } from './Summary';
 
-const defaultProps = {
+const defaultProps: Props = {
   numItems: 2,
   numFiles: 5,
 };

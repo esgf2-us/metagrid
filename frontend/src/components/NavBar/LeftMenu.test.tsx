@@ -2,11 +2,14 @@
 import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { render, fireEvent, waitFor } from '@testing-library/react';
-import LeftMenu from './LeftMenu';
+import LeftMenu, { Props } from './LeftMenu';
 
-const leftMenuProps = {
+const defaultProps: Props = {
   activeProject: { name: 'test1' },
-  projects: [{ name: 'test1' }, { name: 'test2' }],
+  projects: [
+    { name: 'test1', facets_url: 'foo.bar' },
+    { name: 'test2', facets_url: 'foo.bar' },
+  ],
   onSearch: jest.fn(),
   onProjectChange: jest.fn(),
 };
@@ -17,7 +20,7 @@ it('renders search input', () => {
   // onFinish function when the user submits the form.
   const { getByTestId } = render(
     <Router>
-      <LeftMenu {...leftMenuProps} />
+      <LeftMenu {...defaultProps} />
     </Router>
   );
 
@@ -27,7 +30,7 @@ it('renders search input', () => {
 it('successfully submits search form and resets current text with onFinish', async () => {
   const { getByPlaceholderText, getByRole } = render(
     <Router>
-      <LeftMenu {...leftMenuProps} />
+      <LeftMenu {...defaultProps} />
     </Router>
   );
 
@@ -49,7 +52,7 @@ it('successfully submits search form and resets current text with onFinish, and 
   const { getByPlaceholderText, getByRole } = render(
     <Router>
       <LeftMenu
-        {...leftMenuProps}
+        {...defaultProps}
         activeProject={{}}
         onProjectChange={onProjectChange}
       />

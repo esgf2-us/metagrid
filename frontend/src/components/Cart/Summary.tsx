@@ -18,7 +18,7 @@ const styles = {
   statistic: { float: 'right' } as React.CSSProperties,
 };
 
-type Props = {
+export type Props = {
   numItems: number;
   numFiles: number;
 };

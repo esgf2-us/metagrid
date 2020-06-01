@@ -75,16 +75,6 @@ export const fetchResults: DeferFn<{ [key: string]: any }> = async (reqUrl) => {
  * Performs process on citation objects.
  */
 
-type Citation = {
-  identifier: { id: string; identifierType: string };
-  creators: { [key: string]: string }[];
-  titles: string;
-  publisher: string;
-  publicationYear: number;
-  identifierDOI: string;
-  creatorsList: string;
-};
-
 export const processCitation = (citation: Citation): Citation => {
   const newCitation = citation;
 

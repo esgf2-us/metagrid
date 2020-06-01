@@ -13,13 +13,13 @@ const styles = {
   form: { width: '235px' },
 };
 
-type Props = {
+export type Props = {
   activeProject: Project | {};
   activeFacets: ActiveFacets | {};
-  projectsFetched?: {
+  projectsFetched: {
     results: Project[];
   };
-  projectsIsLoading?: boolean;
+  projectsIsLoading: boolean;
   projectsError?: Error;
   handleProjectForm: (allValues: { [key: string]: string }) => void;
 };
@@ -63,75 +63,69 @@ const ProjectsForm: React.FC<Props> = ({
     );
   }
 
-  if (projectsFetched) {
-    // Since activeProject is also typed as an empty object ({}), TypeScript forbids accessing the
-    // name attribute. In order to bypass this check, uncast activeProject for this single access.
-    // https://stackoverflow.https://stackoverflow.com/a/46530838/questions/34274487/property-does-not-exists-on-type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const initialValues = { project: (activeProject as any).name };
+  // Since activeProject is also typed as an empty object ({}), TypeScript forbids accessing the
+  // name attribute. In order to bypass this check, uncast activeProject for this single access.
+  // https://stackoverflow.https://stackoverflow.com/a/46530838/questions/34274487/property-does-not-exists-on-type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const initialValues = { project: (activeProject as Project).name };
 
-    return (
-      <div data-testid="project-form">
-        <Form
-          form={projectForm}
-          layout="inline"
-          initialValues={initialValues}
-          onFinish={handleProjectForm}
-          hideRequiredMark
+  return (
+    <div data-testid="project-form">
+      <Form
+        form={projectForm}
+        layout="inline"
+        initialValues={initialValues}
+        onFinish={handleProjectForm}
+        hideRequiredMark
+      >
+        <Form.Item
+          name="project"
+          rules={[{ required: true, message: 'Project is required' }]}
         >
-          <Form.Item
-            name="project"
-            rules={[{ required: true, message: 'Project is required' }]}
+          <Select
+            data-testid="project-form-select"
+            placeholder="Select a project"
+            style={styles.form}
+            showArrow
           >
-            <Select
-              data-testid="project-form-select"
-              placeholder="Select a project"
-              style={styles.form}
-              showArrow
+            {projectsFetched.results.map(
+              (projectObj: Project, index: number) => {
+                return (
+                  <Select.Option key={projectObj.name} value={projectObj.name}>
+                    <span data-testid={`project_${index}`}>
+                      {projectObj.name}
+                    </span>
+                  </Select.Option>
+                );
+              }
+            )}
+          </Select>
+        </Form.Item>
+        <Form.Item>
+          {!isEmpty(activeProject) && !isEmpty(activeFacets) ? (
+            <Popconfirm
+              title="Your constraints will be cleared."
+              onConfirm={() => projectForm.submit()}
+              icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
+              placement="right"
             >
-              {projectsFetched.results.map(
-                (projectObj: Project, index: number) => {
-                  return (
-                    <Select.Option
-                      key={projectObj.name}
-                      value={projectObj.name}
-                    >
-                      <span data-testid={`project_${index}`}>
-                        {projectObj.name}
-                      </span>
-                    </Select.Option>
-                  );
-                }
-              )}
-            </Select>
-          </Form.Item>
-          <Form.Item>
-            {!isEmpty(activeProject) && !isEmpty(activeFacets) ? (
-              <Popconfirm
-                title="Your constraints will be cleared."
-                onConfirm={() => projectForm.submit()}
-                icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
-                placement="right"
-              >
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  icon={<SelectOutlined />}
-                ></Button>
-              </Popconfirm>
-            ) : (
               <Button
                 type="primary"
                 htmlType="submit"
                 icon={<SelectOutlined />}
               ></Button>
-            )}
-          </Form.Item>
-        </Form>
-      </div>
-    );
-  }
-  return null;
+            </Popconfirm>
+          ) : (
+            <Button
+              type="primary"
+              htmlType="submit"
+              icon={<SelectOutlined />}
+            ></Button>
+          )}
+        </Form.Item>
+      </Form>
+    </div>
+  );
 };
 
 export default ProjectsForm;

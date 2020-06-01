@@ -18,14 +18,14 @@ type Props = {
     | 'rightBottom'
     | undefined;
   trigger?: string | string[] | undefined;
-  children?: React.ReactElement;
+  children: React.ReactElement;
 };
 
 const Popover: React.FC<Props> = ({
   content,
   placement = 'top',
   trigger = 'hover',
-  children = undefined,
+  children,
 }) => {
   return (
     <PopoverD placement={placement} trigger={trigger} content={content}>

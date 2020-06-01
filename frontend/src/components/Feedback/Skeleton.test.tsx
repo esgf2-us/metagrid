@@ -8,3 +8,12 @@ it('returns component', () => {
   const skeleton = getByTestId('skeleton');
   expect(skeleton).toBeTruthy();
 });
+
+it('returns component without active animation effect', () => {
+  const { getByTestId } = render(<Skeleton />);
+  const skeleton = getByTestId('skeleton');
+  expect(skeleton).toBeTruthy();
+
+  const activeClass = document.querySelector('.ant-skeleton-active');
+  expect(activeClass).toBeNull();
+});

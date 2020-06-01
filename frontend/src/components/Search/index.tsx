@@ -75,7 +75,7 @@ export const checkConstraintsExist = (
   return !(isEmpty(activeFacets) && textInputs.length === 0);
 };
 
-type Props = {
+export type Props = {
   activeProject: Project | {};
   textInputs: TextInputs | [];
   activeFacets: ActiveFacets;
