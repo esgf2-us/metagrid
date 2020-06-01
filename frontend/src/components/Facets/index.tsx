@@ -28,9 +28,7 @@ const Facets: React.FC<Props> = ({
   handleProjectChange,
   onSetActiveFacets,
 }) => {
-  const { data, error, isLoading } = useAsync({
-    promiseFn: fetchProjects,
-  });
+  const { data, error, isLoading } = useAsync(fetchProjects);
 
   /**
    * Handles when the facets form is submitted.
@@ -51,10 +49,14 @@ const Facets: React.FC<Props> = ({
   const handleProjectForm = (selectedProject: {
     [key: string]: string;
   }): void => {
-    const selectedProj = data.results.find(
-      (obj: { [key: string]: string }) => obj.name === selectedProject.project
-    );
-    handleProjectChange(selectedProj);
+    if (data) {
+      const selectedProj: Project | undefined = data.results.find(
+        (obj: Project) => obj.name === selectedProject.project
+      );
+      if (selectedProj) {
+        handleProjectChange(selectedProj);
+      }
+    }
   };
 
   return (

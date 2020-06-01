@@ -1,5 +1,4 @@
 import queryString from 'query-string';
-import { PromiseFn, DeferFn } from 'react-async';
 
 import axios from '../axios';
 
@@ -7,8 +6,11 @@ import axios from '../axios';
  * Fetches a list of projects.
  * NOTE: Uses the axios baseURL
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const fetchProjects: PromiseFn<any> = async () => {
+export const fetchProjects = async (): Promise<{
+  results: Project[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
+}> => {
   return axios
     .get(`/api/v1/projects/`)
     .then((res) => {
@@ -57,10 +59,11 @@ export const genUrlQuery = (
 /**
  * Fetch the search results using the ESG Search API.
  * https://github.com/ESGF/esgf.github.io/wiki/ESGF_Search_REST_API
-
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const fetchResults: DeferFn<{ [key: string]: any }> = async (reqUrl) => {
+export const fetchResults = async (
+  reqUrl: string
+): // eslint-disable-next-line @typescript-eslint/no-explicit-any
+Promise<{ [key: string]: any }> => {
   return axios
     .get(`http://localhost:8080/${reqUrl}`)
     .then((res) => {
@@ -92,7 +95,12 @@ export const processCitation = (citation: Citation): Citation => {
  * Fetches citation data using a dataset's citation url.
  * NOTE: Local proxy used to bypass CORS (http://localhost:8080/)
  */
-export const fetchCitation: PromiseFn<Citation> = async ({ url }) => {
+export const fetchCitation = async ({
+  url,
+}: {
+  [key: string]: string;
+}): // eslint-disable-next-line @typescript-eslint/no-explicit-any
+Promise<{ [key: string]: any }> => {
   return axios
     .get(`http://localhost:8080/${url}`)
     .then((res) => {
@@ -108,8 +116,12 @@ export const fetchCitation: PromiseFn<Citation> = async ({ url }) => {
  * Fetches files for a dataset.
  * NOTE: Local proxy used to bypass CORS (http://localhost:8080/)
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const fetchFiles: PromiseFn<any> = async ({ id }) => {
+export const fetchFiles = async ({
+  id,
+}: {
+  id: string;
+}): // eslint-disable-next-line @typescript-eslint/no-explicit-any
+Promise<{ [key: string]: any }> => {
   const url = `https://esgf-node.llnl.gov/search_files/${id}//esgf-node.llnl.gov/?limit=10`;
   return axios
     .get(`http://localhost:8080/${url}`)
