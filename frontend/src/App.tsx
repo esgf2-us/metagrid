@@ -6,7 +6,7 @@ import {
   Switch,
 } from 'react-router-dom';
 import { Breadcrumb, Layout, message } from 'antd';
-import { HomeOutlined } from '@ant-design/icons';
+import { HomeOutlined, BookOutlined } from '@ant-design/icons';
 
 import NavBar from './components/NavBar';
 import Facets from './components/Facets';
@@ -39,6 +39,9 @@ const App: React.FC = () => {
   const [cart, setCart] = React.useState<Cart | []>(
     JSON.parse(localStorage.getItem('cart') || '[]')
   );
+  const [savedSearches, setSavedSearches] = React.useState<SavedSearch[] | []>(
+    JSON.parse(localStorage.getItem('savedSearches') || '[]')
+  );
 
   /**
    * Stores the cart in localStorage
@@ -46,6 +49,13 @@ const App: React.FC = () => {
   React.useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cart));
   }, [cart]);
+
+  /**
+   * Stores the savedSearches in localStorage
+   */
+  React.useEffect(() => {
+    localStorage.setItem('savedSearches', JSON.stringify(savedSearches));
+  }, [savedSearches]);
 
   /**
    * Handles clearing constraints for a selected project.
@@ -141,6 +151,27 @@ const App: React.FC = () => {
     setAvailableFacets(facets);
   };
 
+  /**
+   * Handles saving search criteria
+   *
+   */
+  const handleSaveSearch = (numResults: number): void => {
+    const savedSearch: SavedSearch = {
+      project: activeProject,
+      activeFacets,
+      textInputs,
+      numResults,
+    };
+
+    setSavedSearches([...savedSearches, savedSearch]);
+    message.success(
+      <>
+        <BookOutlined />
+        <p>Saved the search criteria into your library</p>
+      </>
+    );
+  };
+
   return (
     <Router>
       <Switch>
@@ -231,6 +262,9 @@ const App: React.FC = () => {
                         handleRemoveTag(removedTag, type)
                       }
                       onClearTags={() => clearConstraints()}
+                      handleSaveSearch={(numResults: number) =>
+                        handleSaveSearch(numResults)
+                      }
                     ></Search>
                   </>
                 )}

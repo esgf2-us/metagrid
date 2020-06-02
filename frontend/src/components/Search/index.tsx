@@ -1,7 +1,11 @@
 import React from 'react';
 import { useAsync, DeferFn } from 'react-async';
 import { Row, Col, Typography } from 'antd';
-import { ExportOutlined } from '@ant-design/icons';
+import {
+  ExportOutlined,
+  BookOutlined,
+  ShoppingCartOutlined,
+} from '@ant-design/icons';
 
 import Table from './Table';
 import Alert from '../Feedback/Alert';
@@ -84,6 +88,7 @@ export type Props = {
   onClearTags: () => void;
   handleCart: (selectedItems: SearchResult[], action: string) => void;
   setAvailableFacets: (parsedFacets: AvailableFacets) => void;
+  handleSaveSearch: (numResults: number) => void;
 };
 
 const Search: React.FC<Props> = ({
@@ -95,6 +100,7 @@ const Search: React.FC<Props> = ({
   onClearTags,
   handleCart,
   setAvailableFacets,
+  handleSaveSearch,
 }) => {
   // Async function to fetch results
   const { data: results, error, isLoading, run } = useAsync({
@@ -236,13 +242,24 @@ const Search: React.FC<Props> = ({
         )}
         <div>
           {results && results.response.numFound > 0 && (
-            <Button
-              type="primary"
-              onClick={() => handleCart(selectedItems, 'add')}
-              disabled={!(selectedItems.length > 0)}
-            >
-              Add Selected to Cart
-            </Button>
+            <div>
+              <Button
+                type="primary"
+                onClick={() => handleSaveSearch(results.response.numFound)}
+                disabled={isLoading}
+              >
+                <BookOutlined />
+                Save Search Criteria
+              </Button>
+              <Button
+                type="primary"
+                onClick={() => handleCart(selectedItems, 'add')}
+                disabled={!(selectedItems.length > 0)}
+              >
+                <ShoppingCartOutlined />
+                Add Selected to Cart
+              </Button>
+            </div>
           )}
         </div>
       </div>
