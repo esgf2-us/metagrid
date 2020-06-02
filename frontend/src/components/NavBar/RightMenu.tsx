@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Menu } from 'antd';
-import { ShoppingCartOutlined } from '@ant-design/icons';
+import { ShoppingCartOutlined, BookOutlined } from '@ant-design/icons';
 
 import Button from '../General/Button';
 
@@ -23,7 +23,7 @@ const RightMenu: React.FC<Props> = ({ mode, cartItems }) => {
           <Link to="/search">Search</Link>
         </Menu.Item>
         <Menu.SubMenu
-          title={<span className="submenu-title-wrapper">Learn</span>}
+          title={<span className="submenu-title-wrapper">Resources</span>}
           disabled
         >
           <Menu.ItemGroup title="Documentation">
@@ -31,9 +31,6 @@ const RightMenu: React.FC<Props> = ({ mode, cartItems }) => {
             <Menu.Item key="api">API</Menu.Item>
           </Menu.ItemGroup>
         </Menu.SubMenu>
-        <Menu.Item key="resources" disabled>
-          Resources
-        </Menu.Item>
         <Menu.Item key="login">
           <Button type="primary" disabled>
             Log In
@@ -44,6 +41,14 @@ const RightMenu: React.FC<Props> = ({ mode, cartItems }) => {
             <Button type="link">
               <ShoppingCartOutlined style={{ fontSize: '24px' }} />
               {cartItems}
+            </Button>
+          </Link>
+        </Menu.Item>
+        <Menu.Item>
+          <Link to="/search/saved">
+            <Button type="link">
+              <BookOutlined style={{ fontSize: '24px' }} />
+              {/* TODO: Add number of objects in search criteria list */}0
             </Button>
           </Link>
         </Menu.Item>
