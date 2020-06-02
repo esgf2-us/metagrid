@@ -36,7 +36,16 @@ const App: React.FC = () => {
   >({});
   const [textInputs, setTextInputs] = React.useState<TextInputs | []>([]);
   const [activeFacets, setActiveFacets] = React.useState<ActiveFacets | {}>({});
-  const [cart, setCart] = React.useState<Cart | []>([]);
+  const [cart, setCart] = React.useState<Cart | []>(
+    JSON.parse(localStorage.getItem('cart') || '[]')
+  );
+
+  /**
+   * Stores the cart in localStorage
+   */
+  React.useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cart));
+  }, [cart]);
 
   /**
    * Handles clearing constraints for a selected project.
