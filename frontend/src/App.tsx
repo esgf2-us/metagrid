@@ -283,6 +283,7 @@ const App: React.FC = () => {
                     </Breadcrumb>
                     <Cart
                       cart={cart}
+                      savedSearches={savedSearches}
                       handleCart={handleCart}
                       clearCart={() => setCart([])}
                     />
