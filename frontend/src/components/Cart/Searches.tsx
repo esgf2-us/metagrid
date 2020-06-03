@@ -7,9 +7,10 @@ import {
 } from '@ant-design/icons';
 
 import Card from '../DataDisplay/Card';
+import Empty from '../DataDisplay/Empty';
 import ToolTip from '../DataDisplay/ToolTip';
-import { genUrlQuery } from '../../utils/api';
 import { stringifyConstraints } from '../Search';
+import { genUrlQuery } from '../../utils/api';
 
 type Props = {
   savedSearches: SavedSearch[] | [];
@@ -19,6 +20,9 @@ type Props = {
 const Searches: React.FC<Props> = ({ savedSearches, handleRemoveSearch }) => {
   return (
     <div>
+      {savedSearches.length === 0 && (
+        <Empty description="Your search library is empty" />
+      )}
       <Row gutter={[18, 18]}>
         {savedSearches.length > 0 &&
           (savedSearches as SavedSearch[]).map(

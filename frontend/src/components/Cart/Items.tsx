@@ -3,10 +3,10 @@ import React from 'react';
 import { Col, Row } from 'antd';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 
-import Table from '../Search/Table';
-import Alert from '../Feedback/Alert';
+import Empty from '../DataDisplay/Empty';
 import Popconfirm from '../Feedback/Popconfirm';
 import Button from '../General/Button';
+import Table from '../Search/Table';
 
 const styles = {
   summary: {
@@ -29,33 +29,33 @@ export type Props = {
 const Items: React.FC<Props> = ({ cart, handleCart, clearCart }) => {
   return (
     <>
-      <div style={styles.summary}>
-        <div style={styles.summary.leftSide}>
-          {cart.length === 0 && (
-            <Alert message="Your cart is empty" type="info" showIcon />
-          )}
-        </div>
-        {cart.length > 0 && (
-          <Popconfirm
-            icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
-            onConfirm={() => clearCart()}
-          >
-            <span>
-              <Button danger>Remove All Items</Button>
-            </span>
-          </Popconfirm>
-        )}
-      </div>
-      <Row gutter={[24, 16]} justify="space-around">
-        <Col lg={24}>
-          <Table
-            loading={false}
-            results={cart}
-            cart={cart}
-            handleCart={handleCart}
-          />
-        </Col>
-      </Row>
+      {cart.length === 0 && <Empty description="Your cart is empty"></Empty>}
+      {cart.length > 0 && (
+        <>
+          <div style={styles.summary}>
+            {cart.length > 0 && (
+              <Popconfirm
+                icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
+                onConfirm={() => clearCart()}
+              >
+                <span>
+                  <Button danger>Remove All Items</Button>
+                </span>
+              </Popconfirm>
+            )}
+          </div>
+          <Row gutter={[24, 16]} justify="space-around">
+            <Col lg={24}>
+              <Table
+                loading={false}
+                results={cart}
+                cart={cart}
+                handleCart={handleCart}
+              />
+            </Col>
+          </Row>
+        </>
+      )}
     </>
   );
 };
