@@ -176,6 +176,7 @@ const App: React.FC = () => {
     <Router>
       <Switch>
         <Redirect from="/" exact to="/search" />
+        <Redirect from="/cart" exact to="/cart/items" />
       </Switch>
       <div>
         <Route
@@ -183,7 +184,8 @@ const App: React.FC = () => {
           render={() => (
             <NavBar
               activeProject={activeProject}
-              cartItems={cart.length}
+              numCartItems={cart.length}
+              numSavedSearches={savedSearches.length}
               onProjectChange={(selectedProj) =>
                 handleProjectChange(selectedProj)
               }

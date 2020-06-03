@@ -12,10 +12,15 @@ export type Props = {
     | 'vertical-left'
     | 'vertical-right'
     | 'inline';
-  cartItems: number;
+  numCartItems: number;
+  numSavedSearches: number;
 };
 
-const RightMenu: React.FC<Props> = ({ mode, cartItems }) => {
+const RightMenu: React.FC<Props> = ({
+  mode,
+  numCartItems,
+  numSavedSearches,
+}) => {
   return (
     <div data-testid="right-menu">
       <Menu defaultSelectedKeys={['search']} mode={mode}>
@@ -40,15 +45,15 @@ const RightMenu: React.FC<Props> = ({ mode, cartItems }) => {
           <Link to="/cart">
             <Button type="link">
               <ShoppingCartOutlined style={{ fontSize: '24px' }} />
-              {cartItems}
+              {numCartItems}
             </Button>
           </Link>
         </Menu.Item>
         <Menu.Item>
-          <Link to="/search/saved">
+          <Link to="/cart/searches">
             <Button type="link">
               <BookOutlined style={{ fontSize: '24px' }} />
-              {/* TODO: Add number of objects in search criteria list */}0
+              {numSavedSearches}
             </Button>
           </Link>
         </Menu.Item>

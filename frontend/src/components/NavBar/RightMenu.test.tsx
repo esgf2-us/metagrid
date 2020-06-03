@@ -6,7 +6,8 @@ import RightMenu, { Props } from './RightMenu';
 
 const rightMenuProps: Props = {
   mode: 'horizontal',
-  cartItems: 4,
+  numCartItems: 4,
+  numSavedSearches: 1,
 };
 
 test('RightMenu displays correct number of cartItems', () => {

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation, useHistory } from 'react-router-dom';
 import { Col, Row, Tabs } from 'antd';
 import {
   QuestionCircleOutlined,
@@ -30,9 +31,38 @@ export type Props = {
 };
 
 const Cart: React.FC<Props> = ({ cart, handleCart, clearCart }) => {
+  const [activeTab, setActiveTab] = React.useState<'items' | 'searches'>(
+    'items'
+  );
+  const history = useHistory();
+  const location = useLocation();
+
+  /**
+   * Update the active tab based on the current pathname
+   */
+  React.useEffect(() => {
+    if (location.pathname.includes('searches')) {
+      setActiveTab('searches');
+    } else {
+      setActiveTab('items');
+    }
+  }, [location.pathname]);
+
+  /**
+   * Handles tab clicking by updating the current pathname and setting the active tab
+   */
+  const handlesTabClick = (key: 'items' | 'searches'): void => {
+    history.push(key);
+    setActiveTab(key);
+  };
+
   return (
     <div data-testid="cart">
-      <Tabs defaultActiveKey="1" animated={false}>
+      <Tabs
+        activeKey={activeTab}
+        animated={false}
+        onTabClick={(key: 'items' | 'searches') => handlesTabClick(key)}
+      >
         <Tabs.TabPane
           tab={
             <span>
@@ -40,7 +70,7 @@ const Cart: React.FC<Props> = ({ cart, handleCart, clearCart }) => {
               Datasets
             </span>
           }
-          key="1"
+          key="items"
         >
           <div style={styles.summary}>
             <div style={styles.summary.leftSide}>
@@ -78,7 +108,7 @@ const Cart: React.FC<Props> = ({ cart, handleCart, clearCart }) => {
               Search Criteria
             </span>
           }
-          key="2"
+          key="searches"
         >
           Content of Tab Pane 2
         </Tabs.TabPane>
