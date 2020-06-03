@@ -4,6 +4,7 @@ import { Menu } from 'antd';
 import { ShoppingCartOutlined, BookOutlined } from '@ant-design/icons';
 
 import Button from '../General/Button';
+import ToolTip from '../DataDisplay/ToolTip';
 
 export type Props = {
   mode:
@@ -42,20 +43,24 @@ const RightMenu: React.FC<Props> = ({
           </Button>
         </Menu.Item>
         <Menu.Item>
-          <Link to="/cart">
-            <Button type="link">
-              <ShoppingCartOutlined style={{ fontSize: '24px' }} />
-              {numCartItems}
-            </Button>
-          </Link>
+          <ToolTip title="Your cart of items">
+            <Link to="/cart">
+              <Button type="link">
+                <ShoppingCartOutlined style={{ fontSize: '24px' }} />
+                {numCartItems}
+              </Button>
+            </Link>
+          </ToolTip>
         </Menu.Item>
         <Menu.Item>
-          <Link to="/cart/searches">
-            <Button type="link">
-              <BookOutlined style={{ fontSize: '24px' }} />
-              {numSavedSearches}
-            </Button>
-          </Link>
+          <ToolTip title="Your library of saved searches">
+            <Link to="/cart/searches">
+              <Button type="link">
+                <BookOutlined style={{ fontSize: '24px' }} />
+                {numSavedSearches}
+              </Button>
+            </Link>
+          </ToolTip>
         </Menu.Item>
       </Menu>
     </div>
