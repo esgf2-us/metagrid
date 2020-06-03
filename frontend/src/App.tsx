@@ -205,6 +205,15 @@ const App: React.FC = () => {
     });
   };
 
+  /**
+   * Handles applying saved search criteria
+   */
+  const handleApplySearch = (savedSearch: SavedSearch): void => {
+    setActiveProject(savedSearch.project);
+    setActiveFacets(savedSearch.activeFacets);
+    setTextInputs(savedSearch.textInputs);
+  };
+
   return (
     <Router>
       <Switch>
@@ -321,6 +330,9 @@ const App: React.FC = () => {
                       clearCart={() => setCart([])}
                       handleRemoveSearch={(id: string) =>
                         handleRemoveSearch(id)
+                      }
+                      handleApplySearch={(savedSearch: SavedSearch) =>
+                        handleApplySearch(savedSearch)
                       }
                     />
                   </>

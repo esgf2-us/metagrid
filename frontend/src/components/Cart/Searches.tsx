@@ -1,4 +1,5 @@
 import React from 'react';
+import { useHistory } from 'react-router-dom';
 import { Row, Col, Typography } from 'antd';
 import {
   DeleteOutlined,
@@ -15,9 +16,16 @@ import { genUrlQuery } from '../../utils/api';
 type Props = {
   savedSearches: SavedSearch[] | [];
   handleRemoveSearch: (id: string) => void;
+  handleApplySearch: (savedSearch: SavedSearch) => void;
 };
 
-const Searches: React.FC<Props> = ({ savedSearches, handleRemoveSearch }) => {
+const Searches: React.FC<Props> = ({
+  savedSearches,
+  handleRemoveSearch,
+  handleApplySearch,
+}) => {
+  const history = useHistory();
+
   return (
     <div>
       {savedSearches.length === 0 && (
@@ -47,7 +55,13 @@ const Searches: React.FC<Props> = ({ savedSearches, handleRemoveSearch }) => {
                         title="Apply search criteria and view results"
                         trigger="hover"
                       >
-                        <SearchOutlined key="search" />
+                        <SearchOutlined
+                          key="search"
+                          onClick={() => {
+                            history.push('/search');
+                            handleApplySearch(search);
+                          }}
+                        />
                       </ToolTip>,
                       <ToolTip title="View results in JSON format">
                         <a

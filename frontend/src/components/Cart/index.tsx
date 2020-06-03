@@ -12,6 +12,7 @@ export type Props = {
   handleCart: (item: SearchResult[], action: string) => void;
   clearCart: () => void;
   handleRemoveSearch: (id: string) => void;
+  handleApplySearch: (savedSearch: SavedSearch) => void;
 };
 
 const Cart: React.FC<Props> = ({
@@ -20,6 +21,7 @@ const Cart: React.FC<Props> = ({
   clearCart,
   handleCart,
   handleRemoveSearch,
+  handleApplySearch,
 }) => {
   const [activeTab, setActiveTab] = React.useState<string>('items');
   const history = useHistory();
@@ -75,6 +77,9 @@ const Cart: React.FC<Props> = ({
           <Searches
             savedSearches={savedSearches}
             handleRemoveSearch={(id: string) => handleRemoveSearch(id)}
+            handleApplySearch={(savedSearch: SavedSearch) =>
+              handleApplySearch(savedSearch)
+            }
           />
         </Tabs.TabPane>
       </Tabs>
