@@ -13,9 +13,10 @@ import { stringifyConstraints } from '../Search';
 
 type Props = {
   savedSearches: SavedSearch[] | [];
+  handleRemoveSearch: (id: string) => void;
 };
 
-const Searches: React.FC<Props> = ({ savedSearches }) => {
+const Searches: React.FC<Props> = ({ savedSearches, handleRemoveSearch }) => {
   return (
     <div>
       <Row gutter={[18, 18]}>
@@ -23,7 +24,7 @@ const Searches: React.FC<Props> = ({ savedSearches }) => {
           (savedSearches as SavedSearch[]).map(
             (search: SavedSearch, index: number) => {
               return (
-                <Col xs={20} sm={16} md={12} lg={10} xl={8}>
+                <Col key={search.id} xs={20} sm={16} md={12} lg={10} xl={8}>
                   <Card
                     hoverable
                     title={
@@ -59,7 +60,11 @@ const Searches: React.FC<Props> = ({ savedSearches }) => {
                         </a>
                       </ToolTip>,
                       <ToolTip title="Remove search criteria from library">
-                        <DeleteOutlined style={{ color: 'red' }} key="remove" />
+                        <DeleteOutlined
+                          onClick={() => handleRemoveSearch(search.id)}
+                          style={{ color: 'red' }}
+                          key="remove"
+                        />
                       </ToolTip>,
                     ]}
                   >

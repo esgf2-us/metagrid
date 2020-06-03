@@ -24,6 +24,7 @@ const defaultProps: Props = {
       access: ['HTTPServer', 'GridFTP', 'OPENDAP', 'Globus'],
     },
   ],
+  savedSearches: [],
   handleCart: jest.fn(),
   clearCart: jest.fn(),
 };
