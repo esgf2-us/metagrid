@@ -11,6 +11,7 @@ export type Props = {
   savedSearches: SavedSearch[] | [];
   handleCart: (item: SearchResult[], action: string) => void;
   clearCart: () => void;
+  handleRemoveSearch: (id: string) => void;
 };
 
 const Cart: React.FC<Props> = ({
@@ -18,10 +19,9 @@ const Cart: React.FC<Props> = ({
   savedSearches,
   clearCart,
   handleCart,
+  handleRemoveSearch,
 }) => {
-  const [activeTab, setActiveTab] = React.useState<'items' | 'searches'>(
-    'items'
-  );
+  const [activeTab, setActiveTab] = React.useState<string>('items');
   const history = useHistory();
   const location = useLocation();
 
@@ -39,7 +39,7 @@ const Cart: React.FC<Props> = ({
   /**
    * Handles tab clicking by updating the current pathname and setting the active tab
    */
-  const handlesTabClick = (key: 'items' | 'searches'): void => {
+  const handlesTabClick = (key: string): void => {
     history.push(key);
     setActiveTab(key);
   };
@@ -49,7 +49,7 @@ const Cart: React.FC<Props> = ({
       <Tabs
         activeKey={activeTab}
         animated={false}
-        onTabClick={(key: 'items' | 'searches') => handlesTabClick(key)}
+        onTabClick={(key: string) => handlesTabClick(key)}
       >
         <Tabs.TabPane
           tab={
@@ -72,7 +72,10 @@ const Cart: React.FC<Props> = ({
           }
           key="searches"
         >
-          <Searches savedSearches={savedSearches} />
+          <Searches
+            savedSearches={savedSearches}
+            handleRemoveSearch={(id: string) => handleRemoveSearch(id)}
+          />
         </Tabs.TabPane>
       </Tabs>
     </div>
