@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation, useHistory } from 'react-router-dom';
-import { Col, Row, Tabs, Card, Typography } from 'antd';
+import { Col, Row, Tabs, Typography } from 'antd';
 import {
   QuestionCircleOutlined,
   ShoppingCartOutlined,
@@ -11,10 +11,11 @@ import {
 } from '@ant-design/icons';
 
 import Table from '../Search/Table';
-import Alert from '../Feedback/Alert';
-import Button from '../General/Button';
-import Popconfirm from '../Feedback/Popconfirm';
+import Card from '../DataDisplay/Card';
 import ToolTip from '../DataDisplay/ToolTip';
+import Alert from '../Feedback/Alert';
+import Popconfirm from '../Feedback/Popconfirm';
+import Button from '../General/Button';
 
 import { stringifyConstraints } from '../Search';
 import { genUrlQuery } from '../../utils/api';
