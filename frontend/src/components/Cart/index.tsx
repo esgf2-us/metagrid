@@ -14,7 +14,7 @@ import Table from '../Search/Table';
 import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
 import Popconfirm from '../Feedback/Popconfirm';
-import ToolTip from '../General/ToolTip';
+import ToolTip from '../DataDisplay/ToolTip';
 
 import { stringifyConstraints } from '../Search';
 import { genUrlQuery } from '../../utils/api';

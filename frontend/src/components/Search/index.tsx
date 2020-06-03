@@ -10,7 +10,7 @@ import {
 import Table from './Table';
 import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
-import Tag from '../General/Tag';
+import Tag from '../DataDisplay/Tag';
 
 import { fetchResults, genUrlQuery } from '../../utils/api';
 import { isEmpty, humanize } from '../../utils/utils';
