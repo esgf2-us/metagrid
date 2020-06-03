@@ -157,6 +157,7 @@ const App: React.FC = () => {
    */
   const handleSaveSearch = (numResults: number): void => {
     const savedSearch: SavedSearch = {
+      id: uuidv4(),
       project: activeProject,
       activeFacets,
       textInputs,
