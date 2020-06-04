@@ -167,8 +167,8 @@ it('handles adding and removing items from the cart', async () => {
   expect(addBtn).toBeTruthy();
   fireEvent.click(addBtn);
 
-  // Check 'Added items to the cart' message appears
-  const addText = await waitFor(() => getByText('Added items to the cart'));
+  // Check 'Added items(s) to the cart' message appears
+  const addText = await waitFor(() => getByText('Added item(s) to your cart'));
   expect(addText).toBeTruthy();
 
   // Check first row has remove button and click it
@@ -176,9 +176,9 @@ it('handles adding and removing items from the cart', async () => {
   expect(removeBtn).toBeTruthy();
   fireEvent.click(removeBtn);
 
-  // Check 'Removed items from the cart' message appears
+  // Check 'Removed items(s) from the cart' message appears
   const removeText = await waitFor(() =>
-    getByText('Removed items from the cart')
+    getByText('Removed item(s) from your cart')
   );
   expect(removeText).toBeTruthy();
 
@@ -425,8 +425,8 @@ it('displays the number of files in the cart summary and handles clearing the ca
   expect(addBtn).toBeTruthy();
   fireEvent.click(addBtn);
 
-  // Check 'Added items to the cart' message appears
-  const addText = await waitFor(() => getByText('Added items to the cart'));
+  // Check 'Added item(s) to your cart' message appears
+  const addText = await waitFor(() => getByText('Added item(s) to your cart'));
   expect(addText).toBeTruthy();
 
   // Click on the cart link
@@ -472,7 +472,7 @@ it('displays the number of files in the cart summary and handles clearing the ca
   ).toBeTruthy();
 
   // Check empty alert renders
-  const emptyAlert = getByRole('img', { name: 'info-circle' });
+  const emptyAlert = getByText('Your cart is empty');
   expect(emptyAlert).toBeTruthy();
 
   // Check mockAxios.get calls
