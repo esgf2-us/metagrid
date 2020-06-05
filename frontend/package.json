@@ -23,7 +23,8 @@
     "react-dom": "^16.13.0",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.4.1",
-    "typescript": "^3.8.3"
+    "typescript": "^3.8.3",
+    "uuid": "^8.1.0"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -51,6 +52,7 @@
     ]
   },
   "devDependencies": {
+    "@types/uuid": "^8.0.0",
     "@typescript-eslint/eslint-plugin": "^2.34.0",
     "codecov": "^3.7.0",
     "eslint": "^6.8.0",
@@ -69,8 +71,8 @@
       "**/*.{js,jsx,ts,tsx}",
       "!**/node_modules/**",
       "!**/coverage/**",
+      "!src/index.tsx",
       "!**/serviceWorker.js",
-      "!**/index.tsx",
       "!**/proxy.js",
       "!**/react-app-env.d.ts",
       "!**/custom_types/**",

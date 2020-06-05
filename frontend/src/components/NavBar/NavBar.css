@@ -20,13 +20,13 @@
 }
 
 .navbar-container .navbar-left {
-  width: 70%;
+  width: 65%;
   min-width: 350px;
   flex-wrap: nowrap;
 }
 
 .navbar-container .navbar-right {
-  width: 30%;
+  width: 35%;
 }
 
 .navbar-mobile-button {

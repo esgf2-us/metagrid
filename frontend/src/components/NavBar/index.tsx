@@ -18,16 +18,18 @@ const styles = {
   spin: { display: 'flex', justifyContent: 'center' },
 };
 
-type Props = {
+export type Props = {
   activeProject: Project | {};
-  cartItems: number;
+  numCartItems: number;
+  numSavedSearches: number;
   onProjectChange: (selectedProj: Project) => void;
   onSearch: (text: string) => void;
 };
 
 const NavBar: React.FC<Props> = ({
   activeProject,
-  cartItems,
+  numCartItems,
+  numSavedSearches,
   onSearch,
   onProjectChange,
 }) => {
@@ -73,7 +75,11 @@ const NavBar: React.FC<Props> = ({
         </div>
 
         <div className="navbar-right">
-          <RightMenu mode="horizontal" cartItems={cartItems}></RightMenu>
+          <RightMenu
+            mode="horizontal"
+            numCartItems={numCartItems}
+            numSavedSearches={numSavedSearches}
+          ></RightMenu>
         </div>
 
         <Button
@@ -91,7 +97,11 @@ const NavBar: React.FC<Props> = ({
           onClose={() => setShowDrawer(false)}
           visible={showDrawer}
         >
-          <RightMenu mode="inline" cartItems={cartItems}></RightMenu>
+          <RightMenu
+            mode="inline"
+            numCartItems={numCartItems}
+            numSavedSearches={numSavedSearches}
+          ></RightMenu>
         </Drawer>
       </div>
     </nav>

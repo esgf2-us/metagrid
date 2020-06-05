@@ -1,4 +1,5 @@
 import React from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import {
   BrowserRouter as Router,
   Route,
@@ -6,7 +7,12 @@ import {
   Switch,
 } from 'react-router-dom';
 import { Breadcrumb, Layout, message } from 'antd';
-import { HomeOutlined } from '@ant-design/icons';
+import {
+  HomeOutlined,
+  BookOutlined,
+  DeleteOutlined,
+  ShoppingCartOutlined,
+} from '@ant-design/icons';
 
 import NavBar from './components/NavBar';
 import Facets from './components/Facets';
@@ -27,17 +33,28 @@ const styles = {
   } as React.CSSProperties,
   bodyContent: { padding: '0 24px' } as React.CSSProperties,
   footer: { textAlign: 'center' } as React.CSSProperties,
+  messageAddIcon: { color: '#90EE90' },
+  messageRemoveIcon: { color: '#ff0000' },
 };
 
 const App: React.FC = () => {
+  // The currently selected project for search queries
   const [activeProject, setActiveProject] = React.useState<Project | {}>({});
+  // The available facets based on the fetched results
   const [availableFacets, setAvailableFacets] = React.useState<
     AvailableFacets | {}
   >({});
+  // The active applied free-text inputs in the search criteria
   const [textInputs, setTextInputs] = React.useState<TextInputs | []>([]);
+  // The active applied facet filters in the search criteria
   const [activeFacets, setActiveFacets] = React.useState<ActiveFacets | {}>({});
+  // The user's cart containing datasets
   const [cart, setCart] = React.useState<Cart | []>(
     JSON.parse(localStorage.getItem('cart') || '[]')
+  );
+  // The user's saved search criteria
+  const [savedSearches, setSavedSearches] = React.useState<SavedSearch[] | []>(
+    JSON.parse(localStorage.getItem('savedSearches') || '[]')
   );
 
   /**
@@ -46,6 +63,13 @@ const App: React.FC = () => {
   React.useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cart));
   }, [cart]);
+
+  /**
+   * Stores the savedSearches in localStorage
+   */
+  React.useEffect(() => {
+    localStorage.setItem('savedSearches', JSON.stringify(savedSearches));
+  }, [savedSearches]);
 
   /**
    * Handles clearing constraints for a selected project.
@@ -110,14 +134,20 @@ const App: React.FC = () => {
         });
         return [...cart, ...itemsNotInCart];
       });
-      message.success('Added items to the cart');
+      message.success({
+        content: 'Added item(s) to your cart',
+        icon: <ShoppingCartOutlined style={styles.messageAddIcon} />,
+      });
     } else if (operation === 'remove') {
       setCart(
         cart.filter((item) => {
           return !selectedItems.includes(item);
         })
       );
-      message.error('Removed items from the cart');
+      message.success({
+        content: 'Removed item(s) from your cart',
+        icon: <DeleteOutlined style={styles.messageRemoveIcon} />,
+      });
     } else {
       throw new Error(
         `handleCart does not support argument 'operation' of value ${operation}`
@@ -136,15 +166,59 @@ const App: React.FC = () => {
     }
   };
 
-  // Handles available facets fetched from the API
+  /**
+   * Handles available facets fetched from the API
+   */
   const handleSetAvailableFacets = (facets: AvailableFacets): void => {
     setAvailableFacets(facets);
+  };
+
+  /**
+   * Handles saving search criteria
+   */
+  const handleSaveSearch = (numResults: number): void => {
+    const savedSearch: SavedSearch = {
+      id: uuidv4(),
+      project: activeProject,
+      activeFacets,
+      textInputs,
+      numResults,
+    };
+
+    setSavedSearches([...savedSearches, savedSearch]);
+    message.success({
+      content: 'Saved search criteria to your library',
+      icon: <BookOutlined style={styles.messageAddIcon} />,
+    });
+  };
+
+  /**
+   * Handles removing saved search criteria
+   */
+  const handleRemoveSearch = (id: string): void => {
+    setSavedSearches(
+      savedSearches.filter((searchItem) => searchItem.id !== id)
+    );
+    message.success({
+      content: 'Removed search criteria from your library',
+      icon: <DeleteOutlined style={styles.messageRemoveIcon} />,
+    });
+  };
+
+  /**
+   * Handles applying saved search criteria
+   */
+  const handleApplySearch = (savedSearch: SavedSearch): void => {
+    setActiveProject(savedSearch.project);
+    setActiveFacets(savedSearch.activeFacets);
+    setTextInputs(savedSearch.textInputs);
   };
 
   return (
     <Router>
       <Switch>
         <Redirect from="/" exact to="/search" />
+        <Redirect from="/cart" exact to="/cart/items" />
       </Switch>
       <div>
         <Route
@@ -152,7 +226,8 @@ const App: React.FC = () => {
           render={() => (
             <NavBar
               activeProject={activeProject}
-              cartItems={cart.length}
+              numCartItems={cart.length}
+              numSavedSearches={savedSearches.length}
               onProjectChange={(selectedProj) =>
                 handleProjectChange(selectedProj)
               }
@@ -231,6 +306,9 @@ const App: React.FC = () => {
                         handleRemoveTag(removedTag, type)
                       }
                       onClearTags={() => clearConstraints()}
+                      handleSaveSearch={(numResults: number) =>
+                        handleSaveSearch(numResults)
+                      }
                     ></Search>
                   </>
                 )}
@@ -247,8 +325,15 @@ const App: React.FC = () => {
                     </Breadcrumb>
                     <Cart
                       cart={cart}
+                      savedSearches={savedSearches}
                       handleCart={handleCart}
                       clearCart={() => setCart([])}
+                      handleRemoveSearch={(id: string) =>
+                        handleRemoveSearch(id)
+                      }
+                      handleApplySearch={(savedSearch: SavedSearch) =>
+                        handleApplySearch(savedSearch)
+                      }
                     />
                   </>
                 )}

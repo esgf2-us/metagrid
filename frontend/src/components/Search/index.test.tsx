@@ -19,6 +19,7 @@ const defaultProps: Props = {
   onClearTags: jest.fn(),
   handleCart: jest.fn(),
   setAvailableFacets: jest.fn(),
+  handleSaveSearch: jest.fn(),
 };
 
 // Reset all mocks after each test
@@ -216,7 +217,7 @@ describe('test Search component', () => {
 
     // Check the 'Add Selected to Cart' button is disabled
     const addCartBtn = getByRole('button', {
-      name: 'Add Selected to Cart',
+      name: 'shopping-cart Add Selected to Cart',
     }) as HTMLButtonElement;
     expect(addCartBtn).toBeTruthy();
     expect(addCartBtn.disabled).toBeTruthy();
@@ -251,10 +252,26 @@ describe('test Search component', () => {
 
     // Check the 'Add Selected to Cart' button is disabled
     const addCartBtn = getByRole('button', {
-      name: 'Add Selected to Cart',
+      name: 'shopping-cart Add Selected to Cart',
     }) as HTMLButtonElement;
     expect(addCartBtn).toBeTruthy();
     expect(addCartBtn.disabled).toBeTruthy();
+  });
+
+  it('handles saving a search criteria', async () => {
+    mockAxios.get.mockImplementationOnce(() =>
+      Promise.resolve({
+        data,
+      })
+    );
+
+    const { getByRole } = render(<Search {...defaultProps} />);
+
+    const saveBtn = await waitFor(() =>
+      getByRole('button', { name: 'book Save Search Criteria' })
+    );
+    expect(saveBtn).toBeTruthy();
+    fireEvent.click(saveBtn);
   });
 });
 
