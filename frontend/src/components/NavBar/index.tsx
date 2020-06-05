@@ -18,7 +18,7 @@ const styles = {
   spin: { display: 'flex', justifyContent: 'center' },
 };
 
-type Props = {
+export type Props = {
   activeProject: Project | {};
   numCartItems: number;
   numSavedSearches: number;
