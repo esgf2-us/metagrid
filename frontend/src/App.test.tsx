@@ -61,8 +61,17 @@ beforeEach(() => {
   jest.setTimeout(10000);
 });
 
-// Reset all mocks after each test
+const location = JSON.stringify(window.location);
 afterEach(() => {
+  // Routes are already declared in the App component using BrowserRouter, so MemoryRouter does
+  // not work to isolate routes in memory between tests. The only workaround is to delete window.location and restore it after each test in order to reset the URL location.
+  // More info:
+  // - https://stackoverflow.com/a/54222110
+  // - https://stackoverflow.com/questions/59892304/cant-get-memoryrouter-to-work-with-testing-library-react
+  delete window.location;
+  window.location = JSON.parse(location);
+
+  // Reset all mocks after each test
   jest.clearAllMocks();
 });
 
@@ -477,4 +486,149 @@ it('displays the number of files in the cart summary and handles clearing the ca
 
   // Check mockAxios.get calls
   expect(mockAxios.get).toBeCalledTimes(4);
+});
+
+it('handles removing searches from the search library', async () => {
+  // Mock axios initially with chained calls
+  mockAxios.get
+    .mockResolvedValueOnce({ data: { results: projectResults } })
+    .mockResolvedValueOnce({ data: { results: projectResults } })
+    .mockResolvedValueOnce({ data: searchResults })
+    .mockResolvedValueOnce({ data: searchResults });
+
+  const {
+    getByRole,
+    getByTestId,
+    getByText,
+    getByPlaceholderText,
+    queryByText,
+  } = render(
+    <Router>
+      <App />
+    </Router>
+  );
+
+  // Check nav-bar component exists
+  const navBar = await waitFor(() => getByTestId('nav-bar'));
+  expect(navBar).toBeTruthy();
+
+  // Change value for free-text input
+  const input = 'foo';
+  const freeTextInput = getByPlaceholderText('Search...');
+  expect(freeTextInput).toBeTruthy();
+  fireEvent.change(freeTextInput, { target: { value: input } });
+
+  // Submit the form
+  const submitBtn = getByRole('img', { name: 'search' });
+  fireEvent.submit(submitBtn);
+
+  // Wait for search to re-render
+  await waitFor(() => getByTestId('search'));
+
+  // Check Save Search Criteria button exists and click it
+  const saveSearch = getByRole('button', { name: 'book Save Search Criteria' });
+  expect(saveSearch).toBeTruthy();
+  fireEvent.click(saveSearch);
+
+  // Check added message appears
+  const addText = await waitFor(() =>
+    getByText('Saved search criteria to your library')
+  );
+  expect(addText).toBeTruthy();
+
+  // Click on the search library link
+  const searchLibraryLink = getByRole('link', { name: 'book 1' });
+  expect(searchLibraryLink).toBeTruthy();
+  fireEvent.click(searchLibraryLink);
+
+  // Check number of files and datasets are correctly displayed
+  const cart = await waitFor(() => getByTestId('cart'));
+  expect(cart).toBeTruthy();
+
+  // Check that the search library is not empty
+  const queryEmptyText = queryByText('Your search library is empty');
+  expect(queryEmptyText).toBeNull();
+
+  // Check delete button renders and click it
+  const deleteBtn = await waitFor(() =>
+    getByRole('img', { name: 'delete', hidden: true })
+  );
+  expect(deleteBtn).toBeTruthy();
+  fireEvent.click(deleteBtn);
+
+  await waitFor(() => getByTestId('cart'));
+
+  // Check removed message appears
+  const removeText = await waitFor(() =>
+    getByText('Removed search criteria from your library')
+  );
+  expect(removeText).toBeTruthy();
+
+  // Check mockAxios.get calls
+  expect(mockAxios.get).toHaveBeenCalledTimes(4);
+});
+
+it('handles applying searches from the search library to render results', async () => {
+  // Mock axios initially with chained calls
+  mockAxios.get
+    .mockResolvedValueOnce({ data: { results: projectResults } })
+    .mockResolvedValueOnce({ data: { results: projectResults } })
+    .mockResolvedValueOnce({ data: searchResults })
+    .mockResolvedValueOnce({ data: searchResults })
+    .mockResolvedValueOnce({ data: { results: projectResults } })
+    .mockResolvedValueOnce({ data: searchResults });
+
+  const { getByRole, getByTestId, getByPlaceholderText, queryByText } = render(
+    <Router>
+      <App />
+    </Router>
+  );
+
+  // Check nav-bar component exists
+  const navBar = await waitFor(() => getByTestId('nav-bar'));
+  expect(navBar).toBeTruthy();
+
+  // Change value for free-text input
+  const input = 'foo';
+  const freeTextInput = getByPlaceholderText('Search...');
+  expect(freeTextInput).toBeTruthy();
+  fireEvent.change(freeTextInput, { target: { value: input } });
+
+  // Submit the form
+  const submitBtn = getByRole('img', { name: 'search' });
+  fireEvent.submit(submitBtn);
+
+  // Wait for search to re-render
+  await waitFor(() => getByTestId('search'));
+
+  // Check Save Search Criteria button exists and click it
+  const saveSearch = getByRole('button', { name: 'book Save Search Criteria' });
+  expect(saveSearch).toBeTruthy();
+  fireEvent.click(saveSearch);
+
+  // Click on the search library link
+  const searchLibraryLink = getByRole('link', { name: 'book 1' });
+  expect(searchLibraryLink).toBeTruthy();
+  fireEvent.click(searchLibraryLink);
+
+  // Check number of files and datasets are correctly displayed
+  const cart = await waitFor(() => getByTestId('cart'));
+  expect(cart).toBeTruthy();
+
+  // Check that the search library is not empty
+  const queryEmptyText = queryByText('Your search library is empty');
+  expect(queryEmptyText).toBeNull();
+
+  // Check apply search button renders and click it
+  const applyBtn = await waitFor(() =>
+    within(cart).getByRole('img', { name: 'search', hidden: true })
+  );
+  expect(applyBtn).toBeTruthy();
+  fireEvent.click(applyBtn);
+
+  // Wait for search to re-render
+  await waitFor(() => getByTestId('search'));
+
+  // Check mockAxios.get calls
+  expect(mockAxios.get).toHaveBeenCalledTimes(6);
 });
