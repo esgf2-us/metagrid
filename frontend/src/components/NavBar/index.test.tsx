@@ -3,12 +3,13 @@ import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { render, waitFor, fireEvent } from '@testing-library/react';
 
-import NavBar from './index';
+import NavBar, { Props } from './index';
 import mockAxios from '../../__mocks__/axios';
 
-const defaultProps = {
+const defaultProps: Props = {
   activeProject: { name: 'test1' },
-  cartItems: 0,
+  numCartItems: 0,
+  numSavedSearches: 0,
   onSearch: jest.fn(),
   onProjectChange: jest.fn(),
 };

@@ -1,12 +1,16 @@
 import React from 'react';
 import { useAsync, DeferFn } from 'react-async';
 import { Row, Col, Typography } from 'antd';
-import { ExportOutlined } from '@ant-design/icons';
+import {
+  ExportOutlined,
+  BookOutlined,
+  ShoppingCartOutlined,
+} from '@ant-design/icons';
 
 import Table from './Table';
 import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
-import Tag from '../General/Tag';
+import Tag from '../DataDisplay/Tag';
 
 import { fetchResults, genUrlQuery } from '../../utils/api';
 import { isEmpty, humanize } from '../../utils/utils';
@@ -23,6 +27,9 @@ const styles = {
   } as React.CSSProperties,
   facetTag: { fontWeight: 'bold' } as React.CSSProperties,
   resultsHeader: { fontWeight: 'bold' } as React.CSSProperties,
+  filtersContainer: {
+    marginBottom: 10,
+  },
 };
 /**
  * Joins adjacent elements of the facets obj into a tuple using reduce().
@@ -84,6 +91,7 @@ export type Props = {
   onClearTags: () => void;
   handleCart: (selectedItems: SearchResult[], action: string) => void;
   setAvailableFacets: (parsedFacets: AvailableFacets) => void;
+  handleSaveSearch: (numResults: number) => void;
 };
 
 const Search: React.FC<Props> = ({
@@ -95,6 +103,7 @@ const Search: React.FC<Props> = ({
   onClearTags,
   handleCart,
   setAvailableFacets,
+  handleSaveSearch,
 }) => {
   // Async function to fetch results
   const { data: results, error, isLoading, run } = useAsync({
@@ -203,7 +212,6 @@ const Search: React.FC<Props> = ({
             showIcon
           />
         )}
-
         {isLoading && (
           <h3>
             <span style={styles.resultsHeader}>Loading </span> results for{' '}
@@ -217,7 +225,6 @@ const Search: React.FC<Props> = ({
             )}
           </h3>
         )}
-
         {results && !isLoading && (
           <h3>
             <span style={styles.resultsHeader}>
@@ -235,19 +242,34 @@ const Search: React.FC<Props> = ({
           </h3>
         )}
         <div>
-          {results && results.response.numFound > 0 && (
-            <Button
-              type="primary"
-              onClick={() => handleCart(selectedItems, 'add')}
-              disabled={!(selectedItems.length > 0)}
-            >
-              Add Selected to Cart
-            </Button>
+          {results && (
+            <div>
+              <Button
+                type="primary"
+                onClick={() => handleSaveSearch(results.response.numFound)}
+                disabled={isLoading || results.response.numFound === 0}
+              >
+                <BookOutlined />
+                Save Search Criteria
+              </Button>{' '}
+              <Button
+                type="primary"
+                onClick={() => handleCart(selectedItems, 'add')}
+                disabled={
+                  isLoading ||
+                  results.response.numFound === 0 ||
+                  !(selectedItems.length > 0)
+                }
+              >
+                <ShoppingCartOutlined />
+                Add Selected to Cart
+              </Button>
+            </div>
           )}
         </div>
       </div>
 
-      <Row>
+      <Row style={styles.filtersContainer}>
         {!constraintsExist ? (
           <Alert message="No constraints applied" type="info" showIcon />
         ) : (

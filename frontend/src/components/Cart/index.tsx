@@ -1,60 +1,87 @@
 import React from 'react';
-import { Col, Row } from 'antd';
-import { QuestionCircleOutlined } from '@ant-design/icons';
+import { useHistory } from 'react-router-dom';
+import { Tabs } from 'antd';
+import { ShoppingCartOutlined, BookOutlined } from '@ant-design/icons';
 
-import Table from '../Search/Table';
-import Alert from '../Feedback/Alert';
-import Button from '../General/Button';
-import Popconfirm from '../Feedback/Popconfirm';
-
-const styles = {
-  summary: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    marginTop: 10,
-    marginBottom: 10,
-    leftSide: {
-      display: 'flex',
-    } as React.CSSProperties,
-  },
-};
+import Searches from './Searches';
+import Items from './Items';
 
 export type Props = {
   cart: SearchResult[] | [];
+  savedSearches: SavedSearch[] | [];
   handleCart: (item: SearchResult[], action: string) => void;
   clearCart: () => void;
+  handleRemoveSearch: (id: string) => void;
+  handleApplySearch: (savedSearch: SavedSearch) => void;
 };
 
-const Cart: React.FC<Props> = ({ cart, handleCart, clearCart }) => {
+const Cart: React.FC<Props> = ({
+  cart,
+  savedSearches,
+  clearCart,
+  handleCart,
+  handleRemoveSearch,
+  handleApplySearch,
+}) => {
+  const [activeTab, setActiveTab] = React.useState<string>('items');
+  const history = useHistory();
+
+  /**
+   * Update the active tab based on the current pathname
+   */
+  React.useEffect(() => {
+    if (history.location.pathname.includes('searches')) {
+      setActiveTab('searches');
+    } else {
+      setActiveTab('items');
+    }
+  }, [history.location.pathname]);
+
+  /**
+   * Handles tab clicking by updating the current pathname and setting the active tab
+   */
+  const handlesTabClick = (key: string): void => {
+    history.push(key);
+    setActiveTab(key);
+  };
+
   return (
     <div data-testid="cart">
-      <div style={styles.summary}>
-        <div style={styles.summary.leftSide}>
-          {cart.length === 0 && (
-            <Alert message="Your cart is empty" type="info" showIcon />
-          )}
-        </div>
-        {cart.length > 0 && (
-          <Popconfirm
-            icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
-            onConfirm={() => clearCart()}
-          >
+      <Tabs
+        activeKey={activeTab}
+        animated={false}
+        onTabClick={(key: string) => handlesTabClick(key)}
+      >
+        <Tabs.TabPane
+          tab={
             <span>
-              <Button danger>Remove All Items</Button>
+              <ShoppingCartOutlined />
+              Datasets
             </span>
-          </Popconfirm>
-        )}
-      </div>
-      <Row gutter={[24, 16]} justify="space-around">
-        <Col lg={24}>
-          <Table
-            loading={false}
-            results={cart}
-            cart={cart}
-            handleCart={handleCart}
+          }
+          key="items"
+        >
+          <Items cart={cart} handleCart={handleCart} clearCart={clearCart} />
+        </Tabs.TabPane>
+
+        <Tabs.TabPane
+          tab={
+            <span>
+              <BookOutlined />
+              Search Criteria
+            </span>
+          }
+          key="searches"
+        >
+          <Searches
+            savedSearches={savedSearches}
+            handleRemoveSearch={(id: string) => handleRemoveSearch(id)}
+            handleApplySearch={(savedSearch: SavedSearch) =>
+              handleApplySearch(savedSearch)
+            }
           />
-        </Col>
-      </Row>
+        </Tabs.TabPane>
+      </Tabs>
     </div>
   );
 };

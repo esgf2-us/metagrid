@@ -187,6 +187,24 @@ it('renders add or remove button for items in or not in the cart respectively, a
   fireEvent.click(addBtn);
 });
 
+it('handles when clicking the select checkbox for a row', () => {
+  const { getByRole } = render(<Table {...defaultProps} />);
+
+  // Check table exists
+  const table = getByRole('table');
+  expect(table).toBeTruthy();
+
+  // Check a record row exist
+  const row = getByRole('row', {
+    name: 'right-circle 3 node.gov 1 HTTPServer download plus',
+  });
+  expect(row).toBeTruthy();
+
+  const checkBox = within(row).getByRole('checkbox');
+  expect(checkBox).toBeTruthy();
+  fireEvent.click(checkBox);
+});
+
 it('handles when clicking the select all checkbox in the table"s header', () => {
   const { getByRole } = render(<Table {...defaultProps} />);
 

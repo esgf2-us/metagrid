@@ -1,9 +1,28 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
-import { BrowserRouter as Router } from 'react-router-dom';
-import { fireEvent, render } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import { fireEvent, render, waitFor } from '@testing-library/react';
 
 import Cart, { Props } from './index';
+
+let mockHistoryPush: () => void;
+beforeEach(() => {
+  mockHistoryPush = jest.fn();
+  jest.mock(
+    'react-router-dom',
+    () =>
+      ({
+        ...jest.requireActual('react-router-dom'),
+        useHistory: () => ({
+          push: mockHistoryPush,
+        }),
+      } as {})
+  );
+});
+
+afterEach(() => {
+  jest.clearAllMocks();
+});
 
 const defaultProps: Props = {
   cart: [
@@ -24,45 +43,63 @@ const defaultProps: Props = {
       access: ['HTTPServer', 'GridFTP', 'OPENDAP', 'Globus'],
     },
   ],
+  savedSearches: [
+    {
+      id: 'id',
+      project: { name: 'foo', facets_url: 'https://fubar.gov/?' },
+      textInputs: ['foo'],
+      activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
+      numResults: 1,
+    },
+  ],
   handleCart: jest.fn(),
   clearCart: jest.fn(),
+  handleRemoveSearch: jest.fn(),
+  handleApplySearch: jest.fn(),
 };
-
-it('renders component', () => {
-  const { getByTestId } = render(
-    <Router>
+it('handles tab switching and saved search actions', async () => {
+  const { getByRole, getByTestId } = render(
+    <MemoryRouter>
       <Cart {...defaultProps} />
-    </Router>
-  );
-  expect(getByTestId('cart')).toBeTruthy();
-});
-
-test('renders alert message when datacart is empty', () => {
-  const props = { ...defaultProps, cart: [] };
-  const { getByText } = render(
-    <Router>
-      <Cart {...props} />
-    </Router>
-  );
-  expect(getByText('Your cart is empty')).toBeTruthy();
-});
-
-it('calls the clearCart() function when confirming the popconfirm', () => {
-  const { getByRole, getByText } = render(
-    <Router>
-      <Cart {...defaultProps} />
-    </Router>
+    </MemoryRouter>
   );
 
-  // Click the Remove All Items button
-  const removeAllBtn = getByRole('button', { name: 'Remove All Items' });
-  fireEvent.click(removeAllBtn);
+  // Check cart tab renders
+  const cart = await waitFor(() => getByTestId('cart'));
+  expect(cart).toBeTruthy();
 
-  // Check popover appears
-  const popOver = getByRole('tooltip');
-  expect(popOver).toBeTruthy();
+  // Check Search Criteria Tab renders and click it
+  const searchCriteriaTab = await waitFor(() =>
+    getByRole('tab', {
+      name: 'book Search Criteria',
+      hidden: true,
+    })
+  );
+  expect(searchCriteriaTab).toBeTruthy();
+  fireEvent.click(searchCriteriaTab);
 
-  // Submit the popover
-  const submitPopOverBtn = getByText('OK');
-  fireEvent.click(submitPopOverBtn);
+  // Check JSON link renders and click it
+  const jsonLink = await waitFor(() => getByRole('link'));
+  expect(jsonLink).toBeTruthy();
+  fireEvent.click(jsonLink);
+
+  // Wait for cart to re-render
+  await waitFor(() => getByTestId('cart'));
+
+  // Check apply search button renders and click it
+  const applyBtn = await waitFor(() =>
+    getByRole('img', { name: 'search', hidden: true })
+  );
+  expect(applyBtn).toBeTruthy();
+  fireEvent.click(applyBtn);
+
+  // Wait for cart to re-render
+  await waitFor(() => getByTestId('cart'));
+
+  // Check delete button renders and click it
+  const deleteBtn = await waitFor(() =>
+    getByRole('img', { name: 'delete', hidden: true })
+  );
+  expect(deleteBtn).toBeTruthy();
+  fireEvent.click(deleteBtn);
 });
