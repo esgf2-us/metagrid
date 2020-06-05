@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLocation, useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { Tabs } from 'antd';
 import { ShoppingCartOutlined, BookOutlined } from '@ant-design/icons';
 
@@ -25,18 +25,17 @@ const Cart: React.FC<Props> = ({
 }) => {
   const [activeTab, setActiveTab] = React.useState<string>('items');
   const history = useHistory();
-  const location = useLocation();
 
   /**
    * Update the active tab based on the current pathname
    */
   React.useEffect(() => {
-    if (location.pathname.includes('searches')) {
+    if (history.location.pathname.includes('searches')) {
       setActiveTab('searches');
     } else {
       setActiveTab('items');
     }
-  }, [location.pathname]);
+  }, [history.location.pathname]);
 
   /**
    * Handles tab clicking by updating the current pathname and setting the active tab
