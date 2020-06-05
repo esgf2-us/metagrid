@@ -1,9 +1,9 @@
 backend:
   rules:
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
+      when: always
     - changes:
         - backend/*
-      when: always
-    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
       when: always
   trigger:
     include: backend/.gitlab-ci.yml
@@ -11,10 +11,10 @@ backend:
 
 frontend:
   rules:
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
+      when: always
     - changes:
         - frontend/*
-      when: always
-    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
       when: always
   trigger:
     include: frontend/.gitlab-ci.yml
