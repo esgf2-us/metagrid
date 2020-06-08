@@ -1,4 +1,5 @@
 import React from 'react';
+import { useHistory } from 'react-router-dom';
 import { Form, Input, Select } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 
@@ -23,11 +24,18 @@ const LeftMenu: React.FC<Props> = ({
 }) => {
   const [form] = Form.useForm();
   const [text, setText] = React.useState('');
+  const history = useHistory();
 
   /**
-   * Sets the project and search value using the search form
+   * Sets the project and search value using the search form.
+   * If the current route is not on search, push route update.
    */
   const onFinish = (values: { [key: string]: string }): void => {
+    /* istanbul ignore else */
+    if (!history.location.pathname.endsWith('search')) {
+      history.push('/search');
+    }
+
     const selectedProj: Project | undefined = projects.find(
       (obj) => obj.name === values.project
     );
