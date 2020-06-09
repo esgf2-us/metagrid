@@ -6,7 +6,7 @@
   "pip_requirements": {
     "fileMatch": [
       "requirements/base.txt",
-      "requirements/local.text",
+      "requirements/local.txt",
       "requirements/production.txt"
     ]
   }
