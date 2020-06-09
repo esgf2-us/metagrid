@@ -29,6 +29,14 @@ module.exports = {
     ],
     'react/prop-types': 'off',
     'react/self-closing-comp': 'off',
+    // https://github.com/facebook/create-react-app/issues/6560#issuecomment-524688843
+    'spaced-comment': [
+      'error',
+      'always',
+      {
+        markers: ['/'],
+      },
+    ],
     '@typescript-eslint/explicit-function-return-type': ['error'],
     // Makes no sense to allow type inferrence for expression parameters, but require typing the response (https://github.com/iamturns/create-exposed-app/blob/master/.eslintrc.js)
     '@typescript-eslint/explicit-function-return-type': [

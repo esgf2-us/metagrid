@@ -25,7 +25,7 @@ logger.addHandler(logging.StreamHandler())
 
 
 def pg_isready(host, user, password, dbname, port):
-    while time() - start_time < check_timeout:
+    while time() - start_time < check_timeout:  # type: ignore
         try:
             conn = psycopg2.connect(**vars())
             logger.info("Postgres is ready! ✨ 💅")
@@ -35,7 +35,7 @@ def pg_isready(host, user, password, dbname, port):
             logger.info(
                 f"Postgres isn't ready. Waiting for {check_interval} {interval_unit}..."
             )
-            sleep(check_interval)
+            sleep(check_interval)  # type: ignore
 
     logger.error(
         f"We could not connect to Postgres within {check_timeout} seconds."
