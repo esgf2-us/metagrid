@@ -1,0 +1,13 @@
+{
+  "extends": ["config:base"],
+  "groupName": "all",
+  "schedule": ["every monday"],
+  "assignees": ["tomvothecoder"],
+  "pip_requirements": {
+    "fileMatch": [
+      "requirements/base.txt",
+      "requirements/local.txt",
+      "requirements/production.txt"
+    ]
+  }
+}
