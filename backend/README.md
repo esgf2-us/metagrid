@@ -16,7 +16,7 @@
 
 ### Getting Started
 
-1. Configure local .env file (template provided)
+1. Configure local .env file as needed (.env.template provided)
 
 2. Setup pre-commit (same as root README instructions)
 
