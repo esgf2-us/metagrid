@@ -1,6 +1,7 @@
 # MetaGrid
 
-[![pipeline status](https://gitlab.com/tomvothecoder/metagrid/badges/master/pipeline.svg)](https://gitlab.com/tomvothecoder/metagrid/-/commits/master)
+![Front-end CI](https://github.com/aims-group/metagrid/workflows/Front-end%20CI/badge.svg)
+![Back-end CI](https://github.com/aims-group/metagrid/workflows/Back-end%20CI/badge.svg)
 [![Codecov Coverage](https://img.shields.io/codecov/c/github/aims-group/metagrid/master.svg?style=flat-square)](https://codecov.io/gh/aims-group/metagrid/)
 
 Earth System Grid Federation's (ESGF) next generation search interface.
