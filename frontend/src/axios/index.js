@@ -1,9 +1,8 @@
 import axios from 'axios';
 import httpAdapter from 'axios/lib/adapters/http';
 
-// TODO:: use environment variables, based on development environments
 export default axios.create({
   // eslint-disable-next-line global-require
   adapter: httpAdapter,
-  baseURL: 'http://localhost:8000',
+  baseURL: `${process.env.REACT_APP_API_PROTOCOL}${process.env.REACT_APP_API_URL}:${process.env.REACT_APP_API_PORT}`,
 });

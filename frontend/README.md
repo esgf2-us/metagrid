@@ -6,11 +6,24 @@
 [![dependencies Status](https://david-dm.org/aims-group/metagrid/status.svg?path=frontend)](https://david-dm.org/aims-group/metagrid?path=frontend)
 [![devDependencies Status](https://david-dm.org/aims-group/metagrid/dev-status.svg?path=frontend)](https://david-dm.org/aims-group/metagrid?path=frontend&type=dev)
 
+## Prerequisites
+
+- Node >= 8.10
+- npm >= 5.6
+
+See the section about [create-react-app requirements](https://reactjs.org/docs/create-a-new-react-app.html#create-react-app) for more information.
+
+## Local Development
+
+### Getting Started
+
+1. Configure local .env file as needed (.env.template provided)
+
 ## Available Scripts
 
 In the project directory, you can run:
 
-### `npm start`
+### `[npm|yarn] start`
 
 Runs the app in the development mode.<br />
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
@@ -18,12 +31,31 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 The page will reload if you make edits.<br />
 You will also see any lint errors in the console.
 
-### `npm test`
+### `[npm|yarn] test`
+
+Launches the test runner for a single run without coverage report.<br />
+See the section about [running tests](https://create-react-app.dev/docs/running-tests/) for more information.
+
+### `[npm|yarn] test:coverage`
+
+Launches the test runner for a single run with coverage reporting.<br />
+See the section about [running tests with coverage](https://create-react-app.dev/docs/running-tests/#coverage-reporting) for more information.
+
+### `[npm|yarn] test:watch`
 
 Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+See the section about [running tests](https://create-react-app.devv/docs/running-tests/) for more information.
 
-### `npm run build`
+### `[npm|yarn] lint`
+
+Runs linters to display violations.<br />
+
+### `[npm|yarn] precommit`
+
+Runs linters against staged git files and attempts to fix as many issues as possible.<br />
+https://github.com/okonet/lint-staged
+
+### `[npm|yarn] run build`
 
 Builds the app for production to the `build` folder.<br />
 It correctly bundles React in production mode and optimizes the build for the best performance.
@@ -33,7 +65,7 @@ Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-### `npm run eject`
+### `[npm|yarn] run eject`
 
 **Note: this is a one-way operation. Once you `eject`, you can’t go back!**
 

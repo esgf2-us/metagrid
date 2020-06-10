@@ -2,9 +2,12 @@ import mockAxios from '../__mocks__/axios';
 import {
   fetchCitation,
   fetchFiles,
+  fetchResults,
   fetchProjects,
   genUrlQuery,
-  fetchResults,
+  nodeProtocol,
+  nodeUrl,
+  proxyString,
   processCitation,
 } from './api';
 
@@ -121,9 +124,7 @@ describe('test fetchResults()', () => {
     const projects = await fetchResults(reqUrl);
     expect(projects).toEqual({ results });
     expect(mockAxios.get).toHaveBeenCalledTimes(1);
-    expect(mockAxios.get).toHaveBeenCalledWith(
-      `http://localhost:8080/${reqUrl}`
-    );
+    expect(mockAxios.get).toHaveBeenCalledWith(`${proxyString}/${reqUrl}`);
   });
 
   it('calls axios and returns results without free-text', async () => {
@@ -139,9 +140,7 @@ describe('test fetchResults()', () => {
     const projects = await fetchResults(reqUrl);
     expect(projects).toEqual({ results });
     expect(mockAxios.get).toHaveBeenCalledTimes(1);
-    expect(mockAxios.get).toHaveBeenCalledWith(
-      `http://localhost:8080/${reqUrl}`
-    );
+    expect(mockAxios.get).toHaveBeenCalledWith(`${proxyString}/${reqUrl}`);
   });
   it('catches and throws an error', async () => {
     const errorMessage = 'Network Error';
@@ -202,7 +201,7 @@ describe('test fetchCitation()', () => {
     expect(newCitation).toEqual({ ...results });
     expect(mockAxios.get).toHaveBeenCalledTimes(1);
     expect(mockAxios.get).toHaveBeenCalledWith(
-      'http://localhost:8080/http://someBaseUrl.com/?'
+      `${proxyString}/http://someBaseUrl.com/?`
     );
   });
   it('catches and throws an error', async () => {
@@ -239,7 +238,7 @@ describe('test fetchFiles()', () => {
     expect(files).toEqual({ results });
     expect(mockAxios.get).toHaveBeenCalledTimes(1);
     expect(mockAxios.get).toHaveBeenCalledWith(
-      `http://localhost:8080/https://esgf-node.llnl.gov/search_files/${dataset.id}//esgf-node.llnl.gov/?limit=10`
+      `${proxyString}/${nodeProtocol}${nodeUrl}/search_files/${dataset.id}/${nodeUrl}/?limit=10`
     );
   });
   it('catches and throws an error', async () => {

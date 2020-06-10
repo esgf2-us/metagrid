@@ -7,7 +7,9 @@ import FilesTable, {
   openDownloadUrl,
   DownloadUrls,
 } from './FilesTable';
+
 import mockAxios from '../../__mocks__/axios';
+import { nodeProtocol, nodeUrl, proxyString } from '../../utils/api';
 
 // Reset all mocks after each test
 afterEach(() => {
@@ -72,7 +74,7 @@ describe('test FilesTable component', () => {
 
     expect(mockAxios.get).toHaveBeenCalledTimes(1);
     expect(mockAxios.get).toHaveBeenCalledWith(
-      `http://localhost:8080/https://esgf-node.llnl.gov/search_files/${id}//esgf-node.llnl.gov/?limit=10`
+      `${proxyString}/${nodeProtocol}${nodeUrl}/search_files/${id}/${nodeUrl}/?limit=10`
     );
 
     await waitFor(() =>
@@ -107,7 +109,7 @@ describe('test FilesTable component', () => {
 
     expect(mockAxios.get).toHaveBeenCalledTimes(1);
     expect(mockAxios.get).toHaveBeenCalledWith(
-      `http://localhost:8080/https://esgf-node.llnl.gov/search_files/${id}//esgf-node.llnl.gov/?limit=10`
+      `${proxyString}/${nodeProtocol}${nodeUrl}/search_files/${id}/${nodeUrl}/?limit=10`
     );
 
     await waitFor(() => expect(getByTestId('filesTable')).toBeTruthy());
@@ -155,7 +157,7 @@ describe('test FilesTable component', () => {
     // Check Axios mock
     expect(mockAxios.get).toHaveBeenCalledTimes(1);
     expect(mockAxios.get).toHaveBeenCalledWith(
-      `http://localhost:8080/https://esgf-node.llnl.gov/search_files/${id}//esgf-node.llnl.gov/?limit=10`
+      `${proxyString}/${nodeProtocol}${nodeUrl}/search_files/${id}/${nodeUrl}/?limit=10`
     );
 
     // Check filesTable rendered
