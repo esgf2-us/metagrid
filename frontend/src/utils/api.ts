@@ -2,6 +2,12 @@ import queryString from 'query-string';
 
 import axios from '../axios';
 
+// Stringified version of proxy to be used for API calls
+export const proxyString = `${process.env.REACT_APP_PROXY_PROTOCOL}${process.env.REACT_APP_PROXY_HOST}:${process.env.REACT_APP_PROXY_PORT}`;
+
+export const nodeProtocol = `${process.env.REACT_APP_ESGF_NODE_PROTOCOL}`;
+export const nodeUrl = `${process.env.REACT_APP_ESGF_NODE_URL}`;
+
 /**
  * Fetches a list of projects.
  * NOTE: Uses the axios baseURL
@@ -65,7 +71,7 @@ export const fetchResults = async (
 ): // eslint-disable-next-line @typescript-eslint/no-explicit-any
 Promise<{ [key: string]: any }> => {
   return axios
-    .get(`http://localhost:8080/${reqUrl}`)
+    .get(`${proxyString}/${reqUrl}`)
     .then((res) => {
       return res.data;
     })
@@ -93,7 +99,7 @@ export const processCitation = (citation: Citation): Citation => {
 
 /**
  * Fetches citation data using a dataset's citation url.
- * NOTE: Local proxy used to bypass CORS (http://localhost:8080/)
+ * NOTE: Local proxy used to bypass CORS
  */
 export const fetchCitation = async ({
   url,
@@ -102,7 +108,7 @@ export const fetchCitation = async ({
 }): // eslint-disable-next-line @typescript-eslint/no-explicit-any
 Promise<{ [key: string]: any }> => {
   return axios
-    .get(`http://localhost:8080/${url}`)
+    .get(`${proxyString}/${url}`)
     .then((res) => {
       const citation = processCitation(res.data);
       return citation;
@@ -114,7 +120,7 @@ Promise<{ [key: string]: any }> => {
 
 /**
  * Fetches files for a dataset.
- * NOTE: Local proxy used to bypass CORS (http://localhost:8080/)
+ * NOTE: Local proxy used to bypass CORS
  */
 export const fetchFiles = async ({
   id,
@@ -122,9 +128,9 @@ export const fetchFiles = async ({
   id: string;
 }): // eslint-disable-next-line @typescript-eslint/no-explicit-any
 Promise<{ [key: string]: any }> => {
-  const url = `https://esgf-node.llnl.gov/search_files/${id}//esgf-node.llnl.gov/?limit=10`;
+  const url = `${nodeProtocol}${nodeUrl}/search_files/${id}/${nodeUrl}/?limit=10`;
   return axios
-    .get(`http://localhost:8080/${url}`)
+    .get(`${proxyString}/${url}`)
     .then((res) => {
       return res.data;
     })

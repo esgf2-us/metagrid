@@ -181,3 +181,6 @@ Session.vim
 
 # Auto-generated tag files
 tags
+
+# Environment variable files
+**/.env
