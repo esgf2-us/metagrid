@@ -121,7 +121,7 @@ describe('test fetchResults()', () => {
     );
     reqUrl += '&query=input1,input2&facet1=var1,var2&facet2=var3,var4';
 
-    const projects = await fetchResults(reqUrl);
+    const projects = await fetchResults([reqUrl]);
     expect(projects).toEqual({ results });
     expect(mockAxios.get).toHaveBeenCalledTimes(1);
     expect(mockAxios.get).toHaveBeenCalledWith(`${proxyString}/${reqUrl}`);
@@ -137,7 +137,7 @@ describe('test fetchResults()', () => {
     );
     reqUrl += '&query=*&facet1=var1,var2&facet2=var3,var4';
 
-    const projects = await fetchResults(reqUrl);
+    const projects = await fetchResults({ reqUrl });
     expect(projects).toEqual({ results });
     expect(mockAxios.get).toHaveBeenCalledTimes(1);
     expect(mockAxios.get).toHaveBeenCalledWith(`${proxyString}/${reqUrl}`);
@@ -149,7 +149,7 @@ describe('test fetchResults()', () => {
       Promise.reject(new Error(errorMessage))
     );
 
-    await expect(fetchResults(reqUrl)).rejects.toThrow(errorMessage);
+    await expect(fetchResults([reqUrl])).rejects.toThrow(errorMessage);
   });
 });
 
