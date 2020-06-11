@@ -37,6 +37,7 @@ beforeEach(() => {
           number_of_files: 3,
           data_node: 'node.gov',
           version: 1,
+          size: 1,
           access: ['HTTPServer', 'GridFTP', 'OPENDAP', 'Globus'],
         },
         {
@@ -45,6 +46,7 @@ beforeEach(() => {
           number_of_files: 2,
           data_node: 'node.gov',
           version: 1,
+          size: 1,
           access: ['HTTPServer', 'GridFTP', 'OPENDAP', 'Globus'],
         },
       ],
@@ -167,7 +169,7 @@ it('handles adding and removing items from the cart', async () => {
 
   // Check first row exists
   const firstRow = getByRole('row', {
-    name: 'right-circle 3 node.gov 1 HTTPServer download plus',
+    name: 'right-circle 3 1 Bytes node.gov 1 HTTPServer download plus',
   });
   expect(firstRow).toBeTruthy();
 
@@ -425,7 +427,7 @@ it('displays the number of files in the cart summary and handles clearing the ca
 
   // Check first row exists
   const firstRow = getByRole('row', {
-    name: 'right-circle 3 node.gov 1 HTTPServer download plus',
+    name: 'right-circle 3 1 Bytes node.gov 1 HTTPServer download plus',
   });
   expect(firstRow).toBeTruthy();
 
@@ -462,6 +464,8 @@ it('displays the number of files in the cart summary and handles clearing the ca
   });
   expect(clearCartBtn).toBeTruthy();
   fireEvent.click(clearCartBtn);
+
+  await waitFor(() => getByTestId('cart'));
 
   // Check confirmBtn exists in popover and click it
   const confirmBtn = await waitFor(() =>

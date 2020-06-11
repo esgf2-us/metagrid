@@ -265,18 +265,7 @@ const App: React.FC = () => {
                   style={styles.bodySider}
                   width={styles.bodySider.width}
                 >
-                  <Summary
-                    numItems={cart.length}
-                    numFiles={
-                      cart.length > 0
-                        ? (cart as SearchResult[]).reduce(
-                            (acc: number, dataset: SearchResult) =>
-                              acc + dataset.number_of_files,
-                            0
-                          )
-                        : 0
-                    }
-                  />
+                  <Summary cart={cart} />
                 </Layout.Sider>
               )}
             />

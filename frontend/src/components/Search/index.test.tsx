@@ -41,6 +41,7 @@ describe('test Search component', () => {
             number_of_files: 3,
             data_node: 'node.gov',
             version: 1,
+            size: 1,
             access: ['HTTPServer', 'GridFTP', 'OPENDAP', 'Globus'],
           },
           {
@@ -49,6 +50,7 @@ describe('test Search component', () => {
             number_of_files: 2,
             data_node: 'node.gov',
             version: 1,
+            size: 1,
             access: ['HTTPServer', 'GridFTP', 'OPENDAP', 'Globus'],
           },
         ],
@@ -224,7 +226,7 @@ describe('test Search component', () => {
 
     // Select the first row
     const firstRow = getByRole('row', {
-      name: 'right-circle 3 node.gov 1 HTTPServer download plus',
+      name: 'right-circle 3 1 Bytes node.gov 1 HTTPServer download plus',
     });
     expect(firstRow).toBeTruthy();
 
