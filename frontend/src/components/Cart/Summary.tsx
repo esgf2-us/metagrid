@@ -3,6 +3,7 @@ import { Divider, Form, Select } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 
 import Button from '../General/Button';
+import { formatBytes } from '../../utils/utils';
 
 import cartImg from '../../assets/img/cart.svg';
 import dataImg from '../../assets/img/data.svg';
@@ -19,13 +20,27 @@ const styles = {
 };
 
 export type Props = {
-  numItems: number;
-  numFiles: number;
+  cart: Cart | [];
 };
 
-const Summary: React.FC<Props> = ({ numItems, numFiles }) => {
+const Summary: React.FC<Props> = ({ cart }) => {
   const [form] = Form.useForm();
   const downloadOptions = ['HTTPServer', 'GridFTP', 'OPENDAP', 'Globus'];
+
+  let numFiles = 0;
+  let totalDataSize = '0';
+  if (cart.length > 0) {
+    numFiles = (cart as SearchResult[]).reduce(
+      (acc: number, dataset: SearchResult) => acc + dataset.number_of_files,
+      0
+    );
+
+    const rawDataSize = (cart as SearchResult[]).reduce(
+      (acc: number, dataset: SearchResult) => acc + dataset.size,
+      0
+    );
+    totalDataSize = formatBytes(rawDataSize);
+  }
 
   return (
     <div data-testid="summary">
@@ -38,13 +53,13 @@ const Summary: React.FC<Props> = ({ numItems, numFiles }) => {
 
       <Divider />
       <h1>
-        Number of Datasets: <span style={styles.statistic}>{numItems}</span>
+        Number of Datasets: <span style={styles.statistic}>{cart.length}</span>
       </h1>
       <h1>
         Number of Files: <span style={styles.statistic}>{numFiles}</span>
       </h1>
       <h1>
-        Total File Size: <span style={styles.statistic}>N/A</span>
+        Total File Size: <span style={styles.statistic}>{totalDataSize}</span>
       </h1>
       <Divider />
       <div style={styles.headerContainer}>
@@ -77,6 +92,7 @@ const Summary: React.FC<Props> = ({ numItems, numFiles }) => {
             type="primary"
             htmlType="submit"
             icon={<DownloadOutlined />}
+            disabled
           ></Button>
         </Form.Item>
       </Form>
