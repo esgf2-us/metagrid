@@ -139,6 +139,7 @@ describe('test FilesTable component', () => {
                 id: 'id',
                 title: 'title',
                 checksum: 'checksum',
+                size: 1,
                 url: ['https://testdownload.com|HTTPServer'],
               },
             ],
@@ -165,7 +166,7 @@ describe('test FilesTable component', () => {
 
     // Select first cell row
     const firstRow = getByRole('row', {
-      name: 'title checksum HTTPServer download',
+      name: 'title checksum 1 Bytes HTTPServer download',
     });
     expect(firstRow).toBeTruthy();
 

@@ -15,7 +15,7 @@ import FilesTable from './FilesTable';
 import Button from '../General/Button';
 import Divider from '../General/Divider';
 
-import { hasKey, parseUrl } from '../../utils/utils';
+import { formatBytes, hasKey, parseUrl } from '../../utils/utils';
 import './Search.css';
 
 export type Props = {
@@ -158,6 +158,13 @@ const Table: React.FC<Props> = ({
       key: 'number_of_files',
       width: 100,
       render: (numberOfFiles: number) => <p>{numberOfFiles}</p>,
+    },
+    {
+      title: 'Total Size',
+      dataIndex: 'size',
+      key: 'size',
+      width: 100,
+      render: (size: number) => <p>{formatBytes(size)}</p>,
     },
     {
       title: 'Node',

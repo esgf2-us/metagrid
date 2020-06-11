@@ -6,8 +6,24 @@ import { fireEvent, render } from '@testing-library/react';
 import Summary, { Props } from './Summary';
 
 const defaultProps: Props = {
-  numItems: 2,
-  numFiles: 5,
+  cart: [
+    {
+      id: 'foo',
+      url: ['foo.bar'],
+      number_of_files: 3,
+      data_node: 'node.gov',
+      version: 1,
+      access: ['HTTPServer', 'GridFTP', 'OPENDAP', 'Globus'],
+    },
+    {
+      id: 'bar',
+      url: ['foo.bar'],
+      number_of_files: 2,
+      data_node: 'node.gov',
+      version: 1,
+      access: ['HTTPServer', 'GridFTP', 'OPENDAP', 'Globus'],
+    },
+  ],
 };
 
 test('renders without crashing', () => {

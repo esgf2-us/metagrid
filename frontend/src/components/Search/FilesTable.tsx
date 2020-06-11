@@ -8,7 +8,7 @@ import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
 
 import { fetchFiles } from '../../utils/api';
-import { parseUrl } from '../../utils/utils';
+import { parseUrl, formatBytes } from '../../utils/utils';
 
 export type DownloadUrls = {
   downloadType: string | undefined;
@@ -74,6 +74,9 @@ const FilesTable: React.FC<Props> = ({ id }) => {
         dataIndex: 'size',
         width: 100,
         key: 'size',
+        render: (size: number) => {
+          return formatBytes(size);
+        },
       },
       {
         title: 'Download',
