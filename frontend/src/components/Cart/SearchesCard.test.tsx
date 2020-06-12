@@ -82,3 +82,15 @@ it('displays "N/A" when no constraints are applied', async () => {
   const queryString = await waitFor(() => getByText('N/A'));
   expect(queryString).toBeTruthy();
 });
+
+it('displays alert error when api fails to return response', async () => {
+  mockAxios.get.mockImplementationOnce(() =>
+    Promise.reject(new Error('Network Error'))
+  );
+
+  const { getByRole } = render(<SearchesCard {...defaultProps} />);
+
+  // Check alert renders
+  const alert = await waitFor(() => getByRole('img', { name: 'close-circle' }));
+  expect(alert).toBeTruthy();
+});
