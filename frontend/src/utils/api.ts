@@ -64,14 +64,31 @@ export const genUrlQuery = (
 
 /**
  * Fetch the search results using the ESG Search API.
- * https://github.com/ESGF/esgf.github.io/wiki/ESGF_Search_REST_API
+ * Source: https://github.com/ESGF/esgf.github.io/wiki/ESGF_Search_REST_API
+ *
+ * This function can be called with either PromiseFn or DeferFn.
+ *
+ * With PromiseFn, arguments are passed in as an object ({reqUrl: string}).
+ * Source: https://docs.react-async.com/api/options#promisefn
+ *
+ * With DeferFn, arguments are passed in as an array ([string]).
+ * Source: https://docs.react-async.com/api/options#deferfn
  */
 export const fetchResults = async (
-  reqUrl: string
-): // eslint-disable-next-line @typescript-eslint/no-explicit-any
-Promise<{ [key: string]: any }> => {
+  args: [string] | Record<string, string>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): Promise<{ [key: string]: any }> => {
+  let reqUrlStr;
+
+  if (Array.isArray(args)) {
+    // eslint-disable-next-line prefer-destructuring
+    reqUrlStr = args[0];
+  } else {
+    reqUrlStr = args.reqUrl;
+  }
+
   return axios
-    .get(`${proxyString}/${reqUrl}`)
+    .get(`${proxyString}/${reqUrlStr}`)
     .then((res) => {
       return res.data;
     })

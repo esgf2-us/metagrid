@@ -14,6 +14,12 @@ let searchResults: {
   facet_counts: { facet_fields: FetchedFacets };
 };
 
+let numFoundResults: {
+  response: {
+    numFound: number;
+  };
+};
+
 beforeEach(() => {
   projectResults = [
     {
@@ -58,6 +64,8 @@ beforeEach(() => {
       },
     },
   };
+
+  numFoundResults = { response: { numFound: 1 } };
 
   // Set timeout since some tests run longer than 5000ms
   jest.setTimeout(10000);
@@ -498,8 +506,8 @@ it('handles removing searches from the search library', async () => {
     .mockResolvedValueOnce({ data: { results: projectResults } })
     .mockResolvedValueOnce({ data: { results: projectResults } })
     .mockResolvedValueOnce({ data: searchResults })
-    .mockResolvedValueOnce({ data: searchResults });
-
+    .mockResolvedValueOnce({ data: searchResults })
+    .mockResolvedValueOnce({ data: numFoundResults });
   const {
     getByRole,
     getByTestId,
@@ -569,7 +577,7 @@ it('handles removing searches from the search library', async () => {
   expect(removeText).toBeTruthy();
 
   // Check mockAxios.get calls
-  expect(mockAxios.get).toHaveBeenCalledTimes(4);
+  expect(mockAxios.get).toHaveBeenCalledTimes(5);
 });
 
 it('handles applying searches from the search library to render results', async () => {
@@ -579,6 +587,7 @@ it('handles applying searches from the search library to render results', async 
     .mockResolvedValueOnce({ data: { results: projectResults } })
     .mockResolvedValueOnce({ data: searchResults })
     .mockResolvedValueOnce({ data: searchResults })
+    .mockResolvedValueOnce({ data: numFoundResults })
     .mockResolvedValueOnce({ data: { results: projectResults } })
     .mockResolvedValueOnce({ data: searchResults });
 
@@ -634,5 +643,5 @@ it('handles applying searches from the search library to render results', async 
   await waitFor(() => getByTestId('search'));
 
   // Check mockAxios.get calls
-  expect(mockAxios.get).toHaveBeenCalledTimes(6);
+  expect(mockAxios.get).toHaveBeenCalledTimes(7);
 });
