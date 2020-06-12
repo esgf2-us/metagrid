@@ -57,7 +57,7 @@ const SearchesCard: React.FC<Props> = ({
   if (error) {
     cardTitle = (
       <Alert
-        message="There was an issue fetching the result count. Please contact support or try again later."
+        message="There was an issue fetching the result count."
         type="error"
       />
     );
