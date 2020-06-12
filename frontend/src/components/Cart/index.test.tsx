@@ -4,6 +4,46 @@ import { MemoryRouter } from 'react-router-dom';
 import { fireEvent, render, waitFor } from '@testing-library/react';
 
 import Cart, { Props } from './index';
+import mockAxios from '../../__mocks__/axios';
+
+// API return data
+const data = { response: { numFound: 1 } };
+
+const defaultProps: Props = {
+  cart: [
+    {
+      id: 'foo',
+      url: ['foo.bar'],
+      number_of_files: 3,
+      data_node: 'node.gov',
+      version: 1,
+      size: 1,
+      access: ['HTTPServer', 'GridFTP', 'OPENDAP', 'Globus'],
+    },
+    {
+      id: 'bar',
+      url: ['foo.bar'],
+      number_of_files: 2,
+      data_node: 'node.gov',
+      version: 1,
+      size: 1,
+      access: ['HTTPServer', 'GridFTP', 'OPENDAP', 'Globus'],
+    },
+  ],
+  savedSearches: [
+    {
+      id: 'id',
+      project: { name: 'foo', facets_url: 'https://fubar.gov/?' },
+      textInputs: ['foo'],
+      activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
+      numResults: 1,
+    },
+  ],
+  handleCart: jest.fn(),
+  clearCart: jest.fn(),
+  handleRemoveSearch: jest.fn(),
+  handleApplySearch: jest.fn(),
+};
 
 let mockHistoryPush: () => void;
 beforeEach(() => {
@@ -24,40 +64,13 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
-const defaultProps: Props = {
-  cart: [
-    {
-      id: 'foo',
-      url: ['foo.bar'],
-      number_of_files: 3,
-      data_node: 'node.gov',
-      version: 1,
-      access: ['HTTPServer', 'GridFTP', 'OPENDAP', 'Globus'],
-    },
-    {
-      id: 'bar',
-      url: ['foo.bar'],
-      number_of_files: 2,
-      data_node: 'node.gov',
-      version: 1,
-      access: ['HTTPServer', 'GridFTP', 'OPENDAP', 'Globus'],
-    },
-  ],
-  savedSearches: [
-    {
-      id: 'id',
-      project: { name: 'foo', facets_url: 'https://fubar.gov/?' },
-      textInputs: ['foo'],
-      activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
-      numResults: 1,
-    },
-  ],
-  handleCart: jest.fn(),
-  clearCart: jest.fn(),
-  handleRemoveSearch: jest.fn(),
-  handleApplySearch: jest.fn(),
-};
 it('handles tab switching and saved search actions', async () => {
+  mockAxios.get.mockImplementationOnce(() =>
+    Promise.resolve({
+      data,
+    })
+  );
+
   const { getByRole, getByTestId } = render(
     <MemoryRouter>
       <Cart {...defaultProps} />
