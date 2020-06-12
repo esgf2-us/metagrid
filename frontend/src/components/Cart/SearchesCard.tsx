@@ -15,6 +15,7 @@ import { stringifyConstraints } from '../Search';
 import { genUrlQuery, fetchResults } from '../../utils/api';
 import { isEmpty } from '../../utils/utils';
 import Skeleton from '../Feedback/Skeleton';
+import Alert from '../Feedback/Alert';
 
 const styles: Record<string, React.CSSProperties> = {
   category: {
@@ -52,6 +53,31 @@ const SearchesCard: React.FC<Props> = ({
     reqUrl,
   });
 
+  let cardTitle;
+  if (error) {
+    cardTitle = (
+      <Alert
+        message="There was an issue fetching the result count. Please contact support or try again later."
+        type="error"
+      />
+    );
+  } else if (isLoading) {
+    cardTitle = (
+      <Skeleton title={{ width: '250px' }} paragraph={{ rows: 0 }} active />
+    );
+  } else {
+    cardTitle = (
+      <>
+        <p>
+          <span style={{ fontWeight: 'bold' }}>
+            {(data as { response: { numFound: number } }).response.numFound}
+          </span>{' '}
+          results found for {project.name}
+        </p>
+      </>
+    );
+  }
+
   return (
     <Col key={id} xs={20} sm={16} md={12} lg={10} xl={8}>
       <Card
@@ -59,25 +85,7 @@ const SearchesCard: React.FC<Props> = ({
         title={
           <>
             <p>Search #{index + 1}</p>
-            {isLoading ? (
-              <Skeleton
-                title={{ width: '250px' }}
-                paragraph={{ rows: 0 }}
-                active
-              />
-            ) : (
-              <>
-                <p>
-                  <span style={{ fontWeight: 'bold' }}>
-                    {
-                      (data as { response: { numFound: number } }).response
-                        .numFound
-                    }
-                  </span>{' '}
-                  results found for {project.name}
-                </p>
-              </>
-            )}
+            {cardTitle}
           </>
         }
         actions={[
