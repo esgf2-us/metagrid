@@ -35,6 +35,20 @@ export const hasKey = (
 };
 
 /**
+ * Performs a shallow comparison between two objects to check if they are equal.
+ * Source: https://stackoverflow.com/a/52323412
+ */
+export const shallowCompare = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  obj1: { [key: string]: any },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  obj2: { [key: string]: any }
+): boolean =>
+  Object.keys(obj1).length === Object.keys(obj2).length &&
+  Object.keys(obj1).every(
+    (key) => obj2.hasOwnProperty.call(obj2, key) && obj1[key] === obj2[key]
+  );
+/**
  * Converts binary bytes into another size
  * Source: https://stackoverflow.com/a/18650828
  */

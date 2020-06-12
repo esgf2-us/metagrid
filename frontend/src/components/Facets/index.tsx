@@ -1,12 +1,13 @@
 import React from 'react';
 import { useAsync } from 'react-async';
+import { message } from 'antd';
 
 import ProjectForm from './ProjectForm';
 import FacetsForm from './FacetsForm';
 import Divider from '../General/Divider';
 
 import { fetchProjects } from '../../utils/api';
-import { isEmpty } from '../../utils/utils';
+import { isEmpty, shallowCompare } from '../../utils/utils';
 
 const styles = {
   form: {
@@ -16,18 +17,20 @@ const styles = {
 
 export type Props = {
   activeProject: Project | {};
+  defaultFacets: DefaultFacets;
   activeFacets: ActiveFacets | {};
   availableFacets: AvailableFacets | {};
   handleProjectChange: (selectedProj: Project) => void;
-  onSetActiveFacets: (allValues: ActiveFacets) => void;
+  onSetFacets: (defaults: DefaultFacets, active: ActiveFacets) => void;
 };
 
 const Facets: React.FC<Props> = ({
   activeProject,
+  defaultFacets,
   activeFacets,
   availableFacets,
   handleProjectChange,
-  onSetActiveFacets,
+  onSetFacets,
 }) => {
   const { data, error, isLoading } = useAsync(fetchProjects);
 
@@ -37,11 +40,32 @@ const Facets: React.FC<Props> = ({
   const handleFacetsForm = (selectedFacets: {
     [key: string]: string[] | [];
   }): void => {
-    Object.keys(selectedFacets).forEach(
+    const newActive = selectedFacets;
+
+    const newDefaults: DefaultFacets = { latest: false, replica: false };
+    const { selectedDefaults } = newActive;
+    // Pop selectedDefaults key since that sets the state for defaultFacets separately
+    delete newActive.selectedDefaults;
+
+    selectedDefaults.forEach((facet) => {
+      newDefaults[facet] = true;
+    });
+
+    Object.keys(newActive).forEach(
       // eslint-disable-next-line no-param-reassign
       (key) => selectedFacets[key] === undefined && delete selectedFacets[key]
     );
-    onSetActiveFacets(selectedFacets);
+
+    if (
+      shallowCompare(newDefaults, defaultFacets) &&
+      shallowCompare(newActive, activeFacets)
+    ) {
+      message.error({
+        content: 'Constraints already applied',
+      });
+    } else {
+      onSetFacets(newDefaults, newActive);
+    }
   };
 
   /**
@@ -77,6 +101,7 @@ const Facets: React.FC<Props> = ({
       <Divider />
       {!isEmpty(availableFacets) && (
         <FacetsForm
+          defaultFacets={defaultFacets}
           activeFacets={activeFacets}
           availableFacets={availableFacets}
           handleFacetsForm={handleFacetsForm}
