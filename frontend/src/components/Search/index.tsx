@@ -57,10 +57,16 @@ export const parseFacets = (facets: FetchedFacets): AvailableFacets => {
  * Example of output: '(Text Input = 'Solar') AND (source_type = AER OR AOGCM OR BGC)'
  */
 export const stringifyConstraints = (
+  defaultFacets: DefaultFacets,
   activeFacets: ActiveFacets,
   textInputs: TextInputs
 ): string => {
   const strConstraints: string[] = [];
+
+  Object.keys(defaultFacets).forEach((key: string) => {
+    strConstraints.push(`(${key} = ${defaultFacets[key]})`);
+  });
+
   if (textInputs.length > 0) {
     strConstraints.push(`(Text Input = ${textInputs.join(' OR ')})`);
   }
@@ -84,8 +90,9 @@ export const checkConstraintsExist = (
 
 export type Props = {
   activeProject: Project | {};
-  textInputs: TextInputs | [];
+  defaultFacets: DefaultFacets;
   activeFacets: ActiveFacets;
+  textInputs: TextInputs | [];
   cart: Cart | [];
   onRemoveTag: (removedTag: Tag, type: string) => void;
   onClearTags: () => void;
@@ -96,8 +103,9 @@ export type Props = {
 
 const Search: React.FC<Props> = ({
   activeProject,
-  textInputs,
+  defaultFacets,
   activeFacets,
+  textInputs,
   cart,
   onRemoveTag,
   onClearTags,
@@ -111,7 +119,7 @@ const Search: React.FC<Props> = ({
     deferFn: (fetchResults as unknown) as DeferFn<{ [key: string]: any }>,
   });
 
-  const [constraintsExist, setConstraintsExist] = React.useState<boolean>(
+  const [constraintsApplied, setConstraintsApplied] = React.useState<boolean>(
     false
   );
   // Parsed version of the returned facet fields
@@ -138,16 +146,17 @@ const Search: React.FC<Props> = ({
     if (!isEmpty(activeProject)) {
       const reqUrl = genUrlQuery(
         (activeProject as Project).facets_url,
-        textInputs,
+        defaultFacets,
         activeFacets,
+        textInputs,
         pagination
       );
       setCurReqUrl(reqUrl);
     }
-  }, [activeProject, textInputs, activeFacets, pagination]);
+  }, [activeProject, defaultFacets, activeFacets, textInputs, pagination]);
 
   React.useEffect(() => {
-    setConstraintsExist(checkConstraintsExist(activeFacets, textInputs));
+    setConstraintsApplied(checkConstraintsExist(activeFacets, textInputs));
   }, [activeFacets, textInputs]);
 
   // Fetch search results
@@ -207,7 +216,7 @@ const Search: React.FC<Props> = ({
       <div style={styles.summary}>
         {isEmpty(activeProject) && (
           <Alert
-            message="Search for a project to display results"
+            message="Select a project to search for results"
             type="info"
             showIcon
           />
@@ -218,11 +227,9 @@ const Search: React.FC<Props> = ({
             <span style={styles.resultsHeader}>
               {(activeProject as Project).name}
             </span>{' '}
-            {constraintsExist && (
-              <Typography.Text code>
-                {stringifyConstraints(activeFacets, textInputs)}
-              </Typography.Text>
-            )}
+            <Typography.Text code>
+              {stringifyConstraints(defaultFacets, activeFacets, textInputs)}
+            </Typography.Text>
           </h3>
         )}
         {results && !isLoading && (
@@ -234,11 +241,9 @@ const Search: React.FC<Props> = ({
             <span style={styles.resultsHeader}>
               {(activeProject as Project).name}
             </span>{' '}
-            {constraintsExist && (
-              <Typography.Text code>
-                {stringifyConstraints(activeFacets, textInputs)}
-              </Typography.Text>
-            )}
+            <Typography.Text code>
+              {stringifyConstraints(defaultFacets, activeFacets, textInputs)}
+            </Typography.Text>
           </h3>
         )}
         <div>
@@ -270,8 +275,12 @@ const Search: React.FC<Props> = ({
       </div>
 
       <Row style={styles.filtersContainer}>
-        {!constraintsExist ? (
-          <Alert message="No constraints applied" type="info" showIcon />
+        {!constraintsApplied ? (
+          <Alert
+            message="No project constraints applied"
+            type="info"
+            showIcon
+          />
         ) : (
           <h4 style={{ marginRight: '0.5em' }}>Applied Constraints: </h4>
         )}
@@ -307,7 +316,7 @@ const Search: React.FC<Props> = ({
               </div>
             );
           })}
-        {constraintsExist && (
+        {constraintsApplied && (
           <Tag
             value="clearAll"
             color="#f50"

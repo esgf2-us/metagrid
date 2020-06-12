@@ -35,11 +35,13 @@ export const fetchProjects = async (): Promise<{
  */
 export const genUrlQuery = (
   baseUrl: string,
+  defaultFacets: DefaultFacets,
+  activeFacets: ActiveFacets | {},
   textInputs: string[] | [],
-  activeFacets: { [key: string]: string[] } | {},
   pagination: { page: number; pageSize: number }
 ): string => {
-  const stringifyFacets = queryString.stringify(activeFacets, {
+  const defaultFacetsStr = queryString.stringify(defaultFacets);
+  const activeFacetsStr = queryString.stringify(activeFacets, {
     arrayFormat: 'comma',
   });
 
@@ -58,7 +60,7 @@ export const genUrlQuery = (
     .replace('limit=0', `limit=${pagination.pageSize}`)
     .replace('offset=0', `offset=${offset}`);
 
-  const url = `${newBaseUrl}&${stringifyText}&${stringifyFacets}`;
+  const url = `${nodeProtocol}${nodeUrl}/esg-search/search/?${newBaseUrl}&${defaultFacetsStr}&${stringifyText}&${activeFacetsStr}`;
   return url;
 };
 

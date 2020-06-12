@@ -12,8 +12,9 @@ import mockAxios from '../../__mocks__/axios';
 
 const defaultProps: Props = {
   activeProject: { name: 'foo', facets_url: 'https://fubar.gov/?' },
-  textInputs: ['foo'],
+  defaultFacets: { latest: true, replica: false },
   activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
+  textInputs: ['foo'],
   cart: [],
   onRemoveTag: jest.fn(),
   onClearTags: jest.fn(),
@@ -126,13 +127,13 @@ describe('test Search component', () => {
     // Check for stringified constraints text
     const strConstraints = getByRole('heading', {
       name:
-        '2 results found for foo (Text Input = foo) AND (foo = option1 OR option2) AND (baz = option1)',
+        '2 results found for foo (latest = true) AND (replica = false) AND (Text Input = foo) AND (foo = option1 OR option2) AND (baz = option1)',
     });
 
     expect(strConstraints).toBeTruthy();
   });
 
-  it('renders "No constraints applied" Alert when no constraints are applied', async () => {
+  it('renders "No project constraints applied" Alert when no constraints are applied', async () => {
     mockAxios.get.mockImplementationOnce(() =>
       Promise.resolve({
         data,
@@ -145,7 +146,7 @@ describe('test Search component', () => {
 
     // Check if code string is generated from active facets
     const noConstraintsText = await waitFor(() =>
-      getByText('No constraints applied')
+      getByText('No project constraints applied')
     );
     expect(noConstraintsText).toBeTruthy();
   });
@@ -301,10 +302,12 @@ describe('test parseFacets()', () => {
 });
 
 describe('test stringifyConstraints()', () => {
+  let defaultFacets: DefaultFacets;
   let activeFacets: ActiveFacets;
   let textInputs: TextInputs;
 
   beforeEach(() => {
+    defaultFacets = { latest: true, replica: false };
     activeFacets = {
       facet_1: ['option1', 'option2'],
       facet_2: ['option1', 'option2'],
@@ -313,20 +316,30 @@ describe('test stringifyConstraints()', () => {
   });
 
   it('successfully generates a stringified version of the active constraints', () => {
-    const strConstraints = stringifyConstraints(activeFacets, textInputs);
+    const strConstraints = stringifyConstraints(
+      defaultFacets,
+      activeFacets,
+      textInputs
+    );
     expect(strConstraints).toEqual(
-      '(Text Input = foo OR bar) AND (facet_1 = option1 OR option2) AND (facet_2 = option1 OR option2)'
+      '(latest = true) AND (replica = false) AND (Text Input = foo OR bar) AND (facet_1 = option1 OR option2) AND (facet_2 = option1 OR option2)'
     );
   });
   it('successfully generates a stringified version of the active constraints w/o textInputs', () => {
-    const strConstraints = stringifyConstraints(activeFacets, []);
+    const strConstraints = stringifyConstraints(
+      defaultFacets,
+      activeFacets,
+      []
+    );
     expect(strConstraints).toEqual(
-      '(facet_1 = option1 OR option2) AND (facet_2 = option1 OR option2)'
+      '(latest = true) AND (replica = false) AND (facet_1 = option1 OR option2) AND (facet_2 = option1 OR option2)'
     );
   });
   it('successfully generates a stringified version of the active constraints w/o activeFacets', () => {
-    const strConstraints = stringifyConstraints({}, textInputs);
-    expect(strConstraints).toEqual('(Text Input = foo OR bar)');
+    const strConstraints = stringifyConstraints(defaultFacets, {}, textInputs);
+    expect(strConstraints).toEqual(
+      '(latest = true) AND (replica = false) AND (Text Input = foo OR bar)'
+    );
   });
 });
 
