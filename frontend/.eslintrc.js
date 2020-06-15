@@ -37,6 +37,7 @@ module.exports = {
         markers: ['/'],
       },
     ],
+    '@typescript-eslint/camelcase': 'off',
     '@typescript-eslint/explicit-function-return-type': ['error'],
     // Makes no sense to allow type inferrence for expression parameters, but require typing the response (https://github.com/iamturns/create-exposed-app/blob/master/.eslintrc.js)
     '@typescript-eslint/explicit-function-return-type': [

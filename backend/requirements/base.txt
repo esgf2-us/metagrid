@@ -5,7 +5,7 @@ django==3.0.7  # pyup: < 3.1  # https://www.djangoproject.com/
 django-environ==0.4.5  # https://github.com/joke2k/django-environ
 gunicorn==20.0.4  # https://github.com/benoitc/gunicorn
 newrelic==5.14.0.142  # https://pypi.org/project/newrelic/
-argon2-cffi==19.2.0  # https://github.com/hynek/argon2_cffi
+argon2-cffi==20.1.0  # https://github.com/hynek/argon2_cffi
 requests==2.23.0  # https://github.com/psf/requests
 
 # Database
