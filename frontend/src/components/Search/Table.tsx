@@ -54,7 +54,7 @@ const Table: React.FC<Props> = ({
     expandable: {
       expandedRowRender: (record: SearchResult) => {
         const metaData = Object.entries(record).map(([k, v]) => ({
-          value: `${k}: ${v}`,
+          value: `${k}: ${v as string}`,
         }));
 
         return (
@@ -80,8 +80,7 @@ const Table: React.FC<Props> = ({
                   options={metaData}
                   placeholder="Lookup a key..."
                   filterOption={(inputValue, option) =>
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    option!.value
+                    (option as Record<'value', string>).value
                       .toUpperCase()
                       .indexOf(inputValue.toUpperCase()) !== -1
                   }

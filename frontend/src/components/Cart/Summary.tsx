@@ -45,8 +45,8 @@ const Summary: React.FC<Props> = ({ cart }) => {
   return (
     <div data-testid="summary">
       <div style={styles.headerContainer}>
-        <img style={styles.image} src={cartImg} alt="Cart" />
-        <img style={styles.image} src={folderImg} alt="Folder" />
+        <img style={styles.image} src={cartImg as string} alt="Cart" />
+        <img style={styles.image} src={folderImg as string} alt="Folder" />
       </div>
 
       <h1 style={styles.summaryHeader}>Your Cart Summary</h1>
@@ -63,7 +63,7 @@ const Summary: React.FC<Props> = ({ cart }) => {
       </h1>
       <Divider />
       <div style={styles.headerContainer}>
-        <img style={styles.image} src={dataImg} alt="Data" />
+        <img style={styles.image} src={dataImg as string} alt="Data" />
       </div>
       <h1 style={styles.summaryHeader}>Download Your Cart</h1>
       <p>

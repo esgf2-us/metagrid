@@ -1,3 +1,4 @@
+/* eslint-disable no-void */
 import React from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -39,15 +40,19 @@ const styles = {
 
 const App: React.FC = () => {
   // The currently selected project for search queries
-  const [activeProject, setActiveProject] = React.useState<Project | {}>({});
+  const [activeProject, setActiveProject] = React.useState<
+    Project | Record<string, unknown>
+  >({});
   // The available facets based on the fetched results
   const [availableFacets, setAvailableFacets] = React.useState<
-    AvailableFacets | {}
+    AvailableFacets | Record<string, unknown>
   >({});
   // The active applied free-text inputs in the search criteria
   const [textInputs, setTextInputs] = React.useState<TextInputs | []>([]);
   // The active applied facet filters in the search criteria
-  const [activeFacets, setActiveFacets] = React.useState<ActiveFacets | {}>({});
+  const [activeFacets, setActiveFacets] = React.useState<
+    ActiveFacets | Record<string, unknown>
+  >({});
   const [defaultFacets, setDefaultFacets] = React.useState<DefaultFacets>({
     latest: true,
     replica: false,
@@ -140,7 +145,7 @@ const App: React.FC = () => {
         });
         return [...cart, ...itemsNotInCart];
       });
-      message.success({
+      void message.success({
         content: 'Added item(s) to your cart',
         icon: <ShoppingCartOutlined style={styles.messageAddIcon} />,
       });
@@ -150,7 +155,7 @@ const App: React.FC = () => {
           return !selectedItems.includes(item);
         })
       );
-      message.success({
+      void message.success({
         content: 'Removed item(s) from your cart',
         icon: <DeleteOutlined style={styles.messageRemoveIcon} />,
       });
@@ -166,7 +171,7 @@ const App: React.FC = () => {
    */
   const handleOnSearch = (text: string): void => {
     if (textInputs.includes(text as never)) {
-      message.error(`Input "${text}" has already been applied`);
+      void message.error(`Input "${text}" has already been applied`);
     } else {
       setTextInputs([...textInputs, text]);
     }
@@ -185,7 +190,7 @@ const App: React.FC = () => {
   const handleSaveSearch = (numResults: number): void => {
     const savedSearch: SavedSearch = {
       id: uuidv4(),
-      project: activeProject,
+      project: activeProject as Project,
       defaultFacets,
       activeFacets,
       textInputs,
@@ -201,7 +206,7 @@ const App: React.FC = () => {
           { ...search, id: undefined }
         ) === true
       ) {
-        message.error({
+        void message.error({
           content: 'This search has already been saved.',
           icon: <BookOutlined style={styles.messageRemoveIcon} />,
         });
@@ -214,7 +219,7 @@ const App: React.FC = () => {
     /* istanbul ignore else */
     if (!alreadySaved) {
       setSavedSearches([...savedSearches, savedSearch]);
-      message.success({
+      void message.success({
         content: 'Saved search criteria to your library',
         icon: <BookOutlined style={styles.messageAddIcon} />,
       });
@@ -226,9 +231,9 @@ const App: React.FC = () => {
    */
   const handleRemoveSearch = (id: string): void => {
     setSavedSearches(
-      savedSearches.filter((searchItem) => searchItem.id !== id)
+      savedSearches.filter((searchItem: SavedSearch) => searchItem.id !== id)
     );
-    message.success({
+    void message.success({
       content: 'Removed search criteria from your library',
       icon: <DeleteOutlined style={styles.messageRemoveIcon} />,
     });

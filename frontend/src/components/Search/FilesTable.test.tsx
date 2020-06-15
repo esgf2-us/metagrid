@@ -9,7 +9,6 @@ import FilesTable, {
 } from './FilesTable';
 
 import mockAxios from '../../__mocks__/axios';
-import { nodeProtocol, nodeUrl, proxyString } from '../../utils/api';
 
 // Reset all mocks after each test
 afterEach(() => {
@@ -34,8 +33,7 @@ describe('test genDownloadUrls()', () => {
 });
 
 describe('test openDownloadUrl()', () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let windowSpy: any;
+  let windowSpy: jest.SpyInstance;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mockedOpen: jest.Mock<any, any>;
 
@@ -72,11 +70,6 @@ describe('test FilesTable component', () => {
     const id = 'testid';
     const { queryByText } = render(<FilesTable id={id} />);
 
-    expect(mockAxios.get).toHaveBeenCalledTimes(1);
-    expect(mockAxios.get).toHaveBeenCalledWith(
-      `${proxyString}/${nodeProtocol}${nodeUrl}/search_files/${id}/${nodeUrl}/?limit=10`
-    );
-
     await waitFor(() =>
       expect(
         queryByText(
@@ -107,11 +100,6 @@ describe('test FilesTable component', () => {
     const id = 'testid';
     const { getByTestId } = render(<FilesTable id={id} />);
 
-    expect(mockAxios.get).toHaveBeenCalledTimes(1);
-    expect(mockAxios.get).toHaveBeenCalledWith(
-      `${proxyString}/${nodeProtocol}${nodeUrl}/search_files/${id}/${nodeUrl}/?limit=10`
-    );
-
     await waitFor(() => expect(getByTestId('filesTable')).toBeTruthy());
   });
 
@@ -123,7 +111,6 @@ describe('test FilesTable component', () => {
     );
 
     const id = 'testid';
-    expect(mockAxios.get).toHaveBeenCalledTimes(0);
     const { container } = render(<FilesTable id={id} />);
 
     await waitFor(() => expect(container.firstChild).toBeNull());
@@ -154,12 +141,6 @@ describe('test FilesTable component', () => {
 
     const id = 'testid';
     const { getByRole, getByTestId } = render(<FilesTable id={id} />);
-
-    // Check Axios mock
-    expect(mockAxios.get).toHaveBeenCalledTimes(1);
-    expect(mockAxios.get).toHaveBeenCalledWith(
-      `${proxyString}/${nodeProtocol}${nodeUrl}/search_files/${id}/${nodeUrl}/?limit=10`
-    );
 
     // Check filesTable rendered
     await waitFor(() => expect(getByTestId('filesTable')).toBeTruthy());

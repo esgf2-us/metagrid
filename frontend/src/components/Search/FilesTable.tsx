@@ -41,7 +41,7 @@ type Props = {
 const FilesTable: React.FC<Props> = ({ id }) => {
   const { data, error, isLoading } = useAsync({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    promiseFn: (fetchFiles as unknown) as PromiseFn<any>,
+    promiseFn: (fetchFiles as unknown) as PromiseFn<Record<string, any>>,
     id,
   });
 
@@ -57,6 +57,10 @@ const FilesTable: React.FC<Props> = ({ id }) => {
   }
 
   if (data) {
+    const { docs } = (data as {
+      response: { docs: SearchResult[] };
+    }).response;
+
     const columns = [
       {
         title: 'File Title',
@@ -126,7 +130,7 @@ const FilesTable: React.FC<Props> = ({ id }) => {
         loading={isLoading}
         pagination={{ position: ['bottomCenter'], showSizeChanger: true }}
         columns={columns}
-        dataSource={data.response.docs}
+        dataSource={docs}
         rowKey="id"
         scroll={{ y: 300 }}
       />

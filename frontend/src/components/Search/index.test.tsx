@@ -29,8 +29,10 @@ afterEach(() => {
 });
 
 describe('test Search component', () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let data: Record<any, any>;
+  let data: {
+    response: { numFound: number; docs: SearchResult[] };
+    facet_counts: { facet_fields: FetchedFacets };
+  };
   beforeEach(() => {
     data = {
       response: {
@@ -38,7 +40,7 @@ describe('test Search component', () => {
         docs: [
           {
             id: 'bar',
-            url: undefined,
+            url: ['foo.bar'],
             number_of_files: 3,
             data_node: 'node.gov',
             version: 1,
@@ -47,7 +49,7 @@ describe('test Search component', () => {
           },
           {
             id: 'bar',
-            url: undefined,
+            url: ['foo.bar'],
             number_of_files: 2,
             data_node: 'node.gov',
             version: 1,
