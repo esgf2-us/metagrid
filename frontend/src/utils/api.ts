@@ -3,10 +3,14 @@ import queryString from 'query-string';
 import axios from '../axios';
 
 // Stringified version of proxy to be used for API calls
-export const proxyString = `${process.env.REACT_APP_PROXY_PROTOCOL}${process.env.REACT_APP_PROXY_HOST}:${process.env.REACT_APP_PROXY_PORT}`;
+export const proxyString = `${process.env.REACT_APP_PROXY_PROTOCOL as string}${
+  process.env.REACT_APP_PROXY_HOST as string
+}:${process.env.REACT_APP_PROXY_PORT as string}`;
 
-export const nodeProtocol = `${process.env.REACT_APP_ESGF_NODE_PROTOCOL}`;
-export const nodeUrl = `${process.env.REACT_APP_ESGF_NODE_URL}`;
+export const nodeProtocol = `${
+  process.env.REACT_APP_ESGF_NODE_PROTOCOL as string
+}`;
+export const nodeUrl = `${process.env.REACT_APP_ESGF_NODE_URL as string}`;
 
 /**
  * Fetches a list of projects.
@@ -20,7 +24,11 @@ export const fetchProjects = async (): Promise<{
   return axios
     .get(`/api/v1/projects/`)
     .then((res) => {
-      return res.data;
+      return res.data as Promise<{
+        results: Project[];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        [key: string]: any;
+      }>;
     })
     .catch((error) => {
       throw new Error(error);
@@ -36,7 +44,7 @@ export const fetchProjects = async (): Promise<{
 export const genUrlQuery = (
   baseUrl: string,
   defaultFacets: DefaultFacets,
-  activeFacets: ActiveFacets | {},
+  activeFacets: ActiveFacets | Record<string, unknown>,
   textInputs: string[] | [],
   pagination: { page: number; pageSize: number }
 ): string => {
@@ -92,7 +100,8 @@ export const fetchResults = async (
   return axios
     .get(`${proxyString}/${reqUrlStr}`)
     .then((res) => {
-      return res.data;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return res.data as Promise<{ [key: string]: any }>;
     })
     .catch((error) => {
       throw new Error(error);
@@ -151,7 +160,8 @@ Promise<{ [key: string]: any }> => {
   return axios
     .get(`${proxyString}/${url}`)
     .then((res) => {
-      return res.data;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return res.data as Promise<{ [key: string]: any }>;
     })
     .catch((error) => {
       throw new Error(error);

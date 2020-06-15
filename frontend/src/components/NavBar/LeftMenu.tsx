@@ -10,7 +10,7 @@ const styles = {
 };
 
 export type Props = {
-  activeProject: Project | {};
+  activeProject: Project | Record<string, unknown>;
   projects: Project[];
   onSearch: (text: string) => void;
   onProjectChange: (selectedProj: Project) => void;

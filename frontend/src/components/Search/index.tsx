@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
 import { useAsync, DeferFn } from 'react-async';
 import { Row, Col, Typography } from 'antd';
 import {
@@ -58,21 +58,26 @@ export const parseFacets = (facets: FetchedFacets): AvailableFacets => {
  */
 export const stringifyConstraints = (
   defaultFacets: DefaultFacets,
-  activeFacets: ActiveFacets,
-  textInputs: TextInputs
+  activeFacets: ActiveFacets | Record<string, unknown>,
+  textInputs: TextInputs | []
 ): string => {
   const strConstraints: string[] = [];
 
   Object.keys(defaultFacets).forEach((key: string) => {
-    strConstraints.push(`(${key} = ${defaultFacets[key]})`);
+    strConstraints.push(`(${key} = ${defaultFacets[key].toString()})`);
   });
 
   if (textInputs.length > 0) {
     strConstraints.push(`(Text Input = ${textInputs.join(' OR ')})`);
   }
-  Object.keys(activeFacets).forEach((key: string) => {
-    strConstraints.push(`(${key} = ${activeFacets[key].join(' OR ')})`);
-  });
+
+  if (!isEmpty(activeFacets)) {
+    Object.keys(activeFacets).forEach((key: string) => {
+      strConstraints.push(
+        `(${key} = ${(activeFacets as ActiveFacets)[key].join(' OR ')})`
+      );
+    });
+  }
 
   const strResult = `${strConstraints.join(' AND ')}`;
   return strResult;
@@ -82,16 +87,16 @@ export const stringifyConstraints = (
  * Checks if constraints exist
  */
 export const checkConstraintsExist = (
-  activeFacets: ActiveFacets | {},
+  activeFacets: ActiveFacets | Record<string, unknown>,
   textInputs: TextInputs
 ): boolean => {
   return !(isEmpty(activeFacets) && textInputs.length === 0);
 };
 
 export type Props = {
-  activeProject: Project | {};
+  activeProject: Project | Record<string, unknown>;
   defaultFacets: DefaultFacets;
-  activeFacets: ActiveFacets;
+  activeFacets: ActiveFacets | Record<string, unknown>;
   textInputs: TextInputs | [];
   cart: Cart | [];
   onRemoveTag: (removedTag: Tag, type: string) => void;
@@ -123,9 +128,9 @@ const Search: React.FC<Props> = ({
     false
   );
   // Parsed version of the returned facet fields
-  const [parsedFacets, setParsedFacets] = React.useState<AvailableFacets | {}>(
-    {}
-  );
+  const [parsedFacets, setParsedFacets] = React.useState<
+    AvailableFacets | Record<string, unknown>
+  >({});
   // The current request URL generated when fetching results
   const [curReqUrl, setCurReqUrl] = React.useState<string | null>(null);
   // Items selected in the data table
@@ -169,12 +174,15 @@ const Search: React.FC<Props> = ({
   // Update the available facets based on the returned results
   React.useEffect(() => {
     if (results && !isEmpty(results)) {
-      setParsedFacets(parseFacets(results.facet_counts.facet_fields));
+      const { facet_fields: facetFields } = (results as {
+        facet_counts: { facet_fields: FetchedFacets };
+      }).facet_counts;
+      setParsedFacets(parseFacets(facetFields));
     }
   }, [results]);
 
   React.useEffect(() => {
-    setAvailableFacets(parsedFacets);
+    setAvailableFacets(parsedFacets as AvailableFacets);
   }, [parsedFacets, setAvailableFacets]);
 
   /**
@@ -211,6 +219,16 @@ const Search: React.FC<Props> = ({
     );
   }
 
+  // Destructure the results object if it exists
+  // TODO: Figure out a better way annotate type for 'results'
+  let numFound = 0;
+  let docs: SearchResult[] = [];
+  if (results) {
+    numFound = (results as { response: { numFound: number } }).response
+      .numFound;
+    docs = (results as { response: { docs: SearchResult[] } }).response.docs;
+  }
+
   return (
     <div data-testid="search">
       <div style={styles.summary}>
@@ -234,9 +252,7 @@ const Search: React.FC<Props> = ({
         )}
         {results && !isLoading && (
           <h3>
-            <span style={styles.resultsHeader}>
-              {results.response.numFound}{' '}
-            </span>
+            <span style={styles.resultsHeader}>{numFound} </span>
             results found for{' '}
             <span style={styles.resultsHeader}>
               {(activeProject as Project).name}
@@ -251,8 +267,8 @@ const Search: React.FC<Props> = ({
             <div>
               <Button
                 type="primary"
-                onClick={() => handleSaveSearch(results.response.numFound)}
-                disabled={isLoading || results.response.numFound === 0}
+                onClick={() => handleSaveSearch(numFound)}
+                disabled={isLoading || numFound === 0}
               >
                 <BookOutlined />
                 Save Search Criteria
@@ -261,9 +277,7 @@ const Search: React.FC<Props> = ({
                 type="primary"
                 onClick={() => handleCart(selectedItems, 'add')}
                 disabled={
-                  isLoading ||
-                  results.response.numFound === 0 ||
-                  !(selectedItems.length > 0)
+                  isLoading || numFound === 0 || !(selectedItems.length > 0)
                 }
               >
                 <ShoppingCartOutlined />
@@ -291,7 +305,7 @@ const Search: React.FC<Props> = ({
               <p key={facet} style={styles.facetTag}>
                 {humanize(facet)}: &nbsp;
               </p>,
-              activeFacets[facet].map((variable: string) => {
+              (activeFacets as ActiveFacets)[facet].map((variable: string) => {
                 return (
                   <div key={variable} data-testid={variable}>
                     <Tag
@@ -304,7 +318,7 @@ const Search: React.FC<Props> = ({
                   </div>
                 );
               }),
-            ];
+            ] as ReactElement[];
           })}
         {textInputs.length !== 0 &&
           (textInputs as TextInputs).map((input: string) => {
@@ -334,8 +348,8 @@ const Search: React.FC<Props> = ({
             {results && !isLoading ? (
               <Table
                 loading={false}
-                results={results.response.docs}
-                totalResults={results.response.numFound}
+                results={docs}
+                totalResults={numFound}
                 cart={cart}
                 handleCart={handleCart}
                 handleRowSelect={handleSelect}

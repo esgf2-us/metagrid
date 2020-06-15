@@ -1,14 +1,23 @@
-require('dotenv').config();
+/**
+ * CORS Anywhere NodeJS proxy configuration
+ * https://github.com/Rob--W/cors-anywhere
+ *
+ * Note: ESLint rules are disabled to follow the configuration format outlined by the docs.
+ */
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
+require('dotenv').config();
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-var-requires
 const corsProxy = require('cors-anywhere');
 
 // The protocol of the HOST
-const protocol = process.env.REACT_APP_PROXY_PROTOCOL;
+const protocol = process.env.REACT_APP_PROXY_PROTOCOL || 'http://';
 // Listen on a specific host via the HOST environment variable
-const host = process.env.REACT_APP_PROXY_HOST;
+const host = process.env.REACT_APP_PROXY_HOST || 'localhost';
 // Listen on a specific port via the PORT environment variable
-const port = process.env.REACT_APP_PROXY_PORT;
+const port = process.env.REACT_APP_PROXY_PORT || 8080;
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
 corsProxy
   .createServer({
     originWhitelist: process.env.REACT_APP_PROXY_ORIGIN_WHITELIST.split(' '),
