@@ -12,6 +12,7 @@ const data = { response: { numFound: 1 } };
 const defaultProps: Props = {
   savedSearch: {
     id: 'id',
+    defaultFacets: { latest: true, replica: false },
     project: { name: 'foo', facets_url: 'https://fubar.gov/?' },
     textInputs: ['foo'],
     activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
@@ -58,29 +59,6 @@ it('renders component and handles button clicks', async () => {
   const deleteBtn = getByRole('img', { name: 'delete' });
   expect(deleteBtn).toBeTruthy();
   fireEvent.click(deleteBtn);
-});
-
-it('displays "N/A" when no constraints are applied', async () => {
-  mockAxios.get.mockImplementationOnce(() =>
-    Promise.resolve({
-      data,
-    })
-  );
-
-  const { getByText } = render(
-    <SearchesCard
-      {...defaultProps}
-      savedSearch={{
-        ...defaultProps.savedSearch,
-        activeFacets: {},
-        textInputs: [],
-      }}
-    />
-  );
-
-  // Check search button renders
-  const queryString = await waitFor(() => getByText('N/A'));
-  expect(queryString).toBeTruthy();
 });
 
 it('displays alert error when api fails to return response', async () => {

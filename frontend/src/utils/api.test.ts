@@ -44,15 +44,17 @@ describe('test fetchProjects()', () => {
 
 describe('test genUrlQuery()', () => {
   let baseUrl: string;
-  let textInputs: TextInputs;
+  let defaultFacets: DefaultFacets;
   let activeFacets: ActiveFacets;
+  let textInputs: TextInputs;
   beforeEach(() => {
-    baseUrl = 'http://someBaseUrl.com/?limit=0&offset=0';
-    textInputs = ['input1', 'input2'];
+    baseUrl = `${nodeProtocol}${nodeUrl}/?limit=0&offset=0`;
+    defaultFacets = { latest: true, replica: false };
     activeFacets = {
       facet1: ['var1', 'var2'],
       facet2: ['var3', 'var4'],
     };
+    textInputs = ['input1', 'input2'];
   });
 
   it('returns formatted url with offset of 0 on page 1', () => {
@@ -61,10 +63,16 @@ describe('test genUrlQuery()', () => {
       pageSize: 10,
     };
 
-    const url = genUrlQuery(baseUrl, textInputs, activeFacets, pagination);
+    const url = genUrlQuery(
+      baseUrl,
+      defaultFacets,
+      activeFacets,
+      textInputs,
+      pagination
+    );
 
     expect(url).toEqual(
-      'http://someBaseUrl.com/?limit=10&offset=0&query=input1,input2&facet1=var1,var2&facet2=var3,var4'
+      'https://esgf-node.llnl.gov/esg-search/search/?https://esgf-node.llnl.gov/?limit=10&offset=0&latest=true&replica=false&query=input1,input2&facet1=var1,var2&facet2=var3,var4'
     );
   });
   it('returns formatted url with offset of 200 and limit of 100 on page 3', () => {
@@ -73,9 +81,15 @@ describe('test genUrlQuery()', () => {
       pageSize: 100,
     };
 
-    const url = genUrlQuery(baseUrl, textInputs, activeFacets, pagination);
+    const url = genUrlQuery(
+      baseUrl,
+      defaultFacets,
+      activeFacets,
+      textInputs,
+      pagination
+    );
     expect(url).toEqual(
-      'http://someBaseUrl.com/?limit=100&offset=200&query=input1,input2&facet1=var1,var2&facet2=var3,var4'
+      'https://esgf-node.llnl.gov/esg-search/search/?https://esgf-node.llnl.gov/?limit=100&offset=200&latest=true&replica=false&query=input1,input2&facet1=var1,var2&facet2=var3,var4'
     );
   });
   it('returns formatted url without free-text', () => {
@@ -84,9 +98,15 @@ describe('test genUrlQuery()', () => {
       pageSize: 10,
     };
 
-    const url = genUrlQuery(baseUrl, [], activeFacets, pagination);
+    const url = genUrlQuery(
+      baseUrl,
+      defaultFacets,
+      activeFacets,
+      [],
+      pagination
+    );
     expect(url).toEqual(
-      'http://someBaseUrl.com/?limit=10&offset=0&query=*&facet1=var1,var2&facet2=var3,var4'
+      'https://esgf-node.llnl.gov/esg-search/search/?https://esgf-node.llnl.gov/?limit=10&offset=0&latest=true&replica=false&query=*&facet1=var1,var2&facet2=var3,var4'
     );
   });
 
@@ -96,9 +116,9 @@ describe('test genUrlQuery()', () => {
       pageSize: 10,
     };
 
-    const url = genUrlQuery(baseUrl, textInputs, [], pagination);
+    const url = genUrlQuery(baseUrl, defaultFacets, [], textInputs, pagination);
     expect(url).toEqual(
-      'http://someBaseUrl.com/?limit=10&offset=0&query=input1,input2&'
+      'https://esgf-node.llnl.gov/esg-search/search/?https://esgf-node.llnl.gov/?limit=10&offset=0&latest=true&replica=false&query=input1,input2&'
     );
   });
 });

@@ -244,9 +244,9 @@ it('handles removing search tags and clearing all search tags', async () => {
   expect(clearAllTag).toBeTruthy();
   fireEvent.click(within(clearAllTag).getByRole('img', { name: 'close' }));
 
-  // Check no constraints applied text renders
+  // Check no project constraints applied text renders
   const noConstraintsText = await waitFor(() =>
-    getByText('No constraints applied')
+    getByText('No project constraints applied')
   );
   expect(noConstraintsText).toBeTruthy();
 
@@ -261,7 +261,7 @@ it('handles removing search tags and clearing all search tags', async () => {
   // Close the baz tag
   fireEvent.click(within(bazTag).getByRole('img', { name: 'close' }));
 
-  // Check no constraints applied
+  // Check no project constraints applied
   await waitFor(() => expect(noConstraintsText).toBeTruthy());
 
   // Check mockAxios.get calls
@@ -303,9 +303,9 @@ it('handles removing facet tags', async () => {
   const submitBtn = within(facets).getByRole('img', { name: 'select' });
   fireEvent.submit(submitBtn);
 
-  // Check no constraints applied text renders
+  // Check no project constraints applied text renders
   const noConstraintsText = await waitFor(() =>
-    getByText('No constraints applied')
+    getByText('No project constraints applied')
   );
   expect(noConstraintsText).toBeTruthy();
 
@@ -337,7 +337,7 @@ it('handles removing facet tags', async () => {
   // Close the baz tag
   fireEvent.click(within(fooTag).getByRole('img', { name: 'close' }));
 
-  // Check no constraints applied
+  // Check no project constraints applied
   await waitFor(() => expect(noConstraintsText).toBeTruthy());
 
   // Check mockAxios.get calls
@@ -580,7 +580,7 @@ it('handles removing searches from the search library', async () => {
   expect(mockAxios.get).toHaveBeenCalledTimes(5);
 });
 
-it('handles applying searches from the search library to render results', async () => {
+it('handles saving and applying searches to and from the search library to render results', async () => {
   // Mock axios initially with chained calls
   mockAxios.get
     .mockResolvedValueOnce({ data: { results: projectResults } })
@@ -644,4 +644,60 @@ it('handles applying searches from the search library to render results', async 
 
   // Check mockAxios.get calls
   expect(mockAxios.get).toHaveBeenCalledTimes(7);
+});
+
+it('handles saving multiple searches', async () => {
+  // Mock axios initially with chained calls
+  mockAxios.get
+    .mockResolvedValueOnce({ data: { results: projectResults } })
+    .mockResolvedValueOnce({ data: { results: projectResults } })
+    .mockResolvedValueOnce({ data: searchResults })
+    .mockResolvedValueOnce({ data: searchResults });
+
+  const { getByRole, getByTestId, getByPlaceholderText, getByText } = render(
+    <Router>
+      <App />
+    </Router>
+  );
+
+  // Check nav-bar component exists
+  const navBar = await waitFor(() => getByTestId('nav-bar'));
+  expect(navBar).toBeTruthy();
+
+  // Change value for free-text input
+  const input = 'foo';
+  const freeTextInput = getByPlaceholderText('Search...');
+  expect(freeTextInput).toBeTruthy();
+  fireEvent.change(freeTextInput, { target: { value: input } });
+
+  // Submit the form
+  const submitBtn = getByRole('img', { name: 'search' });
+  fireEvent.submit(submitBtn);
+
+  // Wait for search to re-render
+  await waitFor(() => getByTestId('search'));
+
+  // Check save button exists and click it
+  const saveSearch = getByRole('button', { name: 'book Save Search Criteria' });
+  expect(saveSearch).toBeTruthy();
+  fireEvent.click(saveSearch);
+
+  // Click on button again
+  fireEvent.click(saveSearch);
+
+  // Check alert appears showing search already saved
+  const alreadySavedAlert = await waitFor(() =>
+    getByText('This search has already been saved.')
+  );
+  expect(alreadySavedAlert).toBeTruthy();
+
+  // Change free-text input and submit to save another search
+  fireEvent.change(freeTextInput, { target: { value: input } });
+  fireEvent.click(saveSearch);
+
+  // Wait for search to re-render
+  await waitFor(() => getByTestId('search'));
+
+  // Check mockAxios.get calls
+  expect(mockAxios.get).toHaveBeenCalledTimes(4);
 });

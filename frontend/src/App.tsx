@@ -20,7 +20,7 @@ import Search from './components/Search';
 import Cart from './components/Cart';
 import Summary from './components/Cart/Summary';
 
-import { isEmpty } from './utils/utils';
+import { isEmpty, shallowCompare } from './utils/utils';
 import './App.css';
 
 const styles = {
@@ -48,6 +48,11 @@ const App: React.FC = () => {
   const [textInputs, setTextInputs] = React.useState<TextInputs | []>([]);
   // The active applied facet filters in the search criteria
   const [activeFacets, setActiveFacets] = React.useState<ActiveFacets | {}>({});
+  const [defaultFacets, setDefaultFacets] = React.useState<DefaultFacets>({
+    latest: true,
+    replica: false,
+  });
+
   // The user's cart containing datasets
   const [cart, setCart] = React.useState<Cart | []>(
     JSON.parse(localStorage.getItem('cart') || '[]')
@@ -77,6 +82,7 @@ const App: React.FC = () => {
   const clearConstraints = (): void => {
     setTextInputs([]);
     setActiveFacets({});
+    setDefaultFacets({ latest: true, replica: false });
   };
 
   /**
@@ -174,22 +180,45 @@ const App: React.FC = () => {
   };
 
   /**
-   * Handles saving search criteria
+   * Handles saving searches to the library
    */
   const handleSaveSearch = (numResults: number): void => {
     const savedSearch: SavedSearch = {
       id: uuidv4(),
       project: activeProject,
+      defaultFacets,
       activeFacets,
       textInputs,
       numResults,
     };
 
-    setSavedSearches([...savedSearches, savedSearch]);
-    message.success({
-      content: 'Saved search criteria to your library',
-      icon: <BookOutlined style={styles.messageAddIcon} />,
+    let alreadySaved = false;
+
+    savedSearches.some((search) => {
+      if (
+        shallowCompare(
+          { ...savedSearch, id: undefined },
+          { ...search, id: undefined }
+        ) === true
+      ) {
+        message.error({
+          content: 'This search has already been saved.',
+          icon: <BookOutlined style={styles.messageRemoveIcon} />,
+        });
+        alreadySaved = true;
+        return true;
+      }
+      return false;
     });
+
+    /* istanbul ignore else */
+    if (!alreadySaved) {
+      setSavedSearches([...savedSearches, savedSearch]);
+      message.success({
+        content: 'Saved search criteria to your library',
+        icon: <BookOutlined style={styles.messageAddIcon} />,
+      });
+    }
   };
 
   /**
@@ -246,14 +275,19 @@ const App: React.FC = () => {
                 >
                   <Facets
                     activeProject={activeProject}
+                    defaultFacets={defaultFacets}
                     activeFacets={activeFacets}
                     availableFacets={availableFacets}
                     handleProjectChange={(selectedProj) =>
                       handleProjectChange(selectedProj)
                     }
-                    onSetActiveFacets={(facets: ActiveFacets) =>
-                      setActiveFacets(facets)
-                    }
+                    onSetFacets={(
+                      defaults: DefaultFacets,
+                      active: ActiveFacets
+                    ) => {
+                      setDefaultFacets(defaults);
+                      setActiveFacets(active);
+                    }}
                   />
                 </Layout.Sider>
               )}
@@ -284,12 +318,13 @@ const App: React.FC = () => {
                     </Breadcrumb>
                     <Search
                       activeProject={activeProject}
+                      defaultFacets={defaultFacets}
+                      activeFacets={activeFacets}
+                      textInputs={textInputs}
+                      cart={cart}
                       setAvailableFacets={(facets) =>
                         handleSetAvailableFacets(facets)
                       }
-                      textInputs={textInputs}
-                      activeFacets={activeFacets}
-                      cart={cart}
                       handleCart={handleCart}
                       onRemoveTag={(removedTag, type) =>
                         handleRemoveTag(removedTag, type)
