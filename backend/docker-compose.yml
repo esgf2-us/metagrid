@@ -2,7 +2,7 @@ version: "2"
 
 services:
   postgres:
-    image: postgres:11.6
+    image: postgres:11.8
     volumes:
       - ${HOME}/postgres_data:/var/lib/postgresql/data
     env_file:
