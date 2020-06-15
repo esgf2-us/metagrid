@@ -13,6 +13,7 @@ const defaultProps: Props = {
     {
       id: 'id',
       project: { name: 'foo', facets_url: 'https://fubar.gov/?' },
+      defaultFacets: { latest: true, replica: false },
       textInputs: ['foo'],
       activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
       numResults: 1,

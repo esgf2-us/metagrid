@@ -1,5 +1,5 @@
 import React from 'react';
-import { Collapse, Form, Select } from 'antd';
+import { Checkbox, Collapse, Form, Select } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
 
 import Button from '../General/Button';
@@ -9,72 +9,69 @@ import { humanize } from '../../utils/utils';
 const styles: { [key: string]: React.CSSProperties } = {
   content: { height: '660px', width: '100%', overflowY: 'auto' },
   facetCount: { float: 'right' },
+  formTitle: { fontWeight: 'bold' },
   applyBtn: { marginBottom: '5px' },
 };
 
 export type Props = {
+  defaultFacets: DefaultFacets;
   activeFacets: ActiveFacets | {};
   availableFacets: AvailableFacets;
   handleFacetsForm: (allValues: { [key: string]: string[] | [] }) => void;
 };
 
 const FacetsForm: React.FC<Props> = ({
+  defaultFacets,
   activeFacets,
   availableFacets,
   handleFacetsForm,
 }) => {
-  const [facetsForm] = Form.useForm();
-  const [btnDisabled, setBtnDisabled] = React.useState(true);
+  const [projectFacetsForm] = Form.useForm();
 
   /**
    * Reset facetsForm based on the activeFacets
    */
   React.useEffect(() => {
-    facetsForm.resetFields();
-  }, [facetsForm, activeFacets]);
-
-  /**
-   * Enables or disables the submit button if any of the facet form items change
-   */
-  const handleValuesChange = (allValues: {
-    [key: string]: string[] | [];
-  }): void => {
-    // Transforms all of the string array values as a single array
-    const values: string[] = Object.keys(allValues).reduce((r, k) => {
-      return r.concat(allValues[k]);
-    }, [] as string[]);
-
-    if (values.length > 0) {
-      setBtnDisabled(false);
-    } else {
-      setBtnDisabled(true);
-    }
-  };
+    projectFacetsForm.resetFields();
+  }, [projectFacetsForm, activeFacets]);
 
   return (
     <div data-testid="facets-form">
       <div style={styles.applyBtn}>
         <Button
           data-testid="facets-form-btn"
-          onClick={() => facetsForm.submit()}
+          onClick={() => projectFacetsForm.submit()}
           type="primary"
           htmlType="submit"
           icon={<FilterOutlined />}
-          disabled={btnDisabled}
         >
           Apply Facets
         </Button>
       </div>
-      <div style={styles.content}>
-        <Form
-          form={facetsForm}
-          layout="vertical"
-          initialValues={{ ...activeFacets }}
-          onFinish={(values) => handleFacetsForm(values)}
-          onValuesChange={(_changedValues, allValues) =>
-            handleValuesChange(allValues)
-          }
-        >
+
+      <Form
+        form={projectFacetsForm}
+        layout="vertical"
+        initialValues={{
+          ...activeFacets,
+          selectedDefaults: Object.keys(defaultFacets).filter(
+            (k) => defaultFacets[k]
+          ),
+        }}
+        onFinish={(values) => handleFacetsForm(values)}
+      >
+        <h4 style={styles.formTitle}>Default Facets</h4>
+        <Form.Item name="selectedDefaults">
+          <Checkbox.Group
+            options={[
+              { label: 'Latest Data', value: 'latest' },
+              { label: 'Include Replica', value: 'replica' },
+            ]}
+          ></Checkbox.Group>
+        </Form.Item>
+        <h4 style={styles.formTitle}>Project Facets</h4>
+
+        <div style={styles.content}>
           <Collapse bordered={false}>
             {Object.keys(availableFacets).map((facet) => {
               return (
@@ -111,8 +108,8 @@ const FacetsForm: React.FC<Props> = ({
               );
             })}
           </Collapse>
-        </Form>
-      </div>
+        </div>
+      </Form>
     </div>
   );
 };

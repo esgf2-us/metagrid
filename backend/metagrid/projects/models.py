@@ -45,8 +45,6 @@ class Project(models.Model):
             logger.warning(f"No facets found for project: {self.name}")
             return None
 
-        # TODO: Configure base_url to be a dynamic Django setting using .env
-        base_url = "https://esgf-node.llnl.gov/esg-search/search/?"
         params = {
             "offset": 0,
             "limit": 0,
@@ -59,7 +57,7 @@ class Project(models.Model):
         }  # type: Dict[str, Union[int, str, List[str]]]
 
         query_string = urllib.parse.urlencode(params, True)
-        return base_url + query_string
+        return query_string
 
 
 class Facet(models.Model):

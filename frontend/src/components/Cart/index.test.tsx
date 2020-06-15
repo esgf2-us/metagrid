@@ -34,8 +34,9 @@ const defaultProps: Props = {
     {
       id: 'id',
       project: { name: 'foo', facets_url: 'https://fubar.gov/?' },
-      textInputs: ['foo'],
+      defaultFacets: { latest: true, replica: false },
       activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
+      textInputs: ['foo'],
       numResults: 1,
     },
   ],

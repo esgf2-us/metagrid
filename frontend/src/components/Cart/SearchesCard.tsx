@@ -13,7 +13,6 @@ import ToolTip from '../DataDisplay/ToolTip';
 
 import { stringifyConstraints } from '../Search';
 import { genUrlQuery, fetchResults } from '../../utils/api';
-import { isEmpty } from '../../utils/utils';
 import Skeleton from '../Feedback/Skeleton';
 import Alert from '../Feedback/Alert';
 
@@ -40,12 +39,18 @@ const SearchesCard: React.FC<Props> = ({
   handleRemoveSearch,
 }) => {
   const history = useHistory();
-  const { id, project, textInputs, activeFacets } = savedSearch;
+  const { id, project, defaultFacets, textInputs, activeFacets } = savedSearch;
 
-  const reqUrl = genUrlQuery(project.facets_url, textInputs, activeFacets, {
-    page: 0,
-    pageSize: 0,
-  });
+  const reqUrl = genUrlQuery(
+    project.facets_url,
+    defaultFacets,
+    activeFacets,
+    textInputs,
+    {
+      page: 0,
+      pageSize: 0,
+    }
+  );
 
   // Fetch the results count
   const { data, isLoading, error } = useAsync({
@@ -103,10 +108,16 @@ const SearchesCard: React.FC<Props> = ({
           </ToolTip>,
           <ToolTip title="View results in JSON format">
             <a
-              href={genUrlQuery(project.facets_url, textInputs, activeFacets, {
-                page: 0,
-                pageSize: 10,
-              })}
+              href={genUrlQuery(
+                project.facets_url,
+                defaultFacets,
+                activeFacets,
+                textInputs,
+                {
+                  page: 0,
+                  pageSize: 10,
+                }
+              )}
               rel="noopener noreferrer"
               target="blank_"
             >
@@ -132,9 +143,7 @@ const SearchesCard: React.FC<Props> = ({
         <p>
           <span style={styles.category}>Query String: </span>
           <Typography.Text code>
-            {isEmpty(activeFacets) && isEmpty(textInputs)
-              ? 'N/A'
-              : stringifyConstraints(activeFacets, textInputs)}
+            {stringifyConstraints(defaultFacets, activeFacets, textInputs)}
           </Typography.Text>
         </p>
       </Card>

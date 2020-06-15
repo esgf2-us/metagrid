@@ -12,6 +12,7 @@ const defaultProps: Props = {
       number_of_files: 3,
       data_node: 'node.gov',
       version: 1,
+      size: 1,
       access: ['HTTPServer', 'GridFTP', 'OPENDAP', 'Globus'],
     },
     {
@@ -19,6 +20,7 @@ const defaultProps: Props = {
       url: ['foo.bar'],
       number_of_files: 2,
       data_node: 'node.gov',
+      size: 1,
       version: 1,
       access: ['HTTPServer', 'GridFTP', 'OPENDAP', 'Globus'],
     },

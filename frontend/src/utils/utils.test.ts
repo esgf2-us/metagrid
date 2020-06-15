@@ -1,4 +1,10 @@
-import { isEmpty, formatBytes, humanize, hasKey } from './utils';
+import {
+  isEmpty,
+  formatBytes,
+  humanize,
+  hasKey,
+  shallowCompare,
+} from './utils';
 
 describe('Test isEmpty', () => {
   test('isEmpty returns true with empty object', () => {
@@ -43,5 +49,16 @@ describe('Test formatBytes', () => {
     expect(formatBytes(2 ** 30, 0)).toEqual('1 GB');
     expect(formatBytes(2 ** 40)).toEqual('1 TB');
     expect(formatBytes(2 ** 50)).toEqual('1 PB');
+  });
+});
+
+describe('Test shallowCompare', () => {
+  it('returns true when two objects are the same', () => {
+    const obj = { foo: 'bar' };
+    expect(shallowCompare(obj, obj)).toBeTruthy();
+  });
+  it('returns false when two objects are not the same', () => {
+    const obj = { foo: 'bar' };
+    expect(shallowCompare(obj, {})).toBeFalsy();
   });
 });

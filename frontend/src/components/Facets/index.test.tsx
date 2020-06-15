@@ -7,6 +7,7 @@ import mockAxios from '../../__mocks__/axios';
 
 const defaultProps: Props = {
   activeProject: {},
+  defaultFacets: { latest: true, replica: false },
   activeFacets: {},
   availableFacets: {
     facet1: [
@@ -19,7 +20,7 @@ const defaultProps: Props = {
     ],
   },
   handleProjectChange: jest.fn(),
-  onSetActiveFacets: jest.fn(),
+  onSetFacets: jest.fn(),
 };
 
 // Need to mock axios for projects
@@ -47,7 +48,7 @@ it('renders component', async () => {
   expect(projectForm).toBeTruthy();
 });
 
-it('handles when the project form is submitted with handleProjectsForm()', async () => {
+it('handles when the project form is submitted', async () => {
   const { getByTestId } = render(<Facets {...defaultProps} />);
 
   // Check FacetsForm component renders
@@ -78,7 +79,7 @@ it('handles when the project form is submitted with handleProjectsForm()', async
   fireEvent.submit(projectFormBtn);
 });
 
-it('handles facets form submission with handleFacetsForm()', async () => {
+it('handles facets form submission', async () => {
   const { getByRole, getByTestId, getByText } = render(
     <Facets {...defaultProps} activeProject={{ name: 'test1' }} />
   );
@@ -113,7 +114,7 @@ it('handles facets form submission with handleFacetsForm()', async () => {
   fireEvent.click(facetFormBtn);
 });
 
-it('handles facets form submission with handleFacetsForm(), including a facet key that is undefined', async () => {
+it('handles facets form submission, including a facet key that is undefined', async () => {
   const { getByRole, getByTestId, getByText } = render(
     <Facets {...defaultProps} activeProject={{ name: 'test1' }} />
   );
@@ -163,4 +164,17 @@ it('handles facets form submission with handleFacetsForm(), including a facet ke
   // Submit the form
   // NOTE: Submit button is outside of the form, so use click instead of submit
   fireEvent.click(facetFormBtn);
+});
+
+it('displays an error message with already applied constraints', async () => {
+  const { getByRole, getByText } = render(<Facets {...defaultProps} />);
+
+  // Submit the form
+  const facetFormBtn = getByRole('button', { name: 'filter Apply Facets' });
+  fireEvent.click(facetFormBtn);
+
+  const errorMsgText = await waitFor(() =>
+    getByText('Constraints already applied')
+  );
+  expect(errorMsgText).toBeTruthy();
 });
