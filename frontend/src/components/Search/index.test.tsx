@@ -8,11 +8,18 @@ import Search, {
   checkConstraintsExist,
   Props,
 } from './index';
-import mockAxios from '../../__mocks__/axios';
+import { proxyString, nodeProtocol, nodeUrl } from '../../env';
+import {
+  defaultFacetsFixture,
+  esgSearchApiFixture,
+  searchResultFixture,
+} from '../../test/fixtures';
+import { server, rest } from '../../test/setup-env';
+import { apiRoutes } from '../../test/server-handlers';
 
 const defaultProps: Props = {
   activeProject: { name: 'foo', facets_url: 'https://fubar.gov/?' },
-  defaultFacets: { latest: true, replica: false },
+  defaultFacets: defaultFacetsFixture(),
   activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
   textInputs: ['foo'],
   cart: [],
@@ -29,60 +36,27 @@ afterEach(() => {
 });
 
 describe('test Search component', () => {
-  let data: {
-    response: { numFound: number; docs: SearchResult[] };
-    facet_counts: { facet_fields: FetchedFacets };
-  };
-  beforeEach(() => {
-    data = {
-      response: {
-        numFound: 2,
-        docs: [
-          {
-            id: 'bar',
-            url: ['foo.bar'],
-            number_of_files: 3,
-            data_node: 'node.gov',
-            version: 1,
-            size: 1,
-            access: ['HTTPServer', 'GridFTP', 'OPENDAP', 'Globus'],
-          },
-          {
-            id: 'bar',
-            url: ['foo.bar'],
-            number_of_files: 2,
-            data_node: 'node.gov',
-            version: 1,
-            size: 1,
-            access: ['HTTPServer', 'GridFTP', 'OPENDAP', 'Globus'],
-          },
-        ],
-      },
-      facet_counts: {
-        facet_fields: {
-          experiment: ['1950-Control', 38],
-          science_driver: ['Water Cycle', 27],
-          realm: ['atmos', 23],
-          model_version: ['1_0', 38],
-        },
-      },
-    };
-  });
-
   it('renders component', async () => {
-    mockAxios.get.mockImplementationOnce(() =>
-      Promise.resolve({
-        data,
-      })
-    );
     const { getByTestId } = render(<Search {...defaultProps} />);
-    await waitFor(() => expect(getByTestId('search')).toBeTruthy());
+
+    // Check search component renders
+    const searchComponent = await waitFor(() => getByTestId('search'));
+    expect(searchComponent).toBeTruthy();
+
+    // Check search table renders
+    const searchTable = await waitFor(() => getByTestId('search-table'));
+    expect(searchTable).toBeTruthy();
   });
 
   it('renders Alert component if there is an error fetching results', async () => {
-    const errorMessage = 'Network Error';
-    mockAxios.get.mockImplementationOnce(() =>
-      Promise.reject(new Error(errorMessage))
+    server.use(
+      // ESGF Search API - datasets
+      rest.get(
+        `${proxyString}/${nodeProtocol}${nodeUrl}/esg-search/search/`,
+        (_req, res, ctx) => {
+          return res(ctx.status(404));
+        }
+      )
     );
 
     const { getByTestId } = render(<Search {...defaultProps} />);
@@ -93,58 +67,43 @@ describe('test Search component', () => {
   });
 
   it('runs the side effect to set the current url when there is an activeProject object with a facets_url key', async () => {
-    mockAxios.get.mockImplementationOnce(() =>
-      Promise.resolve({
-        data,
-      })
-    );
-
     const { getByRole, getByTestId } = render(<Search {...defaultProps} />);
 
-    // Wait for search to re-render
-    await waitFor(() => getByTestId('search'));
+    // Check search component renders
+    const searchComponent = await waitFor(() => getByTestId('search'));
+    expect(searchComponent).toBeTruthy();
 
     // Check if the 'Open as Json' button renders
-    const jsonBtn = getByRole('img', { name: 'export' });
+    const jsonBtn = await waitFor(() => getByRole('img', { name: 'export' }));
     expect(jsonBtn).toBeTruthy();
   });
 
   it('renders activeFacets and textInputs as stringified constraints', async () => {
-    mockAxios.get.mockImplementationOnce(() =>
-      Promise.resolve({
-        data,
-      })
-    );
+    const { getByRole, getByTestId } = render(<Search {...defaultProps} />);
 
-    const { getByRole, getByTestId } = render(
-      <Search
-        {...defaultProps}
-        activeProject={{ name: 'foo', facets_url: 'https://fubar.gov/?' }}
-      />
-    );
-
-    // Wait for search to re-render
-    await waitFor(() => getByTestId('search'));
+    // Check search component renders
+    const searchComponent = await waitFor(() => getByTestId('search'));
+    expect(searchComponent).toBeTruthy();
 
     // Check for stringified constraints text
-    const strConstraints = getByRole('heading', {
-      name:
-        '2 results found for foo (latest = true) AND (replica = false) AND (Text Input = foo) AND (foo = option1 OR option2) AND (baz = option1)',
-    });
+    const strConstraints = await waitFor(() =>
+      getByRole('heading', {
+        name:
+          '2 results found for foo (latest = true) AND (replica = false) AND (Text Input = foo) AND (foo = option1 OR option2) AND (baz = option1)',
+      })
+    );
 
     expect(strConstraints).toBeTruthy();
   });
 
   it('renders "No project constraints applied" Alert when no constraints are applied', async () => {
-    mockAxios.get.mockImplementationOnce(() =>
-      Promise.resolve({
-        data,
-      })
-    );
-
-    const { getByText } = render(
+    const { getByText, getByTestId } = render(
       <Search {...defaultProps} activeFacets={{}} textInputs={[]} />
     );
+
+    // Check search component renders
+    const searchComponent = await waitFor(() => getByTestId('search'));
+    expect(searchComponent).toBeTruthy();
 
     // Check if code string is generated from active facets
     const noConstraintsText = await waitFor(() =>
@@ -154,27 +113,44 @@ describe('test Search component', () => {
   });
 
   it('clears all tags when selecting the "Clear All" tag', async () => {
-    mockAxios.get.mockImplementationOnce(() =>
-      Promise.resolve({
-        data,
-      })
-    );
+    const { getByText, getByTestId } = render(<Search {...defaultProps} />);
 
-    const { getByText } = render(<Search {...defaultProps} />);
+    // Check search component renders
+    const searchComponent = await waitFor(() => getByTestId('search'));
+    expect(searchComponent).toBeTruthy();
 
     // Check if 'Clear All' tag exists, then click it
     const clearAllTag = await waitFor(() => getByText('Clear All'));
     expect(clearAllTag).toBeTruthy();
-    fireEvent.click(within(clearAllTag).getByRole('img', { name: 'close' }));
+
+    // Check close button inside clear all tag exiss
+    const clearBtn = await waitFor(() =>
+      within(clearAllTag).getByRole('img', { name: 'close' })
+    );
+    expect(clearBtn).toBeTruthy();
+    fireEvent.click(clearBtn);
+
+    // Wait for search component to re-render
+    await waitFor(() => getByTestId('search'));
   });
 
   it('handles pagination and page size changes', async () => {
-    // Update numFound to 20 in order to enable pagination buttons
-    data = { ...data, response: { ...data.response, numFound: 20 } };
-
-    mockAxios.get.mockImplementationOnce(() =>
-      Promise.resolve({
-        data,
+    // Update api to return 20 search results, which enables pagination if 10/page selected
+    const data = esgSearchApiFixture();
+    server.use(
+      rest.get(apiRoutes.esgSearchDatasets, (_req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            ...data,
+            response: {
+              docs: new Array(20).fill(
+                searchResultFixture()
+              ) as RawSearchResult[],
+              numFound: 20,
+            },
+          })
+        );
       })
     );
 
@@ -182,15 +158,21 @@ describe('test Search component', () => {
       <Search {...defaultProps} />
     );
 
+    // Check search component renders
+    const searchComponent = await waitFor(() => getByTestId('search'));
+    expect(searchComponent).toBeTruthy();
+
     // Wait for search to re-render
     await waitFor(() => getByTestId('search-table'));
 
     // Select the combobox drop down and update its value to render options
-    const paginationList = getByRole('list');
+    const paginationList = await waitFor(() => getByRole('list'));
     expect(paginationList).toBeTruthy();
 
     // Select the combobox drop down, update its value, then click it
-    const pageSizeComboBox = within(paginationList).getByRole('combobox');
+    const pageSizeComboBox = await waitFor(() =>
+      within(paginationList).getByRole('combobox')
+    );
     expect(pageSizeComboBox).toBeTruthy();
     fireEvent.change(pageSizeComboBox, { target: { value: 'foo' } });
     fireEvent.click(pageSizeComboBox);
@@ -204,32 +186,37 @@ describe('test Search component', () => {
     fireEvent.click(firstOption);
 
     // Select the 'Next Page' button (only enabled if there are > 10 results)
-    const nextPage = getByRole('listitem', { name: 'Next Page' });
+    const nextPage = await waitFor(() =>
+      getByRole('listitem', { name: 'Next Page' })
+    );
     fireEvent.click(nextPage);
+
+    // Wait for search table to re-render
+    await waitFor(() => getByTestId('search-table'));
   });
 
   it('handles selecting a row"s checkbox in the table and adding to the cart', async () => {
-    mockAxios.get.mockImplementationOnce(() =>
-      Promise.resolve({
-        data,
-      })
-    );
-
     const { getByRole, getByTestId } = render(<Search {...defaultProps} />);
+
+    // Check search component renders
+    const searchComponent = await waitFor(() => getByTestId('search'));
+    expect(searchComponent).toBeTruthy();
 
     // Wait for search to re-render from side-effect
     await waitFor(() => getByTestId('search-table'));
 
     // Check the 'Add Selected to Cart' button is disabled
-    const addCartBtn = getByRole('button', {
-      name: 'shopping-cart Add Selected to Cart',
-    }) as HTMLButtonElement;
+    const addCartBtn = (await waitFor(() =>
+      getByRole('button', {
+        name: 'shopping-cart Add Selected to Cart',
+      })
+    )) as HTMLButtonElement;
     expect(addCartBtn).toBeTruthy();
     expect(addCartBtn.disabled).toBeTruthy();
 
     // Select the first row
     const firstRow = getByRole('row', {
-      name: 'right-circle 3 1 Bytes node.gov 1 HTTPServer download plus',
+      name: 'right-circle foo 3 1 Bytes node.gov 1 HTTPServer download plus',
     });
     expect(firstRow).toBeTruthy();
 
@@ -241,48 +228,56 @@ describe('test Search component', () => {
     // Check 'Add Selected to Cart' button is enabled and click it
     expect(addCartBtn.disabled).toBeFalsy();
     fireEvent.click(addCartBtn);
+
+    // Wait for search component to re-render
+    await waitFor(() => getByTestId('search'));
   });
 
   it('disables the "Add Selected to Cart" button when no items are in the cart', async () => {
-    mockAxios.get.mockImplementationOnce(() =>
-      Promise.resolve({
-        data,
-      })
-    );
-
     const { getByRole, getByTestId } = render(<Search {...defaultProps} />);
+
+    // Check search component renders
+    const searchComponent = await waitFor(() => getByTestId('search'));
+    expect(searchComponent).toBeTruthy();
 
     // Wait for search to re-render
     await waitFor(() => getByTestId('search-table'));
 
     // Check the 'Add Selected to Cart' button is disabled
-    const addCartBtn = getByRole('button', {
-      name: 'shopping-cart Add Selected to Cart',
-    }) as HTMLButtonElement;
+    const addCartBtn = (await waitFor(() =>
+      getByRole('button', {
+        name: 'shopping-cart Add Selected to Cart',
+      })
+    )) as HTMLButtonElement;
     expect(addCartBtn).toBeTruthy();
     expect(addCartBtn.disabled).toBeTruthy();
   });
 
   it('handles saving a search criteria', async () => {
-    mockAxios.get.mockImplementationOnce(() =>
-      Promise.resolve({
-        data,
-      })
-    );
+    const { getByRole, getByTestId } = render(<Search {...defaultProps} />);
 
-    const { getByRole } = render(<Search {...defaultProps} />);
+    // Check search component renders
+    const searchComponent = await waitFor(() => getByTestId('search'));
+    expect(searchComponent).toBeTruthy();
 
+    // Wait for search table to render
+    await waitFor(() => getByTestId('search-table'));
+
+    // Click on save button
     const saveBtn = await waitFor(() =>
       getByRole('button', { name: 'book Save Search Criteria' })
     );
     expect(saveBtn).toBeTruthy();
     fireEvent.click(saveBtn);
+
+    // Wait for search component to re-render
+    await waitFor(() => getByTestId('search'));
   });
 });
 
 describe('test parseFacets()', () => {
   it('successfully parses an object of arrays into an array of tuples', () => {
-    const facets: FetchedFacets = {
+    const facets: RawFacets = {
       facet1: ['option1', 1, 'option2', 2],
       facet2: ['option1', 1, 'option2', 2],
     };

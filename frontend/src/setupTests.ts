@@ -3,6 +3,12 @@
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom/extend-expect';
+import './test/setup-env';
+
+beforeEach(() => {
+  // Set timeout since some tests run longer than 5000ms
+  jest.setTimeout(10000);
+});
 
 // This resolves 'TypeError: window.matchMedia is not a function caused by JSDom.
 // Source: https://stackoverflow.com/a/53449595

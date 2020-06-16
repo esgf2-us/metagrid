@@ -45,7 +45,7 @@ const App: React.FC = () => {
   >({});
   // The available facets based on the fetched results
   const [availableFacets, setAvailableFacets] = React.useState<
-    AvailableFacets | Record<string, unknown>
+    ParsedFacets | Record<string, unknown>
   >({});
   // The active applied free-text inputs in the search criteria
   const [textInputs, setTextInputs] = React.useState<TextInputs | []>([]);
@@ -134,7 +134,7 @@ const App: React.FC = () => {
    * @param {arrayOf(objectOf(any))} selectedItems
    */
   const handleCart = (
-    selectedItems: SearchResult[],
+    selectedItems: RawSearchResult[],
     operation: string
   ): void => {
     /* istanbul ignore else */
@@ -180,7 +180,7 @@ const App: React.FC = () => {
   /**
    * Handles available facets fetched from the API
    */
-  const handleSetAvailableFacets = (facets: AvailableFacets): void => {
+  const handleSetAvailableFacets = (facets: ParsedFacets): void => {
     setAvailableFacets(facets);
   };
 

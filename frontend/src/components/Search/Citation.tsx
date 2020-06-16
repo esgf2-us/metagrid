@@ -30,7 +30,7 @@ type CitationProps = {
 
 const Citation: React.FC<CitationProps> = ({ url }) => {
   const { data, error, isLoading } = useAsync({
-    promiseFn: (fetchCitation as unknown) as PromiseFn<Citation>,
+    promiseFn: (fetchCitation as unknown) as PromiseFn<RawCitation>,
     url,
   });
 

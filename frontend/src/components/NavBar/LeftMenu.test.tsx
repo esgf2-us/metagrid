@@ -3,13 +3,11 @@ import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { render, fireEvent, waitFor } from '@testing-library/react';
 import LeftMenu, { Props } from './LeftMenu';
+import { projectsFixture } from '../../test/fixtures';
 
 const defaultProps: Props = {
   activeProject: { name: 'test1' },
-  projects: [
-    { name: 'test1', facets_url: 'foo.bar' },
-    { name: 'test2', facets_url: 'foo.bar' },
-  ],
+  projects: projectsFixture(),
   onSearch: jest.fn(),
   onProjectChange: jest.fn(),
 };
