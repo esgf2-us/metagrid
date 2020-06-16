@@ -5,10 +5,9 @@ import {
   fetchResults,
   fetchProjects,
   genUrlQuery,
+  processCitation,
   nodeProtocol,
   nodeUrl,
-  proxyString,
-  processCitation,
 } from './api';
 
 // Reset all mocks after each test
@@ -28,8 +27,6 @@ describe('test fetchProjects()', () => {
     );
     const projects = await fetchProjects();
     expect(projects).toEqual({ results });
-    expect(mockAxios.get).toHaveBeenCalledTimes(1);
-    expect(mockAxios.get).toHaveBeenCalledWith('/api/v1/projects/');
   });
   it('catches and throws an error', async () => {
     const errorMessage = 'Network Error';
@@ -72,7 +69,7 @@ describe('test genUrlQuery()', () => {
     );
 
     expect(url).toEqual(
-      'https://esgf-node.llnl.gov/esg-search/search/?https://esgf-node.llnl.gov/?limit=10&offset=0&latest=true&replica=false&query=input1,input2&facet1=var1,var2&facet2=var3,var4'
+      `${nodeProtocol}${nodeUrl}/esg-search/search/?${nodeProtocol}${nodeUrl}/?limit=10&offset=0&latest=true&replica=false&query=input1,input2&facet1=var1,var2&facet2=var3,var4`
     );
   });
   it('returns formatted url with offset of 200 and limit of 100 on page 3', () => {
@@ -89,7 +86,7 @@ describe('test genUrlQuery()', () => {
       pagination
     );
     expect(url).toEqual(
-      'https://esgf-node.llnl.gov/esg-search/search/?https://esgf-node.llnl.gov/?limit=100&offset=200&latest=true&replica=false&query=input1,input2&facet1=var1,var2&facet2=var3,var4'
+      `${nodeProtocol}${nodeUrl}/esg-search/search/?${nodeProtocol}${nodeUrl}/?limit=100&offset=200&latest=true&replica=false&query=input1,input2&facet1=var1,var2&facet2=var3,var4`
     );
   });
   it('returns formatted url without free-text', () => {
@@ -106,7 +103,7 @@ describe('test genUrlQuery()', () => {
       pagination
     );
     expect(url).toEqual(
-      'https://esgf-node.llnl.gov/esg-search/search/?https://esgf-node.llnl.gov/?limit=10&offset=0&latest=true&replica=false&query=*&facet1=var1,var2&facet2=var3,var4'
+      `${nodeProtocol}${nodeUrl}/esg-search/search/?${nodeProtocol}${nodeUrl}/?limit=10&offset=0&latest=true&replica=false&query=*&facet1=var1,var2&facet2=var3,var4`
     );
   });
 
@@ -116,9 +113,9 @@ describe('test genUrlQuery()', () => {
       pageSize: 10,
     };
 
-    const url = genUrlQuery(baseUrl, defaultFacets, [], textInputs, pagination);
+    const url = genUrlQuery(baseUrl, defaultFacets, {}, textInputs, pagination);
     expect(url).toEqual(
-      'https://esgf-node.llnl.gov/esg-search/search/?https://esgf-node.llnl.gov/?limit=10&offset=0&latest=true&replica=false&query=input1,input2&'
+      `${nodeProtocol}${nodeUrl}/esg-search/search/?${nodeProtocol}${nodeUrl}/?limit=10&offset=0&latest=true&replica=false&query=input1,input2&`
     );
   });
 });
@@ -143,8 +140,6 @@ describe('test fetchResults()', () => {
 
     const projects = await fetchResults([reqUrl]);
     expect(projects).toEqual({ results });
-    expect(mockAxios.get).toHaveBeenCalledTimes(1);
-    expect(mockAxios.get).toHaveBeenCalledWith(`${proxyString}/${reqUrl}`);
   });
 
   it('calls axios and returns results without free-text', async () => {
@@ -159,8 +154,6 @@ describe('test fetchResults()', () => {
 
     const projects = await fetchResults({ reqUrl });
     expect(projects).toEqual({ results });
-    expect(mockAxios.get).toHaveBeenCalledTimes(1);
-    expect(mockAxios.get).toHaveBeenCalledWith(`${proxyString}/${reqUrl}`);
   });
   it('catches and throws an error', async () => {
     const errorMessage = 'Network Error';
@@ -219,10 +212,6 @@ describe('test fetchCitation()', () => {
       url: 'http://someBaseUrl.com/?',
     });
     expect(newCitation).toEqual({ ...results });
-    expect(mockAxios.get).toHaveBeenCalledTimes(1);
-    expect(mockAxios.get).toHaveBeenCalledWith(
-      `${proxyString}/http://someBaseUrl.com/?`
-    );
   });
   it('catches and throws an error', async () => {
     const errorMessage = 'Network Error';
@@ -256,10 +245,6 @@ describe('test fetchFiles()', () => {
     );
     const files = await fetchFiles({ id: dataset.id });
     expect(files).toEqual({ results });
-    expect(mockAxios.get).toHaveBeenCalledTimes(1);
-    expect(mockAxios.get).toHaveBeenCalledWith(
-      `${proxyString}/${nodeProtocol}${nodeUrl}/search_files/${dataset.id}/${nodeUrl}/?limit=10`
-    );
   });
   it('catches and throws an error', async () => {
     const errorMessage = 'Network Error';

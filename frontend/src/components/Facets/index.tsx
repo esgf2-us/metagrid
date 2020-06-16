@@ -16,10 +16,10 @@ const styles = {
 };
 
 export type Props = {
-  activeProject: Project | {};
+  activeProject: Project | Record<string, unknown>;
   defaultFacets: DefaultFacets;
-  activeFacets: ActiveFacets | {};
-  availableFacets: AvailableFacets | {};
+  activeFacets: ActiveFacets | Record<string, unknown>;
+  availableFacets: AvailableFacets | Record<string, unknown>;
   handleProjectChange: (selectedProj: Project) => void;
   onSetFacets: (defaults: DefaultFacets, active: ActiveFacets) => void;
 };
@@ -60,7 +60,8 @@ const Facets: React.FC<Props> = ({
       shallowCompare(newDefaults, defaultFacets) &&
       shallowCompare(newActive, activeFacets)
     ) {
-      message.error({
+      // eslint-disable-next-line no-void
+      void message.error({
         content: 'Constraints already applied',
       });
     } else {
@@ -103,7 +104,7 @@ const Facets: React.FC<Props> = ({
         <FacetsForm
           defaultFacets={defaultFacets}
           activeFacets={activeFacets}
-          availableFacets={availableFacets}
+          availableFacets={availableFacets as AvailableFacets}
           handleFacetsForm={handleFacetsForm}
         />
       )}

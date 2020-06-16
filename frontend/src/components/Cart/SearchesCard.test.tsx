@@ -33,7 +33,7 @@ beforeEach(() => {
         useHistory: () => ({
           push: mockHistoryPush,
         }),
-      } as {})
+      } as Record<string, unknown>)
   );
 });
 

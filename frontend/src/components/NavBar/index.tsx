@@ -19,7 +19,7 @@ const styles = {
 };
 
 export type Props = {
-  activeProject: Project | {};
+  activeProject: Project | Record<string, unknown>;
   numCartItems: number;
   numSavedSearches: number;
   onProjectChange: (selectedProj: Project) => void;
@@ -51,7 +51,7 @@ const NavBar: React.FC<Props> = ({
         <Link to="/search">
           <img
             style={{ maxWidth: '100%', height: 'auto' }}
-            src={esgfLogo}
+            src={esgfLogo as string}
             alt="ESGF Logo"
           />
         </Link>
