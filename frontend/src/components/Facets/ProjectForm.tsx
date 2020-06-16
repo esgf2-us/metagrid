@@ -14,8 +14,8 @@ const styles = {
 };
 
 export type Props = {
-  activeProject: Project | {};
-  activeFacets: ActiveFacets | {};
+  activeProject: Project | Record<string, unknown>;
+  activeFacets: ActiveFacets | Record<string, unknown>;
   projectsFetched?: {
     results: Project[];
   };

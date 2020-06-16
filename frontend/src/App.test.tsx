@@ -79,7 +79,7 @@ afterEach(() => {
   // - https://stackoverflow.com/a/54222110
   // - https://stackoverflow.com/questions/59892304/cant-get-memoryrouter-to-work-with-testing-library-react
   delete window.location;
-  window.location = JSON.parse(location);
+  window.location = (JSON.parse(location) as unknown) as Location;
 
   // Reset all mocks after each test
   jest.clearAllMocks();
@@ -100,7 +100,6 @@ it('renders App component', async () => {
 });
 
 it('handles project changes when a new project is selected', async () => {
-  // Mock axios initially with chained calls
   mockAxios.get
     .mockResolvedValueOnce({ data: { results: projectResults } })
     .mockResolvedValueOnce({ data: { results: projectResults } })
@@ -139,9 +138,6 @@ it('handles project changes when a new project is selected', async () => {
     getByText(`Input "${input}" has already been applied`)
   );
   expect(errorMsg).toBeTruthy();
-
-  // Check mockAxios.get calls
-  expect(mockAxios.get).toHaveBeenCalledTimes(4);
 });
 
 it('handles adding and removing items from the cart', async () => {
@@ -200,9 +196,6 @@ it('handles adding and removing items from the cart', async () => {
     getByText('Removed item(s) from your cart')
   );
   expect(removeText).toBeTruthy();
-
-  // Check mockAxios.get calls
-  expect(mockAxios.get).toHaveBeenCalledTimes(4);
 });
 
 it('handles removing search tags and clearing all search tags', async () => {
@@ -263,9 +256,6 @@ it('handles removing search tags and clearing all search tags', async () => {
 
   // Check no project constraints applied
   await waitFor(() => expect(noConstraintsText).toBeTruthy());
-
-  // Check mockAxios.get calls
-  expect(mockAxios.get).toHaveBeenCalledTimes(7);
 });
 
 it('handles removing facet tags', async () => {
@@ -339,9 +329,6 @@ it('handles removing facet tags', async () => {
 
   // Check no project constraints applied
   await waitFor(() => expect(noConstraintsText).toBeTruthy());
-
-  // Check mockAxios.get calls
-  expect(mockAxios.get).toHaveBeenCalledTimes(5);
 });
 
 it('handles project changes and clearing constraints when the active project !== selected project', async () => {
@@ -397,9 +384,6 @@ it('handles project changes and clearing constraints when the active project !==
 
   // Wait for search to re-render with results for project_1
   await waitFor(() => getByTestId('search'));
-
-  // Check mockAxios.get calls
-  expect(mockAxios.get).toHaveBeenCalledTimes(4);
 });
 
 it('displays the number of files in the cart summary and handles clearing the cart', async () => {
@@ -495,9 +479,6 @@ it('displays the number of files in the cart summary and handles clearing the ca
   // Check empty alert renders
   const emptyAlert = getByText('Your cart is empty');
   expect(emptyAlert).toBeTruthy();
-
-  // Check mockAxios.get calls
-  expect(mockAxios.get).toBeCalledTimes(4);
 });
 
 it('handles removing searches from the search library', async () => {
@@ -575,9 +556,6 @@ it('handles removing searches from the search library', async () => {
     getByText('Removed search criteria from your library')
   );
   expect(removeText).toBeTruthy();
-
-  // Check mockAxios.get calls
-  expect(mockAxios.get).toHaveBeenCalledTimes(5);
 });
 
 it('handles saving and applying searches to and from the search library to render results', async () => {
@@ -641,9 +619,6 @@ it('handles saving and applying searches to and from the search library to rende
 
   // Wait for search to re-render
   await waitFor(() => getByTestId('search'));
-
-  // Check mockAxios.get calls
-  expect(mockAxios.get).toHaveBeenCalledTimes(7);
 });
 
 it('handles saving multiple searches', async () => {
@@ -697,7 +672,4 @@ it('handles saving multiple searches', async () => {
 
   // Wait for search to re-render
   await waitFor(() => getByTestId('search'));
-
-  // Check mockAxios.get calls
-  expect(mockAxios.get).toHaveBeenCalledTimes(4);
 });

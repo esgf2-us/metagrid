@@ -15,7 +15,7 @@ const styles: { [key: string]: React.CSSProperties } = {
 
 export type Props = {
   defaultFacets: DefaultFacets;
-  activeFacets: ActiveFacets | {};
+  activeFacets: ActiveFacets | Record<string, unknown>;
   availableFacets: AvailableFacets;
   handleFacetsForm: (allValues: { [key: string]: string[] | [] }) => void;
 };

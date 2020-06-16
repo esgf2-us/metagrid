@@ -4,10 +4,13 @@
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom/extend-expect';
 
+// This resolves 'TypeError: window.matchMedia is not a function caused by JSDom.
+// Source: https://stackoverflow.com/a/53449595
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: jest.fn().mockImplementation((query) => ({
     matches: false,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     media: query,
     onchange: null,
     addListener: jest.fn(), // deprecated
