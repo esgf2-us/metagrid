@@ -4,7 +4,8 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { render, waitFor, fireEvent } from '@testing-library/react';
 
 import NavBar, { Props } from './index';
-import mockAxios from '../../__mocks__/axios';
+import { server, rest } from '../../test/setup-env';
+import { apiRoutes } from '../../test/server-handlers';
 
 const defaultProps: Props = {
   activeProject: { name: 'test1' },
@@ -15,16 +16,6 @@ const defaultProps: Props = {
 };
 
 it('renders LeftMenu and RightMenu components', async () => {
-  const results = [{ name: 'test1' }, { name: 'test2' }];
-
-  mockAxios.get.mockImplementationOnce(() =>
-    Promise.resolve({
-      data: {
-        results,
-      },
-    })
-  );
-
   const { getByTestId } = render(
     <Router>
       <NavBar {...defaultProps} />
@@ -34,17 +25,25 @@ it('renders LeftMenu and RightMenu components', async () => {
   expect(getByTestId('right-menu')).toBeTruthy();
 });
 
-it('opens the drawer onClick and closes with onClose', async () => {
-  const results = [{ name: 'test1' }, { name: 'test2' }];
-
-  mockAxios.get.mockImplementationOnce(() =>
-    Promise.resolve({
-      data: {
-        results,
-      },
+it('renders error message when projects can"t be fetched', async () => {
+  server.use(
+    rest.get(apiRoutes.metagrid, (_req, res, ctx) => {
+      return res(ctx.status(404));
     })
   );
+  const { getByRole } = render(
+    <Router>
+      <NavBar {...defaultProps} />
+    </Router>
+  );
 
+  const alertComponent = await waitFor(() =>
+    getByRole('img', { name: 'close-circle' })
+  );
+  expect(alertComponent).toBeTruthy();
+});
+
+it('opens the drawer onClick and closes with onClose', async () => {
   const { getByRole, getByTestId } = render(
     <Router>
       <NavBar {...defaultProps} />

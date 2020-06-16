@@ -3,48 +3,26 @@ import React from 'react';
 import { fireEvent, render, waitFor, within } from '@testing-library/react';
 
 import Facets, { Props } from './index';
-import mockAxios from '../../__mocks__/axios';
+import { parsedFacetsFixture, defaultFacetsFixture } from '../../test/fixtures';
 
 const defaultProps: Props = {
   activeProject: {},
-  defaultFacets: { latest: true, replica: false },
+  defaultFacets: defaultFacetsFixture(),
   activeFacets: {},
-  availableFacets: {
-    facet1: [
-      ['foo', 3],
-      ['bar', 5],
-    ],
-    facet2: [
-      ['baz', 2],
-      ['fubar', 3],
-    ],
-  },
+  availableFacets: parsedFacetsFixture(),
   handleProjectChange: jest.fn(),
   onSetFacets: jest.fn(),
 };
-
-// Need to mock axios for projects
-beforeEach(() => {
-  const results = [{ name: 'test1' }, { name: 'test2' }];
-
-  mockAxios.get.mockImplementationOnce(() =>
-    Promise.resolve({
-      data: {
-        results,
-      },
-    })
-  );
-});
 
 it('renders component', async () => {
   const { getByTestId } = render(<Facets {...defaultProps} />);
 
   // Check FacetsForm component renders
-  const facetsForm = getByTestId('facets-form');
+  const facetsForm = await waitFor(() => getByTestId('facets-form'));
   await waitFor(() => expect(facetsForm).toBeTruthy());
 
   // Check ProjectForm component renders
-  const projectForm = getByTestId('project-form');
+  const projectForm = await waitFor(() => getByTestId('project-form'));
   expect(projectForm).toBeTruthy();
 });
 
@@ -52,11 +30,11 @@ it('handles when the project form is submitted', async () => {
   const { getByTestId } = render(<Facets {...defaultProps} />);
 
   // Check FacetsForm component renders
-  const facetsForm = getByTestId('facets-form');
+  const facetsForm = await waitFor(() => getByTestId('facets-form'));
   await waitFor(() => expect(facetsForm).toBeTruthy());
 
   // Check ProjectForm component renders
-  const projectForm = getByTestId('project-form');
+  const projectForm = await waitFor(() => getByTestId('project-form'));
   expect(projectForm).toBeTruthy();
 
   // Check facet select form exists and mouseDown to expand list of options
@@ -84,12 +62,12 @@ it('handles facets form submission', async () => {
     <Facets {...defaultProps} activeProject={{ name: 'test1' }} />
   );
 
-  // Check FacetForm component renders
-  const facetsForm = getByTestId('facets-form');
+  // Check FacetsForm component renders
+  const facetsForm = await waitFor(() => getByTestId('facets-form'));
   await waitFor(() => expect(facetsForm).toBeTruthy());
 
   // Check ProjectForm component renders
-  const projectForm = getByTestId('project-form');
+  const projectForm = await waitFor(() => getByTestId('project-form'));
   expect(projectForm).toBeTruthy();
 
   // Open Collapse Panel in Collapse component for the facet1 form to render
@@ -119,12 +97,12 @@ it('handles facets form submission, including a facet key that is undefined', as
     <Facets {...defaultProps} activeProject={{ name: 'test1' }} />
   );
 
-  // Check Facetform component renders
-  const facetsForm = getByTestId('facets-form');
+  // Check FacetsForm component renders
+  const facetsForm = await waitFor(() => getByTestId('facets-form'));
   await waitFor(() => expect(facetsForm).toBeTruthy());
 
   // Check ProjectForm component renders
-  const projectForm = getByTestId('project-form');
+  const projectForm = await waitFor(() => getByTestId('project-form'));
   expect(projectForm).toBeTruthy();
 
   // Open Collapse Panel in Collapse component for the facet1 form to render

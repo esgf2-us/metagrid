@@ -1,4 +1,4 @@
-type Citation = {
+type RawCitation = {
   identifier: { id: string; identifierType: string };
   creators: { [key: string]: string }[];
   titles: string;

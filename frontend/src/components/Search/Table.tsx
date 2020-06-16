@@ -20,11 +20,11 @@ import './Search.css';
 
 export type Props = {
   loading: boolean;
-  results: SearchResult[] | [];
+  results: RawSearchResult[] | [];
   totalResults?: number;
   cart: Cart | [];
-  handleCart: (item: SearchResult[], action: string) => void;
-  handleRowSelect?: (selectedRows: SearchResult[] | []) => void;
+  handleCart: (item: RawSearchResult[], action: string) => void;
+  handleRowSelect?: (selectedRows: RawSearchResult[] | []) => void;
   handlePagination?: (page: number, pageSize: number) => void;
   handlePageSizeChange?: (size: number) => void;
 };
@@ -52,7 +52,7 @@ const Table: React.FC<Props> = ({
         handlePageSizeChange && handlePageSizeChange(size),
     } as TablePaginationConfig,
     expandable: {
-      expandedRowRender: (record: SearchResult) => {
+      expandedRowRender: (record: RawSearchResult) => {
         const metaData = Object.entries(record).map(([k, v]) => ({
           value: `${k}: ${v as string}`,
         }));
@@ -109,10 +109,10 @@ const Table: React.FC<Props> = ({
       }: {
         expanded: boolean;
         onExpand: (
-          record: SearchResult,
+          record: RawSearchResult,
           e: React.MouseEvent<HTMLSpanElement, MouseEvent>
         ) => void;
-        record: SearchResult;
+        record: RawSearchResult;
       }): React.ReactElement =>
         expanded ? (
           <DownCircleOutlined onClick={(e) => onExpand(record, e)} />
@@ -121,7 +121,7 @@ const Table: React.FC<Props> = ({
         ),
     },
     rowSelection: {
-      getCheckboxProps: (record: SearchResult) =>
+      getCheckboxProps: (record: RawSearchResult) =>
         cart.includes(record as never, 0)
           ? { disabled: true }
           : { disabled: false },
@@ -181,7 +181,7 @@ const Table: React.FC<Props> = ({
       title: 'Download',
       key: 'download',
       width: 200,
-      render: (record: SearchResult) => (
+      render: (record: RawSearchResult) => (
         <span>
           <Form layout="inline">
             <Form.Item>
@@ -210,7 +210,7 @@ const Table: React.FC<Props> = ({
       title: 'Additional',
       key: 'additional',
       width: 200,
-      render: (record: SearchResult) => {
+      render: (record: RawSearchResult) => {
         return (
           <>
             {hasKey(record, 'xlink') && (
@@ -241,7 +241,7 @@ const Table: React.FC<Props> = ({
       title: 'Cart',
       key: 'cart',
       width: 50,
-      render: (record: SearchResult) => {
+      render: (record: RawSearchResult) => {
         if (cart.includes(record as never, 0)) {
           return (
             <>

@@ -21,8 +21,8 @@ const styles = {
 };
 
 export type Props = {
-  cart: SearchResult[] | [];
-  handleCart: (item: SearchResult[], action: string) => void;
+  cart: RawSearchResult[] | [];
+  handleCart: (item: RawSearchResult[], action: string) => void;
   clearCart: () => void;
 };
 

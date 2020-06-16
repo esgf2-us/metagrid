@@ -1,16 +1,8 @@
 import queryString from 'query-string';
 
 import axios from '../axios';
-
-// Stringified version of proxy to be used for API calls
-export const proxyString = `${process.env.REACT_APP_PROXY_PROTOCOL as string}${
-  process.env.REACT_APP_PROXY_HOST as string
-}:${process.env.REACT_APP_PROXY_PORT as string}`;
-
-export const nodeProtocol = `${
-  process.env.REACT_APP_ESGF_NODE_PROTOCOL as string
-}`;
-export const nodeUrl = `${process.env.REACT_APP_ESGF_NODE_URL as string}`;
+import { apiRoutes } from '../test/server-handlers';
+import { proxyString } from '../env';
 
 /**
  * Fetches a list of projects.
@@ -68,7 +60,7 @@ export const genUrlQuery = (
     .replace('limit=0', `limit=${pagination.pageSize}`)
     .replace('offset=0', `offset=${offset}`);
 
-  const url = `${nodeProtocol}${nodeUrl}/esg-search/search/?${newBaseUrl}&${defaultFacetsStr}&${stringifyText}&${activeFacetsStr}`;
+  const url = `${apiRoutes.esgSearchDatasets}?${newBaseUrl}&${defaultFacetsStr}&${stringifyText}&${activeFacetsStr}`;
   return url;
 };
 
@@ -98,7 +90,7 @@ export const fetchResults = async (
   }
 
   return axios
-    .get(`${proxyString}/${reqUrlStr}`)
+    .get(`${reqUrlStr}`)
     .then((res) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return res.data as Promise<{ [key: string]: any }>;
@@ -112,7 +104,7 @@ export const fetchResults = async (
  * Performs process on citation objects.
  */
 
-export const processCitation = (citation: Citation): Citation => {
+export const processCitation = (citation: RawCitation): RawCitation => {
   const newCitation = citation;
 
   newCitation.identifierDOI = `http://${newCitation.identifier.identifierType.toLowerCase()}.org/${
@@ -156,9 +148,9 @@ export const fetchFiles = async ({
   id: string;
 }): // eslint-disable-next-line @typescript-eslint/no-explicit-any
 Promise<{ [key: string]: any }> => {
-  const url = `${nodeProtocol}${nodeUrl}/search_files/${id}/${nodeUrl}/?limit=10`;
+  const url = `${apiRoutes.esgSearchFiles.replace(':id', id)}?limit=10`;
   return axios
-    .get(`${proxyString}/${url}`)
+    .get(url)
     .then((res) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return res.data as Promise<{ [key: string]: any }>;

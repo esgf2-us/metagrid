@@ -30,13 +30,13 @@ const Summary: React.FC<Props> = ({ cart }) => {
   let numFiles = 0;
   let totalDataSize = '0';
   if (cart.length > 0) {
-    numFiles = (cart as SearchResult[]).reduce(
-      (acc: number, dataset: SearchResult) => acc + dataset.number_of_files,
+    numFiles = (cart as RawSearchResult[]).reduce(
+      (acc: number, dataset: RawSearchResult) => acc + dataset.number_of_files,
       0
     );
 
-    const rawDataSize = (cart as SearchResult[]).reduce(
-      (acc: number, dataset: SearchResult) => acc + dataset.size,
+    const rawDataSize = (cart as RawSearchResult[]).reduce(
+      (acc: number, dataset: RawSearchResult) => acc + dataset.size,
       0
     );
     totalDataSize = formatBytes(rawDataSize);

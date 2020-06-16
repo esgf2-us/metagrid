@@ -56,87 +56,87 @@ const FilesTable: React.FC<Props> = ({ id }) => {
     );
   }
 
+  let docs: RawSearchResult[] | [] = [];
   if (data) {
-    const { docs } = (data as {
-      response: { docs: SearchResult[] };
-    }).response;
-
-    const columns = [
-      {
-        title: 'File Title',
-        dataIndex: 'title',
-        size: 400,
-        key: 'title',
-      },
-      {
-        title: 'Checksum',
-        dataIndex: 'checksum',
-        key: 'checksum',
-      },
-      {
-        title: 'Size',
-        dataIndex: 'size',
-        width: 100,
-        key: 'size',
-        render: (size: number) => {
-          return formatBytes(size);
-        },
-      },
-      {
-        title: 'Download',
-        key: 'download',
-        width: 200,
-        render: (record: { url: string[] }) => {
-          const downloadUrls = genDownloadUrls(record.url);
-
-          return (
-            <span>
-              <Form
-                data-testid="download-form"
-                layout="inline"
-                onFinish={({ download }) => openDownloadUrl(download)}
-                initialValues={{ download: downloadUrls[0].downloadUrl }}
-              >
-                <Form.Item name="download">
-                  <Select style={{ width: 120 }}>
-                    {downloadUrls.map((option) => (
-                      <Select.Option
-                        key={option.downloadType}
-                        value={option.downloadUrl as React.ReactText}
-                      >
-                        {option.downloadType}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-                <Form.Item>
-                  <Button
-                    type="primary"
-                    htmlType="submit"
-                    icon={<DownloadOutlined />}
-                  ></Button>
-                </Form.Item>
-              </Form>
-            </span>
-          );
-        },
-      },
-    ];
-
-    return (
-      <TableD
-        data-testid="filesTable"
-        size="small"
-        loading={isLoading}
-        pagination={{ position: ['bottomCenter'], showSizeChanger: true }}
-        columns={columns}
-        dataSource={docs}
-        rowKey="id"
-        scroll={{ y: 300 }}
-      />
-    );
+    docs = (data as {
+      response: { docs: RawSearchResult[] };
+    }).response.docs;
   }
-  return null;
+
+  const columns = [
+    {
+      title: 'File Title',
+      dataIndex: 'title',
+      size: 400,
+      key: 'title',
+    },
+    {
+      title: 'Checksum',
+      dataIndex: 'checksum',
+      key: 'checksum',
+    },
+    {
+      title: 'Size',
+      dataIndex: 'size',
+      width: 100,
+      key: 'size',
+      render: (size: number) => {
+        return formatBytes(size);
+      },
+    },
+    {
+      title: 'Download',
+      key: 'download',
+      width: 200,
+      render: (record: { url: string[] }) => {
+        const downloadUrls = genDownloadUrls(record.url);
+
+        return (
+          <span>
+            <Form
+              data-testid="download-form"
+              layout="inline"
+              onFinish={({ download }) => openDownloadUrl(download)}
+              initialValues={{ download: downloadUrls[0].downloadUrl }}
+            >
+              <Form.Item name="download">
+                <Select style={{ width: 120 }}>
+                  {downloadUrls.map((option) => (
+                    <Select.Option
+                      key={option.downloadType}
+                      value={option.downloadUrl as React.ReactText}
+                    >
+                      {option.downloadType}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+              <Form.Item>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  icon={<DownloadOutlined />}
+                ></Button>
+              </Form.Item>
+            </Form>
+          </span>
+        );
+      },
+    },
+  ];
+
+  return (
+    <TableD
+      data-testid="filesTable"
+      size="small"
+      loading={isLoading}
+      pagination={{ position: ['bottomCenter'], showSizeChanger: true }}
+      columns={columns}
+      dataSource={docs}
+      rowKey="id"
+      scroll={{ y: 300 }}
+    />
+  );
 };
 
 export default FilesTable;

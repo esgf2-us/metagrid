@@ -35,8 +35,8 @@ const styles = {
  * Joins adjacent elements of the facets obj into a tuple using reduce().
  * https://stackoverflow.com/questions/37270508/javascript-function-that-converts-array-to-array-of-2-tuples
  */
-export const parseFacets = (facets: FetchedFacets): AvailableFacets => {
-  const res = (facets as unknown) as AvailableFacets;
+export const parseFacets = (facets: RawFacets): ParsedFacets => {
+  const res = (facets as unknown) as ParsedFacets;
   const keys: string[] = Object.keys(facets);
 
   keys.forEach((key) => {
@@ -101,8 +101,8 @@ export type Props = {
   cart: Cart | [];
   onRemoveTag: (removedTag: Tag, type: string) => void;
   onClearTags: () => void;
-  handleCart: (selectedItems: SearchResult[], action: string) => void;
-  setAvailableFacets: (parsedFacets: AvailableFacets) => void;
+  handleCart: (selectedItems: RawSearchResult[], action: string) => void;
+  setAvailableFacets: (parsedFacets: ParsedFacets) => void;
   handleSaveSearch: (numResults: number) => void;
 };
 
@@ -129,14 +129,14 @@ const Search: React.FC<Props> = ({
   );
   // Parsed version of the returned facet fields
   const [parsedFacets, setParsedFacets] = React.useState<
-    AvailableFacets | Record<string, unknown>
+    ParsedFacets | Record<string, unknown>
   >({});
   // The current request URL generated when fetching results
   const [curReqUrl, setCurReqUrl] = React.useState<string | null>(null);
   // Items selected in the data table
-  const [selectedItems, setSelectedItems] = React.useState<SearchResult[] | []>(
-    []
-  );
+  const [selectedItems, setSelectedItems] = React.useState<
+    RawSearchResult[] | []
+  >([]);
   // Pagination options in the data table
   const [pagination, setPagination] = React.useState<{
     page: number;
@@ -175,22 +175,22 @@ const Search: React.FC<Props> = ({
   React.useEffect(() => {
     if (results && !isEmpty(results)) {
       const { facet_fields: facetFields } = (results as {
-        facet_counts: { facet_fields: FetchedFacets };
+        facet_counts: { facet_fields: RawFacets };
       }).facet_counts;
       setParsedFacets(parseFacets(facetFields));
     }
   }, [results]);
 
   React.useEffect(() => {
-    setAvailableFacets(parsedFacets as AvailableFacets);
+    setAvailableFacets(parsedFacets as ParsedFacets);
   }, [parsedFacets, setAvailableFacets]);
 
   /**
-   * Handles when the user selectes individual items and adds to the cart
+   * Handles when the user selected individual items and adds to the cart.
    * This function filters out items that have been already added to the cart,
    * which is indicated as disabled on the UI.
    */
-  const handleSelect = (selectedRows: SearchResult[] | []): void => {
+  const handleSelect = (selectedRows: RawSearchResult[] | []): void => {
     setSelectedItems(selectedRows);
   };
 
@@ -219,14 +219,12 @@ const Search: React.FC<Props> = ({
     );
   }
 
-  // Destructure the results object if it exists
-  // TODO: Figure out a better way annotate type for 'results'
   let numFound = 0;
-  let docs: SearchResult[] = [];
+  let docs: RawSearchResult[] = [];
   if (results) {
     numFound = (results as { response: { numFound: number } }).response
       .numFound;
-    docs = (results as { response: { docs: SearchResult[] } }).response.docs;
+    docs = (results as { response: { docs: RawSearchResult[] } }).response.docs;
   }
 
   return (

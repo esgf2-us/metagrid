@@ -8,7 +8,8 @@ import FilesTable, {
   DownloadUrls,
 } from './FilesTable';
 
-import mockAxios from '../../__mocks__/axios';
+import { apiRoutes } from '../../test/server-handlers';
+import { server, rest } from '../../test/setup-env';
 
 // Reset all mocks after each test
 afterEach(() => {
@@ -62,93 +63,36 @@ describe('test openDownloadUrl()', () => {
 
 describe('test FilesTable component', () => {
   it('returns Alert when there is an error fetching files', async () => {
-    const errorMessage = 'Network Error';
-
-    mockAxios.get.mockImplementationOnce(() =>
-      Promise.reject(new Error(errorMessage))
-    );
-    const id = 'testid';
-    const { queryByText } = render(<FilesTable id={id} />);
-
-    await waitFor(() =>
-      expect(
-        queryByText(
-          'There was an issue fetching files for this dataset. Please contact support for assistance or try again later.'
-        )
-      ).toBeTruthy()
-    );
-  });
-
-  it('returns TableD after succesfully fetching files', async () => {
-    mockAxios.get.mockImplementationOnce(() =>
-      Promise.resolve({
-        data: {
-          response: {
-            docs: [
-              {
-                id: 'id',
-                title: 'title',
-                checksum: 'checksum',
-                url: ['https://testdownload.com|HTTPServer'],
-              },
-            ],
-          },
-        },
+    server.use(
+      rest.get(apiRoutes.esgSearchFiles, (_req, res, ctx) => {
+        return res(ctx.status(404));
       })
     );
 
-    const id = 'testid';
-    const { getByTestId } = render(<FilesTable id={id} />);
-
-    await waitFor(() => expect(getByTestId('filesTable')).toBeTruthy());
+    const { getByRole } = render(<FilesTable id="id" />);
+    const alertMsg = await waitFor(() =>
+      getByRole('img', { name: 'close-circle', hidden: true })
+    );
+    expect(alertMsg).toBeTruthy();
   });
 
-  it('it returns null by default', async () => {
-    mockAxios.get.mockImplementationOnce(() =>
-      Promise.resolve({
-        data: undefined,
-      })
-    );
-
-    const id = 'testid';
-    const { container } = render(<FilesTable id={id} />);
-
-    await waitFor(() => expect(container.firstChild).toBeNull());
-  });
-
-  it('opens up a new window when submitting form for downloading a file', async () => {
-    mockAxios.get.mockImplementationOnce(() =>
-      Promise.resolve({
-        data: {
-          response: {
-            docs: [
-              {
-                id: 'id',
-                title: 'title',
-                checksum: 'checksum',
-                size: 1,
-                url: ['https://testdownload.com|HTTPServer'],
-              },
-            ],
-          },
-        },
-      })
-    );
-
+  it('renders files table with data and opens up a new window when submitting form for downloading a file', async () => {
     // Update the value of open
     // https://stackoverflow.com/questions/58189851/mocking-a-conditional-window-open-function-call-with-jest
     Object.defineProperty(window, 'open', { value: jest.fn() });
 
-    const id = 'testid';
-    const { getByRole, getByTestId } = render(<FilesTable id={id} />);
+    const { getByRole, getByTestId } = render(<FilesTable id="id" />);
 
-    // Check filesTable rendered
-    await waitFor(() => expect(getByTestId('filesTable')).toBeTruthy());
+    // Check files table componet renders
+    const filesTableComponent = await waitFor(() => getByTestId('filesTable'));
+    expect(filesTableComponent).toBeTruthy();
 
     // Select first cell row
-    const firstRow = getByRole('row', {
-      name: 'title checksum 1 Bytes HTTPServer download',
-    });
+    const firstRow = await waitFor(() =>
+      getByRole('row', {
+        name: 'foo 1 Bytes foo.bar download',
+      })
+    );
     expect(firstRow).toBeTruthy();
 
     // Select first cell download button
@@ -159,5 +103,7 @@ describe('test FilesTable component', () => {
 
     // Submit the download form
     fireEvent.submit(downloadBtn);
+
+    await waitFor(() => getByTestId('filesTable'));
   });
 });
