@@ -4,26 +4,10 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { fireEvent, render } from '@testing-library/react';
 
 import Summary, { Props } from './Summary';
+import { cartFixture } from '../../test/fixtures';
 
 const defaultProps: Props = {
-  cart: [
-    {
-      id: 'foo',
-      url: ['foo.bar'],
-      number_of_files: 3,
-      data_node: 'node.gov',
-      version: 1,
-      access: ['HTTPServer', 'GridFTP', 'OPENDAP', 'Globus'],
-    },
-    {
-      id: 'bar',
-      url: ['foo.bar'],
-      number_of_files: 2,
-      data_node: 'node.gov',
-      version: 1,
-      access: ['HTTPServer', 'GridFTP', 'OPENDAP', 'Globus'],
-    },
-  ],
+  cart: cartFixture(),
 };
 
 test('renders without crashing', () => {
@@ -46,7 +30,7 @@ it('shows the correct number of datasets and files', () => {
     getByText((_, node) => node.textContent === 'Number of Datasets: 2')
   ).toBeTruthy();
   expect(
-    getByText((_, node) => node.textContent === 'Number of Files: 5')
+    getByText((_, node) => node.textContent === 'Number of Files: 6')
   ).toBeTruthy();
 });
 
