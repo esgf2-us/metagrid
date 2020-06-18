@@ -3,73 +3,6 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { render, waitFor, fireEvent, within } from '@testing-library/react';
 
 import App from './App';
-import mockAxios from './__mocks__/axios';
-
-let projectResults: Project[];
-let searchResults: {
-  response: {
-    numFound: number;
-    docs: SearchResult[];
-  };
-  facet_counts: { facet_fields: FetchedFacets };
-};
-
-let numFoundResults: {
-  response: {
-    numFound: number;
-  };
-};
-
-beforeEach(() => {
-  projectResults = [
-    {
-      name: 'test1',
-      facets_url:
-        'https://esgf-node.llnl.gov/esg-search/search/?offset=0&limit=0',
-    },
-    {
-      name: 'test2',
-      facets_url:
-        'https://esgf-node.llnl.gov/esg-search/search/?offset=0&limit=0',
-    },
-  ];
-  searchResults = {
-    response: {
-      numFound: 2,
-      docs: [
-        {
-          id: 'bar',
-          url: ['foo.bar'],
-          number_of_files: 3,
-          data_node: 'node.gov',
-          version: 1,
-          size: 1,
-          access: ['HTTPServer', 'GridFTP', 'OPENDAP', 'Globus'],
-        },
-        {
-          id: 'bar',
-          url: ['foo.bar'],
-          number_of_files: 2,
-          data_node: 'node.gov',
-          version: 1,
-          size: 1,
-          access: ['HTTPServer', 'GridFTP', 'OPENDAP', 'Globus'],
-        },
-      ],
-    },
-    facet_counts: {
-      facet_fields: {
-        facet1: ['foo', 3, 'bar', 5],
-        facet2: ['baz', 2, 'fubar', 3],
-      },
-    },
-  };
-
-  numFoundResults = { response: { numFound: 1 } };
-
-  // Set timeout since some tests run longer than 5000ms
-  jest.setTimeout(10000);
-});
 
 const location = JSON.stringify(window.location);
 afterEach(() => {
@@ -93,44 +26,44 @@ it('renders App component', async () => {
   );
 
   // Check all components exist
-  expect(getByTestId('nav-bar')).toBeTruthy();
+  const navComponent = await waitFor(() => getByTestId('nav-bar'));
+  expect(navComponent).toBeTruthy();
+  const facetsComponent = await waitFor(() => getByTestId('facets'));
+  expect(facetsComponent).toBeTruthy();
   expect(getByTestId('footer')).toBeTruthy();
-  await waitFor(() => expect(getByTestId('facets')).toBeTruthy());
   expect(getByTestId('search')).toBeTruthy();
 });
 
 it('handles project changes when a new project is selected', async () => {
-  mockAxios.get
-    .mockResolvedValueOnce({ data: { results: projectResults } })
-    .mockResolvedValueOnce({ data: { results: projectResults } })
-    .mockResolvedValueOnce({ data: searchResults })
-    .mockResolvedValueOnce({ data: searchResults });
-
   const { getByPlaceholderText, getByRole, getByTestId, getByText } = render(
     <Router>
       <App />
     </Router>
   );
 
-  // Check navbar rendered with test1 as the default project
-  const navBar = await waitFor(() => getByTestId('nav-bar'));
-  expect(navBar).toBeTruthy();
+  // Check components render
+  const navComponent = await waitFor(() => getByTestId('nav-bar'));
+  expect(navComponent).toBeTruthy();
+  const facetsComponent = await waitFor(() => getByTestId('facets'));
+  expect(facetsComponent).toBeTruthy();
 
   // Change value for free-text input
   const input = 'foo';
-  const freeTextInput = await waitFor(() => getByPlaceholderText('Search...'));
-  expect(freeTextInput).toBeTruthy();
-  fireEvent.change(freeTextInput, { target: { value: input } });
+  const freeTextForm = await waitFor(() => getByPlaceholderText('Search...'));
+  expect(freeTextForm).toBeTruthy();
+  fireEvent.change(freeTextForm, { target: { value: input } });
 
   // Submit the form
   const submitBtn = getByRole('img', { name: 'search' });
   fireEvent.submit(submitBtn);
 
-  // Wait for search to re-render
+  // Wait for components to re-render
   await waitFor(() => getByTestId('search'));
+  await waitFor(() => getByTestId('search-table'));
+  await waitFor(() => getByTestId('facets'));
 
   // Change the value for free-text input to 'foo' again and submit
-  fireEvent.change(freeTextInput, { target: { value: input } });
+  fireEvent.change(freeTextForm, { target: { value: input } });
   fireEvent.submit(submitBtn);
 
   // Check error message appears that input has already been applied
@@ -141,22 +74,17 @@ it('handles project changes when a new project is selected', async () => {
 });
 
 it('handles adding and removing items from the cart', async () => {
-  // Mock axios initially with chained calls
-  mockAxios.get
-    .mockResolvedValueOnce({ data: { results: projectResults } })
-    .mockResolvedValueOnce({ data: { results: projectResults } })
-    .mockResolvedValueOnce({ data: searchResults })
-    .mockResolvedValueOnce({ data: searchResults });
-
   const { getByRole, getByTestId, getByText, getByPlaceholderText } = render(
     <Router>
       <App />
     </Router>
   );
 
-  // Check nav-bar component exists
-  await waitFor(() => expect(getByTestId('facets')).toBeTruthy());
-  await waitFor(() => expect(getByTestId('nav-bar')).toBeTruthy());
+  // Check facets and navbar component renders
+  const facetsComponent = await waitFor(() => getByTestId('facets'));
+  expect(facetsComponent).toBeTruthy();
+  const navComponent = await waitFor(() => getByTestId('nav-bar'));
+  expect(navComponent).toBeTruthy();
 
   // Change value for free-text input
   const input = 'foo';
@@ -168,13 +96,17 @@ it('handles adding and removing items from the cart', async () => {
   const submitBtn = getByRole('img', { name: 'search' });
   fireEvent.submit(submitBtn);
 
-  // Wait for search to re-render
+  // Wait for components to re-render
   await waitFor(() => getByTestId('search'));
+  await waitFor(() => getByTestId('search-table'));
+  await waitFor(() => getByTestId('facets'));
 
   // Check first row exists
-  const firstRow = getByRole('row', {
-    name: 'right-circle 3 1 Bytes node.gov 1 HTTPServer download plus',
-  });
+  const firstRow = await waitFor(() =>
+    getByRole('row', {
+      name: 'right-circle foo 3 1 Bytes node.gov 1 HTTPServer download plus',
+    })
+  );
   expect(firstRow).toBeTruthy();
 
   // Check first row has add button and click it
@@ -199,25 +131,17 @@ it('handles adding and removing items from the cart', async () => {
 });
 
 it('handles removing search tags and clearing all search tags', async () => {
-  // Mock axios initially with chained calls
-  mockAxios.get
-    .mockResolvedValueOnce({ data: { results: projectResults } })
-    .mockResolvedValueOnce({ data: { results: projectResults } })
-    .mockResolvedValueOnce({ data: searchResults })
-    .mockResolvedValueOnce({ data: searchResults })
-    .mockResolvedValueOnce({ data: searchResults })
-    .mockResolvedValueOnce({ data: searchResults })
-    .mockResolvedValueOnce({ data: searchResults });
-
   const { getByRole, getByPlaceholderText, getByTestId, getByText } = render(
     <Router>
       <App />
     </Router>
   );
 
-  // Check all components exist
-  await waitFor(() => expect(getByTestId('facets')).toBeTruthy());
-  await waitFor(() => expect(getByTestId('nav-bar')).toBeTruthy());
+  // Check facets and navbar component renders
+  const facetsComponent = await waitFor(() => getByTestId('facets'));
+  expect(facetsComponent).toBeTruthy();
+  const navComponent = await waitFor(() => getByTestId('nav-bar'));
+  expect(navComponent).toBeTruthy();
 
   // Change value for free-text input
   const freeTextInput = await waitFor(() => getByPlaceholderText('Search...'));
@@ -227,6 +151,11 @@ it('handles removing search tags and clearing all search tags', async () => {
   // Submit the form
   const submitBtn = getByRole('img', { name: 'search' });
   fireEvent.submit(submitBtn);
+
+  // Wait for components to re-render
+  await waitFor(() => getByTestId('search'));
+  await waitFor(() => getByTestId('search-table'));
+  await waitFor(() => getByTestId('facets'));
 
   // Check foo tag renders
   const fooTag = await waitFor(() => getByTestId('foo'));
@@ -247,6 +176,11 @@ it('handles removing search tags and clearing all search tags', async () => {
   fireEvent.change(freeTextInput, { target: { value: 'baz' } });
   fireEvent.submit(submitBtn);
 
+  // Wait for components to re-render
+  await waitFor(() => getByTestId('search'));
+  await waitFor(() => getByTestId('search-table'));
+  await waitFor(() => getByTestId('facets'));
+
   // Check baz tag exists
   const bazTag = await waitFor(() => getByTestId('baz'));
   expect(bazTag).toBeTruthy();
@@ -254,28 +188,31 @@ it('handles removing search tags and clearing all search tags', async () => {
   // Close the baz tag
   fireEvent.click(within(bazTag).getByRole('img', { name: 'close' }));
 
+  // Wait for components to re-render
+  await waitFor(() => getByTestId('search'));
+  await waitFor(() => getByTestId('search-table'));
+  await waitFor(() => getByTestId('facets'));
+
   // Check no project constraints applied
   await waitFor(() => expect(noConstraintsText).toBeTruthy());
 });
 
 it('handles removing facet tags', async () => {
-  // Mock axios initially with chained calls
-  mockAxios.get
-    .mockResolvedValueOnce({ data: { results: projectResults } })
-    .mockResolvedValueOnce({ data: { results: projectResults } })
-    .mockResolvedValueOnce({ data: searchResults })
-    .mockResolvedValueOnce({ data: searchResults })
-    .mockResolvedValueOnce({ data: searchResults });
-
   const { getByRole, getByTestId, getByText } = render(
     <Router>
       <App />
     </Router>
   );
 
-  // Check all components exist
-  const facets = await waitFor(() => getByTestId('facets'));
-  expect(facets).toBeTruthy();
+  // Check facets and navbar component renders
+  const facetsComponent = await waitFor(() => getByTestId('facets'));
+  expect(facetsComponent).toBeTruthy();
+  const navComponent = await waitFor(() => getByTestId('nav-bar'));
+  expect(navComponent).toBeTruthy();
+
+  // Wait for project form to render
+  const projectForm = await waitFor(() => getByTestId('project-form'));
+  expect(projectForm).toBeTruthy();
 
   // Check project select form exists and mouseDown to expand list of options to expand options
   const projectFormSelect = document.querySelector(
@@ -290,7 +227,9 @@ it('handles removing facet tags', async () => {
   fireEvent.click(projectOption);
 
   // Submit the form
-  const submitBtn = within(facets).getByRole('img', { name: 'select' });
+  const submitBtn = within(facetsComponent).getByRole('img', {
+    name: 'select',
+  });
   fireEvent.submit(submitBtn);
 
   // Check no project constraints applied text renders
@@ -300,7 +239,7 @@ it('handles removing facet tags', async () => {
   expect(noConstraintsText).toBeTruthy();
 
   // Open Collapse Panel in Collapse component for the facet1 form to render
-  const collapse = getByText('Facet1');
+  const collapse = await waitFor(() => getByText('Facet1'));
   fireEvent.click(collapse);
 
   // Check facet select form exists and mouseDown to expand list of options
@@ -320,6 +259,11 @@ it('handles removing facet tags', async () => {
   expect(facetFormBtn).toBeTruthy();
   fireEvent.click(facetFormBtn);
 
+  // Wait for components to re-render
+  await waitFor(() => getByTestId('search'));
+  await waitFor(() => getByTestId('search-table'));
+  await waitFor(() => getByTestId('facets'));
+
   // Check foo tag exists
   const fooTag = await waitFor(() => getByTestId('foo'));
   expect(fooTag).toBeTruthy();
@@ -327,26 +271,31 @@ it('handles removing facet tags', async () => {
   // Close the baz tag
   fireEvent.click(within(fooTag).getByRole('img', { name: 'close' }));
 
+  // Wait for components to re-render
+  await waitFor(() => getByTestId('search'));
+  await waitFor(() => getByTestId('search-table'));
+  await waitFor(() => getByTestId('facets'));
+
   // Check no project constraints applied
   await waitFor(() => expect(noConstraintsText).toBeTruthy());
 });
 
 it('handles project changes and clearing constraints when the active project !== selected project', async () => {
-  // Mock axios initially with chained calls
-  mockAxios.get
-    .mockResolvedValueOnce({ data: { results: projectResults } })
-    .mockResolvedValueOnce({ data: { results: projectResults } })
-    .mockResolvedValueOnce({ data: searchResults });
-
   const { getByTestId } = render(
     <Router>
       <App />
     </Router>
   );
 
-  // Check facet component renders
-  const facets = await waitFor(() => getByTestId('facets'));
-  expect(facets).toBeTruthy();
+  // Check facets and navbar component renders
+  const facetsComponent = await waitFor(() => getByTestId('facets'));
+  expect(facetsComponent).toBeTruthy();
+  const navComponent = await waitFor(() => getByTestId('nav-bar'));
+  expect(navComponent).toBeTruthy();
+
+  // Wait for project form to render
+  const projectForm = await waitFor(() => getByTestId('project-form'));
+  expect(projectForm).toBeTruthy();
 
   // Check project select form exists and mouseDown to expand list of options
   const projectFormSelect = document.querySelector(
@@ -356,16 +305,25 @@ it('handles project changes and clearing constraints when the active project !==
   fireEvent.mouseDown(projectFormSelect);
 
   // Select the first project option
-  const projectOption = getByTestId('project_0');
+  const projectOption = await waitFor(() => getByTestId('project_0'));
   expect(projectOption).toBeInTheDocument();
   fireEvent.click(projectOption);
 
+  // Check facets component re-renders
+  const facetsComponent2 = await waitFor(() => getByTestId('facets'));
+  expect(facetsComponent).toBeTruthy();
+
   // Submit the form
-  const submitBtn = within(facets).getByRole('img', { name: 'select' });
+  const submitBtn = within(facetsComponent2).getByRole('img', {
+    name: 'select',
+  });
+
   fireEvent.submit(submitBtn);
 
-  // Wait for search to re-render with results for project_0
+  // Wait for components to re-render
   await waitFor(() => getByTestId('search'));
+  await waitFor(() => getByTestId('search-table'));
+  await waitFor(() => getByTestId('facets'));
 
   // Check project select form exists again and mouseDown to expand list of options
   const projectFormSelect2 = document.querySelector(
@@ -375,25 +333,20 @@ it('handles project changes and clearing constraints when the active project !==
   fireEvent.mouseDown(projectFormSelect2);
 
   // Select the second project option
-  const secondOption = getByTestId('project_1');
+  const secondOption = await waitFor(() => getByTestId('project_1'));
   expect(secondOption).toBeInTheDocument();
   fireEvent.click(secondOption);
 
   // Submit the form
   fireEvent.submit(submitBtn);
 
-  // Wait for search to re-render with results for project_1
+  // Wait for components to re-render
   await waitFor(() => getByTestId('search'));
+  await waitFor(() => getByTestId('search-table'));
+  await waitFor(() => getByTestId('facets'));
 });
 
 it('displays the number of files in the cart summary and handles clearing the cart', async () => {
-  // Mock axios initially with chained calls
-  mockAxios.get
-    .mockResolvedValueOnce({ data: { results: projectResults } })
-    .mockResolvedValueOnce({ data: { results: projectResults } })
-    .mockResolvedValueOnce({ data: searchResults })
-    .mockResolvedValueOnce({ data: searchResults });
-
   const { getByRole, getByTestId, getByText, getByPlaceholderText } = render(
     <Router>
       <App />
@@ -406,7 +359,7 @@ it('displays the number of files in the cart summary and handles clearing the ca
 
   // Change value for free-text input
   const input = 'foo';
-  const freeTextInput = getByPlaceholderText('Search...');
+  const freeTextInput = await waitFor(() => getByPlaceholderText('Search...'));
   expect(freeTextInput).toBeTruthy();
   fireEvent.change(freeTextInput, { target: { value: input } });
 
@@ -414,13 +367,17 @@ it('displays the number of files in the cart summary and handles clearing the ca
   const submitBtn = getByRole('img', { name: 'search' });
   fireEvent.submit(submitBtn);
 
-  // Wait for search to re-render
+  // Wait for components to re-render
   await waitFor(() => getByTestId('search'));
+  await waitFor(() => getByTestId('search-table'));
+  await waitFor(() => getByTestId('facets'));
 
   // Check first row exists
-  const firstRow = getByRole('row', {
-    name: 'right-circle 3 1 Bytes node.gov 1 HTTPServer download plus',
-  });
+  const firstRow = await waitFor(() =>
+    getByRole('row', {
+      name: 'right-circle foo 3 1 Bytes node.gov 1 HTTPServer download plus',
+    })
+  );
   expect(firstRow).toBeTruthy();
 
   // Check first row has add button and click it
@@ -482,44 +439,35 @@ it('displays the number of files in the cart summary and handles clearing the ca
 });
 
 it('handles removing searches from the search library', async () => {
-  // Mock axios initially with chained calls
-  mockAxios.get
-    .mockResolvedValueOnce({ data: { results: projectResults } })
-    .mockResolvedValueOnce({ data: { results: projectResults } })
-    .mockResolvedValueOnce({ data: searchResults })
-    .mockResolvedValueOnce({ data: searchResults })
-    .mockResolvedValueOnce({ data: numFoundResults });
-  const {
-    getByRole,
-    getByTestId,
-    getByText,
-    getByPlaceholderText,
-    queryByText,
-  } = render(
+  const { getByRole, getByTestId, getByText, getByPlaceholderText } = render(
     <Router>
       <App />
     </Router>
   );
 
-  // Check nav-bar component exists
-  const navBar = await waitFor(() => getByTestId('nav-bar'));
-  expect(navBar).toBeTruthy();
+  // Check navbar component renders
+  const navComponent = await waitFor(() => getByTestId('nav-bar'));
+  expect(navComponent).toBeTruthy();
 
   // Change value for free-text input
   const input = 'foo';
-  const freeTextInput = getByPlaceholderText('Search...');
+  const freeTextInput = await waitFor(() => getByPlaceholderText('Search...'));
   expect(freeTextInput).toBeTruthy();
   fireEvent.change(freeTextInput, { target: { value: input } });
 
   // Submit the form
-  const submitBtn = getByRole('img', { name: 'search' });
+  const submitBtn = await waitFor(() => getByRole('img', { name: 'search' }));
   fireEvent.submit(submitBtn);
 
-  // Wait for search to re-render
+  // Wait for components to re-render
   await waitFor(() => getByTestId('search'));
+  await waitFor(() => getByTestId('search-table'));
+  await waitFor(() => getByTestId('facets'));
 
   // Check Save Search Criteria button exists and click it
-  const saveSearch = getByRole('button', { name: 'book Save Search Criteria' });
+  const saveSearch = await waitFor(() =>
+    getByRole('button', { name: 'book Save Search Criteria' })
+  );
   expect(saveSearch).toBeTruthy();
   fireEvent.click(saveSearch);
 
@@ -530,7 +478,9 @@ it('handles removing searches from the search library', async () => {
   expect(addText).toBeTruthy();
 
   // Click on the search library link
-  const searchLibraryLink = getByRole('link', { name: 'book 1' });
+  const searchLibraryLink = await waitFor(() =>
+    getByRole('link', { name: 'book 1' })
+  );
   expect(searchLibraryLink).toBeTruthy();
   fireEvent.click(searchLibraryLink);
 
@@ -538,11 +488,7 @@ it('handles removing searches from the search library', async () => {
   const cart = await waitFor(() => getByTestId('cart'));
   expect(cart).toBeTruthy();
 
-  // Check that the search library is not empty
-  const queryEmptyText = queryByText('Your search library is empty');
-  expect(queryEmptyText).toBeNull();
-
-  // Check delete button renders and click it
+  // Check delete button renders for the saved search and click it
   const deleteBtn = await waitFor(() =>
     getByRole('img', { name: 'delete', hidden: true })
   );
@@ -559,29 +505,19 @@ it('handles removing searches from the search library', async () => {
 });
 
 it('handles saving and applying searches to and from the search library to render results', async () => {
-  // Mock axios initially with chained calls
-  mockAxios.get
-    .mockResolvedValueOnce({ data: { results: projectResults } })
-    .mockResolvedValueOnce({ data: { results: projectResults } })
-    .mockResolvedValueOnce({ data: searchResults })
-    .mockResolvedValueOnce({ data: searchResults })
-    .mockResolvedValueOnce({ data: numFoundResults })
-    .mockResolvedValueOnce({ data: { results: projectResults } })
-    .mockResolvedValueOnce({ data: searchResults });
-
-  const { getByRole, getByTestId, getByPlaceholderText, queryByText } = render(
+  const { getByRole, getByTestId, getByPlaceholderText } = render(
     <Router>
       <App />
     </Router>
   );
 
   // Check nav-bar component exists
-  const navBar = await waitFor(() => getByTestId('nav-bar'));
-  expect(navBar).toBeTruthy();
+  const navComponent = await waitFor(() => getByTestId('nav-bar'));
+  expect(navComponent).toBeTruthy();
 
   // Change value for free-text input
   const input = 'foo';
-  const freeTextInput = getByPlaceholderText('Search...');
+  const freeTextInput = await waitFor(() => getByPlaceholderText('Search...'));
   expect(freeTextInput).toBeTruthy();
   fireEvent.change(freeTextInput, { target: { value: input } });
 
@@ -589,11 +525,15 @@ it('handles saving and applying searches to and from the search library to rende
   const submitBtn = getByRole('img', { name: 'search' });
   fireEvent.submit(submitBtn);
 
-  // Wait for search to re-render
+  // Wait for components to re-render
   await waitFor(() => getByTestId('search'));
+  await waitFor(() => getByTestId('search-table'));
+  await waitFor(() => getByTestId('facets'));
 
   // Check Save Search Criteria button exists and click it
-  const saveSearch = getByRole('button', { name: 'book Save Search Criteria' });
+  const saveSearch = await waitFor(() =>
+    getByRole('button', { name: 'book Save Search Criteria' })
+  );
   expect(saveSearch).toBeTruthy();
   fireEvent.click(saveSearch);
 
@@ -602,33 +542,27 @@ it('handles saving and applying searches to and from the search library to rende
   expect(searchLibraryLink).toBeTruthy();
   fireEvent.click(searchLibraryLink);
 
-  // Check number of files and datasets are correctly displayed
+  // Check cart renders
   const cart = await waitFor(() => getByTestId('cart'));
   expect(cart).toBeTruthy();
 
-  // Check that the search library is not empty
-  const queryEmptyText = queryByText('Your search library is empty');
-  expect(queryEmptyText).toBeNull();
-
   // Check apply search button renders and click it
-  const applyBtn = await waitFor(() =>
+  const applySearchBtn = await waitFor(() =>
     within(cart).getByRole('img', { name: 'search', hidden: true })
   );
-  expect(applyBtn).toBeTruthy();
-  fireEvent.click(applyBtn);
+  expect(applySearchBtn).toBeTruthy();
+  fireEvent.click(applySearchBtn);
 
-  // Wait for search to re-render
+  // Wait for components to re-render
+  await waitFor(() => getByTestId('facets'));
   await waitFor(() => getByTestId('search'));
+  await waitFor(() => getByTestId('search-table'));
+
+  // Wait for facets component to render again based on the results
+  await waitFor(() => getByTestId('facets'));
 });
 
 it('handles saving multiple searches', async () => {
-  // Mock axios initially with chained calls
-  mockAxios.get
-    .mockResolvedValueOnce({ data: { results: projectResults } })
-    .mockResolvedValueOnce({ data: { results: projectResults } })
-    .mockResolvedValueOnce({ data: searchResults })
-    .mockResolvedValueOnce({ data: searchResults });
-
   const { getByRole, getByTestId, getByPlaceholderText, getByText } = render(
     <Router>
       <App />
@@ -636,12 +570,12 @@ it('handles saving multiple searches', async () => {
   );
 
   // Check nav-bar component exists
-  const navBar = await waitFor(() => getByTestId('nav-bar'));
-  expect(navBar).toBeTruthy();
+  const navComponent = await waitFor(() => getByTestId('nav-bar'));
+  expect(navComponent).toBeTruthy();
 
   // Change value for free-text input
   const input = 'foo';
-  const freeTextInput = getByPlaceholderText('Search...');
+  const freeTextInput = await waitFor(() => getByPlaceholderText('Search...'));
   expect(freeTextInput).toBeTruthy();
   fireEvent.change(freeTextInput, { target: { value: input } });
 
@@ -649,16 +583,23 @@ it('handles saving multiple searches', async () => {
   const submitBtn = getByRole('img', { name: 'search' });
   fireEvent.submit(submitBtn);
 
-  // Wait for search to re-render
+  // Wait for components to re-render
   await waitFor(() => getByTestId('search'));
+  await waitFor(() => getByTestId('search-table'));
+  await waitFor(() => getByTestId('facets'));
 
   // Check save button exists and click it
-  const saveSearch = getByRole('button', { name: 'book Save Search Criteria' });
+  const saveSearch = await waitFor(() =>
+    getByRole('button', { name: 'book Save Search Criteria' })
+  );
   expect(saveSearch).toBeTruthy();
   fireEvent.click(saveSearch);
 
   // Click on button again
   fireEvent.click(saveSearch);
+
+  // Wait for search to re-render
+  await waitFor(() => getByTestId('search'));
 
   // Check alert appears showing search already saved
   const alreadySavedAlert = await waitFor(() =>
@@ -668,6 +609,13 @@ it('handles saving multiple searches', async () => {
 
   // Change free-text input and submit to save another search
   fireEvent.change(freeTextInput, { target: { value: input } });
+  fireEvent.submit(submitBtn);
+
+  // Wait for components to re-render
+  await waitFor(() => getByTestId('search'));
+  await waitFor(() => getByTestId('search-table'));
+  await waitFor(() => getByTestId('facets'));
+
   fireEvent.click(saveSearch);
 
   // Wait for search to re-render

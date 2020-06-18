@@ -1,4 +1,3 @@
-import mockAxios from '../__mocks__/axios';
 import {
   fetchCitation,
   fetchFiles,
@@ -6,9 +5,15 @@ import {
   fetchProjects,
   genUrlQuery,
   processCitation,
-  nodeProtocol,
-  nodeUrl,
 } from './api';
+import {
+  defaultFacetsFixture,
+  projectsFixture,
+  citationFixture,
+  esgSearchApiFixture,
+} from '../test/fixtures';
+import { server, rest } from '../test/setup-env';
+import { apiRoutes } from '../test/server-handlers';
 
 // Reset all mocks after each test
 afterEach(() => {
@@ -17,25 +22,16 @@ afterEach(() => {
 
 describe('test fetchProjects()', () => {
   it('calls axios and returns projects', async () => {
-    const results = ['test1', 'test2'];
-    mockAxios.get.mockImplementationOnce(() =>
-      Promise.resolve({
-        data: {
-          results,
-        },
-      })
-    );
     const projects = await fetchProjects();
-    expect(projects).toEqual({ results });
+    expect(projects).toEqual({ results: projectsFixture() });
   });
   it('catches and throws an error', async () => {
-    const errorMessage = 'Network Error';
-
-    mockAxios.get.mockImplementationOnce(() =>
-      Promise.reject(new Error(errorMessage))
+    server.use(
+      rest.get(apiRoutes.metagrid, (_req, res, ctx) => {
+        return res(ctx.status(404));
+      })
     );
-
-    await expect(fetchProjects()).rejects.toThrow(errorMessage);
+    await expect(fetchProjects()).rejects.toThrow('404');
   });
 });
 
@@ -45,8 +41,8 @@ describe('test genUrlQuery()', () => {
   let activeFacets: ActiveFacets;
   let textInputs: TextInputs;
   beforeEach(() => {
-    baseUrl = `${nodeProtocol}${nodeUrl}/?limit=0&offset=0`;
-    defaultFacets = { latest: true, replica: false };
+    baseUrl = `limit=0&offset=0`;
+    defaultFacets = defaultFacetsFixture();
     activeFacets = {
       facet1: ['var1', 'var2'],
       facet2: ['var3', 'var4'],
@@ -69,7 +65,7 @@ describe('test genUrlQuery()', () => {
     );
 
     expect(url).toEqual(
-      `${nodeProtocol}${nodeUrl}/esg-search/search/?${nodeProtocol}${nodeUrl}/?limit=10&offset=0&latest=true&replica=false&query=input1,input2&facet1=var1,var2&facet2=var3,var4`
+      `${apiRoutes.esgSearchDatasets}?limit=10&offset=0&latest=true&replica=false&query=input1,input2&facet1=var1,var2&facet2=var3,var4`
     );
   });
   it('returns formatted url with offset of 200 and limit of 100 on page 3', () => {
@@ -86,7 +82,7 @@ describe('test genUrlQuery()', () => {
       pagination
     );
     expect(url).toEqual(
-      `${nodeProtocol}${nodeUrl}/esg-search/search/?${nodeProtocol}${nodeUrl}/?limit=100&offset=200&latest=true&replica=false&query=input1,input2&facet1=var1,var2&facet2=var3,var4`
+      `${apiRoutes.esgSearchDatasets}?limit=100&offset=200&latest=true&replica=false&query=input1,input2&facet1=var1,var2&facet2=var3,var4`
     );
   });
   it('returns formatted url without free-text', () => {
@@ -103,7 +99,7 @@ describe('test genUrlQuery()', () => {
       pagination
     );
     expect(url).toEqual(
-      `${nodeProtocol}${nodeUrl}/esg-search/search/?${nodeProtocol}${nodeUrl}/?limit=10&offset=0&latest=true&replica=false&query=*&facet1=var1,var2&facet2=var3,var4`
+      `${apiRoutes.esgSearchDatasets}?limit=10&offset=0&latest=true&replica=false&query=*&facet1=var1,var2&facet2=var3,var4`
     );
   });
 
@@ -115,60 +111,43 @@ describe('test genUrlQuery()', () => {
 
     const url = genUrlQuery(baseUrl, defaultFacets, {}, textInputs, pagination);
     expect(url).toEqual(
-      `${nodeProtocol}${nodeUrl}/esg-search/search/?${nodeProtocol}${nodeUrl}/?limit=10&offset=0&latest=true&replica=false&query=input1,input2&`
+      `${apiRoutes.esgSearchDatasets}?limit=10&offset=0&latest=true&replica=false&query=input1,input2&`
     );
   });
 });
 
 describe('test fetchResults()', () => {
-  let results: string[];
   let reqUrl: string;
 
   beforeEach(() => {
-    results = ['test1', 'test2'];
-    reqUrl = 'http://someBaseUrl.com/?';
+    reqUrl = apiRoutes.esgSearchDatasets;
   });
   it('calls axios and returns results', async () => {
-    mockAxios.get.mockImplementationOnce(() =>
-      Promise.resolve({
-        data: {
-          results,
-        },
-      })
-    );
-    reqUrl += '&query=input1,input2&facet1=var1,var2&facet2=var3,var4';
+    reqUrl += '?query=input1,input2&facet1=var1,var2&facet2=var3,var4';
 
     const projects = await fetchResults([reqUrl]);
-    expect(projects).toEqual({ results });
+    expect(projects).toEqual(esgSearchApiFixture());
   });
 
   it('calls axios and returns results without free-text', async () => {
-    mockAxios.get.mockImplementationOnce(() =>
-      Promise.resolve({
-        data: {
-          results,
-        },
-      })
-    );
-    reqUrl += '&query=*&facet1=var1,var2&facet2=var3,var4';
+    reqUrl += '?query=*&facet1=var1,var2&facet2=var3,var4';
 
     const projects = await fetchResults({ reqUrl });
-    expect(projects).toEqual({ results });
+    expect(projects).toEqual(esgSearchApiFixture());
   });
   it('catches and throws an error', async () => {
-    const errorMessage = 'Network Error';
-
-    mockAxios.get.mockImplementationOnce(() =>
-      Promise.reject(new Error(errorMessage))
+    server.use(
+      rest.get(apiRoutes.esgSearchDatasets, (_req, res, ctx) => {
+        return res(ctx.status(404));
+      })
     );
-
-    await expect(fetchResults([reqUrl])).rejects.toThrow(errorMessage);
+    await expect(fetchResults([reqUrl])).rejects.toThrow('404');
   });
 });
 
 describe('test processCitation()', () => {
   it('returns citation object with additional correct fields', () => {
-    const citation: Citation = {
+    const citation: RawCitation = {
       identifier: { id: 'an_id', identifierType: 'DOI' },
       creators: [{ creatorName: 'Bob' }, { creatorName: 'Tom' }],
       identifierDOI: '',
@@ -177,7 +156,7 @@ describe('test processCitation()', () => {
       publisher: 'publisher',
       publicationYear: 2020,
     };
-    const result: Citation = {
+    const result: RawCitation = {
       ...citation,
       identifierDOI: 'http://doi.org/an_id',
       creatorsList: 'Bob; Tom',
@@ -189,42 +168,39 @@ describe('test processCitation()', () => {
 });
 
 describe('test fetchCitation()', () => {
-  it('calls axios and returns results', async () => {
-    const citation = {
-      identifier: { id: 'an_id', identifierType: 'DOI' },
-      creators: [{ creatorName: 'Bob' }, { creatorName: 'Tom' }],
-    };
+  beforeEach(() => {
+    server.use(
+      // ESGF Citation API
+      rest.get(apiRoutes.citation, (_req, res, ctx) => {
+        return res(ctx.status(200), ctx.json(citationFixture()));
+      })
+    );
+  });
+  it('returns results', async () => {
+    const citation = citationFixture();
     const results = {
-      identifier: { id: 'an_id', identifierType: 'DOI' },
-      creators: [{ creatorName: 'Bob' }, { creatorName: 'Tom' }],
+      ...citation,
       identifierDOI: 'http://doi.org/an_id',
       creatorsList: 'Bob; Tom',
     };
-    mockAxios.get.mockImplementationOnce(() =>
-      Promise.resolve({
-        data: {
-          ...citation,
-        },
-      })
-    );
 
     const newCitation = await fetchCitation({
-      url: 'http://someBaseUrl.com/?',
+      url: 'citation_url',
     });
-    expect(newCitation).toEqual({ ...results });
+    expect(newCitation).toEqual(results);
   });
   it('catches and throws an error', async () => {
-    const errorMessage = 'Network Error';
-
-    mockAxios.get.mockImplementationOnce(() =>
-      Promise.reject(new Error(errorMessage))
+    server.use(
+      rest.get(apiRoutes.citation, (_req, res, ctx) => {
+        return res(ctx.status(404));
+      })
     );
 
     await expect(
       fetchCitation({
-        url: 'http://someBaseUrl.com/?',
+        url: 'citation_url',
       })
-    ).rejects.toThrow(errorMessage);
+    ).rejects.toThrow('404');
   });
 });
 
@@ -235,24 +211,15 @@ describe('test fetchFiles()', () => {
   });
 
   it('calls axios and returns files', async () => {
-    const results = ['test1', 'test2'];
-    mockAxios.get.mockImplementationOnce(() =>
-      Promise.resolve({
-        data: {
-          results,
-        },
-      })
-    );
     const files = await fetchFiles({ id: dataset.id });
-    expect(files).toEqual({ results });
+    expect(files).toEqual(esgSearchApiFixture());
   });
   it('catches and throws an error', async () => {
-    const errorMessage = 'Network Error';
-
-    mockAxios.get.mockImplementationOnce(() =>
-      Promise.reject(new Error(errorMessage))
+    server.use(
+      rest.get(apiRoutes.esgSearchFiles, (_req, res, ctx) => {
+        return res(ctx.status(404));
+      })
     );
-
-    await expect(fetchFiles({ id: dataset.id })).rejects.toThrow(errorMessage);
+    await expect(fetchFiles({ id: dataset.id })).rejects.toThrow('404');
   });
 });

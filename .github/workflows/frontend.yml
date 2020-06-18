@@ -29,7 +29,7 @@ jobs:
 
       - name: Set Environment Variables
         run: |
-          echo "::set-env name=REACT_APP_PROTOCOL::http://"
+          echo "::set-env name=REACT_APP_API_PROTOCOL::http://"
           echo "::set-env name=REACT_APP_API_URL::localhost"
           echo "::set-env name=REACT_APP_API_PORT::8000"
           echo "::set-env name=REACT_APP_ESGF_NODE_PROTOCOL::https://"

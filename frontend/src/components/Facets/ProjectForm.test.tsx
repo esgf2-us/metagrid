@@ -3,12 +3,13 @@ import React from 'react';
 import { fireEvent, render } from '@testing-library/react';
 
 import ProjectsForm, { Props } from './ProjectForm';
+import { projectsFixture } from '../../test/fixtures';
 
 const defaultProps: Props = {
   activeProject: { name: 'foo' },
   activeFacets: { facet1: ['foo'] },
   projectsIsLoading: false,
-  projectsFetched: { results: [{ name: 'foo', facets_url: 'foo.bar' }] },
+  projectsFetched: { results: projectsFixture() },
   handleProjectForm: jest.fn(),
 };
 
@@ -36,4 +37,13 @@ it('renders empty form', () => {
   // Check submit button does not exist
   const submitBtn = queryByRole('img', { name: 'select' });
   expect(submitBtn).toBeNull();
+});
+
+it('renders error message when projects can"t be fetched', () => {
+  const { getByRole } = render(
+    <ProjectsForm {...defaultProps} projectsError={new Error('404')} />
+  );
+
+  const alertComponent = getByRole('img', { name: 'close-circle' });
+  expect(alertComponent).toBeTruthy();
 });

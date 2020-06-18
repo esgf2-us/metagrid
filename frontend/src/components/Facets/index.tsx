@@ -19,7 +19,7 @@ export type Props = {
   activeProject: Project | Record<string, unknown>;
   defaultFacets: DefaultFacets;
   activeFacets: ActiveFacets | Record<string, unknown>;
-  availableFacets: AvailableFacets | Record<string, unknown>;
+  availableFacets: ParsedFacets | Record<string, unknown>;
   handleProjectChange: (selectedProj: Project) => void;
   onSetFacets: (defaults: DefaultFacets, active: ActiveFacets) => void;
 };
@@ -104,7 +104,7 @@ const Facets: React.FC<Props> = ({
         <FacetsForm
           defaultFacets={defaultFacets}
           activeFacets={activeFacets}
-          availableFacets={availableFacets as AvailableFacets}
+          availableFacets={availableFacets as ParsedFacets}
           handleFacetsForm={handleFacetsForm}
         />
       )}

@@ -1,5 +1,5 @@
 // Type definition for a search result object, based on the ESG Search APi
-type SearchResult = {
+type RawSearchResult = {
   id: string;
   url: string[];
   access: string[];

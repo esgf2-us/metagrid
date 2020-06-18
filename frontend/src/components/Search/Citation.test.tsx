@@ -1,8 +1,9 @@
 import React from 'react';
 import { render, waitFor } from '@testing-library/react';
 
-import mockAxios from '../../__mocks__/axios';
 import Citation, { CitationInfo } from './Citation';
+import { apiRoutes } from '../../test/server-handlers';
+import { server, rest } from '../../test/setup-env';
 
 // Reset all mocks after each test
 afterEach(() => {
@@ -10,29 +11,8 @@ afterEach(() => {
 });
 
 describe('test Citation component', () => {
-  let data: Citation;
-
-  beforeEach(() => {
-    data = {
-      identifier: { id: 'an_id', identifierType: 'DOI' },
-      creators: [{ creatorName: 'Bob' }, { creatorName: 'Tom' }],
-      titles: 'title',
-      publisher: 'Earth System Grid Federation',
-      publicationYear: 2020,
-      identifierDOI: '',
-      creatorsList: '',
-    };
-  });
-
   it('renders component', async () => {
-    mockAxios.get.mockImplementationOnce(() =>
-      Promise.resolve({
-        data,
-      })
-    );
-
-    const url = 'https://foo.bar|.json';
-    const { getByRole, getByText } = render(<Citation url={url} />);
+    const { getByRole, getByText } = render(<Citation url="citation_url" />);
 
     // Check for skeleton header, which indicates loading
     const skeletonHeading = getByRole('heading');
@@ -43,13 +23,13 @@ describe('test Citation component', () => {
     expect(citationCreators).toBeInTheDocument();
   });
   it('renders Alert error fetching citation data ', async () => {
-    const errorMessage = 'Network Error';
-    mockAxios.get.mockImplementationOnce(() =>
-      Promise.reject(new Error(errorMessage))
+    server.use(
+      // ESGF Citation API (uses dummy link)
+      rest.get(apiRoutes.citation, (_req, res, ctx) => {
+        return res(ctx.status(404));
+      })
     );
-
-    const url = 'https://foo.bar|.json';
-    const { getByRole } = render(<Citation url={url} />);
+    const { getByRole } = render(<Citation url="citation_url" />);
 
     // Wait for Alert error to render
     const alert = await waitFor(() =>
