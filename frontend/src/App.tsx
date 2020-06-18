@@ -113,15 +113,20 @@ const App: React.FC = () => {
     if (type === 'text') {
       setTextInputs(() => textInputs.filter((input) => input !== removedTag));
     } else if (type === 'facet') {
-      // Need to cast variable to type since it can be an empty object
       const prevActiveFacets = activeFacets as ActiveFacets;
-      const facet = ([removedTag[0]] as unknown) as string;
-      const option = ([removedTag[1]] as unknown) as string;
 
+      const facet = (removedTag[0] as unknown) as string;
+      const facetOption = (removedTag[1] as unknown) as string;
       const updateFacet = {
-        facet: prevActiveFacets[facet].filter((item) => item !== option),
+        [facet]: prevActiveFacets[facet].filter((item) => item !== facetOption),
       };
-      setActiveFacets({ ...activeFacets, ...updateFacet });
+
+      if (updateFacet[facet].length === 0) {
+        delete prevActiveFacets[facet];
+        setActiveFacets({ ...prevActiveFacets });
+      } else {
+        setActiveFacets({ ...prevActiveFacets, ...updateFacet });
+      }
     } else {
       throw new Error(
         `handleRemoveTag does not support argument 'type' of value ${type}`
