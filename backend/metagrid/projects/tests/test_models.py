@@ -12,24 +12,43 @@ if TYPE_CHECKING:
 
 
 class TestProjectModel:
+    @pytest.fixture(autouse=True)
+    def setUp(self):
+        self.project = ProjectFactory.create(name="CMIP6")  # type: Project
+
+    def test__str__(self):
+        assert self.project.__str__() == self.project.name
+
+    def test_get_absolute_url(self):
+        assert self.project.get_absolute_url() == self.project.name
+
     def test_facets_url_property_success(self):
-        project = ProjectFactory.create(name="CMIP6")  # type: Project
         facet = FacetFactory.create(
-            name="mip_era", project=project
+            name="mip_era", project=self.project
         )  # type: Facet
 
         # Check that the project has a list of facets
-        assert project.facets
+        assert self.project.facets
 
         # Check that the facet name is in the facets url
-        assert facet.name in project.facets_url
+        assert facet.name in self.project.facets_url
 
     def test_facets_url_property_fail(self):
-        project = ProjectFactory.create(name="e3sm")  # type: Project
-
         # Delete the facets that were automatically created
-        Facet.objects.filter(project=project).delete()
+        Facet.objects.filter(project=self.project).delete()
 
         # Check that an exception was raised when there are no facets
         # associated with the project
-        assert project.facets_url is None
+        assert self.project.facets_url is None
+
+
+class TestFacetModel:
+    @pytest.fixture(autouse=True)
+    def setUp(self):
+        self.project = ProjectFactory.create(name="CMIP6")  # type: Project
+        self.facet = FacetFactory.create(
+            name="mip_era", project=self.project
+        )  # type: Facet
+
+    def test_get_absolute_url(self):
+        self.facet.get_absolute_url() == self.facet.name
