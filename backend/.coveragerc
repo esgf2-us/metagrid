@@ -11,6 +11,7 @@ omit =
     *postgres-data/*,
     *tests/*,
     *venv/*,
+    *config/*
 
 [report]
 # Regexes for lines to exclude from consideration
