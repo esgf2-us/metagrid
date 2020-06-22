@@ -7655,7 +7655,7 @@ ms@^2.1.1:
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.2.tgz#d09d1f357b443f493382a8eb3ccd183872ae6009"
   integrity sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==
 
-msw@^0.19.3:
+msw@0.19.3:
   version "0.19.3"
   resolved "https://registry.yarnpkg.com/msw/-/msw-0.19.3.tgz#88f39edbd37313bff15a0e7cd00c71406cbdbbae"
   integrity sha512-HYLnyrCDDPP72GG/CeHPhBjHsZFYkz36rJLXDWccZWNA24gYjgrcp9iVqqitk2cI6NAJwsupRml9GkfpJBB74w==
