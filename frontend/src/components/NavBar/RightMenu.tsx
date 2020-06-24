@@ -1,7 +1,13 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu } from 'antd';
-import { ShoppingCartOutlined, BookOutlined } from '@ant-design/icons';
+import { KeycloakTokenParsed } from 'keycloak-js';
+import {
+  ShoppingCartOutlined,
+  SearchOutlined,
+  UserOutlined,
+} from '@ant-design/icons';
+import { useKeycloak } from '@react-keycloak/web';
 
 import Button from '../General/Button';
 import ToolTip from '../DataDisplay/ToolTip';
@@ -22,8 +28,19 @@ const RightMenu: React.FC<Props> = ({
   numCartItems,
   numSavedSearches,
 }) => {
-  const location = useLocation();
   const [activeMenuItem, setActiveMenuItem] = React.useState<string>('search');
+
+  const location = useLocation();
+  const [keycloak] = useKeycloak();
+
+  let userInfo;
+  const { authenticated } = keycloak;
+  if (authenticated) {
+    userInfo = keycloak.idTokenParsed as KeycloakTokenParsed & {
+      given_name: string;
+      email: string;
+    };
+  }
 
   /**
    * Update the active menu item based on the current pathname
@@ -53,28 +70,41 @@ const RightMenu: React.FC<Props> = ({
             <Menu.Item key="api">API</Menu.Item>
           </Menu.ItemGroup>
         </Menu.SubMenu>
-        <Menu.Item key="login">
-          <Button type="primary" disabled>
-            Log In
-          </Button>
-        </Menu.Item>
-        <Menu.Item key="cartItems">
-          <ToolTip title="Your cart of items">
+        <Menu.SubMenu
+          icon={<UserOutlined style={{ fontSize: '24px' }} />}
+          title={
+            <span className="submenu-title-wrapper">
+              {userInfo ? `Hi, ${userInfo.given_name}` : 'Sign In'}
+            </span>
+          }
+        >
+          <Menu.ItemGroup>
+            <Menu.Item key="login">
+              {!authenticated ? (
+                <Button type="text" onClick={() => keycloak.login()}>
+                  Sign In
+                </Button>
+              ) : (
+                <Button type="text" onClick={() => keycloak.logout()}>
+                  Sign Out
+                </Button>
+              )}
+            </Menu.Item>
+          </Menu.ItemGroup>
+        </Menu.SubMenu>
+        <Menu.Item key="cartItems" className="modified-item">
+          <ToolTip title="Cart">
             <Link to="/cart/items">
-              <Button type="link">
-                <ShoppingCartOutlined style={{ fontSize: '24px' }} />
-                {numCartItems}
-              </Button>
+              <ShoppingCartOutlined style={{ fontSize: '24px' }} />
+              {numCartItems}
             </Link>
           </ToolTip>
         </Menu.Item>
-        <Menu.Item key="cartSearches">
-          <ToolTip title="Your library of saved searches">
+        <Menu.Item key="cartSearches" className="modified-item">
+          <ToolTip title="Saved Searches">
             <Link to="/cart/searches">
-              <Button type="link">
-                <BookOutlined style={{ fontSize: '24px' }} />
-                {numSavedSearches}
-              </Button>
+              <SearchOutlined style={{ fontSize: '24px' }} />
+              {numSavedSearches}
             </Link>
           </ToolTip>
         </Menu.Item>

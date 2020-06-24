@@ -2,7 +2,14 @@ import React from 'react';
 import { Button as ButtonD } from 'antd';
 
 type Props = {
-  type?: 'link' | 'ghost' | 'default' | 'primary' | 'dashed' | undefined;
+  type?:
+    | 'link'
+    | 'ghost'
+    | 'default'
+    | 'primary'
+    | 'dashed'
+    | 'text'
+    | undefined;
   className?: string | undefined;
   href?: string | undefined;
   target?: string | undefined;
