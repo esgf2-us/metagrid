@@ -6,19 +6,6 @@
 [![dependencies Status](https://david-dm.org/aims-group/metagrid/status.svg?path=frontend)](https://david-dm.org/aims-group/metagrid?path=frontend)
 [![devDependencies Status](https://david-dm.org/aims-group/metagrid/dev-status.svg?path=frontend)](https://david-dm.org/aims-group/metagrid?path=frontend&type=dev)
 
-## Prerequisites
-
-- Node >= 8.10
-- npm >= 5.6
-
-See the section about [create-react-app requirements](https://reactjs.org/docs/create-a-new-react-app.html#create-react-app) for more information.
-
-## Local Development
-
-### Getting Started
-
-1. Configure local .env file as needed (.env.template provided)
-
 ## Available Scripts
 
 In the project directory, you can run:

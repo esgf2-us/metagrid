@@ -1,5 +1,6 @@
 import { rest } from 'msw';
 import {
+  userAuthFixture,
   projectsFixture,
   citationFixture,
   esgSearchApiFixture,
@@ -7,7 +8,8 @@ import {
 import { apiBaseUrl, nodeRoute, nodeUrl, proxyString } from '../env';
 
 type ApiRoutes = {
-  metagrid: string;
+  keycloakAuth: string;
+  projects: string;
   esgSearchDatasets: string;
   esgSearchFiles: string;
   citation: string;
@@ -15,8 +17,9 @@ type ApiRoutes = {
 
 // Routes for API services utilized by the app.
 export const apiRoutes: ApiRoutes = {
-  // MetaGrid API - projects
-  metagrid: `${apiBaseUrl}/api/v1/projects/`,
+  // MetaGrid API
+  keycloakAuth: `${apiBaseUrl}/dj-rest-auth/keycloak`,
+  projects: `${apiBaseUrl}/api/v1/projects/`,
   // ESGF Search API - datasets
   esgSearchDatasets: `${proxyString}/${nodeRoute}/esg-search/search/`,
   // ESGF Search API - files
@@ -29,7 +32,10 @@ export const apiRoutes: ApiRoutes = {
 // These handlers can be overridden in a test, for example when a 404 needs to
 // be returned to //display an error message within a component.
 const handlers = [
-  rest.get(apiRoutes.metagrid, (_req, res, ctx) => {
+  rest.post(apiRoutes.keycloakAuth, (_req, res, ctx) => {
+    return res(ctx.status(200), ctx.json({ results: userAuthFixture() }));
+  }),
+  rest.get(apiRoutes.projects, (_req, res, ctx) => {
     return res(ctx.status(200), ctx.json({ results: projectsFixture() }));
   }),
   rest.get(apiRoutes.esgSearchDatasets, (_req, res, ctx) => {

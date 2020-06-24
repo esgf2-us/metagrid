@@ -3,7 +3,18 @@
 // APIs) and reduce duplicate hard-coded dummy data.
 
 /**
- * Project fixture, related to the Project model from the MetaGrid API
+ * User fixture based on the User API.
+ */
+export const userAuthFixture = (props: Partial<Project> = {}): UserAuth => {
+  const defaults: UserAuth = {
+    access_token: 'access_token',
+    refresh_token: 'refresh_token',
+  };
+  return { ...defaults, ...props } as UserAuth;
+};
+
+/**
+ * Project fixture based on the Project API.
  */
 export const projectFixture = (props: Partial<Project> = {}): Project => {
   const defaults: Project = {
@@ -19,7 +30,7 @@ export const projectsFixture = (): Project[] => {
 };
 
 /**
- * Search result fixture, related to the ESG Search API.
+ * Search result fixture based on the ESG Search API.
  * In the API, this value is stored in an array of objects under the 'docs' key
  * of the HTTP  response object.
  */
@@ -85,7 +96,7 @@ export const cartFixture = (): Cart => {
 };
 
 /**
- * Citation fixture, related to the Citation API.
+ * Citation fixture based on the Citation API.
  */
 export const citationFixture = (
   props: Partial<RawCitation> = {}

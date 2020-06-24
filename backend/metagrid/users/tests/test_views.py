@@ -7,8 +7,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from metagrid.users.models import User
-
-from .factories import UserFactory
+from metagrid.users.tests.factories import UserFactory, raw_password
 
 fake = Faker()
 
@@ -33,7 +32,7 @@ class TestUserListTestCase(APITestCase):
         assert response.status_code == status.HTTP_201_CREATED
 
         user = User.objects.get(pk=response.data.get("id"))
-        assert user.username == self.user_data.get("username")
+        assert user.email == self.user_data.get("email")
         assert check_password(self.user_data.get("password"), user.password)
 
 
@@ -44,10 +43,22 @@ class TestUserDetailTestCase(APITestCase):
 
     def setUp(self):
         self.user = UserFactory()
+
+        # Login user to fetch access token
+        rest_login_url = reverse("rest_login")
+        payload = {
+            "email": self.user.email,
+            "password": raw_password,
+        }
+        response = self.client.post(rest_login_url, payload, format="json",)
+        assert response.status_code == status.HTTP_200_OK
+
+        # Add access token to authorization header
+        access_token = response.data["access_token"]
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
+
+        # URL for user's detail
         self.url = reverse("user-detail", kwargs={"pk": self.user.pk})
-        self.client.credentials(
-            HTTP_AUTHORIZATION=f"Token {self.user.auth_token}"
-        )
 
     def test_get_request_returns_a_given_user(self):
         response = self.client.get(self.url)

@@ -27,7 +27,7 @@ describe('test fetchProjects()', () => {
   });
   it('catches and throws an error', async () => {
     server.use(
-      rest.get(apiRoutes.metagrid, (_req, res, ctx) => {
+      rest.get(apiRoutes.projects, (_req, res, ctx) => {
         return res(ctx.status(404));
       })
     );

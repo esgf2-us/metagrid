@@ -38,15 +38,20 @@ INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
+    "django.contrib.sites",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # Third party apps
     "rest_framework",  # utilities for rest apis
-    "rest_framework.authtoken",  # token authentication
     "django_filters",  # for filtering rest endpoints
     "corsheaders",
     "django_extensions",
+    "allauth",
+    "allauth.account",
+    "dj_rest_auth",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.keycloak",
     # Your apps
     "metagrid.users",
     "metagrid.projects",
@@ -153,8 +158,12 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
-    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
-    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"
+    },
 ]
 
 # LOGGING
@@ -175,7 +184,9 @@ LOGGING = {
         },
         "simple": {"format": "%(levelname)s %(message)s"},
     },
-    "filters": {"require_debug_true": {"()": "django.utils.log.RequireDebugTrue"}},
+    "filters": {
+        "require_debug_true": {"()": "django.utils.log.RequireDebugTrue"}
+    },
     "handlers": {
         "django.server": {
             "level": "INFO",
@@ -219,9 +230,35 @@ REST_FRAMEWORK = {
         "rest_framework.renderers.JSONRenderer",
         "rest_framework.renderers.BrowsableAPIRenderer",
     ),
-    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated"
+    ],
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework.authentication.SessionAuthentication",
-        "rest_framework.authentication.TokenAuthentication",
+        "dj_rest_auth.jwt_auth.JWTCookieAuthentication",
     ),
 }
+
+# django-allauth
+# -------------------------------------------------------------------------------
+# https://django-allauth.readthedocs.io/en/latest/configuration.html
+SITE_ID = 2
+# https://django-allauth.readthedocs.io/en/latest/providers.html#keycloak
+SOCIALACCOUNT_PROVIDERS = {
+    "keycloak": {
+        "KEYCLOAK_URL": env("KEYCLOAK_URL",),
+        "KEYCLOAK_REALM": env("KEYCLOAK_REALM",),
+    }
+}
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = "email"
+ACCOUNT_UNIQUE_EMAIL = True
+# Access tokens are used to validate a user
+ACCOUNT_EMAIL_VERIFICATION = "none"
+
+# dj-rest-auth
+# -------------------------------------------------------------------------------
+# hhttps://dj-rest-auth.readthedocs.io/en/latest/index.html
+REST_USE_JWT = True
+JWT_AUTH_COOKIE = "jwt-auth"

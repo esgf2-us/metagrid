@@ -1,9 +1,9 @@
 from rest_framework import mixins, viewsets
 from rest_framework.permissions import AllowAny
 
-from .models import User
-from .permissions import IsUserOrReadOnly
-from .serializers import CreateUserSerializer, UserSerializer
+from metagrid.users.models import User
+from metagrid.users.permissions import IsUserOrReadOnly
+from metagrid.users.serializers import CreateUserSerializer, UserSerializer
 
 
 class UserViewSet(
