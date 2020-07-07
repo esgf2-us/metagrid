@@ -39,6 +39,8 @@ jobs:
         run: |
           echo "::set-env name=DATABASE_URL::pgsql://postgres:postgres@localhost:5432/postgres"
           echo "::set-env name=CELERY_BROKER_URL::redis://redis:6379/0"
+          echo "::set-env name=KEYCLOAK_URL::http://keycloak:8080/auth"
+          echo "::set-env name=KEYCLOAK_REALM::metagrid"
 
       - name: Cache pip
         uses: actions/cache@v2

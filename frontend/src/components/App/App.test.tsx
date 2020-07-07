@@ -1,8 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { render, waitFor, fireEvent, within } from '@testing-library/react';
+import { waitFor, fireEvent, within } from '@testing-library/react';
 
 import App from './App';
+import { customRender } from '../../test/custom-render';
 
 const location = JSON.stringify(window.location);
 afterEach(() => {
@@ -19,13 +20,13 @@ afterEach(() => {
 });
 
 it('renders App component', async () => {
-  const { getByTestId } = render(
+  const { getByTestId } = customRender(
     <Router>
       <App />
     </Router>
   );
 
-  // Check all components exist
+  // Check applicable components render
   const navComponent = await waitFor(() => getByTestId('nav-bar'));
   expect(navComponent).toBeTruthy();
   const facetsComponent = await waitFor(() => getByTestId('facets'));
@@ -35,15 +36,17 @@ it('renders App component', async () => {
 });
 
 it('handles project changes when a new project is selected', async () => {
-  const { getByPlaceholderText, getByRole, getByTestId, getByText } = render(
+  const { getByPlaceholderText, getByTestId, getByText } = customRender(
     <Router>
       <App />
     </Router>
   );
 
-  // Check components render
+  // Check applicable components render
   const navComponent = await waitFor(() => getByTestId('nav-bar'));
   expect(navComponent).toBeTruthy();
+  const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
+  expect(leftMenuComponent).toBeTruthy();
   const facetsComponent = await waitFor(() => getByTestId('facets'));
   expect(facetsComponent).toBeTruthy();
 
@@ -54,7 +57,9 @@ it('handles project changes when a new project is selected', async () => {
   fireEvent.change(freeTextForm, { target: { value: input } });
 
   // Submit the form
-  const submitBtn = getByRole('img', { name: 'search' });
+  const submitBtn = within(leftMenuComponent).getByRole('img', {
+    name: 'search',
+  });
   fireEvent.submit(submitBtn);
 
   // Wait for components to re-render
@@ -74,17 +79,24 @@ it('handles project changes when a new project is selected', async () => {
 });
 
 it('handles adding and removing items from the cart', async () => {
-  const { getByRole, getByTestId, getByText, getByPlaceholderText } = render(
+  const {
+    getByRole,
+    getByTestId,
+    getByText,
+    getByPlaceholderText,
+  } = customRender(
     <Router>
       <App />
     </Router>
   );
 
-  // Check facets and navbar component renders
-  const facetsComponent = await waitFor(() => getByTestId('facets'));
-  expect(facetsComponent).toBeTruthy();
+  // Check applicable components render
   const navComponent = await waitFor(() => getByTestId('nav-bar'));
   expect(navComponent).toBeTruthy();
+  const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
+  expect(leftMenuComponent).toBeTruthy();
+  const facetsComponent = await waitFor(() => getByTestId('facets'));
+  expect(facetsComponent).toBeTruthy();
 
   // Change value for free-text input
   const input = 'foo';
@@ -93,7 +105,9 @@ it('handles adding and removing items from the cart', async () => {
   fireEvent.change(freeTextInput, { target: { value: input } });
 
   // Submit the form
-  const submitBtn = getByRole('img', { name: 'search' });
+  const submitBtn = within(leftMenuComponent).getByRole('img', {
+    name: 'search',
+  });
   fireEvent.submit(submitBtn);
 
   // Wait for components to re-render
@@ -131,17 +145,19 @@ it('handles adding and removing items from the cart', async () => {
 });
 
 it('handles removing search tags and clearing all search tags', async () => {
-  const { getByRole, getByPlaceholderText, getByTestId, getByText } = render(
+  const { getByPlaceholderText, getByTestId, getByText } = customRender(
     <Router>
       <App />
     </Router>
   );
 
-  // Check facets and navbar component renders
-  const facetsComponent = await waitFor(() => getByTestId('facets'));
-  expect(facetsComponent).toBeTruthy();
+  // Check applicable components render
   const navComponent = await waitFor(() => getByTestId('nav-bar'));
   expect(navComponent).toBeTruthy();
+  const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
+  expect(navComponent).toBeTruthy();
+  const facetsComponent = await waitFor(() => getByTestId('facets'));
+  expect(facetsComponent).toBeTruthy();
 
   // Change value for free-text input
   const freeTextInput = await waitFor(() => getByPlaceholderText('Search...'));
@@ -149,7 +165,9 @@ it('handles removing search tags and clearing all search tags', async () => {
   fireEvent.change(freeTextInput, { target: { value: 'foo' } });
 
   // Submit the form
-  const submitBtn = getByRole('img', { name: 'search' });
+  const submitBtn = within(leftMenuComponent).getByRole('img', {
+    name: 'search',
+  });
   fireEvent.submit(submitBtn);
 
   // Wait for components to re-render
@@ -198,17 +216,17 @@ it('handles removing search tags and clearing all search tags', async () => {
 });
 
 it('handles removing facet tags', async () => {
-  const { getByRole, getByTestId, getByText } = render(
+  const { getByRole, getByTestId, getByText } = customRender(
     <Router>
       <App />
     </Router>
   );
 
-  // Check facets and navbar component renders
-  const facetsComponent = await waitFor(() => getByTestId('facets'));
-  expect(facetsComponent).toBeTruthy();
+  // Check applicable components render
   const navComponent = await waitFor(() => getByTestId('nav-bar'));
   expect(navComponent).toBeTruthy();
+  const facetsComponent = await waitFor(() => getByTestId('facets'));
+  expect(facetsComponent).toBeTruthy();
 
   // Wait for project form to render
   const projectForm = await waitFor(() => getByTestId('project-form'));
@@ -281,13 +299,13 @@ it('handles removing facet tags', async () => {
 });
 
 it('handles project changes and clearing constraints when the active project !== selected project', async () => {
-  const { getByTestId } = render(
+  const { getByTestId } = customRender(
     <Router>
       <App />
     </Router>
   );
 
-  // Check facets and navbar component renders
+  // Check applicable components render
   const facetsComponent = await waitFor(() => getByTestId('facets'));
   expect(facetsComponent).toBeTruthy();
   const navComponent = await waitFor(() => getByTestId('nav-bar'));
@@ -347,15 +365,22 @@ it('handles project changes and clearing constraints when the active project !==
 });
 
 it('displays the number of files in the cart summary and handles clearing the cart', async () => {
-  const { getByRole, getByTestId, getByText, getByPlaceholderText } = render(
+  const {
+    getByRole,
+    getByTestId,
+    getByText,
+    getByPlaceholderText,
+  } = customRender(
     <Router>
       <App />
     </Router>
   );
 
-  // Check nav-bar component exists
-  const navBar = await waitFor(() => getByTestId('nav-bar'));
-  expect(navBar).toBeTruthy();
+  // Check applicable components render
+  const navComponent = await waitFor(() => getByTestId('nav-bar'));
+  expect(navComponent).toBeTruthy();
+  const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
+  expect(leftMenuComponent).toBeTruthy();
 
   // Change value for free-text input
   const input = 'foo';
@@ -364,7 +389,9 @@ it('displays the number of files in the cart summary and handles clearing the ca
   fireEvent.change(freeTextInput, { target: { value: input } });
 
   // Submit the form
-  const submitBtn = getByRole('img', { name: 'search' });
+  const submitBtn = within(leftMenuComponent).getByRole('img', {
+    name: 'search',
+  });
   fireEvent.submit(submitBtn);
 
   // Wait for components to re-render
@@ -439,15 +466,24 @@ it('displays the number of files in the cart summary and handles clearing the ca
 });
 
 it('handles removing searches from the search library', async () => {
-  const { getByRole, getByTestId, getByText, getByPlaceholderText } = render(
+  const {
+    getByRole,
+    getByTestId,
+    getByText,
+    getByPlaceholderText,
+  } = customRender(
     <Router>
       <App />
     </Router>
   );
 
-  // Check navbar component renders
+  // Check applicable components render
   const navComponent = await waitFor(() => getByTestId('nav-bar'));
   expect(navComponent).toBeTruthy();
+  const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
+  expect(leftMenuComponent).toBeTruthy();
+  const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
+  expect(rightMenuComponent).toBeTruthy();
 
   // Change value for free-text input
   const input = 'foo';
@@ -456,7 +492,9 @@ it('handles removing searches from the search library', async () => {
   fireEvent.change(freeTextInput, { target: { value: input } });
 
   // Submit the form
-  const submitBtn = await waitFor(() => getByRole('img', { name: 'search' }));
+  const submitBtn = within(leftMenuComponent).getByRole('img', {
+    name: 'search',
+  });
   fireEvent.submit(submitBtn);
 
   // Wait for components to re-render
@@ -479,7 +517,7 @@ it('handles removing searches from the search library', async () => {
 
   // Click on the search library link
   const searchLibraryLink = await waitFor(() =>
-    getByRole('link', { name: 'book 1' })
+    within(rightMenuComponent).getByRole('img', { name: 'search' })
   );
   expect(searchLibraryLink).toBeTruthy();
   fireEvent.click(searchLibraryLink);
@@ -505,15 +543,19 @@ it('handles removing searches from the search library', async () => {
 });
 
 it('handles saving and applying searches to and from the search library to render results', async () => {
-  const { getByRole, getByTestId, getByPlaceholderText } = render(
+  const { getByRole, getByTestId, getByPlaceholderText } = customRender(
     <Router>
       <App />
     </Router>
   );
 
-  // Check nav-bar component exists
+  // Check applicable components render
   const navComponent = await waitFor(() => getByTestId('nav-bar'));
   expect(navComponent).toBeTruthy();
+  const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
+  expect(leftMenuComponent).toBeTruthy();
+  const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
+  expect(rightMenuComponent).toBeTruthy();
 
   // Change value for free-text input
   const input = 'foo';
@@ -522,7 +564,9 @@ it('handles saving and applying searches to and from the search library to rende
   fireEvent.change(freeTextInput, { target: { value: input } });
 
   // Submit the form
-  const submitBtn = getByRole('img', { name: 'search' });
+  const submitBtn = within(leftMenuComponent).getByRole('img', {
+    name: 'search',
+  });
   fireEvent.submit(submitBtn);
 
   // Wait for components to re-render
@@ -538,7 +582,9 @@ it('handles saving and applying searches to and from the search library to rende
   fireEvent.click(saveSearch);
 
   // Click on the search library link
-  const searchLibraryLink = getByRole('link', { name: 'book 1' });
+  const searchLibraryLink = within(rightMenuComponent).getByRole('img', {
+    name: 'search',
+  });
   expect(searchLibraryLink).toBeTruthy();
   fireEvent.click(searchLibraryLink);
 
@@ -563,15 +609,24 @@ it('handles saving and applying searches to and from the search library to rende
 });
 
 it('handles saving multiple searches', async () => {
-  const { getByRole, getByTestId, getByPlaceholderText, getByText } = render(
+  const {
+    getByRole,
+    getByTestId,
+    getByPlaceholderText,
+    getByText,
+  } = customRender(
     <Router>
       <App />
     </Router>
   );
 
-  // Check nav-bar component exists
+  // Check applicable components render
   const navComponent = await waitFor(() => getByTestId('nav-bar'));
   expect(navComponent).toBeTruthy();
+  const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
+  expect(leftMenuComponent).toBeTruthy();
+  const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
+  expect(rightMenuComponent).toBeTruthy();
 
   // Change value for free-text input
   const input = 'foo';
@@ -580,7 +635,9 @@ it('handles saving multiple searches', async () => {
   fireEvent.change(freeTextInput, { target: { value: input } });
 
   // Submit the form
-  const submitBtn = getByRole('img', { name: 'search' });
+  const submitBtn = within(leftMenuComponent).getByRole('img', {
+    name: 'search',
+  });
   fireEvent.submit(submitBtn);
 
   // Wait for components to re-render

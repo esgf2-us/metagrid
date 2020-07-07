@@ -1,3 +1,4 @@
+/* Component styling */
 .navbar {
   margin-top: 20px;
   width: 100%;
@@ -6,17 +7,7 @@
 
 .navbar-logo {
   width: 175px;
-
   float: left;
-}
-
-.navbar-container .ant-menu-horizontal {
-  border-bottom: none;
-}
-.navbar-container {
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
 }
 
 .navbar-container .navbar-left {
@@ -27,6 +18,16 @@
 
 .navbar-container .navbar-right {
   width: 35%;
+}
+
+/* Menu Ant Design overrides */
+.navbar-container .ant-menu-horizontal {
+  border-bottom: none;
+}
+.navbar-container {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
 }
 
 .navbar-mobile-button {
@@ -65,4 +66,14 @@
   .navbar-logo a {
     padding: 10px 20px;
   }
+}
+
+/* Sub-menu Ant Design overrides */
+.modified-item {
+  width: 75px;
+}
+
+.modified-item:hover {
+  border-bottom: 2px solid transparent !important;
+  color: inherit !important;
 }
