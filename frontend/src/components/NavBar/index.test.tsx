@@ -1,11 +1,12 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { render, waitFor, fireEvent } from '@testing-library/react';
+import { waitFor, fireEvent } from '@testing-library/react';
 
 import NavBar, { Props } from './index';
 import { server, rest } from '../../test/setup-env';
 import { apiRoutes } from '../../test/server-handlers';
+import { customRender } from '../../test/custom-render';
 
 const defaultProps: Props = {
   activeProject: { name: 'test1' },
@@ -16,22 +17,26 @@ const defaultProps: Props = {
 };
 
 it('renders LeftMenu and RightMenu components', async () => {
-  const { getByTestId } = render(
+  const { getByTestId } = customRender(
     <Router>
       <NavBar {...defaultProps} />
     </Router>
   );
-  await waitFor(() => expect(getByTestId('left-menu')).toBeTruthy());
-  expect(getByTestId('right-menu')).toBeTruthy();
+
+  const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
+  expect(rightMenuComponent).toBeTruthy();
+
+  const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
+  expect(leftMenuComponent).toBeTruthy();
 });
 
 it('renders error message when projects can"t be fetched', async () => {
   server.use(
-    rest.get(apiRoutes.metagrid, (_req, res, ctx) => {
+    rest.get(apiRoutes.projects, (_req, res, ctx) => {
       return res(ctx.status(404));
     })
   );
-  const { getByRole } = render(
+  const { getByRole } = customRender(
     <Router>
       <NavBar {...defaultProps} />
     </Router>
@@ -44,7 +49,7 @@ it('renders error message when projects can"t be fetched', async () => {
 });
 
 it('opens the drawer onClick and closes with onClose', async () => {
-  const { getByRole, getByTestId } = render(
+  const { getByRole, getByTestId } = customRender(
     <Router>
       <NavBar {...defaultProps} />
     </Router>

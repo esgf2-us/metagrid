@@ -15,13 +15,13 @@ import {
   ShoppingCartOutlined,
 } from '@ant-design/icons';
 
-import NavBar from './components/NavBar';
-import Facets from './components/Facets';
-import Search from './components/Search';
-import Cart from './components/Cart';
-import Summary from './components/Cart/Summary';
+import NavBar from '../NavBar';
+import Facets from '../Facets';
+import Search from '../Search';
+import Cart from '../Cart';
+import Summary from '../Cart/Summary';
 
-import { isEmpty, shallowCompare } from './utils/utils';
+import { isEmpty, shallowCompare } from '../../utils/utils';
 import './App.css';
 
 const styles = {

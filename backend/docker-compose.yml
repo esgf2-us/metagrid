@@ -5,13 +5,44 @@ services:
     image: postgres:11.8
     volumes:
       - ${HOME}/postgres_data:/var/lib/postgresql/data
-    env_file:
-      - .env
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     expose:
-      - "5433"
+      - "${POSTGRES_PORT}"
     ports:
-      - "5433:5433"
-    command: -p 5433
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    command: -p ${POSTGRES_PORT}
+
+  keycloak:
+    # Source: https://github.com/keycloak/keycloak-containers/blob/master/docker-compose-examples/keycloak-postgres.yml
+    image: jboss/keycloak
+    # https://github.com/jhipster/generator-jhipster/issues/7157#issuecomment-367813386
+    volumes:
+      - ./docker/keycloak:/opt/jboss/keycloak/imports
+    command:
+      -Dkeycloak.import=/opt/jboss/keycloak/imports/realm-export.json
+      -Dkeycloak.migration.strategy=IGNORE_EXISTING
+    environment:
+      DB_VENDOR: POSTGRES
+      DB_ADDR: ${POSTGRES_HOST}:${POSTGRES_PORT}
+      DB_DATABASE: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_SCHEMA: keycloak
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      KEYCLOAK_USER: ${KEYCLOAK_USER}
+      KEYCLOAK_PASSWORD: ${KEYCLOAK_PASSWORD}
+      KEYCLOAK_IMPORT: ./keycloak_realm.json
+    expose:
+      - "8080"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
 
   web:
     restart: always
@@ -19,6 +50,11 @@ services:
       - DJANGO_SECRET_KEY=local
     image: web
     build: ./
+    environment:
+      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE}
+      DATABASE_URL: ${DATABASE_URL}
+      KEYCLOAK_URL: ${KEYCLOAK_URL}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
     command: >
       bash -c "python wait_for_postgres.py &&
                ./manage.py migrate &&
@@ -29,8 +65,7 @@ services:
       - "8000:8000"
     depends_on:
       - postgres
-    env_file:
-      - .env
+      - keycloak
 
   documentation:
     restart: always
