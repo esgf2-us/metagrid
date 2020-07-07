@@ -5,6 +5,8 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from metagrid.cart.models import Cart
+
 
 class UserManager(BaseUserManager):
     """Define a model manager for User model with no username field."""
@@ -50,6 +52,17 @@ class User(AbstractUser):
     REQUIRED_FIELDS = []  # type: List[str]
 
     objects = UserManager()  # type: ignore
+
+    def save(self, *args, **kwargs):
+        """
+        Override save method to automatically create a linked Cart when
+        a new user is created.
+        https://stackoverflow.com/a/35647389
+        """
+        is_new = self._state.adding  # type: ignore
+        super(User, self).save(*args, **kwargs)
+        if is_new:
+            Cart.objects.create(user=self)
 
     def __str__(self):
         return self.email

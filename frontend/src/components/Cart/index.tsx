@@ -9,7 +9,7 @@ import Items from './Items';
 export type Props = {
   cart: RawSearchResult[] | [];
   savedSearches: SavedSearch[] | [];
-  handleCart: (item: RawSearchResult[], action: string) => void;
+  handleCart: (item: RawSearchResult[], operation: 'add' | 'remove') => void;
   clearCart: () => void;
   handleRemoveSearch: (id: string) => void;
   handleApplySearch: (savedSearch: SavedSearch) => void;
