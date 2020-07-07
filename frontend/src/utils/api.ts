@@ -5,8 +5,70 @@ import { apiRoutes } from '../test/server-handlers';
 import { proxyString } from '../env';
 
 /**
+ * Fetches user cart
+ */
+export const fetchUserCart = async (
+  pk: string,
+  accessToken: string
+): Promise<{
+  results: RawUserCart;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
+}> => {
+  return axios
+    .get(`${apiRoutes.userCart.replace(':pk', pk)}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+    .then((res) => {
+      return res.data as Promise<{
+        results: RawUserCart;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        [key: string]: any;
+      }>;
+    })
+    .catch((error) => {
+      throw new Error(error);
+    });
+};
+
+/**
+ * Updates user cart
+ */
+export const updateUserCart = async (
+  pk: string,
+  accessToken: string,
+  newUserCart: Cart
+): Promise<{
+  results: RawUserCart;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
+}> => {
+  return axios
+    .patch(
+      `${apiRoutes.userCart.replace(':pk', pk)}`,
+      { items: newUserCart },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    )
+    .then((res) => {
+      return res.data as Promise<{
+        results: RawUserCart;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        [key: string]: any;
+      }>;
+    })
+    .catch((error) => {
+      throw new Error(error);
+    });
+};
+
+/**
  * Fetches a list of projects.
- * NOTE: Uses the axios baseURL
  */
 export const fetchProjects = async (): Promise<{
   results: Project[];
@@ -14,7 +76,7 @@ export const fetchProjects = async (): Promise<{
   [key: string]: any;
 }> => {
   return axios
-    .get(`/api/v1/projects/`)
+    .get(apiRoutes.projects)
     .then((res) => {
       return res.data as Promise<{
         results: Project[];

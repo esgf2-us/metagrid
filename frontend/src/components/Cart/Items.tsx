@@ -22,7 +22,7 @@ const styles = {
 
 export type Props = {
   cart: RawSearchResult[] | [];
-  handleCart: (item: RawSearchResult[], action: string) => void;
+  handleCart: (item: RawSearchResult[], operation: 'add' | 'remove') => void;
   clearCart: () => void;
 };
 

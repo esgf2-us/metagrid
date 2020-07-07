@@ -1,5 +1,6 @@
 import pytest
 
+from metagrid.cart.models import Cart
 from metagrid.users.models import User
 from metagrid.users.tests.factories import UserFactory
 
@@ -53,7 +54,11 @@ class TestUserManager:
 class TestUser:
     @pytest.fixture(autouse=True)
     def setUp(self):
-        self.user = UserFactory.create()  # type: User
+        self.user = UserFactory()  # type: User
+
+    def test_save_creates_linked_user_cart(self):
+        cart_exists = Cart.objects.filter(user=self.user).exists()
+        assert cart_exists
 
     def test__str__(self):
         assert self.user.__str__() == self.user.email

@@ -9,6 +9,7 @@ from django.urls import include, path, re_path, reverse_lazy
 from django.views.generic.base import RedirectView
 from rest_framework.routers import DefaultRouter
 
+from metagrid.cart.views import CartViewSet
 from metagrid.projects.views import ProjectsViewSet
 from metagrid.users.views import UserCreateViewSet, UserViewSet
 
@@ -16,6 +17,7 @@ router = DefaultRouter()
 router.register(r"users", UserViewSet)
 router.register(r"users", UserCreateViewSet)
 router.register(r"projects", ProjectsViewSet)
+router.register(r"carts", CartViewSet)
 
 
 class KeycloakLogin(SocialLoginView):

@@ -5,12 +5,15 @@ import {
   fetchProjects,
   genUrlQuery,
   processCitation,
+  fetchUserCart,
+  updateUserCart,
 } from './api';
 import {
   defaultFacetsFixture,
   projectsFixture,
   citationFixture,
   esgSearchApiFixture,
+  userCartFixture,
 } from '../test/fixtures';
 import { server, rest } from '../test/setup-env';
 import { apiRoutes } from '../test/server-handlers';
@@ -221,5 +224,37 @@ describe('test fetchFiles()', () => {
       })
     );
     await expect(fetchFiles({ id: dataset.id })).rejects.toThrow('404');
+  });
+});
+
+describe('test fetchUserCart', () => {
+  it('returns user"s cart', async () => {
+    const files = await fetchUserCart('pk', 'access_token');
+    expect(files).toEqual(userCartFixture());
+  });
+  it('catches and throws an error', async () => {
+    server.use(
+      rest.get(apiRoutes.userCart, (_req, res, ctx) => {
+        return res(ctx.status(404));
+      })
+    );
+    await expect(fetchUserCart('pk', 'access_token')).rejects.toThrow('404');
+  });
+});
+
+describe('test fetchUserCart', () => {
+  it('updates user"s cart and returns user"s cart', async () => {
+    const files = await updateUserCart('pk', 'access_token', []);
+    expect(files).toEqual(userCartFixture());
+  });
+  it('catches and throws an error', async () => {
+    server.use(
+      rest.patch(apiRoutes.userCart, (_req, res, ctx) => {
+        return res(ctx.status(404));
+      })
+    );
+    await expect(updateUserCart('pk', 'access_token', [])).rejects.toThrow(
+      '404'
+    );
   });
 });
