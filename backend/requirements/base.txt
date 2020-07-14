@@ -19,7 +19,7 @@ Markdown==3.2.2  # https://pypi.org/project/Markdown/
 django-filter==2.3.0  # https://github.com/carltongibson/django-filter
 django-cors-headers==3.4.0  # https://github.com/adamchainz/django-cors-headers
 django-allauth==0.42.0  # https://github.com/pennersr/django-allauth
-dj-rest-auth==1.0.9  # https://github.com/jazzband/dj-rest-auth
+dj-rest-auth==1.1.0  # https://github.com/jazzband/dj-rest-auth
 djangorestframework-simplejwt==4.4.0  # https://github.com/SimpleJWT/django-rest-framework-simplejwt/
 
 # Code quality
