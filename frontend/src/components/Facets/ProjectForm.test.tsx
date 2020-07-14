@@ -3,7 +3,7 @@ import React from 'react';
 import { fireEvent, render } from '@testing-library/react';
 
 import ProjectsForm, { Props } from './ProjectForm';
-import { projectsFixture } from '../../test/fixtures';
+import { projectsFixture } from '../../api/mock/fixtures';
 
 const defaultProps: Props = {
   activeProject: { name: 'foo' },

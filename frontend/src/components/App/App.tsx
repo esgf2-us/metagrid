@@ -21,10 +21,16 @@ import Search from '../Search';
 import Cart from '../Cart';
 import Summary from '../Cart/Summary';
 
-import { isEmpty, shallowCompare } from '../../utils/utils';
+import { isEmpty } from '../../utils/utils';
 import './App.css';
 import { AuthContext } from '../../contexts/AuthContext';
-import { fetchUserCart, updateUserCart } from '../../utils/api';
+import {
+  fetchUserCart,
+  updateUserCart,
+  fetchUserSearches,
+  addUserSearch,
+  deleteUserSearch,
+} from '../../api';
 
 const styles = {
   bodyLayout: { padding: '24px 0' } as React.CSSProperties,
@@ -64,6 +70,7 @@ const App: React.FC = () => {
     latest: true,
     replica: false,
   });
+
   // User's cart containing datasets
   const [cart, setCart] = React.useState<Cart | []>(
     JSON.parse(localStorage.getItem('cart') || '[]')
@@ -89,6 +96,17 @@ const App: React.FC = () => {
               'There was an issue fetching your cart. Please contact support or try again later.',
           });
         });
+
+      void fetchUserSearches(accessToken as string)
+        .then((rawUserSearches) => {
+          setSavedSearches(rawUserSearches.results);
+        })
+        .catch(() => {
+          void message.error({
+            content:
+              'There was an issue fetching your saved searches. Please contact support or try again later.',
+          });
+        });
     }
   }, [isAuthenticated, pk, accessToken]);
 
@@ -106,8 +124,10 @@ const App: React.FC = () => {
    * Stores the savedSearches in local storage.
    */
   React.useEffect(() => {
-    localStorage.setItem('savedSearches', JSON.stringify(savedSearches));
-  }, [savedSearches]);
+    if (!isAuthenticated) {
+      localStorage.setItem('savedSearches', JSON.stringify(savedSearches));
+    }
+  }, [isAuthenticated, savedSearches]);
 
   /**
    * Handles clearing constraints for a selected project.
@@ -234,58 +254,80 @@ const App: React.FC = () => {
   };
 
   /**
-   * Handles saving searches to the library.
+   * Handles saving searches to the user's library.
    */
-  const handleSaveSearch = (numResults: number): void => {
+  const handleSaveSearch = (url: string): void => {
     const savedSearch: SavedSearch = {
-      id: uuidv4(),
+      uuid: uuidv4(),
+      user: pk,
       project: activeProject as Project,
+      projectId: activeProject.pk as string,
       defaultFacets,
       activeFacets,
       textInputs,
-      numResults,
+      url,
     };
 
-    let alreadySaved = false;
-
-    savedSearches.some((search) => {
-      if (
-        shallowCompare(
-          { ...savedSearch, id: undefined },
-          { ...search, id: undefined }
-        ) === true
-      ) {
-        void message.error({
-          content: 'This search has already been saved.',
-          icon: <BookOutlined style={styles.messageRemoveIcon} />,
-        });
-        alreadySaved = true;
-        return true;
-      }
-      return false;
-    });
-
-    /* istanbul ignore else */
-    if (!alreadySaved) {
+    /**
+     * Update the state saved searches and displays success message
+     */
+    const saveSuccess = (): void => {
       setSavedSearches([...savedSearches, savedSearch]);
       void message.success({
         content: 'Saved search criteria to your library',
         icon: <BookOutlined style={styles.messageAddIcon} />,
       });
+    };
+
+    if (isAuthenticated) {
+      void addUserSearch(pk as string, accessToken as string, savedSearch)
+        .then(() => {
+          saveSuccess();
+        })
+        .catch(() => {
+          void message.error({
+            content:
+              'There was an issue updating your cart. Please contact support or try again later.',
+          });
+        });
+    } else {
+      saveSuccess();
     }
   };
 
   /**
-   * Handles removing saved search criteria.
+   * Handles removing searches from the user's library.
    */
-  const handleRemoveSearch = (id: string): void => {
-    setSavedSearches(
-      savedSearches.filter((searchItem: SavedSearch) => searchItem.id !== id)
-    );
-    void message.success({
-      content: 'Removed search criteria from your library',
-      icon: <DeleteOutlined style={styles.messageRemoveIcon} />,
-    });
+  const handleRemoveSearch = (searchUUID: string): void => {
+    /**
+     * Updates the state of saved searches and display success
+     */
+    const deleteSuccess = (): void => {
+      setSavedSearches(
+        savedSearches.filter(
+          (searchItem: SavedSearch) => searchItem.uuid !== searchUUID
+        )
+      );
+      void message.success({
+        content: 'Removed search criteria from your library',
+        icon: <DeleteOutlined style={styles.messageRemoveIcon} />,
+      });
+    };
+
+    if (isAuthenticated) {
+      void deleteUserSearch(searchUUID, accessToken as string)
+        .then(() => {
+          deleteSuccess();
+        })
+        .catch(() => {
+          void message.error({
+            content:
+              'There was an issue updating your cart. Please contact support or try again later.',
+          });
+        });
+    } else {
+      deleteSuccess();
+    }
   };
 
   /**
@@ -386,9 +428,7 @@ const App: React.FC = () => {
                         handleRemoveTag(removedTag, type)
                       }
                       onClearTags={() => clearConstraints()}
-                      handleSaveSearch={(numResults: number) =>
-                        handleSaveSearch(numResults)
-                      }
+                      handleSaveSearch={handleSaveSearch}
                     ></Search>
                   </>
                 )}
@@ -408,8 +448,8 @@ const App: React.FC = () => {
                       savedSearches={savedSearches}
                       handleCart={handleCart}
                       clearCart={() => handleClearCart()}
-                      handleRemoveSearch={(id: string) =>
-                        handleRemoveSearch(id)
+                      handleRemoveSearch={(uuid: string) =>
+                        handleRemoveSearch(uuid)
                       }
                       handleApplySearch={(savedSearch: SavedSearch) =>
                         handleApplySearch(savedSearch)

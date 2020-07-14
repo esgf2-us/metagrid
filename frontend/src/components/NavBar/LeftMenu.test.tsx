@@ -3,7 +3,7 @@ import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { render, fireEvent, waitFor } from '@testing-library/react';
 import LeftMenu, { Props } from './LeftMenu';
-import { projectsFixture } from '../../test/fixtures';
+import { projectsFixture } from '../../api/mock/fixtures';
 
 const defaultProps: Props = {
   activeProject: { name: 'test1' },

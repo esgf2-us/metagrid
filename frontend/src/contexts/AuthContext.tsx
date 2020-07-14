@@ -3,7 +3,7 @@ import { useKeycloak } from '@react-keycloak/web';
 import { useAsync, DeferFn } from 'react-async';
 
 import axios from '../axios';
-import { apiRoutes } from '../test/server-handlers';
+import apiRoutes from '../api/routes';
 
 export const AuthContext = React.createContext<RawUserAuth & RawUserInfo>({
   access_token: null,

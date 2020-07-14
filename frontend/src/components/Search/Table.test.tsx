@@ -3,7 +3,7 @@ import React from 'react';
 import { fireEvent, render, within } from '@testing-library/react';
 
 import Table, { Props } from './Table';
-import { searchResultsFixture } from '../../test/fixtures';
+import { searchResultsFixture } from '../../api/mock/fixtures';
 
 const defaultProps: Props = {
   loading: false,

@@ -7,9 +7,8 @@ import FilesTable, {
   openDownloadUrl,
   DownloadUrls,
 } from './FilesTable';
-
-import { apiRoutes } from '../../test/server-handlers';
-import { server, rest } from '../../test/setup-env';
+import apiRoutes from '../../api/routes';
+import { server, rest } from '../../api/mock/setup-env';
 
 // Reset all mocks after each test
 afterEach(() => {
@@ -64,7 +63,7 @@ describe('test openDownloadUrl()', () => {
 describe('test FilesTable component', () => {
   it('returns Alert when there is an error fetching files', async () => {
     server.use(
-      rest.get(apiRoutes.esgSearchFiles, (_req, res, ctx) => {
+      rest.get(apiRoutes.esgfFiles, (_req, res, ctx) => {
         return res(ctx.status(404));
       })
     );

@@ -1,5 +1,8 @@
-// test/setup-env.js
-// add this to your setupFilesAfterEnv config in jest so it's imported for every test file
+/**
+ * This file imports the mock-service-worker server to all tests before initialization.
+ * Import this in setupTests.ts.
+ */
+
 import { server, rest } from './server';
 
 beforeAll(() => server.listen());

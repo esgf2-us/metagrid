@@ -9,4 +9,11 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ("name", "full_name", "description", "facets", "facets_url")
+        fields = (
+            "pk",
+            "name",
+            "full_name",
+            "description",
+            "facets",
+            "facets_url",
+        )
