@@ -7,7 +7,7 @@ import './test/setup-env';
 
 beforeEach(() => {
   // Set timeout since some tests run longer than 5000ms
-  jest.setTimeout(10000);
+  jest.setTimeout(15000);
 });
 
 // This resolves 'TypeError: window.matchMedia is not a function caused by JSDom.

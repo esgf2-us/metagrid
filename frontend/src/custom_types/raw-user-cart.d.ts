@@ -1,0 +1,3 @@
+type RawUserCart = {
+  items: RawSearchResult[];
+};

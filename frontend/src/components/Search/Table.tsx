@@ -23,7 +23,7 @@ export type Props = {
   results: RawSearchResult[] | [];
   totalResults?: number;
   cart: Cart | [];
-  handleCart: (item: RawSearchResult[], action: string) => void;
+  handleCart: (item: RawSearchResult[], operation: 'add' | 'remove') => void;
   handleRowSelect?: (selectedRows: RawSearchResult[] | []) => void;
   handlePagination?: (page: number, pageSize: number) => void;
   handlePageSizeChange?: (size: number) => void;
@@ -133,10 +133,10 @@ const Table: React.FC<Props> = ({
         }
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      onSelectAll: (_selected: any, selectedRows: any) => {
+      onSelectAll: (_selected: any, _selectedRows: any, changeRows: any) => {
         /* istanbul ignore else */
         if (handleRowSelect) {
-          handleRowSelect(selectedRows);
+          handleRowSelect(changeRows);
         }
       },
     },

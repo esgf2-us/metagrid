@@ -4,6 +4,8 @@ import { waitFor, fireEvent, within } from '@testing-library/react';
 
 import App from './App';
 import { customRender } from '../../test/custom-render';
+import { server, rest } from '../../test/setup-env';
+import { apiRoutes } from '../../test/server-handlers';
 
 const location = JSON.stringify(window.location);
 afterEach(() => {
@@ -78,7 +80,7 @@ it('handles project changes when a new project is selected', async () => {
   expect(errorMsg).toBeTruthy();
 });
 
-it('handles adding and removing items from the cart', async () => {
+it('handles anonymous user adding and removing items from cart', async () => {
   const {
     getByRole,
     getByTestId,
@@ -88,6 +90,74 @@ it('handles adding and removing items from the cart', async () => {
     <Router>
       <App />
     </Router>
+  );
+
+  // Check applicable components render
+  const navComponent = await waitFor(() => getByTestId('nav-bar'));
+  expect(navComponent).toBeTruthy();
+  const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
+  expect(leftMenuComponent).toBeTruthy();
+  const facetsComponent = await waitFor(() => getByTestId('facets'));
+  expect(facetsComponent).toBeTruthy();
+
+  // Change value for free-text input
+  const input = 'foo';
+  const freeTextInput = await waitFor(() => getByPlaceholderText('Search...'));
+  expect(freeTextInput).toBeTruthy();
+  fireEvent.change(freeTextInput, { target: { value: input } });
+
+  // Submit the form
+  const submitBtn = within(leftMenuComponent).getByRole('img', {
+    name: 'search',
+  });
+  fireEvent.submit(submitBtn);
+
+  // Wait for components to re-render
+  await waitFor(() => getByTestId('search'));
+  await waitFor(() => getByTestId('search-table'));
+  await waitFor(() => getByTestId('facets'));
+
+  // Check first row exists
+  const firstRow = await waitFor(() =>
+    getByRole('row', {
+      name: 'right-circle foo 3 1 Bytes node.gov 1 HTTPServer download plus',
+    })
+  );
+  expect(firstRow).toBeTruthy();
+
+  // Check first row has add button and click it
+  const addBtn = within(firstRow).getByRole('img', { name: 'plus' });
+  expect(addBtn).toBeTruthy();
+  fireEvent.click(addBtn);
+
+  // Check 'Added items(s) to the cart' message appears
+  const addText = await waitFor(() => getByText('Added item(s) to your cart'));
+  expect(addText).toBeTruthy();
+
+  // Check first row has remove button and click it
+  const removeBtn = within(firstRow).getByRole('img', { name: 'minus' });
+  expect(removeBtn).toBeTruthy();
+  fireEvent.click(removeBtn);
+
+  // Check 'Removed items(s) from the cart' message appears
+  const removeText = await waitFor(() =>
+    getByText('Removed item(s) from your cart')
+  );
+  expect(removeText).toBeTruthy();
+});
+
+it('handles authenticated user adding and removing items from cart', async () => {
+  const {
+    getByRole,
+    getByTestId,
+    getByText,
+    getByPlaceholderText,
+  } = customRender(
+    // Same test as the anonymous user version, but includes the token
+    <Router>
+      <App />
+    </Router>,
+    { token: 'token' }
   );
 
   // Check applicable components render
@@ -364,7 +434,7 @@ it('handles project changes and clearing constraints when the active project !==
   await waitFor(() => getByTestId('facets'));
 });
 
-it('displays the number of files in the cart summary and handles clearing the cart', async () => {
+it('displays anonymous user"s number of files in the cart summary and handles clearing the cart', async () => {
   const {
     getByRole,
     getByTestId,
@@ -465,6 +535,72 @@ it('displays the number of files in the cart summary and handles clearing the ca
   expect(emptyAlert).toBeTruthy();
 });
 
+it('displays authenticated user"s number of files in the cart summary and handles clearing the cart', async () => {
+  const { getByRole, getByTestId, getByText } = customRender(
+    <Router>
+      <App />
+    </Router>,
+    { token: 'token' }
+  );
+
+  // Check applicable components render
+  const navComponent = await waitFor(() => getByTestId('nav-bar'));
+  expect(navComponent).toBeTruthy();
+  const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
+  expect(leftMenuComponent).toBeTruthy();
+  const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
+  expect(rightMenuComponent).toBeTruthy();
+
+  // Click on the cart link
+  const cartLink = within(rightMenuComponent).getByRole('img', {
+    name: 'shopping-cart',
+  });
+  expect(cartLink).toBeTruthy();
+  fireEvent.click(cartLink);
+
+  // Check number of files and datasets are correctly displayed
+  const cart = await waitFor(() => getByTestId('cart'));
+  expect(cart).toBeTruthy();
+  const cartSummary = await waitFor(() => getByTestId('summary'));
+  expect(cartSummary).toBeTruthy();
+
+  expect(
+    getByText((_, node) => node.textContent === 'Number of Datasets: 1')
+  ).toBeTruthy();
+  expect(
+    getByText((_, node) => node.textContent === 'Number of Files: 3')
+  ).toBeTruthy();
+
+  // Check "Remove All Items" button renders with cart > 0 items and click it
+  const clearCartBtn = within(cart).getByRole('button', {
+    name: 'Remove All Items',
+  });
+  expect(clearCartBtn).toBeTruthy();
+  fireEvent.click(clearCartBtn);
+
+  await waitFor(() => getByTestId('cart'));
+
+  // Check confirmBtn exists in popover and click it
+  const confirmBtn = await waitFor(() =>
+    getByRole('button', {
+      name: 'OK',
+    })
+  );
+  expect(confirmBtn).toBeTruthy();
+  fireEvent.click(confirmBtn);
+
+  // Check number of datasets and files are now 0
+  expect(
+    getByText((_, node) => node.textContent === 'Number of Datasets: 0')
+  ).toBeTruthy();
+  expect(
+    getByText((_, node) => node.textContent === 'Number of Files: 0')
+  ).toBeTruthy();
+
+  // Check empty alert renders
+  const emptyAlert = getByText('Your cart is empty');
+  expect(emptyAlert).toBeTruthy();
+});
 it('handles removing searches from the search library', async () => {
   const {
     getByRole,
@@ -677,4 +813,31 @@ it('handles saving multiple searches', async () => {
 
   // Wait for search to re-render
   await waitFor(() => getByTestId('search'));
+});
+
+it('displays error message after failing to fetch authenticated user"s cart', async () => {
+  server.use(
+    rest.get(apiRoutes.userCart, (_req, res, ctx) => {
+      return res(ctx.status(404));
+    })
+  );
+
+  const { getByText, getByTestId } = customRender(
+    <Router>
+      <App />
+    </Router>,
+    { token: 'token' }
+  );
+
+  // Check applicable components render
+  const navComponent = await waitFor(() => getByTestId('nav-bar'));
+  expect(navComponent).toBeTruthy();
+
+  // Check error message renders after failing to fetch cart from API
+  const errorMsg = await waitFor(() =>
+    getByText(
+      'There was an issue fetching your cart. Please contact support or try again later.'
+    )
+  );
+  expect(errorMsg).toBeTruthy();
 });
