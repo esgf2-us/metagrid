@@ -3,17 +3,6 @@
 // APIs) and reduce duplicate hard-coded dummy data.
 
 /**
- * User fixture based on the User API.
- */
-export const userAuthFixture = (props: Partial<Project> = {}): UserAuth => {
-  const defaults: UserAuth = {
-    access_token: 'access_token',
-    refresh_token: 'refresh_token',
-  };
-  return { ...defaults, ...props } as UserAuth;
-};
-
-/**
  * Project fixture based on the Project API.
  */
 export const projectFixture = (props: Partial<Project> = {}): Project => {
@@ -160,4 +149,41 @@ export const esgSearchApiFixture = (): ESGSearchApiResponse => {
       facet_fields: rawFacetsFixture(),
     },
   };
+};
+
+/**
+ * User auth fixture based on the Keycloak User Auth API.
+ */
+export const userAuthFixture = (
+  props: Partial<RawUserAuth> = {}
+): RawUserAuth => {
+  const defaults: RawUserAuth = {
+    access_token: 'access_token',
+    refresh_token: 'refresh_token',
+  };
+  return { ...defaults, ...props };
+};
+
+/**
+ * User info fixture based on the User API.
+ */
+export const userInfoFixture = (
+  props: Partial<RawUserInfo> = {}
+): RawUserInfo => {
+  const defaults: RawUserInfo = {
+    pk: 'pk',
+  };
+  return { ...defaults, ...props } as RawUserInfo;
+};
+
+/**
+ * User cart fixture based on the Cart API.
+ */
+export const userCartFixture = (
+  props: Partial<RawUserCart> = {}
+): RawUserCart => {
+  const defaults: RawUserCart = {
+    items: [searchResultFixture()],
+  };
+  return { ...defaults, ...props } as RawUserCart;
 };

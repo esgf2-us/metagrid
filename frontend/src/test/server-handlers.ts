@@ -4,11 +4,15 @@ import {
   projectsFixture,
   citationFixture,
   esgSearchApiFixture,
+  userInfoFixture,
+  userCartFixture,
 } from './fixtures';
 import { apiBaseUrl, nodeRoute, nodeUrl, proxyString } from '../env';
 
 type ApiRoutes = {
   keycloakAuth: string;
+  userInfo: string;
+  userCart: string;
   projects: string;
   esgSearchDatasets: string;
   esgSearchFiles: string;
@@ -19,6 +23,8 @@ type ApiRoutes = {
 export const apiRoutes: ApiRoutes = {
   // MetaGrid API
   keycloakAuth: `${apiBaseUrl}/dj-rest-auth/keycloak`,
+  userInfo: `${apiBaseUrl}/dj-rest-auth/user/`,
+  userCart: `${apiBaseUrl}/api/v1/carts/:pk/`,
   projects: `${apiBaseUrl}/api/v1/projects/`,
   // ESGF Search API - datasets
   esgSearchDatasets: `${proxyString}/${nodeRoute}/esg-search/search/`,
@@ -33,7 +39,16 @@ export const apiRoutes: ApiRoutes = {
 // be returned to //display an error message within a component.
 const handlers = [
   rest.post(apiRoutes.keycloakAuth, (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json({ results: userAuthFixture() }));
+    return res(ctx.status(200), ctx.json(userAuthFixture()));
+  }),
+  rest.get(apiRoutes.userInfo, (_req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(userInfoFixture()));
+  }),
+  rest.get(apiRoutes.userCart, (_req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(userCartFixture()));
+  }),
+  rest.patch(apiRoutes.userCart, (_req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(userCartFixture()));
   }),
   rest.get(apiRoutes.projects, (_req, res, ctx) => {
     return res(ctx.status(200), ctx.json({ results: projectsFixture() }));

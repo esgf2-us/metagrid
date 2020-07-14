@@ -101,7 +101,10 @@ export type Props = {
   cart: Cart | [];
   onRemoveTag: (removedTag: Tag, type: string) => void;
   onClearTags: () => void;
-  handleCart: (selectedItems: RawSearchResult[], action: string) => void;
+  handleCart: (
+    selectedItems: RawSearchResult[],
+    operation: 'add' | 'remove'
+  ) => void;
   setAvailableFacets: (parsedFacets: ParsedFacets) => void;
   handleSaveSearch: (numResults: number) => void;
 };
