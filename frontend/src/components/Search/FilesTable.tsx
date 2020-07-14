@@ -7,7 +7,7 @@ import { Form, Select, Table as TableD } from 'antd';
 import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
 
-import { fetchFiles } from '../../utils/api';
+import { fetchFiles } from '../../api';
 import { parseUrl, formatBytes } from '../../utils/utils';
 
 export type DownloadUrls = {

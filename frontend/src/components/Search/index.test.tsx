@@ -8,17 +8,17 @@ import Search, {
   checkConstraintsExist,
   Props,
 } from './index';
+import apiRoutes from '../../api/routes';
 import { proxyString, nodeProtocol, nodeUrl } from '../../env';
 import {
   defaultFacetsFixture,
   esgSearchApiFixture,
   searchResultFixture,
-} from '../../test/fixtures';
-import { server, rest } from '../../test/setup-env';
-import { apiRoutes } from '../../test/server-handlers';
+} from '../../api/mock/fixtures';
+import { server, rest } from '../../api/mock/setup-env';
 
 const defaultProps: Props = {
-  activeProject: { name: 'foo', facets_url: 'https://fubar.gov/?' },
+  activeProject: { name: 'foo', facetsUrl: 'https://fubar.gov/?' },
   defaultFacets: defaultFacetsFixture(),
   activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
   textInputs: ['foo'],
@@ -66,7 +66,7 @@ describe('test Search component', () => {
     expect(alert).toBeTruthy();
   });
 
-  it('runs the side effect to set the current url when there is an activeProject object with a facets_url key', async () => {
+  it('runs the side effect to set the current url when there is an activeProject object with a facetsUrl key', async () => {
     const { getByRole, getByTestId } = render(<Search {...defaultProps} />);
 
     // Check search component renders
@@ -138,7 +138,7 @@ describe('test Search component', () => {
     // Update api to return 20 search results, which enables pagination if 10/page selected
     const data = esgSearchApiFixture();
     server.use(
-      rest.get(apiRoutes.esgSearchDatasets, (_req, res, ctx) => {
+      rest.get(apiRoutes.esgfDatasets, (_req, res, ctx) => {
         return res(
           ctx.status(200),
           ctx.json({

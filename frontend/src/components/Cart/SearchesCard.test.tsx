@@ -4,9 +4,9 @@ import { MemoryRouter } from 'react-router-dom';
 import { fireEvent, render, waitFor } from '@testing-library/react';
 
 import SearchesCard, { Props } from './SearchesCard';
-import { savedSearchFixture } from '../../test/fixtures';
-import { apiRoutes } from '../../test/server-handlers';
-import { server, rest } from '../../test/setup-env';
+import apiRoutes from '../../api/routes';
+import { savedSearchFixture } from '../../api/mock/fixtures';
+import { server, rest } from '../../api/mock/setup-env';
 
 const defaultProps: Props = {
   savedSearch: savedSearchFixture(),
@@ -49,7 +49,7 @@ it('renders component and handles button clicks', async () => {
 
 it('displays alert error when api fails to return response', async () => {
   server.use(
-    rest.get(apiRoutes.esgSearchDatasets, (_req, res, ctx) => {
+    rest.get(apiRoutes.esgfDatasets, (_req, res, ctx) => {
       return res(ctx.status(404));
     })
   );

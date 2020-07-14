@@ -1,22 +1,27 @@
 import {
+  addUserSearch,
+  deleteUserSearch,
   fetchCitation,
   fetchFiles,
   fetchResults,
   fetchProjects,
+  fetchUserCart,
+  fetchUserSearches,
   genUrlQuery,
   processCitation,
-  fetchUserCart,
   updateUserCart,
-} from './api';
+} from '.';
+import apiRoutes from './routes';
 import {
-  defaultFacetsFixture,
-  projectsFixture,
   citationFixture,
+  defaultFacetsFixture,
   esgSearchApiFixture,
+  projectsFixture,
+  savedSearchFixture,
+  savedSearchesFixture,
   userCartFixture,
-} from '../test/fixtures';
-import { server, rest } from '../test/setup-env';
-import { apiRoutes } from '../test/server-handlers';
+} from './mock/fixtures';
+import { server, rest } from './mock/setup-env';
 
 // Reset all mocks after each test
 afterEach(() => {
@@ -68,7 +73,7 @@ describe('test genUrlQuery()', () => {
     );
 
     expect(url).toEqual(
-      `${apiRoutes.esgSearchDatasets}?limit=10&offset=0&latest=true&replica=false&query=input1,input2&facet1=var1,var2&facet2=var3,var4`
+      `${apiRoutes.esgfDatasets}?limit=10&offset=0&latest=true&replica=false&query=input1,input2&facet1=var1,var2&facet2=var3,var4`
     );
   });
   it('returns formatted url with offset of 200 and limit of 100 on page 3', () => {
@@ -85,7 +90,7 @@ describe('test genUrlQuery()', () => {
       pagination
     );
     expect(url).toEqual(
-      `${apiRoutes.esgSearchDatasets}?limit=100&offset=200&latest=true&replica=false&query=input1,input2&facet1=var1,var2&facet2=var3,var4`
+      `${apiRoutes.esgfDatasets}?limit=100&offset=200&latest=true&replica=false&query=input1,input2&facet1=var1,var2&facet2=var3,var4`
     );
   });
   it('returns formatted url without free-text', () => {
@@ -102,7 +107,7 @@ describe('test genUrlQuery()', () => {
       pagination
     );
     expect(url).toEqual(
-      `${apiRoutes.esgSearchDatasets}?limit=10&offset=0&latest=true&replica=false&query=*&facet1=var1,var2&facet2=var3,var4`
+      `${apiRoutes.esgfDatasets}?limit=10&offset=0&latest=true&replica=false&query=*&facet1=var1,var2&facet2=var3,var4`
     );
   });
 
@@ -114,7 +119,7 @@ describe('test genUrlQuery()', () => {
 
     const url = genUrlQuery(baseUrl, defaultFacets, {}, textInputs, pagination);
     expect(url).toEqual(
-      `${apiRoutes.esgSearchDatasets}?limit=10&offset=0&latest=true&replica=false&query=input1,input2&`
+      `${apiRoutes.esgfDatasets}?limit=10&offset=0&latest=true&replica=false&query=input1,input2&`
     );
   });
 });
@@ -123,16 +128,16 @@ describe('test fetchResults()', () => {
   let reqUrl: string;
 
   beforeEach(() => {
-    reqUrl = apiRoutes.esgSearchDatasets;
+    reqUrl = apiRoutes.esgfDatasets;
   });
-  it('calls axios and returns results', async () => {
+  it('returns results', async () => {
     reqUrl += '?query=input1,input2&facet1=var1,var2&facet2=var3,var4';
 
     const projects = await fetchResults([reqUrl]);
     expect(projects).toEqual(esgSearchApiFixture());
   });
 
-  it('calls axios and returns results without free-text', async () => {
+  it('returns results without free-text', async () => {
     reqUrl += '?query=*&facet1=var1,var2&facet2=var3,var4';
 
     const projects = await fetchResults({ reqUrl });
@@ -140,7 +145,7 @@ describe('test fetchResults()', () => {
   });
   it('catches and throws an error', async () => {
     server.use(
-      rest.get(apiRoutes.esgSearchDatasets, (_req, res, ctx) => {
+      rest.get(apiRoutes.esgfDatasets, (_req, res, ctx) => {
         return res(ctx.status(404));
       })
     );
@@ -219,7 +224,7 @@ describe('test fetchFiles()', () => {
   });
   it('catches and throws an error', async () => {
     server.use(
-      rest.get(apiRoutes.esgSearchFiles, (_req, res, ctx) => {
+      rest.get(apiRoutes.esgfFiles, (_req, res, ctx) => {
         return res(ctx.status(404));
       })
     );
@@ -256,5 +261,60 @@ describe('test fetchUserCart', () => {
     await expect(updateUserCart('pk', 'access_token', [])).rejects.toThrow(
       '404'
     );
+  });
+});
+
+describe('test fetchUserSearches', () => {
+  it('returns user"s searches', async () => {
+    const res = await fetchUserSearches('access_token');
+
+    expect(res).toEqual({ results: savedSearchesFixture() });
+  });
+  it('catches and throws an error', async () => {
+    server.use(
+      rest.get(apiRoutes.userSearches, (_req, res, ctx) => {
+        return res(ctx.status(404));
+      })
+    );
+
+    await expect(fetchUserSearches('access_token')).rejects.toThrow('404');
+  });
+});
+
+describe('test addUserSearch', () => {
+  it('adds user search and returns response', async () => {
+    const payload = savedSearchFixture();
+    const res = await addUserSearch('pk', 'access_token', payload);
+
+    expect(res).toEqual(payload);
+  });
+  it('catches and throws an error', async () => {
+    server.use(
+      rest.post(apiRoutes.userSearches, (_req, res, ctx) => {
+        return res(ctx.status(404));
+      })
+    );
+
+    const payload = savedSearchFixture();
+    await expect(addUserSearch('pk', 'access_token', payload)).rejects.toThrow(
+      '404'
+    );
+  });
+});
+
+describe('test deleteUserSearch', () => {
+  it('deletes user search and returns response', async () => {
+    const res = await deleteUserSearch('pk', 'access_token');
+
+    expect(res).toEqual('');
+  });
+  it('catches and throws an error', async () => {
+    server.use(
+      rest.delete(apiRoutes.userSearch, (_req, res, ctx) => {
+        return res(ctx.status(404));
+      })
+    );
+
+    await expect(deleteUserSearch('pk', 'access_token')).rejects.toThrow('404');
   });
 });

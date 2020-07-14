@@ -12,8 +12,9 @@ import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
 import Tag from '../DataDisplay/Tag';
 
-import { fetchResults, genUrlQuery } from '../../utils/api';
+import { fetchResults, genUrlQuery } from '../../api';
 import { isEmpty, humanize } from '../../utils/utils';
+import { clickableRoute } from '../../api/routes';
 
 const styles = {
   summary: {
@@ -106,7 +107,7 @@ export type Props = {
     operation: 'add' | 'remove'
   ) => void;
   setAvailableFacets: (parsedFacets: ParsedFacets) => void;
-  handleSaveSearch: (numResults: number) => void;
+  handleSaveSearch: (url: string) => void;
 };
 
 const Search: React.FC<Props> = ({
@@ -153,7 +154,7 @@ const Search: React.FC<Props> = ({
   React.useEffect(() => {
     if (!isEmpty(activeProject)) {
       const reqUrl = genUrlQuery(
-        (activeProject as Project).facets_url,
+        (activeProject as Project).facetsUrl,
         defaultFacets,
         activeFacets,
         textInputs,
@@ -268,7 +269,7 @@ const Search: React.FC<Props> = ({
             <div>
               <Button
                 type="primary"
-                onClick={() => handleSaveSearch(numFound)}
+                onClick={() => handleSaveSearch(curReqUrl as string)}
                 disabled={isLoading || numFound === 0}
               >
                 <BookOutlined />
@@ -371,7 +372,7 @@ const Search: React.FC<Props> = ({
         {curReqUrl && (
           <Button
             type="primary"
-            href={curReqUrl}
+            href={clickableRoute(curReqUrl)}
             target="_blank"
             icon={<ExportOutlined />}
           >

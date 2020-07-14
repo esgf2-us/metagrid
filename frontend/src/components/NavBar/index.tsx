@@ -10,7 +10,7 @@ import LeftMenu from './LeftMenu';
 import RightMenu from './RightMenu';
 import './NavBar.css';
 
-import { fetchProjects } from '../../utils/api';
+import { fetchProjects } from '../../api';
 import esgfLogo from '../../assets/img/esgf_logo.png';
 import Spin from '../Feedback/Spin';
 
@@ -51,6 +51,7 @@ const NavBar: React.FC<Props> = ({
         <Link to="/search">
           <img
             style={{ maxWidth: '100%', height: 'auto' }}
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
             src={esgfLogo as string}
             alt="ESGF Logo"
           />

@@ -3,7 +3,10 @@ import React from 'react';
 import { fireEvent, render, waitFor, within } from '@testing-library/react';
 
 import Facets, { Props } from './index';
-import { parsedFacetsFixture, defaultFacetsFixture } from '../../test/fixtures';
+import {
+  parsedFacetsFixture,
+  defaultFacetsFixture,
+} from '../../api/mock/fixtures';
 
 const defaultProps: Props = {
   activeProject: {},
