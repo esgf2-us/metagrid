@@ -86,7 +86,9 @@ const SearchesCard: React.FC<Props> = ({
       <>
         <p>
           <span style={{ fontWeight: 'bold' }}>
-            {(data as { response: { numFound: number } }).response.numFound}
+            {(data as {
+              response: { numFound: number };
+            }).response.numFound.toLocaleString()}
           </span>{' '}
           results found for {project.name}
         </p>
