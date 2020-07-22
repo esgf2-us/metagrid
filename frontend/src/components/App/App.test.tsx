@@ -1,11 +1,19 @@
+/**
+ * This file contains tests for the App component.
+ *
+ * The App component uses React Router and React Context, so it must be wrapped
+ * in order to mock their behaviors.
+ *
+ */
+
 import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { waitFor, fireEvent, within } from '@testing-library/react';
 
 import App from './App';
+import apiRoutes from '../../api/routes';
 import { customRender } from '../../test/custom-render';
-import { server, rest } from '../../test/setup-env';
-import { apiRoutes } from '../../test/server-handlers';
+import { server, rest } from '../../api/mock/setup-env';
 
 const location = JSON.stringify(window.location);
 afterEach(() => {
@@ -16,6 +24,9 @@ afterEach(() => {
   // - https://stackoverflow.com/questions/59892304/cant-get-memoryrouter-to-work-with-testing-library-react
   delete window.location;
   window.location = (JSON.parse(location) as unknown) as Location;
+
+  // Clear localStorage between tests
+  localStorage.clear();
 
   // Reset all mocks after each test
   jest.clearAllMocks();
@@ -78,140 +89,6 @@ it('handles project changes when a new project is selected', async () => {
     getByText(`Input "${input}" has already been applied`)
   );
   expect(errorMsg).toBeTruthy();
-});
-
-it('handles anonymous user adding and removing items from cart', async () => {
-  const {
-    getByRole,
-    getByTestId,
-    getByText,
-    getByPlaceholderText,
-  } = customRender(
-    <Router>
-      <App />
-    </Router>
-  );
-
-  // Check applicable components render
-  const navComponent = await waitFor(() => getByTestId('nav-bar'));
-  expect(navComponent).toBeTruthy();
-  const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
-  expect(leftMenuComponent).toBeTruthy();
-  const facetsComponent = await waitFor(() => getByTestId('facets'));
-  expect(facetsComponent).toBeTruthy();
-
-  // Change value for free-text input
-  const input = 'foo';
-  const freeTextInput = await waitFor(() => getByPlaceholderText('Search...'));
-  expect(freeTextInput).toBeTruthy();
-  fireEvent.change(freeTextInput, { target: { value: input } });
-
-  // Submit the form
-  const submitBtn = within(leftMenuComponent).getByRole('img', {
-    name: 'search',
-  });
-  fireEvent.submit(submitBtn);
-
-  // Wait for components to re-render
-  await waitFor(() => getByTestId('search'));
-  await waitFor(() => getByTestId('search-table'));
-  await waitFor(() => getByTestId('facets'));
-
-  // Check first row exists
-  const firstRow = await waitFor(() =>
-    getByRole('row', {
-      name: 'right-circle foo 3 1 Bytes node.gov 1 HTTPServer download plus',
-    })
-  );
-  expect(firstRow).toBeTruthy();
-
-  // Check first row has add button and click it
-  const addBtn = within(firstRow).getByRole('img', { name: 'plus' });
-  expect(addBtn).toBeTruthy();
-  fireEvent.click(addBtn);
-
-  // Check 'Added items(s) to the cart' message appears
-  const addText = await waitFor(() => getByText('Added item(s) to your cart'));
-  expect(addText).toBeTruthy();
-
-  // Check first row has remove button and click it
-  const removeBtn = within(firstRow).getByRole('img', { name: 'minus' });
-  expect(removeBtn).toBeTruthy();
-  fireEvent.click(removeBtn);
-
-  // Check 'Removed items(s) from the cart' message appears
-  const removeText = await waitFor(() =>
-    getByText('Removed item(s) from your cart')
-  );
-  expect(removeText).toBeTruthy();
-});
-
-it('handles authenticated user adding and removing items from cart', async () => {
-  const {
-    getByRole,
-    getByTestId,
-    getByText,
-    getByPlaceholderText,
-  } = customRender(
-    // Same test as the anonymous user version, but includes the token
-    <Router>
-      <App />
-    </Router>,
-    { token: 'token' }
-  );
-
-  // Check applicable components render
-  const navComponent = await waitFor(() => getByTestId('nav-bar'));
-  expect(navComponent).toBeTruthy();
-  const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
-  expect(leftMenuComponent).toBeTruthy();
-  const facetsComponent = await waitFor(() => getByTestId('facets'));
-  expect(facetsComponent).toBeTruthy();
-
-  // Change value for free-text input
-  const input = 'foo';
-  const freeTextInput = await waitFor(() => getByPlaceholderText('Search...'));
-  expect(freeTextInput).toBeTruthy();
-  fireEvent.change(freeTextInput, { target: { value: input } });
-
-  // Submit the form
-  const submitBtn = within(leftMenuComponent).getByRole('img', {
-    name: 'search',
-  });
-  fireEvent.submit(submitBtn);
-
-  // Wait for components to re-render
-  await waitFor(() => getByTestId('search'));
-  await waitFor(() => getByTestId('search-table'));
-  await waitFor(() => getByTestId('facets'));
-
-  // Check first row exists
-  const firstRow = await waitFor(() =>
-    getByRole('row', {
-      name: 'right-circle foo 3 1 Bytes node.gov 1 HTTPServer download plus',
-    })
-  );
-  expect(firstRow).toBeTruthy();
-
-  // Check first row has add button and click it
-  const addBtn = within(firstRow).getByRole('img', { name: 'plus' });
-  expect(addBtn).toBeTruthy();
-  fireEvent.click(addBtn);
-
-  // Check 'Added items(s) to the cart' message appears
-  const addText = await waitFor(() => getByText('Added item(s) to your cart'));
-  expect(addText).toBeTruthy();
-
-  // Check first row has remove button and click it
-  const removeBtn = within(firstRow).getByRole('img', { name: 'minus' });
-  expect(removeBtn).toBeTruthy();
-  fireEvent.click(removeBtn);
-
-  // Check 'Removed items(s) from the cart' message appears
-  const removeText = await waitFor(() =>
-    getByText('Removed item(s) from your cart')
-  );
-  expect(removeText).toBeTruthy();
 });
 
 it('handles removing search tags and clearing all search tags', async () => {
@@ -434,410 +311,734 @@ it('handles project changes and clearing constraints when the active project !==
   await waitFor(() => getByTestId('facets'));
 });
 
-it('displays anonymous user"s number of files in the cart summary and handles clearing the cart', async () => {
-  const {
-    getByRole,
-    getByTestId,
-    getByText,
-    getByPlaceholderText,
-  } = customRender(
-    <Router>
-      <App />
-    </Router>
-  );
+describe('User cart', () => {
+  it('handles authenticated user adding and removing items from cart', async () => {
+    const {
+      getByRole,
+      getByTestId,
+      getByText,
+      getByPlaceholderText,
+    } = customRender(
+      <Router>
+        <App />
+      </Router>,
+      { token: 'token' }
+    );
 
-  // Check applicable components render
-  const navComponent = await waitFor(() => getByTestId('nav-bar'));
-  expect(navComponent).toBeTruthy();
-  const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
-  expect(leftMenuComponent).toBeTruthy();
+    // Check applicable components render
+    const navComponent = await waitFor(() => getByTestId('nav-bar'));
+    expect(navComponent).toBeTruthy();
+    const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
+    expect(leftMenuComponent).toBeTruthy();
+    const facetsComponent = await waitFor(() => getByTestId('facets'));
+    expect(facetsComponent).toBeTruthy();
 
-  // Change value for free-text input
-  const input = 'foo';
-  const freeTextInput = await waitFor(() => getByPlaceholderText('Search...'));
-  expect(freeTextInput).toBeTruthy();
-  fireEvent.change(freeTextInput, { target: { value: input } });
+    // Change value for free-text input
+    const input = 'foo';
+    const freeTextInput = await waitFor(() =>
+      getByPlaceholderText('Search...')
+    );
+    expect(freeTextInput).toBeTruthy();
+    fireEvent.change(freeTextInput, { target: { value: input } });
 
-  // Submit the form
-  const submitBtn = within(leftMenuComponent).getByRole('img', {
-    name: 'search',
+    // Submit the form
+    const submitBtn = within(leftMenuComponent).getByRole('img', {
+      name: 'search',
+    });
+    fireEvent.submit(submitBtn);
+
+    // Wait for components to re-render
+    await waitFor(() => getByTestId('search'));
+    await waitFor(() => getByTestId('search-table'));
+    await waitFor(() => getByTestId('facets'));
+
+    // Check first row exists
+    const firstRow = await waitFor(() =>
+      getByRole('row', {
+        name: 'right-circle foo 3 1 Bytes node.gov 1 HTTPServer download plus',
+      })
+    );
+    expect(firstRow).toBeTruthy();
+
+    // Check first row has add button and click it
+    const addBtn = within(firstRow).getByRole('img', { name: 'plus' });
+    expect(addBtn).toBeTruthy();
+    fireEvent.click(addBtn);
+
+    // Check 'Added items(s) to the cart' message appears
+    const addText = await waitFor(() =>
+      getByText('Added item(s) to your cart')
+    );
+    expect(addText).toBeTruthy();
+
+    // Check first row has remove button and click it
+    const removeBtn = within(firstRow).getByRole('img', { name: 'minus' });
+    expect(removeBtn).toBeTruthy();
+    fireEvent.click(removeBtn);
+
+    // Check 'Removed items(s) from the cart' message appears
+    const removeText = await waitFor(() =>
+      getByText('Removed item(s) from your cart')
+    );
+    expect(removeText).toBeTruthy();
   });
-  fireEvent.submit(submitBtn);
+  it('displays authenticated user"s number of files in the cart summary and handles clearing the cart', async () => {
+    const { getByRole, getByTestId, getByText } = customRender(
+      <Router>
+        <App />
+      </Router>,
+      { token: 'token' }
+    );
 
-  // Wait for components to re-render
-  await waitFor(() => getByTestId('search'));
-  await waitFor(() => getByTestId('search-table'));
-  await waitFor(() => getByTestId('facets'));
+    // Check applicable components render
+    const navComponent = await waitFor(() => getByTestId('nav-bar'));
+    expect(navComponent).toBeTruthy();
+    const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
+    expect(leftMenuComponent).toBeTruthy();
+    const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
+    expect(rightMenuComponent).toBeTruthy();
 
-  // Check first row exists
-  const firstRow = await waitFor(() =>
-    getByRole('row', {
-      name: 'right-circle foo 3 1 Bytes node.gov 1 HTTPServer download plus',
-    })
-  );
-  expect(firstRow).toBeTruthy();
+    // Click on the cart link
+    const cartLink = within(rightMenuComponent).getByRole('img', {
+      name: 'shopping-cart',
+    });
+    expect(cartLink).toBeTruthy();
+    fireEvent.click(cartLink);
 
-  // Check first row has add button and click it
-  const addBtn = within(firstRow).getByRole('img', { name: 'plus' });
-  expect(addBtn).toBeTruthy();
-  fireEvent.click(addBtn);
+    // Check number of files and datasets are correctly displayed
+    const cart = await waitFor(() => getByTestId('cart'));
+    expect(cart).toBeTruthy();
+    const cartSummary = await waitFor(() => getByTestId('summary'));
+    expect(cartSummary).toBeTruthy();
 
-  // Check 'Added item(s) to your cart' message appears
-  const addText = await waitFor(() => getByText('Added item(s) to your cart'));
-  expect(addText).toBeTruthy();
+    expect(
+      getByText((_, node) => node.textContent === 'Number of Datasets: 1')
+    ).toBeTruthy();
+    expect(
+      getByText((_, node) => node.textContent === 'Number of Files: 3')
+    ).toBeTruthy();
 
-  // Click on the cart link
-  const cartLink = getByRole('link', { name: 'shopping-cart 1' });
-  expect(cartLink).toBeTruthy();
-  fireEvent.click(cartLink);
+    // Check "Remove All Items" button renders with cart > 0 items and click it
+    const clearCartBtn = within(cart).getByRole('button', {
+      name: 'Remove All Items',
+    });
+    expect(clearCartBtn).toBeTruthy();
+    fireEvent.click(clearCartBtn);
 
-  // Check number of files and datasets are correctly displayed
-  const cart = await waitFor(() => getByTestId('cart'));
-  expect(cart).toBeTruthy();
-  const cartSummary = await waitFor(() => getByTestId('summary'));
-  expect(cartSummary).toBeTruthy();
+    await waitFor(() => getByTestId('cart'));
 
-  expect(
-    getByText((_, node) => node.textContent === 'Number of Datasets: 1')
-  ).toBeTruthy();
-  expect(
-    getByText((_, node) => node.textContent === 'Number of Files: 3')
-  ).toBeTruthy();
+    // Check confirmBtn exists in popover and click it
+    const confirmBtn = await waitFor(() =>
+      getByRole('button', {
+        name: 'OK',
+      })
+    );
+    expect(confirmBtn).toBeTruthy();
+    fireEvent.click(confirmBtn);
 
-  // Check "Remove All Items" button renders with cart > 0 items and click it
-  const clearCartBtn = within(cart).getByRole('button', {
-    name: 'Remove All Items',
+    // Check number of datasets and files are now 0
+    expect(
+      getByText((_, node) => node.textContent === 'Number of Datasets: 0')
+    ).toBeTruthy();
+    expect(
+      getByText((_, node) => node.textContent === 'Number of Files: 0')
+    ).toBeTruthy();
+
+    // Check empty alert renders
+    const emptyAlert = getByText('Your cart is empty');
+    expect(emptyAlert).toBeTruthy();
   });
-  expect(clearCartBtn).toBeTruthy();
-  fireEvent.click(clearCartBtn);
 
-  await waitFor(() => getByTestId('cart'));
+  it('handles anonymous user adding and removing items from cart', async () => {
+    const {
+      getByRole,
+      getByTestId,
+      getByText,
+      getByPlaceholderText,
+    } = customRender(
+      <Router>
+        <App />
+      </Router>
+    );
 
-  // Check confirmBtn exists in popover and click it
-  const confirmBtn = await waitFor(() =>
-    getByRole('button', {
-      name: 'OK',
-    })
-  );
-  expect(confirmBtn).toBeTruthy();
-  fireEvent.click(confirmBtn);
+    // Check applicable components render
+    const navComponent = await waitFor(() => getByTestId('nav-bar'));
+    expect(navComponent).toBeTruthy();
+    const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
+    expect(leftMenuComponent).toBeTruthy();
+    const facetsComponent = await waitFor(() => getByTestId('facets'));
+    expect(facetsComponent).toBeTruthy();
 
-  // Check number of datasets and files are now 0
-  expect(
-    getByText((_, node) => node.textContent === 'Number of Datasets: 0')
-  ).toBeTruthy();
-  expect(
-    getByText((_, node) => node.textContent === 'Number of Files: 0')
-  ).toBeTruthy();
+    // Change value for free-text input
+    const input = 'foo';
+    const freeTextInput = await waitFor(() =>
+      getByPlaceholderText('Search...')
+    );
+    expect(freeTextInput).toBeTruthy();
+    fireEvent.change(freeTextInput, { target: { value: input } });
 
-  // Check empty alert renders
-  const emptyAlert = getByText('Your cart is empty');
-  expect(emptyAlert).toBeTruthy();
+    // Submit the form
+    const submitBtn = within(leftMenuComponent).getByRole('img', {
+      name: 'search',
+    });
+    fireEvent.submit(submitBtn);
+
+    // Wait for components to re-render
+    await waitFor(() => getByTestId('search'));
+    await waitFor(() => getByTestId('search-table'));
+    await waitFor(() => getByTestId('facets'));
+
+    // Check first row exists
+    const firstRow = await waitFor(() =>
+      getByRole('row', {
+        name: 'right-circle foo 3 1 Bytes node.gov 1 HTTPServer download plus',
+      })
+    );
+    expect(firstRow).toBeTruthy();
+
+    // Check first row has add button and click it
+    const addBtn = within(firstRow).getByRole('img', { name: 'plus' });
+    expect(addBtn).toBeTruthy();
+    fireEvent.click(addBtn);
+
+    // Check 'Added items(s) to the cart' message appears
+    const addText = await waitFor(() =>
+      getByText('Added item(s) to your cart')
+    );
+    expect(addText).toBeTruthy();
+
+    // Check first row has remove button and click it
+    const removeBtn = within(firstRow).getByRole('img', { name: 'minus' });
+    expect(removeBtn).toBeTruthy();
+    fireEvent.click(removeBtn);
+
+    // Check 'Removed items(s) from the cart' message appears
+    const removeText = await waitFor(() =>
+      getByText('Removed item(s) from your cart')
+    );
+    expect(removeText).toBeTruthy();
+  });
+
+  it('displays anonymous user"s number of files in the cart summary and handles clearing the cart', async () => {
+    const {
+      getByRole,
+      getByTestId,
+      getByText,
+      getByPlaceholderText,
+    } = customRender(
+      <Router>
+        <App />
+      </Router>
+    );
+
+    // Check applicable components render
+    const navComponent = await waitFor(() => getByTestId('nav-bar'));
+    expect(navComponent).toBeTruthy();
+    const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
+    expect(leftMenuComponent).toBeTruthy();
+
+    // Change value for free-text input
+    const input = 'foo';
+    const freeTextInput = await waitFor(() =>
+      getByPlaceholderText('Search...')
+    );
+    expect(freeTextInput).toBeTruthy();
+    fireEvent.change(freeTextInput, { target: { value: input } });
+
+    // Submit the form
+    const submitBtn = within(leftMenuComponent).getByRole('img', {
+      name: 'search',
+    });
+    fireEvent.submit(submitBtn);
+
+    // Wait for components to re-render
+    await waitFor(() => getByTestId('search'));
+    await waitFor(() => getByTestId('search-table'));
+    await waitFor(() => getByTestId('facets'));
+
+    // Check first row exists
+    const firstRow = await waitFor(() =>
+      getByRole('row', {
+        name: 'right-circle foo 3 1 Bytes node.gov 1 HTTPServer download plus',
+      })
+    );
+    expect(firstRow).toBeTruthy();
+
+    // Check first row has add button and click it
+    const addBtn = within(firstRow).getByRole('img', { name: 'plus' });
+    expect(addBtn).toBeTruthy();
+    fireEvent.click(addBtn);
+
+    // Check 'Added item(s) to your cart' message appears
+    const addText = await waitFor(() =>
+      getByText('Added item(s) to your cart')
+    );
+    expect(addText).toBeTruthy();
+
+    // Click on the cart link
+    const cartLink = getByRole('link', { name: 'shopping-cart 1' });
+    expect(cartLink).toBeTruthy();
+    fireEvent.click(cartLink);
+
+    // Check number of files and datasets are correctly displayed
+    const cart = await waitFor(() => getByTestId('cart'));
+    expect(cart).toBeTruthy();
+    const cartSummary = await waitFor(() => getByTestId('summary'));
+    expect(cartSummary).toBeTruthy();
+
+    expect(
+      getByText((_, node) => node.textContent === 'Number of Datasets: 1')
+    ).toBeTruthy();
+    expect(
+      getByText((_, node) => node.textContent === 'Number of Files: 3')
+    ).toBeTruthy();
+
+    // Check "Remove All Items" button renders with cart > 0 items and click it
+    const clearCartBtn = within(cart).getByRole('button', {
+      name: 'Remove All Items',
+    });
+    expect(clearCartBtn).toBeTruthy();
+    fireEvent.click(clearCartBtn);
+
+    await waitFor(() => getByTestId('cart'));
+
+    // Check confirmBtn exists in popover and click it
+    const confirmBtn = await waitFor(() =>
+      getByRole('button', {
+        name: 'OK',
+      })
+    );
+    expect(confirmBtn).toBeTruthy();
+    fireEvent.click(confirmBtn);
+
+    // Check number of datasets and files are now 0
+    expect(
+      getByText((_, node) => node.textContent === 'Number of Datasets: 0')
+    ).toBeTruthy();
+    expect(
+      getByText((_, node) => node.textContent === 'Number of Files: 0')
+    ).toBeTruthy();
+
+    // Check empty alert renders
+    const emptyAlert = getByText('Your cart is empty');
+    expect(emptyAlert).toBeTruthy();
+  });
+
+  describe('Error handling', () => {
+    it('displays error message after failing to fetch authenticated user"s cart', async () => {
+      server.use(
+        rest.get(apiRoutes.userCart, (_req, res, ctx) => {
+          return res(ctx.status(404));
+        })
+      );
+
+      const { getByText, getByTestId } = customRender(
+        <Router>
+          <App />
+        </Router>,
+        { token: 'token' }
+      );
+
+      // Check applicable components render
+      const navComponent = await waitFor(() => getByTestId('nav-bar'));
+      expect(navComponent).toBeTruthy();
+
+      // Check error message renders after failing to fetch cart from API
+      const errorMsg = await waitFor(() =>
+        getByText(
+          'There was an issue fetching your cart. Please contact support or try again later.'
+        )
+      );
+      expect(errorMsg).toBeTruthy();
+    });
+  });
 });
 
-it('displays authenticated user"s number of files in the cart summary and handles clearing the cart', async () => {
-  const { getByRole, getByTestId, getByText } = customRender(
-    <Router>
-      <App />
-    </Router>,
-    { token: 'token' }
-  );
+describe('User search library', () => {
+  it('handles authenticated user saving and applying searches', async () => {
+    const { getByTestId, getByPlaceholderText, getByRole } = customRender(
+      <Router>
+        <App />
+      </Router>,
+      { token: 'token' }
+    );
 
-  // Check applicable components render
-  const navComponent = await waitFor(() => getByTestId('nav-bar'));
-  expect(navComponent).toBeTruthy();
-  const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
-  expect(leftMenuComponent).toBeTruthy();
-  const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
-  expect(rightMenuComponent).toBeTruthy();
+    // Check applicable components render
+    const navComponent = await waitFor(() => getByTestId('nav-bar'));
+    expect(navComponent).toBeTruthy();
+    const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
+    expect(leftMenuComponent).toBeTruthy();
+    const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
+    expect(rightMenuComponent).toBeTruthy();
 
-  // Click on the cart link
-  const cartLink = within(rightMenuComponent).getByRole('img', {
-    name: 'shopping-cart',
+    // Change value for free-text input
+    const input = 'foo';
+    const freeTextInput = await waitFor(() =>
+      getByPlaceholderText('Search...')
+    );
+    expect(freeTextInput).toBeTruthy();
+    fireEvent.change(freeTextInput, { target: { value: input } });
+
+    // Submit the form
+    const submitBtn = within(leftMenuComponent).getByRole('img', {
+      name: 'search',
+    });
+    fireEvent.submit(submitBtn);
+
+    // Wait for components to re-render
+    await waitFor(() => getByTestId('search'));
+    await waitFor(() => getByTestId('search-table'));
+    await waitFor(() => getByTestId('facets'));
+
+    // Check Save Search Criteria button exists and click it
+    const saveSearch = await waitFor(() =>
+      getByRole('button', { name: 'book Save Search Criteria' })
+    );
+    expect(saveSearch).toBeTruthy();
+    fireEvent.click(saveSearch);
+
+    // Click on the search library link
+    const searchLibraryLink = within(rightMenuComponent).getByRole('img', {
+      name: 'search',
+    });
+    expect(searchLibraryLink).toBeTruthy();
+    fireEvent.click(searchLibraryLink);
+
+    // Check cart renders
+    const cart = await waitFor(() => getByTestId('cart'));
+    expect(cart).toBeTruthy();
+
+    // Check apply search button renders and click it
+    const applySearchBtn = await waitFor(() =>
+      within(cart).getByRole('img', { name: 'search', hidden: true })
+    );
+    expect(applySearchBtn).toBeTruthy();
+    fireEvent.click(applySearchBtn);
+
+    // Wait for components to re-render
+    await waitFor(() => getByTestId('facets'));
+    await waitFor(() => getByTestId('search'));
+    await waitFor(() => getByTestId('search-table'));
+
+    // Wait for facets component to render again based on the results
+    await waitFor(() => getByTestId('facets'));
   });
-  expect(cartLink).toBeTruthy();
-  fireEvent.click(cartLink);
+  it('handles authenticated user removing searches from the search library', async () => {
+    const { getByRole, getByTestId, getByText } = customRender(
+      <Router>
+        <App />
+      </Router>,
+      { token: 'token' }
+    );
 
-  // Check number of files and datasets are correctly displayed
-  const cart = await waitFor(() => getByTestId('cart'));
-  expect(cart).toBeTruthy();
-  const cartSummary = await waitFor(() => getByTestId('summary'));
-  expect(cartSummary).toBeTruthy();
+    // Check applicable components render
+    const navComponent = await waitFor(() => getByTestId('nav-bar'));
+    expect(navComponent).toBeTruthy();
+    const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
+    expect(leftMenuComponent).toBeTruthy();
+    const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
+    expect(rightMenuComponent).toBeTruthy();
 
-  expect(
-    getByText((_, node) => node.textContent === 'Number of Datasets: 1')
-  ).toBeTruthy();
-  expect(
-    getByText((_, node) => node.textContent === 'Number of Files: 3')
-  ).toBeTruthy();
+    // Go directly to the search library since user already has items in their cart
+    const searchLibraryLink = await waitFor(() =>
+      within(rightMenuComponent).getByRole('img', { name: 'search' })
+    );
+    expect(searchLibraryLink).toBeTruthy();
+    fireEvent.click(searchLibraryLink);
 
-  // Check "Remove All Items" button renders with cart > 0 items and click it
-  const clearCartBtn = within(cart).getByRole('button', {
-    name: 'Remove All Items',
+    // Check number of files and datasets are correctly displayed
+    const cart = await waitFor(() => getByTestId('cart'));
+    expect(cart).toBeTruthy();
+
+    // Check delete button renders for the saved search and click it
+    const deleteBtn = await waitFor(() =>
+      getByRole('img', { name: 'delete', hidden: true })
+    );
+    expect(deleteBtn).toBeTruthy();
+    fireEvent.click(deleteBtn);
+
+    await waitFor(() => getByTestId('cart'));
+
+    // Check removed message appears
+    const removeText = await waitFor(() =>
+      getByText('Removed search criteria from your library')
+    );
+    expect(removeText).toBeTruthy();
   });
-  expect(clearCartBtn).toBeTruthy();
-  fireEvent.click(clearCartBtn);
 
-  await waitFor(() => getByTestId('cart'));
+  it('handles anonymous user saving and applying searches', async () => {
+    const { getByTestId, getByPlaceholderText, getByRole } = customRender(
+      <Router>
+        <App />
+      </Router>
+    );
 
-  // Check confirmBtn exists in popover and click it
-  const confirmBtn = await waitFor(() =>
-    getByRole('button', {
-      name: 'OK',
-    })
-  );
-  expect(confirmBtn).toBeTruthy();
-  fireEvent.click(confirmBtn);
+    // Check applicable components render
+    const navComponent = await waitFor(() => getByTestId('nav-bar'));
+    expect(navComponent).toBeTruthy();
+    const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
+    expect(leftMenuComponent).toBeTruthy();
+    const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
+    expect(rightMenuComponent).toBeTruthy();
 
-  // Check number of datasets and files are now 0
-  expect(
-    getByText((_, node) => node.textContent === 'Number of Datasets: 0')
-  ).toBeTruthy();
-  expect(
-    getByText((_, node) => node.textContent === 'Number of Files: 0')
-  ).toBeTruthy();
+    // Change value for free-text input
+    const input = 'foo';
+    const freeTextInput = await waitFor(() =>
+      getByPlaceholderText('Search...')
+    );
+    expect(freeTextInput).toBeTruthy();
+    fireEvent.change(freeTextInput, { target: { value: input } });
 
-  // Check empty alert renders
-  const emptyAlert = getByText('Your cart is empty');
-  expect(emptyAlert).toBeTruthy();
-});
-it('handles removing searches from the search library', async () => {
-  const {
-    getByRole,
-    getByTestId,
-    getByText,
-    getByPlaceholderText,
-  } = customRender(
-    <Router>
-      <App />
-    </Router>
-  );
+    // Submit the form
+    const submitBtn = within(leftMenuComponent).getByRole('img', {
+      name: 'search',
+    });
+    fireEvent.submit(submitBtn);
 
-  // Check applicable components render
-  const navComponent = await waitFor(() => getByTestId('nav-bar'));
-  expect(navComponent).toBeTruthy();
-  const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
-  expect(leftMenuComponent).toBeTruthy();
-  const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
-  expect(rightMenuComponent).toBeTruthy();
+    // Wait for components to re-render
+    await waitFor(() => getByTestId('search'));
+    await waitFor(() => getByTestId('search-table'));
+    await waitFor(() => getByTestId('facets'));
 
-  // Change value for free-text input
-  const input = 'foo';
-  const freeTextInput = await waitFor(() => getByPlaceholderText('Search...'));
-  expect(freeTextInput).toBeTruthy();
-  fireEvent.change(freeTextInput, { target: { value: input } });
+    // Check Save Search Criteria button exists and click it
+    const saveSearch = await waitFor(() =>
+      getByRole('button', { name: 'book Save Search Criteria' })
+    );
+    expect(saveSearch).toBeTruthy();
+    fireEvent.click(saveSearch);
 
-  // Submit the form
-  const submitBtn = within(leftMenuComponent).getByRole('img', {
-    name: 'search',
+    // Click on the search library link
+    const searchLibraryLink = within(rightMenuComponent).getByRole('img', {
+      name: 'search',
+    });
+    expect(searchLibraryLink).toBeTruthy();
+    fireEvent.click(searchLibraryLink);
+
+    // Check cart renders
+    const cart = await waitFor(() => getByTestId('cart'));
+    expect(cart).toBeTruthy();
+
+    // Check apply search button renders and click it
+    const applySearchBtn = await waitFor(() =>
+      within(cart).getByRole('img', { name: 'search', hidden: true })
+    );
+    expect(applySearchBtn).toBeTruthy();
+    fireEvent.click(applySearchBtn);
+
+    // Wait for components to re-render
+    await waitFor(() => getByTestId('facets'));
+    await waitFor(() => getByTestId('search'));
+    await waitFor(() => getByTestId('search-table'));
+
+    // Wait for facets component to render again based on the results
+    await waitFor(() => getByTestId('facets'));
   });
-  fireEvent.submit(submitBtn);
+  it('handles anonymous user removing searches from the search library', async () => {
+    const {
+      getByPlaceholderText,
+      getByRole,
+      getByTestId,
+      getByText,
+    } = customRender(
+      <Router>
+        <App />
+      </Router>
+    );
 
-  // Wait for components to re-render
-  await waitFor(() => getByTestId('search'));
-  await waitFor(() => getByTestId('search-table'));
-  await waitFor(() => getByTestId('facets'));
+    // Check applicable components render
+    const navComponent = await waitFor(() => getByTestId('nav-bar'));
+    expect(navComponent).toBeTruthy();
+    const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
+    expect(leftMenuComponent).toBeTruthy();
+    const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
+    expect(rightMenuComponent).toBeTruthy();
 
-  // Check Save Search Criteria button exists and click it
-  const saveSearch = await waitFor(() =>
-    getByRole('button', { name: 'book Save Search Criteria' })
-  );
-  expect(saveSearch).toBeTruthy();
-  fireEvent.click(saveSearch);
+    // Change value for free-text input
+    const input = 'foo';
+    const freeTextInput = await waitFor(() =>
+      getByPlaceholderText('Search...')
+    );
+    expect(freeTextInput).toBeTruthy();
+    fireEvent.change(freeTextInput, { target: { value: input } });
 
-  // Check added message appears
-  const addText = await waitFor(() =>
-    getByText('Saved search criteria to your library')
-  );
-  expect(addText).toBeTruthy();
+    // Submit the form
+    const submitBtn = within(leftMenuComponent).getByRole('img', {
+      name: 'search',
+    });
+    fireEvent.submit(submitBtn);
 
-  // Click on the search library link
-  const searchLibraryLink = await waitFor(() =>
-    within(rightMenuComponent).getByRole('img', { name: 'search' })
-  );
-  expect(searchLibraryLink).toBeTruthy();
-  fireEvent.click(searchLibraryLink);
+    // Wait for components to re-render
+    await waitFor(() => getByTestId('search'));
+    await waitFor(() => getByTestId('search-table'));
+    await waitFor(() => getByTestId('facets'));
 
-  // Check number of files and datasets are correctly displayed
-  const cart = await waitFor(() => getByTestId('cart'));
-  expect(cart).toBeTruthy();
+    // Check Save Search Criteria button exists and click it
+    const saveSearch = await waitFor(() =>
+      getByRole('button', { name: 'book Save Search Criteria' })
+    );
+    expect(saveSearch).toBeTruthy();
+    fireEvent.click(saveSearch);
 
-  // Check delete button renders for the saved search and click it
-  const deleteBtn = await waitFor(() =>
-    getByRole('img', { name: 'delete', hidden: true })
-  );
-  expect(deleteBtn).toBeTruthy();
-  fireEvent.click(deleteBtn);
+    const searchLibraryLink = await waitFor(() =>
+      within(rightMenuComponent).getByRole('img', { name: 'search' })
+    );
+    expect(searchLibraryLink).toBeTruthy();
+    fireEvent.click(searchLibraryLink);
 
-  await waitFor(() => getByTestId('cart'));
+    const cart = await waitFor(() => getByTestId('cart'));
+    expect(cart).toBeTruthy();
 
-  // Check removed message appears
-  const removeText = await waitFor(() =>
-    getByText('Removed search criteria from your library')
-  );
-  expect(removeText).toBeTruthy();
-});
+    // Check delete button renders for the saved search and click it
+    const deleteBtn = await waitFor(() =>
+      getByRole('img', { name: 'delete', hidden: true })
+    );
+    expect(deleteBtn).toBeTruthy();
+    fireEvent.click(deleteBtn);
 
-it('handles saving and applying searches to and from the search library to render results', async () => {
-  const { getByRole, getByTestId, getByPlaceholderText } = customRender(
-    <Router>
-      <App />
-    </Router>
-  );
+    await waitFor(() => getByTestId('cart'));
 
-  // Check applicable components render
-  const navComponent = await waitFor(() => getByTestId('nav-bar'));
-  expect(navComponent).toBeTruthy();
-  const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
-  expect(leftMenuComponent).toBeTruthy();
-  const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
-  expect(rightMenuComponent).toBeTruthy();
-
-  // Change value for free-text input
-  const input = 'foo';
-  const freeTextInput = await waitFor(() => getByPlaceholderText('Search...'));
-  expect(freeTextInput).toBeTruthy();
-  fireEvent.change(freeTextInput, { target: { value: input } });
-
-  // Submit the form
-  const submitBtn = within(leftMenuComponent).getByRole('img', {
-    name: 'search',
+    // Check removed message appears
+    const removeText = getByText('Removed search criteria from your library');
+    expect(removeText).toBeTruthy();
   });
-  fireEvent.submit(submitBtn);
 
-  // Wait for components to re-render
-  await waitFor(() => getByTestId('search'));
-  await waitFor(() => getByTestId('search-table'));
-  await waitFor(() => getByTestId('facets'));
+  describe('Error handling', () => {
+    it('displays error message after failing to fetch authenticated user"s saved searches', async () => {
+      server.use(
+        rest.get(apiRoutes.userSearches, (_req, res, ctx) => {
+          return res(ctx.status(404));
+        })
+      );
 
-  // Check Save Search Criteria button exists and click it
-  const saveSearch = await waitFor(() =>
-    getByRole('button', { name: 'book Save Search Criteria' })
-  );
-  expect(saveSearch).toBeTruthy();
-  fireEvent.click(saveSearch);
+      const { getByText, getByTestId } = customRender(
+        <Router>
+          <App />
+        </Router>,
+        { token: 'token' }
+      );
 
-  // Click on the search library link
-  const searchLibraryLink = within(rightMenuComponent).getByRole('img', {
-    name: 'search',
+      // Check applicable components render
+      const navComponent = await waitFor(() => getByTestId('nav-bar'));
+      expect(navComponent).toBeTruthy();
+
+      // Check error message renders after failing to fetch cart from API
+      const errorMsg = await waitFor(() =>
+        getByText(
+          'There was an issue fetching your saved searches. Please contact support or try again later.'
+        )
+      );
+      expect(errorMsg).toBeTruthy();
+    });
+
+    it('displays error message after failing to add authenticated user"s saved search', async () => {
+      // Override API response with 404
+      server.use(
+        rest.post(apiRoutes.userSearches, (_req, res, ctx) => {
+          return res(ctx.status(404));
+        })
+      );
+
+      const {
+        getByTestId,
+        getByPlaceholderText,
+        getByRole,
+        getByText,
+      } = customRender(
+        <Router>
+          <App />
+        </Router>,
+        { token: 'token' }
+      );
+
+      // Check applicable components render
+      const navComponent = await waitFor(() => getByTestId('nav-bar'));
+      expect(navComponent).toBeTruthy();
+      const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
+      expect(leftMenuComponent).toBeTruthy();
+      const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
+      expect(rightMenuComponent).toBeTruthy();
+
+      // Change value for free-text input
+      const input = 'foo';
+      const freeTextInput = await waitFor(() =>
+        getByPlaceholderText('Search...')
+      );
+      expect(freeTextInput).toBeTruthy();
+      fireEvent.change(freeTextInput, { target: { value: input } });
+
+      // Submit the form
+      const submitBtn = within(leftMenuComponent).getByRole('img', {
+        name: 'search',
+      });
+      fireEvent.submit(submitBtn);
+      // Wait for components to re-render
+      await waitFor(() => getByTestId('search'));
+      await waitFor(() => getByTestId('search-table'));
+      await waitFor(() => getByTestId('facets'));
+
+      // Check Save Search Criteria button exists and click it
+      const saveSearch = await waitFor(() =>
+        getByRole('button', { name: 'book Save Search Criteria' })
+      );
+      expect(saveSearch).toBeTruthy();
+      fireEvent.click(saveSearch);
+
+      const errorMsg = await waitFor(() =>
+        getByText(
+          'There was an issue updating your cart. Please contact support or try again later.'
+        )
+      );
+      expect(errorMsg).toBeTruthy();
+    });
+    it('displays error message after failing to remove authenticated user"s saved search', async () => {
+      // Override API response with 404
+      server.use(
+        rest.delete(apiRoutes.userSearch, (_req, res, ctx) => {
+          return res(ctx.status(404));
+        })
+      );
+
+      const { getByRole, getByTestId, getByText } = customRender(
+        <Router>
+          <App />
+        </Router>,
+        { token: 'token' }
+      );
+
+      // Check applicable components render
+      const navComponent = await waitFor(() => getByTestId('nav-bar'));
+      expect(navComponent).toBeTruthy();
+      const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
+      expect(leftMenuComponent).toBeTruthy();
+      const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
+      expect(rightMenuComponent).toBeTruthy();
+
+      // Go directly to the search library since user already has items in their cart
+      const searchLibraryLink = await waitFor(() =>
+        within(rightMenuComponent).getByRole('img', { name: 'search' })
+      );
+      expect(searchLibraryLink).toBeTruthy();
+      fireEvent.click(searchLibraryLink);
+
+      // Check number of files and datasets are correctly displayed
+      const cart = await waitFor(() => getByTestId('cart'));
+      expect(cart).toBeTruthy();
+
+      // Check delete button renders for the saved search and click it
+      const deleteBtn = await waitFor(() =>
+        getByRole('img', { name: 'delete', hidden: true })
+      );
+      expect(deleteBtn).toBeTruthy();
+      fireEvent.click(deleteBtn);
+
+      await waitFor(() => getByTestId('cart'));
+
+      const errorMsg = await waitFor(() =>
+        getByText(
+          'There was an issue updating your cart. Please contact support or try again later.'
+        )
+      );
+      expect(errorMsg).toBeTruthy();
+    });
   });
-  expect(searchLibraryLink).toBeTruthy();
-  fireEvent.click(searchLibraryLink);
-
-  // Check cart renders
-  const cart = await waitFor(() => getByTestId('cart'));
-  expect(cart).toBeTruthy();
-
-  // Check apply search button renders and click it
-  const applySearchBtn = await waitFor(() =>
-    within(cart).getByRole('img', { name: 'search', hidden: true })
-  );
-  expect(applySearchBtn).toBeTruthy();
-  fireEvent.click(applySearchBtn);
-
-  // Wait for components to re-render
-  await waitFor(() => getByTestId('facets'));
-  await waitFor(() => getByTestId('search'));
-  await waitFor(() => getByTestId('search-table'));
-
-  // Wait for facets component to render again based on the results
-  await waitFor(() => getByTestId('facets'));
-});
-
-it('handles saving multiple searches', async () => {
-  const {
-    getByRole,
-    getByTestId,
-    getByPlaceholderText,
-    getByText,
-  } = customRender(
-    <Router>
-      <App />
-    </Router>
-  );
-
-  // Check applicable components render
-  const navComponent = await waitFor(() => getByTestId('nav-bar'));
-  expect(navComponent).toBeTruthy();
-  const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
-  expect(leftMenuComponent).toBeTruthy();
-  const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
-  expect(rightMenuComponent).toBeTruthy();
-
-  // Change value for free-text input
-  const input = 'foo';
-  const freeTextInput = await waitFor(() => getByPlaceholderText('Search...'));
-  expect(freeTextInput).toBeTruthy();
-  fireEvent.change(freeTextInput, { target: { value: input } });
-
-  // Submit the form
-  const submitBtn = within(leftMenuComponent).getByRole('img', {
-    name: 'search',
-  });
-  fireEvent.submit(submitBtn);
-
-  // Wait for components to re-render
-  await waitFor(() => getByTestId('search'));
-  await waitFor(() => getByTestId('search-table'));
-  await waitFor(() => getByTestId('facets'));
-
-  // Check save button exists and click it
-  const saveSearch = await waitFor(() =>
-    getByRole('button', { name: 'book Save Search Criteria' })
-  );
-  expect(saveSearch).toBeTruthy();
-  fireEvent.click(saveSearch);
-
-  // Click on button again
-  fireEvent.click(saveSearch);
-
-  // Wait for search to re-render
-  await waitFor(() => getByTestId('search'));
-
-  // Check alert appears showing search already saved
-  const alreadySavedAlert = await waitFor(() =>
-    getByText('This search has already been saved.')
-  );
-  expect(alreadySavedAlert).toBeTruthy();
-
-  // Change free-text input and submit to save another search
-  fireEvent.change(freeTextInput, { target: { value: input } });
-  fireEvent.submit(submitBtn);
-
-  // Wait for components to re-render
-  await waitFor(() => getByTestId('search'));
-  await waitFor(() => getByTestId('search-table'));
-  await waitFor(() => getByTestId('facets'));
-
-  fireEvent.click(saveSearch);
-
-  // Wait for search to re-render
-  await waitFor(() => getByTestId('search'));
-});
-
-it('displays error message after failing to fetch authenticated user"s cart', async () => {
-  server.use(
-    rest.get(apiRoutes.userCart, (_req, res, ctx) => {
-      return res(ctx.status(404));
-    })
-  );
-
-  const { getByText, getByTestId } = customRender(
-    <Router>
-      <App />
-    </Router>,
-    { token: 'token' }
-  );
-
-  // Check applicable components render
-  const navComponent = await waitFor(() => getByTestId('nav-bar'));
-  expect(navComponent).toBeTruthy();
-
-  // Check error message renders after failing to fetch cart from API
-  const errorMsg = await waitFor(() =>
-    getByText(
-      'There was an issue fetching your cart. Please contact support or try again later.'
-    )
-  );
-  expect(errorMsg).toBeTruthy();
 });

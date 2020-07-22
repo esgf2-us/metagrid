@@ -1,15 +1,18 @@
-// This file contains fixtures to seed tests with dummy data.
-// Fixtures allows tests to be maintainable (especially in the case of updated
-// APIs) and reduce duplicate hard-coded dummy data.
+/**
+ * This file contains fixtures to pre-populate server-handlers with dummy data.
+ * Fixtures allows tests to be maintainable (especially in the case of updated
+ * APIs) and reduce duplicate hard-coded dummy data.
+ */
 
 /**
- * Project fixture based on the Project API.
+ * Project fixture
  */
 export const projectFixture = (props: Partial<Project> = {}): Project => {
   const defaults: Project = {
+    pk: '1',
     name: 'test1',
-    facets_url:
-      'https://esgf-node.llnl.gov/esg-search/search/?offset=0&limit=0',
+    facetsUrl: 'https://esgf-node.llnl.gov/esg-search/search/?offset=0&limit=0',
+    fullName: 'test1',
   };
   return { ...defaults, ...props } as Project;
 };
@@ -48,7 +51,7 @@ export const searchResultsFixture = (): RawSearchResult[] => {
 };
 
 /**
- * Raw facets fixture, related to the ESG Search API.
+ * Raw facets fixture
  */
 export const rawFacetsFixture = (props: Partial<RawFacets> = {}): RawFacets => {
   const defaults: RawFacets = {
@@ -110,16 +113,14 @@ export const savedSearchFixture = (
   props: Partial<SavedSearch> = {}
 ): SavedSearch => {
   const defaults: SavedSearch = {
-    id: 'id',
-    project: {
-      name: 'foo',
-      facets_url:
-        'latest=true&replica=false&query=foo&baz=option1&foo=option1,option2',
-    },
+    uuid: 'uuid',
+    user: 'user',
+    project: projectFixture(),
+    projectId: '1',
     defaultFacets: { latest: true, replica: false },
     activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
     textInputs: ['foo'],
-    numResults: 1,
+    url: 'url.com',
   };
 
   return { ...defaults, ...props } as SavedSearch;
@@ -137,7 +138,7 @@ export const defaultFacetsFixture = (
 };
 
 /**
- * ESG Search API fixture
+ * ESGF Search API fixture.
  */
 export const esgSearchApiFixture = (): ESGSearchApiResponse => {
   return {
@@ -177,7 +178,7 @@ export const userInfoFixture = (
 };
 
 /**
- * User cart fixture based on the Cart API.
+ * User cart fixture based on the Cart Datasets API.
  */
 export const userCartFixture = (
   props: Partial<RawUserCart> = {}

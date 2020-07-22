@@ -4,7 +4,7 @@ import { useAsync, PromiseFn } from 'react-async';
 import Alert from '../Feedback/Alert';
 import Skeleton from '../Feedback/Skeleton';
 
-import { fetchCitation } from '../../utils/api';
+import { fetchCitation } from '../../api';
 import { parseUrl } from '../../utils/utils';
 
 type CitationInfoProps = {

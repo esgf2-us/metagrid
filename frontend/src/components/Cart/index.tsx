@@ -11,7 +11,7 @@ export type Props = {
   savedSearches: SavedSearch[] | [];
   handleCart: (item: RawSearchResult[], operation: 'add' | 'remove') => void;
   clearCart: () => void;
-  handleRemoveSearch: (id: string) => void;
+  handleRemoveSearch: (uuid: string) => void;
   handleApplySearch: (savedSearch: SavedSearch) => void;
 };
 
@@ -75,7 +75,7 @@ const Cart: React.FC<Props> = ({
         >
           <Searches
             savedSearches={savedSearches}
-            handleRemoveSearch={(id: string) => handleRemoveSearch(id)}
+            handleRemoveSearch={handleRemoveSearch}
             handleApplySearch={(savedSearch: SavedSearch) =>
               handleApplySearch(savedSearch)
             }

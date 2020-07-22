@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { fireEvent, render, waitFor } from '@testing-library/react';
 
 import Cart, { Props } from './index';
-import { cartFixture, savedSearchesFixture } from '../../test/fixtures';
+import { cartFixture, savedSearchesFixture } from '../../api/mock/fixtures';
 
 const defaultProps: Props = {
   cart: cartFixture(),

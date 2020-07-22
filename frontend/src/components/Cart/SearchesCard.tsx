@@ -12,9 +12,10 @@ import Card from '../DataDisplay/Card';
 import ToolTip from '../DataDisplay/ToolTip';
 
 import { stringifyConstraints } from '../Search';
-import { genUrlQuery, fetchResults } from '../../utils/api';
+import { fetchResults, genUrlQuery } from '../../api';
 import Skeleton from '../Feedback/Skeleton';
 import Alert from '../Feedback/Alert';
+import { clickableRoute } from '../../api/routes';
 
 const styles: Record<string, React.CSSProperties> = {
   category: {
@@ -28,7 +29,7 @@ const styles: Record<string, React.CSSProperties> = {
 export type Props = {
   savedSearch: SavedSearch;
   index: number;
-  handleRemoveSearch: (id: string) => void;
+  handleRemoveSearch: (uuid: string) => void;
   handleApplySearch: (savedSearch: SavedSearch) => void;
 };
 
@@ -39,10 +40,20 @@ const SearchesCard: React.FC<Props> = ({
   handleRemoveSearch,
 }) => {
   const history = useHistory();
-  const { id, project, defaultFacets, textInputs, activeFacets } = savedSearch;
+  const {
+    uuid,
+    project,
+    defaultFacets,
+    textInputs,
+    activeFacets,
+    url,
+  } = savedSearch;
 
-  const reqUrl = genUrlQuery(
-    project.facets_url,
+  // Generate the URL for only receiving the number of results.
+  // This cuts the response time by nearly half since the actual results
+  // aren't needed in the query.
+  const numResultsUrl = genUrlQuery(
+    project.facetsUrl,
     defaultFacets,
     activeFacets,
     textInputs,
@@ -55,7 +66,7 @@ const SearchesCard: React.FC<Props> = ({
   // Fetch the results count
   const { data, isLoading, error } = useAsync({
     promiseFn: fetchResults,
-    reqUrl,
+    reqUrl: numResultsUrl,
   });
 
   let cardTitle;
@@ -84,7 +95,7 @@ const SearchesCard: React.FC<Props> = ({
   }
 
   return (
-    <Col key={id} xs={20} sm={16} md={12} lg={10} xl={8}>
+    <Col key={uuid} xs={20} sm={16} md={12} lg={10} xl={8}>
       <Card
         hoverable
         title={
@@ -108,16 +119,7 @@ const SearchesCard: React.FC<Props> = ({
           </ToolTip>,
           <ToolTip title="View results in JSON format">
             <a
-              href={genUrlQuery(
-                project.facets_url,
-                defaultFacets,
-                activeFacets,
-                textInputs,
-                {
-                  page: 0,
-                  pageSize: 10,
-                }
-              )}
+              href={clickableRoute(url)}
               rel="noopener noreferrer"
               target="blank_"
             >
@@ -126,7 +128,7 @@ const SearchesCard: React.FC<Props> = ({
           </ToolTip>,
           <ToolTip title="Remove search criteria from library">
             <DeleteOutlined
-              onClick={() => handleRemoveSearch(id)}
+              onClick={() => handleRemoveSearch(uuid)}
               style={{ color: 'red' }}
               key="remove"
             />
@@ -135,7 +137,7 @@ const SearchesCard: React.FC<Props> = ({
       >
         <p>
           <span style={styles.category}>Project: </span>
-          {project.full_name}
+          {project.fullName}
         </p>
 
         {project.description !== null && <p>{project.description}</p>}
