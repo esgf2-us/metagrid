@@ -49,8 +49,6 @@ class Project(models.Model):
             "offset": 0,
             "limit": 0,
             "type": "Dataset",
-            "replica": False,
-            "latest": True,
             "format": "application/solr+json",
             "project": [self.name, self.name.upper(), self.name.lower()],
             "facets": ", ".join(facets),

@@ -63,10 +63,7 @@ const FacetsForm: React.FC<Props> = ({
         <h4 style={styles.formTitle}>Default Facets</h4>
         <Form.Item name="selectedDefaults">
           <Checkbox.Group
-            options={[
-              { label: 'Latest Data', value: 'latest' },
-              { label: 'Include Replica', value: 'replica' },
-            ]}
+            options={[{ label: 'Include Replica', value: 'replica' }]}
           ></Checkbox.Group>
         </Form.Item>
         <h4 style={styles.formTitle}>Project Facets</h4>
