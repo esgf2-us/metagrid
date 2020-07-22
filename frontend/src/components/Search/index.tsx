@@ -243,7 +243,8 @@ const Search: React.FC<Props> = ({
         )}
         {isLoading && (
           <h3>
-            <span style={styles.resultsHeader}>Loading </span> results for{' '}
+            <span style={styles.resultsHeader}>Loading latest </span> results
+            for{' '}
             <span style={styles.resultsHeader}>
               {(activeProject as Project).name}
             </span>{' '}
@@ -254,7 +255,9 @@ const Search: React.FC<Props> = ({
         )}
         {results && !isLoading && (
           <h3>
-            <span style={styles.resultsHeader}>{numFound} </span>
+            <span style={styles.resultsHeader}>
+              {numFound.toLocaleString()}{' '}
+            </span>
             results found for{' '}
             <span style={styles.resultsHeader}>
               {(activeProject as Project).name}

@@ -42,7 +42,7 @@ const Facets: React.FC<Props> = ({
   }): void => {
     const newActive = selectedFacets;
 
-    const newDefaults: DefaultFacets = { latest: false, replica: false };
+    const newDefaults: DefaultFacets = { latest: true, replica: false };
     const { selectedDefaults } = newActive;
     // Pop selectedDefaults key since that sets the state for defaultFacets separately
     delete newActive.selectedDefaults;
