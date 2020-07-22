@@ -6,7 +6,7 @@ import SearchesCard from './SearchesCard';
 
 export type Props = {
   savedSearches: SavedSearch[] | [];
-  handleRemoveSearch: (id: string) => void;
+  handleRemoveSearch: (uuid: string) => void;
   handleApplySearch: (savedSearch: SavedSearch) => void;
 };
 
@@ -26,7 +26,7 @@ const Searches: React.FC<Props> = ({
           (savedSearch: SavedSearch, index: number) => {
             return (
               <SearchesCard
-                key={savedSearch.id}
+                key={savedSearch.uuid}
                 savedSearch={savedSearch}
                 index={index}
                 handleApplySearch={handleApplySearch}

@@ -2,8 +2,8 @@ import React from 'react';
 import { render, waitFor } from '@testing-library/react';
 
 import Citation, { CitationInfo } from './Citation';
-import { apiRoutes } from '../../test/server-handlers';
-import { server, rest } from '../../test/setup-env';
+import apiRoutes from '../../api/routes';
+import { server, rest } from '../../api/mock/setup-env';
 
 // Reset all mocks after each test
 afterEach(() => {

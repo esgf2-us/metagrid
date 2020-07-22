@@ -4,8 +4,8 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { waitFor, fireEvent } from '@testing-library/react';
 
 import NavBar, { Props } from './index';
-import { server, rest } from '../../test/setup-env';
-import { apiRoutes } from '../../test/server-handlers';
+import apiRoutes from '../../api/routes';
+import { server, rest } from '../../api/mock/setup-env';
 import { customRender } from '../../test/custom-render';
 
 const defaultProps: Props = {

@@ -6,7 +6,7 @@ import ProjectForm from './ProjectForm';
 import FacetsForm from './FacetsForm';
 import Divider from '../General/Divider';
 
-import { fetchProjects } from '../../utils/api';
+import { fetchProjects } from '../../api';
 import { isEmpty, shallowCompare } from '../../utils/utils';
 
 const styles = {

@@ -4,7 +4,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { fireEvent, render } from '@testing-library/react';
 
 import Summary, { Props } from './Summary';
-import { cartFixture } from '../../test/fixtures';
+import { cartFixture } from '../../api/mock/fixtures';
 
 const defaultProps: Props = {
   cart: cartFixture(),

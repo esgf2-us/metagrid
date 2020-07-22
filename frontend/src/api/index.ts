@@ -1,11 +1,31 @@
+/**
+ * This file contains HTTP Request functions.
+ */
+import humps from 'humps';
 import queryString from 'query-string';
 
 import axios from '../axios';
-import { apiRoutes } from '../test/server-handlers';
+import apiRoutes from './routes';
 import { proxyString } from '../env';
 
 /**
- * Fetches user cart
+ * Camelizes keys from a string that is parsed as JSON.
+ * Arg 'res' is type string because axios's transFormResponse function attempts
+ * to parse the response body using JSON.parse but fails.
+ * https://github.com/axios/axios/issues/576
+ * https://github.com/axios/axios/issues/430
+ *
+ * @param str
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const camelizeKeysFromString = (str: string): Record<string, any> => {
+  return humps.camelizeKeys(JSON.parse(str));
+};
+
+/**
+ * Fetches a user's cart.
+ * HTTP Request Method: GET
+ * HTTP Response Code: 200 OK
  */
 export const fetchUserCart = async (
   pk: string,
@@ -34,7 +54,9 @@ export const fetchUserCart = async (
 };
 
 /**
- * Updates user cart
+ * Updates a user's cart.
+ * HTTP Request Method: PATCH
+ * HTTP Response Code: 200 OK
  */
 export const updateUserCart = async (
   pk: string,
@@ -68,7 +90,96 @@ export const updateUserCart = async (
 };
 
 /**
+ * Fetches a user's searches.
+ * HTTP Request Method: GET
+ * HTTP Response: 200 OK
+ */
+export const fetchUserSearches = async (
+  accessToken: string
+): Promise<{
+  count: number;
+  results: SavedSearch[];
+}> => {
+  return axios
+    .get(apiRoutes.userSearches, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      transformResponse: (res: string) => {
+        try {
+          return camelizeKeysFromString(res);
+        } catch (e) {
+          return null;
+        }
+      },
+    })
+    .then((res) => {
+      return res.data as Promise<{
+        count: number;
+        results: SavedSearch[];
+      }>;
+    })
+    .catch((error) => {
+      throw new Error(error);
+    });
+};
+
+/**
+ * Add a user's search.
+ * HTTP Request Method: POST
+ * HTTP Response Code: 201 Created
+ */
+export const addUserSearch = async (
+  userPk: string,
+  accessToken: string,
+  payload: SavedSearch
+): Promise<RawUserSearch> => {
+  const decamelizedPayload = humps.decamelizeKeys({
+    user: userPk,
+    ...payload,
+  });
+  return axios
+    .post(apiRoutes.userSearches, decamelizedPayload, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+    .then((res) => {
+      return res.data as Promise<RawUserSearch>;
+    })
+    .catch((error) => {
+      throw new Error(error);
+    });
+};
+
+/**
+ * Delete a user's search.
+ * HTTP Request Method: DELETE
+ * HTTP Response: 204 No Content
+ */
+export const deleteUserSearch = async (
+  pk: string,
+  accessToken: string
+): Promise<''> => {
+  return axios
+    .delete(`${apiRoutes.userSearch.replace(':pk', pk)}`, {
+      data: {},
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+    .then((res) => {
+      return res.data as Promise<''>;
+    })
+    .catch((error) => {
+      throw new Error(error);
+    });
+};
+
+/**
  * Fetches a list of projects.
+ * HTTP Request Method: GET
+ * HTTP Response: 200 OK
  */
 export const fetchProjects = async (): Promise<{
   results: Project[];
@@ -76,7 +187,15 @@ export const fetchProjects = async (): Promise<{
   [key: string]: any;
 }> => {
   return axios
-    .get(apiRoutes.projects)
+    .get(apiRoutes.projects, {
+      transformResponse: (res: string) => {
+        try {
+          return camelizeKeysFromString(res);
+        } catch (e) {
+          return null;
+        }
+      },
+    })
     .then((res) => {
       return res.data as Promise<{
         results: Project[];
@@ -90,10 +209,8 @@ export const fetchProjects = async (): Promise<{
 };
 
 /**
- * Generate a URL to perform a GET request to the ESG Search API.
+ * Generate a URL to perform a GET request to the ESGF Search API.
  * Query string parameters use the logical OR operator, so queries are inclusive.
- * NOTE: Local proxy used to bypass CORS (http://localhost:8080/)
-
  */
 export const genUrlQuery = (
   baseUrl: string,
@@ -122,19 +239,18 @@ export const genUrlQuery = (
     .replace('limit=0', `limit=${pagination.pageSize}`)
     .replace('offset=0', `offset=${offset}`);
 
-  const url = `${apiRoutes.esgSearchDatasets}?${newBaseUrl}&${defaultFacetsStr}&${stringifyText}&${activeFacetsStr}`;
+  const url = `${apiRoutes.esgfDatasets}?${newBaseUrl}&${defaultFacetsStr}&${stringifyText}&${activeFacetsStr}`;
   return url;
 };
 
 /**
- * Fetch the search results using the ESG Search API.
- * Source: https://github.com/ESGF/esgf.github.io/wiki/ESGF_Search_REST_API
+ * Fetch the search results using the ESGF Search API.
+ * HTTP Request Method: GET
+ * HTTP Response: 200 OK
  *
  * This function can be called with either PromiseFn or DeferFn.
- *
  * With PromiseFn, arguments are passed in as an object ({reqUrl: string}).
  * Source: https://docs.react-async.com/api/options#promisefn
- *
  * With DeferFn, arguments are passed in as an array ([string]).
  * Source: https://docs.react-async.com/api/options#deferfn
  */
@@ -163,9 +279,8 @@ export const fetchResults = async (
 };
 
 /**
- * Performs process on citation objects.
+ * Performs processing on citation objects.
  */
-
 export const processCitation = (citation: RawCitation): RawCitation => {
   const newCitation = citation;
 
@@ -181,7 +296,8 @@ export const processCitation = (citation: RawCitation): RawCitation => {
 
 /**
  * Fetches citation data using a dataset's citation url.
- * NOTE: Local proxy used to bypass CORS
+ * HTTP Request Method: GET
+ * HTTP Response: 200 OK
  */
 export const fetchCitation = async ({
   url,
@@ -202,7 +318,8 @@ Promise<{ [key: string]: any }> => {
 
 /**
  * Fetches files for a dataset.
- * NOTE: Local proxy used to bypass CORS
+ * HTTP Request Method: GET
+ * HTTP Response: 200 OK
  */
 export const fetchFiles = async ({
   id,
@@ -210,7 +327,7 @@ export const fetchFiles = async ({
   id: string;
 }): // eslint-disable-next-line @typescript-eslint/no-explicit-any
 Promise<{ [key: string]: any }> => {
-  const url = `${apiRoutes.esgSearchFiles.replace(':id', id)}?limit=10`;
+  const url = `${apiRoutes.esgfFiles.replace(':id', id)}?limit=10`;
   return axios
     .get(url)
     .then((res) => {

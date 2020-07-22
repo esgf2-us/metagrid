@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "dj_rest_auth",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.keycloak",
+    "drf_yasg",
     # Your apps
     "metagrid.users",
     "metagrid.projects",
