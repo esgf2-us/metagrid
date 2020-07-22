@@ -219,10 +219,15 @@ export const genUrlQuery = (
   textInputs: string[] | [],
   pagination: { page: number; pageSize: number }
 ): string => {
-  const defaultFacetsStr = queryString.stringify(defaultFacets);
-  const activeFacetsStr = queryString.stringify(activeFacets, {
-    arrayFormat: 'comma',
-  });
+  const defaultFacetsStr = queryString.stringify(
+    humps.decamelizeKeys(defaultFacets)
+  );
+  const activeFacetsStr = queryString.stringify(
+    humps.decamelizeKeys(activeFacets),
+    {
+      arrayFormat: 'comma',
+    }
+  );
 
   let stringifyText = 'query=*';
   if (textInputs.length > 0) {
