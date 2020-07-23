@@ -24,7 +24,7 @@ class TestProjectModel:
 
     def test_facets_url_property_success(self):
         facet = FacetFactory.create(
-            name="mip_era", project=self.project
+            name="test_facet", project=self.project
         )  # type: Facet
 
         # Check that the project has a list of facets
@@ -47,7 +47,7 @@ class TestFacetModel:
     def setUp(self):
         self.project = ProjectFactory.create(name="CMIP6")  # type: Project
         self.facet = FacetFactory.create(
-            name="mip_era", project=self.project
+            name="test_facet", project=self.project
         )  # type: Facet
 
     def test_get_absolute_url(self):

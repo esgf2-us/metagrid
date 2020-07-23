@@ -1,0 +1,14 @@
+# General
+# ------------------------------------------------------------------------------
+DJANGO_SETTINGS_MODULE=metagrid.config.local
+DOMAIN_NAME=http://localhost:8000
+
+# django-cors-headers
+# ------------------------------------------------------------------------------
+CORS_ORIGIN_WHITELIST=http://localhost:3000
+
+# django-all-auth
+# ------------------------------------------------------------------------------
+KEYCLOAK_URL=http://keycloak:8080/auth
+KEYCLOAK_REALM=metagrid
+KEYCLOAK_CLIENT_ID=backend

@@ -25,16 +25,9 @@ jobs:
           node-version: "12.x"
 
       - name: Set Environment Variables
-        run: |
-          echo "::set-env name=REACT_APP_API_PROTOCOL::http://"
-          echo "::set-env name=REACT_APP_API_URL::localhost"
-          echo "::set-env name=REACT_APP_API_PORT::8000"
-          echo "::set-env name=REACT_APP_ESGF_NODE_PROTOCOL::https://"
-          echo "::set-env name=REACT_APP_ESGF_NODE_URL::esgf-node.llnl.gov"
-          echo "::set-env name=REACT_APP_PROXY_PROTOCOL::http://"
-          echo "::set-env name=REACT_APP_PROXY_HOST::localhost"
-          echo "::set-env name=REACT_APP_PROXY_PORT::8080"
-          echo "::set-env name=REACT_APP_PROXY_ORIGIN_WHITELIST::'http://localhost:3000'"
+        uses: c-py/action-dotenv-to-setenv@v1
+        with:
+          env-file: frontend/.envs/.local/.react
 
       - name: Cache node modules
         uses: actions/cache@v2

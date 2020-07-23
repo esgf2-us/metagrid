@@ -1,0 +1,14 @@
+# Database settings, make sure this matches .postgres
+# ------------------------------------------------------------------------------
+DB_VENDOR=POSTGRES
+DB_ADDR=postgres:5432
+DB_DATABASE=postgres
+DB_USER=postgres
+DB_SCHEMA=keycloak
+DB_PASSWORD=postgres
+
+# Other settings
+# ------------------------------------------------------------------------------
+KEYCLOAK_USER=admin
+KEYCLOAK_PASSWORD=admin
+KEYCLOAK_IMPORT=./keycloak_realm.json
