@@ -52,6 +52,7 @@ coverage.xml
 
 # Django stuff:
 staticfiles/
+metagrid/media/
 
 # Sphinx documentation
 docs/_build/
@@ -82,13 +83,10 @@ ENV/
 # pytest
 .pytest_cache/
 
-### Project template
-
-metagrid/media/
-
-
-# Local environment
+# ipython
 .ipython/
+
+# Environment varibles
 .env
 .envs/*
 !.envs/.local/
