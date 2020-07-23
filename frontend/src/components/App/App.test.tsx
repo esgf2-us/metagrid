@@ -971,6 +971,7 @@ describe('User search library', () => {
         name: 'search',
       });
       fireEvent.submit(submitBtn);
+
       // Wait for components to re-render
       await waitFor(() => getByTestId('search'));
       await waitFor(() => getByTestId('search-table'));
@@ -998,7 +999,7 @@ describe('User search library', () => {
         })
       );
 
-      const { getByRole, getByTestId, getByText } = customRender(
+      const { getByTestId, getByText } = customRender(
         <Router>
           <App />
         </Router>,
@@ -1020,19 +1021,16 @@ describe('User search library', () => {
       expect(searchLibraryLink).toBeTruthy();
       fireEvent.click(searchLibraryLink);
 
-      // Check number of files and datasets are correctly displayed
-      const cart = await waitFor(() => getByTestId('cart'));
-      expect(cart).toBeTruthy();
+      // Check cart component renders
+      const cartComponent = await waitFor(() => getByTestId('cart'));
+      expect(cartComponent).toBeTruthy();
 
       // Check delete button renders for the saved search and click it
       const deleteBtn = await waitFor(() =>
-        getByRole('img', { name: 'delete', hidden: true })
+        within(cartComponent).getByRole('img', { name: 'delete', hidden: true })
       );
       expect(deleteBtn).toBeTruthy();
       fireEvent.click(deleteBtn);
-
-      await waitFor(() => getByTestId('cart'));
-
       const errorMsg = await waitFor(() =>
         getByText(
           'There was an issue updating your cart. Please contact support or try again later.'
