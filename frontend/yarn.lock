@@ -1423,7 +1423,7 @@
     prop-types "^15.7.2"
     react-fast-compare "^3.0.1"
 
-"@react-keycloak/web@^2.1.1":
+"@react-keycloak/web@2.1.1":
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/@react-keycloak/web/-/web-2.1.1.tgz#2a93620e63e51c0d7cab9bb2bda306c741de9f31"
   integrity sha512-oGO70eecyVmUWdyxnv2v7cTXVjtauQRFSv2HimA56a3RH0aJXzBI52oo35Y+0knIg+3h26tSntL9VtUgek1CrA==
@@ -1651,7 +1651,7 @@
   resolved "https://registry.yarnpkg.com/@types/history/-/history-4.7.6.tgz#ed8fc802c45b8e8f54419c2d054e55c9ea344356"
   integrity sha512-GRTZLeLJ8ia00ZH8mxMO8t0aC9M1N9bN461Z2eaRurJo6Fpa+utgCwLzI4jQHcrdzuzp5WPN9jRwpsCQ1VhJ5w==
 
-"@types/humps@^2.0.0":
+"@types/humps@2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@types/humps/-/humps-2.0.0.tgz#9ad07801cd34f9d9ce379fa66f62d3049937d815"
   integrity sha512-bP/s9HUT2oTJ0c3XGcHGISwTNs6r8eUPNfU6DuOSU8EHgtHqwvoDEyj76jPhKT/0MszS1PF/hHolxRrHSLYUPQ==
@@ -7178,7 +7178,7 @@ jsx-ast-utils@^2.4.1:
     array-includes "^3.1.1"
     object.assign "^4.1.0"
 
-keycloak-js@^10.0.2:
+keycloak-js@10.0.2:
   version "10.0.2"
   resolved "https://registry.yarnpkg.com/keycloak-js/-/keycloak-js-10.0.2.tgz#f0cf5b942627c5221f1466552c40e4624503b77b"
   integrity sha512-7nkg4Ob1khHGcNbuK36AMndKUEuIQFpNlWU9ygWs7nSBPCI9VZ8dJjjXfKJHm0ewgcqLFGPIJ6bxxRlfcQ6sLg==
