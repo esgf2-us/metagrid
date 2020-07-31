@@ -38,7 +38,6 @@ jobs:
       - name: Set Environment Variables
         run: |
           echo "::set-env name=DATABASE_URL::pgsql://postgres:postgres@localhost:5432/postgres"
-          echo "::set-env name=CELERY_BROKER_URL::redis://redis:6379/0"
           echo "::set-env name=KEYCLOAK_URL::http://keycloak:8080/auth"
           echo "::set-env name=KEYCLOAK_REALM::metagrid"
 
@@ -54,12 +53,9 @@ jobs:
             ${{ runner.os }}-
 
       - name: Install Dependencies
-        # TODO: Remove explicit isort version after flake8-isort is updated to support v.5
-        # https://github.com/gforcada/flake8-isort/issues/88
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements/local.txt
-          pip install isort==4.3.21
 
       - name: Lint and Style (flake8, black)
         run: |
