@@ -7,6 +7,7 @@ import {
   ShoppingCartOutlined,
 } from '@ant-design/icons';
 
+import humps from 'humps';
 import Table from './Table';
 import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
@@ -75,7 +76,9 @@ export const stringifyConstraints = (
   if (!isEmpty(activeFacets)) {
     Object.keys(activeFacets).forEach((key: string) => {
       strConstraints.push(
-        `(${key} = ${(activeFacets as ActiveFacets)[key].join(' OR ')})`
+        `(${humps.decamelize(key)} = ${(activeFacets as ActiveFacets)[key].join(
+          ' OR '
+        )})`
       );
     });
   }
