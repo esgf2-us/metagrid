@@ -7,6 +7,7 @@ import {
   SearchOutlined,
   LinkOutlined,
   DeleteOutlined,
+  FileSearchOutlined,
 } from '@ant-design/icons';
 import Card from '../DataDisplay/Card';
 import ToolTip from '../DataDisplay/ToolTip';
@@ -69,30 +70,28 @@ const SearchesCard: React.FC<Props> = ({
     reqUrl: numResultsUrl,
   });
 
-  let cardTitle;
+  let numResults;
   if (error) {
-    cardTitle = (
+    numResults = (
       <Alert
         message="There was an issue fetching the result count."
         type="error"
       />
     );
   } else if (isLoading) {
-    cardTitle = (
-      <Skeleton title={{ width: '250px' }} paragraph={{ rows: 0 }} active />
+    numResults = (
+      <Skeleton title={{ width: '100%' }} paragraph={{ rows: 0 }} active />
     );
   } else {
-    cardTitle = (
-      <>
-        <p>
-          <span style={{ fontWeight: 'bold' }}>
-            {(data as {
-              response: { numFound: number };
-            }).response.numFound.toLocaleString()}
-          </span>{' '}
-          results found for {project.name}
-        </p>
-      </>
+    numResults = (
+      <p>
+        <span style={{ fontWeight: 'bold' }}>
+          {(data as {
+            response: { numFound: number };
+          }).response.numFound.toLocaleString()}
+        </span>{' '}
+        results found for {project.name}
+      </p>
     );
   }
 
@@ -102,8 +101,7 @@ const SearchesCard: React.FC<Props> = ({
         hoverable
         title={
           <>
-            <p>Search #{index + 1}</p>
-            {cardTitle}
+            <FileSearchOutlined /> Search #{index + 1}
           </>
         }
         actions={[
@@ -137,12 +135,11 @@ const SearchesCard: React.FC<Props> = ({
           </ToolTip>,
         ]}
       >
+        {numResults}
         <p>
           <span style={styles.category}>Project: </span>
           {project.fullName}
         </p>
-
-        {project.description !== null && <p>{project.description}</p>}
 
         <p>
           <span style={styles.category}>Query String: </span>
