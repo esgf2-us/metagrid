@@ -10,7 +10,7 @@
 
 In the project directory, you can run:
 
-### `[npm|yarn] start`
+### `yarn start`
 
 Runs the app in the development mode.<br />
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
@@ -18,33 +18,33 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 The page will reload if you make edits.<br />
 You will also see any lint errors in the console.
 
-### `[npm|yarn] test`
+### `yarn test`
 
 Launches the test runner for a single run without coverage report.<br />
 See the section about [running tests](https://create-react-app.dev/docs/running-tests/) for more information.
 
-### `[npm|yarn] test:coverage`
+### `yarn test:coverage`
 
 Launches the test runner for a single run with coverage reporting.<br />
 See the section about [running tests with coverage](https://create-react-app.dev/docs/running-tests/#coverage-reporting) for more information.
 
-### `[npm|yarn] test:watch`
+### `yarn test:watch`
 
 Launches the test runner in the interactive watch mode.<br />
 See the section about [running tests](https://create-react-app.devv/docs/running-tests/) for more information.
 
-### `[npm|yarn] lint`
+### `yarn lint`
 
 Runs linters to display violations.<br />
 
-### `[npm|yarn] precommit`
+### `yarn precommit`
 
 Runs linters against staged git files and attempts to fix as many issues as possible.<br />
 https://github.com/okonet/lint-staged
 
-### `[npm|yarn] run build`
+### `yarn run build:local`
 
-Builds the app for production to the `build` folder.<br />
+Builds the app for production to the `build` folder using `.local` environment settings.<br />
 It correctly bundles React in production mode and optimizes the build for the best performance.
 
 The build is minified and the filenames include the hashes.<br />
@@ -52,7 +52,17 @@ Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-### `[npm|yarn] run eject`
+### `yarn run build:production`
+
+Builds the app for production to the `build` folder using `.production` environment settings.<br />
+It correctly bundles React in production mode and optimizes the build for the best performance.
+
+The build is minified and the filenames include the hashes.<br />
+Your app is ready to be deployed!
+
+See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+
+### `yarn run eject`
 
 **Note: this is a one-way operation. Once you `eject`, you can’t go back!**
 

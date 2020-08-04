@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+  proxy:
+    build:
+      context: ./
+      dockerfile: ./docker/local/proxy/Dockerfile
+    image: metagrid_local_proxy
+    container_name: proxy
+    env_file:
+      - .envs/.local/.proxy
+      - .envs/.local/.react
+    volumes:
+      - './:/app'
+    ports:
+      - '3001:3001'
+
+  react:
+    build:
+      context: ./
+      dockerfile: ./docker/local/react/Dockerfile
+    image: metagrid_local_react
+    container_name: react
+    env_file:
+      - .envs/.local/.proxy
+      - .envs/.local/.react
+    volumes:
+      - './:/app'
+      - '/app/node_modules'
+    ports:
+      - '3000:3000'
+    stdin_open: true
+    depends_on:
+      - proxy
