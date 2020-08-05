@@ -690,9 +690,9 @@ describe('User search library', () => {
     await waitFor(() => getByTestId('search-table'));
     await waitFor(() => getByTestId('facets'));
 
-    // Check Save Search Criteria button exists and click it
+    // Check Save Search button exists and click it
     const saveSearch = await waitFor(() =>
-      getByRole('button', { name: 'book Save Search Criteria' })
+      getByRole('button', { name: 'book Save Search' })
     );
     expect(saveSearch).toBeTruthy();
     fireEvent.click(saveSearch);
@@ -800,9 +800,9 @@ describe('User search library', () => {
     await waitFor(() => getByTestId('search-table'));
     await waitFor(() => getByTestId('facets'));
 
-    // Check Save Search Criteria button exists and click it
+    // Check Save Search button exists and click it
     const saveSearch = await waitFor(() =>
-      getByRole('button', { name: 'book Save Search Criteria' })
+      getByRole('button', { name: 'book Save Search' })
     );
     expect(saveSearch).toBeTruthy();
     fireEvent.click(saveSearch);
@@ -872,9 +872,9 @@ describe('User search library', () => {
     await waitFor(() => getByTestId('search-table'));
     await waitFor(() => getByTestId('facets'));
 
-    // Check Save Search Criteria button exists and click it
+    // Check Save Search button exists and click it
     const saveSearch = await waitFor(() =>
-      getByRole('button', { name: 'book Save Search Criteria' })
+      getByRole('button', { name: 'book Save Search' })
     );
     expect(saveSearch).toBeTruthy();
     fireEvent.click(saveSearch);
@@ -977,9 +977,9 @@ describe('User search library', () => {
       await waitFor(() => getByTestId('search-table'));
       await waitFor(() => getByTestId('facets'));
 
-      // Check Save Search Criteria button exists and click it
+      // Check Save Search button exists and click it
       const saveSearch = await waitFor(() =>
-        getByRole('button', { name: 'book Save Search Criteria' })
+        getByRole('button', { name: 'book Save Search' })
       );
       expect(saveSearch).toBeTruthy();
       fireEvent.click(saveSearch);
