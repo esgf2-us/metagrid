@@ -70,32 +70,42 @@ const RightMenu: React.FC<Props> = ({
             <Menu.Item key="api">API</Menu.Item>
           </Menu.ItemGroup>
         </Menu.SubMenu>
-        <Menu.SubMenu
-          icon={<UserOutlined style={{ fontSize: '24px' }} />}
-          title={
-            <span className="submenu-title-wrapper">
-              {userInfo ? `Hi, ${userInfo.given_name}` : 'Sign In'}
-            </span>
-          }
-        >
-          <Menu.ItemGroup>
-            <Menu.Item key="login">
-              {!authenticated ? (
-                <Button type="text" onClick={() => keycloak.login()}>
-                  Sign In
-                </Button>
-              ) : (
+        {!authenticated ? (
+          <Menu.Item key="signIn">
+            <Button
+              type="text"
+              icon={<UserOutlined style={{ fontSize: '18px' }} />}
+              onClick={() => keycloak.login()}
+            >
+              Sign In
+            </Button>
+          </Menu.Item>
+        ) : (
+          <Menu.SubMenu
+            icon={<UserOutlined style={{ fontSize: '18px' }} />}
+            title={
+              <span className="submenu-title-wrapper">
+                Hi,{' '}
+                {userInfo && userInfo.given_name
+                  ? userInfo.given_name
+                  : userInfo?.email}
+              </span>
+            }
+          >
+            <Menu.ItemGroup>
+              <Menu.Item key="login">
                 <Button type="text" onClick={() => keycloak.logout()}>
                   Sign Out
                 </Button>
-              )}
-            </Menu.Item>
-          </Menu.ItemGroup>
-        </Menu.SubMenu>
+              </Menu.Item>
+            </Menu.ItemGroup>
+          </Menu.SubMenu>
+        )}
+
         <Menu.Item key="cartItems" className="modified-item">
           <ToolTip title="Cart">
             <Link to="/cart/items">
-              <ShoppingCartOutlined style={{ fontSize: '24px' }} />
+              <ShoppingCartOutlined style={{ fontSize: '18px' }} />
               {numCartItems}
             </Link>
           </ToolTip>
@@ -103,7 +113,7 @@ const RightMenu: React.FC<Props> = ({
         <Menu.Item key="cartSearches" className="modified-item">
           <ToolTip title="Saved Searches">
             <Link to="/cart/searches">
-              <SearchOutlined style={{ fontSize: '24px' }} />
+              <SearchOutlined style={{ fontSize: '18px' }} />
               {numSavedSearches}
             </Link>
           </ToolTip>

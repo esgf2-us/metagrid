@@ -68,12 +68,7 @@
   }
 }
 
-/* Sub-menu Ant Design overrides */
+/* Ant design menu item overrides */
 .modified-item {
-  width: 75px;
-}
-
-.modified-item:hover {
-  border-bottom: 2px solid transparent !important;
-  color: inherit !important;
+  text-align: center;
 }
