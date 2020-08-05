@@ -44,18 +44,23 @@ const Facets: React.FC<Props> = ({
 
     const newDefaults: DefaultFacets = { latest: true, replica: false };
     const { selectedDefaults } = newActive;
-    // Pop selectedDefaults key since that sets the state for defaultFacets separately
+    // Pop selectedDefault keys from newActive since its values are declared
+    // separately in a newDefaults
     delete newActive.selectedDefaults;
 
     selectedDefaults.forEach((facet) => {
       newDefaults[facet] = true;
     });
 
-    Object.keys(newActive).forEach(
-      // eslint-disable-next-line no-param-reassign
-      (key) => selectedFacets[key] === undefined && delete selectedFacets[key]
-    );
-
+    // The form keeps a history of all selected facets, including when a
+    // previously selected key goes from > 0 elements to 0 elements. Thus,
+    // iterate through the object and delete the keys where the array's length
+    // is equal to 0.
+    Object.keys(newActive).forEach((key) => {
+      if (newActive[key] === undefined || newActive[key].length === 0) {
+        delete newActive[key];
+      }
+    });
     if (
       shallowCompare(newDefaults, defaultFacets) &&
       shallowCompare(newActive, activeFacets)

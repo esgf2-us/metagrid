@@ -265,7 +265,7 @@ describe('test Search component', () => {
 
     // Click on save button
     const saveBtn = await waitFor(() =>
-      getByRole('button', { name: 'book Save Search Criteria' })
+      getByRole('button', { name: 'book Save Search' })
     );
     expect(saveBtn).toBeTruthy();
     fireEvent.click(saveBtn);
