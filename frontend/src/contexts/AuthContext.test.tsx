@@ -38,6 +38,8 @@ describe('test fetchUserInfo()', () => {
 });
 describe('test AuthProvider', () => {
   it('renders using keycloak provider', async () => {
+    jest.useFakeTimers();
+
     const { getByTestId, getByText } = keycloakRender(
       <AuthProvider>
         <div data-testid="authProvider">
@@ -57,5 +59,8 @@ describe('test AuthProvider', () => {
     // Check children renders
     const renderResult = await waitFor(() => getByText('renders'));
     expect(renderResult).toBeTruthy();
+
+    jest.advanceTimersByTime(295000);
+    await waitFor(() => getByTestId('authProvider'));
   });
 });
