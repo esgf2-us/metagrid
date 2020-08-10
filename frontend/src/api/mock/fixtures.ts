@@ -32,7 +32,7 @@ export const searchResultFixture = (
   const defaults: RawSearchResult = {
     id: 'foo',
     title: 'foo',
-    url: ['foo.bar'],
+    url: ['foo.bar|HTTPServer'],
     number_of_files: 3,
     data_node: 'node.gov',
     version: 1,

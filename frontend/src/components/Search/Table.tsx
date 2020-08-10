@@ -29,6 +29,9 @@ export type Props = {
   handlePageSizeChange?: (size: number) => void;
 };
 
+// Allowed download types
+export const allowedDownloads = ['HTTPServer', 'OPENDAP', 'Globus'];
+
 const Table: React.FC<Props> = ({
   loading,
   results,
@@ -96,7 +99,10 @@ const Table: React.FC<Props> = ({
                 })}
               </Collapse.Panel>
               <Collapse.Panel header="Files" key="files">
-                <FilesTable id={record.id} />
+                <FilesTable
+                  id={record.id}
+                  allowedDownloads={allowedDownloads}
+                />
               </Collapse.Panel>
             </Collapse>
           </>
@@ -181,30 +187,36 @@ const Table: React.FC<Props> = ({
       title: 'Download',
       key: 'download',
       width: 200,
-      render: (record: RawSearchResult) => (
-        <span>
-          <Form layout="inline">
-            <Form.Item>
-              {/* eslint-disable-next-line react/prop-types */}
-              <Select defaultValue={record.access[0]} style={{ width: 120 }}>
-                {/* eslint-disable-next-line react/prop-types */}
-                {record.access.map((option) => (
-                  <Select.Option key={option} value={option}>
-                    {option}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <Form.Item>
-              <Button
-                type="primary"
-                icon={<DownloadOutlined />}
-                disabled
-              ></Button>
-            </Form.Item>
-          </Form>
-        </span>
-      ),
+      render: (record: RawSearchResult) => {
+        const availableDownloads = record.access.filter((download) =>
+          allowedDownloads.includes(download)
+        );
+        return (
+          <span>
+            <Form layout="inline">
+              <Form.Item>
+                <Select
+                  defaultValue={availableDownloads[0]}
+                  style={{ width: 120 }}
+                >
+                  {availableDownloads.map((option) => (
+                    <Select.Option key={option} value={option}>
+                      {option}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+              <Form.Item>
+                <Button
+                  type="primary"
+                  icon={<DownloadOutlined />}
+                  disabled
+                ></Button>
+              </Form.Item>
+            </Form>
+          </span>
+        );
+      },
     },
     {
       title: 'Additional',
