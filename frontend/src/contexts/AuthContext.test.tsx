@@ -1,5 +1,5 @@
 import React from 'react';
-import { waitFor } from '@testing-library/react';
+import { act, waitFor } from '@testing-library/react';
 
 import { fetchUserAuth, AuthProvider, fetchUserInfo } from './AuthContext';
 import apiRoutes from '../api/routes';
@@ -60,7 +60,13 @@ describe('test AuthProvider', () => {
     const renderResult = await waitFor(() => getByText('renders'));
     expect(renderResult).toBeTruthy();
 
-    jest.advanceTimersByTime(295000);
+    act(() => {
+      jest.advanceTimersByTime(295000);
+    });
+
     await waitFor(() => getByTestId('authProvider'));
+
+    // Revert back to real timer
+    jest.useRealTimers();
   });
 });
