@@ -6,7 +6,9 @@ import FilesTable, {
   genDownloadUrls,
   openDownloadUrl,
   DownloadUrls,
+  Props,
 } from './FilesTable';
+import { allowedDownloads } from './Table';
 import apiRoutes from '../../api/routes';
 import { server, rest } from '../../api/mock/setup-env';
 
@@ -19,10 +21,15 @@ describe('test genDownloadUrls()', () => {
   let urls: string[];
   let result: DownloadUrls;
   beforeEach(() => {
-    urls = ['http://test.com|HTTPServer', 'http://test.com|Globus'];
+    urls = [
+      'http://test.com|HTTPServer',
+      'http://test.com|Globus',
+      'http://test.com/file.html|OPENDAP',
+    ];
     result = [
       { downloadType: 'HTTPServer', downloadUrl: 'http://test.com' },
       { downloadType: 'Globus', downloadUrl: 'http://test.com' },
+      { downloadType: 'OPENDAP', downloadUrl: 'http://test.com/file.dods' },
     ];
   });
 
@@ -60,6 +67,11 @@ describe('test openDownloadUrl()', () => {
   });
 });
 
+const defaultProps: Props = {
+  id: 'id',
+  allowedDownloads,
+};
+
 describe('test FilesTable component', () => {
   it('returns Alert when there is an error fetching files', async () => {
     server.use(
@@ -68,7 +80,7 @@ describe('test FilesTable component', () => {
       })
     );
 
-    const { getByRole } = render(<FilesTable id="id" />);
+    const { getByRole } = render(<FilesTable {...defaultProps} />);
     const alertMsg = await waitFor(() =>
       getByRole('img', { name: 'close-circle', hidden: true })
     );
@@ -80,7 +92,7 @@ describe('test FilesTable component', () => {
     // https://stackoverflow.com/questions/58189851/mocking-a-conditional-window-open-function-call-with-jest
     Object.defineProperty(window, 'open', { value: jest.fn() });
 
-    const { getByRole, getByTestId } = render(<FilesTable id="id" />);
+    const { getByRole, getByTestId } = render(<FilesTable {...defaultProps} />);
 
     // Check files table componet renders
     const filesTableComponent = await waitFor(() => getByTestId('filesTable'));
@@ -89,7 +101,7 @@ describe('test FilesTable component', () => {
     // Select first cell row
     const firstRow = await waitFor(() =>
       getByRole('row', {
-        name: 'foo 1 Bytes foo.bar download',
+        name: 'foo 1 Bytes HTTPServer download',
       })
     );
     expect(firstRow).toBeTruthy();
