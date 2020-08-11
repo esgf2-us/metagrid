@@ -8,7 +8,6 @@ import FilesTable, {
   DownloadUrls,
   Props,
 } from './FilesTable';
-import { allowedDownloads } from './Table';
 import apiRoutes from '../../api/routes';
 import { server, rest } from '../../api/mock/setup-env';
 
@@ -24,12 +23,12 @@ describe('test genDownloadUrls()', () => {
     urls = [
       'http://test.com|HTTPServer',
       'http://test.com|Globus',
-      'http://test.com/file.html|OPENDAP',
+      'http://test.com/file.html|OPeNDAP',
     ];
     result = [
       { downloadType: 'HTTPServer', downloadUrl: 'http://test.com' },
       { downloadType: 'Globus', downloadUrl: 'http://test.com' },
-      { downloadType: 'OPENDAP', downloadUrl: 'http://test.com/file.dods' },
+      { downloadType: 'OPeNDAP', downloadUrl: 'http://test.com/file.dods' },
     ];
   });
 
@@ -69,7 +68,6 @@ describe('test openDownloadUrl()', () => {
 
 const defaultProps: Props = {
   id: 'id',
-  allowedDownloads,
 };
 
 describe('test FilesTable component', () => {

@@ -24,7 +24,7 @@ export const genDownloadUrls = (urls: string[]): DownloadUrls => {
     const downloadType = url.split('|').pop();
     let downloadUrl = parseUrl(url, '|');
 
-    if (downloadType === 'OPENDAP') {
+    if (downloadType === 'OPeNDAP') {
       downloadUrl = downloadUrl.replace('.html', '.dods');
     }
     newUrls.push({ downloadType, downloadUrl });
@@ -40,10 +40,12 @@ export const openDownloadUrl = (url: string): Window | null => {
 
 export type Props = {
   id: string;
-  allowedDownloads: ReadonlyArray<string>;
 };
 
-const FilesTable: React.FC<Props> = ({ id, allowedDownloads }) => {
+const FilesTable: React.FC<Props> = ({ id }) => {
+  // Allowed download types
+  const downloadOptions = ['HTTPServer', 'OPeNDAP', 'Globus'];
+
   const { data, error, isLoading } = useAsync({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     promiseFn: (fetchFiles as unknown) as PromiseFn<Record<string, any>>,
@@ -107,7 +109,7 @@ const FilesTable: React.FC<Props> = ({ id, allowedDownloads }) => {
                 <Select style={{ width: 120 }}>
                   {downloadUrls.map(
                     (option) =>
-                      allowedDownloads.includes(
+                      downloadOptions.includes(
                         option.downloadType as string
                       ) && (
                         <Select.Option
