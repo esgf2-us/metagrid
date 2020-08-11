@@ -25,7 +25,8 @@ export type Props = {
 
 const Summary: React.FC<Props> = ({ cart }) => {
   const [form] = Form.useForm();
-  const downloadOptions = ['HTTPServer', 'GridFTP', 'OPENDAP', 'Globus'];
+  // TODO: Add handle for Globus download if selected dataset has no Globus option
+  const downloadOptions = ['WGET', 'Globus'];
 
   let numFiles = 0;
   let totalDataSize = '0';

@@ -216,7 +216,7 @@ describe('test Search component', () => {
 
     // Select the first row
     const firstRow = getByRole('row', {
-      name: 'right-circle foo 3 1 Bytes node.gov 1 HTTPServer download plus',
+      name: 'right-circle foo 3 1 Bytes node.gov 1 WGET download plus',
     });
     expect(firstRow).toBeTruthy();
 

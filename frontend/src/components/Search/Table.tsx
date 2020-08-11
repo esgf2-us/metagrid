@@ -29,9 +29,6 @@ export type Props = {
   handlePageSizeChange?: (size: number) => void;
 };
 
-// Allowed download types
-export const allowedDownloads = ['HTTPServer', 'OPENDAP', 'Globus'];
-
 const Table: React.FC<Props> = ({
   loading,
   results,
@@ -99,10 +96,7 @@ const Table: React.FC<Props> = ({
                 })}
               </Collapse.Panel>
               <Collapse.Panel header="Files" key="files">
-                <FilesTable
-                  id={record.id}
-                  allowedDownloads={allowedDownloads}
-                />
+                <FilesTable id={record.id} />
               </Collapse.Panel>
             </Collapse>
           </>
@@ -188,9 +182,14 @@ const Table: React.FC<Props> = ({
       key: 'download',
       width: 200,
       render: (record: RawSearchResult) => {
-        const availableDownloads = record.access.filter((download) =>
-          allowedDownloads.includes(download)
-        );
+        const availableDownloads = ['WGET'];
+
+        record.access.forEach((download) => {
+          if (download === 'Globus') {
+            availableDownloads.push('Globus');
+          }
+        });
+
         return (
           <span>
             <Form layout="inline">
