@@ -51,7 +51,7 @@ it('renders record metadata in an expandable panel', () => {
 
   // Check a record row exist
   const row = getByRole('row', {
-    name: 'right-circle foo 3 1 Bytes node.gov 1 HTTPServer download plus',
+    name: 'right-circle foo 3 1 Bytes node.gov 1 WGET download plus',
   });
   expect(row).toBeTruthy();
 
@@ -115,7 +115,7 @@ it('renders "PID" button when the record has a "xlink" key/value, vice versa', (
   // Check first row exists
   const firstRow = getByRole('row', {
     name:
-      'right-circle foo 3 1 Bytes node.gov 1 HTTPServer download PID Further Info plus',
+      'right-circle foo 3 1 Bytes node.gov 1 WGET download PID Further Info plus',
   });
   expect(firstRow).toBeTruthy();
 
@@ -127,7 +127,7 @@ it('renders "PID" button when the record has a "xlink" key/value, vice versa', (
 
   // Check second row exists
   const secondRow = getByRole('row', {
-    name: 'right-circle bar 2 1 Bytes node.gov 1 HTTPServer download plus',
+    name: 'right-circle bar 2 1 Bytes node.gov 1 WGET download plus',
   });
   expect(secondRow).toBeTruthy();
 
@@ -149,7 +149,7 @@ it('renders add or remove button for items in or not in the cart respectively, a
 
   // Check first row exists
   const firstRow = getByRole('row', {
-    name: 'right-circle foo 3 1 Bytes node.gov 1 HTTPServer download minus',
+    name: 'right-circle foo 3 1 Bytes node.gov 1 WGET download minus',
   });
   expect(firstRow).toBeTruthy();
 
@@ -160,7 +160,7 @@ it('renders add or remove button for items in or not in the cart respectively, a
 
   // Check second row exists
   const secondRow = getByRole('row', {
-    name: 'right-circle bar 2 1 Bytes node.gov 1 HTTPServer download plus',
+    name: 'right-circle bar 2 1 Bytes node.gov 1 WGET download plus',
   });
   expect(secondRow).toBeTruthy();
 
@@ -179,7 +179,7 @@ it('handles when clicking the select checkbox for a row', () => {
 
   // Check a record row exist
   const row = getByRole('row', {
-    name: 'right-circle foo 3 1 Bytes node.gov 1 HTTPServer download plus',
+    name: 'right-circle foo 3 1 Bytes node.gov 1 WGET download plus',
   });
   expect(row).toBeTruthy();
 
