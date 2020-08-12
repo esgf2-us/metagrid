@@ -1,13 +1,8 @@
+import { Divider } from 'antd';
 import React from 'react';
-import { Divider, Form, Select } from 'antd';
-import { DownloadOutlined } from '@ant-design/icons';
-
-import Button from '../General/Button';
-import { formatBytes } from '../../utils/utils';
-
 import cartImg from '../../assets/img/cart.svg';
-import dataImg from '../../assets/img/data.svg';
 import folderImg from '../../assets/img/folder.svg';
+import { formatBytes } from '../../utils/utils';
 
 const styles = {
   headerContainer: { display: 'flex', justifyContent: 'center' },
@@ -24,10 +19,6 @@ export type Props = {
 };
 
 const Summary: React.FC<Props> = ({ cart }) => {
-  const [form] = Form.useForm();
-  // TODO: Add handle for Globus download if selected dataset has no Globus option
-  const downloadOptions = ['WGET', 'Globus'];
-
   let numFiles = 0;
   let totalDataSize = '0';
   if (cart.length > 0) {
@@ -63,40 +54,6 @@ const Summary: React.FC<Props> = ({ cart }) => {
         Total File Size: <span style={styles.statistic}>{totalDataSize}</span>
       </h1>
       <Divider />
-      <div style={styles.headerContainer}>
-        <img style={styles.image} src={dataImg as string} alt="Data" />
-      </div>
-      <h1 style={styles.summaryHeader}>Download Your Cart</h1>
-      <p>
-        Download speeds will vary based on your bandwidth and distance from the
-        data node serving the file(s)
-      </p>
-      <Form
-        form={form}
-        layout="inline"
-        initialValues={{
-          download: downloadOptions[0],
-        }}
-      >
-        <Form.Item name="download">
-          <Select style={{ width: 235 }}>
-            {downloadOptions.map((option) => (
-              <Select.Option key={option} value={option}>
-                {option}
-              </Select.Option>
-            ))}
-            /
-          </Select>
-        </Form.Item>
-        <Form.Item>
-          <Button
-            type="primary"
-            htmlType="submit"
-            icon={<DownloadOutlined />}
-            disabled
-          ></Button>
-        </Form.Item>
-      </Form>
     </div>
   );
 };

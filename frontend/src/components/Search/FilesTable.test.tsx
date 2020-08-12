@@ -2,12 +2,7 @@
 import React from 'react';
 import { render, waitFor, fireEvent, within } from '@testing-library/react';
 
-import FilesTable, {
-  genDownloadUrls,
-  openDownloadUrl,
-  DownloadUrls,
-  Props,
-} from './FilesTable';
+import FilesTable, { genDownloadUrls, DownloadUrls, Props } from './FilesTable';
 import apiRoutes from '../../api/routes';
 import { server, rest } from '../../api/mock/setup-env';
 
@@ -38,34 +33,6 @@ describe('test genDownloadUrls()', () => {
   });
 });
 
-describe('test openDownloadUrl()', () => {
-  let windowSpy: jest.SpyInstance;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let mockedOpen: jest.Mock<any, any>;
-
-  beforeEach(() => {
-    mockedOpen = jest.fn();
-    windowSpy = jest.spyOn(global, 'window', 'get');
-  });
-
-  afterEach(() => {
-    windowSpy.mockRestore();
-  });
-
-  it('should return https://example.com', () => {
-    const url = 'https://example.com';
-    windowSpy.mockImplementation(() => ({
-      location: {
-        origin: url,
-      },
-      open: mockedOpen,
-    }));
-
-    openDownloadUrl(url);
-    expect(window.location.origin).toEqual('https://example.com');
-  });
-});
-
 const defaultProps: Props = {
   id: 'id',
 };
@@ -88,8 +55,11 @@ describe('test FilesTable component', () => {
   it('renders files table with data and opens up a new window when submitting form for downloading a file', async () => {
     // Update the value of open
     // https://stackoverflow.com/questions/58189851/mocking-a-conditional-window-open-function-call-with-jest
-    Object.defineProperty(window, 'open', { value: jest.fn() });
-
+    Object.defineProperty(window, 'location', {
+      value: {
+        href: jest.fn(),
+      },
+    });
     const { getByRole, getByTestId } = render(<FilesTable {...defaultProps} />);
 
     // Check files table componet renders

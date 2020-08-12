@@ -8,6 +8,8 @@ import {
   fetchUserCart,
   fetchUserSearches,
   genUrlQuery,
+  fetchWgetScript,
+  openDownloadURL,
   processCitation,
   updateUserCart,
 } from '.';
@@ -316,5 +318,52 @@ describe('test deleteUserSearch', () => {
     );
 
     await expect(deleteUserSearch('pk', 'access_token')).rejects.toThrow('404');
+  });
+});
+
+describe('test fetchWgetScript', () => {
+  it('returns a response with a single dataset id', async () => {
+    await fetchWgetScript('id');
+  });
+  it('returns a response with an array of dataset ids', async () => {
+    await fetchWgetScript(['id', 'id']);
+  });
+
+  it('catches and throws an error', async () => {
+    server.use(
+      rest.get(apiRoutes.wget, (_req, res, ctx) => {
+        return res(ctx.status(404));
+      })
+    );
+
+    await expect(fetchWgetScript('id')).rejects.toThrow('404');
+  });
+});
+
+describe('test openDownloadUrl()', () => {
+  let windowSpy: jest.SpyInstance;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let mockedOpen: jest.Mock<any, any>;
+
+  beforeEach(() => {
+    mockedOpen = jest.fn();
+    windowSpy = jest.spyOn(global, 'window', 'get');
+  });
+
+  afterEach(() => {
+    windowSpy.mockRestore();
+  });
+
+  it('should return https://example.com', () => {
+    const url = 'https://example.com';
+    windowSpy.mockImplementation(() => ({
+      location: {
+        origin: url,
+      },
+      open: mockedOpen,
+    }));
+
+    openDownloadURL(url);
+    expect(window.location.origin).toEqual('https://example.com');
   });
 });
