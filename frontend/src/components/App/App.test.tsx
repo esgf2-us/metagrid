@@ -355,7 +355,8 @@ describe('User cart', () => {
     // Check first row exists
     const firstRow = await waitFor(() =>
       getByRole('row', {
-        name: 'right-circle foo 3 1 Bytes node.gov 1 WGET download plus',
+        name:
+          'right-circle foo 3 1 Bytes node.gov 1 check-circle Globus Compatible wget download plus',
       })
     );
     expect(firstRow).toBeTruthy();
@@ -491,7 +492,8 @@ describe('User cart', () => {
     // Check first row exists
     const firstRow = await waitFor(() =>
       getByRole('row', {
-        name: 'right-circle foo 3 1 Bytes node.gov 1 WGET download plus',
+        name:
+          'right-circle foo 3 1 Bytes node.gov 1 check-circle Globus Compatible wget download plus',
       })
     );
     expect(firstRow).toBeTruthy();
@@ -559,7 +561,8 @@ describe('User cart', () => {
     // Check first row exists
     const firstRow = await waitFor(() =>
       getByRole('row', {
-        name: 'right-circle foo 3 1 Bytes node.gov 1 WGET download plus',
+        name:
+          'right-circle foo 3 1 Bytes node.gov 1 check-circle Globus Compatible wget download plus',
       })
     );
     expect(firstRow).toBeTruthy();

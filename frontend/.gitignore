@@ -81,5 +81,6 @@ typings/
 src/react-app-env.d.ts
 
 # Environment variables
-# .env
-# .envs/*
+.env
+.envs/*
+!.envs/.local/
