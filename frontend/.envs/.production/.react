@@ -5,6 +5,11 @@ REACT_APP_API_PROTOCOL=http://
 REACT_APP_API_URL=localhost
 REACT_APP_API_PORT=8000
 
+# ESGF WGET API
+# ------------------------------------------------------------------------------
+# https://github.com/ESGF/esgf-wget
+REACT_APP_WGET_API_URL=https://pcmdi8vm.llnl.gov/wget
+
 # ESG Search API
 # ------------------------------------------------------------------------------
 # https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html

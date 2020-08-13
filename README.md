@@ -166,7 +166,7 @@ Finally, note that Keycloak is not included as a Docker service and must be a st
 
 ### 1. Back-end Configuration
 
-#### Django
+#### 1.1 Django
 
 Directory: `backend/.envs/.production/.django`
 
@@ -292,7 +292,7 @@ KEYCLOAK_CLIENT_ID=backend
 
 Directory: `frontend/.envs/.production/.react`
 
-#### API
+#### 2.1 MetaGrid API
 
 ##### `REACT_APP_API_PROTOCOL`
 
@@ -336,7 +336,23 @@ Example:
 REACT_APP_API_PORT=8000
 ```
 
-#### ESGF Search API
+#### 2.2 ESGF wget API
+
+[Documentation](https://github.com/ESGF/esgf-wget)
+
+##### `REACT_APP_WGET_API_URL`
+
+The URL for the ESGF wget API.
+
+Example:
+
+```env
+REACT_APP_WGET_API_URL=https://pcmdi8vm.llnl.gov/wget
+```
+
+#### 2.3 ESGF Search API
+
+[Documentation](https://github.com/ESGF/esgf.github.io/wiki/ESGF_Search_REST_API)
 
 ##### `REACT_APP_ESGF_NODE_PROTOCOL`
 
@@ -358,7 +374,7 @@ Example:
 REACT_APP_ESGF_NODE_URL=esgf-node.llnl.gov
 ```
 
-#### Keycloak
+#### 2.4 Keycloak
 
 ##### `REACT_APP_KEYCLOAK_REALM`
 

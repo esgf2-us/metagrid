@@ -1,9 +1,11 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
-import { fireEvent, render, within } from '@testing-library/react';
+import { fireEvent, render, within, waitFor } from '@testing-library/react';
 
 import Table, { Props } from './Table';
 import { searchResultsFixture } from '../../api/mock/fixtures';
+import { server, rest } from '../../api/mock/setup-env';
+import apiRoutes from '../../api/routes';
 
 const defaultProps: Props = {
   loading: false,
@@ -51,7 +53,8 @@ it('renders record metadata in an expandable panel', () => {
 
   // Check a record row exist
   const row = getByRole('row', {
-    name: 'right-circle foo 3 1 Bytes node.gov 1 WGET download plus',
+    name:
+      'right-circle foo 3 1 Bytes node.gov 1 check-circle Globus Compatible wget download plus',
   });
   expect(row).toBeTruthy();
 
@@ -115,7 +118,7 @@ it('renders "PID" button when the record has a "xlink" key/value, vice versa', (
   // Check first row exists
   const firstRow = getByRole('row', {
     name:
-      'right-circle foo 3 1 Bytes node.gov 1 WGET download PID Further Info plus',
+      'right-circle foo 3 1 Bytes node.gov 1 check-circle Globus Compatible wget download PID Further Info plus',
   });
   expect(firstRow).toBeTruthy();
 
@@ -127,7 +130,8 @@ it('renders "PID" button when the record has a "xlink" key/value, vice versa', (
 
   // Check second row exists
   const secondRow = getByRole('row', {
-    name: 'right-circle bar 2 1 Bytes node.gov 1 WGET download plus',
+    name:
+      'right-circle bar 2 1 Bytes node.gov 1 close-circle Globus Compatible wget download plus',
   });
   expect(secondRow).toBeTruthy();
 
@@ -149,7 +153,8 @@ it('renders add or remove button for items in or not in the cart respectively, a
 
   // Check first row exists
   const firstRow = getByRole('row', {
-    name: 'right-circle foo 3 1 Bytes node.gov 1 WGET download minus',
+    name:
+      'right-circle foo 3 1 Bytes node.gov 1 check-circle Globus Compatible wget download minus',
   });
   expect(firstRow).toBeTruthy();
 
@@ -160,7 +165,8 @@ it('renders add or remove button for items in or not in the cart respectively, a
 
   // Check second row exists
   const secondRow = getByRole('row', {
-    name: 'right-circle bar 2 1 Bytes node.gov 1 WGET download plus',
+    name:
+      'right-circle bar 2 1 Bytes node.gov 1 close-circle Globus Compatible wget download plus',
   });
   expect(secondRow).toBeTruthy();
 
@@ -179,7 +185,8 @@ it('handles when clicking the select checkbox for a row', () => {
 
   // Check a record row exist
   const row = getByRole('row', {
-    name: 'right-circle foo 3 1 Bytes node.gov 1 WGET download plus',
+    name:
+      'right-circle foo 3 1 Bytes node.gov 1 check-circle Globus Compatible wget download plus',
   });
   expect(row).toBeTruthy();
 
@@ -203,4 +210,67 @@ it('handles when clicking the select all checkbox in the table"s header', () => 
   ) as HTMLInputElement;
   expect(selectAllCheckbox).toBeTruthy();
   fireEvent.click(selectAllCheckbox);
+});
+
+it('handles downloading an item via wget', async () => {
+  const { getByRole } = render(
+    <Table {...defaultProps} cart={[defaultProps.results[0]]} />
+  );
+
+  // Check table renders
+  const tableComponent = getByRole('table');
+  expect(tableComponent).toBeTruthy();
+
+  // Check first row renders
+  const firstRow = getByRole('row', {
+    name:
+      'right-circle foo 3 1 Bytes node.gov 1 check-circle Globus Compatible wget download minus',
+  });
+  expect(firstRow).toBeTruthy();
+
+  // Check first row download button renders and submit the form
+  const firstRowBtn = within(firstRow).getByRole('img', { name: 'download' });
+  expect(firstRowBtn).toBeTruthy();
+  fireEvent.submit(firstRowBtn);
+
+  // Wait component to re-render
+  await waitFor(() => getByRole('table'));
+});
+it('displays an error when unable to access download via wget', async () => {
+  server.use(
+    rest.get(apiRoutes.wget, (_req, res, ctx) => {
+      return res(ctx.status(404));
+    })
+  );
+
+  const { getByRole, getByText } = render(
+    <Table {...defaultProps} cart={[defaultProps.results[0]]} />
+  );
+
+  // Check table renders
+  const tableComponent = getByRole('table');
+  expect(tableComponent).toBeTruthy();
+
+  // Check first row renders
+  const firstRow = getByRole('row', {
+    name:
+      'right-circle foo 3 1 Bytes node.gov 1 check-circle Globus Compatible wget download minus',
+  });
+  expect(firstRow).toBeTruthy();
+
+  // Check first row download button renders and submit the form
+  const firstRowBtn = within(firstRow).getByRole('img', { name: 'download' });
+  expect(firstRowBtn).toBeTruthy();
+  fireEvent.submit(firstRowBtn);
+
+  // Wait component to re-render
+  await waitFor(() => getByRole('table'));
+
+  // Check error message renders
+  const errorMsg = await waitFor(() =>
+    getByText(
+      'There was an issue fetching the wget script. Please contact support or try again later.'
+    )
+  );
+  expect(errorMsg).toBeTruthy();
 });

@@ -7,7 +7,7 @@ import { Form, Select, Table as TableD } from 'antd';
 import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
 
-import { fetchFiles } from '../../api';
+import { fetchFiles, openDownloadURL } from '../../api';
 import { parseUrl, formatBytes } from '../../utils/utils';
 
 export type DownloadUrls = {
@@ -31,13 +31,6 @@ export const genDownloadUrls = (urls: string[]): DownloadUrls => {
   });
   return newUrls;
 };
-/**
- * Opens the selected download url in a new tab
- */
-export const openDownloadUrl = (url: string): Window | null => {
-  return window.open(url, '_blank');
-};
-
 export type Props = {
   id: string;
 };
@@ -102,7 +95,7 @@ const FilesTable: React.FC<Props> = ({ id }) => {
             <Form
               data-testid="download-form"
               layout="inline"
-              onFinish={({ download }) => openDownloadUrl(download)}
+              onFinish={({ download }) => openDownloadURL(download)}
               initialValues={{ download: downloadUrls[0].downloadUrl }}
             >
               <Form.Item name="download">

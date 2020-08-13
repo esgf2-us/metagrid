@@ -9,6 +9,9 @@ const apiUrl = process.env.REACT_APP_API_URL as string;
 const apiPort = process.env.REACT_APP_API_PORT as string;
 export const apiBaseUrl = `${apiProtocol}${apiUrl}:${apiPort}`;
 
+// wget Script API
+export const wgetApiUrl = process.env.REACT_APP_WGET_API_URL as string;
+
 // ESG Search API
 // ------------------------------------------------------------------------------
 // https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
