@@ -1,21 +1,29 @@
-import React from 'react';
-import { AutoComplete, Collapse, Form, Select, Table as TableD } from 'antd';
 import {
-  RightCircleOutlined,
+  CheckCircleTwoTone,
+  CloseCircleTwoTone,
   DownCircleOutlined,
   DownloadOutlined,
   MinusOutlined,
   PlusOutlined,
+  RightCircleOutlined,
 } from '@ant-design/icons';
+import {
+  AutoComplete,
+  Collapse,
+  Form,
+  message,
+  Select,
+  Table as TableD,
+} from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
-
-import Citation from './Citation';
-import FilesTable from './FilesTable';
+import React from 'react';
+import { fetchWgetScript, openDownloadURL } from '../../api';
+import { formatBytes, hasKey, parseUrl } from '../../utils/utils';
 import Button from '../General/Button';
 import Divider from '../General/Divider';
-
-import { formatBytes, hasKey, parseUrl } from '../../utils/utils';
+import Citation from './Citation';
+import FilesTable from './FilesTable';
 import './Search.css';
 
 export type Props = {
@@ -121,10 +129,6 @@ const Table: React.FC<Props> = ({
         ),
     },
     rowSelection: {
-      getCheckboxProps: (record: RawSearchResult) =>
-        cart.includes(record as never, 0)
-          ? { disabled: true }
-          : { disabled: false },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onSelect: (_record: any, _selected: any, selectedRows: any) => {
         /* istanbul ignore else */
@@ -182,22 +186,53 @@ const Table: React.FC<Props> = ({
       key: 'download',
       width: 200,
       render: (record: RawSearchResult) => {
-        const availableDownloads = ['WGET'];
+        const availableDownloads = ['wget'];
+        let globusCompatible = false;
 
         record.access.forEach((download) => {
           if (download === 'Globus') {
+            globusCompatible = true;
             availableDownloads.push('Globus');
           }
         });
 
+        /**
+         * Handle the download form for datasets
+         */
+        const handleDownloadForm = (download: string): void => {
+          /* istanbul ignore else */
+          if (download === 'wget') {
+            fetchWgetScript(record.id)
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              .then((url) => {
+                openDownloadURL(url);
+              })
+              .catch(() => {
+                // eslint-disable-next-line no-void
+                void message.error(
+                  'There was an issue fetching the wget script. Please contact support or try again later.'
+                );
+              });
+          }
+        };
+
         return (
-          <span>
-            <Form layout="inline">
-              <Form.Item>
-                <Select
-                  defaultValue={availableDownloads[0]}
-                  style={{ width: 120 }}
-                >
+          <>
+            <p>
+              {globusCompatible ? (
+                <CheckCircleTwoTone twoToneColor="#52c41a" />
+              ) : (
+                <CloseCircleTwoTone twoToneColor="#eb2f96" />
+              )}{' '}
+              Globus Compatible
+            </p>
+            <Form
+              layout="inline"
+              onFinish={({ download }) => handleDownloadForm(download)}
+              initialValues={{ download: availableDownloads[0] }}
+            >
+              <Form.Item name="download">
+                <Select style={{ width: 120 }}>
                   {availableDownloads.map((option) => (
                     <Select.Option key={option} value={option}>
                       {option}
@@ -208,12 +243,12 @@ const Table: React.FC<Props> = ({
               <Form.Item>
                 <Button
                   type="primary"
+                  htmlType="submit"
                   icon={<DownloadOutlined />}
-                  disabled
                 ></Button>
               </Form.Item>
             </Form>
-          </span>
+          </>
         );
       },
     },

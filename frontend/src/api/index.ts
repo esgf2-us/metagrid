@@ -343,3 +343,43 @@ Promise<{ [key: string]: any }> => {
       throw new Error(error);
     });
 };
+
+/**
+ * Performs validation against the wget API to ensure a 200 response.
+ *
+ * If the API returns a 200, it returns the responseURL so the browser can open
+ * the link.
+ */
+export const fetchWgetScript = async (
+  ids: string[] | string
+): Promise<string> => {
+  const params = new URLSearchParams();
+
+  if (Array.isArray(ids)) {
+    ids.forEach((id: string) => {
+      params.append('dataset_id', id);
+    });
+  } else {
+    params.append('dataset_id', ids);
+  }
+
+  return axios
+    .get(apiRoutes.wget, { params })
+    .then((res) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      return res.request.responseURL as string;
+    })
+    .catch((error) => {
+      throw new Error(error);
+    });
+};
+
+/**
+ * Sets the window location href to the specified URL.
+ *
+ * It removes the proxyString from the URL so the link can be access through
+ * the browser.
+ */
+export const openDownloadURL = (url: string): void => {
+  window.location.href = url.replace(`${proxyString}/`, '');
+};

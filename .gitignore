@@ -183,5 +183,6 @@ Session.vim
 tags
 
 # Environment variable files
-**/.env
-**/.envs/
+.env
+.envs/*
+!.envs/.local/
