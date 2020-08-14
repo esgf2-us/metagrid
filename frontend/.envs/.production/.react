@@ -1,32 +1,26 @@
 # MetaGrid API
 # ------------------------------------------------------------------------------
 # https://github.com/aims-group/metagrid/tree/master/backend
-REACT_APP_API_PROTOCOL=http://
-REACT_APP_API_URL=localhost
-REACT_APP_API_PORT=8000
+REACT_APP_METAGRID_API_URL=http://localhost:8000
 
-# ESGF WGET API
+# ESGF wget API
 # ------------------------------------------------------------------------------
 # https://github.com/ESGF/esgf-wget
 REACT_APP_WGET_API_URL=https://pcmdi8vm.llnl.gov/wget
 
-# ESG Search API
+# ESGF Search API
 # ------------------------------------------------------------------------------
 # https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
-REACT_APP_ESGF_NODE_PROTOCOL=https://
-REACT_APP_ESGF_NODE_URL=esgf-node.llnl.gov
+REACT_APP_ESGF_NODE_URL=https://esgf-node.llnl.gov
 
 # cors-anywhere proxy
 # ------------------------------------------------------------------------------
 # https://github.com/Rob--W/cors-anywhere
-REACT_APP_PROXY_PROTOCOL=http://
-# Must specify 'localhost' instead of 'proxy' since the host's browser is performing the requests
-REACT_APP_PROXY_HOST=localhost
-REACT_APP_PROXY_PORT=3001
+REACT_APP_PROXY_URL=http://localhost:3001
 
 # Keycloak
 # ------------------------------------------------------------------------------
 # https://github.com/keycloak/keycloak
-REACT_APP_KEYCLOAK_REALM=
-REACT_APP_KEYCLOAK_URL=
-REACT_APP_KEYCLOAK_CLIENT_ID=
+REACT_APP_KEYCLOAK_REALM=metagrid
+REACT_APP_KEYCLOAK_URL=http://keycloak:8000/auth
+REACT_APP_KEYCLOAK_CLIENT_ID=frontend

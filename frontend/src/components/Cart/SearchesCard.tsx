@@ -1,22 +1,20 @@
-import React from 'react';
-import { useHistory } from 'react-router-dom';
-import { useAsync } from 'react-async';
-import { Col, Typography } from 'antd';
-
 import {
-  SearchOutlined,
-  LinkOutlined,
   DeleteOutlined,
   FileSearchOutlined,
+  LinkOutlined,
+  SearchOutlined,
 } from '@ant-design/icons';
+import { Col, Typography } from 'antd';
+import React from 'react';
+import { useAsync } from 'react-async';
+import { useHistory } from 'react-router-dom';
+import { fetchResults, genUrlQuery } from '../../api';
+import { clickableRoute } from '../../api/routes';
 import Card from '../DataDisplay/Card';
 import ToolTip from '../DataDisplay/ToolTip';
-
-import { stringifyConstraints } from '../Search';
-import { fetchResults, genUrlQuery } from '../../api';
-import Skeleton from '../Feedback/Skeleton';
 import Alert from '../Feedback/Alert';
-import { clickableRoute } from '../../api/routes';
+import Skeleton from '../Feedback/Skeleton';
+import { stringifyConstraints } from '../Search';
 
 const styles: Record<string, React.CSSProperties> = {
   category: {
@@ -110,6 +108,7 @@ const SearchesCard: React.FC<Props> = ({
             trigger="hover"
           >
             <SearchOutlined
+              data-testid={`apply-${index + 1}`}
               key="search"
               onClick={() => {
                 history.push('/search');

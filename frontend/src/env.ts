@@ -1,33 +1,30 @@
 /**
- * This file sets environment variables as constants for re-use.
+ * This file transforms environment variables into constants for re-usability.
  *
- * Make sure it is consistent with .envs!
+ * Make sure it is consistent with env file, .react!
  */
 
-const apiProtocol = process.env.REACT_APP_API_PROTOCOL as string;
-const apiUrl = process.env.REACT_APP_API_URL as string;
-const apiPort = process.env.REACT_APP_API_PORT as string;
-export const apiBaseUrl = `${apiProtocol}${apiUrl}:${apiPort}`;
+// MetaGrid API
+// ------------------------------------------------------------------------------
+// https://github.com/aims-group/metagrid/tree/master/backend
+export const metagridApiURL = `${
+  process.env.REACT_APP_METAGRID_API_URL as string
+}`;
 
-// wget Script API
-export const wgetApiUrl = process.env.REACT_APP_WGET_API_URL as string;
+// ESGF wget API
+// ------------------------------------------------------------------------------
+// https://github.com/ESGF/esgf-wget
+export const wgetApiURL = process.env.REACT_APP_WGET_API_URL as string;
 
-// ESG Search API
+// ESGF Search API
 // ------------------------------------------------------------------------------
 // https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
-export const nodeProtocol = `${
-  process.env.REACT_APP_ESGF_NODE_PROTOCOL as string
-}`;
-export const nodeUrl = `${process.env.REACT_APP_ESGF_NODE_URL as string}`;
-export const nodeRoute = `${nodeProtocol}${nodeUrl}`;
+export const esgfNodeURL = `${process.env.REACT_APP_ESGF_NODE_URL as string}`;
 
-// CORS Anywhere configuration
+// cors-anywhere proxy
 // ------------------------------------------------------------------------------
 // https://github.com/Rob--W/cors-anywhere
-const proxyProtocol = process.env.REACT_APP_PROXY_PROTOCOL as string;
-const proxyHost = process.env.REACT_APP_PROXY_HOST as string;
-const proxyPort = process.env.REACT_APP_PROXY_PORT as string;
-export const proxyString = `${proxyProtocol}${proxyHost}:${proxyPort}`;
+export const proxyURL = `${process.env.REACT_APP_PROXY_URL as string}`;
 
 // Keycloak
 // ------------------------------------------------------------------------------
