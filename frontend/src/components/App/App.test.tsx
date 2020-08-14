@@ -6,14 +6,13 @@
  *
  */
 
+import { fireEvent, waitFor, within } from '@testing-library/react';
 import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { waitFor, fireEvent, within } from '@testing-library/react';
-
-import App from './App';
+import { rest, server } from '../../api/mock/setup-env';
 import apiRoutes from '../../api/routes';
 import { customRender } from '../../test/custom-render';
-import { server, rest } from '../../api/mock/setup-env';
+import App from './App';
 
 const location = JSON.stringify(window.location);
 afterEach(() => {
@@ -712,9 +711,7 @@ describe('User search library', () => {
     expect(cart).toBeTruthy();
 
     // Check apply search button renders and click it
-    const applySearchBtn = await waitFor(() =>
-      within(cart).getByRole('img', { name: 'search', hidden: true })
-    );
+    const applySearchBtn = await waitFor(() => getByTestId('apply-1'));
     expect(applySearchBtn).toBeTruthy();
     fireEvent.click(applySearchBtn);
 

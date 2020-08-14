@@ -1,5 +1,7 @@
-# https://github.com/Rob--W/cors-anywhere#server
 
+# cors-anywhere proxy
+# ------------------------------------------------------------------------------
+# https://github.com/Rob--W/cors-anywhere#server
 PROXY_PROTOCOL=http://
 PROXY_HOST=proxy
 PROXY_PORT=3001
