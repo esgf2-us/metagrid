@@ -294,46 +294,20 @@ Directory: `frontend/.envs/.production/.react`
 
 #### 2.1 MetaGrid API
 
-##### `REACT_APP_API_PROTOCOL`
-
-The protocol for the MetaGrid back-end API.
-
-Example with subdomain:
-
-```env
-REACT_APP_API_PROTOCOL=https
-```
-
-Example without subdomain:
-
-```env
-REACT_APP_API_PROTOCOL=http
-```
-
 ##### `REACT_APP_API_URL`
 
-The URL for the MetaGrid back-end API.
+The URL for the MetaGrid API.
 
 Example with subdomain:
 
 ```env
-REACT_APP_API_URL=backend.metagrid.com
+REACT_APP_METAGRID_API_URL=https://backend.metagrid.com
 ```
 
 Example without subdomain
 
 ```env
-REACT_APP_API_URL=localhost
-```
-
-##### `REACT_APP_API_PORT`
-
-The port for the MetaGrid back-end API.
-
-Example:
-
-```env
-REACT_APP_API_PORT=8000
+REACT_APP_METAGRID_API_URL=http://localhost:8000
 ```
 
 #### 2.2 ESGF wget API
@@ -354,16 +328,6 @@ REACT_APP_WGET_API_URL=https://pcmdi8vm.llnl.gov/wget
 
 [Documentation](https://github.com/ESGF/esgf.github.io/wiki/ESGF_Search_REST_API)
 
-##### `REACT_APP_ESGF_NODE_PROTOCOL`
-
-The protocol for the ESGF node.
-
-Example:
-
-```env
-REACT_APP_ESGF_NODE_PROTOCOL=https://
-```
-
 ##### `REACT_APP_ESGF_NODE_URL`
 
 The URL for the ESGF node.
@@ -371,7 +335,7 @@ The URL for the ESGF node.
 Example:
 
 ```env
-REACT_APP_ESGF_NODE_URL=esgf-node.llnl.gov
+REACT_APP_ESGF_NODE_URL=https://esgf-node.llnl.gov
 ```
 
 #### 2.4 Keycloak

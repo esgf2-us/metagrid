@@ -3,10 +3,9 @@
  */
 import humps from 'humps';
 import queryString from 'query-string';
-
 import axios from '../axios';
-import apiRoutes from './routes';
-import { proxyString } from '../env';
+import { proxyURL } from '../env';
+import apiRoutes, { clickableRoute } from './routes';
 
 /**
  * Camelizes keys from a string that is parsed as JSON.
@@ -311,7 +310,7 @@ export const fetchCitation = async ({
 }): // eslint-disable-next-line @typescript-eslint/no-explicit-any
 Promise<{ [key: string]: any }> => {
   return axios
-    .get(`${proxyString}/${url}`)
+    .get(`${proxyURL}/${url}`)
     .then((res) => {
       const citation = processCitation(res.data);
       return citation;
@@ -381,5 +380,6 @@ export const fetchWgetScript = async (
  * the browser.
  */
 export const openDownloadURL = (url: string): void => {
-  window.location.href = url.replace(`${proxyString}/`, '');
+  const newURL = clickableRoute(url);
+  window.location.href = newURL;
 };
