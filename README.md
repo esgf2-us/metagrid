@@ -357,7 +357,7 @@ The url of your hosted keycloak server, it must end with `/auth`.
 Example:
 
 ```env
-RKEYCLOAK_URL=https://keycloak.metagrid.com/auth
+REACT_APP_KEYCLOAK_URL=https://keycloak.metagrid.com/auth
 ```
 
 ##### `REACT_APP_KEYCLOAK_CLIENT_ID`
