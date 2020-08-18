@@ -1,11 +1,10 @@
 /* eslint-disable react/jsx-props-no-spreading */
+import { fireEvent, render, waitFor, within } from '@testing-library/react';
 import React from 'react';
-import { fireEvent, render, within, waitFor } from '@testing-library/react';
-
-import Items, { Props } from './Items';
-import apiRoutes from '../../api/routes';
 import { cartFixture } from '../../api/mock/fixtures';
 import { rest, server } from '../../api/mock/setup-env';
+import apiRoutes from '../../api/routes';
+import Items, { Props } from './Items';
 
 const defaultProps: Props = {
   cart: cartFixture(),
@@ -40,6 +39,14 @@ it('removes all items from the cart when confirming the popconfirm', () => {
 });
 
 it('handles selecting items in the cart and downloading them via wget', async () => {
+  // Mock window.location.href
+  Object.defineProperty(window, 'location', {
+    value: {
+      href: jest.fn(),
+    },
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const { getByRole, getByTestId } = render(<Items {...defaultProps} />);
 
   // Check first row renders and click the checkbox
@@ -65,6 +72,9 @@ it('handles selecting items in the cart and downloading them via wget', async ()
   // Check cart items component renders
   const cartItemsComponent = await waitFor(() => getByTestId('cartItems'));
   expect(cartItemsComponent).toBeTruthy();
+
+  // Wait for cart items component to re-render
+  await waitFor(() => getByTestId('cartItems'));
 });
 
 it('handles error selecting items in the cart and downloading them via wget', async () => {
@@ -106,7 +116,7 @@ it('handles error selecting items in the cart and downloading them via wget', as
   // Check error message renders
   const errorMsg = await waitFor(() =>
     getByText(
-      'There was an issue fetching the wget script. Please contact support or try again later.'
+      'There was an issue generating the wget script. Please contact support or try again later.'
     )
   );
   expect(errorMsg).toBeTruthy();

@@ -1,11 +1,10 @@
 /* eslint-disable react/jsx-props-no-spreading */
+import { fireEvent, render, waitFor, within } from '@testing-library/react';
 import React from 'react';
-import { fireEvent, render, within, waitFor } from '@testing-library/react';
-
-import Table, { Props } from './Table';
 import { searchResultsFixture } from '../../api/mock/fixtures';
-import { server, rest } from '../../api/mock/setup-env';
+import { rest, server } from '../../api/mock/setup-env';
 import apiRoutes from '../../api/routes';
+import Table, { Props } from './Table';
 
 const defaultProps: Props = {
   loading: false,
@@ -213,6 +212,13 @@ it('handles when clicking the select all checkbox in the table"s header', () => 
 });
 
 it('handles downloading an item via wget', async () => {
+  // Mock window.location.href
+  Object.defineProperty(window, 'location', {
+    value: {
+      href: jest.fn(),
+    },
+  });
+
   const { getByRole } = render(
     <Table {...defaultProps} cart={[defaultProps.results[0]]} />
   );
@@ -269,7 +275,7 @@ it('displays an error when unable to access download via wget', async () => {
   // Check error message renders
   const errorMsg = await waitFor(() =>
     getByText(
-      'There was an issue fetching the wget script. Please contact support or try again later.'
+      'There was an issue generating the wget script. Please contact support or try again later.'
     )
   );
   expect(errorMsg).toBeTruthy();

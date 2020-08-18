@@ -33,40 +33,47 @@ export type Props = {
 const Items: React.FC<Props> = ({ cart, handleCart, clearCart }) => {
   const [form] = Form.useForm();
 
-  // TODO: Add 'Globus' as a download option
   // Available download options for datasets (batch download of files)
   const downloadOptions = ['wget'];
-
+  // Loading state, specifically for wget script
+  const [isLoading, setIsLoading] = React.useState(false);
   // Items selected in the data table
   const [selectedItems, setSelectedItems] = React.useState<
     RawSearchResult[] | []
   >([]);
 
   /**
-   * Handles when the user selects datasets for download
+   * Handles when the user selects datasets for download.
    */
   const handleSelect = (selectedRows: RawSearchResult[] | []): void => {
     setSelectedItems(selectedRows);
   };
 
   /**
-   * Handles the download form
+   * Handles the download form on submission.
    * TODO: Add handle for Globus
    */
   const handleDownloadForm = (downloadType: 'wget' | 'Globus'): void => {
     /* istanbul ignore else */
     if (downloadType === 'wget') {
       const ids = (selectedItems as RawSearchResult[]).map((item) => item.id);
+      // eslint-disable-next-line no-void
+      void message.success(
+        'The wget script is generating, please wait momentarily.',
+        5
+      );
+      setIsLoading(true);
       fetchWgetScript(ids)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .then((url) => {
           openDownloadURL(url);
+          setIsLoading(false);
         })
         .catch(() => {
           // eslint-disable-next-line no-void
           void message.error(
-            'There was an issue fetching the wget script. Please contact support or try again later.'
+            'There was an issue generating the wget script. Please contact support or try again later.'
           );
+          setIsLoading(false);
         });
     }
   };
@@ -133,7 +140,10 @@ const Items: React.FC<Props> = ({ cart, handleCart, clearCart }) => {
                   htmlType="submit"
                   icon={<DownloadOutlined />}
                   disabled={selectedItems.length === 0}
-                ></Button>
+                  loading={isLoading}
+                >
+                  Download
+                </Button>
               </Form.Item>
             </Form>
           </div>
