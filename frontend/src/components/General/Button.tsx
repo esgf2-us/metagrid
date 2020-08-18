@@ -1,5 +1,5 @@
-import React from 'react';
 import { Button as ButtonD } from 'antd';
+import React from 'react';
 
 type Props = {
   type?:
@@ -21,6 +21,7 @@ type Props = {
   disabled?: boolean | undefined;
   danger?: boolean;
   children?: React.ReactElement | React.ReactNode | string;
+  loading?: boolean;
 };
 
 const Button: React.FC<Props> = ({
@@ -33,6 +34,7 @@ const Button: React.FC<Props> = ({
   onClick,
   disabled = false,
   danger = false,
+  loading = false,
   children,
 }) => {
   return (
@@ -46,6 +48,7 @@ const Button: React.FC<Props> = ({
       onClick={onClick}
       disabled={disabled}
       danger={danger}
+      loading={loading}
     >
       {children}
     </ButtonD>
