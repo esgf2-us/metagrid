@@ -199,18 +199,21 @@ const Table: React.FC<Props> = ({
         /**
          * Handle the download form for datasets
          */
-        const handleDownloadForm = (download: string): void => {
+        const handleDownloadForm = (downloadType: 'wget' | 'Globus'): void => {
           /* istanbul ignore else */
-          if (download === 'wget') {
+          if (downloadType === 'wget') {
+            // eslint-disable-next-line no-void
+            void message.success(
+              'The wget script is generating, please wait momentarily.'
+            );
             fetchWgetScript(record.id)
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               .then((url) => {
                 openDownloadURL(url);
               })
               .catch(() => {
                 // eslint-disable-next-line no-void
                 void message.error(
-                  'There was an issue fetching the wget script. Please contact support or try again later.'
+                  'There was an issue generating the wget script. Please contact support or try again later.'
                 );
               });
           }
