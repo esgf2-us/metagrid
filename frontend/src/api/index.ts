@@ -352,21 +352,14 @@ Promise<{ [key: string]: any }> => {
 export const fetchWgetScript = async (
   ids: string[] | string
 ): Promise<string> => {
-  const params = new URLSearchParams();
-
-  if (Array.isArray(ids)) {
-    ids.forEach((id: string) => {
-      params.append('dataset_id', id);
-    });
-  } else {
-    params.append('dataset_id', ids);
-  }
-
+  const url = queryString.stringifyUrl({
+    url: apiRoutes.wget,
+    query: { dataset_id: ids },
+  });
   return axios
-    .get(apiRoutes.wget, { params })
-    .then((res) => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      return res.request.responseURL as string;
+    .get(url)
+    .then(() => {
+      return url;
     })
     .catch((error) => {
       throw new Error(error);
