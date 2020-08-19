@@ -86,7 +86,7 @@ ENV/
 # ipython
 .ipython/
 
-# Environment varibles
+# Environment variables
 .env
-.envs/*
-!.envs/.local/
+.envs/.production/.django
+.envs/.production/.postgres
