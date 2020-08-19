@@ -7,7 +7,7 @@ import { Form, Select, Table as TableD } from 'antd';
 import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
 
-import { fetchFiles } from '../../api';
+import { fetchFiles, openDownloadURL } from '../../api';
 import { parseUrl, formatBytes } from '../../utils/utils';
 
 export type DownloadUrls = {
@@ -22,23 +22,23 @@ export const genDownloadUrls = (urls: string[]): DownloadUrls => {
   const newUrls: DownloadUrls = [];
   urls.forEach((url) => {
     const downloadType = url.split('|').pop();
-    const downloadUrl = parseUrl(url, '|');
+    let downloadUrl = parseUrl(url, '|');
+
+    if (downloadType === 'OPeNDAP') {
+      downloadUrl = downloadUrl.replace('.html', '.dods');
+    }
     newUrls.push({ downloadType, downloadUrl });
   });
   return newUrls;
 };
-/**
- * Opens the selected download url in a new tab
- */
-export const openDownloadUrl = (url: string): Window | null => {
-  return window.open(url, '_blank');
-};
-
-type Props = {
+export type Props = {
   id: string;
 };
 
 const FilesTable: React.FC<Props> = ({ id }) => {
+  // Allowed download types
+  const downloadOptions = ['HTTPServer', 'OPeNDAP', 'Globus'];
+
   const { data, error, isLoading } = useAsync({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     promiseFn: (fetchFiles as unknown) as PromiseFn<Record<string, any>>,
@@ -90,25 +90,29 @@ const FilesTable: React.FC<Props> = ({ id }) => {
       width: 200,
       render: (record: { url: string[] }) => {
         const downloadUrls = genDownloadUrls(record.url);
-
         return (
           <span>
             <Form
               data-testid="download-form"
               layout="inline"
-              onFinish={({ download }) => openDownloadUrl(download)}
+              onFinish={({ download }) => openDownloadURL(download)}
               initialValues={{ download: downloadUrls[0].downloadUrl }}
             >
               <Form.Item name="download">
                 <Select style={{ width: 120 }}>
-                  {downloadUrls.map((option) => (
-                    <Select.Option
-                      key={option.downloadType}
-                      value={option.downloadUrl as React.ReactText}
-                    >
-                      {option.downloadType}
-                    </Select.Option>
-                  ))}
+                  {downloadUrls.map(
+                    (option) =>
+                      downloadOptions.includes(
+                        option.downloadType as string
+                      ) && (
+                        <Select.Option
+                          key={option.downloadType}
+                          value={option.downloadUrl as React.ReactText}
+                        >
+                          {option.downloadType}
+                        </Select.Option>
+                      )
+                  )}
                 </Select>
               </Form.Item>
               <Form.Item>

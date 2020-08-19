@@ -1,21 +1,20 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React from 'react';
 import { fireEvent, render, waitFor, within } from '@testing-library/react';
-
-import Search, {
-  parseFacets,
-  stringifyConstraints,
-  checkConstraintsExist,
-  Props,
-} from './index';
-import apiRoutes from '../../api/routes';
-import { proxyString, nodeProtocol, nodeUrl } from '../../env';
+import React from 'react';
 import {
   defaultFacetsFixture,
   esgSearchApiFixture,
   searchResultFixture,
 } from '../../api/mock/fixtures';
-import { server, rest } from '../../api/mock/setup-env';
+import { rest, server } from '../../api/mock/setup-env';
+import apiRoutes from '../../api/routes';
+import { esgfNodeURL, proxyURL } from '../../env';
+import Search, {
+  checkConstraintsExist,
+  parseFacets,
+  Props,
+  stringifyConstraints,
+} from './index';
 
 const defaultProps: Props = {
   activeProject: { name: 'foo', facetsUrl: 'https://fubar.gov/?' },
@@ -52,7 +51,7 @@ describe('test Search component', () => {
     server.use(
       // ESGF Search API - datasets
       rest.get(
-        `${proxyString}/${nodeProtocol}${nodeUrl}/esg-search/search/`,
+        `${proxyURL}/${esgfNodeURL}/esg-search/search/`,
         (_req, res, ctx) => {
           return res(ctx.status(404));
         }
@@ -216,7 +215,8 @@ describe('test Search component', () => {
 
     // Select the first row
     const firstRow = getByRole('row', {
-      name: 'right-circle foo 3 1 Bytes node.gov 1 HTTPServer download plus',
+      name:
+        'right-circle foo 3 1 Bytes node.gov 1 check-circle Globus Compatible wget download plus',
     });
     expect(firstRow).toBeTruthy();
 
@@ -265,7 +265,7 @@ describe('test Search component', () => {
 
     // Click on save button
     const saveBtn = await waitFor(() =>
-      getByRole('button', { name: 'book Save Search Criteria' })
+      getByRole('button', { name: 'book Save Search' })
     );
     expect(saveBtn).toBeTruthy();
     fireEvent.click(saveBtn);

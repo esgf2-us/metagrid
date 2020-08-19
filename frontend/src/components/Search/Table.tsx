@@ -1,21 +1,29 @@
-import React from 'react';
-import { AutoComplete, Collapse, Form, Select, Table as TableD } from 'antd';
 import {
-  RightCircleOutlined,
+  CheckCircleTwoTone,
+  CloseCircleTwoTone,
   DownCircleOutlined,
   DownloadOutlined,
   MinusOutlined,
   PlusOutlined,
+  RightCircleOutlined,
 } from '@ant-design/icons';
+import {
+  AutoComplete,
+  Collapse,
+  Form,
+  message,
+  Select,
+  Table as TableD,
+} from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
-
-import Citation from './Citation';
-import FilesTable from './FilesTable';
+import React from 'react';
+import { fetchWgetScript, openDownloadURL } from '../../api';
+import { formatBytes, hasKey, parseUrl } from '../../utils/utils';
 import Button from '../General/Button';
 import Divider from '../General/Divider';
-
-import { formatBytes, hasKey, parseUrl } from '../../utils/utils';
+import Citation from './Citation';
+import FilesTable from './FilesTable';
 import './Search.css';
 
 export type Props = {
@@ -121,10 +129,6 @@ const Table: React.FC<Props> = ({
         ),
     },
     rowSelection: {
-      getCheckboxProps: (record: RawSearchResult) =>
-        cart.includes(record as never, 0)
-          ? { disabled: true }
-          : { disabled: false },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onSelect: (_record: any, _selected: any, selectedRows: any) => {
         /* istanbul ignore else */
@@ -181,30 +185,75 @@ const Table: React.FC<Props> = ({
       title: 'Download',
       key: 'download',
       width: 200,
-      render: (record: RawSearchResult) => (
-        <span>
-          <Form layout="inline">
-            <Form.Item>
-              {/* eslint-disable-next-line react/prop-types */}
-              <Select defaultValue={record.access[0]} style={{ width: 120 }}>
-                {/* eslint-disable-next-line react/prop-types */}
-                {record.access.map((option) => (
-                  <Select.Option key={option} value={option}>
-                    {option}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <Form.Item>
-              <Button
-                type="primary"
-                icon={<DownloadOutlined />}
-                disabled
-              ></Button>
-            </Form.Item>
-          </Form>
-        </span>
-      ),
+      render: (record: RawSearchResult) => {
+        const availableDownloads = ['wget'];
+        let globusCompatible = false;
+
+        record.access.forEach((download) => {
+          if (download === 'Globus') {
+            globusCompatible = true;
+            availableDownloads.push('Globus');
+          }
+        });
+
+        /**
+         * Handle the download form for datasets
+         */
+        const handleDownloadForm = (downloadType: 'wget' | 'Globus'): void => {
+          /* istanbul ignore else */
+          if (downloadType === 'wget') {
+            // eslint-disable-next-line no-void
+            void message.success(
+              'The wget script is generating, please wait momentarily.'
+            );
+            fetchWgetScript(record.id)
+              .then((url) => {
+                openDownloadURL(url);
+              })
+              .catch(() => {
+                // eslint-disable-next-line no-void
+                void message.error(
+                  'There was an issue generating the wget script. Please contact support or try again later.'
+                );
+              });
+          }
+        };
+
+        return (
+          <>
+            <p>
+              {globusCompatible ? (
+                <CheckCircleTwoTone twoToneColor="#52c41a" />
+              ) : (
+                <CloseCircleTwoTone twoToneColor="#eb2f96" />
+              )}{' '}
+              Globus Compatible
+            </p>
+            <Form
+              layout="inline"
+              onFinish={({ download }) => handleDownloadForm(download)}
+              initialValues={{ download: availableDownloads[0] }}
+            >
+              <Form.Item name="download">
+                <Select style={{ width: 120 }}>
+                  {availableDownloads.map((option) => (
+                    <Select.Option key={option} value={option}>
+                      {option}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+              <Form.Item>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  icon={<DownloadOutlined />}
+                ></Button>
+              </Form.Item>
+            </Form>
+          </>
+        );
+      },
     },
     {
       title: 'Additional',

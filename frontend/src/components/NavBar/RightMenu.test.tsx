@@ -40,7 +40,7 @@ it('sets the active menu item based on the location pathname', async () => {
   expect(savedSearchLink).toBeTruthy();
   fireEvent.click(savedSearchLink);
 });
-it('display the user"s name after authentication and signs out', async () => {
+it('display the user"s given name after authentication and signs out', async () => {
   const { getByTestId, getByText } = customRender(
     <Router>
       <RightMenu {...rightMenuProps} />
@@ -65,8 +65,34 @@ it('display the user"s name after authentication and signs out', async () => {
   expect(signOutBtn).toBeTruthy();
   fireEvent.click(signOutBtn);
 });
-it('display the user"s name after authentication and signs out', async () => {
-  const { getByRole, getByTestId, getByText } = customRender(
+
+it('display the user"s email after authentication if they did not provide a name and signs out', async () => {
+  const { getByTestId, getByText } = customRender(
+    <Router>
+      <RightMenu {...rightMenuProps} />
+    </Router>,
+    {
+      authenticated: true,
+      idTokenParsed: { email: 'johndoe@url.com' },
+    }
+  );
+
+  // Check applicable components render
+  const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
+  expect(rightMenuComponent).toBeTruthy();
+
+  // Check user logged in and hover
+  const greeting = await waitFor(() => getByText('Hi, johndoe@url.com'));
+  expect(greeting).toBeTruthy();
+  fireEvent.mouseEnter(greeting);
+
+  // Click the sign out button
+  const signOutBtn = await waitFor(() => getByText('Sign Out'));
+  expect(signOutBtn).toBeTruthy();
+  fireEvent.click(signOutBtn);
+});
+it('displays sign in button when user hasn"t logged in', async () => {
+  const { getByRole, getByTestId } = customRender(
     <Router>
       <RightMenu {...rightMenuProps} />
     </Router>
@@ -76,15 +102,8 @@ it('display the user"s name after authentication and signs out', async () => {
   const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
   expect(rightMenuComponent).toBeTruthy();
 
-  // Check no user logged in
-  const greeting = await waitFor(() => getByText('Sign In'));
-  expect(greeting).toBeTruthy();
-  fireEvent.mouseEnter(greeting);
-
-  // Click the sign out button
-  const signInBtn = await waitFor(() =>
-    getByRole('button', { name: 'Sign In' })
-  );
+  // Click the sign ib button
+  const signInBtn = await waitFor(() => getByRole('img', { name: 'user' }));
   expect(signInBtn).toBeTruthy();
   fireEvent.click(signInBtn);
 });

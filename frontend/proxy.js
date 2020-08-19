@@ -11,16 +11,16 @@ require('dotenv').config();
 const corsProxy = require('cors-anywhere');
 
 // The protocol of the HOST
-const protocol = process.env.REACT_APP_PROXY_PROTOCOL || 'http://';
+const protocol = process.env.PROXY_PROTOCOL || 'http://';
 // Listen on a specific host via the HOST environment variable
-const host = process.env.REACT_APP_PROXY_HOST || 'localhost';
+const host = process.env.PROXY_HOST || 'localhost';
 // Listen on a specific port via the PORT environment variable
-const port = process.env.REACT_APP_PROXY_PORT || 8080;
+const port = process.env.PROXY_PORT || 8080;
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
 corsProxy
   .createServer({
-    originWhitelist: process.env.REACT_APP_PROXY_ORIGIN_WHITELIST.split(' '),
+    originWhitelist: process.env.PROXY_ORIGIN_WHITELIST.split(' '),
     requireHeader: ['origin', 'x-requested-with'],
     removeHeaders: ['cookie', 'cookie2'],
   })

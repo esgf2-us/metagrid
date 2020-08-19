@@ -230,7 +230,7 @@ const App: React.FC = () => {
   const handleClearCart = (): void => {
     setCart([]);
 
-    /* instanbul ignore else */
+    /* instabul ignore else */
     if (isAuthenticated) {
       void updateUserCart(pk as string, accessToken as string, []);
     }

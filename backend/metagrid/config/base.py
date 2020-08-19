@@ -1,6 +1,7 @@
 """
 Base settings to build other settings files upon.
 """
+from datetime import timedelta
 from typing import List  # noqa
 
 import environ
@@ -11,7 +12,7 @@ ROOT_DIR = (
 
 env = environ.Env()
 
-READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=True)
+READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=False)
 if READ_DOT_ENV_FILE:
     # OS environment variables take precedence over variables from .env
     env.read_env(str(ROOT_DIR.path(".env")))
@@ -46,7 +47,6 @@ INSTALLED_APPS = [
     "rest_framework",  # utilities for rest apis
     "django_filters",  # for filtering rest endpoints
     "corsheaders",
-    "django_extensions",
     "allauth",
     "allauth.account",
     "dj_rest_auth",
@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     "metagrid.users",
     "metagrid.projects",
     "metagrid.cart",
+    "metagrid.mysites",
 ]
 
 # https://docs.djangoproject.com/en/2.0/topics/http/middleware/
@@ -64,6 +65,7 @@ MIDDLEWARE = (
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -221,9 +223,8 @@ LOGGING = {
     },
 }
 
-# django-rest-framework
-# -------------------------------------------------------------------------------
 # django-rest-framework - https://www.django-rest-framework.org/api-guide/settings/
+# -------------------------------------------------------------------------------
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": int(env("DJANGO_PAGINATION_LIMIT", default=10)),
@@ -240,10 +241,20 @@ REST_FRAMEWORK = {
     ),
 }
 
+# django-rest-framework-simplejwt
+# -------------------------------------------------------------------------------
+# https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html
+SIMPLE_JWT = {
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=14),
+    "ROTATE_REFRESH_TOKENS": True,
+}
+
 # django-allauth
 # -------------------------------------------------------------------------------
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
-SITE_ID = 2
+DOMAIN_NAME = env("DOMAIN_NAME", default="example.com")
+SITE_ID = 1
+
 # https://django-allauth.readthedocs.io/en/latest/providers.html#keycloak
 SOCIALACCOUNT_PROVIDERS = {
     "keycloak": {
@@ -251,6 +262,9 @@ SOCIALACCOUNT_PROVIDERS = {
         "KEYCLOAK_REALM": env("KEYCLOAK_REALM",),
     }
 }
+# Used in data migration to register Keycloak social app
+KEYCLOAK_CLIENT_ID = env("KEYCLOAK_CLIENT_ID")
+
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 ACCOUNT_USERNAME_REQUIRED = False
@@ -261,6 +275,12 @@ ACCOUNT_EMAIL_VERIFICATION = "none"
 
 # dj-rest-auth
 # -------------------------------------------------------------------------------
-# hhttps://dj-rest-auth.readthedocs.io/en/latest/index.html
+# https://dj-rest-auth.readthedocs.io/en/latest/index.html
 REST_USE_JWT = True
 JWT_AUTH_COOKIE = "jwt-auth"
+
+# django-cors-headers
+# -------------------------------------------------------------------------------
+# https://github.com/adamchainz/django-cors-headers#setup
+CORS_ORIGIN_ALLOW_ALL = False
+CORS_ORIGIN_WHITELIST = env.list("CORS_ORIGIN_WHITELIST")

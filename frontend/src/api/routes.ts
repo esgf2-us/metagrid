@@ -8,7 +8,7 @@
  * https://github.com/ESGF/esgf.github.io/wiki/ESGF_Search_REST_API
  *
  */
-import { apiBaseUrl, nodeRoute, nodeUrl, proxyString } from '../env';
+import { esgfNodeURL, metagridApiURL, proxyURL, wgetApiURL } from '../env';
 
 type ApiRoutes = {
   keycloakAuth: string;
@@ -20,6 +20,7 @@ type ApiRoutes = {
   esgfDatasets: string;
   esgfFiles: string;
   citation: string;
+  wget: string;
 };
 
 /**
@@ -29,23 +30,25 @@ type ApiRoutes = {
  * @param route
  */
 export const clickableRoute = (route: string): string => {
-  return route.replace(`${proxyString}/`, '');
+  return route.replace(`${proxyURL}/`, '');
 };
 
 const apiRoutes: ApiRoutes = {
   // MetaGrid API
-  keycloakAuth: `${apiBaseUrl}/dj-rest-auth/keycloak`,
-  userInfo: `${apiBaseUrl}/dj-rest-auth/user/`,
-  userCart: `${apiBaseUrl}/api/v1/carts/datasets/:pk/`,
-  userSearches: `${apiBaseUrl}/api/v1/carts/searches/`,
-  userSearch: `${apiBaseUrl}/api/v1/carts/searches/:pk/`,
-  projects: `${apiBaseUrl}/api/v1/projects/`,
+  keycloakAuth: `${metagridApiURL}/dj-rest-auth/keycloak`,
+  userInfo: `${metagridApiURL}/dj-rest-auth/user/`,
+  userCart: `${metagridApiURL}/api/v1/carts/datasets/:pk/`,
+  userSearches: `${metagridApiURL}/api/v1/carts/searches/`,
+  userSearch: `${metagridApiURL}/api/v1/carts/searches/:pk/`,
+  projects: `${metagridApiURL}/api/v1/projects/`,
   // ESGF Search API - datasets
-  esgfDatasets: `${proxyString}/${nodeRoute}/esg-search/search/`,
+  esgfDatasets: `${proxyURL}/${esgfNodeURL}/esg-search/search/`,
   // ESGF Search API - files
-  esgfFiles: `${proxyString}/${nodeRoute}/search_files/:id/${nodeUrl}/`,
+  esgfFiles: `${proxyURL}/${esgfNodeURL}/search_files/:id/${esgfNodeURL}/`,
   // ESGF Citation API (uses dummy link)
-  citation: `${proxyString}/citation_url`,
+  citation: `${proxyURL}/citation_url`,
+  // ESGF wget API
+  wget: `${proxyURL}/${wgetApiURL}`,
 };
 
 export default apiRoutes;

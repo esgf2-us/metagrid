@@ -7,6 +7,7 @@ import {
   ShoppingCartOutlined,
 } from '@ant-design/icons';
 
+import humps from 'humps';
 import Table from './Table';
 import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
@@ -16,18 +17,16 @@ import { fetchResults, genUrlQuery } from '../../api';
 import { isEmpty, humanize } from '../../utils/utils';
 import { clickableRoute } from '../../api/routes';
 
-const styles = {
+const styles: { [key: string]: React.CSSProperties } = {
   summary: {
     display: 'flex',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
     marginTop: 10,
     marginBottom: 10,
-    leftSide: {
-      display: 'flex',
-    },
-  } as React.CSSProperties,
-  facetTag: { fontWeight: 'bold' } as React.CSSProperties,
-  resultsHeader: { fontWeight: 'bold' } as React.CSSProperties,
+  },
+  facetTag: { fontWeight: 'bold' },
+  resultsHeader: { fontWeight: 'bold' },
   filtersContainer: {
     marginBottom: 10,
   },
@@ -75,7 +74,9 @@ export const stringifyConstraints = (
   if (!isEmpty(activeFacets)) {
     Object.keys(activeFacets).forEach((key: string) => {
       strConstraints.push(
-        `(${key} = ${(activeFacets as ActiveFacets)[key].join(' OR ')})`
+        `(${humps.decamelize(key)} = ${(activeFacets as ActiveFacets)[key].join(
+          ' OR '
+        )})`
       );
     });
   }
@@ -276,7 +277,7 @@ const Search: React.FC<Props> = ({
                 disabled={isLoading || numFound === 0}
               >
                 <BookOutlined />
-                Save Search Criteria
+                Save Search
               </Button>{' '}
               <Button
                 type="primary"

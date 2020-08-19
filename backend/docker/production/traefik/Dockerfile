@@ -1,0 +1,5 @@
+FROM traefik:2.3
+RUN mkdir -p /etc/traefik/acme
+RUN touch /etc/traefik/acme/acme.json
+RUN chmod 600 /etc/traefik/acme/acme.json
+COPY ./docker/production/traefik/traefik.yml /etc/traefik

@@ -51,6 +51,9 @@ const handlers = [
   rest.get(apiRoutes.citation, (_req, res, ctx) => {
     return res(ctx.status(200), ctx.json(citationFixture()));
   }),
+  rest.get(apiRoutes.wget, (_req, res, ctx) => {
+    return res(ctx.status(200));
+  }),
   // Default fallback handler
   rest.get('*', (req, res, ctx) => {
     // eslint-disable-next-line no-console

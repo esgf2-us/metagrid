@@ -3,10 +3,9 @@
  */
 import humps from 'humps';
 import queryString from 'query-string';
-
 import axios from '../axios';
-import apiRoutes from './routes';
-import { proxyString } from '../env';
+import { proxyURL } from '../env';
+import apiRoutes, { clickableRoute } from './routes';
 
 /**
  * Camelizes keys from a string that is parsed as JSON.
@@ -311,7 +310,7 @@ export const fetchCitation = async ({
 }): // eslint-disable-next-line @typescript-eslint/no-explicit-any
 Promise<{ [key: string]: any }> => {
   return axios
-    .get(`${proxyString}/${url}`)
+    .get(`${proxyURL}/${url}`)
     .then((res) => {
       const citation = processCitation(res.data);
       return citation;
@@ -342,4 +341,38 @@ Promise<{ [key: string]: any }> => {
     .catch((error) => {
       throw new Error(error);
     });
+};
+
+/**
+ * Performs validation against the wget API to ensure a 200 response.
+ *
+ * If the API returns a 200, it returns the responseURL so the browser can open
+ * the link.
+ */
+export const fetchWgetScript = async (
+  ids: string[] | string
+): Promise<string> => {
+  const url = queryString.stringifyUrl({
+    url: apiRoutes.wget,
+    query: { dataset_id: ids },
+  });
+  return axios
+    .get(url)
+    .then(() => {
+      return url;
+    })
+    .catch((error) => {
+      throw new Error(error);
+    });
+};
+
+/**
+ * Sets the window location href to the specified URL.
+ *
+ * It removes the proxyString from the URL so the link can be access through
+ * the browser.
+ */
+export const openDownloadURL = (url: string): void => {
+  const newURL = clickableRoute(url);
+  window.location.href = newURL;
 };

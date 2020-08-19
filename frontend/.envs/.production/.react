@@ -1,0 +1,26 @@
+# MetaGrid API
+# ------------------------------------------------------------------------------
+# https://github.com/aims-group/metagrid/tree/master/backend
+REACT_APP_METAGRID_API_URL=http://localhost:8000
+
+# ESGF wget API
+# ------------------------------------------------------------------------------
+# https://github.com/ESGF/esgf-wget
+REACT_APP_WGET_API_URL=https://pcmdi8vm.llnl.gov/wget
+
+# ESGF Search API
+# ------------------------------------------------------------------------------
+# https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
+REACT_APP_ESGF_NODE_URL=https://esgf-node.llnl.gov
+
+# cors-anywhere proxy
+# ------------------------------------------------------------------------------
+# https://github.com/Rob--W/cors-anywhere
+REACT_APP_PROXY_URL=http://localhost:3001
+
+# Keycloak
+# ------------------------------------------------------------------------------
+# https://github.com/keycloak/keycloak
+REACT_APP_KEYCLOAK_REALM=metagrid
+REACT_APP_KEYCLOAK_URL=http://keycloak:8000/auth
+REACT_APP_KEYCLOAK_CLIENT_ID=frontend
