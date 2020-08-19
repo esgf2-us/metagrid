@@ -7,6 +7,7 @@ gunicorn==20.0.4  # https://github.com/benoitc/gunicorn
 newrelic==5.14.1.144  # https://pypi.org/project/newrelic/
 argon2-cffi==20.1.0  # https://github.com/hynek/argon2_cffi
 requests==2.24.0  # https://github.com/psf/requests
+whitenoise==5.1.0  # https://github.com/evansd/whitenoise
 
 # Database
 # ------------------------------------------------------------------------------
@@ -21,6 +22,7 @@ django-cors-headers==3.4.0  # https://github.com/adamchainz/django-cors-headers
 django-allauth==0.42.0  # https://github.com/pennersr/django-allauth
 dj-rest-auth==1.1.0  # https://github.com/jazzband/dj-rest-auth
 djangorestframework-simplejwt==4.4.0  # https://github.com/SimpleJWT/django-rest-framework-simplejwt/
+drf-yasg==1.17.1  # https://github.com/axnsan12/drf-yasg
 
 # Code quality
 # ------------------------------------------------------------------------------

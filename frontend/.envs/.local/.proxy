@@ -1,0 +1,11 @@
+
+# cors-anywhere proxy
+# ------------------------------------------------------------------------------
+# https://github.com/Rob--W/cors-anywhere#server
+PROXY_PROTOCOL=http://
+PROXY_HOST=proxy
+PROXY_PORT=3001
+
+# If set (array of strings), requests whose origin is not listed are blocked.
+# If this list is empty, all origins are allowed.
+PROXY_ORIGIN_WHITELIST=http://localhost:3000

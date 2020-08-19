@@ -1,5 +1,5 @@
 import React from 'react';
-import { waitFor } from '@testing-library/react';
+import { act, waitFor } from '@testing-library/react';
 
 import { fetchUserAuth, AuthProvider, fetchUserInfo } from './AuthContext';
 import apiRoutes from '../api/routes';
@@ -38,6 +38,8 @@ describe('test fetchUserInfo()', () => {
 });
 describe('test AuthProvider', () => {
   it('renders using keycloak provider', async () => {
+    jest.useFakeTimers();
+
     const { getByTestId, getByText } = keycloakRender(
       <AuthProvider>
         <div data-testid="authProvider">
@@ -57,5 +59,14 @@ describe('test AuthProvider', () => {
     // Check children renders
     const renderResult = await waitFor(() => getByText('renders'));
     expect(renderResult).toBeTruthy();
+
+    act(() => {
+      jest.advanceTimersByTime(295000);
+    });
+
+    await waitFor(() => getByTestId('authProvider'));
+
+    // Revert back to real timer
+    jest.useRealTimers();
   });
 });

@@ -32,12 +32,12 @@ export const searchResultFixture = (
   const defaults: RawSearchResult = {
     id: 'foo',
     title: 'foo',
-    url: ['foo.bar'],
+    url: ['foo.bar|HTTPServer'],
     number_of_files: 3,
     data_node: 'node.gov',
     version: 1,
     size: 1,
-    access: ['HTTPServer', 'GridFTP', 'OPENDAP', 'Globus'],
+    access: ['HTTPServer', 'OPeNDAP', 'Globus'],
     citation_url: ['https://foo.bar'],
   };
   return { ...defaults, ...props };
@@ -46,7 +46,12 @@ export const searchResultFixture = (
 export const searchResultsFixture = (): RawSearchResult[] => {
   return [
     searchResultFixture(),
-    searchResultFixture({ id: 'bar', title: 'bar', number_of_files: 2 }),
+    searchResultFixture({
+      id: 'bar',
+      title: 'bar',
+      number_of_files: 2,
+      access: ['HTTPServer', 'OPeNDAP'],
+    }),
   ];
 };
 
@@ -84,7 +89,7 @@ export const parsedFacetsFixture = (
  * Cart fixture, which contains multiple search results.
  */
 export const cartFixture = (): Cart => {
-  return [searchResultFixture(), searchResultFixture()];
+  return searchResultsFixture();
 };
 
 /**

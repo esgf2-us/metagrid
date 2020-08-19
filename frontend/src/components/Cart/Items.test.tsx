@@ -1,30 +1,13 @@
 /* eslint-disable react/jsx-props-no-spreading */
+import { fireEvent, render, waitFor, within } from '@testing-library/react';
 import React from 'react';
-import { fireEvent, render } from '@testing-library/react';
-
+import { cartFixture } from '../../api/mock/fixtures';
+import { rest, server } from '../../api/mock/setup-env';
+import apiRoutes from '../../api/routes';
 import Items, { Props } from './Items';
 
 const defaultProps: Props = {
-  cart: [
-    {
-      id: 'foo',
-      url: ['foo.bar'],
-      number_of_files: 3,
-      data_node: 'node.gov',
-      version: 1,
-      size: 1,
-      access: ['HTTPServer', 'GridFTP', 'OPENDAP', 'Globus'],
-    },
-    {
-      id: 'bar',
-      url: ['foo.bar'],
-      number_of_files: 2,
-      data_node: 'node.gov',
-      size: 1,
-      version: 1,
-      access: ['HTTPServer', 'GridFTP', 'OPENDAP', 'Globus'],
-    },
-  ],
+  cart: cartFixture(),
   handleCart: jest.fn(),
   clearCart: jest.fn(),
 };
@@ -53,4 +36,88 @@ it('removes all items from the cart when confirming the popconfirm', () => {
   // Submit the popover
   const submitPopOverBtn = getByText('OK');
   fireEvent.click(submitPopOverBtn);
+});
+
+it('handles selecting items in the cart and downloading them via wget', async () => {
+  // Mock window.location.href
+  Object.defineProperty(window, 'location', {
+    value: {
+      href: jest.fn(),
+    },
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const { getByRole, getByTestId } = render(<Items {...defaultProps} />);
+
+  // Check first row renders and click the checkbox
+  const firstRow = getByRole('row', {
+    name:
+      'right-circle foo 3 1 Bytes node.gov 1 check-circle Globus Compatible wget download minus',
+  });
+  const firstCheckBox = within(firstRow).getByRole('checkbox');
+  expect(firstCheckBox).toBeTruthy();
+  fireEvent.click(firstCheckBox);
+
+  // Check download form renders
+  const downloadForm = getByTestId('downloadForm');
+  expect(downloadForm).toBeTruthy();
+
+  // Check download button exists and submit the form
+  const downloadBtn = within(downloadForm).getByRole('img', {
+    name: 'download',
+  });
+  expect(downloadBtn).toBeTruthy();
+  fireEvent.submit(downloadBtn);
+
+  // Check cart items component renders
+  const cartItemsComponent = await waitFor(() => getByTestId('cartItems'));
+  expect(cartItemsComponent).toBeTruthy();
+
+  // Wait for cart items component to re-render
+  await waitFor(() => getByTestId('cartItems'));
+});
+
+it('handles error selecting items in the cart and downloading them via wget', async () => {
+  // Override route HTTP response
+  server.use(
+    rest.get(apiRoutes.wget, (_req, res, ctx) => {
+      return res(ctx.status(404));
+    })
+  );
+
+  const { getByRole, getByTestId, getByText } = render(
+    <Items {...defaultProps} />
+  );
+
+  // Check first row renders and click the checkbox
+  const firstRow = getByRole('row', {
+    name:
+      'right-circle foo 3 1 Bytes node.gov 1 check-circle Globus Compatible wget download minus',
+  });
+  const firstCheckBox = within(firstRow).getByRole('checkbox');
+  expect(firstCheckBox).toBeTruthy();
+  fireEvent.click(firstCheckBox);
+
+  // Check download form renders
+  const downloadForm = getByTestId('downloadForm');
+  expect(downloadForm).toBeTruthy();
+
+  // Check download button exists and submit the form
+  const downloadBtn = within(downloadForm).getByRole('img', {
+    name: 'download',
+  });
+  expect(downloadBtn).toBeTruthy();
+  fireEvent.submit(downloadBtn);
+
+  // Check cart items component renders
+  const cartItemsComponent = await waitFor(() => getByTestId('cartItems'));
+  expect(cartItemsComponent).toBeTruthy();
+
+  // Check error message renders
+  const errorMsg = await waitFor(() =>
+    getByText(
+      'There was an issue generating the wget script. Please contact support or try again later.'
+    )
+  );
+  expect(errorMsg).toBeTruthy();
 });

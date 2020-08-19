@@ -1,21 +1,20 @@
-import React from 'react';
-import { useHistory } from 'react-router-dom';
-import { useAsync } from 'react-async';
-import { Col, Typography } from 'antd';
-
 import {
-  SearchOutlined,
-  LinkOutlined,
   DeleteOutlined,
+  FileSearchOutlined,
+  LinkOutlined,
+  SearchOutlined,
 } from '@ant-design/icons';
+import { Col, Typography } from 'antd';
+import React from 'react';
+import { useAsync } from 'react-async';
+import { useHistory } from 'react-router-dom';
+import { fetchResults, genUrlQuery } from '../../api';
+import { clickableRoute } from '../../api/routes';
 import Card from '../DataDisplay/Card';
 import ToolTip from '../DataDisplay/ToolTip';
-
-import { stringifyConstraints } from '../Search';
-import { fetchResults, genUrlQuery } from '../../api';
-import Skeleton from '../Feedback/Skeleton';
 import Alert from '../Feedback/Alert';
-import { clickableRoute } from '../../api/routes';
+import Skeleton from '../Feedback/Skeleton';
+import { stringifyConstraints } from '../Search';
 
 const styles: Record<string, React.CSSProperties> = {
   category: {
@@ -69,30 +68,28 @@ const SearchesCard: React.FC<Props> = ({
     reqUrl: numResultsUrl,
   });
 
-  let cardTitle;
+  let numResults;
   if (error) {
-    cardTitle = (
+    numResults = (
       <Alert
         message="There was an issue fetching the result count."
         type="error"
       />
     );
   } else if (isLoading) {
-    cardTitle = (
-      <Skeleton title={{ width: '250px' }} paragraph={{ rows: 0 }} active />
+    numResults = (
+      <Skeleton title={{ width: '100%' }} paragraph={{ rows: 0 }} active />
     );
   } else {
-    cardTitle = (
-      <>
-        <p>
-          <span style={{ fontWeight: 'bold' }}>
-            {(data as {
-              response: { numFound: number };
-            }).response.numFound.toLocaleString()}
-          </span>{' '}
-          results found for {project.name}
-        </p>
-      </>
+    numResults = (
+      <p>
+        <span style={{ fontWeight: 'bold' }}>
+          {(data as {
+            response: { numFound: number };
+          }).response.numFound.toLocaleString()}
+        </span>{' '}
+        results found for {project.name}
+      </p>
     );
   }
 
@@ -102,8 +99,7 @@ const SearchesCard: React.FC<Props> = ({
         hoverable
         title={
           <>
-            <p>Search #{index + 1}</p>
-            {cardTitle}
+            <FileSearchOutlined /> Search #{index + 1}
           </>
         }
         actions={[
@@ -112,6 +108,7 @@ const SearchesCard: React.FC<Props> = ({
             trigger="hover"
           >
             <SearchOutlined
+              data-testid={`apply-${index + 1}`}
               key="search"
               onClick={() => {
                 history.push('/search');
@@ -137,12 +134,11 @@ const SearchesCard: React.FC<Props> = ({
           </ToolTip>,
         ]}
       >
+        {numResults}
         <p>
           <span style={styles.category}>Project: </span>
           {project.fullName}
         </p>
-
-        {project.description !== null && <p>{project.description}</p>}
 
         <p>
           <span style={styles.category}>Query String: </span>
