@@ -1,15 +1,9 @@
 # General
 # ------------------------------------------------------------------------------
 DJANGO_SETTINGS_MODULE=metagrid.config.production
-DJANGO_SECRET_KEY=YAFKApvifkIFTw0DDNQQdHI3ufUpzSsJPR6Uei4kyQdyWH89acWTogCfm4SGRz2x
-DJANGO_ADMIN_URL=11hxhSu03aSBTOZWCysDvSvcDfa16kFh/
-
-# HTTPS is on by default. If you are not using a subdomain, set DJANGO_ALLOWED_HOSTS
-# to your staging/production IP Address
-# https://cookiecutter-django.readthedocs.io/en/latest/deployment-with-docker.html#https-is-on-by-default
+DJANGO_SECRET_KEY=
+DJANGO_ADMIN_URL=
 DJANGO_ALLOWED_HOSTS=
-
-# This is your domain name (or staging/production IP address) and port
 DOMAIN_NAME=
 
 # Security
