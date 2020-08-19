@@ -76,8 +76,6 @@ This can take a while, especially the first time you run this particular command
 docker-compose -f docker-compose.yml build
 ```
 
-Generally, if you want to emulate production environment use `docker-compose.production.yml` instead. And this is true for any other actions you might need to perform: whenever a switch is required, just do it!
-
 #### 2.2. Run the Stack
 
 The first time bringing the containers up might take a while to get started, but subsequent runs will occur quickly.
