@@ -134,8 +134,6 @@ This can take a while, especially the first time you run this particular command
 docker-compose -f docker-compose.yml build
 ```
 
-Generally, if you want to emulate production environment use `docker-compose.production.yml` instead. And this is true for any other actions you might need to perform: whenever a switch is required, just do it!
-
 #### 3.2. Run the Stack
 
 The first time bringing the containers up might take a while to get started, but subsequent runs will occur quickly.
@@ -158,17 +156,19 @@ docker-compose -f docker-compose.yml up -d
 
 ## Getting Started for Production
 
-Follow the same steps for building the local environment, with the exception of using `docker-compose.prod.yml` and updating the environment variables listed below.
+Building the production environment involves the same steps as local; however, use `docker-compose.production.yml` instead. The environment also needs to be configured.
 
-Some settings take into account if the server is configured with or without a subdomain. Follow the examples without a subdomain if you are reproducing the production environment locally.
+Some environment variables take into account if the server is configured with or without a subdomain. Follow the examples **without** a subdomain if you are reproducing the production environment locally.
 
-Finally, note that Keycloak is not included as a Docker service and must be a stand-alone instance hosted elsewhere.
+Finally, please note that Keycloak is not a Docker service and must be hosted as a stand-alone instance.
 
 ### 1. Back-end Configuration
 
-#### 1.1 Django
+1. Enter directory: `./backend/.envs/.production/`
+2. Copy env files `.django.template` and `.postgres.template`
+3. Rename files as `.django` and `.postgres`
 
-Directory: `backend/.envs/.production/.django`
+#### 1.1 Django
 
 ##### `DJANGO_SECRET_KEY`
 
@@ -288,11 +288,19 @@ Example:
 KEYCLOAK_CLIENT_ID=backend
 ```
 
+#### 1.2 Postgres
+
+The default postgres environment variables can be updated as desired and are self-explanatory.
+
 ### 2. Front-end Configuration
 
-Directory: `frontend/.envs/.production/.react`
+1. Enter directory: `./frontend/.envs/.production/`
+2. Copy env files `.proxy.template` and `.react.template`
+3. Rename files as `.proxy` and `.react`
 
-#### 2.1 MetaGrid API
+#### 2.1 React
+
+##### 2.1.1 MetaGrid API
 
 ##### `REACT_APP_API_URL`
 
@@ -310,7 +318,7 @@ Example without subdomain
 REACT_APP_METAGRID_API_URL=http://localhost:8000
 ```
 
-#### 2.2 ESGF wget API
+##### 2.1.2 ESGF wget API
 
 [Documentation](https://github.com/ESGF/esgf-wget)
 
@@ -324,7 +332,7 @@ Example:
 REACT_APP_WGET_API_URL=https://pcmdi8vm.llnl.gov/wget
 ```
 
-#### 2.3 ESGF Search API
+##### 2.1.3 ESGF Search API
 
 [Documentation](https://github.com/ESGF/esgf.github.io/wiki/ESGF_Search_REST_API)
 
@@ -338,7 +346,7 @@ Example:
 REACT_APP_ESGF_NODE_URL=https://esgf-node.llnl.gov
 ```
 
-#### 2.4 Keycloak
+##### 2.1.4 Keycloak
 
 ##### `REACT_APP_KEYCLOAK_REALM`
 
@@ -369,3 +377,7 @@ Example:
 ```env
 REACT_APP_KEYCLOAK_CLIENT_ID=frontend
 ```
+
+#### 2.2 Proxy
+
+The default proxy configuration does not need to be updated.
