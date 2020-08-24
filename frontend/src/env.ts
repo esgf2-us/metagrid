@@ -20,6 +20,7 @@ export const wgetApiURL = process.env.REACT_APP_WGET_API_URL as string;
 // ------------------------------------------------------------------------------
 // https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
 export const esgfNodeURL = `${process.env.REACT_APP_ESGF_NODE_URL as string}`;
+export const esgfNodeURLNoProtocol = esgfNodeURL.split('//')[1];
 
 // cors-anywhere proxy
 // ------------------------------------------------------------------------------

@@ -8,7 +8,13 @@
  * https://github.com/ESGF/esgf.github.io/wiki/ESGF_Search_REST_API
  *
  */
-import { esgfNodeURL, metagridApiURL, proxyURL, wgetApiURL } from '../env';
+import {
+  esgfNodeURL,
+  esgfNodeURLNoProtocol,
+  metagridApiURL,
+  proxyURL,
+  wgetApiURL,
+} from '../env';
 
 type ApiRoutes = {
   keycloakAuth: string;
@@ -44,7 +50,7 @@ const apiRoutes: ApiRoutes = {
   // ESGF Search API - datasets
   esgfDatasets: `${proxyURL}/${esgfNodeURL}/esg-search/search/`,
   // ESGF Search API - files
-  esgfFiles: `${proxyURL}/${esgfNodeURL}/search_files/:id/${esgfNodeURL}/`,
+  esgfFiles: `${proxyURL}/${esgfNodeURL}/search_files/:id/${esgfNodeURLNoProtocol}/`,
   // ESGF Citation API (uses dummy link)
   citation: `${proxyURL}/citation_url`,
   // ESGF wget API
