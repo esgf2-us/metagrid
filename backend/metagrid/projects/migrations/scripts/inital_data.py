@@ -115,7 +115,7 @@ projects = [
         ],
     },
     {
-        "name": "obs4MIPS",
+        "name": "obs4MIPs",
         "full_name": "observations for Model Intercomparison Projects",
         "description": "Obs4MIPs (Observations for Model Intercomparisons Project) is an activity to make observational products more accessible for climate model intercomparisons via the same searchable distributed system used to serve and disseminate the rapidly expanding set of  simulations made available for community research.",
         "facets": [
