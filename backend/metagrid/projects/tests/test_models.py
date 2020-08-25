@@ -3,12 +3,16 @@ from typing import TYPE_CHECKING
 import pytest
 
 from metagrid.projects.models import Facet
-from metagrid.projects.tests.factories import FacetFactory, ProjectFactory
+from metagrid.projects.tests.factories import (
+    FacetFactory,
+    FacetGroupFactory,
+    ProjectFactory,
+)
 
 pytestmark = pytest.mark.django_db
 
 if TYPE_CHECKING:
-    from metagrid.projects.models import Project
+    from metagrid.projects.models import FacetGroup, Project
 
 
 class TestProjectModel:
@@ -51,4 +55,18 @@ class TestFacetModel:
         )  # type: Facet
 
     def test_get_absolute_url(self):
-        self.facet.get_absolute_url() == self.facet.name
+        assert self.facet.get_absolute_url() == self.facet.name
+
+    def test__str__(self):
+        assert self.facet.__str__() == "test_facet"
+
+
+class TestFacetGroupModel:
+    @pytest.fixture(autouse=True)
+    def setUp(self):
+        self.facet_group = FacetGroupFactory.create(
+            name="test_group",
+        )  # type: FacetGroup
+
+    def test__str__(self):
+        assert self.facet_group.__str__() == "test_group"

@@ -1,15 +1,15 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React from 'react';
 import { fireEvent, render, waitFor, within } from '@testing-library/react';
-
-import Facets, { Props } from './index';
+import React from 'react';
 import {
-  parsedFacetsFixture,
   defaultFacetsFixture,
+  parsedFacetsFixture,
+  projectFixture,
 } from '../../api/mock/fixtures';
+import Facets, { Props } from './index';
 
 const defaultProps: Props = {
-  activeProject: {},
+  activeProject: projectFixture(),
   defaultFacets: defaultFacetsFixture(),
   activeFacets: {},
   availableFacets: parsedFacetsFixture(),
@@ -30,7 +30,9 @@ it('renders component', async () => {
 });
 
 it('handles when the project form is submitted', async () => {
-  const { getByTestId } = render(<Facets {...defaultProps} />);
+  const { getByTestId } = render(
+    <Facets {...defaultProps} activeProject={{}} />
+  );
 
   // Check FacetsForm component renders
   const facetsForm = await waitFor(() => getByTestId('facets-form'));
@@ -61,18 +63,19 @@ it('handles when the project form is submitted', async () => {
 });
 
 it('handles facets form submission', async () => {
-  const { getByRole, getByTestId, getByText } = render(
-    <Facets {...defaultProps} activeProject={{ name: 'test1' }} />
+  const { getByRole, getByTestId, getByText, debug } = render(
+    <Facets {...defaultProps} />
   );
-
-  // Check FacetsForm component renders
-  const facetsForm = await waitFor(() => getByTestId('facets-form'));
-  await waitFor(() => expect(facetsForm).toBeTruthy());
 
   // Check ProjectForm component renders
   const projectForm = await waitFor(() => getByTestId('project-form'));
   expect(projectForm).toBeTruthy();
 
+  // Check FacetsForm component renders
+  const facetsForm = await waitFor(() => getByTestId('facets-form'));
+  await waitFor(() => expect(facetsForm).toBeTruthy());
+
+  debug();
   // Open Collapse Panel in Collapse component for the facet1 form to render
   const collapse = getByText('Facet1');
   fireEvent.click(collapse);
@@ -97,7 +100,7 @@ it('handles facets form submission', async () => {
 
 it('handles facets form submission, including a facet key that is undefined', async () => {
   const { getByRole, getByTestId, getByText } = render(
-    <Facets {...defaultProps} activeProject={{ name: 'test1' }} />
+    <Facets {...defaultProps} />
   );
 
   // Check FacetsForm component renders

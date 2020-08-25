@@ -65,6 +65,9 @@ class Facet(models.Model):
     project = models.ForeignKey(
         Project, related_name="facets", on_delete=models.CASCADE
     )
+    group = models.ForeignKey(
+        "projects.facetgroup", on_delete=models.CASCADE, null=True
+    )
 
     class Meta:
         """Meta definition for Facet."""
@@ -79,4 +82,21 @@ class Facet(models.Model):
 
     def get_absolute_url(self) -> str:
         """Return absolute url for Facet."""
+        return self.name
+
+
+class FacetGroup(models.Model):
+    """Model definition for FacetGroup."""
+
+    name = models.CharField(max_length=255)
+    description = models.TextField(null=True)
+
+    class Meta:
+        """Meta definition for FacetGroup."""
+
+        verbose_name = "FacetGroup"
+        verbose_name_plural = "FacetGroups"
+
+    def __str__(self):
+        """Unicode representation of FacetGroup."""
         return self.name
