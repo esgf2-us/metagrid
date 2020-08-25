@@ -1,21 +1,19 @@
-import React, { ReactElement } from 'react';
-import { useAsync, DeferFn } from 'react-async';
-import { Row, Col, Typography } from 'antd';
 import {
-  ExportOutlined,
   BookOutlined,
+  ExportOutlined,
   ShoppingCartOutlined,
 } from '@ant-design/icons';
-
+import { Col, Row, Typography } from 'antd';
 import humps from 'humps';
-import Table from './Table';
+import React, { ReactElement } from 'react';
+import { DeferFn, useAsync } from 'react-async';
+import { fetchResults, genUrlQuery } from '../../api';
+import { clickableRoute } from '../../api/routes';
+import { humanize, isEmpty } from '../../utils/utils';
+import Tag from '../DataDisplay/Tag';
 import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
-import Tag from '../DataDisplay/Tag';
-
-import { fetchResults, genUrlQuery } from '../../api';
-import { isEmpty, humanize } from '../../utils/utils';
-import { clickableRoute } from '../../api/routes';
+import Table from './Table';
 
 const styles: { [key: string]: React.CSSProperties } = {
   summary: {
@@ -272,7 +270,7 @@ const Search: React.FC<Props> = ({
           {results && (
             <div>
               <Button
-                type="primary"
+                type="default"
                 onClick={() => handleSaveSearch(curReqUrl as string)}
                 disabled={isLoading || numFound === 0}
               >
@@ -280,7 +278,7 @@ const Search: React.FC<Props> = ({
                 Save Search
               </Button>{' '}
               <Button
-                type="primary"
+                type="default"
                 onClick={() => handleCart(selectedItems, 'add')}
                 disabled={
                   isLoading || numFound === 0 || !(selectedItems.length > 0)
@@ -373,9 +371,9 @@ const Search: React.FC<Props> = ({
             )}
           </div>
         </Col>
-        {curReqUrl && (
+        {results && curReqUrl && (
           <Button
-            type="primary"
+            type="default"
             href={clickableRoute(curReqUrl)}
             target="_blank"
             icon={<ExportOutlined />}

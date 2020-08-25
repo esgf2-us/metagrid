@@ -1,11 +1,22 @@
+from collections import defaultdict
+
 from rest_framework import serializers
 
 from .models import Project
 
 
 class ProjectSerializer(serializers.ModelSerializer):
-    facets = serializers.StringRelatedField(many=True)
+    facets_by_group = serializers.SerializerMethodField(read_only=True)
     facets_url = serializers.ReadOnlyField()
+
+    def get_facets_by_group(self, project):
+        facets_by_group = defaultdict(list)
+
+        for result in project.facets.values("group__name", "name").order_by(
+            "group__pk",
+        ):
+            facets_by_group[result["group__name"]].append(result["name"])
+        return facets_by_group
 
     class Meta:
         model = Project
@@ -14,6 +25,6 @@ class ProjectSerializer(serializers.ModelSerializer):
             "name",
             "full_name",
             "description",
-            "facets",
+            "facets_by_group",
             "facets_url",
         )

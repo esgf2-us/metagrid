@@ -1,13 +1,11 @@
-import React from 'react';
-import { Form, Select } from 'antd';
 import { QuestionCircleOutlined, SelectOutlined } from '@ant-design/icons';
-
+import { Form, Select } from 'antd';
+import React from 'react';
+import { isEmpty } from '../../utils/utils';
 import Alert from '../Feedback/Alert';
-import Button from '../General/Button';
 import Popconfirm from '../Feedback/Popconfirm';
 import Spin from '../Feedback/Spin';
-
-import { isEmpty } from '../../utils/utils';
+import Button from '../General/Button';
 
 const styles = {
   form: { width: '235px' },
@@ -67,7 +65,6 @@ const ProjectsForm: React.FC<Props> = ({
     // Since activeProject is also typed as an empty object ({}), TypeScript forbids accessing the
     // name attribute. In order to bypass this check, uncast activeProject for this single access.
     // https://stackoverflow.https://stackoverflow.com/a/46530838/questions/34274487/property-does-not-exists-on-type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const initialValues = { project: (activeProject as Project).name };
 
     return (

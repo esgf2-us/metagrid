@@ -1,36 +1,34 @@
 /* eslint-disable no-void */
+import {
+  BookOutlined,
+  DeleteOutlined,
+  HomeOutlined,
+  ShoppingCartOutlined,
+} from '@ant-design/icons';
+import { Breadcrumb, Layout, message } from 'antd';
 import React from 'react';
 import {
   BrowserRouter as Router,
-  Route,
   Redirect,
+  Route,
   Switch,
 } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
-import { Breadcrumb, Layout, message } from 'antd';
 import {
-  HomeOutlined,
-  BookOutlined,
-  DeleteOutlined,
-  ShoppingCartOutlined,
-} from '@ant-design/icons';
-
-import NavBar from '../NavBar';
-import Facets from '../Facets';
-import Search from '../Search';
-import Cart from '../Cart';
-import Summary from '../Cart/Summary';
-
-import { isEmpty } from '../../utils/utils';
-import './App.css';
-import { AuthContext } from '../../contexts/AuthContext';
-import {
-  fetchUserCart,
-  updateUserCart,
-  fetchUserSearches,
   addUserSearch,
   deleteUserSearch,
+  fetchUserCart,
+  fetchUserSearches,
+  updateUserCart,
 } from '../../api';
+import { AuthContext } from '../../contexts/AuthContext';
+import { isEmpty } from '../../utils/utils';
+import Cart from '../Cart';
+import Summary from '../Cart/Summary';
+import Facets from '../Facets';
+import NavBar from '../NavBar';
+import Search from '../Search';
+import './App.css';
 
 const styles = {
   bodyLayout: { padding: '24px 0' } as React.CSSProperties,
@@ -52,24 +50,25 @@ const App: React.FC = () => {
   const { access_token: accessToken, pk } = authState;
   const isAuthenticated = accessToken && pk;
 
-  // Active project selected in the current search criteria
+  // Active project selected in the current search
   const [activeProject, setActiveProject] = React.useState<
     Project | Record<string, unknown>
   >({});
-  // Available facets for an active project that the user can apply
-  const [availableFacets, setAvailableFacets] = React.useState<
-    ParsedFacets | Record<string, unknown>
-  >({});
-  // Applied free-text inputs in the current search criteria
-  const [textInputs, setTextInputs] = React.useState<TextInputs | []>([]);
-  // Applied facet filters int the current search criteria
-  const [activeFacets, setActiveFacets] = React.useState<
-    ActiveFacets | Record<string, unknown>
-  >({});
+  // Default facet filters
   const [defaultFacets, setDefaultFacets] = React.useState<DefaultFacets>({
     latest: true,
     replica: false,
   });
+  // Available facets for an active project that the user can apply
+  const [availableFacets, setAvailableFacets] = React.useState<
+    ParsedFacets | Record<string, unknown>
+  >({});
+  // Applied free-text inputs in the current search
+  const [textInputs, setTextInputs] = React.useState<TextInputs | []>([]);
+  // Applied facet filters in the current search
+  const [activeFacets, setActiveFacets] = React.useState<
+    ActiveFacets | Record<string, unknown>
+  >({});
 
   // User's cart containing datasets
   const [cart, setCart] = React.useState<Cart | []>(
@@ -151,6 +150,10 @@ const App: React.FC = () => {
     }
 
     setActiveProject(selectedProject);
+    void message.loading(
+      'Project selected. Please wait for results and facets to load...',
+      2
+    );
   };
 
   /**
