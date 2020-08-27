@@ -64,7 +64,9 @@ it('handles project changes when a new project is selected', async () => {
 
   // Change value for free-text input
   const input = 'foo';
-  const freeTextForm = await waitFor(() => getByPlaceholderText('Search...'));
+  const freeTextForm = await waitFor(() =>
+    getByPlaceholderText('Search for a keyword')
+  );
   expect(freeTextForm).toBeTruthy();
   fireEvent.change(freeTextForm, { target: { value: input } });
 
@@ -106,7 +108,9 @@ it('handles removing search tags and clearing all search tags', async () => {
   expect(facetsComponent).toBeTruthy();
 
   // Change value for free-text input
-  const freeTextInput = await waitFor(() => getByPlaceholderText('Search...'));
+  const freeTextInput = await waitFor(() =>
+    getByPlaceholderText('Search for a keyword')
+  );
   expect(freeTextInput).toBeTruthy();
   fireEvent.change(freeTextInput, { target: { value: 'foo' } });
 
@@ -335,7 +339,7 @@ describe('User cart', () => {
     // Change value for free-text input
     const input = 'foo';
     const freeTextInput = await waitFor(() =>
-      getByPlaceholderText('Search...')
+      getByPlaceholderText('Search for a keyword')
     );
     expect(freeTextInput).toBeTruthy();
     fireEvent.change(freeTextInput, { target: { value: input } });
@@ -472,7 +476,7 @@ describe('User cart', () => {
     // Change value for free-text input
     const input = 'foo';
     const freeTextInput = await waitFor(() =>
-      getByPlaceholderText('Search...')
+      getByPlaceholderText('Search for a keyword')
     );
     expect(freeTextInput).toBeTruthy();
     fireEvent.change(freeTextInput, { target: { value: input } });
@@ -541,7 +545,7 @@ describe('User cart', () => {
     // Change value for free-text input
     const input = 'foo';
     const freeTextInput = await waitFor(() =>
-      getByPlaceholderText('Search...')
+      getByPlaceholderText('Search for a keyword')
     );
     expect(freeTextInput).toBeTruthy();
     fireEvent.change(freeTextInput, { target: { value: input } });
@@ -676,7 +680,7 @@ describe('User search library', () => {
     // Change value for free-text input
     const input = 'foo';
     const freeTextInput = await waitFor(() =>
-      getByPlaceholderText('Search...')
+      getByPlaceholderText('Search for a keyword')
     );
     expect(freeTextInput).toBeTruthy();
     fireEvent.change(freeTextInput, { target: { value: input } });
@@ -784,7 +788,7 @@ describe('User search library', () => {
     // Change value for free-text input
     const input = 'foo';
     const freeTextInput = await waitFor(() =>
-      getByPlaceholderText('Search...')
+      getByPlaceholderText('Search for a keyword')
     );
     expect(freeTextInput).toBeTruthy();
     fireEvent.change(freeTextInput, { target: { value: input } });
@@ -856,7 +860,7 @@ describe('User search library', () => {
     // Change value for free-text input
     const input = 'foo';
     const freeTextInput = await waitFor(() =>
-      getByPlaceholderText('Search...')
+      getByPlaceholderText('Search for a keyword')
     );
     expect(freeTextInput).toBeTruthy();
     fireEvent.change(freeTextInput, { target: { value: input } });
@@ -961,7 +965,7 @@ describe('User search library', () => {
       // Change value for free-text input
       const input = 'foo';
       const freeTextInput = await waitFor(() =>
-        getByPlaceholderText('Search...')
+        getByPlaceholderText('Search for a keyword')
       );
       expect(freeTextInput).toBeTruthy();
       fireEvent.change(freeTextInput, { target: { value: input } });
