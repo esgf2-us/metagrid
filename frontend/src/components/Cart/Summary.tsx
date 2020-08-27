@@ -4,14 +4,14 @@ import cartImg from '../../assets/img/cart.svg';
 import folderImg from '../../assets/img/folder.svg';
 import { formatBytes } from '../../utils/utils';
 
-const styles = {
+const styles: CSSinJS = {
   headerContainer: { display: 'flex', justifyContent: 'center' },
   summaryHeader: {
     fontWeight: 'bold',
     textAlign: 'center',
-  } as React.CSSProperties,
+  },
   image: { margin: '1em', width: '25%' },
-  statistic: { float: 'right' } as React.CSSProperties,
+  statistic: { float: 'right' },
 };
 
 export type Props = {
@@ -37,8 +37,8 @@ const Summary: React.FC<Props> = ({ cart }) => {
   return (
     <div data-testid="summary">
       <div style={styles.headerContainer}>
-        <img style={styles.image} src={cartImg as string} alt="Cart" />
-        <img style={styles.image} src={folderImg as string} alt="Folder" />
+        <img style={styles.image} src={cartImg} alt="Cart" />
+        <img style={styles.image} src={folderImg} alt="Folder" />
       </div>
 
       <h1 style={styles.summaryHeader}>Your Cart Summary</h1>

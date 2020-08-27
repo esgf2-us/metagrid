@@ -8,7 +8,7 @@ import Spin from '../Feedback/Spin';
 import Button from '../General/Button';
 
 const styles = {
-  form: { width: '235px' },
+  form: { width: '256px' },
 };
 
 export type Props = {

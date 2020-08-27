@@ -117,13 +117,13 @@ it('renders "PID" button when the record has a "xlink" key/value, vice versa', (
   // Check first row exists
   const firstRow = getByRole('row', {
     name:
-      'right-circle foo 3 1 Bytes node.gov 1 check-circle Globus Compatible wget download PID Further Info plus',
+      'right-circle foo 3 1 Bytes node.gov 1 check-circle Globus Compatible wget download PID More Info plus',
   });
   expect(firstRow).toBeTruthy();
 
-  // Check both PID and Further Info buttons rendered for the first row
+  // Check both PID and More Info buttons rendered for the first row
   const firstPidBtn = within(firstRow).getByText('PID');
-  const firstInfoBtn = within(firstRow).getByText('Further Info');
+  const firstInfoBtn = within(firstRow).getByText('More Info');
   expect(firstPidBtn).toBeTruthy();
   expect(firstInfoBtn).toBeTruthy();
 
@@ -134,10 +134,10 @@ it('renders "PID" button when the record has a "xlink" key/value, vice versa', (
   });
   expect(secondRow).toBeTruthy();
 
-  // Check both PID and Further Info buttons did not render for the second row
+  // Check both PID and More Info buttons did not render for the second row
   const qPidBtn = within(secondRow).queryByText('PID');
   expect(qPidBtn).toBeNull();
-  const qInfoBtn = within(secondRow).queryByText('Further Info');
+  const qInfoBtn = within(secondRow).queryByText('More Info');
   expect(qInfoBtn).toBeNull();
 });
 

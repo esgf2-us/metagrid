@@ -5,17 +5,17 @@ import {
 } from '@ant-design/icons';
 import { Col, Row, Typography } from 'antd';
 import humps from 'humps';
-import React, { ReactElement } from 'react';
+import React from 'react';
 import { DeferFn, useAsync } from 'react-async';
 import { fetchResults, genUrlQuery } from '../../api';
 import { clickableRoute } from '../../api/routes';
-import { humanize, isEmpty } from '../../utils/utils';
+import { isEmpty } from '../../utils/utils';
 import Tag from '../DataDisplay/Tag';
 import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
 import Table from './Table';
 
-const styles: { [key: string]: React.CSSProperties } = {
+const styles: CSSinJS = {
   summary: {
     display: 'flex',
     flexWrap: 'wrap',
@@ -23,6 +23,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     marginTop: 10,
     marginBottom: 10,
   },
+  subtitles: { fontWeight: 'bold' },
   facetTag: { fontWeight: 'bold' },
   resultsHeader: { fontWeight: 'bold' },
   filtersContainer: {
@@ -127,9 +128,7 @@ const Search: React.FC<Props> = ({
     deferFn: (fetchResults as unknown) as DeferFn<{ [key: string]: any }>,
   });
 
-  const [constraintsApplied, setConstraintsApplied] = React.useState<boolean>(
-    false
-  );
+  const [facetsApplied, setConstraintsApplied] = React.useState<boolean>(false);
   // Parsed version of the returned facet fields
   const [parsedFacets, setParsedFacets] = React.useState<
     ParsedFacets | Record<string, unknown>
@@ -240,32 +239,21 @@ const Search: React.FC<Props> = ({
             showIcon
           />
         )}
-        {isLoading && (
-          <h3>
-            <span style={styles.resultsHeader}>Loading latest </span> results
-            for{' '}
+        <h3>
+          {isLoading && (
             <span style={styles.resultsHeader}>
-              {(activeProject as Project).name}
-            </span>{' '}
-            <Typography.Text code>
-              {stringifyConstraints(defaultFacets, activeFacets, textInputs)}
-            </Typography.Text>
-          </h3>
-        )}
-        {results && !isLoading && (
-          <h3>
-            <span style={styles.resultsHeader}>
-              {numFound.toLocaleString()}{' '}
+              Loading latest results for{' '}
             </span>
-            results found for{' '}
+          )}
+          {results && !isLoading && (
             <span style={styles.resultsHeader}>
-              {(activeProject as Project).name}
-            </span>{' '}
-            <Typography.Text code>
-              {stringifyConstraints(defaultFacets, activeFacets, textInputs)}
-            </Typography.Text>
-          </h3>
-        )}
+              {numFound.toLocaleString()} results found for{' '}
+            </span>
+          )}
+          <span style={styles.resultsHeader}>
+            {(activeProject as Project).name}
+          </span>
+        </h3>
         <div>
           {results && (
             <div>
@@ -291,60 +279,61 @@ const Search: React.FC<Props> = ({
           )}
         </div>
       </div>
-
-      <Row style={styles.filtersContainer}>
-        {!constraintsApplied ? (
-          <Alert
-            message="No project constraints applied"
-            type="info"
-            showIcon
-          />
-        ) : (
-          <h4 style={{ marginRight: '0.5em' }}>Applied Constraints: </h4>
+      <div>
+        {results && (
+          <>
+            <p>
+              <span style={styles.subtitles}>Query String: </span>
+              <Typography.Text code>
+                {stringifyConstraints(defaultFacets, activeFacets, textInputs)}
+              </Typography.Text>
+            </p>
+          </>
         )}
+      </div>
 
-        {Object.keys(activeFacets).length !== 0 &&
-          Object.keys(activeFacets).map((facet: string) => {
-            return [
-              <p key={facet} style={styles.facetTag}>
-                {humanize(facet)}: &nbsp;
-              </p>,
-              (activeFacets as ActiveFacets)[facet].map((variable: string) => {
-                return (
-                  <div key={variable} data-testid={variable}>
-                    <Tag
-                      value={[facet, variable]}
-                      onClose={onRemoveTag}
-                      type="facet"
-                    >
-                      {variable}
-                    </Tag>
-                  </div>
-                );
-              }),
-            ] as ReactElement[];
-          })}
-        {textInputs.length !== 0 &&
-          (textInputs as TextInputs).map((input: string) => {
-            return (
-              <div key={input} data-testid={input}>
-                <Tag value={input} onClose={onRemoveTag} type="text">
-                  {input}
-                </Tag>
-              </div>
-            );
-          })}
-        {constraintsApplied && (
-          <Tag
-            value="clearAll"
-            color="#f50"
-            type="close all"
-            onClose={() => onClearTags()}
-          >
-            Clear All
-          </Tag>
-        )}
-      </Row>
+      {results && (
+        <Row style={styles.filtersContainer}>
+          {Object.keys(activeFacets).length !== 0 &&
+            Object.keys(activeFacets).map((facet: string) => {
+              return (activeFacets as ActiveFacets)[facet].map(
+                (variable: string) => {
+                  return (
+                    <div key={variable} data-testid={variable}>
+                      <Tag
+                        value={[facet, variable]}
+                        onClose={onRemoveTag}
+                        type="facet"
+                      >
+                        {variable}
+                      </Tag>
+                    </div>
+                  );
+                }
+              );
+            })}
+          {textInputs.length !== 0 &&
+            (textInputs as TextInputs).map((input: string) => {
+              return (
+                <div key={input} data-testid={input}>
+                  <Tag value={input} onClose={onRemoveTag} type="text">
+                    {input}
+                  </Tag>
+                </div>
+              );
+            })}
+          {facetsApplied && (
+            <Tag
+              value="clearAll"
+              color="#f50"
+              type="close all"
+              onClose={() => onClearTags()}
+            >
+              Clear All
+            </Tag>
+          )}
+        </Row>
+      )}
 
       <Row gutter={[24, 16]} justify="space-around">
         <Col lg={24}>

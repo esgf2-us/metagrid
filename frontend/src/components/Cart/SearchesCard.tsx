@@ -16,7 +16,7 @@ import Alert from '../Feedback/Alert';
 import Skeleton from '../Feedback/Skeleton';
 import { stringifyConstraints } from '../Search';
 
-const styles: Record<string, React.CSSProperties> = {
+const styles: CSSinJS = {
   category: {
     fontWeight: 'bold',
   },

@@ -1,8 +1,7 @@
+import { SearchOutlined } from '@ant-design/icons';
+import { Form, Input, Select } from 'antd';
 import React from 'react';
 import { useHistory } from 'react-router-dom';
-import { Form, Input, Select } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
-
 import Button from '../General/Button';
 
 const styles = {
@@ -82,7 +81,7 @@ const LeftMenu: React.FC<Props> = ({
             <Input
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder="Search..."
+              placeholder="Search for a keyword"
             />
           </Form.Item>
 
