@@ -245,7 +245,7 @@ const Table: React.FC<Props> = ({
               </Form.Item>
               <Form.Item>
                 <Button
-                  type="primary"
+                  type="default"
                   htmlType="submit"
                   icon={<DownloadOutlined />}
                 ></Button>
@@ -279,7 +279,7 @@ const Table: React.FC<Props> = ({
                 href={record.further_info_url![0]}
                 target="_blank"
               >
-                Further Info
+                More Info
               </Button>
             )}
           </>
@@ -305,7 +305,7 @@ const Table: React.FC<Props> = ({
         return (
           <>
             <Button
-              type="default"
+              type="primary"
               icon={<PlusOutlined />}
               onClick={() => handleCart([record], 'add')}
             />
@@ -322,7 +322,7 @@ const Table: React.FC<Props> = ({
       columns={columns}
       dataSource={results}
       rowKey="id"
-      scroll={{ y: 595 }}
+      scroll={{ y: 'calc(70vh)' }}
     />
   );
 };

@@ -30,16 +30,15 @@ import NavBar from '../NavBar';
 import Search from '../Search';
 import './App.css';
 
-const styles = {
-  bodyLayout: { padding: '24px 0' } as React.CSSProperties,
+const styles: CSSinJS = {
   bodySider: {
     background: '#fff',
-    padding: '25px 25px 25px 25px',
-    marginLeft: '25px',
-    width: '350',
-  } as React.CSSProperties,
-  bodyContent: { padding: '0 24px' } as React.CSSProperties,
-  footer: { textAlign: 'center' } as React.CSSProperties,
+    padding: '48px 24px 24px 24px',
+    width: '384px',
+    marginRight: '2px',
+    boxShadow: '2px 0 4px 0 rgba(0, 0, 0, 0.2)',
+  },
+  bodyContent: { padding: '48px 24px', margin: 0 },
   messageAddIcon: { color: '#90EE90' },
   messageRemoveIcon: { color: '#ff0000' },
 };
@@ -363,14 +362,14 @@ const App: React.FC = () => {
             ></NavBar>
           )}
         />
-        <Layout id="body-layout" style={styles.bodyLayout}>
+        <Layout id="body-layout">
           <Switch>
             <Route
               path="/search"
               render={() => (
                 <Layout.Sider
                   style={styles.bodySider}
-                  width={styles.bodySider.width}
+                  width={styles.bodySider.width as number}
                 >
                   <Facets
                     activeProject={activeProject}
@@ -396,7 +395,7 @@ const App: React.FC = () => {
               render={() => (
                 <Layout.Sider
                   style={styles.bodySider}
-                  width={styles.bodySider.width}
+                  width={styles.bodySider.width as number}
                 >
                   <Summary cart={cart} />
                 </Layout.Sider>
@@ -464,9 +463,6 @@ const App: React.FC = () => {
             </Switch>
           </Layout.Content>
         </Layout>
-        <Layout.Footer data-testid="footer" style={styles.footer}>
-          ESGF Search UI ©2020
-        </Layout.Footer>
       </div>
     </Router>
   );

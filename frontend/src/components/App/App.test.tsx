@@ -43,7 +43,6 @@ it('renders App component', async () => {
   expect(navComponent).toBeTruthy();
   const facetsComponent = await waitFor(() => getByTestId('facets'));
   expect(facetsComponent).toBeTruthy();
-  expect(getByTestId('footer')).toBeTruthy();
   expect(getByTestId('search')).toBeTruthy();
 });
 
@@ -64,7 +63,9 @@ it('handles project changes when a new project is selected', async () => {
 
   // Change value for free-text input
   const input = 'foo';
-  const freeTextForm = await waitFor(() => getByPlaceholderText('Search...'));
+  const freeTextForm = await waitFor(() =>
+    getByPlaceholderText('Search for a keyword')
+  );
   expect(freeTextForm).toBeTruthy();
   fireEvent.change(freeTextForm, { target: { value: input } });
 
@@ -106,7 +107,9 @@ it('handles removing search tags and clearing all search tags', async () => {
   expect(facetsComponent).toBeTruthy();
 
   // Change value for free-text input
-  const freeTextInput = await waitFor(() => getByPlaceholderText('Search...'));
+  const freeTextInput = await waitFor(() =>
+    getByPlaceholderText('Search for a keyword')
+  );
   expect(freeTextInput).toBeTruthy();
   fireEvent.change(freeTextInput, { target: { value: 'foo' } });
 
@@ -130,12 +133,6 @@ it('handles removing search tags and clearing all search tags', async () => {
   expect(clearAllTag).toBeTruthy();
   fireEvent.click(within(clearAllTag).getByRole('img', { name: 'close' }));
 
-  // Check no project constraints applied text renders
-  const noConstraintsText = await waitFor(() =>
-    getByText('No project constraints applied')
-  );
-  expect(noConstraintsText).toBeTruthy();
-
   // Change value for free-text input and submit again
   fireEvent.change(freeTextInput, { target: { value: 'baz' } });
   fireEvent.submit(submitBtn);
@@ -156,13 +153,10 @@ it('handles removing search tags and clearing all search tags', async () => {
   await waitFor(() => getByTestId('search'));
   await waitFor(() => getByTestId('search-table'));
   await waitFor(() => getByTestId('facets'));
-
-  // Check no project constraints applied
-  await waitFor(() => expect(noConstraintsText).toBeTruthy());
 });
 
 it('handles removing facet tags', async () => {
-  const { getByRole, getByTestId, getByText } = customRender(
+  const { getByTestId, getByText } = customRender(
     <Router>
       <App />
     </Router>
@@ -196,12 +190,6 @@ it('handles removing facet tags', async () => {
   });
   fireEvent.submit(submitBtn);
 
-  // Check no project constraints applied text renders
-  const noConstraintsText = await waitFor(() =>
-    getByText('No project constraints applied')
-  );
-  expect(noConstraintsText).toBeTruthy();
-
   // Open Collapse Panel in Collapse component for the facet1 form to render
   const collapse = await waitFor(() => getByText('Facet1'));
   fireEvent.click(collapse);
@@ -217,11 +205,6 @@ it('handles removing facet tags', async () => {
   const facetOption = await waitFor(() => getByTestId('facet1_foo'));
   expect(facetOption).toBeTruthy();
   fireEvent.click(facetOption);
-
-  // Submit the form
-  const facetFormBtn = getByRole('button', { name: 'filter Apply Facets' });
-  expect(facetFormBtn).toBeTruthy();
-  fireEvent.click(facetFormBtn);
 
   // Wait for components to re-render
   await waitFor(() => getByTestId('search'));
@@ -239,9 +222,6 @@ it('handles removing facet tags', async () => {
   await waitFor(() => getByTestId('search'));
   await waitFor(() => getByTestId('search-table'));
   await waitFor(() => getByTestId('facets'));
-
-  // Check no project constraints applied
-  await waitFor(() => expect(noConstraintsText).toBeTruthy());
 });
 
 it('handles project changes and clearing constraints when the active project !== selected project', async () => {
@@ -335,7 +315,7 @@ describe('User cart', () => {
     // Change value for free-text input
     const input = 'foo';
     const freeTextInput = await waitFor(() =>
-      getByPlaceholderText('Search...')
+      getByPlaceholderText('Search for a keyword')
     );
     expect(freeTextInput).toBeTruthy();
     fireEvent.change(freeTextInput, { target: { value: input } });
@@ -472,7 +452,7 @@ describe('User cart', () => {
     // Change value for free-text input
     const input = 'foo';
     const freeTextInput = await waitFor(() =>
-      getByPlaceholderText('Search...')
+      getByPlaceholderText('Search for a keyword')
     );
     expect(freeTextInput).toBeTruthy();
     fireEvent.change(freeTextInput, { target: { value: input } });
@@ -541,7 +521,7 @@ describe('User cart', () => {
     // Change value for free-text input
     const input = 'foo';
     const freeTextInput = await waitFor(() =>
-      getByPlaceholderText('Search...')
+      getByPlaceholderText('Search for a keyword')
     );
     expect(freeTextInput).toBeTruthy();
     fireEvent.change(freeTextInput, { target: { value: input } });
@@ -578,7 +558,7 @@ describe('User cart', () => {
     expect(addText).toBeTruthy();
 
     // Click on the cart link
-    const cartLink = getByRole('link', { name: 'shopping-cart 1' });
+    const cartLink = getByRole('link', { name: 'shopping-cart' });
     expect(cartLink).toBeTruthy();
     fireEvent.click(cartLink);
 
@@ -676,7 +656,7 @@ describe('User search library', () => {
     // Change value for free-text input
     const input = 'foo';
     const freeTextInput = await waitFor(() =>
-      getByPlaceholderText('Search...')
+      getByPlaceholderText('Search for a keyword')
     );
     expect(freeTextInput).toBeTruthy();
     fireEvent.change(freeTextInput, { target: { value: input } });
@@ -784,7 +764,7 @@ describe('User search library', () => {
     // Change value for free-text input
     const input = 'foo';
     const freeTextInput = await waitFor(() =>
-      getByPlaceholderText('Search...')
+      getByPlaceholderText('Search for a keyword')
     );
     expect(freeTextInput).toBeTruthy();
     fireEvent.change(freeTextInput, { target: { value: input } });
@@ -856,7 +836,7 @@ describe('User search library', () => {
     // Change value for free-text input
     const input = 'foo';
     const freeTextInput = await waitFor(() =>
-      getByPlaceholderText('Search...')
+      getByPlaceholderText('Search for a keyword')
     );
     expect(freeTextInput).toBeTruthy();
     fireEvent.change(freeTextInput, { target: { value: input } });
@@ -961,7 +941,7 @@ describe('User search library', () => {
       // Change value for free-text input
       const input = 'foo';
       const freeTextInput = await waitFor(() =>
-        getByPlaceholderText('Search...')
+        getByPlaceholderText('Search for a keyword')
       );
       expect(freeTextInput).toBeTruthy();
       fireEvent.change(freeTextInput, { target: { value: input } });
