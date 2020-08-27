@@ -1,9 +1,9 @@
 /* eslint-disable react/jsx-props-no-spreading */
+import { fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { render, fireEvent, waitFor } from '@testing-library/react';
-import LeftMenu, { Props } from './LeftMenu';
 import { projectsFixture } from '../../api/mock/fixtures';
+import LeftMenu, { Props } from './LeftMenu';
 
 const defaultProps: Props = {
   activeProject: { name: 'test1' },
@@ -33,7 +33,9 @@ it('successfully submits search form and resets current text with onFinish', asy
   );
 
   // Change form field values
-  const input = getByPlaceholderText('Search...') as HTMLInputElement;
+  const input = getByPlaceholderText(
+    'Search for a keyword'
+  ) as HTMLInputElement;
   fireEvent.change(input, { target: { value: 'Solar' } });
   expect(input.value).toEqual('Solar');
 
@@ -58,7 +60,9 @@ it('successfully submits search form and resets current text with onFinish, and 
   );
 
   // Change form field values
-  const input = getByPlaceholderText('Search...') as HTMLInputElement;
+  const input = getByPlaceholderText(
+    'Search for a keyword'
+  ) as HTMLInputElement;
   fireEvent.change(input, { target: { value: 'Solar' } });
   expect(input.value).toEqual('Solar');
 
