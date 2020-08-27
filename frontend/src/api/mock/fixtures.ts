@@ -11,6 +11,7 @@ export const projectFixture = (props: Partial<Project> = {}): Project => {
   const defaults: Project = {
     pk: '1',
     name: 'test1',
+    facetsByGroup: { group1: ['facet1'], group2: ['facet2'] },
     facetsUrl: 'https://esgf-node.llnl.gov/esg-search/search/?offset=0&limit=0',
     fullName: 'test1',
   };

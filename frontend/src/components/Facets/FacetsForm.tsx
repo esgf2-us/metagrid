@@ -1,19 +1,18 @@
-import React from 'react';
-import { Checkbox, Collapse, Form, Select } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
-
+import { Checkbox, Collapse, Form, Select } from 'antd';
+import React from 'react';
+import { humanize } from '../../utils/utils';
 import Button from '../General/Button';
 
-import { humanize } from '../../utils/utils';
-
 const styles: { [key: string]: React.CSSProperties } = {
-  content: { height: '660px', width: '100%', overflowY: 'auto' },
   facetCount: { float: 'right' },
-  formTitle: { fontWeight: 'bold' },
-  applyBtn: { marginBottom: '5px' },
+  formTitle: { fontWeight: 'bold', textTransform: 'capitalize' },
+  applyBtn: { marginBottom: '10px' },
+  collapseContainer: { marginTop: '10px' },
 };
 
 export type Props = {
+  facetsByGroup?: { [key: string]: string[] };
   defaultFacets: DefaultFacets;
   activeFacets: ActiveFacets | Record<string, unknown>;
   availableFacets: ParsedFacets;
@@ -21,6 +20,7 @@ export type Props = {
 };
 
 const FacetsForm: React.FC<Props> = ({
+  facetsByGroup,
   defaultFacets,
   activeFacets,
   availableFacets,
@@ -60,52 +60,68 @@ const FacetsForm: React.FC<Props> = ({
         }}
         onFinish={(values) => handleFacetsForm(values)}
       >
-        <h4 style={styles.formTitle}>Default Facets</h4>
         <Form.Item name="selectedDefaults">
           <Checkbox.Group
             options={[{ label: 'Include Replica', value: 'replica' }]}
           ></Checkbox.Group>
         </Form.Item>
-        <h4 style={styles.formTitle}>Project Facets</h4>
-
-        <div style={styles.content}>
-          <Collapse bordered={false}>
-            {Object.keys(availableFacets).map((facet) => {
-              return (
-                <Collapse.Panel header={humanize(facet)} key={facet}>
-                  <Form.Item
-                    style={{ marginBottom: '4px' }}
-                    key={facet}
-                    name={facet}
-                  >
-                    <Select
-                      data-testid={`${facet}-form-select`}
-                      size="small"
-                      placeholder="Select option(s)"
-                      mode="multiple"
-                      style={{ width: '100%' }}
-                      tokenSeparators={[',']}
-                      showArrow
-                    >
-                      {availableFacets[facet].map((variable) => {
-                        return (
-                          <Select.Option key={variable[0]} value={variable[0]}>
-                            <span data-testid={`${facet}_${variable[0]}`}>
-                              {variable[0]}
-                              <span style={styles.facetCount}>
-                                ({variable[1]})
-                              </span>
-                            </span>
-                          </Select.Option>
-                        );
-                      })}
-                    </Select>
-                  </Form.Item>
-                </Collapse.Panel>
-              );
-            })}
-          </Collapse>
-        </div>
+        {facetsByGroup &&
+          Object.keys(facetsByGroup).map((group) => {
+            return (
+              <div key={group} style={styles.collapseContainer}>
+                <h4 style={styles.formTitle}>{group}</h4>
+                <Collapse>
+                  {Object.keys(availableFacets).map((facet) => {
+                    if (facetsByGroup[group].includes(facet)) {
+                      const facetOptions = availableFacets[facet];
+                      return (
+                        <Collapse.Panel
+                          header={humanize(facet)}
+                          key={facet}
+                          disabled={facetOptions.length === 0}
+                        >
+                          <Form.Item
+                            style={{ marginBottom: '4px' }}
+                            key={facet}
+                            name={facet}
+                          >
+                            <Select
+                              data-testid={`${facet}-form-select`}
+                              size="small"
+                              placeholder="Select option(s)"
+                              mode="multiple"
+                              style={{ width: '100%' }}
+                              tokenSeparators={[',']}
+                              showArrow
+                            >
+                              {facetOptions.map((variable) => {
+                                return (
+                                  <Select.Option
+                                    key={variable[0]}
+                                    value={variable[0]}
+                                  >
+                                    <span
+                                      data-testid={`${facet}_${variable[0]}`}
+                                    >
+                                      {variable[0]}
+                                      <span style={styles.facetCount}>
+                                        ({variable[1]})
+                                      </span>
+                                    </span>
+                                  </Select.Option>
+                                );
+                              })}
+                            </Select>
+                          </Form.Item>
+                        </Collapse.Panel>
+                      );
+                    }
+                    return null;
+                  })}
+                </Collapse>
+              </div>
+            );
+          })}
       </Form>
     </div>
   );

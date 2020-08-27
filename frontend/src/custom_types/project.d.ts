@@ -2,7 +2,7 @@
 type Project = {
   pk: string;
   name: string;
+  facetsByGroup: { [key: string]: string[] };
   facetsUrl: string;
   fullName: string;
-  [key: string]: string | string[] | number;
 };
