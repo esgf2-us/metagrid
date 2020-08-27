@@ -3,27 +3,27 @@ import {
   deleteUserSearch,
   fetchCitation,
   fetchFiles,
-  fetchResults,
   fetchProjects,
+  fetchResults,
   fetchUserCart,
   fetchUserSearches,
-  genUrlQuery,
   fetchWgetScript,
+  genUrlQuery,
   openDownloadURL,
   processCitation,
   updateUserCart,
 } from '.';
-import apiRoutes from './routes';
 import {
   citationFixture,
   defaultFacetsFixture,
   esgSearchApiFixture,
   projectsFixture,
-  savedSearchFixture,
   savedSearchesFixture,
+  savedSearchFixture,
   userCartFixture,
 } from './mock/fixtures';
-import { server, rest } from './mock/setup-env';
+import { rest, server } from './mock/setup-env';
+import apiRoutes from './routes';
 
 // Reset all mocks after each test
 afterEach(() => {

@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from metagrid.projects.models import Facet, Project
 
+
 # Facets are pulled from ESGF Search API JSON results
 projects = [
     {
@@ -17,10 +18,7 @@ projects = [
         "full_name": "Coupled Model Intercomparison Project Phase 6",
         "description": "The Coupled Model Intercomparison Project, which began in 1995 under the auspices of the World Climate Research Programme (WCRP), is now in its sixth phase (CMIP6). CMIP6 coordinates somewhat independent model intercomparison activities and their experiments which have adopted a common infrastructure for collecting, organizing, and distributing output from models performing common sets of experiments. The simulation data produced by models under previous phases of CMIP have been used in thousands of research papers (some of which are listed here), and the multi-model results provide some perspective on errors and uncertainty in model simulations. This information has proved invaluable in preparing high profile reports assessing our understanding of climate and climate change (e.g., the IPCC Assessment Reports).",
         "facets": [
-            "mip_era",
             "activity_id",
-            "model_cohort",
-            "product",
             "source_id",
             "institution_id",
             "source_type",
@@ -99,7 +97,6 @@ projects = [
         "full_name": "input datasets for Model Intercomparison Projects",
         "description": "input4MIPS (input datasets for Model Intercomparison Projects) is an activity to make available via ESGF the boundary condition and forcing datasets needed for CMIP6. Various datasets are needed for the pre-industrial control (piControl), AMIP, and historical simulations, and additional datasets are needed for many of the CMIP6-endorsed model intercomparison projects (MIPs) experiments. Earlier versions of many of these datasets were used in the 5th Coupled Model Intercomparison Project (CMIP5).",
         "facets": [
-            "mip_era",
             "target_mip_list",
             "institution_id",
             "source_id",
@@ -110,7 +107,6 @@ projects = [
             "nominal_resolution",
             "frequency",
             "realm",
-            "data_node",
             "dataset_status",
         ],
     },
@@ -158,3 +154,9 @@ def insert_data(apps, schema_editor):
         facets = project.get("facets", [])
         for facet in facets:
             FacetModel(name=facet, project=new_project).save()
+
+
+def reverse_insert_data(apps, schema_editor):
+    ProjectModel = apps.get_model("projects", "Project")  # type: Project
+
+    ProjectModel.objects.all().delete()

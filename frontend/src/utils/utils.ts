@@ -7,13 +7,22 @@ export const isEmpty = (obj: Record<any, any>): boolean => {
 };
 
 /**
- * Makes a string human-readable rather than underscore separated and lowercase.
+ * Converts strings from snake_case to human readable.
+ *
+ * It checks for acronyms to convert to uppercase.
  */
 export const humanize = (str: string): string => {
+  const acronyms = ['Id', 'Cf', 'Cmor', 'Mip'];
   const frags = str.split('_');
+
   for (let i = 0; i < frags.length; i += 1) {
     frags[i] = frags[i].charAt(0).toUpperCase() + frags[i].slice(1);
+
+    if (acronyms.includes(frags[i])) {
+      frags[i] = frags[i].toUpperCase();
+    }
   }
+
   return frags.join(' ');
 };
 

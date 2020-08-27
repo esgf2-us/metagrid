@@ -1,13 +1,11 @@
+import { message } from 'antd';
 import React from 'react';
 import { useAsync } from 'react-async';
-import { message } from 'antd';
-
-import ProjectForm from './ProjectForm';
-import FacetsForm from './FacetsForm';
-import Divider from '../General/Divider';
-
 import { fetchProjects } from '../../api';
 import { isEmpty, shallowCompare } from '../../utils/utils';
+import Divider from '../General/Divider';
+import FacetsForm from './FacetsForm';
+import ProjectForm from './ProjectForm';
 
 const styles = {
   form: {
@@ -75,7 +73,7 @@ const Facets: React.FC<Props> = ({
   };
 
   /**
-   * Set the selectedProject by using the projectsFetched object
+   * Handles the project form by setting the active project
    */
   const handleProjectForm = (selectedProject: {
     [key: string]: string;
@@ -103,10 +101,11 @@ const Facets: React.FC<Props> = ({
           projectsError={error}
           handleProjectForm={handleProjectForm}
         />
+        <Divider />
       </div>
-      <Divider />
       {!isEmpty(availableFacets) && (
         <FacetsForm
+          facetsByGroup={(activeProject as Project).facetsByGroup}
           defaultFacets={defaultFacets}
           activeFacets={activeFacets}
           availableFacets={availableFacets as ParsedFacets}
