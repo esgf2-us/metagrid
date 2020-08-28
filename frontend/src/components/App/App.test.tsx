@@ -43,7 +43,6 @@ it('renders App component', async () => {
   expect(navComponent).toBeTruthy();
   const facetsComponent = await waitFor(() => getByTestId('facets'));
   expect(facetsComponent).toBeTruthy();
-  expect(getByTestId('footer')).toBeTruthy();
   expect(getByTestId('search')).toBeTruthy();
 });
 
@@ -166,7 +165,7 @@ it('handles removing search tags and clearing all search tags', async () => {
 });
 
 it('handles removing facet tags', async () => {
-  const { getByRole, getByTestId, getByText } = customRender(
+  const { getByTestId, getByText } = customRender(
     <Router>
       <App />
     </Router>
@@ -221,11 +220,6 @@ it('handles removing facet tags', async () => {
   const facetOption = await waitFor(() => getByTestId('facet1_foo'));
   expect(facetOption).toBeTruthy();
   fireEvent.click(facetOption);
-
-  // Submit the form
-  const facetFormBtn = getByRole('button', { name: 'filter Apply Facets' });
-  expect(facetFormBtn).toBeTruthy();
-  fireEvent.click(facetFormBtn);
 
   // Wait for components to re-render
   await waitFor(() => getByTestId('search'));

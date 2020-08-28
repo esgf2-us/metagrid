@@ -1,8 +1,6 @@
-import { FilterOutlined } from '@ant-design/icons';
 import { Checkbox, Collapse, Form, Select } from 'antd';
 import React from 'react';
 import { humanize } from '../../utils/utils';
-import Button from '../General/Button';
 
 const styles: { [key: string]: React.CSSProperties } = {
   container: { maxHeight: '80vh', overflowY: 'auto' },
@@ -38,18 +36,6 @@ const FacetsForm: React.FC<Props> = ({
 
   return (
     <div data-testid="facets-form">
-      <div style={styles.applyBtn}>
-        <Button
-          data-testid="facets-form-btn"
-          onClick={() => projectFacetsForm.submit()}
-          type="primary"
-          htmlType="submit"
-          icon={<FilterOutlined />}
-        >
-          Apply Facets
-        </Button>
-      </div>
-
       <Form
         form={projectFacetsForm}
         layout="vertical"
@@ -59,7 +45,9 @@ const FacetsForm: React.FC<Props> = ({
             (k) => defaultFacets[k]
           ),
         }}
-        onFinish={(values) => handleFacetsForm(values)}
+        onValuesChange={(_changedValues, allValues) => {
+          handleFacetsForm(allValues);
+        }}
       >
         <Form.Item name="selectedDefaults">
           <Checkbox.Group

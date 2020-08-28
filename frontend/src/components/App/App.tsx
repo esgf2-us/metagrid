@@ -36,9 +36,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     background: '#fff',
     padding: '48px 24px 24px 24px',
     width: '384px',
+    marginRight: '2px',
+    boxShadow: '2px 0 4px 0 rgba(0, 0, 0, 0.2)',
   },
   bodyContent: { padding: '48px 24px', margin: 0 },
-  footer: { textAlign: 'center' },
   messageAddIcon: { color: '#90EE90' },
   messageRemoveIcon: { color: '#ff0000' },
 };

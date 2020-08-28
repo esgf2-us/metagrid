@@ -1,8 +1,7 @@
-import { message } from 'antd';
 import React from 'react';
 import { useAsync } from 'react-async';
 import { fetchProjects } from '../../api';
-import { isEmpty, shallowCompare } from '../../utils/utils';
+import { isEmpty } from '../../utils/utils';
 import Divider from '../General/Divider';
 import FacetsForm from './FacetsForm';
 import ProjectForm from './ProjectForm';
@@ -39,16 +38,18 @@ const Facets: React.FC<Props> = ({
     [key: string]: string[] | [];
   }): void => {
     const newActive = selectedFacets;
-
-    const newDefaults: DefaultFacets = { latest: true, replica: false };
     const { selectedDefaults } = newActive;
-    // Pop selectedDefault keys from newActive since its values are declared
-    // separately in a newDefaults
     delete newActive.selectedDefaults;
 
-    selectedDefaults.forEach((facet) => {
-      newDefaults[facet] = true;
-    });
+    const newDefaults: DefaultFacets = { latest: true, replica: false };
+
+    // Test fails because ant design's form initialValues does not work after
+    // the initial detection of value changes, so selectedDefaults becomes undefined.
+    if (selectedDefaults) {
+      selectedDefaults.forEach((facet) => {
+        newDefaults[facet] = true;
+      });
+    }
 
     // The form keeps a history of all selected facets, including when a
     // previously selected key goes from > 0 elements to 0 elements. Thus,
@@ -59,17 +60,7 @@ const Facets: React.FC<Props> = ({
         delete newActive[key];
       }
     });
-    if (
-      shallowCompare(newDefaults, defaultFacets) &&
-      shallowCompare(newActive, activeFacets)
-    ) {
-      // eslint-disable-next-line no-void
-      void message.error({
-        content: 'Constraints already applied',
-      });
-    } else {
-      onSetFacets(newDefaults, newActive);
-    }
+    onSetFacets(newDefaults, newActive);
   };
 
   /**
