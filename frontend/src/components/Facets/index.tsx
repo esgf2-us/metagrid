@@ -83,6 +83,7 @@ const Facets: React.FC<Props> = ({
 
   return (
     <div data-testid="facets" style={styles.form}>
+      <h2>Select a Project</h2>
       <div data-testid="projectForm">
         <ProjectForm
           activeProject={activeProject}
@@ -95,13 +96,16 @@ const Facets: React.FC<Props> = ({
         <Divider />
       </div>
       {!isEmpty(availableFacets) && (
-        <FacetsForm
-          facetsByGroup={(activeProject as Project).facetsByGroup}
-          defaultFacets={defaultFacets}
-          activeFacets={activeFacets}
-          availableFacets={availableFacets as ParsedFacets}
-          handleFacetsForm={handleFacetsForm}
-        />
+        <>
+          <h2>Filter with Facets</h2>
+          <FacetsForm
+            facetsByGroup={(activeProject as Project).facetsByGroup}
+            defaultFacets={defaultFacets}
+            activeFacets={activeFacets}
+            availableFacets={availableFacets as ParsedFacets}
+            handleFacetsForm={handleFacetsForm}
+          />
+        </>
       )}
     </div>
   );

@@ -87,28 +87,11 @@ describe('test Search component', () => {
     // Check for stringified constraints text
     const strConstraints = await waitFor(() =>
       getByRole('heading', {
-        name:
-          '2 results found for foo (latest = true) AND (replica = false) AND (Text Input = foo) AND (foo = option1 OR option2) AND (baz = option1)',
+        name: '2 results found for foo',
       })
     );
 
     expect(strConstraints).toBeTruthy();
-  });
-
-  it('renders "No project constraints applied" Alert when no constraints are applied', async () => {
-    const { getByText, getByTestId } = render(
-      <Search {...defaultProps} activeFacets={{}} textInputs={[]} />
-    );
-
-    // Check search component renders
-    const searchComponent = await waitFor(() => getByTestId('search'));
-    expect(searchComponent).toBeTruthy();
-
-    // Check if code string is generated from active facets
-    const noConstraintsText = await waitFor(() =>
-      getByText('No project constraints applied')
-    );
-    expect(noConstraintsText).toBeTruthy();
   });
 
   it('clears all tags when selecting the "Clear All" tag', async () => {
