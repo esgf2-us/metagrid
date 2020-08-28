@@ -1,16 +1,15 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Menu } from 'antd';
-import { KeycloakTokenParsed } from 'keycloak-js';
 import {
-  ShoppingCartOutlined,
   SearchOutlined,
+  ShoppingCartOutlined,
   UserOutlined,
 } from '@ant-design/icons';
 import { useKeycloak } from '@react-keycloak/web';
-
-import Button from '../General/Button';
+import { Badge, Menu } from 'antd';
+import { KeycloakTokenParsed } from 'keycloak-js';
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import ToolTip from '../DataDisplay/ToolTip';
+import Button from '../General/Button';
 
 export type Props = {
   mode:
@@ -104,18 +103,30 @@ const RightMenu: React.FC<Props> = ({
 
         <Menu.Item key="cartItems" className="modified-item">
           <ToolTip title="Cart">
-            <Link to="/cart/items">
-              <ShoppingCartOutlined style={{ fontSize: '18px' }} />
-              {numCartItems}
-            </Link>
+            <Badge
+              count={numCartItems}
+              className="badge"
+              offset={[5, 0]}
+              showZero
+            >
+              <Link to="/cart/items">
+                <ShoppingCartOutlined style={{ fontSize: '24px' }} />
+              </Link>
+            </Badge>
           </ToolTip>
         </Menu.Item>
         <Menu.Item key="cartSearches" className="modified-item">
           <ToolTip title="Saved Searches">
-            <Link to="/cart/searches">
-              <SearchOutlined style={{ fontSize: '18px' }} />
-              {numSavedSearches}
-            </Link>
+            <Badge
+              count={numSavedSearches}
+              className="badge"
+              offset={[5, 0]}
+              showZero
+            >
+              <Link to="/cart/searches">
+                <SearchOutlined style={{ fontSize: '24px' }} />
+              </Link>
+            </Badge>
           </ToolTip>
         </Menu.Item>
       </Menu>

@@ -558,7 +558,7 @@ describe('User cart', () => {
     expect(addText).toBeTruthy();
 
     // Click on the cart link
-    const cartLink = getByRole('link', { name: 'shopping-cart 1' });
+    const cartLink = getByRole('link', { name: 'shopping-cart' });
     expect(cartLink).toBeTruthy();
     fireEvent.click(cartLink);
 
