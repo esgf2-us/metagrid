@@ -19,7 +19,7 @@ const styles: CSSinJS = {
     marginBottom: 10,
     leftSide: {
       display: 'flex',
-    } as CSSinJS,
+    },
   },
   image: { margin: '1em', width: '25%' },
 };

@@ -369,7 +369,7 @@ const App: React.FC = () => {
               render={() => (
                 <Layout.Sider
                   style={styles.bodySider}
-                  width={styles.bodySider.width}
+                  width={styles.bodySider.width as number}
                 >
                   <Facets
                     activeProject={activeProject}
@@ -395,7 +395,7 @@ const App: React.FC = () => {
               render={() => (
                 <Layout.Sider
                   style={styles.bodySider}
-                  width={styles.bodySider.width}
+                  width={styles.bodySider.width as number}
                 >
                   <Summary cart={cart} />
                 </Layout.Sider>
