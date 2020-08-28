@@ -15,7 +15,7 @@ import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
 import Table from './Table';
 
-const styles: { [key: string]: React.CSSProperties } = {
+const styles: CSSinJS = {
   summary: {
     display: 'flex',
     flexWrap: 'wrap',

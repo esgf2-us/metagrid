@@ -30,8 +30,7 @@ import NavBar from '../NavBar';
 import Search from '../Search';
 import './App.css';
 
-const styles: { [key: string]: React.CSSProperties } = {
-  // bodyLayout: { padding: '24px 0' },
+const styles: CSSinJS = {
   bodySider: {
     background: '#fff',
     padding: '48px 24px 24px 24px',

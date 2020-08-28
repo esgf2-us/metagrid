@@ -2,7 +2,7 @@ import { Checkbox, Collapse, Form, Select } from 'antd';
 import React from 'react';
 import { humanize } from '../../utils/utils';
 
-const styles: { [key: string]: React.CSSProperties } = {
+const styles: CSSinJS = {
   container: { maxHeight: '80vh', overflowY: 'auto' },
   facetCount: { float: 'right' },
   formTitle: { fontWeight: 'bold', textTransform: 'capitalize' },
