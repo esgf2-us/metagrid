@@ -32,7 +32,7 @@ const FacetsForm: React.FC<Props> = ({
    */
   React.useEffect(() => {
     projectFacetsForm.resetFields();
-  }, [projectFacetsForm, activeFacets]);
+  }, [projectFacetsForm, activeFacets, defaultFacets]);
 
   return (
     <div data-testid="facets-form">
