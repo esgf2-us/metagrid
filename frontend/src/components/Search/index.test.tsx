@@ -10,10 +10,10 @@ import { rest, server } from '../../api/mock/setup-env';
 import apiRoutes from '../../api/routes';
 import { esgfNodeURL, proxyURL } from '../../env';
 import Search, {
-  checkConstraintsExist,
+  checkFiltersExist,
   parseFacets,
   Props,
-  stringifyConstraints,
+  stringifyFilters,
 } from './index';
 
 const defaultProps: Props = {
@@ -77,38 +77,21 @@ describe('test Search component', () => {
     expect(jsonBtn).toBeTruthy();
   });
 
-  it('renders activeFacets and textInputs as stringified constraints', async () => {
+  it('renders activeFacets and textInputs as stringified filters', async () => {
     const { getByRole, getByTestId } = render(<Search {...defaultProps} />);
 
     // Check search component renders
     const searchComponent = await waitFor(() => getByTestId('search'));
     expect(searchComponent).toBeTruthy();
 
-    // Check for stringified constraints text
-    const strConstraints = await waitFor(() =>
+    // Check for stringified filters text
+    const strFilters = await waitFor(() =>
       getByRole('heading', {
-        name:
-          '2 results found for foo (latest = true) AND (replica = false) AND (Text Input = foo) AND (foo = option1 OR option2) AND (baz = option1)',
+        name: '2 results found for foo',
       })
     );
 
-    expect(strConstraints).toBeTruthy();
-  });
-
-  it('renders "No project constraints applied" Alert when no constraints are applied', async () => {
-    const { getByText, getByTestId } = render(
-      <Search {...defaultProps} activeFacets={{}} textInputs={[]} />
-    );
-
-    // Check search component renders
-    const searchComponent = await waitFor(() => getByTestId('search'));
-    expect(searchComponent).toBeTruthy();
-
-    // Check if code string is generated from active facets
-    const noConstraintsText = await waitFor(() =>
-      getByText('No project constraints applied')
-    );
-    expect(noConstraintsText).toBeTruthy();
+    expect(strFilters).toBeTruthy();
   });
 
   it('clears all tags when selecting the "Clear All" tag', async () => {
@@ -298,7 +281,7 @@ describe('test parseFacets()', () => {
   });
 });
 
-describe('test stringifyConstraints()', () => {
+describe('test stringifyFilters()', () => {
   let defaultFacets: DefaultFacets;
   let activeFacets: ActiveFacets;
   let textInputs: TextInputs;
@@ -312,35 +295,31 @@ describe('test stringifyConstraints()', () => {
     textInputs = ['foo', 'bar'];
   });
 
-  it('successfully generates a stringified version of the active constraints', () => {
-    const strConstraints = stringifyConstraints(
+  it('successfully generates a stringified version of the active filters', () => {
+    const strFilters = stringifyFilters(
       defaultFacets,
       activeFacets,
       textInputs
     );
-    expect(strConstraints).toEqual(
+    expect(strFilters).toEqual(
       '(latest = true) AND (replica = false) AND (Text Input = foo OR bar) AND (facet_1 = option1 OR option2) AND (facet_2 = option1 OR option2)'
     );
   });
-  it('successfully generates a stringified version of the active constraints w/o textInputs', () => {
-    const strConstraints = stringifyConstraints(
-      defaultFacets,
-      activeFacets,
-      []
-    );
-    expect(strConstraints).toEqual(
+  it('successfully generates a stringified version of the active filters w/o textInputs', () => {
+    const strFilters = stringifyFilters(defaultFacets, activeFacets, []);
+    expect(strFilters).toEqual(
       '(latest = true) AND (replica = false) AND (facet_1 = option1 OR option2) AND (facet_2 = option1 OR option2)'
     );
   });
-  it('successfully generates a stringified version of the active constraints w/o activeFacets', () => {
-    const strConstraints = stringifyConstraints(defaultFacets, {}, textInputs);
-    expect(strConstraints).toEqual(
+  it('successfully generates a stringified version of the active filters w/o activeFacets', () => {
+    const strFilters = stringifyFilters(defaultFacets, {}, textInputs);
+    expect(strFilters).toEqual(
       '(latest = true) AND (replica = false) AND (Text Input = foo OR bar)'
     );
   });
 });
 
-describe('test checkConstraintsExist()', () => {
+describe('test checkFiltersExist()', () => {
   let activeFacets: ActiveFacets;
   let textInputs: TextInputs;
 
@@ -353,21 +332,21 @@ describe('test checkConstraintsExist()', () => {
   });
 
   it('returns true when activeFacets and textInputs exist', () => {
-    const constraintsExist = checkConstraintsExist(activeFacets, textInputs);
-    expect(constraintsExist).toBeTruthy();
+    const filtersExist = checkFiltersExist(activeFacets, textInputs);
+    expect(filtersExist).toBeTruthy();
   });
   it('returns true when only textInputs exist', () => {
-    const constraintsExist = checkConstraintsExist({}, textInputs);
-    expect(constraintsExist).toBeTruthy();
+    const filtersExist = checkFiltersExist({}, textInputs);
+    expect(filtersExist).toBeTruthy();
   });
 
   it('returns true when only activeFacets exist', () => {
-    const constraintsExist = checkConstraintsExist(activeFacets, []);
-    expect(constraintsExist).toBeTruthy();
+    const filtersExist = checkFiltersExist(activeFacets, []);
+    expect(filtersExist).toBeTruthy();
   });
 
-  it('returns false if constraints do not exist', () => {
-    const constraintsExist = checkConstraintsExist({}, []);
-    expect(constraintsExist).toBeFalsy();
+  it('returns false if filters do not exist', () => {
+    const filtersExist = checkFiltersExist({}, []);
+    expect(filtersExist).toBeFalsy();
   });
 });

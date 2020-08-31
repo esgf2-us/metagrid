@@ -11,7 +11,7 @@ import Popconfirm from '../Feedback/Popconfirm';
 import Button from '../General/Button';
 import Table from '../Search/Table';
 
-const styles = {
+const styles: CSSinJS = {
   summary: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -19,7 +19,7 @@ const styles = {
     marginBottom: 10,
     leftSide: {
       display: 'flex',
-    } as React.CSSProperties,
+    },
   },
   image: { margin: '1em', width: '25%' },
 };

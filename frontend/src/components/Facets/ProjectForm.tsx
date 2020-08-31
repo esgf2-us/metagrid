@@ -8,7 +8,7 @@ import Spin from '../Feedback/Spin';
 import Button from '../General/Button';
 
 const styles = {
-  form: { width: '235px' },
+  form: { width: '256px' },
 };
 
 export type Props = {
@@ -105,7 +105,7 @@ const ProjectsForm: React.FC<Props> = ({
           <Form.Item>
             {!isEmpty(activeProject) && !isEmpty(activeFacets) ? (
               <Popconfirm
-                title="Your constraints will be cleared."
+                title="Your filters will be cleared."
                 onConfirm={() => projectForm.submit()}
                 icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
                 placement="right"
