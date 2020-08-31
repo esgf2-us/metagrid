@@ -62,8 +62,8 @@ it('handles when the project form is submitted', async () => {
   fireEvent.submit(projectFormBtn);
 });
 
-it('handles facets form submission', async () => {
-  const { getByRole, getByTestId, getByText, debug } = render(
+it('handles facets form auto-filtering', async () => {
+  const { getByTestId, getByText, getByRole } = render(
     <Facets {...defaultProps} />
   );
 
@@ -75,7 +75,6 @@ it('handles facets form submission', async () => {
   const facetsForm = await waitFor(() => getByTestId('facets-form'));
   await waitFor(() => expect(facetsForm).toBeTruthy());
 
-  debug();
   // Open Collapse Panel in Collapse component for the facet1 form to render
   const collapse = getByText('Facet1');
   fireEvent.click(collapse);
@@ -92,16 +91,21 @@ it('handles facets form submission', async () => {
   expect(facetOption).toBeTruthy();
   fireEvent.click(facetOption);
 
-  // Submit the form
-  // NOTE: Submit button is outside of the form, so use click instead of submit
-  const facetFormBtn = getByRole('button', { name: 'filter Apply Facets' });
-  fireEvent.click(facetFormBtn);
+  // Wait for facet form component to re-render
+  await waitFor(() => getByTestId('facets-form'));
+
+  // De-select the first facet option
+  const closeFacetOption = getByRole('img', {
+    name: 'close',
+    hidden: true,
+  });
+  fireEvent.click(closeFacetOption);
+  // Wait for facet form component to re-render
+  await waitFor(() => getByTestId('facets-form'));
 });
 
 it('handles facets form submission, including a facet key that is undefined', async () => {
-  const { getByRole, getByTestId, getByText } = render(
-    <Facets {...defaultProps} />
-  );
+  const { getByTestId, getByText } = render(<Facets {...defaultProps} />);
 
   // Check FacetsForm component renders
   const facetsForm = await waitFor(() => getByTestId('facets-form'));
@@ -126,11 +130,6 @@ it('handles facets form submission, including a facet key that is undefined', as
   const facetOption = getByTestId('facet1_foo');
   expect(facetOption).toBeTruthy();
   fireEvent.click(facetOption);
-
-  // Submit the form
-  // NOTE: Submit button is outside of the form, so use click instead of submit
-  const facetFormBtn = getByRole('button', { name: 'filter Apply Facets' });
-  fireEvent.click(facetFormBtn);
 
   // Open Collapse Panel for  in Collapse component for the facet2 form to render
   const collapse2 = getByText('Facet2');
@@ -144,21 +143,4 @@ it('handles facets form submission, including a facet key that is undefined', as
   ) as HTMLInputElement;
   expect(facetFormSelect2).toBeTruthy();
   fireEvent.mouseDown(facetFormSelect2);
-
-  // Submit the form
-  // NOTE: Submit button is outside of the form, so use click instead of submit
-  fireEvent.click(facetFormBtn);
-});
-
-it('displays an error message with already applied constraints', async () => {
-  const { getByRole, getByText } = render(<Facets {...defaultProps} />);
-
-  // Submit the form
-  const facetFormBtn = getByRole('button', { name: 'filter Apply Facets' });
-  fireEvent.click(facetFormBtn);
-
-  const errorMsgText = await waitFor(() =>
-    getByText('Constraints already applied')
-  );
-  expect(errorMsgText).toBeTruthy();
 });
