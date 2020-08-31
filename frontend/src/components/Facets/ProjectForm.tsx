@@ -105,7 +105,7 @@ const ProjectsForm: React.FC<Props> = ({
           <Form.Item>
             {!isEmpty(activeProject) && !isEmpty(activeFacets) ? (
               <Popconfirm
-                title="Your constraints will be cleared."
+                title="Your filters will be cleared."
                 onConfirm={() => projectForm.submit()}
                 icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
                 placement="right"

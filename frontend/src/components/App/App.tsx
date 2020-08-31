@@ -128,9 +128,9 @@ const App: React.FC = () => {
   }, [isAuthenticated, savedSearches]);
 
   /**
-   * Handles clearing constraints for a selected project.
+   * Handles clearing filters for a selected project.
    */
-  const clearConstraints = (): void => {
+  const clearFilters = (): void => {
     setTextInputs([]);
     setActiveFacets({});
     setDefaultFacets({ latest: true, replica: false });
@@ -145,7 +145,7 @@ const App: React.FC = () => {
    */
   const handleProjectChange = (selectedProject: Project): void => {
     if (!isEmpty(activeProject) && activeProject !== selectedProject) {
-      clearConstraints();
+      clearFilters();
     }
 
     setActiveProject(selectedProject);
@@ -429,7 +429,7 @@ const App: React.FC = () => {
                       onRemoveTag={(removedTag, type) =>
                         handleRemoveTag(removedTag, type)
                       }
-                      onClearTags={() => clearConstraints()}
+                      onClearTags={() => clearFilters()}
                       handleSaveSearch={handleSaveSearch}
                     ></Search>
                   </>
