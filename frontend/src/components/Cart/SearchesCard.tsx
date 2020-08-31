@@ -14,7 +14,7 @@ import Card from '../DataDisplay/Card';
 import ToolTip from '../DataDisplay/ToolTip';
 import Alert from '../Feedback/Alert';
 import Skeleton from '../Feedback/Skeleton';
-import { stringifyConstraints } from '../Search';
+import { stringifyFilters } from '../Search';
 
 const styles: CSSinJS = {
   category: {
@@ -143,7 +143,7 @@ const SearchesCard: React.FC<Props> = ({
         <p>
           <span style={styles.category}>Query String: </span>
           <Typography.Text code>
-            {stringifyConstraints(defaultFacets, activeFacets, textInputs)}
+            {stringifyFilters(defaultFacets, activeFacets, textInputs)}
           </Typography.Text>
         </p>
       </Card>

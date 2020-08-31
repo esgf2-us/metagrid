@@ -52,27 +52,27 @@ export const parseFacets = (facets: RawFacets): ParsedFacets => {
 };
 
 /**
- * Stringifies the active constraints
+ * Stringifies the active filters
  * Example of output: '(Text Input = 'Solar') AND (source_type = AER OR AOGCM OR BGC)'
  */
-export const stringifyConstraints = (
+export const stringifyFilters = (
   defaultFacets: DefaultFacets,
   activeFacets: ActiveFacets | Record<string, unknown>,
   textInputs: TextInputs | []
 ): string => {
-  const strConstraints: string[] = [];
+  const strFilters: string[] = [];
 
   Object.keys(defaultFacets).forEach((key: string) => {
-    strConstraints.push(`(${key} = ${defaultFacets[key].toString()})`);
+    strFilters.push(`(${key} = ${defaultFacets[key].toString()})`);
   });
 
   if (textInputs.length > 0) {
-    strConstraints.push(`(Text Input = ${textInputs.join(' OR ')})`);
+    strFilters.push(`(Text Input = ${textInputs.join(' OR ')})`);
   }
 
   if (!isEmpty(activeFacets)) {
     Object.keys(activeFacets).forEach((key: string) => {
-      strConstraints.push(
+      strFilters.push(
         `(${humps.decamelize(key)} = ${(activeFacets as ActiveFacets)[key].join(
           ' OR '
         )})`
@@ -80,14 +80,14 @@ export const stringifyConstraints = (
     });
   }
 
-  const strResult = `${strConstraints.join(' AND ')}`;
+  const strResult = `${strFilters.join(' AND ')}`;
   return strResult;
 };
 
 /**
- * Checks if constraints exist
+ * Checks if filters exist for a search
  */
-export const checkConstraintsExist = (
+export const checkFiltersExist = (
   activeFacets: ActiveFacets | Record<string, unknown>,
   textInputs: TextInputs
 ): boolean => {
@@ -128,8 +128,9 @@ const Search: React.FC<Props> = ({
     deferFn: (fetchResults as unknown) as DeferFn<{ [key: string]: any }>,
   });
 
-  const [facetsApplied, setConstraintsApplied] = React.useState<boolean>(false);
-  // Parsed version of the returned facet fields
+  // Filters applied by the user
+  const [filters, setFilters] = React.useState<boolean>(false);
+  // Parsed version of the facets from the API
   const [parsedFacets, setParsedFacets] = React.useState<
     ParsedFacets | Record<string, unknown>
   >({});
@@ -148,7 +149,7 @@ const Search: React.FC<Props> = ({
     pageSize: 10,
   });
 
-  // Generate the current request URL based on constraints
+  // Generate the current request URL based on filters
   React.useEffect(() => {
     if (!isEmpty(activeProject)) {
       const reqUrl = genUrlQuery(
@@ -163,7 +164,7 @@ const Search: React.FC<Props> = ({
   }, [activeProject, defaultFacets, activeFacets, textInputs, pagination]);
 
   React.useEffect(() => {
-    setConstraintsApplied(checkConstraintsExist(activeFacets, textInputs));
+    setFilters(checkFiltersExist(activeFacets, textInputs));
   }, [activeFacets, textInputs]);
 
   // Fetch search results
@@ -285,7 +286,7 @@ const Search: React.FC<Props> = ({
             <p>
               <span style={styles.subtitles}>Query String: </span>
               <Typography.Text code>
-                {stringifyConstraints(defaultFacets, activeFacets, textInputs)}
+                {stringifyFilters(defaultFacets, activeFacets, textInputs)}
               </Typography.Text>
             </p>
           </>
@@ -322,7 +323,7 @@ const Search: React.FC<Props> = ({
                 </div>
               );
             })}
-          {facetsApplied && (
+          {filters && (
             <Tag
               value="clearAll"
               color="#f50"

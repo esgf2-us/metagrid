@@ -224,7 +224,7 @@ it('handles removing facet tags', async () => {
   await waitFor(() => getByTestId('facets'));
 });
 
-it('handles project changes and clearing constraints when the active project !== selected project', async () => {
+it('handles project changes and clearing filters when the active project !== selected project', async () => {
   const { getByTestId } = customRender(
     <Router>
       <App />
