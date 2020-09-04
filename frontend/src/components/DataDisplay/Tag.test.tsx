@@ -1,10 +1,8 @@
+import { fireEvent, render } from '@testing-library/react';
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react';
-
-import Tag from './Tag';
+import { Tag } from './Tag';
 
 it('renders component with and without onClose prop', () => {
-  // eslint-disable-next-line no-console
   const { getByRole, rerender } = render(
     <Tag value="foo" type="bar" onClose={jest.fn()}>
       tag

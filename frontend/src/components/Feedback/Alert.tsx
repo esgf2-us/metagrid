@@ -1,5 +1,5 @@
-import React from 'react';
 import { Alert as AlertD } from 'antd';
+import React from 'react';
 
 type Props = {
   message: string;

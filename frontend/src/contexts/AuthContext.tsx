@@ -1,9 +1,17 @@
-import React from 'react';
 import { useKeycloak } from '@react-keycloak/web';
-import { useAsync, DeferFn } from 'react-async';
-
-import axios from '../axios';
+import React from 'react';
+import { DeferFn, useAsync } from 'react-async';
 import apiRoutes from '../api/routes';
+import axios from '../axios';
+
+export type RawUserAuth = {
+  access_token: string | null;
+  refresh_token: string | null;
+};
+
+export type RawUserInfo = {
+  pk: string | null;
+};
 
 export const AuthContext = React.createContext<RawUserAuth & RawUserInfo>({
   access_token: null,

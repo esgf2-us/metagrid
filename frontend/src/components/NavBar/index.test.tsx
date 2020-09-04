@@ -1,12 +1,10 @@
-/* eslint-disable react/jsx-props-no-spreading */
+import { fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { waitFor, fireEvent } from '@testing-library/react';
-
-import NavBar, { Props } from './index';
+import { rest, server } from '../../api/mock/setup-env';
 import apiRoutes from '../../api/routes';
-import { server, rest } from '../../api/mock/setup-env';
 import { customRender } from '../../test/custom-render';
+import NavBar, { Props } from './index';
 
 const defaultProps: Props = {
   activeProject: { name: 'test1' },

@@ -6,16 +6,17 @@ import Alert from '../Feedback/Alert';
 import Popconfirm from '../Feedback/Popconfirm';
 import Spin from '../Feedback/Spin';
 import Button from '../General/Button';
+import { ActiveFacets, RawProject, RawProjects } from './types';
 
 const styles = {
   form: { width: '256px' },
 };
 
 export type Props = {
-  activeProject: Project | Record<string, unknown>;
+  activeProject: RawProject | Record<string, unknown>;
   activeFacets: ActiveFacets | Record<string, unknown>;
   projectsFetched?: {
-    results: Project[];
+    results: RawProjects;
   };
   projectsIsLoading: boolean;
   projectsError?: Error;
@@ -65,7 +66,7 @@ const ProjectsForm: React.FC<Props> = ({
     // Since activeProject is also typed as an empty object ({}), TypeScript forbids accessing the
     // name attribute. In order to bypass this check, uncast activeProject for this single access.
     // https://stackoverflow.https://stackoverflow.com/a/46530838/questions/34274487/property-does-not-exists-on-type
-    const initialValues = { project: (activeProject as Project).name };
+    const initialValues = { project: (activeProject as RawProject).name };
 
     return (
       <div data-testid="project-form">
@@ -87,7 +88,7 @@ const ProjectsForm: React.FC<Props> = ({
               showArrow
             >
               {projectsFetched.results.map(
-                (projectObj: Project, index: number) => {
+                (projectObj: RawProject, index: number) => {
                   return (
                     <Select.Option
                       key={projectObj.name}

@@ -1,11 +1,10 @@
 import React from 'react';
-import { useAsync, PromiseFn } from 'react-async';
-
-import Alert from '../Feedback/Alert';
-import Skeleton from '../Feedback/Skeleton';
-
+import { PromiseFn, useAsync } from 'react-async';
 import { fetchCitation } from '../../api';
 import { parseUrl } from '../../utils/utils';
+import Alert from '../Feedback/Alert';
+import Skeleton from '../Feedback/Skeleton';
+import { RawCitation } from './types';
 
 type CitationInfoProps = {
   title: string;

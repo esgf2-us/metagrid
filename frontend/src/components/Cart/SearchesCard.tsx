@@ -10,11 +10,13 @@ import { useAsync } from 'react-async';
 import { useHistory } from 'react-router-dom';
 import { fetchResults, genUrlQuery } from '../../api';
 import { clickableRoute } from '../../api/routes';
+import { CSSinJS } from '../../common/types';
 import Card from '../DataDisplay/Card';
 import ToolTip from '../DataDisplay/ToolTip';
 import Alert from '../Feedback/Alert';
 import Skeleton from '../Feedback/Skeleton';
 import { stringifyFilters } from '../Search';
+import { SavedSearch } from './types';
 
 const styles: CSSinJS = {
   category: {

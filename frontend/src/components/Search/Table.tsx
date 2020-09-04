@@ -20,17 +20,19 @@ import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
 import { fetchWgetScript, openDownloadURL } from '../../api';
 import { formatBytes, hasKey, parseUrl } from '../../utils/utils';
+import { CartType } from '../Cart/types';
 import Button from '../General/Button';
 import Divider from '../General/Divider';
 import Citation from './Citation';
 import FilesTable from './FilesTable';
 import './Search.css';
+import { RawSearchResult } from './types';
 
 export type Props = {
   loading: boolean;
   results: RawSearchResult[] | [];
   totalResults?: number;
-  cart: Cart | [];
+  cart: CartType | [];
   handleCart: (item: RawSearchResult[], operation: 'add' | 'remove') => void;
   handleRowSelect?: (selectedRows: RawSearchResult[] | []) => void;
   handlePagination?: (page: number, pageSize: number) => void;
@@ -117,7 +119,7 @@ const Table: React.FC<Props> = ({
       }: {
         expanded: boolean;
         onExpand: (
-          record: RawSearchResult,
+          rowRecord: RawSearchResult,
           e: React.MouseEvent<HTMLSpanElement, MouseEvent>
         ) => void;
         record: RawSearchResult;
@@ -317,7 +319,6 @@ const Table: React.FC<Props> = ({
 
   return (
     <TableD
-      // eslint-disable-next-line react/jsx-props-no-spreading
       {...tableConfig}
       columns={columns}
       dataSource={results}

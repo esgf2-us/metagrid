@@ -15,8 +15,8 @@ module.exports = {
     'prettier/@typescript-eslint',
     'prettier/react',
   ],
-
   plugins: ['react', 'jsx-a11y', 'import'],
+  parser: '@typescript-eslint/parser',
   parserOptions: {
     project: './tsconfig.json',
   },
@@ -27,6 +27,7 @@ module.exports = {
       1,
       { extensions: ['.js', '.jsx', '.ts', '.tsx'] },
     ],
+    'react/jsx-props-no-spreading': 'off',
     'react/prop-types': 'off',
     'react/self-closing-comp': 'off',
     // https://github.com/facebook/create-react-app/issues/6560#issuecomment-524688843
@@ -48,5 +49,6 @@ module.exports = {
       'error',
       { functions: false, classes: true, variables: true, typedefs: true },
     ],
+
   },
 };

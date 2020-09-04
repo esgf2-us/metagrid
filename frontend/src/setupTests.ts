@@ -6,12 +6,13 @@ import '@testing-library/jest-dom/extend-expect';
 import './api/mock/setup-env';
 
 beforeEach(() => {
-  // Set timeout since some tests run longer than 5000ms
+  // Some tests run longer than 5000ms
   jest.setTimeout(15000);
 });
 
-// This resolves 'TypeError: window.matchMedia is not a function caused by JSDom.
-// Source: https://stackoverflow.com/a/53449595
+// Fixes 'TypeError: window.matchMedia is not a function caused by JSDom.
+// https://stackoverflow.com/a/53449595
+// https://jestjs.io/docs/zh-Hans/manual-mocks#mocking-methods-which-are-not-implemented-in-jsdom
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: jest.fn().mockImplementation((query) => ({

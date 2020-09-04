@@ -1,10 +1,11 @@
+import { BookOutlined, ShoppingCartOutlined } from '@ant-design/icons';
+import { Tabs } from 'antd';
 import React from 'react';
 import { useHistory } from 'react-router-dom';
-import { Tabs } from 'antd';
-import { ShoppingCartOutlined, BookOutlined } from '@ant-design/icons';
-
-import Searches from './Searches';
+import { RawSearchResult } from '../Search/types';
 import Items from './Items';
+import Searches from './Searches';
+import { SavedSearch } from './types';
 
 export type Props = {
   cart: RawSearchResult[] | [];

@@ -1,9 +1,7 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import React from 'react';
 import { fireEvent, render } from '@testing-library/react';
-
-import ProjectsForm, { Props } from './ProjectForm';
+import React from 'react';
 import { projectsFixture } from '../../api/mock/fixtures';
+import ProjectsForm, { Props } from './ProjectForm';
 
 const defaultProps: Props = {
   activeProject: { name: 'foo' },

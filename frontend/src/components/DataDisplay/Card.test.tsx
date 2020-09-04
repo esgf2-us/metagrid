@@ -1,6 +1,5 @@
-import React from 'react';
 import { render } from '@testing-library/react';
-
+import React from 'react';
 import Card from './Card';
 
 it('returns component with required content', () => {

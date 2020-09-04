@@ -21,13 +21,23 @@ import {
   fetchUserSearches,
   updateUserCart,
 } from '../../api';
+import { CSSinJS } from '../../common/types';
 import { AuthContext } from '../../contexts/AuthContext';
 import { isEmpty } from '../../utils/utils';
 import Cart from '../Cart';
 import Summary from '../Cart/Summary';
+import { CartType, SavedSearch } from '../Cart/types';
+import { TagType } from '../DataDisplay/Tag';
 import Facets from '../Facets';
+import {
+  ActiveFacets,
+  DefaultFacets,
+  ParsedFacets,
+  RawProject,
+} from '../Facets/types';
 import NavBar from '../NavBar';
 import Search from '../Search';
+import { RawSearchResult, TextInputs } from '../Search/types';
 import './App.css';
 
 const styles: CSSinJS = {
@@ -51,7 +61,7 @@ const App: React.FC = () => {
 
   // Active project selected in the current search
   const [activeProject, setActiveProject] = React.useState<
-    Project | Record<string, unknown>
+    RawProject | Record<string, unknown>
   >({});
   // Default facet filters
   const [defaultFacets, setDefaultFacets] = React.useState<DefaultFacets>({
@@ -70,7 +80,7 @@ const App: React.FC = () => {
   >({});
 
   // User's cart containing datasets
-  const [cart, setCart] = React.useState<Cart | []>(
+  const [cart, setCart] = React.useState<CartType | []>(
     JSON.parse(localStorage.getItem('cart') || '[]')
   );
   // User's saved search criteria
@@ -143,7 +153,7 @@ const App: React.FC = () => {
    * equal to the selected project to reset textInputs and activeFacets, then
    * it updates the selected project.
    */
-  const handleProjectChange = (selectedProject: Project): void => {
+  const handleProjectChange = (selectedProject: RawProject): void => {
     if (!isEmpty(activeProject) && activeProject !== selectedProject) {
       clearFilters();
     }
@@ -158,7 +168,7 @@ const App: React.FC = () => {
   /**
    * Handles removing applied tags.
    */
-  const handleRemoveTag = (removedTag: Tag, type: string): void => {
+  const handleRemoveTag = (removedTag: TagType, type: string): void => {
     /* istanbul ignore else */
     if (type === 'text') {
       setTextInputs(() => textInputs.filter((input) => input !== removedTag));
@@ -193,7 +203,7 @@ const App: React.FC = () => {
     selectedItems: RawSearchResult[],
     operation: 'add' | 'remove'
   ): void => {
-    let newCart: Cart = [];
+    let newCart: CartType = [];
 
     /* istanbul ignore else */
     if (operation === 'add') {
@@ -262,7 +272,7 @@ const App: React.FC = () => {
     const savedSearch: SavedSearch = {
       uuid: uuidv4(),
       user: pk,
-      project: activeProject as Project,
+      project: activeProject as RawProject,
       projectId: activeProject.pk as string,
       defaultFacets,
       activeFacets,
