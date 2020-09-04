@@ -1,9 +1,7 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import React from 'react';
 import { render } from '@testing-library/react';
-
-import Searches, { Props } from './Searches';
+import React from 'react';
 import { savedSearchesFixture } from '../../api/mock/fixtures';
+import Searches, { Props } from './Searches';
 
 afterEach(() => {
   jest.clearAllMocks();

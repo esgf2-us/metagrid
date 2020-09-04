@@ -1,5 +1,5 @@
-import React from 'react';
 import { Tooltip as TooltipD } from 'antd';
+import React from 'react';
 
 type Props = {
   title: string;

@@ -13,6 +13,8 @@ import {
   processCitation,
   updateUserCart,
 } from '.';
+import { ActiveFacets, DefaultFacets } from '../components/Facets/types';
+import { RawCitation, TextInputs } from '../components/Search/types';
 import {
   citationFixture,
   defaultFacetsFixture,

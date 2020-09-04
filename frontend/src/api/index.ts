@@ -4,6 +4,18 @@
 import humps from 'humps';
 import queryString from 'query-string';
 import axios from '../axios';
+import {
+  CartType,
+  RawUserCart,
+  RawUserSearch,
+  SavedSearch,
+} from '../components/Cart/types';
+import {
+  ActiveFacets,
+  DefaultFacets,
+  RawProjects,
+} from '../components/Facets/types';
+import { RawCitation } from '../components/Search/types';
 import { proxyURL } from '../env';
 import apiRoutes, { clickableRoute } from './routes';
 
@@ -60,7 +72,7 @@ export const fetchUserCart = async (
 export const updateUserCart = async (
   pk: string,
   accessToken: string,
-  newUserCart: Cart
+  newUserCart: CartType
 ): Promise<{
   results: RawUserCart;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -181,7 +193,7 @@ export const deleteUserSearch = async (
  * HTTP Response: 200 OK
  */
 export const fetchProjects = async (): Promise<{
-  results: Project[];
+  results: RawProjects;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }> => {
@@ -197,7 +209,7 @@ export const fetchProjects = async (): Promise<{
     })
     .then((res) => {
       return res.data as Promise<{
-        results: Project[];
+        results: RawProjects;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         [key: string]: any;
       }>;

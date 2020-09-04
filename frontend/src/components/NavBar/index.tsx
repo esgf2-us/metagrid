@@ -1,28 +1,27 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { useAsync } from 'react-async';
-import { Drawer } from 'antd';
 import { MenuUnfoldOutlined } from '@ant-design/icons';
-
-import Alert from '../Feedback/Alert';
-import Button from '../General/Button';
-import LeftMenu from './LeftMenu';
-import RightMenu from './RightMenu';
-import './NavBar.css';
-
+import { Drawer } from 'antd';
+import React from 'react';
+import { useAsync } from 'react-async';
+import { Link } from 'react-router-dom';
 import { fetchProjects } from '../../api';
 import esgfLogo from '../../assets/img/esgf_logo.png';
+import { RawProject } from '../Facets/types';
+import Alert from '../Feedback/Alert';
 import Spin from '../Feedback/Spin';
+import Button from '../General/Button';
+import LeftMenu from './LeftMenu';
+import './NavBar.css';
+import RightMenu from './RightMenu';
 
 const styles = {
   spin: { display: 'flex', justifyContent: 'center' },
 };
 
 export type Props = {
-  activeProject: Project | Record<string, unknown>;
+  activeProject: RawProject | Record<string, unknown>;
   numCartItems: number;
   numSavedSearches: number;
-  onProjectChange: (selectedProj: Project) => void;
+  onProjectChange: (selectedProj: RawProject) => void;
   onSearch: (text: string) => void;
 };
 
@@ -51,8 +50,7 @@ const NavBar: React.FC<Props> = ({
         <Link to="/search">
           <img
             style={{ maxWidth: '100%', height: 'auto' }}
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-            src={esgfLogo as string}
+            src={esgfLogo}
             alt="ESGF Logo"
           />
         </Link>

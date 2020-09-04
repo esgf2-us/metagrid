@@ -1,5 +1,5 @@
-import React from 'react';
 import { Skeleton as SkeletonD } from 'antd';
+import React from 'react';
 
 type Props = {
   title?: Record<string, unknown>;

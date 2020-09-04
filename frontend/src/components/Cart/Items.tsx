@@ -6,10 +6,12 @@ import {
 import { Col, Form, message, Row, Select } from 'antd';
 import React from 'react';
 import { fetchWgetScript, openDownloadURL } from '../../api/index';
+import { CSSinJS } from '../../common/types';
 import Empty from '../DataDisplay/Empty';
 import Popconfirm from '../Feedback/Popconfirm';
 import Button from '../General/Button';
 import Table from '../Search/Table';
+import { RawSearchResult } from '../Search/types';
 
 const styles: CSSinJS = {
   summary: {

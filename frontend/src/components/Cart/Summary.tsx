@@ -2,7 +2,10 @@ import { Divider } from 'antd';
 import React from 'react';
 import cartImg from '../../assets/img/cart.svg';
 import folderImg from '../../assets/img/folder.svg';
+import { CSSinJS } from '../../common/types';
 import { formatBytes } from '../../utils/utils';
+import { RawSearchResult } from '../Search/types';
+import { CartType } from './types';
 
 const styles: CSSinJS = {
   headerContainer: { display: 'flex', justifyContent: 'center' },
@@ -15,7 +18,7 @@ const styles: CSSinJS = {
 };
 
 export type Props = {
-  cart: Cart | [];
+  cart: CartType | [];
 };
 
 const Summary: React.FC<Props> = ({ cart }) => {
