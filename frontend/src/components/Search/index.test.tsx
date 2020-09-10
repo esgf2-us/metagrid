@@ -119,20 +119,21 @@ describe('test Search component', () => {
   it('handles pagination and page size changes', async () => {
     // Update api to return 20 search results, which enables pagination if 10/page selected
     const data = esgSearchApiFixture();
+    const response = {
+      ...data,
+      response: {
+        docs: new Array(20)
+          .fill(searchResultFixture())
+          .map(
+            (obj, index) => ({ ...obj, id: `id_${index}` } as RawSearchResult)
+          ),
+        numFound: 20,
+      },
+    };
+
     server.use(
       rest.get(apiRoutes.esgfDatasets, (_req, res, ctx) => {
-        return res(
-          ctx.status(200),
-          ctx.json({
-            ...data,
-            response: {
-              docs: new Array(20).fill(
-                searchResultFixture()
-              ) as RawSearchResult[],
-              numFound: 20,
-            },
-          })
-        );
+        return res(ctx.status(200), ctx.json(response));
       })
     );
 
