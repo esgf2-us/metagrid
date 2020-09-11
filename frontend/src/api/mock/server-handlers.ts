@@ -5,51 +5,57 @@
  * HTTP response from an API (404).
  */
 import { rest } from 'msw';
+import apiRoutes from '../routes';
 import {
   citationFixture,
   esgSearchApiFixture,
   projectsFixture,
-  savedSearchFixture,
   savedSearchesFixture,
+  savedSearchFixture,
   userAuthFixture,
-  userInfoFixture,
   userCartFixture,
+  userInfoFixture,
 } from './fixtures';
-import apiRoutes from '../routes';
 
 const handlers = [
   rest.post(apiRoutes.keycloakAuth, (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(userAuthFixture()));
+    return res(ctx.status(200), ctx.json(userAuthFixture() as unknown));
   }),
   rest.get(apiRoutes.userInfo, (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(userInfoFixture()));
+    return res(ctx.status(200), ctx.json(userInfoFixture() as unknown));
   }),
   rest.get(apiRoutes.userCart, (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(userCartFixture()));
+    return res(ctx.status(200), ctx.json(userCartFixture() as unknown));
   }),
   rest.patch(apiRoutes.userCart, (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(userCartFixture()));
+    return res(ctx.status(200), ctx.json(userCartFixture() as unknown));
   }),
   rest.get(apiRoutes.userSearches, (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json({ results: savedSearchesFixture() }));
+    return res(
+      ctx.status(200),
+      ctx.json({ results: savedSearchesFixture() } as unknown)
+    );
   }),
   rest.post(apiRoutes.userSearches, (_req, res, ctx) => {
-    return res(ctx.status(201), ctx.json(savedSearchFixture()));
+    return res(ctx.status(201), ctx.json(savedSearchFixture() as unknown));
   }),
   rest.delete(apiRoutes.userSearch, (_req, res, ctx) => {
     return res(ctx.status(204));
   }),
   rest.get(apiRoutes.projects, (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json({ results: projectsFixture() }));
+    return res(
+      ctx.status(200),
+      ctx.json({ results: projectsFixture() } as unknown)
+    );
   }),
   rest.get(apiRoutes.esgfDatasets, (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(esgSearchApiFixture()));
+    return res(ctx.status(200), ctx.json(esgSearchApiFixture() as unknown));
   }),
   rest.get(apiRoutes.esgfFiles, (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(esgSearchApiFixture()));
+    return res(ctx.status(200), ctx.json(esgSearchApiFixture() as unknown));
   }),
   rest.get(apiRoutes.citation, (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(citationFixture()));
+    return res(ctx.status(200), ctx.json(citationFixture() as unknown));
   }),
   rest.get(apiRoutes.wget, (_req, res, ctx) => {
     return res(ctx.status(200));
@@ -60,7 +66,7 @@ const handlers = [
     console.error(`Please add request handler for ${req.url.toString()}`);
     return res(
       ctx.status(500),
-      ctx.json({ error: 'You must add request handler.' })
+      ctx.json({ error: 'You must add request handler.' } as unknown)
     );
   }),
 ];
