@@ -1,7 +1,7 @@
-import React, { ComponentType } from 'react';
 import { KeycloakProvider } from '@react-keycloak/web';
 import { render, RenderResult } from '@testing-library/react';
 import { KeycloakInstance } from 'keycloak-js';
+import React, { ComponentType } from 'react';
 import { AuthProvider } from '../contexts/AuthContext';
 
 const keycloak: KeycloakInstance = {
@@ -18,7 +18,7 @@ const keycloak: KeycloakInstance = {
   isTokenExpired: jest.fn(),
   hasRealmRole: jest.fn(),
   hasResourceRole: jest.fn(),
-  init: jest.fn(),
+  init: jest.fn().mockImplementation(() => Promise.resolve({})),
   loadUserInfo: jest.fn(),
   loadUserProfile: jest.fn(),
   login: jest.fn(),
