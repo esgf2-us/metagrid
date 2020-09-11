@@ -178,14 +178,6 @@ describe('test processCitation()', () => {
 });
 
 describe('test fetchCitation()', () => {
-  beforeEach(() => {
-    server.use(
-      // ESGF Citation API
-      rest.get(apiRoutes.citation, (_req, res, ctx) => {
-        return res(ctx.status(200), ctx.json(citationFixture()));
-      })
-    );
-  });
   it('returns results', async () => {
     const citation = citationFixture();
     const results = {
