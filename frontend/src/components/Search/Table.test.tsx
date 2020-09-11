@@ -26,20 +26,11 @@ it('renders component', () => {
 });
 
 it('renders component without results', () => {
-  const { getByRole } = render(
+  const { getByText } = render(
     <Table {...defaultProps} results={[]} totalResults={undefined} />
   );
 
-  // Check table exists
-  const table = getByRole('table');
-  expect(table).toBeTruthy();
-
-  // Check cell exists
-  const cell = getByRole('cell');
-  expect(cell).toBeTruthy();
-
-  // Check table has single cell displaying 'No Data' text
-  const noDataText = within(cell).getByText('No Data');
+  const noDataText = getByText('No Data');
   expect(noDataText).toBeTruthy();
 });
 
