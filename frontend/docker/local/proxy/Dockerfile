@@ -7,14 +7,15 @@ WORKDIR /app
 # Add `/app/node_modules/.bin` to $PATH
 ENV PATH /app/node_modules/.bin:$PATH
 
-# Install app dependencies
+# Install proxy dependencies
 COPY package.json ./
 COPY yarn.lock ./
+RUN yarn add dotenv@^8.2.0
 RUN yarn add cors-anywhere
 
-# Add app
+# Add proxy
 COPY . ./
 COPY proxy.js ./
 
-# Start app
+# Start proxy
 CMD ["node", "proxy.js"]
