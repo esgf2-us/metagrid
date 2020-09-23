@@ -4,7 +4,7 @@ pytz==2020.1  # https://github.com/stub42/pytz
 django==3.1.1  # pyup: < 3.1  # https://www.djangoproject.com/
 django-environ==0.4.5  # https://github.com/joke2k/django-environ
 gunicorn==20.0.4  # https://github.com/benoitc/gunicorn
-newrelic==5.18.0.148  # https://pypi.org/project/newrelic/
+newrelic==5.20.0.149  # https://pypi.org/project/newrelic/
 argon2-cffi==20.1.0  # https://github.com/hynek/argon2_cffi
 requests==2.24.0  # https://github.com/psf/requests
 whitenoise==5.2.0  # https://github.com/evansd/whitenoise
