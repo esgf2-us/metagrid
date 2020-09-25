@@ -1,10 +1,8 @@
-/* eslint-disable react/jsx-props-no-spreading */
+import { fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
-import { fireEvent, render, waitFor } from '@testing-library/react';
-
-import Cart, { Props } from './index';
 import { cartFixture, savedSearchesFixture } from '../../api/mock/fixtures';
+import Cart, { Props } from './index';
 
 const defaultProps: Props = {
   cart: cartFixture(),

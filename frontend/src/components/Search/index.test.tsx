@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import { fireEvent, render, waitFor, within } from '@testing-library/react';
 import React from 'react';
 import {
@@ -9,12 +8,14 @@ import {
 import { rest, server } from '../../api/mock/setup-env';
 import apiRoutes from '../../api/routes';
 import { esgfNodeURL, proxyURL } from '../../env';
+import { ActiveFacets, DefaultFacets, RawFacets } from '../Facets/types';
 import Search, {
   checkFiltersExist,
   parseFacets,
   Props,
   stringifyFilters,
 } from './index';
+import { RawSearchResult, TextInputs } from './types';
 
 const defaultProps: Props = {
   activeProject: { name: 'foo', facetsUrl: 'https://fubar.gov/?' },

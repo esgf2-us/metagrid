@@ -1,19 +1,21 @@
-import React from 'react';
 import { Tag as TagD } from 'antd';
+import React from 'react';
+
+export type TagType = string | { [key: string]: string } | [string, string];
 
 const styles = {
   tag: { height: '2em' },
 };
 
 type Props = {
-  value: Tag;
-  onClose?: (value: Tag, type: string) => void;
+  value: TagType;
+  onClose?: (value: TagType, type: string) => void;
   closable?: boolean;
   type: string;
   color?: string;
 };
 
-const Tag: React.FC<Props> = ({
+export const Tag: React.FC<Props> = ({
   value,
   onClose,
   closable = true,
@@ -32,5 +34,3 @@ const Tag: React.FC<Props> = ({
     </TagD>
   );
 };
-
-export default Tag;

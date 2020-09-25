@@ -1,14 +1,12 @@
-import React from 'react';
-import { useAsync, PromiseFn } from 'react-async';
 import { DownloadOutlined } from '@ant-design/icons';
-
 import { Form, Select, Table as TableD } from 'antd';
-
+import React from 'react';
+import { PromiseFn, useAsync } from 'react-async';
+import { fetchFiles, openDownloadURL } from '../../api';
+import { formatBytes, parseUrl } from '../../utils/utils';
 import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
-
-import { fetchFiles, openDownloadURL } from '../../api';
-import { parseUrl, formatBytes } from '../../utils/utils';
+import { RawSearchResult } from './types';
 
 export type DownloadUrls = {
   downloadType: string | undefined;

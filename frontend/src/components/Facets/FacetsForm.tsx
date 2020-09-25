@@ -1,6 +1,8 @@
 import { Checkbox, Collapse, Form, Select } from 'antd';
 import React from 'react';
+import { CSSinJS } from '../../common/types';
 import { humanize } from '../../utils/utils';
+import { ActiveFacets, DefaultFacets, ParsedFacets } from './types';
 
 const styles: CSSinJS = {
   container: { maxHeight: '80vh', overflowY: 'auto' },

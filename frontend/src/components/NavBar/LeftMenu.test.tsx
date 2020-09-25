@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import { fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';

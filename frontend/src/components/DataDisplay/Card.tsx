@@ -1,5 +1,5 @@
-import React from 'react';
 import { Card as CardD } from 'antd';
+import React from 'react';
 
 type Props = {
   title: string | React.ReactNode;

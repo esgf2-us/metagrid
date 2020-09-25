@@ -1,5 +1,5 @@
-import React from 'react';
 import { Spin as SpinD } from 'antd';
+import React from 'react';
 
 const Spin: React.FC = () => {
   return <SpinD></SpinD>;

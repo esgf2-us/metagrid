@@ -1,10 +1,8 @@
-/* eslint-disable react/jsx-props-no-spreading */
+import { fireEvent, render, waitFor, within } from '@testing-library/react';
 import React from 'react';
-import { render, waitFor, fireEvent, within } from '@testing-library/react';
-
-import FilesTable, { genDownloadUrls, DownloadUrls, Props } from './FilesTable';
+import { rest, server } from '../../api/mock/setup-env';
 import apiRoutes from '../../api/routes';
-import { server, rest } from '../../api/mock/setup-env';
+import FilesTable, { DownloadUrls, genDownloadUrls, Props } from './FilesTable';
 
 // Reset all mocks after each test
 afterEach(() => {

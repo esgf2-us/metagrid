@@ -1,8 +1,8 @@
-import React from 'react';
 import { Row } from 'antd';
-
+import React from 'react';
 import Empty from '../DataDisplay/Empty';
 import SearchesCard from './SearchesCard';
+import { SavedSearch } from './types';
 
 export type Props = {
   savedSearches: SavedSearch[] | [];

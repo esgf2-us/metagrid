@@ -9,11 +9,21 @@ import React from 'react';
 import { DeferFn, useAsync } from 'react-async';
 import { fetchResults, genUrlQuery } from '../../api';
 import { clickableRoute } from '../../api/routes';
+import { CSSinJS } from '../../common/types';
 import { isEmpty } from '../../utils/utils';
-import Tag from '../DataDisplay/Tag';
+import { CartType } from '../Cart/types';
+import { Tag, TagType } from '../DataDisplay/Tag';
+import {
+  ActiveFacets,
+  DefaultFacets,
+  ParsedFacets,
+  RawFacets,
+  RawProject,
+} from '../Facets/types';
 import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
 import Table from './Table';
+import { RawSearchResult, TextInputs } from './types';
 
 const styles: CSSinJS = {
   summary: {
@@ -95,12 +105,12 @@ export const checkFiltersExist = (
 };
 
 export type Props = {
-  activeProject: Project | Record<string, unknown>;
+  activeProject: RawProject | Record<string, unknown>;
   defaultFacets: DefaultFacets;
   activeFacets: ActiveFacets | Record<string, unknown>;
   textInputs: TextInputs | [];
-  cart: Cart | [];
-  onRemoveTag: (removedTag: Tag, type: string) => void;
+  cart: CartType | [];
+  onRemoveTag: (removedTag: TagType, type: string) => void;
   onClearTags: () => void;
   handleCart: (
     selectedItems: RawSearchResult[],
@@ -125,7 +135,7 @@ const Search: React.FC<Props> = ({
   // Async function to fetch results
   const { data: results, error, isLoading, run } = useAsync({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    deferFn: (fetchResults as unknown) as DeferFn<{ [key: string]: any }>,
+    deferFn: (fetchResults as unknown) as DeferFn<Record<string, any>>,
   });
 
   // Filters applied by the user
@@ -153,7 +163,7 @@ const Search: React.FC<Props> = ({
   React.useEffect(() => {
     if (!isEmpty(activeProject)) {
       const reqUrl = genUrlQuery(
-        (activeProject as Project).facetsUrl,
+        (activeProject as RawProject).facetsUrl,
         defaultFacets,
         activeFacets,
         textInputs,
@@ -252,7 +262,7 @@ const Search: React.FC<Props> = ({
             </span>
           )}
           <span style={styles.resultsHeader}>
-            {(activeProject as Project).name}
+            {(activeProject as RawProject).name}
           </span>
         </h3>
         <div>

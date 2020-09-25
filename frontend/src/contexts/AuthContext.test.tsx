@@ -1,11 +1,10 @@
-import React from 'react';
 import { act, waitFor } from '@testing-library/react';
-
-import { fetchUserAuth, AuthProvider, fetchUserInfo } from './AuthContext';
-import apiRoutes from '../api/routes';
+import React from 'react';
 import { userAuthFixture, userInfoFixture } from '../api/mock/fixtures';
-import { server, rest } from '../api/mock/setup-env';
+import { rest, server } from '../api/mock/setup-env';
+import apiRoutes from '../api/routes';
 import { keycloakRender } from '../test/custom-render';
+import { AuthProvider, fetchUserAuth, fetchUserInfo } from './AuthContext';
 
 describe('test fetchUserAuth()', () => {
   it('returns user authentication tokens', async () => {

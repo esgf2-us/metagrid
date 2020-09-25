@@ -5,7 +5,6 @@
  * in order to mock their behaviors.
  *
  */
-
 import { fireEvent, waitFor, within } from '@testing-library/react';
 import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
@@ -14,13 +13,15 @@ import apiRoutes from '../../api/routes';
 import { customRender } from '../../test/custom-render';
 import App from './App';
 
+// Used to restore window.location after each test
 const location = JSON.stringify(window.location);
+
 afterEach(() => {
   // Routes are already declared in the App component using BrowserRouter, so MemoryRouter does
   // not work to isolate routes in memory between tests. The only workaround is to delete window.location and restore it after each test in order to reset the URL location.
-  // More info:
-  // - https://stackoverflow.com/a/54222110
-  // - https://stackoverflow.com/questions/59892304/cant-get-memoryrouter-to-work-with-testing-library-react
+  // https://stackoverflow.com/a/54222110
+  // https://stackoverflow.com/questions/59892304/cant-get-memoryrouter-to-work-with-testing-library-react
+
   delete window.location;
   window.location = (JSON.parse(location) as unknown) as Location;
 
@@ -506,6 +507,7 @@ describe('User cart', () => {
       getByTestId,
       getByText,
       getByPlaceholderText,
+      debug,
     } = customRender(
       <Router>
         <App />
@@ -550,12 +552,6 @@ describe('User cart', () => {
     const addBtn = within(firstRow).getByRole('img', { name: 'plus' });
     expect(addBtn).toBeTruthy();
     fireEvent.click(addBtn);
-
-    // Check 'Added item(s) to your cart' message appears
-    const addText = await waitFor(() =>
-      getByText('Added item(s) to your cart')
-    );
-    expect(addText).toBeTruthy();
 
     // Click on the cart link
     const cartLink = getByRole('link', { name: 'shopping-cart' });
