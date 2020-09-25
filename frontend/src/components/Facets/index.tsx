@@ -5,6 +5,7 @@ import { isEmpty } from '../../utils/utils';
 import Divider from '../General/Divider';
 import FacetsForm from './FacetsForm';
 import ProjectForm from './ProjectForm';
+import { ActiveFacets, DefaultFacets, ParsedFacets, RawProject } from './types';
 
 const styles = {
   form: {
@@ -13,11 +14,11 @@ const styles = {
 };
 
 export type Props = {
-  activeProject: Project | Record<string, unknown>;
+  activeProject: RawProject | Record<string, unknown>;
   defaultFacets: DefaultFacets;
   activeFacets: ActiveFacets | Record<string, unknown>;
   availableFacets: ParsedFacets | Record<string, unknown>;
-  handleProjectChange: (selectedProj: Project) => void;
+  handleProjectChange: (selectedProj: RawProject) => void;
   onSetFacets: (defaults: DefaultFacets, active: ActiveFacets) => void;
 };
 
@@ -71,8 +72,8 @@ const Facets: React.FC<Props> = ({
   }): void => {
     /* istanbul ignore else */
     if (data) {
-      const selectedProj: Project | undefined = data.results.find(
-        (obj: Project) => obj.name === selectedProject.project
+      const selectedProj: RawProject | undefined = data.results.find(
+        (obj: RawProject) => obj.name === selectedProject.project
       );
       /* istanbul ignore else */
       if (selectedProj) {
@@ -99,7 +100,7 @@ const Facets: React.FC<Props> = ({
         <>
           <h2>Filter with Facets</h2>
           <FacetsForm
-            facetsByGroup={(activeProject as Project).facetsByGroup}
+            facetsByGroup={(activeProject as RawProject).facetsByGroup}
             defaultFacets={defaultFacets}
             activeFacets={activeFacets}
             availableFacets={availableFacets as ParsedFacets}

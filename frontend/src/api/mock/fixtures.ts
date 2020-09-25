@@ -4,21 +4,36 @@
  * APIs) and reduce duplicate hard-coded dummy data.
  */
 
+import {
+  CartType,
+  RawUserCart,
+  SavedSearch,
+} from '../../components/Cart/types';
+import {
+  DefaultFacets,
+  ParsedFacets,
+  RawFacets,
+  RawProject,
+  RawProjects,
+} from '../../components/Facets/types';
+import { RawCitation, RawSearchResult } from '../../components/Search/types';
+import { RawUserAuth, RawUserInfo } from '../../contexts/AuthContext';
+
 /**
  * Project fixture
  */
-export const projectFixture = (props: Partial<Project> = {}): Project => {
-  const defaults: Project = {
+export const projectFixture = (props: Partial<RawProject> = {}): RawProject => {
+  const defaults: RawProject = {
     pk: '1',
     name: 'test1',
     facetsByGroup: { group1: ['facet1'], group2: ['facet2'] },
     facetsUrl: 'https://esgf-node.llnl.gov/esg-search/search/?offset=0&limit=0',
     fullName: 'test1',
   };
-  return { ...defaults, ...props } as Project;
+  return { ...defaults, ...props } as RawProject;
 };
 
-export const projectsFixture = (): Project[] => {
+export const projectsFixture = (): RawProjects => {
   return [projectFixture(), projectFixture({ name: 'test2' })];
 };
 
@@ -89,7 +104,7 @@ export const parsedFacetsFixture = (
 /**
  * Cart fixture, which contains multiple search results.
  */
-export const cartFixture = (): Cart => {
+export const cartFixture = (): CartType => {
   return searchResultsFixture();
 };
 
@@ -143,10 +158,15 @@ export const defaultFacetsFixture = (
   return { ...defaults, ...props } as DefaultFacets;
 };
 
+type ESGFSearchAPIResponse = {
+  response: { numFound: number; docs: RawSearchResult[] };
+  facet_counts: { facet_fields: RawFacets };
+};
+
 /**
  * ESGF Search API fixture.
  */
-export const esgSearchApiFixture = (): ESGSearchApiResponse => {
+export const esgSearchApiFixture = (): ESGFSearchAPIResponse => {
   return {
     response: {
       numFound: searchResultsFixture().length,

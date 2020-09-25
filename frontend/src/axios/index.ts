@@ -1,9 +1,8 @@
-import axios from 'axios';
+import axios, { AxiosAdapter } from 'axios';
 import httpAdapter from 'axios/lib/adapters/http';
 import { metagridApiURL } from '../env';
 
 export default axios.create({
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  adapter: httpAdapter,
+  adapter: httpAdapter as AxiosAdapter,
   baseURL: metagridApiURL,
 });

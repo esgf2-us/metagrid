@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import { fireEvent, render, waitFor, within } from '@testing-library/react';
 import React from 'react';
 import { cartFixture } from '../../api/mock/fixtures';
@@ -46,7 +45,6 @@ it('handles selecting items in the cart and downloading them via wget', async ()
     },
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const { getByRole, getByTestId } = render(<Items {...defaultProps} />);
 
   // Check first row renders and click the checkbox

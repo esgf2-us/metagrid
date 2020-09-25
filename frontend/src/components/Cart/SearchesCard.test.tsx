@@ -1,12 +1,10 @@
-/* eslint-disable react/jsx-props-no-spreading */
+import { fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
-import { fireEvent, render, waitFor } from '@testing-library/react';
-
-import SearchesCard, { Props } from './SearchesCard';
-import apiRoutes from '../../api/routes';
 import { savedSearchFixture } from '../../api/mock/fixtures';
-import { server, rest } from '../../api/mock/setup-env';
+import { rest, server } from '../../api/mock/setup-env';
+import apiRoutes from '../../api/routes';
+import SearchesCard, { Props } from './SearchesCard';
 
 const defaultProps: Props = {
   savedSearch: savedSearchFixture(),

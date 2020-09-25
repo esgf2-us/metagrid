@@ -3,7 +3,7 @@
  * Import this in setupTests.ts.
  */
 
-import { server, rest } from './server';
+import { rest, server } from './server';
 
 beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());

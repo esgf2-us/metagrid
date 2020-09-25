@@ -2,6 +2,7 @@ import { SearchOutlined } from '@ant-design/icons';
 import { Form, Input, Select } from 'antd';
 import React from 'react';
 import { useHistory } from 'react-router-dom';
+import { RawProject, RawProjects } from '../Facets/types';
 import Button from '../General/Button';
 
 const styles = {
@@ -9,10 +10,10 @@ const styles = {
 };
 
 export type Props = {
-  activeProject: Project | Record<string, unknown>;
-  projects: Project[];
+  activeProject: RawProject | Record<string, unknown>;
+  projects: RawProjects;
   onSearch: (text: string) => void;
-  onProjectChange: (selectedProj: Project) => void;
+  onProjectChange: (selectedProj: RawProject) => void;
 };
 
 const LeftMenu: React.FC<Props> = ({
@@ -35,7 +36,7 @@ const LeftMenu: React.FC<Props> = ({
       history.push('/search');
     }
 
-    const selectedProj: Project | undefined = projects.find(
+    const selectedProj: RawProject | undefined = projects.find(
       (obj) => obj.name === values.project
     );
 
