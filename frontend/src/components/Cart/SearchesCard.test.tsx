@@ -1,16 +1,16 @@
 import { fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
-import { savedSearchFixture } from '../../api/mock/fixtures';
+import { userSearchQueryFixture } from '../../api/mock/fixtures';
 import { rest, server } from '../../api/mock/setup-env';
 import apiRoutes from '../../api/routes';
 import SearchesCard, { Props } from './SearchesCard';
 
 const defaultProps: Props = {
-  savedSearch: savedSearchFixture(),
+  searchQuery: userSearchQueryFixture(),
   index: 0,
-  handleRemoveSearch: jest.fn(),
-  handleApplySearch: jest.fn(),
+  onRunSearchQuery: jest.fn(),
+  onRemoveSearchQuery: jest.fn(),
 };
 
 beforeEach(() => {

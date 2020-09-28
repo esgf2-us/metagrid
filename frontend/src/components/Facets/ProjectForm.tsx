@@ -1,7 +1,7 @@
 import { QuestionCircleOutlined, SelectOutlined } from '@ant-design/icons';
 import { Form, Select } from 'antd';
 import React from 'react';
-import { isEmpty } from '../../utils/utils';
+import { objectIsEmpty } from '../../common/utils';
 import Alert from '../Feedback/Alert';
 import Popconfirm from '../Feedback/Popconfirm';
 import Spin from '../Feedback/Spin';
@@ -20,7 +20,7 @@ export type Props = {
   };
   projectsIsLoading: boolean;
   projectsError?: Error;
-  handleProjectForm: (allValues: { [key: string]: string }) => void;
+  onFinish: (allValues: { [key: string]: string }) => void;
 };
 
 const ProjectsForm: React.FC<Props> = ({
@@ -29,7 +29,7 @@ const ProjectsForm: React.FC<Props> = ({
   projectsFetched,
   projectsIsLoading,
   projectsError,
-  handleProjectForm,
+  onFinish,
 }) => {
   const [projectForm] = Form.useForm();
   /**
@@ -74,7 +74,7 @@ const ProjectsForm: React.FC<Props> = ({
           form={projectForm}
           layout="inline"
           initialValues={initialValues}
-          onFinish={handleProjectForm}
+          onFinish={onFinish}
           hideRequiredMark
         >
           <Form.Item
@@ -104,7 +104,7 @@ const ProjectsForm: React.FC<Props> = ({
             </Select>
           </Form.Item>
           <Form.Item>
-            {!isEmpty(activeProject) && !isEmpty(activeFacets) ? (
+            {!objectIsEmpty(activeProject) && !objectIsEmpty(activeFacets) ? (
               <Popconfirm
                 title="Your filters will be cleared."
                 onConfirm={() => projectForm.submit()}
@@ -131,7 +131,7 @@ const ProjectsForm: React.FC<Props> = ({
       </div>
     );
   }
-  // Return an empty form
+  // Need to return an empty form to avoid linting errors
   return <Form form={projectForm}></Form>;
 };
 

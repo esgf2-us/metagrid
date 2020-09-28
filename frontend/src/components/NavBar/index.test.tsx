@@ -10,7 +10,7 @@ const defaultProps: Props = {
   activeProject: { name: 'test1' },
   numCartItems: 0,
   numSavedSearches: 0,
-  onSearch: jest.fn(),
+  onTextSearch: jest.fn(),
   onProjectChange: jest.fn(),
 };
 

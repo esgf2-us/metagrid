@@ -1,5 +1,5 @@
 import Keycloak from 'keycloak-js';
-import { keycloakRealm, keycloakUrl, keycloakClientId } from './env';
+import { keycloakClientId, keycloakRealm, keycloakUrl } from '../../env';
 
 // Setup Keycloak instance as needed
 // Pass initialization options as required or leave blank to load from 'keycloak.json'

@@ -1,19 +1,19 @@
 import { fireEvent, render, waitFor, within } from '@testing-library/react';
 import React from 'react';
-import { searchResultsFixture } from '../../api/mock/fixtures';
+import { rawSearchResultsFixture } from '../../api/mock/fixtures';
 import { rest, server } from '../../api/mock/setup-env';
 import apiRoutes from '../../api/routes';
 import Table, { Props } from './Table';
 
 const defaultProps: Props = {
   loading: false,
-  results: searchResultsFixture(),
-  totalResults: searchResultsFixture().length,
-  cart: [],
-  handleCart: jest.fn(),
-  handleRowSelect: jest.fn(),
-  handlePagination: jest.fn(),
-  handlePageSizeChange: jest.fn(),
+  results: rawSearchResultsFixture(),
+  totalResults: rawSearchResultsFixture().length,
+  userCart: [],
+  onUpdateCart: jest.fn(),
+  onRowSelect: jest.fn(),
+  onPageChange: jest.fn(),
+  onPageSizeChange: jest.fn(),
 };
 
 it('renders component', () => {
@@ -133,7 +133,7 @@ it('renders "PID" button when the record has a "xlink" key/value, vice versa', (
 
 it('renders add or remove button for items in or not in the cart respectively, and handles clicking them', () => {
   const { getByRole } = render(
-    <Table {...defaultProps} cart={[defaultProps.results[0]]} />
+    <Table {...defaultProps} userCart={[defaultProps.results[0]]} />
   );
 
   // Check table exists
@@ -210,7 +210,7 @@ it('handles downloading an item via wget', async () => {
   });
 
   const { getByRole } = render(
-    <Table {...defaultProps} cart={[defaultProps.results[0]]} />
+    <Table {...defaultProps} userCart={[defaultProps.results[0]]} />
   );
 
   // Check table renders
@@ -240,7 +240,7 @@ it('displays an error when unable to access download via wget', async () => {
   );
 
   const { getByRole, getByText } = render(
-    <Table {...defaultProps} cart={[defaultProps.results[0]]} />
+    <Table {...defaultProps} userCart={[defaultProps.results[0]]} />
   );
 
   // Check table renders

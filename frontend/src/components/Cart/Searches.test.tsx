@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react';
 import React from 'react';
-import { savedSearchesFixture } from '../../api/mock/fixtures';
+import { userSearchQueriesFixture } from '../../api/mock/fixtures';
 import Searches, { Props } from './Searches';
 
 afterEach(() => {
@@ -8,14 +8,14 @@ afterEach(() => {
 });
 
 const defaultProps: Props = {
-  savedSearches: savedSearchesFixture(),
-  handleRemoveSearch: jest.fn(),
-  handleApplySearch: jest.fn(),
+  userSearchQueries: userSearchQueriesFixture(),
+  onRunSearchQuery: jest.fn(),
+  onRemoveSearchQuery: jest.fn(),
 };
 
 it('renders component with empty savedSearches', () => {
   const { getByText } = render(
-    <Searches {...defaultProps} savedSearches={[]} />
+    <Searches {...defaultProps} userSearchQueries={[]} />
   );
 
   const emptyText = getByText('Your search library is empty');

@@ -2,35 +2,35 @@ import { Row } from 'antd';
 import React from 'react';
 import Empty from '../DataDisplay/Empty';
 import SearchesCard from './SearchesCard';
-import { SavedSearch } from './types';
+import { UserSearchQueries, UserSearchQuery } from './types';
 
 export type Props = {
-  savedSearches: SavedSearch[] | [];
-  handleRemoveSearch: (uuid: string) => void;
-  handleApplySearch: (savedSearch: SavedSearch) => void;
+  userSearchQueries: UserSearchQueries | [];
+  onRunSearchQuery: (savedSearch: UserSearchQuery) => void;
+  onRemoveSearchQuery: (uuid: string) => void;
 };
 
 const Searches: React.FC<Props> = ({
-  savedSearches,
-  handleRemoveSearch,
-  handleApplySearch,
+  userSearchQueries,
+  onRunSearchQuery,
+  onRemoveSearchQuery,
 }) => {
-  if (savedSearches.length === 0) {
+  if (userSearchQueries.length === 0) {
     return <Empty description="Your search library is empty" />;
   }
 
   return (
     <div>
       <Row gutter={[18, 18]}>
-        {(savedSearches as SavedSearch[]).map(
-          (savedSearch: SavedSearch, index: number) => {
+        {(userSearchQueries as UserSearchQueries).map(
+          (searchQuery: UserSearchQuery, index: number) => {
             return (
               <SearchesCard
-                key={savedSearch.uuid}
-                savedSearch={savedSearch}
+                key={searchQuery.uuid}
+                searchQuery={searchQuery}
                 index={index}
-                handleApplySearch={handleApplySearch}
-                handleRemoveSearch={handleRemoveSearch}
+                onRunSearchQuery={onRunSearchQuery}
+                onRemoveSearchQuery={onRemoveSearchQuery}
               />
             );
           }

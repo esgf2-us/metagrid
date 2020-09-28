@@ -2,34 +2,31 @@ import { BookOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { Tabs } from 'antd';
 import React from 'react';
 import { useHistory } from 'react-router-dom';
-import { RawSearchResult } from '../Search/types';
+import { RawSearchResults } from '../Search/types';
 import Items from './Items';
 import Searches from './Searches';
-import { SavedSearch } from './types';
+import { UserSearchQueries, UserSearchQuery } from './types';
 
 export type Props = {
-  cart: RawSearchResult[] | [];
-  savedSearches: SavedSearch[] | [];
-  handleCart: (item: RawSearchResult[], operation: 'add' | 'remove') => void;
-  clearCart: () => void;
-  handleRemoveSearch: (uuid: string) => void;
-  handleApplySearch: (savedSearch: SavedSearch) => void;
+  userCart: RawSearchResults | [];
+  userSearchQueries: UserSearchQueries | [];
+  onUpdateCart: (item: RawSearchResults, operation: 'add' | 'remove') => void;
+  onClearCart: () => void;
+  onRunSearchQuery: (savedSearch: UserSearchQuery) => void;
+  onRemoveSearchQuery: (uuid: string) => void;
 };
 
 const Cart: React.FC<Props> = ({
-  cart,
-  savedSearches,
-  clearCart,
-  handleCart,
-  handleRemoveSearch,
-  handleApplySearch,
+  userCart,
+  userSearchQueries,
+  onUpdateCart,
+  onClearCart,
+  onRunSearchQuery,
+  onRemoveSearchQuery,
 }) => {
   const [activeTab, setActiveTab] = React.useState<string>('items');
   const history = useHistory();
 
-  /**
-   * Update the active tab based on the current pathname
-   */
   React.useEffect(() => {
     if (history.location.pathname.includes('searches')) {
       setActiveTab('searches');
@@ -38,21 +35,14 @@ const Cart: React.FC<Props> = ({
     }
   }, [history.location.pathname]);
 
-  /**
-   * Handles tab clicking by updating the current pathname and setting the active tab
-   */
-  const handlesTabClick = (key: string): void => {
+  const handleTabClick = (key: string): void => {
     history.push(key);
     setActiveTab(key);
   };
 
   return (
     <div data-testid="cart">
-      <Tabs
-        activeKey={activeTab}
-        animated={false}
-        onTabClick={(key: string) => handlesTabClick(key)}
-      >
+      <Tabs activeKey={activeTab} animated={false} onTabClick={handleTabClick}>
         <Tabs.TabPane
           tab={
             <span>
@@ -62,7 +52,11 @@ const Cart: React.FC<Props> = ({
           }
           key="items"
         >
-          <Items cart={cart} handleCart={handleCart} clearCart={clearCart} />
+          <Items
+            userCart={userCart}
+            onUpdateCart={onUpdateCart}
+            onClearCart={onClearCart}
+          />
         </Tabs.TabPane>
 
         <Tabs.TabPane
@@ -75,11 +69,9 @@ const Cart: React.FC<Props> = ({
           key="searches"
         >
           <Searches
-            savedSearches={savedSearches}
-            handleRemoveSearch={handleRemoveSearch}
-            handleApplySearch={(savedSearch: SavedSearch) =>
-              handleApplySearch(savedSearch)
-            }
+            userSearchQueries={userSearchQueries}
+            onRunSearchQuery={onRunSearchQuery}
+            onRemoveSearchQuery={onRemoveSearchQuery}
           />
         </Tabs.TabPane>
       </Tabs>

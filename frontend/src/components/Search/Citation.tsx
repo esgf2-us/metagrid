@@ -1,7 +1,7 @@
 import React from 'react';
 import { PromiseFn, useAsync } from 'react-async';
 import { fetchCitation } from '../../api';
-import { parseUrl } from '../../utils/utils';
+import { parseURL } from '../../common/utils';
 import Alert from '../Feedback/Alert';
 import Skeleton from '../Feedback/Skeleton';
 import { RawCitation } from './types';
@@ -37,7 +37,7 @@ const Citation: React.FC<CitationProps> = ({ url }) => {
     <div>
       <div>
         <a
-          href={parseUrl(url, '.json')}
+          href={parseURL(url, '.json')}
           rel="noopener noreferrer"
           target="_blank"
         >

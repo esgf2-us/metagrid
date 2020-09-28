@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAsync } from 'react-async';
 import { fetchProjects } from '../../api';
-import { isEmpty } from '../../utils/utils';
+import { objectIsEmpty } from '../../common/utils';
 import Divider from '../General/Divider';
 import FacetsForm from './FacetsForm';
 import ProjectForm from './ProjectForm';
@@ -17,8 +17,8 @@ export type Props = {
   activeProject: RawProject | Record<string, unknown>;
   defaultFacets: DefaultFacets;
   activeFacets: ActiveFacets | Record<string, unknown>;
-  availableFacets: ParsedFacets | Record<string, unknown>;
-  handleProjectChange: (selectedProj: RawProject) => void;
+  projectFacets: ParsedFacets | Record<string, unknown>;
+  onProjectChange: (selectedProj: RawProject) => void;
   onSetFacets: (defaults: DefaultFacets, active: ActiveFacets) => void;
 };
 
@@ -26,16 +26,28 @@ const Facets: React.FC<Props> = ({
   activeProject,
   defaultFacets,
   activeFacets,
-  availableFacets,
-  handleProjectChange,
+  projectFacets,
+  onProjectChange,
   onSetFacets,
 }) => {
   const { data, error, isLoading } = useAsync(fetchProjects);
 
-  /**
-   * Handles when the facets form is submitted.
-   */
-  const handleFacetsForm = (selectedFacets: {
+  const handleSubmitProjectForm = (selectedProject: {
+    [key: string]: string;
+  }): void => {
+    /* istanbul ignore else */
+    if (data) {
+      const selectedProj: RawProject | undefined = data.results.find(
+        (obj: RawProject) => obj.name === selectedProject.project
+      );
+      /* istanbul ignore else */
+      if (selectedProj) {
+        onProjectChange(selectedProj);
+      }
+    }
+  };
+
+  const handleUpdateFacetsForm = (selectedFacets: {
     [key: string]: string[] | [];
   }): void => {
     const newActive = selectedFacets;
@@ -44,8 +56,9 @@ const Facets: React.FC<Props> = ({
 
     const newDefaults: DefaultFacets = { latest: true, replica: false };
 
-    // Test fails because ant design's form initialValues does not work after
-    // the initial detection of value changes, so selectedDefaults becomes undefined.
+    // Have to check if selected default facets is not undefined, otherwise a
+    // test fails because ant design's form's initialValues does not work after
+    // the initial detection of value changes.
     if (selectedDefaults) {
       selectedDefaults.forEach((facet) => {
         newDefaults[facet] = true;
@@ -64,24 +77,6 @@ const Facets: React.FC<Props> = ({
     onSetFacets(newDefaults, newActive);
   };
 
-  /**
-   * Handles the project form by setting the active project
-   */
-  const handleProjectForm = (selectedProject: {
-    [key: string]: string;
-  }): void => {
-    /* istanbul ignore else */
-    if (data) {
-      const selectedProj: RawProject | undefined = data.results.find(
-        (obj: RawProject) => obj.name === selectedProject.project
-      );
-      /* istanbul ignore else */
-      if (selectedProj) {
-        handleProjectChange(selectedProj);
-      }
-    }
-  };
-
   return (
     <div data-testid="facets" style={styles.form}>
       <h2>Select a Project</h2>
@@ -92,19 +87,19 @@ const Facets: React.FC<Props> = ({
           projectsFetched={data}
           projectsIsLoading={isLoading}
           projectsError={error}
-          handleProjectForm={handleProjectForm}
+          onFinish={handleSubmitProjectForm}
         />
         <Divider />
       </div>
-      {!isEmpty(availableFacets) && (
+      {!objectIsEmpty(projectFacets) && (
         <>
           <h2>Filter with Facets</h2>
           <FacetsForm
             facetsByGroup={(activeProject as RawProject).facetsByGroup}
             defaultFacets={defaultFacets}
             activeFacets={activeFacets}
-            availableFacets={availableFacets as ParsedFacets}
-            handleFacetsForm={handleFacetsForm}
+            projectFacets={projectFacets as ParsedFacets}
+            onValuesChange={handleUpdateFacetsForm}
           />
         </>
       )}

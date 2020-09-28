@@ -80,10 +80,8 @@
       "!**/coverage/**",
       "!src/index.tsx",
       "!**/serviceWorker.js",
-      "!**/keycloak.ts",
       "!**/react-app-env.d.ts",
-      "!**/custom_types/**",
-      "!**/axios/**"
+      "!**/lib/**"
     ],
     "coverageThreshold": {
       "global": {
