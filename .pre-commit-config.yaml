@@ -29,8 +29,6 @@ repos:
         language: python
         types: [python]
         args: ["--config=backend/setup.cfg"]
-        additional_dependencies:
-          - isort<5 # https://github.com/gforcada/flake8-isort/issues/88
 
   - repo: https://github.com/psf/black
     rev: stable
