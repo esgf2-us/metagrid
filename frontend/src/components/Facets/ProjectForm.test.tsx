@@ -8,7 +8,7 @@ const defaultProps: Props = {
   activeFacets: { facet1: ['foo'] },
   projectsIsLoading: false,
   projectsFetched: { results: projectsFixture() },
-  handleProjectForm: jest.fn(),
+  onFinish: jest.fn(),
 };
 
 it('renders Popconfirm component when there is an activeProject and activeFacet(s)', () => {

@@ -19,35 +19,35 @@ import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
 import { fetchWgetScript, openDownloadURL } from '../../api';
-import { formatBytes, hasKey, parseUrl } from '../../utils/utils';
-import { CartType } from '../Cart/types';
+import { formatBytes, objectHasKey, parseURL } from '../../common/utils';
+import { UserCart } from '../Cart/types';
 import Button from '../General/Button';
 import Divider from '../General/Divider';
 import Citation from './Citation';
 import FilesTable from './FilesTable';
 import './Search.css';
-import { RawSearchResult } from './types';
+import { RawSearchResult, RawSearchResults } from './types';
 
 export type Props = {
   loading: boolean;
-  results: RawSearchResult[] | [];
+  results: RawSearchResults | [];
   totalResults?: number;
-  cart: CartType | [];
-  handleCart: (item: RawSearchResult[], operation: 'add' | 'remove') => void;
-  handleRowSelect?: (selectedRows: RawSearchResult[] | []) => void;
-  handlePagination?: (page: number, pageSize: number) => void;
-  handlePageSizeChange?: (size: number) => void;
+  userCart: UserCart | [];
+  onUpdateCart: (item: RawSearchResults, operation: 'add' | 'remove') => void;
+  onRowSelect?: (selectedRows: RawSearchResults | []) => void;
+  onPageChange?: (page: number, pageSize: number) => void;
+  onPageSizeChange?: (size: number) => void;
 };
 
 const Table: React.FC<Props> = ({
   loading,
   results,
   totalResults,
-  cart,
-  handleCart,
-  handleRowSelect,
-  handlePagination,
-  handlePageSizeChange,
+  userCart,
+  onUpdateCart,
+  onRowSelect,
+  onPageChange,
+  onPageSizeChange,
 }) => {
   const tableConfig = {
     size: 'small' as SizeType,
@@ -57,9 +57,9 @@ const Table: React.FC<Props> = ({
       position: ['bottomCenter'],
       showSizeChanger: true,
       onChange: (page: number, pageSize: number) =>
-        handlePagination && handlePagination(page, pageSize),
+        onPageChange && onPageChange(page, pageSize),
       onShowSizeChange: (_current: number, size: number) =>
-        handlePageSizeChange && handlePageSizeChange(size),
+        onPageSizeChange && onPageSizeChange(size),
     } as TablePaginationConfig,
     expandable: {
       expandedRowRender: (record: RawSearchResult) => {
@@ -70,7 +70,7 @@ const Table: React.FC<Props> = ({
         return (
           <>
             <Collapse>
-              {hasKey(record, 'citation_url') && (
+              {objectHasKey(record, 'citation_url') && (
                 <Collapse.Panel header="Citation" key="citation">
                   <Citation
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -134,15 +134,15 @@ const Table: React.FC<Props> = ({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onSelect: (_record: any, _selected: any, selectedRows: any) => {
         /* istanbul ignore else */
-        if (handleRowSelect) {
-          handleRowSelect(selectedRows);
+        if (onRowSelect) {
+          onRowSelect(selectedRows);
         }
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onSelectAll: (_selected: any, _selectedRows: any, changeRows: any) => {
         /* istanbul ignore else */
-        if (handleRowSelect) {
-          handleRowSelect(changeRows);
+        if (onRowSelect) {
+          onRowSelect(changeRows);
         }
       },
     },
@@ -264,17 +264,17 @@ const Table: React.FC<Props> = ({
       render: (record: RawSearchResult) => {
         return (
           <>
-            {hasKey(record, 'xlink') && (
+            {objectHasKey(record, 'xlink') && (
               <Button
                 type="link"
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                href={parseUrl(record.xlink![1], '|')}
+                href={parseURL(record.xlink![1], '|')}
                 target="_blank"
               >
                 PID
               </Button>
             )}
-            {hasKey(record, 'further_info_url') && (
+            {objectHasKey(record, 'further_info_url') && (
               <Button
                 type="link"
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -293,12 +293,12 @@ const Table: React.FC<Props> = ({
       key: 'cart',
       width: 50,
       render: (record: RawSearchResult) => {
-        if (cart.includes(record as never, 0)) {
+        if (userCart.includes(record as never, 0)) {
           return (
             <>
               <Button
                 icon={<MinusOutlined />}
-                onClick={() => handleCart([record], 'remove')}
+                onClick={() => onUpdateCart([record], 'remove')}
                 danger
               />
             </>
@@ -309,7 +309,7 @@ const Table: React.FC<Props> = ({
             <Button
               type="primary"
               icon={<PlusOutlined />}
-              onClick={() => handleCart([record], 'add')}
+              onClick={() => onUpdateCart([record], 'add')}
             />
           </>
         );

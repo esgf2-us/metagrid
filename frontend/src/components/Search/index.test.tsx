@@ -2,8 +2,8 @@ import { fireEvent, render, waitFor, within } from '@testing-library/react';
 import React from 'react';
 import {
   defaultFacetsFixture,
-  esgSearchApiFixture,
-  searchResultFixture,
+  ESGFSearchAPIFixture,
+  rawSearchResultFixture,
 } from '../../api/mock/fixtures';
 import { rest, server } from '../../api/mock/setup-env';
 import apiRoutes from '../../api/routes';
@@ -22,12 +22,12 @@ const defaultProps: Props = {
   defaultFacets: defaultFacetsFixture(),
   activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
   textInputs: ['foo'],
-  cart: [],
-  onRemoveTag: jest.fn(),
-  onClearTags: jest.fn(),
-  handleCart: jest.fn(),
-  setAvailableFacets: jest.fn(),
-  handleSaveSearch: jest.fn(),
+  userCart: [],
+  onRemoveFilter: jest.fn(),
+  onClearFilters: jest.fn(),
+  onUpdateCart: jest.fn(),
+  onUpdateProjectFacets: jest.fn(),
+  onSaveSearchQuery: jest.fn(),
 };
 
 // Reset all mocks after each test
@@ -119,12 +119,12 @@ describe('test Search component', () => {
 
   it('handles pagination and page size changes', async () => {
     // Update api to return 20 search results, which enables pagination if 10/page selected
-    const data = esgSearchApiFixture();
+    const data = ESGFSearchAPIFixture();
     const response = {
       ...data,
       response: {
         docs: new Array(20)
-          .fill(searchResultFixture())
+          .fill(rawSearchResultFixture())
           .map(
             (obj, index) => ({ ...obj, id: `id_${index}` } as RawSearchResult)
           ),

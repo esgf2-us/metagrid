@@ -30,17 +30,15 @@ type ApiRoutes = {
 };
 
 /**
- * Strips the proxy string from a route.
- * Stripping the proxy string is necessary if the route needs to be served as a
- * clickable link within the browser.
- * @param route
+ * Stripping the prefix proxy string is necessary if the route needs to be
+ * served as a clickable link within the browser.
  */
 export const clickableRoute = (route: string): string => {
   return route.replace(`${proxyURL}/`, '');
 };
 
 const apiRoutes: ApiRoutes = {
-  // MetaGrid API
+  // MetaGrid APIs
   keycloakAuth: `${metagridApiURL}/dj-rest-auth/keycloak`,
   userInfo: `${metagridApiURL}/dj-rest-auth/user/`,
   userCart: `${metagridApiURL}/api/v1/carts/datasets/:pk/`,
@@ -50,6 +48,7 @@ const apiRoutes: ApiRoutes = {
   // ESGF Search API - datasets
   esgfDatasets: `${proxyURL}/${esgfNodeURL}/esg-search/search/`,
   // ESGF Search API - files
+  // TODO: Fix route to use the correct suffix url for the node
   esgfFiles: `${proxyURL}/${esgfNodeURL}/search_files/:id/${esgfNodeURLNoProtocol}/`,
   // ESGF Citation API (uses dummy link)
   citation: `${proxyURL}/citation_url`,

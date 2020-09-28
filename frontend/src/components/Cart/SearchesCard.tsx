@@ -16,7 +16,7 @@ import ToolTip from '../DataDisplay/ToolTip';
 import Alert from '../Feedback/Alert';
 import Skeleton from '../Feedback/Skeleton';
 import { stringifyFilters } from '../Search';
-import { SavedSearch } from './types';
+import { UserSearchQuery } from './types';
 
 const styles: CSSinJS = {
   category: {
@@ -28,17 +28,17 @@ const styles: CSSinJS = {
 };
 
 export type Props = {
-  savedSearch: SavedSearch;
+  searchQuery: UserSearchQuery;
   index: number;
-  handleRemoveSearch: (uuid: string) => void;
-  handleApplySearch: (savedSearch: SavedSearch) => void;
+  onRunSearchQuery: (savedSearch: UserSearchQuery) => void;
+  onRemoveSearchQuery: (uuid: string) => void;
 };
 
 const SearchesCard: React.FC<Props> = ({
-  savedSearch,
+  searchQuery,
   index,
-  handleApplySearch,
-  handleRemoveSearch,
+  onRunSearchQuery,
+  onRemoveSearchQuery,
 }) => {
   const history = useHistory();
   const {
@@ -48,11 +48,10 @@ const SearchesCard: React.FC<Props> = ({
     textInputs,
     activeFacets,
     url,
-  } = savedSearch;
+  } = searchQuery;
 
-  // Generate the URL for only receiving the number of results.
-  // This cuts the response time by nearly half since the actual results
-  // aren't needed in the query.
+  // Generate the URL for receiving only the result count to reduce response time
+
   const numResultsUrl = genUrlQuery(
     project.facetsUrl,
     defaultFacets,
@@ -63,8 +62,6 @@ const SearchesCard: React.FC<Props> = ({
       pageSize: 0,
     }
   );
-
-  // Fetch the results count
   const { data, isLoading, error } = useAsync({
     promiseFn: fetchResults,
     reqUrl: numResultsUrl,
@@ -114,7 +111,7 @@ const SearchesCard: React.FC<Props> = ({
               key="search"
               onClick={() => {
                 history.push('/search');
-                handleApplySearch(savedSearch);
+                onRunSearchQuery(searchQuery);
               }}
             />
           </ToolTip>,
@@ -129,7 +126,7 @@ const SearchesCard: React.FC<Props> = ({
           </ToolTip>,
           <ToolTip title="Remove search criteria from library">
             <DeleteOutlined
-              onClick={() => handleRemoveSearch(uuid)}
+              onClick={() => onRemoveSearchQuery(uuid)}
               style={{ color: 'red' }}
               key="remove"
             />

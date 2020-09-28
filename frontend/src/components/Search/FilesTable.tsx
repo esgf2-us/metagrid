@@ -3,10 +3,10 @@ import { Form, Select, Table as TableD } from 'antd';
 import React from 'react';
 import { PromiseFn, useAsync } from 'react-async';
 import { fetchFiles, openDownloadURL } from '../../api';
-import { formatBytes, parseUrl } from '../../utils/utils';
+import { formatBytes, parseURL } from '../../common/utils';
 import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
-import { RawSearchResult } from './types';
+import { RawSearchResults } from './types';
 
 export type DownloadUrls = {
   downloadType: string | undefined;
@@ -20,7 +20,7 @@ export const genDownloadUrls = (urls: string[]): DownloadUrls => {
   const newUrls: DownloadUrls = [];
   urls.forEach((url) => {
     const downloadType = url.split('|').pop();
-    let downloadUrl = parseUrl(url, '|');
+    let downloadUrl = parseURL(url, '|');
 
     if (downloadType === 'OPeNDAP') {
       downloadUrl = downloadUrl.replace('.html', '.dods');
@@ -54,10 +54,10 @@ const FilesTable: React.FC<Props> = ({ id }) => {
     );
   }
 
-  let docs: RawSearchResult[] | [] = [];
+  let docs: RawSearchResults | [] = [];
   if (data) {
     docs = (data as {
-      response: { docs: RawSearchResult[] };
+      response: { docs: RawSearchResults };
     }).response.docs;
   }
 

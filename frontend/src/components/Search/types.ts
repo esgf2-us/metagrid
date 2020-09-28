@@ -21,3 +21,5 @@ export type RawSearchResult = {
   size: number;
   [key: string]: string | string[] | number | undefined;
 };
+
+export type RawSearchResults = Array<RawSearchResult>;

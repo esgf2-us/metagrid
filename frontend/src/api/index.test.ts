@@ -1,6 +1,6 @@
 import {
-  addUserSearch,
-  deleteUserSearch,
+  addUserSearchQuery,
+  deleteUserSearchQuery,
   fetchCitation,
   fetchFiles,
   fetchProjects,
@@ -16,13 +16,13 @@ import {
 import { ActiveFacets, DefaultFacets } from '../components/Facets/types';
 import { RawCitation, TextInputs } from '../components/Search/types';
 import {
-  citationFixture,
   defaultFacetsFixture,
-  esgSearchApiFixture,
+  ESGFSearchAPIFixture,
   projectsFixture,
-  savedSearchesFixture,
-  savedSearchFixture,
-  userCartFixture,
+  rawCitationFixture,
+  rawUserCartFixture,
+  userSearchQueriesFixture,
+  userSearchQueryFixture,
 } from './mock/fixtures';
 import { rest, server } from './mock/setup-env';
 import apiRoutes from './routes';
@@ -138,14 +138,14 @@ describe('test fetchResults()', () => {
     reqUrl += '?query=input1,input2&facet1=var1,var2&facet2=var3,var4';
 
     const projects = await fetchResults([reqUrl]);
-    expect(projects).toEqual(esgSearchApiFixture());
+    expect(projects).toEqual(ESGFSearchAPIFixture());
   });
 
   it('returns results without free-text', async () => {
     reqUrl += '?query=*&facet1=var1,var2&facet2=var3,var4';
 
     const projects = await fetchResults({ reqUrl });
-    expect(projects).toEqual(esgSearchApiFixture());
+    expect(projects).toEqual(ESGFSearchAPIFixture());
   });
   it('catches and throws an error', async () => {
     server.use(
@@ -181,7 +181,7 @@ describe('test processCitation()', () => {
 
 describe('test fetchCitation()', () => {
   it('returns results', async () => {
-    const citation = citationFixture();
+    const citation = rawCitationFixture();
     const results = {
       ...citation,
       identifierDOI: 'http://doi.org/an_id',
@@ -216,7 +216,7 @@ describe('test fetchFiles()', () => {
 
   it('calls axios and returns files', async () => {
     const files = await fetchFiles({ id: dataset.id });
-    expect(files).toEqual(esgSearchApiFixture());
+    expect(files).toEqual(ESGFSearchAPIFixture());
   });
   it('catches and throws an error', async () => {
     server.use(
@@ -231,7 +231,7 @@ describe('test fetchFiles()', () => {
 describe('test fetchUserCart', () => {
   it('returns user"s cart', async () => {
     const files = await fetchUserCart('pk', 'access_token');
-    expect(files).toEqual(userCartFixture());
+    expect(files).toEqual(rawUserCartFixture());
   });
   it('catches and throws an error', async () => {
     server.use(
@@ -246,7 +246,7 @@ describe('test fetchUserCart', () => {
 describe('test fetchUserCart', () => {
   it('updates user"s cart and returns user"s cart', async () => {
     const files = await updateUserCart('pk', 'access_token', []);
-    expect(files).toEqual(userCartFixture());
+    expect(files).toEqual(rawUserCartFixture());
   });
   it('catches and throws an error', async () => {
     server.use(
@@ -264,7 +264,7 @@ describe('test fetchUserSearches', () => {
   it('returns user"s searches', async () => {
     const res = await fetchUserSearches('access_token');
 
-    expect(res).toEqual({ results: savedSearchesFixture() });
+    expect(res).toEqual({ results: userSearchQueriesFixture() });
   });
   it('catches and throws an error', async () => {
     server.use(
@@ -279,8 +279,8 @@ describe('test fetchUserSearches', () => {
 
 describe('test addUserSearch', () => {
   it('adds user search and returns response', async () => {
-    const payload = savedSearchFixture();
-    const res = await addUserSearch('pk', 'access_token', payload);
+    const payload = userSearchQueryFixture();
+    const res = await addUserSearchQuery('pk', 'access_token', payload);
 
     expect(res).toEqual(payload);
   });
@@ -291,16 +291,16 @@ describe('test addUserSearch', () => {
       })
     );
 
-    const payload = savedSearchFixture();
-    await expect(addUserSearch('pk', 'access_token', payload)).rejects.toThrow(
-      '404'
-    );
+    const payload = userSearchQueryFixture();
+    await expect(
+      addUserSearchQuery('pk', 'access_token', payload)
+    ).rejects.toThrow('404');
   });
 });
 
 describe('test deleteUserSearch', () => {
   it('deletes user search and returns response', async () => {
-    const res = await deleteUserSearch('pk', 'access_token');
+    const res = await deleteUserSearchQuery('pk', 'access_token');
 
     expect(res).toEqual('');
   });
@@ -311,7 +311,9 @@ describe('test deleteUserSearch', () => {
       })
     );
 
-    await expect(deleteUserSearch('pk', 'access_token')).rejects.toThrow('404');
+    await expect(deleteUserSearchQuery('pk', 'access_token')).rejects.toThrow(
+      '404'
+    );
   });
 });
 

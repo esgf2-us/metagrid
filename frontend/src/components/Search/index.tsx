@@ -10,8 +10,8 @@ import { DeferFn, useAsync } from 'react-async';
 import { fetchResults, genUrlQuery } from '../../api';
 import { clickableRoute } from '../../api/routes';
 import { CSSinJS } from '../../common/types';
-import { isEmpty } from '../../utils/utils';
-import { CartType } from '../Cart/types';
+import { objectIsEmpty } from '../../common/utils';
+import { UserCart } from '../Cart/types';
 import { Tag, TagType } from '../DataDisplay/Tag';
 import {
   ActiveFacets,
@@ -23,7 +23,7 @@ import {
 import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
 import Table from './Table';
-import { RawSearchResult, TextInputs } from './types';
+import { RawSearchResults, TextInputs } from './types';
 
 const styles: CSSinJS = {
   summary: {
@@ -62,8 +62,8 @@ export const parseFacets = (facets: RawFacets): ParsedFacets => {
 };
 
 /**
- * Stringifies the active filters
- * Example of output: '(Text Input = 'Solar') AND (source_type = AER OR AOGCM OR BGC)'
+ * Stringifies the active filters to output in a formatted structure.
+ * Example: '(Text Input = 'Solar') AND (source_type = AER OR AOGCM OR BGC)'
  */
 export const stringifyFilters = (
   defaultFacets: DefaultFacets,
@@ -80,7 +80,7 @@ export const stringifyFilters = (
     strFilters.push(`(Text Input = ${textInputs.join(' OR ')})`);
   }
 
-  if (!isEmpty(activeFacets)) {
+  if (!objectIsEmpty(activeFacets)) {
     Object.keys(activeFacets).forEach((key: string) => {
       strFilters.push(
         `(${humps.decamelize(key)} = ${(activeFacets as ActiveFacets)[key].join(
@@ -94,14 +94,11 @@ export const stringifyFilters = (
   return strResult;
 };
 
-/**
- * Checks if filters exist for a search
- */
 export const checkFiltersExist = (
   activeFacets: ActiveFacets | Record<string, unknown>,
   textInputs: TextInputs
 ): boolean => {
-  return !(isEmpty(activeFacets) && textInputs.length === 0);
+  return !(objectIsEmpty(activeFacets) && textInputs.length === 0);
 };
 
 export type Props = {
@@ -109,15 +106,15 @@ export type Props = {
   defaultFacets: DefaultFacets;
   activeFacets: ActiveFacets | Record<string, unknown>;
   textInputs: TextInputs | [];
-  cart: CartType | [];
-  onRemoveTag: (removedTag: TagType, type: string) => void;
-  onClearTags: () => void;
-  handleCart: (
-    selectedItems: RawSearchResult[],
+  userCart: UserCart | [];
+  onRemoveFilter: (removedTag: TagType, type: string) => void;
+  onClearFilters: () => void;
+  onUpdateCart: (
+    selectedItems: RawSearchResults,
     operation: 'add' | 'remove'
   ) => void;
-  setAvailableFacets: (parsedFacets: ParsedFacets) => void;
-  handleSaveSearch: (url: string) => void;
+  onUpdateProjectFacets: (parsedFacets: ParsedFacets) => void;
+  onSaveSearchQuery: (url: string) => void;
 };
 
 const Search: React.FC<Props> = ({
@@ -125,33 +122,29 @@ const Search: React.FC<Props> = ({
   defaultFacets,
   activeFacets,
   textInputs,
-  cart,
-  onRemoveTag,
-  onClearTags,
-  handleCart,
-  setAvailableFacets,
-  handleSaveSearch,
+  userCart,
+  onRemoveFilter,
+  onClearFilters,
+  onUpdateCart,
+  onUpdateProjectFacets,
+  onSaveSearchQuery,
 }) => {
-  // Async function to fetch results
   const { data: results, error, isLoading, run } = useAsync({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     deferFn: (fetchResults as unknown) as DeferFn<Record<string, any>>,
   });
 
-  // Filters applied by the user
-  const [filters, setFilters] = React.useState<boolean>(false);
-  // Parsed version of the facets from the API
+  const [filtersExist, setFiltersExist] = React.useState<boolean>(false);
   const [parsedFacets, setParsedFacets] = React.useState<
     ParsedFacets | Record<string, unknown>
   >({});
-  // The current request URL generated when fetching results
-  const [curReqUrl, setCurReqUrl] = React.useState<string | null>(null);
-  // Items selected in the data table
+  const [currentRequestURL, setCurrentRequestURL] = React.useState<
+    string | null
+  >(null);
   const [selectedItems, setSelectedItems] = React.useState<
-    RawSearchResult[] | []
+    RawSearchResults | []
   >([]);
-  // Pagination options in the data table
-  const [pagination, setPagination] = React.useState<{
+  const [paginationOptions, setPaginationOptions] = React.useState<{
     page: number;
     pageSize: number;
   }>({
@@ -161,32 +154,38 @@ const Search: React.FC<Props> = ({
 
   // Generate the current request URL based on filters
   React.useEffect(() => {
-    if (!isEmpty(activeProject)) {
+    if (!objectIsEmpty(activeProject)) {
       const reqUrl = genUrlQuery(
         (activeProject as RawProject).facetsUrl,
         defaultFacets,
         activeFacets,
         textInputs,
-        pagination
+        paginationOptions
       );
-      setCurReqUrl(reqUrl);
+      setCurrentRequestURL(reqUrl);
     }
-  }, [activeProject, defaultFacets, activeFacets, textInputs, pagination]);
+  }, [
+    activeProject,
+    defaultFacets,
+    activeFacets,
+    textInputs,
+    paginationOptions,
+  ]);
 
   React.useEffect(() => {
-    setFilters(checkFiltersExist(activeFacets, textInputs));
+    setFiltersExist(checkFiltersExist(activeFacets, textInputs));
   }, [activeFacets, textInputs]);
 
   // Fetch search results
   React.useEffect(() => {
-    if (!isEmpty(activeProject) && curReqUrl) {
-      run(curReqUrl);
+    if (!objectIsEmpty(activeProject) && currentRequestURL) {
+      run(currentRequestURL);
     }
-  }, [run, curReqUrl, activeProject]);
+  }, [run, currentRequestURL, activeProject]);
 
   // Update the available facets based on the returned results
   React.useEffect(() => {
-    if (results && !isEmpty(results)) {
+    if (results && !objectIsEmpty(results)) {
       const { facet_fields: facetFields } = (results as {
         facet_counts: { facet_fields: RawFacets };
       }).facet_counts;
@@ -195,30 +194,19 @@ const Search: React.FC<Props> = ({
   }, [results]);
 
   React.useEffect(() => {
-    setAvailableFacets(parsedFacets as ParsedFacets);
-  }, [parsedFacets, setAvailableFacets]);
+    onUpdateProjectFacets(parsedFacets as ParsedFacets);
+  }, [parsedFacets, onUpdateProjectFacets]);
 
-  /**
-   * Handles when the user selected individual items and adds to the cart.
-   * This function filters out items that have been already added to the cart,
-   * which is indicated as disabled on the UI.
-   */
-  const handleSelect = (selectedRows: RawSearchResult[] | []): void => {
+  const handleRowSelect = (selectedRows: RawSearchResults | []): void => {
     setSelectedItems(selectedRows);
   };
 
-  /**
-   * Handles setting the pagination options based on the Search table
-   */
-  const handlePagination = (page: number, pageSize: number): void => {
-    setPagination({ page, pageSize });
+  const handlePageChange = (page: number, pageSize: number): void => {
+    setPaginationOptions({ page, pageSize });
   };
 
-  /**
-   * Handles pageSize changes and resets the current page back to the first
-   */
   const handlePageSizeChange = (pageSize: number): void => {
-    setPagination({ page: 1, pageSize });
+    setPaginationOptions({ page: 1, pageSize });
   };
 
   if (error) {
@@ -233,17 +221,17 @@ const Search: React.FC<Props> = ({
   }
 
   let numFound = 0;
-  let docs: RawSearchResult[] = [];
+  let docs: RawSearchResults = [];
   if (results) {
     numFound = (results as { response: { numFound: number } }).response
       .numFound;
-    docs = (results as { response: { docs: RawSearchResult[] } }).response.docs;
+    docs = (results as { response: { docs: RawSearchResults } }).response.docs;
   }
 
   return (
     <div data-testid="search">
       <div style={styles.summary}>
-        {isEmpty(activeProject) && (
+        {objectIsEmpty(activeProject) && (
           <Alert
             message="Select a project to search for results"
             type="info"
@@ -270,7 +258,7 @@ const Search: React.FC<Props> = ({
             <div>
               <Button
                 type="default"
-                onClick={() => handleSaveSearch(curReqUrl as string)}
+                onClick={() => onSaveSearchQuery(currentRequestURL as string)}
                 disabled={isLoading || numFound === 0}
               >
                 <BookOutlined />
@@ -278,7 +266,7 @@ const Search: React.FC<Props> = ({
               </Button>{' '}
               <Button
                 type="default"
-                onClick={() => handleCart(selectedItems, 'add')}
+                onClick={() => onUpdateCart(selectedItems, 'add')}
                 disabled={
                   isLoading || numFound === 0 || !(selectedItems.length > 0)
                 }
@@ -313,7 +301,7 @@ const Search: React.FC<Props> = ({
                     <div key={variable} data-testid={variable}>
                       <Tag
                         value={[facet, variable]}
-                        onClose={onRemoveTag}
+                        onClose={onRemoveFilter}
                         type="facet"
                       >
                         {variable}
@@ -327,18 +315,18 @@ const Search: React.FC<Props> = ({
             (textInputs as TextInputs).map((input: string) => {
               return (
                 <div key={input} data-testid={input}>
-                  <Tag value={input} onClose={onRemoveTag} type="text">
+                  <Tag value={input} onClose={onRemoveFilter} type="text">
                     {input}
                   </Tag>
                 </div>
               );
             })}
-          {filters && (
+          {filtersExist && (
             <Tag
               value="clearAll"
               color="#f50"
               type="close all"
-              onClose={() => onClearTags()}
+              onClose={() => onClearFilters()}
             >
               Clear All
             </Tag>
@@ -354,27 +342,27 @@ const Search: React.FC<Props> = ({
                 loading={false}
                 results={docs}
                 totalResults={numFound}
-                cart={cart}
-                handleCart={handleCart}
-                handleRowSelect={handleSelect}
-                handlePagination={handlePagination}
-                handlePageSizeChange={handlePageSizeChange}
+                userCart={userCart}
+                onUpdateCart={onUpdateCart}
+                onRowSelect={handleRowSelect}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
               />
             ) : (
               <Table
                 loading={isLoading}
                 results={[]}
-                totalResults={pagination.pageSize}
-                cart={cart}
-                handleCart={handleCart}
+                totalResults={paginationOptions.pageSize}
+                userCart={userCart}
+                onUpdateCart={onUpdateCart}
               />
             )}
           </div>
         </Col>
-        {results && curReqUrl && (
+        {results && currentRequestURL && (
           <Button
             type="default"
-            href={clickableRoute(curReqUrl)}
+            href={clickableRoute(currentRequestURL)}
             target="_blank"
             icon={<ExportOutlined />}
           >

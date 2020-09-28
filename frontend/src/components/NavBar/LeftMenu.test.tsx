@@ -7,7 +7,7 @@ import LeftMenu, { Props } from './LeftMenu';
 const defaultProps: Props = {
   activeProject: { name: 'test1' },
   projects: projectsFixture(),
-  onSearch: jest.fn(),
+  onTextSearch: jest.fn(),
   onProjectChange: jest.fn(),
 };
 

@@ -1,46 +1,46 @@
 import {
   formatBytes,
-  hasKey,
-  humanize,
-  isEmpty,
-  shallowCompare,
+  humanizeStr,
+  objectHasKey,
+  objectIsEmpty,
+  shallowCompareObjects,
 } from './utils';
 
-describe('Test isEmpty', () => {
+describe('Test objectIsEmpty', () => {
   it('returns true with empty object', () => {
-    expect(isEmpty({})).toBeTruthy();
+    expect(objectIsEmpty({})).toBeTruthy();
   });
 
   it('returns false with non-empty object', () => {
     const testObj = { key1: 1, key2: 2 };
-    expect(isEmpty(testObj)).toBeFalsy();
+    expect(objectIsEmpty(testObj)).toBeFalsy();
   });
 });
 
-describe('Test humanize', () => {
+describe('Test humanizeStr', () => {
   it('removes underscore and lowercases', () => {
-    expect(humanize('camel_case')).toEqual('Camel Case');
+    expect(humanizeStr('camel_case')).toEqual('Camel Case');
   });
 
   it('does not change properly formatted text ', () => {
-    expect(humanize('Proper Text')).toEqual('Proper Text');
+    expect(humanizeStr('Proper Text')).toEqual('Proper Text');
   });
 
   it('converts acronyms to uppercase', () => {
-    expect(humanize('facet_id')).toEqual('Facet ID');
+    expect(humanizeStr('facet_id')).toEqual('Facet ID');
   });
 });
 
-describe('Test hasKey', () => {
+describe('Test objectHasKey', () => {
   it('returns true if key is found', () => {
     const testObj = { findKey: 'yup' };
 
-    expect(hasKey(testObj, 'findKey')).toBeTruthy();
+    expect(objectHasKey(testObj, 'findKey')).toBeTruthy();
   });
 
   it('returns false if key is not found ', () => {
     const testObj = {};
-    expect(hasKey(testObj, 'findKey')).toBeFalsy();
+    expect(objectHasKey(testObj, 'findKey')).toBeFalsy();
   });
 });
 
@@ -56,13 +56,13 @@ describe('Test formatBytes', () => {
   });
 });
 
-describe('Test shallowCompare', () => {
+describe('Test shallowCompareObjects', () => {
   it('returns true when two objects are the same', () => {
     const obj = { foo: 'bar' };
-    expect(shallowCompare(obj, obj)).toBeTruthy();
+    expect(shallowCompareObjects(obj, obj)).toBeTruthy();
   });
   it('returns false when two objects are not the same', () => {
     const obj = { foo: 'bar' };
-    expect(shallowCompare(obj, {})).toBeFalsy();
+    expect(shallowCompareObjects(obj, {})).toBeFalsy();
   });
 });
