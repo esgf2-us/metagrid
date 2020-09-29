@@ -7,14 +7,14 @@
 import { rest } from 'msw';
 import apiRoutes from '../routes';
 import {
-  citationFixture,
-  esgSearchApiFixture,
+  ESGFSearchAPIFixture,
   projectsFixture,
-  savedSearchesFixture,
-  savedSearchFixture,
+  rawCitationFixture,
+  rawUserCartFixture,
   userAuthFixture,
-  userCartFixture,
   userInfoFixture,
+  userSearchQueriesFixture,
+  userSearchQueryFixture,
 } from './fixtures';
 
 const handlers = [
@@ -25,16 +25,19 @@ const handlers = [
     return res(ctx.status(200), ctx.json(userInfoFixture()));
   }),
   rest.get(apiRoutes.userCart, (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(userCartFixture()));
+    return res(ctx.status(200), ctx.json(rawUserCartFixture()));
   }),
   rest.patch(apiRoutes.userCart, (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(userCartFixture()));
+    return res(ctx.status(200), ctx.json(rawUserCartFixture()));
   }),
   rest.get(apiRoutes.userSearches, (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json({ results: savedSearchesFixture() }));
+    return res(
+      ctx.status(200),
+      ctx.json({ results: userSearchQueriesFixture() })
+    );
   }),
   rest.post(apiRoutes.userSearches, (_req, res, ctx) => {
-    return res(ctx.status(201), ctx.json(savedSearchFixture()));
+    return res(ctx.status(201), ctx.json(userSearchQueryFixture()));
   }),
   rest.delete(apiRoutes.userSearch, (_req, res, ctx) => {
     return res(ctx.status(204));
@@ -43,13 +46,13 @@ const handlers = [
     return res(ctx.status(200), ctx.json({ results: projectsFixture() }));
   }),
   rest.get(apiRoutes.esgfDatasets, (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(esgSearchApiFixture()));
+    return res(ctx.status(200), ctx.json(ESGFSearchAPIFixture()));
   }),
   rest.get(apiRoutes.esgfFiles, (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(esgSearchApiFixture()));
+    return res(ctx.status(200), ctx.json(ESGFSearchAPIFixture()));
   }),
   rest.get(apiRoutes.citation, (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(citationFixture()));
+    return res(ctx.status(200), ctx.json(rawCitationFixture()));
   }),
   rest.get(apiRoutes.wget, (_req, res, ctx) => {
     return res(ctx.status(200));

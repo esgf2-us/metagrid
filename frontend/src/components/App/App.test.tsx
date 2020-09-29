@@ -507,7 +507,6 @@ describe('User cart', () => {
       getByTestId,
       getByText,
       getByPlaceholderText,
-      debug,
     } = customRender(
       <Router>
         <App />

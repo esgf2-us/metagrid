@@ -3,16 +3,16 @@ import React from 'react';
 import {
   defaultFacetsFixture,
   parsedFacetsFixture,
-  projectFixture,
+  rawProjectFixture,
 } from '../../api/mock/fixtures';
 import Facets, { Props } from './index';
 
 const defaultProps: Props = {
-  activeProject: projectFixture(),
+  activeProject: rawProjectFixture(),
   defaultFacets: defaultFacetsFixture(),
   activeFacets: {},
-  availableFacets: parsedFacetsFixture(),
-  handleProjectChange: jest.fn(),
+  projectFacets: parsedFacetsFixture(),
+  onProjectChange: jest.fn(),
   onSetFacets: jest.fn(),
 };
 

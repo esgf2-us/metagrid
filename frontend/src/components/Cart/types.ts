@@ -1,12 +1,12 @@
 import { ActiveFacets, DefaultFacets, RawProject } from '../Facets/types';
-import { RawSearchResult, TextInputs } from '../Search/types';
+import { RawSearchResults, TextInputs } from '../Search/types';
 
-export type CartType = RawSearchResult[];
+export type UserCart = RawSearchResults;
 export type RawUserCart = {
-  items: RawSearchResult[];
+  items: RawSearchResults;
 };
 
-export type RawUserSearch = {
+export type RawUserSearchQuery = {
   uuid: string;
   user: string;
   project: {
@@ -20,7 +20,8 @@ export type RawUserSearch = {
   text_inputs: TextInputs;
 };
 
-export type SavedSearch = {
+// camelCase version of the raw API results
+export type UserSearchQuery = {
   uuid: string;
   user: string | null;
   project: RawProject;
@@ -30,3 +31,5 @@ export type SavedSearch = {
   textInputs: TextInputs | [];
   url: string;
 };
+
+export type UserSearchQueries = Array<UserSearchQuery>;

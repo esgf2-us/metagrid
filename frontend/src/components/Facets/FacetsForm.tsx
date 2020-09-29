@@ -1,7 +1,7 @@
 import { Checkbox, Collapse, Form, Select } from 'antd';
 import React from 'react';
 import { CSSinJS } from '../../common/types';
-import { humanize } from '../../utils/utils';
+import { humanizeStr } from '../../common/utils';
 import { ActiveFacets, DefaultFacets, ParsedFacets } from './types';
 
 const styles: CSSinJS = {
@@ -16,21 +16,22 @@ export type Props = {
   facetsByGroup?: { [key: string]: string[] };
   defaultFacets: DefaultFacets;
   activeFacets: ActiveFacets | Record<string, unknown>;
-  availableFacets: ParsedFacets;
-  handleFacetsForm: (allValues: { [key: string]: string[] | [] }) => void;
+  projectFacets: ParsedFacets;
+  onValuesChange: (allValues: { [key: string]: string[] | [] }) => void;
 };
 
 const FacetsForm: React.FC<Props> = ({
   facetsByGroup,
   defaultFacets,
   activeFacets,
-  availableFacets,
-  handleFacetsForm,
+  projectFacets,
+  onValuesChange,
 }) => {
   const [projectFacetsForm] = Form.useForm();
 
   /**
-   * Reset facetsForm based on the activeFacets
+   * Need to reset the project facet form's fields whenever the active and default
+   * facets change in order to capture the correct number of facet counts per option
    */
   React.useEffect(() => {
     projectFacetsForm.resetFields();
@@ -48,7 +49,7 @@ const FacetsForm: React.FC<Props> = ({
           ),
         }}
         onValuesChange={(_changedValues, allValues) => {
-          handleFacetsForm(allValues);
+          onValuesChange(allValues);
         }}
       >
         <Form.Item name="selectedDefaults">
@@ -63,12 +64,12 @@ const FacetsForm: React.FC<Props> = ({
                 <div key={group} style={styles.collapseContainer}>
                   <h4 style={styles.formTitle}>{group}</h4>
                   <Collapse>
-                    {Object.keys(availableFacets).map((facet) => {
+                    {Object.keys(projectFacets).map((facet) => {
                       if (facetsByGroup[group].includes(facet)) {
-                        const facetOptions = availableFacets[facet];
+                        const facetOptions = projectFacets[facet];
                         return (
                           <Collapse.Panel
-                            header={humanize(facet)}
+                            header={humanizeStr(facet)}
                             key={facet}
                             disabled={facetOptions.length === 0}
                           >

@@ -11,7 +11,7 @@ import Empty from '../DataDisplay/Empty';
 import Popconfirm from '../Feedback/Popconfirm';
 import Button from '../General/Button';
 import Table from '../Search/Table';
-import { RawSearchResult } from '../Search/types';
+import { RawSearchResults } from '../Search/types';
 
 const styles: CSSinJS = {
   summary: {
@@ -27,69 +27,66 @@ const styles: CSSinJS = {
 };
 
 export type Props = {
-  cart: RawSearchResult[] | [];
-  handleCart: (item: RawSearchResult[], operation: 'add' | 'remove') => void;
-  clearCart: () => void;
+  userCart: RawSearchResults | [];
+  onUpdateCart: (item: RawSearchResults, operation: 'add' | 'remove') => void;
+  onClearCart: () => void;
 };
 
-const Items: React.FC<Props> = ({ cart, handleCart, clearCart }) => {
-  const [form] = Form.useForm();
+const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
+  const [downloadForm] = Form.useForm();
 
-  // Available download options for datasets (batch download of files)
+  // Statically defined list of dataset download options
+  // TODO: Add 'Globus'
   const downloadOptions = ['wget'];
-  // Loading state, specifically for wget script
-  const [isLoading, setIsLoading] = React.useState(false);
-  // Items selected in the data table
+  const [downloadIsLoading, setDownloadIsLoading] = React.useState(false);
   const [selectedItems, setSelectedItems] = React.useState<
-    RawSearchResult[] | []
+    RawSearchResults | []
   >([]);
 
-  /**
-   * Handles when the user selects datasets for download.
-   */
-  const handleSelect = (selectedRows: RawSearchResult[] | []): void => {
+  const handleRowSelect = (selectedRows: RawSearchResults | []): void => {
     setSelectedItems(selectedRows);
   };
 
   /**
-   * Handles the download form on submission.
    * TODO: Add handle for Globus
    */
   const handleDownloadForm = (downloadType: 'wget' | 'Globus'): void => {
     /* istanbul ignore else */
     if (downloadType === 'wget') {
-      const ids = (selectedItems as RawSearchResult[]).map((item) => item.id);
+      const ids = (selectedItems as RawSearchResults).map((item) => item.id);
       // eslint-disable-next-line no-void
       void message.success(
         'The wget script is generating, please wait momentarily.',
         5
       );
-      setIsLoading(true);
+      setDownloadIsLoading(true);
       fetchWgetScript(ids)
         .then((url) => {
           openDownloadURL(url);
-          setIsLoading(false);
+          setDownloadIsLoading(false);
         })
         .catch(() => {
           // eslint-disable-next-line no-void
           void message.error(
             'There was an issue generating the wget script. Please contact support or try again later.'
           );
-          setIsLoading(false);
+          setDownloadIsLoading(false);
         });
     }
   };
 
   return (
     <div data-testid="cartItems">
-      {cart.length === 0 && <Empty description="Your cart is empty"></Empty>}
-      {cart.length > 0 && (
+      {userCart.length === 0 && (
+        <Empty description="Your cart is empty"></Empty>
+      )}
+      {userCart.length > 0 && (
         <>
           <div style={styles.summary}>
-            {cart.length > 0 && (
+            {userCart.length > 0 && (
               <Popconfirm
                 icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
-                onConfirm={() => clearCart()}
+                onConfirm={onClearCart}
               >
                 <span>
                   <Button danger>Remove All Items</Button>
@@ -101,10 +98,10 @@ const Items: React.FC<Props> = ({ cart, handleCart, clearCart }) => {
             <Col lg={24}>
               <Table
                 loading={false}
-                results={cart}
-                cart={cart}
-                handleCart={handleCart}
-                handleRowSelect={handleSelect}
+                results={userCart}
+                userCart={userCart}
+                onUpdateCart={onUpdateCart}
+                onRowSelect={handleRowSelect}
               />
             </Col>
           </Row>
@@ -119,7 +116,7 @@ const Items: React.FC<Props> = ({ cart, handleCart, clearCart }) => {
               data node serving the files.
             </p>
             <Form
-              form={form}
+              form={downloadForm}
               layout="inline"
               onFinish={({ downloadType }) => handleDownloadForm(downloadType)}
               initialValues={{
@@ -142,7 +139,7 @@ const Items: React.FC<Props> = ({ cart, handleCart, clearCart }) => {
                   htmlType="submit"
                   icon={<DownloadOutlined />}
                   disabled={selectedItems.length === 0}
-                  loading={isLoading}
+                  loading={downloadIsLoading}
                 >
                   Download
                 </Button>

@@ -12,14 +12,14 @@ const styles = {
 export type Props = {
   activeProject: RawProject | Record<string, unknown>;
   projects: RawProjects;
-  onSearch: (text: string) => void;
+  onTextSearch: (text: string) => void;
   onProjectChange: (selectedProj: RawProject) => void;
 };
 
 const LeftMenu: React.FC<Props> = ({
   activeProject,
   projects,
-  onSearch,
+  onTextSearch,
   onProjectChange,
 }) => {
   const [form] = Form.useForm();
@@ -45,7 +45,7 @@ const LeftMenu: React.FC<Props> = ({
       onProjectChange(selectedProj);
     }
 
-    onSearch(values.text);
+    onTextSearch(values.text);
 
     // Reset the controlled state and form field
     setText('');
