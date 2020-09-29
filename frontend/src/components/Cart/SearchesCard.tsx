@@ -8,7 +8,7 @@ import { Col, Typography } from 'antd';
 import React from 'react';
 import { useAsync } from 'react-async';
 import { useHistory } from 'react-router-dom';
-import { fetchResults, genUrlQuery } from '../../api';
+import { fetchSearchResults, generateSearchURLQuery } from '../../api';
 import { clickableRoute } from '../../api/routes';
 import { CSSinJS } from '../../common/types';
 import Card from '../DataDisplay/Card';
@@ -52,7 +52,7 @@ const SearchesCard: React.FC<Props> = ({
 
   // Generate the URL for receiving only the result count to reduce response time
 
-  const numResultsUrl = genUrlQuery(
+  const numResultsUrl = generateSearchURLQuery(
     project.facetsUrl,
     defaultFacets,
     activeFacets,
@@ -63,7 +63,7 @@ const SearchesCard: React.FC<Props> = ({
     }
   );
   const { data, isLoading, error } = useAsync({
-    promiseFn: fetchResults,
+    promiseFn: fetchSearchResults,
     reqUrl: numResultsUrl,
   });
 

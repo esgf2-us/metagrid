@@ -7,7 +7,7 @@ import { Col, Row, Typography } from 'antd';
 import humps from 'humps';
 import React from 'react';
 import { DeferFn, useAsync } from 'react-async';
-import { fetchResults, genUrlQuery } from '../../api';
+import { fetchSearchResults, generateSearchURLQuery } from '../../api';
 import { clickableRoute } from '../../api/routes';
 import { CSSinJS } from '../../common/types';
 import { objectIsEmpty } from '../../common/utils';
@@ -131,7 +131,7 @@ const Search: React.FC<Props> = ({
 }) => {
   const { data: results, error, isLoading, run } = useAsync({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    deferFn: (fetchResults as unknown) as DeferFn<Record<string, any>>,
+    deferFn: (fetchSearchResults as unknown) as DeferFn<Record<string, any>>,
   });
 
   const [filtersExist, setFiltersExist] = React.useState<boolean>(false);
@@ -155,7 +155,7 @@ const Search: React.FC<Props> = ({
   // Generate the current request URL based on filters
   React.useEffect(() => {
     if (!objectIsEmpty(activeProject)) {
-      const reqUrl = genUrlQuery(
+      const reqUrl = generateSearchURLQuery(
         (activeProject as RawProject).facetsUrl,
         defaultFacets,
         activeFacets,

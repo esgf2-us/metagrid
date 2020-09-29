@@ -19,7 +19,7 @@ import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
 import { fetchWgetScript, openDownloadURL } from '../../api';
-import { formatBytes, objectHasKey, parseURL } from '../../common/utils';
+import { formatBytes, objectHasKey, splitURLByChar } from '../../common/utils';
 import { UserCart } from '../Cart/types';
 import Button from '../General/Button';
 import Divider from '../General/Divider';
@@ -268,7 +268,7 @@ const Table: React.FC<Props> = ({
               <Button
                 type="link"
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                href={parseURL(record.xlink![1], '|')}
+                href={splitURLByChar(record.xlink![1], '|', 'first')}
                 target="_blank"
               >
                 PID
