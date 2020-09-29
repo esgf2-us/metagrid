@@ -22,14 +22,14 @@ export type Props = {
   numCartItems: number;
   numSavedSearches: number;
   onProjectChange: (selectedProj: RawProject) => void;
-  onSearch: (text: string) => void;
+  onTextSearch: (text: string) => void;
 };
 
 const NavBar: React.FC<Props> = ({
   activeProject,
   numCartItems,
   numSavedSearches,
-  onSearch,
+  onTextSearch,
   onProjectChange,
 }) => {
   const { data, error, isLoading } = useAsync(fetchProjects);
@@ -67,7 +67,7 @@ const NavBar: React.FC<Props> = ({
             <LeftMenu
               activeProject={activeProject}
               projects={data.results}
-              onSearch={onSearch}
+              onTextSearch={onTextSearch}
               onProjectChange={onProjectChange}
             ></LeftMenu>
           )}

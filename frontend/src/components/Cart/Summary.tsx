@@ -3,9 +3,9 @@ import React from 'react';
 import cartImg from '../../assets/img/cart.svg';
 import folderImg from '../../assets/img/folder.svg';
 import { CSSinJS } from '../../common/types';
-import { formatBytes } from '../../utils/utils';
-import { RawSearchResult } from '../Search/types';
-import { CartType } from './types';
+import { formatBytes } from '../../common/utils';
+import { RawSearchResult, RawSearchResults } from '../Search/types';
+import { UserCart } from './types';
 
 const styles: CSSinJS = {
   headerContainer: { display: 'flex', justifyContent: 'center' },
@@ -18,19 +18,19 @@ const styles: CSSinJS = {
 };
 
 export type Props = {
-  cart: CartType | [];
+  userCart: UserCart | [];
 };
 
-const Summary: React.FC<Props> = ({ cart }) => {
+const Summary: React.FC<Props> = ({ userCart }) => {
   let numFiles = 0;
   let totalDataSize = '0';
-  if (cart.length > 0) {
-    numFiles = (cart as RawSearchResult[]).reduce(
+  if (userCart.length > 0) {
+    numFiles = (userCart as RawSearchResults).reduce(
       (acc: number, dataset: RawSearchResult) => acc + dataset.number_of_files,
       0
     );
 
-    const rawDataSize = (cart as RawSearchResult[]).reduce(
+    const rawDataSize = (userCart as RawSearchResults).reduce(
       (acc: number, dataset: RawSearchResult) => acc + dataset.size,
       0
     );
@@ -48,7 +48,8 @@ const Summary: React.FC<Props> = ({ cart }) => {
 
       <Divider />
       <h1>
-        Number of Datasets: <span style={styles.statistic}>{cart.length}</span>
+        Number of Datasets:{' '}
+        <span style={styles.statistic}>{userCart.length}</span>
       </h1>
       <h1>
         Number of Files: <span style={styles.statistic}>{numFiles}</span>

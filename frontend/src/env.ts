@@ -1,7 +1,7 @@
 /**
  * This file transforms environment variables into constants for re-usability.
  *
- * Make sure it is consistent with env file, .react!
+ * Make sure it is consistent with .envs/frontend, .react!
  */
 
 // MetaGrid API

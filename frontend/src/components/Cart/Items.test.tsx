@@ -1,18 +1,18 @@
 import { fireEvent, render, waitFor, within } from '@testing-library/react';
 import React from 'react';
-import { cartFixture } from '../../api/mock/fixtures';
+import { userCartFixture } from '../../api/mock/fixtures';
 import { rest, server } from '../../api/mock/setup-env';
 import apiRoutes from '../../api/routes';
 import Items, { Props } from './Items';
 
 const defaultProps: Props = {
-  cart: cartFixture(),
-  handleCart: jest.fn(),
-  clearCart: jest.fn(),
+  userCart: userCartFixture(),
+  onUpdateCart: jest.fn(),
+  onClearCart: jest.fn(),
 };
 
 it('renders message that the cart is empty when no items are added', () => {
-  const props = { ...defaultProps, cart: [] };
+  const props = { ...defaultProps, userCart: [] };
   const { getByText } = render(<Items {...props} />);
 
   // Check empty cart text renders

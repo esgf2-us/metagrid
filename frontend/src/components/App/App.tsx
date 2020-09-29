@@ -15,18 +15,18 @@ import {
 } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import {
-  addUserSearch,
-  deleteUserSearch,
+  addUserSearchQuery,
+  deleteUserSearchQuery,
   fetchUserCart,
   fetchUserSearches,
   updateUserCart,
 } from '../../api';
 import { CSSinJS } from '../../common/types';
+import { objectIsEmpty } from '../../common/utils';
 import { AuthContext } from '../../contexts/AuthContext';
-import { isEmpty } from '../../utils/utils';
 import Cart from '../Cart';
 import Summary from '../Cart/Summary';
-import { CartType, SavedSearch } from '../Cart/types';
+import { UserCart, UserSearchQueries, UserSearchQuery } from '../Cart/types';
 import { TagType } from '../DataDisplay/Tag';
 import Facets from '../Facets';
 import {
@@ -37,7 +37,7 @@ import {
 } from '../Facets/types';
 import NavBar from '../NavBar';
 import Search from '../Search';
-import { RawSearchResult, TextInputs } from '../Search/types';
+import { RawSearchResults, TextInputs } from '../Search/types';
 import './App.css';
 
 const styles: CSSinJS = {
@@ -59,44 +59,34 @@ const App: React.FC = () => {
   const { access_token: accessToken, pk } = authState;
   const isAuthenticated = accessToken && pk;
 
-  // Active project selected in the current search
   const [activeProject, setActiveProject] = React.useState<
     RawProject | Record<string, unknown>
   >({});
-  // Default facet filters
   const [defaultFacets, setDefaultFacets] = React.useState<DefaultFacets>({
     latest: true,
     replica: false,
   });
-  // Available facets for an active project that the user can apply
-  const [availableFacets, setAvailableFacets] = React.useState<
+  const [projectFacets, setProjectFacets] = React.useState<
     ParsedFacets | Record<string, unknown>
   >({});
-  // Applied free-text inputs in the current search
-  const [textInputs, setTextInputs] = React.useState<TextInputs | []>([]);
-  // Applied facet filters in the current search
   const [activeFacets, setActiveFacets] = React.useState<
     ActiveFacets | Record<string, unknown>
   >({});
+  const [textInputs, setTextInputs] = React.useState<TextInputs | []>([]);
 
-  // User's cart containing datasets
-  const [cart, setCart] = React.useState<CartType | []>(
-    JSON.parse(localStorage.getItem('cart') || '[]')
+  const [userCart, setUserCart] = React.useState<UserCart | []>(
+    JSON.parse(localStorage.getItem('userCart') || '[]')
   );
-  // User's saved search criteria
-  const [savedSearches, setSavedSearches] = React.useState<SavedSearch[] | []>(
-    JSON.parse(localStorage.getItem('savedSearches') || '[]')
-  );
+  const [userSearchQueries, setUserSearchQueries] = React.useState<
+    UserSearchQueries | []
+  >(JSON.parse(localStorage.getItem('userSearchQueries') || '[]'));
 
-  /**
-   * Fetches the authenticated user's cart from the database
-   */
   React.useEffect(() => {
     /* istanbul ignore else */
     if (isAuthenticated) {
       void fetchUserCart(pk as string, accessToken as string)
         .then((rawUserCart) => {
-          setCart(rawUserCart.items);
+          setUserCart(rawUserCart.items);
         })
         .catch(() => {
           void message.error({
@@ -107,7 +97,7 @@ const App: React.FC = () => {
 
       void fetchUserSearches(accessToken as string)
         .then((rawUserSearches) => {
-          setSavedSearches(rawUserSearches.results);
+          setUserSearchQueries(rawUserSearches.results);
         })
         .catch(() => {
           void message.error({
@@ -118,44 +108,43 @@ const App: React.FC = () => {
     }
   }, [isAuthenticated, pk, accessToken]);
 
-  /**
-   * Stores the anonoymous user's cart in local storage.
-   */
   React.useEffect(() => {
     /* istanbul ignore else */
     if (!isAuthenticated) {
-      localStorage.setItem('cart', JSON.stringify(cart));
+      localStorage.setItem('userCart', JSON.stringify(userCart));
     }
-  }, [isAuthenticated, cart]);
+  }, [isAuthenticated, userCart]);
 
-  /**
-   * Stores the savedSearches in local storage.
-   */
   React.useEffect(() => {
     if (!isAuthenticated) {
-      localStorage.setItem('savedSearches', JSON.stringify(savedSearches));
+      localStorage.setItem(
+        'userSearchQueries',
+        JSON.stringify(userSearchQueries)
+      );
     }
-  }, [isAuthenticated, savedSearches]);
+  }, [isAuthenticated, userSearchQueries]);
 
-  /**
-   * Handles clearing filters for a selected project.
-   */
-  const clearFilters = (): void => {
+  const handleTextSearch = (text: string): void => {
+    if (textInputs.includes(text as never)) {
+      void message.error(`Input "${text}" has already been applied`);
+    } else {
+      setTextInputs([...textInputs, text]);
+    }
+  };
+
+  const handleUpdateProjectFacets = (facets: ParsedFacets): void => {
+    setProjectFacets(facets);
+  };
+
+  const handleClearFilters = (): void => {
     setTextInputs([]);
     setActiveFacets({});
     setDefaultFacets({ latest: true, replica: false });
   };
 
-  /**
-   * Handles when the selected project changes.
-   *
-   * This functions checks if the current project is not an empty object or
-   * equal to the selected project to reset textInputs and activeFacets, then
-   * it updates the selected project.
-   */
   const handleProjectChange = (selectedProject: RawProject): void => {
-    if (!isEmpty(activeProject) && activeProject !== selectedProject) {
-      clearFilters();
+    if (!objectIsEmpty(activeProject) && activeProject !== selectedProject) {
+      handleClearFilters();
     }
 
     setActiveProject(selectedProject);
@@ -165,10 +154,7 @@ const App: React.FC = () => {
     );
   };
 
-  /**
-   * Handles removing applied tags.
-   */
-  const handleRemoveTag = (removedTag: TagType, type: string): void => {
+  const handleRemoveFilter = (removedTag: TagType, type: string): void => {
     /* istanbul ignore else */
     if (type === 'text') {
       setTextInputs(() => textInputs.filter((input) => input !== removedTag));
@@ -187,41 +173,32 @@ const App: React.FC = () => {
       } else {
         setActiveFacets({ ...prevActiveFacets, ...updateFacet });
       }
-    } else {
-      throw new Error(
-        `handleRemoveTag does not support argument 'type' of value ${type}`
-      );
     }
   };
 
-  /**
-   * Handles adding or removing items from the cart.
-   * If the user is authenticated, update their cart in the database.
-   * @param {arrayOf(objectOf(any))} selectedItems
-   */
-  const handleCart = (
-    selectedItems: RawSearchResult[],
+  const handleUpdateCart = (
+    selectedItems: RawSearchResults,
     operation: 'add' | 'remove'
   ): void => {
-    let newCart: CartType = [];
+    let newCart: UserCart = [];
 
     /* istanbul ignore else */
     if (operation === 'add') {
       const itemsNotInCart = selectedItems.filter((item) => {
-        return !cart.includes(item as never);
+        return !userCart.includes(item as never);
       });
-      newCart = [...cart, ...itemsNotInCart];
-      setCart(newCart);
+      newCart = [...userCart, ...itemsNotInCart];
+      setUserCart(newCart);
 
       void message.success({
         content: 'Added item(s) to your cart',
         icon: <ShoppingCartOutlined style={styles.messageAddIcon} />,
       });
     } else if (operation === 'remove') {
-      newCart = cart.filter((item) => {
+      newCart = userCart.filter((item) => {
         return !selectedItems.includes(item);
       });
-      setCart(newCart);
+      setUserCart(newCart);
 
       void message.success({
         content: 'Removed item(s) from your cart',
@@ -235,41 +212,17 @@ const App: React.FC = () => {
     }
   };
 
-  /**
-   * Handles clearing the user's cart.
-   * If the user is authenticated, update their cart in the database.
-   */
   const handleClearCart = (): void => {
-    setCart([]);
+    setUserCart([]);
 
     /* instabul ignore else */
     if (isAuthenticated) {
       void updateUserCart(pk as string, accessToken as string, []);
     }
   };
-  /**
-   * Handles free-text search form submission.
-   */
-  const handleOnSearch = (text: string): void => {
-    if (textInputs.includes(text as never)) {
-      void message.error(`Input "${text}" has already been applied`);
-    } else {
-      setTextInputs([...textInputs, text]);
-    }
-  };
 
-  /**
-   * Handles available facets fetched from the API.
-   */
-  const handleSetAvailableFacets = (facets: ParsedFacets): void => {
-    setAvailableFacets(facets);
-  };
-
-  /**
-   * Handles saving searches to the user's library.
-   */
-  const handleSaveSearch = (url: string): void => {
-    const savedSearch: SavedSearch = {
+  const handleSaveSearchQuery = (url: string): void => {
+    const savedSearch: UserSearchQuery = {
       uuid: uuidv4(),
       user: pk,
       project: activeProject as RawProject,
@@ -280,11 +233,8 @@ const App: React.FC = () => {
       url,
     };
 
-    /**
-     * Update the state saved searches and displays success message
-     */
     const saveSuccess = (): void => {
-      setSavedSearches([...savedSearches, savedSearch]);
+      setUserSearchQueries([...userSearchQueries, savedSearch]);
       void message.success({
         content: 'Saved search criteria to your library',
         icon: <BookOutlined style={styles.messageAddIcon} />,
@@ -292,7 +242,7 @@ const App: React.FC = () => {
     };
 
     if (isAuthenticated) {
-      void addUserSearch(pk as string, accessToken as string, savedSearch)
+      void addUserSearchQuery(pk as string, accessToken as string, savedSearch)
         .then(() => {
           saveSuccess();
         })
@@ -307,17 +257,11 @@ const App: React.FC = () => {
     }
   };
 
-  /**
-   * Handles removing searches from the user's library.
-   */
-  const handleRemoveSearch = (searchUUID: string): void => {
-    /**
-     * Updates the state of saved searches and display success
-     */
+  const handleRemoveSearchQuery = (searchUUID: string): void => {
     const deleteSuccess = (): void => {
-      setSavedSearches(
-        savedSearches.filter(
-          (searchItem: SavedSearch) => searchItem.uuid !== searchUUID
+      setUserSearchQueries(
+        userSearchQueries.filter(
+          (searchItem: UserSearchQuery) => searchItem.uuid !== searchUUID
         )
       );
       void message.success({
@@ -327,7 +271,7 @@ const App: React.FC = () => {
     };
 
     if (isAuthenticated) {
-      void deleteUserSearch(searchUUID, accessToken as string)
+      void deleteUserSearchQuery(searchUUID, accessToken as string)
         .then(() => {
           deleteSuccess();
         })
@@ -342,10 +286,7 @@ const App: React.FC = () => {
     }
   };
 
-  /**
-   * Handles applying saved search criteria
-   */
-  const handleApplySearch = (savedSearch: SavedSearch): void => {
+  const handleRunSearchQuery = (savedSearch: UserSearchQuery): void => {
     setActiveProject(savedSearch.project);
     setActiveFacets(savedSearch.activeFacets);
     setTextInputs(savedSearch.textInputs);
@@ -363,12 +304,10 @@ const App: React.FC = () => {
           render={() => (
             <NavBar
               activeProject={activeProject}
-              numCartItems={cart.length}
-              numSavedSearches={savedSearches.length}
-              onProjectChange={(selectedProj) =>
-                handleProjectChange(selectedProj)
-              }
-              onSearch={(text) => handleOnSearch(text)}
+              numCartItems={userCart.length}
+              numSavedSearches={userSearchQueries.length}
+              onProjectChange={handleProjectChange}
+              onTextSearch={handleTextSearch}
             ></NavBar>
           )}
         />
@@ -384,11 +323,9 @@ const App: React.FC = () => {
                   <Facets
                     activeProject={activeProject}
                     defaultFacets={defaultFacets}
+                    projectFacets={projectFacets}
                     activeFacets={activeFacets}
-                    availableFacets={availableFacets}
-                    handleProjectChange={(selectedProj) =>
-                      handleProjectChange(selectedProj)
-                    }
+                    onProjectChange={handleProjectChange}
                     onSetFacets={(
                       defaults: DefaultFacets,
                       active: ActiveFacets
@@ -407,7 +344,7 @@ const App: React.FC = () => {
                   style={styles.bodySider}
                   width={styles.bodySider.width as number}
                 >
-                  <Summary cart={cart} />
+                  <Summary userCart={userCart} />
                 </Layout.Sider>
               )}
             />
@@ -429,18 +366,12 @@ const App: React.FC = () => {
                       defaultFacets={defaultFacets}
                       activeFacets={activeFacets}
                       textInputs={textInputs}
-                      cart={cart}
-                      setAvailableFacets={(facets) =>
-                        handleSetAvailableFacets(facets)
-                      }
-                      handleCart={(selectedItems, operation) =>
-                        handleCart(selectedItems, operation)
-                      }
-                      onRemoveTag={(removedTag, type) =>
-                        handleRemoveTag(removedTag, type)
-                      }
-                      onClearTags={() => clearFilters()}
-                      handleSaveSearch={handleSaveSearch}
+                      userCart={userCart}
+                      onUpdateProjectFacets={handleUpdateProjectFacets}
+                      onUpdateCart={handleUpdateCart}
+                      onRemoveFilter={handleRemoveFilter}
+                      onClearFilters={handleClearFilters}
+                      onSaveSearchQuery={handleSaveSearchQuery}
                     ></Search>
                   </>
                 )}
@@ -456,16 +387,12 @@ const App: React.FC = () => {
                       <Breadcrumb.Item>Cart</Breadcrumb.Item>
                     </Breadcrumb>
                     <Cart
-                      cart={cart}
-                      savedSearches={savedSearches}
-                      handleCart={handleCart}
-                      clearCart={() => handleClearCart()}
-                      handleRemoveSearch={(uuid: string) =>
-                        handleRemoveSearch(uuid)
-                      }
-                      handleApplySearch={(savedSearch: SavedSearch) =>
-                        handleApplySearch(savedSearch)
-                      }
+                      userCart={userCart}
+                      userSearchQueries={userSearchQueries}
+                      onUpdateCart={handleUpdateCart}
+                      onClearCart={handleClearCart}
+                      onRunSearchQuery={handleRunSearchQuery}
+                      onRemoveSearchQuery={handleRemoveSearchQuery}
                     />
                   </>
                 )}

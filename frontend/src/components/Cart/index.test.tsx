@@ -1,16 +1,19 @@
 import { fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
-import { cartFixture, savedSearchesFixture } from '../../api/mock/fixtures';
+import {
+  userCartFixture,
+  userSearchQueriesFixture,
+} from '../../api/mock/fixtures';
 import Cart, { Props } from './index';
 
 const defaultProps: Props = {
-  cart: cartFixture(),
-  savedSearches: savedSearchesFixture(),
-  handleCart: jest.fn(),
-  clearCart: jest.fn(),
-  handleRemoveSearch: jest.fn(),
-  handleApplySearch: jest.fn(),
+  userCart: userCartFixture(),
+  userSearchQueries: userSearchQueriesFixture(),
+  onUpdateCart: jest.fn(),
+  onClearCart: jest.fn(),
+  onRunSearchQuery: jest.fn(),
+  onRemoveSearchQuery: jest.fn(),
 };
 
 let mockHistoryPush: () => void;

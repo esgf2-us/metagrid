@@ -5,9 +5,10 @@
  */
 
 import {
-  CartType,
   RawUserCart,
-  SavedSearch,
+  UserCart,
+  UserSearchQueries,
+  UserSearchQuery,
 } from '../../components/Cart/types';
 import {
   DefaultFacets,
@@ -16,13 +17,16 @@ import {
   RawProject,
   RawProjects,
 } from '../../components/Facets/types';
-import { RawCitation, RawSearchResult } from '../../components/Search/types';
+import {
+  RawCitation,
+  RawSearchResult,
+  RawSearchResults,
+} from '../../components/Search/types';
 import { RawUserAuth, RawUserInfo } from '../../contexts/AuthContext';
 
-/**
- * Project fixture
- */
-export const projectFixture = (props: Partial<RawProject> = {}): RawProject => {
+export const rawProjectFixture = (
+  props: Partial<RawProject> = {}
+): RawProject => {
   const defaults: RawProject = {
     pk: '1',
     name: 'test1',
@@ -34,15 +38,15 @@ export const projectFixture = (props: Partial<RawProject> = {}): RawProject => {
 };
 
 export const projectsFixture = (): RawProjects => {
-  return [projectFixture(), projectFixture({ name: 'test2' })];
+  return [rawProjectFixture(), rawProjectFixture({ name: 'test2' })];
 };
 
 /**
- * Search result fixture based on the ESG Search API.
+ * Search result fixture based on the ESGF Search API.
  * In the API, this value is stored in an array of objects under the 'docs' key
  * of the HTTP  response object.
  */
-export const searchResultFixture = (
+export const rawSearchResultFixture = (
   props: Partial<RawSearchResult> = {}
 ): RawSearchResult => {
   const defaults: RawSearchResult = {
@@ -59,10 +63,10 @@ export const searchResultFixture = (
   return { ...defaults, ...props };
 };
 
-export const searchResultsFixture = (): RawSearchResult[] => {
+export const rawSearchResultsFixture = (): Array<RawSearchResult> => {
   return [
-    searchResultFixture(),
-    searchResultFixture({
+    rawSearchResultFixture(),
+    rawSearchResultFixture({
       id: 'bar',
       title: 'bar',
       number_of_files: 2,
@@ -71,9 +75,6 @@ export const searchResultsFixture = (): RawSearchResult[] => {
   ];
 };
 
-/**
- * Raw facets fixture
- */
 export const rawFacetsFixture = (props: Partial<RawFacets> = {}): RawFacets => {
   const defaults: RawFacets = {
     facet1: ['foo', 3, 'bar', 5],
@@ -82,9 +83,6 @@ export const rawFacetsFixture = (props: Partial<RawFacets> = {}): RawFacets => {
   return { ...defaults, ...props } as RawFacets;
 };
 
-/**
- * Parsed facets fixture, which is the raw facets parsed using a helper function.
- */
 export const parsedFacetsFixture = (
   props: Partial<ParsedFacets> = {}
 ): ParsedFacets => {
@@ -101,17 +99,11 @@ export const parsedFacetsFixture = (
   return { ...defaults, ...props } as ParsedFacets;
 };
 
-/**
- * Cart fixture, which contains multiple search results.
- */
-export const cartFixture = (): CartType => {
-  return searchResultsFixture();
+export const userCartFixture = (): UserCart => {
+  return rawSearchResultsFixture();
 };
 
-/**
- * Citation fixture based on the Citation API.
- */
-export const citationFixture = (
+export const rawCitationFixture = (
   props: Partial<RawCitation> = {}
 ): RawCitation => {
   const defaults: RawCitation = {
@@ -127,16 +119,13 @@ export const citationFixture = (
   return { ...defaults, ...props };
 };
 
-/**
- * Saved search fixture.
- */
-export const savedSearchFixture = (
-  props: Partial<SavedSearch> = {}
-): SavedSearch => {
-  const defaults: SavedSearch = {
+export const userSearchQueryFixture = (
+  props: Partial<UserSearchQuery> = {}
+): UserSearchQuery => {
+  const defaults: UserSearchQuery = {
     uuid: 'uuid',
     user: 'user',
-    project: projectFixture(),
+    project: rawProjectFixture(),
     projectId: '1',
     defaultFacets: { latest: true, replica: false },
     activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
@@ -144,11 +133,11 @@ export const savedSearchFixture = (
     url: 'url.com',
   };
 
-  return { ...defaults, ...props } as SavedSearch;
+  return { ...defaults, ...props } as UserSearchQuery;
 };
 
-export const savedSearchesFixture = (): SavedSearch[] => {
-  return [savedSearchFixture()];
+export const userSearchQueriesFixture = (): UserSearchQueries => {
+  return [userSearchQueryFixture()];
 };
 
 export const defaultFacetsFixture = (
@@ -159,18 +148,15 @@ export const defaultFacetsFixture = (
 };
 
 type ESGFSearchAPIResponse = {
-  response: { numFound: number; docs: RawSearchResult[] };
+  response: { numFound: number; docs: RawSearchResults };
   facet_counts: { facet_fields: RawFacets };
 };
 
-/**
- * ESGF Search API fixture.
- */
-export const esgSearchApiFixture = (): ESGFSearchAPIResponse => {
+export const ESGFSearchAPIFixture = (): ESGFSearchAPIResponse => {
   return {
     response: {
-      numFound: searchResultsFixture().length,
-      docs: searchResultsFixture(),
+      numFound: rawSearchResultsFixture().length,
+      docs: rawSearchResultsFixture(),
     },
     facet_counts: {
       facet_fields: rawFacetsFixture(),
@@ -178,9 +164,6 @@ export const esgSearchApiFixture = (): ESGFSearchAPIResponse => {
   };
 };
 
-/**
- * User auth fixture based on the Keycloak User Auth API.
- */
 export const userAuthFixture = (
   props: Partial<RawUserAuth> = {}
 ): RawUserAuth => {
@@ -191,9 +174,6 @@ export const userAuthFixture = (
   return { ...defaults, ...props };
 };
 
-/**
- * User info fixture based on the User API.
- */
 export const userInfoFixture = (
   props: Partial<RawUserInfo> = {}
 ): RawUserInfo => {
@@ -203,14 +183,11 @@ export const userInfoFixture = (
   return { ...defaults, ...props } as RawUserInfo;
 };
 
-/**
- * User cart fixture based on the Cart Datasets API.
- */
-export const userCartFixture = (
+export const rawUserCartFixture = (
   props: Partial<RawUserCart> = {}
 ): RawUserCart => {
   const defaults: RawUserCart = {
-    items: [searchResultFixture()],
+    items: [rawSearchResultFixture()],
   };
   return { ...defaults, ...props } as RawUserCart;
 };

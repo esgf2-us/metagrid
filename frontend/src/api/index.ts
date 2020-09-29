@@ -3,12 +3,12 @@
  */
 import humps from 'humps';
 import queryString from 'query-string';
-import axios from '../axios';
 import {
-  CartType,
   RawUserCart,
-  RawUserSearch,
-  SavedSearch,
+  RawUserSearchQuery,
+  UserCart,
+  UserSearchQueries,
+  UserSearchQuery,
 } from '../components/Cart/types';
 import {
   ActiveFacets,
@@ -17,16 +17,15 @@ import {
 } from '../components/Facets/types';
 import { RawCitation } from '../components/Search/types';
 import { proxyURL } from '../env';
+import axios from '../lib/axios';
 import apiRoutes, { clickableRoute } from './routes';
 
 /**
- * Camelizes keys from a string that is parsed as JSON.
- * Arg 'res' is type string because axios's transFormResponse function attempts
- * to parse the response body using JSON.parse but fails.
+ * Must use JSON.parse on the 'str' arg string because axios's transformResponse
+ * function attempts to parse the response body using JSON.parse but fails.
  * https://github.com/axios/axios/issues/576
  * https://github.com/axios/axios/issues/430
  *
- * @param str
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const camelizeKeysFromString = (str: string): Record<string, any> => {
@@ -34,7 +33,6 @@ const camelizeKeysFromString = (str: string): Record<string, any> => {
 };
 
 /**
- * Fetches a user's cart.
  * HTTP Request Method: GET
  * HTTP Response Code: 200 OK
  */
@@ -65,14 +63,13 @@ export const fetchUserCart = async (
 };
 
 /**
- * Updates a user's cart.
  * HTTP Request Method: PATCH
  * HTTP Response Code: 200 OK
  */
 export const updateUserCart = async (
   pk: string,
   accessToken: string,
-  newUserCart: CartType
+  newUserCart: UserCart
 ): Promise<{
   results: RawUserCart;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -101,7 +98,6 @@ export const updateUserCart = async (
 };
 
 /**
- * Fetches a user's searches.
  * HTTP Request Method: GET
  * HTTP Response: 200 OK
  */
@@ -109,7 +105,7 @@ export const fetchUserSearches = async (
   accessToken: string
 ): Promise<{
   count: number;
-  results: SavedSearch[];
+  results: UserSearchQueries;
 }> => {
   return axios
     .get(apiRoutes.userSearches, {
@@ -127,7 +123,7 @@ export const fetchUserSearches = async (
     .then((res) => {
       return res.data as Promise<{
         count: number;
-        results: SavedSearch[];
+        results: UserSearchQueries;
       }>;
     })
     .catch((error) => {
@@ -136,15 +132,14 @@ export const fetchUserSearches = async (
 };
 
 /**
- * Add a user's search.
  * HTTP Request Method: POST
  * HTTP Response Code: 201 Created
  */
-export const addUserSearch = async (
+export const addUserSearchQuery = async (
   userPk: string,
   accessToken: string,
-  payload: SavedSearch
-): Promise<RawUserSearch> => {
+  payload: UserSearchQuery
+): Promise<RawUserSearchQuery> => {
   const decamelizedPayload = humps.decamelizeKeys({
     user: userPk,
     ...payload,
@@ -156,7 +151,7 @@ export const addUserSearch = async (
       },
     })
     .then((res) => {
-      return res.data as Promise<RawUserSearch>;
+      return res.data as Promise<RawUserSearchQuery>;
     })
     .catch((error) => {
       throw new Error(error);
@@ -164,11 +159,10 @@ export const addUserSearch = async (
 };
 
 /**
- * Delete a user's search.
  * HTTP Request Method: DELETE
  * HTTP Response: 204 No Content
  */
-export const deleteUserSearch = async (
+export const deleteUserSearchQuery = async (
   pk: string,
   accessToken: string
 ): Promise<''> => {
@@ -188,7 +182,6 @@ export const deleteUserSearch = async (
 };
 
 /**
- * Fetches a list of projects.
  * HTTP Request Method: GET
  * HTTP Response: 200 OK
  */
@@ -260,7 +253,6 @@ export const genUrlQuery = (
 };
 
 /**
- * Fetch the search results using the ESGF Search API.
  * HTTP Request Method: GET
  * HTTP Response: 200 OK
  *
@@ -311,7 +303,6 @@ export const processCitation = (citation: RawCitation): RawCitation => {
 };
 
 /**
- * Fetches citation data using a dataset's citation url.
  * HTTP Request Method: GET
  * HTTP Response: 200 OK
  */
@@ -333,7 +324,6 @@ Promise<{ [key: string]: any }> => {
 };
 
 /**
- * Fetches files for a dataset.
  * HTTP Request Method: GET
  * HTTP Response: 200 OK
  */
@@ -379,10 +369,8 @@ export const fetchWgetScript = async (
 };
 
 /**
- * Sets the window location href to the specified URL.
- *
- * It removes the proxyString from the URL so the link can be access through
- * the browser.
+ * This function removes the proxyString from the URL so the link can be accessed
+ * through the browser.
  */
 export const openDownloadURL = (url: string): void => {
   const newURL = clickableRoute(url);

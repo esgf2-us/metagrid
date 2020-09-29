@@ -1,11 +1,11 @@
 import { render } from '@testing-library/react';
 import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { cartFixture } from '../../api/mock/fixtures';
+import { userCartFixture } from '../../api/mock/fixtures';
 import Summary, { Props } from './Summary';
 
 const defaultProps: Props = {
-  cart: cartFixture(),
+  userCart: userCartFixture(),
 };
 
 test('renders without crashing', () => {

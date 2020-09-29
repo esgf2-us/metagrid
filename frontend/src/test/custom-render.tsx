@@ -38,7 +38,7 @@ type CustomOptions = {
 
 /**
  * Wraps components in the Keycloak Provider for testing
- * Source: https://testing-library.com/docs/react-testing-library/setup#custom-render
+ * https://testing-library.com/docs/react-testing-library/setup#custom-render
  */
 export const keycloakRender = (
   ui: React.ReactElement,
@@ -57,7 +57,7 @@ export const keycloakRender = (
 
 /**
  * Wraps components in all implemented React Context Providers for testing
- * Source: https://testing-library.com/docs/react-testing-library/setup#custom-render
+ * https://testing-library.com/docs/react-testing-library/setup#custom-render
  */
 export const customRender = (
   ui: React.ReactElement,

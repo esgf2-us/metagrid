@@ -5,7 +5,7 @@ import ReactDOM from 'react-dom';
 import App from './components/App/App';
 import { AuthProvider } from './contexts/AuthContext';
 import './index.css';
-import { keycloak, keycloakProviderInitConfig } from './keycloak';
+import { keycloak, keycloakProviderInitConfig } from './lib/keycloak';
 
 ReactDOM.render(
   <KeycloakProvider
