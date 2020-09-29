@@ -18,30 +18,17 @@ export const objectHasKey = (
 };
 
 /**
- * Converts strings from snake_case to human readable.
- *
- * It checks for acronyms to convert to uppercase.
- */
-export const humanizeStr = (str: string): string => {
-  const acronyms = ['Id', 'Cf', 'Cmor', 'Mip'];
-  const frags = str.split('_');
-
-  for (let i = 0; i < frags.length; i += 1) {
-    frags[i] = frags[i].charAt(0).toUpperCase() + frags[i].slice(1);
-
-    if (acronyms.includes(frags[i])) {
-      frags[i] = frags[i].toUpperCase();
-    }
-  }
-
-  return frags.join(' ');
-};
-
-/**
  * Parses urls to remove characters following the specified character
  */
-export const parseURL = (url: string, char: string): string => {
-  return url.split(char)[0];
+export const splitURLByChar = (
+  url: string,
+  char: string,
+  returnHalf: 'first' | 'second'
+): string => {
+  if (returnHalf === 'first') {
+    return url.split(char)[0];
+  }
+  return url.split(char)[1];
 };
 
 /**

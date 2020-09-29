@@ -1,7 +1,6 @@
 import { Checkbox, Collapse, Form, Select } from 'antd';
 import React from 'react';
 import { CSSinJS } from '../../common/types';
-import { humanizeStr } from '../../common/utils';
 import { ActiveFacets, DefaultFacets, ParsedFacets } from './types';
 
 const styles: CSSinJS = {
@@ -18,6 +17,26 @@ export type Props = {
   activeFacets: ActiveFacets | Record<string, unknown>;
   projectFacets: ParsedFacets;
   onValuesChange: (allValues: { [key: string]: string[] | [] }) => void;
+};
+
+/**
+ * Converts facet names from snake_case to human readable.
+ *
+ * It also checks for acronyms to convert to uppercase.
+ */
+export const humanizeFacetNames = (str: string): string => {
+  const acronyms = ['Id', 'Cf', 'Cmor', 'Mip'];
+  const frags = str.split('_');
+
+  for (let i = 0; i < frags.length; i += 1) {
+    frags[i] = frags[i].charAt(0).toUpperCase() + frags[i].slice(1);
+
+    if (acronyms.includes(frags[i])) {
+      frags[i] = frags[i].toUpperCase();
+    }
+  }
+
+  return frags.join(' ');
 };
 
 const FacetsForm: React.FC<Props> = ({
@@ -69,7 +88,7 @@ const FacetsForm: React.FC<Props> = ({
                         const facetOptions = projectFacets[facet];
                         return (
                           <Collapse.Panel
-                            header={humanizeStr(facet)}
+                            header={humanizeFacetNames(facet)}
                             key={facet}
                             disabled={facetOptions.length === 0}
                           >

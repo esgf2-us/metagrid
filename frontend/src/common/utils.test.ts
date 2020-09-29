@@ -1,6 +1,5 @@
 import {
   formatBytes,
-  humanizeStr,
   objectHasKey,
   objectIsEmpty,
   shallowCompareObjects,
@@ -14,20 +13,6 @@ describe('Test objectIsEmpty', () => {
   it('returns false with non-empty object', () => {
     const testObj = { key1: 1, key2: 2 };
     expect(objectIsEmpty(testObj)).toBeFalsy();
-  });
-});
-
-describe('Test humanizeStr', () => {
-  it('removes underscore and lowercases', () => {
-    expect(humanizeStr('camel_case')).toEqual('Camel Case');
-  });
-
-  it('does not change properly formatted text ', () => {
-    expect(humanizeStr('Proper Text')).toEqual('Proper Text');
-  });
-
-  it('converts acronyms to uppercase', () => {
-    expect(humanizeStr('facet_id')).toEqual('Facet ID');
   });
 });
 

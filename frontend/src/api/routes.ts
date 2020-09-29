@@ -8,13 +8,7 @@
  * https://github.com/ESGF/esgf.github.io/wiki/ESGF_Search_REST_API
  *
  */
-import {
-  esgfNodeURL,
-  esgfNodeURLNoProtocol,
-  metagridApiURL,
-  proxyURL,
-  wgetApiURL,
-} from '../env';
+import { esgfNodeURL, metagridApiURL, proxyURL, wgetApiURL } from '../env';
 
 type ApiRoutes = {
   keycloakAuth: string;
@@ -37,6 +31,8 @@ export const clickableRoute = (route: string): string => {
   return route.replace(`${proxyURL}/`, '');
 };
 
+// Any path with parameters (e.g. '/:datasetID/') must be in camelCase
+// https://mswjs.io/docs/basics/path-matching#path-with-parameters
 const apiRoutes: ApiRoutes = {
   // MetaGrid APIs
   keycloakAuth: `${metagridApiURL}/dj-rest-auth/keycloak`,
@@ -48,8 +44,7 @@ const apiRoutes: ApiRoutes = {
   // ESGF Search API - datasets
   esgfDatasets: `${proxyURL}/${esgfNodeURL}/esg-search/search/`,
   // ESGF Search API - files
-  // TODO: Fix route to use the correct suffix url for the node
-  esgfFiles: `${proxyURL}/${esgfNodeURL}/search_files/:id/${esgfNodeURLNoProtocol}/`,
+  esgfFiles: `${proxyURL}/${esgfNodeURL}/search_files/:datasetID/:sourceNode/`,
   // ESGF Citation API (uses dummy link)
   citation: `${proxyURL}/citation_url`,
   // ESGF wget API
