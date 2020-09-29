@@ -1,7 +1,7 @@
 import React from 'react';
 import { PromiseFn, useAsync } from 'react-async';
-import { fetchCitation } from '../../api';
-import { parseURL } from '../../common/utils';
+import { fetchDatasetCitation } from '../../api';
+import { splitURLByChar } from '../../common/utils';
 import Alert from '../Feedback/Alert';
 import Skeleton from '../Feedback/Skeleton';
 import { RawCitation } from './types';
@@ -29,7 +29,7 @@ type CitationProps = {
 
 const Citation: React.FC<CitationProps> = ({ url }) => {
   const { data, error, isLoading } = useAsync({
-    promiseFn: (fetchCitation as unknown) as PromiseFn<RawCitation>,
+    promiseFn: (fetchDatasetCitation as unknown) as PromiseFn<RawCitation>,
     url,
   });
 
@@ -37,7 +37,7 @@ const Citation: React.FC<CitationProps> = ({ url }) => {
     <div>
       <div>
         <a
-          href={parseURL(url, '.json')}
+          href={splitURLByChar(url, '.json', 'first')}
           rel="noopener noreferrer"
           target="_blank"
         >

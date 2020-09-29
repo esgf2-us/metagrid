@@ -2,8 +2,8 @@ import { DownloadOutlined } from '@ant-design/icons';
 import { Form, Select, Table as TableD } from 'antd';
 import React from 'react';
 import { PromiseFn, useAsync } from 'react-async';
-import { fetchFiles, openDownloadURL } from '../../api';
-import { formatBytes, parseURL } from '../../common/utils';
+import { fetchDatasetFiles, openDownloadURL } from '../../api';
+import { formatBytes, splitURLByChar } from '../../common/utils';
 import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
 import { RawSearchResults } from './types';
@@ -20,7 +20,7 @@ export const genDownloadUrls = (urls: string[]): DownloadUrls => {
   const newUrls: DownloadUrls = [];
   urls.forEach((url) => {
     const downloadType = url.split('|').pop();
-    let downloadUrl = parseURL(url, '|');
+    let downloadUrl = splitURLByChar(url, '|', 'first');
 
     if (downloadType === 'OPeNDAP') {
       downloadUrl = downloadUrl.replace('.html', '.dods');
@@ -39,7 +39,7 @@ const FilesTable: React.FC<Props> = ({ id }) => {
 
   const { data, error, isLoading } = useAsync({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    promiseFn: (fetchFiles as unknown) as PromiseFn<Record<string, any>>,
+    promiseFn: (fetchDatasetFiles as unknown) as PromiseFn<Record<string, any>>,
     id,
   });
 

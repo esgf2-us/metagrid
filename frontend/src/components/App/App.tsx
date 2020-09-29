@@ -18,7 +18,7 @@ import {
   addUserSearchQuery,
   deleteUserSearchQuery,
   fetchUserCart,
-  fetchUserSearches,
+  fetchUserSearchQueries,
   updateUserCart,
 } from '../../api';
 import { CSSinJS } from '../../common/types';
@@ -95,7 +95,7 @@ const App: React.FC = () => {
           });
         });
 
-      void fetchUserSearches(accessToken as string)
+      void fetchUserSearchQueries(accessToken as string)
         .then((rawUserSearches) => {
           setUserSearchQueries(rawUserSearches.results);
         })
