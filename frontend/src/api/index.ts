@@ -3,6 +3,7 @@
  */
 import humps from 'humps';
 import queryString from 'query-string';
+import { splitURLByChar } from '../common/utils';
 import {
   RawUserCart,
   RawUserSearchQuery,
@@ -30,6 +31,15 @@ import apiRoutes, { clickableRoute } from './routes';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const camelizeKeysFromString = (str: string): Record<string, any> => {
   return humps.camelizeKeys(JSON.parse(str));
+};
+
+/**
+ * This function removes the proxyString from the URL so the link can be accessed
+ * through the browser.
+ */
+export const openDownloadURL = (url: string): void => {
+  const newURL = clickableRoute(url);
+  window.location.href = newURL;
 };
 
 /**
@@ -101,7 +111,7 @@ export const updateUserCart = async (
  * HTTP Request Method: GET
  * HTTP Response: 200 OK
  */
-export const fetchUserSearches = async (
+export const fetchUserSearchQueries = async (
   accessToken: string
 ): Promise<{
   count: number;
@@ -213,10 +223,9 @@ export const fetchProjects = async (): Promise<{
 };
 
 /**
- * Generate a URL to perform a GET request to the ESGF Search API.
  * Query string parameters use the logical OR operator, so queries are inclusive.
  */
-export const genUrlQuery = (
+export const generateSearchURLQuery = (
   baseUrl: string,
   defaultFacets: DefaultFacets,
   activeFacets: ActiveFacets | Record<string, unknown>,
@@ -262,7 +271,7 @@ export const genUrlQuery = (
  * With DeferFn, arguments are passed in as an array ([string]).
  * Source: https://docs.react-async.com/api/options#deferfn
  */
-export const fetchResults = async (
+export const fetchSearchResults = async (
   args: [string] | Record<string, string>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<{ [key: string]: any }> => {
@@ -306,7 +315,7 @@ export const processCitation = (citation: RawCitation): RawCitation => {
  * HTTP Request Method: GET
  * HTTP Response: 200 OK
  */
-export const fetchCitation = async ({
+export const fetchDatasetCitation = async ({
   url,
 }: {
   [key: string]: string;
@@ -327,13 +336,19 @@ Promise<{ [key: string]: any }> => {
  * HTTP Request Method: GET
  * HTTP Response: 200 OK
  */
-export const fetchFiles = async ({
+export const fetchDatasetFiles = async ({
   id,
 }: {
   id: string;
 }): // eslint-disable-next-line @typescript-eslint/no-explicit-any
 Promise<{ [key: string]: any }> => {
-  const url = `${apiRoutes.esgfFiles.replace(':id', id)}?limit=10`;
+  // The dataset's source node is contained in its id, so strip the URL suffix.
+  const sourceNodeURL = splitURLByChar(id, '|', 'second');
+
+  const url = `${apiRoutes.esgfFiles
+    .replace(':datasetID', id)
+    .replace(':sourceNode', sourceNodeURL)}`;
+
   return axios
     .get(url)
     .then((res) => {
@@ -366,13 +381,4 @@ export const fetchWgetScript = async (
     .catch((error) => {
       throw new Error(error);
     });
-};
-
-/**
- * This function removes the proxyString from the URL so the link can be accessed
- * through the browser.
- */
-export const openDownloadURL = (url: string): void => {
-  const newURL = clickableRoute(url);
-  window.location.href = newURL;
 };

@@ -1,14 +1,14 @@
 import {
   addUserSearchQuery,
   deleteUserSearchQuery,
-  fetchCitation,
-  fetchFiles,
+  fetchDatasetCitation,
+  fetchDatasetFiles,
   fetchProjects,
-  fetchResults,
+  fetchSearchResults,
   fetchUserCart,
-  fetchUserSearches,
+  fetchUserSearchQueries,
   fetchWgetScript,
-  genUrlQuery,
+  generateSearchURLQuery,
   openDownloadURL,
   processCitation,
   updateUserCart,
@@ -68,7 +68,7 @@ describe('test genUrlQuery()', () => {
       pageSize: 10,
     };
 
-    const url = genUrlQuery(
+    const url = generateSearchURLQuery(
       baseUrl,
       defaultFacets,
       activeFacets,
@@ -86,7 +86,7 @@ describe('test genUrlQuery()', () => {
       pageSize: 100,
     };
 
-    const url = genUrlQuery(
+    const url = generateSearchURLQuery(
       baseUrl,
       defaultFacets,
       activeFacets,
@@ -103,7 +103,7 @@ describe('test genUrlQuery()', () => {
       pageSize: 10,
     };
 
-    const url = genUrlQuery(
+    const url = generateSearchURLQuery(
       baseUrl,
       defaultFacets,
       activeFacets,
@@ -121,7 +121,13 @@ describe('test genUrlQuery()', () => {
       pageSize: 10,
     };
 
-    const url = genUrlQuery(baseUrl, defaultFacets, {}, textInputs, pagination);
+    const url = generateSearchURLQuery(
+      baseUrl,
+      defaultFacets,
+      {},
+      textInputs,
+      pagination
+    );
     expect(url).toEqual(
       `${apiRoutes.esgfDatasets}?limit=10&offset=0&latest=true&replica=false&query=input1,input2&`
     );
@@ -137,14 +143,14 @@ describe('test fetchResults()', () => {
   it('returns results', async () => {
     reqUrl += '?query=input1,input2&facet1=var1,var2&facet2=var3,var4';
 
-    const projects = await fetchResults([reqUrl]);
+    const projects = await fetchSearchResults([reqUrl]);
     expect(projects).toEqual(ESGFSearchAPIFixture());
   });
 
   it('returns results without free-text', async () => {
     reqUrl += '?query=*&facet1=var1,var2&facet2=var3,var4';
 
-    const projects = await fetchResults({ reqUrl });
+    const projects = await fetchSearchResults({ reqUrl });
     expect(projects).toEqual(ESGFSearchAPIFixture());
   });
   it('catches and throws an error', async () => {
@@ -153,7 +159,7 @@ describe('test fetchResults()', () => {
         return res(ctx.status(404));
       })
     );
-    await expect(fetchResults([reqUrl])).rejects.toThrow('404');
+    await expect(fetchSearchResults([reqUrl])).rejects.toThrow('404');
   });
 });
 
@@ -188,7 +194,7 @@ describe('test fetchCitation()', () => {
       creatorsList: 'Bob; Tom',
     };
 
-    const newCitation = await fetchCitation({
+    const newCitation = await fetchDatasetCitation({
       url: 'citation_url',
     });
     expect(newCitation).toEqual(results);
@@ -201,7 +207,7 @@ describe('test fetchCitation()', () => {
     );
 
     await expect(
-      fetchCitation({
+      fetchDatasetCitation({
         url: 'citation_url',
       })
     ).rejects.toThrow('404');
@@ -211,11 +217,11 @@ describe('test fetchCitation()', () => {
 describe('test fetchFiles()', () => {
   let dataset: { [key: string]: string };
   beforeEach(() => {
-    dataset = { id: 'testid' };
+    dataset = { id: 'testid|node.org' };
   });
 
   it('calls axios and returns files', async () => {
-    const files = await fetchFiles({ id: dataset.id });
+    const files = await fetchDatasetFiles({ id: dataset.id });
     expect(files).toEqual(ESGFSearchAPIFixture());
   });
   it('catches and throws an error', async () => {
@@ -224,7 +230,7 @@ describe('test fetchFiles()', () => {
         return res(ctx.status(404));
       })
     );
-    await expect(fetchFiles({ id: dataset.id })).rejects.toThrow('404');
+    await expect(fetchDatasetFiles({ id: dataset.id })).rejects.toThrow('404');
   });
 });
 
@@ -262,7 +268,7 @@ describe('test fetchUserCart', () => {
 
 describe('test fetchUserSearches', () => {
   it('returns user"s searches', async () => {
-    const res = await fetchUserSearches('access_token');
+    const res = await fetchUserSearchQueries('access_token');
 
     expect(res).toEqual({ results: userSearchQueriesFixture() });
   });
@@ -273,7 +279,7 @@ describe('test fetchUserSearches', () => {
       })
     );
 
-    await expect(fetchUserSearches('access_token')).rejects.toThrow('404');
+    await expect(fetchUserSearchQueries('access_token')).rejects.toThrow('404');
   });
 });
 
