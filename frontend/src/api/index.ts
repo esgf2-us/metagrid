@@ -233,10 +233,10 @@ export const generateSearchURLQuery = (
   pagination: { page: number; pageSize: number }
 ): string => {
   const defaultFacetsStr = queryString.stringify(
-    humps.decamelizeKeys(defaultFacets)
+    humps.decamelizeKeys(defaultFacets) as DefaultFacets
   );
   const activeFacetsStr = queryString.stringify(
-    humps.decamelizeKeys(activeFacets),
+    humps.decamelizeKeys(activeFacets) as ActiveFacets,
     {
       arrayFormat: 'comma',
     }
