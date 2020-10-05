@@ -3,9 +3,10 @@ import {
   BookOutlined,
   DeleteOutlined,
   HomeOutlined,
+  QuestionOutlined,
   ShoppingCartOutlined,
 } from '@ant-design/icons';
-import { Breadcrumb, Layout, message } from 'antd';
+import { Affix, Breadcrumb, Button, Layout, message } from 'antd';
 import React from 'react';
 import {
   BrowserRouter as Router,
@@ -38,6 +39,7 @@ import {
 import NavBar from '../NavBar';
 import Search from '../Search';
 import { RawSearchResults, TextInputs } from '../Search/types';
+import Support from '../Support';
 import './App.css';
 
 const styles: CSSinJS = {
@@ -58,6 +60,10 @@ const App: React.FC = () => {
   const authState = React.useContext(AuthContext);
   const { access_token: accessToken, pk } = authState;
   const isAuthenticated = accessToken && pk;
+
+  const [supportModalVisible, setSupportModalVisible] = React.useState<boolean>(
+    false
+  );
 
   const [activeProject, setActiveProject] = React.useState<
     RawProject | Record<string, unknown>
@@ -400,6 +406,19 @@ const App: React.FC = () => {
             </Switch>
           </Layout.Content>
         </Layout>
+        <Affix style={{ position: 'fixed', bottom: 20, right: 20 }}>
+          <Button
+            type="primary"
+            shape="circle"
+            size="large"
+            icon={<QuestionOutlined style={{ fontSize: '24px' }} />}
+            onClick={() => setSupportModalVisible(true)}
+          ></Button>
+        </Affix>
+        <Support
+          visible={supportModalVisible}
+          onClose={() => setSupportModalVisible(false)}
+        />
       </div>
     </Router>
   );
