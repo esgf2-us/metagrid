@@ -1015,3 +1015,28 @@ describe('User search library', () => {
     });
   });
 });
+
+describe('User support', () => {
+  it('renders user support modal when clicking fixed button and is closeable', () => {
+    const { getByRole } = customRender(
+      <Router>
+        <App />
+      </Router>
+    );
+
+    // support button renders
+    const supportBtn = getByRole('img', { name: 'question', hidden: true });
+    expect(supportBtn).toBeTruthy();
+
+    // click support button
+    fireEvent.click(supportBtn);
+
+    // GitHub icon renders
+    const githubIcon = getByRole('img', { name: 'github', hidden: true });
+    expect(githubIcon).toBeTruthy();
+
+    // click close button
+    const closeBtn = getByRole('button', { name: 'Close' });
+    fireEvent.click(closeBtn);
+  });
+});
