@@ -11,7 +11,7 @@ repos:
         name: eslint
         language: system
         files: .+(js|jsx|ts|tsx|css|sass|less|json)
-        entry: yarn --cwd frontend precommit
+        entry: bash -c 'cd frontend && yarn lint'
 
   # BACKEND
   # ------------------------------------------------------------------------------
