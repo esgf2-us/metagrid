@@ -22,6 +22,8 @@ type Props = {
   danger?: boolean;
   children?: React.ReactElement | React.ReactNode | string;
   loading?: boolean;
+  shape?: 'circle' | 'round';
+  size?: 'large' | 'middle' | 'small';
 };
 
 const Button: React.FC<Props> = ({
@@ -36,6 +38,8 @@ const Button: React.FC<Props> = ({
   danger = false,
   loading = false,
   children,
+  shape,
+  size,
 }) => {
   return (
     <ButtonD
@@ -49,6 +53,8 @@ const Button: React.FC<Props> = ({
       disabled={disabled}
       danger={danger}
       loading={loading}
+      shape={shape}
+      size={size}
     >
       {children}
     </ButtonD>
