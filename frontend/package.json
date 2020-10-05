@@ -21,7 +21,6 @@
     "env-cmd": "10.1.0",
     "humps": "2.0.1",
     "keycloak-js": "11.0.2",
-    "lint-staged": "10.4.0",
     "query-string": "6.13.4",
     "react": "16.13.1",
     "react-async": "10.0.1",
@@ -94,13 +93,5 @@
         "lines": 100
       }
     }
-  },
-  "lint-staged": {
-    "src/**/*.+(js|jsx|ts|tsx|json)": [
-      "eslint './src/**/*.{js,jsx,ts,tsx,json}' --fix --no-error-on-unmatched-pattern"
-    ],
-    "src/**/*.+(js|jsx|ts|tsx|css|sass|less|json)": [
-      "prettier --write './src/**/*.{js,jsx,ts,tsx,css,sass,less,json}'"
-    ]
   }
 }
