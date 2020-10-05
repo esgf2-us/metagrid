@@ -39,7 +39,7 @@
     "test": "CI=1 env-cmd -f .envs/.local/.react react-scripts test --env=jest-environment-jsdom-sixteen",
     "test:watch": "env-cmd -f .envs/.local/.react react-scripts test --env=jest-environment-jsdom-sixteen",
     "test:coverage": "CI=1 env-cmd -f .envs/.local/.react react-scripts test --coverage --env=jest-environment-jsdom-sixteen",
-    "lint": "eslint src/**/*.{js,jsx,ts,tsx} --no-error-on-unmatched-pattern",
+    "lint": "eslint './src/**/*.{js,jsx,ts,tsx,json}' --fix --no-error-on-unmatched-pattern",
     "precommit": "lint-staged"
   },
   "eslintConfig": {
@@ -97,10 +97,10 @@
   },
   "lint-staged": {
     "src/**/*.+(js|jsx|ts|tsx|json)": [
-      "eslint --fix --no-error-on-unmatched-pattern"
+      "eslint './src/**/*.{js,jsx,ts,tsx,json}' --fix --no-error-on-unmatched-pattern"
     ],
     "src/**/*.+(js|jsx|ts|tsx|css|sass|less|json)": [
-      "prettier --write"
+      "prettier --write './src/**/*.{js,jsx,ts,tsx,css,sass,less,json}'"
     ]
   }
 }
