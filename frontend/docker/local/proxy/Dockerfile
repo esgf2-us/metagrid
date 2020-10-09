@@ -4,7 +4,7 @@ FROM node:13.14.0-alpine
 # Set working directory
 WORKDIR /proxy
 
-# Add `/app/node_modules/.bin` to $PATH
+# Add `/proxy/node_modules/.bin` to $PATH
 ENV PATH /proxy/node_modules/.bin:$PATH
 
 # Install proxy dependencies
