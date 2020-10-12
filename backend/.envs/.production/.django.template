@@ -5,6 +5,7 @@ DJANGO_SECRET_KEY=
 DJANGO_ADMIN_URL=
 DJANGO_ALLOWED_HOSTS=
 DOMAIN_NAME=
+DOMAIN_SUBDIRECTORY=
 
 # Security
 # ------------------------------------------------------------------------------
