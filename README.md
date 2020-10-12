@@ -87,7 +87,7 @@ Remove the `--build` flag when you don't need to rebuild (e.g. no updates to Doc
 
 ##### 2.1.1 Addressing Keycloak Boot Issue
 
-Keycloak has a known fatal issue where if it is interrupted during boot (stopping docker-compose up prematurely), the command that adds the admin user fails. As a result, the Keycloak docker service will not start and outputs the error: _"User with username 'admin' already..."_.
+Keycloak has a known fatal issue where if it is interrupted during boot (stopping `docker-compose up` prematurely), the command that adds the admin user fails. As a result, the Keycloak docker service will not start and outputs the error _"User with username 'admin' already..."_.
 
 If you run into this problem, follow these work-around steps:
 
@@ -172,7 +172,7 @@ Remove the `--build` flag when you don't need to rebuild (e.g. no updates to Doc
 
 Building the production environment involves the same steps as local; however, use `docker-compose.production.yml` instead. The environment also needs to be configured.
 
-Some environment variables take into account if the server is configured with or without a subdomain. Follow the examples **without** a subdomain if you are reproducing the production environment locally.
+Some environment variables take into account if the server hostname includes a subdirectory/subdomain. Follow the examples **without** a subdirectory/subdomain if you are reproducing the production environment locally.
 
 Finally, Keycloak is not a Docker service and must be hosted as a stand-alone instance.
 
@@ -182,129 +182,30 @@ Finally, Keycloak is not a Docker service and must be hosted as a stand-alone in
 2. Copy env files `.django.template` and `.postgres.template`
 3. Rename files as `.django` and `.postgres`
 
-#### 1.1 Django
+| Service  | Environment Variable                                                                               | Description                                                                                                                                                                                                                        | Documentation                                                                   | Example                                                                                                                                             |
+| -------- | -------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Django   | `DJANGO_SECRET_KEY`                                                                                | A secret key for a particular Django installation. This is used to provide cryptographic signing, and should be set to a unique, unpredictable value.                                                                              | [Link](https://docs.djangoproject.com/en/3.0/ref/settings/#secret-key)          | `DJANGO_SECRET_KEY=YAFKApvifkIFTw0DDNQQdHI34kyQdyWH89acWTogCfm4SGRz2x`                                                                              |
+| Django   | `DJANGO_ADMIN_URL`                                                                                 | The url to access the Django Admin page. It should be set to a unique, unpredictable value (not `admin/`).                                                                                                                         |                                                                                 | `DJANGO_ADMIN_URL=11hxhSu03aSBTOZWCysDvSvcDfa16kFh/`                                                                                                |
+| Django   | `DJANGO_ALLOWED_HOSTS`                                                                             | A list of strings representing the host/domain names that this Django site can serve. This is a security measure to prevent HTTP Host header attacks, which are possible even under many seemingly-safe web server configurations. | [Link](https://docs.djangoproject.com/en/3.0/ref/settings/#allowed-hosts)       | `DJANGO_ALLOWED_HOSTS=esgf-dev1.llnl.gov`<br><br>Without subdirectory/subdomain:<br>`DJANGO_ALLOWED_HOSTS=localhost`                                |
+| Django   | `DOMAIN_NAME`                                                                                      | The domain linked to the server hosting the Django site.                                                                                                                                                                           |                                                                                 | `DOMAIN_NAME=esgf-dev1.llnl.gov`<br><br>Without subdirectory/subdomain:<br>`DOMAIN_NAME=localhost`                                                  |
+| Django   | `DOMAIN_SUBDIRECTORY`                                                                              | _OPTIONAL_ The domain subdirectory that is proxied to the Django site (e.g. _esgf-dev1.llnl.gov/metagrid-backend_). Make sure this matches the domains used in the rules in `traefik.yml`.                                         |                                                                                 | `DOMAIN_SUBDIRECTORY=metagrid-backend/`                                                                                                             |
+| Django   | `CORS_ORIGIN_WHITELIST`                                                                            | List of origins that are authorized to make HTTP requests. Make sure to add the URL of the front-end here.                                                                                                                         | [Link](https://github.com/adamchainz/django-cors-headers#cors_origin_whitelist) | `CORS_ORIGIN_WHITELIST=https://esgf-dev1.llnl.gov/metagrid`<br><br>Without subdirectory/subdomain:<br>`CORS_ORIGIN_WHITELIST=http://localhost:3000` |
+| Django   | `KEYCLOAK_URL`                                                                                     | The url of your hosted Keycloak server, it must end with `/auth`.                                                                                                                                                                  | [Link](https://django-allauth.readthedocs.io/en/latest/providers.html#keycloak) | `KEYCLOAK_URL=https://keycloak.metagrid.com/auth`                                                                                                   |
+| Django   | `KEYCLOAK_REALM`                                                                                   | The name of the Keycloak realm you want to use.                                                                                                                                                                                    | [Link](https://django-allauth.readthedocs.io/en/latest/providers.html#keycloak) | `KEYCLOAK_REALM=esgf`                                                                                                                               |
+| Django   | `KEYCLOAK_CLIENT_ID`                                                                               | The id for the Keycloak client, which is the entity that can request Keycloak to authenticate a user.                                                                                                                              |                                                                                 | `KEYCLOAK_CLIENT_ID=metagrid-backend`                                                                                                               |
+| Postgres | `POSTGRES_HOST` <br> `POSTGRES_PORT`<br> `POSTGRES_DB`<br> `POSTGRES_USER`<br> `POSTGRES_PASSWORD` | The default Postgres environment variables are self-explanatory and can be updated if needed.                                                                                                                                      |                                                                                 | N/A                                                                                                                                                 |  |
 
-##### `DJANGO_SECRET_KEY`
+#### Traefik
 
-A secret key for a particular Django installation. This is used to provide cryptographic signing, and should be set to a unique, unpredictable value.
+You will need to configure the domains used in Traefik's rules to match what you set for Django's `DOMAIN_NAME` (and `DOMAIN_SUBDIRECTORY` if applicable).
 
-[Source Documentation](https://docs.djangoproject.com/en/3.0/ref/settings/#secret-key)
+1. Enter directory: `./backend/docker/production/traefik/`
+2. Open `traefik.yml` in your editor
+3. Edit lines using example.com domains
 
-Example:
+- For example, esgf-dev1.llnl.gov or esgf-dev1.llnl.gov/metagrid-backend.
 
-```env
-DJANGO_SECRET_KEY=YAFKApvifkIFTw0DDNQQdHI34kyQdyWH89acWTogCfm4SGRz2x
-```
-
-##### `DJANGO_ADMIN_URL`
-
-The url to access the Django Admin page. It should be set to a unique, unpredictable value (not `admin/`).
-
-Example:
-
-```env
-DJANGO_ADMIN_URL=11hxhSu03aSBTOZWCysDvSvcDfa16kFh/
-```
-
-##### `DJANGO_ALLOWED_HOSTS`
-
-A list of strings representing the host/domain names that this Django site can serve. This is a security measure to prevent HTTP Host header attacks, which are possible even under many seemingly-safe web server configurations.
-
-[Source Documentation](https://docs.djangoproject.com/en/3.0/ref/settings/#allowed-hosts)
-
-Example with subdomain:
-
-```env
-DJANGO_ALLOWED_HOSTS=metagrid
-```
-
-Example without subdomain:
-
-If you are not using a subdomain of the domain name set in the project, set `DJANGO_ALLOWED_HOSTS` to your staging/production IP Address.
-
-```env
-DJANGO_ALLOWED_HOSTS=localhost
-```
-
-Failure to do this will mean you will not have access to your website through the HTTP protocol.
-
-```bash
-ERROR Invalid HTTP_HOST header: 'localhost:5000'. You may need to add 'localhost' to ALLOWED_HOSTS.
-```
-
-##### `DOMAIN_NAME`
-
-The name of the domain linked to the server.
-
-Example with subdomain:
-
-```env
-DOMAIN_NAME=https://backend.metagrid.com
-```
-
-Example without subdomain:
-
-```env
-DOMAIN_NAME=http://localhost:5000
-```
-
-##### `CORS_ORIGIN_WHITELIST`
-
-List of origins that are authorized to make HTTP requests. Make sure to add the URL of the front-end here.
-
-[Source Documentation](https://github.com/adamchainz/django-cors-headers#cors_origin_whitelist)
-
-Example with domain:
-
-```env
-CORS_ORIGIN_WHITELIST=https://frontend.metagrid.com
-```
-
-Example without subdomain:
-
-If you are not using a subdomain of the domain name set in the project, set `CORS_ORIGIN_WHITELIST` to your staging/production IP Address and port of the react front-end service.
-
-```env
-CORS_ORIGIN_WHITELIST=http://localhost:3000
-```
-
-##### `KEYCLOAK_URL`
-
-The url of your hosted keycloak server, it must end with `/auth`.
-
-[Source Documentation](https://django-allauth.readthedocs.io/en/latest/providers.html#keycloak)
-
-Example:
-
-```env
-KEYCLOAK_URL=https://keycloak.metagrid.com/auth
-```
-
-##### `KEYCLOAK_REALM`
-
-The name of the `realm` you want to use.
-
-[Source Documentation](https://django-allauth.readthedocs.io/en/latest/providers.html#keycloak)
-
-Example:
-
-```env
-KEYCLOAK_REALM=metagrid
-```
-
-##### `KEYCLOAK_CLIENT_ID`
-
-The id for the Keycloak client, or a entity that can request Keycloak to authenticate a user.
-
-Example:
-
-```env
-KEYCLOAK_CLIENT_ID=backend
-```
-
-#### 1.2 Postgres
-
-The default postgres environment variables can be updated as desired and are self-explanatory.
+Once configured, Traefik will get you a valid certificate from Lets Encrypt and update it automatically.
 
 ### 2. Front-end Configuration
 
@@ -312,86 +213,12 @@ The default postgres environment variables can be updated as desired and are sel
 2. Copy env files `.proxy.template` and `.react.template`
 3. Rename files as `.proxy` and `.react`
 
-#### 2.1 React
-
-##### 2.1.1 MetaGrid API
-
-##### `REACT_APP_API_URL`
-
-The URL for the MetaGrid API.
-
-Example with subdomain:
-
-```env
-REACT_APP_METAGRID_API_URL=https://backend.metagrid.com
-```
-
-Example without subdomain
-
-```env
-REACT_APP_METAGRID_API_URL=http://localhost:8000
-```
-
-##### 2.1.2 ESGF wget API
-
-[Documentation](https://github.com/ESGF/esgf-wget)
-
-##### `REACT_APP_WGET_API_URL`
-
-The URL for the ESGF wget API.
-
-Example:
-
-```env
-REACT_APP_WGET_API_URL=https://pcmdi8vm.llnl.gov/wget
-```
-
-##### 2.1.3 ESGF Search API
-
-[Documentation](https://github.com/ESGF/esgf.github.io/wiki/ESGF_Search_REST_API)
-
-##### `REACT_APP_ESGF_NODE_URL`
-
-The URL for the ESGF node.
-
-Example:
-
-```env
-REACT_APP_ESGF_NODE_URL=https://esgf-node.llnl.gov
-```
-
-##### 2.1.4 Keycloak
-
-##### `REACT_APP_KEYCLOAK_REALM`
-
-The name of the `realm` you want to use.
-
-Example:
-
-```env
-REACT_APP_KEYCLOAK_REALM=metagrid
-```
-
-##### `REACT_APP_KEYCLOAK_URL`
-
-The url of your hosted keycloak server, it must end with `/auth`.
-
-Example:
-
-```env
-REACT_APP_KEYCLOAK_URL=https://keycloak.metagrid.com/auth
-```
-
-##### `REACT_APP_KEYCLOAK_CLIENT_ID`
-
-The id for the Keycloak client, or a entity that can request Keycloak to authenticate a user.
-
-Example:
-
-```env
-REACT_APP_KEYCLOAK_CLIENT_ID=frontend
-```
-
-#### 2.2 Proxy
-
-The default proxy configuration does not need to be updated.
+| Service | Environment Variable           | Description                                                                                          | Documentation                                                            | Example                                                                                                                                                           |
+| ------- | ------------------------------ | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| React   | `REACT_APP_API_URL`            | The URL for the MetaGrid API used to query projects, users, etc.                                     |                                                                          | `REACT_APP_METAGRID_API_URL=https://esgf-dev1.llnl/metagrid-backend`<br><br>Without subdirectory/subdomain:<br>`REACT_APP_METAGRID_API_URL=http://localhost:8000` |
+| React   | `REACT_APP_WGET_API_URL`       | The URL for the ESGF wget API to generate a wget script for downloading selected datasets.           | [Link](https://github.com/ESGF/esgf-wget)                                | `REACT_APP_WGET_API_URL=https://pcmdi8vm.llnl.gov/wget`                                                                                                           |
+| React   | `REACT_APP_ESGF_NODE_URL`      | The URL for the ESGF Search API node used to query datasets, files, and facets.                      | [Link](https://github.com/ESGF/esgf.github.io/wiki/ESGF_Search_REST_API) | `REACT_APP_ESGF_NODE_URL=https://esgf-node.llnl.gov`                                                                                                              |
+| React   | `REACT_APP_KEYCLOAK_URL`       | The url of your hosted Keycloak server, it must end with `/auth`.                                    |                                                                          | `REACT_APP_KEYCLOAK_URL=https://keycloak.metagrid.com/auth`                                                                                                       |
+| React   | `REACT_APP_KEYCLOAK_REALM`     | The name of the Keycloak realm you want to use.                                                      |                                                                          | `REACT_APP_KEYCLOAK_REALM=esgf`                                                                                                                                   |
+| React   | `REACT_APP_KEYCLOAK_CLIENT_ID` | The id for the Keycloak client, which is an entity that can request Keycloak to authenticate a user. |                                                                          | `REACT_APP_KEYCLOAK_CLIENT_ID=frontend`                                                                                                                           |
+| Proxy   | N/A                            | The default proxy configuration does not need to be updated.                                         |                                                                          | N/A                                                                                                                                                               |
