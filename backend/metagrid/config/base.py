@@ -33,6 +33,10 @@ USE_L10N = True
 USE_TZ = True
 LOGIN_REDIRECT_URL = "/"
 
+DOMAIN_NAME = env("DOMAIN_NAME", default="example.com")
+DOMAIN_SUBDIRECTORY = env("DOMAIN_SUBDIRECTORY", default=None)
+SITE_ID = 1
+
 # APPS
 # ------------------------------------------------------------------------------
 INSTALLED_APPS = [
@@ -252,14 +256,15 @@ SIMPLE_JWT = {
 # django-allauth
 # -------------------------------------------------------------------------------
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
-DOMAIN_NAME = env("DOMAIN_NAME", default="example.com")
-SITE_ID = 1
-
 # https://django-allauth.readthedocs.io/en/latest/providers.html#keycloak
 SOCIALACCOUNT_PROVIDERS = {
     "keycloak": {
-        "KEYCLOAK_URL": env("KEYCLOAK_URL",),
-        "KEYCLOAK_REALM": env("KEYCLOAK_REALM",),
+        "KEYCLOAK_URL": env(
+            "KEYCLOAK_URL",
+        ),
+        "KEYCLOAK_REALM": env(
+            "KEYCLOAK_REALM",
+        ),
     }
 }
 # Used in data migration to register Keycloak social app

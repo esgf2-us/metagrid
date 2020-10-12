@@ -92,3 +92,9 @@ urlpatterns += [
         name="schema-redoc",
     ),
 ]
+
+# In a production environment, the site may be hosted in a subdirectory
+# of a domain. The subdirectory must be prepended to each of the urls
+# for the routes to be valid.
+if settings.DOMAIN_SUBDIRECTORY:
+    urlpatterns = [path(settings.DOMAIN_SUBDIRECTORY, include(urlpatterns))]
