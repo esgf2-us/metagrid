@@ -22,6 +22,16 @@ EMAIL_BACKEND = env(
     default="django.core.mail.backends.console.EmailBackend",
 )
 
+# django-rest-framework - https://www.django-rest-framework.org/api-guide/settings/
+
+# -------------------------------------------------------------------------------
+DEFAULT_RENDERER_CLASSES.append(  # noqa F405
+    "rest_framework.renderers.BrowsableAPIRenderer",
+)
+REST_FRAMEWORK[  # noqa F405
+    "DEFAULT_RENDERER_CLASSES"
+] = DEFAULT_RENDERER_CLASSES  # noqa F405
+
 # WhiteNoise
 # ------------------------------------------------------------------------------
 # http://whitenoise.evans.io/en/latest/django.html#using-whitenoise-in-development
