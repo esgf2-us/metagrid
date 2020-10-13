@@ -201,9 +201,10 @@ You will need to configure the domains used in Traefik's rules to match what you
 
 1. Enter directory: `./backend/docker/production/traefik/`
 2. Open `traefik.yml` in your editor
-3. Edit lines using example.com domains
-
-- For example, esgf-dev1.llnl.gov or esgf-dev1.llnl.gov/metagrid-backend.
+3. Edit both `` rule: "Host(`example.com`) && PathPrefix(`/prefix`)" ``
+   - Change `example.com` to the domain name (e.g. `esgf-dev1.llnl.gov`)
+   - Change `/prefix` to the domain subdirectory (e.g. `/metagrid-backend`)
+     - If you don't use a subdirectory, delete both `` PathPrefix(`prefix`) ``
 
 Once configured, Traefik will get you a valid certificate from Lets Encrypt and update it automatically.
 
