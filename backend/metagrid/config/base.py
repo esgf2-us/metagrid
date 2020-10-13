@@ -111,6 +111,8 @@ DATABASES["default"]["ATOMIC_REQUESTS"] = True
 STATIC_ROOT = str(ROOT_DIR("staticfiles"))
 # https://docs.djangoproject.com/en/dev/ref/settings/#static-url
 STATIC_URL = "/static/"
+if DOMAIN_SUBDIRECTORY:
+    STATIC_URL = f"{DOMAIN_SUBDIRECTORY}{STATIC_URL}"
 # https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
 STATICFILES_DIRS = []  # type: List[str]
 # https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#staticfiles-finders
@@ -119,12 +121,15 @@ STATICFILES_FINDERS = [
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
 ]
 
+
 # MEDIA
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#media-root
 MEDIA_ROOT = str(ROOT_DIR)
 # https://docs.djangoproject.com/en/dev/ref/settings/#media-url
 MEDIA_URL = "/media/"
+if DOMAIN_SUBDIRECTORY:
+    MEDIA_URL = f"{DOMAIN_SUBDIRECTORY}{MEDIA_URL}"
 
 # TEMPLATES
 # ------------------------------------------------------------------------------
