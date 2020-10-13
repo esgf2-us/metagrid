@@ -97,4 +97,6 @@ urlpatterns += [
 # of a domain. The subdirectory must be prepended to each of the urls
 # for the routes to be valid.
 if settings.DOMAIN_SUBDIRECTORY:
-    urlpatterns = [path(settings.DOMAIN_SUBDIRECTORY, include(urlpatterns))]
+    urlpatterns = [
+        path(f"{settings.DOMAIN_SUBDIRECTORY}/", include(urlpatterns))
+    ]
