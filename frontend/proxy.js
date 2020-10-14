@@ -16,11 +16,20 @@ const protocol = process.env.PROXY_PROTOCOL || 'http://';
 const host = process.env.PROXY_HOST || 'localhost';
 // Listen on a specific port via the PORT environment variable
 const port = process.env.PROXY_PORT || 8080;
+// If set, requests whose origin is not listed are blocked.
+// If the frontend is performing a same-site request (origin is the same),
+// the list can be empty to allow origins.
+let originWhitelist = process.env.PROXY_ORIGIN_WHITELIST;
+if (originWhitelist) {
+  originWhitelist = originWhitelist.split(',');
+} else {
+  originWhitelist = [];
+}
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
 corsProxy
   .createServer({
-    originWhitelist: process.env.PROXY_ORIGIN_WHITELIST.split(' '),
+    originWhitelist,
     requireHeader: ['origin', 'x-requested-with'],
     removeHeaders: ['cookie', 'cookie2'],
   })

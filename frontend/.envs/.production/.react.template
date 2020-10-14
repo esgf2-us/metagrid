@@ -1,3 +1,7 @@
+# General
+# ------------------------------------------------------------------------------
+PUBLIC_URL=
+
 # MetaGrid API
 # ------------------------------------------------------------------------------
 # https://github.com/aims-group/metagrid/tree/master/backend
@@ -16,7 +20,7 @@ REACT_APP_ESGF_NODE_URL=https://esgf-node.llnl.gov
 # cors-anywhere proxy
 # ------------------------------------------------------------------------------
 # https://github.com/Rob--W/cors-anywhere
-REACT_APP_PROXY_URL=http://localhost:3001
+REACT_APP_PROXY_URL=
 
 # Keycloak
 # ------------------------------------------------------------------------------

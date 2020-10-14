@@ -16,4 +16,4 @@ RUN yarn install
 COPY . ./
 
 # Start app
-CMD ["yarn", "start"]
+CMD ["yarn", "start:local"]

@@ -299,7 +299,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <Router>
+    <Router basename={process.env.PUBLIC_URL}>
       <Switch>
         <Redirect from="/" exact to="/search" />
         <Redirect from="/cart" exact to="/cart/items" />

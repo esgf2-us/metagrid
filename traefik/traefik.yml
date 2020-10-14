@@ -22,7 +22,7 @@ certificatesResolvers:
 
 http:
   routers:
-    web-router:
+    web-backend-router:
       rule: "Host(`example.com`) && PathPrefix(`/prefix`)"
 
       entryPoints:
@@ -32,14 +32,52 @@ http:
         - csrf
       service: django
 
-    web-secure-router:
-      rule: "Host(`example.com`) || PathPrefix(`/prefix`)"
+    web-backend-secure-router:
+      rule: "Host(`example.com`) && PathPrefix(`/prefix`)"
 
       entryPoints:
         - web-secure
       middlewares:
         - csrf
       service: django
+      tls:
+        # https://docs.traefik.io/master/routing/routers/#certresolver
+        certResolver: letsencrypt
+
+    web-frontend-router:
+      rule: "Host(`example.com`) && PathPrefix(`/prefix`)"
+
+      entryPoints:
+        - web
+      middlewares:
+        - redirect
+      service: react
+
+    web-frontend-secure-router:
+      rule: "Host(`example.com`) && PathPrefix(`/prefix`)"
+
+      entryPoints:
+        - web-secure
+      service: react
+      tls:
+        # https://docs.traefik.io/master/routing/routers/#certresolver
+        certResolver: letsencrypt
+
+    web-proxy-router:
+      rule: "Host(`example.com`)"
+
+      entryPoints:
+        - web
+      middlewares:
+        - redirect
+      service: proxy
+
+    web-proxy-secure-router:
+      rule: "Host(`example.com`)"
+
+      entryPoints:
+        - web-secure
+      service: proxy
       tls:
         # https://docs.traefik.io/master/routing/routers/#certresolver
         certResolver: letsencrypt
@@ -61,6 +99,14 @@ http:
       loadBalancer:
         servers:
           - url: http://django:5000
+    react:
+      loadBalancer:
+        servers:
+          - url: http://react:3000
+    proxy:
+      loadBalancer:
+        servers:
+          - url: http://proxy:3001
 
 providers:
   # https://docs.traefik.io/master/providers/file/
