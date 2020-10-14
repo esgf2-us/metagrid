@@ -31,7 +31,8 @@
     "uuid": "8.3.0"
   },
   "scripts": {
-    "start": "env-cmd -f .envs/.local/.react react-scripts start",
+    "start:local": "env-cmd -f .envs/.local/.react react-scripts start",
+    "start:production": "env-cmd -f .envs/.production/.react react-scripts start",
     "build:local": "env-cmd -f .envs/.local/.react react-scripts build",
     "build:production": "env-cmd -f .envs/.production/.react react-scripts build",
     "eject": "react-scripts eject",
