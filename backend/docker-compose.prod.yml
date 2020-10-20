@@ -22,6 +22,9 @@ services:
       context: .
       dockerfile: ./docker/production/django/Dockerfile
     image: metagrid_production_django
+    networks:
+      - traefik_default
+      - default
     depends_on:
       - postgres
     env_file:
@@ -31,15 +34,6 @@ services:
       - "5000:5000"
     command: /start
 
-  traefik:
-    build:
-      context: .
-      dockerfile: ./docker/production/traefik/Dockerfile
-    image: metagrid_production_traefik
-    depends_on:
-      - django
-    volumes:
-      - production_traefik:/etc/traefik/acme
-    ports:
-      - "0.0.0.0:80:80"
-      - "0.0.0.0:443:443"
+networks:
+  traefik_default:
+    external: true

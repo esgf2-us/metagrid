@@ -17,5 +17,7 @@ RUN yarn add cors-anywhere
 COPY src/env.ts ./
 COPY proxy.js ./
 
+EXPOSE 3001
+
 # Start proxy
 CMD ["node", "proxy.js"]
