@@ -6,6 +6,9 @@ services:
       context: ./
       dockerfile: ./docker/production/proxy/Dockerfile
     image: metagrid_production_proxy
+    networks:
+      - traefik_default
+      - default
     container_name: proxy
     env_file:
       - .envs/.production/.proxy
@@ -19,6 +22,9 @@ services:
       context: ./
       dockerfile: ./docker/production/react/Dockerfile
     image: metagrid_production_react
+    networks:
+      - traefik_default
+      - default
     container_name: react
     env_file:
       - .envs/.production/.react
@@ -26,7 +32,11 @@ services:
       - './:/app'
       - '/app/node_modules'
     ports:
-      - '3000:80'
+      - '3000:3000'
     stdin_open: true
     depends_on:
       - proxy
+
+networks:
+  traefik_default:
+    external: true
