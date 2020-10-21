@@ -3,6 +3,7 @@ import {
   deleteUserSearchQuery,
   fetchDatasetCitation,
   fetchDatasetFiles,
+  fetchNodeStatus,
   fetchProjects,
   fetchSearchResults,
   fetchUserCart,
@@ -10,6 +11,7 @@ import {
   fetchWgetScript,
   generateSearchURLQuery,
   openDownloadURL,
+  parseNodeStatus,
   processCitation,
   updateUserCart,
 } from '.';
@@ -18,8 +20,10 @@ import { RawCitation, TextInputs } from '../components/Search/types';
 import {
   defaultFacetsFixture,
   ESGFSearchAPIFixture,
+  parsedNodeStatusFixture,
   projectsFixture,
   rawCitationFixture,
+  rawNodeStatusFixture,
   rawUserCartFixture,
   userSearchQueriesFixture,
   userSearchQueryFixture,
@@ -56,7 +60,7 @@ describe('test genUrlQuery()', () => {
     baseUrl = `limit=0&offset=0`;
     defaultFacets = defaultFacetsFixture();
     activeFacets = {
-      facet1: ['var1', 'var2'],
+      data_node: ['var1', 'var2'],
       facet2: ['var3', 'var4'],
     };
     textInputs = ['input1', 'input2'];
@@ -77,7 +81,7 @@ describe('test genUrlQuery()', () => {
     );
 
     expect(url).toEqual(
-      `${apiRoutes.esgfSearch}?limit=10&offset=0&latest=true&replica=false&query=input1,input2&facet1=var1,var2&facet2=var3,var4`
+      `${apiRoutes.esgfSearch}?limit=10&offset=0&latest=true&replica=false&query=input1,input2&data_node=var1,var2&facet2=var3,var4`
     );
   });
   it('returns formatted url with offset of 200 and limit of 100 on page 3', () => {
@@ -94,7 +98,7 @@ describe('test genUrlQuery()', () => {
       pagination
     );
     expect(url).toEqual(
-      `${apiRoutes.esgfSearch}?limit=100&offset=200&latest=true&replica=false&query=input1,input2&facet1=var1,var2&facet2=var3,var4`
+      `${apiRoutes.esgfSearch}?limit=100&offset=200&latest=true&replica=false&query=input1,input2&data_node=var1,var2&facet2=var3,var4`
     );
   });
   it('returns formatted url without free-text', () => {
@@ -111,7 +115,7 @@ describe('test genUrlQuery()', () => {
       pagination
     );
     expect(url).toEqual(
-      `${apiRoutes.esgfSearch}?limit=10&offset=0&latest=true&replica=false&query=*&facet1=var1,var2&facet2=var3,var4`
+      `${apiRoutes.esgfSearch}?limit=10&offset=0&latest=true&replica=false&query=*&data_node=var1,var2&facet2=var3,var4`
     );
   });
 
@@ -141,14 +145,14 @@ describe('test fetchSearchResults()', () => {
     reqUrl = apiRoutes.esgfSearch;
   });
   it('returns results', async () => {
-    reqUrl += '?query=input1,input2&facet1=var1,var2&facet2=var3,var4';
+    reqUrl += '?query=input1,input2&data_node=var1,var2&facet2=var3,var4';
 
     const projects = await fetchSearchResults([reqUrl]);
     expect(projects).toEqual(ESGFSearchAPIFixture());
   });
 
   it('returns results without free-text', async () => {
-    reqUrl += '?query=*&facet1=var1,var2&facet2=var3,var4';
+    reqUrl += '?query=*&data_node=var1,var2&facet2=var3,var4';
 
     const projects = await fetchSearchResults({ reqUrl });
     expect(projects).toEqual(ESGFSearchAPIFixture());
@@ -367,5 +371,29 @@ describe('test openDownloadUrl()', () => {
 
     openDownloadURL(url);
     expect(window.location.origin).toEqual('https://example.com');
+  });
+});
+
+describe('test parseNodeStatus()', () => {
+  it('returns correctly formatted node status', () => {
+    const nodeStatus = rawNodeStatusFixture();
+    expect(parseNodeStatus(nodeStatus)).toEqual(parsedNodeStatusFixture());
+  });
+});
+
+describe('test fetchNodeStatus()', () => {
+  it('returns parsed node status', async () => {
+    const res = await fetchNodeStatus();
+
+    expect(res).toEqual(parsedNodeStatusFixture());
+  });
+  it('catches and throws an error', async () => {
+    server.use(
+      rest.get(apiRoutes.nodeStatus, (_req, res, ctx) => {
+        return res(ctx.status(404));
+      })
+    );
+
+    await expect(fetchNodeStatus()).rejects.toThrow('404');
   });
 });

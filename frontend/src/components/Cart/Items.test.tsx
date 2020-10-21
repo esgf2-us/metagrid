@@ -50,7 +50,7 @@ it('handles selecting items in the cart and downloading them via wget', async ()
   // Check first row renders and click the checkbox
   const firstRow = getByRole('row', {
     name:
-      'right-circle foo 3 1 Bytes node.gov 1 check-circle Globus Compatible wget download minus',
+      'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 check-circle Globus Compatible wget download minus',
   });
   const firstCheckBox = within(firstRow).getByRole('checkbox');
   expect(firstCheckBox).toBeTruthy();
@@ -90,7 +90,7 @@ it('handles error selecting items in the cart and downloading them via wget', as
   // Check first row renders and click the checkbox
   const firstRow = getByRole('row', {
     name:
-      'right-circle foo 3 1 Bytes node.gov 1 check-circle Globus Compatible wget download minus',
+      'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 check-circle Globus Compatible wget download minus',
   });
   const firstCheckBox = within(firstRow).getByRole('checkbox');
   expect(firstCheckBox).toBeTruthy();

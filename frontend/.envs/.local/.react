@@ -13,6 +13,11 @@ REACT_APP_WGET_API_URL=https://pcmdi8vm.llnl.gov/wget
 # https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
 REACT_APP_ESGF_NODE_URL=https://esgf-node.llnl.gov
 
+# ESGF Node Status API
+# ------------------------------------------------------------------------------
+# https://github.com/ESGF/esgf-utils/blob/master/node_status/query_prom.py
+REACT_APP_ESGF_NODE_STATUS_URL=https://aims4.llnl.gov/prometheus/api/v1/query?query=probe_success%7Bjob%3D%22http_2xx%22%2C+target%3D~%22.%2Athredds.%2A%22%7D
+
 # cors-anywhere proxy
 # ------------------------------------------------------------------------------
 # https://github.com/Rob--W/cors-anywhere

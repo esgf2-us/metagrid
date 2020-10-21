@@ -15,6 +15,7 @@ import {
   DefaultFacets,
   RawProjects,
 } from '../components/Facets/types';
+import { NodeStatusArray, RawNodeStatus } from '../components/NodeStatus/types';
 import { RawCitation } from '../components/Search/types';
 import { proxyURL } from '../env';
 import axios from '../lib/axios';
@@ -374,6 +375,46 @@ export const fetchWgetScript = async (
     .get(url)
     .then(() => {
       return url;
+    })
+    .catch((error) => {
+      throw new Error(error);
+    });
+};
+
+/**
+ * Parses the results of the node status API to simplify the data structure.
+ */
+export const parseNodeStatus = (res: RawNodeStatus): NodeStatusArray => {
+  const parsedRes = [] as NodeStatusArray;
+
+  res.data.result.forEach((node) => {
+    const { instance, target: source } = node.metric;
+    const [epochTimestamp, isOnline] = node.value;
+
+    const timestamp = new Date(epochTimestamp * 1000).toUTCString();
+
+    parsedRes.push({
+      name: instance,
+      source,
+      timestamp,
+      isOnline: Boolean(Number(isOnline)),
+    });
+  });
+
+  parsedRes.sort((a, b) => a.name.localeCompare(b.name));
+
+  return parsedRes;
+};
+
+/**
+ * HTTP Request Method: GET
+ * HTTP Response: 200 OK
+ */
+export const fetchNodeStatus = async (): Promise<NodeStatusArray> => {
+  return axios
+    .get(`${apiRoutes.nodeStatus}`)
+    .then((res) => {
+      return parseNodeStatus(res.data as RawNodeStatus);
     })
     .catch((error) => {
       throw new Error(error);

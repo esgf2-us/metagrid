@@ -1,6 +1,6 @@
 import { humanizeFacetNames } from './FacetsForm';
 
-describe('Test humanizeStr', () => {
+describe('Test humanizeFacetNames', () => {
   it('removes underscore and lowercases', () => {
     expect(humanizeFacetNames('camel_case')).toEqual('Camel Case');
   });
