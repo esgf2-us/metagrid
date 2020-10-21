@@ -201,7 +201,7 @@ describe('test Search component', () => {
     // Select the first row
     const firstRow = getByRole('row', {
       name:
-        'right-circle foo 3 1 Bytes node.gov 1 check-circle Globus Compatible wget download plus',
+        'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 check-circle Globus Compatible wget download plus',
     });
     expect(firstRow).toBeTruthy();
 
@@ -263,12 +263,12 @@ describe('test Search component', () => {
 describe('test parseFacets()', () => {
   it('successfully parses an object of arrays into an array of tuples', () => {
     const facets: RawFacets = {
-      facet1: ['option1', 1, 'option2', 2],
+      data_node: ['option1', 1, 'option2', 2],
       facet2: ['option1', 1, 'option2', 2],
     };
 
     const result = {
-      facet1: [
+      data_node: [
         ['option1', 1],
         ['option2', 2],
       ],

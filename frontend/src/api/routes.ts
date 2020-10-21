@@ -1,14 +1,10 @@
-/**
- * This file contains API routes.
- *
- * For more information on available HTTP Request Methods for a given route,
- * refer to the MetaGrid swagger docs.
- *
- * For more information on the ESGF Search API, refer to the official docs:
- * https://github.com/ESGF/esgf.github.io/wiki/ESGF_Search_REST_API
- *
- */
-import { esgfNodeURL, metagridApiURL, proxyURL, wgetApiURL } from '../env';
+import {
+  esgfNodeURL,
+  metagridApiURL,
+  nodeStatusURL,
+  proxyURL,
+  wgetApiURL,
+} from '../env';
 
 type ApiRoutes = {
   keycloakAuth: string;
@@ -20,6 +16,7 @@ type ApiRoutes = {
   esgfSearch: string;
   citation: string;
   wget: string;
+  nodeStatus: string;
 };
 
 /**
@@ -46,6 +43,8 @@ const apiRoutes: ApiRoutes = {
   citation: `${proxyURL}/citation_url`,
   // ESGF wget API
   wget: `${proxyURL}/${wgetApiURL}`,
+  // ESGF Node Status API
+  nodeStatus: `${proxyURL}/${nodeStatusURL}`,
 };
 
 export default apiRoutes;

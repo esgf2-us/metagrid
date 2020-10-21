@@ -8,6 +8,7 @@ import {
 } from '@ant-design/icons';
 import { Affix, Breadcrumb, Button, Layout, message } from 'antd';
 import React from 'react';
+import { useAsync } from 'react-async';
 import {
   BrowserRouter as Router,
   Redirect,
@@ -18,6 +19,7 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   addUserSearchQuery,
   deleteUserSearchQuery,
+  fetchNodeStatus,
   fetchUserCart,
   fetchUserSearchQueries,
   updateUserCart,
@@ -37,6 +39,8 @@ import {
   RawProject,
 } from '../Facets/types';
 import NavBar from '../NavBar';
+import NodeStatus from '../NodeStatus';
+import NodeSummary from '../NodeStatus/NodeSummary';
 import Search from '../Search';
 import { RawSearchResults, TextInputs } from '../Search/types';
 import Support from '../Support';
@@ -64,6 +68,15 @@ const App: React.FC = () => {
   const [supportModalVisible, setSupportModalVisible] = React.useState<boolean>(
     false
   );
+
+  const {
+    data: nodeStatus,
+    run: runFetchNodeStatus,
+    isLoading: nodeStatusisLoading,
+  } = useAsync({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    deferFn: fetchNodeStatus,
+  });
 
   const [activeProject, setActiveProject] = React.useState<
     RawProject | Record<string, unknown>
@@ -129,6 +142,15 @@ const App: React.FC = () => {
       );
     }
   }, [isAuthenticated, userSearchQueries]);
+
+  React.useEffect(() => {
+    /* istanbul ignore else */
+    runFetchNodeStatus();
+    const interval = setInterval(() => {
+      runFetchNodeStatus();
+    }, 295000);
+    return () => clearInterval(interval);
+  }, [runFetchNodeStatus]);
 
   const handleTextSearch = (text: string): void => {
     if (textInputs.includes(text as never)) {
@@ -221,7 +243,7 @@ const App: React.FC = () => {
   const handleClearCart = (): void => {
     setUserCart([]);
 
-    /* instabul ignore else */
+    /* istanbul ignore else */
     if (isAuthenticated) {
       void updateUserCart(pk as string, accessToken as string, []);
     }
@@ -331,6 +353,7 @@ const App: React.FC = () => {
                     defaultFacets={defaultFacets}
                     projectFacets={projectFacets}
                     activeFacets={activeFacets}
+                    nodeStatus={nodeStatus}
                     onProjectChange={handleProjectChange}
                     onSetFacets={(
                       defaults: DefaultFacets,
@@ -340,6 +363,17 @@ const App: React.FC = () => {
                       setActiveFacets(active);
                     }}
                   />
+                </Layout.Sider>
+              )}
+            />
+            <Route
+              path="/nodes"
+              render={() => (
+                <Layout.Sider
+                  style={styles.bodySider}
+                  width={styles.bodySider.width as number}
+                >
+                  <NodeSummary nodeStatus={nodeStatus} />
                 </Layout.Sider>
               )}
             />
@@ -373,12 +407,30 @@ const App: React.FC = () => {
                       activeFacets={activeFacets}
                       textInputs={textInputs}
                       userCart={userCart}
+                      nodeStatus={nodeStatus}
                       onUpdateProjectFacets={handleUpdateProjectFacets}
                       onUpdateCart={handleUpdateCart}
                       onRemoveFilter={handleRemoveFilter}
                       onClearFilters={handleClearFilters}
                       onSaveSearchQuery={handleSaveSearchQuery}
                     ></Search>
+                  </>
+                )}
+              />
+              <Route
+                path="/nodes"
+                render={() => (
+                  <>
+                    <Breadcrumb>
+                      <Breadcrumb.Item>
+                        <HomeOutlined /> Home
+                      </Breadcrumb.Item>
+                      <Breadcrumb.Item>Data Node Status</Breadcrumb.Item>
+                    </Breadcrumb>
+                    <NodeStatus
+                      nodeStatus={nodeStatus}
+                      isLoading={nodeStatusisLoading}
+                    />
                   </>
                 )}
               />

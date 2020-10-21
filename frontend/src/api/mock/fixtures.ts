@@ -3,7 +3,6 @@
  * Fixtures allows tests to be maintainable (especially in the case of updated
  * APIs) and reduce duplicate hard-coded dummy data.
  */
-
 import {
   RawUserCart,
   UserCart,
@@ -18,6 +17,10 @@ import {
   RawProjects,
 } from '../../components/Facets/types';
 import {
+  NodeStatusArray,
+  RawNodeStatus,
+} from '../../components/NodeStatus/types';
+import {
   RawCitation,
   RawSearchResult,
   RawSearchResults,
@@ -30,7 +33,7 @@ export const rawProjectFixture = (
   const defaults: RawProject = {
     pk: '1',
     name: 'test1',
-    facetsByGroup: { group1: ['facet1'], group2: ['facet2'] },
+    facetsByGroup: { group1: ['data_node'], group2: ['facet2'] },
     facetsUrl: 'https://esgf-node.llnl.gov/esg-search/search/?offset=0&limit=0',
     fullName: 'test1',
   };
@@ -54,7 +57,7 @@ export const rawSearchResultFixture = (
     title: 'foo',
     url: ['foo.bar|HTTPServer'],
     number_of_files: 3,
-    data_node: 'node.gov',
+    data_node: 'aims3.llnl.gov',
     version: 1,
     size: 1,
     access: ['HTTPServer', 'OPeNDAP', 'Globus'],
@@ -70,6 +73,7 @@ export const rawSearchResultsFixture = (): Array<RawSearchResult> => {
       id: 'bar',
       title: 'bar',
       number_of_files: 2,
+      data_node: 'esgf1.dkrz.de',
       access: ['HTTPServer', 'OPeNDAP'],
     }),
   ];
@@ -77,7 +81,7 @@ export const rawSearchResultsFixture = (): Array<RawSearchResult> => {
 
 export const rawFacetsFixture = (props: Partial<RawFacets> = {}): RawFacets => {
   const defaults: RawFacets = {
-    facet1: ['foo', 3, 'bar', 5],
+    data_node: ['aims3.llnl.gov', 3, 'esgf1.dkrz.de', 5],
     facet2: ['baz', 2, 'fubar', 3],
   };
   return { ...defaults, ...props } as RawFacets;
@@ -87,9 +91,9 @@ export const parsedFacetsFixture = (
   props: Partial<ParsedFacets> = {}
 ): ParsedFacets => {
   const defaults: ParsedFacets = {
-    facet1: [
-      ['foo', 3],
-      ['bar', 5],
+    data_node: [
+      ['aims3.llnl.gov', 3],
+      ['esgf1.dkrz.de', 5],
     ],
     facet2: [
       ['baz', 2],
@@ -190,4 +194,53 @@ export const rawUserCartFixture = (
     items: [rawSearchResultFixture()],
   };
   return { ...defaults, ...props } as RawUserCart;
+};
+
+export const rawNodeStatusFixture = (
+  props: Partial<RawNodeStatus> = {}
+): RawNodeStatus => {
+  const defaults: RawNodeStatus = {
+    status: 'success',
+    data: {
+      resultType: 'vector',
+      result: [
+        {
+          metric: {
+            __name__: 'probe_success',
+            instance: 'aims3.llnl.gov',
+            job: 'http_2xx',
+            target: 'https://aims3.llnl.gov/thredds/catalog/catalog.html',
+          },
+          value: [1603315430.611, '1'],
+        },
+        {
+          metric: {
+            __name__: 'probe_success',
+            instance: 'esgf1.dkrz.de',
+            job: 'http_2xx',
+            target: 'https://esgf1.dkrz.de/thredds/catalog/catalog.html',
+          },
+          value: [1603315430.611, '0'],
+        },
+      ],
+    },
+  };
+
+  return { ...defaults, ...props } as RawNodeStatus;
+};
+export const parsedNodeStatusFixture = (): NodeStatusArray => {
+  return [
+    {
+      name: 'aims3.llnl.gov',
+      source: 'https://aims3.llnl.gov/thredds/catalog/catalog.html',
+      timestamp: 'Wed, 21 Oct 2020 21:23:50 GMT',
+      isOnline: true,
+    },
+    {
+      name: 'esgf1.dkrz.de',
+      source: 'https://esgf1.dkrz.de/thredds/catalog/catalog.html',
+      timestamp: 'Wed, 21 Oct 2020 21:23:50 GMT',
+      isOnline: false,
+    },
+  ];
 };

@@ -22,6 +22,13 @@ export const wgetApiURL = process.env.REACT_APP_WGET_API_URL as string;
 export const esgfNodeURL = `${process.env.REACT_APP_ESGF_NODE_URL as string}`;
 export const esgfNodeURLNoProtocol = esgfNodeURL.split('//')[1];
 
+// ESGF Node Status API
+// ------------------------------------------------------------------------------
+// https://github.com/ESGF/esgf-utils/blob/master/node_status/query_prom.py
+export const nodeStatusURL = `${
+  process.env.REACT_APP_ESGF_NODE_STATUS_URL as string
+}`;
+
 // cors-anywhere proxy
 // ------------------------------------------------------------------------------
 // https://github.com/Rob--W/cors-anywhere

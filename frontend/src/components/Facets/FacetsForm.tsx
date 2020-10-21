@@ -1,6 +1,8 @@
 import { Checkbox, Collapse, Form, Select } from 'antd';
 import React from 'react';
 import { CSSinJS } from '../../common/types';
+import StatusToolTip from '../NodeStatus/StatusToolTip';
+import { NodeStatusArray } from '../NodeStatus/types';
 import { ActiveFacets, DefaultFacets, ParsedFacets } from './types';
 
 const styles: CSSinJS = {
@@ -16,6 +18,7 @@ export type Props = {
   defaultFacets: DefaultFacets;
   activeFacets: ActiveFacets | Record<string, unknown>;
   projectFacets: ParsedFacets;
+  nodeStatus?: NodeStatusArray;
   onValuesChange: (allValues: { [key: string]: string[] | [] }) => void;
 };
 
@@ -44,6 +47,7 @@ const FacetsForm: React.FC<Props> = ({
   defaultFacets,
   activeFacets,
   projectFacets,
+  nodeStatus,
   onValuesChange,
 }) => {
   const [projectFacetsForm] = Form.useForm();
@@ -86,6 +90,7 @@ const FacetsForm: React.FC<Props> = ({
                     {Object.keys(projectFacets).map((facet) => {
                       if (facetsByGroup[group].includes(facet)) {
                         const facetOptions = projectFacets[facet];
+
                         return (
                           <Collapse.Panel
                             header={humanizeFacetNames(facet)}
@@ -107,6 +112,29 @@ const FacetsForm: React.FC<Props> = ({
                                 showArrow
                               >
                                 {facetOptions.map((variable) => {
+                                  let optionOutput:
+                                    | string
+                                    | React.ReactElement = (
+                                    <>
+                                      {variable[0]}
+                                      <span style={styles.facetCount}>
+                                        ({variable[1]})
+                                      </span>
+                                    </>
+                                  );
+                                  // The data node facet has a unique tooltip overlay to show the status of the highlighted node
+                                  if (facet === 'data_node') {
+                                    optionOutput = (
+                                      <StatusToolTip
+                                        nodeStatus={nodeStatus}
+                                        dataNode={variable[0]}
+                                      >
+                                        <span style={styles.facetCount}>
+                                          ({variable[1]})
+                                        </span>
+                                      </StatusToolTip>
+                                    );
+                                  }
                                   return (
                                     <Select.Option
                                       key={variable[0]}
@@ -115,10 +143,7 @@ const FacetsForm: React.FC<Props> = ({
                                       <span
                                         data-testid={`${facet}_${variable[0]}`}
                                       >
-                                        {variable[0]}
-                                        <span style={styles.facetCount}>
-                                          ({variable[1]})
-                                        </span>
+                                        {optionOutput}
                                       </span>
                                     </Select.Option>
                                   );

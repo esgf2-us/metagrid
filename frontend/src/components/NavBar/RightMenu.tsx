@@ -1,4 +1,6 @@
 import {
+  FileSearchOutlined,
+  NodeIndexOutlined,
   SearchOutlined,
   ShoppingCartOutlined,
   UserOutlined,
@@ -47,6 +49,8 @@ const RightMenu: React.FC<Props> = ({
   React.useEffect(() => {
     if (location.pathname.endsWith('search')) {
       setActiveMenuItem('search');
+    } else if (location.pathname.includes('nodes')) {
+      setActiveMenuItem('nodes');
     } else if (location.pathname.includes('cart/items')) {
       setActiveMenuItem('cartItems');
     } else if (location.pathname.includes('cart/searches')) {
@@ -58,7 +62,14 @@ const RightMenu: React.FC<Props> = ({
     <div data-testid="right-menu">
       <Menu selectedKeys={[activeMenuItem]} mode={mode}>
         <Menu.Item key="search">
-          <Link to="/search">Search</Link>
+          <Link to="/search">
+            <SearchOutlined /> Search
+          </Link>
+        </Menu.Item>
+        <Menu.Item key="nodes">
+          <Link to="/nodes">
+            <NodeIndexOutlined /> Node Status
+          </Link>
         </Menu.Item>
         <Menu.SubMenu
           title={<span className="submenu-title-wrapper">Resources</span>}
@@ -124,7 +135,7 @@ const RightMenu: React.FC<Props> = ({
               showZero
             >
               <Link to="/cart/searches">
-                <SearchOutlined style={{ fontSize: '24px' }} />
+                <FileSearchOutlined style={{ fontSize: '24px' }} />
               </Link>
             </Badge>
           </ToolTip>
