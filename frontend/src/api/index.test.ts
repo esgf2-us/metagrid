@@ -77,7 +77,7 @@ describe('test genUrlQuery()', () => {
     );
 
     expect(url).toEqual(
-      `${apiRoutes.esgfDatasets}?limit=10&offset=0&latest=true&replica=false&query=input1,input2&facet1=var1,var2&facet2=var3,var4`
+      `${apiRoutes.esgfSearch}?limit=10&offset=0&latest=true&replica=false&query=input1,input2&facet1=var1,var2&facet2=var3,var4`
     );
   });
   it('returns formatted url with offset of 200 and limit of 100 on page 3', () => {
@@ -94,7 +94,7 @@ describe('test genUrlQuery()', () => {
       pagination
     );
     expect(url).toEqual(
-      `${apiRoutes.esgfDatasets}?limit=100&offset=200&latest=true&replica=false&query=input1,input2&facet1=var1,var2&facet2=var3,var4`
+      `${apiRoutes.esgfSearch}?limit=100&offset=200&latest=true&replica=false&query=input1,input2&facet1=var1,var2&facet2=var3,var4`
     );
   });
   it('returns formatted url without free-text', () => {
@@ -111,7 +111,7 @@ describe('test genUrlQuery()', () => {
       pagination
     );
     expect(url).toEqual(
-      `${apiRoutes.esgfDatasets}?limit=10&offset=0&latest=true&replica=false&query=*&facet1=var1,var2&facet2=var3,var4`
+      `${apiRoutes.esgfSearch}?limit=10&offset=0&latest=true&replica=false&query=*&facet1=var1,var2&facet2=var3,var4`
     );
   });
 
@@ -129,16 +129,16 @@ describe('test genUrlQuery()', () => {
       pagination
     );
     expect(url).toEqual(
-      `${apiRoutes.esgfDatasets}?limit=10&offset=0&latest=true&replica=false&query=input1,input2&`
+      `${apiRoutes.esgfSearch}?limit=10&offset=0&latest=true&replica=false&query=input1,input2&`
     );
   });
 });
 
-describe('test fetchResults()', () => {
+describe('test fetchSearchResults()', () => {
   let reqUrl: string;
 
   beforeEach(() => {
-    reqUrl = apiRoutes.esgfDatasets;
+    reqUrl = apiRoutes.esgfSearch;
   });
   it('returns results', async () => {
     reqUrl += '?query=input1,input2&facet1=var1,var2&facet2=var3,var4';
@@ -155,7 +155,7 @@ describe('test fetchResults()', () => {
   });
   it('catches and throws an error', async () => {
     server.use(
-      rest.get(apiRoutes.esgfDatasets, (_req, res, ctx) => {
+      rest.get(apiRoutes.esgfSearch, (_req, res, ctx) => {
         return res(ctx.status(404));
       })
     );
@@ -226,7 +226,7 @@ describe('test fetchFiles()', () => {
   });
   it('catches and throws an error', async () => {
     server.use(
-      rest.get(apiRoutes.esgfFiles, (_req, res, ctx) => {
+      rest.get(apiRoutes.esgfSearch, (_req, res, ctx) => {
         return res(ctx.status(404));
       })
     );

@@ -45,10 +45,7 @@ const handlers = [
   rest.get(apiRoutes.projects, (_req, res, ctx) => {
     return res(ctx.status(200), ctx.json({ results: projectsFixture() }));
   }),
-  rest.get(apiRoutes.esgfDatasets, (_req, res, ctx) => {
-    return res(ctx.status(200), ctx.json(ESGFSearchAPIFixture()));
-  }),
-  rest.get(apiRoutes.esgfFiles, (_req, res, ctx) => {
+  rest.get(apiRoutes.esgfSearch, (_req, res, ctx) => {
     return res(ctx.status(200), ctx.json(ESGFSearchAPIFixture()));
   }),
   rest.get(apiRoutes.citation, (_req, res, ctx) => {
