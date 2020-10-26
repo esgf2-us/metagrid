@@ -3,6 +3,7 @@ import {
   objectHasKey,
   objectIsEmpty,
   shallowCompareObjects,
+  splitURLByChar,
 } from './utils';
 
 describe('Test objectIsEmpty', () => {
@@ -29,6 +30,18 @@ describe('Test objectHasKey', () => {
   });
 });
 
+describe('Test splitURLbyChar', () => {
+  let url: string;
+  beforeEach(() => {
+    url = 'first.com|second.com';
+  });
+  it('returns first half of the split', () => {
+    expect(splitURLByChar(url, '|', 'first')).toEqual('first.com');
+  });
+  it('returns second half of the split', () => {
+    expect(splitURLByChar(url, '|', 'second')).toEqual('second.com');
+  });
+});
 describe('Test formatBytes', () => {
   it('returns the correct rounded format', () => {
     expect(formatBytes(0)).toEqual('0 Bytes');
