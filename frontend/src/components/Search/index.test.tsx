@@ -133,7 +133,7 @@ describe('test Search component', () => {
     };
 
     server.use(
-      rest.get(apiRoutes.esgfDatasets, (_req, res, ctx) => {
+      rest.get(apiRoutes.esgfSearch, (_req, res, ctx) => {
         return res(ctx.status(200), ctx.json(response));
       })
     );

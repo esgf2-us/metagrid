@@ -38,7 +38,7 @@ const defaultProps: Props = {
 describe('test FilesTable component', () => {
   it('returns Alert when there is an error fetching files', async () => {
     server.use(
-      rest.get(apiRoutes.esgfFiles, (_req, res, ctx) => {
+      rest.get(apiRoutes.esgfSearch, (_req, res, ctx) => {
         return res(ctx.status(404));
       })
     );
