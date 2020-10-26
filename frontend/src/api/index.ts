@@ -3,7 +3,6 @@
  */
 import humps from 'humps';
 import queryString from 'query-string';
-import { splitURLByChar } from '../common/utils';
 import {
   RawUserCart,
   RawUserSearchQuery,
@@ -257,7 +256,7 @@ export const generateSearchURLQuery = (
     .replace('limit=0', `limit=${pagination.pageSize}`)
     .replace('offset=0', `offset=${offset}`);
 
-  const url = `${apiRoutes.esgfDatasets}?${newBaseUrl}&${defaultFacetsStr}&${stringifyText}&${activeFacetsStr}`;
+  const url = `${apiRoutes.esgfSearch}?${newBaseUrl}&${defaultFacetsStr}&${stringifyText}&${activeFacetsStr}`;
   return url;
 };
 
@@ -342,12 +341,10 @@ export const fetchDatasetFiles = async ({
   id: string;
 }): // eslint-disable-next-line @typescript-eslint/no-explicit-any
 Promise<{ [key: string]: any }> => {
-  // The dataset's source node is contained in its id, so strip the URL suffix.
-  const sourceNodeURL = splitURLByChar(id, '|', 'second');
-
-  const url = `${apiRoutes.esgfFiles
-    .replace(':datasetID', id)
-    .replace(':sourceNode', sourceNodeURL)}`;
+  const url = queryString.stringifyUrl({
+    url: apiRoutes.esgfSearch,
+    query: { format: 'application/solr+json', type: 'File', dataset_id: id },
+  });
 
   return axios
     .get(url)

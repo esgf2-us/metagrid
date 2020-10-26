@@ -17,8 +17,7 @@ type ApiRoutes = {
   userSearches: string;
   userSearch: string;
   projects: string;
-  esgfDatasets: string;
-  esgfFiles: string;
+  esgfSearch: string;
   citation: string;
   wget: string;
 };
@@ -41,10 +40,8 @@ const apiRoutes: ApiRoutes = {
   userSearches: `${metagridApiURL}/api/v1/carts/searches/`,
   userSearch: `${metagridApiURL}/api/v1/carts/searches/:pk/`,
   projects: `${metagridApiURL}/api/v1/projects/`,
-  // ESGF Search API - datasets
-  esgfDatasets: `${proxyURL}/${esgfNodeURL}/esg-search/search/`,
-  // ESGF Search API - files
-  esgfFiles: `${proxyURL}/${esgfNodeURL}/search_files/:datasetID/:sourceNode/`,
+  // ESGF Search API
+  esgfSearch: `${proxyURL}/${esgfNodeURL}/esg-search/search/`,
   // ESGF Citation API (uses dummy link)
   citation: `${proxyURL}/citation_url`,
   // ESGF wget API

@@ -45,6 +45,7 @@ export const shallowCompareObjects = (
   Object.keys(obj1).every(
     (key) => obj2.hasOwnProperty.call(obj2, key) && obj1[key] === obj2[key]
   );
+
 /**
  * Converts binary bytes into another size
  * https://stackoverflow.com/a/18650828

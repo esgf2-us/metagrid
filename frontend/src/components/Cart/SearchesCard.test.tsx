@@ -47,7 +47,7 @@ it('renders component and handles button clicks', async () => {
 
 it('displays alert error when api fails to return response', async () => {
   server.use(
-    rest.get(apiRoutes.esgfDatasets, (_req, res, ctx) => {
+    rest.get(apiRoutes.esgfSearch, (_req, res, ctx) => {
       return res(ctx.status(404));
     })
   );
