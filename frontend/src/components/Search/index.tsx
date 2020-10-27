@@ -22,6 +22,7 @@ import {
 } from '../Facets/types';
 import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
+import { NodeStatusArray } from '../NodeStatus/types';
 import Table from './Table';
 import { RawSearchResults, TextInputs } from './types';
 
@@ -107,6 +108,7 @@ export type Props = {
   activeFacets: ActiveFacets | Record<string, unknown>;
   textInputs: TextInputs | [];
   userCart: UserCart | [];
+  nodeStatus?: NodeStatusArray;
   onRemoveFilter: (removedTag: TagType, type: string) => void;
   onClearFilters: () => void;
   onUpdateCart: (
@@ -123,6 +125,7 @@ const Search: React.FC<Props> = ({
   activeFacets,
   textInputs,
   userCart,
+  nodeStatus,
   onRemoveFilter,
   onClearFilters,
   onUpdateCart,
@@ -343,6 +346,7 @@ const Search: React.FC<Props> = ({
                 results={docs}
                 totalResults={numFound}
                 userCart={userCart}
+                nodeStatus={nodeStatus}
                 onUpdateCart={onUpdateCart}
                 onRowSelect={handleRowSelect}
                 onPageChange={handlePageChange}

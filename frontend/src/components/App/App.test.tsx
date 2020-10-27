@@ -5,7 +5,7 @@
  * in order to mock their behaviors.
  *
  */
-import { fireEvent, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, waitFor, within } from '@testing-library/react';
 import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { rest, server } from '../../api/mock/setup-env';
@@ -125,9 +125,9 @@ it('handles removing search tags and clearing all search tags', async () => {
   await waitFor(() => getByTestId('search-table'));
   await waitFor(() => getByTestId('facets'));
 
-  // Check foo tag renders
-  const fooTag = await waitFor(() => getByTestId('foo'));
-  expect(fooTag).toBeTruthy();
+  // Check tag renders
+  const tag = await waitFor(() => getByTestId('foo'));
+  expect(tag).toBeTruthy();
 
   // Click on the ClearAllTag
   const clearAllTag = await waitFor(() => getByText('Clear All'));
@@ -191,19 +191,21 @@ it('handles removing facet tags', async () => {
   });
   fireEvent.submit(submitBtn);
 
-  // Open Collapse Panel in Collapse component for the facet1 form to render
-  const collapse = await waitFor(() => getByText('Facet1'));
+  // Open Collapse Panel in Collapse component for the data_node form to render
+  const collapse = await waitFor(() => getByText('Data Node'));
   fireEvent.click(collapse);
 
   // Check facet select form exists and mouseDown to expand list of options
   const facetFormSelect = document.querySelector(
-    '[data-testid=facet1-form-select] > .ant-select-selector'
+    '[data-testid=data_node-form-select] > .ant-select-selector'
   ) as HTMLFormElement;
   expect(facetFormSelect).toBeTruthy();
   fireEvent.mouseDown(facetFormSelect);
 
   // Select the first facet option
-  const facetOption = await waitFor(() => getByTestId('facet1_foo'));
+  const facetOption = await waitFor(() =>
+    getByTestId('data_node_aims3.llnl.gov')
+  );
   expect(facetOption).toBeTruthy();
   fireEvent.click(facetOption);
 
@@ -212,12 +214,12 @@ it('handles removing facet tags', async () => {
   await waitFor(() => getByTestId('search-table'));
   await waitFor(() => getByTestId('facets'));
 
-  // Check foo tag exists
-  const fooTag = await waitFor(() => getByTestId('foo'));
-  expect(fooTag).toBeTruthy();
+  // Check tag renders
+  const tag = await waitFor(() => getByTestId('aims3.llnl.gov'));
+  expect(tag).toBeTruthy();
 
-  // Close the baz tag
-  fireEvent.click(within(fooTag).getByRole('img', { name: 'close' }));
+  // Close tag
+  fireEvent.click(within(tag).getByRole('img', { name: 'close' }));
 
   // Wait for components to re-render
   await waitFor(() => getByTestId('search'));
@@ -291,6 +293,20 @@ it('handles project changes and clearing filters when the active project !== sel
   await waitFor(() => getByTestId('facets'));
 });
 
+it('fetches the data node status every defined interval', () => {
+  jest.useFakeTimers();
+
+  customRender(
+    <Router>
+      <App />
+    </Router>
+  );
+
+  act(() => {
+    jest.advanceTimersByTime(295000);
+  });
+  jest.useRealTimers();
+});
 describe('User cart', () => {
   it('handles authenticated user adding and removing items from cart', async () => {
     const {
@@ -336,7 +352,7 @@ describe('User cart', () => {
     const firstRow = await waitFor(() =>
       getByRole('row', {
         name:
-          'right-circle foo 3 1 Bytes node.gov 1 check-circle Globus Compatible wget download plus',
+          'right-circle foo 3 1 Bytes check-circle aims3.llnl.gov 1 check-circle Globus Compatible wget download plus',
       })
     );
     expect(firstRow).toBeTruthy();
@@ -473,7 +489,7 @@ describe('User cart', () => {
     const firstRow = await waitFor(() =>
       getByRole('row', {
         name:
-          'right-circle foo 3 1 Bytes node.gov 1 check-circle Globus Compatible wget download plus',
+          'right-circle foo 3 1 Bytes check-circle aims3.llnl.gov 1 check-circle Globus Compatible wget download plus',
       })
     );
     expect(firstRow).toBeTruthy();
@@ -542,7 +558,7 @@ describe('User cart', () => {
     const firstRow = await waitFor(() =>
       getByRole('row', {
         name:
-          'right-circle foo 3 1 Bytes node.gov 1 check-circle Globus Compatible wget download plus',
+          'right-circle foo 3 1 Bytes check-circle aims3.llnl.gov 1 check-circle Globus Compatible wget download plus',
       })
     );
     expect(firstRow).toBeTruthy();
@@ -676,7 +692,7 @@ describe('User search library', () => {
 
     // Click on the search library link
     const searchLibraryLink = within(rightMenuComponent).getByRole('img', {
-      name: 'search',
+      name: 'file-search',
     });
     expect(searchLibraryLink).toBeTruthy();
     fireEvent.click(searchLibraryLink);
@@ -716,7 +732,7 @@ describe('User search library', () => {
 
     // Go directly to the search library since user already has items in their cart
     const searchLibraryLink = await waitFor(() =>
-      within(rightMenuComponent).getByRole('img', { name: 'search' })
+      within(rightMenuComponent).getByRole('img', { name: 'file-search' })
     );
     expect(searchLibraryLink).toBeTruthy();
     fireEvent.click(searchLibraryLink);
@@ -784,7 +800,7 @@ describe('User search library', () => {
 
     // Click on the search library link
     const searchLibraryLink = within(rightMenuComponent).getByRole('img', {
-      name: 'search',
+      name: 'file-search',
     });
     expect(searchLibraryLink).toBeTruthy();
     fireEvent.click(searchLibraryLink);
@@ -855,7 +871,10 @@ describe('User search library', () => {
     fireEvent.click(saveSearch);
 
     const searchLibraryLink = await waitFor(() =>
-      within(rightMenuComponent).getByRole('img', { name: 'search' })
+      within(rightMenuComponent).getByRole('img', {
+        name: 'file-search',
+        hidden: true,
+      })
     );
     expect(searchLibraryLink).toBeTruthy();
     fireEvent.click(searchLibraryLink);
@@ -991,7 +1010,10 @@ describe('User search library', () => {
 
       // Go directly to the search library since user already has items in their cart
       const searchLibraryLink = await waitFor(() =>
-        within(rightMenuComponent).getByRole('img', { name: 'search' })
+        within(rightMenuComponent).getByRole('img', {
+          name: 'file-search',
+          hidden: true,
+        })
       );
       expect(searchLibraryLink).toBeTruthy();
       fireEvent.click(searchLibraryLink);
@@ -1038,5 +1060,26 @@ describe('User support', () => {
     // click close button
     const closeBtn = getByRole('button', { name: 'Close' });
     fireEvent.click(closeBtn);
+  });
+});
+
+describe('Data node status page', () => {
+  it('renders the node status page after clicking the link', async () => {
+    const { getByTestId } = customRender(
+      <Router>
+        <App />
+      </Router>
+    );
+    const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
+    expect(rightMenuComponent).toBeTruthy();
+
+    const nodeLink = within(rightMenuComponent).getByRole('link', {
+      name: 'node-index Node Status',
+    });
+    expect(nodeLink).toBeTruthy();
+    fireEvent.click(nodeLink);
+
+    const nodeStatusPage = await waitFor(() => getByTestId('node-status'));
+    expect(nodeStatusPage).toBeTruthy();
   });
 });

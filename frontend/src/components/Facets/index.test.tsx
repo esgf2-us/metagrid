@@ -3,6 +3,7 @@ import React from 'react';
 import {
   defaultFacetsFixture,
   parsedFacetsFixture,
+  parsedNodeStatusFixture,
   rawProjectFixture,
 } from '../../api/mock/fixtures';
 import Facets, { Props } from './index';
@@ -12,6 +13,7 @@ const defaultProps: Props = {
   defaultFacets: defaultFacetsFixture(),
   activeFacets: {},
   projectFacets: parsedFacetsFixture(),
+  nodeStatus: parsedNodeStatusFixture(),
   onProjectChange: jest.fn(),
   onSetFacets: jest.fn(),
 };
@@ -74,19 +76,19 @@ it('handles facets form auto-filtering', async () => {
   const facetsForm = await waitFor(() => getByTestId('facets-form'));
   await waitFor(() => expect(facetsForm).toBeTruthy());
 
-  // Open Collapse Panel in Collapse component for the facet1 form to render
-  const collapse = getByText('Facet1');
+  // Open Collapse Panel in Collapse component for the data_node form to render
+  const collapse = getByText('Data Node');
   fireEvent.click(collapse);
 
   // Check facet select form exists and mouseDown to expand list of options
   const facetFormSelect = document.querySelector(
-    '[data-testid=facet1-form-select] > .ant-select-selector'
+    '[data-testid=data_node-form-select] > .ant-select-selector'
   ) as HTMLInputElement;
   expect(facetFormSelect).toBeTruthy();
   fireEvent.mouseDown(facetFormSelect);
 
   // Select the first facet option
-  const facetOption = getByTestId('facet1_foo');
+  const facetOption = getByTestId('data_node_aims3.llnl.gov');
   expect(facetOption).toBeTruthy();
   fireEvent.click(facetOption);
 
@@ -114,19 +116,19 @@ it('handles facets form submission, including a facet key that is undefined', as
   const projectForm = await waitFor(() => getByTestId('project-form'));
   expect(projectForm).toBeTruthy();
 
-  // Open Collapse Panel in Collapse component for the facet1 form to render
-  const collapse = getByText('Facet1');
+  // Open Collapse Panel in Collapse component for the Data Node form to render
+  const collapse = getByText('Data Node');
   fireEvent.click(collapse);
 
   // Check facet select form exists and mouseDown to expand list of options
   const facetFormSelect = document.querySelector(
-    '[data-testid=facet1-form-select] > .ant-select-selector'
+    '[data-testid=data_node-form-select] > .ant-select-selector'
   ) as HTMLInputElement;
   expect(facetFormSelect).toBeTruthy();
   fireEvent.mouseDown(facetFormSelect);
 
   // Select the first facet option
-  const facetOption = getByTestId('facet1_foo');
+  const facetOption = getByTestId('data_node_aims3.llnl.gov');
   expect(facetOption).toBeTruthy();
   fireEvent.click(facetOption);
 

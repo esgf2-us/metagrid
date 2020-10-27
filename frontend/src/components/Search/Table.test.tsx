@@ -43,7 +43,7 @@ it('renders record metadata in an expandable panel', () => {
   // Check a record row exist
   const row = getByRole('row', {
     name:
-      'right-circle foo 3 1 Bytes node.gov 1 check-circle Globus Compatible wget download plus',
+      'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 check-circle Globus Compatible wget download plus',
   });
   expect(row).toBeTruthy();
 
@@ -107,7 +107,7 @@ it('renders "PID" button when the record has a "xlink" key/value, vice versa', (
   // Check first row exists
   const firstRow = getByRole('row', {
     name:
-      'right-circle foo 3 1 Bytes node.gov 1 check-circle Globus Compatible wget download PID More Info plus',
+      'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 check-circle Globus Compatible wget download PID More Info plus',
   });
   expect(firstRow).toBeTruthy();
 
@@ -120,7 +120,7 @@ it('renders "PID" button when the record has a "xlink" key/value, vice versa', (
   // Check second row exists
   const secondRow = getByRole('row', {
     name:
-      'right-circle bar 2 1 Bytes node.gov 1 close-circle Globus Compatible wget download plus',
+      'right-circle bar 2 1 Bytes question-circle esgf1.dkrz.de 1 close-circle Globus Compatible wget download plus',
   });
   expect(secondRow).toBeTruthy();
 
@@ -143,7 +143,7 @@ it('renders add or remove button for items in or not in the cart respectively, a
   // Check first row exists
   const firstRow = getByRole('row', {
     name:
-      'right-circle foo 3 1 Bytes node.gov 1 check-circle Globus Compatible wget download minus',
+      'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 check-circle Globus Compatible wget download minus',
   });
   expect(firstRow).toBeTruthy();
 
@@ -155,7 +155,7 @@ it('renders add or remove button for items in or not in the cart respectively, a
   // Check second row exists
   const secondRow = getByRole('row', {
     name:
-      'right-circle bar 2 1 Bytes node.gov 1 close-circle Globus Compatible wget download plus',
+      'right-circle bar 2 1 Bytes question-circle esgf1.dkrz.de 1 close-circle Globus Compatible wget download plus',
   });
   expect(secondRow).toBeTruthy();
 
@@ -175,7 +175,7 @@ it('handles when clicking the select checkbox for a row', () => {
   // Check a record row exist
   const row = getByRole('row', {
     name:
-      'right-circle foo 3 1 Bytes node.gov 1 check-circle Globus Compatible wget download plus',
+      'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 check-circle Globus Compatible wget download plus',
   });
   expect(row).toBeTruthy();
 
@@ -220,7 +220,7 @@ it('handles downloading an item via wget', async () => {
   // Check first row renders
   const firstRow = getByRole('row', {
     name:
-      'right-circle foo 3 1 Bytes node.gov 1 check-circle Globus Compatible wget download minus',
+      'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 check-circle Globus Compatible wget download minus',
   });
   expect(firstRow).toBeTruthy();
 
@@ -250,7 +250,7 @@ it('displays an error when unable to access download via wget', async () => {
   // Check first row renders
   const firstRow = getByRole('row', {
     name:
-      'right-circle foo 3 1 Bytes node.gov 1 check-circle Globus Compatible wget download minus',
+      'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 check-circle Globus Compatible wget download minus',
   });
   expect(firstRow).toBeTruthy();
 

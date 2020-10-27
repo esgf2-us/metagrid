@@ -10,6 +10,7 @@ import {
   ESGFSearchAPIFixture,
   projectsFixture,
   rawCitationFixture,
+  rawNodeStatusFixture,
   rawUserCartFixture,
   userAuthFixture,
   userInfoFixture,
@@ -53,6 +54,9 @@ const handlers = [
   }),
   rest.get(apiRoutes.wget, (_req, res, ctx) => {
     return res(ctx.status(200));
+  }),
+  rest.get(apiRoutes.nodeStatus, (_req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(rawNodeStatusFixture()));
   }),
   // Default fallback handler
   rest.get('*', (req, res, ctx) => {
