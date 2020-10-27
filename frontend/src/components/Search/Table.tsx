@@ -23,6 +23,8 @@ import { formatBytes, objectHasKey, splitURLByChar } from '../../common/utils';
 import { UserCart } from '../Cart/types';
 import Button from '../General/Button';
 import Divider from '../General/Divider';
+import StatusToolTip from '../NodeStatus/StatusToolTip';
+import { NodeStatusArray } from '../NodeStatus/types';
 import Citation from './Citation';
 import FilesTable from './FilesTable';
 import './Search.css';
@@ -33,6 +35,7 @@ export type Props = {
   results: RawSearchResults | [];
   totalResults?: number;
   userCart: UserCart | [];
+  nodeStatus?: NodeStatusArray;
   onUpdateCart: (item: RawSearchResults, operation: 'add' | 'remove') => void;
   onRowSelect?: (selectedRows: RawSearchResults | []) => void;
   onPageChange?: (page: number, pageSize: number) => void;
@@ -44,6 +47,7 @@ const Table: React.FC<Props> = ({
   results,
   totalResults,
   userCart,
+  nodeStatus,
   onUpdateCart,
   onRowSelect,
   onPageChange,
@@ -174,8 +178,10 @@ const Table: React.FC<Props> = ({
     {
       title: 'Node',
       dataIndex: 'data_node',
-      key: 'data_node',
-      width: 200,
+      width: 225,
+      render: (data_node: string) => (
+        <StatusToolTip nodeStatus={nodeStatus} dataNode={data_node} />
+      ),
     },
     {
       title: 'Version',

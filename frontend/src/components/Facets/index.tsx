@@ -3,6 +3,7 @@ import { useAsync } from 'react-async';
 import { fetchProjects } from '../../api';
 import { objectIsEmpty } from '../../common/utils';
 import Divider from '../General/Divider';
+import { NodeStatusArray } from '../NodeStatus/types';
 import FacetsForm from './FacetsForm';
 import ProjectForm from './ProjectForm';
 import { ActiveFacets, DefaultFacets, ParsedFacets, RawProject } from './types';
@@ -18,6 +19,7 @@ export type Props = {
   defaultFacets: DefaultFacets;
   activeFacets: ActiveFacets | Record<string, unknown>;
   projectFacets: ParsedFacets | Record<string, unknown>;
+  nodeStatus?: NodeStatusArray;
   onProjectChange: (selectedProj: RawProject) => void;
   onSetFacets: (defaults: DefaultFacets, active: ActiveFacets) => void;
 };
@@ -27,6 +29,7 @@ const Facets: React.FC<Props> = ({
   defaultFacets,
   activeFacets,
   projectFacets,
+  nodeStatus,
   onProjectChange,
   onSetFacets,
 }) => {
@@ -99,6 +102,7 @@ const Facets: React.FC<Props> = ({
             defaultFacets={defaultFacets}
             activeFacets={activeFacets}
             projectFacets={projectFacets as ParsedFacets}
+            nodeStatus={nodeStatus}
             onValuesChange={handleUpdateFacetsForm}
           />
         </>

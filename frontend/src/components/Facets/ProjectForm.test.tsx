@@ -5,7 +5,7 @@ import ProjectsForm, { Props } from './ProjectForm';
 
 const defaultProps: Props = {
   activeProject: { name: 'foo' },
-  activeFacets: { facet1: ['foo'] },
+  activeFacets: { data_node: ['foo'] },
   projectsIsLoading: false,
   projectsFetched: { results: projectsFixture() },
   onFinish: jest.fn(),
