@@ -39,6 +39,7 @@ http:
         - web-secure
       middlewares:
         - csrf
+        - secure-headers
       service: django
       tls:
         # https://docs.traefik.io/master/routing/routers/#certresolver
@@ -58,6 +59,8 @@ http:
 
       entryPoints:
         - web-secure
+      middlewares:
+        - secure-headers
       service: react
       tls:
         # https://docs.traefik.io/master/routing/routers/#certresolver
@@ -77,6 +80,8 @@ http:
 
       entryPoints:
         - web-secure
+      middlewares:
+        - secure-headers
       service: proxy
       tls:
         # https://docs.traefik.io/master/routing/routers/#certresolver
@@ -88,6 +93,14 @@ http:
       redirectScheme:
         scheme: https
         permanent: true
+    secure-headers:
+      # https://doc.traefik.io/traefik/middlewares/headers/#stsseconds
+      # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security
+      headers:
+        stsPreload: true
+        stsIncludeSubdomains: true
+        stsSeconds: 31536000
+        forceSTSHeader: true
     csrf:
       # https://docs.traefik.io/master/middlewares/headers/#hostsproxyheaders
       # https://docs.djangoproject.com/en/dev/ref/csrf/#ajax
