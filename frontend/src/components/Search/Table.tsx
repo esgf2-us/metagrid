@@ -195,8 +195,11 @@ const Table: React.FC<Props> = ({
       width: 200,
       render: (record: RawSearchResult) => {
         const availableDownloads = ['wget'];
-        let globusCompatible = false;
+        const { id } = record;
+        // Unique key for the download form item
+        const formKey = `download-${id}`;
 
+        let globusCompatible = false;
         record.access.forEach((download) => {
           if (download === 'Globus') {
             globusCompatible = true;
@@ -239,10 +242,12 @@ const Table: React.FC<Props> = ({
             </p>
             <Form
               layout="inline"
-              onFinish={({ download }) => handleDownloadForm(download)}
-              initialValues={{ download: availableDownloads[0] }}
+              onFinish={({ [formKey]: download }) =>
+                handleDownloadForm(download)
+              }
+              initialValues={{ [formKey]: availableDownloads[0] }}
             >
-              <Form.Item name="download">
+              <Form.Item name={formKey}>
                 <Select style={{ width: 120 }}>
                   {availableDownloads.map((option) => (
                     <Select.Option key={option} value={option}>
