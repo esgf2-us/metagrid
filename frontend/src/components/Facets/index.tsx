@@ -62,6 +62,7 @@ const Facets: React.FC<Props> = ({
     // Have to check if selected default facets is not undefined, otherwise a
     // test fails because ant design's form's initialValues does not work after
     // the initial detection of value changes.
+    /* istanbul ignore else */
     if (selectedDefaults) {
       selectedDefaults.forEach((facet) => {
         newDefaults[facet] = true;
