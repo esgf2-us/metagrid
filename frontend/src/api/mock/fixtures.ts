@@ -33,7 +33,11 @@ export const rawProjectFixture = (
   const defaults: RawProject = {
     pk: '1',
     name: 'test1',
-    facetsByGroup: { group1: ['data_node'], group2: ['facet2'] },
+    facetsByGroup: {
+      group1: ['data_node'],
+      group2: ['facet2'],
+      group3: ['optional'],
+    },
     facetsUrl: 'https://esgf-node.llnl.gov/esg-search/search/?offset=0&limit=0',
     fullName: 'test1',
   };
@@ -83,6 +87,7 @@ export const rawFacetsFixture = (props: Partial<RawFacets> = {}): RawFacets => {
   const defaults: RawFacets = {
     data_node: ['aims3.llnl.gov', 3, 'esgf1.dkrz.de', 5],
     facet2: ['baz', 2, 'fubar', 3],
+    optional: ['none', 8],
   };
   return { ...defaults, ...props } as RawFacets;
 };
@@ -99,6 +104,7 @@ export const parsedFacetsFixture = (
       ['baz', 2],
       ['fubar', 3],
     ],
+    optional: [['none', 8]],
   };
   return { ...defaults, ...props } as ParsedFacets;
 };
