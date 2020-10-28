@@ -37,7 +37,7 @@ const LeftMenu: React.FC<Props> = ({
     }
 
     const selectedProj: RawProject | undefined = projects.find(
-      (obj) => obj.name === values.project
+      (obj) => obj.name === values.projectTextInput
     );
 
     /* istanbul ignore else */
@@ -55,14 +55,14 @@ const LeftMenu: React.FC<Props> = ({
   return (
     <div data-testid="left-menu">
       <Form
-        initialValues={{ project: projects[0].name }}
+        initialValues={{ projectTextInput: projects[0].name }}
         style={styles.searchForm}
         form={form}
         onFinish={onFinish}
       >
         <Input.Group compact>
           <Form.Item
-            name="project"
+            name="projectTextInput"
             rules={[{ required: true, message: 'Project is required' }]}
             style={{ width: '15%' }}
           >
