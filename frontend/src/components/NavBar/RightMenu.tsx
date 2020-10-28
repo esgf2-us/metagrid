@@ -32,7 +32,7 @@ const RightMenu: React.FC<Props> = ({
   const [activeMenuItem, setActiveMenuItem] = React.useState<string>('search');
 
   const location = useLocation();
-  const [keycloak] = useKeycloak();
+  const { keycloak } = useKeycloak();
 
   let userInfo;
   const { authenticated } = keycloak;
