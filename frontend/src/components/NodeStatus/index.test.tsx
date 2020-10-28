@@ -18,9 +18,7 @@ it('renders the loading table', () => {
 });
 
 it('renders the node status and columns sort', () => {
-  const { getByRole, queryAllByRole } = render(
-    <NodeStatus {...defaultProps}></NodeStatus>
-  );
+  const { getByRole } = render(<NodeStatus {...defaultProps}></NodeStatus>);
 
   const header = getByRole('heading', {
     name: 'Status as of Wed, 21 Oct 2020 21:23:50 GMT',

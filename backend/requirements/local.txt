@@ -2,23 +2,23 @@
 
 # Code quality
 # ------------------------------------------------------------------------------
-flake8==3.8.3  # https://github.com/PyCQA/flake8
+flake8==3.8.4  # https://github.com/PyCQA/flake8
 flake8-isort==4.0.0  # https://github.com/gforcada/flake8-isort
 black==19.10b0  # https://github.com/ambv/black
-mypy==0.782  # https://github.com/python/mypy
+mypy==0.790  # https://github.com/python/mypy
 
 # Testing
 # ------------------------------------------------------------------------------
-django-stubs==1.5.0  # https://github.com/typeddjango/django-stubs
-pytest==6.1.0  # https://github.com/pytest-dev/pytest
+django-stubs==1.7.0  # https://github.com/typeddjango/django-stubs
+pytest==6.1.1  # https://github.com/pytest-dev/pytest
 pytest-cov==2.10.1  # https://github.com/pytest-dev/pytest-cov
 pytest-django==3.10.0  # https://github.com/pytest-dev/pytest-django
 pytest-sugar==0.9.4  # https://github.com/Frozenball/pytest-sugar
 pytest-watch==4.2.0  # https://github.com/joeyespo/pytest-watch
-factory-boy==3.0.1  # https://github.com/FactoryBoy/factory_boy
+factory-boy==3.1.0  # https://github.com/FactoryBoy/factory_boy
 
 # Developer Tools
 # ------------------------------------------------------------------------------
-ipdb==0.13.3  # https://github.com/gotcha/ipdb
+ipdb==0.13.4  # https://github.com/gotcha/ipdb
 ipython==7.18.1  # https://github.com/ipython/ipython
 mkdocs==1.1.2  # https://www.mkdocs.org/
