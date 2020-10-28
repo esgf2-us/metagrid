@@ -1,3 +1,4 @@
+import { InfoCircleOutlined } from '@ant-design/icons';
 import { Checkbox, Collapse, Form, Select } from 'antd';
 import React from 'react';
 import { CSSinJS } from '../../common/types';
@@ -90,17 +91,30 @@ const FacetsForm: React.FC<Props> = ({
                     {Object.keys(projectFacets).map((facet) => {
                       if (facetsByGroup[group].includes(facet)) {
                         const facetOptions = projectFacets[facet];
-
+                        const isOptionalforDatasets = facetOptions[0].includes(
+                          'none'
+                        );
                         return (
                           <Collapse.Panel
                             header={humanizeFacetNames(facet)}
                             key={facet}
-                            disabled={facetOptions.length === 0}
                           >
                             <Form.Item
                               style={{ marginBottom: '4px' }}
                               key={facet}
                               name={facet}
+                              label={
+                                isOptionalforDatasets ? '(Optional)' : undefined
+                              }
+                              tooltip={
+                                isOptionalforDatasets
+                                  ? {
+                                      title:
+                                        'Selecting the "none" option filters for datasets that do not use this facet.',
+                                      icon: <InfoCircleOutlined />,
+                                    }
+                                  : undefined
+                              }
                             >
                               <Select
                                 data-testid={`${facet}-form-select`}
