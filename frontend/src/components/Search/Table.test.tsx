@@ -33,8 +33,10 @@ it('renders component without results', () => {
   expect(noDataText).toBeTruthy();
 });
 
-it('renders record metadata in an expandable panel', () => {
-  const { getByRole, getByText } = render(<Table {...defaultProps} />);
+it('renders record metadata in an expandable panel', async () => {
+  const { getByRole, getByTestId, getByText } = render(
+    <Table {...defaultProps} />
+  );
 
   // Check table exists
   const table = getByRole('table');
@@ -88,6 +90,8 @@ it('renders record metadata in an expandable panel', () => {
   });
   expect(expandableDownIcon).toBeTruthy();
   fireEvent.click(expandableDownIcon);
+
+  await waitFor(() => row);
 });
 
 it('renders "PID" button when the record has a "xlink" key/value, vice versa', () => {
