@@ -64,8 +64,5 @@ describe('test AuthProvider', () => {
     });
 
     await waitFor(() => getByTestId('authProvider'));
-
-    // Revert back to real timer
-    jest.useRealTimers();
   });
 });
