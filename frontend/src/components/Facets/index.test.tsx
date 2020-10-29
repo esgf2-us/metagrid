@@ -55,6 +55,9 @@ it('handles when the project form is submitted', async () => {
   expect(projectOption).toBeTruthy();
   fireEvent.click(projectOption);
 
+  // Wait for facet form component to re-render
+  await waitFor(() => getByTestId('facets-form'));
+
   // Submit the form
   // NOTE: Submit button is inside the form, so use submit
   const projectFormBtn = within(projectForm).getByRole('img', {
@@ -101,6 +104,7 @@ it('handles facets form auto-filtering', async () => {
     hidden: true,
   });
   fireEvent.click(closeFacetOption);
+
   // Wait for facet form component to re-render
   await waitFor(() => getByTestId('facets-form'));
 });
@@ -132,6 +136,9 @@ it('handles facets form submission, including a facet key that is undefined', as
   expect(facetOption).toBeTruthy();
   fireEvent.click(facetOption);
 
+  // Wait for facet form component to re-render
+  await waitFor(() => getByTestId('facets-form'));
+
   // Open Collapse Panel for  in Collapse component for the facet2 form to render
   const collapse2 = getByText('Facet2');
   fireEvent.click(collapse2);
@@ -144,4 +151,7 @@ it('handles facets form submission, including a facet key that is undefined', as
   ) as HTMLInputElement;
   expect(facetFormSelect2).toBeTruthy();
   fireEvent.mouseDown(facetFormSelect2);
+
+  // Wait for facet form component to re-render
+  await waitFor(() => getByTestId('facets-form'));
 });
