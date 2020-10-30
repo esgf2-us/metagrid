@@ -29,7 +29,7 @@ export type Props = {
  * It also checks for acronyms to convert to uppercase.
  */
 export const humanizeFacetNames = (str: string): string => {
-  const acronyms = ['Id', 'Cf', 'Cmor', 'Mip'];
+  const acronyms = ['Id', 'Cf', 'Cmor', 'Mip', 'Rcm', 'Pft'];
   const frags = str.split('_');
 
   for (let i = 0; i < frags.length; i += 1) {
@@ -91,9 +91,10 @@ const FacetsForm: React.FC<Props> = ({
                     {Object.keys(projectFacets).map((facet) => {
                       if (facetsByGroup[group].includes(facet)) {
                         const facetOptions = projectFacets[facet];
-                        const isOptionalforDatasets = facetOptions[0].includes(
-                          'none'
-                        );
+
+                        const isOptionalforDatasets =
+                          facetOptions.length > 0 &&
+                          facetOptions[0].includes('none');
                         return (
                           <Collapse.Panel
                             header={humanizeFacetNames(facet)}

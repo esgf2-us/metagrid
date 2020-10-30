@@ -12,7 +12,9 @@ class Project(models.Model):
     """Model definition for Project."""
 
     name = models.CharField(
-        max_length=255, unique=True, help_text="The acronym of the project",
+        max_length=255,
+        unique=True,
+        help_text="The acronym of the project",
     )
     full_name = models.CharField(
         max_length=255,
@@ -38,7 +40,7 @@ class Project(models.Model):
 
     @property
     def facets_url(self) -> Union[None, str]:
-        """Generates a URL query for the ESG-Search API."""
+        """Generates a URL query string for the ESGF Search API."""
         facets = self.facets.order_by("id").values_list("name", flat=True)  # type: ignore
 
         if not facets:
@@ -50,12 +52,28 @@ class Project(models.Model):
             "limit": 0,
             "type": "Dataset",
             "format": "application/solr+json",
-            "project": [self.name, self.name.upper(), self.name.lower()],
+            "project": self.project_url_param,
             "facets": ", ".join(facets),
         }  # type: Dict[str, Union[int, str, List[str]]]
 
         query_string = urllib.parse.urlencode(params, True)
+
+        if self.name == "All (except CMIP6)":
+            query_string = query_string.replace(
+                "project=CMIP6", "project!=CMIP6"
+            )
+
         return query_string
+
+    @property
+    def project_url_param(self) -> str:
+        if self.name == "E3SM":
+            return self.name.lower()
+        elif self.name == "All (except CMIP6)":
+            # NOT operator will be performed CMIP6
+            return "CMIP6"
+
+        return self.name
 
 
 class Facet(models.Model):
