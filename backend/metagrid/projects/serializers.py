@@ -12,10 +12,14 @@ class ProjectSerializer(serializers.ModelSerializer):
     def get_facets_by_group(self, project):
         facets_by_group = defaultdict(list)
 
-        for result in project.facets.values("group__name", "name").order_by(
+        for result in project.facets.values(
+            "group__name", "facet__name"
+        ).order_by(
             "group__pk",
         ):
-            facets_by_group[result["group__name"]].append(result["name"])
+            facets_by_group[result["group__name"]].append(
+                result["facet__name"]
+            )
         return facets_by_group
 
     class Meta:

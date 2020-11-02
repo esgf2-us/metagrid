@@ -41,7 +41,7 @@ class Project(models.Model):
     @property
     def facets_url(self) -> Union[None, str]:
         """Generates a URL query string for the ESGF Search API."""
-        facets = self.facets.order_by("id").values_list("name", flat=True)  # type: ignore
+        facets = self.facets.order_by("id").values_list("facet__name", flat=True)  # type: ignore
 
         if not facets:
             logger.warning(f"No facets found for project: {self.name}")
@@ -79,18 +79,12 @@ class Project(models.Model):
 class Facet(models.Model):
     """Model definition for Facet."""
 
-    name = models.CharField(max_length=255)
-    project = models.ForeignKey(
-        Project, related_name="facets", on_delete=models.CASCADE
-    )
-    group = models.ForeignKey(
-        "projects.facetgroup", on_delete=models.CASCADE, null=True
-    )
+    name = models.CharField(max_length=255, unique=True)
+    description = models.TextField(null=True)
 
     class Meta:
         """Meta definition for Facet."""
 
-        unique_together = ["name", "project"]
         verbose_name = "Facet"
         verbose_name_plural = "Facets"
 
@@ -101,6 +95,34 @@ class Facet(models.Model):
     def get_absolute_url(self) -> str:
         """Return absolute url for Facet."""
         return self.name
+
+
+class ProjectFacet(models.Model):
+    """Model definition for ProjectFacet."""
+
+    project = models.ForeignKey(
+        Project, related_name="facets", on_delete=models.CASCADE
+    )
+    facet = models.ForeignKey(Facet, on_delete=models.CASCADE)
+    group = models.ForeignKey(
+        "projects.facetgroup",
+        on_delete=models.CASCADE,
+    )
+
+    class Meta:
+        """Meta definition for ProjectFacet."""
+
+        unique_together = ["project", "facet"]
+        verbose_name = "ProjectFacet"
+        verbose_name_plural = "ProjectFacets"
+
+    def __str__(self) -> str:
+        """Unicode representation of ProjectFacet."""
+        return self.facet.name
+
+    def get_absolute_url(self) -> str:
+        """Return absolute url for ProjectFacet."""
+        return self.facet.name
 
 
 class FacetGroup(models.Model):

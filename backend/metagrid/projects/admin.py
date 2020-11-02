@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Facet, Project
+from metagrid.projects.models import Facet, Project, ProjectFacet
 
 
 @admin.register(Project)
@@ -10,4 +10,9 @@ class ProjectAdmin(admin.ModelAdmin):
 
 @admin.register(Facet)
 class FacetAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(ProjectFacet)
+class ProjectFacetAdmin(admin.ModelAdmin):
     pass

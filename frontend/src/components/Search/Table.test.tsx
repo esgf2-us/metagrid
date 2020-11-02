@@ -34,9 +34,7 @@ it('renders component without results', () => {
 });
 
 it('renders record metadata in an expandable panel', async () => {
-  const { getByRole, getByTestId, getByText } = render(
-    <Table {...defaultProps} />
-  );
+  const { getByRole, getByText } = render(<Table {...defaultProps} />);
 
   // Check table exists
   const table = getByRole('table');
