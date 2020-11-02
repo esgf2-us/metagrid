@@ -45,6 +45,16 @@ class TestProjectModel:
         # associated with the project
         assert self.project.facets_url is None
 
+    def test_facets_url_cross_project_search(self):
+        cross_project = ProjectFactory.create(
+            name="All (except CMIP6)"
+        )  # type: Project
+
+        assert "project!=CMIP6" in cross_project.facets_url
+
+    def test_project_url_param_success(self):
+        assert self.project.project_url_param == "CMIP6"
+
 
 class TestFacetModel:
     @pytest.fixture(autouse=True)

@@ -1,8 +1,8 @@
 import uuid
 
 from django.contrib.postgres.fields import ArrayField
-from django.contrib.postgres.fields import JSONField as JSONBField
 from django.db import models
+from django.db.models import JSONField as JSONBField
 
 
 class Cart(models.Model):
