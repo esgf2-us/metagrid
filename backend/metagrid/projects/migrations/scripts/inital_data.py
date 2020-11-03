@@ -8,7 +8,7 @@ https://docs.djangoproject.com/en/3.0/topics/migrations/#data-migrations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from metagrid.projects.models import Facet, Project
+    from metagrid.projects.models import ProjectFacet, Project
 
 
 # Facets are pulled from ESGF Search API JSON results
