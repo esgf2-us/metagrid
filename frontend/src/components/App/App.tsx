@@ -9,6 +9,7 @@ import {
 import { Affix, Breadcrumb, Button, Layout, message } from 'antd';
 import React from 'react';
 import { useAsync } from 'react-async';
+import { hotjar } from 'react-hotjar';
 import {
   BrowserRouter as Router,
   Redirect,
@@ -27,6 +28,7 @@ import {
 import { CSSinJS } from '../../common/types';
 import { objectIsEmpty } from '../../common/utils';
 import { AuthContext } from '../../contexts/AuthContext';
+import { hjid, hjsv } from '../../env';
 import Cart from '../Cart';
 import Summary from '../Cart/Summary';
 import { UserCart, UserSearchQueries, UserSearchQuery } from '../Cart/types';
@@ -151,6 +153,16 @@ const App: React.FC = () => {
     }, 295000);
     return () => clearInterval(interval);
   }, [runFetchNodeStatus]);
+
+  /**
+   * Initialize react-hotjar in production
+   */
+  React.useEffect(() => {
+    /* istanbul ignore next */
+    if (hjid && hjsv) {
+      hotjar.initialize(hjid, hjsv);
+    }
+  }, []);
 
   const handleTextSearch = (text: string): void => {
     if (textInputs.includes(text as never)) {
@@ -458,7 +470,7 @@ const App: React.FC = () => {
             </Switch>
           </Layout.Content>
         </Layout>
-        <Affix style={{ position: 'fixed', bottom: 20, right: 20 }}>
+        <Affix style={{ position: 'fixed', bottom: 90, right: 35 }}>
           <Button
             type="primary"
             shape="circle"
