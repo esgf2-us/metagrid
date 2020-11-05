@@ -41,3 +41,9 @@ export const keycloakRealm = process.env.REACT_APP_KEYCLOAK_REALM as string;
 export const keycloakUrl = process.env.REACT_APP_KEYCLOAK_URL as string;
 export const keycloakClientId = process.env
   .REACT_APP_KEYCLOAK_CLIENT_ID as string;
+
+// react-hotjar
+// ------------------------------------------------------------------------------
+// https://github.com/abdalla/react-hotjar
+export const hjid = (process.env.REACT_APP_HOTJAR_ID as unknown) as number;
+export const hjsv = (process.env.REACT_APP_HOTJAR_SV as unknown) as number;
