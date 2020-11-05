@@ -33,3 +33,9 @@ REACT_APP_PROXY_URL=
 REACT_APP_KEYCLOAK_URL=
 REACT_APP_KEYCLOAK_REALM=
 REACT_APP_KEYCLOAK_CLIENT_ID=
+
+# react-hotjar
+# ------------------------------------------------------------------------------
+# https://github.com/abdalla/react-hotjar
+REACT_APP_HOTJAR_ID=
+REACT_APP_HOTJAR_SV=
