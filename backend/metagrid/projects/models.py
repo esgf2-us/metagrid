@@ -52,28 +52,25 @@ class Project(models.Model):
             "limit": 0,
             "type": "Dataset",
             "format": "application/solr+json",
-            "project": self.project_url_param,
             "facets": ", ".join(facets),
         }  # type: Dict[str, Union[int, str, List[str]]]
-
+        params = {**self.project_param, **params}
         query_string = urllib.parse.urlencode(params, True)
-
-        if self.name == "All (except CMIP6)":
-            query_string = query_string.replace(
-                "project=CMIP6", "project!=CMIP6"
-            )
 
         return query_string
 
     @property
-    def project_url_param(self) -> str:
-        if self.name == "E3SM":
-            return self.name.lower()
-        elif self.name == "All (except CMIP6)":
-            # NOT operator will be performed CMIP6
-            return "CMIP6"
+    def project_param(self) -> Dict[str, str]:
+        """Generates the respective url param based on the project.
 
-        return self.name
+        For example, input4MIPs uses 'activity_id' instead of 'project'
+        """
+        project_params = {
+            "E3SM": {"project": self.name.lower()},
+            "All (except CMIP6)": {"project!": "CMIP6"},
+            "input4MIPs": {"activity_id": self.name},
+        }
+        return project_params.get(self.name, {"project": self.name})
 
 
 class Facet(models.Model):

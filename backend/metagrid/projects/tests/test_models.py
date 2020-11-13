@@ -52,10 +52,16 @@ class TestProjectModel:
             name="All (except CMIP6)"
         )  # type: Project
 
-        assert "project!=CMIP6" in cross_project.facets_url
+        # The HTML URL encoding for ! (NOT) is %21
+        assert "project%21=CMIP6" in cross_project.facets_url
 
-    def test_project_url_param_success(self):
-        assert self.project.project_url_param == "CMIP6"
+    def test_facets_url_input4MIPS(self):
+        project = ProjectFactory.create(name="input4MIPs")  # type: Project
+
+        assert "activity_id=input4MIPs" in project.facets_url
+
+    def test_project_param_success(self):
+        assert self.project.project_param == {"project": "CMIP6"}
 
 
 class TestProjectFacetModel:
