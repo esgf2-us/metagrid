@@ -2,6 +2,7 @@ import { KeycloakProvider } from '@react-keycloak/web';
 import { render, RenderResult } from '@testing-library/react';
 import { KeycloakInstance } from 'keycloak-js';
 import React, { ComponentType } from 'react';
+import { BrowserRouter as Router } from 'react-router-dom';
 import { AuthProvider } from '../contexts/AuthContext';
 
 const keycloak: KeycloakInstance = {
@@ -66,7 +67,9 @@ export const customRender = (
   function AllProviders({ children }: AllProvidersProps): React.ReactElement {
     return (
       <KeycloakProvider keycloak={{ ...keycloak, ...options }}>
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <Router basename={process.env.PUBLIC_URL}>{children}</Router>
+        </AuthProvider>
       </KeycloakProvider>
     );
   }
