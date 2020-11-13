@@ -39,3 +39,8 @@ REACT_APP_KEYCLOAK_CLIENT_ID=
 # https://github.com/abdalla/react-hotjar
 REACT_APP_HOTJAR_ID=
 REACT_APP_HOTJAR_SV=
+
+# react-ga
+# ------------------------------------------------------------------------------
+# https://github.com/react-ga/react-ga
+REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID=
