@@ -7,7 +7,6 @@
  */
 import { act, fireEvent, waitFor, within } from '@testing-library/react';
 import React from 'react';
-import { BrowserRouter as Router } from 'react-router-dom';
 import { rest, server } from '../../api/mock/setup-env';
 import apiRoutes from '../../api/routes';
 import { customRender } from '../../test/custom-render';
@@ -33,11 +32,7 @@ afterEach(() => {
 });
 
 it('renders App component', async () => {
-  const { getByTestId } = customRender(
-    <Router>
-      <App />
-    </Router>
-  );
+  const { getByTestId } = customRender(<App />);
 
   // Check applicable components render
   const navComponent = await waitFor(() => getByTestId('nav-bar'));
@@ -49,9 +44,7 @@ it('renders App component', async () => {
 
 it('handles project changes when a new project is selected', async () => {
   const { getByPlaceholderText, getByTestId, getByText } = customRender(
-    <Router>
-      <App />
-    </Router>
+    <App />
   );
 
   // Check applicable components render
@@ -94,9 +87,7 @@ it('handles project changes when a new project is selected', async () => {
 
 it('handles removing search tags and clearing all search tags', async () => {
   const { getByPlaceholderText, getByTestId, getByText } = customRender(
-    <Router>
-      <App />
-    </Router>
+    <App />
   );
 
   // Check applicable components render
@@ -157,11 +148,7 @@ it('handles removing search tags and clearing all search tags', async () => {
 });
 
 it('handles removing facet tags', async () => {
-  const { getByTestId, getByText } = customRender(
-    <Router>
-      <App />
-    </Router>
-  );
+  const { getByTestId, getByText } = customRender(<App />);
 
   // Check applicable components render
   const navComponent = await waitFor(() => getByTestId('nav-bar'));
@@ -228,11 +215,7 @@ it('handles removing facet tags', async () => {
 });
 
 it('handles project changes and clearing filters when the active project !== selected project', async () => {
-  const { getByTestId } = customRender(
-    <Router>
-      <App />
-    </Router>
-  );
+  const { getByTestId } = customRender(<App />);
 
   // Check applicable components render
   const facetsComponent = await waitFor(() => getByTestId('facets'));
@@ -296,11 +279,7 @@ it('handles project changes and clearing filters when the active project !== sel
 it('fetches the data node status every defined interval', () => {
   jest.useFakeTimers();
 
-  customRender(
-    <Router>
-      <App />
-    </Router>
-  );
+  customRender(<App />);
 
   act(() => {
     jest.advanceTimersByTime(295000);
@@ -314,12 +293,7 @@ describe('User cart', () => {
       getByTestId,
       getByText,
       getByPlaceholderText,
-    } = customRender(
-      <Router>
-        <App />
-      </Router>,
-      { token: 'token' }
-    );
+    } = customRender(<App />, { token: 'token' });
 
     // Check applicable components render
     const navComponent = await waitFor(() => getByTestId('nav-bar'));
@@ -380,12 +354,9 @@ describe('User cart', () => {
     expect(removeText).toBeTruthy();
   });
   it('displays authenticated user"s number of files in the cart summary and handles clearing the cart', async () => {
-    const { getByRole, getByTestId, getByText } = customRender(
-      <Router>
-        <App />
-      </Router>,
-      { token: 'token' }
-    );
+    const { getByRole, getByTestId, getByText } = customRender(<App />, {
+      token: 'token',
+    });
 
     // Check applicable components render
     const navComponent = await waitFor(() => getByTestId('nav-bar'));
@@ -452,11 +423,7 @@ describe('User cart', () => {
       getByTestId,
       getByText,
       getByPlaceholderText,
-    } = customRender(
-      <Router>
-        <App />
-      </Router>
-    );
+    } = customRender(<App />);
 
     // Check applicable components render
     const navComponent = await waitFor(() => getByTestId('nav-bar'));
@@ -523,11 +490,7 @@ describe('User cart', () => {
       getByTestId,
       getByText,
       getByPlaceholderText,
-    } = customRender(
-      <Router>
-        <App />
-      </Router>
-    );
+    } = customRender(<App />);
 
     // Check applicable components render
     const navComponent = await waitFor(() => getByTestId('nav-bar'));
@@ -625,12 +588,9 @@ describe('User cart', () => {
         })
       );
 
-      const { getByText, getByTestId } = customRender(
-        <Router>
-          <App />
-        </Router>,
-        { token: 'token' }
-      );
+      const { getByText, getByTestId } = customRender(<App />, {
+        token: 'token',
+      });
 
       // Check applicable components render
       const navComponent = await waitFor(() => getByTestId('nav-bar'));
@@ -649,12 +609,11 @@ describe('User cart', () => {
 
 describe('User search library', () => {
   it('handles authenticated user saving and applying searches', async () => {
-    const { getByTestId, getByPlaceholderText, getByRole } = customRender(
-      <Router>
-        <App />
-      </Router>,
-      { token: 'token' }
-    );
+    const {
+      getByTestId,
+      getByPlaceholderText,
+      getByRole,
+    } = customRender(<App />, { token: 'token' });
 
     // Check applicable components render
     const navComponent = await waitFor(() => getByTestId('nav-bar'));
@@ -715,12 +674,9 @@ describe('User search library', () => {
     await waitFor(() => getByTestId('facets'));
   });
   it('handles authenticated user removing searches from the search library', async () => {
-    const { getByRole, getByTestId, getByText } = customRender(
-      <Router>
-        <App />
-      </Router>,
-      { token: 'token' }
-    );
+    const { getByRole, getByTestId, getByText } = customRender(<App />, {
+      token: 'token',
+    });
 
     // Check applicable components render
     const navComponent = await waitFor(() => getByTestId('nav-bar'));
@@ -759,9 +715,7 @@ describe('User search library', () => {
 
   it('handles anonymous user saving and applying searches', async () => {
     const { getByTestId, getByPlaceholderText, getByRole } = customRender(
-      <Router>
-        <App />
-      </Router>
+      <App />
     );
 
     // Check applicable components render
@@ -830,11 +784,7 @@ describe('User search library', () => {
       getByRole,
       getByTestId,
       getByText,
-    } = customRender(
-      <Router>
-        <App />
-      </Router>
-    );
+    } = customRender(<App />);
 
     // Check applicable components render
     const navComponent = await waitFor(() => getByTestId('nav-bar'));
@@ -904,12 +854,9 @@ describe('User search library', () => {
         })
       );
 
-      const { getByText, getByTestId } = customRender(
-        <Router>
-          <App />
-        </Router>,
-        { token: 'token' }
-      );
+      const { getByText, getByTestId } = customRender(<App />, {
+        token: 'token',
+      });
 
       // Check applicable components render
       const navComponent = await waitFor(() => getByTestId('nav-bar'));
@@ -937,12 +884,7 @@ describe('User search library', () => {
         getByPlaceholderText,
         getByRole,
         getByText,
-      } = customRender(
-        <Router>
-          <App />
-        </Router>,
-        { token: 'token' }
-      );
+      } = customRender(<App />, { token: 'token' });
 
       // Check applicable components render
       const navComponent = await waitFor(() => getByTestId('nav-bar'));
@@ -993,12 +935,9 @@ describe('User search library', () => {
         })
       );
 
-      const { getByTestId, getByText } = customRender(
-        <Router>
-          <App />
-        </Router>,
-        { token: 'token' }
-      );
+      const { getByTestId, getByText } = customRender(<App />, {
+        token: 'token',
+      });
 
       // Check applicable components render
       const navComponent = await waitFor(() => getByTestId('nav-bar'));
@@ -1040,11 +979,7 @@ describe('User search library', () => {
 
 describe('User support', () => {
   it('renders user support modal when clicking fixed button and is closeable', () => {
-    const { getByRole } = customRender(
-      <Router>
-        <App />
-      </Router>
-    );
+    const { getByRole } = customRender(<App />);
 
     // support button renders
     const supportBtn = getByRole('img', { name: 'question', hidden: true });
@@ -1065,11 +1000,7 @@ describe('User support', () => {
 
 describe('Data node status page', () => {
   it('renders the node status page after clicking the link', async () => {
-    const { getByTestId } = customRender(
-      <Router>
-        <App />
-      </Router>
-    );
+    const { getByTestId } = customRender(<App />);
     const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
     expect(rightMenuComponent).toBeTruthy();
 
