@@ -9,13 +9,9 @@ import {
 import { Affix, Breadcrumb, Button, Layout, message } from 'antd';
 import React from 'react';
 import { useAsync } from 'react-async';
+import ReactGA from 'react-ga';
 import { hotjar } from 'react-hotjar';
-import {
-  BrowserRouter as Router,
-  Redirect,
-  Route,
-  Switch,
-} from 'react-router-dom';
+import { Redirect, Route, Switch, useLocation } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import {
   addUserSearchQuery,
@@ -28,7 +24,7 @@ import {
 import { CSSinJS } from '../../common/types';
 import { objectIsEmpty } from '../../common/utils';
 import { AuthContext } from '../../contexts/AuthContext';
-import { hjid, hjsv } from '../../env';
+import { gaTrackingID, hjid, hjsv } from '../../env';
 import Cart from '../Cart';
 import Summary from '../Cart/Summary';
 import { UserCart, UserSearchQueries, UserSearchQuery } from '../Cart/types';
@@ -61,7 +57,32 @@ const styles: CSSinJS = {
   messageRemoveIcon: { color: '#ff0000' },
 };
 
+const useGoogleAnalytics = (): void => {
+  const location = useLocation();
+
+  React.useEffect(() => {
+    /* istanbul ignore next */
+    if (gaTrackingID) {
+      ReactGA.initialize(gaTrackingID);
+      ReactGA.pageview(location.pathname + location.search);
+    }
+  }, [location]);
+};
+
+const useHotjar = (): void => {
+  React.useEffect(() => {
+    /* istanbul ignore next */
+    if (hjid && hjsv) {
+      hotjar.initialize(hjid, hjsv);
+    }
+  }, []);
+};
+
 const App: React.FC = () => {
+  // Third-party tool integration
+  useGoogleAnalytics();
+  useHotjar();
+
   // User's authentication state
   const authState = React.useContext(AuthContext);
   const { access_token: accessToken, pk } = authState;
@@ -153,16 +174,6 @@ const App: React.FC = () => {
     }, 295000);
     return () => clearInterval(interval);
   }, [runFetchNodeStatus]);
-
-  /**
-   * Initialize react-hotjar in production
-   */
-  React.useEffect(() => {
-    /* istanbul ignore next */
-    if (hjid && hjsv) {
-      hotjar.initialize(hjid, hjsv);
-    }
-  }, []);
 
   const handleTextSearch = (text: string): void => {
     if (textInputs.includes(text as never)) {
@@ -333,7 +344,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <Router basename={process.env.PUBLIC_URL}>
+    <>
       <Switch>
         <Redirect from="/" exact to="/search" />
         <Redirect from="/cart" exact to="/cart/items" />
@@ -484,7 +495,7 @@ const App: React.FC = () => {
           onClose={() => setSupportModalVisible(false)}
         />
       </div>
-    </Router>
+    </>
   );
 };
 
