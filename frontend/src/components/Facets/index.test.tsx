@@ -50,8 +50,8 @@ it('handles when the project form is submitted', async () => {
   expect(projectFormSelect).toBeTruthy();
   fireEvent.mouseDown(projectFormSelect);
 
-  // Select the first project option
-  const projectOption = getByTestId('project_0');
+  // Select the second project option
+  const projectOption = getByTestId('project_1');
   expect(projectOption).toBeTruthy();
   fireEvent.click(projectOption);
 

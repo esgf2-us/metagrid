@@ -102,10 +102,7 @@ const SearchesCard: React.FC<Props> = ({
           </>
         }
         actions={[
-          <ToolTip
-            title="Apply search criteria and view results"
-            trigger="hover"
-          >
+          <ToolTip title="Apply search query and view results" trigger="hover">
             <SearchOutlined
               data-testid={`apply-${index + 1}`}
               key="search"
@@ -124,7 +121,7 @@ const SearchesCard: React.FC<Props> = ({
               <LinkOutlined key="json" /> JSON
             </a>
           </ToolTip>,
-          <ToolTip title="Remove search criteria from library">
+          <ToolTip title="Remove search query from library">
             <DeleteOutlined
               onClick={() => onRemoveSearchQuery(uuid)}
               style={{ color: 'red' }}
