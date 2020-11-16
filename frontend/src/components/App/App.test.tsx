@@ -167,8 +167,8 @@ it('handles removing facet tags', async () => {
   expect(projectFormSelect).toBeTruthy();
   fireEvent.mouseDown(projectFormSelect);
 
-  // Select the first project option
-  const projectOption = getByTestId('project_0');
+  // Select the second project option
+  const projectOption = getByTestId('project_1');
   expect(projectOption).toBeTruthy();
   fireEvent.click(projectOption);
 
@@ -234,8 +234,8 @@ it('handles project changes and clearing filters when the active project !== sel
   expect(projectFormSelect).toBeTruthy();
   fireEvent.mouseDown(projectFormSelect);
 
-  // Select the first project option
-  const projectOption = await waitFor(() => getByTestId('project_0'));
+  // Select the second project option
+  const projectOption = await waitFor(() => getByTestId('project_1'));
   expect(projectOption).toBeInTheDocument();
   fireEvent.click(projectOption);
 
@@ -262,10 +262,10 @@ it('handles project changes and clearing filters when the active project !== sel
   expect(projectFormSelect).toBeTruthy();
   fireEvent.mouseDown(projectFormSelect2);
 
-  // Select the second project option
-  const secondOption = await waitFor(() => getByTestId('project_1'));
-  expect(secondOption).toBeInTheDocument();
-  fireEvent.click(secondOption);
+  // Select the first project option
+  const firstOption = await waitFor(() => getByTestId('project_0'));
+  expect(firstOption).toBeInTheDocument();
+  fireEvent.click(firstOption);
 
   // Submit the form
   fireEvent.submit(submitBtn);
@@ -326,7 +326,7 @@ describe('User cart', () => {
     const firstRow = await waitFor(() =>
       getByRole('row', {
         name:
-          'right-circle foo 3 1 Bytes check-circle aims3.llnl.gov 1 check-circle Globus Compatible wget download plus',
+          'right-circle bar 2 1 Bytes close-circle esgf1.dkrz.de 1 wget download plus',
       })
     );
     expect(firstRow).toBeTruthy();
@@ -456,7 +456,7 @@ describe('User cart', () => {
     const firstRow = await waitFor(() =>
       getByRole('row', {
         name:
-          'right-circle foo 3 1 Bytes check-circle aims3.llnl.gov 1 check-circle Globus Compatible wget download plus',
+          'right-circle foo 3 1 Bytes check-circle aims3.llnl.gov 1 wget download plus',
       })
     );
     expect(firstRow).toBeTruthy();
@@ -521,7 +521,7 @@ describe('User cart', () => {
     const firstRow = await waitFor(() =>
       getByRole('row', {
         name:
-          'right-circle foo 3 1 Bytes check-circle aims3.llnl.gov 1 check-circle Globus Compatible wget download plus',
+          'right-circle foo 3 1 Bytes check-circle aims3.llnl.gov 1 wget download plus',
       })
     );
     expect(firstRow).toBeTruthy();
@@ -708,7 +708,7 @@ describe('User search library', () => {
 
     // Check removed message appears
     const removeText = await waitFor(() =>
-      getByText('Removed search criteria from your library')
+      getByText('Removed search query from your library')
     );
     expect(removeText).toBeTruthy();
   });
@@ -842,12 +842,12 @@ describe('User search library', () => {
     await waitFor(() => getByTestId('cart'));
 
     // Check removed message appears
-    const removeText = getByText('Removed search criteria from your library');
+    const removeText = getByText('Removed search query from your library');
     expect(removeText).toBeTruthy();
   });
 
   describe('Error handling', () => {
-    it('displays error message after failing to fetch authenticated user"s saved searches', async () => {
+    it('displays error message after failing to fetch authenticated user"s saved search queries', async () => {
       server.use(
         rest.get(apiRoutes.userSearches, (_req, res, ctx) => {
           return res(ctx.status(404));
@@ -865,13 +865,13 @@ describe('User search library', () => {
       // Check error message renders after failing to fetch cart from API
       const errorMsg = await waitFor(() =>
         getByText(
-          'There was an issue fetching your saved searches. Please contact support or try again later.'
+          'There was an issue fetching your saved search queries. Please contact support or try again later.'
         )
       );
       expect(errorMsg).toBeTruthy();
     });
 
-    it('displays error message after failing to add authenticated user"s saved search', async () => {
+    it('displays error message after failing to add authenticated user"s saved search query', async () => {
       // Override API response with 404
       server.use(
         rest.post(apiRoutes.userSearches, (_req, res, ctx) => {

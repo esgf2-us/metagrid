@@ -63,7 +63,7 @@ const Cart: React.FC<Props> = ({
           tab={
             <span>
               <BookOutlined />
-              Search Criteria
+              Search Library
             </span>
           }
           key="searches"

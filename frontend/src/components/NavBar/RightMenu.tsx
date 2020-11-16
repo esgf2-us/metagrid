@@ -85,7 +85,9 @@ const RightMenu: React.FC<Props> = ({
             <Button
               type="text"
               icon={<UserOutlined style={{ fontSize: '18px' }} />}
-              onClick={() => keycloak.login()}
+              // TODO: Re-enable after Keycloak integration
+              // onClick={() => keycloak.login()}
+              disabled
             >
               Sign In
             </Button>
@@ -117,25 +119,25 @@ const RightMenu: React.FC<Props> = ({
             <Badge
               count={numCartItems}
               className="badge"
-              offset={[5, 0]}
+              offset={[5, 3]}
               showZero
             >
               <Link to="/cart/items">
-                <ShoppingCartOutlined style={{ fontSize: '24px' }} />
+                <ShoppingCartOutlined style={{ fontSize: '20px' }} />
               </Link>
             </Badge>
           </ToolTip>
         </Menu.Item>
         <Menu.Item key="cartSearches" className="modified-item">
-          <ToolTip title="Saved Searches">
+          <ToolTip title="Search Library">
             <Badge
               count={numSavedSearches}
               className="badge"
-              offset={[5, 0]}
+              offset={[5, 3]}
               showZero
             >
               <Link to="/cart/searches">
-                <FileSearchOutlined style={{ fontSize: '24px' }} />
+                <FileSearchOutlined style={{ fontSize: '20px' }} />
               </Link>
             </Badge>
           </ToolTip>

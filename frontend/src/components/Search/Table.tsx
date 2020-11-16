@@ -32,6 +32,7 @@ import { RawSearchResult, RawSearchResults } from './types';
 
 export type Props = {
   loading: boolean;
+  canDisableRows?: boolean;
   results: RawSearchResults | [];
   totalResults?: number;
   userCart: UserCart | [];
@@ -44,6 +45,7 @@ export type Props = {
 
 const Table: React.FC<Props> = ({
   loading,
+  canDisableRows = true,
   results,
   totalResults,
   userCart,
@@ -143,12 +145,16 @@ const Table: React.FC<Props> = ({
         }
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      onSelectAll: (_selected: any, _selectedRows: any, changeRows: any) => {
+      onSelectAll: (_selected: any, selectedRows: any) => {
         /* istanbul ignore else */
         if (onRowSelect) {
-          onRowSelect(changeRows);
+          onRowSelect(selectedRows);
         }
       },
+      getCheckboxProps: (record: RawSearchResult) => ({
+        disabled:
+          canDisableRows && userCart.some((item) => item.id === record.id),
+      }),
     },
 
     hasData: results.length > 0,
@@ -232,7 +238,8 @@ const Table: React.FC<Props> = ({
 
         return (
           <>
-            <p>
+            {/* TODO: Remove display styling when Globus is integrated*/}
+            <p style={{ display: 'none' }}>
               {globusCompatible ? (
                 <CheckCircleTwoTone twoToneColor="#52c41a" />
               ) : (
@@ -304,7 +311,9 @@ const Table: React.FC<Props> = ({
       key: 'cart',
       width: 50,
       render: (record: RawSearchResult) => {
-        if (userCart.includes(record as never, 0)) {
+        if (
+          userCart.some((dataset: RawSearchResult) => dataset.id === record.id)
+        ) {
           return (
             <>
               <Button

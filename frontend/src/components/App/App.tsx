@@ -40,7 +40,7 @@ import NavBar from '../NavBar';
 import NodeStatus from '../NodeStatus';
 import NodeSummary from '../NodeStatus/NodeSummary';
 import Search from '../Search';
-import { RawSearchResults, TextInputs } from '../Search/types';
+import { RawSearchResult, RawSearchResults, TextInputs } from '../Search/types';
 import Support from '../Support';
 import './App.css';
 
@@ -144,7 +144,7 @@ const App: React.FC = () => {
         .catch(() => {
           void message.error({
             content:
-              'There was an issue fetching your saved searches. Please contact support or try again later.',
+              'There was an issue fetching your saved search queries. Please contact support or try again later.',
           });
         });
     }
@@ -235,9 +235,11 @@ const App: React.FC = () => {
 
     /* istanbul ignore else */
     if (operation === 'add') {
-      const itemsNotInCart = selectedItems.filter((item) => {
-        return !userCart.includes(item as never);
-      });
+      const itemsNotInCart = selectedItems.filter(
+        (item: RawSearchResult) =>
+          !userCart.some((dataset) => dataset.id === item.id)
+      );
+
       newCart = [...userCart, ...itemsNotInCart];
       setUserCart(newCart);
 
@@ -247,7 +249,9 @@ const App: React.FC = () => {
       });
     } else if (operation === 'remove') {
       newCart = userCart.filter((item) => {
-        return !selectedItems.includes(item);
+        return selectedItems.some(
+          (dataset: RawSearchResult) => dataset.id !== item.id
+        );
       });
       setUserCart(newCart);
 
@@ -287,7 +291,7 @@ const App: React.FC = () => {
     const saveSuccess = (): void => {
       setUserSearchQueries([...userSearchQueries, savedSearch]);
       void message.success({
-        content: 'Saved search criteria to your library',
+        content: 'Saved search query to your library',
         icon: <BookOutlined style={styles.messageAddIcon} />,
       });
     };
@@ -316,7 +320,7 @@ const App: React.FC = () => {
         )
       );
       void message.success({
-        content: 'Removed search criteria from your library',
+        content: 'Removed search query from your library',
         icon: <DeleteOutlined style={styles.messageRemoveIcon} />,
       });
     };
