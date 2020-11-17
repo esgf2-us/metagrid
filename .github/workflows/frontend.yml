@@ -25,7 +25,9 @@ jobs:
           node-version: "12.x"
 
       - name: Set Environment Variables
-        run: echo "frontend/.envs/.local/.react" >> $GITHUB_PATH
+        uses: c-py/action-dotenv-to-setenv@v1
+        with:
+          env-file: frontend/.envs/.local/.react
 
       - name: Cache node modules
         uses: actions/cache@v2

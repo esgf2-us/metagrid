@@ -36,9 +36,12 @@ jobs:
           python-version: 3.8
 
       - name: Set Environment Variables
-        run: |
-        echo "frontend/.envs/.local/.react" >> $GITHUB_PATH
-        echo "DATABASE_URL=pgsql://postgres:postgres@localhost:5432/postgres" >> $GITHUB_ENV
+        run: echo "::set-env name=DATABASE_URL::pgsql://postgres:postgres@localhost:5432/postgres"
+
+      - name: Set Environment Variables (via .env)
+        uses: c-py/action-dotenv-to-setenv@v1
+        with:
+          env-file: backend/.envs/.local/.django
 
       - name: Cache pip
         uses: actions/cache@v2
