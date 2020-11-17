@@ -10,6 +10,15 @@ defaults:
   run:
     working-directory: backend
 
+env:
+  DJANGO_SETTINGS_MODULE: metagrid.config.local
+  DOMAIN_NAME: http://localhost:8000
+  CORS_ORIGIN_WHITELIST: http://localhost:3000
+  KEYCLOAK_URL: http://keycloak:8080/auth
+  KEYCLOAK_REALM: metagrid
+  KEYCLOAK_CLIENT_ID: backend
+  DATABASE_URL: pgsql://postgres:postgres@localhost:5432/postgres
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -34,14 +43,6 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
-
-      - name: Set Environment Variables
-        run: echo "::set-env name=DATABASE_URL::pgsql://postgres:postgres@localhost:5432/postgres"
-
-      - name: Set Environment Variables (via .env)
-        uses: c-py/action-dotenv-to-setenv@v1
-        with:
-          env-file: backend/.envs/.local/.django
 
       - name: Cache pip
         uses: actions/cache@v2
