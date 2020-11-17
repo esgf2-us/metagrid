@@ -1,6 +1,5 @@
+import { fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react';
-
 import Button from './Button';
 
 it('renders component', () => {
@@ -11,7 +10,7 @@ it('renders component', () => {
   expect(button).toBeTruthy();
 });
 
-it('returns string "clicked" onClick', () => {
+it('returns string "clicked" onClick', async () => {
   const { getByRole } = render(
     <Button type="primary" onClick={jest.fn()}></Button>
   );
@@ -19,4 +18,5 @@ it('returns string "clicked" onClick', () => {
   // Click on the button
   const button = getByRole('button');
   fireEvent.click(button);
+  await waitFor(() => button);
 });

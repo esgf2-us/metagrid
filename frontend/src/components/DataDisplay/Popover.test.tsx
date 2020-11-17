@@ -1,9 +1,8 @@
+import { fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
-import { fireEvent, render } from '@testing-library/react';
-
 import Popover from './Popover';
 
-it('returns component with required content', () => {
+it('returns component with required content', async () => {
   const children = 'Click Me';
   const { getByText, getByRole, findByText, rerender } = render(
     <Popover content={<p>foobar</p>} trigger="click">
@@ -16,10 +15,10 @@ it('returns component with required content', () => {
   fireEvent.click(popOverBtn);
 
   // Check popover exists and content is displayed
-  const popOver = getByRole('tooltip');
+  const popOver = await waitFor(() => getByRole('tooltip'));
   expect(popOver).toBeTruthy();
 
-  const content = findByText('foobar');
+  const content = await waitFor(() => findByText('foobar'));
   expect(content).toBeTruthy();
 
   // Re-render component without trigger prop
