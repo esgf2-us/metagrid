@@ -1,5 +1,4 @@
-import { KeycloakProvider } from '@react-keycloak/web';
-import { KeycloakInitOptions } from 'keycloak-js';
+import { ReactKeycloakProvider } from '@react-keycloak/web';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter as Router } from 'react-router-dom';
@@ -9,15 +8,15 @@ import './index.css';
 import { keycloak, keycloakProviderInitConfig } from './lib/keycloak';
 
 ReactDOM.render(
-  <KeycloakProvider
-    keycloak={keycloak}
-    initConfig={keycloakProviderInitConfig as KeycloakInitOptions}
+  <ReactKeycloakProvider
+    authClient={keycloak}
+    initOptions={keycloakProviderInitConfig}
   >
     <AuthProvider>
       <Router basename={process.env.PUBLIC_URL}>
         <App />
       </Router>
     </AuthProvider>
-  </KeycloakProvider>,
+  </ReactKeycloakProvider>,
   document.getElementById('root')
 );

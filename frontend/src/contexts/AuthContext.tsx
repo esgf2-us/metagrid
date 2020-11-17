@@ -55,7 +55,7 @@ type Props = { children: React.ReactNode };
 
 export const AuthProvider: React.FC<Props> = ({ children }) => {
   // Keycloak instance
-  const [keycloak] = useKeycloak();
+  const { keycloak } = useKeycloak();
 
   // MetaGrid authenticated user tokens
   const { data: userAuth, run: runFetchUserAuth } = useAsync({
