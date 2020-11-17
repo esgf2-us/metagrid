@@ -1,10 +1,9 @@
+import { fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react';
-
 import ToolTip from './ToolTip';
 
-it('renders the component', () => {
-  const { getByText, findByText, getByRole, rerender } = render(
+it('renders the component', async () => {
+  const { getByText, getByRole, rerender } = render(
     <ToolTip title="foo" trigger="click">
       <p>Click Me</p>
     </ToolTip>
@@ -15,9 +14,8 @@ it('renders the component', () => {
   fireEvent.click(toolTipBtn);
 
   // Check if tool tip exists and content is displayed
-  const toolTip = getByRole('tooltip');
+  const toolTip = await waitFor(() => getByRole('tooltip'));
   expect(toolTip).toBeTruthy();
-  expect(findByText('foo')).toBeTruthy();
 
   // Re-render component without trigger prop
   rerender(
@@ -28,6 +26,7 @@ it('renders the component', () => {
 
   // Hover over button
   fireEvent.mouseOver(toolTipBtn);
+  await waitFor(() => toolTipBtn);
 
   // Check if tool tip exists and content is displayed
   expect(toolTip).toBeTruthy();
