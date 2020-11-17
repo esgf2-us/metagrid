@@ -98,6 +98,7 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
             <Col lg={24}>
               <Table
                 loading={false}
+                canDisableRows={false}
                 results={userCart}
                 userCart={userCart}
                 onUpdateCart={onUpdateCart}

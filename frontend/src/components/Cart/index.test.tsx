@@ -46,15 +46,15 @@ it('handles tab switching and saved search actions', async () => {
   const cart = await waitFor(() => getByTestId('cart'));
   expect(cart).toBeTruthy();
 
-  // Check Search Criteria Tab renders and click it
-  const searchCriteriaTab = await waitFor(() =>
+  // Check Search Library Tab renders and click it
+  const searchLibraryTab = await waitFor(() =>
     getByRole('tab', {
-      name: 'book Search Criteria',
+      name: 'book Search Library',
       hidden: true,
     })
   );
-  expect(searchCriteriaTab).toBeTruthy();
-  fireEvent.click(searchCriteriaTab);
+  expect(searchLibraryTab).toBeTruthy();
+  fireEvent.click(searchLibraryTab);
 
   // Check JSON link renders and click it
   const jsonLink = await waitFor(() => getByRole('link'));

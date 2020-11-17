@@ -66,12 +66,12 @@ const NodeStatus: React.FC<Props> = ({ nodeStatus, isLoading }) => {
         },
       },
       {
-        title: 'Source',
+        title: 'Source (THREDDS Catalog)',
         dataIndex: 'source',
         render: (source: string) => {
           return (
             <a href={source} target="_blank" rel="noopener noreferrer">
-              {source}
+              Link
             </a>
           );
         },

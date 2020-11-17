@@ -4,6 +4,7 @@ import {
   defaultFacetsFixture,
   ESGFSearchAPIFixture,
   rawSearchResultFixture,
+  userCartFixture,
 } from '../../api/mock/fixtures';
 import { rest, server } from '../../api/mock/setup-env';
 import apiRoutes from '../../api/routes';
@@ -201,7 +202,7 @@ describe('test Search component', () => {
     // Select the first row
     const firstRow = getByRole('row', {
       name:
-        'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 check-circle Globus Compatible wget download plus',
+        'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 wget download plus',
     });
     expect(firstRow).toBeTruthy();
 
@@ -238,7 +239,49 @@ describe('test Search component', () => {
     expect(addCartBtn.disabled).toBeTruthy();
   });
 
-  it('handles saving a search criteria', async () => {
+  it('disables the "Add Selected to Cart" button when all rows are already in the cart', async () => {
+    const { getByRole, getByTestId, rerender } = render(
+      <Search {...defaultProps} />
+    );
+
+    // Check search component renders
+    const searchComponent = await waitFor(() => getByTestId('search'));
+    expect(searchComponent).toBeTruthy();
+
+    // Wait for search to re-render
+    await waitFor(() => getByTestId('search-table'));
+
+    // Check the select all checkbox exists and click it
+    // Note: Cannot query by aria-role or data-testid because Ant Design API
+    //   renders the column and there are checkboxes for each row (no uniqueness)
+    const selectAllCheckbox = document.querySelector(
+      'th.ant-table-cell.ant-table-selection-column [type="checkbox"]'
+    ) as HTMLInputElement;
+    expect(selectAllCheckbox).toBeTruthy();
+    fireEvent.click(selectAllCheckbox);
+
+    // Click the 'Add Selected to Cart'
+    let addCartBtn = (await waitFor(() =>
+      getByRole('button', {
+        name: 'shopping-cart Add Selected to Cart',
+      })
+    )) as HTMLButtonElement;
+    expect(addCartBtn).toBeTruthy();
+    fireEvent.click(addCartBtn);
+
+    // Re-render with items in the cart
+    rerender(<Search {...defaultProps} userCart={userCartFixture()} />);
+
+    // Check the 'Add Selected to Cart' button is disabled
+    addCartBtn = (await waitFor(() =>
+      getByRole('button', {
+        name: 'shopping-cart Add Selected to Cart',
+      })
+    )) as HTMLButtonElement;
+    expect(addCartBtn.disabled).toBeTruthy();
+  });
+
+  it('handles saving a search query', async () => {
     const { getByRole, getByTestId } = render(<Search {...defaultProps} />);
 
     // Check search component renders
