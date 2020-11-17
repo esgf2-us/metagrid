@@ -24,7 +24,7 @@ import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
 import { NodeStatusArray } from '../NodeStatus/types';
 import Table from './Table';
-import { RawSearchResults, TextInputs } from './types';
+import { RawSearchResult, RawSearchResults, TextInputs } from './types';
 
 const styles: CSSinJS = {
   summary: {
@@ -201,7 +201,15 @@ const Search: React.FC<Props> = ({
   }, [parsedFacets, onUpdateProjectFacets]);
 
   const handleRowSelect = (selectedRows: RawSearchResults | []): void => {
-    setSelectedItems(selectedRows);
+    // If you select rows on one page of the table, then go to another page
+    // and select more rows, the rows from the previous page transform from
+    // objects to undefined in the array. To work around this, filter out the
+    // undefined values.
+    // https://github.com/ant-design/ant-design/issues/24243
+    const rows = (selectedRows as RawSearchResults).filter(
+      (row: RawSearchResult) => row !== undefined
+    );
+    setSelectedItems(rows);
   };
 
   const handlePageChange = (page: number, pageSize: number): void => {
@@ -230,6 +238,12 @@ const Search: React.FC<Props> = ({
       .numFound;
     docs = (results as { response: { docs: RawSearchResults } }).response.docs;
   }
+
+  const allSelectedItemsInCart =
+    selectedItems.filter(
+      (item: RawSearchResult) =>
+        !userCart.some((dataset: RawSearchResult) => dataset.id === item.id)
+    ).length === 0;
 
   return (
     <div data-testid="search">
@@ -261,21 +275,24 @@ const Search: React.FC<Props> = ({
             <div>
               <Button
                 type="default"
+                onClick={() => onUpdateCart(selectedItems, 'add')}
+                disabled={
+                  isLoading ||
+                  numFound === 0 ||
+                  selectedItems.length === 0 ||
+                  allSelectedItemsInCart
+                }
+              >
+                <ShoppingCartOutlined />
+                Add Selected to Cart
+              </Button>{' '}
+              <Button
+                type="default"
                 onClick={() => onSaveSearchQuery(currentRequestURL as string)}
                 disabled={isLoading || numFound === 0}
               >
                 <BookOutlined />
                 Save Search
-              </Button>{' '}
-              <Button
-                type="default"
-                onClick={() => onUpdateCart(selectedItems, 'add')}
-                disabled={
-                  isLoading || numFound === 0 || !(selectedItems.length > 0)
-                }
-              >
-                <ShoppingCartOutlined />
-                Add Selected to Cart
               </Button>
             </div>
           )}

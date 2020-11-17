@@ -63,10 +63,10 @@ const ProjectsForm: React.FC<Props> = ({
   }
 
   if (projectsFetched) {
-    // Since activeProject is also typed as an empty object ({}), TypeScript forbids accessing the
-    // name attribute. In order to bypass this check, uncast activeProject for this single access.
-    // https://stackoverflow.https://stackoverflow.com/a/46530838/questions/34274487/property-does-not-exists-on-type
-    const initialValues = { project: (activeProject as RawProject).name };
+    const { results } = projectsFetched;
+    const initialValues = {
+      project: (activeProject as RawProject).name || results[0].name,
+    };
 
     return (
       <div data-testid="project-form">
@@ -75,7 +75,6 @@ const ProjectsForm: React.FC<Props> = ({
           layout="inline"
           initialValues={initialValues}
           onFinish={onFinish}
-          hideRequiredMark
         >
           <Form.Item
             name="project"
@@ -83,24 +82,18 @@ const ProjectsForm: React.FC<Props> = ({
           >
             <Select
               data-testid="project-form-select"
-              placeholder="Select a project"
               style={styles.form}
               showArrow
             >
-              {projectsFetched.results.map(
-                (projectObj: RawProject, index: number) => {
-                  return (
-                    <Select.Option
-                      key={projectObj.name}
-                      value={projectObj.name}
-                    >
-                      <span data-testid={`project_${index}`}>
-                        {projectObj.name}
-                      </span>
-                    </Select.Option>
-                  );
-                }
-              )}
+              {results.map((projectObj: RawProject, index: number) => {
+                return (
+                  <Select.Option key={projectObj.name} value={projectObj.name}>
+                    <span data-testid={`project_${index}`}>
+                      {projectObj.name}
+                    </span>
+                  </Select.Option>
+                );
+              })}
             </Select>
           </Form.Item>
           <Form.Item>
