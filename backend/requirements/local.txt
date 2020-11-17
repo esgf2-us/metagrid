@@ -10,7 +10,7 @@ mypy==0.790  # https://github.com/python/mypy
 # Testing
 # ------------------------------------------------------------------------------
 django-stubs==1.7.0  # https://github.com/typeddjango/django-stubs
-pytest==6.1.1  # https://github.com/pytest-dev/pytest
+pytest==6.1.2  # https://github.com/pytest-dev/pytest
 pytest-cov==2.10.1  # https://github.com/pytest-dev/pytest-cov
 pytest-django==3.10.0  # https://github.com/pytest-dev/pytest-django
 pytest-sugar==0.9.4  # https://github.com/Frozenball/pytest-sugar
@@ -20,5 +20,5 @@ factory-boy==3.1.0  # https://github.com/FactoryBoy/factory_boy
 # Developer Tools
 # ------------------------------------------------------------------------------
 ipdb==0.13.4  # https://github.com/gotcha/ipdb
-ipython==7.18.1  # https://github.com/ipython/ipython
+ipython==7.19.0  # https://github.com/ipython/ipython
 mkdocs==1.1.2  # https://www.mkdocs.org/
