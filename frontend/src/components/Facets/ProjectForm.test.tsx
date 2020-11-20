@@ -1,17 +1,19 @@
 import { fireEvent, render } from '@testing-library/react';
 import React from 'react';
-import { projectsFixture } from '../../api/mock/fixtures';
+import {
+  activeSearchQueryFixture,
+  projectsFixture,
+} from '../../api/mock/fixtures';
 import ProjectsForm, { Props } from './ProjectForm';
 
 const defaultProps: Props = {
-  activeProject: { name: 'foo' },
-  activeFacets: { data_node: ['foo'] },
+  activeSearchQuery: activeSearchQueryFixture(),
   projectsIsLoading: false,
   projectsFetched: { results: projectsFixture() },
   onFinish: jest.fn(),
 };
 
-it('renders Popconfirm component when there is an activeProject and activeFacet(s)', () => {
+it('renders Popconfirm component when there is an active project and active facets', () => {
   const { getByRole, getByText } = render(<ProjectsForm {...defaultProps} />);
 
   // Click the submit button

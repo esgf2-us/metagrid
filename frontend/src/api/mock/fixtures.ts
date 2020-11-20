@@ -21,6 +21,7 @@ import {
   RawNodeStatus,
 } from '../../components/NodeStatus/types';
 import {
+  ActiveSearchQuery,
   RawCitation,
   RawSearchResult,
   RawSearchResults,
@@ -127,6 +128,18 @@ export const rawCitationFixture = (
   };
 
   return { ...defaults, ...props };
+};
+
+export const activeSearchQueryFixture = (
+  props: Partial<ActiveSearchQuery> = {}
+): ActiveSearchQuery => {
+  const defaults: ActiveSearchQuery = {
+    project: rawProjectFixture(),
+    resultType: 'all',
+    activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
+    textInputs: ['foo'],
+  };
+  return { ...defaults, ...props } as ActiveSearchQuery;
 };
 
 export const userSearchQueryFixture = (

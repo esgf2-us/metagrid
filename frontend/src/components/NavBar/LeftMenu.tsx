@@ -10,18 +10,11 @@ const styles = {
 };
 
 export type Props = {
-  activeProject: RawProject | Record<string, unknown>;
   projects: RawProjects;
-  onTextSearch: (text: string) => void;
-  onProjectChange: (selectedProj: RawProject) => void;
+  onTextSearch: (selectedProject: RawProject, text: string) => void;
 };
 
-const LeftMenu: React.FC<Props> = ({
-  activeProject,
-  projects,
-  onTextSearch,
-  onProjectChange,
-}) => {
+const LeftMenu: React.FC<Props> = ({ projects, onTextSearch }) => {
   const [form] = Form.useForm();
   const [text, setText] = React.useState('');
   const history = useHistory();
@@ -40,12 +33,7 @@ const LeftMenu: React.FC<Props> = ({
       (obj) => obj.name === values.projectTextInput
     );
 
-    /* istanbul ignore else */
-    if (selectedProj && activeProject !== selectedProj) {
-      onProjectChange(selectedProj);
-    }
-
-    onTextSearch(values.text);
+    onTextSearch(selectedProj as RawProject, values.text);
 
     // Reset the controlled state and form field
     setText('');

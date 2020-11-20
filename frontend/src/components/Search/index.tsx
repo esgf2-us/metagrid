@@ -24,7 +24,12 @@ import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
 import { NodeStatusArray } from '../NodeStatus/types';
 import Table from './Table';
-import { RawSearchResult, RawSearchResults, TextInputs } from './types';
+import {
+  ActiveSearchQuery,
+  RawSearchResult,
+  RawSearchResults,
+  TextInputs,
+} from './types';
 
 const styles: CSSinJS = {
   summary: {
@@ -103,10 +108,8 @@ export const checkFiltersExist = (
 };
 
 export type Props = {
-  activeProject: RawProject | Record<string, unknown>;
+  activeSearchQuery: ActiveSearchQuery;
   defaultFacets: DefaultFacets;
-  activeFacets: ActiveFacets | Record<string, unknown>;
-  textInputs: TextInputs | [];
   userCart: UserCart | [];
   nodeStatus?: NodeStatusArray;
   onRemoveFilter: (removedTag: TagType, type: string) => void;
@@ -115,21 +118,19 @@ export type Props = {
     selectedItems: RawSearchResults,
     operation: 'add' | 'remove'
   ) => void;
-  onUpdateProjectFacets: (parsedFacets: ParsedFacets) => void;
+  onUpdateAvailableFacets: (parsedFacets: ParsedFacets) => void;
   onSaveSearchQuery: (url: string) => void;
 };
 
 const Search: React.FC<Props> = ({
-  activeProject,
+  activeSearchQuery,
   defaultFacets,
-  activeFacets,
-  textInputs,
   userCart,
   nodeStatus,
   onRemoveFilter,
   onClearFilters,
   onUpdateCart,
-  onUpdateProjectFacets,
+  onUpdateAvailableFacets,
   onSaveSearchQuery,
 }) => {
   const { data: results, error, isLoading, run } = useAsync({
@@ -157,34 +158,38 @@ const Search: React.FC<Props> = ({
 
   // Generate the current request URL based on filters
   React.useEffect(() => {
-    if (!objectIsEmpty(activeProject)) {
+    if (!objectIsEmpty(activeSearchQuery.project)) {
       const reqUrl = generateSearchURLQuery(
-        (activeProject as RawProject).facetsUrl,
+        (activeSearchQuery.project as RawProject).facetsUrl,
         defaultFacets,
-        activeFacets,
-        textInputs,
+        activeSearchQuery.activeFacets,
+        activeSearchQuery.textInputs,
         paginationOptions
       );
       setCurrentRequestURL(reqUrl);
     }
   }, [
-    activeProject,
+    activeSearchQuery.project,
+    activeSearchQuery,
     defaultFacets,
-    activeFacets,
-    textInputs,
     paginationOptions,
   ]);
 
   React.useEffect(() => {
-    setFiltersExist(checkFiltersExist(activeFacets, textInputs));
-  }, [activeFacets, textInputs]);
+    setFiltersExist(
+      checkFiltersExist(
+        activeSearchQuery.activeFacets,
+        activeSearchQuery.textInputs
+      )
+    );
+  }, [activeSearchQuery.activeFacets, activeSearchQuery.textInputs]);
 
   // Fetch search results
   React.useEffect(() => {
-    if (!objectIsEmpty(activeProject) && currentRequestURL) {
+    if (!objectIsEmpty(activeSearchQuery.project) && currentRequestURL) {
       run(currentRequestURL);
     }
-  }, [run, currentRequestURL, activeProject]);
+  }, [run, currentRequestURL, activeSearchQuery.project]);
 
   // Update the available facets based on the returned results
   React.useEffect(() => {
@@ -197,8 +202,8 @@ const Search: React.FC<Props> = ({
   }, [results]);
 
   React.useEffect(() => {
-    onUpdateProjectFacets(parsedFacets as ParsedFacets);
-  }, [parsedFacets, onUpdateProjectFacets]);
+    onUpdateAvailableFacets(parsedFacets as ParsedFacets);
+  }, [parsedFacets, onUpdateAvailableFacets]);
 
   const handleRowSelect = (selectedRows: RawSearchResults | []): void => {
     // If you select rows on one page of the table, then go to another page
@@ -248,7 +253,7 @@ const Search: React.FC<Props> = ({
   return (
     <div data-testid="search">
       <div style={styles.summary}>
-        {objectIsEmpty(activeProject) && (
+        {objectIsEmpty(activeSearchQuery.project) && (
           <Alert
             message="Select a project to search for results"
             type="info"
@@ -267,7 +272,7 @@ const Search: React.FC<Props> = ({
             </span>
           )}
           <span style={styles.resultsHeader}>
-            {(activeProject as RawProject).name}
+            {(activeSearchQuery.project as RawProject).name}
           </span>
         </h3>
         <div>
@@ -304,7 +309,11 @@ const Search: React.FC<Props> = ({
             <p>
               <span style={styles.subtitles}>Query String: </span>
               <Typography.Text code>
-                {stringifyFilters(defaultFacets, activeFacets, textInputs)}
+                {stringifyFilters(
+                  defaultFacets,
+                  activeSearchQuery.activeFacets,
+                  activeSearchQuery.textInputs
+                )}
               </Typography.Text>
             </p>
           </>
@@ -313,34 +322,36 @@ const Search: React.FC<Props> = ({
 
       {results && (
         <Row style={styles.filtersContainer}>
-          {Object.keys(activeFacets).length !== 0 &&
-            Object.keys(activeFacets).map((facet: string) => {
-              return (activeFacets as ActiveFacets)[facet].map(
-                (variable: string) => {
-                  return (
-                    <div key={variable} data-testid={variable}>
-                      <Tag
-                        value={[facet, variable]}
-                        onClose={onRemoveFilter}
-                        type="facet"
-                      >
-                        {variable}
-                      </Tag>
-                    </div>
-                  );
-                }
-              );
+          {Object.keys(activeSearchQuery.activeFacets).length !== 0 &&
+            Object.keys(activeSearchQuery.activeFacets).map((facet: string) => {
+              return (activeSearchQuery.activeFacets as ActiveFacets)[
+                facet
+              ].map((variable: string) => {
+                return (
+                  <div key={variable} data-testid={variable}>
+                    <Tag
+                      value={[facet, variable]}
+                      onClose={onRemoveFilter}
+                      type="facet"
+                    >
+                      {variable}
+                    </Tag>
+                  </div>
+                );
+              });
             })}
-          {textInputs.length !== 0 &&
-            (textInputs as TextInputs).map((input: string) => {
-              return (
-                <div key={input} data-testid={input}>
-                  <Tag value={input} onClose={onRemoveFilter} type="text">
-                    {input}
-                  </Tag>
-                </div>
-              );
-            })}
+          {activeSearchQuery.textInputs.length !== 0 &&
+            (activeSearchQuery.textInputs as TextInputs).map(
+              (input: string) => {
+                return (
+                  <div key={input} data-testid={input}>
+                    <Tag value={input} onClose={onRemoveFilter} type="text">
+                      {input}
+                    </Tag>
+                  </div>
+                );
+              }
+            )}
           {filtersExist && (
             <Tag
               value="clearAll"

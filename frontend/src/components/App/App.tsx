@@ -40,7 +40,11 @@ import NavBar from '../NavBar';
 import NodeStatus from '../NodeStatus';
 import NodeSummary from '../NodeStatus/NodeSummary';
 import Search from '../Search';
-import { RawSearchResult, RawSearchResults, TextInputs } from '../Search/types';
+import {
+  ActiveSearchQuery,
+  RawSearchResult,
+  RawSearchResults,
+} from '../Search/types';
 import Support from '../Support';
 import './App.css';
 
@@ -101,21 +105,17 @@ const App: React.FC = () => {
     deferFn: fetchNodeStatus,
   });
 
-  const [activeProject, setActiveProject] = React.useState<
-    RawProject | Record<string, unknown>
+  const [activeSearchQuery, setActiveSearchQuery] = React.useState<
+    ActiveSearchQuery
+  >({ project: {}, resultType: 'all', activeFacets: {}, textInputs: [] });
+
+  const [availableFacets, setAvailableFacets] = React.useState<
+    ParsedFacets | Record<string, unknown>
   >({});
   const [defaultFacets, setDefaultFacets] = React.useState<DefaultFacets>({
     latest: true,
     replica: false,
   });
-  const [projectFacets, setProjectFacets] = React.useState<
-    ParsedFacets | Record<string, unknown>
-  >({});
-  const [activeFacets, setActiveFacets] = React.useState<
-    ActiveFacets | Record<string, unknown>
-  >({});
-  const [textInputs, setTextInputs] = React.useState<TextInputs | []>([]);
-
   const [userCart, setUserCart] = React.useState<UserCart | []>(
     JSON.parse(localStorage.getItem('userCart') || '[]')
   );
@@ -175,30 +175,43 @@ const App: React.FC = () => {
     return () => clearInterval(interval);
   }, [runFetchNodeStatus]);
 
-  const handleTextSearch = (text: string): void => {
-    if (textInputs.includes(text as never)) {
+  const handleTextSearch = (
+    selectedProject: RawProject,
+    text: string
+  ): void => {
+    if (activeSearchQuery.textInputs.includes(text as never)) {
       void message.error(`Input "${text}" has already been applied`);
     } else {
-      setTextInputs([...textInputs, text]);
+      setActiveSearchQuery({
+        ...activeSearchQuery,
+        project: selectedProject,
+        textInputs: [...activeSearchQuery.textInputs, text],
+      });
     }
-  };
-
-  const handleUpdateProjectFacets = (facets: ParsedFacets): void => {
-    setProjectFacets(facets);
   };
 
   const handleClearFilters = (): void => {
-    setTextInputs([]);
-    setActiveFacets({});
     setDefaultFacets({ latest: true, replica: false });
+
+    setActiveSearchQuery({
+      project: activeSearchQuery.project,
+      activeFacets: {},
+      textInputs: [],
+      resultType: 'all',
+    });
   };
 
   const handleProjectChange = (selectedProject: RawProject): void => {
-    if (!objectIsEmpty(activeProject) && activeProject !== selectedProject) {
+    if (
+      !objectIsEmpty(activeSearchQuery.project) &&
+      activeSearchQuery.project !== selectedProject
+    ) {
       handleClearFilters();
     }
-
-    setActiveProject(selectedProject);
+    setActiveSearchQuery({
+      ...activeSearchQuery,
+      project: selectedProject,
+    });
     void message.loading(
       'Project selected. Please wait for results and facets to load...',
       2
@@ -208,9 +221,14 @@ const App: React.FC = () => {
   const handleRemoveFilter = (removedTag: TagType, type: string): void => {
     /* istanbul ignore else */
     if (type === 'text') {
-      setTextInputs(() => textInputs.filter((input) => input !== removedTag));
+      setActiveSearchQuery({
+        ...activeSearchQuery,
+        textInputs: activeSearchQuery.textInputs.filter(
+          (input) => input !== removedTag
+        ),
+      });
     } else if (type === 'facet') {
-      const prevActiveFacets = activeFacets as ActiveFacets;
+      const prevActiveFacets = activeSearchQuery.activeFacets as ActiveFacets;
 
       const facet = (removedTag[0] as unknown) as string;
       const facetOption = (removedTag[1] as unknown) as string;
@@ -220,9 +238,15 @@ const App: React.FC = () => {
 
       if (updateFacet[facet].length === 0) {
         delete prevActiveFacets[facet];
-        setActiveFacets({ ...prevActiveFacets });
+        setActiveSearchQuery({
+          ...activeSearchQuery,
+          activeFacets: { ...prevActiveFacets },
+        });
       } else {
-        setActiveFacets({ ...prevActiveFacets, ...updateFacet });
+        setActiveSearchQuery({
+          ...activeSearchQuery,
+          activeFacets: { ...prevActiveFacets, ...updateFacet },
+        });
       }
     }
   };
@@ -280,11 +304,11 @@ const App: React.FC = () => {
     const savedSearch: UserSearchQuery = {
       uuid: uuidv4(),
       user: pk,
-      project: activeProject as RawProject,
-      projectId: activeProject.pk as string,
+      project: activeSearchQuery.project as RawProject,
+      projectId: activeSearchQuery.project.pk as string,
       defaultFacets,
-      activeFacets,
-      textInputs,
+      activeFacets: activeSearchQuery.activeFacets,
+      textInputs: activeSearchQuery.textInputs,
       url,
     };
 
@@ -342,9 +366,12 @@ const App: React.FC = () => {
   };
 
   const handleRunSearchQuery = (savedSearch: UserSearchQuery): void => {
-    setActiveProject(savedSearch.project);
-    setActiveFacets(savedSearch.activeFacets);
-    setTextInputs(savedSearch.textInputs);
+    setActiveSearchQuery({
+      project: savedSearch.project,
+      activeFacets: savedSearch.activeFacets,
+      textInputs: savedSearch.textInputs,
+      resultType: 'all',
+    });
   };
 
   return (
@@ -358,10 +385,8 @@ const App: React.FC = () => {
           path="/"
           render={() => (
             <NavBar
-              activeProject={activeProject}
               numCartItems={userCart.length}
               numSavedSearches={userSearchQueries.length}
-              onProjectChange={handleProjectChange}
               onTextSearch={handleTextSearch}
             ></NavBar>
           )}
@@ -376,10 +401,9 @@ const App: React.FC = () => {
                   width={styles.bodySider.width as number}
                 >
                   <Facets
-                    activeProject={activeProject}
+                    activeSearchQuery={activeSearchQuery}
                     defaultFacets={defaultFacets}
-                    projectFacets={projectFacets}
-                    activeFacets={activeFacets}
+                    availableFacets={availableFacets}
                     nodeStatus={nodeStatus}
                     onProjectChange={handleProjectChange}
                     onSetFacets={(
@@ -387,7 +411,12 @@ const App: React.FC = () => {
                       active: ActiveFacets
                     ) => {
                       setDefaultFacets(defaults);
-                      setActiveFacets(active);
+                      setActiveSearchQuery({
+                        ...activeSearchQuery,
+                        activeFacets: {
+                          ...active,
+                        },
+                      });
                     }}
                   />
                 </Layout.Sider>
@@ -429,13 +458,13 @@ const App: React.FC = () => {
                       <Breadcrumb.Item>Search</Breadcrumb.Item>
                     </Breadcrumb>
                     <Search
-                      activeProject={activeProject}
+                      activeSearchQuery={activeSearchQuery}
                       defaultFacets={defaultFacets}
-                      activeFacets={activeFacets}
-                      textInputs={textInputs}
                       userCart={userCart}
                       nodeStatus={nodeStatus}
-                      onUpdateProjectFacets={handleUpdateProjectFacets}
+                      onUpdateAvailableFacets={(facets) =>
+                        setAvailableFacets(facets)
+                      }
                       onUpdateCart={handleUpdateCart}
                       onRemoveFilter={handleRemoveFilter}
                       onClearFilters={handleClearFilters}

@@ -1,6 +1,7 @@
 import { fireEvent, render, waitFor, within } from '@testing-library/react';
 import React from 'react';
 import {
+  activeSearchQueryFixture,
   defaultFacetsFixture,
   ESGFSearchAPIFixture,
   rawSearchResultFixture,
@@ -19,15 +20,13 @@ import Search, {
 import { RawSearchResult, TextInputs } from './types';
 
 const defaultProps: Props = {
-  activeProject: { name: 'foo', facetsUrl: 'https://fubar.gov/?' },
+  activeSearchQuery: activeSearchQueryFixture(),
   defaultFacets: defaultFacetsFixture(),
-  activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
-  textInputs: ['foo'],
   userCart: [],
   onRemoveFilter: jest.fn(),
   onClearFilters: jest.fn(),
   onUpdateCart: jest.fn(),
-  onUpdateProjectFacets: jest.fn(),
+  onUpdateAvailableFacets: jest.fn(),
   onSaveSearchQuery: jest.fn(),
 };
 
@@ -89,7 +88,7 @@ describe('test Search component', () => {
     // Check for stringified filters text
     const strFilters = await waitFor(() =>
       getByRole('heading', {
-        name: '2 results found for foo',
+        name: '2 results found for test1',
       })
     );
 
