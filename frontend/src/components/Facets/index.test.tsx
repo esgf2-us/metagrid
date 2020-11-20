@@ -1,18 +1,17 @@
 import { fireEvent, render, waitFor, within } from '@testing-library/react';
 import React from 'react';
 import {
+  activeSearchQueryFixture,
   defaultFacetsFixture,
   parsedFacetsFixture,
   parsedNodeStatusFixture,
-  rawProjectFixture,
 } from '../../api/mock/fixtures';
 import Facets, { Props } from './index';
 
 const defaultProps: Props = {
-  activeProject: rawProjectFixture(),
   defaultFacets: defaultFacetsFixture(),
-  activeFacets: {},
-  projectFacets: parsedFacetsFixture(),
+  activeSearchQuery: activeSearchQueryFixture(),
+  availableFacets: parsedFacetsFixture(),
   nodeStatus: parsedNodeStatusFixture(),
   onProjectChange: jest.fn(),
   onSetFacets: jest.fn(),
@@ -32,7 +31,10 @@ it('renders component', async () => {
 
 it('handles when the project form is submitted', async () => {
   const { getByTestId } = render(
-    <Facets {...defaultProps} activeProject={{}} />
+    <Facets
+      {...defaultProps}
+      activeSearchQuery={{ ...activeSearchQueryFixture(), project: {} }}
+    />
   );
 
   // Check FacetsForm component renders

@@ -6,15 +6,15 @@ import Alert from '../Feedback/Alert';
 import Popconfirm from '../Feedback/Popconfirm';
 import Spin from '../Feedback/Spin';
 import Button from '../General/Button';
-import { ActiveFacets, RawProject, RawProjects } from './types';
+import { ActiveSearchQuery } from '../Search/types';
+import { RawProject, RawProjects } from './types';
 
 const styles = {
   form: { width: '256px' },
 };
 
 export type Props = {
-  activeProject: RawProject | Record<string, unknown>;
-  activeFacets: ActiveFacets | Record<string, unknown>;
+  activeSearchQuery: ActiveSearchQuery;
   projectsFetched?: {
     results: RawProjects;
   };
@@ -24,8 +24,7 @@ export type Props = {
 };
 
 const ProjectsForm: React.FC<Props> = ({
-  activeProject,
-  activeFacets,
+  activeSearchQuery,
   projectsFetched,
   projectsIsLoading,
   projectsError,
@@ -37,7 +36,7 @@ const ProjectsForm: React.FC<Props> = ({
    */
   React.useEffect(() => {
     projectForm.resetFields();
-  }, [projectForm, activeProject]);
+  }, [projectForm, activeSearchQuery.project]);
 
   // Note, have to wrap Alert and Spin with Form to suppress warning about
   // projectForm not being bound to a <Form/></Form> Instance
@@ -65,7 +64,8 @@ const ProjectsForm: React.FC<Props> = ({
   if (projectsFetched) {
     const { results } = projectsFetched;
     const initialValues = {
-      project: (activeProject as RawProject).name || results[0].name,
+      project:
+        (activeSearchQuery.project as RawProject).name || results[0].name,
     };
 
     return (
@@ -97,7 +97,8 @@ const ProjectsForm: React.FC<Props> = ({
             </Select>
           </Form.Item>
           <Form.Item>
-            {!objectIsEmpty(activeProject) && !objectIsEmpty(activeFacets) ? (
+            {!objectIsEmpty(activeSearchQuery.project) &&
+            !objectIsEmpty(activeSearchQuery.activeFacets) ? (
               <Popconfirm
                 title="Your filters will be cleared."
                 onConfirm={() => projectForm.submit()}
