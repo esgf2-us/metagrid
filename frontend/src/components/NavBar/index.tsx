@@ -18,19 +18,15 @@ const styles = {
 };
 
 export type Props = {
-  activeProject: RawProject | Record<string, unknown>;
   numCartItems: number;
   numSavedSearches: number;
-  onProjectChange: (selectedProj: RawProject) => void;
-  onTextSearch: (text: string) => void;
+  onTextSearch: (selectedProject: RawProject, text: string) => void;
 };
 
 const NavBar: React.FC<Props> = ({
-  activeProject,
   numCartItems,
   numSavedSearches,
   onTextSearch,
-  onProjectChange,
 }) => {
   const { data, error, isLoading } = useAsync(fetchProjects);
   const [showDrawer, setShowDrawer] = React.useState(false);
@@ -65,10 +61,8 @@ const NavBar: React.FC<Props> = ({
           )}
           {data && (
             <LeftMenu
-              activeProject={activeProject}
               projects={data.results}
               onTextSearch={onTextSearch}
-              onProjectChange={onProjectChange}
             ></LeftMenu>
           )}
         </div>
