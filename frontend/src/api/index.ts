@@ -10,13 +10,13 @@ import {
   UserSearchQueries,
   UserSearchQuery,
 } from '../components/Cart/types';
-import {
-  ActiveFacets,
-  DefaultFacets,
-  RawProjects,
-} from '../components/Facets/types';
+import { ActiveFacets, RawProjects } from '../components/Facets/types';
 import { NodeStatusArray, RawNodeStatus } from '../components/NodeStatus/types';
-import { RawCitation } from '../components/Search/types';
+import {
+  ActiveSearchQuery,
+  RawCitation,
+  ResultType,
+} from '../components/Search/types';
 import { proxyURL } from '../env';
 import axios from '../lib/axios';
 import apiRoutes, { clickableRoute } from './routes';
@@ -223,42 +223,67 @@ export const fetchProjects = async (): Promise<{
 };
 
 /**
+ * replica param indicates whether the record is the 'master' copy, or a replica.
+ * - replica=false to return only originals
+ * - replica=true to return only replicas
+ * - default: no replica flag specified, i.e. return both replicas and originals
+ * https://github.com/ESGF/esgf.github.io/wiki/ESGF_Search_REST_API#core-facets
+ */
+export const convertResultTypeToReplicaParam = (
+  resultType: ResultType,
+  isLabel?: boolean
+): string | undefined => {
+  const replicaParams = {
+    all: undefined,
+    'originals only': 'replica=false',
+    'replicas only': 'replica=true',
+  };
+
+  const param = replicaParams[resultType] as ResultType;
+  return param && isLabel ? param.replace('=', ' = ') : param;
+};
+
+/**
  * Query string parameters use the logical OR operator, so queries are inclusive.
+ *
+ * Example output: http://localhost:3001/https://esgf-node.llnl.gov/esg-search/search/?replica=false&offset=0&limit=10&query=foo&baz=option1&foo=option1
  */
 export const generateSearchURLQuery = (
-  baseUrl: string,
-  defaultFacets: DefaultFacets,
-  activeFacets: ActiveFacets | Record<string, unknown>,
-  textInputs: string[] | [],
+  activeSearchQuery: ActiveSearchQuery | UserSearchQuery,
   pagination: { page: number; pageSize: number }
 ): string => {
-  const defaultFacetsStr = queryString.stringify(
-    humps.decamelizeKeys(defaultFacets) as DefaultFacets
-  );
-  const activeFacetsStr = queryString.stringify(
+  const { project, resultType, activeFacets, textInputs } = activeSearchQuery;
+
+  const activeFacetsParams = queryString.stringify(
     humps.decamelizeKeys(activeFacets) as ActiveFacets,
     {
       arrayFormat: 'comma',
     }
   );
 
-  let stringifyText = 'query=*';
+  let textInputParam = 'query=*';
   if (textInputs.length > 0) {
-    stringifyText = queryString.stringify(
+    textInputParam = queryString.stringify(
       { query: textInputs },
       {
         arrayFormat: 'comma',
       }
     );
   }
-  const offset =
-    pagination.page > 1 ? (pagination.page - 1) * pagination.pageSize : 0;
-  const newBaseUrl = baseUrl
-    .replace('limit=0', `limit=${pagination.pageSize}`)
-    .replace('offset=0', `offset=${offset}`);
 
-  const url = `${apiRoutes.esgfSearch}?${newBaseUrl}&${defaultFacetsStr}&${stringifyText}&${activeFacetsStr}`;
-  return url;
+  const paginationOffset =
+    pagination.page > 1 ? (pagination.page - 1) * pagination.pageSize : 0;
+  const baseParams = (project.facetsUrl as string)
+    .replace('limit=0', `limit=${pagination.pageSize}`)
+    .replace('offset=0', `offset=${paginationOffset}`);
+
+  let route = `${apiRoutes.esgfSearch}?`;
+  const replicaParam = convertResultTypeToReplicaParam(resultType);
+  if (replicaParam) {
+    route += `${replicaParam}&`;
+  }
+
+  return `${route}${baseParams}&${textInputParam}&${activeFacetsParams}`;
 };
 
 /**

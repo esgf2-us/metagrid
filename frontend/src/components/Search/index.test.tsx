@@ -2,7 +2,6 @@ import { fireEvent, render, waitFor, within } from '@testing-library/react';
 import React from 'react';
 import {
   activeSearchQueryFixture,
-  defaultFacetsFixture,
   ESGFSearchAPIFixture,
   rawSearchResultFixture,
   userCartFixture,
@@ -10,18 +9,17 @@ import {
 import { rest, server } from '../../api/mock/setup-env';
 import apiRoutes from '../../api/routes';
 import { esgfNodeURL, proxyURL } from '../../env';
-import { ActiveFacets, DefaultFacets, RawFacets } from '../Facets/types';
+import { ActiveFacets, RawFacets } from '../Facets/types';
 import Search, {
   checkFiltersExist,
   parseFacets,
   Props,
   stringifyFilters,
 } from './index';
-import { RawSearchResult, TextInputs } from './types';
+import { RawSearchResult, ResultType, TextInputs } from './types';
 
 const defaultProps: Props = {
   activeSearchQuery: activeSearchQueryFixture(),
-  defaultFacets: defaultFacetsFixture(),
   userCart: [],
   onRemoveFilter: jest.fn(),
   onClearFilters: jest.fn(),
@@ -326,12 +324,11 @@ describe('test parseFacets()', () => {
 });
 
 describe('test stringifyFilters()', () => {
-  let defaultFacets: DefaultFacets;
+  const resultType: ResultType = 'originals only';
   let activeFacets: ActiveFacets;
   let textInputs: TextInputs;
 
   beforeEach(() => {
-    defaultFacets = { latest: true, replica: false };
     activeFacets = {
       facet_1: ['option1', 'option2'],
       facet_2: ['option1', 'option2'],
@@ -340,26 +337,20 @@ describe('test stringifyFilters()', () => {
   });
 
   it('successfully generates a stringified version of the active filters', () => {
-    const strFilters = stringifyFilters(
-      defaultFacets,
-      activeFacets,
-      textInputs
-    );
+    const strFilters = stringifyFilters(resultType, activeFacets, textInputs);
     expect(strFilters).toEqual(
-      '(latest = true) AND (replica = false) AND (Text Input = foo OR bar) AND (facet_1 = option1 OR option2) AND (facet_2 = option1 OR option2)'
+      'replica = false AND (Text Input = foo OR bar) AND (facet_1 = option1 OR option2) AND (facet_2 = option1 OR option2)'
     );
   });
   it('successfully generates a stringified version of the active filters w/o textInputs', () => {
-    const strFilters = stringifyFilters(defaultFacets, activeFacets, []);
+    const strFilters = stringifyFilters(resultType, activeFacets, []);
     expect(strFilters).toEqual(
-      '(latest = true) AND (replica = false) AND (facet_1 = option1 OR option2) AND (facet_2 = option1 OR option2)'
+      'replica = false AND (facet_1 = option1 OR option2) AND (facet_2 = option1 OR option2)'
     );
   });
   it('successfully generates a stringified version of the active filters w/o activeFacets', () => {
-    const strFilters = stringifyFilters(defaultFacets, {}, textInputs);
-    expect(strFilters).toEqual(
-      '(latest = true) AND (replica = false) AND (Text Input = foo OR bar)'
-    );
+    const strFilters = stringifyFilters(resultType, {}, textInputs);
+    expect(strFilters).toEqual('replica = false AND (Text Input = foo OR bar)');
   });
 });
 

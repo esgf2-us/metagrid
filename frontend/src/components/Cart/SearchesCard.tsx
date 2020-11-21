@@ -44,7 +44,7 @@ const SearchesCard: React.FC<Props> = ({
   const {
     uuid,
     project,
-    defaultFacets,
+    resultType,
     textInputs,
     activeFacets,
     url,
@@ -52,16 +52,10 @@ const SearchesCard: React.FC<Props> = ({
 
   // Generate the URL for receiving only the result count to reduce response time
 
-  const numResultsUrl = generateSearchURLQuery(
-    project.facetsUrl,
-    defaultFacets,
-    activeFacets,
-    textInputs,
-    {
-      page: 0,
-      pageSize: 0,
-    }
-  );
+  const numResultsUrl = generateSearchURLQuery(searchQuery, {
+    page: 0,
+    pageSize: 0,
+  });
   const { data, isLoading, error } = useAsync({
     promiseFn: fetchSearchResults,
     reqUrl: numResultsUrl,
@@ -139,7 +133,7 @@ const SearchesCard: React.FC<Props> = ({
         <p>
           <span style={styles.category}>Query String: </span>
           <Typography.Text code>
-            {stringifyFilters(defaultFacets, activeFacets, textInputs)}
+            {stringifyFilters(resultType, activeFacets, textInputs)}
           </Typography.Text>
         </p>
       </Card>

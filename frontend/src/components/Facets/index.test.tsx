@@ -2,14 +2,12 @@ import { fireEvent, render, waitFor, within } from '@testing-library/react';
 import React from 'react';
 import {
   activeSearchQueryFixture,
-  defaultFacetsFixture,
   parsedFacetsFixture,
   parsedNodeStatusFixture,
 } from '../../api/mock/fixtures';
 import Facets, { Props } from './index';
 
 const defaultProps: Props = {
-  defaultFacets: defaultFacetsFixture(),
   activeSearchQuery: activeSearchQueryFixture(),
   availableFacets: parsedFacetsFixture(),
   nodeStatus: parsedNodeStatusFixture(),
