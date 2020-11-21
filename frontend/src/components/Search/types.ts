@@ -1,3 +1,6 @@
+import { ActiveFacets , RawProject } from '../Facets/types';
+
+
 export type TextInputs = string[];
 
 export type RawCitation = {
@@ -8,6 +11,15 @@ export type RawCitation = {
   publicationYear: number;
   identifierDOI: string;
   creatorsList: string;
+};
+
+export type ResultType = 'all' | 'originalsOnly' | 'replicasOnly';
+
+export type ActiveSearchQuery = {
+  project: RawProject | Record<string, unknown>;
+  resultType: ResultType;
+  activeFacets: ActiveFacets | Record<string, unknown>;
+  textInputs: TextInputs | [];
 };
 
 export type RawSearchResult = {

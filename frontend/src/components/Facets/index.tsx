@@ -4,6 +4,7 @@ import { fetchProjects } from '../../api';
 import { objectIsEmpty } from '../../common/utils';
 import Divider from '../General/Divider';
 import { NodeStatusArray } from '../NodeStatus/types';
+import { ActiveSearchQuery } from '../Search/types';
 import FacetsForm from './FacetsForm';
 import ProjectForm from './ProjectForm';
 import { ActiveFacets, DefaultFacets, ParsedFacets, RawProject } from './types';
@@ -15,20 +16,18 @@ const styles = {
 };
 
 export type Props = {
-  activeProject: RawProject | Record<string, unknown>;
+  activeSearchQuery: ActiveSearchQuery;
   defaultFacets: DefaultFacets;
-  activeFacets: ActiveFacets | Record<string, unknown>;
-  projectFacets: ParsedFacets | Record<string, unknown>;
+  availableFacets: ParsedFacets | Record<string, unknown>;
   nodeStatus?: NodeStatusArray;
   onProjectChange: (selectedProj: RawProject) => void;
   onSetFacets: (defaults: DefaultFacets, active: ActiveFacets) => void;
 };
 
 const Facets: React.FC<Props> = ({
-  activeProject,
+  activeSearchQuery,
   defaultFacets,
-  activeFacets,
-  projectFacets,
+  availableFacets,
   nodeStatus,
   onProjectChange,
   onSetFacets,
@@ -50,24 +49,16 @@ const Facets: React.FC<Props> = ({
     }
   };
 
+  /**
+   * TODO: Add logic to handle new resultType form for replicas
+   */
   const handleUpdateFacetsForm = (selectedFacets: {
     [key: string]: string[] | [];
   }): void => {
     const newActive = selectedFacets;
-    const { selectedDefaults } = newActive;
-    delete newActive.selectedDefaults;
 
+    // TODO: Placeholder until DefaultFacets are removed
     const newDefaults: DefaultFacets = { latest: true, replica: false };
-
-    // Have to check if selected default facets is not undefined, otherwise a
-    // test fails because ant design's form's initialValues does not work after
-    // the initial detection of value changes.
-    /* istanbul ignore else */
-    if (selectedDefaults) {
-      selectedDefaults.forEach((facet) => {
-        newDefaults[facet] = true;
-      });
-    }
 
     // The form keeps a history of all selected facets, including when a
     // previously selected key goes from > 0 elements to 0 elements. Thus,
@@ -86,8 +77,7 @@ const Facets: React.FC<Props> = ({
       <h2>Select a Project</h2>
       <div data-testid="projectForm">
         <ProjectForm
-          activeProject={activeProject}
-          activeFacets={activeFacets}
+          activeSearchQuery={activeSearchQuery}
           projectsFetched={data}
           projectsIsLoading={isLoading}
           projectsError={error}
@@ -95,14 +85,13 @@ const Facets: React.FC<Props> = ({
         />
         <Divider />
       </div>
-      {!objectIsEmpty(projectFacets) && (
+      {!objectIsEmpty(availableFacets) && (
         <>
           <h2>Filter with Facets</h2>
           <FacetsForm
-            facetsByGroup={(activeProject as RawProject).facetsByGroup}
+            activeSearchQuery={activeSearchQuery}
             defaultFacets={defaultFacets}
-            activeFacets={activeFacets}
-            projectFacets={projectFacets as ParsedFacets}
+            availableFacets={availableFacets as ParsedFacets}
             nodeStatus={nodeStatus}
             onValuesChange={handleUpdateFacetsForm}
           />

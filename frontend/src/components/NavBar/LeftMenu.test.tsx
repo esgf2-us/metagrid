@@ -5,10 +5,8 @@ import { projectsFixture } from '../../api/mock/fixtures';
 import LeftMenu, { Props } from './LeftMenu';
 
 const defaultProps: Props = {
-  activeProject: { name: 'test1' },
   projects: projectsFixture(),
   onTextSearch: jest.fn(),
-  onProjectChange: jest.fn(),
 };
 
 it('renders search input', () => {
@@ -44,32 +42,4 @@ it('successfully submits search form and resets current text with onFinish', asy
 
   // Check if the input value resets back to blank
   await waitFor(() => expect(input.value).toEqual(''));
-});
-
-it('successfully submits search form and resets current text with onFinish, and updates activeProject when activeProject !== selectedProj', async () => {
-  const onProjectChange = jest.fn();
-  const { getByPlaceholderText, getByRole } = render(
-    <Router>
-      <LeftMenu
-        {...defaultProps}
-        activeProject={{}}
-        onProjectChange={onProjectChange}
-      />
-    </Router>
-  );
-
-  // Change form field values
-  const input = getByPlaceholderText(
-    'Search for a keyword'
-  ) as HTMLInputElement;
-  fireEvent.change(input, { target: { value: 'Solar' } });
-  expect(input.value).toEqual('Solar');
-
-  // Submit the form
-  const submitBtn = getByRole('img', { name: 'search' });
-  fireEvent.submit(submitBtn);
-
-  // Check if the input value resets back to blank
-  await waitFor(() => expect(input.value).toEqual(''));
-  expect(onProjectChange).toHaveBeenCalled();
 });

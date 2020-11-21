@@ -1,10 +1,11 @@
 import { InfoCircleOutlined } from '@ant-design/icons';
-import { Checkbox, Collapse, Form, Select } from 'antd';
+import { Collapse, Form, Select } from 'antd';
 import React from 'react';
 import { CSSinJS } from '../../common/types';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
 import { NodeStatusArray } from '../NodeStatus/types';
-import { ActiveFacets, DefaultFacets, ParsedFacets } from './types';
+import { ActiveSearchQuery } from '../Search/types';
+import { DefaultFacets, ParsedFacets } from './types';
 
 const styles: CSSinJS = {
   container: { maxHeight: '80vh', overflowY: 'auto' },
@@ -15,10 +16,9 @@ const styles: CSSinJS = {
 };
 
 export type Props = {
-  facetsByGroup?: { [key: string]: string[] };
+  activeSearchQuery: ActiveSearchQuery;
   defaultFacets: DefaultFacets;
-  activeFacets: ActiveFacets | Record<string, unknown>;
-  projectFacets: ParsedFacets;
+  availableFacets: ParsedFacets;
   nodeStatus?: NodeStatusArray;
   onValuesChange: (allValues: { [key: string]: string[] | [] }) => void;
 };
@@ -44,43 +44,37 @@ export const humanizeFacetNames = (str: string): string => {
 };
 
 const FacetsForm: React.FC<Props> = ({
-  facetsByGroup,
+  activeSearchQuery,
   defaultFacets,
-  activeFacets,
-  projectFacets,
+  availableFacets,
   nodeStatus,
   onValuesChange,
 }) => {
-  const [projectFacetsForm] = Form.useForm();
+  const [availableFacetsForm] = Form.useForm();
 
   /**
    * Need to reset the project facet form's fields whenever the active and default
    * facets change in order to capture the correct number of facet counts per option
    */
   React.useEffect(() => {
-    projectFacetsForm.resetFields();
-  }, [projectFacetsForm, activeFacets, defaultFacets]);
+    availableFacetsForm.resetFields();
+  }, [availableFacetsForm, activeSearchQuery, defaultFacets]);
 
+  const facetsByGroup = activeSearchQuery.project.facetsByGroup as {
+    [key: string]: string[];
+  };
   return (
     <div data-testid="facets-form">
       <Form
-        form={projectFacetsForm}
+        form={availableFacetsForm}
         layout="vertical"
         initialValues={{
-          ...activeFacets,
-          selectedDefaults: Object.keys(defaultFacets).filter(
-            (k) => defaultFacets[k]
-          ),
+          ...activeSearchQuery.activeFacets,
         }}
         onValuesChange={(_changedValues, allValues) => {
           onValuesChange(allValues);
         }}
       >
-        <Form.Item name="selectedDefaults">
-          <Checkbox.Group
-            options={[{ label: 'Include Replica', value: 'replica' }]}
-          ></Checkbox.Group>
-        </Form.Item>
         <div style={styles.container}>
           {facetsByGroup &&
             Object.keys(facetsByGroup).map((group) => {
@@ -88,9 +82,9 @@ const FacetsForm: React.FC<Props> = ({
                 <div key={group} style={styles.collapseContainer}>
                   <h4 style={styles.formTitle}>{group}</h4>
                   <Collapse>
-                    {Object.keys(projectFacets).map((facet) => {
+                    {Object.keys(availableFacets).map((facet) => {
                       if (facetsByGroup[group].includes(facet)) {
-                        const facetOptions = projectFacets[facet];
+                        const facetOptions = availableFacets[facet];
 
                         const isOptionalforDatasets =
                           facetOptions.length > 0 &&
