@@ -30,12 +30,7 @@ import Summary from '../Cart/Summary';
 import { UserCart, UserSearchQueries, UserSearchQuery } from '../Cart/types';
 import { TagType } from '../DataDisplay/Tag';
 import Facets from '../Facets';
-import {
-  ActiveFacets,
-  DefaultFacets,
-  ParsedFacets,
-  RawProject,
-} from '../Facets/types';
+import { ActiveFacets, ParsedFacets, RawProject } from '../Facets/types';
 import NavBar from '../NavBar';
 import NodeStatus from '../NodeStatus';
 import NodeSummary from '../NodeStatus/NodeSummary';
@@ -44,6 +39,7 @@ import {
   ActiveSearchQuery,
   RawSearchResult,
   RawSearchResults,
+  ResultType,
 } from '../Search/types';
 import Support from '../Support';
 import './App.css';
@@ -112,10 +108,7 @@ const App: React.FC = () => {
   const [availableFacets, setAvailableFacets] = React.useState<
     ParsedFacets | Record<string, unknown>
   >({});
-  const [defaultFacets, setDefaultFacets] = React.useState<DefaultFacets>({
-    latest: true,
-    replica: false,
-  });
+
   const [userCart, setUserCart] = React.useState<UserCart | []>(
     JSON.parse(localStorage.getItem('userCart') || '[]')
   );
@@ -190,9 +183,18 @@ const App: React.FC = () => {
     }
   };
 
-  const handleClearFilters = (): void => {
-    setDefaultFacets({ latest: true, replica: false });
+  const handleOnSetFacets = (
+    resultType: ResultType,
+    activeFacets: ActiveFacets
+  ): void => {
+    setActiveSearchQuery({
+      ...activeSearchQuery,
+      resultType,
+      activeFacets,
+    });
+  };
 
+  const handleClearFilters = (): void => {
     setActiveSearchQuery({
       project: activeSearchQuery.project,
       activeFacets: {},
@@ -306,7 +308,7 @@ const App: React.FC = () => {
       user: pk,
       project: activeSearchQuery.project as RawProject,
       projectId: activeSearchQuery.project.pk as string,
-      defaultFacets,
+      resultType: activeSearchQuery.resultType,
       activeFacets: activeSearchQuery.activeFacets,
       textInputs: activeSearchQuery.textInputs,
       url,
@@ -402,22 +404,10 @@ const App: React.FC = () => {
                 >
                   <Facets
                     activeSearchQuery={activeSearchQuery}
-                    defaultFacets={defaultFacets}
                     availableFacets={availableFacets}
                     nodeStatus={nodeStatus}
                     onProjectChange={handleProjectChange}
-                    onSetFacets={(
-                      defaults: DefaultFacets,
-                      active: ActiveFacets
-                    ) => {
-                      setDefaultFacets(defaults);
-                      setActiveSearchQuery({
-                        ...activeSearchQuery,
-                        activeFacets: {
-                          ...active,
-                        },
-                      });
-                    }}
+                    onSetFacets={handleOnSetFacets}
                   />
                 </Layout.Sider>
               )}
@@ -459,7 +449,6 @@ const App: React.FC = () => {
                     </Breadcrumb>
                     <Search
                       activeSearchQuery={activeSearchQuery}
-                      defaultFacets={defaultFacets}
                       userCart={userCart}
                       nodeStatus={nodeStatus}
                       onUpdateAvailableFacets={(facets) =>

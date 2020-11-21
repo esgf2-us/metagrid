@@ -28,7 +28,7 @@ class SearchSerializer(serializers.ModelSerializer):
             "user",
             "project",
             "project_id",
-            "default_facets",
+            "result_type",
             "active_facets",
             "text_inputs",
             "url",

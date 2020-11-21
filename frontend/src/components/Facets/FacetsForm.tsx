@@ -4,8 +4,8 @@ import React from 'react';
 import { CSSinJS } from '../../common/types';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
 import { NodeStatusArray } from '../NodeStatus/types';
-import { ActiveSearchQuery } from '../Search/types';
-import { DefaultFacets, ParsedFacets } from './types';
+import { ActiveSearchQuery, ResultType } from '../Search/types';
+import { ActiveFacets, ParsedFacets } from './types';
 
 const styles: CSSinJS = {
   container: { maxHeight: '80vh', overflowY: 'auto' },
@@ -17,10 +17,12 @@ const styles: CSSinJS = {
 
 export type Props = {
   activeSearchQuery: ActiveSearchQuery;
-  defaultFacets: DefaultFacets;
   availableFacets: ParsedFacets;
   nodeStatus?: NodeStatusArray;
-  onValuesChange: (allValues: { [key: string]: string[] | [] }) => void;
+  onValuesChange: (allValues: {
+    resultType: ResultType;
+    [key: string]: ResultType | ActiveFacets | [];
+  }) => void;
 };
 
 /**
@@ -45,7 +47,6 @@ export const humanizeFacetNames = (str: string): string => {
 
 const FacetsForm: React.FC<Props> = ({
   activeSearchQuery,
-  defaultFacets,
   availableFacets,
   nodeStatus,
   onValuesChange,
@@ -58,7 +59,7 @@ const FacetsForm: React.FC<Props> = ({
    */
   React.useEffect(() => {
     availableFacetsForm.resetFields();
-  }, [availableFacetsForm, activeSearchQuery, defaultFacets]);
+  }, [availableFacetsForm, activeSearchQuery]);
 
   const facetsByGroup = activeSearchQuery.project.facetsByGroup as {
     [key: string]: string[];
@@ -70,11 +71,33 @@ const FacetsForm: React.FC<Props> = ({
         layout="vertical"
         initialValues={{
           ...activeSearchQuery.activeFacets,
+          resultType: activeSearchQuery.resultType,
         }}
         onValuesChange={(_changedValues, allValues) => {
           onValuesChange(allValues);
         }}
       >
+        <Form.Item
+          label="Result Type"
+          name="resultType"
+          tooltip={{
+            title:
+              'Datasets can be replicated from the source node (original) to other nodes (replica)',
+            trigger: 'hover',
+          }}
+        >
+          <Select>
+            <Select.Option value={'all' as ResultType}>
+              Originals and Replicas
+            </Select.Option>
+            <Select.Option value={'originals only' as ResultType}>
+              Originals only
+            </Select.Option>
+            <Select.Option value={'replicas only' as ResultType}>
+              Replicas only
+            </Select.Option>
+          </Select>
+        </Form.Item>
         <div style={styles.container}>
           {facetsByGroup &&
             Object.keys(facetsByGroup).map((group) => {
