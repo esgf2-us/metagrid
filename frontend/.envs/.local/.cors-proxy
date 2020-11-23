@@ -3,7 +3,7 @@
 # ------------------------------------------------------------------------------
 # https://github.com/Rob--W/cors-anywhere#server
 PROXY_PROTOCOL=http://
-PROXY_HOST=proxy
+PROXY_HOST=cors-proxy
 PROXY_PORT=3001
 
 # If set (array of strings), requests whose origin is not listed are blocked.
