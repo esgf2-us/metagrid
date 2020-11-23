@@ -21,7 +21,7 @@ REACT_APP_ESGF_NODE_STATUS_URL=https://aims4.llnl.gov/prometheus/api/v1/query?qu
 # cors-anywhere proxy
 # ------------------------------------------------------------------------------
 # https://github.com/Rob--W/cors-anywhere
-REACT_APP_PROXY_URL=http://localhost:3001
+REACT_APP_CORS_PROXY_URL=http://localhost:3001
 
 # Keycloak
 # ------------------------------------------------------------------------------
