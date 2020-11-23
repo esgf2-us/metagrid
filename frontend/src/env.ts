@@ -32,7 +32,7 @@ export const nodeStatusURL = `${
 // cors-anywhere proxy
 // ------------------------------------------------------------------------------
 // https://github.com/Rob--W/cors-anywhere
-export const proxyURL = `${process.env.REACT_APP_PROXY_URL as string}`;
+export const proxyURL = `${process.env.REACT_APP_CORS_PROXY_URL as string}`;
 
 // Keycloak
 // ------------------------------------------------------------------------------
