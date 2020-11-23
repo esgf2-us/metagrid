@@ -82,5 +82,5 @@ src/react-app-env.d.ts
 
 # Environment variables
 .env
-.envs/.production/.proxy
+.envs/.production/.cors-proxy
 .envs/.production/.react
