@@ -15,10 +15,13 @@ import {
   processCitation,
   updateUserCart,
 } from '.';
-import { ActiveFacets, DefaultFacets } from '../components/Facets/types';
-import { RawCitation, TextInputs } from '../components/Search/types';
 import {
-  defaultFacetsFixture,
+  ActiveSearchQuery,
+  Pagination,
+  RawCitation,
+} from '../components/Search/types';
+import {
+  activeSearchQueryFixture,
   ESGFSearchAPIFixture,
   parsedNodeStatusFixture,
   projectsFixture,
@@ -51,90 +54,59 @@ describe('test fetchProjects()', () => {
   });
 });
 
-describe('test genUrlQuery()', () => {
-  let baseUrl: string;
-  let defaultFacets: DefaultFacets;
-  let activeFacets: ActiveFacets;
-  let textInputs: TextInputs;
+describe('test generateURLSearchQuery', () => {
+  let activeSearchQuery: ActiveSearchQuery;
+  let pagination: Pagination;
   beforeEach(() => {
-    baseUrl = `limit=0&offset=0`;
-    defaultFacets = defaultFacetsFixture();
-    activeFacets = {
-      data_node: ['var1', 'var2'],
-      facet2: ['var3', 'var4'],
-    };
-    textInputs = ['input1', 'input2'];
-  });
-
-  it('returns formatted url with offset of 0 on page 1', () => {
-    const pagination = {
+    activeSearchQuery = activeSearchQueryFixture();
+    pagination = {
       page: 1,
       pageSize: 10,
     };
+  });
 
-    const url = generateSearchURLQuery(
-      baseUrl,
-      defaultFacets,
-      activeFacets,
-      textInputs,
-      pagination
-    );
-
+  it('returns formatted url with offset of 0 on page 1', () => {
+    const url = generateSearchURLQuery(activeSearchQuery, pagination);
     expect(url).toEqual(
-      `${apiRoutes.esgfSearch}?limit=10&offset=0&latest=true&replica=false&query=input1,input2&data_node=var1,var2&facet2=var3,var4`
+      `${apiRoutes.esgfSearch}?offset=0&limit=10&query=foo&baz=option1&foo=option1,option2`
     );
   });
   it('returns formatted url with offset of 200 and limit of 100 on page 3', () => {
-    const pagination = {
+    pagination = {
       page: 3,
       pageSize: 100,
     };
 
-    const url = generateSearchURLQuery(
-      baseUrl,
-      defaultFacets,
-      activeFacets,
-      textInputs,
-      pagination
-    );
+    const url = generateSearchURLQuery(activeSearchQuery, pagination);
     expect(url).toEqual(
-      `${apiRoutes.esgfSearch}?limit=100&offset=200&latest=true&replica=false&query=input1,input2&data_node=var1,var2&facet2=var3,var4`
+      `${apiRoutes.esgfSearch}?offset=200&limit=100&query=foo&baz=option1&foo=option1,option2`
     );
   });
   it('returns formatted url without free-text', () => {
-    const pagination = {
-      page: 1,
-      pageSize: 10,
-    };
-
     const url = generateSearchURLQuery(
-      baseUrl,
-      defaultFacets,
-      activeFacets,
-      [],
+      { ...activeSearchQuery, textInputs: [] },
       pagination
     );
     expect(url).toEqual(
-      `${apiRoutes.esgfSearch}?limit=10&offset=0&latest=true&replica=false&query=*&data_node=var1,var2&facet2=var3,var4`
+      `${apiRoutes.esgfSearch}?offset=0&limit=10&query=*&baz=option1&foo=option1,option2`
+    );
+  });
+  it('returns formatted url with replica param', () => {
+    const url = generateSearchURLQuery(
+      { ...activeSearchQuery, resultType: 'originals only' },
+      pagination
+    );
+    expect(url).toEqual(
+      `${apiRoutes.esgfSearch}?replica=false&offset=0&limit=10&query=foo&baz=option1&foo=option1,option2`
     );
   });
 
   it('returns formatted url without facets', () => {
-    const pagination = {
-      page: 1,
-      pageSize: 10,
-    };
-
     const url = generateSearchURLQuery(
-      baseUrl,
-      defaultFacets,
-      {},
-      textInputs,
+      { ...activeSearchQuery, activeFacets: {} },
       pagination
     );
-    expect(url).toEqual(
-      `${apiRoutes.esgfSearch}?limit=10&offset=0&latest=true&replica=false&query=input1,input2&`
-    );
+    expect(url).toEqual(`${apiRoutes.esgfSearch}?offset=0&limit=10&query=foo&`);
   });
 });
 

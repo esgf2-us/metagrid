@@ -1,5 +1,4 @@
-import { ActiveFacets , RawProject } from '../Facets/types';
-
+import { ActiveFacets, RawProject } from '../Facets/types';
 
 export type TextInputs = string[];
 
@@ -13,7 +12,7 @@ export type RawCitation = {
   creatorsList: string;
 };
 
-export type ResultType = 'all' | 'originalsOnly' | 'replicasOnly';
+export type ResultType = 'all' | 'originals only' | 'replicas only';
 
 export type ActiveSearchQuery = {
   project: RawProject | Record<string, unknown>;
@@ -35,3 +34,8 @@ export type RawSearchResult = {
 };
 
 export type RawSearchResults = Array<RawSearchResult>;
+
+export type Pagination = {
+  page: number;
+  pageSize: number;
+};

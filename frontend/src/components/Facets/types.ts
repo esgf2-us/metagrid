@@ -10,8 +10,3 @@ export type RawProjects = Array<RawProject>;
 export type RawFacets = Record<string, (string | number)[]>;
 export type ParsedFacets = Record<string, [string, number][]>;
 export type ActiveFacets = Record<string, string[]>;
-export type DefaultFacets = {
-  latest: boolean;
-  replica: boolean;
-  [key: string]: boolean;
-};

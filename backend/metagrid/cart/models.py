@@ -25,10 +25,22 @@ class Cart(models.Model):
 class Search(models.Model):
     """Model definition for Search."""
 
+    ALL = "all"
+    ORIGINALS_ONLY = "originals only"
+    REPLICAS_ONLY = "replicas only"
+
+    RESULT_TYPE_CHOICES = (
+        (ALL, ALL),
+        (ORIGINALS_ONLY, ORIGINALS_ONLY),
+        (REPLICAS_ONLY, REPLICAS_ONLY),
+    )
+
     uuid = models.UUIDField(default=uuid.uuid4)
     user = models.ForeignKey("users.User", on_delete=models.CASCADE)
     project = models.ForeignKey("projects.Project", on_delete=models.CASCADE)
-    default_facets = JSONBField(default=dict)
+    result_type = models.CharField(
+        max_length=255, default=ALL, choices=RESULT_TYPE_CHOICES
+    )
     active_facets = JSONBField(default=dict)
     text_inputs = ArrayField(
         models.CharField(max_length=255, blank=True),

@@ -1,5 +1,5 @@
-import { ActiveFacets, DefaultFacets, RawProject } from '../Facets/types';
-import { RawSearchResults, TextInputs } from '../Search/types';
+import { ActiveFacets, RawProject } from '../Facets/types';
+import { RawSearchResults, ResultType, TextInputs } from '../Search/types';
 
 export type UserCart = RawSearchResults;
 export type RawUserCart = {
@@ -15,7 +15,7 @@ export type RawUserSearchQuery = {
     full_name: string;
   };
   project_id: number;
-  default_facets: DefaultFacets;
+  result_type: ResultType;
   active_facets: ActiveFacets;
   text_inputs: TextInputs;
 };
@@ -26,7 +26,7 @@ export type UserSearchQuery = {
   user: string | null;
   project: RawProject;
   projectId: string;
-  defaultFacets: DefaultFacets;
+  resultType: ResultType;
   activeFacets: ActiveFacets | Record<string, unknown>;
   textInputs: TextInputs | [];
   url: string;
