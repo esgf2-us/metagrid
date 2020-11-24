@@ -4,10 +4,10 @@ import { fetchProjects } from '../../api';
 import { objectIsEmpty } from '../../common/utils';
 import Divider from '../General/Divider';
 import { NodeStatusArray } from '../NodeStatus/types';
-import { ActiveSearchQuery } from '../Search/types';
+import { ActiveSearchQuery, ResultType } from '../Search/types';
 import FacetsForm from './FacetsForm';
 import ProjectForm from './ProjectForm';
-import { ActiveFacets, DefaultFacets, ParsedFacets, RawProject } from './types';
+import { ActiveFacets, ParsedFacets, RawProject } from './types';
 
 const styles = {
   form: {
@@ -17,16 +17,14 @@ const styles = {
 
 export type Props = {
   activeSearchQuery: ActiveSearchQuery;
-  defaultFacets: DefaultFacets;
   availableFacets: ParsedFacets | Record<string, unknown>;
   nodeStatus?: NodeStatusArray;
   onProjectChange: (selectedProj: RawProject) => void;
-  onSetFacets: (defaults: DefaultFacets, active: ActiveFacets) => void;
+  onSetFacets: (resultType: ResultType, activeFacets: ActiveFacets) => void;
 };
 
 const Facets: React.FC<Props> = ({
   activeSearchQuery,
-  defaultFacets,
   availableFacets,
   nodeStatus,
   onProjectChange,
@@ -49,27 +47,25 @@ const Facets: React.FC<Props> = ({
     }
   };
 
-  /**
-   * TODO: Add logic to handle new resultType form for replicas
-   */
   const handleUpdateFacetsForm = (selectedFacets: {
-    [key: string]: string[] | [];
+    resultType: ResultType;
+    [key: string]: ResultType | ActiveFacets | [];
   }): void => {
-    const newActive = selectedFacets;
+    const { resultType: newResultType, ...newActiveFacets } = selectedFacets;
 
-    // TODO: Placeholder until DefaultFacets are removed
-    const newDefaults: DefaultFacets = { latest: true, replica: false };
-
-    // The form keeps a history of all selected facets, including when a
-    // previously selected key goes from > 0 elements to 0 elements. Thus,
-    // iterate through the object and delete the keys where the array's length
-    // is equal to 0.
-    Object.keys(newActive).forEach((key) => {
-      if (newActive[key] === undefined || newActive[key].length === 0) {
-        delete newActive[key];
+    // The form keeps a history of all selected facets, including when
+    // facet keys change from > 0 elements to 0 elements (none selected) in the
+    // array. To avoid including facet keys with 0 elements, iterate through the
+    // object and delete them.
+    Object.keys(newActiveFacets).forEach((key) => {
+      if (
+        newActiveFacets[key] === undefined ||
+        newActiveFacets[key].length === 0
+      ) {
+        delete newActiveFacets[key];
       }
     });
-    onSetFacets(newDefaults, newActive);
+    onSetFacets(newResultType, newActiveFacets as ActiveFacets);
   };
 
   return (
@@ -90,7 +86,6 @@ const Facets: React.FC<Props> = ({
           <h2>Filter with Facets</h2>
           <FacetsForm
             activeSearchQuery={activeSearchQuery}
-            defaultFacets={defaultFacets}
             availableFacets={availableFacets as ParsedFacets}
             nodeStatus={nodeStatus}
             onValuesChange={handleUpdateFacetsForm}

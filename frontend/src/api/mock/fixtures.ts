@@ -10,7 +10,6 @@ import {
   UserSearchQuery,
 } from '../../components/Cart/types';
 import {
-  DefaultFacets,
   ParsedFacets,
   RawFacets,
   RawProject,
@@ -39,7 +38,7 @@ export const rawProjectFixture = (
       group2: ['facet2'],
       group3: ['optional'],
     },
-    facetsUrl: 'https://esgf-node.llnl.gov/esg-search/search/?offset=0&limit=0',
+    facetsUrl: 'offset=0&limit=0',
     fullName: 'test1',
   };
   return { ...defaults, ...props } as RawProject;
@@ -150,7 +149,7 @@ export const userSearchQueryFixture = (
     user: 'user',
     project: rawProjectFixture(),
     projectId: '1',
-    defaultFacets: { latest: true, replica: false },
+    resultType: 'all',
     activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
     textInputs: ['foo'],
     url: 'url.com',
@@ -161,13 +160,6 @@ export const userSearchQueryFixture = (
 
 export const userSearchQueriesFixture = (): UserSearchQueries => {
   return [userSearchQueryFixture()];
-};
-
-export const defaultFacetsFixture = (
-  props: Partial<DefaultFacets> = {}
-): DefaultFacets => {
-  const defaults: DefaultFacets = { latest: true, replica: false };
-  return { ...defaults, ...props } as DefaultFacets;
 };
 
 type ESGFSearchAPIResponse = {

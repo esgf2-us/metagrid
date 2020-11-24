@@ -31,7 +31,7 @@ class SearchFactory(factory.django.DjangoModelFactory):
 
     user = factory.SubFactory(UserFactory)
     project = factory.SubFactory(ProjectFactory)
-    default_facets = factory.Dict({"latest": True}, dict_factory=JSONFactory)
+    result_type = "all"
     active_facets = factory.Dict(
         {"facet": ["option"]}, dict_factory=JSONFactory
     )
