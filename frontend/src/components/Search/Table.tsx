@@ -21,6 +21,7 @@ import React from 'react';
 import { fetchWgetScript, openDownloadURL } from '../../api';
 import { formatBytes, objectHasKey, splitURLByChar } from '../../common/utils';
 import { UserCart } from '../Cart/types';
+import ToolTip from '../DataDisplay/ToolTip';
 import Button from '../General/Button';
 import Divider from '../General/Divider';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
@@ -28,7 +29,7 @@ import { NodeStatusArray } from '../NodeStatus/types';
 import Citation from './Citation';
 import FilesTable from './FilesTable';
 import './Search.css';
-import { RawSearchResult, RawSearchResults } from './types';
+import { RawSearchResult, RawSearchResults, TextInputs } from './types';
 
 export type Props = {
   loading: boolean;
@@ -37,6 +38,7 @@ export type Props = {
   totalResults?: number;
   userCart: UserCart | [];
   nodeStatus?: NodeStatusArray;
+  filenameVars?: TextInputs | [];
   onUpdateCart: (item: RawSearchResults, operation: 'add' | 'remove') => void;
   onRowSelect?: (selectedRows: RawSearchResults | []) => void;
   onPageChange?: (page: number, pageSize: number) => void;
@@ -50,11 +52,18 @@ const Table: React.FC<Props> = ({
   totalResults,
   userCart,
   nodeStatus,
+  filenameVars,
   onUpdateCart,
   onRowSelect,
   onPageChange,
   onPageSizeChange,
 }) => {
+  // Add options to this constant as needed.
+  type DatasetDownloadTypes = 'wget' | 'Globus';
+  // This variable populates the download drop downs and is used in conditionals.
+  // TODO: Add 'Globus' during Globus integration process.
+  const allowedDownloadTypes: DatasetDownloadTypes[] = ['wget'];
+
   const tableConfig = {
     size: 'small' as SizeType,
     loading,
@@ -112,7 +121,11 @@ const Table: React.FC<Props> = ({
                 })}
               </Collapse.Panel>
               <Collapse.Panel header="Files" key="files">
-                <FilesTable id={record.id} />
+                <FilesTable
+                  id={record.id}
+                  numResults={record.number_of_files}
+                  filenameVars={filenameVars}
+                />
               </Collapse.Panel>
             </Collapse>
           </>
@@ -133,7 +146,12 @@ const Table: React.FC<Props> = ({
         expanded ? (
           <DownCircleOutlined onClick={(e) => onExpand(record, e)} />
         ) : (
-          <RightCircleOutlined onClick={(e) => onExpand(record, e)} />
+          <ToolTip
+            title="View this dataset's citation, metadata, and files"
+            trigger="hover"
+          >
+            <RightCircleOutlined onClick={(e) => onExpand(record, e)} />
+          </ToolTip>
         ),
     },
     rowSelection: {
@@ -200,30 +218,31 @@ const Table: React.FC<Props> = ({
       key: 'download',
       width: 200,
       render: (record: RawSearchResult) => {
-        const availableDownloads = ['wget'];
         const { id } = record;
+
         // Unique key for the download form item
         const formKey = `download-${id}`;
-
         let globusCompatible = false;
         record.access.forEach((download) => {
           if (download === 'Globus') {
             globusCompatible = true;
-            availableDownloads.push('Globus');
+            allowedDownloadTypes.push('Globus');
           }
         });
 
         /**
          * Handle the download form for datasets
          */
-        const handleDownloadForm = (downloadType: 'wget' | 'Globus'): void => {
+        const handleDownloadForm = (
+          downloadType: DatasetDownloadTypes
+        ): void => {
           /* istanbul ignore else */
           if (downloadType === 'wget') {
             // eslint-disable-next-line no-void
             void message.success(
               'The wget script is generating, please wait momentarily.'
             );
-            fetchWgetScript(record.id)
+            fetchWgetScript(record.id, filenameVars)
               .then((url) => {
                 openDownloadURL(url);
               })
@@ -252,11 +271,11 @@ const Table: React.FC<Props> = ({
               onFinish={({ [formKey]: download }) =>
                 handleDownloadForm(download)
               }
-              initialValues={{ [formKey]: availableDownloads[0] }}
+              initialValues={{ [formKey]: allowedDownloadTypes[0] }}
             >
               <Form.Item name={formKey}>
                 <Select style={{ width: 120 }}>
-                  {availableDownloads.map((option) => (
+                  {allowedDownloadTypes.map((option) => (
                     <Select.Option key={option} value={option}>
                       {option}
                     </Select.Option>
@@ -299,7 +318,7 @@ const Table: React.FC<Props> = ({
                 href={record.further_info_url![0]}
                 target="_blank"
               >
-                More Info
+                ES-DOC
               </Button>
             )}
           </>

@@ -14,8 +14,10 @@ import { ActiveFacets, RawProjects } from '../components/Facets/types';
 import { NodeStatusArray, RawNodeStatus } from '../components/NodeStatus/types';
 import {
   ActiveSearchQuery,
+  Pagination,
   RawCitation,
   ResultType,
+  TextInputs,
 } from '../components/Search/types';
 import { proxyURL } from '../env';
 import axios from '../lib/axios';
@@ -224,9 +226,10 @@ export const fetchProjects = async (): Promise<{
 
 /**
  * replica param indicates whether the record is the 'master' copy, or a replica.
+ * - By default, no replica param is specified (return both replicas and originals)
  * - replica=false to return only originals
  * - replica=true to return only replicas
- * - default: no replica flag specified, i.e. return both replicas and originals
+ *
  * https://github.com/ESGF/esgf.github.io/wiki/ESGF_Search_REST_API#core-facets
  */
 export const convertResultTypeToReplicaParam = (
@@ -243,16 +246,42 @@ export const convertResultTypeToReplicaParam = (
   return param && isLabel ? param.replace('=', ' = ') : param;
 };
 
+export const updatePaginationParams = (
+  url: string,
+  pagination: Pagination
+): string => {
+  const paginationOffset =
+    pagination.page > 1 ? (pagination.page - 1) * pagination.pageSize : 0;
+
+  const baseParams = url
+    .replace('limit=0', `limit=${pagination.pageSize}`)
+    .replace('offset=0', `offset=${paginationOffset}`);
+
+  return baseParams;
+};
+
 /**
  * Query string parameters use the logical OR operator, so queries are inclusive.
  *
- * Example output: http://localhost:3001/https://esgf-node.llnl.gov/esg-search/search/?replica=false&offset=0&limit=10&query=foo&baz=option1&foo=option1
+ * Example output: https://esgf-node.llnl.gov/esg-search/search/?replica=false&offset=0&limit=10&query=foo&baz=option1&foo=option1
  */
 export const generateSearchURLQuery = (
   activeSearchQuery: ActiveSearchQuery | UserSearchQuery,
   pagination: { page: number; pageSize: number }
 ): string => {
   const { project, resultType, activeFacets, textInputs } = activeSearchQuery;
+
+  let route = `${apiRoutes.esgfSearch}?`;
+
+  const replicaParam = convertResultTypeToReplicaParam(resultType);
+  if (replicaParam) {
+    route += `${replicaParam}&`;
+  }
+
+  const baseParams = updatePaginationParams(
+    project.facetsUrl as string,
+    pagination
+  );
 
   const activeFacetsParams = queryString.stringify(
     humps.decamelizeKeys(activeFacets) as ActiveFacets,
@@ -269,18 +298,6 @@ export const generateSearchURLQuery = (
         arrayFormat: 'comma',
       }
     );
-  }
-
-  const paginationOffset =
-    pagination.page > 1 ? (pagination.page - 1) * pagination.pageSize : 0;
-  const baseParams = (project.facetsUrl as string)
-    .replace('limit=0', `limit=${pagination.pageSize}`)
-    .replace('offset=0', `offset=${paginationOffset}`);
-
-  let route = `${apiRoutes.esgfSearch}?`;
-  const replicaParam = convertResultTypeToReplicaParam(resultType);
-  if (replicaParam) {
-    route += `${replicaParam}&`;
   }
 
   return `${route}${baseParams}&${textInputParam}&${activeFacetsParams}`;
@@ -344,8 +361,7 @@ export const fetchDatasetCitation = async ({
   url,
 }: {
   [key: string]: string;
-}): // eslint-disable-next-line @typescript-eslint/no-explicit-any
-Promise<{ [key: string]: any }> => {
+}): Promise<{ [key: string]: unknown }> => {
   return axios
     .get(`${proxyURL}/${url}`)
     .then((res) => {
@@ -357,20 +373,53 @@ Promise<{ [key: string]: any }> => {
     });
 };
 
+export type FetchDatasetFilesProps = {
+  id: string;
+  paginationOptions: Pagination;
+  filenameVars?: TextInputs | [];
+};
+
 /**
  * HTTP Request Method: GET
  * HTTP Response: 200 OK
+ *
+ * This function is invokved by react-async package's deferFn method.
+ * https://docs.react-async.com/api/options#deferfn
+ *
+ * Example output: https://esgf-node.llnl.gov/esg-search/search/?dataset_id=cmip5.output1.BCC.bcc-csm1-1.abrupt4xCO2.mon.ocean.Omon.r2i1p1.v20120202%7Caims3.llnl.gov&format=application%2Fsolr%2Bjson&type=File&query=hfds,Omon
  */
-export const fetchDatasetFiles = async ({
-  id,
-}: {
-  id: string;
-}): // eslint-disable-next-line @typescript-eslint/no-explicit-any
-Promise<{ [key: string]: any }> => {
-  const url = queryString.stringifyUrl({
-    url: apiRoutes.esgfSearch,
-    query: { format: 'application/solr+json', type: 'File', dataset_id: id },
-  });
+export const fetchDatasetFiles = async (
+  _args: [],
+  props: FetchDatasetFilesProps
+): Promise<{ [key: string]: unknown }> => {
+  const { id, paginationOptions, filenameVars } = props;
+  const queryParams: {
+    format: string;
+    type: 'File';
+    offset: number;
+    limit: number;
+    dataset_id: string;
+    query?: string[];
+  } = {
+    format: 'application/solr+json',
+    type: 'File',
+    offset: 0,
+    limit: 0,
+    dataset_id: id,
+  };
+
+  if (filenameVars && filenameVars.length > 0) {
+    queryParams.query = filenameVars;
+  }
+
+  let url = queryString.stringifyUrl(
+    {
+      url: apiRoutes.esgfSearch,
+      query: queryParams,
+    },
+    { arrayFormat: 'comma' }
+  );
+  url = updatePaginationParams(url, paginationOptions);
 
   return axios
     .get(url)
@@ -382,7 +431,6 @@ Promise<{ [key: string]: any }> => {
       throw new Error(error);
     });
 };
-
 /**
  * Performs validation against the wget API to ensure a 200 response.
  *
@@ -390,12 +438,24 @@ Promise<{ [key: string]: any }> => {
  * the link.
  */
 export const fetchWgetScript = async (
-  ids: string[] | string
+  ids: string[] | string,
+  filenameVars?: string[]
 ): Promise<string> => {
-  const url = queryString.stringifyUrl({
+  let url = queryString.stringifyUrl({
     url: apiRoutes.wget,
     query: { dataset_id: ids },
   });
+
+  if (filenameVars && filenameVars.length > 0) {
+    const filenameVarsParam = queryString.stringify(
+      { query: filenameVars },
+      {
+        arrayFormat: 'comma',
+      }
+    );
+    url += `&${filenameVarsParam}`;
+  }
+
   return axios
     .get(url)
     .then(() => {

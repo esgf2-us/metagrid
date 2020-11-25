@@ -20,6 +20,7 @@ export type Props = {
   availableFacets: ParsedFacets | Record<string, unknown>;
   nodeStatus?: NodeStatusArray;
   onProjectChange: (selectedProj: RawProject) => void;
+  onSetFilenameVars: (filenameVar: string) => void;
   onSetFacets: (resultType: ResultType, activeFacets: ActiveFacets) => void;
 };
 
@@ -28,6 +29,7 @@ const Facets: React.FC<Props> = ({
   availableFacets,
   nodeStatus,
   onProjectChange,
+  onSetFilenameVars,
   onSetFacets,
 }) => {
   const { data, error, isLoading } = useAsync(fetchProjects);
@@ -45,27 +47,6 @@ const Facets: React.FC<Props> = ({
         onProjectChange(selectedProj);
       }
     }
-  };
-
-  const handleUpdateFacetsForm = (selectedFacets: {
-    resultType: ResultType;
-    [key: string]: ResultType | ActiveFacets | [];
-  }): void => {
-    const { resultType: newResultType, ...newActiveFacets } = selectedFacets;
-
-    // The form keeps a history of all selected facets, including when
-    // facet keys change from > 0 elements to 0 elements (none selected) in the
-    // array. To avoid including facet keys with 0 elements, iterate through the
-    // object and delete them.
-    Object.keys(newActiveFacets).forEach((key) => {
-      if (
-        newActiveFacets[key] === undefined ||
-        newActiveFacets[key].length === 0
-      ) {
-        delete newActiveFacets[key];
-      }
-    });
-    onSetFacets(newResultType, newActiveFacets as ActiveFacets);
   };
 
   return (
@@ -88,7 +69,8 @@ const Facets: React.FC<Props> = ({
             activeSearchQuery={activeSearchQuery}
             availableFacets={availableFacets as ParsedFacets}
             nodeStatus={nodeStatus}
-            onValuesChange={handleUpdateFacetsForm}
+            onSetFilenameVars={onSetFilenameVars}
+            onSetFacets={onSetFacets}
           />
         </>
       )}

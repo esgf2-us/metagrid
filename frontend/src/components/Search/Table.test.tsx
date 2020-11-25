@@ -109,13 +109,13 @@ it('renders "PID" button when the record has a "xlink" key/value, vice versa', (
   // Check first row exists
   const firstRow = getByRole('row', {
     name:
-      'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 wget download PID More Info plus',
+      'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 wget download PID ES-DOC plus',
   });
   expect(firstRow).toBeTruthy();
 
-  // Check both PID and More Info buttons rendered for the first row
+  // Check both PID and ES-DOC buttons rendered for the first row
   const firstPidBtn = within(firstRow).getByText('PID');
-  const firstInfoBtn = within(firstRow).getByText('More Info');
+  const firstInfoBtn = within(firstRow).getByText('ES-DOC');
   expect(firstPidBtn).toBeTruthy();
   expect(firstInfoBtn).toBeTruthy();
 
@@ -126,10 +126,10 @@ it('renders "PID" button when the record has a "xlink" key/value, vice versa', (
   });
   expect(secondRow).toBeTruthy();
 
-  // Check both PID and More Info buttons did not render for the second row
+  // Check both PID and ES-DOC buttons did not render for the second row
   const qPidBtn = within(secondRow).queryByText('PID');
   expect(qPidBtn).toBeNull();
-  const qInfoBtn = within(secondRow).queryByText('More Info');
+  const qInfoBtn = within(secondRow).queryByText('ES-DOC');
   expect(qInfoBtn).toBeNull();
 });
 

@@ -135,6 +135,7 @@ export const activeSearchQueryFixture = (
   const defaults: ActiveSearchQuery = {
     project: rawProjectFixture(),
     resultType: 'all',
+    filenameVars: ['var'],
     activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
     textInputs: ['foo'],
   };
@@ -150,6 +151,7 @@ export const userSearchQueryFixture = (
     project: rawProjectFixture(),
     projectId: '1',
     resultType: 'all',
+    filenameVars: ['var'],
     activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
     textInputs: ['foo'],
     url: 'url.com',

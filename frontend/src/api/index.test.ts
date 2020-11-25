@@ -3,6 +3,7 @@ import {
   deleteUserSearchQuery,
   fetchDatasetCitation,
   fetchDatasetFiles,
+  FetchDatasetFilesProps,
   fetchNodeStatus,
   fetchProjects,
   fetchSearchResults,
@@ -40,7 +41,7 @@ afterEach(() => {
 });
 
 describe('test fetchProjects()', () => {
-  it('calls axios and returns projects', async () => {
+  it('returns projects', async () => {
     const projects = await fetchProjects();
     expect(projects).toEqual({ results: projectsFixture() });
   });
@@ -191,13 +192,17 @@ describe('test fetchCitation()', () => {
 });
 
 describe('test fetchFiles()', () => {
-  let dataset: { [key: string]: string };
+  let props: FetchDatasetFilesProps;
   beforeEach(() => {
-    dataset = { id: 'testid|node.org' };
+    props = {
+      id: 'testid|node.org',
+      paginationOptions: { page: 1, pageSize: 10 },
+      filenameVars: ['var'],
+    };
   });
 
-  it('calls axios and returns files', async () => {
-    const files = await fetchDatasetFiles({ id: dataset.id });
+  it('returns files', async () => {
+    const files = await fetchDatasetFiles([], props);
     expect(files).toEqual(ESGFSearchAPIFixture());
   });
   it('catches and throws an error', async () => {
@@ -206,7 +211,7 @@ describe('test fetchFiles()', () => {
         return res(ctx.status(404));
       })
     );
-    await expect(fetchDatasetFiles({ id: dataset.id })).rejects.toThrow('404');
+    await expect(fetchDatasetFiles([], props)).rejects.toThrow('404');
   });
 });
 
@@ -301,7 +306,7 @@ describe('test deleteUserSearch', () => {
 
 describe('test fetchWgetScript', () => {
   it('returns a response with a single dataset id', async () => {
-    await fetchWgetScript('id');
+    await fetchWgetScript('id', ['var']);
   });
   it('returns a response with an array of dataset ids', async () => {
     await fetchWgetScript(['id', 'id']);

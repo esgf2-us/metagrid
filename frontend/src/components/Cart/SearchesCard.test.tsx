@@ -58,3 +58,16 @@ it('displays alert error when api fails to return response', async () => {
   const alert = await waitFor(() => getByRole('img', { name: 'close-circle' }));
   expect(alert).toBeTruthy();
 });
+
+it('displays "N/A" for Filename Variables when none are applied', () => {
+  const { getByText } = render(
+    <SearchesCard
+      {...defaultProps}
+      searchQuery={userSearchQueryFixture({ filenameVars: undefined })}
+    />
+  );
+
+  expect(
+    getByText((_, node) => node.textContent === 'Filename Variables: N/A')
+  ).toBeTruthy();
+});

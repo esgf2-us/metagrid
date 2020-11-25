@@ -1,7 +1,14 @@
-import { InfoCircleOutlined } from '@ant-design/icons';
-import { Collapse, Form, Select } from 'antd';
+import {
+  InfoCircleOutlined,
+  QuestionCircleOutlined,
+  RightCircleOutlined,
+  SearchOutlined,
+} from '@ant-design/icons';
+import { Collapse, Form, Input, Select } from 'antd';
 import React from 'react';
 import { CSSinJS } from '../../common/types';
+import ToolTip from '../DataDisplay/ToolTip';
+import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
 import { NodeStatusArray } from '../NodeStatus/types';
 import { ActiveSearchQuery, ResultType } from '../Search/types';
@@ -9,6 +16,7 @@ import { ActiveFacets, ParsedFacets } from './types';
 
 const styles: CSSinJS = {
   container: { maxHeight: '80vh', overflowY: 'auto' },
+  filenameVarForm: { marginBottom: '12px' },
   facetCount: { float: 'right' },
   formTitle: { fontWeight: 'bold', textTransform: 'capitalize' },
   applyBtn: { marginBottom: '12px' },
@@ -19,10 +27,8 @@ export type Props = {
   activeSearchQuery: ActiveSearchQuery;
   availableFacets: ParsedFacets;
   nodeStatus?: NodeStatusArray;
-  onValuesChange: (allValues: {
-    resultType: ResultType;
-    [key: string]: ResultType | ActiveFacets | [];
-  }) => void;
+  onSetFilenameVars: (filenameVar: string) => void;
+  onSetFacets: (resultType: ResultType, activeFacets: ActiveFacets) => void;
 };
 
 /**
@@ -49,9 +55,16 @@ const FacetsForm: React.FC<Props> = ({
   activeSearchQuery,
   availableFacets,
   nodeStatus,
-  onValuesChange,
+  onSetFilenameVars,
+  onSetFacets,
 }) => {
   const [availableFacetsForm] = Form.useForm();
+  const [filenameVarForm] = Form.useForm();
+  const [filenameVars, setFilenameVar] = React.useState('');
+
+  const facetsByGroup = activeSearchQuery.project.facetsByGroup as {
+    [key: string]: string[];
+  };
 
   /**
    * Need to reset the project facet form's fields whenever the active and default
@@ -61,11 +74,81 @@ const FacetsForm: React.FC<Props> = ({
     availableFacetsForm.resetFields();
   }, [availableFacetsForm, activeSearchQuery]);
 
-  const facetsByGroup = activeSearchQuery.project.facetsByGroup as {
-    [key: string]: string[];
+  const handleOnFinishFilenameVarForm = (values: {
+    [key: string]: string;
+  }): void => {
+    onSetFilenameVars(values.filenameVar);
+
+    setFilenameVar('');
+    filenameVarForm.setFieldsValue({ filenameVar: '' });
   };
+
+  const handleOnChangeFacetsForm = (selectedFacets: {
+    resultType: ResultType;
+    [key: string]: ResultType | ActiveFacets | [];
+  }): void => {
+    const { resultType: newResultType, ...newActiveFacets } = selectedFacets;
+
+    // The form keeps a history of all selected facets, including when
+    // facet keys change from > 0 elements to 0 elements (none selected) in the
+    // array. To avoid including facet keys with 0 elements, iterate through the
+    // object and delete them.
+    Object.keys(newActiveFacets).forEach((key) => {
+      if (
+        newActiveFacets[key] === undefined ||
+        newActiveFacets[key].length === 0
+      ) {
+        delete newActiveFacets[key];
+      }
+    });
+    onSetFacets(newResultType, newActiveFacets as ActiveFacets);
+  };
+
   return (
     <div data-testid="facets-form">
+      <Form
+        form={filenameVarForm}
+        layout="inline"
+        onFinish={handleOnFinishFilenameVarForm}
+        style={styles.filenameVarForm}
+      >
+        {/* Use a seperate label instead of the Form.Item 'label' argument so that it floats above the input and button, rather than being inline */}
+        {/* eslint-disable-next-line jsx-a11y/label-has-associated-control*/}
+        <label htmlFor="filenameVar">
+          Filename Variable{' '}
+          <ToolTip
+            title={
+              <p>
+                Use variables to filter a dataset&apos;s files under the{' '}
+                <RightCircleOutlined></RightCircleOutlined> icon. For multiple
+                variables, add them individually or as a single comma-separated
+                input (e.g. cct, cl).
+              </p>
+            }
+          >
+            <QuestionCircleOutlined style={{ color: 'rgba(0, 0, 0, 0.45)' }} />
+          </ToolTip>
+        </label>
+
+        <Form.Item
+          name="filenameVar"
+          rules={[{ required: true, message: 'Variable is required' }]}
+          style={{ width: '256px' }}
+        >
+          <Input
+            value={filenameVars}
+            onChange={(e) => setFilenameVar(e.target.value)}
+          />
+        </Form.Item>
+        <Form.Item>
+          <Button
+            type="primary"
+            htmlType="submit"
+            icon={<SearchOutlined />}
+          ></Button>
+        </Form.Item>
+      </Form>
+
       <Form
         form={availableFacetsForm}
         layout="vertical"
@@ -74,7 +157,7 @@ const FacetsForm: React.FC<Props> = ({
           resultType: activeSearchQuery.resultType,
         }}
         onValuesChange={(_changedValues, allValues) => {
-          onValuesChange(allValues);
+          handleOnChangeFacetsForm(allValues);
         }}
       >
         <Form.Item
