@@ -17,6 +17,7 @@ export type ResultType = 'all' | 'originals only' | 'replicas only';
 export type ActiveSearchQuery = {
   project: RawProject | Record<string, unknown>;
   resultType: ResultType;
+  filenameVars: TextInputs | [];
   activeFacets: ActiveFacets | Record<string, unknown>;
   textInputs: TextInputs | [];
 };

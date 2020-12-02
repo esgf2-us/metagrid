@@ -1,8 +1,13 @@
 import { fireEvent, render, waitFor, within } from '@testing-library/react';
 import React from 'react';
+import {
+  ESGFSearchAPIFixture,
+  rawSearchResultFixture,
+} from '../../api/mock/fixtures';
 import { rest, server } from '../../api/mock/setup-env';
 import apiRoutes from '../../api/routes';
 import FilesTable, { DownloadUrls, genDownloadUrls, Props } from './FilesTable';
+import { RawSearchResult } from './types';
 
 // Reset all mocks after each test
 afterEach(() => {
@@ -33,6 +38,7 @@ describe('test genDownloadUrls()', () => {
 
 const defaultProps: Props = {
   id: 'id',
+  numResults: 1,
 };
 
 describe('test FilesTable component', () => {
@@ -64,10 +70,9 @@ describe('test FilesTable component', () => {
     const filesTableComponent = await waitFor(() => getByTestId('filesTable'));
     expect(filesTableComponent).toBeTruthy();
 
-    // Select first cell row
     const firstRow = await waitFor(() =>
       getByRole('row', {
-        name: 'foo 1 Bytes HTTPServer download',
+        name: 'right-circle foo 1 Bytes HTTPServer download',
       })
     );
     expect(firstRow).toBeTruthy();
@@ -82,5 +87,106 @@ describe('test FilesTable component', () => {
     fireEvent.submit(downloadBtn);
 
     await waitFor(() => getByTestId('filesTable'));
+  });
+
+  it('handles pagination and page size changes', async () => {
+    // Update api to return 20 search results, which enables pagination if 10/page selected
+    const data = ESGFSearchAPIFixture();
+
+    const docs = new Array(20)
+      .fill(rawSearchResultFixture())
+      .map((obj, index) => ({ ...obj, id: `id_${index}` } as RawSearchResult));
+    const numFound = docs.length;
+    const response = {
+      ...data,
+      response: {
+        docs,
+        numFound,
+      },
+    };
+    server.use(
+      rest.get(apiRoutes.esgfSearch, (_req, res, ctx) => {
+        return res(ctx.status(200), ctx.json(response));
+      })
+    );
+
+    const { getByRole, getByTestId, getByText } = render(
+      <FilesTable {...defaultProps} numResults={numFound} />
+    );
+
+    // Check component renders
+    const component = await waitFor(() => getByTestId('filesTable'));
+    expect(component).toBeTruthy();
+
+    // Wait for component to re-render
+    await waitFor(() => getByTestId('filesTable'));
+
+    // Select the combobox drop down and update its value to render options
+    const paginationList = await waitFor(() => getByRole('list'));
+    expect(paginationList).toBeTruthy();
+
+    // Select the combobox drop down, update its value, then click it
+    const pageSizeComboBox = await waitFor(() =>
+      within(paginationList).getByRole('combobox')
+    );
+    expect(pageSizeComboBox).toBeTruthy();
+    fireEvent.change(pageSizeComboBox, { target: { value: 'foo' } });
+    fireEvent.click(pageSizeComboBox);
+
+    // Wait for the options to render, then select 20 / page
+    const secondOption = await waitFor(() => getByText('20 / page'));
+    fireEvent.click(secondOption);
+
+    // Change back to 10 / page
+    const firstOption = await waitFor(() => getByText('10 / page'));
+    fireEvent.click(firstOption);
+
+    // Select the 'Next Page' button (only enabled if there are > 10 results)
+    const nextPage = await waitFor(() =>
+      getByRole('listitem', { name: 'Next Page' })
+    );
+    fireEvent.click(nextPage);
+
+    // Wait for component to re-render
+    await waitFor(() => getByTestId('filesTable'));
+  });
+
+  it('handles clicking the expandable icon', async () => {
+    const { getByRole, getByTestId } = render(<FilesTable {...defaultProps} />);
+
+    // Check component renders
+    const component = await waitFor(() => getByTestId('filesTable'));
+    expect(component).toBeTruthy();
+
+    // Wait for component to re-render
+    await waitFor(() => getByTestId('filesTable'));
+
+    // Check a record row exist
+    const row = getByRole('row', {
+      name: 'right-circle foo 1 Bytes HTTPServer download',
+    });
+    expect(row).toBeTruthy();
+
+    // Get the expandable cell
+    const expandableCell = within(row).getByRole('cell', {
+      name: 'right-circle',
+    });
+    expect(expandableCell).toBeTruthy();
+
+    // Get the right circle icon within the cell and click to expand the row
+    const expandableIcon = within(expandableCell).getByRole('img', {
+      name: 'right-circle',
+    });
+    expect(expandableIcon).toBeTruthy();
+    fireEvent.click(expandableIcon);
+
+    // Get the down circle icon within the cell and click to close the expandable row
+    const expandableDownIcon = within(expandableCell).getByRole('img', {
+      name: 'down-circle',
+    });
+    expect(expandableDownIcon).toBeTruthy();
+    fireEvent.click(expandableDownIcon);
+
+    await waitFor(() => row);
   });
 });

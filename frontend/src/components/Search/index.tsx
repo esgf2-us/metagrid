@@ -120,7 +120,7 @@ export type Props = {
   activeSearchQuery: ActiveSearchQuery;
   userCart: UserCart | [];
   nodeStatus?: NodeStatusArray;
-  onRemoveFilter: (removedTag: TagType, type: string) => void;
+  onRemoveFilter: (removedTag: Tag, type: TagType) => void;
   onClearFilters: () => void;
   onUpdateCart: (
     selectedItems: RawSearchResults,
@@ -140,7 +140,13 @@ const Search: React.FC<Props> = ({
   onUpdateAvailableFacets,
   onSaveSearchQuery,
 }) => {
-  const { project, resultType, activeFacets, textInputs } = activeSearchQuery;
+  const {
+    project,
+    resultType,
+    filenameVars,
+    activeFacets,
+    textInputs,
+  } = activeSearchQuery;
 
   const { data: results, error, isLoading, run } = useAsync({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -339,6 +345,20 @@ const Search: React.FC<Props> = ({
                 </div>
               );
             })}
+          {filenameVars.length !== 0 &&
+            (filenameVars as TextInputs).map((input: string) => {
+              return (
+                <div key={input} data-testid={input}>
+                  <Tag
+                    value={input}
+                    onClose={onRemoveFilter}
+                    type="filenameVar"
+                  >
+                    Filename Variable: {input}
+                  </Tag>
+                </div>
+              );
+            })}
           {filtersExist && (
             <Tag
               value="clearAll"
@@ -362,6 +382,7 @@ const Search: React.FC<Props> = ({
                 totalResults={numFound}
                 userCart={userCart}
                 nodeStatus={nodeStatus}
+                filenameVars={activeSearchQuery.filenameVars}
                 onUpdateCart={onUpdateCart}
                 onRowSelect={handleRowSelect}
                 onPageChange={handlePageChange}
