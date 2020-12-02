@@ -28,7 +28,7 @@ import { gaTrackingID, hjid, hjsv } from '../../env';
 import Cart from '../Cart';
 import Summary from '../Cart/Summary';
 import { UserCart, UserSearchQueries, UserSearchQuery } from '../Cart/types';
-import { TagType } from '../DataDisplay/Tag';
+import { Tag, TagType } from '../DataDisplay/Tag';
 import Facets from '../Facets';
 import { ActiveFacets, ParsedFacets, RawProject } from '../Facets/types';
 import NavBar from '../NavBar';
@@ -97,13 +97,18 @@ const App: React.FC = () => {
     run: runFetchNodeStatus,
     isLoading: nodeStatusisLoading,
   } = useAsync({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     deferFn: fetchNodeStatus,
   });
 
   const [activeSearchQuery, setActiveSearchQuery] = React.useState<
     ActiveSearchQuery
-  >({ project: {}, resultType: 'all', activeFacets: {}, textInputs: [] });
+  >({
+    project: {},
+    resultType: 'all',
+    filenameVars: [],
+    activeFacets: {},
+    textInputs: [],
+  });
 
   const [availableFacets, setAvailableFacets] = React.useState<
     ParsedFacets | Record<string, unknown>
@@ -183,6 +188,17 @@ const App: React.FC = () => {
     }
   };
 
+  const handleOnSetFilenameVars = (filenameVar: string): void => {
+    if (activeSearchQuery.filenameVars.includes(filenameVar as never)) {
+      void message.error(`Input "${filenameVar}" has already been applied`);
+    } else {
+      setActiveSearchQuery({
+        ...activeSearchQuery,
+        filenameVars: [...activeSearchQuery.filenameVars, filenameVar],
+      });
+    }
+  };
+
   const handleOnSetFacets = (
     resultType: ResultType,
     activeFacets: ActiveFacets
@@ -197,9 +213,10 @@ const App: React.FC = () => {
   const handleClearFilters = (): void => {
     setActiveSearchQuery({
       project: activeSearchQuery.project,
+      resultType: 'all',
+      filenameVars: [],
       activeFacets: {},
       textInputs: [],
-      resultType: 'all',
     });
   };
 
@@ -220,12 +237,19 @@ const App: React.FC = () => {
     );
   };
 
-  const handleRemoveFilter = (removedTag: TagType, type: string): void => {
+  const handleRemoveFilter = (removedTag: Tag, type: TagType): void => {
     /* istanbul ignore else */
     if (type === 'text') {
       setActiveSearchQuery({
         ...activeSearchQuery,
         textInputs: activeSearchQuery.textInputs.filter(
+          (input) => input !== removedTag
+        ),
+      });
+    } else if (type === 'filenameVar') {
+      setActiveSearchQuery({
+        ...activeSearchQuery,
+        filenameVars: activeSearchQuery.filenameVars.filter(
           (input) => input !== removedTag
         ),
       });
@@ -309,6 +333,7 @@ const App: React.FC = () => {
       project: activeSearchQuery.project as RawProject,
       projectId: activeSearchQuery.project.pk as string,
       resultType: activeSearchQuery.resultType,
+      filenameVars: activeSearchQuery.filenameVars,
       activeFacets: activeSearchQuery.activeFacets,
       textInputs: activeSearchQuery.textInputs,
       url,
@@ -370,9 +395,10 @@ const App: React.FC = () => {
   const handleRunSearchQuery = (savedSearch: UserSearchQuery): void => {
     setActiveSearchQuery({
       project: savedSearch.project,
+      resultType: 'all',
+      filenameVars: savedSearch.filenameVars,
       activeFacets: savedSearch.activeFacets,
       textInputs: savedSearch.textInputs,
-      resultType: 'all',
     });
   };
 
@@ -407,6 +433,7 @@ const App: React.FC = () => {
                     availableFacets={availableFacets}
                     nodeStatus={nodeStatus}
                     onProjectChange={handleProjectChange}
+                    onSetFilenameVars={handleOnSetFilenameVars}
                     onSetFacets={handleOnSetFacets}
                   />
                 </Layout.Sider>

@@ -16,6 +16,7 @@ export type RawUserSearchQuery = {
   };
   project_id: number;
   result_type: ResultType;
+  filename_vars: TextInputs | [];
   active_facets: ActiveFacets;
   text_inputs: TextInputs;
 };
@@ -27,6 +28,7 @@ export type UserSearchQuery = {
   project: RawProject;
   projectId: string;
   resultType: ResultType;
+  filenameVars: TextInputs | [];
   activeFacets: ActiveFacets | Record<string, unknown>;
   textInputs: TextInputs | [];
   url: string;

@@ -32,6 +32,7 @@ class SearchFactory(factory.django.DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
     project = factory.SubFactory(ProjectFactory)
     result_type = "all"
+    filename_vars = factory.List(["input1"])
     active_facets = factory.Dict(
         {"facet": ["option"]}, dict_factory=JSONFactory
     )

@@ -41,6 +41,13 @@ class Search(models.Model):
     result_type = models.CharField(
         max_length=255, default=ALL, choices=RESULT_TYPE_CHOICES
     )
+    filename_vars = ArrayField(
+        models.CharField(max_length=255, blank=True),
+        blank=True,
+        null=True,
+        default=list,
+        size=1,
+    )
     active_facets = JSONBField(default=dict)
     text_inputs = ArrayField(
         models.CharField(max_length=255, blank=True),

@@ -1,12 +1,24 @@
-import { DownloadOutlined } from '@ant-design/icons';
+import {
+  DownCircleOutlined,
+  DownloadOutlined,
+  RightCircleOutlined,
+} from '@ant-design/icons';
 import { Form, Select, Table as TableD } from 'antd';
+import { SizeType } from 'antd/lib/config-provider/SizeContext';
+import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
-import { PromiseFn, useAsync } from 'react-async';
+import { DeferFn, useAsync } from 'react-async';
 import { fetchDatasetFiles, openDownloadURL } from '../../api';
 import { formatBytes, splitURLByChar } from '../../common/utils';
+import ToolTip from '../DataDisplay/ToolTip';
 import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
-import { RawSearchResults } from './types';
+import {
+  Pagination,
+  RawSearchResult,
+  RawSearchResults,
+  TextInputs,
+} from './types';
 
 export type DownloadUrls = {
   downloadType: string | undefined;
@@ -31,17 +43,55 @@ export const genDownloadUrls = (urls: string[]): DownloadUrls => {
 };
 export type Props = {
   id: string;
+  numResults: number;
+  filenameVars?: TextInputs | [];
 };
 
-const FilesTable: React.FC<Props> = ({ id }) => {
-  // Allowed download types
-  const downloadOptions = ['HTTPServer', 'OPeNDAP', 'Globus'];
+const FilesTable: React.FC<Props> = ({ id, numResults, filenameVars }) => {
+  // Add options to this constant as needed.
+  type FileDownloadTypes = 'HTTPServer' | 'OpeNDAP' | 'Globus';
+  // This variable populates the download drop downs and is used in conditionals.
+  // TODO: Add 'Globus' during Globus integration process.
+  const allowedDownloadTypes: FileDownloadTypes[] = ['HTTPServer', 'OpeNDAP'];
+  const metadataKeysToDisplay = [
+    'cf_standard_name',
+    'checksum_type',
+    'dataset_id',
+    'id',
+    'instance_id',
+    'master_id',
+    'timestamp',
+    'variable',
+    'variable_id',
+    'variable_long_name',
+    'variable_units',
+    'version',
+  ];
 
-  const { data, error, isLoading } = useAsync({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    promiseFn: (fetchDatasetFiles as unknown) as PromiseFn<Record<string, any>>,
-    id,
+  const [paginationOptions, setPaginationOptions] = React.useState<Pagination>({
+    page: 1,
+    pageSize: 10,
   });
+
+  const { data, error, isLoading, run: runFetchDatasetFiles } = useAsync({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    deferFn: (fetchDatasetFiles as unknown) as DeferFn<Record<string, any>>,
+    id,
+    paginationOptions,
+    filenameVars,
+  });
+
+  React.useEffect(() => {
+    runFetchDatasetFiles();
+  }, [runFetchDatasetFiles, id, paginationOptions, filenameVars]);
+
+  const handlePageChange = (page: number, pageSize: number): void => {
+    setPaginationOptions({ page, pageSize });
+  };
+
+  const handlePageSizeChange = (pageSize: number): void => {
+    setPaginationOptions({ page: 1, pageSize });
+  };
 
   if (error) {
     return (
@@ -61,17 +111,63 @@ const FilesTable: React.FC<Props> = ({ id }) => {
     }).response.docs;
   }
 
+  const tableConfig = {
+    dataSource: docs,
+    size: 'small' as SizeType,
+    loading: isLoading,
+    rowKey: 'id',
+    scroll: { y: 1000 },
+    pagination: {
+      total: numResults,
+      position: ['bottomCenter'],
+      showSizeChanger: true,
+      onChange: (page: number, pageSize: number) =>
+        handlePageChange(page, pageSize),
+      onShowSizeChange: (_current: number, size: number) =>
+        handlePageSizeChange(size),
+    } as TablePaginationConfig,
+    expandable: {
+      expandedRowRender: (record: RawSearchResult) => {
+        return Object.keys(record).map((key) => {
+          if (metadataKeysToDisplay.includes(key)) {
+            return (
+              <p key={key} style={{ margin: 0 }}>
+                <span style={{ fontWeight: 'bold' }}>{key}</span>: {record[key]}
+              </p>
+            );
+          }
+          return null;
+        });
+      },
+
+      expandIcon: ({
+        expanded,
+        onExpand,
+        record,
+      }: {
+        expanded: boolean;
+        onExpand: (
+          rowRecord: RawSearchResult,
+          e: React.MouseEvent<HTMLSpanElement, MouseEvent>
+        ) => void;
+        record: RawSearchResult;
+      }): React.ReactElement =>
+        expanded ? (
+          <DownCircleOutlined onClick={(e) => onExpand(record, e)} />
+        ) : (
+          <ToolTip title="View this file's metadata" trigger="hover">
+            <RightCircleOutlined onClick={(e) => onExpand(record, e)} />
+          </ToolTip>
+        ),
+    },
+  };
+
   const columns = [
     {
       title: 'File Title',
       dataIndex: 'title',
       size: 400,
       key: 'title',
-    },
-    {
-      title: 'Checksum',
-      dataIndex: 'checksum',
-      key: 'checksum',
     },
     {
       title: 'Size',
@@ -100,8 +196,8 @@ const FilesTable: React.FC<Props> = ({ id }) => {
                 <Select style={{ width: 120 }}>
                   {downloadUrls.map(
                     (option) =>
-                      downloadOptions.includes(
-                        option.downloadType as string
+                      allowedDownloadTypes.includes(
+                        option.downloadType as FileDownloadTypes
                       ) && (
                         <Select.Option
                           key={option.downloadType}
@@ -125,20 +221,14 @@ const FilesTable: React.FC<Props> = ({ id }) => {
         );
       },
     },
+    {
+      title: 'Checksum',
+      dataIndex: 'checksum',
+      key: 'checksum',
+    },
   ];
 
-  return (
-    <TableD
-      data-testid="filesTable"
-      size="small"
-      loading={isLoading}
-      pagination={{ position: ['bottomCenter'], showSizeChanger: true }}
-      columns={columns}
-      dataSource={docs}
-      rowKey="id"
-      scroll={{ y: 300 }}
-    />
-  );
+  return <TableD data-testid="filesTable" {...tableConfig} columns={columns} />;
 };
 
 export default FilesTable;

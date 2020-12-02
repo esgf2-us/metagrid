@@ -45,6 +45,7 @@ const SearchesCard: React.FC<Props> = ({
     uuid,
     project,
     resultType,
+    filenameVars,
     textInputs,
     activeFacets,
     url,
@@ -117,6 +118,7 @@ const SearchesCard: React.FC<Props> = ({
           </ToolTip>,
           <ToolTip title="Remove search query from library">
             <DeleteOutlined
+              data-testid={`remove-${index + 1}`}
               onClick={() => onRemoveSearchQuery(uuid)}
               style={{ color: 'red' }}
               key="remove"
@@ -134,6 +136,12 @@ const SearchesCard: React.FC<Props> = ({
           <span style={styles.category}>Query String: </span>
           <Typography.Text code>
             {stringifyFilters(resultType, activeFacets, textInputs)}
+          </Typography.Text>
+        </p>
+        <p>
+          <span style={styles.category}>Filename Variables: </span>
+          <Typography.Text code>
+            {filenameVars ? filenameVars.join(', ') : 'N/A'}
           </Typography.Text>
         </p>
       </Card>

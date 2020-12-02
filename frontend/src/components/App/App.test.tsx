@@ -48,12 +48,8 @@ it('handles project changes when a new project is selected', async () => {
   );
 
   // Check applicable components render
-  const navComponent = await waitFor(() => getByTestId('nav-bar'));
-  expect(navComponent).toBeTruthy();
   const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
   expect(leftMenuComponent).toBeTruthy();
-  const facetsComponent = await waitFor(() => getByTestId('facets'));
-  expect(facetsComponent).toBeTruthy();
 
   // Change value for free-text input
   const input = 'foo';
@@ -71,8 +67,6 @@ it('handles project changes when a new project is selected', async () => {
 
   // Wait for components to re-render
   await waitFor(() => getByTestId('search'));
-  await waitFor(() => getByTestId('search-table'));
-  await waitFor(() => getByTestId('facets'));
 
   // Change the value for free-text input to 'foo' again and submit
   fireEvent.change(freeTextForm, { target: { value: input } });
@@ -85,18 +79,66 @@ it('handles project changes when a new project is selected', async () => {
   expect(errorMsg).toBeTruthy();
 });
 
-it('handles removing search tags and clearing all search tags', async () => {
+it('handles setting filename variables and duplicates', async () => {
+  const { getByRole, getByTestId } = customRender(<App />);
+  // Check applicable components render
+  const facetsComponent = await waitFor(() => getByTestId('facets'));
+  expect(facetsComponent).toBeTruthy();
+
+  // Wait for project form to render
+  const projectForm = await waitFor(() => getByTestId('project-form'));
+  expect(projectForm).toBeTruthy();
+
+  // Check project select form exists and mouseDown to expand list of options to expand options
+  const projectFormSelect = within(projectForm).getByRole('combobox');
+  expect(projectFormSelect).toBeTruthy();
+  fireEvent.mouseDown(projectFormSelect);
+
+  // Select the second project option
+  const projectOption = getByTestId('project_1');
+  expect(projectOption).toBeTruthy();
+  fireEvent.click(projectOption);
+
+  // Submit the form
+  const submitBtn = within(facetsComponent).getByRole('img', {
+    name: 'select',
+  });
+  fireEvent.submit(submitBtn);
+
+  // Wait for components to re-render
+  await waitFor(() => getByTestId('search'));
+  await waitFor(() => getByTestId('facets'));
+
+  // Change form field values
+  const input = getByRole('textbox', {
+    name: 'Filename Variable question-circle',
+  });
+  fireEvent.change(input, { target: { value: 'var' } });
+
+  // Submit the form
+  const filenameVarsSubmitBtn = within(facetsComponent).getByRole('button', {
+    name: 'search',
+  });
+  fireEvent.submit(filenameVarsSubmitBtn);
+
+  // Wait for components to re-render
+  await waitFor(() => getByTestId('search'));
+
+  fireEvent.change(input, { target: { value: 'var' } });
+  fireEvent.submit(filenameVarsSubmitBtn);
+
+  // Wait for components to re-render
+  await waitFor(() => getByTestId('search'));
+});
+
+it('handles setting and removing text input filters and clearing all search filters', async () => {
   const { getByPlaceholderText, getByTestId, getByText } = customRender(
     <App />
   );
 
   // Check applicable components render
-  const navComponent = await waitFor(() => getByTestId('nav-bar'));
-  expect(navComponent).toBeTruthy();
   const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
-  expect(navComponent).toBeTruthy();
-  const facetsComponent = await waitFor(() => getByTestId('facets'));
-  expect(facetsComponent).toBeTruthy();
+  expect(leftMenuComponent).toBeTruthy();
 
   // Change value for free-text input
   const freeTextInput = await waitFor(() =>
@@ -113,8 +155,6 @@ it('handles removing search tags and clearing all search tags', async () => {
 
   // Wait for components to re-render
   await waitFor(() => getByTestId('search'));
-  await waitFor(() => getByTestId('search-table'));
-  await waitFor(() => getByTestId('facets'));
 
   // Check tag renders
   const tag = await waitFor(() => getByTestId('foo'));
@@ -131,8 +171,6 @@ it('handles removing search tags and clearing all search tags', async () => {
 
   // Wait for components to re-render
   await waitFor(() => getByTestId('search'));
-  await waitFor(() => getByTestId('search-table'));
-  await waitFor(() => getByTestId('facets'));
 
   // Check baz tag exists
   const bazTag = await waitFor(() => getByTestId('baz'));
@@ -143,16 +181,12 @@ it('handles removing search tags and clearing all search tags', async () => {
 
   // Wait for components to re-render
   await waitFor(() => getByTestId('search'));
-  await waitFor(() => getByTestId('search-table'));
-  await waitFor(() => getByTestId('facets'));
 });
 
 it('handles removing facet tags', async () => {
   const { getByTestId, getByText } = customRender(<App />);
 
   // Check applicable components render
-  const navComponent = await waitFor(() => getByTestId('nav-bar'));
-  expect(navComponent).toBeTruthy();
   const facetsComponent = await waitFor(() => getByTestId('facets'));
   expect(facetsComponent).toBeTruthy();
 
@@ -161,9 +195,8 @@ it('handles removing facet tags', async () => {
   expect(projectForm).toBeTruthy();
 
   // Check project select form exists and mouseDown to expand list of options to expand options
-  const projectFormSelect = document.querySelector(
-    '[data-testid=project-form-select] > .ant-select-selector'
-  ) as HTMLFormElement;
+  const projectFormSelect = within(projectForm).getByRole('combobox');
+
   expect(projectFormSelect).toBeTruthy();
   fireEvent.mouseDown(projectFormSelect);
 
@@ -198,8 +231,6 @@ it('handles removing facet tags', async () => {
 
   // Wait for components to re-render
   await waitFor(() => getByTestId('search'));
-  await waitFor(() => getByTestId('search-table'));
-  await waitFor(() => getByTestId('facets'));
 
   // Check tag renders
   const tag = await waitFor(() => getByTestId('aims3.llnl.gov'));
@@ -210,8 +241,6 @@ it('handles removing facet tags', async () => {
 
   // Wait for components to re-render
   await waitFor(() => getByTestId('search'));
-  await waitFor(() => getByTestId('search-table'));
-  await waitFor(() => getByTestId('facets'));
 });
 
 it('handles project changes and clearing filters when the active project !== selected project', async () => {
@@ -220,17 +249,14 @@ it('handles project changes and clearing filters when the active project !== sel
   // Check applicable components render
   const facetsComponent = await waitFor(() => getByTestId('facets'));
   expect(facetsComponent).toBeTruthy();
-  const navComponent = await waitFor(() => getByTestId('nav-bar'));
-  expect(navComponent).toBeTruthy();
 
   // Wait for project form to render
   const projectForm = await waitFor(() => getByTestId('project-form'));
   expect(projectForm).toBeTruthy();
 
   // Check project select form exists and mouseDown to expand list of options
-  const projectFormSelect = document.querySelector(
-    '[data-testid=project-form-select] > .ant-select-selector'
-  ) as HTMLFormElement;
+  const projectFormSelect = within(projectForm).getByRole('combobox');
+
   expect(projectFormSelect).toBeTruthy();
   fireEvent.mouseDown(projectFormSelect);
 
@@ -251,15 +277,11 @@ it('handles project changes and clearing filters when the active project !== sel
   fireEvent.submit(submitBtn);
 
   // Wait for components to re-render
-  await waitFor(() => getByTestId('search'));
-  await waitFor(() => getByTestId('search-table'));
   await waitFor(() => getByTestId('facets'));
 
   // Check project select form exists again and mouseDown to expand list of options
-  const projectFormSelect2 = document.querySelector(
-    '[data-testid=project-form-select] > .ant-select-selector'
-  ) as HTMLFormElement;
-  expect(projectFormSelect).toBeTruthy();
+  const projectFormSelect2 = within(projectForm).getByRole('combobox');
+
   fireEvent.mouseDown(projectFormSelect2);
 
   // Select the first project option
@@ -271,8 +293,6 @@ it('handles project changes and clearing filters when the active project !== sel
   fireEvent.submit(submitBtn);
 
   // Wait for components to re-render
-  await waitFor(() => getByTestId('search'));
-  await waitFor(() => getByTestId('search-table'));
   await waitFor(() => getByTestId('facets'));
 });
 
@@ -296,12 +316,8 @@ describe('User cart', () => {
     } = customRender(<App />, { token: 'token' });
 
     // Check applicable components render
-    const navComponent = await waitFor(() => getByTestId('nav-bar'));
-    expect(navComponent).toBeTruthy();
     const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
     expect(leftMenuComponent).toBeTruthy();
-    const facetsComponent = await waitFor(() => getByTestId('facets'));
-    expect(facetsComponent).toBeTruthy();
 
     // Change value for free-text input
     const input = 'foo';
@@ -319,8 +335,6 @@ describe('User cart', () => {
 
     // Wait for components to re-render
     await waitFor(() => getByTestId('search'));
-    await waitFor(() => getByTestId('search-table'));
-    await waitFor(() => getByTestId('facets'));
 
     // Check first row exists
     const firstRow = await waitFor(() =>
@@ -359,10 +373,6 @@ describe('User cart', () => {
     });
 
     // Check applicable components render
-    const navComponent = await waitFor(() => getByTestId('nav-bar'));
-    expect(navComponent).toBeTruthy();
-    const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
-    expect(leftMenuComponent).toBeTruthy();
     const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
     expect(rightMenuComponent).toBeTruthy();
 
@@ -418,20 +428,13 @@ describe('User cart', () => {
   });
 
   it('handles anonymous user adding and removing items from cart', async () => {
-    const {
-      getByRole,
-      getByTestId,
-      getByText,
-      getByPlaceholderText,
-    } = customRender(<App />);
+    const { getByRole, getByTestId, getByPlaceholderText } = customRender(
+      <App />
+    );
 
     // Check applicable components render
-    const navComponent = await waitFor(() => getByTestId('nav-bar'));
-    expect(navComponent).toBeTruthy();
     const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
     expect(leftMenuComponent).toBeTruthy();
-    const facetsComponent = await waitFor(() => getByTestId('facets'));
-    expect(facetsComponent).toBeTruthy();
 
     // Change value for free-text input
     const input = 'foo';
@@ -449,8 +452,6 @@ describe('User cart', () => {
 
     // Wait for components to re-render
     await waitFor(() => getByTestId('search'));
-    await waitFor(() => getByTestId('search-table'));
-    await waitFor(() => getByTestId('facets'));
 
     // Check first row exists
     const firstRow = await waitFor(() =>
@@ -466,22 +467,10 @@ describe('User cart', () => {
     expect(addBtn).toBeTruthy();
     fireEvent.click(addBtn);
 
-    // Check 'Added items(s) to the cart' message appears
-    const addText = await waitFor(() =>
-      getByText('Added item(s) to your cart')
-    );
-    expect(addText).toBeTruthy();
-
     // Check first row has remove button and click it
     const removeBtn = within(firstRow).getByRole('img', { name: 'minus' });
     expect(removeBtn).toBeTruthy();
     fireEvent.click(removeBtn);
-
-    // Check 'Removed items(s) from the cart' message appears
-    const removeText = await waitFor(() =>
-      getByText('Removed item(s) from your cart')
-    );
-    expect(removeText).toBeTruthy();
   });
 
   it('displays anonymous user"s number of files in the cart summary and handles clearing the cart', async () => {
@@ -493,8 +482,6 @@ describe('User cart', () => {
     } = customRender(<App />);
 
     // Check applicable components render
-    const navComponent = await waitFor(() => getByTestId('nav-bar'));
-    expect(navComponent).toBeTruthy();
     const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
     expect(leftMenuComponent).toBeTruthy();
 
@@ -514,8 +501,6 @@ describe('User cart', () => {
 
     // Wait for components to re-render
     await waitFor(() => getByTestId('search'));
-    await waitFor(() => getByTestId('search-table'));
-    await waitFor(() => getByTestId('facets'));
 
     // Check first row exists
     const firstRow = await waitFor(() =>
@@ -616,8 +601,6 @@ describe('User search library', () => {
     } = customRender(<App />, { token: 'token' });
 
     // Check applicable components render
-    const navComponent = await waitFor(() => getByTestId('nav-bar'));
-    expect(navComponent).toBeTruthy();
     const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
     expect(leftMenuComponent).toBeTruthy();
     const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
@@ -639,8 +622,6 @@ describe('User search library', () => {
 
     // Wait for components to re-render
     await waitFor(() => getByTestId('search'));
-    await waitFor(() => getByTestId('search-table'));
-    await waitFor(() => getByTestId('facets'));
 
     // Check Save Search button exists and click it
     const saveSearch = await waitFor(() =>
@@ -666,12 +647,7 @@ describe('User search library', () => {
     fireEvent.click(applySearchBtn);
 
     // Wait for components to re-render
-    await waitFor(() => getByTestId('facets'));
     await waitFor(() => getByTestId('search'));
-    await waitFor(() => getByTestId('search-table'));
-
-    // Wait for facets component to render again based on the results
-    await waitFor(() => getByTestId('facets'));
   });
   it('handles authenticated user removing searches from the search library', async () => {
     const { getByRole, getByTestId, getByText } = customRender(<App />, {
@@ -719,8 +695,6 @@ describe('User search library', () => {
     );
 
     // Check applicable components render
-    const navComponent = await waitFor(() => getByTestId('nav-bar'));
-    expect(navComponent).toBeTruthy();
     const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
     expect(leftMenuComponent).toBeTruthy();
     const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
@@ -742,8 +716,6 @@ describe('User search library', () => {
 
     // Wait for components to re-render
     await waitFor(() => getByTestId('search'));
-    await waitFor(() => getByTestId('search-table'));
-    await waitFor(() => getByTestId('facets'));
 
     // Check Save Search button exists and click it
     const saveSearch = await waitFor(() =>
@@ -772,23 +744,13 @@ describe('User search library', () => {
 
     // Wait for components to re-render
     await waitFor(() => getByTestId('facets'));
-    await waitFor(() => getByTestId('search'));
-    await waitFor(() => getByTestId('search-table'));
-
-    // Wait for facets component to render again based on the results
-    await waitFor(() => getByTestId('facets'));
   });
   it('handles anonymous user removing searches from the search library', async () => {
-    const {
-      getByPlaceholderText,
-      getByRole,
-      getByTestId,
-      getByText,
-    } = customRender(<App />);
+    const { getByPlaceholderText, getByRole, getByTestId } = customRender(
+      <App />
+    );
 
     // Check applicable components render
-    const navComponent = await waitFor(() => getByTestId('nav-bar'));
-    expect(navComponent).toBeTruthy();
     const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
     expect(leftMenuComponent).toBeTruthy();
     const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
@@ -810,8 +772,6 @@ describe('User search library', () => {
 
     // Wait for components to re-render
     await waitFor(() => getByTestId('search'));
-    await waitFor(() => getByTestId('search-table'));
-    await waitFor(() => getByTestId('facets'));
 
     // Check Save Search button exists and click it
     const saveSearch = await waitFor(() =>
@@ -833,17 +793,12 @@ describe('User search library', () => {
     expect(cart).toBeTruthy();
 
     // Check delete button renders for the saved search and click it
-    const deleteBtn = await waitFor(() =>
-      getByRole('img', { name: 'delete', hidden: true })
-    );
+    const deleteBtn = getByTestId('remove-1');
+
     expect(deleteBtn).toBeTruthy();
     fireEvent.click(deleteBtn);
 
     await waitFor(() => getByTestId('cart'));
-
-    // Check removed message appears
-    const removeText = getByText('Removed search query from your library');
-    expect(removeText).toBeTruthy();
   });
 
   describe('Error handling', () => {
@@ -887,12 +842,8 @@ describe('User search library', () => {
       } = customRender(<App />, { token: 'token' });
 
       // Check applicable components render
-      const navComponent = await waitFor(() => getByTestId('nav-bar'));
-      expect(navComponent).toBeTruthy();
       const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
       expect(leftMenuComponent).toBeTruthy();
-      const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
-      expect(rightMenuComponent).toBeTruthy();
 
       // Change value for free-text input
       const input = 'foo';
@@ -910,8 +861,6 @@ describe('User search library', () => {
 
       // Wait for components to re-render
       await waitFor(() => getByTestId('search'));
-      await waitFor(() => getByTestId('search-table'));
-      await waitFor(() => getByTestId('facets'));
 
       // Check Save Search button exists and click it
       const saveSearch = await waitFor(() =>
@@ -940,10 +889,6 @@ describe('User search library', () => {
       });
 
       // Check applicable components render
-      const navComponent = await waitFor(() => getByTestId('nav-bar'));
-      expect(navComponent).toBeTruthy();
-      const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
-      expect(leftMenuComponent).toBeTruthy();
       const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
       expect(rightMenuComponent).toBeTruthy();
 
