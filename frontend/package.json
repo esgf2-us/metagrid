@@ -72,7 +72,7 @@
     "eslint-plugin-react": "7.20.3",
     "eslint-plugin-react-hooks": "4.1.0",
     "jest-environment-jsdom-sixteen": "1.0.3",
-    "msw": "0.24.0",
+    "msw": "0.21.3",
     "prettier": "2.2.1"
   },
   "jest": {
