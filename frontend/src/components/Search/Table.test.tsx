@@ -34,7 +34,7 @@ it('renders component without results', () => {
 });
 
 it('renders record metadata in an expandable panel', async () => {
-  const { getByRole, getByText, debug } = render(<Table {...defaultProps} />);
+  const { getByRole, getByText } = render(<Table {...defaultProps} />);
 
   // Check table exists
   const table = getByRole('table');
@@ -70,8 +70,6 @@ it('renders record metadata in an expandable panel', async () => {
   const panel = within(expandableRow).getByText('Metadata');
   expect(panel).toBeTruthy();
   fireEvent.click(panel);
-
-  debug();
 
   // Check metadata panel contains metadata
   const id = getByText((_, node) => node.textContent === 'id: foo');
