@@ -197,6 +197,7 @@ const FacetsForm: React.FC<Props> = ({
                           facetOptions[0].includes('none');
                         return (
                           <Collapse.Panel
+                            collapsible="header"
                             header={humanizeFacetNames(facet)}
                             key={facet}
                           >
