@@ -85,9 +85,7 @@ const RightMenu: React.FC<Props> = ({
             <Button
               type="text"
               icon={<UserOutlined style={{ fontSize: '18px' }} />}
-              // TODO: Re-enable after Keycloak integration
-              // onClick={() => keycloak.login()}
-              disabled
+              onClick={() => keycloak.login()}
             >
               Sign In
             </Button>

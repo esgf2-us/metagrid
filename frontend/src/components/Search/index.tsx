@@ -34,6 +34,7 @@ import {
   RawSearchResults,
   ResultType,
   TextInputs,
+  VersionDate,
 } from './types';
 
 const styles: CSSinJS = {
@@ -78,6 +79,8 @@ export const parseFacets = (facets: RawFacets): ParsedFacets => {
  */
 export const stringifyFilters = (
   resultType: ResultType,
+  minVersionDate: VersionDate,
+  maxVersionDate: VersionDate,
   activeFacets: ActiveFacets | Record<string, unknown>,
   textInputs: TextInputs | []
 ): string => {
@@ -86,6 +89,14 @@ export const stringifyFilters = (
   const replicaParam = convertResultTypeToReplicaParam(resultType, true);
   if (replicaParam) {
     filtersArr.push(replicaParam);
+  }
+
+  if (minVersionDate) {
+    filtersArr.push(`min_version = ${minVersionDate}`);
+  }
+
+  if (maxVersionDate) {
+    filtersArr.push(`max_version = ${maxVersionDate}`);
   }
 
   if (textInputs.length > 0) {
@@ -143,6 +154,8 @@ const Search: React.FC<Props> = ({
   const {
     project,
     resultType,
+    minVersionDate,
+    maxVersionDate,
     filenameVars,
     activeFacets,
     textInputs,
@@ -308,7 +321,13 @@ const Search: React.FC<Props> = ({
             <p>
               <span style={styles.subtitles}>Query String: </span>
               <Typography.Text code>
-                {stringifyFilters(resultType, activeFacets, textInputs)}
+                {stringifyFilters(
+                  resultType,
+                  minVersionDate,
+                  maxVersionDate,
+                  activeFacets,
+                  textInputs
+                )}
               </Typography.Text>
             </p>
           </>

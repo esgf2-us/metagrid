@@ -31,6 +31,8 @@ class SearchFactory(factory.django.DjangoModelFactory):
 
     user = factory.SubFactory(UserFactory)
     project = factory.SubFactory(ProjectFactory)
+    min_version_date = None
+    max_version_date = None
     result_type = "all"
     filename_vars = factory.List(["input1"])
     active_facets = factory.Dict(

@@ -89,7 +89,7 @@ describe('test FilesTable component', () => {
     await waitFor(() => getByTestId('filesTable'));
   });
 
-  it('handles pagination and page size changes', async () => {
+  it('`handles pagination and page size changes', async () => {
     // Update api to return 20 search results, which enables pagination if 10/page selected
     const data = ESGFSearchAPIFixture();
 
@@ -162,9 +162,11 @@ describe('test FilesTable component', () => {
     await waitFor(() => getByTestId('filesTable'));
 
     // Check a record row exist
-    const row = getByRole('row', {
-      name: 'right-circle foo 1 Bytes HTTPServer download',
-    });
+    const row = await waitFor(() =>
+      getByRole('row', {
+        name: 'right-circle foo 1 Bytes HTTPServer download',
+      })
+    );
     expect(row).toBeTruthy();
 
     // Get the expandable cell

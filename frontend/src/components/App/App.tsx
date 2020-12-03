@@ -22,7 +22,6 @@ import {
   updateUserCart,
 } from '../../api';
 import { CSSinJS } from '../../common/types';
-import { objectIsEmpty } from '../../common/utils';
 import { AuthContext } from '../../contexts/AuthContext';
 import { gaTrackingID, hjid, hjsv } from '../../env';
 import Cart from '../Cart';
@@ -40,6 +39,7 @@ import {
   RawSearchResult,
   RawSearchResults,
   ResultType,
+  VersionDate,
 } from '../Search/types';
 import Support from '../Support';
 import './App.css';
@@ -100,15 +100,24 @@ const App: React.FC = () => {
     deferFn: fetchNodeStatus,
   });
 
-  const [activeSearchQuery, setActiveSearchQuery] = React.useState<
-    ActiveSearchQuery
-  >({
-    project: {},
-    resultType: 'all',
-    filenameVars: [],
-    activeFacets: {},
-    textInputs: [],
-  });
+  const projectBaseQuery = (
+    project: Record<string, unknown> | RawProject
+  ): ActiveSearchQuery => {
+    return {
+      project,
+      resultType: 'all',
+      minVersionDate: null,
+      maxVersionDate: null,
+      filenameVars: [],
+      activeFacets: {},
+      textInputs: [],
+    };
+  };
+
+  const [
+    activeSearchQuery,
+    setActiveSearchQuery,
+  ] = React.useState<ActiveSearchQuery>(projectBaseQuery({}));
 
   const [availableFacets, setAvailableFacets] = React.useState<
     ParsedFacets | Record<string, unknown>
@@ -201,36 +210,25 @@ const App: React.FC = () => {
 
   const handleOnSetFacets = (
     resultType: ResultType,
+    minVersionDate: VersionDate,
+    maxVersionDate: VersionDate,
     activeFacets: ActiveFacets
   ): void => {
     setActiveSearchQuery({
       ...activeSearchQuery,
       resultType,
+      minVersionDate,
+      maxVersionDate,
       activeFacets,
     });
   };
 
   const handleClearFilters = (): void => {
-    setActiveSearchQuery({
-      project: activeSearchQuery.project,
-      resultType: 'all',
-      filenameVars: [],
-      activeFacets: {},
-      textInputs: [],
-    });
+    setActiveSearchQuery(projectBaseQuery(activeSearchQuery.project));
   };
 
   const handleProjectChange = (selectedProject: RawProject): void => {
-    if (
-      !objectIsEmpty(activeSearchQuery.project) &&
-      activeSearchQuery.project !== selectedProject
-    ) {
-      handleClearFilters();
-    }
-    setActiveSearchQuery({
-      ...activeSearchQuery,
-      project: selectedProject,
-    });
+    setActiveSearchQuery(projectBaseQuery(selectedProject));
     void message.loading(
       'Project selected. Please wait for results and facets to load...',
       2
@@ -333,6 +331,8 @@ const App: React.FC = () => {
       project: activeSearchQuery.project as RawProject,
       projectId: activeSearchQuery.project.pk as string,
       resultType: activeSearchQuery.resultType,
+      minVersionDate: activeSearchQuery.minVersionDate,
+      maxVersionDate: activeSearchQuery.maxVersionDate,
       filenameVars: activeSearchQuery.filenameVars,
       activeFacets: activeSearchQuery.activeFacets,
       textInputs: activeSearchQuery.textInputs,
@@ -396,6 +396,8 @@ const App: React.FC = () => {
     setActiveSearchQuery({
       project: savedSearch.project,
       resultType: 'all',
+      minVersionDate: savedSearch.minVersionDate,
+      maxVersionDate: savedSearch.maxVersionDate,
       filenameVars: savedSearch.filenameVars,
       activeFacets: savedSearch.activeFacets,
       textInputs: savedSearch.textInputs,

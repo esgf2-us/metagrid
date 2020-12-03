@@ -86,7 +86,11 @@ const Table: React.FC<Props> = ({
           <>
             <Collapse>
               {objectHasKey(record, 'citation_url') && (
-                <Collapse.Panel header="Citation" key="citation">
+                <Collapse.Panel
+                  collapsible="header"
+                  header="Citation"
+                  key="citation"
+                >
                   <Citation
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     url={record.citation_url![0]}
@@ -95,6 +99,7 @@ const Table: React.FC<Props> = ({
               )}
 
               <Collapse.Panel
+                collapsible="header"
                 className="metadata"
                 header="Metadata"
                 key="metadata"
@@ -120,7 +125,7 @@ const Table: React.FC<Props> = ({
                   );
                 })}
               </Collapse.Panel>
-              <Collapse.Panel header="Files" key="files">
+              <Collapse.Panel collapsible="header" header="Files" key="files">
                 <FilesTable
                   id={record.id}
                   numResults={record.number_of_files}

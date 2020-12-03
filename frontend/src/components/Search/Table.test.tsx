@@ -67,9 +67,7 @@ it('renders record metadata in an expandable panel', async () => {
   expect(expandableRow).toBeTruthy();
 
   // Get the meta data panel and click on it
-  const panel = within(expandableRow).getByRole('button', {
-    name: 'right Metadata',
-  });
+  const panel = within(expandableRow).getByText('Metadata');
   expect(panel).toBeTruthy();
   fireEvent.click(panel);
 
