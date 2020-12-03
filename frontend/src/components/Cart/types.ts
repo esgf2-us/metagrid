@@ -1,5 +1,10 @@
 import { ActiveFacets, RawProject } from '../Facets/types';
-import { RawSearchResults, ResultType, TextInputs } from '../Search/types';
+import {
+  RawSearchResults,
+  ResultType,
+  TextInputs,
+  VersionDate,
+} from '../Search/types';
 
 export type UserCart = RawSearchResults;
 export type RawUserCart = {
@@ -16,6 +21,8 @@ export type RawUserSearchQuery = {
   };
   project_id: number;
   result_type: ResultType;
+  min_version_date: VersionDate;
+  max_version_date: VersionDate;
   filename_vars: TextInputs | [];
   active_facets: ActiveFacets;
   text_inputs: TextInputs;
@@ -24,10 +31,12 @@ export type RawUserSearchQuery = {
 // camelCase version of the raw API results
 export type UserSearchQuery = {
   uuid: string;
-  user: string | null;
+  user: VersionDate;
   project: RawProject;
   projectId: string;
   resultType: ResultType;
+  minVersionDate: VersionDate;
+  maxVersionDate: VersionDate;
   filenameVars: TextInputs | [];
   activeFacets: ActiveFacets | Record<string, unknown>;
   textInputs: TextInputs | [];

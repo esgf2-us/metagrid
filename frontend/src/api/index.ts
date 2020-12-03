@@ -257,7 +257,7 @@ export const updatePaginationParams = (
     .replace('limit=0', `limit=${pagination.pageSize}`)
     .replace('offset=0', `offset=${paginationOffset}`);
 
-  return baseParams;
+  return `${baseParams}&`;
 };
 
 /**
@@ -269,19 +269,42 @@ export const generateSearchURLQuery = (
   activeSearchQuery: ActiveSearchQuery | UserSearchQuery,
   pagination: { page: number; pageSize: number }
 ): string => {
-  const { project, resultType, activeFacets, textInputs } = activeSearchQuery;
-
-  let route = `${apiRoutes.esgfSearch}?`;
-
+  const {
+    project,
+    resultType,
+    minVersionDate,
+    maxVersionDate,
+    activeFacets,
+    textInputs,
+  } = activeSearchQuery;
+  const baseRoute = `${apiRoutes.esgfSearch}?`;
   const replicaParam = convertResultTypeToReplicaParam(resultType);
-  if (replicaParam) {
-    route += `${replicaParam}&`;
-  }
 
-  const baseParams = updatePaginationParams(
+  // The base params include facet fields to return for each dataset and the pagination options
+  let baseParams = updatePaginationParams(
     project.facetsUrl as string,
     pagination
   );
+
+  if (replicaParam) {
+    baseParams += `${replicaParam}&`;
+  }
+  if (minVersionDate) {
+    baseParams += `min_version=${minVersionDate}&`;
+  }
+  if (maxVersionDate) {
+    baseParams += `max_version=${maxVersionDate}&`;
+  }
+
+  let textInputsParams = 'query=*';
+  if (textInputs.length > 0) {
+    textInputsParams = queryString.stringify(
+      { query: textInputs },
+      {
+        arrayFormat: 'comma',
+      }
+    );
+  }
 
   const activeFacetsParams = queryString.stringify(
     humps.decamelizeKeys(activeFacets) as ActiveFacets,
@@ -290,17 +313,7 @@ export const generateSearchURLQuery = (
     }
   );
 
-  let textInputParam = 'query=*';
-  if (textInputs.length > 0) {
-    textInputParam = queryString.stringify(
-      { query: textInputs },
-      {
-        arrayFormat: 'comma',
-      }
-    );
-  }
-
-  return `${route}${baseParams}&${textInputParam}&${activeFacetsParams}`;
+  return `${baseRoute}${baseParams}${textInputsParams}&${activeFacetsParams}`;
 };
 
 /**

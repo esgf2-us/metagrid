@@ -69,7 +69,7 @@ describe('test generateURLSearchQuery', () => {
   it('returns formatted url with offset of 0 on page 1', () => {
     const url = generateSearchURLQuery(activeSearchQuery, pagination);
     expect(url).toEqual(
-      `${apiRoutes.esgfSearch}?offset=0&limit=10&query=foo&baz=option1&foo=option1,option2`
+      `${apiRoutes.esgfSearch}?offset=0&limit=10&min_version=20200101&max_version=20201231&query=foo&baz=option1&foo=option1,option2`
     );
   });
   it('returns formatted url with offset of 200 and limit of 100 on page 3', () => {
@@ -80,7 +80,7 @@ describe('test generateURLSearchQuery', () => {
 
     const url = generateSearchURLQuery(activeSearchQuery, pagination);
     expect(url).toEqual(
-      `${apiRoutes.esgfSearch}?offset=200&limit=100&query=foo&baz=option1&foo=option1,option2`
+      `${apiRoutes.esgfSearch}?offset=200&limit=100&min_version=20200101&max_version=20201231&query=foo&baz=option1&foo=option1,option2`
     );
   });
   it('returns formatted url without free-text', () => {
@@ -89,7 +89,7 @@ describe('test generateURLSearchQuery', () => {
       pagination
     );
     expect(url).toEqual(
-      `${apiRoutes.esgfSearch}?offset=0&limit=10&query=*&baz=option1&foo=option1,option2`
+      `${apiRoutes.esgfSearch}?offset=0&limit=10&min_version=20200101&max_version=20201231&query=*&baz=option1&foo=option1,option2`
     );
   });
   it('returns formatted url with replica param', () => {
@@ -98,7 +98,7 @@ describe('test generateURLSearchQuery', () => {
       pagination
     );
     expect(url).toEqual(
-      `${apiRoutes.esgfSearch}?replica=false&offset=0&limit=10&query=foo&baz=option1&foo=option1,option2`
+      `${apiRoutes.esgfSearch}?offset=0&limit=10&replica=false&min_version=20200101&max_version=20201231&query=foo&baz=option1&foo=option1,option2`
     );
   });
 
@@ -107,7 +107,9 @@ describe('test generateURLSearchQuery', () => {
       { ...activeSearchQuery, activeFacets: {} },
       pagination
     );
-    expect(url).toEqual(`${apiRoutes.esgfSearch}?offset=0&limit=10&query=foo&`);
+    expect(url).toEqual(
+      `${apiRoutes.esgfSearch}?offset=0&limit=10&min_version=20200101&max_version=20201231&query=foo&`
+    );
   });
 });
 
