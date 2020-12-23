@@ -28,7 +28,7 @@ This project contains front-end and back-end sub-projects.
 [![Black code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-<!-- vscode-markdown-toc -->
+---
 
 - [Getting Started for Local Development](#GettingStartedforLocalDevelopment)
   - [Prerequisites](#Prerequisites)
@@ -47,14 +47,6 @@ This project contains front-end and back-end sub-projects.
   - [1. Traefik](#Traefik)
   - [2. Back-end](#Back-end-1)
   - [3. Front-end](#Front-end-1)
-
-<!-- vscode-markdown-toc-config
-	numbering=true
-	autoSave=true
-	/vscode-markdown-toc-config -->
-<!-- /vscode-markdown-toc -->
-
----
 
 ## <a name='GettingStartedforLocalDevelopment'></a>Getting Started for Local Development
 
