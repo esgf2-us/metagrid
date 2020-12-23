@@ -4,14 +4,15 @@ import {
   RightCircleOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
-import { Collapse, Form, Input, Select } from 'antd';
+import { Collapse, DatePicker, Form, Input, Select } from 'antd';
+import moment from 'moment';
 import React from 'react';
 import { CSSinJS } from '../../common/types';
 import ToolTip from '../DataDisplay/ToolTip';
 import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
 import { NodeStatusArray } from '../NodeStatus/types';
-import { ActiveSearchQuery, ResultType } from '../Search/types';
+import { ActiveSearchQuery, ResultType, VersionDate } from '../Search/types';
 import { ActiveFacets, ParsedFacets } from './types';
 
 const styles: CSSinJS = {
@@ -28,7 +29,12 @@ export type Props = {
   availableFacets: ParsedFacets;
   nodeStatus?: NodeStatusArray;
   onSetFilenameVars: (filenameVar: string) => void;
-  onSetFacets: (resultType: ResultType, activeFacets: ActiveFacets) => void;
+  onSetFacets: (
+    resultType: ResultType,
+    minVersionDate: VersionDate,
+    maxVersionDate: VersionDate,
+    activeFacets: ActiveFacets
+  ) => void;
 };
 
 /**
@@ -51,6 +57,18 @@ export const humanizeFacetNames = (str: string): string => {
   return frags.join(' ');
 };
 
+export const formatDate = (
+  date: string | moment.Moment,
+  toString: boolean
+): string | moment.Moment => {
+  const format = 'YYYYMMDD';
+
+  if (toString) {
+    return moment(date).format(format);
+  }
+  return moment(date, format);
+};
+
 const FacetsForm: React.FC<Props> = ({
   activeSearchQuery,
   availableFacets,
@@ -66,6 +84,22 @@ const FacetsForm: React.FC<Props> = ({
     [key: string]: string[];
   };
 
+  type DatePickerReturnType =
+    | [null, null]
+    | [moment.Moment, null]
+    | [null, moment.Moment]
+    | [moment.Moment, moment.Moment];
+
+  // Convert using moment.js to for the initial value of the date picker
+  const { minVersionDate, maxVersionDate } = activeSearchQuery;
+  const initialVersionDateRange = [
+    minVersionDate
+      ? formatDate(minVersionDate, false)
+      : (minVersionDate as null),
+    maxVersionDate
+      ? formatDate(maxVersionDate, false)
+      : (maxVersionDate as null),
+  ];
   /**
    * Need to reset the project facet form's fields whenever the active and default
    * facets change in order to capture the correct number of facet counts per option
@@ -85,9 +119,27 @@ const FacetsForm: React.FC<Props> = ({
 
   const handleOnChangeFacetsForm = (selectedFacets: {
     resultType: ResultType;
-    [key: string]: ResultType | ActiveFacets | [];
+    versionDateRange: DatePickerReturnType;
+    [key: string]: ResultType | ActiveFacets | [] | DatePickerReturnType;
   }): void => {
-    const { resultType: newResultType, ...newActiveFacets } = selectedFacets;
+    const {
+      resultType: newResultType,
+      versionDateRange,
+      ...newActiveFacets
+    } = selectedFacets;
+
+    let newMinVersionDate = null;
+    let newMaxVersionDate = null;
+    /* istanbul ignore else */
+    if (versionDateRange) {
+      const [minDate, maxDate] = versionDateRange;
+      newMinVersionDate = minDate
+        ? (formatDate(minDate, true) as string)
+        : minDate;
+      newMaxVersionDate = maxDate
+        ? (formatDate(maxDate, true) as string)
+        : maxDate;
+    }
 
     // The form keeps a history of all selected facets, including when
     // facet keys change from > 0 elements to 0 elements (none selected) in the
@@ -101,7 +153,13 @@ const FacetsForm: React.FC<Props> = ({
         delete newActiveFacets[key];
       }
     });
-    onSetFacets(newResultType, newActiveFacets as ActiveFacets);
+
+    onSetFacets(
+      newResultType,
+      newMinVersionDate,
+      newMaxVersionDate,
+      newActiveFacets as ActiveFacets
+    );
   };
 
   return (
@@ -154,6 +212,7 @@ const FacetsForm: React.FC<Props> = ({
         layout="vertical"
         initialValues={{
           ...activeSearchQuery.activeFacets,
+          versionDateRange: initialVersionDateRange,
           resultType: activeSearchQuery.resultType,
         }}
         onValuesChange={(_changedValues, allValues) => {
@@ -163,6 +222,7 @@ const FacetsForm: React.FC<Props> = ({
         <Form.Item
           label="Result Type"
           name="resultType"
+          style={{ width: '256px' }}
           tooltip={{
             title:
               'Datasets can be replicated from the source node (original) to other nodes (replica)',
@@ -180,6 +240,17 @@ const FacetsForm: React.FC<Props> = ({
               Replicas only
             </Select.Option>
           </Select>
+        </Form.Item>
+        <Form.Item
+          label="Version Date Range"
+          name="versionDateRange"
+          tooltip={{
+            title:
+              'Specify the versions of datasets using a single min/max date or a date range. ',
+            trigger: 'hover',
+          }}
+        >
+          <DatePicker.RangePicker allowEmpty={[true, true]} />
         </Form.Item>
         <div style={styles.container}>
           {facetsByGroup &&

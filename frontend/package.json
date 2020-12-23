@@ -21,6 +21,7 @@
     "env-cmd": "10.1.0",
     "humps": "2.0.1",
     "keycloak-js": "11.0.3",
+    "moment": "2.29.1",
     "query-string": "6.13.7",
     "react": "17.0.1",
     "react-async": "10.0.1",

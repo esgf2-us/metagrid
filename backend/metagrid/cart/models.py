@@ -41,6 +41,12 @@ class Search(models.Model):
     result_type = models.CharField(
         max_length=255, default=ALL, choices=RESULT_TYPE_CHOICES
     )
+    # CharField is used instead of DateField for consistency with ESGF
+    # Search API.
+    # https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html#minimum-and-maximum-version-queries
+    # Version date fields format is 'YYYYMMDD' (e.g. 20200101)
+    min_version_date = models.CharField(max_length=255, blank=True, null=True)
+    max_version_date = models.CharField(max_length=255, blank=True, null=True)
     filename_vars = ArrayField(
         models.CharField(max_length=255, blank=True),
         blank=True,

@@ -325,6 +325,8 @@ describe('test parseFacets()', () => {
 
 describe('test stringifyFilters()', () => {
   const resultType: ResultType = 'originals only';
+  const minVersionDate = '20200101';
+  const maxVersionDate = '20201231';
   let activeFacets: ActiveFacets;
   let textInputs: TextInputs;
 
@@ -337,20 +339,40 @@ describe('test stringifyFilters()', () => {
   });
 
   it('successfully generates a stringified version of the active filters', () => {
-    const strFilters = stringifyFilters(resultType, activeFacets, textInputs);
+    const strFilters = stringifyFilters(
+      resultType,
+      minVersionDate,
+      maxVersionDate,
+      activeFacets,
+      textInputs
+    );
     expect(strFilters).toEqual(
-      'replica = false AND (Text Input = foo OR bar) AND (facet_1 = option1 OR option2) AND (facet_2 = option1 OR option2)'
+      'replica = false AND min_version = 20200101 AND max_version = 20201231 AND (Text Input = foo OR bar) AND (facet_1 = option1 OR option2) AND (facet_2 = option1 OR option2)'
     );
   });
   it('successfully generates a stringified version of the active filters w/o textInputs', () => {
-    const strFilters = stringifyFilters(resultType, activeFacets, []);
+    const strFilters = stringifyFilters(
+      resultType,
+      minVersionDate,
+      maxVersionDate,
+      activeFacets,
+      []
+    );
     expect(strFilters).toEqual(
-      'replica = false AND (facet_1 = option1 OR option2) AND (facet_2 = option1 OR option2)'
+      'replica = false AND min_version = 20200101 AND max_version = 20201231 AND (facet_1 = option1 OR option2) AND (facet_2 = option1 OR option2)'
     );
   });
   it('successfully generates a stringified version of the active filters w/o activeFacets', () => {
-    const strFilters = stringifyFilters(resultType, {}, textInputs);
-    expect(strFilters).toEqual('replica = false AND (Text Input = foo OR bar)');
+    const strFilters = stringifyFilters(
+      resultType,
+      minVersionDate,
+      maxVersionDate,
+      {},
+      textInputs
+    );
+    expect(strFilters).toEqual(
+      'replica = false AND min_version = 20200101 AND max_version = 20201231 AND (Text Input = foo OR bar)'
+    );
   });
 });
 

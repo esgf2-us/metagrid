@@ -135,6 +135,8 @@ export const activeSearchQueryFixture = (
   const defaults: ActiveSearchQuery = {
     project: rawProjectFixture(),
     resultType: 'all',
+    minVersionDate: '20200101',
+    maxVersionDate: '20201231',
     filenameVars: ['var'],
     activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
     textInputs: ['foo'],
@@ -151,6 +153,8 @@ export const userSearchQueryFixture = (
     project: rawProjectFixture(),
     projectId: '1',
     resultType: 'all',
+    minVersionDate: '20200101',
+    maxVersionDate: '20201231',
     filenameVars: ['var'],
     activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
     textInputs: ['foo'],

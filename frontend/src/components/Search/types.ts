@@ -13,10 +13,13 @@ export type RawCitation = {
 };
 
 export type ResultType = 'all' | 'originals only' | 'replicas only';
+export type VersionDate = string | null;
 
 export type ActiveSearchQuery = {
   project: RawProject | Record<string, unknown>;
   resultType: ResultType;
+  minVersionDate: VersionDate;
+  maxVersionDate: VersionDate;
   filenameVars: TextInputs | [];
   activeFacets: ActiveFacets | Record<string, unknown>;
   textInputs: TextInputs | [];
