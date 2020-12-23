@@ -42,8 +42,8 @@
     "test": "CI=1 env-cmd -f .envs/.local/.react react-scripts test --env=jest-environment-jsdom-sixteen",
     "test:watch": "env-cmd -f .envs/.local/.react react-scripts test --env=jest-environment-jsdom-sixteen",
     "test:coverage": "CI=1 env-cmd -f .envs/.local/.react react-scripts test --coverage --env=jest-environment-jsdom-sixteen",
-    "lint": "eslint './src/**/*.{js,jsx,ts,tsx,json}' --fix --no-error-on-unmatched-pattern",
-    "precommit": "lint-staged"
+    "lint": "eslint './src/**/*.{js,jsx,ts,tsx,json}' --fix --max-warnings=0 --no-error-on-unmatched-pattern",
+    "precommit": "eslint './src/**/*.{js,jsx,ts,tsx,json}' --max-warnings=0 --no-error-on-unmatched-pattern"
   },
   "eslintConfig": {
     "extends": "react-app"
