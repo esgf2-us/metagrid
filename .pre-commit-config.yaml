@@ -3,40 +3,41 @@ default_stages: [commit]
 fail_fast: true
 
 repos:
-  # FRONTEND
-  # ------------------------------------------------------------------------------
-  - repo: local
-    hooks:
-      - id: eslint
-        name: eslint
-        language: system
-        files: .+(js|jsx|ts|tsx|css|sass|less|json)
-        entry: bash -c 'cd frontend && yarn lint'
-
-  # BACKEND
-  # ------------------------------------------------------------------------------
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: master
     hooks:
       - id: trailing-whitespace
-        files: (^|/)a/.+\.(py|html|sh|css|js)$
+      - id: end-of-file-fixer
+      - id: check-yaml
 
-  - repo: local
+  # Backend
+  # ------------------------------------------------------------------------------
+  - repo: https://gitlab.com/pycqa/flake8
+    rev: 3.8.4
     hooks:
       - id: flake8
-        name: flake8
-        entry: flake8
-        language: python
-        types: [python]
         args: ["--config=backend/setup.cfg"]
+        additional_dependencies: [flake8-isort]
 
   - repo: https://github.com/psf/black
     rev: stable
     hooks:
       - id: black
-        language_version: python3.8
+        args: ["--config=backend/pyproject.toml"]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.770
+    rev: v0.790
     hooks:
       - id: mypy
+
+  # Frontend
+  # ------------------------------------------------------------------------------
+  # This hook runs the local eslint to avoid dependencies being out of sync with frontend/package.json
+  # https://github.com/pre-commit/pre-commit/issues/945
+  - repo: local
+    hooks:
+      - id: eslint
+        name: eslint
+        language: system
+        files: .+(js|jsx|ts|tsx|json)$
+        entry: bash -c 'cd frontend && yarn precommit'
