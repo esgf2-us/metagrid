@@ -7,11 +7,11 @@
 
 Earth System Grid Federation's (ESGF) next generation search portal
 
-## <a name='RepositoryStructure'></a>Repository Structure
+## Repository Structure
 
 This project contains front-end and back-end sub-projects.
 
-### <a name='Front-end'></a>Front-end
+### Front-end
 
 [![React](frontend/src/assets/img/react_badge.svg)](https://reactjs.org/)
 [![TypeScript](frontend/src/assets/img/typescript_badge.svg)](https://www.typescriptlang.org/)
@@ -19,7 +19,7 @@ This project contains front-end and back-end sub-projects.
 [![dependencies Status](https://david-dm.org/aims-group/metagrid/status.svg?path=frontend)](https://david-dm.org/aims-group/metagrid?path=frontend)
 [![devDependencies Status](https://david-dm.org/aims-group/metagrid/dev-status.svg?path=frontend)](https://david-dm.org/aims-group/metagrid?path=frontend&type=dev)
 
-### <a name='Back-end'></a>Back-end
+### Back-end
 
 [![Made with Django.](https://www.djangoproject.com/m/img/badges/djangomade124x25.gif)](http://www.djangoproject.com)
 
@@ -27,6 +27,8 @@ This project contains front-end and back-end sub-projects.
 [![Python 3](https://pyup.io/repos/github/aims-group/metagrid/python-3-shield.svg)](https://pyup.io/repos/github/aims-group/metagrid/)
 [![Black code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+---
 
 <!-- vscode-markdown-toc -->
 
@@ -53,8 +55,6 @@ This project contains front-end and back-end sub-projects.
 	autoSave=true
 	/vscode-markdown-toc-config -->
 <!-- /vscode-markdown-toc -->
-
----
 
 ## <a name='GettingStartedforLocalDevelopment'></a>Getting Started for Local Development
 
