@@ -7,11 +7,11 @@
 
 Earth System Grid Federation's (ESGF) next generation search portal
 
-## Repository Structure
+## <a name='RepositoryStructure'></a>Repository Structure
 
 This project contains front-end and back-end sub-projects.
 
-### Front-end
+### <a name='Front-end'></a>Front-end
 
 [![React](frontend/src/assets/img/react_badge.svg)](https://reactjs.org/)
 [![TypeScript](frontend/src/assets/img/typescript_badge.svg)](https://www.typescriptlang.org/)
@@ -19,7 +19,7 @@ This project contains front-end and back-end sub-projects.
 [![dependencies Status](https://david-dm.org/aims-group/metagrid/status.svg?path=frontend)](https://david-dm.org/aims-group/metagrid?path=frontend)
 [![devDependencies Status](https://david-dm.org/aims-group/metagrid/dev-status.svg?path=frontend)](https://david-dm.org/aims-group/metagrid?path=frontend&type=dev)
 
-### Back-end
+### <a name='Back-end'></a>Back-end
 
 [![Made with Django.](https://www.djangoproject.com/m/img/badges/djangomade124x25.gif)](http://www.djangoproject.com)
 
@@ -28,28 +28,56 @@ This project contains front-end and back-end sub-projects.
 [![Black code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Getting Started for Local Development
+<!-- vscode-markdown-toc -->
+
+- [Getting Started for Local Development](#GettingStartedforLocalDevelopment)
+  - [Prerequisites](#Prerequisites)
+  - [1. Set up Pre-commit (contributors)](#SetupPre-commitcontributors)
+    - [1.1 Integrated tools](#Integratedtools)
+    - [1.2 Install](#Install)
+  - [2. Back-end](#Back-end)
+    - [2.1 Build and Run the Stack](#BuildandRuntheStack)
+    - [2.2 Additional Configuration](#AdditionalConfiguration)
+    - [2.3 Accessible Services](#AccessibleServices)
+    - [2.4 Troubleshooting](#Troubleshooting)
+  - [3. Front-end](#Front-end)
+    - [3.1 Build and Run the Stack](#BuildandRuntheStack-1)
+    - [3.2 Accessible Services](#AccessibleServices-1)
+- [Getting Started for Production](#GettingStartedforProduction)
+  - [1. Traefik](#Traefik)
+  - [2. Back-end](#Back-end-1)
+  - [3. Front-end](#Front-end-1)
+
+<!-- vscode-markdown-toc-config
+	numbering=true
+	autoSave=true
+	/vscode-markdown-toc-config -->
+<!-- /vscode-markdown-toc -->
+
+---
+
+## <a name='GettingStartedforLocalDevelopment'></a>Getting Started for Local Development
 
 Carefully follow the steps below for a smooth experience.
 
-### Prerequisites
+### <a name='Prerequisites'></a>Prerequisites
 
 - [Docker](https://docs.docker.com/get-docker/)
 - [docker-compose](https://docs.docker.com/compose/install/)
 - Python >= 3.7 for Pre-commit (contributors)
 
-### 1. Set up Pre-commit (contributors)
+### <a name='SetupPre-commitcontributors'></a>1. Set up Pre-commit (contributors)
 
 This repo has default integration with [pre-commit](https://pre-commit.com/), a tool for identifying simple issues before submission to code review. These checks are performed for all staged files using `git commit` before they are committed to a branch.
 
-#### 1.1 Integrated tools
+#### <a name='Integratedtools'></a>1.1 Integrated tools
 
 | Platform              | Code Styling                                     | Linting                                          | Type Checking                 |
 | --------------------- | ------------------------------------------------ | ------------------------------------------------ | ----------------------------- |
 | Python                | [black](https://black.readthedocs.io/en/stable/) | [flake8](https://github.com/PyCQA/flake8#flake8) | [mypy](http://mypy-lang.org/) |
 | JavaScript/TypeScript | [prettier](https://prettier.io/)                 | [ESLint](https://eslint.org/)                    | N/A                           |
 
-#### 1.2 Install
+#### <a name='Install'></a>1.2 Install
 
 ```bash
 cd backend
@@ -69,27 +97,59 @@ pre-commit install
 
 **Note**, any update to `.pre-commit.config.yaml` requires a re-installation of the hooks.
 
-### 2. Set up Back-end
+### <a name='Back-end'></a>2. Set up Back-end
 
 Open the project in a terminal and `cd backend`.
 
-#### 2.1 Build and Run the Stack
+#### <a name='BuildandRuntheStack'></a>2.1 Build and Run the Stack
 
 This can take a while, especially the first time you run this particular command on your development system but subsequent runs will occur quickly:
 
 ```bash
-docker-compose -f docker-compose.yml up --build
+docker-compose -p metagrid_backend_dev -f docker-compose.yml up --build
 ```
 
 Remove the `--build` flag when you don't need to rebuild (e.g. no updates to Docker/docker-compose related files).
 
 [Useful Django Management Commands](backend/README.md)
 
-##### 2.1.1 Addressing Keycloak Boot Issue
+#### <a name='AdditionalConfiguration'></a>2.2 Additional Configuration
+
+##### 2.2.1 Update /etc/hosts file
+
+The Keycloak docker service can be accessed by other containers over a shared network using its docker service name and port, `keycloak:8080`. More information on how this works can be found in Docker's [networking guide](https://docs.docker.com/compose/networking/).
+
+You will need to bind the hostname `keycloak` to `localhost` to allow the browser to make requests to the Keycloak service. Otherwise, it will not recognize the hostname.
+
+1. Open your hosts file with admin privileges
+
+   1. Mac/Linux: `/etc/hosts`
+   2. Windows: `C:\Windows\System32\drivers\etc\hosts`
+
+2. Append `127.0.0.1 keycloak` to the end of the file and save
+
+##### 2.2.2 Create user on Keycloak for authentication
+
+This user will be used for logging into registered Keycloak clients, including the React and Django services.
+
+1. Head over to `localhost:8080`/`keycloak:8080`
+2. Login with admin credentials (automatically created)
+   - username: admin
+   - password: admin
+3. Follow the rest of the instructions in the official Keycloak guide to [create a new user](https://www.keycloak.org/docs/latest/getting_started/#creating-a-user)
+
+#### <a name='AccessibleServices'></a>2.3 Accessible Services
+
+- Django: `localhost:8000`
+- Keycloak: `localhost:8080`/`keycloak:8080`
+
+#### <a name='Troubleshooting'></a>2.4 Troubleshooting
+
+##### 2.4.1 Addressing Keycloak Boot Issue
 
 Keycloak has a known fatal issue where if it is interrupted during boot (stopping `docker-compose up` prematurely), the command that adds the admin user fails. As a result, the Keycloak docker service will not start and outputs the error _"User with username 'admin' already..."_.
 
-If you run into this problem, follow these work-around steps:
+If you run into this problem, follow these workaround steps:
 
 1. Stop all backend containers
    `docker-compose -f docker-compose.yml down`
@@ -118,61 +178,33 @@ Source:
 - https://issues.redhat.com/browse/KEYCLOAK-12896
 - https://stackoverflow.com/a/59712689/8023435
 
-#### 2.2 Final Setup
-
-##### 2.2.1 Update /etc/hosts file
-
-The Keycloak docker service can be accessed by other containers over a shared network using its docker service name and port, `keycloak:8080`. More information on how this works can be found in Docker's [networking guide](https://docs.docker.com/compose/networking/).
-
-You will need to bind the hostname `keycloak` to `localhost` to allow the browser to make requests to the Keycloak service. Otherwise, it will not recognize the hostname.
-
-1. Open your hosts file with admin privileges
-
-   1. Mac/Linux: `/etc/hosts`
-   2. Windows: `C:\Windows\System32\drivers\etc\hosts`
-
-2. Append `127.0.0.1 keycloak` to the end of the file and save
-
-##### 2.2.2 Create user on Keycloak for authentication
-
-This user will be used for logging into registered Keycloak clients, including the React and Django services.
-
-1. Head over to `localhost:8080`/`keycloak:8080`
-2. Login with admin credentials (automatically created)
-   - username: admin
-   - password: admin
-3. Follow the rest of the instructions in the official Keycloak guide to [create a new user](https://www.keycloak.org/docs/latest/getting_started/#creating-a-user)
-
-#### 2.3 Accessible Services
-
-- Django: `localhost:8000`
-- Keycloak: `localhost:8080`/`keycloak:8080`
-
-### 3. Set up Front-end
+### <a name='Front-end'></a>3. Set up Front-end
 
 Open the project in a terminal and `cd frontend`.
 
-#### 3.1 Build and Run the Stack
+#### <a name='BuildandRuntheStack-1'></a>3.1 Build and Run the Stack
 
 This can take a while, especially the first time you run this particular command on your development system but subsequent runs will occur quickly:
 
 ```bash
-docker-compose -f docker-compose.yml up --build
+docker-compose -p  -f docker-compose.yml up --build
 ```
 
 Remove the `--build` flag when you don't need to rebuild (e.g. no updates to Docker/docker-compose related files).
 
 [Useful React Scripts Commands](frontend/README.md)
 
-#### 3.2 Accessible Services
+#### <a name='AccessibleServices-1'></a>3.2 Accessible Services
 
 - React: `localhost:3000`
 
-## Getting Started for Production
+---
+
+## <a name='GettingStartedforProduction'></a>Getting Started for Production
 
 Building the production environment involves the same steps as local; however, use `docker-compose.production.yml` instead. The environment also needs to be configured.
 
-### 1. Traefik
+### <a name='Traefik'></a>1. Traefik
 
 You will need to configure each router's `rule`, which is used to route a request to a service (e.g. django, react, cors-proxy).
 
@@ -186,7 +218,7 @@ You will need to configure each router's `rule`, which is used to route a reques
 
 Once configured, Traefik will get you a valid certificate from Lets Encrypt and update it automatically.
 
-### 2. Back-end
+### <a name='Back-end-1'></a>2. Back-end
 
 1. Enter directory: `./backend/.envs/.production/`
 2. Copy env files `.django.template` and `.postgres.template`
@@ -204,7 +236,7 @@ Once configured, Traefik will get you a valid certificate from Lets Encrypt and 
    | Django | `KEYCLOAK_CLIENT_ID` | The id for the Keycloak client, which is the entity that can request Keycloak to authenticate a user. | | string | `KEYCLOAK_CLIENT_ID=metagrid-backend` |
    | Postgres | `POSTGRES_HOST` <br> `POSTGRES_PORT`<br> `POSTGRES_DB`<br> `POSTGRES_USER`<br> `POSTGRES_PASSWORD` | The default Postgres environment variables are self-explanatory and can be updated if needed. | | string | N/A |
 
-### 3. Front-end
+### <a name='Front-end-1'></a>3. Front-end
 
 1. Enter directory: `./frontend/.envs/.production/`
 2. Copy env files `.cors-proxy.template` and `.react.template`
