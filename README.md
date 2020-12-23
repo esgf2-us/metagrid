@@ -7,11 +7,11 @@
 
 Earth System Grid Federation's (ESGF) next generation search portal
 
-## Repository Structure
+## <a name='RepositoryStructure'></a>Repository Structure
 
 This project contains front-end and back-end sub-projects.
 
-### Front-end
+### <a name='Front-end'></a>Front-end
 
 [![React](frontend/src/assets/img/react_badge.svg)](https://reactjs.org/)
 [![TypeScript](frontend/src/assets/img/typescript_badge.svg)](https://www.typescriptlang.org/)
@@ -19,7 +19,7 @@ This project contains front-end and back-end sub-projects.
 [![dependencies Status](https://david-dm.org/aims-group/metagrid/status.svg?path=frontend)](https://david-dm.org/aims-group/metagrid?path=frontend)
 [![devDependencies Status](https://david-dm.org/aims-group/metagrid/dev-status.svg?path=frontend)](https://david-dm.org/aims-group/metagrid?path=frontend&type=dev)
 
-### Back-end
+### <a name='Back-end'></a>Back-end
 
 [![Made with Django.](https://www.djangoproject.com/m/img/badges/djangomade124x25.gif)](http://www.djangoproject.com)
 
@@ -29,8 +29,6 @@ This project contains front-end and back-end sub-projects.
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ---
-
-<!-- vscode-markdown-toc -->
 
 - [Getting Started for Local Development](#GettingStartedforLocalDevelopment)
   - [Prerequisites](#Prerequisites)
@@ -49,12 +47,6 @@ This project contains front-end and back-end sub-projects.
   - [1. Traefik](#Traefik)
   - [2. Back-end](#Back-end-1)
   - [3. Front-end](#Front-end-1)
-
-<!-- vscode-markdown-toc-config
-	numbering=true
-	autoSave=true
-	/vscode-markdown-toc-config -->
-<!-- /vscode-markdown-toc -->
 
 ## <a name='GettingStartedforLocalDevelopment'></a>Getting Started for Local Development
 
