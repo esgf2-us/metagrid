@@ -4,7 +4,7 @@ import { fetchProjects } from '../../api';
 import { objectIsEmpty } from '../../common/utils';
 import Divider from '../General/Divider';
 import { NodeStatusArray } from '../NodeStatus/types';
-import { ActiveSearchQuery, ResultType } from '../Search/types';
+import { ActiveSearchQuery, ResultType, VersionDate } from '../Search/types';
 import FacetsForm from './FacetsForm';
 import ProjectForm from './ProjectForm';
 import { ActiveFacets, ParsedFacets, RawProject } from './types';
@@ -21,7 +21,12 @@ export type Props = {
   nodeStatus?: NodeStatusArray;
   onProjectChange: (selectedProj: RawProject) => void;
   onSetFilenameVars: (filenameVar: string) => void;
-  onSetFacets: (resultType: ResultType, activeFacets: ActiveFacets) => void;
+  onSetFacets: (
+    resultType: ResultType,
+    minVersionDate: VersionDate,
+    maxVersionDate: VersionDate,
+    activeFacets: ActiveFacets
+  ) => void;
 };
 
 const Facets: React.FC<Props> = ({
