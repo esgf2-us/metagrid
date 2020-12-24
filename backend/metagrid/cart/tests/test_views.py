@@ -26,7 +26,11 @@ class TestCartDetail(APITestCase):
             "email": self.user.email,
             "password": raw_password,
         }
-        response = self.client.post(rest_login_url, payload, format="json",)
+        response = self.client.post(
+            rest_login_url,
+            payload,
+            format="json",
+        )
         assert response.status_code == status.HTTP_200_OK
 
         # Add access token to authorization header
@@ -43,7 +47,11 @@ class TestCartDetail(APITestCase):
     def test_patch_request_updates_user_cart(self):
         # Add item to the user's cart
         payload = {"items": [{"title": "dataset"}]}
-        response = self.client.patch(self.url, payload, format="json",)
+        response = self.client.patch(
+            self.url,
+            payload,
+            format="json",
+        )
         assert response.status_code == status.HTTP_200_OK
 
         user_cart = Cart.objects.get(user=self.user)
@@ -64,7 +72,11 @@ class TestSearchViewSet(APITestCase):
             "email": self.user.email,
             "password": raw_password,
         }
-        response = self.client.post(rest_login_url, payload, format="json",)
+        response = self.client.post(
+            rest_login_url,
+            payload,
+            format="json",
+        )
         assert response.status_code == status.HTTP_200_OK
 
         # Add access token to authorization header
@@ -105,7 +117,11 @@ class TestSearchViewSet(APITestCase):
         )
         payload["project_id"] = project.pk
 
-        response = self.client.put(self.detail_url, payload, format="json",)
+        response = self.client.put(
+            self.detail_url,
+            payload,
+            format="json",
+        )
         assert response.status_code == status.HTTP_200_OK
 
         user_search = Search.objects.get(pk=self.search_obj.pk)
@@ -114,7 +130,11 @@ class TestSearchViewSet(APITestCase):
     def test_patch_request_partially_updates_object(self):
         # Add item to the user's cart
         payload = {"text_inputs": ["new_text"]}
-        response = self.client.patch(self.detail_url, payload, format="json",)
+        response = self.client.patch(
+            self.detail_url,
+            payload,
+            format="json",
+        )
         assert response.status_code == status.HTTP_200_OK
 
         user_search = Search.objects.get(pk=self.search_obj.pk)
