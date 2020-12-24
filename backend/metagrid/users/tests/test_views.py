@@ -50,7 +50,11 @@ class TestUserDetailTestCase(APITestCase):
             "email": self.user.email,
             "password": raw_password,
         }
-        response = self.client.post(rest_login_url, payload, format="json",)
+        response = self.client.post(
+            rest_login_url,
+            payload,
+            format="json",
+        )
         assert response.status_code == status.HTTP_200_OK
 
         # Add access token to authorization header
