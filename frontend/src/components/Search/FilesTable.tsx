@@ -32,7 +32,7 @@ export const genDownloadUrls = (urls: string[]): DownloadUrls => {
   const newUrls: DownloadUrls = [];
   urls.forEach((url) => {
     const downloadType = url.split('|').pop();
-    let downloadUrl = splitURLByChar(url, '|', 'first');
+    let downloadUrl = splitURLByChar(url, '|', '0') as string;
 
     if (downloadType === 'OPeNDAP') {
       downloadUrl = downloadUrl.replace('.html', '.dods');
