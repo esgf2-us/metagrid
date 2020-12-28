@@ -340,7 +340,7 @@ describe('User cart', () => {
     const firstRow = await waitFor(() =>
       getByRole('row', {
         name:
-          'right-circle bar 2 1 Bytes close-circle esgf1.dkrz.de 1 wget download plus',
+          'right-circle bar 2 1 Bytes close-circle esgf1.dkrz.de 1 wget download PID plus',
       })
     );
     expect(firstRow).toBeTruthy();
@@ -457,7 +457,7 @@ describe('User cart', () => {
     const firstRow = await waitFor(() =>
       getByRole('row', {
         name:
-          'right-circle foo 3 1 Bytes check-circle aims3.llnl.gov 1 wget download plus',
+          'right-circle foo 3 1 Bytes check-circle aims3.llnl.gov 1 wget download PID plus',
       })
     );
     expect(firstRow).toBeTruthy();
@@ -506,7 +506,7 @@ describe('User cart', () => {
     const firstRow = await waitFor(() =>
       getByRole('row', {
         name:
-          'right-circle foo 3 1 Bytes check-circle aims3.llnl.gov 1 wget download plus',
+          'right-circle foo 3 1 Bytes check-circle aims3.llnl.gov 1 wget download PID plus',
       })
     );
     expect(firstRow).toBeTruthy();

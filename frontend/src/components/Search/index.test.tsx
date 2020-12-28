@@ -199,7 +199,7 @@ describe('test Search component', () => {
     // Select the first row
     const firstRow = getByRole('row', {
       name:
-        'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 wget download plus',
+        'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 wget download PID plus',
     });
     expect(firstRow).toBeTruthy();
 

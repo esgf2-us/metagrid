@@ -18,17 +18,31 @@ export const objectHasKey = (
 };
 
 /**
- * Parses urls to remove characters following the specified character
+ * Parses urls to split strings following the specified character.
+ *
+ * For a record's 'xlink' attribute, it will be split into an array of
+ * three strings.
+ *
+ * xlink URL example: 'http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.ScenarioMIP.CCCma.CanESM5.ssp126.r12i1p2f1.day.clt.gn.v20190429.json|Citation|citation'
+ * Output split by '|': ['http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.ScenarioMIP.CCCma.CanESM5.ssp126.r12i1p2f1.day.clt.gn.v20190429.json', 'Citation', 'citation])
+ *
  */
 export const splitURLByChar = (
   url: string,
-  char: string,
-  returnHalf: 'first' | 'second'
-): string => {
-  if (returnHalf === 'first') {
-    return url.split(char)[0];
+  char: '|' | '.json',
+  returnIndex?: '0' | '1' | '2'
+): string[] | string => {
+  const splitURL = url.split(char);
+
+  if (returnIndex) {
+    const returnIndexNum = Number(returnIndex);
+    if (splitURL[returnIndexNum] === undefined) {
+      throw new Error('Index does not exist in array of URLs');
+    }
+    return splitURL[returnIndexNum];
   }
-  return url.split(char)[1];
+
+  return splitURL;
 };
 
 /**
