@@ -43,7 +43,7 @@ it('renders record metadata in an expandable panel', async () => {
   // Check a record row exist
   const row = getByRole('row', {
     name:
-      'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 wget download plus',
+      'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 wget download PID plus',
   });
   expect(row).toBeTruthy();
 
@@ -94,7 +94,7 @@ it('renders "PID" button when the record has a "xlink" key/value, vice versa', (
   const results = [...defaultProps.results];
   results[0] = {
     ...results[0],
-    xlink: ['https://foo.bar|', 'https://foo.bar|'],
+    xlink: ['https://foo.bar|PID|pid', 'https://foo.bar|'],
     further_info_url: ['https://foo.bar'],
   };
 
@@ -116,19 +116,6 @@ it('renders "PID" button when the record has a "xlink" key/value, vice versa', (
   const firstInfoBtn = within(firstRow).getByText('ES-DOC');
   expect(firstPidBtn).toBeTruthy();
   expect(firstInfoBtn).toBeTruthy();
-
-  // Check second row exists
-  const secondRow = getByRole('row', {
-    name:
-      'right-circle bar 2 1 Bytes question-circle esgf1.dkrz.de 1 wget download plus',
-  });
-  expect(secondRow).toBeTruthy();
-
-  // Check both PID and ES-DOC buttons did not render for the second row
-  const qPidBtn = within(secondRow).queryByText('PID');
-  expect(qPidBtn).toBeNull();
-  const qInfoBtn = within(secondRow).queryByText('ES-DOC');
-  expect(qInfoBtn).toBeNull();
 });
 
 it('renders add or remove button for items in or not in the cart respectively, and handles clicking them', () => {
@@ -143,7 +130,7 @@ it('renders add or remove button for items in or not in the cart respectively, a
   // Check first row exists
   const firstRow = getByRole('row', {
     name:
-      'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 wget download minus',
+      'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 wget download PID minus',
   });
   expect(firstRow).toBeTruthy();
 
@@ -155,7 +142,7 @@ it('renders add or remove button for items in or not in the cart respectively, a
   // Check second row exists
   const secondRow = getByRole('row', {
     name:
-      'right-circle bar 2 1 Bytes question-circle esgf1.dkrz.de 1 wget download plus',
+      'right-circle bar 2 1 Bytes question-circle esgf1.dkrz.de 1 wget download PID plus',
   });
   expect(secondRow).toBeTruthy();
 
@@ -175,7 +162,7 @@ it('handles when clicking the select checkbox for a row', () => {
   // Check a record row exist
   const row = getByRole('row', {
     name:
-      'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 wget download plus',
+      'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 wget download PID plus',
   });
   expect(row).toBeTruthy();
 
@@ -220,7 +207,7 @@ it('handles downloading an item via wget', async () => {
   // Check first row renders
   const firstRow = getByRole('row', {
     name:
-      'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 wget download minus',
+      'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 wget download PID minus',
   });
   expect(firstRow).toBeTruthy();
 
@@ -250,7 +237,7 @@ it('displays an error when unable to access download via wget', async () => {
   // Check first row renders
   const firstRow = getByRole('row', {
     name:
-      'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 wget download minus',
+      'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 wget download PID minus',
   });
   expect(firstRow).toBeTruthy();
 

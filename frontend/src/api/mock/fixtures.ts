@@ -66,6 +66,7 @@ export const rawSearchResultFixture = (
     size: 1,
     access: ['HTTPServer', 'OPeNDAP', 'Globus'],
     citation_url: ['https://foo.bar'],
+    xlink: ['url.com|PID|pid'],
   };
   return { ...defaults, ...props };
 };

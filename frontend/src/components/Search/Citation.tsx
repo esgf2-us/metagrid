@@ -37,7 +37,7 @@ const Citation: React.FC<CitationProps> = ({ url }) => {
     <div>
       <div>
         <a
-          href={splitURLByChar(url, '.json', 'first')}
+          href={splitURLByChar(url, '.json', '0') as string}
           rel="noopener noreferrer"
           target="_blank"
         >

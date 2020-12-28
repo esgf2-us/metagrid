@@ -304,28 +304,57 @@ const Table: React.FC<Props> = ({
       key: 'additional',
       width: 200,
       render: (record: RawSearchResult) => {
+        const xlinkTypesToOutput: Record<
+          string,
+          { label: string; url: null | string }
+        > = {
+          pid: { label: 'PID', url: null },
+          // Some technical notes are published as "summary"
+          summary: { label: 'Technical Notes', url: null },
+          supdata: { label: 'Supplemental Data', url: null },
+          'Tech Note': { label: 'Technical Notes', url: null },
+        };
+
+        /* istanbul ignore else */
+        if (objectHasKey(record, 'xlink')) {
+          const { xlink } = record;
+
+          (xlink as string[]).forEach((link) => {
+            const splitURL = splitURLByChar(link, '|') as string[];
+            const [url, , linkType] = splitURL;
+
+            if (Object.keys(xlinkTypesToOutput).includes(linkType)) {
+              xlinkTypesToOutput[linkType].url = url;
+            }
+          });
+        }
+
         return (
           <>
-            {objectHasKey(record, 'xlink') && (
-              <Button
-                type="link"
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                href={splitURLByChar(record.xlink![1], '|', 'first')}
-                target="_blank"
-              >
-                PID
-              </Button>
-            )}
-            {objectHasKey(record, 'further_info_url') && (
-              <Button
-                type="link"
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                href={record.further_info_url![0]}
-                target="_blank"
-              >
-                ES-DOC
-              </Button>
-            )}
+            {Object.keys(xlinkTypesToOutput).map((linkType) => {
+              const { label, url } = xlinkTypesToOutput[linkType];
+
+              if (url) {
+                return (
+                  <Button type="link" href={url} target="_blank" key={label}>
+                    <span>{label}</span>
+                  </Button>
+                );
+              }
+              return null;
+            })}
+            {/* Records may return "further_info_url": [''], which indicates no available URLs */}
+            {objectHasKey(record, 'further_info_url') &&
+              ((record.further_info_url as unknown) as string)[0] !== '' && (
+                <Button
+                  type="link"
+                  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                  href={record.further_info_url![0]}
+                  target="_blank"
+                >
+                  ES-DOC
+                </Button>
+              )}
           </>
         );
       },

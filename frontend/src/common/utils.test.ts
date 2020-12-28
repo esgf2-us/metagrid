@@ -36,10 +36,13 @@ describe('Test splitURLbyChar', () => {
     url = 'first.com|second.com';
   });
   it('returns first half of the split', () => {
-    expect(splitURLByChar(url, '|', 'first')).toEqual('first.com');
+    expect(splitURLByChar(url, '|', '0') as string).toEqual('first.com');
   });
   it('returns second half of the split', () => {
-    expect(splitURLByChar(url, '|', 'second')).toEqual('second.com');
+    expect(splitURLByChar(url, '|', '1') as string).toEqual('second.com');
+  });
+  it('throws error if index does not exist', () => {
+    expect(() => splitURLByChar(url, '|', '2') as string).toThrow();
   });
 });
 describe('Test formatBytes', () => {
