@@ -18,8 +18,6 @@ export const objectHasKey = (
 };
 
 /**
- * Parses urls to split strings following the specified character.
- *
  * For a record's 'xlink' attribute, it will be split into an array of
  * three strings.
  *
@@ -27,9 +25,9 @@ export const objectHasKey = (
  * Output split by '|': ['http://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.ScenarioMIP.CCCma.CanESM5.ssp126.r12i1p2f1.day.clt.gn.v20190429.json', 'Citation', 'citation])
  *
  */
-export const splitURLByChar = (
+export const splitStringByChar = (
   url: string,
-  char: '|' | '.json',
+  char: '|' | '.json' | ':',
   returnIndex?: '0' | '1' | '2'
 ): string[] | string => {
   const splitURL = url.split(char);

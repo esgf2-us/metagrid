@@ -1,7 +1,7 @@
 import React from 'react';
 import { PromiseFn, useAsync } from 'react-async';
 import { fetchDatasetCitation } from '../../api';
-import { splitURLByChar } from '../../common/utils';
+import { splitStringByChar } from '../../common/utils';
 import Alert from '../Feedback/Alert';
 import Skeleton from '../Feedback/Skeleton';
 import { RawCitation } from './types';
@@ -37,7 +37,7 @@ const Citation: React.FC<CitationProps> = ({ url }) => {
     <div>
       <div>
         <a
-          href={splitURLByChar(url, '.json', '0') as string}
+          href={splitStringByChar(url, '.json', '0') as string}
           rel="noopener noreferrer"
           target="_blank"
         >

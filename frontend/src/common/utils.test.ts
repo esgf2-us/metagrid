@@ -3,7 +3,7 @@ import {
   objectHasKey,
   objectIsEmpty,
   shallowCompareObjects,
-  splitURLByChar,
+  splitStringByChar,
 } from './utils';
 
 describe('Test objectIsEmpty', () => {
@@ -30,19 +30,19 @@ describe('Test objectHasKey', () => {
   });
 });
 
-describe('Test splitURLbyChar', () => {
+describe('Test splitStringByChar', () => {
   let url: string;
   beforeEach(() => {
     url = 'first.com|second.com';
   });
   it('returns first half of the split', () => {
-    expect(splitURLByChar(url, '|', '0') as string).toEqual('first.com');
+    expect(splitStringByChar(url, '|', '0') as string).toEqual('first.com');
   });
   it('returns second half of the split', () => {
-    expect(splitURLByChar(url, '|', '1') as string).toEqual('second.com');
+    expect(splitStringByChar(url, '|', '1') as string).toEqual('second.com');
   });
   it('throws error if index does not exist', () => {
-    expect(() => splitURLByChar(url, '|', '2') as string).toThrow();
+    expect(() => splitStringByChar(url, '|', '2') as string).toThrow();
   });
 });
 describe('Test formatBytes', () => {
