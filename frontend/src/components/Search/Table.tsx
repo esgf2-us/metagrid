@@ -19,8 +19,15 @@ import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
 import { fetchWgetScript, openDownloadURL } from '../../api';
-import { formatBytes, objectHasKey, splitURLByChar } from '../../common/utils';
+import qualityFlagsImg from '../../assets/img/climate_indicators_table.png';
+import { CSSinJS } from '../../common/types';
+import {
+  formatBytes,
+  objectHasKey,
+  splitStringByChar,
+} from '../../common/utils';
 import { UserCart } from '../Cart/types';
+import Popover from '../DataDisplay/Popover';
 import ToolTip from '../DataDisplay/ToolTip';
 import Button from '../General/Button';
 import Divider from '../General/Divider';
@@ -30,6 +37,30 @@ import Citation from './Citation';
 import FilesTable from './FilesTable';
 import './Search.css';
 import { RawSearchResult, RawSearchResults, TextInputs } from './types';
+
+const styles: CSSinJS = {
+  qualityFlagsRow: { display: 'flex' },
+  flagColorBox: {
+    width: '16px',
+    height: '16px',
+    backgroundColor: '#ccc',
+    border: '1px',
+    borderStyle: 'solid',
+    borderColor: '#666',
+    margin: '2px',
+  },
+};
+
+export type QualityFlagProps = { index: string; color: string };
+
+export const QualityFlag: React.FC<QualityFlagProps> = ({ index, color }) => {
+  return (
+    <div
+      data-testid={`qualityFlag${index}`}
+      style={{ ...styles.flagColorBox, backgroundColor: color }}
+    ></div>
+  );
+};
 
 export type Props = {
   loading: boolean;
@@ -304,6 +335,8 @@ const Table: React.FC<Props> = ({
       key: 'additional',
       width: 200,
       render: (record: RawSearchResult) => {
+        // Have to parse and format since 'xlink' attribute is
+        // poorly structured in the Search API
         const xlinkTypesToOutput: Record<
           string,
           { label: string; url: null | string }
@@ -314,18 +347,30 @@ const Table: React.FC<Props> = ({
           supdata: { label: 'Supplemental Data', url: null },
           'Tech Note': { label: 'Technical Notes', url: null },
         };
-
         /* istanbul ignore else */
         if (objectHasKey(record, 'xlink')) {
           const { xlink } = record;
 
           (xlink as string[]).forEach((link) => {
-            const splitURL = splitURLByChar(link, '|') as string[];
-            const [url, , linkType] = splitURL;
+            const [url, , linkType] = splitStringByChar(link, '|') as string[];
 
             if (Object.keys(xlinkTypesToOutput).includes(linkType)) {
               xlinkTypesToOutput[linkType].url = url;
             }
+          });
+        }
+
+        // Have to parse and format since 'quality_control_flags' attribute is
+        // poorly structured in the Search API
+        const qualityFlags: Record<string, string> = {};
+        /* istanbul ignore else */
+        if (objectHasKey(record, 'quality_control_flags')) {
+          const { quality_control_flags: qcFlags } = record;
+
+          (qcFlags as string[]).forEach((flag) => {
+            const [, key, color] = splitStringByChar(flag, ':') as string[];
+            // Sometimes colors are snakecase, such as 'light_gray'
+            qualityFlags[key] = color.replace('_', '');
           });
         }
 
@@ -343,6 +388,7 @@ const Table: React.FC<Props> = ({
               }
               return null;
             })}
+
             {/* Records may return "further_info_url": [''], which indicates no available URLs */}
             {objectHasKey(record, 'further_info_url') &&
               ((record.further_info_url as unknown) as string)[0] !== '' && (
@@ -355,6 +401,33 @@ const Table: React.FC<Props> = ({
                   ES-DOC
                 </Button>
               )}
+
+            {Object.keys(qualityFlags).length > 0 && (
+              <Button
+                type="link"
+                href="https://esgf-node.llnl.gov/projects/obs4mips/DatasetIndicators"
+                target="_blank"
+              >
+                <Popover
+                  content={
+                    <img
+                      src={qualityFlagsImg}
+                      alt="Quality Flags Indicator"
+                    ></img>
+                  }
+                >
+                  <span style={styles.qualityFlagsRow}>
+                    {Object.keys(qualityFlags).map((key) => (
+                      <QualityFlag
+                        index={key}
+                        color={qualityFlags[key]}
+                        key={key}
+                      />
+                    ))}
+                  </span>
+                </Popover>
+              </Button>
+            )}
           </>
         );
       },

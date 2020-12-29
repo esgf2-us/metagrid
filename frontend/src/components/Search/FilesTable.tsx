@@ -9,7 +9,7 @@ import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
 import { DeferFn, useAsync } from 'react-async';
 import { fetchDatasetFiles, openDownloadURL } from '../../api';
-import { formatBytes, splitURLByChar } from '../../common/utils';
+import { formatBytes, splitStringByChar } from '../../common/utils';
 import ToolTip from '../DataDisplay/ToolTip';
 import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
@@ -32,7 +32,7 @@ export const genDownloadUrls = (urls: string[]): DownloadUrls => {
   const newUrls: DownloadUrls = [];
   urls.forEach((url) => {
     const downloadType = url.split('|').pop();
-    let downloadUrl = splitURLByChar(url, '|', '0') as string;
+    let downloadUrl = splitStringByChar(url, '|', '0') as string;
 
     if (downloadType === 'OPeNDAP') {
       downloadUrl = downloadUrl.replace('.html', '.dods');
