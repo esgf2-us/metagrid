@@ -3,7 +3,7 @@ import React from 'react';
 import { rawSearchResultsFixture } from '../../api/mock/fixtures';
 import { rest, server } from '../../api/mock/setup-env';
 import apiRoutes from '../../api/routes';
-import Table, { Props } from './Table';
+import Table, { Props, QualityFlag } from './Table';
 
 const defaultProps: Props = {
   loading: false,
@@ -116,6 +116,41 @@ it('renders "PID" button when the record has a "xlink" key/value, vice versa', (
   const firstInfoBtn = within(firstRow).getByText('ES-DOC');
   expect(firstPidBtn).toBeTruthy();
   expect(firstInfoBtn).toBeTruthy();
+});
+
+it('renders quality control flags for obs4MIPs datasets when therecord has the respective attribute', () => {
+  const results = [...defaultProps.results];
+  results[0] = {
+    ...results[0],
+    project: 'obs4MIPs',
+    quality_control_flags: [
+      'obs4mips_indicators:1:green',
+      'obs4mips_indicators:2:green',
+      'obs4mips_indicators:3:Yellow',
+      'obs4mips_indicators:4:Green',
+      'obs4mips_indicators:5:Yellow',
+      'obs4mips_indicators:6:light_gray',
+    ],
+  };
+
+  const { getByRole } = render(<Table {...defaultProps} results={results} />);
+
+  // Check table exists
+  const table = getByRole('table');
+  expect(table).toBeTruthy();
+
+  // Check first row exists
+  const firstRow = getByRole('row', {
+    name:
+      'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 wget download PID plus',
+  });
+  expect(firstRow).toBeTruthy();
+
+  const firstFlag = within(firstRow).getByTestId('qualityFlag1');
+  expect(firstFlag).toBeTruthy();
+
+  const lastFlag = within(firstRow).getByTestId('qualityFlag5');
+  expect(lastFlag).toBeTruthy();
 });
 
 it('renders add or remove button for items in or not in the cart respectively, and handles clicking them', () => {
@@ -256,4 +291,13 @@ it('displays an error when unable to access download via wget', async () => {
     )
   );
   expect(errorMsg).toBeTruthy();
+});
+
+describe('test QualityFlag', () => {
+  it('renders component', () => {
+    const { getByTestId } = render(<QualityFlag index="1" color="blue" />);
+
+    const component = getByTestId('qualityFlag1');
+    expect(component).toBeTruthy();
+  });
 });
