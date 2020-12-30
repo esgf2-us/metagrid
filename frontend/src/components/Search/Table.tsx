@@ -18,7 +18,7 @@ import {
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
-import { fetchWgetScript, openDownloadURL } from '../../api';
+import { fetchWgetScript, openDownloadURL, ResponseError } from '../../api';
 import qualityFlagsImg from '../../assets/img/climate_indicators_table.png';
 import { CSSinJS } from '../../common/types';
 import {
@@ -282,11 +282,9 @@ const Table: React.FC<Props> = ({
               .then((url) => {
                 openDownloadURL(url);
               })
-              .catch(() => {
+              .catch((error: ResponseError) => {
                 // eslint-disable-next-line no-void
-                void message.error(
-                  'There was an issue generating the wget script. Please contact support or try again later.'
-                );
+                void message.error(error.message);
               });
           }
         };

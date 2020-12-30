@@ -19,43 +19,43 @@ import {
 } from './fixtures';
 
 const handlers = [
-  rest.post(apiRoutes.keycloakAuth, (_req, res, ctx) => {
+  rest.post(apiRoutes.keycloakAuth.path, (_req, res, ctx) => {
     return res(ctx.status(200), ctx.json(userAuthFixture()));
   }),
-  rest.get(apiRoutes.userInfo, (_req, res, ctx) => {
+  rest.get(apiRoutes.userInfo.path, (_req, res, ctx) => {
     return res(ctx.status(200), ctx.json(userInfoFixture()));
   }),
-  rest.get(apiRoutes.userCart, (_req, res, ctx) => {
+  rest.get(apiRoutes.userCart.path, (_req, res, ctx) => {
     return res(ctx.status(200), ctx.json(rawUserCartFixture()));
   }),
-  rest.patch(apiRoutes.userCart, (_req, res, ctx) => {
+  rest.patch(apiRoutes.userCart.path, (_req, res, ctx) => {
     return res(ctx.status(200), ctx.json(rawUserCartFixture()));
   }),
-  rest.get(apiRoutes.userSearches, (_req, res, ctx) => {
+  rest.get(apiRoutes.userSearches.path, (_req, res, ctx) => {
     return res(
       ctx.status(200),
       ctx.json({ results: userSearchQueriesFixture() })
     );
   }),
-  rest.post(apiRoutes.userSearches, (_req, res, ctx) => {
+  rest.post(apiRoutes.userSearches.path, (_req, res, ctx) => {
     return res(ctx.status(201), ctx.json(userSearchQueryFixture()));
   }),
-  rest.delete(apiRoutes.userSearch, (_req, res, ctx) => {
+  rest.delete(apiRoutes.userSearch.path, (_req, res, ctx) => {
     return res(ctx.status(204));
   }),
-  rest.get(apiRoutes.projects, (_req, res, ctx) => {
+  rest.get(apiRoutes.projects.path, (_req, res, ctx) => {
     return res(ctx.status(200), ctx.json({ results: projectsFixture() }));
   }),
-  rest.get(apiRoutes.esgfSearch, (_req, res, ctx) => {
+  rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) => {
     return res(ctx.status(200), ctx.json(ESGFSearchAPIFixture()));
   }),
-  rest.get(apiRoutes.citation, (_req, res, ctx) => {
+  rest.get(apiRoutes.citation.path, (_req, res, ctx) => {
     return res(ctx.status(200), ctx.json(rawCitationFixture()));
   }),
-  rest.get(apiRoutes.wget, (_req, res, ctx) => {
+  rest.get(apiRoutes.wget.path, (_req, res, ctx) => {
     return res(ctx.status(200));
   }),
-  rest.get(apiRoutes.nodeStatus, (_req, res, ctx) => {
+  rest.get(apiRoutes.nodeStatus.path, (_req, res, ctx) => {
     return res(ctx.status(200), ctx.json(rawNodeStatusFixture()));
   }),
   // Default fallback handler

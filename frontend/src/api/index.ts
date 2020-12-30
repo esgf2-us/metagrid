@@ -19,9 +19,15 @@ import {
   ResultType,
   TextInputs,
 } from '../components/Search/types';
+import { RawUserAuth, RawUserInfo } from '../contexts/types';
 import { proxyURL } from '../env';
 import axios from '../lib/axios';
-import apiRoutes, { clickableRoute } from './routes';
+import apiRoutes, { ApiRoute, clickableRoute, HTTPCodeType } from './routes';
+
+export interface ResponseError extends Error {
+  status?: number;
+  response: { status: HTTPCodeType; [key: string]: string | HTTPCodeType };
+}
 
 /**
  * Must use JSON.parse on the 'str' arg string because axios's transformResponse
@@ -45,6 +51,58 @@ export const openDownloadURL = (url: string): void => {
 };
 
 /**
+ * https://github.com/axios/axios#handling-errors
+ */
+export const errorMsgBasedOnHTTPStatusCode = (
+  error: ResponseError,
+  route: ApiRoute
+): string => {
+  // Indicates that an HTTP response status code was returned from the server
+  if (error.response) {
+    return route.handleErrorMsg(error.response.status);
+  }
+
+  // A connection could not be established, so return a generic error message
+  return route.handleErrorMsg('generic');
+};
+
+/**
+ * HTTP Request Method: POST
+ * HTTP Response Code: 200 OK
+ */
+export const fetchUserAuth = async (args: [string]): Promise<RawUserAuth> => {
+  return axios
+    .post(apiRoutes.keycloakAuth.path, { access_token: args[0] })
+    .then((res) => {
+      return res.data as Promise<RawUserAuth>;
+    })
+    .catch((error) => {
+      throw new Error(
+        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.keycloakAuth)
+      );
+    });
+};
+
+/**
+ * HTTP Request Method: GET
+ * HTTP Response Code: 200 OK
+ */
+export const fetchUserInfo = async (args: [string]): Promise<RawUserInfo> => {
+  return axios
+    .get(apiRoutes.userInfo.path, {
+      headers: {
+        Authorization: `Bearer ${args[0]}`,
+      },
+    })
+    .then((res) => {
+      return res.data as Promise<RawUserInfo>;
+    })
+    .catch((error) => {
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userInfo));
+    });
+};
+
+/**
  * HTTP Request Method: GET
  * HTTP Response Code: 200 OK
  */
@@ -57,7 +115,7 @@ export const fetchUserCart = async (
   [key: string]: any;
 }> => {
   return axios
-    .get(`${apiRoutes.userCart.replace(':pk', pk)}`, {
+    .get(`${apiRoutes.userCart.path.replace(':pk', pk)}`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -69,8 +127,8 @@ export const fetchUserCart = async (
         [key: string]: any;
       }>;
     })
-    .catch((error) => {
-      throw new Error(error);
+    .catch((error: ResponseError) => {
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userCart));
     });
 };
 
@@ -89,7 +147,7 @@ export const updateUserCart = async (
 }> => {
   return axios
     .patch(
-      `${apiRoutes.userCart.replace(':pk', pk)}`,
+      `${apiRoutes.userCart.path.replace(':pk', pk)}`,
       { items: newUserCart },
       {
         headers: {
@@ -104,8 +162,8 @@ export const updateUserCart = async (
         [key: string]: any;
       }>;
     })
-    .catch((error) => {
-      throw new Error(error);
+    .catch((error: ResponseError) => {
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userCart));
     });
 };
 
@@ -120,7 +178,7 @@ export const fetchUserSearchQueries = async (
   results: UserSearchQueries;
 }> => {
   return axios
-    .get(apiRoutes.userSearches, {
+    .get(apiRoutes.userSearches.path, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -138,8 +196,10 @@ export const fetchUserSearchQueries = async (
         results: UserSearchQueries;
       }>;
     })
-    .catch((error) => {
-      throw new Error(error);
+    .catch((error: ResponseError) => {
+      throw new Error(
+        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userSearches)
+      );
     });
 };
 
@@ -157,7 +217,7 @@ export const addUserSearchQuery = async (
     ...payload,
   });
   return axios
-    .post(apiRoutes.userSearches, decamelizedPayload, {
+    .post(apiRoutes.userSearches.path, decamelizedPayload, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -165,8 +225,10 @@ export const addUserSearchQuery = async (
     .then((res) => {
       return res.data as Promise<RawUserSearchQuery>;
     })
-    .catch((error) => {
-      throw new Error(error);
+    .catch((error: ResponseError) => {
+      throw new Error(
+        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userSearches)
+      );
     });
 };
 
@@ -179,7 +241,7 @@ export const deleteUserSearchQuery = async (
   accessToken: string
 ): Promise<''> => {
   return axios
-    .delete(`${apiRoutes.userSearch.replace(':pk', pk)}`, {
+    .delete(`${apiRoutes.userSearch.path.replace(':pk', pk)}`, {
       data: {},
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -188,8 +250,10 @@ export const deleteUserSearchQuery = async (
     .then((res) => {
       return res.data as Promise<''>;
     })
-    .catch((error) => {
-      throw new Error(error);
+    .catch((error: ResponseError) => {
+      throw new Error(
+        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userSearch)
+      );
     });
 };
 
@@ -203,7 +267,7 @@ export const fetchProjects = async (): Promise<{
   [key: string]: any;
 }> => {
   return axios
-    .get(apiRoutes.projects, {
+    .get(apiRoutes.projects.path, {
       transformResponse: (res: string) => {
         try {
           return camelizeKeysFromString(res);
@@ -219,8 +283,8 @@ export const fetchProjects = async (): Promise<{
         [key: string]: any;
       }>;
     })
-    .catch((error) => {
-      throw new Error(error);
+    .catch((error: ResponseError) => {
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.projects));
     });
 };
 
@@ -277,7 +341,7 @@ export const generateSearchURLQuery = (
     activeFacets,
     textInputs,
   } = activeSearchQuery;
-  const baseRoute = `${apiRoutes.esgfSearch}?`;
+  const baseRoute = `${apiRoutes.esgfSearch.path}?`;
   const replicaParam = convertResultTypeToReplicaParam(resultType);
 
   // The base params include facet fields to return for each dataset and the pagination options
@@ -345,8 +409,10 @@ export const fetchSearchResults = async (
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return res.data as Promise<{ [key: string]: any }>;
     })
-    .catch((error) => {
-      throw new Error(error);
+    .catch((error: ResponseError) => {
+      throw new Error(
+        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearch)
+      );
     });
 };
 
@@ -381,8 +447,8 @@ export const fetchDatasetCitation = async ({
       const citation = processCitation(res.data);
       return citation;
     })
-    .catch((error) => {
-      throw new Error(error);
+    .catch((error: ResponseError) => {
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.citation));
     });
 };
 
@@ -427,7 +493,7 @@ export const fetchDatasetFiles = async (
 
   let url = queryString.stringifyUrl(
     {
-      url: apiRoutes.esgfSearch,
+      url: apiRoutes.esgfSearch.path,
       query: queryParams,
     },
     { arrayFormat: 'comma' }
@@ -440,8 +506,10 @@ export const fetchDatasetFiles = async (
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return res.data as Promise<{ [key: string]: any }>;
     })
-    .catch((error) => {
-      throw new Error(error);
+    .catch((error: ResponseError) => {
+      throw new Error(
+        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearch)
+      );
     });
 };
 /**
@@ -455,7 +523,7 @@ export const fetchWgetScript = async (
   filenameVars?: string[]
 ): Promise<string> => {
   let url = queryString.stringifyUrl({
-    url: apiRoutes.wget,
+    url: apiRoutes.wget.path,
     query: { dataset_id: ids },
   });
 
@@ -474,8 +542,8 @@ export const fetchWgetScript = async (
     .then(() => {
       return url;
     })
-    .catch((error) => {
-      throw new Error(error);
+    .catch((error: ResponseError) => {
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.wget));
     });
 };
 
@@ -510,11 +578,13 @@ export const parseNodeStatus = (res: RawNodeStatus): NodeStatusArray => {
  */
 export const fetchNodeStatus = async (): Promise<NodeStatusArray> => {
   return axios
-    .get(`${apiRoutes.nodeStatus}`)
+    .get(`${apiRoutes.nodeStatus.path}`)
     .then((res) => {
       return parseNodeStatus(res.data as RawNodeStatus);
     })
-    .catch((error) => {
-      throw new Error(error);
+    .catch((error: ResponseError) => {
+      throw new Error(
+        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.nodeStatus)
+      );
     });
 };

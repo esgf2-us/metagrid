@@ -1,6 +1,7 @@
 import { QuestionCircleOutlined, SelectOutlined } from '@ant-design/icons';
 import { Form, Select } from 'antd';
 import React from 'react';
+import { ResponseError } from '../../api';
 import { objectIsEmpty } from '../../common/utils';
 import Alert from '../Feedback/Alert';
 import Popconfirm from '../Feedback/Popconfirm';
@@ -18,16 +19,16 @@ export type Props = {
   projectsFetched?: {
     results: RawProjects;
   };
-  projectsIsLoading: boolean;
-  projectsError?: Error;
+  apiIsLoading: boolean;
+  apiError?: ResponseError;
   onFinish: (allValues: { [key: string]: string }) => void;
 };
 
 const ProjectsForm: React.FC<Props> = ({
   activeSearchQuery,
   projectsFetched,
-  projectsIsLoading,
-  projectsError,
+  apiIsLoading,
+  apiError,
   onFinish,
 }) => {
   const [projectForm] = Form.useForm();
@@ -40,20 +41,15 @@ const ProjectsForm: React.FC<Props> = ({
 
   // Note, have to wrap Alert and Spin with Form to suppress warning about
   // projectForm not being bound to a <Form/></Form> Instance
-  if (projectsError) {
+  if (apiError) {
     return (
       <Form form={projectForm}>
-        <Alert
-          message="Error"
-          description="There was an issue fetching projects. Please contact support for assistance or try again later."
-          type="error"
-          showIcon
-        />
+        <Alert message={apiError.message} type="error" showIcon />
       </Form>
     );
   }
 
-  if (projectsIsLoading) {
+  if (apiIsLoading) {
     return (
       <Form form={projectForm}>
         <Spin></Spin>

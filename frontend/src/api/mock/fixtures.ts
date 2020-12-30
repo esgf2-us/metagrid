@@ -25,7 +25,7 @@ import {
   RawSearchResult,
   RawSearchResults,
 } from '../../components/Search/types';
-import { RawUserAuth, RawUserInfo } from '../../contexts/AuthContext';
+import { RawUserAuth, RawUserInfo } from '../../contexts/types';
 
 export const rawProjectFixture = (
   props: Partial<RawProject> = {}
