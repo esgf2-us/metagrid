@@ -6,12 +6,12 @@ import {
   QuestionOutlined,
   ShoppingCartOutlined,
 } from '@ant-design/icons';
-import { Affix, Breadcrumb, Button, Layout, message } from 'antd';
+import { Affix, Breadcrumb, Button, Layout, message, Result } from 'antd';
 import React from 'react';
 import { useAsync } from 'react-async';
 import ReactGA from 'react-ga';
 import { hotjar } from 'react-hotjar';
-import { Redirect, Route, Switch, useLocation } from 'react-router-dom';
+import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import {
   addUserSearchQuery,
@@ -527,6 +527,20 @@ const App: React.FC = () => {
                       onRemoveSearchQuery={handleRemoveSearchQuery}
                     />
                   </>
+                )}
+              />
+              <Route
+                render={() => (
+                  <Result
+                    status="404"
+                    title="404"
+                    subTitle="Sorry, the page you visited does not exist."
+                    extra={
+                      <Button type="primary">
+                        <Link to="/">Back to Home</Link>
+                      </Button>
+                    }
+                  />
                 )}
               />
             </Switch>
