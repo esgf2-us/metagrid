@@ -256,7 +256,7 @@ it('handles downloading an item via wget', async () => {
 });
 it('displays an error when unable to access download via wget', async () => {
   server.use(
-    rest.get(apiRoutes.wget, (_req, res, ctx) => {
+    rest.get(apiRoutes.wget.path, (_req, res, ctx) => {
       return res(ctx.status(404));
     })
   );
@@ -286,9 +286,7 @@ it('displays an error when unable to access download via wget', async () => {
 
   // Check error message renders
   const errorMsg = await waitFor(() =>
-    getByText(
-      'There was an issue generating the wget script. Please contact support or try again later.'
-    )
+    getByText(apiRoutes.wget.handleErrorMsg(404))
   );
   expect(errorMsg).toBeTruthy();
 });

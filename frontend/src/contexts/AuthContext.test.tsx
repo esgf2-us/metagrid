@@ -1,40 +1,8 @@
 import { act, waitFor } from '@testing-library/react';
 import React from 'react';
-import { userAuthFixture, userInfoFixture } from '../api/mock/fixtures';
-import { rest, server } from '../api/mock/setup-env';
-import apiRoutes from '../api/routes';
 import { keycloakRender } from '../test/custom-render';
-import { AuthProvider, fetchUserAuth, fetchUserInfo } from './AuthContext';
+import { AuthProvider } from './AuthContext';
 
-describe('test fetchUserAuth()', () => {
-  it('returns user authentication tokens', async () => {
-    const userAuth = await fetchUserAuth(['keycloak_token']);
-    expect(userAuth).toEqual(userAuthFixture());
-  });
-  it('returns error', async () => {
-    server.use(
-      rest.post(apiRoutes.keycloakAuth, (_req, res, ctx) => {
-        return res(ctx.status(404));
-      })
-    );
-    await expect(fetchUserAuth(['keycloak_token'])).rejects.toThrow('404');
-  });
-});
-
-describe('test fetchUserInfo()', () => {
-  it('returns user info', async () => {
-    const userInfo = await fetchUserInfo(['access_token']);
-    expect(userInfo).toEqual(userInfoFixture());
-  });
-  it('returns error', async () => {
-    server.use(
-      rest.get(apiRoutes.userInfo, (_req, res, ctx) => {
-        return res(ctx.status(404));
-      })
-    );
-    await expect(fetchUserInfo(['access_token'])).rejects.toThrow('404');
-  });
-});
 describe('test AuthProvider', () => {
   it('renders using keycloak provider', async () => {
     jest.useFakeTimers();

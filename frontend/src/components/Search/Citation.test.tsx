@@ -1,9 +1,8 @@
-import React from 'react';
 import { render, waitFor } from '@testing-library/react';
-
-import Citation, { CitationInfo } from './Citation';
+import React from 'react';
+import { rest, server } from '../../api/mock/setup-env';
 import apiRoutes from '../../api/routes';
-import { server, rest } from '../../api/mock/setup-env';
+import Citation, { CitationInfo } from './Citation';
 
 // Reset all mocks after each test
 afterEach(() => {
@@ -25,7 +24,7 @@ describe('test Citation component', () => {
   it('renders Alert error fetching citation data ', async () => {
     server.use(
       // ESGF Citation API (uses dummy link)
-      rest.get(apiRoutes.citation, (_req, res, ctx) => {
+      rest.get(apiRoutes.citation.path, (_req, res, ctx) => {
         return res(ctx.status(404));
       })
     );

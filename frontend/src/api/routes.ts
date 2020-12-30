@@ -6,17 +6,46 @@ import {
   wgetApiURL,
 } from '../env';
 
+export type HTTPCodeType = 400 | 401 | 403 | 404 | 405 | 'generic';
+
+/**
+ * Update this function if more API HTTP codes need to be handled.
+ * https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+ */
+export const mapHTTPErrorCodes = (
+  service: string,
+  HTTPCode: HTTPCodeType
+): string => {
+  const HTTPCodes = {
+    400: `Your request to the ${service} service was invalid. Please contact support.`,
+    401: `Your request to the ${service} service was unauthorized. Please contact support.`,
+    403: `Your request to the ${service} service was forbidden. Please contact support.`,
+    404: `The requested resource at the ${service} service was invalid. Please contact support.`,
+    405: `Could not perform operation at the ${service} service. Please contact support`,
+    // Adds verbosity to network errors that have generic messages.
+    // For example, the axios default network error message is "Error: Network Error".
+    // This typically occurs when an API/service is down and unable to be reached.
+    generic: `We couldn't reach the ${service} service and are working on it. If the problem persists for awhile, please contact support.`,
+  };
+  return HTTPCodes[HTTPCode];
+};
+
+export type ApiRoute = {
+  path: string;
+  handleErrorMsg: (HTTPCode: HTTPCodeType) => string;
+};
+
 type ApiRoutes = {
-  keycloakAuth: string;
-  userInfo: string;
-  userCart: string;
-  userSearches: string;
-  userSearch: string;
-  projects: string;
-  esgfSearch: string;
-  citation: string;
-  wget: string;
-  nodeStatus: string;
+  keycloakAuth: ApiRoute;
+  userInfo: ApiRoute;
+  userCart: ApiRoute;
+  userSearches: ApiRoute;
+  userSearch: ApiRoute;
+  projects: ApiRoute;
+  esgfSearch: ApiRoute;
+  citation: ApiRoute;
+  wget: ApiRoute;
+  nodeStatus: ApiRoute;
 };
 
 /**
@@ -31,20 +60,58 @@ export const clickableRoute = (route: string): string => {
 // https://mswjs.io/docs/basics/path-matching#path-with-parameters
 const apiRoutes: ApiRoutes = {
   // MetaGrid APIs
-  keycloakAuth: `${metagridApiURL}/dj-rest-auth/keycloak`,
-  userInfo: `${metagridApiURL}/dj-rest-auth/user/`,
-  userCart: `${metagridApiURL}/api/v1/carts/datasets/:pk/`,
-  userSearches: `${metagridApiURL}/api/v1/carts/searches/`,
-  userSearch: `${metagridApiURL}/api/v1/carts/searches/:pk/`,
-  projects: `${metagridApiURL}/api/v1/projects/`,
+  keycloakAuth: {
+    path: `${metagridApiURL}/dj-rest-auth/keycloak`,
+    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Keycloak', HTTPCode),
+  },
+  userInfo: {
+    path: `${metagridApiURL}/dj-rest-auth/user/`,
+    handleErrorMsg: (HTTPCode) =>
+      mapHTTPErrorCodes('user authentication', HTTPCode),
+  },
+  userCart: {
+    path: `${metagridApiURL}/api/v1/carts/datasets/:pk/`,
+    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('user cart', HTTPCode),
+  },
+  userSearches: {
+    path: `${metagridApiURL}/api/v1/carts/searches/`,
+    handleErrorMsg: (HTTPCode) =>
+      mapHTTPErrorCodes('user saved searches', HTTPCode),
+  },
+  userSearch: {
+    path: `${metagridApiURL}/api/v1/carts/searches/:pk/`,
+    handleErrorMsg: (HTTPCode) =>
+      mapHTTPErrorCodes('user saved searches', HTTPCode),
+  },
+  projects: {
+    path: `${metagridApiURL}/api/v1/projects/`,
+    handleErrorMsg: (HTTPCode) =>
+      mapHTTPErrorCodes('MetaGrid projects API', HTTPCode),
+  },
   // ESGF Search API
-  esgfSearch: `${proxyURL}/${esgfNodeURL}/esg-search/search/`,
-  // ESGF Citation API (uses dummy link)
-  citation: `${proxyURL}/citation_url`,
+  esgfSearch: {
+    path: `${proxyURL}/${esgfNodeURL}/esg-search/search/`,
+    handleErrorMsg: (HTTPCode) =>
+      mapHTTPErrorCodes('ESGF Search API', HTTPCode),
+  },
+  // ESGF Citation API (uses dummy path 'citation_url' for testing since the
+  // URL is included in each Search API dataset result)
+  citation: {
+    path: `${proxyURL}/citation_url`,
+    handleErrorMsg: (HTTPCode) =>
+      mapHTTPErrorCodes('ESGF Citation API', HTTPCode),
+  },
   // ESGF wget API
-  wget: `${proxyURL}/${wgetApiURL}`,
+  wget: {
+    path: `${proxyURL}/${wgetApiURL}`,
+    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('ESGF wget API', HTTPCode),
+  },
   // ESGF Node Status API
-  nodeStatus: `${proxyURL}/${nodeStatusURL}`,
+  nodeStatus: {
+    path: `${proxyURL}/${nodeStatusURL}`,
+    handleErrorMsg: (HTTPCode) =>
+      mapHTTPErrorCodes('ESGF Node Status API', HTTPCode),
+  },
 };
 
 export default apiRoutes;

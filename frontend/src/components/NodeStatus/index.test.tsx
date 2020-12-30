@@ -1,10 +1,12 @@
 import { fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
 import NodeStatus, { Props } from '.';
+import { ResponseError } from '../../api';
 import { parsedNodeStatusFixture } from '../../api/mock/fixtures';
 
 const defaultProps: Props = {
   nodeStatus: parsedNodeStatusFixture(),
+  apiError: undefined,
   isLoading: false,
 };
 
@@ -30,15 +32,11 @@ it('renders the node status and columns sort', () => {
   expect(nodeColHeader).toBeTruthy();
   fireEvent.click(nodeColHeader);
 
-  // TODO: Test order of rows
-
   const isOnlineColHeader = getByRole('columnheader', {
     name: 'Online caret-up caret-down',
   });
   expect(isOnlineColHeader).toBeTruthy();
   fireEvent.click(isOnlineColHeader);
-
-  // TODO: Test order of rows
 });
 
 it('renders an error message when no node status information is available', async () => {
@@ -48,4 +46,23 @@ it('renders an error message when no node status information is available', asyn
     getByRole('img', { name: 'close-circle', hidden: true })
   );
   expect(alertMsg).toBeTruthy();
+});
+
+it('renders an error message when there is an api error', async () => {
+  const errorMsg = 'API error';
+
+  const { getByRole, getByText } = render(
+    <NodeStatus
+      isLoading={false}
+      apiError={Error(errorMsg) as ResponseError}
+    ></NodeStatus>
+  );
+
+  const alertMsg = await waitFor(() =>
+    getByRole('img', { name: 'close-circle', hidden: true })
+  );
+  expect(alertMsg).toBeTruthy();
+
+  const errorMsgDiv = getByText(errorMsg);
+  expect(errorMsgDiv).toBeTruthy();
 });

@@ -5,7 +5,11 @@ import {
 } from '@ant-design/icons';
 import { Col, Form, message, Row, Select } from 'antd';
 import React from 'react';
-import { fetchWgetScript, openDownloadURL } from '../../api/index';
+import {
+  fetchWgetScript,
+  openDownloadURL,
+  ResponseError,
+} from '../../api/index';
 import { CSSinJS } from '../../common/types';
 import Empty from '../DataDisplay/Empty';
 import Popconfirm from '../Feedback/Popconfirm';
@@ -57,7 +61,7 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
       // eslint-disable-next-line no-void
       void message.success(
         'The wget script is generating, please wait momentarily.',
-        5
+        10
       );
       setDownloadIsLoading(true);
       fetchWgetScript(ids)
@@ -65,11 +69,9 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
           openDownloadURL(url);
           setDownloadIsLoading(false);
         })
-        .catch(() => {
+        .catch((error: ResponseError) => {
           // eslint-disable-next-line no-void
-          void message.error(
-            'There was an issue generating the wget script. Please contact support or try again later.'
-          );
+          void message.error(error.message);
           setDownloadIsLoading(false);
         });
     }

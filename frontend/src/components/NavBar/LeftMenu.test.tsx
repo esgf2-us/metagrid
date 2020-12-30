@@ -6,6 +6,8 @@ import LeftMenu, { Props } from './LeftMenu';
 
 const defaultProps: Props = {
   projects: projectsFixture(),
+  apiIsLoading: false,
+  apiError: undefined,
   onTextSearch: jest.fn(),
 };
 
@@ -20,6 +22,16 @@ it('renders search input', () => {
   );
 
   expect(getByTestId('left-menu')).toBeTruthy();
+});
+
+it('renders no component if there is no error, not loading, and no projects fetched', () => {
+  const { container } = render(
+    <Router>
+      <LeftMenu {...defaultProps} projects={undefined} />
+    </Router>
+  );
+
+  expect(container.firstChild).toEqual(null);
 });
 
 it('successfully submits search form and resets current text with onFinish', async () => {

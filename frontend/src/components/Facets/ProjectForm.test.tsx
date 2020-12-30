@@ -8,8 +8,9 @@ import ProjectsForm, { Props } from './ProjectForm';
 
 const defaultProps: Props = {
   activeSearchQuery: activeSearchQueryFixture(),
-  projectsIsLoading: false,
   projectsFetched: { results: projectsFixture() },
+  apiIsLoading: false,
+  apiError: undefined,
   onFinish: jest.fn(),
 };
 
@@ -41,7 +42,7 @@ it('renders empty form', () => {
 
 it('renders error message when projects can"t be fetched', () => {
   const { getByRole } = render(
-    <ProjectsForm {...defaultProps} projectsError={new Error('404')} />
+    <ProjectsForm {...defaultProps} apiError={new Error('404')} />
   );
 
   const alertComponent = getByRole('img', { name: 'close-circle' });
