@@ -3,19 +3,13 @@ import { Drawer } from 'antd';
 import React from 'react';
 import { useAsync } from 'react-async';
 import { Link } from 'react-router-dom';
-import { fetchProjects } from '../../api';
+import { fetchProjects, ResponseError } from '../../api';
 import esgfLogo from '../../assets/img/esgf_logo.png';
 import { RawProject } from '../Facets/types';
-import Alert from '../Feedback/Alert';
-import Spin from '../Feedback/Spin';
 import Button from '../General/Button';
 import LeftMenu from './LeftMenu';
 import './NavBar.css';
 import RightMenu from './RightMenu';
-
-const styles = {
-  spin: { display: 'flex', justifyContent: 'center' },
-};
 
 export type Props = {
   numCartItems: number;
@@ -31,15 +25,6 @@ const NavBar: React.FC<Props> = ({
   const { data, error, isLoading } = useAsync(fetchProjects);
   const [showDrawer, setShowDrawer] = React.useState(false);
 
-  if (error) {
-    return (
-      <Alert
-        message="There was an issue fetching list of projects. Please contact support or try again later."
-        type="error"
-      />
-    );
-  }
-
   return (
     <nav data-testid="nav-bar" className="navbar">
       <div className="navbar-logo">
@@ -54,17 +39,12 @@ const NavBar: React.FC<Props> = ({
 
       <div className="navbar-container">
         <div className="navbar-left">
-          {isLoading && (
-            <div style={styles.spin}>
-              <Spin />
-            </div>
-          )}
-          {data && (
-            <LeftMenu
-              projects={data.results}
-              onTextSearch={onTextSearch}
-            ></LeftMenu>
-          )}
+          <LeftMenu
+            projects={data ? data.results : undefined}
+            apiError={error as ResponseError}
+            apiIsLoading={isLoading}
+            onTextSearch={onTextSearch}
+          ></LeftMenu>
         </div>
 
         <div className="navbar-right">

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAsync } from 'react-async';
-import { fetchProjects } from '../../api';
+import { fetchProjects, ResponseError } from '../../api';
 import { objectIsEmpty } from '../../common/utils';
 import Divider from '../General/Divider';
 import { NodeStatusArray } from '../NodeStatus/types';
@@ -61,8 +61,8 @@ const Facets: React.FC<Props> = ({
         <ProjectForm
           activeSearchQuery={activeSearchQuery}
           projectsFetched={data}
-          projectsIsLoading={isLoading}
-          projectsError={error}
+          apiIsLoading={isLoading}
+          apiError={error as ResponseError}
           onFinish={handleSubmitProjectForm}
         />
         <Divider />

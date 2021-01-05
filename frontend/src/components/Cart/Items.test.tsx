@@ -78,7 +78,7 @@ it('handles selecting items in the cart and downloading them via wget', async ()
 it('handles error selecting items in the cart and downloading them via wget', async () => {
   // Override route HTTP response
   server.use(
-    rest.get(apiRoutes.wget, (_req, res, ctx) => {
+    rest.get(apiRoutes.wget.path, (_req, res, ctx) => {
       return res(ctx.status(404));
     })
   );
@@ -113,9 +113,7 @@ it('handles error selecting items in the cart and downloading them via wget', as
 
   // Check error message renders
   const errorMsg = await waitFor(() =>
-    getByText(
-      'There was an issue generating the wget script. Please contact support or try again later.'
-    )
+    getByText(apiRoutes.wget.handleErrorMsg(404))
   );
   expect(errorMsg).toBeTruthy();
 });
