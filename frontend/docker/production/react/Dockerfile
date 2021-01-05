@@ -10,7 +10,7 @@ ENV PATH /app/node_modules/.bin:$PATH
 # Install app dependencies
 COPY package.json ./
 COPY yarn.lock ./
-RUN yarn install --frozen-lock-file
+RUN yarn install --frozen-lock-file --network-timeout=1000000
 
 # Add app
 COPY . ./
