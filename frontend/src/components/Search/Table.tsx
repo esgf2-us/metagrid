@@ -161,14 +161,14 @@ const Table: React.FC<Props> = ({
       dataIndex: 'number_of_files',
       key: 'number_of_files',
       width: 100,
-      render: (numberOfFiles: number) => <p>{numberOfFiles}</p>,
+      render: (numberOfFiles: number) => <p>{numberOfFiles || 'N/A'}</p>,
     },
     {
       title: 'Total Size',
       dataIndex: 'size',
       key: 'size',
       width: 100,
-      render: (size: number) => <p>{formatBytes(size)}</p>,
+      render: (size: number) => <p>{size ? formatBytes(size) : 'N/A'}</p>,
     },
     {
       title: 'Node',
