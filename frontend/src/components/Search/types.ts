@@ -32,8 +32,8 @@ export type RawSearchResult = {
   xlink?: string[] | [];
   citation_url?: string[] | [];
   further_info_url?: string[] | [];
-  number_of_files: number;
-  size: number;
+  number_of_files?: number;
+  size?: number;
   [key: string]: string | string[] | number | undefined;
 };
 
