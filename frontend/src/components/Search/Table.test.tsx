@@ -1,6 +1,9 @@
 import { fireEvent, render, waitFor, within } from '@testing-library/react';
 import React from 'react';
-import { rawSearchResultsFixture } from '../../api/mock/fixtures';
+import {
+  rawSearchResultFixture,
+  rawSearchResultsFixture,
+} from '../../api/mock/fixtures';
 import { rest, server } from '../../api/mock/setup-env';
 import apiRoutes from '../../api/routes';
 import Table, { Props, QualityFlag } from './Table';
@@ -31,6 +34,28 @@ it('renders component without results', () => {
 
   const noDataText = getByText('No Data');
   expect(noDataText).toBeTruthy();
+});
+
+it('renders not available for total size and number of files columns when dataset doesn"t have those attributes', () => {
+  const { getByRole } = render(
+    <Table
+      {...defaultProps}
+      results={[
+        rawSearchResultFixture({ size: undefined, number_of_files: undefined }),
+      ]}
+    />
+  );
+
+  // Check table exists
+  const table = getByRole('table');
+  expect(table).toBeTruthy();
+
+  // Check a record row exist
+  const row = getByRole('row', {
+    name:
+      'right-circle foo N/A N/A question-circle aims3.llnl.gov 1 wget download PID plus',
+  });
+  expect(row).toBeTruthy();
 });
 
 it('renders record metadata in an expandable panel', async () => {
