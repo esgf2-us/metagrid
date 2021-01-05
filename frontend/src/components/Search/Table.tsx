@@ -7,14 +7,7 @@ import {
   PlusOutlined,
   RightCircleOutlined,
 } from '@ant-design/icons';
-import {
-  AutoComplete,
-  Collapse,
-  Form,
-  message,
-  Select,
-  Table as TableD,
-} from 'antd';
+import { Form, message, Select, Table as TableD } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
@@ -30,12 +23,10 @@ import { UserCart } from '../Cart/types';
 import Popover from '../DataDisplay/Popover';
 import ToolTip from '../DataDisplay/ToolTip';
 import Button from '../General/Button';
-import Divider from '../General/Divider';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
 import { NodeStatusArray } from '../NodeStatus/types';
-import Citation from './Citation';
-import FilesTable from './FilesTable';
 import './Search.css';
+import Tabs from './Tabs';
 import { RawSearchResult, RawSearchResults, TextInputs } from './types';
 
 const styles: CSSinJS = {
@@ -109,63 +100,7 @@ const Table: React.FC<Props> = ({
     } as TablePaginationConfig,
     expandable: {
       expandedRowRender: (record: RawSearchResult) => {
-        const metaData = Object.entries(record).map(([k, v]) => ({
-          value: `${k}: ${v as string}`,
-        }));
-
-        return (
-          <>
-            <Collapse>
-              {objectHasKey(record, 'citation_url') && (
-                <Collapse.Panel
-                  collapsible="header"
-                  header="Citation"
-                  key="citation"
-                >
-                  <Citation
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    url={record.citation_url![0]}
-                  />
-                </Collapse.Panel>
-              )}
-
-              <Collapse.Panel
-                collapsible="header"
-                className="metadata"
-                header="Metadata"
-                key="metadata"
-              >
-                <h4>Displaying {Object.keys(record).length} keys</h4>
-                <AutoComplete
-                  style={{ width: '100%' }}
-                  options={metaData}
-                  placeholder="Lookup a key..."
-                  filterOption={(inputValue, option) =>
-                    (option as Record<'value', string>).value
-                      .toUpperCase()
-                      .indexOf(inputValue.toUpperCase()) !== -1
-                  }
-                />
-                <Divider />
-                {Object.keys(record).map((key) => {
-                  return (
-                    <p key={key} style={{ margin: 0 }}>
-                      <span style={{ fontWeight: 'bold' }}>{key}</span>:{' '}
-                      {record[key]}
-                    </p>
-                  );
-                })}
-              </Collapse.Panel>
-              <Collapse.Panel collapsible="header" header="Files" key="files">
-                <FilesTable
-                  id={record.id}
-                  numResults={record.number_of_files}
-                  filenameVars={filenameVars}
-                />
-              </Collapse.Panel>
-            </Collapse>
-          </>
-        );
+        return <Tabs record={record} filenameVars={filenameVars}></Tabs>;
       },
       expandIcon: ({
         expanded,
@@ -183,7 +118,7 @@ const Table: React.FC<Props> = ({
           <DownCircleOutlined onClick={(e) => onExpand(record, e)} />
         ) : (
           <ToolTip
-            title="View this dataset's citation, metadata, and files"
+            title="View this dataset's metadata, files, and citation"
             trigger="hover"
           >
             <RightCircleOutlined onClick={(e) => onExpand(record, e)} />
