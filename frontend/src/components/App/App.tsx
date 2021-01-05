@@ -19,6 +19,7 @@ import {
   fetchNodeStatus,
   fetchUserCart,
   fetchUserSearchQueries,
+  ResponseError,
   updateUserCart,
 } from '../../api';
 import { CSSinJS } from '../../common/types';
@@ -93,9 +94,10 @@ const App: React.FC = () => {
   );
 
   const {
-    data: nodeStatus,
     run: runFetchNodeStatus,
-    isLoading: nodeStatusisLoading,
+    data: nodeStatus,
+    error: nodeStatusApiError,
+    isLoading: nodeStatusIsLoading,
   } = useAsync({
     deferFn: fetchNodeStatus,
   });
@@ -137,10 +139,9 @@ const App: React.FC = () => {
         .then((rawUserCart) => {
           setUserCart(rawUserCart.items);
         })
-        .catch(() => {
+        .catch((error: ResponseError) => {
           void message.error({
-            content:
-              'There was an issue fetching your cart. Please contact support or try again later.',
+            content: error.message,
           });
         });
 
@@ -148,10 +149,9 @@ const App: React.FC = () => {
         .then((rawUserSearches) => {
           setUserSearchQueries(rawUserSearches.results);
         })
-        .catch(() => {
+        .catch((error: ResponseError) => {
           void message.error({
-            content:
-              'There was an issue fetching your saved search queries. Please contact support or try again later.',
+            content: error.message,
           });
         });
     }
@@ -229,10 +229,6 @@ const App: React.FC = () => {
 
   const handleProjectChange = (selectedProject: RawProject): void => {
     setActiveSearchQuery(projectBaseQuery(selectedProject));
-    void message.loading(
-      'Project selected. Please wait for results and facets to load...',
-      2
-    );
   };
 
   const handleRemoveFilter = (removedTag: Tag, type: TagType): void => {
@@ -352,10 +348,9 @@ const App: React.FC = () => {
         .then(() => {
           saveSuccess();
         })
-        .catch(() => {
+        .catch((error: ResponseError) => {
           void message.error({
-            content:
-              'There was an issue updating your cart. Please contact support or try again later.',
+            content: error.message,
           });
         });
     } else {
@@ -381,10 +376,9 @@ const App: React.FC = () => {
         .then(() => {
           deleteSuccess();
         })
-        .catch(() => {
+        .catch((error: ResponseError) => {
           void message.error({
-            content:
-              'There was an issue updating your cart. Please contact support or try again later.',
+            content: error.message,
           });
         });
     } else {
@@ -503,7 +497,8 @@ const App: React.FC = () => {
                     </Breadcrumb>
                     <NodeStatus
                       nodeStatus={nodeStatus}
-                      isLoading={nodeStatusisLoading}
+                      apiError={nodeStatusApiError as ResponseError}
+                      isLoading={nodeStatusIsLoading}
                     />
                   </>
                 )}

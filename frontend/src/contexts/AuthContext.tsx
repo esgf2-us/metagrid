@@ -1,55 +1,14 @@
 import { useKeycloak } from '@react-keycloak/web';
 import React from 'react';
 import { DeferFn, useAsync } from 'react-async';
-import apiRoutes from '../api/routes';
-import axios from '../lib/axios';
-
-export type RawUserAuth = {
-  access_token: string | null;
-  refresh_token: string | null;
-};
-
-export type RawUserInfo = {
-  pk: string | null;
-};
+import { fetchUserAuth, fetchUserInfo } from '../api';
+import { RawUserAuth, RawUserInfo } from './types';
 
 export const AuthContext = React.createContext<RawUserAuth & RawUserInfo>({
   access_token: null,
   refresh_token: null,
   pk: null,
 });
-
-/**
- * Fetches the keycloak user auth tokens from the MetaGrid back-end
- */
-export const fetchUserAuth = async (args: [string]): Promise<RawUserAuth> => {
-  return axios
-    .post(apiRoutes.keycloakAuth, { access_token: args[0] })
-    .then((res) => {
-      return res.data as Promise<RawUserAuth>;
-    })
-    .catch((error) => {
-      throw new Error(error);
-    });
-};
-
-/**
- * Fetches the user info from the MetaGrid back-end
- */
-export const fetchUserInfo = async (args: [string]): Promise<RawUserInfo> => {
-  return axios
-    .get(apiRoutes.userInfo, {
-      headers: {
-        Authorization: `Bearer ${args[0]}`,
-      },
-    })
-    .then((res) => {
-      return res.data as Promise<RawUserInfo>;
-    })
-    .catch((error) => {
-      throw new Error(error);
-    });
-};
 
 type Props = { children: React.ReactNode };
 
