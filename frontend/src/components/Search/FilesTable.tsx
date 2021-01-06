@@ -43,11 +43,11 @@ export const genDownloadUrls = (urls: string[]): DownloadUrls => {
 };
 export type Props = {
   id: string;
-  numResults: number;
+  numResults?: number;
   filenameVars?: TextInputs | [];
 };
 
-const FilesTable: React.FC<Props> = ({ id, numResults, filenameVars }) => {
+const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
   // Add options to this constant as needed.
   type FileDownloadTypes = 'HTTPServer' | 'OpeNDAP' | 'Globus';
   // This variable populates the download drop downs and is used in conditionals.
