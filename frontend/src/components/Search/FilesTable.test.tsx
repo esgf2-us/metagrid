@@ -42,6 +42,15 @@ const defaultProps: Props = {
 };
 
 describe('test FilesTable component', () => {
+  it('renders an empty data table when no results are available', async () => {
+    const { getByRole } = render(
+      <FilesTable {...defaultProps} numResults={undefined} />
+    );
+
+    const component = await waitFor(() => getByRole('table'));
+    expect(component).toBeTruthy();
+  });
+
   it('returns Alert when there is an error fetching files', async () => {
     server.use(
       rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) => {

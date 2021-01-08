@@ -397,12 +397,15 @@ describe('User cart', () => {
     const cartSummary = await waitFor(() => getByTestId('summary'));
     expect(cartSummary).toBeTruthy();
 
-    expect(
+    const numDatasetsText = await waitFor(() =>
       getByText((_, node) => node.textContent === 'Number of Datasets: 1')
-    ).toBeTruthy();
-    expect(
+    );
+    expect(numDatasetsText).toBeTruthy();
+
+    const numFilesText = await waitFor(() =>
       getByText((_, node) => node.textContent === 'Number of Files: 3')
-    ).toBeTruthy();
+    );
+    expect(numFilesText).toBeTruthy();
 
     // Check "Remove All Items" button renders with cart > 0 items and click it
     const clearCartBtn = within(cart).getByRole('button', {

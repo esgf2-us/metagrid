@@ -3,6 +3,7 @@ import React from 'react';
 import NodeStatus, { Props } from '.';
 import { ResponseError } from '../../api';
 import { parsedNodeStatusFixture } from '../../api/mock/fixtures';
+import apiRoutes from '../../api/routes';
 
 const defaultProps: Props = {
   nodeStatus: parsedNodeStatusFixture(),
@@ -56,6 +57,39 @@ it('renders an error message when there is an api error', async () => {
       isLoading={false}
       apiError={Error(errorMsg) as ResponseError}
     ></NodeStatus>
+  );
+
+  const alertMsg = await waitFor(() =>
+    getByRole('img', { name: 'close-circle', hidden: true })
+  );
+  expect(alertMsg).toBeTruthy();
+
+  const errorMsgDiv = getByText(errorMsg);
+  expect(errorMsgDiv).toBeTruthy();
+});
+
+it('renders error message that feature is disabled', async () => {
+  const errorMsg =
+    'This feature is not enabled on this node or status information is currently unavailable.';
+
+  const { getByRole, getByText } = render(
+    <NodeStatus isLoading={false} nodeStatus={[]}></NodeStatus>
+  );
+
+  const alertMsg = await waitFor(() =>
+    getByRole('img', { name: 'close-circle', hidden: true })
+  );
+  expect(alertMsg).toBeTruthy();
+
+  const errorMsgDiv = getByText(errorMsg);
+  expect(errorMsgDiv).toBeTruthy();
+});
+
+it('renders fallback network error msg', async () => {
+  const errorMsg = apiRoutes.nodeStatus.handleErrorMsg('generic');
+
+  const { getByRole, getByText } = render(
+    <NodeStatus isLoading={false}></NodeStatus>
   );
 
   const alertMsg = await waitFor(() =>
