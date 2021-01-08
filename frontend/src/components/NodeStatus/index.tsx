@@ -17,6 +17,10 @@ export type Props = {
 };
 
 const NodeStatus: React.FC<Props> = ({ nodeStatus, apiError, isLoading }) => {
+  // If the API returns a response but there is no data, that means the feature
+  // is disabled
+  const featureIsDisabled = nodeStatus && nodeStatus.length === 0;
+
   if (isLoading) {
     return (
       <>
@@ -35,7 +39,7 @@ const NodeStatus: React.FC<Props> = ({ nodeStatus, apiError, isLoading }) => {
   }
 
   /* istanbul ignore else */
-  if (nodeStatus) {
+  if (nodeStatus && !featureIsDisabled) {
     // Since the timestamp is the same for all node objects, use the first one
     const { timestamp } = nodeStatus[0];
 
@@ -118,15 +122,21 @@ const NodeStatus: React.FC<Props> = ({ nodeStatus, apiError, isLoading }) => {
     );
   }
 
-  let titleMsg = apiRoutes.nodeStatus.handleErrorMsg('generic');
+  let errorMsg: string;
+
   if (apiError) {
-    titleMsg = apiError.message;
+    errorMsg = apiError.message;
+  } else if (featureIsDisabled) {
+    errorMsg =
+      'This feature is not enabled on this node or status information is currently unavailable.';
+  } else {
+    errorMsg = apiRoutes.nodeStatus.handleErrorMsg('generic');
   }
 
   return (
     <>
       <TableD
-        title={() => <Alert message={titleMsg} type="error" />}
+        title={() => <Alert message={errorMsg} type="error" />}
         data-testid="nodeStatusTable"
         size="small"
         rowKey="name"
