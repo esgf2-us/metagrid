@@ -1,0 +1,24 @@
+.. _architecture_and_scaffolding:
+
+Architecture and Scaffolding
+======================================================================
+
+Repositories
+Link: https://github.com/aims-group/metagrid
+
+Project Stack
+
+- Python >= 3.8
+- Django > 3.x
+- Django REST Framework
+- PostgreSQL
+
+
+Architecture Diagram
+
+..
+   _TODO: Add architecture diagram
+
+Django serves REST APIs, which send data and receive responses via REST API endpoints. Typically, the response is in the form of JSON.
+
+Django Project Scaffolding
