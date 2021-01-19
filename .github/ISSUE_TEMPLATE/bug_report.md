@@ -11,21 +11,10 @@ assignees: ""
 <!-- A clear and concise description of what the bug is. -->
 
 **Desktop (please complete the following information):**
-
-- OS: [e.g. iOS]
-- Browser:
-  - [ ] Google Chrome
-    - Version:
-  - [ ] Safari
-    - Version:
-  - [ ] Mozilla Firefox
-    - Version:
-  - [ ] Microsoft Edge
-    - Version:
-  - [ ] Internet Explorer
-    - Version:
-  - [ ] Other (specify)
-    - Version:
+<!-- e.g. Mac OSX, Windows 10 -->
+- OS:
+<!-- e.g. Google Chrome Version 87.0.4280.141 (Official Build) (x86_64) -->
+- Browser and Version:
 
 #### To Reproduce
 
