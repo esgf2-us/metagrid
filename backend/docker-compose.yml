@@ -56,17 +56,3 @@ services:
       - "8000:8000"
     restart: always
     command: /start
-
-  documentation:
-    restart: always
-    build:
-      context: .
-      dockerfile: ./docker/local/django/Dockerfile
-    command: "mkdocs serve"
-    volumes:
-      - ./:/app
-    env_file:
-      - ./.envs/.local/.django
-      - ./.envs/.local/.postgres
-    ports:
-      - "8001:8001"

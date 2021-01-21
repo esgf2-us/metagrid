@@ -1,0 +1,42 @@
+.. MetaGrid documentation master file, created by
+   sphinx-quickstart on Thu Jan  7 11:03:02 2021.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+Welcome to MetaGrid API's documentation!
+====================================
+
+API Documentation
+--------------
+
+This project uses drf-yasg_ to generate OpenAPI Swagger documentation.
+Please visit the '/swagger' endpoint for more information on how to use the MetaGrid API.
+
+.. _drf-yasg: https://drf-yasg.readthedocs.io/en/stable/readme.html
+
+
+Contributor Guide
+---------------------
+
+If you want to contribute to the project, this part of the documentation is for
+you.
+
+.. toctree::
+   :maxdepth: 3
+
+   dev/architecture_and_scaffolding
+   dev/contributing
+   dev/how_to_document
+   dev/building_local
+   dev/building_production
+
+Helpful Links
+- Django
+- Django REST Framework
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
