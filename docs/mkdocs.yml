@@ -1,0 +1,27 @@
+site_name: MetaGrid
+site_description: ESGF Search UI
+repo_url: https://github.com/aims-group/metagrid
+site_dir: site
+copyright: Copyright &copy; 2019, <a href="https://github.com/aims-group">aims-group</a>.
+dev_addr: 0.0.0.0:8001
+theme: readthedocs
+markdown_extensions:
+  - mdx_truly_sane_lists
+  - admonition
+  - toc:
+      permalink: 
+
+nav:
+  - Home: "index.md"
+  # - User Guide:
+  #     - Search: "users/search.md"
+  #     - Download: "users/download.md"
+  #     - Account Management: "users/account_management.md"
+  - Contributor Guide:
+      - Repo Standards: "contributors/repo_standards.md"
+      - Architecture Design: "contributors/architecture_design.md"
+      - Getting Started For Local Development: "contributors/getting_started_local.md"
+      - Getting Started For Production: "contributors/getting_started_production.md"
+      - Document: "contributors/document.md"
+      - Back-end Development: "contributors/backend_development.md"
+      - Front-end Development: "contributors/frontend_development.md"

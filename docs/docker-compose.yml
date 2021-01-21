@@ -1,0 +1,15 @@
+version: "3"
+
+services:
+  docs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: metagrid_local_docs
+    volumes:
+      - ./:/docs
+    # env_file:
+    #   - ./.envs/.local/.django
+    ports:
+      - "8001:8001"
+    command: /start-docs
