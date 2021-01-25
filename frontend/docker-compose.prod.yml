@@ -9,7 +9,6 @@ services:
     networks:
       - traefik_default
       - default
-    container_name: cors-proxy
     env_file:
       - .envs/.production/.cors-proxy
     volumes:
@@ -26,7 +25,6 @@ services:
     networks:
       - traefik_default
       - default
-    container_name: react
     env_file:
       - .envs/.production/.react
     volumes:
