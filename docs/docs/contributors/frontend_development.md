@@ -103,26 +103,26 @@ frontend
 └── yarn.lock
 ```
 
-- `/.envs` - stores environment variables for each microservice found in the docker-compose files, separated by environment and service
-- `/cors-proxy` - the cors-proxy microservice it its own self-contained folder
-- `/docker` - stores files used by each microservice found in the docker-compose files, including DockerFiles, start scripts, etc, separated by environment and service
-- `/public` - stores static files used before app is compiled [https://create-react-app.dev/docs/using-the-public-folder/#when-to-use-the-public-folder](https://create-react-app.dev/docs/using-the-public-folder/#when-to-use-the-public-folder)
-- `/src` - where dynamic files reside, the **bulk of your work is done here**
-  - `/api` - contains API related files
-    - `/mock` - API mocking using [_mock-service-worker_](https://mswjs.io/docs/) package to avoid making real requests in test suites. More info [here](https://kentcdodds.com/blog/stop-mocking-fetch)
+- `.envs/` - stores environment variables for each microservice found in the docker-compose files, separated by environment and service
+- `cors-proxy/` - the cors-proxy microservice it its own self-contained folder
+- `docker/` - stores files used by each microservice found in the docker-compose files, including DockerFiles, start scripts, etc, separated by environment and service
+- `public/` - stores static files used before app is compiled [https://create-react-app.dev/docs/using-the-public-folder/#when-to-use-the-public-folder](https://create-react-app.dev/docs/using-the-public-folder/#when-to-use-the-public-folder)
+- `src/` - where dynamic files reside, the **bulk of your work is done here**
+  - `api/` - contains API related files
+    - `mock/` - API mocking using [_mock-service-worker_](https://mswjs.io/docs/) package to avoid making real requests in test suites. More info [here](https://kentcdodds.com/blog/stop-mocking-fetch)
       - `fixtures.ts` - stores objects that resemble API response data
       - `server-handlers.ts` - handles requests to routes by mapping fixtures as responses to each route endpoint
       - `server.ts` - sets up mock service worker server with server-handlers for tests. Essentially, it creates a mock server that intercepts all requests and handle it as if it were a real server
       - `setup-envs.ts` - imports the mock service worker server to all tests before initialization
     - `index.ts` - contains promise-based HTTP client request functions to APIs, references `routes.ts` for API URL endpoints
     - `routes.ts` - contains routes to APIs and error-handling
-  - `/assets` - stores assets used when the app is compiled
-  - `/common` - stores common code used between components such as utility functions
-  - `/components` - contains React components and related files.
+  - `assets/` - stores assets used when the app is compiled
+  - `common/` - stores common code used between components such as utility functions
+  - `components/` - contains React components and related files.
     Follow [React Components Scaffolding](#react-components-scaffolding)
-  - `/contexts` - stores React [Context](https://reactjs.org/docs/context.html) components, such as for authentication state
-  - `/lib` - stores initialized instances of third party library that are exported for use in the codebase (e.g. Axios, Keycloak)
-  - `/test` - contains related files and functions shared among tests
+  - `contexts/` - stores React [Context](https://reactjs.org/docs/context.html) components, such as for authentication state
+  - `lib/` - stores initialized instances of third party library that are exported for use in the codebase (e.g. Axios, Keycloak)
+  - `test/` - contains related files and functions shared among tests
     - `custom-render.tsx` - wraps the react-testing-library render method with contexts from `/context`
   - `env.ts` - converts environment variables into constants for reusability
   - `setupTests.ts` - configuration for additional test environment settings for jest

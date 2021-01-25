@@ -8,7 +8,7 @@ import environ
 
 ROOT_DIR = (
     environ.Path(__file__) - 3
-)  # (metagrid/config/settings/base.py - 3 = metagrid/)
+)  # (config/settings/base.py - 3 = metagrid/)
 
 env = environ.Env()
 
@@ -79,9 +79,9 @@ MIDDLEWARE = (
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1"]
-ROOT_URLCONF = "metagrid.config.urls"
+ROOT_URLCONF = "config.urls"
 
-WSGI_APPLICATION = "metagrid.config.wsgi.application"
+WSGI_APPLICATION = "config.wsgi.application"
 
 # EMAIL
 # ------------------------------------------------------------------------------
