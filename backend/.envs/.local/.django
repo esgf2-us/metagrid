@@ -1,6 +1,6 @@
 # General
 # ------------------------------------------------------------------------------
-DJANGO_SETTINGS_MODULE=metagrid.config.local
+DJANGO_SETTINGS_MODULE=config.settings.local
 DOMAIN_NAME=http://localhost:8000
 
 # django-cors-headers

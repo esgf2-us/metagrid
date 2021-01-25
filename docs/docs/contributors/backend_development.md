@@ -36,6 +36,14 @@ backend
 ├── .envs
 │ ├── .local
 │ └── .production
+├── config
+│ ├── settings
+│ │ ├── base.py
+│ │ ├── local.py
+│ │ ├── production.py
+│ │ └── test.py
+│ ├── urls.py
+│ └── wsgi.py
 ├── docker
 │ ├── local
 │ └── production
@@ -67,19 +75,20 @@ backend
 └── setup.cfg
 ```
 
-- `/.envs` - stores environment variables for each microservice found in the docker-compose files, separated by environment and service
-- `/docker` - stores files used by each microservice found in the docker-compose files, including DockerFiles, start scripts, etc, separated by environment and service
-- `/docs` - stores documentation files for the project
-- `/metagrid` - stores Django apps
-  - `/config` - not a Django app, stores Django configuration files
+- `.envs/` - stores environment variables for each microservice found in the docker-compose files, separated by environment and service
+- `config/` - stores Django configuration files
+  - `settings/` - stores Django settings files
     - `base.py` - base setting shared across local development and production environments
     - `local.py` - extends `base.py` with local development environment settings
     - `production.py` - extends `base.py` with production environment settings
     - `test.py` - extends `base.py` with test environment settings
-    - `urls.py` - provides URL mapping to Django views
-    - `wsgi.py` - interface between application server to connect with Django. Used primarily in deployment.
-  - `/mysites` - **not a standalone app, only hosts data migrations** for internal Django apps and external third-party apps
-  - `/users` - handles user related data such as accounts and profiles
+  - `urls.py` - provides URL mapping to Django views
+  - `wsgi.py` - interface between application server to connect with Django. Used primarily in deployment.
+- `docker/` - stores files used by each microservice found in the docker-compose files, including DockerFiles, start scripts, etc, separated by environment and service
+- `docs/` - stores documentation files for the project
+- `metagrid/` - stores Django apps
+  - `mysites/` - only hosts data migrations for internal Django apps and external third-party apps, not a typical standalone Django app
+  - `users/` - handles user related data such as accounts and profiles
 - `.coveragerc` - configuration file for coverage.py (used by pytest-cov)
 - `.dockerignore` - files and folders to ignore when building docker containers
 - `.editorconfig` - configuration file for unifying coding style for different editors and IDEs
