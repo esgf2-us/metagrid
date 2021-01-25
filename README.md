@@ -7,6 +7,8 @@
 
 Earth System Grid Federation's (ESGF) next generation search portal
 
+Please visit the [documentation site](https://metagrid.readthedocs.io/en/latest/) for more information.
+
 ## <a name='RepositoryStructure'></a>Repository Structure
 
 This project contains front-end and back-end sub-projects.
