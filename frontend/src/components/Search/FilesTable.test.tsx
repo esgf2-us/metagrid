@@ -24,14 +24,21 @@ describe('test genDownloadUrls()', () => {
       'http://test.com/file.html|OPeNDAP',
     ];
     result = [
-      { downloadType: 'HTTPServer', downloadUrl: 'http://test.com' },
+      { downloadType: 'HTTPServer', downloadUrl: 'https://test.com' },
       { downloadType: 'Globus', downloadUrl: 'http://test.com' },
       { downloadType: 'OPeNDAP', downloadUrl: 'http://test.com/file.dods' },
     ];
   });
 
-  it('successfully converts array of urls to array of objects containing download type and download url', () => {
+  it('converts array of urls to array of objects containing download type and download url', () => {
     const newUrls = genDownloadUrls(urls);
+    expect(newUrls).toEqual(result);
+  });
+  it('converts array of urls to array of objects but ignores HTTPServer URL conversion to HTTPS since it is already HTTPS', () => {
+    const updatedUrls = urls;
+    updatedUrls[0] = updatedUrls[0].replace('http', 'https');
+
+    const newUrls = genDownloadUrls(updatedUrls);
     expect(newUrls).toEqual(result);
   });
 });
