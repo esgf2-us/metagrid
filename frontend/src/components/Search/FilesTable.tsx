@@ -24,6 +24,7 @@ export type DownloadUrls = {
   downloadType: string | undefined;
   downloadUrl: string | undefined;
 }[];
+type FileDownloadTypes = 'HTTPServer' | 'OpeNDAP' | 'Globus';
 
 /**
  * Splits the string by a delimiter and pops the last string
@@ -33,6 +34,13 @@ export const genDownloadUrls = (urls: string[]): DownloadUrls => {
   urls.forEach((url) => {
     const downloadType = url.split('|').pop();
     let downloadUrl = splitStringByChar(url, '|', '0') as string;
+
+    // Chrome blocks Mixed Content (HTTPS to HTTP) downloads and the index
+    // serves HTTP links
+    // https://blog.chromium.org/2020/02/protecting-users-from-insecure.html
+    if (downloadType === 'HTTPServer' && !downloadUrl.includes('https')) {
+      downloadUrl = downloadUrl.replace('http', 'https');
+    }
 
     if (downloadType === 'OPeNDAP') {
       downloadUrl = downloadUrl.replace('.html', '.dods');
@@ -49,7 +57,6 @@ export type Props = {
 
 const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
   // Add options to this constant as needed.
-  type FileDownloadTypes = 'HTTPServer' | 'OpeNDAP' | 'Globus';
   // This variable populates the download drop downs and is used in conditionals.
   // TODO: Add 'Globus' during Globus integration process.
   const allowedDownloadTypes: FileDownloadTypes[] = ['HTTPServer', 'OpeNDAP'];
@@ -184,6 +191,7 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
       width: 200,
       render: (record: { url: string[] }) => {
         const downloadUrls = genDownloadUrls(record.url);
+
         return (
           <span>
             <Form
