@@ -4,7 +4,7 @@ This page provides a high-level overview of the project architecture.
 
 ## Overview
 
-The project repo is a mono-repo split up between directories for the `front-end/`, `back-end/`, and `traefik/`. Although both sides of the stack are in a single repo, each directory contains its own microservices.
+The project repo is a mono-repo split up between directories for the `frontend/`, `backend/`, and `traefik/`. Although both sides of the stack are in a single repo, each directory contains its own microservices.
 
 **Why a mono-repo?**
 

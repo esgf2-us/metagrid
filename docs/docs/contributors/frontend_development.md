@@ -200,9 +200,17 @@ Run a command inside the docker container:
 docker-compose -p metagrid_local_frontend run --rm react [command]
 ```
 
-### `yarn start`
+### `yarn start:local`
 
-Runs the app in the development mode.<br />
+Runs the app in the development mode using `.local` environment settings.<br />
+Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+
+The page will reload if you make edits.<br />
+You will also see any lint errors in the console.
+
+### `yarn start:production`
+
+Runs the app in the development mode using `.production` environment settings.<br />
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
 The page will reload if you make edits.<br />
