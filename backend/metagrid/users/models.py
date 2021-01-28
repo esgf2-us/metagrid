@@ -6,6 +6,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from metagrid.cart.models import Cart
+from metagrid.subscriptions.models import Subscriptions
 
 
 class UserManager(BaseUserManager):
@@ -55,14 +56,15 @@ class User(AbstractUser):
 
     def save(self, *args, **kwargs):
         """
-        Override save method to automatically create a linked Cart when
-        a new user is created.
+        Override save method to automatically link one-to-one objects to a
+        user when a new user is created.
         https://stackoverflow.com/a/35647389
         """
         is_new = self._state.adding  # type: ignore
         super(User, self).save(*args, **kwargs)
         if is_new:
             Cart.objects.create(user=self)
+            Subscriptions.objects.create(user=self)
 
     def __str__(self):
         return self.email

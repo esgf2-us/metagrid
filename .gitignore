@@ -4,6 +4,9 @@
 # pytest
 .pytest_cache/
 
+# NPM virtual environment
+frontend/venv/
+
 
 ### Linux template
 *~

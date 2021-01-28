@@ -21,6 +21,8 @@ module.exports = {
     project: './tsconfig.json',
   },
   rules: {
+    "no-shadow": "off",
+    "@typescript-eslint/no-shadow": ["error"],
     'import/no-extraneous-dependencies': ['error', { devDependencies: true }],
     'react/destructuring-assignment': 'off',
     'react/jsx-filename-extension': [

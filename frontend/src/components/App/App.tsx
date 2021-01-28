@@ -7,6 +7,12 @@ import {
   ShoppingCartOutlined,
 } from '@ant-design/icons';
 import { Affix, Breadcrumb, Button, Layout, message, Result } from 'antd';
+import {
+  ExperimentInfo,
+  ISubscribeState,
+  ModelInfo,
+  Subscription,
+} from 'esgf-subscriptions';
 import React from 'react';
 import { useAsync } from 'react-async';
 import ReactGA from 'react-ga';
@@ -18,9 +24,11 @@ import {
   deleteUserSearchQuery,
   fetchNodeStatus,
   fetchUserCart,
+  fetchUserSubscriptions,
   fetchUserSearchQueries,
   ResponseError,
   updateUserCart,
+  updateUserSubscriptions,
 } from '../../api';
 import { CSSinJS } from '../../common/types';
 import { AuthContext } from '../../contexts/AuthContext';
@@ -42,6 +50,8 @@ import {
   ResultType,
   VersionDate,
 } from '../Search/types';
+import { Subscriptions } from '../Subscriptions';
+import { UserSubscriptions } from '../Subscriptions/types';
 import Support from '../Support';
 import './App.css';
 
@@ -132,6 +142,10 @@ const App: React.FC = () => {
     UserSearchQueries | []
   >(JSON.parse(localStorage.getItem('userSearchQueries') || '[]'));
 
+  const [userSubscriptions, setUserSubscriptions] = React.useState<
+    UserSubscriptions | []
+  >(JSON.parse(localStorage.getItem('userSubscriptions') || '[]'));
+
   React.useEffect(() => {
     /* istanbul ignore else */
     if (isAuthenticated) {
@@ -148,6 +162,16 @@ const App: React.FC = () => {
       void fetchUserSearchQueries(accessToken as string)
         .then((rawUserSearches) => {
           setUserSearchQueries(rawUserSearches.results);
+        })
+        .catch((error: ResponseError) => {
+          void message.error({
+            content: error.message,
+          });
+        });
+
+      void fetchUserSubscriptions(pk as string, accessToken as string)
+        .then((rawUserSubscriptions) => {
+          setUserSubscriptions(rawUserSubscriptions.subscriptions);
         })
         .catch((error: ResponseError) => {
           void message.error({
@@ -172,6 +196,15 @@ const App: React.FC = () => {
       );
     }
   }, [isAuthenticated, userSearchQueries]);
+
+  React.useEffect(() => {
+    if (!isAuthenticated) {
+      localStorage.setItem(
+        'userSubscriptions',
+        JSON.stringify(userSubscriptions)
+      );
+    }
+  }, [isAuthenticated, userSubscriptions]);
 
   React.useEffect(() => {
     /* istanbul ignore else */
@@ -398,6 +431,97 @@ const App: React.FC = () => {
     });
   };
 
+  const handleCreateSubscriptions = (subState: ISubscribeState): void => {
+    // Get experiment IDs
+    const experimentIds: string[] = subState.experiment_id.selectedIds.map(
+      (exp: ExperimentInfo): string => {
+        return exp.experiment_id;
+      }
+    );
+
+    // Get model IDs
+    const modelIds: string[] = subState.source_id.selectedIds.map(
+      (model: ModelInfo) => {
+        return model.source_id;
+      }
+    );
+
+    // Create subscription object to pass to backend
+    const time: number = Date.now();
+    const newSub: Subscription = {
+      id: uuidv4(),
+      timestamp: time,
+      period: subState.period,
+      name: subState.name,
+      activity_id: subState.activity_id.selectedIds,
+      experiment_id: experimentIds,
+      frequency: subState.frequency.selectedIds,
+      source_id: modelIds,
+      realm: subState.realm.selectedIds,
+      variable_id: subState.variable_id.selectedIds,
+    };
+
+    const newSubs = [...userSubscriptions, newSub];
+
+    const saveSuccess = (): void => {
+      setUserSubscriptions(newSubs);
+      void message.success({
+        content: 'Saved new subscription!',
+        icon: <BookOutlined style={styles.messageAddIcon} />,
+      });
+    };
+
+    if (isAuthenticated) {
+      void updateUserSubscriptions(pk as string, accessToken as string, newSubs)
+        .then(() => {
+          saveSuccess();
+        })
+        .catch((error: ResponseError) => {
+          void message.error({
+            content: error.message,
+          });
+        });
+    } else {
+      saveSuccess();
+    }
+  };
+
+  const handleDeleteSubscriptions = (subsToDelete: UserSubscriptions): void => {
+    if (!userSubscriptions || userSubscriptions.length === 0) {
+      return; // No subscriptions to delete
+    }
+
+    const newSubs = [...userSubscriptions].filter(
+      (sub: Subscription) => {
+        return !subsToDelete.includes(sub);
+      }
+    );
+    // Update state
+    setUserSubscriptions(newSubs);
+
+    const deleteSuccess = (): void => {
+      setUserSubscriptions(newSubs);
+      void message.success({
+        content: 'Subscriptions updated!',
+        icon: <BookOutlined style={styles.messageAddIcon} />,
+      });
+    };
+
+    if (isAuthenticated) {
+      void updateUserSubscriptions(pk as string, accessToken as string, newSubs)
+        .then(() => {
+          deleteSuccess();
+        })
+        .catch((error: ResponseError) => {
+          void message.error({
+            content: error.message,
+          });
+        });
+    } else {
+      deleteSuccess();
+    }
+  };
+
   return (
     <>
       <Switch>
@@ -521,6 +645,24 @@ const App: React.FC = () => {
                       onRunSearchQuery={handleRunSearchQuery}
                       onRemoveSearchQuery={handleRemoveSearchQuery}
                     />
+                  </>
+                )}
+              />
+              <Route
+                path="/subscriptions"
+                render={() => (
+                  <>
+                    <Breadcrumb>
+                      <Breadcrumb.Item>
+                        <HomeOutlined /> Home
+                      </Breadcrumb.Item>
+                      <Breadcrumb.Item>Subscriptions</Breadcrumb.Item>
+                    </Breadcrumb>
+                    <Subscriptions
+                      onCreateSubscription={handleCreateSubscriptions}
+                      onDeleteSubscriptions={handleDeleteSubscriptions}
+                      userSubscriptions={userSubscriptions}
+                    ></Subscriptions>
                   </>
                 )}
               />

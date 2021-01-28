@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     "metagrid.projects",
     "metagrid.cart",
     "metagrid.mysites",
+    "metagrid.subscriptions",
 ]
 
 # https://docs.djangoproject.com/en/2.0/topics/http/middleware/

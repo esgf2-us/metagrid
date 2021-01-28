@@ -7,6 +7,7 @@ import {
 } from '../Search/types';
 
 export type UserCart = RawSearchResults;
+
 export type RawUserCart = {
   items: RawSearchResults;
 };

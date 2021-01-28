@@ -10,6 +10,7 @@ import {
   fetchUserAuth,
   fetchUserCart,
   fetchUserInfo,
+  fetchUserSubscriptions,
   fetchUserSearchQueries,
   fetchWgetScript,
   generateSearchURLQuery,
@@ -31,6 +32,7 @@ import {
   rawCitationFixture,
   rawNodeStatusFixture,
   rawUserCartFixture,
+  rawUserSubscriptionsFixture,
   userAuthFixture,
   userInfoFixture,
   userSearchQueriesFixture,
@@ -331,6 +333,33 @@ describe('test fetching user cart', () => {
   it('returns user"s cart', async () => {
     const files = await fetchUserCart('pk', 'access_token');
     expect(files).toEqual(rawUserCartFixture());
+  });
+  it('catches and throws an error based on HTTP status code', async () => {
+    server.use(
+      rest.get(apiRoutes.userCart.path, (_req, res, ctx) => {
+        return res(ctx.status(404));
+      })
+    );
+    await expect(fetchUserCart('pk', 'access_token')).rejects.toThrow(
+      apiRoutes.userCart.handleErrorMsg(404)
+    );
+  });
+  it('catches and throws generic network error', async () => {
+    server.use(
+      rest.get(apiRoutes.userCart.path, (_req, res) => {
+        return res.networkError(genericNetworkErrorMsg);
+      })
+    );
+    await expect(fetchUserCart('pk', 'access_token')).rejects.toThrow(
+      apiRoutes.userCart.handleErrorMsg('generic')
+    );
+  });
+});
+
+describe('test fetching user saved subscriptions', () => {
+  it('returns user\'s saved subscriptions', async () => {
+    const files = await fetchUserSubscriptions('pk', 'access_token');
+    expect(files).toEqual(rawUserSubscriptionsFixture());
   });
   it('catches and throws an error based on HTTP status code', async () => {
     server.use(

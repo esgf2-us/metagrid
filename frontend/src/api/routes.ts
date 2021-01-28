@@ -40,6 +40,7 @@ type ApiRoutes = {
   userInfo: ApiRoute;
   userCart: ApiRoute;
   userSearches: ApiRoute;
+  userSubscriptions: ApiRoute;
   userSearch: ApiRoute;
   projects: ApiRoute;
   esgfSearch: ApiRoute;
@@ -72,6 +73,10 @@ const apiRoutes: ApiRoutes = {
   userCart: {
     path: `${metagridApiURL}/api/v1/carts/datasets/:pk/`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('user cart', HTTPCode),
+  },
+  userSubscriptions: {
+    path: `${metagridApiURL}/api/v1/subscriptions/:pk/`,
+    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('user saved subscriptions', HTTPCode)
   },
   userSearches: {
     path: `${metagridApiURL}/api/v1/carts/searches/`,

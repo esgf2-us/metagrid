@@ -3,6 +3,7 @@
  * Fixtures allows tests to be maintainable (especially in the case of updated
  * APIs) and reduce duplicate hard-coded dummy data.
  */
+import { Subscription } from 'esgf-subscriptions';
 import {
   RawUserCart,
   UserCart,
@@ -71,6 +72,24 @@ export const rawSearchResultFixture = (
   return { ...defaults, ...props };
 };
 
+/**
+ * Subscription result fixture based on the ESGF Subscriptions.
+ * In the API, this value is stored in an array of objects under the 'docs' key
+ * of the HTTP  response object.
+ */
+export const rawSubscriptionResultFixture = (
+  props: Subscription[] = []
+): Subscription[] => {
+  const defaults: Subscription[] = [{
+    id: -1,
+    period: "weekly",
+    timestamp: 1234567,
+    name: "test_subscription",
+    variable_id: ['clt'],
+  }];
+  return { ...defaults, ...props };
+};
+
 export const rawSearchResultsFixture = (): Array<RawSearchResult> => {
   return [
     rawSearchResultFixture(),
@@ -113,6 +132,10 @@ export const parsedFacetsFixture = (
 export const userCartFixture = (): UserCart => {
   return rawSearchResultsFixture();
 };
+
+export const userSubscriptionsFixture = (): Subscription[] => {
+  return rawSubscriptionResultFixture();
+}
 
 export const rawCitationFixture = (
   props: Partial<RawCitation> = {}
@@ -212,6 +235,13 @@ export const rawUserCartFixture = (
     items: [rawSearchResultFixture()],
   };
   return { ...defaults, ...props } as RawUserCart;
+};
+
+export const rawUserSubscriptionsFixture = (
+  props: Subscription[] = []
+): Subscription[] => {
+  const defaults: Subscription[] = userSubscriptionsFixture();
+  return { ...defaults, ...props } as Subscription[];
 };
 
 export const rawNodeStatusFixture = (

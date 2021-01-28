@@ -1,6 +1,7 @@
 /**
  * This file contains HTTP Request functions.
  */
+import { Subscription } from 'esgf-subscriptions';
 import humps from 'humps';
 import queryString from 'query-string';
 import {
@@ -164,6 +165,75 @@ export const updateUserCart = async (
     })
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userCart));
+    });
+};
+
+/**
+ * HTTP Request Method: GET
+ * HTTP Response Code: 200 OK
+ */
+export const fetchUserSubscriptions = async (
+  pk: string,
+  accessToken: string
+): Promise<{
+  subscriptions: Subscription[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
+}> => {
+  return axios
+    .get(`${apiRoutes.userSubscriptions.path.replace(':pk', pk)}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+    .then((res) => {
+      return res.data as Promise<{
+        subscriptions: Subscription[];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        [key: string]: any;
+      }>;
+    })
+    .catch((error: ResponseError) => {
+      throw new Error(
+        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userSubscriptions)
+      );
+    });
+};
+
+/**
+ * HTTP Request Method: GET
+ * HTTP Response Code: 200 OK
+ */
+export const updateUserSubscriptions = async (
+  pk: string,
+  accessToken: string,
+  newSubscriptions: Subscription[]
+): Promise<{
+  subscriptions: Subscription[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
+}> => {
+  return axios
+    .patch(
+      `${apiRoutes.userSubscriptions.path.replace(':pk', pk)}`,
+      { subscriptions: newSubscriptions },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    )
+    .then((res) => {
+      return res.data as Promise<{
+        subscriptions: Subscription[];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        [key: string]: any;
+      }>;
+    })
+    .catch((error: ResponseError) => {
+      throw new Error(
+        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userSubscriptions)
+      );
     });
 };
 

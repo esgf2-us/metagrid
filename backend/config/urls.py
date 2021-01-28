@@ -14,6 +14,7 @@ from rest_framework.routers import DefaultRouter
 
 from metagrid.cart.views import CartViewSet, SearchViewSet
 from metagrid.projects.views import ProjectsViewSet
+from metagrid.subscriptions.views import SubscriptionsViewSet
 from metagrid.users.views import UserCreateViewSet, UserViewSet
 
 router = DefaultRouter()
@@ -22,6 +23,7 @@ router.register(r"users", UserCreateViewSet)
 router.register(r"projects", ProjectsViewSet)
 router.register(r"carts/datasets", CartViewSet)
 router.register(r"carts/searches", SearchViewSet)
+router.register(r"subscriptions", SubscriptionsViewSet)
 
 
 class KeycloakLogin(SocialLoginView):

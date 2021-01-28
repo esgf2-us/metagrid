@@ -90,3 +90,9 @@ ENV/
 .env
 .envs/.production/.django
 .envs/.production/.postgres
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+package-lock.json

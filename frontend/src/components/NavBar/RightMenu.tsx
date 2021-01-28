@@ -55,6 +55,8 @@ const RightMenu: React.FC<Props> = ({
       setActiveMenuItem('cartItems');
     } else if (location.pathname.includes('cart/searches')) {
       setActiveMenuItem('cartSearches');
+    } else if (location.pathname.endsWith('subscriptions')) {
+      setActiveMenuItem('subscriptions');
     }
   }, [location.pathname]);
 
@@ -70,6 +72,9 @@ const RightMenu: React.FC<Props> = ({
           <Link to="/nodes">
             <NodeIndexOutlined /> Node Status
           </Link>
+        </Menu.Item>
+        <Menu.Item key="subscriptions">
+          <Link to="/subscriptions">Subscribe</Link>
         </Menu.Item>
         <Menu.SubMenu
           title={<span className="submenu-title-wrapper">Resources</span>}
