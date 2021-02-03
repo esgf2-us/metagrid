@@ -21,12 +21,12 @@ export type Props = {
   nodeStatus?: NodeStatusArray;
   onProjectChange: (selectedProj: RawProject) => void;
   onSetFilenameVars: (filenameVar: string) => void;
-  onSetFacets: (
+  onSetGeneralFacets: (
     resultType: ResultType,
     minVersionDate: VersionDate,
-    maxVersionDate: VersionDate,
-    activeFacets: ActiveFacets
+    maxVersionDate: VersionDate
   ) => void;
+  onSetActiveFacets: (activeFacets: ActiveFacets) => void;
 };
 
 const Facets: React.FC<Props> = ({
@@ -35,7 +35,8 @@ const Facets: React.FC<Props> = ({
   nodeStatus,
   onProjectChange,
   onSetFilenameVars,
-  onSetFacets,
+  onSetGeneralFacets,
+  onSetActiveFacets,
 }) => {
   const { data, error, isLoading } = useAsync(fetchProjects);
 
@@ -75,7 +76,8 @@ const Facets: React.FC<Props> = ({
             availableFacets={availableFacets as ParsedFacets}
             nodeStatus={nodeStatus}
             onSetFilenameVars={onSetFilenameVars}
-            onSetFacets={onSetFacets}
+            onSetGeneralFacets={onSetGeneralFacets}
+            onSetActiveFacets={onSetActiveFacets}
           />
         </>
       )}

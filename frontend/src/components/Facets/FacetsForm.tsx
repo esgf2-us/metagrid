@@ -29,12 +29,12 @@ export type Props = {
   availableFacets: ParsedFacets;
   nodeStatus?: NodeStatusArray;
   onSetFilenameVars: (filenameVar: string) => void;
-  onSetFacets: (
+  onSetGeneralFacets: (
     resultType: ResultType,
     minVersionDate: VersionDate,
-    maxVersionDate: VersionDate,
-    activeFacets: ActiveFacets
+    maxVersionDate: VersionDate
   ) => void;
+  onSetActiveFacets: (activeFacets: ActiveFacets) => void;
 };
 
 /**
@@ -74,15 +74,24 @@ const FacetsForm: React.FC<Props> = ({
   availableFacets,
   nodeStatus,
   onSetFilenameVars,
-  onSetFacets,
+  onSetGeneralFacets,
+  onSetActiveFacets,
 }) => {
+  const [generalFacetsForm] = Form.useForm();
   const [availableFacetsForm] = Form.useForm();
   const [filenameVarForm] = Form.useForm();
   const [filenameVars, setFilenameVar] = React.useState('');
 
-  const facetsByGroup = activeSearchQuery.project.facetsByGroup as {
-    [key: string]: string[];
-  };
+  // Manually handles the state of individual dropdowns to capture all selected
+  // options as an array, rather than using the Form component to handle form
+  // changes. If the form handles changes, auto-filtering occurs for each single
+  // option selected, which results in the user not being able to select multiple
+  // options in a single instance. In this case, auto-filtering is performed after
+  // the dropdown closes, therefore allowing the user to filter using multiple options.
+  const [activeDropdownValue, setActiveDropdownValue] = React.useState<
+    [string, string[] | []] | null
+  >(null);
+  const [dropdownIsOpen, setDropdownIsOpen] = React.useState<boolean>(false);
 
   type DatePickerReturnType =
     | [null, null]
@@ -100,13 +109,6 @@ const FacetsForm: React.FC<Props> = ({
       ? formatDate(maxVersionDate, false)
       : (maxVersionDate as null),
   ];
-  /**
-   * Need to reset the project facet form's fields whenever the active and default
-   * facets change in order to capture the correct number of facet counts per option
-   */
-  React.useEffect(() => {
-    availableFacetsForm.resetFields();
-  }, [availableFacetsForm, activeSearchQuery]);
 
   const handleOnFinishFilenameVarForm = (values: {
     [key: string]: string;
@@ -117,17 +119,12 @@ const FacetsForm: React.FC<Props> = ({
     filenameVarForm.setFieldsValue({ filenameVar: '' });
   };
 
-  const handleOnChangeFacetsForm = (selectedFacets: {
+  const handleOnChangeGeneralFacetsForm = (selectedFacets: {
     resultType: ResultType;
     versionDateRange: DatePickerReturnType;
     [key: string]: ResultType | ActiveFacets | [] | DatePickerReturnType;
   }): void => {
-    const {
-      resultType: newResultType,
-      versionDateRange,
-      ...newActiveFacets
-    } = selectedFacets;
-
+    const { resultType: newResultType, versionDateRange } = selectedFacets;
     let newMinVersionDate = null;
     let newMaxVersionDate = null;
     /* istanbul ignore else */
@@ -141,27 +138,52 @@ const FacetsForm: React.FC<Props> = ({
         : maxDate;
     }
 
-    // The form keeps a history of all selected facets, including when
-    // facet keys change from > 0 elements to 0 elements (none selected) in the
-    // array. To avoid including facet keys with 0 elements, iterate through the
-    // object and delete them.
-    Object.keys(newActiveFacets).forEach((key) => {
-      if (
-        newActiveFacets[key] === undefined ||
-        newActiveFacets[key].length === 0
-      ) {
-        delete newActiveFacets[key];
-      }
-    });
-
-    onSetFacets(
-      newResultType,
-      newMinVersionDate,
-      newMaxVersionDate,
-      newActiveFacets as ActiveFacets
-    );
+    onSetGeneralFacets(newResultType, newMinVersionDate, newMaxVersionDate);
   };
 
+  const handleOnSelectAvailableFacetsForm = (
+    facet: string,
+    options: string[] | []
+  ): void => {
+    setActiveDropdownValue([facet, options]);
+  };
+
+  /**
+   * Need to reset the form fields when the active search query updates to
+   * capture the correct number of facet counts per option
+   */
+  React.useEffect(() => {
+    generalFacetsForm.resetFields();
+    availableFacetsForm.resetFields();
+  }, [generalFacetsForm, availableFacetsForm, activeSearchQuery]);
+
+  React.useEffect(() => {
+    if (!dropdownIsOpen && activeDropdownValue) {
+      const [facet, options] = activeDropdownValue;
+      const newActiveFacets = activeSearchQuery.activeFacets as ActiveFacets;
+      /* istanbul ignore else */
+      if (options.length === 0) {
+        delete newActiveFacets[facet];
+        onSetActiveFacets(newActiveFacets);
+      } else if (options.length > 0) {
+        onSetActiveFacets({
+          ...newActiveFacets,
+          [facet]: options,
+        } as ActiveFacets);
+      }
+      setActiveDropdownValue(null);
+    }
+  }, [
+    dropdownIsOpen,
+    onSetActiveFacets,
+    activeSearchQuery,
+    activeDropdownValue,
+    setActiveDropdownValue,
+  ]);
+
+  const facetsByGroup = activeSearchQuery.project.facetsByGroup as {
+    [key: string]: string[];
+  };
   return (
     <div data-testid="facets-form">
       <Form
@@ -208,7 +230,7 @@ const FacetsForm: React.FC<Props> = ({
       </Form>
 
       <Form
-        form={availableFacetsForm}
+        form={generalFacetsForm}
         layout="vertical"
         initialValues={{
           ...activeSearchQuery.activeFacets,
@@ -216,7 +238,7 @@ const FacetsForm: React.FC<Props> = ({
           resultType: activeSearchQuery.resultType,
         }}
         onValuesChange={(_changedValues, allValues) => {
-          handleOnChangeFacetsForm(allValues);
+          handleOnChangeGeneralFacetsForm(allValues);
         }}
       >
         <Form.Item
@@ -229,7 +251,7 @@ const FacetsForm: React.FC<Props> = ({
             trigger: 'hover',
           }}
         >
-          <Select>
+          <Select data-testid="result-type-form-select">
             <Select.Option value={'all' as ResultType}>
               Originals and Replicas
             </Select.Option>
@@ -242,6 +264,7 @@ const FacetsForm: React.FC<Props> = ({
           </Select>
         </Form.Item>
         <Form.Item
+          data-testid="version-range-datepicker"
           label="Version Date Range"
           name="versionDateRange"
           tooltip={{
@@ -252,6 +275,15 @@ const FacetsForm: React.FC<Props> = ({
         >
           <DatePicker.RangePicker allowEmpty={[true, true]} />
         </Form.Item>
+      </Form>
+
+      <Form
+        form={availableFacetsForm}
+        layout="vertical"
+        initialValues={{
+          ...activeSearchQuery.activeFacets,
+        }}
+      >
         <div style={styles.container}>
           {facetsByGroup &&
             Object.keys(facetsByGroup).map((group) => {
@@ -297,6 +329,20 @@ const FacetsForm: React.FC<Props> = ({
                                 style={{ width: '100%' }}
                                 tokenSeparators={[',']}
                                 showArrow
+                                // Need to set getPopupContainer to fix drop-down menu scrolling with the page in a fixed position
+                                getPopupContainer={(triggerNode) =>
+                                  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
+                                  triggerNode.parentElement
+                                }
+                                onDropdownVisibleChange={(open) =>
+                                  setDropdownIsOpen(open)
+                                }
+                                onChange={(value: string[] | []) => {
+                                  return handleOnSelectAvailableFacetsForm(
+                                    facet,
+                                    value
+                                  );
+                                }}
                               >
                                 {facetOptions.map((variable) => {
                                   let optionOutput:

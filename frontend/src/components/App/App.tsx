@@ -208,19 +208,21 @@ const App: React.FC = () => {
     }
   };
 
-  const handleOnSetFacets = (
+  const handleOnSetGeneralFacets = (
     resultType: ResultType,
     minVersionDate: VersionDate,
-    maxVersionDate: VersionDate,
-    activeFacets: ActiveFacets
+    maxVersionDate: VersionDate
   ): void => {
     setActiveSearchQuery({
       ...activeSearchQuery,
       resultType,
       minVersionDate,
       maxVersionDate,
-      activeFacets,
     });
+  };
+
+  const handleOnSetActiveFacets = (activeFacets: ActiveFacets): void => {
+    setActiveSearchQuery({ ...activeSearchQuery, activeFacets });
   };
 
   const handleClearFilters = (): void => {
@@ -430,7 +432,8 @@ const App: React.FC = () => {
                     nodeStatus={nodeStatus}
                     onProjectChange={handleProjectChange}
                     onSetFilenameVars={handleOnSetFilenameVars}
-                    onSetFacets={handleOnSetFacets}
+                    onSetGeneralFacets={handleOnSetGeneralFacets}
+                    onSetActiveFacets={handleOnSetActiveFacets}
                   />
                 </Layout.Sider>
               )}
