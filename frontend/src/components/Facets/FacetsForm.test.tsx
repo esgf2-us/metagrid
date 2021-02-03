@@ -26,7 +26,8 @@ const defaultProps: Props = {
   availableFacets: parsedFacetsFixture(),
   nodeStatus: parsedNodeStatusFixture(),
   onSetFilenameVars: jest.fn(),
-  onSetFacets: jest.fn(),
+  onSetGeneralFacets: jest.fn(),
+  onSetActiveFacets: jest.fn(),
 };
 
 describe('test FacetsForm component', () => {
@@ -46,5 +47,32 @@ describe('test FacetsForm component', () => {
 
     // Check if the input value resets back to blank
     await waitFor(() => expect(input.value).toEqual(''));
+  });
+
+  it('handles date picker for versioning', async () => {
+    const { getByTestId } = render(<FacetsForm {...defaultProps} />);
+
+    // Check date picker renders
+    const datePickerComponent = getByTestId('version-range-datepicker');
+    expect(datePickerComponent).toBeTruthy();
+
+    const datePickerComponentInput = datePickerComponent.querySelectorAll(
+      'input'
+    )[0];
+
+    // Open calendar and focus on input
+    fireEvent.mouseDown(datePickerComponentInput);
+
+    // Set date as input value
+    fireEvent.change(datePickerComponentInput, {
+      target: { value: '2020-01-15' },
+    });
+
+    // Open calendar, select the set value, and click it
+    fireEvent.click(
+      document.querySelector('.ant-picker-cell-selected') as HTMLInputElement
+    );
+
+    await waitFor(() => getByTestId('facets-form'));
   });
 });

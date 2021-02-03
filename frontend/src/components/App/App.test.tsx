@@ -73,7 +73,7 @@ it('handles project changes when a new project is selected', async () => {
   });
   fireEvent.submit(submitBtn);
 
-  // Wait for components to re-render
+  // Wait for components to rerender
   await waitFor(() => getByTestId('search'));
 
   // Change the value for free-text input to 'foo' again and submit
@@ -113,7 +113,7 @@ it('handles setting filename variables and duplicates', async () => {
   });
   fireEvent.submit(submitBtn);
 
-  // Wait for components to re-render
+  // Wait for components to rerender
   await waitFor(() => getByTestId('search'));
   await waitFor(() => getByTestId('facets'));
 
@@ -129,13 +129,13 @@ it('handles setting filename variables and duplicates', async () => {
   });
   fireEvent.submit(filenameVarsSubmitBtn);
 
-  // Wait for components to re-render
+  // Wait for components to rerender
   await waitFor(() => getByTestId('search'));
 
   fireEvent.change(input, { target: { value: 'var' } });
   fireEvent.submit(filenameVarsSubmitBtn);
 
-  // Wait for components to re-render
+  // Wait for components to rerender
   await waitFor(() => getByTestId('search'));
 });
 
@@ -161,7 +161,7 @@ it('handles setting and removing text input filters and clearing all search filt
   });
   fireEvent.submit(submitBtn);
 
-  // Wait for components to re-render
+  // Wait for components to rerender
   await waitFor(() => getByTestId('search'));
 
   // Check tag renders
@@ -177,7 +177,7 @@ it('handles setting and removing text input filters and clearing all search filt
   fireEvent.change(freeTextInput, { target: { value: 'baz' } });
   fireEvent.submit(submitBtn);
 
-  // Wait for components to re-render
+  // Wait for components to rerender
   await waitFor(() => getByTestId('search'));
 
   // Check baz tag exists
@@ -187,11 +187,11 @@ it('handles setting and removing text input filters and clearing all search filt
   // Close the baz tag
   fireEvent.click(within(bazTag).getByRole('img', { name: 'close' }));
 
-  // Wait for components to re-render
+  // Wait for components to rerender
   await waitFor(() => getByTestId('search'));
 });
 
-it('handles removing facet tags', async () => {
+it('handles applying general facets', async () => {
   const { getByTestId, getByText } = customRender(<App />);
 
   // Check applicable components render
@@ -219,16 +219,66 @@ it('handles removing facet tags', async () => {
   });
   fireEvent.submit(submitBtn);
 
+  // Wait for facets forms to rerender
+  const facetsForm = await waitFor(() => getByTestId('facets-form'));
+  expect(facetsForm).toBeTruthy();
+
+  // Change result type
+  // Check facet select form exists and mouseDown to expand list of options
+  const resultTypeSelect = getByTestId('result-type-form-select');
+  expect(resultTypeSelect).toBeTruthy();
+  fireEvent.mouseDown(resultTypeSelect.firstElementChild as HTMLInputElement);
+
+  // Select the first facet option
+  const resultTypeOption = await waitFor(() => getByText('Originals only'));
+  expect(resultTypeOption).toBeTruthy();
+  fireEvent.click(resultTypeOption);
+  await waitFor(() => getByTestId('facets-form'));
+
+  await waitFor(() => getByTestId('search'));
+});
+
+it('handles applying and removing project facets', async () => {
+  const { getByTestId, getByText } = customRender(<App />);
+
+  // Check applicable components render
+  const facetsComponent = await waitFor(() => getByTestId('facets'));
+  expect(facetsComponent).toBeTruthy();
+
+  // Wait for project form to render
+  const projectForm = await waitFor(() => getByTestId('project-form'));
+  expect(projectForm).toBeTruthy();
+
+  // Check project select form exists and mouseDown to expand list of options to
+  // expand options
+  const projectFormSelect = within(projectForm).getByRole('combobox');
+
+  expect(projectFormSelect).toBeTruthy();
+  fireEvent.mouseDown(projectFormSelect);
+
+  // Select the second project option
+  const projectOption = getByTestId('project_1');
+  expect(projectOption).toBeTruthy();
+  fireEvent.click(projectOption);
+
+  // Submit the form
+  const submitBtn = within(facetsComponent).getByRole('img', {
+    name: 'select',
+  });
+  fireEvent.submit(submitBtn);
+
+  // Wait for project form to render
+  const facetsForm = await waitFor(() => getByTestId('facets-form'));
+  expect(facetsForm).toBeTruthy();
+
   // Open Collapse Panel in Collapse component for the data_node form to render
-  const collapse = await waitFor(() => getByText('Data Node'));
+  const collapse = getByText('Data Node');
   fireEvent.click(collapse);
 
   // Check facet select form exists and mouseDown to expand list of options
-  const facetFormSelect = document.querySelector(
-    '[data-testid=data_node-form-select] > .ant-select-selector'
-  ) as HTMLFormElement;
+  const facetFormSelect = getByTestId('data_node-form-select');
   expect(facetFormSelect).toBeTruthy();
-  fireEvent.mouseDown(facetFormSelect);
+  fireEvent.mouseDown(facetFormSelect.firstElementChild as HTMLInputElement);
 
   // Select the first facet option
   const facetOption = await waitFor(() =>
@@ -237,17 +287,47 @@ it('handles removing facet tags', async () => {
   expect(facetOption).toBeTruthy();
   fireEvent.click(facetOption);
 
-  // Wait for components to re-render
+  // Apply facets
+  fireEvent.keyDown(facetFormSelect, {
+    key: 'Escape',
+    code: 'Escape',
+    keyCode: '27',
+    charCode: '27',
+  });
+
+  // Wait for components to rerender
   await waitFor(() => getByTestId('search'));
 
-  // Check tag renders
+  // Check facet option applied
   const tag = await waitFor(() => getByTestId('aims3.llnl.gov'));
   expect(tag).toBeTruthy();
 
-  // Close tag
-  fireEvent.click(within(tag).getByRole('img', { name: 'close' }));
+  // Check facets select form rerenders and mouseDown to expand list of options
+  const facetFormSelectRerender = getByTestId('data_node-form-select');
+  expect(facetFormSelectRerender).toBeTruthy();
+  fireEvent.mouseDown(
+    facetFormSelectRerender.firstElementChild as HTMLInputElement
+  );
 
-  // Wait for components to re-render
+  // Check option is selected and remove it
+  const facetOptionRerender = await waitFor(() =>
+    within(facetFormSelectRerender).getByRole('img', {
+      name: 'close',
+      hidden: true,
+    })
+  );
+  expect(facetOptionRerender).toBeTruthy();
+  fireEvent.click(facetOptionRerender);
+
+  // Remove facets
+  fireEvent.keyDown(facetFormSelectRerender, {
+    key: 'Escape',
+    code: 'Escape',
+    keyCode: '27',
+    charCode: '27',
+  });
+
+  // Wait for component to rerender
   await waitFor(() => getByTestId('search'));
 });
 
@@ -284,7 +364,7 @@ it('handles project changes and clearing filters when the active project !== sel
 
   fireEvent.submit(submitBtn);
 
-  // Wait for components to re-render
+  // Wait for components to rerender
   await waitFor(() => getByTestId('facets'));
 
   // Check project select form exists again and mouseDown to expand list of options
@@ -300,7 +380,7 @@ it('handles project changes and clearing filters when the active project !== sel
   // Submit the form
   fireEvent.submit(submitBtn);
 
-  // Wait for components to re-render
+  // Wait for components to rerender
   await waitFor(() => getByTestId('facets'));
 });
 
@@ -341,7 +421,7 @@ describe('User cart', () => {
     });
     fireEvent.submit(submitBtn);
 
-    // Wait for components to re-render
+    // Wait for components to rerender
     await waitFor(() => getByTestId('search'));
 
     // Check first row exists
@@ -461,7 +541,7 @@ describe('User cart', () => {
     });
     fireEvent.submit(submitBtn);
 
-    // Wait for components to re-render
+    // Wait for components to rerender
     await waitFor(() => getByTestId('search'));
 
     // Check first row exists
@@ -510,7 +590,7 @@ describe('User cart', () => {
     });
     fireEvent.submit(submitBtn);
 
-    // Wait for components to re-render
+    // Wait for components to rerender
     await waitFor(() => getByTestId('search'));
 
     // Check first row exists
@@ -629,7 +709,7 @@ describe('User search library', () => {
     });
     fireEvent.submit(submitBtn);
 
-    // Wait for components to re-render
+    // Wait for components to rerender
     await waitFor(() => getByTestId('search'));
 
     // Check Save Search button exists and click it
@@ -655,7 +735,7 @@ describe('User search library', () => {
     expect(applySearchBtn).toBeTruthy();
     fireEvent.click(applySearchBtn);
 
-    // Wait for components to re-render
+    // Wait for components to rerender
     await waitFor(() => getByTestId('search'));
   });
   it('handles authenticated user removing searches from the search library', async () => {
@@ -723,7 +803,7 @@ describe('User search library', () => {
     });
     fireEvent.submit(submitBtn);
 
-    // Wait for components to re-render
+    // Wait for components to rerender
     await waitFor(() => getByTestId('search'));
 
     // Check Save Search button exists and click it
@@ -751,7 +831,7 @@ describe('User search library', () => {
     expect(applySearchBtn).toBeTruthy();
     fireEvent.click(applySearchBtn);
 
-    // Wait for components to re-render
+    // Wait for components to rerender
     await waitFor(() => getByTestId('facets'));
   });
   it('handles anonymous user removing searches from the search library', async () => {
@@ -779,7 +859,7 @@ describe('User search library', () => {
     });
     fireEvent.submit(submitBtn);
 
-    // Wait for components to re-render
+    // Wait for components to rerender
     await waitFor(() => getByTestId('search'));
 
     // Check Save Search button exists and click it
@@ -865,7 +945,7 @@ describe('User search library', () => {
       });
       fireEvent.submit(submitBtn);
 
-      // Wait for components to re-render
+      // Wait for components to rerender
       await waitFor(() => getByTestId('search'));
 
       // Check Save Search button exists and click it
