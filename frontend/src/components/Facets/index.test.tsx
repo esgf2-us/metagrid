@@ -12,7 +12,9 @@ const defaultProps: Props = {
   availableFacets: parsedFacetsFixture(),
   nodeStatus: parsedNodeStatusFixture(),
   onProjectChange: jest.fn(),
-  onSetFacets: jest.fn(),
+  onSetFilenameVars: jest.fn(),
+  onSetGeneralFacets: jest.fn(),
+  onSetActiveFacets: jest.fn(),
 };
 
 it('renders component', async () => {
