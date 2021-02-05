@@ -1,6 +1,4 @@
 import {
-  CheckCircleTwoTone,
-  CloseCircleTwoTone,
   DownCircleOutlined,
   DownloadOutlined,
   MinusOutlined,
@@ -80,10 +78,10 @@ const Table: React.FC<Props> = ({
   onPageChange,
   onPageSizeChange,
 }) => {
-  // Add options to this constant as needed.
+  // Add options to this constant as needed
   type DatasetDownloadTypes = 'wget' | 'Globus';
-  // This variable populates the download drop downs and is used in conditionals.
-  // TODO: Add 'Globus' during Globus integration process.
+  // If a record supports downloads from the allowed downloads, it will render
+  // in the drop downs
   const allowedDownloadTypes: DatasetDownloadTypes[] = ['wget'];
 
   const tableConfig = {
@@ -189,17 +187,8 @@ const Table: React.FC<Props> = ({
       key: 'download',
       width: 200,
       render: (record: RawSearchResult) => {
-        const { id } = record;
-
-        // Unique key for the download form item
-        const formKey = `download-${id}`;
-        let globusCompatible = false;
-        record.access.forEach((download) => {
-          if (download === 'Globus') {
-            globusCompatible = true;
-            allowedDownloadTypes.push('Globus');
-          }
-        });
+        const supportedDownloadTypes = record.access;
+        const formKey = `download-${record.id}`;
 
         /**
          * Handle the download form for datasets
@@ -226,15 +215,6 @@ const Table: React.FC<Props> = ({
 
         return (
           <>
-            {/* TODO: Remove display styling when Globus is integrated*/}
-            <p style={{ display: 'none' }}>
-              {globusCompatible ? (
-                <CheckCircleTwoTone twoToneColor="#52c41a" />
-              ) : (
-                <CloseCircleTwoTone twoToneColor="#eb2f96" />
-              )}{' '}
-              Globus Compatible
-            </p>
             <Form
               layout="inline"
               onFinish={({ [formKey]: download }) =>
@@ -244,11 +224,18 @@ const Table: React.FC<Props> = ({
             >
               <Form.Item name={formKey}>
                 <Select style={{ width: 120 }}>
-                  {allowedDownloadTypes.map((option) => (
-                    <Select.Option key={option} value={option}>
-                      {option}
-                    </Select.Option>
-                  ))}
+                  {allowedDownloadTypes.map(
+                    (option) =>
+                      (supportedDownloadTypes.includes(option) ||
+                        option === 'wget') && (
+                        <Select.Option
+                          key={`${formKey}-${option}`}
+                          value={option}
+                        >
+                          {option}
+                        </Select.Option>
+                      )
+                  )}
                 </Select>
               </Form.Item>
               <Form.Item>
@@ -268,8 +255,8 @@ const Table: React.FC<Props> = ({
       key: 'additional',
       width: 200,
       render: (record: RawSearchResult) => {
-        // Have to parse and format since 'xlink' attribute is
-        // poorly structured in the Search API
+        // Have to parse and format since 'xlink' attribute is poorly structured
+        // in the Search API
         const xlinkTypesToOutput: Record<
           string,
           { label: string; url: null | string }
