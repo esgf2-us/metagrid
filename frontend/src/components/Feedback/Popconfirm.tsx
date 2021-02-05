@@ -29,8 +29,7 @@ const Popconfirm: React.FC<Props> = ({
   placement = 'top',
   onConfirm,
   children,
-}) => {
-  return (
+}) => (
     <PopconfirmD
       title={title}
       icon={icon}
@@ -40,6 +39,5 @@ const Popconfirm: React.FC<Props> = ({
       {children}
     </PopconfirmD>
   );
-};
 
 export default Popconfirm;

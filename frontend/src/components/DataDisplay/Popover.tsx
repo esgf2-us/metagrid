@@ -26,12 +26,10 @@ const Popover: React.FC<Props> = ({
   placement = 'top',
   trigger = 'hover',
   children,
-}) => {
-  return (
+}) => (
     <PopoverD placement={placement} trigger={trigger} content={content}>
       {children}
     </PopoverD>
   );
-};
 
 export default Popover;

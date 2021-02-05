@@ -2,9 +2,7 @@
  * Checks if an object is empty.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const objectIsEmpty = (obj: Record<any, any>): boolean => {
-  return !obj || Object.keys(obj).length === 0;
-};
+export const objectIsEmpty = (obj: Record<any, any>): boolean => !obj || Object.keys(obj).length === 0;
 
 /**
  * Checks if the specified key is in the object
@@ -13,9 +11,7 @@ export const objectHasKey = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   obj: Record<any, any>,
   key: string | number
-): boolean => {
-  return Object.prototype.hasOwnProperty.call(obj, key);
-};
+): boolean => Object.prototype.hasOwnProperty.call(obj, key);
 
 /**
  * For a record's 'xlink' attribute, it will be split into an array of

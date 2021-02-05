@@ -15,8 +15,7 @@ const Modal: React.FC<Props> = ({
   onClose,
   centered,
   children,
-}) => {
-  return (
+}) => (
     <ModalD
       visible={visible}
       title={title}
@@ -27,6 +26,5 @@ const Modal: React.FC<Props> = ({
       {children}
     </ModalD>
   );
-};
 
 export default Modal;

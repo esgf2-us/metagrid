@@ -8,12 +8,10 @@ type Props = {
   children: React.ReactNode;
 };
 
-const Card: React.FC<Props> = ({ title, hoverable, actions, children }) => {
-  return (
+const Card: React.FC<Props> = ({ title, hoverable, actions, children }) => (
     <CardD title={title} hoverable={hoverable} actions={actions}>
       {children}
     </CardD>
   );
-};
 
 export default Card;

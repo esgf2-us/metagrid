@@ -9,11 +9,5 @@
       "requirements/local.txt",
       "requirements/production.txt"
     ]
-  },
-  "packageRules": [
-    {
-      "packagePatterns": ["^eslint"],
-      "enabled": false
-    }
-  ]
+  }
 }
