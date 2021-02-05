@@ -8,11 +8,10 @@ if TYPE_CHECKING:
 
 
 def insert_facets(apps, schema_editor):
-    """Inserts Facet objects using the existing ProjectFacet objects
-    """
-    ProjectFacetModel = apps.get_model(  # type: ProjectFacet
+    """Inserts Facet objects using the existing ProjectFacet objects"""
+    ProjectFacetModel = apps.get_model(
         "projects", "ProjectFacet"
-    )
+    )  # type: ProjectFacet
 
     facet_names = (
         ProjectFacetModel.objects.values_list("name", flat=True)
@@ -20,17 +19,13 @@ def insert_facets(apps, schema_editor):
         .distinct()
     )
 
-    FacetModel = apps.get_model(  # type: Facet
-        "projects", "Facet"
-    )
+    FacetModel = apps.get_model("projects", "Facet")  # type: Facet
     for name in facet_names:
         FacetModel.objects.create(name=name)
 
 
 def reverse_insert_facets(apps, schema_editor):
-    FacetModel = apps.get_model(  # type: Facet
-        "projects", "Facet"
-    )
+    FacetModel = apps.get_model("projects", "Facet")  # type: Facet
 
     FacetModel.objects.all().delete()
 

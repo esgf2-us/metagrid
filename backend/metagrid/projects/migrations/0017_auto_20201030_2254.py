@@ -10,9 +10,9 @@ if TYPE_CHECKING:
 def insert_cross_search(apps, schema_editor):
     ProjectModel = apps.get_model("projects", "Project")  # type: Project
     FacetModel = apps.get_model("projects", "Facet")  # type: Facet
-    FacetGroupModel = apps.get_model(  # type: FacetGroup
+    FacetGroupModel = apps.get_model(
         "projects", "FacetGroup"
-    )
+    )  # type: FacetGroup
 
     cross_project = ProjectModel(
         name="All (except CMIP6)",
@@ -20,8 +20,18 @@ def insert_cross_search(apps, schema_editor):
     )
     cross_project.save()
     facets = {
-        "General": ["project", "product", "institute", "model", "data_node",],
-        "Identifiers": ["source_id", "experiment", "experiment_family",],
+        "General": [
+            "project",
+            "product",
+            "institute",
+            "model",
+            "data_node",
+        ],
+        "Identifiers": [
+            "source_id",
+            "experiment",
+            "experiment_family",
+        ],
         "Classifications": [
             "time_frequency",
             "realm",
@@ -42,22 +52,28 @@ def insert_cross_search(apps, schema_editor):
             "pft",
             "vegetation",
         ],
-        "CORDEX": ["domain", "rcm_name", "rcm_version",],
+        "CORDEX": [
+            "domain",
+            "rcm_name",
+            "rcm_version",
+        ],
     }
 
     for group_name, facets_by_group in facets.items():
         group = FacetGroupModel.objects.get_or_create(name=group_name)
         for facet in facets_by_group:
             FacetModel.objects.create(
-                name=facet, project=cross_project, group=group[0],
+                name=facet,
+                project=cross_project,
+                group=group[0],
             )
 
 
 def reverse_cross_search(apps, schema_editor):
     ProjectModel = apps.get_model("projects", "Project")  # type: Project
-    FacetGroupModel = apps.get_model(  # type: FacetGroup
+    FacetGroupModel = apps.get_model(
         "projects", "FacetGroup"
-    )
+    )  # type: FacetGroup
 
     ProjectModel.objects.get(name="All (except CMIP6)").delete()
     FacetGroupModel.objects.filter(name__in=["ISIMIP-FT", "CORDEX"]).delete()
