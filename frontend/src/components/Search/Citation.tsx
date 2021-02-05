@@ -14,14 +14,12 @@ type CitationInfoProps = {
 export const CitationInfo: React.FC<CitationInfoProps> = ({
   title,
   children,
-}) => {
-  return (
+}) => (
     <p style={{ margin: 0 }}>
       <span style={{ fontWeight: 'bold' }}>{title}: </span>
       {children}
     </p>
   );
-};
 
 type CitationProps = {
   url: string;

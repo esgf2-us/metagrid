@@ -281,9 +281,7 @@ it('handles downloading an item via wget', async () => {
 });
 it('displays an error when unable to access download via wget', async () => {
   server.use(
-    rest.get(apiRoutes.wget.path, (_req, res, ctx) => {
-      return res(ctx.status(404));
-    })
+    rest.get(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404)))
   );
 
   const { getByRole, getByText } = render(

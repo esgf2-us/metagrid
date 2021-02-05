@@ -16,7 +16,7 @@ import { clickableRoute } from '../../api/routes';
 import { CSSinJS } from '../../common/types';
 import { objectIsEmpty } from '../../common/utils';
 import { UserCart } from '../Cart/types';
-import { Tag, TagType } from '../DataDisplay/Tag';
+import { Tag, TagType, TagValue } from '../DataDisplay/Tag';
 import {
   ActiveFacets,
   ParsedFacets,
@@ -123,15 +123,13 @@ export const stringifyFilters = (
 export const checkFiltersExist = (
   activeFacets: ActiveFacets | Record<string, unknown>,
   textInputs: TextInputs
-): boolean => {
-  return !(objectIsEmpty(activeFacets) && textInputs.length === 0);
-};
+): boolean => !(objectIsEmpty(activeFacets) && textInputs.length === 0);
 
 export type Props = {
   activeSearchQuery: ActiveSearchQuery;
   userCart: UserCart | [];
   nodeStatus?: NodeStatusArray;
-  onRemoveFilter: (removedTag: Tag, type: TagType) => void;
+  onRemoveFilter: (removedTag: TagValue, type: TagType) => void;
   onClearFilters: () => void;
   onUpdateCart: (
     selectedItems: RawSearchResults,
@@ -337,47 +335,35 @@ const Search: React.FC<Props> = ({
       {results && (
         <Row style={styles.filtersContainer}>
           {Object.keys(activeFacets).length !== 0 &&
-            Object.keys(activeFacets).map((facet: string) => {
-              return (activeFacets as ActiveFacets)[facet].map(
-                (variable: string) => {
-                  return (
-                    <div key={variable} data-testid={variable}>
-                      <Tag
-                        value={[facet, variable]}
-                        onClose={onRemoveFilter}
-                        type="facet"
-                      >
-                        {variable}
-                      </Tag>
-                    </div>
-                  );
-                }
-              );
-            })}
-          {textInputs.length !== 0 &&
-            (textInputs as TextInputs).map((input: string) => {
-              return (
-                <div key={input} data-testid={input}>
-                  <Tag value={input} onClose={onRemoveFilter} type="text">
-                    {input}
-                  </Tag>
-                </div>
-              );
-            })}
-          {filenameVars.length !== 0 &&
-            (filenameVars as TextInputs).map((input: string) => {
-              return (
-                <div key={input} data-testid={input}>
+            Object.keys(activeFacets).map((facet: string) =>
+              (activeFacets as ActiveFacets)[facet].map((variable: string) => (
+                <div key={variable} data-testid={variable}>
                   <Tag
-                    value={input}
+                    value={[facet, variable]}
                     onClose={onRemoveFilter}
-                    type="filenameVar"
+                    type="facet"
                   >
-                    Filename Variable: {input}
+                    {variable}
                   </Tag>
                 </div>
-              );
-            })}
+              ))
+            )}
+          {textInputs.length !== 0 &&
+            (textInputs as TextInputs).map((input: string) => (
+              <div key={input} data-testid={input}>
+                <Tag value={input} onClose={onRemoveFilter} type="text">
+                  {input}
+                </Tag>
+              </div>
+            ))}
+          {filenameVars.length !== 0 &&
+            (filenameVars as TextInputs).map((input: string) => (
+              <div key={input} data-testid={input}>
+                <Tag value={input} onClose={onRemoveFilter} type="filenameVar">
+                  Filename Variable: {input}
+                </Tag>
+              </div>
+            ))}
           {filtersExist && (
             <Tag
               value="clearAll"

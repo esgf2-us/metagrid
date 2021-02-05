@@ -10,22 +10,17 @@ beforeEach(() => {
   jest.setTimeout(15000);
 });
 
-// Fixes 'TypeError: window.matchMedia is not a function caused by JSDom.
-// https://stackoverflow.com/a/53449595
-// https://jestjs.io/docs/zh-Hans/manual-mocks#mocking-methods-which-are-not-implemented-in-jsdom
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: jest.fn().mockImplementation((query) => ({
-    matches: false,
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    media: query,
-    onchange: null,
-    addListener: jest.fn(), // deprecated
-    removeListener: jest.fn(), // deprecated
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
-  })),
-});
+// Fixes 'TypeError: Cannot read property 'addListener' of undefined.
+// https://github.com/AO19/typeError-cannot-read-property-addListener-of-undefined/commit/873ce9b730a1c21b40c9264e5f29fc2df436136b
+
+global.matchMedia =
+  global.matchMedia ||
+  // eslint-disable-next-line func-names
+  function () {
+    return {
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+    };
+  };
 
 module.exports = window;
