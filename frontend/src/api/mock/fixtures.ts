@@ -79,7 +79,7 @@ export const rawSearchResultsFixture = (): Array<RawSearchResult> => {
       title: 'bar',
       number_of_files: 2,
       data_node: 'esgf1.dkrz.de',
-      access: ['HTTPServer', 'OPeNDAP'],
+      access: ['wget', 'HTTPServer', 'OPeNDAP'],
     }),
   ];
 };
