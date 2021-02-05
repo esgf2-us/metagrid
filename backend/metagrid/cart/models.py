@@ -2,7 +2,10 @@ import uuid
 
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.db.models import JSONField as JSONBField
+from django.db.models import JSONField as JSONBField  # type: ignore
+
+# mypy does not have support for some Django 3.x features (e.g. JSONField)
+# https://github.com/typeddjango/django-stubs/issues/439
 
 
 class Cart(models.Model):

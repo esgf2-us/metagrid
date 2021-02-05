@@ -59,7 +59,7 @@ class User(AbstractUser):
         a new user is created.
         https://stackoverflow.com/a/35647389
         """
-        is_new = self._state.adding  # type: ignore
+        is_new = self._state.adding
         super(User, self).save(*args, **kwargs)
         if is_new:
             Cart.objects.create(user=self)
