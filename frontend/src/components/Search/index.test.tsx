@@ -51,9 +51,7 @@ describe('test Search component', () => {
       // ESGF Search API - datasets
       rest.get(
         `${proxyURL}/${esgfNodeURL}/esg-search/search/`,
-        (_req, res, ctx) => {
-          return res(ctx.status(404));
-        }
+        (_req, res, ctx) => res(ctx.status(404))
       )
     );
 
@@ -131,9 +129,7 @@ describe('test Search component', () => {
     };
 
     server.use(
-      rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) => {
-        return res(ctx.status(200), ctx.json(response));
-      })
+      rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) => res(ctx.status(200), ctx.json(response)))
     );
 
     const { getByRole, getByTestId, getByText } = render(

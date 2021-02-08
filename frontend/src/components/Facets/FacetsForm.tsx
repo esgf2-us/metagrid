@@ -286,8 +286,7 @@ const FacetsForm: React.FC<Props> = ({
       >
         <div style={styles.container}>
           {facetsByGroup &&
-            Object.keys(facetsByGroup).map((group) => {
-              return (
+            Object.keys(facetsByGroup).map((group) => (
                 <div key={group} style={styles.collapseContainer}>
                   <h4 style={styles.formTitle}>{group}</h4>
                   <Collapse>
@@ -337,12 +336,10 @@ const FacetsForm: React.FC<Props> = ({
                                 onDropdownVisibleChange={(open) =>
                                   setDropdownIsOpen(open)
                                 }
-                                onChange={(value: string[] | []) => {
-                                  return handleOnSelectAvailableFacetsForm(
+                                onChange={(value: string[] | []) => handleOnSelectAvailableFacetsForm(
                                     facet,
                                     value
-                                  );
-                                }}
+                                  )}
                               >
                                 {facetOptions.map((variable) => {
                                   let optionOutput:
@@ -390,8 +387,7 @@ const FacetsForm: React.FC<Props> = ({
                     })}
                   </Collapse>
                 </div>
-              );
-            })}
+              ))}
         </div>
       </Form>
     </div>

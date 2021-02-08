@@ -44,9 +44,7 @@ export const rawProjectFixture = (
   return { ...defaults, ...props } as RawProject;
 };
 
-export const projectsFixture = (): RawProjects => {
-  return [rawProjectFixture(), rawProjectFixture({ name: 'test2' })];
-};
+export const projectsFixture = (): RawProjects => [rawProjectFixture(), rawProjectFixture({ name: 'test2' })];
 
 /**
  * Search result fixture based on the ESGF Search API.
@@ -71,8 +69,7 @@ export const rawSearchResultFixture = (
   return { ...defaults, ...props };
 };
 
-export const rawSearchResultsFixture = (): Array<RawSearchResult> => {
-  return [
+export const rawSearchResultsFixture = (): Array<RawSearchResult> => [
     rawSearchResultFixture(),
     rawSearchResultFixture({
       id: 'bar',
@@ -82,7 +79,6 @@ export const rawSearchResultsFixture = (): Array<RawSearchResult> => {
       access: ['wget', 'HTTPServer', 'OPeNDAP'],
     }),
   ];
-};
 
 export const rawFacetsFixture = (props: Partial<RawFacets> = {}): RawFacets => {
   const defaults: RawFacets = {
@@ -110,9 +106,7 @@ export const parsedFacetsFixture = (
   return { ...defaults, ...props } as ParsedFacets;
 };
 
-export const userCartFixture = (): UserCart => {
-  return rawSearchResultsFixture();
-};
+export const userCartFixture = (): UserCart => rawSearchResultsFixture();
 
 export const rawCitationFixture = (
   props: Partial<RawCitation> = {}
@@ -165,17 +159,14 @@ export const userSearchQueryFixture = (
   return { ...defaults, ...props } as UserSearchQuery;
 };
 
-export const userSearchQueriesFixture = (): UserSearchQueries => {
-  return [userSearchQueryFixture()];
-};
+export const userSearchQueriesFixture = (): UserSearchQueries => [userSearchQueryFixture()];
 
 type ESGFSearchAPIResponse = {
   response: { numFound: number; docs: RawSearchResults };
   facet_counts: { facet_fields: RawFacets };
 };
 
-export const ESGFSearchAPIFixture = (): ESGFSearchAPIResponse => {
-  return {
+export const ESGFSearchAPIFixture = (): ESGFSearchAPIResponse => ({
     response: {
       numFound: rawSearchResultsFixture().length,
       docs: rawSearchResultsFixture(),
@@ -183,8 +174,7 @@ export const ESGFSearchAPIFixture = (): ESGFSearchAPIResponse => {
     facet_counts: {
       facet_fields: rawFacetsFixture(),
     },
-  };
-};
+  });
 
 export const userAuthFixture = (
   props: Partial<RawUserAuth> = {}
@@ -246,8 +236,7 @@ export const rawNodeStatusFixture = (
 
   return { ...defaults, ...props } as RawNodeStatus;
 };
-export const parsedNodeStatusFixture = (): NodeStatusArray => {
-  return [
+export const parsedNodeStatusFixture = (): NodeStatusArray => [
     {
       name: 'aims3.llnl.gov',
       source: 'https://aims3.llnl.gov/thredds/catalog/catalog.html',
@@ -261,4 +250,3 @@ export const parsedNodeStatusFixture = (): NodeStatusArray => {
       isOnline: false,
     },
   ];
-};

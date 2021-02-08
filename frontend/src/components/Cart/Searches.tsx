@@ -23,8 +23,7 @@ const Searches: React.FC<Props> = ({
     <div>
       <Row gutter={[18, 18]}>
         {(userSearchQueries as UserSearchQueries).map(
-          (searchQuery: UserSearchQuery, index: number) => {
-            return (
+          (searchQuery: UserSearchQuery, index: number) => (
               <SearchesCard
                 key={searchQuery.uuid}
                 searchQuery={searchQuery}
@@ -32,8 +31,7 @@ const Searches: React.FC<Props> = ({
                 onRunSearchQuery={onRunSearchQuery}
                 onRemoveSearchQuery={onRemoveSearchQuery}
               />
-            );
-          }
+            )
         )}
       </Row>
     </div>

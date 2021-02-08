@@ -78,9 +78,7 @@ it('handles selecting items in the cart and downloading them via wget', async ()
 it('handles error selecting items in the cart and downloading them via wget', async () => {
   // Override route HTTP response
   server.use(
-    rest.get(apiRoutes.wget.path, (_req, res, ctx) => {
-      return res(ctx.status(404));
-    })
+    rest.get(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404)))
   );
 
   const { getByRole, getByTestId, getByText } = render(

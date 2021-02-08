@@ -24,9 +24,7 @@ describe('test Citation component', () => {
   it('renders Alert error fetching citation data ', async () => {
     server.use(
       // ESGF Citation API (uses dummy link)
-      rest.get(apiRoutes.citation.path, (_req, res, ctx) => {
-        return res(ctx.status(404));
-      })
+      rest.get(apiRoutes.citation.path, (_req, res, ctx) => res(ctx.status(404)))
     );
     const { getByRole } = render(<Citation url="citation_url" />);
 

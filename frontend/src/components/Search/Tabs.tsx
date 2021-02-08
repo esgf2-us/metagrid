@@ -27,13 +27,11 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
           }
         />
         <Divider />
-        {Object.keys(record).map((key) => {
-          return (
+        {Object.keys(record).map((key) => (
             <p key={key} style={{ margin: 0 }}>
               <span style={{ fontWeight: 'bold' }}>{key}</span>: {record[key]}
             </p>
-          );
-        })}
+          ))}
       </TabsD.TabPane>
       <TabsD.TabPane tab="Files" key="2">
         <FilesTable

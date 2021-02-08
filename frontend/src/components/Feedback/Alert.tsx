@@ -13,8 +13,7 @@ const Alert: React.FC<Props> = ({
   description,
   type,
   showIcon = true,
-}) => {
-  return (
+}) => (
     <AlertD
       message={message}
       description={description}
@@ -22,6 +21,5 @@ const Alert: React.FC<Props> = ({
       showIcon={showIcon}
     />
   );
-};
 
 export default Alert;
