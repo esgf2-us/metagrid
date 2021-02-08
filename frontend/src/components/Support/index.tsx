@@ -7,8 +7,7 @@ export type Props = {
   onClose: () => void;
 };
 
-const Support: React.FC<Props> = ({ visible, onClose }) => {
-  return (
+const Support: React.FC<Props> = ({ visible, onClose }) => (
     <div>
       <Modal
         visible={visible}
@@ -48,6 +47,5 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
       </Modal>
     </div>
   );
-};
 
 export default Support;

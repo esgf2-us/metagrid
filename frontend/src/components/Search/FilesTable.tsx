@@ -134,8 +134,7 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
         handlePageSizeChange(size),
     } as TablePaginationConfig,
     expandable: {
-      expandedRowRender: (record: RawSearchResult) => {
-        return Object.keys(record).map((key) => {
+      expandedRowRender: (record: RawSearchResult) => Object.keys(record).map((key) => {
           if (metadataKeysToDisplay.includes(key)) {
             return (
               <p key={key} style={{ margin: 0 }}>
@@ -144,8 +143,7 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
             );
           }
           return null;
-        });
-      },
+        }),
 
       expandIcon: ({
         expanded,
@@ -181,9 +179,7 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
       dataIndex: 'size',
       width: 100,
       key: 'size',
-      render: (size: number) => {
-        return formatBytes(size);
-      },
+      render: (size: number) => formatBytes(size),
     },
     {
       title: 'Download',

@@ -40,8 +40,7 @@ const Button: React.FC<Props> = ({
   children,
   shape,
   size,
-}) => {
-  return (
+}) => (
     <ButtonD
       type={type}
       className={className}
@@ -59,6 +58,5 @@ const Button: React.FC<Props> = ({
       {children}
     </ButtonD>
   );
-};
 
 export default Button;

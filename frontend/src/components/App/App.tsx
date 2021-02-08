@@ -28,7 +28,7 @@ import { gaTrackingID, hjid, hjsv } from '../../env';
 import Cart from '../Cart';
 import Summary from '../Cart/Summary';
 import { UserCart, UserSearchQueries, UserSearchQuery } from '../Cart/types';
-import { Tag, TagType } from '../DataDisplay/Tag';
+import { TagType, TagValue } from '../DataDisplay/Tag';
 import Facets from '../Facets';
 import { ActiveFacets, ParsedFacets, RawProject } from '../Facets/types';
 import NavBar from '../NavBar';
@@ -104,17 +104,15 @@ const App: React.FC = () => {
 
   const projectBaseQuery = (
     project: Record<string, unknown> | RawProject
-  ): ActiveSearchQuery => {
-    return {
-      project,
-      resultType: 'all',
-      minVersionDate: null,
-      maxVersionDate: null,
-      filenameVars: [],
-      activeFacets: {},
-      textInputs: [],
-    };
-  };
+  ): ActiveSearchQuery => ({
+    project,
+    resultType: 'all',
+    minVersionDate: null,
+    maxVersionDate: null,
+    filenameVars: [],
+    activeFacets: {},
+    textInputs: [],
+  });
 
   const [
     activeSearchQuery,
@@ -233,7 +231,7 @@ const App: React.FC = () => {
     setActiveSearchQuery(projectBaseQuery(selectedProject));
   };
 
-  const handleRemoveFilter = (removedTag: Tag, type: TagType): void => {
+  const handleRemoveFilter = (removedTag: TagValue, type: TagType): void => {
     /* istanbul ignore else */
     if (type === 'text') {
       setActiveSearchQuery({
@@ -294,11 +292,9 @@ const App: React.FC = () => {
         icon: <ShoppingCartOutlined style={styles.messageAddIcon} />,
       });
     } else if (operation === 'remove') {
-      newCart = userCart.filter((item) => {
-        return selectedItems.some(
-          (dataset: RawSearchResult) => dataset.id !== item.id
-        );
-      });
+      newCart = userCart.filter((item) =>
+        selectedItems.some((dataset: RawSearchResult) => dataset.id !== item.id)
+      );
       setUserCart(newCart);
 
       void message.success({

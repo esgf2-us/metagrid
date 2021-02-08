@@ -81,15 +81,13 @@ const ProjectsForm: React.FC<Props> = ({
               style={styles.form}
               showArrow
             >
-              {results.map((projectObj: RawProject, index: number) => {
-                return (
+              {results.map((projectObj: RawProject, index: number) => (
                   <Select.Option key={projectObj.name} value={projectObj.name}>
                     <span data-testid={`project_${index}`}>
                       {projectObj.name}
                     </span>
                   </Select.Option>
-                );
-              })}
+                ))}
             </Select>
           </Form.Item>
           <Form.Item>

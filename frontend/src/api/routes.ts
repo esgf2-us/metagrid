@@ -52,9 +52,7 @@ type ApiRoutes = {
  * Stripping the prefix proxy string is necessary if the route needs to be
  * served as a clickable link within the browser.
  */
-export const clickableRoute = (route: string): string => {
-  return route.replace(`${proxyURL}/`, '');
-};
+export const clickableRoute = (route: string): string => route.replace(`${proxyURL}/`, '');
 
 // Any path with parameters (e.g. '/:datasetID/') must be in camelCase
 // https://mswjs.io/docs/basics/path-matching#path-with-parameters

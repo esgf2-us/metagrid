@@ -42,14 +42,12 @@ const styles: CSSinJS = {
 
 export type QualityFlagProps = { index: string; color: string };
 
-export const QualityFlag: React.FC<QualityFlagProps> = ({ index, color }) => {
-  return (
+export const QualityFlag: React.FC<QualityFlagProps> = ({ index, color }) => (
     <div
       data-testid={`qualityFlag${index}`}
       style={{ ...styles.flagColorBox, backgroundColor: color }}
     ></div>
   );
-};
 
 export type Props = {
   loading: boolean;
@@ -97,9 +95,7 @@ const Table: React.FC<Props> = ({
         onPageSizeChange && onPageSizeChange(size),
     } as TablePaginationConfig,
     expandable: {
-      expandedRowRender: (record: RawSearchResult) => {
-        return <Tabs record={record} filenameVars={filenameVars}></Tabs>;
-      },
+      expandedRowRender: (record: RawSearchResult) => <Tabs record={record} filenameVars={filenameVars}></Tabs>,
       expandIcon: ({
         expanded,
         onExpand,

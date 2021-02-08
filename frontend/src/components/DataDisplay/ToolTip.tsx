@@ -27,8 +27,7 @@ const ToolTip: React.FC<Props> = ({
   placement = 'top',
   color,
   children,
-}) => {
-  return (
+}) => (
     <TooltipD
       title={title}
       trigger={trigger}
@@ -38,6 +37,5 @@ const ToolTip: React.FC<Props> = ({
       {children}
     </TooltipD>
   );
-};
 
 export default ToolTip;

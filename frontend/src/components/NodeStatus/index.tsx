@@ -60,8 +60,7 @@ const NodeStatus: React.FC<Props> = ({ nodeStatus, apiError, isLoading }) => {
         sortDirections: ['descend', 'ascend'] as SortOrder[],
         sorter: (a: NodeStatusElement, b: NodeStatusElement) =>
           String(a.isOnline).localeCompare(String(b.isOnline)),
-        render: (isOnline: boolean) => {
-          return isOnline ? (
+        render: (isOnline: boolean) => isOnline ? (
             <>
               <CheckCircleTwoTone twoToneColor="#52c41a" /> Yes
             </>
@@ -69,19 +68,16 @@ const NodeStatus: React.FC<Props> = ({ nodeStatus, apiError, isLoading }) => {
             <>
               <CloseCircleTwoTone twoToneColor="#eb2f96" /> No
             </>
-          );
-        },
+          ),
       },
       {
         title: 'Source (THREDDS Catalog)',
         dataIndex: 'source',
-        render: (source: string) => {
-          return (
+        render: (source: string) => (
             <a href={source} target="_blank" rel="noopener noreferrer">
               Link
             </a>
-          );
-        },
+          ),
       },
     ];
 
