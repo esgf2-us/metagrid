@@ -44,6 +44,7 @@ const SearchesCard: React.FC<Props> = ({
   const {
     uuid,
     project,
+    versionType,
     resultType,
     minVersionDate,
     maxVersionDate,
@@ -138,6 +139,7 @@ const SearchesCard: React.FC<Props> = ({
           <span style={styles.category}>Query String: </span>
           <Typography.Text code>
             {stringifyFilters(
+              versionType,
               resultType,
               minVersionDate,
               maxVersionDate,

@@ -12,7 +12,12 @@ import ToolTip from '../DataDisplay/ToolTip';
 import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
 import { NodeStatusArray } from '../NodeStatus/types';
-import { ActiveSearchQuery, ResultType, VersionDate } from '../Search/types';
+import {
+  ActiveSearchQuery,
+  ResultType,
+  VersionDate,
+  VersionType,
+} from '../Search/types';
 import { ActiveFacets, ParsedFacets } from './types';
 
 const styles: CSSinJS = {
@@ -30,6 +35,7 @@ export type Props = {
   nodeStatus?: NodeStatusArray;
   onSetFilenameVars: (filenameVar: string) => void;
   onSetGeneralFacets: (
+    versionType: VersionType,
     resultType: ResultType,
     minVersionDate: VersionDate,
     maxVersionDate: VersionDate
@@ -120,11 +126,21 @@ const FacetsForm: React.FC<Props> = ({
   };
 
   const handleOnChangeGeneralFacetsForm = (selectedFacets: {
+    versionType: VersionType;
     resultType: ResultType;
     versionDateRange: DatePickerReturnType;
-    [key: string]: ResultType | ActiveFacets | [] | DatePickerReturnType;
+    [key: string]:
+      | VersionType
+      | ResultType
+      | ActiveFacets
+      | []
+      | DatePickerReturnType;
   }): void => {
-    const { resultType: newResultType, versionDateRange } = selectedFacets;
+    const {
+      versionType: newVersionType,
+      resultType: newResultType,
+      versionDateRange,
+    } = selectedFacets;
     let newMinVersionDate = null;
     let newMaxVersionDate = null;
     /* istanbul ignore else */
@@ -138,7 +154,12 @@ const FacetsForm: React.FC<Props> = ({
         : maxDate;
     }
 
-    onSetGeneralFacets(newResultType, newMinVersionDate, newMaxVersionDate);
+    onSetGeneralFacets(
+      newVersionType,
+      newResultType,
+      newMinVersionDate,
+      newMaxVersionDate
+    );
   };
 
   const handleOnSelectAvailableFacetsForm = (
@@ -234,13 +255,29 @@ const FacetsForm: React.FC<Props> = ({
         layout="vertical"
         initialValues={{
           ...activeSearchQuery.activeFacets,
-          versionDateRange: initialVersionDateRange,
+          versionType: activeSearchQuery.versionType,
           resultType: activeSearchQuery.resultType,
+          versionDateRange: initialVersionDateRange,
         }}
         onValuesChange={(_changedValues, allValues) => {
           handleOnChangeGeneralFacetsForm(allValues);
         }}
       >
+        <Form.Item
+          label="Version Type"
+          name="versionType"
+          style={{ width: '256px' }}
+          tooltip={{
+            title:
+              'By default, only the latest version of a dataset is returned',
+            trigger: 'hover',
+          }}
+        >
+          <Select data-testid="version-type-form-select">
+            <Select.Option value={'latest' as ResultType}>Latest</Select.Option>
+            <Select.Option value={'all' as ResultType}>All</Select.Option>
+          </Select>
+        </Form.Item>
         <Form.Item
           label="Result Type"
           name="resultType"
@@ -287,107 +324,106 @@ const FacetsForm: React.FC<Props> = ({
         <div style={styles.container}>
           {facetsByGroup &&
             Object.keys(facetsByGroup).map((group) => (
-                <div key={group} style={styles.collapseContainer}>
-                  <h4 style={styles.formTitle}>{group}</h4>
-                  <Collapse>
-                    {Object.keys(availableFacets).map((facet) => {
-                      if (facetsByGroup[group].includes(facet)) {
-                        const facetOptions = availableFacets[facet];
+              <div key={group} style={styles.collapseContainer}>
+                <h4 style={styles.formTitle}>{group}</h4>
+                <Collapse>
+                  {Object.keys(availableFacets).map((facet) => {
+                    if (facetsByGroup[group].includes(facet)) {
+                      const facetOptions = availableFacets[facet];
 
-                        const isOptionalforDatasets =
-                          facetOptions.length > 0 &&
-                          facetOptions[0].includes('none');
-                        return (
-                          <Collapse.Panel
-                            collapsible="header"
-                            header={humanizeFacetNames(facet)}
+                      const isOptionalforDatasets =
+                        facetOptions.length > 0 &&
+                        facetOptions[0].includes('none');
+                      return (
+                        <Collapse.Panel
+                          collapsible="header"
+                          header={humanizeFacetNames(facet)}
+                          key={facet}
+                        >
+                          <Form.Item
+                            style={{ marginBottom: '4px' }}
                             key={facet}
+                            name={facet}
+                            label={
+                              isOptionalforDatasets ? '(Optional)' : undefined
+                            }
+                            tooltip={
+                              isOptionalforDatasets
+                                ? {
+                                    title:
+                                      'Selecting the "none" option filters for datasets that do not use this facet.',
+                                    icon: <InfoCircleOutlined />,
+                                  }
+                                : undefined
+                            }
                           >
-                            <Form.Item
-                              style={{ marginBottom: '4px' }}
-                              key={facet}
-                              name={facet}
-                              label={
-                                isOptionalforDatasets ? '(Optional)' : undefined
+                            <Select
+                              data-testid={`${facet}-form-select`}
+                              size="small"
+                              placeholder="Select option(s)"
+                              mode="multiple"
+                              style={{ width: '100%' }}
+                              tokenSeparators={[',']}
+                              showArrow
+                              // Need to set getPopupContainer to fix drop-down menu scrolling with the page in a fixed position
+                              getPopupContainer={(triggerNode) =>
+                                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
+                                triggerNode.parentElement
                               }
-                              tooltip={
-                                isOptionalforDatasets
-                                  ? {
-                                      title:
-                                        'Selecting the "none" option filters for datasets that do not use this facet.',
-                                      icon: <InfoCircleOutlined />,
-                                    }
-                                  : undefined
+                              onDropdownVisibleChange={(open) =>
+                                setDropdownIsOpen(open)
+                              }
+                              onChange={(value: string[] | []) =>
+                                handleOnSelectAvailableFacetsForm(facet, value)
                               }
                             >
-                              <Select
-                                data-testid={`${facet}-form-select`}
-                                size="small"
-                                placeholder="Select option(s)"
-                                mode="multiple"
-                                style={{ width: '100%' }}
-                                tokenSeparators={[',']}
-                                showArrow
-                                // Need to set getPopupContainer to fix drop-down menu scrolling with the page in a fixed position
-                                getPopupContainer={(triggerNode) =>
-                                  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
-                                  triggerNode.parentElement
-                                }
-                                onDropdownVisibleChange={(open) =>
-                                  setDropdownIsOpen(open)
-                                }
-                                onChange={(value: string[] | []) => handleOnSelectAvailableFacetsForm(
-                                    facet,
-                                    value
-                                  )}
-                              >
-                                {facetOptions.map((variable) => {
-                                  let optionOutput:
-                                    | string
-                                    | React.ReactElement = (
-                                    <>
-                                      {variable[0]}
+                              {facetOptions.map((variable) => {
+                                let optionOutput:
+                                  | string
+                                  | React.ReactElement = (
+                                  <>
+                                    {variable[0]}
+                                    <span style={styles.facetCount}>
+                                      ({variable[1]})
+                                    </span>
+                                  </>
+                                );
+                                // The data node facet has a unique tooltip overlay to show the status of the highlighted node
+                                if (facet === 'data_node') {
+                                  optionOutput = (
+                                    <StatusToolTip
+                                      nodeStatus={nodeStatus}
+                                      dataNode={variable[0]}
+                                    >
                                       <span style={styles.facetCount}>
                                         ({variable[1]})
                                       </span>
-                                    </>
+                                    </StatusToolTip>
                                   );
-                                  // The data node facet has a unique tooltip overlay to show the status of the highlighted node
-                                  if (facet === 'data_node') {
-                                    optionOutput = (
-                                      <StatusToolTip
-                                        nodeStatus={nodeStatus}
-                                        dataNode={variable[0]}
-                                      >
-                                        <span style={styles.facetCount}>
-                                          ({variable[1]})
-                                        </span>
-                                      </StatusToolTip>
-                                    );
-                                  }
-                                  return (
-                                    <Select.Option
-                                      key={variable[0]}
-                                      value={variable[0]}
+                                }
+                                return (
+                                  <Select.Option
+                                    key={variable[0]}
+                                    value={variable[0]}
+                                  >
+                                    <span
+                                      data-testid={`${facet}_${variable[0]}`}
                                     >
-                                      <span
-                                        data-testid={`${facet}_${variable[0]}`}
-                                      >
-                                        {optionOutput}
-                                      </span>
-                                    </Select.Option>
-                                  );
-                                })}
-                              </Select>
-                            </Form.Item>
-                          </Collapse.Panel>
-                        );
-                      }
-                      return null;
-                    })}
-                  </Collapse>
-                </div>
-              ))}
+                                      {optionOutput}
+                                    </span>
+                                  </Select.Option>
+                                );
+                              })}
+                            </Select>
+                          </Form.Item>
+                        </Collapse.Panel>
+                      );
+                    }
+                    return null;
+                  })}
+                </Collapse>
+              </div>
+            ))}
         </div>
       </Form>
     </div>
