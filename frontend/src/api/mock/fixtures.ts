@@ -44,7 +44,10 @@ export const rawProjectFixture = (
   return { ...defaults, ...props } as RawProject;
 };
 
-export const projectsFixture = (): RawProjects => [rawProjectFixture(), rawProjectFixture({ name: 'test2' })];
+export const projectsFixture = (): RawProjects => [
+  rawProjectFixture(),
+  rawProjectFixture({ name: 'test2' }),
+];
 
 /**
  * Search result fixture based on the ESGF Search API.
@@ -70,15 +73,15 @@ export const rawSearchResultFixture = (
 };
 
 export const rawSearchResultsFixture = (): Array<RawSearchResult> => [
-    rawSearchResultFixture(),
-    rawSearchResultFixture({
-      id: 'bar',
-      title: 'bar',
-      number_of_files: 2,
-      data_node: 'esgf1.dkrz.de',
-      access: ['wget', 'HTTPServer', 'OPeNDAP'],
-    }),
-  ];
+  rawSearchResultFixture(),
+  rawSearchResultFixture({
+    id: 'bar',
+    title: 'bar',
+    number_of_files: 2,
+    data_node: 'esgf1.dkrz.de',
+    access: ['wget', 'HTTPServer', 'OPeNDAP'],
+  }),
+];
 
 export const rawFacetsFixture = (props: Partial<RawFacets> = {}): RawFacets => {
   const defaults: RawFacets = {
@@ -129,6 +132,7 @@ export const activeSearchQueryFixture = (
 ): ActiveSearchQuery => {
   const defaults: ActiveSearchQuery = {
     project: rawProjectFixture(),
+    versionType: 'latest',
     resultType: 'all',
     minVersionDate: '20200101',
     maxVersionDate: '20201231',
@@ -147,6 +151,7 @@ export const userSearchQueryFixture = (
     user: 'user',
     project: rawProjectFixture(),
     projectId: '1',
+    versionType: 'latest',
     resultType: 'all',
     minVersionDate: '20200101',
     maxVersionDate: '20201231',
@@ -159,7 +164,9 @@ export const userSearchQueryFixture = (
   return { ...defaults, ...props } as UserSearchQuery;
 };
 
-export const userSearchQueriesFixture = (): UserSearchQueries => [userSearchQueryFixture()];
+export const userSearchQueriesFixture = (): UserSearchQueries => [
+  userSearchQueryFixture(),
+];
 
 type ESGFSearchAPIResponse = {
   response: { numFound: number; docs: RawSearchResults };
@@ -167,14 +174,14 @@ type ESGFSearchAPIResponse = {
 };
 
 export const ESGFSearchAPIFixture = (): ESGFSearchAPIResponse => ({
-    response: {
-      numFound: rawSearchResultsFixture().length,
-      docs: rawSearchResultsFixture(),
-    },
-    facet_counts: {
-      facet_fields: rawFacetsFixture(),
-    },
-  });
+  response: {
+    numFound: rawSearchResultsFixture().length,
+    docs: rawSearchResultsFixture(),
+  },
+  facet_counts: {
+    facet_fields: rawFacetsFixture(),
+  },
+});
 
 export const userAuthFixture = (
   props: Partial<RawUserAuth> = {}
@@ -237,16 +244,16 @@ export const rawNodeStatusFixture = (
   return { ...defaults, ...props } as RawNodeStatus;
 };
 export const parsedNodeStatusFixture = (): NodeStatusArray => [
-    {
-      name: 'aims3.llnl.gov',
-      source: 'https://aims3.llnl.gov/thredds/catalog/catalog.html',
-      timestamp: 'Wed, 21 Oct 2020 21:23:50 GMT',
-      isOnline: true,
-    },
-    {
-      name: 'esgf1.dkrz.de',
-      source: 'https://esgf1.dkrz.de/thredds/catalog/catalog.html',
-      timestamp: 'Wed, 21 Oct 2020 21:23:50 GMT',
-      isOnline: false,
-    },
-  ];
+  {
+    name: 'aims3.llnl.gov',
+    source: 'https://aims3.llnl.gov/thredds/catalog/catalog.html',
+    timestamp: 'Wed, 21 Oct 2020 21:23:50 GMT',
+    isOnline: true,
+  },
+  {
+    name: 'esgf1.dkrz.de',
+    source: 'https://esgf1.dkrz.de/thredds/catalog/catalog.html',
+    timestamp: 'Wed, 21 Oct 2020 21:23:50 GMT',
+    isOnline: false,
+  },
+];

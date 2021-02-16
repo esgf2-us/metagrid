@@ -4,6 +4,7 @@ import {
   ResultType,
   TextInputs,
   VersionDate,
+  VersionType,
 } from '../Search/types';
 
 export type UserCart = RawSearchResults;
@@ -20,6 +21,7 @@ export type RawUserSearchQuery = {
     full_name: string;
   };
   project_id: number;
+  version_type: VersionType;
   result_type: ResultType;
   min_version_date: VersionDate;
   max_version_date: VersionDate;
@@ -34,6 +36,7 @@ export type UserSearchQuery = {
   user: VersionDate;
   project: RawProject;
   projectId: string;
+  versionType: VersionType;
   resultType: ResultType;
   minVersionDate: VersionDate;
   maxVersionDate: VersionDate;

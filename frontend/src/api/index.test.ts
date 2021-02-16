@@ -53,7 +53,9 @@ describe('test fetching user authentication', () => {
   });
   it('catches and throws error based on HTTP status code', async () => {
     server.use(
-      rest.post(apiRoutes.keycloakAuth.path, (_req, res, ctx) => res(ctx.status(404)))
+      rest.post(apiRoutes.keycloakAuth.path, (_req, res, ctx) =>
+        res(ctx.status(404))
+      )
     );
     await expect(fetchUserAuth(['keycloak_token'])).rejects.toThrow(
       apiRoutes.keycloakAuth.handleErrorMsg(404)
@@ -61,7 +63,9 @@ describe('test fetching user authentication', () => {
   });
   it('catches and throws generic network error', async () => {
     server.use(
-      rest.post(apiRoutes.keycloakAuth.path, (_req, res) => res.networkError(genericNetworkErrorMsg))
+      rest.post(apiRoutes.keycloakAuth.path, (_req, res) =>
+        res.networkError(genericNetworkErrorMsg)
+      )
     );
     await expect(fetchUserAuth(['keycloak_token'])).rejects.toThrow(
       apiRoutes.keycloakAuth.handleErrorMsg('generic')
@@ -77,7 +81,9 @@ describe('test fetching user info', () => {
 
   it('returns error', async () => {
     server.use(
-      rest.get(apiRoutes.userInfo.path, (_req, res, ctx) => res(ctx.status(404)))
+      rest.get(apiRoutes.userInfo.path, (_req, res, ctx) =>
+        res(ctx.status(404))
+      )
     );
     await expect(fetchUserInfo(['access_token'])).rejects.toThrow(
       apiRoutes.userInfo.handleErrorMsg(404)
@@ -85,7 +91,9 @@ describe('test fetching user info', () => {
   });
   it('catches and throws generic network error', async () => {
     server.use(
-      rest.get(apiRoutes.userInfo.path, (_req, res) => res.networkError(genericNetworkErrorMsg))
+      rest.get(apiRoutes.userInfo.path, (_req, res) =>
+        res.networkError(genericNetworkErrorMsg)
+      )
     );
     await expect(fetchUserInfo(['access_token'])).rejects.toThrow(
       apiRoutes.userInfo.handleErrorMsg('generic')
@@ -100,7 +108,9 @@ describe('test fetching projects', () => {
   });
   it('catches and throws an error based on HTTP status code', async () => {
     server.use(
-      rest.get(apiRoutes.projects.path, (_req, res, ctx) => res(ctx.status(404)))
+      rest.get(apiRoutes.projects.path, (_req, res, ctx) =>
+        res(ctx.status(404))
+      )
     );
     await expect(fetchProjects()).rejects.toThrow(
       apiRoutes.projects.handleErrorMsg(404)
@@ -109,7 +119,9 @@ describe('test fetching projects', () => {
 
   it('catches and throws generic network error', async () => {
     server.use(
-      rest.get(apiRoutes.projects.path, (_req, res) => res.networkError(genericNetworkErrorMsg))
+      rest.get(apiRoutes.projects.path, (_req, res) =>
+        res.networkError(genericNetworkErrorMsg)
+      )
     );
     await expect(fetchProjects()).rejects.toThrow(
       apiRoutes.projects.handleErrorMsg('generic')
@@ -131,7 +143,7 @@ describe('test generating search url query', () => {
   it('returns formatted url with offset of 0 on page 1', () => {
     const url = generateSearchURLQuery(activeSearchQuery, pagination);
     expect(url).toEqual(
-      `${apiRoutes.esgfSearch.path}?offset=0&limit=10&min_version=20200101&max_version=20201231&query=foo&baz=option1&foo=option1,option2`
+      `${apiRoutes.esgfSearch.path}?offset=0&limit=10&latest=true&min_version=20200101&max_version=20201231&query=foo&baz=option1&foo=option1,option2`
     );
   });
   it('returns formatted url with offset of 200 and limit of 100 on page 3', () => {
@@ -142,7 +154,7 @@ describe('test generating search url query', () => {
 
     const url = generateSearchURLQuery(activeSearchQuery, pagination);
     expect(url).toEqual(
-      `${apiRoutes.esgfSearch.path}?offset=200&limit=100&min_version=20200101&max_version=20201231&query=foo&baz=option1&foo=option1,option2`
+      `${apiRoutes.esgfSearch.path}?offset=200&limit=100&latest=true&min_version=20200101&max_version=20201231&query=foo&baz=option1&foo=option1,option2`
     );
   });
   it('returns formatted url without free-text', () => {
@@ -151,7 +163,7 @@ describe('test generating search url query', () => {
       pagination
     );
     expect(url).toEqual(
-      `${apiRoutes.esgfSearch.path}?offset=0&limit=10&min_version=20200101&max_version=20201231&query=*&baz=option1&foo=option1,option2`
+      `${apiRoutes.esgfSearch.path}?offset=0&limit=10&latest=true&min_version=20200101&max_version=20201231&query=*&baz=option1&foo=option1,option2`
     );
   });
   it('returns formatted url with replica param', () => {
@@ -160,7 +172,7 @@ describe('test generating search url query', () => {
       pagination
     );
     expect(url).toEqual(
-      `${apiRoutes.esgfSearch.path}?offset=0&limit=10&replica=false&min_version=20200101&max_version=20201231&query=foo&baz=option1&foo=option1,option2`
+      `${apiRoutes.esgfSearch.path}?offset=0&limit=10&latest=true&replica=false&min_version=20200101&max_version=20201231&query=foo&baz=option1&foo=option1,option2`
     );
   });
 
@@ -170,7 +182,17 @@ describe('test generating search url query', () => {
       pagination
     );
     expect(url).toEqual(
-      `${apiRoutes.esgfSearch.path}?offset=0&limit=10&min_version=20200101&max_version=20201231&query=foo&`
+      `${apiRoutes.esgfSearch.path}?offset=0&limit=10&latest=true&min_version=20200101&max_version=20201231&query=foo&`
+    );
+  });
+
+  it('returns formatted url without version type', () => {
+    const url = generateSearchURLQuery(
+      { ...activeSearchQuery, versionType: 'all' },
+      pagination
+    );
+    expect(url).toEqual(
+      `${apiRoutes.esgfSearch.path}?offset=0&limit=10&min_version=20200101&max_version=20201231&query=foo&baz=option1&foo=option1,option2`
     );
   });
 });
@@ -196,7 +218,9 @@ describe('test fetching search results', () => {
   });
   it('catches and throws an error based on HTTP status code', async () => {
     server.use(
-      rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) => res(ctx.status(404)))
+      rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
+        res(ctx.status(404))
+      )
     );
     await expect(fetchSearchResults([reqUrl])).rejects.toThrow(
       apiRoutes.esgfSearch.handleErrorMsg(404)
@@ -205,7 +229,9 @@ describe('test fetching search results', () => {
 
   it('catches and throws generic network error', async () => {
     server.use(
-      rest.get(apiRoutes.esgfSearch.path, (_req, res) => res.networkError(genericNetworkErrorMsg))
+      rest.get(apiRoutes.esgfSearch.path, (_req, res) =>
+        res.networkError(genericNetworkErrorMsg)
+      )
     );
     await expect(fetchSearchResults([reqUrl])).rejects.toThrow(
       apiRoutes.esgfSearch.handleErrorMsg('generic')
@@ -251,7 +277,9 @@ describe('test fetching citation', () => {
   });
   it('catches and throws an error based on HTTP status code', async () => {
     server.use(
-      rest.get(apiRoutes.citation.path, (_req, res, ctx) => res(ctx.status(404)))
+      rest.get(apiRoutes.citation.path, (_req, res, ctx) =>
+        res(ctx.status(404))
+      )
     );
 
     await expect(
@@ -262,7 +290,9 @@ describe('test fetching citation', () => {
   });
   it('catches and throws generic network error', async () => {
     server.use(
-      rest.get(apiRoutes.citation.path, (_req, res) => res.networkError(genericNetworkErrorMsg))
+      rest.get(apiRoutes.citation.path, (_req, res) =>
+        res.networkError(genericNetworkErrorMsg)
+      )
     );
     await expect(fetchDatasetCitation({ url: 'citation_url' })).rejects.toThrow(
       apiRoutes.citation.handleErrorMsg('generic')
@@ -286,7 +316,9 @@ describe('test fetchFiles()', () => {
   });
   it('catches and throws an error based on HTTP status code', async () => {
     server.use(
-      rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) => res(ctx.status(404)))
+      rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
+        res(ctx.status(404))
+      )
     );
     await expect(fetchDatasetFiles([], props)).rejects.toThrow(
       apiRoutes.esgfSearch.handleErrorMsg(404)
@@ -295,7 +327,9 @@ describe('test fetchFiles()', () => {
 
   it('catches and throws generic network error', async () => {
     server.use(
-      rest.get(apiRoutes.esgfSearch.path, (_req, res) => res.networkError(genericNetworkErrorMsg))
+      rest.get(apiRoutes.esgfSearch.path, (_req, res) =>
+        res.networkError(genericNetworkErrorMsg)
+      )
     );
     await expect(fetchDatasetFiles([], props)).rejects.toThrow(
       apiRoutes.esgfSearch.handleErrorMsg('generic')
@@ -310,7 +344,9 @@ describe('test fetching user cart', () => {
   });
   it('catches and throws an error based on HTTP status code', async () => {
     server.use(
-      rest.get(apiRoutes.userCart.path, (_req, res, ctx) => res(ctx.status(404)))
+      rest.get(apiRoutes.userCart.path, (_req, res, ctx) =>
+        res(ctx.status(404))
+      )
     );
     await expect(fetchUserCart('pk', 'access_token')).rejects.toThrow(
       apiRoutes.userCart.handleErrorMsg(404)
@@ -318,7 +354,9 @@ describe('test fetching user cart', () => {
   });
   it('catches and throws generic network error', async () => {
     server.use(
-      rest.get(apiRoutes.userCart.path, (_req, res) => res.networkError(genericNetworkErrorMsg))
+      rest.get(apiRoutes.userCart.path, (_req, res) =>
+        res.networkError(genericNetworkErrorMsg)
+      )
     );
     await expect(fetchUserCart('pk', 'access_token')).rejects.toThrow(
       apiRoutes.userCart.handleErrorMsg('generic')
@@ -333,7 +371,9 @@ describe('test updating user cart', () => {
   });
   it('catches and throws an error based on HTTP status code', async () => {
     server.use(
-      rest.patch(apiRoutes.userCart.path, (_req, res, ctx) => res(ctx.status(404)))
+      rest.patch(apiRoutes.userCart.path, (_req, res, ctx) =>
+        res(ctx.status(404))
+      )
     );
     await expect(updateUserCart('pk', 'access_token', [])).rejects.toThrow(
       apiRoutes.userCart.handleErrorMsg(404)
@@ -341,7 +381,9 @@ describe('test updating user cart', () => {
   });
   it('catches and throws generic network error', async () => {
     server.use(
-      rest.patch(apiRoutes.userCart.path, (_req, res) => res.networkError(genericNetworkErrorMsg))
+      rest.patch(apiRoutes.userCart.path, (_req, res) =>
+        res.networkError(genericNetworkErrorMsg)
+      )
     );
     await expect(updateUserCart('pk', 'access_token', [])).rejects.toThrow(
       apiRoutes.userCart.handleErrorMsg('generic')
@@ -357,7 +399,9 @@ describe('test fetching user searches', () => {
   });
   it('catches and throws an error based on HTTP status code', async () => {
     server.use(
-      rest.get(apiRoutes.userSearches.path, (_req, res, ctx) => res(ctx.status(404)))
+      rest.get(apiRoutes.userSearches.path, (_req, res, ctx) =>
+        res(ctx.status(404))
+      )
     );
 
     await expect(fetchUserSearchQueries('access_token')).rejects.toThrow(
@@ -366,7 +410,9 @@ describe('test fetching user searches', () => {
   });
   it('catches and throws generic network error', async () => {
     server.use(
-      rest.get(apiRoutes.userSearches.path, (_req, res) => res.networkError(genericNetworkErrorMsg))
+      rest.get(apiRoutes.userSearches.path, (_req, res) =>
+        res.networkError(genericNetworkErrorMsg)
+      )
     );
     await expect(fetchUserSearchQueries('access_token')).rejects.toThrow(
       apiRoutes.userSearches.handleErrorMsg('generic')
@@ -383,7 +429,9 @@ describe('test adding user search', () => {
   });
   it('catches and throws an error based on HTTP status code', async () => {
     server.use(
-      rest.post(apiRoutes.userSearches.path, (_req, res, ctx) => res(ctx.status(404)))
+      rest.post(apiRoutes.userSearches.path, (_req, res, ctx) =>
+        res(ctx.status(404))
+      )
     );
 
     const payload = userSearchQueryFixture();
@@ -394,7 +442,9 @@ describe('test adding user search', () => {
 
   it('catches and throws generic network error', async () => {
     server.use(
-      rest.post(apiRoutes.userSearches.path, (_req, res) => res.networkError(genericNetworkErrorMsg))
+      rest.post(apiRoutes.userSearches.path, (_req, res) =>
+        res.networkError(genericNetworkErrorMsg)
+      )
     );
 
     const payload = userSearchQueryFixture();
@@ -412,7 +462,9 @@ describe('test deleting user search', () => {
   });
   it('catches and throws an error based on HTTP status code', async () => {
     server.use(
-      rest.delete(apiRoutes.userSearch.path, (_req, res, ctx) => res(ctx.status(404)))
+      rest.delete(apiRoutes.userSearch.path, (_req, res, ctx) =>
+        res(ctx.status(404))
+      )
     );
 
     await expect(deleteUserSearchQuery('pk', 'access_token')).rejects.toThrow(
@@ -421,7 +473,9 @@ describe('test deleting user search', () => {
   });
   it('catches and throws generic network error', async () => {
     server.use(
-      rest.delete(apiRoutes.userSearch.path, (_req, res) => res.networkError(genericNetworkErrorMsg))
+      rest.delete(apiRoutes.userSearch.path, (_req, res) =>
+        res.networkError(genericNetworkErrorMsg)
+      )
     );
 
     await expect(deleteUserSearchQuery('pk', 'access_token')).rejects.toThrow(
@@ -449,7 +503,9 @@ describe('test fetching wget script', () => {
   });
   it('catches and throws generic network error', async () => {
     server.use(
-      rest.get(apiRoutes.wget.path, (_req, res) => res.networkError(genericNetworkErrorMsg))
+      rest.get(apiRoutes.wget.path, (_req, res) =>
+        res.networkError(genericNetworkErrorMsg)
+      )
     );
     await expect(fetchWgetScript('id')).rejects.toThrow(
       apiRoutes.wget.handleErrorMsg('generic')
@@ -500,7 +556,9 @@ describe('test fetching node status', () => {
   });
   it('catches and throws an error based on HTTP status code', async () => {
     server.use(
-      rest.get(apiRoutes.nodeStatus.path, (_req, res, ctx) => res(ctx.status(404)))
+      rest.get(apiRoutes.nodeStatus.path, (_req, res, ctx) =>
+        res(ctx.status(404))
+      )
     );
 
     await expect(fetchNodeStatus()).rejects.toThrow(
@@ -510,7 +568,9 @@ describe('test fetching node status', () => {
 
   it('catches and throws generic network error', async () => {
     server.use(
-      rest.get(apiRoutes.nodeStatus.path, (_req, res) => res.networkError(genericNetworkErrorMsg))
+      rest.get(apiRoutes.nodeStatus.path, (_req, res) =>
+        res.networkError(genericNetworkErrorMsg)
+      )
     );
 
     await expect(fetchNodeStatus()).rejects.toThrow(
