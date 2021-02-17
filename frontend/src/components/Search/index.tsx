@@ -35,6 +35,7 @@ import {
   ResultType,
   TextInputs,
   VersionDate,
+  VersionType,
 } from './types';
 
 const styles: CSSinJS = {
@@ -78,6 +79,7 @@ export const parseFacets = (facets: RawFacets): ParsedFacets => {
  * Example: '(Text Input = 'Solar') AND (source_type = AER OR AOGCM OR BGC)'
  */
 export const stringifyFilters = (
+  versionType: VersionType,
   resultType: ResultType,
   minVersionDate: VersionDate,
   maxVersionDate: VersionDate,
@@ -85,6 +87,10 @@ export const stringifyFilters = (
   textInputs: TextInputs | []
 ): string => {
   const filtersArr: string[] = [];
+
+  if (versionType === 'latest') {
+    filtersArr.push('latest = true');
+  }
 
   const replicaParam = convertResultTypeToReplicaParam(resultType, true);
   if (replicaParam) {
@@ -151,6 +157,7 @@ const Search: React.FC<Props> = ({
 }) => {
   const {
     project,
+    versionType,
     resultType,
     minVersionDate,
     maxVersionDate,
@@ -320,6 +327,7 @@ const Search: React.FC<Props> = ({
               <span style={styles.subtitles}>Query String: </span>
               <Typography.Text code>
                 {stringifyFilters(
+                  versionType,
                   resultType,
                   minVersionDate,
                   maxVersionDate,

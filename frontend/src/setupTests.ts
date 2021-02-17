@@ -5,10 +5,7 @@
 import '@testing-library/jest-dom/extend-expect';
 import './api/mock/setup-env';
 
-beforeEach(() => {
-  // Some tests run longer than 5000ms
-  jest.setTimeout(15000);
-});
+jest.setTimeout(15000);
 
 // Fixes 'TypeError: Cannot read property 'addListener' of undefined.
 // https://github.com/AO19/typeError-cannot-read-property-addListener-of-undefined/commit/873ce9b730a1c21b40c9264e5f29fc2df436136b

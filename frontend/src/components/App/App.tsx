@@ -41,6 +41,7 @@ import {
   RawSearchResults,
   ResultType,
   VersionDate,
+  VersionType,
 } from '../Search/types';
 import Support from '../Support';
 import './App.css';
@@ -106,6 +107,7 @@ const App: React.FC = () => {
     project: Record<string, unknown> | RawProject
   ): ActiveSearchQuery => ({
     project,
+    versionType: 'latest',
     resultType: 'all',
     minVersionDate: null,
     maxVersionDate: null,
@@ -207,12 +209,14 @@ const App: React.FC = () => {
   };
 
   const handleOnSetGeneralFacets = (
+    versionType: VersionType,
     resultType: ResultType,
     minVersionDate: VersionDate,
     maxVersionDate: VersionDate
   ): void => {
     setActiveSearchQuery({
       ...activeSearchQuery,
+      versionType,
       resultType,
       minVersionDate,
       maxVersionDate,
@@ -324,6 +328,7 @@ const App: React.FC = () => {
       user: pk,
       project: activeSearchQuery.project as RawProject,
       projectId: activeSearchQuery.project.pk as string,
+      versionType: activeSearchQuery.versionType,
       resultType: activeSearchQuery.resultType,
       minVersionDate: activeSearchQuery.minVersionDate,
       maxVersionDate: activeSearchQuery.maxVersionDate,
@@ -387,6 +392,7 @@ const App: React.FC = () => {
   const handleRunSearchQuery = (savedSearch: UserSearchQuery): void => {
     setActiveSearchQuery({
       project: savedSearch.project,
+      versionType: savedSearch.versionType,
       resultType: 'all',
       minVersionDate: savedSearch.minVersionDate,
       maxVersionDate: savedSearch.maxVersionDate,

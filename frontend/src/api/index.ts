@@ -37,7 +37,8 @@ export interface ResponseError extends Error {
  *
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const camelizeKeysFromString = (str: string): Record<string, any> => humps.camelizeKeys(JSON.parse(str));
+const camelizeKeysFromString = (str: string): Record<string, any> =>
+  humps.camelizeKeys(JSON.parse(str));
 
 /**
  * This function removes the proxyString from the URL so the link can be accessed
@@ -68,7 +69,8 @@ export const errorMsgBasedOnHTTPStatusCode = (
  * HTTP Request Method: POST
  * HTTP Response Code: 200 OK
  */
-export const fetchUserAuth = async (args: [string]): Promise<RawUserAuth> => axios
+export const fetchUserAuth = async (args: [string]): Promise<RawUserAuth> =>
+  axios
     .post(apiRoutes.keycloakAuth.path, { access_token: args[0] })
     .then((res) => res.data as Promise<RawUserAuth>)
     .catch((error) => {
@@ -81,7 +83,8 @@ export const fetchUserAuth = async (args: [string]): Promise<RawUserAuth> => axi
  * HTTP Request Method: GET
  * HTTP Response Code: 200 OK
  */
-export const fetchUserInfo = async (args: [string]): Promise<RawUserInfo> => axios
+export const fetchUserInfo = async (args: [string]): Promise<RawUserInfo> =>
+  axios
     .get(apiRoutes.userInfo.path, {
       headers: {
         Authorization: `Bearer ${args[0]}`,
@@ -103,17 +106,21 @@ export const fetchUserCart = async (
   results: RawUserCart;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
-}> => axios
+}> =>
+  axios
     .get(`${apiRoutes.userCart.path.replace(':pk', pk)}`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
     })
-    .then((res) => res.data as Promise<{
-        results: RawUserCart;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        [key: string]: any;
-      }>)
+    .then(
+      (res) =>
+        res.data as Promise<{
+          results: RawUserCart;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          [key: string]: any;
+        }>
+    )
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userCart));
     });
@@ -130,7 +137,8 @@ export const updateUserCart = async (
   results: RawUserCart;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
-}> => axios
+}> =>
+  axios
     .patch(
       `${apiRoutes.userCart.path.replace(':pk', pk)}`,
       { items: newUserCart },
@@ -140,11 +148,14 @@ export const updateUserCart = async (
         },
       }
     )
-    .then((res) => res.data as Promise<{
-        results: RawUserCart;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        [key: string]: any;
-      }>)
+    .then(
+      (res) =>
+        res.data as Promise<{
+          results: RawUserCart;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          [key: string]: any;
+        }>
+    )
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userCart));
     });
@@ -158,7 +169,8 @@ export const fetchUserSearchQueries = async (
 ): Promise<{
   count: number;
   results: UserSearchQueries;
-}> => axios
+}> =>
+  axios
     .get(apiRoutes.userSearches.path, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -171,10 +183,13 @@ export const fetchUserSearchQueries = async (
         }
       },
     })
-    .then((res) => res.data as Promise<{
-        count: number;
-        results: UserSearchQueries;
-      }>)
+    .then(
+      (res) =>
+        res.data as Promise<{
+          count: number;
+          results: UserSearchQueries;
+        }>
+    )
     .catch((error: ResponseError) => {
       throw new Error(
         errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userSearches)
@@ -215,7 +230,8 @@ export const addUserSearchQuery = async (
 export const deleteUserSearchQuery = async (
   pk: string,
   accessToken: string
-): Promise<''> => axios
+): Promise<''> =>
+  axios
     .delete(`${apiRoutes.userSearch.path.replace(':pk', pk)}`, {
       data: {},
       headers: {
@@ -237,7 +253,8 @@ export const fetchProjects = async (): Promise<{
   results: RawProjects;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
-}> => axios
+}> =>
+  axios
     .get(apiRoutes.projects.path, {
       transformResponse: (res: string) => {
         try {
@@ -247,11 +264,14 @@ export const fetchProjects = async (): Promise<{
         }
       },
     })
-    .then((res) => res.data as Promise<{
-        results: RawProjects;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        [key: string]: any;
-      }>)
+    .then(
+      (res) =>
+        res.data as Promise<{
+          results: RawProjects;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          [key: string]: any;
+        }>
+    )
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.projects));
     });
@@ -303,6 +323,7 @@ export const generateSearchURLQuery = (
 ): string => {
   const {
     project,
+    versionType,
     resultType,
     minVersionDate,
     maxVersionDate,
@@ -318,6 +339,9 @@ export const generateSearchURLQuery = (
     pagination
   );
 
+  if (versionType === 'latest') {
+    baseParams += `latest=true&`;
+  }
   if (replicaParam) {
     baseParams += `${replicaParam}&`;
   }
@@ -373,9 +397,10 @@ export const fetchSearchResults = async (
 
   return axios
     .get(`${reqUrlStr}`)
-    .then((res) =>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-       res.data as Promise<{ [key: string]: any }>
+    .then(
+      (res) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        res.data as Promise<{ [key: string]: any }>
     )
     .catch((error: ResponseError) => {
       throw new Error(
@@ -408,7 +433,8 @@ export const fetchDatasetCitation = async ({
   url,
 }: {
   [key: string]: string;
-}): Promise<{ [key: string]: unknown }> => axios
+}): Promise<{ [key: string]: unknown }> =>
+  axios
     .get(`${proxyURL}/${url}`)
     .then((res) => {
       const citation = processCitation(res.data);
@@ -468,9 +494,10 @@ export const fetchDatasetFiles = async (
 
   return axios
     .get(url)
-    .then((res) =>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-       res.data as Promise<{ [key: string]: any }>
+    .then(
+      (res) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        res.data as Promise<{ [key: string]: any }>
     )
     .catch((error: ResponseError) => {
       throw new Error(
@@ -540,7 +567,8 @@ export const parseNodeStatus = (res: RawNodeStatus): NodeStatusArray => {
  * HTTP Request Method: GET
  * HTTP Response: 200 OK
  */
-export const fetchNodeStatus = async (): Promise<NodeStatusArray> => axios
+export const fetchNodeStatus = async (): Promise<NodeStatusArray> =>
+  axios
     .get(`${apiRoutes.nodeStatus.path}`)
     .then((res) => parseNodeStatus(res.data as RawNodeStatus))
     .catch((error: ResponseError) => {

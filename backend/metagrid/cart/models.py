@@ -29,9 +29,14 @@ class Search(models.Model):
     """Model definition for Search."""
 
     ALL = "all"
+    LATEST = "latest"
     ORIGINALS_ONLY = "originals only"
     REPLICAS_ONLY = "replicas only"
 
+    VERSION_TYPE_CHOICES = (
+        (LATEST, LATEST),
+        (ALL, ALL),
+    )
     RESULT_TYPE_CHOICES = (
         (ALL, ALL),
         (ORIGINALS_ONLY, ORIGINALS_ONLY),
@@ -41,6 +46,9 @@ class Search(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4)
     user = models.ForeignKey("users.User", on_delete=models.CASCADE)
     project = models.ForeignKey("projects.Project", on_delete=models.CASCADE)
+    version_type = models.CharField(
+        max_length=255, default=LATEST, choices=VERSION_TYPE_CHOICES
+    )
     result_type = models.CharField(
         max_length=255, default=ALL, choices=RESULT_TYPE_CHOICES
     )
