@@ -28,6 +28,7 @@ class SearchSerializer(serializers.ModelSerializer):
             "user",
             "project",
             "project_id",
+            "version_type",
             "result_type",
             "min_version_date",
             "max_version_date",

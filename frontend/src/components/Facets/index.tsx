@@ -4,7 +4,12 @@ import { fetchProjects, ResponseError } from '../../api';
 import { objectIsEmpty } from '../../common/utils';
 import Divider from '../General/Divider';
 import { NodeStatusArray } from '../NodeStatus/types';
-import { ActiveSearchQuery, ResultType, VersionDate } from '../Search/types';
+import {
+  ActiveSearchQuery,
+  ResultType,
+  VersionDate,
+  VersionType,
+} from '../Search/types';
 import FacetsForm from './FacetsForm';
 import ProjectForm from './ProjectForm';
 import { ActiveFacets, ParsedFacets, RawProject } from './types';
@@ -22,6 +27,7 @@ export type Props = {
   onProjectChange: (selectedProj: RawProject) => void;
   onSetFilenameVars: (filenameVar: string) => void;
   onSetGeneralFacets: (
+    versionType: VersionType,
     resultType: ResultType,
     minVersionDate: VersionDate,
     maxVersionDate: VersionDate

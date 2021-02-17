@@ -16,7 +16,13 @@ import Search, {
   Props,
   stringifyFilters,
 } from './index';
-import { RawSearchResult, ResultType, TextInputs } from './types';
+import {
+  ActiveSearchQuery,
+  RawSearchResult,
+  ResultType,
+  TextInputs,
+  VersionType,
+} from './types';
 
 const defaultProps: Props = {
   activeSearchQuery: activeSearchQueryFixture(),
@@ -74,21 +80,48 @@ describe('test Search component', () => {
     expect(jsonBtn).toBeTruthy();
   });
 
-  it('renders activeFacets and textInputs as stringified filters', async () => {
-    const { getByRole, getByTestId } = render(<Search {...defaultProps} />);
+  it('renders query string', async () => {
+    const { getByRole, getByTestId, getByText, rerender } = render(
+      <Search {...defaultProps} />
+    );
 
     // Check search component renders
     const searchComponent = await waitFor(() => getByTestId('search'));
     expect(searchComponent).toBeTruthy();
 
-    // Check for stringified filters text
-    const strFilters = await waitFor(() =>
+    // Check renders results string
+    const strResults = await waitFor(() =>
       getByRole('heading', {
         name: '2 results found for test1',
       })
     );
+    expect(strResults).toBeTruthy();
 
-    expect(strFilters).toBeTruthy();
+    // Check renders query string
+    let queryString = await waitFor(() =>
+      getByText(
+        'latest = true AND min_version = 20200101 AND max_version = 20201231 AND (Text Input = foo) AND (foo = option1 OR option2) AND (baz = option1)'
+      )
+    );
+    expect(queryString).toBeTruthy();
+
+    // Rerender with no filters applied
+    const activeSearchQuery: ActiveSearchQuery = {
+      ...activeSearchQueryFixture(),
+      versionType: 'all',
+      minVersionDate: null,
+      maxVersionDate: null,
+      activeFacets: {},
+      textInputs: [],
+    };
+
+    rerender(
+      <Search {...defaultProps} activeSearchQuery={activeSearchQuery} />
+    );
+
+    // Check renders query string
+    queryString = await waitFor(() => getByText('No filters applied'));
+    expect(queryString).toBeTruthy();
   });
 
   it('clears all tags when selecting the "Clear All" tag', async () => {
@@ -129,7 +162,9 @@ describe('test Search component', () => {
     };
 
     server.use(
-      rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) => res(ctx.status(200), ctx.json(response)))
+      rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
+        res(ctx.status(200), ctx.json(response))
+      )
     );
 
     const { getByRole, getByTestId, getByText } = render(
@@ -320,6 +355,7 @@ describe('test parseFacets()', () => {
 });
 
 describe('test stringifyFilters()', () => {
+  const versionType: VersionType = 'latest';
   const resultType: ResultType = 'originals only';
   const minVersionDate = '20200101';
   const maxVersionDate = '20201231';
@@ -334,8 +370,9 @@ describe('test stringifyFilters()', () => {
     textInputs = ['foo', 'bar'];
   });
 
-  it('successfully generates a stringified version of the active filters', () => {
+  it('generates output', () => {
     const strFilters = stringifyFilters(
+      versionType,
       resultType,
       minVersionDate,
       maxVersionDate,
@@ -343,11 +380,12 @@ describe('test stringifyFilters()', () => {
       textInputs
     );
     expect(strFilters).toEqual(
-      'replica = false AND min_version = 20200101 AND max_version = 20201231 AND (Text Input = foo OR bar) AND (facet_1 = option1 OR option2) AND (facet_2 = option1 OR option2)'
+      'latest = true AND replica = false AND min_version = 20200101 AND max_version = 20201231 AND (Text Input = foo OR bar) AND (facet_1 = option1 OR option2) AND (facet_2 = option1 OR option2)'
     );
   });
-  it('successfully generates a stringified version of the active filters w/o textInputs', () => {
+  it('generates output w/o textInputs', () => {
     const strFilters = stringifyFilters(
+      versionType,
       resultType,
       minVersionDate,
       maxVersionDate,
@@ -355,11 +393,25 @@ describe('test stringifyFilters()', () => {
       []
     );
     expect(strFilters).toEqual(
-      'replica = false AND min_version = 20200101 AND max_version = 20201231 AND (facet_1 = option1 OR option2) AND (facet_2 = option1 OR option2)'
+      'latest = true AND replica = false AND min_version = 20200101 AND max_version = 20201231 AND (facet_1 = option1 OR option2) AND (facet_2 = option1 OR option2)'
     );
   });
-  it('successfully generates a stringified version of the active filters w/o activeFacets', () => {
+  it('generates output w/o activeFacets', () => {
     const strFilters = stringifyFilters(
+      versionType,
+      resultType,
+      minVersionDate,
+      maxVersionDate,
+      {},
+      textInputs
+    );
+    expect(strFilters).toEqual(
+      'latest = true AND replica = false AND min_version = 20200101 AND max_version = 20201231 AND (Text Input = foo OR bar)'
+    );
+  });
+  it('generates output w/o version type', () => {
+    const strFilters = stringifyFilters(
+      'all',
       resultType,
       minVersionDate,
       maxVersionDate,
