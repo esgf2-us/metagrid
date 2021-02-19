@@ -1,3 +1,19 @@
 {
-    "python.pythonPath": "venv/bin/python"
+  // Back-end Workspace VSCode Settings
+  // Python
+  // -----------------------------
+  "[python]": {
+    "editor.rulers": [72, 79, 120],
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 120,
+    "editor.defaultFormatter": "ms-python.python"
+  },
+  // Update as needed
+  "python.pythonPath": "venv/bin/python",
+  // Update as needed
+  "python.autoComplete.extraPaths": ["${workspaceFolder}/venv/bin/python"],
+  "python.linting.flake8Enabled": true,
+  "python.linting.flake8Args": ["--config=setup.cfg"],
+  "python.formatting.provider": "black",
+  "python.linting.mypyEnabled": true
 }
