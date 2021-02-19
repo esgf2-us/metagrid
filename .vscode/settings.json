@@ -1,0 +1,79 @@
+{
+  // Project-wide VSCode Settings
+  // Python
+  // -----------------------------
+  "[python]": {
+    "editor.rulers": [72, 79, 120],
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 120,
+    "editor.defaultFormatter": "ms-python.python"
+  },
+  // Update as needed
+  "python.pythonPath": "backend/venv/bin/python",
+  // Update as needed
+  "python.autoComplete.extraPaths": ["backend/venv/bin/python"],
+  "python.linting.flake8Enabled": true,
+  "python.linting.flake8Args": ["--config=backend/setup.cfg"],
+  "python.formatting.provider": "black",
+  "python.linting.mypyEnabled": true,
+  // JavaScript
+  // -----------------------------
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.rulers": [80, 100],
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 100
+  },
+  // React
+  // -----------------------------
+  "files.exclude": {
+    "frontend/src/react-app-env.d.ts": true
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.rulers": [80, 100],
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 100
+  },
+  // TypeScript
+  // -----------------------------
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.rulers": [80, 100],
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 100
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.rulers": [80, 100],
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 100
+  },
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  // ESLint
+  // -----------------------------
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  // Jest
+  // -----------------------------
+  "jest.pathToJest": "yarn test:watch",
+  // HTML, CSS, JSON
+  // -----------------------------
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}
