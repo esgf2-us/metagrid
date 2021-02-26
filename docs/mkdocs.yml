@@ -13,15 +13,11 @@ markdown_extensions:
 
 nav:
   - Home: "index.md"
-  # - User Guide:
-  #     - Search: "users/search.md"
-  #     - Download: "users/download.md"
-  #     - Account Management: "users/account_management.md"
   - Contributor Guide:
-      - Repo Standards: "contributors/repo_standards.md"
+      - Project Standards: "contributors/project_standards.md"
       - Architecture Design: "contributors/architecture_design.md"
       - Getting Started For Local Development: "contributors/getting_started_local.md"
-      - Getting Started For Production: "contributors/getting_started_production.md"
-      - Document: "contributors/document.md"
       - Back-end Development: "contributors/backend_development.md"
       - Front-end Development: "contributors/frontend_development.md"
+      - Getting Started For Production: "contributors/getting_started_production.md"
+      - Document: "contributors/document.md"

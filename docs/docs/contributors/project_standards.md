@@ -1,8 +1,6 @@
-# Repo Standards
+# Project Standards
 
-Following development patterns and best practices is essential for developing high quality, manageable software.
-
-This page outlines the standards for version control, styling and formatting, documenting, and testing.
+This page outlines version control, styling and formatting, documenting, and testing.
 
 ## Version Control
 
@@ -14,11 +12,12 @@ GitHub Flow aligns with **continuous delivery** of modern web applications where
 ![GitHub Flow Diagram](https://i.stack.imgur.com/ChShh.png)
 
 1. `master` must always be deployable
-2. All changes are made through **support** branches. Reference [list below](#type-of-support-branches)
+2. All changes are made through **support** branches on forks. Reference [list below](#type-of-support-branches)
 3. Rebase with master to avoid/resolve conflicts
-4. Open a pull-request (PR) and follow the PR guidelines
-5. Once PR is approved and build passes, **squash and rebase** your commits
-6. Merge in to `master` and **delete the branch**
+4. Make sure `pre-commit` checks pass when committing
+5. Open a pull-request (PR) and follow the PR guidelines
+6. Once the PR's build passes and is approved, **squash and rebase** your commits
+7. Merge in to `master` and **delete the branch**
 
 Source: [https://guides.github.com/introduction/flow/](https://guides.github.com/introduction/flow/)
 
@@ -53,18 +52,39 @@ Why?
 
 Source: [https://blog.carbonfive.com/always-squash-and-rebase-your-git-commits/](https://blog.carbonfive.com/always-squash-and-rebase-your-git-commits/)
 
+### Pre-commit
+
+The repository uses the `pre-commit` package to manage pre-commit hooks for the quality assurance tools.
+These hooks help enforce software standards and identify simple issues at the commit level before submitting code reviews.
+
+![GitHub Flow Diagram](../images/pre-commit.png)
+
+#### Quality Assurance Tools
+
+| Platform  | Code Formatter                                   | Linter                                           | Type Checker                  |
+| --------- | ------------------------------------------------ | ------------------------------------------------ | ----------------------------- |
+| Back-end  | [black](https://black.readthedocs.io/en/stable/) | [flake8](https://github.com/PyCQA/flake8#flake8) | [mypy](http://mypy-lang.org/) |
+| Front-end | [prettier](https://prettier.io/)                 | [ESLint + Airbnb](https://eslint.org/)           | TypeScript (language)         |
+
+---
+
+##### Ways to Run Tools
+
+1. Using `pre-commit` - recommend in most cases, commands found [here](../getting_started_local#helpful-commands)
+2. Using IDE/text editor - recommended alongside #1 for integrated linting and formatting, only VSCode `settings.json` file provided for configuration
+3. Using terminal to run standalone tool - useful to test configs. Visit the tool's site for a list of commands
+
 ### Summary
 
 #### DOs for Version Control
 
-- **DO** keep `master` in working order.
+- **DO** keep `master` in working order
 - **DO** learn to rebase
+- **DO** fork the repository
 - **DO** squash commits
-- **DO** rebase your `feature` branches.
+- **DO** open PRs early for discussion
 - **DO** pull in (rebase on top of) changes
-- **DO** push `feature` branches early for discussion
 - **DO** name your branches clearly against an issue number
-- **DO** delete your branches after a PR is closed/merged, otherwise it makes navigating branches on origin messy
 
 #### DON'Ts for Version Control
 
@@ -75,24 +95,9 @@ Source: [https://blog.carbonfive.com/always-squash-and-rebase-your-git-commits/]
 
 Source: [https://gist.github.com/jbenet/ee6c9ac48068889b0912](https://gist.github.com/jbenet/ee6c9ac48068889b0912)
 
-## Style Guide, Linting, Type Checking
+## Documenting APIs
 
-This project uses several tools for code formatting, linting, and type checking. These tools can either by run manually through the terminal, through your IDE/text editor, or automatically before each commit using pre-commit hooks.
-
-| Platform | Code Formatting                                  | Linting                                          | Type Checking                 |
-| -------- | ------------------------------------------------ | ------------------------------------------------ | ----------------------------- |
-| Backend  | [black](https://black.readthedocs.io/en/stable/) | [flake8](https://github.com/PyCQA/flake8#flake8) | [mypy](http://mypy-lang.org/) |
-| Frontend | [prettier](https://prettier.io/)                 | [ESLint + Airbnb](https://eslint.org/)           | TypeScript                    |
-
-_Tools used in the repository_
-
-The repository uses **pre-commit hooks** to help enforce software standards and identify simple issues at the commit level before submitting code reviews. Instructions on how to get pre-commit setup can be found [here](../getting_started_local#1-set-up-pre-commit).
-
-## Documenting
-
-Code should be self-documenting. Generally, you don't need comments if you write clean code.
-
-However, when necessary, documentation should explain **WHY** something is done, its purpose, and its goal. The code already shows **HOW** it is done, so commenting on this is redundant and should be avoided.
+Code should be self-documenting. However, when necessary, documentation should explain **WHY** something is done, its purpose, and its goal. The code already shows **HOW** it is done, so commenting on this can be redundant.
 
 ### DOs for Documenting
 
@@ -105,23 +110,20 @@ However, when necessary, documentation should explain **WHY** something is done,
 ### DON'Ts for Documenting
 
 - **DON'T** write comments as a crutch for poor code
-- **DON'T** comment _every_ function, data structure, type declaration, etc. -- this kind of machanical comment writing actually makes it more difficult to maintain code since two things need to be updated when you make a single update
+- **DON'T** comment _every_ function, data structure, type declaration, etc. -- two things need to be updated when you make a single update
 
 Source: “A Pragmatic Philosophy.” _The Pragmatic Programmer: Your Journey to Mastery_, by David Thomas and Andrew Hunt, Pearson Education, Inc., 2020, pp. 23–23.
 
-Watch this great video on [The Art of Code Comments](https://www.youtube.com/watch?v=yhF7OmuIILc)
-
 ## Testing and Continuous Integration (CI)
 
-Writing high quality tests is essential for high quality software. Pull requests should include tests where applicable. PRs builds are tested using CI.
+MetaGrid uses GitHub Actions to run the workflows below:
+
+1. Back-end CI - runs formatters, linters, and a `pytest` test suite and uploads coverage report
+
+2. Front-end CI - runs formatters, linters, and `jest`/`react-testing-library` test suite and uploads a coverage report
 
 ### How do I Know What to Test?
 
 Use code coverage tools to generate a report and see what you should test. Be aware, code coverage tools measure lines of code covered by tests. **You should still write test cases that exceed the base testcases**.
 
 The repository's code coverage tools have minimum threshold percentages for code coverage. If your PR's CI build causes the code coverage percentage to drop below the limit, **your build cannot be merged**.
-
-### GitHub Actions for CI
-
-MetaGrid uses GitHub Actions to run _workflows_ (aka pipelines) for each side of the stack.
-Each workflow for the front-end and back-end run the code formatters, linters, and test suites to check for issues before allowing a PR to be merged.
