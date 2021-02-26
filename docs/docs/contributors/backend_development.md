@@ -1,6 +1,6 @@
 # Getting Started with Back-end Development
 
-This walkthrough will show you how to contribute to MetaGrid's back-end. You'll learn about the technologies used, the file scaffolding scheme, and the style guide. Resources are also provided to get new contributors up to speed in the technologies.
+This page will show you how to contribute to MetaGrid's back-end. You'll learn about the technologies used, the file structure scheme, and the style guide. Resources are also provided to get new contributors up to speed in the technologies.
 
 ## Technologies
 
@@ -9,9 +9,9 @@ This walkthrough will show you how to contribute to MetaGrid's back-end. You'll 
 - [Django](https://www.djangoproject.com/start/overview/)
 - [Django REST Framework (DRF)](https://www.django-rest-framework.org/)
 
-### Styler and Linting
+### Formatter and Linter
 
-- Styler: [Black](https://black.readthedocs.io/en/stable/)
+- Formatter: [Black](https://black.readthedocs.io/en/stable/)
 - Linter: [Flake8](https://flake8.pycqa.org/en/latest/)
 - Static Type Checker: [mypy](https://mypy.readthedocs.io/en/stable/introduction.html)
 
@@ -25,11 +25,11 @@ This walkthrough will show you how to contribute to MetaGrid's back-end. You'll 
 - [Docker](https://www.docker.com/)
 - [Docker-Compose](https://docs.docker.com/compose/)
 
-## File Scaffold
+## File Structure
 
 ### Root
 
-Adapted from [Cookiecutter Django's](https://github.com/pydanny/cookiecutter-django/tree/master/%7B%7Bcookiecutter.project_slug%7D%7D) scaffolding scheme
+Adapted from [Cookiecutter Django's](https://github.com/pydanny/cookiecutter-django/tree/master/%7B%7Bcookiecutter.project_slug%7D%7D) file structure scheme
 
 ```scaffold
 backend
@@ -103,7 +103,37 @@ backend
 
 [What are Django Apps?](https://docs.djangoproject.com/en/3.1/ref/applications/)
 
-Below is an example of how MetaGrid scaffolds Django apps (a `cart` app in this case).
+#### General Practices
+
+- Django apps should by tightly focused on its task rather than a combination of multiple tasks
+- Keep Django apps small. If an app becomes too complex, break it up.
+- App's name should be a plural version of the app's main model (e.g. `users` for `User` model)
+  - Use valid, PEP8 complain and importable Python package names, which are short, all-lowercase names
+  - Use underscores for readability, but avoid in most cases.
+
+#### Starting an App
+
+Run the command to start an app
+
+```bash
+cd metagrid
+docker-compose -p metagrid_backend_dev run --rm django python manage.py startapp <app_name>
+```
+
+Register the app under `INSTALLED_APPS`
+
+```python
+INSTALLED_APPS =[
+    ...
+    # Your apps
+    "metagrid.users",
+    "metagrid.app_name"
+]
+```
+
+#### App File Structure
+
+Below is an example of how MetaGrid scaffolds Django apps.
 
 ```scaffold
 backend
@@ -137,18 +167,39 @@ backend
 - `views.py`\* - stores Django REST Framework [views](https://www.django-rest-framework.org/api-guide/views/), [generic views](https://www.django-rest-framework.org/api-guide/generic-views/), and [viewsets](https://www.django-rest-framework.org/api-guide/viewsets/)
   - If `views.py` becomes too large from storing views and viewsets for example, you can seperate viewsets in a `viewsets.py`
 
-#### Test Files
+#### Building REST APIs in an App
 
-- A `test.py` file will be auto-generated after you run the `startapp` command, but you can delete. Instead, create a `tests` folder to store all your test files.
-- Each testable file should have an associated test file. Typically, you should be testing `models.py`, `serializers.py`, `views.py` and `urls.py`. Run pytest to generate a coverage report automatically to see what you should test.
+After adding an app, you can start building REST APIs for the frontend. Here's the typical flow for creating an API.
+
+1. Add [models](https://docs.djangoproject.com/en/3.1/intro/tutorial02/#creating-models)
+2. (If needed) Link user-related models to `User` model through `OnetoOneField`
+   - Make sure to update the `User` model's `save()` method (e.g. add `Cart.objects.create(user=self)`). When a new `User` object is saved, it will map a new `Cart` object automatically
+   - You need to create and run a [data migration](https://docs.djangoproject.com/en/3.1/topics/migrations/#data-migrations) to create new `Cart` objects that map to any existing `User` objects. Make sure to have a [reverse operation](https://docs.djangoproject.com/en/3.1/ref/migration-operations/#django.db.migrations.operations.RunPython) for `RunPython` in case you need to reverse the migration
+3. Add [model serializers](https://www.django-rest-framework.org/tutorial/1-serialization/#using-modelserializers) and/or [serializers](https://www.django-rest-framework.org/tutorial/1-serialization/#creating-a-serializer-class)
+4. Add [viewsets](https://www.django-rest-framework.org/tutorial/6-viewsets-and-routers/), [generic class-based views](https://www.django-rest-framework.org/tutorial/3-class-based-views/), and/or [views](https://www.django-rest-framework.org/tutorial/2-requests-and-responses/),
+   - Viewsets and generic class-based views are the preferred way to write APIs because it abstracts a lot of boilerplate code, making code simpler and cleaner
+   - If you need custom behaviors in a view and viewsets/generic class-based views aren't cutting it, then use the `APIView` class
+5. Register your viewsets to the router in `urls.py` and/or add your views/generic class-based views to the `urls.py` list
+6. Run `pytest` and open `htmlcov/index.html` to view code coverage
+7. Write tests for 100% coverage
+
+#### Testing the App
+
+1. Delete the autogenerated `tests.py` file
+2. Create a `tests` folder to store all your test files
+3. If needed, add `test_models.py`, `test_serializers.py`, `test_views.py`, `test_urls.py`
+   - The convention is to add an associated `test_` file for a file that needs to be tested
+
+#### Creating and Applying Model Migrations (Database Version Control)
+
+[What are migrations?](https://docs.djangoproject.com/en/3.1/topics/migrations/)
+
+> Migrations are Django’s way of propagating changes you make to your models (adding a field, deleting a model, etc.) into your database schema.
+> They’re designed to be mostly automatic, but you’ll need to know when to make migrations, when to run them, and the common problems you might run into.
 
 ## Style Guide
 
-The MetaGrid back-end follows the [Black](https://black.readthedocs.io/en/stable/the_black_code_style.html) code style, which reformats entire files in place. It is not configurable and doesn't take previous formatting into account. Please spend some time reading through Black's code style guide.
-
-Since Black is a project dependency, you just need to set up the virtual environment using the `requirements/local.txt` dependencies file then point your IDE/text editor to it.
-
-Afterwards, your code can be **automatically reformatted** through your IDE/text editor or by using [pre-commit](../getting_started_local#1-set-up-precommit). This means you don't have to worry about manually styling your code for every commit, and you can focus on the architecture of change. Automation is the key.
+MetaGrid's back-end follows the [Black](https://black.readthedocs.io/en/stable/the_black_code_style.html) code style. Please read through Black's code style guide.
 
 **Style guide and linting rules are enforced in CI test builds.**.
 
@@ -157,32 +208,70 @@ Afterwards, your code can be **automatically reformatted** through your IDE/text
 Run a command inside the docker container:
 
 ```bash
-docker-compose -p metagrid_local_backend run --rm django [command]
+docker-compose -p metagrid_backend_dev run --rm django [command]
 ```
 
-### Setting Up Users
+### Creating a Superuser
 
-- To create an superuser account, use this command:
+Useful for logging into Django Admin page to manage the database
 
 ```bash
 python manage.py createsuperuser
 ```
 
-### Test coverage
+### Show URLs
+
+Produce a tab-separated list of (url_pattern, view_function, name) tuples. Useful for writing tests and testing REST APIs using `curl`, Postman, etc.
+
+```bash
+python manage.py show_urls
+```
+
+### Run the Enhanced Django Shell
+
+Useful for prototyping and testing code
+
+Run the enhanced django shell:
+
+```bash
+python manage.py shell_plus
+```
+
+### Run Tests and Produce Coverage Report
 
 To run the tests, check your test coverage, and generate an HTML coverage report:
 
 ```bash
 pytest
-open htmlcov/index.html
 ```
 
-### Type checks
+The HTML coverage report is located here: `htmlcov/index.html`.
 
-Running type checks with mypy:
+### Format Code
+
+Format with `black`
+
+```bash
+black .
+```
+
+Sort imports with `isort`
+
+```bash
+isort .
+```
+
+### Type Checks
 
 ```bash
 mypy metagrid
+```
+
+### Linting
+
+
+```bash
+flake8 .
 ```
 
 ## New Contributor Resources
