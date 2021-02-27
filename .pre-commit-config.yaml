@@ -4,13 +4,13 @@ fail_fast: true
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: master
+    rev: v3.4.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
 
-  # Backend
+  # Back-end
   # ------------------------------------------------------------------------------
   - repo: https://gitlab.com/pycqa/flake8
     rev: 3.8.4
@@ -20,7 +20,7 @@ repos:
         additional_dependencies: [flake8-isort]
 
   - repo: https://github.com/psf/black
-    rev: stable
+    rev: 20.8b1
     hooks:
       - id: black
         args: ["--config=backend/pyproject.toml"]
@@ -30,7 +30,7 @@ repos:
     hooks:
       - id: mypy
 
-  # Frontend
+  # Front-end
   # ------------------------------------------------------------------------------
   # This hook runs the local eslint to avoid dependencies being out of sync with frontend/package.json
   # https://github.com/pre-commit/pre-commit/issues/945
