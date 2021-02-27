@@ -1,0 +1,47 @@
+name: Pre-commit Checks
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  pre-commit-hooks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v2
+
+      # Required to run the local ESLint hook
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: "12.x"
+
+      - name: Cache node modules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ~/.cache/yarn
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: Install Dependencies
+        run: |
+          cd frontend
+          yarn install --frozen-lockfile
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      # Run all pre-commit hooks on all the files.
+      # Getting only staged files can be tricky in case a new PR is opened
+      # since the action is run on a branch in detached head state
+      - name: Install and Run Pre-commit
+        uses: pre-commit/action@v2.0.0

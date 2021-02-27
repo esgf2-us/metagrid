@@ -45,15 +45,11 @@ jobs:
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Lint and Style (ESLint + Prettier)
-        run: |
-          yarn lint
-
-      - name: Run Tests (Jest)
+      - name: Run Tests
         run: |
           yarn test:coverage
 
-      - name: Upload Coverage Report (Codecov)
+      - name: Upload Coverage Report
         uses: codecov/codecov-action@v1
         with:
           file: "./frontend/coverage/coverage-final.json"
