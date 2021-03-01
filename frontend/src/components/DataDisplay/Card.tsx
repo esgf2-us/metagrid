@@ -9,9 +9,9 @@ type Props = {
 };
 
 const Card: React.FC<Props> = ({ title, hoverable, actions, children }) => (
-    <CardD title={title} hoverable={hoverable} actions={actions}>
-      {children}
-    </CardD>
-  );
+  <CardD title={title} hoverable={hoverable} actions={actions}>
+    {children}
+  </CardD>
+);
 
 export default Card;

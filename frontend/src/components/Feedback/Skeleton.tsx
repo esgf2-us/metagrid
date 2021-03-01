@@ -8,9 +8,9 @@ type Props = {
 };
 
 const Skeleton: React.FC<Props> = ({ title, paragraph, active = false }) => (
-    <div data-testid="skeleton">
-      <SkeletonD title={title} paragraph={paragraph} active={active} />
-    </div>
-  );
+  <div data-testid="skeleton">
+    <SkeletonD title={title} paragraph={paragraph} active={active} />
+  </div>
+);
 
 export default Skeleton;

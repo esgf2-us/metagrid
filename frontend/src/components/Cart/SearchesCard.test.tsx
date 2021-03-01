@@ -47,7 +47,9 @@ it('renders component and handles button clicks', async () => {
 
 it('displays alert error when api fails to return response', async () => {
   server.use(
-    rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) => res(ctx.status(404)))
+    rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
+      res(ctx.status(404))
+    )
   );
 
   const { getByRole } = render(<SearchesCard {...defaultProps} />);

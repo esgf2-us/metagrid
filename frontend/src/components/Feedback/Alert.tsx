@@ -14,12 +14,12 @@ const Alert: React.FC<Props> = ({
   type,
   showIcon = true,
 }) => (
-    <AlertD
-      message={message}
-      description={description}
-      type={type}
-      showIcon={showIcon}
-    />
-  );
+  <AlertD
+    message={message}
+    description={description}
+    type={type}
+    showIcon={showIcon}
+  />
+);
 
 export default Alert;
