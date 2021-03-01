@@ -134,7 +134,8 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
         handlePageSizeChange(size),
     } as TablePaginationConfig,
     expandable: {
-      expandedRowRender: (record: RawSearchResult) => Object.keys(record).map((key) => {
+      expandedRowRender: (record: RawSearchResult) =>
+        Object.keys(record).map((key) => {
           if (metadataKeysToDisplay.includes(key)) {
             return (
               <p key={key} style={{ margin: 0 }}>

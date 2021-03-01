@@ -5,6 +5,8 @@ type Props = {
   description: string;
 };
 
-const Empty: React.FC<Props> = ({ description }) => <EmptyD description={description} />;
+const Empty: React.FC<Props> = ({ description }) => (
+  <EmptyD description={description} />
+);
 
 export default Empty;
