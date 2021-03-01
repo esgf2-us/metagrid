@@ -1,6 +1,6 @@
 # Getting Started with Front-end Development
 
-This walkthrough will show you how to contribute to MetaGrid's front-end. You'll learn about the technologies used, the file scaffolding scheme, and the style guide. Resources are also provided to get new contributors up to speed in the technologies.
+This page will show you how to contribute to MetaGrid's front-end. You'll learn about the technologies used, the file structure scheme, and the style guide. Resources are also provided to get new contributors up to speed in the technologies.
 
 ## Technologies
 
@@ -13,9 +13,9 @@ This walkthrough will show you how to contribute to MetaGrid's front-end. You'll
 
 - [Ant Design](https://ant.design/)
 
-### Styler and Linting
+### Formatter and Linter
 
-- Styler: [Prettier](https://prettier.io/)
+- Formatter: [Prettier](https://prettier.io/)
 - Linter: [ESLint](https://eslint.org/) + [Airbnb config](https://www.npmjs.com/package/eslint-config-airbnb)
 
 ### Testing/QA
@@ -28,7 +28,7 @@ This walkthrough will show you how to contribute to MetaGrid's front-end. You'll
 - [Docker](https://www.docker.com/)
 - [Docker-Compose](https://docs.docker.com/compose/)
 
-## File Scaffold
+## File Structure
 
 Adapted from sources:
 
@@ -119,7 +119,7 @@ frontend
   - `assets/` - stores assets used when the app is compiled
   - `common/` - stores common code used between components such as utility functions
   - `components/` - contains React components and related files.
-    Follow [React Components Scaffolding](#react-components-scaffolding)
+    Follow [React Components File Structure](#react-components-file-structure)
   - `contexts/` - stores React [Context](https://reactjs.org/docs/context.html) components, such as for authentication state
   - `lib/` - stores initialized instances of third party library that are exported for use in the codebase (e.g. Axios, Keycloak)
   - `test/` - contains related files and functions shared among tests
@@ -181,14 +181,10 @@ frontend
 
 ## Style Guide
 
-The MetaGrid front-end follows the Airbnb JavaScript and React/JSX style guides, which are one of the most popular and comprehensive. Please spend some time to read through the style guides.
+The MetaGrid front-end follows the Airbnb JavaScript and React/JSX style guides. Please spend some time to read through the style guides.
 
 - [Airbnb JavaScript Style Guide](https://github.com/airbnb/javascript)
 - [Airbnb React/JSX Style Guide](https://github.com/airbnb/javascript/tree/master/react)
-
-Since ESLint is configured with Airbnb's style guide, your code can be **automatically reformatted** through your IDE/text editor or by using [pre-commit](../getting_started_local#1-set-up-precommit).
-
-The ESLint and Prettier config files are located in root, so your IDE/text editor will use them. This means you don't have to worry about manually styling your code for every commit, and you can focus on the architecture of change. Automation is the key.
 
 **Style guide and linting rules are enforced in CI test builds.**
 
@@ -197,7 +193,7 @@ The ESLint and Prettier config files are located in root, so your IDE/text edito
 Run a command inside the docker container:
 
 ```bash
-docker-compose -p metagrid_local_frontend run --rm react [command]
+docker-compose -p metagrid_frontend_dev run --rm react [command]
 ```
 
 ### `yarn start:local`
@@ -259,16 +255,6 @@ The build is minified and the filenames include the hashes.<br />
 Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `yarn run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
 
 ## New Contributor Resources
 

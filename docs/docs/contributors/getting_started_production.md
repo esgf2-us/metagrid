@@ -1,6 +1,6 @@
 # Getting Started for Production
 
-Building the production environment involves the similar steps to local.
+Follow this page if you are interested in deploying or running the production environment locally.
 
 ## Prerequisites
 
@@ -17,7 +17,7 @@ The environment also needs to be configured as listed below.
 
 ### 1. Traefik
 
-You will need to configure each router's `rule`, which is used to route a request to a service (e.g. django, react, cors-proxy).
+You will need to configure each router's `rule`, which is used to route a request to a docker-compose service (e.g. `django`, `react`, `cors-proxy`).
 
 1. Enter directory `./backend/docker/production/traefik/`
 2. Open `traefik.yml` in your editor
