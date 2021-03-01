@@ -41,22 +41,22 @@ const Button: React.FC<Props> = ({
   shape,
   size,
 }) => (
-    <ButtonD
-      type={type}
-      className={className}
-      href={href}
-      target={target}
-      htmlType={htmlType}
-      icon={icon}
-      onClick={onClick}
-      disabled={disabled}
-      danger={danger}
-      loading={loading}
-      shape={shape}
-      size={size}
-    >
-      {children}
-    </ButtonD>
-  );
+  <ButtonD
+    type={type}
+    className={className}
+    href={href}
+    target={target}
+    htmlType={htmlType}
+    icon={icon}
+    onClick={onClick}
+    disabled={disabled}
+    danger={danger}
+    loading={loading}
+    shape={shape}
+    size={size}
+  >
+    {children}
+  </ButtonD>
+);
 
 export default Button;

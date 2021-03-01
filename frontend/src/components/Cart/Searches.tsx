@@ -24,14 +24,14 @@ const Searches: React.FC<Props> = ({
       <Row gutter={[18, 18]}>
         {(userSearchQueries as UserSearchQueries).map(
           (searchQuery: UserSearchQuery, index: number) => (
-              <SearchesCard
-                key={searchQuery.uuid}
-                searchQuery={searchQuery}
-                index={index}
-                onRunSearchQuery={onRunSearchQuery}
-                onRemoveSearchQuery={onRemoveSearchQuery}
-              />
-            )
+            <SearchesCard
+              key={searchQuery.uuid}
+              searchQuery={searchQuery}
+              index={index}
+              onRunSearchQuery={onRunSearchQuery}
+              onRemoveSearchQuery={onRemoveSearchQuery}
+            />
+          )
         )}
       </Row>
     </div>

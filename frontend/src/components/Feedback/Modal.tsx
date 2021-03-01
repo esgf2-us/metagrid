@@ -16,15 +16,15 @@ const Modal: React.FC<Props> = ({
   centered,
   children,
 }) => (
-    <ModalD
-      visible={visible}
-      title={title}
-      onOk={onClose}
-      onCancel={onClose}
-      centered={centered}
-    >
-      {children}
-    </ModalD>
-  );
+  <ModalD
+    visible={visible}
+    title={title}
+    onOk={onClose}
+    onCancel={onClose}
+    centered={centered}
+  >
+    {children}
+  </ModalD>
+);
 
 export default Modal;

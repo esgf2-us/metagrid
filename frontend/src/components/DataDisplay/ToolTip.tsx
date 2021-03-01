@@ -28,14 +28,9 @@ const ToolTip: React.FC<Props> = ({
   color,
   children,
 }) => (
-    <TooltipD
-      title={title}
-      trigger={trigger}
-      color={color}
-      placement={placement}
-    >
-      {children}
-    </TooltipD>
-  );
+  <TooltipD title={title} trigger={trigger} color={color} placement={placement}>
+    {children}
+  </TooltipD>
+);
 
 export default ToolTip;
