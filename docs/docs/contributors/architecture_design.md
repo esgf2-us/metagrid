@@ -4,7 +4,7 @@ This page provides a high-level overview of the project architecture.
 
 ## Overview
 
-The project repo is a mono-repo split up between directories for the `frontend/`, `backend/`, and `traefik/`. Although both sides of the stack are in a single repo, each directory contains its own microservices.
+The project repo is a mono-repo split up between directories for the `/frontend`, `/backend`, `/traefik`, and `/docs`. Each directory contains its own microservice(s). The `/traefik` directory is intended for deployment in a production environment.
 
 **Why a mono-repo?**
 
@@ -20,14 +20,14 @@ Source: [http://blog.shippable.com/our-journey-to-microservices-and-a-mono-repos
 
 ![MetaGrid Architecture Diagram](../images/metagrid_architecture_diagram.png)
 
-## Scaffolding
+## File Structure
 
-In root, there are several directories that contain microservices:
+In root, there are multiple directories that contain microservices:
 
-- `frontend/`
-- `backend/`
-- `traefik/`
-- `docs/`
+- `/frontend`
+- `/backend`
+- `/traefik`
+- `/docs`
 
 ### Front-end
 

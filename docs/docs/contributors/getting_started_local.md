@@ -12,15 +12,15 @@ Carefully follow the steps below for a smooth experience.
 
 - [Docker](https://docs.docker.com/get-docker/)
 - [docker-compose](https://docs.docker.com/compose/install/)
-- Python >= 3.8 for Pre-commit (contributors)
+- Python >= 3.8 to create virtual environment for `pre-commit` package
 
-## 1. Set up Pre-commit (contributors)
+## 1. Set up `pre-commit`
 
 This repo has default integration with [pre-commit](https://pre-commit.com/), a tool for identifying simple issues before submission to code review. These checks are performed for all staged files using `git commit` before they are committed to a branch.
 
-### 1.1 Integrated hooks
+### 1.1 Integrated Hooks (Quality Assurance Tools)
 
-| Platform              | Code Styling                                     | Linting                                          | Type Checking                 |
+| Platform              | Code Formatter                                   | Linter                                           | Type Checker                  |
 | --------------------- | ------------------------------------------------ | ------------------------------------------------ | ----------------------------- |
 | Python                | [black](https://black.readthedocs.io/en/stable/) | [flake8](https://github.com/PyCQA/flake8#flake8) | [mypy](http://mypy-lang.org/) |
 | JavaScript/TypeScript | [prettier](https://prettier.io/)                 | [ESLint](https://eslint.org/)                    | N/A                           |
@@ -43,7 +43,29 @@ pip install -r requirements/local.txt
 pre-commit install
 ```
 
-**Note**, any update to `.pre-commit.config.yaml` requires a re-installation of the hooks.
+**Note: any update to `.pre-commit.config.yaml` requires a reinstallation of the hooks**
+
+### Helpful Commands
+
+#### Automatically run all pre-commit hooks -- just commit
+
+```bash
+git commit -m '...'
+```
+
+#### Manually run all pre-commit hooks
+
+```bash
+pre-commit run --all-files.
+```
+
+#### Run individual hook
+
+```bash
+pre-commit run <hook_id>.
+```
+
+Available hook ids: `trailing-whitespace`, `end-of-file-fixer`, `check-yaml`, `black`, `isort`, `flake8`, `mypy`
 
 ## 2. Set up Back-end
 
@@ -54,7 +76,7 @@ Open the project in a terminal and `cd backend`.
 This can take a while, especially the first time you run this particular command on your development system but subsequent runs will occur quickly:
 
 ```bash
-docker-compose -p metagrid_backend_dev -f docker-compose.yml up --build
+docker-compose -p metagrid_backend_dev up --build
 ```
 
 Remove the `--build` flag when you don't need to rebuild (e.g. no updates to Docker/docker-compose related files).
@@ -98,14 +120,14 @@ As a result, the Keycloak docker service will not start and outputs the error **
 If you run into this problem, follow these workaround steps:
 
 1. Stop all back-end containers
-   `docker-compose -p metagrid_dev_backend -f docker-compose.yml down`
+   `docker-compose -p metagrid_backend_dev down`
 2. Comment out the two relevant lines (`./backend/.envs/.local/.keycloak`)
 
    - `#KEYCLOAK_USER: admin`
    - `#KEYCLOAK_PASSWORD: pass`
 
 3. Rebuild and restart the containers
-   `docker-compose -f docker-compose.yml up --build`
+   `docker-compose -p metagrid_backend_dev up --build`
 4. Un-do commenting
    - `KEYCLOAK_USER: admin`
    - `KEYCLOAK_PASSWORD: pass`
@@ -124,7 +146,7 @@ Open the project in a terminal and `cd frontend`.
 This can take a while, especially the first time you run this particular command on your development system but subsequent runs will occur quickly:
 
 ```bash
-docker-compose -p metagrid_frontend_dev -f docker-compose.yml up --build
+docker-compose -p metagrid_frontend_dev up --build
 ```
 
 Remove the `--build` flag when you don't need to rebuild (e.g. no updates to Docker/docker-compose related files).
@@ -134,3 +156,7 @@ Remove the `--build` flag when you don't need to rebuild (e.g. no updates to Doc
 - React: `localhost:3000`
 
 ---
+
+## VSCode Configuration
+
+`.vscode/settings.json` files are provided to automatically configure your VSCode to leverage the quality assurance tools even if you use workspaces or open the folder directly.
