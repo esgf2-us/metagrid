@@ -160,3 +160,9 @@ Remove the `--build` flag when you don't need to rebuild (e.g. no updates to Doc
 ## VSCode Configuration
 
 `.vscode/settings.json` files are provided to automatically configure your VSCode to leverage the quality assurance tools even if you use workspaces or open the folder directly.
+
+## Third Party Tool Integration
+
+Code coverage: [![Codecov Coverage](https://codecov.io/gh/aims-group/metagrid/branch/master/graph/badge.svg)](https://codecov.io/gh/aims-group/metagrid/)
+
+Dependency Monitoring: [![Renovate enabled](https://img.shields.io/badge/renovate-enabled-brightgreen.svg)](https://renovatebot.com/) [![Updates](https://pyup.io/repos/github/aims-group/metagrid/shield.svg)](https://pyup.io/repos/github/aims-group/metagrid/)
