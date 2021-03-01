@@ -118,9 +118,9 @@ Source: “A Pragmatic Philosophy.” _The Pragmatic Programmer: Your Journey to
 
 MetaGrid uses GitHub Actions to run the workflows below:
 
-1. Back-end CI - runs formatters, linters, and a `pytest` test suite and uploads coverage report
-
-2. Front-end CI - runs formatters, linters, and `jest`/`react-testing-library` test suite and uploads a coverage report
+1. Pre-commit Checks - runs formatters and linters
+2. Back-end CI - runs a `pytest` test suite and uploads coverage report
+3. Front-end CI - runs a `jest` + `react-testing-library` test suite and uploads a coverage report
 
 ### How do I Know What to Test?
 
