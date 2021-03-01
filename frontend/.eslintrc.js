@@ -11,9 +11,7 @@ module.exports = {
     'plugin:@typescript-eslint/eslint-recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:@typescript-eslint/recommended-requiring-type-checking',
-    'prettier',
-    'prettier/@typescript-eslint',
-    'prettier/react',
+    'plugin:prettier/recommended',
   ],
   plugins: ['react', 'jsx-a11y', 'import'],
   parser: '@typescript-eslint/parser',
@@ -49,6 +47,5 @@ module.exports = {
       'error',
       { functions: false, classes: true, variables: true, typedefs: true },
     ],
-
   },
 };
