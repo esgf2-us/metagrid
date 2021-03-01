@@ -2,7 +2,7 @@
   "extends": ["config:base"],
   "groupName": "all",
   "schedule": ["every monday"],
-  "assignees": ["tomvothecoder"],
+  "labels": ["Type: Dependencies"],
   "pip_requirements": {
     "fileMatch": [
       "requirements/base.txt",
