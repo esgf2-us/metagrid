@@ -36,5 +36,6 @@ REST_FRAMEWORK[  # noqa F405
 # ------------------------------------------------------------------------------
 # http://whitenoise.evans.io/en/latest/django.html#using-whitenoise-in-development
 INSTALLED_APPS = [
-    "whitenoise.runserver_nostatic"
+    "whitenoise.runserver_nostatic",
+    "django_extensions",
 ] + INSTALLED_APPS  # noqa F405
