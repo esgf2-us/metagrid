@@ -1,9 +1,11 @@
 import { fireEvent, render } from '@testing-library/react';
 import React from 'react';
+import { ResponseError } from '../../api';
 import {
   activeSearchQueryFixture,
   projectsFixture,
 } from '../../api/mock/fixtures';
+import { mapHTTPErrorCodes } from '../../api/routes';
 import ProjectsForm, { Props } from './ProjectForm';
 
 const defaultProps: Props = {
@@ -42,7 +44,12 @@ it('renders empty form', () => {
 
 it('renders error message when projects can"t be fetched', () => {
   const { getByRole } = render(
-    <ProjectsForm {...defaultProps} apiError={new Error('404')} />
+    <ProjectsForm
+      {...defaultProps}
+      apiError={
+        new Error(mapHTTPErrorCodes('service', 'generic')) as ResponseError
+      }
+    />
   );
 
   const alertComponent = getByRole('img', { name: 'close-circle' });

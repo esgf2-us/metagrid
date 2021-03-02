@@ -27,6 +27,10 @@ afterEach(() => {
   // https://stackoverflow.com/a/54222110
   // https://stackoverflow.com/questions/59892304/cant-get-memoryrouter-to-work-with-testing-library-react
 
+  // TypeScript complains with error TS2790: The operand of a 'delete' operator must be optional.
+  // https://github.com/facebook/jest/issues/890#issuecomment-776112686
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   delete window.location;
   window.location = (JSON.parse(location) as unknown) as Location;
 

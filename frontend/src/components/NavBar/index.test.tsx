@@ -7,11 +7,9 @@ import { customRender } from '../../test/custom-render';
 import NavBar, { Props } from './index';
 
 const defaultProps: Props = {
-  activeProject: { name: 'test1' },
   numCartItems: 0,
   numSavedSearches: 0,
   onTextSearch: jest.fn(),
-  onProjectChange: jest.fn(),
 };
 
 it('renders LeftMenu and RightMenu components', async () => {

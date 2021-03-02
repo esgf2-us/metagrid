@@ -32,12 +32,12 @@ repos:
 
   # Front-end
   # ------------------------------------------------------------------------------
-  # This hook runs the local eslint to avoid dependencies being out of sync with frontend/package.json
+  # Runs the local node `lint` script to avoid dependencies being out of sync with `frontend/package.json`
   # https://github.com/pre-commit/pre-commit/issues/945
   - repo: local
     hooks:
-      - id: eslint
-        name: eslint
+      - id: eslint_and_tsc
+        name: eslint_and_tsc
         language: system
         files: .+(js|jsx|ts|tsx|json)$
         entry: bash -c 'cd frontend && yarn precommit'
