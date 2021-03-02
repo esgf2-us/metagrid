@@ -6,9 +6,8 @@
  * https://kentcdodds.com/blog/stop-mocking-fetch
  */
 import { rest } from 'msw';
-import { RequestHandlersList } from 'msw/lib/types/setupWorker/glossary';
 import { setupServer } from 'msw/node';
 import handlers from './server-handlers';
 
-const server = setupServer(...(handlers as RequestHandlersList));
+const server = setupServer(...handlers);
 export { server, rest };

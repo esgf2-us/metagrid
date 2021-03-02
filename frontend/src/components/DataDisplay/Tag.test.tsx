@@ -4,7 +4,7 @@ import { Tag } from './Tag';
 
 it('renders component with and without onClose prop', () => {
   const { getByRole, rerender } = render(
-    <Tag value="foo" type="bar" onClose={jest.fn()}>
+    <Tag value="foo" type="filenameVar" onClose={jest.fn()}>
       tag
     </Tag>
   );
@@ -14,7 +14,7 @@ it('renders component with and without onClose prop', () => {
 
   // Re-render the component without onClose prop
   rerender(
-    <Tag value="foo" type="bar">
+    <Tag value="foo" type="filenameVar">
       tag
     </Tag>
   );
