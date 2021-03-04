@@ -1,6 +1,8 @@
 # Project Standards
 
-This page outlines version control, styling and formatting, documenting, and testing.
+## Development Environment
+
+If you haven't already, please visit the [Getting Started for Local Development](getting_started_local.md).
 
 ## Version Control
 
@@ -11,15 +13,62 @@ GitHub Flow aligns with **continuous delivery** of modern web applications where
 
 ![GitHub Flow Diagram](https://i.stack.imgur.com/ChShh.png)
 
+### Guidelines
+
 1. `master` must always be deployable
-2. All changes are made through **support** branches on forks. Reference [list below](#type-of-support-branches)
-3. Rebase with master to avoid/resolve conflicts
-4. Make sure `pre-commit` checks pass when committing
-5. Open a pull-request (PR) and follow the PR guidelines
-6. Once the PR's build passes and is approved, **squash and rebase** your commits
-7. Merge in to `master` and **delete the branch**
+2. **Fork** the repo and make all your changes through **support** branches
+3. **Rebase** with `master` to avoid/resolve conflicts
+4. Make sure `pre-commit` checks pass when committing (enforced in CI/CD build)
+5. Open a pull-request (PR) early for discussion and follow the PR guidelines
+6. Once the CI/CD build passes build passes and PR is approved, **squash and rebase** your commits
+7. Merge PR into `master` and **delete the branch**
+
+### Things to Avoid
+
+1. Don't merge in broken or commented out code
+2. Don't commit onto `master` directly
+3. Don't merge with conflicts (handle conflicts upon rebasing)
 
 Source: [https://guides.github.com/introduction/flow/](https://guides.github.com/introduction/flow/)
+
+### Pre-commit
+
+The repository uses the `pre-commit` package to manage pre-commit hooks for the quality assurance tools.
+These hooks help enforce software standards and identify simple issues at the commit level before submitting code reviews.
+
+![GitHub Flow Diagram](../images/pre-commit-flow.svg)
+
+#### Helpful Commands
+
+Install into your cloned repo
+
+```bash
+# Activate virtual environment
+source activate backend/venv/bin/activate
+# Install into your repo's .git directory
+pre-commit install
+```
+
+Automatically run all pre-commit hooks (just commit)
+
+```bash
+git commit -m '...'
+```
+
+![Pre-commit Output](../images/pre-commit-passing.png)
+
+Manually run all pre-commit hooks
+
+```bash
+pre-commit run --all-files.
+```
+
+Run individual hook
+
+```bash
+# Available hook ids: trailing-whitespace, end-of-file-fixer, check-yaml, black, isort, flake8, mypy
+pre-commit run <hook_id>.
+```
 
 ### Branching
 
@@ -43,21 +92,45 @@ Make sure to reference the issue number related to the branch, along with a clea
 
 Before you merge a support branch back into `master`, your support branch should be squashed down to a single buildable commit, and then rebased from the up-to-date `master` branch.
 
-Why?
+Why squash and rebase commits?
 
 - Ensures build passes from the commit
 - Cleans up Git history for easy navigation
 - Makes collaboration process more efficient
 - Makes handling conflicts from rebasing simple since you only have to deal with conflicted commits
+- Makes `git bisect` easier and more effective to use. For example, it will show the exact commit that introduced a bug since the commit contains a relatively small changeset. On the otherhand, merge commits make it much harder since it includes a large changeset.
+
+#### How to squash and rebase commits
+
+1. Sync `master` with upstream `master`
+
+      git checkout master
+      git rebase upstream/master
+      git push -f origin master
+
+2. Rebase branch onto `master`
+
+      git checkout branchName
+      git rebase master
+      git push -f origin branchName
+
+3. Get the SHA of the commit OR number of commits to rebase to
+
+      git log --graph --decorate --pretty=oneline --abbrev-commit
+
+4. Squash commits
+
+      git rebase -i [SHA]
+      OR
+      git rebase -i HEAD~[NUMBER OF COMMITS]
+
+5. Resolve merge conflicts if they exist
+6. Make sure your squashed commit messages are refined
+7. Force push to remote branch
+
+      git push -f origin branchName
 
 Source: [https://blog.carbonfive.com/always-squash-and-rebase-your-git-commits/](https://blog.carbonfive.com/always-squash-and-rebase-your-git-commits/)
-
-### Pre-commit
-
-The repository uses the `pre-commit` package to manage pre-commit hooks for the quality assurance tools.
-These hooks help enforce software standards and identify simple issues at the commit level before submitting code reviews.
-
-![GitHub Flow Diagram](../images/pre-commit.png)
 
 #### Quality Assurance Tools
 
@@ -74,49 +147,32 @@ These hooks help enforce software standards and identify simple issues at the co
 2. Using IDE/text editor - recommended alongside #1 for integrated linting and formatting, only VSCode `settings.json` file provided for configuration
 3. Using terminal to run standalone tool - useful to test configs. Visit the tool's site for a list of commands
 
-### Summary
-
-#### DOs for Version Control
-
-- **DO** keep `master` in working order
-- **DO** learn to rebase
-- **DO** fork the repository
-- **DO** squash commits
-- **DO** open PRs early for discussion
-- **DO** pull in (rebase on top of) changes
-- **DO** name your branches clearly against an issue number
-
-#### DON'Ts for Version Control
-
-- **DON'T** merge in broken or commented out code
-- **DON'T** commit onto `master` directly
-- **DON'T** rebase `master`
-- **DON'T** merge with conflicts. Handle conflicts upon rebasing
-
-Source: [https://gist.github.com/jbenet/ee6c9ac48068889b0912](https://gist.github.com/jbenet/ee6c9ac48068889b0912)
-
 ## Documenting APIs
 
-Code should be self-documenting. However, when necessary, documentation should explain **WHY** something is done, its purpose, and its goal. The code already shows **HOW** it is done, so commenting on this can be redundant.
+In most cases, code should be self-documenting.
 
-### DOs for Documenting
+If necessary, documentation should explain **why** something is done, its purpose, and its goal. The code shows **how** it is done, so commenting on this can be redundant.
 
-- **DO** embrace documentation as an integral part of the overall development process
-- **DO** treat documenting as code and follow principles such as _Don't Repeat Yourself_ (DRY), _Easier to Change_ (ETC)
-- **DO** use comments and docstrings to explain ambigiuity, complexity, or to avoid confusion
-- **DO** co-locate documentation with related code -- makes maintenance simpler
-- **DO** use type annotations and type comments (for Python)
+### Guidelines
 
-### DON'Ts for Documenting
+1. Embrace documentation as an integral part of the overall
+   development process
+2. Treat documenting as code and follow principles such as _Don't
+   Repeat Yourself_ and _Easier to Change_
+3. Use comments and docstrings to explain ambigiuity, complexity,
+   or to avoid confusion
+4. Co-locate API documentation with related code
+5. Use Python type annotations and type comments where helpful
+6. Be as specific as possible with TypeScript annotations
 
-- **DON'T** write comments as a crutch for poor code
-- **DON'T** comment _every_ function, data structure, type declaration, etc. -- two things need to be updated when you make a single update
+### Things to Avoid
 
-Source: “A Pragmatic Philosophy.” _The Pragmatic Programmer: Your Journey to Mastery_, by David Thomas and Andrew Hunt, Pearson Education, Inc., 2020, pp. 23–23.
+1. Don't write comments as a crutch for poor code
+2. Don't comment _every_ function, data structure, type declaration
 
 ## Testing and Continuous Integration (CI)
 
-MetaGrid uses GitHub Actions to run the workflows below:
+This project uses [GitHub Actions](https://github.com/aims-group/metagrid/actions) to run the CI/CD build. The build is triggered by Git `pull_request` and `push` (merging PRs) events to the upstream `master`.
 
 1. Pre-commit Checks - runs formatters and linters
 2. Back-end CI - runs a `pytest` test suite and uploads coverage report

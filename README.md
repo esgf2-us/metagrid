@@ -3,7 +3,7 @@
 Earth System Grid Federation's (ESGF) next generation search portal.
 If you are a new contributor or just want to learn more, please visit the [documentation site](https://metagrid.readthedocs.io/en/latest/).
 
-[![Pre-commit Checks](https://github.com/aims-group/metagrid/actions/workflows/pre-commit.yml/badge.svg)](https://github.com/aims-group/metagrid/actions/workflows/pre-commit.yml) ![Front-end CI](https://github.com/aims-group/metagrid/workflows/Front-end%20CI/badge.svg) ![Back-end CI](https://github.com/aims-group/metagrid/workflows/Back-end%20CI/badge.svg)
+[![Pre-commit Checks](https://github.com/aims-group/metagrid/actions/workflows/pre-commit.yml/badge.svg)](https://github.com/aims-group/metagrid/actions/workflows/pre-commit.yml) ![Front-end CI](https://github.com/aims-group/metagrid/workflows/Front-end%20CI/badge.svg) ![Back-end CI](https://github.com/aims-group/metagrid/workflows/Back-end%20CI/badge.svg) [![Documentation Status](https://readthedocs.org/projects/metagrid/badge/?version=latest)](https://metagrid.readthedocs.io/en/latest/?badge=latest)
 [![Codecov Coverage](https://codecov.io/gh/aims-group/metagrid/branch/master/graph/badge.svg)](https://codecov.io/gh/aims-group/metagrid/) [![Renovate enabled](https://img.shields.io/badge/renovate-enabled-brightgreen.svg)](https://renovatebot.com/)
 
 ## Front-end

@@ -7,19 +7,22 @@ Follow this page if you are interested in deploying or running the production en
 - [Docker](https://docs.docker.com/get-docker/)
 - [docker-compose](https://docs.docker.com/compose/install/)
 
-## Building and Running the Stack
-
-Follow the same steps as local; however, use `docker-compose.prod.yml` instead. [Getting Started for Local Development](../getting_started_local/#2-set-up-back-end)
-
-The environment also needs to be configured as listed below.
-
 ## Configuring the Stack
+
+Clone the project
+
+```bash
+git clone https://github.com/aims-group/metagrid.git
+```
 
 ### 1. Traefik
 
-You will need to configure each router's `rule`, which is used to route a request to a docker-compose service (e.g. `django`, `react`, `cors-proxy`).
+> Traefik is a modern HTTP reverse proxy and load balancer that makes deploying microservices easy.
+> &mdash; <cite><https://github.com/traefik/traefik></cite>
 
-1. Enter directory `./backend/docker/production/traefik/`
+You will need to configure each router's `rule`, which is used to route a HTTP request to a docker-compose service (e.g. `django`, `react`, `cors-proxy`).
+
+1. Enter directory `./backend/docker/production/traefik`
 2. Open `traefik.yml` in your editor
 3. Edit rules for routers
    - Change `example.com` to the domain name (e.g. `esgf-dev1.llnl.gov`)
@@ -31,9 +34,14 @@ Once configured, Traefik will get you a valid certificate from Lets Encrypt and 
 
 ### 2. Back-end
 
-1. Enter directory: `./backend/.envs/.production/`
+#### 2.1 Configure the Environment
+
+The majority of services are configured through the use of environment variables.
+
+1. Enter directory: `./backend/.envs/.production`
 2. Copy env files `.django.template` and `.postgres.template`
 3. Rename files as `.django` and `.postgres`
+4. Configure as needed using the table below to serve as a guide
 
 | Service  | Environment Variable                                                                               | Description                                                                                                                                                                                                                        | Documentation                                                                   | Type             | Example                                                                                                                                |
 | -------- | -------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
@@ -48,11 +56,62 @@ Once configured, Traefik will get you a valid certificate from Lets Encrypt and 
 | Django   | `KEYCLOAK_CLIENT_ID`                                                                               | The id for the Keycloak client, which is the entity that can request Keycloak to authenticate a user.                                                                                                                              |                                                                                 | string           | `KEYCLOAK_CLIENT_ID=metagrid-backend`                                                                                                  |
 | Postgres | `POSTGRES_HOST` <br> `POSTGRES_PORT`<br> `POSTGRES_DB`<br> `POSTGRES_USER`<br> `POSTGRES_PASSWORD` | The default Postgres environment variables are self-explanatory and can be updated if needed.                                                                                                                                      |                                                                                 | string           | N/A                                                                                                                                    |
 
+##### HTTPS is On by Default
+
+If you are not using a subdomain of the domain name set in the project, then remember to put your staging/production IP address in the `DJANGO_ALLOWED_HOSTS` environment variable before you deploy the back-end. Failure to do this will mean you will not have access to your back-end services through the **HTTP protocol**.
+
+Access to the Django admin is set up by default to require HTTPS in production or once live.
+
+The Traefik reverse proxy used in the default configuration will get you a valid certificate from Lets Encrypt and update it automatically. All you need to do to enable this is to make sure that your DNS records are pointing to the server Traefik runs on.
+
+You can read more about this feature and how to configure it, at [Automatic HTTPS](https://doc.traefik.io/traefik/https/acme/) in the Traefik docs.
+
+#### 2.2 Build and Run the Stack
+
+```bash
+docker-compose -f docker-compose.prod.yml up --build
+```
+
+To run the stack and detach the containers, run
+
+```bash
+docker-compose -f docker-compose.prod.yml up --build -d
+```
+
+#### 2.3 Helpful Commands
+
+Run a command inside the docker container:
+
+```bash
+docker-compose -f docker-compose.prod.yml run --rm django [command]
+```
+
+##### Run Django migrations
+
+**NOTE: In production, you must apply Django migrations manually since they are not automatically applied to the database when you rebuild the docker-compose containers.**
+
+```bash
+python manage.py migrate
+```
+
+##### Creating a Superuser
+
+Useful for logging into Django Admin page to manage the database
+
+```bash
+python manage.py createsuperuser
+```
+
 ### 3. Front-end
 
-1. Enter directory: `./frontend/.envs/.production/`
+#### 3.1 Build and Run the Stack
+
+All of the services are configured through the use of environment variables.
+
+1. Enter directory: `./frontend/.envs/.production`
 2. Copy env files `.cors-proxy.template` and `.react.template`
 3. Rename files as `.cors-proxy` and `.react`
+4. Configure as needed using the table below to serve as a guide
 
 | Service    | Environment Variable                     | Description                                                                                                                                                                                                                                                                      | Documentation                                                            | Type             | Example                                                                                                                                              |
 | ---------- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -68,3 +127,126 @@ Once configured, Traefik will get you a valid certificate from Lets Encrypt and 
 | React      | `REACT_APP_HOTJAR_SV`                    | **OPTIONAL**<br>The snippet version of the Tracking Code you are using. This is only needed if Hotjar ever updates the Tracking Code and needs to discontinue older ones. Knowing which version your site includes allows Hotjar team to contact you and inform you accordingly. | [Link](https://github.com/abdalla/react-hotjar)                          | number           | `REACT_APP_HOTJAR_SV=6`                                                                                                                              |
 | React      | `REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID` | **OPTIONAL**<br>Google Analytics tracking id.                                                                                                                                                                                                                                    | [Link](https://github.com/react-ga/react-ga#api)                         | string           | `REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID=UA-000000-01`                                                                                                |
 | CORS Proxy | `PROXY_ORIGIN_WHITELIST`                 | **OPTIONAL**<br> If set, requests whose origin is not listed are blocked. If this list is empty, all origins are allowed.                                                                                                                                                        | [Link](https://github.com/Rob--W/cors-anywhere#server)                   | array of strings | `PROXY_ORIGIN_WHITELIST=https://esgf-dev1.llnl.gov, http://esgf-dev1.llnl.gov`                                                                       |
+
+#### 3.2 Build and Run the Stack
+
+```bash
+docker-compose -f docker-compose.prod.yml up --build
+```
+
+### 4. Supervisor
+
+> Supervisor is a client/server system that allows its users to monitor and control a number of processes on UNIX-like operating systems.
+> &mdash; <cite><http://supervisord.org/index.html></cite>
+
+Once you are ready with your initial setup, you want to make sure that your application is run by a process manager to survive reboots and auto restarts in case of an error.
+
+Although we recommend using Supervisor, you can use the process manager you are most familiar with. All it needs to do is to run `docker-compose -f production.yml up --build` for `traefik`, `backend`, and `frontend`.
+
+#### 4.1 Install Supervisor
+
+Ubuntu/Debian
+
+```bash
+sudo apt install supervisor -y
+```
+
+CentOS
+
+```bash
+sudo yum update -y
+sudo yum install epel-release
+sudo yum update
+sudo yum -y install supervisor
+```
+
+#### 4.2 Enable Supervisor
+
+```bash
+sudo systemctl start supervisord
+sudo systemctl enable supervisord
+sudo systemctl status supervisord
+```
+
+#### 4.3 Create Supervisor configuration files
+
+You can use the `.ini` configuration files below as starting points and configure where necessary.
+
+The directory for where to store the `.ini` files vary based on the OS:
+
+- For Ubuntu/Debian: `/etc/supervisor/conf.d/`
+- For CentOS: `/etc/supervisor.d/`
+
+`metagrid-traefik.ini`
+
+```ini
+[program:metagrid-traefik]
+command=docker-compose -f docker-compose.prod.yml up --build
+directory=/home/<username>/metagrid/traefik
+redirect_stderr=true
+autostart=true
+autorestart=true
+priority=10
+```
+
+`metagrid-backend.ini`
+
+```ini
+[program:metagrid-backend]
+command=docker-compose -f docker-compose.prod.yml up --build
+directory=/home/<username>/metagrid/backend
+redirect_stderr=true
+autostart=true
+autorestart=true
+priority=10
+```
+
+`metagrid-frontend.ini`
+
+```ini
+[program:metagrid-frontend]
+command=docker-compose -f docker-compose.prod.yml up --build
+directory=/home/<your-username>/metagrid/frontend
+redirect_stderr=true
+autostart=true
+autorestart=true
+priority=10
+```
+
+#### 4.4 Load configurations and start the processes
+
+```bash
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl start all
+```
+
+#### 4.5 Check the status
+
+```bash
+sudo supervisorctl status
+```
+
+Example output
+
+```bash
+metagrid-backend                 RUNNING   pid 9359, uptime 1 day, 0:07:28
+metagrid-frontend                RUNNING   pid 6819, uptime 1 day, 0:42:53
+metagrid-traefik                 RUNNING   pid 9871, uptime 1 day, 0:03:27
+```
+
+## Helpful Docker-Compose Commands
+
+These commands can be run on any `docker-compose.prod.yml` file.
+
+### Check logs
+
+```bash
+docker-compose -f docker-compose.prod.yml logs
+```
+
+### Check status of containers
+
+```bash
+docker-compose -f docker-compose.prod.yml ps
+```
