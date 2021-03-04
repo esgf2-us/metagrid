@@ -211,6 +211,39 @@ Run a command inside the docker container:
 docker-compose -p metagrid_backend_dev run --rm django [command]
 ```
 
+### Django migrations
+
+Make migrations
+
+```bash
+python manage.py makemigrations your_app_name
+```
+
+- You specify the app using `your_app_name`, or omit to run on all
+
+Make data migration
+
+- https://docs.djangoproject.com/en/3.1/topics/migrations/#data-migrations
+- Useful for changing the data in the database itself, in conjunction with the schema if you want
+
+```bash
+python manage.py makemigrations --empty your_app_name
+```
+
+Show migrations
+
+```bash
+python manage.py showmigrations
+```
+
+Run migrations
+
+```bash
+python manage.py migrate your_app_name
+```
+
+- You specify the app using `your_app_name`, or omit to run on all
+
 ### Creating a Superuser
 
 Useful for logging into Django Admin page to manage the database
@@ -268,7 +301,6 @@ mypy metagrid
 ```
 
 ### Linting
-
 
 ```bash
 flake8 .

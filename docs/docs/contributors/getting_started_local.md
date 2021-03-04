@@ -1,7 +1,5 @@
 # Getting Started for Local Development
 
-Carefully follow the steps below for a smooth experience.
-
 !!! note
 
     If you're new to Docker, please be aware that some resources are cached system-wide
@@ -14,27 +12,58 @@ Carefully follow the steps below for a smooth experience.
 - [docker-compose](https://docs.docker.com/compose/install/)
 - Python >= 3.8 to create virtual environment for `pre-commit` package
 
-## 1. Set up `pre-commit`
+## 1. Clone your fork and keep in sync with upstream `master`
+
+```bash
+git clone https://github.com/<your-github-username>/metagrid.git
+```
+
+Rebase your fork with upstream to keep in sync
+
+```bash
+# Add the remote, call it "upstream":
+git remote add upstream https://github.com/aims-group/metagrid.git
+
+# Fetch all the branches of that remote into remote-tracking branches
+git fetch upstream
+
+# Make sure that you're on your master branch:
+git checkout master
+
+# Rewrite your master branch so that any of your commits that
+# aren't already in upstream/master are replayed on top of the
+# other branch:
+git rebase upstream/master
+git push -f origin master
+```
+
+Checkout a new branch from `master`.
+
+```bash
+git checkout -b <branch-name> master
+```
+
+## 2. Set up `pre-commit`
 
 This repo has default integration with [pre-commit](https://pre-commit.com/), a tool for identifying simple issues before submission to code review. These checks are performed for all staged files using `git commit` before they are committed to a branch.
 
-### 1.1 Integrated Hooks (Quality Assurance Tools)
+### 2.1 Integrated Hooks (Quality Assurance Tools)
 
 | Platform              | Code Formatter                                   | Linter                                           | Type Checker                  |
 | --------------------- | ------------------------------------------------ | ------------------------------------------------ | ----------------------------- |
 | Python                | [black](https://black.readthedocs.io/en/stable/) | [flake8](https://github.com/PyCQA/flake8#flake8) | [mypy](http://mypy-lang.org/) |
 | JavaScript/TypeScript | [prettier](https://prettier.io/)                 | [ESLint](https://eslint.org/)                    | N/A                           |
 
-### 1.2 Install
+### 2.2 Install
 
 ```bash
-cd backend
 
-# Create a python3 virtual environment using system-level Python
-python3 -m venv venv
+# Create a python3 virtual environment using system-level Python.
+# There may be alternative ways for you to do this.
+python3 -m venv backend/venv
 
 # Activate the virtual environment
-source venv/bin/activate
+source backend/venv/bin/activate
 
 # Install local requirements
 pip install -r requirements/local.txt
@@ -45,33 +74,34 @@ pre-commit install
 
 **Note: any update to `.pre-commit.config.yaml` requires a reinstallation of the hooks**
 
-### Helpful Commands
+### 2.3 Helpful Commands
 
-#### Automatically run all pre-commit hooks -- just commit
+Automatically run all pre-commit hooks (just commit)
 
 ```bash
 git commit -m '...'
 ```
 
-#### Manually run all pre-commit hooks
+![Pre-commit Output](../images/pre-commit-passing.png)
+
+Manually run all pre-commit hooks
 
 ```bash
 pre-commit run --all-files.
 ```
 
-#### Run individual hook
+Run individual hook
 
 ```bash
+# Available hook ids: trailing-whitespace, end-of-file-fixer, check-yaml, black, isort, flake8, mypy
 pre-commit run <hook_id>.
 ```
 
-Available hook ids: `trailing-whitespace`, `end-of-file-fixer`, `check-yaml`, `black`, `isort`, `flake8`, `mypy`
-
-## 2. Set up Back-end
+## 3. Set up Back-end
 
 Open the project in a terminal and `cd backend`.
 
-### 2.1 Build and Run the Stack
+### 3.1 Build and Run the Stack
 
 This can take a while, especially the first time you run this particular command on your development system but subsequent runs will occur quickly:
 
@@ -79,9 +109,7 @@ This can take a while, especially the first time you run this particular command
 docker-compose -p metagrid_backend_dev up --build
 ```
 
-Remove the `--build` flag when you don't need to rebuild (e.g. no updates to Docker/docker-compose related files).
-
-### 2.2 Additional Configuration
+### 3.2 Additional Configuration
 
 #### Update `/etc/hosts` file
 
@@ -102,14 +130,14 @@ This user will be used for logging into registered Keycloak clients, including t
 2. Login with admin credentials (automatically created)
    - username: admin
    - password: admin
-3. Follow the rest of the instructions in the official Keycloak guide to [create a new user](https://www.keycloak.org/docs/latest/getting_started/#creating-a-user)
+3. Follow the official Keycloak instructions to [create a new user](https://www.keycloak.org/docs/latest/getting_started/#creating-a-user)
 
-### 2.3 Accessible Services
+### 3.3 Accessible Services
 
 - Django: `localhost:8000`
 - Keycloak: `localhost:8080`/`keycloak:8080`
 
-### 2.4 Troubleshooting
+### 3.4 Troubleshooting
 
 #### Addressing Keycloak Boot Issue
 
@@ -137,11 +165,11 @@ Source:
 - [https://issues.redhat.com/browse/KEYCLOAK-12896](https://issues.redhat.com/browse/KEYCLOAK-12896)
 - [https://stackoverflow.com/a/59712689/8023435](https://stackoverflow.com/a/59712689/8023435)
 
-## 3. Set up Front-end
+## 4. Set up Front-end
 
 Open the project in a terminal and `cd frontend`.
 
-### 3.1 Build and Run the Stack
+### 4.1 Build and Run the Stack
 
 This can take a while, especially the first time you run this particular command on your development system but subsequent runs will occur quickly:
 
@@ -149,9 +177,7 @@ This can take a while, especially the first time you run this particular command
 docker-compose -p metagrid_frontend_dev up --build
 ```
 
-Remove the `--build` flag when you don't need to rebuild (e.g. no updates to Docker/docker-compose related files).
-
-### 3.2 Accessible Services
+### 4.2 Accessible Services
 
 - React: `localhost:3000`
 
@@ -166,3 +192,5 @@ Remove the `--build` flag when you don't need to rebuild (e.g. no updates to Doc
 Code coverage: [![Codecov Coverage](https://codecov.io/gh/aims-group/metagrid/branch/master/graph/badge.svg)](https://codecov.io/gh/aims-group/metagrid/)
 
 Dependency Monitoring: [![Renovate enabled](https://img.shields.io/badge/renovate-enabled-brightgreen.svg)](https://renovatebot.com/) [![Updates](https://pyup.io/repos/github/aims-group/metagrid/shield.svg)](https://pyup.io/repos/github/aims-group/metagrid/)
+
+Docs: [![Documentation Status](https://readthedocs.org/projects/metagrid/badge/?version=latest)](https://metagrid.readthedocs.io/en/latest/?badge=latest)
