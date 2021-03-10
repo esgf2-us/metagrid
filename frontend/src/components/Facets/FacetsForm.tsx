@@ -216,14 +216,14 @@ const FacetsForm: React.FC<Props> = ({
         {/* Use a seperate label instead of the Form.Item 'label' argument so that it floats above the input and button, rather than being inline */}
         {/* eslint-disable-next-line jsx-a11y/label-has-associated-control*/}
         <label htmlFor="filenameVar">
-          Filename Variable{' '}
+          Filename Search{' '}
           <ToolTip
             title={
               <p>
-                Use variables to filter a dataset&apos;s files under the{' '}
-                <RightCircleOutlined></RightCircleOutlined> icon. For multiple
-                variables, add them individually or as a single comma-separated
-                input (e.g. cct, cl).
+                Use file or variable names to filter a dataset&apos;s files
+                under the <RightCircleOutlined></RightCircleOutlined> icon. For
+                multiple names, add them individually or as a single
+                comma-separated input (e.g. cct, cl).
               </p>
             }
           >

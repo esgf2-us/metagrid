@@ -368,7 +368,7 @@ const Search: React.FC<Props> = ({
             (filenameVars as TextInputs).map((input: string) => (
               <div key={input} data-testid={input}>
                 <Tag value={input} onClose={onRemoveFilter} type="filenameVar">
-                  Filename Variable: {input}
+                  Filename Search: {input}
                 </Tag>
               </div>
             ))}
