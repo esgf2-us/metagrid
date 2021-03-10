@@ -220,10 +220,10 @@ const FacetsForm: React.FC<Props> = ({
           <ToolTip
             title={
               <p>
-                Use file or variable names to filter a dataset&apos;s files under the{' '}
-                <RightCircleOutlined></RightCircleOutlined> icon. For multiple
-                names, add them individually or as a single comma-separated
-                input (e.g. cct, cl).
+                Use file or variable names to filter a dataset&apos;s files
+                under the <RightCircleOutlined></RightCircleOutlined> icon. For
+                multiple names, add them individually or as a single
+                comma-separated input (e.g. cct, cl).
               </p>
             }
           >
