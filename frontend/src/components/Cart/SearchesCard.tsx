@@ -149,7 +149,7 @@ const SearchesCard: React.FC<Props> = ({
           </Typography.Text>
         </p>
         <p>
-          <span style={styles.category}>Filename Variables: </span>
+          <span style={styles.category}>Filename Searches: </span>
           <Typography.Text code>
             {filenameVars ? filenameVars.join(', ') : 'N/A'}
           </Typography.Text>

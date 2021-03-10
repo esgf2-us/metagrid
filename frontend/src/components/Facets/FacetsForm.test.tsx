@@ -36,7 +36,7 @@ describe('test FacetsForm component', () => {
 
     // Change form field values
     const input = getByRole('textbox', {
-      name: 'Filename Variable question-circle',
+      name: 'Filename Search question-circle',
     }) as HTMLInputElement;
     fireEvent.change(input, { target: { value: 'var' } });
     expect(input.value).toEqual('var');

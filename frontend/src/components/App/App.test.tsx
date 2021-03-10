@@ -91,7 +91,7 @@ it('handles project changes when a new project is selected', async () => {
   expect(errorMsg).toBeTruthy();
 });
 
-it('handles setting filename variables and duplicates', async () => {
+it('handles setting filename searches and duplicates', async () => {
   const { getByRole, getByTestId } = customRender(<App />);
   // Check applicable components render
   const facetsComponent = await waitFor(() => getByTestId('facets'));
@@ -123,7 +123,7 @@ it('handles setting filename variables and duplicates', async () => {
 
   // Change form field values
   const input = getByRole('textbox', {
-    name: 'Filename Variable question-circle',
+    name: 'Filename Search question-circle',
   });
   fireEvent.change(input, { target: { value: 'var' } });
 

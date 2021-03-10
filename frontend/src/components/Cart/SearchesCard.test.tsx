@@ -59,7 +59,7 @@ it('displays alert error when api fails to return response', async () => {
   expect(alert).toBeTruthy();
 });
 
-it('displays "N/A" for Filename Variables when none are applied', () => {
+it('displays "N/A" for Filename Searches when none are applied', () => {
   const { getByText } = render(
     <SearchesCard
       {...defaultProps}
@@ -68,6 +68,6 @@ it('displays "N/A" for Filename Variables when none are applied', () => {
   );
 
   expect(
-    getByText((_, node) => node.textContent === 'Filename Variables: N/A')
+    getByText((_, node) => node.textContent === 'Filename Searches: N/A')
   ).toBeTruthy();
 });
