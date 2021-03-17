@@ -7,29 +7,44 @@ If you haven't already, please visit the [Getting Started for Local Development]
 ## Version Control
 
 The repository uses **GitHub Flow**, a lightweight, branch-based workflow that supports teams and projects where deployments are made regularly.
-GitHub Flow aligns with **continuous delivery** of modern web applications where changes are not rolled back and multiple versions of software does not need to be supported.
+GitHub Flow aligns with **continuous delivery** of modern web applications where changes are not rolled back and multiple versions of software don't need to be supported.
 
-### GitHub Flow in a Nutshell
+### How to Use GitHub Flow
 
 ![GitHub Flow Diagram](https://i.stack.imgur.com/ChShh.png)
+
+1. Fork the repo and create a support branch
+   - Forking ensures the upstream repository can only be affected through a pull request (PR)
+   - `master` branch is not affected by branching
+2. Add commits
+   - Make sure `pre-commit` checks pass before each commit because CI/CD enforces them
+3. Open a PR
+   - Encourages questions or comments from reviewers
+   - Check to see if your branch passes the CI/CD build
+4. Discuss and review your code
+   - You can continue to push to your branch as discussion happens, such as to address bugs
+5. Deploy
+   - Once your PR has been reviewed and the branch passes the CI/CD build, you can deploy to verify them in production
+   - For our case, we use a specifically provisioned testing environment that resembles production
+6. Squash and rebase
+   - After verification in the test environment, squash your commits into a single buildable commit
+   - Rebase your branch on top of master and handle conflicts
+7. Merge PR
+   - Merge the PR into `master` and delete the branch
+
+Source: [https://guides.github.com/introduction/flow/](https://guides.github.com/introduction/flow/)
 
 ### Guidelines
 
 1. `master` must always be deployable
-2. **Fork** the repo and make all your changes through **support** branches
-3. **Rebase** with `master` to avoid/resolve conflicts
-4. Make sure `pre-commit` checks pass when committing (enforced in CI/CD build)
-5. Open a pull-request (PR) early for discussion and follow the PR guidelines
-6. Once the CI/CD build passes build passes and PR is approved, **squash and rebase** your commits
-7. Merge PR into `master` and **delete the branch**
+2. Never push directly to `master`
+3. Always test your deployments on a test server
 
 ### Things to Avoid
 
 1. Don't merge in broken or commented out code
 2. Don't commit onto `master` directly
-3. Don't merge with conflicts (handle conflicts upon rebasing)
-
-Source: [https://guides.github.com/introduction/flow/](https://guides.github.com/introduction/flow/)
+3. Don't merge with conflicts -- handle conflicts upon rebasing
 
 ### Pre-commit
 
@@ -78,6 +93,7 @@ pre-commit run <hook_id>.
   - The essence of a feature branch is that it exists as long as the feature is in development, but will eventually be merged back into master.
 - `hotfix/` branches arise from the necessity to act immediately upon an undesired state of a live production version
   - When a critical bug in a production version must be resolved immediately, a hotfix branch may be branched off from the master branch.
+- `docs/` branches are used when there are only documentation related updates without new features
 
 Source: [https://nvie.com/posts/a-successful-git-branching-model/#supporting-branches](https://nvie.com/posts/a-successful-git-branching-model/#supporting-branches)
 
@@ -87,6 +103,7 @@ Make sure to reference the issue number related to the branch, along with a clea
 
 - `feature/181-add-user-auth`
 - `hotfix/67-searches-not-saving`
+- `docs/91-github-flow`
 
 ### Squash and Rebase Commits
 
@@ -121,7 +138,9 @@ Why squash and rebase commits?
 4. Squash commits
 
       git rebase -i [SHA]
+
       OR
+
       git rebase -i HEAD~[NUMBER OF COMMITS]
 
 5. Resolve merge conflicts if they exist
