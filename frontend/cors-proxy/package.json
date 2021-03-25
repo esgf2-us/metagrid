@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "cors-anywhere": "0.4.3",
+    "cors-anywhere": "0.4.4",
     "dotenv": "8.2.0"
   }
 }
