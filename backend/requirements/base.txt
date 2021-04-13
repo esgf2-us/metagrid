@@ -1,9 +1,9 @@
 # Core
 # ------------------------------------------------------------------------------
 pytz==2021.1  # https://github.com/stub42/pytz
-django==3.1.7  # pyup: < 3.1  # https://www.djangoproject.com/
+django==3.2  # pyup: < 3.1  # https://www.djangoproject.com/
 django-environ==0.4.5  # https://github.com/joke2k/django-environ
-gunicorn==20.0.4  # https://github.com/benoitc/gunicorn
+gunicorn==20.1.0  # https://github.com/benoitc/gunicorn
 newrelic==6.2.0.156  # https://pypi.org/project/newrelic/
 argon2-cffi==20.1.0  # https://github.com/hynek/argon2_cffi
 requests==2.25.1  # https://github.com/psf/requests
@@ -15,7 +15,7 @@ psycopg2-binary==2.8.6  # https://github.com/psycopg/psycopg2
 
 # REST API
 # ------------------------------------------------------------------------------
-djangorestframework==3.12.3  # https://github.com/encode/django-rest-framework
+djangorestframework==3.12.4  # https://github.com/encode/django-rest-framework
 Markdown==3.3.4  # https://pypi.org/project/Markdown/
 django-filter==2.4.0  # https://github.com/carltongibson/django-filter
 django-cors-headers==3.7.0  # https://github.com/adamchainz/django-cors-headers
@@ -26,7 +26,7 @@ drf-yasg==1.20.0  # https://github.com/axnsan12/drf-yasg
 
 # Code quality
 # ------------------------------------------------------------------------------
-pre-commit==2.11.1  # https://github.com/pre-commit/pre-commit
+pre-commit==2.12.0  # https://github.com/pre-commit/pre-commit
 
 # Model Tools
 # ------------------------------------------------------------------------------
