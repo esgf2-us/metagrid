@@ -14,7 +14,14 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
 
   return (
     <TabsD>
-      <TabsD.TabPane tab="Metadata" key="1">
+      <TabsD.TabPane tab="Files" key="1">
+        <FilesTable
+          id={record.id}
+          numResults={record.number_of_files}
+          filenameVars={filenameVars}
+        />
+      </TabsD.TabPane>
+      <TabsD.TabPane tab="Metadata" key="2">
         <h4>Displaying {Object.keys(record).length} keys</h4>
         <AutoComplete
           style={{ width: '100%' }}
@@ -32,13 +39,6 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
             <span style={{ fontWeight: 'bold' }}>{key}</span>: {record[key]}
           </p>
         ))}
-      </TabsD.TabPane>
-      <TabsD.TabPane tab="Files" key="2">
-        <FilesTable
-          id={record.id}
-          numResults={record.number_of_files}
-          filenameVars={filenameVars}
-        />
       </TabsD.TabPane>
       {objectHasKey(record, 'citation_url') && (
         <TabsD.TabPane tab="Citation" key="3">

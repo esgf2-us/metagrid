@@ -147,16 +147,53 @@ const Table: React.FC<Props> = ({
 
   const columns = [
     {
+      title: 'Cart',
+      key: 'cart',
+      width: 50,
+      render: (record: RawSearchResult) => {
+        if (
+          userCart.some((dataset: RawSearchResult) => dataset.id === record.id)
+        ) {
+          return (
+            <>
+              <Button
+                icon={<MinusOutlined />}
+                onClick={() => onUpdateCart([record], 'remove')}
+                danger
+              />
+            </>
+          );
+        }
+        return (
+          <>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => onUpdateCart([record], 'add')}
+            />
+          </>
+        );
+      },
+    },
+    {
+      title: '',
+      dataIndex: 'data_node',
+      width: 20,
+      render: (data_node: string) => (
+        <StatusToolTip nodeStatus={nodeStatus} dataNode={data_node} />
+      ),
+    },
+    {
       title: 'Dataset Title',
       dataIndex: 'title',
       key: 'title',
       width: 400,
     },
     {
-      title: '# of Files',
+      title: 'Files',
       dataIndex: 'number_of_files',
       key: 'number_of_files',
-      width: 100,
+      width: 50,
       render: (numberOfFiles: number) => <p>{numberOfFiles || 'N/A'}</p>,
     },
     {
@@ -165,14 +202,6 @@ const Table: React.FC<Props> = ({
       key: 'size',
       width: 100,
       render: (size: number) => <p>{size ? formatBytes(size) : 'N/A'}</p>,
-    },
-    {
-      title: 'Node',
-      dataIndex: 'data_node',
-      width: 225,
-      render: (data_node: string) => (
-        <StatusToolTip nodeStatus={nodeStatus} dataNode={data_node} />
-      ),
     },
     {
       title: 'Version',
@@ -346,35 +375,6 @@ const Table: React.FC<Props> = ({
                 </Popover>
               </Button>
             )}
-          </>
-        );
-      },
-    },
-    {
-      title: 'Cart',
-      key: 'cart',
-      width: 50,
-      render: (record: RawSearchResult) => {
-        if (
-          userCart.some((dataset: RawSearchResult) => dataset.id === record.id)
-        ) {
-          return (
-            <>
-              <Button
-                icon={<MinusOutlined />}
-                onClick={() => onUpdateCart([record], 'remove')}
-                danger
-              />
-            </>
-          );
-        }
-        return (
-          <>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => onUpdateCart([record], 'add')}
-            />
           </>
         );
       },

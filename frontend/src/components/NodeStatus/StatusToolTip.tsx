@@ -28,13 +28,14 @@ const StatusToolTip: React.FC<Props> = ({ nodeStatus, dataNode, children }) => {
             <ToolTip
               title={
                 <>
+                  Data Node:<div>{dataNode}</div>
                   Online as of:<div>{timestamp}</div>
                 </>
               }
               color="green"
             >
               <span>
-                <CheckCircleTwoTone twoToneColor="#52c41a" /> {dataNode}{' '}
+                <CheckCircleTwoTone twoToneColor="#52c41a" />
                 {children}
               </span>
             </ToolTip>
@@ -42,13 +43,14 @@ const StatusToolTip: React.FC<Props> = ({ nodeStatus, dataNode, children }) => {
             <ToolTip
               title={
                 <>
+                  Data Node:<div>{dataNode}</div>
                   Offline as of:<div>{timestamp}</div>
                 </>
               }
               color="red"
             >
               <span>
-                <CloseCircleTwoTone twoToneColor="#eb2f96" /> {dataNode}{' '}
+                <CloseCircleTwoTone twoToneColor="#eb2f96" />
                 {children}
               </span>
             </ToolTip>
