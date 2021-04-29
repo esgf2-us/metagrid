@@ -10,15 +10,8 @@ import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
 import { fetchWgetScript, openDownloadURL, ResponseError } from '../../api';
-// import qualityFlagsImg from '../../assets/img/climate_indicators_table.png';
-// import { CSSinJS } from '../../common/types';
-import {
-  formatBytes,
-  objectHasKey,
-  splitStringByChar,
-} from '../../common/utils';
+import { formatBytes } from '../../common/utils';
 import { UserCart } from '../Cart/types';
-// import Popover from '../DataDisplay/Popover';
 import ToolTip from '../DataDisplay/ToolTip';
 import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
@@ -26,19 +19,6 @@ import { NodeStatusArray } from '../NodeStatus/types';
 import './Search.css';
 import Tabs from './Tabs';
 import { RawSearchResult, RawSearchResults, TextInputs } from './types';
-
-/* const styles: CSSinJS = {
-  qualityFlagsRow: { display: 'flex' },
-  flagColorBox: {
-    width: '16px',
-    height: '16px',
-    backgroundColor: '#ccc',
-    border: '1px',
-    borderStyle: 'solid',
-    borderColor: '#666',
-    margin: '2px',
-  },
-};*/
 
 export type Props = {
   loading: boolean;
@@ -105,7 +85,7 @@ const Table: React.FC<Props> = ({
           <DownCircleOutlined onClick={(e) => onExpand(record, e)} />
         ) : (
           <ToolTip
-            title="View this dataset's metadata, files, and citation"
+            title="View this dataset's metadata, files or additional info."
             trigger="hover"
           >
             <RightCircleOutlined onClick={(e) => onExpand(record, e)} />
@@ -264,81 +244,6 @@ const Table: React.FC<Props> = ({
                 ></Button>
               </Form.Item>
             </Form>
-          </>
-        );
-      },
-    },
-    {
-      title: 'ES-DOC',
-      key: 'additional',
-      width: 80,
-      render: (record: RawSearchResult) => {
-        // Have to parse and format since 'xlink' attribute is poorly structured
-        // in the Search API
-        const xlinkTypesToOutput: Record<
-          string,
-          { label: string; url: null | string }
-        > = {
-          pid: { label: 'PID', url: null },
-          // Some technical notes are published as "summary"
-          summary: { label: 'Technical Notes', url: null },
-          supdata: { label: 'Supplemental Data', url: null },
-          'Tech Note': { label: 'Technical Notes', url: null },
-        };
-        /* istanbul ignore else */
-        if (objectHasKey(record, 'xlink')) {
-          const { xlink } = record;
-
-          (xlink as string[]).forEach((link) => {
-            const [url, , linkType] = splitStringByChar(link, '|') as string[];
-
-            if (Object.keys(xlinkTypesToOutput).includes(linkType)) {
-              xlinkTypesToOutput[linkType].url = url;
-            }
-          });
-        }
-
-        // Have to parse and format since 'quality_control_flags' attribute is
-        // poorly structured in the Search API
-        // const qualityFlags: Record<string, string> = {};
-        /* istanbul ignore else */
-        /* if (objectHasKey(record, 'quality_control_flags')) {
-          const { quality_control_flags: qcFlags } = record;
-
-          (qcFlags as string[]).forEach((flag) => {
-            const [, key, color] = splitStringByChar(flag, ':') as string[];
-            // Sometimes colors are snakecase, such as 'light_gray'
-            qualityFlags[key] = color.replace('_', '');
-          });
-        } */
-
-        return (
-          <>
-            {/* Object.keys(xlinkTypesToOutput).map((linkType) => {
-              const { label, url } = xlinkTypesToOutput[linkType];
-
-              if (url) {
-                return (
-                  <Button type="link" href={url} target="_blank" key={label}>
-                    <span>{label}</span>
-                  </Button>
-                );
-              }
-              return null;
-            })*/}
-
-            {/* Records may return "further_info_url": [''], which indicates no available URLs */}
-            {objectHasKey(record, 'further_info_url') &&
-              ((record.further_info_url as unknown) as string)[0] !== '' && (
-                <Button
-                  type="link"
-                  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                  href={record.further_info_url![0]}
-                  target="_blank"
-                >
-                  ES-DOC
-                </Button>
-              )}
           </>
         );
       },

@@ -75,6 +75,29 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
     });
   }
 
+  let urlCount = 0;
+  const additionalLinks = Object.keys(xlinkTypesToOutput).map((linkType) => {
+    const { label, url } = xlinkTypesToOutput[linkType];
+    if (url) {
+      urlCount += 1;
+      return (
+        <Button type="link" href={url} target="_blank" key={label}>
+          <span>{label}</span>
+        </Button>
+      );
+    }
+    return null;
+  });
+
+  const showCitation = objectHasKey(record, 'citation_url');
+  const showESDOC =
+    objectHasKey(record, 'further_info_url') &&
+    ((record.further_info_url as unknown) as string)[0] !== '';
+  const showQualityFlags = Object.keys(qualityFlags).length > 0;
+  const showAdditionalLinks = urlCount > 0;
+  const showAdditionalTab =
+    showESDOC || showQualityFlags || showAdditionalLinks;
+
   return (
     <TabsD>
       <TabsD.TabPane tab="Files" key="1">
@@ -103,7 +126,7 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
           </p>
         ))}
       </TabsD.TabPane>
-      {objectHasKey(record, 'citation_url') && (
+      {showCitation && (
         <TabsD.TabPane tab="Citation" key="3">
           <Citation
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -111,20 +134,21 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
           />
         </TabsD.TabPane>
       )}
-      {Object.keys(xlinkTypesToOutput).length > 0 && (
+      {showAdditionalTab && (
         <TabsD.TabPane tab="Additional" key="4">
-          {Object.keys(xlinkTypesToOutput).map((linkType) => {
-            const { label, url } = xlinkTypesToOutput[linkType];
-            if (url) {
-              return (
-                <Button type="link" href={url} target="_blank" key={label}>
-                  <span>{label}</span>
-                </Button>
-              );
-            }
-            return null;
-          })}
-          {Object.keys(qualityFlags).length > 0 && (
+          {showAdditionalLinks && additionalLinks}
+          {showESDOC &&
+            ((record.further_info_url as unknown) as string)[0] !== '' && (
+              <Button
+                type="link"
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                href={record.further_info_url![0]}
+                target="_blank"
+              >
+                ES-DOC
+              </Button>
+            )}
+          {showQualityFlags && (
             <Button
               type="link"
               href="https://esgf-node.llnl.gov/projects/obs4mips/DatasetIndicators"
