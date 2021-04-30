@@ -100,7 +100,7 @@ const StatusToolTip: React.FC<Props> = ({ nodeStatus, dataNode, children }) => {
     return (
       <ToolTip title="Could not fetch status. Please contact support or try again later.">
         <span>
-          <CheckCircleTwoTone twoToneColor="#52c41a" />
+          <QuestionCircleTwoTone />
           {dataNode} {children}
         </span>
       </ToolTip>
