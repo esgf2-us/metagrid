@@ -113,7 +113,6 @@ const StatusToolTip: React.FC<Props> = ({ nodeStatus, dataNode, children }) => {
         <>
           Could not fetch status. Please contact support or try again later.
           Data Node:<div>{dataNode}</div>
-          {children}
         </>
       }
     >
