@@ -1,16 +1,18 @@
 import {
   FileSearchOutlined,
+  // FileSearchOutlined,
   NodeIndexOutlined,
   SearchOutlined,
   ShoppingCartOutlined,
+  // ShoppingCartOutlined,
   UserOutlined,
 } from '@ant-design/icons';
 import { useKeycloak } from '@react-keycloak/web';
-import { Badge, Menu } from 'antd';
+import { /* Badge,*/ Badge, Menu } from 'antd';
 import { KeycloakTokenParsed } from 'keycloak-js';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import ToolTip from '../DataDisplay/ToolTip';
+// import ToolTip from '../DataDisplay/ToolTip';
 import Button from '../General/Button';
 
 export type Props = {
@@ -60,10 +62,38 @@ const RightMenu: React.FC<Props> = ({
 
   return (
     <div data-testid="right-menu">
-      <Menu selectedKeys={[activeMenuItem]} mode={mode}>
+      <Menu
+        selectedKeys={[activeMenuItem]}
+        mode={mode}
+        style={{ float: 'right' }}
+      >
         <Menu.Item key="search">
           <Link to="/search">
             <SearchOutlined /> Search
+          </Link>
+        </Menu.Item>
+        <Menu.Item key="cartItems" className="modified-item">
+          <Link to="/cart/items">
+            <ShoppingCartOutlined style={{ fontSize: '20px' }} />
+            <Badge
+              count={numCartItems}
+              className="badge"
+              offset={[-5, 3]}
+              showZero
+            ></Badge>
+            Cart
+          </Link>
+        </Menu.Item>
+        <Menu.Item key="cartSearches" className="modified-item">
+          <Link to="/cart/searches">
+            <FileSearchOutlined style={{ fontSize: '20px' }} />{' '}
+            <Badge
+              count={numSavedSearches}
+              className="badge"
+              offset={[-5, 3]}
+              showZero
+            ></Badge>
+            Saved Searches
           </Link>
         </Menu.Item>
         <Menu.Item key="nodes">
@@ -71,7 +101,7 @@ const RightMenu: React.FC<Props> = ({
             <NodeIndexOutlined /> Node Status
           </Link>
         </Menu.Item>
-        <Menu.SubMenu
+        {/* <Menu.SubMenu
           title={<span className="submenu-title-wrapper">Resources</span>}
           disabled
         >
@@ -79,7 +109,7 @@ const RightMenu: React.FC<Props> = ({
             <Menu.Item key="guide">Guide</Menu.Item>
             <Menu.Item key="api">API</Menu.Item>
           </Menu.ItemGroup>
-        </Menu.SubMenu>
+        </Menu.SubMenu>*/}
         {!authenticated ? (
           <Menu.Item key="signIn">
             <Button
@@ -112,7 +142,7 @@ const RightMenu: React.FC<Props> = ({
           </Menu.SubMenu>
         )}
 
-        <Menu.Item key="cartItems" className="modified-item">
+        {/* <Menu.Item key="cartItems" className="modified-item">
           <ToolTip title="Cart">
             <Badge
               count={numCartItems}
@@ -139,7 +169,7 @@ const RightMenu: React.FC<Props> = ({
               </Link>
             </Badge>
           </ToolTip>
-        </Menu.Item>
+        </Menu.Item>*/}
       </Menu>
     </div>
   );

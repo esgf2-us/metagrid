@@ -77,7 +77,7 @@ const LeftMenu: React.FC<Props> = ({
             <Form.Item
               name="projectTextInput"
               rules={[{ required: true, message: 'Project is required' }]}
-              style={{ width: '15%' }}
+              style={{ width: '15%', minWidth: '100px' }}
             >
               <Select>
                 {projects.map((projObj) => (
