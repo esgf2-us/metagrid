@@ -15,7 +15,7 @@ import {
 import React from 'react';
 import { rest, server } from '../../api/mock/setup-env';
 import apiRoutes from '../../api/routes';
-import { customRender } from '../../test/custom-render';
+import { customRender, getRowName } from '../../test/custom-render';
 import App from './App';
 
 // Used to restore window.location after each test
@@ -431,8 +431,7 @@ describe('User cart', () => {
     // Check first row exists
     const firstRow = await waitFor(() =>
       getByRole('row', {
-        name:
-          'right-circle bar 2 1 Bytes close-circle esgf1.dkrz.de 1 wget download PID plus',
+        name: getRowName('plus', 'close', 'bar', '2', '1', '1'),
       })
     );
     expect(firstRow).toBeTruthy();
@@ -551,8 +550,7 @@ describe('User cart', () => {
     // Check first row exists
     const firstRow = await waitFor(() =>
       getByRole('row', {
-        name:
-          'right-circle foo 3 1 Bytes check-circle aims3.llnl.gov 1 wget download PID plus',
+        name: getRowName('plus', 'check', 'foo', '3', '1', '1'),
       })
     );
     expect(firstRow).toBeTruthy();
@@ -600,8 +598,7 @@ describe('User cart', () => {
     // Check first row exists
     const firstRow = await waitFor(() =>
       getByRole('row', {
-        name:
-          'right-circle foo 3 1 Bytes check-circle aims3.llnl.gov 1 wget download PID plus',
+        name: getRowName('plus', 'check', 'foo', '3', '1', '1'),
       })
     );
     expect(firstRow).toBeTruthy();

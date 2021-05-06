@@ -6,7 +6,9 @@ import {
 } from '../../api/mock/fixtures';
 import { rest, server } from '../../api/mock/setup-env';
 import apiRoutes from '../../api/routes';
-import Table, { Props, QualityFlag } from './Table';
+import { getRowName } from '../../test/custom-render';
+import Table, { Props } from './Table';
+import { QualityFlag } from './Tabs';
 
 const defaultProps: Props = {
   loading: false,
@@ -52,8 +54,7 @@ it('renders not available for total size and number of files columns when datase
 
   // Check a record row exist
   const row = getByRole('row', {
-    name:
-      'right-circle foo N/A N/A question-circle aims3.llnl.gov 1 wget download PID plus',
+    name: getRowName('plus', 'question', 'foo', 'N/A', 'N/A', '1'),
   });
   expect(row).toBeTruthy();
 });
@@ -67,8 +68,7 @@ it('renders record metadata in an expandable panel', async () => {
 
   // Check a record row exist
   const row = getByRole('row', {
-    name:
-      'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 wget download PID plus',
+    name: getRowName('plus', 'question', 'foo', '3', '1', '1'),
   });
   expect(row).toBeTruthy();
 
@@ -131,19 +131,42 @@ it('renders "PID" button when the record has a "xlink" key/value, vice versa', (
 
   // Check first row exists
   const firstRow = getByRole('row', {
-    name:
-      'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 wget download PID ES-DOC plus',
+    name: getRowName('plus', 'question', 'foo', '3', '1', '1'),
   });
   expect(firstRow).toBeTruthy();
 
-  // Check both PID and ES-DOC buttons rendered for the first row
-  const firstPidBtn = within(firstRow).getByText('PID');
-  const firstInfoBtn = within(firstRow).getByText('ES-DOC');
+  // Get the expandable cell
+  const expandableCell = within(firstRow).getByRole('cell', {
+    name: 'right-circle',
+  });
+  expect(expandableCell).toBeTruthy();
+
+  // Get the right circle icon within the cell and click to expand the row
+  const expandableIcon = within(expandableCell).getByRole('img', {
+    name: 'right-circle',
+  });
+  expect(expandableIcon).toBeTruthy();
+  fireEvent.click(expandableIcon);
+
+  // Get the expandable row that was rendered and click on it
+  const expandableRow = document.querySelector(
+    'tr.ant-table-expanded-row.ant-table-expanded-row-level-1'
+  ) as HTMLElement;
+  expect(expandableRow).toBeTruthy();
+
+  // Get the Additional panel and click on it
+  const panel = within(expandableRow).getByText('Additional');
+  expect(panel).toBeTruthy();
+  fireEvent.click(panel);
+
+  // Check Additional panel contains PID and ES-DOC
+  const firstPidBtn = within(expandableRow).getByText('PID');
+  const firstInfoBtn = within(expandableRow).getByText('ES-DOC');
   expect(firstPidBtn).toBeTruthy();
   expect(firstInfoBtn).toBeTruthy();
 });
 
-it('renders quality control flags for obs4MIPs datasets when therecord has the respective attribute', () => {
+it('renders quality control flags for obs4MIPs datasets when the record has the respective attribute', () => {
   const results = [...defaultProps.results];
   results[0] = {
     ...results[0],
@@ -166,15 +189,39 @@ it('renders quality control flags for obs4MIPs datasets when therecord has the r
 
   // Check first row exists
   const firstRow = getByRole('row', {
-    name:
-      'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 wget download PID plus',
+    name: getRowName('plus', 'question', 'foo', '3', '1', '1'),
   });
   expect(firstRow).toBeTruthy();
 
-  const firstFlag = within(firstRow).getByTestId('qualityFlag1');
+  // Get the expandable cell
+  const expandableCell = within(firstRow).getByRole('cell', {
+    name: 'right-circle',
+  });
+  expect(expandableCell).toBeTruthy();
+
+  // Get the right circle icon within the cell and click to expand the row
+  const expandableIcon = within(expandableCell).getByRole('img', {
+    name: 'right-circle',
+  });
+  expect(expandableIcon).toBeTruthy();
+  fireEvent.click(expandableIcon);
+
+  // Get the expandable row that was rendered and click on it
+  const expandableRow = document.querySelector(
+    'tr.ant-table-expanded-row.ant-table-expanded-row-level-1'
+  ) as HTMLElement;
+  expect(expandableRow).toBeTruthy();
+
+  // Get the Additional panel and click on it
+  const panel = within(expandableRow).getByText('Additional');
+  expect(panel).toBeTruthy();
+  fireEvent.click(panel);
+
+  // Check Additional panel contains quality flags
+  const firstFlag = within(expandableRow).getByTestId('qualityFlag1');
   expect(firstFlag).toBeTruthy();
 
-  const lastFlag = within(firstRow).getByTestId('qualityFlag5');
+  const lastFlag = within(expandableRow).getByTestId('qualityFlag5');
   expect(lastFlag).toBeTruthy();
 });
 
@@ -189,8 +236,7 @@ it('renders add or remove button for items in or not in the cart respectively, a
 
   // Check first row exists
   const firstRow = getByRole('row', {
-    name:
-      'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 wget download PID minus',
+    name: getRowName('minus', 'question', 'foo', '3', '1', '1'),
   });
   expect(firstRow).toBeTruthy();
 
@@ -201,8 +247,7 @@ it('renders add or remove button for items in or not in the cart respectively, a
 
   // Check second row exists
   const secondRow = getByRole('row', {
-    name:
-      'right-circle bar 2 1 Bytes question-circle esgf1.dkrz.de 1 wget download PID plus',
+    name: getRowName('plus', 'question', 'bar', '2', '1', '1'),
   });
   expect(secondRow).toBeTruthy();
 
@@ -221,8 +266,7 @@ it('handles when clicking the select checkbox for a row', () => {
 
   // Check a record row exist
   const row = getByRole('row', {
-    name:
-      'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 wget download PID plus',
+    name: getRowName('plus', 'question', 'foo', '3', '1', '1'),
   });
   expect(row).toBeTruthy();
 
@@ -266,8 +310,7 @@ it('handles downloading an item via wget', async () => {
 
   // Check first row renders
   const firstRow = getByRole('row', {
-    name:
-      'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 wget download PID minus',
+    name: getRowName('minus', 'question', 'foo', '3', '1', '1'),
   });
   expect(firstRow).toBeTruthy();
 
@@ -294,8 +337,7 @@ it('displays an error when unable to access download via wget', async () => {
 
   // Check first row renders
   const firstRow = getByRole('row', {
-    name:
-      'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 wget download PID minus',
+    name: getRowName('minus', 'question', 'foo', '3', '1', '1'),
   });
   expect(firstRow).toBeTruthy();
 

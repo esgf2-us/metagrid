@@ -9,6 +9,7 @@ import {
 import { rest, server } from '../../api/mock/setup-env';
 import apiRoutes from '../../api/routes';
 import { esgfNodeURL, proxyURL } from '../../env';
+import { getRowName } from '../../test/custom-render';
 import { ActiveFacets, RawFacets } from '../Facets/types';
 import Search, {
   checkFiltersExist,
@@ -229,8 +230,7 @@ describe('test Search component', () => {
 
     // Select the first row
     const firstRow = getByRole('row', {
-      name:
-        'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 wget download PID plus',
+      name: getRowName('plus', 'question', 'foo', '3', '1', '1'),
     });
     expect(firstRow).toBeTruthy();
 
