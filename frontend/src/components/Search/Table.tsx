@@ -10,15 +10,8 @@ import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
 import { fetchWgetScript, openDownloadURL, ResponseError } from '../../api';
-import qualityFlagsImg from '../../assets/img/climate_indicators_table.png';
-import { CSSinJS } from '../../common/types';
-import {
-  formatBytes,
-  objectHasKey,
-  splitStringByChar,
-} from '../../common/utils';
+import { formatBytes } from '../../common/utils';
 import { UserCart } from '../Cart/types';
-import Popover from '../DataDisplay/Popover';
 import ToolTip from '../DataDisplay/ToolTip';
 import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
@@ -26,28 +19,6 @@ import { NodeStatusArray } from '../NodeStatus/types';
 import './Search.css';
 import Tabs from './Tabs';
 import { RawSearchResult, RawSearchResults, TextInputs } from './types';
-
-const styles: CSSinJS = {
-  qualityFlagsRow: { display: 'flex' },
-  flagColorBox: {
-    width: '16px',
-    height: '16px',
-    backgroundColor: '#ccc',
-    border: '1px',
-    borderStyle: 'solid',
-    borderColor: '#666',
-    margin: '2px',
-  },
-};
-
-export type QualityFlagProps = { index: string; color: string };
-
-export const QualityFlag: React.FC<QualityFlagProps> = ({ index, color }) => (
-  <div
-    data-testid={`qualityFlag${index}`}
-    style={{ ...styles.flagColorBox, backgroundColor: color }}
-  ></div>
-);
 
 export type Props = {
   loading: boolean;
@@ -114,7 +85,7 @@ const Table: React.FC<Props> = ({
           <DownCircleOutlined onClick={(e) => onExpand(record, e)} />
         ) : (
           <ToolTip
-            title="View this dataset's metadata, files, and citation"
+            title="View this dataset's metadata, files or additional info."
             trigger="hover"
           >
             <RightCircleOutlined onClick={(e) => onExpand(record, e)} />
@@ -147,16 +118,53 @@ const Table: React.FC<Props> = ({
 
   const columns = [
     {
+      title: 'Cart',
+      key: 'cart',
+      width: 50,
+      render: (record: RawSearchResult) => {
+        if (
+          userCart.some((dataset: RawSearchResult) => dataset.id === record.id)
+        ) {
+          return (
+            <>
+              <Button
+                icon={<MinusOutlined />}
+                onClick={() => onUpdateCart([record], 'remove')}
+                danger
+              />
+            </>
+          );
+        }
+        return (
+          <>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => onUpdateCart([record], 'add')}
+            />
+          </>
+        );
+      },
+    },
+    {
+      title: '',
+      dataIndex: 'data_node',
+      width: 20,
+      render: (data_node: string) => (
+        <StatusToolTip nodeStatus={nodeStatus} dataNode={data_node} />
+      ),
+    },
+    {
       title: 'Dataset Title',
       dataIndex: 'title',
       key: 'title',
       width: 400,
     },
     {
-      title: '# of Files',
+      title: 'Files',
       dataIndex: 'number_of_files',
       key: 'number_of_files',
-      width: 100,
+      width: 50,
       render: (numberOfFiles: number) => <p>{numberOfFiles || 'N/A'}</p>,
     },
     {
@@ -165,14 +173,6 @@ const Table: React.FC<Props> = ({
       key: 'size',
       width: 100,
       render: (size: number) => <p>{size ? formatBytes(size) : 'N/A'}</p>,
-    },
-    {
-      title: 'Node',
-      dataIndex: 'data_node',
-      width: 225,
-      render: (data_node: string) => (
-        <StatusToolTip nodeStatus={nodeStatus} dataNode={data_node} />
-      ),
     },
     {
       title: 'Version',
@@ -244,137 +244,6 @@ const Table: React.FC<Props> = ({
                 ></Button>
               </Form.Item>
             </Form>
-          </>
-        );
-      },
-    },
-    {
-      title: 'Additional',
-      key: 'additional',
-      width: 200,
-      render: (record: RawSearchResult) => {
-        // Have to parse and format since 'xlink' attribute is poorly structured
-        // in the Search API
-        const xlinkTypesToOutput: Record<
-          string,
-          { label: string; url: null | string }
-        > = {
-          pid: { label: 'PID', url: null },
-          // Some technical notes are published as "summary"
-          summary: { label: 'Technical Notes', url: null },
-          supdata: { label: 'Supplemental Data', url: null },
-          'Tech Note': { label: 'Technical Notes', url: null },
-        };
-        /* istanbul ignore else */
-        if (objectHasKey(record, 'xlink')) {
-          const { xlink } = record;
-
-          (xlink as string[]).forEach((link) => {
-            const [url, , linkType] = splitStringByChar(link, '|') as string[];
-
-            if (Object.keys(xlinkTypesToOutput).includes(linkType)) {
-              xlinkTypesToOutput[linkType].url = url;
-            }
-          });
-        }
-
-        // Have to parse and format since 'quality_control_flags' attribute is
-        // poorly structured in the Search API
-        const qualityFlags: Record<string, string> = {};
-        /* istanbul ignore else */
-        if (objectHasKey(record, 'quality_control_flags')) {
-          const { quality_control_flags: qcFlags } = record;
-
-          (qcFlags as string[]).forEach((flag) => {
-            const [, key, color] = splitStringByChar(flag, ':') as string[];
-            // Sometimes colors are snakecase, such as 'light_gray'
-            qualityFlags[key] = color.replace('_', '');
-          });
-        }
-
-        return (
-          <>
-            {Object.keys(xlinkTypesToOutput).map((linkType) => {
-              const { label, url } = xlinkTypesToOutput[linkType];
-
-              if (url) {
-                return (
-                  <Button type="link" href={url} target="_blank" key={label}>
-                    <span>{label}</span>
-                  </Button>
-                );
-              }
-              return null;
-            })}
-
-            {/* Records may return "further_info_url": [''], which indicates no available URLs */}
-            {objectHasKey(record, 'further_info_url') &&
-              ((record.further_info_url as unknown) as string)[0] !== '' && (
-                <Button
-                  type="link"
-                  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                  href={record.further_info_url![0]}
-                  target="_blank"
-                >
-                  ES-DOC
-                </Button>
-              )}
-
-            {Object.keys(qualityFlags).length > 0 && (
-              <Button
-                type="link"
-                href="https://esgf-node.llnl.gov/projects/obs4mips/DatasetIndicators"
-                target="_blank"
-              >
-                <Popover
-                  content={
-                    <img
-                      src={qualityFlagsImg}
-                      alt="Quality Flags Indicator"
-                    ></img>
-                  }
-                >
-                  <span style={styles.qualityFlagsRow}>
-                    {Object.keys(qualityFlags).map((key) => (
-                      <QualityFlag
-                        index={key}
-                        color={qualityFlags[key]}
-                        key={key}
-                      />
-                    ))}
-                  </span>
-                </Popover>
-              </Button>
-            )}
-          </>
-        );
-      },
-    },
-    {
-      title: 'Cart',
-      key: 'cart',
-      width: 50,
-      render: (record: RawSearchResult) => {
-        if (
-          userCart.some((dataset: RawSearchResult) => dataset.id === record.id)
-        ) {
-          return (
-            <>
-              <Button
-                icon={<MinusOutlined />}
-                onClick={() => onUpdateCart([record], 'remove')}
-                danger
-              />
-            </>
-          );
-        }
-        return (
-          <>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => onUpdateCart([record], 'add')}
-            />
           </>
         );
       },

@@ -3,6 +3,7 @@ import React from 'react';
 import { userCartFixture } from '../../api/mock/fixtures';
 import { rest, server } from '../../api/mock/setup-env';
 import apiRoutes from '../../api/routes';
+import { getRowName } from '../../test/custom-render';
 import Items, { Props } from './Items';
 
 const defaultProps: Props = {
@@ -49,8 +50,7 @@ it('handles selecting items in the cart and downloading them via wget', async ()
 
   // Check first row renders and click the checkbox
   const firstRow = getByRole('row', {
-    name:
-      'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 wget download PID minus',
+    name: getRowName('minus', 'question', 'foo', '3', '1', '1'),
   });
   const firstCheckBox = within(firstRow).getByRole('checkbox');
   expect(firstCheckBox).toBeTruthy();
@@ -87,8 +87,7 @@ it('handles error selecting items in the cart and downloading them via wget', as
 
   // Check first row renders and click the checkbox
   const firstRow = getByRole('row', {
-    name:
-      'right-circle foo 3 1 Bytes question-circle aims3.llnl.gov 1 wget download PID minus',
+    name: getRowName('minus', 'question', 'foo', '3', '1', '1'),
   });
   const firstCheckBox = within(firstRow).getByRole('checkbox');
   expect(firstCheckBox).toBeTruthy();
