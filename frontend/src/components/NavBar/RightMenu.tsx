@@ -1,18 +1,15 @@
 import {
   FileSearchOutlined,
-  // FileSearchOutlined,
   NodeIndexOutlined,
   SearchOutlined,
   ShoppingCartOutlined,
-  // ShoppingCartOutlined,
   UserOutlined,
 } from '@ant-design/icons';
 import { useKeycloak } from '@react-keycloak/web';
-import { /* Badge,*/ Badge, Menu } from 'antd';
+import { Badge, Menu } from 'antd';
 import { KeycloakTokenParsed } from 'keycloak-js';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-// import ToolTip from '../DataDisplay/ToolTip';
 import Button from '../General/Button';
 
 export type Props = {
@@ -101,15 +98,6 @@ const RightMenu: React.FC<Props> = ({
             <NodeIndexOutlined /> Node Status
           </Link>
         </Menu.Item>
-        {/* <Menu.SubMenu
-          title={<span className="submenu-title-wrapper">Resources</span>}
-          disabled
-        >
-          <Menu.ItemGroup title="Documentation">
-            <Menu.Item key="guide">Guide</Menu.Item>
-            <Menu.Item key="api">API</Menu.Item>
-          </Menu.ItemGroup>
-        </Menu.SubMenu>*/}
         {!authenticated ? (
           <Menu.Item key="signIn">
             <Button
@@ -141,35 +129,6 @@ const RightMenu: React.FC<Props> = ({
             </Menu.ItemGroup>
           </Menu.SubMenu>
         )}
-
-        {/* <Menu.Item key="cartItems" className="modified-item">
-          <ToolTip title="Cart">
-            <Badge
-              count={numCartItems}
-              className="badge"
-              offset={[5, 3]}
-              showZero
-            >
-              <Link to="/cart/items">
-                <ShoppingCartOutlined style={{ fontSize: '20px' }} />
-              </Link>
-            </Badge>
-          </ToolTip>
-        </Menu.Item>
-        <Menu.Item key="cartSearches" className="modified-item">
-          <ToolTip title="Search Library">
-            <Badge
-              count={numSavedSearches}
-              className="badge"
-              offset={[5, 3]}
-              showZero
-            >
-              <Link to="/cart/searches">
-                <FileSearchOutlined style={{ fontSize: '20px' }} />
-              </Link>
-            </Badge>
-          </ToolTip>
-        </Menu.Item>*/}
       </Menu>
     </div>
   );

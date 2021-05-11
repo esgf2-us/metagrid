@@ -98,7 +98,6 @@ const LeftMenu: React.FC<Props> = ({
                 placeholder="Search for a keyword"
               />
             </Form.Item>
-
             <Form.Item style={{ width: '15%' }}>
               <Button
                 type="primary"
