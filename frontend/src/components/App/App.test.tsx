@@ -577,6 +577,8 @@ describe('User cart', () => {
     // Check applicable components render
     const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
     expect(leftMenuComponent).toBeTruthy();
+    const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
+    expect(leftMenuComponent).toBeTruthy();
 
     // Change value for free-text input
     const input = 'foo';
@@ -609,7 +611,9 @@ describe('User cart', () => {
     fireEvent.click(addBtn);
 
     // Click on the cart link
-    const cartLink = getByRole('link', { name: 'shopping-cart' });
+    const cartLink = within(rightMenuComponent).getByRole('img', {
+      name: 'shopping-cart',
+    });
     expect(cartLink).toBeTruthy();
     fireEvent.click(cartLink);
 
