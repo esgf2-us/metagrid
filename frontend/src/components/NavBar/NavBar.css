@@ -13,13 +13,13 @@
 }
 
 .navbar-container .navbar-left {
-  width: 65%;
+  width: 45%;
   min-width: 384px;
   flex-wrap: nowrap;
 }
 
 .navbar-container .navbar-right {
-  width: 35%;
+  width: 55%;
 }
 
 /* Menu Ant Design overrides */
