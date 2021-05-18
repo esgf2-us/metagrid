@@ -68,7 +68,9 @@ http:
       tls:
         # https://docs.traefik.io/master/routing/routers/#certresolver
         certResolver: letsencrypt
-        minversion
+        options:
+          default:
+            minVersion: VersionTLS13
 
     web-cors-proxy-router:
       rule: "Host(`example.com`)"
