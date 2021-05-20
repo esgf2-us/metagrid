@@ -46,7 +46,7 @@ http:
         certResolver: letsencrypt
         options:
           default:
-            minVersion: VersionTLS13
+            minVersion: "VersionTLS12"
 
     web-frontend-router:
       rule: "Host(`example.com`) && PathPrefix(`/prefix`)"
@@ -70,7 +70,7 @@ http:
         certResolver: letsencrypt
         options:
           default:
-            minVersion: VersionTLS13
+            minVersion: "VersionTLS12"
 
     web-cors-proxy-router:
       rule: "Host(`example.com`)"
