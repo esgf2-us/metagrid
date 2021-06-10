@@ -30,28 +30,29 @@ const StatusToolTip: React.FC<Props> = ({ nodeStatus, dataNode, children }) => {
               <ToolTip
                 title={
                   <>
+                    Data Node:<div>{dataNode}</div>
                     Online as of:<div>{timestamp}</div>
                   </>
                 }
                 color="green"
               >
                 <span>
-                  <CheckCircleTwoTone twoToneColor="#52c41a" />
-                  {dataNode} {children}
+                  <CheckCircleTwoTone twoToneColor="#52c41a" /> {dataNode}{' '}
+                  {children}
                 </span>
               </ToolTip>
             ) : (
               <ToolTip
                 title={
                   <>
+                    Data Node:<div>{dataNode}</div>
                     Offline as of:<div>{timestamp}</div>
                   </>
                 }
                 color="red"
               >
                 <span>
-                  <CloseCircleTwoTone twoToneColor="#eb2f96" />
-                  {dataNode}
+                  <CloseCircleTwoTone twoToneColor="#eb2f96" /> {dataNode}{' '}
                   {children}
                 </span>
               </ToolTip>
@@ -98,10 +99,16 @@ const StatusToolTip: React.FC<Props> = ({ nodeStatus, dataNode, children }) => {
 
   if (children) {
     return (
-      <ToolTip title="Could not fetch status. Please contact support or try again later.">
+      <ToolTip
+        title={
+          <>
+            Could not fetch status. Please contact support or try again later.
+            Data Node:<div>{dataNode}</div>
+          </>
+        }
+      >
         <span>
-          <QuestionCircleTwoTone />
-          {dataNode} {children}
+          <QuestionCircleTwoTone /> {dataNode} {children}
         </span>
       </ToolTip>
     );

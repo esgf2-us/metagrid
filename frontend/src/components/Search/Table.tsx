@@ -256,7 +256,8 @@ const Table: React.FC<Props> = ({
       columns={columns}
       dataSource={results}
       rowKey="id"
-      scroll={{ y: 'calc(70vh)' }}
+      size="small"
+      scroll={{ y: 'calc(100vh)' }}
     />
   );
 };

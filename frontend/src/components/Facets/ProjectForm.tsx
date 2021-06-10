@@ -11,7 +11,7 @@ import { ActiveSearchQuery } from '../Search/types';
 import { RawProject, RawProjects } from './types';
 
 const styles = {
-  form: { width: '256px' },
+  form: { width: '280px' },
 };
 
 export type Props = {
@@ -69,6 +69,7 @@ const ProjectsForm: React.FC<Props> = ({
         <Form
           form={projectForm}
           layout="inline"
+          size="small"
           initialValues={initialValues}
           onFinish={onFinish}
         >

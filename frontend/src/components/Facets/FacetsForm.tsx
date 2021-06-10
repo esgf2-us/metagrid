@@ -1,14 +1,12 @@
 import {
   InfoCircleOutlined,
-  QuestionCircleOutlined,
   RightCircleOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
-import { Collapse, DatePicker, Form, Input, Select } from 'antd';
+import { Col, Collapse, DatePicker, Form, Input, Row, Select } from 'antd';
 import moment from 'moment';
 import React from 'react';
 import { CSSinJS } from '../../common/types';
-import ToolTip from '../DataDisplay/ToolTip';
 import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
 import { NodeStatusArray } from '../NodeStatus/types';
@@ -21,12 +19,14 @@ import {
 import { ActiveFacets, ParsedFacets } from './types';
 
 const styles: CSSinJS = {
-  container: { maxHeight: '80vh', overflowY: 'auto' },
-  filenameVarForm: { marginBottom: '12px' },
+  container: {
+    maxHeight: '70vh',
+    overflowY: 'auto',
+  },
   facetCount: { float: 'right' },
   formTitle: { fontWeight: 'bold', textTransform: 'capitalize' },
   applyBtn: { marginBottom: '12px' },
-  collapseContainer: { marginTop: '12px' },
+  collapseContainer: { marginTop: '5px' },
 };
 
 export type Props = {
@@ -209,50 +209,49 @@ const FacetsForm: React.FC<Props> = ({
     <div data-testid="facets-form">
       <Form
         form={filenameVarForm}
-        layout="inline"
+        layout="horizontal"
+        size="small"
         onFinish={handleOnFinishFilenameVarForm}
         style={styles.filenameVarForm}
       >
-        {/* Use a seperate label instead of the Form.Item 'label' argument so that it floats above the input and button, rather than being inline */}
-        {/* eslint-disable-next-line jsx-a11y/label-has-associated-control*/}
-        <label htmlFor="filenameVar">
-          Filename Search{' '}
-          <ToolTip
-            title={
+        <Form.Item
+          name="filenameVar"
+          label="Filename Search"
+          rules={[{ required: true, message: 'Variable is required' }]}
+          tooltip={{
+            title: (
               <p>
                 Use file or variable names to filter a dataset&apos;s files
                 under the <RightCircleOutlined></RightCircleOutlined> icon. For
                 multiple names, add them individually or as a single
                 comma-separated input (e.g. cct, cl).
               </p>
-            }
-          >
-            <QuestionCircleOutlined style={{ color: 'rgba(0, 0, 0, 0.45)' }} />
-          </ToolTip>
-        </label>
-
-        <Form.Item
-          name="filenameVar"
-          rules={[{ required: true, message: 'Variable is required' }]}
-          style={{ width: '256px' }}
+            ),
+            trigger: 'hover',
+          }}
         >
-          <Input
-            value={filenameVars}
-            onChange={(e) => setFilenameVar(e.target.value)}
-          />
-        </Form.Item>
-        <Form.Item>
-          <Button
-            type="primary"
-            htmlType="submit"
-            icon={<SearchOutlined />}
-          ></Button>
+          <Row gutter={5}>
+            <Col>
+              <Input
+                value={filenameVars}
+                style={{ width: '157px' }}
+                onChange={(e) => setFilenameVar(e.target.value)}
+              />
+            </Col>
+            <Col>
+              <Button
+                type="primary"
+                htmlType="submit"
+                icon={<SearchOutlined />}
+              ></Button>
+            </Col>
+          </Row>
         </Form.Item>
       </Form>
-
       <Form
         form={generalFacetsForm}
-        layout="vertical"
+        layout="horizontal"
+        size="small"
         initialValues={{
           ...activeSearchQuery.activeFacets,
           versionType: activeSearchQuery.versionType,
@@ -266,7 +265,6 @@ const FacetsForm: React.FC<Props> = ({
         <Form.Item
           label="Version Type"
           name="versionType"
-          style={{ width: '256px' }}
           tooltip={{
             title:
               'By default, only the latest version of a dataset is returned',
@@ -281,7 +279,6 @@ const FacetsForm: React.FC<Props> = ({
         <Form.Item
           label="Result Type"
           name="resultType"
-          style={{ width: '256px' }}
           tooltip={{
             title:
               'Datasets can be replicated from the source node (original) to other nodes (replica)',
@@ -316,17 +313,19 @@ const FacetsForm: React.FC<Props> = ({
 
       <Form
         form={availableFacetsForm}
-        layout="vertical"
         initialValues={{
           ...activeSearchQuery.activeFacets,
         }}
       >
         <div style={styles.container}>
-          {facetsByGroup &&
-            Object.keys(facetsByGroup).map((group) => (
-              <div key={group} style={styles.collapseContainer}>
-                <h4 style={styles.formTitle}>{group}</h4>
-                <Collapse>
+          <Collapse accordion>
+            {facetsByGroup &&
+              Object.keys(facetsByGroup).map((group) => (
+                <Collapse.Panel
+                  header={humanizeFacetNames(group)}
+                  key={group}
+                  className="site-collapse-custom-collapse"
+                >
                   {Object.keys(availableFacets).map((facet) => {
                     if (facetsByGroup[group].includes(facet)) {
                       const facetOptions = availableFacets[facet];
@@ -335,95 +334,86 @@ const FacetsForm: React.FC<Props> = ({
                         facetOptions.length > 0 &&
                         facetOptions[0].includes('none');
                       return (
-                        <Collapse.Panel
-                          collapsible="header"
-                          header={humanizeFacetNames(facet)}
+                        <Form.Item
                           key={facet}
+                          name={facet}
+                          label={
+                            humanizeFacetNames(facet) +
+                            (isOptionalforDatasets ? ' (Optional)' : '')
+                          }
+                          style={{ marginBottom: '0px' }}
+                          tooltip={
+                            isOptionalforDatasets
+                              ? {
+                                  title:
+                                    'Selecting the "none" option filters for datasets that do not use this facet.',
+                                  icon: <InfoCircleOutlined />,
+                                }
+                              : undefined
+                          }
                         >
-                          <Form.Item
-                            style={{ marginBottom: '4px' }}
-                            key={facet}
-                            name={facet}
-                            label={
-                              isOptionalforDatasets ? '(Optional)' : undefined
+                          <Select
+                            data-testid={`${facet}-form-select`}
+                            size="small"
+                            placeholder="Select option(s)"
+                            mode="multiple"
+                            style={{ width: '100%' }}
+                            tokenSeparators={[',']}
+                            showArrow
+                            getPopupContainer={(triggerNode) =>
+                              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
+                              triggerNode.parentElement
                             }
-                            tooltip={
-                              isOptionalforDatasets
-                                ? {
-                                    title:
-                                      'Selecting the "none" option filters for datasets that do not use this facet.',
-                                    icon: <InfoCircleOutlined />,
-                                  }
-                                : undefined
+                            onDropdownVisibleChange={(open) =>
+                              setDropdownIsOpen(open)
                             }
+                            onChange={(value: string[] | []) => {
+                              console.log(value);
+                              handleOnSelectAvailableFacetsForm(facet, value);
+                            }}
                           >
-                            <Select
-                              data-testid={`${facet}-form-select`}
-                              size="small"
-                              placeholder="Select option(s)"
-                              mode="multiple"
-                              style={{ width: '100%' }}
-                              tokenSeparators={[',']}
-                              showArrow
-                              // Need to set getPopupContainer to fix drop-down menu scrolling with the page in a fixed position
-                              getPopupContainer={(triggerNode) =>
-                                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
-                                triggerNode.parentElement
-                              }
-                              onDropdownVisibleChange={(open) =>
-                                setDropdownIsOpen(open)
-                              }
-                              onChange={(value: string[] | []) =>
-                                handleOnSelectAvailableFacetsForm(facet, value)
-                              }
-                            >
-                              {facetOptions.map((variable) => {
-                                let optionOutput:
-                                  | string
-                                  | React.ReactElement = (
-                                  <>
-                                    {variable[0]}
+                            {facetOptions.map((variable) => {
+                              let optionOutput: string | React.ReactElement = (
+                                <>
+                                  {variable[0]}
+                                  <span style={styles.facetCount}>
+                                    ({variable[1]})
+                                  </span>
+                                </>
+                              );
+                              // The data node facet has a unique tooltip overlay to show the status of the highlighted node
+                              if (facet === 'data_node') {
+                                optionOutput = (
+                                  <StatusToolTip
+                                    nodeStatus={nodeStatus}
+                                    dataNode={variable[0]}
+                                  >
                                     <span style={styles.facetCount}>
                                       ({variable[1]})
                                     </span>
-                                  </>
+                                  </StatusToolTip>
                                 );
-                                // The data node facet has a unique tooltip overlay to show the status of the highlighted node
-                                if (facet === 'data_node') {
-                                  optionOutput = (
-                                    <StatusToolTip
-                                      nodeStatus={nodeStatus}
-                                      dataNode={variable[0]}
-                                    >
-                                      <span style={styles.facetCount}>
-                                        ({variable[1]})
-                                      </span>
-                                    </StatusToolTip>
-                                  );
-                                }
-                                return (
-                                  <Select.Option
-                                    key={variable[0]}
-                                    value={variable[0]}
-                                  >
-                                    <span
-                                      data-testid={`${facet}_${variable[0]}`}
-                                    >
-                                      {optionOutput}
-                                    </span>
-                                  </Select.Option>
-                                );
-                              })}
-                            </Select>
-                          </Form.Item>
-                        </Collapse.Panel>
+                              }
+                              return (
+                                <Select.Option
+                                  key={variable[0]}
+                                  value={variable[0]}
+                                >
+                                  <span data-testid={`${facet}_${variable[0]}`}>
+                                    {optionOutput}
+                                  </span>
+                                </Select.Option>
+                              );
+                            })}
+                          </Select>
+                        </Form.Item>
                       );
                     }
                     return null;
                   })}
-                </Collapse>
-              </div>
-            ))}
+                </Collapse.Panel>
+              ))}
+          </Collapse>
         </div>
       </Form>
     </div>
