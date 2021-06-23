@@ -121,10 +121,14 @@ it('handles setting filename searches and duplicates', async () => {
   await waitFor(() => getByTestId('search'));
   await waitFor(() => getByTestId('facets'));
 
-  // Change form field values
-  const input = getByRole('textbox', {
-    name: 'Filename Search question-circle',
+  // Open filename collapse panel
+  const filenameSearchPanel = within(facetsComponent).getByRole('button', {
+    name: 'right Filename',
   });
+  fireEvent.click(filenameSearchPanel);
+
+  // Change form field values
+  const input = getByTestId('filename-search-input');
   fireEvent.change(input, { target: { value: 'var' } });
 
   // Submit the form
@@ -175,7 +179,7 @@ it('handles setting and removing text input filters and clearing all search filt
   // Click on the ClearAllTag
   const clearAllTag = await waitFor(() => getByText('Clear All'));
   expect(clearAllTag).toBeTruthy();
-  fireEvent.click(within(clearAllTag).getByRole('img', { name: 'close' }));
+  fireEvent.click(clearAllTag);
 
   // Change value for free-text input and submit again
   fireEvent.change(freeTextInput, { target: { value: 'baz' } });
@@ -227,6 +231,15 @@ it('handles applying general facets', async () => {
   const facetsForm = await waitFor(() => getByTestId('facets-form'));
   expect(facetsForm).toBeTruthy();
 
+  // Open additional properties collapse panel
+  const additionalPropertiesPanel = within(facetsComponent).getByRole(
+    'button',
+    {
+      name: 'right Additional Properties',
+    }
+  );
+  fireEvent.click(additionalPropertiesPanel);
+
   // Change result type
   // Check facet select form exists and mouseDown to expand list of options
   const resultTypeSelect = getByTestId('result-type-form-select');
@@ -274,6 +287,12 @@ it('handles applying and removing project facets', async () => {
   // Wait for project form to render
   const facetsForm = await waitFor(() => getByTestId('facets-form'));
   expect(facetsForm).toBeTruthy();
+
+  // Open top collapse panel
+  const group1Panel = within(facetsComponent).getByRole('tab', {
+    name: 'right Group1',
+  });
+  fireEvent.click(group1Panel);
 
   // Open Collapse Panel in Collapse component for the data_node form to render
   const collapse = getByText('Data Node');

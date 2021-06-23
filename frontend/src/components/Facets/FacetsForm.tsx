@@ -4,6 +4,7 @@ import {
   SearchOutlined,
 } from '@ant-design/icons';
 import { Col, Collapse, DatePicker, Form, Input, Row, Select } from 'antd';
+import CollapsePanel from 'antd/lib/collapse/CollapsePanel';
 import moment from 'moment';
 import React from 'react';
 import { CSSinJS } from '../../common/types';
@@ -208,110 +209,6 @@ const FacetsForm: React.FC<Props> = ({
   return (
     <div data-testid="facets-form">
       <Form
-        form={filenameVarForm}
-        layout="horizontal"
-        size="small"
-        onFinish={handleOnFinishFilenameVarForm}
-        style={styles.filenameVarForm}
-      >
-        <Form.Item
-          name="filenameVar"
-          label="Filename Search"
-          rules={[{ required: true, message: 'Variable is required' }]}
-          tooltip={{
-            title: (
-              <p>
-                Use file or variable names to filter a dataset&apos;s files
-                under the <RightCircleOutlined></RightCircleOutlined> icon. For
-                multiple names, add them individually or as a single
-                comma-separated input (e.g. cct, cl).
-              </p>
-            ),
-            trigger: 'hover',
-          }}
-        >
-          <Row gutter={5}>
-            <Col>
-              <Input
-                value={filenameVars}
-                style={{ width: '157px' }}
-                onChange={(e) => setFilenameVar(e.target.value)}
-              />
-            </Col>
-            <Col>
-              <Button
-                type="primary"
-                htmlType="submit"
-                icon={<SearchOutlined />}
-              ></Button>
-            </Col>
-          </Row>
-        </Form.Item>
-      </Form>
-      <Form
-        form={generalFacetsForm}
-        layout="horizontal"
-        size="small"
-        initialValues={{
-          ...activeSearchQuery.activeFacets,
-          versionType: activeSearchQuery.versionType,
-          resultType: activeSearchQuery.resultType,
-          versionDateRange: initialVersionDateRange,
-        }}
-        onValuesChange={(_changedValues, allValues) => {
-          handleOnChangeGeneralFacetsForm(allValues);
-        }}
-      >
-        <Form.Item
-          label="Version Type"
-          name="versionType"
-          tooltip={{
-            title:
-              'By default, only the latest version of a dataset is returned',
-            trigger: 'hover',
-          }}
-        >
-          <Select data-testid="version-type-form-select">
-            <Select.Option value={'latest' as ResultType}>Latest</Select.Option>
-            <Select.Option value={'all' as ResultType}>All</Select.Option>
-          </Select>
-        </Form.Item>
-        <Form.Item
-          label="Result Type"
-          name="resultType"
-          tooltip={{
-            title:
-              'Datasets can be replicated from the source node (original) to other nodes (replica)',
-            trigger: 'hover',
-          }}
-        >
-          <Select data-testid="result-type-form-select">
-            <Select.Option value={'all' as ResultType}>
-              Originals and Replicas
-            </Select.Option>
-            <Select.Option value={'originals only' as ResultType}>
-              Originals only
-            </Select.Option>
-            <Select.Option value={'replicas only' as ResultType}>
-              Replicas only
-            </Select.Option>
-          </Select>
-        </Form.Item>
-        <Form.Item
-          data-testid="version-range-datepicker"
-          label="Version Date Range"
-          name="versionDateRange"
-          tooltip={{
-            title:
-              'Specify the versions of datasets using a single min/max date or a date range. ',
-            trigger: 'hover',
-          }}
-        >
-          <DatePicker.RangePicker allowEmpty={[true, true]} />
-        </Form.Item>
-      </Form>
-
-      <Form
         form={availableFacetsForm}
         initialValues={{
           ...activeSearchQuery.activeFacets,
@@ -368,7 +265,6 @@ const FacetsForm: React.FC<Props> = ({
                               setDropdownIsOpen(open)
                             }
                             onChange={(value: string[] | []) => {
-                              console.log(value);
                               handleOnSelectAvailableFacetsForm(facet, value);
                             }}
                           >
@@ -415,6 +311,128 @@ const FacetsForm: React.FC<Props> = ({
               ))}
           </Collapse>
         </div>
+      </Form>
+      <Form
+        form={generalFacetsForm}
+        layout="horizontal"
+        size="small"
+        initialValues={{
+          ...activeSearchQuery.activeFacets,
+          versionType: activeSearchQuery.versionType,
+          resultType: activeSearchQuery.resultType,
+          versionDateRange: initialVersionDateRange,
+        }}
+        onValuesChange={(_changedValues, allValues) => {
+          handleOnChangeGeneralFacetsForm(allValues);
+        }}
+      >
+        <Collapse>
+          <Collapse.Panel
+            header={humanizeFacetNames('additional_properties')}
+            key="additional_properties"
+            className="site-collapse-custom-collapse"
+          >
+            <Form.Item
+              label="Version Type"
+              name="versionType"
+              tooltip={{
+                title:
+                  'By default, only the latest version of a dataset is returned',
+                trigger: 'hover',
+              }}
+            >
+              <Select data-testid="version-type-form-select">
+                <Select.Option value={'latest' as ResultType}>
+                  Latest
+                </Select.Option>
+                <Select.Option value={'all' as ResultType}>All</Select.Option>
+              </Select>
+            </Form.Item>
+            <Form.Item
+              label="Result Type"
+              name="resultType"
+              tooltip={{
+                title:
+                  'Datasets can be replicated from the source node (original) to other nodes (replica)',
+                trigger: 'hover',
+              }}
+            >
+              <Select data-testid="result-type-form-select">
+                <Select.Option value={'all' as ResultType}>
+                  Originals and Replicas
+                </Select.Option>
+                <Select.Option value={'originals only' as ResultType}>
+                  Originals only
+                </Select.Option>
+                <Select.Option value={'replicas only' as ResultType}>
+                  Replicas only
+                </Select.Option>
+              </Select>
+            </Form.Item>
+            <Form.Item
+              data-testid="version-range-datepicker"
+              label="Version Date Range"
+              name="versionDateRange"
+              tooltip={{
+                title:
+                  'Specify the versions of datasets using a single min/max date or a date range. ',
+                trigger: 'hover',
+              }}
+            >
+              <DatePicker.RangePicker allowEmpty={[true, true]} />
+            </Form.Item>
+          </Collapse.Panel>
+        </Collapse>
+      </Form>
+      <Form
+        form={filenameVarForm}
+        layout="horizontal"
+        size="small"
+        onFinish={handleOnFinishFilenameVarForm}
+        style={styles.filenameVarForm}
+      >
+        <Collapse>
+          <Collapse.Panel
+            header={humanizeFacetNames('filename')}
+            key="filename"
+            className="site-collapse-custom-collapse"
+          >
+            <Form.Item
+              name="filenameVar"
+              label="Filter by Filename"
+              rules={[{ required: true, message: 'Variable is required' }]}
+              tooltip={{
+                title: (
+                  <p>
+                    Use file or variable names to filter a dataset&apos;s files
+                    under the <RightCircleOutlined></RightCircleOutlined> icon.
+                    For multiple names, add them individually or as a single
+                    comma-separated input (e.g. cct, cl).
+                  </p>
+                ),
+                trigger: 'hover',
+              }}
+            >
+              <Row gutter={5}>
+                <Col>
+                  <Input
+                    data-testid="filename-search-input"
+                    value={filenameVars}
+                    style={{ width: '140px' }}
+                    onChange={(e) => setFilenameVar(e.target.value)}
+                  />
+                </Col>
+                <Col>
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    icon={<SearchOutlined />}
+                  ></Button>
+                </Col>
+              </Row>
+            </Form.Item>
+          </Collapse.Panel>
+        </Collapse>
       </Form>
     </div>
   );

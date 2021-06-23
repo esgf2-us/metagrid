@@ -81,6 +81,12 @@ it('handles facets form auto-filtering', async () => {
   const facetsForm = await waitFor(() => getByTestId('facets-form'));
   await waitFor(() => expect(facetsForm).toBeTruthy());
 
+  // Open top collapse panel
+  const group1Panel = within(facetsForm).getByRole('tab', {
+    name: 'right Group1',
+  });
+  fireEvent.click(group1Panel);
+
   // Open Collapse Panel in Collapse component for the data_node form to render
   const collapse = getByText('Data Node');
   fireEvent.click(collapse);
@@ -112,7 +118,7 @@ it('handles facets form auto-filtering', async () => {
 });
 
 it('handles facets form submission, including a facet key that is undefined', async () => {
-  const { getByTestId, getByText } = render(<Facets {...defaultProps} />);
+  const { getByTestId, getByText, getByRole } = render(<Facets {...defaultProps} />);
 
   // Check FacetsForm component renders
   const facetsForm = await waitFor(() => getByTestId('facets-form'));
@@ -121,6 +127,12 @@ it('handles facets form submission, including a facet key that is undefined', as
   // Check ProjectForm component renders
   const projectForm = await waitFor(() => getByTestId('project-form'));
   expect(projectForm).toBeTruthy();
+
+    // Open top collapse panel
+    const group1Panel = within(facetsForm).getByRole('tab', {
+      name: 'right Group1',
+    });
+    fireEvent.click(group1Panel);
 
   // Open Collapse Panel in Collapse component for the Data Node form to render
   const collapse = getByText('Data Node');
@@ -142,7 +154,13 @@ it('handles facets form submission, including a facet key that is undefined', as
   await waitFor(() => getByTestId('facets-form'));
 
   // Open Collapse Panel for  in Collapse component for the facet2 form to render
-  const collapse2 = getByText('Facet2');
+  // Open additional properties collapse panel
+  const collapse2 = getByRole(
+    'tab',
+    {
+      name: 'right Group2',
+    }
+  );
   fireEvent.click(collapse2);
 
   // Click on the facet2 select form but don't select an option
