@@ -132,16 +132,10 @@ describe('test Search component', () => {
     const searchComponent = await waitFor(() => getByTestId('search'));
     expect(searchComponent).toBeTruthy();
 
-    // Check if 'Clear All' tag exists, then click it
-    const clearAllTag = await waitFor(() => getByText('Clear All'));
-    expect(clearAllTag).toBeTruthy();
-
-    // Check close button inside clear all tag exiss
-    const clearBtn = await waitFor(() =>
-      within(clearAllTag).getByRole('img', { name: 'close' })
-    );
-    expect(clearBtn).toBeTruthy();
-    fireEvent.click(clearBtn);
+    // Check if 'Clear All' button exists, then click it
+    const clearAllBtn = await waitFor(() => getByText('Clear All'));
+    expect(clearAllBtn).toBeTruthy();
+    fireEvent.click(clearAllBtn);
 
     // Wait for search component to re-render
     await waitFor(() => getByTestId('search'));
