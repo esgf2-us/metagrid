@@ -92,7 +92,7 @@ it('handles project changes when a new project is selected', async () => {
 });
 
 it('handles setting filename searches and duplicates', async () => {
-  const { getByRole, getByTestId } = customRender(<App />);
+  const { getByTestId } = customRender(<App />);
   // Check applicable components render
   const facetsComponent = await waitFor(() => getByTestId('facets'));
   expect(facetsComponent).toBeTruthy();

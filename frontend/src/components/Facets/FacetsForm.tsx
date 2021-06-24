@@ -4,7 +4,6 @@ import {
   SearchOutlined,
 } from '@ant-design/icons';
 import { Col, Collapse, DatePicker, Form, Input, Row, Select } from 'antd';
-import CollapsePanel from 'antd/lib/collapse/CollapsePanel';
 import moment from 'moment';
 import React from 'react';
 import { CSSinJS } from '../../common/types';
