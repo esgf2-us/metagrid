@@ -29,6 +29,7 @@ it('sets the active menu item based on the location pathname', async () => {
   expect(savedSearchLink).toBeTruthy();
   fireEvent.click(savedSearchLink);
 });
+
 it('display the user"s given name after authentication and signs out', async () => {
   const { getByTestId, getByText } = customRender(
     <Router>
