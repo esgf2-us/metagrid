@@ -43,8 +43,7 @@ const styles: CSSinJS = {
     display: 'flex',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginTop: 10,
-    marginBottom: 10,
+    marginTop: 5,
   },
   subtitles: { fontWeight: 'bold' },
   facetTag: { fontWeight: 'bold' },
@@ -373,14 +372,14 @@ const Search: React.FC<Props> = ({
               </div>
             ))}
           {filtersExist && (
-            <Tag
-              value="clearAll"
-              color="#f50"
-              type="close all"
-              onClose={() => onClearFilters()}
+            <Button
+              type="primary"
+              danger
+              size="small"
+              onClick={() => onClearFilters()}
             >
               Clear All
-            </Tag>
+            </Button>
           )}
         </Row>
       )}

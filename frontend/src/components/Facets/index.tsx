@@ -63,7 +63,7 @@ const Facets: React.FC<Props> = ({
 
   return (
     <div data-testid="facets" style={styles.form}>
-      <h2>Select a Project</h2>
+      <h3>Select a Project</h3>
       <div data-testid="projectForm">
         <ProjectForm
           activeSearchQuery={activeSearchQuery}
@@ -76,7 +76,7 @@ const Facets: React.FC<Props> = ({
       </div>
       {!objectIsEmpty(availableFacets) && (
         <>
-          <h2>Filter with Facets</h2>
+          <h3>Filter with Facets</h3>
           <FacetsForm
             activeSearchQuery={activeSearchQuery}
             availableFacets={availableFacets as ParsedFacets}

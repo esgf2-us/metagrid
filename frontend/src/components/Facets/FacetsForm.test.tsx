@@ -32,12 +32,16 @@ const defaultProps: Props = {
 
 describe('test FacetsForm component', () => {
   it('handles submitting filename', async () => {
-    const { getByRole } = render(<FacetsForm {...defaultProps} />);
+    const { getByRole, getByTestId } = render(<FacetsForm {...defaultProps} />);
+
+    // Open filename collapse panel
+    const filenameSearchPanel = getByRole('button', {
+      name: 'right Filename',
+    });
+    fireEvent.click(filenameSearchPanel);
 
     // Change form field values
-    const input = getByRole('textbox', {
-      name: 'Filename Search question-circle',
-    }) as HTMLInputElement;
+    const input = getByTestId('filename-search-input') as HTMLInputElement;
     fireEvent.change(input, { target: { value: 'var' } });
     expect(input.value).toEqual('var');
 
@@ -50,7 +54,13 @@ describe('test FacetsForm component', () => {
   });
 
   it('handles date picker for versioning', async () => {
-    const { getByTestId } = render(<FacetsForm {...defaultProps} />);
+    const { getByTestId, getByRole } = render(<FacetsForm {...defaultProps} />);
+
+    // Open additional properties collapse panel
+    const additionalPropertiesPanel = getByRole('button', {
+      name: 'right Additional Properties',
+    });
+    fireEvent.click(additionalPropertiesPanel);
 
     // Check date picker renders
     const datePickerComponent = getByTestId('version-range-datepicker');

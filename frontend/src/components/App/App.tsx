@@ -49,12 +49,12 @@ import './App.css';
 const styles: CSSinJS = {
   bodySider: {
     background: '#fff',
-    padding: '48px 24px 24px 24px',
+    padding: '12px 12px 12px 12px',
     width: '384px',
     marginRight: '2px',
     boxShadow: '2px 0 4px 0 rgba(0, 0, 0, 0.2)',
   },
-  bodyContent: { padding: '48px 24px', margin: 0 },
+  bodyContent: { padding: '12px 12px', margin: 0 },
   messageAddIcon: { color: '#90EE90' },
   messageRemoveIcon: { color: '#ff0000' },
 };
@@ -546,7 +546,7 @@ const App: React.FC = () => {
             </Switch>
           </Layout.Content>
         </Layout>
-        <Affix style={{ position: 'fixed', bottom: 90, right: 35 }}>
+        <Affix style={{ position: 'fixed', bottom: 70, right: 45 }}>
           <Button
             type="primary"
             shape="circle"
