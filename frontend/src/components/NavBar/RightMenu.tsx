@@ -59,11 +59,7 @@ const RightMenu: React.FC<Props> = ({
 
   return (
     <div data-testid="right-menu">
-      <Menu
-        selectedKeys={[activeMenuItem]}
-        mode={mode}
-        style={{ float: 'right' }}
-      >
+      <Menu selectedKeys={[activeMenuItem]} mode={mode}>
         <Menu.Item key="search">
           <Link to="/search">
             <SearchOutlined /> Search
@@ -110,6 +106,7 @@ const RightMenu: React.FC<Props> = ({
           </Menu.Item>
         ) : (
           <Menu.SubMenu
+            key="greeting"
             icon={<UserOutlined style={{ fontSize: '18px' }} />}
             title={
               <span className="submenu-title-wrapper">
@@ -120,13 +117,11 @@ const RightMenu: React.FC<Props> = ({
               </span>
             }
           >
-            <Menu.ItemGroup>
-              <Menu.Item key="login">
-                <Button type="text" onClick={() => keycloak.logout()}>
-                  Sign Out
-                </Button>
-              </Menu.Item>
-            </Menu.ItemGroup>
+            <Menu.Item key="login">
+              <Button type="text" onClick={() => keycloak.logout()}>
+                Sign Out
+              </Button>
+            </Menu.Item>
           </Menu.SubMenu>
         )}
       </Menu>
