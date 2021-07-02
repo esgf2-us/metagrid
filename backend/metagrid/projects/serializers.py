@@ -29,6 +29,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             "name",
             "full_name",
             "description",
+            "project_url",
             "facets_by_group",
             "facets_url",
         )

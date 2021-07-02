@@ -22,6 +22,12 @@ class Project(models.Model):
         null=True,
         help_text="The spelled out name of the project.",
     )
+    project_url = models.CharField(
+        max_length=510,
+        unique=True,
+        null=True,
+        help_text="The url associated with this project.",
+    )
     description = models.TextField(null=True)
 
     class Meta:
