@@ -19,6 +19,7 @@ export type RawUserSearchQuery = {
     pk: number;
     name: string;
     full_name: string;
+    project_url: string;
   };
   project_id: number;
   version_type: VersionType;
