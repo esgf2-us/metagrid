@@ -1,3 +1,5 @@
+import { ActiveSearchQuery } from '../components/Search/types';
+
 /**
  * Checks if an object is empty.
  */
@@ -69,4 +71,47 @@ export const formatBytes = (bytes: number, decimals = 2): string => {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
   return `${parseFloat((bytes / k ** i).toFixed(dm))} ${sizes[i]}`;
+};
+
+export const getUrlFromSearch = (search: ActiveSearchQuery): string => {
+  const params = new URLSearchParams();
+  const newSearch = { ...search } as Record<string, unknown>;
+  delete newSearch.project; // We don't need all the project data, as it can be loaded later
+
+  params.set('project', search.project.name as string);
+  params.set('data', JSON.stringify({ ...newSearch }));
+
+  const urlString = `${window.location.protocol}${window.location.host}
+  /search/`;
+
+  if (params.toString().length > 1000) {
+    console.log('WARNING! URL is really long!');
+  }
+
+  return `${urlString}?${params.toString()}`;
+};
+
+export const getSearchFromUrl = (): ActiveSearchQuery => {
+  const searchQuery: ActiveSearchQuery = {
+    project: {},
+    versionType: 'latest',
+    resultType: 'all',
+    minVersionDate: null,
+    maxVersionDate: null,
+    filenameVars: [],
+    activeFacets: {},
+    textInputs: [],
+  };
+
+  const params = new URLSearchParams(window.location.search);
+  const projName = params.get('project');
+  const data = params.get('data');
+  if (data && projName) {
+    const activeSearches: ActiveSearchQuery = JSON.parse(
+      data
+    ) as ActiveSearchQuery;
+    return { ...activeSearches, project: { name: projName } };
+  }
+
+  return searchQuery;
 };

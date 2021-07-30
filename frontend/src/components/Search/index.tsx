@@ -1,6 +1,7 @@
 import {
   BookOutlined,
   ExportOutlined,
+  ShareAltOutlined,
   ShoppingCartOutlined,
 } from '@ant-design/icons';
 import { Col, Row, Typography } from 'antd';
@@ -142,6 +143,7 @@ export type Props = {
   ) => void;
   onUpdateAvailableFacets: (parsedFacets: ParsedFacets) => void;
   onSaveSearchQuery: (url: string) => void;
+  onShareSearchQuery: () => void;
 };
 
 const Search: React.FC<Props> = ({
@@ -153,6 +155,7 @@ const Search: React.FC<Props> = ({
   onUpdateCart,
   onUpdateAvailableFacets,
   onSaveSearchQuery,
+  onShareSearchQuery,
 }) => {
   const {
     project,
@@ -314,6 +317,14 @@ const Search: React.FC<Props> = ({
               >
                 <BookOutlined />
                 Save Search
+              </Button>{' '}
+              <Button
+                type="default"
+                onClick={() => onShareSearchQuery()}
+                disabled={isLoading || numFound === 0}
+              >
+                <ShareAltOutlined />
+                Copy Search
               </Button>
             </div>
           )}
