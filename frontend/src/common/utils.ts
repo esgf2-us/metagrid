@@ -84,9 +84,9 @@ export const getUrlFromSearch = (search: ActiveSearchQuery): string => {
   const urlString = `${window.location.protocol}${window.location.host}
   /search/`;
 
-  if (params.toString().length > 1000) {
+  /* if (params.toString().length > 1000) {
     console.log('WARNING! URL is really long!');
-  }
+  }*/
 
   return `${urlString}?${params.toString()}`;
 };

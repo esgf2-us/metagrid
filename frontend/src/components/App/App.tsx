@@ -192,19 +192,15 @@ const App: React.FC<Props> = ({ searchQuery }) => {
   React.useEffect(() => {
     void fetchProjects()
       .then((data) => {
-        console.log(searchQuery);
         const projectName = searchQuery ? searchQuery.project.name : '';
         if (projectName !== '' && data) {
-          console.log(data.results);
           const rawProj: RawProject | undefined = data.results.find((proj) => {
             return proj.name === projectName;
           });
           if (rawProj) {
-            console.log('Search query initialized!');
             setActiveSearchQuery({ ...searchQuery, project: rawProj });
           }
         }
-        console.log('Data was empty.');
       })
       .catch((error: ResponseError) => {
         void message.error({
@@ -393,17 +389,8 @@ const App: React.FC<Props> = ({ searchQuery }) => {
   };
 
   const handleShareSearchQuery = (): void => {
-    /* const urlShare = Object.keys(sharedSearch)
-      .map((key) => {
-        return (
-          encodeURIComponent(key) + '=' + encodeURIComponent(sharedSearch[key])
-        );
-      })
-      .join('&');*/
-
     const shareSuccess = (): void => {
       // copy link to clipboard
-      console.log(getUrlFromSearch(activeSearchQuery));
       void navigator.clipboard.writeText(getUrlFromSearch(activeSearchQuery));
       void message.success({
         content: 'Search copied to clipboard!',
