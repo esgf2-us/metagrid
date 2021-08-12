@@ -9,7 +9,12 @@ import { Form, message, Select, Table as TableD } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
-import { fetchWgetScript, openDownloadURL, ResponseError } from '../../api';
+import {
+  fetchWgetScript,
+  fetchGlobusScript,
+  openDownloadURL,
+  ResponseError,
+} from '../../api';
 import { formatBytes } from '../../common/utils';
 import { UserCart } from '../Cart/types';
 import ToolTip from '../DataDisplay/ToolTip';
@@ -51,7 +56,7 @@ const Table: React.FC<Props> = ({
   type DatasetDownloadTypes = 'wget' | 'Globus';
   // If a record supports downloads from the allowed downloads, it will render
   // in the drop downs
-  const allowedDownloadTypes: DatasetDownloadTypes[] = ['wget'];
+  const allowedDownloadTypes: DatasetDownloadTypes[] = ['wget', 'Globus'];
 
   const tableConfig = {
     size: 'small' as SizeType,
@@ -208,6 +213,19 @@ const Table: React.FC<Props> = ({
                 // eslint-disable-next-line no-void
                 void message.error(error.message);
               });
+          } else if (downloadType === 'Globus') {
+            // eslint-disable-next-line no-void
+            void message.success(
+              'The Globus script is generating, please wait momentarily.'
+            );
+            fetchGlobusScript(record.id, filenameVars)
+              .then((url) => {
+                openDownloadURL(url);
+              })
+              .catch((error: ResponseError) => {
+                // eslint-disable-next-line no-void
+                void message.error(error.message);
+              });
           }
         };
 
@@ -225,7 +243,8 @@ const Table: React.FC<Props> = ({
                   {allowedDownloadTypes.map(
                     (option) =>
                       (supportedDownloadTypes.includes(option) ||
-                        option === 'wget') && (
+                        option === 'wget' ||
+                        option === 'Globus') && (
                         <Select.Option
                           key={`${formKey}-${option}`}
                           value={option}

@@ -8,6 +8,9 @@ REACT_APP_METAGRID_API_URL=http://localhost:8000
 # https://github.com/ESGF/esgf-wget
 REACT_APP_WGET_API_URL=https://esgf-node.llnl.gov/esg-search/wget
 
+# ESGF Globus API
+REACT_APP_GLOBUS_API_URL=https://127.0.0.1:5000/globus
+
 # ESGF Search API
 # ------------------------------------------------------------------------------
 # https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html

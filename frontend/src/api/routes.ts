@@ -4,6 +4,7 @@ import {
   nodeStatusURL,
   proxyURL,
   wgetApiURL,
+  globusApiURL,
 } from '../env';
 
 export type HTTPCodeType = 400 | 401 | 403 | 404 | 405 | 'generic';
@@ -45,6 +46,7 @@ type ApiRoutes = {
   esgfSearch: ApiRoute;
   citation: ApiRoute;
   wget: ApiRoute;
+  globus: ApiRoute;
   nodeStatus: ApiRoute;
 };
 
@@ -104,6 +106,12 @@ const apiRoutes: ApiRoutes = {
   wget: {
     path: `${proxyURL}/${wgetApiURL}`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('ESGF wget API', HTTPCode),
+  },
+  // ESGF globus script API
+  globus: {
+    path: `${proxyURL}/${globusApiURL}`,
+    handleErrorMsg: (HTTPCode) =>
+      mapHTTPErrorCodes('ESGF globus API', HTTPCode),
   },
   // ESGF Node Status API
   nodeStatus: {

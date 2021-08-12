@@ -7,6 +7,7 @@ import { Col, Form, message, Row, Select } from 'antd';
 import React from 'react';
 import {
   fetchWgetScript,
+  fetchGlobusScript,
   openDownloadURL,
   ResponseError,
 } from '../../api/index';
@@ -41,7 +42,7 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
 
   // Statically defined list of dataset download options
   // TODO: Add 'Globus'
-  const downloadOptions = ['wget'];
+  const downloadOptions = ['wget', 'Globus'];
   const [downloadIsLoading, setDownloadIsLoading] = React.useState(false);
   const [selectedItems, setSelectedItems] = React.useState<
     RawSearchResults | []
@@ -65,6 +66,24 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
       );
       setDownloadIsLoading(true);
       fetchWgetScript(ids)
+        .then((url) => {
+          openDownloadURL(url);
+          setDownloadIsLoading(false);
+        })
+        .catch((error: ResponseError) => {
+          // eslint-disable-next-line no-void
+          void message.error(error.message);
+          setDownloadIsLoading(false);
+        });
+    } else if (downloadType === 'Globus') {
+      const ids = (selectedItems as RawSearchResults).map((item) => item.id);
+      // eslint-disable-next-line no-void
+      void message.success(
+        'The globus script is generating, please wait momentarily.',
+        10
+      );
+      setDownloadIsLoading(true);
+      fetchGlobusScript(ids)
         .then((url) => {
           openDownloadURL(url);
           setDownloadIsLoading(false);

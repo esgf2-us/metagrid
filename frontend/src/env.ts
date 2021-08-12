@@ -16,6 +16,9 @@ export const metagridApiURL = `${
 // https://github.com/ESGF/esgf-wget
 export const wgetApiURL = process.env.REACT_APP_WGET_API_URL as string;
 
+// ESGF Globus Script API
+export const globusApiURL = process.env.REACT_APP_GLOBUS_API_URL as string;
+
 // ESGF Search API
 // ------------------------------------------------------------------------------
 // https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html

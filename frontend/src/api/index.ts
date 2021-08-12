@@ -539,6 +539,39 @@ export const fetchWgetScript = async (
 };
 
 /**
+ * Performs validation against Globus Script API to ensure a 200 response.
+ *
+ * If the API returns a 200 response, it returns the download url.
+ */
+export const fetchGlobusScript = async (
+  ids: string[] | string,
+  filenameVars?: string[]
+): Promise<string> => {
+  let url = queryString.stringifyUrl({
+    url: apiRoutes.globus.path,
+    query: { dataset_id: ids },
+  });
+  console.log(url);
+
+  if (filenameVars && filenameVars.length > 0) {
+    const filenameVarsParam = queryString.stringify(
+      { query: filenameVars },
+      {
+        arrayFormat: 'comma',
+      }
+    );
+    url += `&${filenameVarsParam}`;
+  }
+
+  return axios
+    .get(url)
+    .then(() => url)
+    .catch((error: ResponseError) => {
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.wget));
+    });
+};
+
+/**
  * Parses the results of the node status API to simplify the data structure.
  */
 export const parseNodeStatus = (res: RawNodeStatus): NodeStatusArray => {
