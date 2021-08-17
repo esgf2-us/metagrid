@@ -15,11 +15,15 @@ import {
 import React from 'react';
 import { rest, server } from '../../api/mock/setup-env';
 import apiRoutes from '../../api/routes';
+import { getSearchFromUrl } from '../../common/utils';
 import { customRender, getRowName } from '../../test/custom-render';
+import { ActiveSearchQuery } from '../Search/types';
 import App from './App';
 
 // Used to restore window.location after each test
 const location = JSON.stringify(window.location);
+
+const activeSearch: ActiveSearchQuery = getSearchFromUrl('?project=CMIP5');
 
 afterEach(() => {
   // Routes are already declared in the App component using BrowserRouter, so MemoryRouter does
@@ -44,7 +48,7 @@ afterEach(() => {
 });
 
 it('renders App component', async () => {
-  const { getByTestId } = customRender(<App />);
+  const { getByTestId } = customRender(<App searchQuery={activeSearch} />);
 
   // Check applicable components render
   const navComponent = await waitFor(() => getByTestId('nav-bar'));
@@ -56,7 +60,7 @@ it('renders App component', async () => {
 
 it('handles project changes when a new project is selected', async () => {
   const { getByPlaceholderText, getByTestId, getByText } = customRender(
-    <App />
+    <App searchQuery={activeSearch} />
   );
 
   // Check applicable components render
@@ -92,7 +96,7 @@ it('handles project changes when a new project is selected', async () => {
 });
 
 it('handles setting filename searches and duplicates', async () => {
-  const { getByTestId } = customRender(<App />);
+  const { getByTestId } = customRender(<App searchQuery={activeSearch} />);
   // Check applicable components render
   const facetsComponent = await waitFor(() => getByTestId('facets'));
   expect(facetsComponent).toBeTruthy();
@@ -149,7 +153,7 @@ it('handles setting filename searches and duplicates', async () => {
 
 it('handles setting and removing text input filters and clearing all search filters', async () => {
   const { getByPlaceholderText, getByTestId, getByText } = customRender(
-    <App />
+    <App searchQuery={activeSearch} />
   );
 
   // Check applicable components render
@@ -200,7 +204,9 @@ it('handles setting and removing text input filters and clearing all search filt
 });
 
 it('handles applying general facets', async () => {
-  const { getByTestId, getByText } = customRender(<App />);
+  const { getByTestId, getByText } = customRender(
+    <App searchQuery={activeSearch} />
+  );
 
   // Check applicable components render
   const facetsComponent = await waitFor(() => getByTestId('facets'));
@@ -256,7 +262,9 @@ it('handles applying general facets', async () => {
 });
 
 it('handles applying and removing project facets', async () => {
-  const { getByTestId, getByText } = customRender(<App />);
+  const { getByTestId, getByText } = customRender(
+    <App searchQuery={activeSearch} />
+  );
 
   // Check applicable components render
   const facetsComponent = await waitFor(() => getByTestId('facets'));
@@ -355,7 +363,7 @@ it('handles applying and removing project facets', async () => {
 });
 
 it('handles project changes and clearing filters when the active project !== selected project', async () => {
-  const { getByTestId } = customRender(<App />);
+  const { getByTestId } = customRender(<App searchQuery={activeSearch} />);
 
   // Check applicable components render
   const facetsComponent = await waitFor(() => getByTestId('facets'));
@@ -410,7 +418,7 @@ it('handles project changes and clearing filters when the active project !== sel
 it('fetches the data node status every defined interval', () => {
   jest.useFakeTimers();
 
-  customRender(<App />);
+  customRender(<App searchQuery={activeSearch} />);
 
   act(() => {
     jest.advanceTimersByTime(295000);
@@ -424,7 +432,9 @@ describe('User cart', () => {
       getByTestId,
       getByText,
       getByPlaceholderText,
-    } = customRender(<App />, { token: 'token' });
+    } = customRender(<App searchQuery={activeSearch} />, {
+      token: 'token',
+    });
 
     // Check applicable components render
     const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
@@ -478,9 +488,12 @@ describe('User cart', () => {
     expect(removeText).toBeTruthy();
   });
   it('displays authenticated user"s number of files in the cart summary and handles clearing the cart', async () => {
-    const { getByRole, getByTestId, getByText } = customRender(<App />, {
-      token: 'token',
-    });
+    const { getByRole, getByTestId, getByText } = customRender(
+      <App searchQuery={activeSearch} />,
+      {
+        token: 'token',
+      }
+    );
 
     // Check applicable components render
     const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
@@ -500,12 +513,17 @@ describe('User cart', () => {
     expect(cartSummary).toBeTruthy();
 
     const numDatasetsText = await waitFor(() =>
-      getByText((_, node) => node.textContent === 'Number of Datasets: 1')
+      getByText(
+        (_, node) =>
+          node !== null && node.textContent === 'Number of Datasets: 1'
+      )
     );
     expect(numDatasetsText).toBeTruthy();
 
     const numFilesText = await waitFor(() =>
-      getByText((_, node) => node.textContent === 'Number of Files: 3')
+      getByText(
+        (_, node) => node !== null && node.textContent === 'Number of Files: 3'
+      )
     );
     expect(numFilesText).toBeTruthy();
 
@@ -529,10 +547,15 @@ describe('User cart', () => {
 
     // Check number of datasets and files are now 0
     expect(
-      getByText((_, node) => node.textContent === 'Number of Datasets: 0')
+      getByText(
+        (_, node) =>
+          node !== null && node.textContent === 'Number of Datasets: 0'
+      )
     ).toBeTruthy();
     expect(
-      getByText((_, node) => node.textContent === 'Number of Files: 0')
+      getByText(
+        (_, node) => node !== null && node.textContent === 'Number of Files: 0'
+      )
     ).toBeTruthy();
 
     // Check empty alert renders
@@ -542,7 +565,7 @@ describe('User cart', () => {
 
   it('handles anonymous user adding and removing items from cart', async () => {
     const { getByRole, getByTestId, getByPlaceholderText } = customRender(
-      <App />
+      <App searchQuery={activeSearch} />
     );
 
     // Check applicable components render
@@ -591,7 +614,7 @@ describe('User cart', () => {
       getByTestId,
       getByText,
       getByPlaceholderText,
-    } = customRender(<App />);
+    } = customRender(<App searchQuery={activeSearch} />);
 
     // Check applicable components render
     const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
@@ -643,10 +666,15 @@ describe('User cart', () => {
     expect(cartSummary).toBeTruthy();
 
     expect(
-      getByText((_, node) => node.textContent === 'Number of Datasets: 1')
+      getByText(
+        (_, node) =>
+          node !== null && node.textContent === 'Number of Datasets: 1'
+      )
     ).toBeTruthy();
     expect(
-      getByText((_, node) => node.textContent === 'Number of Files: 3')
+      getByText(
+        (_, node) => node !== null && node.textContent === 'Number of Files: 3'
+      )
     ).toBeTruthy();
 
     // Check "Remove All Items" button renders with cart > 0 items and click it
@@ -669,10 +697,15 @@ describe('User cart', () => {
 
     // Check number of datasets and files are now 0
     expect(
-      getByText((_, node) => node.textContent === 'Number of Datasets: 0')
+      getByText(
+        (_, node) =>
+          node !== null && node.textContent === 'Number of Datasets: 0'
+      )
     ).toBeTruthy();
     expect(
-      getByText((_, node) => node.textContent === 'Number of Files: 0')
+      getByText(
+        (_, node) => node !== null && node.textContent === 'Number of Files: 0'
+      )
     ).toBeTruthy();
 
     // Check empty alert renders
@@ -688,9 +721,12 @@ describe('User cart', () => {
         )
       );
 
-      const { getByText, getByTestId } = customRender(<App />, {
-        token: 'token',
-      });
+      const { getByText, getByTestId } = customRender(
+        <App searchQuery={activeSearch} />,
+        {
+          token: 'token',
+        }
+      );
 
       // Check applicable components render
       const navComponent = await waitFor(() => getByTestId('nav-bar'));
@@ -707,11 +743,10 @@ describe('User cart', () => {
 
 describe('User search library', () => {
   it('handles authenticated user saving and applying searches', async () => {
-    const {
-      getByTestId,
-      getByPlaceholderText,
-      getByRole,
-    } = customRender(<App />, { token: 'token' });
+    const { getByTestId, getByPlaceholderText, getByRole } = customRender(
+      <App searchQuery={activeSearch} />,
+      { token: 'token' }
+    );
 
     // Check applicable components render
     const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
@@ -763,9 +798,12 @@ describe('User search library', () => {
     await waitFor(() => getByTestId('search'));
   });
   it('handles authenticated user removing searches from the search library', async () => {
-    const { getByRole, getByTestId, getByText } = customRender(<App />, {
-      token: 'token',
-    });
+    const { getByRole, getByTestId, getByText } = customRender(
+      <App searchQuery={activeSearch} />,
+      {
+        token: 'token',
+      }
+    );
 
     // Check applicable components render
     const navComponent = await waitFor(() => getByTestId('nav-bar'));
@@ -804,7 +842,7 @@ describe('User search library', () => {
 
   it('handles anonymous user saving and applying searches', async () => {
     const { getByTestId, getByPlaceholderText, getByRole } = customRender(
-      <App />
+      <App searchQuery={activeSearch} />
     );
 
     // Check applicable components render
@@ -860,7 +898,7 @@ describe('User search library', () => {
   });
   it('handles anonymous user removing searches from the search library', async () => {
     const { getByPlaceholderText, getByRole, getByTestId } = customRender(
-      <App />
+      <App searchQuery={activeSearch} />
     );
 
     // Check applicable components render
@@ -914,6 +952,43 @@ describe('User search library', () => {
     await waitFor(() => getByTestId('cart'));
   });
 
+  it('handles anonymous user copying search to clipboard', async () => {
+    const { getByTestId, getByPlaceholderText, getByRole } = customRender(
+      <App searchQuery={activeSearch} />
+    );
+
+    // Check applicable components render
+    const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
+    expect(leftMenuComponent).toBeTruthy();
+    const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
+    expect(rightMenuComponent).toBeTruthy();
+
+    // Change value for free-text input
+    const input = 'foo';
+    const freeTextInput = await waitFor(() =>
+      getByPlaceholderText('Search for a keyword')
+    );
+    expect(freeTextInput).toBeTruthy();
+    fireEvent.change(freeTextInput, { target: { value: input } });
+
+    // Submit the form
+    const submitBtn = within(leftMenuComponent).getByRole('img', {
+      name: 'search',
+    });
+    fireEvent.submit(submitBtn);
+
+    // Wait for components to rerender
+    await waitFor(() => getByTestId('search'));
+
+    // Check Save Search button exists and click it
+    const copySearch = await waitFor(() =>
+      getByRole('button', { name: 'share-alt Copy Search' })
+    );
+
+    expect(copySearch).toBeTruthy();
+    fireEvent.click(copySearch);
+  });
+
   describe('Error handling', () => {
     it('displays error message after failing to fetch authenticated user"s saved search queries', async () => {
       server.use(
@@ -922,9 +997,12 @@ describe('User search library', () => {
         )
       );
 
-      const { getByText, getByTestId } = customRender(<App />, {
-        token: 'token',
-      });
+      const { getByText, getByTestId } = customRender(
+        <App searchQuery={activeSearch} />,
+        {
+          token: 'token',
+        }
+      );
 
       // Check applicable components render
       const navComponent = await waitFor(() => getByTestId('nav-bar'));
@@ -949,7 +1027,9 @@ describe('User search library', () => {
         getByPlaceholderText,
         getByRole,
         getByText,
-      } = customRender(<App />, { token: 'token' });
+      } = customRender(<App searchQuery={activeSearch} />, {
+        token: 'token',
+      });
 
       // Check applicable components render
       const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
@@ -992,9 +1072,12 @@ describe('User search library', () => {
         )
       );
 
-      const { getByTestId, getAllByText } = customRender(<App />, {
-        token: 'token',
-      });
+      const { getByTestId, getAllByText } = customRender(
+        <App searchQuery={activeSearch} />,
+        {
+          token: 'token',
+        }
+      );
 
       // Check applicable components render
       const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
@@ -1034,7 +1117,7 @@ describe('User search library', () => {
 
 describe('User support', () => {
   it('renders user support modal when clicking fixed button and is closeable', () => {
-    const { getByRole } = customRender(<App />);
+    const { getByRole } = customRender(<App searchQuery={activeSearch} />);
 
     // support button renders
     const supportBtn = getByRole('img', { name: 'question', hidden: true });
@@ -1055,7 +1138,7 @@ describe('User support', () => {
 
 describe('Data node status page', () => {
   it('renders the node status page after clicking the link', async () => {
-    const { getByTestId } = customRender(<App />);
+    const { getByTestId } = customRender(<App searchQuery={activeSearch} />);
     const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
     expect(rightMenuComponent).toBeTruthy();
 

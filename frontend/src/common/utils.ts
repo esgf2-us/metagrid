@@ -74,15 +74,52 @@ export const formatBytes = (bytes: number, decimals = 2): string => {
 };
 
 export const getUrlFromSearch = (search: ActiveSearchQuery): string => {
-  const params = new URLSearchParams();
-  const newSearch = { ...search } as Record<string, unknown>;
-  delete newSearch.project; // We don't need all the project data, as it can be loaded later
-
-  params.set('project', search.project.name as string);
-  params.set('data', JSON.stringify({ ...newSearch }));
-
   const urlString = `${window.location.protocol}${window.location.host}
   /search/`;
+
+  if (!search.project) {
+    return urlString;
+  }
+
+  const params = new URLSearchParams();
+  const newSearch = { ...search } as Record<string, unknown>;
+
+  // Clear unecessary default values
+  delete newSearch.project; // We don't need all the project data, as it can be loaded later
+  if (newSearch.versionType === 'latest') {
+    delete newSearch.versionType;
+  }
+  if (newSearch.resultType === 'all') {
+    delete newSearch.resultType;
+  }
+  if (!newSearch.minVersionDate) {
+    delete newSearch.minVersionDate;
+  }
+  if (!newSearch.maxVersionDate) {
+    delete newSearch.maxVersionDate;
+  }
+  if (
+    Array.isArray(newSearch.filenameVars) &&
+    newSearch.filenameVars.length < 1
+  ) {
+    delete newSearch.filenameVars;
+  }
+  if (
+    newSearch.activeFacets &&
+    typeof newSearch.activeFacets === 'object' &&
+    Object.keys(newSearch.activeFacets).length < 1
+  ) {
+    delete newSearch.activeFacets;
+  }
+  if (Array.isArray(newSearch.textInputs) && newSearch.textInputs.length < 1) {
+    delete newSearch.textInputs;
+  }
+
+  params.set('project', search.project.name as string);
+
+  if (Object.entries(newSearch).length > 0) {
+    params.set('data', JSON.stringify({ ...newSearch }));
+  }
 
   /* if (params.toString().length > 1000) {
     console.log('WARNING! URL is really long!');
@@ -91,7 +128,7 @@ export const getUrlFromSearch = (search: ActiveSearchQuery): string => {
   return `${urlString}?${params.toString()}`;
 };
 
-export const getSearchFromUrl = (): ActiveSearchQuery => {
+export const getSearchFromUrl = (url?: string): ActiveSearchQuery => {
   const searchQuery: ActiveSearchQuery = {
     project: {},
     versionType: 'latest',
@@ -103,14 +140,18 @@ export const getSearchFromUrl = (): ActiveSearchQuery => {
     textInputs: [],
   };
 
-  const params = new URLSearchParams(window.location.search);
+  const params = new URLSearchParams(url || window.location.search);
+
   const projName = params.get('project');
   const data = params.get('data');
   if (data && projName) {
     const activeSearches: ActiveSearchQuery = JSON.parse(
       data
     ) as ActiveSearchQuery;
-    return { ...activeSearches, project: { name: projName } };
+    return { ...searchQuery, ...activeSearches, project: { name: projName } };
+  }
+  if (projName) {
+    return { ...searchQuery, project: { name: projName } };
   }
 
   return searchQuery;

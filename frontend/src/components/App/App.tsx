@@ -391,11 +391,13 @@ const App: React.FC<Props> = ({ searchQuery }) => {
   const handleShareSearchQuery = (): void => {
     const shareSuccess = (): void => {
       // copy link to clipboard
-      void navigator.clipboard.writeText(getUrlFromSearch(activeSearchQuery));
-      void message.success({
-        content: 'Search copied to clipboard!',
-        icon: <ShareAltOutlined style={styles.messageAddIcon} />,
-      });
+      if (navigator && navigator.clipboard) {
+        void navigator.clipboard.writeText(getUrlFromSearch(activeSearchQuery));
+        void message.success({
+          content: 'Search copied to clipboard!',
+          icon: <ShareAltOutlined style={styles.messageAddIcon} />,
+        });
+      }
     };
     shareSuccess();
   };

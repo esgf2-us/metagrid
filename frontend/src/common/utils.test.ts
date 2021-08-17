@@ -1,5 +1,8 @@
+import { ActiveSearchQuery } from '../components/Search/types';
 import {
   formatBytes,
+  getSearchFromUrl,
+  getUrlFromSearch,
   objectHasKey,
   objectIsEmpty,
   shallowCompareObjects,
@@ -35,6 +38,12 @@ describe('Test splitStringByChar', () => {
   beforeEach(() => {
     url = 'first.com|second.com';
   });
+  it('returns split string if no index specified', () => {
+    expect(splitStringByChar(url, '|') as string).toEqual([
+      'first.com',
+      'second.com',
+    ]);
+  });
   it('returns first half of the split', () => {
     expect(splitStringByChar(url, '|', '0') as string).toEqual('first.com');
   });
@@ -65,5 +74,31 @@ describe('Test shallowCompareObjects', () => {
   it('returns false when two objects are not the same', () => {
     const obj = { foo: 'bar' };
     expect(shallowCompareObjects(obj, {})).toBeFalsy();
+  });
+});
+
+describe('Test getUrlFromSearch', () => {
+  it('returns basic url when active search is empty', () => {
+    expect(getUrlFromSearch({} as ActiveSearchQuery)).toBeTruthy();
+  });
+  it('returns basic url with project parameter when search contains project', () => {
+    expect(
+      getUrlFromSearch({
+        project: { name: 'CMIP6' },
+      } as ActiveSearchQuery).includes('?project=CMIP6')
+    ).toBeTruthy();
+  });
+});
+
+describe('Test getSearchFromUrl', () => {
+  it('returns basic search object of no search params are in url', () => {
+    expect(getSearchFromUrl()).toBeTruthy();
+  });
+  it('returns search object of specific project', () => {
+    expect(
+      getSearchFromUrl(
+        '?project=CMIP5&data=%7B%22versionType%22%3A%22latest%22%2C%22resultType%22%3A%22all%22%2C%22minVersionDate%22%3Anull%2C%22maxVersionDate%22%3Anull%2C%22filenameVars%22%3A%5B%5D%2C%22activeFacets%22%3A%7B%7D%2C%22textInputs%22%3A%5B%5D%7D'
+      )
+    ).toBeTruthy();
   });
 });
