@@ -275,8 +275,13 @@ python manage.py shell_plus
 To run the tests, check your test coverage, and generate an HTML coverage report:
 
 ```bash
-pytest
+# Optional, stop existing Django containers so tests can run without conflicts
+docker-compose -f docker-compose.yml down
+# Runs the tests
+docker-compose -p metagrid_backend_dev run --rm django pytest
 ```
+
+Note: Run commands above within the 'metagrid/backend' directory.
 
 The HTML coverage report is located here: `htmlcov/index.html`.
 
