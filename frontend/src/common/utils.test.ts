@@ -81,6 +81,36 @@ describe('Test getUrlFromSearch', () => {
   it('returns basic url when active search is empty', () => {
     expect(getUrlFromSearch({} as ActiveSearchQuery)).toBeTruthy();
   });
+  it('returns basic url if active search is default object', () => {
+    expect(
+      getUrlFromSearch({
+        project: { name: 'CMIP6' },
+        versionType: 'latest',
+        resultType: 'all',
+        minVersionDate: null,
+        maxVersionDate: null,
+        filenameVars: [],
+        activeFacets: {},
+        textInputs: [],
+      } as ActiveSearchQuery).includes('?project=CMIP6')
+    ).toBeTruthy();
+  });
+  it('returns basic url with min and max version date', () => {
+    expect(
+      getUrlFromSearch({
+        project: { name: 'CMIP6' },
+        versionType: 'latest',
+        resultType: 'all',
+        minVersionDate: '2021',
+        maxVersionDate: '2021',
+        filenameVars: [],
+        activeFacets: {},
+        textInputs: [],
+      } as ActiveSearchQuery).includes(
+        '?project=CMIP6&data=%7B%22minVersionDate%22%3A%222021%22%2C%22maxVersionDate%22%3A%222021%22%7D'
+      )
+    ).toBeTruthy();
+  });
   it('returns basic url with project parameter when search contains project', () => {
     expect(
       getUrlFromSearch({
@@ -91,13 +121,30 @@ describe('Test getUrlFromSearch', () => {
 });
 
 describe('Test getSearchFromUrl', () => {
-  it('returns basic search object of no search params are in url', () => {
+  it('returns basic search object if no search params are in url', () => {
     expect(getSearchFromUrl()).toBeTruthy();
   });
   it('returns search object of specific project', () => {
+    expect(getSearchFromUrl('?project=CMIP5')).toBeTruthy();
+  });
+  it('returns search object of specific version type', () => {
     expect(
       getSearchFromUrl(
-        '?project=CMIP5&data=%7B%22versionType%22%3A%22latest%22%2C%22resultType%22%3A%22all%22%2C%22minVersionDate%22%3Anull%2C%22maxVersionDate%22%3Anull%2C%22filenameVars%22%3A%5B%5D%2C%22activeFacets%22%3A%7B%7D%2C%22textInputs%22%3A%5B%5D%7D'
+        '?project=CMIP6&data=%7B%22versionType%22%3A%22all%22%7D'
+      )
+    ).toBeTruthy();
+  });
+  it('returns search object of specific result type', () => {
+    expect(
+      getSearchFromUrl(
+        '?project=CMIP6&data=%7B%22resultType%22%3A%22originals+only%22%7D'
+      )
+    ).toBeTruthy();
+  });
+  it('returns search object of version date range', () => {
+    expect(
+      getSearchFromUrl(
+        '?project=CMIP6&data=%7B%22resultType%22%3A%22originals+only%22%7D'
       )
     ).toBeTruthy();
   });

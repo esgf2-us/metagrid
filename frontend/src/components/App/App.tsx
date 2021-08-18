@@ -193,20 +193,25 @@ const App: React.FC<Props> = ({ searchQuery }) => {
     void fetchProjects()
       .then((data) => {
         const projectName = searchQuery ? searchQuery.project.name : '';
+        /* istanbul ignore else */
         if (projectName !== '' && data) {
           const rawProj: RawProject | undefined = data.results.find((proj) => {
             return proj.name === projectName;
           });
+          /* istanbul ignore next */
           if (rawProj) {
             setActiveSearchQuery({ ...searchQuery, project: rawProj });
           }
         }
       })
-      .catch((error: ResponseError) => {
-        void message.error({
-          content: error.message,
-        });
-      });
+      .catch(
+        /* istanbul ignore next */
+        (error: ResponseError) => {
+          void message.error({
+            content: error.message,
+          });
+        }
+      );
   }, [searchQuery]);
 
   const handleTextSearch = (
@@ -391,6 +396,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
   const handleShareSearchQuery = (): void => {
     const shareSuccess = (): void => {
       // copy link to clipboard
+      /* istanbul ignore if */
       if (navigator && navigator.clipboard) {
         void navigator.clipboard.writeText(getUrlFromSearch(activeSearchQuery));
         void message.success({

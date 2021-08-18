@@ -23,7 +23,7 @@ import App from './App';
 // Used to restore window.location after each test
 const location = JSON.stringify(window.location);
 
-const activeSearch: ActiveSearchQuery = getSearchFromUrl('?project=CMIP5');
+const activeSearch: ActiveSearchQuery = getSearchFromUrl();
 
 afterEach(() => {
   // Routes are already declared in the App component using BrowserRouter, so MemoryRouter does
@@ -49,6 +49,32 @@ afterEach(() => {
 
 it('renders App component', async () => {
   const { getByTestId } = customRender(<App searchQuery={activeSearch} />);
+
+  // Check applicable components render
+  const navComponent = await waitFor(() => getByTestId('nav-bar'));
+  expect(navComponent).toBeTruthy();
+  const facetsComponent = await waitFor(() => getByTestId('facets'));
+  expect(facetsComponent).toBeTruthy();
+  expect(getByTestId('search')).toBeTruthy();
+});
+
+it('renders App component with undefined search query', async () => {
+  const { getByTestId } = customRender(
+    <App searchQuery={(undefined as unknown) as ActiveSearchQuery} />
+  );
+
+  // Check applicable components render
+  const navComponent = await waitFor(() => getByTestId('nav-bar'));
+  expect(navComponent).toBeTruthy();
+  const facetsComponent = await waitFor(() => getByTestId('facets'));
+  expect(facetsComponent).toBeTruthy();
+  expect(getByTestId('search')).toBeTruthy();
+});
+
+it('renders App component with project only search query', async () => {
+  const { getByTestId } = customRender(
+    <App searchQuery={getSearchFromUrl('?project=CMIP5')} />
+  );
 
   // Check applicable components render
   const navComponent = await waitFor(() => getByTestId('nav-bar'));
