@@ -39,6 +39,7 @@ export const rawProjectFixture = (
       group3: ['optional'],
     },
     facetsUrl: 'offset=0&limit=0',
+    projectUrl: 'https://esgf-dev1.llnl.gov/metagrid/search',
     fullName: 'test1',
   };
   return { ...defaults, ...props } as RawProject;

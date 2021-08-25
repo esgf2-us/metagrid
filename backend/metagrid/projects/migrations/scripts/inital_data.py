@@ -147,7 +147,7 @@ def insert_data(apps, schema_editor):
         new_project = ProjectModel(
             name=project.get("name"),
             full_name=project.get("full_name"),
-            description=project.get("description"),
+            description=project.get("description")
         )
         new_project.save()
 

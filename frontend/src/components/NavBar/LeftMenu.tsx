@@ -93,12 +93,13 @@ const LeftMenu: React.FC<Props> = ({
               style={{ width: '70%' }}
             >
               <Input
+                width="100"
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder="Search for a keyword"
               />
             </Form.Item>
-            <Form.Item style={{ width: '15%' }}>
+            <Form.Item style={{ width: '15px' }}>
               <Button
                 type="primary"
                 htmlType="submit"

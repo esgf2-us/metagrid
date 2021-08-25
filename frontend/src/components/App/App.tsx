@@ -4,6 +4,7 @@ import {
   DeleteOutlined,
   HomeOutlined,
   QuestionOutlined,
+  ShareAltOutlined,
   ShoppingCartOutlined,
 } from '@ant-design/icons';
 import { Affix, Breadcrumb, Button, Layout, message, Result } from 'antd';
@@ -17,12 +18,14 @@ import {
   addUserSearchQuery,
   deleteUserSearchQuery,
   fetchNodeStatus,
+  fetchProjects,
   fetchUserCart,
   fetchUserSearchQueries,
   ResponseError,
   updateUserCart,
 } from '../../api';
 import { CSSinJS } from '../../common/types';
+import { getUrlFromSearch } from '../../common/utils';
 import { AuthContext } from '../../contexts/AuthContext';
 import { gaTrackingID, hjid, hjsv } from '../../env';
 import Cart from '../Cart';
@@ -80,7 +83,11 @@ const useHotjar = (): void => {
   }, []);
 };
 
-const App: React.FC = () => {
+export type Props = {
+  searchQuery: ActiveSearchQuery;
+};
+
+const App: React.FC<Props> = ({ searchQuery }) => {
   // Third-party tool integration
   useGoogleAnalytics();
   useHotjar();
@@ -181,6 +188,31 @@ const App: React.FC = () => {
     }, 295000);
     return () => clearInterval(interval);
   }, [runFetchNodeStatus]);
+
+  React.useEffect(() => {
+    void fetchProjects()
+      .then((data) => {
+        const projectName = searchQuery ? searchQuery.project.name : '';
+        /* istanbul ignore else */
+        if (projectName !== '' && data) {
+          const rawProj: RawProject | undefined = data.results.find((proj) => {
+            return proj.name === projectName;
+          });
+          /* istanbul ignore next */
+          if (rawProj) {
+            setActiveSearchQuery({ ...searchQuery, project: rawProj });
+          }
+        }
+      })
+      .catch(
+        /* istanbul ignore next */
+        (error: ResponseError) => {
+          void message.error({
+            content: error.message,
+          });
+        }
+      );
+  }, [searchQuery]);
 
   const handleTextSearch = (
     selectedProject: RawProject,
@@ -361,6 +393,21 @@ const App: React.FC = () => {
     }
   };
 
+  const handleShareSearchQuery = (): void => {
+    const shareSuccess = (): void => {
+      // copy link to clipboard
+      /* istanbul ignore if */
+      if (navigator && navigator.clipboard) {
+        void navigator.clipboard.writeText(getUrlFromSearch(activeSearchQuery));
+        void message.success({
+          content: 'Search copied to clipboard!',
+          icon: <ShareAltOutlined style={styles.messageAddIcon} />,
+        });
+      }
+    };
+    shareSuccess();
+  };
+
   const handleRemoveSearchQuery = (searchUUID: string): void => {
     const deleteSuccess = (): void => {
       setUserSearchQueries(
@@ -389,6 +436,7 @@ const App: React.FC = () => {
     }
   };
 
+  // This converts a saved search to the active search query
   const handleRunSearchQuery = (savedSearch: UserSearchQuery): void => {
     setActiveSearchQuery({
       project: savedSearch.project,
@@ -486,6 +534,7 @@ const App: React.FC = () => {
                       onRemoveFilter={handleRemoveFilter}
                       onClearFilters={handleClearFilters}
                       onSaveSearchQuery={handleSaveSearchQuery}
+                      onShareSearchQuery={handleShareSearchQuery}
                     ></Search>
                   </>
                 )}
