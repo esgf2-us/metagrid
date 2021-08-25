@@ -33,6 +33,7 @@ const defaultProps: Props = {
   onUpdateCart: jest.fn(),
   onUpdateAvailableFacets: jest.fn(),
   onSaveSearchQuery: jest.fn(),
+  onShareSearchQuery: jest.fn(),
 };
 
 // Reset all mocks after each test
@@ -319,6 +320,27 @@ describe('test Search component', () => {
     );
     expect(saveBtn).toBeTruthy();
     fireEvent.click(saveBtn);
+
+    // Wait for search component to re-render
+    await waitFor(() => getByTestId('search'));
+  });
+
+  it('handles copying search query to clipboard', async () => {
+    const { getByRole, getByTestId } = render(<Search {...defaultProps} />);
+
+    // Check search component renders
+    const searchComponent = await waitFor(() => getByTestId('search'));
+    expect(searchComponent).toBeTruthy();
+
+    // Wait for search table to render
+    await waitFor(() => getByTestId('search-table'));
+
+    // Click on cop button
+    const copyBtn = await waitFor(() =>
+      getByRole('button', { name: 'share-alt Copy Search' })
+    );
+    expect(copyBtn).toBeTruthy();
+    fireEvent.click(copyBtn);
 
     // Wait for search component to re-render
     await waitFor(() => getByTestId('search'));

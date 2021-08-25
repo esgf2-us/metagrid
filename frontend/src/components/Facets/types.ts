@@ -1,6 +1,7 @@
 export type RawProject = {
   pk: string;
   name: string;
+  projectUrl: string;
   facetsByGroup: { [key: string]: string[] };
   facetsUrl: string;
   fullName: string;

@@ -1,4 +1,5 @@
-import React from 'react';
+import { Button, Tooltip } from 'antd';
+import React, { useEffect } from 'react';
 import { useAsync } from 'react-async';
 import { fetchProjects, ResponseError } from '../../api';
 import { objectIsEmpty } from '../../common/utils';
@@ -46,6 +47,8 @@ const Facets: React.FC<Props> = ({
 }) => {
   const { data, error, isLoading } = useAsync(fetchProjects);
 
+  const [curProject, setCurProject] = React.useState<RawProject>();
+
   const handleSubmitProjectForm = (selectedProject: {
     [key: string]: string;
   }): void => {
@@ -57,9 +60,16 @@ const Facets: React.FC<Props> = ({
       /* istanbul ignore else */
       if (selectedProj) {
         onProjectChange(selectedProj);
+        setCurProject(selectedProj);
       }
     }
   };
+
+  useEffect(() => {
+    if (activeSearchQuery.project) {
+      setCurProject(activeSearchQuery.project as RawProject);
+    }
+  }, [activeSearchQuery]);
 
   return (
     <div data-testid="facets" style={styles.form}>
@@ -72,6 +82,17 @@ const Facets: React.FC<Props> = ({
           apiError={error as ResponseError}
           onFinish={handleSubmitProjectForm}
         />
+        {curProject && curProject.projectUrl && (
+          <Tooltip title={curProject.projectUrl}>
+            <Button
+              href={curProject.projectUrl}
+              target="_blank"
+              style={{ marginTop: '10px' }}
+            >
+              {curProject.name} Website
+            </Button>
+          </Tooltip>
+        )}
         <Divider />
       </div>
       {!objectIsEmpty(availableFacets) && (
