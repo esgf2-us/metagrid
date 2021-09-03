@@ -82,7 +82,7 @@ const Facets: React.FC<Props> = ({
           apiError={error as ResponseError}
           onFinish={handleSubmitProjectForm}
         />
-        {curProject && curProject.projectUrl && (
+        {curProject && curProject.projectUrl !== '' && (
           <Tooltip title={curProject.projectUrl}>
             <Button
               href={curProject.projectUrl}
