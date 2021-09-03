@@ -567,7 +567,7 @@ export const fetchGlobusScript = async (
     .get(url)
     .then(() => url)
     .catch((error: ResponseError) => {
-      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.wget));
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globus));
     });
 };
 
