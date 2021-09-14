@@ -46,7 +46,11 @@ const camelizeKeysFromString = (str: string): Record<string, any> =>
  */
 export const openDownloadURL = (url: string): void => {
   const newURL = clickableRoute(url);
-  window.location.href = newURL;
+  const a = document.createElement('a');
+  a.target = '_blank';
+  a.href = newURL;
+  a.click();
+  // window.location.href = newURL;
 };
 
 /**
@@ -551,7 +555,6 @@ export const fetchGlobusScript = async (
     url: apiRoutes.globus.path,
     query: { dataset_id: ids },
   });
-  console.log(url);
 
   if (filenameVars && filenameVars.length > 0) {
     const filenameVarsParam = queryString.stringify(

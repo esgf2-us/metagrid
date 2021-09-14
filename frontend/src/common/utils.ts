@@ -121,10 +121,6 @@ export const getUrlFromSearch = (search: ActiveSearchQuery): string => {
     params.set('data', JSON.stringify({ ...newSearch }));
   }
 
-  /* if (params.toString().length > 1000) {
-    console.log('WARNING! URL is really long!');
-  }*/
-
   return `${urlString}?${params.toString()}`;
 };
 
