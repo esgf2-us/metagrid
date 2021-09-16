@@ -243,8 +243,7 @@ const Table: React.FC<Props> = ({
                   {allowedDownloadTypes.map(
                     (option) =>
                       (supportedDownloadTypes.includes(option) ||
-                        option === 'wget' ||
-                        option === 'Globus') && (
+                        option === 'wget') && (
                         <Select.Option
                           key={`${formKey}-${option}`}
                           value={option}

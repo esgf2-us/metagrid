@@ -46,11 +46,7 @@ const camelizeKeysFromString = (str: string): Record<string, any> =>
  */
 export const openDownloadURL = (url: string): void => {
   const newURL = clickableRoute(url);
-  const a = document.createElement('a');
-  a.target = '_blank';
-  a.href = newURL;
-  a.click();
-  // window.location.href = newURL;
+  window.location.href = newURL;
 };
 
 /**
@@ -210,8 +206,8 @@ export const addUserSearchQuery = async (
   payload: UserSearchQuery
 ): Promise<RawUserSearchQuery> => {
   const decamelizedPayload = humps.decamelizeKeys({
-    user: userPk,
     ...payload,
+    user: userPk,
   });
   return axios
     .post(apiRoutes.userSearches.path, decamelizedPayload, {
