@@ -10,6 +10,7 @@ import { Badge, Menu } from 'antd';
 import { KeycloakTokenParsed } from 'keycloak-js';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { JoyrideTargetIds } from '../../common/reactJoyrideSteps';
 import Button from '../General/Button';
 
 export type Props = {
@@ -58,7 +59,7 @@ const RightMenu: React.FC<Props> = ({
   }, [location.pathname]);
 
   return (
-    <div data-testid="right-menu">
+    <div data-testid="right-menu" id={JoyrideTargetIds.topNavBar}>
       <Menu selectedKeys={[activeMenuItem]} mode={mode}>
         <Menu.Item key="search">
           <Link to="/search">

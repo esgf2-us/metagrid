@@ -14,6 +14,7 @@ import {
   generateSearchURLQuery,
 } from '../../api';
 import { clickableRoute } from '../../api/routes';
+import { JoyrideTargetIds } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import { objectIsEmpty } from '../../common/utils';
 import { UserCart } from '../Cart/types';
@@ -270,7 +271,7 @@ const Search: React.FC<Props> = ({
     ).length === 0;
 
   return (
-    <div data-testid="search">
+    <div data-testid="search" id={JoyrideTargetIds.searchResultsTable}>
       <div style={styles.summary}>
         {objectIsEmpty(project) && (
           <Alert
