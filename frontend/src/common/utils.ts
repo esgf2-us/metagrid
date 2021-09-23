@@ -75,7 +75,7 @@ export const formatBytes = (bytes: number, decimals = 2): string => {
 
 export const getUrlFromSearch = (search: ActiveSearchQuery): string => {
   const urlString = `${window.location.protocol}${window.location.host}
-  /search/`;
+  ${window.location.pathname}`;
 
   if (!search.project) {
     return urlString;
