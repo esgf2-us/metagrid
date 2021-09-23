@@ -1,15 +1,22 @@
+/* eslint-disable no-void */
 import {
+  CopyOutlined,
   DownCircleOutlined,
   DownloadOutlined,
   RightCircleOutlined,
+  ShareAltOutlined,
 } from '@ant-design/icons';
-import { Form, Select, Table as TableD } from 'antd';
+import { Form, message, Select, Table as TableD } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
 import { DeferFn, useAsync } from 'react-async';
 import { fetchDatasetFiles, openDownloadURL } from '../../api';
-import { formatBytes, splitStringByChar } from '../../common/utils';
+import { CSSinJS } from '../../common/types';
+import {
+  formatBytes,
+  splitStringByChar,
+} from '../../common/utils';
 import ToolTip from '../DataDisplay/ToolTip';
 import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
@@ -25,6 +32,19 @@ export type DownloadUrls = {
   downloadUrl: string | undefined;
 }[];
 type FileDownloadTypes = 'HTTPServer' | 'OpeNDAP' | 'Globus';
+
+const styles: CSSinJS = {
+  bodySider: {
+    background: '#fff',
+    padding: '12px 12px 12px 12px',
+    width: '384px',
+    marginRight: '2px',
+    boxShadow: '2px 0 4px 0 rgba(0, 0, 0, 0.2)',
+  },
+  bodyContent: { padding: '12px 12px', margin: 0 },
+  messageAddIcon: { color: '#90EE90' },
+  messageRemoveIcon: { color: '#ff0000' },
+};
 
 /**
  * Splits the string by a delimiter and pops the last string
@@ -43,7 +63,7 @@ export const genDownloadUrls = (urls: string[]): DownloadUrls => {
     }
 
     if (downloadType === 'OPeNDAP') {
-      downloadUrl = downloadUrl.replace('.html', '.dods');
+      downloadUrl = downloadUrl.replace('.nc', '.dods');
     }
     newUrls.push({ downloadType, downloadUrl });
   });
@@ -197,7 +217,7 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
               onFinish={({ download }) => openDownloadURL(download)}
               initialValues={{ download: downloadUrls[0].downloadUrl }}
             >
-              <Form.Item name="download">
+              {/* <Form.Item name="download">
                 <Select style={{ width: 120 }}>
                   {downloadUrls.map(
                     (option) =>
@@ -213,12 +233,37 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
                       )
                   )}
                 </Select>
+              </Form.Item>*/}
+              <Form.Item>
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    const url = downloadUrls[0].downloadUrl || '';
+                    console.log(url);
+                    openDownloadURL(url);
+                  }}
+                  icon={<DownloadOutlined />}
+                ></Button>
               </Form.Item>
               <Form.Item>
                 <Button
                   type="primary"
-                  htmlType="submit"
-                  icon={<DownloadOutlined />}
+                  onClick={() => {
+                    const url = downloadUrls[0].downloadUrl || '';
+                    console.log(url);
+                    if (navigator && navigator.clipboard) {
+                      void navigator.clipboard
+                        .writeText(url)
+                        .catch((e) => console.log(e));
+                      void message.success({
+                        content: 'URL copied to clipboard!',
+                        icon: (
+                          <ShareAltOutlined style={styles.messageAddIcon} />
+                        ),
+                      });
+                    }
+                  }}
+                  icon={<CopyOutlined />}
                 ></Button>
               </Form.Item>
             </Form>
