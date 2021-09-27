@@ -1,5 +1,5 @@
 # Pull official base image
-FROM node:14.16.1-alpine
+FROM node:16.10.0-alpine
 
 # Set working directory
 WORKDIR /cors-proxy
