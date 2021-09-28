@@ -4,6 +4,6 @@
   "private": true,
   "dependencies": {
     "cors-anywhere": "0.4.4",
-    "dotenv": "8.2.0"
+    "dotenv": "8.6.0"
   }
 }
