@@ -26,7 +26,7 @@ import {
 
 export type DownloadUrls = {
   HTTPServer: string;
-  OPeNDAP: string;
+  OPENDAP: string;
 };
 
 const styles: CSSinJS = {
@@ -46,7 +46,7 @@ const styles: CSSinJS = {
  * Splits the string by a delimiter and pops the last string
  */
 export const genDownloadUrls = (urls: string[]): DownloadUrls => {
-  const newUrls: DownloadUrls = { HTTPServer: '', OPeNDAP: '' };
+  const newUrls: DownloadUrls = { HTTPServer: '', OPENDAP: '' };
   urls.forEach((url) => {
     const downloadType = url.split('|').pop();
     let downloadUrl = splitStringByChar(url, '|', '0') as string;
@@ -54,15 +54,16 @@ export const genDownloadUrls = (urls: string[]): DownloadUrls => {
     // Chrome blocks Mixed Content (HTTPS to HTTP) downloads and the index
     // serves HTTP links
     // https://blog.chromium.org/2020/02/protecting-users-from-insecure.html
-    if (downloadType === 'HTTPServer' && !downloadUrl.includes('https')) {
-      downloadUrl = downloadUrl.replace('http', 'https');
+    if (downloadType === 'HTTPServer') {
+      if (!downloadUrl.includes('https')) {
+        downloadUrl = downloadUrl.replace('http', 'https');
+      }
       newUrls.HTTPServer = downloadUrl;
-      return;
     }
 
     if (downloadType === 'OPENDAP') {
       downloadUrl = downloadUrl.replace('.nc', '.dods');
-      newUrls.OPeNDAP = downloadUrl;
+      newUrls.OPENDAP = downloadUrl;
     }
   });
   return newUrls;
@@ -207,7 +208,6 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
         return (
           <span>
             <Form
-              data-testid="download-form"
               layout="inline"
               onFinish={() => openDownloadURL(downloadUrls.HTTPServer)}
               initialValues={{ download: downloadUrls.HTTPServer }}
@@ -221,24 +221,25 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
                   ></Button>
                 </Form.Item>
               </ToolTip>
-              {downloadUrls.OPeNDAP !== '' && (
+              {downloadUrls.OPENDAP !== '' && (
                 <ToolTip
-                  title="Copy a shareable OPeNDAP URL to the clipboard."
+                  title="Copy a shareable OPENDAP URL to the clipboard."
                   trigger="hover"
                 >
                   <Form.Item>
                     <Button
                       type="primary"
                       onClick={() => {
+                        /* istanbul ignore if */
                         if (navigator && navigator.clipboard) {
                           void navigator.clipboard
-                            .writeText(downloadUrls.OPeNDAP)
+                            .writeText(downloadUrls.OPENDAP)
                             .catch(
                               (e: PromiseRejectedResult) =>
                                 void message.error(e.reason)
                             );
                           void message.success({
-                            content: 'OPeNDAP URL copied to clipboard!',
+                            content: 'OPENDAP URL copied to clipboard!',
                             icon: (
                               <ShareAltOutlined style={styles.messageAddIcon} />
                             ),
