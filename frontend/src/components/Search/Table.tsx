@@ -181,7 +181,7 @@ const Table: React.FC<Props> = ({
       width: 100,
     },
     {
-      title: 'Download',
+      title: 'Download Script',
       key: 'download',
       width: 200,
       render: (record: RawSearchResult) => {

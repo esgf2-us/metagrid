@@ -21,13 +21,12 @@ describe('test genDownloadUrls()', () => {
     urls = [
       'http://test.com|HTTPServer',
       'http://test.com|Globus',
-      'http://test.com/file.html|OPeNDAP',
+      'http://test.com/file.nc|OPENDAP',
     ];
-    result = [
-      { downloadType: 'HTTPServer', downloadUrl: 'https://test.com' },
-      { downloadType: 'Globus', downloadUrl: 'http://test.com' },
-      { downloadType: 'OPeNDAP', downloadUrl: 'http://test.com/file.dods' },
-    ];
+    result = {
+      HTTPServer: 'https://test.com',
+      OPENDAP: 'http://test.com/file.dods',
+    };
   });
 
   it('converts array of urls to array of objects containing download type and download url', () => {
@@ -37,7 +36,6 @@ describe('test genDownloadUrls()', () => {
   it('converts array of urls to array of objects but ignores HTTPServer URL conversion to HTTPS since it is already HTTPS', () => {
     const updatedUrls = urls;
     updatedUrls[0] = updatedUrls[0].replace('http', 'https');
-
     const newUrls = genDownloadUrls(updatedUrls);
     expect(newUrls).toEqual(result);
   });
@@ -72,7 +70,51 @@ describe('test FilesTable component', () => {
     expect(alertMsg).toBeTruthy();
   });
 
-  it('renders files table with data and opens up a new window when submitting form for downloading a file', async () => {
+  it('handles downloading data with httpserver', async () => {
+    const { getByTestId } = render(<FilesTable {...defaultProps} />);
+
+    // Check component renders
+    const component = await waitFor(() => getByTestId('filesTable'));
+    expect(component).toBeTruthy();
+
+    // Wait for component to re-render
+    await waitFor(() => getByTestId('filesTable'));
+
+    // Check a record row exist
+    const row = document.querySelector('tr.ant-table-row') as HTMLElement;
+    expect(row).toBeTruthy();
+
+    // Get the download button
+    const downloadBtn = within(row).getByRole('button', {
+      name: 'download',
+    });
+    expect(downloadBtn).toBeTruthy();
+    fireEvent.click(downloadBtn);
+  });
+
+  it('handles copying OPENDAP link to clipboard', async () => {
+    const { getByTestId } = render(<FilesTable {...defaultProps} />);
+
+    // Check component renders
+    const component = await waitFor(() => getByTestId('filesTable'));
+    expect(component).toBeTruthy();
+
+    // Wait for component to re-render
+    await waitFor(() => getByTestId('filesTable'));
+
+    // Check a record row exist
+    const row = document.querySelector('tr.ant-table-row') as HTMLElement;
+    expect(row).toBeTruthy();
+
+    // Get the download button
+    const downloadBtn = within(row).getByRole('button', {
+      name: 'copy',
+    });
+    expect(downloadBtn).toBeTruthy();
+    fireEvent.click(downloadBtn);
+  });
+
+  /* it('renders files table with data and opens up a new window when submitting form for downloading a file', async () => {
     // Update the value of open
     // https://stackoverflow.com/questions/58189851/mocking-a-conditional-window-open-function-call-with-jest
     Object.defineProperty(window, 'location', {
@@ -82,30 +124,37 @@ describe('test FilesTable component', () => {
     });
     const { getByRole, getByTestId } = render(<FilesTable {...defaultProps} />);
 
-    // Check files table componet renders
+    // Check files table component renders
     const filesTableComponent = await waitFor(() => getByTestId('filesTable'));
     expect(filesTableComponent).toBeTruthy();
 
-    const firstRow = await waitFor(() =>
-      getByRole('row', {
-        name: 'right-circle foo 1 Bytes HTTPServer download',
-      })
-    );
-    expect(firstRow).toBeTruthy();
+    // Check component renders
+    const component = await waitFor(() => getByTestId('filesTable'));
+    expect(component).toBeTruthy();
+
+    // Wait for component to re-render
+    await waitFor(() => getByTestId('filesTable'));
+
+    // Check a record row exist
+    const row = document.querySelector(
+      'ant-icon.ant-icon-download'
+    ) as HTMLElement;
+    expect(row).toBeTruthy();
+
+    // Submit the download form
+    fireEvent.submit(row);
 
     // Select first cell download button
-    const downloadBtn = within(firstRow).getByRole('img', {
+    /*const downloadBtn = within(component).getByRole('img', {
       name: 'download',
     });
     expect(downloadBtn).toBeTruthy();
 
     // Submit the download form
     fireEvent.submit(downloadBtn);
+  });*/
 
-    await waitFor(() => getByTestId('filesTable'));
-  });
-
-  it('`handles pagination and page size changes', async () => {
+  it('handles pagination and page size changes', async () => {
     // Update api to return 20 search results, which enables pagination if 10/page selected
     const data = ESGFSearchAPIFixture();
 
@@ -168,7 +217,7 @@ describe('test FilesTable component', () => {
   });
 
   it('handles clicking the expandable icon', async () => {
-    const { getByRole, getByTestId } = render(<FilesTable {...defaultProps} />);
+    const { getByTestId } = render(<FilesTable {...defaultProps} />);
 
     // Check component renders
     const component = await waitFor(() => getByTestId('filesTable'));
@@ -178,11 +227,7 @@ describe('test FilesTable component', () => {
     await waitFor(() => getByTestId('filesTable'));
 
     // Check a record row exist
-    const row = await waitFor(() =>
-      getByRole('row', {
-        name: 'right-circle foo 1 Bytes HTTPServer download',
-      })
-    );
+    const row = document.querySelector('tr.ant-table-row') as HTMLElement;
     expect(row).toBeTruthy();
 
     // Get the expandable cell
@@ -204,7 +249,5 @@ describe('test FilesTable component', () => {
     });
     expect(expandableDownIcon).toBeTruthy();
     fireEvent.click(expandableDownIcon);
-
-    await waitFor(() => row);
   });
 });
