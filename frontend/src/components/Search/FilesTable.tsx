@@ -1,14 +1,18 @@
+/* eslint-disable no-void */
 import {
+  CopyOutlined,
   DownCircleOutlined,
   DownloadOutlined,
   RightCircleOutlined,
+  ShareAltOutlined,
 } from '@ant-design/icons';
-import { Form, Select, Table as TableD } from 'antd';
+import { Form, message, Table as TableD } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
 import { DeferFn, useAsync } from 'react-async';
 import { fetchDatasetFiles, openDownloadURL } from '../../api';
+import { CSSinJS } from '../../common/types';
 import { formatBytes, splitStringByChar } from '../../common/utils';
 import ToolTip from '../DataDisplay/ToolTip';
 import Alert from '../Feedback/Alert';
@@ -21,16 +25,28 @@ import {
 } from './types';
 
 export type DownloadUrls = {
-  downloadType: string | undefined;
-  downloadUrl: string | undefined;
-}[];
-type FileDownloadTypes = 'HTTPServer' | 'OpeNDAP' | 'Globus';
+  HTTPServer: string;
+  OPENDAP: string;
+};
+
+const styles: CSSinJS = {
+  bodySider: {
+    background: '#fff',
+    padding: '12px 12px 12px 12px',
+    width: '384px',
+    marginRight: '2px',
+    boxShadow: '2px 0 4px 0 rgba(0, 0, 0, 0.2)',
+  },
+  bodyContent: { padding: '12px 12px', margin: 0 },
+  messageAddIcon: { color: '#90EE90' },
+  messageRemoveIcon: { color: '#ff0000' },
+};
 
 /**
  * Splits the string by a delimiter and pops the last string
  */
 export const genDownloadUrls = (urls: string[]): DownloadUrls => {
-  const newUrls: DownloadUrls = [];
+  const newUrls: DownloadUrls = { HTTPServer: '', OPENDAP: '' };
   urls.forEach((url) => {
     const downloadType = url.split('|').pop();
     let downloadUrl = splitStringByChar(url, '|', '0') as string;
@@ -38,14 +54,17 @@ export const genDownloadUrls = (urls: string[]): DownloadUrls => {
     // Chrome blocks Mixed Content (HTTPS to HTTP) downloads and the index
     // serves HTTP links
     // https://blog.chromium.org/2020/02/protecting-users-from-insecure.html
-    if (downloadType === 'HTTPServer' && !downloadUrl.includes('https')) {
-      downloadUrl = downloadUrl.replace('http', 'https');
+    if (downloadType === 'HTTPServer') {
+      if (!downloadUrl.includes('https')) {
+        downloadUrl = downloadUrl.replace('http', 'https');
+      }
+      newUrls.HTTPServer = downloadUrl;
     }
 
-    if (downloadType === 'OPeNDAP') {
-      downloadUrl = downloadUrl.replace('.html', '.dods');
+    if (downloadType === 'OPENDAP') {
+      downloadUrl = downloadUrl.replace('.nc', '.dods');
+      newUrls.OPENDAP = downloadUrl;
     }
-    newUrls.push({ downloadType, downloadUrl });
   });
   return newUrls;
 };
@@ -58,8 +77,6 @@ export type Props = {
 const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
   // Add options to this constant as needed.
   // This variable populates the download drop downs and is used in conditionals.
-  // TODO: Add 'Globus' during Globus integration process.
-  const allowedDownloadTypes: FileDownloadTypes[] = ['HTTPServer', 'OpeNDAP'];
   const metadataKeysToDisplay = [
     'cf_standard_name',
     'checksum_type',
@@ -183,44 +200,57 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
       render: (size: number) => formatBytes(size),
     },
     {
-      title: 'Download',
+      title: 'Download / Copy URL',
       key: 'download',
       width: 200,
       render: (record: { url: string[] }) => {
         const downloadUrls = genDownloadUrls(record.url);
-
         return (
           <span>
             <Form
-              data-testid="download-form"
               layout="inline"
-              onFinish={({ download }) => openDownloadURL(download)}
-              initialValues={{ download: downloadUrls[0].downloadUrl }}
+              onFinish={() => openDownloadURL(downloadUrls.HTTPServer)}
+              initialValues={{ download: downloadUrls.HTTPServer }}
             >
-              <Form.Item name="download">
-                <Select style={{ width: 120 }}>
-                  {downloadUrls.map(
-                    (option) =>
-                      allowedDownloadTypes.includes(
-                        option.downloadType as FileDownloadTypes
-                      ) && (
-                        <Select.Option
-                          key={option.downloadType}
-                          value={option.downloadUrl as React.ReactText}
-                        >
-                          {option.downloadType}
-                        </Select.Option>
-                      )
-                  )}
-                </Select>
-              </Form.Item>
-              <Form.Item>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  icon={<DownloadOutlined />}
-                ></Button>
-              </Form.Item>
+              <ToolTip title="Download the data file via Http." trigger="hover">
+                <Form.Item>
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    icon={<DownloadOutlined />}
+                  ></Button>
+                </Form.Item>
+              </ToolTip>
+              {downloadUrls.OPENDAP !== '' && (
+                <ToolTip
+                  title="Copy a shareable OPENDAP URL to the clipboard."
+                  trigger="hover"
+                >
+                  <Form.Item>
+                    <Button
+                      type="primary"
+                      onClick={() => {
+                        /* istanbul ignore if */
+                        if (navigator && navigator.clipboard) {
+                          void navigator.clipboard
+                            .writeText(downloadUrls.OPENDAP)
+                            .catch(
+                              (e: PromiseRejectedResult) =>
+                                void message.error(e.reason)
+                            );
+                          void message.success({
+                            content: 'OPENDAP URL copied to clipboard!',
+                            icon: (
+                              <ShareAltOutlined style={styles.messageAddIcon} />
+                            ),
+                          });
+                        }
+                      }}
+                      icon={<CopyOutlined />}
+                    ></Button>
+                  </Form.Item>
+                </ToolTip>
+              )}
             </Form>
           </span>
         );
