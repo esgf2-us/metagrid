@@ -14,13 +14,13 @@ ReactDOM.render(
     authClient={keycloak}
     initOptions={keycloakProviderInitConfig}
   >
-    <ReactJoyrideProvider>
-      <AuthProvider>
-        <Router basename={process.env.PUBLIC_URL}>
+    <AuthProvider>
+      <Router basename={process.env.PUBLIC_URL}>
+        <ReactJoyrideProvider>
           <App searchQuery={getSearchFromUrl()} />
-        </Router>
-      </AuthProvider>
-    </ReactJoyrideProvider>
+        </ReactJoyrideProvider>
+      </Router>
+    </AuthProvider>
   </ReactKeycloakProvider>,
   document.getElementById('root')
 );

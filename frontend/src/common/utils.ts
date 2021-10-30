@@ -1,4 +1,6 @@
+import { useHistory } from 'react-router-dom';
 import { ActiveSearchQuery } from '../components/Search/types';
+import { AppPage } from './types';
 
 /**
  * Checks if an object is empty.

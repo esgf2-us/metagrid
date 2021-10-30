@@ -2,9 +2,17 @@ import { GithubOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { Button, Card } from 'antd';
 import React from 'react';
 import { Step } from 'react-joyride';
-import { mainTour } from '../../common/reactJoyrideSteps';
-import { ReactJoyrideContext } from '../../contexts/ReactJoyrideContext';
-import { RawTourState } from '../../contexts/types';
+import { Link, useHistory } from 'react-router-dom';
+import {
+  mainTourUnloadedTable,
+  mainTourLoadedTable,
+  searchCardTour,
+} from '../../common/reactJoyrideSteps';
+import { AppPage } from '../../common/types';
+import {
+  RawTourState,
+  ReactJoyrideContext,
+} from '../../contexts/ReactJoyrideContext';
 import Modal from '../Feedback/Modal';
 
 export type Props = {
@@ -13,9 +21,17 @@ export type Props = {
 };
 
 const Support: React.FC<Props> = ({ visible, onClose }) => {
+  const history = useHistory();
+
   // Tutorial state
   const tourState: RawTourState = React.useContext(ReactJoyrideContext);
-  const { startTour, setSteps } = tourState;
+  const {
+    startTour,
+    setSteps,
+    setFinishCallback,
+    getCurrentAppPage,
+    setCurrentAppPage,
+  } = tourState;
 
   const startSpecificTour = (steps: Step[]): void => {
     setSteps(steps);
@@ -23,8 +39,36 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
     onClose();
   };
 
+  const curPage = getCurrentAppPage();
+
   const startMainTour = (): void => {
-    startSpecificTour(mainTour);
+    startSpecificTour(mainTourUnloadedTable);
+  };
+
+  const startSearchCardTour = (): void => {
+    startSpecificTour(searchCardTour);
+  };
+
+  const doMultiPageTour = (): void => {
+    setCurrentAppPage(AppPage.Main);
+    startSpecificTour(mainTourUnloadedTable);
+    setFinishCallback(() => {
+      return () => {
+        setTimeout(() => {
+          setCurrentAppPage(AppPage.SavedSearches);
+          setTimeout(() => {
+            setFinishCallback(() => {
+              return () => {
+                setTimeout(() => {
+                  setCurrentAppPage(curPage);
+                }, 0);
+              };
+            });
+            startSpecificTour(searchCardTour);
+          }, 0);
+        }, 0);
+      };
+    });
   };
 
   return (
@@ -46,8 +90,15 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
                 If you are new to Metagrid, you can familiarize yourself with
                 the user interface by clicking on an available tour below.
               </p>
-              <Card title="U.I. Tours">
-                <Button onClick={startMainTour}>Main Page</Button>
+              <Card title="U.I Tours">
+                <Button onClick={doMultiPageTour}>Full Walkthrough</Button>
+
+                {curPage === AppPage.Main && (
+                  <Button onClick={startMainTour}>Main Page</Button>
+                )}
+                {curPage === AppPage.SavedSearches && (
+                  <Button onClick={startSearchCardTour}>Search Card</Button>
+                )}
               </Card>
             </div>
           }

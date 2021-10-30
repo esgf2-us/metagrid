@@ -10,6 +10,7 @@ import { useAsync } from 'react-async';
 import { useHistory } from 'react-router-dom';
 import { fetchSearchResults, generateSearchURLQuery } from '../../api';
 import { clickableRoute } from '../../api/routes';
+import { SearchCardTargetIds } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import Card from '../DataDisplay/Card';
 import ToolTip from '../DataDisplay/ToolTip';
@@ -102,6 +103,7 @@ const SearchesCard: React.FC<Props> = ({
         actions={[
           <ToolTip title="Apply search query and view results" trigger="hover">
             <SearchOutlined
+              className={SearchCardTargetIds.applySearchesBtn}
               data-testid={`apply-${index + 1}`}
               key="search"
               onClick={() => {
@@ -112,6 +114,7 @@ const SearchesCard: React.FC<Props> = ({
           </ToolTip>,
           <ToolTip title="View results in JSON format">
             <a
+              className={SearchCardTargetIds.jsonBtn}
               href={clickableRoute(url)}
               rel="noopener noreferrer"
               target="blank_"
@@ -121,6 +124,7 @@ const SearchesCard: React.FC<Props> = ({
           </ToolTip>,
           <ToolTip title="Remove search query from library">
             <DeleteOutlined
+              className={SearchCardTargetIds.removeSearchBtn}
               data-testid={`remove-${index + 1}`}
               onClick={() => onRemoveSearchQuery(uuid)}
               style={{ color: 'red' }}

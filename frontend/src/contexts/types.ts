@@ -8,11 +8,3 @@ export type RawUserAuth = {
 export type RawUserInfo = {
   pk: string | null;
 };
-
-export type RawTourState = {
-  running: boolean;
-  setRunning: (running: boolean) => void;
-  steps: Step[];
-  setSteps: (steps: Step[]) => void;
-  startTour: () => void;
-};

@@ -2,7 +2,7 @@ import { Button, Tooltip } from 'antd';
 import React, { useEffect } from 'react';
 import { useAsync } from 'react-async';
 import { fetchProjects, ResponseError } from '../../api';
-import { JoyrideTargetIds } from '../../common/reactJoyrideSteps';
+import { SearchPageTargetIds } from '../../common/reactJoyrideSteps';
 import { objectIsEmpty } from '../../common/utils';
 import Divider from '../General/Divider';
 import { NodeStatusArray } from '../NodeStatus/types';
@@ -76,7 +76,7 @@ const Facets: React.FC<Props> = ({
     <div
       data-testid="facets"
       style={styles.form}
-      id={JoyrideTargetIds.leftSideBar}
+      id={SearchPageTargetIds.leftSideBar}
     >
       <h3>Select a Project</h3>
       <div data-testid="projectForm">
