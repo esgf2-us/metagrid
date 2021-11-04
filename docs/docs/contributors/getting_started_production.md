@@ -35,7 +35,7 @@ Once configured, Traefik will get you a valid certificate from Lets Encrypt and 
 #### 1.2 Build and Run the Stack
 
 ```bash
-docker-compose -f docker-compose.prod.yml up --build
+docker-compose -f docker-compose.prod.yml up --build -d
 ```
 
 ### 2. Back-end
@@ -51,12 +51,12 @@ The majority of services are configured through the use of environment variables
 
 NOTE: You can easily generate keys with Python using this command:
 
-`python -c 'import secrets; print(get_random_secret_key())`
+`python3 -c 'import secrets; print(secrets.token_hex(100))'`
 
 | Service  | Environment Variable                                                                               | Description                                                                                                                                                                                                                                                                                                              | Documentation                                                                   | Type             | Example                                                                                                                                |
 | -------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | Django   | `DJANGO_SECRET_KEY`                                                                                | A secret key for a particular Django installation. This is used to provide cryptographic signing, and should be set to a unique, unpredictable value. | [Link](https://docs.djangoproject.com/en/3.0/ref/settings/#secret-key)          | string           | `DJANGO_SECRET_KEY=YAFKApvifkIFTw0DDNQQdHI34kyQdyWH89acWTogCfm4SGRz2x`                                                                 |
-| Django   | `DJANGO_ADMIN_URL`                                                                                 | The url to access the Django Admin page. It should be set to a unique, unpredictable value (not `admin/`).                                                                                                                                                                                                               |                                                                                 | string           | `DJANGO_ADMIN_URL=11hxhSu03aSBTOZWCysDvSvcDfa16kFh/`                                                                                   |
+| Django   | `DJANGO_ADMIN_URL`                                                                                 | The url to access the Django Admin page. It should be set to a unique, unpredictable value (not `admin/`). Take note of this value in order to access the admin page later on. For example with the settings shown here you would go to: https://esgf-dev1.llnl.gov/metagrid-backend/example_admin_url_87261847395 to access the admin site. Then you would use the admin credentials created when creating a django superuser (explained further below).                                                                                                                                                                                                           |                                                                                 | string           | `DJANGO_ADMIN_URL=example_admin_url_87261847395`                                                                                   |
 | Django   | `DJANGO_ALLOWED_HOSTS`                                                                             | A list of strings representing the host/domain names that this Django site can serve. This is a security measure to prevent HTTP Host header attacks, which are possible even under many seemingly-safe web server configurations.                                                                                       | [Link](https://docs.djangoproject.com/en/3.0/ref/settings/#allowed-hosts)       | array of strings | `DJANGO_ALLOWED_HOSTS=esgf-dev1.llnl.gov`<br><br>Local environment:<br>`DJANGO_ALLOWED_HOSTS=localhost`                                |
 | Django   | `DOMAIN_NAME`                                                                                      | The domain linked to the server hosting the Django site.                                                                                                                                                                                                                                                                 |                                                                                 | string           | `DOMAIN_NAME=esgf-dev1.llnl.gov`<br><br>Local environment:<br>`DOMAIN_NAME=localhost`                                                  |
 | Django   | `DOMAIN_SUBDIRECTORY`                                                                              | **OPTIONAL** The domain subdirectory that is proxied to the Django site (e.g. _esgf-dev1.llnl.gov/metagrid-backend_). Omit backslash and match backend rules' `PathPrefix` in `traefik.yml`.                                                                                                                             |                                                                                 | string           | `DOMAIN_SUBDIRECTORY=metagrid-backend`                                                                                                 |
@@ -88,28 +88,30 @@ To run the stack and detach the containers, run
 docker-compose -f docker-compose.prod.yml up --build -d
 ```
 
-#### 2.3 Helpful Commands
+#### 2.3 Run Django migrations
 
-Run a command inside the docker container:
+In production, you must apply Django migrations manually since they are not automatically applied to the database when you rebuild the docker-compose containers. To do so, with backend docker container running, run command below in the backend directory:
+
+```bash
+docker-compose -f docker-compose.prod.yml run --rm django python manage.py migrate
+```
+
+NOTE: If this step is skipped, you may see issues loading the project drop-down and search table results.
+
+#### 2.4 Helpful Commands
+
+##### Run Command in Running Container
+To run a command inside the docker container (front-end, backend, traefik) go to the appropriate directory and run:
 
 ```bash
 docker-compose -f docker-compose.prod.yml run --rm django [command]
 ```
-
-##### Run Django migrations
-
-**NOTE: In production, you must apply Django migrations manually since they are not automatically applied to the database when you rebuild the docker-compose containers.**
-
-```bash
-python manage.py migrate
-```
-
 ##### Creating a Superuser
 
-Useful for logging into Django Admin page to manage the database
+With backend docker container running, run command below in the backend directory to create a superuser. Useful for logging into Django Admin page to manage the database.
 
 ```bash
-python manage.py createsuperuser
+docker-compose -f docker-compose.prod.yml run --rm django python manage.py createsuperuser
 ```
 
 ### 3. Front-end
