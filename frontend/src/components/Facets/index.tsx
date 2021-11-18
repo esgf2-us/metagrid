@@ -2,7 +2,7 @@ import { Button, Tooltip } from 'antd';
 import React, { useEffect } from 'react';
 import { useAsync } from 'react-async';
 import { fetchProjects, ResponseError } from '../../api';
-import { SearchPageTargetIds } from '../../common/reactJoyrideSteps';
+import { addTempStep, MainPageTargets } from '../../common/reactJoyrideSteps';
 import { objectIsEmpty } from '../../common/utils';
 import Divider from '../General/Divider';
 import { NodeStatusArray } from '../NodeStatus/types';
@@ -76,9 +76,9 @@ const Facets: React.FC<Props> = ({
     <div
       data-testid="facets"
       style={styles.form}
-      id={SearchPageTargetIds.leftSideBar}
+      id={MainPageTargets.leftSideBar}
     >
-      <h3>Select a Project</h3>
+      <h3 className={addTempStep('Facets-index', 84)}>Select a Project</h3>
       <div data-testid="projectForm">
         <ProjectForm
           activeSearchQuery={activeSearchQuery}

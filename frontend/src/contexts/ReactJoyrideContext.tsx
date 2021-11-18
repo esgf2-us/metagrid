@@ -1,75 +1,64 @@
 import React from 'react';
-import Joyride, { CallBackProps, STATUS, Step } from 'react-joyride';
+import Joyride, { CallBackProps, EVENTS, STATUS } from 'react-joyride';
 import { useHistory } from 'react-router-dom';
-import { mainTourUnloadedTable } from '../common/reactJoyrideSteps';
+import { JoyrideTour } from '../common/JoyrideTour';
+import { getCurrentAppPage } from '../common/reactJoyrideSteps';
 import { AppPage } from '../common/types';
 
-export type TourCallback = () => () => void;
-
 export type RawTourState = {
-  running: boolean;
-  setRunning: (running: boolean) => void;
-  getSteps: Step[];
-  setSteps: (steps: Step[]) => void;
+  getTour: JoyrideTour;
+  setTour: (tour: JoyrideTour) => void;
   startTour: () => void;
-  setFinishCallback: (tourCallback: TourCallback) => void;
-  getCurrentAppPage: () => number;
   setCurrentAppPage: (page: number) => void;
 };
 
 export const ReactJoyrideContext = React.createContext<RawTourState>({
-  running: false,
-  setRunning: () => {},
-  getSteps: [],
-  setSteps: () => {},
+  getTour: new JoyrideTour('Empty Tour'),
+  setTour: () => {},
   startTour: () => {},
-  setFinishCallback: () => {},
-  getCurrentAppPage: () => 0,
   setCurrentAppPage: () => {},
 });
 
 type Props = { children: React.ReactNode };
 
+const defaultTour = new JoyrideTour('Empty Tour');
+
 export const ReactJoyrideProvider: React.FC<Props> = ({ children }) => {
   const history = useHistory();
   const [running, setRunning] = React.useState<boolean>(false);
-  const [getSteps, setSteps] = React.useState<Step[]>(mainTourUnloadedTable);
-  const [getFinishCallback, setFinishCallback] = React.useState<() => void>(
-    () => {}
-  );
+  const [getTour, setTour] = React.useState<JoyrideTour>(defaultTour);
+  const [getStepIndex, setStepIndex] = React.useState<number>(0);
 
-  const handleJoyrideCallback = (data: CallBackProps): void => {
-    const { status } = data;
+  const handleJoyrideCallback = async (data: CallBackProps): Promise<void> => {
+    const { status, index, type } = data;
     const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
 
     if (finishedStatuses.includes(status)) {
+      await getTour.onFinish(); // Run the callback for finished tour
+
       setRunning(false);
-      console.log('Tour complete!');
-      if (getFinishCallback) {
-        getFinishCallback();
-        setFinishCallback(() => {});
+      setStepIndex(0);
+      setTour(defaultTour);
+    } else if (
+      type === EVENTS.STEP_AFTER
+      // ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND] as string[]).includes(type)
+    ) {
+      const action = getTour.getActionByStepIndex(index);
+      if (action) {
+        // If an action exists, perform the action
+        await action.action();
+        setStepIndex(index + 1);
       }
+    } else if (type === EVENTS.TARGET_NOT_FOUND) {
+      setStepIndex(index + 1);
     }
   };
 
   const startTour = (): void => {
-    setRunning(true);
-  };
-
-  const getCurrentAppPage = (): number => {
-    const { pathname } = window.location;
-    switch (pathname) {
-      case '/search':
-        return AppPage.Main;
-      case '/cart/items':
-        return AppPage.Cart;
-      case '/nodes':
-        return AppPage.NodeStatus;
-      case '/cart/searches':
-        return AppPage.SavedSearches;
-      default:
-        return -1;
+    if (getTour) {
+      setStepIndex(0);
     }
+    setRunning(true);
   };
 
   const setCurrentAppPage = (page: AppPage): void => {
@@ -99,20 +88,18 @@ export const ReactJoyrideProvider: React.FC<Props> = ({ children }) => {
   return (
     <ReactJoyrideContext.Provider
       value={{
-        running,
-        setRunning,
-        getSteps,
-        setSteps,
+        getTour,
+        setTour,
         startTour,
-        setFinishCallback,
-        getCurrentAppPage,
         setCurrentAppPage,
       }}
     >
       <Joyride
-        steps={getSteps}
+        steps={getTour.getSteps()}
+        stepIndex={getStepIndex}
         run={running}
         callback={handleJoyrideCallback}
+        locale={getTour.getLocale()}
         continuous
       />
       {children}

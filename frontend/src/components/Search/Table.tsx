@@ -10,6 +10,7 @@ import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
 import { fetchWgetScript, openDownloadURL, ResponseError } from '../../api';
+import { MainPageTargets } from '../../common/reactJoyrideSteps';
 import { formatBytes } from '../../common/utils';
 import { UserCart } from '../Cart/types';
 import ToolTip from '../DataDisplay/ToolTip';
@@ -88,7 +89,10 @@ const Table: React.FC<Props> = ({
             title="View this dataset's metadata, files or additional info."
             trigger="hover"
           >
-            <RightCircleOutlined onClick={(e) => onExpand(record, e)} />
+            <RightCircleOutlined
+              className={MainPageTargets.searchResultsRowExpandIcon}
+              onClick={(e) => onExpand(record, e)}
+            />
           </ToolTip>
         ),
     },

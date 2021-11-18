@@ -1,12 +1,13 @@
 import { GithubOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { Button, Card } from 'antd';
 import React from 'react';
-import { Step } from 'react-joyride';
-import { Link, useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
+import { JoyrideTour } from '../../common/JoyrideTour';
 import {
-  mainTourUnloadedTable,
-  mainTourLoadedTable,
   searchCardTour,
+  mainPageTour,
+  getCurrentAppPage,
+  testTour,
 } from '../../common/reactJoyrideSteps';
 import { AppPage } from '../../common/types';
 import {
@@ -25,50 +26,47 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
 
   // Tutorial state
   const tourState: RawTourState = React.useContext(ReactJoyrideContext);
-  const {
-    startTour,
-    setSteps,
-    setFinishCallback,
-    getCurrentAppPage,
-    setCurrentAppPage,
-  } = tourState;
+  const { setTour, startTour, setCurrentAppPage } = tourState;
 
-  const startSpecificTour = (steps: Step[]): void => {
-    setSteps(steps);
+  const curPage = getCurrentAppPage();
+
+  const startSpecificTour = (tour: JoyrideTour): void => {
+    setTour(tour);
     startTour();
     onClose();
   };
 
-  const curPage = getCurrentAppPage();
-
-  const startMainTour = (): void => {
-    startSpecificTour(mainTourUnloadedTable);
+  const startTestTour = (): void => {
+    console.log(testTour.getSteps());
+    startSpecificTour(testTour);
   };
 
   const startSearchCardTour = (): void => {
-    startSpecificTour(searchCardTour);
+    startSpecificTour(searchCardTour());
   };
 
-  const doMultiPageTour = (): void => {
+  const startMainPageTour = (): void => {
+    startSpecificTour(mainPageTour());
+  };
+
+  const startGrandTour = (): void => {
     setCurrentAppPage(AppPage.Main);
-    startSpecificTour(mainTourUnloadedTable);
-    setFinishCallback(() => {
-      return () => {
-        setTimeout(() => {
+
+    const firstTour = mainPageTour();
+    const secondTour = searchCardTour();
+
+    firstTour.setOnFinish(() => {
+      return (): void => {
+        setTimeout((): void => {
           setCurrentAppPage(AppPage.SavedSearches);
           setTimeout(() => {
-            setFinishCallback(() => {
-              return () => {
-                setTimeout(() => {
-                  setCurrentAppPage(curPage);
-                }, 0);
-              };
-            });
-            startSpecificTour(searchCardTour);
-          }, 0);
-        }, 0);
+            startSpecificTour(secondTour);
+          }, 1000);
+        }, 1000);
       };
     });
+
+    startSpecificTour(firstTour);
   };
 
   return (
@@ -91,11 +89,11 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
                 the user interface by clicking on an available tour below.
               </p>
               <Card title="U.I Tours">
-                <Button onClick={doMultiPageTour}>Full Walkthrough</Button>
-
-                {curPage === AppPage.Main && (
-                  <Button onClick={startMainTour}>Main Page</Button>
-                )}
+                <Button onClick={startGrandTour}>Metagrid Grand Tour</Button>
+                <Button onClick={startTestTour}>TEST TOUR</Button>
+                <Button onClick={startMainPageTour}>
+                  Main Search Page Tour
+                </Button>
                 {curPage === AppPage.SavedSearches && (
                   <Button onClick={startSearchCardTour}>Search Card</Button>
                 )}

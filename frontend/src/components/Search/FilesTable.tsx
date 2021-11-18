@@ -12,6 +12,7 @@ import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
 import { DeferFn, useAsync } from 'react-async';
 import { fetchDatasetFiles, openDownloadURL } from '../../api';
+import { MainPageTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import { formatBytes, splitStringByChar } from '../../common/utils';
 import ToolTip from '../DataDisplay/ToolTip';
@@ -263,7 +264,14 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
     },
   ];
 
-  return <TableD data-testid="filesTable" {...tableConfig} columns={columns} />;
+  return (
+    <TableD
+      className={MainPageTargets.selectedRowExpandedInfo}
+      data-testid="filesTable"
+      {...tableConfig}
+      columns={columns}
+    />
+  );
 };
 
 export default FilesTable;
