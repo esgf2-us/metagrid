@@ -66,6 +66,14 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
       };
     });
 
+    secondTour.setOnFinish(() => {
+      return (): void => {
+        setTimeout((): void => {
+          setCurrentAppPage(curPage);
+        }, 500);
+      };
+    });
+
     startSpecificTour(firstTour);
   };
 

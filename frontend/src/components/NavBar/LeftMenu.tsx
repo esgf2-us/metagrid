@@ -65,7 +65,7 @@ const LeftMenu: React.FC<Props> = ({
 
   if (projects) {
     return (
-      <div data-testid="left-menu" id={MainPageTargets.topSearchBar}>
+      <div data-testid="left-menu" className={MainPageTargets.topSearchBar}>
         <Form
           initialValues={{
             projectTextInput: projects[0].name,

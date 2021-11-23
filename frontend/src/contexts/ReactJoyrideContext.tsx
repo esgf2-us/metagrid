@@ -29,6 +29,17 @@ export const ReactJoyrideProvider: React.FC<Props> = ({ children }) => {
   const [getTour, setTour] = React.useState<JoyrideTour>(defaultTour);
   const [getStepIndex, setStepIndex] = React.useState<number>(0);
 
+  const nextStep = (index: number): void => {
+    try {
+      const stepCount = getTour.getSteps().length;
+      if (index < stepCount) {
+        setStepIndex(index + 1);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const handleJoyrideCallback = async (data: CallBackProps): Promise<void> => {
     const { status, index, type } = data;
     const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
@@ -39,18 +50,15 @@ export const ReactJoyrideProvider: React.FC<Props> = ({ children }) => {
       setRunning(false);
       setStepIndex(0);
       setTour(defaultTour);
-    } else if (
-      type === EVENTS.STEP_AFTER
-      // ([EVENTS.STEP_AFTER, EVENTS.TARGET_NOT_FOUND] as string[]).includes(type)
-    ) {
+    } else if (type === EVENTS.STEP_AFTER) {
       const action = getTour.getActionByStepIndex(index);
       if (action) {
         // If an action exists, perform the action
         await action.action();
-        setStepIndex(index + 1);
       }
+      nextStep(index);
     } else if (type === EVENTS.TARGET_NOT_FOUND) {
-      setStepIndex(index + 1);
+      nextStep(index);
     }
   };
 
@@ -100,6 +108,8 @@ export const ReactJoyrideProvider: React.FC<Props> = ({ children }) => {
         run={running}
         callback={handleJoyrideCallback}
         locale={getTour.getLocale()}
+        disableScrolling
+        disableScrollParentFix
         continuous
       />
       {children}

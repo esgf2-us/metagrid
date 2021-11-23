@@ -76,9 +76,9 @@ const Facets: React.FC<Props> = ({
     <div
       data-testid="facets"
       style={styles.form}
-      id={MainPageTargets.leftSideBar}
+      className={MainPageTargets.leftSideBar}
     >
-      <h3 className={addTempStep('Facets-index', 84)}>Select a Project</h3>
+      <h3>Select a Project</h3>
       <div data-testid="projectForm">
         <ProjectForm
           activeSearchQuery={activeSearchQuery}
@@ -91,6 +91,7 @@ const Facets: React.FC<Props> = ({
           <Tooltip title={curProject.projectUrl}>
             <Button
               href={curProject.projectUrl}
+              className={addTempStep('Facets-index', 94)}
               target="_blank"
               style={{ marginTop: '10px' }}
             >

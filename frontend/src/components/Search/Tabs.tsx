@@ -6,6 +6,7 @@ import Citation from './Citation';
 import FilesTable from './FilesTable';
 import { RawSearchResult, TextInputs } from './types';
 import { CSSinJS } from '../../common/types';
+import { MainPageTargets } from '../../common/reactJoyrideSteps';
 
 const styles: CSSinJS = {
   qualityFlagsRow: { display: 'flex' },
@@ -100,7 +101,11 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
 
   return (
     <TabsD>
-      <TabsD.TabPane tab="Files" key="1">
+      <TabsD.TabPane
+        tab="Files"
+        key="1"
+        className={MainPageTargets.selectedRowExpandedInfo}
+      >
         <FilesTable
           id={record.id}
           numResults={record.number_of_files}

@@ -21,29 +21,23 @@ export const delay = (ms: number): Promise<void> => {
   return new Promise((res) => setTimeout(res, ms));
 };
 
-export const getElementByClass = (className: string): string | HTMLElement => {
-  const element: HTMLElement = document.getElementsByClassName(
-    className
-  )[0] as HTMLElement;
-  if (element) {
-    return element;
-  }
-
+export function classSelector(className: string): string {
   return `.${className}`;
-};
+}
 
 export const elementExists = (className: string): boolean => {
-  if (getElementByClass(className) instanceof HTMLElement) {
-    return true;
-  }
-  return false;
+  return document.getElementsByClassName(className).length > 0;
 };
 
 export const clickFirstElement = (className: string): boolean => {
-  const element: string | HTMLElement = getElementByClass(className);
-  if (element instanceof HTMLElement) {
-    element.click();
-    return true;
+  if (elementExists(className)) {
+    const elem = document
+      .getElementsByClassName(className)
+      .item(0) as HTMLElement;
+    if (elem) {
+      elem.click();
+      return true;
+    }
   }
   return false;
 };
@@ -96,66 +90,73 @@ export enum SearchCardTargets {
 export const mainPageTour = (): JoyrideTour => {
   const tour = new JoyrideTour('Main Search Page Tour')
     .addNextStep(
-      `#${MainPageTargets.topSearchBar}`,
+      classSelector(MainPageTargets.topSearchBar),
       'This is the top search bar! You can select a project, then enter a search term and click the magnifying glass button to quickly view results in the result table.',
       'bottom'
     )
     .addNextStep(
-      `#${MainPageTargets.topNavBar}`,
+      classSelector(MainPageTargets.topNavBar),
       'This area lets you navigate between pages of Metagrid. From here you can select to view your data cart, your saved searches, currently available node status information and to login to your personal profile.',
       'bottom'
+    )
+    .addNextStep(
+      classSelector(MainPageTargets.selectProjectBtn),
+      'To begin a search, you would first select a project from this drop-down.',
+      'right'
     );
 
   if (elementExists('ant-empty-image')) {
     tour
       .addNextStep(
-        getElementByClass(MainPageTargets.selectProjectBtn),
-        'To begin a search, you would first select a project using this drop-down.',
-        'right'
-      )
-      .addNextStep(
-        getElementByClass(MainPageTargets.projectSelectLeftSideBtn),
+        classSelector(MainPageTargets.projectSelectLeftSideBtn),
         'Then you click this button to load the results for the project you selected...',
-        'bottom',
+        'right',
         () => {
           clickFirstElement(MainPageTargets.projectSelectLeftSideBtn);
         }
       )
       .addNextStep(
-        getElementByClass(MainPageTargets.projectSelectLeftSideBtn),
+        classSelector(MainPageTargets.projectSelectLeftSideBtn),
         'NOTE: The search results may take a few seconds to load... Click to continue.',
-        'bottom',
+        'right',
         async () => {
           if (elementExists('ant-empty-image')) {
             await delay(1000);
           }
         }
       );
+  } else {
+    tour.addNextStep(
+      classSelector(MainPageTargets.projectSelectLeftSideBtn),
+      'Then you click this button to load results for the project you selected.',
+      'right'
+    );
   }
 
   tour
     .addNextStep(
-      `#${MainPageTargets.searchResultsTable}`,
+      classSelector(MainPageTargets.searchResultsTable),
       'These are your search results! Each row in the results table is a specific dataset that matches your criteria.',
       'top-start'
     )
     .addNextStep(
-      getElementByClass(MainPageTargets.searchResultsRowExpandIcon),
+      classSelector(MainPageTargets.searchResultsRowExpandIcon),
       'To view more information about a specific dataset, you would expand the row by clicking this little arrow icon',
       'top-start',
-      () => {
+      async () => {
         clickFirstElement(MainPageTargets.searchResultsRowExpandIcon);
+        await delay(700);
       }
     )
     .addNextStep(
-      getElementByClass(MainPageTargets.selectedRowExpandedInfo),
+      classSelector(MainPageTargets.selectedRowExpandedInfo),
       'In addition to viewing more information about a dataset, it is possible to view individual files in the dataset for access and download.',
       'top-start'
     )
     .addNextStep(
-      `#${MainPageTargets.leftSideBar}`,
+      classSelector(MainPageTargets.leftSideBar),
       'This is the search filter area. From here you can narrow your search results by selecting specific facets and parameters that will be included in your search.',
-      'bottom'
+      'right'
     );
 
   return tour;
@@ -164,20 +165,20 @@ export const mainPageTour = (): JoyrideTour => {
 export const searchCardTour = (): JoyrideTour => {
   return new JoyrideTour('Search Card Tour')
     .addNextStep(
-      `.${SearchCardTargets.projectDescription}`,
+      classSelector(SearchCardTargets.projectDescription),
       'This is the project selected for this search.'
     )
     .addNextStep(
-      `.${SearchCardTargets.applySearchesBtn}`,
+      classSelector(SearchCardTargets.applySearchesBtn),
       'Clicking this button will apply your saved search to the main results page.'
     )
     .addNextStep(
-      `.${SearchCardTargets.jsonBtn}`,
+      classSelector(SearchCardTargets.jsonBtn),
       'Clicking this button will show the JSON data associated with this search.',
       'right'
     )
     .addNextStep(
-      `.${SearchCardTargets.removeSearchBtn}`,
+      classSelector(SearchCardTargets.removeSearchBtn),
       'This button will remove this search from your saved searches.',
       'left-start'
     );

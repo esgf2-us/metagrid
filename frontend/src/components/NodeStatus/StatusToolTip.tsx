@@ -4,6 +4,7 @@ import {
   QuestionCircleTwoTone,
 } from '@ant-design/icons';
 import React from 'react';
+import { addTempStep } from '../../common/reactJoyrideSteps';
 import ToolTip from '../DataDisplay/ToolTip';
 import { NodeStatusArray, NodeStatusElement } from './types';
 
@@ -37,8 +38,11 @@ const StatusToolTip: React.FC<Props> = ({ nodeStatus, dataNode, children }) => {
                 color="green"
               >
                 <span>
-                  <CheckCircleTwoTone twoToneColor="#52c41a" /> {dataNode}{' '}
-                  {children}
+                  <CheckCircleTwoTone
+                    className={addTempStep('StatusToolTip', 42)}
+                    twoToneColor="#52c41a"
+                  />{' '}
+                  {dataNode} {children}
                 </span>
               </ToolTip>
             ) : (
@@ -52,8 +56,11 @@ const StatusToolTip: React.FC<Props> = ({ nodeStatus, dataNode, children }) => {
                 color="red"
               >
                 <span>
-                  <CloseCircleTwoTone twoToneColor="#eb2f96" /> {dataNode}{' '}
-                  {children}
+                  <CloseCircleTwoTone
+                    className={addTempStep('StatusToolTip', 60)}
+                    twoToneColor="#eb2f96"
+                  />{' '}
+                  {dataNode} {children}
                 </span>
               </ToolTip>
             )}
@@ -74,7 +81,10 @@ const StatusToolTip: React.FC<Props> = ({ nodeStatus, dataNode, children }) => {
               color="green"
             >
               <span>
-                <CheckCircleTwoTone twoToneColor="#52c41a" />
+                <CheckCircleTwoTone
+                  className={addTempStep('StatusToolTip', 85)}
+                  twoToneColor="#52c41a"
+                />
               </span>
             </ToolTip>
           ) : (
@@ -88,7 +98,10 @@ const StatusToolTip: React.FC<Props> = ({ nodeStatus, dataNode, children }) => {
               color="red"
             >
               <span>
-                <CloseCircleTwoTone twoToneColor="#eb2f96" />
+                <CloseCircleTwoTone
+                  className={addTempStep('StatusToolTip', 102)}
+                  twoToneColor="#eb2f96"
+                />
               </span>
             </ToolTip>
           )}
@@ -108,7 +121,10 @@ const StatusToolTip: React.FC<Props> = ({ nodeStatus, dataNode, children }) => {
         }
       >
         <span>
-          <QuestionCircleTwoTone /> {dataNode} {children}
+          <QuestionCircleTwoTone
+            className={addTempStep('StatusToolTip', 125)}
+          />{' '}
+          {dataNode} {children}
         </span>
       </ToolTip>
     );
@@ -124,7 +140,7 @@ const StatusToolTip: React.FC<Props> = ({ nodeStatus, dataNode, children }) => {
       }
     >
       <span>
-        <QuestionCircleTwoTone />
+        <QuestionCircleTwoTone className={addTempStep('StatusToolTip', 143)} />
       </span>
     </ToolTip>
   );

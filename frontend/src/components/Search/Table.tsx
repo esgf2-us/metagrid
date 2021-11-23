@@ -10,7 +10,7 @@ import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
 import { fetchWgetScript, openDownloadURL, ResponseError } from '../../api';
-import { MainPageTargets } from '../../common/reactJoyrideSteps';
+import { addTempStep, MainPageTargets } from '../../common/reactJoyrideSteps';
 import { formatBytes } from '../../common/utils';
 import { UserCart } from '../Cart/types';
 import ToolTip from '../DataDisplay/ToolTip';
@@ -132,6 +132,7 @@ const Table: React.FC<Props> = ({
           return (
             <>
               <Button
+                className={addTempStep('Table', 135)}
                 icon={<MinusOutlined />}
                 onClick={() => onUpdateCart([record], 'remove')}
                 danger
@@ -143,7 +144,7 @@ const Table: React.FC<Props> = ({
           <>
             <Button
               type="primary"
-              icon={<PlusOutlined />}
+              icon={<PlusOutlined className={addTempStep('Table', 148)} />}
               onClick={() => onUpdateCart([record], 'add')}
             />
           </>
@@ -163,20 +164,29 @@ const Table: React.FC<Props> = ({
       dataIndex: 'title',
       key: 'title',
       width: 400,
+      render: (title: string) => {
+        return <div className={addTempStep('Search-table', 168)}>{title}</div>;
+      },
     },
     {
       title: 'Files',
       dataIndex: 'number_of_files',
       key: 'number_of_files',
       width: 50,
-      render: (numberOfFiles: number) => <p>{numberOfFiles || 'N/A'}</p>,
+      render: (numberOfFiles: number) => (
+        <p className={addTempStep('Table', 177)}>{numberOfFiles || 'N/A'}</p>
+      ),
     },
     {
       title: 'Total Size',
       dataIndex: 'size',
       key: 'size',
       width: 100,
-      render: (size: number) => <p>{size ? formatBytes(size) : 'N/A'}</p>,
+      render: (size: number) => (
+        <p className={addTempStep('Table', 186)}>
+          {size ? formatBytes(size) : 'N/A'}
+        </p>
+      ),
     },
     {
       title: 'Version',
@@ -218,6 +228,7 @@ const Table: React.FC<Props> = ({
         return (
           <>
             <Form
+              className={addTempStep('Table', 231)}
               layout="inline"
               onFinish={({ [formKey]: download }) =>
                 handleDownloadForm(download)
@@ -242,6 +253,7 @@ const Table: React.FC<Props> = ({
               </Form.Item>
               <Form.Item>
                 <Button
+                  className={addTempStep('Table', 256)}
                   type="default"
                   htmlType="submit"
                   icon={<DownloadOutlined />}

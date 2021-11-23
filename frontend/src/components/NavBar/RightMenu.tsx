@@ -10,7 +10,7 @@ import { Badge, Menu } from 'antd';
 import { KeycloakTokenParsed } from 'keycloak-js';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { MainPageTargets } from '../../common/reactJoyrideSteps';
+import { addTempStep, MainPageTargets } from '../../common/reactJoyrideSteps';
 import Button from '../General/Button';
 
 export type Props = {
@@ -59,14 +59,17 @@ const RightMenu: React.FC<Props> = ({
   }, [location.pathname]);
 
   return (
-    <div data-testid="right-menu" id={MainPageTargets.topNavBar}>
+    <div data-testid="right-menu" className={MainPageTargets.topNavBar}>
       <Menu selectedKeys={[activeMenuItem]} mode={mode}>
-        <Menu.Item key="search">
+        <Menu.Item key="search" className={addTempStep('RightMenu', 64)}>
           <Link to="/search">
             <SearchOutlined /> Search
           </Link>
         </Menu.Item>
-        <Menu.Item key="cartItems" className="modified-item">
+        <Menu.Item
+          key="cartItems"
+          className={`modified-item ${addTempStep('RightMenu', 71)}`}
+        >
           <Link to="/cart/items">
             <ShoppingCartOutlined style={{ fontSize: '20px' }} />
             <Badge
@@ -78,7 +81,10 @@ const RightMenu: React.FC<Props> = ({
             Cart
           </Link>
         </Menu.Item>
-        <Menu.Item key="cartSearches" className="modified-item">
+        <Menu.Item
+          key="cartSearches"
+          className={`modified-item ${addTempStep('RightMenu', 86)}`}
+        >
           <Link to="/cart/searches">
             <FileSearchOutlined style={{ fontSize: '20px' }} />{' '}
             <Badge
@@ -90,13 +96,13 @@ const RightMenu: React.FC<Props> = ({
             Saved Searches
           </Link>
         </Menu.Item>
-        <Menu.Item key="nodes">
+        <Menu.Item key="nodes" className={addTempStep('RightMenu', 99)}>
           <Link to="/nodes">
             <NodeIndexOutlined /> Node Status
           </Link>
         </Menu.Item>
         {!authenticated ? (
-          <Menu.Item key="signIn">
+          <Menu.Item key="signIn" className={addTempStep('RightMenu', 105)}>
             <Button
               type="text"
               icon={<UserOutlined style={{ fontSize: '18px' }} />}
@@ -107,6 +113,7 @@ const RightMenu: React.FC<Props> = ({
           </Menu.Item>
         ) : (
           <Menu.SubMenu
+            className={addTempStep('RightMenu', 116)}
             key="greeting"
             icon={<UserOutlined style={{ fontSize: '18px' }} />}
             title={
