@@ -10,7 +10,7 @@ import { Badge, Menu } from 'antd';
 import { KeycloakTokenParsed } from 'keycloak-js';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { addTempStep, mainTourTargets } from '../../common/reactJoyrideSteps';
+import { mainTourTargets } from '../../common/reactJoyrideSteps';
 import Button from '../General/Button';
 
 export type Props = {
@@ -127,7 +127,6 @@ const RightMenu: React.FC<Props> = ({
           </Menu.Item>
         ) : (
           <Menu.SubMenu
-            className={addTempStep('RightMenu', 116)}
             key="greeting"
             icon={<UserOutlined style={{ fontSize: '18px' }} />}
             title={

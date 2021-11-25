@@ -6,7 +6,7 @@ import {
 import { Col, Collapse, DatePicker, Form, Input, Row, Select } from 'antd';
 import moment from 'moment';
 import React from 'react';
-import { addTempStep } from '../../common/reactJoyrideSteps';
+import { facetTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
@@ -209,7 +209,7 @@ const FacetsForm: React.FC<Props> = ({
   return (
     <div data-testid="facets-form">
       <Form
-        className={addTempStep('FacetsForm', 212)}
+        className={facetTourTargets.getClass('facetForm1')}
         form={availableFacetsForm}
         initialValues={{
           ...activeSearchQuery.activeFacets,
@@ -235,7 +235,7 @@ const FacetsForm: React.FC<Props> = ({
                         <Form.Item
                           key={facet}
                           name={facet}
-                          className={addTempStep('FacetsForm', 238)}
+                          className={facetTourTargets.getClass('facetForm2')}
                           label={
                             humanizeFacetNames(facet) +
                             (isOptionalforDatasets ? ' (Optional)' : '')
@@ -315,7 +315,7 @@ const FacetsForm: React.FC<Props> = ({
         </div>
       </Form>
       <Form
-        className={addTempStep('FacetsForm', 317)}
+        className={facetTourTargets.getClass('facetForm3')}
         form={generalFacetsForm}
         layout="horizontal"
         size="small"
@@ -388,7 +388,7 @@ const FacetsForm: React.FC<Props> = ({
         </Collapse>
       </Form>
       <Form
-        className={addTempStep('FacetsForm', 390)}
+        className={facetTourTargets.getClass('facetForm4')}
         form={filenameVarForm}
         layout="horizontal"
         size="small"
@@ -420,7 +420,7 @@ const FacetsForm: React.FC<Props> = ({
               <Row gutter={5}>
                 <Col>
                   <Input
-                    className={addTempStep('FacetsForm', 422)}
+                    className={facetTourTargets.getClass('facetForm5')}
                     data-testid="filename-search-input"
                     value={filenameVars}
                     style={{ width: '140px' }}

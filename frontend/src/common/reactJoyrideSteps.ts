@@ -81,6 +81,13 @@ export const mainTourTargets = new TourTargets('main-joyride-tour')
   .create('checksum')
   .create('searchFacetsForm');
 
+export const facetTourTargets = new TourTargets('facets-form-joyride-tour')
+  .create('facetForm1')
+  .create('facetForm2')
+  .create('facetForm3')
+  .create('facetForm4')
+  .create('facetForm5');
+
 export enum CartTourTargets {
   savedSearches = 'cartPage-saved-search-items',
   cartSummary = 'cartPage-cart-summary',

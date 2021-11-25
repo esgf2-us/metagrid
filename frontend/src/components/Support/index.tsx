@@ -8,6 +8,7 @@ import {
   createMainPageTour,
   getCurrentAppPage,
   mainTourTargets,
+  facetTourTargets,
 } from '../../common/reactJoyrideSteps';
 import { AppPage } from '../../common/types';
 import {
@@ -36,8 +37,18 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
     onClose();
   };
 
-  const startTestTour = (): void => {
-    startSpecificTour(mainTourTargets.createTestTourOfTargets());
+  const startTestTours = (): void => {
+    const firstTest = mainTourTargets.createTestTourOfTargets();
+    const secondTest = facetTourTargets.createTestTourOfTargets();
+
+    firstTest.setOnFinish(() => {
+      return (): void => {
+        setTimeout(() => {
+          startSpecificTour(secondTest);
+        }, 1000);
+      };
+    });
+    startSpecificTour(firstTest);
   };
 
   const startSearchCardTour = (): void => {
@@ -97,7 +108,7 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
               </p>
               <Card title="U.I Tours">
                 <Button onClick={startGrandTour}>Metagrid Grand Tour</Button>
-                <Button onClick={startTestTour}>TEST Main Page Targets</Button>
+                <Button onClick={startTestTours}>TEST Tour Targets</Button>
                 <Button onClick={startMainPageTour}>
                   Main Search Page Tour
                 </Button>
