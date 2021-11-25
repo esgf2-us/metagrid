@@ -12,7 +12,7 @@ import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
 import { DeferFn, useAsync } from 'react-async';
 import { fetchDatasetFiles, openDownloadURL } from '../../api';
-import { addTempStep } from '../../common/reactJoyrideSteps';
+import { mainTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import { formatBytes, splitStringByChar } from '../../common/utils';
 import ToolTip from '../DataDisplay/ToolTip';
@@ -193,7 +193,9 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
       size: 400,
       key: 'title',
       render: (title: string) => {
-        return <div className={addTempStep('FilesTable', 196)}>{title}</div>;
+        return (
+          <div className={mainTourTargets.getClass('filesTitle')}>{title}</div>
+        );
       },
     },
     {
@@ -203,7 +205,7 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
       key: 'size',
       render: (size: number) => {
         return (
-          <div className={addTempStep('FilesTable', 206)}>
+          <div className={mainTourTargets.getClass('dataSize')}>
             {formatBytes(size)}
           </div>
         );
@@ -223,7 +225,9 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
               initialValues={{ download: downloadUrls.HTTPServer }}
             >
               <ToolTip title="Download the data file via Http." trigger="hover">
-                <Form.Item className={addTempStep('FilesTable', 226)}>
+                <Form.Item
+                  className={mainTourTargets.getClass('downloadDataBtn')}
+                >
                   <Button
                     type="primary"
                     htmlType="submit"
@@ -236,7 +240,7 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
                   title="Copy a shareable OPENDAP URL to the clipboard."
                   trigger="hover"
                 >
-                  <Form.Item className={addTempStep('FilesTable', 239)}>
+                  <Form.Item className={mainTourTargets.getClass('copyUrlBtn')}>
                     <Button
                       type="primary"
                       onClick={() => {
@@ -271,7 +275,9 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
       dataIndex: 'checksum',
       key: 'checksum',
       render: (checksum: string) => {
-        return <div className={addTempStep('FilesTable', 274)}>{checksum}</div>;
+        return (
+          <div className={mainTourTargets.getClass('checksum')}>{checksum}</div>
+        );
       },
     },
   ];

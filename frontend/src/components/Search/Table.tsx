@@ -10,7 +10,7 @@ import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
 import { fetchWgetScript, openDownloadURL, ResponseError } from '../../api';
-import { addTempStep, MainPageTargets } from '../../common/reactJoyrideSteps';
+import { mainTourTargets } from '../../common/reactJoyrideSteps';
 import { formatBytes } from '../../common/utils';
 import { UserCart } from '../Cart/types';
 import ToolTip from '../DataDisplay/ToolTip';
@@ -90,7 +90,7 @@ const Table: React.FC<Props> = ({
             trigger="hover"
           >
             <RightCircleOutlined
-              className={MainPageTargets.searchResultsRowExpandIcon}
+              className={mainTourTargets.getClass('searchResultsRowExpandIcon')}
               onClick={(e) => onExpand(record, e)}
             />
           </ToolTip>
@@ -132,7 +132,7 @@ const Table: React.FC<Props> = ({
           return (
             <>
               <Button
-                className={addTempStep('Table', 135)}
+                className={mainTourTargets.getClass('cartMinusBtn')}
                 icon={<MinusOutlined />}
                 onClick={() => onUpdateCart([record], 'remove')}
                 danger
@@ -144,7 +144,11 @@ const Table: React.FC<Props> = ({
           <>
             <Button
               type="primary"
-              icon={<PlusOutlined className={addTempStep('Table', 148)} />}
+              icon={
+                <PlusOutlined
+                  className={mainTourTargets.getClass('cartPlusBtn')}
+                />
+              }
               onClick={() => onUpdateCart([record], 'add')}
             />
           </>
@@ -156,7 +160,9 @@ const Table: React.FC<Props> = ({
       dataIndex: 'data_node',
       width: 20,
       render: (data_node: string) => (
-        <StatusToolTip nodeStatus={nodeStatus} dataNode={data_node} />
+        <div className={mainTourTargets.getClass('nodeStatusIcon')}>
+          <StatusToolTip nodeStatus={nodeStatus} dataNode={data_node} />
+        </div>
       ),
     },
     {
@@ -165,7 +171,11 @@ const Table: React.FC<Props> = ({
       key: 'title',
       width: 400,
       render: (title: string) => {
-        return <div className={addTempStep('Search-table', 168)}>{title}</div>;
+        return (
+          <div className={mainTourTargets.getClass('datasetTitle')}>
+            {title}
+          </div>
+        );
       },
     },
     {
@@ -174,7 +184,9 @@ const Table: React.FC<Props> = ({
       key: 'number_of_files',
       width: 50,
       render: (numberOfFiles: number) => (
-        <p className={addTempStep('Table', 177)}>{numberOfFiles || 'N/A'}</p>
+        <p className={mainTourTargets.getClass('fileCount')}>
+          {numberOfFiles || 'N/A'}
+        </p>
       ),
     },
     {
@@ -183,7 +195,7 @@ const Table: React.FC<Props> = ({
       key: 'size',
       width: 100,
       render: (size: number) => (
-        <p className={addTempStep('Table', 186)}>
+        <p className={mainTourTargets.getClass('totalSize')}>
           {size ? formatBytes(size) : 'N/A'}
         </p>
       ),
@@ -193,6 +205,9 @@ const Table: React.FC<Props> = ({
       dataIndex: 'version',
       key: 'version',
       width: 100,
+      render: (version: string) => (
+        <p className={mainTourTargets.getClass('versionText')}>{version}</p>
+      ),
     },
     {
       title: 'Download Script',
@@ -228,7 +243,7 @@ const Table: React.FC<Props> = ({
         return (
           <>
             <Form
-              className={addTempStep('Table', 231)}
+              className={mainTourTargets.getClass('downloadScriptForm')}
               layout="inline"
               onFinish={({ [formKey]: download }) =>
                 handleDownloadForm(download)
@@ -236,7 +251,10 @@ const Table: React.FC<Props> = ({
               initialValues={{ [formKey]: allowedDownloadTypes[0] }}
             >
               <Form.Item name={formKey}>
-                <Select style={{ width: 120 }}>
+                <Select
+                  className={mainTourTargets.getClass('downloadScriptOptions')}
+                  style={{ width: 120 }}
+                >
                   {allowedDownloadTypes.map(
                     (option) =>
                       (supportedDownloadTypes.includes(option) ||
@@ -253,7 +271,7 @@ const Table: React.FC<Props> = ({
               </Form.Item>
               <Form.Item>
                 <Button
-                  className={addTempStep('Table', 256)}
+                  className={mainTourTargets.getClass('downloadScriptBtn')}
                   type="default"
                   htmlType="submit"
                   icon={<DownloadOutlined />}

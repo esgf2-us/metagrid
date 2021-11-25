@@ -2,7 +2,7 @@ import { Divider } from 'antd';
 import React from 'react';
 import cartImg from '../../assets/img/cart.svg';
 import folderImg from '../../assets/img/folder.svg';
-import { CartPageTargets } from '../../common/reactJoyrideSteps';
+import { CartTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import { formatBytes } from '../../common/utils';
 import { RawSearchResult, RawSearchResults } from '../Search/types';
@@ -40,7 +40,7 @@ const Summary: React.FC<Props> = ({ userCart }) => {
   }
 
   return (
-    <div data-testid="summary" className={CartPageTargets.cartSummary}>
+    <div data-testid="summary" className={CartTourTargets.cartSummary}>
       <div style={styles.headerContainer}>
         <img style={styles.image} src={cartImg} alt="Cart" />
         <img style={styles.image} src={folderImg} alt="Folder" />

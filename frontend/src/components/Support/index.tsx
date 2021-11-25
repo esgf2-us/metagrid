@@ -4,10 +4,10 @@ import React from 'react';
 import { useHistory } from 'react-router-dom';
 import { JoyrideTour } from '../../common/JoyrideTour';
 import {
-  searchCardTour,
-  mainPageTour,
+  createSearchCardTour,
+  createMainPageTour,
   getCurrentAppPage,
-  testTour,
+  mainTourTargets,
 } from '../../common/reactJoyrideSteps';
 import { AppPage } from '../../common/types';
 import {
@@ -37,23 +37,22 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
   };
 
   const startTestTour = (): void => {
-    console.log(testTour.getSteps());
-    startSpecificTour(testTour);
+    startSpecificTour(mainTourTargets.createTestTourOfTargets());
   };
 
   const startSearchCardTour = (): void => {
-    startSpecificTour(searchCardTour());
+    startSpecificTour(createSearchCardTour());
   };
 
   const startMainPageTour = (): void => {
-    startSpecificTour(mainPageTour());
+    startSpecificTour(createMainPageTour());
   };
 
   const startGrandTour = (): void => {
     setCurrentAppPage(AppPage.Main);
 
-    const firstTour = mainPageTour();
-    const secondTour = searchCardTour();
+    const firstTour = createMainPageTour();
+    const secondTour = createSearchCardTour();
 
     firstTour.setOnFinish(() => {
       return (): void => {
@@ -98,7 +97,7 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
               </p>
               <Card title="U.I Tours">
                 <Button onClick={startGrandTour}>Metagrid Grand Tour</Button>
-                <Button onClick={startTestTour}>TEST TOUR</Button>
+                <Button onClick={startTestTour}>TEST Main Page Targets</Button>
                 <Button onClick={startMainPageTour}>
                   Main Search Page Tour
                 </Button>

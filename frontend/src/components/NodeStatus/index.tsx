@@ -4,7 +4,6 @@ import { SortOrder } from 'antd/lib/table/interface';
 import React from 'react';
 import { ResponseError } from '../../api';
 import apiRoutes from '../../api/routes';
-import { addTempStep } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import Alert from '../Feedback/Alert';
 import { NodeStatusArray, NodeStatusElement } from './types';
@@ -106,7 +105,6 @@ const NodeStatus: React.FC<Props> = ({ nodeStatus, apiError, isLoading }) => {
               </ol>
             </div>
           )}
-          className={addTempStep('NodeStatus-index', 109)}
           data-testid="nodeStatusTable"
           size="small"
           pagination={{

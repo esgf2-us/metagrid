@@ -3,7 +3,7 @@ import { Form, Input, Select, Spin } from 'antd';
 import React from 'react';
 import { useHistory } from 'react-router-dom';
 import { ResponseError } from '../../api';
-import { MainPageTargets } from '../../common/reactJoyrideSteps';
+import { mainTourTargets } from '../../common/reactJoyrideSteps';
 import { RawProject, RawProjects } from '../Facets/types';
 import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
@@ -65,7 +65,10 @@ const LeftMenu: React.FC<Props> = ({
 
   if (projects) {
     return (
-      <div data-testid="left-menu" className={MainPageTargets.topSearchBar}>
+      <div
+        data-testid="left-menu"
+        className={mainTourTargets.getClass('topSearchBar')}
+      >
         <Form
           initialValues={{
             projectTextInput: projects[0].name,

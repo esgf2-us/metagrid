@@ -51,7 +51,7 @@ export class JoyrideTour {
   }
 
   addNextStep(
-    target: string | HTMLElement,
+    target: string,
     content: string,
     placement?: Placement | 'auto' | 'center' | undefined,
     action?: () => void | Promise<void>
