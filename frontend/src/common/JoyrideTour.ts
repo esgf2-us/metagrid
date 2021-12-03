@@ -66,6 +66,7 @@ export class JoyrideTour {
         hideBackButton: true,
         hideCloseButton: true,
         disableBeacon: true,
+        disableScrolling: false,
         placement,
         styles: {
           options: {

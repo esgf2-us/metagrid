@@ -30,6 +30,16 @@ export const elementExists = (className: string): boolean => {
   return document.getElementsByClassName(className).length > 0;
 };
 
+export const elementHasState = (classname: string, state: string): boolean => {
+  const elem: HTMLElement = document.getElementsByClassName(
+    classname
+  )[0] as HTMLElement;
+  if (elem) {
+    return elem.classList.contains(state);
+  }
+  return false;
+};
+
 export const clickFirstElement = (className: string): boolean => {
   if (elementExists(className)) {
     const elem = document
@@ -62,8 +72,7 @@ export const mainTourTargets = new TourTargets('main-joyride-tour')
   .create('addSelectedToCartBtn')
   .create('saveSearchBtn')
   .create('copySearchLinkBtn')
-  .create('cartPlusBtn')
-  .create('cartMinusBtn')
+  .create('cartAddBtn')
   .create('nodeStatusIcon')
   .create('datasetTitle')
   .create('fileCount')
@@ -73,20 +82,19 @@ export const mainTourTargets = new TourTargets('main-joyride-tour')
   .create('downloadScriptOptions')
   .create('downloadScriptBtn')
   .create('searchResultsRowExpandIcon')
+  .create('searchResultsRowContractIcon')
   .create('selectedRowExpandedInfo')
   .create('filesTitle')
   .create('dataSize')
   .create('downloadDataBtn')
   .create('copyUrlBtn')
   .create('checksum')
-  .create('searchFacetsForm');
-
-export const facetTourTargets = new TourTargets('facets-form-joyride-tour')
-  .create('facetForm1')
-  .create('facetForm2')
-  .create('facetForm3')
-  .create('facetForm4')
-  .create('facetForm5');
+  .create('searchFacetsForm')
+  .create('facetFormGeneral')
+  .create('facetFormFirstFacet')
+  .create('facetFormAdditional')
+  .create('facetFormFilename')
+  .create('facetFormFilenameInput');
 
 export enum CartTourTargets {
   savedSearches = 'cartPage-saved-search-items',
@@ -105,8 +113,13 @@ export enum SavedSearchTargets {
 export const createMainPageTour = (): JoyrideTour => {
   const tour = new JoyrideTour('Main Search Page Tour')
     .addNextStep(
+      'body',
+      "Welcome to Metagrid! This tour will highlight the main controls and features of the search page. During the tour, click 'Next' to continue, or 'Previous' to go back a step in the tour. Click 'Skip' if you wish to cancel the tour. Let's begin!",
+      'center'
+    )
+    .addNextStep(
       mainTourTargets.getSelector('topSearchBar'),
-      'This is the top search bar! You can select a project, then enter a search term and click the magnifying glass button to quickly view results in the result table.',
+      'This is the top search bar! You can select a project, then enter a search term and click the magnifying glass button to quickly start your search and view results in the table below.',
       'bottom'
     )
     .addNextStep(
@@ -116,22 +129,22 @@ export const createMainPageTour = (): JoyrideTour => {
     )
     .addNextStep(
       mainTourTargets.getSelector('searchPageBtn'),
-      'Clicking this button takes you to the main search page.',
+      "Clicking this button takes you to the main search page (Metagrid's home page.)",
       'bottom'
     )
     .addNextStep(
       mainTourTargets.getSelector('cartPageBtn'),
-      'Clicking this button takes you to the data cart page.',
+      'This button takes you to the data cart page where you can view the data you have selected for download.',
       'bottom'
     )
     .addNextStep(
       mainTourTargets.getSelector('savedSearchPageBtn'),
-      'Clicking this button will allow you to view your currently saved searches.',
+      'To view your currently saved searches, you would click here.',
       'bottom'
     )
     .addNextStep(
       mainTourTargets.getSelector('nodeStatusBtn'),
-      'Clicking this button will take you to the data node status page.',
+      'If you are curious about data node status, you can visit the status page by clicking here.',
       'bottom'
     )
     .addNextStep(
@@ -182,13 +195,53 @@ export const createMainPageTour = (): JoyrideTour => {
       'right'
     )
     .addNextStep(
-      mainTourTargets.getSelector('leftSideBar'),
-      'This is the left sidebar area of the app. From here you can update your search results by selecting the specific project, facets and parameters you need to narrow your search.',
+      mainTourTargets.getSelector('searchFacetsForm'),
+      'This area contains various groups of facets and parameters that you can use to filter results from your selected project.',
       'right'
     )
     .addNextStep(
+      mainTourTargets.getSelector('facetFormGeneral'),
+      'To filter by facets provided within this group, you would open this collapsable form by clicking on it...',
+      'right-end',
+      () => {
+        clickFirstElement(mainTourTargets.getClass('facetFormGeneral'));
+      }
+    )
+    .addNextStep(
+      mainTourTargets.getSelector('facetFormFirstFacet'),
+      'This is a specific facet available within this group. The drop-downs allow you to select multiple items you wish to include in your search. Note that you can search for elements in the drop-down by typing within the input area.',
+      'left-start',
+      () => {
+        clickFirstElement(mainTourTargets.getClass('facetFormAdditional'));
+      }
+    )
+    .addNextStep(
+      mainTourTargets.getSelector('facetFormAdditional'),
+      'This section contains additional properties that you can select to further refine your search results, including the Version Type, Result Type and Version Date Range. Hovering over the question mark icon will further explain the parameter.',
+      'left-end',
+      () => {
+        clickFirstElement(mainTourTargets.getClass('facetFormFilename'));
+      }
+    )
+    .addNextStep(
+      mainTourTargets.getSelector('facetFormFilename'),
+      'This section lets you filter your results to include a specific filename. For more explanation you can hover over the question mark icon to see the tooltip.',
+      'left-end'
+    )
+    .addNextStep(
+      mainTourTargets.getSelector('facetFormFilenameInput'),
+      'To filter by filename, you would type in the name or names as a list of comma separated values then click the magnifying glass icon to add it as a search parameter.',
+      'left-end',
+      () => {
+        clickFirstElement(mainTourTargets.getClass('facetFormFilename'));
+        clickFirstElement(mainTourTargets.getClass('facetFormAdditional'));
+        clickFirstElement(mainTourTargets.getClass('facetFormGeneral'));
+        window.scrollTo(0, 0);
+      }
+    )
+    .addNextStep(
       mainTourTargets.getSelector('queryString'),
-      "When performing a search, you'll be able to view the query generated for your search here.",
+      "When performing a search, you'll be able to view the resulting query generated by your selections here.",
       'bottom'
     )
     .addNextStep(
@@ -219,30 +272,42 @@ export const createMainPageTour = (): JoyrideTour => {
     .addNextStep(
       mainTourTargets.getSelector('addSelectedToCartBtn'),
       'Then to add them to your cart, you would click this button.',
-      'bottom-start'
-    )
-    .addNextStep(
-      mainTourTargets.getSelector('cartPlusBtn'),
-      "You can also directly add a specific dataset to the cart by clicking it's plus button like so...",
-      'top-start',
+      'bottom-start',
       async () => {
-        clickFirstElement(mainTourTargets.getClass('cartPlusBtn'));
-        await delay(1500);
+        if (
+          elementHasState(
+            mainTourTargets.getClass('cartAddBtn'),
+            'target-state_minus'
+          )
+        ) {
+          clickFirstElement(mainTourTargets.getClass('cartAddBtn'));
+          await delay(300);
+        }
       }
     )
     .addNextStep(
-      mainTourTargets.getSelector('cartMinusBtn'),
+      mainTourTargets.getSelector('cartAddBtn'),
+      "You can also directly add a specific dataset to the cart by clicking it's plus button like so...",
+      'top-start',
+      async () => {
+        clickFirstElement(mainTourTargets.getClass('cartAddBtn', 'plus'));
+        await delay(1000);
+      }
+    )
+    .addNextStep(
+      mainTourTargets.getSelector('cartAddBtn'),
       'If you change your mind, you can remove it from the cart by clicking the minus button like so...',
       'top-start',
       async () => {
-        clickFirstElement(mainTourTargets.getClass('cartMinusBtn'));
-        await delay(1500);
+        clickFirstElement(mainTourTargets.getClass('cartAddBtn'));
+        await delay(1000);
       }
     )
     .addNextStep(
       mainTourTargets.getSelector('datasetTitle'),
       'Each row provides access to a specific dataset. The title of the dataset is shown here.',
-      'top-start'
+      'top-start',
+      () => {}
     )
     .addNextStep(
       mainTourTargets.getSelector('nodeStatusIcon'),
@@ -261,7 +326,7 @@ export const createMainPageTour = (): JoyrideTour => {
     )
     .addNextStep(
       mainTourTargets.getSelector('versionText'),
-      'The version number or publish date is shown in this column (depending on the dataset).',
+      'The version number or preparation date is shown in this column (depending on the dataset).',
       'top-start'
     )
     .addNextStep(
@@ -318,12 +383,17 @@ export const createMainPageTour = (): JoyrideTour => {
     .addNextStep(
       mainTourTargets.getSelector('checksum'),
       'The checksum of the specified file is shown here.',
-      'top-start'
+      'top-start',
+      () => {
+        clickFirstElement(
+          mainTourTargets.getClass('searchResultsRowContractIcon')
+        );
+      }
     )
     .addNextStep(
-      mainTourTargets.getSelector('searchFacetsForm'),
-      'From here you can select various facets and parameters to filter your search further.',
-      'right'
+      'body',
+      'This concludes the main search page tour. To get a tour of other pages in the app, or repeat this tour again, you can click the big question mark button in the lower-right corner and select the tour in the Support pop-up menu.',
+      'center'
     );
 
   return tour;

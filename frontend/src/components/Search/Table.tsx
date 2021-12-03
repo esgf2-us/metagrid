@@ -83,7 +83,10 @@ const Table: React.FC<Props> = ({
         record: RawSearchResult;
       }): React.ReactElement =>
         expanded ? (
-          <DownCircleOutlined onClick={(e) => onExpand(record, e)} />
+          <DownCircleOutlined
+            className={mainTourTargets.getClass('searchResultsRowContractIcon')}
+            onClick={(e) => onExpand(record, e)}
+          />
         ) : (
           <ToolTip
             title="View this dataset's metadata, files or additional info."
@@ -132,7 +135,7 @@ const Table: React.FC<Props> = ({
           return (
             <>
               <Button
-                className={mainTourTargets.getClass('cartMinusBtn')}
+                className={mainTourTargets.getClass('cartAddBtn', 'minus')}
                 icon={<MinusOutlined />}
                 onClick={() => onUpdateCart([record], 'remove')}
                 danger
@@ -146,7 +149,7 @@ const Table: React.FC<Props> = ({
               type="primary"
               icon={
                 <PlusOutlined
-                  className={mainTourTargets.getClass('cartPlusBtn')}
+                  className={mainTourTargets.getClass('cartAddBtn', 'plus')}
                 />
               }
               onClick={() => onUpdateCart([record], 'add')}

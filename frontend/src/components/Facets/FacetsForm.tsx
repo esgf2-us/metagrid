@@ -6,7 +6,7 @@ import {
 import { Col, Collapse, DatePicker, Form, Input, Row, Select } from 'antd';
 import moment from 'moment';
 import React from 'react';
-import { facetTourTargets } from '../../common/reactJoyrideSteps';
+import { mainTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
@@ -209,7 +209,6 @@ const FacetsForm: React.FC<Props> = ({
   return (
     <div data-testid="facets-form">
       <Form
-        className={facetTourTargets.getClass('facetForm1')}
         form={availableFacetsForm}
         initialValues={{
           ...activeSearchQuery.activeFacets,
@@ -220,7 +219,13 @@ const FacetsForm: React.FC<Props> = ({
             {facetsByGroup &&
               Object.keys(facetsByGroup).map((group) => (
                 <Collapse.Panel
-                  header={humanizeFacetNames(group)}
+                  header={
+                    <div
+                      className={mainTourTargets.getClass('facetFormGeneral')}
+                    >
+                      {humanizeFacetNames(group)}
+                    </div>
+                  }
                   key={group}
                   className="site-collapse-custom-collapse"
                 >
@@ -235,7 +240,9 @@ const FacetsForm: React.FC<Props> = ({
                         <Form.Item
                           key={facet}
                           name={facet}
-                          className={facetTourTargets.getClass('facetForm2')}
+                          className={mainTourTargets.getClass(
+                            'facetFormFirstFacet'
+                          )}
                           label={
                             humanizeFacetNames(facet) +
                             (isOptionalforDatasets ? ' (Optional)' : '')
@@ -315,7 +322,6 @@ const FacetsForm: React.FC<Props> = ({
         </div>
       </Form>
       <Form
-        className={facetTourTargets.getClass('facetForm3')}
         form={generalFacetsForm}
         layout="horizontal"
         size="small"
@@ -331,7 +337,11 @@ const FacetsForm: React.FC<Props> = ({
       >
         <Collapse>
           <Collapse.Panel
-            header={humanizeFacetNames('additional_properties')}
+            header={
+              <div className={mainTourTargets.getClass('facetFormAdditional')}>
+                {humanizeFacetNames('additional_properties')}
+              </div>
+            }
             key="additional_properties"
             className="site-collapse-custom-collapse"
           >
@@ -388,7 +398,6 @@ const FacetsForm: React.FC<Props> = ({
         </Collapse>
       </Form>
       <Form
-        className={facetTourTargets.getClass('facetForm4')}
         form={filenameVarForm}
         layout="horizontal"
         size="small"
@@ -397,7 +406,11 @@ const FacetsForm: React.FC<Props> = ({
       >
         <Collapse>
           <Collapse.Panel
-            header={humanizeFacetNames('filename')}
+            header={
+              <div className={mainTourTargets.getClass('facetFormFilename')}>
+                {humanizeFacetNames('filename')}
+              </div>
+            }
             key="filename"
             className="site-collapse-custom-collapse"
           >
@@ -420,7 +433,9 @@ const FacetsForm: React.FC<Props> = ({
               <Row gutter={5}>
                 <Col>
                   <Input
-                    className={facetTourTargets.getClass('facetForm5')}
+                    className={mainTourTargets.getClass(
+                      'facetFormFilenameInput'
+                    )}
                     data-testid="filename-search-input"
                     value={filenameVars}
                     style={{ width: '140px' }}

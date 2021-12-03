@@ -1,5 +1,10 @@
 import { JoyrideTour } from './JoyrideTour';
 
+/**
+ * name: The identifier to use when locating the target
+ * class: The actual classname of the target
+ * selector: The css selector which can be used to get the target
+ */
 export type TourTarget = {
   name: string;
   class: string;
@@ -33,12 +38,26 @@ export class TourTargets {
     return this;
   }
 
-  getClass(targetId: string): string {
-    return this.targets.get(targetId)?.class || this.defaultTarget.class;
+  getClass(targetId: string, state?: string): string {
+    if (this.targets.has(targetId)) {
+      return `${this.targets.get(targetId)!.class}${
+        state ? ` target-state_${state}` : ''
+      }`;
+    }
+    return this.defaultTarget.class;
   }
 
-  getSelector(targetId: string): string {
-    return this.targets.get(targetId)?.selector || this.defaultTarget.selector;
+  getSelector(targetId: string, state?: string): string {
+    if (this.targets.has(targetId)) {
+      return `${this.targets.get(targetId)!.selector}${
+        state ? `.target-state_${state}` : ''
+      }`;
+    }
+    return this.defaultTarget.selector;
+  }
+
+  getTarget(targetId: string): TourTarget | undefined {
+    return this.targets.get(targetId);
   }
 
   createTestTourOfTargets(): JoyrideTour {
