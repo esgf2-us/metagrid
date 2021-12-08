@@ -10,7 +10,7 @@ import { useAsync } from 'react-async';
 import { useHistory } from 'react-router-dom';
 import { fetchSearchResults, generateSearchURLQuery } from '../../api';
 import { clickableRoute } from '../../api/routes';
-import { SavedSearchTargets } from '../../common/reactJoyrideSteps';
+import { savedSearchTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import Card from '../DataDisplay/Card';
 import ToolTip from '../DataDisplay/ToolTip';
@@ -103,7 +103,7 @@ const SearchesCard: React.FC<Props> = ({
         actions={[
           <ToolTip title="Apply search query and view results" trigger="hover">
             <SearchOutlined
-              className={SavedSearchTargets.applySearchesBtn}
+              className={savedSearchTourTargets.getClass('applySearch')}
               data-testid={`apply-${index + 1}`}
               key="search"
               onClick={() => {
@@ -114,7 +114,7 @@ const SearchesCard: React.FC<Props> = ({
           </ToolTip>,
           <ToolTip title="View results in JSON format">
             <a
-              className={SavedSearchTargets.jsonBtn}
+              className={savedSearchTourTargets.getClass('jsonBtn')}
               href={clickableRoute(url)}
               rel="noopener noreferrer"
               target="blank_"
@@ -124,7 +124,7 @@ const SearchesCard: React.FC<Props> = ({
           </ToolTip>,
           <ToolTip title="Remove search query from library">
             <DeleteOutlined
-              className={SavedSearchTargets.removeSearchBtn}
+              className={savedSearchTourTargets.getClass('removeBtn')}
               data-testid={`remove-${index + 1}`}
               onClick={() => onRemoveSearchQuery(uuid)}
               style={{ color: 'red' }}
@@ -134,7 +134,7 @@ const SearchesCard: React.FC<Props> = ({
         ]}
       >
         {numResults}
-        <p className={SavedSearchTargets.projectDescription}>
+        <p className={savedSearchTourTargets.getClass('projectDescription')}>
           <span style={styles.category}>Project: </span>
           {project.fullName}
         </p>

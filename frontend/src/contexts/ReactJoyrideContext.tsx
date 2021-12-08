@@ -30,23 +30,15 @@ export const ReactJoyrideProvider: React.FC<Props> = ({ children }) => {
   const [getStepIndex, setStepIndex] = React.useState<number>(0);
 
   const nextStep = (index: number): void => {
-    try {
-      const stepCount = getTour.getSteps().length;
-      if (index < stepCount) {
-        setStepIndex(index + 1);
-      }
-    } catch (error) {
-      console.error(error);
+    const stepCount = getTour.getSteps().length;
+    if (index < stepCount) {
+      setStepIndex(index + 1);
     }
   };
 
   const previousStep = (index: number): void => {
-    try {
-      if (index >= 0) {
-        setStepIndex(index - 1);
-      }
-    } catch (error) {
-      console.error(error);
+    if (index >= 0) {
+      setStepIndex(index - 1);
     }
   };
 

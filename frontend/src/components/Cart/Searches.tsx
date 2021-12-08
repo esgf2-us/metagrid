@@ -1,6 +1,6 @@
 import { Row } from 'antd';
 import React from 'react';
-import { CartTourTargets } from '../../common/reactJoyrideSteps';
+import { cartTourTargets } from '../../common/reactJoyrideSteps';
 import Empty from '../DataDisplay/Empty';
 import SearchesCard from './SearchesCard';
 import { UserSearchQueries, UserSearchQuery } from './types';
@@ -21,7 +21,7 @@ const Searches: React.FC<Props> = ({
   }
 
   return (
-    <div className={CartTourTargets.savedSearches}>
+    <div className={cartTourTargets.getClass('cartItems')}>
       <Row gutter={[18, 18]}>
         {(userSearchQueries as UserSearchQueries).map(
           (searchQuery: UserSearchQuery, index: number) => (

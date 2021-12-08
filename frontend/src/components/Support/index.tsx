@@ -1,13 +1,13 @@
 import { GithubOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { Button, Card } from 'antd';
 import React from 'react';
-import { useHistory } from 'react-router-dom';
 import { JoyrideTour } from '../../common/JoyrideTour';
 import {
   createSearchCardTour,
   createMainPageTour,
   getCurrentAppPage,
   mainTourTargets,
+  createCartItemsTour,
 } from '../../common/reactJoyrideSteps';
 import { AppPage } from '../../common/types';
 import {
@@ -22,8 +22,6 @@ export type Props = {
 };
 
 const Support: React.FC<Props> = ({ visible, onClose }) => {
-  const history = useHistory();
-
   // Tutorial state
   const tourState: RawTourState = React.useContext(ReactJoyrideContext);
   const { setTour, startTour, setCurrentAppPage } = tourState;
@@ -56,6 +54,10 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
 
   const startMainPageTour = (): void => {
     startSpecificTour(createMainPageTour());
+  };
+
+  const startCartPageTour = (): void => {
+    startSpecificTour(createCartItemsTour(setCurrentAppPage));
   };
 
   const startGrandTour = (): void => {
@@ -113,6 +115,9 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
                 </Button>
                 {curPage === AppPage.SavedSearches && (
                   <Button onClick={startSearchCardTour}>Search Card</Button>
+                )}
+                {curPage === AppPage.Cart && (
+                  <Button onClick={startCartPageTour}>Cart Page Tour</Button>
                 )}
               </Card>
             </div>

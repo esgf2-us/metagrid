@@ -10,6 +10,7 @@ import {
   openDownloadURL,
   ResponseError,
 } from '../../api/index';
+import { cartTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import Empty from '../DataDisplay/Empty';
 import Popconfirm from '../Feedback/Popconfirm';
@@ -91,7 +92,12 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
                 onConfirm={onClearCart}
               >
                 <span>
-                  <Button danger>Remove All Items</Button>
+                  <Button
+                    className={cartTourTargets.getClass('removeItemsBtn')}
+                    danger
+                  >
+                    Remove All Items
+                  </Button>
                 </span>
               </Popconfirm>
             )}

@@ -22,10 +22,6 @@ export const delay = (ms: number): Promise<void> => {
   return new Promise((res) => setTimeout(res, ms));
 };
 
-export function classSelector(className: string): string {
-  return `.${className}`;
-}
-
 export const elementExists = (className: string): boolean => {
   return document.getElementsByClassName(className).length > 0;
 };
@@ -35,20 +31,40 @@ export const elementHasState = (classname: string, state: string): boolean => {
     classname
   )[0] as HTMLElement;
   if (elem) {
-    return elem.classList.contains(state);
+    return elem.classList.contains(`target-state_${state}`);
   }
   return false;
 };
 
-export const clickFirstElement = (className: string): boolean => {
-  if (elementExists(className)) {
-    const elem = document
-      .getElementsByClassName(className)
-      .item(0) as HTMLElement;
-    if (elem) {
-      elem.click();
-      return true;
-    }
+export const clickFirstElement = (selector: string): boolean => {
+  const elem = document.querySelector(selector) as HTMLElement;
+  if (elem) {
+    elem.click();
+    return true;
+  }
+  return false;
+};
+
+const mainTableEmpty = (): boolean => {
+  return elementExists('ant-empty-image');
+};
+
+const cartIsEmpty = (): boolean => {
+  const elem = document.querySelector(
+    '#root .ant-tabs-tabpane-active .ant-empty-description'
+  );
+  if (elem) {
+    return elem.innerHTML === 'Your cart is empty';
+  }
+  return false;
+};
+
+const searchLibraryIsEmpty = (): boolean => {
+  const elem = document.querySelector(
+    '#root .ant-tabs-tabpane-active .ant-empty-description'
+  );
+  if (elem) {
+    return elem.innerHTML === 'Your search library is empty';
   }
   return false;
 };
@@ -96,19 +112,18 @@ export const mainTourTargets = new TourTargets('main-joyride-tour')
   .create('facetFormFilename')
   .create('facetFormFilenameInput');
 
-export enum CartTourTargets {
-  savedSearches = 'cartPage-saved-search-items',
-  cartSummary = 'cartPage-cart-summary',
-  datasetBtn = 'cartPage-dataset-btn',
-  searchLibraryBtn = 'cartPage-search-library-btn',
-}
+export const cartTourTargets = new TourTargets('cart-tour')
+  .create('cartItems')
+  .create('cartSummary')
+  .create('datasetBtn')
+  .create('libraryBtn')
+  .create('removeItemsBtn');
 
-export enum SavedSearchTargets {
-  applySearchesBtn = 'searchCard-apply-searches-btn',
-  jsonBtn = 'searchCard-json-btn',
-  removeSearchBtn = 'searchCard-remove-search-btn',
-  projectDescription = 'searchCard-project-description',
-}
+export const savedSearchTourTargets = new TourTargets('saved-search-tour')
+  .create('applySearch')
+  .create('jsonBtn')
+  .create('removeBtn')
+  .create('projectDescription');
 
 export const createMainPageTour = (): JoyrideTour => {
   const tour = new JoyrideTour('Main Search Page Tour')
@@ -158,7 +173,7 @@ export const createMainPageTour = (): JoyrideTour => {
       'right'
     );
 
-  if (elementExists('ant-empty-image')) {
+  if (mainTableEmpty()) {
     tour
       .addNextStep(
         mainTourTargets.getSelector('projectSelectLeftSideBtn'),
@@ -166,16 +181,16 @@ export const createMainPageTour = (): JoyrideTour => {
         'right',
         () => {
           clickFirstElement(
-            mainTourTargets.getClass('projectSelectLeftSideBtn')
+            mainTourTargets.getSelector('projectSelectLeftSideBtn')
           );
         }
       )
       .addNextStep(
         mainTourTargets.getSelector('projectSelectLeftSideBtn'),
-        'NOTE: The search results may take a few seconds to load... Click to continue.',
+        "NOTE: The search results may take a few seconds to load... Click 'next' to continue.",
         'right',
         async () => {
-          if (elementExists('ant-empty-image')) {
+          if (mainTableEmpty()) {
             await delay(1000);
           }
         }
@@ -204,7 +219,7 @@ export const createMainPageTour = (): JoyrideTour => {
       'To filter by facets provided within this group, you would open this collapsable form by clicking on it...',
       'right-end',
       () => {
-        clickFirstElement(mainTourTargets.getClass('facetFormGeneral'));
+        clickFirstElement(mainTourTargets.getSelector('facetFormGeneral'));
       }
     )
     .addNextStep(
@@ -212,7 +227,7 @@ export const createMainPageTour = (): JoyrideTour => {
       'This is a specific facet available within this group. The drop-downs allow you to select multiple items you wish to include in your search. Note that you can search for elements in the drop-down by typing within the input area.',
       'left-start',
       () => {
-        clickFirstElement(mainTourTargets.getClass('facetFormAdditional'));
+        clickFirstElement(mainTourTargets.getSelector('facetFormAdditional'));
       }
     )
     .addNextStep(
@@ -220,7 +235,7 @@ export const createMainPageTour = (): JoyrideTour => {
       'This section contains additional properties that you can select to further refine your search results, including the Version Type, Result Type and Version Date Range. Hovering over the question mark icon will further explain the parameter.',
       'left-end',
       () => {
-        clickFirstElement(mainTourTargets.getClass('facetFormFilename'));
+        clickFirstElement(mainTourTargets.getSelector('facetFormFilename'));
       }
     )
     .addNextStep(
@@ -233,9 +248,9 @@ export const createMainPageTour = (): JoyrideTour => {
       'To filter by filename, you would type in the name or names as a list of comma separated values then click the magnifying glass icon to add it as a search parameter.',
       'left-end',
       () => {
-        clickFirstElement(mainTourTargets.getClass('facetFormFilename'));
-        clickFirstElement(mainTourTargets.getClass('facetFormAdditional'));
-        clickFirstElement(mainTourTargets.getClass('facetFormGeneral'));
+        clickFirstElement(mainTourTargets.getSelector('facetFormFilename'));
+        clickFirstElement(mainTourTargets.getSelector('facetFormAdditional'));
+        clickFirstElement(mainTourTargets.getSelector('facetFormGeneral'));
         window.scrollTo(0, 0);
       }
     )
@@ -275,12 +290,9 @@ export const createMainPageTour = (): JoyrideTour => {
       'bottom-start',
       async () => {
         if (
-          elementHasState(
-            mainTourTargets.getClass('cartAddBtn'),
-            'target-state_minus'
-          )
+          elementHasState(mainTourTargets.getSelector('cartAddBtn'), 'minus')
         ) {
-          clickFirstElement(mainTourTargets.getClass('cartAddBtn'));
+          clickFirstElement(mainTourTargets.getSelector('cartAddBtn'));
           await delay(300);
         }
       }
@@ -290,8 +302,8 @@ export const createMainPageTour = (): JoyrideTour => {
       "You can also directly add a specific dataset to the cart by clicking it's plus button like so...",
       'top-start',
       async () => {
-        clickFirstElement(mainTourTargets.getClass('cartAddBtn', 'plus'));
-        await delay(1000);
+        clickFirstElement(mainTourTargets.getSelector('cartAddBtn', 'plus'));
+        await delay(300);
       }
     )
     .addNextStep(
@@ -299,15 +311,14 @@ export const createMainPageTour = (): JoyrideTour => {
       'If you change your mind, you can remove it from the cart by clicking the minus button like so...',
       'top-start',
       async () => {
-        clickFirstElement(mainTourTargets.getClass('cartAddBtn'));
-        await delay(1000);
+        clickFirstElement(mainTourTargets.getSelector('cartAddBtn'));
+        await delay(300);
       }
     )
     .addNextStep(
       mainTourTargets.getSelector('datasetTitle'),
       'Each row provides access to a specific dataset. The title of the dataset is shown here.',
-      'top-start',
-      () => {}
+      'top-start'
     )
     .addNextStep(
       mainTourTargets.getSelector('nodeStatusIcon'),
@@ -350,9 +361,9 @@ export const createMainPageTour = (): JoyrideTour => {
       'top-start',
       async () => {
         clickFirstElement(
-          mainTourTargets.getClass('searchResultsRowExpandIcon')
+          mainTourTargets.getSelector('searchResultsRowExpandIcon')
         );
-        await delay(700);
+        await delay(1000);
       }
     )
     .addNextStep(
@@ -386,7 +397,7 @@ export const createMainPageTour = (): JoyrideTour => {
       'top-start',
       () => {
         clickFirstElement(
-          mainTourTargets.getClass('searchResultsRowContractIcon')
+          mainTourTargets.getSelector('searchResultsRowContractIcon')
         );
       }
     )
@@ -399,24 +410,135 @@ export const createMainPageTour = (): JoyrideTour => {
   return tour;
 };
 
-export const createSearchCardTour = (): JoyrideTour => {
-  return new JoyrideTour('Search Card Tour')
+export const createCartItemsTour = (
+  setCurrentPage: (page: number) => void
+): JoyrideTour => {
+  const tour = new JoyrideTour('Metagrid Data Cart Tour').addNextStep(
+    'body',
+    'This tour will highlight the main elements of the Metagrid data cart.',
+    'center'
+  );
+
+  let cartItemsAdded = false;
+
+  // Add steps if the cart is empty, which will add an item
+  if (cartIsEmpty()) {
+    cartItemsAdded = true;
+    tour
+      .addNextStep(
+        '#root .ant-empty-img-default',
+        'As you can tell, currently no datasets have been added to your cart. We will need to go to the search page and add a dataset first...',
+        'top',
+        async (): Promise<void> => {
+          await delay(300);
+          setCurrentPage(AppPage.Main);
+        }
+      )
+      .addNextStep(
+        'body',
+        'This is the main search page where we will load a project to add a dataset...',
+        'center'
+      );
+    // If the main search page is empty, select a project
+    if (cartIsEmpty()) {
+      tour
+        .addNextStep(
+          mainTourTargets.getSelector('projectSelectLeftSideBtn'),
+          'First we will click this button to load results from a project into the search table...',
+          'right',
+          () => {
+            console.log(
+              mainTourTargets.getSelector('projectSelectLeftSideBtn')
+            );
+            clickFirstElement(
+              mainTourTargets.getSelector('projectSelectLeftSideBtn')
+            );
+          }
+        )
+        .addNextStep(
+          mainTourTargets.getSelector('projectSelectLeftSideBtn'),
+          "NOTE: The search results may take a few seconds to load... Click 'next' to continue.",
+          'right',
+          async () => {
+            if (cartIsEmpty()) {
+              await delay(1000);
+            }
+          }
+        );
+    }
+    tour
+      .addNextStep(
+        mainTourTargets.getSelector('searchResultsTable'),
+        "Let's go ahead and add some datasets to the cart...",
+        'top-start',
+        async () => {
+          clickFirstElement(mainTourTargets.getSelector('cartAddBtn', 'plus'));
+          await delay(300);
+          clickFirstElement(mainTourTargets.getSelector('cartAddBtn', 'plus'));
+          await delay(300);
+        }
+      )
+      .addNextStep(
+        mainTourTargets.getSelector('cartPageBtn'),
+        'Now that there are datasets in the cart, we will go view them in the cart page...',
+        'bottom',
+        async (): Promise<void> => {
+          setCurrentPage(AppPage.Cart);
+          await delay(1000);
+        }
+      );
+  }
+
+  tour
     .addNextStep(
-      classSelector(SavedSearchTargets.projectDescription),
+      cartTourTargets.getSelector('cartSummary'),
+      'This shows a summary of the datasets in the cart.'
+    )
+    .addNextStep(
+      '.ant-table-container',
+      'This table shows the current datasets in the cart.'
+    )
+    .addNextStep(
+      cartTourTargets.getSelector('removeItemsBtn'),
+      'We can remove all items from the cart with this button.',
+      'right-start',
+      async () => {
+        if (cartItemsAdded) {
+          clickFirstElement(cartTourTargets.getSelector('removeItemsBtn'));
+          await delay(500);
+          clickFirstElement('.ant-popover-buttons .ant-btn-primary');
+          await delay(300);
+        }
+      }
+    );
+
+  tour.addNextStep('body', 'This concludes the cart page tour.', 'center');
+
+  return tour;
+};
+
+export const createSearchCardTour = (): JoyrideTour => {
+  const searchCardTour = new JoyrideTour('Search Card Tour');
+
+  searchCardTour
+    .addNextStep(
+      savedSearchTourTargets.getSelector('projectDescription'),
       'This is the project selected for this search.'
     )
     .addNextStep(
-      classSelector(SavedSearchTargets.applySearchesBtn),
+      savedSearchTourTargets.getSelector('applyBtn'),
       'Clicking this button will apply your saved search to the main results page.'
     )
     .addNextStep(
-      classSelector(SavedSearchTargets.jsonBtn),
+      savedSearchTourTargets.getSelector('jsonBtn'),
       'Clicking this button will show the JSON data associated with this search.',
       'right'
     )
     .addNextStep(
-      classSelector(SavedSearchTargets.removeSearchBtn),
+      savedSearchTourTargets.getSelector('removeBtn'),
       'This button will remove this search from your saved searches.',
       'left-start'
     );
+
+  return searchCardTour;
 };
