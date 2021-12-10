@@ -4,6 +4,7 @@ import { SortOrder } from 'antd/lib/table/interface';
 import React from 'react';
 import { ResponseError } from '../../api';
 import apiRoutes from '../../api/routes';
+import { nodeTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import Alert from '../Feedback/Alert';
 import { NodeStatusArray, NodeStatusElement } from './types';
@@ -87,7 +88,9 @@ const NodeStatus: React.FC<Props> = ({ nodeStatus, apiError, isLoading }) => {
         <TableD
           title={() => (
             <div style={styles.headerContainer}>
-              <h1>Status as of {timestamp}</h1>
+              <h1 className={nodeTourTargets.getClass('updateTime')}>
+                Status as of {timestamp}
+              </h1>
               <p>
                 The status is automatically refreshed every five minutes. You
                 can also manually refresh your browser for the latest update.

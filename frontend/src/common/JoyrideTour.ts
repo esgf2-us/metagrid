@@ -23,9 +23,7 @@ export class JoyrideTour {
     this.actions = [];
     this.stepCount = 0;
     this.finish = () => {
-      return () => {
-        console.log('Tour complete!');
-      };
+      return () => {};
     };
   }
 

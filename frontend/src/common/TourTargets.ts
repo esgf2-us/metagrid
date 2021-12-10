@@ -39,19 +39,17 @@ export class TourTargets {
   }
 
   getClass(targetId: string, state?: string): string {
-    if (this.targets.has(targetId)) {
-      return `${this.targets.get(targetId)!.class}${
-        state ? ` target-state_${state}` : ''
-      }`;
+    const target = this.targets.get(targetId);
+    if (target) {
+      return `${target.class}${state ? ` target-state_${state}` : ''}`;
     }
     return this.defaultTarget.class;
   }
 
   getSelector(targetId: string, state?: string): string {
-    if (this.targets.has(targetId)) {
-      return `${this.targets.get(targetId)!.selector}${
-        state ? `.target-state_${state}` : ''
-      }`;
+    const target = this.targets.get(targetId);
+    if (target) {
+      return `${target.selector}${state ? `.target-state_${state}` : ''}`;
     }
     return this.defaultTarget.selector;
   }
@@ -62,7 +60,7 @@ export class TourTargets {
 
   createTestTourOfTargets(): JoyrideTour {
     const testTour = new JoyrideTour(`Test Tour of ${this.name} Targets`);
-    this.targets.forEach((target, id) => {
+    this.targets.forEach((target) => {
       testTour.addNextStep(
         target.selector,
         `Target Name: ${target.name} __ Target Selector: ${target.selector}`

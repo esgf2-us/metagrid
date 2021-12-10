@@ -8,6 +8,9 @@ import {
   getCurrentAppPage,
   mainTourTargets,
   createCartItemsTour,
+  cartTourTargets,
+  savedSearchTourTargets,
+  nodeTourTargets,
 } from '../../common/reactJoyrideSteps';
 import { AppPage } from '../../common/types';
 import {
@@ -36,16 +39,51 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
 
   const startTestTours = (): void => {
     const firstTest = mainTourTargets.createTestTourOfTargets();
-    // const secondTest = facetTourTargets.createTestTourOfTargets();
+    const secondTest = cartTourTargets.createTestTourOfTargets();
+    const thirdTest = savedSearchTourTargets.createTestTourOfTargets();
+    const fourthTest = nodeTourTargets.createTestTourOfTargets();
 
     firstTest.setOnFinish(() => {
       return (): void => {
+        setCurrentAppPage(AppPage.Cart);
         setTimeout(() => {
-          // startSpecificTour(secondTest);
+          startSpecificTour(secondTest);
         }, 1000);
       };
     });
-    startSpecificTour(firstTest);
+
+    secondTest.setOnFinish(() => {
+      return (): void => {
+        setCurrentAppPage(AppPage.SavedSearches);
+        setTimeout(() => {
+          startSpecificTour(thirdTest);
+        }, 1000);
+      };
+    });
+
+    thirdTest.setOnFinish(() => {
+      return (): void => {
+        setCurrentAppPage(AppPage.NodeStatus);
+        setTimeout(() => {
+          startSpecificTour(fourthTest);
+        }, 1000);
+      };
+    });
+
+    fourthTest.setOnFinish(() => {
+      return (): void => {
+        setCurrentAppPage(curPage);
+      };
+    });
+
+    if (curPage !== AppPage.Main) {
+      setCurrentAppPage(AppPage.Main);
+      setTimeout(() => {
+        startSpecificTour(firstTest);
+      }, 500);
+    } else {
+      startSpecificTour(firstTest);
+    }
   };
 
   const startSearchCardTour = (): void => {
@@ -110,9 +148,9 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
               <Card title="U.I Tours">
                 <Button onClick={startGrandTour}>Metagrid Grand Tour</Button>
                 <Button onClick={startTestTours}>TEST Tour Targets</Button>
-                <Button onClick={startMainPageTour}>
-                  Main Search Page Tour
-                </Button>
+                {curPage === AppPage.Main && (
+                  <Button onClick={startMainPageTour}>Main Page Tour</Button>
+                )}
                 {curPage === AppPage.SavedSearches && (
                   <Button onClick={startSearchCardTour}>Search Card</Button>
                 )}

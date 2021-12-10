@@ -31,14 +31,22 @@ export const ReactJoyrideProvider: React.FC<Props> = ({ children }) => {
 
   const nextStep = (index: number): void => {
     const stepCount = getTour.getSteps().length;
-    if (index < stepCount) {
-      setStepIndex(index + 1);
+    try {
+      if (index < stepCount) {
+        setStepIndex(index + 1);
+      }
+    } catch (error) {
+      console.error(error);
     }
   };
 
   const previousStep = (index: number): void => {
-    if (index >= 0) {
-      setStepIndex(index - 1);
+    try {
+      if (index >= 0) {
+        setStepIndex(index - 1);
+      }
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -92,7 +100,7 @@ export const ReactJoyrideProvider: React.FC<Props> = ({ children }) => {
             default:
           }
         }
-      }, 0);
+      }, 100);
     }
   };
 

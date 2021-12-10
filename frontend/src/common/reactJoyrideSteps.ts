@@ -4,18 +4,19 @@ import { AppPage } from './types';
 
 export const getCurrentAppPage = (): number => {
   const { pathname } = window.location;
-  switch (pathname) {
-    case '/search':
-      return AppPage.Main;
-    case '/cart/items':
-      return AppPage.Cart;
-    case '/nodes':
-      return AppPage.NodeStatus;
-    case '/cart/searches':
-      return AppPage.SavedSearches;
-    default:
-      return -1;
+  if (pathname.endsWith('/search')) {
+    return AppPage.Main;
   }
+  if (pathname.endsWith('/cart/items')) {
+    return AppPage.Cart;
+  }
+  if (pathname.endsWith('/nodes')) {
+    return AppPage.NodeStatus;
+  }
+  if (pathname.endsWith('/cart/searches')) {
+    return AppPage.SavedSearches;
+  }
+  return -1;
 };
 
 export const delay = (ms: number): Promise<void> => {
@@ -124,6 +125,10 @@ export const savedSearchTourTargets = new TourTargets('saved-search-tour')
   .create('jsonBtn')
   .create('removeBtn')
   .create('projectDescription');
+
+export const nodeTourTargets = new TourTargets('node-tour').create(
+  'updateTime'
+);
 
 export const createMainPageTour = (): JoyrideTour => {
   const tour = new JoyrideTour('Main Search Page Tour')
@@ -447,9 +452,6 @@ export const createCartItemsTour = (
           'First we will click this button to load results from a project into the search table...',
           'right',
           () => {
-            console.log(
-              mainTourTargets.getSelector('projectSelectLeftSideBtn')
-            );
             clickFirstElement(
               mainTourTargets.getSelector('projectSelectLeftSideBtn')
             );
@@ -520,6 +522,13 @@ export const createCartItemsTour = (
 export const createSearchCardTour = (): JoyrideTour => {
   const searchCardTour = new JoyrideTour('Search Card Tour');
 
+  if (searchLibraryIsEmpty()) {
+    searchCardTour.addNextStep(
+      savedSearchTourTargets.getSelector('projectDescription'),
+      'This tour requires some search cards.'
+    );
+    return searchCardTour;
+  }
   searchCardTour
     .addNextStep(
       savedSearchTourTargets.getSelector('projectDescription'),
