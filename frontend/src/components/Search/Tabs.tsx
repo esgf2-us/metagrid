@@ -102,9 +102,8 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
   return (
     <TabsD>
       <TabsD.TabPane
-        tab="Files"
+        tab={<div className={mainTourTargets.getClass('filesTab')}>Files</div>}
         key="1"
-        className={mainTourTargets.getClass('selectedRowExpandedInfo')}
       >
         <FilesTable
           id={record.id}
@@ -112,10 +111,18 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
           filenameVars={filenameVars}
         />
       </TabsD.TabPane>
-      <TabsD.TabPane tab="Metadata" key="2">
+      <TabsD.TabPane
+        tab={
+          <div className={mainTourTargets.getClass('metadataTab')}>
+            Metadata
+          </div>
+        }
+        key="2"
+      >
         <h4>Displaying {Object.keys(record).length} keys</h4>
         <AutoComplete
           style={{ width: '100%' }}
+          className={mainTourTargets.getClass('metadataLookupField')}
           options={metaData}
           placeholder="Lookup a key..."
           filterOption={(inputValue, option) =>
@@ -132,7 +139,14 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
         ))}
       </TabsD.TabPane>
       {showCitation && (
-        <TabsD.TabPane tab="Citation" key="3">
+        <TabsD.TabPane
+          tab={
+            <div className={mainTourTargets.getClass('citationTab')}>
+              Citation
+            </div>
+          }
+          key="3"
+        >
           <Citation
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             url={record.citation_url![0]}
@@ -140,7 +154,14 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
         </TabsD.TabPane>
       )}
       {showAdditionalTab && (
-        <TabsD.TabPane tab="Additional" key="4">
+        <TabsD.TabPane
+          tab={
+            <div className={mainTourTargets.getClass('additionalTab')}>
+              Additional
+            </div>
+          }
+          key="4"
+        >
           {showAdditionalLinks && additionalLinks}
           {showESDOC &&
             ((record.further_info_url as unknown) as string)[0] !== '' && (

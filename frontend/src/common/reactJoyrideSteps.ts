@@ -100,7 +100,11 @@ export const mainTourTargets = new TourTargets('main-joyride-tour')
   .create('downloadScriptBtn')
   .create('searchResultsRowExpandIcon')
   .create('searchResultsRowContractIcon')
-  .create('selectedRowExpandedInfo')
+  .create('filesTab')
+  .create('metadataTab')
+  .create('metadataLookupField')
+  .create('citationTab')
+  .create('additionalTab')
   .create('filesTitle')
   .create('dataSize')
   .create('downloadDataBtn')
@@ -108,10 +112,11 @@ export const mainTourTargets = new TourTargets('main-joyride-tour')
   .create('checksum')
   .create('searchFacetsForm')
   .create('facetFormGeneral')
-  .create('facetFormFirstFacet')
+  .create('facetFormFields')
   .create('facetFormAdditional')
+  .create('facetFormAdditionalFields')
   .create('facetFormFilename')
-  .create('facetFormFilenameInput');
+  .create('facetFormFilenameFields');
 
 export const cartTourTargets = new TourTargets('cart-tour')
   .create('cartItems')
@@ -129,6 +134,135 @@ export const savedSearchTourTargets = new TourTargets('saved-search-tour')
 export const nodeTourTargets = new TourTargets('node-tour').create(
   'updateTime'
 );
+
+const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
+  tour
+    .addNextStep(
+      mainTourTargets.getSelector('datasetTitle'),
+      'Each row provides access to a specific dataset. The title of the dataset is shown here.',
+      'top-start'
+    )
+    .addNextStep(
+      mainTourTargets.getSelector('nodeStatusIcon'),
+      "This icon shows the current status of the node which hosts this dataset. When hovering over the icon you will see more detail as to the node's status.",
+      'top-start'
+    )
+    .addNextStep(
+      mainTourTargets.getSelector('fileCount'),
+      'This shows how many separate files are contained in this dataset.',
+      'top-start'
+    )
+    .addNextStep(
+      mainTourTargets.getSelector('totalSize'),
+      'This shows the total size of the dataset with all of its files.',
+      'top-start'
+    )
+    .addNextStep(
+      mainTourTargets.getSelector('versionText'),
+      'The version number or preparation date is shown in this column (depending on the dataset).',
+      'top-start'
+    )
+    .addNextStep(
+      mainTourTargets.getSelector('downloadScriptForm'),
+      'If you wish to download the entire dataset, you can do so by first obtaining the download script.',
+      'top-start'
+    )
+    .addNextStep(
+      mainTourTargets.getSelector('downloadScriptOptions'),
+      'This drop-down allows you to select which type of script you wish to download. Currently wget is the only form supported.',
+      'top'
+    )
+    .addNextStep(
+      mainTourTargets.getSelector('downloadScriptBtn'),
+      'Clicking this button will begin the download of your script.',
+      'top'
+    )
+    .addNextStep(
+      mainTourTargets.getSelector('searchResultsRowExpandIcon'),
+      'To view more information about a specific dataset, you can expand the row by clicking this little arrow icon...',
+      'top-start',
+      async () => {
+        clickFirstElement(
+          mainTourTargets.getSelector('searchResultsRowExpandIcon')
+        );
+        await delay(1000);
+      }
+    )
+    .addNextStep(
+      mainTourTargets.getSelector('filesTab'),
+      'The file information tab is open by default. Within this tab, it is possible to view individual files in the dataset for access and download.',
+      'top-start'
+    )
+    .addNextStep(
+      mainTourTargets.getSelector('filesTitle'),
+      'This shows the title of a specific file contained within the dataset.',
+      'top-start'
+    )
+    .addNextStep(
+      mainTourTargets.getSelector('dataSize'),
+      'This shows the size of the specific file in the dataset.',
+      'top-start'
+    )
+    .addNextStep(
+      mainTourTargets.getSelector('downloadDataBtn'),
+      'Clicking this button will initiate a direct download of this data file via HTTPS.',
+      'top-start'
+    )
+    .addNextStep(
+      mainTourTargets.getSelector('copyUrlBtn'),
+      'Clicking this button will copy the OPEN DAP URL of this file directly to your clipboard.',
+      'top-start'
+    )
+    .addNextStep(
+      mainTourTargets.getSelector('checksum'),
+      'The checksum of the specified file is shown here.',
+      'top-start'
+    )
+    .addNextStep(
+      mainTourTargets.getSelector('metadataTab'),
+      'This is the Metadata tab. If you click it, you can view metadata for the dataset...',
+      'top-start',
+      async () => {
+        await delay(300);
+        clickFirstElement(mainTourTargets.getSelector('metadataTab'));
+      }
+    )
+    .addNextStep(
+      mainTourTargets.getSelector('metadataLookupField'),
+      'Besides seeing the metadata listed below, this field can help you search for a specific key/value pair of metadata.',
+      'top-start',
+      async () => {
+        await delay(300);
+        if (elementExists(mainTourTargets.getClass('citationTab'))) {
+          clickFirstElement(mainTourTargets.getSelector('citationTab'));
+        }
+      }
+    )
+    .addNextStep(
+      mainTourTargets.getSelector('citationTab'),
+      'Citation information for the dataset can be viewed within this tab...',
+      'top-start',
+      async () => {
+        await delay(300);
+        if (elementExists(mainTourTargets.getClass('additionalTab'))) {
+          clickFirstElement(mainTourTargets.getSelector('additionalTab'));
+        }
+      }
+    )
+    .addNextStep(
+      mainTourTargets.getSelector('additionalTab'),
+      'You can view additional data and sources by clicking this tab.',
+      'top-start',
+      async () => {
+        clickFirstElement(
+          mainTourTargets.getSelector('searchResultsRowContractIcon')
+        );
+        await delay(300);
+      }
+    );
+
+  return tour;
+};
 
 export const createMainPageTour = (): JoyrideTour => {
   const tour = new JoyrideTour('Main Search Page Tour')
@@ -223,39 +357,45 @@ export const createMainPageTour = (): JoyrideTour => {
       mainTourTargets.getSelector('facetFormGeneral'),
       'To filter by facets provided within this group, you would open this collapsable form by clicking on it...',
       'right-end',
-      () => {
+      async () => {
+        // Open general facets
         clickFirstElement(mainTourTargets.getSelector('facetFormGeneral'));
+        await delay(300);
       }
     )
     .addNextStep(
-      mainTourTargets.getSelector('facetFormFirstFacet'),
-      'This is a specific facet available within this group. The drop-downs allow you to select multiple items you wish to include in your search. Note that you can search for elements in the drop-down by typing within the input area.',
+      mainTourTargets.getSelector('facetFormFields'),
+      'These are facets that are available within this group. The drop-downs allow you to select multiple items you wish to include in your search. Note that you can search for elements in the drop-down by typing within the input area.',
       'left-start',
-      () => {
+      async () => {
+        // Close general facets
+        clickFirstElement(mainTourTargets.getSelector('facetFormGeneral'));
+        await delay(300);
+        // Open additional facets
         clickFirstElement(mainTourTargets.getSelector('facetFormAdditional'));
+        await delay(500);
       }
     )
     .addNextStep(
-      mainTourTargets.getSelector('facetFormAdditional'),
+      mainTourTargets.getSelector('facetFormAdditionalFields'),
       'This section contains additional properties that you can select to further refine your search results, including the Version Type, Result Type and Version Date Range. Hovering over the question mark icon will further explain the parameter.',
       'left-end',
-      () => {
+      async () => {
+        // Close additional facets
+        clickFirstElement(mainTourTargets.getSelector('facetFormAdditional'));
+        await delay(500);
+        // Open filename section
         clickFirstElement(mainTourTargets.getSelector('facetFormFilename'));
+        await delay(300);
       }
     )
     .addNextStep(
-      mainTourTargets.getSelector('facetFormFilename'),
-      'This section lets you filter your results to include a specific filename. For more explanation you can hover over the question mark icon to see the tooltip.',
-      'left-end'
-    )
-    .addNextStep(
-      mainTourTargets.getSelector('facetFormFilenameInput'),
-      'To filter by filename, you would type in the name or names as a list of comma separated values then click the magnifying glass icon to add it as a search parameter.',
+      mainTourTargets.getSelector('facetFormFilenameFields'),
+      'This section lets you filter your results to include a specific filename. To filter by filename, you would type in the name or names as a list of comma separated values then click the magnifying glass icon to add it as a search parameter.',
       'left-end',
       () => {
+        // Close filename section
         clickFirstElement(mainTourTargets.getSelector('facetFormFilename'));
-        clickFirstElement(mainTourTargets.getSelector('facetFormAdditional'));
-        clickFirstElement(mainTourTargets.getSelector('facetFormGeneral'));
         window.scrollTo(0, 0);
       }
     )
@@ -319,98 +459,14 @@ export const createMainPageTour = (): JoyrideTour => {
         clickFirstElement(mainTourTargets.getSelector('cartAddBtn'));
         await delay(300);
       }
-    )
-    .addNextStep(
-      mainTourTargets.getSelector('datasetTitle'),
-      'Each row provides access to a specific dataset. The title of the dataset is shown here.',
-      'top-start'
-    )
-    .addNextStep(
-      mainTourTargets.getSelector('nodeStatusIcon'),
-      "This icon shows the current status of the node which hosts this dataset. When hovering over the icon you will see more detail as to the node's status.",
-      'top-start'
-    )
-    .addNextStep(
-      mainTourTargets.getSelector('fileCount'),
-      'This shows how many separate files are contained in this dataset.',
-      'top-start'
-    )
-    .addNextStep(
-      mainTourTargets.getSelector('totalSize'),
-      'This shows the total size of the dataset with all of its files.',
-      'top-start'
-    )
-    .addNextStep(
-      mainTourTargets.getSelector('versionText'),
-      'The version number or preparation date is shown in this column (depending on the dataset).',
-      'top-start'
-    )
-    .addNextStep(
-      mainTourTargets.getSelector('downloadScriptForm'),
-      'If you wish to download the entire dataset, you can do so by first obtaining the download script.',
-      'top-start'
-    )
-    .addNextStep(
-      mainTourTargets.getSelector('downloadScriptOptions'),
-      'This drop-down allows you to select which type of script you wish to download. Currently wget is the only form supported.',
-      'top'
-    )
-    .addNextStep(
-      mainTourTargets.getSelector('downloadScriptBtn'),
-      'Clicking this button will begin the download of your script.',
-      'top'
-    )
-    .addNextStep(
-      mainTourTargets.getSelector('searchResultsRowExpandIcon'),
-      'To view more information about a specific dataset, you can expand the row by clicking this little arrow icon...',
-      'top-start',
-      async () => {
-        clickFirstElement(
-          mainTourTargets.getSelector('searchResultsRowExpandIcon')
-        );
-        await delay(1000);
-      }
-    )
-    .addNextStep(
-      mainTourTargets.getSelector('selectedRowExpandedInfo'),
-      'In addition to viewing more information about a dataset, it is possible to view individual files in the dataset for access and download.',
-      'top-start'
-    )
-    .addNextStep(
-      mainTourTargets.getSelector('filesTitle'),
-      'This shows the title of a specific file contained within the dataset.',
-      'top-start'
-    )
-    .addNextStep(
-      mainTourTargets.getSelector('dataSize'),
-      'This shows the size of the specific file in the dataset.',
-      'top-start'
-    )
-    .addNextStep(
-      mainTourTargets.getSelector('downloadDataBtn'),
-      'Clicking this button will initiate a direct download of this data file via HTTPS.',
-      'top-start'
-    )
-    .addNextStep(
-      mainTourTargets.getSelector('copyUrlBtn'),
-      'Clicking this button will copy the OPEN DAP URL of this file directly to your clipboard.',
-      'top-start'
-    )
-    .addNextStep(
-      mainTourTargets.getSelector('checksum'),
-      'The checksum of the specified file is shown here.',
-      'top-start',
-      () => {
-        clickFirstElement(
-          mainTourTargets.getSelector('searchResultsRowContractIcon')
-        );
-      }
-    )
-    .addNextStep(
-      'body',
-      'This concludes the main search page tour. To get a tour of other pages in the app, or repeat this tour again, you can click the big question mark button in the lower-right corner and select the tour in the Support pop-up menu.',
-      'center'
     );
+
+  // This will add steps to tour through elements of a dataset row
+  addDataRowTourSteps(tour).addNextStep(
+    'body',
+    'This concludes the main search page tour. To get a tour of other pages in the app, or repeat this tour again, you can click the big question mark button in the lower-right corner and select the tour in the Support pop-up menu.',
+    'center'
+  );
 
   return tour;
 };
@@ -501,18 +557,25 @@ export const createCartItemsTour = (
       'This table shows the current datasets in the cart.'
     )
     .addNextStep(
-      cartTourTargets.getSelector('removeItemsBtn'),
-      'We can remove all items from the cart with this button.',
-      'right-start',
-      async () => {
-        if (cartItemsAdded) {
-          clickFirstElement(cartTourTargets.getSelector('removeItemsBtn'));
-          await delay(500);
-          clickFirstElement('.ant-popover-buttons .ant-btn-primary');
-          await delay(300);
-        }
-      }
+      mainTourTargets.getSelector('cartAddBtn', 'minus'),
+      'If you change your mind and want to remove a dataset, you can remove it from the cart by clicking the minus button.',
+      'top-start'
     );
+
+  // This will add steps to tour through elements of a dataset row
+  addDataRowTourSteps(tour).addNextStep(
+    cartTourTargets.getSelector('removeItemsBtn'),
+    'We can remove all items from the cart with this button.',
+    'right-start',
+    async () => {
+      if (cartItemsAdded) {
+        clickFirstElement(cartTourTargets.getSelector('removeItemsBtn'));
+        await delay(500);
+        clickFirstElement('.ant-popover-buttons .ant-btn-primary');
+        await delay(300);
+      }
+    }
+  );
 
   tour.addNextStep('body', 'This concludes the cart page tour.', 'center');
 

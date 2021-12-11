@@ -227,7 +227,9 @@ const FacetsForm: React.FC<Props> = ({
                     </div>
                   }
                   key={group}
-                  className="site-collapse-custom-collapse"
+                  className={`site-collapse-custom-collapse ${mainTourTargets.getClass(
+                    'facetFormFields'
+                  )}`}
                 >
                   {Object.keys(availableFacets).map((facet) => {
                     if (facetsByGroup[group].includes(facet)) {
@@ -240,9 +242,6 @@ const FacetsForm: React.FC<Props> = ({
                         <Form.Item
                           key={facet}
                           name={facet}
-                          className={mainTourTargets.getClass(
-                            'facetFormFirstFacet'
-                          )}
                           label={
                             humanizeFacetNames(facet) +
                             (isOptionalforDatasets ? ' (Optional)' : '')
@@ -343,7 +342,9 @@ const FacetsForm: React.FC<Props> = ({
               </div>
             }
             key="additional_properties"
-            className="site-collapse-custom-collapse"
+            className={`site-collapse-custom-collapse ${mainTourTargets.getClass(
+              'facetFormAdditionalFields'
+            )}`}
           >
             <Form.Item
               label="Version Type"
@@ -412,7 +413,9 @@ const FacetsForm: React.FC<Props> = ({
               </div>
             }
             key="filename"
-            className="site-collapse-custom-collapse"
+            className={`site-collapse-custom-collapse ${mainTourTargets.getClass(
+              'facetFormFilenameFields'
+            )}`}
           >
             <Form.Item
               name="filenameVar"
@@ -433,9 +436,6 @@ const FacetsForm: React.FC<Props> = ({
               <Row gutter={5}>
                 <Col>
                   <Input
-                    className={mainTourTargets.getClass(
-                      'facetFormFilenameInput'
-                    )}
                     data-testid="filename-search-input"
                     value={filenameVars}
                     style={{ width: '140px' }}
