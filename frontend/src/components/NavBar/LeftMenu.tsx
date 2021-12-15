@@ -3,7 +3,7 @@ import { Form, Input, Select, Spin } from 'antd';
 import React from 'react';
 import { useHistory } from 'react-router-dom';
 import { ResponseError } from '../../api';
-import { mainTourTargets } from '../../common/reactJoyrideSteps';
+import { navBarTargets } from '../../common/reactJoyrideSteps';
 import { RawProject, RawProjects } from '../Facets/types';
 import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
@@ -67,7 +67,7 @@ const LeftMenu: React.FC<Props> = ({
     return (
       <div
         data-testid="left-menu"
-        className={mainTourTargets.getClass('topSearchBar')}
+        className={navBarTargets.getClass('topSearchBar')}
       >
         <Form
           initialValues={{

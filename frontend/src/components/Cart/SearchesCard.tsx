@@ -139,7 +139,7 @@ const SearchesCard: React.FC<Props> = ({
           {project.fullName}
         </p>
 
-        <p>
+        <p className={savedSearchTourTargets.getClass('searchQueryString')}>
           <span style={styles.category}>Query String: </span>
           <Typography.Text code>
             {stringifyFilters(

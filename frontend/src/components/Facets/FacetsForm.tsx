@@ -6,7 +6,7 @@ import {
 import { Col, Collapse, DatePicker, Form, Input, Row, Select } from 'antd';
 import moment from 'moment';
 import React from 'react';
-import { mainTourTargets } from '../../common/reactJoyrideSteps';
+import { leftSidebarTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
@@ -221,13 +221,15 @@ const FacetsForm: React.FC<Props> = ({
                 <Collapse.Panel
                   header={
                     <div
-                      className={mainTourTargets.getClass('facetFormGeneral')}
+                      className={leftSidebarTargets.getClass(
+                        'facetFormGeneral'
+                      )}
                     >
                       {humanizeFacetNames(group)}
                     </div>
                   }
                   key={group}
-                  className={`site-collapse-custom-collapse ${mainTourTargets.getClass(
+                  className={`site-collapse-custom-collapse ${leftSidebarTargets.getClass(
                     'facetFormFields'
                   )}`}
                 >
@@ -337,12 +339,14 @@ const FacetsForm: React.FC<Props> = ({
         <Collapse>
           <Collapse.Panel
             header={
-              <div className={mainTourTargets.getClass('facetFormAdditional')}>
+              <div
+                className={leftSidebarTargets.getClass('facetFormAdditional')}
+              >
                 {humanizeFacetNames('additional_properties')}
               </div>
             }
             key="additional_properties"
-            className={`site-collapse-custom-collapse ${mainTourTargets.getClass(
+            className={`site-collapse-custom-collapse ${leftSidebarTargets.getClass(
               'facetFormAdditionalFields'
             )}`}
           >
@@ -408,12 +412,12 @@ const FacetsForm: React.FC<Props> = ({
         <Collapse>
           <Collapse.Panel
             header={
-              <div className={mainTourTargets.getClass('facetFormFilename')}>
+              <div className={leftSidebarTargets.getClass('facetFormFilename')}>
                 {humanizeFacetNames('filename')}
               </div>
             }
             key="filename"
-            className={`site-collapse-custom-collapse ${mainTourTargets.getClass(
+            className={`site-collapse-custom-collapse ${leftSidebarTargets.getClass(
               'facetFormFilenameFields'
             )}`}
           >

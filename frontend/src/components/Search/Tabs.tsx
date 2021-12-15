@@ -6,7 +6,7 @@ import Citation from './Citation';
 import FilesTable from './FilesTable';
 import { RawSearchResult, TextInputs } from './types';
 import { CSSinJS } from '../../common/types';
-import { mainTourTargets } from '../../common/reactJoyrideSteps';
+import { innerDataRowTargets } from '../../common/reactJoyrideSteps';
 
 const styles: CSSinJS = {
   qualityFlagsRow: { display: 'flex' },
@@ -102,7 +102,9 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
   return (
     <TabsD>
       <TabsD.TabPane
-        tab={<div className={mainTourTargets.getClass('filesTab')}>Files</div>}
+        tab={
+          <div className={innerDataRowTargets.getClass('filesTab')}>Files</div>
+        }
         key="1"
       >
         <FilesTable
@@ -113,7 +115,7 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
       </TabsD.TabPane>
       <TabsD.TabPane
         tab={
-          <div className={mainTourTargets.getClass('metadataTab')}>
+          <div className={innerDataRowTargets.getClass('metadataTab')}>
             Metadata
           </div>
         }
@@ -122,7 +124,7 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
         <h4>Displaying {Object.keys(record).length} keys</h4>
         <AutoComplete
           style={{ width: '100%' }}
-          className={mainTourTargets.getClass('metadataLookupField')}
+          className={innerDataRowTargets.getClass('metadataLookupField')}
           options={metaData}
           placeholder="Lookup a key..."
           filterOption={(inputValue, option) =>
@@ -141,7 +143,7 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
       {showCitation && (
         <TabsD.TabPane
           tab={
-            <div className={mainTourTargets.getClass('citationTab')}>
+            <div className={innerDataRowTargets.getClass('citationTab')}>
               Citation
             </div>
           }
@@ -156,7 +158,7 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
       {showAdditionalTab && (
         <TabsD.TabPane
           tab={
-            <div className={mainTourTargets.getClass('additionalTab')}>
+            <div className={innerDataRowTargets.getClass('additionalTab')}>
               Additional
             </div>
           }

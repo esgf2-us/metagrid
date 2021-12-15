@@ -14,7 +14,7 @@ import {
   generateSearchURLQuery,
 } from '../../api';
 import { clickableRoute } from '../../api/routes';
-import { mainTourTargets } from '../../common/reactJoyrideSteps';
+import { searchTableTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import { objectIsEmpty } from '../../common/utils';
 import { UserCart } from '../Cart/types';
@@ -273,7 +273,7 @@ const Search: React.FC<Props> = ({
   return (
     <div
       data-testid="search"
-      className={mainTourTargets.getClass('searchResultsTable')}
+      className={searchTableTargets.getClass('searchResultsTable')}
     >
       <div style={styles.summary}>
         {objectIsEmpty(project) && (
@@ -291,7 +291,7 @@ const Search: React.FC<Props> = ({
           )}
           {results && !isLoading && (
             <span
-              className={mainTourTargets.getClass('resultsFoundText')}
+              className={searchTableTargets.getClass('resultsFoundText')}
               style={styles.resultsHeader}
             >
               {numFound.toLocaleString()} results found for{' '}
@@ -306,7 +306,7 @@ const Search: React.FC<Props> = ({
             <div>
               <Button
                 type="default"
-                className={mainTourTargets.getClass('addSelectedToCartBtn')}
+                className={searchTableTargets.getClass('addSelectedToCartBtn')}
                 onClick={() => onUpdateCart(selectedItems, 'add')}
                 disabled={
                   isLoading ||
@@ -319,7 +319,7 @@ const Search: React.FC<Props> = ({
                 Add Selected to Cart
               </Button>{' '}
               <Button
-                className={mainTourTargets.getClass('saveSearchBtn')}
+                className={searchTableTargets.getClass('saveSearchBtn')}
                 type="default"
                 onClick={() => onSaveSearchQuery(currentRequestURL as string)}
                 disabled={isLoading || numFound === 0}
@@ -329,7 +329,7 @@ const Search: React.FC<Props> = ({
               </Button>{' '}
               <Button
                 type="default"
-                className={mainTourTargets.getClass('copySearchLinkBtn')}
+                className={searchTableTargets.getClass('copySearchLinkBtn')}
                 onClick={() => onShareSearchQuery()}
                 disabled={isLoading || numFound === 0}
               >
@@ -346,7 +346,7 @@ const Search: React.FC<Props> = ({
             <p>
               <span style={styles.subtitles}>Query String: </span>
               <Typography.Text
-                className={mainTourTargets.getClass('queryString')}
+                className={searchTableTargets.getClass('queryString')}
                 code
               >
                 {stringifyFilters(

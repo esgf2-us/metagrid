@@ -10,7 +10,7 @@ import { Badge, Menu } from 'antd';
 import { KeycloakTokenParsed } from 'keycloak-js';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { mainTourTargets } from '../../common/reactJoyrideSteps';
+import { navBarTargets } from '../../common/reactJoyrideSteps';
 import Button from '../General/Button';
 
 export type Props = {
@@ -61,12 +61,12 @@ const RightMenu: React.FC<Props> = ({
   return (
     <div
       data-testid="right-menu"
-      className={mainTourTargets.getClass('topNavBar')}
+      className={navBarTargets.getClass('topNavBar')}
     >
       <Menu selectedKeys={[activeMenuItem]} mode={mode}>
         <Menu.Item
           key="search"
-          className={mainTourTargets.getClass('searchPageBtn')}
+          className={navBarTargets.getClass('searchPageBtn')}
         >
           <Link to="/search">
             <SearchOutlined /> Search
@@ -74,7 +74,7 @@ const RightMenu: React.FC<Props> = ({
         </Menu.Item>
         <Menu.Item
           key="cartItems"
-          className={`modified-item ${mainTourTargets.getClass('cartPageBtn')}`}
+          className={`modified-item ${navBarTargets.getClass('cartPageBtn')}`}
         >
           <Link to="/cart/items">
             <ShoppingCartOutlined style={{ fontSize: '20px' }} />
@@ -89,7 +89,7 @@ const RightMenu: React.FC<Props> = ({
         </Menu.Item>
         <Menu.Item
           key="cartSearches"
-          className={`modified-item ${mainTourTargets.getClass(
+          className={`modified-item ${navBarTargets.getClass(
             'savedSearchPageBtn'
           )}`}
         >
@@ -106,7 +106,7 @@ const RightMenu: React.FC<Props> = ({
         </Menu.Item>
         <Menu.Item
           key="nodes"
-          className={mainTourTargets.getClass('nodeStatusBtn')}
+          className={navBarTargets.getClass('nodeStatusBtn')}
         >
           <Link to="/nodes">
             <NodeIndexOutlined /> Node Status
@@ -115,7 +115,7 @@ const RightMenu: React.FC<Props> = ({
         {!authenticated ? (
           <Menu.Item
             key="signIn"
-            className={mainTourTargets.getClass('signInBtn')}
+            className={navBarTargets.getClass('signInBtn')}
           >
             <Button
               type="text"

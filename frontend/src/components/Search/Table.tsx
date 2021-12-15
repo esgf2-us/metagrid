@@ -10,7 +10,7 @@ import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
 import { fetchWgetScript, openDownloadURL, ResponseError } from '../../api';
-import { mainTourTargets } from '../../common/reactJoyrideSteps';
+import { topDataRowTargets } from '../../common/reactJoyrideSteps';
 import { formatBytes } from '../../common/utils';
 import { UserCart } from '../Cart/types';
 import ToolTip from '../DataDisplay/ToolTip';
@@ -84,7 +84,9 @@ const Table: React.FC<Props> = ({
       }): React.ReactElement =>
         expanded ? (
           <DownCircleOutlined
-            className={mainTourTargets.getClass('searchResultsRowContractIcon')}
+            className={topDataRowTargets.getClass(
+              'searchResultsRowContractIcon'
+            )}
             onClick={(e) => onExpand(record, e)}
           />
         ) : (
@@ -93,7 +95,9 @@ const Table: React.FC<Props> = ({
             trigger="hover"
           >
             <RightCircleOutlined
-              className={mainTourTargets.getClass('searchResultsRowExpandIcon')}
+              className={topDataRowTargets.getClass(
+                'searchResultsRowExpandIcon'
+              )}
               onClick={(e) => onExpand(record, e)}
             />
           </ToolTip>
@@ -135,7 +139,7 @@ const Table: React.FC<Props> = ({
           return (
             <>
               <Button
-                className={mainTourTargets.getClass('cartAddBtn', 'minus')}
+                className={topDataRowTargets.getClass('cartAddBtn', 'minus')}
                 icon={<MinusOutlined />}
                 onClick={() => onUpdateCart([record], 'remove')}
                 danger
@@ -149,7 +153,7 @@ const Table: React.FC<Props> = ({
               type="primary"
               icon={
                 <PlusOutlined
-                  className={mainTourTargets.getClass('cartAddBtn', 'plus')}
+                  className={topDataRowTargets.getClass('cartAddBtn', 'plus')}
                 />
               }
               onClick={() => onUpdateCart([record], 'add')}
@@ -163,7 +167,7 @@ const Table: React.FC<Props> = ({
       dataIndex: 'data_node',
       width: 20,
       render: (data_node: string) => (
-        <div className={mainTourTargets.getClass('nodeStatusIcon')}>
+        <div className={topDataRowTargets.getClass('nodeStatusIcon')}>
           <StatusToolTip nodeStatus={nodeStatus} dataNode={data_node} />
         </div>
       ),
@@ -175,7 +179,7 @@ const Table: React.FC<Props> = ({
       width: 400,
       render: (title: string) => {
         return (
-          <div className={mainTourTargets.getClass('datasetTitle')}>
+          <div className={topDataRowTargets.getClass('datasetTitle')}>
             {title}
           </div>
         );
@@ -187,7 +191,7 @@ const Table: React.FC<Props> = ({
       key: 'number_of_files',
       width: 50,
       render: (numberOfFiles: number) => (
-        <p className={mainTourTargets.getClass('fileCount')}>
+        <p className={topDataRowTargets.getClass('fileCount')}>
           {numberOfFiles || 'N/A'}
         </p>
       ),
@@ -198,7 +202,7 @@ const Table: React.FC<Props> = ({
       key: 'size',
       width: 100,
       render: (size: number) => (
-        <p className={mainTourTargets.getClass('totalSize')}>
+        <p className={topDataRowTargets.getClass('totalSize')}>
           {size ? formatBytes(size) : 'N/A'}
         </p>
       ),
@@ -209,7 +213,7 @@ const Table: React.FC<Props> = ({
       key: 'version',
       width: 100,
       render: (version: string) => (
-        <p className={mainTourTargets.getClass('versionText')}>{version}</p>
+        <p className={topDataRowTargets.getClass('versionText')}>{version}</p>
       ),
     },
     {
@@ -246,7 +250,7 @@ const Table: React.FC<Props> = ({
         return (
           <>
             <Form
-              className={mainTourTargets.getClass('downloadScriptForm')}
+              className={topDataRowTargets.getClass('downloadScriptForm')}
               layout="inline"
               onFinish={({ [formKey]: download }) =>
                 handleDownloadForm(download)
@@ -255,7 +259,9 @@ const Table: React.FC<Props> = ({
             >
               <Form.Item name={formKey}>
                 <Select
-                  className={mainTourTargets.getClass('downloadScriptOptions')}
+                  className={topDataRowTargets.getClass(
+                    'downloadScriptOptions'
+                  )}
                   style={{ width: 120 }}
                 >
                   {allowedDownloadTypes.map(
@@ -274,7 +280,7 @@ const Table: React.FC<Props> = ({
               </Form.Item>
               <Form.Item>
                 <Button
-                  className={mainTourTargets.getClass('downloadScriptBtn')}
+                  className={topDataRowTargets.getClass('downloadScriptBtn')}
                   type="default"
                   htmlType="submit"
                   icon={<DownloadOutlined />}

@@ -34,7 +34,7 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
   };
 
   const startSearchCardTour = (): void => {
-    startSpecificTour(createSearchCardTour());
+    startSpecificTour(createSearchCardTour(setCurrentAppPage));
   };
 
   const startMainPageTour = (): void => {
@@ -49,7 +49,7 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
     setCurrentAppPage(AppPage.Main);
 
     const firstTour = createMainPageTour();
-    const secondTour = createSearchCardTour();
+    const secondTour = createSearchCardTour(setCurrentAppPage);
 
     firstTour.setOnFinish(() => {
       return (): void => {
