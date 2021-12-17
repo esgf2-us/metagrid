@@ -46,7 +46,9 @@ const NodeStatus: React.FC<Props> = ({ nodeStatus, apiError, isLoading }) => {
 
     const columns = [
       {
-        title: 'Node',
+        title: (
+          <div className={nodeTourTargets.getClass('nodeColHeader')}>Node</div>
+        ),
         dataIndex: 'name',
         align: 'center' as const,
         sortDirections: ['descend'] as SortOrder[],
@@ -54,7 +56,11 @@ const NodeStatus: React.FC<Props> = ({ nodeStatus, apiError, isLoading }) => {
           a.name.localeCompare(b.name),
       },
       {
-        title: 'Online',
+        title: (
+          <div className={nodeTourTargets.getClass('onlineColHeader')}>
+            Online
+          </div>
+        ),
         dataIndex: 'isOnline',
         align: 'center' as const,
         width: 50,
@@ -76,7 +82,12 @@ const NodeStatus: React.FC<Props> = ({ nodeStatus, apiError, isLoading }) => {
         title: 'Source (THREDDS Catalog)',
         dataIndex: 'source',
         render: (source: string) => (
-          <a href={source} target="_blank" rel="noopener noreferrer">
+          <a
+            className={nodeTourTargets.getClass('sourceColHeader')}
+            href={source}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             Link
           </a>
         ),

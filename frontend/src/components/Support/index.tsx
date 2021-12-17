@@ -7,6 +7,7 @@ import {
   createMainPageTour,
   getCurrentAppPage,
   createCartItemsTour,
+  createNodeStatusTour,
 } from '../../common/reactJoyrideSteps';
 import { AppPage } from '../../common/types';
 import {
@@ -30,47 +31,26 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
   const startSpecificTour = (tour: JoyrideTour): void => {
     setTour(tour);
     startTour();
+  };
+
+  const startMainPageTour = (): void => {
+    startSpecificTour(createMainPageTour());
+    onClose();
+  };
+
+  const startCartPageTour = (): void => {
+    startSpecificTour(createCartItemsTour(setCurrentAppPage));
     onClose();
   };
 
   const startSearchCardTour = (): void => {
     startSpecificTour(createSearchCardTour(setCurrentAppPage));
+    onClose();
   };
 
-  const startMainPageTour = (): void => {
-    startSpecificTour(createMainPageTour());
-  };
-
-  const startCartPageTour = (): void => {
-    startSpecificTour(createCartItemsTour(setCurrentAppPage));
-  };
-
-  const startGrandTour = (): void => {
-    setCurrentAppPage(AppPage.Main);
-
-    const firstTour = createMainPageTour();
-    const secondTour = createSearchCardTour(setCurrentAppPage);
-
-    firstTour.setOnFinish(() => {
-      return (): void => {
-        setTimeout((): void => {
-          setCurrentAppPage(AppPage.SavedSearches);
-          setTimeout(() => {
-            startSpecificTour(secondTour);
-          }, 1000);
-        }, 1000);
-      };
-    });
-
-    secondTour.setOnFinish(() => {
-      return (): void => {
-        setTimeout((): void => {
-          setCurrentAppPage(curPage);
-        }, 500);
-      };
-    });
-
-    startSpecificTour(firstTour);
+  const startNodeStatusTour = (): void => {
+    startSpecificTour(createNodeStatusTour());
+    onClose();
   };
 
   return (
@@ -87,21 +67,45 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
               <p style={{ fontSize: '14px' }}>
                 Checkback for documentation and FAQs in the near future!
               </p>
-              <h3>User Interface Tours</h3>
-              <p style={{ fontSize: '14px' }}>
-                If you are new to Metagrid, you can familiarize yourself with
-                the user interface by clicking on an available tour below.
-              </p>
-              <Card title="U.I Tours">
-                <Button onClick={startGrandTour}>Metagrid Grand Tour</Button>
+              <div>
+                <h3>User Interface Tours</h3>
+                <p style={{ fontSize: '14px' }}>
+                  If you are new to Metagrid, you can familiarize yourself with
+                  the user interface by clicking on an available tour below.
+                </p>
+              </div>
+              <Card title="">
                 {curPage === AppPage.Main && (
-                  <Button onClick={startMainPageTour}>Main Page Tour</Button>
-                )}
-                {curPage === AppPage.SavedSearches && (
-                  <Button onClick={startSearchCardTour}>Search Card</Button>
+                  <Button
+                    style={{ marginLeft: '10px' }}
+                    onClick={startMainPageTour}
+                  >
+                    Main Page Tour
+                  </Button>
                 )}
                 {curPage === AppPage.Cart && (
-                  <Button onClick={startCartPageTour}>Cart Page Tour</Button>
+                  <Button
+                    style={{ marginLeft: '10px' }}
+                    onClick={startCartPageTour}
+                  >
+                    Cart Page Tour
+                  </Button>
+                )}
+                {curPage === AppPage.SavedSearches && (
+                  <Button
+                    style={{ marginLeft: '10px' }}
+                    onClick={startSearchCardTour}
+                  >
+                    Search Library Tour
+                  </Button>
+                )}
+                {curPage === AppPage.NodeStatus && (
+                  <Button
+                    style={{ marginLeft: '10px' }}
+                    onClick={startNodeStatusTour}
+                  >
+                    Node Status Tour
+                  </Button>
                 )}
               </Card>
             </div>

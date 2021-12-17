@@ -189,9 +189,12 @@ export const savedSearchTourTargets = new TourTargets('saved-search-tour')
   .create('jsonBtn')
   .create('removeBtn');
 
-export const nodeTourTargets = new TourTargets('node-tour').create(
-  'updateTime'
-);
+export const nodeTourTargets = new TourTargets('node-tour')
+  .create('updateTime')
+  .create('nodeStatusSummary')
+  .create('nodeColHeader')
+  .create('onlineColHeader')
+  .create('sourceColHeader');
 
 const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
   tour
@@ -492,6 +495,8 @@ export const createMainPageTour = (): JoyrideTour => {
       'top',
       async () => {
         clickFirstElement('#root .ant-checkbox');
+        // Flag that the check boxes are on
+        tour.setTourFlag('boxes-checked', true);
         await delay(500);
       }
     )
@@ -500,8 +505,10 @@ export const createMainPageTour = (): JoyrideTour => {
       'Then to add them to your cart, you would click this button.',
       'bottom-start',
       async () => {
-        await delay(300);
         clickFirstElement('#root .ant-checkbox');
+        // Flag that the check boxes are on
+        tour.setTourFlag('boxes-checked', false);
+        await delay(500);
       }
     )
     .addNextStep(
@@ -516,11 +523,20 @@ export const createMainPageTour = (): JoyrideTour => {
     );
 
   // This will add steps to tour through elements of a dataset row
-  addDataRowTourSteps(tour).addNextStep(
-    'body',
-    'This concludes the main search page tour. To get a tour of other pages in the app, or repeat this tour again, you can click the big question mark button in the lower-right corner and select the tour in the Support pop-up menu.',
-    'center'
-  );
+  addDataRowTourSteps(tour)
+    .addNextStep(
+      'body',
+      'This concludes the main search page tour. To get a tour of other pages in the app, or repeat this tour again, you can click the big question mark button in the lower-right corner and select the tour in the Support pop-up menu.',
+      'center'
+    )
+    .setOnFinish(() => {
+      return () => {
+        // Clean-up step for when the tour is complete (or skipped)
+        if (tour.getTourFlag('boxes-checked')) {
+          clickFirstElement('#root .ant-checkbox');
+        }
+      };
+    });
 
   return tour;
 };
@@ -556,6 +572,7 @@ export const createCartItemsTour = (
         async (): Promise<void> => {
           await delay(300);
           setCurrentPage(AppPage.Main);
+          await delay(1000);
         }
       )
       .addNextStep(
@@ -581,9 +598,7 @@ export const createCartItemsTour = (
           "NOTE: The search results may take a few seconds to load... Click 'next' to continue.",
           'right',
           async () => {
-            if (cartIsEmpty()) {
-              await delay(1000);
-            }
+            await delay(1000);
           }
         );
     }
@@ -596,11 +611,11 @@ export const createCartItemsTour = (
           clickFirstElement(
             topDataRowTargets.getSelector('cartAddBtn', 'plus')
           );
-          await delay(300);
+          await delay(500);
           clickFirstElement(
             topDataRowTargets.getSelector('cartAddBtn', 'plus')
           );
-          await delay(300);
+          await delay(500);
         }
       )
       .addNextStep(
@@ -609,7 +624,7 @@ export const createCartItemsTour = (
         'bottom',
         async (): Promise<void> => {
           setCurrentPage(AppPage.Cart);
-          await delay(700);
+          await delay(1000);
         }
       );
   }
@@ -637,6 +652,8 @@ export const createCartItemsTour = (
       'top-start',
       async () => {
         clickFirstElement('#root .ant-checkbox');
+        // Flag that the check boxes are on
+        tour.setTourFlag('boxes-checked', true);
         await delay(300);
       }
     )
@@ -648,7 +665,13 @@ export const createCartItemsTour = (
     .addNextStep(
       cartTourTargets.getSelector('downloadAllBtn'),
       'Then you would click this button to get the download script needed for all currently selected datasets in the cart.',
-      'top-start'
+      'top-start',
+      async () => {
+        clickFirstElement('#root .ant-checkbox');
+        // Flag that the check boxes are on
+        tour.setTourFlag('boxes-checked', false);
+        await delay(300);
+      }
     )
     .addNextStep(
       cartTourTargets.getSelector('removeItemsBtn'),
@@ -659,12 +682,14 @@ export const createCartItemsTour = (
     .setOnFinish(() => {
       // Clean-up step for when the tour is complete (or skipped)
       return async () => {
-        clickFirstElement('#root .ant-checkbox');
-        await delay(300);
         if (cartItemsAdded) {
           clickFirstElement(cartTourTargets.getSelector('removeItemsBtn'));
           await delay(500);
           clickFirstElement('.ant-popover-buttons .ant-btn-primary');
+          await delay(300);
+        }
+        if (tour.getTourFlag('boxes-checked')) {
+          clickFirstElement('#root .ant-checkbox');
           await delay(300);
         }
       };
@@ -697,11 +722,11 @@ export const createSearchCardTour = (
     searchSaved = true;
     tour
       .addNextStep(
-        '#root .ant-empty-description',
+        '#root .ant-tabs-tabpane-active .ant-empty-description',
         'Currently, no searches have been saved to your library. We will need to go to the search page to save a search first...',
         'top',
         async (): Promise<void> => {
-          await delay(300);
+          await delay(500);
           setCurrentPage(AppPage.Main);
         }
       )
@@ -797,6 +822,55 @@ export const createSearchCardTour = (
         }
       };
     });
+
+  return tour;
+};
+
+export const createNodeStatusTour = (): JoyrideTour => {
+  const tour = new JoyrideTour('Node Status Tour')
+    .addNextStep(
+      'body',
+      'This tour will provide a brief overview of the node status page.',
+      'center'
+    )
+    .addNextStep(
+      nodeTourTargets.getSelector('updateTime'),
+      'This is the timestamp for the last time the node status was updated.'
+    )
+    .addNextStep(
+      nodeTourTargets.getSelector('nodeStatusSummary'),
+      'This area provides an overall summary of the number of nodes that are available, how many are currently online and how many are currently offline.'
+    )
+    .addNextStep(
+      nodeTourTargets.getSelector('nodeColHeader'),
+      'This column lists the various nodes that are registered to serve the data with Metagrid. Clicking the header will toggle the sort between ascending and descending like so...',
+      'top',
+      async () => {
+        clickFirstElement(nodeTourTargets.getSelector('nodeColHeader'));
+        await delay(500);
+      }
+    )
+    .addNextStep(
+      nodeTourTargets.getSelector('onlineColHeader'),
+      'This column shows the online status of each node. A green check-mark indicates the node is online whereas a red x mark indicates it is offline. As with the node column, you can click this to sort by node status like so...',
+      'top',
+      async () => {
+        clickFirstElement(nodeTourTargets.getSelector('onlineColHeader'));
+        await delay(700);
+        clickFirstElement(nodeTourTargets.getSelector('onlineColHeader'));
+        await delay(700);
+        clickFirstElement(nodeTourTargets.getSelector('nodeColHeader'));
+      }
+    )
+    .addNextStep(
+      nodeTourTargets.getSelector('sourceColHeader'),
+      'This column shows links to the THREDDS catalog of its respective node.'
+    )
+    .addNextStep(
+      'body',
+      'This concludes the overview of the node status page.',
+      'center'
+    );
 
   return tour;
 };

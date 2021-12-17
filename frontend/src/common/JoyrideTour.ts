@@ -15,6 +15,8 @@ export class JoyrideTour {
 
   private stepCount: number;
 
+  private tourFlags: Map<string, boolean>;
+
   private finish: () => () => void | Promise<void>;
 
   constructor(title?: string, locale?: Locale) {
@@ -22,6 +24,7 @@ export class JoyrideTour {
     this.locale = locale || { back: 'Previous', last: 'End' };
     this.actions = [];
     this.stepCount = 0;
+    this.tourFlags = new Map<string, boolean>();
     this.finish = () => {
       return () => {};
     };
@@ -33,14 +36,18 @@ export class JoyrideTour {
     });
   }
 
+  getLocale(): Locale {
+    return this.locale;
+  }
+
   getSteps(): Step[] {
     return this.actions.map((actionStep) => {
       return actionStep.step;
     });
   }
 
-  getLocale(): Locale {
-    return this.locale;
+  getTourFlag(name: string): boolean {
+    return this.tourFlags.get(name) || false;
   }
 
   async onFinish(): Promise<void> {
@@ -80,6 +87,11 @@ export class JoyrideTour {
 
   setOnFinish(callback: () => () => void | Promise<void>): JoyrideTour {
     this.finish = callback;
+    return this;
+  }
+
+  setTourFlag(name: string, value: boolean): JoyrideTour {
+    this.tourFlags.set(name, value);
     return this;
   }
 }
