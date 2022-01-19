@@ -31,7 +31,7 @@ export const elementHasState = (classname: string, state: string): boolean => {
   const elem: HTMLElement = document.getElementsByClassName(
     classname
   )[0] as HTMLElement;
-  if (elem) {
+  if (elem && elem.classList) {
     return elem.classList.contains(`target-state_${state}`);
   }
   return false;
@@ -45,6 +45,7 @@ export const clickFirstElement = (selector: string): boolean => {
   }
   return false;
 };
+
 
 const mainTableEmpty = (): boolean => {
   return elementExists('ant-empty-image');
@@ -69,54 +70,6 @@ const searchLibraryIsEmpty = (): boolean => {
   }
   return false;
 };
-
-// Object used to test, store and access the the targets used by the main tour
-export const mainTourTargets = new TourTargets('main-joyride-tour')
-  .create('topSearchBar')
-  .create('topNavBar')
-  .create('searchPageBtn')
-  .create('cartPageBtn')
-  .create('savedSearchPageBtn')
-  .create('nodeStatusBtn')
-  .create('signInBtn')
-  .create('selectProjectBtn')
-  .create('projectSelectLeftSideBtn')
-  .create('projectWebsiteBtn')
-  .create('leftSideBar')
-  .create('queryString')
-  .create('resultsFoundText')
-  .create('searchResultsTable')
-  .create('addSelectedToCartBtn')
-  .create('saveSearchBtn')
-  .create('copySearchLinkBtn')
-  .create('cartAddBtn')
-  .create('nodeStatusIcon')
-  .create('datasetTitle')
-  .create('fileCount')
-  .create('totalSize')
-  .create('versionText')
-  .create('downloadScriptForm')
-  .create('downloadScriptOptions')
-  .create('downloadScriptBtn')
-  .create('searchResultsRowExpandIcon')
-  .create('searchResultsRowContractIcon')
-  .create('filesTab')
-  .create('metadataTab')
-  .create('metadataLookupField')
-  .create('citationTab')
-  .create('additionalTab')
-  .create('filesTitle')
-  .create('dataSize')
-  .create('downloadDataBtn')
-  .create('copyUrlBtn')
-  .create('checksum')
-  .create('searchFacetsForm')
-  .create('facetFormGeneral')
-  .create('facetFormFields')
-  .create('facetFormAdditional')
-  .create('facetFormAdditionalFields')
-  .create('facetFormFilename')
-  .create('facetFormFilenameFields');
 
 export const navBarTargets = new TourTargets('nav-bar-tour')
   .create('topSearchBar')
