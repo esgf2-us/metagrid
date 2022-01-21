@@ -6,6 +6,8 @@ import {
   clickFirstElement,
   createMainPageTour,
   createCartItemsTour,
+  createSearchCardTour,
+  createNodeStatusTour,
 } from './reactJoyrideSteps';
 import { AppPage } from './types';
 
@@ -22,6 +24,7 @@ describe('Test reactJoyrideStep util functions', () => {
   it('returns appropriate page name based on window location', () => {
     expect(getCurrentAppPage()).toEqual(-1);
 
+    // eslint-disable-next-line
     window = Object.create(window);
     const url = 'https://test.com/search';
     Object.defineProperty(window, 'location', {
@@ -92,9 +95,12 @@ describe('Test reactJoyrideStep util functions', () => {
     expect(mainTour).toBeTruthy();
     const cartTour = createCartItemsTour(() => {});
     expect(cartTour).toBeTruthy();
+    const searchTour = createSearchCardTour(() => {});
+    expect(searchTour).toBeTruthy();
+    const nodeTour = createNodeStatusTour();
+    expect(nodeTour).toBeTruthy();
 
     // Made the main table empty
     document.getElementById('root')?.appendChild(mainTable);
-    
   });
 });

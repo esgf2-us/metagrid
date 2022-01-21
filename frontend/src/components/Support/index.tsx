@@ -8,6 +8,7 @@ import {
   getCurrentAppPage,
   createCartItemsTour,
   createNodeStatusTour,
+  TourTitles,
 } from '../../common/reactJoyrideSteps';
 import { AppPage } from '../../common/types';
 import {
@@ -55,7 +56,7 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
 
   return (
     <>
-      <div>
+      <div data-testid="support-form">
         <Modal
           visible={visible}
           title={
@@ -80,7 +81,7 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
                     style={{ marginLeft: '10px' }}
                     onClick={startMainPageTour}
                   >
-                    Main Page Tour
+                    {TourTitles.Main}
                   </Button>
                 )}
                 {curPage === AppPage.Cart && (
@@ -88,7 +89,7 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
                     style={{ marginLeft: '10px' }}
                     onClick={startCartPageTour}
                   >
-                    Cart Page Tour
+                    {TourTitles.Cart}
                   </Button>
                 )}
                 {curPage === AppPage.SavedSearches && (
@@ -96,7 +97,7 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
                     style={{ marginLeft: '10px' }}
                     onClick={startSearchCardTour}
                   >
-                    Search Library Tour
+                    {TourTitles.Searches}
                   </Button>
                 )}
                 {curPage === AppPage.NodeStatus && (
@@ -104,7 +105,7 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
                     style={{ marginLeft: '10px' }}
                     onClick={startNodeStatusTour}
                   >
-                    Node Status Tour
+                    {TourTitles.Node}
                   </Button>
                 )}
               </Card>

@@ -46,11 +46,12 @@ export const clickFirstElement = (selector: string): boolean => {
   return false;
 };
 
-
+/* istanbul ignore next */
 const mainTableEmpty = (): boolean => {
   return elementExists('ant-empty-image');
 };
 
+/* istanbul ignore next */
 const cartIsEmpty = (): boolean => {
   const elem = document.querySelector(
     '#root .ant-tabs-tabpane-active .ant-empty-description'
@@ -61,6 +62,7 @@ const cartIsEmpty = (): boolean => {
   return false;
 };
 
+/* istanbul ignore next */
 const searchLibraryIsEmpty = (): boolean => {
   const elem = document.querySelector(
     '#root .ant-tabs-tabpane-active .ant-empty-description'
@@ -70,6 +72,14 @@ const searchLibraryIsEmpty = (): boolean => {
   }
   return false;
 };
+
+// Used when creating the tour, as the title that user sees
+export enum TourTitles {
+  Main = 'Main Search Page Tour',
+  Cart = 'Data Cart Tour',
+  Searches = 'Saved Searches Tour',
+  Node = 'Node Status Tour',
+}
 
 export const navBarTargets = new TourTargets('nav-bar-tour')
   .create('topSearchBar')
@@ -195,6 +205,7 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
       topDataRowTargets.getSelector('searchResultsRowExpandIcon'),
       'To view more information about a specific dataset, you can expand the row by clicking this little arrow icon...',
       'top-start',
+      /* istanbul ignore next */
       async () => {
         clickFirstElement(
           topDataRowTargets.getSelector('searchResultsRowExpandIcon')
@@ -236,6 +247,7 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
       innerDataRowTargets.getSelector('metadataTab'),
       'This is the Metadata tab. If you click it, you can view metadata for the dataset...',
       'top-start',
+      /* istanbul ignore next */
       async () => {
         await delay(300);
         clickFirstElement(innerDataRowTargets.getSelector('metadataTab'));
@@ -245,6 +257,7 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
       innerDataRowTargets.getSelector('metadataLookupField'),
       'Besides seeing the metadata listed below, this field can help you search for a specific key/value pair of metadata.',
       'top-start',
+      /* istanbul ignore next */
       async () => {
         await delay(300);
         if (elementExists(innerDataRowTargets.getClass('citationTab'))) {
@@ -256,6 +269,7 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
       innerDataRowTargets.getSelector('citationTab'),
       'Citation information for the dataset can be viewed within this tab...',
       'top-start',
+      /* istanbul ignore next */
       async () => {
         await delay(300);
         if (elementExists(innerDataRowTargets.getClass('additionalTab'))) {
@@ -267,6 +281,7 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
       innerDataRowTargets.getSelector('additionalTab'),
       'You can view additional data and sources by clicking this tab.',
       'top-start',
+      /* istanbul ignore next */
       async () => {
         clickFirstElement(
           topDataRowTargets.getSelector('searchResultsRowContractIcon')
@@ -279,7 +294,7 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
 };
 
 export const createMainPageTour = (): JoyrideTour => {
-  const tour = new JoyrideTour('Main Search Page Tour')
+  const tour = new JoyrideTour(TourTitles.Main)
     .addNextStep(
       'body',
       "Welcome to Metagrid! This tour will highlight the main controls and features of the search page. During the tour, click 'Next' to continue, or 'Previous' to go back a step in the tour. Click 'Skip' if you wish to cancel the tour. Let's begin!",
@@ -326,6 +341,7 @@ export const createMainPageTour = (): JoyrideTour => {
       'right'
     );
 
+  /* istanbul ignore if */
   if (mainTableEmpty()) {
     tour
       .addNextStep(
@@ -371,6 +387,7 @@ export const createMainPageTour = (): JoyrideTour => {
       leftSidebarTargets.getSelector('facetFormGeneral'),
       'To filter by facets provided within this group, you would open this collapsable form by clicking on it...',
       'right-end',
+      /* istanbul ignore next */
       async () => {
         // Open general facets
         clickFirstElement(leftSidebarTargets.getSelector('facetFormGeneral'));
@@ -381,6 +398,7 @@ export const createMainPageTour = (): JoyrideTour => {
       leftSidebarTargets.getSelector('facetFormFields'),
       'These are facets that are available within this group. The drop-downs allow you to select multiple items you wish to include in your search. Note that you can search for elements in the drop-down by typing within the input area.',
       'right-start',
+      /* istanbul ignore next */
       async () => {
         // Close general facets
         clickFirstElement(leftSidebarTargets.getSelector('facetFormGeneral'));
@@ -396,6 +414,7 @@ export const createMainPageTour = (): JoyrideTour => {
       leftSidebarTargets.getSelector('facetFormAdditionalFields'),
       'This section contains additional properties that you can select to further refine your search results, including the Version Type, Result Type and Version Date Range. Hovering over the question mark icon will further explain the parameter.',
       'right-end',
+      /* istanbul ignore next */
       async () => {
         // Close additional facets
         clickFirstElement(
@@ -411,6 +430,7 @@ export const createMainPageTour = (): JoyrideTour => {
       leftSidebarTargets.getSelector('facetFormFilenameFields'),
       'This section lets you filter your results to include a specific filename. To filter by filename, you would type in the name or names as a list of comma separated values then click the magnifying glass icon to add it as a search parameter.',
       'right-end',
+      /* istanbul ignore next */
       () => {
         // Close filename section
         clickFirstElement(leftSidebarTargets.getSelector('facetFormFilename'));
@@ -446,6 +466,7 @@ export const createMainPageTour = (): JoyrideTour => {
       '#root .ant-checkbox',
       'You can select multiple datasets using these checkboxes...',
       'top',
+      /* istanbul ignore next */
       async () => {
         clickFirstElement('#root .ant-checkbox');
         // Flag that the check boxes are on
@@ -457,6 +478,7 @@ export const createMainPageTour = (): JoyrideTour => {
       searchTableTargets.getSelector('addSelectedToCartBtn'),
       'Then to add them to your cart, you would click this button.',
       'bottom-start',
+      /* istanbul ignore next */
       async () => {
         clickFirstElement('#root .ant-checkbox');
         // Flag that the check boxes are on
@@ -482,14 +504,16 @@ export const createMainPageTour = (): JoyrideTour => {
       'This concludes the main search page tour. To get a tour of other pages in the app, or repeat this tour again, you can click the big question mark button in the lower-right corner and select the tour in the Support pop-up menu.',
       'center'
     )
-    .setOnFinish(() => {
-      return () => {
-        // Clean-up step for when the tour is complete (or skipped)
-        if (tour.getTourFlag('boxes-checked')) {
-          clickFirstElement('#root .ant-checkbox');
-        }
-      };
-    });
+    .setOnFinish(
+      /* istanbul ignore next */ () => {
+        return () => {
+          // Clean-up step for when the tour is complete (or skipped)
+          if (tour.getTourFlag('boxes-checked')) {
+            clickFirstElement('#root .ant-checkbox');
+          }
+        };
+      }
+    );
 
   return tour;
 };
@@ -499,7 +523,7 @@ export const createCartItemsTour = (
 ): JoyrideTour => {
   let cartItemsAdded = false;
 
-  const tour = new JoyrideTour('Metagrid Data Cart Tour')
+  const tour = new JoyrideTour(TourTitles.Cart)
     .addNextStep(
       'body',
       'The data cart allows you to manage multiple datasets selected for bulk download. This tour will highlight the main elements of the data cart.',
@@ -514,6 +538,7 @@ export const createCartItemsTour = (
       'Clicking this would switch you to the search library tab. However we will stay in the data cart for this tour.'
     );
 
+  /* istanbul ignore if */
   // Add steps if the cart or search library is empty, which will add needed items
   if (cartIsEmpty()) {
     cartItemsAdded = true;
@@ -533,6 +558,7 @@ export const createCartItemsTour = (
         'This is the main search page where we will load a project to add a dataset...',
         'center'
       );
+    /* istanbul ignore if */
     // If the main search page is empty, select a project
     if (mainTableEmpty()) {
       tour
@@ -560,6 +586,7 @@ export const createCartItemsTour = (
         searchTableTargets.getSelector('searchResultsTable'),
         "Let's go ahead and add some datasets to the cart...",
         'top-start',
+        /* istanbul ignore next */
         async () => {
           clickFirstElement(
             topDataRowTargets.getSelector('cartAddBtn', 'plus')
@@ -575,6 +602,7 @@ export const createCartItemsTour = (
         navBarTargets.getSelector('cartPageBtn'),
         'Now that there are datasets in the cart, we will go view them in the cart page...',
         'bottom',
+        /* istanbul ignore next */
         async (): Promise<void> => {
           setCurrentPage(AppPage.Cart);
           await delay(1000);
@@ -603,6 +631,7 @@ export const createCartItemsTour = (
       '#root .ant-checkbox',
       'You can select which datasets to download by clicking their checkboxes, or to select them all, click the top checkbox like so...',
       'top-start',
+      /* istanbul ignore next */
       async () => {
         clickFirstElement('#root .ant-checkbox');
         // Flag that the check boxes are on
@@ -619,6 +648,7 @@ export const createCartItemsTour = (
       cartTourTargets.getSelector('downloadAllBtn'),
       'Then you would click this button to get the download script needed for all currently selected datasets in the cart.',
       'top-start',
+      /* istanbul ignore next */
       async () => {
         clickFirstElement('#root .ant-checkbox');
         // Flag that the check boxes are on
@@ -632,21 +662,24 @@ export const createCartItemsTour = (
       'right-start'
     )
     .addNextStep('body', 'This concludes the cart page tour.', 'center')
-    .setOnFinish(() => {
-      // Clean-up step for when the tour is complete (or skipped)
-      return async () => {
-        if (cartItemsAdded) {
-          clickFirstElement(cartTourTargets.getSelector('removeItemsBtn'));
-          await delay(500);
-          clickFirstElement('.ant-popover-buttons .ant-btn-primary');
-          await delay(300);
-        }
-        if (tour.getTourFlag('boxes-checked')) {
-          clickFirstElement('#root .ant-checkbox');
-          await delay(300);
-        }
-      };
-    });
+    .setOnFinish(
+      /* istanbul ignore next */
+      () => {
+        // Clean-up step for when the tour is complete (or skipped)
+        return async () => {
+          if (cartItemsAdded) {
+            clickFirstElement(cartTourTargets.getSelector('removeItemsBtn'));
+            await delay(500);
+            clickFirstElement('.ant-popover-buttons .ant-btn-primary');
+            await delay(300);
+          }
+          if (tour.getTourFlag('boxes-checked')) {
+            clickFirstElement('#root .ant-checkbox');
+            await delay(300);
+          }
+        };
+      }
+    );
 
   return tour;
 };
@@ -655,7 +688,7 @@ export const createSearchCardTour = (
   setCurrentPage: (page: number) => void
 ): JoyrideTour => {
   let searchSaved = false;
-  const tour = new JoyrideTour('Search Card Tour')
+  const tour = new JoyrideTour(TourTitles.Searches)
     .addNextStep(
       'body',
       'The search library allows you to manage previous searches that have been saved, so they can be applied in the future if desired. This tour will highlight the main features of the search library...',
@@ -671,6 +704,7 @@ export const createSearchCardTour = (
     );
 
   // Add steps if the cart or search library is empty, which will add needed items
+  /* istanbul ignore if */
   if (searchLibraryIsEmpty()) {
     searchSaved = true;
     tour
@@ -688,7 +722,9 @@ export const createSearchCardTour = (
         'This is the main search page where we will create and save a search...',
         'center'
       );
+
     // If the main search page is empty, select a project
+    /* istanbul ignore if */
     if (mainTableEmpty()) {
       tour
         .addNextStep(
@@ -717,6 +753,7 @@ export const createSearchCardTour = (
         searchTableTargets.getSelector('saveSearchBtn'),
         'To save the current search to the library, we need to click this button...',
         'bottom-start',
+        /* istanbul ignore next */
         async () => {
           clickFirstElement(searchTableTargets.getSelector('saveSearchBtn'));
           await delay(500);
@@ -726,6 +763,7 @@ export const createSearchCardTour = (
         navBarTargets.getSelector('savedSearchPageBtn'),
         'We can now go back to the search library and view our recently added search...',
         'bottom',
+        /* istanbul ignore next */
         async (): Promise<void> => {
           setCurrentPage(AppPage.SavedSearches);
           await delay(1000);
@@ -766,21 +804,24 @@ export const createSearchCardTour = (
       'left-start'
     )
     .addNextStep('body', 'This concludes the search library tour.', 'center')
-    .setOnFinish(() => {
-      // Clean-up step for when the tour is complete (or skipped)
-      return async () => {
-        if (searchSaved) {
-          clickFirstElement(savedSearchTourTargets.getSelector('removeBtn'));
-          await delay(500);
-        }
-      };
-    });
+    .setOnFinish(
+      /* istanbul ignore next */
+      () => {
+        // Clean-up step for when the tour is complete (or skipped)
+        return async () => {
+          if (searchSaved) {
+            clickFirstElement(savedSearchTourTargets.getSelector('removeBtn'));
+            await delay(500);
+          }
+        };
+      }
+    );
 
   return tour;
 };
 
 export const createNodeStatusTour = (): JoyrideTour => {
-  const tour = new JoyrideTour('Node Status Tour')
+  const tour = new JoyrideTour(TourTitles.Node)
     .addNextStep(
       'body',
       'This tour will provide a brief overview of the node status page.',
@@ -798,6 +839,7 @@ export const createNodeStatusTour = (): JoyrideTour => {
       nodeTourTargets.getSelector('nodeColHeader'),
       'This column lists the various nodes that are registered to serve the data with Metagrid. Clicking the header will toggle the sort between ascending and descending like so...',
       'top',
+      /* istanbul ignore next */
       async () => {
         clickFirstElement(nodeTourTargets.getSelector('nodeColHeader'));
         await delay(500);
@@ -807,6 +849,7 @@ export const createNodeStatusTour = (): JoyrideTour => {
       nodeTourTargets.getSelector('onlineColHeader'),
       'This column shows the online status of each node. A green check-mark indicates the node is online whereas a red x mark indicates it is offline. As with the node column, you can click this to sort by node status like so...',
       'top',
+      /* istanbul ignore next */
       async () => {
         clickFirstElement(nodeTourTargets.getSelector('onlineColHeader'));
         await delay(700);

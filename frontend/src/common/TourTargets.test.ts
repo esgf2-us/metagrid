@@ -1,4 +1,4 @@
-import { TourTarget, TourTargets } from './TourTargets';
+import { TourTargets } from './TourTargets';
 
 describe('Test TourTarget class', () => {
   it('returns default tour targets', () => {

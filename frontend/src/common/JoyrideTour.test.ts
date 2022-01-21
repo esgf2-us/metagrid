@@ -32,7 +32,7 @@ describe('Test JoyrideTour class', () => {
     expect(testValue).toEqual(5);
   });
 
-  it('Creates a tour and steps', async () => {
+  it('Creates a tour and steps', () => {
     const testTour = new JoyrideTour();
     let testValue = 0;
 

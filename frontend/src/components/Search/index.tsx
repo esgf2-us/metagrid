@@ -267,7 +267,10 @@ const Search: React.FC<Props> = ({
   const allSelectedItemsInCart =
     selectedItems.filter(
       (item: RawSearchResult) =>
-        !userCart.some((dataset: RawSearchResult) => dataset.id === item.id)
+        !userCart.some(
+          /* istanbul ignore else */
+          (dataset: RawSearchResult) => dataset.id === item.id
+        )
     ).length === 0;
 
   return (

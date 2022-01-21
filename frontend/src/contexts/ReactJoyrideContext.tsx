@@ -12,6 +12,7 @@ export type RawTourState = {
   setCurrentAppPage: (page: number) => void;
 };
 
+/* istanbul ignore next */
 export const ReactJoyrideContext = React.createContext<RawTourState>({
   getTour: new JoyrideTour('Empty Tour'),
   setTour: () => {},
@@ -29,6 +30,7 @@ export const ReactJoyrideProvider: React.FC<Props> = ({ children }) => {
   const [getTour, setTour] = React.useState<JoyrideTour>(defaultTour);
   const [getStepIndex, setStepIndex] = React.useState<number>(0);
 
+  /* istanbul ignore next */
   const nextStep = (index: number): void => {
     const stepCount = getTour.getSteps().length;
     try {
@@ -36,20 +38,24 @@ export const ReactJoyrideProvider: React.FC<Props> = ({ children }) => {
         setStepIndex(index + 1);
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error(error);
     }
   };
 
+  /* istanbul ignore next */
   const previousStep = (index: number): void => {
     try {
       if (index >= 0) {
         setStepIndex(index - 1);
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error(error);
     }
   };
 
+  /* istanbul ignore next */
   const handleJoyrideCallback = async (data: CallBackProps): Promise<void> => {
     const { status, index, type, action } = data;
     const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
@@ -73,6 +79,7 @@ export const ReactJoyrideProvider: React.FC<Props> = ({ children }) => {
     }
   };
 
+  /* istanbul ignore next */
   const startTour = (): void => {
     if (getTour) {
       setStepIndex(0);
@@ -80,6 +87,7 @@ export const ReactJoyrideProvider: React.FC<Props> = ({ children }) => {
     setRunning(true);
   };
 
+  /* istanbul ignore next */
   const setCurrentAppPage = (page: AppPage): void => {
     if (getCurrentAppPage() !== page) {
       setTimeout(() => {

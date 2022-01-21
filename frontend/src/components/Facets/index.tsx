@@ -67,6 +67,7 @@ const Facets: React.FC<Props> = ({
   };
 
   useEffect(() => {
+    /* istanbul ignore else */
     if (activeSearchQuery.project) {
       setCurProject(activeSearchQuery.project as RawProject);
     }
