@@ -297,7 +297,7 @@ export const createMainPageTour = (): JoyrideTour => {
   const tour = new JoyrideTour(TourTitles.Main)
     .addNextStep(
       'body',
-      "Welcome to Metagrid! This tour will highlight the main controls and features of the search page. During the tour, click 'Next' to continue, or 'Previous' to go back a step in the tour. Click 'Skip' if you wish to cancel the tour. Let's begin!",
+      "Welcome to Metagrid! This tour will highlight the main controls and features of the search page. During the tour, click 'Next' to continue, or 'Skip' if you wish to cancel the tour. Let's begin!",
       'center'
     )
     .addNextStep(
