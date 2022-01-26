@@ -10,6 +10,7 @@ import { Badge, Menu } from 'antd';
 import { KeycloakTokenParsed } from 'keycloak-js';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { navBarTargets } from '../../common/reactJoyrideSteps';
 import Button from '../General/Button';
 
 export type Props = {
@@ -58,14 +59,23 @@ const RightMenu: React.FC<Props> = ({
   }, [location.pathname]);
 
   return (
-    <div data-testid="right-menu">
+    <div
+      data-testid="right-menu"
+      className={navBarTargets.getClass('topNavBar')}
+    >
       <Menu selectedKeys={[activeMenuItem]} mode={mode}>
-        <Menu.Item key="search">
+        <Menu.Item
+          key="search"
+          className={navBarTargets.getClass('searchPageBtn')}
+        >
           <Link to="/search">
             <SearchOutlined /> Search
           </Link>
         </Menu.Item>
-        <Menu.Item key="cartItems" className="modified-item">
+        <Menu.Item
+          key="cartItems"
+          className={`modified-item ${navBarTargets.getClass('cartPageBtn')}`}
+        >
           <Link to="/cart/items">
             <ShoppingCartOutlined style={{ fontSize: '20px' }} />
             <Badge
@@ -77,7 +87,12 @@ const RightMenu: React.FC<Props> = ({
             Cart
           </Link>
         </Menu.Item>
-        <Menu.Item key="cartSearches" className="modified-item">
+        <Menu.Item
+          key="cartSearches"
+          className={`modified-item ${navBarTargets.getClass(
+            'savedSearchPageBtn'
+          )}`}
+        >
           <Link to="/cart/searches">
             <FileSearchOutlined style={{ fontSize: '20px' }} />{' '}
             <Badge
@@ -89,13 +104,19 @@ const RightMenu: React.FC<Props> = ({
             Saved Searches
           </Link>
         </Menu.Item>
-        <Menu.Item key="nodes">
+        <Menu.Item
+          key="nodes"
+          className={navBarTargets.getClass('nodeStatusBtn')}
+        >
           <Link to="/nodes">
             <NodeIndexOutlined /> Node Status
           </Link>
         </Menu.Item>
         {!authenticated ? (
-          <Menu.Item key="signIn">
+          <Menu.Item
+            key="signIn"
+            className={navBarTargets.getClass('signInBtn')}
+          >
             <Button
               type="text"
               icon={<UserOutlined style={{ fontSize: '18px' }} />}

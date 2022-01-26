@@ -81,7 +81,9 @@ describe('test FilesTable component', () => {
     await waitFor(() => getByTestId('filesTable'));
 
     // Check a record row exist
-    const row = document.querySelector('tr.ant-table-row') as HTMLElement;
+    const row = await waitFor(
+      () => document.querySelector('tr.ant-table-row') as HTMLElement
+    );
     expect(row).toBeTruthy();
 
     // Get the download button

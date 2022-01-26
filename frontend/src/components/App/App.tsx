@@ -135,6 +135,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
   const [userCart, setUserCart] = React.useState<UserCart | []>(
     JSON.parse(localStorage.getItem('userCart') || '[]')
   );
+
   const [userSearchQueries, setUserSearchQueries] = React.useState<
     UserSearchQueries | []
   >(JSON.parse(localStorage.getItem('userSearchQueries') || '[]'));

@@ -206,8 +206,8 @@ export const addUserSearchQuery = async (
   payload: UserSearchQuery
 ): Promise<RawUserSearchQuery> => {
   const decamelizedPayload = humps.decamelizeKeys({
-    user: userPk,
     ...payload,
+    user: userPk,
   });
   return axios
     .post(apiRoutes.userSearches.path, decamelizedPayload, {
