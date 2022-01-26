@@ -14,6 +14,7 @@ import {
   generateSearchURLQuery,
 } from '../../api';
 import { clickableRoute } from '../../api/routes';
+import { searchTableTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import { objectIsEmpty } from '../../common/utils';
 import { UserCart } from '../Cart/types';
@@ -266,11 +267,17 @@ const Search: React.FC<Props> = ({
   const allSelectedItemsInCart =
     selectedItems.filter(
       (item: RawSearchResult) =>
-        !userCart.some((dataset: RawSearchResult) => dataset.id === item.id)
+        !userCart.some(
+          /* istanbul ignore else */
+          (dataset: RawSearchResult) => dataset.id === item.id
+        )
     ).length === 0;
 
   return (
-    <div data-testid="search">
+    <div
+      data-testid="search"
+      className={searchTableTargets.getClass('searchResultsTable')}
+    >
       <div style={styles.summary}>
         {objectIsEmpty(project) && (
           <Alert
@@ -286,7 +293,10 @@ const Search: React.FC<Props> = ({
             </span>
           )}
           {results && !isLoading && (
-            <span style={styles.resultsHeader}>
+            <span
+              className={searchTableTargets.getClass('resultsFoundText')}
+              style={styles.resultsHeader}
+            >
               {numFound.toLocaleString()} results found for{' '}
             </span>
           )}
@@ -299,6 +309,7 @@ const Search: React.FC<Props> = ({
             <div>
               <Button
                 type="default"
+                className={searchTableTargets.getClass('addSelectedToCartBtn')}
                 onClick={() => onUpdateCart(selectedItems, 'add')}
                 disabled={
                   isLoading ||
@@ -311,6 +322,7 @@ const Search: React.FC<Props> = ({
                 Add Selected to Cart
               </Button>{' '}
               <Button
+                className={searchTableTargets.getClass('saveSearchBtn')}
                 type="default"
                 onClick={() => onSaveSearchQuery(currentRequestURL as string)}
                 disabled={isLoading || numFound === 0}
@@ -320,6 +332,7 @@ const Search: React.FC<Props> = ({
               </Button>{' '}
               <Button
                 type="default"
+                className={searchTableTargets.getClass('copySearchLinkBtn')}
                 onClick={() => onShareSearchQuery()}
                 disabled={isLoading || numFound === 0}
               >
@@ -335,7 +348,10 @@ const Search: React.FC<Props> = ({
           <>
             <p>
               <span style={styles.subtitles}>Query String: </span>
-              <Typography.Text code>
+              <Typography.Text
+                className={searchTableTargets.getClass('queryString')}
+                code
+              >
                 {stringifyFilters(
                   versionType,
                   resultType,

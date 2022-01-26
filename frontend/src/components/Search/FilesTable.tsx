@@ -12,6 +12,7 @@ import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
 import { DeferFn, useAsync } from 'react-async';
 import { fetchDatasetFiles, openDownloadURL } from '../../api';
+import { innerDataRowTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import { formatBytes, splitStringByChar } from '../../common/utils';
 import ToolTip from '../DataDisplay/ToolTip';
@@ -191,13 +192,26 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
       dataIndex: 'title',
       size: 400,
       key: 'title',
+      render: (title: string) => {
+        return (
+          <div className={innerDataRowTargets.getClass('filesTitle')}>
+            {title}
+          </div>
+        );
+      },
     },
     {
       title: 'Size',
       dataIndex: 'size',
       width: 100,
       key: 'size',
-      render: (size: number) => formatBytes(size),
+      render: (size: number) => {
+        return (
+          <div className={innerDataRowTargets.getClass('dataSize')}>
+            {formatBytes(size)}
+          </div>
+        );
+      },
     },
     {
       title: 'Download / Copy URL',
@@ -213,7 +227,9 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
               initialValues={{ download: downloadUrls.HTTPServer }}
             >
               <ToolTip title="Download the data file via Http." trigger="hover">
-                <Form.Item>
+                <Form.Item
+                  className={innerDataRowTargets.getClass('downloadDataBtn')}
+                >
                   <Button
                     type="primary"
                     htmlType="submit"
@@ -226,7 +242,9 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
                   title="Copy a shareable OPENDAP URL to the clipboard."
                   trigger="hover"
                 >
-                  <Form.Item>
+                  <Form.Item
+                    className={innerDataRowTargets.getClass('copyUrlBtn')}
+                  >
                     <Button
                       type="primary"
                       onClick={() => {
@@ -260,6 +278,13 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
       title: 'Checksum',
       dataIndex: 'checksum',
       key: 'checksum',
+      render: (checksum: string) => {
+        return (
+          <div className={innerDataRowTargets.getClass('checksum')}>
+            {checksum}
+          </div>
+        );
+      },
     },
   ];
 

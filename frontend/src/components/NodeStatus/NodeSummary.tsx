@@ -2,6 +2,7 @@ import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
 import { Divider } from 'antd';
 import React from 'react';
 import nodeImg from '../../assets/img/nodes.svg';
+import { nodeTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import { NodeStatusArray } from './types';
 
@@ -33,7 +34,10 @@ const NodeSummary: React.FC<Props> = ({ nodeStatus }) => {
   }
 
   return (
-    <div data-testid="summary">
+    <div
+      data-testid="summary"
+      className={nodeTourTargets.getClass('nodeStatusSummary')}
+    >
       <div style={styles.headerContainer}>
         <img style={styles.image} src={nodeImg} alt="Node" />
       </div>

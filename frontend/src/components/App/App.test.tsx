@@ -1157,7 +1157,7 @@ describe('User support', () => {
     expect(githubIcon).toBeTruthy();
 
     // click close button
-    const closeBtn = getByRole('button', { name: 'Close' });
+    const closeBtn = getByRole('img', { name: 'close' });
     fireEvent.click(closeBtn);
   });
 });

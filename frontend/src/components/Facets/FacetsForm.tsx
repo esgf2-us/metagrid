@@ -6,6 +6,7 @@ import {
 import { Col, Collapse, DatePicker, Form, Input, Row, Select } from 'antd';
 import moment from 'moment';
 import React from 'react';
+import { leftSidebarTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
@@ -218,9 +219,19 @@ const FacetsForm: React.FC<Props> = ({
             {facetsByGroup &&
               Object.keys(facetsByGroup).map((group) => (
                 <Collapse.Panel
-                  header={humanizeFacetNames(group)}
+                  header={
+                    <div
+                      className={leftSidebarTargets.getClass(
+                        'facetFormGeneral'
+                      )}
+                    >
+                      {humanizeFacetNames(group)}
+                    </div>
+                  }
                   key={group}
-                  className="site-collapse-custom-collapse"
+                  className={`site-collapse-custom-collapse ${leftSidebarTargets.getClass(
+                    'facetFormFields'
+                  )}`}
                 >
                   {Object.keys(availableFacets).map((facet) => {
                     if (facetsByGroup[group].includes(facet)) {
@@ -327,9 +338,17 @@ const FacetsForm: React.FC<Props> = ({
       >
         <Collapse>
           <Collapse.Panel
-            header={humanizeFacetNames('additional_properties')}
+            header={
+              <div
+                className={leftSidebarTargets.getClass('facetFormAdditional')}
+              >
+                {humanizeFacetNames('additional_properties')}
+              </div>
+            }
             key="additional_properties"
-            className="site-collapse-custom-collapse"
+            className={`site-collapse-custom-collapse ${leftSidebarTargets.getClass(
+              'facetFormAdditionalFields'
+            )}`}
           >
             <Form.Item
               label="Version Type"
@@ -392,9 +411,15 @@ const FacetsForm: React.FC<Props> = ({
       >
         <Collapse>
           <Collapse.Panel
-            header={humanizeFacetNames('filename')}
+            header={
+              <div className={leftSidebarTargets.getClass('facetFormFilename')}>
+                {humanizeFacetNames('filename')}
+              </div>
+            }
             key="filename"
-            className="site-collapse-custom-collapse"
+            className={`site-collapse-custom-collapse ${leftSidebarTargets.getClass(
+              'facetFormFilenameFields'
+            )}`}
           >
             <Form.Item
               name="filenameVar"

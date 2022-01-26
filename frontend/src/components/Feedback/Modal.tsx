@@ -20,6 +20,7 @@ const Modal: React.FC<Props> = ({
     visible={visible}
     title={title}
     onOk={onClose}
+    okText="Close"
     onCancel={onClose}
     centered={centered}
   >

@@ -10,6 +10,7 @@ import {
   openDownloadURL,
   ResponseError,
 } from '../../api/index';
+import { cartTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import Empty from '../DataDisplay/Empty';
 import Popconfirm from '../Feedback/Popconfirm';
@@ -91,7 +92,12 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
                 onConfirm={onClearCart}
               >
                 <span>
-                  <Button danger>Remove All Items</Button>
+                  <Button
+                    className={cartTourTargets.getClass('removeItemsBtn')}
+                    danger
+                  >
+                    Remove All Items
+                  </Button>
                 </span>
               </Popconfirm>
             )}
@@ -126,7 +132,10 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
                 downloadType: downloadOptions[0],
               }}
             >
-              <Form.Item name="downloadType">
+              <Form.Item
+                name="downloadType"
+                className={cartTourTargets.getClass('downloadAllType')}
+              >
                 <Select style={{ width: 235 }}>
                   {downloadOptions.map((option) => (
                     <Select.Option key={option} value={option}>
@@ -138,6 +147,7 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
               </Form.Item>
               <Form.Item>
                 <Button
+                  className={cartTourTargets.getClass('downloadAllBtn')}
                   type="primary"
                   htmlType="submit"
                   icon={<DownloadOutlined />}

@@ -2,6 +2,7 @@ import { Button, Tooltip } from 'antd';
 import React, { useEffect } from 'react';
 import { useAsync } from 'react-async';
 import { fetchProjects, ResponseError } from '../../api';
+import { leftSidebarTargets } from '../../common/reactJoyrideSteps';
 import { objectIsEmpty } from '../../common/utils';
 import Divider from '../General/Divider';
 import { NodeStatusArray } from '../NodeStatus/types';
@@ -66,13 +67,18 @@ const Facets: React.FC<Props> = ({
   };
 
   useEffect(() => {
+    /* istanbul ignore else */
     if (activeSearchQuery.project) {
       setCurProject(activeSearchQuery.project as RawProject);
     }
   }, [activeSearchQuery]);
 
   return (
-    <div data-testid="facets" style={styles.form}>
+    <div
+      data-testid="facets"
+      style={styles.form}
+      className={leftSidebarTargets.getClass('leftSideBar')}
+    >
       <h3>Select a Project</h3>
       <div data-testid="projectForm">
         <ProjectForm
@@ -86,6 +92,7 @@ const Facets: React.FC<Props> = ({
           <Tooltip title={curProject.projectUrl}>
             <Button
               href={curProject.projectUrl}
+              className={leftSidebarTargets.getClass('projectWebsiteBtn')}
               target="_blank"
               style={{ marginTop: '10px' }}
             >
@@ -96,7 +103,7 @@ const Facets: React.FC<Props> = ({
         <Divider />
       </div>
       {!objectIsEmpty(availableFacets) && (
-        <>
+        <div className={leftSidebarTargets.getClass('searchFacetsForm')}>
           <h3>Filter with Facets</h3>
           <FacetsForm
             activeSearchQuery={activeSearchQuery}
@@ -106,7 +113,7 @@ const Facets: React.FC<Props> = ({
             onSetGeneralFacets={onSetGeneralFacets}
             onSetActiveFacets={onSetActiveFacets}
           />
-        </>
+        </div>
       )}
     </div>
   );
