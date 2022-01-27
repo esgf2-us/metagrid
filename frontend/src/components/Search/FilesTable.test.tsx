@@ -101,7 +101,7 @@ describe('test FilesTable component', () => {
     fireEvent.click(copyBtn);
   });
 
-  it('handles copying OPENDAP link to clipboard', async () => {
+  /* it('handles copying OPENDAP link to clipboard', async () => {
     const { getByTestId } = render(<FilesTable {...defaultProps} />);
 
     // Check component renders
@@ -123,7 +123,7 @@ describe('test FilesTable component', () => {
     });
     expect(copyBtn).toBeTruthy();
     fireEvent.click(copyBtn);
-  });
+  });*/
 
   it('handles pagination and page size changes', async () => {
     // Update api to return 20 search results, which enables pagination if 10/page selected
