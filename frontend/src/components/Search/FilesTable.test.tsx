@@ -92,69 +92,14 @@ describe('test FilesTable component', () => {
     });
     expect(downloadBtn).toBeTruthy();
     fireEvent.click(downloadBtn);
-  });
 
-  it('handles copying OPENDAP link to clipboard', async () => {
-    const { getByTestId } = render(<FilesTable {...defaultProps} />);
-
-    // Check component renders
-    const component = await waitFor(() => getByTestId('filesTable'));
-    expect(component).toBeTruthy();
-
-    // Wait for component to re-render
-    await waitFor(() => getByTestId('filesTable'));
-
-    // Check a record row exist
-    const row = document.querySelector('tr.ant-table-row') as HTMLElement;
-    expect(row).toBeTruthy();
-
-    // Get the download button
-    const downloadBtn = within(row).getByRole('button', {
+    // Test the copy button
+    const copyBtn = within(row).getByRole('button', {
       name: 'copy',
     });
-    expect(downloadBtn).toBeTruthy();
-    fireEvent.click(downloadBtn);
+    expect(copyBtn).toBeTruthy();
+    fireEvent.click(copyBtn);
   });
-
-  /* it('renders files table with data and opens up a new window when submitting form for downloading a file', async () => {
-    // Update the value of open
-    // https://stackoverflow.com/questions/58189851/mocking-a-conditional-window-open-function-call-with-jest
-    Object.defineProperty(window, 'location', {
-      value: {
-        href: jest.fn(),
-      },
-    });
-    const { getByRole, getByTestId } = render(<FilesTable {...defaultProps} />);
-
-    // Check files table component renders
-    const filesTableComponent = await waitFor(() => getByTestId('filesTable'));
-    expect(filesTableComponent).toBeTruthy();
-
-    // Check component renders
-    const component = await waitFor(() => getByTestId('filesTable'));
-    expect(component).toBeTruthy();
-
-    // Wait for component to re-render
-    await waitFor(() => getByTestId('filesTable'));
-
-    // Check a record row exist
-    const row = document.querySelector(
-      'ant-icon.ant-icon-download'
-    ) as HTMLElement;
-    expect(row).toBeTruthy();
-
-    // Submit the download form
-    fireEvent.submit(row);
-
-    // Select first cell download button
-    /*const downloadBtn = within(component).getByRole('img', {
-      name: 'download',
-    });
-    expect(downloadBtn).toBeTruthy();
-
-    // Submit the download form
-    fireEvent.submit(downloadBtn);
-  });*/
 
   it('handles pagination and page size changes', async () => {
     // Update api to return 20 search results, which enables pagination if 10/page selected
@@ -229,7 +174,9 @@ describe('test FilesTable component', () => {
     await waitFor(() => getByTestId('filesTable'));
 
     // Check a record row exist
-    const row = document.querySelector('tr.ant-table-row') as HTMLElement;
+    const row = await waitFor(
+      () => document.querySelector('tr.ant-table-row') as HTMLElement
+    );
     expect(row).toBeTruthy();
 
     // Get the expandable cell
