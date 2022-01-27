@@ -92,6 +92,13 @@ describe('test FilesTable component', () => {
     });
     expect(downloadBtn).toBeTruthy();
     fireEvent.click(downloadBtn);
+
+    // Test the copy button
+    const copyBtn = within(row).getByRole('button', {
+      name: 'copy',
+    });
+    expect(copyBtn).toBeTruthy();
+    fireEvent.click(copyBtn);
   });
 
   it('handles copying OPENDAP link to clipboard', async () => {
@@ -111,11 +118,11 @@ describe('test FilesTable component', () => {
     expect(row).toBeTruthy();
 
     // Get the download button
-    const downloadBtn = within(row).getByRole('button', {
+    const copyBtn = within(row).getByRole('button', {
       name: 'copy',
     });
-    expect(downloadBtn).toBeTruthy();
-    fireEvent.click(downloadBtn);
+    expect(copyBtn).toBeTruthy();
+    fireEvent.click(copyBtn);
   });
 
   it('handles pagination and page size changes', async () => {
