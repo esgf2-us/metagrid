@@ -101,30 +101,6 @@ describe('test FilesTable component', () => {
     fireEvent.click(copyBtn);
   });
 
-  /* it('handles copying OPENDAP link to clipboard', async () => {
-    const { getByTestId } = render(<FilesTable {...defaultProps} />);
-
-    // Check component renders
-    const component = await waitFor(() => getByTestId('filesTable'));
-    expect(component).toBeTruthy();
-
-    // Wait for component to re-render
-    await waitFor(() => getByTestId('filesTable'));
-
-    // Check a record row exist
-    const row = await waitFor(
-      () => document.querySelector('tr.ant-table-row') as HTMLElement
-    );
-    expect(row).toBeTruthy();
-
-    // Get the download button
-    const copyBtn = within(row).getByRole('button', {
-      name: 'copy',
-    });
-    expect(copyBtn).toBeTruthy();
-    fireEvent.click(copyBtn);
-  });*/
-
   it('handles pagination and page size changes', async () => {
     // Update api to return 20 search results, which enables pagination if 10/page selected
     const data = ESGFSearchAPIFixture();
