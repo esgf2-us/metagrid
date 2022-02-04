@@ -598,7 +598,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
             </Layout.Content>
             <Layout.Footer>
               <p style={{ fontSize: '10px' }}>
-                Privacy & Legal Notice:{' '}
+                Privacy &amp; Legal Notice:{' '}
                 <a href="https://www.llnl.gov/disclaimer.html">
                   https://www.llnl.gov/disclaimer.html
                 </a>
