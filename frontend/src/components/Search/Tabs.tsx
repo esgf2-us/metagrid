@@ -136,7 +136,8 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
         <Divider />
         {Object.keys(record).map((key) => (
           <p key={key} style={{ margin: 0 }}>
-            <span style={{ fontWeight: 'bold' }}>{key}</span>: {record[key]}
+            <span style={{ fontWeight: 'bold' }}>{key}</span>:{' '}
+            {String(record[key])}
           </p>
         ))}
       </TabsD.TabPane>
