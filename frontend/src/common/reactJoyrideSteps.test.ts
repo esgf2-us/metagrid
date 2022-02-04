@@ -17,7 +17,7 @@ describe('Test reactJoyrideStep util functions', () => {
     await delay(500);
     const nextTime = Date.now();
 
-    expect(nextTime - time).toBeGreaterThanOrEqual(500);
+    expect(nextTime - time).toBeGreaterThanOrEqual(450);
     expect(nextTime - time).toBeLessThan(1000);
   });
 
