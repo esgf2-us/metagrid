@@ -82,7 +82,8 @@ describe('test FilesTable component', () => {
 
     // Check a record row exist
     const row = await waitFor(
-      () => document.querySelector('tr.ant-table-row') as HTMLElement
+      () =>
+        document.getElementsByClassName('ant-table-row').item(0) as HTMLElement
     );
     expect(row).toBeTruthy();
 
@@ -175,7 +176,8 @@ describe('test FilesTable component', () => {
 
     // Check a record row exist
     const row = await waitFor(
-      () => document.querySelector('tr.ant-table-row') as HTMLElement
+      () =>
+        document.getElementsByClassName('ant-table-row').item(0) as HTMLElement
     );
     expect(row).toBeTruthy();
 
