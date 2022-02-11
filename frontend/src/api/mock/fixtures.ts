@@ -123,6 +123,7 @@ export const rawCitationFixture = (
     titles: 'title',
     publisher: 'publisher',
     publicationYear: 2020,
+    license: 'MIT',
   };
 
   return { ...defaults, ...props };

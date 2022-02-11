@@ -10,6 +10,7 @@ export type RawCitation = {
   publicationYear: number;
   identifierDOI: string;
   creatorsList: string;
+  license: string;
 };
 
 export type VersionType = 'all' | 'latest';

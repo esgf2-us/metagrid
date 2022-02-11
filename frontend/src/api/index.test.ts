@@ -249,6 +249,7 @@ describe('test processing citation', () => {
       titles: 'title',
       publisher: 'publisher',
       publicationYear: 2020,
+      license: 'MIT',
     };
     const result: RawCitation = {
       ...citation,
