@@ -418,6 +418,9 @@ export const processCitation = (citation: RawCitation): RawCitation => {
   newCitation.identifierDOI = `http://${newCitation.identifier.identifierType.toLowerCase()}.org/${
     newCitation.identifier.id
   }`;
+  newCitation.license = newCitation.rightsList
+    .map((elem) => elem.rights)
+    .join('; ');
   newCitation.creatorsList = newCitation.creators
     .map((elem) => elem.creatorName)
     .join('; ');

@@ -31,6 +31,12 @@ const Citation: React.FC<CitationProps> = ({ url }) => {
     url,
   });
 
+  // Limit creator list to 3
+  let displayedCreators = '';
+  if (data && data.creatorsList.split(';').length >= 3) {
+    displayedCreators = data.creatorsList.split(';').slice(0, 3).join('; ');
+  }
+
   return (
     <div>
       <div>
@@ -62,7 +68,7 @@ const Citation: React.FC<CitationProps> = ({ url }) => {
               {data.identifierDOI}
             </a>
           </CitationInfo>
-          <CitationInfo title="Creators">{data.creatorsList}</CitationInfo>
+          <CitationInfo title="Creators">{displayedCreators}</CitationInfo>
           <CitationInfo title="Titles">{data.titles}</CitationInfo>
           <CitationInfo title="Publisher">{data.publisher}</CitationInfo>
           <CitationInfo title="Publication Year">

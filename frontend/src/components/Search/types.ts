@@ -10,6 +10,7 @@ export type RawCitation = {
   publicationYear: number;
   identifierDOI: string;
   creatorsList: string;
+  rightsList: { [key: string]: string }[];
   license: string;
 };
 
