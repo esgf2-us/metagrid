@@ -69,7 +69,11 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
                 Welcome to Metagrid Support! To view the latest documentation
                 and FAQ, please visit this page:
                 <br />
-                <a href=" https://esgf.github.io/esgf-user-support/metagrid.html">
+                <a
+                  href=" https://esgf.github.io/esgf-user-support/metagrid.html"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
                   https://esgf.github.io/esgf-user-support/metagrid.html
                 </a>
               </p>
