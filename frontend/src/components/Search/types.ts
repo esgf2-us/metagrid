@@ -38,7 +38,8 @@ export type RawSearchResult = {
   further_info_url?: string[] | [];
   number_of_files?: number;
   size?: number;
-  [key: string]: string | string[] | number | undefined;
+  retracted?: boolean;
+  [key: string]: boolean | string | string[] | number | undefined;
 };
 
 export type RawSearchResults = Array<RawSearchResult>;

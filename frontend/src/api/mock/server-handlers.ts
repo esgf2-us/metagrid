@@ -46,9 +46,43 @@ const handlers = [
   rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(ESGFSearchAPIFixture()))
   ),
-  rest.get(apiRoutes.citation.path, (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json(rawCitationFixture()))
-  ),
+  rest.get(apiRoutes.citation.path, (_req, res, ctx) => {
+    // For testing more than one set of creators
+    const variant = _req.url.searchParams.get('variant');
+    if (variant) {
+      if (variant === 'a') {
+        return res(
+          ctx.status(200),
+          ctx.json(
+            rawCitationFixture({
+              creators: [
+                { creatorName: 'Bobby' },
+                { creatorName: 'Tommy' },
+                { creatorName: 'Joey' },
+              ],
+            })
+          )
+        );
+      }
+      if (variant === 'b') {
+        return res(
+          ctx.status(200),
+          ctx.json(
+            rawCitationFixture({
+              creators: [
+                { creatorName: 'Bobby' },
+                { creatorName: 'Tommy' },
+                { creatorName: 'Timmy' },
+                { creatorName: 'Joey' },
+              ],
+            })
+          )
+        );
+      }
+    }
+
+    return res(ctx.status(200), ctx.json(rawCitationFixture()));
+  }),
   rest.get(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(200))),
   rest.get(apiRoutes.nodeStatus.path, (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(rawNodeStatusFixture()))

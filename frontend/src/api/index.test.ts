@@ -284,6 +284,25 @@ describe('test fetching citation', () => {
     });
     expect(newCitation).toEqual(results);
   });
+  it('returns results with different creators', async () => {
+    const citation = rawCitationFixture();
+    const results = {
+      ...citation,
+      creators: [
+        { creatorName: 'Bobby' },
+        { creatorName: 'Tommy' },
+        { creatorName: 'Timmy' },
+        { creatorName: 'Joey' },
+      ],
+      identifierDOI: 'http://doi.org/an_id',
+      creatorsList: 'Bobby; Tommy; Timmy; et al.',
+    };
+
+    const newCitation = await fetchDatasetCitation({
+      url: 'citation_url?variant=b',
+    });
+    expect(newCitation).toEqual(results);
+  });
   it('catches and throws an error based on HTTP status code', async () => {
     server.use(
       rest.get(apiRoutes.citation.path, (_req, res, ctx) =>

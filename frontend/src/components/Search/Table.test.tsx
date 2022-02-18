@@ -59,6 +59,45 @@ it('renders not available for total size and number of files columns when datase
   expect(row).toBeTruthy();
 });
 
+it('renders warning that dataset is retracted', () => {
+  const { getByRole } = render(
+    <Table
+      {...defaultProps}
+      results={[rawSearchResultFixture({ retracted: true })]}
+    />
+  );
+
+  // Check table exists
+  const table = getByRole('table');
+  expect(table).toBeTruthy();
+
+  // Check the dataset title include retracted warning
+  const cell = within(table).getByRole('cell', {
+    name:
+      'foo IMPORTANT! This dataset has been retracted and is no longer avaiable for download.',
+  });
+  expect(cell).toBeTruthy();
+
+  // Get the expandable cell
+  const expandableCell = within(table).getByRole('cell', {
+    name: 'right-circle',
+  });
+  expect(expandableCell).toBeTruthy();
+
+  // Get the right circle icon within the cell and click to expand the row
+  const expandableIcon = within(expandableCell).getByRole('img', {
+    name: 'right-circle',
+  });
+  expect(expandableIcon).toBeTruthy();
+  fireEvent.click(expandableIcon);
+
+  // Get the expandable row that was rendered and click on it
+  const expandableRow = document.querySelector(
+    'tr.ant-table-expanded-row.ant-table-expanded-row-level-1'
+  ) as HTMLElement;
+  expect(expandableRow).toBeTruthy();
+});
+
 it('renders record metadata in an expandable panel', async () => {
   const { getByRole, getByText } = render(<Table {...defaultProps} />);
 
