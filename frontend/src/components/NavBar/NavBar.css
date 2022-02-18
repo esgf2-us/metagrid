@@ -13,13 +13,13 @@
 }
 
 .navbar-container .navbar-left {
-  width: 45%;
+  width: 35%;
   min-width: 384px;
   flex-wrap: nowrap;
 }
 
 .navbar-container .navbar-right {
-  width: 55%;
+  width: 65%;
 }
 
 /* Menu Ant Design overrides */
@@ -68,11 +68,6 @@
   .navbar-logo a {
     padding: 8px 16px;
   }
-}
-
-/* Ant design menu item overrides */
-.modified-item {
-  text-align: center;
 }
 
 .badge .ant-badge-count {

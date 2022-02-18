@@ -465,6 +465,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
               numCartItems={userCart.length}
               numSavedSearches={userSearchQueries.length}
               onTextSearch={handleTextSearch}
+              supportModalVisible={setSupportModalVisible}
             ></NavBar>
           )}
         />
@@ -612,12 +613,18 @@ const App: React.FC<Props> = ({ searchQuery }) => {
             </Layout.Footer>
           </Layout>
         </Layout>
-        <Affix style={{ position: 'fixed', bottom: 70, right: 45 }}>
+        <Affix
+          style={{
+            position: 'fixed',
+            bottom: 75,
+            right: 50,
+          }}
+        >
           <Button
             type="primary"
             shape="circle"
-            size="large"
-            icon={<QuestionOutlined style={{ fontSize: '24px' }} />}
+            style={{ width: '48px', height: '48px' }}
+            icon={<QuestionOutlined style={{ fontSize: '40px' }} />}
             onClick={() => setSupportModalVisible(true)}
           ></Button>
         </Affix>
