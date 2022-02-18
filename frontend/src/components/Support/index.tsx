@@ -66,7 +66,16 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
               </h2>
               <h3>Documentation</h3>
               <p style={{ fontSize: '14px' }}>
-                Checkback for documentation and FAQs in the near future!
+                Welcome to Metagrid Support! To view the latest documentation
+                and FAQ, please visit this page:
+                <br />
+                <a
+                  href=" https://esgf.github.io/esgf-user-support/metagrid.html"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  https://esgf.github.io/esgf-user-support/metagrid.html
+                </a>
               </p>
               <div>
                 <h3>User Interface Tours</h3>

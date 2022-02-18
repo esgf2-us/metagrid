@@ -100,8 +100,10 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
     showESDOC || showQualityFlags || showAdditionalLinks;
 
   return (
-    <TabsD>
+    // Disable all tabs excep metadata if the record is retracted
+    <TabsD activeKey={record.retracted === true ? '2' : undefined}>
       <TabsD.TabPane
+        disabled={record.retracted === true}
         tab={
           <div className={innerDataRowTargets.getClass('filesTab')}>Files</div>
         }
@@ -136,12 +138,14 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
         <Divider />
         {Object.keys(record).map((key) => (
           <p key={key} style={{ margin: 0 }}>
-            <span style={{ fontWeight: 'bold' }}>{key}</span>: {record[key]}
+            <span style={{ fontWeight: 'bold' }}>{key}</span>:{' '}
+            {String(record[key])}
           </p>
         ))}
       </TabsD.TabPane>
       {showCitation && (
         <TabsD.TabPane
+          disabled={record.retracted === true}
           tab={
             <div className={innerDataRowTargets.getClass('citationTab')}>
               Citation
@@ -157,6 +161,7 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
       )}
       {showAdditionalTab && (
         <TabsD.TabPane
+          disabled={record.retracted === true}
           tab={
             <div className={innerDataRowTargets.getClass('additionalTab')}>
               Additional
