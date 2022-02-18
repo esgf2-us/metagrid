@@ -246,9 +246,18 @@ describe('test processing citation', () => {
       creators: [{ creatorName: 'Bob' }, { creatorName: 'Tom' }],
       identifierDOI: '',
       creatorsList: '',
+      license:
+        'Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA 4.0)',
       titles: 'title',
       publisher: 'publisher',
       publicationYear: 2020,
+      rightsList: [
+        {
+          rightsURI: 'http://creativecommons.org/licenses/by-sa/4.0/',
+          rights:
+            'Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA 4.0)',
+        },
+      ],
     };
     const result: RawCitation = {
       ...citation,
@@ -272,6 +281,25 @@ describe('test fetching citation', () => {
 
     const newCitation = await fetchDatasetCitation({
       url: 'citation_url',
+    });
+    expect(newCitation).toEqual(results);
+  });
+  it('returns results with different creators', async () => {
+    const citation = rawCitationFixture();
+    const results = {
+      ...citation,
+      creators: [
+        { creatorName: 'Bobby' },
+        { creatorName: 'Tommy' },
+        { creatorName: 'Timmy' },
+        { creatorName: 'Joey' },
+      ],
+      identifierDOI: 'http://doi.org/an_id',
+      creatorsList: 'Bobby; Tommy; Timmy; et al.',
+    };
+
+    const newCitation = await fetchDatasetCitation({
+      url: 'citation_url?variant=b',
     });
     expect(newCitation).toEqual(results);
   });

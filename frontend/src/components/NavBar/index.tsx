@@ -15,12 +15,14 @@ export type Props = {
   numCartItems: number;
   numSavedSearches: number;
   onTextSearch: (selectedProject: RawProject, text: string) => void;
+  supportModalVisible: (visible: boolean) => void;
 };
 
 const NavBar: React.FC<Props> = ({
   numCartItems,
   numSavedSearches,
   onTextSearch,
+  supportModalVisible,
 }) => {
   const { data, error, isLoading } = useAsync(fetchProjects);
   const [showDrawer, setShowDrawer] = React.useState(false);
@@ -46,12 +48,12 @@ const NavBar: React.FC<Props> = ({
             onTextSearch={onTextSearch}
           ></LeftMenu>
         </div>
-
-        <div className="navbar-right">
+        <div className="navbar-right" style={{ marginLeft: 'auto' }}>
           <RightMenu
             mode="horizontal"
             numCartItems={numCartItems}
             numSavedSearches={numSavedSearches}
+            supportModalVisible={supportModalVisible}
           ></RightMenu>
         </div>
 
@@ -74,6 +76,7 @@ const NavBar: React.FC<Props> = ({
             mode="inline"
             numCartItems={numCartItems}
             numSavedSearches={numSavedSearches}
+            supportModalVisible={supportModalVisible}
           ></RightMenu>
         </Drawer>
       </div>

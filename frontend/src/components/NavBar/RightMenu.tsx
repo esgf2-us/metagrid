@@ -1,6 +1,8 @@
 import {
+  BarsOutlined,
   FileSearchOutlined,
   NodeIndexOutlined,
+  QuestionCircleOutlined,
   SearchOutlined,
   ShoppingCartOutlined,
   UserOutlined,
@@ -8,10 +10,12 @@ import {
 import { useKeycloak } from '@react-keycloak/web';
 import { Badge, Menu } from 'antd';
 import { KeycloakTokenParsed } from 'keycloak-js';
-import React from 'react';
+import React, { CSSProperties } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { navBarTargets } from '../../common/reactJoyrideSteps';
 import Button from '../General/Button';
+
+const menuItemStyling: CSSProperties = { margin: '8px' };
 
 export type Props = {
   mode:
@@ -22,12 +26,14 @@ export type Props = {
     | 'inline';
   numCartItems: number;
   numSavedSearches: number;
+  supportModalVisible: (visible: boolean) => void;
 };
 
 const RightMenu: React.FC<Props> = ({
   mode,
   numCartItems,
   numSavedSearches,
+  supportModalVisible,
 }) => {
   const [activeMenuItem, setActiveMenuItem] = React.useState<string>('search');
 
@@ -63,9 +69,17 @@ const RightMenu: React.FC<Props> = ({
       data-testid="right-menu"
       className={navBarTargets.getClass('topNavBar')}
     >
-      <Menu selectedKeys={[activeMenuItem]} mode={mode}>
+      <Menu
+        selectedKeys={[activeMenuItem]}
+        mode={mode}
+        style={
+          mode === 'inline' ? { textAlign: 'left' } : { textAlign: 'right' }
+        }
+        overflowedIndicator={<BarsOutlined style={{ fontSize: '24px' }} />}
+      >
         <Menu.Item
           key="search"
+          style={menuItemStyling}
           className={navBarTargets.getClass('searchPageBtn')}
         >
           <Link to="/search">
@@ -74,6 +88,7 @@ const RightMenu: React.FC<Props> = ({
         </Menu.Item>
         <Menu.Item
           key="cartItems"
+          style={menuItemStyling}
           className={`modified-item ${navBarTargets.getClass('cartPageBtn')}`}
         >
           <Link to="/cart/items">
@@ -89,6 +104,7 @@ const RightMenu: React.FC<Props> = ({
         </Menu.Item>
         <Menu.Item
           key="cartSearches"
+          style={menuItemStyling}
           className={`modified-item ${navBarTargets.getClass(
             'savedSearchPageBtn'
           )}`}
@@ -106,6 +122,7 @@ const RightMenu: React.FC<Props> = ({
         </Menu.Item>
         <Menu.Item
           key="nodes"
+          style={menuItemStyling}
           className={navBarTargets.getClass('nodeStatusBtn')}
         >
           <Link to="/nodes">
@@ -115,11 +132,12 @@ const RightMenu: React.FC<Props> = ({
         {!authenticated ? (
           <Menu.Item
             key="signIn"
+            style={menuItemStyling}
             className={navBarTargets.getClass('signInBtn')}
           >
             <Button
               type="text"
-              icon={<UserOutlined style={{ fontSize: '18px' }} />}
+              icon={<UserOutlined style={{ fontSize: '18px', margin: 0 }} />}
               onClick={() => keycloak.login()}
             >
               Sign In
@@ -145,6 +163,17 @@ const RightMenu: React.FC<Props> = ({
             </Menu.Item>
           </Menu.SubMenu>
         )}
+        <Menu.Item style={menuItemStyling} key="help">
+          <Button
+            type="text"
+            icon={
+              <QuestionCircleOutlined style={{ fontSize: '18px', margin: 0 }} />
+            }
+            onClick={() => supportModalVisible(true)}
+          >
+            Help
+          </Button>
+        </Menu.Item>
       </Menu>
     </div>
   );

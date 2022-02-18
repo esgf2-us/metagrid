@@ -120,7 +120,9 @@ const Table: React.FC<Props> = ({
       },
       getCheckboxProps: (record: RawSearchResult) => ({
         disabled:
-          canDisableRows && userCart.some((item) => item.id === record.id),
+          canDisableRows &&
+          (userCart.some((item) => item.id === record.id) ||
+            record.retracted === true),
       }),
     },
 
@@ -151,6 +153,7 @@ const Table: React.FC<Props> = ({
           <>
             <Button
               type="primary"
+              disabled={record.retracted === true}
               icon={
                 <PlusOutlined
                   className={topDataRowTargets.getClass('cartAddBtn', 'plus')}
@@ -177,7 +180,20 @@ const Table: React.FC<Props> = ({
       dataIndex: 'title',
       key: 'title',
       width: 400,
-      render: (title: string) => {
+      render: (title: string, record: RawSearchResult) => {
+        if (record && record.retracted) {
+          const msg =
+            'IMPORTANT! This dataset has been retracted and is no longer avaiable for download.';
+          return (
+            <div className={topDataRowTargets.getClass('datasetTitle')}>
+              <p>
+                <span style={{ textDecoration: 'line-through' }}>{title}</span>
+                <br />
+                <span style={{ color: 'red' }}>{msg}</span>
+              </p>
+            </div>
+          );
+        }
         return (
           <div className={topDataRowTargets.getClass('datasetTitle')}>
             {title}
@@ -259,6 +275,7 @@ const Table: React.FC<Props> = ({
             >
               <Form.Item name={formKey}>
                 <Select
+                  disabled={record.retracted === true}
                   className={topDataRowTargets.getClass(
                     'downloadScriptOptions'
                   )}
@@ -280,6 +297,7 @@ const Table: React.FC<Props> = ({
               </Form.Item>
               <Form.Item>
                 <Button
+                  disabled={record.retracted === true}
                   className={topDataRowTargets.getClass('downloadScriptBtn')}
                   type="default"
                   htmlType="submit"

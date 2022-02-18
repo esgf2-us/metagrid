@@ -68,6 +68,7 @@ const Citation: React.FC<CitationProps> = ({ url }) => {
           <CitationInfo title="Publication Year">
             {data.publicationYear}
           </CitationInfo>
+          <CitationInfo title="License">{data.license}</CitationInfo>
         </div>
       )}
     </div>

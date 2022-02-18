@@ -418,9 +418,23 @@ export const processCitation = (citation: RawCitation): RawCitation => {
   newCitation.identifierDOI = `http://${newCitation.identifier.identifierType.toLowerCase()}.org/${
     newCitation.identifier.id
   }`;
-  newCitation.creatorsList = newCitation.creators
-    .map((elem) => elem.creatorName)
+
+  newCitation.license = newCitation.rightsList
+    .map((elem) => elem.rights)
     .join('; ');
+
+  // Allow a max of 3 creators to be displayed
+  if (newCitation.creators.length > 3) {
+    newCitation.creatorsList = newCitation.creators
+      .slice(0, 3)
+      .map((elem) => elem.creatorName)
+      .join('; ')
+      .concat('; et al.');
+  } else {
+    newCitation.creatorsList = newCitation.creators
+      .map((elem) => elem.creatorName)
+      .join('; ');
+  }
 
   return newCitation;
 };

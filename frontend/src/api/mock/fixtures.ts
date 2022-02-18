@@ -120,9 +120,18 @@ export const rawCitationFixture = (
     creators: [{ creatorName: 'Bob' }, { creatorName: 'Tom' }],
     identifierDOI: '',
     creatorsList: '',
+    license:
+      'Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA 4.0)',
     titles: 'title',
     publisher: 'publisher',
     publicationYear: 2020,
+    rightsList: [
+      {
+        rightsURI: 'http://creativecommons.org/licenses/by-sa/4.0/',
+        rights:
+          'Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA 4.0)',
+      },
+    ],
   };
 
   return { ...defaults, ...props };
