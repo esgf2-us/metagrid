@@ -64,6 +64,7 @@ const handlers = [
           )
         );
       }
+      /* istanbul ignore next */
       if (variant === 'b') {
         return res(
           ctx.status(200),
