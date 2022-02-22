@@ -1,13 +1,17 @@
-import { fireEvent, waitFor } from '@testing-library/react';
+import { fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { customRender } from '../../test/custom-render';
+import Support from '../Support';
 import RightMenu, { Props } from './RightMenu';
 
 const rightMenuProps: Props = {
   mode: 'horizontal',
   numCartItems: 4,
   numSavedSearches: 1,
+  supportModalVisible: () => {
+    render(<Support visible onClose={jest.fn()} />);
+  },
 };
 
 it('sets the active menu item based on the location pathname', async () => {
@@ -81,6 +85,7 @@ it('display the user"s email after authentication if they did not provide a name
   expect(signOutBtn).toBeTruthy();
   fireEvent.click(signOutBtn);
 });
+
 it('displays sign in button when user hasn"t logged in', async () => {
   const { getByRole, getByTestId } = customRender(
     <Router>
@@ -96,4 +101,25 @@ it('displays sign in button when user hasn"t logged in', async () => {
   const signInBtn = await waitFor(() => getByRole('img', { name: 'user' }));
   expect(signInBtn).toBeTruthy();
   fireEvent.click(signInBtn);
+});
+
+it('displays help menu when help button is clicked', async () => {
+  const { getByText, getByTestId } = customRender(
+    <Router>
+      <RightMenu {...rightMenuProps} />
+    </Router>
+  );
+
+  // Check applicable components render
+  const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
+  expect(rightMenuComponent).toBeTruthy();
+
+  // Click the help button
+  const helpBtn = await waitFor(() => getByText('Help'));
+  expect(helpBtn).toBeTruthy();
+  fireEvent.click(helpBtn);
+
+  // Check support form rendered
+  const support = getByTestId('support-form');
+  expect(support).toBeTruthy();
 });
