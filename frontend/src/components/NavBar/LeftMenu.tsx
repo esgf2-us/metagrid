@@ -1,7 +1,7 @@
 import { SearchOutlined } from '@ant-design/icons';
 import { Form, Input, Select, Spin } from 'antd';
 import React from 'react';
-import { useHistory } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ResponseError } from '../../api';
 import { navBarTargets } from '../../common/reactJoyrideSteps';
 import { RawProject, RawProjects } from '../Facets/types';
@@ -28,7 +28,8 @@ const LeftMenu: React.FC<Props> = ({
 }) => {
   const [form] = Form.useForm();
   const [text, setText] = React.useState('');
-  const history = useHistory();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   /**
    * Sets the project and search value using the search form.
@@ -36,8 +37,8 @@ const LeftMenu: React.FC<Props> = ({
    */
   const onFinish = (values: { [key: string]: string }): void => {
     /* istanbul ignore else */
-    if (!history.location.pathname.endsWith('search')) {
-      history.push('/search');
+    if (!location.pathname.endsWith('search')) {
+      navigate('/search');
     }
 
     const selectedProj: RawProject | undefined = (projects as RawProjects).find(

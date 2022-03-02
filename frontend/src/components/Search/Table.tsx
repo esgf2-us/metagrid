@@ -139,29 +139,25 @@ const Table: React.FC<Props> = ({
           userCart.some((dataset: RawSearchResult) => dataset.id === record.id)
         ) {
           return (
-            <>
-              <Button
-                className={topDataRowTargets.getClass('cartAddBtn', 'minus')}
-                icon={<MinusOutlined />}
-                onClick={() => onUpdateCart([record], 'remove')}
-                danger
-              />
-            </>
+            <Button
+              className={topDataRowTargets.getClass('cartAddBtn', 'minus')}
+              icon={<MinusOutlined />}
+              onClick={() => onUpdateCart([record], 'remove')}
+              danger
+            />
           );
         }
         return (
-          <>
-            <Button
-              type="primary"
-              disabled={record.retracted === true}
-              icon={
-                <PlusOutlined
-                  className={topDataRowTargets.getClass('cartAddBtn', 'plus')}
-                />
-              }
-              onClick={() => onUpdateCart([record], 'add')}
-            />
-          </>
+          <Button
+            type="primary"
+            disabled={record.retracted === true}
+            icon={
+              <PlusOutlined
+                className={topDataRowTargets.getClass('cartAddBtn', 'plus')}
+              />
+            }
+            onClick={() => onUpdateCart([record], 'add')}
+          />
         );
       },
     },
@@ -264,48 +260,42 @@ const Table: React.FC<Props> = ({
         };
 
         return (
-          <>
-            <Form
-              className={topDataRowTargets.getClass('downloadScriptForm')}
-              layout="inline"
-              onFinish={({ [formKey]: download }) =>
-                handleDownloadForm(download)
-              }
-              initialValues={{ [formKey]: allowedDownloadTypes[0] }}
-            >
-              <Form.Item name={formKey}>
-                <Select
-                  disabled={record.retracted === true}
-                  className={topDataRowTargets.getClass(
-                    'downloadScriptOptions'
-                  )}
-                  style={{ width: 120 }}
-                >
-                  {allowedDownloadTypes.map(
-                    (option) =>
-                      (supportedDownloadTypes.includes(option) ||
-                        option === 'wget') && (
-                        <Select.Option
-                          key={`${formKey}-${option}`}
-                          value={option}
-                        >
-                          {option}
-                        </Select.Option>
-                      )
-                  )}
-                </Select>
-              </Form.Item>
-              <Form.Item>
-                <Button
-                  disabled={record.retracted === true}
-                  className={topDataRowTargets.getClass('downloadScriptBtn')}
-                  type="default"
-                  htmlType="submit"
-                  icon={<DownloadOutlined />}
-                ></Button>
-              </Form.Item>
-            </Form>
-          </>
+          <Form
+            className={topDataRowTargets.getClass('downloadScriptForm')}
+            layout="inline"
+            onFinish={({ [formKey]: download }) => handleDownloadForm(download)}
+            initialValues={{ [formKey]: allowedDownloadTypes[0] }}
+          >
+            <Form.Item name={formKey}>
+              <Select
+                disabled={record.retracted === true}
+                className={topDataRowTargets.getClass('downloadScriptOptions')}
+                style={{ width: 120 }}
+              >
+                {allowedDownloadTypes.map(
+                  (option) =>
+                    (supportedDownloadTypes.includes(option) ||
+                      option === 'wget') && (
+                      <Select.Option
+                        key={`${formKey}-${option}`}
+                        value={option}
+                      >
+                        {option}
+                      </Select.Option>
+                    )
+                )}
+              </Select>
+            </Form.Item>
+            <Form.Item>
+              <Button
+                disabled={record.retracted === true}
+                className={topDataRowTargets.getClass('downloadScriptBtn')}
+                type="default"
+                htmlType="submit"
+                icon={<DownloadOutlined />}
+              ></Button>
+            </Form.Item>
+          </Form>
         );
       },
     },

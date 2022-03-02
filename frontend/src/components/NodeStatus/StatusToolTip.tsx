@@ -15,9 +15,9 @@ export type Props = {
 
 const StatusToolTip: React.FC<Props> = ({ nodeStatus, dataNode, children }) => {
   if (nodeStatus) {
-    const node = (nodeStatus.find(
+    const node = nodeStatus.find(
       (obj) => obj.name === dataNode
-    ) as unknown) as NodeStatusElement;
+    ) as unknown as NodeStatusElement;
 
     /* istanbul ignore else*/
     if (node) {

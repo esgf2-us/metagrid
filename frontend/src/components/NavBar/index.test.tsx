@@ -10,6 +10,7 @@ const defaultProps: Props = {
   numCartItems: 0,
   numSavedSearches: 0,
   onTextSearch: jest.fn(),
+  supportModalVisible: () => {},
 };
 
 it('renders LeftMenu and RightMenu components', async () => {

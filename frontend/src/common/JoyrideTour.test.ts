@@ -32,7 +32,7 @@ describe('Test JoyrideTour class', () => {
     expect(testValue).toEqual(5);
   });
 
-  it('Creates a tour and steps', () => {
+  it('Creates a tour and steps', async () => {
     const testTour = new JoyrideTour();
     let testValue = 0;
 
@@ -52,9 +52,9 @@ describe('Test JoyrideTour class', () => {
     expect(testTour.getActionByStepIndex(2)?.stepIndex).toEqual(2);
 
     // Check that action functions work
-    testTour.getActionByStepIndex(0)?.action(); // should do nothing
+    await testTour.getActionByStepIndex(0)?.action(); // should do nothing
     expect(testValue).toEqual(0);
-    testTour.getActionByStepIndex(2)?.action(); // Should set value to 5
+    await testTour.getActionByStepIndex(2)?.action(); // Should set value to 5
     expect(testValue).toEqual(5);
 
     // Test tour flags

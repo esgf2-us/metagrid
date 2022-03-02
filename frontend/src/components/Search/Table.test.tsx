@@ -73,8 +73,7 @@ it('renders warning that dataset is retracted', () => {
 
   // Check the dataset title include retracted warning
   const cell = within(table).getByRole('cell', {
-    name:
-      'foo IMPORTANT! This dataset has been retracted and is no longer avaiable for download.',
+    name: 'foo IMPORTANT! This dataset has been retracted and is no longer avaiable for download.',
   });
   expect(cell).toBeTruthy();
 
@@ -136,7 +135,9 @@ it('renders record metadata in an expandable panel', async () => {
   fireEvent.click(panel);
 
   // Check metadata panel contains metadata
-  const id = getByText((_, node) => node.textContent === 'id: foo');
+  const id = getByText(
+    (_, node) => node !== null && node.textContent === 'id: foo'
+  );
   expect(id).toBeInTheDocument();
 
   // Open up the Autocomplete form and change the input to look up 'i'

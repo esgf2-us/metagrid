@@ -36,7 +36,7 @@ export interface ResponseError extends Error {
  * https://github.com/axios/axios/issues/430
  *
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line
 const camelizeKeysFromString = (str: string): Record<string, any> =>
   humps.camelizeKeys(JSON.parse(str));
 

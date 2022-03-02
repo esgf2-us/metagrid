@@ -28,10 +28,14 @@ it('shows the correct number of datasets and files', () => {
   );
   // Shows number of files
   expect(
-    getByText((_, node) => node.textContent === 'Number of Datasets: 2')
+    getByText(
+      (_, node) => node !== null && node.textContent === 'Number of Datasets: 2'
+    )
   ).toBeTruthy();
   expect(
-    getByText((_, node) => node.textContent === 'Number of Files: 5')
+    getByText(
+      (_, node) => node !== null && node.textContent === 'Number of Files: 5'
+    )
   ).toBeTruthy();
 });
 
@@ -51,9 +55,13 @@ it('renders component with correct calculations when a dataset doesn"t have size
   );
   // Shows number of files
   expect(
-    getByText((_, node) => node.textContent === 'Number of Datasets: 2')
+    getByText(
+      (_, node) => node !== null && node.textContent === 'Number of Datasets: 2'
+    )
   ).toBeTruthy();
   expect(
-    getByText((_, node) => node.textContent === 'Number of Files: 3')
+    getByText(
+      (_, node) => node !== null && node.textContent === 'Number of Files: 3'
+    )
   ).toBeTruthy();
 });

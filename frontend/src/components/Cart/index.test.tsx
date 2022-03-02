@@ -16,17 +16,15 @@ const defaultProps: Props = {
   onRemoveSearchQuery: jest.fn(),
 };
 
-let mockHistoryPush: () => void;
+let mockNavigate: () => void;
 beforeEach(() => {
-  mockHistoryPush = jest.fn();
+  mockNavigate = jest.fn();
   jest.mock(
     'react-router-dom',
     () =>
       ({
         ...jest.requireActual('react-router-dom'),
-        useHistory: () => ({
-          push: mockHistoryPush,
-        }),
+        useNavigate: mockNavigate,
       } as Record<string, unknown>)
   );
 });

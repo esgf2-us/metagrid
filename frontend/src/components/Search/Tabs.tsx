@@ -93,7 +93,7 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
   const showCitation = objectHasKey(record, 'citation_url');
   const showESDOC =
     objectHasKey(record, 'further_info_url') &&
-    ((record.further_info_url as unknown) as string)[0] !== '';
+    (record.further_info_url as unknown as string)[0] !== '';
   const showQualityFlags = Object.keys(qualityFlags).length > 0;
   const showAdditionalLinks = urlCount > 0;
   const showAdditionalTab =
@@ -171,7 +171,7 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
         >
           {showAdditionalLinks && additionalLinks}
           {showESDOC &&
-            ((record.further_info_url as unknown) as string)[0] !== '' && (
+            (record.further_info_url as unknown as string)[0] !== '' && (
               <Button
                 type="link"
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

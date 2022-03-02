@@ -12,7 +12,7 @@ import React from 'react';
 import { useAsync } from 'react-async';
 import ReactGA from 'react-ga';
 import { hotjar } from 'react-hotjar';
-import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom';
+import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import {
   addUserSearchQuery,
@@ -97,9 +97,8 @@ const App: React.FC<Props> = ({ searchQuery }) => {
   const { access_token: accessToken, pk } = authState;
   const isAuthenticated = accessToken && pk;
 
-  const [supportModalVisible, setSupportModalVisible] = React.useState<boolean>(
-    false
-  );
+  const [supportModalVisible, setSupportModalVisible] =
+    React.useState<boolean>(false);
 
   const {
     run: runFetchNodeStatus,
@@ -123,10 +122,8 @@ const App: React.FC<Props> = ({ searchQuery }) => {
     textInputs: [],
   });
 
-  const [
-    activeSearchQuery,
-    setActiveSearchQuery,
-  ] = React.useState<ActiveSearchQuery>(projectBaseQuery({}));
+  const [activeSearchQuery, setActiveSearchQuery] =
+    React.useState<ActiveSearchQuery>(projectBaseQuery({}));
 
   const [availableFacets, setAvailableFacets] = React.useState<
     ParsedFacets | Record<string, unknown>
@@ -143,7 +140,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
   React.useEffect(() => {
     /* istanbul ignore else */
     if (isAuthenticated) {
-      void fetchUserCart(pk as string, accessToken as string)
+      void fetchUserCart(pk, accessToken)
         .then((rawUserCart) => {
           setUserCart(rawUserCart.items);
         })
@@ -153,7 +150,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           });
         });
 
-      void fetchUserSearchQueries(accessToken as string)
+      void fetchUserSearchQueries(accessToken)
         .then((rawUserSearches) => {
           setUserSearchQueries(rawUserSearches.results);
         })
@@ -274,21 +271,21 @@ const App: React.FC<Props> = ({ searchQuery }) => {
       setActiveSearchQuery({
         ...activeSearchQuery,
         textInputs: activeSearchQuery.textInputs.filter(
-          (input) => input !== removedTag
+          (input: TagValue) => input !== removedTag
         ),
       });
     } else if (type === 'filenameVar') {
       setActiveSearchQuery({
         ...activeSearchQuery,
         filenameVars: activeSearchQuery.filenameVars.filter(
-          (input) => input !== removedTag
+          (input: TagValue) => input !== removedTag
         ),
       });
     } else if (type === 'facet') {
       const prevActiveFacets = activeSearchQuery.activeFacets as ActiveFacets;
 
-      const facet = (removedTag[0] as unknown) as string;
-      const facetOption = (removedTag[1] as unknown) as string;
+      const facet = removedTag[0] as unknown as string;
+      const facetOption = removedTag[1] as unknown as string;
       const updateFacet = {
         [facet]: prevActiveFacets[facet].filter((item) => item !== facetOption),
       };
@@ -318,7 +315,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
     if (operation === 'add') {
       const itemsNotInCart = selectedItems.filter(
         (item: RawSearchResult) =>
-          !userCart.some((dataset) => dataset.id === item.id)
+          !userCart.some((dataset: { id: string }) => dataset.id === item.id)
       );
 
       newCart = [...userCart, ...itemsNotInCart];
@@ -329,7 +326,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
         icon: <ShoppingCartOutlined style={styles.messageAddIcon} />,
       });
     } else if (operation === 'remove') {
-      newCart = userCart.filter((item) =>
+      newCart = userCart.filter((item: { id: string }) =>
         selectedItems.some((dataset: RawSearchResult) => dataset.id !== item.id)
       );
       setUserCart(newCart);
@@ -342,7 +339,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
 
     /* istanbul ignore else */
     if (isAuthenticated) {
-      void updateUserCart(pk as string, accessToken as string, newCart);
+      void updateUserCart(pk, accessToken, newCart);
     }
   };
 
@@ -351,7 +348,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
 
     /* istanbul ignore else */
     if (isAuthenticated) {
-      void updateUserCart(pk as string, accessToken as string, []);
+      void updateUserCart(pk, accessToken, []);
     }
   };
 
@@ -380,7 +377,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
     };
 
     if (isAuthenticated) {
-      void addUserSearchQuery(pk as string, accessToken as string, savedSearch)
+      void addUserSearchQuery(pk, accessToken, savedSearch)
         .then(() => {
           saveSuccess();
         })
@@ -423,7 +420,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
     };
 
     if (isAuthenticated) {
-      void deleteUserSearchQuery(searchUUID, accessToken as string)
+      void deleteUserSearchQuery(searchUUID, accessToken)
         .then(() => {
           deleteSuccess();
         })
@@ -452,188 +449,184 @@ const App: React.FC<Props> = ({ searchQuery }) => {
   };
 
   return (
-    <>
-      <Switch>
-        <Redirect from="/" exact to="/search" />
-        <Redirect from="/cart" exact to="/cart/items" />
-      </Switch>
-      <div>
+    <div>
+      <Routes>
+        <Route path="/" element={<Navigate replace to="/search" />} />
         <Route
-          path="/"
-          render={() => (
+          element={
             <NavBar
               numCartItems={userCart.length}
               numSavedSearches={userSearchQueries.length}
               onTextSearch={handleTextSearch}
               supportModalVisible={setSupportModalVisible}
             ></NavBar>
-          )}
+          }
         />
-        <Layout id="body-layout">
-          <Switch>
-            <Route
-              path="/search"
-              render={() => (
-                <Layout.Sider
-                  style={styles.bodySider}
-                  width={styles.bodySider.width as number}
-                >
-                  <Facets
-                    activeSearchQuery={activeSearchQuery}
-                    availableFacets={availableFacets}
-                    nodeStatus={nodeStatus}
-                    onProjectChange={handleProjectChange}
-                    onSetFilenameVars={handleOnSetFilenameVars}
-                    onSetGeneralFacets={handleOnSetGeneralFacets}
-                    onSetActiveFacets={handleOnSetActiveFacets}
-                  />
-                </Layout.Sider>
-              )}
-            />
-            <Route
-              path="/nodes"
-              render={() => (
-                <Layout.Sider
-                  style={styles.bodySider}
-                  width={styles.bodySider.width as number}
-                >
-                  <NodeSummary nodeStatus={nodeStatus} />
-                </Layout.Sider>
-              )}
-            />
-            <Route
-              path="/cart"
-              render={() => (
-                <Layout.Sider
-                  style={styles.bodySider}
-                  width={styles.bodySider.width as number}
-                >
-                  <Summary userCart={userCart} />
-                </Layout.Sider>
-              )}
-            />
-          </Switch>
-          <Layout>
-            <Layout.Content style={styles.bodyContent}>
-              <Switch>
-                <Route
-                  path="/search"
-                  render={() => (
-                    <>
-                      <Breadcrumb>
-                        <Breadcrumb.Item>
-                          <HomeOutlined /> Home
-                        </Breadcrumb.Item>
-                        <Breadcrumb.Item>Search</Breadcrumb.Item>
-                      </Breadcrumb>
-                      <Search
-                        activeSearchQuery={activeSearchQuery}
-                        userCart={userCart}
-                        nodeStatus={nodeStatus}
-                        onUpdateAvailableFacets={(facets) =>
-                          setAvailableFacets(facets)
-                        }
-                        onUpdateCart={handleUpdateCart}
-                        onRemoveFilter={handleRemoveFilter}
-                        onClearFilters={handleClearFilters}
-                        onSaveSearchQuery={handleSaveSearchQuery}
-                        onShareSearchQuery={handleShareSearchQuery}
-                      ></Search>
-                    </>
-                  )}
+      </Routes>
+      <Layout id="body-layout">
+        <Routes>
+          <Route
+            path="/search"
+            element={
+              <Layout.Sider
+                style={styles.bodySider}
+                width={styles.bodySider.width as number}
+              >
+                <Facets
+                  activeSearchQuery={activeSearchQuery}
+                  availableFacets={availableFacets}
+                  nodeStatus={nodeStatus}
+                  onProjectChange={handleProjectChange}
+                  onSetFilenameVars={handleOnSetFilenameVars}
+                  onSetGeneralFacets={handleOnSetGeneralFacets}
+                  onSetActiveFacets={handleOnSetActiveFacets}
                 />
-                <Route
-                  path="/nodes"
-                  render={() => (
-                    <>
-                      <Breadcrumb>
-                        <Breadcrumb.Item>
-                          <HomeOutlined /> Home
-                        </Breadcrumb.Item>
-                        <Breadcrumb.Item>Data Node Status</Breadcrumb.Item>
-                      </Breadcrumb>
-                      <NodeStatus
-                        nodeStatus={nodeStatus}
-                        apiError={nodeStatusApiError as ResponseError}
-                        isLoading={nodeStatusIsLoading}
-                      />
-                    </>
-                  )}
-                />
-                <Route
-                  path="/cart"
-                  render={() => (
-                    <>
-                      <Breadcrumb>
-                        <Breadcrumb.Item>
-                          <HomeOutlined /> Home
-                        </Breadcrumb.Item>
-                        <Breadcrumb.Item>Cart</Breadcrumb.Item>
-                      </Breadcrumb>
-                      <Cart
-                        userCart={userCart}
-                        userSearchQueries={userSearchQueries}
-                        onUpdateCart={handleUpdateCart}
-                        onClearCart={handleClearCart}
-                        onRunSearchQuery={handleRunSearchQuery}
-                        onRemoveSearchQuery={handleRemoveSearchQuery}
-                      />
-                    </>
-                  )}
-                />
-                <Route
-                  render={() => (
-                    <Result
-                      status="404"
-                      title="404"
-                      subTitle="Sorry, the page you visited does not exist."
-                      extra={
-                        <Button type="primary">
-                          <Link to="/">Back to Home</Link>
-                        </Button>
+              </Layout.Sider>
+            }
+          />
+          <Route
+            path="/nodes"
+            element={
+              <Layout.Sider
+                style={styles.bodySider}
+                width={styles.bodySider.width as number}
+              >
+                <NodeSummary nodeStatus={nodeStatus} />
+              </Layout.Sider>
+            }
+          />
+          <Route
+            path="/cart"
+            element={
+              <Layout.Sider
+                style={styles.bodySider}
+                width={styles.bodySider.width as number}
+              >
+                <Summary userCart={userCart} />
+              </Layout.Sider>
+            }
+          />
+        </Routes>
+        <Layout>
+          <Layout.Content style={styles.bodyContent}>
+            <Routes>
+              <Route
+                path="/search"
+                element={
+                  <>
+                    <Breadcrumb>
+                      <Breadcrumb.Item>
+                        <HomeOutlined /> Home
+                      </Breadcrumb.Item>
+                      <Breadcrumb.Item>Search</Breadcrumb.Item>
+                    </Breadcrumb>
+                    <Search
+                      activeSearchQuery={activeSearchQuery}
+                      userCart={userCart}
+                      nodeStatus={nodeStatus}
+                      onUpdateAvailableFacets={(facets: ParsedFacets) =>
+                        setAvailableFacets(facets)
                       }
+                      onUpdateCart={handleUpdateCart}
+                      onRemoveFilter={handleRemoveFilter}
+                      onClearFilters={handleClearFilters}
+                      onSaveSearchQuery={handleSaveSearchQuery}
+                      onShareSearchQuery={handleShareSearchQuery}
+                    ></Search>
+                  </>
+                }
+              />
+              <Route
+                path="/nodes"
+                element={
+                  <>
+                    <Breadcrumb>
+                      <Breadcrumb.Item>
+                        <HomeOutlined /> Home
+                      </Breadcrumb.Item>
+                      <Breadcrumb.Item>Data Node Status</Breadcrumb.Item>
+                    </Breadcrumb>
+                    <NodeStatus
+                      nodeStatus={nodeStatus}
+                      apiError={nodeStatusApiError as ResponseError}
+                      isLoading={nodeStatusIsLoading}
                     />
-                  )}
-                />
-              </Switch>
-            </Layout.Content>
-            <Layout.Footer>
-              <p style={{ fontSize: '10px' }}>
-                Privacy &amp; Legal Notice:{' '}
-                <a href="https://www.llnl.gov/disclaimer.html">
-                  https://www.llnl.gov/disclaimer.html
-                </a>
-                <br />
-                Learn about the Department of Energy&apos;s Vulnerability
-                Disclosure Program (VDP):{' '}
-                <a href="https://doe.responsibledisclosure.com/hc/en-us">
-                  https://doe.responsibledisclosure.com/hc/en-us
-                </a>
-              </p>
-            </Layout.Footer>
-          </Layout>
+                  </>
+                }
+              />
+              <Route
+                path="/cart"
+                element={
+                  <>
+                    <Breadcrumb>
+                      <Breadcrumb.Item>
+                        <HomeOutlined /> Home
+                      </Breadcrumb.Item>
+                      <Breadcrumb.Item>Cart</Breadcrumb.Item>
+                    </Breadcrumb>
+                    <Cart
+                      userCart={userCart}
+                      userSearchQueries={userSearchQueries}
+                      onUpdateCart={handleUpdateCart}
+                      onClearCart={handleClearCart}
+                      onRunSearchQuery={handleRunSearchQuery}
+                      onRemoveSearchQuery={handleRemoveSearchQuery}
+                    />
+                  </>
+                }
+              />
+              <Route
+                element={
+                  <Result
+                    status="404"
+                    title="404"
+                    subTitle="Sorry, the page you visited does not exist."
+                    extra={
+                      <Button type="primary">
+                        <Link to="/">Back to Home</Link>
+                      </Button>
+                    }
+                  />
+                }
+              />
+            </Routes>
+          </Layout.Content>
+          <Layout.Footer>
+            <p style={{ fontSize: '10px' }}>
+              Privacy &amp; Legal Notice:{' '}
+              <a href="https://www.llnl.gov/disclaimer.html">
+                https://www.llnl.gov/disclaimer.html
+              </a>
+              <br />
+              Learn about the Department of Energy&apos;s Vulnerability
+              Disclosure Program (VDP):{' '}
+              <a href="https://doe.responsibledisclosure.com/hc/en-us">
+                https://doe.responsibledisclosure.com/hc/en-us
+              </a>
+            </p>
+          </Layout.Footer>
         </Layout>
-        <Affix
-          style={{
-            position: 'fixed',
-            bottom: 75,
-            right: 50,
-          }}
-        >
-          <Button
-            type="primary"
-            shape="circle"
-            style={{ width: '48px', height: '48px' }}
-            icon={<QuestionOutlined style={{ fontSize: '40px' }} />}
-            onClick={() => setSupportModalVisible(true)}
-          ></Button>
-        </Affix>
-        <Support
-          visible={supportModalVisible}
-          onClose={() => setSupportModalVisible(false)}
-        />
-      </div>
-    </>
+      </Layout>
+      <Affix
+        style={{
+          position: 'fixed',
+          bottom: 75,
+          right: 50,
+        }}
+      >
+        <Button
+          type="primary"
+          shape="circle"
+          style={{ width: '48px', height: '48px' }}
+          icon={<QuestionOutlined style={{ fontSize: '40px' }} />}
+          onClick={() => setSupportModalVisible(true)}
+        ></Button>
+      </Affix>
+      <Support
+        visible={supportModalVisible}
+        onClose={() => setSupportModalVisible(false)}
+      />
+    </div>
   );
 };
 

@@ -98,9 +98,14 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
     pageSize: 10,
   });
 
-  const { data, error, isLoading, run: runFetchDatasetFiles } = useAsync({
+  const {
+    data,
+    error,
+    isLoading,
+    run: runFetchDatasetFiles,
+  } = useAsync({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    deferFn: (fetchDatasetFiles as unknown) as DeferFn<Record<string, any>>,
+    deferFn: fetchDatasetFiles as unknown as DeferFn<Record<string, any>>,
     id,
     paginationOptions,
     filenameVars,
@@ -131,9 +136,11 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
 
   let docs: RawSearchResults | [] = [];
   if (data) {
-    docs = (data as {
-      response: { docs: RawSearchResults };
-    }).response.docs;
+    docs = (
+      data as {
+        response: { docs: RawSearchResults };
+      }
+    ).response.docs;
   }
 
   const tableConfig = {

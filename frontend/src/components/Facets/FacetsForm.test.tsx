@@ -66,9 +66,8 @@ describe('test FacetsForm component', () => {
     const datePickerComponent = getByTestId('version-range-datepicker');
     expect(datePickerComponent).toBeTruthy();
 
-    const datePickerComponentInput = datePickerComponent.querySelectorAll(
-      'input'
-    )[0];
+    const datePickerComponentInput =
+      datePickerComponent.querySelectorAll('input')[0];
 
     // Open calendar and focus on input
     fireEvent.mouseDown(datePickerComponentInput);

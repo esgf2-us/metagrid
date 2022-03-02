@@ -7,7 +7,7 @@ import {
 import { Col, Typography } from 'antd';
 import React from 'react';
 import { useAsync } from 'react-async';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { fetchSearchResults, generateSearchURLQuery } from '../../api';
 import { clickableRoute } from '../../api/routes';
 import { savedSearchTourTargets } from '../../common/reactJoyrideSteps';
@@ -41,7 +41,7 @@ const SearchesCard: React.FC<Props> = ({
   onRunSearchQuery,
   onRemoveSearchQuery,
 }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const {
     uuid,
     project,
@@ -82,9 +82,11 @@ const SearchesCard: React.FC<Props> = ({
     numResults = (
       <p>
         <span style={{ fontWeight: 'bold' }}>
-          {(data as {
-            response: { numFound: number };
-          }).response.numFound.toLocaleString()}
+          {(
+            data as {
+              response: { numFound: number };
+            }
+          ).response.numFound.toLocaleString()}
         </span>{' '}
         results found for {project.name}
       </p>
@@ -107,7 +109,7 @@ const SearchesCard: React.FC<Props> = ({
               data-testid={`apply-${index + 1}`}
               key="search"
               onClick={() => {
-                history.push('/search');
+                navigate('/search');
                 onRunSearchQuery(searchQuery);
               }}
             />

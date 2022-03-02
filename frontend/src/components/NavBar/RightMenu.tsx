@@ -18,12 +18,7 @@ import Button from '../General/Button';
 const menuItemStyling: CSSProperties = { margin: '8px' };
 
 export type Props = {
-  mode:
-    | 'horizontal'
-    | 'vertical'
-    | 'vertical-left'
-    | 'vertical-right'
-    | 'inline';
+  mode: 'horizontal' | 'vertical' | 'inline';
   numCartItems: number;
   numSavedSearches: number;
   supportModalVisible: (visible: boolean) => void;

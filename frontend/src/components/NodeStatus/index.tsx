@@ -24,18 +24,16 @@ const NodeStatus: React.FC<Props> = ({ nodeStatus, apiError, isLoading }) => {
 
   if (isLoading) {
     return (
-      <>
-        <TableD
-          title={() => (
-            <div style={styles.headerContainer}>
-              <h1>Fetching latest node status...</h1>
-            </div>
-          )}
-          loading={isLoading}
-          data-testid="nodeStatusTable"
-          size="small"
-        />
-      </>
+      <TableD
+        title={() => (
+          <div style={styles.headerContainer}>
+            <h1>Fetching latest node status...</h1>
+          </div>
+        )}
+        loading={isLoading}
+        data-testid="nodeStatusTable"
+        size="small"
+      />
     );
   }
 
@@ -145,14 +143,12 @@ const NodeStatus: React.FC<Props> = ({ nodeStatus, apiError, isLoading }) => {
   }
 
   return (
-    <>
-      <TableD
-        title={() => <Alert message={errorMsg} type="error" />}
-        data-testid="nodeStatusTable"
-        size="small"
-        rowKey="name"
-      />
-    </>
+    <TableD
+      title={() => <Alert message={errorMsg} type="error" />}
+      data-testid="nodeStatusTable"
+      size="small"
+      rowKey="name"
+    />
   );
 };
 

@@ -59,18 +59,18 @@ const styles: CSSinJS = {
  * https://stackoverflow.com/questions/37270508/javascript-function-that-converts-array-to-array-of-2-tuples
  */
 export const parseFacets = (facets: RawFacets): ParsedFacets => {
-  const res = (facets as unknown) as ParsedFacets;
+  const res = facets as unknown as ParsedFacets;
   const keys: string[] = Object.keys(facets);
 
   keys.forEach((key) => {
     res[key] = res[key].reduce((r, a, i) => {
       if (i % 2) {
-        r[r.length - 1].push((a as unknown) as number);
+        r[r.length - 1].push(a as unknown as number);
       } else {
         r.push([a] as never);
       }
       return r;
-    }, ([] as unknown) as [string, number][]);
+    }, [] as unknown as [string, number][]);
   });
   return res;
 };
@@ -169,9 +169,14 @@ const Search: React.FC<Props> = ({
     textInputs,
   } = activeSearchQuery;
 
-  const { data: results, error, isLoading, run } = useAsync({
+  const {
+    data: results,
+    error,
+    isLoading,
+    run,
+  } = useAsync({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    deferFn: (fetchSearchResults as unknown) as DeferFn<Record<string, any>>,
+    deferFn: fetchSearchResults as unknown as DeferFn<Record<string, any>>,
   });
   const [filtersExist, setFiltersExist] = React.useState<boolean>(false);
   const [parsedFacets, setParsedFacets] = React.useState<
@@ -214,9 +219,11 @@ const Search: React.FC<Props> = ({
   // Update the available facets based on the returned results
   React.useEffect(() => {
     if (results && !objectIsEmpty(results)) {
-      const { facet_fields: facetFields } = (results as {
-        facet_counts: { facet_fields: RawFacets };
-      }).facet_counts;
+      const { facet_fields: facetFields } = (
+        results as {
+          facet_counts: { facet_fields: RawFacets };
+        }
+      ).facet_counts;
       setParsedFacets(parseFacets(facetFields));
     }
   }, [results]);
@@ -345,24 +352,22 @@ const Search: React.FC<Props> = ({
       </div>
       <div>
         {results && (
-          <>
-            <p>
-              <span style={styles.subtitles}>Query String: </span>
-              <Typography.Text
-                className={searchTableTargets.getClass('queryString')}
-                code
-              >
-                {stringifyFilters(
-                  versionType,
-                  resultType,
-                  minVersionDate,
-                  maxVersionDate,
-                  activeFacets,
-                  textInputs
-                )}
-              </Typography.Text>
-            </p>
-          </>
+          <p>
+            <span style={styles.subtitles}>Query String: </span>
+            <Typography.Text
+              className={searchTableTargets.getClass('queryString')}
+              code
+            >
+              {stringifyFilters(
+                versionType,
+                resultType,
+                minVersionDate,
+                maxVersionDate,
+                activeFacets,
+                textInputs
+              )}
+            </Typography.Text>
+          </p>
         )}
       </div>
 

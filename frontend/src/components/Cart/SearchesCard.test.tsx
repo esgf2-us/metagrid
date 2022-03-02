@@ -14,15 +14,13 @@ const defaultProps: Props = {
 };
 
 beforeEach(() => {
-  const mockHistoryPush = jest.fn();
+  const mockNavigate = jest.fn();
   jest.mock(
     'react-router-dom',
     () =>
       ({
         ...jest.requireActual('react-router-dom'),
-        useHistory: () => ({
-          push: mockHistoryPush,
-        }),
+        useNavigate: mockNavigate,
       } as Record<string, unknown>)
   );
 });
@@ -68,6 +66,9 @@ it('displays "N/A" for Filename Searches when none are applied', () => {
   );
 
   expect(
-    getByText((_, node) => node.textContent === 'Filename Searches: N/A')
+    getByText(
+      (_, node) =>
+        node !== null && node.textContent === 'Filename Searches: N/A'
+    )
   ).toBeTruthy();
 });

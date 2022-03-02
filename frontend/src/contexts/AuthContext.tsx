@@ -18,12 +18,12 @@ export const AuthProvider: React.FC<Props> = ({ children }) => {
 
   // MetaGrid authenticated user tokens
   const { data: userAuth, run: runFetchUserAuth } = useAsync({
-    deferFn: (fetchUserAuth as unknown) as DeferFn<RawUserAuth>,
+    deferFn: fetchUserAuth as unknown as DeferFn<RawUserAuth>,
   });
 
   // MetaGrid authenticated user info
   const { data: userInfo, run: runFetchUserInfo } = useAsync({
-    deferFn: (fetchUserInfo as unknown) as DeferFn<RawUserInfo>,
+    deferFn: fetchUserInfo as unknown as DeferFn<RawUserInfo>,
   });
 
   /**

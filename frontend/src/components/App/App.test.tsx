@@ -36,7 +36,7 @@ afterEach(() => {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   delete window.location;
-  window.location = (JSON.parse(location) as unknown) as Location;
+  window.location = JSON.parse(location) as unknown as Location;
 
   // Clear localStorage between tests
   localStorage.clear();
@@ -60,7 +60,7 @@ it('renders App component', async () => {
 
 it('renders App component with undefined search query', async () => {
   const { getByTestId } = customRender(
-    <App searchQuery={(undefined as unknown) as ActiveSearchQuery} />
+    <App searchQuery={undefined as unknown as ActiveSearchQuery} />
   );
 
   // Check applicable components render
@@ -453,14 +453,10 @@ it('fetches the data node status every defined interval', () => {
 });
 describe('User cart', () => {
   it('handles authenticated user adding and removing items from cart', async () => {
-    const {
-      getByRole,
-      getByTestId,
-      getByText,
-      getByPlaceholderText,
-    } = customRender(<App searchQuery={activeSearch} />, {
-      token: 'token',
-    });
+    const { getByRole, getByTestId, getByText, getByPlaceholderText } =
+      customRender(<App searchQuery={activeSearch} />, {
+        token: 'token',
+      });
 
     // Check applicable components render
     const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
@@ -635,12 +631,8 @@ describe('User cart', () => {
   });
 
   it('displays anonymous user"s number of files in the cart summary and handles clearing the cart', async () => {
-    const {
-      getByRole,
-      getByTestId,
-      getByText,
-      getByPlaceholderText,
-    } = customRender(<App searchQuery={activeSearch} />);
+    const { getByRole, getByTestId, getByText, getByPlaceholderText } =
+      customRender(<App searchQuery={activeSearch} />);
 
     // Check applicable components render
     const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
@@ -1048,14 +1040,10 @@ describe('User search library', () => {
         )
       );
 
-      const {
-        getByTestId,
-        getByPlaceholderText,
-        getByRole,
-        getByText,
-      } = customRender(<App searchQuery={activeSearch} />, {
-        token: 'token',
-      });
+      const { getByTestId, getByPlaceholderText, getByRole, getByText } =
+        customRender(<App searchQuery={activeSearch} />, {
+          token: 'token',
+        });
 
       // Check applicable components render
       const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
