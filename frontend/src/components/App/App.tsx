@@ -87,6 +87,8 @@ export type Props = {
   searchQuery: ActiveSearchQuery;
 };
 
+const appVersion = '1.0.2-beta';
+
 const App: React.FC<Props> = ({ searchQuery }) => {
   // Third-party tool integration
   useGoogleAnalytics();
@@ -447,26 +449,20 @@ const App: React.FC<Props> = ({ searchQuery }) => {
       textInputs: savedSearch.textInputs,
     });
   };
-
   return (
     <div>
-      <Routes>
-        <Route path="/" element={<Navigate replace to="/search" />} />
-        <Route
-          element={
-            <NavBar
-              numCartItems={userCart.length}
-              numSavedSearches={userSearchQueries.length}
-              onTextSearch={handleTextSearch}
-              supportModalVisible={setSupportModalVisible}
-            ></NavBar>
-          }
-        />
-      </Routes>
+      <NavBar
+        numCartItems={userCart.length}
+        numSavedSearches={userSearchQueries.length}
+        onTextSearch={handleTextSearch}
+        supportModalVisible={setSupportModalVisible}
+      ></NavBar>
       <Layout id="body-layout">
         <Routes>
+          <Route path="" element={<Navigate to="/search" replace />} />
+          <Route path="cart" element={<Navigate to="/cart/items" replace />} />
           <Route
-            path="/search"
+            path="/search/*"
             element={
               <Layout.Sider
                 style={styles.bodySider}
@@ -485,7 +481,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
             }
           />
           <Route
-            path="/nodes"
+            path="/nodes/*"
             element={
               <Layout.Sider
                 style={styles.bodySider}
@@ -496,7 +492,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
             }
           />
           <Route
-            path="/cart"
+            path="/cart/*"
             element={
               <Layout.Sider
                 style={styles.bodySider}
@@ -511,7 +507,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           <Layout.Content style={styles.bodyContent}>
             <Routes>
               <Route
-                path="/search"
+                path="/search/*"
                 element={
                   <>
                     <Breadcrumb>
@@ -524,7 +520,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
                       activeSearchQuery={activeSearchQuery}
                       userCart={userCart}
                       nodeStatus={nodeStatus}
-                      onUpdateAvailableFacets={(facets: ParsedFacets) =>
+                      onUpdateAvailableFacets={(facets) =>
                         setAvailableFacets(facets)
                       }
                       onUpdateCart={handleUpdateCart}
@@ -537,7 +533,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
                 }
               />
               <Route
-                path="/nodes"
+                path="/nodes/*"
                 element={
                   <>
                     <Breadcrumb>
@@ -555,7 +551,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
                 }
               />
               <Route
-                path="/cart"
+                path="/cart/*"
                 element={
                   <>
                     <Breadcrumb>
@@ -593,6 +589,8 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           </Layout.Content>
           <Layout.Footer>
             <p style={{ fontSize: '10px' }}>
+              {`Metagrid Version: ${appVersion} `}
+              <br />
               Privacy &amp; Legal Notice:{' '}
               <a href="https://www.llnl.gov/disclaimer.html">
                 https://www.llnl.gov/disclaimer.html

@@ -335,7 +335,7 @@ describe('test Search component', () => {
     // Wait for search table to render
     await waitFor(() => getByTestId('search-table'));
 
-    // Click on cop button
+    // Click on copy button
     const copyBtn = await waitFor(() =>
       getByRole('button', { name: 'share-alt Copy Search' })
     );
