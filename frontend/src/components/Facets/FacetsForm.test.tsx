@@ -1,4 +1,4 @@
-import { fireEvent, render, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
 import {
   activeSearchQueryFixture,
@@ -38,16 +38,22 @@ describe('test FacetsForm component', () => {
     const filenameSearchPanel = getByRole('button', {
       name: 'right Filename',
     });
-    fireEvent.click(filenameSearchPanel);
+    act(() => {
+      fireEvent.click(filenameSearchPanel);
+    });
 
     // Change form field values
     const input = getByTestId('filename-search-input') as HTMLInputElement;
-    fireEvent.change(input, { target: { value: 'var' } });
+    act(() => {
+      fireEvent.change(input, { target: { value: 'var' } });
+    });
     expect(input.value).toEqual('var');
 
     // Submit the form
     const submitBtn = getByRole('img', { name: 'search' });
-    fireEvent.submit(submitBtn);
+    act(() => {
+      fireEvent.submit(submitBtn);
+    });
 
     // Check if the input value resets back to blank
     await waitFor(() => expect(input.value).toEqual(''));
@@ -60,7 +66,9 @@ describe('test FacetsForm component', () => {
     const additionalPropertiesPanel = getByRole('button', {
       name: 'right Additional Properties',
     });
-    fireEvent.click(additionalPropertiesPanel);
+    act(() => {
+      fireEvent.click(additionalPropertiesPanel);
+    });
 
     // Check date picker renders
     const datePickerComponent = getByTestId('version-range-datepicker');
@@ -70,17 +78,23 @@ describe('test FacetsForm component', () => {
       datePickerComponent.querySelectorAll('input')[0];
 
     // Open calendar and focus on input
-    fireEvent.mouseDown(datePickerComponentInput);
+    act(() => {
+      fireEvent.mouseDown(datePickerComponentInput);
+    });
 
     // Set date as input value
-    fireEvent.change(datePickerComponentInput, {
-      target: { value: '2020-01-15' },
+    act(() => {
+      fireEvent.change(datePickerComponentInput, {
+        target: { value: '2020-01-15' },
+      });
     });
 
     // Open calendar, select the set value, and click it
-    fireEvent.click(
-      document.querySelector('.ant-picker-cell-selected') as HTMLInputElement
-    );
+    act(() => {
+      fireEvent.click(
+        document.querySelector('.ant-picker-cell-selected') as HTMLInputElement
+      );
+    });
 
     await waitFor(() => getByTestId('facets-form'));
   });

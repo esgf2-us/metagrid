@@ -1,4 +1,10 @@
-import { fireEvent, render, waitFor, within } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import React from 'react';
 import {
   activeSearchQueryFixture,
@@ -50,12 +56,16 @@ it('handles when the project form is submitted', async () => {
     '[data-testid=project-form-select] > .ant-select-selector'
   ) as HTMLInputElement;
   expect(projectFormSelect).toBeTruthy();
-  fireEvent.mouseDown(projectFormSelect);
+  act(() => {
+    fireEvent.mouseDown(projectFormSelect);
+  });
 
   // Select the second project option
   const projectOption = getByTestId('project_1');
   expect(projectOption).toBeTruthy();
-  fireEvent.click(projectOption);
+  act(() => {
+    fireEvent.click(projectOption);
+  });
 
   // Wait for facet form component to re-render
   await waitFor(() => getByTestId('facets-form'));
@@ -65,7 +75,9 @@ it('handles when the project form is submitted', async () => {
   const projectFormBtn = within(projectForm).getByRole('img', {
     name: 'select',
   });
-  fireEvent.submit(projectFormBtn);
+  act(() => {
+    fireEvent.submit(projectFormBtn);
+  });
 });
 
 it('handles facets form auto-filtering', async () => {
@@ -85,23 +97,31 @@ it('handles facets form auto-filtering', async () => {
   const group1Panel = within(facetsForm).getByRole('tab', {
     name: 'right Group1',
   });
-  fireEvent.click(group1Panel);
+  act(() => {
+    fireEvent.click(group1Panel);
+  });
 
   // Open Collapse Panel in Collapse component for the data_node form to render
   const collapse = getByText('Data Node');
-  fireEvent.click(collapse);
+  act(() => {
+    fireEvent.click(collapse);
+  });
 
   // Check facet select form exists and mouseDown to expand list of options
   const facetFormSelect = document.querySelector(
     '[data-testid=data_node-form-select] > .ant-select-selector'
   ) as HTMLInputElement;
   expect(facetFormSelect).toBeTruthy();
-  fireEvent.mouseDown(facetFormSelect);
+  act(() => {
+    fireEvent.mouseDown(facetFormSelect);
+  });
 
   // Select the first facet option
   const facetOption = getByTestId('data_node_aims3.llnl.gov');
   expect(facetOption).toBeTruthy();
-  fireEvent.click(facetOption);
+  act(() => {
+    fireEvent.click(facetOption);
+  });
 
   // Wait for facet form component to re-render
   await waitFor(() => getByTestId('facets-form'));
@@ -111,7 +131,9 @@ it('handles facets form auto-filtering', async () => {
     name: 'close',
     hidden: true,
   });
-  fireEvent.click(closeFacetOption);
+  act(() => {
+    fireEvent.click(closeFacetOption);
+  });
 
   // Wait for facet form component to re-render
   await waitFor(() => getByTestId('facets-form'));
@@ -134,23 +156,31 @@ it('handles facets form submission, including a facet key that is undefined', as
   const group1Panel = within(facetsForm).getByRole('tab', {
     name: 'right Group1',
   });
-  fireEvent.click(group1Panel);
+  act(() => {
+    fireEvent.click(group1Panel);
+  });
 
   // Open Collapse Panel in Collapse component for the Data Node form to render
   const collapse = getByText('Data Node');
-  fireEvent.click(collapse);
+  act(() => {
+    fireEvent.click(collapse);
+  });
 
   // Check facet select form exists and mouseDown to expand list of options
   const facetFormSelect = document.querySelector(
     '[data-testid=data_node-form-select] > .ant-select-selector'
   ) as HTMLInputElement;
   expect(facetFormSelect).toBeTruthy();
-  fireEvent.mouseDown(facetFormSelect);
+  act(() => {
+    fireEvent.mouseDown(facetFormSelect);
+  });
 
   // Select the first facet option
   const facetOption = getByTestId('data_node_aims3.llnl.gov');
   expect(facetOption).toBeTruthy();
-  fireEvent.click(facetOption);
+  act(() => {
+    fireEvent.click(facetOption);
+  });
 
   // Wait for facet form component to re-render
   await waitFor(() => getByTestId('facets-form'));
@@ -160,7 +190,9 @@ it('handles facets form submission, including a facet key that is undefined', as
   const collapse2 = getByRole('tab', {
     name: 'right Group2',
   });
-  fireEvent.click(collapse2);
+  act(() => {
+    fireEvent.click(collapse2);
+  });
 
   // Click on the facet2 select form but don't select an option
   // This will result in an undefined value for the form item (ant-design logic)
@@ -169,7 +201,9 @@ it('handles facets form submission, including a facet key that is undefined', as
     '[data-testid=facet2-form-select] > .ant-select-selector'
   ) as HTMLInputElement;
   expect(facetFormSelect2).toBeTruthy();
-  fireEvent.mouseDown(facetFormSelect2);
+  act(() => {
+    fireEvent.mouseDown(facetFormSelect2);
+  });
 
   // Wait for facet form component to re-render
   await waitFor(() => getByTestId('facets-form'));

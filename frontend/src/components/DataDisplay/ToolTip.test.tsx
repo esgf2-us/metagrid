@@ -1,4 +1,4 @@
-import { fireEvent, render, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
 import ToolTip from './ToolTip';
 
@@ -11,7 +11,9 @@ it('renders the component', async () => {
 
   // Trigger event
   const toolTipBtn = getByText('Click Me');
-  fireEvent.click(toolTipBtn);
+  act(() => {
+    fireEvent.click(toolTipBtn);
+  });
 
   // Check if tool tip exists and content is displayed
   const toolTip = await waitFor(() => getByRole('tooltip'));
@@ -25,7 +27,10 @@ it('renders the component', async () => {
   );
 
   // Hover over button
-  fireEvent.mouseOver(toolTipBtn);
+  act(() => {
+    fireEvent.mouseOver(toolTipBtn);
+  });
+
   await waitFor(() => toolTipBtn);
 
   // Check if tool tip exists and content is displayed

@@ -1,5 +1,6 @@
 import { fireEvent, render, waitFor, within } from '@testing-library/react';
 import React from 'react';
+import { act } from 'react-dom/test-utils';
 import {
   activeSearchQueryFixture,
   ESGFSearchAPIFixture,
@@ -136,7 +137,10 @@ describe('test Search component', () => {
     // Check if 'Clear All' button exists, then click it
     const clearAllBtn = await waitFor(() => getByText('Clear All'));
     expect(clearAllBtn).toBeTruthy();
-    fireEvent.click(clearAllBtn);
+
+    act(() => {
+      fireEvent.click(clearAllBtn);
+    });
 
     // Wait for search component to re-render
     await waitFor(() => getByTestId('search'));
@@ -184,21 +188,29 @@ describe('test Search component', () => {
     );
     expect(pageSizeComboBox).toBeTruthy();
     fireEvent.change(pageSizeComboBox, { target: { value: 'foo' } });
-    fireEvent.click(pageSizeComboBox);
+    act(() => {
+      fireEvent.click(pageSizeComboBox);
+    });
 
     // Wait for the options to render, then select 20 / page
     const secondOption = await waitFor(() => getByText('20 / page'));
-    fireEvent.click(secondOption);
+    act(() => {
+      fireEvent.click(secondOption);
+    });
 
     // Change back to 10 / page
     const firstOption = await waitFor(() => getByText('10 / page'));
-    fireEvent.click(firstOption);
+    act(() => {
+      fireEvent.click(firstOption);
+    });
 
     // Select the 'Next Page' button (only enabled if there are > 10 results)
     const nextPage = await waitFor(() =>
       getByRole('listitem', { name: 'Next Page' })
     );
-    fireEvent.click(nextPage);
+    act(() => {
+      fireEvent.click(nextPage);
+    });
 
     // Wait for search table to re-render
     await waitFor(() => getByTestId('search-table'));
@@ -232,11 +244,15 @@ describe('test Search component', () => {
     // Select the first row's checkbox
     const firstCheckBox = within(firstRow).getByRole('checkbox');
     expect(firstCheckBox).toBeTruthy();
-    fireEvent.click(firstCheckBox);
+    act(() => {
+      fireEvent.click(firstCheckBox);
+    });
 
     // Check 'Add Selected to Cart' button is enabled and click it
     expect(addCartBtn.disabled).toBeFalsy();
-    fireEvent.click(addCartBtn);
+    act(() => {
+      fireEvent.click(addCartBtn);
+    });
 
     // Wait for search component to re-render
     await waitFor(() => getByTestId('search'));
@@ -281,7 +297,9 @@ describe('test Search component', () => {
       'th.ant-table-cell.ant-table-selection-column [type="checkbox"]'
     ) as HTMLInputElement;
     expect(selectAllCheckbox).toBeTruthy();
-    fireEvent.click(selectAllCheckbox);
+    act(() => {
+      fireEvent.click(selectAllCheckbox);
+    });
 
     // Click the 'Add Selected to Cart'
     let addCartBtn = (await waitFor(() =>
@@ -290,7 +308,9 @@ describe('test Search component', () => {
       })
     )) as HTMLButtonElement;
     expect(addCartBtn).toBeTruthy();
-    fireEvent.click(addCartBtn);
+    act(() => {
+      fireEvent.click(addCartBtn);
+    });
 
     // Re-render with items in the cart
     rerender(<Search {...defaultProps} userCart={userCartFixture()} />);
@@ -319,7 +339,9 @@ describe('test Search component', () => {
       getByRole('button', { name: 'book Save Search' })
     );
     expect(saveBtn).toBeTruthy();
-    fireEvent.click(saveBtn);
+    act(() => {
+      fireEvent.click(saveBtn);
+    });
 
     // Wait for search component to re-render
     await waitFor(() => getByTestId('search'));
@@ -340,7 +362,9 @@ describe('test Search component', () => {
       getByRole('button', { name: 'share-alt Copy Search' })
     );
     expect(copyBtn).toBeTruthy();
-    fireEvent.click(copyBtn);
+    act(() => {
+      fireEvent.click(copyBtn);
+    });
 
     // Wait for search component to re-render
     await waitFor(() => getByTestId('search'));

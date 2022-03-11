@@ -2,12 +2,11 @@
 import {
   BookOutlined,
   DeleteOutlined,
-  HomeOutlined,
   QuestionOutlined,
   ShareAltOutlined,
   ShoppingCartOutlined,
 } from '@ant-design/icons';
-import { Affix, Breadcrumb, Button, Layout, message, Result } from 'antd';
+import { Affix, Button, message, Result } from 'antd';
 import React from 'react';
 import { useAsync } from 'react-async';
 import ReactGA from 'react-ga';
@@ -38,6 +37,7 @@ import NavBar from '../NavBar';
 import NodeStatus from '../NodeStatus';
 import NodeSummary from '../NodeStatus/NodeSummary';
 import Search from '../Search';
+import AppLayout from './AppLayout';
 import {
   ActiveSearchQuery,
   RawSearchResult,
@@ -86,8 +86,6 @@ const useHotjar = (): void => {
 export type Props = {
   searchQuery: ActiveSearchQuery;
 };
-
-const appVersion = '1.0.2-beta';
 
 const App: React.FC<Props> = ({ searchQuery }) => {
   // Third-party tool integration
@@ -449,6 +447,8 @@ const App: React.FC<Props> = ({ searchQuery }) => {
       textInputs: savedSearch.textInputs,
     });
   };
+
+  /*
   return (
     <div>
       <NavBar
@@ -459,10 +459,13 @@ const App: React.FC<Props> = ({ searchQuery }) => {
       ></NavBar>
       <Layout id="body-layout">
         <Routes>
-          <Route path="" element={<Navigate to="/search" replace />} />
-          <Route path="cart" element={<Navigate to="/cart/items" replace />} />
+          <Route path="/" element={<Navigate to="/search/" replace />} />
           <Route
-            path="/search/*"
+            path="cart/"
+            element={<Navigate to="/cart/items/" replace />}
+          />
+          <Route
+            path="/search/"
             element={
               <Layout.Sider
                 style={styles.bodySider}
@@ -481,7 +484,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
             }
           />
           <Route
-            path="/nodes/*"
+            path="/nodes/"
             element={
               <Layout.Sider
                 style={styles.bodySider}
@@ -492,7 +495,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
             }
           />
           <Route
-            path="/cart/*"
+            path="/cart/"
             element={
               <Layout.Sider
                 style={styles.bodySider}
@@ -507,7 +510,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           <Layout.Content style={styles.bodyContent}>
             <Routes>
               <Route
-                path="/search/*"
+                path="/search/"
                 element={
                   <>
                     <Breadcrumb>
@@ -533,7 +536,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
                 }
               />
               <Route
-                path="/nodes/*"
+                path="/nodes/"
                 element={
                   <>
                     <Breadcrumb>
@@ -551,7 +554,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
                 }
               />
               <Route
-                path="/cart/*"
+                path="/cart/"
                 element={
                   <>
                     <Breadcrumb>
@@ -579,7 +582,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
                     subTitle="Sorry, the page you visited does not exist."
                     extra={
                       <Button type="primary">
-                        <Link to="/">Back to Home</Link>
+                        <Link to="/searchf">Back to Home</Link>
                       </Button>
                     }
                   />
@@ -605,6 +608,124 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           </Layout.Footer>
         </Layout>
       </Layout>
+      <Affix
+        style={{
+          position: 'fixed',
+          bottom: 75,
+          right: 50,
+        }}
+      >
+        <Button
+          type="primary"
+          shape="circle"
+          style={{ width: '48px', height: '48px' }}
+          icon={<QuestionOutlined style={{ fontSize: '40px' }} />}
+          onClick={() => setSupportModalVisible(true)}
+        ></Button>
+      </Affix>
+      <Support
+        visible={supportModalVisible}
+        onClose={() => setSupportModalVisible(false)}
+      />
+    </div>
+  );*/
+
+  return (
+    <div>
+      <NavBar
+        numCartItems={userCart.length}
+        numSavedSearches={userSearchQueries.length}
+        onTextSearch={handleTextSearch}
+        supportModalVisible={setSupportModalVisible}
+      ></NavBar>
+      <Routes>
+        <Route
+          path="*"
+          element={
+            <Result
+              status="404"
+              title="404"
+              subTitle="Sorry, the page you visited does not exist."
+              extra={
+                <Button type="primary">
+                  <Link to="/">Back to Home</Link>
+                </Button>
+              }
+            />
+          }
+        />
+        <Route path="/" element={<Navigate to="search/" replace />} />
+        <Route path="cart/" element={<Navigate to="/cart/items/" replace />} />
+        <Route
+          path="search/"
+          element={
+            <AppLayout
+              pageName="Search"
+              sider={
+                <Facets
+                  activeSearchQuery={activeSearchQuery}
+                  availableFacets={availableFacets}
+                  nodeStatus={nodeStatus}
+                  onProjectChange={handleProjectChange}
+                  onSetFilenameVars={handleOnSetFilenameVars}
+                  onSetGeneralFacets={handleOnSetGeneralFacets}
+                  onSetActiveFacets={handleOnSetActiveFacets}
+                />
+              }
+              pageContent={
+                <Search
+                  activeSearchQuery={activeSearchQuery}
+                  userCart={userCart}
+                  nodeStatus={nodeStatus}
+                  onUpdateAvailableFacets={(facets) =>
+                    setAvailableFacets(facets)
+                  }
+                  onUpdateCart={handleUpdateCart}
+                  onRemoveFilter={handleRemoveFilter}
+                  onClearFilters={handleClearFilters}
+                  onSaveSearchQuery={handleSaveSearchQuery}
+                  onShareSearchQuery={handleShareSearchQuery}
+                />
+              }
+            />
+          }
+        />
+        <Route
+          path="cart/*"
+          element={
+            <AppLayout
+              pageName="Cart"
+              sider={<Summary userCart={userCart} />}
+              pageContent={
+                <Cart
+                  userCart={userCart}
+                  userSearchQueries={userSearchQueries}
+                  onUpdateCart={handleUpdateCart}
+                  onClearCart={handleClearCart}
+                  onRunSearchQuery={handleRunSearchQuery}
+                  onRemoveSearchQuery={handleRemoveSearchQuery}
+                />
+              }
+            />
+          }
+        />
+        <Route
+          path="nodes/"
+          element={
+            <AppLayout
+              pageName="Data Node Status"
+              sider={<NodeSummary nodeStatus={nodeStatus} />}
+              pageContent={
+                <NodeStatus
+                  nodeStatus={nodeStatus}
+                  apiError={nodeStatusApiError as ResponseError}
+                  isLoading={nodeStatusIsLoading}
+                />
+              }
+            />
+          }
+        />
+      </Routes>
       <Affix
         style={{
           position: 'fixed',

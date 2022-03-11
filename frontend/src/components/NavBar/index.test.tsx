@@ -1,4 +1,4 @@
-import { fireEvent, waitFor } from '@testing-library/react';
+import { act, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { rest, server } from '../../api/mock/setup-env';
@@ -55,7 +55,9 @@ it('opens the drawer onClick and closes with onClose', async () => {
   // Open drawer
   const drawerBtn = getByRole('img', { name: 'menu-unfold' });
   expect(drawerBtn).toBeTruthy();
-  fireEvent.click(drawerBtn);
+  act(() => {
+    fireEvent.click(drawerBtn);
+  });
 
   // Close drawer by clicking on mask
   // It is not best practice to use querySelect to query elements. However, this
@@ -67,6 +69,8 @@ it('opens the drawer onClick and closes with onClose', async () => {
   const drawerMask = document.querySelector('div.ant-drawer-mask');
   expect(drawerMask).not.toBeNull();
   if (drawerMask !== null) {
-    fireEvent.click(drawerMask);
+    act(() => {
+      fireEvent.click(drawerMask);
+    });
   }
 });

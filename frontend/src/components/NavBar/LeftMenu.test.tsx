@@ -1,4 +1,4 @@
-import { fireEvent, render, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { projectsFixture } from '../../api/mock/fixtures';
@@ -45,12 +45,16 @@ it('successfully submits search form and resets current text with onFinish', asy
   const input = getByPlaceholderText(
     'Search for a keyword'
   ) as HTMLInputElement;
-  fireEvent.change(input, { target: { value: 'Solar' } });
+  act(() => {
+    fireEvent.change(input, { target: { value: 'Solar' } });
+  });
   expect(input.value).toEqual('Solar');
 
   // Submit the form
   const submitBtn = getByRole('img', { name: 'search' });
-  fireEvent.submit(submitBtn);
+  act(() => {
+    fireEvent.submit(submitBtn);
+  });
 
   // Check if the input value resets back to blank
   await waitFor(() => expect(input.value).toEqual(''));

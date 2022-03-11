@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, render } from '@testing-library/react';
+import { act, fireEvent, render } from '@testing-library/react';
 import { ResponseError } from '../../api';
 import {
   activeSearchQueryFixture,
@@ -21,7 +21,9 @@ it('renders Popconfirm component when there is an active project and active face
 
   // Click the submit button
   const submitBtn = getByRole('img', { name: 'select' });
-  fireEvent.click(submitBtn);
+  act(() => {
+    fireEvent.click(submitBtn);
+  });
 
   // Check popover exists
   const popOver = getByRole('img', { name: 'question-circle' });
@@ -29,7 +31,9 @@ it('renders Popconfirm component when there is an active project and active face
 
   // Submit popover
   const popOverSubmitBtn = getByText('OK');
-  fireEvent.click(popOverSubmitBtn);
+  act(() => {
+    fireEvent.click(popOverSubmitBtn);
+  });
 });
 
 it('renders empty form', () => {

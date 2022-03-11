@@ -1,4 +1,4 @@
-import { fireEvent, render, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
 import NodeStatus, { Props } from '.';
 import { ResponseError } from '../../api';
@@ -31,13 +31,17 @@ it('renders the node status and columns sort', () => {
   const nodeColHeader = getByRole('columnheader', { name: 'Node caret-down' });
 
   expect(nodeColHeader).toBeTruthy();
-  fireEvent.click(nodeColHeader);
+  act(() => {
+    fireEvent.click(nodeColHeader);
+  });
 
   const isOnlineColHeader = getByRole('columnheader', {
     name: 'Online caret-up caret-down',
   });
   expect(isOnlineColHeader).toBeTruthy();
-  fireEvent.click(isOnlineColHeader);
+  act(() => {
+    fireEvent.click(isOnlineColHeader);
+  });
 });
 
 it('renders an error message when no node status information is available', async () => {

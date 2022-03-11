@@ -1,5 +1,6 @@
 import { fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
+import { act } from 'react-dom/test-utils';
 import { getCurrentAppPage, TourTitles } from '../../common/reactJoyrideSteps';
 import { AppPage } from '../../common/types';
 import { ReactJoyrideProvider } from '../../contexts/ReactJoyrideContext';
@@ -52,7 +53,9 @@ describe('Testing the support form and buttons', () => {
     expect(button).toBeTruthy();
 
     // Start tutorial and check that it renders
-    fireEvent.click(button);
+    act(() => {
+      fireEvent.click(button);
+    });
     await waitFor(() => button);
     const tourModal = getByRole('heading', { name: TourTitles.Main });
     expect(tourModal).toBeTruthy();
@@ -77,7 +80,9 @@ describe('Testing the support form and buttons', () => {
     expect(button).toBeTruthy();
 
     // Start tutorial and check that it renders
-    fireEvent.click(button);
+    act(() => {
+      fireEvent.click(button);
+    });
     await waitFor(() => button);
     const tourModal = getByRole('heading', { name: TourTitles.Cart });
     expect(tourModal).toBeTruthy();
@@ -102,7 +107,9 @@ describe('Testing the support form and buttons', () => {
     expect(button).toBeTruthy();
 
     // Start tutorial and check that it renders
-    fireEvent.click(button);
+    act(() => {
+      fireEvent.click(button);
+    });
     await waitFor(() => button);
     const tourModal = getByRole('heading', { name: TourTitles.Searches });
     expect(tourModal).toBeTruthy();
@@ -127,7 +134,9 @@ describe('Testing the support form and buttons', () => {
     expect(button).toBeTruthy();
 
     // Start tutorial and check that it renders
-    fireEvent.click(button);
+    act(() => {
+      fireEvent.click(button);
+    });
     await waitFor(() => button);
     const tourModal = getByRole('heading', { name: TourTitles.Node });
     expect(tourModal).toBeTruthy();

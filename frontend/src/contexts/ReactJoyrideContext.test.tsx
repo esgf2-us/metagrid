@@ -1,5 +1,7 @@
 import { waitFor, render, fireEvent } from '@testing-library/react';
 import React from 'react';
+import { act } from 'react-dom/test-utils';
+import { BrowserRouter } from 'react-router-dom';
 import { getCurrentAppPage, TourTitles } from '../common/reactJoyrideSteps';
 import { AppPage } from '../common/types';
 import Support from '../components/Support';
@@ -8,11 +10,13 @@ import { ReactJoyrideProvider } from './ReactJoyrideContext';
 describe('test ReactJoyrideProvider', () => {
   it('renders using provider', async () => {
     const { getByTestId, getByText } = render(
-      <ReactJoyrideProvider>
-        <div data-testid="reactJoyrideProvider">
-          <p>renders</p>
-        </div>
-      </ReactJoyrideProvider>
+      <BrowserRouter>
+        <ReactJoyrideProvider>
+          <div data-testid="reactJoyrideProvider">
+            <p>renders</p>
+          </div>
+        </ReactJoyrideProvider>
+      </BrowserRouter>
     );
 
     // Wait for render to get user auth info
@@ -47,9 +51,11 @@ describe('test ReactJoyrideProvider', () => {
     window.location.pathname = 'testing/search';
     expect(getCurrentAppPage()).toEqual(AppPage.Main);
     const { getByTestId, getByRole } = render(
-      <ReactJoyrideProvider>
-        <Support visible onClose={jest.fn()} />
-      </ReactJoyrideProvider>
+      <BrowserRouter>
+        <ReactJoyrideProvider>
+          <Support visible onClose={jest.fn()} />
+        </ReactJoyrideProvider>
+      </BrowserRouter>
     );
 
     // Check support modal rendered
@@ -61,7 +67,9 @@ describe('test ReactJoyrideProvider', () => {
     expect(button).toBeTruthy();
 
     // Start tutorial and check that it renders
-    fireEvent.click(button);
+    act(() => {
+      fireEvent.click(button);
+    });
     await waitFor(() => button);
     const tourModal = getByRole('heading', { name: TourTitles.Main });
     expect(tourModal).toBeTruthy();
@@ -70,7 +78,9 @@ describe('test ReactJoyrideProvider', () => {
     let nextBtn = getByRole('button', { name: 'Next' });
     expect(nextBtn).toBeTruthy();
 
-    fireEvent.click(button);
+    act(() => {
+      fireEvent.click(button);
+    });
     await waitFor(() => button);
     nextBtn = getByRole('button', { name: 'Next' });
 

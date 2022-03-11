@@ -1,4 +1,4 @@
-import { fireEvent, render, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { customRender } from '../../test/custom-render';
@@ -25,13 +25,17 @@ it('sets the active menu item based on the location pathname', async () => {
     getByRole('img', { name: 'shopping-cart' })
   );
   expect(cartItemsLink).toBeTruthy();
-  fireEvent.click(cartItemsLink);
+  act(() => {
+    fireEvent.click(cartItemsLink);
+  });
 
   const savedSearchLink = await waitFor(() =>
     getByRole('img', { name: 'search' })
   );
   expect(savedSearchLink).toBeTruthy();
-  fireEvent.click(savedSearchLink);
+  act(() => {
+    fireEvent.click(savedSearchLink);
+  });
 });
 
 it('display the user"s given name after authentication and signs out', async () => {
@@ -52,12 +56,16 @@ it('display the user"s given name after authentication and signs out', async () 
   // Check user logged in and hover
   const greeting = await waitFor(() => getByText('Hi, John'));
   expect(greeting).toBeTruthy();
-  fireEvent.mouseEnter(greeting);
+  act(() => {
+    fireEvent.mouseEnter(greeting);
+  });
 
   // Click the sign out button
   const signOutBtn = await waitFor(() => getByText('Sign Out'));
   expect(signOutBtn).toBeTruthy();
-  fireEvent.click(signOutBtn);
+  act(() => {
+    fireEvent.click(signOutBtn);
+  });
 });
 
 it('display the user"s email after authentication if they did not provide a name and signs out', async () => {
@@ -78,12 +86,16 @@ it('display the user"s email after authentication if they did not provide a name
   // Check user logged in and hover
   const greeting = await waitFor(() => getByText('Hi, johndoe@url.com'));
   expect(greeting).toBeTruthy();
-  fireEvent.mouseEnter(greeting);
+  act(() => {
+    fireEvent.mouseEnter(greeting);
+  });
 
   // Click the sign out button
   const signOutBtn = await waitFor(() => getByText('Sign Out'));
   expect(signOutBtn).toBeTruthy();
-  fireEvent.click(signOutBtn);
+  act(() => {
+    fireEvent.click(signOutBtn);
+  });
 });
 
 it('displays sign in button when user hasn"t logged in', async () => {
@@ -100,7 +112,9 @@ it('displays sign in button when user hasn"t logged in', async () => {
   // Click the sign ib button
   const signInBtn = await waitFor(() => getByRole('img', { name: 'user' }));
   expect(signInBtn).toBeTruthy();
-  fireEvent.click(signInBtn);
+  act(() => {
+    fireEvent.click(signInBtn);
+  });
 });
 
 it('displays help menu when help button is clicked', async () => {
@@ -117,7 +131,9 @@ it('displays help menu when help button is clicked', async () => {
   // Click the help button
   const helpBtn = await waitFor(() => getByText('Help'));
   expect(helpBtn).toBeTruthy();
-  fireEvent.click(helpBtn);
+  act(() => {
+    fireEvent.click(helpBtn);
+  });
 
   // Check support form rendered
   const support = getByTestId('support-form');

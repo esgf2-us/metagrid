@@ -1,4 +1,4 @@
-import { fireEvent, render } from '@testing-library/react';
+import { act, fireEvent, render } from '@testing-library/react';
 import React from 'react';
 import { Tag } from './Tag';
 
@@ -10,7 +10,9 @@ it('renders component with and without onClose prop', () => {
   );
 
   const closeBtn = getByRole('img', { name: 'close' });
-  fireEvent.click(closeBtn);
+  act(() => {
+    fireEvent.click(closeBtn);
+  });
 
   // Re-render the component without onClose prop
   rerender(
@@ -18,5 +20,7 @@ it('renders component with and without onClose prop', () => {
       tag
     </Tag>
   );
-  fireEvent.click(closeBtn);
+  act(() => {
+    fireEvent.click(closeBtn);
+  });
 });

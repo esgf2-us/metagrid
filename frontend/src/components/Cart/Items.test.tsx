@@ -1,4 +1,10 @@
-import { fireEvent, render, waitFor, within } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import React from 'react';
 import { userCartFixture } from '../../api/mock/fixtures';
 import { rest, server } from '../../api/mock/setup-env';
@@ -27,7 +33,9 @@ it('removes all items from the cart when confirming the popconfirm', () => {
   // Click the Remove All Items button
   const removeAllBtn = getByRole('button', { name: 'Remove All Items' });
   expect(removeAllBtn).toBeTruthy();
-  fireEvent.click(removeAllBtn);
+  act(() => {
+    fireEvent.click(removeAllBtn);
+  });
 
   // Check popover appears
   const popOver = getByRole('tooltip');
@@ -35,7 +43,9 @@ it('removes all items from the cart when confirming the popconfirm', () => {
 
   // Submit the popover
   const submitPopOverBtn = getByText('OK');
-  fireEvent.click(submitPopOverBtn);
+  act(() => {
+    fireEvent.click(submitPopOverBtn);
+  });
 });
 
 it('handles selecting items in the cart and downloading them via wget', async () => {
@@ -54,7 +64,9 @@ it('handles selecting items in the cart and downloading them via wget', async ()
   });
   const firstCheckBox = within(firstRow).getByRole('checkbox');
   expect(firstCheckBox).toBeTruthy();
-  fireEvent.click(firstCheckBox);
+  act(() => {
+    fireEvent.click(firstCheckBox);
+  });
 
   // Check download form renders
   const downloadForm = getByTestId('downloadForm');
@@ -65,7 +77,9 @@ it('handles selecting items in the cart and downloading them via wget', async ()
     name: 'download',
   });
   expect(downloadBtn).toBeTruthy();
-  fireEvent.submit(downloadBtn);
+  act(() => {
+    fireEvent.submit(downloadBtn);
+  });
 
   // Check cart items component renders
   const cartItemsComponent = await waitFor(() => getByTestId('cartItems'));
@@ -91,7 +105,9 @@ it('handles error selecting items in the cart and downloading them via wget', as
   });
   const firstCheckBox = within(firstRow).getByRole('checkbox');
   expect(firstCheckBox).toBeTruthy();
-  fireEvent.click(firstCheckBox);
+  act(() => {
+    fireEvent.click(firstCheckBox);
+  });
 
   // Check download form renders
   const downloadForm = getByTestId('downloadForm');
@@ -102,7 +118,9 @@ it('handles error selecting items in the cart and downloading them via wget', as
     name: 'download',
   });
   expect(downloadBtn).toBeTruthy();
-  fireEvent.submit(downloadBtn);
+  act(() => {
+    fireEvent.submit(downloadBtn);
+  });
 
   // Check cart items component renders
   const cartItemsComponent = await waitFor(() => getByTestId('cartItems'));

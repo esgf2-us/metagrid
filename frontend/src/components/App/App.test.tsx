@@ -21,7 +21,7 @@ import { ActiveSearchQuery } from '../Search/types';
 import App from './App';
 
 // Used to restore window.location after each test
-const location = JSON.stringify(window.location);
+// const location = JSON.stringify(window.location);
 
 const activeSearch: ActiveSearchQuery = getSearchFromUrl();
 
@@ -35,11 +35,11 @@ afterEach(() => {
   // https://github.com/facebook/jest/issues/890#issuecomment-776112686
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  delete window.location;
-  window.location = JSON.parse(location) as unknown as Location;
+  // delete window.location;
+  // window.location = JSON.parse(location) as unknown as Location;
 
   // Clear localStorage between tests
-  localStorage.clear();
+  // localStorage.clear(); #Causes endless test with no stop
 
   // Reset all mocks after each test
   jest.clearAllMocks();
@@ -99,20 +99,28 @@ it('handles project changes when a new project is selected', async () => {
     getByPlaceholderText('Search for a keyword')
   );
   expect(freeTextForm).toBeTruthy();
-  fireEvent.change(freeTextForm, { target: { value: input } });
+  act(() => {
+    fireEvent.change(freeTextForm, { target: { value: input } });
+  });
 
   // Submit the form
   const submitBtn = within(leftMenuComponent).getByRole('img', {
     name: 'search',
   });
-  fireEvent.submit(submitBtn);
+  act(() => {
+    fireEvent.submit(submitBtn);
+  });
 
   // Wait for components to rerender
   await waitFor(() => getByTestId('search'));
 
   // Change the value for free-text input to 'foo' again and submit
-  fireEvent.change(freeTextForm, { target: { value: input } });
-  fireEvent.submit(submitBtn);
+  act(() => {
+    fireEvent.change(freeTextForm, { target: { value: input } });
+  });
+  act(() => {
+    fireEvent.submit(submitBtn);
+  });
 
   // Check error message appears that input has already been applied
   const errorMsg = await waitFor(() =>
@@ -134,18 +142,24 @@ it('handles setting filename searches and duplicates', async () => {
   // Check project select form exists and mouseDown to expand list of options to expand options
   const projectFormSelect = within(projectForm).getByRole('combobox');
   expect(projectFormSelect).toBeTruthy();
-  fireEvent.mouseDown(projectFormSelect);
+  act(() => {
+    fireEvent.mouseDown(projectFormSelect);
+  });
 
   // Select the second project option
   const projectOption = getByTestId('project_1');
   expect(projectOption).toBeTruthy();
-  fireEvent.click(projectOption);
+  act(() => {
+    fireEvent.click(projectOption);
+  });
 
   // Submit the form
   const submitBtn = within(facetsComponent).getByRole('img', {
     name: 'select',
   });
-  fireEvent.submit(submitBtn);
+  act(() => {
+    fireEvent.submit(submitBtn);
+  });
 
   // Wait for components to rerender
   await waitFor(() => getByTestId('search'));
@@ -155,23 +169,33 @@ it('handles setting filename searches and duplicates', async () => {
   const filenameSearchPanel = within(facetsComponent).getByRole('button', {
     name: 'right Filename',
   });
-  fireEvent.click(filenameSearchPanel);
+  act(() => {
+    fireEvent.click(filenameSearchPanel);
+  });
 
   // Change form field values
   const input = getByTestId('filename-search-input');
-  fireEvent.change(input, { target: { value: 'var' } });
+  act(() => {
+    fireEvent.change(input, { target: { value: 'var' } });
+  });
 
   // Submit the form
   const filenameVarsSubmitBtn = within(facetsComponent).getByRole('button', {
     name: 'search',
   });
-  fireEvent.submit(filenameVarsSubmitBtn);
+  act(() => {
+    fireEvent.submit(filenameVarsSubmitBtn);
+  });
 
   // Wait for components to rerender
   await waitFor(() => getByTestId('search'));
 
-  fireEvent.change(input, { target: { value: 'var' } });
-  fireEvent.submit(filenameVarsSubmitBtn);
+  act(() => {
+    fireEvent.change(input, { target: { value: 'var' } });
+  });
+  act(() => {
+    fireEvent.submit(filenameVarsSubmitBtn);
+  });
 
   // Wait for components to rerender
   await waitFor(() => getByTestId('search'));
@@ -191,13 +215,17 @@ it('handles setting and removing text input filters and clearing all search filt
     getByPlaceholderText('Search for a keyword')
   );
   expect(freeTextInput).toBeTruthy();
-  fireEvent.change(freeTextInput, { target: { value: 'foo' } });
+  act(() => {
+    fireEvent.change(freeTextInput, { target: { value: 'foo' } });
+  });
 
   // Submit the form
   const submitBtn = within(leftMenuComponent).getByRole('img', {
     name: 'search',
   });
-  fireEvent.submit(submitBtn);
+  act(() => {
+    fireEvent.submit(submitBtn);
+  });
 
   // Wait for components to rerender
   await waitFor(() => getByTestId('search'));
@@ -209,11 +237,17 @@ it('handles setting and removing text input filters and clearing all search filt
   // Click on the ClearAllTag
   const clearAllTag = await waitFor(() => getByText('Clear All'));
   expect(clearAllTag).toBeTruthy();
-  fireEvent.click(clearAllTag);
+  act(() => {
+    fireEvent.click(clearAllTag);
+  });
 
   // Change value for free-text input and submit again
-  fireEvent.change(freeTextInput, { target: { value: 'baz' } });
-  fireEvent.submit(submitBtn);
+  act(() => {
+    fireEvent.change(freeTextInput, { target: { value: 'baz' } });
+  });
+  act(() => {
+    fireEvent.submit(submitBtn);
+  });
 
   // Wait for components to rerender
   await waitFor(() => getByTestId('search'));
@@ -223,7 +257,9 @@ it('handles setting and removing text input filters and clearing all search filt
   expect(bazTag).toBeTruthy();
 
   // Close the baz tag
-  fireEvent.click(within(bazTag).getByRole('img', { name: 'close' }));
+  act(() => {
+    fireEvent.click(within(bazTag).getByRole('img', { name: 'close' }));
+  });
 
   // Wait for components to rerender
   await waitFor(() => getByTestId('search'));
@@ -246,18 +282,24 @@ it('handles applying general facets', async () => {
   const projectFormSelect = within(projectForm).getByRole('combobox');
 
   expect(projectFormSelect).toBeTruthy();
-  fireEvent.mouseDown(projectFormSelect);
+  act(() => {
+    fireEvent.mouseDown(projectFormSelect);
+  });
 
   // Select the second project option
   const projectOption = getByTestId('project_1');
   expect(projectOption).toBeTruthy();
-  fireEvent.click(projectOption);
+  act(() => {
+    fireEvent.click(projectOption);
+  });
 
   // Submit the form
   const submitBtn = within(facetsComponent).getByRole('img', {
     name: 'select',
   });
-  fireEvent.submit(submitBtn);
+  act(() => {
+    fireEvent.submit(submitBtn);
+  });
 
   // Wait for facets forms to rerender
   const facetsForm = await waitFor(() => getByTestId('facets-form'));
@@ -270,18 +312,24 @@ it('handles applying general facets', async () => {
       name: 'right Additional Properties',
     }
   );
-  fireEvent.click(additionalPropertiesPanel);
+  act(() => {
+    fireEvent.click(additionalPropertiesPanel);
+  });
 
   // Change result type
   // Check facet select form exists and mouseDown to expand list of options
   const resultTypeSelect = getByTestId('result-type-form-select');
   expect(resultTypeSelect).toBeTruthy();
-  fireEvent.mouseDown(resultTypeSelect.firstElementChild as HTMLInputElement);
+  act(() => {
+    fireEvent.mouseDown(resultTypeSelect.firstElementChild as HTMLInputElement);
+  });
 
   // Select the first facet option
   const resultTypeOption = await waitFor(() => getByText('Originals only'));
   expect(resultTypeOption).toBeTruthy();
-  fireEvent.click(resultTypeOption);
+  act(() => {
+    fireEvent.click(resultTypeOption);
+  });
   await waitFor(() => getByTestId('facets-form'));
 
   await waitFor(() => getByTestId('search'));
@@ -305,18 +353,24 @@ it('handles applying and removing project facets', async () => {
   const projectFormSelect = within(projectForm).getByRole('combobox');
 
   expect(projectFormSelect).toBeTruthy();
-  fireEvent.mouseDown(projectFormSelect);
+  act(() => {
+    fireEvent.mouseDown(projectFormSelect);
+  });
 
   // Select the second project option
   const projectOption = getByTestId('project_1');
   expect(projectOption).toBeTruthy();
-  fireEvent.click(projectOption);
+  act(() => {
+    fireEvent.click(projectOption);
+  });
 
   // Submit the form
   const submitBtn = within(facetsComponent).getByRole('img', {
     name: 'select',
   });
-  fireEvent.submit(submitBtn);
+  act(() => {
+    fireEvent.submit(submitBtn);
+  });
 
   // Wait for project form to render
   const facetsForm = await waitFor(() => getByTestId('facets-form'));
@@ -326,30 +380,40 @@ it('handles applying and removing project facets', async () => {
   const group1Panel = within(facetsComponent).getByRole('tab', {
     name: 'right Group1',
   });
-  fireEvent.click(group1Panel);
+  act(() => {
+    fireEvent.click(group1Panel);
+  });
 
   // Open Collapse Panel in Collapse component for the data_node form to render
   const collapse = getByText('Data Node');
-  fireEvent.click(collapse);
+  act(() => {
+    fireEvent.click(collapse);
+  });
 
   // Check facet select form exists and mouseDown to expand list of options
   const facetFormSelect = getByTestId('data_node-form-select');
   expect(facetFormSelect).toBeTruthy();
-  fireEvent.mouseDown(facetFormSelect.firstElementChild as HTMLInputElement);
+  act(() => {
+    fireEvent.mouseDown(facetFormSelect.firstElementChild as HTMLInputElement);
+  });
 
   // Select the first facet option
   const facetOption = await waitFor(() =>
     getByTestId('data_node_aims3.llnl.gov')
   );
   expect(facetOption).toBeTruthy();
-  fireEvent.click(facetOption);
+  act(() => {
+    fireEvent.click(facetOption);
+  });
 
   // Apply facets
-  fireEvent.keyDown(facetFormSelect, {
-    key: 'Escape',
-    code: 'Escape',
-    keyCode: '27',
-    charCode: '27',
+  act(() => {
+    fireEvent.keyDown(facetFormSelect, {
+      key: 'Escape',
+      code: 'Escape',
+      keyCode: '27',
+      charCode: '27',
+    });
   });
 
   // Wait for components to rerender
@@ -362,9 +426,11 @@ it('handles applying and removing project facets', async () => {
   // Check facets select form rerenders and mouseDown to expand list of options
   const facetFormSelectRerender = getByTestId('data_node-form-select');
   expect(facetFormSelectRerender).toBeTruthy();
-  fireEvent.mouseDown(
-    facetFormSelectRerender.firstElementChild as HTMLInputElement
-  );
+  act(() => {
+    fireEvent.mouseDown(
+      facetFormSelectRerender.firstElementChild as HTMLInputElement
+    );
+  });
 
   // Check option is selected and remove it
   const facetOptionRerender = await waitFor(() =>
@@ -374,14 +440,18 @@ it('handles applying and removing project facets', async () => {
     })
   );
   expect(facetOptionRerender).toBeTruthy();
-  fireEvent.click(facetOptionRerender);
+  act(() => {
+    fireEvent.click(facetOptionRerender);
+  });
 
   // Remove facets
-  fireEvent.keyDown(facetFormSelectRerender, {
-    key: 'Escape',
-    code: 'Escape',
-    keyCode: '27',
-    charCode: '27',
+  act(() => {
+    fireEvent.keyDown(facetFormSelectRerender, {
+      key: 'Escape',
+      code: 'Escape',
+      keyCode: '27',
+      charCode: '27',
+    });
   });
 
   // Wait for component to rerender
@@ -403,12 +473,16 @@ it('handles project changes and clearing filters when the active project !== sel
   const projectFormSelect = within(projectForm).getByRole('combobox');
 
   expect(projectFormSelect).toBeTruthy();
-  fireEvent.mouseDown(projectFormSelect);
+  act(() => {
+    fireEvent.mouseDown(projectFormSelect);
+  });
 
   // Select the second project option
   const projectOption = await waitFor(() => getByTestId('project_1'));
   expect(projectOption).toBeInTheDocument();
-  fireEvent.click(projectOption);
+  act(() => {
+    fireEvent.click(projectOption);
+  });
 
   // Check facets component re-renders
   const facetsComponent2 = await waitFor(() => getByTestId('facets'));
@@ -419,7 +493,9 @@ it('handles project changes and clearing filters when the active project !== sel
     name: 'select',
   });
 
-  fireEvent.submit(submitBtn);
+  act(() => {
+    fireEvent.submit(submitBtn);
+  });
 
   // Wait for components to rerender
   await waitFor(() => getByTestId('facets'));
@@ -427,15 +503,21 @@ it('handles project changes and clearing filters when the active project !== sel
   // Check project select form exists again and mouseDown to expand list of options
   const projectFormSelect2 = within(projectForm).getByRole('combobox');
 
-  fireEvent.mouseDown(projectFormSelect2);
+  act(() => {
+    fireEvent.mouseDown(projectFormSelect2);
+  });
 
   // Select the first project option
   const firstOption = await waitFor(() => getByTestId('project_0'));
   expect(firstOption).toBeInTheDocument();
-  fireEvent.click(firstOption);
+  act(() => {
+    fireEvent.click(firstOption);
+  });
 
   // Submit the form
-  fireEvent.submit(submitBtn);
+  act(() => {
+    fireEvent.submit(submitBtn);
+  });
 
   // Wait for components to rerender
   await waitFor(() => getByTestId('facets'));
@@ -468,13 +550,17 @@ describe('User cart', () => {
       getByPlaceholderText('Search for a keyword')
     );
     expect(freeTextInput).toBeTruthy();
-    fireEvent.change(freeTextInput, { target: { value: input } });
+    act(() => {
+      fireEvent.change(freeTextInput, { target: { value: input } });
+    });
 
     // Submit the form
     const submitBtn = within(leftMenuComponent).getByRole('img', {
       name: 'search',
     });
-    fireEvent.submit(submitBtn);
+    act(() => {
+      fireEvent.submit(submitBtn);
+    });
 
     // Wait for components to rerender
     await waitFor(() => getByTestId('search'));
@@ -490,7 +576,9 @@ describe('User cart', () => {
     // Check first row has add button and click it
     const addBtn = within(firstRow).getByRole('img', { name: 'plus' });
     expect(addBtn).toBeTruthy();
-    fireEvent.click(addBtn);
+    act(() => {
+      fireEvent.click(addBtn);
+    });
 
     // Check 'Added items(s) to the cart' message appears
     const addText = await waitFor(() =>
@@ -501,7 +589,9 @@ describe('User cart', () => {
     // Check first row has remove button and click it
     const removeBtn = within(firstRow).getByRole('img', { name: 'minus' });
     expect(removeBtn).toBeTruthy();
-    fireEvent.click(removeBtn);
+    act(() => {
+      fireEvent.click(removeBtn);
+    });
 
     // Check 'Removed items(s) from the cart' message appears
     const removeText = await waitFor(() =>
@@ -526,7 +616,9 @@ describe('User cart', () => {
       name: 'shopping-cart',
     });
     expect(cartLink).toBeTruthy();
-    fireEvent.click(cartLink);
+    act(() => {
+      fireEvent.click(cartLink);
+    });
 
     // Check number of files and datasets are correctly displayed
     const cart = await waitFor(() => getByTestId('cart'));
@@ -554,7 +646,9 @@ describe('User cart', () => {
       name: 'Remove All Items',
     });
     expect(clearCartBtn).toBeTruthy();
-    fireEvent.click(clearCartBtn);
+    act(() => {
+      fireEvent.click(clearCartBtn);
+    });
 
     await waitFor(() => getByTestId('cart'));
 
@@ -565,7 +659,9 @@ describe('User cart', () => {
       })
     );
     expect(confirmBtn).toBeTruthy();
-    fireEvent.click(confirmBtn);
+    act(() => {
+      fireEvent.click(confirmBtn);
+    });
 
     // Check number of datasets and files are now 0
     expect(
@@ -600,13 +696,17 @@ describe('User cart', () => {
       getByPlaceholderText('Search for a keyword')
     );
     expect(freeTextInput).toBeTruthy();
-    fireEvent.change(freeTextInput, { target: { value: input } });
+    act(() => {
+      fireEvent.change(freeTextInput, { target: { value: input } });
+    });
 
     // Submit the form
     const submitBtn = within(leftMenuComponent).getByRole('img', {
       name: 'search',
     });
-    fireEvent.submit(submitBtn);
+    act(() => {
+      fireEvent.submit(submitBtn);
+    });
 
     // Wait for components to rerender
     await waitFor(() => getByTestId('search'));
@@ -622,12 +722,16 @@ describe('User cart', () => {
     // Check first row has add button and click it
     const addBtn = within(firstRow).getByRole('img', { name: 'plus' });
     expect(addBtn).toBeTruthy();
-    fireEvent.click(addBtn);
+    act(() => {
+      fireEvent.click(addBtn);
+    });
 
     // Check first row has remove button and click it
     const removeBtn = within(firstRow).getByRole('img', { name: 'minus' });
     expect(removeBtn).toBeTruthy();
-    fireEvent.click(removeBtn);
+    act(() => {
+      fireEvent.click(removeBtn);
+    });
   });
 
   it('displays anonymous user"s number of files in the cart summary and handles clearing the cart', async () => {
@@ -646,13 +750,17 @@ describe('User cart', () => {
       getByPlaceholderText('Search for a keyword')
     );
     expect(freeTextInput).toBeTruthy();
-    fireEvent.change(freeTextInput, { target: { value: input } });
+    act(() => {
+      fireEvent.change(freeTextInput, { target: { value: input } });
+    });
 
     // Submit the form
     const submitBtn = within(leftMenuComponent).getByRole('img', {
       name: 'search',
     });
-    fireEvent.submit(submitBtn);
+    act(() => {
+      fireEvent.submit(submitBtn);
+    });
 
     // Wait for components to rerender
     await waitFor(() => getByTestId('search'));
@@ -668,14 +776,18 @@ describe('User cart', () => {
     // Check first row has add button and click it
     const addBtn = within(firstRow).getByRole('img', { name: 'plus' });
     expect(addBtn).toBeTruthy();
-    fireEvent.click(addBtn);
+    act(() => {
+      fireEvent.click(addBtn);
+    });
 
     // Click on the cart link
     const cartLink = within(rightMenuComponent).getByRole('img', {
       name: 'shopping-cart',
     });
     expect(cartLink).toBeTruthy();
-    fireEvent.click(cartLink);
+    act(() => {
+      fireEvent.click(cartLink);
+    });
 
     // Check number of files and datasets are correctly displayed
     const cart = await waitFor(() => getByTestId('cart'));
@@ -700,7 +812,9 @@ describe('User cart', () => {
       name: 'Remove All Items',
     });
     expect(clearCartBtn).toBeTruthy();
-    fireEvent.click(clearCartBtn);
+    act(() => {
+      fireEvent.click(clearCartBtn);
+    });
 
     await waitFor(() => getByTestId('cart'));
 
@@ -711,7 +825,9 @@ describe('User cart', () => {
       })
     );
     expect(confirmBtn).toBeTruthy();
-    fireEvent.click(confirmBtn);
+    act(() => {
+      fireEvent.click(confirmBtn);
+    });
 
     // Check number of datasets and files are now 0
     expect(
@@ -778,13 +894,17 @@ describe('User search library', () => {
       getByPlaceholderText('Search for a keyword')
     );
     expect(freeTextInput).toBeTruthy();
-    fireEvent.change(freeTextInput, { target: { value: input } });
+    act(() => {
+      fireEvent.change(freeTextInput, { target: { value: input } });
+    });
 
     // Submit the form
     const submitBtn = within(leftMenuComponent).getByRole('img', {
       name: 'search',
     });
-    fireEvent.submit(submitBtn);
+    act(() => {
+      fireEvent.submit(submitBtn);
+    });
 
     // Wait for components to rerender
     await waitFor(() => getByTestId('search'));
@@ -794,14 +914,18 @@ describe('User search library', () => {
       getByRole('button', { name: 'book Save Search' })
     );
     expect(saveSearch).toBeTruthy();
-    fireEvent.click(saveSearch);
+    act(() => {
+      fireEvent.click(saveSearch);
+    });
 
     // Click on the search library link
     const searchLibraryLink = within(rightMenuComponent).getByRole('img', {
       name: 'file-search',
     });
     expect(searchLibraryLink).toBeTruthy();
-    fireEvent.click(searchLibraryLink);
+    act(() => {
+      fireEvent.click(searchLibraryLink);
+    });
 
     // Check cart renders
     const cart = await waitFor(() => getByTestId('cart'));
@@ -810,7 +934,9 @@ describe('User search library', () => {
     // Check apply search button renders and click it
     const applySearchBtn = await waitFor(() => getByTestId('apply-1'));
     expect(applySearchBtn).toBeTruthy();
-    fireEvent.click(applySearchBtn);
+    act(() => {
+      fireEvent.click(applySearchBtn);
+    });
 
     // Wait for components to rerender
     await waitFor(() => getByTestId('search'));
@@ -836,7 +962,9 @@ describe('User search library', () => {
       within(rightMenuComponent).getByRole('img', { name: 'file-search' })
     );
     expect(searchLibraryLink).toBeTruthy();
-    fireEvent.click(searchLibraryLink);
+    act(() => {
+      fireEvent.click(searchLibraryLink);
+    });
 
     // Check number of files and datasets are correctly displayed
     const cart = await waitFor(() => getByTestId('cart'));
@@ -847,7 +975,9 @@ describe('User search library', () => {
       getByRole('img', { name: 'delete', hidden: true })
     );
     expect(deleteBtn).toBeTruthy();
-    fireEvent.click(deleteBtn);
+    act(() => {
+      fireEvent.click(deleteBtn);
+    });
 
     await waitFor(() => getByTestId('cart'));
 
@@ -875,13 +1005,17 @@ describe('User search library', () => {
       getByPlaceholderText('Search for a keyword')
     );
     expect(freeTextInput).toBeTruthy();
-    fireEvent.change(freeTextInput, { target: { value: input } });
+    act(() => {
+      fireEvent.change(freeTextInput, { target: { value: input } });
+    });
 
     // Submit the form
     const submitBtn = within(leftMenuComponent).getByRole('img', {
       name: 'search',
     });
-    fireEvent.submit(submitBtn);
+    act(() => {
+      fireEvent.submit(submitBtn);
+    });
 
     // Wait for components to rerender
     await waitFor(() => getByTestId('search'));
@@ -891,14 +1025,18 @@ describe('User search library', () => {
       getByRole('button', { name: 'book Save Search' })
     );
     expect(saveSearch).toBeTruthy();
-    fireEvent.click(saveSearch);
+    act(() => {
+      fireEvent.click(saveSearch);
+    });
 
     // Click on the search library link
     const searchLibraryLink = within(rightMenuComponent).getByRole('img', {
       name: 'file-search',
     });
     expect(searchLibraryLink).toBeTruthy();
-    fireEvent.click(searchLibraryLink);
+    act(() => {
+      fireEvent.click(searchLibraryLink);
+    });
 
     // Check cart renders
     const cart = await waitFor(() => getByTestId('cart'));
@@ -909,7 +1047,9 @@ describe('User search library', () => {
       within(cart).getByRole('img', { name: 'search', hidden: true })
     );
     expect(applySearchBtn).toBeTruthy();
-    fireEvent.click(applySearchBtn);
+    act(() => {
+      fireEvent.click(applySearchBtn);
+    });
 
     // Wait for components to rerender
     await waitFor(() => getByTestId('facets'));
@@ -931,13 +1071,17 @@ describe('User search library', () => {
       getByPlaceholderText('Search for a keyword')
     );
     expect(freeTextInput).toBeTruthy();
-    fireEvent.change(freeTextInput, { target: { value: input } });
+    act(() => {
+      fireEvent.change(freeTextInput, { target: { value: input } });
+    });
 
     // Submit the form
     const submitBtn = within(leftMenuComponent).getByRole('img', {
       name: 'search',
     });
-    fireEvent.submit(submitBtn);
+    act(() => {
+      fireEvent.submit(submitBtn);
+    });
 
     // Wait for components to rerender
     await waitFor(() => getByTestId('search'));
@@ -947,7 +1091,9 @@ describe('User search library', () => {
       getByRole('button', { name: 'book Save Search' })
     );
     expect(saveSearch).toBeTruthy();
-    fireEvent.click(saveSearch);
+    act(() => {
+      fireEvent.click(saveSearch);
+    });
 
     const searchLibraryLink = await waitFor(() =>
       within(rightMenuComponent).getByRole('img', {
@@ -956,7 +1102,9 @@ describe('User search library', () => {
       })
     );
     expect(searchLibraryLink).toBeTruthy();
-    fireEvent.click(searchLibraryLink);
+    act(() => {
+      fireEvent.click(searchLibraryLink);
+    });
 
     const cart = await waitFor(() => getByTestId('cart'));
     expect(cart).toBeTruthy();
@@ -965,7 +1113,9 @@ describe('User search library', () => {
     const deleteBtn = getByTestId('remove-1');
 
     expect(deleteBtn).toBeTruthy();
-    fireEvent.click(deleteBtn);
+    act(() => {
+      fireEvent.click(deleteBtn);
+    });
 
     await waitFor(() => getByTestId('cart'));
   });
@@ -987,13 +1137,17 @@ describe('User search library', () => {
       getByPlaceholderText('Search for a keyword')
     );
     expect(freeTextInput).toBeTruthy();
-    fireEvent.change(freeTextInput, { target: { value: input } });
+    act(() => {
+      fireEvent.change(freeTextInput, { target: { value: input } });
+    });
 
     // Submit the form
     const submitBtn = within(leftMenuComponent).getByRole('img', {
       name: 'search',
     });
-    fireEvent.submit(submitBtn);
+    act(() => {
+      fireEvent.submit(submitBtn);
+    });
 
     // Wait for components to rerender
     await waitFor(() => getByTestId('search'));
@@ -1004,7 +1158,9 @@ describe('User search library', () => {
     );
 
     expect(copySearch).toBeTruthy();
-    fireEvent.click(copySearch);
+    act(() => {
+      fireEvent.click(copySearch);
+    });
   });
 
   describe('Error handling', () => {
@@ -1055,13 +1211,17 @@ describe('User search library', () => {
         getByPlaceholderText('Search for a keyword')
       );
       expect(freeTextInput).toBeTruthy();
-      fireEvent.change(freeTextInput, { target: { value: input } });
+      act(() => {
+        fireEvent.change(freeTextInput, { target: { value: input } });
+      });
 
       // Submit the form
       const submitBtn = within(leftMenuComponent).getByRole('img', {
         name: 'search',
       });
-      fireEvent.submit(submitBtn);
+      act(() => {
+        fireEvent.submit(submitBtn);
+      });
 
       // Wait for components to rerender
       await waitFor(() => getByTestId('search'));
@@ -1071,7 +1231,9 @@ describe('User search library', () => {
         getByRole('button', { name: 'book Save Search' })
       );
       expect(saveSearch).toBeTruthy();
-      fireEvent.click(saveSearch);
+      act(() => {
+        fireEvent.click(saveSearch);
+      });
 
       const errorMsg = await waitFor(() =>
         getByText(apiRoutes.userSearches.handleErrorMsg(404))
@@ -1105,7 +1267,9 @@ describe('User search library', () => {
         })
       );
       expect(searchLibraryLink).toBeTruthy();
-      fireEvent.click(searchLibraryLink);
+      act(() => {
+        fireEvent.click(searchLibraryLink);
+      });
 
       // Check cart component renders
       const cartComponent = await waitFor(() => getByTestId('cart'));
@@ -1116,7 +1280,9 @@ describe('User search library', () => {
         within(cartComponent).getByRole('img', { name: 'delete', hidden: true })
       );
       expect(deleteBtn).toBeTruthy();
-      fireEvent.click(deleteBtn);
+      act(() => {
+        fireEvent.click(deleteBtn);
+      });
 
       // FIXME: There should only be 1 error message rendering, but for some reason 3 render.
       // This might be because other tests leak in the describe block.
@@ -1138,7 +1304,9 @@ describe('User support', () => {
     expect(supportBtn).toBeTruthy();
 
     // click support button
-    fireEvent.click(supportBtn);
+    act(() => {
+      fireEvent.click(supportBtn);
+    });
 
     // GitHub icon renders
     const githubIcon = getByRole('img', { name: 'github', hidden: true });
@@ -1146,7 +1314,9 @@ describe('User support', () => {
 
     // click close button
     const closeBtn = getByRole('img', { name: 'close' });
-    fireEvent.click(closeBtn);
+    act(() => {
+      fireEvent.click(closeBtn);
+    });
   });
 });
 
@@ -1160,7 +1330,9 @@ describe('Data node status page', () => {
       name: 'node-index Node Status',
     });
     expect(nodeLink).toBeTruthy();
-    fireEvent.click(nodeLink);
+    act(() => {
+      fireEvent.click(nodeLink);
+    });
 
     const nodeStatusPage = await waitFor(() => getByTestId('node-status'));
     expect(nodeStatusPage).toBeTruthy();

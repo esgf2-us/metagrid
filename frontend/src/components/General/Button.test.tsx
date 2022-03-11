@@ -1,4 +1,4 @@
-import { fireEvent, render, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
 import Button from './Button';
 
@@ -17,6 +17,8 @@ it('returns string "clicked" onClick', async () => {
 
   // Click on the button
   const button = getByRole('button');
-  fireEvent.click(button);
+  act(() => {
+    fireEvent.click(button);
+  });
   await waitFor(() => button);
 });

@@ -1,4 +1,10 @@
-import { fireEvent, render, waitFor, within } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import React from 'react';
 import {
   ESGFSearchAPIFixture,
@@ -92,14 +98,18 @@ describe('test FilesTable component', () => {
       name: 'download',
     });
     expect(downloadBtn).toBeTruthy();
-    fireEvent.click(downloadBtn);
+    act(() => {
+      fireEvent.click(downloadBtn);
+    });
 
     // Test the copy button
     const copyBtn = within(row).getByRole('button', {
       name: 'copy',
     });
     expect(copyBtn).toBeTruthy();
-    fireEvent.click(copyBtn);
+    act(() => {
+      fireEvent.click(copyBtn);
+    });
   });
 
   it('handles pagination and page size changes', async () => {
@@ -143,22 +153,32 @@ describe('test FilesTable component', () => {
       within(paginationList).getByRole('combobox')
     );
     expect(pageSizeComboBox).toBeTruthy();
-    fireEvent.change(pageSizeComboBox, { target: { value: 'foo' } });
-    fireEvent.click(pageSizeComboBox);
+    act(() => {
+      fireEvent.change(pageSizeComboBox, { target: { value: 'foo' } });
+    });
+    act(() => {
+      fireEvent.click(pageSizeComboBox);
+    });
 
     // Wait for the options to render, then select 20 / page
     const secondOption = await waitFor(() => getByText('20 / page'));
-    fireEvent.click(secondOption);
+    act(() => {
+      fireEvent.click(secondOption);
+    });
 
     // Change back to 10 / page
     const firstOption = await waitFor(() => getByText('10 / page'));
-    fireEvent.click(firstOption);
+    act(() => {
+      fireEvent.click(firstOption);
+    });
 
     // Select the 'Next Page' button (only enabled if there are > 10 results)
     const nextPage = await waitFor(() =>
       getByRole('listitem', { name: 'Next Page' })
     );
-    fireEvent.click(nextPage);
+    act(() => {
+      fireEvent.click(nextPage);
+    });
 
     // Wait for component to re-render
     await waitFor(() => getByTestId('filesTable'));
@@ -192,13 +212,17 @@ describe('test FilesTable component', () => {
       name: 'right-circle',
     });
     expect(expandableIcon).toBeTruthy();
-    fireEvent.click(expandableIcon);
+    act(() => {
+      fireEvent.click(expandableIcon);
+    });
 
     // Get the down circle icon within the cell and click to close the expandable row
     const expandableDownIcon = within(expandableCell).getByRole('img', {
       name: 'down-circle',
     });
     expect(expandableDownIcon).toBeTruthy();
-    fireEvent.click(expandableDownIcon);
+    act(() => {
+      fireEvent.click(expandableDownIcon);
+    });
   });
 });

@@ -1,4 +1,4 @@
-import { fireEvent, render, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
 import Popover from './Popover';
 
@@ -12,7 +12,9 @@ it('returns component with required content', async () => {
 
   // Trigger event
   const popOverBtn = getByText('Click Me');
-  fireEvent.click(popOverBtn);
+  act(() => {
+    fireEvent.click(popOverBtn);
+  });
 
   // Check popover exists and content is displayed
   const popOver = await waitFor(() => getByRole('tooltip'));
@@ -29,6 +31,8 @@ it('returns component with required content', async () => {
   );
 
   // Check if tool tip exists and content is displayed
-  fireEvent.mouseOver(popOverBtn);
+  act(() => {
+    fireEvent.mouseOver(popOverBtn);
+  });
   expect(popOver).toBeTruthy();
 });
