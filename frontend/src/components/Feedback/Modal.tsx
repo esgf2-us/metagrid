@@ -1,4 +1,4 @@
-import { Modal as ModalD } from 'antd';
+import { Button, Modal as ModalD } from 'antd';
 import React from 'react';
 
 type Props = {
@@ -19,10 +19,13 @@ const Modal: React.FC<Props> = ({
   <ModalD
     visible={visible}
     title={title}
-    onOk={onClose}
-    okText="Close"
     onCancel={onClose}
     centered={centered}
+    footer={[
+      <Button key="submit" type="primary" onClick={onClose}>
+        Close
+      </Button>,
+    ]}
   >
     {children}
   </ModalD>
