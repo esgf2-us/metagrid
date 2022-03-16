@@ -87,6 +87,8 @@ export type Props = {
   searchQuery: ActiveSearchQuery;
 };
 
+const metagridVersion = '1.0.2-beta';
+
 const App: React.FC<Props> = ({ searchQuery }) => {
   // Third-party tool integration
   useGoogleAnalytics();
@@ -599,6 +601,8 @@ const App: React.FC<Props> = ({ searchQuery }) => {
             </Layout.Content>
             <Layout.Footer>
               <p style={{ fontSize: '10px' }}>
+                Metagrid Version: {metagridVersion}
+                <br />
                 Privacy &amp; Legal Notice:{' '}
                 <a href="https://www.llnl.gov/disclaimer.html">
                   https://www.llnl.gov/disclaimer.html
