@@ -104,6 +104,7 @@ export const parsedFacetsFixture = (
     facet2: [
       ['baz', 2],
       ['fubar', 3],
+      ['very_long_facet_text_name_which_wont_fit', 2],
     ],
     optional: [['none', 8]],
   };
