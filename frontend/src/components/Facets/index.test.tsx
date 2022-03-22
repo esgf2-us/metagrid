@@ -82,7 +82,7 @@ it('handles facets form auto-filtering', async () => {
   await waitFor(() => expect(facetsForm).toBeTruthy());
 
   // Open top collapse panel
-  const group1Panel = within(facetsForm).getByRole('tab', {
+  const group1Panel = within(facetsForm).getByRole('button', {
     name: 'right Group1',
   });
   fireEvent.click(group1Panel);
@@ -131,7 +131,7 @@ it('handles facets form submission, including a facet key that is undefined', as
   expect(projectForm).toBeTruthy();
 
   // Open top collapse panel
-  const group1Panel = within(facetsForm).getByRole('tab', {
+  const group1Panel = within(facetsForm).getByRole('button', {
     name: 'right Group1',
   });
   fireEvent.click(group1Panel);
@@ -157,7 +157,7 @@ it('handles facets form submission, including a facet key that is undefined', as
 
   // Open Collapse Panel for  in Collapse component for the facet2 form to render
   // Open additional properties collapse panel
-  const collapse2 = getByRole('tab', {
+  const collapse2 = getByRole('button', {
     name: 'right Group2',
   });
   fireEvent.click(collapse2);
