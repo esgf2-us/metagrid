@@ -21,16 +21,49 @@ describe('test genDownloadUrls()', () => {
     urls = [
       'http://test.com|HTTPServer',
       'http://test.com|Globus',
-      'http://test.com/file.nc|OPENDAP',
+      'http://test.com/file.dods|OPENDAP',
     ];
     result = {
       HTTPServer: 'https://test.com',
-      OPENDAP: 'http://test.com/file.dods',
+      OPENDAP: 'http://test.com/file.nc',
     };
   });
 
   it('converts array of urls to array of objects containing download type and download url', () => {
-    const newUrls = genDownloadUrls(urls);
+    let newUrls = genDownloadUrls(urls);
+    expect(newUrls).toEqual(result);
+
+    // Test different OpendDap url variations are converted to .nc
+    urls = ['http://test.com/file.dods.nc|OPENDAP'];
+    result = {
+      HTTPServer: '',
+      OPENDAP: 'http://test.com/file.nc',
+    };
+    newUrls = genDownloadUrls(urls);
+    expect(newUrls).toEqual(result);
+
+    urls = ['http://test.com/file.dods.html|OPENDAP'];
+    result = {
+      HTTPServer: '',
+      OPENDAP: 'http://test.com/file.nc',
+    };
+    newUrls = genDownloadUrls(urls);
+    expect(newUrls).toEqual(result);
+
+    urls = ['http://test.com/file.dods|OPENDAP'];
+    result = {
+      HTTPServer: '',
+      OPENDAP: 'http://test.com/file.nc',
+    };
+    newUrls = genDownloadUrls(urls);
+    expect(newUrls).toEqual(result);
+
+    urls = ['http://test.com/file.nc.dods|OPENDAP'];
+    result = {
+      HTTPServer: '',
+      OPENDAP: 'http://test.com/file.nc',
+    };
+    newUrls = genDownloadUrls(urls);
     expect(newUrls).toEqual(result);
   });
   it('converts array of urls to array of objects but ignores HTTPServer URL conversion to HTTPS since it is already HTTPS', () => {
