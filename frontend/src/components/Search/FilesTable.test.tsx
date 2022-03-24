@@ -65,6 +65,14 @@ describe('test genDownloadUrls()', () => {
     };
     newUrls = genDownloadUrls(urls);
     expect(newUrls).toEqual(result);
+
+    urls = ['http://test.com/file.nc.html|OPENDAP'];
+    result = {
+      HTTPServer: '',
+      OPENDAP: 'http://test.com/file.nc',
+    };
+    newUrls = genDownloadUrls(urls);
+    expect(newUrls).toEqual(result);
   });
   it('converts array of urls to array of objects but ignores HTTPServer URL conversion to HTTPS since it is already HTTPS', () => {
     const updatedUrls = urls;

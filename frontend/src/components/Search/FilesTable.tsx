@@ -64,7 +64,7 @@ export const genDownloadUrls = (urls: string[]): DownloadUrls => {
 
     if (downloadType === 'OPENDAP') {
       downloadUrl = downloadUrl.replace(
-        /(\.dods\.nc|\.nc\.dods|\.dods\.html|\.dods)/g,
+        /(\.dods\.nc|\.nc\.dods|\.nc\.html|\.dods\.html|\.dods)/g,
         '.nc'
       );
       newUrls.OPENDAP = downloadUrl;
