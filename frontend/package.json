@@ -40,8 +40,8 @@
     "build:local": "env-cmd -f .envs/.local/.react react-scripts build",
     "build:production": "env-cmd -f .envs/.production/.react react-scripts build",
     "eject": "react-scripts eject",
-    "test": "CI=1 env-cmd -f .envs/.local/.react react-scripts test --env=jest-environment-jsdom-sixteen",
-    "test:watch": "env-cmd -f .envs/.local/.react react-scripts test --env=jest-environment-jsdom-sixteen",
+    "test": "CI=1 env-cmd -f .envs/.local/.react react-scripts test --runInBand --env=jest-environment-jsdom-sixteen",
+    "test:watch": "env-cmd -f .envs/.local/.react react-scripts test --runInBand --env=jest-environment-jsdom-sixteen",
     "test:coverage": "CI=1 env-cmd -f .envs/.local/.react react-scripts test --coverage --env=jest-environment-jsdom-sixteen",
     "lint": "eslint './src/**/*.{js,jsx,ts,tsx,json}' --fix --max-warnings=0 --no-error-on-unmatched-pattern && tsc --noemit",
     "precommit": "eslint './src/**/*.{js,jsx,ts,tsx,json}' --max-warnings=0 --no-error-on-unmatched-pattern"

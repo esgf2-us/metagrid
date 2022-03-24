@@ -3,7 +3,16 @@ import {
   RightCircleOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
-import { Col, Collapse, DatePicker, Form, Input, Row, Select } from 'antd';
+import {
+  Col,
+  Collapse,
+  DatePicker,
+  Form,
+  Input,
+  Row,
+  Select,
+  Tooltip,
+} from 'antd';
 import moment from 'moment';
 import React from 'react';
 import { leftSidebarTargets } from '../../common/reactJoyrideSteps';
@@ -206,6 +215,11 @@ const FacetsForm: React.FC<Props> = ({
   const facetsByGroup = activeSearchQuery.project.facetsByGroup as {
     [key: string]: string[];
   };
+
+  // Used to control text length of the drop-down items
+  // Tooltip is shown if the length is above this threshold
+  const maxItemLength = 22;
+
   return (
     <div data-testid="facets-form">
       <Form
@@ -215,7 +229,7 @@ const FacetsForm: React.FC<Props> = ({
         }}
       >
         <div style={styles.container}>
-          <Collapse accordion>
+          <Collapse>
             {facetsByGroup &&
               Object.keys(facetsByGroup).map((group) => (
                 <Collapse.Panel
@@ -298,6 +312,29 @@ const FacetsForm: React.FC<Props> = ({
                                       ({variable[1]})
                                     </span>
                                   </StatusToolTip>
+                                );
+                              }
+                              // If the option output name is very long, use a tooltip
+                              const vLength = variable[0].length - 2;
+                              const cLength =
+                                variable[1].toString().length * 1.5 + 2;
+                              if (vLength > maxItemLength - cLength) {
+                                const innerTitle = variable[0].substring(
+                                  0,
+                                  maxItemLength - cLength
+                                );
+                                optionOutput = (
+                                  <Tooltip
+                                    overlayInnerStyle={{
+                                      width: 'max-content',
+                                    }}
+                                    title={variable[0]}
+                                  >
+                                    {innerTitle}...
+                                    <span style={styles.facetCount}>
+                                      ({variable[1]})
+                                    </span>
+                                  </Tooltip>
                                 );
                               }
                               return (
