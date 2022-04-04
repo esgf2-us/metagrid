@@ -21,23 +21,62 @@ describe('test genDownloadUrls()', () => {
     urls = [
       'http://test.com|HTTPServer',
       'http://test.com|Globus',
-      'http://test.com/file.html|OPeNDAP',
+      'http://test.com/file.dods|OPENDAP',
     ];
-    result = [
-      { downloadType: 'HTTPServer', downloadUrl: 'https://test.com' },
-      { downloadType: 'Globus', downloadUrl: 'http://test.com' },
-      { downloadType: 'OPeNDAP', downloadUrl: 'http://test.com/file.dods' },
-    ];
+    result = {
+      HTTPServer: 'https://test.com',
+      OPENDAP: 'http://test.com/file.nc',
+    };
   });
 
   it('converts array of urls to array of objects containing download type and download url', () => {
-    const newUrls = genDownloadUrls(urls);
+    let newUrls = genDownloadUrls(urls);
+    expect(newUrls).toEqual(result);
+
+    // Test different OpendDap url variations are converted to .nc
+    urls = ['http://test.com/file.dods.nc|OPENDAP'];
+    result = {
+      HTTPServer: '',
+      OPENDAP: 'http://test.com/file.nc',
+    };
+    newUrls = genDownloadUrls(urls);
+    expect(newUrls).toEqual(result);
+
+    urls = ['http://test.com/file.dods.html|OPENDAP'];
+    result = {
+      HTTPServer: '',
+      OPENDAP: 'http://test.com/file.nc',
+    };
+    newUrls = genDownloadUrls(urls);
+    expect(newUrls).toEqual(result);
+
+    urls = ['http://test.com/file.dods|OPENDAP'];
+    result = {
+      HTTPServer: '',
+      OPENDAP: 'http://test.com/file.nc',
+    };
+    newUrls = genDownloadUrls(urls);
+    expect(newUrls).toEqual(result);
+
+    urls = ['http://test.com/file.nc.dods|OPENDAP'];
+    result = {
+      HTTPServer: '',
+      OPENDAP: 'http://test.com/file.nc',
+    };
+    newUrls = genDownloadUrls(urls);
+    expect(newUrls).toEqual(result);
+
+    urls = ['http://test.com/file.nc.html|OPENDAP'];
+    result = {
+      HTTPServer: '',
+      OPENDAP: 'http://test.com/file.nc',
+    };
+    newUrls = genDownloadUrls(urls);
     expect(newUrls).toEqual(result);
   });
   it('converts array of urls to array of objects but ignores HTTPServer URL conversion to HTTPS since it is already HTTPS', () => {
     const updatedUrls = urls;
     updatedUrls[0] = updatedUrls[0].replace('http', 'https');
-
     const newUrls = genDownloadUrls(updatedUrls);
     expect(newUrls).toEqual(result);
   });
@@ -72,40 +111,39 @@ describe('test FilesTable component', () => {
     expect(alertMsg).toBeTruthy();
   });
 
-  it('renders files table with data and opens up a new window when submitting form for downloading a file', async () => {
-    // Update the value of open
-    // https://stackoverflow.com/questions/58189851/mocking-a-conditional-window-open-function-call-with-jest
-    Object.defineProperty(window, 'location', {
-      value: {
-        href: jest.fn(),
-      },
-    });
-    const { getByRole, getByTestId } = render(<FilesTable {...defaultProps} />);
+  it('handles downloading data with httpserver', async () => {
+    const { getByTestId } = render(<FilesTable {...defaultProps} />);
 
-    // Check files table componet renders
-    const filesTableComponent = await waitFor(() => getByTestId('filesTable'));
-    expect(filesTableComponent).toBeTruthy();
+    // Check component renders
+    const component = await waitFor(() => getByTestId('filesTable'));
+    expect(component).toBeTruthy();
 
-    const firstRow = await waitFor(() =>
-      getByRole('row', {
-        name: 'right-circle foo 1 Bytes HTTPServer download',
-      })
+    // Wait for component to re-render
+    await waitFor(() => getByTestId('filesTable'));
+
+    // Check a record row exist
+    const row = await waitFor(
+      () =>
+        document.getElementsByClassName('ant-table-row').item(0) as HTMLElement
     );
-    expect(firstRow).toBeTruthy();
+    expect(row).toBeTruthy();
 
-    // Select first cell download button
-    const downloadBtn = within(firstRow).getByRole('img', {
+    // Get the download button
+    const downloadBtn = within(row).getByRole('button', {
       name: 'download',
     });
     expect(downloadBtn).toBeTruthy();
+    fireEvent.click(downloadBtn);
 
-    // Submit the download form
-    fireEvent.submit(downloadBtn);
-
-    await waitFor(() => getByTestId('filesTable'));
+    // Test the copy button
+    const copyBtn = within(row).getByRole('button', {
+      name: 'copy',
+    });
+    expect(copyBtn).toBeTruthy();
+    fireEvent.click(copyBtn);
   });
 
-  it('`handles pagination and page size changes', async () => {
+  it('handles pagination and page size changes', async () => {
     // Update api to return 20 search results, which enables pagination if 10/page selected
     const data = ESGFSearchAPIFixture();
 
@@ -168,7 +206,7 @@ describe('test FilesTable component', () => {
   });
 
   it('handles clicking the expandable icon', async () => {
-    const { getByRole, getByTestId } = render(<FilesTable {...defaultProps} />);
+    const { getByTestId } = render(<FilesTable {...defaultProps} />);
 
     // Check component renders
     const component = await waitFor(() => getByTestId('filesTable'));
@@ -178,10 +216,9 @@ describe('test FilesTable component', () => {
     await waitFor(() => getByTestId('filesTable'));
 
     // Check a record row exist
-    const row = await waitFor(() =>
-      getByRole('row', {
-        name: 'right-circle foo 1 Bytes HTTPServer download',
-      })
+    const row = await waitFor(
+      () =>
+        document.getElementsByClassName('ant-table-row').item(0) as HTMLElement
     );
     expect(row).toBeTruthy();
 
@@ -204,7 +241,5 @@ describe('test FilesTable component', () => {
     });
     expect(expandableDownIcon).toBeTruthy();
     fireEvent.click(expandableDownIcon);
-
-    await waitFor(() => row);
   });
 });

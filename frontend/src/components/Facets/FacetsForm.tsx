@@ -3,9 +3,19 @@ import {
   RightCircleOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
-import { Col, Collapse, DatePicker, Form, Input, Row, Select } from 'antd';
+import {
+  Col,
+  Collapse,
+  DatePicker,
+  Form,
+  Input,
+  Row,
+  Select,
+  Tooltip,
+} from 'antd';
 import moment from 'moment';
 import React from 'react';
+import { leftSidebarTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
@@ -205,6 +215,11 @@ const FacetsForm: React.FC<Props> = ({
   const facetsByGroup = activeSearchQuery.project.facetsByGroup as {
     [key: string]: string[];
   };
+
+  // Used to control text length of the drop-down items
+  // Tooltip is shown if the length is above this threshold
+  const maxItemLength = 22;
+
   return (
     <div data-testid="facets-form">
       <Form
@@ -214,13 +229,23 @@ const FacetsForm: React.FC<Props> = ({
         }}
       >
         <div style={styles.container}>
-          <Collapse accordion>
+          <Collapse>
             {facetsByGroup &&
               Object.keys(facetsByGroup).map((group) => (
                 <Collapse.Panel
-                  header={humanizeFacetNames(group)}
+                  header={
+                    <div
+                      className={leftSidebarTargets.getClass(
+                        'facetFormGeneral'
+                      )}
+                    >
+                      {humanizeFacetNames(group)}
+                    </div>
+                  }
                   key={group}
-                  className="site-collapse-custom-collapse"
+                  className={`site-collapse-custom-collapse ${leftSidebarTargets.getClass(
+                    'facetFormFields'
+                  )}`}
                 >
                   {Object.keys(availableFacets).map((facet) => {
                     if (facetsByGroup[group].includes(facet)) {
@@ -289,6 +314,29 @@ const FacetsForm: React.FC<Props> = ({
                                   </StatusToolTip>
                                 );
                               }
+                              // If the option output name is very long, use a tooltip
+                              const vLength = variable[0].length - 2;
+                              const cLength =
+                                variable[1].toString().length * 1.5 + 2;
+                              if (vLength > maxItemLength - cLength) {
+                                const innerTitle = variable[0].substring(
+                                  0,
+                                  maxItemLength - cLength
+                                );
+                                optionOutput = (
+                                  <Tooltip
+                                    overlayInnerStyle={{
+                                      width: 'max-content',
+                                    }}
+                                    title={variable[0]}
+                                  >
+                                    {innerTitle}...
+                                    <span style={styles.facetCount}>
+                                      ({variable[1]})
+                                    </span>
+                                  </Tooltip>
+                                );
+                              }
                               return (
                                 <Select.Option
                                   key={variable[0]}
@@ -327,9 +375,17 @@ const FacetsForm: React.FC<Props> = ({
       >
         <Collapse>
           <Collapse.Panel
-            header={humanizeFacetNames('additional_properties')}
+            header={
+              <div
+                className={leftSidebarTargets.getClass('facetFormAdditional')}
+              >
+                {humanizeFacetNames('additional_properties')}
+              </div>
+            }
             key="additional_properties"
-            className="site-collapse-custom-collapse"
+            className={`site-collapse-custom-collapse ${leftSidebarTargets.getClass(
+              'facetFormAdditionalFields'
+            )}`}
           >
             <Form.Item
               label="Version Type"
@@ -392,9 +448,15 @@ const FacetsForm: React.FC<Props> = ({
       >
         <Collapse>
           <Collapse.Panel
-            header={humanizeFacetNames('filename')}
+            header={
+              <div className={leftSidebarTargets.getClass('facetFormFilename')}>
+                {humanizeFacetNames('filename')}
+              </div>
+            }
             key="filename"
-            className="site-collapse-custom-collapse"
+            className={`site-collapse-custom-collapse ${leftSidebarTargets.getClass(
+              'facetFormFilenameFields'
+            )}`}
           >
             <Form.Item
               name="filenameVar"

@@ -87,6 +87,8 @@ export type Props = {
   searchQuery: ActiveSearchQuery;
 };
 
+const metagridVersion = '1.0.2-beta';
+
 const App: React.FC<Props> = ({ searchQuery }) => {
   // Third-party tool integration
   useGoogleAnalytics();
@@ -135,6 +137,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
   const [userCart, setUserCart] = React.useState<UserCart | []>(
     JSON.parse(localStorage.getItem('userCart') || '[]')
   );
+
   const [userSearchQueries, setUserSearchQueries] = React.useState<
     UserSearchQueries | []
   >(JSON.parse(localStorage.getItem('userSearchQueries') || '[]'));
@@ -464,6 +467,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
               numCartItems={userCart.length}
               numSavedSearches={userSearchQueries.length}
               onTextSearch={handleTextSearch}
+              supportModalVisible={setSupportModalVisible}
             ></NavBar>
           )}
         />
@@ -511,96 +515,120 @@ const App: React.FC<Props> = ({ searchQuery }) => {
               )}
             />
           </Switch>
-          <Layout.Content style={styles.bodyContent}>
-            <Switch>
-              <Route
-                path="/search"
-                render={() => (
-                  <>
-                    <Breadcrumb>
-                      <Breadcrumb.Item>
-                        <HomeOutlined /> Home
-                      </Breadcrumb.Item>
-                      <Breadcrumb.Item>Search</Breadcrumb.Item>
-                    </Breadcrumb>
-                    <Search
-                      activeSearchQuery={activeSearchQuery}
-                      userCart={userCart}
-                      nodeStatus={nodeStatus}
-                      onUpdateAvailableFacets={(facets) =>
-                        setAvailableFacets(facets)
+          <Layout>
+            <Layout.Content style={styles.bodyContent}>
+              <Switch>
+                <Route
+                  path="/search"
+                  render={() => (
+                    <>
+                      <Breadcrumb>
+                        <Breadcrumb.Item>
+                          <HomeOutlined /> Home
+                        </Breadcrumb.Item>
+                        <Breadcrumb.Item>Search</Breadcrumb.Item>
+                      </Breadcrumb>
+                      <Search
+                        activeSearchQuery={activeSearchQuery}
+                        userCart={userCart}
+                        nodeStatus={nodeStatus}
+                        onUpdateAvailableFacets={(facets) =>
+                          setAvailableFacets(facets)
+                        }
+                        onUpdateCart={handleUpdateCart}
+                        onRemoveFilter={handleRemoveFilter}
+                        onClearFilters={handleClearFilters}
+                        onSaveSearchQuery={handleSaveSearchQuery}
+                        onShareSearchQuery={handleShareSearchQuery}
+                      ></Search>
+                    </>
+                  )}
+                />
+                <Route
+                  path="/nodes"
+                  render={() => (
+                    <>
+                      <Breadcrumb>
+                        <Breadcrumb.Item>
+                          <HomeOutlined /> Home
+                        </Breadcrumb.Item>
+                        <Breadcrumb.Item>Data Node Status</Breadcrumb.Item>
+                      </Breadcrumb>
+                      <NodeStatus
+                        nodeStatus={nodeStatus}
+                        apiError={nodeStatusApiError as ResponseError}
+                        isLoading={nodeStatusIsLoading}
+                      />
+                    </>
+                  )}
+                />
+                <Route
+                  path="/cart"
+                  render={() => (
+                    <>
+                      <Breadcrumb>
+                        <Breadcrumb.Item>
+                          <HomeOutlined /> Home
+                        </Breadcrumb.Item>
+                        <Breadcrumb.Item>Cart</Breadcrumb.Item>
+                      </Breadcrumb>
+                      <Cart
+                        userCart={userCart}
+                        userSearchQueries={userSearchQueries}
+                        onUpdateCart={handleUpdateCart}
+                        onClearCart={handleClearCart}
+                        onRunSearchQuery={handleRunSearchQuery}
+                        onRemoveSearchQuery={handleRemoveSearchQuery}
+                      />
+                    </>
+                  )}
+                />
+                <Route
+                  render={() => (
+                    <Result
+                      status="404"
+                      title="404"
+                      subTitle="Sorry, the page you visited does not exist."
+                      extra={
+                        <Button type="primary">
+                          <Link to="/">Back to Home</Link>
+                        </Button>
                       }
-                      onUpdateCart={handleUpdateCart}
-                      onRemoveFilter={handleRemoveFilter}
-                      onClearFilters={handleClearFilters}
-                      onSaveSearchQuery={handleSaveSearchQuery}
-                      onShareSearchQuery={handleShareSearchQuery}
-                    ></Search>
-                  </>
-                )}
-              />
-              <Route
-                path="/nodes"
-                render={() => (
-                  <>
-                    <Breadcrumb>
-                      <Breadcrumb.Item>
-                        <HomeOutlined /> Home
-                      </Breadcrumb.Item>
-                      <Breadcrumb.Item>Data Node Status</Breadcrumb.Item>
-                    </Breadcrumb>
-                    <NodeStatus
-                      nodeStatus={nodeStatus}
-                      apiError={nodeStatusApiError as ResponseError}
-                      isLoading={nodeStatusIsLoading}
                     />
-                  </>
-                )}
-              />
-              <Route
-                path="/cart"
-                render={() => (
-                  <>
-                    <Breadcrumb>
-                      <Breadcrumb.Item>
-                        <HomeOutlined /> Home
-                      </Breadcrumb.Item>
-                      <Breadcrumb.Item>Cart</Breadcrumb.Item>
-                    </Breadcrumb>
-                    <Cart
-                      userCart={userCart}
-                      userSearchQueries={userSearchQueries}
-                      onUpdateCart={handleUpdateCart}
-                      onClearCart={handleClearCart}
-                      onRunSearchQuery={handleRunSearchQuery}
-                      onRemoveSearchQuery={handleRemoveSearchQuery}
-                    />
-                  </>
-                )}
-              />
-              <Route
-                render={() => (
-                  <Result
-                    status="404"
-                    title="404"
-                    subTitle="Sorry, the page you visited does not exist."
-                    extra={
-                      <Button type="primary">
-                        <Link to="/">Back to Home</Link>
-                      </Button>
-                    }
-                  />
-                )}
-              />
-            </Switch>
-          </Layout.Content>
+                  )}
+                />
+              </Switch>
+            </Layout.Content>
+            <Layout.Footer>
+              <p style={{ fontSize: '10px' }}>
+                Metagrid Version: {metagridVersion}
+                <br />
+                Privacy &amp; Legal Notice:{' '}
+                <a href="https://www.llnl.gov/disclaimer.html">
+                  https://www.llnl.gov/disclaimer.html
+                </a>
+                <br />
+                Learn about the Department of Energy&apos;s Vulnerability
+                Disclosure Program (VDP):{' '}
+                <a href="https://doe.responsibledisclosure.com/hc/en-us">
+                  https://doe.responsibledisclosure.com/hc/en-us
+                </a>
+              </p>
+            </Layout.Footer>
+          </Layout>
         </Layout>
-        <Affix style={{ position: 'fixed', bottom: 70, right: 45 }}>
+        <Affix
+          style={{
+            position: 'fixed',
+            bottom: 75,
+            right: 50,
+          }}
+        >
           <Button
             type="primary"
             shape="circle"
-            size="large"
-            icon={<QuestionOutlined style={{ fontSize: '24px' }} />}
+            style={{ width: '48px', height: '48px' }}
+            icon={<QuestionOutlined style={{ fontSize: '40px' }} />}
             onClick={() => setSupportModalVisible(true)}
           ></Button>
         </Affix>

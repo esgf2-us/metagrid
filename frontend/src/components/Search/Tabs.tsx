@@ -6,6 +6,7 @@ import Citation from './Citation';
 import FilesTable from './FilesTable';
 import { RawSearchResult, TextInputs } from './types';
 import { CSSinJS } from '../../common/types';
+import { innerDataRowTargets } from '../../common/reactJoyrideSteps';
 
 const styles: CSSinJS = {
   qualityFlagsRow: { display: 'flex' },
@@ -99,18 +100,33 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
     showESDOC || showQualityFlags || showAdditionalLinks;
 
   return (
-    <TabsD>
-      <TabsD.TabPane tab="Files" key="1">
+    // Disable all tabs excep metadata if the record is retracted
+    <TabsD activeKey={record.retracted === true ? '2' : undefined}>
+      <TabsD.TabPane
+        disabled={record.retracted === true}
+        tab={
+          <div className={innerDataRowTargets.getClass('filesTab')}>Files</div>
+        }
+        key="1"
+      >
         <FilesTable
           id={record.id}
           numResults={record.number_of_files}
           filenameVars={filenameVars}
         />
       </TabsD.TabPane>
-      <TabsD.TabPane tab="Metadata" key="2">
+      <TabsD.TabPane
+        tab={
+          <div className={innerDataRowTargets.getClass('metadataTab')}>
+            Metadata
+          </div>
+        }
+        key="2"
+      >
         <h4>Displaying {Object.keys(record).length} keys</h4>
         <AutoComplete
           style={{ width: '100%' }}
+          className={innerDataRowTargets.getClass('metadataLookupField')}
           options={metaData}
           placeholder="Lookup a key..."
           filterOption={(inputValue, option) =>
@@ -122,12 +138,21 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
         <Divider />
         {Object.keys(record).map((key) => (
           <p key={key} style={{ margin: 0 }}>
-            <span style={{ fontWeight: 'bold' }}>{key}</span>: {record[key]}
+            <span style={{ fontWeight: 'bold' }}>{key}</span>:{' '}
+            {String(record[key])}
           </p>
         ))}
       </TabsD.TabPane>
       {showCitation && (
-        <TabsD.TabPane tab="Citation" key="3">
+        <TabsD.TabPane
+          disabled={record.retracted === true}
+          tab={
+            <div className={innerDataRowTargets.getClass('citationTab')}>
+              Citation
+            </div>
+          }
+          key="3"
+        >
           <Citation
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             url={record.citation_url![0]}
@@ -135,7 +160,15 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
         </TabsD.TabPane>
       )}
       {showAdditionalTab && (
-        <TabsD.TabPane tab="Additional" key="4">
+        <TabsD.TabPane
+          disabled={record.retracted === true}
+          tab={
+            <div className={innerDataRowTargets.getClass('additionalTab')}>
+              Additional
+            </div>
+          }
+          key="4"
+        >
           {showAdditionalLinks && additionalLinks}
           {showESDOC &&
             ((record.further_info_url as unknown) as string)[0] !== '' && (

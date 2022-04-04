@@ -6,10 +6,10 @@ import { getSearchFromUrl } from './common/utils';
 import App from './components/App/App';
 import { ActiveSearchQuery } from './components/Search/types';
 import { AuthProvider } from './contexts/AuthContext';
+import { ReactJoyrideProvider } from './contexts/ReactJoyrideContext';
 import './index.css';
 import { keycloak, keycloakProviderInitConfig } from './lib/keycloak';
 
-const search: ActiveSearchQuery = getSearchFromUrl();
 
 ReactDOM.render(
   <ReactKeycloakProvider
@@ -18,7 +18,9 @@ ReactDOM.render(
   >
     <AuthProvider>
       <Router basename={process.env.PUBLIC_URL}>
-        <App searchQuery={search} />
+        <ReactJoyrideProvider>
+          <App searchQuery={getSearchFromUrl()} />
+        </ReactJoyrideProvider>
       </Router>
     </AuthProvider>
   </ReactKeycloakProvider>,

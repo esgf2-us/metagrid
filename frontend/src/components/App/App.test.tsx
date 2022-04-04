@@ -323,7 +323,7 @@ it('handles applying and removing project facets', async () => {
   expect(facetsForm).toBeTruthy();
 
   // Open top collapse panel
-  const group1Panel = within(facetsComponent).getByRole('tab', {
+  const group1Panel = within(facetsComponent).getByRole('button', {
     name: 'right Group1',
   });
   fireEvent.click(group1Panel);
@@ -1157,7 +1157,7 @@ describe('User support', () => {
     expect(githubIcon).toBeTruthy();
 
     // click close button
-    const closeBtn = getByRole('button', { name: 'Close' });
+    const closeBtn = getByRole('img', { name: 'close' });
     fireEvent.click(closeBtn);
   });
 });

@@ -2,6 +2,7 @@ import { QuestionCircleOutlined, SelectOutlined } from '@ant-design/icons';
 import { Form, Select } from 'antd';
 import React from 'react';
 import { ResponseError } from '../../api';
+import { leftSidebarTargets } from '../../common/reactJoyrideSteps';
 import { objectIsEmpty } from '../../common/utils';
 import Alert from '../Feedback/Alert';
 import Popconfirm from '../Feedback/Popconfirm';
@@ -79,6 +80,7 @@ const ProjectsForm: React.FC<Props> = ({
           >
             <Select
               data-testid="project-form-select"
+              className={leftSidebarTargets.getClass('selectProjectBtn')}
               style={styles.form}
               showArrow
             >
@@ -102,6 +104,9 @@ const ProjectsForm: React.FC<Props> = ({
               >
                 <span>
                   <Button
+                    className={leftSidebarTargets.getClass(
+                      'projectSelectLeftSideBtn'
+                    )}
                     type="primary"
                     htmlType="submit"
                     icon={<SelectOutlined />}
@@ -110,6 +115,9 @@ const ProjectsForm: React.FC<Props> = ({
               </Popconfirm>
             ) : (
               <Button
+                className={leftSidebarTargets.getClass(
+                  'projectSelectLeftSideBtn'
+                )}
                 type="primary"
                 htmlType="submit"
                 icon={<SelectOutlined />}

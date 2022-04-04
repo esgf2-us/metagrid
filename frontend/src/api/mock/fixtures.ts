@@ -61,12 +61,12 @@ export const rawSearchResultFixture = (
   const defaults: RawSearchResult = {
     id: 'foo',
     title: 'foo',
-    url: ['foo.bar|HTTPServer'],
+    url: ['foo.bar|HTTPServer', 'http://test.com/file.nc|OPENDAP'],
     number_of_files: 3,
     data_node: 'aims3.llnl.gov',
     version: 1,
     size: 1,
-    access: ['HTTPServer', 'OPeNDAP', 'Globus'],
+    access: ['HTTPServer', 'OPENDAP', 'Globus'],
     citation_url: ['https://foo.bar'],
     xlink: ['url.com|PID|pid'],
   };
@@ -80,7 +80,7 @@ export const rawSearchResultsFixture = (): Array<RawSearchResult> => [
     title: 'bar',
     number_of_files: 2,
     data_node: 'esgf1.dkrz.de',
-    access: ['wget', 'HTTPServer', 'OPeNDAP'],
+    access: ['wget', 'HTTPServer', 'OPENDAP'],
   }),
 ];
 
@@ -104,6 +104,7 @@ export const parsedFacetsFixture = (
     facet2: [
       ['baz', 2],
       ['fubar', 3],
+      ['very_long_facet_text_name_which_wont_fit', 2],
     ],
     optional: [['none', 8]],
   };
@@ -120,9 +121,18 @@ export const rawCitationFixture = (
     creators: [{ creatorName: 'Bob' }, { creatorName: 'Tom' }],
     identifierDOI: '',
     creatorsList: '',
+    license:
+      'Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA 4.0)',
     titles: 'title',
     publisher: 'publisher',
     publicationYear: 2020,
+    rightsList: [
+      {
+        rightsURI: 'http://creativecommons.org/licenses/by-sa/4.0/',
+        rights:
+          'Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA 4.0)',
+      },
+    ],
   };
 
   return { ...defaults, ...props };

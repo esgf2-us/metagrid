@@ -1,5 +1,5 @@
 # Pull official base image
-FROM node:14.16.1-alpine
+FROM node:fermium-alpine3.15
 
 # Set working directory
 WORKDIR /app
