@@ -101,13 +101,13 @@ describe('Test getUrlFromSearch', () => {
         project: { name: 'CMIP6' },
         versionType: 'latest',
         resultType: 'all',
-        minVersionDate: '2021',
-        maxVersionDate: '2021',
+        minVersionDate: '20210309',
+        maxVersionDate: '20210413',
         filenameVars: [],
         activeFacets: {},
         textInputs: [],
       } as ActiveSearchQuery).includes(
-        '?project=CMIP6&data=%7B%22minVersionDate%22%3A%222021%22%2C%22maxVersionDate%22%3A%222021%22%7D'
+        '?project=CMIP6&minVersionDate=20210309&maxVersionDate=20210413'
       )
     ).toBeTruthy();
   });
@@ -145,6 +145,13 @@ describe('Test getSearchFromUrl', () => {
     expect(
       getSearchFromUrl(
         '?project=CMIP6&data=%7B%22resultType%22%3A%22originals+only%22%7D'
+      )
+    ).toBeTruthy();
+  });
+  it('returns search object using alternate url', () => {
+    expect(
+      getSearchFromUrl(
+        'input4mips/?mip_era=CMIP6&activity_id=input4MIPs&institution_id=PCMDI&target_mip=CMIP&source_id=PCMDI-AMIP-1-1-2'
       )
     ).toBeTruthy();
   });
