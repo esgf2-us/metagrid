@@ -10,7 +10,6 @@ import { ReactJoyrideProvider } from './contexts/ReactJoyrideContext';
 import './index.css';
 import { keycloak, keycloakProviderInitConfig } from './lib/keycloak';
 
-
 ReactDOM.render(
   <ReactKeycloakProvider
     authClient={keycloak}

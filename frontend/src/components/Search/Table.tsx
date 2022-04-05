@@ -9,7 +9,12 @@ import { Form, message, Select, Table as TableD } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
-import { fetchWgetScript, fetchGlobusScript, openDownloadURL, ResponseError } from '../../api';
+import {
+  fetchWgetScript,
+  fetchGlobusScript,
+  openDownloadURL,
+  ResponseError,
+} from '../../api';
 import { topDataRowTargets } from '../../common/reactJoyrideSteps';
 import { formatBytes } from '../../common/utils';
 import { UserCart } from '../Cart/types';
