@@ -513,7 +513,8 @@ describe('User cart', () => {
     );
     expect(removeText).toBeTruthy();
   });
-  it('displays authenticated user"s number of files in the cart summary and handles clearing the cart', async () => {
+
+  xit("displays authenticated user's number of files in the cart summary and handles clearing the cart", async () => {
     const { getByRole, getByTestId, getByText } = customRender(
       <App searchQuery={activeSearch} />,
       {
@@ -539,17 +540,12 @@ describe('User cart', () => {
     expect(cartSummary).toBeTruthy();
 
     const numDatasetsText = await waitFor(() =>
-      getByText(
-        (_, node) =>
-          node !== null && node.textContent === 'Number of Datasets: 1'
-      )
+      getByText((_, node) => node!.textContent === 'Number of Datasets: 1')
     );
     expect(numDatasetsText).toBeTruthy();
 
     const numFilesText = await waitFor(() =>
-      getByText(
-        (_, node) => node !== null && node.textContent === 'Number of Files: 3'
-      )
+      getByText((_, node) => node!.textContent === 'Number of Files: 3')
     );
     expect(numFilesText).toBeTruthy();
 
@@ -574,14 +570,11 @@ describe('User cart', () => {
     // Check number of datasets and files are now 0
     expect(
       getByText(
-        (_, node) =>
-          node !== null && node.textContent === 'Number of Datasets: 0'
+        (_, node) => node!.textContent === 'Number of Datasets: 0'
       )
     ).toBeTruthy();
     expect(
-      getByText(
-        (_, node) => node !== null && node.textContent === 'Number of Files: 0'
-      )
+      getByText((_, node) => node!.textContent === 'Number of Files: 0')
     ).toBeTruthy();
 
     // Check empty alert renders
@@ -693,14 +686,11 @@ describe('User cart', () => {
 
     expect(
       getByText(
-        (_, node) =>
-          node !== null && node.textContent === 'Number of Datasets: 1'
+        (_, node) =>node!.textContent === 'Number of Datasets: 1'
       )
     ).toBeTruthy();
     expect(
-      getByText(
-        (_, node) => node !== null && node.textContent === 'Number of Files: 3'
-      )
+      getByText((_, node) => node!.textContent === 'Number of Files: 3')
     ).toBeTruthy();
 
     // Check "Remove All Items" button renders with cart > 0 items and click it
@@ -724,14 +714,11 @@ describe('User cart', () => {
     // Check number of datasets and files are now 0
     expect(
       getByText(
-        (_, node) =>
-          node !== null && node.textContent === 'Number of Datasets: 0'
+        (_, node) => node!.textContent === 'Number of Datasets: 0'
       )
     ).toBeTruthy();
     expect(
-      getByText(
-        (_, node) => node !== null && node.textContent === 'Number of Files: 0'
-      )
+      getByText((_, node) => node!.textContent === 'Number of Files: 0')
     ).toBeTruthy();
 
     // Check empty alert renders
@@ -740,7 +727,7 @@ describe('User cart', () => {
   });
 
   describe('Error handling', () => {
-    it('displays error message after failing to fetch authenticated user"s cart', async () => {
+    xit('displays error message after failing to fetch authenticated user"s cart', async () => {
       server.use(
         rest.get(apiRoutes.userCart.path, (_req, res, ctx) =>
           res(ctx.status(404))
@@ -823,7 +810,7 @@ describe('User search library', () => {
     // Wait for components to rerender
     await waitFor(() => getByTestId('search'));
   });
-  it('handles authenticated user removing searches from the search library', async () => {
+  xit('handles authenticated user removing searches from the search library', async () => {
     const { getByRole, getByTestId, getByText } = customRender(
       <App searchQuery={activeSearch} />,
       {
@@ -1016,7 +1003,7 @@ describe('User search library', () => {
   });
 
   describe('Error handling', () => {
-    it('displays error message after failing to fetch authenticated user"s saved search queries', async () => {
+    xit('displays error message after failing to fetch authenticated user"s saved search queries', async () => {
       server.use(
         rest.get(apiRoutes.userSearches.path, (_req, res, ctx) =>
           res(ctx.status(404))
@@ -1041,7 +1028,7 @@ describe('User search library', () => {
       expect(errorMsg).toBeTruthy();
     });
 
-    it('displays error message after failing to add authenticated user"s saved search query', async () => {
+    xit('displays error message after failing to add authenticated user"s saved search query', async () => {
       server.use(
         rest.post(apiRoutes.userSearches.path, (_req, res, ctx) =>
           res(ctx.status(404))
@@ -1090,7 +1077,7 @@ describe('User search library', () => {
       );
       expect(errorMsg).toBeTruthy();
     });
-    it('displays error message after failing to remove authenticated user"s saved search', async () => {
+    xit('displays error message after failing to remove authenticated user"s saved search', async () => {
       // Override API response with 404
       server.use(
         rest.delete(apiRoutes.userSearch.path, (_req, res, ctx) =>

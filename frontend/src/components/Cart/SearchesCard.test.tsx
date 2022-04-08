@@ -68,6 +68,6 @@ it('displays "N/A" for Filename Searches when none are applied', () => {
   );
 
   expect(
-    getByText((_, node) => node.textContent === 'Filename Searches: N/A')
+    getByText((_, node) => node!.textContent === 'Filename Searches: N/A')
   ).toBeTruthy();
 });

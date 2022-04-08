@@ -150,9 +150,12 @@ export const getAltSearchFromUrl = (url?: string): ActiveSearchQuery => {
 
   const params = new URLSearchParams(url || window.location.search);
   // eslint-disable-next-line
-  const paramEntries = Object.fromEntries(params.entries());
+  const paramEntries: { [k: string]: string } = Object.fromEntries(
+    params.entries()
+  );
+  // eslint-disable-next-line
   const activeFacets: { [k: string]: string[] } = {};
-  Object.keys(paramEntries).forEach((key) => {
+  Object.keys(paramEntries).forEach((key: string) => {
     activeFacets[key] = [paramEntries[key]];
   });
 

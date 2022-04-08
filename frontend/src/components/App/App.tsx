@@ -135,19 +135,23 @@ const App: React.FC<Props> = ({ searchQuery }) => {
   >({});
 
   const [userCart, setUserCart] = React.useState<UserCart | []>(
-    JSON.parse(localStorage.getItem('userCart') || '[]')
+    JSON.parse(localStorage.getItem('userCart') || '[]') as RawSearchResults
   );
 
   const [userSearchQueries, setUserSearchQueries] = React.useState<
     UserSearchQueries | []
-  >(JSON.parse(localStorage.getItem('userSearchQueries') || '[]'));
+  >(
+    JSON.parse(
+      localStorage.getItem('userSearchQueries') || '[]'
+    ) as UserSearchQueries
+  );
 
   React.useEffect(() => {
     /* istanbul ignore else */
     if (isAuthenticated) {
       void fetchUserCart(pk, accessToken)
         .then((rawUserCart) => {
-          setUserCart(rawUserCart.items);
+          setUserCart(rawUserCart.items as RawSearchResults);
         })
         .catch((error: ResponseError) => {
           void message.error({
