@@ -25,6 +25,7 @@ import { NodeStatusArray } from '../NodeStatus/types';
 import './Search.css';
 import Tabs from './Tabs';
 import { RawSearchResult, RawSearchResults, TextInputs } from './types';
+import { AuthContext } from '../../contexts/AuthContext';
 
 export type Props = {
   loading: boolean;
@@ -54,10 +55,17 @@ const Table: React.FC<Props> = ({
   onPageSizeChange,
 }) => {
   // Add options to this constant as needed
-  type DatasetDownloadTypes = 'wget' | 'Globus';
+  type DatasetDownloadTypes = 'wget' | 'wget_simple' | 'Globus';
   // If a record supports downloads from the allowed downloads, it will render
   // in the drop downs
-  const allowedDownloadTypes: DatasetDownloadTypes[] = ['wget', 'Globus'];
+  const allowedDownloadTypes: DatasetDownloadTypes[] = [
+    'wget',
+    'wget_simple',
+    'Globus',
+  ];
+  // User's authentication state
+  const authState = React.useContext(AuthContext);
+  const { access_token: accessToken, pk } = authState;
 
   const tableConfig = {
     size: 'small' as SizeType,
@@ -257,7 +265,30 @@ const Table: React.FC<Props> = ({
             void message.success(
               'The wget script is generating, please wait momentarily.'
             );
-            fetchWgetScript(record.id, filenameVars)
+            fetchWgetScript(
+              record.id,
+              filenameVars,
+              false,
+              accessToken as string
+            )
+              .then((url) => {
+                openDownloadURL(url);
+              })
+              .catch((error: ResponseError) => {
+                // eslint-disable-next-line no-void
+                void message.error(error.message);
+              });
+          } else if (downloadType === 'wget_simple') {
+            // eslint-disable-next-line no-void
+            void message.success(
+              'The simplified wget script is generating, please wait momentarily.'
+            );
+            fetchWgetScript(
+              record.id,
+              filenameVars,
+              true,
+              accessToken as string
+            )
               .then((url) => {
                 openDownloadURL(url);
               })
@@ -302,7 +333,8 @@ const Table: React.FC<Props> = ({
                   {allowedDownloadTypes.map(
                     (option) =>
                       (supportedDownloadTypes.includes(option) ||
-                        option === 'wget') && (
+                        option === 'wget' ||
+                        option === 'wget_simple') && (
                         <Select.Option
                           key={`${formKey}-${option}`}
                           value={option}

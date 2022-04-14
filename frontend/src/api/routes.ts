@@ -4,6 +4,7 @@ import {
   nodeStatusURL,
   proxyURL,
   wgetApiURL,
+  wgetSimpleURL,
   globusApiURL,
 } from '../env';
 
@@ -46,6 +47,7 @@ type ApiRoutes = {
   esgfSearch: ApiRoute;
   citation: ApiRoute;
   wget: ApiRoute;
+  wget_simple: ApiRoute;
   globus: ApiRoute;
   nodeStatus: ApiRoute;
 };
@@ -107,6 +109,12 @@ const apiRoutes: ApiRoutes = {
     path: `${proxyURL}/${wgetApiURL}`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('ESGF wget API', HTTPCode),
   },
+  wget_simple: {
+    path: `${proxyURL}/${wgetSimpleURL}`,
+    handleErrorMsg: (HTTPCode) =>
+      mapHTTPErrorCodes('ESGF simple_wget API', HTTPCode),
+  },
+
   // ESGF globus script API
   globus: {
     path: `${proxyURL}/${globusApiURL}`,

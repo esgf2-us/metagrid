@@ -527,13 +527,26 @@ export const fetchDatasetFiles = async (
  */
 export const fetchWgetScript = async (
   ids: string[] | string,
-  filenameVars?: string[]
+  filenameVars?: string[],
+  simple_bool?: boolean,
+  access_token?: string
 ): Promise<string> => {
-  let url = queryString.stringifyUrl({
-    url: apiRoutes.wget.path,
-    query: { dataset_id: ids },
-  });
-
+  let url = '';
+  if (access_token) {
+    url = queryString.stringifyUrl({
+      url: apiRoutes.wget.path,
+      query: {
+        dataset_id: ids,
+        simple: simple_bool,
+        bearer_token: access_token,
+      },
+    });
+  } else {
+    url = queryString.stringifyUrl({
+      url: apiRoutes.wget.path,
+      query: { dataset_id: ids, simple: simple_bool },
+    });
+  }
   if (filenameVars && filenameVars.length > 0) {
     const filenameVarsParam = queryString.stringify(
       { query: filenameVars },
@@ -543,7 +556,6 @@ export const fetchWgetScript = async (
     );
     url += `&${filenameVarsParam}`;
   }
-
   return axios
     .get(url)
     .then(() => url)
