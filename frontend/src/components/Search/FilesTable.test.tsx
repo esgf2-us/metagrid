@@ -111,7 +111,7 @@ describe('test FilesTable component', () => {
     expect(alertMsg).toBeTruthy();
   });
 
-  xit('handles downloading data with httpserver', async () => {
+  it('handles downloading data with httpserver', async () => {
     const { getByTestId } = render(<FilesTable {...defaultProps} />);
 
     // Check component renders
@@ -205,7 +205,7 @@ describe('test FilesTable component', () => {
     await waitFor(() => getByTestId('filesTable'));
   });
 
-  xit('handles clicking the expandable icon', async () => {
+  it('handles clicking the expandable icon', async () => {
     const { getByTestId } = render(<FilesTable {...defaultProps} />);
 
     // Check component renders

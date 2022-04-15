@@ -47,11 +47,11 @@ afterEach(() => {
 });
 
 describe('test fetching user authentication', () => {
-  xit('returns user authentication tokens', async () => {
+  it('returns user authentication tokens', async () => {
     const userAuth = await fetchUserAuth(['keycloak_token']);
     expect(userAuth).toEqual(userAuthFixture());
   });
-  xit('catches and throws error based on HTTP status code', async () => {
+  it('catches and throws error based on HTTP status code', async () => {
     server.use(
       rest.post(apiRoutes.keycloakAuth.path, (_req, res, ctx) =>
         res(ctx.status(404))
@@ -393,11 +393,11 @@ describe('test fetching user cart', () => {
 });
 
 describe('test updating user cart', () => {
-  xit('updates user"s cart and returns user"s cart', async () => {
+  it('updates user"s cart and returns user"s cart', async () => {
     const files = await updateUserCart('pk', 'access_token', []);
     expect(files).toEqual(rawUserCartFixture());
   });
-  xit('catches and throws an error based on HTTP status code', async () => {
+  it('catches and throws an error based on HTTP status code', async () => {
     server.use(
       rest.patch(apiRoutes.userCart.path, (_req, res, ctx) =>
         res(ctx.status(404))
@@ -449,13 +449,13 @@ describe('test fetching user searches', () => {
 });
 
 describe('test adding user search', () => {
-  xit('adds user search and returns response', async () => {
+  it('adds user search and returns response', async () => {
     const payload = userSearchQueryFixture();
     const res = await addUserSearchQuery('pk', 'access_token', payload);
 
     expect(res).toEqual(payload);
   });
-  xit('catches and throws an error based on HTTP status code', async () => {
+  it('catches and throws an error based on HTTP status code', async () => {
     server.use(
       rest.post(apiRoutes.userSearches.path, (_req, res, ctx) =>
         res(ctx.status(404))
@@ -483,12 +483,12 @@ describe('test adding user search', () => {
 });
 
 describe('test deleting user search', () => {
-  xit('deletes user search and returns response', async () => {
+  it('deletes user search and returns response', async () => {
     const res = await deleteUserSearchQuery('pk', 'access_token');
 
     expect(res).toEqual('');
   });
-  xit('catches and throws an error based on HTTP status code', async () => {
+  it('catches and throws an error based on HTTP status code', async () => {
     server.use(
       rest.delete(apiRoutes.userSearch.path, (_req, res, ctx) =>
         res(ctx.status(404))

@@ -54,5 +54,6 @@ module.exports = {
     'react/no-unstable-nested-components': 'off',
     'react/jsx-no-useless-fragment': 'off',
     'react/jsx-no-constructed-context-values': 'off',
+    'import/no-import-module-exports': 'off',
   },
 };

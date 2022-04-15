@@ -27,16 +27,11 @@ it('shows the correct number of datasets and files', () => {
     </Router>
   );
   // Shows number of files
-  expect(
-    getByText(
-      (_, node) => node!.textContent === 'Number of Datasets: 2'
-    )
-  ).toBeTruthy();
-  expect(
-    getByText(
-      (_, node) => node!.textContent === 'Number of Files: 5'
-    )
-  ).toBeTruthy();
+  const numDatasetsField = getByText('Number of Datasets:');
+  const numFilesText = getByText('Number of Files:');
+
+  expect(numDatasetsField.textContent).toEqual('Number of Datasets: 2');
+  expect(numFilesText.textContent).toEqual('Number of Files: 5');
 });
 
 it('renders component with correct calculations when a dataset doesn"t have size or number_of_files attributes', () => {
@@ -54,14 +49,9 @@ it('renders component with correct calculations when a dataset doesn"t have size
     </Router>
   );
   // Shows number of files
-  expect(
-    getByText(
-      (_, node) => node!.textContent === 'Number of Datasets: 2'
-    )
-  ).toBeTruthy();
-  expect(
-    getByText(
-      (_, node) => node!.textContent === 'Number of Files: 3'
-    )
-  ).toBeTruthy();
+  const numDatasetsField = getByText('Number of Datasets:');
+  const numFilesText = getByText('Number of Files:');
+
+  expect(numDatasetsField.textContent).toEqual('Number of Datasets: 2');
+  expect(numFilesText.textContent).toEqual('Number of Files: 3');
 });

@@ -66,8 +66,7 @@ it('displays "N/A" for Filename Searches when none are applied', () => {
       searchQuery={userSearchQueryFixture({ filenameVars: undefined })}
     />
   );
-
-  expect(
-    getByText((_, node) => node!.textContent === 'Filename Searches: N/A')
-  ).toBeTruthy();
+  // Shows number of files
+  const filenameSearchesField = getByText('Filename Searches:').parentNode;
+  expect(filenameSearchesField?.textContent).toEqual('Filename Searches: N/A');
 });

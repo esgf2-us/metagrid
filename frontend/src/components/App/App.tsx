@@ -199,13 +199,13 @@ const App: React.FC<Props> = ({ searchQuery }) => {
   React.useEffect(() => {
     void fetchProjects()
       .then((data) => {
-        const projectName = searchQuery
-          ? (searchQuery.project.name as string)
-          : '';
+        const projectName = searchQuery ? searchQuery.project.name : '';
         /* istanbul ignore else */
-        if (projectName !== '' && data) {
+        if (projectName && projectName !== '' && data) {
           const rawProj: RawProject | undefined = data.results.find((proj) => {
-            return proj.name.toUpperCase() === projectName.toUpperCase();
+            return (
+              proj.name.toLowerCase() === (projectName as string).toLowerCase()
+            );
           });
           /* istanbul ignore next */
           if (rawProj) {
