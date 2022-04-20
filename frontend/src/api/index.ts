@@ -1,6 +1,7 @@
 /**
  * This file contains HTTP Request functions.
  */
+import 'setimmediate'; // Added because in Jest 27, setImmediate is not defined, causing test errors
 import humps from 'humps';
 import queryString from 'query-string';
 import {
