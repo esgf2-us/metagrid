@@ -513,7 +513,8 @@ describe('User cart', () => {
     );
     expect(removeText).toBeTruthy();
   });
-  it('displays authenticated user"s number of files in the cart summary and handles clearing the cart', async () => {
+
+  it("displays authenticated user's number of files in the cart summary and handles clearing the cart", async () => {
     const { getByRole, getByTestId, getByText } = customRender(
       <App searchQuery={activeSearch} />,
       {
@@ -538,20 +539,15 @@ describe('User cart', () => {
     const cartSummary = await waitFor(() => getByTestId('summary'));
     expect(cartSummary).toBeTruthy();
 
-    const numDatasetsText = await waitFor(() =>
-      getByText(
-        (_, node) =>
-          node !== null && node.textContent === 'Number of Datasets: 1'
-      )
+    const numDatasetsField = await waitFor(() =>
+      within(cartSummary).getByText('Number of Datasets:')
     );
-    expect(numDatasetsText).toBeTruthy();
-
     const numFilesText = await waitFor(() =>
-      getByText(
-        (_, node) => node !== null && node.textContent === 'Number of Files: 3'
-      )
+      within(cartSummary).getByText('Number of Files:')
     );
-    expect(numFilesText).toBeTruthy();
+
+    expect(numDatasetsField.textContent).toEqual('Number of Datasets: 1');
+    expect(numFilesText.textContent).toEqual('Number of Files: 3');
 
     // Check "Remove All Items" button renders with cart > 0 items and click it
     const clearCartBtn = within(cart).getByRole('button', {
@@ -572,17 +568,8 @@ describe('User cart', () => {
     fireEvent.click(confirmBtn);
 
     // Check number of datasets and files are now 0
-    expect(
-      getByText(
-        (_, node) =>
-          node !== null && node.textContent === 'Number of Datasets: 0'
-      )
-    ).toBeTruthy();
-    expect(
-      getByText(
-        (_, node) => node !== null && node.textContent === 'Number of Files: 0'
-      )
-    ).toBeTruthy();
+    expect(numDatasetsField.textContent).toEqual('Number of Datasets: 0');
+    expect(numFilesText.textContent).toEqual('Number of Files: 0');
 
     // Check empty alert renders
     const emptyAlert = getByText('Your cart is empty');
@@ -691,17 +678,15 @@ describe('User cart', () => {
     const cartSummary = await waitFor(() => getByTestId('summary'));
     expect(cartSummary).toBeTruthy();
 
-    expect(
-      getByText(
-        (_, node) =>
-          node !== null && node.textContent === 'Number of Datasets: 1'
-      )
-    ).toBeTruthy();
-    expect(
-      getByText(
-        (_, node) => node !== null && node.textContent === 'Number of Files: 3'
-      )
-    ).toBeTruthy();
+    const numDatasetsField = await waitFor(() =>
+      within(cartSummary).getByText('Number of Datasets:')
+    );
+    const numFilesText = await waitFor(() =>
+      within(cartSummary).getByText('Number of Files:')
+    );
+
+    expect(numDatasetsField.textContent).toEqual('Number of Datasets: 1');
+    expect(numFilesText.textContent).toEqual('Number of Files: 3');
 
     // Check "Remove All Items" button renders with cart > 0 items and click it
     const clearCartBtn = within(cart).getByRole('button', {
@@ -722,17 +707,8 @@ describe('User cart', () => {
     fireEvent.click(confirmBtn);
 
     // Check number of datasets and files are now 0
-    expect(
-      getByText(
-        (_, node) =>
-          node !== null && node.textContent === 'Number of Datasets: 0'
-      )
-    ).toBeTruthy();
-    expect(
-      getByText(
-        (_, node) => node !== null && node.textContent === 'Number of Files: 0'
-      )
-    ).toBeTruthy();
+    expect(numDatasetsField.textContent).toEqual('Number of Datasets: 0');
+    expect(numFilesText.textContent).toEqual('Number of Files: 0');
 
     // Check empty alert renders
     const emptyAlert = getByText('Your cart is empty');
@@ -1090,6 +1066,7 @@ describe('User search library', () => {
       );
       expect(errorMsg).toBeTruthy();
     });
+
     it('displays error message after failing to remove authenticated user"s saved search', async () => {
       // Override API response with 404
       server.use(

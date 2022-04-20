@@ -87,7 +87,7 @@ export type Props = {
   searchQuery: ActiveSearchQuery;
 };
 
-const metagridVersion = '1.0.2-beta';
+const metagridVersion = '1.0.3-beta';
 
 const App: React.FC<Props> = ({ searchQuery }) => {
   // Third-party tool integration
@@ -135,19 +135,23 @@ const App: React.FC<Props> = ({ searchQuery }) => {
   >({});
 
   const [userCart, setUserCart] = React.useState<UserCart | []>(
-    JSON.parse(localStorage.getItem('userCart') || '[]')
+    JSON.parse(localStorage.getItem('userCart') || '[]') as RawSearchResults
   );
 
   const [userSearchQueries, setUserSearchQueries] = React.useState<
     UserSearchQueries | []
-  >(JSON.parse(localStorage.getItem('userSearchQueries') || '[]'));
+  >(
+    JSON.parse(
+      localStorage.getItem('userSearchQueries') || '[]'
+    ) as UserSearchQueries
+  );
 
   React.useEffect(() => {
     /* istanbul ignore else */
     if (isAuthenticated) {
-      void fetchUserCart(pk as string, accessToken as string)
+      void fetchUserCart(pk, accessToken)
         .then((rawUserCart) => {
-          setUserCart(rawUserCart.items);
+          setUserCart(rawUserCart.items as RawSearchResults);
         })
         .catch((error: ResponseError) => {
           void message.error({
@@ -155,7 +159,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           });
         });
 
-      void fetchUserSearchQueries(accessToken as string)
+      void fetchUserSearchQueries(accessToken)
         .then((rawUserSearches) => {
           setUserSearchQueries(rawUserSearches.results);
         })
@@ -197,9 +201,11 @@ const App: React.FC<Props> = ({ searchQuery }) => {
       .then((data) => {
         const projectName = searchQuery ? searchQuery.project.name : '';
         /* istanbul ignore else */
-        if (projectName !== '' && data) {
+        if (projectName && projectName !== '' && data) {
           const rawProj: RawProject | undefined = data.results.find((proj) => {
-            return proj.name === projectName;
+            return (
+              proj.name.toLowerCase() === (projectName as string).toLowerCase()
+            );
           });
           /* istanbul ignore next */
           if (rawProj) {
@@ -344,7 +350,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
 
     /* istanbul ignore else */
     if (isAuthenticated) {
-      void updateUserCart(pk as string, accessToken as string, newCart);
+      void updateUserCart(pk, accessToken, newCart);
     }
   };
 
@@ -353,7 +359,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
 
     /* istanbul ignore else */
     if (isAuthenticated) {
-      void updateUserCart(pk as string, accessToken as string, []);
+      void updateUserCart(pk, accessToken, []);
     }
   };
 
@@ -382,7 +388,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
     };
 
     if (isAuthenticated) {
-      void addUserSearchQuery(pk as string, accessToken as string, savedSearch)
+      void addUserSearchQuery(pk, accessToken, savedSearch)
         .then(() => {
           saveSuccess();
         })
@@ -425,7 +431,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
     };
 
     if (isAuthenticated) {
-      void deleteUserSearchQuery(searchUUID, accessToken as string)
+      void deleteUserSearchQuery(searchUUID, accessToken)
         .then(() => {
           deleteSuccess();
         })
