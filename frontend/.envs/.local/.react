@@ -29,3 +29,8 @@ REACT_APP_CORS_PROXY_URL=http://localhost:3001
 REACT_APP_KEYCLOAK_REALM=metagrid
 REACT_APP_KEYCLOAK_URL=http://keycloak:8080/auth
 REACT_APP_KEYCLOAK_CLIENT_ID=frontend
+
+# Temporary fix to remove Keycloak sourcemap error
+# ------------------------------------------------------------------------------
+# https://github.com/react-keycloak/react-keycloak/issues/176
+GENERATE_SOURCEMAP=false

@@ -135,19 +135,23 @@ const App: React.FC<Props> = ({ searchQuery }) => {
   >({});
 
   const [userCart, setUserCart] = React.useState<UserCart | []>(
-    JSON.parse(localStorage.getItem('userCart') || '[]')
+    JSON.parse(localStorage.getItem('userCart') || '[]') as RawSearchResults
   );
 
   const [userSearchQueries, setUserSearchQueries] = React.useState<
     UserSearchQueries | []
-  >(JSON.parse(localStorage.getItem('userSearchQueries') || '[]'));
+  >(
+    JSON.parse(
+      localStorage.getItem('userSearchQueries') || '[]'
+    ) as UserSearchQueries
+  );
 
   React.useEffect(() => {
     /* istanbul ignore else */
     if (isAuthenticated) {
       void fetchUserCart(pk, accessToken)
         .then((rawUserCart) => {
-          setUserCart(rawUserCart.items);
+          setUserCart(rawUserCart.items as RawSearchResults);
         })
         .catch((error: ResponseError) => {
           void message.error({
@@ -195,13 +199,13 @@ const App: React.FC<Props> = ({ searchQuery }) => {
   React.useEffect(() => {
     void fetchProjects()
       .then((data) => {
-        const projectName = searchQuery
-          ? (searchQuery.project.name as string)
-          : '';
+        const projectName = searchQuery ? searchQuery.project.name : '';
         /* istanbul ignore else */
-        if (projectName !== '' && data) {
+        if (projectName && projectName !== '' && data) {
           const rawProj: RawProject | undefined = data.results.find((proj) => {
-            return proj.name.toUpperCase() === projectName.toUpperCase();
+            return (
+              proj.name.toLowerCase() === (projectName as string).toLowerCase()
+            );
           });
           /* istanbul ignore next */
           if (rawProj) {
