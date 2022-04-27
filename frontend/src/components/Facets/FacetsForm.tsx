@@ -301,19 +301,7 @@ const FacetsForm: React.FC<Props> = ({
                                   </span>
                                 </>
                               );
-                              // The data node facet has a unique tooltip overlay to show the status of the highlighted node
-                              if (facet === 'data_node') {
-                                optionOutput = (
-                                  <StatusToolTip
-                                    nodeStatus={nodeStatus}
-                                    dataNode={variable[0]}
-                                  >
-                                    <span style={styles.facetCount}>
-                                      ({variable[1]})
-                                    </span>
-                                  </StatusToolTip>
-                                );
-                              }
+
                               // If the option output name is very long, use a tooltip
                               const vLength = variable[0].length - 2;
                               const cLength =
@@ -335,6 +323,20 @@ const FacetsForm: React.FC<Props> = ({
                                       ({variable[1]})
                                     </span>
                                   </Tooltip>
+                                );
+                              }
+
+                              // The data node facet has a unique tooltip overlay to show the status of the highlighted node
+                              if (facet === 'data_node') {
+                                optionOutput = (
+                                  <StatusToolTip
+                                    nodeStatus={nodeStatus}
+                                    dataNode={variable[0]}
+                                  >
+                                    <span style={styles.facetCount}>
+                                      ({variable[1]})
+                                    </span>
+                                  </StatusToolTip>
                                 );
                               }
                               return (
