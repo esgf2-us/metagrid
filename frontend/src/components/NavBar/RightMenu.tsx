@@ -138,7 +138,9 @@ const RightMenu: React.FC<Props> = ({
             <Button
               type="text"
               icon={<UserOutlined style={{ fontSize: '18px', margin: 0 }} />}
-              onClick={() => keycloak.login()}
+              onClick={() => {
+                keycloak.login();
+              }}
             >
               Sign In
             </Button>
@@ -157,7 +159,12 @@ const RightMenu: React.FC<Props> = ({
             }
           >
             <Menu.Item key="login">
-              <Button type="text" onClick={() => keycloak.logout()}>
+              <Button
+                type="text"
+                onClick={() => {
+                  keycloak.logout();
+                }}
+              >
                 Sign Out
               </Button>
             </Menu.Item>

@@ -136,7 +136,7 @@ it('renders record metadata in an expandable panel', async () => {
   fireEvent.click(panel);
 
   // Check metadata panel contains metadata
-  const id = getByText((_, node) => node.textContent === 'id: foo');
+  const id = getByText((_, node) => node?.textContent === 'id: foo');
   expect(id).toBeInTheDocument();
 
   // Open up the Autocomplete form and change the input to look up 'i'

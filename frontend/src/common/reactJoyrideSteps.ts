@@ -4,7 +4,7 @@ import { AppPage } from './types';
 
 export const getCurrentAppPage = (): number => {
   const { pathname } = window.location;
-  if (pathname.endsWith('/search')) {
+  if (pathname.endsWith('/search') || pathname.includes('/search/')) {
     return AppPage.Main;
   }
   if (pathname.endsWith('/cart/items')) {
@@ -20,7 +20,9 @@ export const getCurrentAppPage = (): number => {
 };
 
 export const delay = (ms: number): Promise<void> => {
-  return new Promise((res) => setTimeout(res, ms));
+  return new Promise((res) => {
+    setTimeout(res, ms);
+  });
 };
 
 export const elementExists = (className: string): boolean => {

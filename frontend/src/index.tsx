@@ -1,5 +1,5 @@
-import { ReactKeycloakProvider } from '@react-keycloak/web';
 import React from 'react';
+import { ReactKeycloakProvider } from '@react-keycloak/web';
 import ReactDOM from 'react-dom';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { getSearchFromUrl } from './common/utils';
