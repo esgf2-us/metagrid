@@ -1,5 +1,5 @@
-import { useKeycloak } from '@react-keycloak/web';
 import React from 'react';
+import { useKeycloak } from '@react-keycloak/web';
 import { DeferFn, useAsync } from 'react-async';
 import { fetchUserAuth, fetchUserInfo } from '../api';
 import { RawUserAuth, RawUserInfo } from './types';
