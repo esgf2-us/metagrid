@@ -30,7 +30,7 @@ def do_wget(request):
 
 
 
-def do_request(request, urlbase)
+def do_request(request, urlbase):
     if request.method == 'POST':
         url_params = request.POST.copy()
     elif request.method == 'GET':
