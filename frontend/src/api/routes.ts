@@ -89,7 +89,7 @@ const apiRoutes: ApiRoutes = {
   },
   // ESGF Search API
   esgfSearch: {
-    path: `${proxyURL}/${esgfNodeURL}/esg-search/search/`,
+    path: `${metagridApiURL}/proxy/search`,
     handleErrorMsg: (HTTPCode) =>
       mapHTTPErrorCodes('ESGF Search API', HTTPCode),
   },
