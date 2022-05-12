@@ -48,8 +48,9 @@ urlpatterns = [
     # dj-rest-auth
     re_path(r"^dj-rest-auth/", include("dj_rest_auth.urls")),
     path("proxy/search", do_search, name="do_search"),
-    path("proxy/citation", do_search, name="do_citation"),
-    path("proxy/wget", do_search, name="do_wget"),
+    path("proxy/citation", do_citation, name="do_citation"),
+    path("proxy/wget", do_wget, name="do_wget"),
+    path("proxy/status", do_wget, name="do_status"),
     path(
         "dj-rest-auth/keycloak", KeycloakLogin.as_view(), name="keycloak_login"
     ),
