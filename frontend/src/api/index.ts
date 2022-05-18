@@ -20,7 +20,7 @@ import {
   TextInputs,
 } from '../components/Search/types';
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
-import { proxyURL } from '../env';
+import { metagridApiURL } from '../env';
 import axios from '../lib/axios';
 import apiRoutes, { ApiRoute, clickableRoute, HTTPCodeType } from './routes';
 
@@ -449,7 +449,9 @@ export const fetchDatasetCitation = async ({
   [key: string]: string;
 }): Promise<{ [key: string]: unknown }> =>
   axios
-    .get(`${proxyURL}/${url}`)
+    .post(`${metagridApiURL}/proxy/citation`, {
+      citurl: url,
+    })
     .then((res) => {
       const citation = processCitation(res.data);
       return citation;
@@ -529,6 +531,11 @@ export const fetchWgetScript = async (
   ids: string[] | string,
   filenameVars?: string[]
 ): Promise<string> => {
+  let testurl = queryString.stringifyUrl({
+    url: `${metagridApiURL}/proxy/wget`,
+    query: { dataset_id: ids },
+  });
+
   let url = queryString.stringifyUrl({
     url: apiRoutes.wget.path,
     query: { dataset_id: ids },
@@ -542,10 +549,11 @@ export const fetchWgetScript = async (
       }
     );
     url += `&${filenameVarsParam}`;
+    testurl += `&${filenameVarsParam}`;
   }
 
   return axios
-    .get(url)
+    .get(testurl)
     .then(() => url)
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.wget));

@@ -4,7 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.conf import settings
 
-import requests
+import requests,json
 
 
 @require_http_methods(['GET', 'POST'])
@@ -13,11 +13,20 @@ def do_search(request):
 
     return do_request(request, "https://esgf-node.llnl.gov/esg-search/search")
 
-@require_http_methods(['GET', 'POST'])
+@require_http_methods(['POST'])
 @csrf_exempt
 def do_citation(request):
-    url = request.POST["url"]
-    
+
+    jo = {}
+    try:
+        jo = json.loads(request.body)
+    except:
+        return HttpResponseBadRequest()
+
+    if not "citurl" in jo:
+        return HttpResponseBadRequest()
+
+    url = jo["citurl"]    
     resp = requests.get(url)
     if resp.status_code == 200:
         return HttpResponse(resp.text)
@@ -29,13 +38,16 @@ def do_citation(request):
 @require_http_methods(['GET', 'POST'])
 @csrf_exempt
 def do_status(request):
-    return do_request(request, "https://aims4.llnl.gov/prometheus/api/v1/query?query=probe_success%7Bjob%3D%22http_2xx%22%2C+target%3D~%22.%2Athredds.%2A%22%7D")
+    resp = requests.get("https://aims4.llnl.gov/prometheus/api/v1/query?query=probe_success%7Bjob%3D%22http_2xx%22%2C+target%3D~%22.%2Athredds.%2A%22%7D")
+    if resp.status_code == 200:
+        return HttpResponse(resp.text)
+    else:
+        return HttpResponseBadRequest(resp.text)
 
 @require_http_methods(['GET', 'POST'])
 @csrf_exempt
 def do_wget(request):
-    return do_request(None, "https://greyworm1.llnl.gov/wget")
-
+    return do_request(request, "https://greyworm1-rh7.llnl.gov/wget")
 
 
 def do_request(request, urlbase):
@@ -53,7 +65,7 @@ def do_request(request, urlbase):
         resp = requests.get(urlbase, params=url_params)
     else:
         resp = request.get(urlbase)
-        
+
     if resp.status_code == 200:
         return HttpResponse(resp.text)
     else:
