@@ -102,12 +102,12 @@ const apiRoutes: ApiRoutes = {
   },
   // ESGF wget API
   wget: {
-    path: `${proxyURL}/${wgetApiURL}`,
+    path: `${wgetApiURL}`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('ESGF wget API', HTTPCode),
   },
   // ESGF Node Status API
   nodeStatus: {
-    path: `${proxyURL}/${nodeStatusURL}`,
+    path: `${metagridApiURL}/proxy/status`,
     handleErrorMsg: (HTTPCode) =>
       mapHTTPErrorCodes('ESGF Node Status API', HTTPCode),
   },
