@@ -15,7 +15,8 @@ from metagrid.projects.migrations.scripts.inital_data import (
 
 
 def insert_data(apps, schema_editor):
-    """Inserts all project data"""
+    
+    # Get the project models
     ProjectModel = apps.get_model("projects", "Project")  # type: Project
     ProjectFacetModel = apps.get_model(
         "projects", "ProjectFacet"
@@ -25,6 +26,7 @@ def insert_data(apps, schema_editor):
     )  # type: FacetGroup
     FacetModel = apps.get_model("projects", "Facet")  # type: Facet
 
+    """Inserts all project data"""
     for project in projects:
         new_project = ProjectModel(
             name=project.get("name"),
