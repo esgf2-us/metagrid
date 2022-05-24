@@ -31,7 +31,7 @@ group_descriptions = {
 # Projects used to populate the database for metagrid
 projects = [
     {
-        "name": "CMIP6 BOSS",
+        "name": "CMIP6",
         "full_name": "Coupled Model Intercomparison Project Phase 6",
         "project_url": "https://www.wcrp-climate.org/wgcm-cmip/wgcm-cmip6/",
         "description": "The Coupled Model Intercomparison Project, which began in 1995 under the auspices of the World Climate Research Programme (WCRP), is now in its sixth phase (CMIP6). CMIP6 coordinates somewhat independent model intercomparison activities and their experiments which have adopted a common infrastructure for collecting, organizing, and distributing output from models performing common sets of experiments. The simulation data produced by models under previous phases of CMIP have been used in thousands of research papers (some of which are listed here), and the multi-model results provide some perspective on errors and uncertainty in model simulations. This information has proved invaluable in preparing high profile reports assessing our understanding of climate and climate change (e.g., the IPCC Assessment Reports).",
