@@ -8,7 +8,7 @@ if TYPE_CHECKING:
         ProjectFacet,
     )
 
-from metagrid.projects.migrations.scripts.inital_data import (
+from metagrid.initial_projects_data import (
     projects,
     group_descriptions,
 )
