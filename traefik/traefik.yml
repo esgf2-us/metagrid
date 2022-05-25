@@ -66,27 +66,6 @@ http:
         # https://docs.traefik.io/master/routing/routers/#certresolver
         certResolver: letsencrypt
 
-    web-cors-proxy-router:
-      rule: "Host(`example.com`)"
-
-      entryPoints:
-        - web
-      middlewares:
-        - redirect
-      service: cors-proxy
-
-    web-cors-proxy-secure-router:
-      rule: "Host(`example.com`)"
-
-      entryPoints:
-        - web-secure
-      middlewares:
-        - secure-headers
-      service: cors-proxy
-      tls:
-        # https://docs.traefik.io/master/routing/routers/#certresolver
-        certResolver: letsencrypt
-
   middlewares:
     redirect:
       # https://docs.traefik.io/master/middlewares/redirectscheme/
@@ -116,10 +95,7 @@ http:
       loadBalancer:
         servers:
           - url: http://react:3000
-    cors-proxy:
-      loadBalancer:
-        servers:
-          - url: http://cors-proxy:3001
+
 
 providers:
   # https://docs.traefik.io/master/providers/file/
