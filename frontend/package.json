@@ -1,53 +1,18 @@
 {
   "name": "frontend",
-  "version": "1.0.2-beta",
+  "version": "1.0.3-beta",
   "private": true,
-  "dependencies": {
-    "@ant-design/icons": "4.6.2",
-    "@react-keycloak/web": "3.4.0",
-    "@testing-library/jest-dom": "5.11.10",
-    "@testing-library/react": "11.2.6",
-    "@testing-library/user-event": "13.1.2",
-    "@types/humps": "2.0.0",
-    "@types/jest": "27.4.0",
-    "@types/node": "14.14.37",
-    "@types/react": "17.0.3",
-    "@types/react-dom": "17.0.3",
-    "@types/react-router-dom": "5.1.7",
-    "antd": "4.15.1",
-    "axios": "0.21.2",
-    "cors-anywhere": "0.4.4",
-    "dotenv": "8.2.0",
-    "env-cmd": "10.1.0",
-    "humps": "2.0.1",
-    "keycloak-js": "12.0.4",
-    "moment": "2.29.1",
-    "query-string": "7.0.0",
-    "react": "17.0.2",
-    "react-async": "10.0.1",
-    "react-dom": "17.0.2",
-    "react-ga": "3.3.0",
-    "react-hotjar": "2.2.1",
-    "react-joyride": "2.3.1",
-    "react-router-dom": "5.2.0",
-    "react-scripts": "4.0.3",
-    "typescript": "4.2.4",
-    "uuid": "8.3.2"
-  },
   "scripts": {
-    "start:local": "env-cmd -f .envs/.local/.react react-scripts start",
-    "start:production": "env-cmd -f .envs/.production/.react react-scripts start",
     "build:local": "env-cmd -f .envs/.local/.react react-scripts build",
     "build:production": "env-cmd -f .envs/.production/.react react-scripts build",
     "eject": "react-scripts eject",
-    "test": "CI=1 env-cmd -f .envs/.local/.react react-scripts test --runInBand --env=jest-environment-jsdom-sixteen",
-    "test:watch": "env-cmd -f .envs/.local/.react react-scripts test --runInBand --env=jest-environment-jsdom-sixteen",
-    "test:coverage": "CI=1 env-cmd -f .envs/.local/.react react-scripts test --coverage --env=jest-environment-jsdom-sixteen",
     "lint": "eslint './src/**/*.{js,jsx,ts,tsx,json}' --fix --max-warnings=0 --no-error-on-unmatched-pattern && tsc --noemit",
-    "precommit": "eslint './src/**/*.{js,jsx,ts,tsx,json}' --max-warnings=0 --no-error-on-unmatched-pattern"
-  },
-  "eslintConfig": {
-    "extends": "react-app"
+    "precommit": "eslint './src/**/*.{js,jsx,ts,tsx,json}' --max-warnings=0 --no-error-on-unmatched-pattern",
+    "start:local": "env-cmd -f .envs/.local/.react react-scripts start",
+    "start:production": "env-cmd -f .envs/.production/.react react-scripts start",
+    "test": "CI=1 env-cmd -f .envs/.local/.react react-scripts test --runInBand",
+    "test:coverage": "CI=1 env-cmd -f .envs/.local/.react react-scripts test --coverage",
+    "test:watch": "env-cmd -f .envs/.local/.react react-scripts test --runInBand"
   },
   "browserslist": {
     "production": [
@@ -61,21 +26,12 @@
       "last 1 safari version"
     ]
   },
-  "devDependencies": {
-    "@types/uuid": "8.3.0",
-    "@typescript-eslint/eslint-plugin": "4.19.0",
-    "@typescript-eslint/parser": "4.19.0",
-    "eslint": "7.24.0",
-    "eslint-config-airbnb-typescript": "12.3.1",
-    "eslint-config-prettier": "8.2.0",
-    "eslint-plugin-import": "2.22.1",
-    "eslint-plugin-jsx-a11y": "6.4.1",
-    "eslint-plugin-prettier": "3.3.1",
-    "eslint-plugin-react": "7.23.2",
-    "eslint-plugin-react-hooks": "4.3.0",
-    "jest-environment-jsdom-sixteen": "1.0.3",
-    "msw": "0.28.1",
-    "prettier": "2.2.1"
+  "eslintConfig": {
+    "extends": "react-app",
+    "eslintIgnore": [
+      "src/**/*.test.ts",
+      "src/**/*.test.tsx"
+    ]
   },
   "jest": {
     "collectCoverageFrom": [
@@ -98,5 +54,62 @@
         "lines": 100
       }
     }
+  },
+  "dependencies": {
+    "@ant-design/icons": "4.6.2",
+    "@babel/plugin-syntax-flow": "^7.16.7",
+    "@babel/plugin-transform-react-jsx": "^7.17.3",
+    "@react-keycloak/web": "3.4.0",
+    "antd": "4.15.1",
+    "autoprefixer": "^10.4.4",
+    "axios": "^0.26.1",
+    "cors-anywhere": "0.4.4",
+    "dotenv": "8.2.0",
+    "env-cmd": "10.1.0",
+    "humps": "2.0.1",
+    "keycloak-js": "17.0.1",
+    "moment": "2.29.2",
+    "prop-types": "^15.8.1",
+    "query-string": "7.0.0",
+    "react": "18.1.0",
+    "react-async": "10.0.1",
+    "react-dom": "18.1.0",
+    "react-ga": "3.3.0",
+    "react-hotjar": "2.2.1",
+    "react-joyride": "^2.4.0",
+    "react-router-dom": "5.3.1",
+    "react-scripts": "^5.0.1",
+    "typescript": "^4.6.3",
+    "uuid": "8.3.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.17.9",
+    "@testing-library/dom": "^8.13.0",
+    "@testing-library/jest-dom": "5.11.10",
+    "@testing-library/react": "11.2.6",
+    "@testing-library/user-event": "13.1.2",
+    "@types/humps": "2.0.0",
+    "@types/jest": "27.4.1",
+    "@types/node": "14.14.37",
+    "@types/react": "17.0.3",
+    "@types/react-dom": "17.0.3",
+    "@types/react-router-dom": "5.1.7",
+    "@types/uuid": "8.3.4",
+    "@typescript-eslint/eslint-plugin": "5.21.0",
+    "@typescript-eslint/parser": "5.21.0",
+    "dayjs": "^1.11.1",
+    "eslint": "^8.12.0",
+    "eslint-config-airbnb": "19.0.4",
+    "eslint-config-airbnb-typescript": "^17.0.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-jsx-a11y": "^6.5.1",
+    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-react": "^7.29.4",
+    "eslint-plugin-react-hooks": "4.5.0",
+    "msw": "0.28.1",
+    "postcss": "^8.4.12",
+    "prettier": "2.2.1",
+    "setimmediate": "^1.0.5"
   }
 }

@@ -101,13 +101,32 @@ describe('Test getUrlFromSearch', () => {
         project: { name: 'CMIP6' },
         versionType: 'latest',
         resultType: 'all',
-        minVersionDate: '2021',
-        maxVersionDate: '2021',
+        minVersionDate: '20210309',
+        maxVersionDate: '20210413',
         filenameVars: [],
         activeFacets: {},
         textInputs: [],
       } as ActiveSearchQuery).includes(
-        '?project=CMIP6&data=%7B%22minVersionDate%22%3A%222021%22%2C%22maxVersionDate%22%3A%222021%22%7D'
+        '?project=CMIP6&minVersionDate=20210309&maxVersionDate=20210413'
+      )
+    ).toBeTruthy();
+  });
+  it('returns url with filname variables, active facets and text inputs.', () => {
+    expect(
+      getUrlFromSearch({
+        project: { name: 'CMIP6' },
+        versionType: 'latest',
+        resultType: 'all',
+        minVersionDate: '',
+        maxVersionDate: '',
+        filenameVars: ['clt', 'tsc'],
+        activeFacets: {
+          activity_id: ['CDRMIP', 'CFMIP'],
+          source_id: ['ACCESS-ESM1-5'],
+        },
+        textInputs: ['CSIRO'],
+      } as ActiveSearchQuery).includes(
+        '?project=CMIP6&filenameVars=%5B%22clt%22%2C%22tsc%22%5D&activeFacets=%7B%22activity_id%22%3A%5B%22CDRMIP%22%2C%22CFMIP%22%5D%2C%22source_id%22%3A%22ACCESS-ESM1-5%22%7D&textInputs=%5B%22CSIRO%22%5D'
       )
     ).toBeTruthy();
   });
@@ -128,23 +147,37 @@ describe('Test getSearchFromUrl', () => {
     expect(getSearchFromUrl('?project=CMIP5')).toBeTruthy();
   });
   it('returns search object of specific version type', () => {
-    expect(
-      getSearchFromUrl(
-        '?project=CMIP6&data=%7B%22versionType%22%3A%22all%22%7D'
-      )
-    ).toBeTruthy();
+    expect(getSearchFromUrl('?project=CMIP6&versionType=all')).toBeTruthy();
   });
   it('returns search object of specific result type', () => {
     expect(
-      getSearchFromUrl(
-        '?project=CMIP6&data=%7B%22resultType%22%3A%22originals+only%22%7D'
-      )
+      getSearchFromUrl('?project=CMIP6&resultType=originals+only')
     ).toBeTruthy();
   });
   it('returns search object of version date range', () => {
     expect(
       getSearchFromUrl(
-        '?project=CMIP6&data=%7B%22resultType%22%3A%22originals+only%22%7D'
+        '?project=CMIP6&minVersionDate=20210401&maxVersionDate=20220401'
+      )
+    ).toBeTruthy();
+  });
+  it('returns search object containing active facets, filenames and text input', () => {
+    expect(
+      getSearchFromUrl(
+        '?project=CMIP6&filenameVars=%5B%22clt%22%2C%22tsc%22%5D&activeFacets=%7B%22activity_id%22%3A%5B%22CDRMIP%22%2C%22CFMIP%22%5D%2C%22source_id%22%3A%22ACCESS-ESM1-5%22%7D&textInputs=%5B%22CSIRO%22%5D'
+      )
+    ).toBeTruthy();
+  });
+  it('returns default search if no project was found.', () => {
+    expect(getSearchFromUrl('BadProjectName/')).toBeTruthy();
+  });
+  it('returns search object using alternate url with no active facets', () => {
+    expect(getSearchFromUrl('input4mips/')).toBeTruthy();
+  });
+  it('returns search object using alternate url', () => {
+    expect(
+      getSearchFromUrl(
+        'input4mips/?mip_era=CMIP6&activity_id=input4MIPs&institution_id=PCMDI&target_mip=CMIP&source_id=PCMDI-AMIP-1-1-2'
       )
     ).toBeTruthy();
   });
