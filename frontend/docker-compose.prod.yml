@@ -17,8 +17,6 @@ services:
     ports:
       - '3000:3000'
     stdin_open: true
-    depends_on:
-      - cors-proxy
 
 networks:
   traefik_default:
