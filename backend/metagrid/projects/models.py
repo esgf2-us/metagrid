@@ -18,13 +18,11 @@ class Project(models.Model):
     )
     full_name = models.CharField(
         max_length=255,
-        unique=True,
         null=True,
         help_text="The spelled out name of the project.",
     )
     project_url = models.CharField(
         max_length=255,
-        unique=True,
         null=True,
         help_text="The url associated with this project.",
     )
