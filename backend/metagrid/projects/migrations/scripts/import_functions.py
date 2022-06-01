@@ -8,6 +8,7 @@ if TYPE_CHECKING:
         ProjectFacet,
     )
 
+
 from metagrid.initial_projects_data import (
     projects,
     group_descriptions,
@@ -31,7 +32,9 @@ def insert_data(apps, schema_editor):
     projectsToDelete = list(set(projectTableIds) - set(projectFileIds))
 
     for projId in projectsToDelete:
-        ProjectModel.objects.filter(id=projId).delete()
+        ProjectModel.objects.filter(
+            id=projId
+        ).delete()  # Then remove the project
 
     """Clear Facet groups and data so it can be recreated"""
     FacetGroupModel = apps.get_model(

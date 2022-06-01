@@ -10,9 +10,7 @@ from metagrid.projects.migrations.scripts.import_functions import (
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ("projects", "0001_initial"),
-    ]
+    dependencies = [("projects", "0001_initial")]
 
     operations = [
         migrations.RunPython(insert_data, reverse_insert_data),

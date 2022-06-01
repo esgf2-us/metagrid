@@ -28,6 +28,7 @@ elif [[ "$containerName" == "$prodPostgres" ]]; then
     sudo docker-compose -f $dockerCompose build django
     echo "---DONE---"
 else
+    echo "This script should be run when the backend containers are active."
     exit 1
 fi
 

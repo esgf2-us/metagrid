@@ -77,6 +77,7 @@ class Migration(migrations.Migration):
                         help_text="The spelled out name of the project.",
                         max_length=255,
                         null=True,
+                        unique=True,
                     ),
                 ),
                 (
@@ -85,6 +86,7 @@ class Migration(migrations.Migration):
                         help_text="The url associated with this project.",
                         max_length=255,
                         null=True,
+                        unique=True,
                     ),
                 ),
                 ("description", models.TextField(null=True)),
