@@ -24,16 +24,18 @@ def insert_data(apps, schema_editor):
     )  # type: ProjectFacet
 
     """Delete projects that are not present in the projects file"""
-    projectTableIds = ProjectModel.objects.all().values_list("id", flat=True)
-    projectFileIds = []
+    projectTableNames = ProjectModel.objects.all().values_list(
+        "name", flat=True
+    )
+    projectFileNames = []
 
     for project in projects:
-        projectFileIds.append(project.get("id"))
-    projectsToDelete = list(set(projectTableIds) - set(projectFileIds))
+        projectFileNames.append(project.get("name"))
+    projectsToDelete = list(set(projectTableNames) - set(projectFileNames))
 
-    for projId in projectsToDelete:
+    for projName in projectsToDelete:
         ProjectModel.objects.filter(
-            id=projId
+            name=projName
         ).delete()  # Then remove the project
 
     """Clear Facet groups and data so it can be recreated"""
@@ -53,9 +55,8 @@ def insert_data(apps, schema_editor):
     """Inserts all project data or updates existing projects"""
     for project in projects:
         new_project = ProjectModel.objects.update_or_create(
-            id=project.get("id"),
+            name=project.get("name"),
             defaults={
-                "name": project.get("name"),
                 "full_name": project.get("full_name"),
                 "project_url": project.get("project_url"),
                 "description": project.get("description"),

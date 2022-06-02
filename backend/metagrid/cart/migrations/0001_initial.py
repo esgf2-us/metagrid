@@ -13,41 +13,121 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('projects', '0001_initial'),
+        ("projects", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Search',
+            name="Search",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('uuid', models.UUIDField(default=uuid.uuid4)),
-                ('version_type', models.CharField(choices=[('latest', 'latest'), ('all', 'all')], default='latest', max_length=255)),
-                ('result_type', models.CharField(choices=[('all', 'all'), ('originals only', 'originals only'), ('replicas only', 'replicas only')], default='all', max_length=255)),
-                ('min_version_date', models.CharField(blank=True, max_length=255, null=True)),
-                ('max_version_date', models.CharField(blank=True, max_length=255, null=True)),
-                ('filename_vars', django.contrib.postgres.fields.ArrayField(base_field=models.CharField(blank=True, max_length=255), blank=True, default=list, null=True, size=1)),
-                ('active_facets', models.JSONField(default=dict)),
-                ('text_inputs', django.contrib.postgres.fields.ArrayField(base_field=models.CharField(blank=True, max_length=255), blank=True, default=list, null=True, size=1)),
-                ('url', models.URLField(max_length=2000)),
-                ('project', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='projects.project')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("uuid", models.UUIDField(default=uuid.uuid4)),
+                (
+                    "version_type",
+                    models.CharField(
+                        choices=[("latest", "latest"), ("all", "all")],
+                        default="latest",
+                        max_length=255,
+                    ),
+                ),
+                (
+                    "result_type",
+                    models.CharField(
+                        choices=[
+                            ("all", "all"),
+                            ("originals only", "originals only"),
+                            ("replicas only", "replicas only"),
+                        ],
+                        default="all",
+                        max_length=255,
+                    ),
+                ),
+                (
+                    "min_version_date",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                (
+                    "max_version_date",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                (
+                    "filename_vars",
+                    django.contrib.postgres.fields.ArrayField(
+                        base_field=models.CharField(
+                            blank=True, max_length=255
+                        ),
+                        blank=True,
+                        default=list,
+                        null=True,
+                        size=1,
+                    ),
+                ),
+                ("active_facets", models.JSONField(default=dict)),
+                (
+                    "text_inputs",
+                    django.contrib.postgres.fields.ArrayField(
+                        base_field=models.CharField(
+                            blank=True, max_length=255
+                        ),
+                        blank=True,
+                        default=list,
+                        null=True,
+                        size=1,
+                    ),
+                ),
+                ("url", models.URLField(max_length=2000)),
+                (
+                    "project",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="projects.project",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Search',
-                'verbose_name_plural': 'Searches',
+                "verbose_name": "Search",
+                "verbose_name_plural": "Searches",
             },
         ),
         migrations.CreateModel(
-            name='Cart',
+            name="Cart",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('items', models.JSONField(default=list)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("items", models.JSONField(default=list)),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Cart',
-                'verbose_name_plural': 'Cart',
+                "verbose_name": "Cart",
+                "verbose_name_plural": "Cart",
             },
         ),
     ]
