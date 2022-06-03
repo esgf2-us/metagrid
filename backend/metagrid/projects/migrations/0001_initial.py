@@ -89,6 +89,14 @@ class Migration(migrations.Migration):
                         unique=True,
                     ),
                 ),
+                (
+                    "display_order",
+                    models.IntegerField(
+                        blank=True,
+                        help_text="The value used to order the project results list. 0 indicates show at the top, 1 show under 0 etc.",
+                        null=True,
+                    ),
+                ),
                 ("description", models.TextField(null=True)),
             ],
             options={

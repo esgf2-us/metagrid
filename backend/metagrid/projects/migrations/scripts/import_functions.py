@@ -53,13 +53,14 @@ def insert_data(apps, schema_editor):
     ProjectFacetModel.objects.all().delete()
 
     """Inserts all project data or updates existing projects"""
-    for project in projects:
+    for idx, project in enumerate(projects):
         new_project = ProjectModel.objects.update_or_create(
             name=project.get("name"),
             defaults={
                 "full_name": project.get("full_name"),
                 "project_url": project.get("project_url"),
                 "description": project.get("description"),
+                "display_order": idx,
             },
         )  # type: Project
         new_project[0].save()
