@@ -26,6 +26,10 @@ APPEND_SLASH = False
 TIME_ZONE = "UTC"
 LANGUAGE_CODE = "en-us"
 
+# Remove default auto field warnings from migration to 3.2
+# https://dev.to/weplayinternet/upgrading-to-django-3-2-and-fixing-defaultautofield-warnings-518n
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
+
 # If you set USE_I18N to False, Django will make some optimizations so
 # as not to load the internationalization machinery.
 USE_I18N = False
@@ -96,7 +100,7 @@ EMAIL_TIMEOUT = 5
 # Django Admin URL.
 ADMIN_URL = "admin/"
 # https://docs.djangoproject.com/en/dev/ref/settings/#admins
-ADMINS = (("Author", "vo13@llnl.gov"),)
+ADMINS = (("Author", "vo13@llnl.gov"), ("Author", "downie4@llnl.gov"))
 # https://docs.djangoproject.com/en/dev/ref/settings/#managers
 MANAGERS = ADMINS
 
