@@ -87,7 +87,7 @@ export type Props = {
   searchQuery: ActiveSearchQuery;
 };
 
-const metagridVersion = '1.0.3-beta';
+const metagridVersion = '1.0.4-beta';
 
 const App: React.FC<Props> = ({ searchQuery }) => {
   // Third-party tool integration
