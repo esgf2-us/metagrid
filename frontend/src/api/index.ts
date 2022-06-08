@@ -1,6 +1,7 @@
 /**
  * This file contains HTTP Request functions.
  */
+import 'setimmediate'; // Added because in Jest 27, setImmediate is not defined, causing test errors
 import humps from 'humps';
 import queryString from 'query-string';
 import {
@@ -38,7 +39,7 @@ export interface ResponseError extends Error {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const camelizeKeysFromString = (str: string): Record<string, any> =>
-  humps.camelizeKeys(JSON.parse(str));
+  humps.camelizeKeys(JSON.parse(str) as object[]);
 
 /**
  * This function removes the proxyString from the URL so the link can be accessed
@@ -73,7 +74,7 @@ export const fetchUserAuth = async (args: [string]): Promise<RawUserAuth> =>
   axios
     .post(apiRoutes.keycloakAuth.path, { access_token: args[0] })
     .then((res) => res.data as Promise<RawUserAuth>)
-    .catch((error) => {
+    .catch((error: ResponseError) => {
       throw new Error(
         errorMsgBasedOnHTTPStatusCode(error, apiRoutes.keycloakAuth)
       );
@@ -91,7 +92,7 @@ export const fetchUserInfo = async (args: [string]): Promise<RawUserInfo> =>
       },
     })
     .then((res) => res.data as Promise<RawUserInfo>)
-    .catch((error) => {
+    .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userInfo));
     });
 
@@ -453,7 +454,7 @@ export const fetchDatasetCitation = async ({
       citurl: url,
     })
     .then((res) => {
-      const citation = processCitation(res.data);
+      const citation = processCitation(res.data as RawCitation);
       return citation;
     })
     .catch((error: ResponseError) => {

@@ -257,6 +257,7 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
                             .writeText(downloadUrls.OPENDAP)
                             .catch(
                               (e: PromiseRejectedResult) =>
+                                // eslint-disable-next-line
                                 void message.error(e.reason)
                             );
                           void message.success({
