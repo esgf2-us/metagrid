@@ -47,10 +47,10 @@ urlpatterns = [
     path("accounts/", include("allauth.urls"), name="socialaccount_signup"),
     # dj-rest-auth
     re_path(r"^dj-rest-auth/", include("dj_rest_auth.urls")),
-    path("proxy/search", do_search, name="do_search"),
-    path("proxy/citation", do_citation, name="do_citation"),
-    path("proxy/wget", do_wget, name="do_wget"),
-    path("proxy/status", do_status, name="do_status"),
+    path("proxy/search", do_search, name="do-search"),
+    path("proxy/citation", do_citation, name="do-citation"),
+    path("proxy/wget", do_wget, name="do-wget"),
+    path("proxy/status", do_status, name="do-status"),
     path(
         "dj-rest-auth/keycloak", KeycloakLogin.as_view(), name="keycloak_login"
     ),

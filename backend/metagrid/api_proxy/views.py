@@ -64,7 +64,7 @@ def do_request(request, urlbase):
          
         resp = requests.get(urlbase, params=url_params)
     else:
-        resp = request.get(urlbase)
+        resp = requests.get(urlbase)
 
     if resp.status_code == 200:
         return HttpResponse(resp.text)
