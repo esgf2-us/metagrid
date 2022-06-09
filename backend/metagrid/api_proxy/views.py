@@ -31,7 +31,7 @@ def do_citation(request):
         resp = requests.get(url)
     except: # pragma: no cover
         return HttpResponseBadRequest()
-        
+
     httpresp = HttpResponse(resp.text)
     httpresp.status_code = resp.status_code
     httpresp.headers = resp.headers
@@ -44,7 +44,7 @@ def do_citation(request):
 @csrf_exempt
 def do_status(request):
     resp = requests.get("https://aims4.llnl.gov/prometheus/api/v1/query?query=probe_success%7Bjob%3D%22http_2xx%22%2C+target%3D~%22.%2Athredds.%2A%22%7D")
-    if resp.status_code == 200:
+    if resp.status_code == 200: # pragma: no cover
         return HttpResponse(resp.text)
     else: # pragma: no cover
         return HttpResponseBadRequest(resp.text)
