@@ -7,7 +7,7 @@ from rest_framework.test import APITestCase
 class TestProxyViewSet(APITestCase):
     def test_wget(self):
         url = reverse("do-wget")
-        response = self.client.get(url, { 'dataset_id' : })
+        response = self.client.get(url, { 'dataset_id' : ' CMIP6.CMIP.IPSL.IPSL-CM6A-LR.abrupt-4xCO2.r12i1p1f1.Amon.n2oglobal.gr.v20191003|esgf-data1.llnl.gov'})
 
     def test_search(self):
         url = reverse("do-search")
