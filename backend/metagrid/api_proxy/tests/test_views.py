@@ -1,4 +1,4 @@
-import pytest
+import pytest, json
 from django.urls import reverse
 
 from rest_framework.test import APITestCase
@@ -22,6 +22,7 @@ class TestProxyViewSet(APITestCase):
 
     def test_citation(self):
         url = reverse("do-citation")
-        response = self.client.get(url)
+        jo = {"citurl" : "https://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.CMIP.IPSL.IPSL-CM6A-LR.abrupt-4xCO2.r12i1p1f1.Amon.n2oglobal.gr.v20191003.json"}
 
-        response = self.client.post(url, json={'citurl' : "https://cera-www.dkrz.de/WDCC/meta/CMIP6/CMIP6.CMIP.IPSL.IPSL-CM6A-LR.abrupt-4xCO2.r12i1p1f1.Amon.n2oglobal.gr.v20191003.json"})
+        response = self.client.post(url, json=jo)
+        response = self.client.post(url, jo, format='json')
