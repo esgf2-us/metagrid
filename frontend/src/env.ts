@@ -47,9 +47,3 @@ export const keycloakClientId = process.env
 // https://github.com/abdalla/react-hotjar
 export const hjid = (process.env.REACT_APP_HOTJAR_ID as unknown) as number;
 export const hjsv = (process.env.REACT_APP_HOTJAR_SV as unknown) as number;
-
-// react-ga
-// ------------------------------------------------------------------------------
-// https://github.com/react-ga/react-ga
-export const gaTrackingID = process.env
-  .REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID as string;
