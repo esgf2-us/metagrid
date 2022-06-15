@@ -10,9 +10,8 @@ import {
 import { Affix, Breadcrumb, Button, Layout, message, Result } from 'antd';
 import React from 'react';
 import { useAsync } from 'react-async';
-import ReactGA from 'react-ga';
 import { hotjar } from 'react-hotjar';
-import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom';
+import { Link, Redirect, Route, Switch } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import {
   addUserSearchQuery,
@@ -27,7 +26,7 @@ import {
 import { CSSinJS } from '../../common/types';
 import { getUrlFromSearch } from '../../common/utils';
 import { AuthContext } from '../../contexts/AuthContext';
-import { gaTrackingID, hjid, hjsv } from '../../env';
+import { hjid, hjsv } from '../../env';
 import Cart from '../Cart';
 import Summary from '../Cart/Summary';
 import { UserCart, UserSearchQueries, UserSearchQuery } from '../Cart/types';
@@ -62,18 +61,6 @@ const styles: CSSinJS = {
   messageRemoveIcon: { color: '#ff0000' },
 };
 
-const useGoogleAnalytics = (): void => {
-  const location = useLocation();
-
-  React.useEffect(() => {
-    /* istanbul ignore next */
-    if (gaTrackingID) {
-      ReactGA.initialize(gaTrackingID);
-      ReactGA.pageview(location.pathname + location.search);
-    }
-  }, [location]);
-};
-
 const useHotjar = (): void => {
   React.useEffect(() => {
     /* istanbul ignore next */
@@ -91,7 +78,6 @@ const metagridVersion = '1.0.5-beta';
 
 const App: React.FC<Props> = ({ searchQuery }) => {
   // Third-party tool integration
-  useGoogleAnalytics();
   useHotjar();
 
   // User's authentication state
