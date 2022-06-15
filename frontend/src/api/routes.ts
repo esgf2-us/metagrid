@@ -1,10 +1,4 @@
-import {
-  esgfNodeURL,
-  metagridApiURL,
-  nodeStatusURL,
-  proxyURL,
-  wgetApiURL,
-} from '../env';
+import { metagridApiURL, proxyURL, wgetApiURL } from '../env';
 
 export type HTTPCodeType = 400 | 401 | 403 | 404 | 405 | 'generic';
 
