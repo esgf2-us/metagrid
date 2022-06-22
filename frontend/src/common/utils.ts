@@ -1,6 +1,9 @@
+import { UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
 import { ActiveFacets } from '../components/Facets/types';
 import {
   ActiveSearchQuery,
+  RawSearchResult,
+  RawSearchResults,
   ResultType,
   TextInputs,
   VersionType,
@@ -232,4 +235,27 @@ export const getSearchFromUrl = (url?: string): ActiveSearchQuery => {
   }
 
   return getAltSearchFromUrl(url);
+};
+
+export const combineCarts = (
+  databaseItems: RawSearchResults,
+  localItems: RawSearchResults
+): RawSearchResults => {
+  const itemsNotInDatabase = localItems.filter(
+    (item: RawSearchResult) =>
+      !databaseItems.some((dataset) => dataset.id === item.id)
+  );
+  const combinedItems = databaseItems.concat(itemsNotInDatabase);
+  return combinedItems;
+};
+
+export const unsavedLocalSearches = (
+  databaseItems: UserSearchQueries,
+  localItems: UserSearchQueries
+): UserSearchQueries => {
+  const itemsNotInDatabase = localItems.filter(
+    (item: UserSearchQuery) =>
+      !databaseItems.some((searchQuery) => searchQuery.uuid === item.uuid)
+  );
+  return itemsNotInDatabase;
 };
