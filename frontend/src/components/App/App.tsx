@@ -27,6 +27,7 @@ import { CSSinJS } from '../../common/types';
 import {
   combineCarts,
   getUrlFromSearch,
+  searchAlreadyExists,
   unsavedLocalSearches,
 } from '../../common/utils';
 import { AuthContext } from '../../contexts/AuthContext';
@@ -380,6 +381,14 @@ const App: React.FC<Props> = ({ searchQuery }) => {
       textInputs: activeSearchQuery.textInputs,
       url,
     };
+
+    if (searchAlreadyExists(userSearchQueries, savedSearch)) {
+      void message.success({
+        content: 'Search query is already in your library',
+        icon: <BookOutlined style={styles.messageAddIcon} />,
+      });
+      return;
+    }
 
     const saveSuccess = (): void => {
       setUserSearchQueries([...userSearchQueries, savedSearch]);

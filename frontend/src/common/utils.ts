@@ -249,13 +249,44 @@ export const combineCarts = (
   return combinedItems;
 };
 
+const convertSearchToHash = (query: UserSearchQuery): number => {
+  /* eslint-disable */
+  let hash: number = 0;
+  const nonUniqueQuery: UserSearchQuery = { ...query, uuid: '', user: null };
+  const queryStr = JSON.stringify(nonUniqueQuery);
+  let i, chr;
+
+  if (queryStr.length === 0) return hash;
+  for (i = 0; i < queryStr.length; i++) {
+    chr = queryStr.charCodeAt(i);
+    hash = (hash << 5) - hash + chr;
+    hash |= 0; // Convert to 32bit integer
+  }
+  return hash;
+};
+
 export const unsavedLocalSearches = (
   databaseItems: UserSearchQueries,
   localItems: UserSearchQueries
 ): UserSearchQueries => {
   const itemsNotInDatabase = localItems.filter(
-    (item: UserSearchQuery) =>
-      !databaseItems.some((searchQuery) => searchQuery.uuid === item.uuid)
+    (localSearchQuery: UserSearchQuery) =>
+      !searchAlreadyExists(databaseItems, localSearchQuery)
   );
   return itemsNotInDatabase;
+};
+
+export const searchAlreadyExists = (
+  existingSearches: UserSearchQueries,
+  newSearch: UserSearchQuery
+): boolean => {
+  const hashValueLocal = convertSearchToHash(newSearch);
+  return existingSearches.some((search) => {
+    if (search.uuid === newSearch.uuid) {
+      return true;
+    }
+    const hashValueDatabase = convertSearchToHash(search);
+
+    return hashValueDatabase === hashValueLocal;
+  });
 };
