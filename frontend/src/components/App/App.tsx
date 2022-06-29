@@ -24,7 +24,12 @@ import {
   updateUserCart,
 } from '../../api';
 import { CSSinJS } from '../../common/types';
-import { getUrlFromSearch } from '../../common/utils';
+import {
+  combineCarts,
+  getUrlFromSearch,
+  searchAlreadyExists,
+  unsavedLocalSearches,
+} from '../../common/utils';
 import { AuthContext } from '../../contexts/AuthContext';
 import { hjid, hjsv } from '../../env';
 import Cart from '../Cart';
@@ -137,7 +142,13 @@ const App: React.FC<Props> = ({ searchQuery }) => {
     if (isAuthenticated) {
       void fetchUserCart(pk, accessToken)
         .then((rawUserCart) => {
-          setUserCart(rawUserCart.items as RawSearchResults);
+          const localItems = JSON.parse(
+            localStorage.getItem('userCart') || '[]'
+          ) as RawSearchResults;
+          const databaseItems = rawUserCart.items as RawSearchResults;
+          const combinedCarts = combineCarts(databaseItems, localItems);
+          void updateUserCart(pk, accessToken, combinedCarts);
+          setUserCart(combinedCarts);
         })
         .catch((error: ResponseError) => {
           void message.error({
@@ -147,7 +158,19 @@ const App: React.FC<Props> = ({ searchQuery }) => {
 
       void fetchUserSearchQueries(accessToken)
         .then((rawUserSearches) => {
-          setUserSearchQueries(rawUserSearches.results);
+          const localItems = JSON.parse(
+            localStorage.getItem('userSearchQueries') || '[]'
+          ) as UserSearchQueries;
+          const databaseItems = rawUserSearches.results;
+          const searchQueriesToAdd = unsavedLocalSearches(
+            databaseItems,
+            localItems
+          );
+          /* istanbul ignore next */
+          searchQueriesToAdd.forEach((query) => {
+            void addUserSearchQuery(pk, accessToken, query);
+          });
+          setUserSearchQueries(databaseItems.concat(searchQueriesToAdd));
         })
         .catch((error: ResponseError) => {
           void message.error({
@@ -158,19 +181,14 @@ const App: React.FC<Props> = ({ searchQuery }) => {
   }, [isAuthenticated, pk, accessToken]);
 
   React.useEffect(() => {
-    /* istanbul ignore else */
-    if (!isAuthenticated) {
-      localStorage.setItem('userCart', JSON.stringify(userCart));
-    }
+    localStorage.setItem('userCart', JSON.stringify(userCart));
   }, [isAuthenticated, userCart]);
 
   React.useEffect(() => {
-    if (!isAuthenticated) {
-      localStorage.setItem(
-        'userSearchQueries',
-        JSON.stringify(userSearchQueries)
-      );
-    }
+    localStorage.setItem(
+      'userSearchQueries',
+      JSON.stringify(userSearchQueries)
+    );
   }, [isAuthenticated, userSearchQueries]);
 
   React.useEffect(() => {
@@ -364,6 +382,14 @@ const App: React.FC<Props> = ({ searchQuery }) => {
       textInputs: activeSearchQuery.textInputs,
       url,
     };
+
+    if (searchAlreadyExists(userSearchQueries, savedSearch)) {
+      void message.success({
+        content: 'Search query is already in your library',
+        icon: <BookOutlined style={styles.messageAddIcon} />,
+      });
+      return;
+    }
 
     const saveSuccess = (): void => {
       setUserSearchQueries([...userSearchQueries, savedSearch]);
