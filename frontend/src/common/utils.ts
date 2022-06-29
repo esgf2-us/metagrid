@@ -256,24 +256,12 @@ const convertSearchToHash = (query: UserSearchQuery): number => {
   const queryStr = JSON.stringify(nonUniqueQuery);
   let i, chr;
 
-  if (queryStr.length === 0) return hash;
   for (i = 0; i < queryStr.length; i++) {
     chr = queryStr.charCodeAt(i);
     hash = (hash << 5) - hash + chr;
     hash |= 0; // Convert to 32bit integer
   }
   return hash;
-};
-
-export const unsavedLocalSearches = (
-  databaseItems: UserSearchQueries,
-  localItems: UserSearchQueries
-): UserSearchQueries => {
-  const itemsNotInDatabase = localItems.filter(
-    (localSearchQuery: UserSearchQuery) =>
-      !searchAlreadyExists(databaseItems, localSearchQuery)
-  );
-  return itemsNotInDatabase;
 };
 
 export const searchAlreadyExists = (
@@ -289,4 +277,15 @@ export const searchAlreadyExists = (
 
     return hashValueDatabase === hashValueLocal;
   });
+};
+
+export const unsavedLocalSearches = (
+  databaseItems: UserSearchQueries,
+  localItems: UserSearchQueries
+): UserSearchQueries => {
+  const itemsNotInDatabase = localItems.filter(
+    (localSearchQuery: UserSearchQuery) =>
+      !searchAlreadyExists(databaseItems, localSearchQuery)
+  );
+  return itemsNotInDatabase;
 };

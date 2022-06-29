@@ -166,6 +166,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
             databaseItems,
             localItems
           );
+          /* istanbul ignore next */
           searchQueriesToAdd.forEach((query) => {
             void addUserSearchQuery(pk, accessToken, query);
           });
