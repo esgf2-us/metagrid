@@ -1,4 +1,4 @@
-import { metagridApiURL, proxyURL, wgetApiURL } from '../env';
+import { metagridApiURL, proxyURL } from '../env';
 
 export type HTTPCodeType = 400 | 401 | 403 | 404 | 405 | 'generic';
 
@@ -90,13 +90,13 @@ const apiRoutes: ApiRoutes = {
   // ESGF Citation API (uses dummy path 'citation_url' for testing since the
   // URL is included in each Search API dataset result)
   citation: {
-    path: `${proxyURL}/citation_url`,
+    path: `${metagridApiURL}/proxy/citation`,
     handleErrorMsg: (HTTPCode) =>
       mapHTTPErrorCodes('ESGF Citation API', HTTPCode),
   },
   // ESGF wget API
   wget: {
-    path: `${wgetApiURL}`,
+    path: `${metagridApiURL}/proxy/wget`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('ESGF wget API', HTTPCode),
   },
   // ESGF Node Status API
