@@ -8,7 +8,6 @@ import {
 } from '../../api/mock/fixtures';
 import { rest, server } from '../../api/mock/setup-env';
 import apiRoutes from '../../api/routes';
-import { esgfNodeURL, proxyURL } from '../../env';
 import { getRowName } from '../../test/custom-render';
 import { ActiveFacets, RawFacets } from '../Facets/types';
 import Search, {
@@ -57,9 +56,8 @@ describe('test Search component', () => {
   it('renders Alert component if there is an error fetching results', async () => {
     server.use(
       // ESGF Search API - datasets
-      rest.get(
-        `${proxyURL}/${esgfNodeURL}/esg-search/search/`,
-        (_req, res, ctx) => res(ctx.status(404))
+      rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
+        res(ctx.status(404))
       )
     );
 

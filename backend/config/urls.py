@@ -15,6 +15,8 @@ from rest_framework.routers import DefaultRouter
 from metagrid.cart.views import CartViewSet, SearchViewSet
 from metagrid.projects.views import ProjectsViewSet
 from metagrid.users.views import UserCreateViewSet, UserViewSet
+from metagrid.api_proxy.views import do_search, do_citation, do_wget, do_status
+
 
 router = DefaultRouter()
 router.register(r"users", UserViewSet)
@@ -45,6 +47,10 @@ urlpatterns = [
     path("accounts/", include("allauth.urls"), name="socialaccount_signup"),
     # dj-rest-auth
     re_path(r"^dj-rest-auth/", include("dj_rest_auth.urls")),
+    path("proxy/search", do_search, name="do-search"),
+    path("proxy/citation", do_citation, name="do-citation"),
+    path("proxy/wget", do_wget, name="do-wget"),
+    path("proxy/status", do_status, name="do-status"),
     path(
         "dj-rest-auth/keycloak", KeycloakLogin.as_view(), name="keycloak_login"
     ),
