@@ -63,7 +63,6 @@
     "antd": "4.15.1",
     "autoprefixer": "^10.4.4",
     "axios": "^0.26.1",
-    "cors-anywhere": "0.4.4",
     "dotenv": "8.2.0",
     "env-cmd": "10.1.0",
     "humps": "2.0.1",
