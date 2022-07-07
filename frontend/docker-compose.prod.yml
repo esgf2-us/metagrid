@@ -1,22 +1,6 @@
 version: '3'
 
 services:
-  cors-proxy:
-    build:
-      context: ./
-      dockerfile: ./docker/production/cors-proxy/Dockerfile
-    image: metagrid_production_cors_proxy
-    networks:
-      - traefik_default
-      - default
-    env_file:
-      - .envs/.production/.cors-proxy
-    volumes:
-      - './cors-proxy:/cors-proxy'
-      - '/cors-proxy/node_modules'
-    ports:
-      - '3001:3001'
-
   react:
     build:
       context: ./
@@ -33,8 +17,6 @@ services:
     ports:
       - '3000:3000'
     stdin_open: true
-    depends_on:
-      - cors-proxy
 
 networks:
   traefik_default:

@@ -1,20 +1,6 @@
 version: '3'
 
 services:
-  cors-proxy:
-    build:
-      context: ./
-      dockerfile: ./docker/local/cors-proxy/Dockerfile
-    image: metagrid_local_cors_proxy
-    container_name: cors-proxy
-    env_file:
-      - .envs/.local/.cors-proxy
-    volumes:
-      - './cors-proxy:/cors-proxy'
-      - '/cors-proxy/node_modules'
-    ports:
-      - '3001:3001'
-
   react:
     build:
       context: ./
@@ -29,5 +15,3 @@ services:
     ports:
       - '3000:3000'
     stdin_open: true
-    depends_on:
-      - cors-proxy
