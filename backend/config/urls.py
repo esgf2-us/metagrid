@@ -12,11 +12,10 @@ from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 from rest_framework.routers import DefaultRouter
 
+from metagrid.api_proxy.views import do_citation, do_search, do_status, do_wget
 from metagrid.cart.views import CartViewSet, SearchViewSet
 from metagrid.projects.views import ProjectsViewSet
 from metagrid.users.views import UserCreateViewSet, UserViewSet
-from metagrid.api_proxy.views import do_search, do_citation, do_wget, do_status
-
 
 router = DefaultRouter()
 router.register(r"users", UserViewSet)
