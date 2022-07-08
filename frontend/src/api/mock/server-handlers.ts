@@ -46,11 +46,12 @@ const handlers = [
   rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(ESGFSearchAPIFixture()))
   ),
-  rest.get(apiRoutes.citation.path, (_req, res, ctx) => {
+  rest.post(apiRoutes.citation.path, (_req, res, ctx) => {
     // For testing more than one set of creators
-    const variant = _req.url.searchParams.get('variant');
-    if (variant) {
-      if (variant === 'a') {
+    const data = _req.body as { [key: string]: unknown };
+    if (data && data.citurl) {
+      const citationUrl = data.citurl;
+      if (citationUrl === 'citation_a') {
         return res(
           ctx.status(200),
           ctx.json(
@@ -65,7 +66,7 @@ const handlers = [
         );
       }
       /* istanbul ignore next */
-      if (variant === 'b') {
+      if (citationUrl === 'citation_b') {
         return res(
           ctx.status(200),
           ctx.json(

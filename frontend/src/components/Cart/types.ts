@@ -34,7 +34,7 @@ export type RawUserSearchQuery = {
 // camelCase version of the raw API results
 export type UserSearchQuery = {
   uuid: string;
-  user: VersionDate;
+  user: string | null;
   project: RawProject;
   projectId: string;
   versionType: VersionType;

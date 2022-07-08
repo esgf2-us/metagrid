@@ -22,9 +22,7 @@ describe('test Citation component', () => {
     expect(citationCreators).toBeInTheDocument();
   });
   it('renders component with 3 creators, no et al.', async () => {
-    const { getByRole, getByText } = render(
-      <Citation url="citation_url?variant=a" />
-    );
+    const { getByRole, getByText } = render(<Citation url="citation_a" />);
 
     // Check for skeleton header, which indicates loading
     const skeletonHeading = getByRole('heading');
@@ -37,9 +35,7 @@ describe('test Citation component', () => {
     expect(citationCreators).toBeInTheDocument();
   });
   it('renders component with three creators and et al.', async () => {
-    const { getByRole, getByText } = render(
-      <Citation url="citation_url?variant=b" />
-    );
+    const { getByRole, getByText } = render(<Citation url="citation_b" />);
 
     // Check for skeleton header, which indicates loading
     const skeletonHeading = getByRole('heading');
@@ -54,11 +50,11 @@ describe('test Citation component', () => {
   it('renders Alert error fetching citation data ', async () => {
     server.use(
       // ESGF Citation API (uses dummy link)
-      rest.get(apiRoutes.citation.path, (_req, res, ctx) =>
+      rest.post(apiRoutes.citation.path, (_req, res, ctx) =>
         res(ctx.status(404))
       )
     );
-    const { getByRole } = render(<Citation url="citation_url" />);
+    const { getByRole } = render(<Citation url="citation_a" />);
 
     // Wait for Alert error to render
     const alert = await waitFor(() =>

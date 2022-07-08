@@ -23,7 +23,7 @@ certificatesResolvers:
 http:
   routers:
     web-backend-router:
-      rule: "Host(`example.com`) && PathPrefix(`/prefix`)"
+      rule: "Host(`{HOSTNAME}`) && PathPrefix(`/metagrid-backend`)"
 
       entryPoints:
         - web
@@ -33,7 +33,7 @@ http:
       service: django
 
     web-backend-secure-router:
-      rule: "Host(`example.com`) && PathPrefix(`/prefix`)"
+      rule: "Host(`{HOSTNAME}`) && PathPrefix(`/metagrid-backend`)"
 
       entryPoints:
         - web-secure
@@ -46,7 +46,7 @@ http:
         certResolver: letsencrypt
 
     web-frontend-router:
-      rule: "Host(`example.com`) && PathPrefix(`/prefix`)"
+      rule: "Host(`{HOSTNAME}`) && PathPrefix(`/metagrid`)"
 
       entryPoints:
         - web
@@ -55,7 +55,7 @@ http:
       service: react
 
     web-frontend-secure-router:
-      rule: "Host(`example.com`) && PathPrefix(`/prefix`)"
+      rule: "Host(`{HOSTNAME}`) && PathPrefix(`/metagrid`)"
 
       entryPoints:
         - web-secure
@@ -96,7 +96,6 @@ http:
         servers:
           - url: http://react:3000
 
-
 providers:
   # https://docs.traefik.io/master/providers/file/
   file:
@@ -105,8 +104,6 @@ providers:
 
 tls:
   options:
-    # Improve security by only using intermediate recommended cipher suites
-    # https://ssl-config.mozilla.org/#server=traefik&version=2.4.2&config=intermediate&guideline=5.6
     default:
       minVersion: VersionTLS12
       cipherSuites:

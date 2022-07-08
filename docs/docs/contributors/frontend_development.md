@@ -42,7 +42,6 @@ frontend
 ├── .envs
 │ ├── .local
 │ └── .production
-├── cors-proxy
 ├── docker
 │ ├── local
 │ └── production
@@ -104,7 +103,6 @@ frontend
 ```
 
 - `.envs/` - stores environment variables for each microservice found in the docker-compose files, separated by environment and service
-- `cors-proxy/` - the cors-proxy microservice it its own self-contained folder
 - `docker/` - stores files used by each microservice found in the docker-compose files, including DockerFiles, start scripts, etc, separated by environment and service
 - `public/` - stores static files used before app is compiled [https://create-react-app.dev/docs/using-the-public-folder/#when-to-use-the-public-folder](https://create-react-app.dev/docs/using-the-public-folder/#when-to-use-the-public-folder)
 - `src/` - where dynamic files reside, the **bulk of your work is done here**

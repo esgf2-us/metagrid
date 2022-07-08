@@ -15,6 +15,7 @@ import {
 import React from 'react';
 import { rest, server } from '../../api/mock/setup-env';
 import apiRoutes from '../../api/routes';
+import { delay } from '../../common/reactJoyrideSteps';
 import { getSearchFromUrl } from '../../common/utils';
 import { customRender, getRowName } from '../../test/custom-render';
 import { ActiveSearchQuery } from '../Search/types';
@@ -780,6 +781,10 @@ describe('User search library', () => {
     expect(saveSearch).toBeTruthy();
     fireEvent.click(saveSearch);
 
+    // Click Save Search button again to check if duplicates are saved
+    await delay(500);
+    fireEvent.click(saveSearch);
+
     // Click on the search library link
     const searchLibraryLink = within(rightMenuComponent).getByRole('img', {
       name: 'file-search',
@@ -799,6 +804,7 @@ describe('User search library', () => {
     // Wait for components to rerender
     await waitFor(() => getByTestId('search'));
   });
+
   it('handles authenticated user removing searches from the search library', async () => {
     const { getByRole, getByTestId, getByText } = customRender(
       <App searchQuery={activeSearch} />,

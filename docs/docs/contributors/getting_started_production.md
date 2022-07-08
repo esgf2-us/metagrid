@@ -20,7 +20,7 @@ git clone https://github.com/aims-group/metagrid.git
 > Traefik is a modern HTTP reverse proxy and load balancer that makes deploying microservices easy.
 > &mdash; <cite><https://github.com/traefik/traefik></cite>
 
-You will need to configure each router's `rule`, which is used to route a HTTP request to a docker-compose service (e.g. `django`, `react`, `cors-proxy`).
+You will need to configure each router's `rule`, which is used to route a HTTP request to a docker-compose service (e.g. `django`, `react`).
 
 1. Enter directory `./traefik`
 2. Open `traefik.yml` in your editor
@@ -121,8 +121,8 @@ docker-compose -f docker-compose.prod.yml run --rm django python manage.py creat
 All of the services are configured through the use of environment variables.
 
 1. Enter directory: `./frontend/.envs/.production`
-2. Copy env files `.cors-proxy.template` and `.react.template`
-3. Rename files as `.cors-proxy` and `.react`
+2. Copy env file `.react.template`
+3. Rename file as `.react`
 4. Configure as needed using the table below to serve as a guide
 
 | Service    | Environment Variable                     | Description                                                                                                                                                                                                                                                                      | Documentation                                                            | Type             | Example                                                                                                                                              |

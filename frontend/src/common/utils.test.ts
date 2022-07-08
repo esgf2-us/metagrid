@@ -1,5 +1,12 @@
-import { ActiveSearchQuery } from '../components/Search/types';
+import { rawProjectFixture } from '../api/mock/fixtures';
+import { UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
 import {
+  ActiveSearchQuery,
+  RawSearchResult,
+  RawSearchResults,
+} from '../components/Search/types';
+import {
+  combineCarts,
   formatBytes,
   getSearchFromUrl,
   getUrlFromSearch,
@@ -7,6 +14,7 @@ import {
   objectIsEmpty,
   shallowCompareObjects,
   splitStringByChar,
+  unsavedLocalSearches,
 } from './utils';
 
 describe('Test objectIsEmpty', () => {
@@ -180,5 +188,157 @@ describe('Test getSearchFromUrl', () => {
         'input4mips/?mip_era=CMIP6&activity_id=input4MIPs&institution_id=PCMDI&target_mip=CMIP&source_id=PCMDI-AMIP-1-1-2'
       )
     ).toBeTruthy();
+  });
+});
+
+describe('Test getUrlFromSearch', () => {
+  it('returns basic url when active search is empty', () => {
+    expect(getUrlFromSearch({} as ActiveSearchQuery)).toBeTruthy();
+  });
+  it('returns basic url if active search is default object', () => {
+    expect(
+      getUrlFromSearch({
+        project: { name: 'CMIP6' },
+        versionType: 'latest',
+        resultType: 'all',
+        minVersionDate: null,
+        maxVersionDate: null,
+        filenameVars: [],
+        activeFacets: {},
+        textInputs: [],
+      } as ActiveSearchQuery).includes('?project=CMIP6')
+    ).toBeTruthy();
+  });
+  it('returns basic url with min and max version date', () => {
+    expect(
+      getUrlFromSearch({
+        project: { name: 'CMIP6' },
+        versionType: 'latest',
+        resultType: 'all',
+        minVersionDate: '20210309',
+        maxVersionDate: '20210413',
+        filenameVars: [],
+        activeFacets: {},
+        textInputs: [],
+      } as ActiveSearchQuery).includes(
+        '?project=CMIP6&minVersionDate=20210309&maxVersionDate=20210413'
+      )
+    ).toBeTruthy();
+  });
+  it('returns url with filname variables, active facets and text inputs.', () => {
+    expect(
+      getUrlFromSearch({
+        project: { name: 'CMIP6' },
+        versionType: 'latest',
+        resultType: 'all',
+        minVersionDate: '',
+        maxVersionDate: '',
+        filenameVars: ['clt', 'tsc'],
+        activeFacets: {
+          activity_id: ['CDRMIP', 'CFMIP'],
+          source_id: ['ACCESS-ESM1-5'],
+        },
+        textInputs: ['CSIRO'],
+      } as ActiveSearchQuery).includes(
+        '?project=CMIP6&filenameVars=%5B%22clt%22%2C%22tsc%22%5D&activeFacets=%7B%22activity_id%22%3A%5B%22CDRMIP%22%2C%22CFMIP%22%5D%2C%22source_id%22%3A%22ACCESS-ESM1-5%22%7D&textInputs=%5B%22CSIRO%22%5D'
+      )
+    ).toBeTruthy();
+  });
+  it('returns basic url with project parameter when search contains project', () => {
+    expect(
+      getUrlFromSearch({
+        project: { name: 'CMIP6' },
+      } as ActiveSearchQuery).includes('?project=CMIP6')
+    ).toBeTruthy();
+  });
+});
+
+describe('Test combineCarts', () => {
+  const firstResult: RawSearchResult = {
+    key: undefined,
+    id: 'firstResult',
+    url: ['test1'],
+    access: [],
+  };
+  const secondResult: RawSearchResult = {
+    key: undefined,
+    id: 'secondResult',
+    url: ['test2'],
+    access: [],
+  };
+  const thirdResult: RawSearchResult = {
+    key: undefined,
+    id: 'thirdResult',
+    url: ['test3'],
+    access: [],
+  };
+  const emptySearchResults: RawSearchResults = [];
+  const searchResults1: RawSearchResults = [firstResult, secondResult];
+  const searchResults2: RawSearchResults = [secondResult, thirdResult];
+
+  it('returns empty results when combining empty results', () => {
+    expect(combineCarts(emptySearchResults, emptySearchResults)).toEqual([]);
+  });
+  it('returns results without duplicates', () => {
+    expect(combineCarts(searchResults1, searchResults1)).toEqual(
+      searchResults1
+    );
+  });
+  it('returns combined results of 3 items (one duplicate removed)', () => {
+    expect(combineCarts(searchResults1, searchResults2).length).toEqual(3);
+  });
+});
+
+describe('Test unsavedLocal searches', () => {
+  const firstResult: UserSearchQuery = {
+    uuid: 'uuid1',
+    user: 'user',
+    project: rawProjectFixture(),
+    projectId: '1',
+    versionType: 'latest',
+    resultType: 'all',
+    minVersionDate: '20200101',
+    maxVersionDate: '20201231',
+    filenameVars: ['var'],
+    activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
+    textInputs: ['foo'],
+    url: 'url.com',
+  };
+  const secondResult: UserSearchQuery = {
+    uuid: 'uuid2',
+    user: 'user',
+    project: rawProjectFixture(),
+    projectId: '2',
+    versionType: 'latest',
+    resultType: 'all',
+    minVersionDate: '20200101',
+    maxVersionDate: '20201231',
+    filenameVars: ['var'],
+    activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
+    textInputs: ['foo'],
+    url: 'url.com',
+  };
+  const thirdResult: UserSearchQuery = {
+    uuid: 'uuid3',
+    user: 'user',
+    project: rawProjectFixture(),
+    projectId: '3',
+    versionType: 'latest',
+    resultType: 'all',
+    minVersionDate: '20200101',
+    maxVersionDate: '20201231',
+    filenameVars: ['var'],
+    activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
+    textInputs: ['foo'],
+    url: 'url.com',
+  };
+
+  const localResults: UserSearchQueries = [firstResult, secondResult];
+  const databaseResults: UserSearchQueries = [secondResult, thirdResult];
+
+  it('returns the first result because it is not currently in database', () => {
+    expect(unsavedLocalSearches(databaseResults, localResults)).toEqual([
+      firstResult,
+    ]);
   });
 });

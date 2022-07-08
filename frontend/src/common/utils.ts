@@ -1,6 +1,9 @@
+import { UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
 import { ActiveFacets } from '../components/Facets/types';
 import {
   ActiveSearchQuery,
+  RawSearchResult,
+  RawSearchResults,
   ResultType,
   TextInputs,
   VersionType,
@@ -232,4 +235,57 @@ export const getSearchFromUrl = (url?: string): ActiveSearchQuery => {
   }
 
   return getAltSearchFromUrl(url);
+};
+
+export const combineCarts = (
+  databaseItems: RawSearchResults,
+  localItems: RawSearchResults
+): RawSearchResults => {
+  const itemsNotInDatabase = localItems.filter(
+    (item: RawSearchResult) =>
+      !databaseItems.some((dataset) => dataset.id === item.id)
+  );
+  const combinedItems = databaseItems.concat(itemsNotInDatabase);
+  return combinedItems;
+};
+
+const convertSearchToHash = (query: UserSearchQuery): number => {
+  /* eslint-disable */
+  let hash: number = 0;
+  const nonUniqueQuery: UserSearchQuery = { ...query, uuid: '', user: null };
+  const queryStr = JSON.stringify(nonUniqueQuery);
+  let i, chr;
+
+  for (i = 0; i < queryStr.length; i++) {
+    chr = queryStr.charCodeAt(i);
+    hash = (hash << 5) - hash + chr;
+    hash |= 0; // Convert to 32bit integer
+  }
+  return hash;
+};
+
+export const searchAlreadyExists = (
+  existingSearches: UserSearchQueries,
+  newSearch: UserSearchQuery
+): boolean => {
+  const hashValueLocal = convertSearchToHash(newSearch);
+  return existingSearches.some((search) => {
+    if (search.uuid === newSearch.uuid) {
+      return true;
+    }
+    const hashValueDatabase = convertSearchToHash(search);
+
+    return hashValueDatabase === hashValueLocal;
+  });
+};
+
+export const unsavedLocalSearches = (
+  databaseItems: UserSearchQueries,
+  localItems: UserSearchQueries
+): UserSearchQueries => {
+  const itemsNotInDatabase = localItems.filter(
+    (localSearchQuery: UserSearchQuery) =>
+      !searchAlreadyExists(databaseItems, localSearchQuery)
+  );
+  return itemsNotInDatabase;
 };
