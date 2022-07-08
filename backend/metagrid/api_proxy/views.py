@@ -20,7 +20,7 @@ def do_citation(request):
     jo = {}
     try:
         jo = json.loads(request.body)
-    except Exception:
+    except Exception:  # pragma: no cover
         return HttpResponseBadRequest()
 
     if "citurl" not in jo:  # pragma: no cover
