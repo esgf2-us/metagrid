@@ -54,7 +54,7 @@ def do_status(request):
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
 def do_wget(request):
-    respcontent = do_request(request, "https://esgf-node.llnl.gov/esg-search/wget")
+    return do_request(request, "https://esgf-node.llnl.gov/esg-search/wget")
 
 
 
