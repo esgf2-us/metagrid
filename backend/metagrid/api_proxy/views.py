@@ -57,6 +57,7 @@ def do_wget(request):
     return do_request(request, "https://esgf-node.llnl.gov/esg-search/wget")
 
 
+
 def do_request(request, urlbase):
     resp = None
 
@@ -76,6 +77,6 @@ def do_request(request, urlbase):
 
     httpresp = HttpResponse(resp.text)
     httpresp.status_code = resp.status_code
-    #    httpresp.headers = resp.headers
-    #    httpresp.encoding = resp.encoding
+    httpresp.headers = resp.headers
+    httpresp.encoding = resp.encoding
     return httpresp
