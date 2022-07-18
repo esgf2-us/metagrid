@@ -57,7 +57,6 @@ def do_wget(request):
     return do_request(request, "https://esgf-node.llnl.gov/esg-search/wget")
 
 
-
 def do_request(request, urlbase):
     resp = None
 
