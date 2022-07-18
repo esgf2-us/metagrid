@@ -76,6 +76,6 @@ def do_request(request, urlbase):
 
     httpresp = HttpResponse(resp.text)
     httpresp.status_code = resp.status_code
-    #    httpresp.headers = resp.headers
-    #    httpresp.encoding = resp.encoding
+    httpresp.headers = resp.headers
+    httpresp.encoding = resp.encoding
     return httpresp
