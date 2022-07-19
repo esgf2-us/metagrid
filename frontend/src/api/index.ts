@@ -21,7 +21,7 @@ import {
   TextInputs,
 } from '../components/Search/types';
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
-import { metagridApiURL } from '../env';
+import { metagridApiURL, wgetApiURL } from '../env';
 import axios from '../lib/axios';
 import apiRoutes, { ApiRoute, clickableRoute, HTTPCodeType } from './routes';
 
@@ -46,8 +46,7 @@ const camelizeKeysFromString = (str: string): Record<string, any> =>
  * through the browser.
  */
 export const openDownloadURL = (url: string): void => {
-  const newURL = clickableRoute(url);
-  window.location.href = newURL;
+  window.location.href = url;
 };
 
 /**
@@ -533,12 +532,12 @@ export const fetchWgetScript = async (
   filenameVars?: string[]
 ): Promise<string> => {
   let testurl = queryString.stringifyUrl({
-    url: `${metagridApiURL}/proxy/wget`,
+    url: apiRoutes.wget.path,
     query: { dataset_id: ids },
   });
 
   let url = queryString.stringifyUrl({
-    url: apiRoutes.wget.path,
+    url: `${wgetApiURL}`,
     query: { dataset_id: ids },
   });
 

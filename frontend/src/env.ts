@@ -29,11 +29,6 @@ export const nodeStatusURL = `${
   process.env.REACT_APP_ESGF_NODE_STATUS_URL as string
 }`;
 
-// cors-anywhere proxy
-// ------------------------------------------------------------------------------
-// https://github.com/Rob--W/cors-anywhere
-export const proxyURL = `${process.env.REACT_APP_CORS_PROXY_URL as string}`;
-
 // Keycloak
 // ------------------------------------------------------------------------------
 // https://github.com/keycloak/keycloak
