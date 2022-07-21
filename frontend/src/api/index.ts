@@ -23,7 +23,7 @@ import {
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
 import { metagridApiURL, wgetApiURL } from '../env';
 import axios from '../lib/axios';
-import apiRoutes, { ApiRoute, clickableRoute, HTTPCodeType } from './routes';
+import apiRoutes, { ApiRoute, HTTPCodeType } from './routes';
 
 export interface ResponseError extends Error {
   status?: number;
