@@ -475,6 +475,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
     <>
       <Switch>
         <Redirect from="/" exact to="/search" />
+        <Redirect from="/metagrid" to="/search" />
         <Redirect from="/cart" exact to="/cart/items" />
       </Switch>
       <div>
