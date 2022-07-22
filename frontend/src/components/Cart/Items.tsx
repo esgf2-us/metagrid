@@ -146,7 +146,9 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
             <Form
               form={downloadForm}
               layout="inline"
-              onFinish={({ downloadType }) => handleDownloadForm(downloadType)}
+              onFinish={({ downloadType }) =>
+                handleDownloadForm(downloadType as 'wget' | 'Globus')
+              }
               initialValues={{
                 downloadType: downloadOptions[0],
               }}

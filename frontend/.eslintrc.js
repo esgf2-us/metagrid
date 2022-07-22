@@ -6,14 +6,14 @@ module.exports = {
     node: true,
   },
   extends: [
+    'airbnb',
     'airbnb-typescript',
-    'airbnb/hooks',
     'plugin:@typescript-eslint/eslint-recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:@typescript-eslint/recommended-requiring-type-checking',
     'plugin:prettier/recommended',
   ],
-  plugins: ['react', 'jsx-a11y', 'import'],
+  plugins: ['react', 'jsx-a11y', 'import', 'prettier'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     project: './tsconfig.json',
@@ -28,6 +28,8 @@ module.exports = {
     ],
     'react/jsx-props-no-spreading': 'off',
     'react/prop-types': 'off',
+    '@typescript-eslint/no-misused-promises': 'off',
+    '@typescript-eslint/no-floating-promises': 'off',
     'react/self-closing-comp': 'off',
     // https://github.com/facebook/create-react-app/issues/6560#issuecomment-524688843
     'spaced-comment': [
@@ -48,5 +50,11 @@ module.exports = {
       'error',
       { functions: false, classes: true, variables: true, typedefs: true },
     ],
+    'react/require-default-props': 'off',
+    'react/function-component-definition': 'off',
+    'react/no-unstable-nested-components': 'off',
+    'react/jsx-no-useless-fragment': 'off',
+    'react/jsx-no-constructed-context-values': 'off',
+    'import/no-import-module-exports': 'off',
   },
 };

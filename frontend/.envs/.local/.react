@@ -21,10 +21,6 @@ REACT_APP_ESGF_NODE_URL=https://esgf-node.llnl.gov
 # https://github.com/ESGF/esgf-utils/blob/master/node_status/query_prom.py
 REACT_APP_ESGF_NODE_STATUS_URL=https://aims4.llnl.gov/prometheus/api/v1/query?query=probe_success%7Bjob%3D%22http_2xx%22%2C+target%3D~%22.%2Athredds.%2A%22%7D
 
-# cors-anywhere proxy
-# ------------------------------------------------------------------------------
-# https://github.com/Rob--W/cors-anywhere
-REACT_APP_CORS_PROXY_URL=http://localhost:3001
 
 # Keycloak
 # ------------------------------------------------------------------------------
@@ -32,3 +28,8 @@ REACT_APP_CORS_PROXY_URL=http://localhost:3001
 REACT_APP_KEYCLOAK_REALM=metagrid
 REACT_APP_KEYCLOAK_URL=http://keycloak:8080/auth
 REACT_APP_KEYCLOAK_CLIENT_ID=frontend
+
+# Temporary fix to remove Keycloak sourcemap error
+# ------------------------------------------------------------------------------
+# https://github.com/react-keycloak/react-keycloak/issues/176
+GENERATE_SOURCEMAP=false

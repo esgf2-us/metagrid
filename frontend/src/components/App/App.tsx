@@ -10,9 +10,8 @@ import {
 import { Affix, Breadcrumb, Button, Layout, message, Result } from 'antd';
 import React from 'react';
 import { useAsync } from 'react-async';
-import ReactGA from 'react-ga';
 import { hotjar } from 'react-hotjar';
-import { Link, Redirect, Route, Switch, useLocation } from 'react-router-dom';
+import { Link, Redirect, Route, Switch } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import {
   addUserSearchQuery,
@@ -25,9 +24,14 @@ import {
   updateUserCart,
 } from '../../api';
 import { CSSinJS } from '../../common/types';
-import { getUrlFromSearch } from '../../common/utils';
+import {
+  combineCarts,
+  getUrlFromSearch,
+  searchAlreadyExists,
+  unsavedLocalSearches,
+} from '../../common/utils';
 import { AuthContext } from '../../contexts/AuthContext';
-import { gaTrackingID, hjid, hjsv } from '../../env';
+import { hjid, hjsv } from '../../env';
 import Cart from '../Cart';
 import Summary from '../Cart/Summary';
 import { UserCart, UserSearchQueries, UserSearchQuery } from '../Cart/types';
@@ -62,18 +66,6 @@ const styles: CSSinJS = {
   messageRemoveIcon: { color: '#ff0000' },
 };
 
-const useGoogleAnalytics = (): void => {
-  const location = useLocation();
-
-  React.useEffect(() => {
-    /* istanbul ignore next */
-    if (gaTrackingID) {
-      ReactGA.initialize(gaTrackingID);
-      ReactGA.pageview(location.pathname + location.search);
-    }
-  }, [location]);
-};
-
 const useHotjar = (): void => {
   React.useEffect(() => {
     /* istanbul ignore next */
@@ -87,11 +79,10 @@ export type Props = {
   searchQuery: ActiveSearchQuery;
 };
 
-const metagridVersion = '1.0.2-beta';
+const metagridVersion = '1.0.6-beta';
 
 const App: React.FC<Props> = ({ searchQuery }) => {
   // Third-party tool integration
-  useGoogleAnalytics();
   useHotjar();
 
   // User's authentication state
@@ -135,19 +126,29 @@ const App: React.FC<Props> = ({ searchQuery }) => {
   >({});
 
   const [userCart, setUserCart] = React.useState<UserCart | []>(
-    JSON.parse(localStorage.getItem('userCart') || '[]')
+    JSON.parse(localStorage.getItem('userCart') || '[]') as RawSearchResults
   );
 
   const [userSearchQueries, setUserSearchQueries] = React.useState<
     UserSearchQueries | []
-  >(JSON.parse(localStorage.getItem('userSearchQueries') || '[]'));
+  >(
+    JSON.parse(
+      localStorage.getItem('userSearchQueries') || '[]'
+    ) as UserSearchQueries
+  );
 
   React.useEffect(() => {
     /* istanbul ignore else */
     if (isAuthenticated) {
-      void fetchUserCart(pk as string, accessToken as string)
+      void fetchUserCart(pk, accessToken)
         .then((rawUserCart) => {
-          setUserCart(rawUserCart.items);
+          const localItems = JSON.parse(
+            localStorage.getItem('userCart') || '[]'
+          ) as RawSearchResults;
+          const databaseItems = rawUserCart.items as RawSearchResults;
+          const combinedCarts = combineCarts(databaseItems, localItems);
+          void updateUserCart(pk, accessToken, combinedCarts);
+          setUserCart(combinedCarts);
         })
         .catch((error: ResponseError) => {
           void message.error({
@@ -155,9 +156,21 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           });
         });
 
-      void fetchUserSearchQueries(accessToken as string)
+      void fetchUserSearchQueries(accessToken)
         .then((rawUserSearches) => {
-          setUserSearchQueries(rawUserSearches.results);
+          const localItems = JSON.parse(
+            localStorage.getItem('userSearchQueries') || '[]'
+          ) as UserSearchQueries;
+          const databaseItems = rawUserSearches.results;
+          const searchQueriesToAdd = unsavedLocalSearches(
+            databaseItems,
+            localItems
+          );
+          /* istanbul ignore next */
+          searchQueriesToAdd.forEach((query) => {
+            void addUserSearchQuery(pk, accessToken, query);
+          });
+          setUserSearchQueries(databaseItems.concat(searchQueriesToAdd));
         })
         .catch((error: ResponseError) => {
           void message.error({
@@ -168,19 +181,14 @@ const App: React.FC<Props> = ({ searchQuery }) => {
   }, [isAuthenticated, pk, accessToken]);
 
   React.useEffect(() => {
-    /* istanbul ignore else */
-    if (!isAuthenticated) {
-      localStorage.setItem('userCart', JSON.stringify(userCart));
-    }
+    localStorage.setItem('userCart', JSON.stringify(userCart));
   }, [isAuthenticated, userCart]);
 
   React.useEffect(() => {
-    if (!isAuthenticated) {
-      localStorage.setItem(
-        'userSearchQueries',
-        JSON.stringify(userSearchQueries)
-      );
-    }
+    localStorage.setItem(
+      'userSearchQueries',
+      JSON.stringify(userSearchQueries)
+    );
   }, [isAuthenticated, userSearchQueries]);
 
   React.useEffect(() => {
@@ -197,9 +205,11 @@ const App: React.FC<Props> = ({ searchQuery }) => {
       .then((data) => {
         const projectName = searchQuery ? searchQuery.project.name : '';
         /* istanbul ignore else */
-        if (projectName !== '' && data) {
+        if (projectName && projectName !== '' && data) {
           const rawProj: RawProject | undefined = data.results.find((proj) => {
-            return proj.name === projectName;
+            return (
+              proj.name.toLowerCase() === (projectName as string).toLowerCase()
+            );
           });
           /* istanbul ignore next */
           if (rawProj) {
@@ -344,7 +354,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
 
     /* istanbul ignore else */
     if (isAuthenticated) {
-      void updateUserCart(pk as string, accessToken as string, newCart);
+      void updateUserCart(pk, accessToken, newCart);
     }
   };
 
@@ -353,7 +363,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
 
     /* istanbul ignore else */
     if (isAuthenticated) {
-      void updateUserCart(pk as string, accessToken as string, []);
+      void updateUserCart(pk, accessToken, []);
     }
   };
 
@@ -373,6 +383,14 @@ const App: React.FC<Props> = ({ searchQuery }) => {
       url,
     };
 
+    if (searchAlreadyExists(userSearchQueries, savedSearch)) {
+      void message.success({
+        content: 'Search query is already in your library',
+        icon: <BookOutlined style={styles.messageAddIcon} />,
+      });
+      return;
+    }
+
     const saveSuccess = (): void => {
       setUserSearchQueries([...userSearchQueries, savedSearch]);
       void message.success({
@@ -382,7 +400,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
     };
 
     if (isAuthenticated) {
-      void addUserSearchQuery(pk as string, accessToken as string, savedSearch)
+      void addUserSearchQuery(pk, accessToken, savedSearch)
         .then(() => {
           saveSuccess();
         })
@@ -425,7 +443,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
     };
 
     if (isAuthenticated) {
-      void deleteUserSearchQuery(searchUUID, accessToken as string)
+      void deleteUserSearchQuery(searchUUID, accessToken)
         .then(() => {
           deleteSuccess();
         })

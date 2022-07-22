@@ -121,14 +121,14 @@ const Table: React.FC<Props> = ({
       onSelect: (_record: any, _selected: any, selectedRows: any) => {
         /* istanbul ignore else */
         if (onRowSelect) {
-          onRowSelect(selectedRows);
+          onRowSelect(selectedRows as RawSearchResults);
         }
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onSelectAll: (_selected: any, selectedRows: any) => {
         /* istanbul ignore else */
         if (onRowSelect) {
-          onRowSelect(selectedRows);
+          onRowSelect(selectedRows as RawSearchResults);
         }
       },
       getCheckboxProps: (record: RawSearchResult) => ({
@@ -318,7 +318,7 @@ const Table: React.FC<Props> = ({
               className={topDataRowTargets.getClass('downloadScriptForm')}
               layout="inline"
               onFinish={({ [formKey]: download }) =>
-                handleDownloadForm(download)
+                handleDownloadForm(download as DatasetDownloadTypes)
               }
               initialValues={{ [formKey]: allowedDownloadTypes[0] }}
             >

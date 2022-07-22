@@ -1,4 +1,13 @@
-import { ActiveSearchQuery } from '../components/Search/types';
+import { UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
+import { ActiveFacets } from '../components/Facets/types';
+import {
+  ActiveSearchQuery,
+  RawSearchResult,
+  RawSearchResults,
+  ResultType,
+  TextInputs,
+  VersionType,
+} from '../components/Search/types';
 
 /**
  * Checks if an object is empty.
@@ -81,46 +90,89 @@ export const getUrlFromSearch = (search: ActiveSearchQuery): string => {
   }
 
   const params = new URLSearchParams();
-  const newSearch = { ...search } as Record<string, unknown>;
+  const newSearch = { ...search };
 
-  // Clear unecessary default values
-  delete newSearch.project; // We don't need all the project data, as it can be loaded later
-  if (newSearch.versionType === 'latest') {
-    delete newSearch.versionType;
+  params.set('project', newSearch.project.name as string);
+
+  if (newSearch.versionType !== 'latest') {
+    params.set('versionType', newSearch.versionType);
   }
-  if (newSearch.resultType === 'all') {
-    delete newSearch.resultType;
+
+  if (newSearch.resultType !== 'all') {
+    params.set('resultType', newSearch.resultType);
   }
-  if (!newSearch.minVersionDate) {
-    delete newSearch.minVersionDate;
+
+  if (newSearch.minVersionDate) {
+    params.set('minVersionDate', newSearch.minVersionDate);
   }
-  if (!newSearch.maxVersionDate) {
-    delete newSearch.maxVersionDate;
+
+  if (newSearch.maxVersionDate) {
+    params.set('maxVersionDate', newSearch.maxVersionDate);
   }
+
   if (
     Array.isArray(newSearch.filenameVars) &&
-    newSearch.filenameVars.length < 1
+    newSearch.filenameVars.length > 0
   ) {
-    delete newSearch.filenameVars;
+    params.set('filenameVars', JSON.stringify(newSearch.filenameVars));
   }
+
   if (
     newSearch.activeFacets &&
     typeof newSearch.activeFacets === 'object' &&
-    Object.keys(newSearch.activeFacets).length < 1
+    Object.keys(newSearch.activeFacets).length > 0
   ) {
-    delete newSearch.activeFacets;
-  }
-  if (Array.isArray(newSearch.textInputs) && newSearch.textInputs.length < 1) {
-    delete newSearch.textInputs;
+    // Convert array values to string if they are of size 1
+    Object.keys(search.activeFacets).forEach((key) => {
+      if ((newSearch.activeFacets[key] as string[]).length === 1) {
+        // eslint-disable-next-line
+        newSearch.activeFacets[key] = (search.activeFacets[key] as string[])[0];
+      }
+    });
+    params.set('activeFacets', JSON.stringify(newSearch.activeFacets));
   }
 
-  params.set('project', search.project.name as string);
-
-  if (Object.entries(newSearch).length > 0) {
-    params.set('data', JSON.stringify({ ...newSearch }));
+  if (Array.isArray(newSearch.textInputs) && newSearch.textInputs.length > 0) {
+    params.set('textInputs', JSON.stringify(newSearch.textInputs));
   }
 
   return `${urlString}?${params.toString()}`;
+};
+
+export const getAltSearchFromUrl = (url?: string): ActiveSearchQuery => {
+  let searchQuery: ActiveSearchQuery = {
+    project: {},
+    versionType: 'latest',
+    resultType: 'all',
+    minVersionDate: null,
+    maxVersionDate: null,
+    filenameVars: [],
+    activeFacets: {},
+    textInputs: [],
+  };
+
+  const params = new URLSearchParams(url || window.location.search);
+  // eslint-disable-next-line
+  const paramEntries: { [k: string]: string } = Object.fromEntries(
+    params.entries()
+  );
+  // eslint-disable-next-line
+  const activeFacets: { [k: string]: string[] } = {};
+  Object.keys(paramEntries).forEach((key: string) => {
+    activeFacets[key] = [paramEntries[key]];
+  });
+
+  // eslint-disable-next-line
+  const projName = (url || window.location.pathname)
+    .split('/')
+    .filter(Boolean)
+    .at(-1);
+
+  if (projName) {
+    searchQuery = { ...searchQuery, project: { name: projName }, activeFacets };
+  }
+
+  return searchQuery;
 };
 
 export const getSearchFromUrl = (url?: string): ActiveSearchQuery => {
@@ -138,16 +190,102 @@ export const getSearchFromUrl = (url?: string): ActiveSearchQuery => {
   const params = new URLSearchParams(url || window.location.search);
 
   const projName = params.get('project');
-  const data = params.get('data');
-  if (data && projName) {
-    const activeSearches: ActiveSearchQuery = JSON.parse(
-      data
-    ) as ActiveSearchQuery;
-    return { ...searchQuery, ...activeSearches, project: { name: projName } };
-  }
+  const versionType = params.get('versionType');
+  const resultType = params.get('resultType');
+  const minVersionDate = params.get('minVersionDate');
+  const maxVersionDate = params.get('maxVersionDate');
+  const filenameVars = params.get('filenameVars');
+  const activeFacets = params.get('activeFacets');
+  const textInputs = params.get('textInputs');
+
   if (projName) {
+    if (versionType) {
+      searchQuery.versionType = versionType as VersionType;
+    }
+    if (resultType) {
+      searchQuery.resultType = resultType as ResultType;
+    }
+    if (minVersionDate) {
+      searchQuery.minVersionDate = minVersionDate;
+    }
+    if (maxVersionDate) {
+      searchQuery.maxVersionDate = maxVersionDate;
+    }
+    if (filenameVars) {
+      searchQuery.filenameVars = JSON.parse(filenameVars) as TextInputs;
+    }
+    if (activeFacets) {
+      searchQuery.activeFacets = JSON.parse(activeFacets) as ActiveFacets;
+
+      // Convert string values to array
+      Object.keys(searchQuery.activeFacets).forEach((key) => {
+        if (!Array.isArray(searchQuery.activeFacets[key])) {
+          // eslint-disable-next-line
+          searchQuery.activeFacets[key] = [
+            searchQuery.activeFacets[key],
+          ] as string[];
+        }
+      });
+    }
+    if (textInputs) {
+      searchQuery.textInputs = JSON.parse(textInputs) as TextInputs;
+    }
+
     return { ...searchQuery, project: { name: projName } };
   }
 
-  return searchQuery;
+  return getAltSearchFromUrl(url);
+};
+
+export const combineCarts = (
+  databaseItems: RawSearchResults,
+  localItems: RawSearchResults
+): RawSearchResults => {
+  const itemsNotInDatabase = localItems.filter(
+    (item: RawSearchResult) =>
+      !databaseItems.some((dataset) => dataset.id === item.id)
+  );
+  const combinedItems = databaseItems.concat(itemsNotInDatabase);
+  return combinedItems;
+};
+
+const convertSearchToHash = (query: UserSearchQuery): number => {
+  /* eslint-disable */
+  let hash: number = 0;
+  const nonUniqueQuery: UserSearchQuery = { ...query, uuid: '', user: null };
+  const queryStr = JSON.stringify(nonUniqueQuery);
+  let i, chr;
+
+  for (i = 0; i < queryStr.length; i++) {
+    chr = queryStr.charCodeAt(i);
+    hash = (hash << 5) - hash + chr;
+    hash |= 0; // Convert to 32bit integer
+  }
+  return hash;
+};
+
+export const searchAlreadyExists = (
+  existingSearches: UserSearchQueries,
+  newSearch: UserSearchQuery
+): boolean => {
+  const hashValueLocal = convertSearchToHash(newSearch);
+  return existingSearches.some((search) => {
+    if (search.uuid === newSearch.uuid) {
+      return true;
+    }
+    const hashValueDatabase = convertSearchToHash(search);
+
+    return hashValueDatabase === hashValueLocal;
+  });
+};
+
+export const unsavedLocalSearches = (
+  databaseItems: UserSearchQueries,
+  localItems: UserSearchQueries
+): UserSearchQueries => {
+  const itemsNotInDatabase = localItems.filter(
+    (localSearchQuery: UserSearchQuery) =>
+      !searchAlreadyExists(databaseItems, localSearchQuery)
+  );
+  return itemsNotInDatabase;
 };

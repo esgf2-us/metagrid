@@ -28,6 +28,11 @@ class Project(models.Model):
         null=True,
         help_text="The url associated with this project.",
     )
+    display_order = models.IntegerField(
+        help_text="The value used to order the project results list. 0 indicates show at the top, 1 show under 0 etc.",
+        null=True,
+        blank=True,
+    )
     description = models.TextField(null=True)
 
     class Meta:

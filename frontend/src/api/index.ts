@@ -1,6 +1,7 @@
 /**
  * This file contains HTTP Request functions.
  */
+import 'setimmediate'; // Added because in Jest 27, setImmediate is not defined, causing test errors
 import humps from 'humps';
 import queryString from 'query-string';
 import {
@@ -20,7 +21,7 @@ import {
   TextInputs,
 } from '../components/Search/types';
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
-import { proxyURL } from '../env';
+import { metagridApiURL } from '../env';
 import axios from '../lib/axios';
 import apiRoutes, { ApiRoute, clickableRoute, HTTPCodeType } from './routes';
 
@@ -38,7 +39,7 @@ export interface ResponseError extends Error {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const camelizeKeysFromString = (str: string): Record<string, any> =>
-  humps.camelizeKeys(JSON.parse(str));
+  humps.camelizeKeys(JSON.parse(str) as object[]);
 
 /**
  * This function removes the proxyString from the URL so the link can be accessed
@@ -73,7 +74,7 @@ export const fetchUserAuth = async (args: [string]): Promise<RawUserAuth> =>
   axios
     .post(apiRoutes.keycloakAuth.path, { access_token: args[0] })
     .then((res) => res.data as Promise<RawUserAuth>)
-    .catch((error) => {
+    .catch((error: ResponseError) => {
       throw new Error(
         errorMsgBasedOnHTTPStatusCode(error, apiRoutes.keycloakAuth)
       );
@@ -91,7 +92,7 @@ export const fetchUserInfo = async (args: [string]): Promise<RawUserInfo> =>
       },
     })
     .then((res) => res.data as Promise<RawUserInfo>)
-    .catch((error) => {
+    .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userInfo));
     });
 
@@ -449,9 +450,11 @@ export const fetchDatasetCitation = async ({
   [key: string]: string;
 }): Promise<{ [key: string]: unknown }> =>
   axios
-    .get(`${proxyURL}/${url}`)
+    .post(`${metagridApiURL}/proxy/citation`, {
+      citurl: url,
+    })
     .then((res) => {
-      const citation = processCitation(res.data);
+      const citation = processCitation(res.data as RawCitation);
       return citation;
     })
     .catch((error: ResponseError) => {
@@ -573,6 +576,11 @@ export const fetchGlobusScript = async (
   ids: string[] | string,
   filenameVars?: string[]
 ): Promise<string> => {
+  let testurl = queryString.stringifyUrl({
+    url: `${metagridApiURL}/proxy/wget`,
+    query: { dataset_id: ids },
+  });
+
   let url = queryString.stringifyUrl({
     url: apiRoutes.globus.path,
     query: { dataset_id: ids },
@@ -586,10 +594,11 @@ export const fetchGlobusScript = async (
       }
     );
     url += `&${filenameVarsParam}`;
+    testurl += `&${filenameVarsParam}`;
   }
 
   return axios
-    .get(url)
+    .get(testurl)
     .then(() => url)
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globus));
