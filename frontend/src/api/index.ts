@@ -21,9 +21,9 @@ import {
   TextInputs,
 } from '../components/Search/types';
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
-import { metagridApiURL } from '../env';
+import { metagridApiURL, wgetApiURL } from '../env';
 import axios from '../lib/axios';
-import apiRoutes, { ApiRoute, clickableRoute, HTTPCodeType } from './routes';
+import apiRoutes, { ApiRoute, HTTPCodeType } from './routes';
 
 export interface ResponseError extends Error {
   status?: number;
@@ -46,8 +46,7 @@ const camelizeKeysFromString = (str: string): Record<string, any> =>
  * through the browser.
  */
 export const openDownloadURL = (url: string): void => {
-  const newURL = clickableRoute(url);
-  window.location.href = newURL;
+  window.location.href = url;
 };
 
 /**
@@ -528,15 +527,18 @@ export const fetchDatasetFiles = async (
  * If the API returns a 200, it returns the responseURL so the browser can open
  * the link.
  */
-export const fetchWgetScript = async (
+ export const fetchWgetScript = async (
   ids: string[] | string,
   filenameVars?: string[],
   simple_bool?: boolean,
   access_token?: string
 ): Promise<string> => {
-  let url = '';
+  let testurl = queryString.stringifyUrl({
+    url: `${metagridApiURL}/proxy/wget`,
+    query: { dataset_id: ids },
+  });
   if (access_token) {
-    url = queryString.stringifyUrl({
+    let url = queryString.stringifyUrl({
       url: apiRoutes.wget.path,
       query: {
         dataset_id: ids,
@@ -544,7 +546,6 @@ export const fetchWgetScript = async (
         bearer_token: access_token,
       },
     });
-  } else {
     url = queryString.stringifyUrl({
       url: apiRoutes.wget.path,
       query: { dataset_id: ids, simple: simple_bool },
@@ -558,34 +559,28 @@ export const fetchWgetScript = async (
       }
     );
     url += `&${filenameVarsParam}`;
+    testurl += `&${filenameVarsParam}`;
   }
   return axios
-    .get(url)
+    .get(testurl)
     .then(() => url)
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.wget));
     });
 };
 
-/**
- * Performs validation against Globus Script API to ensure a 200 response.
- *
- * If the API returns a 200 response, it returns the download url.
- */
 export const fetchGlobusScript = async (
   ids: string[] | string,
   filenameVars?: string[]
 ): Promise<string> => {
   let testurl = queryString.stringifyUrl({
-    url: `${metagridApiURL}/proxy/wget`,
+    url: `${metagridApiURL}/proxy/globus_script`,
     query: { dataset_id: ids },
   });
-
   let url = queryString.stringifyUrl({
-    url: apiRoutes.globus.path,
+    url: apiRoutes.wget.path,
     query: { dataset_id: ids },
   });
-
   if (filenameVars && filenameVars.length > 0) {
     const filenameVarsParam = queryString.stringify(
       { query: filenameVars },
@@ -596,12 +591,11 @@ export const fetchGlobusScript = async (
     url += `&${filenameVarsParam}`;
     testurl += `&${filenameVarsParam}`;
   }
-
   return axios
     .get(testurl)
     .then(() => url)
     .catch((error: ResponseError) => {
-      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globus));
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.wget));
     });
 };
 

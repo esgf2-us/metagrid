@@ -1,16 +1,4 @@
-<<<<<<< HEAD
-import {
-  esgfNodeURL,
-  metagridApiURL,
-  nodeStatusURL,
-  proxyURL,
-  wgetApiURL,
-  wgetSimpleURL,
-  globusApiURL,
-} from '../env';
-=======
-import { metagridApiURL, proxyURL } from '../env';
->>>>>>> master
+import { esgfNodeURL, metagridApiURL } from '../env';
 
 export type HTTPCodeType = 400 | 401 | 403 | 404 | 405 | 'generic';
 
@@ -61,7 +49,7 @@ type ApiRoutes = {
  * served as a clickable link within the browser.
  */
 export const clickableRoute = (route: string): string =>
-  route.replace(`${proxyURL}/`, '');
+  route.replace(`${metagridApiURL}/proxy/search`, `${esgfNodeURL}`);
 
 // Any path with parameters (e.g. '/:datasetID/') must be in camelCase
 // https://mswjs.io/docs/basics/path-matching#path-with-parameters
@@ -108,22 +96,14 @@ const apiRoutes: ApiRoutes = {
     handleErrorMsg: (HTTPCode) =>
       mapHTTPErrorCodes('ESGF Citation API', HTTPCode),
   },
-  // ESGF wget API
+  // ESGF wget API, GLobus
   wget: {
     path: `${metagridApiURL}/proxy/wget`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('ESGF wget API', HTTPCode),
   },
-  wget_simple: {
-    path: `${proxyURL}/${wgetSimpleURL}`,
-    handleErrorMsg: (HTTPCode) =>
-      mapHTTPErrorCodes('ESGF simple_wget API', HTTPCode),
-  },
-
-  // ESGF globus script API
   globus: {
-    path: `${proxyURL}/${globusApiURL}`,
-    handleErrorMsg: (HTTPCode) =>
-      mapHTTPErrorCodes('ESGF globus API', HTTPCode),
+    path: `${metagridApiURL}/proxy/globus_script`,
+    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('ESGF Globus script API', HTTPCode),
   },
   // ESGF Node Status API
   nodeStatus: {
