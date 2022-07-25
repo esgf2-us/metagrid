@@ -50,6 +50,7 @@ urlpatterns = [
     path("proxy/citation", do_citation, name="do-citation"),
     path("proxy/wget", do_wget, name="do-wget"),
     path("proxy/status", do_status, name="do-status"),
+    path("proxy/globus_script", do_wget, name="do-globusscript"),
     path(
         "dj-rest-auth/keycloak", KeycloakLogin.as_view(), name="keycloak_login"
     ),
