@@ -39,7 +39,6 @@ type ApiRoutes = {
   esgfSearch: ApiRoute;
   citation: ApiRoute;
   wget: ApiRoute;
-  wget_simple: ApiRoute;
   globus: ApiRoute;
   nodeStatus: ApiRoute;
 };
@@ -103,7 +102,8 @@ const apiRoutes: ApiRoutes = {
   },
   globus: {
     path: `${metagridApiURL}/proxy/globus_script`,
-    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('ESGF Globus script API', HTTPCode),
+    handleErrorMsg: (HTTPCode) =>
+      mapHTTPErrorCodes('ESGF Globus script API', HTTPCode),
   },
   // ESGF Node Status API
   nodeStatus: {

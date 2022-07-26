@@ -527,7 +527,7 @@ export const fetchDatasetFiles = async (
  * If the API returns a 200, it returns the responseURL so the browser can open
  * the link.
  */
- export const fetchWgetScript = async (
+export const fetchWgetScript = async (
   ids: string[] | string,
   filenameVars?: string[],
   simple_bool?: boolean,
@@ -537,8 +537,9 @@ export const fetchDatasetFiles = async (
     url: `${metagridApiURL}/proxy/wget`,
     query: { dataset_id: ids },
   });
+  let url = '';
   if (access_token) {
-    let url = queryString.stringifyUrl({
+    url = queryString.stringifyUrl({
       url: apiRoutes.wget.path,
       query: {
         dataset_id: ids,
@@ -546,6 +547,7 @@ export const fetchDatasetFiles = async (
         bearer_token: access_token,
       },
     });
+  } else {
     url = queryString.stringifyUrl({
       url: apiRoutes.wget.path,
       query: { dataset_id: ids, simple: simple_bool },
