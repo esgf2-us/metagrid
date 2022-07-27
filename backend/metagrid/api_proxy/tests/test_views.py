@@ -14,6 +14,16 @@ class TestProxyViewSet(APITestCase):
         )
         assert response.status_code == status.HTTP_200_OK
 
+    def test_globus(self):
+        url = reverse("do-globusscript")
+        response = self.client.get(
+            url,
+            {
+                "dataset_id": " CMIP6.CMIP.IPSL.IPSL-CM6A-LR.abrupt-4xCO2.r12i1p1f1.Amon.n2oglobal.gr.v20191003|esgf-data1.llnl.gov"
+            },
+        )
+        assert response.status_code == status.HTTP_200_OK
+
     def test_search(self):
         url = reverse("do-search")
         postdata = {"project": "CMIP6", "limit": 0}

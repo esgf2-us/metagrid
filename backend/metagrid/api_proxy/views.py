@@ -5,12 +5,14 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
+from django.conf import settings
+
 
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
 def do_search(request):
 
-    return do_request(request, "https://esgf-node.llnl.gov/esg-search/search")
+    return do_request(request, getattr(settings, "SEARCH_URL", "https://esgf-node.llnl.gov/esg-search/search"))
 
 
 @require_http_methods(["POST"])
@@ -42,9 +44,8 @@ def do_citation(request):
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
 def do_status(request):
-    resp = requests.get(
-        "https://aims4.llnl.gov/prometheus/api/v1/query?query=probe_success%7Bjob%3D%22http_2xx%22%2C+target%3D~%22.%2Athredds.%2A%22%7D"
-    )
+    status_url = getattr(settings, "STATUS_URL", "https://aims4.llnl.gov/prometheus/api/v1/query?query=probe_success%7Bjob%3D%22http_2xx%22%2C+target%3D~%22.%2Athredds.%2A%22%7D")
+    resp = requests.get(status_url)
     if resp.status_code == 200:  # pragma: no cover
         return HttpResponse(resp.text)
     else:  # pragma: no cover
@@ -54,13 +55,13 @@ def do_status(request):
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
 def do_wget(request):
-    return do_request(request, "https://esgf-node.llnl.gov/esg-search/wget")
+    return do_request(request, getattr(settings, "WGET_URL", "https://esgf-node.llnl.gov/esg-search/wget"))
+
 
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
-def do_wget(request):
-    return do_request(request, "https://")
-
+def do_globus_script(request):
+    return do_request(request, getattr(settings, "GLOBUS_SCRIPT_URL" "https://greyworm1-rh7.llnl.gov/globusscript"))
 
 
 def do_request(request, urlbase):
