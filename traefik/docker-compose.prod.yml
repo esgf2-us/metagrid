@@ -8,6 +8,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        host_name: ${HOST_NAME}
+        frontend_prefix: ${FRONTEND_PREFIX}
+        backend_prefix: ${BACKEND_PREFIX}
     image: metagrid_production_traefik
     volumes:
       - production_traefik:/etc/traefik/acme

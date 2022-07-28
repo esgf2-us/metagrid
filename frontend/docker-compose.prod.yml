@@ -10,7 +10,7 @@ services:
       - traefik_default
       - default
     env_file:
-      - .envs/.production/.react
+      - ./../.metagrid_config
     volumes:
       - './:/app'
       - '/app/node_modules'
