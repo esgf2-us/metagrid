@@ -1,7 +1,7 @@
 # =================================TREAFIK CONFIG===============================
-HOST_NAME=aims2.llnl.gov
-FRONTEND_PREFIX=test
-BACKEND_PREFIX=metagrid-backend
+HOST_NAME=
+FRONTEND_PREFIX=
+BACKEND_PREFIX=
 
 # =================================BACKEND CONFIG===============================
 
@@ -36,7 +36,7 @@ POSTGRES_PASSWORD=postgres
 
 # General
 # ------------------------------------------------------------------------------
-PUBLIC_URL=$HOST_NAME
+PUBLIC_URL=$FRONTEND_PREFIX
 
 # MetaGrid API
 # ------------------------------------------------------------------------------
@@ -61,7 +61,7 @@ REACT_APP_ESGF_NODE_STATUS_URL=https://aims4.llnl.gov/prometheus/api/v1/query?qu
 # Keycloak
 # ------------------------------------------------------------------------------
 # https://github.com/keycloak/keycloak
-REACT_APP_KEYCLOAK_URL=
+REACT_APP_KEYCLOAK_URL=$KEYCLOAK_URL
 REACT_APP_KEYCLOAK_REALM=$KEYCLOAK_REALM
 REACT_APP_KEYCLOAK_CLIENT_ID=
 

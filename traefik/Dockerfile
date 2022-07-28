@@ -14,9 +14,10 @@ ENV HOST_NAME=$host_name
 ENV FRONTEND_PREFIX=$frontend_prefix
 ENV BACKEND_PREFIX=$backend_prefix
 
+# Convert template to traefik.yml
 COPY traefik.tmpl /traefik.tmpl
-RUN if [[ $frontend_prefix ]] ; then FRONTEND_PREFIX=" && PathPrefix('/${frontend_prefix}')"; fi &&  \
-    if [[ $backend_prefix ]] ; then BACKEND_PREFIX=" && PathPrefix('/${backend_prefix}')"; fi &&  \
-    export HOST_NAME=$HOST_NAME FRONTEND_PREFIX=$FRONTEND_PREFIX \
-    BACKEND_PREFIX=$BACKEND_PREFIX && envsubst < traefik.tmpl > /etc/traefik/traefik.yml
+COPY make_traefik.sh /make_traefik.sh
+RUN chmod +x /make_traefik.sh
+RUN ./make_traefik.sh
 RUN rm traefik.tmpl
+RUN rm make_traefik.sh

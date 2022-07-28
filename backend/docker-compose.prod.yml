@@ -15,7 +15,7 @@ services:
       - production_postgres_data:/var/lib/postgresql/data
       - production_postgres_data_backups:/backups
     env_file:
-      - ./../metagrid_config
+      - ./../metagrid_configs/metagrid_config
 
   django:
     build:

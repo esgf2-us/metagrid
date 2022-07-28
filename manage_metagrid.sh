@@ -1,9 +1,10 @@
 # Constants
 METAGRID_CONFIG=metagrid_config
+DEFAULT_EDITOR=emacs
 
 #Custom functions
 function configure() {
-    vim .metagrid_configs/$METAGRID_CONFIG && cp .metagrid_configs/$METAGRID_CONFIG traefik/.env
+    sudo $DEFAULT_EDITOR metagrid_configs/$METAGRID_CONFIG && cp metagrid_configs/$METAGRID_CONFIG traefik/.env
 }
 
 #Arg1 name of service: frontend, backend or traefik
@@ -11,13 +12,13 @@ function configure() {
 function startService() {
     echo "Starting $1"
     cd $1
-    docker-compose -f docker-compose.prod.yml up --build $2
+    sudo docker compose -f docker-compose.prod.yml up --build $2
 }
 
 function stopService() {
     echo "Stopping $1"
     cd $1
-    docker-compose -f docker-compose.prod.yml down
+    sudo docker compose -f docker-compose.prod.yml down
 }
 
 function startMetagridContainers() {
