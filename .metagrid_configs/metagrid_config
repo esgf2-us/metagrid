@@ -1,6 +1,6 @@
 # =================================TREAFIK CONFIG===============================
-HOST_NAME=esgf-dev1.llnl.gov
-FRONTEND_PREFIX=metagrid
+HOST_NAME=aims2.llnl.gov
+FRONTEND_PREFIX=test
 BACKEND_PREFIX=metagrid-backend
 
 # =================================BACKEND CONFIG===============================
