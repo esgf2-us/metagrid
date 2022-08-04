@@ -1,7 +1,7 @@
 # =================================TREAFIK CONFIG===============================
-HOST_NAME=
-FRONTEND_PREFIX=
-BACKEND_PREFIX=
+DOMAIN_NAME=example.com
+PUBLIC_URL=
+DOMAIN_SUBDIRECTORY=metagrid-backend
 
 # =================================BACKEND CONFIG===============================
 
@@ -11,8 +11,6 @@ DJANGO_SETTINGS_MODULE=config.settings.production
 DJANGO_SECRET_KEY=
 DJANGO_ADMIN_URL=
 DJANGO_ALLOWED_HOSTS=
-DOMAIN_NAME=$HOST_NAME
-DOMAIN_SUBDIRECTORY=$BACKEND_PREFIX
 
 # Security
 # ------------------------------------------------------------------------------
@@ -33,10 +31,6 @@ POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
 
 # =================================FRONTEND CONFIG===============================
-
-# General
-# ------------------------------------------------------------------------------
-PUBLIC_URL=$FRONTEND_PREFIX
 
 # MetaGrid API
 # ------------------------------------------------------------------------------
@@ -61,8 +55,8 @@ REACT_APP_ESGF_NODE_STATUS_URL=https://aims4.llnl.gov/prometheus/api/v1/query?qu
 # Keycloak
 # ------------------------------------------------------------------------------
 # https://github.com/keycloak/keycloak
-REACT_APP_KEYCLOAK_URL=$KEYCLOAK_URL
-REACT_APP_KEYCLOAK_REALM=$KEYCLOAK_REALM
+REACT_APP_KEYCLOAK_URL=
+REACT_APP_KEYCLOAK_REALM=
 REACT_APP_KEYCLOAK_CLIENT_ID=
 
 # react-hotjar

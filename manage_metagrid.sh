@@ -1,10 +1,44 @@
 # Constants
 METAGRID_CONFIG=metagrid_config
 DEFAULT_EDITOR=emacs
+CONFIG_DIR=metagrid_configs
+BACKUP_DIR=$CONFIG_DIR/backups
 
 #Custom functions
 function configure() {
-    sudo $DEFAULT_EDITOR metagrid_configs/$METAGRID_CONFIG && cp metagrid_configs/$METAGRID_CONFIG traefik/.env
+    sudo $DEFAULT_EDITOR $CONFIG_DIR/$METAGRID_CONFIG
+    cp $CONFIG_DIR/$METAGRID_CONFIG traefik/.env
+    cp $CONFIG_DIR/$METAGRID_CONFIG $BACKUP_DIR/config_backup_$(date +'%a_%b_%g-%I_%M_%S')
+}
+
+function setCurrentConfig() {
+    clear
+    fileCount=$(ls "$BACKUP_DIR"| wc -l)
+    if [ "$fileCount" -lt "1" ]; then
+        echo "There aren't any config files in the backup directory."
+        read -p "Press enter to continue..." option
+        return
+    fi
+
+    echo "Enter the config backup to restore (1 -"$fileCount"):"
+    ls $BACKUP_DIR/ | cat -n
+    read configNum
+    fileName=$(ls "$BACKUP_DIR" | sed -n "$configNum"p)
+    configName=$(pwd)/$BACKUP_DIR/$fileName
+
+    if test -f "$configName"; then
+        echo "Setting $fileName as current..."
+        sudo cp $CONFIG_DIR/$METAGRID_CONFIG $BACKUP_DIR/config_backup_$(date +'%a_%b_%g-%I_%M_%S')
+        sudo cp $configName $CONFIG_DIR/$METAGRID_CONFIG
+        echo "Done!"
+    else
+        clear
+        echo "The config file number entered was invalid."
+        read -p "Try again? (y/n): " option
+        if [ "$option" = "y" ]; then
+            setCurrentConfig
+        fi
+    fi
 }
 
 #Arg1 name of service: frontend, backend or traefik
@@ -12,13 +46,13 @@ function configure() {
 function startService() {
     echo "Starting $1"
     cd $1
-    sudo docker compose -f docker-compose.prod.yml up --build $2
+    sudo docker-compose -f docker-compose.prod.yml up --build $2
 }
 
 function stopService() {
     echo "Stopping $1"
     cd $1
-    sudo docker compose -f docker-compose.prod.yml down
+    sudo docker-compose -f docker-compose.prod.yml down
 }
 
 function startMetagridContainers() {
@@ -37,10 +71,11 @@ function stopMetagridContainers() {
 function mainMenu() {
     echo "Main Menu Options:"
     echo "1 Configure Metagrid"
-    echo "2 Start all containers"
-    echo "3 Stop all containers"
-    echo "4 Container Start / Stop Menu"
-    echo "5 Exit"
+    echo "2 Restore Backup Config"
+    echo "3 Start all containers"
+    echo "4 Stop all containers"
+    echo "5 Container Start / Stop Menu"
+    echo "6 Exit"
     read option
     if [ -z $option ]; then
         clear
@@ -52,22 +87,26 @@ function mainMenu() {
             clear
             mainMenu
         elif [ "$option" = "2" ]; then
-            startMetagridContainers
+            setCurrentConfig
             clear
             mainMenu
         elif [ "$option" = "3" ]; then
-            stopMetagridContainers
+            startMetagridContainers
             clear
             mainMenu
         elif [ "$option" = "4" ]; then
+            stopMetagridContainers
+            clear
+            mainMenu
+        elif [ "$option" = "5" ]; then
             clear
             containersMenu
-        elif [ "$option" = "5" ]; then
+        elif [ "$option" = "6" ]; then
             return 0
         else
             clear
             echo "You entered: $option"
-            echo "Please enter a number from 1 to 5"
+            echo "Please enter a number from 1 to 6"
             mainMenu
         fi
     fi

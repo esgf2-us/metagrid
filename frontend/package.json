@@ -3,16 +3,16 @@
   "version": "1.0.7-beta",
   "private": true,
   "scripts": {
-    "build:local": "env-cmd -f .envs/.local/.react react-scripts build",
-    "build:production": "env-cmd -f .envs/.production/.react react-scripts build",
+    "build:local": "env-cmd -f .envs/.react react-scripts build",
+    "build:production": "env-cmd -f ./../metagrid_configs/metagrid_config react-scripts build",
     "eject": "react-scripts eject",
     "lint": "eslint './src/**/*.{js,jsx,ts,tsx,json}' --fix --max-warnings=0 --no-error-on-unmatched-pattern && tsc --noemit",
     "precommit": "eslint './src/**/*.{js,jsx,ts,tsx,json}' --max-warnings=0 --no-error-on-unmatched-pattern",
-    "start:local": "env-cmd -f .envs/.local/.react react-scripts start",
-    "start:production": "env-cmd -f .envs/.production/.react react-scripts start",
-    "test": "CI=1 env-cmd -f .envs/.local/.react react-scripts test --runInBand",
-    "test:coverage": "CI=1 env-cmd -f .envs/.local/.react react-scripts test --coverage",
-    "test:watch": "env-cmd -f .envs/.local/.react react-scripts test --runInBand"
+    "start:local": "env-cmd -f .envs/.react react-scripts start",
+    "start:production": "env-cmd -f ./../metagrid_configs/metagrid_config react-scripts start",
+    "test": "CI=1 env-cmd -f .envs/.react react-scripts test --runInBand",
+    "test:coverage": "CI=1 env-cmd -f .envs/.react react-scripts test --coverage",
+    "test:watch": "env-cmd -f .envs/.react react-scripts test --runInBand"
   },
   "browserslist": {
     "production": [
