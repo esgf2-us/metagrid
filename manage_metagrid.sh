@@ -6,9 +6,17 @@ BACKUP_DIR=$CONFIG_DIR/backups
 
 #Custom functions
 function configure() {
-    sudo $DEFAULT_EDITOR $CONFIG_DIR/$METAGRID_CONFIG
-    sudo cp $CONFIG_DIR/$METAGRID_CONFIG traefik/.env
     sudo cp $CONFIG_DIR/$METAGRID_CONFIG $BACKUP_DIR/config_backup_$(date +'%a_%b_%g-%I_%M_%S')
+    sudo $DEFAULT_EDITOR $CONFIG_DIR/$METAGRID_CONFIG
+    saveConfigs $CONFIG_DIR/$METAGRID_CONFIG
+}
+
+# Saves config to required directories
+# Arg1 name of config file to copy into active locations
+function saveConfigs() {
+    sudo cp $CONFIG_DIR/$METAGRID_CONFIG traefik/.env
+    sudo cp $CONFIG_DIR/$METAGRID_CONFIG frontend/.envs/.prod.env
+    sudo cp $CONFIG_DIR/$METAGRID_CONFIG backend/.envs/.prod.env
 }
 
 function setCurrentConfig() {
@@ -30,7 +38,7 @@ function setCurrentConfig() {
         echo "Setting $fileName as current..."
         sudo cp $CONFIG_DIR/$METAGRID_CONFIG $BACKUP_DIR/config_backup_$(date +'%a_%b_%g-%I_%M_%S')
         sudo cp $configName $CONFIG_DIR/$METAGRID_CONFIG
-        sudo cp $configName traefik/.env
+        saveConfigs
         echo "Done!"
     else
         clear
@@ -78,6 +86,7 @@ function stopLocalService() {
 
 function startMetagridContainers() {
     clear
+    saveConfigs $CONFIG_DIR/$METAGRID_CONFIG
     startService traefik -d
     startService backend -d
     startService frontend -d
