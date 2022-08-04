@@ -28,8 +28,7 @@ services:
     depends_on:
       - postgres
     env_file:
-      - ./.envs/.production/.django
-      - ./.envs/.production/.postgres
+      - ./../metagrid_configs/metagrid_config
     ports:
       - "5000:5000"
     command: /start

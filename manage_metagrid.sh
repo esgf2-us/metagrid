@@ -42,30 +42,66 @@ function setCurrentConfig() {
     fi
 }
 
-#Arg1 name of service: frontend, backend or traefik
+#Arg1 name of service to start: frontend, backend or traefik
 #Arg2 optional '-d' to perform service in background
 function startService() {
     echo "Starting $1"
     cd $1
     sudo docker-compose -f docker-compose.prod.yml up --build $2
+    cd ..
 }
 
+#Arg1 name of service top stop: frontend, backend or traefik
 function stopService() {
     echo "Stopping $1"
     cd $1
-    sudo docker-compose -f docker-compose.prod.yml down
+    sudo docker-compose -f docker-compose.prod.yml down --remove-orphans
+    cd ..
+}
+
+#Arg1 name of service to start: frontend, backend or traefik
+#Arg2 optional '-d' to perform service in background
+function startLocalService() {
+    echo "Starting $1"
+    cd $1
+    sudo docker-compose -f docker-compose.yml up --build $2
+    cd ..
+}
+
+#Arg1 name of service top stop: frontend, backend or traefik
+function stopLocalService() {
+    echo "Stopping $1"
+    cd $1
+    sudo docker-compose -f docker-compose.yml down --remove-orphans
+    cd ..
 }
 
 function startMetagridContainers() {
+    clear
     startService traefik -d
     startService backend -d
     startService frontend -d
 }
 
 function stopMetagridContainers() {
+    clear
     stopService frontend
     stopService backend
     stopService traefik
+}
+
+function toggleLocalContainers() {
+    clear
+    # If frontend container is up, stop all services
+    if sudo docker ps -a --format '{{.Names}}' | grep -Eq "^react\$"; then
+        stopLocalService frontend -d
+        stopLocalService backend -d
+    else
+        # Otherwise stop any remaining services and start them up again
+        stopLocalService backend -d
+        startLocalService backend -d
+        startLocalService frontend -d
+    fi
 }
 
 # Main Menu
@@ -75,8 +111,9 @@ function mainMenu() {
     echo "2 Restore Backup Config"
     echo "3 Start all containers"
     echo "4 Stop all containers"
-    echo "5 Container Start / Stop Menu"
-    echo "6 Exit"
+    echo "5 Start / Stop Local Dev Containers"
+    echo "6 Container Start / Stop Menu"
+    echo "7 Exit"
     read option
     if [ -z $option ]; then
         clear
@@ -100,9 +137,13 @@ function mainMenu() {
             clear
             mainMenu
         elif [ "$option" = "5" ]; then
+            toggleLocalContainers
+            clear
+            mainMenu
+        elif [ "$option" = "6" ]; then
             clear
             containersMenu
-        elif [ "$option" = "6" ]; then
+        elif [ "$option" = "7" ]; then
             return 0
         else
             clear
