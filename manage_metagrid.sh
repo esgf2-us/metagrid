@@ -7,8 +7,8 @@ BACKUP_DIR=$CONFIG_DIR/backups
 #Custom functions
 function configure() {
     sudo $DEFAULT_EDITOR $CONFIG_DIR/$METAGRID_CONFIG
-    cp $CONFIG_DIR/$METAGRID_CONFIG traefik/.env
-    cp $CONFIG_DIR/$METAGRID_CONFIG $BACKUP_DIR/config_backup_$(date +'%a_%b_%g-%I_%M_%S')
+    sudo cp $CONFIG_DIR/$METAGRID_CONFIG traefik/.env
+    sudo cp $CONFIG_DIR/$METAGRID_CONFIG $BACKUP_DIR/config_backup_$(date +'%a_%b_%g-%I_%M_%S')
 }
 
 function setCurrentConfig() {
@@ -30,6 +30,7 @@ function setCurrentConfig() {
         echo "Setting $fileName as current..."
         sudo cp $CONFIG_DIR/$METAGRID_CONFIG $BACKUP_DIR/config_backup_$(date +'%a_%b_%g-%I_%M_%S')
         sudo cp $configName $CONFIG_DIR/$METAGRID_CONFIG
+        sudo cp $configName traefik/.env
         echo "Done!"
     else
         clear
