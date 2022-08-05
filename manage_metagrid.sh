@@ -153,6 +153,7 @@ function mainMenu() {
             clear
             containersMenu
         elif [ "$option" = "7" ]; then
+            clear
             return 0
         else
             clear
