@@ -173,7 +173,9 @@ function containersMenu() {
     echo "4 Stop Backend"
     echo "5 Start Traefik"
     echo "6 Stop Traefik"
-    echo "7 Back to Main Menu"
+    echo "7 Start Documentation"
+    echo "8 Stop Documentation"
+    echo "9 Back to Main Menu"
     read option
     if [ -z $option ]; then
         clear
@@ -182,29 +184,39 @@ function containersMenu() {
     else
         if [ "$option" = "1" ]; then
             startService frontend
+            mainMenu
         elif [ "$option" = "2" ]; then
             stopService frontend
             clear
             mainMenu
         elif [ "$option" = "3" ]; then
             startService backend
+            mainMenu
         elif [ "$option" = "4" ]; then
             stopService backend
             clear
             mainMenu
         elif [ "$option" = "5" ]; then
             startService traefik
+            mainMenu
         elif [ "$option" = "6" ]; then
             stopService traefik
             clear
             mainMenu
         elif [ "$option" = "7" ]; then
+            startLocalService docs -d
+            mainMenu
+        elif [ "$option" = "8" ]; then
+            stopLocalService docs -d
+            clear
+            mainMenu
+        elif [ "$option" = "9" ]; then
             clear
             mainMenu
         else
             clear
             echo "You entered: $option"
-            echo "Please enter a number from 1 to 7"
+            echo "Please enter a number from 1 to 9"
             containersMenu
         fi
     fi
