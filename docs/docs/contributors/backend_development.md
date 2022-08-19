@@ -34,8 +34,9 @@ Adapted from [Cookiecutter Django's](https://github.com/pydanny/cookiecutter-dja
 ```scaffold
 backend
 ├── .envs
-│ ├── .local
-│ └── .production
+│ ├── .django
+│ ├── .keykloak
+│ ├── .postgres
 ├── config
 │ ├── settings
 │ │ ├── base.py
@@ -47,18 +48,13 @@ backend
 ├── docker
 │ ├── local
 │ └── production
-├── docs
 ├── metagrid
-│ ├── config
-│ │ ├── base.py
-│ │ ├── local.py
-│ │ ├── production.py
-│ │ ├── test.py
-│ │ ├── urls.py
-│ │ └── wsgi.py
+│ ├── initial_projects_data.py
+│ ├── api_proxy
+│ ├── cart
 │ ├── mysites
-│ ├── users
-│ └── ...
+│ ├── projects
+│ └── users
 ├── requirements
 │ ├── base.txt
 │ ├── local.txt
@@ -72,10 +68,11 @@ backend
 ├── manage.py
 ├── mkdocs.yml
 ├── pyproject.toml
-└── setup.cfg
+├── setup.cfg
+└── updateProjects.sh
 ```
 
-- `.envs/` - stores environment variables for each microservice found in the docker-compose files, separated by environment and service
+- `.envs/` - stores environment variables for each microservice found in the docker-compose files, for use in local development.
 - `config/` - stores Django configuration files
   - `settings/` - stores Django settings files
     - `base.py` - base setting shared across local development and production environments
@@ -87,7 +84,11 @@ backend
 - `docker/` - stores files used by each microservice found in the docker-compose files, including DockerFiles, start scripts, etc, separated by environment and service
 - `docs/` - stores documentation files for the project
 - `metagrid/` - stores Django apps
+  - `initial_projects_data.py` - used to pre-populate the postgres database with project related groups, facets etc. If modified, then you must run the updateProjects.sh script for the database to be updated.
+  - `api_proxy/` - handles the proxy communication between the backend and outside sources like esgf, citations etc.
+  - `cart/` - handles the data cart related models and views
   - `mysites/` - only hosts data migrations for internal Django apps and external third-party apps, not a typical standalone Django app
+  - `projects/` - handles project related models and views, including reading in the initial project data for the database.
   - `users/` - handles user related data such as accounts and profiles
 - `.coveragerc` - configuration file for coverage.py (used by pytest-cov)
 - `.dockerignore` - files and folders to ignore when building docker containers
@@ -98,6 +99,7 @@ backend
 - `mkdocs.yml` - configuration file for [MkDocs](https://www.mkdocs.org/user-guide/configuration/)
 - `pyproject.toml` - configuration for system dependencies written in the TOML format. In MetaGrid, it is specifically used to configure Black which does not support setup.cfg
 - `setup.cfg` - configuration for system dependencies such as flake8 and mypy. setup.cfg is preferred over using individual config files because it centralizes configuration
+- `updateProjects.sh` - a script which updates the database using initial_project_data.py. For example, if a new project has come out, or an existing one has had changes or been removed, the intial_project_data.py would need to be updated and then this script is run to migrate the django database.
 
 ### Django Apps
 
