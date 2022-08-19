@@ -15,58 +15,73 @@ Clone the project
 git clone https://github.com/aims-group/metagrid.git
 ```
 
-### 1. Traefik
+If you go to the root project directory for metagrid, you'll see there is a `manage_metagrid.sh` script.
 
-> Traefik is a modern HTTP reverse proxy and load balancer that makes deploying microservices easy.
-> &mdash; <cite><https://github.com/traefik/traefik></cite>
+This script provides some convenience functions for tasks related to running Metagrid. When preparing for production, you'll need to edit the file 'metagrid_config' located in the 'metagrid_configs' folder in the root directory. To do so, simply run the script: <code>./manage_metagrid.sh</code>
+Then in the script's option menu, select the "Configure Metagrid" option.
 
-You will need to configure each router's `rule`, which is used to route a HTTP request to a docker-compose service (e.g. `django`, `react`).
+This will open up an editor where you can enter the configuration parameters as needed (refer to table below). Once you save the config file and close the editor, the script will automatically copy the configuration to the necessary locations and save a backup using the current timestamp. If you change parameters in the future or need to revert your settings, you can do so by running the "Restore Backup Config" option in the `manage_metagrid.sh` script.
 
-1. Enter directory `./traefik`
-2. Open `traefik.yml` in your editor
-3. Edit rules for routers
-   - Change `example.com` to the domain name (e.g. `esgf-dev1.llnl.gov`)
-   - **OPTIONAL:** Change `/prefix` to the domain subdirectory for the service
-     - For example, the `PathPrefix` for the rules of backend can be `/metagrid-backend` and frontend can be `/metagrid`.
-     - **If you don't use a subdirectory, delete `` PathPrefix(`prefix`) `` for the service**
+NOTE: You can easily generate a secret key with Python using this command:
 
-Once configured, Traefik will get you a valid certificate from Lets Encrypt and update it automatically.
+`python3 -c 'import secrets; print(secrets.token_hex(100))'`
 
-#### 1.2 Build and Run the Stack
+### Config Parameters
+
+| Environment Variable                     | Description                                                                                                                                                                                                                                                                                                                                                                                                                                               | Documentation                                                                   | Type             | Example                                                                                                                                                          |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| =========== TREAFIK CONFIG ============= |
+| `DOMAIN_NAME`                            | The domain linked to the server hosting the Metagrid site.                                                                                                                                                                                                                                                                                                                                                                                                |                                                                                 | string           | `DOMAIN_NAME=esgf-dev1.llnl.gov`<br><br>Local environment:<br>`DOMAIN_NAME=localhost`                                                                            |
+| `PUBLIC_URL`                             | **OPTIONAL** The domain subdirectory that is used to serve the front-end. Leave blank if you want users to access the app from the domain directly.                                                                                                                                                                                                                                                                                                       |                                                                                 | string           | `DOMAIN_SUBDIRECTORY=metagrid`                                                                                                                                   |
+| `DOMAIN_SUBDIRECTORY`                    | **OPTIONAL** The domain subdirectory that is proxied to the Django site (e.g. _esgf-dev1.llnl.gov/metagrid-backend_). Omit backslash and match backend rules' `PathPrefix` in `traefik.yml`.                                                                                                                                                                                                                                                              |                                                                                 | string           | `DOMAIN_SUBDIRECTORY=metagrid-backend`                                                                                                                           |
+| =========== BACKEND CONFIG ============= |
+| `DJANGO_SECRET_KEY`                      | A secret key for a particular Django installation. This is used to provide cryptographic signing, and should be set to a unique, unpredictable value.                                                                                                                                                                                                                                                                                                     | [Link](https://docs.djangoproject.com/en/3.0/ref/settings/#secret-key)          | string           | `DJANGO_SECRET_KEY=YAFKApvifkIFTw0DDNQQdHI34kyQdyWH89acWTogCfm4SGRz2x`                                                                                           |
+| `DJANGO_ADMIN_URL`                       | The url to access the Django Admin page. It should be set to a unique, unpredictable value (not `admin/`). Take note of this value in order to access the admin page later on. For example with the settings shown here you would go to: https://esgf-dev1.llnl.gov/metagrid-backend/example_admin_url_87261847395 to access the admin site. Then you would use the admin credentials created when creating a django superuser (explained further below). |                                                                                 | string           | `DJANGO_ADMIN_URL=example_admin_url_87261847395`                                                                                                                 |
+| `DJANGO_ALLOWED_HOSTS`                   | A list of strings representing the host/domain names that this Django site can serve. This is a security measure to prevent HTTP Host header attacks, which are possible even under many seemingly-safe web server configurations.                                                                                                                                                                                                                        | [Link](https://docs.djangoproject.com/en/3.0/ref/settings/#allowed-hosts)       | array of strings | `DJANGO_ALLOWED_HOSTS=esgf-dev1.llnl.gov`<br><br>Local environment:<br>`DJANGO_ALLOWED_HOSTS=localhost`                                                          |
+| `KEYCLOAK_URL`                           | The url of your hosted Keycloak server, it must end with `/auth`.                                                                                                                                                                                                                                                                                                                                                                                         | [Link](https://django-allauth.readthedocs.io/en/latest/providers.html#keycloak) | string           | `KEYCLOAK_URL=https://keycloak.metagrid.com/auth`                                                                                                                |
+| `KEYCLOAK_REALM`                         | The name of the Keycloak realm you want to use.                                                                                                                                                                                                                                                                                                                                                                                                           | [Link](https://django-allauth.readthedocs.io/en/latest/providers.html#keycloak) | string           | `KEYCLOAK_REALM=esgf`                                                                                                                                            |
+| `KEYCLOAK_CLIENT_ID`                     | The id for the Keycloak client, which is the entity that can request Keycloak to authenticate a user.                                                                                                                                                                                                                                                                                                                                                     |                                                                                 | string           | `KEYCLOAK_CLIENT_ID=metagrid-backend`                                                                                                                            |
+| ========== FRONTEND CONFIG ============= |
+| `REACT_APP_METAGRID_URL`                 | The URL for the MetaGrid API used to query projects, users, etc.                                                                                                                                                                                                                                                                                                                                                                                          |                                                                                 | string           | `REACT_APP_METAGRID_API_URL=https://esgf-dev1.llnl/metagrid-backend`<br><br>Local environment:<br>`REACT_APP_METAGRID_API_URL=http://localhost:8000`             |
+| `REACT_APP_WGET_API_URL`                 | The URL for the ESGF wget API to generate a wget script for downloading selected datasets.                                                                                                                                                                                                                                                                                                                                                                | [Link](https://github.com/ESGF/esgf-wget)                                       | string           | `REACT_APP_WGET_API_URL=https://pcmdi8vm.llnl.gov/wget`                                                                                                          |
+| `REACT_APP_ESGF_NODE_URL`                | The URL for the ESGF Search API node used to query datasets, files, and facets.                                                                                                                                                                                                                                                                                                                                                                           | [Link](https://github.com/ESGF/esgf.github.io/wiki/ESGF_Search_REST_API)        | string           | `REACT_APP_ESGF_NODE_URL=https://esgf-node.llnl.gov`                                                                                                             |
+| `REACT_APP_ESGF_NODE_STATUS`             | The URL for the ESGF node status API node used to query node status.                                                                                                                                                                                                                                                                                                                                                                                      |                                                                                 | string           | `REACT_APP_ESGF_NODE_STATUS_URL=https://aims4.llnl.gov/prometheus/api/v1/query?query=probe_success%7Bjob%3D%22http_2xx%22%2C+target%3D~%22.%2Athredds.%2A%22%7D` |
+| `REACT_APP_KEYCLOAK_URL`                 | The url of your hosted Keycloak server, it must end with `/auth`.                                                                                                                                                                                                                                                                                                                                                                                         |                                                                                 | string           | `REACT_APP_KEYCLOAK_URL=https://keycloak.metagrid.com/auth`                                                                                                      |
+| `REACT_APP_KEYCLOAK_REALM`               | The name of the Keycloak realm you want to use.                                                                                                                                                                                                                                                                                                                                                                                                           |                                                                                 | string           | `REACT_APP_KEYCLOAK_REALM=esgf`                                                                                                                                  |
+| `REACT_APP_KEYCLOAK_CLIENT_ID`           | The id for the Keycloak client, which is an entity that can request Keycloak to authenticate a user.                                                                                                                                                                                                                                                                                                                                                      |                                                                                 | string           | `REACT_APP_KEYCLOAK_CLIENT_ID=frontend`                                                                                                                          |
+| `REACT_APP_HOTJAR_ID`                    | **OPTIONAL**<br>Your site's ID. This is the ID which tells Hotjar which site settings it should load and where it should save the data collected.                                                                                                                                                                                                                                                                                                         | [Link](https://github.com/abdalla/react-hotjar)                                 | number           | `REACT_APP_HOTJAR_ID=1234567`                                                                                                                                    |
+| `REACT_APP_HOTJAR_SV`                    | **OPTIONAL**<br>The snippet version of the Tracking Code you are using. This is only needed if Hotjar ever updates the Tracking Code and needs to discontinue older ones. Knowing which version your site includes allows Hotjar team to contact you and inform you accordingly.                                                                                                                                                                          | [Link](https://github.com/abdalla/react-hotjar)                                 | number           | `REACT_APP_HOTJAR_SV=6`                                                                                                                                          |
+| `REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID` | **OPTIONAL**<br>Google Analytics tracking id.                                                                                                                                                                                                                                                                                                                                                                                                             | [Link](https://github.com/react-ga/react-ga#api)                                | string           | `REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID=UA-000000-01`                                                                                                            |
+
+## Building and Running Services
+
+Once you've finished the configuration, you will be ready to start the service containers.
+Using the manage_metagrid.sh script you can start or stop all or specific docker containers by selecting the appropriate option in the menu. If you wish to start or stop a container manually, you need to go to the specific service directory, for example the frontend or backend, the run the command below:
+
+```bash
+docker-compose -f docker-compose.prod.yml up --build
+```
+
+To run the stack and detach the containers, run:
 
 ```bash
 docker-compose -f docker-compose.prod.yml up --build -d
 ```
 
-### 2. Back-end
+## Post Build Steps
 
-#### 2.1 Configure the Environment
+After running the containers for the first time, you should perform some other steps as well to finalize the production deployment of Metagrid.
 
-The majority of services are configured through the use of environment variables.
+### 1. Traefik Notes
 
-1. Enter directory: `./backend/.envs/.production`
-2. Copy env files `.django.template` and `.postgres.template`
-3. Rename files as `.django` and `.postgres`
-4. Configure as needed using the table below to serve as a guide
+> Traefik is a modern HTTP reverse proxy and load balancer that makes deploying microservices easy.
+> &mdash; <cite><https://github.com/traefik/traefik></cite>
 
-NOTE: You can easily generate keys with Python using this command:
+Once configured and running, Traefik will get you a valid certificate from Lets Encrypt and update it automatically. This service should be run before running the backend or frontend if starting it up manually. Using the script to run all containers will build and run them in the appropriate order.
 
-`python3 -c 'import secrets; print(secrets.token_hex(100))'`
+### 2. Back-end Notes
 
-| Service  | Environment Variable                                                                               | Description                                                                                                                                                                                                                                                                                                              | Documentation                                                                   | Type             | Example                                                                                                                                |
-| -------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Django   | `DJANGO_SECRET_KEY`                                                                                | A secret key for a particular Django installation. This is used to provide cryptographic signing, and should be set to a unique, unpredictable value. | [Link](https://docs.djangoproject.com/en/3.0/ref/settings/#secret-key)          | string           | `DJANGO_SECRET_KEY=YAFKApvifkIFTw0DDNQQdHI34kyQdyWH89acWTogCfm4SGRz2x`                                                                 |
-| Django   | `DJANGO_ADMIN_URL`                                                                                 | The url to access the Django Admin page. It should be set to a unique, unpredictable value (not `admin/`). Take note of this value in order to access the admin page later on. For example with the settings shown here you would go to: https://esgf-dev1.llnl.gov/metagrid-backend/example_admin_url_87261847395 to access the admin site. Then you would use the admin credentials created when creating a django superuser (explained further below).                                                                                                                                                                                                           |                                                                                 | string           | `DJANGO_ADMIN_URL=example_admin_url_87261847395`                                                                                   |
-| Django   | `DJANGO_ALLOWED_HOSTS`                                                                             | A list of strings representing the host/domain names that this Django site can serve. This is a security measure to prevent HTTP Host header attacks, which are possible even under many seemingly-safe web server configurations.                                                                                       | [Link](https://docs.djangoproject.com/en/3.0/ref/settings/#allowed-hosts)       | array of strings | `DJANGO_ALLOWED_HOSTS=esgf-dev1.llnl.gov`<br><br>Local environment:<br>`DJANGO_ALLOWED_HOSTS=localhost`                                |
-| Django   | `DOMAIN_NAME`                                                                                      | The domain linked to the server hosting the Django site.                                                                                                                                                                                                                                                                 |                                                                                 | string           | `DOMAIN_NAME=esgf-dev1.llnl.gov`<br><br>Local environment:<br>`DOMAIN_NAME=localhost`                                                  |
-| Django   | `DOMAIN_SUBDIRECTORY`                                                                              | **OPTIONAL** The domain subdirectory that is proxied to the Django site (e.g. _esgf-dev1.llnl.gov/metagrid-backend_). Omit backslash and match backend rules' `PathPrefix` in `traefik.yml`.                                                                                                                             |                                                                                 | string           | `DOMAIN_SUBDIRECTORY=metagrid-backend`                                                                                                 |
-| Django   | `CORS_ORIGIN_WHITELIST`                                                                            | List of origins that are authorized to make HTTP requests. Make sure to add the URL of the front-end here.                                                                                                                                                                                                               | [Link](https://github.com/adamchainz/django-cors-headers#cors_origin_whitelist) | array of strings | `CORS_ORIGIN_WHITELIST=https://esgf-dev1.llnl.gov/metagrid`<br><br>Local environment:<br>`CORS_ORIGIN_WHITELIST=http://localhost:3000` |
-| Django   | `KEYCLOAK_URL`                                                                                     | The url of your hosted Keycloak server, it must end with `/auth`.                                                                                                                                                                                                                                                        | [Link](https://django-allauth.readthedocs.io/en/latest/providers.html#keycloak) | string           | `KEYCLOAK_URL=https://keycloak.metagrid.com/auth`                                                                                      |
-| Django   | `KEYCLOAK_REALM`                                                                                   | The name of the Keycloak realm you want to use.                                                                                                                                                                                                                                                                          | [Link](https://django-allauth.readthedocs.io/en/latest/providers.html#keycloak) | string           | `KEYCLOAK_REALM=esgf`                                                                                                                  |
-| Django   | `KEYCLOAK_CLIENT_ID`                                                                               | The id for the Keycloak client, which is the entity that can request Keycloak to authenticate a user.                                                                                                                                                                                                                    |                                                                                 | string           | `KEYCLOAK_CLIENT_ID=metagrid-backend`                                                                                                  |
-| Postgres | `POSTGRES_HOST` <br> `POSTGRES_PORT`<br> `POSTGRES_DB`<br> `POSTGRES_USER`<br> `POSTGRES_PASSWORD` | The default Postgres environment variables are self-explanatory and can be updated if needed.                                                                                                                                                                                                                            |                                                                                 | string           | N/A                                                                                                                                    |
-
-##### HTTPS is On by Default
+#### 2.1 HTTPS is On by Default
 
 If you are not using a subdomain of the domain name set in the project, then remember to put your staging/production IP address in the `DJANGO_ALLOWED_HOSTS` environment variable before you deploy the back-end. Failure to do this will mean you will not have access to your back-end services through the **HTTP protocol**.
 
@@ -76,21 +91,9 @@ The Traefik reverse proxy used in the default configuration will get you a valid
 
 You can read more about this feature and how to configure it, at [Automatic HTTPS](https://doc.traefik.io/traefik/https/acme/) in the Traefik docs.
 
-#### 2.2 Build and Run the Stack
+#### 2.2 Run Django migrations
 
-```bash
-docker-compose -f docker-compose.prod.yml up --build
-```
-
-To run the stack and detach the containers, run
-
-```bash
-docker-compose -f docker-compose.prod.yml up --build -d
-```
-
-#### 2.3 Run Django migrations
-
-In production, you must apply Django migrations manually since they are not automatically applied to the database when you rebuild the docker-compose containers. To do so, with backend docker container running, run command below in the backend directory:
+In production, you must apply Django migrations manually since they are not automatically applied to the database when you rebuild the docker-compose containers. To do so, with the backend docker container running, run the command below in the backend directory:
 
 ```bash
 docker-compose -f docker-compose.prod.yml run --rm django python manage.py migrate
@@ -98,52 +101,48 @@ docker-compose -f docker-compose.prod.yml run --rm django python manage.py migra
 
 NOTE: If this step is skipped, you may see issues loading the project drop-down and search table results.
 
+#### 2.3 Updating the database
+
+In production, if the list of projects or specific groups, or facets need to be changed, the postgress database will need to be updated. Running migrations may not be possible without clearing the database tables and rebuilding them to include the new changes. There is a script that is designed to make the update process simpler, by first following the steps below:
+
+- Edit the intial_project_data file with changes that you need to make: ~/metagrid/backend/metagrid/initial_projects_data.py
+- Change directory to: ~/metagrid/backend
+- Make backups and/or test changes locally to make sure the changes are correct before updating production. Start by running the local backend container:
+
+```bash
+docker compose -f docker-compose.yml up --build -d
+```
+
+- Then run the updateProjects script to update existing tables without removing user data:
+
+```bash
+./updateProjects.sh
+```
+
+Otherwise if you wish to clear the tables and start fresh, then run:
+
+```bash
+./updateProjects.sh --clear
+```
+
+- When satisfied with results, stop the local container and perform the same steps again with the production backend container running
+
 #### 2.4 Helpful Commands
 
 ##### Run Command in Running Container
+
 To run a command inside the docker container (front-end, backend, traefik) go to the appropriate directory and run:
 
 ```bash
 docker-compose -f docker-compose.prod.yml run --rm django [command]
 ```
+
 ##### Creating a Superuser
 
 With backend docker container running, run command below in the backend directory to create a superuser. Useful for logging into Django Admin page to manage the database.
 
 ```bash
 docker-compose -f docker-compose.prod.yml run --rm django python manage.py createsuperuser
-```
-
-### 3. Front-end
-
-#### 3.1 Build and Run the Stack
-
-All of the services are configured through the use of environment variables.
-
-1. Enter directory: `./frontend/.envs/.production`
-2. Copy env file `.react.template`
-3. Rename file as `.react`
-4. Configure as needed using the table below to serve as a guide
-
-| Service    | Environment Variable                     | Description                                                                                                                                                                                                                                                                      | Documentation                                                            | Type             | Example                                                                                                                                              |
-| ---------- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| React      | `PUBLIC_URL`                             | **OPTIONAL**<br> The subdirectory of the domain where the project is hosted. Must include backslash and match frontend rules' `PathPrefix` in `traefik.yml`.                                                                                                                     | [Link](https://stackoverflow.com/a/58508562/8023435)                     | string           | `CORS_PROXY_URL=/metagrid`                                                                                                                           |
-| React      | `REACT_APP_METAGRID_URL`                      | The URL for the MetaGrid API used to query projects, users, etc.                                                                                                                                                                                                                 |                                                                          | string           | `REACT_APP_METAGRID_API_URL=https://esgf-dev1.llnl/metagrid-backend`<br><br>Local environment:<br>`REACT_APP_METAGRID_API_URL=http://localhost:8000` |
-| React      | `REACT_APP_WGET_API_URL`                 | The URL for the ESGF wget API to generate a wget script for downloading selected datasets.                                                                                                                                                                                       | [Link](https://github.com/ESGF/esgf-wget)                                | string           | `REACT_APP_WGET_API_URL=https://pcmdi8vm.llnl.gov/wget`                                                                                              |
-| React      | `REACT_APP_ESGF_NODE_URL`                | The URL for the ESGF Search API node used to query datasets, files, and facets.                                                                                                                                                                                                  | [Link](https://github.com/ESGF/esgf.github.io/wiki/ESGF_Search_REST_API) | string           | `REACT_APP_ESGF_NODE_URL=https://esgf-node.llnl.gov`                                                                                                 |
-| React      | `REACT_APP_CORS_PROXY_URL`               | The URL for the proxy API that enables cross-origin requests to anywhere.                                                                                                                                                                                                        |                                                                          | string           | `REACT_APP_CORS_PROXY_URL=https://esgf-dev1.llnl.gov/`                                                                                               |
-| React      | `REACT_APP_KEYCLOAK_URL`                 | The url of your hosted Keycloak server, it must end with `/auth`.                                                                                                                                                                                                                |                                                                          | string           | `REACT_APP_KEYCLOAK_URL=https://keycloak.metagrid.com/auth`                                                                                          |
-| React      | `REACT_APP_KEYCLOAK_REALM`               | The name of the Keycloak realm you want to use.                                                                                                                                                                                                                                  |                                                                          | string           | `REACT_APP_KEYCLOAK_REALM=esgf`                                                                                                                      |
-| React      | `REACT_APP_KEYCLOAK_CLIENT_ID`           | The id for the Keycloak client, which is an entity that can request Keycloak to authenticate a user.                                                                                                                                                                             |                                                                          | string           | `REACT_APP_KEYCLOAK_CLIENT_ID=frontend`                                                                                                              |
-| React      | `REACT_APP_HOTJAR_ID`                    | **OPTIONAL**<br>Your site's ID. This is the ID which tells Hotjar which site settings it should load and where it should save the data collected.                                                                                                                                | [Link](https://github.com/abdalla/react-hotjar)                          | number           | `REACT_APP_HOTJAR_ID=1234567`                                                                                                                        |
-| React      | `REACT_APP_HOTJAR_SV`                    | **OPTIONAL**<br>The snippet version of the Tracking Code you are using. This is only needed if Hotjar ever updates the Tracking Code and needs to discontinue older ones. Knowing which version your site includes allows Hotjar team to contact you and inform you accordingly. | [Link](https://github.com/abdalla/react-hotjar)                          | number           | `REACT_APP_HOTJAR_SV=6`                                                                                                                              |
-| React      | `REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID` | **OPTIONAL**<br>Google Analytics tracking id.                                                                                                                                                                                                                                    | [Link](https://github.com/react-ga/react-ga#api)                         | string           | `REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID=UA-000000-01`                                                                                                |
-| CORS Proxy | `PROXY_ORIGIN_WHITELIST`                 | **OPTIONAL**<br> If set, requests whose origin is not listed are blocked. If this list is empty, all origins are allowed.                                                                                                                                                        | [Link](https://github.com/Rob--W/cors-anywhere#server)                   | array of strings | `PROXY_ORIGIN_WHITELIST=https://esgf-dev1.llnl.gov, http://esgf-dev1.llnl.gov`                                                                       |
-
-#### 3.2 Build and Run the Stack
-
-```bash
-docker-compose -f docker-compose.prod.yml up --build
 ```
 
 ### 4. Supervisor
@@ -255,7 +254,7 @@ If you need to manually restart or stop production services for some reason, you
 sudo supervisorctl stop all # Stops supervisor from restoring containers
 ```
 
-Then you need to go to the directory of the service(s) that you want to stop. For example if you need to stop the frontend and backend services to do a rebuild then:
+Then either use the manage_metagrid.sh scripts to stop services, or you can go to the directory of the service(s) that you want to stop. For example if you need to stop the frontend and backend services to do a rebuild then:
 
 ```bash
 cd ./backend # Shutting off backend service
