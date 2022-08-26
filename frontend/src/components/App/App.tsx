@@ -142,6 +142,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
     if (isAuthenticated) {
       void fetchUserCart(pk, accessToken)
         .then((rawUserCart) => {
+          /* istanbul ignore next */
           const localItems = JSON.parse(
             localStorage.getItem('userCart') || '[]'
           ) as RawSearchResults;
@@ -158,6 +159,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
 
       void fetchUserSearchQueries(accessToken)
         .then((rawUserSearches) => {
+          /* istanbul ignore next */
           const localItems = JSON.parse(
             localStorage.getItem('userSearchQueries') || '[]'
           ) as UserSearchQueries;

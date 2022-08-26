@@ -235,12 +235,13 @@ const FacetsForm: React.FC<Props> = ({
         }}
       >
         <Row justify="end" gutter={8}>
-          <Col span={18}>
+          <Col span={16}>
             <h3>Filter with Facets</h3>
           </Col>
-          <Col span={6}>
+          <Col span={8} style={{ textAlign: 'right' }}>
             {expandAll ? (
               <Button
+                className={leftSidebarTargets.getClass('facetFormExpandAllBtn')}
                 size="small"
                 onClick={() => {
                   setActivePanels(
@@ -253,6 +254,9 @@ const FacetsForm: React.FC<Props> = ({
               </Button>
             ) : (
               <Button
+                className={leftSidebarTargets.getClass(
+                  'facetFormCollapseAllBtn'
+                )}
                 size="small"
                 onClick={() => {
                   setActivePanels([]);
