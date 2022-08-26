@@ -109,6 +109,12 @@ const FacetsForm: React.FC<Props> = ({
   >(null);
   const [dropdownIsOpen, setDropdownIsOpen] = React.useState<boolean>(false);
 
+  // Handles the expand and collapse all feature of the facets panels
+  const [activePanels, setActivePanels] = React.useState<
+    string | number | (string | number)[] | undefined
+  >([]);
+  const [expandAll, setExpandAll] = React.useState<boolean>(true);
+
   type DatePickerReturnType =
     | [null, null]
     | [moment.Moment, null]
@@ -228,8 +234,48 @@ const FacetsForm: React.FC<Props> = ({
           ...activeSearchQuery.activeFacets,
         }}
       >
+        <Row justify="end" gutter={8}>
+          <Col span={18}>
+            <h3>Filter with Facets</h3>
+          </Col>
+          <Col span={6}>
+            {expandAll ? (
+              <Button
+                size="small"
+                onClick={() => {
+                  setActivePanels(
+                    Object.keys(facetsByGroup).map((panel) => panel)
+                  );
+                  setExpandAll(false);
+                }}
+              >
+                Expand All
+              </Button>
+            ) : (
+              <Button
+                size="small"
+                onClick={() => {
+                  setActivePanels([]);
+                  setExpandAll(true);
+                }}
+              >
+                Collapse All
+              </Button>
+            )}
+          </Col>
+        </Row>
         <div style={styles.container}>
-          <Collapse>
+          <Collapse
+            activeKey={activePanels}
+            onChange={(change) => {
+              setActivePanels(change);
+              if (change.length === 0) {
+                setExpandAll(true);
+              } else if (change.length > 1) {
+                setExpandAll(false);
+              }
+            }}
+          >
             {facetsByGroup &&
               Object.keys(facetsByGroup).map((group) => (
                 <Collapse.Panel
@@ -376,7 +422,7 @@ const FacetsForm: React.FC<Props> = ({
           handleOnChangeGeneralFacetsForm(allValues);
         }}
       >
-        <Collapse>
+        <Collapse defaultActiveKey="additional_properties">
           <Collapse.Panel
             header={
               <div
