@@ -61,7 +61,7 @@ def do_wget(request):
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
 def do_globus_script(request):
-    return do_request(request, getattr(settings, "GLOBUS_SCRIPT_URL" "https://greyworm1-rh7.llnl.gov/globusscript"))
+    return do_request(request, getattr(settings, "GLOBUS_SCRIPT_URL", "https://greyworm1-rh7.llnl.gov/globusscript"))
 
 
 def do_request(request, urlbase):
