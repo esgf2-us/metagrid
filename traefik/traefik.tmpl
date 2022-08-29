@@ -23,7 +23,7 @@ certificatesResolvers:
 http:
   routers:
     web-backend-router:
-      rule: "Host(`{HOSTNAME}`) && PathPrefix(`/metagrid-backend`)"
+      rule: "$BACKEND_RULE"
 
       entryPoints:
         - web
@@ -33,7 +33,7 @@ http:
       service: django
 
     web-backend-secure-router:
-      rule: "Host(`{HOSTNAME}`) && PathPrefix(`/metagrid-backend`)"
+      rule: "$BACKEND_RULE"
 
       entryPoints:
         - web-secure
@@ -46,7 +46,7 @@ http:
         certResolver: letsencrypt
 
     web-frontend-router:
-      rule: "Host(`{HOSTNAME}`) && PathPrefix(`/metagrid`)"
+      rule: "$FRONTEND_RULE"
 
       entryPoints:
         - web
@@ -55,7 +55,7 @@ http:
       service: react
 
     web-frontend-secure-router:
-      rule: "Host(`{HOSTNAME}`) && PathPrefix(`/metagrid`)"
+      rule: "$FRONTEND_RULE"
 
       entryPoints:
         - web-secure
