@@ -11,6 +11,10 @@ export const metagridApiURL = `${
   process.env.REACT_APP_METAGRID_API_URL as string
 }`;
 
+// Redirect frontend
+export const publicUrl = process.env.PUBLIC_URL;
+export const previousPublicUrl = process.env.PREVIOUS_URL as string;
+
 // ESGF wget API
 // ------------------------------------------------------------------------------
 // https://github.com/ESGF/esgf-wget
