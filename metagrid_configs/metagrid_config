@@ -1,6 +1,7 @@
 # =====================TREAFIK CONFIG=====================
 DOMAIN_NAME=example.com
 PUBLIC_URL=
+PREVIOUS_URL=metagrid
 DOMAIN_SUBDIRECTORY=metagrid-backend
 
 # =====================BACKEND CONFIG====================

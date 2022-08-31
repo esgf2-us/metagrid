@@ -1,12 +1,13 @@
 #!/bin/sh
 
 export PUBLIC_URL
+export PREVIOUS_URL
 
 if [[ -z "${PUBLIC_URL}" ]]
 then
-    cp /nginx.conf /etc/nginx/conf.d/default.conf
+    envsubst '${PREVIOUS_URL}' < /nginx.conf > /etc/nginx/conf.d/default.conf
 else
-    envsubst '${PUBLIC_URL}' < /nginx.subdir.conf  > /etc/nginx/conf.d/default.conf
+    envsubst '${PREVIOUS_URL},${PUBLIC_URL}' < /nginx.subdir.conf > /etc/nginx/conf.d/default.conf
 fi
 
 exec "$@"
