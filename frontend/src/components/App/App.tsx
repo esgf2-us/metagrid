@@ -472,9 +472,9 @@ const App: React.FC<Props> = ({ searchQuery }) => {
   };
 
   const generateRedirects = (): ReactElement => {
-    if (publicUrl === '' && previousPublicUrl !== '') {
+    if (!publicUrl && previousPublicUrl) {
       const newFrom = `/${previousPublicUrl}`;
-      return <Redirect from={newFrom} exact to="/search" />;
+      return <Redirect from={newFrom} to="/search" />;
     }
 
     return <></>;

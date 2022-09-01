@@ -13,7 +13,7 @@ export const metagridApiURL = `${
 
 // Redirect frontend
 export const publicUrl = process.env.PUBLIC_URL;
-export const previousPublicUrl = process.env.PREVIOUS_URL as string;
+export const previousPublicUrl = process.env.REACT_APP_PREVIOUS_URL as string;
 
 // ESGF wget API
 // ------------------------------------------------------------------------------

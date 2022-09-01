@@ -1,7 +1,6 @@
 # =====================TREAFIK CONFIG=====================
 DOMAIN_NAME=example.com
 PUBLIC_URL=
-PREVIOUS_URL=
 DOMAIN_SUBDIRECTORY=metagrid-backend
 
 # =====================BACKEND CONFIG====================
@@ -31,6 +30,9 @@ POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
 
 # =====================FRONTEND CONFIG====================
+
+# Redirect the frontend to home page when old subdirectory is used (optional)
+REACT_APP_PREVIOUS_URL=
 
 # MetaGrid API
 # https://github.com/aims-group/metagrid/tree/master/backend
