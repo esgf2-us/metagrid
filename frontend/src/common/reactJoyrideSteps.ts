@@ -106,6 +106,8 @@ export const leftSidebarTargets = new TourTargets('left-sidebar-tour')
   .create('projectSelectLeftSideBtn')
   .create('projectWebsiteBtn')
   .create('searchFacetsForm')
+  .create('facetFormExpandAllBtn')
+  .create('facetFormCollapseAllBtn')
   .create('facetFormGeneral')
   .create('facetFormFields')
   .create('facetFormAdditional')
@@ -405,11 +407,41 @@ export const createMainPageTour = (): JoyrideTour => {
         // Close general facets
         clickFirstElement(leftSidebarTargets.getSelector('facetFormGeneral'));
         await delay(300);
-        // Open additional facets
+        // Close facet panels if more than one is open
+        if (
+          elementExists(leftSidebarTargets.getClass('facetFormCollapseAllBtn'))
+        ) {
+          clickFirstElement(
+            leftSidebarTargets.getSelector('facetFormCollapseAllBtn')
+          );
+          await delay(50);
+        }
+      }
+    )
+    .addNextStep(
+      leftSidebarTargets.getSelector('facetFormExpandAllBtn'),
+      'You can quickly expand all the facet panels by clicking this button.',
+      'right-end',
+      /* istanbul ignore next */
+      async () => {
+        // Expand all facets
         clickFirstElement(
-          leftSidebarTargets.getSelector('facetFormAdditional')
+          leftSidebarTargets.getSelector('facetFormExpandAllBtn')
         );
-        await delay(500);
+        await delay(300);
+      }
+    )
+    .addNextStep(
+      leftSidebarTargets.getSelector('facetFormCollapseAllBtn'),
+      "Note that there is a scroll bar on the right when the panels don't all fit on the page. Clicking the collapse all button will close all the open facet panels.",
+      'right-end',
+      /* istanbul ignore next */
+      async () => {
+        // Open general facets
+        clickFirstElement(
+          leftSidebarTargets.getSelector('facetFormCollapseAllBtn')
+        );
+        await delay(300);
       }
     )
     .addNextStep(
@@ -418,11 +450,6 @@ export const createMainPageTour = (): JoyrideTour => {
       'right-end',
       /* istanbul ignore next */
       async () => {
-        // Close additional facets
-        clickFirstElement(
-          leftSidebarTargets.getSelector('facetFormAdditional')
-        );
-        await delay(500);
         // Open filename section
         clickFirstElement(leftSidebarTargets.getSelector('facetFormFilename'));
         await delay(300);
