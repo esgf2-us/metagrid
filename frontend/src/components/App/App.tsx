@@ -472,6 +472,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
   };
 
   const generateRedirects = (): ReactElement => {
+    /* istanbul ignore next */
     if (!publicUrl && previousPublicUrl) {
       const newFrom = `/${previousPublicUrl}`;
       return <Redirect from={newFrom} to="/search" />;
