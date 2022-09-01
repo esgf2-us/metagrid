@@ -8,7 +8,7 @@ import {
   ShoppingCartOutlined,
 } from '@ant-design/icons';
 import { Affix, Breadcrumb, Button, Layout, message, Result } from 'antd';
-import React from 'react';
+import React, { ReactElement } from 'react';
 import { useAsync } from 'react-async';
 import { hotjar } from 'react-hotjar';
 import { Link, Redirect, Route, Switch } from 'react-router-dom';
@@ -31,7 +31,7 @@ import {
   unsavedLocalSearches,
 } from '../../common/utils';
 import { AuthContext } from '../../contexts/AuthContext';
-import { hjid, hjsv } from '../../env';
+import { hjid, hjsv, previousPublicUrl, publicUrl } from '../../env';
 import Cart from '../Cart';
 import Summary from '../Cart/Summary';
 import { UserCart, UserSearchQueries, UserSearchQuery } from '../Cart/types';
@@ -471,11 +471,22 @@ const App: React.FC<Props> = ({ searchQuery }) => {
     });
   };
 
+  const generateRedirects = (): ReactElement => {
+    /* istanbul ignore next */
+    if (!publicUrl && previousPublicUrl) {
+      const newFrom = `/${previousPublicUrl}`;
+      return <Redirect from={newFrom} to="/search" />;
+    }
+
+    return <></>;
+  };
+
   return (
     <>
       <Switch>
         <Redirect from="/" exact to="/search" />
         <Redirect from="/cart" exact to="/cart/items" />
+        {generateRedirects()}
       </Switch>
       <div>
         <Route

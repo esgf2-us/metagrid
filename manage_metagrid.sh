@@ -6,17 +6,17 @@ BACKUP_DIR=$CONFIG_DIR/backups
 
 #Custom functions
 function configure() {
-    sudo cp $CONFIG_DIR/$METAGRID_CONFIG $BACKUP_DIR/config_backup_$(date +'%a_%b_%g-%I_%M_%S')
-    sudo $DEFAULT_EDITOR $CONFIG_DIR/$METAGRID_CONFIG
+    cp $CONFIG_DIR/$METAGRID_CONFIG $BACKUP_DIR/config_backup_$(date +'%a_%b_%g-%I_%M_%S')
+    $DEFAULT_EDITOR $CONFIG_DIR/$METAGRID_CONFIG
     saveConfigs $CONFIG_DIR/$METAGRID_CONFIG
 }
 
 # Saves config to required directories
 # Arg1 name of config file to copy into active locations
 function saveConfigs() {
-    sudo cp $CONFIG_DIR/$METAGRID_CONFIG traefik/.env
-    sudo cp $CONFIG_DIR/$METAGRID_CONFIG frontend/.envs/.prod.env
-    sudo cp $CONFIG_DIR/$METAGRID_CONFIG backend/.envs/.prod.env
+    cp $CONFIG_DIR/$METAGRID_CONFIG traefik/.env
+    cp $CONFIG_DIR/$METAGRID_CONFIG frontend/.envs/.prod.env
+    cp $CONFIG_DIR/$METAGRID_CONFIG backend/.envs/.prod.env
 }
 
 function setCurrentConfig() {
@@ -36,8 +36,8 @@ function setCurrentConfig() {
 
     if test -f "$configName"; then
         echo "Setting $fileName as current..."
-        sudo cp $CONFIG_DIR/$METAGRID_CONFIG $BACKUP_DIR/config_backup_$(date +'%a_%b_%g-%I_%M_%S')
-        sudo cp $configName $CONFIG_DIR/$METAGRID_CONFIG
+        cp $CONFIG_DIR/$METAGRID_CONFIG $BACKUP_DIR/config_backup_$(date +'%a_%b_%g-%I_%M_%S')
+        cp $configName $CONFIG_DIR/$METAGRID_CONFIG
         saveConfigs
         echo "Done!"
     else
@@ -55,7 +55,7 @@ function setCurrentConfig() {
 function startService() {
     echo "Starting $1"
     cd $1
-    sudo docker-compose -f docker-compose.prod.yml up --build $2
+    docker-compose -f docker-compose.prod.yml up --build $2
     cd ..
 }
 
@@ -63,7 +63,7 @@ function startService() {
 function stopService() {
     echo "Stopping $1"
     cd $1
-    sudo docker-compose -f docker-compose.prod.yml down --remove-orphans
+    docker-compose -f docker-compose.prod.yml down --remove-orphans
     cd ..
 }
 
@@ -72,7 +72,7 @@ function stopService() {
 function startLocalService() {
     echo "Starting $1"
     cd $1
-    sudo docker-compose -f docker-compose.yml up --build $2
+    docker-compose -f docker-compose.yml up --build $2
     cd ..
 }
 
@@ -80,7 +80,7 @@ function startLocalService() {
 function stopLocalService() {
     echo "Stopping $1"
     cd $1
-    sudo docker-compose -f docker-compose.yml down --remove-orphans
+    docker-compose -f docker-compose.yml down --remove-orphans
     cd ..
 }
 
@@ -102,7 +102,7 @@ function stopMetagridContainers() {
 function toggleLocalContainers() {
     clear
     # If frontend container is up, stop all services
-    if sudo docker ps -a --format '{{.Names}}' | grep -Eq "^react\$"; then
+    if docker ps -a --format '{{.Names}}' | grep -Eq "^react\$"; then
         stopLocalService frontend -d
         stopLocalService backend -d
     else
