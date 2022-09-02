@@ -4,6 +4,8 @@
 # pytest
 .pytest_cache/
 
+# Config backups
+metagrid_configs/backups
 
 ### Linux template
 *~

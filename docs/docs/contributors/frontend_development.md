@@ -40,8 +40,7 @@ Adapted from sources:
 ```scaffold
 frontend
 ├── .envs
-│ ├── .local
-│ └── .production
+│ └── .react
 ├── docker
 │ ├── local
 │ └── production
@@ -63,6 +62,12 @@ frontend
 │ ├── assets
 │ │ └── img
 │ ├── common
+│ │ ├── JoyrideTour.test.ts
+│ │ ├── JoyrideTour.ts
+│ │ ├── reactJoyrideSteps.test.ts
+│ │ ├── reactJoyrideSteps.ts
+│ │ ├── TourTargets.test.ts
+│ │ ├── TourTargets.ts
 │ │ ├── types.ts
 │ │ ├── utils.test.ts
 │ │ └── utils.ts
@@ -71,11 +76,13 @@ frontend
 │ │ │ ├── App.css
 │ │ │ ├── App.tsx
 │ │ │ └── App.test.tsx
-│ │ ├── index.js
+│ │ ├── Cart
 │ │ └── ...
 │ ├── contexts
 │ │ ├── AuthContext.test.ts
 │ │ ├── AuthContext.tsx
+│ │ ├── ReactJoyrideContext.test.ts
+│ │ ├── ReactJoyrideContext.tsx
 │ │ └── types.ts
 │ ├── lib
 │ │ ├── axios
@@ -102,7 +109,7 @@ frontend
 └── yarn.lock
 ```
 
-- `.envs/` - stores environment variables for each microservice found in the docker-compose files, separated by environment and service
+- `.envs/` - stores environment variables for each microservice found in the docker-compose files.
 - `docker/` - stores files used by each microservice found in the docker-compose files, including DockerFiles, start scripts, etc, separated by environment and service
 - `public/` - stores static files used before app is compiled [https://create-react-app.dev/docs/using-the-public-folder/#when-to-use-the-public-folder](https://create-react-app.dev/docs/using-the-public-folder/#when-to-use-the-public-folder)
 - `src/` - where dynamic files reside, the **bulk of your work is done here**
