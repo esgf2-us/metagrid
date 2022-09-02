@@ -83,4 +83,5 @@ def do_request(request, urlbase):
 
     httpresp = HttpResponse(resp.text)
     httpresp.status_code = resp.status_code
+
     return httpresp

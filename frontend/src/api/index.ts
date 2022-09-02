@@ -534,25 +534,15 @@ export const fetchWgetScript = async (
   access_token?: string
 ): Promise<string> => {
   let testurl = queryString.stringifyUrl({
-    url: `${metagridApiURL}/proxy/wget`,
+    url: apiRoutes.wget.path,
     query: { dataset_id: ids },
   });
-  let url = '';
-  if (access_token) {
-    url = queryString.stringifyUrl({
-      url: apiRoutes.wget.path,
-      query: {
-        dataset_id: ids,
-        simple: simple_bool,
-        bearer_token: access_token,
-      },
-    });
-  } else {
-    url = queryString.stringifyUrl({
-      url: apiRoutes.wget.path,
-      query: { dataset_id: ids, simple: simple_bool },
-    });
-  }
+
+  let url = queryString.stringifyUrl({
+    url: `${wgetApiURL}`,
+    query: { dataset_id: ids },
+  });
+
   if (filenameVars && filenameVars.length > 0) {
     const filenameVarsParam = queryString.stringify(
       { query: filenameVars },
