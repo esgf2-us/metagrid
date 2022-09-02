@@ -4,11 +4,11 @@ services:
   react:
     build:
       context: ./
-      dockerfile: ./docker/local/react/Dockerfile
+      dockerfile: ./docker/local/Dockerfile
     image: metagrid_local_react
     container_name: react
     env_file:
-      - .envs/.local/.react
+      - .envs/.react
     volumes:
       - './:/app'
       - '/app/node_modules'

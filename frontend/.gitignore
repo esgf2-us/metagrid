@@ -13,10 +13,6 @@
 
 # misc
 .DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
 
 npm-debug.log*
 yarn-debug.log*
@@ -44,9 +40,6 @@ coverage
 
 # nyc test coverage
 .nyc_output
-
-# Bower dependency directory (https://bower.io/)
-bower_components
 
 # node-waf configuration
 .lock-wscript
@@ -81,5 +74,4 @@ typings/
 src/react-app-env.d.ts
 
 # Environment variables
-.env
-.envs/.production/.react
+.envs/.react

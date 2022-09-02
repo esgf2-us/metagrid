@@ -18,7 +18,7 @@ services:
       - local_postgres_data_backups:/backups
       - ./docker/local/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     env_file:
-      - ./.envs/.local/.postgres
+      - ./.envs/.postgres
     ports:
       - "5433:5432"
 
@@ -32,7 +32,7 @@ services:
     volumes:
       - ./docker/local/keycloak:/opt/jboss/keycloak/imports
     env_file:
-      - ./.envs/.local/.keycloak
+      - ./.envs/.keycloak
     ports:
       - "8080:8080"
     command: -Dkeycloak.import=/opt/jboss/keycloak/imports/realm-export.json
@@ -50,8 +50,8 @@ services:
     volumes:
       - .:/app
     env_file:
-      - ./.envs/.local/.django
-      - ./.envs/.local/.postgres
+      - ./.envs/.django
+      - ./.envs/.postgres
     ports:
       - "8000:8000"
     restart: always

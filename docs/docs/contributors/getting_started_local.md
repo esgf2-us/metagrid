@@ -183,6 +183,14 @@ docker-compose -p metagrid_frontend_dev up --build
 
 ---
 
+## Convenience Script for Common Tasks
+
+If you cd to the root project directory for metagrid, you'll see there is a `manage_metagrid.sh` script. 
+
+This script provides some convenience functions for common tasks related to running Metagrid. Selecting the 'Start / Stop Local Dev Containers' option in the main menu will automatically build the frontend and backend local containers using the same commands described earlier on this page. If the containers are already running, then the same option will stop the containers instead.
+
+This is a quick way to start and stop the Metagrid app for local development. The other functions in the script are related to production mode and are explained further here: [Getting Started for Production](getting_started_production.md)
+
 ## VSCode Configuration
 
 `.vscode/settings.json` files are provided to automatically configure your VSCode to leverage the quality assurance tools even if you use workspaces or open the folder directly.

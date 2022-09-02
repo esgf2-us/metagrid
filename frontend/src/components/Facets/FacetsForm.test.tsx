@@ -53,6 +53,46 @@ describe('test FacetsForm component', () => {
     await waitFor(() => expect(input.value).toEqual(''));
   });
 
+  it('handles expand and collapse facet panels', () => {
+    const { getByText } = render(<FacetsForm {...defaultProps} />);
+
+    // Click the expand all button
+    const expandAllBtn = getByText('Expand All');
+    expect(expandAllBtn).toBeTruthy();
+    fireEvent.click(expandAllBtn);
+
+    // Click the collaps all button
+    const collapseAllBtn = getByText('Collapse All');
+    expect(collapseAllBtn).toBeTruthy();
+    fireEvent.click(collapseAllBtn);
+  });
+
+  it('handles changing expand to collapse and vice-versa base on user actions', () => {
+    const { getByText } = render(<FacetsForm {...defaultProps} />);
+
+    // Expand the group1 panel
+    const group1Btn = getByText('Group1');
+    expect(group1Btn).toBeTruthy();
+    fireEvent.click(group1Btn);
+
+    // Expand the group2 panel
+    const group2Btn = getByText('Group2');
+    expect(group2Btn).toBeTruthy();
+    fireEvent.click(group2Btn);
+
+    // The collapse all button should now show since 2 panels are expanded
+    const collapseAllBtn = getByText('Collapse All');
+    expect(collapseAllBtn).toBeTruthy();
+
+    // Collapse group 1 and 2 panels
+    fireEvent.click(group1Btn);
+    fireEvent.click(group2Btn);
+
+    // The expand all button should show since all panels are collapsed
+    const expandAllBtn = getByText('Expand All');
+    expect(expandAllBtn).toBeTruthy();
+  });
+
   it('handles date picker for versioning', async () => {
     const { getByTestId, getByRole } = render(<FacetsForm {...defaultProps} />);
 

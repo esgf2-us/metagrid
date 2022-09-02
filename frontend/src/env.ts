@@ -11,6 +11,10 @@ export const metagridApiURL = `${
   process.env.REACT_APP_METAGRID_API_URL as string
 }`;
 
+// Redirect frontend
+export const publicUrl = process.env.PUBLIC_URL;
+export const previousPublicUrl = process.env.REACT_APP_PREVIOUS_URL as string;
+
 // ESGF wget API
 // ------------------------------------------------------------------------------
 // https://github.com/ESGF/esgf-wget
@@ -28,11 +32,6 @@ export const esgfNodeURLNoProtocol = esgfNodeURL.split('//')[1];
 export const nodeStatusURL = `${
   process.env.REACT_APP_ESGF_NODE_STATUS_URL as string
 }`;
-
-// cors-anywhere proxy
-// ------------------------------------------------------------------------------
-// https://github.com/Rob--W/cors-anywhere
-export const proxyURL = `${process.env.REACT_APP_CORS_PROXY_URL as string}`;
 
 // Keycloak
 // ------------------------------------------------------------------------------

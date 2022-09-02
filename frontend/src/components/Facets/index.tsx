@@ -104,7 +104,6 @@ const Facets: React.FC<Props> = ({
       </div>
       {!objectIsEmpty(availableFacets) && (
         <div className={leftSidebarTargets.getClass('searchFacetsForm')}>
-          <h3>Filter with Facets</h3>
           <FacetsForm
             activeSearchQuery={activeSearchQuery}
             availableFacets={availableFacets as ParsedFacets}
