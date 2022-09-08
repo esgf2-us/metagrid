@@ -1,27 +1,27 @@
 # =====================TREAFIK CONFIG=====================
-DOMAIN_NAME=example.com
+DOMAIN_NAME=esgf-dev1.llnl.gov
 PUBLIC_URL=
-PREVIOUS_URL=metagrid
+REACT_APP_PREVIOUS_URL=metagrid
 DOMAIN_SUBDIRECTORY=metagrid-backend
 
 # =====================BACKEND CONFIG====================
 
 # General
 DJANGO_SETTINGS_MODULE=config.settings.production
-DJANGO_SECRET_KEY=
-DJANGO_ADMIN_URL=
-DJANGO_ALLOWED_HOSTS=
+DJANGO_SECRET_KEY=RxPYuuqUmCK2VHHwyqab7tt7PrL-ktuGmOPncb_wwFM
+DJANGO_ADMIN_URL=TG_-ztsXwL7NOx6cTqZ_bjINGF_R1VuOTI8FocOfAfs
+DJANGO_ALLOWED_HOSTS=esgf-dev1.llnl.gov,198.128.245.131
 
 # Security
 DJANGO_SECURE_SSL_REDIRECT=False
 
 # django-cors-headers
-CORS_ORIGIN_WHITELIST=https://localhost:3000
+CORS_ORIGIN_WHITELIST=https://localhost:3000,https://esgf-dev1.llnl.gov
 
 # django-all-auth
-KEYCLOAK_URL=
-KEYCLOAK_REALM=
-KEYCLOAK_CLIENT_ID=
+KEYCLOAK_URL=https://auth-test.ceda.ac.uk/auth/
+KEYCLOAK_REALM=esgf
+KEYCLOAK_CLIENT_ID=metagrid-backend
 
 # postgress
 POSTGRES_HOST=postgres
@@ -32,17 +32,16 @@ POSTGRES_PASSWORD=postgres
 
 # =====================FRONTEND CONFIG====================
 
-# Redirect the frontend to home page when old subdirectory is used (optional)
-REACT_APP_PREVIOUS_URL=
-
 # MetaGrid API
 # https://github.com/aims-group/metagrid/tree/master/backend
-REACT_APP_METAGRID_API_URL=
+REACT_APP_METAGRID_API_URL=https://esgf-dev1.llnl.gov/metagrid-backend
 
 # ESGF wget API
 # https://github.com/ESGF/esgf-wget
+
 REACT_APP_WGET_API_URL=https://greyworm1-rh7.llnl.gov/wget
 REACT_APP_GLOBUS_SCRIPT_URL=https://greyworm1-rh7.llnl.gov/globusscript
+
 
 # ESGF Search API
 # https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
@@ -54,16 +53,16 @@ REACT_APP_ESGF_NODE_STATUS_URL=https://aims4.llnl.gov/prometheus/api/v1/query?qu
 
 # Keycloak
 # https://github.com/keycloak/keycloak
-REACT_APP_KEYCLOAK_URL=
-REACT_APP_KEYCLOAK_REALM=
-REACT_APP_KEYCLOAK_CLIENT_ID=
+REACT_APP_KEYCLOAK_URL=https://auth-test.ceda.ac.uk/auth/
+REACT_APP_KEYCLOAK_REALM=esgf
+REACT_APP_KEYCLOAK_CLIENT_ID=metagrid-frontend
 
 # react-hotjar
 # https://github.com/abdalla/react-hotjar
-REACT_APP_HOTJAR_ID=
-REACT_APP_HOTJAR_SV=
+REACT_APP_HOTJAR_ID=2079136
+REACT_APP_HOTJAR_SV=6
 
 
 # react-ga
 # https://github.com/react-ga/react-ga
-REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID=
+REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID=G-515H3RKZYX
