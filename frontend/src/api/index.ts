@@ -538,11 +538,22 @@ export const fetchWgetScript = async (
     query: { dataset_id: ids },
   });
 
-  let url = queryString.stringifyUrl({
-    url: `${wgetApiURL}`,
-    query: { dataset_id: ids },
-  });
-
+  let url = '';
+  if (access_token) {
+    url = queryString.stringifyUrl({
+      url: `${wgetApiURL}`,
+      query: {
+        dataset_id: ids,
+        simple: simple_bool,
+        bearer_token: access_token,
+      },
+    });
+  } else {
+    url = queryString.stringifyUrl({
+      url: `${wgetApiURL}`,
+      query: { dataset_id: ids, simple: simple_bool },
+    });
+  }
   if (filenameVars && filenameVars.length > 0) {
     const filenameVarsParam = queryString.stringify(
       { query: filenameVars },
