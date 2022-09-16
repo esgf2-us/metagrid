@@ -24,7 +24,7 @@ export const wgetApiURL = process.env.REACT_APP_WGET_API_URL as string;
 // export const wgetSimpleURL = process.env.REACT_APP_WGET_SIMPLE_URL as string;
 
 // ESGF Globus Script API
-// export const globusApiURL = process.env.REACT_APP_GLOBUS_API_URL as string;
+export const globusApiURL = process.env.REACT_APP_GLOBUS_API_URL as string;
 
 // ESGF Search API
 // ------------------------------------------------------------------------------

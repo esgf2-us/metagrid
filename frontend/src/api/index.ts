@@ -21,7 +21,7 @@ import {
   TextInputs,
 } from '../components/Search/types';
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
-import { metagridApiURL, wgetApiURL } from '../env';
+import { metagridApiURL, wgetApiURL, globusApiURL } from '../env';
 import axios from '../lib/axios';
 import apiRoutes, { ApiRoute, HTTPCodeType } from './routes';
 
@@ -577,11 +577,11 @@ export const fetchGlobusScript = async (
   filenameVars?: string[]
 ): Promise<string> => {
   let testurl = queryString.stringifyUrl({
-    url: `${metagridApiURL}/proxy/globus_script`,
+    url: apiRoutes.globus.path,
     query: { dataset_id: ids },
   });
   let url = queryString.stringifyUrl({
-    url: apiRoutes.wget.path,
+    url: `${globusApiURL}`,
     query: { dataset_id: ids },
   });
   if (filenameVars && filenameVars.length > 0) {
