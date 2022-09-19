@@ -529,10 +529,10 @@ export const fetchDatasetFiles = async (
  */
 export const fetchWgetScript = async (
   ids: string[] | string,
-  filenameVars?: string[],
-  simple_bool?: boolean,
-  access_token?: string
-): Promise<string> => {
+  simple_bool: boolean,
+  access_token: string,
+  filenameVars?: string[]
+  ): Promise<string> => {
   let testurl = queryString.stringifyUrl({
     url: apiRoutes.wget.path,
     query: { dataset_id: ids },
@@ -598,7 +598,7 @@ export const fetchGlobusScript = async (
     .get(testurl)
     .then(() => url)
     .catch((error: ResponseError) => {
-      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.wget));
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globus));
     });
 };
 

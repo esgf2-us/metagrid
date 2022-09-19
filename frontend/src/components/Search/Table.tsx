@@ -267,9 +267,9 @@ const Table: React.FC<Props> = ({
             );
             fetchWgetScript(
               record.id,
-              filenameVars,
               false,
-              accessToken as string
+              accessToken as string,
+              filenameVars
             )
               .then((url) => {
                 openDownloadURL(url);
@@ -285,9 +285,9 @@ const Table: React.FC<Props> = ({
             );
             fetchWgetScript(
               record.id,
-              filenameVars,
               true,
-              accessToken as string
+              accessToken as string,
+              filenameVars
             )
               .then((url) => {
                 openDownloadURL(url);

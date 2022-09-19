@@ -18,6 +18,7 @@ import Popconfirm from '../Feedback/Popconfirm';
 import Button from '../General/Button';
 import Table from '../Search/Table';
 import { RawSearchResults } from '../Search/types';
+import { AuthContext } from '../../contexts/AuthContext';
 
 const styles: CSSinJS = {
   summary: {
@@ -38,6 +39,9 @@ export type Props = {
   onClearCart: () => void;
 };
 
+const authState = React.useContext(AuthContext);
+const { access_token: accessToken, pk } = authState;
+
 const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
   const [downloadForm] = Form.useForm();
 
@@ -56,7 +60,7 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
   /**
    * TODO: Add handle for Globus
    */
-  const handleDownloadForm = (downloadType: 'wget' | 'Globus'): void => {
+  const handleDownloadForm = (downloadType: 'wget' | 'wget_simple' | 'Globus'): void => {
     /* istanbul ignore else */
     if (downloadType === 'wget') {
       const ids = (selectedItems as RawSearchResults).map((item) => item.id);
@@ -66,7 +70,7 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
         10
       );
       setDownloadIsLoading(true);
-      fetchWgetScript(ids)
+      fetchWgetScript(ids, false, accessToken as string)
         .then((url) => {
           openDownloadURL(url);
           setDownloadIsLoading(false);
@@ -76,7 +80,27 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
           void message.error(error.message);
           setDownloadIsLoading(false);
         });
-    } else if (downloadType === 'Globus') {
+    }
+    else if (downloadType === 'wget_simple') {
+      const ids = (selectedItems as RawSearchResults).map((item) => item.id);
+      // eslint-disable-next-line no-void
+      void message.success(
+        'The wget script is generating, please wait momentarily.',
+        10
+      );
+      setDownloadIsLoading(true);
+      fetchWgetScript(ids, true, accessToken as string)
+        .then((url) => {
+          openDownloadURL(url);
+          setDownloadIsLoading(false);
+        })
+        .catch((error: ResponseError) => {
+          // eslint-disable-next-line no-void
+          void message.error(error.message);
+          setDownloadIsLoading(false);
+        });
+    } 
+    else if (downloadType === 'Globus') {
       const ids = (selectedItems as RawSearchResults).map((item) => item.id);
       // eslint-disable-next-line no-void
       void message.success(
