@@ -5,6 +5,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
+from urllib.parse import urlparse
 
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
@@ -27,6 +28,12 @@ def do_citation(request):
         return HttpResponseBadRequest()
 
     url = jo["citurl"]
+
+    parsed_url = urlparse(url)
+
+    if not parsed_url.hostname == "cera-www.dkrz.de":
+        return HttpResponseBadRequest()
+
     try:
         resp = requests.get(url)
     except Exception:  # pragma: no cover
