@@ -1,4 +1,5 @@
 import json
+from urllib.parse import urlparse
 
 import requests
 from django.conf import settings
@@ -6,7 +7,6 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from urllib.parse import urlparse
 
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
