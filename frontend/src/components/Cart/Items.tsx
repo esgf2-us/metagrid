@@ -39,15 +39,12 @@ export type Props = {
   onClearCart: () => void;
 };
 
-const authState = React.useContext(AuthContext);
-const { access_token: accessToken, pk } = authState;
-
 const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
   const [downloadForm] = Form.useForm();
 
   // Statically defined list of dataset download options
   // TODO: Add 'Globus'
-  const downloadOptions = ['wget', 'Globus'];
+  const downloadOptions = ['wget', 'wget_simple', 'Globus'];
   const [downloadIsLoading, setDownloadIsLoading] = React.useState(false);
   const [selectedItems, setSelectedItems] = React.useState<
     RawSearchResults | []
@@ -57,10 +54,14 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
     setSelectedItems(selectedRows);
   };
 
+  const authState = React.useContext(AuthContext);
+  const { access_token: accessToken, pk } = authState;
   /**
    * TODO: Add handle for Globus
    */
-  const handleDownloadForm = (downloadType: 'wget' | 'wget_simple' | 'Globus'): void => {
+  const handleDownloadForm = (
+    downloadType: 'wget' | 'wget_simple' | 'Globus'
+  ): void => {
     /* istanbul ignore else */
     if (downloadType === 'wget') {
       const ids = (selectedItems as RawSearchResults).map((item) => item.id);
@@ -80,8 +81,7 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
           void message.error(error.message);
           setDownloadIsLoading(false);
         });
-    }
-    else if (downloadType === 'wget_simple') {
+    } else if (downloadType === 'wget_simple') {
       const ids = (selectedItems as RawSearchResults).map((item) => item.id);
       // eslint-disable-next-line no-void
       void message.success(
@@ -99,8 +99,7 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
           void message.error(error.message);
           setDownloadIsLoading(false);
         });
-    } 
-    else if (downloadType === 'Globus') {
+    } else if (downloadType === 'Globus') {
       const ids = (selectedItems as RawSearchResults).map((item) => item.id);
       // eslint-disable-next-line no-void
       void message.success(
@@ -171,7 +170,9 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
               form={downloadForm}
               layout="inline"
               onFinish={({ downloadType }) =>
-                handleDownloadForm(downloadType as 'wget' | 'Globus')
+                handleDownloadForm(
+                  downloadType as 'wget' | 'wget_simple' | 'Globus'
+                )
               }
               initialValues={{
                 downloadType: downloadOptions[0],
