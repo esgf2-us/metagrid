@@ -33,3 +33,10 @@ class TestProxyViewSet(APITestCase):
 
         response = self.client.post(url, jo, format="json")
         assert response.status_code == status.HTTP_200_OK
+
+        jo = {
+            "citurl": "https://aims4.llnl.gov/WDCC/meta/CMIP6/CMIP6.CMIP.IPSL.IPSL-CM6A-LR.abrupt-4xCO2.r12i1p1f1.Amon.n2oglobal.gr.v20191003.json"
+        }
+
+        response = self.client.post(url, jo, format="json")
+        assert response.status_code != status.HTTP_200_OK

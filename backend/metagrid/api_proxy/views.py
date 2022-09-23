@@ -1,4 +1,5 @@
 import json
+from urllib.parse import urlparse
 
 import requests
 from django.http import HttpResponse, HttpResponseBadRequest
@@ -27,6 +28,12 @@ def do_citation(request):
         return HttpResponseBadRequest()
 
     url = jo["citurl"]
+
+    parsed_url = urlparse(url)
+
+    if not parsed_url.hostname == "cera-www.dkrz.de":
+        return HttpResponseBadRequest()
+
     try:
         resp = requests.get(url)
     except Exception:  # pragma: no cover
