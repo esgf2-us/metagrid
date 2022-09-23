@@ -26,6 +26,9 @@ export type Props = {
     | 'inline';
   numCartItems: number;
   numSavedSearches: number;
+  globus_auth_token: string | null;
+  loginWithGlobus: () => void;
+  logoutGlobus: () => void;
   supportModalVisible: (visible: boolean) => void;
 };
 
@@ -33,6 +36,9 @@ const RightMenu: React.FC<Props> = ({
   mode,
   numCartItems,
   numSavedSearches,
+  globus_auth_token,
+  loginWithGlobus,
+  logoutGlobus,
   supportModalVisible,
 }) => {
   const [activeMenuItem, setActiveMenuItem] = React.useState<string>('search');
@@ -129,47 +135,81 @@ const RightMenu: React.FC<Props> = ({
             <NodeIndexOutlined /> Node Status
           </Link>
         </Menu.Item>
-        {!authenticated ? (
-          <Menu.Item
-            key="signIn"
-            style={menuItemStyling}
-            className={navBarTargets.getClass('signInBtn')}
-          >
-            <Button
-              type="text"
-              icon={<UserOutlined style={{ fontSize: '18px', margin: 0 }} />}
-              onClick={() => {
-                keycloak.login();
-              }}
+        <Menu.SubMenu
+          key="signInMenu"
+          icon={<UserOutlined style={{ fontSize: '18px' }} />}
+          title="Sign In Options"
+        >
+          {!authenticated ? (
+            <Menu.Item
+              key="signIn"
+              style={menuItemStyling}
+              className={navBarTargets.getClass('signInBtn')}
             >
-              Sign In
-            </Button>
-          </Menu.Item>
-        ) : (
-          <Menu.SubMenu
-            key="greeting"
-            icon={<UserOutlined style={{ fontSize: '18px' }} />}
-            title={
-              <span className="submenu-title-wrapper">
-                Hi,{' '}
-                {userInfo && userInfo.given_name
-                  ? userInfo.given_name
-                  : userInfo?.email}
-              </span>
-            }
-          >
-            <Menu.Item key="login">
+              <Button
+                type="text"
+                // icon={<UserOutlined style={{ fontSize: '18px', margin: 0 }} />}
+                onClick={() => {
+                  keycloak.login();
+                }}
+              >
+                Sign In
+              </Button>
+            </Menu.Item>
+          ) : (
+            <Menu.SubMenu
+              key="greeting"
+              // icon={<UserOutlined style={{ fontSize: '18px' }} />}
+              title={
+                <span className="submenu-title-wrapper">
+                  Hi,{' '}
+                  {userInfo && userInfo.given_name
+                    ? userInfo.given_name
+                    : userInfo?.email}
+                </span>
+              }
+            >
+              <Menu.Item key="login">
+                <Button
+                  type="text"
+                  onClick={() => {
+                    keycloak.logout();
+                  }}
+                >
+                  Sign Out
+                </Button>
+              </Menu.Item>
+            </Menu.SubMenu>
+          )}
+          {!globus_auth_token ? (
+            <Menu.Item
+              key="globusSignIn"
+              style={menuItemStyling}
+              className={navBarTargets.getClass('globusSignInBtn')}
+            >
+              <Button
+                type="text"
+                // icon={<UserOutlined style={{ fontSize: '18px', margin: 0 }} />}
+                onClick={() => {
+                  loginWithGlobus();
+                }}
+              >
+                Globus Sign In
+              </Button>
+            </Menu.Item>
+          ) : (
+            <Menu.Item key="globus_login">
               <Button
                 type="text"
                 onClick={() => {
-                  keycloak.logout();
+                  logoutGlobus();
                 }}
               >
-                Sign Out
+                Globus Sign Out
               </Button>
             </Menu.Item>
-          </Menu.SubMenu>
-        )}
+          )}
+        </Menu.SubMenu>
         <Menu.Item style={menuItemStyling} key="help">
           <Button
             type="text"

@@ -1,4 +1,7 @@
 /* eslint-disable no-void */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+
 import {
   BookOutlined,
   DeleteOutlined,
@@ -13,6 +16,7 @@ import { useAsync } from 'react-async';
 import { hotjar } from 'react-hotjar';
 import { Link, Redirect, Route, Switch } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
+import jwt_decode from 'jwt-decode';
 import {
   addUserSearchQuery,
   deleteUserSearchQuery,
@@ -38,6 +42,7 @@ import { UserCart, UserSearchQueries, UserSearchQuery } from '../Cart/types';
 import { TagType, TagValue } from '../DataDisplay/Tag';
 import Facets from '../Facets';
 import { ActiveFacets, ParsedFacets, RawProject } from '../Facets/types';
+import GlobusAuth from '../GlobusAuth/GlobusAuth';
 import NavBar from '../NavBar';
 import NodeStatus from '../NodeStatus';
 import NodeSummary from '../NodeStatus/NodeSummary';
@@ -52,6 +57,7 @@ import {
 } from '../Search/types';
 import Support from '../Support';
 import './App.css';
+import { Identity } from '../../contexts/types';
 
 const styles: CSSinJS = {
   bodySider: {
@@ -79,11 +85,61 @@ export type Props = {
   searchQuery: ActiveSearchQuery;
 };
 
-const metagridVersion = '1.0.8-beta';
+const metagridVersion = '1.1.0-globus-demo';
+
+// Simple check to see if we have an authorization callback in the URL
+const params = new URLSearchParams(window.location.search);
+const globusAuthCode = params.get('code');
+
+if (globusAuthCode) {
+  console.log('Getting a token...');
+  const url = window.location.href;
+  GlobusAuth.exchangeForAccessToken(url).then((resp: any) => {
+    // If you get back multiple tokens you'll need to make changes here.
+    const globusAccessToken: string = resp.access_token;
+    const globusIdToken: string = resp.id_token;
+
+    // Set it in local storage - the are a number of alternatives for
+    // saving this that are arguably more secure but this is the simplest
+    // for demonstration purposes.
+    window.localStorage.setItem('globus_auth_token', globusAccessToken);
+    window.localStorage.setItem('globus_id_token', globusIdToken);
+
+    // This isn't strictly necessary but it ensures no code reuse.
+    sessionStorage.removeItem('pkce_code_verifier');
+    sessionStorage.removeItem('pkce_state');
+    console.log('Cleared the PKCE state!');
+
+    // Redirect back to the root URL (simple but brittle way to clear the query params)
+    const newUrl = window.location.href.split('?')[0];
+    window.location.replace(newUrl);
+  });
+}
+
+const loginWithGlobus: () => void = () => {
+  const authUrl = GlobusAuth.authorizeUrl();
+  console.log(`Sending the user to ${authUrl}`);
+  window.location.replace(GlobusAuth.authorizeUrl());
+};
+
+const logoutGlobus: () => void = () => {
+  // Should revoke here
+  window.localStorage.removeItem('globus_auth_token');
+  window.localStorage.removeItem('globus_id_token');
+  const url = window.location.href.split('?')[0];
+  window.location.replace(url);
+};
 
 const App: React.FC<Props> = ({ searchQuery }) => {
   // Third-party tool integration
   useHotjar();
+
+  // Globus authentication state
+  const globusAuthToken = localStorage.getItem('globus_auth_token');
+  const rawGlobusIdToken = localStorage.getItem('globus_id_token');
+  const globusIdToken: Identity | null = rawGlobusIdToken
+    ? jwt_decode(rawGlobusIdToken)
+    : null;
 
   // User's authentication state
   const authState = React.useContext(AuthContext);
@@ -498,6 +554,9 @@ const App: React.FC<Props> = ({ searchQuery }) => {
               numCartItems={userCart.length}
               numSavedSearches={userSearchQueries.length}
               onTextSearch={handleTextSearch}
+              globus_auth_token={globusAuthToken}
+              loginWithGlobus={loginWithGlobus}
+              logoutGlobus={logoutGlobus}
               supportModalVisible={setSupportModalVisible}
             ></NavBar>
           )}

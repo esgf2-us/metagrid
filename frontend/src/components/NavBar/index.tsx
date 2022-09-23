@@ -16,6 +16,9 @@ export type Props = {
   numSavedSearches: number;
   onTextSearch: (selectedProject: RawProject, text: string) => void;
   supportModalVisible: (visible: boolean) => void;
+  globus_auth_token: string | null;
+  loginWithGlobus: () => void;
+  logoutGlobus: () => void;
 };
 
 const NavBar: React.FC<Props> = ({
@@ -23,6 +26,9 @@ const NavBar: React.FC<Props> = ({
   numSavedSearches,
   onTextSearch,
   supportModalVisible,
+  globus_auth_token,
+  loginWithGlobus,
+  logoutGlobus,
 }) => {
   const { data, error, isLoading } = useAsync(fetchProjects);
   const [showDrawer, setShowDrawer] = React.useState(false);
@@ -53,6 +59,9 @@ const NavBar: React.FC<Props> = ({
             mode="horizontal"
             numCartItems={numCartItems}
             numSavedSearches={numSavedSearches}
+            globus_auth_token={globus_auth_token}
+            loginWithGlobus={loginWithGlobus}
+            logoutGlobus={logoutGlobus}
             supportModalVisible={supportModalVisible}
           ></RightMenu>
         </div>
@@ -76,6 +85,9 @@ const NavBar: React.FC<Props> = ({
             mode="inline"
             numCartItems={numCartItems}
             numSavedSearches={numSavedSearches}
+            globus_auth_token={globus_auth_token}
+            loginWithGlobus={loginWithGlobus}
+            logoutGlobus={logoutGlobus}
             supportModalVisible={supportModalVisible}
           ></RightMenu>
         </Drawer>

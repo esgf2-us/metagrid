@@ -9,6 +9,9 @@ const rightMenuProps: Props = {
   mode: 'horizontal',
   numCartItems: 4,
   numSavedSearches: 1,
+  globus_auth_token: null,
+  loginWithGlobus: jest.fn(),
+  logoutGlobus: jest.fn(),
   supportModalVisible: () => {
     render(<Support visible onClose={jest.fn()} />);
   },

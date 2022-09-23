@@ -10,6 +10,9 @@ const defaultProps: Props = {
   numCartItems: 0,
   numSavedSearches: 0,
   onTextSearch: jest.fn(),
+  globus_auth_token: null,
+  loginWithGlobus: jest.fn(),
+  logoutGlobus: jest.fn(),
   supportModalVisible: jest.fn(),
 };
 
