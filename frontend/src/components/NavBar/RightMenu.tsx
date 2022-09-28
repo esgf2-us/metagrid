@@ -14,6 +14,11 @@ import React, { CSSProperties } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { navBarTargets } from '../../common/reactJoyrideSteps';
 import Button from '../General/Button';
+import {
+  getGlobusAuthToken,
+  loginWithGlobus,
+  logoutGlobus,
+} from '../GlobusAuth/GlobusAuth';
 
 const menuItemStyling: CSSProperties = { margin: '8px' };
 
@@ -26,9 +31,6 @@ export type Props = {
     | 'inline';
   numCartItems: number;
   numSavedSearches: number;
-  globus_auth_token: string | null;
-  loginWithGlobus: () => void;
-  logoutGlobus: () => void;
   supportModalVisible: (visible: boolean) => void;
 };
 
@@ -36,9 +38,6 @@ const RightMenu: React.FC<Props> = ({
   mode,
   numCartItems,
   numSavedSearches,
-  globus_auth_token,
-  loginWithGlobus,
-  logoutGlobus,
   supportModalVisible,
 }) => {
   const [activeMenuItem, setActiveMenuItem] = React.useState<string>('search');
@@ -54,6 +53,7 @@ const RightMenu: React.FC<Props> = ({
       email: string;
     };
   }
+  const globusToken = getGlobusAuthToken();
 
   /**
    * Update the active menu item based on the current pathname
@@ -181,7 +181,7 @@ const RightMenu: React.FC<Props> = ({
               </Menu.Item>
             </Menu.SubMenu>
           )}
-          {!globus_auth_token ? (
+          {!globusToken ? (
             <Menu.Item
               key="globusSignIn"
               style={menuItemStyling}

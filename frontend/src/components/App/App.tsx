@@ -42,7 +42,10 @@ import { UserCart, UserSearchQueries, UserSearchQuery } from '../Cart/types';
 import { TagType, TagValue } from '../DataDisplay/Tag';
 import Facets from '../Facets';
 import { ActiveFacets, ParsedFacets, RawProject } from '../Facets/types';
-import GlobusAuth from '../GlobusAuth/GlobusAuth';
+import GlobusAuth, {
+  getGlobusAuthToken,
+  getGlobusIdToken,
+} from '../GlobusAuth/GlobusAuth';
 import NavBar from '../NavBar';
 import NodeStatus from '../NodeStatus';
 import NodeSummary from '../NodeStatus/NodeSummary';
@@ -116,30 +119,9 @@ if (globusAuthCode) {
   });
 }
 
-const loginWithGlobus: () => void = () => {
-  const authUrl = GlobusAuth.authorizeUrl();
-  console.log(`Sending the user to ${authUrl}`);
-  window.location.replace(GlobusAuth.authorizeUrl());
-};
-
-const logoutGlobus: () => void = () => {
-  // Should revoke here
-  window.localStorage.removeItem('globus_auth_token');
-  window.localStorage.removeItem('globus_id_token');
-  const url = window.location.href.split('?')[0];
-  window.location.replace(url);
-};
-
 const App: React.FC<Props> = ({ searchQuery }) => {
   // Third-party tool integration
   useHotjar();
-
-  // Globus authentication state
-  const globusAuthToken = localStorage.getItem('globus_auth_token');
-  const rawGlobusIdToken = localStorage.getItem('globus_id_token');
-  const globusIdToken: Identity | null = rawGlobusIdToken
-    ? jwt_decode(rawGlobusIdToken)
-    : null;
 
   // User's authentication state
   const authState = React.useContext(AuthContext);
@@ -149,6 +131,15 @@ const App: React.FC<Props> = ({ searchQuery }) => {
   const [supportModalVisible, setSupportModalVisible] = React.useState<boolean>(
     false
   );
+
+  // Globus auth state
+  const authToken = localStorage.getItem('auth_token');
+  const rawIdToken = localStorage.getItem('id_token');
+  const idToken: Identity | null = rawIdToken ? jwt_decode(rawIdToken) : null;
+
+  if (idToken) {
+    console.log(idToken);
+  }
 
   const {
     run: runFetchNodeStatus,
@@ -554,9 +545,6 @@ const App: React.FC<Props> = ({ searchQuery }) => {
               numCartItems={userCart.length}
               numSavedSearches={userSearchQueries.length}
               onTextSearch={handleTextSearch}
-              globus_auth_token={globusAuthToken}
-              loginWithGlobus={loginWithGlobus}
-              logoutGlobus={logoutGlobus}
               supportModalVisible={setSupportModalVisible}
             ></NavBar>
           )}

@@ -15,6 +15,7 @@ import { CSSinJS } from '../../common/types';
 import Empty from '../DataDisplay/Empty';
 import Popconfirm from '../Feedback/Popconfirm';
 import Button from '../General/Button';
+import { getGlobusAuthToken } from '../GlobusAuth/GlobusAuth';
 import Table from '../Search/Table';
 import { RawSearchResults } from '../Search/types';
 
@@ -41,8 +42,14 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
   const [downloadForm] = Form.useForm();
 
   // Statically defined list of dataset download options
+  let downloadOptions = ['wget'];
+
   // TODO: Add 'Globus'
-  const downloadOptions = ['wget'];
+  const globusAuth = getGlobusAuthToken();
+  if (globusAuth) {
+    downloadOptions = ['globus', 'wget'];
+  }
+
   const [downloadIsLoading, setDownloadIsLoading] = React.useState(false);
   const [selectedItems, setSelectedItems] = React.useState<
     RawSearchResults | []
@@ -55,7 +62,7 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
   /**
    * TODO: Add handle for Globus
    */
-  const handleDownloadForm = (downloadType: 'wget' | 'Globus'): void => {
+  const handleDownloadForm = (downloadType: 'wget' | 'globus'): void => {
     /* istanbul ignore else */
     if (downloadType === 'wget') {
       const ids = (selectedItems as RawSearchResults).map((item) => item.id);
@@ -75,6 +82,14 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
           void message.error(error.message);
           setDownloadIsLoading(false);
         });
+    } else if (downloadType === 'globus') {
+      const ids = (selectedItems as RawSearchResults).map((item) => item.id);
+      // eslint-disable-next-line no-void
+      void message.success('The globus download has been initiated...', 10);
+      setDownloadIsLoading(true);
+      setTimeout(() => {
+        setDownloadIsLoading(false);
+      }, 3000);
     }
   };
 
@@ -128,7 +143,7 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
               form={downloadForm}
               layout="inline"
               onFinish={({ downloadType }) =>
-                handleDownloadForm(downloadType as 'wget' | 'Globus')
+                handleDownloadForm(downloadType as 'wget' | 'globus')
               }
               initialValues={{
                 downloadType: downloadOptions[0],
