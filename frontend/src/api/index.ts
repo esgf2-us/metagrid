@@ -532,7 +532,7 @@ export const fetchWgetScript = async (
   simple_bool: boolean,
   access_token: string,
   filenameVars?: string[]
-  ): Promise<string> => {
+): Promise<string> => {
   let testurl = queryString.stringifyUrl({
     url: apiRoutes.wget.path,
     query: { dataset_id: ids },
