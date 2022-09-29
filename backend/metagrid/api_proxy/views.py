@@ -11,7 +11,7 @@ from django.views.decorators.http import require_http_methods
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
 def do_search(request):
-    esgf_host = getattr(settings, "SEARCH_URL", "https://esgf-node.llnl.gov/esg-search/search")
+    esgf_host = getattr(settings, "REACT_APP_SEARCH_URL", "https://esgf-node.llnl.gov/esg-search/search")
     return do_request(request, esgf_host)
 
 
