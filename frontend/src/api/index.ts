@@ -449,9 +449,13 @@ export const fetchDatasetCitation = async ({
   [key: string]: string;
 }): Promise<{ [key: string]: unknown }> =>
   axios
+<<<<<<< Updated upstream
     .post(`${metagridApiURL}/proxy/citation`, {
       citurl: url,
     })
+=======
+    .post(`${metagridApiURL}/proxy/citation`, { "url" : url  })
+>>>>>>> Stashed changes
     .then((res) => {
       const citation = processCitation(res.data as RawCitation);
       return citation;
@@ -532,7 +536,7 @@ export const fetchWgetScript = async (
   simple_bool: boolean,
   access_token: string,
   filenameVars?: string[]
-  ): Promise<string> => {
+): Promise<string> => {
   let testurl = queryString.stringifyUrl({
     url: apiRoutes.wget.path,
     query: { dataset_id: ids },

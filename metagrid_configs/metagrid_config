@@ -38,10 +38,8 @@ REACT_APP_METAGRID_API_URL=https://esgf-dev1.llnl.gov/metagrid-backend
 
 # ESGF wget API
 # https://github.com/ESGF/esgf-wget
-
 REACT_APP_WGET_API_URL=https://greyworm1-rh7.llnl.gov/wget
 REACT_APP_GLOBUS_SCRIPT_URL=https://greyworm1-rh7.llnl.gov/globusscript
-
 
 # ESGF Search API
 # https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
@@ -61,6 +59,7 @@ REACT_APP_KEYCLOAK_CLIENT_ID=metagrid-frontend
 # https://github.com/abdalla/react-hotjar
 REACT_APP_HOTJAR_ID=2079136
 REACT_APP_HOTJAR_SV=6
+
 
 
 # react-ga
