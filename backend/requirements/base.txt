@@ -1,6 +1,6 @@
 # Core
 # ------------------------------------------------------------------------------
-pytz==2022.1  # https://github.com/stub42/pytz
+pytz==2022.2.1  # https://github.com/stub42/pytz
 django==3.2.15  # https://www.djangoproject.com/
 django-environ==0.8.1  # https://github.com/joke2k/django-environ
 gunicorn==20.1.0  # https://github.com/benoitc/gunicorn
