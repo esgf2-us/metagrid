@@ -449,13 +449,9 @@ export const fetchDatasetCitation = async ({
   [key: string]: string;
 }): Promise<{ [key: string]: unknown }> =>
   axios
-<<<<<<< Updated upstream
     .post(`${metagridApiURL}/proxy/citation`, {
       citurl: url,
     })
-=======
-    .post(`${metagridApiURL}/proxy/citation`, { "url" : url  })
->>>>>>> Stashed changes
     .then((res) => {
       const citation = processCitation(res.data as RawCitation);
       return citation;
@@ -585,7 +581,7 @@ export const fetchGlobusScript = async (
     query: { dataset_id: ids },
   });
   let url = queryString.stringifyUrl({
-    url: `${globusApiURL}`,
+    url: globusApiURL,
     query: { dataset_id: ids },
   });
   if (filenameVars && filenameVars.length > 0) {
