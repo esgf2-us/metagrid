@@ -233,7 +233,7 @@ const Table: React.FC<Props> = ({
       ),
     },
     {
-      title: 'Download Script',
+      title: 'Download Options',
       key: 'download',
       width: 200,
       render: (record: RawSearchResult) => {

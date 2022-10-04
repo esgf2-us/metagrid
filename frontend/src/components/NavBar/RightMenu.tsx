@@ -15,7 +15,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { navBarTargets } from '../../common/reactJoyrideSteps';
 import Button from '../General/Button';
 import {
-  getGlobusAuthToken,
+  isSignedIntoGlobus,
   loginWithGlobus,
   logoutGlobus,
 } from '../GlobusAuth/GlobusAuth';
@@ -53,7 +53,6 @@ const RightMenu: React.FC<Props> = ({
       email: string;
     };
   }
-  const globusToken = getGlobusAuthToken();
 
   /**
    * Update the active menu item based on the current pathname
@@ -181,7 +180,7 @@ const RightMenu: React.FC<Props> = ({
               </Menu.Item>
             </Menu.SubMenu>
           )}
-          {!globusToken ? (
+          {!isSignedIntoGlobus() ? (
             <Menu.Item
               key="globusSignIn"
               style={menuItemStyling}

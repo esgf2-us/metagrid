@@ -102,6 +102,15 @@ if (globusAuthCode) {
     const globusAccessToken: string = resp.access_token;
     const globusIdToken: string = resp.id_token;
 
+    // If the token is undefined, don't save it
+    if (globusAccessToken !== 'undefined' || globusAuthCode !== 'undefined') {
+      // Set it in local storage - the are a number of alternatives for
+      // saving this that are arguably more secure but this is the simplest
+      // for demonstration purposes.
+      window.localStorage.setItem('globus_auth_token', globusAccessToken);
+      window.localStorage.setItem('globus_id_token', globusIdToken);
+    }
+
     // Set it in local storage - the are a number of alternatives for
     // saving this that are arguably more secure but this is the simplest
     // for demonstration purposes.
@@ -133,13 +142,9 @@ const App: React.FC<Props> = ({ searchQuery }) => {
   );
 
   // Globus auth state
-  const authToken = localStorage.getItem('auth_token');
-  const rawIdToken = localStorage.getItem('id_token');
-  const idToken: Identity | null = rawIdToken ? jwt_decode(rawIdToken) : null;
-
-  if (idToken) {
-    console.log(idToken);
-  }
+  // const authToken = getGlobusAuthToken();
+  // const rawIdToken = getGlobusIdToken();
+  // const idToken: Identity | null = rawIdToken ? jwt_decode(rawIdToken) : null;
 
   const {
     run: runFetchNodeStatus,
