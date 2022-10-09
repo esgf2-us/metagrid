@@ -188,3 +188,6 @@ tags
 .env
 .envs/*
 !.envs/.local/
+
+# Helm
+helm/metagrid/charts/

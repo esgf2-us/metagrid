@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "metagrid.fullname" . }}-react
+  labels:
+    {{- include "metagrid.labels" . | nindent 4 }}
+    app.kubernetes.io/component: react
+spec:
+  {{- if not .Values.react.autoscaling.enabled }}
+  replicas: {{ .Values.react.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "metagrid.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.react.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "metagrid.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: react
+    spec:
+      {{- with .Values.react.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.react.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.react.securityContext | nindent 12 }}
+          image: "{{ .Values.react.image.repository }}:{{ .Values.react.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.react.image.pullPolicy }}
+          env:
+            {{- range $key, $value := .Values.react.env }}
+            - name: {{ tpl $key $ }}
+              value: {{ tpl $value $ | quote }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {{- toYaml .Values.react.resources | nindent 12 }}
+          volumeMounts:
+          - name: runtime-conf
+            mountPath: /usr/share/nginx/html/config
+          {{- with .Values.react.extraVolumeMounts }}
+          {{- tpl (toYaml .Values.react.extraVolumeMounts) . | nindent 10 }}
+          {{- end }}
+      volumes:
+      - name: runtime-conf
+        emptyDir: {}
+      {{- with .Values.react.extraVolumes }}
+      {{- tpl (toYaml .Values.react.extraVolumes) . | nindent 10 }}
+      {{- end }}
+      {{- with .Values.react.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.react.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.react.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

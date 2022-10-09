@@ -1,0 +1,29 @@
+{{- if .Values.django.autoscaling.enabled }}
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "metagrid.fullname" . }}-django
+  labels:
+    {{- include "metagrid.labels" . | nindent 4 }}
+    app.kubernetes.io/component: django
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "metagrid.fullname" . }}
+  minReplicas: {{ .Values.django.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.django.autoscaling.maxReplicas }}
+  metrics:
+    {{- if .Values.django.autoscaling.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: cpu
+        targetAverageUtilization: {{ .Values.django.autoscaling.targetCPUUtilizationPercentage }}
+    {{- end }}
+    {{- if .Values.django.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        targetAverageUtilization: {{ .Values.django.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
+{{- end }}

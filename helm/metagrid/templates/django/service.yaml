@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "metagrid.fullname" . }}-django
+  labels:
+    {{- include "metagrid.labels" . | nindent 4 }}
+    app.kubernetes.io/component: django
+spec:
+  type: {{ .Values.django.service.type }}
+  ports:
+    - port: {{ .Values.django.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "metagrid.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: django

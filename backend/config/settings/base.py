@@ -297,7 +297,6 @@ JWT_AUTH_COOKIE = "jwt-auth"
 CORS_ORIGIN_ALLOW_ALL = False
 CORS_ORIGIN_WHITELIST = env.list("CORS_ORIGIN_WHITELIST")
 
-
-SEARCH_URL = env("REACT_APP_ESGF_NODE_URL")
-WGET_URL = env("REACT_APP_WGET_API_URL")
-STATUS_URL = env("REACT_APP_ESGF_NODE_STATUS_URL")
+SEARCH_URL = env("REACT_APP_ESGF_NODE_URL", default="https://esgf-node.llnl.gov/esg-search/search")
+WGET_URL = env("REACT_APP_WGET_API_URL", default="https://esgf-node.llnl.gov/esg-search/wget")
+STATUS_URL = env("REACT_APP_ESGF_NODE_STATUS_URL", default="https://aims4.llnl.gov/prometheus/api/v1/query?query=probe_success%7Bjob%3D%22http_2xx%22%2C+target%3D~%22.%2Athredds.%2A%22%7D")

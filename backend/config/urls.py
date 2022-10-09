@@ -17,6 +17,9 @@ from metagrid.cart.views import CartViewSet, SearchViewSet
 from metagrid.projects.views import ProjectsViewSet
 from metagrid.users.views import UserCreateViewSet, UserViewSet
 
+from . import views
+
+
 router = DefaultRouter()
 router.register(r"users", UserViewSet)
 router.register(r"users", UserCreateViewSet)
@@ -35,6 +38,8 @@ class KeycloakLogin(SocialLoginView):
 
 urlpatterns = [
     path(settings.ADMIN_URL, admin.site.urls),
+    path("healthz", views.healthz, name="healthz"),
+    path("readiness", views.readiness, name="readiness"),
     path("api/v1/", include(router.urls)),
     # the 'api-root' from django rest-frameworks default router
     # http://www.django-rest-framework.org/api-guide/routers/#defaultrouter

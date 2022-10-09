@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "metagrid.fullname" . }}-django
+  labels:
+    {{- include "metagrid.labels" . | nindent 4 }}
+    app.kubernetes.io/component: django
+spec:
+  {{- if not .Values.django.autoscaling.enabled }}
+  replicas: {{ .Values.django.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "metagrid.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.django.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "metagrid.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: django
+    spec:
+      {{- with .Values.django.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.django.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.django.securityContext | nindent 12 }}
+          image: "{{ .Values.django.image.repository }}:{{ .Values.django.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.django.image.pullPolicy }}
+          env:
+            {{- range $key, $value := omit .Values.django.env "DJANGO_ALLOWED_HOSTS" }}
+            - name: {{ tpl $key $ }}
+              value: {{ tpl $value $ | quote }}
+            {{- end }}
+            - name: THIS_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: DJANGO_ALLOWED_HOSTS
+              value: '{{ include "metagrid.django_allowed_hosts" $ }}'
+          ports:
+            - name: http
+              containerPort: 5000
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /readiness
+              port: http
+          resources:
+            {{- toYaml .Values.django.resources | nindent 12 }}
+      {{- with .Values.django.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.django.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.django.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -11,12 +11,8 @@ from django.views.decorators.http import require_http_methods
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
 def do_search(request):
-    esgf_host = getattr(
-        settings,
-        "REACT_APP_SEARCH_URL",
-        "https://esgf-node.llnl.gov/esg-search/search",
-    )
-    return do_request(request, esgf_host)
+    return do_request(request, settings.SEARCH_URL)
+
 
 @require_http_methods(["POST"])
 @csrf_exempt
@@ -53,12 +49,7 @@ def do_citation(request):
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
 def do_status(request):
-    status_url = getattr(
-        settings,
-        "REACT_APP_ESGF_NODE_STATUS_URL",
-        "https://aims4.llnl.gov/prometheus/api/v1/query?query=probe_success%7Bjob%3D%22http_2xx%22%2C+target%3D~%22.%2Athredds.%2A%22%7D",
-    )
-    resp = requests.get(status_url)
+    resp = requests.get(settings.STATUS_URL)
     if resp.status_code == 200:  # pragma: no cover
         return HttpResponse(resp.text)
     else:  # pragma: no cover
@@ -68,14 +59,7 @@ def do_status(request):
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
 def do_wget(request):
-    return do_request(
-        request,
-        getattr(
-            settings,
-            "REACT_APP_WGET_API_URL",
-            "https://esgf-node.llnl.gov/esg-search/wget",
-        ),
-    )
+    return do_request(request, settings.WGET_URL)
 
 
 def do_request(request, urlbase):
