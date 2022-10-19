@@ -21,7 +21,7 @@ import {
   TextInputs,
 } from '../components/Search/types';
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
-import { metagridApiURL, wgetApiURL } from '../env';
+import { metagridApiURL, wgetApiURL, globusApiURL } from '../env';
 import axios from '../lib/axios';
 import apiRoutes, { ApiRoute, HTTPCodeType } from './routes';
 
@@ -529,6 +529,8 @@ export const fetchDatasetFiles = async (
  */
 export const fetchWgetScript = async (
   ids: string[] | string,
+  simple_bool: boolean,
+  access_token: string,
   filenameVars?: string[]
 ): Promise<string> => {
   let testurl = queryString.stringifyUrl({
@@ -536,11 +538,22 @@ export const fetchWgetScript = async (
     query: { dataset_id: ids },
   });
 
-  let url = queryString.stringifyUrl({
-    url: `${wgetApiURL}`,
-    query: { dataset_id: ids },
-  });
-
+  let url = '';
+  if (access_token) {
+    url = queryString.stringifyUrl({
+      url: `${wgetApiURL}`,
+      query: {
+        dataset_id: ids,
+        simple: simple_bool,
+        bearer_token: access_token,
+      },
+    });
+  } else {
+    url = queryString.stringifyUrl({
+      url: `${wgetApiURL}`,
+      query: { dataset_id: ids, simple: simple_bool },
+    });
+  }
   if (filenameVars && filenameVars.length > 0) {
     const filenameVarsParam = queryString.stringify(
       { query: filenameVars },
@@ -551,12 +564,41 @@ export const fetchWgetScript = async (
     url += `&${filenameVarsParam}`;
     testurl += `&${filenameVarsParam}`;
   }
-
   return axios
     .get(testurl)
     .then(() => url)
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.wget));
+    });
+};
+
+export const fetchGlobusScript = async (
+  ids: string[] | string,
+  filenameVars?: string[]
+): Promise<string> => {
+  let testurl = queryString.stringifyUrl({
+    url: apiRoutes.globus.path,
+    query: { dataset_id: ids },
+  });
+  let url = queryString.stringifyUrl({
+    url: globusApiURL,
+    query: { dataset_id: ids },
+  });
+  if (filenameVars && filenameVars.length > 0) {
+    const filenameVarsParam = queryString.stringify(
+      { query: filenameVars },
+      {
+        arrayFormat: 'comma',
+      }
+    );
+    url += `&${filenameVarsParam}`;
+    testurl += `&${filenameVarsParam}`;
+  }
+  return axios
+    .get(testurl)
+    .then(() => url)
+    .catch((error: ResponseError) => {
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globus));
     });
 };
 

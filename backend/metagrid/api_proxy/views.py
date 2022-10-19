@@ -61,6 +61,10 @@ def do_status(request):
 def do_wget(request):
     return do_request(request, settings.WGET_URL)
 
+@require_http_methods(["GET", "POST"])
+@csrf_exempt
+def do_globus_script(request):
+    return do_request(request, settings.GLOBUS_URL)
 
 def do_request(request, urlbase):
     resp = None

@@ -12,6 +12,7 @@ import {
   fetchUserInfo,
   fetchUserSearchQueries,
   fetchWgetScript,
+  fetchGlobusScript,
   generateSearchURLQuery,
   openDownloadURL,
   parseNodeStatus,
@@ -510,18 +511,17 @@ describe('test deleting user search', () => {
 
 describe('test fetching wget script', () => {
   it('returns a response with a single dataset id', async () => {
-    await fetchWgetScript('id', ['var']);
+    await fetchWgetScript('id', false, '', ['var']);
   });
   it('returns a response with an array of dataset ids', async () => {
-    await fetchWgetScript(['id', 'id']);
+    await fetchWgetScript(['id', 'id'], true, 'token');
   });
-
   it('catches and throws an error based on HTTP status code', async () => {
     server.use(
       rest.get(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404)))
     );
 
-    await expect(fetchWgetScript('id')).rejects.toThrow(
+    await expect(fetchWgetScript('id', false, '')).rejects.toThrow(
       apiRoutes.wget.handleErrorMsg(404)
     );
   });
@@ -531,8 +531,37 @@ describe('test fetching wget script', () => {
         res.networkError(genericNetworkErrorMsg)
       )
     );
-    await expect(fetchWgetScript('id')).rejects.toThrow(
+    await expect(fetchWgetScript('id', false, '')).rejects.toThrow(
       apiRoutes.wget.handleErrorMsg('generic')
+    );
+  });
+});
+
+describe('test fetching globus script', () => {
+  it('returns a response with a single dataset id', async () => {
+    await fetchGlobusScript('id', ['var']);
+  });
+  it('returns a response with an array of dataset ids', async () => {
+    await fetchGlobusScript(['id', 'id']);
+  });
+
+  it('catches and throws an error based on HTTP status code', async () => {
+    server.use(
+      rest.get(apiRoutes.globus.path, (_req, res, ctx) => res(ctx.status(404)))
+    );
+
+    await expect(fetchGlobusScript('id')).rejects.toThrow(
+      apiRoutes.globus.handleErrorMsg(404)
+    );
+  });
+  it('catches and throws generic network error', async () => {
+    server.use(
+      rest.get(apiRoutes.globus.path, (_req, res) =>
+        res.networkError(genericNetworkErrorMsg)
+      )
+    );
+    await expect(fetchGlobusScript('id')).rejects.toThrow(
+      apiRoutes.globus.handleErrorMsg('generic')
     );
   });
 });

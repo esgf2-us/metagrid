@@ -18,6 +18,12 @@ export const previousPublicUrl = process.env.REACT_APP_PREVIOUS_URL as string;
 // https://github.com/ESGF/esgf-wget
 export const wgetApiURL = (window.REACT_APP_WGET_API_URL as unknown) as string;
 
+// Not used ???
+// export const wgetSimpleURL = process.env.REACT_APP_WGET_SIMPLE_URL as string;
+
+// ESGF Globus Script API
+export const globusApiURL = process.env.REACT_APP_GLOBUS_API_URL as string;
+
 // ESGF Search API
 // ------------------------------------------------------------------------------
 // https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
