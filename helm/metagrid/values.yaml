@@ -7,10 +7,10 @@ django:
   replicaCount: 1
 
   image:
-    repository: image-registry.openshift-image-registry.svc:5000/cli137/django
+    repository: sashakames/metagrid-django
     pullPolicy: Always
     # Overrides the image tag whose default is the chart appVersion.
-    tag: "latest"
+    tag: "devel"
 
   imagePullSecrets: []
   nameOverride: ""
@@ -101,10 +101,10 @@ react:
   replicaCount: 1
 
   image:
-    repository: image-registry.openshift-image-registry.svc:5000/cli137/react
+    repository: sashakames/metagrid-react
     pullPolicy: Always
     # Overrides the image tag whose default is the chart appVersion.
-    tag: latest
+    tag: devel
 
   imagePullSecrets: []
   nameOverride: ""
@@ -113,11 +113,11 @@ react:
   env:
     REACT_APP_METAGRID_API_URL: http://{{ (index .Values.react.ingress.hosts 0).host }}
     REACT_APP_WGET_API_URL: https://greyworm1-rh7.llnl.gov/wget
-    REACT_APP_ESGF_NODE_URL: esg-search/search
+    REACT_APP_ESGF_NODE_URL: http://esgf-node.llnl.gov/esg-search/search
     REACT_APP_ESGF_NODE_STATUS_URL: https://aims4.llnl.gov/prometheus/api/v1/query?query=probe_success%7Bjob%3D%22http_2xx%22%2C+target%3D~%22.%2Athredds.%2A%22%7D
     REACT_APP_KEYCLOAK_REALM: esgf
-    REACT_APP_KEYCLOAK_URL: https://keycloak.metagrid.com/auth
-    REACT_APP_KEYCLOAK_CLIENT_ID: frontend
+    REACT_APP_KEYCLOAK_URL: https://login.esgf.io/
+    REACT_APP_KEYCLOAK_CLIENT_ID: metagrid-nimbus
     GENERATE_SOURCEMAP: 'false'
 
   podAnnotations: {}
@@ -144,7 +144,7 @@ react:
       # kubernetes.io/ingress.class: nginx
       # kubernetes.io/tls-acme: "true"
     hosts:
-      - host: esgf.apps.marble.ccs.ornl.gov
+      - host: nimbus3.llnl.gov
         paths:
           - path: /
             pathType: ImplementationSpecific
