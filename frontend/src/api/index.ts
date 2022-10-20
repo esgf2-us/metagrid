@@ -80,6 +80,44 @@ export const fetchUserAuth = async (args: [string]): Promise<RawUserAuth> =>
     });
 
 /**
+ * HTTP Request Method: POST
+ * HTTP Response Code: 200 OK
+ */
+export const fetchGlobusAuth = async (authCode: string): Promise<RawUserAuth> =>
+  axios
+    .post(apiRoutes.globusAuth.path, {
+      refresh_token: authCode,
+      redirect_uri: 'http://localhost:3000/search',
+      grant_type: 'refresh_token',
+    })
+    .then((res) => res.data as Promise<RawUserAuth>)
+    .catch((error: ResponseError) => {
+      throw new Error(
+        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusAuth)
+      );
+    });
+
+/**
+ * HTTP Request Method: POST
+ * HTTP Response Code: 200 OK
+ */
+export const fetchGlobusEndpoints = async (
+  accessToken: string
+): Promise<RawUserAuth> =>
+  axios
+    .post(apiRoutes.globusEndpoints.path, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+    .then((res) => res.data as Promise<RawUserAuth>)
+    .catch((error: ResponseError) => {
+      throw new Error(
+        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusEndpoints)
+      );
+    });
+
+/**
  * HTTP Request Method: GET
  * HTTP Response Code: 200 OK
  */

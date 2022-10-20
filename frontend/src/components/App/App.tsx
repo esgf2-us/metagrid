@@ -1,6 +1,4 @@
 /* eslint-disable no-void */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 
 import {
   BookOutlined,
@@ -16,10 +14,10 @@ import { useAsync } from 'react-async';
 import { hotjar } from 'react-hotjar';
 import { Link, Redirect, Route, Switch } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
-import jwt_decode from 'jwt-decode';
 import {
   addUserSearchQuery,
   deleteUserSearchQuery,
+  fetchGlobusEndpoints,
   fetchNodeStatus,
   fetchProjects,
   fetchUserCart,
@@ -42,9 +40,10 @@ import { UserCart, UserSearchQueries, UserSearchQuery } from '../Cart/types';
 import { TagType, TagValue } from '../DataDisplay/Tag';
 import Facets from '../Facets';
 import { ActiveFacets, ParsedFacets, RawProject } from '../Facets/types';
-import GlobusAuth, {
+import {
   getGlobusAuthToken,
-  getGlobusIdToken,
+  isSignedIntoGlobus,
+  updateGlobusAccessTokens,
 } from '../GlobusAuth/GlobusAuth';
 import NavBar from '../NavBar';
 import NodeStatus from '../NodeStatus';
@@ -60,7 +59,6 @@ import {
 } from '../Search/types';
 import Support from '../Support';
 import './App.css';
-import { Identity } from '../../contexts/types';
 
 const styles: CSSinJS = {
   bodySider: {
@@ -90,44 +88,6 @@ export type Props = {
 
 const metagridVersion = '1.1.0-globus-demo';
 
-// Simple check to see if we have an authorization callback in the URL
-const params = new URLSearchParams(window.location.search);
-const globusAuthCode = params.get('code');
-
-if (globusAuthCode) {
-  console.log('Getting a token...');
-  const url = window.location.href;
-  GlobusAuth.exchangeForAccessToken(url).then((resp: any) => {
-    // If you get back multiple tokens you'll need to make changes here.
-    const globusAccessToken: string = resp.access_token;
-    const globusIdToken: string = resp.id_token;
-
-    // If the token is undefined, don't save it
-    if (globusAccessToken !== 'undefined' || globusAuthCode !== 'undefined') {
-      // Set it in local storage - the are a number of alternatives for
-      // saving this that are arguably more secure but this is the simplest
-      // for demonstration purposes.
-      window.localStorage.setItem('globus_auth_token', globusAccessToken);
-      window.localStorage.setItem('globus_id_token', globusIdToken);
-    }
-
-    // Set it in local storage - the are a number of alternatives for
-    // saving this that are arguably more secure but this is the simplest
-    // for demonstration purposes.
-    window.localStorage.setItem('globus_auth_token', globusAccessToken);
-    window.localStorage.setItem('globus_id_token', globusIdToken);
-
-    // This isn't strictly necessary but it ensures no code reuse.
-    sessionStorage.removeItem('pkce_code_verifier');
-    sessionStorage.removeItem('pkce_state');
-    console.log('Cleared the PKCE state!');
-
-    // Redirect back to the root URL (simple but brittle way to clear the query params)
-    const newUrl = window.location.href.split('?')[0];
-    window.location.replace(newUrl);
-  });
-}
-
 const App: React.FC<Props> = ({ searchQuery }) => {
   // Third-party tool integration
   useHotjar();
@@ -141,11 +101,6 @@ const App: React.FC<Props> = ({ searchQuery }) => {
     false
   );
 
-  // Globus auth state
-  // const authToken = getGlobusAuthToken();
-  // const rawIdToken = getGlobusIdToken();
-  // const idToken: Identity | null = rawIdToken ? jwt_decode(rawIdToken) : null;
-
   const {
     run: runFetchNodeStatus,
     data: nodeStatus,
@@ -154,6 +109,8 @@ const App: React.FC<Props> = ({ searchQuery }) => {
   } = useAsync({
     deferFn: fetchNodeStatus,
   });
+
+  updateGlobusAccessTokens();
 
   const projectBaseQuery = (
     project: Record<string, unknown> | RawProject
@@ -188,6 +145,20 @@ const App: React.FC<Props> = ({ searchQuery }) => {
       localStorage.getItem('userSearchQueries') || '[]'
     ) as UserSearchQueries
   );
+
+  React.useEffect(() => {
+    if (true) {
+      void fetchGlobusEndpoints('')
+        .then((endpoints) => {
+          console.log(endpoints);
+        })
+        .catch((error: ResponseError) => {
+          void message.error({
+            content: error.message,
+          });
+        });
+    }
+  }, [isSignedIntoGlobus]);
 
   React.useEffect(() => {
     /* istanbul ignore else */
