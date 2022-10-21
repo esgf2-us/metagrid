@@ -1,6 +1,10 @@
 /**
  * This file contains HTTP Request functions.
  */
+
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+
 import 'setimmediate'; // Added because in Jest 27, setImmediate is not defined, causing test errors
 import humps from 'humps';
 import queryString from 'query-string';
@@ -24,6 +28,7 @@ import { RawUserAuth, RawUserInfo } from '../contexts/types';
 import { metagridApiURL, wgetApiURL } from '../env';
 import axios from '../lib/axios';
 import apiRoutes, { ApiRoute, HTTPCodeType } from './routes';
+import { RawEndpointList } from '../components/Globus/types';
 
 export interface ResponseError extends Error {
   status?: number;
@@ -103,14 +108,14 @@ export const fetchGlobusAuth = async (authCode: string): Promise<RawUserAuth> =>
  */
 export const fetchGlobusEndpoints = async (
   accessToken: string
-): Promise<RawUserAuth> =>
+): Promise<RawEndpointList> =>
   axios
     .post(apiRoutes.globusEndpoints.path, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
     })
-    .then((res) => res.data as Promise<RawUserAuth>)
+    .then((res) => res.data as RawEndpointList)
     .catch((error: ResponseError) => {
       throw new Error(
         errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusEndpoints)

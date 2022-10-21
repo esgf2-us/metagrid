@@ -15,12 +15,10 @@ import { CSSinJS } from '../../common/types';
 import Empty from '../DataDisplay/Empty';
 import Popconfirm from '../Feedback/Popconfirm';
 import Button from '../General/Button';
-import {
-  getGlobusAuthToken,
-  isSignedIntoGlobus,
-} from '../GlobusAuth/GlobusAuth';
+import { isSignedIntoGlobus } from '../Globus/GlobusAuth';
 import Table from '../Search/Table';
 import { RawSearchResults } from '../Search/types';
+import { ModalContext } from '../../contexts/ModalContext';
 
 const styles: CSSinJS = {
   summary: {
@@ -59,6 +57,11 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
     RawSearchResults | []
   >([]);
 
+  const {
+    setEndpointListVisible,
+    setSearchResults,
+  } = React.useContext(ModalContext);
+
   const handleRowSelect = (selectedRows: RawSearchResults | []): void => {
     setSelectedItems(selectedRows);
   };
@@ -87,13 +90,8 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
           setDownloadIsLoading(false);
         });
     } else if (downloadType === 'Globus') {
-      const ids = (selectedItems as RawSearchResults).map((item) => item.id);
-      // eslint-disable-next-line no-void
-      void message.success('The globus download has been initiated...', 10);
-      setDownloadIsLoading(true);
-      setTimeout(() => {
-        setDownloadIsLoading(false);
-      }, 3000);
+      setEndpointListVisible(true);
+      setSearchResults(selectedItems as RawSearchResults);
     }
   };
 

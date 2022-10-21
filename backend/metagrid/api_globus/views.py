@@ -6,7 +6,7 @@ from django.views.decorators.http import require_http_methods
 
 from metagrid.api_proxy.views import do_request
 
-mock_endpoint = {
+mock_endpoint_full = {
     "DATA_TYPE": "endpoint",
     "id": "096a65b1-3e90-44e6-9cb4-550b2d5401c0",
     "display_name": "myserver",
@@ -57,17 +57,40 @@ mock_endpoint = {
 }
 
 
+mock_endpoint1 = {
+    "id": "096a65b1-3e90-44e6-9cb4-550b2d5401c0",
+    "display_name": "myserver",
+}
+
+mock_endpoint2 = {
+    "id": "096a65b1-3e90-44e6-9cb4-543252d5401c0",
+    "display_name": "myserver2",
+}
+
+mock_endpoint3 = {
+    "id": "096a65b1-3e90-44e6-9cb4-45b2d5401c0",
+    "display_name": "myserver3",
+}
+
+mock_endpoint_list_full = {
+    "DATA_TYPE": "endpoint_list",
+    "offset": 0,
+    "limit": 100,
+    "has_next_page": False,
+    "DATA": [mock_endpoint1, mock_endpoint2, mock_endpoint3],
+}
+
+
 @require_http_methods(["POST"])
 @csrf_exempt
 def get_endpoint_list(request):
 
     resp = json.dumps(
         {
-            "DATA_TYPE": "endpoint_list",
             "offset": 0,
             "limit": 100,
             "has_next_page": False,
-            "DATA": [mock_endpoint],
+            "DATA": [mock_endpoint1, mock_endpoint2, mock_endpoint3],
         }
     )
 

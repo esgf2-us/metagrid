@@ -18,7 +18,7 @@ import {
   isSignedIntoGlobus,
   loginWithGlobus,
   logoutGlobus,
-} from '../GlobusAuth/GlobusAuth';
+} from '../Globus/GlobusAuth';
 
 const menuItemStyling: CSSProperties = { margin: '8px' };
 

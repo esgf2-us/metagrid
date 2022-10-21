@@ -8,6 +8,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ReactJoyrideProvider } from './contexts/ReactJoyrideContext';
 import './index.css';
 import { keycloak, keycloakProviderInitConfig } from './lib/keycloak';
+import { ModalProvider } from './contexts/ModalContext';
 
 ReactDOM.render(
   <ReactKeycloakProvider
@@ -17,7 +18,9 @@ ReactDOM.render(
     <AuthProvider>
       <Router basename={process.env.PUBLIC_URL}>
         <ReactJoyrideProvider>
-          <App searchQuery={getSearchFromUrl()} />
+          <ModalProvider>
+            <App searchQuery={getSearchFromUrl()} />
+          </ModalProvider>
         </ReactJoyrideProvider>
       </Router>
     </AuthProvider>

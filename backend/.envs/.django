@@ -12,3 +12,15 @@ CORS_ORIGIN_WHITELIST=http://localhost:3000
 KEYCLOAK_URL=http://keycloak:8080/auth
 KEYCLOAK_REALM=metagrid
 KEYCLOAK_CLIENT_ID=backend
+
+# ESGF wget API
+# https://github.com/ESGF/esgf-wget
+REACT_APP_WGET_API_URL=https://pcmdi8vm.llnl.gov/wget
+
+# ESGF Search API
+# https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
+REACT_APP_ESGF_NODE_URL=https://esgf-node.llnl.gov/esg-search/search
+
+# ESGF Node Status API
+# https://github.com/ESGF/esgf-utils/blob/master/node_status/query_prom.py
+REACT_APP_ESGF_NODE_STATUS_URL=https://aims2.llnl.gov/metagrid-backend/proxy/status

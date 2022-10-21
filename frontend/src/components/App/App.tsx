@@ -41,10 +41,9 @@ import { TagType, TagValue } from '../DataDisplay/Tag';
 import Facets from '../Facets';
 import { ActiveFacets, ParsedFacets, RawProject } from '../Facets/types';
 import {
-  getGlobusAuthToken,
   isSignedIntoGlobus,
   updateGlobusAccessTokens,
-} from '../GlobusAuth/GlobusAuth';
+} from '../Globus/GlobusAuth';
 import NavBar from '../NavBar';
 import NodeStatus from '../NodeStatus';
 import NodeSummary from '../NodeStatus/NodeSummary';
@@ -145,20 +144,6 @@ const App: React.FC<Props> = ({ searchQuery }) => {
       localStorage.getItem('userSearchQueries') || '[]'
     ) as UserSearchQueries
   );
-
-  React.useEffect(() => {
-    if (true) {
-      void fetchGlobusEndpoints('')
-        .then((endpoints) => {
-          console.log(endpoints);
-        })
-        .catch((error: ResponseError) => {
-          void message.error({
-            content: error.message,
-          });
-        });
-    }
-  }, [isSignedIntoGlobus]);
 
   React.useEffect(() => {
     /* istanbul ignore else */
