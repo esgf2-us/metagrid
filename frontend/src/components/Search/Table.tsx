@@ -65,6 +65,7 @@ const Table: React.FC<Props> = ({
   ];
   // User's authentication state
   const authState = React.useContext(AuthContext);
+  // eslint-disable-next-line
   const { access_token: accessToken, pk } = authState;
 
   const tableConfig = {

@@ -55,6 +55,7 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
   };
 
   const authState = React.useContext(AuthContext);
+  // eslint-disable-next-line
   const { access_token: accessToken, pk } = authState;
   /**
    * TODO: Add handle for Globus

@@ -4,7 +4,6 @@ import ReactDOM from 'react-dom';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { getSearchFromUrl } from './common/utils';
 import App from './components/App/App';
-import { ActiveSearchQuery } from './components/Search/types';
 import { AuthProvider } from './contexts/AuthContext';
 import { ReactJoyrideProvider } from './contexts/ReactJoyrideContext';
 import './index.css';
