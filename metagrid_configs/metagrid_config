@@ -1,5 +1,5 @@
 # =====================TREAFIK CONFIG=====================
-DOMAIN_NAME=esgf-dev1.llnl.gov
+DOMAIN_NAME=
 PUBLIC_URL=
 REACT_APP_PREVIOUS_URL=metagrid
 DOMAIN_SUBDIRECTORY=metagrid-backend
@@ -8,19 +8,19 @@ DOMAIN_SUBDIRECTORY=metagrid-backend
 
 # General
 DJANGO_SETTINGS_MODULE=config.settings.production
-DJANGO_SECRET_KEY=RxPYuuqUmCK2VHHwyqab7tt7PrL-ktuGmOPncb_wwFM
-DJANGO_ADMIN_URL=TG_-ztsXwL7NOx6cTqZ_bjINGF_R1VuOTI8FocOfAfs
-DJANGO_ALLOWED_HOSTS=esgf-dev1.llnl.gov,198.128.245.131
+DJANGO_SECRET_KEY=
+DJANGO_ADMIN_URL=
+DJANGO_ALLOWED_HOSTS=
 
 # Security
 DJANGO_SECURE_SSL_REDIRECT=False
 
 # django-cors-headers
-CORS_ORIGIN_WHITELIST=https://localhost:3000,https://esgf-dev1.llnl.gov
+CORS_ORIGIN_WHITELIST=https://localhost:3000
 
 # django-all-auth
-KEYCLOAK_URL=https://auth-test.ceda.ac.uk/auth/
-KEYCLOAK_REALM=esgf
+KEYCLOAK_URL=
+KEYCLOAK_REALM=
 KEYCLOAK_CLIENT_ID=metagrid-backend
 
 # postgress
@@ -34,16 +34,16 @@ POSTGRES_PASSWORD=postgres
 
 # MetaGrid API
 # https://github.com/aims-group/metagrid/tree/master/backend
-REACT_APP_METAGRID_API_URL=https://esgf-dev1.llnl.gov/metagrid-backend
+REACT_APP_METAGRID_API_URL=
 
 # ESGF wget API
 # https://github.com/ESGF/esgf-wget
-REACT_APP_WGET_API_URL=https://greyworm1-rh7.llnl.gov/wget
-REACT_APP_GLOBUS_SCRIPT_URL=https://greyworm1-rh7.llnl.gov/globusscript
+REACT_APP_WGET_API_URL=
+REACT_APP_GLOBUS_SCRIPT_URL=
 
 # ESGF Search API
 # https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
-REACT_APP_ESGF_NODE_URL=https://esgf-node.llnl.gov/esg-search/search
+REACT_APP_ESGF_NODE_URL=
 
 # ESGF Node Status API
 # https://github.com/ESGF/esgf-utils/blob/master/node_status/query_prom.py
@@ -51,17 +51,17 @@ REACT_APP_ESGF_NODE_STATUS_URL=https://aims4.llnl.gov/prometheus/api/v1/query?qu
 
 # Keycloak
 # https://github.com/keycloak/keycloak
-REACT_APP_KEYCLOAK_URL=https://auth-test.ceda.ac.uk/auth/
-REACT_APP_KEYCLOAK_REALM=esgf
+REACT_APP_KEYCLOAK_URL=
+REACT_APP_KEYCLOAK_REALM=
 REACT_APP_KEYCLOAK_CLIENT_ID=metagrid-frontend
 
 # react-hotjar
 # https://github.com/abdalla/react-hotjar
-REACT_APP_HOTJAR_ID=2079136
-REACT_APP_HOTJAR_SV=6
+REACT_APP_HOTJAR_ID=
+REACT_APP_HOTJAR_SV=
 
 
 
 # react-ga
 # https://github.com/react-ga/react-ga
-REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID=G-515H3RKZYX
+REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID=
