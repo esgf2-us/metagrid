@@ -18,6 +18,7 @@ def do_search(request):
     )
     return do_request(request, esgf_host)
 
+
 @require_http_methods(["POST"])
 @csrf_exempt
 def do_citation(request):
