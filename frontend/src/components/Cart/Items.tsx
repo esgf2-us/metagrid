@@ -57,10 +57,9 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
     RawSearchResults | []
   >([]);
 
-  const {
-    setEndpointListVisible,
-    setSearchResults,
-  } = React.useContext(ModalContext);
+  const { setEndpointListVisible, setSearchResults } = React.useContext(
+    ModalContext
+  );
 
   const handleRowSelect = (selectedRows: RawSearchResults | []): void => {
     setSelectedItems(selectedRows);

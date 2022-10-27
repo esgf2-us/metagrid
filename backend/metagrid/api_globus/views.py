@@ -59,17 +59,17 @@ mock_endpoint_full = {
 
 mock_endpoint1 = {
     "id": "096a65b1-3e90-44e6-9cb4-550b2d5401c0",
-    "display_name": "myserver",
+    "display_name": "endpoint_a",
 }
 
 mock_endpoint2 = {
     "id": "096a65b1-3e90-44e6-9cb4-543252d5401c0",
-    "display_name": "myserver2",
+    "display_name": "endpoint_b",
 }
 
 mock_endpoint3 = {
     "id": "096a65b1-3e90-44e6-9cb4-45b2d5401c0",
-    "display_name": "myserver3",
+    "display_name": "endpoint_c",
 }
 
 mock_endpoint_list_full = {

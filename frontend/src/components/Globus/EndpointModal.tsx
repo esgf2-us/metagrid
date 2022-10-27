@@ -1,9 +1,10 @@
-import { message } from 'antd';
+/* eslint-disable no-void */
+
+import { message, Modal, Select } from 'antd';
 import React, { useEffect } from 'react';
 import { fetchGlobusEndpoints, ResponseError } from '../../api';
-import Modal from '../Feedback/Modal';
 import { RawSearchResults } from '../Search/types';
-import { RawEndpointList } from './types';
+import { RawEndpoint, RawEndpointList } from './types';
 
 export type Props = {
   visible: boolean;
@@ -11,31 +12,64 @@ export type Props = {
   searchResults: RawSearchResults | null;
 };
 
+const { Option } = Select;
+
 const EndpointModal: React.FC<Props> = ({
   visible,
   onClose,
   searchResults,
 }) => {
+  const [filesToDownload, setFilesToDownloade] = React.useState<string[]>([]);
   const [endpoints, setEndpoints] = React.useState<RawEndpointList | null>(
     null
   );
+  const [
+    selectedEndpoint,
+    setSelectedEndpoint,
+  ] = React.useState<RawEndpoint | null>(null);
+
+  const handleSelectionChanged = (endpointId: string): void => {
+    console.log(`selected endpoint id: ${endpointId}`);
+
+    if (endpoints && endpoints.DATA.length > 0) {
+      const endpoint = endpoints.DATA.find((rawEndpoint) => {
+        if (rawEndpoint.id === endpointId) {
+          return rawEndpoint;
+        }
+        return selectedEndpoint;
+      });
+      if (endpoint) {
+        setSelectedEndpoint(endpoint);
+      }
+    }
+  };
+  const handleEndpointDownload = (): void => {
+    if (selectedEndpoint) {
+      void message.info(
+        `Loading selected endpoint: ${selectedEndpoint.display_name}`
+      );
+      void message.info(`Downloading files: ${filesToDownload.toString()}`);
+    }
+    onClose();
+  };
 
   useEffect(() => {
     let ids = null;
     if (searchResults) {
       ids = searchResults.map((item) => item.id);
-
-      // eslint-disable-next-line no-void
-      void message.info('Loading endpoints list...');
+      setFilesToDownloade(ids);
 
       fetchGlobusEndpoints('')
         .then((response) => {
-          // eslint-disable-next-line no-void
-          void message.success('Finished!');
           setEndpoints(response);
+          if (response.DATA.length > 0) {
+            const firstEndpoint = response.DATA.at(0);
+            if (firstEndpoint) {
+              setSelectedEndpoint(firstEndpoint);
+            }
+          }
         })
         .catch((error: ResponseError) => {
-          // eslint-disable-next-line no-void
           void message.error(error.message);
         });
     }
@@ -50,19 +84,31 @@ const EndpointModal: React.FC<Props> = ({
             <h2>Globus Endpoint Selection</h2>
           </div>
         }
-        onClose={() => {
+        okText="Download"
+        onOk={handleEndpointDownload}
+        cancelText="Cancel"
+        onCancel={() => {
           onClose();
-          // eslint-disable-next-line no-void
-          void message.success('The globus download has been initiated...', 3);
         }}
-        centered
       >
-        <p>Select the endpoint you&apos;d like to have.</p>
-        <ul>
-          {endpoints?.DATA.map((endpoint) => {
-            return <li key={endpoint.id}>{endpoint.display_name}</li>;
-          })}
-        </ul>
+        <>
+          <p>Select the endpoint you&apos;d like to reach:</p>
+          {endpoints && (
+            <Select
+              defaultValue={endpoints.DATA.at(0)?.display_name}
+              onChange={handleSelectionChanged}
+              style={{ width: 120 }}
+            >
+              {endpoints.DATA.map((endpoint) => {
+                return (
+                  <Option key={endpoint.id} value={endpoint.id}>
+                    {endpoint.display_name}
+                  </Option>
+                );
+              })}
+            </Select>
+          )}
+        </>
       </Modal>
     </div>
   );

@@ -35,7 +35,7 @@ export const updateGlobusAccessTokens = (): void => {
 
     const url = window.location.href;
     GlobusAuth.exchangeForAccessToken(url)
-      .then((response) => {
+      .then((response: { refresh_token: string }) => {
         // This isn't strictly necessary but it ensures no code reuse.
         sessionStorage.removeItem('pkce_code_verifier');
         sessionStorage.removeItem('pkce_state');
@@ -53,7 +53,7 @@ export const updateGlobusAccessTokens = (): void => {
           );
         }
       })
-      .catch((error) => {
+      .catch((error: any) => {
         // This isn't strictly necessary but it ensures no code reuse.
         sessionStorage.removeItem('pkce_code_verifier');
         sessionStorage.removeItem('pkce_state');

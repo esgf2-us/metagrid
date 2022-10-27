@@ -17,7 +17,6 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   addUserSearchQuery,
   deleteUserSearchQuery,
-  fetchGlobusEndpoints,
   fetchNodeStatus,
   fetchProjects,
   fetchUserCart,
@@ -40,10 +39,7 @@ import { UserCart, UserSearchQueries, UserSearchQuery } from '../Cart/types';
 import { TagType, TagValue } from '../DataDisplay/Tag';
 import Facets from '../Facets';
 import { ActiveFacets, ParsedFacets, RawProject } from '../Facets/types';
-import {
-  isSignedIntoGlobus,
-  updateGlobusAccessTokens,
-} from '../Globus/GlobusAuth';
+import { updateGlobusAccessTokens } from '../Globus/GlobusAuth';
 import NavBar from '../NavBar';
 import NodeStatus from '../NodeStatus';
 import NodeSummary from '../NodeStatus/NodeSummary';
