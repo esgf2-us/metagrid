@@ -5,7 +5,7 @@
 flake8==5.0.4  # https://github.com/PyCQA/flake8
 flake8-isort==5.0.0  # https://github.com/gforcada/flake8-isort
 black==22.10.0  # https://github.com/ambv/black
-mypy==0.931  # https://github.com/python/mypy
+mypy==0.982  # https://github.com/python/mypy
 
 # Testing
 # ------------------------------------------------------------------------------
