@@ -60,16 +60,33 @@ mock_endpoint_full = {
 mock_endpoint1 = {
     "id": "096a65b1-3e90-44e6-9cb4-550b2d5401c0",
     "display_name": "endpoint_a",
+    "organization": "My Org1",
+    "username": "auser1",
+    "description": "Example gridftp endpoint a.",
 }
 
 mock_endpoint2 = {
     "id": "096a65b1-3e90-44e6-9cb4-543252d5401c0",
     "display_name": "endpoint_b",
+    "organization": "My Org2",
+    "username": "auser2",
+    "description": "Example gridftp endpoint b.",
 }
 
 mock_endpoint3 = {
     "id": "096a65b1-3e90-44e6-9cb4-45b2d5401c0",
     "display_name": "endpoint_c",
+    "organization": "My Org3",
+    "username": "auser3",
+    "description": "Example gridftp endpoint c.",
+}
+
+mock_endpoint4 = {
+    "id": "0sdfa65b1-3e90-44e6-9cb4-45b2d5401c0",
+    "display_name": "endpoint_d",
+    "organization": "My Org 4",
+    "username": "auser4",
+    "description": "Example gridftp endpoint. d",
 }
 
 mock_endpoint_list_full = {
@@ -77,8 +94,33 @@ mock_endpoint_list_full = {
     "offset": 0,
     "limit": 100,
     "has_next_page": False,
-    "DATA": [mock_endpoint1, mock_endpoint2, mock_endpoint3],
+    "DATA": [mock_endpoint1, mock_endpoint2, mock_endpoint3, mock_endpoint4],
 }
+
+
+@require_http_methods(["POST"])
+@csrf_exempt
+def get_endpoint_list_test(request):
+
+    resp = json.dumps(
+        {
+            "offset": 0,
+            "limit": 100,
+            "has_next_page": False,
+            "DATA": [
+                mock_endpoint1,
+                mock_endpoint2,
+                mock_endpoint3,
+                mock_endpoint4,
+            ],
+        }
+    )
+
+    httpresp = HttpResponse(resp)
+    httpresp.status_code = 200
+    #    httpresp.headers = resp.headers
+    #    httpresp.encoding = resp.encoding
+    return httpresp
 
 
 @require_http_methods(["POST"])
@@ -90,7 +132,12 @@ def get_endpoint_list(request):
             "offset": 0,
             "limit": 100,
             "has_next_page": False,
-            "DATA": [mock_endpoint1, mock_endpoint2, mock_endpoint3],
+            "DATA": [
+                mock_endpoint1,
+                mock_endpoint2,
+                mock_endpoint3,
+                mock_endpoint4,
+            ],
         }
     )
 

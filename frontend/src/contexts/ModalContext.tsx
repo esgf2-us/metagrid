@@ -6,8 +6,8 @@ import Support from '../components/Support';
 export type RawModalState = {
   supportVisible: boolean;
   setSupportVisible: (visible: boolean) => void;
-  endpointListVisible: boolean;
-  setEndpointListVisible: (visible: boolean) => void;
+  endpointModalVisible: boolean;
+  setEndpointModalVisible: (visible: boolean) => void;
   searchResults: RawSearchResults | null;
   setSearchResults: (searchResults: RawSearchResults) => void;
 };
@@ -15,8 +15,8 @@ export type RawModalState = {
 export const ModalContext = React.createContext<RawModalState>({
   supportVisible: false,
   setSupportVisible: () => {},
-  endpointListVisible: false,
-  setEndpointListVisible: () => {},
+  endpointModalVisible: false,
+  setEndpointModalVisible: () => {},
   searchResults: null,
   setSearchResults: () => {},
 });
@@ -25,9 +25,10 @@ type Props = { children: React.ReactNode };
 
 export const ModalProvider: React.FC<Props> = ({ children }) => {
   const [supportVisible, setSupportVisible] = React.useState<boolean>(false);
-  const [endpointListVisible, setEndpointListVisible] = React.useState<boolean>(
-    false
-  );
+  const [
+    endpointModalVisible,
+    setEndpointModalVisible,
+  ] = React.useState<boolean>(false);
   const [
     searchResults,
     setSearchResults,
@@ -38,8 +39,8 @@ export const ModalProvider: React.FC<Props> = ({ children }) => {
       value={{
         supportVisible,
         setSupportVisible,
-        endpointListVisible,
-        setEndpointListVisible,
+        endpointModalVisible,
+        setEndpointModalVisible,
         searchResults,
         setSearchResults,
       }}
@@ -49,9 +50,9 @@ export const ModalProvider: React.FC<Props> = ({ children }) => {
         onClose={() => setSupportVisible(false)}
       />
       <EndpointModal
-        visible={endpointListVisible}
+        visible={endpointModalVisible}
         onClose={() => {
-          setEndpointListVisible(false);
+          setEndpointModalVisible(false);
         }}
         searchResults={searchResults}
       />

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 
 import PKCE from 'js-pkce';
 import ITokenResponse from 'js-pkce/dist/ITokenResponse';
@@ -14,7 +15,7 @@ export interface GlobusTokenResponse extends ITokenResponse {
 // Reference: https://github.com/bpedroza/js-pkce
 const GlobusAuth = new PKCE({
   client_id: 'dc983d3a-30be-43e2-b3db-28e1cad9bad5', // Update this using your native client ID
-  redirect_uri: 'http://localhost:3000/search', // Update this if you are deploying this anywhere else (Globus Auth will redirect back here once you have logged in)
+  redirect_uri: 'http://localhost:3000/cart/items', // Update this if you are deploying this anywhere else (Globus Auth will redirect back here once you have logged in)
   authorization_endpoint: 'https://auth.globus.org/v2/oauth2/authorize', // No changes needed
   token_endpoint: 'https://auth.globus.org/v2/oauth2/token', // No changes needed
   requested_scopes: 'openid profile email offline_access', // Update with any scopes you would need, e.g. transfer
@@ -68,7 +69,7 @@ export const updateGlobusAccessTokens = (): void => {
 };
 
 export const loginWithGlobus: () => void = () => {
-  const authUrl = GlobusAuth.authorizeUrl();
+  const authUrl: string = GlobusAuth.authorizeUrl();
   console.log(`Sending the user to ${authUrl}`);
   window.location.replace(authUrl);
 };
@@ -93,6 +94,14 @@ export const isSignedIntoGlobus = (): boolean => {
   const authToken = getGlobusAuthToken();
 
   return authToken !== null && authToken !== 'undefined';
+};
+
+export const getDefaultGlobusEndpoint = (): string | null => {
+  return localStorage.getItem('default_globus_endpoint_id');
+};
+
+export const setDefaultGlobusEndpoint = (endpointId: string): void => {
+  return localStorage.setItem('default_globus_endpoint_id', endpointId);
 };
 
 export default GlobusAuth;

@@ -1,10 +1,10 @@
 export type RawEndpoint = {
   id: string;
   display_name: string;
-  /* organization: string;
+  organization: string;
   username: string;
   description: string;
-  public: boolean;
+  /* public: boolean;
   isGlobusConnect: boolean;
   globusConnectSetupKey: string;
   activated: boolean;
