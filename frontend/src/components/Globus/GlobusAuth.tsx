@@ -104,4 +104,10 @@ export const setDefaultGlobusEndpoint = (endpointId: string): void => {
   return localStorage.setItem('default_globus_endpoint_id', endpointId);
 };
 
+export const redirectToSelectGlobusEndpoint = (): void => {
+  const endpointSearchURL =
+    'https://app.globus.org/file-manager?action=http://localhost:3000/cart/items';
+  window.location.replace(endpointSearchURL);
+};
+
 export default GlobusAuth;

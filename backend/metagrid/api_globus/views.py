@@ -1,5 +1,6 @@
 import json
 
+import requests
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -98,7 +99,7 @@ mock_endpoint_list_full = {
 }
 
 
-@require_http_methods(["POST"])
+@require_http_methods(["GET"])
 @csrf_exempt
 def get_endpoint_list_test(request):
 
@@ -123,22 +124,28 @@ def get_endpoint_list_test(request):
     return httpresp
 
 
-@require_http_methods(["POST"])
+@require_http_methods(["GET"])
 @csrf_exempt
 def get_endpoint_list(request):
 
-    resp = json.dumps(
-        {
-            "offset": 0,
-            "limit": 100,
-            "has_next_page": False,
-            "DATA": [
-                mock_endpoint1,
-                mock_endpoint2,
-                mock_endpoint3,
-                mock_endpoint4,
-            ],
-        }
+    transfer_api_root = "https://transfer.api.globusonline.org/v0.10"
+    endpoint_search_url = "/endpoint_search?"
+    url = transfer_api_root + endpoint_search_url
+
+    filterText = request.GET.get("filterText")
+    refreshToken = request.GET.get("refreshToken")
+
+    params = {
+        "filter_scope": "all",
+        "filter_fulltext": filterText or "test_backend",
+    }
+    # req = PreparedRequest()
+    # req.prepare_url(url, params)
+    resp = requests.get(
+        url,
+        params=params,
+        verify=False,
+        headers={"refresh_token": refreshToken or ""},
     )
 
     httpresp = HttpResponse(resp)

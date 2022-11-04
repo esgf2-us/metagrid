@@ -5,7 +5,7 @@ import {
   DownloadOutlined,
   QuestionCircleOutlined,
 } from '@ant-design/icons';
-import { Col, Form, message, Modal, Row, Select, Switch } from 'antd';
+import { Col, Form, message, Modal, Radio, Row, Select, Space } from 'antd';
 import React from 'react';
 import {
   fetchGlobusEndpoints,
@@ -20,6 +20,7 @@ import Popconfirm from '../Feedback/Popconfirm';
 import Button from '../General/Button';
 import {
   getDefaultGlobusEndpoint,
+  getGlobusAuthToken,
   isSignedIntoGlobus,
   loginWithGlobus,
   setDefaultGlobusEndpoint,
@@ -100,6 +101,7 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
   const handleGlobusDownload = (): void => {
     if (selectedItems) {
       const ids = selectedItems.map((item) => item.id);
+      const globusAuth = getGlobusAuthToken();
 
       // Open the endpoint selection modal if not using default
       if (!useDefaultEndpoint) {
@@ -108,38 +110,40 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
         return;
       }
 
-      fetchGlobusEndpoints('')
-        .then((response) => {
-          if (response.DATA && response.DATA.length > 0) {
-            let defaultEndpoint = null;
-            if (defaultGlobusEndpoint) {
-              defaultEndpoint = response.DATA.find((rawEndpoint) => {
-                return rawEndpoint.id === defaultGlobusEndpoint;
-              });
-              if (!defaultEndpoint) {
-                void message.warning(
-                  `Unable to find the selected default endpoint!`
+      if (globusAuth) {
+        fetchGlobusEndpoints(globusAuth, 'test')
+          .then((response) => {
+            if (response.DATA && response.DATA.length > 0) {
+              let defaultEndpoint = null;
+              if (defaultGlobusEndpoint) {
+                defaultEndpoint = response.DATA.find((rawEndpoint) => {
+                  return rawEndpoint.id === defaultGlobusEndpoint;
+                });
+                if (!defaultEndpoint) {
+                  void message.warning(
+                    `Unable to find the selected default endpoint!`
+                  );
+                  setDefaultGlobusEndpoint('');
+                  setUseDefaultEndpoint(false);
+                }
+              }
+
+              // If there's a default endpoint, no need to open selection
+              if (defaultEndpoint) {
+                void message.info(
+                  `Loading using default endpoint: ${defaultEndpoint.display_name}`
                 );
-                setDefaultGlobusEndpoint('');
-                setUseDefaultEndpoint(false);
+                void message.info(`Downloading files: ${ids.toString()}`);
+              } else {
+                setSearchResults(selectedItems as RawSearchResults);
+                setEndpointModalVisible(true);
               }
             }
-
-            // If there's a default endpoint, no need to open selection
-            if (defaultEndpoint) {
-              void message.info(
-                `Loading using default endpoint: ${defaultEndpoint.display_name}`
-              );
-              void message.info(`Downloading files: ${ids.toString()}`);
-            } else {
-              setSearchResults(selectedItems as RawSearchResults);
-              setEndpointModalVisible(true);
-            }
-          }
-        })
-        .catch((error: ResponseError) => {
-          void message.error(error.message);
-        });
+          })
+          .catch((error: ResponseError) => {
+            void message.error(error.message);
+          });
+      }
     }
   };
 
@@ -153,10 +157,7 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
 
   const logIntoGlobusConfirmed = (): void => {
     hideLoginModal();
-    void message.info(`Redirecting you to log into Globus...`, 2);
-    setTimeout(() => {
-      loginWithGlobus();
-    }, 2000);
+    loginWithGlobus();
   };
 
   const handleDownloadForm = (downloadType: 'wget' | 'Globus'): void => {
@@ -252,30 +253,30 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
                 >
                   Download
                 </Button>
-                {signedIn &&
-                  selectedItems.length !== 0 &&
-                  defaultGlobusEndpoint && (
-                    <>
-                      {' '}
-                      <ToolTip title="Uncheck if you want to select a specific endpoint">
-                        <Switch
-                          defaultChecked
-                          checkedChildren="Default endpoint"
-                          unCheckedChildren="Select an endpoint"
-                          onChange={(checked) => {
-                            setUseDefaultEndpoint(checked);
-                          }}
-                        />
-                      </ToolTip>
-                    </>
-                  )}
               </Form.Item>
+              {signedIn && selectedItems.length !== 0 && (
+                <Form.Item>
+                  <Radio.Group
+                    onChange={(e) => {
+                      setUseDefaultEndpoint(e.target.value as boolean);
+                    }}
+                    value={useDefaultEndpoint}
+                  >
+                    <Space direction="vertical">
+                      <Radio disabled={defaultGlobusEndpoint === null} value>
+                        Default Endpoint
+                      </Radio>
+                      <Radio value={false}>Specify Endpoint</Radio>
+                    </Space>
+                  </Radio.Group>
+                </Form.Item>
+              )}
             </Form>
           </div>
         </>
       )}
       <Modal
-        title="Modal"
+        title="Globus Login Required"
         visible={showLoginConfirmModal}
         onOk={logIntoGlobusConfirmed}
         onCancel={hideLoginModal}

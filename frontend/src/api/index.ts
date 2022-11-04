@@ -107,13 +107,15 @@ export const fetchGlobusAuth = async (authCode: string): Promise<RawUserAuth> =>
  * HTTP Response Code: 200 OK
  */
 export const fetchGlobusEndpoints = async (
-  accessToken: string
+  accessToken: string,
+  filterText: string
 ): Promise<RawEndpointList> =>
   axios
-    .post(apiRoutes.globusEndpoints.path, {
+    .get(apiRoutes.globusEndpoints.path, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
+      params: { filterText },
     })
     .then((res) => res.data as RawEndpointList)
     .catch((error: ResponseError) => {

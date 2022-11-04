@@ -1,11 +1,24 @@
 /* eslint-disable no-void */
 
-import { AutoComplete, Checkbox, Col, message, Modal, Row } from 'antd';
+import {
+  AutoComplete,
+  Button,
+  Checkbox,
+  Col,
+  message,
+  Modal,
+  Row,
+  Switch,
+} from 'antd';
 import { CheckboxChangeEvent } from 'antd/lib/checkbox';
 import React, { useEffect } from 'react';
 import { fetchGlobusEndpoints, ResponseError } from '../../api';
 import { RawSearchResults } from '../Search/types';
-import { setDefaultGlobusEndpoint } from './GlobusAuth';
+import {
+  getGlobusAuthToken,
+  redirectToSelectGlobusEndpoint,
+  setDefaultGlobusEndpoint,
+} from './GlobusAuth';
 import { RawEndpoint } from './types';
 
 export type Props = {
@@ -36,19 +49,14 @@ const EndpointModal: React.FC<Props> = ({
 
   useEffect(() => {
     let ids = null;
-    if (searchResults) {
+    const globusToken = getGlobusAuthToken();
+    if (globusToken && searchResults) {
       ids = searchResults.map((item) => item.id);
       setFilesToDownloade(ids);
 
-      fetchGlobusEndpoints('')
+      fetchGlobusEndpoints(globusToken, 'test')
         .then((response) => {
           setEndpoints(response.DATA);
-          /* if (response.DATA.length > 0) {
-            const firstEndpoint = response.DATA.at(0);
-            if (firstEndpoint) {
-              setSelectedEndpoint(firstEndpoint);
-            }
-          }*/
         })
         .catch((error: ResponseError) => {
           void message.error(error.message);
@@ -121,14 +129,14 @@ const EndpointModal: React.FC<Props> = ({
     resetEndpointModal();
   };
 
-  const onCheckboxChange = (e: CheckboxChangeEvent): void => {
-    setDefaultChecked(e.target.checked);
+  const onDefaultSwitched = (switchedOn: boolean): void => {
+    setDefaultChecked(switchedOn);
   };
 
   return (
     <div data-testid="globus-endpoint-form">
       <Modal
-        visible={visible && endpoints.length > 0}
+        visible={visible && endpoints && endpoints.length > 0}
         title={
           <div>
             <h2>Globus Endpoint Selection</h2>
@@ -172,9 +180,12 @@ const EndpointModal: React.FC<Props> = ({
           </Row>
           <Row>
             <Col flex="200px">
-              <Checkbox checked={defaultChecked} onChange={onCheckboxChange}>
-                Set endpoint as default
-              </Checkbox>
+              <Switch
+                checkedChildren="Save as default"
+                unCheckedChildren="Use this time"
+                onChange={onDefaultSwitched}
+                disabled={selectedEndpoint === null}
+              />
             </Col>
             <Col flex="100px">
               <h4 style={{ float: 'right', marginRight: '10px' }}>
@@ -186,7 +197,16 @@ const EndpointModal: React.FC<Props> = ({
             </Col>
           </Row>
           <Row>
-            <Col flex="200px"></Col>
+            <Col flex="200px">
+              <Button
+                onClick={(): void => {
+                  handleCancelClicked();
+                  redirectToSelectGlobusEndpoint();
+                }}
+              >
+                Search Endpoint At Globus
+              </Button>
+            </Col>
             <Col flex="100px">
               <h4 style={{ float: 'right', marginRight: '10px' }}>
                 Description
