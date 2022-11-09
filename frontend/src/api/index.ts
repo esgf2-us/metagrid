@@ -1,6 +1,10 @@
 /**
  * This file contains HTTP Request functions.
  */
+
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+
 import 'setimmediate'; // Added because in Jest 27, setImmediate is not defined, causing test errors
 import humps from 'humps';
 import queryString from 'query-string';
@@ -24,6 +28,7 @@ import { RawUserAuth, RawUserInfo } from '../contexts/types';
 import { metagridApiURL, wgetApiURL } from '../env';
 import axios from '../lib/axios';
 import apiRoutes, { ApiRoute, HTTPCodeType } from './routes';
+import { RawEndpointList } from '../components/Globus/types';
 
 export interface ResponseError extends Error {
   status?: number;
@@ -76,6 +81,46 @@ export const fetchUserAuth = async (args: [string]): Promise<RawUserAuth> =>
     .catch((error: ResponseError) => {
       throw new Error(
         errorMsgBasedOnHTTPStatusCode(error, apiRoutes.keycloakAuth)
+      );
+    });
+
+/**
+ * HTTP Request Method: POST
+ * HTTP Response Code: 200 OK
+ */
+export const fetchGlobusAuth = async (authCode: string): Promise<RawUserAuth> =>
+  axios
+    .post(apiRoutes.globusAuth.path, {
+      refresh_token: authCode,
+      redirect_uri: 'http://localhost:3000/search',
+      grant_type: 'refresh_token',
+    })
+    .then((res) => res.data as Promise<RawUserAuth>)
+    .catch((error: ResponseError) => {
+      throw new Error(
+        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusAuth)
+      );
+    });
+
+/**
+ * HTTP Request Method: POST
+ * HTTP Response Code: 200 OK
+ */
+export const fetchGlobusEndpoints = async (
+  accessToken: string,
+  filterText: string
+): Promise<RawEndpointList> =>
+  axios
+    .get(apiRoutes.globusEndpoints.path, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      params: { filterText },
+    })
+    .then((res) => res.data as RawEndpointList)
+    .catch((error: ResponseError) => {
+      throw new Error(
+        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusEndpoints)
       );
     });
 

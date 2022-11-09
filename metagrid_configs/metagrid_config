@@ -49,7 +49,7 @@ REACT_APP_ESGF_NODE_URL=https://esgf-node.llnl.gov/esg-search/search
 
 # ESGF Node Status API
 # https://github.com/ESGF/esgf-utils/blob/master/node_status/query_prom.py
-REACT_APP_ESGF_NODE_STATUS_URL=https://aims4.llnl.gov/prometheus/api/v1/query?query=probe_success%7Bjob%3D%22http_2xx%22%2C+target%3D~%22.%2Athredds.%2A%22%7D
+REACT_APP_ESGF_NODE_STATUS_URL=https://aims2.llnl.gov/metagrid-backend/proxy/status
 
 # Keycloak
 # https://github.com/keycloak/keycloak

@@ -272,7 +272,7 @@ SOCIALACCOUNT_PROVIDERS = {
         "KEYCLOAK_REALM": env(
             "KEYCLOAK_REALM",
         ),
-    }
+    },
 }
 # Used in data migration to register Keycloak social app
 KEYCLOAK_CLIENT_ID = env("KEYCLOAK_CLIENT_ID")

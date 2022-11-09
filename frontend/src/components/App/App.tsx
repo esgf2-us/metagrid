@@ -1,4 +1,5 @@
 /* eslint-disable no-void */
+
 import {
   BookOutlined,
   DeleteOutlined,
@@ -38,6 +39,7 @@ import { UserCart, UserSearchQueries, UserSearchQuery } from '../Cart/types';
 import { TagType, TagValue } from '../DataDisplay/Tag';
 import Facets from '../Facets';
 import { ActiveFacets, ParsedFacets, RawProject } from '../Facets/types';
+import { updateGlobusAccessTokens } from '../Globus/GlobusAuth';
 import NavBar from '../NavBar';
 import NodeStatus from '../NodeStatus';
 import NodeSummary from '../NodeStatus/NodeSummary';
@@ -79,7 +81,7 @@ export type Props = {
   searchQuery: ActiveSearchQuery;
 };
 
-const metagridVersion = '1.0.8-beta';
+const metagridVersion = '1.1.0-globus-demo';
 
 const App: React.FC<Props> = ({ searchQuery }) => {
   // Third-party tool integration
@@ -102,6 +104,8 @@ const App: React.FC<Props> = ({ searchQuery }) => {
   } = useAsync({
     deferFn: fetchNodeStatus,
   });
+
+  updateGlobusAccessTokens();
 
   const projectBaseQuery = (
     project: Record<string, unknown> | RawProject

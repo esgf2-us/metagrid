@@ -1,11 +1,14 @@
+/* eslint-disable no-void */
+
 import {
   CloudDownloadOutlined,
   DownloadOutlined,
   QuestionCircleOutlined,
 } from '@ant-design/icons';
-import { Col, Form, message, Row, Select } from 'antd';
+import { Col, Form, message, Modal, Radio, Row, Select, Space } from 'antd';
 import React from 'react';
 import {
+  fetchGlobusEndpoints,
   fetchWgetScript,
   openDownloadURL,
   ResponseError,
@@ -15,8 +18,17 @@ import { CSSinJS } from '../../common/types';
 import Empty from '../DataDisplay/Empty';
 import Popconfirm from '../Feedback/Popconfirm';
 import Button from '../General/Button';
+import {
+  getDefaultGlobusEndpoint,
+  getGlobusAuthToken,
+  isSignedIntoGlobus,
+  loginWithGlobus,
+  setDefaultGlobusEndpoint,
+} from '../Globus/GlobusAuth';
 import Table from '../Search/Table';
 import { RawSearchResults } from '../Search/types';
+import { ModalContext } from '../../contexts/ModalContext';
+import ToolTip from '../DataDisplay/ToolTip';
 
 const styles: CSSinJS = {
   summary: {
@@ -41,40 +53,123 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
   const [downloadForm] = Form.useForm();
 
   // Statically defined list of dataset download options
-  // TODO: Add 'Globus'
-  const downloadOptions = ['wget'];
+  const downloadOptions = ['Globus', 'wget'];
+  const defaultGlobusEndpoint = getDefaultGlobusEndpoint();
+
+  const signedIn = isSignedIntoGlobus();
+  const [
+    showLoginConfirmModal,
+    setShowLoginConfirmModal,
+  ] = React.useState<boolean>(false);
+
+  const [useDefaultEndpoint, setUseDefaultEndpoint] = React.useState(
+    defaultGlobusEndpoint !== null
+  );
   const [downloadIsLoading, setDownloadIsLoading] = React.useState(false);
   const [selectedItems, setSelectedItems] = React.useState<
     RawSearchResults | []
   >([]);
 
+  const { setEndpointModalVisible, setSearchResults } = React.useContext(
+    ModalContext
+  );
+
   const handleRowSelect = (selectedRows: RawSearchResults | []): void => {
     setSelectedItems(selectedRows);
   };
 
-  /**
-   * TODO: Add handle for Globus
-   */
+  const handleWgetDownload = (): void => {
+    const ids = (selectedItems as RawSearchResults).map((item) => item.id);
+    // eslint-disable-next-line no-void
+    void message.success(
+      'The wget script is generating, please wait momentarily.',
+      10
+    );
+    setDownloadIsLoading(true);
+    fetchWgetScript(ids)
+      .then((url) => {
+        openDownloadURL(url);
+        setDownloadIsLoading(false);
+      })
+      .catch((error: ResponseError) => {
+        // eslint-disable-next-line no-void
+        void message.error(error.message);
+        setDownloadIsLoading(false);
+      });
+  };
+
+  const handleGlobusDownload = (): void => {
+    if (selectedItems) {
+      const ids = selectedItems.map((item) => item.id);
+      const globusAuth = getGlobusAuthToken();
+
+      // Open the endpoint selection modal if not using default
+      if (!useDefaultEndpoint) {
+        setSearchResults(selectedItems as RawSearchResults);
+        setEndpointModalVisible(true);
+        return;
+      }
+
+      if (globusAuth) {
+        fetchGlobusEndpoints(globusAuth, 'test')
+          .then((response) => {
+            if (response.DATA && response.DATA.length > 0) {
+              let defaultEndpoint = null;
+              if (defaultGlobusEndpoint) {
+                defaultEndpoint = response.DATA.find((rawEndpoint) => {
+                  return rawEndpoint.id === defaultGlobusEndpoint;
+                });
+                if (!defaultEndpoint) {
+                  void message.warning(
+                    `Unable to find the selected default endpoint!`
+                  );
+                  setDefaultGlobusEndpoint('');
+                  setUseDefaultEndpoint(false);
+                }
+              }
+
+              // If there's a default endpoint, no need to open selection
+              if (defaultEndpoint) {
+                void message.info(
+                  `Loading using default endpoint: ${defaultEndpoint.display_name}`
+                );
+                void message.info(`Downloading files: ${ids.toString()}`);
+              } else {
+                setSearchResults(selectedItems as RawSearchResults);
+                setEndpointModalVisible(true);
+              }
+            }
+          })
+          .catch((error: ResponseError) => {
+            void message.error(error.message);
+          });
+      }
+    }
+  };
+
+  const showLoginModal = (): void => {
+    setShowLoginConfirmModal(true);
+  };
+
+  const hideLoginModal = (): void => {
+    setShowLoginConfirmModal(false);
+  };
+
+  const logIntoGlobusConfirmed = (): void => {
+    hideLoginModal();
+    loginWithGlobus();
+  };
+
   const handleDownloadForm = (downloadType: 'wget' | 'Globus'): void => {
     /* istanbul ignore else */
     if (downloadType === 'wget') {
-      const ids = (selectedItems as RawSearchResults).map((item) => item.id);
-      // eslint-disable-next-line no-void
-      void message.success(
-        'The wget script is generating, please wait momentarily.',
-        10
-      );
-      setDownloadIsLoading(true);
-      fetchWgetScript(ids)
-        .then((url) => {
-          openDownloadURL(url);
-          setDownloadIsLoading(false);
-        })
-        .catch((error: ResponseError) => {
-          // eslint-disable-next-line no-void
-          void message.error(error.message);
-          setDownloadIsLoading(false);
-        });
+      handleWgetDownload();
+    } else if (downloadType === 'Globus') {
+      if (signedIn) {
+        handleGlobusDownload();
+      } else {
+        showLoginModal();
+      }
     }
   };
 
@@ -159,10 +254,39 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
                   Download
                 </Button>
               </Form.Item>
+              {signedIn && selectedItems.length !== 0 && (
+                <Form.Item>
+                  <Radio.Group
+                    onChange={(e) => {
+                      setUseDefaultEndpoint(e.target.value as boolean);
+                    }}
+                    value={useDefaultEndpoint}
+                  >
+                    <Space direction="vertical">
+                      <Radio disabled={defaultGlobusEndpoint === null} value>
+                        Default Endpoint
+                      </Radio>
+                      <Radio value={false}>Specify Endpoint</Radio>
+                    </Space>
+                  </Radio.Group>
+                </Form.Item>
+              )}
             </Form>
           </div>
         </>
       )}
+      <Modal
+        title="Globus Login Required"
+        visible={showLoginConfirmModal}
+        onOk={logIntoGlobusConfirmed}
+        onCancel={hideLoginModal}
+        okText="Login to Globus"
+        cancelText="Cancel"
+      >
+        <p>
+          You are not currently logged into Globus. Would you like to log in?
+        </p>
+      </Modal>
     </div>
   );
 };
