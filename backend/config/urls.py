@@ -17,6 +17,7 @@ from metagrid.api_proxy.views import do_citation, do_search, do_status, do_wget
 from metagrid.cart.views import CartViewSet, SearchViewSet
 from metagrid.projects.views import ProjectsViewSet
 from metagrid.users.views import UserCreateViewSet, UserViewSet
+from metagrid.globus.views import do_transfer
 
 router = DefaultRouter()
 router.register(r"users", UserViewSet)
@@ -56,6 +57,7 @@ urlpatterns = [
     ),
     path("globus/auth", get_access_token, name="globus_auth"),
     path("globus/endpoints", get_endpoint_list_test, name="globus_endpoints"),
+    path("globus/transfer", do_transfer, name="globus_transfer"),
     re_path(
         r"^account-confirm-email/",
         VerifyEmailView.as_view(),

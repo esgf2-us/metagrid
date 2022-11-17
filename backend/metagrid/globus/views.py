@@ -250,9 +250,9 @@ def do_transfer(request):
     if TOKEN in url_params:
         bearer_token = url_params.pop(TOKEN)[0]
     if "target_endpoint" in url_params:
-        target_endpoint = url_params.pop("target_endpoint")
+        target_endpoint = url_params.pop("endpoint")
     if "target_folder" in url_params:
-        target_folder = url_params.pop("target_folder")
+        target_folder = url_params.pop("path")
 
     if (not target_endpoint) or (not bearer_token) or (not target_folder):
         return HttpResponseBadRequest("missing required params")
