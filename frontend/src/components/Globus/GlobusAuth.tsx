@@ -12,6 +12,14 @@ export interface GlobusTokenResponse extends ITokenResponse {
   other_tokens: any;
 }
 
+export type GlobusEndpointData = {
+  endpoint: string | null;
+  label: string | null;
+  path: string | null;
+  globfs: string | null;
+  endpointId?: string | null;
+};
+
 // Reference: https://github.com/bpedroza/js-pkce
 const GlobusAuth = new PKCE({
   client_id: 'dc983d3a-30be-43e2-b3db-28e1cad9bad5', // Update this using your native client ID
@@ -96,18 +104,47 @@ export const isSignedIntoGlobus = (): boolean => {
   return authToken !== null && authToken !== 'undefined';
 };
 
-export const getDefaultGlobusEndpoint = (): string | null => {
-  return localStorage.getItem('default_globus_endpoint_id');
+export const getDefaultGlobusEndpoint = (): GlobusEndpointData | null => {
+  const endpointInfo = localStorage.getItem('defaultGlobusEndpoint');
+  if (endpointInfo) {
+    return JSON.parse(endpointInfo) as GlobusEndpointData;
+  }
+  return null;
 };
 
 export const setDefaultGlobusEndpoint = (endpointId: string): void => {
-  return localStorage.setItem('default_globus_endpoint_id', endpointId);
+  return localStorage.setItem('defaultGlobusEndpoint', endpointId);
 };
 
 export const redirectToSelectGlobusEndpoint = (): void => {
   const endpointSearchURL =
-    'https://app.globus.org/file-manager?action=http://localhost:3000/cart/items';
+    'https://app.globus.org/file-manager?action=http://localhost:3000/cart/items&method=GET&cancelUrl=http://localhost:3000/search';
   window.location.replace(endpointSearchURL);
+};
+
+export const checkGlobusEndpointLoaded = (): void => {
+  // Simple check to see if we have an authorization callback in the URL
+  const params = new URLSearchParams(window.location.search);
+
+  const endpoint = params.get('endpoint');
+  if (endpoint) {
+    const label = params.get('label');
+    const path = params.get('path');
+    const globfs = params.get('globfs');
+    const endpointId = params.get('endpoint_id');
+
+    const endpointInfo: GlobusEndpointData = {
+      endpoint,
+      label,
+      path,
+      globfs,
+      endpointId,
+    };
+
+    const newUrl = window.location.href.split('?')[0];
+    // window.location.replace(newUrl);
+    window.history.replaceState({}, '', newUrl);
+  }
 };
 
 export default GlobusAuth;

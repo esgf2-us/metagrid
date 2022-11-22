@@ -12,7 +12,11 @@ from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 from rest_framework.routers import DefaultRouter
 
-from metagrid.api_globus.views import get_access_token, get_endpoint_list_test
+from metagrid.api_globus.views import (
+    get_access_token,
+    get_endpoint,
+    get_endpoint_list_test,
+)
 from metagrid.api_proxy.views import do_citation, do_search, do_status, do_wget
 from metagrid.cart.views import CartViewSet, SearchViewSet
 from metagrid.projects.views import ProjectsViewSet
@@ -55,6 +59,7 @@ urlpatterns = [
         "dj-rest-auth/keycloak", KeycloakLogin.as_view(), name="keycloak_login"
     ),
     path("globus/auth", get_access_token, name="globus_auth"),
+    path("globus/endpoint", get_endpoint, name="globus_endpoint"),
     path("globus/endpoints", get_endpoint_list_test, name="globus_endpoints"),
     re_path(
         r"^account-confirm-email/",

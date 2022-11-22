@@ -162,3 +162,16 @@ def get_access_token(request):
     url = "https://auth.globus.org/v2/oauth2/token"
 
     return do_request(request, url)
+
+
+@require_http_methods(["POST"])
+@csrf_exempt
+def get_endpoint(request):
+
+    resp = json.dumps({"value": request.POST})
+
+    httpresp = HttpResponse(resp)
+    httpresp.status_code = 200
+    #    httpresp.headers = resp.headers
+    #    httpresp.encoding = resp.encoding
+    return httpresp
