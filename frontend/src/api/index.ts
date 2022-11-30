@@ -611,25 +611,19 @@ export const fetchWgetScript = async (
  * If the API returns a 200, it returns the responseURL so the browser can open
  * the link.
  */
- export const startGlobusTransfer = async (
+export const startGlobusTransfer = async (
   ids: string[] | string,
   accessToken: string,
-  endpointId: string,
-  path: string,
-  filenameVars?: string[],
-
+  endpointId: string
+  // path: string,
+  // filenameVars?: string[]
 ): Promise<string> => {
-  let testurl = queryString.stringifyUrl({
-    url: apiRoutes.wget.path,
-    query: { dataset_id: ids },
+  const url = queryString.stringifyUrl({
+    url: apiRoutes.globusTransfer.path,
+    query: { dataset_ids: ids, accessToken, endpointId },
   });
-
-  let url = queryString.stringifyUrl({
-    url: `${wgetApiURL}`,
-    query: { dataset_id: ids },
-  });
-
-  if (filenameVars && filenameVars.length > 0) {
+  console.log('Started transfer!');
+  /* if (filenameVars && filenameVars.length > 0) {
     const filenameVarsParam = queryString.stringify(
       { query: filenameVars },
       {
@@ -637,14 +631,25 @@ export const fetchWgetScript = async (
       }
     );
     url += `&${filenameVarsParam}`;
-    testurl += `&${filenameVarsParam}`;
   }
 
+  const data = {
+    DATA_TYPE: 'transfer_item',
+    source_path: path,
+    destination_path: path,
+    recursive: false,
+  };*/
+
   return axios
-    .get(testurl)
-    .then(() => url)
+    .get(url)
+    .then((resp) => {
+      console.log(resp);
+      return url;
+    })
     .catch((error: ResponseError) => {
-      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.wget));
+      throw new Error(
+        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusTransfer)
+      );
     });
 };
 

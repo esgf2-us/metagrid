@@ -116,7 +116,6 @@ const EndpointModal: React.FC<Props> = ({
       );
       void message.info(`Downloading files: ${filesToDownload.toString()}`);
       if (defaultChecked) {
-        setDefaultGlobusEndpoint(selectedEndpoint.id);
         void message.info(
           `Default endpoint set to: ${selectedEndpoint.display_name}`
         );

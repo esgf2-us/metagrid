@@ -175,3 +175,15 @@ def get_endpoint(request):
     #    httpresp.headers = resp.headers
     #    httpresp.encoding = resp.encoding
     return httpresp
+
+
+@require_http_methods(["GET", "POST"])
+@csrf_exempt
+def do_globus_transfer(request):
+
+    resp = json.dumps({"request_received": request.GET})
+
+    httpresp = HttpResponse(resp)
+    httpresp.status_code = 200
+
+    return httpresp

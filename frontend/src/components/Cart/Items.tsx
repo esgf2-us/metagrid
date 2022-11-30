@@ -9,10 +9,10 @@ import { Col, Form, message, Modal, Radio, Row, Select, Space } from 'antd';
 import React, { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom-v5-compat';
 import {
-  fetchGlobusEndpoints,
   fetchWgetScript,
   openDownloadURL,
   ResponseError,
+  startGlobusTransfer,
 } from '../../api/index';
 import { cartTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
@@ -32,6 +32,7 @@ import {
 import Table from '../Search/Table';
 import { RawSearchResults } from '../Search/types';
 import { ModalContext } from '../../contexts/ModalContext';
+import { getDataFromLocal, saveDataToLocal } from '../../common/utils';
 
 const styles: CSSinJS = {
   summary: {
@@ -60,23 +61,14 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const removeUrlParams = (): void => {
-    const paramKeys = searchParams.keys();
+    const paramKeys = [...searchParams.keys()];
 
-    console.log(searchParams.toString());
-
-    for (let key = paramKeys.next(); !key.done; key = paramKeys.next()) {
-      console.log(key);
-      searchParams.delete(key.value);
-    }
+    paramKeys.forEach((key: string) => {
+      searchParams.delete(key);
+    });
 
     setSearchParams(searchParams);
   };
-
-  useEffect((): void => {
-    if (searchParams.get('endpoint')) {
-      removeUrlParams();
-    }
-  }, [searchParams]);
 
   /* const newUrl = window.location.href.split('?')[0];
     // window.location.replace(newUrl);
@@ -84,13 +76,20 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
 
   // Statically defined list of dataset download options
   const downloadOptions = ['Globus', 'wget'];
+  const [
+    selectedEndpoint,
+    setSelectedEndpoint,
+  ] = React.useState<GlobusEndpointData | null>(null);
   const defaultGlobusEndpoint: GlobusEndpointData | null = getDefaultGlobusEndpoint();
-
-  const signedIn = isSignedIntoGlobus();
 
   const [
     showRedirectConfirmModal,
     setShowRedirectConfirmModal,
+  ] = React.useState<boolean>(false);
+
+  const [
+    showSigninConfirmModal,
+    setShowSigninConfirmModal,
   ] = React.useState<boolean>(false);
 
   const [
@@ -102,13 +101,46 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
     defaultGlobusEndpoint !== null
   );
   const [downloadIsLoading, setDownloadIsLoading] = React.useState(false);
+
   const [selectedItems, setSelectedItems] = React.useState<
     RawSearchResults | []
   >([]);
 
-  const { setEndpointModalVisible, setSearchResults } = React.useContext(
-    ModalContext
+  const savedSelections = getDataFromLocal<RawSearchResults>(
+    'savedItemSelections'
   );
+
+  const saveSelectionStateBeforeRedirect = (): void => {
+    if (selectedItems && selectedItems.length > 0) {
+      saveDataToLocal('savedItemSelections', selectedItems);
+    }
+  };
+
+  // If there are parameters from a redirect, remove them
+  useEffect((): void => {
+    if (searchParams.has('endpoint')) {
+      const endpoint = searchParams.get('endpoint');
+      const label = searchParams.get('label');
+      const path = searchParams.get('path');
+      const globfs = searchParams.get('globfs');
+      const endpointId = searchParams.get('endpoint_id');
+
+      const endpointInfo: GlobusEndpointData = {
+        endpoint,
+        label,
+        path,
+        globfs,
+        endpointId,
+      };
+      setSelectedEndpoint(endpointInfo);
+      removeUrlParams();
+      setShowDefaultConfirmModal(true);
+    }
+  }, []);
+
+  /* const { setEndpointModalVisible, setSearchResults } = React.useContext(
+    ModalContext
+  );*/
 
   const handleRowSelect = (selectedRows: RawSearchResults | []): void => {
     setSelectedItems(selectedRows);
@@ -134,10 +166,12 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
       });
   };
 
-  const handleGlobusDownload = (): void => {
+  const handleGlobusDownload = (endpoint: GlobusEndpointData | null): void => {
     if (selectedItems) {
       const ids = selectedItems.map((item) => item.id);
       const globusAuth = getGlobusAuthToken();
+
+      startGlobusTransfer(ids, globusAuth || '', endpoint?.endpointId || '');
 
       /*
       // Open the endpoint selection modal if not using default
@@ -184,28 +218,26 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
     }
   };
 
-  const showRedirectModal = (): void => {
-    setShowRedirectConfirmModal(true);
-  };
-
-  const hideRedirectModal = (): void => {
-    setShowRedirectConfirmModal(false);
-  };
-
-  const logIntoGlobusConfirmed = (): void => {
-    hideRedirectModal();
-    loginWithGlobus();
-  };
-
   const handleDownloadForm = (downloadType: 'wget' | 'Globus'): void => {
     /* istanbul ignore else */
     if (downloadType === 'wget') {
       handleWgetDownload();
     } else if (downloadType === 'Globus') {
-      if (useDefaultEndpoint) {
-        handleGlobusDownload();
+      if (!isSignedIntoGlobus()) {
+        setShowSigninConfirmModal(true);
+      } else if (selectedEndpoint) {
+        const endpointToUse = useDefaultEndpoint
+          ? defaultGlobusEndpoint
+          : selectedEndpoint;
+        handleGlobusDownload(endpointToUse);
+      } else if (defaultGlobusEndpoint) {
+        if (useDefaultEndpoint) {
+          handleGlobusDownload(defaultGlobusEndpoint);
+        } else {
+          setShowRedirectConfirmModal(true);
+        }
       } else {
-        showRedirectModal();
+        setShowRedirectConfirmModal(true);
       }
     }
   };
@@ -250,7 +282,6 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
             <h1>
               <CloudDownloadOutlined /> Download Your Cart
             </h1>
-            <p></p>
             <p>
               Select datasets in your cart and confirm your download preference.
               Speeds will vary based on your bandwidth and distance from the
@@ -315,8 +346,13 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
       <Modal
         title="Redirecting to Globus"
         visible={showRedirectConfirmModal}
-        onOk={redirectToSelectGlobusEndpoint}
-        onCancel={hideRedirectModal}
+        onOk={() => {
+          saveSelectionStateBeforeRedirect();
+          redirectToSelectGlobusEndpoint();
+        }}
+        onCancel={() => {
+          setShowRedirectConfirmModal(false);
+        }}
         okText="Go to Globus"
         cancelText="Cancel"
       >
@@ -325,9 +361,29 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
         </p>
       </Modal>
       <Modal
+        title="Sign in to Globus"
+        visible={showSigninConfirmModal}
+        onOk={() => {
+          saveSelectionStateBeforeRedirect();
+          loginWithGlobus();
+        }}
+        onCancel={() => {
+          setShowSigninConfirmModal(false);
+        }}
+        okText="Sign In"
+        cancelText="Cancel"
+      >
+        <p>
+          You will be redirected to obtain permission from Globus. Continue?
+        </p>
+      </Modal>
+      <Modal
         title="Save Endpoint"
         visible={showDefaultConfirmModal}
         onOk={() => {
+          if (selectedEndpoint) {
+            setDefaultGlobusEndpoint(selectedEndpoint);
+          }
           setShowDefaultConfirmModal(false);
         }}
         onCancel={() => {

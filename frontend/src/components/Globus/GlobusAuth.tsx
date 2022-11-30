@@ -5,6 +5,7 @@
 
 import PKCE from 'js-pkce';
 import ITokenResponse from 'js-pkce/dist/ITokenResponse';
+import { getDataFromLocal, saveDataToLocal } from '../../common/utils';
 
 export interface GlobusTokenResponse extends ITokenResponse {
   id_token: string;
@@ -55,11 +56,8 @@ export const updateGlobusAccessTokens = (): void => {
         window.location.replace(newUrl);
 
         if (response) {
-          window.localStorage.setItem('response', JSON.stringify(response));
-          window.localStorage.setItem(
-            'globus_auth_token',
-            response.refresh_token
-          );
+          saveDataToLocal('response', response);
+          saveDataToLocal('globus_auth_token', response.refresh_token);
         }
       })
       .catch((error: any) => {
@@ -71,7 +69,7 @@ export const updateGlobusAccessTokens = (): void => {
         // Redirect back to the root URL (simple but brittle way to clear the query params)
         const newUrl = window.location.href.split('?')[0];
         window.location.replace(newUrl);
-        window.localStorage.setItem('tokenError', JSON.stringify(error));
+        saveDataToLocal('tokenError', error);
       });
   }
 };
@@ -91,11 +89,11 @@ export const logoutGlobus: () => void = () => {
 };
 
 export const getGlobusAuthToken = (): string | null => {
-  return localStorage.getItem('globus_auth_token');
+  return getDataFromLocal<string>('globus_auth_token');
 };
 
 export const getGlobusIdToken = (): string | null => {
-  return localStorage.getItem('globus_id_token');
+  return getDataFromLocal<string>('globus_id_token');
 };
 
 export const isSignedIntoGlobus = (): boolean => {
@@ -105,15 +103,13 @@ export const isSignedIntoGlobus = (): boolean => {
 };
 
 export const getDefaultGlobusEndpoint = (): GlobusEndpointData | null => {
-  const endpointInfo = localStorage.getItem('defaultGlobusEndpoint');
-  if (endpointInfo) {
-    return JSON.parse(endpointInfo) as GlobusEndpointData;
-  }
-  return null;
+  return getDataFromLocal<GlobusEndpointData>('defaultGlobusEndpoint');
 };
 
-export const setDefaultGlobusEndpoint = (endpointId: string): void => {
-  return localStorage.setItem('defaultGlobusEndpoint', endpointId);
+export const setDefaultGlobusEndpoint = (
+  endpoint: GlobusEndpointData
+): void => {
+  saveDataToLocal('defaultGlobusEndpoint', endpoint);
 };
 
 export const redirectToSelectGlobusEndpoint = (): void => {
