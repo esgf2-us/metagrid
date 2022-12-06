@@ -289,3 +289,21 @@ export const unsavedLocalSearches = (
   );
   return itemsNotInDatabase;
 };
+
+export const saveDataToLocal = (key: string, data: Object): void => {
+  localStorage.setItem(key, JSON.stringify(data));
+};
+
+export const getDataFromLocal = <T>(key: string): T | null => {
+  const dataString = localStorage.getItem(key);
+
+  if (dataString) {
+    try {
+      return JSON.parse(dataString) as T;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  return null;
+};

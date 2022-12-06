@@ -33,6 +33,7 @@ type ApiRoutes = {
   keycloakAuth: ApiRoute;
   globusAuth: ApiRoute;
   globusEndpoints: ApiRoute;
+  globusTransfer: ApiRoute;
   userInfo: ApiRoute;
   userCart: ApiRoute;
   userSearches: ApiRoute;
@@ -67,6 +68,11 @@ const apiRoutes: ApiRoutes = {
     path: `${metagridApiURL}/globus/endpoints`,
     handleErrorMsg: (HTTPCode) =>
       mapHTTPErrorCodes('Globus endpoints', HTTPCode),
+  },
+  globusTransfer: {
+    path: `${metagridApiURL}/globus/transfer`,
+    handleErrorMsg: (HTTPCode) =>
+      mapHTTPErrorCodes('Globus transfer', HTTPCode),
   },
   userInfo: {
     path: `${metagridApiURL}/dj-rest-auth/user/`,

@@ -606,6 +606,54 @@ export const fetchWgetScript = async (
 };
 
 /**
+ * Performs validation against the wget API to ensure a 200 response.
+ *
+ * If the API returns a 200, it returns the responseURL so the browser can open
+ * the link.
+ */
+export const startGlobusTransfer = async (
+  ids: string[] | string,
+  accessToken: string,
+  endpointId: string
+  // path: string,
+  // filenameVars?: string[]
+): Promise<string> => {
+  const url = queryString.stringifyUrl({
+    url: apiRoutes.globusTransfer.path,
+    query: { dataset_ids: ids, accessToken, endpointId },
+  });
+  console.log('Started transfer!');
+  /* if (filenameVars && filenameVars.length > 0) {
+    const filenameVarsParam = queryString.stringify(
+      { query: filenameVars },
+      {
+        arrayFormat: 'comma',
+      }
+    );
+    url += `&${filenameVarsParam}`;
+  }
+
+  const data = {
+    DATA_TYPE: 'transfer_item',
+    source_path: path,
+    destination_path: path,
+    recursive: false,
+  };*/
+
+  return axios
+    .get(url)
+    .then((resp) => {
+      console.log(resp);
+      return url;
+    })
+    .catch((error: ResponseError) => {
+      throw new Error(
+        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusTransfer)
+      );
+    });
+};
+
+/**
  * Parses the results of the node status API to simplify the data structure.
  */
 export const parseNodeStatus = (res: RawNodeStatus): NodeStatusArray => {

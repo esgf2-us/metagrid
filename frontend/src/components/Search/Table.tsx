@@ -27,6 +27,7 @@ export type Props = {
   results: RawSearchResults | [];
   totalResults?: number;
   userCart: UserCart | [];
+  selections?: RawSearchResults | [];
   nodeStatus?: NodeStatusArray;
   filenameVars?: TextInputs | [];
   onUpdateCart: (item: RawSearchResults, operation: 'add' | 'remove') => void;
@@ -41,6 +42,7 @@ const Table: React.FC<Props> = ({
   results,
   totalResults,
   userCart,
+  selections,
   nodeStatus,
   filenameVars,
   onUpdateCart,
@@ -104,6 +106,7 @@ const Table: React.FC<Props> = ({
         ),
     },
     rowSelection: {
+      selectedRowkeys: selections?.map((item) => item.id),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onSelect: (_record: any, _selected: any, selectedRows: any) => {
         /* istanbul ignore else */

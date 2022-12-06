@@ -180,7 +180,7 @@ const RightMenu: React.FC<Props> = ({
               </Menu.Item>
             </Menu.SubMenu>
           )}
-          {!isSignedIntoGlobus() ? (
+          {/* !isSignedIntoGlobus() ? (
             <Menu.Item
               key="globusSignIn"
               style={menuItemStyling}
@@ -207,7 +207,7 @@ const RightMenu: React.FC<Props> = ({
                 Globus Sign Out
               </Button>
             </Menu.Item>
-          )}
+          )*/}
         </Menu.SubMenu>
         <Menu.Item style={menuItemStyling} key="help">
           <Button
