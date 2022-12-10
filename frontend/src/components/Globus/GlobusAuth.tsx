@@ -27,7 +27,8 @@ const GlobusAuth = new PKCE({
   redirect_uri: 'http://localhost:3000/cart/items', // Update this if you are deploying this anywhere else (Globus Auth will redirect back here once you have logged in)
   authorization_endpoint: 'https://auth.globus.org/v2/oauth2/authorize', // No changes needed
   token_endpoint: 'https://auth.globus.org/v2/oauth2/token', // No changes needed
-  requested_scopes: 'openid profile email offline_access', // Update with any scopes you would need, e.g. transfer
+  requested_scopes:
+    'openid profile email offline_access urn:globus:auth:scope:transfer.api.globus.org:all', // Update with any scopes you would need, e.g. transfer
 });
 
 export const updateGlobusAccessTokens = (): void => {
@@ -45,7 +46,9 @@ export const updateGlobusAccessTokens = (): void => {
 
     const url = window.location.href;
     GlobusAuth.exchangeForAccessToken(url)
-      .then((response: { refresh_token: string }) => {
+      .then((response: ITokenResponse) => {
+        const tokenResponse: GlobusTokenResponse = response as GlobusTokenResponse;
+
         // This isn't strictly necessary but it ensures no code reuse.
         sessionStorage.removeItem('pkce_code_verifier');
         sessionStorage.removeItem('pkce_state');
@@ -55,9 +58,16 @@ export const updateGlobusAccessTokens = (): void => {
         const newUrl = window.location.href.split('?')[0];
         window.location.replace(newUrl);
 
-        if (response) {
-          saveDataToLocal('response', response);
-          saveDataToLocal('globus_auth_token', response.refresh_token);
+        if (tokenResponse) {
+          saveDataToLocal('response', tokenResponse);
+          saveDataToLocal('globus_refresh_token', tokenResponse.refresh_token);
+          saveDataToLocal('globus_access_token', tokenResponse.access_token);
+          if (tokenResponse.other_tokens && tokenResponse.other_tokens[0]) {
+            saveDataToLocal(
+              'globus_transfer_token',
+              tokenResponse.other_tokens[0].access_token
+            );
+          }
         }
       })
       .catch((error: any) => {
@@ -82,14 +92,24 @@ export const loginWithGlobus: () => void = () => {
 
 export const logoutGlobus: () => void = () => {
   // Should revoke here
-  localStorage.removeItem('globus_auth_token');
+  localStorage.removeItem('globus_access_token');
+  localStorage.removeItem('globus_refresh_token');
+  localStorage.removeItem('globus_transfer_token');
   localStorage.removeItem('globus_id_token');
   const url = window.location.href.split('?')[0];
   window.location.replace(url);
 };
 
-export const getGlobusAuthToken = (): string | null => {
-  return getDataFromLocal<string>('globus_auth_token');
+export const getGlobusAccessToken = (): string | null => {
+  return getDataFromLocal<string>('globus_access_token');
+};
+
+export const getGlobusRefreshToken = (): string | null => {
+  return getDataFromLocal<string>('globus_refresh_token');
+};
+
+export const getGlobusTransferAccessToken = (): string | null => {
+  return getDataFromLocal<string>('globus_transfer_token');
 };
 
 export const getGlobusIdToken = (): string | null => {
@@ -97,7 +117,7 @@ export const getGlobusIdToken = (): string | null => {
 };
 
 export const isSignedIntoGlobus = (): boolean => {
-  const authToken = getGlobusAuthToken();
+  const authToken = getGlobusRefreshToken();
 
   return authToken !== null && authToken !== 'undefined';
 };

@@ -10,12 +10,12 @@ import {
   Row,
   Switch,
 } from 'antd';
-import { CheckboxChangeEvent } from 'antd/lib/checkbox';
 import React, { useEffect } from 'react';
 import { fetchGlobusEndpoints, ResponseError } from '../../api';
 import { RawSearchResults } from '../Search/types';
 import {
-  getGlobusAuthToken,
+  getGlobusAccessToken,
+  getGlobusRefreshToken,
   redirectToSelectGlobusEndpoint,
   setDefaultGlobusEndpoint,
 } from './GlobusAuth';
@@ -49,7 +49,7 @@ const EndpointModal: React.FC<Props> = ({
 
   useEffect(() => {
     let ids = null;
-    const globusToken = getGlobusAuthToken();
+    const globusToken = getGlobusAccessToken();
     if (globusToken && searchResults) {
       ids = searchResults.map((item) => item.id);
       setFilesToDownloade(ids);

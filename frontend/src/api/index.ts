@@ -612,18 +612,25 @@ export const fetchWgetScript = async (
  * the link.
  */
 export const startGlobusTransfer = async (
-  ids: string[] | string,
   accessToken: string,
-  endpointId: string
-  // path: string,
+  refreshToken: string,
+  endpointId: string,
+  path: string,
+  filenameVars?: string[]
   // filenameVars?: string[]
 ): Promise<string> => {
-  const url = queryString.stringifyUrl({
+  let url = queryString.stringifyUrl({
     url: apiRoutes.globusTransfer.path,
-    query: { dataset_ids: ids, accessToken, endpointId },
+    query: {
+      access_token: accessToken,
+      refresh_token: refreshToken,
+      endpointId,
+      path,
+    },
   });
   console.log('Started transfer!');
-  /* if (filenameVars && filenameVars.length > 0) {
+
+  if (filenameVars && filenameVars.length > 0) {
     const filenameVarsParam = queryString.stringify(
       { query: filenameVars },
       {
@@ -632,7 +639,7 @@ export const startGlobusTransfer = async (
     );
     url += `&${filenameVarsParam}`;
   }
-
+  /*
   const data = {
     DATA_TYPE: 'transfer_item',
     source_path: path,

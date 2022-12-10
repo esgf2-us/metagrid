@@ -20,9 +20,10 @@ import Empty from '../DataDisplay/Empty';
 import Popconfirm from '../Feedback/Popconfirm';
 import Button from '../General/Button';
 import {
-  checkGlobusEndpointLoaded,
   getDefaultGlobusEndpoint,
-  getGlobusAuthToken,
+  getGlobusAccessToken,
+  getGlobusRefreshToken,
+  getGlobusTransferAccessToken,
   GlobusEndpointData,
   isSignedIntoGlobus,
   loginWithGlobus,
@@ -31,7 +32,6 @@ import {
 } from '../Globus/GlobusAuth';
 import Table from '../Search/Table';
 import { RawSearchResults } from '../Search/types';
-import { ModalContext } from '../../contexts/ModalContext';
 import { getDataFromLocal, saveDataToLocal } from '../../common/utils';
 
 const styles: CSSinJS = {
@@ -97,7 +97,7 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
     setShowDefaultConfirmModal,
   ] = React.useState<boolean>(false);
 
-  const [useDefaultEndpoint, setUseDefaultEndpoint] = React.useState(
+  const [useDefaultEndpoint, setUseDefaultEndpoint] = React.useState<boolean>(
     defaultGlobusEndpoint !== null
   );
   const [downloadIsLoading, setDownloadIsLoading] = React.useState(false);
@@ -168,10 +168,17 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
 
   const handleGlobusDownload = (endpoint: GlobusEndpointData | null): void => {
     if (selectedItems) {
-      const ids = selectedItems.map((item) => item.id);
-      const globusAuth = getGlobusAuthToken();
+      const ids = (selectedItems as RawSearchResults).map((item) => item.id);
+      const globusAccessToken = getGlobusTransferAccessToken();
+      const globusRefreshToken = getGlobusRefreshToken();
 
-      startGlobusTransfer(ids, globusAuth || '', endpoint?.endpointId || '');
+      startGlobusTransfer(
+        globusAccessToken || '',
+        globusRefreshToken || '',
+        endpoint?.endpointId || '',
+        endpoint?.path || '',
+        ids
+      );
 
       /*
       // Open the endpoint selection modal if not using default
@@ -331,7 +338,7 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
                     value={useDefaultEndpoint}
                   >
                     <Space direction="vertical">
-                      <Radio disabled={defaultGlobusEndpoint === null} value>
+                      <Radio value disabled={defaultGlobusEndpoint === null}>
                         Default Endpoint
                       </Radio>
                       <Radio value={false}>Specify Endpoint</Radio>
