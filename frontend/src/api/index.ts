@@ -616,8 +616,8 @@ export const startGlobusTransfer = async (
   refreshToken: string,
   endpointId: string,
   path: string,
+  ids: string[] | string,
   filenameVars?: string[]
-  // filenameVars?: string[]
 ): Promise<string> => {
   let url = queryString.stringifyUrl({
     url: apiRoutes.globusTransfer.path,
@@ -626,10 +626,9 @@ export const startGlobusTransfer = async (
       refresh_token: refreshToken,
       endpointId,
       path,
+      dataset_id: ids,
     },
   });
-  console.log('Started transfer!');
-
   if (filenameVars && filenameVars.length > 0) {
     const filenameVarsParam = queryString.stringify(
       { query: filenameVars },
@@ -639,6 +638,7 @@ export const startGlobusTransfer = async (
     );
     url += `&${filenameVarsParam}`;
   }
+  console.log('Started transfer!');
   /*
   const data = {
     DATA_TYPE: 'transfer_item',
@@ -646,7 +646,6 @@ export const startGlobusTransfer = async (
     destination_path: path,
     recursive: false,
   };*/
-
   return axios
     .get(url)
     .then((resp) => {
