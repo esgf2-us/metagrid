@@ -207,8 +207,7 @@ export const setDefaultGlobusEndpoint = (
 };
 
 export const redirectToSelectGlobusEndpoint = (): void => {
-  const endpointSearchURL =
-    'https://app.globus.org/file-manager?action=http://localhost:3000/cart/items&method=GET&cancelUrl=http://localhost:3000/cart/items';
+  const endpointSearchURL = `https://app.globus.org/file-manager?action=${globusRedirectUrl}&method=GET&cancelUrl=${globusRedirectUrl}`;
   window.location.replace(endpointSearchURL);
 };
 
