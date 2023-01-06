@@ -8,6 +8,8 @@
 import 'setimmediate'; // Added because in Jest 27, setImmediate is not defined, causing test errors
 import humps from 'humps';
 import queryString from 'query-string';
+import { AxiosResponse } from 'axios';
+import axios from '../lib/axios';
 import {
   RawUserCart,
   RawUserSearchQuery,
@@ -26,7 +28,6 @@ import {
 } from '../components/Search/types';
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
 import { metagridApiURL, wgetApiURL } from '../env';
-import axios from '../lib/axios';
 import apiRoutes, { ApiRoute, HTTPCodeType } from './routes';
 import { RawEndpointList } from '../components/Globus/types';
 
@@ -606,10 +607,9 @@ export const fetchWgetScript = async (
 };
 
 /**
- * Performs validation against the wget API to ensure a 200 response.
+ * Performs validation against the globus API to ensure a 200 response.
  *
- * If the API returns a 200, it returns the responseURL so the browser can open
- * the link.
+ * If the API returns a 200, it returns the axios response.
  */
 export const startGlobusTransfer = async (
   accessToken: string,
@@ -618,7 +618,7 @@ export const startGlobusTransfer = async (
   path: string,
   ids: string[] | string,
   filenameVars?: string[]
-): Promise<string> => {
+): Promise<AxiosResponse> => {
   let url = queryString.stringifyUrl({
     url: apiRoutes.globusTransfer.path,
     query: {
@@ -638,7 +638,6 @@ export const startGlobusTransfer = async (
     );
     url += `&${filenameVarsParam}`;
   }
-  console.log('Started transfer!');
   /*
   const data = {
     DATA_TYPE: 'transfer_item',
@@ -649,8 +648,7 @@ export const startGlobusTransfer = async (
   return axios
     .get(url)
     .then((resp) => {
-      console.log(resp);
-      return url;
+      return resp;
     })
     .catch((error: ResponseError) => {
       throw new Error(

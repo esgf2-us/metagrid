@@ -1,4 +1,10 @@
 # MetaGrid API
+
+# Globus
+# ------------------------------------------------------------------------------
+REACT_APP_GLOBUS_REDIRECT=http://localhost:3000/cart/items
+REACT_APP_CLIENT_ID=dc983d3a-30be-43e2-b3db-28e1cad9bad5
+
 # ------------------------------------------------------------------------------
 # https://github.com/aims-group/metagrid/tree/master/backend
 REACT_APP_METAGRID_API_URL=http://localhost:8000

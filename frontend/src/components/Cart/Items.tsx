@@ -1,13 +1,13 @@
 /* eslint-disable no-void */
 
 import {
+  CheckCircleFilled,
   CloudDownloadOutlined,
   DownloadOutlined,
   QuestionCircleOutlined,
 } from '@ant-design/icons';
 import { Col, Form, message, Modal, Radio, Row, Select, Space } from 'antd';
 import React, { useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom-v5-compat';
 import {
   fetchWgetScript,
   openDownloadURL,
@@ -21,18 +21,22 @@ import Popconfirm from '../Feedback/Popconfirm';
 import Button from '../General/Button';
 import {
   getDefaultGlobusEndpoint,
-  getGlobusAccessToken,
   getGlobusRefreshToken,
-  getGlobusTransferAccessToken,
+  getGlobusTransferToken,
   GlobusEndpointData,
   isSignedIntoGlobus,
   loginWithGlobus,
+  processGlobusParams,
   redirectToSelectGlobusEndpoint,
   setDefaultGlobusEndpoint,
 } from '../Globus/GlobusAuth';
 import Table from '../Search/Table';
 import { RawSearchResults } from '../Search/types';
-import { getDataFromLocal, saveDataToLocal } from '../../common/utils';
+import {
+  getDataFromLocal,
+  removeFromLocal,
+  saveDataToLocal,
+} from '../../common/utils';
 
 const styles: CSSinJS = {
   summary: {
@@ -53,94 +57,66 @@ export type Props = {
   onClearCart: () => void;
 };
 
+type ModalState = {
+  onCancelAction: () => void;
+  onOkAction: () => void;
+  show: boolean;
+  state: 'signin' | 'endpoint' | 'both' | 'none';
+};
+
 const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
   const [downloadForm] = Form.useForm();
 
-  // checkGlobusEndpointLoaded();
-
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  const removeUrlParams = (): void => {
-    const paramKeys = [...searchParams.keys()];
-
-    paramKeys.forEach((key: string) => {
-      searchParams.delete(key);
-    });
-
-    setSearchParams(searchParams);
-  };
-
-  /* const newUrl = window.location.href.split('?')[0];
-    // window.location.replace(newUrl);
-    window.history.replaceState({}, '', newUrl);*/
-
   // Statically defined list of dataset download options
   const downloadOptions = ['Globus', 'wget'];
+
+  // The selected endpoint
   const [
     selectedEndpoint,
     setSelectedEndpoint,
   ] = React.useState<GlobusEndpointData | null>(null);
+
+  // Default endpoint exists
   const defaultGlobusEndpoint: GlobusEndpointData | null = getDefaultGlobusEndpoint();
 
-  const [
-    showRedirectConfirmModal,
-    setShowRedirectConfirmModal,
-  ] = React.useState<boolean>(false);
-
-  const [
-    showSigninConfirmModal,
-    setShowSigninConfirmModal,
-  ] = React.useState<boolean>(false);
+  // User wants to select their endpoint
+  const [useDefaultEndpoint, setUseDefaultEndpoint] = React.useState<boolean>(
+    false
+  );
 
   const [
     showDefaultConfirmModal,
     setShowDefaultConfirmModal,
   ] = React.useState<boolean>(false);
 
-  const [useDefaultEndpoint, setUseDefaultEndpoint] = React.useState<boolean>(
-    defaultGlobusEndpoint !== null
-  );
   const [downloadIsLoading, setDownloadIsLoading] = React.useState(false);
+
+  const [globusStepsModal, setGlobusStepsModal] = React.useState<ModalState>({
+    show: false,
+    state: 'both',
+    onOkAction: () => {
+      setGlobusStepsModal({ ...globusStepsModal, show: false });
+    },
+    onCancelAction: () => {
+      setDownloadIsLoading(false);
+      saveDataToLocal('continueGlobusPrepSteps', false);
+      removeFromLocal('userSelectedEndpoint');
+      setGlobusStepsModal({ ...globusStepsModal, show: false });
+    },
+  });
+
+  const savedSelections =
+    getDataFromLocal<RawSearchResults>('savedItemSelections') || [];
 
   const [selectedItems, setSelectedItems] = React.useState<
     RawSearchResults | []
-  >([]);
-
-  const savedSelections = getDataFromLocal<RawSearchResults>(
-    'savedItemSelections'
-  );
+  >(savedSelections);
 
   const saveSelectionStateBeforeRedirect = (): void => {
     if (selectedItems && selectedItems.length > 0) {
       saveDataToLocal('savedItemSelections', selectedItems);
     }
   };
-
-  // If there are parameters from a redirect, remove them
-  useEffect((): void => {
-    if (searchParams.has('endpoint')) {
-      const endpoint = searchParams.get('endpoint');
-      const label = searchParams.get('label');
-      const path = searchParams.get('path');
-      const globfs = searchParams.get('globfs');
-      const endpointId = searchParams.get('endpoint_id');
-
-      const endpointInfo: GlobusEndpointData = {
-        endpoint,
-        label,
-        path,
-        globfs,
-        endpointId,
-      };
-      setSelectedEndpoint(endpointInfo);
-      removeUrlParams();
-      setShowDefaultConfirmModal(true);
-    }
-  }, []);
-
-  /* const { setEndpointModalVisible, setSearchResults } = React.useContext(
-    ModalContext
-  );*/
 
   const handleRowSelect = (selectedRows: RawSearchResults | []): void => {
     setSelectedItems(selectedRows);
@@ -167,85 +143,154 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
   };
 
   const handleGlobusDownload = (endpoint: GlobusEndpointData | null): void => {
-    if (selectedItems) {
-      const ids = (selectedItems as RawSearchResults).map((item) => item.id);
-      const globusAccessToken = getGlobusTransferAccessToken();
+    saveDataToLocal('continueGlobusPrepSteps', false);
+
+    if (!endpoint) {
+      void message.warning(`Globus endpoint was undefined.`);
+      return;
+    }
+
+    let selections = [...selectedItems];
+
+    if (selections.length < 1) {
+      const savedItems =
+        getDataFromLocal<RawSearchResults>('savedItemSelections') || [];
+      selections = [...savedItems];
+    }
+
+    if (selections && selections.length > 0) {
+      const ids = (selections as RawSearchResults).map((item) => item.id);
+
+      const globusTransferToken = getGlobusTransferToken();
       const globusRefreshToken = getGlobusRefreshToken();
 
-      startGlobusTransfer(
-        globusAccessToken || '',
-        globusRefreshToken || '',
-        endpoint?.endpointId || '',
-        endpoint?.path || '',
-        ids
-      );
-
-      /*
-      // Open the endpoint selection modal if not using default
-      if (!useDefaultEndpoint) {
-        setSearchResults(selectedItems as RawSearchResults);
-        setEndpointModalVisible(true);
-        return;
-      }
-
-      if (globusAuth) {
-        fetchGlobusEndpoints(globusAuth, 'test')
-          .then((response) => {
-            if (response.DATA && response.DATA.length > 0) {
-              let defaultEndpoint = null;
-              if (defaultGlobusEndpoint) {
-                defaultEndpoint = response.DATA.find((rawEndpoint) => {
-                  return rawEndpoint.id === defaultGlobusEndpoint;
-                });
-                if (!defaultEndpoint) {
-                  void message.warning(
-                    `Unable to find the selected default endpoint!`
-                  );
-                  setDefaultGlobusEndpoint('');
-                  setUseDefaultEndpoint(false);
-                }
-              }
-
-              // If there's a default endpoint, no need to open selection
-              if (defaultEndpoint) {
-                void message.info(
-                  `Loading using default endpoint: ${defaultEndpoint.display_name}`
-                );
-                void message.info(`Downloading files: ${ids.toString()}`);
-              } else {
-                setSearchResults(selectedItems as RawSearchResults);
-                setEndpointModalVisible(true);
-              }
+      if (globusTransferToken && globusRefreshToken) {
+        startGlobusTransfer(
+          globusTransferToken.access_token,
+          globusRefreshToken,
+          endpoint?.endpointId || '',
+          endpoint?.path || '',
+          ids
+        )
+          .then((resp) => {
+            if (resp.status === 200) {
+              void message.info(`Globus transfer task submitted successfully!`);
+            } else {
+              void message.warning(
+                `Globus transfer task struggled: ${resp.statusText}`
+              );
             }
           })
           .catch((error: ResponseError) => {
-            void message.error(error.message);
+            void message.error(`Globus transfer task failed: ${error.message}`);
+            void message.error(ids);
+          })
+          .finally(() => {
+            removeFromLocal('userSelectedEndpoint');
+            setDownloadIsLoading(false);
           });
-      }*/
+      }
+    } else {
+      removeFromLocal('userSelectedEndpoint');
+      setDownloadIsLoading(false);
+
+      // Should logout to refresh Globus state
+      removeFromLocal('globus_access_token');
+      removeFromLocal('globus_refresh_token');
+      removeFromLocal('globus_transfer_token');
+      removeFromLocal('globus_id_token');
     }
   };
+
+  const showGlobusDownloadPrompt = (
+    endpoint: GlobusEndpointData | null
+  ): void => {
+    setGlobusStepsModal({
+      ...globusStepsModal,
+      onOkAction: () => {
+        setGlobusStepsModal({ ...globusStepsModal, show: false });
+        setDownloadIsLoading(true);
+        handleGlobusDownload(endpoint);
+      },
+      show: true,
+      state: 'none',
+    });
+  };
+
+  const prepareForGlobusDownload = (): void => {
+    /**
+     * What to do when user selects data to download via globus in the cart
+     * State 0: User needs globus auth token, user also needs and endpoint.
+     * State 1: User has an endpoint but needs globus auth.
+     * State 2: User has globus auth but needs to select endpoint.
+     * State 3: User has globus auth and endpoint.
+     */
+
+    // User has Globus permissions
+    const globusReady = isSignedIntoGlobus();
+
+    const savedEndpoint = getDataFromLocal<GlobusEndpointData | null>(
+      'userSelectedEndpoint'
+    );
+    setSelectedEndpoint(savedEndpoint);
+    const endpointReady = useDefaultEndpoint || savedEndpoint;
+
+    saveSelectionStateBeforeRedirect(); // Save selected cart items
+    saveDataToLocal('continueGlobusPrepSteps', true);
+
+    if (globusReady && endpointReady) {
+      if (useDefaultEndpoint) {
+        showGlobusDownloadPrompt(defaultGlobusEndpoint);
+      } else {
+        setShowDefaultConfirmModal(true);
+      }
+    } else if (globusReady) {
+      // Endpoint is missing, so get endpoint then continue prep
+      setGlobusStepsModal({
+        ...globusStepsModal,
+        onOkAction: () => {
+          redirectToSelectGlobusEndpoint();
+        },
+        show: true,
+        state: 'endpoint',
+      });
+    } else if (endpointReady) {
+      setGlobusStepsModal({
+        ...globusStepsModal,
+        onOkAction: () => {
+          loginWithGlobus();
+        },
+        show: true,
+        state: 'signin',
+      });
+    } else {
+      setGlobusStepsModal({
+        ...globusStepsModal,
+        onOkAction: () => {
+          loginWithGlobus();
+        },
+        show: true,
+        state: 'both',
+      });
+    }
+  };
+
+  // Do next preparation step if prep steps is true
+  useEffect(() => {
+    if (getDataFromLocal<boolean>('continueGlobusPrepSteps') === true) {
+      setTimeout(async () => {
+        await processGlobusParams();
+        prepareForGlobusDownload();
+      }, 1000);
+    }
+  }, []);
 
   const handleDownloadForm = (downloadType: 'wget' | 'Globus'): void => {
     /* istanbul ignore else */
     if (downloadType === 'wget') {
       handleWgetDownload();
     } else if (downloadType === 'Globus') {
-      if (!isSignedIntoGlobus()) {
-        setShowSigninConfirmModal(true);
-      } else if (selectedEndpoint) {
-        const endpointToUse = useDefaultEndpoint
-          ? defaultGlobusEndpoint
-          : selectedEndpoint;
-        handleGlobusDownload(endpointToUse);
-      } else if (defaultGlobusEndpoint) {
-        if (useDefaultEndpoint) {
-          handleGlobusDownload(defaultGlobusEndpoint);
-        } else {
-          setShowRedirectConfirmModal(true);
-        }
-      } else {
-        setShowRedirectConfirmModal(true);
-      }
+      prepareForGlobusDownload();
     }
   };
 
@@ -338,7 +383,7 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
                     value={useDefaultEndpoint}
                   >
                     <Space direction="vertical">
-                      <Radio value disabled={defaultGlobusEndpoint === null}>
+                      <Radio value defaultChecked>
                         Default Endpoint
                       </Radio>
                       <Radio value={false}>Specify Endpoint</Radio>
@@ -351,55 +396,54 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
         </>
       )}
       <Modal
-        title="Redirecting to Globus"
-        visible={showRedirectConfirmModal}
-        onOk={() => {
-          saveSelectionStateBeforeRedirect();
-          redirectToSelectGlobusEndpoint();
-        }}
-        onCancel={() => {
-          setShowRedirectConfirmModal(false);
-        }}
-        okText="Go to Globus"
-        cancelText="Cancel"
-      >
-        <p>
-          You will be redirected to Globus to select your endpoint. Continue?
-        </p>
-      </Modal>
-      <Modal
-        title="Sign in to Globus"
-        visible={showSigninConfirmModal}
-        onOk={() => {
-          saveSelectionStateBeforeRedirect();
-          loginWithGlobus();
-        }}
-        onCancel={() => {
-          setShowSigninConfirmModal(false);
-        }}
-        okText="Sign In"
-        cancelText="Cancel"
-      >
-        <p>
-          You will be redirected to obtain permission from Globus. Continue?
-        </p>
-      </Modal>
-      <Modal
         title="Save Endpoint"
         visible={showDefaultConfirmModal}
         onOk={() => {
           if (selectedEndpoint) {
             setDefaultGlobusEndpoint(selectedEndpoint);
+            showGlobusDownloadPrompt(selectedEndpoint);
           }
           setShowDefaultConfirmModal(false);
         }}
         onCancel={() => {
           setShowDefaultConfirmModal(false);
+          showGlobusDownloadPrompt(selectedEndpoint);
         }}
         okText="Yes"
         cancelText="No"
       >
         <p>Do you want to save this endpoint as default?</p>
+      </Modal>
+      <Modal
+        title="Globus Transfer"
+        visible={globusStepsModal.show}
+        onOk={globusStepsModal.onOkAction}
+        onCancel={globusStepsModal.onCancelAction}
+        okText="Yes"
+        cancelText="Cancel"
+      >
+        <p>Steps for Globus transfer:</p>
+        <ol>
+          <li>
+            {(globusStepsModal.state === 'both' ||
+              globusStepsModal.state === 'signin') &&
+              '-> '}
+            Redirect to obtain transfer permission from Globus.
+            {(globusStepsModal.state === 'none' ||
+              globusStepsModal.state === 'endpoint') && <CheckCircleFilled />}
+          </li>
+          <li>
+            {globusStepsModal.state === 'endpoint' && '-> '}
+            Redirect to select an endpoint in Globus.
+            {(globusStepsModal.state === 'none' ||
+              globusStepsModal.state === 'signin') && <CheckCircleFilled />}
+          </li>
+
+          <li>
+            {globusStepsModal.state === 'none' && '-> '} Start Globus transfer.
+          </li>
+        </ol>
+        <p>Do you wish to proceed?</p>
       </Modal>
     </div>
   );

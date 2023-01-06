@@ -39,6 +39,10 @@ REACT_APP_PREVIOUS_URL=
 # https://github.com/aims-group/metagrid/tree/master/backend
 REACT_APP_METAGRID_API_URL=
 
+# Globus
+REACT_APP_GLOBUS_REDIRECT=http://localhost:3000/cart/items
+REACT_APP_CLIENT_ID=dc983d3a-30be-43e2-b3db-28e1cad9bad5
+
 # ESGF wget API
 # https://github.com/ESGF/esgf-wget
 REACT_APP_WGET_API_URL=https://pcmdi8vm.llnl.gov/wget

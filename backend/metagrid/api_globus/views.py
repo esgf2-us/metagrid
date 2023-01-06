@@ -264,6 +264,7 @@ def get_files(url_params):
         # (i.e. cases such as "CESM1(CAM5.1,FV2)")
 
         split_value_list = []
+
         for v in value_list:
             for sv in split_value(v):
                 split_value_list.append(sv)

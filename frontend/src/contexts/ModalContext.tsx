@@ -1,5 +1,4 @@
 import React from 'react';
-import EndpointModal from '../components/Globus/EndpointModal';
 import { RawSearchResults } from '../components/Search/types';
 import Support from '../components/Support';
 
@@ -48,13 +47,6 @@ export const ModalProvider: React.FC<Props> = ({ children }) => {
       <Support
         visible={supportVisible}
         onClose={() => setSupportVisible(false)}
-      />
-      <EndpointModal
-        visible={endpointModalVisible}
-        onClose={() => {
-          setEndpointModalVisible(false);
-        }}
-        searchResults={searchResults}
       />
       {children}
     </ModalContext.Provider>

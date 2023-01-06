@@ -14,11 +14,6 @@ import React, { CSSProperties } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { navBarTargets } from '../../common/reactJoyrideSteps';
 import Button from '../General/Button';
-import {
-  isSignedIntoGlobus,
-  loginWithGlobus,
-  logoutGlobus,
-} from '../Globus/GlobusAuth';
 
 const menuItemStyling: CSSProperties = { margin: '8px' };
 
@@ -137,7 +132,7 @@ const RightMenu: React.FC<Props> = ({
         <Menu.SubMenu
           key="signInMenu"
           icon={<UserOutlined style={{ fontSize: '18px' }} />}
-          title="Sign In Options"
+          title="Sign In"
         >
           {!authenticated ? (
             <Menu.Item
