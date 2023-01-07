@@ -3,10 +3,11 @@ METAGRID_CONFIG=metagrid_config
 DEFAULT_EDITOR=emacs
 CONFIG_DIR=metagrid_configs
 BACKUP_DIR=$CONFIG_DIR/backups
+BACKUP_FORMAT=config_backup_$(date +'%F_%I-%M-%S')
 
 #Custom functions
 function configure() {
-    cp $CONFIG_DIR/$METAGRID_CONFIG $BACKUP_DIR/config_backup_$(date +'%a_%b_%g-%I_%M_%S')
+    cp $CONFIG_DIR/$METAGRID_CONFIG $BACKUP_DIR/$BACKUP_FORMAT
     $DEFAULT_EDITOR $CONFIG_DIR/$METAGRID_CONFIG
     saveConfigs $CONFIG_DIR/$METAGRID_CONFIG
 }
@@ -29,14 +30,14 @@ function setCurrentConfig() {
     fi
 
     echo "Enter the config backup to restore (1 -"$fileCount"):"
-    ls $BACKUP_DIR/ | cat -n
+    ls $BACKUP_DIR/ | sort -r | cat -n
     read configNum
-    fileName=$(ls "$BACKUP_DIR" | sed -n "$configNum"p)
+    fileName=$(ls "$BACKUP_DIR" | sort -r | sed -n "$configNum"p)
     configName=$(pwd)/$BACKUP_DIR/$fileName
 
     if test -f "$configName"; then
         echo "Setting $fileName as current..."
-        cp $CONFIG_DIR/$METAGRID_CONFIG $BACKUP_DIR/config_backup_$(date +'%a_%b_%g-%I_%M_%S')
+        cp $CONFIG_DIR/$METAGRID_CONFIG $BACKUP_DIR/$BACKUP_FORMAT
         cp $configName $CONFIG_DIR/$METAGRID_CONFIG
         saveConfigs
         echo "Done!"
