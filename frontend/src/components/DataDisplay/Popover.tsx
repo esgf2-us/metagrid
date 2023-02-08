@@ -21,7 +21,7 @@ type Props = {
   children: React.ReactElement;
 };
 
-const Popover: React.FC<Props> = ({
+const Popover: React.FC<React.PropsWithChildren<Props>> = ({
   content,
   placement = 'top',
   trigger = 'hover',

@@ -22,7 +22,10 @@ export type Props = {
   onClose: () => void;
 };
 
-const Support: React.FC<Props> = ({ visible, onClose }) => {
+const Support: React.FC<React.PropsWithChildren<Props>> = ({
+  visible,
+  onClose,
+}) => {
   // Tutorial state
   const tourState: RawTourState = React.useContext(ReactJoyrideContext);
   const { setTour, startTour, setCurrentAppPage } = tourState;

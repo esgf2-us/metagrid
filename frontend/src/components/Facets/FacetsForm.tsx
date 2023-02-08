@@ -85,7 +85,7 @@ export const formatDate = (
   return moment(date, format);
 };
 
-const FacetsForm: React.FC<Props> = ({
+const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
   activeSearchQuery,
   availableFacets,
   nodeStatus,

@@ -8,7 +8,12 @@ type Props = {
   children: React.ReactNode;
 };
 
-const Card: React.FC<Props> = ({ title, hoverable, actions, children }) => (
+const Card: React.FC<React.PropsWithChildren<Props>> = ({
+  title,
+  hoverable,
+  actions,
+  children,
+}) => (
   <CardD title={title} hoverable={hoverable} actions={actions}>
     {children}
   </CardD>

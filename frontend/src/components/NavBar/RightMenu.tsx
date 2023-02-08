@@ -18,7 +18,7 @@ import Button from '../General/Button';
 const menuItemStyling: CSSProperties = { margin: '8px' };
 
 export type Props = {
-  mode:
+  menuMode:
     | 'horizontal'
     | 'vertical'
     | 'vertical-left'
@@ -29,7 +29,7 @@ export type Props = {
   supportModalVisible: (visible: boolean) => void;
 };
 
-const RightMenu: React.FC<Props> = ({
+const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
   mode,
   numCartItems,
   numSavedSearches,
@@ -71,7 +71,7 @@ const RightMenu: React.FC<Props> = ({
     >
       <Menu
         selectedKeys={[activeMenuItem]}
-        mode={mode}
+        mode={MenuMode}
         style={
           mode === 'inline' ? { textAlign: 'left' } : { textAlign: 'right' }
         }

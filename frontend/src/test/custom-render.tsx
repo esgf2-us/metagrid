@@ -76,7 +76,10 @@ export const customRender = (
     );
   }
 
-  return render(ui, { wrapper: AllProviders as ComponentType, ...options });
+  return render(ui, {
+    wrapper: AllProviders as ComponentType<React.PropsWithChildren<unknown>>,
+    ...options,
+  });
 };
 
 /**

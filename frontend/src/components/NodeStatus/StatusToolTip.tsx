@@ -13,7 +13,11 @@ export type Props = {
   children?: React.ReactNode;
 };
 
-const StatusToolTip: React.FC<Props> = ({ nodeStatus, dataNode, children }) => {
+const StatusToolTip: React.FC<React.PropsWithChildren<Props>> = ({
+  nodeStatus,
+  dataNode,
+  children,
+}) => {
   if (nodeStatus) {
     const node = (nodeStatus.find(
       (obj) => obj.name === dataNode

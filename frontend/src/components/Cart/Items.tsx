@@ -37,7 +37,11 @@ export type Props = {
   onClearCart: () => void;
 };
 
-const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
+const Items: React.FC<React.PropsWithChildren<Props>> = ({
+  userCart,
+  onUpdateCart,
+  onClearCart,
+}) => {
   const [downloadForm] = Form.useForm();
 
   // Statically defined list of dataset download options

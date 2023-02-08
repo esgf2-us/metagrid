@@ -26,7 +26,7 @@ type Props = {
   size?: 'large' | 'middle' | 'small';
 };
 
-const Button: React.FC<Props> = ({
+const Button: React.FC<React.PropsWithChildren<Props>> = ({
   type = 'primary',
   className,
   href,

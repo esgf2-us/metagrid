@@ -7,7 +7,11 @@ type Props = {
   active?: boolean;
 };
 
-const Skeleton: React.FC<Props> = ({ title, paragraph, active = false }) => (
+const Skeleton: React.FC<React.PropsWithChildren<Props>> = ({
+  title,
+  paragraph,
+  active = false,
+}) => (
   <div data-testid="skeleton">
     <SkeletonD title={title} paragraph={paragraph} active={active} />
   </div>

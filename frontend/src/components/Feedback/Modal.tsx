@@ -9,7 +9,7 @@ type Props = {
   children: React.ReactNode;
 };
 
-const Modal: React.FC<Props> = ({
+const Modal: React.FC<React.PropsWithChildren<Props>> = ({
   visible,
   title,
   onClose,

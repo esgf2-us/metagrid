@@ -22,7 +22,7 @@ export type Props = {
   userCart: UserCart | [];
 };
 
-const Summary: React.FC<Props> = ({ userCart }) => {
+const Summary: React.FC<React.PropsWithChildren<Props>> = ({ userCart }) => {
   let numFiles = 0;
   let totalDataSize = '0';
   if (userCart.length > 0) {

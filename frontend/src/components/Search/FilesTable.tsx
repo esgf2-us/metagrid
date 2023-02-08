@@ -78,7 +78,11 @@ export type Props = {
   filenameVars?: TextInputs | [];
 };
 
-const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
+const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
+  id,
+  numResults = 0,
+  filenameVars,
+}) => {
   // Add options to this constant as needed.
   // This variable populates the download drop downs and is used in conditionals.
   const metadataKeysToDisplay = [

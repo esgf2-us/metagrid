@@ -11,7 +11,7 @@ export type Props = {
   onRemoveSearchQuery: (uuid: string) => void;
 };
 
-const Searches: React.FC<Props> = ({
+const Searches: React.FC<React.PropsWithChildren<Props>> = ({
   userSearchQueries,
   onRunSearchQuery,
   onRemoveSearchQuery,

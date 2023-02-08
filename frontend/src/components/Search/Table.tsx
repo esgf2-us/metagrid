@@ -35,7 +35,7 @@ export type Props = {
   onPageSizeChange?: (size: number) => void;
 };
 
-const Table: React.FC<Props> = ({
+const Table: React.FC<React.PropsWithChildren<Props>> = ({
   loading,
   canDisableRows = true,
   results,

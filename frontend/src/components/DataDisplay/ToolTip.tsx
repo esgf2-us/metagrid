@@ -21,7 +21,7 @@ type Props = {
   children?: React.ReactElement;
 };
 
-const ToolTip: React.FC<Props> = ({
+const ToolTip: React.FC<React.PropsWithChildren<Props>> = ({
   title,
   trigger = 'hover',
   placement = 'top',

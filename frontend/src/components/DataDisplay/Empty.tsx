@@ -5,7 +5,7 @@ type Props = {
   description: string;
 };
 
-const Empty: React.FC<Props> = ({ description }) => (
+const Empty: React.FC<React.PropsWithChildren<Props>> = ({ description }) => (
   <EmptyD description={description} />
 );
 

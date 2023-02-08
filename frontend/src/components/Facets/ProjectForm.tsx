@@ -25,7 +25,7 @@ export type Props = {
   onFinish: (allValues: { [key: string]: string }) => void;
 };
 
-const ProjectsForm: React.FC<Props> = ({
+const ProjectsForm: React.FC<React.PropsWithChildren<Props>> = ({
   activeSearchQuery,
   projectsFetched,
   apiIsLoading,

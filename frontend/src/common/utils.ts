@@ -139,17 +139,19 @@ export const getUrlFromSearch = (search: ActiveSearchQuery): string => {
   return `${urlString}?${params.toString()}`;
 };
 
+export const emptySearchQuery: ActiveSearchQuery = {
+  project: {},
+  versionType: 'latest',
+  resultType: 'all',
+  minVersionDate: null,
+  maxVersionDate: null,
+  filenameVars: [],
+  activeFacets: {},
+  textInputs: [],
+};
+
 export const getAltSearchFromUrl = (url?: string): ActiveSearchQuery => {
-  let searchQuery: ActiveSearchQuery = {
-    project: {},
-    versionType: 'latest',
-    resultType: 'all',
-    minVersionDate: null,
-    maxVersionDate: null,
-    filenameVars: [],
-    activeFacets: {},
-    textInputs: [],
-  };
+  let searchQuery: ActiveSearchQuery = { ...emptySearchQuery };
 
   const params = new URLSearchParams(url || window.location.search);
   // eslint-disable-next-line
@@ -176,16 +178,7 @@ export const getAltSearchFromUrl = (url?: string): ActiveSearchQuery => {
 };
 
 export const getSearchFromUrl = (url?: string): ActiveSearchQuery => {
-  const searchQuery: ActiveSearchQuery = {
-    project: {},
-    versionType: 'latest',
-    resultType: 'all',
-    minVersionDate: null,
-    maxVersionDate: null,
-    filenameVars: [],
-    activeFacets: {},
-    textInputs: [],
-  };
+  const searchQuery: ActiveSearchQuery = { ...emptySearchQuery };
 
   const params = new URLSearchParams(url || window.location.search);
 

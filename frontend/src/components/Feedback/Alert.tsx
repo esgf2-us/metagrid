@@ -8,7 +8,7 @@ type Props = {
   showIcon?: boolean;
 };
 
-const Alert: React.FC<Props> = ({
+const Alert: React.FC<React.PropsWithChildren<Props>> = ({
   message,
   description,
   type,
