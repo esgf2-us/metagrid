@@ -425,10 +425,11 @@ def do_globus_transfer(request):
     transfer_client = TransferClient(authorizer=token_authorizer)
 
     for source_endpoint, source_files in list(download_map.items()):
+        test_endpoint = "1889ea03-25ad-4f9f-8110-1ce8833a9d7e"
         # submit transfer request
         task_id = submit_transfer(
             transfer_client,
-            source_endpoint,
+            test_endpoint,
             source_files,
             target_endpoint,
             target_folder,
