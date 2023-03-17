@@ -8,11 +8,7 @@ if TYPE_CHECKING:
         ProjectFacet,
     )
 
-
-from metagrid.initial_projects_data import (
-    projects,
-    group_descriptions,
-)
+from metagrid.initial_projects_data import group_descriptions, projects
 
 
 def insert_data(apps, schema_editor):
