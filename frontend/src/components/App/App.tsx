@@ -11,7 +11,7 @@ import { Affix, Breadcrumb, Button, Layout, message, Result } from 'antd';
 import React, { ReactElement } from 'react';
 import { useAsync } from 'react-async';
 import { hotjar } from 'react-hotjar';
-import { Link, Redirect, Route, Switch } from 'react-router-dom';
+import { Link, Navigate, Route, Routes } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import {
   addUserSearchQuery,
@@ -477,7 +477,8 @@ const App: React.FC<Props> = ({ searchQuery }) => {
     /* istanbul ignore next */
     if (!publicUrl && previousPublicUrl) {
       const newFrom = `/${previousPublicUrl}`;
-      return <Redirect from={newFrom} to="/search" />;
+      // return <Redirect from={newFrom} to="/search" />;
+      <Route path={newFrom} element={<Navigate to="/search" />} />;
     }
 
     return <></>;
@@ -485,28 +486,32 @@ const App: React.FC<Props> = ({ searchQuery }) => {
 
   return (
     <>
-      <Switch>
-        <Redirect from="/" exact to="/search" />
-        <Redirect from="/cart" exact to="/cart/items" />
+      <Routes>
+        <Route path="/" element={<Navigate to="/search" />} />
+        <Route path="/cart" element={<Navigate to="/cart/items" />} />
+        {/* <Redirect from="/" exact to="/search" />
+        <Redirect from="/cart" exact to="/cart/items" /> */}
         {generateRedirects()}
-      </Switch>
+      </Routes>
       <div>
-        <Route
-          path="/"
-          render={() => (
-            <NavBar
-              numCartItems={userCart.length}
-              numSavedSearches={userSearchQueries.length}
-              onTextSearch={handleTextSearch}
-              supportModalVisible={setSupportModalVisible}
-            ></NavBar>
-          )}
-        />
+        <Routes>
+          <Route
+            path="*"
+            element={
+              <NavBar
+                numCartItems={userCart.length}
+                numSavedSearches={userSearchQueries.length}
+                onTextSearch={handleTextSearch}
+                supportModalVisible={setSupportModalVisible}
+              ></NavBar>
+            }
+          />
+        </Routes>
         <Layout id="body-layout">
-          <Switch>
+          <Routes>
             <Route
               path="/search"
-              render={() => (
+              element={
                 <Layout.Sider
                   style={styles.bodySider}
                   width={styles.bodySider.width as number}
@@ -521,37 +526,37 @@ const App: React.FC<Props> = ({ searchQuery }) => {
                     onSetActiveFacets={handleOnSetActiveFacets}
                   />
                 </Layout.Sider>
-              )}
+              }
             />
             <Route
               path="/nodes"
-              render={() => (
+              element={
                 <Layout.Sider
                   style={styles.bodySider}
                   width={styles.bodySider.width as number}
                 >
                   <NodeSummary nodeStatus={nodeStatus} />
                 </Layout.Sider>
-              )}
+              }
             />
             <Route
-              path="/cart"
-              render={() => (
+              path="/cart/*"
+              element={
                 <Layout.Sider
                   style={styles.bodySider}
                   width={styles.bodySider.width as number}
                 >
                   <Summary userCart={userCart} />
                 </Layout.Sider>
-              )}
+              }
             />
-          </Switch>
+          </Routes>
           <Layout>
             <Layout.Content style={styles.bodyContent}>
-              <Switch>
+              <Routes>
                 <Route
                   path="/search"
-                  render={() => (
+                  element={
                     <>
                       <Breadcrumb>
                         <Breadcrumb.Item>
@@ -573,11 +578,11 @@ const App: React.FC<Props> = ({ searchQuery }) => {
                         onShareSearchQuery={handleShareSearchQuery}
                       ></Search>
                     </>
-                  )}
+                  }
                 />
                 <Route
                   path="/nodes"
-                  render={() => (
+                  element={
                     <>
                       <Breadcrumb>
                         <Breadcrumb.Item>
@@ -591,11 +596,11 @@ const App: React.FC<Props> = ({ searchQuery }) => {
                         isLoading={nodeStatusIsLoading}
                       />
                     </>
-                  )}
+                  }
                 />
                 <Route
-                  path="/cart"
-                  render={() => (
+                  path="/cart/*"
+                  element={
                     <>
                       <Breadcrumb>
                         <Breadcrumb.Item>
@@ -612,9 +617,9 @@ const App: React.FC<Props> = ({ searchQuery }) => {
                         onRemoveSearchQuery={handleRemoveSearchQuery}
                       />
                     </>
-                  )}
+                  }
                 />
-                <Route
+                {/* <Route
                   render={() => (
                     <Result
                       status="404"
@@ -627,8 +632,23 @@ const App: React.FC<Props> = ({ searchQuery }) => {
                       }
                     />
                   )}
+                /> */}
+                <Route
+                  path="*"
+                  element={
+                    <Result
+                      status="404"
+                      title="404"
+                      subTitle="Sorry, the page you visited does not exist."
+                      extra={
+                        <Button type="primary">
+                          <Link to="/">Back to Home</Link>
+                        </Button>
+                      }
+                    />
+                  }
                 />
-              </Switch>
+              </Routes>
             </Layout.Content>
             <Layout.Footer>
               <p style={{ fontSize: '10px' }}>

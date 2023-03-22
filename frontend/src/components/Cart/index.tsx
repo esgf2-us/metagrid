@@ -1,7 +1,7 @@
 import { BookOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { Tabs } from 'antd';
 import React from 'react';
-import { useHistory } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { cartTourTargets } from '../../common/reactJoyrideSteps';
 import { RawSearchResults } from '../Search/types';
 import Items from './Items';
@@ -26,18 +26,21 @@ const Cart: React.FC<Props> = ({
   onRemoveSearchQuery,
 }) => {
   const [activeTab, setActiveTab] = React.useState<string>('items');
-  const history = useHistory();
+  // const history = useHistory();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   React.useEffect(() => {
-    if (history.location.pathname.includes('searches')) {
+    if (location.pathname.includes('searches')) {
       setActiveTab('searches');
     } else {
       setActiveTab('items');
     }
-  }, [history.location.pathname]);
+  }, [location.pathname]);
 
   const handleTabClick = (key: string): void => {
-    history.push(key);
+    // history.push(key);
+    navigate(key);
     setActiveTab(key);
   };
 
