@@ -41,7 +41,6 @@ const SearchesCard: React.FC<Props> = ({
   onRunSearchQuery,
   onRemoveSearchQuery,
 }) => {
-  // const history = useHistory();
   const navigate = useNavigate();
   const {
     uuid,
@@ -108,7 +107,6 @@ const SearchesCard: React.FC<Props> = ({
               data-testid={`apply-${index + 1}`}
               key="search"
               onClick={() => {
-                // history.push('/search');
                 navigate('/search');
                 onRunSearchQuery(searchQuery);
               }}

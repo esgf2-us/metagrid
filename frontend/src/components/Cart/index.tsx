@@ -26,7 +26,6 @@ const Cart: React.FC<Props> = ({
   onRemoveSearchQuery,
 }) => {
   const [activeTab, setActiveTab] = React.useState<string>('items');
-  // const history = useHistory();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -39,7 +38,6 @@ const Cart: React.FC<Props> = ({
   }, [location.pathname]);
 
   const handleTabClick = (key: string): void => {
-    // history.push(key);
     navigate(key);
     setActiveTab(key);
   };

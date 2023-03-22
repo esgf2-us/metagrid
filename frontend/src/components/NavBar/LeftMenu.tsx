@@ -28,7 +28,6 @@ const LeftMenu: React.FC<Props> = ({
 }) => {
   const [form] = Form.useForm();
   const [text, setText] = React.useState('');
-  // const history = useHistory();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -39,7 +38,6 @@ const LeftMenu: React.FC<Props> = ({
   const onFinish = (values: { [key: string]: string }): void => {
     /* istanbul ignore else */
     if (!location.pathname.endsWith('search')) {
-      // history.push('/search');
       navigate('/search');
     }
 

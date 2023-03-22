@@ -25,7 +25,6 @@ type Props = { children: React.ReactNode };
 const defaultTour = new JoyrideTour('Empty Tour');
 
 export const ReactJoyrideProvider: React.FC<Props> = ({ children }) => {
-  // const history = useHistory();
   const navigate = useNavigate();
   const [running, setRunning] = React.useState<boolean>(false);
   const [getTour, setTour] = React.useState<JoyrideTour>(defaultTour);
@@ -95,19 +94,15 @@ export const ReactJoyrideProvider: React.FC<Props> = ({ children }) => {
         if (navigate) {
           switch (page) {
             case AppPage.Main:
-              // history.push('/search');
               navigate('/search');
               break;
             case AppPage.Cart:
-              // history.push('/cart/items');
               navigate('/cart/items');
               break;
             case AppPage.NodeStatus:
-              // history.push('/nodes');
               navigate('/nodes');
               break;
             case AppPage.SavedSearches:
-              // history.push('/cart/searches');
               navigate('/cart/searches');
               break;
             default:

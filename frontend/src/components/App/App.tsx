@@ -477,7 +477,6 @@ const App: React.FC<Props> = ({ searchQuery }) => {
     /* istanbul ignore next */
     if (!publicUrl && previousPublicUrl) {
       const newFrom = `/${previousPublicUrl}`;
-      // return <Redirect from={newFrom} to="/search" />;
       <Route path={newFrom} element={<Navigate to="/search" />} />;
     }
 
@@ -489,8 +488,6 @@ const App: React.FC<Props> = ({ searchQuery }) => {
       <Routes>
         <Route path="/" element={<Navigate to="/search" />} />
         <Route path="/cart" element={<Navigate to="/cart/items" />} />
-        {/* <Redirect from="/" exact to="/search" />
-        <Redirect from="/cart" exact to="/cart/items" /> */}
         {generateRedirects()}
       </Routes>
       <div>
@@ -619,20 +616,6 @@ const App: React.FC<Props> = ({ searchQuery }) => {
                     </>
                   }
                 />
-                {/* <Route
-                  render={() => (
-                    <Result
-                      status="404"
-                      title="404"
-                      subTitle="Sorry, the page you visited does not exist."
-                      extra={
-                        <Button type="primary">
-                          <Link to="/">Back to Home</Link>
-                        </Button>
-                      }
-                    />
-                  )}
-                /> */}
                 <Route
                   path="*"
                   element={
