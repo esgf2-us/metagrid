@@ -203,11 +203,11 @@ const App: React.FC<Props> = ({ searchQuery }) => {
   }, [runFetchNodeStatus]);
 
   React.useEffect(() => {
-    void fetchProjects()
+    fetchProjects()
       .then((data) => {
         const projectName = searchQuery ? searchQuery.project.name : '';
         /* istanbul ignore else */
-        if (projectName && projectName !== '' && data) {
+        if (data && projectName && projectName !== '') {
           const rawProj: RawProject | undefined = data.results.find((proj) => {
             return (
               proj.name.toLowerCase() === (projectName as string).toLowerCase()
@@ -227,7 +227,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           });
         }
       );
-  }, [searchQuery]);
+  }, [fetchProjects]);
 
   const handleTextSearch = (
     selectedProject: RawProject,
@@ -476,8 +476,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
   const generateRedirects = (): ReactElement => {
     /* istanbul ignore next */
     if (!publicUrl && previousPublicUrl) {
-      const newFrom = `/${previousPublicUrl}`;
-      <Route path={newFrom} element={<Navigate to="/search" />} />;
+      <Route path={previousPublicUrl} element={<Navigate to="/search" />} />;
     }
 
     return <></>;

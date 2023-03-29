@@ -52,7 +52,9 @@ it('displays alert error when api fails to return response', async () => {
     )
   );
 
-  const { getByRole } = render(<SearchesCard {...defaultProps} />);
+  const { getByRole } = render(<SearchesCard {...defaultProps} />, {
+    wrapper: MemoryRouter,
+  });
 
   // Check alert renders
   const alert = await waitFor(() => getByRole('img', { name: 'close-circle' }));
@@ -64,7 +66,8 @@ it('displays "N/A" for Filename Searches when none are applied', () => {
     <SearchesCard
       {...defaultProps}
       searchQuery={userSearchQueryFixture({ filenameVars: undefined })}
-    />
+    />,
+    { wrapper: MemoryRouter }
   );
   // Shows number of files
   const filenameSearchesField = getByText('Filename Searches:').parentNode;

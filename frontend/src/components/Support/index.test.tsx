@@ -1,5 +1,6 @@
 import { fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
+import { MemoryRouter } from 'react-router-dom';
 import { getCurrentAppPage, TourTitles } from '../../common/reactJoyrideSteps';
 import { AppPage } from '../../common/types';
 import { ReactJoyrideProvider } from '../../contexts/ReactJoyrideContext';
@@ -40,7 +41,10 @@ describe('Testing the support form and buttons', () => {
     const { getByTestId, getByRole } = render(
       <ReactJoyrideProvider>
         <Support visible onClose={jest.fn()} />
-      </ReactJoyrideProvider>
+      </ReactJoyrideProvider>,
+      {
+        wrapper: MemoryRouter,
+      }
     );
 
     // Check support modal rendered
@@ -65,7 +69,10 @@ describe('Testing the support form and buttons', () => {
     const { getByTestId, getByRole } = render(
       <ReactJoyrideProvider>
         <Support visible onClose={jest.fn()} />
-      </ReactJoyrideProvider>
+      </ReactJoyrideProvider>,
+      {
+        wrapper: MemoryRouter,
+      }
     );
 
     // Check support modal rendered
@@ -90,7 +97,10 @@ describe('Testing the support form and buttons', () => {
     const { getByTestId, getByRole } = render(
       <ReactJoyrideProvider>
         <Support visible onClose={jest.fn()} />
-      </ReactJoyrideProvider>
+      </ReactJoyrideProvider>,
+      {
+        wrapper: MemoryRouter,
+      }
     );
 
     // Check support modal rendered
@@ -115,7 +125,10 @@ describe('Testing the support form and buttons', () => {
     const { getByTestId, getByRole } = render(
       <ReactJoyrideProvider>
         <Support visible onClose={jest.fn()} />
-      </ReactJoyrideProvider>
+      </ReactJoyrideProvider>,
+      {
+        wrapper: MemoryRouter,
+      }
     );
 
     // Check support modal rendered
