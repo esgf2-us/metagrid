@@ -51,6 +51,7 @@ import {
   VersionType,
 } from '../Search/types';
 import Support from '../Support';
+import Startup from '../Support/startup';
 import './App.css';
 
 const styles: CSSinJS = {
@@ -669,6 +670,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           visible={supportModalVisible}
           onClose={() => setSupportModalVisible(false)}
         />
+        <Startup />
       </div>
     </>
   );

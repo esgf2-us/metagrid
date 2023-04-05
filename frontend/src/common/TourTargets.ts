@@ -10,7 +10,6 @@ export type TourTarget = {
   class: string;
   selector: string;
 };
-
 export class TourTargets {
   private name: string;
 

@@ -65,10 +65,7 @@ const RightMenu: React.FC<Props> = ({
   }, [location.pathname]);
 
   return (
-    <div
-      data-testid="right-menu"
-      className={navBarTargets.getClass('topNavBar')}
-    >
+    <div data-testid="right-menu" className={navBarTargets.topNavBar.class()}>
       <Menu
         selectedKeys={[activeMenuItem]}
         mode={mode}
@@ -80,7 +77,7 @@ const RightMenu: React.FC<Props> = ({
         <Menu.Item
           key="search"
           style={menuItemStyling}
-          className={navBarTargets.getClass('searchPageBtn')}
+          className={navBarTargets.searchPageBtn.class()}
         >
           <Link to="/search">
             <SearchOutlined /> Search
@@ -89,7 +86,7 @@ const RightMenu: React.FC<Props> = ({
         <Menu.Item
           key="cartItems"
           style={menuItemStyling}
-          className={`modified-item ${navBarTargets.getClass('cartPageBtn')}`}
+          className={`modified-item ${navBarTargets.cartPageBtn.class()}`}
         >
           <Link to="/cart/items">
             <ShoppingCartOutlined style={{ fontSize: '20px' }} />
@@ -105,9 +102,7 @@ const RightMenu: React.FC<Props> = ({
         <Menu.Item
           key="cartSearches"
           style={menuItemStyling}
-          className={`modified-item ${navBarTargets.getClass(
-            'savedSearchPageBtn'
-          )}`}
+          className={`modified-item ${navBarTargets.savedSearchPageBtn.class()}`}
         >
           <Link to="/cart/searches">
             <FileSearchOutlined style={{ fontSize: '20px' }} />{' '}
@@ -123,7 +118,7 @@ const RightMenu: React.FC<Props> = ({
         <Menu.Item
           key="nodes"
           style={menuItemStyling}
-          className={navBarTargets.getClass('nodeStatusBtn')}
+          className={navBarTargets.nodeStatusBtn.class()}
         >
           <Link to="/nodes">
             <NodeIndexOutlined /> Node Status
@@ -133,7 +128,7 @@ const RightMenu: React.FC<Props> = ({
           <Menu.Item
             key="signIn"
             style={menuItemStyling}
-            className={navBarTargets.getClass('signInBtn')}
+            className={navBarTargets.signInBtn.class()}
           >
             <Button
               type="text"

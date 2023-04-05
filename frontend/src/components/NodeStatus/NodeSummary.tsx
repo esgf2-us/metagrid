@@ -36,7 +36,7 @@ const NodeSummary: React.FC<Props> = ({ nodeStatus }) => {
   return (
     <div
       data-testid="summary"
-      className={nodeTourTargets.getClass('nodeStatusSummary')}
+      className={nodeTourTargets.nodeStatusSummary.class()}
     >
       <div style={styles.headerContainer}>
         <img style={styles.image} src={nodeImg} alt="Node" />

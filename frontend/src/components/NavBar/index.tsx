@@ -38,7 +38,6 @@ const NavBar: React.FC<Props> = ({
           />
         </Link>
       </div>
-
       <div className="navbar-container">
         <div className="navbar-left">
           <LeftMenu
@@ -56,7 +55,6 @@ const NavBar: React.FC<Props> = ({
             supportModalVisible={supportModalVisible}
           ></RightMenu>
         </div>
-
         <Button
           className="navbar-mobile-button"
           type="primary"
@@ -64,7 +62,6 @@ const NavBar: React.FC<Props> = ({
         >
           <MenuUnfoldOutlined />
         </Button>
-
         <Drawer
           placement="right"
           className="navbar-drawer"

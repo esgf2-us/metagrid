@@ -104,9 +104,7 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
     <TabsD activeKey={record.retracted === true ? '2' : undefined}>
       <TabsD.TabPane
         disabled={record.retracted === true}
-        tab={
-          <div className={innerDataRowTargets.getClass('filesTab')}>Files</div>
-        }
+        tab={<div className={innerDataRowTargets.filesTab.class()}>Files</div>}
         key="1"
       >
         <FilesTable
@@ -117,7 +115,7 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
       </TabsD.TabPane>
       <TabsD.TabPane
         tab={
-          <div className={innerDataRowTargets.getClass('metadataTab')}>
+          <div className={innerDataRowTargets.metadataTab.class()}>
             Metadata
           </div>
         }
@@ -126,7 +124,7 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
         <h4>Displaying {Object.keys(record).length} keys</h4>
         <AutoComplete
           style={{ width: '100%' }}
-          className={innerDataRowTargets.getClass('metadataLookupField')}
+          className={innerDataRowTargets.metadataLookupField.class()}
           options={metaData}
           placeholder="Lookup a key..."
           filterOption={(inputValue, option) =>
@@ -147,7 +145,7 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
         <TabsD.TabPane
           disabled={record.retracted === true}
           tab={
-            <div className={innerDataRowTargets.getClass('citationTab')}>
+            <div className={innerDataRowTargets.citationTab.class()}>
               Citation
             </div>
           }
@@ -163,7 +161,7 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
         <TabsD.TabPane
           disabled={record.retracted === true}
           tab={
-            <div className={innerDataRowTargets.getClass('additionalTab')}>
+            <div className={innerDataRowTargets.additionalTab.class()}>
               Additional
             </div>
           }

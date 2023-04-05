@@ -68,7 +68,7 @@ const LeftMenu: React.FC<Props> = ({
     return (
       <div
         data-testid="left-menu"
-        className={navBarTargets.getClass('topSearchBar')}
+        className={navBarTargets.topSearchBar.class()}
       >
         <Form
           initialValues={{

@@ -93,7 +93,7 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
               >
                 <span>
                   <Button
-                    className={cartTourTargets.getClass('removeItemsBtn')}
+                    className={cartTourTargets.removeItemsBtn.class()}
                     danger
                   >
                     Remove All Items
@@ -136,7 +136,7 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
             >
               <Form.Item
                 name="downloadType"
-                className={cartTourTargets.getClass('downloadAllType')}
+                className={cartTourTargets.downloadAllType.class()}
               >
                 <Select style={{ width: 235 }}>
                   {downloadOptions.map((option) => (
@@ -149,7 +149,7 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
               </Form.Item>
               <Form.Item>
                 <Button
-                  className={cartTourTargets.getClass('downloadAllBtn')}
+                  className={cartTourTargets.downloadAllBtn.class()}
                   type="primary"
                   htmlType="submit"
                   icon={<DownloadOutlined />}

@@ -103,7 +103,7 @@ const SearchesCard: React.FC<Props> = ({
         actions={[
           <ToolTip title="Apply search query and view results" trigger="hover">
             <SearchOutlined
-              className={savedSearchTourTargets.getClass('applySearch')}
+              className={savedSearchTourTargets.applySearch.class()}
               data-testid={`apply-${index + 1}`}
               key="search"
               onClick={() => {
@@ -114,7 +114,7 @@ const SearchesCard: React.FC<Props> = ({
           </ToolTip>,
           <ToolTip title="View results in JSON format">
             <a
-              className={savedSearchTourTargets.getClass('jsonBtn')}
+              className={savedSearchTourTargets.jsonBtn.class()}
               href={clickableRoute(url)}
               rel="noopener noreferrer"
               target="blank_"
@@ -124,7 +124,7 @@ const SearchesCard: React.FC<Props> = ({
           </ToolTip>,
           <ToolTip title="Remove search query from library">
             <DeleteOutlined
-              className={savedSearchTourTargets.getClass('removeBtn')}
+              className={savedSearchTourTargets.removeBtn.class()}
               data-testid={`remove-${index + 1}`}
               onClick={() => onRemoveSearchQuery(uuid)}
               style={{ color: 'red' }}
@@ -134,12 +134,12 @@ const SearchesCard: React.FC<Props> = ({
         ]}
       >
         {numResults}
-        <p className={savedSearchTourTargets.getClass('projectDescription')}>
+        <p className={savedSearchTourTargets.projectDescription.class()}>
           <span style={styles.category}>Project: </span>
           {project.fullName}
         </p>
 
-        <p className={savedSearchTourTargets.getClass('searchQueryString')}>
+        <p className={savedSearchTourTargets.searchQueryString.class()}>
           <span style={styles.category}>Query String: </span>
           <Typography.Text code>
             {stringifyFilters(

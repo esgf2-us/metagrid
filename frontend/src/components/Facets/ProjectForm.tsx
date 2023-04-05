@@ -80,7 +80,7 @@ const ProjectsForm: React.FC<Props> = ({
           >
             <Select
               data-testid="project-form-select"
-              className={leftSidebarTargets.getClass('selectProjectBtn')}
+              className={leftSidebarTargets.selectProjectBtn.class()}
               style={styles.form}
               showArrow
             >
@@ -104,9 +104,7 @@ const ProjectsForm: React.FC<Props> = ({
               >
                 <span>
                   <Button
-                    className={leftSidebarTargets.getClass(
-                      'projectSelectLeftSideBtn'
-                    )}
+                    className={leftSidebarTargets.projectSelectLeftSideBtn.class()}
                     type="primary"
                     htmlType="submit"
                     icon={<SelectOutlined />}
@@ -115,9 +113,7 @@ const ProjectsForm: React.FC<Props> = ({
               </Popconfirm>
             ) : (
               <Button
-                className={leftSidebarTargets.getClass(
-                  'projectSelectLeftSideBtn'
-                )}
+                className={leftSidebarTargets.projectSelectLeftSideBtn.class()}
                 type="primary"
                 htmlType="submit"
                 icon={<SelectOutlined />}

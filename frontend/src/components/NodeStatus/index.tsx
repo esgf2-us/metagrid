@@ -47,7 +47,7 @@ const NodeStatus: React.FC<Props> = ({ nodeStatus, apiError, isLoading }) => {
     const columns = [
       {
         title: (
-          <div className={nodeTourTargets.getClass('nodeColHeader')}>Node</div>
+          <div className={nodeTourTargets.nodeColHeader.class()}>Node</div>
         ),
         dataIndex: 'name',
         align: 'center' as const,
@@ -57,9 +57,7 @@ const NodeStatus: React.FC<Props> = ({ nodeStatus, apiError, isLoading }) => {
       },
       {
         title: (
-          <div className={nodeTourTargets.getClass('onlineColHeader')}>
-            Online
-          </div>
+          <div className={nodeTourTargets.onlineColHeader.class()}>Online</div>
         ),
         dataIndex: 'isOnline',
         align: 'center' as const,
@@ -83,7 +81,7 @@ const NodeStatus: React.FC<Props> = ({ nodeStatus, apiError, isLoading }) => {
         dataIndex: 'source',
         render: (source: string) => (
           <a
-            className={nodeTourTargets.getClass('sourceColHeader')}
+            className={nodeTourTargets.sourceColHeader.class()}
             href={source}
             target="_blank"
             rel="noopener noreferrer"
@@ -99,7 +97,7 @@ const NodeStatus: React.FC<Props> = ({ nodeStatus, apiError, isLoading }) => {
         <TableD
           title={() => (
             <div style={styles.headerContainer}>
-              <h1 className={nodeTourTargets.getClass('updateTime')}>
+              <h1 className={nodeTourTargets.updateTime.class()}>
                 Status as of {timestamp}
               </h1>
               <p>
