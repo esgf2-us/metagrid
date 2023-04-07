@@ -51,7 +51,8 @@ import {
   VersionType,
 } from '../Search/types';
 import Support from '../Support';
-import Startup from '../Support/startup';
+import StartPopup from '../Startup/StartPopup';
+import startupDisplayData from '../Startup/startupDisplayData';
 import './App.css';
 
 const styles: CSSinJS = {
@@ -80,7 +81,7 @@ export type Props = {
   searchQuery: ActiveSearchQuery;
 };
 
-const metagridVersion = '1.0.8-beta';
+const metagridVersion = startupDisplayData.latestVersion;
 
 const App: React.FC<Props> = ({ searchQuery }) => {
   // Third-party tool integration
@@ -670,7 +671,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           visible={supportModalVisible}
           onClose={() => setSupportModalVisible(false)}
         />
-        <Startup />
+        <StartPopup />
       </div>
     </>
   );
