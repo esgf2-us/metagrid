@@ -1,11 +1,11 @@
 import { SearchOutlined } from '@ant-design/icons';
-import { Form, Input, Select, Spin } from 'antd';
+import { Alert, Form, Input, Select, Spin } from 'antd';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ResponseError } from '../../api';
 import { navBarTargets } from '../../common/reactJoyrideSteps';
 import { RawProject, RawProjects } from '../Facets/types';
-import Alert from '../Feedback/Alert';
+// import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
 
 const styles = {
@@ -82,7 +82,7 @@ const LeftMenu: React.FC<Props> = ({
             <Form.Item
               name="projectTextInput"
               rules={[{ required: true, message: 'Project is required' }]}
-              style={{ width: '15%', minWidth: '100px' }}
+              style={{ width: '15%', minWidth: '100px', margin: '0 5px' }}
             >
               <Select>
                 {projects.map((projObj) => (
@@ -95,7 +95,7 @@ const LeftMenu: React.FC<Props> = ({
             <Form.Item
               name="text"
               rules={[{ required: true, message: 'Text is required' }]}
-              style={{ width: '70%' }}
+              style={{ width: '55%', margin: '0 5px' }}
             >
               <Input
                 width="100"
@@ -104,7 +104,7 @@ const LeftMenu: React.FC<Props> = ({
                 placeholder="Search for a keyword"
               />
             </Form.Item>
-            <Form.Item style={{ width: '15px' }}>
+            <Form.Item style={{ width: '15px', margin: '0 5px' }}>
               <Button
                 type="primary"
                 htmlType="submit"

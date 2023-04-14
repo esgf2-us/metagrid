@@ -1,9 +1,10 @@
 import React from 'react';
+import { Alert, Skeleton } from 'antd';
 import { PromiseFn, useAsync } from 'react-async';
 import { fetchDatasetCitation } from '../../api';
 import { splitStringByChar } from '../../common/utils';
-import Alert from '../Feedback/Alert';
-import Skeleton from '../Feedback/Skeleton';
+// import Alert from '../Feedback/Alert';
+// import Skeleton from '../Feedback/Skeleton';
 import { RawCitation } from './types';
 
 type CitationInfoProps = {

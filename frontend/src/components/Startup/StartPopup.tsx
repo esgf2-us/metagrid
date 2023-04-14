@@ -1,91 +1,99 @@
 import { GithubOutlined } from '@ant-design/icons';
 import React, { useEffect } from 'react';
 import Modal from '../Feedback/Modal';
-import startupDisplayData, { StartPopupData } from './startupDisplayData';
-import WelcomeTemplate, { WelcomeProps } from './Templates/Welcome';
-import ChangeLogTemplate, { ChangeLogProps } from './Templates/ChangeLog';
+import startupDisplayData from './startupDisplayData';
+import WelcomeTemplate from './Templates/Welcome';
+import ChangeLogTemplate from './Templates/ChangeLog';
+import { MessageData, MessageTemplates } from './types';
+
+const getMessageSeen = (): string | null => {
+  return localStorage.getItem('lastMessageSeen');
+};
+
+const setMessageSeen = (): void => {
+  localStorage.setItem('lastMessageSeen', startupDisplayData.messageToShow);
+};
+
+const getMessageTemplate = (msgId: string | null): JSX.Element => {
+  const messages: MessageData[] = startupDisplayData.messageData;
+  let messageData = messages.find((msg) => {
+    return msg.messageId === startupDisplayData.defaultMessageId;
+  });
+  if (msgId) {
+    const msgData = messages.find((msg) => {
+      return msg.messageId === msgId;
+    });
+    if (msgData) {
+      messageData = msgData;
+    }
+  }
+
+  if (!messageData) {
+    return <></>;
+  }
+
+  const { template, props } = messageData;
+  switch (template) {
+    case MessageTemplates.ChangeLog:
+      return <ChangeLogTemplate templateProps={props} />;
+    default:
+      return <WelcomeTemplate templateProps={props} />;
+  }
+};
 
 const StartPopup: React.FC = () => {
-  const startup: StartPopupData = startupDisplayData;
-
+  const startData = startupDisplayData;
   // Startup visibility
   const [visible, setVisible] = React.useState<boolean>(false);
   const [title, setTitle] = React.useState<JSX.Element>(<></>);
-  const [welcome, setWelcome] = React.useState<boolean>(false);
 
-  const setMessageSeen = (): void => {
-    localStorage.setItem(
-      'startupMessageSeen',
-      startupDisplayData.latestVersion
-    );
-  };
-
-  const showLatestChangeLog = (): void => {
-    const props = startup.displayData[startup.latestVersion]
-      .props as ChangeLogProps;
-    const titleComponent = <ChangeLogTemplate changeList={props.changeList} />;
-    setVisible(true);
-    setTitle(titleComponent);
-  };
-
-  const showWelcomeMessage = (): void => {
-    const props = startup.displayData.welcome.props as WelcomeProps;
-    const titleComponent = (
-      <WelcomeTemplate welcomeMessage={props.welcomeMessage} />
-    );
+  const showMessage = (msgId: string | null): void => {
+    const titleComponent = getMessageTemplate(msgId);
     setTitle(titleComponent);
     setVisible(true);
   };
 
   useEffect(() => {
-    const startupMessageSeen = localStorage.getItem('startupMessageSeen');
+    const startupMessageSeen = getMessageSeen();
     if (startupMessageSeen === null) {
-      setWelcome(true);
-      showWelcomeMessage();
-    } else if (startupMessageSeen !== startup.latestVersion) {
-      showLatestChangeLog();
+      showMessage(null);
+    } else if (startupMessageSeen !== startData.messageToShow) {
+      showMessage(startData.messageToShow);
     }
   }, []);
 
   return (
-    <>
-      <div data-testid="startup-window">
-        <Modal
-          visible={visible}
-          title={title}
-          onClose={() => {
-            if (welcome) {
-              setWelcome(false);
-              showLatestChangeLog();
-            } else {
-              setVisible(false);
-              setMessageSeen();
-            }
+    <div data-testid="startup-window">
+      <Modal
+        visible={visible}
+        title={title}
+        onClose={() => {
+          setVisible(false);
+          setMessageSeen();
+        }}
+        centered
+      >
+        <p>
+          Questions, suggestions, or problems? Please visit our GitHub page to
+          open an issue.
+        </p>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            margin: 0,
           }}
-          centered
         >
-          <p>
-            Questions, suggestions, or problems? Please visit our GitHub page to
-            open an issue.
-          </p>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              margin: '12px',
-            }}
+          <a
+            href="https://github.com/aims-group/metagrid/issues"
+            rel="noopener noreferrer"
+            target="_blank"
           >
-            <a
-              href="https://github.com/aims-group/metagrid/issues"
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              <GithubOutlined style={{ fontSize: '32px' }} /> GitHub Issues
-            </a>
-          </div>
-        </Modal>
-      </div>
-    </>
+            <GithubOutlined style={{ fontSize: '24px' }} /> GitHub Issues
+          </a>
+        </div>
+      </Modal>
+    </div>
   );
 };
 

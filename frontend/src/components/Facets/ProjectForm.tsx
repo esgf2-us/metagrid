@@ -1,12 +1,12 @@
 import { QuestionCircleOutlined, SelectOutlined } from '@ant-design/icons';
-import { Form, Select } from 'antd';
+import { Alert, Form, Popconfirm, Select, Spin } from 'antd';
 import React from 'react';
 import { ResponseError } from '../../api';
 import { leftSidebarTargets } from '../../common/reactJoyrideSteps';
 import { objectIsEmpty } from '../../common/utils';
-import Alert from '../Feedback/Alert';
-import Popconfirm from '../Feedback/Popconfirm';
-import Spin from '../Feedback/Spin';
+// import Alert from '../Feedback/Alert';
+// import Popconfirm from '../Feedback/Popconfirm';
+// import Spin from '../Feedback/Spin';
 import Button from '../General/Button';
 import { ActiveSearchQuery } from '../Search/types';
 import { RawProject, RawProjects } from './types';

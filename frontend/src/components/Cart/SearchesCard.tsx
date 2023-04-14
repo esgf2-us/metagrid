@@ -4,7 +4,7 @@ import {
   LinkOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
-import { Col, Typography } from 'antd';
+import { Alert, Col, Skeleton, Typography } from 'antd';
 import React from 'react';
 import { useAsync } from 'react-async';
 import { useNavigate } from 'react-router-dom';
@@ -14,8 +14,8 @@ import { savedSearchTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import Card from '../DataDisplay/Card';
 import ToolTip from '../DataDisplay/ToolTip';
-import Alert from '../Feedback/Alert';
-import Skeleton from '../Feedback/Skeleton';
+// import Alert from '../Feedback/Alert';
+// import Skeleton from '../Feedback/Skeleton';
 import { stringifyFilters } from '../Search';
 import { UserSearchQuery } from './types';
 

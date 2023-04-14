@@ -1,12 +1,12 @@
 import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
-import { Table as TableD } from 'antd';
+import { Alert, Table as TableD } from 'antd';
 import { SortOrder } from 'antd/lib/table/interface';
 import React from 'react';
 import { ResponseError } from '../../api';
 import apiRoutes from '../../api/routes';
 import { nodeTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
-import Alert from '../Feedback/Alert';
+// import Alert from '../Feedback/Alert';
 import { NodeStatusArray, NodeStatusElement } from './types';
 
 const styles = { headerContainer: { margin: '12px' } } as CSSinJS;

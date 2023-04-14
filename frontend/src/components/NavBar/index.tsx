@@ -47,7 +47,7 @@ const NavBar: React.FC<Props> = ({
             onTextSearch={onTextSearch}
           ></LeftMenu>
         </div>
-        <div className="navbar-right" style={{ marginLeft: 'auto' }}>
+        <div className="navbar-right">
           <RightMenu
             mode="horizontal"
             numCartItems={numCartItems}
@@ -67,7 +67,7 @@ const NavBar: React.FC<Props> = ({
           className="navbar-drawer"
           closable={false}
           onClose={() => setShowDrawer(false)}
-          visible={showDrawer}
+          open={showDrawer}
         >
           <RightMenu
             mode="inline"

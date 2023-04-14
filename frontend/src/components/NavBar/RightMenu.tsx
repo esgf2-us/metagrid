@@ -1,6 +1,7 @@
 import {
   BarsOutlined,
   FileSearchOutlined,
+  MailOutlined,
   NodeIndexOutlined,
   QuestionCircleOutlined,
   SearchOutlined,
@@ -8,7 +9,7 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 import { useKeycloak } from '@react-keycloak/web';
-import { Badge, Menu } from 'antd';
+import { Badge, Drawer, Menu, Space } from 'antd';
 import { KeycloakTokenParsed } from 'keycloak-js';
 import React, { CSSProperties } from 'react';
 import { Link, useLocation } from 'react-router-dom';
@@ -18,12 +19,7 @@ import Button from '../General/Button';
 const menuItemStyling: CSSProperties = { margin: '8px' };
 
 export type Props = {
-  mode:
-    | 'horizontal'
-    | 'vertical'
-    | 'vertical-left'
-    | 'vertical-right'
-    | 'inline';
+  mode: 'horizontal' | 'vertical' | 'inline';
   numCartItems: number;
   numSavedSearches: number;
   supportModalVisible: (visible: boolean) => void;
@@ -36,7 +32,7 @@ const RightMenu: React.FC<Props> = ({
   supportModalVisible,
 }) => {
   const [activeMenuItem, setActiveMenuItem] = React.useState<string>('search');
-
+  const [showDrawer, setShowDrawer] = React.useState(false);
   const location = useLocation();
   const { keycloak } = useKeycloak();
 
@@ -48,6 +44,16 @@ const RightMenu: React.FC<Props> = ({
       email: string;
     };
   }
+  /**
+   * Drawer control functions.
+   */
+  const openDrawer = (): void => {
+    setShowDrawer(true);
+  };
+
+  const closeDrawer = (): void => {
+    setShowDrawer(false);
+  };
 
   /**
    * Update the active menu item based on the current pathname
@@ -70,9 +76,13 @@ const RightMenu: React.FC<Props> = ({
         selectedKeys={[activeMenuItem]}
         mode={mode}
         style={
-          mode === 'inline' ? { textAlign: 'left' } : { textAlign: 'right' }
+          mode === 'inline'
+            ? { textAlign: 'left', justifyContent: 'flex-end' }
+            : { textAlign: 'right', justifyContent: 'flex-end' }
         }
-        overflowedIndicator={<BarsOutlined style={{ fontSize: '24px' }} />}
+        overflowedIndicator={
+          <BarsOutlined style={{ fontSize: '24px', margin: '20px 0' }} />
+        }
       >
         <Menu.Item
           key="search"
@@ -123,6 +133,15 @@ const RightMenu: React.FC<Props> = ({
           <Link to="/nodes">
             <NodeIndexOutlined /> Node Status
           </Link>
+        </Menu.Item>
+        <Menu.Item style={menuItemStyling} key="notice">
+          <Button
+            type="text"
+            icon={<MailOutlined style={{ fontSize: '18px', margin: 0 }} />}
+            onClick={openDrawer}
+          >
+            Alerts
+          </Button>
         </Menu.Item>
         {!authenticated ? (
           <Menu.Item
@@ -177,6 +196,25 @@ const RightMenu: React.FC<Props> = ({
           </Button>
         </Menu.Item>
       </Menu>
+      <Drawer
+        title="Drawer with extra actions"
+        placement="right"
+        width={500}
+        onClose={closeDrawer}
+        open={showDrawer}
+        extra={
+          <Space>
+            <Button onClick={closeDrawer}>Cancel</Button>
+            <Button type="primary" onClick={closeDrawer}>
+              OK
+            </Button>
+          </Space>
+        }
+      >
+        <p>Some contents...</p>
+        <p>Some contents...</p>
+        <p>Some contents...</p>
+      </Drawer>
     </div>
   );
 };

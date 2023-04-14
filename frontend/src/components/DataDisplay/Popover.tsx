@@ -17,7 +17,7 @@ type Props = {
     | 'rightTop'
     | 'rightBottom'
     | undefined;
-  trigger?: string | string[] | undefined;
+  trigger?: 'click' | 'contextMenu' | 'hover' | undefined;
   children: React.ReactElement;
 };
 

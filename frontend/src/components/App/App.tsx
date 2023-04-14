@@ -81,7 +81,7 @@ export type Props = {
   searchQuery: ActiveSearchQuery;
 };
 
-const metagridVersion = startupDisplayData.latestVersion;
+const metagridVersion: string = startupDisplayData.messageToShow;
 
 const App: React.FC<Props> = ({ searchQuery }) => {
   // Third-party tool integration
@@ -663,7 +663,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
             type="primary"
             shape="circle"
             style={{ width: '48px', height: '48px' }}
-            icon={<QuestionOutlined style={{ fontSize: '40px' }} />}
+            icon={<QuestionOutlined style={{ fontSize: '28px' }} />}
             onClick={() => setSupportModalVisible(true)}
           ></Button>
         </Affix>

@@ -1,24 +1,24 @@
 import React from 'react';
+import { Card } from 'antd';
 import { v4 as uuidv4 } from 'uuid';
-import startupDisplayData, { StartPopupData } from '../startupDisplayData';
+import { TemplateProps, ChangeLogProps } from '../types';
 
-export type ChangeLogProps = {
-  changeList: string[];
-};
-
-const ChangeLogTemplate: React.FC<ChangeLogProps> = ({ changeList }) => {
-  const startup: StartPopupData = startupDisplayData;
+const ChangeLogTemplate: React.FC<TemplateProps> = ({ templateProps }) => {
+  const props: ChangeLogProps = templateProps as ChangeLogProps;
   return (
     <>
-      <h1>Latest Changes: {startup.latestVersion}</h1>
-      <h2>Change Log</h2>
-      <ol>
-        {changeList.map((item: string) => {
-          const key = uuidv4();
-          return <li key={key}>{item}</li>;
-        })}
-      </ol>
-
+      <h1>What&apos;s New with Metagrid</h1>
+      <p>{props.intro}</p>
+      <h3>Version {props.version} Changes:</h3>
+      <Card style={{ maxHeight: '120px', overflow: 'auto' }}>
+        <ol>
+          {props.changeList.map((item: string) => {
+            const key = uuidv4();
+            return <li key={key}>{item}</li>;
+          })}
+        </ol>
+      </Card>
+      <br />
       <h3>Documentation</h3>
       <p style={{ fontSize: '14px' }}>
         To view the latest documentation and FAQ, please visit this page:

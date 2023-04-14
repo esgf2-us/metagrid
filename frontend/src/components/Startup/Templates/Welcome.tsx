@@ -1,5 +1,6 @@
-import { Button, Card } from 'antd';
+import { Button, Card, Col, Row } from 'antd';
 import React from 'react';
+// import { useNavigate } from 'react-router-dom';
 import { JoyrideTour } from '../../../common/JoyrideTour';
 import {
   createMainPageTour,
@@ -12,15 +13,15 @@ import {
   RawTourState,
   ReactJoyrideContext,
 } from '../../../contexts/ReactJoyrideContext';
+import { TemplateProps, WelcomeProps } from '../types';
 
-export type WelcomeProps = {
-  welcomeMessage: string;
-};
+const WelcomeTemplate: React.FC<TemplateProps> = ({ templateProps }) => {
+  const props: WelcomeProps = templateProps as WelcomeProps;
 
-const WelcomeTemplate: React.FC<WelcomeProps> = ({ welcomeMessage }) => {
   // Tutorial state
   const tourState: RawTourState = React.useContext(ReactJoyrideContext);
   const { setTour, startTour, setCurrentAppPage } = tourState;
+  // const navigator = useNavigate();
 
   const startSpecificTour = (tour: JoyrideTour): void => {
     setTour(tour);
@@ -44,32 +45,53 @@ const WelcomeTemplate: React.FC<WelcomeProps> = ({ welcomeMessage }) => {
   };
 
   return (
-    <div>
+    <>
       <h1>Welcome!</h1>
-      <p>{welcomeMessage}</p>
-      <div>
-        <h3>User Interface Tours</h3>
-        <p style={{ fontSize: '14px' }}>
-          {`If you are new to Metagrid, you can familiarize yourself with
-                  the user interface by clicking on an available tour below.`}
-        </p>
-      </div>
-      <Card title="">
-        <Button style={{ marginLeft: '10px' }} onClick={startMainPageTour}>
-          {TourTitles.Main}
-        </Button>
-        <Button style={{ marginLeft: '10px' }} onClick={startCartPageTour}>
-          {TourTitles.Cart}
-        </Button>
-        <Button style={{ marginLeft: '10px' }} onClick={startSearchCardTour}>
-          {TourTitles.Searches}
-        </Button>
-        <Button style={{ marginLeft: '10px' }} onClick={startNodeStatusTour}>
-          {TourTitles.Node}
-        </Button>
-      </Card>
+      <p>{props.welcomeMessage}</p>
 
-      <h3>Documentation</h3>
+      <Card>
+        <Row gutter={[16, 16]}>
+          <Col span={12}>
+            <Button
+              style={{ marginLeft: '10px', width: '180px' }}
+              onClick={startMainPageTour}
+            >
+              {TourTitles.Main}
+            </Button>
+          </Col>
+          <Col span={12}>
+            <Button
+              style={{ marginLeft: '10px', width: '180px' }}
+              onClick={startCartPageTour}
+            >
+              {TourTitles.Cart}
+            </Button>
+          </Col>
+          <Col span={12}>
+            <Button
+              style={{ marginLeft: '10px', width: '180px' }}
+              onClick={startSearchCardTour}
+            >
+              {TourTitles.Searches}
+            </Button>
+          </Col>
+          <Col span={12}>
+            <Button
+              style={{ marginLeft: '10px', width: '180px' }}
+              onClick={startNodeStatusTour}
+            >
+              {TourTitles.Node}
+            </Button>
+          </Col>
+        </Row>
+      </Card>
+      <br />
+      <p style={{ textAlign: 'center' }}>
+        Click below, to learn what&apos;s new in this version of Metagrid:
+        <br />
+        <Button style={{ margin: '8px' }}>View Latest Changes</Button>
+      </p>
+      <h2>Documentation</h2>
       <p style={{ fontSize: '14px' }}>
         To view the latest documentation and FAQ, please visit this page:
         <br />
@@ -81,7 +103,7 @@ const WelcomeTemplate: React.FC<WelcomeProps> = ({ welcomeMessage }) => {
           https://esgf.github.io/esgf-user-support/metagrid.html
         </a>
       </p>
-    </div>
+    </>
   );
 };
 

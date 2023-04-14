@@ -3,7 +3,7 @@ import {
   DownloadOutlined,
   QuestionCircleOutlined,
 } from '@ant-design/icons';
-import { Col, Form, message, Row, Select } from 'antd';
+import { Col, Form, message, Popconfirm, Row, Select } from 'antd';
 import React from 'react';
 import {
   fetchWgetScript,
@@ -13,7 +13,7 @@ import {
 import { cartTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import Empty from '../DataDisplay/Empty';
-import Popconfirm from '../Feedback/Popconfirm';
+// import Popconfirm from '../Feedback/Popconfirm';
 import Button from '../General/Button';
 import Table from '../Search/Table';
 import { RawSearchResults } from '../Search/types';
@@ -88,6 +88,7 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
           <div style={styles.summary}>
             {userCart.length > 0 && (
               <Popconfirm
+                title=""
                 icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
                 onConfirm={onClearCart}
               >

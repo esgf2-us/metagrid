@@ -4,7 +4,7 @@ import {
   ShareAltOutlined,
   ShoppingCartOutlined,
 } from '@ant-design/icons';
-import { Col, Row, Typography } from 'antd';
+import { Alert, Col, Row, Typography } from 'antd';
 import humps from 'humps';
 import React from 'react';
 import { DeferFn, useAsync } from 'react-async';
@@ -25,7 +25,7 @@ import {
   RawFacets,
   RawProject,
 } from '../Facets/types';
-import Alert from '../Feedback/Alert';
+// import Alert from '../Feedback/Alert';
 import Button from '../General/Button'; // Note, tooltips do not work for this button
 import { NodeStatusArray } from '../NodeStatus/types';
 import Table from './Table';
