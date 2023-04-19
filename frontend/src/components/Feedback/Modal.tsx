@@ -17,7 +17,7 @@ const Modal: React.FC<Props> = ({
   children,
 }) => (
   <ModalD
-    open={visible}
+    visible={visible}
     title={title}
     onCancel={onClose}
     centered={centered}

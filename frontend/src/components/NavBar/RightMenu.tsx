@@ -201,12 +201,11 @@ const RightMenu: React.FC<Props> = ({
         placement="right"
         width={500}
         onClose={closeDrawer}
-        open={showDrawer}
-        extra={
+        visible={showDrawer}
+        footer={
           <Space>
-            <Button onClick={closeDrawer}>Cancel</Button>
             <Button type="primary" onClick={closeDrawer}>
-              OK
+              Close
             </Button>
           </Space>
         }

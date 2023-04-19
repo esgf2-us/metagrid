@@ -67,7 +67,7 @@ const NavBar: React.FC<Props> = ({
           className="navbar-drawer"
           closable={false}
           onClose={() => setShowDrawer(false)}
-          open={showDrawer}
+          visible={showDrawer}
         >
           <RightMenu
             mode="inline"
