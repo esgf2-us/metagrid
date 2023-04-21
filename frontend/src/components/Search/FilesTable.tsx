@@ -16,7 +16,6 @@ import { innerDataRowTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import { formatBytes, splitStringByChar } from '../../common/utils';
 import ToolTip from '../DataDisplay/ToolTip';
-// import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
 import {
   Pagination,

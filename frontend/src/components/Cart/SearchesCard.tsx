@@ -14,8 +14,6 @@ import { savedSearchTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import Card from '../DataDisplay/Card';
 import ToolTip from '../DataDisplay/ToolTip';
-// import Alert from '../Feedback/Alert';
-// import Skeleton from '../Feedback/Skeleton';
 import { stringifyFilters } from '../Search';
 import { UserSearchQuery } from './types';
 

@@ -5,7 +5,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { ResponseError } from '../../api';
 import { navBarTargets } from '../../common/reactJoyrideSteps';
 import { RawProject, RawProjects } from '../Facets/types';
-// import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
 
 const styles = {

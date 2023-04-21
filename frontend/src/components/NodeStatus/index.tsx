@@ -6,7 +6,6 @@ import { ResponseError } from '../../api';
 import apiRoutes from '../../api/routes';
 import { nodeTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
-// import Alert from '../Feedback/Alert';
 import { NodeStatusArray, NodeStatusElement } from './types';
 
 const styles = { headerContainer: { margin: '12px' } } as CSSinJS;

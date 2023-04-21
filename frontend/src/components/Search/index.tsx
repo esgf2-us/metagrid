@@ -25,7 +25,6 @@ import {
   RawFacets,
   RawProject,
 } from '../Facets/types';
-// import Alert from '../Feedback/Alert';
 import Button from '../General/Button'; // Note, tooltips do not work for this button
 import { NodeStatusArray } from '../NodeStatus/types';
 import Table from './Table';
