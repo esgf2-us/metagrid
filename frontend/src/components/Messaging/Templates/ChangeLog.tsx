@@ -1,10 +1,10 @@
 import React from 'react';
 import { Card } from 'antd';
 import { v4 as uuidv4 } from 'uuid';
-import { TemplateProps, ChangeLogProps } from '../types';
+import { TemplateProps, ChangeLogData } from '../types';
 
-const ChangeLogTemplate: React.FC<TemplateProps> = ({ templateProps }) => {
-  const props: ChangeLogProps = templateProps as ChangeLogProps;
+const ChangeLogTemplate: React.FC<TemplateProps> = ({ templateData }) => {
+  const props: ChangeLogData = templateData as ChangeLogData;
   return (
     <>
       <h1>What&apos;s New with Metagrid</h1>

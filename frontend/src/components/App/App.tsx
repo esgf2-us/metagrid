@@ -51,8 +51,8 @@ import {
   VersionType,
 } from '../Search/types';
 import Support from '../Support';
-import StartPopup from '../Startup/StartPopup';
-import startupDisplayData from '../Startup/startupDisplayData';
+import StartPopup from '../Messaging/StartPopup';
+import startupDisplayData from '../Messaging/startupDisplayData';
 import './App.css';
 
 const styles: CSSinJS = {

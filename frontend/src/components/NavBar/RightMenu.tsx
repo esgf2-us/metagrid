@@ -9,12 +9,13 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 import { useKeycloak } from '@react-keycloak/web';
-import { Badge, Drawer, Menu, Space } from 'antd';
+import { Badge, Menu } from 'antd';
 import { KeycloakTokenParsed } from 'keycloak-js';
 import React, { CSSProperties } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { navBarTargets } from '../../common/reactJoyrideSteps';
 import Button from '../General/Button';
+import RightDrawer from '../Messaging/RightDrawer';
 
 const menuItemStyling: CSSProperties = { margin: '8px' };
 
@@ -32,7 +33,7 @@ const RightMenu: React.FC<Props> = ({
   supportModalVisible,
 }) => {
   const [activeMenuItem, setActiveMenuItem] = React.useState<string>('search');
-  const [showDrawer, setShowDrawer] = React.useState(false);
+  const [noticesVisible, setShowNotices] = React.useState(false);
   const location = useLocation();
   const { keycloak } = useKeycloak();
 
@@ -44,15 +45,13 @@ const RightMenu: React.FC<Props> = ({
       email: string;
     };
   }
-  /**
-   * Drawer control functions.
-   */
-  const openDrawer = (): void => {
-    setShowDrawer(true);
+
+  const showNotices = (): void => {
+    setShowNotices(true);
   };
 
-  const closeDrawer = (): void => {
-    setShowDrawer(false);
+  const hideNotices = (): void => {
+    setShowNotices(false);
   };
 
   /**
@@ -138,7 +137,7 @@ const RightMenu: React.FC<Props> = ({
           <Button
             type="text"
             icon={<MailOutlined style={{ fontSize: '18px', margin: 0 }} />}
-            onClick={openDrawer}
+            onClick={showNotices}
           >
             Notices
           </Button>
@@ -196,24 +195,7 @@ const RightMenu: React.FC<Props> = ({
           </Button>
         </Menu.Item>
       </Menu>
-      <Drawer
-        title="Notifications"
-        placement="right"
-        width={500}
-        onClose={closeDrawer}
-        visible={showDrawer}
-        footer={
-          <Space>
-            <Button type="primary" onClick={closeDrawer}>
-              Hide
-            </Button>
-          </Space>
-        }
-      >
-        <p>Some contents...</p>
-        <p>Some contents...</p>
-        <p>Some contents...</p>
-      </Drawer>
+      <RightDrawer visible={noticesVisible} onClose={hideNotices} />
     </div>
   );
 };

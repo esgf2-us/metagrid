@@ -4,26 +4,32 @@ export enum MessageTemplates {
   Notice,
 }
 
-export type ChangeLogProps = {
+export type ChangeLogData = {
   changeList: string[];
   intro: string;
   version: string;
 };
 
-export type WelcomeProps = {
+export type WelcomeData = {
   welcomeMessage: string;
 };
 
-export type ValidTemplateProps = ChangeLogProps | WelcomeProps;
+export type MessageActions = {
+  close: () => void;
+  viewChanges: () => void;
+};
+
+export type ValidTemplateData = ChangeLogData | WelcomeData;
 
 export type TemplateProps = {
-  templateProps: ValidTemplateProps;
+  templateData: ValidTemplateData;
+  templateActions: MessageActions;
 };
 
 export type MessageData = {
   messageId: string;
   template: MessageTemplates;
-  props: ValidTemplateProps;
+  data: ValidTemplateData;
 };
 
 export type StartPopupData = {

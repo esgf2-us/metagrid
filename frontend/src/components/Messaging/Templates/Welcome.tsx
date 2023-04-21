@@ -1,6 +1,6 @@
 import { Button, Card, Col, Row } from 'antd';
 import React from 'react';
-// import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { JoyrideTour } from '../../../common/JoyrideTour';
 import {
   createMainPageTour,
@@ -13,41 +13,50 @@ import {
   RawTourState,
   ReactJoyrideContext,
 } from '../../../contexts/ReactJoyrideContext';
-import { TemplateProps, WelcomeProps } from '../types';
+import { MessageActions, TemplateProps, WelcomeData } from '../types';
 
-const WelcomeTemplate: React.FC<TemplateProps> = ({ templateProps }) => {
-  const props: WelcomeProps = templateProps as WelcomeProps;
+const WelcomeTemplate: React.FC<TemplateProps> = ({
+  templateData,
+  templateActions,
+}) => {
+  const data: WelcomeData = templateData as WelcomeData;
+  const actions: MessageActions = templateActions;
 
   // Tutorial state
   const tourState: RawTourState = React.useContext(ReactJoyrideContext);
   const { setTour, startTour, setCurrentAppPage } = tourState;
-  // const navigator = useNavigate();
+  const navigator = useNavigate();
 
   const startSpecificTour = (tour: JoyrideTour): void => {
     setTour(tour);
+    actions.close();
     startTour();
   };
 
   const startMainPageTour = (): void => {
+    navigator('/search');
     startSpecificTour(createMainPageTour());
   };
 
   const startCartPageTour = (): void => {
+    navigator('/cart/items');
     startSpecificTour(createCartItemsTour(setCurrentAppPage));
   };
 
   const startSearchCardTour = (): void => {
+    navigator('/cart/searches');
     startSpecificTour(createSearchCardTour(setCurrentAppPage));
   };
 
   const startNodeStatusTour = (): void => {
+    navigator('/nodes');
     startSpecificTour(createNodeStatusTour());
   };
 
   return (
     <>
       <h1>Welcome!</h1>
-      <p>{props.welcomeMessage}</p>
+      <p>{data.welcomeMessage}</p>
 
       <Card>
         <Row gutter={[16, 16]}>
@@ -89,7 +98,9 @@ const WelcomeTemplate: React.FC<TemplateProps> = ({ templateProps }) => {
       <p style={{ textAlign: 'center' }}>
         Click below, to learn what&apos;s new in this version of Metagrid:
         <br />
-        <Button style={{ margin: '8px' }}>View Latest Changes</Button>
+        <Button style={{ margin: '8px' }} onClick={actions.viewChanges}>
+          View Latest Changes
+        </Button>
       </p>
       <h2>Documentation</h2>
       <p style={{ fontSize: '14px' }}>

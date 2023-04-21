@@ -7,7 +7,7 @@ const startupMessages: StartPopupData = {
     {
       messageId: 'v1.0.9-beta',
       template: MessageTemplates.ChangeLog,
-      props: {
+      data: {
         changeList: [
           'Did this new thing.',
           'Did that thing.',
@@ -30,7 +30,7 @@ const startupMessages: StartPopupData = {
     {
       messageId: 'v1.0.8-beta',
       template: MessageTemplates.ChangeLog,
-      props: {
+      data: {
         changeList: ['Did this thing.', 'Did that thing.', 'Also this thing'],
         intro: '',
         version: '1.0.8 Beta',
@@ -39,7 +39,7 @@ const startupMessages: StartPopupData = {
     {
       messageId: 'v1.0.7-beta',
       template: MessageTemplates.ChangeLog,
-      props: {
+      data: {
         changeList: ['Did this thing.', 'Did that thing.', 'Also this thing'],
         intro: '',
         version: '1.0.7 Beta',
@@ -48,7 +48,7 @@ const startupMessages: StartPopupData = {
     {
       messageId: 'welcome',
       template: MessageTemplates.Welcome,
-      props: {
+      data: {
         welcomeMessage:
           "If you wish to become familiar with Metagrid's search and download features, we recommend checking out the interface tours below:",
       },
