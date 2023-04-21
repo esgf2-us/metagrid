@@ -1,7 +1,7 @@
 import { GithubOutlined } from '@ant-design/icons';
 import React, { useEffect } from 'react';
 import Modal from '../Feedback/Modal';
-import startupDisplayData from './startupDisplayData';
+import messageDisplayData from './messageDisplayData';
 import WelcomeTemplate from './Templates/Welcome';
 import ChangeLogTemplate from './Templates/ChangeLog';
 import { MessageActions, MessageData, MessageTemplates } from './types';
@@ -11,16 +11,16 @@ const getMessageSeen = (): string | null => {
 };
 
 const setMessageSeen = (): void => {
-  localStorage.setItem('lastMessageSeen', startupDisplayData.messageToShow);
+  localStorage.setItem('lastMessageSeen', messageDisplayData.messageToShow);
 };
 
 const getMessageTemplate = (
   msgId: string | null,
   msgActions: MessageActions
 ): JSX.Element => {
-  const messages: MessageData[] = startupDisplayData.messageData;
+  const messages: MessageData[] = messageDisplayData.messageData;
   let messageData = messages.find((msg) => {
-    return msg.messageId === startupDisplayData.defaultMessageId;
+    return msg.messageId === messageDisplayData.defaultMessageId;
   });
   if (msgId) {
     const msgData = messages.find((msg) => {
@@ -49,7 +49,7 @@ const getMessageTemplate = (
 };
 
 const StartPopup: React.FC = () => {
-  const startData = startupDisplayData;
+  const startData = messageDisplayData;
   // Startup visibility
   const [visible, setVisible] = React.useState<boolean>(false);
   const [title, setTitle] = React.useState<JSX.Element>(<></>);

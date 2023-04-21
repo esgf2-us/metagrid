@@ -52,7 +52,7 @@ import {
 } from '../Search/types';
 import Support from '../Support';
 import StartPopup from '../Messaging/StartPopup';
-import startupDisplayData from '../Messaging/startupDisplayData';
+import startupDisplayData from '../Messaging/messageDisplayData';
 import './App.css';
 
 const styles: CSSinJS = {

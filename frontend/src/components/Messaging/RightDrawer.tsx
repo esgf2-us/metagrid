@@ -1,5 +1,7 @@
-import { Drawer, Space, Button } from 'antd';
 import React from 'react';
+import { Drawer, Space, Button, Collapse } from 'antd';
+import { markdownMessages } from './messageDisplayData';
+import MessageCard from './MessageCard';
 
 export type Props = {
   visible: boolean;
@@ -22,9 +24,15 @@ const RightDrawer: React.FC<Props> = ({ visible, onClose }) => {
         </Space>
       }
     >
-      <p>Some contents...</p>
-      <p>Some contents...</p>
-      <p>Some contents...</p>
+      <Collapse defaultActiveKey={[markdownMessages[0].fileName]}>
+        {markdownMessages.map((message) => {
+          return (
+            <Collapse.Panel key={message.fileName} header={message.title}>
+              <MessageCard title={message.title} fileName={message.fileName} />
+            </Collapse.Panel>
+          );
+        })}
+      </Collapse>
     </Drawer>
   );
 };

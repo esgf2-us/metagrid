@@ -37,3 +37,8 @@ export type StartPopupData = {
   defaultMessageId: string;
   messageData: MessageData[];
 };
+
+export type MarkdownMessage = {
+  fileName: string;
+  title: string;
+};

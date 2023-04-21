@@ -75,6 +75,7 @@
     "react-dom": "18.2.0",
     "react-hotjar": "2.2.1",
     "react-joyride": "2.5.3",
+    "react-markdown": "^8.0.7",
     "react-router-dom": "^6.9.0",
     "react-scripts": "5.0.1",
     "typescript": "4.6.3",
