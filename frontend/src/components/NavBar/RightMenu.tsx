@@ -140,7 +140,7 @@ const RightMenu: React.FC<Props> = ({
             icon={<MailOutlined style={{ fontSize: '18px', margin: 0 }} />}
             onClick={openDrawer}
           >
-            Alerts
+            Notices
           </Button>
         </Menu.Item>
         {!authenticated ? (
@@ -197,7 +197,7 @@ const RightMenu: React.FC<Props> = ({
         </Menu.Item>
       </Menu>
       <Drawer
-        title="Drawer with extra actions"
+        title="Notifications"
         placement="right"
         width={500}
         onClose={closeDrawer}
@@ -205,7 +205,7 @@ const RightMenu: React.FC<Props> = ({
         footer={
           <Space>
             <Button type="primary" onClick={closeDrawer}>
-              Close
+              Hide
             </Button>
           </Space>
         }
