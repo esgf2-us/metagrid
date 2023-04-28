@@ -38,7 +38,6 @@ const NavBar: React.FC<Props> = ({
           />
         </Link>
       </div>
-
       <div className="navbar-container">
         <div className="navbar-left">
           <LeftMenu

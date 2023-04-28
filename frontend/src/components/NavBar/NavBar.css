@@ -13,8 +13,8 @@
 }
 
 .navbar-container .navbar-left {
-  width: 35%;
-  min-width: 384px;
+  width: 40%;
+  min-width: 400px;
   flex-wrap: nowrap;
 }
 

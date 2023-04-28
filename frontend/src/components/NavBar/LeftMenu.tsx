@@ -1,7 +1,7 @@
 import { SearchOutlined } from '@ant-design/icons';
 import { Form, Input, Select, Spin } from 'antd';
 import React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { ResponseError } from '../../api';
 import { navBarTargets } from '../../common/reactJoyrideSteps';
 import { RawProject, RawProjects } from '../Facets/types';
@@ -78,6 +78,8 @@ const LeftMenu: React.FC<Props> = ({
           form={form}
           onFinish={onFinish}
         >
+          <Link to="https://esgf.github.io/nodes.html">Federated Nodes</Link>
+          &nbsp;
           <Input.Group compact>
             <Form.Item
               name="projectTextInput"
@@ -95,10 +97,10 @@ const LeftMenu: React.FC<Props> = ({
             <Form.Item
               name="text"
               rules={[{ required: true, message: 'Text is required' }]}
-              style={{ width: '70%' }}
+              style={{ width: '40%' }}
             >
               <Input
-                width="100"
+                width="50"
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder="Search for a keyword"
