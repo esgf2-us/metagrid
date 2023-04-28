@@ -1,5 +1,5 @@
 import { GithubOutlined } from '@ant-design/icons';
-import React, { useEffect } from 'react';
+import React, { CSSProperties, useEffect } from 'react';
 import Modal from '../Feedback/Modal';
 import messageDisplayData from './messageDisplayData';
 import WelcomeTemplate from './Templates/Welcome';
@@ -14,28 +14,25 @@ const setMessageSeen = (): void => {
   localStorage.setItem('lastMessageSeen', messageDisplayData.messageToShow);
 };
 
+const getMessageData = (msgId: string | null): MessageData | undefined => {
+  if (!msgId) {
+    return undefined;
+  }
+  const messages: MessageData[] = messageDisplayData.messageData;
+  const msgData = messages.find((msg) => {
+    return msg.messageId === msgId;
+  });
+  return msgData;
+};
+
 const getMessageTemplate = (
-  msgId: string | null,
+  msgData: MessageData | undefined,
   msgActions: MessageActions
 ): JSX.Element => {
-  const messages: MessageData[] = messageDisplayData.messageData;
-  let messageData = messages.find((msg) => {
-    return msg.messageId === messageDisplayData.defaultMessageId;
-  });
-  if (msgId) {
-    const msgData = messages.find((msg) => {
-      return msg.messageId === msgId;
-    });
-    if (msgData) {
-      messageData = msgData;
-    }
-  }
-
-  if (!messageData) {
+  if (!msgData) {
     return <></>;
   }
-
-  const { template, data: props } = messageData;
+  const { template, data: props } = msgData;
   switch (template) {
     case MessageTemplates.ChangeLog:
       return (
@@ -53,6 +50,7 @@ const StartPopup: React.FC = () => {
   // Startup visibility
   const [visible, setVisible] = React.useState<boolean>(false);
   const [title, setTitle] = React.useState<JSX.Element>(<></>);
+  const [style, setStyle] = React.useState<CSSProperties>();
 
   const hideMessage = (): void => {
     setVisible(false);
@@ -64,7 +62,9 @@ const StartPopup: React.FC = () => {
       close: hideMessage,
       viewChanges: (): void => showMessage(startData.messageToShow),
     };
-    const titleComponent = getMessageTemplate(msgId, actions);
+    const messageData = getMessageData(msgId);
+    const titleComponent = getMessageTemplate(messageData, actions);
+    setStyle(messageData?.style);
     setTitle(titleComponent);
     setVisible(true);
   };
@@ -72,7 +72,7 @@ const StartPopup: React.FC = () => {
   useEffect(() => {
     const startupMessageSeen = getMessageSeen();
     if (startupMessageSeen === null) {
-      showMessage(null);
+      showMessage(startData.defaultMessageId);
     } else if (startupMessageSeen !== startData.messageToShow) {
       showMessage(startData.messageToShow);
     }
@@ -80,7 +80,13 @@ const StartPopup: React.FC = () => {
 
   return (
     <div data-testid="startup-window">
-      <Modal visible={visible} title={title} onClose={hideMessage} centered>
+      <Modal
+        visible={visible}
+        title={title}
+        onClose={hideMessage}
+        style={style}
+        centered
+      >
         <p>
           Questions, suggestions, or problems? Please visit our GitHub page to
           open an issue.

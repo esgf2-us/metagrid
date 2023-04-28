@@ -1,3 +1,5 @@
+import { CSSProperties } from 'react';
+
 export enum MessageTemplates {
   Welcome,
   ChangeLog,
@@ -5,9 +7,8 @@ export enum MessageTemplates {
 }
 
 export type ChangeLogData = {
-  changeList: string[];
-  intro: string;
   version: string;
+  changesFile: string;
 };
 
 export type WelcomeData = {
@@ -30,6 +31,7 @@ export type MessageData = {
   messageId: string;
   template: MessageTemplates;
   data: ValidTemplateData;
+  style?: CSSProperties;
 };
 
 export type StartPopupData = {

@@ -53,6 +53,9 @@
       "./src/components/App/App.tsx": {
         "lines": 100
       }
+    },
+    "moduleNameMapper": {
+      "react-markdown": "<rootDir>/node_modules/react-markdown/react-markdown.min.js"
     }
   },
   "dependencies": {

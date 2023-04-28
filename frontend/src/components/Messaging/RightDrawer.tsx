@@ -1,7 +1,8 @@
 import React from 'react';
-import { Drawer, Space, Button, Collapse } from 'antd';
-import { markdownMessages } from './messageDisplayData';
+import { Drawer, Space, Button, Collapse, Card } from 'antd';
+import { rightDrawerChanges, rightDrawerMessages } from './messageDisplayData';
 import MessageCard from './MessageCard';
+import { MarkdownMessage } from './types';
 
 export type Props = {
   visible: boolean;
@@ -24,15 +25,31 @@ const RightDrawer: React.FC<Props> = ({ visible, onClose }) => {
         </Space>
       }
     >
-      <Collapse defaultActiveKey={[markdownMessages[0].fileName]}>
-        {markdownMessages.map((message) => {
-          return (
-            <Collapse.Panel key={message.fileName} header={message.title}>
-              <MessageCard title={message.title} fileName={message.fileName} />
-            </Collapse.Panel>
-          );
-        })}
-      </Collapse>
+      <Card title="Metagrid Messages">
+        <Collapse defaultActiveKey={[rightDrawerMessages[0].fileName]}>
+          {rightDrawerMessages.map((message: MarkdownMessage) => {
+            return (
+              <Collapse.Panel key={message.fileName} header={message.title}>
+                <MessageCard
+                  title={message.title}
+                  fileName={message.fileName}
+                />
+              </Collapse.Panel>
+            );
+          })}
+        </Collapse>
+      </Card>
+      <Card title="Metagrid Version History">
+        <Collapse>
+          {rightDrawerChanges.map((change: MarkdownMessage) => {
+            return (
+              <Collapse.Panel key={change.fileName} header={change.title}>
+                <MessageCard title={change.title} fileName={change.fileName} />
+              </Collapse.Panel>
+            );
+          })}
+        </Collapse>
+      </Card>
     </Drawer>
   );
 };

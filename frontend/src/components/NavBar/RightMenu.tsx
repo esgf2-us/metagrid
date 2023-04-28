@@ -133,13 +133,13 @@ const RightMenu: React.FC<Props> = ({
             <NodeIndexOutlined /> Node Status
           </Link>
         </Menu.Item>
-        <Menu.Item style={menuItemStyling} key="notice">
+        <Menu.Item style={menuItemStyling} key="news">
           <Button
             type="text"
-            icon={<MailOutlined style={{ fontSize: '18px', margin: 0 }} />}
+            icon={<MailOutlined style={{ fontSize: '20px', margin: 0 }} />}
             onClick={showNotices}
           >
-            Notices
+            News
           </Button>
         </Menu.Item>
         {!authenticated ? (
