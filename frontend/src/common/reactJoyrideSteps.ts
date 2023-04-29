@@ -89,6 +89,7 @@ export const navBarTargets = {
   cartPageBtn: new TargetObject(),
   savedSearchPageBtn: new TargetObject(),
   nodeStatusBtn: new TargetObject(),
+  newsBtn: new TargetObject(),
   signInBtn: new TargetObject(),
   helpBtn: new TargetObject(),
 };
@@ -324,13 +325,18 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
 
 export const welcomeTour = new JoyrideTour(TourTitles.Welcome)
   .addNextStep(
+    'body',
+    'Just a note: We are continually striving to improve the Metagrid user interface and make it more intuitive. However, if you ever feel stuck, please try out the interface tours. The following is a quick tour showing where you can access support.',
+    'center'
+  )
+  .addNextStep(
     navBarTargets.helpBtn.selector(),
     'This help button will open the Metagrid support dialog, which contains interface tours (like this one) as well as helpful resources.',
     'bottom'
   )
   .addNextStep(
     miscTargets.questionBtn.selector(),
-    'This question button will open the Metagrid support dialog, which contains interface tours (like this one) as well as helpful resources.',
+    'This question button will also open the Metagrid support dialog. Note that the tour button shown in the support dialog will be specific to the current page you are on.',
     'top-end'
   );
 
@@ -340,11 +346,6 @@ export const createMainPageTour = (): JoyrideTour => {
       'body',
       "Welcome to Metagrid! This tour will highlight the main controls and features of the search page. During the tour, click 'Next' to continue, or 'Skip' if you wish to cancel the tour. Let's begin!",
       'center'
-    )
-    .addNextStep(
-      navBarTargets.helpBtn.selector(),
-      "Clicking this 'Help' button will open the support dialog, where you can view interface tours (like this), or get links to helpful documentation.",
-      'bottom'
     )
     .addNextStep(
       navBarTargets.topSearchBar.selector(),
@@ -377,8 +378,18 @@ export const createMainPageTour = (): JoyrideTour => {
       'bottom'
     )
     .addNextStep(
+      navBarTargets.newsBtn.selector(),
+      "Clicking the news button will open up the message center to the right, where you'll find important notes from the admins and developers. You can also view changelog information regarding the latest version of Metagrid",
+      'bottom'
+    )
+    .addNextStep(
       navBarTargets.signInBtn.selector(),
       'Clicking this button will allow you to sign in to your profile.',
+      'bottom'
+    )
+    .addNextStep(
+      navBarTargets.helpBtn.selector(),
+      "Clicking this 'Help' button will open the support dialog, where you can view interface tours (like this), or get links to helpful documentation.",
       'bottom'
     )
     .addNextStep(

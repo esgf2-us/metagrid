@@ -5,10 +5,15 @@ import { MarkdownMessage } from './types';
 const MessageCard: React.FC<MarkdownMessage> = ({ fileName }) => {
   const [content, setContent] = React.useState<string>('Content is empty.');
 
+  /* istanbul ignore next */
   useEffect(() => {
     fetch(fileName)
       .then((res) => res.text())
-      .then((text) => setContent(text));
+      .then((text) => setContent(text))
+      .catch((error) => {
+        // eslint-disable-next-line
+        console.error(error);
+      });
   }, []);
 
   return <ReactMarkdown>{content}</ReactMarkdown>;

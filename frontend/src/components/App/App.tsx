@@ -54,6 +54,7 @@ import Support from '../Support';
 import StartPopup from '../Messaging/StartPopup';
 import startupDisplayData from '../Messaging/messageDisplayData';
 import './App.css';
+import { miscTargets } from '../../common/reactJoyrideSteps';
 
 const styles: CSSinJS = {
   bodySider: {
@@ -653,6 +654,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           </Layout>
         </Layout>
         <Affix
+          className={miscTargets.questionBtn.class()}
           style={{
             position: 'fixed',
             bottom: 75,

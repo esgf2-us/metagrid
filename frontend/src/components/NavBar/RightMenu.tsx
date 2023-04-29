@@ -133,7 +133,11 @@ const RightMenu: React.FC<Props> = ({
             <NodeIndexOutlined /> Node Status
           </Link>
         </Menu.Item>
-        <Menu.Item style={menuItemStyling} key="news">
+        <Menu.Item
+          style={menuItemStyling}
+          key="news"
+          className={navBarTargets.newsBtn.class()}
+        >
           <Button
             type="text"
             icon={<MailOutlined style={{ fontSize: '20px', margin: 0 }} />}
@@ -183,7 +187,11 @@ const RightMenu: React.FC<Props> = ({
             </Menu.Item>
           </Menu.SubMenu>
         )}
-        <Menu.Item style={menuItemStyling} key="help">
+        <Menu.Item
+          style={menuItemStyling}
+          key="help"
+          className={navBarTargets.helpBtn.class()}
+        >
           <Button
             type="text"
             icon={

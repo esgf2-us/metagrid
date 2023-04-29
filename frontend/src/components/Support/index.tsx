@@ -9,7 +9,6 @@ import {
   createCartItemsTour,
   createNodeStatusTour,
   TourTitles,
-  miscTargets,
 } from '../../common/reactJoyrideSteps';
 import { AppPage } from '../../common/types';
 import {
@@ -60,9 +59,10 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
       <div data-testid="support-form">
         <Modal
           visible={visible}
+          closeText="Close Support"
           title={
             <div>
-              <h2 className={miscTargets.questionBtn.class()}>
+              <h2>
                 <QuestionCircleOutlined /> MetaGrid Support
               </h2>
               <h3>Documentation</h3>

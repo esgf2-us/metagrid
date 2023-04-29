@@ -55,7 +55,7 @@ const WelcomeTemplate: React.FC<TemplateProps> = ({
 
   return (
     <>
-      <h1>Welcome!</h1>
+      <h1 data-testid="welcomeTemplate">Welcome!</h1>
       <p>{data.welcomeMessage}</p>
       <Card>
         <Row gutter={[16, 16]}>
@@ -95,7 +95,7 @@ const WelcomeTemplate: React.FC<TemplateProps> = ({
       </Card>
       <br />
       <p style={{ textAlign: 'center' }}>
-        Click buttons below, to view the latest changes related to Metagrid:
+        To view the latest changes to Metagrid click button below:
         <br />
         <Button style={{ margin: '8px' }} onClick={actions.viewChanges}>
           View Latest Changes
