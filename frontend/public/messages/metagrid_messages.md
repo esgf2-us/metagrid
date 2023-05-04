@@ -1,12 +1,13 @@
-# Important Message
+# Welcome to the Metagrid Beta test v1.0.8
 
-This section provides messages, notices and information from admins that may be helpful or important for users.
+Use the Help link to find information on how to contact support or report any issues you find.
 
-## Example
+## CORDEX data *not* supported
 
-Go to this link to view view [ESGF Federated Nodes](https://esgf.github.io/nodes.html)
+Metagrid uses an updated user accounts system.  Unfortunately for anyone looking for CORDEX data, these new accounts cannot be used to authenticate when running a CORDEX Wget script.  Please use an ESGF *legacy* OpenID obtained at any of the ESGF CoG instances listed here: https://esgf.github.io/nodes.html 
 
-**Example list**
+## Upcoming changes to ESGF @LLNL
 
-- This is a markdown file
-- It can be updated at run-time!
+We are excited to be planning to have an "official" release of the Metagrid platform onto scalable infrastructure.  In the meantime we will be testing new features.
+* Globus Transfer feature planned to be released in v1.0.9.  
+
