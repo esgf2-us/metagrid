@@ -133,7 +133,7 @@ const NodeStatus: React.FC<Props> = ({ nodeStatus, apiError, isLoading }) => {
   let errorMsg: string;
 
   if (apiError) {
-    errorMsg = apiError.message;
+    errorMsg = 'Node status information is currently unavailable.';
   } else if (featureIsDisabled) {
     errorMsg =
       'This feature is not enabled on this node or status information is currently unavailable.';
