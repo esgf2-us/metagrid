@@ -4,6 +4,7 @@ import React, { CSSProperties } from 'react';
 type Props = {
   visible: boolean;
   title?: React.ReactNode;
+  closeText: string;
   onClose?: () => void;
   centered?: boolean;
   children: React.ReactNode;
@@ -14,6 +15,7 @@ const Modal: React.FC<Props> = ({
   visible,
   title,
   onClose,
+  closeText,
   centered,
   children,
   style,
@@ -26,7 +28,7 @@ const Modal: React.FC<Props> = ({
     centered={centered}
     footer={[
       <Button key="submit" type="primary" onClick={onClose}>
-        Close
+        {closeText}
       </Button>,
     ]}
   >

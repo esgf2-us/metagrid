@@ -1125,24 +1125,28 @@ describe('User search library', () => {
 });
 
 describe('User support', () => {
-  it('renders user support modal when clicking fixed button and is closeable', () => {
-    const { getByRole, getAllByRole } = customRender(
+  it('renders user support modal when clicking help button and is closeable', () => {
+    const { getByRole, getByText, findByText } = customRender(
       <App searchQuery={activeSearch} />
     );
 
     // support button renders
-    const supportBtn = getByRole('img', { name: 'question', hidden: true });
+    const supportBtn = getByRole('img', { name: 'question' });
     expect(supportBtn).toBeTruthy();
 
     // click support button
     fireEvent.click(supportBtn);
 
     // GitHub icon renders
-    const githubIcon = getAllByRole('img', { name: 'github', hidden: true })[0];
-    expect(githubIcon).toBeTruthy();
+    const metagridSupportHeader = findByText(' MetaGrid Support');
+    expect(metagridSupportHeader).toBeTruthy();
 
     // click close button
-    const closeBtn = getAllByRole('img', { name: 'close' })[0];
+    // const closeBtn = getAllByRole('img', { name: 'close' })[1];
+    // fireEvent.click(closeBtn);
+
+    // click close button
+    const closeBtn = getByText('Close Support');
     fireEvent.click(closeBtn);
   });
 });

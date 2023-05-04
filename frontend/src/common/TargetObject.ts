@@ -11,8 +11,8 @@ export class TargetObject {
    * @param args
    */
   public constructor(...args: string[]) {
-    const targetId = uuidv4();
     if (args.length === 0) {
+      const targetId = uuidv4();
       this.className = `joyrideTarget-${targetId}`;
       this.selectorName = `.joyrideTarget-${targetId}`;
     } else if (args.length === 1) {
@@ -32,7 +32,7 @@ export class TargetObject {
   }
 
   selector(state?: string): string {
-    return `${this.selectorName}${state ? `.target-state_${state}` : ''}`;
+    return `${this.selectorName}${state ? ` .target-state_${state}` : ''}`;
   }
 }
 
