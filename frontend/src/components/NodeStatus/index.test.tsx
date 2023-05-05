@@ -48,7 +48,7 @@ it('renders an error message when no node status information is available', asyn
 });
 
 it('renders an error message when there is an api error', async () => {
-  const errorMsg = 'API error';
+  const errorMsg = 'Node status information is currently unavailable.';
 
   const { getByRole, getByText } = render(
     <NodeStatus
