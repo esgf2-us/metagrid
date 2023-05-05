@@ -47,7 +47,7 @@ const Cart: React.FC<Props> = ({
       <Tabs activeKey={activeTab} animated={false} onTabClick={handleTabClick}>
         <Tabs.TabPane
           tab={
-            <span className={cartTourTargets.getClass('datasetBtn')}>
+            <span className={cartTourTargets.datasetBtn.class()}>
               <ShoppingCartOutlined />
               Datasets
             </span>
@@ -63,7 +63,7 @@ const Cart: React.FC<Props> = ({
 
         <Tabs.TabPane
           tab={
-            <span className={cartTourTargets.getClass('libraryBtn')}>
+            <span className={cartTourTargets.libraryBtn.class()}>
               <BookOutlined />
               Search Library
             </span>

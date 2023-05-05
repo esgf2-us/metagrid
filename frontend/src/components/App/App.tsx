@@ -51,7 +51,10 @@ import {
   VersionType,
 } from '../Search/types';
 import Support from '../Support';
+import StartPopup from '../Messaging/StartPopup';
+import startupDisplayData from '../Messaging/messageDisplayData';
 import './App.css';
+import { miscTargets } from '../../common/reactJoyrideSteps';
 
 const styles: CSSinJS = {
   bodySider: {
@@ -79,7 +82,7 @@ export type Props = {
   searchQuery: ActiveSearchQuery;
 };
 
-const metagridVersion = '1.0.8-beta';
+const metagridVersion: string = startupDisplayData.messageToShow;
 
 const App: React.FC<Props> = ({ searchQuery }) => {
   // Third-party tool integration
@@ -651,6 +654,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           </Layout>
         </Layout>
         <Affix
+          className={miscTargets.questionBtn.class()}
           style={{
             position: 'fixed',
             bottom: 75,
@@ -661,7 +665,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
             type="primary"
             shape="circle"
             style={{ width: '48px', height: '48px' }}
-            icon={<QuestionOutlined style={{ fontSize: '40px' }} />}
+            icon={<QuestionOutlined style={{ fontSize: '28px' }} />}
             onClick={() => setSupportModalVisible(true)}
           ></Button>
         </Affix>
@@ -669,6 +673,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           visible={supportModalVisible}
           onClose={() => setSupportModalVisible(false)}
         />
+        <StartPopup />
       </div>
     </>
   );

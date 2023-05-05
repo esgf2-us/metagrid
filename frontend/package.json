@@ -53,6 +53,9 @@
       "./src/components/App/App.tsx": {
         "lines": 100
       }
+    },
+    "moduleNameMapper": {
+      "react-markdown": "<rootDir>/node_modules/react-markdown/react-markdown.min.js"
     }
   },
   "dependencies": {
@@ -75,6 +78,7 @@
     "react-dom": "18.2.0",
     "react-hotjar": "2.2.1",
     "react-joyride": "2.5.3",
+    "react-markdown": "^8.0.7",
     "react-router-dom": "^6.9.0",
     "react-scripts": "5.0.1",
     "typescript": "4.6.3",

@@ -1,5 +1,5 @@
-import { fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
+import { fireEvent, render, waitFor } from '@testing-library/react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { projectsFixture } from '../../api/mock/fixtures';
 import LeftMenu, { Props } from './LeftMenu';

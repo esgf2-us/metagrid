@@ -110,3 +110,23 @@ it('displays help menu when help button is clicked', async () => {
   const support = getByTestId('support-form');
   expect(support).toBeTruthy();
 });
+
+it('the the right drawer display for news button and hide news button', async () => {
+  const { getByText, getByTestId } = customRender(
+    <RightMenu {...rightMenuProps} />
+  );
+
+  // Check applicable components render
+  const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
+  expect(rightMenuComponent).toBeTruthy();
+
+  // Click the news button
+  const newsBtn = await waitFor(() => getByText('News'));
+  expect(newsBtn).toBeTruthy();
+  fireEvent.click(newsBtn);
+
+  // Click hide button
+  const hideBtn = await waitFor(() => getByText('Hide'));
+  expect(hideBtn).toBeTruthy();
+  fireEvent.click(hideBtn);
+});

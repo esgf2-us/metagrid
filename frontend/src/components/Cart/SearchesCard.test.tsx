@@ -57,7 +57,7 @@ it('displays alert error when api fails to return response', async () => {
   });
 
   // Check alert renders
-  const alert = await waitFor(() => getByRole('img', { name: 'close-circle' }));
+  const alert = await waitFor(() => getByRole('alert'));
   expect(alert).toBeTruthy();
 });
 
