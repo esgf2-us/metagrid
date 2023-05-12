@@ -147,7 +147,12 @@ projects = [
         "project_url": "https://esgf-node.llnl.gov/projects/input4mips/",
         "description": "input4MIPS (input datasets for Model Intercomparison Projects) is an activity to make available via ESGF the boundary condition and forcing datasets needed for CMIP6. Various datasets are needed for the pre-industrial control (piControl), AMIP, and historical simulations, and additional datasets are needed for many of the CMIP6-endorsed model intercomparison projects (MIPs) experiments. Earlier versions of many of these datasets were used in the 5th Coupled Model Intercomparison Project (CMIP5).",
         "facets_by_group": {
-            GROUPS[0]: ["target_mip_list", "dataset_status"],
+            GROUPS[0]: [
+                "target_mip_list",
+                "dataset_status",
+                "mip_era",
+                "data_node",
+            ],
             GROUPS[1]: [
                 "institution_id",
                 "source_id",
