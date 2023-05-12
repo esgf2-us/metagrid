@@ -1,4 +1,5 @@
 /* eslint-disable no-void */
+
 import {
   BookOutlined,
   DeleteOutlined,
@@ -139,6 +140,10 @@ const App: React.FC<Props> = ({ searchQuery }) => {
       localStorage.getItem('userSearchQueries') || '[]'
     ) as UserSearchQueries
   );
+
+  /* React.useEffect(() => {
+    loadGlobusState();
+  });*/
 
   React.useEffect(() => {
     /* istanbul ignore else */

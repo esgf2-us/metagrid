@@ -100,3 +100,131 @@ def do_request(request, urlbase):
     httpresp.status_code = resp.status_code
 
     return httpresp
+
+
+@require_http_methods(["POST"])
+@csrf_exempt
+def get_temp_storage(request):
+    if not request.method == "POST":
+        # pragma: no cover
+        return HttpResponseBadRequest("Request method must be POST.")
+
+    requestBody = json.loads(request.body)
+
+    if requestBody is not None and "dataKey" in requestBody:
+
+        dataKey = requestBody["dataKey"]
+
+        if "temp_storage" not in request.session:
+            print({"msg": "Temporary storage empty.", dataKey: "None"})
+            return HttpResponse(
+                json.dumps(
+                    {"msg": "Temporary storage empty.", dataKey: "None"}
+                )
+            )
+
+        tempStorage = request.session.get("temp_storage")
+
+        if dataKey == "tempStorage":
+            print(
+                {
+                    "msg": "Full temp storage dict returned.",
+                    "tempStorage": tempStorage,
+                }
+            )
+            return HttpResponse(
+                json.dumps(
+                    {
+                        "msg": "Full temp storage dict returned.",
+                        "tempStorage": tempStorage,
+                    }
+                )
+            )
+
+        if dataKey in tempStorage:
+            response = {
+                "msg": "Key found!",
+                dataKey: tempStorage.get(dataKey),
+            }
+        else:
+            response = {
+                "msg": "Key not found.",
+                dataKey: "None",
+            }
+    else:
+        return HttpResponseBadRequest(
+            json.dumps(
+                {"msg": "Invalid request.", "request body": requestBody}
+            )
+        )
+
+    print(response)
+    return HttpResponse(json.dumps(response))
+
+
+@require_http_methods(["POST"])
+@csrf_exempt
+def set_temp_storage(request):
+    if not request.method == "POST":
+        # pragma: no cover
+        return HttpResponseBadRequest("Request method must be POST.")
+
+    requestBody = json.loads(request.body)
+
+    if (
+        requestBody is not None
+        and "dataKey" in requestBody
+        and "dataValue" in requestBody
+    ):
+        dataKey = requestBody["dataKey"]
+        dataValue = requestBody["dataValue"]
+
+        # Replace all of temp storage if temp storage key is used
+        if dataKey == "tempStorage":
+            request.session["temp_storage"] = dataValue
+            response = {
+                "msg": "All temp storage was set to incoming value.",
+                "temp_storage": request.session["temp_storage"],
+            }
+        else:
+            # Otherwise, just set specific value in temp storage
+            if "temp_storage" not in request.session:
+
+                if dataValue == "None":
+                    response = {
+                        "msg": "Data was none, so no change made.",
+                        dataKey: dataValue,
+                    }
+                else:
+                    request.session["temp_storage"] = {dataKey: dataValue}
+                    response = {
+                        "msg": "Created temporary storage.",
+                        dataKey: dataValue,
+                    }
+            else:
+                temp_storage = request.session["temp_storage"]
+                if dataValue == "None":
+                    temp_storage.pop(dataKey, None)
+                    response = {
+                        "msg": "Data was none, so removed it from storage.",
+                        dataKey: dataValue,
+                    }
+                else:
+                    temp_storage[dataKey] = dataValue
+                    response = {
+                        "msg": "Updated temporary storage.",
+                        dataKey: dataValue,
+                    }
+    else:
+        return HttpResponseBadRequest(
+            json.dumps(
+                {
+                    "msg": "Invalid request.",
+                    "request body": requestBody,
+                }
+            )
+        )
+
+    print(response)
+
+    return HttpResponse(json.dumps(response))

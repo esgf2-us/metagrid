@@ -187,11 +187,35 @@ const RightMenu: React.FC<Props> = ({
             </Menu.Item>
           </Menu.SubMenu>
         )}
-        <Menu.Item
-          style={menuItemStyling}
-          key="help"
-          className={navBarTargets.helpBtn.class()}
-        >
+        {/* !isSignedIntoGlobus() ? (
+            <Menu.Item
+              key="globusSignIn"
+              style={menuItemStyling}
+              className={navBarTargets.getClass('globusSignInBtn')}
+            >
+              <Button
+                type="text"
+                // icon={<UserOutlined style={{ fontSize: '18px', margin: 0 }} />}
+                onClick={() => {
+                  loginWithGlobus();
+                }}
+              >
+                Globus Sign In
+              </Button>
+            </Menu.Item>
+          ) : (
+            <Menu.Item key="globus_login">
+              <Button
+                type="text"
+                onClick={() => {
+                  logoutGlobus();
+                }}
+              >
+                Globus Sign Out
+              </Button>
+            </Menu.Item>
+          )*/}
+        <Menu.Item style={menuItemStyling} key="help">
           <Button
             type="text"
             icon={
