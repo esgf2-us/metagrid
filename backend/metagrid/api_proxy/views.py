@@ -13,7 +13,7 @@ from django.views.decorators.http import require_http_methods
 def do_search(request):
     esgf_host = getattr(
         settings,
-        "REACT_APP_SEARCH_URL",
+        "REACT_APP_ESGF_NODE_URL",
         "https://esgf-node.llnl.gov/esg-search/search",
     )
     return do_request(request, esgf_host)

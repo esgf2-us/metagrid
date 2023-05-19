@@ -6,6 +6,7 @@ import urllib.request
 from datetime import datetime, timedelta
 
 import requests
+from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -133,8 +134,6 @@ KEYWORDS = [
     R_TOKEN,
 ]
 
-SOLR_URL = "https://esgf-fedtest.llnl.gov/solr"
-
 
 def truncate_urls(lst):
     for x in lst:
@@ -246,8 +245,12 @@ def split_value(value):
 
 
 def get_files(url_params):
-
-    query_url = SOLR_URL + "/files/select"
+    solr_url = getattr(
+        settings,
+        "REACT_APP_ESGF_NODE_URL",
+        "https://esgf-node.llnl.gov/esg-search/search",
+    )
+    query_url = solr_url + "/files/select"
     file_limit = 10000
     file_offset = 0
     use_distrib = True
