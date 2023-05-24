@@ -506,8 +506,6 @@ def get_endpoint_list_test(request):
 
     httpresp = HttpResponse(resp)
     httpresp.status_code = 200
-    #    httpresp.headers = resp.headers
-    #    httpresp.encoding = resp.encoding
     return httpresp
 
 
@@ -526,8 +524,7 @@ def get_endpoint_list(request):
         "filter_scope": "all",
         "filter_fulltext": filterText or "test_backend",
     }
-    # req = PreparedRequest()
-    # req.prepare_url(url, params)
+
     resp = requests.get(
         url,
         params=params,
@@ -537,8 +534,7 @@ def get_endpoint_list(request):
 
     httpresp = HttpResponse(resp)
     httpresp.status_code = 200
-    #    httpresp.headers = resp.headers
-    #    httpresp.encoding = resp.encoding
+
     return httpresp
 
 

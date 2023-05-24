@@ -200,7 +200,7 @@ const DatasetDownloadForm: React.FC = () => {
     );
     if (loadedSelections && loadedSelections.length > 0) {
       setItemSelections(loadedSelections);
-      const ids = loadedSelections.map((item) => item.id);
+      const ids = loadedSelections.map((item) => (item ? item.id : ''));
 
       if (globusTransferToken && refreshToken) {
         startGlobusTransfer(
@@ -435,6 +435,7 @@ const DatasetDownloadForm: React.FC = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const tUrlReady = tokenUrlReady(urlParams);
     const eUrlReady = endpointUrlReady(urlParams);
+
     if (tReady && eReady) {
       setDownloadIsLoading(true);
       if (useDefaultEndpoint) {
