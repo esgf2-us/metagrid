@@ -247,8 +247,8 @@ def split_value(value):
 def get_files(url_params):
     solr_url = getattr(
         settings,
-        "REACT_APP_ESGF_NODE_URL",
-        "https://esgf-node.llnl.gov/esg-search/search",
+        "REACT_APP_ESGF_SOLR_URL",
+        "https://esgf-node.llnl.gov/solr",
     )
     query_url = solr_url + "/files/select"
     file_limit = 10000
