@@ -20,6 +20,13 @@ import { NodeStatusArray } from '../NodeStatus/types';
 import './Search.css';
 import Tabs from './Tabs';
 import { RawSearchResult, RawSearchResults, TextInputs } from './types';
+import GlobusToolTip from '../NodeStatus/GlobusToolTip';
+
+const globusEnabledNodes = [
+  'aims3.llnl.gov',
+  'esgf-data1.llnl.gov',
+  'esgf-data2.llnl.gov',
+];
 
 export type Props = {
   loading: boolean;
@@ -167,7 +174,7 @@ const Table: React.FC<Props> = ({
     {
       title: '',
       dataIndex: 'data_node',
-      width: 20,
+      width: 35,
       render: (data_node: string) => (
         <div className={topDataRowTargets.nodeStatusIcon.class()}>
           <StatusToolTip nodeStatus={nodeStatus} dataNode={data_node} />
@@ -232,7 +239,7 @@ const Table: React.FC<Props> = ({
     {
       title: 'Download Options',
       key: 'download',
-      width: 200,
+      width: 150,
       render: (record: RawSearchResult) => {
         const supportedDownloadTypes = record.access;
         const formKey = `download-${record.id}`;
@@ -303,6 +310,22 @@ const Table: React.FC<Props> = ({
           </>
         );
       },
+    },
+    {
+      title: 'Globus Available',
+      dataIndex: 'data_node',
+      width: 60,
+      render: (data_node: string) => (
+        <div
+          style={{ textAlign: 'center' }}
+          className={topDataRowTargets.nodeStatusIcon.class()}
+        >
+          <GlobusToolTip
+            globusEnabledNodes={globusEnabledNodes}
+            dataNode={data_node}
+          />
+        </div>
+      ),
     },
   ];
 
