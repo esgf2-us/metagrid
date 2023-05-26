@@ -46,8 +46,6 @@ def do_citation(request):
 
     httpresp = HttpResponse(resp.text)
     httpresp.status_code = resp.status_code
-    #    httpresp.headers = resp.headers
-    #    httpresp.encoding = resp.encoding
     return httpresp
 
 
@@ -126,12 +124,6 @@ def get_temp_storage(request):
         tempStorage = request.session.get("temp_storage")
 
         if dataKey == "tempStorage":
-            print(
-                {
-                    "msg": "Full temp storage dict returned.",
-                    "tempStorage": tempStorage,
-                }
-            )
             return HttpResponse(
                 json.dumps(
                     {
@@ -158,7 +150,6 @@ def get_temp_storage(request):
             )
         )
 
-    print(response)
     return HttpResponse(json.dumps(response))
 
 
@@ -224,7 +215,5 @@ def set_temp_storage(request):
                 }
             )
         )
-
-    print(response)
 
     return HttpResponse(json.dumps(response))
