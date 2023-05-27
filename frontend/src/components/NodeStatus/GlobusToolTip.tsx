@@ -1,42 +1,24 @@
 import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
 import React from 'react';
 import ToolTip from '../DataDisplay/ToolTip';
+import { globusEnabledNodes } from '../../env';
 
 export type Props = {
-  globusEnabledNodes: string[];
   dataNode: string;
   children?: React.ReactNode;
 };
 
-const GlobusToolTip: React.FC<Props> = ({
-  globusEnabledNodes,
-  dataNode,
-  children,
-}) => {
-  if (globusEnabledNodes) {
-    const globusEnabled = globusEnabledNodes.includes(dataNode);
+export function globusEnabled(node: string | null | undefined): boolean {
+  if (node) {
+    return globusEnabledNodes.includes(node);
+  }
+  return false;
+}
 
-    /* istanbul ignore else*/
-    if (globusEnabled) {
-      if (children) {
-        return (
-          <ToolTip
-            title={
-              <>
-                Data Node:<div>{dataNode}</div>
-                Globus Download Available
-              </>
-            }
-            color="green"
-          >
-            <span>
-              <CheckCircleTwoTone twoToneColor="#52c41a" />
-              {dataNode}
-              {children}
-            </span>
-          </ToolTip>
-        );
-      }
+const GlobusToolTip: React.FC<Props> = ({ dataNode, children }) => {
+  /* istanbul ignore else*/
+  if (globusEnabled(dataNode)) {
+    if (children) {
       return (
         <ToolTip
           title={
@@ -49,10 +31,27 @@ const GlobusToolTip: React.FC<Props> = ({
         >
           <span>
             <CheckCircleTwoTone twoToneColor="#52c41a" />
+            {dataNode}
+            {children}
           </span>
         </ToolTip>
       );
     }
+    return (
+      <ToolTip
+        title={
+          <>
+            Data Node:<div>{dataNode}</div>
+            Globus Download Available
+          </>
+        }
+        color="green"
+      >
+        <span>
+          <CheckCircleTwoTone twoToneColor="#52c41a" />
+        </span>
+      </ToolTip>
+    );
   }
 
   if (children) {

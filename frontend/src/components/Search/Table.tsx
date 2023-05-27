@@ -22,12 +22,6 @@ import Tabs from './Tabs';
 import { RawSearchResult, RawSearchResults, TextInputs } from './types';
 import GlobusToolTip from '../NodeStatus/GlobusToolTip';
 
-const globusEnabledNodes = [
-  'aims3.llnl.gov',
-  'esgf-data1.llnl.gov',
-  'esgf-data2.llnl.gov',
-];
-
 export type Props = {
   loading: boolean;
   canDisableRows?: boolean;
@@ -312,18 +306,15 @@ const Table: React.FC<Props> = ({
       },
     },
     {
-      title: 'Globus Available',
+      title: 'Globus Ready',
       dataIndex: 'data_node',
-      width: 60,
+      width: 50,
       render: (data_node: string) => (
         <div
           style={{ textAlign: 'center' }}
           className={topDataRowTargets.nodeStatusIcon.class()}
         >
-          <GlobusToolTip
-            globusEnabledNodes={globusEnabledNodes}
-            dataNode={data_node}
-          />
+          <GlobusToolTip dataNode={data_node} />
         </div>
       ),
     },

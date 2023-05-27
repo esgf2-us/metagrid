@@ -47,8 +47,6 @@ type ModalState = {
   state: ModalFormState;
 };
 
-// const globusStatusKey = 'globusDownloadStatus';
-
 // Statically defined list of dataset download options
 const downloadOptions = ['Globus', 'wget'];
 

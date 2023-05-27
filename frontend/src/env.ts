@@ -19,6 +19,10 @@ export const previousPublicUrl = process.env.REACT_APP_PREVIOUS_URL as string;
 export const globusRedirectUrl = process.env
   .REACT_APP_GLOBUS_REDIRECT as string;
 export const globusClientID = process.env.REACT_APP_CLIENT_ID as string;
+const globusNodesString = process.env.REACT_APP_GLOBUS_NODES as string;
+export const globusEnabledNodes = globusNodesString
+  ? globusNodesString.split(',')
+  : [];
 
 // ESGF wget API
 // ------------------------------------------------------------------------------
