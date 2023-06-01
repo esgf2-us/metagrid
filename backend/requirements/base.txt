@@ -1,7 +1,7 @@
 # Core
 # ------------------------------------------------------------------------------
 pytz==2023.3  # https://github.com/stub42/pytz
-django==3.2.15  # https://www.djangoproject.com/
+django==4.2.1  # https://www.djangoproject.com/
 django-environ==0.8.1  # https://github.com/joke2k/django-environ
 gunicorn==20.1.0  # https://github.com/benoitc/gunicorn
 newrelic==7.6.0.173  # https://pypi.org/project/newrelic/
