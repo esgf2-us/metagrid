@@ -84,9 +84,7 @@ const Table: React.FC<Props> = ({
       }): React.ReactElement =>
         expanded ? (
           <DownCircleOutlined
-            className={topDataRowTargets.getClass(
-              'searchResultsRowContractIcon'
-            )}
+            className={topDataRowTargets.searchResultsRowContractIcon.class()}
             onClick={(e) => onExpand(record, e)}
           />
         ) : (
@@ -95,9 +93,7 @@ const Table: React.FC<Props> = ({
             trigger="hover"
           >
             <RightCircleOutlined
-              className={topDataRowTargets.getClass(
-                'searchResultsRowExpandIcon'
-              )}
+              className={topDataRowTargets.searchResultsRowExpandIcon.class()}
               onClick={(e) => onExpand(record, e)}
             />
           </ToolTip>
@@ -141,7 +137,7 @@ const Table: React.FC<Props> = ({
           return (
             <>
               <Button
-                className={topDataRowTargets.getClass('cartAddBtn', 'minus')}
+                className={topDataRowTargets.cartAddBtn.class('minus')}
                 icon={<MinusOutlined />}
                 onClick={() => onUpdateCart([record], 'remove')}
                 danger
@@ -156,7 +152,7 @@ const Table: React.FC<Props> = ({
               disabled={record.retracted === true}
               icon={
                 <PlusOutlined
-                  className={topDataRowTargets.getClass('cartAddBtn', 'plus')}
+                  className={topDataRowTargets.cartAddBtn.class('plus')}
                 />
               }
               onClick={() => onUpdateCart([record], 'add')}
@@ -170,7 +166,7 @@ const Table: React.FC<Props> = ({
       dataIndex: 'data_node',
       width: 20,
       render: (data_node: string) => (
-        <div className={topDataRowTargets.getClass('nodeStatusIcon')}>
+        <div className={topDataRowTargets.nodeStatusIcon.class()}>
           <StatusToolTip nodeStatus={nodeStatus} dataNode={data_node} />
         </div>
       ),
@@ -185,7 +181,7 @@ const Table: React.FC<Props> = ({
           const msg =
             'IMPORTANT! This dataset has been retracted and is no longer avaiable for download.';
           return (
-            <div className={topDataRowTargets.getClass('datasetTitle')}>
+            <div className={topDataRowTargets.datasetTitle.class()}>
               <p>
                 <span style={{ textDecoration: 'line-through' }}>{title}</span>
                 <br />
@@ -195,9 +191,7 @@ const Table: React.FC<Props> = ({
           );
         }
         return (
-          <div className={topDataRowTargets.getClass('datasetTitle')}>
-            {title}
-          </div>
+          <div className={topDataRowTargets.datasetTitle.class()}>{title}</div>
         );
       },
     },
@@ -207,7 +201,7 @@ const Table: React.FC<Props> = ({
       key: 'number_of_files',
       width: 50,
       render: (numberOfFiles: number) => (
-        <p className={topDataRowTargets.getClass('fileCount')}>
+        <p className={topDataRowTargets.fileCount.class()}>
           {numberOfFiles || 'N/A'}
         </p>
       ),
@@ -218,7 +212,7 @@ const Table: React.FC<Props> = ({
       key: 'size',
       width: 100,
       render: (size: number) => (
-        <p className={topDataRowTargets.getClass('totalSize')}>
+        <p className={topDataRowTargets.totalSize.class()}>
           {size ? formatBytes(size) : 'N/A'}
         </p>
       ),
@@ -229,7 +223,7 @@ const Table: React.FC<Props> = ({
       key: 'version',
       width: 100,
       render: (version: string) => (
-        <p className={topDataRowTargets.getClass('versionText')}>{version}</p>
+        <p className={topDataRowTargets.versionText.class()}>{version}</p>
       ),
     },
     {
@@ -266,7 +260,7 @@ const Table: React.FC<Props> = ({
         return (
           <>
             <Form
-              className={topDataRowTargets.getClass('downloadScriptForm')}
+              className={topDataRowTargets.downloadScriptForm.class()}
               layout="inline"
               onFinish={({ [formKey]: download }) =>
                 handleDownloadForm(download as DatasetDownloadTypes)
@@ -276,9 +270,7 @@ const Table: React.FC<Props> = ({
               <Form.Item name={formKey}>
                 <Select
                   disabled={record.retracted === true}
-                  className={topDataRowTargets.getClass(
-                    'downloadScriptOptions'
-                  )}
+                  className={topDataRowTargets.downloadScriptOptions.class()}
                   style={{ width: 120 }}
                 >
                   {allowedDownloadTypes.map(
@@ -298,7 +290,7 @@ const Table: React.FC<Props> = ({
               <Form.Item>
                 <Button
                   disabled={record.retracted === true}
-                  className={topDataRowTargets.getClass('downloadScriptBtn')}
+                  className={topDataRowTargets.downloadScriptBtn.class()}
                   type="default"
                   htmlType="submit"
                   icon={<DownloadOutlined />}

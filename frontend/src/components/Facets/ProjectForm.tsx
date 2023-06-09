@@ -1,12 +1,9 @@
 import { QuestionCircleOutlined, SelectOutlined } from '@ant-design/icons';
-import { Form, Select } from 'antd';
+import { Alert, Form, Popconfirm, Select, Spin } from 'antd';
 import React from 'react';
 import { ResponseError } from '../../api';
 import { leftSidebarTargets } from '../../common/reactJoyrideSteps';
 import { objectIsEmpty } from '../../common/utils';
-import Alert from '../Feedback/Alert';
-import Popconfirm from '../Feedback/Popconfirm';
-import Spin from '../Feedback/Spin';
 import Button from '../General/Button';
 import { ActiveSearchQuery } from '../Search/types';
 import { RawProject, RawProjects } from './types';
@@ -80,7 +77,7 @@ const ProjectsForm: React.FC<Props> = ({
           >
             <Select
               data-testid="project-form-select"
-              className={leftSidebarTargets.getClass('selectProjectBtn')}
+              className={leftSidebarTargets.selectProjectBtn.class()}
               style={styles.form}
               showArrow
             >
@@ -104,9 +101,7 @@ const ProjectsForm: React.FC<Props> = ({
               >
                 <span>
                   <Button
-                    className={leftSidebarTargets.getClass(
-                      'projectSelectLeftSideBtn'
-                    )}
+                    className={leftSidebarTargets.projectSelectLeftSideBtn.class()}
                     type="primary"
                     htmlType="submit"
                     icon={<SelectOutlined />}
@@ -115,9 +110,7 @@ const ProjectsForm: React.FC<Props> = ({
               </Popconfirm>
             ) : (
               <Button
-                className={leftSidebarTargets.getClass(
-                  'projectSelectLeftSideBtn'
-                )}
+                className={leftSidebarTargets.projectSelectLeftSideBtn.class()}
                 type="primary"
                 htmlType="submit"
                 icon={<SelectOutlined />}

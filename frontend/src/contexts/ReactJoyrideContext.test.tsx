@@ -1,5 +1,6 @@
 import { waitFor, render, fireEvent } from '@testing-library/react';
 import React from 'react';
+import { MemoryRouter } from 'react-router-dom';
 import { getCurrentAppPage, TourTitles } from '../common/reactJoyrideSteps';
 import { AppPage } from '../common/types';
 import Support from '../components/Support';
@@ -12,7 +13,10 @@ describe('test ReactJoyrideProvider', () => {
         <div data-testid="reactJoyrideProvider">
           <p>renders</p>
         </div>
-      </ReactJoyrideProvider>
+      </ReactJoyrideProvider>,
+      {
+        wrapper: MemoryRouter,
+      }
     );
 
     // Wait for render to get user auth info
@@ -49,7 +53,10 @@ describe('test ReactJoyrideProvider', () => {
     const { getByTestId, getByRole } = render(
       <ReactJoyrideProvider>
         <Support visible onClose={jest.fn()} />
-      </ReactJoyrideProvider>
+      </ReactJoyrideProvider>,
+      {
+        wrapper: MemoryRouter,
+      }
     );
 
     // Check support modal rendered

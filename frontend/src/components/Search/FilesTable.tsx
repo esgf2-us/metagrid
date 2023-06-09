@@ -6,7 +6,7 @@ import {
   RightCircleOutlined,
   ShareAltOutlined,
 } from '@ant-design/icons';
-import { Form, message, Table as TableD } from 'antd';
+import { Alert, Form, message, Table as TableD } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
@@ -16,7 +16,6 @@ import { innerDataRowTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import { formatBytes, splitStringByChar } from '../../common/utils';
 import ToolTip from '../DataDisplay/ToolTip';
-import Alert from '../Feedback/Alert';
 import Button from '../General/Button';
 import {
   Pagination,
@@ -197,9 +196,7 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
       key: 'title',
       render: (title: string) => {
         return (
-          <div className={innerDataRowTargets.getClass('filesTitle')}>
-            {title}
-          </div>
+          <div className={innerDataRowTargets.filesTitle.class()}>{title}</div>
         );
       },
     },
@@ -210,7 +207,7 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
       key: 'size',
       render: (size: number) => {
         return (
-          <div className={innerDataRowTargets.getClass('dataSize')}>
+          <div className={innerDataRowTargets.dataSize.class()}>
             {formatBytes(size)}
           </div>
         );
@@ -231,7 +228,7 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
             >
               <ToolTip title="Download the data file via Http." trigger="hover">
                 <Form.Item
-                  className={innerDataRowTargets.getClass('downloadDataBtn')}
+                  className={innerDataRowTargets.downloadDataBtn.class()}
                 >
                   <Button
                     type="primary"
@@ -245,9 +242,7 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
                   title="Copy a shareable OPENDAP URL to the clipboard."
                   trigger="hover"
                 >
-                  <Form.Item
-                    className={innerDataRowTargets.getClass('copyUrlBtn')}
-                  >
+                  <Form.Item className={innerDataRowTargets.copyUrlBtn.class()}>
                     <Button
                       type="primary"
                       onClick={() => {
@@ -284,9 +279,7 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
       key: 'checksum',
       render: (checksum: string) => {
         return (
-          <div className={innerDataRowTargets.getClass('checksum')}>
-            {checksum}
-          </div>
+          <div className={innerDataRowTargets.checksum.class()}>{checksum}</div>
         );
       },
     },
