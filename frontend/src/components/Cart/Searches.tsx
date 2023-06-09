@@ -21,7 +21,7 @@ const Searches: React.FC<Props> = ({
   }
 
   return (
-    <div className={savedSearchTourTargets.getClass('savedSearches')}>
+    <div className={savedSearchTourTargets.savedSearches.class()}>
       <Row gutter={[18, 18]}>
         {(userSearchQueries as UserSearchQueries).map(
           (searchQuery: UserSearchQuery, index: number) => (

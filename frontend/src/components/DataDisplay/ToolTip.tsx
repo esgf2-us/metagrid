@@ -3,7 +3,7 @@ import React from 'react';
 
 type Props = {
   title: string | React.ReactElement;
-  trigger?: string;
+  trigger?: 'click' | 'contextMenu' | 'hover' | undefined;
   color?: string;
   placement?:
     | 'top'

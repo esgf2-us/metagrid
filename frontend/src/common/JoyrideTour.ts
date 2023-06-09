@@ -55,6 +55,14 @@ export class JoyrideTour {
     await func();
   }
 
+  /**
+   *
+   * @param target The element to highlight (CSS selector or an HTML Element)
+   * @param content The content of the tour window
+   * @param placement Default location for displaying the window
+   * @param action A function to call when the tour passes this step
+   * @returns This tour object
+   */
   addNextStep(
     target: string,
     content: string,

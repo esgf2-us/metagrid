@@ -4,7 +4,7 @@ import {
   ShareAltOutlined,
   ShoppingCartOutlined,
 } from '@ant-design/icons';
-import { Col, Row, Typography } from 'antd';
+import { Alert, Col, Row, Typography } from 'antd';
 import humps from 'humps';
 import React from 'react';
 import { DeferFn, useAsync } from 'react-async';
@@ -25,7 +25,6 @@ import {
   RawFacets,
   RawProject,
 } from '../Facets/types';
-import Alert from '../Feedback/Alert';
 import Button from '../General/Button'; // Note, tooltips do not work for this button
 import { NodeStatusArray } from '../NodeStatus/types';
 import Table from './Table';
@@ -276,7 +275,7 @@ const Search: React.FC<Props> = ({
   return (
     <div
       data-testid="search"
-      className={searchTableTargets.getClass('searchResultsTable')}
+      className={searchTableTargets.searchResultsTable.class()}
     >
       <div style={styles.summary}>
         {objectIsEmpty(project) && (
@@ -294,7 +293,7 @@ const Search: React.FC<Props> = ({
           )}
           {results && !isLoading && (
             <span
-              className={searchTableTargets.getClass('resultsFoundText')}
+              className={searchTableTargets.resultsFoundText.class()}
               style={styles.resultsHeader}
             >
               {numFound.toLocaleString()} results found for{' '}
@@ -309,7 +308,7 @@ const Search: React.FC<Props> = ({
             <div>
               <Button
                 type="default"
-                className={searchTableTargets.getClass('addSelectedToCartBtn')}
+                className={searchTableTargets.addSelectedToCartBtn.class()}
                 onClick={() => onUpdateCart(selectedItems, 'add')}
                 disabled={
                   isLoading ||
@@ -322,7 +321,7 @@ const Search: React.FC<Props> = ({
                 Add Selected to Cart
               </Button>{' '}
               <Button
-                className={searchTableTargets.getClass('saveSearchBtn')}
+                className={searchTableTargets.saveSearchBtn.class()}
                 type="default"
                 onClick={() => onSaveSearchQuery(currentRequestURL as string)}
                 disabled={isLoading || numFound === 0}
@@ -332,7 +331,7 @@ const Search: React.FC<Props> = ({
               </Button>{' '}
               <Button
                 type="default"
-                className={searchTableTargets.getClass('copySearchLinkBtn')}
+                className={searchTableTargets.copySearchLinkBtn.class()}
                 onClick={() => onShareSearchQuery()}
                 disabled={isLoading || numFound === 0}
               >
@@ -349,7 +348,7 @@ const Search: React.FC<Props> = ({
             <p>
               <span style={styles.subtitles}>Query String: </span>
               <Typography.Text
-                className={searchTableTargets.getClass('queryString')}
+                className={searchTableTargets.queryString.class()}
                 code
               >
                 {stringifyFilters(

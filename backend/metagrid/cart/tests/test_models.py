@@ -1,9 +1,5 @@
-from typing import TYPE_CHECKING
-
+from metagrid.cart.models import Cart, Search
 from metagrid.cart.tests.factories import CartFactory, SearchFactory
-
-if TYPE_CHECKING:
-    from metagrid.cart.models import Cart, Search
 
 
 class TestCart:

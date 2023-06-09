@@ -5,8 +5,8 @@ omit =
     *urls.py,
     *manage.py,
     *wsgi.py*,
-    *docs/*
-    *migrations/*,
+    *docs/*,
+    */migrations/*,
     *settings*,
     *postgres-data/*,
     *tests/*,

@@ -2,7 +2,7 @@ import { ReactKeycloakProvider } from '@react-keycloak/web';
 import { render, RenderResult } from '@testing-library/react';
 import { KeycloakInstance } from 'keycloak-js';
 import React, { ComponentType } from 'react';
-import { BrowserRouter as Router } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
 import { AuthProvider } from '../contexts/AuthContext';
 import { keycloakProviderInitConfig } from '../lib/keycloak';
 
@@ -70,7 +70,9 @@ export const customRender = (
         initOptions={keycloakProviderInitConfig}
       >
         <AuthProvider>
-          <Router basename={process.env.PUBLIC_URL}>{children}</Router>
+          <MemoryRouter basename={process.env.PUBLIC_URL}>
+            {children}
+          </MemoryRouter>
         </AuthProvider>
       </ReactKeycloakProvider>
     );

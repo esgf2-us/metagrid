@@ -14,8 +14,8 @@ class JSONFactory(factory.DictFactory):
 
     @classmethod
     def _generate(cls, create, attrs):
-        obj = super()._generate(create, attrs)
-        return json.dumps(obj)
+        obj = super()._generate(create, attrs)  # pragma: no cover
+        return json.dumps(obj)  # pragma: no cover
 
 
 class CartFactory(factory.django.DjangoModelFactory):

@@ -1,7 +1,7 @@
 import { BookOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { Tabs } from 'antd';
 import React from 'react';
-import { useHistory } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { cartTourTargets } from '../../common/reactJoyrideSteps';
 import { RawSearchResults } from '../Search/types';
 import Items from './Items';
@@ -26,18 +26,19 @@ const Cart: React.FC<Props> = ({
   onRemoveSearchQuery,
 }) => {
   const [activeTab, setActiveTab] = React.useState<string>('items');
-  const history = useHistory();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   React.useEffect(() => {
-    if (history.location.pathname.includes('searches')) {
+    if (location.pathname.includes('searches')) {
       setActiveTab('searches');
     } else {
       setActiveTab('items');
     }
-  }, [history.location.pathname]);
+  }, [location.pathname]);
 
   const handleTabClick = (key: string): void => {
-    history.push(key);
+    navigate(key);
     setActiveTab(key);
   };
 
@@ -46,7 +47,7 @@ const Cart: React.FC<Props> = ({
       <Tabs activeKey={activeTab} animated={false} onTabClick={handleTabClick}>
         <Tabs.TabPane
           tab={
-            <span className={cartTourTargets.getClass('datasetBtn')}>
+            <span className={cartTourTargets.datasetBtn.class()}>
               <ShoppingCartOutlined />
               Datasets
             </span>
@@ -62,7 +63,7 @@ const Cart: React.FC<Props> = ({
 
         <Tabs.TabPane
           tab={
-            <span className={cartTourTargets.getClass('libraryBtn')}>
+            <span className={cartTourTargets.libraryBtn.class()}>
               <BookOutlined />
               Search Library
             </span>

@@ -43,14 +43,12 @@ it('renders the node status and columns sort', () => {
 it('renders an error message when no node status information is available', async () => {
   const { getByRole } = render(<NodeStatus isLoading={false} />);
 
-  const alertMsg = await waitFor(() =>
-    getByRole('img', { name: 'close-circle', hidden: true })
-  );
+  const alertMsg = await waitFor(() => getByRole('alert'));
   expect(alertMsg).toBeTruthy();
 });
 
 it('renders an error message when there is an api error', async () => {
-  const errorMsg = 'API error';
+  const errorMsg = 'Node status information is currently unavailable.';
 
   const { getByRole, getByText } = render(
     <NodeStatus
@@ -59,9 +57,7 @@ it('renders an error message when there is an api error', async () => {
     ></NodeStatus>
   );
 
-  const alertMsg = await waitFor(() =>
-    getByRole('img', { name: 'close-circle', hidden: true })
-  );
+  const alertMsg = await waitFor(() => getByRole('alert'));
   expect(alertMsg).toBeTruthy();
 
   const errorMsgDiv = getByText(errorMsg);
@@ -76,9 +72,7 @@ it('renders error message that feature is disabled', async () => {
     <NodeStatus isLoading={false} nodeStatus={[]}></NodeStatus>
   );
 
-  const alertMsg = await waitFor(() =>
-    getByRole('img', { name: 'close-circle', hidden: true })
-  );
+  const alertMsg = await waitFor(() => getByRole('alert'));
   expect(alertMsg).toBeTruthy();
 
   const errorMsgDiv = getByText(errorMsg);
@@ -92,9 +86,7 @@ it('renders fallback network error msg', async () => {
     <NodeStatus isLoading={false}></NodeStatus>
   );
 
-  const alertMsg = await waitFor(() =>
-    getByRole('img', { name: 'close-circle', hidden: true })
-  );
+  const alertMsg = await waitFor(() => getByRole('alert'));
   expect(alertMsg).toBeTruthy();
 
   const errorMsgDiv = getByText(errorMsg);

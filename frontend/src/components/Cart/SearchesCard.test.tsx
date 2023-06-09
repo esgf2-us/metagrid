@@ -14,14 +14,14 @@ const defaultProps: Props = {
 };
 
 beforeEach(() => {
-  const mockHistoryPush = jest.fn();
+  const mockNavigate = jest.fn();
   jest.mock(
     'react-router-dom',
     () =>
       ({
         ...jest.requireActual('react-router-dom'),
-        useHistory: () => ({
-          push: mockHistoryPush,
+        useNavigate: () => ({
+          push: mockNavigate,
         }),
       } as Record<string, unknown>)
   );
@@ -52,10 +52,12 @@ it('displays alert error when api fails to return response', async () => {
     )
   );
 
-  const { getByRole } = render(<SearchesCard {...defaultProps} />);
+  const { getByRole } = render(<SearchesCard {...defaultProps} />, {
+    wrapper: MemoryRouter,
+  });
 
   // Check alert renders
-  const alert = await waitFor(() => getByRole('img', { name: 'close-circle' }));
+  const alert = await waitFor(() => getByRole('alert'));
   expect(alert).toBeTruthy();
 });
 
@@ -64,7 +66,8 @@ it('displays "N/A" for Filename Searches when none are applied', () => {
     <SearchesCard
       {...defaultProps}
       searchQuery={userSearchQueryFixture({ filenameVars: undefined })}
-    />
+    />,
+    { wrapper: MemoryRouter }
   );
   // Shows number of files
   const filenameSearchesField = getByText('Filename Searches:').parentNode;

@@ -296,3 +296,8 @@ JWT_AUTH_COOKIE = "jwt-auth"
 # https://github.com/adamchainz/django-cors-headers#setup
 CORS_ORIGIN_ALLOW_ALL = False
 CORS_ORIGIN_WHITELIST = env.list("CORS_ORIGIN_WHITELIST")
+
+
+SEARCH_URL = env("REACT_APP_ESGF_NODE_URL")
+WGET_URL = env("REACT_APP_WGET_API_URL")
+STATUS_URL = env("REACT_APP_ESGF_NODE_STATUS_URL")

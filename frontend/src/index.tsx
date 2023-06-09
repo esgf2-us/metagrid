@@ -1,7 +1,7 @@
 import React from 'react';
 import { ReactKeycloakProvider } from '@react-keycloak/web';
 import ReactDOM from 'react-dom';
-import { BrowserRouter as Router } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
 import { getSearchFromUrl } from './common/utils';
 import App from './components/App/App';
 import { AuthProvider } from './contexts/AuthContext';
@@ -15,11 +15,11 @@ ReactDOM.render(
     initOptions={keycloakProviderInitConfig}
   >
     <AuthProvider>
-      <Router basename={process.env.PUBLIC_URL}>
+      <BrowserRouter basename={process.env.PUBLIC_URL}>
         <ReactJoyrideProvider>
           <App searchQuery={getSearchFromUrl()} />
         </ReactJoyrideProvider>
-      </Router>
+      </BrowserRouter>
     </AuthProvider>
   </ReactKeycloakProvider>,
   document.getElementById('root')

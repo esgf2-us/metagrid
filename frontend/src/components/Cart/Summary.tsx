@@ -40,10 +40,7 @@ const Summary: React.FC<Props> = ({ userCart }) => {
   }
 
   return (
-    <div
-      data-testid="summary"
-      className={cartTourTargets.getClass('cartSummary')}
-    >
+    <div data-testid="summary" className={cartTourTargets.cartSummary.class()}>
       <div style={styles.headerContainer}>
         <img style={styles.image} src={cartImg} alt="Cart" />
         <img style={styles.image} src={folderImg} alt="Folder" />

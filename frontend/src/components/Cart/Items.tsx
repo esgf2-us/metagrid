@@ -3,7 +3,7 @@ import {
   DownloadOutlined,
   QuestionCircleOutlined,
 } from '@ant-design/icons';
-import { Col, Form, message, Row, Select } from 'antd';
+import { Col, Form, message, Popconfirm, Row, Select } from 'antd';
 import React from 'react';
 import {
   fetchWgetScript,
@@ -13,7 +13,7 @@ import {
 import { cartTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import Empty from '../DataDisplay/Empty';
-import Popconfirm from '../Feedback/Popconfirm';
+// import Popconfirm from '../Feedback/Popconfirm';
 import Button from '../General/Button';
 import Table from '../Search/Table';
 import { RawSearchResults } from '../Search/types';
@@ -88,12 +88,13 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
           <div style={styles.summary}>
             {userCart.length > 0 && (
               <Popconfirm
+                title=""
                 icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
                 onConfirm={onClearCart}
               >
                 <span>
                   <Button
-                    className={cartTourTargets.getClass('removeItemsBtn')}
+                    className={cartTourTargets.removeItemsBtn.class()}
                     danger
                   >
                     Remove All Items
@@ -136,7 +137,7 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
             >
               <Form.Item
                 name="downloadType"
-                className={cartTourTargets.getClass('downloadAllType')}
+                className={cartTourTargets.downloadAllType.class()}
               >
                 <Select style={{ width: 235 }}>
                   {downloadOptions.map((option) => (
@@ -149,7 +150,7 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
               </Form.Item>
               <Form.Item>
                 <Button
-                  className={cartTourTargets.getClass('downloadAllBtn')}
+                  className={cartTourTargets.downloadAllBtn.class()}
                   type="primary"
                   htmlType="submit"
                   icon={<DownloadOutlined />}

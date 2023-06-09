@@ -59,6 +59,7 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
       <div data-testid="support-form">
         <Modal
           visible={visible}
+          closeText="Close Support"
           title={
             <div>
               <h2>

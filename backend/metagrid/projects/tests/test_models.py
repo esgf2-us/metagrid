@@ -1,8 +1,6 @@
-from typing import TYPE_CHECKING
-
 import pytest
 
-from metagrid.projects.models import ProjectFacet
+from metagrid.projects.models import Facet, FacetGroup, Project, ProjectFacet
 from metagrid.projects.tests.factories import (
     FacetFactory,
     FacetGroupFactory,
@@ -11,9 +9,6 @@ from metagrid.projects.tests.factories import (
 )
 
 pytestmark = pytest.mark.django_db
-
-if TYPE_CHECKING:
-    from metagrid.projects.models import Facet, FacetGroup, Project
 
 
 class TestProjectModel:

@@ -4,18 +4,16 @@ import {
   LinkOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
-import { Col, Typography } from 'antd';
+import { Alert, Col, Skeleton, Typography } from 'antd';
 import React from 'react';
 import { useAsync } from 'react-async';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { fetchSearchResults, generateSearchURLQuery } from '../../api';
 import { clickableRoute } from '../../api/routes';
 import { savedSearchTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import Card from '../DataDisplay/Card';
 import ToolTip from '../DataDisplay/ToolTip';
-import Alert from '../Feedback/Alert';
-import Skeleton from '../Feedback/Skeleton';
 import { stringifyFilters } from '../Search';
 import { UserSearchQuery } from './types';
 
@@ -41,7 +39,7 @@ const SearchesCard: React.FC<Props> = ({
   onRunSearchQuery,
   onRemoveSearchQuery,
 }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const {
     uuid,
     project,
@@ -103,18 +101,18 @@ const SearchesCard: React.FC<Props> = ({
         actions={[
           <ToolTip title="Apply search query and view results" trigger="hover">
             <SearchOutlined
-              className={savedSearchTourTargets.getClass('applySearch')}
+              className={savedSearchTourTargets.applySearch.class()}
               data-testid={`apply-${index + 1}`}
               key="search"
               onClick={() => {
-                history.push('/search');
+                navigate('/search');
                 onRunSearchQuery(searchQuery);
               }}
             />
           </ToolTip>,
           <ToolTip title="View results in JSON format">
             <a
-              className={savedSearchTourTargets.getClass('jsonBtn')}
+              className={savedSearchTourTargets.jsonBtn.class()}
               href={clickableRoute(url)}
               rel="noopener noreferrer"
               target="blank_"
@@ -124,7 +122,7 @@ const SearchesCard: React.FC<Props> = ({
           </ToolTip>,
           <ToolTip title="Remove search query from library">
             <DeleteOutlined
-              className={savedSearchTourTargets.getClass('removeBtn')}
+              className={savedSearchTourTargets.removeBtn.class()}
               data-testid={`remove-${index + 1}`}
               onClick={() => onRemoveSearchQuery(uuid)}
               style={{ color: 'red' }}
@@ -134,12 +132,12 @@ const SearchesCard: React.FC<Props> = ({
         ]}
       >
         {numResults}
-        <p className={savedSearchTourTargets.getClass('projectDescription')}>
+        <p className={savedSearchTourTargets.projectDescription.class()}>
           <span style={styles.category}>Project: </span>
           {project.fullName}
         </p>
 
-        <p className={savedSearchTourTargets.getClass('searchQueryString')}>
+        <p className={savedSearchTourTargets.searchQueryString.class()}>
           <span style={styles.category}>Query String: </span>
           <Typography.Text code>
             {stringifyFilters(
