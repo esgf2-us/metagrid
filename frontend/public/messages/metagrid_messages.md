@@ -1,4 +1,4 @@
-# Welcome to the Metagrid Beta test v1.0.8
+# Welcome to the Metagrid Beta test v1.0.9
 
 Use the Help link to find information on how to contact support or report any issues you find.
 
@@ -10,4 +10,4 @@ Metagrid uses an updated user accounts system. Unfortunately for anyone looking 
 
 We are excited to be planning to have an "official" release of the Metagrid platform onto scalable infrastructure. In the meantime we will be testing new features.
 
-- Globus Transfer feature planned to be released in v1.0.9.
+- Globus Transfer feature updates planned to be released in v1.1.0.
