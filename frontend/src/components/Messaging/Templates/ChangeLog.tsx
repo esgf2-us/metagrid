@@ -7,7 +7,7 @@ const ChangeLogTemplate: React.FC<TemplateProps> = ({ templateData }) => {
   return (
     <>
       <h1 data-testid="changelogTemplate">
-        What&apos;s New with Metagrid v{props.version}
+        New with Metagrid v{props.version}
       </h1>
       <p style={{ maxHeight: '650px', overflow: 'auto' }}>
         {props.changesFile && (

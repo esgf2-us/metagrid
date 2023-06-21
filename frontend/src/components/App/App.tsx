@@ -141,10 +141,6 @@ const App: React.FC<Props> = ({ searchQuery }) => {
     ) as UserSearchQueries
   );
 
-  /* React.useEffect(() => {
-    loadGlobusState();
-  });*/
-
   React.useEffect(() => {
     /* istanbul ignore else */
     if (isAuthenticated) {
