@@ -3,7 +3,11 @@ from urllib.parse import urlparse
 
 import requests
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseServerError
+from django.http import (
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseServerError,
+)
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
@@ -82,9 +86,13 @@ def do_wget(request):
 def do_request(request, urlbase):
     resp = None
 
-    if len(urlbase) < 1:
-        print("ERROR:  urlbase string empty, ensure you have the settings loaded")
-        return HttpResponseServerError("ERROR: missing url configuration for request")
+    if len(urlbase) < 1:  # pragma: no cover
+        print(
+            "ERROR:  urlbase string empty, ensure you have the settings loaded"
+        )
+        return HttpResponseServerError(
+            "ERROR: missing url configuration for request"
+        )
     if request:
         if request.method == "POST":
             url_params = request.POST.copy()
