@@ -9,7 +9,7 @@ class TestProxyViewSet(APITestCase):
         response = self.client.get(
             url,
             {
-                "dataset_id": " CMIP6.CMIP.IPSL.IPSL-CM6A-LR.abrupt-4xCO2.r12i1p1f1.Amon.n2oglobal.gr.v20191003|esgf-data1.llnl.gov"
+                "dataset_id": "CMIP6.CMIP.IPSL.IPSL-CM6A-LR.abrupt-4xCO2.r12i1p1f1.Amon.n2oglobal.gr.v20191003|esgf-data1.llnl.gov"
             },
         )
         assert response.status_code == status.HTTP_200_OK
@@ -23,7 +23,7 @@ class TestProxyViewSet(APITestCase):
     def test_status(self):
         url = reverse("do-status")
         response = self.client.get(url)
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.status_code == status.HTTP_200_OK
 
     def test_citation(self):
         url = reverse("do-citation")
