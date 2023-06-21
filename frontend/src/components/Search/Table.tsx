@@ -21,6 +21,7 @@ import './Search.css';
 import Tabs from './Tabs';
 import { RawSearchResult, RawSearchResults, TextInputs } from './types';
 import GlobusToolTip from '../NodeStatus/GlobusToolTip';
+import { globusEnabledNodes } from '../../env';
 
 export type Props = {
   loading: boolean;
@@ -305,7 +306,10 @@ const Table: React.FC<Props> = ({
         );
       },
     },
-    {
+  ];
+
+  if (globusEnabledNodes.length > 0) {
+    columns.push({
       title: 'Globus Ready',
       dataIndex: 'data_node',
       width: 50,
@@ -317,8 +321,8 @@ const Table: React.FC<Props> = ({
           <GlobusToolTip dataNode={data_node} />
         </div>
       ),
-    },
-  ];
+    });
+  }
 
   return (
     <TableD

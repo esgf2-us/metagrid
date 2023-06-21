@@ -255,19 +255,23 @@ const FacetsForm: React.FC<Props> = ({
           ...activeSearchQuery.activeFacets,
         }}
       >
-        <h3>Filter By Download Options</h3>
-        <Row>
-          <Col>
-            <Radio.Group
-              onChange={handleOnGlobusReadyChanged}
-              value={globusReadyOnly}
-            >
-              <Radio value={false}>Any</Radio>
-              <Radio value>Globus Downloadable Only</Radio>
-            </Radio.Group>
-          </Col>
-        </Row>
-        <br />
+        {globusEnabledNodes.length > 0 && (
+          <>
+            <h3>Filter By Download Options</h3>
+            <Row>
+              <Col>
+                <Radio.Group
+                  onChange={handleOnGlobusReadyChanged}
+                  value={globusReadyOnly}
+                >
+                  <Radio value={false}>Any</Radio>
+                  <Radio value>Globus Downloadable Only</Radio>
+                </Radio.Group>
+              </Col>
+            </Row>
+            <br />
+          </>
+        )}
         <Row justify="end" gutter={8}>
           <Col span={16}>
             <h3>Filter with Facets</h3>
