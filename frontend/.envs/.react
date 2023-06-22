@@ -21,7 +21,7 @@ REACT_APP_WGET_API_URL=https://esgf-node.llnl.gov/esg-search/wget
 
 # ESGF Search API
 # https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
-REACT_APP_ESGF_NODE_URL=https://esgf-fedtest.llnl.gov/esg-search/search
+REACT_APP_ESGF_NODE_URL=https://esgf-node.llnl.gov/esg-search/search
 
 # https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
 REACT_APP_ESGF_SOLR_URL=https://esgf-fedtest.llnl.gov/solr

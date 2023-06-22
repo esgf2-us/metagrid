@@ -237,6 +237,7 @@ const DatasetDownloadForm: React.FC = () => {
           .then((resp) => {
             if (resp.status === 200) {
               message.info(`Globus transfer task submitted successfully!`);
+              setItemSelections([]);
               saveSessionValue(CartStateKeys.cartItemSelections, []);
             } else {
               message.warning(
@@ -256,67 +257,82 @@ const DatasetDownloadForm: React.FC = () => {
     }
   };
 
+  /**
+   *
+   * @returns False if one or more items are not Globus Ready
+   */
+  const checkItemsAreGlobusEnabled = (): boolean => {
+    if (globusEnabledNodes.length === 0) {
+      return true;
+    }
+    const globusReadyItems: RawSearchResults = [];
+    itemSelections.forEach((selection) => {
+      const data = selection as Record<string, unknown>;
+      const dataNode = data.data_node as string;
+      if (dataNode && globusEnabledNodes.includes(dataNode)) {
+        globusReadyItems.push(selection);
+      }
+    });
+
+    // If there are non-Globus Ready selections, show alert
+    const globusDisabledCount = itemSelections.length - globusReadyItems.length;
+    if (globusDisabledCount > 0) {
+      let state = 'One';
+      if (globusDisabledCount > 1) {
+        state = 'Some';
+      }
+      let content = `${state} of your selected items cannot be downloaded via Globus. Would you like to continue Globus Download with only the 'Globus Ready' items?`;
+
+      if (globusDisabledCount === itemSelections.length) {
+        state = 'None';
+        content =
+          "None of your selected items can be downloaded via Globus at this time. When choosing the Globus Download option, make sure your selections are 'Globus Ready'.";
+      }
+
+      const newAlertPopupState: AlertModalState = {
+        content,
+        onCancelAction: () => {
+          setAlertPopupState({ ...alertPopupState, show: false });
+        },
+        onOkAction: async () => {
+          setAlertPopupState({ ...alertPopupState, show: false });
+          if (state !== 'None') {
+            // Select only globus enabled items, save to session memory
+            setItemSelections(globusReadyItems);
+            await saveSessionValue<RawSearchResults>(
+              CartStateKeys.cartItemSelections,
+              globusReadyItems
+            );
+            // Starting globus download process
+            const prepareDownload = async (): Promise<void> => {
+              await performGlobusDownloadStep();
+            };
+            prepareDownload();
+          }
+        },
+        show: true,
+        state,
+      };
+
+      setAlertPopupState(newAlertPopupState);
+      return false;
+    }
+
+    return true;
+  };
+
   const handleDownloadForm = (downloadType: 'wget' | 'Globus'): void => {
     /* istanbul ignore else */
     if (downloadType === 'wget') {
       handleWgetDownload();
     } else if (downloadType === 'Globus') {
-      const globusReadyItems: RawSearchResults = [];
-      itemSelections.forEach((selection) => {
-        const data = selection as Record<string, unknown>;
-        const dataNode = data.data_node as string;
-        if (dataNode && globusEnabledNodes.includes(dataNode)) {
-          globusReadyItems.push(selection);
-        }
-      });
-      const globusDisabledCount =
-        itemSelections.length - globusReadyItems.length;
-      if (globusDisabledCount > 0) {
-        let state = 'One';
-        if (globusDisabledCount > 1) {
-          state = 'Some';
-        }
-        let content = `${state} of your selected items cannot be downloaded via Globus. Would you like to continue Globus Download with only the 'Globus Ready' items?`;
-
-        if (globusDisabledCount === itemSelections.length) {
-          state = 'None';
-          content =
-            "None of your selected items can be downloaded via Globus at this time. When choosing the Globus Download option, make sure your selections are 'Globus Ready'.";
-        }
-
-        const newAlertPopupState: AlertModalState = {
-          content,
-          onCancelAction: () => {
-            setAlertPopupState({ ...alertPopupState, show: false });
-          },
-          onOkAction: async () => {
-            setAlertPopupState({ ...alertPopupState, show: false });
-
-            if (state !== 'None') {
-              // Select only globus enabled items, save to session memory
-              setItemSelections(globusReadyItems);
-              await saveSessionValue<RawSearchResults>(
-                CartStateKeys.cartItemSelections,
-                globusReadyItems
-              );
-              // Starting globus download process
-              const prepareDownload = async (): Promise<void> => {
-                await performGlobusDownloadStep();
-              };
-              prepareDownload();
-            }
-          },
-          show: true,
-          state,
+      const itemsReady = checkItemsAreGlobusEnabled();
+      if (itemsReady) {
+        const prepareDownload = async (): Promise<void> => {
+          await performGlobusDownloadStep();
         };
-
-        setAlertPopupState(newAlertPopupState);
-        return;
+        prepareDownload();
       }
-      const prepareDownload = async (): Promise<void> => {
-        await performGlobusDownloadStep();
-      };
-      prepareDownload();
     }
   };
 

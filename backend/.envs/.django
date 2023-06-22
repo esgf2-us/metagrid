@@ -24,3 +24,6 @@ REACT_APP_ESGF_NODE_URL=https://esgf-node.llnl.gov/esg-search/search
 # ESGF Node Status API
 # https://github.com/ESGF/esgf-utils/blob/master/node_status/query_prom.py
 REACT_APP_ESGF_NODE_STATUS_URL=https://aims2.llnl.gov/metagrid-backend/proxy/status
+
+# ESGF Solr URL
+REACT_APP_ESGF_SOLR_URL=https://esgf-fedtest.llnl.gov/solr
