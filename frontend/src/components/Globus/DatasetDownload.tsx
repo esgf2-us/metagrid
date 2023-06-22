@@ -17,7 +17,11 @@ import {
   GlobusTokenResponse,
 } from '../../common/types';
 import { cartTourTargets } from '../../common/reactJoyrideSteps';
-import { globusClientID, globusRedirectUrl } from '../../env';
+import {
+  globusClientID,
+  globusEnabledNodes,
+  globusRedirectUrl,
+} from '../../env';
 import { RawSearchResults } from '../Search/types';
 import CartStateKeys, {
   cartItemSelections,
@@ -45,6 +49,14 @@ type ModalState = {
   onOkAction: () => void;
   show: boolean;
   state: ModalFormState;
+};
+
+type AlertModalState = {
+  onCancelAction: () => void;
+  onOkAction: () => void;
+  show: boolean;
+  state: string;
+  content: React.ReactNode;
 };
 
 // Statically defined list of dataset download options
@@ -97,6 +109,20 @@ const DatasetDownloadForm: React.FC = () => {
       setUseDefaultConfirmModal({ ...useDefaultConfirmModal, show: false });
     },
   });
+
+  const [alertPopupState, setAlertPopupState] = React.useState<AlertModalState>(
+    {
+      content: '',
+      onCancelAction: () => {
+        setAlertPopupState({ ...alertPopupState, show: false });
+      },
+      onOkAction: () => {
+        setAlertPopupState({ ...alertPopupState, show: false });
+      },
+      show: false,
+      state: 'none',
+    }
+  );
 
   function redirectToNewURL(newUrl: string): void {
     setTimeout(() => {
@@ -235,6 +261,58 @@ const DatasetDownloadForm: React.FC = () => {
     if (downloadType === 'wget') {
       handleWgetDownload();
     } else if (downloadType === 'Globus') {
+      const globusReadyItems: RawSearchResults = [];
+      itemSelections.forEach((selection) => {
+        const data = selection as Record<string, unknown>;
+        const dataNode = data.data_node as string;
+        if (dataNode && globusEnabledNodes.includes(dataNode)) {
+          globusReadyItems.push(selection);
+        }
+      });
+      const globusDisabledCount =
+        itemSelections.length - globusReadyItems.length;
+      if (globusDisabledCount > 0) {
+        let state = 'One';
+        if (globusDisabledCount > 1) {
+          state = 'Some';
+        }
+        let content = `${state} of your selected items cannot be downloaded via Globus. Would you like to continue Globus Download with only the 'Globus Ready' items?`;
+
+        if (globusDisabledCount === itemSelections.length) {
+          state = 'None';
+          content =
+            "None of your selected items can be downloaded via Globus at this time. When choosing the Globus Download option, make sure your selections are 'Globus Ready'.";
+        }
+
+        const newAlertPopupState: AlertModalState = {
+          content,
+          onCancelAction: () => {
+            setAlertPopupState({ ...alertPopupState, show: false });
+          },
+          onOkAction: async () => {
+            setAlertPopupState({ ...alertPopupState, show: false });
+
+            if (state !== 'None') {
+              // Select only globus enabled items, save to session memory
+              setItemSelections(globusReadyItems);
+              await saveSessionValue<RawSearchResults>(
+                CartStateKeys.cartItemSelections,
+                globusReadyItems
+              );
+              // Starting globus download process
+              const prepareDownload = async (): Promise<void> => {
+                await performGlobusDownloadStep();
+              };
+              prepareDownload();
+            }
+          },
+          show: true,
+          state,
+        };
+
+        setAlertPopupState(newAlertPopupState);
+        return;
+      }
       const prepareDownload = async (): Promise<void> => {
         await performGlobusDownloadStep();
       };
@@ -628,6 +706,15 @@ const DatasetDownloadForm: React.FC = () => {
           </li>
         </ol>
         <p>Do you wish to proceed?</p>
+      </Modal>
+      <Modal
+        okText="Ok"
+        onOk={alertPopupState.onOkAction}
+        onCancel={alertPopupState.onCancelAction}
+        title="Notice"
+        visible={alertPopupState.show}
+      >
+        {alertPopupState.content}
       </Modal>
     </>
   );
