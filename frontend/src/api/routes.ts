@@ -1,4 +1,4 @@
-import { esgfNodeURL, metagridApiURL } from '../env';
+import { esgfSearchURL, metagridApiURL } from '../env';
 
 export type HTTPCodeType = 400 | 401 | 403 | 404 | 405 | 'generic';
 
@@ -52,7 +52,7 @@ type ApiRoutes = {
  * served as a clickable link within the browser.
  */
 export const clickableRoute = (route: string): string =>
-  route.replace(`${metagridApiURL}/proxy/search`, `${esgfNodeURL}`);
+  route.replace(`${metagridApiURL}/proxy/search`, `${esgfSearchURL}`);
 
 // Any path with parameters (e.g. '/:datasetID/') must be in camelCase
 // https://mswjs.io/docs/basics/path-matching#path-with-parameters

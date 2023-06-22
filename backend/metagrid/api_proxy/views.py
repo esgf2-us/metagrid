@@ -3,7 +3,11 @@ from urllib.parse import urlparse
 
 import requests
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import (
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseServerError,
+)
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
@@ -13,8 +17,8 @@ from django.views.decorators.http import require_http_methods
 def do_search(request):
     esgf_host = getattr(
         settings,
-        "REACT_APP_ESGF_NODE_URL",
-        "https://esgf-node.llnl.gov/esg-search/search",
+        "SEARCH_URL",
+        "",
     )
     return do_request(request, esgf_host)
 
@@ -54,8 +58,8 @@ def do_citation(request):
 def do_status(request):
     status_url = getattr(
         settings,
-        "REACT_APP_ESGF_NODE_STATUS_URL",
-        "https://aims4.llnl.gov/prometheus/api/v1/query?query=probe_success%7Bjob%3D%22http_2xx%22%2C+target%3D~%22.%2Athredds.%2A%22%7D",
+        "STATUS_URL",
+        "",
     )
     resp = requests.get(status_url)
     if resp.status_code == 200:  # pragma: no cover
@@ -71,8 +75,8 @@ def do_wget(request):
         request,
         getattr(
             settings,
-            "REACT_APP_WGET_API_URL",
-            "https://esgf-node.llnl.gov/esg-search/wget",
+            "WGET_URL",
+            "",
         ),
     )
 
@@ -80,6 +84,13 @@ def do_wget(request):
 def do_request(request, urlbase):
     resp = None
 
+    if len(urlbase) < 1:  # pragma: no cover
+        print(
+            "ERROR:  urlbase string empty, ensure you have the settings loaded"
+        )
+        return HttpResponseServerError(
+            "ERROR: missing url configuration for request"
+        )
     if request:
         if request.method == "POST":
             url_params = request.POST.copy()

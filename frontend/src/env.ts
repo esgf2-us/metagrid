@@ -32,8 +32,7 @@ export const wgetApiURL = process.env.REACT_APP_WGET_API_URL as string;
 // ESGF Search API
 // ------------------------------------------------------------------------------
 // https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
-export const esgfNodeURL = `${process.env.REACT_APP_ESGF_NODE_URL as string}`;
-export const esgfNodeURLNoProtocol = esgfNodeURL.split('//')[1];
+export const esgfSearchURL = `${process.env.REACT_APP_SEARCH_URL as string}`;
 
 // ESGF Node Status API
 // ------------------------------------------------------------------------------

@@ -58,7 +58,7 @@ REACT_APP_GLOBUS_NODES=
 
 # https://github.com/ESGF/esgf-wget
 
-REACT_APP_WGET_API_URL=https://pcmdi8vm.llnl.gov/wget
+REACT_APP_WGET_API_URL=
 
 # ESGF Search API
 
@@ -68,13 +68,13 @@ REACT_APP_ESGF_NODE_URL=https://esgf-fedtest.llnl.gov/esg-search/search
 
 # https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
 
-REACT_APP_ESGF_SOLR_URL=https://esgf-fedtest.llnl.gov/solr
+REACT_APP_SEARCH_URL=
 
 # ESGF Node Status API
 
 # https://github.com/ESGF/esgf-utils/blob/master/node_status/query_prom.py
 
-REACT_APP_ESGF_NODE_STATUS_URL=https://aims2.llnl.gov/metagrid-backend/proxy/status
+REACT_APP_ESGF_NODE_STATUS_URL=
 
 # Keycloak
 

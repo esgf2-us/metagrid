@@ -187,7 +187,11 @@ const RightMenu: React.FC<Props> = ({
             </Menu.Item>
           </Menu.SubMenu>
         )}
-        <Menu.Item style={menuItemStyling} key="help">
+        <Menu.Item
+          style={menuItemStyling}
+          key="help"
+          className={navBarTargets.helpBtn.class()}
+        >
           <Button
             type="text"
             icon={
