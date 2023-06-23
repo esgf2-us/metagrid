@@ -208,6 +208,17 @@ const DatasetDownloadForm: React.FC = () => {
     }
   };
 
+  const createTaskOverviewURL = (
+    transRespData: Record<string, unknown>
+  ): string => {
+    if (transRespData && transRespData.taskid) {
+      const taskId = transRespData.taskid as string;
+
+      return `https://app.globus.org/activity/${taskId}/overview`;
+    }
+    return '';
+  };
+
   const handleGlobusDownload = async (
     globusTransferToken: GlobusTokenResponse | null,
     refreshToken: string | null,
@@ -237,8 +248,24 @@ const DatasetDownloadForm: React.FC = () => {
           .then((resp) => {
             if (resp.status === 200) {
               message.info(`Globus transfer task submitted successfully!`);
+
               setItemSelections([]);
               saveSessionValue(CartStateKeys.cartItemSelections, []);
+
+              const taskStatusURL = createTaskOverviewURL(
+                resp.data as Record<string, unknown>
+              );
+              if (taskStatusURL !== '') {
+                message.info(
+                  <p>
+                    Click here to view Task Status:{' '}
+                    <a href={taskStatusURL} target="_blank" rel="noreferrer">
+                      Task Status
+                    </a>
+                  </p>,
+                  15
+                );
+              }
             } else {
               message.warning(
                 `Globus transfer task struggled: ${resp.statusText}`

@@ -12,13 +12,7 @@ from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 from rest_framework.routers import DefaultRouter
 
-from metagrid.api_globus.views import (
-    do_globus_transfer,
-    get_access_token,
-    get_endpoint_list_test,
-    get_globus_state,
-    set_globus_state,
-)
+from metagrid.api_globus.views import do_globus_transfer, get_access_token
 from metagrid.api_proxy.views import (
     do_citation,
     do_search,
@@ -70,9 +64,6 @@ urlpatterns = [
     path("tempStorage/get", get_temp_storage, name="temp_storage_get"),
     path("tempStorage/set", set_temp_storage, name="temp_storage_set"),
     path("globus/auth", get_access_token, name="globus_auth"),
-    path("globus/state/get", get_globus_state, name="globus_state_get"),
-    path("globus/state/set", set_globus_state, name="globus_state_set"),
-    path("globus/endpoints", get_endpoint_list_test, name="globus_endpoints"),
     path("globus/transfer", do_globus_transfer, name="globus_transfer"),
     re_path(
         r"^account-confirm-email/",
