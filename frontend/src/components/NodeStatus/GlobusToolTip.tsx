@@ -24,7 +24,7 @@ const GlobusToolTip: React.FC<Props> = ({ dataNode, children }) => {
           title={
             <>
               Data Node:<div>{dataNode}</div>
-              Globus Download Available
+              Globus Transfer Available
             </>
           }
           color="green"
@@ -42,7 +42,7 @@ const GlobusToolTip: React.FC<Props> = ({ dataNode, children }) => {
         title={
           <>
             Data Node:<div>{dataNode}</div>
-            Globus Download Available
+            Globus Transfer Available
           </>
         }
         color="green"
@@ -61,7 +61,7 @@ const GlobusToolTip: React.FC<Props> = ({ dataNode, children }) => {
           title={
             <>
               Data Node:<div>{dataNode}</div>
-              Globus Download Unavailable
+              Globus Transfer Unavailable
             </>
           }
           color="red"
@@ -80,7 +80,7 @@ const GlobusToolTip: React.FC<Props> = ({ dataNode, children }) => {
         title={
           <>
             Data Node:<div>{dataNode}</div>
-            Globus Download Unavailable
+            Globus Transfer Unavailable
           </>
         }
         color="red"

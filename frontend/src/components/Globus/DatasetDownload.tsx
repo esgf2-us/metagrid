@@ -308,12 +308,12 @@ const DatasetDownloadForm: React.FC = () => {
       if (globusDisabledCount > 1) {
         state = 'Some';
       }
-      let content = `${state} of your selected items cannot be downloaded via Globus. Would you like to continue Globus Download with only the 'Globus Ready' items?`;
+      let content = `${state} of your selected items cannot be transfered via Globus. Would you like to continue the Globus transfer with the 'Globus Ready' items?`;
 
       if (globusDisabledCount === itemSelections.length) {
         state = 'None';
         content =
-          "None of your selected items can be downloaded via Globus at this time. When choosing the Globus Download option, make sure your selections are 'Globus Ready'.";
+          "None of your selected items can be transferred via Globus at this time. When choosing the Globus Transfer option, make sure your selections are 'Globus Ready'.";
       }
 
       const newAlertPopupState: AlertModalState = {
@@ -670,7 +670,6 @@ const DatasetDownloadForm: React.FC = () => {
                 {option}
               </Select.Option>
             ))}
-            /
           </Select>
         </Form.Item>
         <Form.Item>

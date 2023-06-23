@@ -257,7 +257,7 @@ const FacetsForm: React.FC<Props> = ({
       >
         {globusEnabledNodes.length > 0 && (
           <>
-            <h3>Filter By Download Options</h3>
+            <h3>Filter By Transfer Options</h3>
             <Row>
               <Col>
                 <Radio.Group
@@ -265,7 +265,7 @@ const FacetsForm: React.FC<Props> = ({
                   value={globusReadyOnly}
                 >
                   <Radio value={false}>Any</Radio>
-                  <Radio value>Globus Downloadable Only</Radio>
+                  <Radio value>Only Globus Transferrable</Radio>
                 </Radio.Group>
               </Col>
             </Row>

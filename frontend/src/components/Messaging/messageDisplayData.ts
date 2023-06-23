@@ -44,7 +44,7 @@ const startupMessages: StartPopupData = {
       template: MessageTemplates.Welcome,
       data: {
         welcomeMessage:
-          "If you wish to become familiar with Metagrid's search and download features, we recommend checking out the interface tours below:",
+          "If you wish to become familiar with Metagrid's search, download and transfer features, we recommend checking out the interface tours below:",
       },
     },
   ],
