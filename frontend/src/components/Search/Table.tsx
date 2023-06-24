@@ -234,7 +234,7 @@ const Table: React.FC<Props> = ({
     {
       title: 'Download Options',
       key: 'download',
-      width: 150,
+      width: 200,
       render: (record: RawSearchResult) => {
         const supportedDownloadTypes = record.access;
         const formKey = `download-${record.id}`;
@@ -312,7 +312,7 @@ const Table: React.FC<Props> = ({
     columns.push({
       title: 'Globus Ready',
       dataIndex: 'data_node',
-      width: 50,
+      width: 65,
       render: (data_node: string) => (
         <div
           style={{ textAlign: 'center' }}
@@ -331,7 +331,7 @@ const Table: React.FC<Props> = ({
       dataSource={results}
       rowKey="id"
       size="small"
-      scroll={{ y: 'calc(100vh)' }}
+      scroll={{ x: '100%', y: 'calc(70vh)' }}
     />
   );
 };

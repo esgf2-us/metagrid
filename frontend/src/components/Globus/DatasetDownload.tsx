@@ -11,11 +11,6 @@ import {
   ResponseError,
   startGlobusTransfer,
 } from '../../api';
-import {
-  GlobusStateValue,
-  GlobusEndpointData,
-  GlobusTokenResponse,
-} from '../../common/types';
 import { cartTourTargets } from '../../common/reactJoyrideSteps';
 import {
   globusClientID,
@@ -30,7 +25,15 @@ import CartStateKeys, {
 import GlobusStateKeys, {
   globusUseDefaultEndpoint,
   globusDefaultEndpoint,
+  globusTaskItems,
 } from './recoil/atom';
+import {
+  GlobusStateValue,
+  GlobusTokenResponse,
+  GlobusEndpointData,
+  GlobusTaskItem,
+  MAX_TASK_LIST_LENGTH,
+} from './types';
 
 // Reference: https://github.com/bpedroza/js-pkce
 const GlobusAuth = new PKCE({
@@ -75,6 +78,10 @@ const DatasetDownloadForm: React.FC = () => {
     defaultGlobusEndpoint,
     setDefaultGlobusEndpoint,
   ] = useRecoilState<GlobusStateValue>(globusDefaultEndpoint);
+
+  const [taskItems, setTaskItems] = useRecoilState<GlobusTaskItem[]>(
+    globusTaskItems
+  );
 
   const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(
     cartItemSelections
@@ -123,6 +130,16 @@ const DatasetDownloadForm: React.FC = () => {
       state: 'none',
     }
   );
+
+  function addNewTask(newTask: GlobusTaskItem): void {
+    const newItemsList = [...taskItems];
+    if (taskItems.length >= MAX_TASK_LIST_LENGTH) {
+      newItemsList.pop();
+    }
+    newItemsList.unshift(newTask);
+    setTaskItems(newItemsList);
+    saveSessionValue(GlobusStateKeys.globusTaskItems, newItemsList);
+  }
 
   function redirectToNewURL(newUrl: string): void {
     setTimeout(() => {
@@ -208,17 +225,6 @@ const DatasetDownloadForm: React.FC = () => {
     }
   };
 
-  const createTaskOverviewURL = (
-    transRespData: Record<string, unknown>
-  ): string => {
-    if (transRespData && transRespData.taskid) {
-      const taskId = transRespData.taskid as string;
-
-      return `https://app.globus.org/activity/${taskId}/overview`;
-    }
-    return '';
-  };
-
   const handleGlobusDownload = async (
     globusTransferToken: GlobusTokenResponse | null,
     refreshToken: string | null,
@@ -247,24 +253,37 @@ const DatasetDownloadForm: React.FC = () => {
         )
           .then((resp) => {
             if (resp.status === 200) {
-              message.info(`Globus transfer task submitted successfully!`);
-
               setItemSelections([]);
               saveSessionValue(CartStateKeys.cartItemSelections, []);
 
-              const taskStatusURL = createTaskOverviewURL(
-                resp.data as Record<string, unknown>
-              );
-              if (taskStatusURL !== '') {
-                message.info(
-                  <p>
-                    Click here to view Task Status:{' '}
-                    <a href={taskStatusURL} target="_blank" rel="noreferrer">
-                      Task Status
-                    </a>
-                  </p>,
-                  15
-                );
+              const transRespData = resp.data as Record<string, unknown>;
+              if (transRespData && transRespData.taskid) {
+                const taskId = transRespData.taskid as string;
+                const taskItem: GlobusTaskItem = {
+                  submitDate: new Date(Date.now()).toLocaleString(),
+                  taskId,
+                  taskStatusURL: `https://app.globus.org/activity/${taskId}/overview`,
+                };
+                addNewTask(taskItem);
+
+                if (taskItem.taskStatusURL !== '') {
+                  message.info(
+                    <p>
+                      Globus transfer task submitted successfully!
+                      <br />
+                      <a
+                        href={taskItem.taskStatusURL}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        View Task Status
+                      </a>
+                    </p>,
+                    5
+                  );
+                }
+              } else {
+                message.info(`Globus transfer task submitted successfully!`);
               }
             } else {
               message.warning(
@@ -634,12 +653,24 @@ const DatasetDownloadForm: React.FC = () => {
       const defaultEndpoint = await loadSessionValue<GlobusStateValue>(
         GlobusStateKeys.defaultEndpoint
       );
+      const useDefaultEndpoint = await loadSessionValue<boolean>(
+        GlobusStateKeys.useDefaultEndpoint
+      );
+      const savedTaskItems = await loadSessionValue<GlobusTaskItem[]>(
+        GlobusStateKeys.globusTaskItems
+      );
 
       if (itemCartSelections) {
         setItemSelections(itemCartSelections);
       }
       if (defaultEndpoint) {
         setDefaultGlobusEndpoint(defaultEndpoint);
+      }
+      if (useDefaultEndpoint) {
+        setUseGlobusDefaultEndpoint(useDefaultEndpoint);
+      }
+      if (savedTaskItems) {
+        setTaskItems(savedTaskItems);
       }
       if (continueProcess) {
         await performGlobusDownloadStep();

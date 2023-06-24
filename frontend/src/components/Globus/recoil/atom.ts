@@ -1,6 +1,6 @@
 import { atom, DefaultValue } from 'recoil';
 import { loadSessionValue, saveSessionValue } from '../../../api';
-import { GlobusStateValue } from '../../../common/types';
+import { GlobusStateValue, GlobusTaskItem } from '../types';
 
 // Folder structure based on: https://wes-rast.medium.com/recoil-project-structure-best-practices-79e74a475caa
 
@@ -13,6 +13,7 @@ enum GlobusStateKeys {
   refreshToken = 'globusRefreshToken',
   tokenResponse = 'tokenResponse',
   transferToken = 'globusTransferToken',
+  globusTaskItems = 'globusTaskItems',
 }
 
 export const sessionStorageEffect = (key: string) => ({
@@ -66,6 +67,11 @@ export const globusDefaultEndpoint = atom<GlobusStateValue>({
 export const globusUseDefaultEndpoint = atom<boolean>({
   key: GlobusStateKeys.useDefaultEndpoint,
   default: false,
+});
+
+export const globusTaskItems = atom<GlobusTaskItem[]>({
+  key: GlobusStateKeys.globusTaskItems,
+  default: [],
 });
 
 export default GlobusStateKeys;
