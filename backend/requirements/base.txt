@@ -15,12 +15,11 @@ psycopg2-binary==2.9.5  # https://github.com/psycopg/psycopg2
 
 # REST API
 # ------------------------------------------------------------------------------
+django-globus-portal-framework==0.4.8
 djangorestframework==3.14.0  # https://github.com/encode/django-rest-framework
 Markdown==3.4.1  # https://pypi.org/project/Markdown/
 django-filter==22.1  # https://github.com/carltongibson/django-filter
 django-cors-headers==3.14.0  # https://github.com/adamchainz/django-cors-headers
-django-allauth==0.54.0  # https://github.com/pennersr/django-allauth
-dj-rest-auth==2.2.8  # https://github.com/jazzband/dj-rest-auth
 djangorestframework-simplejwt==5.2.2  # https://github.com/SimpleJWT/django-rest-framework-simplejwt/
 drf-yasg==1.21.5  # https://github.com/axnsan12/drf-yasg
 

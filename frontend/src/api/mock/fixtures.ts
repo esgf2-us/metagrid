@@ -199,7 +199,8 @@ export const userAuthFixture = (
 ): RawUserAuth => {
   const defaults: RawUserAuth = {
     access_token: 'access_token',
-    refresh_token: 'refresh_token',
+    is_authenticated: false,
+    pk: 'pk',
   };
   return { ...defaults, ...props };
 };

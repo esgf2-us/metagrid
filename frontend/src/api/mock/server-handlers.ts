@@ -19,12 +19,6 @@ import {
 } from './fixtures';
 
 const handlers = [
-  rest.post(apiRoutes.keycloakAuth.path, (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json(userAuthFixture()))
-  ),
-  rest.get(apiRoutes.userInfo.path, (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json(userInfoFixture()))
-  ),
   rest.get(apiRoutes.userCart.path, (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(rawUserCartFixture()))
   ),

@@ -56,12 +56,8 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "django_filters",  # for filtering rest endpoints
     "corsheaders",
-    "allauth",
-    "allauth.account",
-    "allauth.socialaccount",
-    "allauth.socialaccount.providers.keycloak",
-    "dj_rest_auth",
     "drf_yasg",
+    "social_django",
     # Your apps
     "metagrid.users",
     "metagrid.projects",
@@ -80,7 +76,15 @@ MIDDLEWARE = (
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "social_django.middleware.SocialAuthExceptionMiddleware",
 )
+
+# Authentication backends setup OAuth2 handling and where user data should be
+# stored
+AUTHENTICATION_BACKENDS = [
+    "globus_portal_framework.auth.GlobusOpenIdConnect",
+    "django.contrib.auth.backends.ModelBackend",
+]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1"]
@@ -247,9 +251,9 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated"
     ],
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "dj_rest_auth.jwt_auth.JWTCookieAuthentication",
-    ),
+    # "DEFAULT_AUTHENTICATION_CLASSES": (
+    #     "dj_rest_auth.jwt_auth.JWTCookieAuthentication",
+    # ),
 }
 
 # django-rest-framework-simplejwt
@@ -260,22 +264,29 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": True,
 }
 
-# django-allauth
+# social_django
 # -------------------------------------------------------------------------------
-# https://django-allauth.readthedocs.io/en/latest/configuration.html
-# https://django-allauth.readthedocs.io/en/latest/providers.html#keycloak
-SOCIALACCOUNT_PROVIDERS = {
-    "keycloak": {
-        "KEYCLOAK_URL": env(
-            "KEYCLOAK_URL",
-        ),
-        "KEYCLOAK_REALM": env(
-            "KEYCLOAK_REALM",
-        ),
-    }
-}
-# Used in data migration to register Keycloak social app
-KEYCLOAK_CLIENT_ID = env("KEYCLOAK_CLIENT_ID")
+# This is a general Django setting if views need to redirect to login
+# https://docs.djangoproject.com/en/3.2/ref/settings/#login-url
+LOGIN_URL = "/login/globus"
+
+LOGIN_REDIRECT_URL = env("DJANGO_LOGIN_REDIRECT_URL")
+LOGOUT_REDIRECT_URL = env("DJANGO_LOGOUT_REDIRECT_URL")
+
+# This dictates which scopes will be requested on each user login
+SOCIAL_AUTH_GLOBUS_SCOPE = [
+    "openid",
+    "profile",
+    "email",
+    "urn:globus:auth:scope:search.api.globus.org:all",
+    "urn:globus:auth:scope:transfer.api.globus.org:all",
+]
+
+SOCIAL_AUTH_GLOBUS_KEY = "fb12eeec-c7b0-4a7d-9182-9ea91c18aae6"
+SOCIAL_AUTH_GLOBUS_SECRET = "Ve1pTSel2HNS2QRXnXPEoIlr0XU2LiX10AMdEtSA58I="
+SOCIAL_AUTH_GLOBUS_AUTH_EXTRA_ARGUMENTS = {
+    "requested_scopes": SOCIAL_AUTH_GLOBUS_SCOPE, "prompt": None}
+SOCIAL_AUTH_JSONFIELD_ENABLED = True
 
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
@@ -285,15 +296,12 @@ ACCOUNT_UNIQUE_EMAIL = True
 # Access tokens are used to validate a user
 ACCOUNT_EMAIL_VERIFICATION = "none"
 
-# dj-rest-auth
-# -------------------------------------------------------------------------------
-# https://dj-rest-auth.readthedocs.io/en/latest/index.html
-REST_USE_JWT = True
-JWT_AUTH_COOKIE = "jwt-auth"
-
 # django-cors-headers
 # -------------------------------------------------------------------------------
 # https://github.com/adamchainz/django-cors-headers#setup
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+]
 CORS_ORIGIN_ALLOW_ALL = False
 CORS_ORIGIN_WHITELIST = env.list("CORS_ORIGIN_WHITELIST")
 

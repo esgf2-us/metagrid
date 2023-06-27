@@ -33,16 +33,13 @@ export const nodeStatusURL = `${
   process.env.REACT_APP_ESGF_NODE_STATUS_URL as string
 }`;
 
-// Keycloak
-// ------------------------------------------------------------------------------
-// https://github.com/keycloak/keycloak
-export const keycloakRealm = process.env.REACT_APP_KEYCLOAK_REALM as string;
-export const keycloakUrl = process.env.REACT_APP_KEYCLOAK_URL as string;
-export const keycloakClientId = process.env
-  .REACT_APP_KEYCLOAK_CLIENT_ID as string;
-
 // react-hotjar
 // ------------------------------------------------------------------------------
 // https://github.com/abdalla/react-hotjar
 export const hjid = (process.env.REACT_APP_HOTJAR_ID as unknown) as number;
 export const hjsv = (process.env.REACT_APP_HOTJAR_SV as unknown) as number;
+
+// Django Auth URLs
+export const djangoLoginUrl = process.env.REACT_APP_DJANGO_LOGIN_URL as string;
+export const djangoLogoutUrl = process.env
+  .REACT_APP_DJANGO_LOGOUT_URL as string;

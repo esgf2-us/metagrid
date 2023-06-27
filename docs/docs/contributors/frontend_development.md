@@ -88,8 +88,6 @@ frontend
 │ │ ├── axios
 │ │ │ ├── axios.d.ts
 │ │ │ └── index.ts
-│ │ ├── keycloak
-│ │ │ └── index.ts
 │ ├── test
 │ │ └── custom-render.tsx
 │ ├── env.ts
@@ -126,7 +124,7 @@ frontend
   - `components/` - contains React components and related files.
     Follow [React Components File Structure](#react-components-file-structure)
   - `contexts/` - stores React [Context](https://reactjs.org/docs/context.html) components, such as for authentication state
-  - `lib/` - stores initialized instances of third party library that are exported for use in the codebase (e.g. Axios, Keycloak)
+  - `lib/` - stores initialized instances of third party library that are exported for use in the codebase (e.g. Axios, etc)
   - `test/` - contains related files and functions shared among tests
     - `custom-render.tsx` - wraps the react-testing-library render method with contexts from `/context`
   - `env.ts` - converts environment variables into constants for reusability

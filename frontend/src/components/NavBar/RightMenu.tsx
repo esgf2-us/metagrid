@@ -8,14 +8,16 @@ import {
   ShoppingCartOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { useKeycloak } from '@react-keycloak/web';
+
 import { Badge, Menu } from 'antd';
-import { KeycloakTokenParsed } from 'keycloak-js';
 import React, { CSSProperties } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { navBarTargets } from '../../common/reactJoyrideSteps';
 import Button from '../General/Button';
 import RightDrawer from '../Messaging/RightDrawer';
+
+import axios from '../../lib/axios';
+import { djangoLoginUrl, djangoLogoutUrl } from '../../env';
 
 const menuItemStyling: CSSProperties = { margin: '8px' };
 
@@ -26,6 +28,10 @@ export type Props = {
   supportModalVisible: (visible: boolean) => void;
 };
 
+export type User = {
+  is_authenticated: boolean;
+};
+
 const RightMenu: React.FC<Props> = ({
   mode,
   numCartItems,
@@ -33,18 +39,9 @@ const RightMenu: React.FC<Props> = ({
   supportModalVisible,
 }) => {
   const [activeMenuItem, setActiveMenuItem] = React.useState<string>('search');
+  const [authenticated, setAuthenticated] = React.useState(false);
   const [noticesVisible, setShowNotices] = React.useState(false);
   const location = useLocation();
-  const { keycloak } = useKeycloak();
-
-  let userInfo;
-  const { authenticated } = keycloak;
-  if (authenticated) {
-    userInfo = keycloak.idTokenParsed as KeycloakTokenParsed & {
-      given_name: string;
-      email: string;
-    };
-  }
 
   const showNotices = (): void => {
     setShowNotices(true);
@@ -53,6 +50,22 @@ const RightMenu: React.FC<Props> = ({
   const hideNotices = (): void => {
     setShowNotices(false);
   };
+
+  const fetchAuth = async (): Promise<void> => {
+    const response = await fetch(
+      'http://localhost:8000/proxy/globus-auth-check/',
+      {
+        credentials: 'include',
+      }
+    );
+    const user: User = (await response.json()) as User;
+    setAuthenticated(user.is_authenticated);
+  };
+
+  React.useEffect(() => {
+    // eslint-disable-next-line
+    fetchAuth();
+  }, []);
 
   /**
    * Update the active menu item based on the current pathname
@@ -155,37 +168,17 @@ const RightMenu: React.FC<Props> = ({
             <Button
               type="text"
               icon={<UserOutlined style={{ fontSize: '18px', margin: 0 }} />}
-              onClick={() => {
-                keycloak.login();
-              }}
+              href={djangoLoginUrl}
             >
               Sign In
             </Button>
           </Menu.Item>
         ) : (
-          <Menu.SubMenu
-            key="greeting"
-            icon={<UserOutlined style={{ fontSize: '18px' }} />}
-            title={
-              <span className="submenu-title-wrapper">
-                Hi,{' '}
-                {userInfo && userInfo.given_name
-                  ? userInfo.given_name
-                  : userInfo?.email}
-              </span>
-            }
-          >
-            <Menu.Item key="login">
-              <Button
-                type="text"
-                onClick={() => {
-                  keycloak.logout();
-                }}
-              >
-                Sign Out
-              </Button>
-            </Menu.Item>
-          </Menu.SubMenu>
+          <Menu.Item key="logout" style={menuItemStyling}>
+            <Button type="text" href={djangoLogoutUrl}>
+              Sign Out
+            </Button>
+          </Menu.Item>
         )}
         <Menu.Item
           style={menuItemStyling}

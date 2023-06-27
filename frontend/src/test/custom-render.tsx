@@ -1,33 +1,7 @@
-import { ReactKeycloakProvider } from '@react-keycloak/web';
 import { render, RenderResult } from '@testing-library/react';
-import { KeycloakInstance } from 'keycloak-js';
 import React, { ComponentType } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { AuthProvider } from '../contexts/AuthContext';
-import { keycloakProviderInitConfig } from '../lib/keycloak';
-
-export const createKeycloakStub = (): KeycloakInstance => ({
-  // Optional
-  authenticated: false,
-  userInfo: {},
-  // Required
-  accountManagement: jest.fn(),
-  clearToken: jest.fn(),
-  createAccountUrl: jest.fn(),
-  createLoginUrl: jest.fn(),
-  createLogoutUrl: jest.fn(),
-  createRegisterUrl: jest.fn(),
-  isTokenExpired: jest.fn(),
-  hasRealmRole: jest.fn(),
-  hasResourceRole: jest.fn(),
-  init: jest.fn().mockResolvedValue(true),
-  loadUserInfo: jest.fn(),
-  loadUserProfile: jest.fn(),
-  login: jest.fn(),
-  logout: jest.fn(),
-  register: jest.fn(),
-  updateToken: jest.fn(),
-});
 
 type AllProvidersProps = {
   children: React.ReactNode;
@@ -39,23 +13,6 @@ type CustomOptions = {
 };
 
 /**
- * Wraps components in the Keycloak Provider for testing
- * https://testing-library.com/docs/example-react-context/
- */
-export const keycloakRender = (
-  ui: React.ReactElement,
-  options?: CustomOptions
-): RenderResult =>
-  render(
-    <ReactKeycloakProvider
-      authClient={{ ...createKeycloakStub(), ...options }}
-      initOptions={keycloakProviderInitConfig}
-    >
-      {ui}
-    </ReactKeycloakProvider>
-  );
-
-/**
  * Wraps components in all implemented React Context Providers for testing
  * https://testing-library.com/docs/react-testing-library/setup#custom-render
  */
@@ -65,16 +22,11 @@ export const customRender = (
 ): RenderResult => {
   function AllProviders({ children }: AllProvidersProps): React.ReactElement {
     return (
-      <ReactKeycloakProvider
-        authClient={{ ...createKeycloakStub(), ...options }}
-        initOptions={keycloakProviderInitConfig}
-      >
-        <AuthProvider>
-          <MemoryRouter basename={process.env.PUBLIC_URL}>
-            {children}
-          </MemoryRouter>
-        </AuthProvider>
-      </ReactKeycloakProvider>
+      <AuthProvider>
+        <MemoryRouter basename={process.env.PUBLIC_URL}>
+          {children}
+        </MemoryRouter>
+      </AuthProvider>
     );
   }
 

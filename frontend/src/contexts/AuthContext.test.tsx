@@ -1,36 +1,35 @@
-import { act, waitFor } from '@testing-library/react';
+// import { act, waitFor } from '@testing-library/react';
+// import { AuthProvider } from './AuthContext';
 import React from 'react';
-import { keycloakRender } from '../test/custom-render';
-import { AuthProvider } from './AuthContext';
 
-describe('test AuthProvider', () => {
-  it('renders using keycloak provider', async () => {
-    jest.useFakeTimers();
+// describe('test AuthProvider', () => {
+//   it('renders using keycloak provider', async () => {
+//     jest.useFakeTimers();
 
-    const { getByTestId, getByText } = keycloakRender(
-      <AuthProvider>
-        <div data-testid="authProvider">
-          <p>renders</p>
-        </div>
-      </AuthProvider>,
-      { token: 'token' }
-    );
+//     const { getByTestId, getByText } = keycloakRender(
+//       <AuthProvider>
+//         <div data-testid="authProvider">
+//           <p>renders</p>
+//         </div>
+//       </AuthProvider>,
+//       { token: 'token' }
+//     );
 
-    // Wait for render to get user auth info
-    const authProvider = await waitFor(() => getByTestId('authProvider'));
-    expect(authProvider).toBeTruthy();
+//     // Wait for render to get user auth info
+//     const authProvider = await waitFor(() => getByTestId('authProvider'));
+//     expect(authProvider).toBeTruthy();
 
-    // Wait for re-render to get user info
-    await waitFor(() => getByTestId('authProvider'));
+//     // Wait for re-render to get user info
+//     await waitFor(() => getByTestId('authProvider'));
 
-    // Check children renders
-    const renderResult = await waitFor(() => getByText('renders'));
-    expect(renderResult).toBeTruthy();
+//     // Check children renders
+//     const renderResult = await waitFor(() => getByText('renders'));
+//     expect(renderResult).toBeTruthy();
 
-    act(() => {
-      jest.advanceTimersByTime(295000);
-    });
+//     act(() => {
+//       jest.advanceTimersByTime(295000);
+//     });
 
-    await waitFor(() => getByTestId('authProvider'));
-  });
-});
+//     await waitFor(() => getByTestId('authProvider'));
+//   });
+// });

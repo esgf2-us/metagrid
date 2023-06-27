@@ -111,18 +111,9 @@ docker-compose -p metagrid_backend_dev up --build
 
 ### 3.2 Additional Configuration
 
-#### Update `/etc/hosts` file
-
-The Keycloak docker service can be accessed by other containers over a shared network using its docker service name and port, `keycloak:8080`. More information on how this works can be found in Docker's [networking guide](https://docs.docker.com/compose/networking/).
-
-You will need to bind the hostname `keycloak` to `localhost` to allow the browser to make requests to the Keycloak service. Otherwise, it will not recognize the hostname and a network connection won't be established.
-
-1. Open your hosts file with admin privileges
-   1. Mac/Linux: `/etc/hosts`
-   2. Windows: `C:\Windows\System32\drivers\etc\hosts`
-2. Append `127.0.0.1 keycloak` to the end of the file and save
-
 #### Create user on Keycloak for authentication
+
+#### Keeping as placeholder for Globus Auth instructions
 
 This user will be used for logging into registered Keycloak clients, including the React and Django services.
 
@@ -135,35 +126,6 @@ This user will be used for logging into registered Keycloak clients, including t
 ### 3.3 Accessible Services
 
 - Django: `localhost:8000`
-- Keycloak: `localhost:8080`/`keycloak:8080`
-
-### 3.4 Troubleshooting
-
-#### Addressing Keycloak Boot Issue
-
-Keycloak has a known fatal issue where if it is interrupted during boot (stopping `docker-compose up` prematurely), the command that adds the admin user fails.
-
-As a result, the Keycloak docker service will not start and outputs the error **_"User with username 'admin' already..."_**.
-
-If you run into this problem, follow these workaround steps:
-
-1. Stop all back-end containers
-   `docker-compose -p metagrid_backend_dev down`
-2. Comment out the two relevant lines (`./backend/.envs/.local/.keycloak`)
-
-   - `#KEYCLOAK_USER: admin`
-   - `#KEYCLOAK_PASSWORD: pass`
-
-3. Rebuild and restart the containers
-   `docker-compose -p metagrid_backend_dev up --build`
-4. Un-do commenting
-   - `KEYCLOAK_USER: admin`
-   - `KEYCLOAK_PASSWORD: pass`
-
-Source:
-
-- [https://issues.redhat.com/browse/KEYCLOAK-12896](https://issues.redhat.com/browse/KEYCLOAK-12896)
-- [https://stackoverflow.com/a/59712689/8023435](https://stackoverflow.com/a/59712689/8023435)
 
 ## 4. Set up Front-end
 
@@ -185,7 +147,7 @@ docker-compose -p metagrid_frontend_dev up --build
 
 ## Convenience Script for Common Tasks
 
-If you cd to the root project directory for metagrid, you'll see there is a `manage_metagrid.sh` script. 
+If you cd to the root project directory for metagrid, you'll see there is a `manage_metagrid.sh` script.
 
 This script provides some convenience functions for common tasks related to running Metagrid. Selecting the 'Start / Stop Local Dev Containers' option in the main menu will automatically build the frontend and backend local containers using the same commands described earlier on this page. If the containers are already running, then the same option will stop the containers instead.
 

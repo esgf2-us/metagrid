@@ -19,12 +19,6 @@ REACT_APP_ESGF_NODE_URL=https://esgf-node.llnl.gov
 # https://github.com/ESGF/esgf-utils/blob/master/node_status/query_prom.py
 REACT_APP_ESGF_NODE_STATUS_URL=https://aims4.llnl.gov/prometheus/api/v1/query?query=probe_success%7Bjob%3D%22http_2xx%22%2C+target%3D~%22.%2Athredds.%2A%22%7D
 
-# Keycloak
-# https://github.com/keycloak/keycloak
-REACT_APP_KEYCLOAK_REALM=metagrid
-REACT_APP_KEYCLOAK_URL=http://keycloak:8080/auth
-REACT_APP_KEYCLOAK_CLIENT_ID=frontend
-
 # react-hotjar
 # https://github.com/abdalla/react-hotjar
 REACT_APP_HOTJAR_ID=
@@ -34,7 +28,6 @@ REACT_APP_HOTJAR_SV=
 # https://github.com/react-ga/react-ga
 REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID=
 
-# Temporary fix to remove Keycloak sourcemap error
-# ------------------------------------------------------------------------------
-# https://github.com/react-keycloak/react-keycloak/issues/176
-GENERATE_SOURCEMAP=false
+# Django Auth URLs
+REACT_APP_DJANGO_LOGIN_URL=http://localhost:8000/login/globus/
+REACT_APP_DJANGO_LOGOUT_URL=http://localhost:8000/logout/globus/

@@ -39,3 +39,5 @@ INSTALLED_APPS = [
     "whitenoise.runserver_nostatic",
     "django_extensions",
 ] + INSTALLED_APPS  # noqa F405
+
+CORS_ALLOW_CREDENTIALS = True

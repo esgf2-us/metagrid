@@ -66,33 +66,17 @@ export const errorMsgBasedOnHTTPStatusCode = (
 };
 
 /**
- * HTTP Request Method: POST
- * HTTP Response Code: 200 OK
- */
-export const fetchUserAuth = async (args: [string]): Promise<RawUserAuth> =>
-  axios
-    .post(apiRoutes.keycloakAuth.path, { access_token: args[0] })
-    .then((res) => res.data as Promise<RawUserAuth>)
-    .catch((error: ResponseError) => {
-      throw new Error(
-        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.keycloakAuth)
-      );
-    });
-
-/**
  * HTTP Request Method: GET
  * HTTP Response Code: 200 OK
  */
-export const fetchUserInfo = async (args: [string]): Promise<RawUserInfo> =>
+export const fetchGlobusAuth = async (): Promise<RawUserAuth> =>
   axios
-    .get(apiRoutes.userInfo.path, {
-      headers: {
-        Authorization: `Bearer ${args[0]}`,
-      },
-    })
-    .then((res) => res.data as Promise<RawUserInfo>)
+    .get(apiRoutes.globusAuth.path)
+    .then((resp) => resp.data as Promise<RawUserAuth>)
     .catch((error: ResponseError) => {
-      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userInfo));
+      throw new Error(
+        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusAuth)
+      );
     });
 
 /**

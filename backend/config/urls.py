@@ -1,7 +1,4 @@
-from allauth.socialaccount.providers.keycloak.views import (
-    KeycloakOAuth2Adapter,
-)
-from dj_rest_auth.registration.views import SocialLoginView, VerifyEmailView
+# from dj_rest_auth.registration.views import SocialLoginView, VerifyEmailView
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
@@ -12,7 +9,14 @@ from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 from rest_framework.routers import DefaultRouter
 
-from metagrid.api_proxy.views import do_citation, do_search, do_status, do_wget
+from metagrid.api_proxy.views import (
+    globus_auth_check,
+    do_citation,
+    do_logout,
+    do_search,
+    do_status,
+    do_wget
+)
 from metagrid.cart.views import CartViewSet, SearchViewSet
 from metagrid.projects.views import ProjectsViewSet
 from metagrid.users.views import UserCreateViewSet, UserViewSet
@@ -25,14 +29,6 @@ router.register(r"carts/datasets", CartViewSet)
 router.register(r"carts/searches", SearchViewSet)
 
 
-class KeycloakLogin(SocialLoginView):
-    """Keycloak social authentication view for dj-rest-auth
-    https://dj-rest-auth.readthedocs.io/en/latest/installation.html#social-authentication-optional
-    """
-
-    adapter_class = KeycloakOAuth2Adapter
-
-
 urlpatterns = [
     path(settings.ADMIN_URL, admin.site.urls),
     path("api/v1/", include(router.urls)),
@@ -42,27 +38,25 @@ urlpatterns = [
         r"^$",
         RedirectView.as_view(url=reverse_lazy("api-root"), permanent=False),
     ),
-    # all-auth
-    path("accounts/", include("allauth.urls"), name="socialaccount_signup"),
-    # dj-rest-auth
-    re_path(r"^dj-rest-auth/", include("dj_rest_auth.urls")),
+    # social_auth
+    path("", include("social_django.urls", namespace="social")),
+    path("logout/globus/", do_logout, name="do-logout"),
+
+    path("proxy/globus-auth-check/", globus_auth_check, name="globus-auth-check"),
     path("proxy/search", do_search, name="do-search"),
     path("proxy/citation", do_citation, name="do-citation"),
     path("proxy/wget", do_wget, name="do-wget"),
     path("proxy/status", do_status, name="do-status"),
-    path(
-        "dj-rest-auth/keycloak", KeycloakLogin.as_view(), name="keycloak_login"
-    ),
-    re_path(
-        r"^account-confirm-email/",
-        VerifyEmailView.as_view(),
-        name="account_email_verification_sent",
-    ),
-    re_path(
-        r"^account-confirm-email/(?P<key>[-:\w]+)/$",
-        VerifyEmailView.as_view(),
-        name="account_confirm_email",
-    ),
+    # re_path(
+    #     r"^account-confirm-email/",
+    #     VerifyEmailView.as_view(),
+    #     name="account_email_verification_sent",
+    # ),
+    # re_path(
+    #     r"^account-confirm-email/(?P<key>[-:\w]+)/$",
+    #     VerifyEmailView.as_view(),
+    #     name="account_confirm_email",
+    # ),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # drf-yasg configuration

@@ -7,9 +7,7 @@ import {
   fetchNodeStatus,
   fetchProjects,
   fetchSearchResults,
-  fetchUserAuth,
   fetchUserCart,
-  fetchUserInfo,
   fetchUserSearchQueries,
   fetchWgetScript,
   generateSearchURLQuery,
@@ -46,60 +44,60 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
-describe('test fetching user authentication', () => {
-  it('returns user authentication tokens', async () => {
-    const userAuth = await fetchUserAuth(['keycloak_token']);
-    expect(userAuth).toEqual(userAuthFixture());
-  });
-  it('catches and throws error based on HTTP status code', async () => {
-    server.use(
-      rest.post(apiRoutes.keycloakAuth.path, (_req, res, ctx) =>
-        res(ctx.status(404))
-      )
-    );
-    await expect(fetchUserAuth(['keycloak_token'])).rejects.toThrow(
-      apiRoutes.keycloakAuth.handleErrorMsg(404)
-    );
-  });
-  it('catches and throws generic network error', async () => {
-    server.use(
-      rest.post(apiRoutes.keycloakAuth.path, (_req, res) =>
-        res.networkError(genericNetworkErrorMsg)
-      )
-    );
-    await expect(fetchUserAuth(['keycloak_token'])).rejects.toThrow(
-      apiRoutes.keycloakAuth.handleErrorMsg('generic')
-    );
-  });
-});
+// describe('test fetching user authentication', () => {
+//   it('returns user authentication tokens', async () => {
+//     const userAuth = await fetchUserAuth(['keycloak_token']);
+//     expect(userAuth).toEqual(userAuthFixture());
+//   });
+//   it('catches and throws error based on HTTP status code', async () => {
+//     server.use(
+//       rest.post(apiRoutes.keycloakAuth.path, (_req, res, ctx) =>
+//         res(ctx.status(404))
+//       )
+//     );
+//     await expect(fetchUserAuth(['keycloak_token'])).rejects.toThrow(
+//       apiRoutes.keycloakAuth.handleErrorMsg(404)
+//     );
+//   });
+//   it('catches and throws generic network error', async () => {
+//     server.use(
+//       rest.post(apiRoutes.keycloakAuth.path, (_req, res) =>
+//         res.networkError(genericNetworkErrorMsg)
+//       )
+//     );
+//     await expect(fetchUserAuth(['keycloak_token'])).rejects.toThrow(
+//       apiRoutes.keycloakAuth.handleErrorMsg('generic')
+//     );
+//   });
+// });
 
-describe('test fetching user info', () => {
-  it('returns user info', async () => {
-    const userInfo = await fetchUserInfo(['access_token']);
-    expect(userInfo).toEqual(userInfoFixture());
-  });
+// describe('test fetching user info', () => {
+//   it('returns user info', async () => {
+//     const userInfo = await fetchUserInfo(['access_token']);
+//     expect(userInfo).toEqual(userInfoFixture());
+//   });
 
-  it('returns error', async () => {
-    server.use(
-      rest.get(apiRoutes.userInfo.path, (_req, res, ctx) =>
-        res(ctx.status(404))
-      )
-    );
-    await expect(fetchUserInfo(['access_token'])).rejects.toThrow(
-      apiRoutes.userInfo.handleErrorMsg(404)
-    );
-  });
-  it('catches and throws generic network error', async () => {
-    server.use(
-      rest.get(apiRoutes.userInfo.path, (_req, res) =>
-        res.networkError(genericNetworkErrorMsg)
-      )
-    );
-    await expect(fetchUserInfo(['access_token'])).rejects.toThrow(
-      apiRoutes.userInfo.handleErrorMsg('generic')
-    );
-  });
-});
+//   it('returns error', async () => {
+//     server.use(
+//       rest.get(apiRoutes.userInfo.path, (_req, res, ctx) =>
+//         res(ctx.status(404))
+//       )
+//     );
+//     await expect(fetchUserInfo(['access_token'])).rejects.toThrow(
+//       apiRoutes.userInfo.handleErrorMsg(404)
+//     );
+//   });
+//   it('catches and throws generic network error', async () => {
+//     server.use(
+//       rest.get(apiRoutes.userInfo.path, (_req, res) =>
+//         res.networkError(genericNetworkErrorMsg)
+//       )
+//     );
+//     await expect(fetchUserInfo(['access_token'])).rejects.toThrow(
+//       apiRoutes.userInfo.handleErrorMsg('generic')
+//     );
+//   });
+// });
 
 describe('test fetching projects', () => {
   it('returns projects', async () => {
