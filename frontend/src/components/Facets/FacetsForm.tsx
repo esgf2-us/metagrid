@@ -256,7 +256,7 @@ const FacetsForm: React.FC<Props> = ({
         }}
       >
         {globusEnabledNodes.length > 0 && (
-          <>
+          <div className={leftSidebarTargets.filterByGlobusTransfer.class()}>
             <h3>Filter By Transfer Options</h3>
             <Row>
               <Col>
@@ -264,13 +264,23 @@ const FacetsForm: React.FC<Props> = ({
                   onChange={handleOnGlobusReadyChanged}
                   value={globusReadyOnly}
                 >
-                  <Radio value={false}>Any</Radio>
-                  <Radio value>Only Globus Transferrable</Radio>
+                  <Radio
+                    value={false}
+                    className={leftSidebarTargets.filterByGlobusTransferAny.class()}
+                  >
+                    Any
+                  </Radio>
+                  <Radio
+                    value
+                    className={leftSidebarTargets.filterByGlobusTransferOnly.class()}
+                  >
+                    Only Globus Transferrable
+                  </Radio>
                 </Radio.Group>
               </Col>
             </Row>
             <br />
-          </>
+          </div>
         )}
         <Row justify="end" gutter={8}>
           <Col span={16}>

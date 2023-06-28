@@ -316,7 +316,7 @@ const Table: React.FC<Props> = ({
       render: (data_node: string) => (
         <div
           style={{ textAlign: 'center' }}
-          className={topDataRowTargets.nodeStatusIcon.class()}
+          className={topDataRowTargets.globusReadyStatusIcon.class()}
         >
           <GlobusToolTip dataNode={data_node} />
         </div>
