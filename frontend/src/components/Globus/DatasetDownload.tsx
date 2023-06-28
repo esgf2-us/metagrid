@@ -251,9 +251,10 @@ const DatasetDownloadForm: React.FC = () => {
           endpoint?.path || '',
           ids
         )
-          .then((resp) => {
+          .then(async (resp) => {
             if (resp.status === 200) {
               setItemSelections([]);
+              setDownloadIsLoading(false);
               saveSessionValue(CartStateKeys.cartItemSelections, []);
 
               const transRespData = resp.data as Record<string, unknown>;
@@ -267,7 +268,7 @@ const DatasetDownloadForm: React.FC = () => {
                 addNewTask(taskItem);
 
                 if (taskItem.taskStatusURL !== '') {
-                  message.info(
+                  await message.info(
                     <p>
                       Globus transfer task submitted successfully!
                       <br />
@@ -283,16 +284,23 @@ const DatasetDownloadForm: React.FC = () => {
                   );
                 }
               } else {
-                message.info(`Globus transfer task submitted successfully!`);
+                await message.info(
+                  `Globus transfer task submitted successfully!`,
+                  5
+                );
               }
             } else {
-              message.warning(
-                `Globus transfer task struggled: ${resp.statusText}`
+              await message.warning(
+                `Globus transfer task struggled: ${resp.statusText}`,
+                5
               );
             }
           })
-          .catch((error: ResponseError) => {
-            message.error(`Globus transfer task failed: ${error.message}`);
+          .catch(async (error: ResponseError) => {
+            await message.error(
+              `Globus transfer task failed: ${error.message}`,
+              5
+            );
           })
           .finally(async () => {
             await endDownloadSteps();
