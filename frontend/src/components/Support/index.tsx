@@ -78,6 +78,13 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
                   https://esgf.github.io/esgf-user-support/metagrid.html
                 </a>
               </p>
+              <p style={{ fontSize: '14px' }}>
+                If you need help on Globus Transfers, please visit this page for
+                more information:
+                <a href="https://app.globus.org/help">
+                  https://app.globus.org/help
+                </a>
+              </p>
               <div>
                 <h3>User Interface Tours</h3>
                 <p style={{ fontSize: '14px' }}>
