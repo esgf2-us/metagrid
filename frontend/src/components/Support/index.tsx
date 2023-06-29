@@ -79,10 +79,11 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
                 </a>
               </p>
               <p style={{ fontSize: '14px' }}>
-              Please visit this page for more information on Globus Transfers:
-              <a href="https://app.globus.org/help">
-              https://app.globus.org/help
-              </a>
+                If you need help on Globus Transfers, please visit this page for
+                more information:
+                <a href="https://app.globus.org/help">
+                  https://app.globus.org/help
+                </a>
               </p>
               <div>
                 <h3>User Interface Tours</h3>
