@@ -250,12 +250,16 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
                         if (navigator && navigator.clipboard) {
                           void navigator.clipboard
                             .writeText(downloadUrls.OPENDAP)
-                            .catch(
-                              (e: PromiseRejectedResult) =>
-                                // eslint-disable-next-line
-                                void message.error(e.reason)
-                            );
-                          void message.success({
+                            .catch((e: PromiseRejectedResult) => {
+                              if (e.reason) {
+                                message.error({
+                                  content: e.reason as string,
+                                });
+                              } else {
+                                message.error('An unknown error has occurred.');
+                              }
+                            });
+                          message.success({
                             content: 'OPENDAP URL copied to clipboard!',
                             icon: (
                               <ShareAltOutlined style={styles.messageAddIcon} />

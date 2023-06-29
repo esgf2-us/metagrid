@@ -247,8 +247,7 @@ const Table: React.FC<Props> = ({
         ): void => {
           /* istanbul ignore else */
           if (downloadType === 'wget') {
-            // eslint-disable-next-line no-void
-            void message.success(
+            message.success(
               'The wget script is generating, please wait momentarily.'
             );
             fetchWgetScript(record.id, filenameVars)
@@ -256,8 +255,13 @@ const Table: React.FC<Props> = ({
                 openDownloadURL(url);
               })
               .catch((error: ResponseError) => {
-                // eslint-disable-next-line no-void
-                void message.error(error.message);
+                if (error.message) {
+                  message.error({
+                    content: error.message,
+                  });
+                } else {
+                  message.error('An unknown error has occurred.');
+                }
               });
           }
         };

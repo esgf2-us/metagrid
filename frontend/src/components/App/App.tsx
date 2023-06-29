@@ -156,9 +156,13 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           setUserCart(combinedCarts);
         })
         .catch((error: ResponseError) => {
-          void message.error({
-            content: error.message,
-          });
+          if (error.message) {
+            message.error({
+              content: error.message,
+            });
+          } else {
+            message.error('An unknown error has occurred.');
+          }
         });
 
       void fetchUserSearchQueries(accessToken)
@@ -179,9 +183,13 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           setUserSearchQueries(databaseItems.concat(searchQueriesToAdd));
         })
         .catch((error: ResponseError) => {
-          void message.error({
-            content: error.message,
-          });
+          if (error.message) {
+            message.error({
+              content: error.message,
+            });
+          } else {
+            message.error('An unknown error has occurred.');
+          }
         });
     }
   }, [isAuthenticated, pk, accessToken]);
@@ -226,9 +234,13 @@ const App: React.FC<Props> = ({ searchQuery }) => {
       .catch(
         /* istanbul ignore next */
         (error: ResponseError) => {
-          void message.error({
-            content: error.message,
-          });
+          if (error.message) {
+            message.error({
+              content: error.message,
+            });
+          } else {
+            message.error('An unknown error has occurred.');
+          }
         }
       );
   }, [fetchProjects]);
@@ -238,7 +250,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
     text: string
   ): void => {
     if (activeSearchQuery.textInputs.includes(text as never)) {
-      void message.error(`Input "${text}" has already been applied`);
+      message.error(`Input "${text}" has already been applied`);
     } else {
       setActiveSearchQuery({
         ...activeSearchQuery,
@@ -250,7 +262,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
 
   const handleOnSetFilenameVars = (filenameVar: string): void => {
     if (activeSearchQuery.filenameVars.includes(filenameVar as never)) {
-      void message.error(`Input "${filenameVar}" has already been applied`);
+      message.error(`Input "${filenameVar}" has already been applied`);
     } else {
       setActiveSearchQuery({
         ...activeSearchQuery,
@@ -342,7 +354,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
       newCart = [...userCart, ...itemsNotInCart];
       setUserCart(newCart);
 
-      void message.success({
+      message.success({
         content: 'Added item(s) to your cart',
         icon: <ShoppingCartOutlined style={styles.messageAddIcon} />,
       });
@@ -352,7 +364,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
       );
       setUserCart(newCart);
 
-      void message.success({
+      message.success({
         content: 'Removed item(s) from your cart',
         icon: <DeleteOutlined style={styles.messageRemoveIcon} />,
       });
@@ -390,7 +402,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
     };
 
     if (searchAlreadyExists(userSearchQueries, savedSearch)) {
-      void message.success({
+      message.success({
         content: 'Search query is already in your library',
         icon: <BookOutlined style={styles.messageAddIcon} />,
       });
@@ -399,7 +411,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
 
     const saveSuccess = (): void => {
       setUserSearchQueries([...userSearchQueries, savedSearch]);
-      void message.success({
+      message.success({
         content: 'Saved search query to your library',
         icon: <BookOutlined style={styles.messageAddIcon} />,
       });
@@ -411,9 +423,13 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           saveSuccess();
         })
         .catch((error: ResponseError) => {
-          void message.error({
-            content: error.message,
-          });
+          if (error.message) {
+            message.error({
+              content: error.message,
+            });
+          } else {
+            message.error('An unknown error has occurred.');
+          }
         });
     } else {
       saveSuccess();
@@ -425,8 +441,8 @@ const App: React.FC<Props> = ({ searchQuery }) => {
       // copy link to clipboard
       /* istanbul ignore if */
       if (navigator && navigator.clipboard) {
-        void navigator.clipboard.writeText(getUrlFromSearch(activeSearchQuery));
-        void message.success({
+        navigator.clipboard.writeText(getUrlFromSearch(activeSearchQuery));
+        message.success({
           content: 'Search copied to clipboard!',
           icon: <ShareAltOutlined style={styles.messageAddIcon} />,
         });
@@ -442,7 +458,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           (searchItem: UserSearchQuery) => searchItem.uuid !== searchUUID
         )
       );
-      void message.success({
+      message.success({
         content: 'Removed search query from your library',
         icon: <DeleteOutlined style={styles.messageRemoveIcon} />,
       });
@@ -454,9 +470,13 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           deleteSuccess();
         })
         .catch((error: ResponseError) => {
-          void message.error({
-            content: error.message,
-          });
+          if (error.message) {
+            message.error({
+              content: error.message,
+            });
+          } else {
+            message.error('An unknown error has occurred.');
+          }
         });
     } else {
       deleteSuccess();
@@ -562,7 +582,6 @@ const App: React.FC<Props> = ({ searchQuery }) => {
                         <Breadcrumb.Item>
                           <HomeOutlined /> Home
                         </Breadcrumb.Item>
-                        <Breadcrumb.Item>Search</Breadcrumb.Item>
                       </Breadcrumb>
                       <Search
                         activeSearchQuery={activeSearchQuery}
@@ -586,7 +605,9 @@ const App: React.FC<Props> = ({ searchQuery }) => {
                     <>
                       <Breadcrumb>
                         <Breadcrumb.Item>
-                          <HomeOutlined /> Home
+                          <Link to="/">
+                            <HomeOutlined /> Home
+                          </Link>
                         </Breadcrumb.Item>
                         <Breadcrumb.Item>Data Node Status</Breadcrumb.Item>
                       </Breadcrumb>
@@ -604,7 +625,9 @@ const App: React.FC<Props> = ({ searchQuery }) => {
                     <>
                       <Breadcrumb>
                         <Breadcrumb.Item>
-                          <HomeOutlined /> Home
+                          <Link to="/">
+                            <HomeOutlined /> Home
+                          </Link>
                         </Breadcrumb.Item>
                         <Breadcrumb.Item>Cart</Breadcrumb.Item>
                       </Breadcrumb>

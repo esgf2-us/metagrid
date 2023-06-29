@@ -214,8 +214,7 @@ const DatasetDownloadForm: React.FC = () => {
   const handleWgetDownload = (): void => {
     if (itemSelections !== null) {
       const ids = itemSelections.map((item) => item.id);
-      // eslint-disable-next-line no-void
-      void message.success(
+      message.success(
         'The wget script is generating, please wait momentarily.',
         10
       );
@@ -226,8 +225,13 @@ const DatasetDownloadForm: React.FC = () => {
           setDownloadIsLoading(false);
         })
         .catch((error: ResponseError) => {
-          // eslint-disable-next-line no-void
-          void message.error(error.message);
+          if (error.message) {
+            message.error({
+              content: error.message,
+            });
+          } else {
+            message.error('An unknown error has occurred.');
+          }
           setDownloadIsLoading(false);
         });
     }

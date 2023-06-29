@@ -54,7 +54,12 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
           <div style={styles.summary}>
             {userCart.length > 0 && (
               <Popconfirm
-                title=""
+                title={
+                  <p>
+                    Do you wish to remove all
+                    <br /> items from your cart?
+                  </p>
+                }
                 icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
                 onConfirm={onClearCart}
               >
