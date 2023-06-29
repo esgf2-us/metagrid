@@ -34,6 +34,7 @@ import {
   GlobusTaskItem,
   MAX_TASK_LIST_LENGTH,
 } from './types';
+import ToolTip from '../DataDisplay/ToolTip';
 
 // Reference: https://github.com/bpedroza/js-pkce
 const GlobusAuth = new PKCE({
@@ -92,6 +93,13 @@ const DatasetDownloadForm: React.FC = () => {
   );
 
   // Component internal state
+  const [downloadActive, setDownloadActive] = React.useState<boolean>(true);
+
+  const [
+    selectedDownloadType,
+    setSelectedDownloadType,
+  ] = React.useState<string>(downloadOptions[0]);
+
   const [globusStepsModal, setGlobusStepsModal] = React.useState<ModalState>({
     show: false,
     state: 'both',
@@ -244,6 +252,9 @@ const DatasetDownloadForm: React.FC = () => {
       const ids = loadedSelections.map((item) => (item ? item.id : ''));
 
       if (globusTransferToken && refreshToken) {
+        let messageContent: React.ReactNode | string = null;
+        let messageType: 'success' | 'warning' | 'error' = 'success';
+
         startGlobusTransfer(
           globusTransferToken.access_token,
           refreshToken,
@@ -251,7 +262,7 @@ const DatasetDownloadForm: React.FC = () => {
           endpoint?.path || '',
           ids
         )
-          .then(async (resp) => {
+          .then((resp) => {
             if (resp.status === 200) {
               setItemSelections([]);
               setDownloadIsLoading(false);
@@ -268,7 +279,7 @@ const DatasetDownloadForm: React.FC = () => {
                 addNewTask(taskItem);
 
                 if (taskItem.taskStatusURL !== '') {
-                  await message.info(
+                  messageContent = (
                     <p>
                       Globus transfer task submitted successfully!
                       <br />
@@ -279,30 +290,31 @@ const DatasetDownloadForm: React.FC = () => {
                       >
                         View Task Status
                       </a>
-                    </p>,
-                    5
+                    </p>
                   );
                 }
               } else {
-                await message.info(
-                  `Globus transfer task submitted successfully!`,
-                  5
-                );
+                messageContent = `Globus transfer task submitted successfully!`;
               }
             } else {
-              await message.warning(
-                `Globus transfer task struggled: ${resp.statusText}`,
-                5
-              );
+              messageContent = `Globus transfer task struggled: ${resp.statusText}`;
+              messageType = 'warning';
             }
           })
-          .catch(async (error: ResponseError) => {
-            await message.error(
-              `Globus transfer task failed: ${error.message}`,
-              5
-            );
+          .catch((error: ResponseError) => {
+            messageContent = `Globus transfer task failed: ${error.message}`;
+            messageType = 'error';
           })
           .finally(async () => {
+            setDownloadActive(false);
+            if (messageType === 'success') {
+              await message.success(messageContent, 5);
+            } else if (messageType === 'warning') {
+              await message.warning(messageContent, 5);
+            } else {
+              await message.error(messageContent, 5);
+            }
+            setDownloadActive(true);
             await endDownloadSteps();
           });
       }
@@ -703,7 +715,15 @@ const DatasetDownloadForm: React.FC = () => {
           name="downloadType"
           className={cartTourTargets.downloadAllType.class()}
         >
-          <Select style={{ width: 235 }}>
+          <Select
+            style={{ width: 235 }}
+            onSelect={(rawType) => {
+              const downloadType = rawType?.toString();
+              if (downloadType) {
+                setSelectedDownloadType(downloadType);
+              }
+            }}
+          >
             {downloadOptions.map((option) => (
               <Select.Option key={option} value={option}>
                 {option}
@@ -718,34 +738,41 @@ const DatasetDownloadForm: React.FC = () => {
               type="primary"
               htmlType="submit"
               icon={<DownloadOutlined />}
-              disabled={itemSelections.length === 0}
+              disabled={itemSelections.length === 0 || !downloadActive}
               loading={downloadIsLoading}
             >
-              Download
+              {selectedDownloadType === 'Globus' ? 'Transfer' : 'Download'}
             </Button>
           </div>
         </Form.Item>
-        {defaultGlobusEndpoint && itemSelections.length !== 0 && (
-          <Form.Item>
-            <Radio.Group
-              onChange={(e) => {
-                setUseGlobusDefaultEndpoint(e.target.value as boolean);
-                saveSessionValue(
-                  GlobusStateKeys.useDefaultEndpoint,
-                  e.target.value as boolean
-                );
-              }}
-              value={useGlobusDefaultEndpoint}
-            >
-              <Space direction="vertical">
-                <Radio value defaultChecked>
-                  Default Endpoint
-                </Radio>
-                <Radio value={false}>Specify Endpoint</Radio>
-              </Space>
-            </Radio.Group>
-          </Form.Item>
-        )}
+        {selectedDownloadType === 'Globus' &&
+          defaultGlobusEndpoint &&
+          itemSelections.length !== 0 &&
+          downloadActive && (
+            <Form.Item>
+              <Radio.Group
+                onChange={(e) => {
+                  setUseGlobusDefaultEndpoint(e.target.value as boolean);
+                  saveSessionValue(
+                    GlobusStateKeys.useDefaultEndpoint,
+                    e.target.value as boolean
+                  );
+                }}
+                value={useGlobusDefaultEndpoint}
+              >
+                <Space direction="vertical">
+                  <ToolTip title="This option will use your currently saved default endpoint for the Globus transfer">
+                    <Radio value defaultChecked>
+                      Default Endpoint
+                    </Radio>
+                  </ToolTip>
+                  <ToolTip title="This option will let you specify an endpoint for the Globus transfer">
+                    <Radio value={false}>Specify Endpoint</Radio>
+                  </ToolTip>
+                </Space>
+              </Radio.Group>
+            </Form.Item>
+          )}
       </Form>
       <Modal
         title="Save Endpoint"

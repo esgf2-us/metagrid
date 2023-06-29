@@ -17,6 +17,7 @@ const startupMessages: StartPopupData = {
     {
       messageId: 'v1.0.9-beta',
       template: MessageTemplates.ChangeLog,
+      style: { minWidth: '700px' },
       data: {
         changesFile: 'changelog/v1.0.9-beta.md',
         version: '1.0.9 Beta',

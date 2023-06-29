@@ -10,4 +10,5 @@ Metagrid uses an updated user accounts system. Unfortunately for anyone looking 
 
 We are excited to be planning to have an "official" release of the Metagrid platform onto scalable infrastructure. In the meantime we will be testing new features.
 
-- Globus Transfer feature updates planned to be released in v1.1.0.
+- More feature updates planned to be released in v1.1.0.
+- Globus Transfer feature will be improved as needed in v1.1.0
