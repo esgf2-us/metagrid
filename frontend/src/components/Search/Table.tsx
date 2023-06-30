@@ -5,13 +5,13 @@ import {
   PlusOutlined,
   RightCircleOutlined,
 } from '@ant-design/icons';
-import { Form, message, Select, Table as TableD } from 'antd';
+import { Form, Select, Table as TableD } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
 import { fetchWgetScript, openDownloadURL, ResponseError } from '../../api';
 import { topDataRowTargets } from '../../common/reactJoyrideSteps';
-import { formatBytes } from '../../common/utils';
+import { formatBytes, showError, showNotice } from '../../common/utils';
 import { UserCart } from '../Cart/types';
 import ToolTip from '../DataDisplay/ToolTip';
 import Button from '../General/Button';
@@ -247,21 +247,16 @@ const Table: React.FC<Props> = ({
         ): void => {
           /* istanbul ignore else */
           if (downloadType === 'wget') {
-            message.success(
-              'The wget script is generating, please wait momentarily.'
+            showNotice(
+              'The wget script is generating, please wait momentarily.',
+              { type: 'info' }
             );
             fetchWgetScript(record.id, filenameVars)
               .then((url) => {
                 openDownloadURL(url);
               })
               .catch((error: ResponseError) => {
-                if (error.message) {
-                  message.error({
-                    content: error.message,
-                  });
-                } else {
-                  message.error('An unknown error has occurred.');
-                }
+                showError(error.message);
               });
           }
         };

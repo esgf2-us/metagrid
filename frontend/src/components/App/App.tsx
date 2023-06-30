@@ -8,7 +8,7 @@ import {
   ShareAltOutlined,
   ShoppingCartOutlined,
 } from '@ant-design/icons';
-import { Affix, Breadcrumb, Button, Layout, message, Result } from 'antd';
+import { Affix, Breadcrumb, Button, Layout, Result } from 'antd';
 import React, { ReactElement } from 'react';
 import { useAsync } from 'react-async';
 import { hotjar } from 'react-hotjar';
@@ -29,6 +29,8 @@ import {
   combineCarts,
   getUrlFromSearch,
   searchAlreadyExists,
+  showError,
+  showNotice,
   unsavedLocalSearches,
 } from '../../common/utils';
 import { AuthContext } from '../../contexts/AuthContext';
@@ -156,13 +158,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           setUserCart(combinedCarts);
         })
         .catch((error: ResponseError) => {
-          if (error.message) {
-            message.error({
-              content: error.message,
-            });
-          } else {
-            message.error('An unknown error has occurred.');
-          }
+          showError(error.message);
         });
 
       void fetchUserSearchQueries(accessToken)
@@ -183,13 +179,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           setUserSearchQueries(databaseItems.concat(searchQueriesToAdd));
         })
         .catch((error: ResponseError) => {
-          if (error.message) {
-            message.error({
-              content: error.message,
-            });
-          } else {
-            message.error('An unknown error has occurred.');
-          }
+          showError(error.message);
         });
     }
   }, [isAuthenticated, pk, accessToken]);
@@ -234,13 +224,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
       .catch(
         /* istanbul ignore next */
         (error: ResponseError) => {
-          if (error.message) {
-            message.error({
-              content: error.message,
-            });
-          } else {
-            message.error('An unknown error has occurred.');
-          }
+          showError(error.message);
         }
       );
   }, [fetchProjects]);
@@ -250,7 +234,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
     text: string
   ): void => {
     if (activeSearchQuery.textInputs.includes(text as never)) {
-      message.error(`Input "${text}" has already been applied`);
+      showError(`Input "${text}" has already been applied`);
     } else {
       setActiveSearchQuery({
         ...activeSearchQuery,
@@ -262,7 +246,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
 
   const handleOnSetFilenameVars = (filenameVar: string): void => {
     if (activeSearchQuery.filenameVars.includes(filenameVar as never)) {
-      message.error(`Input "${filenameVar}" has already been applied`);
+      showError(`Input "${filenameVar}" has already been applied`);
     } else {
       setActiveSearchQuery({
         ...activeSearchQuery,
@@ -353,9 +337,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
 
       newCart = [...userCart, ...itemsNotInCart];
       setUserCart(newCart);
-
-      message.success({
-        content: 'Added item(s) to your cart',
+      showNotice('Added item(s) to your cart', {
         icon: <ShoppingCartOutlined style={styles.messageAddIcon} />,
       });
     } else if (operation === 'remove') {
@@ -364,8 +346,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
       );
       setUserCart(newCart);
 
-      message.success({
-        content: 'Removed item(s) from your cart',
+      showNotice('Removed item(s) from your cart', {
         icon: <DeleteOutlined style={styles.messageRemoveIcon} />,
       });
     }
@@ -402,17 +383,16 @@ const App: React.FC<Props> = ({ searchQuery }) => {
     };
 
     if (searchAlreadyExists(userSearchQueries, savedSearch)) {
-      message.success({
-        content: 'Search query is already in your library',
+      showNotice('Search query is already in your library', {
         icon: <BookOutlined style={styles.messageAddIcon} />,
+        type: 'info',
       });
       return;
     }
 
     const saveSuccess = (): void => {
       setUserSearchQueries([...userSearchQueries, savedSearch]);
-      message.success({
-        content: 'Saved search query to your library',
+      showNotice('Saved search query to your library', {
         icon: <BookOutlined style={styles.messageAddIcon} />,
       });
     };
@@ -423,13 +403,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           saveSuccess();
         })
         .catch((error: ResponseError) => {
-          if (error.message) {
-            message.error({
-              content: error.message,
-            });
-          } else {
-            message.error('An unknown error has occurred.');
-          }
+          showError(error.message);
         });
     } else {
       saveSuccess();
@@ -442,8 +416,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
       /* istanbul ignore if */
       if (navigator && navigator.clipboard) {
         navigator.clipboard.writeText(getUrlFromSearch(activeSearchQuery));
-        message.success({
-          content: 'Search copied to clipboard!',
+        showNotice('Search copied to clipboard!', {
           icon: <ShareAltOutlined style={styles.messageAddIcon} />,
         });
       }
@@ -458,8 +431,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           (searchItem: UserSearchQuery) => searchItem.uuid !== searchUUID
         )
       );
-      message.success({
-        content: 'Removed search query from your library',
+      showNotice('Removed search query from your library', {
         icon: <DeleteOutlined style={styles.messageRemoveIcon} />,
       });
     };
@@ -470,13 +442,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           deleteSuccess();
         })
         .catch((error: ResponseError) => {
-          if (error.message) {
-            message.error({
-              content: error.message,
-            });
-          } else {
-            message.error('An unknown error has occurred.');
-          }
+          showError(error.message);
         });
     } else {
       deleteSuccess();

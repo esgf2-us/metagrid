@@ -1,5 +1,5 @@
 import { CheckCircleFilled, DownloadOutlined } from '@ant-design/icons';
-import { Button, Form, message, Modal, Radio, Select, Space } from 'antd';
+import { Button, Form, Modal, Radio, Select, Space } from 'antd';
 import PKCE from 'js-pkce';
 import React, { useEffect } from 'react';
 import { useRecoilState } from 'recoil';
@@ -35,6 +35,7 @@ import {
   MAX_TASK_LIST_LENGTH,
 } from './types';
 import ToolTip from '../DataDisplay/ToolTip';
+import { NotificationType, showError, showNotice } from '../../common/utils';
 
 // Reference: https://github.com/bpedroza/js-pkce
 const GlobusAuth = new PKCE({
@@ -214,10 +215,10 @@ const DatasetDownloadForm: React.FC = () => {
   const handleWgetDownload = (): void => {
     if (itemSelections !== null) {
       const ids = itemSelections.map((item) => item.id);
-      message.success(
-        'The wget script is generating, please wait momentarily.',
-        10
-      );
+      showNotice('The wget script is generating, please wait momentarily.', {
+        duration: 7,
+        type: 'info',
+      });
       setDownloadIsLoading(true);
       fetchWgetScript(ids)
         .then((url) => {
@@ -225,13 +226,7 @@ const DatasetDownloadForm: React.FC = () => {
           setDownloadIsLoading(false);
         })
         .catch((error: ResponseError) => {
-          if (error.message) {
-            message.error({
-              content: error.message,
-            });
-          } else {
-            message.error('An unknown error has occurred.');
-          }
+          showError(error.message);
           setDownloadIsLoading(false);
         });
     }
@@ -243,7 +238,7 @@ const DatasetDownloadForm: React.FC = () => {
     endpoint: GlobusEndpointData | null
   ): Promise<void> => {
     if (!endpoint) {
-      message.warning(`Globus endpoint was undefined.`);
+      showNotice('Globus endpoint was undefined.', { type: 'warning' });
       return;
     }
 
@@ -257,7 +252,7 @@ const DatasetDownloadForm: React.FC = () => {
 
       if (globusTransferToken && refreshToken) {
         let messageContent: React.ReactNode | string = null;
-        let messageType: 'success' | 'warning' | 'error' = 'success';
+        let messageType: NotificationType = 'success';
 
         startGlobusTransfer(
           globusTransferToken.access_token,
@@ -311,13 +306,10 @@ const DatasetDownloadForm: React.FC = () => {
           })
           .finally(async () => {
             setDownloadActive(false);
-            if (messageType === 'success') {
-              await message.success(messageContent, 5);
-            } else if (messageType === 'warning') {
-              await message.warning(messageContent, 5);
-            } else {
-              await message.error(messageContent, 5);
-            }
+            await showNotice(messageContent, {
+              duration: 5,
+              type: messageType,
+            });
             setDownloadActive(true);
             await endDownloadSteps();
           });
@@ -522,7 +514,7 @@ const DatasetDownloadForm: React.FC = () => {
         }
       }
     } catch (error: unknown) {
-      message.error('Error occured when obtaining transfer permissions.');
+      showError('Error occured when obtaining transfer permissions.');
     } finally {
       // This isn't strictly necessary but it ensures no code reuse.
       sessionStorage.removeItem('pkce_code_verifier');
