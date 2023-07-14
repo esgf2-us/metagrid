@@ -5,8 +5,11 @@ CONFIG_DIR=metagrid_configs
 BACKUP_DIR=$CONFIG_DIR/backups
 BACKUP_FORMAT=config_backup_$(date +'%F_%I-%M-%S')
 
+set -e
+
 #Custom functions
 function configure() {
+    mkdir -p $BACKUP_DIR
     cp $CONFIG_DIR/$METAGRID_CONFIG $BACKUP_DIR/$BACKUP_FORMAT
     $DEFAULT_EDITOR $CONFIG_DIR/$METAGRID_CONFIG
     saveConfigs $CONFIG_DIR/$METAGRID_CONFIG
@@ -22,7 +25,7 @@ function saveConfigs() {
 
 function setCurrentConfig() {
     clear
-    fileCount=$(ls "$BACKUP_DIR"| wc -l)
+    fileCount=$(ls "$BACKUP_DIR" | wc -l)
     if [ "$fileCount" -lt "1" ]; then
         echo "There aren't any config files in the backup directory."
         read -p "Press enter to continue..." option
@@ -56,7 +59,7 @@ function setCurrentConfig() {
 function startService() {
     echo "Starting $1"
     cd $1
-    docker-compose -f docker-compose.prod.yml up --build $2
+    docker compose -f docker-compose.prod.yml up --build $2
     cd ..
 }
 
@@ -64,7 +67,7 @@ function startService() {
 function stopService() {
     echo "Stopping $1"
     cd $1
-    docker-compose -f docker-compose.prod.yml down --remove-orphans
+    docker compose -f docker-compose.prod.yml down --remove-orphans
     cd ..
 }
 
@@ -73,7 +76,7 @@ function stopService() {
 function startLocalService() {
     echo "Starting $1"
     cd $1
-    docker-compose -f docker-compose.yml up --build $2
+    docker compose -f docker-compose.yml up --build $2
     cd ..
 }
 
@@ -81,7 +84,7 @@ function startLocalService() {
 function stopLocalService() {
     echo "Stopping $1"
     cd $1
-    docker-compose -f docker-compose.yml down --remove-orphans
+    docker compose -f docker-compose.yml down --remove-orphans
     cd ..
 }
 

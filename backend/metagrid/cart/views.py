@@ -18,11 +18,6 @@ class CartViewSet(
         queryset = self.queryset.filter(user=user).prefetch_related()
         return queryset
 
-    def get_queryset_email(self):
-        user_email = self.request.user.get_email_field_name()
-        queryset = self.queryset.filter(user=user_email).prefetch_related()
-        return queryset
-
 
 class SearchViewSet(viewsets.ModelViewSet):
     queryset = Search.objects.all().order_by("id")

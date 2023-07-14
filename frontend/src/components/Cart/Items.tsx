@@ -14,6 +14,7 @@ import { RawSearchResults } from '../Search/types';
 import DatasetDownload from '../Globus/DatasetDownload';
 import { saveSessionValue } from '../../api';
 import CartStateKeys, { cartItemSelections } from './recoil/atoms';
+import { NodeStatusArray } from '../NodeStatus/types';
 
 const styles: CSSinJS = {
   summary: {
@@ -32,9 +33,15 @@ export type Props = {
   userCart: RawSearchResults | [];
   onUpdateCart: (item: RawSearchResults, operation: 'add' | 'remove') => void;
   onClearCart: () => void;
+  nodeStatus?: NodeStatusArray;
 };
 
-const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
+const Items: React.FC<Props> = ({
+  userCart,
+  onUpdateCart,
+  onClearCart,
+  nodeStatus,
+}) => {
   const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(
     cartItemSelections
   );
@@ -79,6 +86,7 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
               <Table
                 loading={false}
                 canDisableRows={false}
+                nodeStatus={nodeStatus}
                 results={userCart}
                 userCart={userCart}
                 onUpdateCart={onUpdateCart}
