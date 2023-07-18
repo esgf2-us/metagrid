@@ -604,6 +604,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
                         onClearCart={handleClearCart}
                         onRunSearchQuery={handleRunSearchQuery}
                         onRemoveSearchQuery={handleRemoveSearchQuery}
+                        nodeStatus={nodeStatus}
                       />
                     </>
                   }
