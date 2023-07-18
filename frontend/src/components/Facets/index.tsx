@@ -77,7 +77,7 @@ const Facets: React.FC<Props> = ({
     <div
       data-testid="facets"
       style={styles.form}
-      className={leftSidebarTargets.getClass('leftSideBar')}
+      className={leftSidebarTargets.leftSideBar.class()}
     >
       <h3>Select a Project</h3>
       <div data-testid="projectForm">
@@ -92,7 +92,7 @@ const Facets: React.FC<Props> = ({
           <Tooltip title={curProject.projectUrl}>
             <Button
               href={curProject.projectUrl}
-              className={leftSidebarTargets.getClass('projectWebsiteBtn')}
+              className={leftSidebarTargets.projectWebsiteBtn.class()}
               target="_blank"
               style={{ marginTop: '10px' }}
             >
@@ -103,7 +103,7 @@ const Facets: React.FC<Props> = ({
         <Divider />
       </div>
       {!objectIsEmpty(availableFacets) && (
-        <div className={leftSidebarTargets.getClass('searchFacetsForm')}>
+        <div className={leftSidebarTargets.searchFacetsForm.class()}>
           <FacetsForm
             activeSearchQuery={activeSearchQuery}
             availableFacets={availableFacets as ParsedFacets}

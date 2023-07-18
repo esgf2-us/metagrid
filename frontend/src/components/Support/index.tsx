@@ -59,6 +59,7 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
       <div data-testid="support-form">
         <Modal
           visible={visible}
+          closeText="Close Support"
           title={
             <div>
               <h2>
@@ -75,6 +76,13 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
                   target="_blank"
                 >
                   https://esgf.github.io/esgf-user-support/metagrid.html
+                </a>
+              </p>
+              <p style={{ fontSize: '14px' }}>
+                If you need help on Globus Transfers, please visit this page for
+                more information:
+                <a href="https://app.globus.org/help">
+                  https://app.globus.org/help
                 </a>
               </p>
               <div>

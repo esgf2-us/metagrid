@@ -1,6 +1,7 @@
 import {
   BarsOutlined,
   FileSearchOutlined,
+  MailOutlined,
   NodeIndexOutlined,
   QuestionCircleOutlined,
   SearchOutlined,
@@ -14,16 +15,12 @@ import React, { CSSProperties } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { navBarTargets } from '../../common/reactJoyrideSteps';
 import Button from '../General/Button';
+import RightDrawer from '../Messaging/RightDrawer';
 
 const menuItemStyling: CSSProperties = { margin: '8px' };
 
 export type Props = {
-  mode:
-    | 'horizontal'
-    | 'vertical'
-    | 'vertical-left'
-    | 'vertical-right'
-    | 'inline';
+  mode: 'horizontal' | 'vertical' | 'inline';
   numCartItems: number;
   numSavedSearches: number;
   supportModalVisible: (visible: boolean) => void;
@@ -36,7 +33,7 @@ const RightMenu: React.FC<Props> = ({
   supportModalVisible,
 }) => {
   const [activeMenuItem, setActiveMenuItem] = React.useState<string>('search');
-
+  const [noticesVisible, setShowNotices] = React.useState(false);
   const location = useLocation();
   const { keycloak } = useKeycloak();
 
@@ -48,6 +45,14 @@ const RightMenu: React.FC<Props> = ({
       email: string;
     };
   }
+
+  const showNotices = (): void => {
+    setShowNotices(true);
+  };
+
+  const hideNotices = (): void => {
+    setShowNotices(false);
+  };
 
   /**
    * Update the active menu item based on the current pathname
@@ -65,22 +70,23 @@ const RightMenu: React.FC<Props> = ({
   }, [location.pathname]);
 
   return (
-    <div
-      data-testid="right-menu"
-      className={navBarTargets.getClass('topNavBar')}
-    >
+    <div data-testid="right-menu" className={navBarTargets.topNavBar.class()}>
       <Menu
         selectedKeys={[activeMenuItem]}
         mode={mode}
         style={
-          mode === 'inline' ? { textAlign: 'left' } : { textAlign: 'right' }
+          mode === 'inline'
+            ? { textAlign: 'left', justifyContent: 'flex-end' }
+            : { textAlign: 'right', justifyContent: 'flex-end' }
         }
-        overflowedIndicator={<BarsOutlined style={{ fontSize: '24px' }} />}
+        overflowedIndicator={
+          <BarsOutlined style={{ fontSize: '24px', margin: '20px 0' }} />
+        }
       >
         <Menu.Item
           key="search"
           style={menuItemStyling}
-          className={navBarTargets.getClass('searchPageBtn')}
+          className={navBarTargets.searchPageBtn.class()}
         >
           <Link to="/search">
             <SearchOutlined /> Search
@@ -89,7 +95,7 @@ const RightMenu: React.FC<Props> = ({
         <Menu.Item
           key="cartItems"
           style={menuItemStyling}
-          className={`modified-item ${navBarTargets.getClass('cartPageBtn')}`}
+          className={`modified-item ${navBarTargets.cartPageBtn.class()}`}
         >
           <Link to="/cart/items">
             <ShoppingCartOutlined style={{ fontSize: '20px' }} />
@@ -105,9 +111,7 @@ const RightMenu: React.FC<Props> = ({
         <Menu.Item
           key="cartSearches"
           style={menuItemStyling}
-          className={`modified-item ${navBarTargets.getClass(
-            'savedSearchPageBtn'
-          )}`}
+          className={`modified-item ${navBarTargets.savedSearchPageBtn.class()}`}
         >
           <Link to="/cart/searches">
             <FileSearchOutlined style={{ fontSize: '20px' }} />{' '}
@@ -123,17 +127,30 @@ const RightMenu: React.FC<Props> = ({
         <Menu.Item
           key="nodes"
           style={menuItemStyling}
-          className={navBarTargets.getClass('nodeStatusBtn')}
+          className={navBarTargets.nodeStatusBtn.class()}
         >
           <Link to="/nodes">
             <NodeIndexOutlined /> Node Status
           </Link>
         </Menu.Item>
+        <Menu.Item
+          style={menuItemStyling}
+          key="news"
+          className={navBarTargets.newsBtn.class()}
+        >
+          <Button
+            type="text"
+            icon={<MailOutlined style={{ fontSize: '20px', margin: 0 }} />}
+            onClick={showNotices}
+          >
+            News
+          </Button>
+        </Menu.Item>
         {!authenticated ? (
           <Menu.Item
             key="signIn"
             style={menuItemStyling}
-            className={navBarTargets.getClass('signInBtn')}
+            className={navBarTargets.signInBtn.class()}
           >
             <Button
               type="text"
@@ -170,7 +187,11 @@ const RightMenu: React.FC<Props> = ({
             </Menu.Item>
           </Menu.SubMenu>
         )}
-        <Menu.Item style={menuItemStyling} key="help">
+        <Menu.Item
+          style={menuItemStyling}
+          key="help"
+          className={navBarTargets.helpBtn.class()}
+        >
           <Button
             type="text"
             icon={
@@ -182,6 +203,7 @@ const RightMenu: React.FC<Props> = ({
           </Button>
         </Menu.Item>
       </Menu>
+      <RightDrawer visible={noticesVisible} onClose={hideNotices} />
     </div>
   );
 };

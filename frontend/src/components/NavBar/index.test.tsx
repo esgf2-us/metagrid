@@ -1,5 +1,5 @@
-import { fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
+import { fireEvent, waitFor } from '@testing-library/react';
 import { rest, server } from '../../api/mock/setup-env';
 import apiRoutes from '../../api/routes';
 import { customRender } from '../../test/custom-render';

@@ -1,9 +1,15 @@
 /**
  * This file contains HTTP Request functions.
  */
+
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+
 import 'setimmediate'; // Added because in Jest 27, setImmediate is not defined, causing test errors
 import humps from 'humps';
 import queryString from 'query-string';
+import { AxiosResponse } from 'axios';
+import axios from '../lib/axios';
 import {
   RawUserCart,
   RawUserSearchQuery,
@@ -22,7 +28,6 @@ import {
 } from '../components/Search/types';
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
 import { metagridApiURL, wgetApiURL } from '../env';
-import axios from '../lib/axios';
 import apiRoutes, { ApiRoute, HTTPCodeType } from './routes';
 
 export interface ResponseError extends Error {
@@ -557,6 +562,99 @@ export const fetchWgetScript = async (
     .then(() => url)
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.wget));
+    });
+};
+
+export const loadSessionValue = async <T>(key: string): Promise<T | null> => {
+  const url = `${apiRoutes.tempStorage.path}/get`;
+  return axios
+    .post(url, { dataKey: key })
+    .then((resp: AxiosResponse) => {
+      const { data } = resp;
+      if (data && key in data) {
+        // eslint-disable-next-line
+        const value: T | null = data[key];
+        if ((value as unknown) === 'None') {
+          return null;
+        }
+        return value as T;
+      }
+      return null;
+    })
+    .catch((error: ResponseError) => {
+      throw new Error(
+        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.tempStorage)
+      );
+    });
+};
+
+export const saveSessionValue = async <T>(
+  key: string,
+  value: T
+): Promise<AxiosResponse> => {
+  const url = `${apiRoutes.tempStorage.path}/set`;
+
+  let data: { dataKey: string; dataValue: T | string } = {
+    dataKey: key,
+    dataValue: 'None',
+  };
+  if (value !== null) {
+    data = { ...data, dataValue: value };
+  }
+  return axios
+    .post(url, JSON.stringify(data))
+    .then((resp) => {
+      return resp.data;
+    })
+    .catch((error: ResponseError) => {
+      throw new Error(
+        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.tempStorage)
+      );
+    });
+};
+
+/**
+ * Performs validation against the globus API to ensure a 200 response.
+ *
+ * If the API returns a 200, it returns the axios response.
+ */
+export const startGlobusTransfer = async (
+  accessToken: string,
+  refreshToken: string,
+  endpointId: string,
+  path: string,
+  ids: string[] | string,
+  filenameVars?: string[]
+): Promise<AxiosResponse> => {
+  let url = queryString.stringifyUrl({
+    url: apiRoutes.globusTransfer.path,
+    query: {
+      access_token: accessToken,
+      refresh_token: refreshToken,
+      endpointId,
+      path,
+      dataset_id: ids,
+    },
+  });
+  if (filenameVars && filenameVars.length > 0) {
+    const filenameVarsParam = queryString.stringify(
+      { query: filenameVars },
+      {
+        arrayFormat: 'comma',
+      }
+    );
+    url += `&${filenameVarsParam}`;
+  }
+
+  return axios
+    .get(url)
+    .then((resp) => {
+      return resp;
+    })
+    .catch((error: ResponseError) => {
+      throw new Error(
+        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusTransfer)
+      );
     });
 };
 

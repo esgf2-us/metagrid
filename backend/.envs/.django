@@ -15,12 +15,15 @@ KEYCLOAK_CLIENT_ID=backend
 
 # ESGF wget API
 # https://github.com/ESGF/esgf-wget
-REACT_APP_WGET_API_URL=https://nimbus3.llnl.gov/wget
+REACT_APP_WGET_API_URL=https://esgf-node.llnl.gov/esg-search/wget
 
 # ESGF Search API
 # https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
-REACT_APP_ESGF_NODE_URL=https://esgf-node.llnl.gov/esg-search/search
+REACT_APP_SEARCH_URL=https://esgf-node.llnl.gov/esg-search/search
 
 # ESGF Node Status API
 # https://github.com/ESGF/esgf-utils/blob/master/node_status/query_prom.py
 REACT_APP_ESGF_NODE_STATUS_URL=https://aims2.llnl.gov/metagrid-backend/proxy/status
+
+# ESGF Solr URL
+REACT_APP_ESGF_SOLR_URL=https://esgf-fedtest.llnl.gov/solr

@@ -15,6 +15,15 @@ export const metagridApiURL = `${
 export const publicUrl = process.env.PUBLIC_URL;
 export const previousPublicUrl = process.env.REACT_APP_PREVIOUS_URL as string;
 
+// Globus variables
+export const globusRedirectUrl = process.env
+  .REACT_APP_GLOBUS_REDIRECT as string;
+export const globusClientID = process.env.REACT_APP_CLIENT_ID as string;
+const globusNodesString = process.env.REACT_APP_GLOBUS_NODES as string;
+export const globusEnabledNodes = globusNodesString
+  ? globusNodesString.split(',')
+  : [];
+
 // ESGF wget API
 // ------------------------------------------------------------------------------
 // https://github.com/ESGF/esgf-wget
@@ -23,8 +32,7 @@ export const wgetApiURL = process.env.REACT_APP_WGET_API_URL as string;
 // ESGF Search API
 // ------------------------------------------------------------------------------
 // https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
-export const esgfNodeURL = `${process.env.REACT_APP_ESGF_NODE_URL as string}`;
-export const esgfNodeURLNoProtocol = esgfNodeURL.split('//')[1];
+export const esgfSearchURL = `${process.env.REACT_APP_SEARCH_URL as string}`;
 
 // ESGF Node Status API
 // ------------------------------------------------------------------------------
