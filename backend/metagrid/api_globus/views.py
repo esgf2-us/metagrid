@@ -15,11 +15,11 @@ from globus_sdk import AccessTokenAuthorizer, TransferClient, TransferData
 from metagrid.api_proxy.views import do_request
 
 ENDPOINT_MAP = {
- "415a6320-e49c-11e5-9798-22000b9da45e" : "1889ea03-25ad-4f9f-8110-1ce8833a9d7e"
+  "415a6320-e49c-11e5-9798-22000b9da45e" : "1889ea03-25ad-4f9f-8110-1ce8833a9d7e"
 }
 
 DATANODE_MAP = {
-    "" : ""
+    "aims3.llnl.gov" : "1889ea03-25ad-4f9f-8110-1ce8833a9d7"
 }
 
 # reserved query keywords
@@ -58,7 +58,7 @@ def truncate_urls(lst):
         for y in x["url"]:
             parts = y.split("|")
             if parts[1] == "Globus":
-                yield (parts[0].split(":")[1] + [z])
+                yield (parts[0].split(":")[1], z)
 
 
 def split_value(value):
@@ -337,8 +337,10 @@ def do_globus_transfer(request):
     download_map = {}
     for file, data_node in files_list:
         parts = file.split("/")
-
-        if endpoint_id == "":
+        if data_node in DATANODE_MAP:
+            endpoint_id = DATANODE_MAP[data_node]
+            print("Data node mapping.....") 
+        elif endpoint_id == "":
             endpoint_id = parts[0]
             if endpoint_id in ENDPOINT_MAP:
                 endpoint_id = ENDPOINT_MAP[endpoint_id]
