@@ -14,6 +14,14 @@ from globus_sdk import AccessTokenAuthorizer, TransferClient, TransferData
 
 from metagrid.api_proxy.views import do_request
 
+ENDPOINT_MAP = {
+ "415a6320-e49c-11e5-9798-22000b9da45e" : "1889ea03-25ad-4f9f-8110-1ce8833a9d7e"
+}
+
+DATANODE_MAP = {
+    "" : ""
+}
+
 # reserved query keywords
 OFFSET = "offset"
 LIMIT = "limit"
@@ -46,10 +54,11 @@ KEYWORDS = [
 
 def truncate_urls(lst):
     for x in lst:
+        z = x["data_node"]
         for y in x["url"]:
             parts = y.split("|")
             if parts[1] == "Globus":
-                yield (parts[0].split(":")[1])
+                yield (parts[0].split(":")[1] + [z])
 
 
 def split_value(value):
@@ -208,7 +217,7 @@ def get_files(url_params):
     # then use the allowed projects as the project query
 
     # Get facets for the file name, URL, checksum
-    file_attributes = ["url"]
+    file_attributes = ["url", "data_node"]
 
     # Solr query parameters
     query_params = dict(
@@ -326,22 +335,26 @@ def do_globus_transfer(request):
     urls = []
     endpoint_id = ""
     download_map = {}
-    for file in files_list:
+    for file, data_node in files_list:
         parts = file.split("/")
+
         if endpoint_id == "":
             endpoint_id = parts[0]
+            if endpoint_id in ENDPOINT_MAP:
+                endpoint_id = ENDPOINT_MAP[endpoint_id]
         urls.append("/" + "/".join(parts[1:]))
+            
     download_map[endpoint_id] = urls
 
     token_authorizer = AccessTokenAuthorizer(access_token)
     transfer_client = TransferClient(authorizer=token_authorizer)
 
     for source_endpoint, source_files in list(download_map.items()):
-        test_endpoint = "1889ea03-25ad-4f9f-8110-1ce8833a9d7e"
+
         # submit transfer request
         task_id = submit_transfer(
             transfer_client,
-            test_endpoint,
+            source_endpoint,
             source_files,
             target_endpoint,
             target_folder,
