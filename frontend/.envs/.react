@@ -9,7 +9,7 @@ REACT_APP_PREVIOUS_URL=/metagrid
 # ------------------------------------------------------------------------------
 REACT_APP_GLOBUS_REDIRECT=http://localhost:3000/cart/items
 REACT_APP_CLIENT_ID=7fa7ac4a-a051-4b26-836f-b292b5c5b268
-REACT_APP_GLOBUS_NODES=aims3.llnl.gov,esgf-data1.llnl.gov,esgf-data2.llnl.gov,esgf.nci.org.au
+REACT_APP_GLOBUS_NODES=aims3.llnl.gov,esgf-data1.llnl.gov,esgf-data2.llnl.gov
 
 # ------------------------------------------------------------------------------
 # https://github.com/aims-group/metagrid/tree/master/backend
