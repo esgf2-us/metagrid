@@ -19,8 +19,15 @@ ENDPOINT_MAP = {
 }
 
 DATANODE_MAP = {
-    "aims3.llnl.gov" : "1889ea03-25ad-4f9f-8110-1ce8833a9d7"
+    "aims3.llnl.gov" : "1889ea03-25ad-4f9f-8110-1ce8833a9d7e"
 }
+
+TEST_SHARDS_MAP = {
+
+    "esgf-fedtest.llnl.gov" : "esgf-node.llnl.gov"
+
+}
+
 
 # reserved query keywords
 OFFSET = "offset"
@@ -132,7 +139,9 @@ def get_files(url_params):
     file_offset = 0
     use_distrib = True
 
+
     #    xml_shards = get_solr_shards_from_xml()
+#    urllib.parse(query_url)  # TODO need to populate the sharts based on the Solr URL
     xml_shards = ["esgf-node.llnl.gov:80/solr"]
     querys = []
     file_query = ["type:File"]
@@ -332,7 +341,6 @@ def do_globus_transfer(request):
 
     task_ids = []  # list of submitted task ids
 
-    urls = []
     endpoint_id = ""
     download_map = {}
     for file, data_node in files_list:
@@ -340,16 +348,21 @@ def do_globus_transfer(request):
         if data_node in DATANODE_MAP:
             endpoint_id = DATANODE_MAP[data_node]
             print("Data node mapping.....") 
-        elif endpoint_id == "":
+        else:
             endpoint_id = parts[0]
             if endpoint_id in ENDPOINT_MAP:
                 endpoint_id = ENDPOINT_MAP[endpoint_id]
-        urls.append("/" + "/".join(parts[1:]))
-            
-    download_map[endpoint_id] = urls
+        if endpoint_id not in download_map:
+            download_map[endpoint_id] = []
+
+        download_map[endpoint_id].append("/" + "/".join(parts[1:]))
 
     token_authorizer = AccessTokenAuthorizer(access_token)
     transfer_client = TransferClient(authorizer=token_authorizer)
+    print()
+    print("   ---  DEBUG  ---")
+    print(download_map)
+    print()
 
     for source_endpoint, source_files in list(download_map.items()):
 
