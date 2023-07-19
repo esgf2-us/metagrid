@@ -30,7 +30,7 @@ const NavBar: React.FC<Props> = ({
   return (
     <nav data-testid="nav-bar" className="navbar">
       <div className="navbar-logo">
-        <Link to="https://esgf.github.io/nodes.html">
+        <Link to="https://www.esgf.io/nodes.html">
           <img
             style={{ maxWidth: '80%', height: 'auto' }}
             src={esgfLogo}
@@ -40,7 +40,7 @@ const NavBar: React.FC<Props> = ({
         &nbsp;
         <Link
           style={{ padding: 0, margin: 0, fontWeight: 'bold' }}
-          to="https://esgf.github.io/nodes.html"
+          to="https://www.esgf.io/nodes.html"
         >
           Federated Nodes
         </Link>
