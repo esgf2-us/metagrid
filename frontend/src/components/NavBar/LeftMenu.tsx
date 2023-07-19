@@ -1,7 +1,7 @@
 import { SearchOutlined } from '@ant-design/icons';
 import { Alert, Form, Input, Select, Spin } from 'antd';
 import React from 'react';
-import { useLocation, useNavigate, Link } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ResponseError } from '../../api';
 import { navBarTargets } from '../../common/reactJoyrideSteps';
 import { RawProject, RawProjects } from '../Facets/types';
@@ -77,8 +77,6 @@ const LeftMenu: React.FC<Props> = ({
           form={form}
           onFinish={onFinish}
         >
-          <Link to="https://esgf.github.io/nodes.html">Federated Nodes</Link>
-          &nbsp;
           <Input.Group compact>
             <Form.Item
               name="projectTextInput"
