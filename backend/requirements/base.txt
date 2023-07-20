@@ -11,6 +11,7 @@ whitenoise==6.4.0  # https://github.com/evansd/whitenoise
 
 # Database
 # ------------------------------------------------------------------------------
+psycopg==3.1.9 # https://learndjango.com/tutorials/psycopg3-binary-and-django-42-installation-quick-t
 psycopg-binary==3.1.9  # https://github.com/psycopg/psycopg2
 
 # REST API
