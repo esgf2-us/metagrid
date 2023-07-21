@@ -1,18 +1,18 @@
 import { act, waitFor } from '@testing-library/react';
 import React from 'react';
 import { keycloakRender } from '../test/custom-render';
-import { AuthProvider } from './AuthContext';
+import { KeycloakAuthProvider } from './AuthContext';
 
 describe('test AuthProvider', () => {
   it('renders using keycloak provider', async () => {
     jest.useFakeTimers();
 
     const { getByTestId, getByText } = keycloakRender(
-      <AuthProvider>
+      <KeycloakAuthProvider>
         <div data-testid="authProvider">
           <p>renders</p>
         </div>
-      </AuthProvider>,
+      </KeycloakAuthProvider>,
       { token: 'token' }
     );
 

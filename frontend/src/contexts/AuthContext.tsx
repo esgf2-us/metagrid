@@ -1,18 +1,57 @@
+// tslint:disable:no-console
 import React from 'react';
 import { useKeycloak } from '@react-keycloak/web';
 import { DeferFn, useAsync } from 'react-async';
-import { fetchUserAuth, fetchUserInfo } from '../api';
+import { fetchGlobusAuth, fetchUserAuth, fetchUserInfo } from '../api';
 import { RawUserAuth, RawUserInfo } from './types';
 
 export const AuthContext = React.createContext<RawUserAuth & RawUserInfo>({
   access_token: null,
+  is_authenticated: false,
   refresh_token: null,
   pk: null,
 });
 
 type Props = { children: React.ReactNode };
 
-export const AuthProvider: React.FC<Props> = ({ children }) => {
+export const GlobusAuthProvider: React.FC<Props> = ({ children }) => {
+  const { data: userAuth, run: runFetchGlobusAuth } = useAsync({
+    deferFn: (fetchGlobusAuth as unknown) as DeferFn<RawUserAuth>,
+  });
+
+  /**
+   * Fetch the MetaGrid auth tokens with valid Globus access token.
+   *
+   * The runFetchGlobusUserAuth function is set to run approximately every 5 minutes
+   * to ensure the user does not encounter an expired token.
+   */
+  React.useEffect(() => {
+    /* istanbul ignore else */
+    if (userAuth?.is_authenticated) {
+      runFetchGlobusAuth();
+      const interval = setInterval(() => {
+        runFetchGlobusAuth();
+      }, 295000);
+      return () => clearInterval(interval);
+    }
+    return undefined;
+  }, [runFetchGlobusAuth, userAuth?.is_authenticated]);
+
+  return (
+    <AuthContext.Provider
+      value={{
+        access_token: userAuth?.access_token || null,
+        is_authenticated: (userAuth?.is_authenticated as boolean) || false,
+        refresh_token: null,
+        pk: (userAuth?.pk as string) || null,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const KeycloakAuthProvider: React.FC<Props> = ({ children }) => {
   // Keycloak instance
   const { keycloak } = useKeycloak();
 
@@ -57,6 +96,7 @@ export const AuthProvider: React.FC<Props> = ({ children }) => {
     <AuthContext.Provider
       value={{
         access_token: userAuth?.access_token || null,
+        is_authenticated: userAuth?.is_authenticated || false,
         refresh_token: userAuth?.refresh_token || null,
         pk: userInfo?.pk || null,
       }}

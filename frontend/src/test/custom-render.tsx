@@ -3,7 +3,7 @@ import { render, RenderResult } from '@testing-library/react';
 import { KeycloakInstance } from 'keycloak-js';
 import React, { ComponentType } from 'react';
 import { MemoryRouter } from 'react-router-dom';
-import { AuthProvider } from '../contexts/AuthContext';
+import { KeycloakAuthProvider } from '../contexts/AuthContext';
 import { keycloakProviderInitConfig } from '../lib/keycloak';
 
 export const createKeycloakStub = (): KeycloakInstance => ({
@@ -69,11 +69,11 @@ export const customRender = (
         authClient={{ ...createKeycloakStub(), ...options }}
         initOptions={keycloakProviderInitConfig}
       >
-        <AuthProvider>
+        <KeycloakAuthProvider>
           <MemoryRouter basename={process.env.PUBLIC_URL}>
             {children}
           </MemoryRouter>
-        </AuthProvider>
+        </KeycloakAuthProvider>
       </ReactKeycloakProvider>
     );
   }

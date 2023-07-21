@@ -1,5 +1,7 @@
 export type RawUserAuth = {
   access_token: string | null;
+  is_authenticated: boolean | false;
+  pk: string | null;
   refresh_token: string | null;
 };
 

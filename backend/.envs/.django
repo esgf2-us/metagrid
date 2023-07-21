@@ -24,3 +24,8 @@ REACT_APP_ESGF_NODE_URL=https://esgf-node.llnl.gov/esg-search/search
 # ESGF Node Status API
 # https://github.com/ESGF/esgf-utils/blob/master/node_status/query_prom.py
 REACT_APP_ESGF_NODE_STATUS_URL=https://aims2.llnl.gov/metagrid-backend/proxy/status
+
+# https://docs.djangoproject.com/en/4.2/ref/settings/#login-redirect-url
+# https://docs.djangoproject.com/en/4.2/ref/settings/#logout-redirect-url
+DJANGO_LOGIN_REDIRECT_URL=http://localhost:3000/search
+DJANGO_LOGOUT_REDIRECT_URL=http://localhost:3000/search

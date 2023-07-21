@@ -16,6 +16,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { navBarTargets } from '../../common/reactJoyrideSteps';
 import Button from '../General/Button';
 import RightDrawer from '../Messaging/RightDrawer';
+import { AuthContext } from '../../contexts/AuthContext';
 
 const menuItemStyling: CSSProperties = { margin: '8px' };
 
@@ -34,11 +35,15 @@ const RightMenu: React.FC<Props> = ({
 }) => {
   const [activeMenuItem, setActiveMenuItem] = React.useState<string>('search');
   const [noticesVisible, setShowNotices] = React.useState(false);
+
   const location = useLocation();
   const { keycloak } = useKeycloak();
 
+  const authState = React.useContext(AuthContext);
+  const { access_token: accessToken, pk } = authState;
+  const authenticated = accessToken && pk;
+
   let userInfo;
-  const { authenticated } = keycloak;
   if (authenticated) {
     userInfo = keycloak.idTokenParsed as KeycloakTokenParsed & {
       given_name: string;

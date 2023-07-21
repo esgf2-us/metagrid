@@ -66,6 +66,20 @@ export const errorMsgBasedOnHTTPStatusCode = (
 };
 
 /**
+ * HTTP Request Method: GET
+ * HTTP Response Code: 200 OK
+ */
+export const fetchGlobusAuth = async (): Promise<RawUserAuth> =>
+  axios
+    .get(apiRoutes.globusAuth.path)
+    .then((resp) => resp.data as Promise<RawUserAuth>)
+    .catch((error: ResponseError) => {
+      throw new Error(
+        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusAuth)
+      );
+    });
+
+/**
  * HTTP Request Method: POST
  * HTTP Response Code: 200 OK
  */

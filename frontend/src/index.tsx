@@ -4,23 +4,26 @@ import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
 import { getSearchFromUrl } from './common/utils';
 import App from './components/App/App';
-import { AuthProvider } from './contexts/AuthContext';
+import { KeycloakAuthProvider } from './contexts/AuthContext';
 import { ReactJoyrideProvider } from './contexts/ReactJoyrideContext';
-import './index.css';
 import { keycloak, keycloakProviderInitConfig } from './lib/keycloak';
+import { authenticationMethod } from './env';
+import './index.css';
 
-ReactDOM.render(
-  <ReactKeycloakProvider
-    authClient={keycloak}
-    initOptions={keycloakProviderInitConfig}
-  >
-    <AuthProvider>
-      <BrowserRouter basename={process.env.PUBLIC_URL}>
-        <ReactJoyrideProvider>
-          <App searchQuery={getSearchFromUrl()} />
-        </ReactJoyrideProvider>
-      </BrowserRouter>
-    </AuthProvider>
-  </ReactKeycloakProvider>,
-  document.getElementById('root')
-);
+if (authenticationMethod === 'keycloak') {
+  ReactDOM.render(
+    <ReactKeycloakProvider
+      authClient={keycloak}
+      initOptions={keycloakProviderInitConfig}
+    >
+      <KeycloakAuthProvider>
+        <BrowserRouter basename={process.env.PUBLIC_URL}>
+          <ReactJoyrideProvider>
+            <App searchQuery={getSearchFromUrl()} />
+          </ReactJoyrideProvider>
+        </BrowserRouter>
+      </KeycloakAuthProvider>
+    </ReactKeycloakProvider>,
+    document.getElementById('root')
+  );
+}
