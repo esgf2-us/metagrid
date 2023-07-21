@@ -14,7 +14,7 @@ def do_search(request):
     esgf_host = getattr(
         settings,
         "REACT_APP_SEARCH_URL",
-        "https://esgf-node.llnl.gov/esg-search/search",
+        "https://esgf-fedtest.llnl.gov/esg-search/search",
     )
     return do_request(request, esgf_host)
 

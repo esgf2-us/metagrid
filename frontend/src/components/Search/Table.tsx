@@ -261,10 +261,11 @@ const Table: React.FC<Props> = ({
           downloadType: DatasetDownloadTypes
         ): void => {
           /* istanbul ignore else */
+          const fooToken = accessToken as string;
           if (downloadType === 'wget') {
             // eslint-disable-next-line no-void
             void message.success(
-              'The wget script is generating, please wait momentarily.'
+              `The wget script is generating, please wait momentarily. ${fooToken}`
             );
             fetchWgetScript(
               record.id,

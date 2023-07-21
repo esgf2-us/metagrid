@@ -71,6 +71,8 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
         'The wget script is generating, please wait momentarily.',
         10
       );
+      // eslint-disable-next-line no-void
+      void message.success(`Access token: ${accessToken || 'null'}`, 10);
       setDownloadIsLoading(true);
       fetchWgetScript(ids, false, accessToken as string)
         .then((url) => {
