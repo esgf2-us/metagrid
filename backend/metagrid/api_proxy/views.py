@@ -26,7 +26,6 @@ def do_search(request):
 @require_http_methods(["POST"])
 @csrf_exempt
 def do_citation(request):
-
     jo = {}
     try:
         jo = json.loads(request.body)
@@ -114,50 +113,48 @@ def do_request(request, urlbase):
 @require_http_methods(["POST"])
 @csrf_exempt
 def get_temp_storage(request):
-    if not request.method == "POST":
-        # pragma: no cover
+    if not request.method == "POST":  # pragma: no cover
         return HttpResponseBadRequest("Request method must be POST.")
 
-    requestBody = json.loads(request.body)
+    request_body = json.loads(request.body)
 
-    if requestBody is not None and "dataKey" in requestBody:
-
-        dataKey = requestBody["dataKey"]
+    if request_body is not None and "dataKey" in request_body:
+        data_key = request_body["dataKey"]
 
         if "temp_storage" not in request.session:
-            print({"msg": "Temporary storage empty.", dataKey: "None"})
+            print({"msg": "Temporary storage empty.", data_key: "None"})
             return HttpResponse(
                 json.dumps(
-                    {"msg": "Temporary storage empty.", dataKey: "None"}
+                    {"msg": "Temporary storage empty.", data_key: "None"}
                 )
             )
 
-        tempStorage = request.session.get("temp_storage")
+        temp_storage = request.session.get("temp_storage")
 
-        if dataKey == "tempStorage":
+        if data_key == "temp_storage":
             return HttpResponse(
                 json.dumps(
                     {
                         "msg": "Full temp storage dict returned.",
-                        "tempStorage": tempStorage,
+                        "tempStorage": temp_storage,
                     }
                 )
             )
 
-        if dataKey in tempStorage:
+        if data_key in temp_storage:
             response = {
                 "msg": "Key found!",
-                dataKey: tempStorage.get(dataKey),
+                data_key: temp_storage.get(data_key),
             }
         else:
             response = {
                 "msg": "Key not found.",
-                dataKey: "None",
+                data_key: "None",
             }
     else:
         return HttpResponseBadRequest(
             json.dumps(
-                {"msg": "Invalid request.", "request body": requestBody}
+                {"msg": "Invalid request.", "request body": request_body}
             )
         )
 
@@ -167,23 +164,25 @@ def get_temp_storage(request):
 @require_http_methods(["POST"])
 @csrf_exempt
 def set_temp_storage(request):
-    if not request.method == "POST":
-        # pragma: no cover
+    if not request.method == "POST":  # pragma: no cover
         return HttpResponseBadRequest("Request method must be POST.")
 
-    requestBody = json.loads(request.body)
+    request_body = json.loads(request.body)
 
     if (
-        requestBody is not None
-        and "dataKey" in requestBody
-        and "dataValue" in requestBody
+        request_body is not None
+        and "dataKey" in request_body
+        and "dataValue" in request_body
     ):
-        dataKey = requestBody["dataKey"]
-        dataValue = requestBody["dataValue"]
+        data_key = request_body["dataKey"]
+        data_value = request_body["dataValue"]
+
+        if data_value is None:
+            data_value = "None"
 
         # Replace all of temp storage if temp storage key is used
-        if dataKey == "tempStorage":
-            request.session["temp_storage"] = dataValue
+        if data_key == "temp_storage":
+            request.session["temp_storage"] = data_value
             response = {
                 "msg": "All temp storage was set to incoming value.",
                 "temp_storage": request.session["temp_storage"],
@@ -191,38 +190,38 @@ def set_temp_storage(request):
         else:
             # Otherwise, just set specific value in temp storage
             if "temp_storage" not in request.session:
-
-                if dataValue == "None":
+                if data_value == "None":
                     response = {
                         "msg": "Data was none, so no change made.",
-                        dataKey: dataValue,
+                        data_key: data_value,
                     }
                 else:
-                    request.session["temp_storage"] = {dataKey: dataValue}
+                    request.session["temp_storage"] = {data_key: data_value}
                     response = {
                         "msg": "Created temporary storage.",
-                        dataKey: dataValue,
+                        data_key: data_value,
                     }
             else:
                 temp_storage = request.session["temp_storage"]
-                if dataValue == "None":
-                    temp_storage.pop(dataKey, None)
+
+                if data_value == "None":
+                    temp_storage.pop(data_key, None)
                     response = {
                         "msg": "Data was none, so removed it from storage.",
-                        dataKey: dataValue,
+                        data_key: data_value,
                     }
                 else:
-                    temp_storage[dataKey] = dataValue
+                    temp_storage[data_key] = data_value
                     response = {
                         "msg": "Updated temporary storage.",
-                        dataKey: dataValue,
+                        data_key: data_value,
                     }
     else:
         return HttpResponseBadRequest(
             json.dumps(
                 {
                     "msg": "Invalid request.",
-                    "request body": requestBody,
+                    "request body": request_body,
                 }
             )
         )

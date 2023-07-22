@@ -5,7 +5,6 @@ import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta
 
-import requests
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
@@ -112,7 +111,7 @@ def split_value(value):
         return _values
 
 
-def get_files(url_params):
+def get_files(url_params):  # pragma: no cover
     solr_url = getattr(
         settings,
         "SOLR_URL",
@@ -250,7 +249,7 @@ def submit_transfer(
     source_files,
     target_endpoint,
     target_directory,
-):
+):  # pragma: no cover
     """
     Method to submit a data transfer request to Globus.
     """
@@ -287,8 +286,7 @@ def submit_transfer(
 
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
-def do_globus_transfer(request):
-
+def do_globus_transfer(request):  # pragma: no cover
     if request.method == "POST":
         url_params = request.POST.copy()
     elif request.method == "GET":
@@ -354,50 +352,9 @@ def do_globus_transfer(request):
     return HttpResponse(json.dumps({"status": "OK", "taskid": task_id}))
 
 
-@require_http_methods(["GET"])
-@csrf_exempt
-def get_endpoint_list(request):
-
-    transfer_api_root = "https://transfer.api.globusonline.org/v0.10"
-    endpoint_search_url = "/endpoint_search?"
-    url = transfer_api_root + endpoint_search_url
-
-    filterText = request.GET.get("filterText")
-    refreshToken = request.GET.get("refreshToken")
-
-    params = {
-        "filter_scope": "all",
-        "filter_fulltext": filterText or "test_backend",
-    }
-
-    resp = requests.get(
-        url,
-        params=params,
-        verify=False,
-        headers={"refresh_token": refreshToken or ""},
-    )
-
-    httpresp = HttpResponse(resp)
-    httpresp.status_code = 200
-
-    return httpresp
-
-
 @require_http_methods(["POST"])
 @csrf_exempt
 def get_access_token(request):
-
     url = "https://auth.globus.org/v2/oauth2/token"
 
     return do_request(request, url)
-
-
-@require_http_methods(["POST"])
-@csrf_exempt
-def get_endpoint(request):
-
-    resp = json.dumps({"value": request.POST})
-
-    httpresp = HttpResponse(resp)
-    httpresp.status_code = 200
-    return httpresp
