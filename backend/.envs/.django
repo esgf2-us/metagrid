@@ -9,9 +9,9 @@ CORS_ORIGIN_WHITELIST=http://localhost:3000
 
 # django-all-auth
 # ------------------------------------------------------------------------------
-KEYCLOAK_URL=http://keycloak:8080/auth
-KEYCLOAK_REALM=metagrid
-KEYCLOAK_CLIENT_ID=backend
+KEYCLOAK_URL=https://login.esgf.io/
+KEYCLOAK_REALM=esgf
+KEYCLOAK_CLIENT_ID=metagrid-localhost
 
 # ESGF wget API
 # https://github.com/ESGF/esgf-wget
