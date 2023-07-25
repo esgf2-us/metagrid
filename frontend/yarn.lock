@@ -8038,10 +8038,10 @@ jsx-ast-utils@^3.3.3:
     array-includes "^3.1.5"
     object.assign "^4.1.3"
 
-keycloak-js@17.0.1:
-  version "17.0.1"
-  resolved "https://registry.yarnpkg.com/keycloak-js/-/keycloak-js-17.0.1.tgz#403ea75b3e938ddc780f99ecbd73e1b6905f826f"
-  integrity sha512-mbLBSoogCBX5VYeKCdEz8BaRWVL9twzSqArRU3Mo3Z7vEO1mghGZJ5IzREfiMEi7kTUZtk5i9mu+Yc0koGkK6g==
+keycloak-js@19.0.3:
+  version "19.0.3"
+  resolved "https://registry.yarnpkg.com/keycloak-js/-/keycloak-js-19.0.3.tgz#f70e988b799054957e47c981b7e962c9874da00e"
+  integrity sha512-mzCBxrzfl+vB551Q7MB+T9+40IHU4i0a6g1eTatzeEGrQMis5m/BqvPC3kxTsI+/LxHbB9XYQE3u9SlWKDHQCw==
   dependencies:
     base64-js "^1.5.1"
     js-sha256 "^0.9.0"
