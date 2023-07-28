@@ -3,7 +3,7 @@ import React from 'react';
 import { userCartFixture } from '../../api/mock/fixtures';
 import { rest, server } from '../../api/mock/setup-env';
 import apiRoutes from '../../api/routes';
-import { getRowName } from '../../test/custom-render';
+import { customRender, getRowName } from '../../test/custom-render';
 import Items, { Props } from './Items';
 
 const defaultProps: Props = {
@@ -14,7 +14,7 @@ const defaultProps: Props = {
 
 it('renders message that the cart is empty when no items are added', () => {
   const props = { ...defaultProps, userCart: [] };
-  const { getByText } = render(<Items {...props} />);
+  const { getByText } = customRender(<Items {...props} />);
 
   // Check empty cart text renders
   const emptyCart = getByText('Your cart is empty');

@@ -26,14 +26,14 @@ export type Props = {
   supportModalVisible: (visible: boolean) => void;
 };
 
-const RightMenu: React.FC<Props> = ({
+const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
   mode,
   numCartItems,
   numSavedSearches,
   supportModalVisible,
 }) => {
   const [activeMenuItem, setActiveMenuItem] = React.useState<string>('search');
-  const [noticesVisible, setShowNotices] = React.useState(false);
+  const [noticesOpen, setShowNotices] = React.useState(false);
   const location = useLocation();
   const { keycloak } = useKeycloak();
 
@@ -203,7 +203,7 @@ const RightMenu: React.FC<Props> = ({
           </Button>
         </Menu.Item>
       </Menu>
-      <RightDrawer visible={noticesVisible} onClose={hideNotices} />
+      <RightDrawer open={noticesOpen} onClose={hideNotices} />
     </div>
   );
 };

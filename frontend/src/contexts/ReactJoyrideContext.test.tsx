@@ -52,7 +52,7 @@ describe('test ReactJoyrideProvider', () => {
     expect(getCurrentAppPage()).toEqual(AppPage.Main);
     const { getByTestId, getByRole } = render(
       <ReactJoyrideProvider>
-        <Support visible onClose={jest.fn()} />
+        <Support open onClose={jest.fn()} />
       </ReactJoyrideProvider>,
       {
         wrapper: MemoryRouter,

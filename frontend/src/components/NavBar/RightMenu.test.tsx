@@ -9,7 +9,7 @@ const rightMenuProps: Props = {
   numCartItems: 4,
   numSavedSearches: 1,
   supportModalVisible: () => {
-    render(<Support visible onClose={jest.fn()} />);
+    render(<Support open onClose={jest.fn()} />);
   },
 };
 

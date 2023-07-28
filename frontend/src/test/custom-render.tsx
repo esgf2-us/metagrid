@@ -3,6 +3,7 @@ import { render, RenderResult } from '@testing-library/react';
 import { KeycloakInstance } from 'keycloak-js';
 import React, { ComponentType } from 'react';
 import { MemoryRouter } from 'react-router-dom';
+import { RecoilRoot } from 'recoil';
 import { AuthProvider } from '../contexts/AuthContext';
 import { keycloakProviderInitConfig } from '../lib/keycloak';
 
@@ -65,16 +66,18 @@ export const customRender = (
 ): RenderResult => {
   function AllProviders({ children }: AllProvidersProps): React.ReactElement {
     return (
-      <ReactKeycloakProvider
-        authClient={{ ...createKeycloakStub(), ...options }}
-        initOptions={keycloakProviderInitConfig}
-      >
-        <AuthProvider>
-          <MemoryRouter basename={process.env.PUBLIC_URL}>
-            {children}
-          </MemoryRouter>
-        </AuthProvider>
-      </ReactKeycloakProvider>
+      <RecoilRoot>
+        <ReactKeycloakProvider
+          authClient={{ ...createKeycloakStub(), ...options }}
+          initOptions={keycloakProviderInitConfig}
+        >
+          <AuthProvider>
+            <MemoryRouter basename={process.env.PUBLIC_URL}>
+              {children}
+            </MemoryRouter>
+          </AuthProvider>
+        </ReactKeycloakProvider>
+      </RecoilRoot>
     );
   }
 

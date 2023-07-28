@@ -27,7 +27,7 @@ describe('Testing the support form and buttons', () => {
   });
 
   it('renders support component', () => {
-    const { getByTestId } = render(<Support visible onClose={jest.fn()} />);
+    const { getByTestId } = render(<Support open onClose={jest.fn()} />);
 
     // Check support form rendered
     const support = getByTestId('support-form');
@@ -40,7 +40,7 @@ describe('Testing the support form and buttons', () => {
     expect(getCurrentAppPage()).toEqual(AppPage.Main);
     const { getByTestId, getByRole } = render(
       <ReactJoyrideProvider>
-        <Support visible onClose={jest.fn()} />
+        <Support open onClose={jest.fn()} />
       </ReactJoyrideProvider>,
       {
         wrapper: MemoryRouter,
@@ -68,7 +68,7 @@ describe('Testing the support form and buttons', () => {
     expect(getCurrentAppPage()).toEqual(AppPage.Cart);
     const { getByTestId, getByRole } = render(
       <ReactJoyrideProvider>
-        <Support visible onClose={jest.fn()} />
+        <Support open onClose={jest.fn()} />
       </ReactJoyrideProvider>,
       {
         wrapper: MemoryRouter,
@@ -96,7 +96,7 @@ describe('Testing the support form and buttons', () => {
     expect(getCurrentAppPage()).toEqual(AppPage.SavedSearches);
     const { getByTestId, getByRole } = render(
       <ReactJoyrideProvider>
-        <Support visible onClose={jest.fn()} />
+        <Support open onClose={jest.fn()} />
       </ReactJoyrideProvider>,
       {
         wrapper: MemoryRouter,
@@ -124,7 +124,7 @@ describe('Testing the support form and buttons', () => {
     expect(getCurrentAppPage()).toEqual(AppPage.NodeStatus);
     const { getByTestId, getByRole } = render(
       <ReactJoyrideProvider>
-        <Support visible onClose={jest.fn()} />
+        <Support open onClose={jest.fn()} />
       </ReactJoyrideProvider>,
       {
         wrapper: MemoryRouter,

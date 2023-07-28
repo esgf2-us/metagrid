@@ -22,7 +22,9 @@ export const ModalContext = React.createContext<RawModalState>({
 
 type Props = { children: React.ReactNode };
 
-export const ModalProvider: React.FC<Props> = ({ children }) => {
+export const ModalProvider: React.FC<React.PropsWithChildren<Props>> = ({
+  children,
+}) => {
   const [supportVisible, setSupportVisible] = React.useState<boolean>(false);
   const [
     endpointModalVisible,
@@ -44,10 +46,7 @@ export const ModalProvider: React.FC<Props> = ({ children }) => {
         setSearchResults,
       }}
     >
-      <Support
-        visible={supportVisible}
-        onClose={() => setSupportVisible(false)}
-      />
+      <Support open={supportVisible} onClose={() => setSupportVisible(false)} />
       {children}
     </ModalContext.Provider>
   );

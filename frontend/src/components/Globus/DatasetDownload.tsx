@@ -1,5 +1,5 @@
 import { CheckCircleFilled, DownloadOutlined } from '@ant-design/icons';
-import { Button, Form, Modal, Radio, Select, Space } from 'antd';
+import { Button, Form, Modal, Radio, Select, Space, Tooltip } from 'antd';
 import PKCE from 'js-pkce';
 import React, { useEffect } from 'react';
 import { useRecoilState } from 'recoil';
@@ -34,7 +34,6 @@ import {
   GlobusTaskItem,
   MAX_TASK_LIST_LENGTH,
 } from './types';
-import ToolTip from '../DataDisplay/ToolTip';
 import { NotificationType, showError, showNotice } from '../../common/utils';
 
 // Reference: https://github.com/bpedroza/js-pkce
@@ -67,7 +66,7 @@ type AlertModalState = {
 // Statically defined list of dataset download options
 const downloadOptions = ['Globus', 'wget'];
 
-const DatasetDownloadForm: React.FC = () => {
+const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   const [downloadForm] = Form.useForm();
 
   // User wants to use default endpoint
@@ -186,6 +185,14 @@ const DatasetDownloadForm: React.FC = () => {
     return null;
   }
 
+  async function resetTokens(): Promise<void> {
+    await saveSessionValue<null>(GlobusStateKeys.accessToken, null);
+    await saveSessionValue<null>(GlobusStateKeys.refreshToken, null);
+    await saveSessionValue<null>(GlobusStateKeys.transferToken, null);
+    await saveSessionValue<null>(GlobusStateKeys.defaultEndpoint, null);
+    await saveSessionValue<null>(GlobusStateKeys.userSelectedEndpoint, null);
+  }
+
   async function getGlobusTokens(): Promise<
     [GlobusTokenResponse | null, string | null]
   > {
@@ -300,9 +307,16 @@ const DatasetDownloadForm: React.FC = () => {
               messageType = 'warning';
             }
           })
-          .catch((error: ResponseError) => {
-            messageContent = `Globus transfer task failed: ${error.message}`;
+          .catch(async (error: ResponseError) => {
+            if (error.message !== '') {
+              messageContent = `Globus transfer task failed: ${error.message}`;
+            } else {
+              messageContent = `Globus transfer task failed. Resetting tokens.`;
+              // eslint-disable-next-line no-console
+              console.error(error);
+            }
             messageType = 'error';
+            await resetTokens();
           })
           .finally(async () => {
             setDownloadActive(false);
@@ -714,7 +728,7 @@ const DatasetDownloadForm: React.FC = () => {
           <Select
             style={{ width: 235 }}
             onSelect={(rawType) => {
-              const downloadType = rawType?.toString();
+              const downloadType: string = rawType as string;
               if (downloadType) {
                 setSelectedDownloadType(downloadType);
               }
@@ -757,14 +771,14 @@ const DatasetDownloadForm: React.FC = () => {
                 value={useGlobusDefaultEndpoint}
               >
                 <Space direction="vertical">
-                  <ToolTip title="This option will use your currently saved default endpoint for the Globus transfer">
+                  <Tooltip title="This option will use your currently saved default endpoint for the Globus transfer">
                     <Radio value defaultChecked>
                       Default Endpoint
                     </Radio>
-                  </ToolTip>
-                  <ToolTip title="This option will let you specify an endpoint for the Globus transfer">
+                  </Tooltip>
+                  <Tooltip title="This option will let you specify an endpoint for the Globus transfer">
                     <Radio value={false}>Specify Endpoint</Radio>
-                  </ToolTip>
+                  </Tooltip>
                 </Space>
               </Radio.Group>
             </Form.Item>
@@ -772,7 +786,7 @@ const DatasetDownloadForm: React.FC = () => {
       </Form>
       <Modal
         title="Save Endpoint"
-        visible={useDefaultConfirmModal.show}
+        open={useDefaultConfirmModal.show}
         onOk={useDefaultConfirmModal.onOkAction}
         onCancel={useDefaultConfirmModal.onCancelAction}
         okText="Yes"
@@ -782,7 +796,7 @@ const DatasetDownloadForm: React.FC = () => {
       </Modal>
       <Modal
         title="Globus Transfer"
-        visible={globusStepsModal.show}
+        open={globusStepsModal.show}
         onOk={globusStepsModal.onOkAction}
         onCancel={globusStepsModal.onCancelAction}
         okText="Yes"
@@ -816,7 +830,7 @@ const DatasetDownloadForm: React.FC = () => {
         onOk={alertPopupState.onOkAction}
         onCancel={alertPopupState.onCancelAction}
         title="Notice"
-        visible={alertPopupState.show}
+        open={alertPopupState.show}
       >
         {alertPopupState.content}
       </Modal>

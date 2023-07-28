@@ -12,7 +12,9 @@ export const AuthContext = React.createContext<RawUserAuth & RawUserInfo>({
 
 type Props = { children: React.ReactNode };
 
-export const AuthProvider: React.FC<Props> = ({ children }) => {
+export const AuthProvider: React.FC<React.PropsWithChildren<Props>> = ({
+  children,
+}) => {
   // Keycloak instance
   const { keycloak } = useKeycloak();
 

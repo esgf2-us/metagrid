@@ -1,7 +1,6 @@
-import { Row } from 'antd';
+import { Empty, Row } from 'antd';
 import React from 'react';
 import { savedSearchTourTargets } from '../../common/reactJoyrideSteps';
-import Empty from '../DataDisplay/Empty';
 import SearchesCard from './SearchesCard';
 import { UserSearchQueries, UserSearchQuery } from './types';
 
@@ -11,7 +10,7 @@ export type Props = {
   onRemoveSearchQuery: (uuid: string) => void;
 };
 
-const Searches: React.FC<Props> = ({
+const Searches: React.FC<React.PropsWithChildren<Props>> = ({
   userSearchQueries,
   onRunSearchQuery,
   onRemoveSearchQuery,

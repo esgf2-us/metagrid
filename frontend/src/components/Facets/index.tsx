@@ -37,7 +37,7 @@ export type Props = {
   onSetActiveFacets: (activeFacets: ActiveFacets) => void;
 };
 
-const Facets: React.FC<Props> = ({
+const Facets: React.FC<React.PropsWithChildren<Props>> = ({
   activeSearchQuery,
   availableFacets,
   nodeStatus,
