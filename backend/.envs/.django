@@ -13,6 +13,10 @@ KEYCLOAK_URL=https://login.esgf.io/
 KEYCLOAK_REALM=esgf
 KEYCLOAK_CLIENT_ID=metagrid-localhost
 
+# KEYCLOAK_URL=http://keycloak:8080/
+# KEYCLOAK_REALM=metagrid
+# KEYCLOAK_CLIENT_ID=backend
+
 # ESGF wget API
 # https://github.com/ESGF/esgf-wget
 REACT_APP_WGET_API_URL=https://nimbus3.llnl.gov/wget

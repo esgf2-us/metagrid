@@ -11,6 +11,7 @@ from django.views.decorators.http import require_http_methods
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 @api_view()
@@ -18,10 +19,13 @@ from rest_framework.response import Response
 def do_globus_auth(request):
     additional_info = {}
     if request.user.is_authenticated:
-        additional_info["acccess_token"] = request.user.social_auth.get(
-            provider='globus').extra_data["access_token"]
+        refresh = RefreshToken.for_user(request.user)
+        additional_info["access_token"] = str(refresh.access_token)
         additional_info["email"] = request.user.email
+        additional_info["globus_access_token"] = request.user.social_auth.get(
+            provider='globus').extra_data["access_token"]
         additional_info["pk"] = request.user.pk
+        additional_info["refresh_token"] = str(refresh)
         additional_info["social_auth_info"] = {
             **request.user.social_auth.get(provider='globus').extra_data
         }

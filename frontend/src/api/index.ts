@@ -71,8 +71,10 @@ export const errorMsgBasedOnHTTPStatusCode = (
  */
 export const fetchGlobusAuth = async (): Promise<RawUserAuth> =>
   axios
-    .get(apiRoutes.globusAuth.path)
-    .then((resp) => resp.data as Promise<RawUserAuth>)
+    .get(apiRoutes.globusAuth.path, { withCredentials: true })
+    .then((resp) => {
+      return resp.data as Promise<RawUserAuth>;
+    })
     .catch((error: ResponseError) => {
       throw new Error(
         errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusAuth)

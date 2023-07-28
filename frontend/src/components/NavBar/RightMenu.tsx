@@ -1,3 +1,5 @@
+import { KeycloakTokenParsed } from 'keycloak-js';
+import { useKeycloak } from '@react-keycloak/web';
 import {
   BarsOutlined,
   FileSearchOutlined,
@@ -8,15 +10,19 @@ import {
   ShoppingCartOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { useKeycloak } from '@react-keycloak/web';
 import { Badge, Menu } from 'antd';
-import { KeycloakTokenParsed } from 'keycloak-js';
 import React, { CSSProperties } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { navBarTargets } from '../../common/reactJoyrideSteps';
 import Button from '../General/Button';
 import RightDrawer from '../Messaging/RightDrawer';
+
 import { AuthContext } from '../../contexts/AuthContext';
+import {
+  authenticationMethod,
+  djangoLoginUrl,
+  djangoLogoutUrl,
+} from '../../env';
 
 const menuItemStyling: CSSProperties = { margin: '8px' };
 
@@ -37,18 +43,65 @@ const RightMenu: React.FC<Props> = ({
   const [noticesVisible, setShowNotices] = React.useState(false);
 
   const location = useLocation();
-  const { keycloak } = useKeycloak();
 
   const authState = React.useContext(AuthContext);
   const { access_token: accessToken, pk } = authState;
   const authenticated = accessToken && pk;
 
+  let loginBtn;
+  let logoutBtn;
   let userInfo;
-  if (authenticated) {
-    userInfo = keycloak.idTokenParsed as KeycloakTokenParsed & {
-      given_name: string;
-      email: string;
-    };
+
+  if (authenticationMethod === 'keycloak') {
+    const { keycloak } = useKeycloak();
+    loginBtn = (
+      <Button
+        type="text"
+        icon={<UserOutlined style={{ fontSize: '18px', margin: 0 }} />}
+        onClick={() => {
+          keycloak.login();
+        }}
+      >
+        Sign In
+      </Button>
+    );
+    logoutBtn = (
+      <Button
+        type="text"
+        onClick={() => {
+          keycloak.logout();
+        }}
+      >
+        Sign Out
+      </Button>
+    );
+    if (authenticated) {
+      userInfo = keycloak.idTokenParsed as KeycloakTokenParsed & {
+        email: string;
+        given_name: string;
+      };
+    }
+  } else if (authenticationMethod === 'globus') {
+    loginBtn = (
+      <Button
+        type="text"
+        icon={<UserOutlined style={{ fontSize: '18px', margin: 0 }} />}
+        href={djangoLoginUrl}
+      >
+        Sign In
+      </Button>
+    );
+    logoutBtn = (
+      <Button type="text" href={djangoLogoutUrl}>
+        Sign Out
+      </Button>
+    );
+    if (authenticated) {
+      userInfo = {
+        email: authState.email as string,
+        given_name: null,
+      };
+    }
   }
 
   const showNotices = (): void => {
@@ -157,7 +210,8 @@ const RightMenu: React.FC<Props> = ({
             style={menuItemStyling}
             className={navBarTargets.signInBtn.class()}
           >
-            <Button
+            {loginBtn}
+            {/* <Button
               type="text"
               icon={<UserOutlined style={{ fontSize: '18px', margin: 0 }} />}
               onClick={() => {
@@ -165,7 +219,7 @@ const RightMenu: React.FC<Props> = ({
               }}
             >
               Sign In
-            </Button>
+            </Button> */}
           </Menu.Item>
         ) : (
           <Menu.SubMenu
@@ -181,14 +235,15 @@ const RightMenu: React.FC<Props> = ({
             }
           >
             <Menu.Item key="login">
-              <Button
+              {logoutBtn}
+              {/* <Button
                 type="text"
                 onClick={() => {
                   keycloak.logout();
                 }}
               >
                 Sign Out
-              </Button>
+              </Button> */}
             </Menu.Item>
           </Menu.SubMenu>
         )}

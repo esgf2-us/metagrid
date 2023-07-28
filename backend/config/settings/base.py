@@ -256,9 +256,11 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated"
     ],
-    # "DEFAULT_AUTHENTICATION_CLASSES": (
-    #     "dj_rest_auth.jwt_auth.JWTCookieAuthentication",
-    # ),
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework.authentication.BasicAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+        "dj_rest_auth.jwt_auth.JWTCookieAuthentication",
+    ),
 }
 
 # django-rest-framework-simplejwt
@@ -298,7 +300,7 @@ ACCOUNT_EMAIL_VERIFICATION = "none"
 # -------------------------------------------------------------------------------
 # This is a general Django setting if views need to redirect to login
 # https://docs.djangoproject.com/en/3.2/ref/settings/#login-url
-LOGIN_URL = "/login/globus"
+LOGIN_URL = "/login/globus/"
 
 LOGIN_REDIRECT_URL = env("DJANGO_LOGIN_REDIRECT_URL")
 LOGOUT_REDIRECT_URL = env("DJANGO_LOGOUT_REDIRECT_URL")
