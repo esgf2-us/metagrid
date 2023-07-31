@@ -25,10 +25,6 @@ REACT_APP_KEYCLOAK_REALM=esgf
 REACT_APP_KEYCLOAK_URL=https://login.esgf.io/
 REACT_APP_KEYCLOAK_CLIENT_ID=metagrid-localhost
 
-# REACT_APP_KEYCLOAK_REALM=metagrid
-# REACT_APP_KEYCLOAK_URL=http://keycloak:8080/auth/
-# REACT_APP_KEYCLOAK_CLIENT_ID=frontend
-
 # react-hotjar
 # https://github.com/abdalla/react-hotjar
 REACT_APP_HOTJAR_ID=
