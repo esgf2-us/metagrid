@@ -211,15 +211,6 @@ const RightMenu: React.FC<Props> = ({
             className={navBarTargets.signInBtn.class()}
           >
             {loginBtn}
-            {/* <Button
-              type="text"
-              icon={<UserOutlined style={{ fontSize: '18px', margin: 0 }} />}
-              onClick={() => {
-                keycloak.login();
-              }}
-            >
-              Sign In
-            </Button> */}
           </Menu.Item>
         ) : (
           <Menu.SubMenu
@@ -234,17 +225,7 @@ const RightMenu: React.FC<Props> = ({
               </span>
             }
           >
-            <Menu.Item key="login">
-              {logoutBtn}
-              {/* <Button
-                type="text"
-                onClick={() => {
-                  keycloak.logout();
-                }}
-              >
-                Sign Out
-              </Button> */}
-            </Menu.Item>
+            <Menu.Item key="login">{logoutBtn}</Menu.Item>
           </Menu.SubMenu>
         )}
         <Menu.Item
