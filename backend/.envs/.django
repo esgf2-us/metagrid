@@ -29,3 +29,7 @@ REACT_APP_ESGF_NODE_STATUS_URL=https://aims2.llnl.gov/metagrid-backend/proxy/sta
 # https://docs.djangoproject.com/en/4.2/ref/settings/#logout-redirect-url
 DJANGO_LOGIN_REDIRECT_URL=http://localhost:3000/search
 DJANGO_LOGOUT_REDIRECT_URL=http://localhost:3000/search
+
+# https://app.globus.org/settings/developers/registration/confidential_client
+GLOBUS_CLIENT_KEY=fb12eeec-c7b0-4a7d-9182-9ea91c18aae6
+GLOBUS_CLIENT_SECRET=Ve1pTSel2HNS2QRXnXPEoIlr0XU2LiX10AMdEtSA58I=
