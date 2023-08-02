@@ -15,7 +15,7 @@ KEYCLOAK_CLIENT_ID=metagrid-localhost
 
 # ESGF wget API
 # https://github.com/ESGF/esgf-wget
-REACT_APP_WGET_API_URL=https://nimbus3.llnl.gov/wget
+REACT_APP_WGET_API_URL=https://esgf-node.llnl.gov/esg-search/wget
 
 # ESGF Search API
 # https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
