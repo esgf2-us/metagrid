@@ -8,7 +8,6 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -23,23 +22,28 @@ def do_globus_auth(request):
         additional_info["access_token"] = str(refresh.access_token)
         additional_info["email"] = request.user.email
         additional_info["globus_access_token"] = request.user.social_auth.get(
-            provider='globus').extra_data["access_token"]
+            provider="globus"
+        ).extra_data["access_token"]
         additional_info["pk"] = request.user.pk
         additional_info["refresh_token"] = str(refresh)
         additional_info["social_auth_info"] = {
-            **request.user.social_auth.get(provider='globus').extra_data
+            **request.user.social_auth.get(provider="globus").extra_data
         }
         additional_info["username"] = request.user.username
-    return Response({
-        "is_authenticated": request.user.is_authenticated,
-        **additional_info,
-    })
+    return Response(
+        {
+            "is_authenticated": request.user.is_authenticated,
+            **additional_info,
+        }
+    )
 
 
 @csrf_exempt
 def do_globus_logout(request):
     logout(request)
-    homepage_url = getattr(settings, "HOMEPAGE_URL", "http://localhost:3000/search/")
+    homepage_url = getattr(
+        settings, "HOMEPAGE_URL", "http://localhost:3000/search/"
+    )
     return redirect(homepage_url)
 
 

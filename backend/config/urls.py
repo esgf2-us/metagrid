@@ -18,7 +18,7 @@ from metagrid.api_proxy.views import (
     do_globus_logout,
     do_search,
     do_status,
-    do_wget
+    do_wget,
 )
 from metagrid.cart.views import CartViewSet, SearchViewSet
 from metagrid.projects.views import ProjectsViewSet
@@ -52,7 +52,6 @@ urlpatterns = [
     # social_auth
     path("", include("social_django.urls", namespace="social")),
     path("proxy/globus-logout/", do_globus_logout, name="globus-logout"),
-
     path("proxy/globus-auth/", do_globus_auth, name="globus-auth"),
     # all-auth
     path("accounts/", include("allauth.urls"), name="socialaccount_signup"),
