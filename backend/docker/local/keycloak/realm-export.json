@@ -1,5 +1,5 @@
 {
-  "id": "metagrid",
+  "id": "MyDemo",
   "realm": "metagrid",
   "displayName": "MetaGrid",
   "notBefore": 0,
@@ -47,7 +47,7 @@
         "description": "${role_offline-access}",
         "composite": false,
         "clientRole": false,
-        "containerId": "metagrid",
+        "containerId": "MyDemo",
         "attributes": {}
       },
       {
@@ -56,7 +56,7 @@
         "description": "${role_uma_authorization}",
         "composite": false,
         "clientRole": false,
-        "containerId": "metagrid",
+        "containerId": "MyDemo",
         "attributes": {}
       }
     ],
@@ -444,13 +444,13 @@
       "clientId": "account-console",
       "name": "${client_account-console}",
       "rootUrl": "${authBaseUrl}",
-      "baseUrl": "/realms/metagrid/account/",
+      "baseUrl": "/realms/MyDemo/account/",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "secret": "**********",
-      "redirectUris": ["/realms/metagrid/account/*"],
+      "redirectUris": ["/realms/MyDemo/account/*"],
       "webOrigins": [],
       "notBefore": 0,
       "bearerOnly": false,
