@@ -1,4 +1,5 @@
 import { fireEvent, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { userCartFixture } from '../../api/mock/fixtures';
 import { rest, server } from '../../api/mock/setup-env';
@@ -12,6 +13,8 @@ const defaultProps: Props = {
   onClearCart: jest.fn(),
 };
 
+const user = userEvent.setup();
+
 it('renders message that the cart is empty when no items are added', () => {
   const props = { ...defaultProps, userCart: [] };
   const { getByText } = customRender(<Items {...props} />);
@@ -21,13 +24,13 @@ it('renders message that the cart is empty when no items are added', () => {
   expect(emptyCart).toBeTruthy();
 });
 
-it('removes all items from the cart when confirming the popconfirm', () => {
+it('removes all items from the cart when confirming the popconfirm', async () => {
   const { getByRole, getByText } = customRender(<Items {...defaultProps} />);
 
   // Click the Remove All Items button
   const removeAllBtn = getByRole('button', { name: 'Remove All Items' });
   expect(removeAllBtn).toBeTruthy();
-  fireEvent.click(removeAllBtn);
+  await user.click(removeAllBtn);
 
   // Check popover appears
   const popOver = getByRole('tooltip');
@@ -35,7 +38,7 @@ it('removes all items from the cart when confirming the popconfirm', () => {
 
   // Submit the popover
   const submitPopOverBtn = getByText('OK');
-  fireEvent.click(submitPopOverBtn);
+  await user.click(submitPopOverBtn);
 });
 
 it('handles selecting items in the cart and downloading them via wget', async () => {
@@ -54,7 +57,7 @@ it('handles selecting items in the cart and downloading them via wget', async ()
   });
   const firstCheckBox = within(firstRow).getByRole('checkbox');
   expect(firstCheckBox).toBeTruthy();
-  fireEvent.click(firstCheckBox);
+  await user.click(firstCheckBox);
 
   // Check download form renders
   const downloadForm = getByTestId('downloadForm');
@@ -91,7 +94,7 @@ it.only('handles error selecting items in the cart and downloading them via wget
   });
   const firstCheckBox = within(firstRow).getByRole('checkbox');
   expect(firstCheckBox).toBeTruthy();
-  fireEvent.click(firstCheckBox);
+  await user.click(firstCheckBox);
 
   // Check download form renders
   const downloadForm = getByTestId('downloadForm');

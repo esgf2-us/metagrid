@@ -1,4 +1,5 @@
-import { fireEvent, waitFor } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import React from 'react';
 import {
   userCartFixture,
@@ -15,6 +16,8 @@ const defaultProps: Props = {
   onRunSearchQuery: jest.fn(),
   onRemoveSearchQuery: jest.fn(),
 };
+
+const user = userEvent.setup();
 
 let mockNavigate: () => void;
 beforeEach(() => {
@@ -50,12 +53,12 @@ it('handles tab switching and saved search actions', async () => {
     })
   );
   expect(searchLibraryTab).toBeTruthy();
-  fireEvent.click(searchLibraryTab);
+  await user.click(searchLibraryTab);
 
   // Check JSON link renders and click it
   const jsonLink = await waitFor(() => getByRole('link'));
   expect(jsonLink).toBeTruthy();
-  fireEvent.click(jsonLink);
+  await user.click(jsonLink);
 
   // Wait for cart to re-render
   await waitFor(() => getByTestId('cart'));
@@ -64,7 +67,7 @@ it('handles tab switching and saved search actions', async () => {
     getByRole('img', { name: 'search', hidden: true })
   );
   expect(applyBtn).toBeTruthy();
-  fireEvent.click(applyBtn);
+  await user.click(applyBtn);
 
   // Wait for cart to re-render
   await waitFor(() => getByTestId('cart'));
@@ -74,5 +77,5 @@ it('handles tab switching and saved search actions', async () => {
     getByRole('img', { name: 'delete', hidden: true })
   );
   expect(deleteBtn).toBeTruthy();
-  fireEvent.click(deleteBtn);
+  await user.click(deleteBtn);
 });

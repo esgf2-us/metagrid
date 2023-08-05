@@ -1,22 +1,19 @@
-import { waitFor, render, fireEvent } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { MemoryRouter } from 'react-router-dom';
 import { getCurrentAppPage, TourTitles } from '../common/reactJoyrideSteps';
 import { AppPage } from '../common/types';
 import Support from '../components/Support';
-import { ReactJoyrideProvider } from './ReactJoyrideContext';
+import { customRender } from '../test/custom-render';
+
+const user = userEvent.setup();
 
 describe('test ReactJoyrideProvider', () => {
   it('renders using provider', async () => {
-    const { getByTestId, getByText } = render(
-      <ReactJoyrideProvider>
-        <div data-testid="reactJoyrideProvider">
-          <p>renders</p>
-        </div>
-      </ReactJoyrideProvider>,
-      {
-        wrapper: MemoryRouter,
-      }
+    const { getByTestId, getByText } = customRender(
+      <div data-testid="reactJoyrideProvider">
+        <p>renders</p>
+      </div>
     );
 
     // Wait for render to get user auth info
@@ -50,13 +47,8 @@ describe('test ReactJoyrideProvider', () => {
     // Set location then render modal
     window.location.pathname = 'testing/search';
     expect(getCurrentAppPage()).toEqual(AppPage.Main);
-    const { getByTestId, getByRole } = render(
-      <ReactJoyrideProvider>
-        <Support open onClose={jest.fn()} />
-      </ReactJoyrideProvider>,
-      {
-        wrapper: MemoryRouter,
-      }
+    const { getByTestId, getByRole } = customRender(
+      <Support open onClose={jest.fn()} />
     );
 
     // Check support modal rendered
@@ -68,7 +60,7 @@ describe('test ReactJoyrideProvider', () => {
     expect(button).toBeTruthy();
 
     // Start tutorial and check that it renders
-    fireEvent.click(button);
+    await user.click(button);
     await waitFor(() => button);
     const tourModal = getByRole('heading', { name: TourTitles.Main });
     expect(tourModal).toBeTruthy();
@@ -77,7 +69,7 @@ describe('test ReactJoyrideProvider', () => {
     let nextBtn = getByRole('button', { name: 'Next' });
     expect(nextBtn).toBeTruthy();
 
-    fireEvent.click(button);
+    await user.click(button);
     await waitFor(() => button);
     nextBtn = getByRole('button', { name: 'Next' });
 

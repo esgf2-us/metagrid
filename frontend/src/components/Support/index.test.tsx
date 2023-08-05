@@ -1,4 +1,3 @@
-import { render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { getCurrentAppPage, TourTitles } from '../../common/reactJoyrideSteps';
@@ -28,7 +27,7 @@ describe('Testing the support form and buttons', () => {
   });
 
   it('renders support component', () => {
-    const { getByTestId } = render(<Support open onClose={jest.fn()} />);
+    const { getByTestId } = customRender(<Support open onClose={jest.fn()} />);
 
     // Check support form rendered
     const support = getByTestId('support-form');
