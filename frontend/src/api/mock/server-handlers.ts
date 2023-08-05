@@ -12,6 +12,7 @@ import {
   rawCitationFixture,
   rawNodeStatusFixture,
   rawUserCartFixture,
+  tempStorageFixture,
   userAuthFixture,
   userInfoFixture,
   userSearchQueriesFixture,
@@ -27,6 +28,15 @@ const handlers = [
   ),
   rest.post(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(userAuthFixture()))
+  ),
+  rest.post(`${apiRoutes.tempStorage.path}/get`, (_req, res, ctx) =>
+    res(ctx.status(200), ctx.json(tempStorageFixture('test', 'testValue')))
+  ),
+  rest.post(`${apiRoutes.tempStorage.path}/set`, (_req, res, ctx) =>
+    res(ctx.status(200), ctx.json(tempStorageFixture('test', 'testValue')))
+  ),
+  rest.post(apiRoutes.tempStorage.path, (_req, res, ctx) =>
+    res(ctx.status(200), ctx.json(tempStorageFixture('test', 200)))
   ),
   rest.get(apiRoutes.userInfo.path, (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(userInfoFixture()))

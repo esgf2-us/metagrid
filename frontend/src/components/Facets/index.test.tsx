@@ -1,4 +1,4 @@
-import { fireEvent, render, waitFor, within } from '@testing-library/react';
+import { fireEvent, waitFor, within } from '@testing-library/react';
 import React from 'react';
 import {
   activeSearchQueryFixture,
@@ -6,6 +6,7 @@ import {
   parsedNodeStatusFixture,
 } from '../../api/mock/fixtures';
 import Facets, { Props } from './index';
+import { customRender } from '../../test/custom-render';
 
 const defaultProps: Props = {
   activeSearchQuery: activeSearchQueryFixture(),
@@ -18,7 +19,7 @@ const defaultProps: Props = {
 };
 
 it('renders component', async () => {
-  const { getByTestId } = render(<Facets {...defaultProps} />);
+  const { getByTestId } = customRender(<Facets {...defaultProps} />);
 
   // Check FacetsForm component renders
   const facetsForm = await waitFor(() => getByTestId('facets-form'));
@@ -30,7 +31,7 @@ it('renders component', async () => {
 });
 
 it('handles when the project form is submitted', async () => {
-  const { getByTestId } = render(
+  const { getByTestId } = customRender(
     <Facets
       {...defaultProps}
       activeSearchQuery={{ ...activeSearchQueryFixture(), project: {} }}
@@ -69,7 +70,7 @@ it('handles when the project form is submitted', async () => {
 });
 
 it('handles facets form auto-filtering', async () => {
-  const { getByTestId, getByText, getByRole } = render(
+  const { getByTestId, getByText, getByRole } = customRender(
     <Facets {...defaultProps} />
   );
 
@@ -118,7 +119,7 @@ it('handles facets form auto-filtering', async () => {
 });
 
 it('handles facets form submission, including a facet key that is undefined', async () => {
-  const { getByTestId, getByText, getByRole } = render(
+  const { getByTestId, getByText, getByRole } = customRender(
     <Facets {...defaultProps} />
   );
 

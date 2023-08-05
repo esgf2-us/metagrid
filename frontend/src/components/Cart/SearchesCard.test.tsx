@@ -1,10 +1,10 @@
-import { fireEvent, render, waitFor } from '@testing-library/react';
+import { fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
-import { MemoryRouter } from 'react-router-dom';
 import { userSearchQueryFixture } from '../../api/mock/fixtures';
 import { rest, server } from '../../api/mock/setup-env';
 import apiRoutes from '../../api/routes';
 import SearchesCard, { Props } from './SearchesCard';
+import { customRender } from '../../test/custom-render';
 
 const defaultProps: Props = {
   searchQuery: userSearchQueryFixture(),
@@ -28,11 +28,7 @@ beforeEach(() => {
 });
 
 it('renders component and handles button clicks', async () => {
-  const { getByRole } = render(
-    <MemoryRouter>
-      <SearchesCard {...defaultProps} />
-    </MemoryRouter>
-  );
+  const { getByRole } = customRender(<SearchesCard {...defaultProps} />);
 
   // Check search button renders and click it
   const searchBtn = await waitFor(() => getByRole('img', { name: 'search' }));
@@ -52,9 +48,7 @@ it('displays alert error when api fails to return response', async () => {
     )
   );
 
-  const { getByRole } = render(<SearchesCard {...defaultProps} />, {
-    wrapper: MemoryRouter,
-  });
+  const { getByRole } = customRender(<SearchesCard {...defaultProps} />);
 
   // Check alert renders
   const alert = await waitFor(() => getByRole('alert'));
@@ -62,12 +56,11 @@ it('displays alert error when api fails to return response', async () => {
 });
 
 it('displays "N/A" for Filename Searches when none are applied', () => {
-  const { getByText } = render(
+  const { getByText } = customRender(
     <SearchesCard
       {...defaultProps}
       searchQuery={userSearchQueryFixture({ filenameVars: undefined })}
-    />,
-    { wrapper: MemoryRouter }
+    />
   );
   // Shows number of files
   const filenameSearchesField = getByText('Filename Searches:').parentNode;

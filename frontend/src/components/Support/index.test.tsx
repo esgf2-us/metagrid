@@ -1,10 +1,10 @@
-import { fireEvent, render, waitFor } from '@testing-library/react';
+import { render } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { MemoryRouter } from 'react-router-dom';
 import { getCurrentAppPage, TourTitles } from '../../common/reactJoyrideSteps';
 import { AppPage } from '../../common/types';
-import { ReactJoyrideProvider } from '../../contexts/ReactJoyrideContext';
 import Support from './index';
+import { customRender } from '../../test/custom-render';
 
 // Test page names
 const mainPagePath = 'testing/search';
@@ -13,7 +13,8 @@ const savedSearchesPath = 'testing/cart/searches';
 const nodeStatusPath = 'testing/cart/nodes';
 
 describe('Testing the support form and buttons', () => {
-  // Create window object to set the pathname manually
+  // Create object for user events
+  const user = userEvent.setup();
 
   // eslint-disable-next-line
   window = Object.create(window);
@@ -38,13 +39,8 @@ describe('Testing the support form and buttons', () => {
     // Set location then render modal
     window.location.pathname = mainPagePath;
     expect(getCurrentAppPage()).toEqual(AppPage.Main);
-    const { getByTestId, getByRole } = render(
-      <ReactJoyrideProvider>
-        <Support open onClose={jest.fn()} />
-      </ReactJoyrideProvider>,
-      {
-        wrapper: MemoryRouter,
-      }
+    const { getByTestId, getByRole } = customRender(
+      <Support open onClose={jest.fn()} />
     );
 
     // Check support modal rendered
@@ -52,12 +48,13 @@ describe('Testing the support form and buttons', () => {
     expect(support).toBeTruthy();
 
     // Check appropriate tutorial button rendered
-    const button = getByRole('button', { name: TourTitles.Main });
+    const button = getByRole('button', {
+      name: TourTitles.Main,
+    });
     expect(button).toBeTruthy();
 
     // Start tutorial and check that it renders
-    fireEvent.click(button);
-    await waitFor(() => button);
+    await user.click(button);
     const tourModal = getByRole('heading', { name: TourTitles.Main });
     expect(tourModal).toBeTruthy();
   });
@@ -66,13 +63,8 @@ describe('Testing the support form and buttons', () => {
     // Set location then render modal
     window.location.pathname = cartPagePath;
     expect(getCurrentAppPage()).toEqual(AppPage.Cart);
-    const { getByTestId, getByRole } = render(
-      <ReactJoyrideProvider>
-        <Support open onClose={jest.fn()} />
-      </ReactJoyrideProvider>,
-      {
-        wrapper: MemoryRouter,
-      }
+    const { getByTestId, getByRole } = customRender(
+      <Support open onClose={jest.fn()} />
     );
 
     // Check support modal rendered
@@ -84,8 +76,7 @@ describe('Testing the support form and buttons', () => {
     expect(button).toBeTruthy();
 
     // Start tutorial and check that it renders
-    fireEvent.click(button);
-    await waitFor(() => button);
+    await user.click(button);
     const tourModal = getByRole('heading', { name: TourTitles.Cart });
     expect(tourModal).toBeTruthy();
   });
@@ -94,13 +85,8 @@ describe('Testing the support form and buttons', () => {
     // Set location then render modal
     window.location.pathname = savedSearchesPath;
     expect(getCurrentAppPage()).toEqual(AppPage.SavedSearches);
-    const { getByTestId, getByRole } = render(
-      <ReactJoyrideProvider>
-        <Support open onClose={jest.fn()} />
-      </ReactJoyrideProvider>,
-      {
-        wrapper: MemoryRouter,
-      }
+    const { getByTestId, getByRole } = customRender(
+      <Support open onClose={jest.fn()} />
     );
 
     // Check support modal rendered
@@ -112,8 +98,7 @@ describe('Testing the support form and buttons', () => {
     expect(button).toBeTruthy();
 
     // Start tutorial and check that it renders
-    fireEvent.click(button);
-    await waitFor(() => button);
+    await user.click(button);
     const tourModal = getByRole('heading', { name: TourTitles.Searches });
     expect(tourModal).toBeTruthy();
   });
@@ -122,13 +107,8 @@ describe('Testing the support form and buttons', () => {
     // Set location then render modal
     window.location.pathname = nodeStatusPath;
     expect(getCurrentAppPage()).toEqual(AppPage.NodeStatus);
-    const { getByTestId, getByRole } = render(
-      <ReactJoyrideProvider>
-        <Support open onClose={jest.fn()} />
-      </ReactJoyrideProvider>,
-      {
-        wrapper: MemoryRouter,
-      }
+    const { getByTestId, getByRole } = customRender(
+      <Support open onClose={jest.fn()} />
     );
 
     // Check support modal rendered
@@ -140,8 +120,7 @@ describe('Testing the support form and buttons', () => {
     expect(button).toBeTruthy();
 
     // Start tutorial and check that it renders
-    fireEvent.click(button);
-    await waitFor(() => button);
+    await user.click(button);
     const tourModal = getByRole('heading', { name: TourTitles.Node });
     expect(tourModal).toBeTruthy();
   });

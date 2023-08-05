@@ -46,6 +46,10 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
+describe('test using the temp storage', () => {
+  it('get temp storage value', () => {});
+});
+
 describe('test fetching user authentication', () => {
   it('returns user authentication tokens', async () => {
     const userAuth = await fetchUserAuth(['keycloak_token']);

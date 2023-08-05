@@ -1,11 +1,11 @@
-import { fireEvent, render, waitFor } from '@testing-library/react';
+import { fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
-import { MemoryRouter } from 'react-router-dom';
 import {
   userCartFixture,
   userSearchQueriesFixture,
 } from '../../api/mock/fixtures';
 import Cart, { Props } from './index';
+import { customRender } from '../../test/custom-render';
 
 const defaultProps: Props = {
   userCart: userCartFixture(),
@@ -36,11 +36,7 @@ afterEach(() => {
 });
 
 it('handles tab switching and saved search actions', async () => {
-  const { getByRole, getByTestId } = render(
-    <MemoryRouter>
-      <Cart {...defaultProps} />
-    </MemoryRouter>
-  );
+  const { getByRole, getByTestId } = customRender(<Cart {...defaultProps} />);
 
   // Check cart tab renders
   const cart = await waitFor(() => getByTestId('cart'));

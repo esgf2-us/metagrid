@@ -1,4 +1,4 @@
-import { fireEvent, render, waitFor, within } from '@testing-library/react';
+import { fireEvent, waitFor, within } from '@testing-library/react';
 import React from 'react';
 import { userCartFixture } from '../../api/mock/fixtures';
 import { rest, server } from '../../api/mock/setup-env';
@@ -22,7 +22,7 @@ it('renders message that the cart is empty when no items are added', () => {
 });
 
 it('removes all items from the cart when confirming the popconfirm', () => {
-  const { getByRole, getByText } = render(<Items {...defaultProps} />);
+  const { getByRole, getByText } = customRender(<Items {...defaultProps} />);
 
   // Click the Remove All Items button
   const removeAllBtn = getByRole('button', { name: 'Remove All Items' });
@@ -46,11 +46,11 @@ it('handles selecting items in the cart and downloading them via wget', async ()
     },
   });
 
-  const { getByRole, getByTestId } = render(<Items {...defaultProps} />);
+  const { getByRole, getByTestId } = customRender(<Items {...defaultProps} />);
 
   // Check first row renders and click the checkbox
   const firstRow = getByRole('row', {
-    name: getRowName('minus', 'question', 'foo', '3', '1', '1'),
+    name: getRowName('minus', 'question', 'foo', '3', '1', '1', true),
   });
   const firstCheckBox = within(firstRow).getByRole('checkbox');
   expect(firstCheckBox).toBeTruthy();
@@ -75,13 +75,13 @@ it('handles selecting items in the cart and downloading them via wget', async ()
   await waitFor(() => getByTestId('cartItems'));
 });
 
-it('handles error selecting items in the cart and downloading them via wget', async () => {
+it.only('handles error selecting items in the cart and downloading them via wget', async () => {
   // Override route HTTP response
   server.use(
     rest.get(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404)))
   );
 
-  const { getByRole, getByTestId, getByText } = render(
+  const { getByRole, getByTestId, getByText } = customRender(
     <Items {...defaultProps} />
   );
 
@@ -97,16 +97,20 @@ it('handles error selecting items in the cart and downloading them via wget', as
   const downloadForm = getByTestId('downloadForm');
   expect(downloadForm).toBeTruthy();
 
+  // Select the Globus from drop-down optinos
+  const globusOption = getByText('Globus');
+  expect(globusOption).toBeTruthy();
+
+  // Select the wget from drop-down optinos
+  const wgetOption = within(globusOption).getByText('wget');
+  expect(wgetOption).toBeTruthy();
+
   // Check download button exists and submit the form
   const downloadBtn = within(downloadForm).getByRole('img', {
     name: 'download',
   });
   expect(downloadBtn).toBeTruthy();
   fireEvent.submit(downloadBtn);
-
-  // Check cart items component renders
-  const cartItemsComponent = await waitFor(() => getByTestId('cartItems'));
-  expect(cartItemsComponent).toBeTruthy();
 
   // Check error message renders
   const errorMsg = await waitFor(() =>

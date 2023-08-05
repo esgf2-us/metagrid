@@ -6,6 +6,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { RecoilRoot } from 'recoil';
 import { AuthProvider } from '../contexts/AuthContext';
 import { keycloakProviderInitConfig } from '../lib/keycloak';
+import { ReactJoyrideProvider } from '../contexts/ReactJoyrideContext';
 
 export const createKeycloakStub = (): KeycloakInstance => ({
   // Optional
@@ -73,7 +74,7 @@ export const customRender = (
         >
           <AuthProvider>
             <MemoryRouter basename={process.env.PUBLIC_URL}>
-              {children}
+              <ReactJoyrideProvider>{children}</ReactJoyrideProvider>
             </MemoryRouter>
           </AuthProvider>
         </ReactKeycloakProvider>
@@ -93,11 +94,20 @@ export const getRowName = (
   title: string,
   fileCount: string,
   totalSize: string,
-  version: string
-): string => {
+  version: string,
+  globusReady?: boolean
+): RegExp => {
   let totalBytes = `${totalSize} Bytes`;
   if (Number.isNaN(Number(totalSize))) {
     totalBytes = totalSize;
   }
-  return `right-circle ${cartButton} ${nodeCircleType}-circle ${title} ${fileCount} ${totalBytes} ${version} wget download`;
+  let globusReadyCheck = '.*';
+  if (globusReady !== undefined) {
+    globusReadyCheck = globusReadyCheck ? 'check-circle' : 'close-circle';
+  }
+  const newRegEx = new RegExp(
+    `right-circle ${cartButton} ${nodeCircleType}-circle ${title} ${fileCount} ${totalBytes} ${version} wget download ${globusReadyCheck}`
+  );
+
+  return newRegEx;
 };

@@ -49,12 +49,14 @@ afterEach(() => {
 });
 
 it('renders App component', async () => {
-  const { getByTestId } = customRender(<App searchQuery={activeSearch} />);
+  const { getByTestId, findByTestId } = customRender(
+    <App searchQuery={activeSearch} />
+  );
 
   // Check applicable components render
-  const navComponent = await waitFor(() => getByTestId('nav-bar'));
+  const navComponent = await findByTestId('nav-bar'); // waitFor(()=>getByTestId('nav-bar));
   expect(navComponent).toBeTruthy();
-  const facetsComponent = await waitFor(() => getByTestId('facets'));
+  const facetsComponent = await findByTestId('facets'); // waitFor(() => getByTestId('facets'));
   expect(facetsComponent).toBeTruthy();
   expect(getByTestId('search')).toBeTruthy();
 });
