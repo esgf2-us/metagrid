@@ -1,24 +1,20 @@
 import {
   CloudDownloadOutlined,
-  DownloadOutlined,
   QuestionCircleOutlined,
 } from '@ant-design/icons';
-import { Col, Form, message, Row, Select } from 'antd';
+import { Col, Popconfirm, Row } from 'antd';
 import React from 'react';
-import {
-  fetchWgetScript,
-  fetchGlobusScript,
-  openDownloadURL,
-  ResponseError,
-} from '../../api/index';
+import { useRecoilState } from 'recoil';
 import { cartTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import Empty from '../DataDisplay/Empty';
-import Popconfirm from '../Feedback/Popconfirm';
 import Button from '../General/Button';
 import Table from '../Search/Table';
 import { RawSearchResults } from '../Search/types';
-import { AuthContext } from '../../contexts/AuthContext';
+import DatasetDownload from '../Globus/DatasetDownload';
+import { saveSessionValue } from '../../api';
+import CartStateKeys, { cartItemSelections } from './recoil/atoms';
+import { NodeStatusArray } from '../NodeStatus/types';
 
 const styles: CSSinJS = {
   summary: {
@@ -37,90 +33,22 @@ export type Props = {
   userCart: RawSearchResults | [];
   onUpdateCart: (item: RawSearchResults, operation: 'add' | 'remove') => void;
   onClearCart: () => void;
+  nodeStatus?: NodeStatusArray;
 };
 
-const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
-  const [downloadForm] = Form.useForm();
-
-  // Statically defined list of dataset download options
-  // TODO: Add 'Globus'
-  const downloadOptions = ['wget', 'wget_simple', 'Globus'];
-  const [downloadIsLoading, setDownloadIsLoading] = React.useState(false);
-  const [selectedItems, setSelectedItems] = React.useState<
-    RawSearchResults | []
-  >([]);
+const Items: React.FC<Props> = ({
+  userCart,
+  onUpdateCart,
+  onClearCart,
+  nodeStatus,
+}) => {
+  const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(
+    cartItemSelections
+  );
 
   const handleRowSelect = (selectedRows: RawSearchResults | []): void => {
-    setSelectedItems(selectedRows);
-  };
-
-  const authState = React.useContext(AuthContext);
-  // eslint-disable-next-line
-  const { access_token: accessToken, pk } = authState;
-  /**
-   * TODO: Add handle for Globus
-   */
-  const handleDownloadForm = (
-    downloadType: 'wget' | 'wget_simple' | 'Globus'
-  ): void => {
-    /* istanbul ignore else */
-    if (downloadType === 'wget') {
-      const ids = (selectedItems as RawSearchResults).map((item) => item.id);
-      // eslint-disable-next-line no-void
-      void message.success(
-        'The wget script is generating, please wait momentarily.',
-        10
-      );
-      // eslint-disable-next-line no-void
-      void message.success(`Access token: ${accessToken || 'null'}`, 10);
-      setDownloadIsLoading(true);
-      fetchWgetScript(ids, false, accessToken as string)
-        .then((url) => {
-          openDownloadURL(url);
-          setDownloadIsLoading(false);
-        })
-        .catch((error: ResponseError) => {
-          // eslint-disable-next-line no-void
-          void message.error(error.message);
-          setDownloadIsLoading(false);
-        });
-    } else if (downloadType === 'wget_simple') {
-      const ids = (selectedItems as RawSearchResults).map((item) => item.id);
-      // eslint-disable-next-line no-void
-      void message.success(
-        'The wget script is generating, please wait momentarily.',
-        10
-      );
-      setDownloadIsLoading(true);
-      fetchWgetScript(ids, true, accessToken as string)
-        .then((url) => {
-          openDownloadURL(url);
-          setDownloadIsLoading(false);
-        })
-        .catch((error: ResponseError) => {
-          // eslint-disable-next-line no-void
-          void message.error(error.message);
-          setDownloadIsLoading(false);
-        });
-    } else if (downloadType === 'Globus') {
-      const ids = (selectedItems as RawSearchResults).map((item) => item.id);
-      // eslint-disable-next-line no-void
-      void message.success(
-        'The globus script is generating, please wait momentarily.',
-        10
-      );
-      setDownloadIsLoading(true);
-      fetchGlobusScript(ids)
-        .then((url) => {
-          openDownloadURL(url);
-          setDownloadIsLoading(false);
-        })
-        .catch((error: ResponseError) => {
-          // eslint-disable-next-line no-void
-          void message.error(error.message);
-          setDownloadIsLoading(false);
-        });
-    }
+    saveSessionValue(CartStateKeys.cartItemSelections, selectedRows);
+    setItemSelections(selectedRows);
   };
 
   return (
@@ -133,12 +61,18 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
           <div style={styles.summary}>
             {userCart.length > 0 && (
               <Popconfirm
+                title={
+                  <p>
+                    Do you wish to remove all
+                    <br /> items from your cart?
+                  </p>
+                }
                 icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
                 onConfirm={onClearCart}
               >
                 <span>
                   <Button
-                    className={cartTourTargets.getClass('removeItemsBtn')}
+                    className={cartTourTargets.removeItemsBtn.class()}
                     danger
                   >
                     Remove All Items
@@ -152,10 +86,12 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
               <Table
                 loading={false}
                 canDisableRows={false}
+                nodeStatus={nodeStatus}
                 results={userCart}
                 userCart={userCart}
                 onUpdateCart={onUpdateCart}
                 onRowSelect={handleRowSelect}
+                selections={itemSelections}
               />
             </Col>
           </Row>
@@ -163,50 +99,12 @@ const Items: React.FC<Props> = ({ userCart, onUpdateCart, onClearCart }) => {
             <h1>
               <CloudDownloadOutlined /> Download Your Cart
             </h1>
-            <p></p>
             <p>
               Select datasets in your cart and confirm your download preference.
               Speeds will vary based on your bandwidth and distance from the
               data node serving the files.
             </p>
-            <Form
-              form={downloadForm}
-              layout="inline"
-              onFinish={({ downloadType }) =>
-                handleDownloadForm(
-                  downloadType as 'wget' | 'wget_simple' | 'Globus'
-                )
-              }
-              initialValues={{
-                downloadType: downloadOptions[0],
-              }}
-            >
-              <Form.Item
-                name="downloadType"
-                className={cartTourTargets.getClass('downloadAllType')}
-              >
-                <Select style={{ width: 235 }}>
-                  {downloadOptions.map((option) => (
-                    <Select.Option key={option} value={option}>
-                      {option}
-                    </Select.Option>
-                  ))}
-                  /
-                </Select>
-              </Form.Item>
-              <Form.Item>
-                <Button
-                  className={cartTourTargets.getClass('downloadAllBtn')}
-                  type="primary"
-                  htmlType="submit"
-                  icon={<DownloadOutlined />}
-                  disabled={selectedItems.length === 0}
-                  loading={downloadIsLoading}
-                >
-                  Download
-                </Button>
-              </Form.Item>
-            </Form>
+            <DatasetDownload />
           </div>
         </>
       )}

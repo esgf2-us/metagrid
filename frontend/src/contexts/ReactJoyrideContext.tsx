@@ -1,6 +1,6 @@
 import React from 'react';
 import Joyride, { ACTIONS, CallBackProps, EVENTS, STATUS } from 'react-joyride';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { JoyrideTour } from '../common/JoyrideTour';
 import { getCurrentAppPage } from '../common/reactJoyrideSteps';
 import { AppPage } from '../common/types';
@@ -25,7 +25,7 @@ type Props = { children: React.ReactNode };
 const defaultTour = new JoyrideTour('Empty Tour');
 
 export const ReactJoyrideProvider: React.FC<Props> = ({ children }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [running, setRunning] = React.useState<boolean>(false);
   const [getTour, setTour] = React.useState<JoyrideTour>(defaultTour);
   const [getStepIndex, setStepIndex] = React.useState<number>(0);
@@ -91,19 +91,19 @@ export const ReactJoyrideProvider: React.FC<Props> = ({ children }) => {
   const setCurrentAppPage = (page: AppPage): void => {
     if (getCurrentAppPage() !== page) {
       setTimeout(() => {
-        if (history) {
+        if (navigate) {
           switch (page) {
             case AppPage.Main:
-              history.push('/search');
+              navigate('/search');
               break;
             case AppPage.Cart:
-              history.push('/cart/items');
+              navigate('/cart/items');
               break;
             case AppPage.NodeStatus:
-              history.push('/nodes');
+              navigate('/nodes');
               break;
             case AppPage.SavedSearches:
-              history.push('/cart/searches');
+              navigate('/cart/searches');
               break;
             default:
           }

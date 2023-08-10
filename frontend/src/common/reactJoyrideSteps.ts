@@ -1,5 +1,6 @@
+import { globusEnabledNodes } from '../env';
 import { JoyrideTour } from './JoyrideTour';
-import { TourTargets } from './TourTargets';
+import { TargetObject } from './TargetObject';
 import { AppPage } from './types';
 
 export const getCurrentAppPage = (): number => {
@@ -75,220 +76,255 @@ const searchLibraryIsEmpty = (): boolean => {
   return false;
 };
 
+export const defaultTarget = new TargetObject('navbar-logo');
+
+export const miscTargets = {
+  defaultTarget,
+  questionBtn: new TargetObject(),
+};
+
+export const navBarTargets = {
+  topSearchBar: new TargetObject(),
+  topNavBar: new TargetObject(),
+  searchPageBtn: new TargetObject(),
+  cartPageBtn: new TargetObject(),
+  savedSearchPageBtn: new TargetObject(),
+  nodeStatusBtn: new TargetObject(),
+  newsBtn: new TargetObject(),
+  signInBtn: new TargetObject(),
+  helpBtn: new TargetObject(),
+};
+
+export const searchTableTargets = {
+  queryString: new TargetObject(),
+  resultsFoundText: new TargetObject(),
+  searchResultsTable: new TargetObject(),
+  addSelectedToCartBtn: new TargetObject(),
+  saveSearchBtn: new TargetObject(),
+  copySearchLinkBtn: new TargetObject(),
+};
+
+export const leftSidebarTargets = {
+  leftSideBar: new TargetObject(),
+  selectProjectBtn: new TargetObject(),
+  projectSelectLeftSideBtn: new TargetObject(),
+  projectWebsiteBtn: new TargetObject(),
+  filterByGlobusTransfer: new TargetObject(),
+  filterByGlobusTransferAny: new TargetObject(),
+  filterByGlobusTransferOnly: new TargetObject(),
+  searchFacetsForm: new TargetObject(),
+  facetFormGeneral: new TargetObject(),
+  facetFormFields: new TargetObject(),
+  facetFormCollapseAllBtn: new TargetObject(),
+  facetFormExpandAllBtn: new TargetObject(),
+  facetFormAdditional: new TargetObject(),
+  facetFormAdditionalFields: new TargetObject(),
+  facetFormFilename: new TargetObject(),
+  facetFormFilenameFields: new TargetObject(),
+};
+
+export const topDataRowTargets = {
+  searchResultsRowExpandIcon: new TargetObject(),
+  searchResultsRowContractIcon: new TargetObject(),
+  cartAddBtn: new TargetObject(),
+  nodeStatusIcon: new TargetObject(),
+  datasetTitle: new TargetObject(),
+  fileCount: new TargetObject(),
+  totalSize: new TargetObject(),
+  versionText: new TargetObject(),
+  downloadScriptForm: new TargetObject(),
+  downloadScriptOptions: new TargetObject(),
+  downloadScriptBtn: new TargetObject(),
+  globusReadyStatusIcon: new TargetObject(),
+};
+
+export const innerDataRowTargets = {
+  filesTab: new TargetObject(),
+  metadataTab: new TargetObject(),
+  metadataLookupField: new TargetObject(),
+  citationTab: new TargetObject(),
+  additionalTab: new TargetObject(),
+  filesTitle: new TargetObject(),
+  dataSize: new TargetObject(),
+  downloadDataBtn: new TargetObject(),
+  copyUrlBtn: new TargetObject(),
+  checksum: new TargetObject(),
+};
+
+export const cartTourTargets = {
+  cartSummary: new TargetObject(),
+  datasetBtn: new TargetObject(),
+  libraryBtn: new TargetObject(),
+  downloadAllType: new TargetObject(),
+  downloadAllBtn: new TargetObject(),
+  removeItemsBtn: new TargetObject(),
+};
+
+export const savedSearchTourTargets = {
+  savedSearches: new TargetObject(),
+  projectDescription: new TargetObject(),
+  searchQueryString: new TargetObject(),
+  applySearch: new TargetObject(),
+  jsonBtn: new TargetObject(),
+  removeBtn: new TargetObject(),
+};
+
+export const nodeTourTargets = {
+  updateTime: new TargetObject(),
+  nodeStatusSummary: new TargetObject(),
+  nodeColHeader: new TargetObject(),
+  onlineColHeader: new TargetObject(),
+  sourceColHeader: new TargetObject(),
+};
+
 // Used when creating the tour, as the title that user sees
 export enum TourTitles {
   Main = 'Main Search Page Tour',
   Cart = 'Data Cart Tour',
   Searches = 'Saved Searches Tour',
   Node = 'Node Status Tour',
+  Welcome = 'Welcome Tour',
 }
-
-export const navBarTargets = new TourTargets('nav-bar-tour')
-  .create('topSearchBar')
-  .create('topNavBar')
-  .create('searchPageBtn')
-  .create('cartPageBtn')
-  .create('savedSearchPageBtn')
-  .create('nodeStatusBtn')
-  .create('signInBtn');
-
-export const searchTableTargets = new TourTargets('search-table-tour')
-  .create('queryString')
-  .create('resultsFoundText')
-  .create('searchResultsTable')
-  .create('addSelectedToCartBtn')
-  .create('saveSearchBtn')
-  .create('copySearchLinkBtn');
-
-export const leftSidebarTargets = new TourTargets('left-sidebar-tour')
-  .create('leftSideBar')
-  .create('selectProjectBtn')
-  .create('projectSelectLeftSideBtn')
-  .create('projectWebsiteBtn')
-  .create('searchFacetsForm')
-  .create('facetFormExpandAllBtn')
-  .create('facetFormCollapseAllBtn')
-  .create('facetFormGeneral')
-  .create('facetFormFields')
-  .create('facetFormAdditional')
-  .create('facetFormAdditionalFields')
-  .create('facetFormFilename')
-  .create('facetFormFilenameFields');
-
-export const topDataRowTargets = new TourTargets('top-data-row-tour')
-  .create('searchResultsRowExpandIcon')
-  .create('searchResultsRowContractIcon')
-  .create('cartAddBtn')
-  .create('nodeStatusIcon')
-  .create('datasetTitle')
-  .create('fileCount')
-  .create('totalSize')
-  .create('versionText')
-  .create('downloadScriptForm')
-  .create('downloadScriptOptions')
-  .create('downloadScriptBtn');
-
-export const innerDataRowTargets = new TourTargets('inner-data-row-tour')
-  .create('filesTab')
-  .create('metadataTab')
-  .create('metadataLookupField')
-  .create('citationTab')
-  .create('additionalTab')
-  .create('filesTitle')
-  .create('dataSize')
-  .create('downloadDataBtn')
-  .create('copyUrlBtn')
-  .create('checksum');
-
-export const cartTourTargets = new TourTargets('cart-tour')
-  .create('cartSummary')
-  .create('datasetBtn')
-  .create('libraryBtn')
-  .create('downloadAllType')
-  .create('downloadAllBtn')
-  .create('removeItemsBtn');
-
-export const savedSearchTourTargets = new TourTargets('saved-search-tour')
-  .create('savedSearches')
-  .create('projectDescription')
-  .create('searchQueryString')
-  .create('applySearch')
-  .create('jsonBtn')
-  .create('removeBtn');
-
-export const nodeTourTargets = new TourTargets('node-tour')
-  .create('updateTime')
-  .create('nodeStatusSummary')
-  .create('nodeColHeader')
-  .create('onlineColHeader')
-  .create('sourceColHeader');
 
 const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
   tour
     .addNextStep(
-      topDataRowTargets.getSelector('datasetTitle'),
+      topDataRowTargets.datasetTitle.selector(),
       'Each row provides access to a specific dataset. The title of the dataset is shown here.',
       'top-start'
     )
     .addNextStep(
-      topDataRowTargets.getSelector('nodeStatusIcon'),
+      topDataRowTargets.nodeStatusIcon.selector(),
       "This icon shows the current status of the node which hosts this dataset. When hovering over the icon you will see more detail as to the node's status.",
       'top-start'
     )
     .addNextStep(
-      topDataRowTargets.getSelector('fileCount'),
+      topDataRowTargets.fileCount.selector(),
       'This shows how many separate files are contained in this dataset.',
       'top-start'
     )
     .addNextStep(
-      topDataRowTargets.getSelector('totalSize'),
+      topDataRowTargets.totalSize.selector(),
       'This shows the total size of the dataset with all of its files.',
       'top-start'
     )
     .addNextStep(
-      topDataRowTargets.getSelector('versionText'),
+      topDataRowTargets.versionText.selector(),
       'The version number or preparation date is shown in this column (depending on the dataset).',
       'top-start'
     )
     .addNextStep(
-      topDataRowTargets.getSelector('downloadScriptForm'),
+      topDataRowTargets.downloadScriptForm.selector(),
       'If you wish to download the entire dataset, you can do so by first obtaining the download script.',
       'top-start'
     )
     .addNextStep(
-      topDataRowTargets.getSelector('downloadScriptOptions'),
+      topDataRowTargets.downloadScriptOptions.selector(),
       'This drop-down allows you to select which type of script you wish to download. Currently wget is the only form supported.',
       'top'
     )
     .addNextStep(
-      topDataRowTargets.getSelector('downloadScriptBtn'),
+      topDataRowTargets.downloadScriptBtn.selector(),
       'Clicking this button will begin the download of your script.',
       'top'
     )
     .addNextStep(
-      topDataRowTargets.getSelector('searchResultsRowExpandIcon'),
+      topDataRowTargets.globusReadyStatusIcon.selector(),
+      'This icon indicates whether the dataset can be transferred with Globus. A check mark means it is Globus Ready and can be transferred through Globus. When hovering over the icon you will see more detail as to what node this dataset is coming from and whether the node is Globus ready.',
+      'top-start'
+    )
+    .addNextStep(
+      topDataRowTargets.searchResultsRowExpandIcon.selector(),
       'To view more information about a specific dataset, you can expand the row by clicking this little arrow icon...',
       'top-start',
       /* istanbul ignore next */
       async () => {
         clickFirstElement(
-          topDataRowTargets.getSelector('searchResultsRowExpandIcon')
+          topDataRowTargets.searchResultsRowExpandIcon.selector()
         );
         await delay(500);
       }
     )
     .addNextStep(
-      innerDataRowTargets.getSelector('filesTab'),
+      innerDataRowTargets.filesTab.selector(),
       'The file information tab is open by default. Within this tab, it is possible to view individual files in the dataset for access and download.',
       'top-start'
     )
     .addNextStep(
-      innerDataRowTargets.getSelector('filesTitle'),
+      innerDataRowTargets.filesTitle.selector(),
       'This shows the title of a specific file contained within the dataset.',
       'top-start'
     )
     .addNextStep(
-      innerDataRowTargets.getSelector('dataSize'),
+      innerDataRowTargets.dataSize.selector(),
       'This shows the size of the specific file in the dataset.',
       'top-start'
     )
     .addNextStep(
-      innerDataRowTargets.getSelector('downloadDataBtn'),
+      innerDataRowTargets.downloadDataBtn.selector(),
       'Clicking this button will initiate a direct download of this data file via HTTPS.',
       'top-start'
     )
     .addNextStep(
-      innerDataRowTargets.getSelector('copyUrlBtn'),
+      innerDataRowTargets.copyUrlBtn.selector(),
       'Clicking this button will copy the OPEN DAP URL of this file directly to your clipboard.',
       'top-start'
     )
     .addNextStep(
-      innerDataRowTargets.getSelector('checksum'),
+      innerDataRowTargets.checksum.selector(),
       'The checksum of the specified file is shown here.',
       'top-start'
     )
     .addNextStep(
-      innerDataRowTargets.getSelector('metadataTab'),
+      innerDataRowTargets.metadataTab.selector(),
       'This is the Metadata tab. If you click it, you can view metadata for the dataset...',
       'top-start',
       /* istanbul ignore next */
       async () => {
         await delay(300);
-        clickFirstElement(innerDataRowTargets.getSelector('metadataTab'));
+        clickFirstElement(innerDataRowTargets.metadataTab.selector());
       }
     )
     .addNextStep(
-      innerDataRowTargets.getSelector('metadataLookupField'),
+      innerDataRowTargets.metadataLookupField.selector(),
       'Besides seeing the metadata listed below, this field can help you search for a specific key/value pair of metadata.',
       'top-start',
       /* istanbul ignore next */
       async () => {
         await delay(300);
-        if (elementExists(innerDataRowTargets.getClass('citationTab'))) {
-          clickFirstElement(innerDataRowTargets.getSelector('citationTab'));
+        if (elementExists(innerDataRowTargets.citationTab.class())) {
+          clickFirstElement(innerDataRowTargets.citationTab.selector());
+        } else if (!elementExists(innerDataRowTargets.additionalTab.class())) {
+          clickFirstElement(
+            topDataRowTargets.searchResultsRowContractIcon.selector()
+          );
         }
       }
     )
     .addNextStep(
-      innerDataRowTargets.getSelector('citationTab'),
+      innerDataRowTargets.citationTab.selector(),
       'Citation information for the dataset can be viewed within this tab...',
       'top-start',
       /* istanbul ignore next */
       async () => {
         await delay(300);
-        if (elementExists(innerDataRowTargets.getClass('additionalTab'))) {
-          clickFirstElement(innerDataRowTargets.getSelector('additionalTab'));
+        if (elementExists(innerDataRowTargets.additionalTab.class())) {
+          clickFirstElement(innerDataRowTargets.additionalTab.selector());
+        } else {
+          clickFirstElement(
+            topDataRowTargets.searchResultsRowContractIcon.selector()
+          );
         }
       }
     )
     .addNextStep(
-      innerDataRowTargets.getSelector('additionalTab'),
+      innerDataRowTargets.additionalTab.selector(),
       'You can view additional data and sources by clicking this tab.',
       'top-start',
       /* istanbul ignore next */
       async () => {
         clickFirstElement(
-          topDataRowTargets.getSelector('searchResultsRowContractIcon')
+          topDataRowTargets.searchResultsRowContractIcon.selector()
         );
         await delay(300);
       }
@@ -296,6 +332,23 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
 
   return tour;
 };
+
+export const welcomeTour = new JoyrideTour(TourTitles.Welcome)
+  .addNextStep(
+    'body',
+    'Just a note: We are continually striving to improve the Metagrid user interface and make it more intuitive. However, if you ever feel stuck, please try out the interface tours. The following is a quick tour showing where you can access support.',
+    'center'
+  )
+  .addNextStep(
+    navBarTargets.helpBtn.selector(),
+    'This help button will open the Metagrid support dialog, which contains interface tours (like this one) as well as helpful resources.',
+    'bottom'
+  )
+  .addNextStep(
+    miscTargets.questionBtn.selector(),
+    'This question button will also open the Metagrid support dialog. Note that the tour button shown in the support dialog will be specific to the current page you are on.',
+    'top-end'
+  );
 
 export const createMainPageTour = (): JoyrideTour => {
   const tour = new JoyrideTour(TourTitles.Main)
@@ -305,42 +358,52 @@ export const createMainPageTour = (): JoyrideTour => {
       'center'
     )
     .addNextStep(
-      navBarTargets.getSelector('topSearchBar'),
+      navBarTargets.topSearchBar.selector(),
       'This is the top search bar! You can select a project, then enter a search term and click the magnifying glass button to quickly start your search and view results in the table below.',
       'bottom'
     )
     .addNextStep(
-      navBarTargets.getSelector('topNavBar'),
+      navBarTargets.topNavBar.selector(),
       'This area lets you navigate between pages of Metagrid.',
       'bottom'
     )
     .addNextStep(
-      navBarTargets.getSelector('searchPageBtn'),
+      navBarTargets.searchPageBtn.selector(),
       "Clicking this button takes you to the main search page (Metagrid's home page.)",
       'bottom'
     )
     .addNextStep(
-      navBarTargets.getSelector('cartPageBtn'),
+      navBarTargets.cartPageBtn.selector(),
       'This button takes you to the data cart page where you can view the data you have selected for download.',
       'bottom'
     )
     .addNextStep(
-      navBarTargets.getSelector('savedSearchPageBtn'),
+      navBarTargets.savedSearchPageBtn.selector(),
       'To view your currently saved searches, you would click here.',
       'bottom'
     )
     .addNextStep(
-      navBarTargets.getSelector('nodeStatusBtn'),
+      navBarTargets.nodeStatusBtn.selector(),
       'If you are curious about data node status, you can visit the status page by clicking here.',
       'bottom'
     )
     .addNextStep(
-      navBarTargets.getSelector('signInBtn'),
+      navBarTargets.newsBtn.selector(),
+      "Clicking the news button will open up the message center to the right, where you'll find important notes from the admins and developers. You can also view changelog information regarding the latest version of Metagrid",
+      'bottom'
+    )
+    .addNextStep(
+      navBarTargets.signInBtn.selector(),
       'Clicking this button will allow you to sign in to your profile.',
       'bottom'
     )
     .addNextStep(
-      leftSidebarTargets.getSelector('selectProjectBtn'),
+      navBarTargets.helpBtn.selector(),
+      "Clicking this 'Help' button will open the support dialog, where you can view interface tours (like this), or get links to helpful documentation.",
+      'bottom'
+    )
+    .addNextStep(
+      leftSidebarTargets.selectProjectBtn.selector(),
       'To begin a search, you would first select a project from this drop-down.',
       'right'
     );
@@ -349,17 +412,17 @@ export const createMainPageTour = (): JoyrideTour => {
   if (mainTableEmpty()) {
     tour
       .addNextStep(
-        leftSidebarTargets.getSelector('projectSelectLeftSideBtn'),
+        leftSidebarTargets.projectSelectLeftSideBtn.selector(),
         'Then you click this button to load the results for the project you selected...',
         'right',
         () => {
           clickFirstElement(
-            leftSidebarTargets.getSelector('projectSelectLeftSideBtn')
+            leftSidebarTargets.projectSelectLeftSideBtn.selector()
           );
         }
       )
       .addNextStep(
-        leftSidebarTargets.getSelector('projectSelectLeftSideBtn'),
+        leftSidebarTargets.projectSelectLeftSideBtn.selector(),
         "NOTE: The search results may take a few seconds to load... Click 'next' to continue.",
         'right',
         async () => {
@@ -370,124 +433,141 @@ export const createMainPageTour = (): JoyrideTour => {
       );
   } else {
     tour.addNextStep(
-      leftSidebarTargets.getSelector('projectSelectLeftSideBtn'),
+      leftSidebarTargets.projectSelectLeftSideBtn.selector(),
       'Then you click this button to load results for the project you selected.',
       'right'
     );
   }
 
+  tour.addNextStep(
+    leftSidebarTargets.projectWebsiteBtn.selector(),
+    'Once a project is selected, if you wish, you can go view the project website by clicking this button.',
+    'right'
+  );
+
+  // Add tour elements for globus ready filter (if globus enabled nodes has been configured)
+  if (globusEnabledNodes.length > 0) {
+    tour
+      .addNextStep(
+        leftSidebarTargets.filterByGlobusTransfer.selector(),
+        'This section allows you to filter search results based on globus transfer availability. There are a set of data nodes that provide the Globus Transfer option, however not all do. You can filter to show all datasets, or only those that can be transferred via globus.',
+        'right'
+      )
+      .addNextStep(
+        leftSidebarTargets.filterByGlobusTransferAny.selector(),
+        'Selecting this option will leave the filter off and allow you to see all datasets, including ones that may not have Globus transfer as an option.',
+        'right'
+      )
+      .addNextStep(
+        leftSidebarTargets.filterByGlobusTransferOnly.selector(),
+        'Selecting this option will filter all datasets, so that only the ones that have Globus transfer as an option will be visible.',
+        'right'
+      );
+  }
+
   tour
     .addNextStep(
-      leftSidebarTargets.getSelector('projectWebsiteBtn'),
-      'Once a project is selected, if you wish, you can go view the project website by clicking this button.',
-      'right'
-    )
-    .addNextStep(
-      leftSidebarTargets.getSelector('searchFacetsForm'),
+      leftSidebarTargets.searchFacetsForm.selector(),
       'This area contains various groups of facets and parameters that you can use to filter results from your selected project.',
       'right'
     )
     .addNextStep(
-      leftSidebarTargets.getSelector('facetFormGeneral'),
+      leftSidebarTargets.facetFormGeneral.selector(),
       'To filter by facets provided within this group, you would open this collapsable form by clicking on it...',
       'right-end',
       /* istanbul ignore next */
       async () => {
         // Open general facets
-        clickFirstElement(leftSidebarTargets.getSelector('facetFormGeneral'));
+        clickFirstElement(leftSidebarTargets.facetFormGeneral.selector());
         await delay(300);
       }
     )
     .addNextStep(
-      leftSidebarTargets.getSelector('facetFormFields'),
+      leftSidebarTargets.facetFormFields.selector(),
       'These are facets that are available within this group. The drop-downs allow you to select multiple items you wish to include in your search. Note that you can search for elements in the drop-down by typing within the input area.',
       'right-start',
       /* istanbul ignore next */
       async () => {
         // Close general facets
-        clickFirstElement(leftSidebarTargets.getSelector('facetFormGeneral'));
+        clickFirstElement(leftSidebarTargets.facetFormGeneral.selector());
         await delay(300);
         // Close facet panels if more than one is open
-        if (
-          elementExists(leftSidebarTargets.getClass('facetFormCollapseAllBtn'))
-        ) {
+        if (elementExists(leftSidebarTargets.facetFormCollapseAllBtn.class())) {
           clickFirstElement(
-            leftSidebarTargets.getSelector('facetFormCollapseAllBtn')
+            leftSidebarTargets.facetFormCollapseAllBtn.selector()
           );
           await delay(50);
         }
       }
     )
     .addNextStep(
-      leftSidebarTargets.getSelector('facetFormExpandAllBtn'),
+      leftSidebarTargets.facetFormExpandAllBtn.selector(),
       'You can quickly expand all the facet panels by clicking this button.',
       'right-end',
       /* istanbul ignore next */
       async () => {
         // Expand all facets
-        clickFirstElement(
-          leftSidebarTargets.getSelector('facetFormExpandAllBtn')
-        );
+        clickFirstElement(leftSidebarTargets.facetFormExpandAllBtn.selector());
         await delay(300);
       }
     )
     .addNextStep(
-      leftSidebarTargets.getSelector('facetFormCollapseAllBtn'),
+      leftSidebarTargets.facetFormCollapseAllBtn.selector(),
       "Note that there is a scroll bar on the right when the panels don't all fit on the page. Clicking the collapse all button will close all the open facet panels.",
       'right-end',
       /* istanbul ignore next */
       async () => {
         // Open general facets
         clickFirstElement(
-          leftSidebarTargets.getSelector('facetFormCollapseAllBtn')
+          leftSidebarTargets.facetFormCollapseAllBtn.selector()
         );
         await delay(300);
       }
     )
     .addNextStep(
-      leftSidebarTargets.getSelector('facetFormAdditionalFields'),
+      leftSidebarTargets.facetFormAdditionalFields.selector(),
       'This section contains additional properties that you can select to further refine your search results, including the Version Type, Result Type and Version Date Range. Hovering over the question mark icon will further explain the parameter.',
       'right-end',
       /* istanbul ignore next */
       async () => {
         // Open filename section
-        clickFirstElement(leftSidebarTargets.getSelector('facetFormFilename'));
+        clickFirstElement(leftSidebarTargets.facetFormFilename.selector());
         await delay(300);
       }
     )
     .addNextStep(
-      leftSidebarTargets.getSelector('facetFormFilenameFields'),
+      leftSidebarTargets.facetFormFilenameFields.selector(),
       'This section lets you filter your results to include a specific filename. To filter by filename, you would type in the name or names as a list of comma separated values then click the magnifying glass icon to add it as a search parameter.',
       'right-end',
       /* istanbul ignore next */
       () => {
         // Close filename section
-        clickFirstElement(leftSidebarTargets.getSelector('facetFormFilename'));
+        clickFirstElement(leftSidebarTargets.facetFormFilename.selector());
         window.scrollTo(0, 0);
       }
     )
     .addNextStep(
-      searchTableTargets.getSelector('queryString'),
+      searchTableTargets.queryString.selector(),
       "When performing a search, you'll be able to view the resulting query generated by your selections here.",
       'bottom'
     )
     .addNextStep(
-      searchTableTargets.getSelector('resultsFoundText'),
+      searchTableTargets.resultsFoundText.selector(),
       'This will display how many results were returned from your search.',
       'bottom'
     )
     .addNextStep(
-      searchTableTargets.getSelector('saveSearchBtn'),
+      searchTableTargets.saveSearchBtn.selector(),
       'If you are happy with your search results and plan to perform this search again, you can save your search by clicking this button.',
       'left'
     )
     .addNextStep(
-      searchTableTargets.getSelector('copySearchLinkBtn'),
+      searchTableTargets.copySearchLinkBtn.selector(),
       'You can also share your search with others as a specific URL by clicking this button. The button will copy the link to your clipboard for you to then paste at your convenience.',
       'bottom-start'
     )
     .addNextStep(
-      searchTableTargets.getSelector('searchResultsTable'),
+      searchTableTargets.searchResultsTable.selector(),
       'These are your search results! Each row in the results table is a specific dataset that matches your criteria.',
       'top-start'
     )
@@ -504,7 +584,7 @@ export const createMainPageTour = (): JoyrideTour => {
       }
     )
     .addNextStep(
-      searchTableTargets.getSelector('addSelectedToCartBtn'),
+      searchTableTargets.addSelectedToCartBtn.selector(),
       'Then to add them to your cart, you would click this button.',
       'bottom-start',
       /* istanbul ignore next */
@@ -516,12 +596,12 @@ export const createMainPageTour = (): JoyrideTour => {
       }
     )
     .addNextStep(
-      topDataRowTargets.getSelector('cartAddBtn', 'plus'),
+      topDataRowTargets.cartAddBtn.selector('plus'),
       "You can also directly add a specific dataset to the cart by clicking it's plus button here.",
       'top-start'
     )
     .addNextStep(
-      topDataRowTargets.getSelector('cartAddBtn', 'minus'),
+      topDataRowTargets.cartAddBtn.selector('minus'),
       'Or you can remove a dataset from the cart by clicking its minus button here.',
       'top-start'
     );
@@ -559,11 +639,11 @@ export const createCartItemsTour = (
       'center'
     )
     .addNextStep(
-      cartTourTargets.getSelector('datasetBtn'),
+      cartTourTargets.datasetBtn.selector(),
       'Note that we are currently in the data cart tab.'
     )
     .addNextStep(
-      cartTourTargets.getSelector('libraryBtn'),
+      cartTourTargets.libraryBtn.selector(),
       'Clicking this would switch you to the search library tab. However we will stay in the data cart for this tour.'
     );
 
@@ -592,17 +672,17 @@ export const createCartItemsTour = (
     if (mainTableEmpty()) {
       tour
         .addNextStep(
-          leftSidebarTargets.getSelector('projectSelectLeftSideBtn'),
+          leftSidebarTargets.projectSelectLeftSideBtn.selector(),
           'First we will click this button to load results from a project into the search table...',
           'right',
           () => {
             clickFirstElement(
-              leftSidebarTargets.getSelector('projectSelectLeftSideBtn')
+              leftSidebarTargets.projectSelectLeftSideBtn.selector()
             );
           }
         )
         .addNextStep(
-          leftSidebarTargets.getSelector('projectSelectLeftSideBtn'),
+          leftSidebarTargets.projectSelectLeftSideBtn.selector(),
           "NOTE: The search results may take a few seconds to load... Click 'next' to continue.",
           'right',
           async () => {
@@ -612,23 +692,19 @@ export const createCartItemsTour = (
     }
     tour
       .addNextStep(
-        searchTableTargets.getSelector('searchResultsTable'),
+        searchTableTargets.searchResultsTable.selector(),
         "Let's go ahead and add some datasets to the cart...",
         'top-start',
         /* istanbul ignore next */
         async () => {
-          clickFirstElement(
-            topDataRowTargets.getSelector('cartAddBtn', 'plus')
-          );
+          clickFirstElement(topDataRowTargets.cartAddBtn.selector('plus'));
           await delay(500);
-          clickFirstElement(
-            topDataRowTargets.getSelector('cartAddBtn', 'plus')
-          );
+          clickFirstElement(topDataRowTargets.cartAddBtn.selector('plus'));
           await delay(500);
         }
       )
       .addNextStep(
-        navBarTargets.getSelector('cartPageBtn'),
+        navBarTargets.cartPageBtn.selector(),
         'Now that there are datasets in the cart, we will go view them in the cart page...',
         'bottom',
         /* istanbul ignore next */
@@ -641,7 +717,7 @@ export const createCartItemsTour = (
 
   tour
     .addNextStep(
-      cartTourTargets.getSelector('cartSummary'),
+      cartTourTargets.cartSummary.selector(),
       'This shows a summary of all the datasets in the cart. From here you can see the total datasets, files and total file size at a glance. Note: The summary is visible to both the data cart and search library.'
     )
     .addNextStep(
@@ -649,7 +725,7 @@ export const createCartItemsTour = (
       'This table shows the datasets that have been added to the cart.'
     )
     .addNextStep(
-      topDataRowTargets.getSelector('cartAddBtn', 'minus'),
+      topDataRowTargets.cartAddBtn.selector('minus'),
       'You can remove a dataset from the cart by clicking its minus button here.',
       'top-start'
     );
@@ -669,12 +745,12 @@ export const createCartItemsTour = (
       }
     )
     .addNextStep(
-      cartTourTargets.getSelector('downloadAllType'),
+      cartTourTargets.downloadAllType.selector(),
       'This will select which download script to use (only wget is available currently).',
       'top-start'
     )
     .addNextStep(
-      cartTourTargets.getSelector('downloadAllBtn'),
+      cartTourTargets.downloadAllBtn.selector(),
       'Then you would click this button to get the download script needed for all currently selected datasets in the cart.',
       'top-start',
       /* istanbul ignore next */
@@ -686,7 +762,7 @@ export const createCartItemsTour = (
       }
     )
     .addNextStep(
-      cartTourTargets.getSelector('removeItemsBtn'),
+      cartTourTargets.removeItemsBtn.selector(),
       'We can remove all items from the cart with this button.',
       'right-start'
     )
@@ -697,7 +773,7 @@ export const createCartItemsTour = (
         // Clean-up step for when the tour is complete (or skipped)
         return async () => {
           if (cartItemsAdded) {
-            clickFirstElement(cartTourTargets.getSelector('removeItemsBtn'));
+            clickFirstElement(cartTourTargets.removeItemsBtn.selector());
             await delay(500);
             clickFirstElement('.ant-popover-buttons .ant-btn-primary');
             await delay(300);
@@ -724,11 +800,11 @@ export const createSearchCardTour = (
       'center'
     )
     .addNextStep(
-      cartTourTargets.getSelector('libraryBtn'),
+      cartTourTargets.libraryBtn.selector(),
       'Note that we are currently in the search library tab.'
     )
     .addNextStep(
-      cartTourTargets.getSelector('datasetBtn'),
+      cartTourTargets.datasetBtn.selector(),
       'Clicking this would switch you to the data cart tab. We will remain on the search tab for this tour.'
     );
 
@@ -757,17 +833,17 @@ export const createSearchCardTour = (
     if (mainTableEmpty()) {
       tour
         .addNextStep(
-          leftSidebarTargets.getSelector('projectSelectLeftSideBtn'),
+          leftSidebarTargets.projectSelectLeftSideBtn.selector(),
           'First we will click this button to load results from a project into the search table...',
           'right',
           () => {
             clickFirstElement(
-              leftSidebarTargets.getSelector('projectSelectLeftSideBtn')
+              leftSidebarTargets.projectSelectLeftSideBtn.selector()
             );
           }
         )
         .addNextStep(
-          leftSidebarTargets.getSelector('projectSelectLeftSideBtn'),
+          leftSidebarTargets.projectSelectLeftSideBtn.selector(),
           "NOTE: The search results may take a few seconds to load... Click 'next' to continue.",
           'right',
           async () => {
@@ -779,17 +855,17 @@ export const createSearchCardTour = (
     }
     tour
       .addNextStep(
-        searchTableTargets.getSelector('saveSearchBtn'),
+        searchTableTargets.saveSearchBtn.selector(),
         'To save the current search to the library, we need to click this button...',
         'bottom-start',
         /* istanbul ignore next */
         async () => {
-          clickFirstElement(searchTableTargets.getSelector('saveSearchBtn'));
+          clickFirstElement(searchTableTargets.saveSearchBtn.selector());
           await delay(500);
         }
       )
       .addNextStep(
-        navBarTargets.getSelector('savedSearchPageBtn'),
+        navBarTargets.savedSearchPageBtn.selector(),
         'We can now go back to the search library and view our recently added search...',
         'bottom',
         /* istanbul ignore next */
@@ -801,34 +877,34 @@ export const createSearchCardTour = (
   }
   tour
     .addNextStep(
-      cartTourTargets.getSelector('cartSummary'),
+      cartTourTargets.cartSummary.selector(),
       'This shows a summary of all the datasets in the data cart. The summary is visible to both the data cart and search library.'
     )
     .addNextStep(
-      savedSearchTourTargets.getSelector('savedSearches'),
+      savedSearchTourTargets.savedSearches.selector(),
       'Your saved searches are shown as cards in this row.',
       'bottom'
     )
     .addNextStep(
-      savedSearchTourTargets.getSelector('projectDescription'),
+      savedSearchTourTargets.projectDescription.selector(),
       'This is the project selected for the search.',
       'top'
     )
     .addNextStep(
-      savedSearchTourTargets.getSelector('searchQueryString'),
+      savedSearchTourTargets.searchQueryString.selector(),
       'This shows the query used by the search to list results.'
     )
     .addNextStep(
-      savedSearchTourTargets.getSelector('applySearch'),
+      savedSearchTourTargets.applySearch.selector(),
       'Clicking this button will apply your saved search to the main results page.'
     )
     .addNextStep(
-      savedSearchTourTargets.getSelector('jsonBtn'),
+      savedSearchTourTargets.jsonBtn.selector(),
       'Clicking this button will show the JSON data associated with this search.',
       'right'
     )
     .addNextStep(
-      savedSearchTourTargets.getSelector('removeBtn'),
+      savedSearchTourTargets.removeBtn.selector(),
       'This button will remove this search from your saved searches.',
       'left-start'
     )
@@ -839,7 +915,7 @@ export const createSearchCardTour = (
         // Clean-up step for when the tour is complete (or skipped)
         return async () => {
           if (searchSaved) {
-            clickFirstElement(savedSearchTourTargets.getSelector('removeBtn'));
+            clickFirstElement(savedSearchTourTargets.removeBtn.selector());
             await delay(500);
           }
         };
@@ -857,38 +933,38 @@ export const createNodeStatusTour = (): JoyrideTour => {
       'center'
     )
     .addNextStep(
-      nodeTourTargets.getSelector('updateTime'),
+      nodeTourTargets.updateTime.selector(),
       'This is the timestamp for the last time the node status was updated.'
     )
     .addNextStep(
-      nodeTourTargets.getSelector('nodeStatusSummary'),
+      nodeTourTargets.nodeStatusSummary.selector(),
       'This area provides an overall summary of the number of nodes that are available, how many are currently online and how many are currently offline.'
     )
     .addNextStep(
-      nodeTourTargets.getSelector('nodeColHeader'),
+      nodeTourTargets.nodeColHeader.selector(),
       'This column lists the various nodes that are registered to serve the data with Metagrid. Clicking the header will toggle the sort between ascending and descending like so...',
       'top',
       /* istanbul ignore next */
       async () => {
-        clickFirstElement(nodeTourTargets.getSelector('nodeColHeader'));
+        clickFirstElement(nodeTourTargets.nodeColHeader.selector());
         await delay(500);
       }
     )
     .addNextStep(
-      nodeTourTargets.getSelector('onlineColHeader'),
+      nodeTourTargets.onlineColHeader.selector(),
       'This column shows the online status of each node. A green check-mark indicates the node is online whereas a red x mark indicates it is offline. As with the node column, you can click this to sort by node status like so...',
       'top',
       /* istanbul ignore next */
       async () => {
-        clickFirstElement(nodeTourTargets.getSelector('onlineColHeader'));
+        clickFirstElement(nodeTourTargets.onlineColHeader.selector());
         await delay(700);
-        clickFirstElement(nodeTourTargets.getSelector('onlineColHeader'));
+        clickFirstElement(nodeTourTargets.onlineColHeader.selector());
         await delay(700);
-        clickFirstElement(nodeTourTargets.getSelector('nodeColHeader'));
+        clickFirstElement(nodeTourTargets.nodeColHeader.selector());
       }
     )
     .addNextStep(
-      nodeTourTargets.getSelector('sourceColHeader'),
+      nodeTourTargets.sourceColHeader.selector(),
       'This column shows links to the THREDDS catalog of its respective node.'
     )
     .addNextStep(

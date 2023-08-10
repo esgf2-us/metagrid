@@ -1,4 +1,5 @@
 /* eslint-disable no-void */
+
 import {
   BookOutlined,
   DeleteOutlined,
@@ -7,11 +8,11 @@ import {
   ShareAltOutlined,
   ShoppingCartOutlined,
 } from '@ant-design/icons';
-import { Affix, Breadcrumb, Button, Layout, message, Result } from 'antd';
+import { Affix, Breadcrumb, Button, Layout, Result } from 'antd';
 import React, { ReactElement } from 'react';
 import { useAsync } from 'react-async';
 import { hotjar } from 'react-hotjar';
-import { Link, Redirect, Route, Switch } from 'react-router-dom';
+import { Link, Navigate, Route, Routes } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import {
   addUserSearchQuery,
@@ -28,6 +29,8 @@ import {
   combineCarts,
   getUrlFromSearch,
   searchAlreadyExists,
+  showError,
+  showNotice,
   unsavedLocalSearches,
 } from '../../common/utils';
 import { AuthContext } from '../../contexts/AuthContext';
@@ -51,7 +54,10 @@ import {
   VersionType,
 } from '../Search/types';
 import Support from '../Support';
+import StartPopup from '../Messaging/StartPopup';
+import startupDisplayData from '../Messaging/messageDisplayData';
 import './App.css';
+import { miscTargets } from '../../common/reactJoyrideSteps';
 
 const styles: CSSinJS = {
   bodySider: {
@@ -79,7 +85,7 @@ export type Props = {
   searchQuery: ActiveSearchQuery;
 };
 
-const metagridVersion = '1.0.7-beta';
+const metagridVersion: string = startupDisplayData.messageToShow;
 
 const App: React.FC<Props> = ({ searchQuery }) => {
   // Third-party tool integration
@@ -152,9 +158,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           setUserCart(combinedCarts);
         })
         .catch((error: ResponseError) => {
-          void message.error({
-            content: error.message,
-          });
+          showError(error.message);
         });
 
       void fetchUserSearchQueries(accessToken)
@@ -175,9 +179,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           setUserSearchQueries(databaseItems.concat(searchQueriesToAdd));
         })
         .catch((error: ResponseError) => {
-          void message.error({
-            content: error.message,
-          });
+          showError(error.message);
         });
     }
   }, [isAuthenticated, pk, accessToken]);
@@ -203,11 +205,11 @@ const App: React.FC<Props> = ({ searchQuery }) => {
   }, [runFetchNodeStatus]);
 
   React.useEffect(() => {
-    void fetchProjects()
+    fetchProjects()
       .then((data) => {
         const projectName = searchQuery ? searchQuery.project.name : '';
         /* istanbul ignore else */
-        if (projectName && projectName !== '' && data) {
+        if (data && projectName && projectName !== '') {
           const rawProj: RawProject | undefined = data.results.find((proj) => {
             return (
               proj.name.toLowerCase() === (projectName as string).toLowerCase()
@@ -222,19 +224,17 @@ const App: React.FC<Props> = ({ searchQuery }) => {
       .catch(
         /* istanbul ignore next */
         (error: ResponseError) => {
-          void message.error({
-            content: error.message,
-          });
+          showError(error.message);
         }
       );
-  }, [searchQuery]);
+  }, [fetchProjects]);
 
   const handleTextSearch = (
     selectedProject: RawProject,
     text: string
   ): void => {
     if (activeSearchQuery.textInputs.includes(text as never)) {
-      void message.error(`Input "${text}" has already been applied`);
+      showError(`Input "${text}" has already been applied`);
     } else {
       setActiveSearchQuery({
         ...activeSearchQuery,
@@ -246,7 +246,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
 
   const handleOnSetFilenameVars = (filenameVar: string): void => {
     if (activeSearchQuery.filenameVars.includes(filenameVar as never)) {
-      void message.error(`Input "${filenameVar}" has already been applied`);
+      showError(`Input "${filenameVar}" has already been applied`);
     } else {
       setActiveSearchQuery({
         ...activeSearchQuery,
@@ -337,9 +337,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
 
       newCart = [...userCart, ...itemsNotInCart];
       setUserCart(newCart);
-
-      void message.success({
-        content: 'Added item(s) to your cart',
+      showNotice('Added item(s) to your cart', {
         icon: <ShoppingCartOutlined style={styles.messageAddIcon} />,
       });
     } else if (operation === 'remove') {
@@ -348,8 +346,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
       );
       setUserCart(newCart);
 
-      void message.success({
-        content: 'Removed item(s) from your cart',
+      showNotice('Removed item(s) from your cart', {
         icon: <DeleteOutlined style={styles.messageRemoveIcon} />,
       });
     }
@@ -386,17 +383,16 @@ const App: React.FC<Props> = ({ searchQuery }) => {
     };
 
     if (searchAlreadyExists(userSearchQueries, savedSearch)) {
-      void message.success({
-        content: 'Search query is already in your library',
+      showNotice('Search query is already in your library', {
         icon: <BookOutlined style={styles.messageAddIcon} />,
+        type: 'info',
       });
       return;
     }
 
     const saveSuccess = (): void => {
       setUserSearchQueries([...userSearchQueries, savedSearch]);
-      void message.success({
-        content: 'Saved search query to your library',
+      showNotice('Saved search query to your library', {
         icon: <BookOutlined style={styles.messageAddIcon} />,
       });
     };
@@ -407,9 +403,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           saveSuccess();
         })
         .catch((error: ResponseError) => {
-          void message.error({
-            content: error.message,
-          });
+          showError(error.message);
         });
     } else {
       saveSuccess();
@@ -421,9 +415,8 @@ const App: React.FC<Props> = ({ searchQuery }) => {
       // copy link to clipboard
       /* istanbul ignore if */
       if (navigator && navigator.clipboard) {
-        void navigator.clipboard.writeText(getUrlFromSearch(activeSearchQuery));
-        void message.success({
-          content: 'Search copied to clipboard!',
+        navigator.clipboard.writeText(getUrlFromSearch(activeSearchQuery));
+        showNotice('Search copied to clipboard!', {
           icon: <ShareAltOutlined style={styles.messageAddIcon} />,
         });
       }
@@ -438,8 +431,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           (searchItem: UserSearchQuery) => searchItem.uuid !== searchUUID
         )
       );
-      void message.success({
-        content: 'Removed search query from your library',
+      showNotice('Removed search query from your library', {
         icon: <DeleteOutlined style={styles.messageRemoveIcon} />,
       });
     };
@@ -450,9 +442,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           deleteSuccess();
         })
         .catch((error: ResponseError) => {
-          void message.error({
-            content: error.message,
-          });
+          showError(error.message);
         });
     } else {
       deleteSuccess();
@@ -476,8 +466,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
   const generateRedirects = (): ReactElement => {
     /* istanbul ignore next */
     if (!publicUrl && previousPublicUrl) {
-      const newFrom = `/${previousPublicUrl}`;
-      return <Redirect from={newFrom} to="/search" />;
+      <Route path={previousPublicUrl} element={<Navigate to="/search" />} />;
     }
 
     return <></>;
@@ -485,28 +474,30 @@ const App: React.FC<Props> = ({ searchQuery }) => {
 
   return (
     <>
-      <Switch>
-        <Redirect from="/" exact to="/search" />
-        <Redirect from="/cart" exact to="/cart/items" />
+      <Routes>
+        <Route path="/" element={<Navigate to="/search" />} />
+        <Route path="/cart" element={<Navigate to="/cart/items" />} />
         {generateRedirects()}
-      </Switch>
+      </Routes>
       <div>
-        <Route
-          path="/"
-          render={() => (
-            <NavBar
-              numCartItems={userCart.length}
-              numSavedSearches={userSearchQueries.length}
-              onTextSearch={handleTextSearch}
-              supportModalVisible={setSupportModalVisible}
-            ></NavBar>
-          )}
-        />
+        <Routes>
+          <Route
+            path="*"
+            element={
+              <NavBar
+                numCartItems={userCart.length}
+                numSavedSearches={userSearchQueries.length}
+                onTextSearch={handleTextSearch}
+                supportModalVisible={setSupportModalVisible}
+              ></NavBar>
+            }
+          />
+        </Routes>
         <Layout id="body-layout">
-          <Switch>
+          <Routes>
             <Route
               path="/search"
-              render={() => (
+              element={
                 <Layout.Sider
                   style={styles.bodySider}
                   width={styles.bodySider.width as number}
@@ -521,43 +512,42 @@ const App: React.FC<Props> = ({ searchQuery }) => {
                     onSetActiveFacets={handleOnSetActiveFacets}
                   />
                 </Layout.Sider>
-              )}
+              }
             />
             <Route
               path="/nodes"
-              render={() => (
+              element={
                 <Layout.Sider
                   style={styles.bodySider}
                   width={styles.bodySider.width as number}
                 >
                   <NodeSummary nodeStatus={nodeStatus} />
                 </Layout.Sider>
-              )}
+              }
             />
             <Route
-              path="/cart"
-              render={() => (
+              path="/cart/*"
+              element={
                 <Layout.Sider
                   style={styles.bodySider}
                   width={styles.bodySider.width as number}
                 >
                   <Summary userCart={userCart} />
                 </Layout.Sider>
-              )}
+              }
             />
-          </Switch>
+          </Routes>
           <Layout>
             <Layout.Content style={styles.bodyContent}>
-              <Switch>
+              <Routes>
                 <Route
                   path="/search"
-                  render={() => (
+                  element={
                     <>
                       <Breadcrumb>
                         <Breadcrumb.Item>
                           <HomeOutlined /> Home
                         </Breadcrumb.Item>
-                        <Breadcrumb.Item>Search</Breadcrumb.Item>
                       </Breadcrumb>
                       <Search
                         activeSearchQuery={activeSearchQuery}
@@ -573,15 +563,17 @@ const App: React.FC<Props> = ({ searchQuery }) => {
                         onShareSearchQuery={handleShareSearchQuery}
                       ></Search>
                     </>
-                  )}
+                  }
                 />
                 <Route
                   path="/nodes"
-                  render={() => (
+                  element={
                     <>
                       <Breadcrumb>
                         <Breadcrumb.Item>
-                          <HomeOutlined /> Home
+                          <Link to="/">
+                            <HomeOutlined /> Home
+                          </Link>
                         </Breadcrumb.Item>
                         <Breadcrumb.Item>Data Node Status</Breadcrumb.Item>
                       </Breadcrumb>
@@ -591,15 +583,17 @@ const App: React.FC<Props> = ({ searchQuery }) => {
                         isLoading={nodeStatusIsLoading}
                       />
                     </>
-                  )}
+                  }
                 />
                 <Route
-                  path="/cart"
-                  render={() => (
+                  path="/cart/*"
+                  element={
                     <>
                       <Breadcrumb>
                         <Breadcrumb.Item>
-                          <HomeOutlined /> Home
+                          <Link to="/">
+                            <HomeOutlined /> Home
+                          </Link>
                         </Breadcrumb.Item>
                         <Breadcrumb.Item>Cart</Breadcrumb.Item>
                       </Breadcrumb>
@@ -610,12 +604,14 @@ const App: React.FC<Props> = ({ searchQuery }) => {
                         onClearCart={handleClearCart}
                         onRunSearchQuery={handleRunSearchQuery}
                         onRemoveSearchQuery={handleRemoveSearchQuery}
+                        nodeStatus={nodeStatus}
                       />
                     </>
-                  )}
+                  }
                 />
                 <Route
-                  render={() => (
+                  path="*"
+                  element={
                     <Result
                       status="404"
                       title="404"
@@ -626,9 +622,9 @@ const App: React.FC<Props> = ({ searchQuery }) => {
                         </Button>
                       }
                     />
-                  )}
+                  }
                 />
-              </Switch>
+              </Routes>
             </Layout.Content>
             <Layout.Footer>
               <p style={{ fontSize: '10px' }}>
@@ -649,6 +645,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           </Layout>
         </Layout>
         <Affix
+          className={miscTargets.questionBtn.class()}
           style={{
             position: 'fixed',
             bottom: 75,
@@ -659,7 +656,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
             type="primary"
             shape="circle"
             style={{ width: '48px', height: '48px' }}
-            icon={<QuestionOutlined style={{ fontSize: '40px' }} />}
+            icon={<QuestionOutlined style={{ fontSize: '28px' }} />}
             onClick={() => setSupportModalVisible(true)}
           ></Button>
         </Affix>
@@ -667,6 +664,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           visible={supportModalVisible}
           onClose={() => setSupportModalVisible(false)}
         />
+        <StartPopup />
       </div>
     </>
   );

@@ -1,3 +1,5 @@
+import { CSSProperties, ReactNode } from 'react';
+import { message } from 'antd';
 import { UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
 import { ActiveFacets } from '../components/Facets/types';
 import {
@@ -8,6 +10,53 @@ import {
   TextInputs,
   VersionType,
 } from '../components/Search/types';
+
+export type NotificationType = 'success' | 'info' | 'warning' | 'error';
+export async function showNotice(
+  content: React.ReactNode | string,
+  config?: {
+    duration?: number;
+    icon?: ReactNode;
+    type?: NotificationType;
+    style?: CSSProperties;
+    key?: string | number;
+  }
+): Promise<void> {
+  const msgConfig = {
+    content,
+    duration: config?.duration,
+    icon: config?.icon,
+    style: { marginTop: '60px', ...config?.style },
+    key: config?.key,
+  };
+
+  switch (config?.type) {
+    case 'success':
+      await message.success(msgConfig);
+      break;
+    case 'warning':
+      await message.warning(msgConfig);
+      break;
+    case 'error':
+      await message.error(msgConfig);
+      break;
+    case 'info':
+      await message.info(msgConfig);
+      break;
+    default:
+      await message.success(msgConfig);
+  }
+}
+
+export async function showError(
+  errorMsg: React.ReactNode | string
+): Promise<void> {
+  let msg = errorMsg;
+  if (!errorMsg || errorMsg === '') {
+    msg = 'An unknown error has occurred.';
+  }
+  await showNotice(msg, { duration: 5, type: 'error' });
+}
 
 /**
  * Checks if an object is empty.

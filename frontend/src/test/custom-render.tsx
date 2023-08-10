@@ -1,33 +1,13 @@
 import { ReactKeycloakProvider } from '@react-keycloak/web';
 import { render, RenderResult } from '@testing-library/react';
-import { KeycloakInstance } from 'keycloak-js';
+import Keycloak from 'keycloak-js';
 import React, { ComponentType } from 'react';
-import { BrowserRouter as Router } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
 import { AuthProvider } from '../contexts/AuthContext';
 import { keycloakProviderInitConfig } from '../lib/keycloak';
 
-export const createKeycloakStub = (): KeycloakInstance => ({
-  // Optional
-  authenticated: false,
-  userInfo: {},
-  // Required
-  accountManagement: jest.fn(),
-  clearToken: jest.fn(),
-  createAccountUrl: jest.fn(),
-  createLoginUrl: jest.fn(),
-  createLogoutUrl: jest.fn(),
-  createRegisterUrl: jest.fn(),
-  isTokenExpired: jest.fn(),
-  hasRealmRole: jest.fn(),
-  hasResourceRole: jest.fn(),
-  init: jest.fn().mockResolvedValue(true),
-  loadUserInfo: jest.fn(),
-  loadUserProfile: jest.fn(),
-  login: jest.fn(),
-  logout: jest.fn(),
-  register: jest.fn(),
-  updateToken: jest.fn(),
-});
+// @ts-ignore
+const keycloak = new Keycloak();
 
 type AllProvidersProps = {
   children: React.ReactNode;
@@ -48,7 +28,7 @@ export const keycloakRender = (
 ): RenderResult =>
   render(
     <ReactKeycloakProvider
-      authClient={{ ...createKeycloakStub(), ...options }}
+      authClient={keycloak}
       initOptions={keycloakProviderInitConfig}
     >
       {ui}
@@ -66,11 +46,13 @@ export const customRender = (
   function AllProviders({ children }: AllProvidersProps): React.ReactElement {
     return (
       <ReactKeycloakProvider
-        authClient={{ ...createKeycloakStub(), ...options }}
+        authClient={keycloak}
         initOptions={keycloakProviderInitConfig}
       >
         <AuthProvider>
-          <Router basename={process.env.PUBLIC_URL}>{children}</Router>
+          <MemoryRouter basename={process.env.PUBLIC_URL}>
+            {children}
+          </MemoryRouter>
         </AuthProvider>
       </ReactKeycloakProvider>
     );

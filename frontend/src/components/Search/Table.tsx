@@ -5,7 +5,7 @@ import {
   PlusOutlined,
   RightCircleOutlined,
 } from '@ant-design/icons';
-import { Form, message, Select, Table as TableD } from 'antd';
+import { Form, Select, Table as TableD } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
@@ -16,7 +16,7 @@ import {
   ResponseError,
 } from '../../api';
 import { topDataRowTargets } from '../../common/reactJoyrideSteps';
-import { formatBytes } from '../../common/utils';
+import { formatBytes, showError, showNotice } from '../../common/utils';
 import { UserCart } from '../Cart/types';
 import ToolTip from '../DataDisplay/ToolTip';
 import Button from '../General/Button';
@@ -26,6 +26,8 @@ import './Search.css';
 import Tabs from './Tabs';
 import { RawSearchResult, RawSearchResults, TextInputs } from './types';
 import { AuthContext } from '../../contexts/AuthContext';
+import GlobusToolTip from '../NodeStatus/GlobusToolTip';
+import { globusEnabledNodes } from '../../env';
 
 export type Props = {
   loading: boolean;
@@ -33,6 +35,7 @@ export type Props = {
   results: RawSearchResults | [];
   totalResults?: number;
   userCart: UserCart | [];
+  selections?: RawSearchResults | [];
   nodeStatus?: NodeStatusArray;
   filenameVars?: TextInputs | [];
   onUpdateCart: (item: RawSearchResults, operation: 'add' | 'remove') => void;
@@ -47,6 +50,7 @@ const Table: React.FC<Props> = ({
   results,
   totalResults,
   userCart,
+  selections,
   nodeStatus,
   filenameVars,
   onUpdateCart,
@@ -98,9 +102,7 @@ const Table: React.FC<Props> = ({
       }): React.ReactElement =>
         expanded ? (
           <DownCircleOutlined
-            className={topDataRowTargets.getClass(
-              'searchResultsRowContractIcon'
-            )}
+            className={topDataRowTargets.searchResultsRowContractIcon.class()}
             onClick={(e) => onExpand(record, e)}
           />
         ) : (
@@ -109,15 +111,14 @@ const Table: React.FC<Props> = ({
             trigger="hover"
           >
             <RightCircleOutlined
-              className={topDataRowTargets.getClass(
-                'searchResultsRowExpandIcon'
-              )}
+              className={topDataRowTargets.searchResultsRowExpandIcon.class()}
               onClick={(e) => onExpand(record, e)}
             />
           </ToolTip>
         ),
     },
     rowSelection: {
+      selectedRowKeys: selections?.map((item) => (item ? item.id : '')),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onSelect: (_record: any, _selected: any, selectedRows: any) => {
         /* istanbul ignore else */
@@ -155,7 +156,7 @@ const Table: React.FC<Props> = ({
           return (
             <>
               <Button
-                className={topDataRowTargets.getClass('cartAddBtn', 'minus')}
+                className={topDataRowTargets.cartAddBtn.class('minus')}
                 icon={<MinusOutlined />}
                 onClick={() => onUpdateCart([record], 'remove')}
                 danger
@@ -170,7 +171,7 @@ const Table: React.FC<Props> = ({
               disabled={record.retracted === true}
               icon={
                 <PlusOutlined
-                  className={topDataRowTargets.getClass('cartAddBtn', 'plus')}
+                  className={topDataRowTargets.cartAddBtn.class('plus')}
                 />
               }
               onClick={() => onUpdateCart([record], 'add')}
@@ -182,9 +183,9 @@ const Table: React.FC<Props> = ({
     {
       title: '',
       dataIndex: 'data_node',
-      width: 20,
+      width: 35,
       render: (data_node: string) => (
-        <div className={topDataRowTargets.getClass('nodeStatusIcon')}>
+        <div className={topDataRowTargets.nodeStatusIcon.class()}>
           <StatusToolTip nodeStatus={nodeStatus} dataNode={data_node} />
         </div>
       ),
@@ -199,7 +200,7 @@ const Table: React.FC<Props> = ({
           const msg =
             'IMPORTANT! This dataset has been retracted and is no longer avaiable for download.';
           return (
-            <div className={topDataRowTargets.getClass('datasetTitle')}>
+            <div className={topDataRowTargets.datasetTitle.class()}>
               <p>
                 <span style={{ textDecoration: 'line-through' }}>{title}</span>
                 <br />
@@ -209,9 +210,7 @@ const Table: React.FC<Props> = ({
           );
         }
         return (
-          <div className={topDataRowTargets.getClass('datasetTitle')}>
-            {title}
-          </div>
+          <div className={topDataRowTargets.datasetTitle.class()}>{title}</div>
         );
       },
     },
@@ -221,7 +220,7 @@ const Table: React.FC<Props> = ({
       key: 'number_of_files',
       width: 50,
       render: (numberOfFiles: number) => (
-        <p className={topDataRowTargets.getClass('fileCount')}>
+        <p className={topDataRowTargets.fileCount.class()}>
           {numberOfFiles || 'N/A'}
         </p>
       ),
@@ -232,7 +231,7 @@ const Table: React.FC<Props> = ({
       key: 'size',
       width: 100,
       render: (size: number) => (
-        <p className={topDataRowTargets.getClass('totalSize')}>
+        <p className={topDataRowTargets.totalSize.class()}>
           {size ? formatBytes(size) : 'N/A'}
         </p>
       ),
@@ -243,11 +242,11 @@ const Table: React.FC<Props> = ({
       key: 'version',
       width: 100,
       render: (version: string) => (
-        <p className={topDataRowTargets.getClass('versionText')}>{version}</p>
+        <p className={topDataRowTargets.versionText.class()}>{version}</p>
       ),
     },
     {
-      title: 'Download Script',
+      title: 'Download Options',
       key: 'download',
       width: 200,
       render: (record: RawSearchResult) => {
@@ -261,11 +260,11 @@ const Table: React.FC<Props> = ({
           downloadType: DatasetDownloadTypes
         ): void => {
           /* istanbul ignore else */
-          const fooToken = accessToken as string;
           if (downloadType === 'wget') {
             // eslint-disable-next-line no-void
-            void message.success(
-              `The wget script is generating, please wait momentarily. ${fooToken}`
+            showNotice(
+              'The wget script is generating, please wait momentarily.',
+              { type: 'info' }
             );
             fetchWgetScript(
               record.id,
@@ -278,12 +277,13 @@ const Table: React.FC<Props> = ({
               })
               .catch((error: ResponseError) => {
                 // eslint-disable-next-line no-void
-                void message.error(error.message);
+                showError(error.message);
               });
           } else if (downloadType === 'wget_simple') {
             // eslint-disable-next-line no-void
-            void message.success(
-              'The simplified wget script is generating, please wait momentarily.'
+            showNotice(
+              'The simplified wget script is generating, please wait momentarily.',
+              { type: 'info' }
             );
             fetchWgetScript(
               record.id,
@@ -296,20 +296,20 @@ const Table: React.FC<Props> = ({
               })
               .catch((error: ResponseError) => {
                 // eslint-disable-next-line no-void
-                void message.error(error.message);
+                showError(error.message);
               });
           } else if (downloadType === 'Globus') {
             // eslint-disable-next-line no-void
-            void message.success(
-              'The Globus script is generating, please wait momentarily.'
+            showNotice(
+              'The Globus script is generating, please wait momentarily.',
+              { type: 'info' }
             );
             fetchGlobusScript(record.id, filenameVars)
               .then((url) => {
                 openDownloadURL(url);
               })
               .catch((error: ResponseError) => {
-                // eslint-disable-next-line no-void
-                void message.error(error.message);
+                showError(error.message);
               });
           }
         };
@@ -317,7 +317,7 @@ const Table: React.FC<Props> = ({
         return (
           <>
             <Form
-              className={topDataRowTargets.getClass('downloadScriptForm')}
+              className={topDataRowTargets.downloadScriptForm.class()}
               layout="inline"
               onFinish={({ [formKey]: download }) =>
                 handleDownloadForm(download as DatasetDownloadTypes)
@@ -327,9 +327,7 @@ const Table: React.FC<Props> = ({
               <Form.Item name={formKey}>
                 <Select
                   disabled={record.retracted === true}
-                  className={topDataRowTargets.getClass(
-                    'downloadScriptOptions'
-                  )}
+                  className={topDataRowTargets.downloadScriptOptions.class()}
                   style={{ width: 120 }}
                 >
                   {allowedDownloadTypes.map(
@@ -350,7 +348,7 @@ const Table: React.FC<Props> = ({
               <Form.Item>
                 <Button
                   disabled={record.retracted === true}
-                  className={topDataRowTargets.getClass('downloadScriptBtn')}
+                  className={topDataRowTargets.downloadScriptBtn.class()}
                   type="default"
                   htmlType="submit"
                   icon={<DownloadOutlined />}
@@ -363,6 +361,22 @@ const Table: React.FC<Props> = ({
     },
   ];
 
+  if (globusEnabledNodes.length > 0) {
+    columns.push({
+      title: 'Globus Ready',
+      dataIndex: 'data_node',
+      width: 65,
+      render: (data_node: string) => (
+        <div
+          style={{ textAlign: 'center' }}
+          className={topDataRowTargets.globusReadyStatusIcon.class()}
+        >
+          <GlobusToolTip dataNode={data_node} />
+        </div>
+      ),
+    });
+  }
+
   return (
     <TableD
       {...tableConfig}
@@ -370,7 +384,7 @@ const Table: React.FC<Props> = ({
       dataSource={results}
       rowKey="id"
       size="small"
-      scroll={{ y: 'calc(100vh)' }}
+      scroll={{ x: '100%', y: 'calc(70vh)' }}
     />
   );
 };

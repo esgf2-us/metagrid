@@ -22,21 +22,6 @@ services:
     ports:
       - "5433:5432"
 
-  keycloak:
-    # Source: https://github.com/keycloak/keycloak-containers/blob/master/docker-compose-examples/keycloak-postgres.yml
-    image: quay.io/keycloak/keycloak:19.0.3
-    # https://github.com/jhipster/generator-jhipster/issues/7157#issuecomment-367813386
-    depends_on:
-      - postgres
-    volumes:
-      - ./docker/local/keycloak:/opt/jboss/keycloak/imports
-    env_file:
-      - ./.envs/.keycloak
-    ports:
-      - "8080:8080"
-    command: start-dev --verbose 
-    # -Dkeycloak.import=/opt/jboss/keycloak/imports/realm-export.json -Dkeycloak.migration.strategy=IGNORE_EXISTING
-
   django:
     build:
       context: .
@@ -45,7 +30,6 @@ services:
     container_name: django
     depends_on:
       - postgres
-      - keycloak
     volumes:
       - .:/app
     env_file:

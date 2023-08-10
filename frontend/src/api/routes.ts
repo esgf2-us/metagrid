@@ -1,4 +1,4 @@
-import { esgfNodeURL, metagridApiURL } from '../env';
+import { esgfSearchURL, metagridApiURL } from '../env';
 
 export type HTTPCodeType = 400 | 401 | 403 | 404 | 405 | 'generic';
 
@@ -31,6 +31,8 @@ export type ApiRoute = {
 
 type ApiRoutes = {
   keycloakAuth: ApiRoute;
+  globusAuth: ApiRoute;
+  globusTransfer: ApiRoute;
   userInfo: ApiRoute;
   userCart: ApiRoute;
   userSearches: ApiRoute;
@@ -41,6 +43,7 @@ type ApiRoutes = {
   wget: ApiRoute;
   globus: ApiRoute;
   nodeStatus: ApiRoute;
+  tempStorage: ApiRoute;
 };
 
 /**
@@ -48,7 +51,7 @@ type ApiRoutes = {
  * served as a clickable link within the browser.
  */
 export const clickableRoute = (route: string): string =>
-  route.replace(`${metagridApiURL}/proxy/search`, `${esgfNodeURL}`);
+  route.replace(`${metagridApiURL}/proxy/search`, `${esgfSearchURL}`);
 
 // Any path with parameters (e.g. '/:datasetID/') must be in camelCase
 // https://mswjs.io/docs/basics/path-matching#path-with-parameters
@@ -57,6 +60,15 @@ const apiRoutes: ApiRoutes = {
   keycloakAuth: {
     path: `${metagridApiURL}/dj-rest-auth/keycloak`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Keycloak', HTTPCode),
+  },
+  globusAuth: {
+    path: `${metagridApiURL}/globus/auth`,
+    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Globus', HTTPCode),
+  },
+  globusTransfer: {
+    path: `${metagridApiURL}/globus/transfer`,
+    handleErrorMsg: (HTTPCode) =>
+      mapHTTPErrorCodes('Globus transfer', HTTPCode),
   },
   userInfo: {
     path: `${metagridApiURL}/dj-rest-auth/user/`,
@@ -110,6 +122,10 @@ const apiRoutes: ApiRoutes = {
     path: `${metagridApiURL}/proxy/status`,
     handleErrorMsg: (HTTPCode) =>
       mapHTTPErrorCodes('ESGF Node Status API', HTTPCode),
+  },
+  tempStorage: {
+    path: `${metagridApiURL}/tempStorage`,
+    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Temp Storage', HTTPCode),
   },
 };
 
