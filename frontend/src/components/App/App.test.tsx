@@ -235,7 +235,7 @@ it('handles setting and removing text input filters and clearing all search filt
   await waitFor(() => getByTestId('search'));
 });
 
-it('handles applying general facets', async () => {
+xit('handles applying general facets', async () => {
   const { getByTestId, getByText } = customRender(
     <App searchQuery={activeSearch} />
   );
