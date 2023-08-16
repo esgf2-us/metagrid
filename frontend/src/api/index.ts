@@ -566,9 +566,8 @@ export const fetchWgetScript = async (
 };
 
 export const loadSessionValue = async <T>(key: string): Promise<T | null> => {
-  const url = `${apiRoutes.tempStorage.path}/get`;
   return axios
-    .post(url, { dataKey: key })
+    .post(apiRoutes.tempStorageGet.path, { dataKey: key })
     .then((resp: AxiosResponse) => {
       const { data } = resp;
       if (data && key in data) {
@@ -583,7 +582,7 @@ export const loadSessionValue = async <T>(key: string): Promise<T | null> => {
     })
     .catch((error: ResponseError) => {
       throw new Error(
-        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.tempStorage)
+        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.tempStorageGet)
       );
     });
 };
@@ -592,8 +591,6 @@ export const saveSessionValue = async <T>(
   key: string,
   value: T
 ): Promise<AxiosResponse> => {
-  const url = `${apiRoutes.tempStorage.path}/set`;
-
   let data: { dataKey: string; dataValue: T | string } = {
     dataKey: key,
     dataValue: 'None',
@@ -602,13 +599,13 @@ export const saveSessionValue = async <T>(
     data = { ...data, dataValue: value };
   }
   return axios
-    .post(url, JSON.stringify(data))
+    .post(apiRoutes.tempStorageSet.path, JSON.stringify(data))
     .then((resp) => {
       return resp.data;
     })
     .catch((error: ResponseError) => {
       throw new Error(
-        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.tempStorage)
+        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.tempStorageSet)
       );
     });
 };

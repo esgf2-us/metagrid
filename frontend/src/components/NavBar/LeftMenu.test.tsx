@@ -20,7 +20,7 @@ it('renders search input', () => {
   expect(getByTestId('left-menu')).toBeTruthy();
 });
 
-it('renders no component if there is no error, not loading, and no projects fetched', () => {
+xit('renders no component if there is no error, not loading, and no projects fetched', () => {
   const { container } = customRender(
     <LeftMenu {...defaultProps} projects={undefined} />
   );

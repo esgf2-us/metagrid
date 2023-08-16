@@ -42,7 +42,8 @@ type ApiRoutes = {
   citation: ApiRoute;
   wget: ApiRoute;
   nodeStatus: ApiRoute;
-  tempStorage: ApiRoute;
+  tempStorageGet: ApiRoute;
+  tempStorageSet: ApiRoute;
 };
 
 /**
@@ -117,9 +118,15 @@ const apiRoutes: ApiRoutes = {
     handleErrorMsg: (HTTPCode) =>
       mapHTTPErrorCodes('ESGF Node Status API', HTTPCode),
   },
-  tempStorage: {
-    path: `${metagridApiURL}/tempStorage`,
-    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Temp Storage', HTTPCode),
+  tempStorageGet: {
+    path: `${metagridApiURL}/tempStorage/get`,
+    handleErrorMsg: (HTTPCode) =>
+      mapHTTPErrorCodes('Temp Storage Get', HTTPCode),
+  },
+  tempStorageSet: {
+    path: `${metagridApiURL}/tempStorage/set`,
+    handleErrorMsg: (HTTPCode) =>
+      mapHTTPErrorCodes('Temp Storage Set', HTTPCode),
   },
 };
 

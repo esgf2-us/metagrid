@@ -80,7 +80,7 @@ const Facets: React.FC<React.PropsWithChildren<Props>> = ({
       className={leftSidebarTargets.leftSideBar.class()}
     >
       <h3>Select a Project</h3>
-      <div data-testid="projectForm">
+      <div data-testid="project-form">
         <ProjectForm
           activeSearchQuery={activeSearchQuery}
           projectsFetched={data}

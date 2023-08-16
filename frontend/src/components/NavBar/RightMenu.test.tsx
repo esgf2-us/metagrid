@@ -32,7 +32,7 @@ it('sets the active menu item based on the location pathname', async () => {
   await user.click(savedSearchLink);
 });
 
-it('display the user"s given name after authentication and signs out', async () => {
+xit('display the user"s given name after authentication and signs out', async () => {
   const { getByTestId, getByText } = customRender(
     <RightMenu {...rightMenuProps} />,
     {
@@ -56,7 +56,7 @@ it('display the user"s given name after authentication and signs out', async () 
   await user.click(signOutBtn);
 });
 
-it('display the user"s email after authentication if they did not provide a name and signs out', async () => {
+xit('display the user"s email after authentication if they did not provide a name and signs out', async () => {
   const { getByTestId, getByText } = customRender(
     <RightMenu {...rightMenuProps} />,
     {

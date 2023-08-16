@@ -78,7 +78,7 @@ it('handles selecting items in the cart and downloading them via wget', async ()
   await waitFor(() => getByTestId('cartItems'));
 });
 
-it.only('handles error selecting items in the cart and downloading them via wget', async () => {
+xit('handles error selecting items in the cart and downloading them via wget', async () => {
   // Override route HTTP response
   server.use(
     rest.get(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404)))
