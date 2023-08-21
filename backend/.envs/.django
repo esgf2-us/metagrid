@@ -7,26 +7,9 @@ DOMAIN_NAME=http://localhost:8000
 # ------------------------------------------------------------------------------
 CORS_ORIGIN_WHITELIST=http://localhost:3000
 
-# django-all-auth
-# ------------------------------------------------------------------------------
-<<<<<<< HEAD
-KEYCLOAK_URL=http://keycloak:8080/auth
-KEYCLOAK_REALM=metagrid
-KEYCLOAK_CLIENT_ID=backend
 
-# Use Same .env keys as Frontend for consistency
-REACT_APP_WGET_API_URL=https://greyworm1-rh7.llnl.gov/wget
 REACT_APP_GLOBUS_SCRIPT_URL=https://greyworm1-rh7.llnl.gov/globusscript
 
-
-# ESGF Search API
-# https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
-REACT_APP_ESGF_NODE_URL=https://esgf-node.llnl.gov/esg-search/search
-
-# ESGF Node Status API
-# https://github.com/ESGF/esgf-utils/blob/master/node_status/query_prom.py
-REACT_APP_ESGF_NODE_STATUS_URL=https://aims4.llnl.gov/prometheus/api/v1/query?query=probe_success%7Bjob%3D%22http_2xx%22%2C+target%3D~%22.%2Athredds.%2A%22%7D
-=======
 KEYCLOAK_URL=https://login.esgf.io/
 KEYCLOAK_REALM=esgf
 KEYCLOAK_CLIENT_ID=metagrid-localhost
@@ -45,4 +28,3 @@ REACT_APP_ESGF_NODE_STATUS_URL=https://aims2.llnl.gov/metagrid-backend/proxy/sta
 
 # ESGF Solr URL
 REACT_APP_ESGF_SOLR_URL=https://esgf-fedtest.llnl.gov/solr
->>>>>>> integration-keycloak
