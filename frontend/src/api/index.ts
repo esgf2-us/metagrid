@@ -528,7 +528,10 @@ export const fetchDatasetFiles = async (
 };
 
 const returnFileToUser = (fileContent: string): void => {
-  const fileName = 'wget.sh';
+  const d = new Date();
+  const fileName = `wget_script_${d.getFullYear()}-${
+    d.getMonth() + 1
+  }-${d.getDate()}_${d.getHours()}-${d.getMinutes()}-${d.getSeconds()}.sh`;
   const downloadLinkNode = document.createElement('a');
   downloadLinkNode.setAttribute(
     'href',
@@ -558,6 +561,8 @@ export const fetchWgetScript = async (
     dataset_id: ids,
     filenameVars,
   };
+
+  const fileName = `wget_${Date.now()}`;
 
   return axios
     .post(apiRoutes.wget.path, data)
