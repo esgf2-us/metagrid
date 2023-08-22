@@ -27,7 +27,7 @@ import {
   TextInputs,
 } from '../components/Search/types';
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
-import { metagridApiURL, wgetApiURL } from '../env';
+import { metagridApiURL } from '../env';
 import apiRoutes, { ApiRoute, HTTPCodeType } from './routes';
 
 export interface ResponseError extends Error {
@@ -526,6 +526,24 @@ export const fetchDatasetFiles = async (
       );
     });
 };
+
+const returnFileToUser = (fileContent: string): void => {
+  const fileName = 'wget.sh';
+  const downloadLinkNode = document.createElement('a');
+  downloadLinkNode.setAttribute(
+    'href',
+    `data:text/plain;charset=utf-8,${encodeURIComponent(fileContent)}`
+  );
+  downloadLinkNode.setAttribute('download', fileName);
+
+  downloadLinkNode.style.display = 'none';
+  document.body.appendChild(downloadLinkNode);
+
+  downloadLinkNode.click();
+
+  document.body.removeChild(downloadLinkNode);
+};
+
 /**
  * Performs validation against the wget API to ensure a 200 response.
  *
@@ -535,8 +553,8 @@ export const fetchDatasetFiles = async (
 export const fetchWgetScript = async (
   ids: string[] | string,
   filenameVars?: string[]
-): Promise<string> => {
-  let testurl = queryString.stringifyUrl({
+): Promise<void> => {
+  /* let testurl = queryString.stringifyUrl({
     url: apiRoutes.wget.path,
     query: { dataset_id: ids },
   });
@@ -555,11 +573,16 @@ export const fetchWgetScript = async (
     );
     url += `&${filenameVarsParam}`;
     testurl += `&${filenameVarsParam}`;
-  }
+  }*/
+
+  const data = {
+    dataset_id: ids,
+    filenameVars,
+  };
 
   return axios
-    .get(testurl)
-    .then(() => url)
+    .post(apiRoutes.wget.path, data)
+    .then((resp) => returnFileToUser(resp.data as string))
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.wget));
     });

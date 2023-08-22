@@ -7,7 +7,7 @@ import {
   saveSessionValue,
   loadSessionValue,
   fetchWgetScript,
-  openDownloadURL,
+  // openDownloadURL,
   ResponseError,
   startGlobusTransfer,
 } from '../../api';
@@ -221,10 +221,10 @@ const DatasetDownloadForm: React.FC = () => {
       });
       setDownloadIsLoading(true);
       fetchWgetScript(ids)
-        .then((url) => {
-          openDownloadURL(url);
-          setDownloadIsLoading(false);
-        })
+        // .then((url) => {
+        //   openDownloadURL(url);
+        //   setDownloadIsLoading(false);
+        // })
         .catch((error: ResponseError) => {
           showError(error.message);
           setDownloadIsLoading(false);
@@ -714,8 +714,10 @@ const DatasetDownloadForm: React.FC = () => {
           <Select
             style={{ width: 235 }}
             onSelect={(rawType) => {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
               const downloadType = rawType?.toString();
               if (downloadType) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 setSelectedDownloadType(downloadType);
               }
             }}

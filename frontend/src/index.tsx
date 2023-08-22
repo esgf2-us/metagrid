@@ -10,6 +10,7 @@ import { ReactJoyrideProvider } from './contexts/ReactJoyrideContext';
 import './index.css';
 import { keycloak, keycloakProviderInitConfig } from './lib/keycloak';
 
+// eslint-disable-next-line react/no-deprecated
 ReactDOM.render(
   <RecoilRoot>
     <ReactKeycloakProvider

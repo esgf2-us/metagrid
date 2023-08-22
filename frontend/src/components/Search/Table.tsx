@@ -9,7 +9,7 @@ import { Form, Select, Table as TableD } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
-import { fetchWgetScript, openDownloadURL, ResponseError } from '../../api';
+import { fetchWgetScript, ResponseError } from '../../api';
 import { topDataRowTargets } from '../../common/reactJoyrideSteps';
 import { formatBytes, showError, showNotice } from '../../common/utils';
 import { UserCart } from '../Cart/types';
@@ -252,9 +252,9 @@ const Table: React.FC<Props> = ({
               { type: 'info' }
             );
             fetchWgetScript(record.id, filenameVars)
-              .then((url) => {
-                openDownloadURL(url);
-              })
+              // .then((url) => {
+              //   openDownloadURL(url);
+              // })
               .catch((error: ResponseError) => {
                 showError(error.message);
               });
