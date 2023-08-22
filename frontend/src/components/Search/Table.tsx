@@ -251,13 +251,11 @@ const Table: React.FC<Props> = ({
               'The wget script is generating, please wait momentarily.',
               { type: 'info' }
             );
-            fetchWgetScript(record.id, filenameVars)
-              // .then((url) => {
-              //   openDownloadURL(url);
-              // })
-              .catch((error: ResponseError) => {
+            fetchWgetScript(record.id, filenameVars).catch(
+              (error: ResponseError) => {
                 showError(error.message);
-              });
+              }
+            );
           }
         };
 

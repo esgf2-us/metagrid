@@ -554,27 +554,6 @@ export const fetchWgetScript = async (
   ids: string[] | string,
   filenameVars?: string[]
 ): Promise<void> => {
-  /* let testurl = queryString.stringifyUrl({
-    url: apiRoutes.wget.path,
-    query: { dataset_id: ids },
-  });
-
-  let url = queryString.stringifyUrl({
-    url: `${wgetApiURL}`,
-    query: { dataset_id: ids },
-  });
-
-  if (filenameVars && filenameVars.length > 0) {
-    const filenameVarsParam = queryString.stringify(
-      { query: filenameVars },
-      {
-        arrayFormat: 'comma',
-      }
-    );
-    url += `&${filenameVarsParam}`;
-    testurl += `&${filenameVarsParam}`;
-  }*/
-
   const data = {
     dataset_id: ids,
     filenameVars,
