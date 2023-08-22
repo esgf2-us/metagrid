@@ -1,4 +1,10 @@
-import { fireEvent, waitFor, within } from '@testing-library/react';
+import {
+  fireEvent,
+  waitFor,
+  within,
+  screen,
+  act,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import {
@@ -101,7 +107,7 @@ it('renders warning that dataset is retracted', async () => {
   expect(expandableRow).toBeTruthy();
 });
 
-xit('renders record metadata in an expandable panel', async () => {
+it.only('renders record metadata in an expandable panel', async () => {
   const { getByRole, getByText } = customRender(<Table {...defaultProps} />);
 
   // Check table exists
@@ -110,7 +116,7 @@ xit('renders record metadata in an expandable panel', async () => {
 
   // Check a record row exist
   const row = getByRole('row', {
-    name: getRowName('plus', 'question', 'foo', '3', '1', '1'),
+    name: getRowName('plus', 'question', 'foo', '3', '1', '1', true),
   });
   expect(row).toBeTruthy();
 
@@ -125,7 +131,14 @@ xit('renders record metadata in an expandable panel', async () => {
     name: 'right-circle',
   });
   expect(expandableIcon).toBeTruthy();
-  await user.click(expandableIcon);
+  await act(async () => {
+    await user.click(expandableIcon);
+  });
+
+  // const tabPanel = within(table).getByTestId('extra-tabs');
+  // expect(tabPanel).toBeTruthy();
+
+  screen.debug(undefined, Infinity);
 
   // Get the expandable row that was rendered and click on it
   const expandableRow = document.querySelector(
@@ -175,7 +188,7 @@ xit('renders "PID" button when the record has a "xlink" key/value, vice versa', 
 
   // Check first row exists
   const firstRow = getByRole('row', {
-    name: getRowName('plus', 'question', 'foo', '3', '1', '1'),
+    name: getRowName('plus', 'question', 'foo', '3', '1', '1', true),
   });
   expect(firstRow).toBeTruthy();
 
@@ -235,7 +248,7 @@ xit('renders quality control flags for obs4MIPs datasets when the record has the
 
   // Check first row exists
   const firstRow = getByRole('row', {
-    name: getRowName('plus', 'question', 'foo', '3', '1', '1'),
+    name: getRowName('plus', 'question', 'foo', '3', '1', '1', false),
   });
   expect(firstRow).toBeTruthy();
 

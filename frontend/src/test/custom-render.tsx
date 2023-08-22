@@ -103,7 +103,7 @@ export const getRowName = (
   }
   let globusReadyCheck = '.*';
   if (globusReady !== undefined) {
-    globusReadyCheck = globusReadyCheck ? 'check-circle' : 'close-circle';
+    globusReadyCheck = globusReady ? 'check-circle' : 'close-circle';
   }
   const newRegEx = new RegExp(
     `right-circle ${cartButton} ${nodeCircleType}-circle ${title} ${fileCount} ${totalBytes} ${version} wget download ${globusReadyCheck}`

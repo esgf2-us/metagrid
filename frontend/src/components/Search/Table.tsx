@@ -71,7 +71,11 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
     } as TablePaginationConfig,
     expandable: {
       expandedRowRender: (record: RawSearchResult) => (
-        <Tabs record={record} filenameVars={filenameVars}></Tabs>
+        <Tabs
+          data-test-id="extra-tabs"
+          record={record}
+          filenameVars={filenameVars}
+        ></Tabs>
       ),
       expandIcon: ({
         expanded,
@@ -125,7 +129,6 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
             record.retracted === true),
       }),
     },
-
     hasData: results.length > 0,
   };
 
@@ -326,35 +329,13 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
           key: 'globus_enabled',
           width: 110,
           render: (data_node: string) => (
-            <div
-              // style={{ textAlign: 'center' }}
-              className={topDataRowTargets.globusReadyStatusIcon.class()}
-            >
+            <div className={topDataRowTargets.globusReadyStatusIcon.class()}>
               <GlobusToolTip dataNode={data_node} />
             </div>
           ),
         }
       : {},
   ];
-
-  /* if (globusEnabledNodes.length > 0) {
-    columns.push({
-      align: 'center' as AlignType,
-      // fixed: 'right' as AlignType,
-      title: 'Globus Ready',
-      dataIndex: 'data_node',
-      key: 'globus_enabled',
-      width: 110,
-      render: (data_node: string) => (
-        <div
-          // style={{ textAlign: 'center' }}
-          className={topDataRowTargets.globusReadyStatusIcon.class()}
-        >
-          <GlobusToolTip dataNode={data_node} />
-        </div>
-      ),
-    });
-  }*/
 
   return (
     <TableD

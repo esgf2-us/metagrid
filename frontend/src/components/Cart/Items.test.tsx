@@ -90,7 +90,7 @@ xit('handles error selecting items in the cart and downloading them via wget', a
 
   // Check first row renders and click the checkbox
   const firstRow = getByRole('row', {
-    name: getRowName('minus', 'question', 'foo', '3', '1', '1'),
+    name: getRowName('minus', 'question', 'foo', '3', '1', '1', false),
   });
   const firstCheckBox = within(firstRow).getByRole('checkbox');
   expect(firstCheckBox).toBeTruthy();
