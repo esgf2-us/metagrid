@@ -92,9 +92,13 @@ def do_request(request, urlbase):
         )
     if request:
         if request.method == "POST":
-            url_params = request.POST.copy()
-            print(f"PARAMS {request.POST}")
-            resp = requests.post(urlbase, params=url_params)
+            jo = {}
+            try:
+                jo = json.loads(request.body)
+            except Exception:  # pragma: no cover
+                return HttpResponseBadRequest()
+            print(f"DEBUG: {jo}")
+            resp = requests.post(urlbase, jo)
 
         elif request.method == "GET":
             url_params = request.GET.copy()
