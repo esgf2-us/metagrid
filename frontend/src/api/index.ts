@@ -548,10 +548,8 @@ const returnFileToUser = (fileContent: string): void => {
 };
 
 /**
- * Performs validation against the wget API to ensure a 200 response.
+ * Performs wget request from the API.
  *
- * If the API returns a 200, it returns the responseURL so the browser can open
- * the link.
  */
 export const fetchWgetScript = async (
   ids: string[] | string,
