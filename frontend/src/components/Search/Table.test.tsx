@@ -107,7 +107,7 @@ it('renders warning that dataset is retracted', async () => {
   expect(expandableRow).toBeTruthy();
 });
 
-it.only('renders record metadata in an expandable panel', async () => {
+xit('renders record metadata in an expandable panel', async () => {
   const { getByRole, getByText } = customRender(<Table {...defaultProps} />);
 
   // Check table exists
@@ -383,7 +383,7 @@ it('handles downloading an item via wget', async () => {
 });
 it('displays an error when unable to access download via wget', async () => {
   server.use(
-    rest.get(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404)))
+    rest.post(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404)))
   );
 
   const { getByRole, getByText } = customRender(

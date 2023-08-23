@@ -7,7 +7,6 @@ import {
   saveSessionValue,
   loadSessionValue,
   fetchWgetScript,
-  openDownloadURL,
   ResponseError,
   startGlobusTransfer,
 } from '../../api';
@@ -228,10 +227,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       });
       setDownloadIsLoading(true);
       fetchWgetScript(ids)
-        .then((url) => {
-          openDownloadURL(url);
-          setDownloadIsLoading(false);
-        })
+        .then(() => setDownloadIsLoading(false))
         .catch((error: ResponseError) => {
           showError(error.message);
           setDownloadIsLoading(false);

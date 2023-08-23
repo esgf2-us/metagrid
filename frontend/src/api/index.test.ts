@@ -518,7 +518,7 @@ describe('test fetching wget script', () => {
 
   it('catches and throws an error based on HTTP status code', async () => {
     server.use(
-      rest.get(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404)))
+      rest.post(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404)))
     );
 
     await expect(fetchWgetScript('id')).rejects.toThrow(
@@ -527,7 +527,7 @@ describe('test fetching wget script', () => {
   });
   it('catches and throws generic network error', async () => {
     server.use(
-      rest.get(apiRoutes.wget.path, (_req, res) =>
+      rest.post(apiRoutes.wget.path, (_req, res) =>
         res.networkError(genericNetworkErrorMsg)
       )
     );

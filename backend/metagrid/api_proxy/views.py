@@ -92,15 +92,22 @@ def do_request(request, urlbase):
         )
     if request:
         if request.method == "POST":
-            url_params = request.POST.copy()
+            jo = {}
+            try:
+                jo = json.loads(request.body)
+            except Exception:  # pragma: no cover
+                return HttpResponseBadRequest()
+            print(f"DEBUG: {jo}")
+            resp = requests.post(urlbase, jo)
+
         elif request.method == "GET":
             url_params = request.GET.copy()
+            resp = requests.get(urlbase, params=url_params)
         else:  # pragma: no cover
             return HttpResponseBadRequest(
                 "Request method must be POST or GET."
             )
 
-        resp = requests.get(urlbase, params=url_params)
     else:  # pragma: no cover
         resp = requests.get(urlbase)
 

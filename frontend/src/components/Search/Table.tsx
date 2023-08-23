@@ -9,7 +9,7 @@ import { Form, Select, Table as TableD, Tooltip } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
-import { fetchWgetScript, openDownloadURL, ResponseError } from '../../api';
+import { fetchWgetScript, ResponseError } from '../../api';
 import { topDataRowTargets } from '../../common/reactJoyrideSteps';
 import { formatBytes, showError, showNotice } from '../../common/utils';
 import { UserCart } from '../Cart/types';
@@ -266,13 +266,11 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
               'The wget script is generating, please wait momentarily.',
               { type: 'info' }
             );
-            fetchWgetScript(record.id, filenameVars)
-              .then((url) => {
-                openDownloadURL(url);
-              })
-              .catch((error: ResponseError) => {
+            fetchWgetScript(record.id, filenameVars).catch(
+              (error: ResponseError) => {
                 showError(error.message);
-              });
+              }
+            );
           }
         };
 

@@ -97,7 +97,7 @@ const handlers = [
 
     return res(ctx.status(200), ctx.json(rawCitationFixture()));
   }),
-  rest.get(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(200))),
+  rest.post(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(200))),
   rest.get(apiRoutes.nodeStatus.path, (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(rawNodeStatusFixture()))
   ),
