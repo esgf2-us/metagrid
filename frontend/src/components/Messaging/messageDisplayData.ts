@@ -5,15 +5,25 @@ export const rightDrawerMessages: MarkdownMessage[] = [
 ];
 
 export const rightDrawerChanges: MarkdownMessage[] = [
+  { title: 'V1.0.10', fileName: 'changelog/v1.0.10-beta.md' },
   { title: 'V1.0.9', fileName: 'changelog/v1.0.9-beta.md' },
   { title: 'V1.0.8', fileName: 'changelog/v1.0.8-beta.md' },
   { title: 'V1.0.7', fileName: 'changelog/v1.0.7-beta.md' },
 ];
 
 const startupMessages: StartPopupData = {
-  messageToShow: 'v1.0.9-beta',
+  messageToShow: 'v1.0.10-beta',
   defaultMessageId: 'welcome',
   messageData: [
+    {
+      messageId: 'v1.0.10-beta',
+      template: MessageTemplates.ChangeLog,
+      style: { minWidth: '700px' },
+      data: {
+        changesFile: 'changelog/v1.0.10-beta.md',
+        version: '1.0.10 Beta',
+      },
+    },
     {
       messageId: 'v1.0.9-beta',
       template: MessageTemplates.ChangeLog,
