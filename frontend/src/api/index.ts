@@ -557,7 +557,7 @@ export const fetchWgetScript = async (
 ): Promise<void> => {
   const data = {
     dataset_id: ids,
-    filenameVars,
+    query: filenameVars,
   };
 
   return axios

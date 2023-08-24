@@ -97,8 +97,12 @@ def do_request(request, urlbase):
                 jo = json.loads(request.body)
             except Exception:  # pragma: no cover
                 return HttpResponseBadRequest()
-            print(f"DEBUG: {jo}")
-            resp = requests.post(urlbase, jo)
+            if "query" in jo:
+                jo["query"] = jo["query"][0]
+            if "dataset_id" in jo:
+                jo["dataset_id"] = ','.join(jo["dataset_id"])
+#            print(f"DEBUG: {jo}")            
+            resp = requests.post(urlbase, data=jo)
 
         elif request.method == "GET":
             url_params = request.GET.copy()
@@ -111,9 +115,10 @@ def do_request(request, urlbase):
     else:  # pragma: no cover
         resp = requests.get(urlbase)
 
+#    print(resp.text)
     httpresp = HttpResponse(resp.text)
     httpresp.status_code = resp.status_code
-
+    
     return httpresp
 
 
