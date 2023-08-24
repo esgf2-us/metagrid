@@ -1,6 +1,6 @@
 import { ReactKeycloakProvider } from '@react-keycloak/web';
 import { render, RenderResult } from '@testing-library/react';
-import { KeycloakInstance } from 'keycloak-js';
+import Keycloak from 'keycloak-js';
 import React, { ComponentType } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { RecoilRoot } from 'recoil';
@@ -8,28 +8,31 @@ import { AuthProvider } from '../contexts/AuthContext';
 import { keycloakProviderInitConfig } from '../lib/keycloak';
 import { ReactJoyrideProvider } from '../contexts/ReactJoyrideContext';
 
-export const createKeycloakStub = (): KeycloakInstance => ({
-  // Optional
-  authenticated: false,
-  userInfo: {},
-  // Required
-  accountManagement: jest.fn(),
-  clearToken: jest.fn(),
-  createAccountUrl: jest.fn(),
-  createLoginUrl: jest.fn(),
-  createLogoutUrl: jest.fn(),
-  createRegisterUrl: jest.fn(),
-  isTokenExpired: jest.fn(),
-  hasRealmRole: jest.fn(),
-  hasResourceRole: jest.fn(),
-  init: jest.fn().mockResolvedValue(true),
-  loadUserInfo: jest.fn(),
-  loadUserProfile: jest.fn(),
-  login: jest.fn(),
-  logout: jest.fn(),
-  register: jest.fn(),
-  updateToken: jest.fn(),
-});
+// export const createKeycloakStub = (): KeycloakInstance => ({
+//   // Optional
+//   authenticated: false,
+//   userInfo: {},
+//   // Required
+//   accountManagement: jest.fn(),
+//   clearToken: jest.fn(),
+//   createAccountUrl: jest.fn(),
+//   createLoginUrl: jest.fn(),
+//   createLogoutUrl: jest.fn(),
+//   createRegisterUrl: jest.fn(),
+//   isTokenExpired: jest.fn(),
+//   hasRealmRole: jest.fn(),
+//   hasResourceRole: jest.fn(),
+//   init: jest.fn().mockResolvedValue(true),
+//   loadUserInfo: jest.fn(),
+//   loadUserProfile: jest.fn(),
+//   login: jest.fn(),
+//   logout: jest.fn(),
+//   register: jest.fn(),
+//   updateToken: jest.fn(),
+// });
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+const keycloak = new Keycloak();
 
 type AllProvidersProps = {
   children: React.ReactNode;
@@ -45,12 +48,14 @@ type CustomOptions = {
  * https://testing-library.com/docs/example-react-context/
  */
 export const keycloakRender = (
-  ui: React.ReactElement,
-  options?: CustomOptions
+  ui: React.ReactElement
+  // options?: CustomOptions
 ): RenderResult =>
   render(
     <ReactKeycloakProvider
-      authClient={{ ...createKeycloakStub(), ...options }}
+      // authClient={{ ...createKeycloakStub(), ...options }}
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      authClient={keycloak}
       initOptions={keycloakProviderInitConfig}
     >
       {ui}
@@ -69,7 +74,9 @@ export const customRender = (
     return (
       <RecoilRoot>
         <ReactKeycloakProvider
-          authClient={{ ...createKeycloakStub(), ...options }}
+          // authClient={{ ...createKeycloakStub(), ...options }}
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          authClient={keycloak}
           initOptions={keycloakProviderInitConfig}
         >
           <AuthProvider>
