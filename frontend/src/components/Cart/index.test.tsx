@@ -1,11 +1,12 @@
-import { fireEvent, render, waitFor } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { MemoryRouter } from 'react-router-dom';
 import {
   userCartFixture,
   userSearchQueriesFixture,
 } from '../../api/mock/fixtures';
 import Cart, { Props } from './index';
+import { customRender } from '../../test/custom-render';
 
 const defaultProps: Props = {
   userCart: userCartFixture(),
@@ -15,6 +16,8 @@ const defaultProps: Props = {
   onRunSearchQuery: jest.fn(),
   onRemoveSearchQuery: jest.fn(),
 };
+
+const user = userEvent.setup();
 
 let mockNavigate: () => void;
 beforeEach(() => {
@@ -36,11 +39,7 @@ afterEach(() => {
 });
 
 it('handles tab switching and saved search actions', async () => {
-  const { getByRole, getByTestId } = render(
-    <MemoryRouter>
-      <Cart {...defaultProps} />
-    </MemoryRouter>
-  );
+  const { getByRole, getByTestId } = customRender(<Cart {...defaultProps} />);
 
   // Check cart tab renders
   const cart = await waitFor(() => getByTestId('cart'));
@@ -54,12 +53,12 @@ it('handles tab switching and saved search actions', async () => {
     })
   );
   expect(searchLibraryTab).toBeTruthy();
-  fireEvent.click(searchLibraryTab);
+  await user.click(searchLibraryTab);
 
   // Check JSON link renders and click it
   const jsonLink = await waitFor(() => getByRole('link'));
   expect(jsonLink).toBeTruthy();
-  fireEvent.click(jsonLink);
+  await user.click(jsonLink);
 
   // Wait for cart to re-render
   await waitFor(() => getByTestId('cart'));
@@ -68,7 +67,7 @@ it('handles tab switching and saved search actions', async () => {
     getByRole('img', { name: 'search', hidden: true })
   );
   expect(applyBtn).toBeTruthy();
-  fireEvent.click(applyBtn);
+  await user.click(applyBtn);
 
   // Wait for cart to re-render
   await waitFor(() => getByTestId('cart'));
@@ -78,5 +77,5 @@ it('handles tab switching and saved search actions', async () => {
     getByRole('img', { name: 'delete', hidden: true })
   );
   expect(deleteBtn).toBeTruthy();
-  fireEvent.click(deleteBtn);
+  await user.click(deleteBtn);
 });

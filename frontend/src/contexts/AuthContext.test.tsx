@@ -12,8 +12,7 @@ describe('test AuthProvider', () => {
         <div data-testid="authProvider">
           <p>renders</p>
         </div>
-      </AuthProvider>,
-      { token: 'token' }
+      </AuthProvider>
     );
 
     // Wait for render to get user auth info

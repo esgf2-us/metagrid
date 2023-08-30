@@ -27,7 +27,7 @@ import {
   TextInputs,
 } from '../components/Search/types';
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
-import { metagridApiURL, wgetApiURL, globusApiURL } from '../env';
+import { metagridApiURL } from '../env';
 import apiRoutes, { ApiRoute, HTTPCodeType } from './routes';
 
 export interface ResponseError extends Error {
@@ -526,52 +526,47 @@ export const fetchDatasetFiles = async (
       );
     });
 };
+
+const returnFileToUser = (fileContent: string): void => {
+  const d = new Date();
+  const fileName = `wget_script_${d.getFullYear()}-${
+    d.getMonth() + 1
+  }-${d.getDate()}_${d.getHours()}-${d.getMinutes()}-${d.getSeconds()}.sh`;
+  const downloadLinkNode = document.createElement('a');
+  downloadLinkNode.setAttribute(
+    'href',
+    `data:text/plain;charset=utf-8,${encodeURIComponent(fileContent)}`
+  );
+  downloadLinkNode.setAttribute('download', fileName);
+
+  downloadLinkNode.style.display = 'none';
+  document.body.appendChild(downloadLinkNode);
+
+  downloadLinkNode.click();
+
+  document.body.removeChild(downloadLinkNode);
+};
+
 /**
- * Performs validation against the wget API to ensure a 200 response.
+ * Performs wget request from the API.
  *
- * If the API returns a 200, it returns the responseURL so the browser can open
- * the link.
  */
 export const fetchWgetScript = async (
   ids: string[] | string,
   simple_bool?: boolean,
   access_token?: string,
   filenameVars?: string[]
-): Promise<string> => {
-  let testurl = queryString.stringifyUrl({
-    url: apiRoutes.wget.path,
-    query: { dataset_id: ids },
-  });
+): Promise<void> => {
+  const data = {
+    dataset_id: ids,
+    simple: simple_bool,
+    bearer_token: access_token,
+    query: filenameVars,
+  };
 
-  let url = '';
-  if (access_token) {
-    url = queryString.stringifyUrl({
-      url: `${wgetApiURL}`,
-      query: {
-        dataset_id: ids,
-        simple: simple_bool,
-        bearer_token: access_token,
-      },
-    });
-  } else {
-    url = queryString.stringifyUrl({
-      url: `${wgetApiURL}`,
-      query: { dataset_id: ids, simple: simple_bool },
-    });
-  }
-  if (filenameVars && filenameVars.length > 0) {
-    const filenameVarsParam = queryString.stringify(
-      { query: filenameVars },
-      {
-        arrayFormat: 'comma',
-      }
-    );
-    url += `&${filenameVarsParam}`;
-    testurl += `&${filenameVarsParam}`;
-  }
   return axios
-    .get(testurl)
-    .then(() => url)
+    .post(apiRoutes.wget.path, data)
+    .then((resp) => returnFileToUser(resp.data as string))
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.wget));
     });
@@ -580,37 +575,22 @@ export const fetchWgetScript = async (
 export const fetchGlobusScript = async (
   ids: string[] | string,
   filenameVars?: string[]
-): Promise<string> => {
-  let testurl = queryString.stringifyUrl({
-    url: apiRoutes.globus.path,
-    query: { dataset_id: ids },
-  });
-  let url = queryString.stringifyUrl({
-    url: globusApiURL,
-    query: { dataset_id: ids },
-  });
-  if (filenameVars && filenameVars.length > 0) {
-    const filenameVarsParam = queryString.stringify(
-      { query: filenameVars },
-      {
-        arrayFormat: 'comma',
-      }
-    );
-    url += `&${filenameVarsParam}`;
-    testurl += `&${filenameVarsParam}`;
-  }
-  return axios
-    .get(testurl)
-    .then(() => url)
-    .catch((error: ResponseError) => {
-      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globus));
-    });
+): Promise<void> => {
+    const data = {
+      dataset_id: ids,
+      query: filenameVars,
+    };  
+    return axios
+      .post(apiRoutes.globus.path, data)
+      .then((resp) => returnFileToUser(resp.data as string))
+      .catch((error: ResponseError) => {
+        throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.wget));
+      });
 };
 
 export const loadSessionValue = async <T>(key: string): Promise<T | null> => {
-  const url = `${apiRoutes.tempStorage.path}/get`;
   return axios
-    .post(url, { dataKey: key })
+    .post(apiRoutes.tempStorageGet.path, { dataKey: key })
     .then((resp: AxiosResponse) => {
       const { data } = resp;
       if (data && key in data) {
@@ -625,7 +605,7 @@ export const loadSessionValue = async <T>(key: string): Promise<T | null> => {
     })
     .catch((error: ResponseError) => {
       throw new Error(
-        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.tempStorage)
+        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.tempStorageGet)
       );
     });
 };
@@ -634,8 +614,6 @@ export const saveSessionValue = async <T>(
   key: string,
   value: T
 ): Promise<AxiosResponse> => {
-  const url = `${apiRoutes.tempStorage.path}/set`;
-
   let data: { dataKey: string; dataValue: T | string } = {
     dataKey: key,
     dataValue: 'None',
@@ -644,13 +622,13 @@ export const saveSessionValue = async <T>(
     data = { ...data, dataValue: value };
   }
   return axios
-    .post(url, JSON.stringify(data))
+    .post(apiRoutes.tempStorageSet.path, JSON.stringify(data))
     .then((resp) => {
       return resp.data;
     })
     .catch((error: ResponseError) => {
       throw new Error(
-        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.tempStorage)
+        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.tempStorageSet)
       );
     });
 };

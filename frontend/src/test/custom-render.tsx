@@ -3,10 +3,35 @@ import { render, RenderResult } from '@testing-library/react';
 import Keycloak from 'keycloak-js';
 import React, { ComponentType } from 'react';
 import { MemoryRouter } from 'react-router-dom';
+import { RecoilRoot } from 'recoil';
 import { AuthProvider } from '../contexts/AuthContext';
 import { keycloakProviderInitConfig } from '../lib/keycloak';
+import { ReactJoyrideProvider } from '../contexts/ReactJoyrideContext';
 
-// @ts-ignore
+// export const createKeycloakStub = (): KeycloakInstance => ({
+//   // Optional
+//   authenticated: false,
+//   userInfo: {},
+//   // Required
+//   accountManagement: jest.fn(),
+//   clearToken: jest.fn(),
+//   createAccountUrl: jest.fn(),
+//   createLoginUrl: jest.fn(),
+//   createLogoutUrl: jest.fn(),
+//   createRegisterUrl: jest.fn(),
+//   isTokenExpired: jest.fn(),
+//   hasRealmRole: jest.fn(),
+//   hasResourceRole: jest.fn(),
+//   init: jest.fn().mockResolvedValue(true),
+//   loadUserInfo: jest.fn(),
+//   loadUserProfile: jest.fn(),
+//   login: jest.fn(),
+//   logout: jest.fn(),
+//   register: jest.fn(),
+//   updateToken: jest.fn(),
+// });
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const keycloak = new Keycloak();
 
 type AllProvidersProps = {
@@ -23,11 +48,13 @@ type CustomOptions = {
  * https://testing-library.com/docs/example-react-context/
  */
 export const keycloakRender = (
-  ui: React.ReactElement,
-  options?: CustomOptions
+  ui: React.ReactElement
+  // options?: CustomOptions
 ): RenderResult =>
   render(
     <ReactKeycloakProvider
+      // authClient={{ ...createKeycloakStub(), ...options }}
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       authClient={keycloak}
       initOptions={keycloakProviderInitConfig}
     >
@@ -45,16 +72,20 @@ export const customRender = (
 ): RenderResult => {
   function AllProviders({ children }: AllProvidersProps): React.ReactElement {
     return (
-      <ReactKeycloakProvider
-        authClient={keycloak}
-        initOptions={keycloakProviderInitConfig}
-      >
-        <AuthProvider>
-          <MemoryRouter basename={process.env.PUBLIC_URL}>
-            {children}
-          </MemoryRouter>
-        </AuthProvider>
-      </ReactKeycloakProvider>
+      <RecoilRoot>
+        <ReactKeycloakProvider
+          // authClient={{ ...createKeycloakStub(), ...options }}
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          authClient={keycloak}
+          initOptions={keycloakProviderInitConfig}
+        >
+          <AuthProvider>
+            <MemoryRouter basename={process.env.PUBLIC_URL}>
+              <ReactJoyrideProvider>{children}</ReactJoyrideProvider>
+            </MemoryRouter>
+          </AuthProvider>
+        </ReactKeycloakProvider>
+      </RecoilRoot>
     );
   }
 
@@ -70,11 +101,20 @@ export const getRowName = (
   title: string,
   fileCount: string,
   totalSize: string,
-  version: string
-): string => {
+  version: string,
+  globusReady?: boolean
+): RegExp => {
   let totalBytes = `${totalSize} Bytes`;
   if (Number.isNaN(Number(totalSize))) {
     totalBytes = totalSize;
   }
-  return `right-circle ${cartButton} ${nodeCircleType}-circle ${title} ${fileCount} ${totalBytes} ${version} wget download`;
+  let globusReadyCheck = '.*';
+  if (globusReady !== undefined) {
+    globusReadyCheck = globusReady ? 'check-circle' : 'close-circle';
+  }
+  const newRegEx = new RegExp(
+    `right-circle ${cartButton} ${nodeCircleType}-circle ${title} ${fileCount} ${totalBytes} ${version} wget download ${globusReadyCheck}`
+  );
+
+  return newRegEx;
 };

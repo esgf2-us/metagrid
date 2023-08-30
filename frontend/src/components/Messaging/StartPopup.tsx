@@ -47,10 +47,10 @@ const getMessageTemplate = (
   }
 };
 
-const StartPopup: React.FC = () => {
+const StartPopup: React.FC<React.PropsWithChildren<unknown>> = () => {
   const startData = messageDisplayData;
   // Startup visibility
-  const [visible, setVisible] = React.useState<boolean>(false);
+  const [open, setVisible] = React.useState<boolean>(false);
   const [title, setTitle] = React.useState<JSX.Element>(<></>);
   const [style, setStyle] = React.useState<CSSProperties>();
 
@@ -95,7 +95,7 @@ const StartPopup: React.FC = () => {
   return (
     <div data-testid="startup-window">
       <Modal
-        visible={visible}
+        open={open}
         title={title}
         closeText="Close"
         onClose={hideMessage}

@@ -87,7 +87,7 @@ export type Props = {
 
 const metagridVersion: string = startupDisplayData.messageToShow;
 
-const App: React.FC<Props> = ({ searchQuery }) => {
+const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   // Third-party tool integration
   useHotjar();
 
@@ -661,7 +661,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           ></Button>
         </Affix>
         <Support
-          visible={supportModalVisible}
+          open={supportModalVisible}
           onClose={() => setSupportModalVisible(false)}
         />
         <StartPopup />

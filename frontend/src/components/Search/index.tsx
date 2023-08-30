@@ -146,7 +146,7 @@ export type Props = {
   onShareSearchQuery: () => void;
 };
 
-const Search: React.FC<Props> = ({
+const Search: React.FC<React.PropsWithChildren<Props>> = ({
   activeSearchQuery,
   userCart,
   nodeStatus,

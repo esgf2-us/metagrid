@@ -9,13 +9,13 @@ clearTables='--clear'
 localDockerCompose='docker-compose.yml'
 prodDockerCompose='docker-compose.prod.yml'
 localPostgres='postgres'
-prodPostgres='backend_postgres_1'
+prodPostgres='backend-postgres-1'
 dockerCompose=$prodDockerCompose
 postgres=$prodPostgres
 useSudo=''
 
 #Check whether to run in production or local
-containerName=$(docker ps --format "table {{.Names}}" | grep -e "postgres" -e "backend_postgres_1")
+containerName=$(docker ps --format "table {{.Names}}" | grep -e "postgres" -e "backend-postgres-1")
 
 if [[ "$containerName" == "$localPostgres" ]]; then
     echo "---LOCAL ENVIRONMENT UPDATE---"

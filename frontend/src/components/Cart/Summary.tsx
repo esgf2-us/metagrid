@@ -31,7 +31,7 @@ export type Props = {
   userCart: UserCart | [];
 };
 
-const Summary: React.FC<Props> = ({ userCart }) => {
+const Summary: React.FC<React.PropsWithChildren<Props>> = ({ userCart }) => {
   const [taskItems, setTaskItems] = useRecoilState<GlobusTaskItem[]>(
     globusTaskItems
   );

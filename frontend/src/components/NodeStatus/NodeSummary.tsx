@@ -20,7 +20,9 @@ export type Props = {
   nodeStatus?: NodeStatusArray;
 };
 
-const NodeSummary: React.FC<Props> = ({ nodeStatus }) => {
+const NodeSummary: React.FC<React.PropsWithChildren<Props>> = ({
+  nodeStatus,
+}) => {
   type NodeStat = number | string;
 
   let numNodes: NodeStat = 'N/A';
