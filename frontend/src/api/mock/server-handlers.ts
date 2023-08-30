@@ -22,6 +22,18 @@ const handlers = [
   rest.post(apiRoutes.keycloakAuth.path, (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(userAuthFixture()))
   ),
+  rest.post(apiRoutes.globusAuth.path, (_req, res, ctx) =>
+    res(ctx.status(200), ctx.json(userAuthFixture()))
+  ),
+  rest.post(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
+    res(ctx.status(200), ctx.json(userAuthFixture()))
+  ),
+  rest.post(apiRoutes.tempStorageGet.path, (_req, res, ctx) => {
+    res(ctx.status(200), ctx.json({ dataValue: 'testValue' }));
+  }),
+  rest.post(apiRoutes.tempStorageSet.path, (_req, res, ctx) =>
+    res(ctx.status(200), ctx.json({ dataKey: 'test', dataValue: 'value' }))
+  ),
   rest.get(apiRoutes.userInfo.path, (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(userInfoFixture()))
   ),
@@ -85,7 +97,8 @@ const handlers = [
 
     return res(ctx.status(200), ctx.json(rawCitationFixture()));
   }),
-  rest.get(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(200))),
+  rest.post(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(200))),
+  rest.post(apiRoutes.globus.path, (_req, res, ctx) => res(ctx.status(200))),
   rest.get(apiRoutes.nodeStatus.path, (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(rawNodeStatusFixture()))
   ),

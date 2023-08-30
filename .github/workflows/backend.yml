@@ -17,9 +17,11 @@ env:
   KEYCLOAK_REALM: metagrid
   KEYCLOAK_CLIENT_ID: backend
   DATABASE_URL: pgsql://postgres:postgres@localhost:5432/postgres
-  REACT_APP_SEARCH_URL: https://esgf-node.llnl.gov/esg-search/search
-  REACT_APP_WGET_API_URL: https://esgf-node.llnl.gov/esg-search/wget
+  REACT_APP_ESGF_NODE_URL: https://esgf-node.llnl.gov/esg-search/search
+  REACT_APP_WGET_API_URL: https://greyworm1-rh7.llnl.gov/wget
+  REACT_APP_GLOBUS_SCRIPT_URL: https://greyworm1-rh7.llnl.gov/globusscript
   REACT_APP_ESGF_NODE_STATUS_URL: https://aims2.llnl.gov/metagrid-backend/proxy/status
+  REACT_APP_ESGF_SOLR_URL: https://esgf-fedtest.llnl.gov/solr
 
 jobs:
   build:
@@ -27,7 +29,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:11.6
+        image: postgres:12.6
         env:
           POSTGRES_PASSWORD: postgres
         ports:

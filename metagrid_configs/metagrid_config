@@ -1,7 +1,12 @@
 # =====================TREAFIK CONFIG=====================
+<<<<<<< HEAD
+DOMAIN_NAME=
+=======
+
 DOMAIN_NAME=example.com
+>>>>>>> integration-keycloak
 PUBLIC_URL=
-PREVIOUS_URL=metagrid
+REACT_APP_PREVIOUS_URL=metagrid
 DOMAIN_SUBDIRECTORY=metagrid-backend
 
 # =====================BACKEND CONFIG====================
@@ -21,7 +26,7 @@ CORS_ORIGIN_WHITELIST=https://localhost:3000
 # django-all-auth
 KEYCLOAK_URL=
 KEYCLOAK_REALM=
-KEYCLOAK_CLIENT_ID=
+KEYCLOAK_CLIENT_ID=metagrid-backend
 
 # postgress
 POSTGRES_HOST=postgres
@@ -32,20 +37,33 @@ POSTGRES_PASSWORD=postgres
 
 # =====================FRONTEND CONFIG====================
 
-# Redirect the frontend to home page when old subdirectory is used (optional)
-REACT_APP_PREVIOUS_URL=
-
 # MetaGrid API
 # https://github.com/aims-group/metagrid/tree/master/backend
 REACT_APP_METAGRID_API_URL=
 
+# Globus
+REACT_APP_GLOBUS_REDIRECT=http://localhost:3000/cart/items
+REACT_APP_CLIENT_ID=7fa7ac4a-a051-4b26-836f-b292b5c5b268
+REACT_APP_GLOBUS_NODES=
+
 # ESGF wget API
 # https://github.com/ESGF/esgf-wget
 REACT_APP_WGET_API_URL=
+<<<<<<< HEAD
+REACT_APP_GLOBUS_SCRIPT_URL=
 
 # ESGF Search API
 # https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
+REACT_APP_ESGF_NODE_URL=
+=======
+
+# ESGF Search API
+# https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
+REACT_APP_ESGF_NODE_URL=https://esgf-fedtest.llnl.gov/esg-search/search
+
+# https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
 REACT_APP_SEARCH_URL=
+>>>>>>> integration-keycloak
 
 # ESGF Node Status API
 # https://github.com/ESGF/esgf-utils/blob/master/node_status/query_prom.py
@@ -55,12 +73,14 @@ REACT_APP_ESGF_NODE_STATUS_URL=
 # https://github.com/keycloak/keycloak
 REACT_APP_KEYCLOAK_URL=
 REACT_APP_KEYCLOAK_REALM=
-REACT_APP_KEYCLOAK_CLIENT_ID=
+REACT_APP_KEYCLOAK_CLIENT_ID=metagrid-frontend
 
 # react-hotjar
 # https://github.com/abdalla/react-hotjar
 REACT_APP_HOTJAR_ID=
 REACT_APP_HOTJAR_SV=
+
+
 
 # react-ga
 # https://github.com/react-ga/react-ga

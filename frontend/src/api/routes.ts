@@ -31,6 +31,8 @@ export type ApiRoute = {
 
 type ApiRoutes = {
   keycloakAuth: ApiRoute;
+  globusAuth: ApiRoute;
+  globusTransfer: ApiRoute;
   userInfo: ApiRoute;
   userCart: ApiRoute;
   userSearches: ApiRoute;
@@ -39,7 +41,10 @@ type ApiRoutes = {
   esgfSearch: ApiRoute;
   citation: ApiRoute;
   wget: ApiRoute;
+  globus: ApiRoute;
   nodeStatus: ApiRoute;
+  tempStorageGet: ApiRoute;
+  tempStorageSet: ApiRoute;
 };
 
 /**
@@ -56,6 +61,15 @@ const apiRoutes: ApiRoutes = {
   keycloakAuth: {
     path: `${metagridApiURL}/dj-rest-auth/keycloak`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Keycloak', HTTPCode),
+  },
+  globusAuth: {
+    path: `${metagridApiURL}/globus/auth`,
+    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Globus', HTTPCode),
+  },
+  globusTransfer: {
+    path: `${metagridApiURL}/globus/transfer`,
+    handleErrorMsg: (HTTPCode) =>
+      mapHTTPErrorCodes('Globus transfer', HTTPCode),
   },
   userInfo: {
     path: `${metagridApiURL}/dj-rest-auth/user/`,
@@ -94,16 +108,31 @@ const apiRoutes: ApiRoutes = {
     handleErrorMsg: (HTTPCode) =>
       mapHTTPErrorCodes('ESGF Citation API', HTTPCode),
   },
-  // ESGF wget API
+  // ESGF wget API, GLobus
   wget: {
     path: `${metagridApiURL}/proxy/wget`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('ESGF wget API', HTTPCode),
+  },
+  globus: {
+    path: `${metagridApiURL}/proxy/globus_script`,
+    handleErrorMsg: (HTTPCode) =>
+      mapHTTPErrorCodes('ESGF Globus script API', HTTPCode),
   },
   // ESGF Node Status API
   nodeStatus: {
     path: `${metagridApiURL}/proxy/status`,
     handleErrorMsg: (HTTPCode) =>
       mapHTTPErrorCodes('ESGF Node Status API', HTTPCode),
+  },
+  tempStorageGet: {
+    path: `${metagridApiURL}/tempStorage/get`,
+    handleErrorMsg: (HTTPCode) =>
+      mapHTTPErrorCodes('Temp Storage Get', HTTPCode),
+  },
+  tempStorageSet: {
+    path: `${metagridApiURL}/tempStorage/set`,
+    handleErrorMsg: (HTTPCode) =>
+      mapHTTPErrorCodes('Temp Storage Set', HTTPCode),
   },
 };
 

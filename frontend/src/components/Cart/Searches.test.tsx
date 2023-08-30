@@ -1,7 +1,7 @@
-import { render } from '@testing-library/react';
 import React from 'react';
 import { userSearchQueriesFixture } from '../../api/mock/fixtures';
 import Searches, { Props } from './Searches';
+import { customRender } from '../../test/custom-render';
 
 afterEach(() => {
   jest.clearAllMocks();
@@ -14,7 +14,7 @@ const defaultProps: Props = {
 };
 
 it('renders component with empty savedSearches', () => {
-  const { getByText } = render(
+  const { getByText } = customRender(
     <Searches {...defaultProps} userSearchQueries={[]} />
   );
 

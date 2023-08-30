@@ -12,7 +12,16 @@ from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 from rest_framework.routers import DefaultRouter
 
-from metagrid.api_proxy.views import do_citation, do_search, do_status, do_wget
+from metagrid.api_globus.views import do_globus_transfer, get_access_token
+from metagrid.api_proxy.views import (
+    do_citation,
+    do_globus_script,
+    do_search,
+    do_status,
+    do_wget,
+    get_temp_storage,
+    set_temp_storage,
+)
 from metagrid.cart.views import CartViewSet, SearchViewSet
 from metagrid.projects.views import ProjectsViewSet
 from metagrid.users.views import UserCreateViewSet, UserViewSet
@@ -50,9 +59,14 @@ urlpatterns = [
     path("proxy/citation", do_citation, name="do-citation"),
     path("proxy/wget", do_wget, name="do-wget"),
     path("proxy/status", do_status, name="do-status"),
+    path("proxy/globus_script", do_globus_script, name="do-globusscript"),
     path(
         "dj-rest-auth/keycloak", KeycloakLogin.as_view(), name="keycloak_login"
     ),
+    path("tempStorage/get", get_temp_storage, name="temp_storage_get"),
+    path("tempStorage/set", set_temp_storage, name="temp_storage_set"),
+    path("globus/auth", get_access_token, name="globus_auth"),
+    path("globus/transfer", do_globus_transfer, name="globus_transfer"),
     re_path(
         r"^account-confirm-email/",
         VerifyEmailView.as_view(),

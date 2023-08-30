@@ -4,16 +4,30 @@
 REACT_APP_PREVIOUS_URL=/metagrid
 
 # MetaGrid API
+
+# Globus
+# ------------------------------------------------------------------------------
+REACT_APP_GLOBUS_REDIRECT=http://localhost:3000/cart/items
+REACT_APP_CLIENT_ID=7fa7ac4a-a051-4b26-836f-b292b5c5b268
+REACT_APP_GLOBUS_NODES=aims3.llnl.gov,esgf-data1.llnl.gov,esgf-data2.llnl.gov
+
+# ------------------------------------------------------------------------------
 # https://github.com/aims-group/metagrid/tree/master/backend
 REACT_APP_METAGRID_API_URL=http://localhost:8000
 
 # ESGF wget API
 # https://github.com/ESGF/esgf-wget
-REACT_APP_WGET_API_URL=https://esgf-node.llnl.gov/esg-search/wget
+REACT_APP_WGET_API_URL=https://greyworm1-rh7.llnl.gov/wget
+
+# ESGF Globus Script API
+REACT_APP_GLOBUS_API_URL=https://greyworm1-rh7.llnl.gov/globusscript
 
 # ESGF Search API
 # https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
-REACT_APP_ESGF_NODE_URL=https://esgf-node.llnl.gov
+REACT_APP_ESGF_NODE_URL=https://esgf-node.llnl.gov/esg-search/search
+
+# https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
+REACT_APP_ESGF_SOLR_URL=https://esgf-fedtest.llnl.gov/solr
 
 # ESGF Node Status API
 # https://github.com/ESGF/esgf-utils/blob/master/node_status/query_prom.py
@@ -21,9 +35,9 @@ REACT_APP_ESGF_NODE_STATUS_URL=https://aims4.llnl.gov/prometheus/api/v1/query?qu
 
 # Keycloak
 # https://github.com/keycloak/keycloak
-REACT_APP_KEYCLOAK_REALM=metagrid
-REACT_APP_KEYCLOAK_URL=http://keycloak:8080/auth
-REACT_APP_KEYCLOAK_CLIENT_ID=frontend
+REACT_APP_KEYCLOAK_REALM=esgf
+REACT_APP_KEYCLOAK_URL=https://login.esgf.io/
+REACT_APP_KEYCLOAK_CLIENT_ID=metagrid-localhost
 
 # react-hotjar
 # https://github.com/abdalla/react-hotjar

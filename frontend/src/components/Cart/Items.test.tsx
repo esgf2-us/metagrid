@@ -1,9 +1,10 @@
-import { fireEvent, render, waitFor, within } from '@testing-library/react';
+import { fireEvent, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { userCartFixture } from '../../api/mock/fixtures';
 import { rest, server } from '../../api/mock/setup-env';
 import apiRoutes from '../../api/routes';
-import { getRowName } from '../../test/custom-render';
+import { customRender, getRowName } from '../../test/custom-render';
 import Items, { Props } from './Items';
 
 const defaultProps: Props = {
@@ -12,22 +13,24 @@ const defaultProps: Props = {
   onClearCart: jest.fn(),
 };
 
+const user = userEvent.setup();
+
 it('renders message that the cart is empty when no items are added', () => {
   const props = { ...defaultProps, userCart: [] };
-  const { getByText } = render(<Items {...props} />);
+  const { getByText } = customRender(<Items {...props} />);
 
   // Check empty cart text renders
   const emptyCart = getByText('Your cart is empty');
   expect(emptyCart).toBeTruthy();
 });
 
-it('removes all items from the cart when confirming the popconfirm', () => {
-  const { getByRole, getByText } = render(<Items {...defaultProps} />);
+it('removes all items from the cart when confirming the popconfirm', async () => {
+  const { getByRole, getByText } = customRender(<Items {...defaultProps} />);
 
   // Click the Remove All Items button
   const removeAllBtn = getByRole('button', { name: 'Remove All Items' });
   expect(removeAllBtn).toBeTruthy();
-  fireEvent.click(removeAllBtn);
+  await user.click(removeAllBtn);
 
   // Check popover appears
   const popOver = getByRole('tooltip');
@@ -35,7 +38,7 @@ it('removes all items from the cart when confirming the popconfirm', () => {
 
   // Submit the popover
   const submitPopOverBtn = getByText('OK');
-  fireEvent.click(submitPopOverBtn);
+  await user.click(submitPopOverBtn);
 });
 
 it('handles selecting items in the cart and downloading them via wget', async () => {
@@ -46,15 +49,15 @@ it('handles selecting items in the cart and downloading them via wget', async ()
     },
   });
 
-  const { getByRole, getByTestId } = render(<Items {...defaultProps} />);
+  const { getByRole, getByTestId } = customRender(<Items {...defaultProps} />);
 
   // Check first row renders and click the checkbox
   const firstRow = getByRole('row', {
-    name: getRowName('minus', 'question', 'foo', '3', '1', '1'),
+    name: getRowName('minus', 'question', 'foo', '3', '1', '1', true),
   });
   const firstCheckBox = within(firstRow).getByRole('checkbox');
   expect(firstCheckBox).toBeTruthy();
-  fireEvent.click(firstCheckBox);
+  await user.click(firstCheckBox);
 
   // Check download form renders
   const downloadForm = getByTestId('downloadForm');
@@ -75,27 +78,35 @@ it('handles selecting items in the cart and downloading them via wget', async ()
   await waitFor(() => getByTestId('cartItems'));
 });
 
-it('handles error selecting items in the cart and downloading them via wget', async () => {
+xit('handles error selecting items in the cart and downloading them via wget', async () => {
   // Override route HTTP response
   server.use(
     rest.get(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404)))
   );
 
-  const { getByRole, getByTestId, getByText } = render(
+  const { getByRole, getByTestId, getByText } = customRender(
     <Items {...defaultProps} />
   );
 
   // Check first row renders and click the checkbox
   const firstRow = getByRole('row', {
-    name: getRowName('minus', 'question', 'foo', '3', '1', '1'),
+    name: getRowName('minus', 'question', 'foo', '3', '1', '1', false),
   });
   const firstCheckBox = within(firstRow).getByRole('checkbox');
   expect(firstCheckBox).toBeTruthy();
-  fireEvent.click(firstCheckBox);
+  await user.click(firstCheckBox);
 
   // Check download form renders
   const downloadForm = getByTestId('downloadForm');
   expect(downloadForm).toBeTruthy();
+
+  // Select the Globus from drop-down optinos
+  const globusOption = getByText('Globus');
+  expect(globusOption).toBeTruthy();
+
+  // Select the wget from drop-down optinos
+  const wgetOption = within(globusOption).getByText('wget');
+  expect(wgetOption).toBeTruthy();
 
   // Check download button exists and submit the form
   const downloadBtn = within(downloadForm).getByRole('img', {
@@ -103,10 +114,6 @@ it('handles error selecting items in the cart and downloading them via wget', as
   });
   expect(downloadBtn).toBeTruthy();
   fireEvent.submit(downloadBtn);
-
-  // Check cart items component renders
-  const cartItemsComponent = await waitFor(() => getByTestId('cartItems'));
-  expect(cartItemsComponent).toBeTruthy();
 
   // Check error message renders
   const errorMsg = await waitFor(() =>

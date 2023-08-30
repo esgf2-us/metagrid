@@ -37,7 +37,7 @@ export type Props = {
   onSetActiveFacets: (activeFacets: ActiveFacets) => void;
 };
 
-const Facets: React.FC<Props> = ({
+const Facets: React.FC<React.PropsWithChildren<Props>> = ({
   activeSearchQuery,
   availableFacets,
   nodeStatus,
@@ -80,7 +80,7 @@ const Facets: React.FC<Props> = ({
       className={leftSidebarTargets.leftSideBar.class()}
     >
       <h3>Select a Project</h3>
-      <div data-testid="projectForm">
+      <div data-testid="project-form">
         <ProjectForm
           activeSearchQuery={activeSearchQuery}
           projectsFetched={data}

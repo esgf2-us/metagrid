@@ -18,11 +18,14 @@ import {
 import Modal from '../Feedback/Modal';
 
 export type Props = {
-  visible: boolean;
+  open: boolean;
   onClose: () => void;
 };
 
-const Support: React.FC<Props> = ({ visible, onClose }) => {
+const Support: React.FC<React.PropsWithChildren<Props>> = ({
+  open,
+  onClose,
+}) => {
   // Tutorial state
   const tourState: RawTourState = React.useContext(ReactJoyrideContext);
   const { setTour, startTour, setCurrentAppPage } = tourState;
@@ -58,7 +61,7 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
     <>
       <div data-testid="support-form">
         <Modal
-          visible={visible}
+          open={open}
           closeText="Close Support"
           title={
             <div>
@@ -76,6 +79,13 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
                   target="_blank"
                 >
                   https://esgf.github.io/esgf-user-support/metagrid.html
+                </a>
+              </p>
+              <p style={{ fontSize: '14px' }}>
+                If you need help on Globus Transfers, please visit this page for
+                more information:
+                <a href="https://app.globus.org/help">
+                  https://app.globus.org/help
                 </a>
               </p>
               <div>

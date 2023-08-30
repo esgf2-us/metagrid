@@ -113,6 +113,14 @@ export const parsedFacetsFixture = (
 
 export const userCartFixture = (): UserCart => rawSearchResultsFixture();
 
+export const tempStorageGetMock = (key: string): string | null => {
+  return window.localStorage.getItem(key);
+};
+
+export const tempStorageSetMock = (key: string, value: string): void => {
+  window.localStorage.setItem(key, value);
+};
+
 export const rawCitationFixture = (
   props: Partial<RawCitation> = {}
 ): RawCitation => {

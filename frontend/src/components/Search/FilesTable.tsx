@@ -6,7 +6,7 @@ import {
   RightCircleOutlined,
   ShareAltOutlined,
 } from '@ant-design/icons';
-import { Alert, Form, message, Table as TableD } from 'antd';
+import { Alert, Form, Table as TableD, Tooltip } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
@@ -14,8 +14,12 @@ import { DeferFn, useAsync } from 'react-async';
 import { fetchDatasetFiles, openDownloadURL } from '../../api';
 import { innerDataRowTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
-import { formatBytes, splitStringByChar } from '../../common/utils';
-import ToolTip from '../DataDisplay/ToolTip';
+import {
+  formatBytes,
+  showError,
+  showNotice,
+  splitStringByChar,
+} from '../../common/utils';
 import Button from '../General/Button';
 import {
   Pagination,
@@ -77,7 +81,11 @@ export type Props = {
   filenameVars?: TextInputs | [];
 };
 
-const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
+const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
+  id,
+  numResults = 0,
+  filenameVars,
+}) => {
   // Add options to this constant as needed.
   // This variable populates the download drop downs and is used in conditionals.
   const metadataKeysToDisplay = [
@@ -181,9 +189,9 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
         expanded ? (
           <DownCircleOutlined onClick={(e) => onExpand(record, e)} />
         ) : (
-          <ToolTip title="View this file's metadata" trigger="hover">
+          <Tooltip title="View this file's metadata" trigger="hover">
             <RightCircleOutlined onClick={(e) => onExpand(record, e)} />
-          </ToolTip>
+          </Tooltip>
         ),
     },
   };
@@ -226,7 +234,7 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
               onFinish={() => openDownloadURL(downloadUrls.HTTPServer)}
               initialValues={{ download: downloadUrls.HTTPServer }}
             >
-              <ToolTip title="Download the data file via Http." trigger="hover">
+              <Tooltip title="Download the data file via Http." trigger="hover">
                 <Form.Item
                   className={innerDataRowTargets.downloadDataBtn.class()}
                 >
@@ -236,9 +244,9 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
                     icon={<DownloadOutlined />}
                   ></Button>
                 </Form.Item>
-              </ToolTip>
+              </Tooltip>
               {downloadUrls.OPENDAP !== '' && (
-                <ToolTip
+                <Tooltip
                   title="Copy a shareable OPENDAP URL to the clipboard."
                   trigger="hover"
                 >
@@ -250,13 +258,10 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
                         if (navigator && navigator.clipboard) {
                           void navigator.clipboard
                             .writeText(downloadUrls.OPENDAP)
-                            .catch(
-                              (e: PromiseRejectedResult) =>
-                                // eslint-disable-next-line
-                                void message.error(e.reason)
-                            );
-                          void message.success({
-                            content: 'OPENDAP URL copied to clipboard!',
+                            .catch((e: PromiseRejectedResult) => {
+                              showError(e.reason as string);
+                            });
+                          showNotice('OPENDAP URL copied to clipboard!', {
                             icon: (
                               <ShareAltOutlined style={styles.messageAddIcon} />
                             ),
@@ -266,7 +271,7 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
                       icon={<CopyOutlined />}
                     ></Button>
                   </Form.Item>
-                </ToolTip>
+                </Tooltip>
               )}
             </Form>
           </span>
