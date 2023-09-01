@@ -9,7 +9,7 @@ mypy==1.5.1  # https://github.com/python/mypy
 
 # Testing
 # ------------------------------------------------------------------------------
-django-stubs==1.15.0  # https://github.com/typeddjango/django-stubs
+django-stubs==4.2.3  # https://github.com/typeddjango/django-stubs
 pytest==7.2.1  # https://github.com/pytest-dev/pytest
 pytest-cov==4.0.0  # https://github.com/pytest-dev/pytest-cov
 pytest-django==4.5.2  # https://github.com/pytest-dev/pytest-django
