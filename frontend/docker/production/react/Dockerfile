@@ -14,7 +14,12 @@ RUN --mount=type=cache,target=/usr/local/share/.cache/yarn \
 	yarn install --frozen-lock-file --network-timeout=1000000
 
 # Add app
-COPY . ./
+COPY src ./src
+COPY tsconfig.json ./
+COPY public ./public
+COPY .eslintrc.js ./
+COPY .prettierignore ./
+COPY .prettierrc ./
 RUN yarn build:production
 
 # Build production environment
