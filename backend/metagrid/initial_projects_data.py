@@ -65,6 +65,36 @@ projects = [
         },
     },
     {
+        "name": "CMIP6Plus",
+        "full_name": "Coupled Model Intercomparison Project Phase 6 Plus",
+        "project_url": "https://pcmdi.llnl.gov/CMIP6",
+        "description": "Follow-up to CMIP6 with closely matching configuration. Description of CMIP6 Plus needed."
+        "facets_by_group": {
+            GROUPS[0]: ["activity_id", "data_node"],
+            GROUPS[1]: [
+                "source_id",
+                "institution_id",
+                "source_type",
+                "experiment_id",
+                "sub_experiment_id",
+            ],
+            GROUPS[2]: [
+                "nominal_resolution",
+            ],
+            GROUPS[3]: [
+                "variant_label",
+                "grid_label",
+            ],
+            GROUPS[4]: [
+                "table_id",
+                "frequency",
+                "realm",
+                "variable_id",
+                "cf_standard_name",
+            ],
+        },
+    },
+    {
         "name": "CMIP5",
         "full_name": "Coupled Model Intercomparison Project Phase 5",
         "project_url": "https://www.wcrp-climate.org/wgcm-cmip/wgcm-cmip5/",
