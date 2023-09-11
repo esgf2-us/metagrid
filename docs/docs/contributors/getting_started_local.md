@@ -106,7 +106,7 @@ Open the project in a terminal and `cd backend`.
 This can take a while, especially the first time you run this particular command on your development system but subsequent runs will occur quickly:
 
 ```bash
-docker-compose -p metagrid_backend_dev up --build
+docker compose -p metagrid_backend_dev up --build
 ```
 
 ### 3.2 Additional Configuration
@@ -141,21 +141,21 @@ This user will be used for logging into registered Keycloak clients, including t
 
 #### Addressing Keycloak Boot Issue
 
-Keycloak has a known fatal issue where if it is interrupted during boot (stopping `docker-compose up` prematurely), the command that adds the admin user fails.
+Keycloak has a known fatal issue where if it is interrupted during boot (stopping `docker compose up` prematurely), the command that adds the admin user fails.
 
 As a result, the Keycloak docker service will not start and outputs the error **_"User with username 'admin' already..."_**.
 
 If you run into this problem, follow these workaround steps:
 
 1. Stop all back-end containers
-   `docker-compose -p metagrid_backend_dev down`
+   `docker compose -p metagrid_backend_dev down`
 2. Comment out the two relevant lines (`./backend/.envs/.local/.keycloak`)
 
    - `#KEYCLOAK_USER: admin`
    - `#KEYCLOAK_PASSWORD: pass`
 
 3. Rebuild and restart the containers
-   `docker-compose -p metagrid_backend_dev up --build`
+   `docker compose -p metagrid_backend_dev up --build`
 4. Un-do commenting
    - `KEYCLOAK_USER: admin`
    - `KEYCLOAK_PASSWORD: pass`
@@ -174,7 +174,7 @@ Open the project in a terminal and `cd frontend`.
 This can take a while, especially the first time you run this particular command on your development system but subsequent runs will occur quickly:
 
 ```bash
-docker-compose -p metagrid_frontend_dev up --build
+docker compose -p metagrid_frontend_dev up --build
 ```
 
 ### 4.2 Accessible Services

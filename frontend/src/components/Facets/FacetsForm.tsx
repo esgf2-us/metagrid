@@ -9,9 +9,11 @@ import {
   DatePicker,
   Form,
   Input,
+  Radio,
   Row,
   Select,
   Tooltip,
+  RadioChangeEvent,
 } from 'antd';
 import moment from 'moment';
 import React from 'react';
@@ -27,6 +29,7 @@ import {
   VersionType,
 } from '../Search/types';
 import { ActiveFacets, ParsedFacets } from './types';
+import { globusEnabledNodes } from '../../env';
 
 const styles: CSSinJS = {
   container: {
@@ -97,6 +100,7 @@ const FacetsForm: React.FC<Props> = ({
   const [availableFacetsForm] = Form.useForm();
   const [filenameVarForm] = Form.useForm();
   const [filenameVars, setFilenameVar] = React.useState('');
+  const [globusReadyOnly, setGlobusReadyOnly] = React.useState(false);
 
   // Manually handles the state of individual dropdowns to capture all selected
   // options as an array, rather than using the Form component to handle form
@@ -185,6 +189,23 @@ const FacetsForm: React.FC<Props> = ({
     setActiveDropdownValue([facet, options]);
   };
 
+  const handleOnGlobusReadyChanged = (event: RadioChangeEvent): void => {
+    const globusOnly = event.target.value as boolean;
+    setGlobusReadyOnly(globusOnly);
+
+    if (globusOnly) {
+      const newActiveFacets = activeSearchQuery.activeFacets as ActiveFacets;
+      onSetActiveFacets({
+        ...newActiveFacets,
+        dataNode: globusEnabledNodes,
+      } as ActiveFacets);
+    } else {
+      const newActiveFacets = activeSearchQuery.activeFacets as ActiveFacets;
+      delete newActiveFacets.dataNode;
+      onSetActiveFacets(newActiveFacets);
+    }
+  };
+
   /**
    * Need to reset the form fields when the active search query updates to
    * capture the correct number of facet counts per option
@@ -234,6 +255,33 @@ const FacetsForm: React.FC<Props> = ({
           ...activeSearchQuery.activeFacets,
         }}
       >
+        {globusEnabledNodes.length > 0 && (
+          <div className={leftSidebarTargets.filterByGlobusTransfer.class()}>
+            <h3>Filter By Transfer Options</h3>
+            <Row>
+              <Col>
+                <Radio.Group
+                  onChange={handleOnGlobusReadyChanged}
+                  value={globusReadyOnly}
+                >
+                  <Radio
+                    value={false}
+                    className={leftSidebarTargets.filterByGlobusTransferAny.class()}
+                  >
+                    Any
+                  </Radio>
+                  <Radio
+                    value
+                    className={leftSidebarTargets.filterByGlobusTransferOnly.class()}
+                  >
+                    Only Globus Transferrable
+                  </Radio>
+                </Radio.Group>
+              </Col>
+            </Row>
+            <br />
+          </div>
+        )}
         <Row justify="end" gutter={8}>
           <Col span={16}>
             <h3>Filter with Facets</h3>

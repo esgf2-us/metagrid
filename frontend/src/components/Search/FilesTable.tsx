@@ -6,7 +6,7 @@ import {
   RightCircleOutlined,
   ShareAltOutlined,
 } from '@ant-design/icons';
-import { Alert, Form, message, Table as TableD } from 'antd';
+import { Alert, Form, Table as TableD } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
@@ -14,7 +14,12 @@ import { DeferFn, useAsync } from 'react-async';
 import { fetchDatasetFiles, openDownloadURL } from '../../api';
 import { innerDataRowTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
-import { formatBytes, splitStringByChar } from '../../common/utils';
+import {
+  formatBytes,
+  showError,
+  showNotice,
+  splitStringByChar,
+} from '../../common/utils';
 import ToolTip from '../DataDisplay/ToolTip';
 import Button from '../General/Button';
 import {
@@ -250,13 +255,10 @@ const FilesTable: React.FC<Props> = ({ id, numResults = 0, filenameVars }) => {
                         if (navigator && navigator.clipboard) {
                           void navigator.clipboard
                             .writeText(downloadUrls.OPENDAP)
-                            .catch(
-                              (e: PromiseRejectedResult) =>
-                                // eslint-disable-next-line
-                                void message.error(e.reason)
-                            );
-                          void message.success({
-                            content: 'OPENDAP URL copied to clipboard!',
+                            .catch((e: PromiseRejectedResult) => {
+                              showError(e.reason as string);
+                            });
+                          showNotice('OPENDAP URL copied to clipboard!', {
                             icon: (
                               <ShareAltOutlined style={styles.messageAddIcon} />
                             ),

@@ -5,13 +5,13 @@ import {
   PlusOutlined,
   RightCircleOutlined,
 } from '@ant-design/icons';
-import { Form, message, Select, Table as TableD } from 'antd';
+import { Form, Select, Table as TableD } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
 import { fetchWgetScript, openDownloadURL, ResponseError } from '../../api';
 import { topDataRowTargets } from '../../common/reactJoyrideSteps';
-import { formatBytes } from '../../common/utils';
+import { formatBytes, showError, showNotice } from '../../common/utils';
 import { UserCart } from '../Cart/types';
 import ToolTip from '../DataDisplay/ToolTip';
 import Button from '../General/Button';
@@ -20,6 +20,8 @@ import { NodeStatusArray } from '../NodeStatus/types';
 import './Search.css';
 import Tabs from './Tabs';
 import { RawSearchResult, RawSearchResults, TextInputs } from './types';
+import GlobusToolTip from '../NodeStatus/GlobusToolTip';
+import { globusEnabledNodes } from '../../env';
 
 export type Props = {
   loading: boolean;
@@ -27,6 +29,7 @@ export type Props = {
   results: RawSearchResults | [];
   totalResults?: number;
   userCart: UserCart | [];
+  selections?: RawSearchResults | [];
   nodeStatus?: NodeStatusArray;
   filenameVars?: TextInputs | [];
   onUpdateCart: (item: RawSearchResults, operation: 'add' | 'remove') => void;
@@ -41,6 +44,7 @@ const Table: React.FC<Props> = ({
   results,
   totalResults,
   userCart,
+  selections,
   nodeStatus,
   filenameVars,
   onUpdateCart,
@@ -100,6 +104,7 @@ const Table: React.FC<Props> = ({
         ),
     },
     rowSelection: {
+      selectedRowKeys: selections?.map((item) => (item ? item.id : '')),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onSelect: (_record: any, _selected: any, selectedRows: any) => {
         /* istanbul ignore else */
@@ -164,7 +169,7 @@ const Table: React.FC<Props> = ({
     {
       title: '',
       dataIndex: 'data_node',
-      width: 20,
+      width: 35,
       render: (data_node: string) => (
         <div className={topDataRowTargets.nodeStatusIcon.class()}>
           <StatusToolTip nodeStatus={nodeStatus} dataNode={data_node} />
@@ -227,7 +232,7 @@ const Table: React.FC<Props> = ({
       ),
     },
     {
-      title: 'Download Script',
+      title: 'Download Options',
       key: 'download',
       width: 200,
       render: (record: RawSearchResult) => {
@@ -242,17 +247,16 @@ const Table: React.FC<Props> = ({
         ): void => {
           /* istanbul ignore else */
           if (downloadType === 'wget') {
-            // eslint-disable-next-line no-void
-            void message.success(
-              'The wget script is generating, please wait momentarily.'
+            showNotice(
+              'The wget script is generating, please wait momentarily.',
+              { type: 'info' }
             );
             fetchWgetScript(record.id, filenameVars)
               .then((url) => {
                 openDownloadURL(url);
               })
               .catch((error: ResponseError) => {
-                // eslint-disable-next-line no-void
-                void message.error(error.message);
+                showError(error.message);
               });
           }
         };
@@ -303,6 +307,22 @@ const Table: React.FC<Props> = ({
     },
   ];
 
+  if (globusEnabledNodes.length > 0) {
+    columns.push({
+      title: 'Globus Ready',
+      dataIndex: 'data_node',
+      width: 65,
+      render: (data_node: string) => (
+        <div
+          style={{ textAlign: 'center' }}
+          className={topDataRowTargets.globusReadyStatusIcon.class()}
+        >
+          <GlobusToolTip dataNode={data_node} />
+        </div>
+      ),
+    });
+  }
+
   return (
     <TableD
       {...tableConfig}
@@ -310,7 +330,7 @@ const Table: React.FC<Props> = ({
       dataSource={results}
       rowKey="id"
       size="small"
-      scroll={{ y: 'calc(100vh)' }}
+      scroll={{ x: '100%', y: 'calc(70vh)' }}
     />
   );
 };

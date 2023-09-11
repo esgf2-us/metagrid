@@ -7,6 +7,7 @@ import { RawSearchResults } from '../Search/types';
 import Items from './Items';
 import Searches from './Searches';
 import { UserSearchQueries, UserSearchQuery } from './types';
+import { NodeStatusArray } from '../NodeStatus/types';
 
 export type Props = {
   userCart: RawSearchResults | [];
@@ -15,6 +16,7 @@ export type Props = {
   onClearCart: () => void;
   onRunSearchQuery: (savedSearch: UserSearchQuery) => void;
   onRemoveSearchQuery: (uuid: string) => void;
+  nodeStatus?: NodeStatusArray;
 };
 
 const Cart: React.FC<Props> = ({
@@ -24,6 +26,7 @@ const Cart: React.FC<Props> = ({
   onClearCart,
   onRunSearchQuery,
   onRemoveSearchQuery,
+  nodeStatus,
 }) => {
   const [activeTab, setActiveTab] = React.useState<string>('items');
   const navigate = useNavigate();
@@ -58,6 +61,7 @@ const Cart: React.FC<Props> = ({
             userCart={userCart}
             onUpdateCart={onUpdateCart}
             onClearCart={onClearCart}
+            nodeStatus={nodeStatus}
           />
         </Tabs.TabPane>
 

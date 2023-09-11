@@ -59,13 +59,13 @@ Once you've finished the configuration, you will be ready to start the service c
 Using the manage_metagrid.sh script you can start or stop all or specific docker containers by selecting the appropriate option in the menu. If you wish to start or stop a container manually, you need to go to the specific service directory, for example the frontend or backend, the run the command below:
 
 ```bash
-docker-compose -f docker-compose.prod.yml up --build
+docker compose -f docker-compose.prod.yml up --build
 ```
 
 To run the stack and detach the containers, run:
 
 ```bash
-docker-compose -f docker-compose.prod.yml up --build -d
+docker compose -f docker-compose.prod.yml up --build -d
 ```
 
 ## Post Build Steps
@@ -96,7 +96,7 @@ You can read more about this feature and how to configure it, at [Automatic HTTP
 In production, you must apply Django migrations manually since they are not automatically applied to the database when you rebuild the docker-compose containers. To do so, with the backend docker container running, run the command below in the backend directory:
 
 ```bash
-docker-compose -f docker-compose.prod.yml run --rm django python manage.py migrate
+docker compose -f docker-compose.prod.yml run --rm django python manage.py migrate
 ```
 
 NOTE: If this step is skipped, you may see issues loading the project drop-down and search table results.
@@ -134,7 +134,7 @@ Otherwise if you wish to clear the tables and start fresh, then run:
 To run a command inside the docker container (front-end, backend, traefik) go to the appropriate directory and run:
 
 ```bash
-docker-compose -f docker-compose.prod.yml run --rm django [command]
+docker compose -f docker-compose.prod.yml run --rm django [command]
 ```
 
 ##### Creating a Superuser
@@ -142,7 +142,7 @@ docker-compose -f docker-compose.prod.yml run --rm django [command]
 With backend docker container running, run command below in the backend directory to create a superuser. Useful for logging into Django Admin page to manage the database.
 
 ```bash
-docker-compose -f docker-compose.prod.yml run --rm django python manage.py createsuperuser
+docker compose -f docker-compose.prod.yml run --rm django python manage.py createsuperuser
 ```
 
 ### 4. Supervisor
@@ -152,7 +152,7 @@ docker-compose -f docker-compose.prod.yml run --rm django python manage.py creat
 
 Once you are ready with your initial setup, you want to make sure that your application is run by a process manager to survive reboots and auto restarts in case of an error.
 
-Although we recommend using Supervisor, you can use the process manager you are most familiar with. All it needs to do is to run `docker-compose -f production.yml up --build` for `traefik`, `backend`, and `frontend`.
+Although we recommend using Supervisor, you can use the process manager you are most familiar with. All it needs to do is to run `docker compose -f production.yml up --build` for `traefik`, `backend`, and `frontend`.
 
 #### 4.1 Install Supervisor
 
@@ -192,7 +192,7 @@ The directory for where to store the `.ini` files vary based on the OS:
 
 ```ini
 [program:metagrid-traefik]
-command=docker-compose -f docker-compose.prod.yml up --build
+command=docker compose -f docker-compose.prod.yml up --build
 directory=/home/<username>/metagrid/traefik
 redirect_stderr=true
 autostart=true
@@ -204,7 +204,7 @@ priority=10
 
 ```ini
 [program:metagrid-backend]
-command=docker-compose -f docker-compose.prod.yml up --build
+command=docker compose -f docker-compose.prod.yml up --build
 directory=/home/<username>/metagrid/backend
 redirect_stderr=true
 autostart=true
@@ -216,7 +216,7 @@ priority=10
 
 ```ini
 [program:metagrid-frontend]
-command=docker-compose -f docker-compose.prod.yml up --build
+command=docker compose -f docker-compose.prod.yml up --build
 directory=/home/<your-username>/metagrid/frontend
 redirect_stderr=true
 autostart=true
@@ -258,15 +258,15 @@ Then either use the manage_metagrid.sh scripts to stop services, or you can go t
 
 ```bash
 cd ./backend # Shutting off backend service
-docker-compose -f docker-compose.prod.yml down # Shut down the container
+docker compose -f docker-compose.prod.yml down # Shut down the container
 cd ./frontend # Shutting off frontend service
-docker-compose -f docker-compose.prod.yml down
+docker compose -f docker-compose.prod.yml down
 ```
 
 When you are ready to restore services, you can do so manually using docker-compose:
 
 ```bash
-docker-compose -f docker-compose.prod.yml up --build # Start the container
+docker compose -f docker-compose.prod.yml up --build # Start the container
 ```
 
 Or let supervisor restore all:
@@ -282,11 +282,11 @@ These commands can be run on any `docker-compose.prod.yml` file.
 ### Check logs
 
 ```bash
-docker-compose -f docker-compose.prod.yml logs
+docker compose -f docker-compose.prod.yml logs
 ```
 
 ### Check status of containers
 
 ```bash
-docker-compose -f docker-compose.prod.yml ps
+docker compose -f docker-compose.prod.yml ps
 ```

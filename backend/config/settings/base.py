@@ -82,6 +82,8 @@ MIDDLEWARE = (
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 )
 
+SESSION_SAVE_EVERY_REQUEST = True
+
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
 ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1"]
 ROOT_URLCONF = "config.urls"
@@ -272,7 +274,7 @@ SOCIALACCOUNT_PROVIDERS = {
         "KEYCLOAK_REALM": env(
             "KEYCLOAK_REALM",
         ),
-    }
+    },
 }
 # Used in data migration to register Keycloak social app
 KEYCLOAK_CLIENT_ID = env("KEYCLOAK_CLIENT_ID")
@@ -295,9 +297,10 @@ JWT_AUTH_COOKIE = "jwt-auth"
 # -------------------------------------------------------------------------------
 # https://github.com/adamchainz/django-cors-headers#setup
 CORS_ORIGIN_ALLOW_ALL = False
+CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_WHITELIST = env.list("CORS_ORIGIN_WHITELIST")
-
 
 SEARCH_URL = env("REACT_APP_SEARCH_URL")
 WGET_URL = env("REACT_APP_WGET_API_URL")
 STATUS_URL = env("REACT_APP_ESGF_NODE_STATUS_URL")
+SOLR_URL = env("REACT_APP_ESGF_SOLR_URL")

@@ -5,7 +5,7 @@ This project uses [MkDocs](https://www.mkdocs.org/) documentation generator.
 If you set up your project by walking through [Getting Started For Local Development](../getting_started_local), run the following command:
 
      cd docs
-     docker-compose -p metagrid_docs_dev up
+     docker compose -p metagrid_docs_dev up
 
 Navigate to port 8001 on your host to see the documentation site locally (e.g. [`localhost:8001`](http://localhost:8001/)).
 MkDocs supports hot-reloading, so changes to any of the `.md` files will reload the site.
