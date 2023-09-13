@@ -10,6 +10,7 @@ import {
   TextInputs,
   VersionType,
 } from '../components/Search/types';
+import messageDisplayData from '../components/Messaging/messageDisplayData';
 
 export type NotificationType = 'success' | 'info' | 'warning' | 'error';
 export async function showNotice(
@@ -337,4 +338,12 @@ export const unsavedLocalSearches = (
       !searchAlreadyExists(databaseItems, localSearchQuery)
   );
   return itemsNotInDatabase;
+};
+
+export const getLastMessageSeen = (): string | null => {
+  return localStorage.getItem('lastMessageSeen');
+};
+
+export const setStartupMessageAsSeen = (): void => {
+  localStorage.setItem('lastMessageSeen', messageDisplayData.messageToShow);
 };

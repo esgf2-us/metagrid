@@ -466,7 +466,12 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   const generateRedirects = (): ReactElement => {
     /* istanbul ignore next */
     if (!publicUrl && previousPublicUrl) {
-      <Route path={previousPublicUrl} element={<Navigate to="/search" />} />;
+      return (
+        <Route
+          path={`${previousPublicUrl}/*`}
+          element={<Navigate to="/search" />}
+        />
+      );
     }
 
     return <></>;

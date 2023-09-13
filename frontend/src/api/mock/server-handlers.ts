@@ -29,10 +29,10 @@ const handlers = [
     res(ctx.status(200), ctx.json(userAuthFixture()))
   ),
   rest.post(apiRoutes.tempStorageGet.path, (_req, res, ctx) => {
-    res(ctx.status(200), ctx.json({ dataValue: 'testValue' }));
+    res(ctx.status(200), ctx.json({ dataValue: 'test1' }));
   }),
   rest.post(apiRoutes.tempStorageSet.path, (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json({ dataKey: 'test', dataValue: 'value' }))
+    res(ctx.status(200), ctx.json({ dataKey: 'test', dataValue: 'test1' }))
   ),
   rest.get(apiRoutes.userInfo.path, (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(userInfoFixture()))

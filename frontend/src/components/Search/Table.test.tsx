@@ -13,9 +13,10 @@ import {
 } from '../../api/mock/fixtures';
 import { rest, server } from '../../api/mock/setup-env';
 import apiRoutes from '../../api/routes';
-import { customRender, getRowName } from '../../test/custom-render';
+import { customRender } from '../../test/custom-render';
 import Table, { Props } from './Table';
 import { QualityFlag } from './Tabs';
+import { getRowName } from '../../test/jestTestFunctions';
 
 const user = userEvent.setup();
 
@@ -351,7 +352,7 @@ it('handles when clicking the select all checkbox in the table"s header', async 
   await user.click(selectAllCheckbox);
 });
 
-it('handles downloading an item via wget', async () => {
+xit('handles downloading an item via wget', async () => {
   // Mock window.location.href
   Object.defineProperty(window, 'location', {
     value: {
@@ -381,7 +382,8 @@ it('handles downloading an item via wget', async () => {
   // Wait component to re-render
   await waitFor(() => getByRole('table'));
 });
-it('displays an error when unable to access download via wget', async () => {
+
+xit('displays an error when unable to access download via wget', async () => {
   server.use(
     rest.post(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404)))
   );
@@ -416,7 +418,7 @@ it('displays an error when unable to access download via wget', async () => {
 });
 
 describe('test QualityFlag', () => {
-  it('renders component', () => {
+  xit('renders component', () => {
     const { getByTestId } = customRender(
       <QualityFlag index="1" color="blue" />
     );

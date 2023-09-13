@@ -10,14 +10,10 @@ import {
   ReactJoyrideContext,
 } from '../../contexts/ReactJoyrideContext';
 import { welcomeTour } from '../../common/reactJoyrideSteps';
-
-const getMessageSeen = (): string | null => {
-  return localStorage.getItem('lastMessageSeen');
-};
-
-const setMessageSeen = (): void => {
-  localStorage.setItem('lastMessageSeen', messageDisplayData.messageToShow);
-};
+import {
+  getLastMessageSeen,
+  setStartupMessageAsSeen,
+} from '../../common/utils';
 
 const getMessageData = (msgId: string): MessageData | undefined => {
   const messages: MessageData[] = messageDisplayData.messageData;
@@ -62,12 +58,12 @@ const StartPopup: React.FC<React.PropsWithChildren<unknown>> = () => {
     setVisible(false);
 
     // Show welcome tour if welcome message is shown
-    const startupMessageSeen = getMessageSeen();
+    const startupMessageSeen = getLastMessageSeen();
     if (!startupMessageSeen) {
       setTour(welcomeTour);
       startTour();
     }
-    setMessageSeen();
+    setStartupMessageAsSeen();
   };
 
   const showMessage = (msgId: string): void => {
@@ -84,7 +80,7 @@ const StartPopup: React.FC<React.PropsWithChildren<unknown>> = () => {
   };
 
   useEffect(() => {
-    const startupMessageSeen = getMessageSeen();
+    const startupMessageSeen = getLastMessageSeen();
     if (!startupMessageSeen) {
       showMessage(startData.defaultMessageId);
     } else if (startupMessageSeen !== startData.messageToShow) {
