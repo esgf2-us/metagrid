@@ -1,5 +1,7 @@
 # =====================FRONTEND CONFIG====================
 
+PUBLIC_URL=
+
 # Redirect the frontend to home page when old subdirectory is used (optional)
 REACT_APP_PREVIOUS_URL=/metagrid
 
