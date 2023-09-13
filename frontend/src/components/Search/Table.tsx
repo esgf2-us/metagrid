@@ -19,6 +19,7 @@ import { NodeStatusArray } from '../NodeStatus/types';
 import './Search.css';
 import Tabs from './Tabs';
 import { RawSearchResult, RawSearchResults, TextInputs } from './types';
+import { AuthContext } from '../../contexts/AuthContext';
 import GlobusToolTip from '../NodeStatus/GlobusToolTip';
 import { globusEnabledNodes } from '../../env';
 
@@ -52,10 +53,14 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
   onPageSizeChange,
 }) => {
   // Add options to this constant as needed
-  type DatasetDownloadTypes = 'wget' | 'Globus';
+  type DatasetDownloadTypes = 'wget' | 'wget-simple' | 'Globus';
   // If a record supports downloads from the allowed downloads, it will render
   // in the drop downs
-  const allowedDownloadTypes: DatasetDownloadTypes[] = ['wget'];
+  const allowedDownloadTypes: DatasetDownloadTypes[] = ['wget', 'wget-simple'];
+  // User's authentication state
+  const authState = React.useContext(AuthContext);
+  // eslint-disable-next-line
+  const { access_token: accessToken, pk } = authState;
 
   const tableConfig = {
     size: 'small' as SizeType,
@@ -266,11 +271,27 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
               'The wget script is generating, please wait momentarily.',
               { type: 'info' }
             );
-            fetchWgetScript(record.id, filenameVars).catch(
-              (error: ResponseError) => {
-                showError(error.message);
-              }
+            fetchWgetScript(
+              [record.id],
+              false,
+              accessToken as string,
+              filenameVars
+            ).catch((error: ResponseError) => {
+              showError(error.message);
+            });
+          } else if (downloadType === 'wget-simple') {
+            showNotice(
+              'The wget script is generating, please wait momentarily.',
+              { type: 'info' }
             );
+            fetchWgetScript(
+              [record.id],
+              true,
+              accessToken as string,
+              filenameVars
+            ).catch((error: ResponseError) => {
+              showError(error.message);
+            });
           }
         };
 
@@ -293,7 +314,8 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
                   {allowedDownloadTypes.map(
                     (option) =>
                       (supportedDownloadTypes.includes(option) ||
-                        option === 'wget') && (
+                        option === 'wget' ||
+                        option === 'wget-simple') && (
                         <Select.Option
                           key={`${formKey}-${option}`}
                           value={option}

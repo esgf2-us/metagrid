@@ -509,13 +509,9 @@ describe('test deleting user search', () => {
 });
 
 describe('test fetching wget script', () => {
-  it('returns a response with a single dataset id', async () => {
-    await fetchWgetScript('id', ['var']);
+  it('returns a response wiht some basic values', async () => {
+    await fetchWgetScript('id', false, 'token', ['id']);
   });
-  it('returns a response with an array of dataset ids', async () => {
-    await fetchWgetScript(['id', 'id']);
-  });
-
   it('catches and throws an error based on HTTP status code', async () => {
     server.use(
       rest.post(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404)))

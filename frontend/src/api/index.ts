@@ -553,11 +553,15 @@ const returnFileToUser = (fileContent: string): void => {
  */
 export const fetchWgetScript = async (
   ids: string[] | string,
+  simple_bool?: boolean,
+  access_token?: string,
   filenameVars?: string[]
 ): Promise<void> => {
   const data = {
     dataset_id: ids,
     query: filenameVars,
+    simple: simple_bool,
+    bearer_token: access_token,
   };
 
   return axios
