@@ -98,10 +98,13 @@ def do_request(request, urlbase):
             except Exception:  # pragma: no cover
                 return HttpResponseBadRequest()
             if "query" in jo:
-                jo["query"] = jo["query"][0]
+                query = jo["query"]
+            #   print(query)
+                if type(query) is list and len(query) > 0:
+                    jo["query"] = query[0]
             if "dataset_id" in jo:
                 jo["dataset_id"] = ','.join(jo["dataset_id"])
-#            print(f"DEBUG: {jo}")            
+            #print(f"DEBUG: {jo}")            
             resp = requests.post(urlbase, data=jo)
 
         elif request.method == "GET":
