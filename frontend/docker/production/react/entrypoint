@@ -21,7 +21,7 @@ while read -r line; do
     fi
 
     echo "  ${varname}: \"${varvalue}\"," >> "${runtime_path}"
-done < /env
+done < ${ENV_FILE:-/env}
 
 echo "};" >> "${runtime_path}"
 
