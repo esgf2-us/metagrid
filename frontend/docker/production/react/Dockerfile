@@ -20,6 +20,8 @@ COPY public ./public
 COPY .eslintrc.js ./
 COPY .prettierignore ./
 COPY .prettierrc ./
+# required as a placeholder
+COPY .envs/.react /app/.envs/.prod.env
 RUN yarn build:production
 
 # Build production environment
@@ -27,6 +29,7 @@ FROM nginx:stable-alpine
 COPY --from=build /app/build /usr/share/nginx/html
 COPY docker/production/nginx/nginx.conf /nginx.conf
 COPY docker/production/nginx/nginx.subdir.conf /nginx.subdir.conf
+COPY .envs/.react /env
 
 # Determines which conf to use if app is/is not being served through subdirectory
 COPY ./docker/production/react/entrypoint /entrypoint

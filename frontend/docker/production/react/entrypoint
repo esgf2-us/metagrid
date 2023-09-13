@@ -1,7 +1,29 @@
 #!/bin/sh
 
-export PUBLIC_URL
-export PREVIOUS_URL
+[[ -n "${DEBUG}" ]] && set -x
+
+runtime_path="/usr/share/nginx/html/static/js/runtime_env.js"
+
+rm -rf "${runtime_path}" && touch "${runtime_path}"
+
+echo "window.ENV = {" >> "${runtime_path}"
+
+while read -r line; do
+    [[ -z "${line}" || "${line}" =~ ^# ]] && continue
+
+    varname=$(printf '%s\n' "${line}" | cut -d"=" -f1)
+    varvalue=$(printenv "${varname}")
+
+    if [[ -z "${varvalue}" ]]; then
+        varvalue=$(printf '%s\n' "${line}" | cut -d"=" -f2)
+
+        export "${varname}"="${varvalue}"
+    fi
+
+    echo "  ${varname}: \"${varvalue}\"," >> "${runtime_path}"
+done < /env
+
+echo "};" >> "${runtime_path}"
 
 if [[ -z "${PUBLIC_URL}" ]]
 then

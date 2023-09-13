@@ -9,6 +9,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ReactJoyrideProvider } from './contexts/ReactJoyrideContext';
 import './index.css';
 import { keycloak, keycloakProviderInitConfig } from './lib/keycloak';
+import { publicUrl } from './env';
 
 ReactDOM.render(
   <RecoilRoot>
@@ -17,7 +18,7 @@ ReactDOM.render(
       initOptions={keycloakProviderInitConfig}
     >
       <AuthProvider>
-        <BrowserRouter basename={process.env.PUBLIC_URL}>
+        <BrowserRouter basename={publicUrl}>
           <ReactJoyrideProvider>
             <App searchQuery={getSearchFromUrl()} />
           </ReactJoyrideProvider>

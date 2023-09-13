@@ -5,6 +5,7 @@ import React, { ComponentType } from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { AuthProvider } from '../contexts/AuthContext';
 import { keycloakProviderInitConfig } from '../lib/keycloak';
+import { publicUrl } from '../env';
 
 export const createKeycloakStub = (): KeycloakInstance => ({
   // Optional
@@ -70,7 +71,7 @@ export const customRender = (
         initOptions={keycloakProviderInitConfig}
       >
         <AuthProvider>
-          <MemoryRouter basename={process.env.PUBLIC_URL}>
+          <MemoryRouter basename={publicUrl}>
             {children}
           </MemoryRouter>
         </AuthProvider>
