@@ -9,7 +9,7 @@ import {
 } from '../../api/mock/fixtures';
 import { rest, server } from '../../api/mock/setup-env';
 import apiRoutes from '../../api/routes';
-import { customRender, getRowName } from '../../test/custom-render';
+import { customRender } from '../../test/custom-render';
 import { ActiveFacets, RawFacets } from '../Facets/types';
 import Search, {
   checkFiltersExist,
@@ -24,6 +24,7 @@ import {
   TextInputs,
   VersionType,
 } from './types';
+import { getRowName } from '../../test/jestTestFunctions';
 
 const user = userEvent.setup();
 

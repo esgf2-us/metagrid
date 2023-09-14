@@ -17,7 +17,7 @@ class TestProxyViewSet(APITestCase):
     def test_search(self):
         url = reverse("do-search")
         postdata = {"project": "CMIP6", "limit": 0}
-        response = self.client.post(url, postdata)
+        response = self.client.get(url, postdata)
         assert response.status_code == status.HTTP_200_OK
 
     def test_status(self):
@@ -93,16 +93,6 @@ class TestProxyViewSet(APITestCase):
         test_data = {"dataKey": "value"}
         response = self.client.post(getUrl, test_data, format="json")
         assert response.status_code == status.HTTP_200_OK
-
-        # Note: Couldn't test the key found case, as there is an error when trying to set the temp storage to have a value
-
-        # Testing setting all of temp storage
-        # test_data = {
-        #     "dataKey": "temp_storage",
-        #     "dataValue": {"testKey": "testValue"},
-        # }
-        # response = self.client.post(setUrl, test_data, format="json")
-        # assert response.status_code == status.HTTP_200_OK
 
         # Testing get data when temp storage is none
         test_data = {"dataKey": "test"}

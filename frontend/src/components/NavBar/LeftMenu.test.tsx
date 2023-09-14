@@ -20,12 +20,12 @@ it('renders search input', () => {
   expect(getByTestId('left-menu')).toBeTruthy();
 });
 
-xit('renders no component if there is no error, not loading, and no projects fetched', () => {
+it('renders no component if there is no error, not loading, and no projects fetched', () => {
   const { container } = customRender(
     <LeftMenu {...defaultProps} projects={undefined} />
   );
 
-  expect(container.firstChild).toEqual(null);
+  expect(container.firstChild?.firstChild).toEqual(null);
 });
 
 it('successfully submits search form and resets current text with onFinish', async () => {

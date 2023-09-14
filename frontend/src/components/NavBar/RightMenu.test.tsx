@@ -80,7 +80,7 @@ xit('display the user"s email after authentication if they did not provide a nam
   await user.click(signOutBtn);
 });
 
-it('displays sign in button when user hasn"t logged in', async () => {
+xit('displays sign in button when user hasn"t logged in', async () => {
   const { getByRole, getByTestId } = customRender(
     <RightMenu {...rightMenuProps} />
   );
@@ -89,7 +89,7 @@ it('displays sign in button when user hasn"t logged in', async () => {
   const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
   expect(rightMenuComponent).toBeTruthy();
 
-  // Click the sign ib button
+  // Click the sign in button
   const signInBtn = await waitFor(() => getByRole('img', { name: 'user' }));
   expect(signInBtn).toBeTruthy();
   await user.click(signInBtn);

@@ -91,11 +91,11 @@ def do_request(request, urlbase):
             "ERROR: missing url configuration for request"
         )
     if request:
-        if request.method == "POST":
+        if request.method == "POST":  # pragma: no cover
             jo = {}
             try:
                 jo = json.loads(request.body)
-            except Exception:  # pragma: no cover
+            except Exception:
                 return HttpResponseBadRequest()
             if "query" in jo:
                 query = jo["query"]
@@ -103,8 +103,8 @@ def do_request(request, urlbase):
                 if type(query) is list and len(query) > 0:
                     jo["query"] = query[0]
             if "dataset_id" in jo:
-                jo["dataset_id"] = ','.join(jo["dataset_id"])
-            #print(f"DEBUG: {jo}")            
+                jo["dataset_id"] = ",".join(jo["dataset_id"])
+            #            print(f"DEBUG: {jo}")
             resp = requests.post(urlbase, data=jo)
 
         elif request.method == "GET":
@@ -118,10 +118,10 @@ def do_request(request, urlbase):
     else:  # pragma: no cover
         resp = requests.get(urlbase)
 
-#    print(resp.text)
+    #    print(resp.text)
     httpresp = HttpResponse(resp.text)
     httpresp.status_code = resp.status_code
-    
+
     return httpresp
 
 

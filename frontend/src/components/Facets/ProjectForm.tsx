@@ -63,62 +63,58 @@ const ProjectsForm: React.FC<React.PropsWithChildren<Props>> = ({
     };
 
     return (
-      <div data-testid="project-form">
-        <Form
-          form={projectForm}
-          layout="inline"
-          size="small"
-          initialValues={initialValues}
-          onFinish={onFinish}
+      <Form
+        form={projectForm}
+        layout="inline"
+        size="small"
+        initialValues={initialValues}
+        onFinish={onFinish}
+      >
+        <Form.Item
+          name="project"
+          rules={[{ required: true, message: 'Project is required' }]}
         >
-          <Form.Item
-            name="project"
-            rules={[{ required: true, message: 'Project is required' }]}
+          <Select
+            data-testid="project-form-select"
+            className={leftSidebarTargets.selectProjectBtn.class()}
+            style={styles.form}
+            showArrow
           >
-            <Select
-              data-testid="project-form-select"
-              className={leftSidebarTargets.selectProjectBtn.class()}
-              style={styles.form}
-              showArrow
+            {results.map((projectObj: RawProject, index: number) => (
+              <Select.Option key={projectObj.name} value={projectObj.name}>
+                <span data-testid={`project_${index}`}>{projectObj.name}</span>
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
+        <Form.Item>
+          {!objectIsEmpty(activeSearchQuery.project) &&
+          !objectIsEmpty(activeSearchQuery.activeFacets) ? (
+            <Popconfirm
+              title="Your filters will be cleared."
+              onConfirm={() => projectForm.submit()}
+              icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
+              placement="right"
             >
-              {results.map((projectObj: RawProject, index: number) => (
-                <Select.Option key={projectObj.name} value={projectObj.name}>
-                  <span data-testid={`project_${index}`}>
-                    {projectObj.name}
-                  </span>
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item>
-            {!objectIsEmpty(activeSearchQuery.project) &&
-            !objectIsEmpty(activeSearchQuery.activeFacets) ? (
-              <Popconfirm
-                title="Your filters will be cleared."
-                onConfirm={() => projectForm.submit()}
-                icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
-                placement="right"
-              >
-                <span>
-                  <Button
-                    className={leftSidebarTargets.projectSelectLeftSideBtn.class()}
-                    type="primary"
-                    htmlType="submit"
-                    icon={<SelectOutlined />}
-                  ></Button>
-                </span>
-              </Popconfirm>
-            ) : (
-              <Button
-                className={leftSidebarTargets.projectSelectLeftSideBtn.class()}
-                type="primary"
-                htmlType="submit"
-                icon={<SelectOutlined />}
-              ></Button>
-            )}
-          </Form.Item>
-        </Form>
-      </div>
+              <span>
+                <Button
+                  className={leftSidebarTargets.projectSelectLeftSideBtn.class()}
+                  type="primary"
+                  htmlType="submit"
+                  icon={<SelectOutlined />}
+                ></Button>
+              </span>
+            </Popconfirm>
+          ) : (
+            <Button
+              className={leftSidebarTargets.projectSelectLeftSideBtn.class()}
+              type="primary"
+              htmlType="submit"
+              icon={<SelectOutlined />}
+            ></Button>
+          )}
+        </Form.Item>
+      </Form>
     );
   }
   // Need to return an empty form to avoid linting errors

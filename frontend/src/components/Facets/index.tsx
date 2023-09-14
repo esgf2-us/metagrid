@@ -75,7 +75,7 @@ const Facets: React.FC<React.PropsWithChildren<Props>> = ({
 
   return (
     <div
-      data-testid="facets"
+      data-testid="search-facets"
       style={styles.form}
       className={leftSidebarTargets.leftSideBar.class()}
     >
