@@ -266,7 +266,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
               'The wget script is generating, please wait momentarily.',
               { type: 'info' }
             );
-            fetchWgetScript(record.id, filenameVars).catch(
+            fetchWgetScript([record.id], filenameVars).catch(
               (error: ResponseError) => {
                 showError(error.message);
               }

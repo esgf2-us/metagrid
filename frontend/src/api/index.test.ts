@@ -510,7 +510,7 @@ describe('test deleting user search', () => {
 
 describe('test fetching wget script', () => {
   it('returns a response with a single dataset id', async () => {
-    await fetchWgetScript('id', ['var']);
+    await fetchWgetScript(['id'], ['var']);
   });
   it('returns a response with an array of dataset ids', async () => {
     await fetchWgetScript(['id', 'id']);
@@ -521,7 +521,7 @@ describe('test fetching wget script', () => {
       rest.post(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404)))
     );
 
-    await expect(fetchWgetScript('id')).rejects.toThrow(
+    await expect(fetchWgetScript(['id'])).rejects.toThrow(
       apiRoutes.wget.handleErrorMsg(404)
     );
   });
@@ -531,7 +531,7 @@ describe('test fetching wget script', () => {
         res.networkError(genericNetworkErrorMsg)
       )
     );
-    await expect(fetchWgetScript('id')).rejects.toThrow(
+    await expect(fetchWgetScript(['id'])).rejects.toThrow(
       apiRoutes.wget.handleErrorMsg('generic')
     );
   });

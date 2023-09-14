@@ -552,7 +552,7 @@ const returnFileToUser = (fileContent: string): void => {
  *
  */
 export const fetchWgetScript = async (
-  ids: string[] | string,
+  ids: string[],
   filenameVars?: string[]
 ): Promise<void> => {
   const data = {
