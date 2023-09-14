@@ -14,6 +14,7 @@ RUN yarn install --frozen-lock-file --network-timeout=1000000
 
 # Add app
 COPY . ./
+COPY .envs/.react .envs/.prod.env
 RUN yarn build:production
 
 # Build production environment
