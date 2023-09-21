@@ -12,5 +12,5 @@ export const keycloak = Keycloak({
 
 export const keycloakProviderInitConfig = {
   onLoad: 'check-sso',
-  flow: 'implicit',
+  flow: 'standard',
 };

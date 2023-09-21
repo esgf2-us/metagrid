@@ -104,7 +104,7 @@ def do_request(request, urlbase):
                     jo["query"] = query[0]
             if "dataset_id" in jo:
                 jo["dataset_id"] = ','.join(jo["dataset_id"])
-            #print(f"DEBUG: {jo}")            
+            print(f"DEBUG: {jo}")            
             resp = requests.post(urlbase, data=jo)
 
         elif request.method == "GET":
