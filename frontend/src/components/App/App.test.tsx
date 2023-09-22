@@ -461,7 +461,7 @@ it('fetches the data node status every defined interval', () => {
   jest.useRealTimers();
 });
 describe('User cart', () => {
-  xit('handles authenticated user adding and removing items from cart', async () => {
+  it('handles authenticated user adding and removing items from cart', async () => {
     const {
       getByRole,
       getByTestId,
@@ -627,7 +627,7 @@ describe('User cart', () => {
     expect(emptyAlert).toBeTruthy();
   });
 
-  xit('handles anonymous user adding and removing items from cart', async () => {
+  it('handles anonymous user adding and removing items from cart', async () => {
     const { getByRole, getByTestId, getByPlaceholderText } = customRender(
       <App searchQuery={activeSearch} />
     );
@@ -672,7 +672,7 @@ describe('User cart', () => {
     await user.click(removeBtn);
   });
 
-  xit('displays anonymous user"s number of files in the cart summary and handles clearing the cart', async () => {
+  it('displays anonymous user"s number of files in the cart summary and handles clearing the cart', async () => {
     const {
       getByRole,
       getByTestId,
@@ -1014,7 +1014,7 @@ describe('User search library', () => {
     await waitFor(() => getByTestId('cart'));
   });
 
-  xit('handles anonymous user copying search to clipboard', async () => {
+  it('handles anonymous user copying search to clipboard', async () => {
     const { getByTestId, getByPlaceholderText, getByRole } = customRender(
       <App searchQuery={activeSearch} />
     );
@@ -1212,7 +1212,7 @@ describe('User search library', () => {
 });
 
 describe('User support', () => {
-  xit('renders user support modal when clicking help button and is closeable', async () => {
+  it('renders user support modal when clicking help button and is closeable', async () => {
     const { getByRole, getByText, findByText } = customRender(
       <App searchQuery={activeSearch} />
     );

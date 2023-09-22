@@ -479,11 +479,6 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
 
   return (
     <>
-      <Routes>
-        <Route path="/" element={<Navigate to="/search" />} />
-        <Route path="/cart" element={<Navigate to="/cart/items" />} />
-        {generateRedirects()}
-      </Routes>
       <div>
         <Routes>
           <Route
@@ -500,6 +495,9 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
         </Routes>
         <Layout id="body-layout">
           <Routes>
+            <Route path="/" element={<Navigate to="/search" />} />
+            <Route path="/cart" element={<Navigate to="/cart/items" />} />
+            {generateRedirects()}
             <Route
               path="/search"
               element={
