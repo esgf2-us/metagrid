@@ -6,7 +6,6 @@ on:
       - v.*
   pull_request:
     branches:
-      - v.*
 
 jobs:
   frontend:
