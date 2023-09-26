@@ -26,7 +26,7 @@ jobs:
           context: frontend/
           file: frontend/docker/production/react/Dockerfile
           push: true
-          tags: ghcr.io/aims-group/metagrid-frontend:${{ github.ref_name }}
+          tags: ghcr.io/aims-group/metagrid-frontend:latest
   backend:
     name: Build/release backend container
     runs-on: ubuntu-latest
@@ -45,4 +45,4 @@ jobs:
           context: backend/
           file: backend/docker/production/django/Dockerfile
           push: true
-          tags: ghcr.io/aims-group/metagrid-backend:${{ github.ref_name }}
+          tags: ghcr.io/aims-group/metagrid-backend:latest
