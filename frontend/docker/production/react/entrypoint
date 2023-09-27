@@ -28,8 +28,17 @@ echo "};" >> "${runtime_path}"
 if [[ -z "${PUBLIC_URL}" ]]
 then
     envsubst '${PREVIOUS_URL}' < /nginx.conf > /etc/nginx/conf.d/default.conf
+    export PUBLIC_URL=""
 else
     envsubst '${PREVIOUS_URL},${PUBLIC_URL}' < /nginx.subdir.conf > /etc/nginx/conf.d/default.conf
 fi
+
+# prepend any "/static/... with "${PUBLIC_URL}/static/...
+sed -i"" "s/\"\/static/\"\${PUBLIC_URL}\/static/g" /usr/share/nginx/html/index.html
+
+# move original index.html, envsubst cannot modify in place
+mv /usr/share/nginx/html/index.html /index.html
+
+envsubst '${PUBLIC_URL},${$REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID}' < /index.html > /usr/share/nginx/html/index.html
 
 exec "$@"
