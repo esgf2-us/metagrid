@@ -67,6 +67,9 @@ type AlertModalState = {
 const downloadOptions = ['Globus', 'wget', 'wget-simple'];
 
 const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
+  const authState = React.useContext(AuthContext);
+  // eslint-disable-next-line
+  const { access_token: accessToken, pk } = authState;
   const [downloadForm] = Form.useForm();
 
   // User wants to use default endpoint
@@ -220,10 +223,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   }
 
   const handleWgetDownload = (simple: boolean): void => {
-    const authState = React.useContext(AuthContext);
-    // eslint-disable-next-line
-    const { access_token: accessToken, pk } = authState;
-
     const simpleStr = simple ? 'simplified ' : '';
 
     if (itemSelections !== null) {
