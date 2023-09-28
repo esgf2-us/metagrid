@@ -517,7 +517,7 @@ describe('test fetching wget script', () => {
       rest.post(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404)))
     );
 
-    await expect(fetchWgetScript('id')).rejects.toThrow(
+    await expect(fetchWgetScript('id', true, null)).rejects.toThrow(
       apiRoutes.wget.handleErrorMsg(404)
     );
   });
@@ -527,7 +527,7 @@ describe('test fetching wget script', () => {
         res.networkError(genericNetworkErrorMsg)
       )
     );
-    await expect(fetchWgetScript('id')).rejects.toThrow(
+    await expect(fetchWgetScript('id', false, null)).rejects.toThrow(
       apiRoutes.wget.handleErrorMsg('generic')
     );
   });

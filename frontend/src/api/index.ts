@@ -553,8 +553,8 @@ const returnFileToUser = (fileContent: string): void => {
  */
 export const fetchWgetScript = async (
   ids: string[] | string,
-  simple_bool?: boolean,
-  access_token?: string,
+  simple_bool: boolean,
+  access_token: string | null,
   filenameVars?: string[]
 ): Promise<void> => {
   const data = {

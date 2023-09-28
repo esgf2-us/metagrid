@@ -114,7 +114,7 @@
     "eslint-plugin-react-hooks": "4.6.0",
     "msw": "0.28.1",
     "postcss": "8.4.21",
-    "prettier": "2.2.1",
+    "prettier": "^2.2.1",
     "setimmediate": "1.0.5"
   }
 }

@@ -34,6 +34,7 @@ import {
   MAX_TASK_LIST_LENGTH,
 } from './types';
 import { NotificationType, showError, showNotice } from '../../common/utils';
+import { AuthContext } from '../../contexts/AuthContext';
 
 // Reference: https://github.com/bpedroza/js-pkce
 const GlobusAuth = new PKCE({
@@ -63,7 +64,7 @@ type AlertModalState = {
 };
 
 // Statically defined list of dataset download options
-const downloadOptions = ['Globus', 'wget'];
+const downloadOptions = ['Globus', 'wget', 'wget-simple'];
 
 const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   const [downloadForm] = Form.useForm();
@@ -218,15 +219,24 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     return [useDefault, defaultEndpoint, selectedEndpoint];
   }
 
-  const handleWgetDownload = (): void => {
+  const handleWgetDownload = (simple: boolean): void => {
+    const authState = React.useContext(AuthContext);
+    // eslint-disable-next-line
+    const { access_token: accessToken, pk } = authState;
+
+    const simpleStr = simple ? 'simplified ' : '';
+
     if (itemSelections !== null) {
       const ids = itemSelections.map((item) => item.id);
-      showNotice('The wget script is generating, please wait momentarily.', {
-        duration: 7,
-        type: 'info',
-      });
+      showNotice(
+        `The ${simpleStr}wget script is generating, please wait momentarily.`,
+        {
+          duration: 7,
+          type: 'info',
+        }
+      );
       setDownloadIsLoading(true);
-      fetchWgetScript(ids)
+      fetchWgetScript(ids, simple, accessToken)
         .then(() => setDownloadIsLoading(false))
         .catch((error: ResponseError) => {
           showError(error.message);
@@ -393,10 +403,14 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     return true;
   };
 
-  const handleDownloadForm = (downloadType: 'wget' | 'Globus'): void => {
+  const handleDownloadForm = (
+    downloadType: 'wget' | 'wget-simple' | 'Globus'
+  ): void => {
     /* istanbul ignore else */
     if (downloadType === 'wget') {
-      handleWgetDownload();
+      handleWgetDownload(false);
+    } else if (downloadType === 'wget-simple') {
+      handleWgetDownload(true);
     } else if (downloadType === 'Globus') {
       const itemsReady = checkItemsAreGlobusEnabled();
       if (itemsReady) {
@@ -711,7 +725,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         form={downloadForm}
         layout="inline"
         onFinish={({ downloadType }) =>
-          handleDownloadForm(downloadType as 'wget' | 'Globus')
+          handleDownloadForm(downloadType as 'wget-simple' | 'wget' | 'Globus')
         }
         initialValues={{
           downloadType: downloadOptions[0],
