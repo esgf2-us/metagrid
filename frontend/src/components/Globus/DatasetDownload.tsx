@@ -670,7 +670,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
   useEffect(() => {
     const initializePage = async (): Promise<void> => {
-      const continueProcess = await loadSessionValue(
+      const continueProcess = await loadSessionValue<boolean>(
         GlobusStateKeys.continueGlobusPrepSteps
       );
       const itemCartSelections = await loadSessionValue<RawSearchResults>(

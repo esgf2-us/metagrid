@@ -8,10 +8,13 @@ import { rest } from 'msw';
 import apiRoutes from '../routes';
 import {
   ESGFSearchAPIFixture,
+  globusTransferResponseFixture,
   projectsFixture,
   rawCitationFixture,
   rawNodeStatusFixture,
   rawUserCartFixture,
+  tempStorageGetMock,
+  tempStorageSetMock,
   userAuthFixture,
   userInfoFixture,
   userSearchQueriesFixture,
@@ -22,18 +25,37 @@ const handlers = [
   rest.post(apiRoutes.keycloakAuth.path, (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(userAuthFixture()))
   ),
-  rest.post(apiRoutes.globusAuth.path, (_req, res, ctx) =>
+  rest.post(apiRoutes.keycloakAuthAlt.path, (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(userAuthFixture()))
   ),
-  rest.post(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
+  rest.post(apiRoutes.keycloakAuth.path, (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(userAuthFixture()))
+  ),
+  rest.get(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
+    res(ctx.status(200), ctx.json(globusTransferResponseFixture()))
+  ),
+  rest.get(apiRoutes.userInfo.path, (_req, res, ctx) =>
+    res(ctx.status(200), ctx.json(userInfoFixture()))
   ),
   rest.post(apiRoutes.tempStorageGet.path, (_req, res, ctx) => {
-    res(ctx.status(200), ctx.json({ dataValue: 'test1' }));
+    const data = _req.body as { [key: string]: unknown };
+    if (data && data.dataKey) {
+      const keyName = data.dataKey as string;
+
+      const value = tempStorageGetMock(keyName);
+      return res(ctx.status(200), ctx.json({ [keyName]: value }));
+    }
+    return res(ctx.status(400), ctx.json('Load failed!'));
   }),
-  rest.post(apiRoutes.tempStorageSet.path, (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json({ dataKey: 'test', dataValue: 'test1' }))
-  ),
+  rest.post(apiRoutes.tempStorageSet.path, (_req, res, ctx) => {
+    const reqBody = _req.body as string;
+    const data = JSON.parse(reqBody) as { [key: string]: unknown };
+    if (data && data.dataKey && data.dataValue) {
+      tempStorageSetMock(data.dataKey as string, data.dataValue as string);
+      return res(ctx.status(200), ctx.json({ data: 'Save success!' }));
+    }
+    return res(ctx.status(400), ctx.json({ data: 'Save failed!' }));
+  }),
   rest.get(apiRoutes.userInfo.path, (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(userInfoFixture()))
   ),

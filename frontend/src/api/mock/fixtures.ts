@@ -212,6 +212,13 @@ export const userAuthFixture = (
   return { ...defaults, ...props };
 };
 
+export const globusTransferResponseFixture = (): {
+  status: string;
+  taskid: string;
+} => {
+  return { status: 'OK', taskid: '1234567' };
+};
+
 export const userInfoFixture = (
   props: Partial<RawUserInfo> = {}
 ): RawUserInfo => {

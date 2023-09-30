@@ -1,5 +1,6 @@
 import {
   addUserSearchQuery,
+  convertResultTypeToReplicaParam,
   deleteUserSearchQuery,
   fetchDatasetCitation,
   fetchDatasetFiles,
@@ -13,15 +14,19 @@ import {
   fetchUserSearchQueries,
   fetchWgetScript,
   generateSearchURLQuery,
+  loadSessionValue,
   openDownloadURL,
   parseNodeStatus,
   processCitation,
+  saveSessionValue,
+  startGlobusTransfer,
   updateUserCart,
 } from '.';
 import {
   ActiveSearchQuery,
   Pagination,
   RawCitation,
+  ResultType,
 } from '../components/Search/types';
 import {
   activeSearchQueryFixture,
@@ -129,6 +134,41 @@ describe('test fetching projects', () => {
   });
 });
 
+describe('test convertResultTypeToReplica', () => {
+  it('Returns undefined when resultType is "all" no matter what label state', () => {
+    const resultType: ResultType = 'all';
+
+    let converted = convertResultTypeToReplicaParam(resultType);
+    expect(converted).toBe(undefined);
+    converted = convertResultTypeToReplicaParam(resultType, true);
+    expect(converted).toBe(undefined);
+    converted = convertResultTypeToReplicaParam(resultType, false);
+    expect(converted).toBe(undefined);
+  });
+
+  it('Returns correct value for resultType originals only based on label state', () => {
+    const resultType: ResultType = 'originals only';
+
+    let converted = convertResultTypeToReplicaParam(resultType);
+    expect(converted).toBe('replica=false');
+    converted = convertResultTypeToReplicaParam(resultType, true);
+    expect(converted).toBe('replica = false');
+    converted = convertResultTypeToReplicaParam(resultType, false);
+    expect(converted).toBe('replica=false');
+  });
+
+  it('Returns correct value for resultType replicas only based on label state', () => {
+    const resultType: ResultType = 'replicas only';
+
+    let converted = convertResultTypeToReplicaParam(resultType);
+    expect(converted).toBe('replica=true');
+    converted = convertResultTypeToReplicaParam(resultType, true);
+    expect(converted).toBe('replica = true');
+    converted = convertResultTypeToReplicaParam(resultType, false);
+    expect(converted).toBe('replica=true');
+  });
+});
+
 describe('test generating search url query', () => {
   let activeSearchQuery: ActiveSearchQuery;
   let pagination: Pagination;
@@ -193,6 +233,16 @@ describe('test generating search url query', () => {
     );
     expect(url).toEqual(
       `${apiRoutes.esgfSearch.path}?offset=0&limit=10&min_version=20200101&max_version=20201231&query=foo&baz=option1&foo=option1,option2`
+    );
+  });
+
+  it('returns formatted url without minVersion and maxVersion date', () => {
+    const url = generateSearchURLQuery(
+      { ...activeSearchQuery, minVersionDate: '', maxVersionDate: '' },
+      pagination
+    );
+    expect(url).toEqual(
+      `${apiRoutes.esgfSearch.path}?offset=0&limit=10&latest=true&query=foo&baz=option1&foo=option1,option2`
     );
   });
 });
@@ -333,7 +383,11 @@ describe('test fetchFiles()', () => {
       filenameVars: ['var'],
     };
   });
-
+  it('returns files', async () => {
+    props.filenameVars = [];
+    const files = await fetchDatasetFiles([], props);
+    expect(files).toEqual(ESGFSearchAPIFixture());
+  });
   it('returns files', async () => {
     const files = await fetchDatasetFiles([], props);
     expect(files).toEqual(ESGFSearchAPIFixture());
@@ -565,6 +619,48 @@ describe('test opening download url', () => {
   });
 });
 
+describe('test startGlobusTransfer function', () => {
+  it('performs a transfer with a filename variable', async () => {
+    const resp = await startGlobusTransfer(
+      'asdfs',
+      'asdfs',
+      'endpointTest',
+      'path',
+      'id',
+      ['clt']
+    );
+
+    expect(resp.data).toEqual({ status: 'OK', taskid: '1234567' });
+  });
+
+  it('performs a transfer without filename variables', async () => {
+    const resp = await startGlobusTransfer(
+      'asdfs',
+      'asdfs',
+      'endpointTest',
+      'path',
+      'id',
+      []
+    );
+
+    expect(resp.data).toEqual({ status: 'OK', taskid: '1234567' });
+  });
+
+  it('catches and throws an error based on HTTP status code', async () => {
+    server.use(
+      rest.get(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
+        res(ctx.status(404))
+      )
+    );
+
+    await expect(
+      startGlobusTransfer('asdfs', 'asdfs', 'endpointTest', 'path', 'id', [
+        'clt',
+      ])
+    ).rejects.toThrow(apiRoutes.globusTransfer.handleErrorMsg(404));
+  });
+});
+
 describe('test parsing node status', () => {
   it('returns correctly formatted node status', () => {
     const nodeStatus = rawNodeStatusFixture();
@@ -599,6 +695,54 @@ describe('test fetching node status', () => {
 
     await expect(fetchNodeStatus()).rejects.toThrow(
       apiRoutes.nodeStatus.handleErrorMsg('generic')
+    );
+  });
+});
+
+describe('testing session storage', () => {
+  it('Test saving null to the session store and then loading it', async () => {
+    const saveResp = await saveSessionValue('dataNull', null);
+    expect(saveResp.data).toEqual('Save success!');
+
+    const loadRes: string | null = await loadSessionValue('dataNull');
+    expect(loadRes).toEqual(null);
+  });
+  it("Test that saving 'None' value will result in null", async () => {
+    const saveResp = await saveSessionValue('dataNone', 'None');
+    expect(saveResp.data).toEqual('Save success!');
+
+    const loadRes: string | null = await loadSessionValue('dataNone');
+    expect(loadRes).toEqual(null);
+  });
+  it("Test saving 'value' to the session store then loading it", async () => {
+    const saveResp = await saveSessionValue('dataValue', 'value');
+    expect(saveResp.data).toEqual('Save success!');
+
+    const loadRes: string | null = await loadSessionValue('dataValue');
+    expect(loadRes).toEqual('value');
+  });
+  it('Test loading non-existent key from session store returns null', async () => {
+    const loadRes: string | null = await loadSessionValue('badKey');
+    expect(loadRes).toEqual(null);
+  });
+  it('Testing a bad response is received for load', () => {
+    server.use(
+      rest.post(apiRoutes.tempStorageGet.path, (_req, res, ctx) =>
+        res(ctx.status(400))
+      )
+    );
+    expect(loadSessionValue('test')).rejects.toThrow(
+      apiRoutes.tempStorageGet.handleErrorMsg(400)
+    );
+  });
+  it('Testing a bad response is received for save', () => {
+    server.use(
+      rest.post(apiRoutes.tempStorageSet.path, (_req, res, ctx) =>
+        res(ctx.status(400))
+      )
+    );
+    expect(saveSessionValue('test', 'value')).rejects.toThrow(
+      apiRoutes.tempStorageSet.handleErrorMsg(400)
     );
   });
 });

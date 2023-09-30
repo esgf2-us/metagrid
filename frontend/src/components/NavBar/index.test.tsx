@@ -1,7 +1,7 @@
 import React from 'react';
 import { waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { rest, server } from '../../api/mock/setup-env';
+import { rest, server } from '../../api/mock/server';
 import apiRoutes from '../../api/routes';
 import { customRender } from '../../test/custom-render';
 import NavBar, { Props } from './index';

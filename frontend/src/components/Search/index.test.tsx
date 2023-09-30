@@ -7,7 +7,7 @@ import {
   rawSearchResultFixture,
   userCartFixture,
 } from '../../api/mock/fixtures';
-import { rest, server } from '../../api/mock/setup-env';
+import { rest, server } from '../../api/mock/server';
 import apiRoutes from '../../api/routes';
 import { customRender } from '../../test/custom-render';
 import { ActiveFacets, RawFacets } from '../Facets/types';

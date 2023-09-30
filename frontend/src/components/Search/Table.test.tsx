@@ -1,17 +1,11 @@
-import {
-  fireEvent,
-  waitFor,
-  within,
-  screen,
-  act,
-} from '@testing-library/react';
+import { fireEvent, waitFor, within, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import {
   rawSearchResultFixture,
   rawSearchResultsFixture,
 } from '../../api/mock/fixtures';
-import { rest, server } from '../../api/mock/setup-env';
+import { rest, server } from '../../api/mock/server';
 import apiRoutes from '../../api/routes';
 import { customRender } from '../../test/custom-render';
 import Table, { Props } from './Table';
@@ -131,15 +125,17 @@ xit('renders record metadata in an expandable panel', async () => {
   const expandableIcon = within(expandableCell).getByRole('img', {
     name: 'right-circle',
   });
+  screen.debug(expandableCell, Infinity);
   expect(expandableIcon).toBeTruthy();
-  await act(async () => {
-    await user.click(expandableIcon);
-  });
+  // await act(async () => {
+  //   await user.click(expandableIcon);
+  // });
+  await user.click(expandableIcon);
 
   // const tabPanel = within(table).getByTestId('extra-tabs');
   // expect(tabPanel).toBeTruthy();
 
-  screen.debug(undefined, Infinity);
+  // screen.debug(undefined, Infinity);
 
   // Get the expandable row that was rendered and click on it
   const expandableRow = document.querySelector(
@@ -204,7 +200,7 @@ xit('renders "PID" button when the record has a "xlink" key/value, vice versa', 
     name: 'right-circle',
   });
   expect(expandableIcon).toBeTruthy();
-  await user.click(expandableIcon);
+  // await user.click(expandableIcon);
 
   // Get the expandable row that was rendered and click on it
   const expandableRow = document.querySelector(

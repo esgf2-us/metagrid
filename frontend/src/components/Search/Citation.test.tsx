@@ -1,6 +1,6 @@
 import { waitFor } from '@testing-library/react';
 import React from 'react';
-import { rest, server } from '../../api/mock/setup-env';
+import { rest, server } from '../../api/mock/server';
 import apiRoutes from '../../api/routes';
 import Citation, { CitationInfo } from './Citation';
 import { customRender } from '../../test/custom-render';

@@ -3,6 +3,7 @@
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom/extend-expect';
+import { server } from './api/mock/server';
 
 jest.setTimeout(15000);
 
@@ -47,14 +48,8 @@ const localStorageMock = (() => {
 
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
-// Mocking the temp storage calls for now
-// eslint-disable-next-line @typescript-eslint/no-unsafe-return
-jest.mock('./api', () => ({
-  ...jest.requireActual('./api'),
-  loadSessionValue: jest.fn(() => Promise.resolve({ dataValue: 'test1' })),
-  saveSessionValue: jest.fn(() =>
-    Promise.resolve({ dataKey: 'test', dataValue: 'test1' })
-  ),
-}));
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
 
 module.exports = window;

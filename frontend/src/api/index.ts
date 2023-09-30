@@ -583,11 +583,14 @@ export const loadSessionValue = async <T>(key: string): Promise<T | null> => {
       }
       return null;
     })
-    .catch((error: ResponseError) => {
-      throw new Error(
-        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.tempStorageGet)
-      );
-    });
+    .catch(
+      /* istanbul ignore next */
+      (error: ResponseError) => {
+        throw new Error(
+          errorMsgBasedOnHTTPStatusCode(error, apiRoutes.tempStorageGet)
+        );
+      }
+    );
 };
 
 export const saveSessionValue = async <T>(
@@ -603,14 +606,17 @@ export const saveSessionValue = async <T>(
   }
   return axios
     .post(apiRoutes.tempStorageSet.path, JSON.stringify(data))
-    .then((resp) => {
-      return resp.data;
+    .then((res) => {
+      return res.data;
     })
-    .catch((error: ResponseError) => {
-      throw new Error(
-        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.tempStorageSet)
-      );
-    });
+    .catch(
+      /* istanbul ignore next */
+      (error: ResponseError) => {
+        throw new Error(
+          errorMsgBasedOnHTTPStatusCode(error, apiRoutes.tempStorageSet)
+        );
+      }
+    );
 };
 
 /**

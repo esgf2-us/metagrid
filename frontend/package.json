@@ -39,16 +39,17 @@
       "!**/node_modules/**",
       "!**/coverage/**",
       "!src/index.tsx",
+      "!src/test/**",
       "!**/serviceWorker.js",
       "!**/react-app-env.d.ts",
       "!**/lib/**"
     ],
     "coverageThreshold": {
       "global": {
-        "branches": 90,
-        "functions": 90,
-        "lines": 90,
-        "statements": 90
+        "branches": 95,
+        "functions": 95,
+        "lines": 95,
+        "statements": 95
       },
       "./src/components/App/App.tsx": {
         "lines": 100
