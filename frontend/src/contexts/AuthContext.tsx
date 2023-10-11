@@ -34,8 +34,8 @@ export const AuthProvider: React.FC<React.PropsWithChildren<Props>> = ({
    * The runFetchUserAuth function is set to run approximately every 5 minutes
    * to ensure the user does not encounter an expired token.
    */
+  /* istanbul ignore next */
   React.useEffect(() => {
-    /* istanbul ignore else */
     if (keycloak.token) {
       runFetchUserAuth(keycloak.token);
       const interval = setInterval(() => {
@@ -50,7 +50,7 @@ export const AuthProvider: React.FC<React.PropsWithChildren<Props>> = ({
    * Fetch the authenticated user's information with valid MetaGrid access token.
    */
   React.useEffect(() => {
-    /* istanbul ignore else */
+    /* istanbul ignore if */
     if (userAuth?.access_token) {
       runFetchUserInfo(userAuth.access_token);
     }

@@ -31,7 +31,6 @@ export type ApiRoute = {
 
 type ApiRoutes = {
   keycloakAuth: ApiRoute;
-  keycloakAuthAlt: ApiRoute;
   globusTransfer: ApiRoute;
   userInfo: ApiRoute;
   userCart: ApiRoute;
@@ -60,10 +59,6 @@ const apiRoutes: ApiRoutes = {
   keycloakAuth: {
     path: `${metagridApiURL}/dj-rest-auth/keycloak`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Keycloak', HTTPCode),
-  },
-  keycloakAuthAlt: {
-    path: `${metagridApiURL}/keycloak.json`,
-    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Keycloak.json', HTTPCode),
   },
   globusTransfer: {
     path: `${metagridApiURL}/globus/transfer`,

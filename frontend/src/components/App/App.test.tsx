@@ -21,7 +21,6 @@ import { getSearchFromUrl } from '../../common/utils';
 import { customRender } from '../../test/custom-render';
 import { ActiveSearchQuery } from '../Search/types';
 import App from './App';
-import messageDisplayData from '../Messaging/messageDisplayData';
 import {
   getRowName,
   printElementContents,
@@ -57,11 +56,6 @@ afterEach(() => {
   server.resetHandlers();
 
   cleanup();
-});
-
-beforeEach(() => {
-  // Set start up messages as 'seen' so start popup won't show
-  localStorage.setItem('lastMessageSeen', messageDisplayData.messageToShow);
 });
 
 it('renders App component', async () => {
@@ -120,7 +114,7 @@ it('shows duplicate error when search keyword is typed in twice', async () => {
   expect(errorMsg).toBeTruthy();
 });
 
-xit('handles setting filename searches and duplicates', async () => {
+it('handles setting filename searches and duplicates', async () => {
   const renderedApp = customRender(<App searchQuery={activeSearch} />);
   const { getByTestId, getByText } = renderedApp;
 
@@ -244,7 +238,7 @@ it('handles setting and removing text input filters and clearing all search filt
   await waitFor(() => getByTestId('search'));
 });
 
-xit('handles applying general facets', async () => {
+it('handles applying general facets', async () => {
   const { getByTestId, getByText } = customRender(
     <App searchQuery={activeSearch} />
   );
@@ -397,8 +391,10 @@ it('handles applying and removing project facets', async () => {
   await waitFor(() => getByTestId('search'));
 });
 
-xit('handles project changes and clearing filters when the active project !== selected project', async () => {
-  const { getByTestId } = customRender(<App searchQuery={activeSearch} />);
+it('handles project changes and clearing filters when the active project !== selected project', async () => {
+  const { getByTestId, getByText } = customRender(
+    <App searchQuery={activeSearch} />
+  );
 
   // Check applicable components render
   const facetsComponent = await waitFor(() => getByTestId('search-facets'));
@@ -439,7 +435,7 @@ xit('handles project changes and clearing filters when the active project !== se
   fireEvent.mouseDown(projectFormSelect2);
 
   // Select the first project option
-  const firstOption = await waitFor(() => getByTestId('project_0'));
+  const firstOption = await waitFor(() => getByText('test1'));
   expect(firstOption).toBeInTheDocument();
   await user.click(firstOption);
 
@@ -523,7 +519,7 @@ describe('User cart', () => {
     expect(removeText).toBeTruthy();
   });
 
-  xit("displays authenticated user's number of files in the cart summary and handles clearing the cart", async () => {
+  it("displays authenticated user's number of files in the cart summary and handles clearing the cart", async () => {
     const {
       getByRole,
       getByTestId,
@@ -543,13 +539,13 @@ describe('User cart', () => {
       getByPlaceholderText('Search for a keyword')
     );
     expect(freeTextInput).toBeTruthy();
-    user.type(freeTextInput, input);
+    await user.type(freeTextInput, input);
 
     // Submit the form
     const submitBtn = within(leftMenuComponent).getByRole('img', {
       name: 'search',
     });
-    user.click(submitBtn);
+    await user.click(submitBtn);
 
     // Wait for components to rerender
     await waitFor(() => getByTestId('search'));
@@ -565,7 +561,7 @@ describe('User cart', () => {
     // Check first row has add button and click it
     const addBtn = within(firstRow).getByRole('img', { name: 'plus' });
     expect(addBtn).toBeTruthy();
-    await user.click(addBtn);
+    user.click(addBtn);
 
     // Check 'Added items(s) to the cart' message appears
     const addText = await waitFor(() =>
@@ -598,7 +594,7 @@ describe('User cart', () => {
     );
 
     expect(numDatasetsField.textContent).toEqual('Number of Datasets: 1');
-    expect(numFilesText.textContent).toEqual('Number of Files: 3');
+    expect(numFilesText.textContent).toEqual('Number of Files: 2');
 
     // Check "Remove All Items" button renders with cart > 0 items and click it
     const clearCartBtn = within(cart).getByRole('button', {

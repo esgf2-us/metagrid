@@ -25,12 +25,6 @@ const handlers = [
   rest.post(apiRoutes.keycloakAuth.path, (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(userAuthFixture()))
   ),
-  rest.post(apiRoutes.keycloakAuthAlt.path, (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json(userAuthFixture()))
-  ),
-  rest.post(apiRoutes.keycloakAuth.path, (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json(userAuthFixture()))
-  ),
   rest.get(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(globusTransferResponseFixture()))
   ),

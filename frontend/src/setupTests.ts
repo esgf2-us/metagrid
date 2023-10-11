@@ -4,6 +4,7 @@
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom/extend-expect';
 import { server } from './api/mock/server';
+import messageDisplayData from './components/Messaging/messageDisplayData';
 
 jest.setTimeout(15000);
 
@@ -49,6 +50,10 @@ const localStorageMock = (() => {
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
 beforeAll(() => server.listen());
+beforeEach(() => {
+  // Set start up messages as 'seen' so start popup won't show
+  localStorage.setItem('lastMessageSeen', messageDisplayData.messageToShow);
+});
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
