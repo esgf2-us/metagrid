@@ -48,6 +48,10 @@ const localStorageMock = (() => {
 
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
+// beforeEach(() => {
+//   jest.spyOn(console, 'error').mockImplementation(() => {});
+// });
+
 beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());

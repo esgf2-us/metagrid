@@ -25,12 +25,12 @@ const handlers = [
   rest.post(apiRoutes.keycloakAuth.path, (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(userAuthFixture()))
   ),
-  rest.post(apiRoutes.keycloakAuthAlt.path, (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json(userAuthFixture()))
-  ),
-  rest.post(apiRoutes.keycloakAuth.path, (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json(userAuthFixture()))
-  ),
+  // rest.post(apiRoutes.keycloakAuthAlt.path, (_req, res, ctx) =>
+  //   res(ctx.status(200), ctx.json(userAuthFixture()))
+  // ),
+  // rest.post(apiRoutes.keycloakAuth.path, (_req, res, ctx) =>
+  //   res(ctx.status(200), ctx.json(userAuthFixture()))
+  // ),
   rest.get(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(globusTransferResponseFixture()))
   ),
@@ -126,7 +126,7 @@ const handlers = [
   // Default fallback handler
   rest.get('*', (req, res, ctx) => {
     // eslint-disable-next-line no-console
-    console.error(`Please add request handler for ${req.url.toString()}`);
+    // console.error(`Please add request handler for ${req.url.toString()}`);
     return res(
       ctx.status(500),
       ctx.json({ error: 'You must add request handler.' })

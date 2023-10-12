@@ -30,8 +30,9 @@ export type ApiRoute = {
 };
 
 type ApiRoutes = {
+  globusAuth: ApiRoute;
   keycloakAuth: ApiRoute;
-  keycloakAuthAlt: ApiRoute;
+  // keycloakAuthAlt: ApiRoute;
   globusTransfer: ApiRoute;
   userInfo: ApiRoute;
   userCart: ApiRoute;
@@ -56,15 +57,20 @@ export const clickableRoute = (route: string): string =>
 // Any path with parameters (e.g. '/:datasetID/') must be in camelCase
 // https://mswjs.io/docs/basics/path-matching#path-with-parameters
 const apiRoutes: ApiRoutes = {
+  // Globus APIs
+  globusAuth: {
+    path: `${metagridApiURL}/proxy/globus-auth/`,
+    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Globus', HTTPCode),
+  },
   // MetaGrid APIs
   keycloakAuth: {
     path: `${metagridApiURL}/dj-rest-auth/keycloak`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Keycloak', HTTPCode),
   },
-  keycloakAuthAlt: {
-    path: `${metagridApiURL}/keycloak.json`,
-    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Keycloak.json', HTTPCode),
-  },
+  // keycloakAuthAlt: {
+  //   path: `${metagridApiURL}/keycloak.json`,
+  //   handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Keycloak.json', HTTPCode),
+  // },
   globusTransfer: {
     path: `${metagridApiURL}/globus/transfer`,
     handleErrorMsg: (HTTPCode) =>
