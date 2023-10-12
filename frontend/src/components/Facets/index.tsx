@@ -80,28 +80,26 @@ const Facets: React.FC<React.PropsWithChildren<Props>> = ({
       className={leftSidebarTargets.leftSideBar.class()}
     >
       <h3>Select a Project</h3>
-      <div data-testid="project-form">
-        <ProjectForm
-          activeSearchQuery={activeSearchQuery}
-          projectsFetched={data}
-          apiIsLoading={isLoading}
-          apiError={error as ResponseError}
-          onFinish={handleSubmitProjectForm}
-        />
-        {curProject && curProject.projectUrl && (
-          <Tooltip title={curProject.projectUrl}>
-            <Button
-              href={curProject.projectUrl}
-              className={leftSidebarTargets.projectWebsiteBtn.class()}
-              target="_blank"
-              style={{ marginTop: '10px' }}
-            >
-              {curProject.name} Website
-            </Button>
-          </Tooltip>
-        )}
-        <Divider />
-      </div>
+      <ProjectForm
+        activeSearchQuery={activeSearchQuery}
+        projectsFetched={data}
+        apiIsLoading={isLoading}
+        apiError={error as ResponseError}
+        onFinish={handleSubmitProjectForm}
+      />
+      {curProject && curProject.projectUrl && (
+        <Tooltip title={curProject.projectUrl}>
+          <Button
+            href={curProject.projectUrl}
+            className={leftSidebarTargets.projectWebsiteBtn.class()}
+            target="_blank"
+            style={{ marginTop: '10px' }}
+          >
+            {curProject.name} Website
+          </Button>
+        </Tooltip>
+      )}
+      <Divider />
       {!objectIsEmpty(availableFacets) && (
         <div className={leftSidebarTargets.searchFacetsForm.class()}>
           <FacetsForm

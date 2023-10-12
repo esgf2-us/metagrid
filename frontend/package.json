@@ -40,6 +40,8 @@
       "!**/coverage/**",
       "!src/index.tsx",
       "!src/test/**",
+      "!src/assets",
+      "!src/api/mock/**",
       "!**/serviceWorker.js",
       "!**/react-app-env.d.ts",
       "!**/lib/**"
