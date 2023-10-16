@@ -9,7 +9,7 @@ CORS_ORIGIN_WHITELIST=http://localhost:3000
 
 # django-all-auth
 # ------------------------------------------------------------------------------
-KEYCLOAK_URL=https://login.esgf.io/
+KEYCLOAK_URL=https://esgf-login.ceda.ac.uk/
 KEYCLOAK_REALM=esgf
 KEYCLOAK_CLIENT_ID=metagrid-localhost
 
@@ -34,7 +34,5 @@ DJANGO_LOGIN_REDIRECT_URL=http://localhost:3000/search
 DJANGO_LOGOUT_REDIRECT_URL=http://localhost:3000/search
 
 # https://app.globus.org/settings/developers/registration/confidential_client
-# GLOBUS_CLIENT_KEY=12345
-# GLOBUS_CLIENT_SECRET=12345
-GLOBUS_CLIENT_KEY=998c6dc4-2939-4714-9004-5ac5b804abea
-GLOBUS_CLIENT_SECRET=xGgpQ2mt4TOVijoGTPkp7GdQZQoB29EMzgOqNdQ6Dzw=
+GLOBUS_CLIENT_KEY=12345
+GLOBUS_CLIENT_SECRET=12345
