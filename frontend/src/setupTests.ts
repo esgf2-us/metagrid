@@ -49,10 +49,6 @@ const localStorageMock = (() => {
 
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
-// beforeEach(() => {
-//   jest.spyOn(console, 'error').mockImplementation(() => {});
-// });
-
 beforeAll(() => server.listen());
 beforeEach(() => {
   // Set start up messages as 'seen' so start popup won't show
