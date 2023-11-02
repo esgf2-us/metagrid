@@ -256,7 +256,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       if (globusTransferToken && refreshToken) {
         let messageContent: React.ReactNode | string = null;
         let messageType: NotificationType = 'success';
-
+        let durationVal = 5;
         startGlobusTransfer(
           globusTransferToken.access_token,
           refreshToken,
@@ -305,7 +305,8 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           })
           .catch(async (error: ResponseError) => {
             if (error.message !== '') {
-              messageContent = `Globus transfer task failed: ${error.message}`;
+              messageContent = `Globus transfer task failed, ${error.message} is your error code.  Please contact ESGF support.`;
+              durationVal = 60;
             } else {
               messageContent = `Globus transfer task failed. Resetting tokens.`;
               // eslint-disable-next-line no-console
@@ -317,7 +318,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           .finally(async () => {
             setDownloadActive(false);
             await showNotice(messageContent, {
-              duration: 5,
+              duration: durationVal,
               type: messageType,
             });
             setDownloadActive(true);

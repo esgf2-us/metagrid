@@ -3,6 +3,7 @@ import os
 import re
 import urllib.parse
 import urllib.request
+import uuid
 from datetime import datetime, timedelta
 
 from django.conf import settings
@@ -276,14 +277,18 @@ def submit_transfer(
         transfer_task.add_item(source_file, target_file)
 
     # submit the transfer request
+    response = {}
     try:
         data = transfer_client.submit_transfer(transfer_task)
-        task_id = data["task_id"]
-        print("Submitted transfer task with id: %s" % task_id)
+        response["success"] = True
+        response["task_id"] = data["task_id"]
+        print("Submitted transfer task with id: %s" % response["task_id"])
     except Exception as e:
-        print("Could not submit the transfer. Error: %s" % str(e))
-        task_id = "Error"
-    return task_id
+        response["success"] = False
+        error_uuid = uuid.uuid4()
+        print(f"Could not submit the transfer. Error: {e} - ID {error_uuid}")
+        response["error_uuid"] = error_uuid
+    return response
 
 
 @require_http_methods(["GET", "POST"])
@@ -338,19 +343,19 @@ def do_globus_transfer(request):  # pragma: no cover
 
     for source_endpoint, source_files in list(download_map.items()):
         # submit transfer request
-        task_id = submit_transfer(
+        task_response = submit_transfer(
             transfer_client,
             TRANSFER_TEMP_ENDPOINT,
             source_files,
             target_endpoint,
             target_folder,
         )
-        if task_id == "Error":
-            return HttpResponseBadRequest("Error")
+        if not task_response["success"]:
+            return HttpResponseBadRequest(task_response["error_uuid"])
 
-        task_ids.append(task_id)
+        task_ids.append(task_response["task_id"])
 
-    return HttpResponse(json.dumps({"status": "OK", "taskid": task_id}))
+    return HttpResponse(json.dumps({"status": "OK", "taskid": task_ids}))
 
 
 @require_http_methods(["POST"])
