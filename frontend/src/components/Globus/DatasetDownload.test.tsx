@@ -1,21 +1,59 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import React from 'react';
 import userEvent from '@testing-library/user-event';
-import { cleanup, fireEvent, waitFor, within } from '@testing-library/react';
+import { cleanup, waitFor, within } from '@testing-library/react';
 import { customRender } from '../../test/custom-render';
 import DatasetDownloadForm from './DatasetDownload';
-import { loadSessionValue } from '../../api';
 import { server } from '../../api/mock/server';
 import { getSearchFromUrl } from '../../common/utils';
 import { ActiveSearchQuery } from '../Search/types';
-import { getRowName, printElementContents } from '../../test/jestTestFunctions';
+import {
+  getRowName,
+  printElementContents,
+  tempStorageGetMock,
+  tempStorageSetMock,
+} from '../../test/jestTestFunctions';
 import App from '../App/App';
+import { GlobusTokenResponse } from './types';
 
 // Used to restore window.location after each test
 const location = JSON.stringify(window.location);
 
-const activeSearch: ActiveSearchQuery = getSearchFromUrl();
+const activeSearch: ActiveSearchQuery = getSearchFromUrl('project=test1');
 
 const user = userEvent.setup();
+
+const mockLoadValue = jest.fn();
+mockLoadValue.mockImplementation((key: string) => {
+  return Promise.resolve({
+    msg: 'Key found!',
+    key: tempStorageGetMock(key),
+  });
+});
+
+const mockSaveValue = jest.fn();
+mockSaveValue.mockImplementation((key: string, value: unknown) => {
+  return Promise.resolve({
+    msg: 'Updated temporary storage.',
+    data_key: tempStorageSetMock(key, value),
+  });
+});
+
+jest.mock('../../api/index', () => {
+  const originalModule = jest.requireActual('../../api/index');
+
+  return {
+    __esModule: true,
+    ...originalModule,
+    loadSessionValue: (key: string) => {
+      return mockLoadValue(key);
+    },
+    saveSessionValue: (key: string, value: unknown) => {
+      return mockSaveValue(key, value);
+    },
+  };
+});
 
 afterEach(() => {
   // Routes are already declared in the App component using BrowserRouter, so MemoryRouter does
@@ -41,57 +79,25 @@ afterEach(() => {
   cleanup();
 });
 
-const mockLoadSessionValue = loadSessionValue as jest.MockedFunction<
-  typeof loadSessionValue
->;
-
 describe('Download form tests', () => {
   it('Download form renders.', () => {
     const downloadForm = customRender(<DatasetDownloadForm />);
     expect(downloadForm).toBeTruthy();
-
-    //  mockLoadSessionValue.mockResolvedValue(true);
-    expect(downloadForm).toBeTruthy();
   });
-
-  it('Performs a wget download from the dropdown', async () => {
-    const {
-      getByRole,
-      getByTestId,
-      getByText,
-      getByPlaceholderText,
-    } = customRender(<App searchQuery={activeSearch} />, {
-      token: 'token',
-    });
-
-    // Check applicable components render
-    const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
-    expect(leftMenuComponent).toBeTruthy();
-
-    // Change value for free-text input
-    const input = 'foo';
-    const freeTextInput = await waitFor(() =>
-      getByPlaceholderText('Search for a keyword')
+  it('Start the wget transfer', async () => {
+    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
+      <App searchQuery={activeSearch} />
     );
-    expect(freeTextInput).toBeTruthy();
-    fireEvent.change(freeTextInput, { target: { value: input } });
 
-    // Submit the form
-    const submitBtn = within(leftMenuComponent).getByRole('img', {
-      name: 'search',
-    });
-    fireEvent.submit(submitBtn);
-
-    // Wait for components to rerender
-    await waitFor(() => getByTestId('search'));
-
-    // Check first row exists
-    const firstRow = await waitFor(() =>
-      getByRole('row', {
-        name: getRowName('plus', 'close', 'bar', '2', '1', '1'),
-      })
+    // Wait for results to load
+    await waitFor(() =>
+      expect(getByText('results found for', { exact: false })).toBeTruthy()
     );
-    expect(firstRow).toBeTruthy();
+
+    // Check first row renders and click the checkbox
+    const firstRow = getByRole('row', {
+      name: getRowName('plus', 'check', 'foo', '3', '1', '1', true),
+    });
 
     // Check first row has add button and click it
     const addBtn = within(firstRow).getByRole('img', { name: 'plus' });
@@ -99,17 +105,199 @@ describe('Download form tests', () => {
     await user.click(addBtn);
 
     // Check 'Added items(s) to the cart' message appears
-    const addText = await waitFor(() =>
-      getByText('Added item(s) to your cart')
+    const addText = await waitFor(
+      () => getAllByText('Added item(s) to your cart')[0]
     );
     expect(addText).toBeTruthy();
 
-    // Check first row has add button and click it
-    const cartBtn = getByRole('menuitem', { name: 'shopping-cart 1 Cart' });
-    expect(cartBtn).toBeTruthy();
+    // Switch to the cart page
+    const cartBtn = getByTestId('cartPageLink');
     await user.click(cartBtn);
 
-    // Click the wget download option
-    printElementContents(undefined);
+    // Select item for globus transfer
+    const firstCheckBox = getByRole('checkbox');
+    expect(firstCheckBox).toBeTruthy();
+    await user.click(firstCheckBox);
+
+    // Select download dropdown
+    const globusTransferDropdown = getByText('Globus');
+    expect(globusTransferDropdown).toBeTruthy();
+    await user.click(globusTransferDropdown);
+
+    // Select wget
+    const wgetOption = getAllByText(/wget/i)[2];
+    expect(wgetOption).toBeTruthy();
+    await user.click(wgetOption);
+
+    // Start wget download
+    const wgetDownload = getByText('Download');
+    expect(wgetDownload).toBeTruthy();
+    await user.click(wgetDownload);
+
+    // Expect script generating message to show
+    expect(
+      getByText('The wget script is generating, please wait momentarily.')
+    ).toBeTruthy();
+  });
+  it('Download form renders and transfer popup form shows.', async () => {
+    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
+      <App searchQuery={activeSearch} />
+    );
+
+    // Wait for results to load
+    await waitFor(() =>
+      expect(getByText('results found for', { exact: false })).toBeTruthy()
+    );
+
+    // Check first row renders and click the checkbox
+    const firstRow = getByRole('row', {
+      name: getRowName('plus', 'check', 'foo', '3', '1', '1', true),
+    });
+
+    // Check first row has add button and click it
+    const addBtn = within(firstRow).getByRole('img', { name: 'plus' });
+    expect(addBtn).toBeTruthy();
+    await user.click(addBtn);
+
+    // Check 'Added items(s) to the cart' message appears
+    const addText = await waitFor(
+      () => getAllByText('Added item(s) to your cart')[0]
+    );
+    expect(addText).toBeTruthy();
+
+    // Switch to the cart page
+    const cartBtn = getByTestId('cartPageLink');
+    await user.click(cartBtn);
+
+    // Select item for globus transfer
+    const firstCheckBox = getByRole('checkbox');
+    expect(firstCheckBox).toBeTruthy();
+    await user.click(firstCheckBox);
+
+    // Click Transfer button
+    const globusTransferBtn = getByRole('button', {
+      name: /download transfer/i,
+    });
+    expect(globusTransferBtn).toBeTruthy();
+    await user.click(globusTransferBtn);
+
+    // Expect the steps popup to show
+    expect(getByText(/Steps for Globus transfer:/i)).toBeTruthy();
+  });
+
+  xit('Cancel Globus Transfer steps', async () => {
+    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
+      <App searchQuery={activeSearch} />
+    );
+
+    tempStorageSetMock('globusTransferToken', {
+      id_token: '',
+      resource_server: '',
+      other_tokens: { refresh_token: '', transfer_token: '' },
+      created_on: 0,
+      expires_in: 1000,
+      access_token: '',
+      refresh_expires_in: 0,
+      refresh_token: '',
+      scope:
+        'openid profile email offline_access urn:globus:auth:scope:transfer.api.globus.org:all',
+      token_type: '',
+    } as GlobusTokenResponse);
+
+    tempStorageGetMock('globusTransferToken');
+
+    // Wait for results to load
+    await waitFor(() =>
+      expect(getByText('results found for', { exact: false })).toBeTruthy()
+    );
+
+    // Check first row renders and click the checkbox
+    const firstRow = getByRole('row', {
+      name: getRowName('plus', 'check', 'foo', '3', '1', '1', true),
+    });
+
+    // Check first row has add button and click it
+    const addBtn = within(firstRow).getByRole('img', { name: 'plus' });
+    expect(addBtn).toBeTruthy();
+    await user.click(addBtn);
+
+    // Check 'Added items(s) to the cart' message appears
+    const addText = await waitFor(
+      () => getAllByText('Added item(s) to your cart')[0]
+    );
+    expect(addText).toBeTruthy();
+
+    // Switch to the cart page
+    const cartBtn = getByTestId('cartPageLink');
+    await user.click(cartBtn);
+
+    // Select item for globus transfer
+    const firstCheckBox = getByRole('checkbox');
+    expect(firstCheckBox).toBeTruthy();
+    await user.click(firstCheckBox);
+
+    // Click Transfer button
+    const globusTransferBtn = getByRole('button', {
+      name: /download transfer/i,
+    });
+    expect(globusTransferBtn).toBeTruthy();
+    await user.click(globusTransferBtn);
+
+    // Click Cancel to end transfer steps
+    const cancelBtn = getByText('Cancel');
+    expect(cancelBtn).toBeTruthy();
+    await user.click(cancelBtn);
+
+    printElementContents(cancelBtn);
+  });
+
+  it('Cancel Globus Transfer steps', async () => {
+    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
+      <App searchQuery={activeSearch} />
+    );
+
+    // Wait for results to load
+    await waitFor(() =>
+      expect(getByText('results found for', { exact: false })).toBeTruthy()
+    );
+
+    // Check first row renders and click the checkbox
+    const firstRow = getByRole('row', {
+      name: getRowName('plus', 'check', 'foo', '3', '1', '1', true),
+    });
+
+    // Check first row has add button and click it
+    const addBtn = within(firstRow).getByRole('img', { name: 'plus' });
+    expect(addBtn).toBeTruthy();
+    await user.click(addBtn);
+
+    // Check 'Added items(s) to the cart' message appears
+    const addText = await waitFor(
+      () => getAllByText('Added item(s) to your cart')[0]
+    );
+    expect(addText).toBeTruthy();
+
+    // Switch to the cart page
+    const cartBtn = getByTestId('cartPageLink');
+    await user.click(cartBtn);
+
+    // Select item for globus transfer
+    const firstCheckBox = getByRole('checkbox');
+    expect(firstCheckBox).toBeTruthy();
+    await user.click(firstCheckBox);
+
+    // Click Transfer button
+    const globusTransferBtn = getByRole('button', {
+      name: /download transfer/i,
+    });
+    expect(globusTransferBtn).toBeTruthy();
+    await user.click(globusTransferBtn);
+
+    // Click Yes to start transfer steps
+    // const yesBtn = getByText('Yes');
+    // expect(yesBtn).toBeTruthy();
+    // await user.click(yesBtn);
+
+    // printElementContents(undefined);
   });
 });

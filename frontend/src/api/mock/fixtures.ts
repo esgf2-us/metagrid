@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 /**
  * This file contains fixtures to pre-populate server-handlers with dummy data.
  * Fixtures allows tests to be maintainable (especially in the case of updated
@@ -15,6 +16,7 @@ import {
   RawProject,
   RawProjects,
 } from '../../components/Facets/types';
+import { GlobusTokenResponse } from '../../components/Globus/types';
 import {
   NodeStatusArray,
   RawNodeStatus,
@@ -48,6 +50,7 @@ export const rawProjectFixture = (
 export const projectsFixture = (): RawProjects => [
   rawProjectFixture(),
   rawProjectFixture({ name: 'test2' }),
+  rawProjectFixture({ name: 'test3' }),
 ];
 
 /**
@@ -112,14 +115,6 @@ export const parsedFacetsFixture = (
 };
 
 export const userCartFixture = (): UserCart => rawSearchResultsFixture();
-
-export const tempStorageGetMock = (key: string): string | null => {
-  return window.localStorage.getItem(key);
-};
-
-export const tempStorageSetMock = (key: string, value: string): void => {
-  window.localStorage.setItem(key, value);
-};
 
 export const rawCitationFixture = (
   props: Partial<RawCitation> = {}
@@ -283,3 +278,19 @@ export const parsedNodeStatusFixture = (): NodeStatusArray => [
     isOnline: false,
   },
 ];
+
+export const globusTokenResponseFixture = (): GlobusTokenResponse => {
+  return {
+    access_token: '',
+    refresh_expires_in: 0,
+    refresh_token: '',
+    scope: '',
+    token_type: '',
+    id_token: '',
+    resource_server: '',
+    other_tokens: '',
+    created_on: 0,
+    expires_in: 0,
+    error: '',
+  };
+};

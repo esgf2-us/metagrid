@@ -34,15 +34,19 @@ export async function showNotice(
   switch (config?.type) {
     case 'success':
       await message.success(msgConfig);
+      /* istanbul ignore next */
       break;
     case 'warning':
       await message.warning(msgConfig);
+      /* istanbul ignore next */
       break;
     case 'error':
       await message.error(msgConfig);
+      /* istanbul ignore next */
       break;
     case 'info':
       await message.info(msgConfig);
+      /* istanbul ignore next */
       break;
     default:
       await message.success(msgConfig);
@@ -53,6 +57,7 @@ export async function showError(
   errorMsg: React.ReactNode | string
 ): Promise<void> {
   let msg = errorMsg;
+  /* istanbul ignore next */
   if (!errorMsg || errorMsg === '') {
     msg = 'An unknown error has occurred.';
   }

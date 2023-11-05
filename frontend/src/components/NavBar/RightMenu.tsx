@@ -119,7 +119,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
     },
     {
       label: (
-        <Link to="/cart/items">
+        <Link data-testid="cartPageLink" to="/cart/items">
           <ShoppingCartOutlined style={{ fontSize: '20px' }} />
           <Badge
             count={numCartItems}

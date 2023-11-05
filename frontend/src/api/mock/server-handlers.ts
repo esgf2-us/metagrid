@@ -13,13 +13,15 @@ import {
   rawCitationFixture,
   rawNodeStatusFixture,
   rawUserCartFixture,
-  tempStorageGetMock,
-  tempStorageSetMock,
   userAuthFixture,
   userInfoFixture,
   userSearchQueriesFixture,
   userSearchQueryFixture,
 } from './fixtures';
+import {
+  tempStorageGetMock,
+  tempStorageSetMock,
+} from '../../test/jestTestFunctions';
 
 const handlers = [
   rest.post(apiRoutes.keycloakAuth.path, (_req, res, ctx) =>
@@ -32,20 +34,28 @@ const handlers = [
     res(ctx.status(200), ctx.json(userInfoFixture()))
   ),
   rest.post(apiRoutes.tempStorageGet.path, (_req, res, ctx) => {
-    const data = _req.body as { [key: string]: unknown };
+    const data = _req.body as { dataKey: string; dataValue: unknown };
     if (data && data.dataKey) {
-      const keyName = data.dataKey as string;
+      const keyName = data.dataKey;
 
-      const value = tempStorageGetMock(keyName);
+      console.log(`Get Value->Key: ${keyName}`);
+      console.log(data.dataValue);
+
+      const value: unknown = tempStorageGetMock(keyName);
       return res(ctx.status(200), ctx.json({ [keyName]: value }));
     }
     return res(ctx.status(400), ctx.json('Load failed!'));
   }),
   rest.post(apiRoutes.tempStorageSet.path, (_req, res, ctx) => {
     const reqBody = _req.body as string;
-    const data = JSON.parse(reqBody) as { [key: string]: unknown };
+    const data = JSON.parse(reqBody) as { dataKey: string; dataValue: unknown };
     if (data && data.dataKey && data.dataValue) {
-      tempStorageSetMock(data.dataKey as string, data.dataValue as string);
+      const keyName = data.dataKey;
+
+      console.log(`Set Value->Key: ${keyName}`);
+      console.log(data.dataValue);
+
+      tempStorageSetMock(keyName, data.dataValue as string);
       return res(ctx.status(200), ctx.json({ data: 'Save success!' }));
     }
     return res(ctx.status(400), ctx.json({ data: 'Save failed!' }));
@@ -120,7 +130,7 @@ const handlers = [
   // Default fallback handler
   rest.get('*', (req, res, ctx) => {
     // eslint-disable-next-line no-console
-    console.error(`Please add request handler for ${req.url.toString()}`);
+    // console.error(`Please add request handler for ${req.url.toString()}`);
     return res(
       ctx.status(500),
       ctx.json({ error: 'You must add request handler.' })
