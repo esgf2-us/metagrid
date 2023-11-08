@@ -16,7 +16,7 @@ type Props = {
   color?: string;
 };
 
-export const Tag: React.FC<Props> = ({
+export const Tag: React.FC<React.PropsWithChildren<Props>> = ({
   value,
   onClose,
   closable = true,

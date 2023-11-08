@@ -1,5 +1,5 @@
 import { BookOutlined, ShoppingCartOutlined } from '@ant-design/icons';
-import { Tabs } from 'antd';
+import { Tabs, TabsProps } from 'antd';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { cartTourTargets } from '../../common/reactJoyrideSteps';
@@ -19,7 +19,7 @@ export type Props = {
   nodeStatus?: NodeStatusArray;
 };
 
-const Cart: React.FC<Props> = ({
+const Cart: React.FC<React.PropsWithChildren<Props>> = ({
   userCart,
   userSearchQueries,
   onUpdateCart,
@@ -45,42 +45,50 @@ const Cart: React.FC<Props> = ({
     setActiveTab(key);
   };
 
+  const tabItems: TabsProps['items'] = [
+    {
+      key: 'items',
+      label: (
+        <span className={cartTourTargets.datasetBtn.class()}>
+          <ShoppingCartOutlined />
+          Datasets
+        </span>
+      ),
+      children: (
+        <Items
+          userCart={userCart}
+          onUpdateCart={onUpdateCart}
+          onClearCart={onClearCart}
+          nodeStatus={nodeStatus}
+        />
+      ),
+    },
+    {
+      key: 'searches',
+      label: (
+        <span className={cartTourTargets.libraryBtn.class()}>
+          <BookOutlined />
+          Search Library
+        </span>
+      ),
+      children: (
+        <Searches
+          userSearchQueries={userSearchQueries}
+          onRunSearchQuery={onRunSearchQuery}
+          onRemoveSearchQuery={onRemoveSearchQuery}
+        />
+      ),
+    },
+  ];
+
   return (
     <div data-testid="cart">
-      <Tabs activeKey={activeTab} animated={false} onTabClick={handleTabClick}>
-        <Tabs.TabPane
-          tab={
-            <span className={cartTourTargets.datasetBtn.class()}>
-              <ShoppingCartOutlined />
-              Datasets
-            </span>
-          }
-          key="items"
-        >
-          <Items
-            userCart={userCart}
-            onUpdateCart={onUpdateCart}
-            onClearCart={onClearCart}
-            nodeStatus={nodeStatus}
-          />
-        </Tabs.TabPane>
-
-        <Tabs.TabPane
-          tab={
-            <span className={cartTourTargets.libraryBtn.class()}>
-              <BookOutlined />
-              Search Library
-            </span>
-          }
-          key="searches"
-        >
-          <Searches
-            userSearchQueries={userSearchQueries}
-            onRunSearchQuery={onRunSearchQuery}
-            onRemoveSearchQuery={onRemoveSearchQuery}
-          />
-        </Tabs.TabPane>
-      </Tabs>
+      <Tabs
+        activeKey={activeTab}
+        animated={false}
+        onTabClick={handleTabClick}
+        items={tabItems}
+      />
     </div>
   );
 };

@@ -18,11 +18,14 @@ import {
 import Modal from '../Feedback/Modal';
 
 export type Props = {
-  visible: boolean;
+  open: boolean;
   onClose: () => void;
 };
 
-const Support: React.FC<Props> = ({ visible, onClose }) => {
+const Support: React.FC<React.PropsWithChildren<Props>> = ({
+  open,
+  onClose,
+}) => {
   // Tutorial state
   const tourState: RawTourState = React.useContext(ReactJoyrideContext);
   const { setTour, startTour, setCurrentAppPage } = tourState;
@@ -58,7 +61,7 @@ const Support: React.FC<Props> = ({ visible, onClose }) => {
     <>
       <div data-testid="support-form">
         <Modal
-          visible={visible}
+          open={open}
           closeText="Close Support"
           title={
             <div>
