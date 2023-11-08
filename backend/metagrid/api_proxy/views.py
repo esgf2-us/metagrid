@@ -20,7 +20,6 @@ from rest_framework_simplejwt.tokens import RefreshToken
 @api_view()
 @permission_classes([])
 def do_globus_auth(request):
-    print(settings.CSRF_TRUSTED_ORIGINS)
     additional_info = {}
     if request.user.is_authenticated:
         refresh = RefreshToken.for_user(request.user)

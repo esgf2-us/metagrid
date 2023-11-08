@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     "drf_yasg",
     "social_django",
     # Your apps
+    "metagrid.api_proxy",
     "metagrid.users",
     "metagrid.projects",
     "metagrid.cart",
