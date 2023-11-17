@@ -57,3 +57,5 @@ INSTALLED_APPS += ["gunicorn"]  # noqa F405
 # ------------------------------------------------------------------------------
 # Django Admin URL regex.
 ADMIN_URL = env("DJANGO_ADMIN_URL")
+
+CORS_ORIGIN_ALLOW_ALL = False

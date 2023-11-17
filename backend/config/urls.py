@@ -15,6 +15,8 @@ from rest_framework.routers import DefaultRouter
 from metagrid.api_globus.views import do_globus_transfer, get_access_token
 from metagrid.api_proxy.views import (
     do_citation,
+    do_globus_auth,
+    do_globus_logout,
     do_search,
     do_status,
     do_wget,
@@ -50,6 +52,10 @@ urlpatterns = [
         r"^$",
         RedirectView.as_view(url=reverse_lazy("api-root"), permanent=False),
     ),
+    # social_auth
+    path("", include("social_django.urls", namespace="social")),
+    path("proxy/globus-logout/", do_globus_logout, name="globus-logout"),
+    path("proxy/globus-auth/", do_globus_auth, name="globus-auth"),
     # all-auth
     path("accounts/", include("allauth.urls"), name="socialaccount_signup"),
     # dj-rest-auth

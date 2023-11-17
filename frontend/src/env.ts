@@ -55,3 +55,12 @@ export const keycloakClientId = process.env
 // https://github.com/abdalla/react-hotjar
 export const hjid = (process.env.REACT_APP_HOTJAR_ID as unknown) as number;
 export const hjsv = (process.env.REACT_APP_HOTJAR_SV as unknown) as number;
+
+// Django Auth URLs
+export const djangoLoginUrl = process.env.REACT_APP_DJANGO_LOGIN_URL as string;
+export const djangoLogoutUrl = process.env
+  .REACT_APP_DJANGO_LOGOUT_URL as string;
+
+// Authentication Method
+export const authenticationMethod = process.env
+  .REACT_APP_AUTHENTICATION_METHOD as string;
