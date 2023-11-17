@@ -38,9 +38,6 @@ const handlers = [
     if (data && data.dataKey) {
       const keyName = data.dataKey;
 
-      console.log(`Get Value->Key: ${keyName}`);
-      console.log(data.dataValue);
-
       const value: unknown = tempStorageGetMock(keyName);
       return res(ctx.status(200), ctx.json({ [keyName]: value }));
     }
@@ -51,9 +48,6 @@ const handlers = [
     const data = JSON.parse(reqBody) as { dataKey: string; dataValue: unknown };
     if (data && data.dataKey && data.dataValue) {
       const keyName = data.dataKey;
-
-      console.log(`Set Value->Key: ${keyName}`);
-      console.log(data.dataValue);
 
       tempStorageSetMock(keyName, data.dataValue as string);
       return res(ctx.status(200), ctx.json({ data: 'Save success!' }));

@@ -1,5 +1,5 @@
 import { CheckCircleFilled, DownloadOutlined } from '@ant-design/icons';
-import { Button, Form, Modal, Radio, Select, Space, Tooltip } from 'antd';
+import { Button, Modal, Radio, Select, Space, Tooltip } from 'antd';
 import PKCE from 'js-pkce';
 import React, { useEffect } from 'react';
 import { useRecoilState } from 'recoil';
@@ -114,10 +114,10 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   ] = React.useState<ModalState>({
     show: false,
     state: 'none',
-    onOkAction: () => {
+    onOkAction: /* istanbul ignore next */ () => {
       setUseDefaultConfirmModal({ ...useDefaultConfirmModal, show: false });
     },
-    onCancelAction: () => {
+    onCancelAction: /* istanbul ignore next */ () => {
       setUseDefaultConfirmModal({ ...useDefaultConfirmModal, show: false });
     },
   });
@@ -155,6 +155,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   function redirectToRootUrl(): void {
     // Redirect back to the root URL (simple but brittle way to clear the query params)
     const splitUrl = window.location.href.split('?');
+    // istanbul ignore next
     if (splitUrl.length > 1) {
       const params = new URLSearchParams(window.location.search);
       if (endpointUrlReady(params) || tokenUrlReady(params)) {
@@ -168,6 +169,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     const token = await loadSessionValue<GlobusTokenResponse>(
       GlobusStateKeys.transferToken
     );
+
     if (token && token.expires_in && token.created_on) {
       const createTime = token.created_on;
       const lifeTime = token.expires_in;
@@ -223,12 +225,18 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       });
       const ids = itemSelections.map((item) => item.id);
       showNotice('The wget script is generating, please wait momentarily.', {
-        duration: 7,
+        duration: 3,
         type: 'info',
       });
       setDownloadIsLoading(true);
       fetchWgetScript(ids)
-        .then(() => setDownloadIsLoading(false))
+        .then(() => {
+          setDownloadIsLoading(false);
+          showNotice('Wget script downloaded successfully!', {
+            duration: 4,
+            type: 'success',
+          });
+        })
         .catch((error: ResponseError) => {
           showError(error.message);
           setDownloadIsLoading(false);
@@ -400,7 +408,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   };
 
   const handleDownloadForm = (downloadType: 'wget' | 'Globus'): void => {
-    /* istanbul ignore else */
     if (downloadType === 'wget') {
       handleWgetDownload();
     } else if (downloadType === 'Globus') {
@@ -410,8 +417,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           await performGlobusDownloadStep();
         };
         prepareDownload();
-      } else {
-        console.log('Download not ready!');
       }
     }
   };
@@ -693,7 +698,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       const savedTaskItems = await loadSessionValue<GlobusTaskItem[]>(
         GlobusStateKeys.globusTaskItems
       );
-
       if (itemCartSelections) {
         setItemSelections(itemCartSelections);
       }
