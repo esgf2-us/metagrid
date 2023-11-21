@@ -1,5 +1,6 @@
 FROM python:3.9-slim-buster
 
+ENV DATABASE_URL postgres://postgres:postgres@postgres:5432/postgres
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONDONTWRITEBYTECODE 1
 
