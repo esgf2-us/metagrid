@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 /**
  * This file contains fixtures to pre-populate server-handlers with dummy data.
  * Fixtures allows tests to be maintainable (especially in the case of updated
@@ -15,6 +16,10 @@ import {
   RawProject,
   RawProjects,
 } from '../../components/Facets/types';
+import {
+  GlobusEndpointData,
+  GlobusTokenResponse,
+} from '../../components/Globus/types';
 import {
   NodeStatusArray,
   RawNodeStatus,
@@ -48,6 +53,7 @@ export const rawProjectFixture = (
 export const projectsFixture = (): RawProjects => [
   rawProjectFixture(),
   rawProjectFixture({ name: 'test2' }),
+  rawProjectFixture({ name: 'test3' }),
 ];
 
 /**
@@ -66,7 +72,7 @@ export const rawSearchResultFixture = (
     data_node: 'aims3.llnl.gov',
     version: 1,
     size: 1,
-    access: ['HTTPServer', 'OPENDAP', 'Globus'],
+    access: ['wget', 'HTTPServer', 'OPENDAP', 'Globus'],
     citation_url: ['https://foo.bar'],
     xlink: ['url.com|PID|pid'],
   };
@@ -80,6 +86,13 @@ export const rawSearchResultsFixture = (): Array<RawSearchResult> => [
     title: 'bar',
     number_of_files: 2,
     data_node: 'esgf1.dkrz.de',
+    access: ['wget', 'HTTPServer', 'OPENDAP'],
+  }),
+  rawSearchResultFixture({
+    id: 'foobar',
+    title: 'foobar',
+    number_of_files: 3,
+    data_node: 'esgf1.test.de',
     access: ['wget', 'HTTPServer', 'OPENDAP'],
   }),
 ];
@@ -204,6 +217,13 @@ export const userAuthFixture = (
   return { ...defaults, ...props };
 };
 
+export const globusTransferResponseFixture = (): {
+  status: string;
+  taskid: string;
+} => {
+  return { status: 'OK', taskid: '1234567' };
+};
+
 export const userInfoFixture = (
   props: Partial<RawUserInfo> = {}
 ): RawUserInfo => {
@@ -268,3 +288,46 @@ export const parsedNodeStatusFixture = (): NodeStatusArray => [
     isOnline: false,
   },
 ];
+
+export const globusTokenResponseFixture = (): GlobusTokenResponse => {
+  return {
+    access_token: '',
+    refresh_expires_in: 0,
+    refresh_token: '',
+    scope: '',
+    token_type: '',
+    id_token: '',
+    resource_server: '',
+    other_tokens: '',
+    created_on: 0,
+    expires_in: 0,
+    error: '',
+  };
+};
+
+export const globusEnabledDatasetFixture = (): RawSearchResult[] => {
+  return [
+    {
+      id: 'foo',
+      title: 'foo',
+      url: ['foo.bar|HTTPServer', 'http://test.com/file.nc|OPENDAP'],
+      number_of_files: 3,
+      data_node: 'aims3.llnl.gov',
+      version: 1,
+      size: 1,
+      access: ['HTTPServer', 'OPENDAP', 'Globus'],
+      citation_url: ['https://foo.bar'],
+      xlink: ['url.com|PID|pid'],
+    },
+  ];
+};
+
+export const globusEndpointFixture = (): GlobusEndpointData => {
+  return {
+    endpoint: 'globus endpoint',
+    label: 'Globus Test Endpoint',
+    path: 'test/path',
+    globfs: 'test/data',
+    endpointId: '1234567',
+  };
+};

@@ -34,7 +34,7 @@ POSTGRES_PASSWORD=postgres
 # =====================FRONTEND CONFIG====================
 
 # Redirect the frontend to home page when old subdirectory is used (optional)
-REACT_APP_PREVIOUS_URL=
+REACT_APP_PREVIOUS_URL=metagrid
 
 # MetaGrid API
 # https://github.com/aims-group/metagrid/tree/master/backend

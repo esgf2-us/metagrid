@@ -31,7 +31,6 @@ export type ApiRoute = {
 
 type ApiRoutes = {
   keycloakAuth: ApiRoute;
-  globusAuth: ApiRoute;
   globusTransfer: ApiRoute;
   userInfo: ApiRoute;
   userCart: ApiRoute;
@@ -42,7 +41,8 @@ type ApiRoutes = {
   citation: ApiRoute;
   wget: ApiRoute;
   nodeStatus: ApiRoute;
-  tempStorage: ApiRoute;
+  tempStorageGet: ApiRoute;
+  tempStorageSet: ApiRoute;
 };
 
 /**
@@ -59,10 +59,6 @@ const apiRoutes: ApiRoutes = {
   keycloakAuth: {
     path: `${metagridApiURL}/dj-rest-auth/keycloak`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Keycloak', HTTPCode),
-  },
-  globusAuth: {
-    path: `${metagridApiURL}/globus/auth`,
-    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Globus', HTTPCode),
   },
   globusTransfer: {
     path: `${metagridApiURL}/globus/transfer`,
@@ -117,9 +113,15 @@ const apiRoutes: ApiRoutes = {
     handleErrorMsg: (HTTPCode) =>
       mapHTTPErrorCodes('ESGF Node Status API', HTTPCode),
   },
-  tempStorage: {
-    path: `${metagridApiURL}/tempStorage`,
-    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Temp Storage', HTTPCode),
+  tempStorageGet: {
+    path: `${metagridApiURL}/tempStorage/get`,
+    handleErrorMsg: (HTTPCode) =>
+      mapHTTPErrorCodes('Temp Storage Get', HTTPCode),
+  },
+  tempStorageSet: {
+    path: `${metagridApiURL}/tempStorage/set`,
+    handleErrorMsg: (HTTPCode) =>
+      mapHTTPErrorCodes('Temp Storage Set', HTTPCode),
   },
 };
 

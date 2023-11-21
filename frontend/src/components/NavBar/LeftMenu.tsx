@@ -19,7 +19,7 @@ export type Props = {
   onTextSearch: (selectedProject: RawProject, text: string) => void;
 };
 
-const LeftMenu: React.FC<Props> = ({
+const LeftMenu: React.FC<React.PropsWithChildren<Props>> = ({
   projects,
   apiError,
   apiIsLoading,

@@ -38,7 +38,7 @@ class TestGlobusViewSet(APITestCase):
         url = reverse("globus_auth")
         getdata = {}
         response = self.client.post(url, getdata)
-        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_globus_transfer(self):
         url = reverse("globus_transfer")

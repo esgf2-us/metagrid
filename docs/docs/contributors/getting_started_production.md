@@ -152,7 +152,7 @@ docker compose -f docker-compose.prod.yml run --rm django python manage.py creat
 
 Once you are ready with your initial setup, you want to make sure that your application is run by a process manager to survive reboots and auto restarts in case of an error.
 
-Although we recommend using Supervisor, you can use the process manager you are most familiar with. All it needs to do is to run `docker compose -f production.yml up --build` for `traefik`, `backend`, and `frontend`.
+Although we recommend using Supervisor, you can use the process manager you are most familiar with. All it needs to do is to run `docker compose -f production.yml up` for `traefik`, `backend`, and `frontend`.
 
 #### 4.1 Install Supervisor
 
@@ -192,7 +192,7 @@ The directory for where to store the `.ini` files vary based on the OS:
 
 ```ini
 [program:metagrid-traefik]
-command=docker compose -f docker-compose.prod.yml up --build
+command=docker compose -f docker-compose.prod.yml up
 directory=/home/<username>/metagrid/traefik
 redirect_stderr=true
 autostart=true
@@ -204,7 +204,7 @@ priority=10
 
 ```ini
 [program:metagrid-backend]
-command=docker compose -f docker-compose.prod.yml up --build
+command=docker compose -f docker-compose.prod.yml up
 directory=/home/<username>/metagrid/backend
 redirect_stderr=true
 autostart=true
@@ -216,7 +216,7 @@ priority=10
 
 ```ini
 [program:metagrid-frontend]
-command=docker compose -f docker-compose.prod.yml up --build
+command=docker compose -f docker-compose.prod.yml up
 directory=/home/<your-username>/metagrid/frontend
 redirect_stderr=true
 autostart=true

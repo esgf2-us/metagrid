@@ -2,12 +2,11 @@ import {
   CloudDownloadOutlined,
   QuestionCircleOutlined,
 } from '@ant-design/icons';
-import { Col, Popconfirm, Row } from 'antd';
+import { Col, Empty, Popconfirm, Row } from 'antd';
 import React from 'react';
 import { useRecoilState } from 'recoil';
 import { cartTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
-import Empty from '../DataDisplay/Empty';
 import Button from '../General/Button';
 import Table from '../Search/Table';
 import { RawSearchResults } from '../Search/types';
@@ -36,7 +35,7 @@ export type Props = {
   nodeStatus?: NodeStatusArray;
 };
 
-const Items: React.FC<Props> = ({
+const Items: React.FC<React.PropsWithChildren<Props>> = ({
   userCart,
   onUpdateCart,
   onClearCart,

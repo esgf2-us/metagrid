@@ -3,10 +3,12 @@ import { render, RenderResult } from '@testing-library/react';
 import Keycloak from 'keycloak-js';
 import React, { ComponentType } from 'react';
 import { MemoryRouter } from 'react-router-dom';
+import { RecoilRoot } from 'recoil';
 import { AuthProvider } from '../contexts/AuthContext';
 import { keycloakProviderInitConfig } from '../lib/keycloak';
+import { ReactJoyrideProvider } from '../contexts/ReactJoyrideContext';
 
-// @ts-ignore
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const keycloak = new Keycloak();
 
 type AllProvidersProps = {
@@ -23,11 +25,13 @@ type CustomOptions = {
  * https://testing-library.com/docs/example-react-context/
  */
 export const keycloakRender = (
-  ui: React.ReactElement,
-  options?: CustomOptions
+  ui: React.ReactElement
+  // options?: CustomOptions
 ): RenderResult =>
   render(
     <ReactKeycloakProvider
+      // authClient={{ ...createKeycloakStub(), ...options }}
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       authClient={keycloak}
       initOptions={keycloakProviderInitConfig}
     >
@@ -45,36 +49,22 @@ export const customRender = (
 ): RenderResult => {
   function AllProviders({ children }: AllProvidersProps): React.ReactElement {
     return (
-      <ReactKeycloakProvider
-        authClient={keycloak}
-        initOptions={keycloakProviderInitConfig}
-      >
-        <AuthProvider>
-          <MemoryRouter basename={process.env.PUBLIC_URL}>
-            {children}
-          </MemoryRouter>
-        </AuthProvider>
-      </ReactKeycloakProvider>
+      <RecoilRoot>
+        <ReactKeycloakProvider
+          // authClient={{ ...createKeycloakStub(), ...options }}
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          authClient={keycloak}
+          initOptions={keycloakProviderInitConfig}
+        >
+          <AuthProvider>
+            <MemoryRouter basename={process.env.PUBLIC_URL}>
+              <ReactJoyrideProvider>{children}</ReactJoyrideProvider>
+            </MemoryRouter>
+          </AuthProvider>
+        </ReactKeycloakProvider>
+      </RecoilRoot>
     );
   }
 
   return render(ui, { wrapper: AllProviders as ComponentType, ...options });
-};
-
-/**
- * Creates the appropriate name string when performing getByRole('row')
- */
-export const getRowName = (
-  cartButton: 'plus' | 'minus',
-  nodeCircleType: 'question' | 'check' | 'close',
-  title: string,
-  fileCount: string,
-  totalSize: string,
-  version: string
-): string => {
-  let totalBytes = `${totalSize} Bytes`;
-  if (Number.isNaN(Number(totalSize))) {
-    totalBytes = totalSize;
-  }
-  return `right-circle ${cartButton} ${nodeCircleType}-circle ${title} ${fileCount} ${totalBytes} ${version} wget download`;
 };

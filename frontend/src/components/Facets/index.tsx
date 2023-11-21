@@ -37,7 +37,7 @@ export type Props = {
   onSetActiveFacets: (activeFacets: ActiveFacets) => void;
 };
 
-const Facets: React.FC<Props> = ({
+const Facets: React.FC<React.PropsWithChildren<Props>> = ({
   activeSearchQuery,
   availableFacets,
   nodeStatus,
@@ -75,33 +75,31 @@ const Facets: React.FC<Props> = ({
 
   return (
     <div
-      data-testid="facets"
+      data-testid="search-facets"
       style={styles.form}
       className={leftSidebarTargets.leftSideBar.class()}
     >
       <h3>Select a Project</h3>
-      <div data-testid="projectForm">
-        <ProjectForm
-          activeSearchQuery={activeSearchQuery}
-          projectsFetched={data}
-          apiIsLoading={isLoading}
-          apiError={error as ResponseError}
-          onFinish={handleSubmitProjectForm}
-        />
-        {curProject && curProject.projectUrl && (
-          <Tooltip title={curProject.projectUrl}>
-            <Button
-              href={curProject.projectUrl}
-              className={leftSidebarTargets.projectWebsiteBtn.class()}
-              target="_blank"
-              style={{ marginTop: '10px' }}
-            >
-              {curProject.name} Website
-            </Button>
-          </Tooltip>
-        )}
-        <Divider />
-      </div>
+      <ProjectForm
+        activeSearchQuery={activeSearchQuery}
+        projectsFetched={data}
+        apiIsLoading={isLoading}
+        apiError={error as ResponseError}
+        onFinish={handleSubmitProjectForm}
+      />
+      {curProject && curProject.projectUrl && (
+        <Tooltip title={curProject.projectUrl}>
+          <Button
+            href={curProject.projectUrl}
+            className={leftSidebarTargets.projectWebsiteBtn.class()}
+            target="_blank"
+            style={{ marginTop: '10px' }}
+          >
+            {curProject.name} Website
+          </Button>
+        </Tooltip>
+      )}
+      <Divider />
       {!objectIsEmpty(availableFacets) && (
         <div className={leftSidebarTargets.searchFacetsForm.class()}>
           <FacetsForm

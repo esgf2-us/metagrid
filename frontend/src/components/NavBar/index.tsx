@@ -18,7 +18,7 @@ export type Props = {
   supportModalVisible: (visible: boolean) => void;
 };
 
-const NavBar: React.FC<Props> = ({
+const NavBar: React.FC<React.PropsWithChildren<Props>> = ({
   numCartItems,
   numSavedSearches,
   onTextSearch,
@@ -74,7 +74,7 @@ const NavBar: React.FC<Props> = ({
           className="navbar-drawer"
           closable={false}
           onClose={() => setShowDrawer(false)}
-          visible={showDrawer}
+          open={showDrawer}
         >
           <RightMenu
             mode="inline"

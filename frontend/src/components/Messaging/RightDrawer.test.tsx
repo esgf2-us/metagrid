@@ -1,9 +1,9 @@
-import { render } from '@testing-library/react';
 import React from 'react';
 import RightDrawer from './RightDrawer';
+import { customRender } from '../../test/custom-render';
 
 it('renders right drawer component.', () => {
-  const { getByText } = render(<RightDrawer visible onClose={() => {}} />);
+  const { getByText } = customRender(<RightDrawer open onClose={() => {}} />);
 
   // Check component renders
   const text = getByText('Notifications');

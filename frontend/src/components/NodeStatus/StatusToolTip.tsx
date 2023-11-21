@@ -4,7 +4,7 @@ import {
   QuestionCircleTwoTone,
 } from '@ant-design/icons';
 import React from 'react';
-import ToolTip from '../DataDisplay/ToolTip';
+import { Tooltip } from 'antd';
 import { NodeStatusArray, NodeStatusElement } from './types';
 
 export type Props = {
@@ -13,7 +13,11 @@ export type Props = {
   children?: React.ReactNode;
 };
 
-const StatusToolTip: React.FC<Props> = ({ nodeStatus, dataNode, children }) => {
+const StatusToolTip: React.FC<React.PropsWithChildren<Props>> = ({
+  nodeStatus,
+  dataNode,
+  children,
+}) => {
   if (nodeStatus) {
     const node = (nodeStatus.find(
       (obj) => obj.name === dataNode
@@ -27,7 +31,7 @@ const StatusToolTip: React.FC<Props> = ({ nodeStatus, dataNode, children }) => {
         return (
           <>
             {isOnline ? (
-              <ToolTip
+              <Tooltip
                 title={
                   <>
                     Data Node:<div>{dataNode}</div>
@@ -40,9 +44,9 @@ const StatusToolTip: React.FC<Props> = ({ nodeStatus, dataNode, children }) => {
                   <CheckCircleTwoTone twoToneColor="#52c41a" /> {dataNode}{' '}
                   {children}
                 </span>
-              </ToolTip>
+              </Tooltip>
             ) : (
-              <ToolTip
+              <Tooltip
                 title={
                   <>
                     Data Node:<div>{dataNode}</div>
@@ -55,7 +59,7 @@ const StatusToolTip: React.FC<Props> = ({ nodeStatus, dataNode, children }) => {
                   <CloseCircleTwoTone twoToneColor="#eb2f96" /> {dataNode}{' '}
                   {children}
                 </span>
-              </ToolTip>
+              </Tooltip>
             )}
           </>
         );
@@ -64,7 +68,7 @@ const StatusToolTip: React.FC<Props> = ({ nodeStatus, dataNode, children }) => {
       return (
         <>
           {isOnline ? (
-            <ToolTip
+            <Tooltip
               title={
                 <>
                   Data Node:<div>{dataNode}</div>
@@ -76,9 +80,9 @@ const StatusToolTip: React.FC<Props> = ({ nodeStatus, dataNode, children }) => {
               <span>
                 <CheckCircleTwoTone twoToneColor="#52c41a" />
               </span>
-            </ToolTip>
+            </Tooltip>
           ) : (
-            <ToolTip
+            <Tooltip
               title={
                 <>
                   Data Node:<div>{dataNode}</div>
@@ -90,7 +94,7 @@ const StatusToolTip: React.FC<Props> = ({ nodeStatus, dataNode, children }) => {
               <span>
                 <CloseCircleTwoTone twoToneColor="#eb2f96" />
               </span>
-            </ToolTip>
+            </Tooltip>
           )}
         </>
       );
@@ -99,7 +103,7 @@ const StatusToolTip: React.FC<Props> = ({ nodeStatus, dataNode, children }) => {
 
   if (children) {
     return (
-      <ToolTip
+      <Tooltip
         title={
           <>
             Could not fetch status. Please contact support or try again later.
@@ -110,12 +114,12 @@ const StatusToolTip: React.FC<Props> = ({ nodeStatus, dataNode, children }) => {
         <span>
           <QuestionCircleTwoTone /> {dataNode} {children}
         </span>
-      </ToolTip>
+      </Tooltip>
     );
   }
 
   return (
-    <ToolTip
+    <Tooltip
       title={
         <>
           Could not fetch status. Please contact support or try again later.
@@ -126,7 +130,7 @@ const StatusToolTip: React.FC<Props> = ({ nodeStatus, dataNode, children }) => {
       <span>
         <QuestionCircleTwoTone />
       </span>
-    </ToolTip>
+    </Tooltip>
   );
 };
 

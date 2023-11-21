@@ -87,7 +87,7 @@ export type Props = {
 
 const metagridVersion: string = startupDisplayData.messageToShow;
 
-const App: React.FC<Props> = ({ searchQuery }) => {
+const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   // Third-party tool integration
   useHotjar();
 
@@ -466,7 +466,12 @@ const App: React.FC<Props> = ({ searchQuery }) => {
   const generateRedirects = (): ReactElement => {
     /* istanbul ignore next */
     if (!publicUrl && previousPublicUrl) {
-      <Route path={previousPublicUrl} element={<Navigate to="/search" />} />;
+      return (
+        <Route
+          path={`${previousPublicUrl}/*`}
+          element={<Navigate to="/search" />}
+        />
+      );
     }
 
     return <></>;
@@ -474,11 +479,6 @@ const App: React.FC<Props> = ({ searchQuery }) => {
 
   return (
     <>
-      <Routes>
-        <Route path="/" element={<Navigate to="/search" />} />
-        <Route path="/cart" element={<Navigate to="/cart/items" />} />
-        {generateRedirects()}
-      </Routes>
       <div>
         <Routes>
           <Route
@@ -495,6 +495,9 @@ const App: React.FC<Props> = ({ searchQuery }) => {
         </Routes>
         <Layout id="body-layout">
           <Routes>
+            <Route path="/" element={<Navigate to="/search" />} />
+            <Route path="/cart" element={<Navigate to="/cart/items" />} />
+            {generateRedirects()}
             <Route
               path="/search"
               element={
@@ -661,7 +664,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           ></Button>
         </Affix>
         <Support
-          visible={supportModalVisible}
+          open={supportModalVisible}
           onClose={() => setSupportModalVisible(false)}
         />
         <StartPopup />

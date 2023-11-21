@@ -5,15 +5,14 @@ import {
   PlusOutlined,
   RightCircleOutlined,
 } from '@ant-design/icons';
-import { Form, Select, Table as TableD } from 'antd';
+import { Form, Select, Table as TableD, Tooltip } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
-import { fetchWgetScript, openDownloadURL, ResponseError } from '../../api';
+import { fetchWgetScript, ResponseError } from '../../api';
 import { topDataRowTargets } from '../../common/reactJoyrideSteps';
 import { formatBytes, showError, showNotice } from '../../common/utils';
 import { UserCart } from '../Cart/types';
-import ToolTip from '../DataDisplay/ToolTip';
 import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
 import { NodeStatusArray } from '../NodeStatus/types';
@@ -38,7 +37,7 @@ export type Props = {
   onPageSizeChange?: (size: number) => void;
 };
 
-const Table: React.FC<Props> = ({
+const Table: React.FC<React.PropsWithChildren<Props>> = ({
   loading,
   canDisableRows = true,
   results,
@@ -72,7 +71,11 @@ const Table: React.FC<Props> = ({
     } as TablePaginationConfig,
     expandable: {
       expandedRowRender: (record: RawSearchResult) => (
-        <Tabs record={record} filenameVars={filenameVars}></Tabs>
+        <Tabs
+          data-test-id="extra-tabs"
+          record={record}
+          filenameVars={filenameVars}
+        ></Tabs>
       ),
       expandIcon: ({
         expanded,
@@ -92,7 +95,7 @@ const Table: React.FC<Props> = ({
             onClick={(e) => onExpand(record, e)}
           />
         ) : (
-          <ToolTip
+          <Tooltip
             title="View this dataset's metadata, files or additional info."
             trigger="hover"
           >
@@ -100,7 +103,7 @@ const Table: React.FC<Props> = ({
               className={topDataRowTargets.searchResultsRowExpandIcon.class()}
               onClick={(e) => onExpand(record, e)}
             />
-          </ToolTip>
+          </Tooltip>
         ),
     },
     rowSelection: {
@@ -126,12 +129,16 @@ const Table: React.FC<Props> = ({
             record.retracted === true),
       }),
     },
-
     hasData: results.length > 0,
   };
 
+  type AlignType = 'left' | 'center' | 'right';
+  type FixedType = 'left' | 'right' | boolean;
+
   const columns = [
     {
+      align: 'right' as AlignType,
+      fixed: 'left' as FixedType,
       title: 'Cart',
       key: 'cart',
       width: 50,
@@ -167,8 +174,11 @@ const Table: React.FC<Props> = ({
       },
     },
     {
+      align: 'center' as AlignType,
+      fixed: 'left' as FixedType,
       title: '',
       dataIndex: 'data_node',
+      key: 'node_status',
       width: 35,
       render: (data_node: string) => (
         <div className={topDataRowTargets.nodeStatusIcon.class()}>
@@ -180,7 +190,7 @@ const Table: React.FC<Props> = ({
       title: 'Dataset Title',
       dataIndex: 'title',
       key: 'title',
-      width: 400,
+      width: 'auto',
       render: (title: string, record: RawSearchResult) => {
         if (record && record.retracted) {
           const msg =
@@ -201,10 +211,11 @@ const Table: React.FC<Props> = ({
       },
     },
     {
+      align: 'center' as AlignType,
       title: 'Files',
       dataIndex: 'number_of_files',
       key: 'number_of_files',
-      width: 50,
+      width: 70,
       render: (numberOfFiles: number) => (
         <p className={topDataRowTargets.fileCount.class()}>
           {numberOfFiles || 'N/A'}
@@ -212,10 +223,11 @@ const Table: React.FC<Props> = ({
       ),
     },
     {
+      align: 'center' as AlignType,
       title: 'Total Size',
       dataIndex: 'size',
       key: 'size',
-      width: 100,
+      width: 120,
       render: (size: number) => (
         <p className={topDataRowTargets.totalSize.class()}>
           {size ? formatBytes(size) : 'N/A'}
@@ -223,18 +235,21 @@ const Table: React.FC<Props> = ({
       ),
     },
     {
+      align: 'center' as AlignType,
       title: 'Version',
       dataIndex: 'version',
       key: 'version',
-      width: 100,
+      width: 130,
       render: (version: string) => (
         <p className={topDataRowTargets.versionText.class()}>{version}</p>
       ),
     },
     {
+      align: 'center' as AlignType,
+      fixed: 'right' as FixedType,
       title: 'Download Options',
       key: 'download',
-      width: 200,
+      width: 180,
       render: (record: RawSearchResult) => {
         const supportedDownloadTypes = record.access;
         const formKey = `download-${record.id}`;
@@ -251,13 +266,11 @@ const Table: React.FC<Props> = ({
               'The wget script is generating, please wait momentarily.',
               { type: 'info' }
             );
-            fetchWgetScript(record.id, filenameVars)
-              .then((url) => {
-                openDownloadURL(url);
-              })
-              .catch((error: ResponseError) => {
+            fetchWgetScript([record.id], filenameVars).catch(
+              (error: ResponseError) => {
                 showError(error.message);
-              });
+              }
+            );
           }
         };
 
@@ -275,7 +288,7 @@ const Table: React.FC<Props> = ({
                 <Select
                   disabled={record.retracted === true}
                   className={topDataRowTargets.downloadScriptOptions.class()}
-                  style={{ width: 120 }}
+                  style={{ width: 100 }}
                 >
                   {allowedDownloadTypes.map(
                     (option) =>
@@ -305,23 +318,22 @@ const Table: React.FC<Props> = ({
         );
       },
     },
+    globusEnabledNodes
+      ? {
+          align: 'center' as AlignType,
+          fixed: 'right' as FixedType,
+          title: 'Globus Ready',
+          dataIndex: 'data_node',
+          key: 'globus_enabled',
+          width: 110,
+          render: (data_node: string) => (
+            <div className={topDataRowTargets.globusReadyStatusIcon.class()}>
+              <GlobusToolTip dataNode={data_node} />
+            </div>
+          ),
+        }
+      : {},
   ];
-
-  if (globusEnabledNodes.length > 0) {
-    columns.push({
-      title: 'Globus Ready',
-      dataIndex: 'data_node',
-      width: 65,
-      render: (data_node: string) => (
-        <div
-          style={{ textAlign: 'center' }}
-          className={topDataRowTargets.globusReadyStatusIcon.class()}
-        >
-          <GlobusToolTip dataNode={data_node} />
-        </div>
-      ),
-    });
-  }
 
   return (
     <TableD
@@ -330,7 +342,7 @@ const Table: React.FC<Props> = ({
       dataSource={results}
       rowKey="id"
       size="small"
-      scroll={{ x: '100%', y: 'calc(70vh)' }}
+      scroll={{ x: '1200px', y: 'calc(70vh)' }}
     />
   );
 };
