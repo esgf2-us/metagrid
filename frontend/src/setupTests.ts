@@ -3,7 +3,9 @@
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom/extend-expect';
-import './api/mock/setup-env';
+import { server } from './api/mock/server';
+import messageDisplayData from './components/Messaging/messageDisplayData';
+import { sessionStorageMock } from './test/jestTestFunctions';
 
 jest.setTimeout(15000);
 
@@ -20,32 +22,14 @@ global.matchMedia =
     };
   };
 
-const localStorageMock = (() => {
-  let store: { [key: string]: string } = {};
+Object.defineProperty(window, 'localStorage', { value: sessionStorageMock });
 
-  return {
-    getItem(key: string) {
-      return store[key];
-    },
-
-    setItem(key: string, value: string) {
-      store[key] = value;
-    },
-
-    clear() {
-      store = {};
-    },
-
-    removeItem(key: string) {
-      delete store[key];
-    },
-
-    getAll() {
-      return store;
-    },
-  };
-})();
-
-Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+beforeAll(() => server.listen());
+beforeEach(() => {
+  // Set start up messages as 'seen' so start popup won't show
+  localStorage.setItem('lastMessageSeen', messageDisplayData.messageToShow);
+});
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
 
 module.exports = window;

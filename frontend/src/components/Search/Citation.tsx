@@ -10,10 +10,9 @@ type CitationInfoProps = {
   children: React.ReactNode;
 };
 
-export const CitationInfo: React.FC<CitationInfoProps> = ({
-  title,
-  children,
-}) => (
+export const CitationInfo: React.FC<
+  React.PropsWithChildren<CitationInfoProps>
+> = ({ title, children }) => (
   <p style={{ margin: 0 }}>
     <span style={{ fontWeight: 'bold' }}>{title}: </span>
     {children}
@@ -24,7 +23,9 @@ type CitationProps = {
   url: string;
 };
 
-const Citation: React.FC<CitationProps> = ({ url }) => {
+const Citation: React.FC<React.PropsWithChildren<CitationProps>> = ({
+  url,
+}) => {
   const { data, error, isLoading } = useAsync({
     promiseFn: (fetchDatasetCitation as unknown) as PromiseFn<RawCitation>,
     url,

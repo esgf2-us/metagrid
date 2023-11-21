@@ -1,5 +1,5 @@
 import { CheckCircleFilled, DownloadOutlined } from '@ant-design/icons';
-import { Button, Form, Modal, Radio, Select, Space } from 'antd';
+import { Button, Modal, Radio, Select, Space, Tooltip } from 'antd';
 import PKCE from 'js-pkce';
 import React, { useEffect } from 'react';
 import { useRecoilState } from 'recoil';
@@ -7,7 +7,6 @@ import {
   saveSessionValue,
   loadSessionValue,
   fetchWgetScript,
-  openDownloadURL,
   ResponseError,
   startGlobusTransfer,
 } from '../../api';
@@ -34,7 +33,6 @@ import {
   GlobusTaskItem,
   MAX_TASK_LIST_LENGTH,
 } from './types';
-import ToolTip from '../DataDisplay/ToolTip';
 import { NotificationType, showError, showNotice } from '../../common/utils';
 
 // Reference: https://github.com/bpedroza/js-pkce
@@ -67,9 +65,7 @@ type AlertModalState = {
 // Statically defined list of dataset download options
 const downloadOptions = ['Globus', 'wget'];
 
-const DatasetDownloadForm: React.FC = () => {
-  const [downloadForm] = Form.useForm();
-
+const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   // User wants to use default endpoint
   const [
     useGlobusDefaultEndpoint,
@@ -118,10 +114,10 @@ const DatasetDownloadForm: React.FC = () => {
   ] = React.useState<ModalState>({
     show: false,
     state: 'none',
-    onOkAction: () => {
+    onOkAction: /* istanbul ignore next */ () => {
       setUseDefaultConfirmModal({ ...useDefaultConfirmModal, show: false });
     },
-    onCancelAction: () => {
+    onCancelAction: /* istanbul ignore next */ () => {
       setUseDefaultConfirmModal({ ...useDefaultConfirmModal, show: false });
     },
   });
@@ -159,6 +155,7 @@ const DatasetDownloadForm: React.FC = () => {
   function redirectToRootUrl(): void {
     // Redirect back to the root URL (simple but brittle way to clear the query params)
     const splitUrl = window.location.href.split('?');
+    // istanbul ignore next
     if (splitUrl.length > 1) {
       const params = new URLSearchParams(window.location.search);
       if (endpointUrlReady(params) || tokenUrlReady(params)) {
@@ -172,6 +169,7 @@ const DatasetDownloadForm: React.FC = () => {
     const token = await loadSessionValue<GlobusTokenResponse>(
       GlobusStateKeys.transferToken
     );
+
     if (token && token.expires_in && token.created_on) {
       const createTime = token.created_on;
       const lifeTime = token.expires_in;
@@ -184,6 +182,14 @@ const DatasetDownloadForm: React.FC = () => {
       return null;
     }
     return null;
+  }
+
+  async function resetTokens(): Promise<void> {
+    await saveSessionValue<null>(GlobusStateKeys.accessToken, null);
+    await saveSessionValue<null>(GlobusStateKeys.refreshToken, null);
+    await saveSessionValue<null>(GlobusStateKeys.transferToken, null);
+    await saveSessionValue<null>(GlobusStateKeys.defaultEndpoint, null);
+    await saveSessionValue<null>(GlobusStateKeys.userSelectedEndpoint, null);
   }
 
   async function getGlobusTokens(): Promise<
@@ -214,16 +220,22 @@ const DatasetDownloadForm: React.FC = () => {
 
   const handleWgetDownload = (): void => {
     if (itemSelections !== null) {
+      itemSelections.filter((item) => {
+        return item !== undefined && item !== null;
+      });
       const ids = itemSelections.map((item) => item.id);
       showNotice('The wget script is generating, please wait momentarily.', {
-        duration: 7,
+        duration: 3,
         type: 'info',
       });
       setDownloadIsLoading(true);
       fetchWgetScript(ids)
-        .then((url) => {
-          openDownloadURL(url);
+        .then(() => {
           setDownloadIsLoading(false);
+          showNotice('Wget script downloaded successfully!', {
+            duration: 4,
+            type: 'success',
+          });
         })
         .catch((error: ResponseError) => {
           showError(error.message);
@@ -243,6 +255,7 @@ const DatasetDownloadForm: React.FC = () => {
     }
 
     setDownloadIsLoading(true);
+
     const loadedSelections = await loadSessionValue<RawSearchResults>(
       CartStateKeys.cartItemSelections
     );
@@ -300,9 +313,16 @@ const DatasetDownloadForm: React.FC = () => {
               messageType = 'warning';
             }
           })
-          .catch((error: ResponseError) => {
-            messageContent = `Globus transfer task failed: ${error.message}`;
+          .catch(async (error: ResponseError) => {
+            if (error.message !== '') {
+              messageContent = `Globus transfer task failed: ${error.message}`;
+            } else {
+              messageContent = `Globus transfer task failed. Resetting tokens.`;
+              // eslint-disable-next-line no-console
+              console.error(error);
+            }
             messageType = 'error';
+            await resetTokens();
           })
           .finally(async () => {
             setDownloadActive(false);
@@ -328,6 +348,10 @@ const DatasetDownloadForm: React.FC = () => {
       return true;
     }
     const globusReadyItems: RawSearchResults = [];
+
+    itemSelections.filter((item) => {
+      return item !== undefined && item !== null;
+    });
     itemSelections.forEach((selection) => {
       const data = selection as Record<string, unknown>;
       const dataNode = data.data_node as string;
@@ -384,7 +408,6 @@ const DatasetDownloadForm: React.FC = () => {
   };
 
   const handleDownloadForm = (downloadType: 'wget' | 'Globus'): void => {
-    /* istanbul ignore else */
     if (downloadType === 'wget') {
       handleWgetDownload();
     } else if (downloadType === 'Globus') {
@@ -660,7 +683,7 @@ const DatasetDownloadForm: React.FC = () => {
 
   useEffect(() => {
     const initializePage = async (): Promise<void> => {
-      const continueProcess = await loadSessionValue(
+      const continueProcess = await loadSessionValue<boolean>(
         GlobusStateKeys.continueGlobusPrepSteps
       );
       const itemCartSelections = await loadSessionValue<RawSearchResults>(
@@ -675,7 +698,6 @@ const DatasetDownloadForm: React.FC = () => {
       const savedTaskItems = await loadSessionValue<GlobusTaskItem[]>(
         GlobusStateKeys.globusTaskItems
       );
-
       if (itemCartSelections) {
         setItemSelections(itemCartSelections);
       }
@@ -697,82 +719,68 @@ const DatasetDownloadForm: React.FC = () => {
 
   return (
     <>
-      <Form
-        form={downloadForm}
-        layout="inline"
-        onFinish={({ downloadType }) =>
-          handleDownloadForm(downloadType as 'wget' | 'Globus')
-        }
-        initialValues={{
-          downloadType: downloadOptions[0],
-        }}
-      >
-        <Form.Item
-          name="downloadType"
+      <Space>
+        <Select
           className={cartTourTargets.downloadAllType.class()}
+          defaultValue={downloadOptions[0]}
+          data-testid="downloadTypeSelector"
+          style={{ width: 235 }}
+          onSelect={(rawType) => {
+            const downloadType: string = rawType;
+            if (downloadType) {
+              setSelectedDownloadType(downloadType);
+            }
+          }}
         >
-          <Select
-            style={{ width: 235 }}
-            onSelect={(rawType) => {
-              const downloadType = rawType?.toString();
-              if (downloadType) {
-                setSelectedDownloadType(downloadType);
-              }
-            }}
-          >
-            {downloadOptions.map((option) => (
-              <Select.Option key={option} value={option}>
-                {option}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
-        <Form.Item>
-          <div>
-            <Button
-              className={cartTourTargets.downloadAllBtn.class()}
-              type="primary"
-              htmlType="submit"
-              icon={<DownloadOutlined />}
-              disabled={itemSelections.length === 0 || !downloadActive}
-              loading={downloadIsLoading}
-            >
-              {selectedDownloadType === 'Globus' ? 'Transfer' : 'Download'}
-            </Button>
-          </div>
-        </Form.Item>
+          {downloadOptions.map((option) => (
+            <Select.Option key={option} value={option}>
+              {option}
+            </Select.Option>
+          ))}
+        </Select>
+        <Button
+          data-testid="downloadDatasetBtn"
+          className={cartTourTargets.downloadAllBtn.class()}
+          type="primary"
+          onClick={() => {
+            handleDownloadForm(selectedDownloadType as 'wget' | 'Globus');
+          }}
+          icon={<DownloadOutlined />}
+          disabled={itemSelections.length === 0 || !downloadActive}
+          loading={downloadIsLoading}
+        >
+          {selectedDownloadType === 'Globus' ? 'Transfer' : 'Download'}
+        </Button>
         {selectedDownloadType === 'Globus' &&
           defaultGlobusEndpoint &&
           itemSelections.length !== 0 &&
           downloadActive && (
-            <Form.Item>
-              <Radio.Group
-                onChange={(e) => {
-                  setUseGlobusDefaultEndpoint(e.target.value as boolean);
-                  saveSessionValue(
-                    GlobusStateKeys.useDefaultEndpoint,
-                    e.target.value as boolean
-                  );
-                }}
-                value={useGlobusDefaultEndpoint}
-              >
-                <Space direction="vertical">
-                  <ToolTip title="This option will use your currently saved default endpoint for the Globus transfer">
-                    <Radio value defaultChecked>
-                      Default Endpoint
-                    </Radio>
-                  </ToolTip>
-                  <ToolTip title="This option will let you specify an endpoint for the Globus transfer">
-                    <Radio value={false}>Specify Endpoint</Radio>
-                  </ToolTip>
-                </Space>
-              </Radio.Group>
-            </Form.Item>
+            <Radio.Group
+              onChange={(e) => {
+                setUseGlobusDefaultEndpoint(e.target.value as boolean);
+                saveSessionValue(
+                  GlobusStateKeys.useDefaultEndpoint,
+                  e.target.value as boolean
+                );
+              }}
+              value={useGlobusDefaultEndpoint}
+            >
+              <Space direction="vertical">
+                <Tooltip title="This option will use your currently saved default endpoint for the Globus transfer">
+                  <Radio value defaultChecked>
+                    Default Endpoint
+                  </Radio>
+                </Tooltip>
+                <Tooltip title="This option will let you specify an endpoint for the Globus transfer">
+                  <Radio value={false}>Specify Endpoint</Radio>
+                </Tooltip>
+              </Space>
+            </Radio.Group>
           )}
-      </Form>
+      </Space>
       <Modal
         title="Save Endpoint"
-        visible={useDefaultConfirmModal.show}
+        open={useDefaultConfirmModal.show}
         onOk={useDefaultConfirmModal.onOkAction}
         onCancel={useDefaultConfirmModal.onCancelAction}
         okText="Yes"
@@ -782,7 +790,7 @@ const DatasetDownloadForm: React.FC = () => {
       </Modal>
       <Modal
         title="Globus Transfer"
-        visible={globusStepsModal.show}
+        open={globusStepsModal.show}
         onOk={globusStepsModal.onOkAction}
         onCancel={globusStepsModal.onCancelAction}
         okText="Yes"
@@ -816,7 +824,7 @@ const DatasetDownloadForm: React.FC = () => {
         onOk={alertPopupState.onOkAction}
         onCancel={alertPopupState.onCancelAction}
         title="Notice"
-        visible={alertPopupState.show}
+        open={alertPopupState.show}
       >
         {alertPopupState.content}
       </Modal>

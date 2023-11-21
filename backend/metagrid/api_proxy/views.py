@@ -3,13 +3,52 @@ from urllib.parse import urlparse
 
 import requests
 from django.conf import settings
+from django.contrib.auth import logout
 from django.http import (
     HttpResponse,
     HttpResponseBadRequest,
     HttpResponseServerError,
 )
+from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+
+
+@api_view()
+@permission_classes([])
+def do_globus_auth(request):
+    additional_info = {}
+    if request.user.is_authenticated:
+        refresh = RefreshToken.for_user(request.user)
+        additional_info["access_token"] = str(refresh.access_token)
+        additional_info["email"] = request.user.email
+        additional_info["globus_access_token"] = request.user.social_auth.get(
+            provider="globus"
+        ).extra_data["access_token"]
+        additional_info["pk"] = request.user.pk
+        additional_info["refresh_token"] = str(refresh)
+        additional_info["social_auth_info"] = {
+            **request.user.social_auth.get(provider="globus").extra_data
+        }
+        additional_info["username"] = request.user.username
+    return Response(
+        {
+            "is_authenticated": request.user.is_authenticated,
+            **additional_info,
+        }
+    )
+
+
+@csrf_exempt
+def do_globus_logout(request):
+    logout(request)
+    homepage_url = getattr(
+        settings, "DJANGO_LOGOUT_REDIRECT_URL", "http://localhost:3000/search/"
+    )
+    return redirect(homepage_url)
 
 
 @require_http_methods(["GET", "POST"])
@@ -91,19 +130,34 @@ def do_request(request, urlbase):
             "ERROR: missing url configuration for request"
         )
     if request:
-        if request.method == "POST":
-            url_params = request.POST.copy()
+        if request.method == "POST":  # pragma: no cover
+            jo = {}
+            try:
+                jo = json.loads(request.body)
+            except Exception:
+                return HttpResponseBadRequest()
+            if "query" in jo:
+                query = jo["query"]
+                #   print(query)
+                if type(query) is list and len(query) > 0:
+                    jo["query"] = query[0]
+            if "dataset_id" in jo:
+                jo["dataset_id"] = ",".join(jo["dataset_id"])
+            #            print(f"DEBUG: {jo}")
+            resp = requests.post(urlbase, data=jo)
+
         elif request.method == "GET":
             url_params = request.GET.copy()
+            resp = requests.get(urlbase, params=url_params)
         else:  # pragma: no cover
             return HttpResponseBadRequest(
                 "Request method must be POST or GET."
             )
 
-        resp = requests.get(urlbase, params=url_params)
     else:  # pragma: no cover
         resp = requests.get(urlbase)
 
+    #    print(resp.text)
     httpresp = HttpResponse(resp.text)
     httpresp.status_code = resp.status_code
 

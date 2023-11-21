@@ -2,7 +2,7 @@ import { Button, Modal as ModalD } from 'antd';
 import React, { CSSProperties } from 'react';
 
 type Props = {
-  visible: boolean;
+  open: boolean;
   title?: React.ReactNode;
   closeText: string;
   onClose?: () => void;
@@ -11,8 +11,8 @@ type Props = {
   style?: CSSProperties;
 };
 
-const Modal: React.FC<Props> = ({
-  visible,
+const Modal: React.FC<React.PropsWithChildren<Props>> = ({
+  open,
   title,
   onClose,
   closeText,
@@ -22,7 +22,7 @@ const Modal: React.FC<Props> = ({
 }) => (
   <ModalD
     style={style}
-    visible={visible}
+    open={open}
     title={title}
     onCancel={onClose}
     centered={centered}
