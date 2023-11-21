@@ -67,7 +67,7 @@ projects = [
     {
         "name": "CMIP6Plus",
         "full_name": "Coupled Model Intercomparison Project Phase 6 Plus",
-        "project_url": "https://pcmdi.llnl.gov/CMIP6",
+        "project_url": "https://wcrp-cmip.org/cmip-overview/",
         "description": "Follow-up to CMIP6 with closely matching configuration. Description of CMIP6 Plus needed.",
         "facets_by_group": {
             GROUPS[0]: ["activity_id", "data_node"],
