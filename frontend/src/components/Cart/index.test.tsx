@@ -7,9 +7,6 @@ import {
 } from '../../api/mock/fixtures';
 import Cart, { Props } from './index';
 import { customRender } from '../../test/custom-render';
-// import { rest, server } from '../../api/mock/setup-env';
-// import { saveSessionValue } from '../../api';
-// import apiRoutes from '../../api/routes';
 
 const defaultProps: Props = {
   userCart: userCartFixture(),
@@ -81,13 +78,4 @@ it('handles tab switching and saved search actions', async () => {
   );
   expect(deleteBtn).toBeTruthy();
   await user.click(deleteBtn);
-
-  // Save value test
-  /* server.use(
-    rest.post(apiRoutes.tempStorageGet.path, (_req, res, ctx) =>
-      res(ctx.status(200), ctx.json({ data: 'Save success!' }))
-    )
-  );
-  const saveResp = await saveSessionValue('dataVal', 'None');
-  expect(saveResp.data).toEqual('Save success!');*/
 });

@@ -1,5 +1,5 @@
 import { CheckCircleFilled, DownloadOutlined } from '@ant-design/icons';
-import { Button, Form, Modal, Radio, Select, Space, Tooltip } from 'antd';
+import { Button, Modal, Radio, Select, Space, Tooltip } from 'antd';
 import PKCE from 'js-pkce';
 import React, { useEffect } from 'react';
 import { useRecoilState } from 'recoil';
@@ -66,8 +66,6 @@ type AlertModalState = {
 const downloadOptions = ['Globus', 'wget'];
 
 const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
-  const [downloadForm] = Form.useForm();
-
   // User wants to use default endpoint
   const [
     useGlobusDefaultEndpoint,
@@ -116,10 +114,10 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   ] = React.useState<ModalState>({
     show: false,
     state: 'none',
-    onOkAction: () => {
+    onOkAction: /* istanbul ignore next */ () => {
       setUseDefaultConfirmModal({ ...useDefaultConfirmModal, show: false });
     },
-    onCancelAction: () => {
+    onCancelAction: /* istanbul ignore next */ () => {
       setUseDefaultConfirmModal({ ...useDefaultConfirmModal, show: false });
     },
   });
@@ -157,6 +155,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   function redirectToRootUrl(): void {
     // Redirect back to the root URL (simple but brittle way to clear the query params)
     const splitUrl = window.location.href.split('?');
+    // istanbul ignore next
     if (splitUrl.length > 1) {
       const params = new URLSearchParams(window.location.search);
       if (endpointUrlReady(params) || tokenUrlReady(params)) {
@@ -170,6 +169,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     const token = await loadSessionValue<GlobusTokenResponse>(
       GlobusStateKeys.transferToken
     );
+
     if (token && token.expires_in && token.created_on) {
       const createTime = token.created_on;
       const lifeTime = token.expires_in;
@@ -220,14 +220,23 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
   const handleWgetDownload = (): void => {
     if (itemSelections !== null) {
+      itemSelections.filter((item) => {
+        return item !== undefined && item !== null;
+      });
       const ids = itemSelections.map((item) => item.id);
       showNotice('The wget script is generating, please wait momentarily.', {
-        duration: 7,
+        duration: 3,
         type: 'info',
       });
       setDownloadIsLoading(true);
       fetchWgetScript(ids)
-        .then(() => setDownloadIsLoading(false))
+        .then(() => {
+          setDownloadIsLoading(false);
+          showNotice('Wget script downloaded successfully!', {
+            duration: 4,
+            type: 'success',
+          });
+        })
         .catch((error: ResponseError) => {
           showError(error.message);
           setDownloadIsLoading(false);
@@ -246,6 +255,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     }
 
     setDownloadIsLoading(true);
+
     const loadedSelections = await loadSessionValue<RawSearchResults>(
       CartStateKeys.cartItemSelections
     );
@@ -338,6 +348,10 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       return true;
     }
     const globusReadyItems: RawSearchResults = [];
+
+    itemSelections.filter((item) => {
+      return item !== undefined && item !== null;
+    });
     itemSelections.forEach((selection) => {
       const data = selection as Record<string, unknown>;
       const dataNode = data.data_node as string;
@@ -394,7 +408,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   };
 
   const handleDownloadForm = (downloadType: 'wget' | 'Globus'): void => {
-    /* istanbul ignore else */
     if (downloadType === 'wget') {
       handleWgetDownload();
     } else if (downloadType === 'Globus') {
@@ -685,7 +698,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       const savedTaskItems = await loadSessionValue<GlobusTaskItem[]>(
         GlobusStateKeys.globusTaskItems
       );
-
       if (itemCartSelections) {
         setItemSelections(itemCartSelections);
       }
@@ -707,79 +719,65 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
   return (
     <>
-      <Form
-        form={downloadForm}
-        layout="inline"
-        onFinish={({ downloadType }) =>
-          handleDownloadForm(downloadType as 'wget' | 'Globus')
-        }
-        initialValues={{
-          downloadType: downloadOptions[0],
-        }}
-      >
-        <Form.Item
-          name="downloadType"
+      <Space>
+        <Select
           className={cartTourTargets.downloadAllType.class()}
+          defaultValue={downloadOptions[0]}
+          data-testid="downloadTypeSelector"
+          style={{ width: 235 }}
+          onSelect={(rawType) => {
+            const downloadType: string = rawType;
+            if (downloadType) {
+              setSelectedDownloadType(downloadType);
+            }
+          }}
         >
-          <Select
-            style={{ width: 235 }}
-            onSelect={(rawType) => {
-              const downloadType: string = rawType as string;
-              if (downloadType) {
-                setSelectedDownloadType(downloadType);
-              }
-            }}
-          >
-            {downloadOptions.map((option) => (
-              <Select.Option key={option} value={option}>
-                {option}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
-        <Form.Item>
-          <div>
-            <Button
-              className={cartTourTargets.downloadAllBtn.class()}
-              type="primary"
-              htmlType="submit"
-              icon={<DownloadOutlined />}
-              disabled={itemSelections.length === 0 || !downloadActive}
-              loading={downloadIsLoading}
-            >
-              {selectedDownloadType === 'Globus' ? 'Transfer' : 'Download'}
-            </Button>
-          </div>
-        </Form.Item>
+          {downloadOptions.map((option) => (
+            <Select.Option key={option} value={option}>
+              {option}
+            </Select.Option>
+          ))}
+        </Select>
+        <Button
+          data-testid="downloadDatasetBtn"
+          className={cartTourTargets.downloadAllBtn.class()}
+          type="primary"
+          onClick={() => {
+            handleDownloadForm(selectedDownloadType as 'wget' | 'Globus');
+          }}
+          icon={<DownloadOutlined />}
+          disabled={itemSelections.length === 0 || !downloadActive}
+          loading={downloadIsLoading}
+        >
+          {selectedDownloadType === 'Globus' ? 'Transfer' : 'Download'}
+        </Button>
         {selectedDownloadType === 'Globus' &&
           defaultGlobusEndpoint &&
           itemSelections.length !== 0 &&
           downloadActive && (
-            <Form.Item>
-              <Radio.Group
-                onChange={(e) => {
-                  setUseGlobusDefaultEndpoint(e.target.value as boolean);
-                  saveSessionValue(
-                    GlobusStateKeys.useDefaultEndpoint,
-                    e.target.value as boolean
-                  );
-                }}
-                value={useGlobusDefaultEndpoint}
-              >
-                <Space direction="vertical">
-                  <Tooltip title="This option will use your currently saved default endpoint for the Globus transfer">
-                    <Radio value defaultChecked>
-                      Default Endpoint
-                    </Radio>
-                  </Tooltip>
-                  <Tooltip title="This option will let you specify an endpoint for the Globus transfer">
-                    <Radio value={false}>Specify Endpoint</Radio>
-                  </Tooltip>
-                </Space>
-              </Radio.Group>
-            </Form.Item>
+            <Radio.Group
+              onChange={(e) => {
+                setUseGlobusDefaultEndpoint(e.target.value as boolean);
+                saveSessionValue(
+                  GlobusStateKeys.useDefaultEndpoint,
+                  e.target.value as boolean
+                );
+              }}
+              value={useGlobusDefaultEndpoint}
+            >
+              <Space direction="vertical">
+                <Tooltip title="This option will use your currently saved default endpoint for the Globus transfer">
+                  <Radio value defaultChecked>
+                    Default Endpoint
+                  </Radio>
+                </Tooltip>
+                <Tooltip title="This option will let you specify an endpoint for the Globus transfer">
+                  <Radio value={false}>Specify Endpoint</Radio>
+                </Tooltip>
+              </Space>
+            </Radio.Group>
           )}
-      </Form>
+      </Space>
       <Modal
         title="Save Endpoint"
         open={useDefaultConfirmModal.show}

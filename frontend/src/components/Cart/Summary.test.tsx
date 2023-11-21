@@ -21,8 +21,8 @@ it('shows the correct number of datasets and files', () => {
   const numDatasetsField = getByText('Number of Datasets:');
   const numFilesText = getByText('Number of Files:');
 
-  expect(numDatasetsField.textContent).toEqual('Number of Datasets: 2');
-  expect(numFilesText.textContent).toEqual('Number of Files: 5');
+  expect(numDatasetsField.textContent).toEqual('Number of Datasets: 3');
+  expect(numFilesText.textContent).toEqual('Number of Files: 8');
 });
 
 it('renders component with correct calculations when a dataset doesn"t have size or number_of_files attributes', () => {

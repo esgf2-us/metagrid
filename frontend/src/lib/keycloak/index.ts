@@ -4,7 +4,7 @@ import { keycloakClientId, keycloakRealm, keycloakUrl } from '../../env';
 // Setup Keycloak instance as needed
 // Pass initialization options as required or leave blank to load from 'keycloak.json'
 // Source: https://github.com/panz3r/react-keycloak/blob/master/packages/web/README.md
-export const keycloak = Keycloak({
+export const keycloak = new Keycloak({
   realm: keycloakRealm,
   url: keycloakUrl,
   clientId: keycloakClientId,
