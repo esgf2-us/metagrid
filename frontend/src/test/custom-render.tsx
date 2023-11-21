@@ -3,8 +3,10 @@ import { render, RenderResult } from '@testing-library/react';
 import Keycloak from 'keycloak-js';
 import React, { ComponentType } from 'react';
 import { MemoryRouter } from 'react-router-dom';
+
 import { RecoilRoot } from 'recoil';
-import { AuthProvider } from '../contexts/AuthContext';
+
+import { KeycloakAuthProvider } from '../contexts/AuthContext';
 import { keycloakProviderInitConfig } from '../lib/keycloak';
 import { ReactJoyrideProvider } from '../contexts/ReactJoyrideContext';
 
@@ -30,8 +32,6 @@ export const keycloakRender = (
 ): RenderResult =>
   render(
     <ReactKeycloakProvider
-      // authClient={{ ...createKeycloakStub(), ...options }}
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       authClient={keycloak}
       initOptions={keycloakProviderInitConfig}
     >
@@ -51,16 +51,14 @@ export const customRender = (
     return (
       <RecoilRoot>
         <ReactKeycloakProvider
-          // authClient={{ ...createKeycloakStub(), ...options }}
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           authClient={keycloak}
           initOptions={keycloakProviderInitConfig}
         >
-          <AuthProvider>
+          <KeycloakAuthProvider>
             <MemoryRouter basename={process.env.PUBLIC_URL}>
               <ReactJoyrideProvider>{children}</ReactJoyrideProvider>
             </MemoryRouter>
-          </AuthProvider>
+          </KeycloakAuthProvider>
         </ReactKeycloakProvider>
       </RecoilRoot>
     );

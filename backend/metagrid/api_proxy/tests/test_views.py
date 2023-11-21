@@ -1,9 +1,53 @@
+from django.contrib.auth import get_user_model
+from django.test import override_settings
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 
 class TestProxyViewSet(APITestCase):
+    fixtures = ["users.json"]
+
+    def test_globus_auth_unauthenticated(self):
+        url = reverse("globus-auth")
+        response = self.client.get(url)
+        assert response.data == {"is_authenticated": False}
+        assert response.status_code == status.HTTP_200_OK
+
+    @override_settings(
+        SOCIAL_AUTH_GLOBUS_KEY="1", SOCIAL_AUTH_GLOBUS_SECRET="2"
+    )
+    def test_globus_auth_begin(self):
+        response = self.client.get(
+            reverse("social:begin", kwargs={"backend": "globus"})
+        )
+        self.assertEqual(response.status_code, 302)
+
+    def test_globus_auth_complete(self):
+        url = reverse("globus-auth")
+        User = get_user_model()
+        user = User.objects.all().first()
+
+        user.set_password("password")
+        user.save()
+
+        logged_in = self.client.login(
+            username=user.get_username(), password="password"
+        )
+        self.assertTrue(logged_in)
+
+        response = self.client.get(url)
+        profile = response.json()
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(profile.get("is_authenticated", False))
+        self.assertTrue(profile.get("access_token", False))
+
+    def test_globus_auth_logout(self):
+        url = reverse("globus-logout")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_302_FOUND)
+
     def test_wget(self):
         url = reverse("do-wget")
         response = self.client.get(
