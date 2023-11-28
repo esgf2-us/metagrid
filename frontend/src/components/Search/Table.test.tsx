@@ -7,7 +7,7 @@ import {
 } from '../../api/mock/fixtures';
 import { rest, server } from '../../api/mock/server';
 import apiRoutes from '../../api/routes';
-import { customRender } from '../../test/custom-render';
+import { customRenderKeycloak } from '../../test/custom-render';
 import Table, { Props } from './Table';
 import { QualityFlag } from './Tabs';
 import { getRowName } from '../../test/jestTestFunctions';
@@ -26,7 +26,7 @@ const defaultProps: Props = {
 };
 
 it('renders component', () => {
-  const { getByRole } = customRender(<Table {...defaultProps} />);
+  const { getByRole } = customRenderKeycloak(<Table {...defaultProps} />);
 
   // Check table exists
   const table = getByRole('table');
@@ -34,7 +34,7 @@ it('renders component', () => {
 });
 
 xit('renders component without results', () => {
-  const { getByText } = customRender(
+  const { getByText } = customRenderKeycloak(
     <Table {...defaultProps} results={[]} totalResults={undefined} />
   );
 
@@ -43,7 +43,7 @@ xit('renders component without results', () => {
 });
 
 it('renders not available for total size and number of files columns when dataset doesn"t have those attributes', () => {
-  const { getByRole } = customRender(
+  const { getByRole } = customRenderKeycloak(
     <Table
       {...defaultProps}
       results={[
@@ -64,7 +64,7 @@ it('renders not available for total size and number of files columns when datase
 });
 
 it('renders warning that dataset is retracted', async () => {
-  const { getByRole } = customRender(
+  const { getByRole } = customRenderKeycloak(
     <Table
       {...defaultProps}
       results={[rawSearchResultFixture({ retracted: true })]}
@@ -103,7 +103,7 @@ it('renders warning that dataset is retracted', async () => {
 });
 
 xit('renders record metadata in an expandable panel', async () => {
-  const { getByRole, getByText } = customRender(<Table {...defaultProps} />);
+  const { getByRole, getByText } = customRenderKeycloak(<Table {...defaultProps} />);
 
   // Check table exists
   const table = getByRole('table');
@@ -175,7 +175,7 @@ xit('renders "PID" button when the record has a "xlink" key/value, vice versa', 
     further_info_url: ['https://foo.bar'],
   };
 
-  const { getByRole } = customRender(
+  const { getByRole } = customRenderKeycloak(
     <Table {...defaultProps} results={results} />
   );
 
@@ -235,7 +235,7 @@ xit('renders quality control flags for obs4MIPs datasets when the record has the
     ],
   };
 
-  const { getByRole } = customRender(
+  const { getByRole } = customRenderKeycloak(
     <Table {...defaultProps} results={results} />
   );
 
@@ -282,7 +282,7 @@ xit('renders quality control flags for obs4MIPs datasets when the record has the
 });
 
 it('renders add or remove button for items in or not in the cart respectively, and handles clicking them', async () => {
-  const { getByRole } = customRender(
+  const { getByRole } = customRenderKeycloak(
     <Table {...defaultProps} userCart={[defaultProps.results[0]]} />
   );
 
@@ -314,7 +314,7 @@ it('renders add or remove button for items in or not in the cart respectively, a
 });
 
 it('handles when clicking the select checkbox for a row', async () => {
-  const { getByRole } = customRender(<Table {...defaultProps} />);
+  const { getByRole } = customRenderKeycloak(<Table {...defaultProps} />);
 
   // Check table exists
   const table = getByRole('table');
@@ -332,7 +332,7 @@ it('handles when clicking the select checkbox for a row', async () => {
 });
 
 it('handles when clicking the select all checkbox in the table"s header', async () => {
-  const { getByRole } = customRender(<Table {...defaultProps} />);
+  const { getByRole } = customRenderKeycloak(<Table {...defaultProps} />);
 
   // Check table exists
   const table = getByRole('table');
@@ -356,7 +356,7 @@ xit('handles downloading an item via wget', async () => {
     },
   });
 
-  const { getByRole } = customRender(
+  const { getByRole } = customRenderKeycloak(
     <Table {...defaultProps} userCart={[defaultProps.results[0]]} />
   );
 
@@ -384,7 +384,7 @@ xit('displays an error when unable to access download via wget', async () => {
     rest.post(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404)))
   );
 
-  const { getByRole, getByText } = customRender(
+  const { getByRole, getByText } = customRenderKeycloak(
     <Table {...defaultProps} userCart={[defaultProps.results[0]]} />
   );
 
@@ -415,7 +415,7 @@ xit('displays an error when unable to access download via wget', async () => {
 
 describe('test QualityFlag', () => {
   xit('renders component', () => {
-    const { getByTestId } = customRender(
+    const { getByTestId } = customRenderKeycloak(
       <QualityFlag index="1" color="blue" />
     );
 

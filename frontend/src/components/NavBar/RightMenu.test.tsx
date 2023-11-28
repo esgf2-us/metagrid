@@ -1,7 +1,7 @@
 import { fireEvent, render, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { customRender } from '../../test/custom-render';
+import { customRenderKeycloak } from '../../test/custom-render';
 import Support from '../Support';
 import RightMenu, { Props } from './RightMenu';
 
@@ -17,7 +17,7 @@ const rightMenuProps: Props = {
 };
 
 it('sets the active menu item based on the location pathname', async () => {
-  const { getByRole } = customRender(<RightMenu {...rightMenuProps} />);
+  const { getByRole } = customRenderKeycloak(<RightMenu {...rightMenuProps} />);
 
   const cartItemsLink = await waitFor(() =>
     getByRole('img', { name: 'shopping-cart' })
@@ -33,7 +33,7 @@ it('sets the active menu item based on the location pathname', async () => {
 });
 
 xit('display the user"s given name after authentication and signs out', async () => {
-  const { getByTestId, getByText } = customRender(
+  const { getByTestId, getByText } = customRenderKeycloak(
     <RightMenu {...rightMenuProps} />,
     {
       authenticated: true,
@@ -57,7 +57,7 @@ xit('display the user"s given name after authentication and signs out', async ()
 });
 
 xit('display the user"s email after authentication if they did not provide a name and signs out', async () => {
-  const { getByTestId, getByText } = customRender(
+  const { getByTestId, getByText } = customRenderKeycloak(
     <RightMenu {...rightMenuProps} />,
     {
       authenticated: true,
@@ -81,7 +81,7 @@ xit('display the user"s email after authentication if they did not provide a nam
 });
 
 xit('displays sign in button when user hasn"t logged in', async () => {
-  const { getByRole, getByTestId } = customRender(
+  const { getByRole, getByTestId } = customRenderKeycloak(
     <RightMenu {...rightMenuProps} />
   );
 
@@ -96,7 +96,7 @@ xit('displays sign in button when user hasn"t logged in', async () => {
 });
 
 it('displays help menu when help button is clicked', async () => {
-  const { getByText, getByTestId } = customRender(
+  const { getByText, getByTestId } = customRenderKeycloak(
     <RightMenu {...rightMenuProps} />
   );
 
@@ -115,7 +115,7 @@ it('displays help menu when help button is clicked', async () => {
 });
 
 it('the the right drawer display for news button and hide news button', async () => {
-  const { getByText, getByTestId } = customRender(
+  const { getByText, getByTestId } = customRenderKeycloak(
     <RightMenu {...rightMenuProps} />
   );
 

@@ -18,7 +18,7 @@ import { rest, server } from '../../api/mock/server';
 import apiRoutes from '../../api/routes';
 import { delay } from '../../common/reactJoyrideSteps';
 import { getSearchFromUrl } from '../../common/utils';
-import { customRender } from '../../test/custom-render';
+import { customRenderKeycloak } from '../../test/custom-render';
 import { ActiveSearchQuery } from '../Search/types';
 import App from './App';
 import {
@@ -59,7 +59,7 @@ afterEach(() => {
 });
 
 it('renders App component', async () => {
-  const { getByTestId, findByTestId } = customRender(
+  const { getByTestId, findByTestId } = customRenderKeycloak(
     <App searchQuery={activeSearch} />
   );
 
@@ -72,7 +72,7 @@ it('renders App component', async () => {
 });
 
 it('renders App component with undefined search query', async () => {
-  const { getByTestId } = customRender(
+  const { getByTestId } = customRenderKeycloak(
     <App searchQuery={(undefined as unknown) as ActiveSearchQuery} />
   );
 
@@ -85,7 +85,7 @@ it('renders App component with undefined search query', async () => {
 });
 
 it('renders App component with project only search query', async () => {
-  const { getByTestId } = customRender(
+  const { getByTestId } = customRenderKeycloak(
     <App searchQuery={getSearchFromUrl('?project=CMIP5')} />
   );
 
@@ -98,7 +98,7 @@ it('renders App component with project only search query', async () => {
 });
 
 it('shows duplicate error when search keyword is typed in twice', async () => {
-  const renderedApp = customRender(<App searchQuery={activeSearch} />);
+  const renderedApp = customRenderKeycloak(<App searchQuery={activeSearch} />);
   const { getByText } = renderedApp;
 
   const input = 'foo';
@@ -115,7 +115,7 @@ it('shows duplicate error when search keyword is typed in twice', async () => {
 });
 
 it('handles setting filename searches and duplicates', async () => {
-  const renderedApp = customRender(<App searchQuery={activeSearch} />);
+  const renderedApp = customRenderKeycloak(<App searchQuery={activeSearch} />);
   const { getByTestId, getByText } = renderedApp;
 
   // Select a project for the test
@@ -187,7 +187,7 @@ it('handles setting filename searches and duplicates', async () => {
 });
 
 it('handles setting and removing text input filters and clearing all search filters', async () => {
-  const { getByPlaceholderText, getByTestId, getByText } = customRender(
+  const { getByPlaceholderText, getByTestId, getByText } = customRenderKeycloak(
     <App searchQuery={activeSearch} />
   );
 
@@ -239,7 +239,7 @@ it('handles setting and removing text input filters and clearing all search filt
 });
 
 it('handles applying general facets', async () => {
-  const { getByTestId, getByText } = customRender(
+  const { getByTestId, getByText } = customRenderKeycloak(
     <App searchQuery={activeSearch} />
   );
 
@@ -291,7 +291,7 @@ it('handles applying general facets', async () => {
 });
 
 it('handles applying and removing project facets', async () => {
-  const { getByTestId, getByText } = customRender(
+  const { getByTestId, getByText } = customRenderKeycloak(
     <App searchQuery={activeSearch} />
   );
 
@@ -392,7 +392,7 @@ it('handles applying and removing project facets', async () => {
 });
 
 it('handles project changes and clearing filters when the active project !== selected project', async () => {
-  const { getByTestId, getByText } = customRender(
+  const { getByTestId, getByText } = customRenderKeycloak(
     <App searchQuery={activeSearch} />
   );
 
@@ -449,7 +449,7 @@ it('handles project changes and clearing filters when the active project !== sel
 it('fetches the data node status every defined interval', () => {
   jest.useFakeTimers();
 
-  customRender(<App searchQuery={activeSearch} />);
+  customRenderKeycloak(<App searchQuery={activeSearch} />);
 
   act(() => {
     jest.advanceTimersByTime(295000);
@@ -463,7 +463,7 @@ describe('User cart', () => {
       getByTestId,
       getByText,
       getByPlaceholderText,
-    } = customRender(<App searchQuery={activeSearch} />, {
+    } = customRenderKeycloak(<App searchQuery={activeSearch} />, {
       token: 'token',
     });
 
@@ -525,7 +525,7 @@ describe('User cart', () => {
       getByTestId,
       getByText,
       getByPlaceholderText,
-    } = customRender(<App searchQuery={activeSearch} />, {
+    } = customRenderKeycloak(<App searchQuery={activeSearch} />, {
       token: 'token',
     });
 
@@ -624,9 +624,11 @@ describe('User cart', () => {
   });
 
   it('handles anonymous user adding and removing items from cart', async () => {
-    const { getByRole, getByTestId, getByPlaceholderText } = customRender(
-      <App searchQuery={activeSearch} />
-    );
+    const {
+      getByRole,
+      getByTestId,
+      getByPlaceholderText,
+    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
 
     // Check applicable components render
     const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
@@ -674,7 +676,7 @@ describe('User cart', () => {
       getByTestId,
       getByText,
       getByPlaceholderText,
-    } = customRender(<App searchQuery={activeSearch} />);
+    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
 
     // Check applicable components render
     const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
@@ -773,7 +775,7 @@ describe('User cart', () => {
         )
       );
 
-      const { getByText, getByTestId } = customRender(
+      const { getByText, getByTestId } = customRenderKeycloak(
         <App searchQuery={activeSearch} />,
         {
           token: 'token',
@@ -795,10 +797,13 @@ describe('User cart', () => {
 
 describe('User search library', () => {
   it('handles authenticated user saving and applying searches', async () => {
-    const { getByTestId, getByPlaceholderText, getByRole } = customRender(
-      <App searchQuery={activeSearch} />,
-      { token: 'token' }
-    );
+    const {
+      getByTestId,
+      getByPlaceholderText,
+      getByRole,
+    } = customRenderKeycloak(<App searchQuery={activeSearch} />, {
+      token: 'token',
+    });
 
     // Check applicable components render
     const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
@@ -855,7 +860,7 @@ describe('User search library', () => {
   });
 
   xit('handles authenticated user removing searches from the search library', async () => {
-    const { getByRole, getByTestId, getByText } = customRender(
+    const { getByRole, getByTestId, getByText } = customRenderKeycloak(
       <App searchQuery={activeSearch} />,
       {
         token: 'token',
@@ -898,9 +903,11 @@ describe('User search library', () => {
   });
 
   it('handles anonymous user saving and applying searches', async () => {
-    const { getByTestId, getByPlaceholderText, getByRole } = customRender(
-      <App searchQuery={activeSearch} />
-    );
+    const {
+      getByTestId,
+      getByPlaceholderText,
+      getByRole,
+    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
 
     // Check applicable components render
     const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
@@ -955,9 +962,11 @@ describe('User search library', () => {
   });
 
   it('handles anonymous user removing searches from the search library', async () => {
-    const { getByPlaceholderText, getByRole, getByTestId } = customRender(
-      <App searchQuery={activeSearch} />
-    );
+    const {
+      getByPlaceholderText,
+      getByRole,
+      getByTestId,
+    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
 
     // Check applicable components render
     const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
@@ -1011,9 +1020,11 @@ describe('User search library', () => {
   });
 
   it('handles anonymous user copying search to clipboard', async () => {
-    const { getByTestId, getByPlaceholderText, getByRole } = customRender(
-      <App searchQuery={activeSearch} />
-    );
+    const {
+      getByTestId,
+      getByPlaceholderText,
+      getByRole,
+    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
 
     // Check applicable components render
     const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
@@ -1057,7 +1068,7 @@ describe('User search library', () => {
 
       printElementContents(undefined);
 
-      const { getByText, getByTestId } = customRender(
+      const { getByText, getByTestId } = customRenderKeycloak(
         <App searchQuery={activeSearch} />,
         {
           token: 'token',
@@ -1076,12 +1087,13 @@ describe('User search library', () => {
     });
 
     it('shows a disabled save search button due to failed search results', async () => {
-      const { getByTestId, getByPlaceholderText, getByRole } = customRender(
-        <App searchQuery={activeSearch} />,
-        {
-          token: 'token',
-        }
-      );
+      const {
+        getByTestId,
+        getByPlaceholderText,
+        getByRole,
+      } = customRenderKeycloak(<App searchQuery={activeSearch} />, {
+        token: 'token',
+      });
 
       server.use(
         rest.post(apiRoutes.userSearches.path, (_req, res, ctx) =>
@@ -1123,9 +1135,12 @@ describe('User search library', () => {
         )
       );
 
-      const renderedApp = customRender(<App searchQuery={activeSearch} />, {
-        token: 'token',
-      });
+      const renderedApp = customRenderKeycloak(
+        <App searchQuery={activeSearch} />,
+        {
+          token: 'token',
+        }
+      );
       const { getByTestId, getAllByText, getByText } = renderedApp;
 
       // Select a project for the test
@@ -1209,7 +1224,7 @@ describe('User search library', () => {
 
 describe('User support', () => {
   it('renders user support modal when clicking help button and is closeable', async () => {
-    const { getByRole, getByText, findByText } = customRender(
+    const { getByRole, getByText, findByText } = customRenderKeycloak(
       <App searchQuery={activeSearch} />
     );
 
@@ -1232,7 +1247,9 @@ describe('User support', () => {
 
 describe('Data node status page', () => {
   it('renders the node status page after clicking the link', async () => {
-    const { getByTestId } = customRender(<App searchQuery={activeSearch} />);
+    const { getByTestId } = customRenderKeycloak(
+      <App searchQuery={activeSearch} />
+    );
     const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
     expect(rightMenuComponent).toBeTruthy();
 

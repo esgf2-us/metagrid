@@ -4,13 +4,13 @@ import React from 'react';
 import { getCurrentAppPage, TourTitles } from '../common/reactJoyrideSteps';
 import { AppPage } from '../common/types';
 import Support from '../components/Support';
-import { customRender } from '../test/custom-render';
+import { customRenderKeycloak } from '../test/custom-render';
 
 const user = userEvent.setup();
 
 describe('test ReactJoyrideProvider', () => {
   it('renders using provider', async () => {
-    const { getByTestId, getByText } = customRender(
+    const { getByTestId, getByText } = customRenderKeycloak(
       <div data-testid="reactJoyrideProvider">
         <p>renders</p>
       </div>
@@ -47,7 +47,7 @@ describe('test ReactJoyrideProvider', () => {
     // Set location then render modal
     window.location.pathname = 'testing/search';
     expect(getCurrentAppPage()).toEqual(AppPage.Main);
-    const { getByTestId, getByRole } = customRender(
+    const { getByTestId, getByRole } = customRenderKeycloak(
       <Support open onClose={jest.fn()} />
     );
 

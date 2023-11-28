@@ -155,7 +155,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   function redirectToRootUrl(): void {
     // Redirect back to the root URL (simple but brittle way to clear the query params)
     const splitUrl = window.location.href.split('?');
-    // istanbul ignore next
     if (splitUrl.length > 1) {
       const params = new URLSearchParams(window.location.search);
       if (endpointUrlReady(params) || tokenUrlReady(params)) {
@@ -219,6 +218,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   }
 
   const handleWgetDownload = (): void => {
+    /* istanbul ignore else */
     if (itemSelections !== null) {
       itemSelections.filter((item) => {
         return item !== undefined && item !== null;
@@ -408,6 +408,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   };
 
   const handleDownloadForm = (downloadType: 'wget' | 'Globus'): void => {
+    // istanbul ignore else
     if (downloadType === 'wget') {
       handleWgetDownload();
     } else if (downloadType === 'Globus') {

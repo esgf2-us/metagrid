@@ -7,7 +7,7 @@ import {
   parsedNodeStatusFixture,
 } from '../../api/mock/fixtures';
 import Facets, { Props } from './index';
-import { customRender } from '../../test/custom-render';
+import { customRenderKeycloak } from '../../test/custom-render';
 
 const user = userEvent.setup();
 
@@ -22,7 +22,7 @@ const defaultProps: Props = {
 };
 
 it('renders component', async () => {
-  const { getByTestId } = customRender(<Facets {...defaultProps} />);
+  const { getByTestId } = customRenderKeycloak(<Facets {...defaultProps} />);
 
   // Check FacetsForm component renders
   const facetsForm = await waitFor(() => getByTestId('facets-form'));
@@ -34,7 +34,7 @@ it('renders component', async () => {
 });
 
 xit('handles when the project form is submitted', async () => {
-  const { getByTestId } = customRender(
+  const { getByTestId } = customRenderKeycloak(
     <Facets
       {...defaultProps}
       activeSearchQuery={{ ...activeSearchQueryFixture(), project: {} }}
@@ -73,7 +73,7 @@ xit('handles when the project form is submitted', async () => {
 });
 
 it('handles facets form auto-filtering', async () => {
-  const { getByTestId, getByText, getByRole } = customRender(
+  const { getByTestId, getByText, getByRole } = customRenderKeycloak(
     <Facets {...defaultProps} />
   );
 
@@ -122,7 +122,7 @@ it('handles facets form auto-filtering', async () => {
 });
 
 it('handles facets form submission, including a facet key that is undefined', async () => {
-  const { getByTestId, getByText, getByRole } = customRender(
+  const { getByTestId, getByText, getByRole } = customRenderKeycloak(
     <Facets {...defaultProps} />
   );
 

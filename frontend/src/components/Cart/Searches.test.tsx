@@ -1,7 +1,7 @@
 import React from 'react';
 import { userSearchQueriesFixture } from '../../api/mock/fixtures';
 import Searches, { Props } from './Searches';
-import { customRender } from '../../test/custom-render';
+import { customRenderKeycloak } from '../../test/custom-render';
 
 afterEach(() => {
   jest.clearAllMocks();
@@ -14,7 +14,7 @@ const defaultProps: Props = {
 };
 
 it('renders component with empty savedSearches', () => {
-  const { getByText } = customRender(
+  const { getByText } = customRenderKeycloak(
     <Searches {...defaultProps} userSearchQueries={[]} />
   );
 

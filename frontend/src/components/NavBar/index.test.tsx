@@ -3,7 +3,7 @@ import { waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { rest, server } from '../../api/mock/server';
 import apiRoutes from '../../api/routes';
-import { customRender } from '../../test/custom-render';
+import { customRenderKeycloak } from '../../test/custom-render';
 import NavBar, { Props } from './index';
 
 const user = userEvent.setup();
@@ -16,7 +16,7 @@ const defaultProps: Props = {
 };
 
 it('renders LeftMenu and RightMenu components', async () => {
-  const { getByTestId } = customRender(<NavBar {...defaultProps} />);
+  const { getByTestId } = customRenderKeycloak(<NavBar {...defaultProps} />);
 
   const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
   expect(rightMenuComponent).toBeTruthy();
@@ -29,7 +29,7 @@ it('renders error message when projects can"t be fetched', async () => {
   server.use(
     rest.get(apiRoutes.projects.path, (_req, res, ctx) => res(ctx.status(404)))
   );
-  const { getByRole } = customRender(<NavBar {...defaultProps} />);
+  const { getByRole } = customRenderKeycloak(<NavBar {...defaultProps} />);
 
   const alertComponent = await waitFor(() =>
     getByRole('img', { name: 'close-circle' })
@@ -38,7 +38,9 @@ it('renders error message when projects can"t be fetched', async () => {
 });
 
 it('opens the drawer onClick and closes with onClose', async () => {
-  const { getByRole, getByTestId } = customRender(<NavBar {...defaultProps} />);
+  const { getByRole, getByTestId } = customRenderKeycloak(
+    <NavBar {...defaultProps} />
+  );
   await waitFor(() => expect(getByTestId('left-menu')).toBeTruthy());
   expect(getByTestId('right-menu')).toBeTruthy();
 
