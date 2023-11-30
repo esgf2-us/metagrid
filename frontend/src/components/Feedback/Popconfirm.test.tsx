@@ -2,12 +2,12 @@ import { waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import Popconfirm from './Popconfirm';
-import { customRender } from '../../test/custom-render';
+import { customRenderKeycloak } from '../../test/custom-render';
 
 const user = userEvent.setup();
 
 it('renders component with default exclamation circle', async () => {
-  const { getByText, getByRole } = customRender(
+  const { getByText, getByRole } = customRenderKeycloak(
     <Popconfirm onConfirm={jest.fn}>
       <p>Click here</p>
     </Popconfirm>

@@ -1,0 +1,55 @@
+[
+  {
+    "model": "users.user",
+    "pk": "b6061686-1a0f-4cf5-a1f8-15784b7390cc",
+    "fields": {
+      "password": "!rNWeW8Vjml9p8pAfJKbLeUeHFZJ599DRilfLYDLX",
+      "last_login": "2023-11-08T17:33:16.128Z",
+      "is_superuser": false,
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2023-11-08T17:33:16.119Z",
+      "email": "sturoscy@uchicago.edu",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "social_django.usersocialauth",
+    "pk": 1,
+    "fields": {
+      "user": "b6061686-1a0f-4cf5-a1f8-15784b7390cc",
+      "provider": "globus",
+      "uid": "a8a1bf81-f9cd-4610-b4df-5e756c3a9e1a",
+      "extra_data": {
+        "id_token": "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhOGExYmY4MS1mOWNkLTQ2MTAtYjRkZi01ZTc1NmMzYTllMWEiLCJvcmdhbml6YXRpb24iOiJUaGUgVW5pdmVyc2l0eSBvZiBDaGljYWdvIiwibmFtZSI6IlN0ZXBoZW4gVHVyb3NjeSIsInByZWZlcnJlZF91c2VybmFtZSI6InN0dXJvc2N5QHVjaGljYWdvLmVkdSIsImlkZW50aXR5X3Byb3ZpZGVyIjoiMGRjZjUwNjMtYmZmZC00MGY3LWI0MDMtMjRmOTdlMzJmYTQ3IiwiaWRlbnRpdHlfcHJvdmlkZXJfZGlzcGxheV9uYW1lIjoiVW5pdmVyc2l0eSBvZiBDaGljYWdvIiwiZW1haWwiOiJzdHVyb3NjeUB1Y2hpY2Fnby5lZHUiLCJsYXN0X2F1dGhlbnRpY2F0aW9uIjoxNjk4Njc4NTM4LCJpZGVudGl0eV9zZXQiOlt7InN1YiI6ImE4YTFiZjgxLWY5Y2QtNDYxMC1iNGRmLTVlNzU2YzNhOWUxYSIsIm9yZ2FuaXphdGlvbiI6IlRoZSBVbml2ZXJzaXR5IG9mIENoaWNhZ28iLCJuYW1lIjoiU3RlcGhlbiBUdXJvc2N5IiwidXNlcm5hbWUiOiJzdHVyb3NjeUB1Y2hpY2Fnby5lZHUiLCJpZGVudGl0eV9wcm92aWRlciI6IjBkY2Y1MDYzLWJmZmQtNDBmNy1iNDAzLTI0Zjk3ZTMyZmE0NyIsImlkZW50aXR5X3Byb3ZpZGVyX2Rpc3BsYXlfbmFtZSI6IlVuaXZlcnNpdHkgb2YgQ2hpY2FnbyIsImVtYWlsIjoic3R1cm9zY3lAdWNoaWNhZ28uZWR1IiwibGFzdF9hdXRoZW50aWNhdGlvbiI6MTY5ODY3ODUzOH0seyJzdWIiOiI2MjUyZjZjYS01NzMzLTRkNWMtYWYwYi01NTMzMmZlY2IxMDgiLCJvcmdhbml6YXRpb24iOiJHbG9idXMiLCJuYW1lIjoiU3RlcGhlbiBUdXJvc2N5IiwidXNlcm5hbWUiOiJzdHVyb3NjeUBhY2Nlc3MtY2kub3JnIiwiaWRlbnRpdHlfcHJvdmlkZXIiOiJiN2Y2NDk5Ni03OGYwLTRjNmQtOWYyYS0wZjRiMzliMDY0MzIiLCJpZGVudGl0eV9wcm92aWRlcl9kaXNwbGF5X25hbWUiOiJBQ0NFU1MgQ0kgKGZvcm1lcmx5IFhTRURFKSIsImVtYWlsIjoic3R1cm9zY3lAZ2xvYnVzLm9yZyIsImxhc3RfYXV0aGVudGljYXRpb24iOm51bGx9LHsic3ViIjoiMWZmNmI5ZGUtYzc4OC00ODIxLThiMDEtY2Q4MTNmMTJiYmY5IiwibmFtZSI6IlN0ZXZlIFR1cm9zY3kiLCJ1c2VybmFtZSI6InN0dXJvc2N5QGdsb2J1cy5vcmciLCJpZGVudGl0eV9wcm92aWRlciI6IjkyN2Q3MjM4LWY5MTctNGViMi05YWNlLWM1MjNmYTliYTM0ZSIsImlkZW50aXR5X3Byb3ZpZGVyX2Rpc3BsYXlfbmFtZSI6Ikdsb2J1cyBTdGFmZiIsImVtYWlsIjoic3R1cm9zY3lAZ2xvYnVzLm9yZyIsImxhc3RfYXV0aGVudGljYXRpb24iOjE2OTgwNzA4NDB9LHsic3ViIjoiNTRkODk2ODMtNjExNy00ODgxLTkwZTEtYTIzNjY2NWIzYzE1Iiwib3JnYW5pemF0aW9uIjoiR2xvYnVzIiwibmFtZSI6IlN0ZXBoZW4gVHVyb3NjeSIsInVzZXJuYW1lIjoic3R1cm9zY3lAZ2xvYnVzaWQub3JnIiwiaWRlbnRpdHlfcHJvdmlkZXIiOiI0MTE0Mzc0My1mM2M4LTRkNjAtYmJkYi1lZWVjYWJhODViZDkiLCJpZGVudGl0eV9wcm92aWRlcl9kaXNwbGF5X25hbWUiOiJHbG9idXMgSUQiLCJlbWFpbCI6InN0dXJvc2N5QGdsb2J1cy5vcmciLCJsYXN0X2F1dGhlbnRpY2F0aW9uIjoxNjkyMjMyMDM3fSx7InN1YiI6IjQ5YjI0YWYxLWVhN2EtNDRkMC04NDJlLTU4YTU0NDNhNzkzMSIsIm5hbWUiOiJTdGVwaGVuIFR1cm9zY3kiLCJ1c2VybmFtZSI6IjAwMDktMDAwNC02Nzk4LTIyMDJAb3JjaWQub3JnIiwiaWRlbnRpdHlfcHJvdmlkZXIiOiIwNTE5MjA2ZC1mMjFjLTQ3NzEtOTkwYS0yODJhMTJiYjY2NmIiLCJpZGVudGl0eV9wcm92aWRlcl9kaXNwbGF5X25hbWUiOiJPUkNJRCIsImVtYWlsIjpudWxsLCJsYXN0X2F1dGhlbnRpY2F0aW9uIjoxNjg1NTU4NzQ4fV0sImlzcyI6Imh0dHBzOi8vYXV0aC5nbG9idXMub3JnIiwiYXVkIjoiOTk4YzZkYzQtMjkzOS00NzE0LTkwMDQtNWFjNWI4MDRhYmVhIiwiZXhwIjoxNjk5NjM3NTk1LCJpYXQiOjE2OTk0NjQ3OTUsIm5vbmNlIjoiTzRTNUdNRmYzY3ZGWlNJc0xkdVM5dVFSMzZLNUZmUjFENzVyTU9LZTZ5NjJkYXU1Y252VjM1V3BiTUxZT2hjbiIsImF0X2hhc2giOiJQdk1aekN6TXNYZzlaLUxoNW5BbTRwRHhlQXlrRi1fZWw0UXdnUWEtbG9jIn0.FGd3fWIWi3b5H7UyISodlaLdK5K-k9KriWugd7ezworJFrhHyBQ59I-SYq7qEywjSuIGyUVew5I5-D-dnPWgCS9aoJZcvpoMnLG3ujMHtS21UHx5Lg68aHF_xuM696ePCzAwDt5JSqEaBFU4yrIPMD_S76D-fFOR2R5kfgM1_wMi4liuRdNfauBIZ9r7twAXpRLkSGXcSweH_ESH8wkZF0nZjxhbETAvazJJGf7y41qKr_TPUOSMRnGri08yeKdd_T560GCtOS4GJCizqF60zIgiOPJzHnFYVutg_HrykhJ7CW7dcWBlzNH8uI_ZZhgfYaDgxQDi_KyFoNnlNoQhMw",
+        "auth_time": 1699464796,
+        "expires_in": 172800,
+        "token_type": "Bearer",
+        "access_token": "AgpM8540XoOvMNJPJOOK6koapdpopNx5Q611kbW6Wq4jr9pWPeCvCx64azD27Jwvrwp8qvJq0dOwONCyvEwKJUdVb2Ou5zoB3C92kx7",
+        "other_tokens": [
+          {
+            "scope": "urn:globus:auth:scope:search.api.globus.org:all",
+            "state": "RAtsZBDhkONxPRyXe6rp2wWQEXNLuPmp",
+            "expires_in": 172800,
+            "token_type": "Bearer",
+            "access_token": "AgeYk0XmJEKKq7zD8y02GpPzNjxKdeyqD4OJVo8o5JoM3Y93MgtVCy0n4vdQ55Dd582aDPd3E7nm49h5O3MGyFdQeMq",
+            "resource_server": "search.api.globus.org"
+          },
+          {
+            "scope": "urn:globus:auth:scope:transfer.api.globus.org:all",
+            "state": "RAtsZBDhkONxPRyXe6rp2wWQEXNLuPmp",
+            "expires_in": 172800,
+            "token_type": "Bearer",
+            "access_token": "Ag2oyva8v5Gwv24kPwKn291vj9yyngow53kGlMYWn7qQ8lBk3lUkC3VeByanO82zlW0xv931r3mq6XIwqvDJXUjX1EE",
+            "resource_server": "transfer.api.globus.org"
+          }
+        ]
+      },
+      "created": "2023-11-08T17:33:16.123Z",
+      "modified": "2023-11-08T17:33:16.124Z"
+    }
+  }
+]

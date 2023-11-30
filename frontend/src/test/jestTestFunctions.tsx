@@ -37,13 +37,11 @@ export const sessionStorageMock = (() => {
 export function tempStorageGetMock<T>(key: string): T {
   const value = sessionStorageMock.getItem<T>(key);
   // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-  console.log('used tempStorageGetMock');
   return value;
 }
 
 export function tempStorageSetMock<T>(key: string, value: T): void {
   sessionStorageMock.setItem<T>(key, value);
-  console.log('used tempStorageSetMock');
 }
 
 export function mockFunction<T extends (...args: any[]) => any>(

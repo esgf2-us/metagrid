@@ -49,3 +49,10 @@ REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID=
 # ------------------------------------------------------------------------------
 # https://github.com/react-keycloak/react-keycloak/issues/176
 GENERATE_SOURCEMAP=false
+
+# Django Auth URLs
+REACT_APP_DJANGO_LOGIN_URL=http://localhost:8000/login/globus/
+REACT_APP_DJANGO_LOGOUT_URL=http://localhost:8000/proxy/globus-logout/
+
+# Authentication Method
+REACT_APP_AUTHENTICATION_METHOD=globus

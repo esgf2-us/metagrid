@@ -10,7 +10,7 @@ import React from 'react';
 import { userCartFixture } from '../../api/mock/fixtures';
 import { rest, server } from '../../api/mock/server';
 import apiRoutes from '../../api/routes';
-import { customRender } from '../../test/custom-render';
+import { customRenderKeycloak } from '../../test/custom-render';
 import Items, { Props } from './Items';
 import { getRowName } from '../../test/jestTestFunctions';
 import { getSearchFromUrl } from '../../common/utils';
@@ -57,7 +57,7 @@ afterEach(() => {
 describe('test the cart items component', () => {
   it('renders message that the cart is empty when no items are added', () => {
     const props = { ...defaultProps, userCart: [] };
-    const { getByText } = customRender(<Items {...props} />);
+    const { getByText } = customRenderKeycloak(<Items {...props} />);
 
     // Check empty cart text renders
     const emptyCart = getByText('Your cart is empty');
@@ -65,7 +65,7 @@ describe('test the cart items component', () => {
   });
 
   it('removes all items from the cart when confirming the popconfirm', async () => {
-    const { getByTestId, getByRole, getAllByText } = customRender(
+    const { getByTestId, getByRole, getAllByText } = customRenderKeycloak(
       <App searchQuery={activeSearch} />
     );
 
@@ -118,7 +118,7 @@ describe('test the cart items component', () => {
   });
 
   it('handles selecting items in the cart and downloading them via wget', async () => {
-    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
+    const { getByTestId, getByRole, getAllByText } = customRenderKeycloak(
       <App searchQuery={activeSearch} />
     );
 
@@ -177,7 +177,7 @@ describe('test the cart items component', () => {
       rest.get(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404)))
     );
 
-    const { getByRole, getByTestId } = customRender(
+    const { getByRole, getByTestId } = customRenderKeycloak(
       <Items {...defaultProps} />
     );
 
