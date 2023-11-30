@@ -3,7 +3,7 @@ import React from 'react';
 import StartPopup from './StartPopup';
 import StartupMessages from './messageDisplayData';
 import { TourTitles } from '../../common/reactJoyrideSteps';
-import { customRender } from '../../test/custom-render';
+import { customRenderKeycloak } from '../../test/custom-render';
 
 const { defaultMessageId, messageToShow } = StartupMessages;
 
@@ -32,7 +32,7 @@ afterEach(() => {
 
 describe('Start popup tests', () => {
   it('renders start popup with welcome message if no local data exists.', () => {
-    const { getByTestId } = customRender(<StartPopup />);
+    const { getByTestId } = customRenderKeycloak(<StartPopup />);
 
     // Check welcome template rendered (default)
     const welcomeHeader = getByTestId('welcomeTemplate');
@@ -40,7 +40,7 @@ describe('Start popup tests', () => {
   });
 
   it('renders start popup with welcome message and starts search tour.', async () => {
-    const { getByTestId, getByText } = customRender(<StartPopup />);
+    const { getByTestId, getByText } = customRenderKeycloak(<StartPopup />);
 
     // Check welcome template rendered (default)
     const welcomeHeader = getByTestId('welcomeTemplate');
@@ -52,7 +52,7 @@ describe('Start popup tests', () => {
   });
 
   it('renders start popup with welcome message and starts cart tour.', async () => {
-    const { getByTestId, getByText } = customRender(<StartPopup />);
+    const { getByTestId, getByText } = customRenderKeycloak(<StartPopup />);
 
     // Check welcome template rendered (default)
     const welcomeHeader = getByTestId('welcomeTemplate');
@@ -64,7 +64,7 @@ describe('Start popup tests', () => {
   });
 
   it('renders start popup with welcome message and starts saved search tour.', async () => {
-    const { getByTestId, getByText } = customRender(<StartPopup />);
+    const { getByTestId, getByText } = customRenderKeycloak(<StartPopup />);
 
     // Check welcome template rendered (default)
     const welcomeHeader = getByTestId('welcomeTemplate');
@@ -76,7 +76,7 @@ describe('Start popup tests', () => {
   });
 
   it('renders start popup with welcome message and starts node page tour.', async () => {
-    const { getByTestId, getByText } = customRender(<StartPopup />);
+    const { getByTestId, getByText } = customRenderKeycloak(<StartPopup />);
 
     // Check welcome template rendered (default)
     const welcomeHeader = getByTestId('welcomeTemplate');
@@ -89,7 +89,7 @@ describe('Start popup tests', () => {
 
   it('renders start popup with message data missing.', () => {
     StartupMessages.defaultMessageId = 'test';
-    const { getByText } = customRender(<StartPopup />);
+    const { getByText } = customRenderKeycloak(<StartPopup />);
     StartupMessages.defaultMessageId = defaultMessageId;
 
     // Check welcome template rendered (default)
@@ -99,7 +99,7 @@ describe('Start popup tests', () => {
 
   it('renders start popup with wrong version specified', () => {
     window.localStorage.setItem('lastMessageSeen', 'test');
-    const { getByTestId } = customRender(<StartPopup />);
+    const { getByTestId } = customRenderKeycloak(<StartPopup />);
 
     // Check changelog template rendered
     const changelog = getByTestId('changelogTemplate');
@@ -108,7 +108,7 @@ describe('Start popup tests', () => {
 
   it('start popup doesnt render when correct version is specified', () => {
     window.localStorage.setItem('lastMessageSeen', messageToShow);
-    const { queryByText } = customRender(<StartPopup />);
+    const { queryByText } = customRenderKeycloak(<StartPopup />);
 
     // Check that popup doesn't render
     const github = queryByText('GitHub Issues');

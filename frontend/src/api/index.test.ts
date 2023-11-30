@@ -5,6 +5,7 @@ import {
   fetchDatasetCitation,
   fetchDatasetFiles,
   FetchDatasetFilesProps,
+  fetchGlobusAuth,
   fetchNodeStatus,
   fetchProjects,
   fetchSearchResults,
@@ -51,7 +52,34 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
-describe('test fetching user authentication', () => {
+describe('test fetching user authentication with globus', () => {
+  it('returns user authentication tokens', async () => {
+    const userAuth = await fetchGlobusAuth();
+    expect(userAuth).toEqual(userAuthFixture());
+  });
+  it('catches and throws error based on HTTP status code', async () => {
+    server.use(
+      rest.get(apiRoutes.globusAuth.path, (_req, res, ctx) =>
+        res(ctx.status(404))
+      )
+    );
+    await expect(fetchGlobusAuth()).rejects.toThrow(
+      apiRoutes.globusAuth.handleErrorMsg(404)
+    );
+  });
+  it('catches and throws generic network error', async () => {
+    server.use(
+      rest.get(apiRoutes.globusAuth.path, (_req, res) =>
+        res.networkError(genericNetworkErrorMsg)
+      )
+    );
+    await expect(fetchGlobusAuth()).rejects.toThrow(
+      apiRoutes.globusAuth.handleErrorMsg('generic')
+    );
+  });
+});
+
+describe('test fetching user authentication with keycloak', () => {
   it('returns user authentication tokens', async () => {
     const userAuth = await fetchUserAuth(['keycloak_token']);
     expect(userAuth).toEqual(userAuthFixture());
@@ -446,6 +474,14 @@ describe('test updating user cart', () => {
   it('updates user"s cart and returns user"s cart', async () => {
     const files = await updateUserCart('pk', 'access_token', []);
     expect(files).toEqual(rawUserCartFixture());
+  });
+  it('updates user"s cart and returns user"s cart with cookie values set', async () => {
+    document.cookie = 'badtoken=blahblah;';
+    const files = await updateUserCart('pk', 'access_token', []);
+    expect(files).toEqual(rawUserCartFixture());
+    document.cookie = 'csrftoken=goodvalue;';
+    const again = await updateUserCart('pk', 'access_token', []);
+    expect(again).toEqual(rawUserCartFixture());
   });
   it('catches and throws an error based on HTTP status code', async () => {
     server.use(

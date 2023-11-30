@@ -3,7 +3,7 @@
 import React from 'react';
 import userEvent from '@testing-library/user-event';
 import { cleanup, waitFor, within } from '@testing-library/react';
-import { customRender } from '../../test/custom-render';
+import { customRenderKeycloak } from '../../test/custom-render';
 import DatasetDownloadForm from './DatasetDownload';
 import { rest, server } from '../../api/mock/server';
 import { getSearchFromUrl } from '../../common/utils';
@@ -19,7 +19,10 @@ import App from '../App/App';
 import { GlobusTokenResponse } from './types';
 import GlobusStateKeys from './recoil/atom';
 import CartStateKeys from '../Cart/recoil/atoms';
-import { globusEndpointFixture } from '../../api/mock/fixtures';
+import {
+  globusEndpointFixture,
+  userCartFixture,
+} from '../../api/mock/fixtures';
 import apiRoutes from '../../api/routes';
 import * as enviroConfig from '../../env';
 
@@ -77,6 +80,35 @@ jest.mock('../../env', () => {
   };
 });
 
+// Mock the globus token response
+// jest.mock('js-pkce', () => {
+//   const originalModule = jest.requireActual('js-pkce');
+
+//   return {
+//     __esModule: true,
+//     ...originalModule,
+//     PKCE: {
+//       exchangeForAccessToken: async (): Promise<GlobusTokenResponse> =>
+//         Promise.resolve({
+//           access_token: '',
+//           refresh_expires_in: 0,
+//           refresh_token: '',
+//           scope: '',
+//           token_type: '',
+//           id_token: '',
+//           resource_server: '',
+//           other_tokens: '',
+//           created_on: 0,
+//           expires_in: 0,
+//           error: '',
+//         }),
+//       authorizeUrl: () => {
+//         return 'https://localhost:3000/cart/items';
+//       },
+//     },
+//   };
+// });
+
 afterEach(() => {
   // Routes are already declared in the App component using BrowserRouter, so MemoryRouter does
   // not work to isolate routes in memory between tests. The only workaround is to delete window.location and restore it after each test in order to reset the URL location.
@@ -116,14 +148,17 @@ beforeEach(() => {
 
 describe('DatasetDownload form tests', () => {
   it('Download form renders.', () => {
-    const downloadForm = customRender(<DatasetDownloadForm />);
+    const downloadForm = customRenderKeycloak(<DatasetDownloadForm />);
     expect(downloadForm).toBeTruthy();
   });
 
   it('Start the wget transfer after adding an item to cart', async () => {
-    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
-      <App searchQuery={activeSearch} />
-    );
+    const {
+      getByTestId,
+      getByRole,
+      getByText,
+      getAllByText,
+    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
 
     // Wait for results to load
     await waitFor(() =>
@@ -187,7 +222,7 @@ describe('DatasetDownload form tests', () => {
       getByText,
       getAllByRole,
       getAllByText,
-    } = customRender(<App searchQuery={activeSearch} />);
+    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
 
     // Wait for results to load
     await waitFor(() =>
@@ -238,7 +273,7 @@ describe('DatasetDownload form tests', () => {
       getByText,
       getAllByRole,
       getAllByText,
-    } = customRender(<App searchQuery={activeSearch} />);
+    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
 
     // Wait for results to load
     await waitFor(() =>
@@ -354,9 +389,12 @@ describe('DatasetDownload form tests', () => {
   });
 
   it('Download form renders and transfer popup form shows after clicking Transfer.', async () => {
-    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
-      <App searchQuery={activeSearch} />
-    );
+    const {
+      getByTestId,
+      getByRole,
+      getByText,
+      getAllByText,
+    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
 
     // Wait for results to load
     await waitFor(() =>
@@ -401,9 +439,12 @@ describe('DatasetDownload form tests', () => {
   });
 
   it('Clicking cancel hides the transfer popup', async () => {
-    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
-      <App searchQuery={activeSearch} />
-    );
+    const {
+      getByTestId,
+      getByRole,
+      getByText,
+      getAllByText,
+    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
 
     // Wait for results to load
     await waitFor(() =>
@@ -459,9 +500,12 @@ describe('DatasetDownload form tests', () => {
   });
 
   it('Globus Transfer popup will show sign-in as first step when no tokens detected', async () => {
-    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
-      <App searchQuery={activeSearch} />
-    );
+    const {
+      getByTestId,
+      getByRole,
+      getByText,
+      getAllByText,
+    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
 
     // Wait for results to load
     await waitFor(() =>
@@ -547,9 +591,12 @@ describe('DatasetDownload form tests', () => {
     } as GlobusTokenResponse);
     mockSaveValue(GlobusStateKeys.continueGlobusPrepSteps, true);
 
-    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
-      <App searchQuery={activeSearch} />
-    );
+    const {
+      getByTestId,
+      getByRole,
+      getByText,
+      getAllByText,
+    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
 
     // Wait for results to load
     await waitFor(() =>
@@ -634,9 +681,12 @@ describe('DatasetDownload form tests', () => {
     } as GlobusTokenResponse);
     mockSaveValue(GlobusStateKeys.continueGlobusPrepSteps, true);
 
-    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
-      <App searchQuery={activeSearch} />
-    );
+    const {
+      getByTestId,
+      getByRole,
+      getByText,
+      getAllByText,
+    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
 
     // Wait for results to load
     await waitFor(() =>
@@ -722,9 +772,12 @@ describe('DatasetDownload form tests', () => {
     } as GlobusTokenResponse);
     mockSaveValue(GlobusStateKeys.continueGlobusPrepSteps, true);
 
-    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
-      <App searchQuery={activeSearch} />
-    );
+    const {
+      getByTestId,
+      getByRole,
+      getByText,
+      getAllByText,
+    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
 
     // Wait for results to load
     await waitFor(() =>
@@ -788,8 +841,83 @@ describe('DatasetDownload form tests', () => {
     expect(popupModal).not.toBeVisible();
   });
 
-  it('Globus Transfer steps popup has endpoint check if endpoint available', async () => {
-    // Setting the tokens so that the endpoint step should be completed
+  // TODO: Figure out how to mock the token for PKCE.exchangeForAccessToken
+  it('Collects url tokens for globus transfer steps', async () => {
+    // Setting the tokens so that the sign-in step should be skipped
+    mockSaveValue(CartStateKeys.cartItemSelections, userCartFixture());
+    mockSaveValue(GlobusStateKeys.continueGlobusPrepSteps, true);
+
+    const {
+      getByTestId,
+      getByRole,
+      getByText,
+      getAllByText,
+    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
+
+    // Wait for results to load
+    await waitFor(() =>
+      expect(getByText('results found for', { exact: false })).toBeTruthy()
+    );
+
+    // Check first row renders and click the checkbox
+    const firstRow = getByRole('row', {
+      name: getRowName('plus', 'check', 'foo', '3', '1', '1', true),
+    });
+
+    // Check first row has add button and click it
+    const addBtn = within(firstRow).getByRole('img', { name: 'plus' });
+    expect(addBtn).toBeTruthy();
+    await user.click(addBtn);
+
+    // Check 'Added items(s) to the cart' message appears
+    const addText = await waitFor(
+      () => getAllByText('Added item(s) to your cart')[0]
+    );
+    expect(addText).toBeTruthy();
+
+    // Set the tokens in the url
+    Object.defineProperty(window, 'location', {
+      value: {
+        pathname: '/cart/items',
+        href:
+          'https://localhost:3000/cart/items?code=12kj3kjh4&state=testingTrasnferTokens',
+        search: '?code=12kj3kjh4&state=testingTrasnferTokens',
+      },
+    });
+
+    // Switch to the cart page
+    const cartBtn = getByTestId('cartPageLink');
+    await user.click(cartBtn);
+
+    // printElementContents(undefined);
+
+    // // Get the transfer dialog popup component
+    // const popupModal = getByRole('dialog');
+    // expect(popupModal).toBeTruthy();
+
+    // // The dialog should be visible
+    // expect(popupModal).toBeVisible();
+
+    // // Select the endpoint step in the dialog
+    // const selectEndpointStep = within(
+    //   popupModal
+    // ).getByText('Redirect to select an endpoint in Globus', { exact: false });
+    // // It should have a -> symbol next to it to indicate it's the next step
+    // expect(selectEndpointStep.innerHTML).toMatch(
+    //   '-&gt; Redirect to select an endpoint in Globus.'
+    // );
+
+    // // Click Yes to start transfer steps
+    // const yesBtn = getByText('Yes');
+    // expect(yesBtn).toBeTruthy();
+    // await user.click(yesBtn);
+
+    // // Expect the dialog to not be visible
+    // expect(popupModal).not.toBeVisible();
+  });
+
+  it('Globus Transfer steps popup has endpoint checked if endpoint available', async () => {
+    // Setting the tokens so that the endpoint step is completed
     mockSaveValue(GlobusStateKeys.useDefaultEndpoint, false);
     mockSaveValue(GlobusStateKeys.defaultEndpoint, null);
     mockSaveValue(
@@ -797,9 +925,12 @@ describe('DatasetDownload form tests', () => {
       globusEndpointFixture()
     );
 
-    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
-      <App searchQuery={activeSearch} />
-    );
+    const {
+      getByTestId,
+      getByRole,
+      getByText,
+      getAllByText,
+    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
 
     // Wait for results to load
     await waitFor(() =>
@@ -862,6 +993,113 @@ describe('DatasetDownload form tests', () => {
     // Expect the dialog to not be visible
     expect(popupModal).not.toBeVisible();
   });
+
+  it('If endpoint URL is available, process it and continue Transfer process', async () => {
+    // Setting the tokens so that the sign-in step should be completed
+    mockSaveValue(CartStateKeys.cartItemSelections, userCartFixture());
+    mockSaveValue(GlobusStateKeys.refreshToken, 'refreshToken');
+    mockSaveValue(GlobusStateKeys.transferToken, {
+      id_token: '',
+      resource_server: '',
+      other_tokens: { refresh_token: 'something', transfer_token: 'something' },
+      created_on: Math.floor(Date.now() / 1000),
+      expires_in: Math.floor(Date.now() / 1000) + 100,
+      access_token: '',
+      refresh_expires_in: 0,
+      refresh_token: 'something',
+      scope:
+        'openid profile email offline_access urn:globus:auth:scope:transfer.api.globus.org:all',
+      token_type: '',
+    } as GlobusTokenResponse);
+    mockSaveValue(GlobusStateKeys.continueGlobusPrepSteps, true);
+
+    const {
+      getByTestId,
+      getByRole,
+      getByText,
+      getAllByText,
+    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
+
+    // Wait for results to load
+    await waitFor(() =>
+      expect(getByText('results found for', { exact: false })).toBeTruthy()
+    );
+
+    // Check first row renders and click the checkbox
+    const firstRow = getByRole('row', {
+      name: getRowName('plus', 'check', 'foo', '3', '1', '1', true),
+    });
+
+    // Check first row has add button and click it
+    const addBtn = within(firstRow).getByRole('img', { name: 'plus' });
+    expect(addBtn).toBeTruthy();
+    await user.click(addBtn);
+
+    // Check 'Added items(s) to the cart' message appears
+    const addText = await waitFor(
+      () => getAllByText('Added item(s) to your cart')[0]
+    );
+    expect(addText).toBeTruthy();
+
+    // Set endpoint in url
+    Object.defineProperty(window, 'location', {
+      value: {
+        pathname: '/cart/items',
+        href:
+          'https://localhost:3000/cart/items?endpoint=dummyEndpoint&label=dummy&path=nowhere&globfs=empty&endpointid=endpoint1',
+        search:
+          '?endpoint=dummyEndpoint&label=dummy&path=nowhere&globfs=empty&endpointid=endpoint1',
+      },
+    });
+
+    // Switch to the cart page
+    const cartBtn = getByTestId('cartPageLink');
+    await user.click(cartBtn);
+
+    // A popup should come asking if user wishes to save endpoint as default
+    const saveEndpointDialog = getByRole('dialog');
+    expect(saveEndpointDialog).toBeTruthy();
+    expect(saveEndpointDialog).toBeVisible();
+    expect(saveEndpointDialog).toHaveTextContent(
+      'Do you want to save this endpoint as default?'
+    );
+
+    // Click Yes to save the endpoint as default
+    const yesBtn = within(saveEndpointDialog).getByText('Yes');
+    expect(yesBtn).toBeTruthy();
+    await user.click(yesBtn);
+
+    // Next step should be to start the Transfer
+    const globusTransferDialog = getByRole('dialog');
+    expect(globusTransferDialog).toBeTruthy();
+
+    // Select the final transfer step in the dialog
+    const transferStep = within(
+      globusTransferDialog
+    ).getByText('Start Globus transfer.', { exact: false });
+    // The transfer step should be the next step to perform
+    expect(transferStep.innerHTML).toMatch(/-&gt; {2}Start Globus transfer./i);
+
+    // Click Yes to start transfer steps
+    const startBtn = within(globusTransferDialog).getByText('Yes');
+    expect(startBtn).toBeTruthy();
+    await user.click(startBtn);
+
+    // Check 'Globus transfer task submitted successfully!' message appears
+    const taskMsg = await waitFor(() =>
+      getByText('Globus transfer task submitted successfully!', {
+        exact: false,
+      })
+    );
+    expect(taskMsg).toBeTruthy();
+
+    // Clear all task items
+    const submitHistory = getByText('Task Submit History', { exact: false });
+    expect(submitHistory).toBeTruthy();
+    const clearAllBtn = within(submitHistory).getByText('Clear All');
+    expect(clearAllBtn).toBeTruthy();
+    await user.click(clearAllBtn);
+  });
 });
 
 describe('DatasetDownload form test failures', () => {
@@ -870,9 +1108,12 @@ describe('DatasetDownload form test failures', () => {
       rest.post(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404)))
     );
 
-    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
-      <App searchQuery={activeSearch} />
-    );
+    const {
+      getByTestId,
+      getByRole,
+      getByText,
+      getAllByText,
+    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
 
     // Wait for results to load
     await waitFor(() =>
@@ -928,5 +1169,62 @@ describe('DatasetDownload form test failures', () => {
         )
       ).toBeTruthy()
     );
+  });
+
+  it('Shows error message if url tokens are not valid for transfer', async () => {
+    // Setting the tokens so that the sign-in step should be skipped
+    mockSaveValue(CartStateKeys.cartItemSelections, userCartFixture());
+    mockSaveValue(GlobusStateKeys.continueGlobusPrepSteps, true);
+
+    const {
+      getByTestId,
+      getByRole,
+      getByText,
+      getAllByText,
+    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
+
+    // Wait for results to load
+    await waitFor(() =>
+      expect(getByText('results found for', { exact: false })).toBeTruthy()
+    );
+
+    // Check first row renders and click the checkbox
+    const firstRow = getByRole('row', {
+      name: getRowName('plus', 'check', 'foo', '3', '1', '1', true),
+    });
+
+    // Check first row has add button and click it
+    const addBtn = within(firstRow).getByRole('img', { name: 'plus' });
+    expect(addBtn).toBeTruthy();
+    await user.click(addBtn);
+
+    // Check 'Added items(s) to the cart' message appears
+    const addText = await waitFor(
+      () => getAllByText('Added item(s) to your cart')[0]
+    );
+    expect(addText).toBeTruthy();
+
+    // Set the tokens in the url
+    Object.defineProperty(window, 'location', {
+      value: {
+        pathname: '/cart/items',
+        href:
+          'https://localhost:3000/cart/items?code=12kj3kjh4&state=testingTrasnferTokens',
+        search: '?code=12kj3kjh4&state=testingTrasnferTokens',
+      },
+    });
+
+    // Switch to the cart page
+    const cartBtn = getByTestId('cartPageLink');
+    await user.click(cartBtn);
+
+    // Check 'Error occurred when obtaining transfer permission!' message appears
+    const taskMsg = await waitFor(
+      () =>
+        getAllByText('Error occured when obtaining transfer permissions.', {
+          exact: false,
+        })[0]
+    );
+    expect(taskMsg).toBeTruthy();
   });
 });

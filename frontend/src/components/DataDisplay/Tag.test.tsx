@@ -1,12 +1,12 @@
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { Tag } from './Tag';
-import { customRender } from '../../test/custom-render';
+import { customRenderKeycloak } from '../../test/custom-render';
 
 const user = userEvent.setup();
 
 it('renders component with and without onClose prop', async () => {
-  const { getByRole, rerender } = customRender(
+  const { getByRole, rerender } = customRenderKeycloak(
     <Tag value="foo" type="filenameVar" onClose={jest.fn()}>
       tag
     </Tag>
