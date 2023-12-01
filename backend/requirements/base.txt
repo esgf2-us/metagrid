@@ -3,7 +3,7 @@
 pytz==2023.3.post1  # https://github.com/stub42/pytz
 django==4.2.7  # https://www.djangoproject.com/
 django-environ==0.11.2  # https://github.com/joke2k/django-environ
-gunicorn==20.1.0  # https://github.com/benoitc/gunicorn
+gunicorn==21.2.0  # https://github.com/benoitc/gunicorn
 newrelic==8.7.0  # https://pypi.org/project/newrelic/
 argon2-cffi==21.3  # https://github.com/hynek/argon2_cffi
 requests==2.31.0  # https://github.com/psf/requests
