@@ -292,16 +292,31 @@ export const parsedNodeStatusFixture = (): NodeStatusArray => [
   },
 ];
 
+export const globusRefeshTokenFixture = 'validRefreshToken';
+export const globusTransferTokenFixture: GlobusTokenResponse = {
+  access_token: '',
+  refresh_expires_in: 0,
+  refresh_token: 'validTransferToken',
+  scope: '',
+  token_type: '',
+  id_token: '',
+  resource_server: 'transfer.api.globus.org',
+  other_tokens: [],
+  created_on: 0,
+  expires_in: 0,
+  error: '',
+};
+
 export const globusTokenResponseFixture = (): GlobusTokenResponse => {
   return {
     access_token: '',
     refresh_expires_in: 0,
-    refresh_token: '',
+    refresh_token: globusRefeshTokenFixture,
     scope: '',
     token_type: '',
     id_token: '',
     resource_server: '',
-    other_tokens: '',
+    other_tokens: [globusTransferTokenFixture],
     created_on: 0,
     expires_in: 0,
     error: '',
