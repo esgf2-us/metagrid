@@ -3,8 +3,13 @@ import { render, RenderResult } from '@testing-library/react';
 import Keycloak from 'keycloak-js';
 import React, { ComponentType } from 'react';
 import { MemoryRouter } from 'react-router-dom';
+
 import { RecoilRoot } from 'recoil';
-import { AuthProvider } from '../contexts/AuthContext';
+
+import {
+  GlobusAuthProvider,
+  KeycloakAuthProvider,
+} from '../contexts/AuthContext';
 import { keycloakProviderInitConfig } from '../lib/keycloak';
 import { ReactJoyrideProvider } from '../contexts/ReactJoyrideContext';
 
@@ -21,29 +26,10 @@ type CustomOptions = {
 };
 
 /**
- * Wraps components in the Keycloak Provider for testing
- * https://testing-library.com/docs/example-react-context/
- */
-export const keycloakRender = (
-  ui: React.ReactElement
-  // options?: CustomOptions
-): RenderResult =>
-  render(
-    <ReactKeycloakProvider
-      // authClient={{ ...createKeycloakStub(), ...options }}
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      authClient={keycloak}
-      initOptions={keycloakProviderInitConfig}
-    >
-      {ui}
-    </ReactKeycloakProvider>
-  );
-
-/**
- * Wraps components in all implemented React Context Providers for testing
+ * Wraps components in all implemented React Context Providers for testing using keycloak
  * https://testing-library.com/docs/react-testing-library/setup#custom-render
  */
-export const customRender = (
+export const customRenderKeycloak = (
   ui: React.ReactElement,
   options?: CustomOptions
 ): RenderResult => {
@@ -51,17 +37,38 @@ export const customRender = (
     return (
       <RecoilRoot>
         <ReactKeycloakProvider
-          // authClient={{ ...createKeycloakStub(), ...options }}
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           authClient={keycloak}
           initOptions={keycloakProviderInitConfig}
         >
-          <AuthProvider>
+          <KeycloakAuthProvider>
             <MemoryRouter basename={process.env.PUBLIC_URL}>
               <ReactJoyrideProvider>{children}</ReactJoyrideProvider>
             </MemoryRouter>
-          </AuthProvider>
+          </KeycloakAuthProvider>
         </ReactKeycloakProvider>
+      </RecoilRoot>
+    );
+  }
+
+  return render(ui, { wrapper: AllProviders as ComponentType, ...options });
+};
+
+/**
+ * Wraps components in all implemented React Context Providers for testing using keycloak
+ * https://testing-library.com/docs/react-testing-library/setup#custom-render
+ */
+export const customRenderGlobus = (
+  ui: React.ReactElement,
+  options?: CustomOptions
+): RenderResult => {
+  function AllProviders({ children }: AllProvidersProps): React.ReactElement {
+    return (
+      <RecoilRoot>
+        <GlobusAuthProvider>
+          <MemoryRouter basename={process.env.PUBLIC_URL}>
+            <ReactJoyrideProvider>{children}</ReactJoyrideProvider>
+          </MemoryRouter>
+        </GlobusAuthProvider>
       </RecoilRoot>
     );
   }

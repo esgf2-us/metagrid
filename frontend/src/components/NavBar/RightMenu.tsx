@@ -8,14 +8,23 @@ import {
   ShoppingCartOutlined,
   UserOutlined,
 } from '@ant-design/icons';
+
 import { useKeycloak } from '@react-keycloak/web';
 import { Badge, Menu, MenuProps } from 'antd';
 import { KeycloakTokenParsed } from 'keycloak-js';
+
 import React, { CSSProperties } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { navBarTargets } from '../../common/reactJoyrideSteps';
 import Button from '../General/Button';
 import RightDrawer from '../Messaging/RightDrawer';
+
+import { AuthContext } from '../../contexts/AuthContext';
+import {
+  authenticationMethod,
+  djangoLoginUrl,
+  djangoLogoutUrl,
+} from '../../env';
 
 const menuItemStyling: CSSProperties = { margin: '8px' };
 
@@ -33,18 +42,69 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
   supportModalVisible,
 }) => {
   const [activeMenuItem, setActiveMenuItem] = React.useState<string>('search');
+
   const [noticesOpen, setShowNotices] = React.useState(false);
+
   const location = useLocation();
-  const { keycloak } = useKeycloak();
 
-  let userInfo: KeycloakTokenParsed & { given_name: string; email: string };
+  const authState = React.useContext(AuthContext);
+  const { access_token: accessToken, pk } = authState;
+  const authenticated = accessToken && pk;
 
-  const { authenticated } = keycloak;
-  if (authenticated) {
-    userInfo = keycloak.idTokenParsed as KeycloakTokenParsed & {
-      given_name: string;
-      email: string;
-    };
+  let loginBtn: JSX.Element;
+  let logoutBtn: JSX.Element;
+  let userInfo = { email: '', given_name: '' };
+
+  if (authenticationMethod === 'keycloak') {
+    const { keycloak } = useKeycloak();
+    loginBtn = (
+      <Button
+        type="text"
+        icon={<UserOutlined style={{ fontSize: '18px', margin: 0 }} />}
+        onClick={() => {
+          keycloak.login();
+        }}
+      >
+        Sign In
+      </Button>
+    );
+    logoutBtn = (
+      <Button
+        type="text"
+        onClick={() => {
+          keycloak.logout();
+        }}
+      >
+        Sign Out
+      </Button>
+    );
+    if (authenticated) {
+      userInfo = keycloak.idTokenParsed as KeycloakTokenParsed & {
+        email: string;
+        given_name: string;
+      };
+    }
+  } else if (authenticationMethod === 'globus') {
+    loginBtn = (
+      <Button
+        type="text"
+        icon={<UserOutlined style={{ fontSize: '18px', margin: 0 }} />}
+        href={djangoLoginUrl}
+      >
+        Sign In
+      </Button>
+    );
+    logoutBtn = (
+      <Button type="text" href={djangoLogoutUrl}>
+        Sign Out
+      </Button>
+    );
+    if (authenticated) {
+      userInfo = {
+        email: authState.email as string,
+        given_name: '',
+      };
+    }
   }
 
   const showNotices = (): void => {
@@ -73,16 +133,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
         children: [
           {
             key: 'login',
-            label: (
-              <Button
-                type="text"
-                onClick={() => {
-                  keycloak.logout();
-                }}
-              >
-                Sign Out
-              </Button>
-            ),
+            label: logoutBtn,
           },
         ],
         style: menuItemStyling,
@@ -90,17 +141,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
     }
     return {
       key: 'signIn',
-      label: (
-        <Button
-          type="text"
-          icon={<UserOutlined style={{ fontSize: '18px', margin: 0 }} />}
-          onClick={() => {
-            keycloak.login();
-          }}
-        >
-          Sign In
-        </Button>
-      ),
+      label: loginBtn,
       className: navBarTargets.signInBtn.class(),
       style: menuItemStyling,
     };
@@ -119,7 +160,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
     },
     {
       label: (
-        <Link to="/cart/items">
+        <Link data-testid="cartPageLink" to="/cart/items">
           <ShoppingCartOutlined style={{ fontSize: '20px' }} />
           <Badge
             count={numCartItems}

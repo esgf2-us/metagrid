@@ -5,7 +5,7 @@ import { userSearchQueryFixture } from '../../api/mock/fixtures';
 import { rest, server } from '../../api/mock/server';
 import apiRoutes from '../../api/routes';
 import SearchesCard, { Props } from './SearchesCard';
-import { customRender } from '../../test/custom-render';
+import { customRenderKeycloak } from '../../test/custom-render';
 
 const user = userEvent.setup();
 
@@ -31,7 +31,9 @@ beforeEach(() => {
 });
 
 it('renders component and handles button clicks', async () => {
-  const { getByRole } = customRender(<SearchesCard {...defaultProps} />);
+  const { getByRole } = customRenderKeycloak(
+    <SearchesCard {...defaultProps} />
+  );
 
   // Check search button renders and click it
   const searchBtn = await waitFor(() => getByRole('img', { name: 'search' }));
@@ -51,7 +53,9 @@ it('displays alert error when api fails to return response', async () => {
     )
   );
 
-  const { getByRole } = customRender(<SearchesCard {...defaultProps} />);
+  const { getByRole } = customRenderKeycloak(
+    <SearchesCard {...defaultProps} />
+  );
 
   // Check alert renders
   const alert = await waitFor(() => getByRole('alert'));
@@ -59,7 +63,7 @@ it('displays alert error when api fails to return response', async () => {
 });
 
 it('displays "N/A" for Filename Searches when none are applied', () => {
-  const { getByText } = customRender(
+  const { getByText } = customRenderKeycloak(
     <SearchesCard
       {...defaultProps}
       searchQuery={userSearchQueryFixture({ filenameVars: undefined })}

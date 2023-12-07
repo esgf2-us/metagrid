@@ -34,6 +34,23 @@ export interface ResponseError extends Error {
   status?: number;
   response: { status: HTTPCodeType; [key: string]: string | HTTPCodeType };
 }
+
+const getCookie = (name: string): null | string => {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i += 1) {
+      const cookie = cookies[i].trim();
+      // Does this cookie string begin with the name we want?
+      if (cookie.substring(0, name.length + 1) === `${name}=`) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+};
+
 /**
  * Must use JSON.parse on the 'str' arg string because axios's transformResponse
  * function attempts to parse the response body using JSON.parse but fails.
@@ -68,6 +85,22 @@ export const errorMsgBasedOnHTTPStatusCode = (
   // A connection could not be established, so return a generic error message
   return route.handleErrorMsg('generic');
 };
+
+/**
+ * HTTP Request Method: GET
+ * HTTP Response Code: 200 OK
+ */
+export const fetchGlobusAuth = async (): Promise<RawUserAuth> =>
+  axios
+    .get(apiRoutes.globusAuth.path, { withCredentials: true })
+    .then((resp) => {
+      return resp.data as Promise<RawUserAuth>;
+    })
+    .catch((error: ResponseError) => {
+      throw new Error(
+        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusAuth)
+      );
+    });
 
 /**
  * HTTP Request Method: POST
@@ -149,6 +182,9 @@ export const updateUserCart = async (
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          'X-CSRFToken': getCookie('csrftoken'),
         },
       }
     )

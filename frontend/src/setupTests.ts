@@ -5,6 +5,7 @@
 import '@testing-library/jest-dom/extend-expect';
 import { server } from './api/mock/server';
 import messageDisplayData from './components/Messaging/messageDisplayData';
+import { sessionStorageMock } from './test/jestTestFunctions';
 
 jest.setTimeout(15000);
 
@@ -21,33 +22,7 @@ global.matchMedia =
     };
   };
 
-const localStorageMock = (() => {
-  let store: { [key: string]: string } = {};
-
-  return {
-    getItem(key: string) {
-      return store[key];
-    },
-
-    setItem(key: string, value: string) {
-      store[key] = value;
-    },
-
-    clear() {
-      store = {};
-    },
-
-    removeItem(key: string) {
-      delete store[key];
-    },
-
-    getAll() {
-      return store;
-    },
-  };
-})();
-
-Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+Object.defineProperty(window, 'localStorage', { value: sessionStorageMock });
 
 beforeAll(() => server.listen());
 beforeEach(() => {

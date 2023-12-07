@@ -7,7 +7,7 @@ import {
 } from '../../api/mock/fixtures';
 import { mapHTTPErrorCodes } from '../../api/routes';
 import ProjectsForm, { Props } from './ProjectForm';
-import { customRender } from '../../test/custom-render';
+import { customRenderKeycloak } from '../../test/custom-render';
 
 const user = userEvent.setup();
 
@@ -20,7 +20,7 @@ const defaultProps: Props = {
 };
 
 it('renders Popconfirm component when there is an active project and active facets', async () => {
-  const { getByRole, getByText } = customRender(
+  const { getByRole, getByText } = customRenderKeycloak(
     <ProjectsForm {...defaultProps} />
   );
 
@@ -38,7 +38,7 @@ it('renders Popconfirm component when there is an active project and active face
 });
 
 it('renders empty form', () => {
-  const { queryByRole } = customRender(
+  const { queryByRole } = customRenderKeycloak(
     <ProjectsForm {...defaultProps} projectsFetched={undefined} />
   );
 
@@ -48,7 +48,7 @@ it('renders empty form', () => {
 });
 
 it('renders error message when projects can"t be fetched', () => {
-  const { getByRole } = customRender(
+  const { getByRole } = customRenderKeycloak(
     <ProjectsForm
       {...defaultProps}
       apiError={

@@ -9,7 +9,7 @@ import { rest, server } from '../../api/mock/server';
 import apiRoutes from '../../api/routes';
 import FilesTable, { DownloadUrls, genDownloadUrls, Props } from './FilesTable';
 import { RawSearchResult } from './types';
-import { customRender } from '../../test/custom-render';
+import { customRenderKeycloak } from '../../test/custom-render';
 
 const user = userEvent.setup();
 
@@ -93,7 +93,7 @@ const defaultProps: Props = {
 
 describe('test FilesTable component', () => {
   it('renders an empty data table when no results are available', async () => {
-    const { getByRole } = customRender(
+    const { getByRole } = customRenderKeycloak(
       <FilesTable {...defaultProps} numResults={undefined} />
     );
 
@@ -108,7 +108,7 @@ describe('test FilesTable component', () => {
       )
     );
 
-    const { getByRole } = customRender(<FilesTable {...defaultProps} />);
+    const { getByRole } = customRenderKeycloak(<FilesTable {...defaultProps} />);
     const alertMsg = await waitFor(() =>
       getByRole('img', { name: 'close-circle', hidden: true })
     );
@@ -116,7 +116,7 @@ describe('test FilesTable component', () => {
   });
 
   it('handles downloading data with httpserver', async () => {
-    const { getByTestId } = customRender(<FilesTable {...defaultProps} />);
+    const { getByTestId } = customRenderKeycloak(<FilesTable {...defaultProps} />);
 
     // Check component renders
     const component = await waitFor(() => getByTestId('filesTable'));
@@ -176,7 +176,7 @@ describe('test FilesTable component', () => {
       )
     );
 
-    const { getByRole, getByTestId, getByText } = customRender(
+    const { getByRole, getByTestId, getByText } = customRenderKeycloak(
       <FilesTable {...defaultProps} numResults={numFound} />
     );
 
@@ -218,7 +218,7 @@ describe('test FilesTable component', () => {
   });
 
   it('handles clicking the expandable icon', async () => {
-    const { getByTestId } = customRender(<FilesTable {...defaultProps} />);
+    const { getByTestId } = customRenderKeycloak(<FilesTable {...defaultProps} />);
 
     // Check component renders
     const component = await waitFor(() => getByTestId('filesTable'));
