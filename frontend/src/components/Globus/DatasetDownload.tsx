@@ -42,7 +42,7 @@ const GlobusAuth = new PKCE({
   authorization_endpoint: 'https://auth.globus.org/v2/oauth2/authorize', // No changes needed
   token_endpoint: 'https://auth.globus.org/v2/oauth2/token', // No changes needed
   requested_scopes:
-    'openid profile email offline_access urn:globus:auth:scope:transfer.api.globus.org:all', // Update with any scopes you would need, e.g. transfer
+    'openid profile email offline_access urn:globus:auth:scope:transfer.api.globus.org:all[*https://auth.globus.org/scopes/9d6d994a-6d04-11e5-ba46-22000b92c6ec/data_access]', // Update with any scopes you would need, e.g. transfer
 });
 
 type ModalFormState = 'signin' | 'endpoint' | 'both' | 'none';
