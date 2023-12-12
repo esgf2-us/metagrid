@@ -541,7 +541,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         }
       }
     } catch (error: unknown) {
-      console.log('Error');
       showError('Error occured when obtaining transfer permissions.');
     } finally {
       // This isn't strictly necessary but it ensures no code reuse.

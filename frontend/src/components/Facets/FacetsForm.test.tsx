@@ -8,6 +8,7 @@ import {
 } from '../../api/mock/fixtures';
 import FacetsForm, { humanizeFacetNames, Props } from './FacetsForm';
 import { customRenderKeycloak } from '../../test/custom-render';
+import { printElementContents } from '../../test/jestTestFunctions';
 
 const user = userEvent.setup();
 
@@ -57,6 +58,32 @@ describe('test FacetsForm component', () => {
 
     // Check if the input value resets back to blank
     await waitFor(() => expect(input.value).toEqual(''));
+  });
+
+  it('handles setting the globusReady option on and off', async () => {
+    const { getByLabelText } = customRenderKeycloak(
+      <FacetsForm {...defaultProps} />
+    );
+
+    const globusReadyRadioOption = getByLabelText('Only Globus Transferrable');
+    const anyRadioOption = getByLabelText('Any');
+    expect(anyRadioOption).toBeTruthy();
+    expect(globusReadyRadioOption).toBeTruthy();
+
+    fireEvent.click(anyRadioOption);
+
+    expect(anyRadioOption).toBeChecked();
+    expect(globusReadyRadioOption).not.toBeChecked();
+
+    fireEvent.click(globusReadyRadioOption);
+
+    expect(anyRadioOption).not.toBeChecked();
+    expect(globusReadyRadioOption).toBeChecked();
+
+    fireEvent.click(anyRadioOption);
+
+    expect(anyRadioOption).toBeChecked();
+    expect(globusReadyRadioOption).not.toBeChecked();
   });
 
   it('handles expand and collapse facet panels', async () => {

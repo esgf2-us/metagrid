@@ -10,7 +10,7 @@ import apiRoutes from '../../api/routes';
 import { customRenderKeycloak } from '../../test/custom-render';
 import Table, { Props } from './Table';
 import { QualityFlag } from './Tabs';
-import { getRowName } from '../../test/jestTestFunctions';
+import { getRowName, printElementContents } from '../../test/jestTestFunctions';
 
 const user = userEvent.setup();
 
@@ -103,7 +103,9 @@ it('renders warning that dataset is retracted', async () => {
 });
 
 xit('renders record metadata in an expandable panel', async () => {
-  const { getByRole, getByText } = customRenderKeycloak(<Table {...defaultProps} />);
+  const { getByRole, getByText } = customRenderKeycloak(
+    <Table {...defaultProps} />
+  );
 
   // Check table exists
   const table = getByRole('table');
@@ -235,7 +237,7 @@ xit('renders quality control flags for obs4MIPs datasets when the record has the
     ],
   };
 
-  const { getByRole } = customRenderKeycloak(
+  const { getByRole, getByText } = customRenderKeycloak(
     <Table {...defaultProps} results={results} />
   );
 
@@ -245,7 +247,7 @@ xit('renders quality control flags for obs4MIPs datasets when the record has the
 
   // Check first row exists
   const firstRow = getByRole('row', {
-    name: getRowName('plus', 'question', 'foo', '3', '1', '1', false),
+    name: getRowName('plus', 'question', 'foo', '3', '1', '1', true),
   });
   expect(firstRow).toBeTruthy();
 
@@ -261,6 +263,7 @@ xit('renders quality control flags for obs4MIPs datasets when the record has the
   });
   expect(expandableIcon).toBeTruthy();
   await user.click(expandableIcon);
+  // fireEvent.click(expandableIcon);
 
   // Get the expandable row that was rendered and click on it
   const expandableRow = document.querySelector(
@@ -268,8 +271,10 @@ xit('renders quality control flags for obs4MIPs datasets when the record has the
   ) as HTMLElement;
   expect(expandableRow).toBeTruthy();
 
+  printElementContents(undefined);
+
   // Get the Additional panel and click on it
-  const panel = within(expandableRow).getByText('Additional');
+  const panel = getByText('Additional');
   expect(panel).toBeTruthy();
   await user.click(panel);
 
