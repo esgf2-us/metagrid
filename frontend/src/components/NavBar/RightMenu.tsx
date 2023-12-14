@@ -57,6 +57,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
 
   if (authenticationMethod === 'keycloak') {
     const { keycloak } = useKeycloak();
+    console.log(keycloak);
     loginBtn = (
       <Button
         type="text"

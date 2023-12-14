@@ -1,9 +1,19 @@
-import { fireEvent, render, waitFor } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  renderHook,
+  waitFor,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { customRenderKeycloak } from '../../test/custom-render';
+import {
+  KeycloakProviders,
+  customRenderKeycloak,
+} from '../../test/custom-render';
 import Support from '../Support';
 import RightMenu, { Props } from './RightMenu';
+import { useKeycloak } from '@react-keycloak/web';
 
 const user = userEvent.setup();
 
@@ -32,13 +42,45 @@ it('sets the active menu item based on the location pathname', async () => {
   await user.click(savedSearchLink);
 });
 
-xit('display the user"s given name after authentication and signs out', async () => {
+describe('Authenticated', () => {
+  let mockKeycloak = jest.fn();
+  jest.mock('@react-keycloak/web', () => {
+    const originalModule = jest.requireActual('@react-keycloak/web');
+
+    return {
+      ...originalModule,
+      useKeycloak: () => {
+        mockKeycloak.mockImplementation(() => 'mocked');
+      },
+    };
+  });
+
+  it('display the users given name after authentication and signs out', async () => {
+    const { getByTestId, getByText } = customRenderKeycloak(
+      <RightMenu {...rightMenuProps} />
+    );
+    expect(mockKeycloak).toHaveBeenCalled();
+
+    // Check applicable components render
+    const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
+    expect(rightMenuComponent).toBeTruthy();
+
+    // Check user logged in and hover
+    const greeting = await waitFor(() => getByText('Hi, John'));
+    expect(greeting).toBeTruthy();
+    fireEvent.mouseEnter(greeting);
+
+    // Click the sign out button
+    const signOutBtn = await waitFor(() => getByText('Sign Out'));
+    expect(signOutBtn).toBeTruthy();
+    await user.click(signOutBtn);
+  });
+});
+
+xit('display the users email after authentication if they did not provide a name and signs out', async () => {
   const { getByTestId, getByText } = customRenderKeycloak(
     <RightMenu {...rightMenuProps} />,
-    {
-      authenticated: true,
-      idTokenParsed: { given_name: 'John', email: 'johndoe@url.com' },
-    }
+    {}
   );
 
   // Check applicable components render
@@ -47,30 +89,6 @@ xit('display the user"s given name after authentication and signs out', async ()
 
   // Check user logged in and hover
   const greeting = await waitFor(() => getByText('Hi, John'));
-  expect(greeting).toBeTruthy();
-  fireEvent.mouseEnter(greeting);
-
-  // Click the sign out button
-  const signOutBtn = await waitFor(() => getByText('Sign Out'));
-  expect(signOutBtn).toBeTruthy();
-  await user.click(signOutBtn);
-});
-
-xit('display the user"s email after authentication if they did not provide a name and signs out', async () => {
-  const { getByTestId, getByText } = customRenderKeycloak(
-    <RightMenu {...rightMenuProps} />,
-    {
-      authenticated: true,
-      idTokenParsed: { email: 'johndoe@url.com' },
-    }
-  );
-
-  // Check applicable components render
-  const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
-  expect(rightMenuComponent).toBeTruthy();
-
-  // Check user logged in and hover
-  const greeting = await waitFor(() => getByText('Hi, johndoe@url.com'));
   expect(greeting).toBeTruthy();
   fireEvent.mouseEnter(greeting);
 
