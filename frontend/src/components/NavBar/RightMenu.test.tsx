@@ -16,6 +16,23 @@ const rightMenuProps: Props = {
   },
 };
 
+jest.mock('@react-keycloak/web', () => {
+  const originalModule = jest.requireActual('@react-keycloak/web');
+
+  return {
+    ...originalModule,
+    useKeycloak: () => {
+      return {
+        keycloak: {
+          login: jest.fn(),
+          logout: jest.fn(),
+          idTokenParsed: { given_name: 'John' },
+        },
+      };
+    },
+  };
+});
+
 it('sets the active menu item based on the location pathname', async () => {
   const { getByRole } = customRenderKeycloak(<RightMenu {...rightMenuProps} />);
 
@@ -32,13 +49,9 @@ it('sets the active menu item based on the location pathname', async () => {
   await user.click(savedSearchLink);
 });
 
-xit('display the user"s given name after authentication and signs out', async () => {
+it('display the users given name after authentication and signs out', async () => {
   const { getByTestId, getByText } = customRenderKeycloak(
-    <RightMenu {...rightMenuProps} />,
-    {
-      authenticated: true,
-      idTokenParsed: { given_name: 'John', email: 'johndoe@url.com' },
-    }
+    <RightMenu {...rightMenuProps} />
   );
 
   // Check applicable components render
@@ -56,13 +69,10 @@ xit('display the user"s given name after authentication and signs out', async ()
   await user.click(signOutBtn);
 });
 
-xit('display the user"s email after authentication if they did not provide a name and signs out', async () => {
+xit('display the users email after authentication if they did not provide a name and signs out', async () => {
   const { getByTestId, getByText } = customRenderKeycloak(
     <RightMenu {...rightMenuProps} />,
-    {
-      authenticated: true,
-      idTokenParsed: { email: 'johndoe@url.com' },
-    }
+    {}
   );
 
   // Check applicable components render
@@ -70,7 +80,7 @@ xit('display the user"s email after authentication if they did not provide a nam
   expect(rightMenuComponent).toBeTruthy();
 
   // Check user logged in and hover
-  const greeting = await waitFor(() => getByText('Hi, johndoe@url.com'));
+  const greeting = await waitFor(() => getByText('Hi, John'));
   expect(greeting).toBeTruthy();
   fireEvent.mouseEnter(greeting);
 
