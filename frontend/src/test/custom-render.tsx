@@ -2,23 +2,14 @@ import { ReactKeycloakProvider } from '@react-keycloak/web';
 import { render, RenderResult } from '@testing-library/react';
 import Keycloak from 'keycloak-js';
 import React from 'react';
-
 import { RecoilRoot } from 'recoil';
-
-import { AuthContext } from '../contexts/AuthContext';
-import {
-  GlobusAuthProvider,
-  KeycloakAuthProvider,
-} from '../contexts/AuthContext';
-import { keycloakProviderInitConfig } from '../lib/keycloak';
 import { MemoryRouter } from 'react-router-dom';
+import { GlobusAuthProvider, AuthContext } from '../contexts/AuthContext';
+import { keycloakProviderInitConfig } from '../lib/keycloak';
 import { ReactJoyrideProvider } from '../contexts/ReactJoyrideContext';
-import { useKeycloak } from '@react-keycloak/web';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const keycloak = new Keycloak();
-
-type CustomOptions = {};
 
 /**
  * Wraps components in all implemented React Context Providers for testing using keycloak
@@ -56,7 +47,7 @@ export const KeycloakProviders = ({
 
 const customRenderKeycloak = (
   ui: React.ReactElement,
-  options?: CustomOptions
+  options?: Record<string, unknown>
 ): RenderResult => render(ui, { wrapper: KeycloakProviders, ...options });
 
 /**
@@ -81,8 +72,7 @@ const GlobusProviders = ({
 
 const customRenderGlobus = (
   ui: React.ReactElement,
-  options?: CustomOptions
+  options?: Record<string, unknown>
 ): RenderResult => render(ui, { wrapper: GlobusProviders, ...options });
 
-export * from '@testing-library/react';
 export { customRenderGlobus, customRenderKeycloak };

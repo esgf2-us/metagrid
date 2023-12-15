@@ -8,7 +8,6 @@ import {
 } from '../../api/mock/fixtures';
 import FacetsForm, { humanizeFacetNames, Props } from './FacetsForm';
 import { customRenderKeycloak } from '../../test/custom-render';
-import { printElementContents } from '../../test/jestTestFunctions';
 
 const user = userEvent.setup();
 
@@ -60,7 +59,7 @@ describe('test FacetsForm component', () => {
     await waitFor(() => expect(input.value).toEqual(''));
   });
 
-  it('handles setting the globusReady option on and off', async () => {
+  it('handles setting the globusReady option on and off', () => {
     const { getByLabelText } = customRenderKeycloak(
       <FacetsForm {...defaultProps} />
     );

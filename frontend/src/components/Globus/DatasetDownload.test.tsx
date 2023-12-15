@@ -10,7 +10,6 @@ import { ActiveSearchQuery } from '../Search/types';
 import {
   getRowName,
   mockFunction,
-  printElementContents,
   tempStorageGetMock,
   tempStorageSetMock,
 } from '../../test/jestTestFunctions';
@@ -117,8 +116,8 @@ beforeEach(() => {
   tempStorageSetMock(GlobusStateKeys.defaultEndpoint, null);
   tempStorageSetMock(GlobusStateKeys.useDefaultEndpoint, false);
   tempStorageSetMock(GlobusStateKeys.globusTaskItems, []);
+  tempStorageSetMock(CartStateKeys.cartItemSelections, []);
   tempStorageSetMock(CartStateKeys.cartDownloadIsLoading, false);
-  tempStorageSetMock(CartStateKeys.cartDownloadIsLoading, []);
 });
 
 describe('DatasetDownload form tests', () => {
@@ -1061,8 +1060,6 @@ describe('DatasetDownload form tests', () => {
     const globusTransferDialog = getByRole('dialog');
     expect(globusTransferDialog).toBeTruthy();
 
-    printElementContents(undefined);
-
     // Select the final transfer step in the dialog
     const transferStep = within(globusTransferDialog).getByText(
       'Redirect to obtain transfer permission from Globus',
@@ -1156,8 +1153,6 @@ describe('DatasetDownload form tests', () => {
     // Next step should be to start the Transfer
     const globusTransferDialog = getByRole('dialog');
     expect(globusTransferDialog).toBeTruthy();
-
-    printElementContents(undefined);
 
     // Select the final transfer step in the dialog
     const transferStep = within(globusTransferDialog).getByText(

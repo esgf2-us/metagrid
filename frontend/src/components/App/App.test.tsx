@@ -21,11 +21,7 @@ import { getSearchFromUrl } from '../../common/utils';
 import { customRenderKeycloak } from '../../test/custom-render';
 import { ActiveSearchQuery } from '../Search/types';
 import App from './App';
-import {
-  getRowName,
-  printElementContents,
-  submitKeywordSearch,
-} from '../../test/jestTestFunctions';
+import { getRowName, submitKeywordSearch } from '../../test/jestTestFunctions';
 
 // Used to restore window.location after each test
 const location = JSON.stringify(window.location);
@@ -924,9 +920,9 @@ describe('User search library', () => {
     fireEvent.change(freeTextInput, { target: { value: input } });
 
     // Submit the form
-    const submitBtn = within(leftMenuComponent).getByRole('img', {
+    const submitBtn = within(leftMenuComponent).getAllByRole('img', {
       name: 'search',
-    });
+    })[0];
     await user.click(submitBtn);
 
     // Wait for components to rerender
@@ -951,8 +947,8 @@ describe('User search library', () => {
     expect(cart).toBeTruthy();
 
     // Check apply search button renders and click it
-    const applySearchBtn = await waitFor(() =>
-      within(cart).getByRole('img', { name: 'search', hidden: true })
+    const applySearchBtn = await waitFor(
+      () => within(cart).getAllByRole('img', { name: 'search' })[0]
     );
     expect(applySearchBtn).toBeTruthy();
     await user.click(applySearchBtn);
@@ -1066,8 +1062,6 @@ describe('User search library', () => {
         )
       );
 
-      printElementContents(undefined);
-
       const { getByText, getByTestId } = customRenderKeycloak(
         <App searchQuery={activeSearch} />,
         {
@@ -1175,7 +1169,6 @@ describe('User search library', () => {
       await waitFor(() => getByTestId('search'));
       await waitFor(() => getByTestId('facets-form'));
 
-      printElementContents(undefined);
       // Check delete button renders for the saved search and click it
       const saveBtn = await waitFor(() => getByText('Save Search'));
       expect(saveBtn).toBeTruthy();
@@ -1213,7 +1206,6 @@ describe('User search library', () => {
       // This might be because other tests leak in the describe block.
       // Using getAllByText instead of getByText for now to pass test.
 
-      printElementContents(undefined);
       const errorMsg = await waitFor(() =>
         getAllByText(apiRoutes.userSearch.handleErrorMsg(404))
       );

@@ -24,7 +24,7 @@ import {
   TextInputs,
   VersionType,
 } from './types';
-import { getRowName, printElementContents } from '../../test/jestTestFunctions';
+import { getRowName } from '../../test/jestTestFunctions';
 
 const user = userEvent.setup();
 
@@ -97,8 +97,6 @@ describe('test Search component', () => {
     // Check search component renders
     const searchComponent = await waitFor(() => getByTestId('search'));
     expect(searchComponent).toBeTruthy();
-
-    printElementContents(undefined);
 
     // Check renders results string
     const strResults = await waitFor(() =>

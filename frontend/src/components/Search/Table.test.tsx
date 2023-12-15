@@ -10,7 +10,7 @@ import apiRoutes from '../../api/routes';
 import { customRenderKeycloak } from '../../test/custom-render';
 import Table, { Props } from './Table';
 import { QualityFlag } from './Tabs';
-import { getRowName, printElementContents } from '../../test/jestTestFunctions';
+import { getRowName } from '../../test/jestTestFunctions';
 
 const user = userEvent.setup();
 
@@ -270,8 +270,6 @@ xit('renders quality control flags for obs4MIPs datasets when the record has the
     'tr.ant-table-expanded-row.ant-table-expanded-row-level-1'
   ) as HTMLElement;
   expect(expandableRow).toBeTruthy();
-
-  printElementContents(undefined);
 
   // Get the Additional panel and click on it
   const panel = getByText('Additional');

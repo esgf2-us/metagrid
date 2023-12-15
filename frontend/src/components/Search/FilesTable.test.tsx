@@ -108,7 +108,9 @@ describe('test FilesTable component', () => {
       )
     );
 
-    const { getByRole } = customRenderKeycloak(<FilesTable {...defaultProps} />);
+    const { getByRole } = customRenderKeycloak(
+      <FilesTable {...defaultProps} />
+    );
     const alertMsg = await waitFor(() =>
       getByRole('img', { name: 'close-circle', hidden: true })
     );
@@ -116,7 +118,9 @@ describe('test FilesTable component', () => {
   });
 
   it('handles downloading data with httpserver', async () => {
-    const { getByTestId } = customRenderKeycloak(<FilesTable {...defaultProps} />);
+    const { getByTestId } = customRenderKeycloak(
+      <FilesTable {...defaultProps} />
+    );
 
     // Check component renders
     const component = await waitFor(() => getByTestId('filesTable'));
@@ -218,7 +222,9 @@ describe('test FilesTable component', () => {
   });
 
   it('handles clicking the expandable icon', async () => {
-    const { getByTestId } = customRenderKeycloak(<FilesTable {...defaultProps} />);
+    const { getByTestId } = customRenderKeycloak(
+      <FilesTable {...defaultProps} />
+    );
 
     // Check component renders
     const component = await waitFor(() => getByTestId('filesTable'));

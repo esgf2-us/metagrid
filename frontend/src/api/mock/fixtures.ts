@@ -240,7 +240,7 @@ export const rawUserCartFixture = (
   props: Partial<RawUserCart> = {}
 ): RawUserCart => {
   const defaults: RawUserCart = {
-    items: [rawSearchResultFixture()],
+    items: [],
   };
   return { ...defaults, ...props } as RawUserCart;
 };
