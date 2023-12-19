@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /**
  * This file contains tests for the App component.
  *
@@ -21,7 +23,12 @@ import { getSearchFromUrl } from '../../common/utils';
 import { customRenderKeycloak } from '../../test/custom-render';
 import { ActiveSearchQuery } from '../Search/types';
 import App from './App';
-import { getRowName, submitKeywordSearch } from '../../test/jestTestFunctions';
+import {
+  getRowName,
+  mockFunction,
+  submitKeywordSearch,
+  tempStorageGetMock,
+} from '../../test/jestTestFunctions';
 
 // Used to restore window.location after each test
 const location = JSON.stringify(window.location);
@@ -52,6 +59,33 @@ afterEach(() => {
   server.resetHandlers();
 
   cleanup();
+});
+
+// This will get a mock value from temp storage to use for keycloak
+const mockKeycloakToken = mockFunction(() => {
+  const loginFixture = tempStorageGetMock('keycloakFixture');
+
+  if (loginFixture) {
+    return loginFixture;
+  }
+  return {
+    keycloak: {
+      login: jest.fn(),
+      logout: jest.fn(),
+      idTokenParsed: { given_name: 'John' },
+    },
+  };
+});
+
+jest.mock('@react-keycloak/web', () => {
+  const originalModule = jest.requireActual('@react-keycloak/web');
+
+  return {
+    ...originalModule,
+    useKeycloak: () => {
+      return mockKeycloakToken();
+    },
+  };
 });
 
 it('renders App component', async () => {
@@ -761,7 +795,7 @@ describe('User cart', () => {
   });
 
   describe('Error handling', () => {
-    xit('displays error message after failing to fetch authenticated user"s cart', async () => {
+    it('displays error message after failing to fetch authenticated user"s cart', async () => {
       server.use(
         rest.get(apiRoutes.userCart.path, (_req, res, ctx) =>
           res(ctx.status(404))
@@ -855,7 +889,7 @@ describe('User search library', () => {
     await waitFor(() => getByTestId('search'));
   });
 
-  xit('handles authenticated user removing searches from the search library', async () => {
+  it('handles authenticated user removing searches from the search library', async () => {
     const { getByRole, getByTestId, getByText } = customRenderKeycloak(
       <App searchQuery={activeSearch} />,
       {
@@ -1055,7 +1089,7 @@ describe('User search library', () => {
   });
 
   describe('Error handling', () => {
-    xit('displays error message after failing to fetch authenticated user"s saved search queries', async () => {
+    it('displays error message after failing to fetch authenticated user"s saved search queries', async () => {
       server.use(
         rest.get(apiRoutes.userSearches.path, (_req, res, ctx) =>
           res(ctx.status(404))
@@ -1121,7 +1155,7 @@ describe('User search library', () => {
       await user.click(saveSearch);
     });
 
-    xit('displays error message after failing to remove authenticated user"s saved search', async () => {
+    it('displays error message after failing to remove authenticated user"s saved search', async () => {
       // Override API response with 404
       server.use(
         rest.delete(apiRoutes.userSearch.path, (_req, res, ctx) =>
@@ -1192,19 +1226,16 @@ describe('User search library', () => {
       const cartComponent = await waitFor(() => getByTestId('cart'));
       expect(cartComponent).toBeTruthy();
 
-      // Check delete button renders for the saved search and click it
-      const deleteBtn = await waitFor(() =>
-        within(cartComponent).getByRole('img', {
-          name: 'delete',
-          hidden: true,
-        })
+      // Check delete button renders for a saved search and click it
+      const deleteBtn = await waitFor(
+        () =>
+          within(cartComponent).getAllByRole('img', {
+            name: 'delete',
+            hidden: true,
+          })[0]
       );
       expect(deleteBtn).toBeTruthy();
       await user.click(deleteBtn);
-
-      // FIXME: There should only be 1 error message rendering, but for some reason 3 render.
-      // This might be because other tests leak in the describe block.
-      // Using getAllByText instead of getByText for now to pass test.
 
       const errorMsg = await waitFor(() =>
         getAllByText(apiRoutes.userSearch.handleErrorMsg(404))
