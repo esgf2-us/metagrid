@@ -107,3 +107,25 @@ export async function submitKeywordSearch(
 
   await waitFor(() => getByTestId('search'));
 }
+
+export async function openDropdownList(
+  user: UserEvent,
+  dropdown: HTMLElement
+): Promise<void> {
+  await waitFor(async () => {
+    dropdown.focus();
+    await user.keyboard('[ArrowDown]');
+  });
+}
+
+export async function selectDropdownOption(
+  user: UserEvent,
+  dropdown: HTMLElement,
+  option: string
+): Promise<void> {
+  await waitFor(async () => {
+    dropdown.focus();
+    await user.keyboard('[ArrowDown]');
+    await user.click(screen.getByText(option));
+  });
+}

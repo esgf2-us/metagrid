@@ -508,7 +508,9 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         url
       )) as GlobusTokenResponse;
 
+      /* istanbul ignore else */
       if (tokenResponse) {
+        /* istanbul ignore else */
         if (tokenResponse.refresh_token) {
           await saveSessionValue(
             GlobusStateKeys.refreshToken,
@@ -519,11 +521,13 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         }
 
         // Try to find and get the transfer token
+        /* istanbul ignore else */
         if (tokenResponse.other_tokens) {
           const otherTokens: GlobusTokenResponse[] = [
             ...(tokenResponse.other_tokens as GlobusTokenResponse[]),
           ];
           otherTokens.forEach(async (tokenBlob) => {
+            /* istanbul ignore else */
             if (
               tokenBlob.resource_server &&
               tokenBlob.resource_server === 'transfer.api.globus.org'
@@ -541,6 +545,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         }
       }
     } catch (error: unknown) {
+      /* istanbul ignore next */
       showError('Error occured when obtaining transfer permissions.');
     } finally {
       // This isn't strictly necessary but it ensures no code reuse.

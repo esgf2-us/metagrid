@@ -4,7 +4,11 @@ import Keycloak from 'keycloak-js';
 import React from 'react';
 import { RecoilRoot } from 'recoil';
 import { MemoryRouter } from 'react-router-dom';
-import { GlobusAuthProvider, AuthContext } from '../contexts/AuthContext';
+import {
+  GlobusAuthProvider,
+  AuthContext,
+  KeycloakAuthProvider,
+} from '../contexts/AuthContext';
 import { keycloakProviderInitConfig } from '../lib/keycloak';
 import { ReactJoyrideProvider } from '../contexts/ReactJoyrideContext';
 
@@ -27,19 +31,21 @@ export const KeycloakProviders = ({
         authClient={keycloak}
         initOptions={keycloakProviderInitConfig}
       >
-        <AuthContext.Provider
-          value={{
-            access_token: '1',
-            email: 'email@email.com',
-            is_authenticated: true,
-            refresh_token: '1',
-            pk: '1',
-          }}
-        >
-          <MemoryRouter basename={process.env.PUBLIC_URL}>
-            <ReactJoyrideProvider>{children}</ReactJoyrideProvider>
-          </MemoryRouter>
-        </AuthContext.Provider>
+        <KeycloakAuthProvider>
+          <AuthContext.Provider
+            value={{
+              access_token: '1',
+              email: 'email@email.com',
+              is_authenticated: true,
+              refresh_token: '1',
+              pk: '1',
+            }}
+          >
+            <MemoryRouter basename={process.env.PUBLIC_URL}>
+              <ReactJoyrideProvider>{children}</ReactJoyrideProvider>
+            </MemoryRouter>
+          </AuthContext.Provider>
+        </KeycloakAuthProvider>
       </ReactKeycloakProvider>
     </RecoilRoot>
   );

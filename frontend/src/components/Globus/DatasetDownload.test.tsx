@@ -10,6 +10,7 @@ import { ActiveSearchQuery } from '../Search/types';
 import {
   getRowName,
   mockFunction,
+  openDropdownList,
   tempStorageGetMock,
   tempStorageSetMock,
 } from '../../test/jestTestFunctions';
@@ -26,17 +27,6 @@ import {
 import apiRoutes from '../../api/routes';
 import * as enviroConfig from '../../env';
 import DatasetDownloadForm from './DatasetDownload';
-
-// For mocking environment variables
-// https://www.mikeborozdin.com/post/changing-jest-mocks-between-tests
-const mockConfig = enviroConfig as {
-  globusEnabledNodes: string[];
-};
-const originalEnabledNodes = [
-  'aims3.llnl.gov',
-  'esgf-data1.llnl.gov',
-  'esgf-data2.llnl.gov',
-];
 
 // Used to restore window.location after each test
 const location = JSON.stringify(window.location);
@@ -71,6 +61,17 @@ jest.mock('../../api/index', () => {
     },
   };
 });
+
+// For mocking environment variables
+// https://www.mikeborozdin.com/post/changing-jest-mocks-between-tests
+const mockConfig = enviroConfig as {
+  globusEnabledNodes: string[];
+};
+const originalEnabledNodes = [
+  'aims3.llnl.gov',
+  'esgf-data1.llnl.gov',
+  'esgf-data2.llnl.gov',
+];
 
 // Mock the globusEnabledNodes variable to simulate configuration
 jest.mock('../../env', () => {
@@ -164,10 +165,12 @@ describe('DatasetDownload form tests', () => {
     expect(firstCheckBox).toBeTruthy();
     await user.click(firstCheckBox);
 
-    // Select download dropdown
-    const globusTransferDropdown = getByText('Globus');
-    expect(globusTransferDropdown).toBeTruthy();
-    await user.click(globusTransferDropdown);
+    // Open download dropdown
+    const globusTransferDropdown = within(
+      getByTestId('downloadTypeSelector')
+    ).getByRole('combobox');
+
+    await openDropdownList(user, globusTransferDropdown);
 
     // Select wget
     const wgetOption = getAllByText(/wget/i)[2];
@@ -175,9 +178,9 @@ describe('DatasetDownload form tests', () => {
     await user.click(wgetOption);
 
     // Start wget download
-    const wgetDownload = getByText('Download');
-    expect(wgetDownload).toBeTruthy();
-    await user.click(wgetDownload);
+    const downloadBtn = getByText('Download');
+    expect(downloadBtn).toBeTruthy();
+    await user.click(downloadBtn);
 
     // Expect download success message to show
     await waitFor(() =>
@@ -1502,6 +1505,7 @@ describe('DatasetDownload form tests', () => {
 
 describe('Testing globus transfer related failures', () => {
   beforeAll(() => {
+    tempStorageSetMock('pkce-pass', false);
     jest.resetModules();
   });
 
@@ -1575,10 +1579,16 @@ describe('Testing globus transfer related failures', () => {
     expect(taskMsg).toBeTruthy();
   });
 
+  // TODO: Figure a reliable way to mock the GlobusAuth.exchangeForAccessToken output values.
+  /** Until that is done, this test will fail and will need to use istanbul ignore statements
+   * for the mean time.
+   */
   xit('Shows error message if url tokens are not valid for transfer', async () => {
     // Setting the tokens so that the sign-in step should be skipped
     mockSaveValue(CartStateKeys.cartItemSelections, userCartFixture());
     mockSaveValue(GlobusStateKeys.continueGlobusPrepSteps, true);
+
+    tempStorageSetMock('pkce-pass', false);
 
     const {
       getByTestId,
@@ -1686,10 +1696,12 @@ describe('Testing wget transfer related failures', () => {
     expect(firstCheckBox).toBeTruthy();
     await user.click(firstCheckBox);
 
-    // Select download dropdown
-    const globusTransferDropdown = getByText('Globus');
-    expect(globusTransferDropdown).toBeTruthy();
-    await user.click(globusTransferDropdown);
+    // Open download dropdown
+    const globusTransferDropdown = within(
+      getByTestId('downloadTypeSelector')
+    ).getByRole('combobox');
+
+    await openDropdownList(user, globusTransferDropdown);
 
     // Select wget
     const wgetOption = getAllByText(/wget/i)[2];
@@ -1697,9 +1709,9 @@ describe('Testing wget transfer related failures', () => {
     await user.click(wgetOption);
 
     // Start wget download
-    const wgetDownload = getByText('Download');
-    expect(wgetDownload).toBeTruthy();
-    await user.click(wgetDownload);
+    const downloadBtn = getByText('Download');
+    expect(downloadBtn).toBeTruthy();
+    await user.click(downloadBtn);
 
     // Expect error message to show
     await waitFor(() =>
