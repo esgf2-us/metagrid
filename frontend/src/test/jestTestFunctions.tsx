@@ -63,7 +63,7 @@ export function tempStorageSetMock<T>(key: string, value: T): void {
   sessionStorageMock.setItem<T>(key, value);
 }
 
-export function mockFunction<T extends (...args: any[]) => any>(
+export function mockFunction<T extends (...args: unknown[]) => unknown>(
   fn: T
 ): jest.MockedFunction<T> {
   return fn as jest.MockedFunction<T>;
