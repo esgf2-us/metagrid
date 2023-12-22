@@ -2,13 +2,14 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 import React from 'react';
 import userEvent from '@testing-library/user-event';
-import { cleanup, waitFor, within } from '@testing-library/react';
+import { waitFor, within } from '@testing-library/react';
 import { customRenderKeycloak } from '../../test/custom-render';
 import { rest, server } from '../../api/mock/server';
 import { getSearchFromUrl } from '../../common/utils';
 import { ActiveSearchQuery } from '../Search/types';
 import {
   getRowName,
+  mockConfig,
   mockFunction,
   openDropdownList,
   tempStorageGetMock,
@@ -25,11 +26,7 @@ import {
   userCartFixture,
 } from '../../api/mock/fixtures';
 import apiRoutes from '../../api/routes';
-import * as enviroConfig from '../../env';
 import DatasetDownloadForm from './DatasetDownload';
-
-// Used to restore window.location after each test
-const location = JSON.stringify(window.location);
 
 const activeSearch: ActiveSearchQuery = getSearchFromUrl('project=test1');
 
@@ -60,56 +57,6 @@ jest.mock('../../api/index', () => {
       return mockSaveValue(key, value);
     },
   };
-});
-
-// For mocking environment variables
-// https://www.mikeborozdin.com/post/changing-jest-mocks-between-tests
-const mockConfig = enviroConfig as {
-  globusEnabledNodes: string[];
-};
-const originalEnabledNodes = [
-  'aims3.llnl.gov',
-  'esgf-data1.llnl.gov',
-  'esgf-data2.llnl.gov',
-];
-
-// Mock the globusEnabledNodes variable to simulate configuration
-jest.mock('../../env', () => {
-  const originalModule = jest.requireActual('../../env');
-
-  return {
-    __esModule: true,
-    ...originalModule,
-    globusEnabledNodes: originalEnabledNodes,
-  };
-});
-
-afterEach(() => {
-  // Routes are already declared in the App component using BrowserRouter, so MemoryRouter does
-  // not work to isolate routes in memory between tests. The only workaround is to delete window.location and restore it after each test in order to reset the URL location.
-  // https://stackoverflow.com/a/54222110
-  // https://stackoverflow.com/questions/59892304/cant-get-memoryrouter-to-work-with-testing-library-react
-
-  // TypeScript complains with error TS2790: The operand of a 'delete' operator must be optional.
-  // https://github.com/facebook/jest/issues/890#issuecomment-776112686
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  delete window.location;
-  window.location = (JSON.parse(location) as unknown) as Location;
-  window.location.replace = () => {}; // Don't do anything with redirects
-
-  // Clear localStorage between tests
-  localStorage.clear();
-
-  // Reset all mocks after each test
-  jest.clearAllMocks();
-
-  // Reset the environment variables that may have been set in tests
-  mockConfig.globusEnabledNodes = originalEnabledNodes;
-
-  server.resetHandlers();
-
-  cleanup();
 });
 
 beforeEach(() => {
@@ -192,7 +139,6 @@ describe('DatasetDownload form tests', () => {
 
   it("Alert popup doesn't show if no globus enabled nodes are configured.", async () => {
     mockConfig.globusEnabledNodes = [];
-
     const {
       getByTestId,
       getByRole,

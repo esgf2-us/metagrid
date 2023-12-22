@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /**
  * This file contains tests for the App component.
  *
@@ -7,15 +5,9 @@
  * in order to mock their behaviors.
  *
  */
-import {
-  act,
-  cleanup,
-  fireEvent,
-  waitFor,
-  within,
-} from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { act, fireEvent, waitFor, within } from '@testing-library/react';
 import React from 'react';
+import userEvent from '@testing-library/user-event';
 import { rest, server } from '../../api/mock/server';
 import apiRoutes from '../../api/routes';
 import { delay } from '../../common/reactJoyrideSteps';
@@ -24,42 +16,14 @@ import { customRenderKeycloak } from '../../test/custom-render';
 import { ActiveSearchQuery } from '../Search/types';
 import App from './App';
 import {
+  activeSearch,
   getRowName,
   mockFunction,
   submitKeywordSearch,
   tempStorageGetMock,
 } from '../../test/jestTestFunctions';
 
-// Used to restore window.location after each test
-const location = JSON.stringify(window.location);
-
-const activeSearch: ActiveSearchQuery = getSearchFromUrl();
-
 const user = userEvent.setup();
-
-afterEach(() => {
-  // Routes are already declared in the App component using BrowserRouter, so MemoryRouter does
-  // not work to isolate routes in memory between tests. The only workaround is to delete window.location and restore it after each test in order to reset the URL location.
-  // https://stackoverflow.com/a/54222110
-  // https://stackoverflow.com/questions/59892304/cant-get-memoryrouter-to-work-with-testing-library-react
-
-  // TypeScript complains with error TS2790: The operand of a 'delete' operator must be optional.
-  // https://github.com/facebook/jest/issues/890#issuecomment-776112686
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  delete window.location;
-  window.location = (JSON.parse(location) as unknown) as Location;
-
-  // Clear localStorage between tests
-  localStorage.clear();
-
-  // Reset all mocks after each test
-  jest.clearAllMocks();
-
-  server.resetHandlers();
-
-  cleanup();
-});
 
 // This will get a mock value from temp storage to use for keycloak
 const mockKeycloakToken = mockFunction(() => {
@@ -78,8 +42,10 @@ const mockKeycloakToken = mockFunction(() => {
 });
 
 jest.mock('@react-keycloak/web', () => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const originalModule = jest.requireActual('@react-keycloak/web');
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return {
     ...originalModule,
     useKeycloak: () => {
@@ -654,11 +620,12 @@ describe('User cart', () => {
   });
 
   it('handles anonymous user adding and removing items from cart', async () => {
+    // Render component as anonymous
     const {
       getByRole,
       getByTestId,
       getByPlaceholderText,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
+    } = customRenderKeycloak(<App searchQuery={activeSearch} />, {}, true);
 
     // Check applicable components render
     const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
@@ -701,12 +668,13 @@ describe('User cart', () => {
   });
 
   it('displays anonymous user"s number of files in the cart summary and handles clearing the cart', async () => {
+    // Render component as anonymous
     const {
       getByRole,
       getByTestId,
       getByText,
       getByPlaceholderText,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
+    } = customRenderKeycloak(<App searchQuery={activeSearch} />, {}, true);
 
     // Check applicable components render
     const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
@@ -933,11 +901,12 @@ describe('User search library', () => {
   });
 
   it('handles anonymous user saving and applying searches', async () => {
+    // Render component as anonymous
     const {
       getByTestId,
       getByPlaceholderText,
       getByRole,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
+    } = customRenderKeycloak(<App searchQuery={activeSearch} />, {}, true);
 
     // Check applicable components render
     const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
@@ -992,11 +961,12 @@ describe('User search library', () => {
   });
 
   it('handles anonymous user removing searches from the search library', async () => {
+    // Render component as anonymous
     const {
       getByPlaceholderText,
       getByRole,
       getByTestId,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
+    } = customRenderKeycloak(<App searchQuery={activeSearch} />, {}, true);
 
     // Check applicable components render
     const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
@@ -1054,7 +1024,7 @@ describe('User search library', () => {
       getByTestId,
       getByPlaceholderText,
       getByRole,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
+    } = customRenderKeycloak(<App searchQuery={activeSearch} />, {}, true);
 
     // Check applicable components render
     const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));

@@ -20,7 +20,7 @@ const keycloak = new Keycloak();
  * https://testing-library.com/docs/react-testing-library/setup#custom-render
  */
 
-export const KeycloakProviders = ({
+export const KeycloakProvidersAuthenticated = ({
   children,
 }: {
   children: React.ReactNode;
@@ -51,10 +51,50 @@ export const KeycloakProviders = ({
   );
 };
 
+export const KeycloakProvidersUnauthenticated = ({
+  children,
+}: {
+  children: React.ReactNode;
+}): React.ReactElement => {
+  return (
+    <RecoilRoot>
+      <ReactKeycloakProvider
+        authClient={keycloak}
+        initOptions={keycloakProviderInitConfig}
+      >
+        <KeycloakAuthProvider>
+          <AuthContext.Provider
+            value={{
+              access_token: null,
+              email: null,
+              is_authenticated: false,
+              refresh_token: null,
+              pk: '1',
+            }}
+          >
+            <MemoryRouter basename={process.env.PUBLIC_URL}>
+              <ReactJoyrideProvider>{children}</ReactJoyrideProvider>
+            </MemoryRouter>
+          </AuthContext.Provider>
+        </KeycloakAuthProvider>
+      </ReactKeycloakProvider>
+    </RecoilRoot>
+  );
+};
+
 const customRenderKeycloak = (
   ui: React.ReactElement,
-  options?: Record<string, unknown>
-): RenderResult => render(ui, { wrapper: KeycloakProviders, ...options });
+  options?: Record<string, unknown>,
+  anonymous?: boolean
+): RenderResult => {
+  if (anonymous) {
+    return render(ui, {
+      wrapper: KeycloakProvidersUnauthenticated,
+      ...options,
+    });
+  }
+  return render(ui, { wrapper: KeycloakProvidersAuthenticated, ...options });
+};
 
 /**
  * Wraps components in all implemented React Context Providers for testing using keycloak

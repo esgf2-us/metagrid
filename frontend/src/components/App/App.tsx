@@ -462,8 +462,8 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     });
   };
 
+  /* istanbul ignore next */
   const generateRedirects = (): ReactElement => {
-    /* istanbul ignore next */
     if (!publicUrl && previousPublicUrl) {
       return (
         <Route

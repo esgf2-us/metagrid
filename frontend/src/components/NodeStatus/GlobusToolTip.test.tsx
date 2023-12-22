@@ -1,24 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-
 import React from 'react';
 import { customRenderKeycloak } from '../../test/custom-render';
 import GlobusToolTip from './GlobusToolTip';
-
-// For mocking environment variables
-// https://www.mikeborozdin.com/post/changing-jest-mocks-between-tests
-const newEnabledNodes = ['globusEnabled', 'globusEnabled2', 'globusEnabled3'];
-
-// Mock the globusEnabledNodes variable to simulate configuration
-jest.mock('../../env', () => {
-  const originalModule = jest.requireActual('../../env');
-
-  return {
-    __esModule: true,
-    ...originalModule,
-    globusEnabledNodes: newEnabledNodes,
-  };
-});
+import { originalEnabledNodes } from '../../test/jestTestFunctions';
 
 describe('Testing the GlobusToolTip component', () => {
   it('Renders the GlobusToolTip component properly with empty node and no children', () => {
@@ -60,7 +43,7 @@ describe('Testing the GlobusToolTip component', () => {
 
   it('Renders the GlobusToolTip component properly with globus enabled node and no children', () => {
     const { getByRole } = customRenderKeycloak(
-      <GlobusToolTip dataNode="globusEnabled"></GlobusToolTip>
+      <GlobusToolTip dataNode={originalEnabledNodes[0]}></GlobusToolTip>
     );
     // Should show globus as available status
     const status = getByRole('img', { name: 'check-circle' });
@@ -69,7 +52,7 @@ describe('Testing the GlobusToolTip component', () => {
 
   it('Renders the GlobusToolTip component properly with globus enabled node and children', () => {
     const { getByRole, getByText } = customRenderKeycloak(
-      <GlobusToolTip dataNode="globusEnabled">
+      <GlobusToolTip dataNode={originalEnabledNodes[0]}>
         <p>Click Me!</p>
       </GlobusToolTip>
     );

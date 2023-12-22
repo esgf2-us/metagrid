@@ -7,6 +7,25 @@
  */
 import { waitFor, within, screen, RenderResult } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event/dist/types/setup/setup';
+import * as enviroConfig from '../env';
+import { getSearchFromUrl } from '../common/utils';
+
+// For mocking environment variables
+export type MockConfig = {
+  globusEnabledNodes: string[];
+};
+
+// For mocking environment variables
+// https://www.mikeborozdin.com/post/changing-jest-mocks-between-tests
+export const mockConfig: MockConfig = enviroConfig;
+
+export const originalEnabledNodes = [
+  'aims3.llnl.gov',
+  'esgf-data1.llnl.gov',
+  'esgf-data2.llnl.gov',
+];
+
+export const activeSearch = getSearchFromUrl();
 
 export const sessionStorageMock = (() => {
   let store: { [key: string]: unknown } = {};
