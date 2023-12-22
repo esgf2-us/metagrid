@@ -1,4 +1,4 @@
-import { fireEvent, waitFor, within } from '@testing-library/react';
+import { waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import {
@@ -10,6 +10,7 @@ import apiRoutes from '../../api/routes';
 import FilesTable, { DownloadUrls, genDownloadUrls, Props } from './FilesTable';
 import { RawSearchResult } from './types';
 import { customRenderKeycloak } from '../../test/custom-render';
+import { selectDropdownOption } from '../../test/jestTestFunctions';
 
 const user = userEvent.setup();
 
@@ -108,7 +109,9 @@ describe('test FilesTable component', () => {
       )
     );
 
-    const { getByRole } = customRenderKeycloak(<FilesTable {...defaultProps} />);
+    const { getByRole } = customRenderKeycloak(
+      <FilesTable {...defaultProps} />
+    );
     const alertMsg = await waitFor(() =>
       getByRole('img', { name: 'close-circle', hidden: true })
     );
@@ -116,7 +119,9 @@ describe('test FilesTable component', () => {
   });
 
   it('handles downloading data with httpserver', async () => {
-    const { getByTestId } = customRenderKeycloak(<FilesTable {...defaultProps} />);
+    const { getByTestId } = customRenderKeycloak(
+      <FilesTable {...defaultProps} />
+    );
 
     // Check component renders
     const component = await waitFor(() => getByTestId('filesTable'));
@@ -155,7 +160,7 @@ describe('test FilesTable component', () => {
     await user.click(copyBtn);
   });
 
-  xit('handles pagination and page size changes', async () => {
+  it('handles pagination and page size changes', async () => {
     // Update api to return 20 search results, which enables pagination if 10/page selected
     const data = ESGFSearchAPIFixture();
 
@@ -176,7 +181,7 @@ describe('test FilesTable component', () => {
       )
     );
 
-    const { getByRole, getByTestId, getByText } = customRenderKeycloak(
+    const { getByRole, getByTestId } = customRenderKeycloak(
       <FilesTable {...defaultProps} numResults={numFound} />
     );
 
@@ -196,16 +201,12 @@ describe('test FilesTable component', () => {
       within(paginationList).getByRole('combobox')
     );
     expect(pageSizeComboBox).toBeTruthy();
-    fireEvent.change(pageSizeComboBox, { target: { value: 'foo' } });
-    await user.click(pageSizeComboBox);
 
     // Wait for the options to render, then select 20 / page
-    const secondOption = await waitFor(() => getByText('20 / page'));
-    await user.click(secondOption);
+    await selectDropdownOption(user, pageSizeComboBox, '20 / page');
 
     // Change back to 10 / page
-    const firstOption = await waitFor(() => getByText('10 / page'));
-    await user.click(firstOption);
+    await selectDropdownOption(user, pageSizeComboBox, '10 / page');
 
     // Select the 'Next Page' button (only enabled if there are > 10 results)
     const nextPage = await waitFor(() =>
@@ -218,7 +219,9 @@ describe('test FilesTable component', () => {
   });
 
   it('handles clicking the expandable icon', async () => {
-    const { getByTestId } = customRenderKeycloak(<FilesTable {...defaultProps} />);
+    const { getByTestId } = customRenderKeycloak(
+      <FilesTable {...defaultProps} />
+    );
 
     // Check component renders
     const component = await waitFor(() => getByTestId('filesTable'));

@@ -17,5 +17,5 @@
     "jsx": "react-jsx",
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src", "src/test/__mocks__/js-pkce.ts"]
 }

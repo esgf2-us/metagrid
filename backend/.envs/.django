@@ -3,6 +3,10 @@
 DJANGO_SETTINGS_MODULE=config.settings.local
 DOMAIN_NAME=http://localhost:8000
 
+# Security
+# ------------------------------------------------------------------------------
+DJANGO_SECURE_SSL_REDIRECT=False
+
 # django-cors-headers
 # ------------------------------------------------------------------------------
 CORS_ORIGIN_WHITELIST=http://localhost:3000

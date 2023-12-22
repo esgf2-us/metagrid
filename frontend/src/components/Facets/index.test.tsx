@@ -33,7 +33,7 @@ it('renders component', async () => {
   expect(projectForm).toBeTruthy();
 });
 
-xit('handles when the project form is submitted', async () => {
+it('handles when the project form is submitted', async () => {
   const { getByTestId } = customRenderKeycloak(
     <Facets
       {...defaultProps}
