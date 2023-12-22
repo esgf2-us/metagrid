@@ -15,7 +15,7 @@ import {
 } from '../../../contexts/ReactJoyrideContext';
 import { MessageActions, TemplateProps, WelcomeData } from '../types';
 
-const WelcomeTemplate: React.FC<TemplateProps> = ({
+const WelcomeTemplate: React.FC<React.PropsWithChildren<TemplateProps>> = ({
   templateData,
   templateActions,
 }) => {

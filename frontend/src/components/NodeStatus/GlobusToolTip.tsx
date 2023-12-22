@@ -1,6 +1,6 @@
 import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
 import React from 'react';
-import ToolTip from '../DataDisplay/ToolTip';
+import { Tooltip } from 'antd';
 import { globusEnabledNodes } from '../../env';
 
 export type Props = {
@@ -15,12 +15,15 @@ export function globusEnabled(node: string | null | undefined): boolean {
   return false;
 }
 
-const GlobusToolTip: React.FC<Props> = ({ dataNode, children }) => {
+const GlobusToolTip: React.FC<React.PropsWithChildren<Props>> = ({
+  dataNode,
+  children,
+}) => {
   /* istanbul ignore else*/
   if (globusEnabled(dataNode)) {
     if (children) {
       return (
-        <ToolTip
+        <Tooltip
           title={
             <>
               Data Node:<div>{dataNode}</div>
@@ -34,11 +37,11 @@ const GlobusToolTip: React.FC<Props> = ({ dataNode, children }) => {
             {dataNode}
             {children}
           </span>
-        </ToolTip>
+        </Tooltip>
       );
     }
     return (
-      <ToolTip
+      <Tooltip
         title={
           <>
             Data Node:<div>{dataNode}</div>
@@ -50,14 +53,14 @@ const GlobusToolTip: React.FC<Props> = ({ dataNode, children }) => {
         <span>
           <CheckCircleTwoTone twoToneColor="#52c41a" />
         </span>
-      </ToolTip>
+      </Tooltip>
     );
   }
 
   if (children) {
     return (
       <>
-        <ToolTip
+        <Tooltip
           title={
             <>
               Data Node:<div>{dataNode}</div>
@@ -69,14 +72,14 @@ const GlobusToolTip: React.FC<Props> = ({ dataNode, children }) => {
           <span>
             <CloseCircleTwoTone twoToneColor="#eb2f96" /> {dataNode} {children}
           </span>
-        </ToolTip>
+        </Tooltip>
       </>
     );
   }
 
   return (
     <>
-      <ToolTip
+      <Tooltip
         title={
           <>
             Data Node:<div>{dataNode}</div>
@@ -88,7 +91,7 @@ const GlobusToolTip: React.FC<Props> = ({ dataNode, children }) => {
         <span>
           <CloseCircleTwoTone twoToneColor="#eb2f96" />
         </span>
-      </ToolTip>
+      </Tooltip>
     </>
   );
 };
