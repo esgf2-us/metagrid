@@ -1,9 +1,15 @@
 /**
  * This file contains HTTP Request functions.
  */
+
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+
 import 'setimmediate'; // Added because in Jest 27, setImmediate is not defined, causing test errors
 import humps from 'humps';
 import queryString from 'query-string';
+import { AxiosResponse } from 'axios';
+import axios from '../lib/axios';
 import {
   RawUserCart,
   RawUserSearchQuery,
@@ -21,14 +27,29 @@ import {
   TextInputs,
 } from '../components/Search/types';
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
-import { metagridApiURL, wgetApiURL } from '../env';
-import axios from '../lib/axios';
+import { metagridApiURL } from '../env';
 import apiRoutes, { ApiRoute, HTTPCodeType } from './routes';
 
 export interface ResponseError extends Error {
   status?: number;
   response: { status: HTTPCodeType; [key: string]: string | HTTPCodeType };
 }
+
+const getCookie = (name: string): null | string => {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i += 1) {
+      const cookie = cookies[i].trim();
+      // Does this cookie string begin with the name we want?
+      if (cookie.substring(0, name.length + 1) === `${name}=`) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+};
 
 /**
  * Must use JSON.parse on the 'str' arg string because axios's transformResponse
@@ -64,6 +85,22 @@ export const errorMsgBasedOnHTTPStatusCode = (
   // A connection could not be established, so return a generic error message
   return route.handleErrorMsg('generic');
 };
+
+/**
+ * HTTP Request Method: GET
+ * HTTP Response Code: 200 OK
+ */
+export const fetchGlobusAuth = async (): Promise<RawUserAuth> =>
+  axios
+    .get(apiRoutes.globusAuth.path, { withCredentials: true })
+    .then((resp) => {
+      return resp.data as Promise<RawUserAuth>;
+    })
+    .catch((error: ResponseError) => {
+      throw new Error(
+        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusAuth)
+      );
+    });
 
 /**
  * HTTP Request Method: POST
@@ -145,6 +182,9 @@ export const updateUserCart = async (
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          'X-CSRFToken': getCookie('csrftoken'),
         },
       }
     )
@@ -521,26 +561,122 @@ export const fetchDatasetFiles = async (
       );
     });
 };
+
+const returnFileToUser = (fileContent: string): void => {
+  const d = new Date();
+  const fileName = `wget_script_${d.getFullYear()}-${
+    d.getMonth() + 1
+  }-${d.getDate()}_${d.getHours()}-${d.getMinutes()}-${d.getSeconds()}.sh`;
+  const downloadLinkNode = document.createElement('a');
+  downloadLinkNode.setAttribute(
+    'href',
+    `data:text/plain;charset=utf-8,${encodeURIComponent(fileContent)}`
+  );
+  downloadLinkNode.setAttribute('download', fileName);
+
+  downloadLinkNode.style.display = 'none';
+  document.body.appendChild(downloadLinkNode);
+
+  downloadLinkNode.click();
+
+  document.body.removeChild(downloadLinkNode);
+};
+
 /**
- * Performs validation against the wget API to ensure a 200 response.
+ * Performs wget request from the API.
  *
- * If the API returns a 200, it returns the responseURL so the browser can open
- * the link.
  */
 export const fetchWgetScript = async (
+  ids: string[],
+  filenameVars?: string[]
+): Promise<void> => {
+  const data = {
+    dataset_id: ids,
+    query: filenameVars,
+  };
+
+  return axios
+    .post(apiRoutes.wget.path, data)
+    .then((resp) => returnFileToUser(resp.data as string))
+    .catch((error: ResponseError) => {
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.wget));
+    });
+};
+
+export const loadSessionValue = async <T>(key: string): Promise<T | null> => {
+  return axios
+    .post(apiRoutes.tempStorageGet.path, { dataKey: key })
+    .then((resp: AxiosResponse) => {
+      const { data } = resp;
+      if (data && key in data) {
+        // eslint-disable-next-line
+        const value: T | null = data[key];
+        if ((value as unknown) === 'None') {
+          return null;
+        }
+        return value as T;
+      }
+      return null;
+    })
+    .catch(
+      /* istanbul ignore next */
+      (error: ResponseError) => {
+        throw new Error(
+          errorMsgBasedOnHTTPStatusCode(error, apiRoutes.tempStorageGet)
+        );
+      }
+    );
+};
+
+export const saveSessionValue = async <T>(
+  key: string,
+  value: T
+): Promise<AxiosResponse> => {
+  let data: { dataKey: string; dataValue: T | string } = {
+    dataKey: key,
+    dataValue: 'None',
+  };
+  if (value !== null) {
+    data = { ...data, dataValue: value };
+  }
+  return axios
+    .post(apiRoutes.tempStorageSet.path, JSON.stringify(data))
+    .then((res) => {
+      return res.data;
+    })
+    .catch(
+      /* istanbul ignore next */
+      (error: ResponseError) => {
+        throw new Error(
+          errorMsgBasedOnHTTPStatusCode(error, apiRoutes.tempStorageSet)
+        );
+      }
+    );
+};
+
+/**
+ * Performs validation against the globus API to ensure a 200 response.
+ *
+ * If the API returns a 200, it returns the axios response.
+ */
+export const startGlobusTransfer = async (
+  accessToken: string,
+  refreshToken: string,
+  endpointId: string,
+  path: string,
   ids: string[] | string,
   filenameVars?: string[]
-): Promise<string> => {
-  let testurl = queryString.stringifyUrl({
-    url: apiRoutes.wget.path,
-    query: { dataset_id: ids },
-  });
-
+): Promise<AxiosResponse> => {
   let url = queryString.stringifyUrl({
-    url: `${wgetApiURL}`,
-    query: { dataset_id: ids },
+    url: apiRoutes.globusTransfer.path,
+    query: {
+      access_token: accessToken,
+      refresh_token: refreshToken,
+      endpointId,
+      path,
+      dataset_id: ids,
+    },
   });
-
   if (filenameVars && filenameVars.length > 0) {
     const filenameVarsParam = queryString.stringify(
       { query: filenameVars },
@@ -549,14 +685,17 @@ export const fetchWgetScript = async (
       }
     );
     url += `&${filenameVarsParam}`;
-    testurl += `&${filenameVarsParam}`;
   }
 
   return axios
-    .get(testurl)
-    .then(() => url)
+    .get(url)
+    .then((resp) => {
+      return resp;
+    })
     .catch((error: ResponseError) => {
-      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.wget));
+      throw new Error(
+        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusTransfer)
+      );
     });
 };
 

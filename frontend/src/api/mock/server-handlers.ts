@@ -8,6 +8,7 @@ import { rest } from 'msw';
 import apiRoutes from '../routes';
 import {
   ESGFSearchAPIFixture,
+  globusTransferResponseFixture,
   projectsFixture,
   rawCitationFixture,
   rawNodeStatusFixture,
@@ -17,11 +18,45 @@ import {
   userSearchQueriesFixture,
   userSearchQueryFixture,
 } from './fixtures';
+import {
+  tempStorageGetMock,
+  tempStorageSetMock,
+} from '../../test/jestTestFunctions';
 
 const handlers = [
   rest.post(apiRoutes.keycloakAuth.path, (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(userAuthFixture()))
   ),
+  rest.get(apiRoutes.globusAuth.path, (_req, res, ctx) =>
+    res(ctx.status(200), ctx.json(userAuthFixture()))
+  ),
+  rest.get(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
+    res(ctx.status(200), ctx.json(globusTransferResponseFixture()))
+  ),
+  rest.get(apiRoutes.userInfo.path, (_req, res, ctx) =>
+    res(ctx.status(200), ctx.json(userInfoFixture()))
+  ),
+  rest.post(apiRoutes.tempStorageGet.path, (_req, res, ctx) => {
+    const data = _req.body as { dataKey: string; dataValue: unknown };
+    if (data && data.dataKey) {
+      const keyName = data.dataKey;
+
+      const value: unknown = tempStorageGetMock(keyName);
+      return res(ctx.status(200), ctx.json({ [keyName]: value }));
+    }
+    return res(ctx.status(400), ctx.json('Load failed!'));
+  }),
+  rest.post(apiRoutes.tempStorageSet.path, (_req, res, ctx) => {
+    const reqBody = _req.body as string;
+    const data = JSON.parse(reqBody) as { dataKey: string; dataValue: unknown };
+    if (data && data.dataKey && data.dataValue) {
+      const keyName = data.dataKey;
+
+      tempStorageSetMock(keyName, data.dataValue as string);
+      return res(ctx.status(200), ctx.json({ data: 'Save success!' }));
+    }
+    return res(ctx.status(400), ctx.json({ data: 'Save failed!' }));
+  }),
   rest.get(apiRoutes.userInfo.path, (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(userInfoFixture()))
   ),
@@ -85,14 +120,14 @@ const handlers = [
 
     return res(ctx.status(200), ctx.json(rawCitationFixture()));
   }),
-  rest.get(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(200))),
+  rest.post(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(200))),
   rest.get(apiRoutes.nodeStatus.path, (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(rawNodeStatusFixture()))
   ),
   // Default fallback handler
   rest.get('*', (req, res, ctx) => {
     // eslint-disable-next-line no-console
-    console.error(`Please add request handler for ${req.url.toString()}`);
+    // console.error(`Please add request handler for ${req.url.toString()}`);
     return res(
       ctx.status(500),
       ctx.json({ error: 'You must add request handler.' })

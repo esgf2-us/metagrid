@@ -15,6 +15,16 @@ export const metagridApiURL = `${
 export const publicUrl = process.env.PUBLIC_URL;
 export const previousPublicUrl = process.env.REACT_APP_PREVIOUS_URL as string;
 
+// Globus variables
+export const globusRedirectUrl = process.env
+  .REACT_APP_GLOBUS_REDIRECT as string;
+export const globusClientID = process.env.REACT_APP_CLIENT_ID as string;
+const globusNodesString = process.env.REACT_APP_GLOBUS_NODES as string;
+/* istanbul ignore next */
+export const globusEnabledNodes = globusNodesString
+  ? globusNodesString.split(',')
+  : [];
+
 // ESGF wget API
 // ------------------------------------------------------------------------------
 // https://github.com/ESGF/esgf-wget
@@ -45,3 +55,12 @@ export const keycloakClientId = process.env
 // https://github.com/abdalla/react-hotjar
 export const hjid = (process.env.REACT_APP_HOTJAR_ID as unknown) as number;
 export const hjsv = (process.env.REACT_APP_HOTJAR_SV as unknown) as number;
+
+// Django Auth URLs
+export const djangoLoginUrl = process.env.REACT_APP_DJANGO_LOGIN_URL as string;
+export const djangoLogoutUrl = process.env
+  .REACT_APP_DJANGO_LOGOUT_URL as string;
+
+// Authentication Method
+export const authenticationMethod = process.env
+  .REACT_APP_AUTHENTICATION_METHOD as string;

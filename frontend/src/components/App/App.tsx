@@ -7,7 +7,7 @@ import {
   ShareAltOutlined,
   ShoppingCartOutlined,
 } from '@ant-design/icons';
-import { Affix, Breadcrumb, Button, Layout, message, Result } from 'antd';
+import { Affix, Breadcrumb, Button, Layout, Result } from 'antd';
 import React, { ReactElement } from 'react';
 import { useAsync } from 'react-async';
 import { hotjar } from 'react-hotjar';
@@ -28,6 +28,8 @@ import {
   combineCarts,
   getUrlFromSearch,
   searchAlreadyExists,
+  showError,
+  showNotice,
   unsavedLocalSearches,
 } from '../../common/utils';
 import { AuthContext } from '../../contexts/AuthContext';
@@ -84,7 +86,7 @@ export type Props = {
 
 const metagridVersion: string = startupDisplayData.messageToShow;
 
-const App: React.FC<Props> = ({ searchQuery }) => {
+const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   // Third-party tool integration
   useHotjar();
 
@@ -155,9 +157,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           setUserCart(combinedCarts);
         })
         .catch((error: ResponseError) => {
-          void message.error({
-            content: error.message,
-          });
+          showError(error.message);
         });
 
       void fetchUserSearchQueries(accessToken)
@@ -178,9 +178,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           setUserSearchQueries(databaseItems.concat(searchQueriesToAdd));
         })
         .catch((error: ResponseError) => {
-          void message.error({
-            content: error.message,
-          });
+          showError(error.message);
         });
     }
   }, [isAuthenticated, pk, accessToken]);
@@ -225,9 +223,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
       .catch(
         /* istanbul ignore next */
         (error: ResponseError) => {
-          void message.error({
-            content: error.message,
-          });
+          showError(error.message);
         }
       );
   }, [fetchProjects]);
@@ -237,7 +233,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
     text: string
   ): void => {
     if (activeSearchQuery.textInputs.includes(text as never)) {
-      void message.error(`Input "${text}" has already been applied`);
+      showError(`Input "${text}" has already been applied`);
     } else {
       setActiveSearchQuery({
         ...activeSearchQuery,
@@ -249,7 +245,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
 
   const handleOnSetFilenameVars = (filenameVar: string): void => {
     if (activeSearchQuery.filenameVars.includes(filenameVar as never)) {
-      void message.error(`Input "${filenameVar}" has already been applied`);
+      showError(`Input "${filenameVar}" has already been applied`);
     } else {
       setActiveSearchQuery({
         ...activeSearchQuery,
@@ -340,9 +336,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
 
       newCart = [...userCart, ...itemsNotInCart];
       setUserCart(newCart);
-
-      void message.success({
-        content: 'Added item(s) to your cart',
+      showNotice('Added item(s) to your cart', {
         icon: <ShoppingCartOutlined style={styles.messageAddIcon} />,
       });
     } else if (operation === 'remove') {
@@ -351,8 +345,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
       );
       setUserCart(newCart);
 
-      void message.success({
-        content: 'Removed item(s) from your cart',
+      showNotice('Removed item(s) from your cart', {
         icon: <DeleteOutlined style={styles.messageRemoveIcon} />,
       });
     }
@@ -389,17 +382,16 @@ const App: React.FC<Props> = ({ searchQuery }) => {
     };
 
     if (searchAlreadyExists(userSearchQueries, savedSearch)) {
-      void message.success({
-        content: 'Search query is already in your library',
+      showNotice('Search query is already in your library', {
         icon: <BookOutlined style={styles.messageAddIcon} />,
+        type: 'info',
       });
       return;
     }
 
     const saveSuccess = (): void => {
       setUserSearchQueries([...userSearchQueries, savedSearch]);
-      void message.success({
-        content: 'Saved search query to your library',
+      showNotice('Saved search query to your library', {
         icon: <BookOutlined style={styles.messageAddIcon} />,
       });
     };
@@ -410,9 +402,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           saveSuccess();
         })
         .catch((error: ResponseError) => {
-          void message.error({
-            content: error.message,
-          });
+          showError(error.message);
         });
     } else {
       saveSuccess();
@@ -422,11 +412,10 @@ const App: React.FC<Props> = ({ searchQuery }) => {
   const handleShareSearchQuery = (): void => {
     const shareSuccess = (): void => {
       // copy link to clipboard
-      /* istanbul ignore if */
+      /* istanbul ignore next */
       if (navigator && navigator.clipboard) {
-        void navigator.clipboard.writeText(getUrlFromSearch(activeSearchQuery));
-        void message.success({
-          content: 'Search copied to clipboard!',
+        navigator.clipboard.writeText(getUrlFromSearch(activeSearchQuery));
+        showNotice('Search copied to clipboard!', {
           icon: <ShareAltOutlined style={styles.messageAddIcon} />,
         });
       }
@@ -441,8 +430,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           (searchItem: UserSearchQuery) => searchItem.uuid !== searchUUID
         )
       );
-      void message.success({
-        content: 'Removed search query from your library',
+      showNotice('Removed search query from your library', {
         icon: <DeleteOutlined style={styles.messageRemoveIcon} />,
       });
     };
@@ -453,9 +441,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           deleteSuccess();
         })
         .catch((error: ResponseError) => {
-          void message.error({
-            content: error.message,
-          });
+          showError(error.message);
         });
     } else {
       deleteSuccess();
@@ -476,10 +462,15 @@ const App: React.FC<Props> = ({ searchQuery }) => {
     });
   };
 
+  /* istanbul ignore next */
   const generateRedirects = (): ReactElement => {
-    /* istanbul ignore next */
     if (!publicUrl && previousPublicUrl) {
-      <Route path={previousPublicUrl} element={<Navigate to="/search" />} />;
+      return (
+        <Route
+          path={`${previousPublicUrl}/*`}
+          element={<Navigate to="/search" />}
+        />
+      );
     }
 
     return <></>;
@@ -487,11 +478,6 @@ const App: React.FC<Props> = ({ searchQuery }) => {
 
   return (
     <>
-      <Routes>
-        <Route path="/" element={<Navigate to="/search" />} />
-        <Route path="/cart" element={<Navigate to="/cart/items" />} />
-        {generateRedirects()}
-      </Routes>
       <div>
         <Routes>
           <Route
@@ -508,6 +494,9 @@ const App: React.FC<Props> = ({ searchQuery }) => {
         </Routes>
         <Layout id="body-layout">
           <Routes>
+            <Route path="/" element={<Navigate to="/search" />} />
+            <Route path="/cart" element={<Navigate to="/cart/items" />} />
+            {generateRedirects()}
             <Route
               path="/search"
               element={
@@ -561,7 +550,6 @@ const App: React.FC<Props> = ({ searchQuery }) => {
                         <Breadcrumb.Item>
                           <HomeOutlined /> Home
                         </Breadcrumb.Item>
-                        <Breadcrumb.Item>Search</Breadcrumb.Item>
                       </Breadcrumb>
                       <Search
                         activeSearchQuery={activeSearchQuery}
@@ -585,7 +573,9 @@ const App: React.FC<Props> = ({ searchQuery }) => {
                     <>
                       <Breadcrumb>
                         <Breadcrumb.Item>
-                          <HomeOutlined /> Home
+                          <Link to="/">
+                            <HomeOutlined /> Home
+                          </Link>
                         </Breadcrumb.Item>
                         <Breadcrumb.Item>Data Node Status</Breadcrumb.Item>
                       </Breadcrumb>
@@ -603,7 +593,9 @@ const App: React.FC<Props> = ({ searchQuery }) => {
                     <>
                       <Breadcrumb>
                         <Breadcrumb.Item>
-                          <HomeOutlined /> Home
+                          <Link to="/">
+                            <HomeOutlined /> Home
+                          </Link>
                         </Breadcrumb.Item>
                         <Breadcrumb.Item>Cart</Breadcrumb.Item>
                       </Breadcrumb>
@@ -614,6 +606,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
                         onClearCart={handleClearCart}
                         onRunSearchQuery={handleRunSearchQuery}
                         onRemoveSearchQuery={handleRemoveSearchQuery}
+                        nodeStatus={nodeStatus}
                       />
                     </>
                   }
@@ -670,7 +663,7 @@ const App: React.FC<Props> = ({ searchQuery }) => {
           ></Button>
         </Affix>
         <Support
-          visible={supportModalVisible}
+          open={supportModalVisible}
           onClose={() => setSupportModalVisible(false)}
         />
         <StartPopup />

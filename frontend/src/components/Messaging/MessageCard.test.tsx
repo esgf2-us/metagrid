@@ -1,9 +1,9 @@
-import { render } from '@testing-library/react';
 import React from 'react';
 import MessageCard from './MessageCard';
+import { customRenderKeycloak } from '../../test/custom-render';
 
-it.only('renders message component with default markdown when file is wrong.', () => {
-  const { getByText } = render(
+it('renders message component with default markdown when file is wrong.', () => {
+  const { getByText } = customRenderKeycloak(
     <MessageCard title="test title" fileName="badFile.md" />
   );
 
