@@ -11,7 +11,7 @@ mypy==1.8.0  # https://github.com/python/mypy
 # ------------------------------------------------------------------------------
 django-stubs==4.2.7  # https://github.com/typeddjango/django-stubs
 pytest==7.4.4  # https://github.com/pytest-dev/pytest
-pytest-cov==4.0.0  # https://github.com/pytest-dev/pytest-cov
+pytest-cov==4.1.0  # https://github.com/pytest-dev/pytest-cov
 pytest-django==4.5.2  # https://github.com/pytest-dev/pytest-django
 pytest-sugar==0.9.6  # https://github.com/Frozenball/pytest-sugar
 pytest-watch==4.2.0  # https://github.com/joeyespo/pytest-watch
