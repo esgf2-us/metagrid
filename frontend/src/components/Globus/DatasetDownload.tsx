@@ -35,14 +35,17 @@ import {
 } from './types';
 import { NotificationType, showError, showNotice } from '../../common/utils';
 
+const scopeId = '0247816e-cc0d-4e03-a509-10903f6dde11';
+const scopesList = `openid profile email offline_access urn:globus:auth:scope:transfer.api.globus.org:all[*https://auth.globus.org/scopes/${scopeId}/data_access]`;
+// 6bdc7956-fc0f-4ad2-989c-7aa5ee643a79 is NERSC Perlmutter
+
 // Reference: https://github.com/bpedroza/js-pkce
 const GlobusAuth = new PKCE({
   client_id: globusClientID, // Update this using your native client ID
   redirect_uri: globusRedirectUrl, // Update this if you are deploying this anywhere else (Globus Auth will redirect back here once you have logged in)
   authorization_endpoint: 'https://auth.globus.org/v2/oauth2/authorize', // No changes needed
   token_endpoint: 'https://auth.globus.org/v2/oauth2/token', // No changes needed
-  requested_scopes:
-    'openid profile email offline_access urn:globus:auth:scope:transfer.api.globus.org:all[*https://auth.globus.org/scopes/9d6d994a-6d04-11e5-ba46-22000b92c6ec/data_access]', // Update with any scopes you would need, e.g. transfer
+  requested_scopes: scopesList, // Update with any scopes you would need, e.g. transfer
 });
 
 type ModalFormState = 'signin' | 'endpoint' | 'both' | 'none';
