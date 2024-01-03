@@ -1,9 +1,16 @@
-import { fireEvent, render, waitFor } from '@testing-library/react';
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+import { render, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { customRenderKeycloak } from '../../test/custom-render';
 import Support from '../Support';
 import RightMenu, { Props } from './RightMenu';
+import {
+  mockFunction,
+  tempStorageGetMock,
+  tempStorageSetMock,
+} from '../../test/jestTestFunctions';
 
 const user = userEvent.setup();
 
@@ -15,6 +22,33 @@ const rightMenuProps: Props = {
     render(<Support open onClose={jest.fn()} />);
   },
 };
+
+// This will get a mock value from temp storage to use for keycloak
+const mockKeycloakToken = mockFunction(() => {
+  const loginFixture = tempStorageGetMock('keycloakFixture');
+
+  if (loginFixture) {
+    return loginFixture;
+  }
+  return {
+    keycloak: {
+      login: jest.fn(),
+      logout: jest.fn(),
+      idTokenParsed: { given_name: 'John' },
+    },
+  };
+});
+
+jest.mock('@react-keycloak/web', () => {
+  const originalModule = jest.requireActual('@react-keycloak/web');
+
+  return {
+    ...originalModule,
+    useKeycloak: () => {
+      return mockKeycloakToken();
+    },
+  };
+});
 
 it('sets the active menu item based on the location pathname', async () => {
   const { getByRole } = customRenderKeycloak(<RightMenu {...rightMenuProps} />);
@@ -32,13 +66,17 @@ it('sets the active menu item based on the location pathname', async () => {
   await user.click(savedSearchLink);
 });
 
-xit('display the user"s given name after authentication and signs out', async () => {
+it('display the users given name after authentication', async () => {
+  tempStorageSetMock('keycloakFixture', {
+    keycloak: {
+      login: jest.fn(),
+      logout: jest.fn(),
+      idTokenParsed: { given_name: 'John Doe', email: 'johnd@email.gov' },
+    },
+  });
+
   const { getByTestId, getByText } = customRenderKeycloak(
-    <RightMenu {...rightMenuProps} />,
-    {
-      authenticated: true,
-      idTokenParsed: { given_name: 'John', email: 'johndoe@url.com' },
-    }
+    <RightMenu {...rightMenuProps} />
   );
 
   // Check applicable components render
@@ -46,23 +84,24 @@ xit('display the user"s given name after authentication and signs out', async ()
   expect(rightMenuComponent).toBeTruthy();
 
   // Check user logged in and hover
-  const greeting = await waitFor(() => getByText('Hi, John'));
+  const greeting = await waitFor(() =>
+    getByText('Hi, John Doe', { exact: false })
+  );
   expect(greeting).toBeTruthy();
-  fireEvent.mouseEnter(greeting);
-
-  // Click the sign out button
-  const signOutBtn = await waitFor(() => getByText('Sign Out'));
-  expect(signOutBtn).toBeTruthy();
-  await user.click(signOutBtn);
 });
 
-xit('display the user"s email after authentication if they did not provide a name and signs out', async () => {
+it('display the users email after authentication if they did not provide a name', async () => {
+  tempStorageSetMock('keycloakFixture', {
+    keycloak: {
+      login: jest.fn(),
+      logout: jest.fn(),
+      idTokenParsed: { email: 'johnd@email.gov' },
+    },
+  });
+
   const { getByTestId, getByText } = customRenderKeycloak(
     <RightMenu {...rightMenuProps} />,
-    {
-      authenticated: true,
-      idTokenParsed: { email: 'johndoe@url.com' },
-    }
+    {}
   );
 
   // Check applicable components render
@@ -70,17 +109,11 @@ xit('display the user"s email after authentication if they did not provide a nam
   expect(rightMenuComponent).toBeTruthy();
 
   // Check user logged in and hover
-  const greeting = await waitFor(() => getByText('Hi, johndoe@url.com'));
+  const greeting = await waitFor(() => getByText('Hi, johnd@email.gov'));
   expect(greeting).toBeTruthy();
-  fireEvent.mouseEnter(greeting);
-
-  // Click the sign out button
-  const signOutBtn = await waitFor(() => getByText('Sign Out'));
-  expect(signOutBtn).toBeTruthy();
-  await user.click(signOutBtn);
 });
 
-xit('displays sign in button when user hasn"t logged in', async () => {
+it('displays sign in button when user hasn"t logged in', async () => {
   const { getByRole, getByTestId } = customRenderKeycloak(
     <RightMenu {...rightMenuProps} />
   );

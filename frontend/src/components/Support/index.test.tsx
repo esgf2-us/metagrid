@@ -27,7 +27,9 @@ describe('Testing the support form and buttons', () => {
   });
 
   it('renders support component', () => {
-    const { getByTestId } = customRenderKeycloak(<Support open onClose={jest.fn()} />);
+    const { getByTestId } = customRenderKeycloak(
+      <Support open onClose={jest.fn()} />
+    );
 
     // Check support form rendered
     const support = getByTestId('support-form');

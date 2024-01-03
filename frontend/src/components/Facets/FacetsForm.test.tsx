@@ -59,6 +59,32 @@ describe('test FacetsForm component', () => {
     await waitFor(() => expect(input.value).toEqual(''));
   });
 
+  it('handles setting the globusReady option on and off', () => {
+    const { getByLabelText } = customRenderKeycloak(
+      <FacetsForm {...defaultProps} />
+    );
+
+    const globusReadyRadioOption = getByLabelText('Only Globus Transferrable');
+    const anyRadioOption = getByLabelText('Any');
+    expect(anyRadioOption).toBeTruthy();
+    expect(globusReadyRadioOption).toBeTruthy();
+
+    fireEvent.click(anyRadioOption);
+
+    expect(anyRadioOption).toBeChecked();
+    expect(globusReadyRadioOption).not.toBeChecked();
+
+    fireEvent.click(globusReadyRadioOption);
+
+    expect(anyRadioOption).not.toBeChecked();
+    expect(globusReadyRadioOption).toBeChecked();
+
+    fireEvent.click(anyRadioOption);
+
+    expect(anyRadioOption).toBeChecked();
+    expect(globusReadyRadioOption).not.toBeChecked();
+  });
+
   it('handles expand and collapse facet panels', async () => {
     const { getByText } = customRenderKeycloak(
       <FacetsForm {...defaultProps} />

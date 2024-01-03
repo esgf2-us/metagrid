@@ -1,4 +1,4 @@
-import { fireEvent, waitFor, within } from '@testing-library/react';
+import { waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import {
@@ -24,7 +24,7 @@ import {
   TextInputs,
   VersionType,
 } from './types';
-import { getRowName, printElementContents } from '../../test/jestTestFunctions';
+import { getRowName, selectDropdownOption } from '../../test/jestTestFunctions';
 
 const user = userEvent.setup();
 
@@ -98,8 +98,6 @@ describe('test Search component', () => {
     const searchComponent = await waitFor(() => getByTestId('search'));
     expect(searchComponent).toBeTruthy();
 
-    printElementContents(undefined);
-
     // Check renders results string
     const strResults = await waitFor(() =>
       getByRole('heading', {
@@ -153,7 +151,7 @@ describe('test Search component', () => {
     await waitFor(() => getByTestId('search'));
   });
 
-  xit('handles pagination and page size changes', async () => {
+  it('handles pagination and page size changes', async () => {
     // Update api to return 20 search results, which enables pagination if 10/page selected
     const data = ESGFSearchAPIFixture();
     const response = {
@@ -174,7 +172,7 @@ describe('test Search component', () => {
       )
     );
 
-    const { getByRole, getByTestId, getByText } = customRenderKeycloak(
+    const { getByRole, getByTestId } = customRenderKeycloak(
       <Search {...defaultProps} />
     );
 
@@ -194,16 +192,12 @@ describe('test Search component', () => {
       within(paginationList).getByRole('combobox')
     );
     expect(pageSizeComboBox).toBeTruthy();
-    fireEvent.change(pageSizeComboBox, { target: { value: 'foo' } });
-    await user.click(pageSizeComboBox);
 
     // Wait for the options to render, then select 20 / page
-    const secondOption = await waitFor(() => getByText('20 / page'));
-    await user.click(secondOption);
+    await selectDropdownOption(user, pageSizeComboBox, '20 / page');
 
     // Change back to 10 / page
-    const firstOption = await waitFor(() => getByText('10 / page'));
-    await user.click(firstOption);
+    await selectDropdownOption(user, pageSizeComboBox, '10 / page');
 
     // Select the 'Next Page' button (only enabled if there are > 10 results)
     const nextPage = await waitFor(() =>

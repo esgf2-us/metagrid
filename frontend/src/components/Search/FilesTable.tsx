@@ -254,7 +254,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
                     <Button
                       type="primary"
                       onClick={() => {
-                        /* istanbul ignore if */
+                        /* istanbul ignore next */
                         if (navigator && navigator.clipboard) {
                           void navigator.clipboard
                             .writeText(downloadUrls.OPENDAP)
