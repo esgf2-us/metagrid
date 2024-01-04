@@ -7,6 +7,25 @@
  */
 import { waitFor, within, screen, RenderResult } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event/dist/types/setup/setup';
+import * as enviroConfig from '../env';
+import { getSearchFromUrl } from '../common/utils';
+
+// For mocking environment variables
+export type MockConfig = {
+  globusEnabledNodes: string[];
+};
+
+// For mocking environment variables
+// https://www.mikeborozdin.com/post/changing-jest-mocks-between-tests
+export const mockConfig: MockConfig = enviroConfig;
+
+export const originalEnabledNodes = [
+  'aims3.llnl.gov',
+  'esgf-data1.llnl.gov',
+  'esgf-data2.llnl.gov',
+];
+
+export const activeSearch = getSearchFromUrl();
 
 export const sessionStorageMock = (() => {
   let store: { [key: string]: unknown } = {};
@@ -44,7 +63,7 @@ export function tempStorageSetMock<T>(key: string, value: T): void {
   sessionStorageMock.setItem<T>(key, value);
 }
 
-export function mockFunction<T extends (...args: any[]) => any>(
+export function mockFunction<T extends (...args: unknown[]) => unknown>(
   fn: T
 ): jest.MockedFunction<T> {
   return fn as jest.MockedFunction<T>;
@@ -106,4 +125,26 @@ export async function submitKeywordSearch(
   await user.click(submitBtn);
 
   await waitFor(() => getByTestId('search'));
+}
+
+export async function openDropdownList(
+  user: UserEvent,
+  dropdown: HTMLElement
+): Promise<void> {
+  await waitFor(async () => {
+    dropdown.focus();
+    await user.keyboard('[ArrowDown]');
+  });
+}
+
+export async function selectDropdownOption(
+  user: UserEvent,
+  dropdown: HTMLElement,
+  option: string
+): Promise<void> {
+  await waitFor(async () => {
+    dropdown.focus();
+    await user.keyboard('[ArrowDown]');
+    await user.click(screen.getByText(option));
+  });
 }

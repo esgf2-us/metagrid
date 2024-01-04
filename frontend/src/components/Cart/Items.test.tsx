@@ -1,10 +1,4 @@
-import {
-  fireEvent,
-  waitFor,
-  within,
-  screen,
-  cleanup,
-} from '@testing-library/react';
+import { fireEvent, waitFor, within, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { userCartFixture } from '../../api/mock/fixtures';
@@ -25,34 +19,7 @@ const defaultProps: Props = {
 
 const user = userEvent.setup();
 
-// Used to restore window.location after each test
-const location = JSON.stringify(window.location);
-
 const activeSearch: ActiveSearchQuery = getSearchFromUrl('project=test1');
-
-afterEach(() => {
-  // Routes are already declared in the App component using BrowserRouter, so MemoryRouter does
-  // not work to isolate routes in memory between tests. The only workaround is to delete window.location and restore it after each test in order to reset the URL location.
-  // https://stackoverflow.com/a/54222110
-  // https://stackoverflow.com/questions/59892304/cant-get-memoryrouter-to-work-with-testing-library-react
-
-  // TypeScript complains with error TS2790: The operand of a 'delete' operator must be optional.
-  // https://github.com/facebook/jest/issues/890#issuecomment-776112686
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  delete window.location;
-  window.location = (JSON.parse(location) as unknown) as Location;
-
-  // Clear localStorage between tests
-  localStorage.clear();
-
-  // Reset all mocks after each test
-  jest.clearAllMocks();
-
-  server.resetHandlers();
-
-  cleanup();
-});
 
 describe('test the cart items component', () => {
   it('renders message that the cart is empty when no items are added', () => {

@@ -9,7 +9,9 @@ const defaultProps: Props = {
 };
 
 it('renders component with node status information', () => {
-  const { getByTestId } = customRenderKeycloak(<NodeSummary {...defaultProps} />);
+  const { getByTestId } = customRenderKeycloak(
+    <NodeSummary {...defaultProps} />
+  );
 
   const numNodes = getByTestId('numNodes');
   expect(within(numNodes).getByText('2')).toBeTruthy();

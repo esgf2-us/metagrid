@@ -16,7 +16,9 @@ const defaultProps: Props = {
 };
 
 it('renders the loading table', () => {
-  const { getByRole } = customRenderKeycloak(<NodeStatus isLoading></NodeStatus>);
+  const { getByRole } = customRenderKeycloak(
+    <NodeStatus isLoading></NodeStatus>
+  );
 
   const header = getByRole('heading', {
     name: 'Fetching latest node status...',
