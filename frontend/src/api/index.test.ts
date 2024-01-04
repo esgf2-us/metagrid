@@ -42,15 +42,10 @@ import {
   userSearchQueriesFixture,
   userSearchQueryFixture,
 } from './mock/fixtures';
-import { rest, server } from './mock/setup-env';
+import { rest, server } from './mock/server';
 import apiRoutes from './routes';
 
 const genericNetworkErrorMsg = 'Failed to Connect';
-
-// Reset all mocks after each test
-afterEach(() => {
-  jest.clearAllMocks();
-});
 
 describe('test fetching user authentication with globus', () => {
   it('returns user authentication tokens', async () => {
