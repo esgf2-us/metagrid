@@ -1,16 +1,19 @@
-import { fireEvent, render } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { Tag } from './Tag';
+import { customRenderKeycloak } from '../../test/custom-render';
 
-it('renders component with and without onClose prop', () => {
-  const { getByRole, rerender } = render(
+const user = userEvent.setup();
+
+it('renders component with and without onClose prop', async () => {
+  const { getByRole, rerender } = customRenderKeycloak(
     <Tag value="foo" type="filenameVar" onClose={jest.fn()}>
       tag
     </Tag>
   );
 
   const closeBtn = getByRole('img', { name: 'close' });
-  fireEvent.click(closeBtn);
+  await user.click(closeBtn);
 
   // Re-render the component without onClose prop
   rerender(
@@ -18,5 +21,5 @@ it('renders component with and without onClose prop', () => {
       tag
     </Tag>
   );
-  fireEvent.click(closeBtn);
+  await user.click(closeBtn);
 });

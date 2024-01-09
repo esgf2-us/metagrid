@@ -146,7 +146,7 @@ export type Props = {
   onShareSearchQuery: () => void;
 };
 
-const Search: React.FC<Props> = ({
+const Search: React.FC<React.PropsWithChildren<Props>> = ({
   activeSearchQuery,
   userCart,
   nodeStatus,
@@ -169,8 +169,9 @@ const Search: React.FC<Props> = ({
   } = activeSearchQuery;
 
   const { data: results, error, isLoading, run } = useAsync({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    deferFn: (fetchSearchResults as unknown) as DeferFn<Record<string, any>>,
+    deferFn: (fetchSearchResults as unknown) as DeferFn<
+      Record<string, unknown>
+    >,
   });
   const [filtersExist, setFiltersExist] = React.useState<boolean>(false);
   const [parsedFacets, setParsedFacets] = React.useState<

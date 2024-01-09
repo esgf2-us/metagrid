@@ -1,10 +1,13 @@
-import { fireEvent, render, waitFor } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { MemoryRouter } from 'react-router-dom';
 import { userSearchQueryFixture } from '../../api/mock/fixtures';
-import { rest, server } from '../../api/mock/setup-env';
+import { rest, server } from '../../api/mock/server';
 import apiRoutes from '../../api/routes';
 import SearchesCard, { Props } from './SearchesCard';
+import { customRenderKeycloak } from '../../test/custom-render';
+
+const user = userEvent.setup();
 
 const defaultProps: Props = {
   searchQuery: userSearchQueryFixture(),
@@ -28,21 +31,19 @@ beforeEach(() => {
 });
 
 it('renders component and handles button clicks', async () => {
-  const { getByRole } = render(
-    <MemoryRouter>
-      <SearchesCard {...defaultProps} />
-    </MemoryRouter>
+  const { getByRole } = customRenderKeycloak(
+    <SearchesCard {...defaultProps} />
   );
 
   // Check search button renders and click it
   const searchBtn = await waitFor(() => getByRole('img', { name: 'search' }));
   expect(searchBtn).toBeTruthy();
-  fireEvent.click(searchBtn);
+  await user.click(searchBtn);
 
   // Check delete button renders and click it
   const deleteBtn = await waitFor(() => getByRole('img', { name: 'delete' }));
   expect(deleteBtn).toBeTruthy();
-  fireEvent.click(deleteBtn);
+  await user.click(deleteBtn);
 });
 
 it('displays alert error when api fails to return response', async () => {
@@ -52,9 +53,9 @@ it('displays alert error when api fails to return response', async () => {
     )
   );
 
-  const { getByRole } = render(<SearchesCard {...defaultProps} />, {
-    wrapper: MemoryRouter,
-  });
+  const { getByRole } = customRenderKeycloak(
+    <SearchesCard {...defaultProps} />
+  );
 
   // Check alert renders
   const alert = await waitFor(() => getByRole('alert'));
@@ -62,12 +63,11 @@ it('displays alert error when api fails to return response', async () => {
 });
 
 it('displays "N/A" for Filename Searches when none are applied', () => {
-  const { getByText } = render(
+  const { getByText } = customRenderKeycloak(
     <SearchesCard
       {...defaultProps}
       searchQuery={userSearchQueryFixture({ filenameVars: undefined })}
-    />,
-    { wrapper: MemoryRouter }
+    />
   );
   // Shows number of files
   const filenameSearchesField = getByText('Filename Searches:').parentNode;

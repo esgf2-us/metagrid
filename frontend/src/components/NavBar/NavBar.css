@@ -10,6 +10,7 @@
 .navbar-logo {
   width: 128px;
   float: left;
+  margin-left: 10px;
 }
 
 .navbar-container .navbar-left {

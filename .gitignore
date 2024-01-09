@@ -5,6 +5,7 @@
 .pytest_cache/
 
 # Config backups
+metagrid_configs/metagrid_config
 metagrid_configs/backups
 
 ### Linux template

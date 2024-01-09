@@ -1,4 +1,5 @@
-import { fireEvent, render, waitFor, within } from '@testing-library/react';
+import { waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import React from 'react';
 import {
   activeSearchQueryFixture,
@@ -6,9 +7,9 @@ import {
   rawSearchResultFixture,
   userCartFixture,
 } from '../../api/mock/fixtures';
-import { rest, server } from '../../api/mock/setup-env';
+import { rest, server } from '../../api/mock/server';
 import apiRoutes from '../../api/routes';
-import { getRowName } from '../../test/custom-render';
+import { customRenderKeycloak } from '../../test/custom-render';
 import { ActiveFacets, RawFacets } from '../Facets/types';
 import Search, {
   checkFiltersExist,
@@ -23,6 +24,9 @@ import {
   TextInputs,
   VersionType,
 } from './types';
+import { getRowName, selectDropdownOption } from '../../test/jestTestFunctions';
+
+const user = userEvent.setup();
 
 const defaultProps: Props = {
   activeSearchQuery: activeSearchQueryFixture(),
@@ -42,7 +46,7 @@ afterEach(() => {
 
 describe('test Search component', () => {
   it('renders component', async () => {
-    const { getByTestId } = render(<Search {...defaultProps} />);
+    const { getByTestId } = customRenderKeycloak(<Search {...defaultProps} />);
 
     // Check search component renders
     const searchComponent = await waitFor(() => getByTestId('search'));
@@ -61,7 +65,7 @@ describe('test Search component', () => {
       )
     );
 
-    const { getByTestId } = render(<Search {...defaultProps} />);
+    const { getByTestId } = customRenderKeycloak(<Search {...defaultProps} />);
 
     // Check if Alert component renders
     const alert = await waitFor(() => getByTestId('alert-fetching'));
@@ -69,7 +73,9 @@ describe('test Search component', () => {
   });
 
   it('runs the side effect to set the current url when there is an activeProject object with a facetsUrl key', async () => {
-    const { getByRole, getByTestId } = render(<Search {...defaultProps} />);
+    const { getByRole, getByTestId } = customRenderKeycloak(
+      <Search {...defaultProps} />
+    );
 
     // Check search component renders
     const searchComponent = await waitFor(() => getByTestId('search'));
@@ -81,9 +87,12 @@ describe('test Search component', () => {
   });
 
   it('renders query string', async () => {
-    const { getByRole, getByTestId, getByText, rerender } = render(
-      <Search {...defaultProps} />
-    );
+    const {
+      getByRole,
+      getByTestId,
+      getByText,
+      rerender,
+    } = customRenderKeycloak(<Search {...defaultProps} />);
 
     // Check search component renders
     const searchComponent = await waitFor(() => getByTestId('search'));
@@ -92,7 +101,7 @@ describe('test Search component', () => {
     // Check renders results string
     const strResults = await waitFor(() =>
       getByRole('heading', {
-        name: '2 results found for test1',
+        name: '3 results found for test1',
       })
     );
     expect(strResults).toBeTruthy();
@@ -125,7 +134,9 @@ describe('test Search component', () => {
   });
 
   it('clears all tags when selecting the "Clear All" tag', async () => {
-    const { getByText, getByTestId } = render(<Search {...defaultProps} />);
+    const { getByText, getByTestId } = customRenderKeycloak(
+      <Search {...defaultProps} />
+    );
 
     // Check search component renders
     const searchComponent = await waitFor(() => getByTestId('search'));
@@ -134,7 +145,7 @@ describe('test Search component', () => {
     // Check if 'Clear All' button exists, then click it
     const clearAllBtn = await waitFor(() => getByText('Clear All'));
     expect(clearAllBtn).toBeTruthy();
-    fireEvent.click(clearAllBtn);
+    await user.click(clearAllBtn);
 
     // Wait for search component to re-render
     await waitFor(() => getByTestId('search'));
@@ -161,7 +172,7 @@ describe('test Search component', () => {
       )
     );
 
-    const { getByRole, getByTestId, getByText } = render(
+    const { getByRole, getByTestId } = customRenderKeycloak(
       <Search {...defaultProps} />
     );
 
@@ -181,29 +192,27 @@ describe('test Search component', () => {
       within(paginationList).getByRole('combobox')
     );
     expect(pageSizeComboBox).toBeTruthy();
-    fireEvent.change(pageSizeComboBox, { target: { value: 'foo' } });
-    fireEvent.click(pageSizeComboBox);
 
     // Wait for the options to render, then select 20 / page
-    const secondOption = await waitFor(() => getByText('20 / page'));
-    fireEvent.click(secondOption);
+    await selectDropdownOption(user, pageSizeComboBox, '20 / page');
 
     // Change back to 10 / page
-    const firstOption = await waitFor(() => getByText('10 / page'));
-    fireEvent.click(firstOption);
+    await selectDropdownOption(user, pageSizeComboBox, '10 / page');
 
     // Select the 'Next Page' button (only enabled if there are > 10 results)
     const nextPage = await waitFor(() =>
       getByRole('listitem', { name: 'Next Page' })
     );
-    fireEvent.click(nextPage);
+    await user.click(nextPage);
 
     // Wait for search table to re-render
     await waitFor(() => getByTestId('search-table'));
   });
 
   it('handles selecting a row"s checkbox in the table and adding to the cart', async () => {
-    const { getByRole, getByTestId } = render(<Search {...defaultProps} />);
+    const { getByRole, getByTestId } = customRenderKeycloak(
+      <Search {...defaultProps} />
+    );
 
     // Check search component renders
     const searchComponent = await waitFor(() => getByTestId('search'));
@@ -230,18 +239,20 @@ describe('test Search component', () => {
     // Select the first row's checkbox
     const firstCheckBox = within(firstRow).getByRole('checkbox');
     expect(firstCheckBox).toBeTruthy();
-    fireEvent.click(firstCheckBox);
+    await user.click(firstCheckBox);
 
     // Check 'Add Selected to Cart' button is enabled and click it
     expect(addCartBtn.disabled).toBeFalsy();
-    fireEvent.click(addCartBtn);
+    await user.click(addCartBtn);
 
     // Wait for search component to re-render
     await waitFor(() => getByTestId('search'));
   });
 
   it('disables the "Add Selected to Cart" button when no items are in the cart', async () => {
-    const { getByRole, getByTestId } = render(<Search {...defaultProps} />);
+    const { getByRole, getByTestId } = customRenderKeycloak(
+      <Search {...defaultProps} />
+    );
 
     // Check search component renders
     const searchComponent = await waitFor(() => getByTestId('search'));
@@ -261,7 +272,7 @@ describe('test Search component', () => {
   });
 
   it('disables the "Add Selected to Cart" button when all rows are already in the cart', async () => {
-    const { getByRole, getByTestId, rerender } = render(
+    const { getByRole, getByTestId, rerender } = customRenderKeycloak(
       <Search {...defaultProps} />
     );
 
@@ -279,7 +290,7 @@ describe('test Search component', () => {
       'th.ant-table-cell.ant-table-selection-column [type="checkbox"]'
     ) as HTMLInputElement;
     expect(selectAllCheckbox).toBeTruthy();
-    fireEvent.click(selectAllCheckbox);
+    await user.click(selectAllCheckbox);
 
     // Click the 'Add Selected to Cart'
     let addCartBtn = (await waitFor(() =>
@@ -288,7 +299,7 @@ describe('test Search component', () => {
       })
     )) as HTMLButtonElement;
     expect(addCartBtn).toBeTruthy();
-    fireEvent.click(addCartBtn);
+    await user.click(addCartBtn);
 
     // Re-render with items in the cart
     rerender(<Search {...defaultProps} userCart={userCartFixture()} />);
@@ -303,7 +314,9 @@ describe('test Search component', () => {
   });
 
   it('handles saving a search query', async () => {
-    const { getByRole, getByTestId } = render(<Search {...defaultProps} />);
+    const { getByRole, getByTestId } = customRenderKeycloak(
+      <Search {...defaultProps} />
+    );
 
     // Check search component renders
     const searchComponent = await waitFor(() => getByTestId('search'));
@@ -317,14 +330,16 @@ describe('test Search component', () => {
       getByRole('button', { name: 'book Save Search' })
     );
     expect(saveBtn).toBeTruthy();
-    fireEvent.click(saveBtn);
+    await user.click(saveBtn);
 
     // Wait for search component to re-render
     await waitFor(() => getByTestId('search'));
   });
 
   it('handles copying search query to clipboard', async () => {
-    const { getByRole, getByTestId } = render(<Search {...defaultProps} />);
+    const { getByRole, getByTestId } = customRenderKeycloak(
+      <Search {...defaultProps} />
+    );
 
     // Check search component renders
     const searchComponent = await waitFor(() => getByTestId('search'));
@@ -338,7 +353,7 @@ describe('test Search component', () => {
       getByRole('button', { name: 'share-alt Copy Search' })
     );
     expect(copyBtn).toBeTruthy();
-    fireEvent.click(copyBtn);
+    await user.click(copyBtn);
 
     // Wait for search component to re-render
     await waitFor(() => getByTestId('search'));

@@ -1,5 +1,5 @@
 import { BookOutlined, ShoppingCartOutlined } from '@ant-design/icons';
-import { Tabs } from 'antd';
+import { Tabs, TabsProps } from 'antd';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { cartTourTargets } from '../../common/reactJoyrideSteps';
@@ -7,6 +7,7 @@ import { RawSearchResults } from '../Search/types';
 import Items from './Items';
 import Searches from './Searches';
 import { UserSearchQueries, UserSearchQuery } from './types';
+import { NodeStatusArray } from '../NodeStatus/types';
 
 export type Props = {
   userCart: RawSearchResults | [];
@@ -15,15 +16,17 @@ export type Props = {
   onClearCart: () => void;
   onRunSearchQuery: (savedSearch: UserSearchQuery) => void;
   onRemoveSearchQuery: (uuid: string) => void;
+  nodeStatus?: NodeStatusArray;
 };
 
-const Cart: React.FC<Props> = ({
+const Cart: React.FC<React.PropsWithChildren<Props>> = ({
   userCart,
   userSearchQueries,
   onUpdateCart,
   onClearCart,
   onRunSearchQuery,
   onRemoveSearchQuery,
+  nodeStatus,
 }) => {
   const [activeTab, setActiveTab] = React.useState<string>('items');
   const navigate = useNavigate();
@@ -42,41 +45,50 @@ const Cart: React.FC<Props> = ({
     setActiveTab(key);
   };
 
+  const tabItems: TabsProps['items'] = [
+    {
+      key: 'items',
+      label: (
+        <span className={cartTourTargets.datasetBtn.class()}>
+          <ShoppingCartOutlined />
+          Datasets
+        </span>
+      ),
+      children: (
+        <Items
+          userCart={userCart}
+          onUpdateCart={onUpdateCart}
+          onClearCart={onClearCart}
+          nodeStatus={nodeStatus}
+        />
+      ),
+    },
+    {
+      key: 'searches',
+      label: (
+        <span className={cartTourTargets.libraryBtn.class()}>
+          <BookOutlined />
+          Search Library
+        </span>
+      ),
+      children: (
+        <Searches
+          userSearchQueries={userSearchQueries}
+          onRunSearchQuery={onRunSearchQuery}
+          onRemoveSearchQuery={onRemoveSearchQuery}
+        />
+      ),
+    },
+  ];
+
   return (
     <div data-testid="cart">
-      <Tabs activeKey={activeTab} animated={false} onTabClick={handleTabClick}>
-        <Tabs.TabPane
-          tab={
-            <span className={cartTourTargets.datasetBtn.class()}>
-              <ShoppingCartOutlined />
-              Datasets
-            </span>
-          }
-          key="items"
-        >
-          <Items
-            userCart={userCart}
-            onUpdateCart={onUpdateCart}
-            onClearCart={onClearCart}
-          />
-        </Tabs.TabPane>
-
-        <Tabs.TabPane
-          tab={
-            <span className={cartTourTargets.libraryBtn.class()}>
-              <BookOutlined />
-              Search Library
-            </span>
-          }
-          key="searches"
-        >
-          <Searches
-            userSearchQueries={userSearchQueries}
-            onRunSearchQuery={onRunSearchQuery}
-            onRemoveSearchQuery={onRemoveSearchQuery}
-          />
-        </Tabs.TabPane>
-      </Tabs>
+      <Tabs
+        activeKey={activeTab}
+        animated={false}
+        onTabClick={handleTabClick}
+        items={tabItems}
+      />
     </div>
   );
 };

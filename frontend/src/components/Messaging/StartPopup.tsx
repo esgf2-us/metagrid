@@ -10,14 +10,10 @@ import {
   ReactJoyrideContext,
 } from '../../contexts/ReactJoyrideContext';
 import { welcomeTour } from '../../common/reactJoyrideSteps';
-
-const getMessageSeen = (): string | null => {
-  return localStorage.getItem('lastMessageSeen');
-};
-
-const setMessageSeen = (): void => {
-  localStorage.setItem('lastMessageSeen', messageDisplayData.messageToShow);
-};
+import {
+  getLastMessageSeen,
+  setStartupMessageAsSeen,
+} from '../../common/utils';
 
 const getMessageData = (msgId: string): MessageData | undefined => {
   const messages: MessageData[] = messageDisplayData.messageData;
@@ -47,10 +43,10 @@ const getMessageTemplate = (
   }
 };
 
-const StartPopup: React.FC = () => {
+const StartPopup: React.FC<React.PropsWithChildren<unknown>> = () => {
   const startData = messageDisplayData;
   // Startup visibility
-  const [visible, setVisible] = React.useState<boolean>(false);
+  const [open, setVisible] = React.useState<boolean>(false);
   const [title, setTitle] = React.useState<JSX.Element>(<></>);
   const [style, setStyle] = React.useState<CSSProperties>();
 
@@ -62,12 +58,12 @@ const StartPopup: React.FC = () => {
     setVisible(false);
 
     // Show welcome tour if welcome message is shown
-    const startupMessageSeen = getMessageSeen();
+    const startupMessageSeen = getLastMessageSeen();
     if (!startupMessageSeen) {
       setTour(welcomeTour);
       startTour();
     }
-    setMessageSeen();
+    setStartupMessageAsSeen();
   };
 
   const showMessage = (msgId: string): void => {
@@ -84,7 +80,7 @@ const StartPopup: React.FC = () => {
   };
 
   useEffect(() => {
-    const startupMessageSeen = getMessageSeen();
+    const startupMessageSeen = getLastMessageSeen();
     if (!startupMessageSeen) {
       showMessage(startData.defaultMessageId);
     } else if (startupMessageSeen !== startData.messageToShow) {
@@ -95,7 +91,7 @@ const StartPopup: React.FC = () => {
   return (
     <div data-testid="startup-window">
       <Modal
-        visible={visible}
+        open={open}
         title={title}
         closeText="Close"
         onClose={hideMessage}

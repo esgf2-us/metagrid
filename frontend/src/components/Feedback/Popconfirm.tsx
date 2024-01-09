@@ -23,7 +23,7 @@ type Props = {
   children: React.ReactElement;
 };
 
-const Popconfirm: React.FC<Props> = ({
+const Popconfirm: React.FC<React.PropsWithChildren<Props>> = ({
   title = 'Are you sure?',
   icon = <ExclamationCircleOutlined />,
   placement = 'top',

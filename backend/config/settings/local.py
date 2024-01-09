@@ -39,3 +39,9 @@ INSTALLED_APPS = [
     "whitenoise.runserver_nostatic",
     "django_extensions",
 ] + INSTALLED_APPS  # noqa F405
+
+CORS_ORIGIN_ALLOW_ALL = True
+
+CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]
+
+SOCIAL_AUTH_REDIRECT_IS_HTTPS = False

@@ -8,3 +8,7 @@
 #body-layout.ant-layout {
   min-height: calc(100vh - 68px);
 }
+
+.no-padding .ant-collapse-content-box {
+  padding: 0;
+}

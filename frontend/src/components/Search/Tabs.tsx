@@ -25,14 +25,19 @@ export type Props = { record: RawSearchResult; filenameVars?: TextInputs | [] };
 
 export type QualityFlagProps = { index: string; color: string };
 
-export const QualityFlag: React.FC<QualityFlagProps> = ({ index, color }) => (
+export const QualityFlag: React.FC<
+  React.PropsWithChildren<QualityFlagProps>
+> = /* istanbul ignore next */ ({ index, color }) => (
   <div
     data-testid={`qualityFlag${index}`}
     style={{ ...styles.flagColorBox, backgroundColor: color }}
   ></div>
 );
 
-const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
+const Tabs: React.FC<React.PropsWithChildren<Props>> = ({
+  record,
+  filenameVars,
+}) => {
   const metaData = Object.entries(record).map(([k, v]) => ({
     value: `${k}: ${v as string}`,
   }));
@@ -55,7 +60,7 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
 
     (xlink as string[]).forEach((link) => {
       const [url, , linkType] = splitStringByChar(link, '|') as string[];
-
+      /* istanbul ignore else */
       if (Object.keys(xlinkTypesToOutput).includes(linkType)) {
         xlinkTypesToOutput[linkType].url = url;
       }
@@ -127,10 +132,11 @@ const Tabs: React.FC<Props> = ({ record, filenameVars }) => {
           className={innerDataRowTargets.metadataLookupField.class()}
           options={metaData}
           placeholder="Lookup a key..."
-          filterOption={(inputValue, option) =>
-            (option as Record<'value', string>).value
-              .toUpperCase()
-              .indexOf(inputValue.toUpperCase()) !== -1
+          filterOption={
+            /* istanbul ignore next */ (inputValue, option) =>
+              (option as Record<'value', string>).value
+                .toUpperCase()
+                .indexOf(inputValue.toUpperCase()) !== -1
           }
         />
         <Divider />

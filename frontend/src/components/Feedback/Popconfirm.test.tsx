@@ -1,9 +1,13 @@
-import { fireEvent, render, waitFor } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import React from 'react';
 import Popconfirm from './Popconfirm';
+import { customRenderKeycloak } from '../../test/custom-render';
+
+const user = userEvent.setup();
 
 it('renders component with default exclamation circle', async () => {
-  const { getByText, getByRole } = render(
+  const { getByText, getByRole } = customRenderKeycloak(
     <Popconfirm onConfirm={jest.fn}>
       <p>Click here</p>
     </Popconfirm>
@@ -12,7 +16,7 @@ it('renders component with default exclamation circle', async () => {
   // Check component renders
   const text = getByText('Click here');
   expect(text).toBeTruthy();
-  fireEvent.click(text);
+  await user.click(text);
 
   //   Check icon defaults to exclamation circle
   const icon = await waitFor(() =>

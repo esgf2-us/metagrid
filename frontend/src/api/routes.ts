@@ -1,4 +1,4 @@
-import { esgfNodeURL, metagridApiURL } from '../env';
+import { esgfSearchURL, metagridApiURL } from '../env';
 
 export type HTTPCodeType = 400 | 401 | 403 | 404 | 405 | 'generic';
 
@@ -30,7 +30,9 @@ export type ApiRoute = {
 };
 
 type ApiRoutes = {
+  globusAuth: ApiRoute;
   keycloakAuth: ApiRoute;
+  globusTransfer: ApiRoute;
   userInfo: ApiRoute;
   userCart: ApiRoute;
   userSearches: ApiRoute;
@@ -40,6 +42,8 @@ type ApiRoutes = {
   citation: ApiRoute;
   wget: ApiRoute;
   nodeStatus: ApiRoute;
+  tempStorageGet: ApiRoute;
+  tempStorageSet: ApiRoute;
 };
 
 /**
@@ -47,15 +51,25 @@ type ApiRoutes = {
  * served as a clickable link within the browser.
  */
 export const clickableRoute = (route: string): string =>
-  route.replace(`${metagridApiURL}/proxy/search`, `${esgfNodeURL}`);
+  route.replace(`${metagridApiURL}/proxy/search`, `${esgfSearchURL}`);
 
 // Any path with parameters (e.g. '/:datasetID/') must be in camelCase
 // https://mswjs.io/docs/basics/path-matching#path-with-parameters
 const apiRoutes: ApiRoutes = {
+  // Globus APIs
+  globusAuth: {
+    path: `${metagridApiURL}/proxy/globus-auth/`,
+    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Globus', HTTPCode),
+  },
   // MetaGrid APIs
   keycloakAuth: {
     path: `${metagridApiURL}/dj-rest-auth/keycloak`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Keycloak', HTTPCode),
+  },
+  globusTransfer: {
+    path: `${metagridApiURL}/globus/transfer`,
+    handleErrorMsg: (HTTPCode) =>
+      mapHTTPErrorCodes('Globus transfer', HTTPCode),
   },
   userInfo: {
     path: `${metagridApiURL}/dj-rest-auth/user/`,
@@ -104,6 +118,16 @@ const apiRoutes: ApiRoutes = {
     path: `${metagridApiURL}/proxy/status`,
     handleErrorMsg: (HTTPCode) =>
       mapHTTPErrorCodes('ESGF Node Status API', HTTPCode),
+  },
+  tempStorageGet: {
+    path: `${metagridApiURL}/tempStorage/get`,
+    handleErrorMsg: (HTTPCode) =>
+      mapHTTPErrorCodes('Temp Storage Get', HTTPCode),
+  },
+  tempStorageSet: {
+    path: `${metagridApiURL}/tempStorage/set`,
+    handleErrorMsg: (HTTPCode) =>
+      mapHTTPErrorCodes('Temp Storage Set', HTTPCode),
   },
 };
 

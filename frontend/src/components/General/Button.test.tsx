@@ -1,9 +1,13 @@
-import { fireEvent, render, waitFor } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import React from 'react';
 import Button from './Button';
+import { customRenderKeycloak } from '../../test/custom-render';
+
+const user = userEvent.setup();
 
 it('renders component', () => {
-  const { getByRole } = render(<Button type="primary"></Button>);
+  const { getByRole } = customRenderKeycloak(<Button type="primary"></Button>);
 
   // Check button rendered
   const button = getByRole('button');
@@ -11,12 +15,12 @@ it('renders component', () => {
 });
 
 it('returns string "clicked" onClick', async () => {
-  const { getByRole } = render(
+  const { getByRole } = customRenderKeycloak(
     <Button type="primary" onClick={jest.fn()}></Button>
   );
 
   // Click on the button
   const button = getByRole('button');
-  fireEvent.click(button);
+  await user.click(button);
   await waitFor(() => button);
 });

@@ -24,7 +24,9 @@ type Props = { children: React.ReactNode };
 
 const defaultTour = new JoyrideTour('Empty Tour');
 
-export const ReactJoyrideProvider: React.FC<Props> = ({ children }) => {
+export const ReactJoyrideProvider: React.FC<React.PropsWithChildren<Props>> = ({
+  children,
+}) => {
   const navigate = useNavigate();
   const [running, setRunning] = React.useState<boolean>(false);
   const [getTour, setTour] = React.useState<JoyrideTour>(defaultTour);

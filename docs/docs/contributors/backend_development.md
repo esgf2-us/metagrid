@@ -119,7 +119,7 @@ Run the command to start an app
 
 ```bash
 cd metagrid
-docker-compose -p metagrid_backend_dev run --rm django python manage.py startapp <app_name>
+docker compose -p metagrid_backend_dev run --rm django python manage.py startapp <app_name>
 ```
 
 Register the app under `INSTALLED_APPS`
@@ -210,7 +210,7 @@ MetaGrid's back-end follows the [Black](https://black.readthedocs.io/en/stable/t
 Run a command inside the docker container:
 
 ```bash
-docker-compose -p metagrid_backend_dev run --rm django [command]
+docker compose -p metagrid_backend_dev run --rm django [command]
 ```
 
 ### Django migrations
@@ -278,9 +278,9 @@ To run the tests, check your test coverage, and generate an HTML coverage report
 
 ```bash
 # Optional, stop existing Django containers so tests can run without conflicts
-docker-compose -f docker-compose.yml down
+docker compose -f docker-compose.yml down
 # Runs the tests
-docker-compose -p metagrid_backend_dev run --rm django pytest
+docker compose -p metagrid_backend_dev run --rm django pytest
 ```
 
 Note: Run commands above within the 'metagrid/backend' directory.

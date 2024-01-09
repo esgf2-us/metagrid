@@ -3,10 +3,14 @@ METAGRID_CONFIG=metagrid_config
 DEFAULT_EDITOR=emacs
 CONFIG_DIR=metagrid_configs
 BACKUP_DIR=$CONFIG_DIR/backups
+BACKUP_FORMAT=config_backup_$(date +'%F_%I-%M-%S')
+
+set -e
 
 #Custom functions
 function configure() {
-    cp $CONFIG_DIR/$METAGRID_CONFIG $BACKUP_DIR/config_backup_$(date +'%a_%b_%g-%I_%M_%S')
+    mkdir -p $BACKUP_DIR
+    cp $CONFIG_DIR/$METAGRID_CONFIG $BACKUP_DIR/$BACKUP_FORMAT
     $DEFAULT_EDITOR $CONFIG_DIR/$METAGRID_CONFIG
     saveConfigs $CONFIG_DIR/$METAGRID_CONFIG
 }
@@ -21,7 +25,7 @@ function saveConfigs() {
 
 function setCurrentConfig() {
     clear
-    fileCount=$(ls "$BACKUP_DIR"| wc -l)
+    fileCount=$(ls "$BACKUP_DIR" | wc -l)
     if [ "$fileCount" -lt "1" ]; then
         echo "There aren't any config files in the backup directory."
         read -p "Press enter to continue..." option
@@ -29,14 +33,14 @@ function setCurrentConfig() {
     fi
 
     echo "Enter the config backup to restore (1 -"$fileCount"):"
-    ls $BACKUP_DIR/ | cat -n
+    ls $BACKUP_DIR/ | sort -r | cat -n
     read configNum
-    fileName=$(ls "$BACKUP_DIR" | sed -n "$configNum"p)
+    fileName=$(ls "$BACKUP_DIR" | sort -r | sed -n "$configNum"p)
     configName=$(pwd)/$BACKUP_DIR/$fileName
 
     if test -f "$configName"; then
         echo "Setting $fileName as current..."
-        cp $CONFIG_DIR/$METAGRID_CONFIG $BACKUP_DIR/config_backup_$(date +'%a_%b_%g-%I_%M_%S')
+        cp $CONFIG_DIR/$METAGRID_CONFIG $BACKUP_DIR/$BACKUP_FORMAT
         cp $configName $CONFIG_DIR/$METAGRID_CONFIG
         saveConfigs
         echo "Done!"
@@ -55,7 +59,7 @@ function setCurrentConfig() {
 function startService() {
     echo "Starting $1"
     cd $1
-    docker-compose -f docker-compose.prod.yml up --build $2
+    docker compose -f docker-compose.prod.yml up --build $2
     cd ..
 }
 
@@ -63,7 +67,7 @@ function startService() {
 function stopService() {
     echo "Stopping $1"
     cd $1
-    docker-compose -f docker-compose.prod.yml down --remove-orphans
+    docker compose -f docker-compose.prod.yml down --remove-orphans
     cd ..
 }
 
@@ -72,7 +76,7 @@ function stopService() {
 function startLocalService() {
     echo "Starting $1"
     cd $1
-    docker-compose -f docker-compose.yml up --build $2
+    docker compose -f docker-compose.yml up --build $2
     cd ..
 }
 
@@ -80,7 +84,7 @@ function startLocalService() {
 function stopLocalService() {
     echo "Stopping $1"
     cd $1
-    docker-compose -f docker-compose.yml down --remove-orphans
+    docker compose -f docker-compose.yml down --remove-orphans
     cd ..
 }
 

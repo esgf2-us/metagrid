@@ -1,4 +1,4 @@
-FROM traefik:2.8
+FROM traefik:2.10
 
 RUN apk add gettext
 RUN mkdir -p /etc/traefik/acme

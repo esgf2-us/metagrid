@@ -12,4 +12,5 @@ export default axios.create({
   // https://github.com/Rob--W/cors-anywhere/issues/39#issuecomment-387690291
   // https://github.com/Rob--W/cors-anywhere/pull/145#issuecomment-450528241
   headers: { 'X-Requested-With': 'XMLHttpRequest' },
+  withCredentials: true,
 });

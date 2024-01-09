@@ -19,7 +19,7 @@ export type Props = {
   onTextSearch: (selectedProject: RawProject, text: string) => void;
 };
 
-const LeftMenu: React.FC<Props> = ({
+const LeftMenu: React.FC<React.PropsWithChildren<Props>> = ({
   projects,
   apiError,
   apiIsLoading,
@@ -94,10 +94,10 @@ const LeftMenu: React.FC<Props> = ({
             <Form.Item
               name="text"
               rules={[{ required: true, message: 'Text is required' }]}
-              style={{ width: '55%', margin: '0 5px' }}
+              style={{ width: '40%', margin: '0 5px' }}
             >
               <Input
-                width="100"
+                width="50"
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder="Search for a keyword"
