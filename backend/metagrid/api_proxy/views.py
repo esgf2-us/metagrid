@@ -45,9 +45,7 @@ def do_globus_auth(request):
 @csrf_exempt
 def do_globus_logout(request):
     logout(request)
-    homepage_url = getattr(
-        settings, "DJANGO_LOGOUT_REDIRECT_URL", "http://localhost:3000/search/"
-    )
+    homepage_url = getattr(settings, "LOGOUT_REDIRECT_URL", "")
     return redirect(homepage_url)
 
 
