@@ -1,3 +1,4 @@
+import { globusEnabledNodes } from '../env';
 import { JoyrideTour } from './JoyrideTour';
 import { TargetObject } from './TargetObject';
 import { AppPage } from './types';
@@ -108,6 +109,9 @@ export const leftSidebarTargets = {
   selectProjectBtn: new TargetObject(),
   projectSelectLeftSideBtn: new TargetObject(),
   projectWebsiteBtn: new TargetObject(),
+  filterByGlobusTransfer: new TargetObject(),
+  filterByGlobusTransferAny: new TargetObject(),
+  filterByGlobusTransferOnly: new TargetObject(),
   searchFacetsForm: new TargetObject(),
   facetFormGeneral: new TargetObject(),
   facetFormFields: new TargetObject(),
@@ -131,6 +135,7 @@ export const topDataRowTargets = {
   downloadScriptForm: new TargetObject(),
   downloadScriptOptions: new TargetObject(),
   downloadScriptBtn: new TargetObject(),
+  globusReadyStatusIcon: new TargetObject(),
 };
 
 export const innerDataRowTargets = {
@@ -222,6 +227,11 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
       topDataRowTargets.downloadScriptBtn.selector(),
       'Clicking this button will begin the download of your script.',
       'top'
+    )
+    .addNextStep(
+      topDataRowTargets.globusReadyStatusIcon.selector(),
+      'This icon indicates whether the dataset can be transferred with Globus. A check mark means it is Globus Ready and can be transferred through Globus. When hovering over the icon you will see more detail as to what node this dataset is coming from and whether the node is Globus ready.',
+      'top-start'
     )
     .addNextStep(
       topDataRowTargets.searchResultsRowExpandIcon.selector(),
@@ -429,12 +439,33 @@ export const createMainPageTour = (): JoyrideTour => {
     );
   }
 
+  tour.addNextStep(
+    leftSidebarTargets.projectWebsiteBtn.selector(),
+    'Once a project is selected, if you wish, you can go view the project website by clicking this button.',
+    'right'
+  );
+
+  // Add tour elements for globus ready filter (if globus enabled nodes has been configured)
+  if (globusEnabledNodes.length > 0) {
+    tour
+      .addNextStep(
+        leftSidebarTargets.filterByGlobusTransfer.selector(),
+        'This section allows you to filter search results based on globus transfer availability. There are a set of data nodes that provide the Globus Transfer option, however not all do. You can filter to show all datasets, or only those that can be transferred via globus.',
+        'right'
+      )
+      .addNextStep(
+        leftSidebarTargets.filterByGlobusTransferAny.selector(),
+        'Selecting this option will leave the filter off and allow you to see all datasets, including ones that may not have Globus transfer as an option.',
+        'right'
+      )
+      .addNextStep(
+        leftSidebarTargets.filterByGlobusTransferOnly.selector(),
+        'Selecting this option will filter all datasets, so that only the ones that have Globus transfer as an option will be visible.',
+        'right'
+      );
+  }
+
   tour
-    .addNextStep(
-      leftSidebarTargets.projectWebsiteBtn.selector(),
-      'Once a project is selected, if you wish, you can go view the project website by clicking this button.',
-      'right'
-    )
     .addNextStep(
       leftSidebarTargets.searchFacetsForm.selector(),
       'This area contains various groups of facets and parameters that you can use to filter results from your selected project.',

@@ -198,7 +198,7 @@ The MetaGrid front-end follows the Airbnb JavaScript and React/JSX style guides.
 Run a command inside the docker container:
 
 ```bash
-docker-compose -p metagrid_frontend_dev run --rm react [command]
+docker compose -p metagrid_frontend_dev run --rm react [command]
 ```
 
 ### `yarn start:local`

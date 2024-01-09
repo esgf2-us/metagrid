@@ -1,4 +1,5 @@
-import { fireEvent, render, waitFor } from '@testing-library/react';
+import { fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import React from 'react';
 import {
   activeSearchQueryFixture,
@@ -6,6 +7,9 @@ import {
   parsedNodeStatusFixture,
 } from '../../api/mock/fixtures';
 import FacetsForm, { humanizeFacetNames, Props } from './FacetsForm';
+import { customRenderKeycloak } from '../../test/custom-render';
+
+const user = userEvent.setup();
 
 describe('Test humanizeFacetNames', () => {
   it('removes underscore and lowercases', () => {
@@ -32,13 +36,15 @@ const defaultProps: Props = {
 
 describe('test FacetsForm component', () => {
   it('handles submitting filename', async () => {
-    const { getByRole, getByTestId } = render(<FacetsForm {...defaultProps} />);
+    const { getByRole, getByTestId } = customRenderKeycloak(
+      <FacetsForm {...defaultProps} />
+    );
 
     // Open filename collapse panel
     const filenameSearchPanel = getByRole('button', {
       name: 'right Filename',
     });
-    fireEvent.click(filenameSearchPanel);
+    await user.click(filenameSearchPanel);
 
     // Change form field values
     const input = getByTestId('filename-search-input') as HTMLInputElement;
@@ -53,40 +59,70 @@ describe('test FacetsForm component', () => {
     await waitFor(() => expect(input.value).toEqual(''));
   });
 
-  it('handles expand and collapse facet panels', () => {
-    const { getByText } = render(<FacetsForm {...defaultProps} />);
+  it('handles setting the globusReady option on and off', () => {
+    const { getByLabelText } = customRenderKeycloak(
+      <FacetsForm {...defaultProps} />
+    );
+
+    const globusReadyRadioOption = getByLabelText('Only Globus Transferrable');
+    const anyRadioOption = getByLabelText('Any');
+    expect(anyRadioOption).toBeTruthy();
+    expect(globusReadyRadioOption).toBeTruthy();
+
+    fireEvent.click(anyRadioOption);
+
+    expect(anyRadioOption).toBeChecked();
+    expect(globusReadyRadioOption).not.toBeChecked();
+
+    fireEvent.click(globusReadyRadioOption);
+
+    expect(anyRadioOption).not.toBeChecked();
+    expect(globusReadyRadioOption).toBeChecked();
+
+    fireEvent.click(anyRadioOption);
+
+    expect(anyRadioOption).toBeChecked();
+    expect(globusReadyRadioOption).not.toBeChecked();
+  });
+
+  it('handles expand and collapse facet panels', async () => {
+    const { getByText } = customRenderKeycloak(
+      <FacetsForm {...defaultProps} />
+    );
 
     // Click the expand all button
     const expandAllBtn = getByText('Expand All');
     expect(expandAllBtn).toBeTruthy();
-    fireEvent.click(expandAllBtn);
+    await user.click(expandAllBtn);
 
     // Click the collaps all button
     const collapseAllBtn = getByText('Collapse All');
     expect(collapseAllBtn).toBeTruthy();
-    fireEvent.click(collapseAllBtn);
+    await user.click(collapseAllBtn);
   });
 
-  it('handles changing expand to collapse and vice-versa base on user actions', () => {
-    const { getByText } = render(<FacetsForm {...defaultProps} />);
+  it('handles changing expand to collapse and vice-versa base on user actions', async () => {
+    const { getByText } = customRenderKeycloak(
+      <FacetsForm {...defaultProps} />
+    );
 
     // Expand the group1 panel
     const group1Btn = getByText('Group1');
     expect(group1Btn).toBeTruthy();
-    fireEvent.click(group1Btn);
+    await user.click(group1Btn);
 
     // Expand the group2 panel
     const group2Btn = getByText('Group2');
     expect(group2Btn).toBeTruthy();
-    fireEvent.click(group2Btn);
+    await user.click(group2Btn);
 
     // The collapse all button should now show since 2 panels are expanded
     const collapseAllBtn = getByText('Collapse All');
     expect(collapseAllBtn).toBeTruthy();
 
     // Collapse group 1 and 2 panels
-    fireEvent.click(group1Btn);
-    fireEvent.click(group2Btn);
+    await user.click(group1Btn);
+    await user.click(group2Btn);
 
     // The expand all button should show since all panels are collapsed
     const expandAllBtn = getByText('Expand All');
@@ -94,13 +130,15 @@ describe('test FacetsForm component', () => {
   });
 
   it('handles date picker for versioning', async () => {
-    const { getByTestId, getByRole } = render(<FacetsForm {...defaultProps} />);
+    const { getByTestId, getByRole } = customRenderKeycloak(
+      <FacetsForm {...defaultProps} />
+    );
 
     // Open additional properties collapse panel
     const additionalPropertiesPanel = getByRole('button', {
       name: 'right Additional Properties',
     });
-    fireEvent.click(additionalPropertiesPanel);
+    await user.click(additionalPropertiesPanel);
 
     // Check date picker renders
     const datePickerComponent = getByTestId('version-range-datepicker');
@@ -119,7 +157,7 @@ describe('test FacetsForm component', () => {
     });
 
     // Open calendar, select the set value, and click it
-    fireEvent.click(
+    await user.click(
       document.querySelector('.ant-picker-cell-selected') as HTMLInputElement
     );
 

@@ -16,7 +16,11 @@ export type Props = {
   isLoading: boolean;
 };
 
-const NodeStatus: React.FC<Props> = ({ nodeStatus, apiError, isLoading }) => {
+const NodeStatus: React.FC<React.PropsWithChildren<Props>> = ({
+  nodeStatus,
+  apiError,
+  isLoading,
+}) => {
   // If the API returns a response but there is no data, that means the feature
   // is disabled
   const featureIsDisabled = nodeStatus && nodeStatus.length === 0;

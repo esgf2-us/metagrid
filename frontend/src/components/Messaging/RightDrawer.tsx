@@ -5,18 +5,21 @@ import MessageCard from './MessageCard';
 import { MarkdownMessage } from './types';
 
 export type Props = {
-  visible: boolean;
+  open: boolean;
   onClose: () => void;
 };
 
-const RightDrawer: React.FC<Props> = ({ visible, onClose }) => {
+const RightDrawer: React.FC<React.PropsWithChildren<Props>> = ({
+  open,
+  onClose,
+}) => {
   return (
     <Drawer
       title="Notifications"
       placement="right"
       width={500}
       onClose={onClose}
-      visible={visible}
+      open={open}
       footer={
         <Space>
           <Button type="primary" onClick={onClose}>
