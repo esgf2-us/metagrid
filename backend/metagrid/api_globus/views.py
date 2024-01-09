@@ -237,7 +237,6 @@ def get_files(url_params):  # pragma: no cover
     print(f"QUERY_URL: {query_url}  QUERY: {query_encoded}")
     with urllib.request.urlopen(req) as response:
         decoded = response.read().decode()
-        print(decoded)
         results = json.loads(decoded)
 
     # Warning message about the number of files retrieved
