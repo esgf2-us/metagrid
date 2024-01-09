@@ -1,4 +1,4 @@
-# Welcome to the Metagrid Beta test v1.0.10
+# Welcome to the Metagrid Beta test v1.0.11
 
 Use the Help link to find information on how to contact support or report any issues you find.
 
