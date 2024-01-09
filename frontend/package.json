@@ -68,7 +68,7 @@
     "@react-keycloak/web": "3.4.0",
     "antd": "4.24.12",
     "autoprefixer": "10.4.14",
-    "axios": "0.26.1",
+    "axios": "1.6.0",
     "dotenv": "8.2.0",
     "env-cmd": "10.1.0",
     "humps": "2.0.1",
