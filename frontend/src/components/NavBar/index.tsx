@@ -18,7 +18,7 @@ export type Props = {
   supportModalVisible: (visible: boolean) => void;
 };
 
-const NavBar: React.FC<Props> = ({
+const NavBar: React.FC<React.PropsWithChildren<Props>> = ({
   numCartItems,
   numSavedSearches,
   onTextSearch,
@@ -30,12 +30,19 @@ const NavBar: React.FC<Props> = ({
   return (
     <nav data-testid="nav-bar" className="navbar">
       <div className="navbar-logo">
-        <Link to="/search">
+        <Link to="https://www.esgf.io/nodes.html">
           <img
-            style={{ maxWidth: '100%', height: 'auto' }}
+            style={{ maxWidth: '80%', height: 'auto' }}
             src={esgfLogo}
-            alt="ESGF Logo"
+            alt="ESGF Federated Nodes"
           />
+        </Link>
+        &nbsp;
+        <Link
+          style={{ padding: 0, margin: 0, fontWeight: 'bold' }}
+          to="https://www.esgf.io/nodes.html"
+        >
+          Federated Nodes
         </Link>
       </div>
       <div className="navbar-container">
@@ -67,7 +74,7 @@ const NavBar: React.FC<Props> = ({
           className="navbar-drawer"
           closable={false}
           onClose={() => setShowDrawer(false)}
-          visible={showDrawer}
+          open={showDrawer}
         >
           <RightMenu
             mode="inline"

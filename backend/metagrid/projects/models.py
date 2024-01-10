@@ -80,6 +80,7 @@ class Project(models.Model):
             "E3SM": {"project": self.name.lower()},
             "All (except CMIP6)": {"project!": "CMIP6"},
             "input4MIPs": {"activity_id": self.name},
+            "obs4MIPs": {"activity_id": self.name},
         }
         return project_params.get(self.name, {"project": self.name})
 

@@ -24,9 +24,10 @@ type Props = {
   loading?: boolean;
   shape?: 'circle' | 'round';
   size?: 'large' | 'middle' | 'small';
+  style?: React.CSSProperties | undefined;
 };
 
-const Button: React.FC<Props> = ({
+const Button: React.FC<React.PropsWithChildren<Props>> = ({
   type = 'primary',
   className,
   href,
@@ -40,6 +41,7 @@ const Button: React.FC<Props> = ({
   children,
   shape,
   size,
+  style,
 }) => (
   <ButtonD
     type={type}
@@ -54,6 +56,7 @@ const Button: React.FC<Props> = ({
     loading={loading}
     shape={shape}
     size={size}
+    style={style}
   >
     {children}
   </ButtonD>

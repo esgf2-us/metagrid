@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, render } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { ResponseError } from '../../api';
 import {
   activeSearchQueryFixture,
@@ -7,6 +7,9 @@ import {
 } from '../../api/mock/fixtures';
 import { mapHTTPErrorCodes } from '../../api/routes';
 import ProjectsForm, { Props } from './ProjectForm';
+import { customRenderKeycloak } from '../../test/custom-render';
+
+const user = userEvent.setup();
 
 const defaultProps: Props = {
   activeSearchQuery: activeSearchQueryFixture(),
@@ -16,12 +19,14 @@ const defaultProps: Props = {
   onFinish: jest.fn(),
 };
 
-it('renders Popconfirm component when there is an active project and active facets', () => {
-  const { getByRole, getByText } = render(<ProjectsForm {...defaultProps} />);
+it('renders Popconfirm component when there is an active project and active facets', async () => {
+  const { getByRole, getByText } = customRenderKeycloak(
+    <ProjectsForm {...defaultProps} />
+  );
 
   // Click the submit button
   const submitBtn = getByRole('img', { name: 'select' });
-  fireEvent.click(submitBtn);
+  await user.click(submitBtn);
 
   // Check popover exists
   const popOver = getByRole('img', { name: 'question-circle' });
@@ -29,11 +34,11 @@ it('renders Popconfirm component when there is an active project and active face
 
   // Submit popover
   const popOverSubmitBtn = getByText('OK');
-  fireEvent.click(popOverSubmitBtn);
+  await user.click(popOverSubmitBtn);
 });
 
 it('renders empty form', () => {
-  const { queryByRole } = render(
+  const { queryByRole } = customRenderKeycloak(
     <ProjectsForm {...defaultProps} projectsFetched={undefined} />
   );
 
@@ -43,7 +48,7 @@ it('renders empty form', () => {
 });
 
 it('renders error message when projects can"t be fetched', () => {
-  const { getByRole } = render(
+  const { getByRole } = customRenderKeycloak(
     <ProjectsForm
       {...defaultProps}
       apiError={

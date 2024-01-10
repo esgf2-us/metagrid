@@ -13,6 +13,8 @@ import {
   objectHasKey,
   objectIsEmpty,
   shallowCompareObjects,
+  showError,
+  showNotice,
   splitStringByChar,
   unsavedLocalSearches,
 } from './utils';
@@ -340,5 +342,38 @@ describe('Test unsavedLocal searches', () => {
     expect(unsavedLocalSearches(databaseResults, localResults)).toEqual([
       firstResult,
     ]);
+  });
+});
+
+describe('Test show notices function', () => {
+  it('Shows a success message', () => {
+    showNotice('Test notification successful', {
+      duration: 5,
+      type: 'success',
+    });
+  });
+  it('Shows a warning message', () => {
+    showNotice('Test warning notification', {
+      duration: 5,
+      type: 'warning',
+    });
+  });
+  it('Shows a error message', () => {
+    showNotice('Test error notification', {
+      duration: 5,
+      type: 'error',
+    });
+  });
+  it('Shows a success message', () => {
+    showNotice('Test info notification', {
+      duration: 5,
+      type: 'info',
+    });
+  });
+  it('Shows a default message', () => {
+    showNotice('Test info notification');
+  });
+  it('Shows a error notification', () => {
+    showError('');
   });
 });

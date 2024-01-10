@@ -12,9 +12,11 @@ whitenoise==6.6.0  # https://github.com/evansd/whitenoise
 # Database
 # ------------------------------------------------------------------------------
 psycopg2-binary==2.9.9  # https://github.com/psycopg/psycopg2
+psycopg2-binary==2.9.6 # https://github.com/psycopg/psycopg2
 
 # REST API
 # ------------------------------------------------------------------------------
+django-globus-portal-framework==0.4.8
 djangorestframework==3.14.0  # https://github.com/encode/django-rest-framework
 Markdown==3.5.1  # https://pypi.org/project/Markdown/
 django-filter==23.5  # https://github.com/carltongibson/django-filter
@@ -32,3 +34,4 @@ pre-commit==3.6.0  # https://github.com/pre-commit/pre-commit
 # ------------------------------------------------------------------------------
 django-model-utils==4.3.1  # https://github.com/jazzband/django-model-utils
 django_unique_upload==0.2.1   # https://github.com/agconti/django-unique-upload
+globus-sdk==3.13.0

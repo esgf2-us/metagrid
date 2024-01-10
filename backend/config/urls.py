@@ -12,7 +12,17 @@ from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 from rest_framework.routers import DefaultRouter
 
-from metagrid.api_proxy.views import do_citation, do_search, do_status, do_wget
+from metagrid.api_globus.views import do_globus_transfer, get_access_token
+from metagrid.api_proxy.views import (
+    do_citation,
+    do_globus_auth,
+    do_globus_logout,
+    do_search,
+    do_status,
+    do_wget,
+    get_temp_storage,
+    set_temp_storage,
+)
 from metagrid.cart.views import CartViewSet, SearchViewSet
 from metagrid.projects.views import ProjectsViewSet
 from metagrid.users.views import UserCreateViewSet, UserViewSet
@@ -42,6 +52,10 @@ urlpatterns = [
         r"^$",
         RedirectView.as_view(url=reverse_lazy("api-root"), permanent=False),
     ),
+    # social_auth
+    path("", include("social_django.urls", namespace="social")),
+    path("proxy/globus-logout/", do_globus_logout, name="globus-logout"),
+    path("proxy/globus-auth/", do_globus_auth, name="globus-auth"),
     # all-auth
     path("accounts/", include("allauth.urls"), name="socialaccount_signup"),
     # dj-rest-auth
@@ -53,6 +67,10 @@ urlpatterns = [
     path(
         "dj-rest-auth/keycloak", KeycloakLogin.as_view(), name="keycloak_login"
     ),
+    path("tempStorage/get", get_temp_storage, name="temp_storage_get"),
+    path("tempStorage/set", set_temp_storage, name="temp_storage_set"),
+    path("globus/auth", get_access_token, name="globus_auth"),
+    path("globus/transfer", do_globus_transfer, name="globus_transfer"),
     re_path(
         r"^account-confirm-email/",
         VerifyEmailView.as_view(),
