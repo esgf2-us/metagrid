@@ -1,6 +1,6 @@
 {
   "name": "frontend",
-  "version": "1.0.10-beta",
+  "version": "1.0.11-beta",
   "private": true,
   "scripts": {
     "build:local": "env-cmd -f .envs/.react react-scripts build",
