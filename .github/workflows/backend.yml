@@ -33,7 +33,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:12.6
+        image: postgres:12.17
         env:
           POSTGRES_PASSWORD: postgres
         ports:
