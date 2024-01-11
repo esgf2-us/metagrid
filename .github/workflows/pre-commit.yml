@@ -10,16 +10,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       # Required to run the local ESLint hook
       - name: Use Node.js 21.x
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: "21.x"
 
       - name: Cache node modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-node-modules
         with:
@@ -36,7 +36,7 @@ jobs:
           yarn install --frozen-lockfile
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: 3.9
 
@@ -44,4 +44,4 @@ jobs:
       # Getting only staged files can be tricky in case a new PR is opened
       # since the action is run on a branch in detached head state
       - name: Install and Run Pre-commit
-        uses: pre-commit/action@v2.0.2
+        uses: pre-commit/action@v3.0.0

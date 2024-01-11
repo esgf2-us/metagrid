@@ -1,11 +1,11 @@
 # Core
 # ------------------------------------------------------------------------------
 pytz==2023.3  # https://github.com/stub42/pytz
-django==4.2.7  # https://www.djangoproject.com/
+django==5.0.1  # https://www.djangoproject.com/
 django-environ==0.10.0  # https://github.com/joke2k/django-environ
-gunicorn==20.1.0  # https://github.com/benoitc/gunicorn
-newrelic==8.8.1  # https://pypi.org/project/newrelic/
-argon2-cffi==21.3  # https://github.com/hynek/argon2_cffi
+gunicorn==21.2.0  # https://github.com/benoitc/gunicorn
+newrelic==9.4.0  # https://pypi.org/project/newrelic/
+argon2-cffi==23.1.0  # https://github.com/hynek/argon2_cffi
 requests==2.31.0  # https://github.com/psf/requests
 whitenoise==6.4.0  # https://github.com/evansd/whitenoise
 
@@ -18,10 +18,10 @@ psycopg2-binary==2.9.6 # https://github.com/psycopg/psycopg2
 django-globus-portal-framework==0.4.8
 djangorestframework==3.14.0  # https://github.com/encode/django-rest-framework
 Markdown==3.4.1  # https://pypi.org/project/Markdown/
-django-filter==22.1  # https://github.com/carltongibson/django-filter
-django-cors-headers==3.14.0  # https://github.com/adamchainz/django-cors-headers
+django-filter==23.5  # https://github.com/carltongibson/django-filter
+django-cors-headers==4.3.1  # https://github.com/adamchainz/django-cors-headers
 django-allauth==0.54.0  # https://github.com/pennersr/django-allauth
-dj-rest-auth==2.2.8  # https://github.com/jazzband/dj-rest-auth
+dj-rest-auth==5.0.2  # https://github.com/jazzband/dj-rest-auth
 djangorestframework-simplejwt==5.2.2  # https://github.com/SimpleJWT/django-rest-framework-simplejwt/
 drf-yasg==1.21.5  # https://github.com/axnsan12/drf-yasg
 
