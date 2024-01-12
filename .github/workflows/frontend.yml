@@ -49,6 +49,8 @@ jobs:
 
       - name: Upload Coverage Report
         uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           file: "./frontend/coverage/coverage-final.json"
           flags: frontend
