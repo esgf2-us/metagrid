@@ -48,7 +48,7 @@ jobs:
           yarn test:coverage
 
       - name: Upload Coverage Report
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
         with:
           file: "./frontend/coverage/coverage-final.json"
           flags: frontend
