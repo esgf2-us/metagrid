@@ -1,6 +1,7 @@
 import json
 from urllib.parse import urlparse
 
+import globus_sdk
 import requests
 from django.conf import settings
 from django.contrib.auth import logout
@@ -40,6 +41,42 @@ def do_globus_auth(request):
             **additional_info,
         }
     )
+
+
+@api_view()
+@permission_classes([])
+def do_globus_get_endpoint(request):
+    endpoint_id = request.GET.get("endpoint_id", None)
+    client = globus_sdk.ConfidentialAppAuthClient(
+        settings.SOCIAL_AUTH_GLOBUS_KEY, settings.SOCIAL_AUTH_GLOBUS_SECRET
+    )
+    token_response = client.oauth2_client_credentials_tokens()
+    globus_transfer_data = token_response.by_resource_server[
+        "transfer.api.globus.org"
+    ]
+    globus_transfer_token = globus_transfer_data["access_token"]
+    authorizer = globus_sdk.AccessTokenAuthorizer(globus_transfer_token)
+    tc = globus_sdk.TransferClient(authorizer=authorizer)
+    endpoint = tc.get_endpoint(endpoint_id)
+    return Response(endpoint.data)
+
+
+@api_view()
+@permission_classes([])
+def do_globus_search_endpoints(request):
+    search_text = request.GET.get("search_text", None)
+    client = globus_sdk.ConfidentialAppAuthClient(
+        settings.SOCIAL_AUTH_GLOBUS_KEY, settings.SOCIAL_AUTH_GLOBUS_SECRET
+    )
+    token_response = client.oauth2_client_credentials_tokens()
+    globus_transfer_data = token_response.by_resource_server[
+        "transfer.api.globus.org"
+    ]
+    globus_transfer_token = globus_transfer_data["access_token"]
+    authorizer = globus_sdk.AccessTokenAuthorizer(globus_transfer_token)
+    tc = globus_sdk.TransferClient(authorizer=authorizer)
+    endpoints = tc.endpoint_search(filter_fulltext=search_text)
+    return Response(endpoints["DATA"])
 
 
 @csrf_exempt

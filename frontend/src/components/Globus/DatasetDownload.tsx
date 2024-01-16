@@ -1,5 +1,5 @@
 import { CheckCircleFilled, DownloadOutlined } from '@ant-design/icons';
-import { Button, Modal, Radio, Select, Space, Tooltip } from 'antd';
+import { Button, Divider, Modal, Radio, Select, Space, Tooltip } from 'antd';
 import PKCE from 'js-pkce';
 import React, { useEffect } from 'react';
 import { useRecoilState } from 'recoil';
@@ -9,6 +9,7 @@ import {
   fetchWgetScript,
   ResponseError,
   startGlobusTransfer,
+  startSearchGlobusEndpoints,
 } from '../../api';
 import { cartTourTargets } from '../../common/reactJoyrideSteps';
 import {
@@ -62,6 +63,14 @@ type AlertModalState = {
   content: React.ReactNode;
 };
 
+type Endpoint = {
+  contact_email: string;
+  entity_type: string;
+  label: string; // display_name
+  value: string; // id
+  subscription_id: string;
+};
+
 // Statically defined list of dataset download options
 const downloadOptions = ['Globus', 'wget'];
 
@@ -91,6 +100,15 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
   // Component internal state
   const [downloadActive, setDownloadActive] = React.useState<boolean>(true);
+
+  const [globusEndpoints, setGlobusEndpoints] = React.useState<
+    Endpoint[] | []
+  >();
+
+  const [
+    chosenGlobusEndpoint,
+    setChosenGlobusEndpoint,
+  ] = React.useState<string>('Search for a Globus Collection');
 
   const [
     selectedDownloadType,
@@ -424,6 +442,35 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     }
   };
 
+  const changeGlobusEndpoint = (value: string): void => {
+    setChosenGlobusEndpoint(value);
+  };
+
+  const searchGlobusEndpoints = async (value: string): Promise<void> => {
+    if (value) {
+      const endpoints = await startSearchGlobusEndpoints(value);
+      const mappedEndpoints = endpoints.data.map((endpoint) => {
+        return {
+          contact_email: endpoint.contact_email,
+          entity_type: endpoint.entity_type,
+          label: endpoint.display_name,
+          value: endpoint.id,
+          subscription_id: endpoint.subscription_id,
+        };
+      });
+
+      for (let i = 0; i < mappedEndpoints.length; i += 1) {
+        if (mappedEndpoints[i].entity_type === 'GCSv5_endpoint') {
+          mappedEndpoints.splice(i, 1);
+        }
+      }
+
+      setGlobusEndpoints(mappedEndpoints);
+    } else {
+      setGlobusEndpoints([]);
+    }
+  };
+
   const showGlobusSigninPrompt = (formState: ModalFormState): void => {
     setGlobusStepsModal({
       ...globusStepsModal,
@@ -746,6 +793,45 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             </Select.Option>
           ))}
         </Select>
+        <Select
+          data-testid="searchEndpointInput"
+          defaultActiveFirstOption={false}
+          filterOption={false}
+          onChange={changeGlobusEndpoint}
+          onSearch={searchGlobusEndpoints}
+          notFoundContent={null}
+          placeholder="Search for a Globus Collection"
+          showSearch
+          style={{ width: '450px' }}
+          value={chosenGlobusEndpoint}
+          options={(globusEndpoints || []).map((d) => ({
+            contact_email: d.contact_email,
+            entity_type: d.entity_type,
+            label: d.label,
+            value: d.value,
+          }))}
+          optionLabelProp="label"
+          optionRender={(option) => (
+            <>
+              <strong>{option.data.label}</strong>
+              <br />
+              ID: {option.data.value}
+              <br />
+              <span>
+                {option.data?.entity_type === 'GCSv5_mapped_collection' &&
+                  option.data?.subscription_id !== '' &&
+                  'Managed '}
+                {option.data?.entity_type === 'GCSv5_guest_collection'
+                  ? 'Guest Collection'
+                  : 'Mapped Collection'}{' '}
+                <br />
+                {option.data?.contact_email !== null &&
+                  option.data?.contact_email}
+              </span>
+              <Divider style={{ marginBottom: '0px', marginTop: '0px' }} />
+            </>
+          )}
+        ></Select>
         <Button
           data-testid="downloadDatasetBtn"
           className={cartTourTargets.downloadAllBtn.class()}

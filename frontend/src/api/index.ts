@@ -8,7 +8,7 @@
 import 'setimmediate'; // Added because in Jest 27, setImmediate is not defined, causing test errors
 import humps from 'humps';
 import queryString from 'query-string';
-import { AxiosResponse } from 'axios';
+import { Axios, AxiosResponse } from 'axios';
 import axios from '../lib/axios';
 import {
   RawUserCart,
@@ -18,6 +18,10 @@ import {
   UserSearchQuery,
 } from '../components/Cart/types';
 import { ActiveFacets, RawProjects } from '../components/Facets/types';
+import {
+  GlobusEndpointSearch,
+  GlobusEndpointSearchArray,
+} from '../components/Globus/types';
 import { NodeStatusArray, RawNodeStatus } from '../components/NodeStatus/types';
 import {
   ActiveSearchQuery,
@@ -695,6 +699,42 @@ export const startGlobusTransfer = async (
     .catch((error: ResponseError) => {
       throw new Error(
         errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusTransfer)
+      );
+    });
+};
+
+export interface Endpoint {
+  canonical_name: string;
+  contact_email: string;
+  display_name: string;
+  entity_type: string;
+  id: string;
+  owner_id: string;
+  owner_string: string;
+  subscription_id: string;
+}
+
+export interface GlobusEndpoint {
+  data: Endpoint[];
+  status: number;
+  statusText: string;
+  headers: object;
+  config: object;
+}
+
+export const startSearchGlobusEndpoints = async (
+  searchText: string
+): Promise<GlobusEndpoint> => {
+  return axios
+    .get(apiRoutes.globusSearchEndpoints.path, {
+      params: { search_text: searchText },
+    })
+    .then((resp) => {
+      return resp;
+    })
+    .catch((error: ResponseError) => {
+      throw new Error(
+        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusSearchEndpoints)
       );
     });
 };

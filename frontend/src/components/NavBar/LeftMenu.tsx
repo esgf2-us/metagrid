@@ -1,5 +1,5 @@
 import { SearchOutlined } from '@ant-design/icons';
-import { Alert, Form, Input, Select, Spin } from 'antd';
+import { Alert, Form, Input, Select, Space, Spin } from 'antd';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ResponseError } from '../../api';
@@ -77,7 +77,7 @@ const LeftMenu: React.FC<React.PropsWithChildren<Props>> = ({
           form={form}
           onFinish={onFinish}
         >
-          <Input.Group compact>
+          <Space.Compact>
             <Form.Item
               name="projectTextInput"
               rules={[{ required: true, message: 'Project is required' }]}
@@ -97,7 +97,6 @@ const LeftMenu: React.FC<React.PropsWithChildren<Props>> = ({
               style={{ width: '40%', margin: '0 5px' }}
             >
               <Input
-                width="50"
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder="Search for a keyword"
@@ -110,7 +109,7 @@ const LeftMenu: React.FC<React.PropsWithChildren<Props>> = ({
                 icon={<SearchOutlined />}
               ></Button>
             </Form.Item>
-          </Input.Group>
+          </Space.Compact>
         </Form>
       </div>
     );

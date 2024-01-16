@@ -546,11 +546,17 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
                   path="/search"
                   element={
                     <>
-                      <Breadcrumb>
-                        <Breadcrumb.Item>
-                          <HomeOutlined /> Home
-                        </Breadcrumb.Item>
-                      </Breadcrumb>
+                      <Breadcrumb
+                        items={[
+                          {
+                            title: (
+                              <>
+                                <HomeOutlined /> Home
+                              </>
+                            ),
+                          },
+                        ]}
+                      />
                       <Search
                         activeSearchQuery={activeSearchQuery}
                         userCart={userCart}
@@ -571,14 +577,18 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
                   path="/nodes"
                   element={
                     <>
-                      <Breadcrumb>
-                        <Breadcrumb.Item>
-                          <Link to="/">
-                            <HomeOutlined /> Home
-                          </Link>
-                        </Breadcrumb.Item>
-                        <Breadcrumb.Item>Data Node Status</Breadcrumb.Item>
-                      </Breadcrumb>
+                      <Breadcrumb
+                        items={[
+                          {
+                            title: (
+                              <Link to="/">
+                                <HomeOutlined /> Home
+                              </Link>
+                            ),
+                          },
+                          { title: 'Data Node Status' },
+                        ]}
+                      ></Breadcrumb>
                       <NodeStatus
                         nodeStatus={nodeStatus}
                         apiError={nodeStatusApiError as ResponseError}
@@ -591,14 +601,18 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
                   path="/cart/*"
                   element={
                     <>
-                      <Breadcrumb>
-                        <Breadcrumb.Item>
-                          <Link to="/">
-                            <HomeOutlined /> Home
-                          </Link>
-                        </Breadcrumb.Item>
-                        <Breadcrumb.Item>Cart</Breadcrumb.Item>
-                      </Breadcrumb>
+                      <Breadcrumb
+                        items={[
+                          {
+                            title: (
+                              <Link to="/">
+                                <HomeOutlined /> Home
+                              </Link>
+                            ),
+                          },
+                          { title: 'Cart' },
+                        ]}
+                      />
                       <Cart
                         userCart={userCart}
                         userSearchQueries={userSearchQueries}
