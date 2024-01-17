@@ -413,7 +413,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   const handleShareSearchQuery = (): void => {
     const shareSuccess = (): void => {
       // copy link to clipboard
-      /* istanbul ignore if */
+      /* istanbul ignore next */
       if (navigator && navigator.clipboard) {
         navigator.clipboard.writeText(getUrlFromSearch(activeSearchQuery));
         showNotice('Search copied to clipboard!', {
@@ -463,8 +463,8 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     });
   };
 
+  /* istanbul ignore next */
   const generateRedirects = (): ReactElement => {
-    /* istanbul ignore next */
     if (!publicUrl && previousPublicUrl) {
       return (
         <Route

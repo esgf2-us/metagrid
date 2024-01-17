@@ -12,15 +12,20 @@ defaults:
 env:
   DJANGO_SETTINGS_MODULE: metagrid.config.local
   DOMAIN_NAME: http://localhost:8000
+  DJANGO_SECURE_SSL_REDIRECT: False
   CORS_ORIGIN_WHITELIST: http://localhost:3000
-  KEYCLOAK_URL: http://keycloak:8080/auth
-  KEYCLOAK_REALM: metagrid
-  KEYCLOAK_CLIENT_ID: backend
+  KEYCLOAK_URL: https://esgf-login.ceda.ac.uk/
+  KEYCLOAK_REALM: esgf
+  KEYCLOAK_CLIENT_ID: metagrid-localhost
   DATABASE_URL: pgsql://postgres:postgres@localhost:5432/postgres
   REACT_APP_SEARCH_URL: https://esgf-node.llnl.gov/esg-search/search
   REACT_APP_WGET_API_URL: https://esgf-node.llnl.gov/esg-search/wget
   REACT_APP_ESGF_NODE_STATUS_URL: https://aims2.llnl.gov/metagrid-backend/proxy/status
   REACT_APP_ESGF_SOLR_URL: https://esgf-fedtest.llnl.gov/solr
+  DJANGO_LOGIN_REDIRECT_URL: http://localhost:3000/search
+  DJANGO_LOGOUT_REDIRECT_URL: http://localhost:3000/search
+  GLOBUS_CLIENT_KEY: 12345
+  GLOBUS_CLIENT_SECRET: 12345
 
 jobs:
   build:
@@ -68,7 +73,9 @@ jobs:
           pytest
 
       - name: Upload Coverage Report
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           file: "./backend/coverage.xml"
           flags: backend

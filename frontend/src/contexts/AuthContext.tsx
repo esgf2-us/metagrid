@@ -31,8 +31,6 @@ export const GlobusAuthProvider: React.FC<Props> = ({ children }) => {
       runFetchGlobusAuth();
     }, 295000);
     return () => clearInterval(interval);
-
-    // return undefined;
   }, [runFetchGlobusAuth, userAuth?.is_authenticated]);
 
   return (
@@ -86,7 +84,7 @@ export const KeycloakAuthProvider: React.FC<Props> = ({ children }) => {
    * Fetch the authenticated user's information with valid MetaGrid access token.
    */
   React.useEffect(() => {
-    /* istanbul ignore if */
+    /* istanbul ignore next */
     if (userAuth?.access_token) {
       userAuth.is_authenticated = true;
       runFetchUserInfo(userAuth.access_token);
