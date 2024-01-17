@@ -98,8 +98,6 @@ describe('test Search component', () => {
     const searchComponent = await waitFor(() => getByTestId('search'));
     expect(searchComponent).toBeTruthy();
 
-    printElementContents(undefined);
-
     // Check renders results string
     const strResults = await waitFor(() =>
       getByRole('heading', {
@@ -153,7 +151,7 @@ describe('test Search component', () => {
     await waitFor(() => getByTestId('search'));
   });
 
-  xit('handles pagination and page size changes', async () => {
+  it('handles pagination and page size changes', async () => {
     // Update api to return 20 search results, which enables pagination if 10/page selected
     const data = ESGFSearchAPIFixture();
     const response = {

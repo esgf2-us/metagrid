@@ -160,7 +160,7 @@ describe('test FilesTable component', () => {
     await user.click(copyBtn);
   });
 
-  xit('handles pagination and page size changes', async () => {
+  it('handles pagination and page size changes', async () => {
     // Update api to return 20 search results, which enables pagination if 10/page selected
     const data = ESGFSearchAPIFixture();
 
