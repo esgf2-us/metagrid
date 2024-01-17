@@ -763,7 +763,7 @@ describe('User cart', () => {
   });
 
   describe('Error handling', () => {
-    xit('displays error message after failing to fetch authenticated user"s cart', async () => {
+    it('displays error message after failing to fetch authenticated user"s cart', async () => {
       server.use(
         rest.get(apiRoutes.userCart.path, (_req, res, ctx) =>
           res(ctx.status(404))
@@ -1059,7 +1059,7 @@ describe('User search library', () => {
   });
 
   describe('Error handling', () => {
-    xit('displays error message after failing to fetch authenticated user"s saved search queries', async () => {
+    it('displays error message after failing to fetch authenticated user"s saved search queries', async () => {
       server.use(
         rest.get(apiRoutes.userSearches.path, (_req, res, ctx) =>
           res(ctx.status(404))
@@ -1125,7 +1125,7 @@ describe('User search library', () => {
       await user.click(saveSearch);
     });
 
-    xit('displays error message after failing to remove authenticated user"s saved search', async () => {
+    it('displays error message after failing to remove authenticated user"s saved search', async () => {
       // Override API response with 404
       server.use(
         rest.delete(apiRoutes.userSearch.path, (_req, res, ctx) =>
