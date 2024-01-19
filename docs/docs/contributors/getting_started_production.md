@@ -53,6 +53,135 @@ NOTE: You can easily generate a secret key with Python using this command:
 | `REACT_APP_HOTJAR_SV`                    | **OPTIONAL**<br>The snippet version of the Tracking Code you are using. This is only needed if Hotjar ever updates the Tracking Code and needs to discontinue older ones. Knowing which version your site includes allows Hotjar team to contact you and inform you accordingly.                                                                                                                                                                          | [Link](https://github.com/abdalla/react-hotjar)                                 | number           | `REACT_APP_HOTJAR_SV=6`                                                                                                                                          |
 | `REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID` | **OPTIONAL**<br>Google Analytics tracking id.                                                                                                                                                                                                                                                                                                                                                                                                             | [Link](https://github.com/react-ga/react-ga#api)                                | string           | `REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID=UA-000000-01`                                                                                                            |
 
+### Example Production Configuration - v1.0.10
+
+```
+# =====================TREAFIK CONFIG=====================
+
+
+DOMAIN_NAME=esgf-dev1.llnl.gov
+
+PUBLIC_URL=   # Not used, should this be deprecated
+REACT_APP_PREVIOUS_URL=metagrid
+DOMAIN_SUBDIRECTORY=metagrid-backend
+
+# =====================BACKEND CONFIG====================
+
+# General
+
+DJANGO_SETTINGS_MODULE=config.settings.production
+DJANGO_SECRET_KEY=
+DJANGO_ADMIN_URL=TG_-ztsXwL7NOx6cTqZ_bjINGF_R1VuOTI8FocOfAfs
+DJANGO_ALLOWED_HOSTS=esgf-dev1.llnl.gov,198.128.245.131,localhost  #include the IP
+
+# Security
+
+DJANGO_SECURE_SSL_REDIRECT=False
+
+# django-cors-headers
+
+CORS_ORIGIN_WHITELIST=https://localhost:3000,https://esgf-dev1.llnl.gov  
+
+# django-all-auth  - Configure your Keycloak here
+
+KEYCLOAK_URL=https://esgf-login.ceda.ac.uk/
+KEYCLOAK_REALM=esgf
+KEYCLOAK_CLIENT_ID=esgf-dev1-metagrid
+
+# postgres
+
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+POSTGRES_DB=postgres
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+
+# =====================FRONTEND CONFIG====================
+
+# Redirect the frontend to home page when old subdirectory is used (optional)
+
+REACT_APP_PREVIOUS_URL=metagrid   # Leave blank for a new install
+
+# MetaGrid API
+
+# https://github.com/aims-group/metagrid/tree/master/backend
+
+REACT_APP_METAGRID_API_URL=https://esgf-dev1.llnl.gov/metagrid-backend
+
+# Globus
+
+REACT_APP_GLOBUS_REDIRECT=https://esgf-dev1.llnl.gov/cart/items
+REACT_APP_CLIENT_ID=   #  Generate a client ID at Globus for your Native App
+REACT_APP_GLOBUS_NODES=aims3.llnl.gov,esgf-data1.llnl.gov,esgf-data2.llnl.gov
+
+# ESGF wget API
+
+# https://github.com/ESGF/esgf-wget
+
+REACT_APP_GLOBUS_SCRIPT_URL=https://greyworm1-rh7.llnl.gov/globusscript
+
+# ESGF Search API
+# https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
+
+#REACT_APP_WGET_API_URL=https://esgf-fedtest.llnl.gov/esg-search/wget
+REACT_APP_WGET_API_URL=https://greyworm1-rh7.llnl.gov/wget
+#REACT_APP_WGET_API_URL=https://esgf-node.llnl.gov/esg-search/wget
+
+# ESGF Search API
+
+# https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
+
+REACT_APP_AUTHENTICATION_METHOD=globus
+REACT_APP_SEARCH_URL=https://esgf-fedtest.llnl.gov/esg-search/search
+REACT_APP_ESGF_SOLR_URL=https://esgf-fedtest.llnl.gov/solr
+
+# ESGF Node Status API
+
+# https://github.com/ESGF/esgf-utils/blob/master/node_status/query_prom.py
+REACT_APP_ESGF_NODE_STATUS_URL=https://aims4.llnl.gov/prometheus/api/v1/query?query=probe_success%7Bjob%3D%22http_2xx%22%2C+target%3D~%22.%2Athredds.%2A%22%7D
+
+# Keycloak  - same settings as above but used on the frontend side
+
+# https://github.com/keycloak/keycloak
+
+REACT_APP_KEYCLOAK_URL=https://esgf-login.ceda.ac.uk/
+REACT_APP_KEYCLOAK_REALM=esgf
+REACT_APP_KEYCLOAK_CLIENT_ID=esgf-dev1-metagrid
+
+
+# Django Auth URLs
+REACT_APP_DJANGO_LOGIN_URL=http://esgf-dev1.llnl.gov/metagrid-backend/login/globus/
+REACT_APP_DJANGO_LOGOUT_URL=http://esgf-dev1.llnl.gov/metagrid-backend/proxy/globus-logout/
+
+# Authentication Method - switch to keycloak or globus
+REACT_APP_AUTHENTICATION_METHOD=keycloak
+
+# https://docs.djangoproject.com/en/4.2/ref/settings/#logout-redirect-url
+DJANGO_LOGIN_REDIRECT_URL=http://esgf-dev1.llnl.gov/search
+DJANGO_LOGOUT_REDIRECT_URL=http://esgf-dev1.llnl.gov/search
+
+# https://app.globus.org/settings/developers/registration/confidential_client
+#  Generate these at Globus, this is a confidential client
+GLOBUS_CLIENT_KEY=25e75a79-7d31-41bd-b1df-0668f7a42d91
+#c111e306-ad45-49ef-af54-6b107ab592ff
+GLOBUS_CLIENT_SECRET=
+
+
+
+# react-hotjar
+
+# https://github.com/abdalla/react-hotjar
+
+REACT_APP_HOTJAR_ID=2079136
+REACT_APP_HOTJAR_SV=6
+
+# react-ga
+
+# https://github.com/react-ga/react-ga
+#  Get a tracking ID from Google if you want to enable Analytics
+REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID=
+```
+
 ## Building and Running Services
 
 Once you've finished the configuration, you will be ready to start the service containers.
