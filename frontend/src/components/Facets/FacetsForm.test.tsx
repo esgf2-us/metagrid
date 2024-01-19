@@ -8,7 +8,6 @@ import {
 } from '../../api/mock/fixtures';
 import FacetsForm, { humanizeFacetNames, Props } from './FacetsForm';
 import { customRenderKeycloak } from '../../test/custom-render';
-import { printElementContents } from '../../test/jestTestFunctions';
 
 const user = userEvent.setup();
 
