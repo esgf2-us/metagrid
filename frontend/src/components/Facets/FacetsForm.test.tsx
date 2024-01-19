@@ -8,6 +8,7 @@ import {
 } from '../../api/mock/fixtures';
 import FacetsForm, { humanizeFacetNames, Props } from './FacetsForm';
 import { customRenderKeycloak } from '../../test/custom-render';
+import { printElementContents } from '../../test/jestTestFunctions';
 
 const user = userEvent.setup();
 
@@ -121,7 +122,7 @@ describe('test FacetsForm component', () => {
     expect(items).toEqual('aims3.llnl.gov\nesgf1.dkrz.de');
 
     // Expect result message to show
-    const resultNotification = getByText('Options copied to clipboard!');
+    const resultNotification = getByText('Data Nodes copied to clipboard!');
     expect(resultNotification).toBeTruthy();
     await user.click(resultNotification);
   });

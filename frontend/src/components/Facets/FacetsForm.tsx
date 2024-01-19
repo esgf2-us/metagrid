@@ -348,6 +348,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                       const isOptionalforDatasets =
                         facetOptions.length > 0 &&
                         facetOptions[0].includes('none');
+                      const facetNameHumanized = humanizeFacetNames(facet);
                       return (
                         <Form.Item
                           key={facet}
@@ -360,9 +361,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                                 style={{ marginLeft: '5px' }}
                                 icon={
                                   <Tooltip
-                                    title={`Copy ${humanizeFacetNames(
-                                      facet
-                                    )}s to clipboard`}
+                                    title={`Copy ${facetNameHumanized}s to clipboard`}
                                   >
                                     <CopyOutlined
                                       style={{ fontSize: '12px' }}
@@ -380,13 +379,16 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                                         })
                                         .join('\n')
                                     );
-                                    showNotice('Options copied to clipboard!', {
-                                      icon: (
-                                        <CopyOutlined
-                                          style={styles.messageAddIcon}
-                                        />
-                                      ),
-                                    });
+                                    showNotice(
+                                      `${facetNameHumanized}s copied to clipboard!`,
+                                      {
+                                        icon: (
+                                          <CopyOutlined
+                                            style={styles.messageAddIcon}
+                                          />
+                                        ),
+                                      }
+                                    );
                                   }
                                 }}
                               ></Button>
