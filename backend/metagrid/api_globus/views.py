@@ -7,14 +7,25 @@ import uuid
 from datetime import datetime, timedelta
 
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseServerError
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from globus_sdk import AccessTokenAuthorizer, TransferClient, TransferData
 
 from metagrid.api_proxy.views import do_request
 
-TRANSFER_TEMP_ENDPOINT = "1889ea03-25ad-4f9f-8110-1ce8833a9d7e"
+ENDPOINT_MAP = {
+    "415a6320-e49c-11e5-9798-22000b9da45e" : "1889ea03-25ad-4f9f-8110-1ce8833a9d7e"
+}
+
+DATANODE_MAP = {
+    "aims3.llnl.gov" : "1889ea03-25ad-4f9f-8110-1ce8833a9d7e"
+}
+
+TEST_SHARDS_MAP = {
+    "esgf-fedtest.llnl.gov" : "esgf-node.llnl.gov"
+}
+
 
 # reserved query keywords
 OFFSET = "offset"
@@ -48,10 +59,11 @@ KEYWORDS = [
 
 def truncate_urls(lst):
     for x in lst:
+        z = x["data_node"]
         for y in x["url"]:
             parts = y.split("|")
             if parts[1] == "Globus":
-                yield (parts[0].split(":")[1])
+                yield (parts[0].split(":")[1], z)
 
 
 def split_value(value):
@@ -125,8 +137,13 @@ def get_files(url_params):  # pragma: no cover
     file_offset = 0
     use_distrib = True
 
-    #    xml_shards = get_solr_shards_from_xml()
-    xml_shards = ["esgf-node.llnl.gov:80/solr"]
+    try:
+        hostname = urllib.parse.urlparse(query_url).hostname  # TODO need to populate the sharts based on the Solr URL
+    except RuntimeError as e:
+        return HttpResponseServerError(f"Malformed URL in search results {e}")
+    if hostname in TEST_SHARDS_MAP:
+        hostname = TEST_SHARDS_MAP[hostname]
+    xml_shards = [f"{hostname}:80/solr"]
     querys = []
     file_query = ["type:File"]
 
@@ -210,7 +227,7 @@ def get_files(url_params):  # pragma: no cover
     # then use the allowed projects as the project query
 
     # Get facets for the file name, URL, checksum
-    file_attributes = ["url"]
+    file_attributes = ["url", "data_node"]
 
     # Solr query parameters
     query_params = dict(
@@ -329,24 +346,35 @@ def do_globus_transfer(request):  # pragma: no cover
 
     task_ids = []  # list of submitted task ids
 
-    urls = []
     endpoint_id = ""
     download_map = {}
-    for file in files_list:
+    for file, data_node in files_list:
         parts = file.split("/")
-        if endpoint_id == "":
+        if data_node in DATANODE_MAP:
+            endpoint_id = DATANODE_MAP[data_node]
+            print("Data node mapping.....")
+        else:
             endpoint_id = parts[0]
-        urls.append("/" + "/".join(parts[1:]))
-    download_map[endpoint_id] = urls
+            if endpoint_id in ENDPOINT_MAP:
+                endpoint_id = ENDPOINT_MAP[endpoint_id]
+        if endpoint_id not in download_map:
+            download_map[endpoint_id] = []
+
+        download_map[endpoint_id].append("/" + "/".join(parts[1:]))
 
     token_authorizer = AccessTokenAuthorizer(access_token)
     transfer_client = TransferClient(authorizer=token_authorizer)
+    print()
+    print("   ---  DEBUG  ---")
+    print(download_map)
+    print()
 
     for source_endpoint, source_files in list(download_map.items()):
+
         # submit transfer request
         task_response = submit_transfer(
             transfer_client,
-            TRANSFER_TEMP_ENDPOINT,
+            source_endpoint,
             source_files,
             target_endpoint,
             target_folder,
