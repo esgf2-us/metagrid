@@ -347,7 +347,7 @@ def do_globus_transfer(request):  # pragma: no cover
         parts = file.split("/")
         if data_node in DATANODE_MAP:
             endpoint_id = DATANODE_MAP[data_node]
-            print("Data node mapping.....") 
+            print("Data node mapping.....")
         else:
             endpoint_id = parts[0]
             if endpoint_id in ENDPOINT_MAP:
