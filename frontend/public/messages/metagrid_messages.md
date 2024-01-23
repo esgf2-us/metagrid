@@ -10,4 +10,3 @@ We now support logins via Globus Auth at LLNL!
 
 This version of Metagrid supports the user of Globus to transfer ESGF datasets to your institutional or personal endpoint. The feature can be accessed at the bottom of the Data Cart page. Institutional _Managed_ endpoints are now supported!
 For more information about Globus Transfers please see: https://app.globus.org/help
-
