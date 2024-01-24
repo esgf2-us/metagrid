@@ -7,7 +7,11 @@ import uuid
 from datetime import datetime, timedelta
 
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseServerError
+from django.http import (
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseServerError,
+)
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from globus_sdk import AccessTokenAuthorizer, TransferClient, TransferData
@@ -15,16 +19,12 @@ from globus_sdk import AccessTokenAuthorizer, TransferClient, TransferData
 from metagrid.api_proxy.views import do_request
 
 ENDPOINT_MAP = {
-    "415a6320-e49c-11e5-9798-22000b9da45e" : "1889ea03-25ad-4f9f-8110-1ce8833a9d7e"
+    "415a6320-e49c-11e5-9798-22000b9da45e": "1889ea03-25ad-4f9f-8110-1ce8833a9d7e"
 }
 
-DATANODE_MAP = {
-    "aims3.llnl.gov" : "1889ea03-25ad-4f9f-8110-1ce8833a9d7e"
-}
+DATANODE_MAP = {"aims3.llnl.gov": "1889ea03-25ad-4f9f-8110-1ce8833a9d7e"}
 
-TEST_SHARDS_MAP = {
-    "esgf-fedtest.llnl.gov" : "esgf-node.llnl.gov"
-}
+TEST_SHARDS_MAP = {"esgf-fedtest.llnl.gov": "esgf-node.llnl.gov"}
 
 
 # reserved query keywords
@@ -138,7 +138,9 @@ def get_files(url_params):  # pragma: no cover
     use_distrib = True
 
     try:
-        hostname = urllib.parse.urlparse(query_url).hostname  # TODO need to populate the sharts based on the Solr URL
+        hostname = urllib.parse.urlparse(
+            query_url
+        ).hostname  # TODO need to populate the sharts based on the Solr URL
     except RuntimeError as e:
         return HttpResponseServerError(f"Malformed URL in search results {e}")
     if hostname in TEST_SHARDS_MAP:
@@ -370,7 +372,6 @@ def do_globus_transfer(request):  # pragma: no cover
     print()
 
     for source_endpoint, source_files in list(download_map.items()):
-
         # submit transfer request
         task_response = submit_transfer(
             transfer_client,

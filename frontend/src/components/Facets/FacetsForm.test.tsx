@@ -101,6 +101,31 @@ describe('test FacetsForm component', () => {
     await user.click(collapseAllBtn);
   });
 
+  it('handles copying facet items to clip board', async () => {
+    const { getByText, getByRole } = customRenderKeycloak(
+      <FacetsForm {...defaultProps} />
+    );
+
+    // Expand the group1 panel
+    const group1Btn = getByText('Group1');
+    expect(group1Btn).toBeTruthy();
+    await user.click(group1Btn);
+
+    // Click the copy facets button
+    const copyBtn = getByRole('img', { name: 'copy' });
+    expect(copyBtn).toBeTruthy();
+    await user.click(copyBtn);
+
+    // Check the clipboard has items
+    const items = await navigator.clipboard.readText();
+    expect(items).toEqual('aims3.llnl.gov\nesgf1.dkrz.de');
+
+    // Expect result message to show
+    const resultNotification = getByText('Data Nodes copied to clipboard!');
+    expect(resultNotification).toBeTruthy();
+    await user.click(resultNotification);
+  });
+
   it('handles changing expand to collapse and vice-versa base on user actions', async () => {
     const { getByText } = customRenderKeycloak(
       <FacetsForm {...defaultProps} />
