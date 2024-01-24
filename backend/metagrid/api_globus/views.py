@@ -124,7 +124,7 @@ def split_value(value):
         # convert listo into array
         return _values
 
-
+# flake8: noqa
 def get_files(url_params):  # pragma: no cover
     solr_url = getattr(
         settings,
