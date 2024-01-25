@@ -97,6 +97,7 @@ const LeftMenu: React.FC<React.PropsWithChildren<Props>> = ({
               style={{ width: '40%', margin: '0 5px' }}
             >
               <Input
+                width="50"
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder="Search for a keyword"

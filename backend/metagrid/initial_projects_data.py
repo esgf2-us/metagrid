@@ -65,6 +65,36 @@ projects = [
         },
     },
     {
+        "name": "CMIP6Plus",
+        "full_name": "Coupled Model Intercomparison Project Phase 6 Plus",
+        "project_url": "https://wcrp-cmip.org/cmip-overview/",
+        "description": "Follow-up to CMIP6 with closely matching configuration. Description of CMIP6 Plus needed.",
+        "facets_by_group": {
+            GROUPS[0]: ["activity_id", "data_node"],
+            GROUPS[1]: [
+                "source_id",
+                "institution_id",
+                "source_type",
+                "experiment_id",
+                "sub_experiment_id",
+            ],
+            GROUPS[2]: [
+                "nominal_resolution",
+            ],
+            GROUPS[3]: [
+                "variant_label",
+                "grid_label",
+            ],
+            GROUPS[4]: [
+                "table_id",
+                "frequency",
+                "realm",
+                "variable_id",
+                "cf_standard_name",
+            ],
+        },
+    },
+    {
         "name": "CMIP5",
         "full_name": "Coupled Model Intercomparison Project Phase 5",
         "project_url": "https://pcmdi.llnl.gov/mips/cmip5/",
@@ -204,7 +234,7 @@ projects = [
         "name": "CREATE-IP",
         "full_name": "Collaborative REAnalysis Technical Environment",
         "description": "The Collaborative REAnalysis Technical Environment (CREATE) is a NASA Climate Model Data Services (CDS) project to collect all available global reanalysis data into one centralized location on NASA’s NCCS Advanced Data Analytics Platform (ADAPT), standardizing data formats, providing analytic capabilities, visualization analysis capabilities, and overall improved access to multiple reanalysis datasets. The CREATE project encompasses two efforts - CREATE-IP and CREATE-V. CREATE-IP is the project that collects and formats the reanalyses data. The list of variables currently available in CREATE-IP is growing over time so please check back frequently.",
-        "project_url" : "https://reanalyses.org/",
+        "project_url": "https://reanalyses.org/",
         "facets_by_group": {
             GROUPS[0]: [
                 "project",

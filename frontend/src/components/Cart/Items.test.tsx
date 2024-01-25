@@ -1,10 +1,4 @@
-import {
-  fireEvent,
-  waitFor,
-  within,
-  screen,
-  cleanup,
-} from '@testing-library/react';
+import { fireEvent, waitFor, within, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { userCartFixture } from '../../api/mock/fixtures';
