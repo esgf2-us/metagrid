@@ -17,6 +17,9 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
+INDEX_ID = ""
+
+
 @api_view()
 @permission_classes([])
 def do_globus_auth(request):
@@ -40,6 +43,73 @@ def do_globus_auth(request):
             **additional_info,
         }
     )
+
+def create_search_response(request):
+
+    res = globus_search(request)
+
+    return   { "response": { "docs" : } }
+
+def globus_search(search):
+
+    if "project" in search:
+        project = search.pop("project")
+        if project != "CMIP6":
+            raise SearchError(f"{self} only contains project=CMIP6 data.")
+    search["type"] = "Dataset"
+    if "latest" not in search:
+        search["latest"] = True
+
+    facets = search.pop("facets")
+    limit = 10
+    offset = 0
+    if "limit" in search:
+        limit = search.pop("limit")
+    if "offset" in search:
+        offset = search.pop("offset")
+
+    if "from" in search:
+        from_field = search.pop("from")
+
+    if "to" in search:
+        to_field = search.pop("to")
+
+    del search["format"]
+
+    facet_arr = [ {"name" : ff, "field_name" : ff } for ff in facets ]
+
+    # booleans need to be strings in the Globus sdk
+    for key, val in search.items():
+        if isinstance(val, bool):
+            search[key] = str(val)
+
+    # build up the query and search
+    query_data = {
+        "q": "",
+        "filters": [
+            {
+                "type": "match_any",
+                "field_name": key,
+                "values": [val] if isinstance(val, str) else val,
+            }
+            for key, val in search.items()
+        ],
+        "facets": facet_arr,
+        "sort": [],
+    }
+    sc = SearchClient()
+
+    res = sc.post_search(INDEX_ID, query_data, limit=limit, offset=offset)
+
+
+    res = []
+    for response in paginator:
+        if not response["total"]:
+            break
+
+        # parse out the CMIP facets from the dataset_id
+        for g in response["gmeta"]:
+            res.append(g["subject"])
 
 
 @csrf_exempt
