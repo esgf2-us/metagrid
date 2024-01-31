@@ -22,7 +22,7 @@ ENDPOINT_MAP = {
     "415a6320-e49c-11e5-9798-22000b9da45e": "1889ea03-25ad-4f9f-8110-1ce8833a9d7e"
 }
 
-DATANODE_MAP = {"aims3.llnl.gov": "1889ea03-25ad-4f9f-8110-1ce8833a9d7e"}
+DATANODE_MAP = {"esgf-node.ornl.gov" : "dea29ae8-bb92-4c63-bdbc-260522c92fe8"}
 
 TEST_SHARDS_MAP = {"esgf-fedtest.llnl.gov": "esgf-node.llnl.gov"}
 
