@@ -50,13 +50,11 @@ const Facets: React.FC<React.PropsWithChildren<Props>> = ({
 
   const [curProject, setCurProject] = React.useState<RawProject>();
 
-  const handleSubmitProjectForm = (selectedProject: {
-    [key: string]: string;
-  }): void => {
+  const handleSubmitProjectForm = (selectedProject: string): void => {
     /* istanbul ignore else */
     if (data) {
       const selectedProj: RawProject | undefined = data.results.find(
-        (obj: RawProject) => obj.name === selectedProject.project
+        (obj: RawProject) => obj.name === selectedProject
       );
       /* istanbul ignore else */
       if (selectedProj) {
@@ -72,6 +70,13 @@ const Facets: React.FC<React.PropsWithChildren<Props>> = ({
       setCurProject(activeSearchQuery.project as RawProject);
     }
   }, [activeSearchQuery]);
+
+  useEffect(() => {
+    if (!isLoading && data && data.results.length > 0) {
+      setCurProject(data.results[0]);
+      onProjectChange(data.results[0]);
+    }
+  }, [isLoading]);
 
   return (
     <div

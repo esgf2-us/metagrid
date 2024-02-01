@@ -1,15 +1,12 @@
-import { QuestionCircleOutlined, SelectOutlined } from '@ant-design/icons';
-import { Alert, Form, Popconfirm, Select, Spin } from 'antd';
+import { Alert, Form, Select, Spin } from 'antd';
 import React from 'react';
 import { ResponseError } from '../../api';
 import { leftSidebarTargets } from '../../common/reactJoyrideSteps';
-import { objectIsEmpty } from '../../common/utils';
-import Button from '../General/Button';
 import { ActiveSearchQuery } from '../Search/types';
 import { RawProject, RawProjects } from './types';
 
 const styles = {
-  form: { width: '280px' },
+  form: { width: '360px' },
 };
 
 export type Props = {
@@ -19,7 +16,7 @@ export type Props = {
   };
   apiIsLoading: boolean;
   apiError?: ResponseError;
-  onFinish: (allValues: { [key: string]: string }) => void;
+  onFinish: (selection: string) => void;
 };
 
 const ProjectsForm: React.FC<React.PropsWithChildren<Props>> = ({
@@ -35,6 +32,7 @@ const ProjectsForm: React.FC<React.PropsWithChildren<Props>> = ({
    */
   React.useEffect(() => {
     projectForm.resetFields();
+    projectForm.submit();
   }, [projectForm, activeSearchQuery.project]);
 
   // Note, have to wrap Alert and Spin with Form to suppress warning about
@@ -61,6 +59,9 @@ const ProjectsForm: React.FC<React.PropsWithChildren<Props>> = ({
       project:
         (activeSearchQuery.project as RawProject).name || results[0].name,
     };
+    const projectOptions = results.map((project) => {
+      return { value: project.name, label: project.name };
+    });
 
     return (
       <div data-testid="project-form">
@@ -69,53 +70,22 @@ const ProjectsForm: React.FC<React.PropsWithChildren<Props>> = ({
           layout="inline"
           size="small"
           initialValues={initialValues}
-          onFinish={onFinish}
+          onFinish={() => {
+            onFinish(projectForm.getFieldValue('projectDropdown') as string);
+          }}
         >
-          <Form.Item
-            name="project"
-            rules={[{ required: true, message: 'Project is required' }]}
-          >
+          <Form.Item name="projectDropdown">
             <Select
+              defaultValue={initialValues.project}
               data-testid="project-form-select"
               className={leftSidebarTargets.selectProjectBtn.class()}
               style={styles.form}
+              onChange={() => {
+                projectForm.submit();
+              }}
               showArrow
-            >
-              {results.map((projectObj: RawProject, index: number) => (
-                <Select.Option key={projectObj.name} value={projectObj.name}>
-                  <span data-testid={`project_${index}`}>
-                    {projectObj.name}
-                  </span>
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item>
-            {!objectIsEmpty(activeSearchQuery.project) &&
-            !objectIsEmpty(activeSearchQuery.activeFacets) ? (
-              <Popconfirm
-                title="Your filters will be cleared."
-                onConfirm={() => projectForm.submit()}
-                icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
-                placement="right"
-              >
-                <span>
-                  <Button
-                    className={leftSidebarTargets.projectSelectLeftSideBtn.class()}
-                    type="primary"
-                    htmlType="submit"
-                    icon={<SelectOutlined />}
-                  ></Button>
-                </span>
-              </Popconfirm>
-            ) : (
-              <Button
-                className={leftSidebarTargets.projectSelectLeftSideBtn.class()}
-                type="primary"
-                htmlType="submit"
-                icon={<SelectOutlined />}
-              ></Button>
-            )}
+              options={projectOptions}
+            />
           </Form.Item>
         </Form>
       </div>
