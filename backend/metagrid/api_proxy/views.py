@@ -15,9 +15,9 @@ from django.views.decorators.http import require_http_methods
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+from globus_sdk import SearchClient, SearchQuery
 
-
-INDEX_ID = ""
+INDEX_ID = "d927e2d9-ccdb-48e4-b05d-adbc3d97bbc5"
 
 
 @api_view()
@@ -44,29 +44,15 @@ def do_globus_auth(request):
         }
     )
 
-def create_search_response(request):
-
-    res = globus_search(request)
-
-    return   { "response": { "docs" : } }
-
 def globus_search(search):
 
-    if "project" in search:
-        project = search.pop("project")
-        if project != "CMIP6":
-            raise SearchError(f"{self} only contains project=CMIP6 data.")
-    search["type"] = "Dataset"
-    if "latest" not in search:
-        search["latest"] = True
-
-    facets = search.pop("facets")
+#    print(search)
     limit = 10
     offset = 0
     if "limit" in search:
-        limit = search.pop("limit")
+        limit = int(search.pop("limit")[0])
     if "offset" in search:
-        offset = search.pop("offset")
+        offset = int(search.pop("offset")[0])
 
     if "from" in search:
         from_field = search.pop("from")
@@ -74,43 +60,79 @@ def globus_search(search):
     if "to" in search:
         to_field = search.pop("to")
 
-    del search["format"]
+    # remove facets that don't fit:
+    if "format" in search:
+        del search["format"]
+    if "query" in search:
+        del search["query"]
 
-    facet_arr = [ {"name" : ff, "field_name" : ff } for ff in facets ]
+    if "type" not in search: # or search["type"] == ["Dataset"]:
+        search["type"] = "Dataset" 
+    elif search["type"] == ["File"]:
+        #  File
+        search["type"] = "File"
+        if "dataset_id" in search:
+            id_parm = search["dataset_id"]
+            query = ( 
+                SearchQuery()
+                .add_filter("dataset_id", id_parm)
+            )
+            resp = SearchClient().post_search(INDEX_ID, query, limit=1)
+            docs = []
+            x = resp["gmeta"]
+            rec = x[0]['entries'][0]['content']
+            rec['id'] = x[0]['subject']
+            docs.append(rec)       
 
-    # booleans need to be strings in the Globus sdk
-    for key, val in search.items():
-        if isinstance(val, bool):
-            search[key] = str(val)
+            ret = { "response" : { "numFound" : resp["total"], "docs" : docs } }
+            return ret
+        else:
+            #   this is a free file query
+            pass
 
-    # build up the query and search
-    query_data = {
-        "q": "",
-        "filters": [
-            {
-                "type": "match_any",
-                "field_name": key,
-                "values": [val] if isinstance(val, str) else val,
-            }
-            for key, val in search.items()
-        ],
-        "facets": facet_arr,
-        "sort": [],
-    }
-    sc = SearchClient()
+    facets = [""]
+    if "facets" in search:
+        facets = search.pop('facets')
 
-    res = sc.post_search(INDEX_ID, query_data, limit=limit, offset=offset)
+    query = SearchQuery()
 
+    for x in search:
+        y = search[x]
+        if ',' in y[0]:
+            y = y[0].split(',')
+        query.add_filter(x, y, type="match_any" )
 
-    res = []
-    for response in paginator:
-        if not response["total"]:
-            break
+    # handle the facets
+    for ff in facets[0].split(', '):
+       query.add_facet(ff, ff)
 
-        # parse out the CMIP facets from the dataset_id
-        for g in response["gmeta"]:
-            res.append(g["subject"])
+    response = SearchClient().post_search(INDEX_ID, query, limit=limit, offset=offset)
+    # unpack the response: facets and records (gmeta/docs)
+    facet_map = {}
+    if "facet_results" in response:
+        fr=response["facet_results"]
+        for x in fr:
+            arr = []
+            for y in x["buckets"]:
+                arr.append(y['value'])
+                arr.append(y['count'])
+            facet_map[x['name']] = arr
 
+    # unpack the dataset Records
+    docs = []
+    for x in response["gmeta"]:
+        rec = x['entries'][0]['content']
+        rec['id'] = x['subject']
+        docs.append(rec)
+
+    # package the response
+    ret = { "response" : { "numFound" : response["total"], "docs" : docs } }
+    if len(facet_map) > 0:
+           ret["facet_counts"] = { "facet_fields" : facet_map } 
+
+    return ret
+
+ 
 
 @csrf_exempt
 def do_globus_logout(request):
@@ -122,13 +144,15 @@ def do_globus_logout(request):
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
 def do_search(request):
-    esgf_host = getattr(
-        settings,
-        "SEARCH_URL",
-        "",
-    )
-    return do_request(request, esgf_host)
 
+#    try:
+    jo = globus_search(dict(request.GET).copy())
+
+    # except Exception as e:
+    #     print(f"ERROR: {e}")
+    #     return HttpResponseServerError(f"An error has occurred: {e}")
+
+    return HttpResponse(json.dumps(jo))
 
 @require_http_methods(["POST"])
 @csrf_exempt
