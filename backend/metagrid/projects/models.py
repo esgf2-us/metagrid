@@ -81,6 +81,7 @@ class Project(models.Model):
             "All (except CMIP6)": {"project!": "CMIP6"},
             "input4MIPs": {"activity_id": self.name},
             "obs4MIPs": {"activity_id": self.name},
+            "CMIP5": {"project": "CMIP5,TAMIP,EUCLIPSE,LUCID,GeoMIP,PMIP3"},
         }
         return project_params.get(self.name, {"project": self.name})
 
