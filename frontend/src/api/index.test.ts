@@ -688,7 +688,7 @@ describe('test startGlobusTransfer function', () => {
       startGlobusTransfer('asdfs', 'asdfs', 'endpointTest', 'path', 'id', [
         'clt',
       ])
-    ).rejects.toThrow(apiRoutes.globusTransfer.handleErrorMsg(404));
+    ).rejects.toThrow(apiRoutes.globusTransfer.handleErrorMsg(408));
   });
 });
 

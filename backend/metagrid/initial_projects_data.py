@@ -234,7 +234,7 @@ projects = [
         "name": "CREATE-IP",
         "full_name": "Collaborative REAnalysis Technical Environment",
         "description": "The Collaborative REAnalysis Technical Environment (CREATE) is a NASA Climate Model Data Services (CDS) project to collect all available global reanalysis data into one centralized location on NASA’s NCCS Advanced Data Analytics Platform (ADAPT), standardizing data formats, providing analytic capabilities, visualization analysis capabilities, and overall improved access to multiple reanalysis datasets. The CREATE project encompasses two efforts - CREATE-IP and CREATE-V. CREATE-IP is the project that collects and formats the reanalyses data. The list of variables currently available in CREATE-IP is growing over time so please check back frequently.",
-        "project_url": "https://reanalyses.org/",
+        "project_url" : "https://reanalyses.org/",
         "facets_by_group": {
             GROUPS[0]: [
                 "project",
