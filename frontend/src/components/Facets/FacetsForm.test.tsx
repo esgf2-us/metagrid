@@ -118,7 +118,7 @@ describe('test FacetsForm component', () => {
 
     // Check the clipboard has items
     const items = await navigator.clipboard.readText();
-    expect(items).toEqual('aims3.llnl.gov\nesgf1.dkrz.de');
+    expect(items).toEqual('aims3.llnl.gov (3)\nesgf1.dkrz.de (5)');
 
     // Expect result message to show
     const resultNotification = getByText('Data Nodes copied to clipboard!');
