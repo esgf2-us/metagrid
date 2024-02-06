@@ -498,7 +498,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
             <Route path="/cart" element={<Navigate to="/cart/items" />} />
             {generateRedirects()}
             <Route
-              path="/search"
+              path="/search/*"
               element={
                 <Layout.Sider
                   style={styles.bodySider}
@@ -543,7 +543,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
             <Layout.Content style={styles.bodyContent}>
               <Routes>
                 <Route
-                  path="/search"
+                  path="/search/*"
                   element={
                     <>
                       <Breadcrumb>

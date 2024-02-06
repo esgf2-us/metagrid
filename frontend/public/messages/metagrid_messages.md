@@ -1,6 +1,11 @@
 # Welcome to the Metagrid Beta test v1.0.10
 
-Use the Help link to find information on how to contact support or report any issues you find.
+To view the latest documentation and FAQ, please visit this page:
+[https://esgf.github.io/esgf-user-support/metagrid.html](https://esgf.github.io/esgf-user-support/metagrid.html)
+
+# NOTICE
+
+All ESGF services and data hosted at LLNL will go **offline on Friday 23 February starting ~8am PST** for a weekend site maintenance period. We expect to restore services on Monday 27 February. In the meantime please visit our partner sites listed here, or use the Federated Nodes link: https://esgf.github.io/nodes.html
 
 ## Globus Auth
 
@@ -8,10 +13,9 @@ We now support logins via Globus Auth at LLNL.
 
 ## Globus Transfers enabled
 
-This version of Metagrid supports the user of Globus to transfer ESGF datasets to your institutional or personal endpoint. The feature can be accessed at the bottom of the Data Cart page. At present only data published at LLNL is available for Globus Transfer via Metagrid. Other sites may continue to have data transferrable using the *legacy* CoG interface.
-Note: for the time being, Institutional *Managed* endpoints aren't supported, but support for those is forthcoming.
-For more information about Globus Transfers please see:  https://app.globus.org/help
-
+This version of Metagrid supports the user of Globus to transfer ESGF datasets to your institutional or personal endpoint. The feature can be accessed at the bottom of the Data Cart page. At present only data published at LLNL is available for Globus Transfer via Metagrid. Other sites may continue to have data transferrable using the _legacy_ CoG interface.
+Note: for the time being, Institutional _Managed_ endpoints aren't supported, but support for those is forthcoming.
+For more information about Globus Transfers please see: https://app.globus.org/help
 
 ## CORDEX data _not_ supported
 
