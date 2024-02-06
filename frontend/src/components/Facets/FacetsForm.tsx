@@ -375,7 +375,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                                     navigator.clipboard.writeText(
                                       facetOptions
                                         .map((item) => {
-                                          return item[0];
+                                          return `${item[0]} (${item[1]})`;
                                         })
                                         .join('\n')
                                     );
