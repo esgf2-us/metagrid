@@ -699,6 +699,42 @@ export const startGlobusTransfer = async (
     });
 };
 
+export interface Endpoint {
+  canonical_name: string;
+  contact_email: string;
+  display_name: string;
+  entity_type: string;
+  id: string;
+  owner_id: string;
+  owner_string: string;
+  subscription_id: string;
+}
+
+export interface GlobusEndpoint {
+  data: Endpoint[];
+  status: number;
+  statusText: string;
+  headers: object;
+  config: object;
+}
+
+export const startSearchGlobusEndpoints = async (
+  searchText: string
+): Promise<GlobusEndpoint> => {
+  return axios
+    .get(apiRoutes.globusSearchEndpoints.path, {
+      params: { search_text: searchText },
+    })
+    .then((resp) => {
+      return resp;
+    })
+    .catch((error: ResponseError) => {
+      throw new Error(
+        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusSearchEndpoints)
+      );
+    });
+};
+
 /**
  * Parses the results of the node status API to simplify the data structure.
  */

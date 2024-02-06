@@ -372,7 +372,6 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                             mode="multiple"
                             style={{ width: '100%' }}
                             tokenSeparators={[',']}
-                            showArrow
                             getPopupContainer={(triggerNode) =>
                               // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
                               triggerNode.parentElement

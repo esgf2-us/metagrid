@@ -79,7 +79,6 @@ const ProjectsForm: React.FC<React.PropsWithChildren<Props>> = ({
               data-testid="project-form-select"
               className={leftSidebarTargets.selectProjectBtn.class()}
               style={styles.form}
-              showArrow
             >
               {results.map((projectObj: RawProject, index: number) => (
                 <Select.Option key={projectObj.name} value={projectObj.name}>
