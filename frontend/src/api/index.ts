@@ -8,7 +8,7 @@
 import 'setimmediate'; // Added because in Jest 27, setImmediate is not defined, causing test errors
 import humps from 'humps';
 import queryString from 'query-string';
-import { AxiosResponse } from 'axios';
+import { AxiosResponse, AxiosError } from 'axios';
 import axios from '../lib/axios';
 import {
   RawUserCart,
@@ -692,10 +692,12 @@ export const startGlobusTransfer = async (
     .then((resp) => {
       return resp;
     })
-    .catch((error: ResponseError) => {
-      throw new Error(
-        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusTransfer)
-      );
+    .catch((error: AxiosError) => {
+      let message = '';
+      if (error.response) {
+        message = error.response.data;
+      }
+      throw new Error(message);
     });
 };
 
