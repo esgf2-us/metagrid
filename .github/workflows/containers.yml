@@ -7,10 +7,14 @@ on:
 
   pull_request:
 
+permissions: {}
+
 jobs:
   frontend:
     name: Build/release frontend container
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
     steps:
       - uses: actions/checkout@v3
       - uses: docker/setup-buildx-action@v2
@@ -26,10 +30,12 @@ jobs:
           context: frontend/
           file: frontend/docker/production/react/Dockerfile
           push: true
-          tags: ghcr.io/aims-group/metagrid-frontend:latest
+          tags: ghcr.io/esgf2-us/metagrid-frontend:latest
   backend:
     name: Build/release backend container
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
     steps:
       - uses: actions/checkout@v3
       - uses: docker/setup-buildx-action@v2
@@ -45,4 +51,4 @@ jobs:
           context: backend/
           file: backend/docker/production/django/Dockerfile
           push: true
-          tags: ghcr.io/aims-group/metagrid-backend:latest
+          tags: ghcr.io/esgf2-us/metagrid-backend:latest
