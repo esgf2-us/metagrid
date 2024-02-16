@@ -4,9 +4,8 @@ on:
   push:
     tags:
       - v.*
+
   pull_request:
-    branches:
-      - v.*
 
 jobs:
   frontend:
