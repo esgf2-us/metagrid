@@ -330,6 +330,7 @@ it('fetches the data node status every defined interval', () => {
   });
   jest.useRealTimers();
 });
+
 describe('User cart', () => {
   it('handles authenticated user adding and removing items from cart', async () => {
     const {

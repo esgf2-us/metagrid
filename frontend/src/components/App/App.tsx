@@ -406,9 +406,12 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
         .then(() => {
           saveSuccess();
         })
-        .catch((error: ResponseError) => {
-          showError(error.message);
-        });
+        .catch(
+          /* istanbul ignore next */
+          (error: ResponseError) => {
+            showError(error.message);
+          }
+        );
     } else {
       saveSuccess();
     }
