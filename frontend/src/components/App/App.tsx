@@ -279,7 +279,11 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   };
 
   const handleProjectChange = (selectedProject: RawProject): void => {
-    setActiveSearchQuery(projectBaseQuery(selectedProject));
+    if (selectedProject.pk !== activeSearchQuery.project.pk) {
+      setActiveSearchQuery(projectBaseQuery(selectedProject));
+    } else {
+      setActiveSearchQuery({ ...activeSearchQuery, project: selectedProject });
+    }
   };
 
   const handleRemoveFilter = (removedTag: TagValue, type: TagType): void => {

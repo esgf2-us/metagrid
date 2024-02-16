@@ -74,10 +74,12 @@ const ProjectsForm: React.FC<React.PropsWithChildren<Props>> = ({
             onFinish(projectForm.getFieldValue('projectDropdown') as string);
           }}
         >
-          <Form.Item name="projectDropdown">
+          <Form.Item
+            data-testid="project-form-select"
+            name="projectDropdown"
+            initialValue={initialValues.project}
+          >
             <Select
-              defaultValue={initialValues.project}
-              data-testid="project-form-select"
               className={leftSidebarTargets.selectProjectBtn.class()}
               style={styles.form}
               onChange={() => {

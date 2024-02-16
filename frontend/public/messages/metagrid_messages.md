@@ -5,7 +5,7 @@ To view the latest documentation and FAQ, please visit this page:
 
 # NOTICE
 
-All ESGF services and data hosted at LLNL will go **offline on Friday 23 February starting ~8am PST** for a weekend site maintenance period. We expect to restore services on Monday 27 February. In the meantime please visit our partner sites listed here, or use the Federated Nodes link: https://esgf.github.io/nodes.html
+All ESGF services and data hosted at LLNL will go **offline on Friday 23 February starting ~8am PST** for a weekend site maintenance period. We expect to restore services on Monday 27 February. In the meantime please visit our partner sites listed here, or use the Federated Nodes link: [https://esgf.github.io/nodes.html](https://esgf.github.io/esgf-user-support/metagrid.html)
 
 ## Globus Auth
 

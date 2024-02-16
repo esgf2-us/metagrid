@@ -57,19 +57,12 @@ const Facets: React.FC<React.PropsWithChildren<Props>> = ({
         (obj: RawProject) => obj.name === selectedProject
       );
       /* istanbul ignore else */
-      if (selectedProj) {
+      if (selectedProj && activeSearchQuery.textInputs) {
         onProjectChange(selectedProj);
         setCurProject(selectedProj);
       }
     }
   };
-
-  useEffect(() => {
-    /* istanbul ignore else */
-    if (activeSearchQuery.project) {
-      setCurProject(activeSearchQuery.project as RawProject);
-    }
-  }, [activeSearchQuery]);
 
   useEffect(() => {
     if (!isLoading && data && data.results.length > 0) {
