@@ -12,7 +12,7 @@ declare global {
   }
 }
 
-function getConfig(name: string): string {
+export function getConfig(name: string): string {
   let value = '';
 
   if (window && window.ENV) {
