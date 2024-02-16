@@ -77,4 +77,6 @@ export const djangoLoginUrl = getConfig('REACT_APP_DJANGO_LOGIN_URL');
 export const djangoLogoutUrl = getConfig('REACT_APP_DJANGO_LOGOUT_URL');
 
 // Authentication Method
-export const authenticationMethod = getConfig('REACT_APP_AUTHENTICATION_METHOD')
+export const authenticationMethod = getConfig(
+  'REACT_APP_AUTHENTICATION_METHOD'
+);
