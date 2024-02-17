@@ -418,17 +418,13 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   };
 
   const handleShareSearchQuery = (): void => {
-    const shareSuccess = (): void => {
-      // copy link to clipboard
-      /* istanbul ignore next */
-      if (navigator && navigator.clipboard) {
-        navigator.clipboard.writeText(getUrlFromSearch(activeSearchQuery));
-        showNotice('Search copied to clipboard!', {
-          icon: <ShareAltOutlined style={styles.messageAddIcon} />,
-        });
-      }
-    };
-    shareSuccess();
+    /* istanbul ignore else */
+    if (navigator && navigator.clipboard) {
+      navigator.clipboard.writeText(getUrlFromSearch(activeSearchQuery));
+      showNotice('Search copied to clipboard!', {
+        icon: <ShareAltOutlined style={styles.messageAddIcon} />,
+      });
+    }
   };
 
   const handleRemoveSearchQuery = (searchUUID: string): void => {
