@@ -1224,7 +1224,7 @@ describe('DatasetDownload form tests', () => {
   });
 
   // TODO: Figure out why this test passes locally, but fails when run in the github CI
-  xit('Perform Transfer process when sign in tokens and endpoint are BOTH ready', async () => {
+  it('Perform Transfer process when sign in tokens and endpoint are BOTH ready', async () => {
     // Setting the tokens so that the sign-in step should be completed
     mockSaveValue(CartStateKeys.cartItemSelections, userCartFixture());
     mockSaveValue(GlobusStateKeys.refreshToken, 'refreshToken');
@@ -1456,6 +1456,7 @@ describe('Testing globus transfer related failures', () => {
     jest.resetModules();
   });
 
+  // TODO: Figure out why this test passes locally, but fails when run in the github CI
   it('Shows an error message if transfer task fails', async () => {
     server.use(
       rest.get(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
@@ -1475,8 +1476,7 @@ describe('Testing globus transfer related failures', () => {
       access_token: '',
       refresh_expires_in: 0,
       refresh_token: 'something',
-      scope:
-        'openid profile email offline_access urn:globus:auth:scope:transfer.api.globus.org:all',
+      scope: 'openid profile email offline_access ',
       token_type: '',
     } as GlobusTokenResponse);
     mockSaveValue(
@@ -1530,7 +1530,7 @@ describe('Testing globus transfer related failures', () => {
   /** Until that is done, this test will fail and will need to use istanbul ignore statements
    * for the mean time.
    */
-  xit('Shows error message if url tokens are not valid for transfer', async () => {
+  it('Shows error message if url tokens are not valid for transfer', async () => {
     // Setting the tokens so that the sign-in step should be skipped
     mockSaveValue(CartStateKeys.cartItemSelections, userCartFixture());
     mockSaveValue(GlobusStateKeys.continueGlobusPrepSteps, true);
