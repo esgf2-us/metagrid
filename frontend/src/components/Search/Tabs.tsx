@@ -104,10 +104,132 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({
   const showAdditionalTab =
     showESDOC || showQualityFlags || showAdditionalLinks;
 
+  const tabList = [
+    {
+      key: '1',
+      disabled: record.retracted === true,
+      label: <div className={innerDataRowTargets.filesTab.class()}>Files</div>,
+      children: (
+        <FilesTable
+          id={record.id}
+          numResults={record.number_of_files}
+          filenameVars={filenameVars}
+        />
+      ),
+    },
+    {
+      key: '2',
+      disabled: record.retracted === true,
+      label: (
+        <div className={innerDataRowTargets.metadataTab.class()}>Metadata</div>
+      ),
+      children: (
+        <>
+          <h4>Displaying {Object.keys(record).length} keys</h4>
+          <AutoComplete
+            style={{ width: '100%' }}
+            className={innerDataRowTargets.metadataLookupField.class()}
+            options={metaData}
+            placeholder="Lookup a key..."
+            filterOption={
+              /* istanbul ignore next */ (inputValue, option) =>
+                (option as Record<'value', string>).value
+                  .toUpperCase()
+                  .indexOf(inputValue.toUpperCase()) !== -1
+            }
+          />
+          <Divider />
+          {Object.keys(record).map((key) => (
+            <p key={key} style={{ margin: 0 }}>
+              <span style={{ fontWeight: 'bold' }}>{key}</span>:{' '}
+              {String(record[key])}
+            </p>
+          ))}
+        </>
+      ),
+    },
+  ];
+
+  if (showCitation) {
+    tabList.push({
+      key: '3',
+      disabled: record.retracted === true,
+      label: (
+        <div className={innerDataRowTargets.citationTab.class()}>Citation</div>
+      ),
+      children: (
+        <Citation
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          url={record.citation_url![0]}
+        />
+      ),
+    });
+  }
+
+  if (showAdditionalTab) {
+    tabList.push({
+      key: '4',
+      disabled: record.retracted === true,
+      label: (
+        <div className={innerDataRowTargets.additionalTab.class()}>
+          Additional
+        </div>
+      ),
+      children: (
+        <>
+          {showAdditionalLinks && additionalLinks}
+          {showESDOC &&
+            ((record.further_info_url as unknown) as string)[0] !== '' && (
+              <Button
+                type="link"
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                href={record.further_info_url![0]}
+                target="_blank"
+              >
+                ES-DOC
+              </Button>
+            )}
+          {showQualityFlags && (
+            <Button
+              type="link"
+              href="https://esgf-node.llnl.gov/projects/obs4mips/DatasetIndicators"
+              target="_blank"
+            >
+              <Popover
+                placement="topLeft"
+                content={
+                  <img
+                    src={qualityFlagsImg}
+                    alt="Quality Flags Indicator"
+                  ></img>
+                }
+              >
+                <span style={styles.qualityFlagsRow}>
+                  {Object.keys(qualityFlags).map((key) => (
+                    <QualityFlag
+                      index={key}
+                      color={qualityFlags[key]}
+                      key={key}
+                    />
+                  ))}
+                </span>
+              </Popover>
+            </Button>
+          )}
+        </>
+      ),
+    });
+  }
+
   return (
-    // Disable all tabs excep metadata if the record is retracted
-    <TabsD activeKey={record.retracted === true ? '2' : undefined}>
-      <TabsD.TabPane
+    <TabsD
+      activeKey={record.retracted === true ? '2' : undefined}
+      items={tabList}
+    />
+  );
+  // Disable all tabs excep metadata if the record is retracted
+  /* <TabsD activeKey={record.retracted === true ? '2' : undefined} />;
+  <TabsD.TabPane
         disabled={record.retracted === true}
         tab={<div className={innerDataRowTargets.filesTab.class()}>Files</div>}
         key="1"
@@ -118,7 +240,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({
           filenameVars={filenameVars}
         />
       </TabsD.TabPane>
-      <TabsD.TabPane
+  <TabsD.TabPane
         tab={
           <div className={innerDataRowTargets.metadataTab.class()}>
             Metadata
@@ -133,7 +255,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({
           options={metaData}
           placeholder="Lookup a key..."
           filterOption={
-            /* istanbul ignore next */ (inputValue, option) =>
+            /* istanbul ignore next  (inputValue, option) =>
               (option as Record<'value', string>).value
                 .toUpperCase()
                 .indexOf(inputValue.toUpperCase()) !== -1
@@ -147,7 +269,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({
           </p>
         ))}
       </TabsD.TabPane>
-      {showCitation && (
+  {showCitation && (
         <TabsD.TabPane
           disabled={record.retracted === true}
           tab={
@@ -163,7 +285,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({
           />
         </TabsD.TabPane>
       )}
-      {showAdditionalTab && (
+  {showAdditionalTab && (
         <TabsD.TabPane
           disabled={record.retracted === true}
           tab={
@@ -213,9 +335,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({
             </Button>
           )}
         </TabsD.TabPane>
-      )}
-    </TabsD>
-  );
+      )}*/
 };
 
 export default Tabs;
