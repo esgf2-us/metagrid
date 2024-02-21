@@ -5,7 +5,15 @@ const PENV = process.env;
 beforeEach(() => {
   jest.resetModules();
 
-  process.env = {};
+  let env = process.env;
+
+  try {
+    delete env['REACT_APP_METAGRID_API_URL'];
+  } catch {
+    console.log('REACT_APP_METAGRID_API_URL not defined');
+  }
+
+  process.env = env;
 
   window.ENV = {};
 });
