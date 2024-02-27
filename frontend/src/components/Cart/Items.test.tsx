@@ -1,6 +1,7 @@
 import { fireEvent, waitFor, within, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
+import { useSetRecoilState } from 'recoil';
 import { userCartFixture } from '../../api/mock/fixtures';
 import { rest, server } from '../../api/mock/server';
 import apiRoutes from '../../api/routes';
@@ -9,10 +10,10 @@ import Items, { Props } from './Items';
 import { getRowName } from '../../test/jestTestFunctions';
 import { getSearchFromUrl } from '../../common/utils';
 import App from '../App/App';
-import { ActiveSearchQuery } from '../Search/types';
+import { ActiveSearchQuery, RawSearchResults } from '../Search/types';
+import { userCartItems } from '../App/recoil/atoms';
 
 const defaultProps: Props = {
-  userCart: userCartFixture(),
   onUpdateCart: jest.fn(),
   onClearCart: jest.fn(),
 };
@@ -145,7 +146,10 @@ describe('test the cart items component', () => {
     );
 
     const { getByRole, getByTestId } = customRenderKeycloak(
-      <Items {...defaultProps} />
+      <Items {...defaultProps} />,
+      {},
+      true,
+      (snapshot) => snapshot.set(userCartItems, userCartFixture())
     );
 
     // Check first row renders and click the checkbox

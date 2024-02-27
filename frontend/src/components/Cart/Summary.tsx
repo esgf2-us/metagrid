@@ -8,7 +8,6 @@ import { cartTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import { formatBytes } from '../../common/utils';
 import { RawSearchResult, RawSearchResults } from '../Search/types';
-import { UserCart } from './types';
 import { GlobusTaskItem } from '../Globus/types';
 import GlobusStateKeys, { globusTaskItems } from '../Globus/recoil/atom';
 import { saveSessionValue } from '../../api';
@@ -28,7 +27,7 @@ const styles: CSSinJS = {
 };
 
 export type Props = {
-  userCart: UserCart | [];
+  userCart: RawSearchResults | [];
 };
 
 const Summary: React.FC<React.PropsWithChildren<Props>> = ({ userCart }) => {

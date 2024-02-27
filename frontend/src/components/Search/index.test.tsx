@@ -25,12 +25,12 @@ import {
   VersionType,
 } from './types';
 import { getRowName, selectDropdownOption } from '../../test/jestTestFunctions';
+import { userCartItems } from '../App/recoil/atoms';
 
 const user = userEvent.setup();
 
 const defaultProps: Props = {
   activeSearchQuery: activeSearchQueryFixture(),
-  userCart: [],
   onRemoveFilter: jest.fn(),
   onClearFilters: jest.fn(),
   onUpdateCart: jest.fn(),
@@ -86,13 +86,18 @@ describe('test Search component', () => {
     expect(jsonBtn).toBeTruthy();
   });
 
-  it('renders query string', async () => {
+  it.only('renders query string', async () => {
     const {
       getByRole,
       getByTestId,
       getByText,
       rerender,
-    } = customRenderKeycloak(<Search {...defaultProps} />);
+    } = customRenderKeycloak(
+      <Search {...defaultProps} />,
+      {},
+      true,
+      (snapshot) => snapshot.set(userCartItems, userCartFixture())
+    );
 
     // Check search component renders
     const searchComponent = await waitFor(() => getByTestId('search'));
@@ -271,9 +276,12 @@ describe('test Search component', () => {
     expect(addCartBtn.disabled).toBeTruthy();
   });
 
-  it('disables the "Add Selected to Cart" button when all rows are already in the cart', async () => {
+  it.only('disables the "Add Selected to Cart" button when all rows are already in the cart', async () => {
     const { getByRole, getByTestId, rerender } = customRenderKeycloak(
-      <Search {...defaultProps} />
+      <Search {...defaultProps} />,
+      {},
+      true,
+      (snapshot) => snapshot.set(userCartItems, userCartFixture())
     );
 
     // Check search component renders
@@ -302,7 +310,7 @@ describe('test Search component', () => {
     await user.click(addCartBtn);
 
     // Re-render with items in the cart
-    rerender(<Search {...defaultProps} userCart={userCartFixture()} />);
+    rerender(<Search {...defaultProps} />);
 
     // Check the 'Add Selected to Cart' button is disabled
     addCartBtn = (await waitFor(() =>

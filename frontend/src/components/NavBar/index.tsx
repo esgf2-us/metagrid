@@ -12,14 +12,12 @@ import './NavBar.css';
 import RightMenu from './RightMenu';
 
 export type Props = {
-  numCartItems: number;
   numSavedSearches: number;
   onTextSearch: (selectedProject: RawProject, text: string) => void;
   supportModalVisible: (visible: boolean) => void;
 };
 
 const NavBar: React.FC<React.PropsWithChildren<Props>> = ({
-  numCartItems,
   numSavedSearches,
   onTextSearch,
   supportModalVisible,
@@ -57,7 +55,6 @@ const NavBar: React.FC<React.PropsWithChildren<Props>> = ({
         <div className="navbar-right">
           <RightMenu
             mode="horizontal"
-            numCartItems={numCartItems}
             numSavedSearches={numSavedSearches}
             supportModalVisible={supportModalVisible}
           ></RightMenu>
@@ -78,7 +75,6 @@ const NavBar: React.FC<React.PropsWithChildren<Props>> = ({
         >
           <RightMenu
             mode="inline"
-            numCartItems={numCartItems}
             numSavedSearches={numSavedSearches}
             supportModalVisible={supportModalVisible}
           ></RightMenu>

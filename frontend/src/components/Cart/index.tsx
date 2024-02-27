@@ -10,7 +10,6 @@ import { UserSearchQueries, UserSearchQuery } from './types';
 import { NodeStatusArray } from '../NodeStatus/types';
 
 export type Props = {
-  userCart: RawSearchResults | [];
   userSearchQueries: UserSearchQueries | [];
   onUpdateCart: (item: RawSearchResults, operation: 'add' | 'remove') => void;
   onClearCart: () => void;
@@ -20,7 +19,6 @@ export type Props = {
 };
 
 const Cart: React.FC<React.PropsWithChildren<Props>> = ({
-  userCart,
   userSearchQueries,
   onUpdateCart,
   onClearCart,
@@ -56,7 +54,6 @@ const Cart: React.FC<React.PropsWithChildren<Props>> = ({
       ),
       children: (
         <Items
-          userCart={userCart}
           onUpdateCart={onUpdateCart}
           onClearCart={onClearCart}
           nodeStatus={nodeStatus}

@@ -7,9 +7,9 @@ import {
 } from '../../api/mock/fixtures';
 import Cart, { Props } from './index';
 import { customRenderKeycloak } from '../../test/custom-render';
+import { userCartItems } from '../App/recoil/atoms';
 
 const defaultProps: Props = {
-  userCart: userCartFixture(),
   userSearchQueries: userSearchQueriesFixture(),
   onUpdateCart: jest.fn(),
   onClearCart: jest.fn(),
@@ -38,9 +38,13 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
-it('handles tab switching and saved search actions', async () => {
+it.only('handles tab switching and saved search actions', async () => {
+  const mockedState = userCartFixture();
   const { getByRole, getByTestId } = customRenderKeycloak(
-    <Cart {...defaultProps} />
+    <Cart {...defaultProps} />,
+    {},
+    true,
+    (snapshot) => snapshot.set(userCartItems, mockedState)
   );
 
   // Check cart tab renders

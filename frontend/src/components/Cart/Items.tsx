@@ -4,7 +4,7 @@ import {
 } from '@ant-design/icons';
 import { Col, Empty, Popconfirm, Row } from 'antd';
 import React from 'react';
-import { useRecoilState } from 'recoil';
+import { useRecoilState, useRecoilValue } from 'recoil';
 import { cartTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import Button from '../General/Button';
@@ -14,6 +14,7 @@ import DatasetDownload from '../Globus/DatasetDownload';
 import { saveSessionValue } from '../../api';
 import CartStateKeys, { cartItemSelections } from './recoil/atoms';
 import { NodeStatusArray } from '../NodeStatus/types';
+import { userCartItems } from '../App/recoil/atoms';
 
 const styles: CSSinJS = {
   summary: {
@@ -29,18 +30,18 @@ const styles: CSSinJS = {
 };
 
 export type Props = {
-  userCart: RawSearchResults | [];
   onUpdateCart: (item: RawSearchResults, operation: 'add' | 'remove') => void;
   onClearCart: () => void;
   nodeStatus?: NodeStatusArray;
 };
 
 const Items: React.FC<React.PropsWithChildren<Props>> = ({
-  userCart,
   onUpdateCart,
   onClearCart,
   nodeStatus,
 }) => {
+  const userCart = useRecoilValue<RawSearchResults>(userCartItems);
+
   const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(
     cartItemSelections
   );

@@ -13,7 +13,6 @@ import axios from '../lib/axios';
 import {
   RawUserCart,
   RawUserSearchQuery,
-  UserCart,
   UserSearchQueries,
   UserSearchQuery,
 } from '../components/Cart/types';
@@ -23,6 +22,7 @@ import {
   ActiveSearchQuery,
   Pagination,
   RawCitation,
+  RawSearchResults,
   ResultType,
   TextInputs,
 } from '../components/Search/types';
@@ -169,7 +169,7 @@ export const fetchUserCart = async (
 export const updateUserCart = async (
   pk: string,
   accessToken: string,
-  newUserCart: UserCart
+  newUserCart: RawSearchResults
 ): Promise<{
   results: RawUserCart;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

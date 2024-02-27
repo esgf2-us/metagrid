@@ -16,7 +16,6 @@ const user = userEvent.setup();
 
 const rightMenuProps: Props = {
   mode: 'horizontal',
-  numCartItems: 4,
   numSavedSearches: 1,
   supportModalVisible: () => {
     render(<Support open onClose={jest.fn()} />);
@@ -101,7 +100,8 @@ it('display the users email after authentication if they did not provide a name'
 
   const { getByTestId, getByText } = customRenderKeycloak(
     <RightMenu {...rightMenuProps} />,
-    {}
+    {},
+    true
   );
 
   // Check applicable components render

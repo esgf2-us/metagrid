@@ -8,6 +8,7 @@ import { Alert, Col, Row, Typography } from 'antd';
 import humps from 'humps';
 import React from 'react';
 import { DeferFn, useAsync } from 'react-async';
+import { useRecoilValue } from 'recoil';
 import {
   convertResultTypeToReplicaParam,
   fetchSearchResults,
@@ -17,7 +18,6 @@ import { clickableRoute } from '../../api/routes';
 import { searchTableTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import { objectIsEmpty } from '../../common/utils';
-import { UserCart } from '../Cart/types';
 import { Tag, TagType, TagValue } from '../DataDisplay/Tag';
 import {
   ActiveFacets,
@@ -38,6 +38,7 @@ import {
   VersionDate,
   VersionType,
 } from './types';
+import { userCartItems } from '../App/recoil/atoms';
 
 const styles: CSSinJS = {
   summary: {
@@ -133,7 +134,6 @@ export const checkFiltersExist = (
 
 export type Props = {
   activeSearchQuery: ActiveSearchQuery;
-  userCart: UserCart | [];
   nodeStatus?: NodeStatusArray;
   onRemoveFilter: (removedTag: TagValue, type: TagType) => void;
   onClearFilters: () => void;
@@ -148,7 +148,6 @@ export type Props = {
 
 const Search: React.FC<React.PropsWithChildren<Props>> = ({
   activeSearchQuery,
-  userCart,
   nodeStatus,
   onRemoveFilter,
   onClearFilters,
@@ -167,6 +166,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
     activeFacets,
     textInputs,
   } = activeSearchQuery;
+
+  const userCart = useRecoilValue<RawSearchResults>(userCartItems);
 
   const { data: results, error, isLoading, run } = useAsync({
     deferFn: (fetchSearchResults as unknown) as DeferFn<

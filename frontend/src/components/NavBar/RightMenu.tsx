@@ -15,6 +15,7 @@ import { KeycloakTokenParsed } from 'keycloak-js';
 
 import React, { CSSProperties } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useRecoilValue } from 'recoil';
 import { navBarTargets } from '../../common/reactJoyrideSteps';
 import Button from '../General/Button';
 import RightDrawer from '../Messaging/RightDrawer';
@@ -25,25 +26,27 @@ import {
   djangoLoginUrl,
   djangoLogoutUrl,
 } from '../../env';
+import { userCartItems } from '../App/recoil/atoms';
+import { RawSearchResults } from '../Search/types';
 
 const menuItemStyling: CSSProperties = { margin: '8px' };
 
 export type Props = {
   mode: 'horizontal' | 'vertical' | 'inline';
-  numCartItems: number;
   numSavedSearches: number;
   supportModalVisible: (visible: boolean) => void;
 };
 
 const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
   mode,
-  numCartItems,
   numSavedSearches,
   supportModalVisible,
 }) => {
   const [activeMenuItem, setActiveMenuItem] = React.useState<string>('search');
 
   const [noticesOpen, setShowNotices] = React.useState(false);
+
+  const userCart = useRecoilValue<RawSearchResults>(userCartItems);
 
   const location = useLocation();
 
@@ -163,7 +166,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
         <Link data-testid="cartPageLink" to="/cart/items">
           <ShoppingCartOutlined style={{ fontSize: '20px' }} />
           <Badge
-            count={numCartItems}
+            count={userCart.length}
             className="badge"
             offset={[-5, 3]}
             showZero

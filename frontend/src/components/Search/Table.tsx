@@ -12,7 +12,6 @@ import React from 'react';
 import { fetchWgetScript, ResponseError } from '../../api';
 import { topDataRowTargets } from '../../common/reactJoyrideSteps';
 import { formatBytes, showError, showNotice } from '../../common/utils';
-import { UserCart } from '../Cart/types';
 import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
 import { NodeStatusArray } from '../NodeStatus/types';
@@ -27,7 +26,7 @@ export type Props = {
   canDisableRows?: boolean;
   results: RawSearchResults | [];
   totalResults?: number;
-  userCart: UserCart | [];
+  userCart: RawSearchResults | [];
   selections?: RawSearchResults | [];
   nodeStatus?: NodeStatusArray;
   filenameVars?: TextInputs | [];

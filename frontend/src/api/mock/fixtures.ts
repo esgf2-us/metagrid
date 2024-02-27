@@ -6,7 +6,6 @@
  */
 import {
   RawUserCart,
-  UserCart,
   UserSearchQueries,
   UserSearchQuery,
 } from '../../components/Cart/types';
@@ -124,7 +123,8 @@ export const parsedFacetsFixture = (
   return { ...defaults, ...props } as ParsedFacets;
 };
 
-export const userCartFixture = (): UserCart => rawSearchResultsFixture();
+export const userCartFixture = (): RawSearchResults =>
+  rawSearchResultsFixture();
 
 export const rawCitationFixture = (
   props: Partial<RawCitation> = {}

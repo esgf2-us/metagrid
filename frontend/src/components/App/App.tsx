@@ -14,6 +14,7 @@ import { useAsync } from 'react-async';
 import { hotjar } from 'react-hotjar';
 import { Link, Navigate, Route, Routes } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
+import { useRecoilState } from 'recoil';
 import {
   addUserSearchQuery,
   deleteUserSearchQuery,
@@ -37,7 +38,7 @@ import { AuthContext } from '../../contexts/AuthContext';
 import { hjid, hjsv, previousPublicUrl, publicUrl } from '../../env';
 import Cart from '../Cart';
 import Summary from '../Cart/Summary';
-import { UserCart, UserSearchQueries, UserSearchQuery } from '../Cart/types';
+import { UserSearchQueries, UserSearchQuery } from '../Cart/types';
 import { TagType, TagValue } from '../DataDisplay/Tag';
 import Facets from '../Facets';
 import { ActiveFacets, ParsedFacets, RawProject } from '../Facets/types';
@@ -58,6 +59,7 @@ import StartPopup from '../Messaging/StartPopup';
 import startupDisplayData from '../Messaging/messageDisplayData';
 import './App.css';
 import { miscTargets } from '../../common/reactJoyrideSteps';
+import { userCartItems } from './recoil/atoms';
 
 const styles: CSSinJS = {
   bodySider: {
@@ -131,8 +133,8 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     ParsedFacets | Record<string, unknown>
   >({});
 
-  const [userCart, setUserCart] = React.useState<UserCart | []>(
-    JSON.parse(localStorage.getItem('userCart') || '[]') as RawSearchResults
+  const [userCart, setUserCart] = useRecoilState<RawSearchResults>(
+    userCartItems
   );
 
   const [userSearchQueries, setUserSearchQueries] = React.useState<
@@ -326,7 +328,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     selectedItems: RawSearchResults,
     operation: 'add' | 'remove'
   ): void => {
-    let newCart: UserCart = [];
+    let newCart: RawSearchResults = [];
 
     /* istanbul ignore else */
     if (operation === 'add') {
@@ -485,7 +487,6 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
             path="*"
             element={
               <NavBar
-                numCartItems={userCart.length}
                 numSavedSearches={userSearchQueries.length}
                 onTextSearch={handleTextSearch}
                 supportModalVisible={setSupportModalVisible}
@@ -554,7 +555,6 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
                       </Breadcrumb>
                       <Search
                         activeSearchQuery={activeSearchQuery}
-                        userCart={userCart}
                         nodeStatus={nodeStatus}
                         onUpdateAvailableFacets={(facets) =>
                           setAvailableFacets(facets)
@@ -601,7 +601,6 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
                         <Breadcrumb.Item>Cart</Breadcrumb.Item>
                       </Breadcrumb>
                       <Cart
-                        userCart={userCart}
                         userSearchQueries={userSearchQueries}
                         onUpdateCart={handleUpdateCart}
                         onClearCart={handleClearCart}
