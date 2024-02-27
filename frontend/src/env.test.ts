@@ -5,11 +5,12 @@ const PENV = process.env;
 beforeEach(() => {
   jest.resetModules();
 
-  let env = process.env;
+  const { env } = process;
 
   try {
-    delete env['REACT_APP_METAGRID_API_URL'];
+    delete env.REACT_APP_METAGRID_API_URL;
   } catch {
+    // eslint-disable-next-line no-console
     console.log('REACT_APP_METAGRID_API_URL not defined');
   }
 
