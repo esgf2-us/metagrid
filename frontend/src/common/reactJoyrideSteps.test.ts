@@ -1,3 +1,4 @@
+import { mockConfig } from '../test/jestTestFunctions';
 import {
   getCurrentAppPage,
   delay,
@@ -91,8 +92,17 @@ describe('Test reactJoyrideStep util functions', () => {
     cartEmpty.className = 'ant-tabs-tabpane-active ant-empty-description';
     document.body.appendChild(root);
 
-    const mainTour = createMainPageTour();
-    expect(mainTour).toBeTruthy();
+    // Test main tour that has no globus nodes
+    mockConfig.globusEnabledNodes = [];
+
+    const mainTourNoGlobus = createMainPageTour();
+    expect(mainTourNoGlobus).toBeTruthy();
+
+    // Test main tour that includes globus options
+    mockConfig.globusEnabledNodes = ['node1', 'node2', 'node3'];
+
+    const mainTourWithGlobus = createMainPageTour();
+    expect(mainTourWithGlobus).toBeTruthy();
     const cartTour = createCartItemsTour(() => {});
     expect(cartTour).toBeTruthy();
     const searchTour = createSearchCardTour(() => {});

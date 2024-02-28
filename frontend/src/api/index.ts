@@ -8,7 +8,7 @@
 import 'setimmediate'; // Added because in Jest 27, setImmediate is not defined, causing test errors
 import humps from 'humps';
 import queryString from 'query-string';
-import { AxiosResponse } from 'axios';
+import { AxiosResponse, AxiosError } from 'axios';
 import axios from '../lib/axios';
 import {
   RawUserCart,
@@ -37,7 +37,7 @@ export interface ResponseError extends Error {
 
 const getCookie = (name: string): null | string => {
   let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
+  if (document && document.cookie && document.cookie !== '') {
     const cookies = document.cookie.split(';');
     for (let i = 0; i < cookies.length; i += 1) {
       const cookie = cookies[i].trim();
@@ -692,10 +692,13 @@ export const startGlobusTransfer = async (
     .then((resp) => {
       return resp;
     })
-    .catch((error: ResponseError) => {
-      throw new Error(
-        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusTransfer)
-      );
+    .catch((error: AxiosError) => {
+      let message = '';
+      /* istanbul ignore else */
+      if (error.response) {
+        message = error.response.data;
+      }
+      throw new Error(message);
     });
 };
 

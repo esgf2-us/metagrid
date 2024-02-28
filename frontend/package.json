@@ -1,6 +1,6 @@
 {
   "name": "frontend",
-  "version": "1.0.10-beta",
+  "version": "1.1.0",
   "private": true,
   "scripts": {
     "build:local": "env-cmd -f .envs/.react react-scripts build",
@@ -90,8 +90,10 @@
     "uuid": "8.3.2"
   },
   "devDependencies": {
-    "@babel/core": "7.17.9",
+    "@babel/core": "7.22.5",
+    "@babel/eslint-parser": "7.22.5",
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@babel/preset-env": "7.22.5",
     "@testing-library/dom": "9.3.1",
     "@testing-library/jest-dom": "5.17.0",
     "@testing-library/react": "14.0.0",
@@ -116,7 +118,7 @@
     "eslint-plugin-react": "7.33.0",
     "eslint-plugin-react-hooks": "4.6.0",
     "msw": "0.28.1",
-    "postcss": "8.4.21",
+    "postcss": "8.4.31",
     "prettier": "2.2.1",
     "setimmediate": "1.0.5"
   }

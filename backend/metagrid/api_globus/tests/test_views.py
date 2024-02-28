@@ -7,11 +7,16 @@ from metagrid.api_globus.views import split_value, truncate_urls
 
 class TestGlobusViewSet(APITestCase):
     def test_truncate(self):
-        lst = [{"url": ["test_url:globus_value|Globus"]}]
+        lst = [
+            {
+                "url": ["test_url:globus_value|Globus"],
+                "data_node": "aims3.llnl.gov",
+            }
+        ]
         results = []
         for value in truncate_urls(lst):
             results.append(value)
-        assert results == ["globus_value"]
+        assert results == [("globus_value", "aims3.llnl.gov")]
 
     def test_split_value(self):
         result = split_value(1)
