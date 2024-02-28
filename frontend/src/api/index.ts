@@ -18,6 +18,10 @@ import {
   UserSearchQuery,
 } from '../components/Cart/types';
 import { ActiveFacets, RawProjects } from '../components/Facets/types';
+import {
+  GlobusEndpointSearch,
+  GlobusEndpointSearchArray,
+} from '../components/Globus/types';
 import { NodeStatusArray, RawNodeStatus } from '../components/NodeStatus/types';
 import {
   ActiveSearchQuery,
@@ -689,6 +693,45 @@ export const startGlobusTransfer = async (
 
   return axios
     .get(url)
+    .then((resp) => {
+      return resp;
+    })
+    .catch((error: AxiosError) => {
+      let message = '';
+      /* istanbul ignore else */
+      if (error.response) {
+        message = error.response.data;
+      }
+      throw new Error(message);
+    });
+};
+
+export interface Endpoint {
+  canonical_name: string;
+  contact_email: string;
+  display_name: string;
+  entity_type: string;
+  id: string;
+  owner_id: string;
+  owner_string: string;
+  subscription_id: string;
+}
+
+export interface GlobusEndpoint {
+  data: Endpoint[];
+  status: number;
+  statusText: string;
+  headers: object;
+  config: object;
+}
+
+export const startSearchGlobusEndpoints = async (
+  searchText: string
+): Promise<GlobusEndpoint> => {
+  return axios
+    .get(apiRoutes.globusSearchEndpoints.path, {
+      params: { search_text: searchText },
+    })
     .then((resp) => {
       return resp;
     })

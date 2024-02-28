@@ -30,12 +30,12 @@ const activeSearch: ActiveSearchQuery = getSearchFromUrl('project=test1');
 
 const user = userEvent.setup();
 
-const mockLoadValue = mockFunction((key: unknown) => {
-  return Promise.resolve(tempStorageGetMock(key as string));
+const mockLoadValue = mockFunction((key: string) => {
+  return Promise.resolve(tempStorageGetMock(key));
 });
 
-const mockSaveValue = mockFunction((key: unknown, value: unknown) => {
-  tempStorageSetMock(key as string, value);
+const mockSaveValue = mockFunction((key: string, value: unknown) => {
+  tempStorageSetMock(key, value);
   return Promise.resolve({
     msg: 'Updated temporary storage.',
     data_key: key,

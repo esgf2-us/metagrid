@@ -19,6 +19,13 @@ export type GlobusEndpointData = {
   endpointId?: string | null;
 };
 
+export type GlobusEndpointSearch = {
+  display_name: string | null;
+  id: string | null;
+};
+
+export type GlobusEndpointSearchArray = GlobusEndpointSearch[];
+
 export type GlobusStateValue =
   | null
   | boolean
