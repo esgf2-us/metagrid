@@ -151,7 +151,6 @@ def get_files(url_params):  # pragma: no cover
         return HttpResponseServerError(f"Malformed URL in search results {e}")
     if hostname in TEST_SHARDS_MAP:
         hostname = TEST_SHARDS_MAP[hostname]
-    
     xml_shards = [f"{hostname}:{port}/solr"]
     querys = []
     file_query = ["type:File"]
