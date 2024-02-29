@@ -35,21 +35,23 @@ export async function showNotice(
     case 'success':
       await message.success(msgConfig);
       /* istanbul ignore next */
-      break;
+      return;
     case 'warning':
       await message.warning(msgConfig);
       /* istanbul ignore next */
-      break;
+      return;
     case 'error':
       await message.error(msgConfig);
       /* istanbul ignore next */
-      break;
+      return;
     case 'info':
       await message.info(msgConfig);
       /* istanbul ignore next */
-      break;
+      return;
     default:
-      await message.success(msgConfig);
+      await message.info(msgConfig);
+      /* istanbul ignore next */
+      break;
   }
 }
 

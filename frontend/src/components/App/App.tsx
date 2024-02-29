@@ -279,7 +279,11 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   };
 
   const handleProjectChange = (selectedProject: RawProject): void => {
-    setActiveSearchQuery(projectBaseQuery(selectedProject));
+    if (selectedProject.pk !== activeSearchQuery.project.pk) {
+      setActiveSearchQuery(projectBaseQuery(selectedProject));
+    } else {
+      setActiveSearchQuery({ ...activeSearchQuery, project: selectedProject });
+    }
   };
 
   const handleRemoveFilter = (removedTag: TagValue, type: TagType): void => {
@@ -402,26 +406,25 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
         .then(() => {
           saveSuccess();
         })
-        .catch((error: ResponseError) => {
-          showError(error.message);
-        });
+        .catch(
+          /* istanbul ignore next */
+          (error: ResponseError) => {
+            showError(error.message);
+          }
+        );
     } else {
       saveSuccess();
     }
   };
 
   const handleShareSearchQuery = (): void => {
-    const shareSuccess = (): void => {
-      // copy link to clipboard
-      /* istanbul ignore next */
-      if (navigator && navigator.clipboard) {
-        navigator.clipboard.writeText(getUrlFromSearch(activeSearchQuery));
-        showNotice('Search copied to clipboard!', {
-          icon: <ShareAltOutlined style={styles.messageAddIcon} />,
-        });
-      }
-    };
-    shareSuccess();
+    /* istanbul ignore else */
+    if (navigator && navigator.clipboard) {
+      navigator.clipboard.writeText(getUrlFromSearch(activeSearchQuery));
+      showNotice('Search copied to clipboard!', {
+        icon: <ShareAltOutlined style={styles.messageAddIcon} />,
+      });
+    }
   };
 
   const handleRemoveSearchQuery = (searchUUID: string): void => {

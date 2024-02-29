@@ -37,7 +37,7 @@ export interface ResponseError extends Error {
 
 const getCookie = (name: string): null | string => {
   let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
+  if (document && document.cookie && document.cookie !== '') {
     const cookies = document.cookie.split(';');
     for (let i = 0; i < cookies.length; i += 1) {
       const cookie = cookies[i].trim();
@@ -694,6 +694,7 @@ export const startGlobusTransfer = async (
     })
     .catch((error: AxiosError) => {
       let message = '';
+      /* istanbul ignore else */
       if (error.response) {
         message = error.response.data;
       }

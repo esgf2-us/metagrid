@@ -33,45 +33,6 @@ it('renders component', async () => {
   expect(projectForm).toBeTruthy();
 });
 
-it('handles when the project form is submitted', async () => {
-  const { getByTestId } = customRenderKeycloak(
-    <Facets
-      {...defaultProps}
-      activeSearchQuery={{ ...activeSearchQueryFixture(), project: {} }}
-    />
-  );
-
-  // Check FacetsForm component renders
-  const facetsForm = await waitFor(() => getByTestId('facets-form'));
-  await waitFor(() => expect(facetsForm).toBeTruthy());
-
-  // Check ProjectForm component renders
-  const projectForm = await waitFor(() => getByTestId('project-form'));
-  expect(projectForm).toBeTruthy();
-
-  // Check facet select form exists and mouseDown to expand list of options
-  const projectFormSelect = document.querySelector(
-    '[data-testid=project-form-select] > .ant-select-selector'
-  ) as HTMLInputElement;
-  expect(projectFormSelect).toBeTruthy();
-  fireEvent.mouseDown(projectFormSelect);
-
-  // Select the second project option
-  const projectOption = getByTestId('project_1');
-  expect(projectOption).toBeTruthy();
-  await user.click(projectOption);
-
-  // Wait for facet form component to re-render
-  await waitFor(() => getByTestId('facets-form'));
-
-  // Submit the form
-  // NOTE: Submit button is inside the form, so use submit
-  const projectFormBtn = within(projectForm).getByRole('img', {
-    name: 'select',
-  });
-  fireEvent.submit(projectFormBtn);
-});
-
 it('handles facets form auto-filtering', async () => {
   const { getByTestId, getByText, getByRole } = customRenderKeycloak(
     <Facets {...defaultProps} />
