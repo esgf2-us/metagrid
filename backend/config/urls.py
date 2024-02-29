@@ -23,6 +23,7 @@ from metagrid.api_proxy.views import (
     get_temp_storage,
     set_temp_storage,
 )
+from metagrid.api_proxy.views_cv import do_cv_req
 from metagrid.cart.views import CartViewSet, SearchViewSet
 from metagrid.projects.views import ProjectsViewSet
 from metagrid.users.views import UserCreateViewSet, UserViewSet
@@ -64,6 +65,7 @@ urlpatterns = [
     path("proxy/citation", do_citation, name="do-citation"),
     path("proxy/wget", do_wget, name="do-wget"),
     path("proxy/status", do_status, name="do-status"),
+    path("cv", do_cv_req, name="do-cv-req"),
     path(
         "dj-rest-auth/keycloak", KeycloakLogin.as_view(), name="keycloak_login"
     ),
