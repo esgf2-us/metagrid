@@ -30,23 +30,28 @@ const NavBar: React.FC<React.PropsWithChildren<Props>> = ({
 
   return (
     <nav data-testid="nav-bar" className="navbar">
-      <div className="navbar-logo">
-        <Link href="https://www.esgf.io/nodes.html">
-          <img
-            style={{ maxWidth: '80%', height: 'auto' }}
-            src={esgfLogo}
-            alt="ESGF Federated Nodes"
-          />
-        </Link>
-        &nbsp;
-        <Link
-          style={{ padding: 0, margin: 0, fontWeight: 'bold' }}
-          href="https://www.esgf.io/nodes.html"
-        >
-          Federated Nodes
-        </Link>
-      </div>
       <div className="navbar-container">
+        <div className="navbar-logo">
+          <Link
+            href="https://www.esgf.io/nodes.html"
+            style={{
+              fontWeight: 'bold',
+              fontSize: '.9em',
+            }}
+          >
+            <img
+              style={{
+                height: '42px',
+                marginLeft: '-5px',
+                marginBottom: '-10px',
+              }}
+              src={esgfLogo}
+              alt="ESGF Federated Nodes"
+            />
+            <br />
+            Federated Nodes
+          </Link>
+        </div>
         <div className="navbar-left">
           <LeftMenu
             projects={data ? data.results : undefined}
@@ -65,7 +70,7 @@ const NavBar: React.FC<React.PropsWithChildren<Props>> = ({
         </div>
         <Button
           className="navbar-mobile-button"
-          type="primary"
+          type="default"
           onClick={() => setShowDrawer(true)}
         >
           <MenuUnfoldOutlined />

@@ -8,7 +8,15 @@ import {
   ShareAltOutlined,
   ShoppingCartOutlined,
 } from '@ant-design/icons';
-import { Affix, Breadcrumb, Button, Layout, Result } from 'antd';
+import {
+  Affix,
+  Breadcrumb,
+  Button,
+  ConfigProvider,
+  FloatButton,
+  Layout,
+  Result,
+} from 'antd';
 import React, { ReactElement } from 'react';
 import { useAsync } from 'react-async';
 import { hotjar } from 'react-hotjar';
@@ -41,7 +49,7 @@ import { UserCart, UserSearchQueries, UserSearchQuery } from '../Cart/types';
 import { TagType, TagValue } from '../DataDisplay/Tag';
 import Facets from '../Facets';
 import { ActiveFacets, ParsedFacets, RawProject } from '../Facets/types';
-import NavBar from '../NavBar';
+import NavBar from '../NavBar/index';
 import NodeStatus from '../NodeStatus';
 import NodeSummary from '../NodeStatus/NodeSummary';
 import Search from '../Search';
@@ -481,7 +489,13 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   };
 
   return (
-    <>
+    <ConfigProvider
+      theme={{
+        token: {
+          borderRadius: 3,
+        },
+      }}
+    >
       <div>
         <Routes>
           <Route
@@ -667,18 +681,22 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
         <Affix
           className={miscTargets.questionBtn.class()}
           style={{
-            position: 'fixed',
-            bottom: 75,
+            position: 'absolute',
+            bottom: 50,
             right: 50,
           }}
         >
-          <Button
+          <FloatButton
             type="primary"
             shape="circle"
             style={{ width: '48px', height: '48px' }}
-            icon={<QuestionOutlined style={{ fontSize: '28px' }} />}
+            icon={
+              <QuestionOutlined
+                style={{ fontSize: '28px', marginLeft: '-5px' }}
+              />
+            }
             onClick={() => setSupportModalVisible(true)}
-          ></Button>
+          ></FloatButton>
         </Affix>
         <Support
           open={supportModalVisible}
@@ -686,7 +704,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
         />
         <StartPopup />
       </div>
-    </>
+    </ConfigProvider>
   );
 };
 

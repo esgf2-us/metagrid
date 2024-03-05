@@ -77,13 +77,12 @@ const LeftMenu: React.FC<React.PropsWithChildren<Props>> = ({
           form={form}
           onFinish={onFinish}
         >
-          <Space.Compact>
+          <Space size="small">
             <Form.Item
               name="projectTextInput"
               rules={[{ required: true, message: 'Project is required' }]}
-              style={{ width: '15%', minWidth: '100px', margin: '0 5px' }}
             >
-              <Select>
+              <Select style={{ minWidth: '110px' }}>
                 {projects.map((projObj) => (
                   <Select.Option key={projObj.name} value={projObj.name}>
                     {projObj.name}
@@ -94,23 +93,22 @@ const LeftMenu: React.FC<React.PropsWithChildren<Props>> = ({
             <Form.Item
               name="text"
               rules={[{ required: true, message: 'Text is required' }]}
-              style={{ width: '40%', margin: '0 5px' }}
             >
               <Input
-                width="50"
+                style={{ minWidth: '200px' }}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder="Search for a keyword"
               />
             </Form.Item>
-            <Form.Item style={{ width: '15px', margin: '0 5px' }}>
+            <Form.Item>
               <Button
                 type="primary"
                 htmlType="submit"
                 icon={<SearchOutlined />}
               ></Button>
             </Form.Item>
-          </Space.Compact>
+          </Space>
         </Form>
       </div>
     );

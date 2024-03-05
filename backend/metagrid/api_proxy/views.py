@@ -13,6 +13,7 @@ from django.http import (
 from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+from globus_portal_framework.gclients import load_transfer_client
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -86,6 +87,48 @@ def do_globus_logout(request):
         settings, "DJANGO_LOGOUT_REDIRECT_URL", "http://localhost:3000/search/"
     )
     return redirect(homepage_url)
+
+
+@api_view()
+@permission_classes([])
+def do_globus_get_endpoint(request):
+    endpoint_id = request.GET.get("endpoint_id", None)
+    if request.user.is_authenticated:
+        tc = load_transfer_client(request.user)
+    else:
+        client = globus_sdk.ConfidentialAppAuthClient(
+            settings.SOCIAL_AUTH_GLOBUS_KEY, settings.SOCIAL_AUTH_GLOBUS_SECRET
+        )
+        token_response = client.oauth2_client_credentials_tokens()
+        globus_transfer_data = token_response.by_resource_server[
+            "transfer.api.globus.org"
+        ]
+        globus_transfer_token = globus_transfer_data["access_token"]
+        authorizer = globus_sdk.AccessTokenAuthorizer(globus_transfer_token)
+        tc = globus_sdk.TransferClient(authorizer=authorizer)
+    endpoint = tc.get_endpoint(endpoint_id)
+    return Response(endpoint.data)
+
+
+@api_view()
+@permission_classes([])
+def do_globus_search_endpoints(request):
+    search_text = request.GET.get("search_text", None)
+    if request.user.is_authenticated:
+        tc = load_transfer_client(request.user)
+    else:
+        client = globus_sdk.ConfidentialAppAuthClient(
+            settings.SOCIAL_AUTH_GLOBUS_KEY, settings.SOCIAL_AUTH_GLOBUS_SECRET
+        )
+        token_response = client.oauth2_client_credentials_tokens()
+        globus_transfer_data = token_response.by_resource_server[
+            "transfer.api.globus.org"
+        ]
+        globus_transfer_token = globus_transfer_data["access_token"]
+        authorizer = globus_sdk.AccessTokenAuthorizer(globus_transfer_token)
+        tc = globus_sdk.TransferClient(authorizer=authorizer)
+    endpoints = tc.endpoint_search(filter_fulltext=search_text)
+    return Response(endpoints["DATA"])
 
 
 @require_http_methods(["GET", "POST"])

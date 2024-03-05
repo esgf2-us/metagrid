@@ -85,7 +85,6 @@ const ProjectsForm: React.FC<React.PropsWithChildren<Props>> = ({
               onChange={() => {
                 projectForm.submit();
               }}
-              showArrow
               options={projectOptions}
             />
           </Form.Item>
