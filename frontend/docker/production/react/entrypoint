@@ -9,6 +9,8 @@ export STATIC_PATH=""
 export STATIC_URL="${PUBLIC_URL}${STATIC_PATH}"
 export RUNTIME_PATH="${HTML_PATH}${STATIC_PATH}/runtime_env.js"
 
+TMP_PATH=/tmp
+
 if [ ! -e "$(dirname ${RUNTIME_PATH})" ]
 then
     mkdir -p "$(dirname ${RUNTIME_PATH})"
@@ -41,7 +43,7 @@ if [ -e "${ENV_FILE}" ]; then
 fi
 
 if [ ! -e "/index.html" ]; then
-    cp "${HTML_PATH}/index.html" /index.html
+    cp "${HTML_PATH}/index.html" "${TMP_PATH}/index.html"
 fi
 
 if [ "${RELEASE}" = "production" ]
@@ -54,11 +56,11 @@ then
         envsubst '${PREVIOUS_URL},${PUBLIC_URL}' < /nginx.subdir.conf > /etc/nginx/conf.d/default.conf
 
         # Fixes react-scripts static path e.g. /static/ -> $PUBLIC_URL/static/
-        sed -i"" "s/\"\/static\//\"\$PUBLIC_URL\/static\//g" /index.html
+        sed -i"" "s/\"\/static\//\"\$PUBLIC_URL\/static\//g" "${TMP_PATH}/index.html"
     fi
 
 fi
 
-envsubst '$STATIC_URL,$PUBLIC_URL,$REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID' < /index.html > "${HTML_PATH}/index.html"
+envsubst '$STATIC_URL,$PUBLIC_URL,$REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID' < "${TMP_PATH}/index.html" > "${HTML_PATH}/index.html"
 
 exec "$@"
