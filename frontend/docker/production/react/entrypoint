@@ -35,6 +35,10 @@ if [ -e "${ENV_FILE}" ]; then
     echo "};" >> "${RUNTIME_PATH}"
 fi
 
+if [ ! -e "/index.html" ]; then
+    cp "${HTML_PATH}/index.html" /index.html
+fi
+
 if [ "${RELEASE}" = "production" ]
 then
     if [ -z "${PUBLIC_URL}" ]
@@ -43,11 +47,11 @@ then
         export PUBLIC_URL=""
     else
         envsubst '${PREVIOUS_URL},${PUBLIC_URL}' < /nginx.subdir.conf > /etc/nginx/conf.d/default.conf
-    fi
-fi
 
-if [ ! -e "/index.html" ]; then
-    cp "${HTML_PATH}/index.html" /index.html
+        # Fixes react-scripts static path e.g. /static/ -> $PUBLIC_URL/static/
+        sed -i"" "s/\"\/static\//\"\$PUBLIC_URL\/static\//g" /index.html
+    fi
+
 fi
 
 envsubst '$STATIC_URL,$PUBLIC_URL,$REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID' < /index.html > "${HTML_PATH}/index.html"
