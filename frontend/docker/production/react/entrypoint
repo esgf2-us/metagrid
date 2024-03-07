@@ -5,13 +5,18 @@
 export RELEASE="${RELEASE:-production}"
 export ENV_FILE="${ENV_FILE:-/env}"
 export HTML_PATH="${HTML_PATH:-/usr/share/nginx/html}"
-export STATIC_PATH="${STATIC_PATH:-/static/js}"
+export STATIC_PATH=""
 export STATIC_URL="${PUBLIC_URL}${STATIC_PATH}"
 export RUNTIME_PATH="${HTML_PATH}${STATIC_PATH}/runtime_env.js"
 
 if [ ! -e "$(dirname ${RUNTIME_PATH})" ]
 then
     mkdir -p "$(dirname ${RUNTIME_PATH})"
+fi
+
+if [ "${RELEASE}" = "production" ]
+then
+    export STATIC_PATH="/static/js"
 fi
 
 if [ -e "${ENV_FILE}" ]; then
