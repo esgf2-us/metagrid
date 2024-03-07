@@ -44,7 +44,14 @@ jobs:
         run: yarn install --frozen-lockfile
 
       - name: Run Tests
+        env:
+          RELEASE: dev
+          ENV_FILE: .envs/.react
+          HTML_PATH: public/
         run: |
+          # Replaces react-scripts substitution during build for index.html and generates runtime_env.js
+          docker/production/react/entrypoint
+
           yarn test:coverage
 
       - name: Upload Coverage Report
