@@ -27,7 +27,14 @@ export async function showNotice(
     content,
     duration: config?.duration,
     icon: config?.icon,
-    style: { marginTop: '60px', ...config?.style },
+    style: {
+      marginTop: '60px',
+      marginLeft: '20%',
+      width: '60%',
+      height: '500px',
+      overflow: 'auto',
+      ...config?.style,
+    },
     key: config?.key,
   };
 

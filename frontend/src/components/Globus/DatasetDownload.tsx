@@ -338,7 +338,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           .catch(async (error: ResponseError) => {
             if (error.message !== '') {
               messageContent = `Globus transfer task failed. ${error.message} is your error code.  Please contact ESGF support.`;
-              durationVal = 60;
+              durationVal = 5;
             } else {
               messageContent = `Globus transfer task failed. Resetting tokens.`;
               // eslint-disable-next-line no-console
