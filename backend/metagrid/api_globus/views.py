@@ -138,15 +138,20 @@ def get_files(url_params):  # pragma: no cover
     file_offset = 0
     use_distrib = True
 
+    port = "80"
+
     try:
-        hostname = urllib.parse.urlparse(
+        res = urllib.parse.urlparse(
             query_url
-        ).hostname  # TODO need to populate the sharts based on the Solr URL
+        )
+        hostname = res.hostname  # TODO need to populate the shards based on the Solr URL
+        if res.port:
+            port = res.port
     except RuntimeError as e:
         return HttpResponseServerError(f"Malformed URL in search results {e}")
     if hostname in TEST_SHARDS_MAP:
         hostname = TEST_SHARDS_MAP[hostname]
-    xml_shards = [f"{hostname}:80/solr"]
+    xml_shards = [f"{hostname}:{port}/solr"]
     querys = []
     file_query = ["type:File"]
 
