@@ -141,10 +141,10 @@ def get_files(url_params):  # pragma: no cover
     port = "80"
 
     try:
-        res = urllib.parse.urlparse(
-            query_url
-        )
-        hostname = res.hostname  # TODO need to populate the shards based on the Solr URL
+        res = urllib.parse.urlparse(query_url)
+        hostname = (
+            res.hostname
+        )  # TODO need to populate the shards based on the Solr URL
         if res.port:
             port = res.port
     except RuntimeError as e:
