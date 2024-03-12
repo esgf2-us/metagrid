@@ -334,11 +334,11 @@ JWT_AUTH_COOKIE = "jwt-auth"
 # django-cors-headers
 # -------------------------------------------------------------------------------
 # https://github.com/adamchainz/django-cors-headers#setup
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-]
+CORS_ALLOWED_ORIGINS = env.list(
+    "CORS_ALLOWED_ORIGINS", default=["http://localhost:5000"]
+)
 CORS_ALLOW_CREDENTIALS = True
-CORS_ORIGIN_WHITELIST = env.list("CORS_ORIGIN_WHITELIST")
+CORS_ORIGIN_WHITELIST = env.list("CORS_ORIGIN_WHITELIST", default=[])
 
 SEARCH_URL = env("REACT_APP_SEARCH_URL")
 WGET_URL = env("REACT_APP_WGET_API_URL")
