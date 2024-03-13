@@ -679,8 +679,8 @@ export const saveSessionValue = async <T>(
  * If the API returns a 200, it returns the axios response.
  */
 export const startGlobusTransfer = async (
+  transferAccessToken: string,
   accessToken: string,
-  refreshToken: string,
   endpointId: string,
   path: string,
   ids: string[] | string,
@@ -689,8 +689,8 @@ export const startGlobusTransfer = async (
   let url = queryString.stringifyUrl({
     url: apiRoutes.globusTransfer.path,
     query: {
-      access_token: accessToken,
-      refresh_token: refreshToken,
+      access_token: transferAccessToken,
+      refresh_token: accessToken,
       endpointId,
       path,
       dataset_id: ids,

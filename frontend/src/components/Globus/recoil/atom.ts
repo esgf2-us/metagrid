@@ -5,6 +5,7 @@ import { GlobusStateValue, GlobusTaskItem } from '../types';
 
 enum GlobusStateKeys {
   accessToken = 'globusAccessToken',
+  globusAuth = 'globusAuth',
   continueGlobusPrepSteps = 'continueGlobusPreparationSteps',
   useDefaultEndpoint = 'useDefaultEndpoint',
   defaultEndpoint = 'defaultGlobusEndpoint',

@@ -1469,7 +1469,7 @@ describe('Testing globus transfer related failures', () => {
 
     // Setting the tokens so that the sign-in step should be completed
     mockSaveValue(CartStateKeys.cartItemSelections, userCartFixture());
-    mockSaveValue(GlobusStateKeys.refreshToken, 'refreshToken');
+    mockSaveValue(GlobusStateKeys.accessToken, 'globusAccessToken');
     mockSaveValue(GlobusStateKeys.transferToken, {
       id_token: '',
       resource_server: '',
@@ -1586,10 +1586,10 @@ describe('Testing globus transfer related failures', () => {
     const cartBtn = getByTestId('cartPageLink');
     await user.click(cartBtn);
 
-    const refreshToken = await mockLoadValue(GlobusStateKeys.refreshToken);
+    const accessToken = await mockLoadValue(GlobusStateKeys.accessToken);
     const transferToken = await mockLoadValue(GlobusStateKeys.transferToken);
 
-    expect(refreshToken).toBeFalsy();
+    expect(accessToken).toBeFalsy();
     expect(transferToken).toBeFalsy();
 
     // Check 'Error occurred when obtaining transfer permission!' message appears

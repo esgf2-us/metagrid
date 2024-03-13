@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { CheckCircleFilled, DownloadOutlined } from '@ant-design/icons';
 import { Button, Divider, Modal, Radio, Select, Space, Tooltip } from 'antd';
@@ -40,13 +41,6 @@ import { NotificationType, showError, showNotice } from '../../common/utils';
 // Reference: https://github.com/bpedroza/js-pkce
 const REQUESTED_SCOPES =
   'openid profile email urn:globus:auth:scope:transfer.api.globus.org:all';
-const GlobusAuth = new PKCE({
-  client_id: globusClientID, // Update this using your native client ID
-  redirect_uri: globusRedirectUrl, // Update this if you are deploying this anywhere else (Globus Auth will redirect back here once you have logged in)
-  authorization_endpoint: 'https://auth.globus.org/v2/oauth2/authorize', // No changes needed
-  token_endpoint: 'https://auth.globus.org/v2/oauth2/token', // No changes needed
-  requested_scopes: REQUESTED_SCOPES, // Update with any scopes you would need, e.g. transfer
-});
 
 type ModalFormState = 'signin' | 'endpoint' | 'both' | 'none';
 
@@ -75,6 +69,19 @@ type Endpoint = {
 
 // Statically defined list of dataset download options
 const downloadOptions = ['Globus', 'wget'];
+
+// Creates an auth object using desired authentication scope
+async function createGlobusAuthObject(): Promise<PKCE> {
+  const authScope = await loadSessionValue<string>(GlobusStateKeys.globusAuth);
+
+  return new PKCE({
+    client_id: globusClientID, // Update this using your native client ID
+    redirect_uri: globusRedirectUrl, // Update this if you are deploying this anywhere else (Globus Auth will redirect back here once you have logged in)
+    authorization_endpoint: 'https://auth.globus.org/v2/oauth2/authorize', // No changes needed
+    token_endpoint: 'https://auth.globus.org/v2/oauth2/token', // No changes needed
+    requested_scopes: authScope || REQUESTED_SCOPES, // Update with any scopes you would need, e.g. transfer
+  });
+}
 
 const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   // User wants to use default endpoint
@@ -211,6 +218,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   }
 
   async function resetTokens(): Promise<void> {
+    await saveSessionValue<null>(GlobusStateKeys.globusAuth, null);
     await saveSessionValue<null>(GlobusStateKeys.accessToken, null);
     await saveSessionValue<null>(GlobusStateKeys.refreshToken, null);
     await saveSessionValue<null>(GlobusStateKeys.transferToken, null);
@@ -221,11 +229,11 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   async function getGlobusTokens(): Promise<
     [GlobusTokenResponse | null, string | null]
   > {
-    const refreshToken = await loadSessionValue<string>(
-      GlobusStateKeys.refreshToken
+    const accessToken = await loadSessionValue<string>(
+      GlobusStateKeys.accessToken
     );
     const transferToken = await getGlobusTransferToken();
-    return [transferToken, refreshToken];
+    return [transferToken, accessToken];
   }
 
   async function getEndpointData(): Promise<
@@ -273,7 +281,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
   const handleGlobusDownload = async (
     globusTransferToken: GlobusTokenResponse | null,
-    refreshToken: string | null,
+    accessToken: string | null,
     endpoint: GlobusEndpointData | null
   ): Promise<void> => {
     setDownloadIsLoading(true);
@@ -285,13 +293,13 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       setItemSelections(loadedSelections);
       const ids = loadedSelections.map((item) => (item ? item.id : ''));
 
-      if (globusTransferToken && refreshToken) {
+      if (globusTransferToken && accessToken) {
         let messageContent: React.ReactNode | string = null;
         let messageType: NotificationType = 'success';
         let durationVal = 5;
         startGlobusTransfer(
           globusTransferToken.access_token,
-          refreshToken,
+          accessToken,
           endpoint?.endpointId || '',
           endpoint?.path || '',
           ids
@@ -299,7 +307,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           .then((resp) => {
             if (resp.status === 200) {
               setItemSelections([]);
-              setDownloadIsLoading(false);
               saveSessionValue(CartStateKeys.cartItemSelections, []);
 
               const transRespData = resp.data as Record<string, unknown>;
@@ -348,6 +355,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             await resetTokens();
           })
           .finally(async () => {
+            setDownloadIsLoading(false);
             setDownloadActive(false);
             await showNotice(messageContent, {
               duration: durationVal,
@@ -450,6 +458,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     const checkEndpoint = globusEndpoints?.find(
       (endpoint) => endpoint.value === value
     );
+
     if (
       checkEndpoint?.entity_type === 'GCSv5_mapped_collection' &&
       checkEndpoint.subscription_id
@@ -457,18 +466,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       const DATA_ACCESS_SCOPE = `urn:globus:auth:scope:transfer.api.globus.org:all[*https://auth.globus.org/scopes/${value}/data_access]`;
       const SCOPES = REQUESTED_SCOPES.concat(' ', DATA_ACCESS_SCOPE);
 
-      const NewGlobusAuth = new PKCE({
-        client_id: globusClientID, // Update this using your native client ID
-        redirect_uri: globusRedirectUrl, // Update this if you are deploying this anywhere else (Globus Auth will redirect back here once you have logged in)
-        authorization_endpoint: 'https://auth.globus.org/v2/oauth2/authorize', // No changes needed
-        token_endpoint: 'https://auth.globus.org/v2/oauth2/token', // No changes needed
-        requested_scopes: SCOPES, // Update with any scopes you would need, e.g. transfer
-      });
-
-      await saveSessionValue(GlobusStateKeys.continueGlobusPrepSteps, true);
-      sessionStorage.removeItem('pkce_code_verifier');
-      sessionStorage.removeItem('pkce_state');
-      console.log(NewGlobusAuth.authorizeUrl());
+      await saveSessionValue<string>(GlobusStateKeys.globusAuth, SCOPES);
     }
   };
 
@@ -523,14 +521,14 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
   const showGlobusDownloadPrompt = (
     transferToken: GlobusTokenResponse | null,
-    refreshToken: string | null,
+    accessToken: string | null,
     endpoint: GlobusEndpointData | null
   ): void => {
     setGlobusStepsModal({
       ...globusStepsModal,
       onOkAction: () => {
         setGlobusStepsModal({ ...globusStepsModal, show: false });
-        handleGlobusDownload(transferToken, refreshToken, endpoint);
+        handleGlobusDownload(transferToken, accessToken, endpoint);
       },
       show: true,
       state: 'none',
@@ -538,10 +536,10 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   };
 
   function tokensReady(
-    refreshToken: string | null,
+    accessToken: string | null,
     globusTransferToken: GlobusTokenResponse | null
   ): boolean {
-    if (refreshToken && globusTransferToken) {
+    if (accessToken && globusTransferToken) {
       return true;
     }
     return false;
@@ -577,20 +575,21 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     try {
       const url = window.location.href;
 
-      const tokenResponse = (await GlobusAuth.exchangeForAccessToken(
+      const pkce = await createGlobusAuthObject(); // Create pkce with saved scope
+      const tokenResponse = (await pkce.exchangeForAccessToken(
         url
       )) as GlobusTokenResponse;
 
       /* istanbul ignore else */
       if (tokenResponse) {
         /* istanbul ignore else */
-        if (tokenResponse.refresh_token) {
+        if (tokenResponse.access_token) {
           await saveSessionValue(
-            GlobusStateKeys.refreshToken,
-            tokenResponse.refresh_token
+            GlobusStateKeys.accessToken,
+            tokenResponse.access_token
           );
         } else {
-          await saveSessionValue(GlobusStateKeys.refreshToken, null);
+          await saveSessionValue(GlobusStateKeys.accessToken, null);
         }
 
         // Try to find and get the transfer token
@@ -664,10 +663,11 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   }
 
   async function loginWithGlobus(): Promise<void> {
-    await saveSessionValue(GlobusStateKeys.continueGlobusPrepSteps, true);
     sessionStorage.removeItem('pkce_code_verifier');
     sessionStorage.removeItem('pkce_state');
-    const authUrl: string = GlobusAuth.authorizeUrl();
+    await saveSessionValue(GlobusStateKeys.continueGlobusPrepSteps, true);
+    const pkce = await createGlobusAuthObject();
+    const authUrl: string = pkce.authorizeUrl();
     redirectToNewURL(authUrl);
   }
 
@@ -679,13 +679,13 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   }
 
   async function performGlobusDownloadStep(): Promise<void> {
-    const [transferToken, refreshToken] = await getGlobusTokens();
+    const [transferToken, accessToken] = await getGlobusTokens();
     const [
       useDefaultEndpoint,
       defaultEndpoint,
       userSelectedEndpoint,
     ] = await getEndpointData();
-    const tReady = tokensReady(refreshToken, transferToken);
+    const tReady = tokensReady(accessToken, transferToken);
     const eReady = endpointIsReady(
       useDefaultEndpoint,
       defaultEndpoint,
@@ -697,9 +697,9 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
     if (tReady && eReady) {
       if (useDefaultEndpoint) {
-        handleGlobusDownload(transferToken, refreshToken, defaultEndpoint);
+        handleGlobusDownload(transferToken, accessToken, defaultEndpoint);
       } else {
-        handleGlobusDownload(transferToken, refreshToken, userSelectedEndpoint);
+        handleGlobusDownload(transferToken, accessToken, userSelectedEndpoint);
       }
     } else if (tReady) {
       if (endpointUrlReady(urlParams)) {
@@ -712,14 +712,14 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
               ...useDefaultConfirmModal,
               show: false,
             });
-            showGlobusDownloadPrompt(transferToken, refreshToken, userEndpoint);
+            showGlobusDownloadPrompt(transferToken, accessToken, userEndpoint);
           },
           onCancelAction: (): void => {
             setUseDefaultConfirmModal({
               ...useDefaultConfirmModal,
               show: false,
             });
-            showGlobusDownloadPrompt(transferToken, refreshToken, userEndpoint);
+            showGlobusDownloadPrompt(transferToken, accessToken, userEndpoint);
           },
           show: true,
           state: 'none',
@@ -732,7 +732,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         await getUrlTokens();
         showGlobusDownloadPrompt(
           transferToken,
-          refreshToken,
+          accessToken,
           userSelectedEndpoint
         );
       } else {
