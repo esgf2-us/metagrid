@@ -661,34 +661,44 @@ export const saveSessionValue = async <T>(
  */
 export const startGlobusTransfer = async (
   accessToken: string,
-  refreshToken: string,
+  transferAccessToken: string,
   endpointId: string,
   path: string,
   ids: string[] | string,
   filenameVars?: string[]
 ): Promise<AxiosResponse> => {
-  let url = queryString.stringifyUrl({
-    url: apiRoutes.globusTransfer.path,
-    query: {
-      access_token: accessToken,
-      refresh_token: refreshToken,
-      endpointId,
-      path,
-      dataset_id: ids,
-    },
-  });
-  if (filenameVars && filenameVars.length > 0) {
-    const filenameVarsParam = queryString.stringify(
-      { query: filenameVars },
-      {
-        arrayFormat: 'comma',
-      }
-    );
-    url += `&${filenameVarsParam}`;
-  }
+  // const url = queryString.stringifyUrl({
+  //   url: apiRoutes.globusTransfer.path,
+  //   query: {
+  //     access_token: transferAccessToken,
+  //     refresh_token: accessToken,
+  //     endpointId,
+  //     path,
+  //     dataset_id: ids,
+  //   },
+  // });
+  // if (filenameVars && filenameVars.length > 0) {
+  //   const filenameVarsParam = queryString.stringify(
+  //     { query: filenameVars },
+  //     {
+  //       arrayFormat: 'comma',
+  //     }
+  //   );
+  //   url += `&${filenameVarsParam}`;
+  // }
 
   return axios
-    .get(url)
+    .post(
+      apiRoutes.globusTransfer.path,
+      JSON.stringify({
+        access_token: transferAccessToken,
+        refresh_token: accessToken,
+        endpointId,
+        path,
+        dataset_id: ids,
+        filenameVars,
+      })
+    )
     .then((resp) => {
       return resp;
     })

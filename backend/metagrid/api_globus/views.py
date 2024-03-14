@@ -167,9 +167,10 @@ def get_files(url_params):  # pragma: no cover
 
     # Create list of parameters to be saved in the script
     url_params_list = []
-    for param, value_list in url_params.lists():
-        for v in value_list:
-            url_params_list.append("{}={}".format(param, v))
+
+    # for param, value_list in url_params.lists():
+    #     for v in value_list:
+    #         url_params_list.append("{}={}".format(param, v))
 
     # Set a Solr query string
     if url_params.get(QUERY):
@@ -193,11 +194,13 @@ def get_files(url_params):  # pragma: no cover
     # Get directory structure for downloaded files
 
     # Collect remaining constraints
-    for param, value_list in url_params.lists():
-        # Check for negative constraints
-        if param[-1] == "!":
-            param = "-" + param[:-1]
+    # for param, value_list in url_params.lists():
+    #     # Check for negative constraints
+    #     if param[-1] == "!":
+    #         param = "-" + param[:-1]
 
+    for param in url_params:
+        value_list = url_params[param]
         # Split values separated by commas
         # but don't split at commas inside parentheses
         # (i.e. cases such as "CESM1(CAM5.1,FV2)")
@@ -320,12 +323,17 @@ def submit_transfer(
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
 def do_globus_transfer(request):  # pragma: no cover
+
+    print(request.body)
+
     if request.method == "POST":
-        url_params = request.POST.copy()
+        url_params = json.loads(request.body)
     elif request.method == "GET":
         url_params = request.GET.copy()
     else:  # pragma: no cover
         return HttpResponseBadRequest("Request method must be POST or GET.")
+
+    print(url_params)
 
     # check for bearer token and set if present
     access_token = None
