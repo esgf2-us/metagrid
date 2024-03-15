@@ -187,8 +187,8 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       ),
     },
     {
-      title: 'Dataset Title',
-      dataIndex: 'title',
+      title: 'Dataset ID',
+      dataIndex: 'master_id',
       key: 'title',
       width: 'auto',
       render: (title: string, record: RawSearchResult) => {

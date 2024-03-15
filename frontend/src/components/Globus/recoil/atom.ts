@@ -5,15 +5,16 @@ import { GlobusStateValue, GlobusTaskItem } from '../types';
 
 enum GlobusStateKeys {
   accessToken = 'globusAccessToken',
-  globusAuth = 'globusAuth',
+  userChosenEndpointUUID = 'globusChosenEndpointUUID',
   continueGlobusPrepSteps = 'continueGlobusPreparationSteps',
-  useDefaultEndpoint = 'useDefaultEndpoint',
   defaultEndpoint = 'defaultGlobusEndpoint',
-  userSelectedEndpoint = 'userSelectedEndpoint',
+  globusAuth = 'globusAuth',
+  globusTaskItems = 'globusTaskItems',
   refreshToken = 'globusRefreshToken',
   tokenResponse = 'tokenResponse',
   transferToken = 'globusTransferToken',
-  globusTaskItems = 'globusTaskItems',
+  useDefaultEndpoint = 'useDefaultEndpoint',
+  userSelectedEndpoint = 'userSelectedEndpoint',
 }
 
 export const globusDefaultEndpoint = atom<GlobusStateValue>({
