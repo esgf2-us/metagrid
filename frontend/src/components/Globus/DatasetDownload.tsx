@@ -117,7 +117,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   const [
     chosenGlobusEndpoint,
     setChosenGlobusEndpoint,
-  ] = React.useState<string>('Search for a Globus Collection');
+  ] = React.useState<string>('');
 
   const [
     selectedDownloadType,
@@ -218,11 +218,12 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   }
 
   async function resetTokens(): Promise<void> {
-    await saveSessionValue<null>(GlobusStateKeys.globusAuth, null);
     await saveSessionValue<null>(GlobusStateKeys.accessToken, null);
+    await saveSessionValue<null>(GlobusStateKeys.defaultEndpoint, null);
+    await saveSessionValue<null>(GlobusStateKeys.globusAuth, null);
     await saveSessionValue<null>(GlobusStateKeys.refreshToken, null);
     await saveSessionValue<null>(GlobusStateKeys.transferToken, null);
-    await saveSessionValue<null>(GlobusStateKeys.defaultEndpoint, null);
+    await saveSessionValue<null>(GlobusStateKeys.userChosenEndpointUUID, null);
     await saveSessionValue<null>(GlobusStateKeys.userSelectedEndpoint, null);
   }
 
@@ -454,7 +455,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   };
 
   const changeGlobusEndpoint = async (value: string): Promise<void> => {
-    setChosenGlobusEndpoint(value);
     const checkEndpoint = globusEndpoints?.find(
       (endpoint) => endpoint.value === value
     );
@@ -468,6 +468,9 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
       await saveSessionValue<string>(GlobusStateKeys.globusAuth, SCOPES);
     }
+
+    await saveSessionValue(GlobusStateKeys.userChosenEndpointUUID, value);
+    setChosenGlobusEndpoint(value);
   };
 
   const searchGlobusEndpoints = async (value: string): Promise<void> => {
@@ -512,7 +515,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       ...globusStepsModal,
       onOkAction: async () => {
         setGlobusStepsModal({ ...globusStepsModal, show: false });
-        await redirectToSelectGlobusEndpoint();
+        await redirectToSelectGlobusEndpointPath();
       },
       show: true,
       state: 'endpoint',
@@ -656,15 +659,26 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     }
   }
 
-  async function redirectToSelectGlobusEndpoint(): Promise<void> {
+  async function redirectToSelectGlobusEndpointPath(): Promise<void> {
+    const endpointUUID = await loadSessionValue<string>(
+      GlobusStateKeys.userChosenEndpointUUID
+    );
+
     await saveSessionValue(GlobusStateKeys.continueGlobusPrepSteps, true);
+
     const endpointSearchURL = `https://app.globus.org/file-manager?action=${globusRedirectUrl}&method=GET&cancelUrl=${globusRedirectUrl}`;
-    redirectToNewURL(endpointSearchURL);
+
+    if (endpointUUID) {
+      redirectToNewURL(`${endpointSearchURL}&origin_id=${endpointUUID}`);
+    } else {
+      redirectToNewURL(endpointSearchURL);
+    }
   }
 
   async function loginWithGlobus(): Promise<void> {
     sessionStorage.removeItem('pkce_code_verifier');
     sessionStorage.removeItem('pkce_state');
+
     await saveSessionValue(GlobusStateKeys.continueGlobusPrepSteps, true);
     const pkce = await createGlobusAuthObject();
     const authUrl: string = pkce.authorizeUrl();
@@ -819,7 +833,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             </Select.Option>
           ))}
         </Select>
-        {selectedDownloadType === 'Globus' && (
+        {!useGlobusDefaultEndpoint && selectedDownloadType === 'Globus' && (
           <Select
             data-testid="searchEndpointInput"
             defaultActiveFirstOption={false}
@@ -830,7 +844,9 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             placeholder="Search for a Globus Collection"
             showSearch
             style={{ width: '450px' }}
-            value={chosenGlobusEndpoint}
+            value={
+              chosenGlobusEndpoint !== '' ? chosenGlobusEndpoint : undefined
+            }
             options={(globusEndpoints || []).map((d) => ({
               contact_email: d.contact_email,
               entity_type: d.entity_type,
@@ -868,13 +884,18 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             handleDownloadForm(selectedDownloadType as 'wget' | 'Globus');
           }}
           icon={<DownloadOutlined />}
-          disabled={itemSelections.length === 0 || !downloadActive}
+          disabled={
+            itemSelections.length === 0 ||
+            !downloadActive ||
+            (!useGlobusDefaultEndpoint &&
+              selectedDownloadType === 'Globus' &&
+              chosenGlobusEndpoint === '')
+          }
           loading={downloadIsLoading}
         >
           {selectedDownloadType === 'Globus' ? 'Transfer' : 'Download'}
         </Button>
         {selectedDownloadType === 'Globus' &&
-          defaultGlobusEndpoint &&
           itemSelections.length !== 0 &&
           downloadActive && (
             <Radio.Group
