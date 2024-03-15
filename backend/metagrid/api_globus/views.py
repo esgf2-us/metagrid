@@ -323,7 +323,6 @@ def submit_transfer(
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
 def do_globus_transfer(request):  # pragma: no cover
-
     print(request.body)
 
     if request.method == "POST":
