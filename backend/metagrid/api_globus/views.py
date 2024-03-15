@@ -341,13 +341,13 @@ def do_globus_transfer(request):  # pragma: no cover
     target_endpoint = None
     target_folder = None
     if A_TOKEN in url_params:
-        access_token = url_params.pop(A_TOKEN)[0]
+        access_token = url_params.pop(A_TOKEN)
     if R_TOKEN in url_params:
-        refresh_token = url_params.pop(R_TOKEN)[0]
+        refresh_token = url_params.pop(R_TOKEN)
     if "endpointId" in url_params:
-        target_endpoint = url_params.pop("endpointId")[0]
+        target_endpoint = url_params.pop("endpointId")
     if "path" in url_params:
-        target_folder = url_params.pop("path")[0]
+        target_folder = url_params.pop("path")
 
     if (
         (not target_endpoint)

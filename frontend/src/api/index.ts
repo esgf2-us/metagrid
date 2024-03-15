@@ -660,8 +660,8 @@ export const saveSessionValue = async <T>(
  * If the API returns a 200, it returns the axios response.
  */
 export const startGlobusTransfer = async (
-  accessToken: string,
   transferAccessToken: string,
+  accessToken: string,
   endpointId: string,
   path: string,
   ids: string[] | string,
