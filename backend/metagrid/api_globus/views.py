@@ -165,21 +165,10 @@ def get_files(url_params):  # pragma: no cover
         if param[-1] == "!":
             param = param[:-1]
 
-    # Create list of parameters to be saved in the script
-    url_params_list = []
-
-    # for param, value_list in url_params.lists():
-    #     for v in value_list:
-    #         url_params_list.append("{}={}".format(param, v))
-
     # Set a Solr query string
     if url_params.get(QUERY):
         _query = url_params.pop(QUERY)[0]
         querys.append(_query)
-
-    # Set range for timestamps to query
-
-    # Set datetime start and stop
 
     if len(querys) == 0:
         querys.append("*:*")
@@ -194,10 +183,6 @@ def get_files(url_params):  # pragma: no cover
     # Get directory structure for downloaded files
 
     # Collect remaining constraints
-    # for param, value_list in url_params.lists():
-    #     # Check for negative constraints
-    #     if param[-1] == "!":
-    #         param = "-" + param[:-1]
 
     for param in url_params:
         value_list = url_params[param]
