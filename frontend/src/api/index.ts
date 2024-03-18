@@ -660,35 +660,25 @@ export const saveSessionValue = async <T>(
  * If the API returns a 200, it returns the axios response.
  */
 export const startGlobusTransfer = async (
+  transferAccessToken: string,
   accessToken: string,
-  refreshToken: string,
   endpointId: string,
   path: string,
   ids: string[] | string,
   filenameVars?: string[]
 ): Promise<AxiosResponse> => {
-  let url = queryString.stringifyUrl({
-    url: apiRoutes.globusTransfer.path,
-    query: {
-      access_token: accessToken,
-      refresh_token: refreshToken,
-      endpointId,
-      path,
-      dataset_id: ids,
-    },
-  });
-  if (filenameVars && filenameVars.length > 0) {
-    const filenameVarsParam = queryString.stringify(
-      { query: filenameVars },
-      {
-        arrayFormat: 'comma',
-      }
-    );
-    url += `&${filenameVarsParam}`;
-  }
-
   return axios
-    .get(url)
+    .post(
+      apiRoutes.globusTransfer.path,
+      JSON.stringify({
+        access_token: transferAccessToken,
+        refresh_token: accessToken,
+        endpointId,
+        path,
+        dataset_id: ids,
+        filenameVars,
+      })
+    )
     .then((resp) => {
       return resp;
     })

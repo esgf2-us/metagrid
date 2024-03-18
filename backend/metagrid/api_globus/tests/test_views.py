@@ -41,15 +41,13 @@ class TestGlobusViewSet(APITestCase):
 
     def test_get_access_token(self):
         url = reverse("globus_auth")
+
         getdata = {}
         response = self.client.post(url, getdata)
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_globus_transfer(self):
         url = reverse("globus_transfer")
-        getdata = {}
-        response = self.client.get(url, getdata)
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
 
         postdata = {
             "access_token": "",
@@ -57,5 +55,5 @@ class TestGlobusViewSet(APITestCase):
             "endpointId": "test",
             "path": "bad/path",
         }
-        response = self.client.post(url, postdata)
+        response = self.client.post(url, postdata, format="json")
         assert response.status_code == status.HTTP_400_BAD_REQUEST
