@@ -8,7 +8,7 @@
 import 'setimmediate'; // Added because in Jest 27, setImmediate is not defined, causing test errors
 import humps from 'humps';
 import queryString from 'query-string';
-import { AxiosResponse } from 'axios';
+import { AxiosResponse, AxiosError } from 'axios';
 import axios from '../lib/axios';
 import {
   RawUserCart,
@@ -37,7 +37,7 @@ export interface ResponseError extends Error {
 
 const getCookie = (name: string): null | string => {
   let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
+  if (document && document.cookie && document.cookie !== '') {
     const cookies = document.cookie.split(';');
     for (let i = 0; i < cookies.length; i += 1) {
       const cookie = cookies[i].trim();
@@ -660,42 +660,35 @@ export const saveSessionValue = async <T>(
  * If the API returns a 200, it returns the axios response.
  */
 export const startGlobusTransfer = async (
+  transferAccessToken: string,
   accessToken: string,
-  refreshToken: string,
   endpointId: string,
   path: string,
   ids: string[] | string,
   filenameVars?: string[]
 ): Promise<AxiosResponse> => {
-  let url = queryString.stringifyUrl({
-    url: apiRoutes.globusTransfer.path,
-    query: {
-      access_token: accessToken,
-      refresh_token: refreshToken,
-      endpointId,
-      path,
-      dataset_id: ids,
-    },
-  });
-  if (filenameVars && filenameVars.length > 0) {
-    const filenameVarsParam = queryString.stringify(
-      { query: filenameVars },
-      {
-        arrayFormat: 'comma',
-      }
-    );
-    url += `&${filenameVarsParam}`;
-  }
-
   return axios
-    .get(url)
+    .post(
+      apiRoutes.globusTransfer.path,
+      JSON.stringify({
+        access_token: transferAccessToken,
+        refresh_token: accessToken,
+        endpointId,
+        path,
+        dataset_id: ids,
+        filenameVars,
+      })
+    )
     .then((resp) => {
       return resp;
     })
-    .catch((error: ResponseError) => {
-      throw new Error(
-        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusTransfer)
-      );
+    .catch((error: AxiosError) => {
+      let message = '';
+      /* istanbul ignore else */
+      if (error.response) {
+        message = error.response.data;
+      }
+      throw new Error(message);
     });
 };
 

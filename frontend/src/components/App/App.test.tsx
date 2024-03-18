@@ -114,31 +114,9 @@ it('handles setting filename searches and duplicates', async () => {
   const renderedApp = customRenderKeycloak(<App searchQuery={activeSearch} />);
   const { getByTestId, getByText } = renderedApp;
 
-  // Select a project for the test
-
   // Check applicable components render
   const leftSearchColumn = await waitFor(() => getByTestId('search-facets'));
   expect(leftSearchColumn).toBeTruthy();
-
-  // Wait for project form to render
-  const projectForm = await waitFor(() => getByTestId('project-form'));
-  expect(projectForm).toBeTruthy();
-
-  // Check project select form exists and mouseDown to expand list of options to expand options
-  const projectFormSelect = within(projectForm).getByRole('combobox');
-  expect(projectFormSelect).toBeTruthy();
-  fireEvent.mouseDown(projectFormSelect);
-
-  // Select a project option
-  const projectOption = getByTestId('project_1');
-  expect(projectOption).toBeTruthy();
-  await user.click(projectOption);
-
-  // Submit the form
-  const submitBtn = within(projectForm).getByRole('img', {
-    name: 'select',
-  });
-  fireEvent.submit(submitBtn);
 
   // Wait for components to rerender
   await waitFor(() => getByTestId('search'));
@@ -183,26 +161,12 @@ it('handles setting filename searches and duplicates', async () => {
 });
 
 it('handles setting and removing text input filters and clearing all search filters', async () => {
-  const { getByPlaceholderText, getByTestId, getByText } = customRenderKeycloak(
-    <App searchQuery={activeSearch} />
-  );
+  const renderedApp = customRenderKeycloak(<App searchQuery={activeSearch} />);
 
-  // Check applicable components render
-  const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
-  expect(leftMenuComponent).toBeTruthy();
+  const { getByTestId, getByText } = renderedApp;
 
   // Change value for free-text input
-  const freeTextInput = await waitFor(() =>
-    getByPlaceholderText('Search for a keyword')
-  );
-  expect(freeTextInput).toBeTruthy();
-  fireEvent.change(freeTextInput, { target: { value: 'foo' } });
-
-  // Submit the form
-  const submitBtn = within(leftMenuComponent).getByRole('img', {
-    name: 'search',
-  });
-  fireEvent.submit(submitBtn);
+  await submitKeywordSearch(renderedApp, 'foo', user);
 
   // Wait for components to rerender
   await waitFor(() => getByTestId('search'));
@@ -217,8 +181,7 @@ it('handles setting and removing text input filters and clearing all search filt
   await user.click(clearAllTag);
 
   // Change value for free-text input and submit again
-  fireEvent.change(freeTextInput, { target: { value: 'baz' } });
-  fireEvent.submit(submitBtn);
+  await submitKeywordSearch(renderedApp, 'baz', user);
 
   // Wait for components to rerender
   await waitFor(() => getByTestId('search'));
@@ -239,28 +202,6 @@ it('handles applying general facets', async () => {
     <App searchQuery={activeSearch} />
   );
 
-  // Check applicable components render
-
-  // Wait for project form to render
-  const projectForm = await waitFor(() => getByTestId('project-form'));
-  expect(projectForm).toBeTruthy();
-
-  // Check project select form exists and mouseDown to expand list of options to expand options
-  const projectFormSelect = within(projectForm).getByRole('combobox');
-  expect(projectFormSelect).toBeTruthy();
-  fireEvent.mouseDown(projectFormSelect);
-
-  // Select the second project option
-  const projectOption = getByTestId('project_1');
-  expect(projectOption).toBeTruthy();
-  await user.click(projectOption);
-
-  // Submit the form
-  const submitBtn = within(projectForm).getByRole('img', {
-    name: 'select',
-  });
-  fireEvent.submit(submitBtn);
-
   // Wait for facets forms to rerender
   const facetsForm = await waitFor(() => getByTestId('facets-form'));
   expect(facetsForm).toBeTruthy();
@@ -271,7 +212,6 @@ it('handles applying general facets', async () => {
   });
   await user.click(additionalPropertiesPanel);
 
-  // Change result type
   // Check facet select form exists and mouseDown to expand list of options
   const resultTypeSelect = getByTestId('result-type-form-select');
   expect(resultTypeSelect).toBeTruthy();
@@ -294,28 +234,6 @@ it('handles applying and removing project facets', async () => {
   // Check applicable components render
   const facetsComponent = await waitFor(() => getByTestId('search-facets'));
   expect(facetsComponent).toBeTruthy();
-
-  // Wait for project form to render
-  const projectForm = await waitFor(() => getByTestId('project-form'));
-  expect(projectForm).toBeTruthy();
-
-  // Check project select form exists and mouseDown to expand list of options to
-  // expand options
-  const projectFormSelect = within(projectForm).getByRole('combobox');
-
-  expect(projectFormSelect).toBeTruthy();
-  fireEvent.mouseDown(projectFormSelect);
-
-  // Select the second project option
-  const projectOption = getByTestId('project_1');
-  expect(projectOption).toBeTruthy();
-  await user.click(projectOption);
-
-  // Submit the form
-  const submitBtn = within(facetsComponent).getByRole('img', {
-    name: 'select',
-  });
-  fireEvent.submit(submitBtn);
 
   // Wait for project form to render
   const facetsForm = await waitFor(() => getByTestId('facets-form'));
@@ -387,99 +305,35 @@ it('handles applying and removing project facets', async () => {
   await waitFor(() => getByTestId('search'));
 });
 
-it('handles project changes and clearing filters when the active project !== selected project', async () => {
-  const { getByTestId, getByText } = customRenderKeycloak(
+it('fetches the data node status every defined interval', async () => {
+  jest.useFakeTimers();
+
+  const { getByTestId } = customRenderKeycloak(
     <App searchQuery={activeSearch} />
   );
+
+  act(() => {
+    jest.advanceTimersByTime(295000);
+    jest.useRealTimers();
+  });
 
   // Check applicable components render
   const facetsComponent = await waitFor(() => getByTestId('search-facets'));
   expect(facetsComponent).toBeTruthy();
-
-  // Wait for project form to render
-  const projectForm = await waitFor(() => getByTestId('project-form'));
-  expect(projectForm).toBeTruthy();
-
-  // Check project select form exists and mouseDown to expand list of options
-  const projectFormSelect = within(projectForm).getByRole('combobox');
-
-  expect(projectFormSelect).toBeTruthy();
-  fireEvent.mouseDown(projectFormSelect);
-
-  // Select the second project option
-  const projectOption = await waitFor(() => getByTestId('project_1'));
-  expect(projectOption).toBeInTheDocument();
-  await user.click(projectOption);
-
-  // Check facets component re-renders
-  const facetsComponent2 = await waitFor(() => getByTestId('search-facets'));
-  expect(facetsComponent).toBeTruthy();
-
-  // Submit the form
-  const submitBtn = within(facetsComponent2).getByRole('img', {
-    name: 'select',
-  });
-
-  fireEvent.submit(submitBtn);
-
-  // Wait for components to rerender
-  await waitFor(() => getByTestId('search-facets'));
-
-  // Check project select form exists again and mouseDown to expand list of options
-  const projectFormSelect2 = within(projectForm).getByRole('combobox');
-
-  fireEvent.mouseDown(projectFormSelect2);
-
-  // Select the first project option
-  const firstOption = await waitFor(() => getByText('test1'));
-  expect(firstOption).toBeInTheDocument();
-  await user.click(firstOption);
-
-  // Submit the form
-  fireEvent.submit(submitBtn);
-
-  // Wait for components to rerender
-  await waitFor(() => getByTestId('search-facets'));
 });
 
-it('fetches the data node status every defined interval', () => {
-  jest.useFakeTimers();
-
-  customRenderKeycloak(<App searchQuery={activeSearch} />);
-
-  act(() => {
-    jest.advanceTimersByTime(295000);
-  });
-  jest.useRealTimers();
-});
 describe('User cart', () => {
   it('handles authenticated user adding and removing items from cart', async () => {
-    const {
-      getByRole,
-      getByTestId,
-      getByText,
-      getByPlaceholderText,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />, {
-      token: 'token',
-    });
-
-    // Check applicable components render
-    const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
-    expect(leftMenuComponent).toBeTruthy();
+    const renderedApp = customRenderKeycloak(
+      <App searchQuery={activeSearch} />,
+      {
+        token: 'token',
+      }
+    );
+    const { getByRole, getByTestId, getByText } = renderedApp;
 
     // Change value for free-text input
-    const input = 'foo';
-    const freeTextInput = await waitFor(() =>
-      getByPlaceholderText('Search for a keyword')
-    );
-    expect(freeTextInput).toBeTruthy();
-    fireEvent.change(freeTextInput, { target: { value: input } });
-
-    // Submit the form
-    const submitBtn = within(leftMenuComponent).getByRole('img', {
-      name: 'search',
-    });
-    fireEvent.submit(submitBtn);
+    await submitKeywordSearch(renderedApp, 'foo', user);
 
     // Wait for components to rerender
     await waitFor(() => getByTestId('search'));
@@ -516,32 +370,16 @@ describe('User cart', () => {
   });
 
   it("displays authenticated user's number of files in the cart summary and handles clearing the cart", async () => {
-    const {
-      getByRole,
-      getByTestId,
-      getByText,
-      getByPlaceholderText,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />, {
-      token: 'token',
-    });
-
-    // Check applicable components render
-    const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
-    expect(leftMenuComponent).toBeTruthy();
+    const renderedApp = customRenderKeycloak(
+      <App searchQuery={activeSearch} />,
+      {
+        token: 'token',
+      }
+    );
+    const { getByRole, getByTestId, getByText, findByText } = renderedApp;
 
     // Change value for free-text input
-    const input = 'foo';
-    const freeTextInput = await waitFor(() =>
-      getByPlaceholderText('Search for a keyword')
-    );
-    expect(freeTextInput).toBeTruthy();
-    await user.type(freeTextInput, input);
-
-    // Submit the form
-    const submitBtn = within(leftMenuComponent).getByRole('img', {
-      name: 'search',
-    });
-    await user.click(submitBtn);
+    await submitKeywordSearch(renderedApp, 'foo', user);
 
     // Wait for components to rerender
     await waitFor(() => getByTestId('search'));
@@ -574,7 +412,10 @@ describe('User cart', () => {
       name: 'shopping-cart',
     });
     expect(cartLink).toBeTruthy();
-    await user.click(cartLink);
+
+    await act(async () => {
+      await user.click(cartLink);
+    });
 
     // Check number of files and datasets are correctly displayed
     const cart = await waitFor(() => getByTestId('cart'));
@@ -615,35 +456,22 @@ describe('User cart', () => {
     expect(numFilesText.textContent).toEqual('Number of Files: 0');
 
     // Check empty alert renders
-    const emptyAlert = getByText('Your cart is empty');
+    const emptyAlert = await findByText('Your cart is empty');
     expect(emptyAlert).toBeTruthy();
   });
 
   it('handles anonymous user adding and removing items from cart', async () => {
     // Render component as anonymous
-    const {
-      getByRole,
-      getByTestId,
-      getByPlaceholderText,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />, {}, true);
+    const renderedApp = customRenderKeycloak(
+      <App searchQuery={activeSearch} />,
+      {},
+      true
+    );
 
-    // Check applicable components render
-    const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
-    expect(leftMenuComponent).toBeTruthy();
+    const { getByRole, getByTestId } = renderedApp;
 
     // Change value for free-text input
-    const input = 'foo';
-    const freeTextInput = await waitFor(() =>
-      getByPlaceholderText('Search for a keyword')
-    );
-    expect(freeTextInput).toBeTruthy();
-    fireEvent.change(freeTextInput, { target: { value: input } });
-
-    // Submit the form
-    const submitBtn = within(leftMenuComponent).getByRole('img', {
-      name: 'search',
-    });
-    fireEvent.submit(submitBtn);
+    await submitKeywordSearch(renderedApp, 'foo', user);
 
     // Wait for components to rerender
     await waitFor(() => getByTestId('search'));
@@ -669,32 +497,17 @@ describe('User cart', () => {
 
   it('displays anonymous user"s number of files in the cart summary and handles clearing the cart', async () => {
     // Render component as anonymous
-    const {
-      getByRole,
-      getByTestId,
-      getByText,
-      getByPlaceholderText,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />, {}, true);
+    const { getByRole, getByTestId, getByText } = customRenderKeycloak(
+      <App searchQuery={activeSearch} />,
+      {},
+      true
+    );
 
     // Check applicable components render
     const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
     expect(leftMenuComponent).toBeTruthy();
     const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
     expect(leftMenuComponent).toBeTruthy();
-
-    // Change value for free-text input
-    const input = 'foo';
-    const freeTextInput = await waitFor(() =>
-      getByPlaceholderText('Search for a keyword')
-    );
-    expect(freeTextInput).toBeTruthy();
-    fireEvent.change(freeTextInput, { target: { value: input } });
-
-    // Submit the form
-    const submitBtn = within(leftMenuComponent).getByRole('img', {
-      name: 'search',
-    });
-    fireEvent.submit(submitBtn);
 
     // Wait for components to rerender
     await waitFor(() => getByTestId('search'));
@@ -795,33 +608,19 @@ describe('User cart', () => {
 
 describe('User search library', () => {
   it('handles authenticated user saving and applying searches', async () => {
-    const {
-      getByTestId,
-      getByPlaceholderText,
-      getByRole,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />, {
-      token: 'token',
-    });
+    const renderedApp = customRenderKeycloak(
+      <App searchQuery={activeSearch} />,
+      {
+        token: 'token',
+      }
+    );
+    // Change value for free-text input
+    await submitKeywordSearch(renderedApp, 'foo', user);
+    const { getByTestId, getByRole } = renderedApp;
 
     // Check applicable components render
-    const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
-    expect(leftMenuComponent).toBeTruthy();
     const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
     expect(rightMenuComponent).toBeTruthy();
-
-    // Change value for free-text input
-    const input = 'foo';
-    const freeTextInput = await waitFor(() =>
-      getByPlaceholderText('Search for a keyword')
-    );
-    expect(freeTextInput).toBeTruthy();
-    fireEvent.change(freeTextInput, { target: { value: input } });
-
-    // Submit the form
-    const submitBtn = within(leftMenuComponent).getByRole('img', {
-      name: 'search',
-    });
-    await user.click(submitBtn);
 
     // Wait for components to rerender
     await waitFor(() => getByTestId('search'));
@@ -902,31 +701,17 @@ describe('User search library', () => {
 
   it('handles anonymous user saving and applying searches', async () => {
     // Render component as anonymous
-    const {
-      getByTestId,
-      getByPlaceholderText,
-      getByRole,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />, {}, true);
+    const { getByTestId, getByRole } = customRenderKeycloak(
+      <App searchQuery={activeSearch} />,
+      {},
+      true
+    );
 
     // Check applicable components render
     const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
     expect(leftMenuComponent).toBeTruthy();
     const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
     expect(rightMenuComponent).toBeTruthy();
-
-    // Change value for free-text input
-    const input = 'foo';
-    const freeTextInput = await waitFor(() =>
-      getByPlaceholderText('Search for a keyword')
-    );
-    expect(freeTextInput).toBeTruthy();
-    fireEvent.change(freeTextInput, { target: { value: input } });
-
-    // Submit the form
-    const submitBtn = within(leftMenuComponent).getAllByRole('img', {
-      name: 'search',
-    })[0];
-    await user.click(submitBtn);
 
     // Wait for components to rerender
     await waitFor(() => getByTestId('search'));
@@ -962,31 +747,19 @@ describe('User search library', () => {
 
   it('handles anonymous user removing searches from the search library', async () => {
     // Render component as anonymous
-    const {
-      getByPlaceholderText,
-      getByRole,
-      getByTestId,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />, {}, true);
-
-    // Check applicable components render
-    const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
-    expect(leftMenuComponent).toBeTruthy();
-    const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
-    expect(rightMenuComponent).toBeTruthy();
+    const renderedApp = customRenderKeycloak(
+      <App searchQuery={activeSearch} />,
+      {},
+      true
+    );
+    const { getByRole, getByTestId } = renderedApp;
 
     // Change value for free-text input
-    const input = 'foo';
-    const freeTextInput = await waitFor(() =>
-      getByPlaceholderText('Search for a keyword')
-    );
-    expect(freeTextInput).toBeTruthy();
-    fireEvent.change(freeTextInput, { target: { value: input } });
+    await submitKeywordSearch(renderedApp, 'foo', user);
 
-    // Submit the form
-    const submitBtn = within(leftMenuComponent).getByRole('img', {
-      name: 'search',
-    });
-    await user.click(submitBtn);
+    // Check applicable components render
+    const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
+    expect(rightMenuComponent).toBeTruthy();
 
     // Wait for components to rerender
     await waitFor(() => getByTestId('search'));
@@ -1020,31 +793,19 @@ describe('User search library', () => {
   });
 
   it('handles anonymous user copying search to clipboard', async () => {
-    const {
-      getByTestId,
-      getByPlaceholderText,
-      getByRole,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />, {}, true);
+    const renderedApp = customRenderKeycloak(
+      <App searchQuery={activeSearch} />,
+      {},
+      true
+    );
+    const { getByTestId, getByRole } = renderedApp;
 
     // Check applicable components render
-    const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
-    expect(leftMenuComponent).toBeTruthy();
     const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
     expect(rightMenuComponent).toBeTruthy();
 
     // Change value for free-text input
-    const input = 'foo';
-    const freeTextInput = await waitFor(() =>
-      getByPlaceholderText('Search for a keyword')
-    );
-    expect(freeTextInput).toBeTruthy();
-    fireEvent.change(freeTextInput, { target: { value: input } });
-
-    // Submit the form
-    const submitBtn = within(leftMenuComponent).getByRole('img', {
-      name: 'search',
-    });
-    fireEvent.submit(submitBtn);
+    await submitKeywordSearch(renderedApp, 'foo', user);
 
     // Wait for components to rerender
     await waitFor(() => getByTestId('search'));
@@ -1085,13 +846,13 @@ describe('User search library', () => {
     });
 
     it('shows a disabled save search button due to failed search results', async () => {
-      const {
-        getByTestId,
-        getByPlaceholderText,
-        getByRole,
-      } = customRenderKeycloak(<App searchQuery={activeSearch} />, {
-        token: 'token',
-      });
+      const renderedApp = customRenderKeycloak(
+        <App searchQuery={activeSearch} />,
+        {
+          token: 'token',
+        }
+      );
+      const { getByRole } = renderedApp;
 
       server.use(
         rest.post(apiRoutes.userSearches.path, (_req, res, ctx) =>
@@ -1099,23 +860,8 @@ describe('User search library', () => {
         )
       );
 
-      // Check applicable components render
-      const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
-      expect(leftMenuComponent).toBeTruthy();
-
       // Change value for free-text input
-      const input = 'foo';
-      const freeTextInput = await waitFor(() =>
-        getByPlaceholderText('Search for a keyword')
-      );
-      expect(freeTextInput).toBeTruthy();
-      await user.type(freeTextInput, input);
-
-      // Submit the form
-      const submitBtn = within(leftMenuComponent).getByRole('img', {
-        name: 'search',
-      });
-      await user.click(submitBtn);
+      await submitKeywordSearch(renderedApp, 'foo', user);
 
       // Check Save Search button exists and click it
       const saveSearch = await waitFor(() =>
@@ -1140,38 +886,6 @@ describe('User search library', () => {
         }
       );
       const { getByTestId, getAllByText, getByText } = renderedApp;
-
-      // Select a project for the test
-
-      // Check applicable components render
-      const leftSearchColumn = await waitFor(() =>
-        getByTestId('search-facets')
-      );
-      expect(leftSearchColumn).toBeTruthy();
-
-      // Wait for project form to render
-      const projectForm = await waitFor(() => getByTestId('project-form'));
-      expect(projectForm).toBeTruthy();
-
-      // Check project select form exists and mouseDown to expand list of options to expand options
-      const projectFormSelect = within(projectForm).getByRole('combobox');
-      expect(projectFormSelect).toBeTruthy();
-      fireEvent.mouseDown(projectFormSelect);
-
-      // Select a project option
-      const projectOption = getByTestId('project_1');
-      expect(projectOption).toBeTruthy();
-      await user.click(projectOption);
-
-      // Submit the form
-      const submitBtn = within(projectForm).getByRole('img', {
-        name: 'select',
-      });
-      fireEvent.submit(submitBtn);
-
-      // Wait for components to rerender
-      await waitFor(() => getByTestId('search'));
-      await waitFor(() => getByTestId('facets-form'));
 
       // Check delete button renders for the saved search and click it
       const saveBtn = await waitFor(() => getByText('Save Search'));

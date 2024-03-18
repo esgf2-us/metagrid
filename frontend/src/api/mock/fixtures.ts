@@ -52,8 +52,8 @@ export const rawProjectFixture = (
 
 export const projectsFixture = (): RawProjects => [
   rawProjectFixture(),
-  rawProjectFixture({ name: 'test2' }),
-  rawProjectFixture({ name: 'test3' }),
+  rawProjectFixture({ name: 'test2', fullName: 'test2' }),
+  rawProjectFixture({ name: 'test3', fullName: 'test3' }),
 ];
 
 /**

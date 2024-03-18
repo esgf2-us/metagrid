@@ -11,6 +11,7 @@ import {
 } from '../contexts/AuthContext';
 import { keycloakProviderInitConfig } from '../lib/keycloak';
 import { ReactJoyrideProvider } from '../contexts/ReactJoyrideContext';
+import { publicUrl } from '../env';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const keycloak = new Keycloak();
@@ -41,7 +42,7 @@ export const KeycloakProvidersAuthenticated = ({
               pk: '1',
             }}
           >
-            <MemoryRouter basename={process.env.PUBLIC_URL}>
+            <MemoryRouter basename={publicUrl}>
               <ReactJoyrideProvider>{children}</ReactJoyrideProvider>
             </MemoryRouter>
           </AuthContext.Provider>

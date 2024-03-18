@@ -1,4 +1,5 @@
 import {
+  CopyOutlined,
   InfoCircleOutlined,
   RightCircleOutlined,
   SearchOutlined,
@@ -30,6 +31,7 @@ import {
 } from '../Search/types';
 import { ActiveFacets, ParsedFacets } from './types';
 import { globusEnabledNodes } from '../../env';
+import { showNotice } from '../../common/utils';
 
 const styles: CSSinJS = {
   container: {
@@ -346,15 +348,53 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                       const isOptionalforDatasets =
                         facetOptions.length > 0 &&
                         facetOptions[0].includes('none');
+                      const facetNameHumanized = humanizeFacetNames(facet);
                       return (
                         <Form.Item
                           key={facet}
                           name={facet}
                           label={
-                            humanizeFacetNames(facet) +
-                            (isOptionalforDatasets ? ' (Optional)' : '')
+                            <div>
+                              {humanizeFacetNames(facet)}
+                              <Button
+                                size="small"
+                                style={{ marginLeft: '5px' }}
+                                icon={
+                                  <Tooltip
+                                    title={`Copy ${facetNameHumanized}s to clipboard`}
+                                  >
+                                    <CopyOutlined
+                                      style={{ fontSize: '12px' }}
+                                    />
+                                  </Tooltip>
+                                }
+                                onClick={() => {
+                                  // copy link to clipboard
+                                  /* istanbul ignore else */
+                                  if (navigator && navigator.clipboard) {
+                                    navigator.clipboard.writeText(
+                                      facetOptions
+                                        .map((item) => {
+                                          return `${item[0]} (${item[1]})`;
+                                        })
+                                        .join('\n')
+                                    );
+                                    showNotice(
+                                      `${facetNameHumanized}s copied to clipboard!`,
+                                      {
+                                        icon: (
+                                          <CopyOutlined
+                                            style={styles.messageAddIcon}
+                                          />
+                                        ),
+                                      }
+                                    );
+                                  }
+                                }}
+                              ></Button>
+                            </div>
                           }
-                          style={{ marginBottom: '0px' }}
+                          style={{ marginBottom: 0 }}
                           tooltip={
                             isOptionalforDatasets
                               ? {

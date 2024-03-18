@@ -21,15 +21,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Use Node.js 21.x
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: "21.x"
 
       - name: Cache node modules
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         env:
           cache-name: cache-node-modules
         with:
@@ -44,11 +44,20 @@ jobs:
         run: yarn install --frozen-lockfile
 
       - name: Run Tests
+        env:
+          RELEASE: dev
+          ENV_FILE: .envs/.react
+          HTML_PATH: public/
         run: |
+          # Replaces react-scripts substitution during build for index.html and generates runtime_env.js
+          docker/production/react/entrypoint
+
           yarn test:coverage
 
       - name: Upload Coverage Report
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           file: "./frontend/coverage/coverage-final.json"
           flags: frontend

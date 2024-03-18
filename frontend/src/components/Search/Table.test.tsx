@@ -1,4 +1,4 @@
-import { fireEvent, waitFor, within, screen } from '@testing-library/react';
+import { fireEvent, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import {
@@ -33,13 +33,10 @@ it('renders component', () => {
   expect(table).toBeTruthy();
 });
 
-xit('renders component without results', () => {
-  const { getByText } = customRenderKeycloak(
-    <Table {...defaultProps} results={[]} totalResults={undefined} />
-  );
-
-  const noDataText = getByText('No Data');
-  expect(noDataText).toBeTruthy();
+it('renders component without results', () => {
+  const table = customRenderKeycloak(<Table {...defaultProps} results={[]} />);
+  const row = table.getAllByRole('row')[1];
+  expect(row).toHaveClass('ant-table-placeholder');
 });
 
 it('renders not available for total size and number of files columns when dataset doesn"t have those attributes', () => {
@@ -127,7 +124,6 @@ xit('renders record metadata in an expandable panel', async () => {
   const expandableIcon = within(expandableCell).getByRole('img', {
     name: 'right-circle',
   });
-  screen.debug(expandableCell, Infinity);
   expect(expandableIcon).toBeTruthy();
   // await act(async () => {
   //   await user.click(expandableIcon);

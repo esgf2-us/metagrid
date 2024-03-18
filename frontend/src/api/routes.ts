@@ -1,6 +1,6 @@
 import { esgfSearchURL, metagridApiURL } from '../env';
 
-export type HTTPCodeType = 400 | 401 | 403 | 404 | 405 | 'generic';
+export type HTTPCodeType = 400 | 401 | 403 | 404 | 405 | 408 | 'generic';
 
 /**
  * Update this function if more API HTTP codes need to be handled.
@@ -16,6 +16,7 @@ export const mapHTTPErrorCodes = (
     403: `Your request to the ${service} service was forbidden. Please contact support.`,
     404: `The requested resource at the ${service} service was invalid. Please contact support.`,
     405: `Could not perform operation at the ${service} service. Please contact support`,
+    408: '',
     // Adds verbosity to network errors that have generic messages.
     // For example, the axios default network error message is "Error: Network Error".
     // This typically occurs when an API/service is down and unable to be reached.

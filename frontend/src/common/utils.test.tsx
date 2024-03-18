@@ -1,3 +1,5 @@
+import { render } from '@testing-library/react';
+import React from 'react';
 import { rawProjectFixture } from '../api/mock/fixtures';
 import { UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
 import {
@@ -346,34 +348,80 @@ describe('Test unsavedLocal searches', () => {
 });
 
 describe('Test show notices function', () => {
+  // Creating a test component to render the messages and verify they're rendered
+  type Props = { testFunc: () => void };
+  const TestComponent: React.FC<React.PropsWithChildren<Props>> = ({
+    testFunc,
+  }) => {
+    React.useEffect(() => {
+      testFunc();
+    }, []);
+    return <div></div>;
+  };
+
   it('Shows a success message', () => {
-    showNotice('Test notification successful', {
-      duration: 5,
-      type: 'success',
-    });
+    const notice = (): void => {
+      showNotice('Test notification successful', {
+        duration: 5,
+        type: 'success',
+      });
+    };
+
+    const { getByText } = render(<TestComponent testFunc={notice} />);
+    expect(getByText('Test notification successful')).toBeTruthy();
   });
+
   it('Shows a warning message', () => {
-    showNotice('Test warning notification', {
-      duration: 5,
-      type: 'warning',
-    });
+    const notice = (): void => {
+      showNotice('Test warning notification', {
+        duration: 5,
+        type: 'warning',
+      });
+    };
+
+    const { getByText } = render(<TestComponent testFunc={notice} />);
+    expect(getByText('Test warning notification')).toBeTruthy();
   });
+
   it('Shows a error message', () => {
-    showNotice('Test error notification', {
-      duration: 5,
-      type: 'error',
-    });
+    const notice = (): void => {
+      showNotice('Test error notification', {
+        duration: 5,
+        type: 'error',
+      });
+    };
+
+    const { getByText } = render(<TestComponent testFunc={notice} />);
+    expect(getByText('Test error notification')).toBeTruthy();
   });
-  it('Shows a success message', () => {
-    showNotice('Test info notification', {
-      duration: 5,
-      type: 'info',
-    });
+
+  it('Shows an info message', () => {
+    const notice = (): void => {
+      showNotice('Test info notification', {
+        duration: 5,
+        type: 'info',
+      });
+    };
+
+    const { getByText } = render(<TestComponent testFunc={notice} />);
+    expect(getByText('Test info notification')).toBeTruthy();
   });
+
   it('Shows a default message', () => {
-    showNotice('Test info notification');
+    const notice = (): void => {
+      showNotice('Test default notification');
+    };
+
+    const { getByText } = render(<TestComponent testFunc={notice} />);
+    expect(getByText('Test default notification')).toBeTruthy();
   });
+
   it('Shows a error notification', () => {
-    showError('');
+    const notice = (): void => {
+      showError('');
+    };
+
+    const { getByText } = render(<TestComponent testFunc={notice} />);
+    expect(getByText('An unknown error has occurred.')).toBeTruthy();
   });
 });

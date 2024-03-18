@@ -30,7 +30,7 @@ const handlers = [
   rest.get(apiRoutes.globusAuth.path, (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(userAuthFixture()))
   ),
-  rest.get(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
+  rest.post(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(globusTransferResponseFixture()))
   ),
   rest.get(apiRoutes.userInfo.path, (_req, res, ctx) =>

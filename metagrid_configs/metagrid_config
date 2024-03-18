@@ -24,6 +24,16 @@ KEYCLOAK_URL=
 KEYCLOAK_REALM=
 KEYCLOAK_CLIENT_ID=
 
+# Django redirects
+# https://docs.djangoproject.com/en/4.2/ref/settings/#logout-redirect-url
+DJANGO_LOGIN_REDIRECT_URL=
+DJANGO_LOGOUT_REDIRECT_URL=
+
+# Globus
+# https://app.globus.org/settings/developers/registration/confidential_client
+GLOBUS_CLIENT_KEY=
+GLOBUS_CLIENT_SECRET=
+
 # postgress
 POSTGRES_HOST=postgres
 POSTGRES_PORT=5432
@@ -39,6 +49,9 @@ REACT_APP_PREVIOUS_URL=metagrid
 # MetaGrid API
 # https://github.com/aims-group/metagrid/tree/master/backend
 REACT_APP_METAGRID_API_URL=
+
+# Authentication Method
+REACT_APP_AUTHENTICATION_METHOD=globus
 
 # Globus
 REACT_APP_GLOBUS_REDIRECT=http://localhost:3000/cart/items
@@ -65,6 +78,10 @@ REACT_APP_ESGF_NODE_STATUS_URL=
 REACT_APP_KEYCLOAK_URL=
 REACT_APP_KEYCLOAK_REALM=
 REACT_APP_KEYCLOAK_CLIENT_ID=
+
+# Django All Auth URLs
+REACT_APP_DJANGO_LOGIN_URL=
+REACT_APP_DJANGO_LOGOUT_URL=
 
 # react-hotjar
 # https://github.com/abdalla/react-hotjar
