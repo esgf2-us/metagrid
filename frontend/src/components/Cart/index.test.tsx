@@ -1,6 +1,6 @@
-import { waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
+import { act } from '@testing-library/react';
 import {
   userCartFixture,
   userSearchQueriesFixture,
@@ -39,45 +39,50 @@ afterEach(() => {
 });
 
 it('handles tab switching and saved search actions', async () => {
-  const { getByRole, getByTestId } = customRenderKeycloak(
+  const { findByRole, findByTestId } = customRenderKeycloak(
     <Cart {...defaultProps} />
   );
 
   // Check cart tab renders
-  const cart = await waitFor(() => getByTestId('cart'));
+  const cart = await findByTestId('cart');
   expect(cart).toBeTruthy();
 
   // Check Search Library Tab renders and click it
-  const searchLibraryTab = await waitFor(() =>
-    getByRole('tab', {
-      name: 'book Search Library',
-      hidden: true,
-    })
-  );
+  const searchLibraryTab = await findByRole('tab', {
+    name: 'book Search Library',
+    hidden: true,
+  });
+
   expect(searchLibraryTab).toBeTruthy();
-  await user.click(searchLibraryTab);
+  await act(async () => {
+    await user.click(searchLibraryTab);
+  });
 
   // Check JSON link renders and click it
-  const jsonLink = await waitFor(() => getByRole('link'));
+  const jsonLink = await findByRole('link');
   expect(jsonLink).toBeTruthy();
-  await user.click(jsonLink);
+  await act(async () => {
+    await user.click(jsonLink);
+  });
 
   // Wait for cart to re-render
-  await waitFor(() => getByTestId('cart'));
+  await findByTestId('cart');
   // Check apply search button renders and click it
-  const applyBtn = await waitFor(() =>
-    getByRole('img', { name: 'search', hidden: true })
-  );
+  const applyBtn = await findByRole('img', { name: 'search', hidden: true });
   expect(applyBtn).toBeTruthy();
-  await user.click(applyBtn);
+
+  await act(async () => {
+    await user.click(applyBtn);
+  });
 
   // Wait for cart to re-render
-  await waitFor(() => getByTestId('cart'));
+  await findByTestId('cart');
 
   // Check delete button renders and click it
-  const deleteBtn = await waitFor(() =>
-    getByRole('img', { name: 'delete', hidden: true })
-  );
+  const deleteBtn = await findByRole('img', { name: 'delete', hidden: true });
   expect(deleteBtn).toBeTruthy();
-  await user.click(deleteBtn);
+
+  await act(async () => {
+    await user.click(deleteBtn);
+  });
 });

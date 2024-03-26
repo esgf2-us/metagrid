@@ -51,6 +51,7 @@ export interface GlobusEndpoint {
 
 export interface ResponseError extends Error {
   status?: number;
+  /* eslint-disable @typescript-eslint/no-redundant-type-constituents */
   response: { status: HTTPCodeType; [key: string]: string | HTTPCodeType };
 }
 

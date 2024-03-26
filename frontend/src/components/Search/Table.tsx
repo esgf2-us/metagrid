@@ -53,6 +53,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
 }) => {
   // Add options to this constant as needed
   type DatasetDownloadTypes = 'wget' | 'Globus';
+
   // If a record supports downloads from the allowed downloads, it will render
   // in the drop downs
   const allowedDownloadTypes: DatasetDownloadTypes[] = ['wget'];
@@ -289,20 +290,18 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
                   disabled={record.retracted === true}
                   className={topDataRowTargets.downloadScriptOptions.class()}
                   style={{ width: 100 }}
-                >
-                  {allowedDownloadTypes.map(
-                    (option) =>
-                      (supportedDownloadTypes.includes(option) ||
-                        option === 'wget') && (
-                        <Select.Option
-                          key={`${formKey}-${option}`}
-                          value={option}
-                        >
-                          {option}
-                        </Select.Option>
-                      )
-                  )}
-                </Select>
+                  options={allowedDownloadTypes
+                    .filter((type) => {
+                      return supportedDownloadTypes.includes(type);
+                    })
+                    .map((option) => {
+                      return {
+                        key: `${formKey}-${option}`,
+                        value: option,
+                        label: option,
+                      };
+                    })}
+                />
               </Form.Item>
               <Form.Item>
                 <Button
