@@ -679,7 +679,7 @@ describe('test startGlobusTransfer function', () => {
 
   it('catches and throws an error based on HTTP status code', async () => {
     server.use(
-      rest.get(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
+      rest.post(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
         res(ctx.status(404))
       )
     );

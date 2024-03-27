@@ -1462,7 +1462,7 @@ describe('Testing globus transfer related failures', () => {
   // TODO: Figure out why this test passes locally, but fails when run in the github CI
   it('Shows an error message if transfer task fails', async () => {
     server.use(
-      rest.get(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
+      rest.post(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
         res(ctx.status(404))
       )
     );
