@@ -1,4 +1,10 @@
-import { fireEvent, waitFor, within, screen } from '@testing-library/react';
+import {
+  fireEvent,
+  waitFor,
+  within,
+  screen,
+  act,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { userCartFixture } from '../../api/mock/fixtures';
@@ -54,7 +60,10 @@ describe('test the cart items component', () => {
     // Check first row has add button and click it
     const addBtn = within(firstRow).getByRole('img', { name: 'plus' });
     expect(addBtn).toBeTruthy();
-    await user.click(addBtn);
+
+    await act(async () => {
+      await user.click(addBtn);
+    });
 
     // Check 'Added items(s) to the cart' message appears
     const addText = await waitFor(
@@ -64,12 +73,18 @@ describe('test the cart items component', () => {
 
     // Switch to the cart page
     const cartBtn = getByTestId('cartPageLink');
-    await user.click(cartBtn);
+
+    await act(async () => {
+      await user.click(cartBtn);
+    });
 
     // Click the Remove All Items button
     const removeAllBtn = getByRole('button', { name: 'Remove All Items' });
     expect(removeAllBtn).toBeTruthy();
-    await user.click(removeAllBtn);
+
+    await act(async () => {
+      await user.click(removeAllBtn);
+    });
 
     // Check popover appears
     const popOver = getByRole('tooltip');
@@ -78,7 +93,10 @@ describe('test the cart items component', () => {
     // Submit the popover
     const submitPopOverBtn = getByRole('button', { name: /ok/i });
     expect(submitPopOverBtn).toBeInTheDocument();
-    await user.click(submitPopOverBtn);
+
+    await act(async () => {
+      await user.click(submitPopOverBtn);
+    });
 
     // Expect cart to now be empty
     expect(screen.getByText('Your cart is empty')).toBeTruthy();
@@ -102,7 +120,10 @@ describe('test the cart items component', () => {
     });
     const addBtn = within(firstRow).getByRole('img', { name: 'plus' });
     expect(addBtn).toBeTruthy();
-    await user.click(addBtn);
+
+    await act(async () => {
+      await user.click(addBtn);
+    });
 
     // Check 'Added items(s) to the cart' message appears
     const addText = await waitFor(
@@ -112,12 +133,18 @@ describe('test the cart items component', () => {
 
     // Switch to the cart page
     const cartBtn = getByTestId('cartPageLink');
-    await user.click(cartBtn);
+
+    await act(async () => {
+      await user.click(cartBtn);
+    });
 
     // Check first row renders and click the checkbox
     const firstCheckBox = within(firstRow).getByRole('checkbox');
     expect(firstCheckBox).toBeTruthy();
-    await user.click(firstCheckBox);
+
+    await act(async () => {
+      await user.click(firstCheckBox);
+    });
 
     // Check download form renders
     const downloadForm = getByTestId('downloadForm');
@@ -135,7 +162,10 @@ describe('test the cart items component', () => {
       name: 'download',
     });
     expect(downloadBtn).toBeTruthy();
-    await user.click(downloadBtn);
+
+    await act(async () => {
+      await user.click(downloadBtn);
+    });
   });
 
   it('handles error selecting items in the cart and downloading them via wget', async () => {
@@ -154,7 +184,10 @@ describe('test the cart items component', () => {
     });
     const firstCheckBox = within(firstRow).getByRole('checkbox');
     expect(firstCheckBox).toBeTruthy();
-    await user.click(firstCheckBox);
+
+    await act(async () => {
+      await user.click(firstCheckBox);
+    });
 
     // Check download form renders
     const downloadForm = getByTestId('downloadForm');

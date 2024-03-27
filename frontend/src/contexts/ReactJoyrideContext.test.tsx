@@ -1,4 +1,4 @@
-import { waitFor } from '@testing-library/react';
+import { act, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { getCurrentAppPage, TourTitles } from '../common/reactJoyrideSteps';
@@ -60,7 +60,9 @@ describe('test ReactJoyrideProvider', () => {
     expect(button).toBeTruthy();
 
     // Start tutorial and check that it renders
-    await user.click(button);
+    await act(async () => {
+      await user.click(button);
+    });
     await waitFor(() => button);
     const tourModal = getByRole('heading', { name: TourTitles.Main });
     expect(tourModal).toBeTruthy();
@@ -69,7 +71,9 @@ describe('test ReactJoyrideProvider', () => {
     let nextBtn = getByRole('button', { name: 'Next' });
     expect(nextBtn).toBeTruthy();
 
-    await user.click(button);
+    await act(async () => {
+      await user.click(button);
+    });
     await waitFor(() => button);
     nextBtn = getByRole('button', { name: 'Next' });
 

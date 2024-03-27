@@ -2,7 +2,7 @@
 // allows you to do things like:
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
-import '@testing-library/jest-dom/extend-expect';
+import '@testing-library/jest-dom';
 import { cleanup } from '@testing-library/react';
 import { server } from './api/mock/server';
 import messageDisplayData from './components/Messaging/messageDisplayData';
@@ -69,6 +69,9 @@ afterEach(() => {
   window.location = (JSON.parse(location) as unknown) as Location; // Reset location
   window.location.replace = jest.fn(); // Don't do anything with redirects
   window.location.assign = jest.fn();
+  window.URL.createObjectURL = jest.fn();
+
+  HTMLAnchorElement.prototype.click = jest.fn();
 
   // Reset mock values
   mockConfig.globusEnabledNodes = originalEnabledNodes;

@@ -4,7 +4,7 @@ import { CheckCircleFilled, DownloadOutlined } from '@ant-design/icons';
 import { Button, Divider, Modal, Radio, Select, Space, Tooltip } from 'antd';
 import PKCE from 'js-pkce';
 import React, { useEffect } from 'react';
-import { useRecoilState } from 'recoil';
+import { useRecoilState, useSetRecoilState } from 'recoil';
 import {
   saveSessionValue,
   loadSessionValue,
@@ -90,10 +90,9 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     setUseGlobusDefaultEndpoint,
   ] = useRecoilState<boolean>(globusUseDefaultEndpoint);
 
-  const [
-    defaultGlobusEndpoint,
-    setDefaultGlobusEndpoint,
-  ] = useRecoilState<GlobusStateValue>(globusDefaultEndpoint);
+  const setDefaultGlobusEndpoint = useSetRecoilState<GlobusStateValue>(
+    globusDefaultEndpoint
+  );
 
   const [taskItems, setTaskItems] = useRecoilState<GlobusTaskItem[]>(
     globusTaskItems
@@ -826,13 +825,12 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
               setSelectedDownloadType(downloadType);
             }
           }}
-        >
-          {downloadOptions.map((option) => (
-            <Select.Option key={option} value={option}>
-              {option}
-            </Select.Option>
-          ))}
-        </Select>
+          options={downloadOptions.map((option) => ({
+            key: option,
+            value: option,
+            label: option,
+          }))}
+        />
         {!useGlobusDefaultEndpoint && selectedDownloadType === 'Globus' && (
           <Select
             data-testid="searchEndpointInput"

@@ -1,4 +1,4 @@
-import { waitFor, within } from '@testing-library/react';
+import { act, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import {
@@ -145,7 +145,10 @@ describe('test Search component', () => {
     // Check if 'Clear All' button exists, then click it
     const clearAllBtn = await waitFor(() => getByText('Clear All'));
     expect(clearAllBtn).toBeTruthy();
-    await user.click(clearAllBtn);
+
+    await act(async () => {
+      await user.click(clearAllBtn);
+    });
 
     // Wait for search component to re-render
     await waitFor(() => getByTestId('search'));
@@ -203,7 +206,10 @@ describe('test Search component', () => {
     const nextPage = await waitFor(() =>
       getByRole('listitem', { name: 'Next Page' })
     );
-    await user.click(nextPage);
+
+    await act(async () => {
+      await user.click(nextPage);
+    });
 
     // Wait for search table to re-render
     await waitFor(() => getByTestId('search-table'));
@@ -239,11 +245,17 @@ describe('test Search component', () => {
     // Select the first row's checkbox
     const firstCheckBox = within(firstRow).getByRole('checkbox');
     expect(firstCheckBox).toBeTruthy();
-    await user.click(firstCheckBox);
+
+    await act(async () => {
+      await user.click(firstCheckBox);
+    });
 
     // Check 'Add Selected to Cart' button is enabled and click it
     expect(addCartBtn.disabled).toBeFalsy();
-    await user.click(addCartBtn);
+
+    await act(async () => {
+      await user.click(addCartBtn);
+    });
 
     // Wait for search component to re-render
     await waitFor(() => getByTestId('search'));
@@ -290,7 +302,10 @@ describe('test Search component', () => {
       'th.ant-table-cell.ant-table-selection-column [type="checkbox"]'
     ) as HTMLInputElement;
     expect(selectAllCheckbox).toBeTruthy();
-    await user.click(selectAllCheckbox);
+
+    await act(async () => {
+      await user.click(selectAllCheckbox);
+    });
 
     // Click the 'Add Selected to Cart'
     let addCartBtn = (await waitFor(() =>
@@ -299,7 +314,10 @@ describe('test Search component', () => {
       })
     )) as HTMLButtonElement;
     expect(addCartBtn).toBeTruthy();
-    await user.click(addCartBtn);
+
+    await act(async () => {
+      await user.click(addCartBtn);
+    });
 
     // Re-render with items in the cart
     rerender(<Search {...defaultProps} userCart={userCartFixture()} />);
@@ -330,7 +348,10 @@ describe('test Search component', () => {
       getByRole('button', { name: 'book Save Search' })
     );
     expect(saveBtn).toBeTruthy();
-    await user.click(saveBtn);
+
+    await act(async () => {
+      await user.click(saveBtn);
+    });
 
     // Wait for search component to re-render
     await waitFor(() => getByTestId('search'));
@@ -353,7 +374,10 @@ describe('test Search component', () => {
       getByRole('button', { name: 'share-alt Copy Search' })
     );
     expect(copyBtn).toBeTruthy();
-    await user.click(copyBtn);
+
+    await act(async () => {
+      await user.click(copyBtn);
+    });
 
     // Wait for search component to re-render
     await waitFor(() => getByTestId('search'));

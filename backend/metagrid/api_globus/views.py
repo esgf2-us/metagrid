@@ -252,7 +252,6 @@ def get_files(url_params):  # pragma: no cover
     with urllib.request.urlopen(req) as response:
         results = json.loads(response.read().decode())
 
-
     # Warning message about the number of files retrieved
     # being smaller than the total number found for the query
     #    values = {"files": results["response"]["docs"], "wget_info": [wget_empty_path, url_params_list],            "file_info": [num_files_found, file_limit]}

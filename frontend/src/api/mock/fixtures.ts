@@ -67,6 +67,7 @@ export const rawSearchResultFixture = (
   const defaults: RawSearchResult = {
     id: 'foo',
     title: 'foo',
+    master_id: 'foo',
     url: ['foo.bar|HTTPServer', 'http://test.com/file.nc|OPENDAP'],
     number_of_files: 3,
     data_node: 'aims3.llnl.gov',
@@ -84,6 +85,7 @@ export const rawSearchResultsFixture = (): Array<RawSearchResult> => [
   rawSearchResultFixture({
     id: 'bar',
     title: 'bar',
+    master_id: 'bar',
     number_of_files: 2,
     data_node: 'esgf1.dkrz.de',
     access: ['wget', 'HTTPServer', 'OPENDAP'],
@@ -91,6 +93,7 @@ export const rawSearchResultsFixture = (): Array<RawSearchResult> => [
   rawSearchResultFixture({
     id: 'foobar',
     title: 'foobar',
+    master_id: 'foobar',
     number_of_files: 3,
     data_node: 'esgf1.test.de',
     access: ['wget', 'HTTPServer', 'OPENDAP'],

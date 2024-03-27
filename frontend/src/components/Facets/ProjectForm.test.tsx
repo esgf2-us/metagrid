@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, waitFor } from '@testing-library/react';
+import { act, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ResponseError } from '../../api';
 import {
@@ -60,7 +60,10 @@ it('Runs project form submit when changing projects', async () => {
   const option3 = await waitFor(() => {
     return getByText('test3');
   });
-  await user.click(option3);
+
+  await act(async () => {
+    await user.click(option3);
+  });
 
   // The 3rd project should now be selected
   const option3Selected = getByText('test3 was selected!');

@@ -359,7 +359,7 @@ describe('Test show notices function', () => {
     return <div></div>;
   };
 
-  it('Shows a success message', () => {
+  it('Shows a success message', async () => {
     const notice = (): void => {
       showNotice('Test notification successful', {
         duration: 5,
@@ -367,11 +367,11 @@ describe('Test show notices function', () => {
       });
     };
 
-    const { getByText } = render(<TestComponent testFunc={notice} />);
-    expect(getByText('Test notification successful')).toBeTruthy();
+    const { findByText } = render(<TestComponent testFunc={notice} />);
+    expect(await findByText('Test notification successful')).toBeTruthy();
   });
 
-  it('Shows a warning message', () => {
+  it('Shows a warning message', async () => {
     const notice = (): void => {
       showNotice('Test warning notification', {
         duration: 5,
@@ -379,11 +379,11 @@ describe('Test show notices function', () => {
       });
     };
 
-    const { getByText } = render(<TestComponent testFunc={notice} />);
-    expect(getByText('Test warning notification')).toBeTruthy();
+    const { findByText } = render(<TestComponent testFunc={notice} />);
+    expect(await findByText('Test warning notification')).toBeTruthy();
   });
 
-  it('Shows a error message', () => {
+  it('Shows a error message', async () => {
     const notice = (): void => {
       showNotice('Test error notification', {
         duration: 5,
@@ -391,11 +391,11 @@ describe('Test show notices function', () => {
       });
     };
 
-    const { getByText } = render(<TestComponent testFunc={notice} />);
-    expect(getByText('Test error notification')).toBeTruthy();
+    const { findByText } = render(<TestComponent testFunc={notice} />);
+    expect(await findByText('Test error notification')).toBeTruthy();
   });
 
-  it('Shows an info message', () => {
+  it('Shows an info message', async () => {
     const notice = (): void => {
       showNotice('Test info notification', {
         duration: 5,
@@ -403,25 +403,25 @@ describe('Test show notices function', () => {
       });
     };
 
-    const { getByText } = render(<TestComponent testFunc={notice} />);
-    expect(getByText('Test info notification')).toBeTruthy();
+    const { findByText } = render(<TestComponent testFunc={notice} />);
+    expect(await findByText('Test info notification')).toBeTruthy();
   });
 
-  it('Shows a default message', () => {
+  it('Shows a default message', async () => {
     const notice = (): void => {
       showNotice('Test default notification');
     };
 
-    const { getByText } = render(<TestComponent testFunc={notice} />);
-    expect(getByText('Test default notification')).toBeTruthy();
+    const { findByText } = render(<TestComponent testFunc={notice} />);
+    expect(await findByText('Test default notification')).toBeTruthy();
   });
 
-  it('Shows a error notification', () => {
+  it('Shows a error notification', async () => {
     const notice = (): void => {
       showError('');
     };
 
-    const { getByText } = render(<TestComponent testFunc={notice} />);
-    expect(getByText('An unknown error has occurred.')).toBeTruthy();
+    const { findByText } = render(<TestComponent testFunc={notice} />);
+    expect(await findByText('An unknown error has occurred.')).toBeTruthy();
   });
 });

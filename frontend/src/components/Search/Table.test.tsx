@@ -1,4 +1,4 @@
-import { fireEvent, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import {
@@ -90,7 +90,9 @@ it('renders warning that dataset is retracted', async () => {
     name: 'right-circle',
   });
   expect(expandableIcon).toBeTruthy();
-  await user.click(expandableIcon);
+  await act(async () => {
+    await user.click(expandableIcon);
+  });
 
   // Get the expandable row that was rendered and click on it
   const expandableRow = document.querySelector(
@@ -125,15 +127,9 @@ xit('renders record metadata in an expandable panel', async () => {
     name: 'right-circle',
   });
   expect(expandableIcon).toBeTruthy();
-  // await act(async () => {
-  //   await user.click(expandableIcon);
-  // });
-  await user.click(expandableIcon);
-
-  // const tabPanel = within(table).getByTestId('extra-tabs');
-  // expect(tabPanel).toBeTruthy();
-
-  // screen.debug(undefined, Infinity);
+  await act(async () => {
+    await user.click(expandableIcon);
+  });
 
   // Get the expandable row that was rendered and click on it
   const expandableRow = document.querySelector(
@@ -144,7 +140,10 @@ xit('renders record metadata in an expandable panel', async () => {
   // Get the meta data panel and click on it
   const panel = within(expandableRow).getByText('Metadata');
   expect(panel).toBeTruthy();
-  await user.click(panel);
+
+  await act(async () => {
+    await user.click(panel);
+  });
 
   // Check metadata panel contains metadata
   const id = getByText((_, node) => node?.textContent === 'id: foo');
@@ -160,7 +159,10 @@ xit('renders record metadata in an expandable panel', async () => {
     name: 'down-circle',
   });
   expect(expandableDownIcon).toBeTruthy();
-  await user.click(expandableDownIcon);
+
+  await act(async () => {
+    await user.click(expandableDownIcon);
+  });
 
   await waitFor(() => row);
 });
@@ -198,7 +200,10 @@ xit('renders "PID" button when the record has a "xlink" key/value, vice versa', 
     name: 'right-circle',
   });
   expect(expandableIcon).toBeTruthy();
-  // await user.click(expandableIcon);
+
+  await act(async () => {
+    await user.click(expandableIcon);
+  });
 
   // Get the expandable row that was rendered and click on it
   const expandableRow = document.querySelector(
@@ -209,7 +214,10 @@ xit('renders "PID" button when the record has a "xlink" key/value, vice versa', 
   // Get the Additional panel and click on it
   const panel = within(expandableRow).getByText('Additional');
   expect(panel).toBeTruthy();
-  await user.click(panel);
+
+  await act(async () => {
+    await user.click(panel);
+  });
 
   // Check Additional panel contains PID and ES-DOC
   const firstPidBtn = within(expandableRow).getByText('PID');
@@ -258,8 +266,9 @@ xit('renders quality control flags for obs4MIPs datasets when the record has the
     name: 'right-circle',
   });
   expect(expandableIcon).toBeTruthy();
-  await user.click(expandableIcon);
-  // fireEvent.click(expandableIcon);
+  await act(async () => {
+    await user.click(expandableIcon);
+  });
 
   // Get the expandable row that was rendered and click on it
   const expandableRow = document.querySelector(
@@ -270,7 +279,9 @@ xit('renders quality control flags for obs4MIPs datasets when the record has the
   // Get the Additional panel and click on it
   const panel = getByText('Additional');
   expect(panel).toBeTruthy();
-  await user.click(panel);
+  await act(async () => {
+    await user.click(panel);
+  });
 
   // Check Additional panel contains quality flags
   const firstFlag = within(expandableRow).getByTestId('qualityFlag1');
@@ -298,7 +309,9 @@ it('renders add or remove button for items in or not in the cart respectively, a
   // Check first row has remove button and click it
   const removeBtn = within(firstRow).getByRole('img', { name: 'minus' });
   expect(removeBtn).toBeTruthy();
-  await user.click(removeBtn);
+  await act(async () => {
+    await user.click(removeBtn);
+  });
 
   // Check second row exists
   const secondRow = getByRole('row', {
@@ -309,7 +322,10 @@ it('renders add or remove button for items in or not in the cart respectively, a
   // Check second row has add button and click it
   const addBtn = within(secondRow).getByRole('img', { name: 'plus' });
   expect(addBtn).toBeTruthy();
-  await user.click(addBtn);
+
+  await act(async () => {
+    await user.click(addBtn);
+  });
 });
 
 it('handles when clicking the select checkbox for a row', async () => {
@@ -327,7 +343,10 @@ it('handles when clicking the select checkbox for a row', async () => {
 
   const checkBox = within(row).getByRole('checkbox');
   expect(checkBox).toBeTruthy();
-  await user.click(checkBox);
+
+  await act(async () => {
+    await user.click(checkBox);
+  });
 });
 
 it('handles when clicking the select all checkbox in the table"s header', async () => {
@@ -344,7 +363,10 @@ it('handles when clicking the select all checkbox in the table"s header', async 
     'th.ant-table-cell.ant-table-selection-column [type="checkbox"]'
   ) as HTMLInputElement;
   expect(selectAllCheckbox).toBeTruthy();
-  await user.click(selectAllCheckbox);
+
+  await act(async () => {
+    await user.click(selectAllCheckbox);
+  });
 });
 
 xit('handles downloading an item via wget', async () => {

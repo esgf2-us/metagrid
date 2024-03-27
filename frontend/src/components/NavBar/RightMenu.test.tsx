@@ -1,14 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
-import { render, waitFor } from '@testing-library/react';
+import { act, render, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { customRenderKeycloak } from '../../test/custom-render';
 import Support from '../Support';
 import RightMenu, { Props } from './RightMenu';
 import {
-  mockFunction,
-  tempStorageGetMock,
+  mockKeycloakToken,
   tempStorageSetMock,
 } from '../../test/jestTestFunctions';
 
@@ -22,22 +21,6 @@ const rightMenuProps: Props = {
     render(<Support open onClose={jest.fn()} />);
   },
 };
-
-// This will get a mock value from temp storage to use for keycloak
-const mockKeycloakToken = mockFunction(() => {
-  const loginFixture = tempStorageGetMock('keycloakFixture');
-
-  if (loginFixture) {
-    return loginFixture;
-  }
-  return {
-    keycloak: {
-      login: jest.fn(),
-      logout: jest.fn(),
-      idTokenParsed: { given_name: 'John' },
-    },
-  };
-});
 
 jest.mock('@react-keycloak/web', () => {
   const originalModule = jest.requireActual('@react-keycloak/web');
@@ -57,13 +40,19 @@ it('sets the active menu item based on the location pathname', async () => {
     getByRole('img', { name: 'shopping-cart' })
   );
   expect(cartItemsLink).toBeTruthy();
-  await user.click(cartItemsLink);
+
+  await act(async () => {
+    await user.click(cartItemsLink);
+  });
 
   const savedSearchLink = await waitFor(() =>
     getByRole('img', { name: 'search' })
   );
   expect(savedSearchLink).toBeTruthy();
-  await user.click(savedSearchLink);
+
+  await act(async () => {
+    await user.click(savedSearchLink);
+  });
 });
 
 it('display the users given name after authentication', async () => {
@@ -99,17 +88,17 @@ it('display the users email after authentication if they did not provide a name'
     },
   });
 
-  const { getByTestId, getByText } = customRenderKeycloak(
+  const { findByTestId, findByText } = customRenderKeycloak(
     <RightMenu {...rightMenuProps} />,
     {}
   );
 
   // Check applicable components render
-  const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
+  const rightMenuComponent = await findByTestId('right-menu');
   expect(rightMenuComponent).toBeTruthy();
 
   // Check user logged in and hover
-  const greeting = await waitFor(() => getByText('Hi, johnd@email.gov'));
+  const greeting = await findByText('Hi, johnd@email.gov');
   expect(greeting).toBeTruthy();
 });
 
@@ -125,7 +114,10 @@ it('displays sign in button when user hasn"t logged in', async () => {
   // Click the sign in button
   const signInBtn = await waitFor(() => getByRole('img', { name: 'user' }));
   expect(signInBtn).toBeTruthy();
-  await user.click(signInBtn);
+
+  await act(async () => {
+    await user.click(signInBtn);
+  });
 });
 
 it('displays help menu when help button is clicked', async () => {
@@ -140,7 +132,10 @@ it('displays help menu when help button is clicked', async () => {
   // Click the help button
   const helpBtn = await waitFor(() => getByText('Help'));
   expect(helpBtn).toBeTruthy();
-  await user.click(helpBtn);
+
+  await act(async () => {
+    await user.click(helpBtn);
+  });
 
   // Check support form rendered
   const support = getByTestId('support-form');
@@ -159,10 +154,16 @@ it('the the right drawer display for news button and hide news button', async ()
   // Click the news button
   const newsBtn = await waitFor(() => getByText('News'));
   expect(newsBtn).toBeTruthy();
-  await user.click(newsBtn);
+
+  await act(async () => {
+    await user.click(newsBtn);
+  });
 
   // Click hide button
   const hideBtn = await waitFor(() => getByText('Hide'));
   expect(hideBtn).toBeTruthy();
-  await user.click(hideBtn);
+
+  await act(async () => {
+    await user.click(hideBtn);
+  });
 });

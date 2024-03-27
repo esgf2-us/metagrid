@@ -27,5 +27,6 @@ docker compose -p metagrid_backend_dev run --rm django pytest
 # Run manage.py function
 docker compose -p metagrid_backend_dev run --rm django python manage.py <function>
 
-# View backend output in browser (esgf-dev1 example)
-Enter this browser url: https://aims2.llnl.gov/metagrid-backend/api/v1/projects/
+# View backend output in browser (localhost: example)
+
+Enter this browser url: https://aims2.llnl.gov/metagrid-backend/api/v1/projects

@@ -1,4 +1,4 @@
-import { waitFor } from '@testing-library/react';
+import { act, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { userSearchQueryFixture } from '../../api/mock/fixtures';
@@ -38,12 +38,18 @@ it('renders component and handles button clicks', async () => {
   // Check search button renders and click it
   const searchBtn = await waitFor(() => getByRole('img', { name: 'search' }));
   expect(searchBtn).toBeTruthy();
-  await user.click(searchBtn);
+
+  await act(async () => {
+    await user.click(searchBtn);
+  });
 
   // Check delete button renders and click it
   const deleteBtn = await waitFor(() => getByRole('img', { name: 'delete' }));
   expect(deleteBtn).toBeTruthy();
-  await user.click(deleteBtn);
+
+  await act(async () => {
+    await user.click(deleteBtn);
+  });
 });
 
 it('displays alert error when api fails to return response', async () => {

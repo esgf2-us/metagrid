@@ -82,13 +82,16 @@ const LeftMenu: React.FC<React.PropsWithChildren<Props>> = ({
               name="projectTextInput"
               rules={[{ required: true, message: 'Project is required' }]}
             >
-              <Select style={{ minWidth: '110px' }}>
-                {projects.map((projObj) => (
-                  <Select.Option key={projObj.name} value={projObj.name}>
-                    {projObj.name}
-                  </Select.Option>
-                ))}
-              </Select>
+              <Select
+                style={{ minWidth: '110px' }}
+                options={projects.map((projObj) => {
+                  return {
+                    key: projObj.name,
+                    value: projObj.name,
+                    label: projObj.name,
+                  };
+                })}
+              />
             </Form.Item>
             <Form.Item
               name="text"

@@ -1,4 +1,4 @@
-import { waitFor } from '@testing-library/react';
+import { act, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import NodeStatus, { Props } from '.';
@@ -39,13 +39,19 @@ it('renders the node status and columns sort', async () => {
   const nodeColHeader = getByRole('columnheader', { name: 'Node caret-down' });
 
   expect(nodeColHeader).toBeTruthy();
-  await user.click(nodeColHeader);
+
+  await act(async () => {
+    await user.click(nodeColHeader);
+  });
 
   const isOnlineColHeader = getByRole('columnheader', {
     name: 'Online caret-up caret-down',
   });
   expect(isOnlineColHeader).toBeTruthy();
-  await user.click(isOnlineColHeader);
+
+  await act(async () => {
+    await user.click(isOnlineColHeader);
+  });
 });
 
 it('renders an error message when no node status information is available', async () => {

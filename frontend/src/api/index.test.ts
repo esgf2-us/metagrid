@@ -134,6 +134,7 @@ describe('test fetching projects', () => {
     const projects = await fetchProjects();
     expect(projects).toEqual({ results: projectsFixture() });
   });
+
   it('catches and throws an error based on HTTP status code', async () => {
     server.use(
       rest.get(apiRoutes.projects.path, (_req, res, ctx) =>
