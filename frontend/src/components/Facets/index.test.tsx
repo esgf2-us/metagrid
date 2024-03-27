@@ -1,4 +1,4 @@
-import { fireEvent, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import {
@@ -50,11 +50,17 @@ it('handles facets form auto-filtering', async () => {
   const group1Panel = within(facetsForm).getByRole('button', {
     name: 'right Group1',
   });
-  await user.click(group1Panel);
+
+  await act(async () => {
+    await user.click(group1Panel);
+  });
 
   // Open Collapse Panel in Collapse component for the data_node form to render
   const collapse = getByText('Data Node');
-  await user.click(collapse);
+
+  await act(async () => {
+    await user.click(collapse);
+  });
 
   // Check facet select form exists and mouseDown to expand list of options
   const facetFormSelect = document.querySelector(
@@ -66,7 +72,10 @@ it('handles facets form auto-filtering', async () => {
   // Select the first facet option
   const facetOption = getByTestId('data_node_aims3.llnl.gov');
   expect(facetOption).toBeTruthy();
-  await user.click(facetOption);
+
+  await act(async () => {
+    await user.click(facetOption);
+  });
 
   // Wait for facet form component to re-render
   await waitFor(() => getByTestId('facets-form'));
@@ -76,7 +85,10 @@ it('handles facets form auto-filtering', async () => {
     name: 'close',
     hidden: true,
   });
-  await user.click(closeFacetOption);
+
+  await act(async () => {
+    await user.click(closeFacetOption);
+  });
 
   // Wait for facet form component to re-render
   await waitFor(() => getByTestId('facets-form'));
@@ -99,11 +111,17 @@ it('handles facets form submission, including a facet key that is undefined', as
   const group1Panel = within(facetsForm).getByRole('button', {
     name: 'right Group1',
   });
-  await user.click(group1Panel);
+
+  await act(async () => {
+    await user.click(group1Panel);
+  });
 
   // Open Collapse Panel in Collapse component for the Data Node form to render
   const collapse = getByText('Data Node');
-  await user.click(collapse);
+
+  await act(async () => {
+    await user.click(collapse);
+  });
 
   // Check facet select form exists and mouseDown to expand list of options
   const facetFormSelect = document.querySelector(
@@ -115,7 +133,10 @@ it('handles facets form submission, including a facet key that is undefined', as
   // Select the first facet option
   const facetOption = getByTestId('data_node_aims3.llnl.gov');
   expect(facetOption).toBeTruthy();
-  await user.click(facetOption);
+
+  await act(async () => {
+    await user.click(facetOption);
+  });
 
   // Wait for facet form component to re-render
   await waitFor(() => getByTestId('facets-form'));
@@ -125,7 +146,10 @@ it('handles facets form submission, including a facet key that is undefined', as
   const collapse2 = getByRole('button', {
     name: 'right Group2',
   });
-  await user.click(collapse2);
+
+  await act(async () => {
+    await user.click(collapse2);
+  });
 
   // Click on the facet2 select form but don't select an option
   // This will result in an undefined value for the form item (ant-design logic)

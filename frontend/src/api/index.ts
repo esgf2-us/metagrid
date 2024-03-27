@@ -687,28 +687,18 @@ export const startGlobusTransfer = async (
   ids: string[] | string,
   filenameVars?: string[]
 ): Promise<AxiosResponse> => {
-  let url = queryString.stringifyUrl({
-    url: apiRoutes.globusTransfer.path,
-    query: {
-      access_token: transferAccessToken,
-      refresh_token: accessToken,
-      endpointId,
-      path,
-      dataset_id: ids,
-    },
-  });
-  if (filenameVars && filenameVars.length > 0) {
-    const filenameVarsParam = queryString.stringify(
-      { query: filenameVars },
-      {
-        arrayFormat: 'comma',
-      }
-    );
-    url += `&${filenameVarsParam}`;
-  }
-
   return axios
-    .get(url)
+    .post(
+      apiRoutes.globusTransfer.path,
+      JSON.stringify({
+        access_token: transferAccessToken,
+        refresh_token: accessToken,
+        endpointId,
+        path,
+        dataset_id: ids,
+        filenameVars,
+      })
+    )
     .then((resp) => {
       return resp;
     })

@@ -5,7 +5,13 @@
  * in order to mock their behaviors.
  *
  */
-import { waitFor, within, screen, RenderResult } from '@testing-library/react';
+import {
+  waitFor,
+  within,
+  screen,
+  RenderResult,
+  act,
+} from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event/dist/types/setup/setup';
 import * as enviroConfig from '../env';
 import { getSearchFromUrl } from '../common/utils';
@@ -52,6 +58,22 @@ export const sessionStorageMock = (() => {
     },
   };
 })();
+
+// This will get a mock value from temp storage to use for keycloak
+export const mockKeycloakToken = mockFunction(() => {
+  const loginFixture = tempStorageGetMock('keycloakFixture');
+
+  if (loginFixture) {
+    return loginFixture;
+  }
+  return {
+    keycloak: {
+      login: jest.fn(),
+      logout: jest.fn(),
+      idTokenParsed: { given_name: 'John' },
+    },
+  };
+});
 
 export function tempStorageGetMock<T>(key: string): T {
   const value = sessionStorageMock.getItem<T>(key);
@@ -122,7 +144,10 @@ export async function submitKeywordSearch(
   const submitBtn = within(leftMenuComponent).getByRole('img', {
     name: 'search',
   });
-  await user.click(submitBtn);
+
+  await act(async () => {
+    await user.click(submitBtn);
+  });
 
   await waitFor(() => getByTestId('search'));
 }
@@ -144,7 +169,11 @@ export async function selectDropdownOption(
 ): Promise<void> {
   await waitFor(async () => {
     dropdown.focus();
-    await user.keyboard('[ArrowDown]');
-    await user.click(screen.getByText(option));
+    await act(async () => {
+      await user.keyboard('[ArrowDown]');
+    });
+    await act(async () => {
+      await user.click(screen.getByText(option));
+    });
   });
 }

@@ -138,15 +138,20 @@ def get_files(url_params):  # pragma: no cover
     file_offset = 0
     use_distrib = True
 
+    port = "80"
+
     try:
-        hostname = urllib.parse.urlparse(
-            query_url
-        ).hostname  # TODO need to populate the sharts based on the Solr URL
+        res = urllib.parse.urlparse(query_url)
+        hostname = (
+            res.hostname
+        )  # TODO need to populate the shards based on the Solr URL
+        if res.port:
+            port = res.port
     except RuntimeError as e:
         return HttpResponseServerError(f"Malformed URL in search results {e}")
     if hostname in TEST_SHARDS_MAP:
         hostname = TEST_SHARDS_MAP[hostname]
-    xml_shards = [f"{hostname}:80/solr"]
+    xml_shards = [f"{hostname}:{port}/solr"]
     querys = []
     file_query = ["type:File"]
 
@@ -160,20 +165,10 @@ def get_files(url_params):  # pragma: no cover
         if param[-1] == "!":
             param = param[:-1]
 
-    # Create list of parameters to be saved in the script
-    url_params_list = []
-    for param, value_list in url_params.lists():
-        for v in value_list:
-            url_params_list.append("{}={}".format(param, v))
-
     # Set a Solr query string
     if url_params.get(QUERY):
         _query = url_params.pop(QUERY)[0]
         querys.append(_query)
-
-    # Set range for timestamps to query
-
-    # Set datetime start and stop
 
     if len(querys) == 0:
         querys.append("*:*")
@@ -188,11 +183,9 @@ def get_files(url_params):  # pragma: no cover
     # Get directory structure for downloaded files
 
     # Collect remaining constraints
-    for param, value_list in url_params.lists():
-        # Check for negative constraints
-        if param[-1] == "!":
-            param = "-" + param[:-1]
 
+    for param in url_params:
+        value_list = url_params[param]
         # Split values separated by commas
         # but don't split at commas inside parentheses
         # (i.e. cases such as "CESM1(CAM5.1,FV2)")
@@ -259,7 +252,6 @@ def get_files(url_params):  # pragma: no cover
     with urllib.request.urlopen(req) as response:
         results = json.loads(response.read().decode())
 
-
     # Warning message about the number of files retrieved
     # being smaller than the total number found for the query
     #    values = {"files": results["response"]["docs"], "wget_info": [wget_empty_path, url_params_list],            "file_info": [num_files_found, file_limit]}
@@ -315,12 +307,16 @@ def submit_transfer(
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
 def do_globus_transfer(request):  # pragma: no cover
+    print(request.body)
+
     if request.method == "POST":
-        url_params = request.POST.copy()
+        url_params = json.loads(request.body)
     elif request.method == "GET":
         url_params = request.GET.copy()
     else:  # pragma: no cover
         return HttpResponseBadRequest("Request method must be POST or GET.")
+
+    print(url_params)
 
     # check for bearer token and set if present
     access_token = None
@@ -328,13 +324,13 @@ def do_globus_transfer(request):  # pragma: no cover
     target_endpoint = None
     target_folder = None
     if A_TOKEN in url_params:
-        access_token = url_params.pop(A_TOKEN)[0]
+        access_token = url_params.pop(A_TOKEN)
     if R_TOKEN in url_params:
-        refresh_token = url_params.pop(R_TOKEN)[0]
+        refresh_token = url_params.pop(R_TOKEN)
     if "endpointId" in url_params:
-        target_endpoint = url_params.pop("endpointId")[0]
+        target_endpoint = url_params.pop("endpointId")
     if "path" in url_params:
-        target_folder = url_params.pop("path")[0]
+        target_folder = url_params.pop("path")
 
     if (
         (not target_endpoint)

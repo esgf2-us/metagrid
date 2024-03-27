@@ -1,4 +1,4 @@
-import { waitFor, within } from '@testing-library/react';
+import { act, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import {
@@ -150,14 +150,20 @@ describe('test FilesTable component', () => {
       name: 'download',
     });
     expect(downloadBtn).toBeTruthy();
-    await user.click(downloadBtn);
+
+    await act(async () => {
+      await user.click(downloadBtn);
+    });
 
     // Test the copy button
     const copyBtn = within(row).getByRole('button', {
       name: 'copy',
     });
     expect(copyBtn).toBeTruthy();
-    await user.click(copyBtn);
+
+    await act(async () => {
+      await user.click(copyBtn);
+    });
   });
 
   it('handles pagination and page size changes', async () => {
@@ -212,7 +218,10 @@ describe('test FilesTable component', () => {
     const nextPage = await waitFor(() =>
       getByRole('listitem', { name: 'Next Page' })
     );
-    await user.click(nextPage);
+
+    await act(async () => {
+      await user.click(nextPage);
+    });
 
     // Wait for component to re-render
     await waitFor(() => getByTestId('filesTable'));
@@ -257,13 +266,19 @@ describe('test FilesTable component', () => {
       name: 'right-circle',
     });
     expect(expandableIcon).toBeTruthy();
-    await user.click(expandableIcon);
+
+    await act(async () => {
+      await user.click(expandableIcon);
+    });
 
     // Get the down circle icon within the cell and click to close the expandable row
     const expandableDownIcon = within(expandableCell).getByRole('img', {
       name: 'down-circle',
     });
     expect(expandableDownIcon).toBeTruthy();
-    await user.click(expandableDownIcon);
+
+    await act(async () => {
+      await user.click(expandableDownIcon);
+    });
   });
 });

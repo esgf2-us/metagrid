@@ -1,5 +1,6 @@
 import userEvent from '@testing-library/user-event';
 import React from 'react';
+import { act } from '@testing-library/react';
 import StartPopup from './StartPopup';
 import StartupMessages from './messageDisplayData';
 import { TourTitles } from '../../common/reactJoyrideSteps';
@@ -48,7 +49,10 @@ describe('Start popup tests', () => {
 
     const searchTourBtn = getByText(TourTitles.Main);
     expect(welcomeHeader).toBeTruthy();
-    await user.click(searchTourBtn);
+
+    await act(async () => {
+      await user.click(searchTourBtn);
+    });
   });
 
   it('renders start popup with welcome message and starts cart tour.', async () => {
@@ -60,7 +64,10 @@ describe('Start popup tests', () => {
 
     const cartTourBtn = getByText(TourTitles.Cart);
     expect(welcomeHeader).toBeTruthy();
-    await user.click(cartTourBtn);
+
+    await act(async () => {
+      await user.click(cartTourBtn);
+    });
   });
 
   it('renders start popup with welcome message and starts saved search tour.', async () => {
@@ -72,7 +79,10 @@ describe('Start popup tests', () => {
 
     const searchesTourBtn = getByText(TourTitles.Searches);
     expect(welcomeHeader).toBeTruthy();
-    await user.click(searchesTourBtn);
+
+    await act(async () => {
+      await user.click(searchesTourBtn);
+    });
   });
 
   it('renders start popup with welcome message and starts node page tour.', async () => {
@@ -84,7 +94,10 @@ describe('Start popup tests', () => {
 
     const nodeTourBtn = getByText(TourTitles.Node);
     expect(welcomeHeader).toBeTruthy();
-    await user.click(nodeTourBtn);
+
+    await act(async () => {
+      await user.click(nodeTourBtn);
+    });
   });
 
   it('renders start popup with message data missing.', () => {

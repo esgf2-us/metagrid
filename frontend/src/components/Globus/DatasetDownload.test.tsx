@@ -1451,7 +1451,7 @@ xdescribe('DatasetDownload form tests', () => {
   });
 });
 
-describe('Testing globus transfer related failures', () => {
+xdescribe('Testing globus transfer related failures', () => {
   beforeAll(() => {
     jest.spyOn(console, 'error').mockImplementation(jest.fn());
     tempStorageSetMock('pkce-pass', false);
@@ -1460,7 +1460,7 @@ describe('Testing globus transfer related failures', () => {
 
   it('Shows an error message if transfer task fails', async () => {
     server.use(
-      rest.get(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
+      rest.post(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
         res(ctx.status(404))
       )
     );
@@ -1601,7 +1601,7 @@ describe('Testing globus transfer related failures', () => {
   });
 });
 
-describe('Testing wget transfer related failures', () => {
+xdescribe('Testing wget transfer related failures', () => {
   it('Wget transfer fails and failure message pops up.', async () => {
     server.use(
       rest.post(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404)))

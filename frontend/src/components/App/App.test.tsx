@@ -18,28 +18,11 @@ import App from './App';
 import {
   activeSearch,
   getRowName,
-  mockFunction,
+  mockKeycloakToken,
   submitKeywordSearch,
-  tempStorageGetMock,
 } from '../../test/jestTestFunctions';
 
 const user = userEvent.setup();
-
-// This will get a mock value from temp storage to use for keycloak
-const mockKeycloakToken = mockFunction(() => {
-  const loginFixture = tempStorageGetMock('keycloakFixture');
-
-  if (loginFixture) {
-    return loginFixture;
-  }
-  return {
-    keycloak: {
-      login: jest.fn(),
-      logout: jest.fn(),
-      idTokenParsed: { given_name: 'John' },
-    },
-  };
-});
 
 jest.mock('@react-keycloak/web', () => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -132,23 +115,35 @@ it('handles setting filename searches and duplicates', async () => {
   const filenameSearchPanel = within(facetsForm).getByRole('button', {
     name: 'right Filename',
   });
-  await user.click(filenameSearchPanel);
+
+  await act(async () => {
+    await user.click(filenameSearchPanel);
+  });
 
   // Change form field values
   const inputField = getByTestId('filename-search-input');
-  await user.type(inputField, input);
+
+  await act(async () => {
+    await user.type(inputField, input);
+  });
 
   // Submit the form
   const filenameVarsSubmitBtn = within(facetsForm).getByRole('button', {
     name: 'search',
   });
-  await user.click(filenameVarsSubmitBtn);
+  await act(async () => {
+    await user.click(filenameVarsSubmitBtn);
+  });
 
   // Wait for components to rerender
   await waitFor(() => getByTestId('search'));
 
-  await user.type(inputField, input);
-  await user.click(filenameVarsSubmitBtn);
+  await act(async () => {
+    await user.type(inputField, input);
+  });
+  await act(async () => {
+    await user.click(filenameVarsSubmitBtn);
+  });
 
   // Wait for components to rerender
   await waitFor(() => getByTestId('search'));
@@ -178,7 +173,10 @@ it('handles setting and removing text input filters and clearing all search filt
   // Click on the ClearAllTag
   const clearAllTag = await waitFor(() => getByText('Clear All'));
   expect(clearAllTag).toBeTruthy();
-  await user.click(clearAllTag);
+
+  await act(async () => {
+    await user.click(clearAllTag);
+  });
 
   // Change value for free-text input and submit again
   await submitKeywordSearch(renderedApp, 'baz', user);
@@ -191,7 +189,9 @@ it('handles setting and removing text input filters and clearing all search filt
   expect(bazTag).toBeTruthy();
 
   // Close the baz tag
-  await user.click(within(bazTag).getByRole('img', { name: 'close' }));
+  await act(async () => {
+    await user.click(within(bazTag).getByRole('img', { name: 'close' }));
+  });
 
   // Wait for components to rerender
   await waitFor(() => getByTestId('search'));
@@ -210,7 +210,9 @@ it('handles applying general facets', async () => {
   const additionalPropertiesPanel = within(facetsForm).getByRole('button', {
     name: 'right Additional Properties',
   });
-  await user.click(additionalPropertiesPanel);
+  await act(async () => {
+    await user.click(additionalPropertiesPanel);
+  });
 
   // Check facet select form exists and mouseDown to expand list of options
   const resultTypeSelect = getByTestId('result-type-form-select');
@@ -220,7 +222,10 @@ it('handles applying general facets', async () => {
   // Select the first facet option
   const resultTypeOption = await waitFor(() => getByText('Originals only'));
   expect(resultTypeOption).toBeTruthy();
-  await user.click(resultTypeOption);
+
+  await act(async () => {
+    await user.click(resultTypeOption);
+  });
   await waitFor(() => getByTestId('facets-form'));
 
   await waitFor(() => getByTestId('search'));
@@ -243,11 +248,17 @@ it('handles applying and removing project facets', async () => {
   const group1Panel = within(facetsComponent).getByRole('button', {
     name: 'right Group1',
   });
-  await user.click(group1Panel);
+
+  await act(async () => {
+    await user.click(group1Panel);
+  });
 
   // Open Collapse Panel in Collapse component for the data_node form to render
   const collapse = getByText('Data Node');
-  await user.click(collapse);
+
+  await act(async () => {
+    await user.click(collapse);
+  });
 
   // Check facet select form exists and mouseDown to expand list of options
   const facetFormSelect = getByTestId('data_node-form-select');
@@ -259,7 +270,9 @@ it('handles applying and removing project facets', async () => {
     getByTestId('data_node_aims3.llnl.gov')
   );
   expect(facetOption).toBeTruthy();
-  await user.click(facetOption);
+  await act(async () => {
+    await user.click(facetOption);
+  });
 
   // Apply facets
   fireEvent.keyDown(facetFormSelect, {
@@ -291,7 +304,10 @@ it('handles applying and removing project facets', async () => {
     })
   );
   expect(facetOptionRerender).toBeTruthy();
-  await user.click(facetOptionRerender);
+
+  await act(async () => {
+    await user.click(facetOptionRerender);
+  });
 
   // Remove facets
   fireEvent.keyDown(facetFormSelectRerender, {
@@ -349,7 +365,10 @@ describe('User cart', () => {
     // Check first row has add button and click it
     const addBtn = within(firstRow).getByRole('img', { name: 'plus' });
     expect(addBtn).toBeTruthy();
-    await user.click(addBtn);
+
+    await act(async () => {
+      await user.click(addBtn);
+    });
 
     // Check 'Added items(s) to the cart' message appears
     const addText = await waitFor(() =>
@@ -360,7 +379,10 @@ describe('User cart', () => {
     // Check first row has remove button and click it
     const removeBtn = within(firstRow).getByRole('img', { name: 'minus' });
     expect(removeBtn).toBeTruthy();
-    await user.click(removeBtn);
+
+    await act(async () => {
+      await user.click(removeBtn);
+    });
 
     // Check 'Removed items(s) from the cart' message appears
     const removeText = await waitFor(() =>
@@ -438,7 +460,10 @@ describe('User cart', () => {
       name: 'Remove All Items',
     });
     expect(clearCartBtn).toBeTruthy();
-    await user.click(clearCartBtn);
+
+    await act(async () => {
+      await user.click(clearCartBtn);
+    });
 
     await waitFor(() => getByTestId('cart'));
 
@@ -449,7 +474,9 @@ describe('User cart', () => {
       })
     );
     expect(confirmBtn).toBeTruthy();
-    await user.click(confirmBtn);
+    await act(async () => {
+      await user.click(confirmBtn);
+    });
 
     // Check number of datasets and files are now 0
     expect(numDatasetsField.textContent).toEqual('Number of Datasets: 0');
@@ -487,12 +514,18 @@ describe('User cart', () => {
     // Check first row has add button and click it
     const addBtn = within(firstRow).getByRole('img', { name: 'plus' });
     expect(addBtn).toBeTruthy();
-    await user.click(addBtn);
+
+    await act(async () => {
+      await user.click(addBtn);
+    });
 
     // Check first row has remove button and click it
     const removeBtn = within(firstRow).getByRole('img', { name: 'minus' });
     expect(removeBtn).toBeTruthy();
-    await user.click(removeBtn);
+
+    await act(async () => {
+      await user.click(removeBtn);
+    });
   });
 
   it('displays anonymous user"s number of files in the cart summary and handles clearing the cart', async () => {
@@ -523,14 +556,20 @@ describe('User cart', () => {
     // Check first row has add button and click it
     const addBtn = within(firstRow).getByRole('img', { name: 'plus' });
     expect(addBtn).toBeTruthy();
-    await user.click(addBtn);
+
+    await act(async () => {
+      await user.click(addBtn);
+    });
 
     // Click on the cart link
     const cartLink = within(rightMenuComponent).getByRole('img', {
       name: 'shopping-cart',
     });
     expect(cartLink).toBeTruthy();
-    await user.click(cartLink);
+
+    await act(async () => {
+      await user.click(cartLink);
+    });
 
     // Check number of files and datasets are correctly displayed
     const cart = await waitFor(() => getByTestId('cart'));
@@ -553,7 +592,10 @@ describe('User cart', () => {
       name: 'Remove All Items',
     });
     expect(clearCartBtn).toBeTruthy();
-    await user.click(clearCartBtn);
+
+    await act(async () => {
+      await user.click(clearCartBtn);
+    });
 
     await waitFor(() => getByTestId('cart'));
 
@@ -564,7 +606,10 @@ describe('User cart', () => {
       })
     );
     expect(confirmBtn).toBeTruthy();
-    await user.click(confirmBtn);
+
+    await act(async () => {
+      await user.click(confirmBtn);
+    });
 
     // Check number of datasets and files are now 0
     expect(numDatasetsField.textContent).toEqual('Number of Datasets: 0');
@@ -630,18 +675,27 @@ describe('User search library', () => {
       getByRole('button', { name: 'book Save Search' })
     );
     expect(saveSearch).toBeTruthy();
-    await user.click(saveSearch);
+
+    await act(async () => {
+      await user.click(saveSearch);
+    });
 
     // Click Save Search button again to check if duplicates are saved
     await delay(500);
-    await user.click(saveSearch);
+
+    await act(async () => {
+      await user.click(saveSearch);
+    });
 
     // Click on the search library link
     const searchLibraryLink = within(rightMenuComponent).getByRole('img', {
       name: 'file-search',
     });
     expect(searchLibraryLink).toBeTruthy();
-    await user.click(searchLibraryLink);
+
+    await act(async () => {
+      await user.click(searchLibraryLink);
+    });
 
     // Check cart renders
     const cart = await waitFor(() => getByTestId('cart'));
@@ -650,7 +704,10 @@ describe('User search library', () => {
     // Check apply search button renders and click it
     const applySearchBtn = await waitFor(() => getByTestId('apply-1'));
     expect(applySearchBtn).toBeTruthy();
-    await user.click(applySearchBtn);
+
+    await act(async () => {
+      await user.click(applySearchBtn);
+    });
 
     // Wait for components to rerender
     await waitFor(() => getByTestId('search'));
@@ -677,7 +734,10 @@ describe('User search library', () => {
       within(rightMenuComponent).getByRole('img', { name: 'file-search' })
     );
     expect(searchLibraryLink).toBeTruthy();
-    await user.click(searchLibraryLink);
+
+    await act(async () => {
+      await user.click(searchLibraryLink);
+    });
 
     // Check number of files and datasets are correctly displayed
     const cart = await waitFor(() => getByTestId('cart'));
@@ -688,7 +748,10 @@ describe('User search library', () => {
       getByRole('img', { name: 'delete', hidden: true })
     );
     expect(deleteBtn).toBeTruthy();
-    await user.click(deleteBtn);
+
+    await act(async () => {
+      await user.click(deleteBtn);
+    });
 
     await waitFor(() => getByTestId('cart'));
 
@@ -721,14 +784,20 @@ describe('User search library', () => {
       getByRole('button', { name: 'book Save Search' })
     );
     expect(saveSearch).toBeTruthy();
-    await user.click(saveSearch);
+
+    await act(async () => {
+      await user.click(saveSearch);
+    });
 
     // Click on the search library link
     const searchLibraryLink = within(rightMenuComponent).getByRole('img', {
       name: 'file-search',
     });
     expect(searchLibraryLink).toBeTruthy();
-    await user.click(searchLibraryLink);
+
+    await act(async () => {
+      await user.click(searchLibraryLink);
+    });
 
     // Check cart renders
     const cart = await waitFor(() => getByTestId('cart'));
@@ -739,7 +808,10 @@ describe('User search library', () => {
       () => within(cart).getAllByRole('img', { name: 'search' })[0]
     );
     expect(applySearchBtn).toBeTruthy();
-    await user.click(applySearchBtn);
+
+    await act(async () => {
+      await user.click(applySearchBtn);
+    });
 
     // Wait for components to rerender
     await waitFor(() => getByTestId('search-facets'));
@@ -769,7 +841,10 @@ describe('User search library', () => {
       getByRole('button', { name: 'book Save Search' })
     );
     expect(saveSearch).toBeTruthy();
-    await user.click(saveSearch);
+
+    await act(async () => {
+      await user.click(saveSearch);
+    });
 
     const searchLibraryLink = await waitFor(() =>
       within(rightMenuComponent).getByRole('img', {
@@ -778,7 +853,10 @@ describe('User search library', () => {
       })
     );
     expect(searchLibraryLink).toBeTruthy();
-    await user.click(searchLibraryLink);
+
+    await act(async () => {
+      await user.click(searchLibraryLink);
+    });
 
     const cart = await waitFor(() => getByTestId('cart'));
     expect(cart).toBeTruthy();
@@ -787,7 +865,10 @@ describe('User search library', () => {
     const deleteBtn = getByTestId('remove-1');
 
     expect(deleteBtn).toBeTruthy();
-    await user.click(deleteBtn);
+
+    await act(async () => {
+      await user.click(deleteBtn);
+    });
 
     await waitFor(() => getByTestId('cart'));
   });
@@ -816,7 +897,10 @@ describe('User search library', () => {
     );
 
     expect(copySearch).toBeTruthy();
-    await user.click(copySearch);
+
+    await act(async () => {
+      await user.click(copySearch);
+    });
   });
 
   describe('Error handling', () => {
@@ -868,7 +952,10 @@ describe('User search library', () => {
         getByRole('button', { name: 'book Save Search' })
       );
       expect(saveSearch).toBeTruthy();
-      await user.click(saveSearch);
+
+      await act(async () => {
+        await user.click(saveSearch);
+      });
     });
 
     it('displays error message after failing to remove authenticated user"s saved search', async () => {
@@ -904,7 +991,9 @@ describe('User search library', () => {
         })
       );
       expect(searchLibraryLink).toBeTruthy();
-      await user.click(searchLibraryLink);
+      await act(async () => {
+        await user.click(searchLibraryLink);
+      });
 
       // Check cart component renders
       const cartComponent = await waitFor(() => getByTestId('cart'));
@@ -919,7 +1008,10 @@ describe('User search library', () => {
           })[0]
       );
       expect(deleteBtn).toBeTruthy();
-      await user.click(deleteBtn);
+
+      await act(async () => {
+        await user.click(deleteBtn);
+      });
 
       const errorMsg = await waitFor(() =>
         getAllByText(apiRoutes.userSearch.handleErrorMsg(404))
@@ -940,7 +1032,9 @@ describe('User support', () => {
     expect(supportBtn).toBeTruthy();
 
     // click support button
-    await user.click(supportBtn);
+    await act(async () => {
+      await user.click(supportBtn);
+    });
 
     // GitHub icon renders
     const metagridSupportHeader = findByText(' MetaGrid Support');
@@ -948,7 +1042,10 @@ describe('User support', () => {
 
     // click close button
     const closeBtn = getByText('Close Support');
-    await user.click(closeBtn);
+
+    await act(async () => {
+      await user.click(closeBtn);
+    });
   });
 });
 
@@ -964,7 +1061,10 @@ describe('Data node status page', () => {
       name: 'node-index Node Status',
     });
     expect(nodeLink).toBeTruthy();
-    await user.click(nodeLink);
+
+    await act(async () => {
+      await user.click(nodeLink);
+    });
 
     const nodeStatusPage = await waitFor(() => getByTestId('node-status'));
     expect(nodeStatusPage).toBeTruthy();

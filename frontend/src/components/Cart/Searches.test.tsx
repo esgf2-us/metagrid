@@ -13,11 +13,11 @@ const defaultProps: Props = {
   onRemoveSearchQuery: jest.fn(),
 };
 
-it('renders component with empty savedSearches', () => {
-  const { getByText } = customRenderKeycloak(
+it('renders component with empty savedSearches', async () => {
+  const { findByText } = customRenderKeycloak(
     <Searches {...defaultProps} userSearchQueries={[]} />
   );
 
-  const emptyText = getByText('Your search library is empty');
+  const emptyText = await findByText('Your search library is empty');
   expect(emptyText).toBeTruthy();
 });
