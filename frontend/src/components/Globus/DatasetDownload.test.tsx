@@ -1,7 +1,7 @@
 import React from 'react';
 import userEvent from '@testing-library/user-event';
 import { waitFor, within } from '@testing-library/react';
-import { customRenderKeycloak } from '../../test/custom-render';
+import customRender from '../../test/custom-render';
 import { rest, server } from '../../api/mock/server';
 import { getSearchFromUrl } from '../../common/utils';
 import { ActiveSearchQuery } from '../Search/types';
@@ -70,19 +70,16 @@ beforeEach(() => {
 
 xdescribe('DatasetDownload form tests', () => {
   it('Download form renders.', async () => {
-    const downloadForm = customRenderKeycloak(<DatasetDownloadForm />);
+    const downloadForm = customRender(<DatasetDownloadForm />);
     expect(downloadForm).toBeTruthy();
 
     await downloadForm.findByTestId('downloadTypeSelector');
   });
 
   it('Start the wget transfer after adding an item to cart', async () => {
-    const {
-      getByTestId,
-      getByRole,
-      getByText,
-      getAllByText,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
+    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
+      <App searchQuery={activeSearch} />
+    );
 
     // Wait for results to load
     await waitFor(() =>
@@ -147,7 +144,7 @@ xdescribe('DatasetDownload form tests', () => {
       getByText,
       getAllByRole,
       getAllByText,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
+    } = customRender(<App searchQuery={activeSearch} />);
 
     // Wait for results to load
     await waitFor(() =>
@@ -198,7 +195,7 @@ xdescribe('DatasetDownload form tests', () => {
       getByText,
       getAllByRole,
       getAllByText,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
+    } = customRender(<App searchQuery={activeSearch} />);
 
     // Wait for results to load
     await waitFor(() =>
@@ -314,12 +311,9 @@ xdescribe('DatasetDownload form tests', () => {
   });
 
   it('Download form renders and transfer popup form shows after clicking Transfer.', async () => {
-    const {
-      getByTestId,
-      getByRole,
-      getByText,
-      getAllByText,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
+    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
+      <App searchQuery={activeSearch} />
+    );
 
     // Wait for results to load
     await waitFor(() =>
@@ -364,12 +358,9 @@ xdescribe('DatasetDownload form tests', () => {
   });
 
   it('Clicking cancel hides the transfer popup', async () => {
-    const {
-      getByTestId,
-      getByRole,
-      getByText,
-      getAllByText,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
+    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
+      <App searchQuery={activeSearch} />
+    );
 
     // Wait for results to load
     await waitFor(() =>
@@ -436,12 +427,9 @@ xdescribe('DatasetDownload form tests', () => {
   });
 
   it('Globus Transfer popup will show sign-in as first step when no tokens detected', async () => {
-    const {
-      getByTestId,
-      getByRole,
-      getByText,
-      getAllByText,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
+    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
+      <App searchQuery={activeSearch} />
+    );
 
     // Wait for results to load
     await waitFor(() =>
@@ -527,12 +515,9 @@ xdescribe('DatasetDownload form tests', () => {
     } as GlobusTokenResponse);
     mockSaveValue(GlobusStateKeys.continueGlobusPrepSteps, true);
 
-    const {
-      getByTestId,
-      getByRole,
-      getByText,
-      getAllByText,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
+    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
+      <App searchQuery={activeSearch} />
+    );
 
     // Wait for results to load
     await waitFor(() =>
@@ -617,12 +602,9 @@ xdescribe('DatasetDownload form tests', () => {
     } as GlobusTokenResponse);
     mockSaveValue(GlobusStateKeys.continueGlobusPrepSteps, true);
 
-    const {
-      getByTestId,
-      getByRole,
-      getByText,
-      getAllByText,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
+    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
+      <App searchQuery={activeSearch} />
+    );
 
     // Wait for results to load
     await waitFor(() =>
@@ -708,12 +690,9 @@ xdescribe('DatasetDownload form tests', () => {
     } as GlobusTokenResponse);
     mockSaveValue(GlobusStateKeys.continueGlobusPrepSteps, true);
 
-    const {
-      getByTestId,
-      getByRole,
-      getByText,
-      getAllByText,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
+    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
+      <App searchQuery={activeSearch} />
+    );
 
     // Wait for results to load
     await waitFor(() =>
@@ -782,12 +761,9 @@ xdescribe('DatasetDownload form tests', () => {
     mockSaveValue(CartStateKeys.cartItemSelections, userCartFixture());
     mockSaveValue(GlobusStateKeys.continueGlobusPrepSteps, true);
 
-    const {
-      getByTestId,
-      getByRole,
-      getByText,
-      getAllByText,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
+    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
+      <App searchQuery={activeSearch} />
+    );
 
     // Wait for results to load
     await waitFor(() =>
@@ -875,12 +851,9 @@ xdescribe('DatasetDownload form tests', () => {
       globusEndpointFixture()
     );
 
-    const {
-      getByTestId,
-      getByRole,
-      getByText,
-      getAllByText,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
+    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
+      <App searchQuery={activeSearch} />
+    );
 
     // Wait for results to load
     await waitFor(() =>
@@ -949,12 +922,9 @@ xdescribe('DatasetDownload form tests', () => {
     mockSaveValue(CartStateKeys.cartItemSelections, userCartFixture());
     mockSaveValue(GlobusStateKeys.continueGlobusPrepSteps, true);
 
-    const {
-      getByTestId,
-      getByRole,
-      getByText,
-      getAllByText,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
+    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
+      <App searchQuery={activeSearch} />
+    );
 
     // Wait for results to load
     await waitFor(() =>
@@ -1043,12 +1013,9 @@ xdescribe('DatasetDownload form tests', () => {
     } as GlobusTokenResponse);
     mockSaveValue(GlobusStateKeys.continueGlobusPrepSteps, true);
 
-    const {
-      getByTestId,
-      getByRole,
-      getByText,
-      getAllByText,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
+    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
+      <App searchQuery={activeSearch} />
+    );
 
     // Wait for results to load
     await waitFor(() =>
@@ -1144,12 +1111,9 @@ xdescribe('DatasetDownload form tests', () => {
     );
     mockSaveValue(GlobusStateKeys.continueGlobusPrepSteps, true);
 
-    const {
-      getByTestId,
-      getByRole,
-      getByText,
-      getAllByText,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
+    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
+      <App searchQuery={activeSearch} />
+    );
 
     // Wait for results to load
     await waitFor(() =>
@@ -1248,12 +1212,9 @@ xdescribe('DatasetDownload form tests', () => {
     );
     mockSaveValue(GlobusStateKeys.continueGlobusPrepSteps, true);
 
-    const {
-      getByTestId,
-      getByRole,
-      getByText,
-      getAllByText,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
+    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
+      <App searchQuery={activeSearch} />
+    );
 
     // Wait for results to load
     await waitFor(() =>
@@ -1368,12 +1329,9 @@ xdescribe('DatasetDownload form tests', () => {
     ]);
     mockSaveValue(GlobusStateKeys.continueGlobusPrepSteps, false);
 
-    const {
-      getByTestId,
-      getByRole,
-      getByText,
-      getAllByText,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
+    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
+      <App searchQuery={activeSearch} />
+    );
 
     // Wait for results to load
     await waitFor(() =>
@@ -1486,12 +1444,9 @@ xdescribe('Testing globus transfer related failures', () => {
     );
     mockSaveValue(GlobusStateKeys.continueGlobusPrepSteps, true);
 
-    const {
-      getByTestId,
-      getByRole,
-      getByText,
-      getAllByText,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
+    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
+      <App searchQuery={activeSearch} />
+    );
 
     // Wait for results to load
     await waitFor(() =>
@@ -1538,12 +1493,9 @@ xdescribe('Testing globus transfer related failures', () => {
 
     tempStorageSetMock('pkce-pass', false);
 
-    const {
-      getByTestId,
-      getByRole,
-      getByText,
-      getAllByText,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
+    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
+      <App searchQuery={activeSearch} />
+    );
 
     // Wait for results to load
     await waitFor(() =>
@@ -1607,12 +1559,9 @@ xdescribe('Testing wget transfer related failures', () => {
       rest.post(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404)))
     );
 
-    const {
-      getByTestId,
-      getByRole,
-      getByText,
-      getAllByText,
-    } = customRenderKeycloak(<App searchQuery={activeSearch} />);
+    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
+      <App searchQuery={activeSearch} />
+    );
 
     // Wait for results to load
     await waitFor(() =>

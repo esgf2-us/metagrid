@@ -11,18 +11,17 @@ import {
 } from '../contexts/AuthContext';
 import { keycloakProviderInitConfig } from '../lib/keycloak';
 import { ReactJoyrideProvider } from '../contexts/ReactJoyrideContext';
-import { publicUrl } from '../env';
+import { authenticationMethod, publicUrl } from '../env';
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const keycloak = new Keycloak();
 
 /**
- * Wraps components in all implemented React Context Providers for testing using keycloak
+ * Wraps components in all implemented React Context Providers for testing using keycloak or globus
  * https://testing-library.com/docs/react-testing-library/setup#custom-render
  */
-
-export const KeycloakProvider = ({
+const AuthProvider = ({
   children,
   authenticated,
   snapshotSetFunc,
@@ -48,66 +47,55 @@ export const KeycloakProvider = ({
       pk: '1',
     };
   }
+
+  if (authenticationMethod === 'keycloak') {
+    return (
+      <RecoilRoot initializeState={snapshotSetFunc}>
+        <ReactKeycloakProvider
+          authClient={keycloak}
+          initOptions={keycloakProviderInitConfig}
+        >
+          <KeycloakAuthProvider>
+            <AuthContext.Provider value={authInfo}>
+              <MemoryRouter basename={publicUrl}>
+                <ReactJoyrideProvider>{children}</ReactJoyrideProvider>
+              </MemoryRouter>
+            </AuthContext.Provider>
+          </KeycloakAuthProvider>
+        </ReactKeycloakProvider>
+      </RecoilRoot>
+    );
+  }
+
   return (
     <RecoilRoot initializeState={snapshotSetFunc}>
-      <ReactKeycloakProvider
-        authClient={keycloak}
-        initOptions={keycloakProviderInitConfig}
-      >
-        <KeycloakAuthProvider>
-          <AuthContext.Provider value={authInfo}>
-            <MemoryRouter basename={publicUrl}>
-              <ReactJoyrideProvider>{children}</ReactJoyrideProvider>
-            </MemoryRouter>
-          </AuthContext.Provider>
-        </KeycloakAuthProvider>
-      </ReactKeycloakProvider>
-    </RecoilRoot>
-  );
-};
-
-const customRenderKeycloak = (
-  ui: React.ReactElement,
-  options?: Record<string, unknown>,
-  authenticated = true,
-  snapshotFunc?: ((mutableSnapshot: MutableSnapshot) => void) | undefined
-): RenderResult => {
-  return render(ui, {
-    wrapper: () => (
-      <KeycloakProvider
-        authenticated={authenticated}
-        snapshotSetFunc={snapshotFunc}
-      >
-        {ui}
-      </KeycloakProvider>
-    ),
-    ...options,
-  });
-};
-
-/**
- * Wraps components in all implemented React Context Providers for testing using keycloak
- * https://testing-library.com/docs/react-testing-library/setup#custom-render
- */
-const GlobusProviders = ({
-  children,
-}: {
-  children: React.ReactNode;
-}): React.ReactElement => {
-  return (
-    <RecoilRoot>
       <GlobusAuthProvider>
-        <MemoryRouter basename={process.env.PUBLIC_URL}>
-          <ReactJoyrideProvider>{children}</ReactJoyrideProvider>
-        </MemoryRouter>
+        <AuthContext.Provider value={authInfo}>
+          <MemoryRouter basename={process.env.PUBLIC_URL}>
+            <ReactJoyrideProvider>{children}</ReactJoyrideProvider>
+          </MemoryRouter>
+        </AuthContext.Provider>
       </GlobusAuthProvider>
     </RecoilRoot>
   );
 };
 
-const customRenderGlobus = (
+const customRender = (
   ui: React.ReactElement,
-  options?: Record<string, unknown>
-): RenderResult => render(ui, { wrapper: GlobusProviders, ...options });
+  options?: Record<string, unknown>,
+  authenticated = true,
+  snapshotFunc?: ((mutableSnapshot: MutableSnapshot) => void) | undefined
+): RenderResult =>
+  render(ui, {
+    wrapper: () => (
+      <AuthProvider
+        authenticated={authenticated}
+        snapshotSetFunc={snapshotFunc}
+      >
+        {ui}
+      </AuthProvider>
+    ),
+    ...options,
+  });
 
-export { customRenderGlobus, customRenderKeycloak };
+export default customRender;

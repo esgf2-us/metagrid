@@ -6,7 +6,7 @@ import {
   userSearchQueriesFixture,
 } from '../../api/mock/fixtures';
 import Cart, { Props } from './index';
-import { customRenderKeycloak } from '../../test/custom-render';
+import customRender from '../../test/custom-render';
 
 const defaultProps: Props = {
   userCart: userCartFixture(),
@@ -39,9 +39,7 @@ afterEach(() => {
 });
 
 it('handles tab switching and saved search actions', async () => {
-  const { findByRole, findByTestId } = customRenderKeycloak(
-    <Cart {...defaultProps} />
-  );
+  const { findByRole, findByTestId } = customRender(<Cart {...defaultProps} />);
 
   // Check cart tab renders
   const cart = await findByTestId('cart');

@@ -1,11 +1,9 @@
 import React from 'react';
 import RightDrawer from './RightDrawer';
-import { customRenderKeycloak } from '../../test/custom-render';
+import customRender from '../../test/custom-render';
 
 it('renders right drawer component.', () => {
-  const { getByText } = customRenderKeycloak(
-    <RightDrawer open onClose={() => {}} />
-  );
+  const { getByText } = customRender(<RightDrawer open onClose={() => {}} />);
 
   // Check component renders
   const text = getByText('Notifications');

@@ -7,7 +7,7 @@ import {
   parsedNodeStatusFixture,
 } from '../../api/mock/fixtures';
 import FacetsForm, { humanizeFacetNames, Props } from './FacetsForm';
-import { customRenderKeycloak } from '../../test/custom-render';
+import customRender from '../../test/custom-render';
 
 const user = userEvent.setup();
 
@@ -36,7 +36,7 @@ const defaultProps: Props = {
 
 describe('test FacetsForm component', () => {
   it('handles submitting filename', async () => {
-    const { getByRole, getByTestId } = customRenderKeycloak(
+    const { getByRole, getByTestId } = customRender(
       <FacetsForm {...defaultProps} />
     );
 
@@ -63,9 +63,7 @@ describe('test FacetsForm component', () => {
   });
 
   it('handles setting the globusReady option on and off', () => {
-    const { getByLabelText } = customRenderKeycloak(
-      <FacetsForm {...defaultProps} />
-    );
+    const { getByLabelText } = customRender(<FacetsForm {...defaultProps} />);
 
     const globusReadyRadioOption = getByLabelText('Only Globus Transferrable');
     const anyRadioOption = getByLabelText('Any');
@@ -89,9 +87,7 @@ describe('test FacetsForm component', () => {
   });
 
   it('handles expand and collapse facet panels', async () => {
-    const { getByText } = customRenderKeycloak(
-      <FacetsForm {...defaultProps} />
-    );
+    const { getByText } = customRender(<FacetsForm {...defaultProps} />);
 
     // Click the expand all button
     const expandAllBtn = getByText('Expand All');
@@ -111,7 +107,7 @@ describe('test FacetsForm component', () => {
   });
 
   it('handles copying facet items to clip board', async () => {
-    const { getByText, getByRole } = customRenderKeycloak(
+    const { getByText, getByRole } = customRender(
       <FacetsForm {...defaultProps} />
     );
 
@@ -145,9 +141,7 @@ describe('test FacetsForm component', () => {
   });
 
   it('handles changing expand to collapse and vice-versa base on user actions', async () => {
-    const { getByText } = customRenderKeycloak(
-      <FacetsForm {...defaultProps} />
-    );
+    const { getByText } = customRender(<FacetsForm {...defaultProps} />);
 
     // Expand the group1 panel
     const group1Btn = getByText('Group1');
@@ -183,7 +177,7 @@ describe('test FacetsForm component', () => {
   });
 
   it('handles date picker for versioning', async () => {
-    const { getByTestId, getByRole } = customRenderKeycloak(
+    const { getByTestId, getByRole } = customRender(
       <FacetsForm {...defaultProps} />
     );
 

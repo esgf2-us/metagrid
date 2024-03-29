@@ -8,7 +8,7 @@ import {
 } from '../../api/mock/fixtures';
 import { mapHTTPErrorCodes } from '../../api/routes';
 import ProjectsForm, { Props } from './ProjectForm';
-import { customRenderKeycloak } from '../../test/custom-render';
+import customRender from '../../test/custom-render';
 import { showNotice } from '../../common/utils';
 
 const defaultProps: Props = {
@@ -22,7 +22,7 @@ const defaultProps: Props = {
 const user = userEvent.setup();
 
 it('renders empty form', () => {
-  const { queryByRole } = customRenderKeycloak(
+  const { queryByRole } = customRender(
     <ProjectsForm {...defaultProps} projectsFetched={undefined} />
   );
 
@@ -32,7 +32,7 @@ it('renders empty form', () => {
 });
 
 it('Runs project form submit when changing projects', async () => {
-  const { getByRole, getByText } = customRenderKeycloak(
+  const { getByRole, getByText } = customRender(
     <ProjectsForm
       {...defaultProps}
       projectsFetched={{ results: projectsFixture() }}
@@ -71,7 +71,7 @@ it('Runs project form submit when changing projects', async () => {
 });
 
 it('renders error message when projects can"t be fetched', () => {
-  const { getByRole } = customRenderKeycloak(
+  const { getByRole } = customRender(
     <ProjectsForm
       {...defaultProps}
       apiError={

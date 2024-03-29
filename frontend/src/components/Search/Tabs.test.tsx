@@ -1,5 +1,5 @@
 import React from 'react';
-import { customRenderKeycloak } from '../../test/custom-render';
+import customRender from '../../test/custom-render';
 import Tabs from './Tabs';
 import { rawSearchResultFixture } from '../../api/mock/fixtures';
 
@@ -10,7 +10,7 @@ afterEach(() => {
 
 describe('test Tab component', () => {
   it('renders standard tab component', () => {
-    const { getByRole } = customRenderKeycloak(
+    const { getByRole } = customRender(
       <Tabs filenameVars={undefined} record={rawSearchResultFixture()} />
     );
 
@@ -18,7 +18,7 @@ describe('test Tab component', () => {
     expect(tabList).toBeTruthy();
   });
   it('renders tab component with quality_control_flags in record', () => {
-    const { getByRole } = customRenderKeycloak(
+    const { getByRole } = customRender(
       <Tabs
         filenameVars={undefined}
         record={{
@@ -32,7 +32,7 @@ describe('test Tab component', () => {
     expect(tabList).toBeTruthy();
   });
   it('renders tab component with further_info_url in record', () => {
-    const { getByRole } = customRenderKeycloak(
+    const { getByRole } = customRender(
       <Tabs
         filenameVars={undefined}
         record={{
@@ -46,7 +46,7 @@ describe('test Tab component', () => {
     expect(tabList).toBeTruthy();
   });
   it('renders tab component with retracted = true in record', () => {
-    const { getByRole } = customRenderKeycloak(
+    const { getByRole } = customRender(
       <Tabs
         filenameVars={undefined}
         record={{

@@ -3,7 +3,7 @@ import React from 'react';
 import { rest, server } from '../../api/mock/server';
 import apiRoutes from '../../api/routes';
 import Citation, { CitationInfo } from './Citation';
-import { customRenderKeycloak } from '../../test/custom-render';
+import customRender from '../../test/custom-render';
 
 // Reset all mocks after each test
 afterEach(() => {
@@ -12,7 +12,7 @@ afterEach(() => {
 
 describe('test Citation component', () => {
   it('renders component', async () => {
-    const { getByRole, getByText } = customRenderKeycloak(
+    const { getByRole, getByText } = customRender(
       <Citation url="citation_url" />
     );
 
@@ -25,7 +25,7 @@ describe('test Citation component', () => {
     expect(citationCreators).toBeInTheDocument();
   });
   it('renders component with 3 creators, no et al.', async () => {
-    const { getByRole, getByText } = customRenderKeycloak(
+    const { getByRole, getByText } = customRender(
       <Citation url="citation_a" />
     );
 
@@ -40,7 +40,7 @@ describe('test Citation component', () => {
     expect(citationCreators).toBeInTheDocument();
   });
   it('renders component with three creators and et al.', async () => {
-    const { getByRole, getByText } = customRenderKeycloak(
+    const { getByRole, getByText } = customRender(
       <Citation url="citation_b" />
     );
 
@@ -61,7 +61,7 @@ describe('test Citation component', () => {
         res(ctx.status(404))
       )
     );
-    const { getByRole } = customRenderKeycloak(<Citation url="citation_a" />);
+    const { getByRole } = customRender(<Citation url="citation_a" />);
 
     // Wait for Alert error to render
     const alert = await waitFor(() =>
@@ -73,7 +73,7 @@ describe('test Citation component', () => {
 
 describe('test CitationInfo component', () => {
   it('returns component', () => {
-    const { getByText } = customRenderKeycloak(
+    const { getByText } = customRender(
       <CitationInfo title="title">children</CitationInfo>
     );
 
@@ -87,7 +87,7 @@ describe('test CitationInfo component', () => {
   });
 
   it('returns component with max of 3 creators', () => {
-    const { getByText } = customRenderKeycloak(
+    const { getByText } = customRender(
       <CitationInfo title="title">children</CitationInfo>
     );
 

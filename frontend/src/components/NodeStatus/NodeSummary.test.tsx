@@ -2,16 +2,14 @@ import { within } from '@testing-library/react';
 import React from 'react';
 import { parsedNodeStatusFixture } from '../../api/mock/fixtures';
 import NodeSummary, { Props } from './NodeSummary';
-import { customRenderKeycloak } from '../../test/custom-render';
+import customRender from '../../test/custom-render';
 
 const defaultProps: Props = {
   nodeStatus: parsedNodeStatusFixture(),
 };
 
 it('renders component with node status information', () => {
-  const { getByTestId } = customRenderKeycloak(
-    <NodeSummary {...defaultProps} />
-  );
+  const { getByTestId } = customRender(<NodeSummary {...defaultProps} />);
 
   const numNodes = getByTestId('numNodes');
   expect(within(numNodes).getByText('2')).toBeTruthy();
@@ -24,7 +22,7 @@ it('renders component with node status information', () => {
 });
 
 it('renders component placeholder with no node status information', () => {
-  const { getByTestId } = customRenderKeycloak(<NodeSummary />);
+  const { getByTestId } = customRender(<NodeSummary />);
 
   const numNodes = getByTestId('numNodes');
   expect(within(numNodes).getByText('N/A')).toBeTruthy();
