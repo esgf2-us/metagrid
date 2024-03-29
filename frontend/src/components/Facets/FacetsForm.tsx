@@ -16,7 +16,7 @@ import {
   Tooltip,
   RadioChangeEvent,
 } from 'antd';
-import moment from 'moment';
+import dayjs, { Dayjs } from 'dayjs';
 import React from 'react';
 import { leftSidebarTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
@@ -79,15 +79,15 @@ export const humanizeFacetNames = (str: string): string => {
 };
 
 export const formatDate = (
-  date: string | moment.Moment,
+  date: string | Dayjs,
   toString: boolean
-): string | moment.Moment => {
+): string | Dayjs => {
   const format = 'YYYYMMDD';
 
   if (toString) {
-    return moment(date).format(format);
+    return dayjs(date).format(format);
   }
-  return moment(date, format);
+  return dayjs(date, format);
 };
 
 const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
@@ -123,9 +123,9 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
 
   type DatePickerReturnType =
     | [null, null]
-    | [moment.Moment, null]
-    | [null, moment.Moment]
-    | [moment.Moment, moment.Moment];
+    | [Dayjs, null]
+    | [null, Dayjs]
+    | [Dayjs, Dayjs];
 
   // Convert using moment.js to for the initial value of the date picker
   const { minVersionDate, maxVersionDate } = activeSearchQuery;
