@@ -2,13 +2,13 @@ import React from 'react';
 import { parsedNodeStatusFixture } from '../../api/mock/fixtures';
 import StatusToolTip from './StatusToolTip';
 import { NodeStatusArray } from './types';
-import { customRenderKeycloak } from '../../test/custom-render';
+import customRender from '../../test/custom-render';
 
 const nodeStatusArr: NodeStatusArray = parsedNodeStatusFixture();
 
 describe('test status tooltip used in the results table', () => {
   it('renders status tooltip with question circle icon for undefined node status.', () => {
-    const { getByRole } = customRenderKeycloak(
+    const { getByRole } = customRender(
       <StatusToolTip dataNode="'aims3.llnl.gov'" />
     );
 
@@ -19,7 +19,7 @@ describe('test status tooltip used in the results table', () => {
   });
 
   it('renders status tooltip with question circle icon for unidentified data node value', () => {
-    const { getByRole } = customRenderKeycloak(
+    const { getByRole } = customRender(
       <StatusToolTip dataNode="'aims3.llnl.gov'" nodeStatus={nodeStatusArr} />
     );
 
@@ -30,7 +30,7 @@ describe('test status tooltip used in the results table', () => {
   });
 
   it('renders component with check circle icon', () => {
-    const { getByRole } = customRenderKeycloak(
+    const { getByRole } = customRender(
       <StatusToolTip dataNode="aims3.llnl.gov" nodeStatus={nodeStatusArr} />
     );
 
@@ -41,7 +41,7 @@ describe('test status tooltip used in the results table', () => {
   });
 
   it('renders component with close circle icon', () => {
-    const { getByRole } = customRenderKeycloak(
+    const { getByRole } = customRender(
       <StatusToolTip dataNode="esgf1.dkrz.de" nodeStatus={nodeStatusArr} />
     );
 
@@ -54,7 +54,7 @@ describe('test status tooltip used in the results table', () => {
 
 describe('test status tooltip used in the facets form on the left.', () => {
   it('renders status tooltip with question circle icon for undefined node status.', () => {
-    const { getByRole } = customRenderKeycloak(
+    const { getByRole } = customRender(
       <StatusToolTip dataNode="'aims3.llnl.gov'">
         <p>Child</p>
       </StatusToolTip>
@@ -67,7 +67,7 @@ describe('test status tooltip used in the facets form on the left.', () => {
   });
 
   it('renders status tooltip with question circle icon for unidentified data node value', () => {
-    const { getByRole } = customRenderKeycloak(
+    const { getByRole } = customRender(
       <StatusToolTip dataNode="'aims3.llnl.gov'" nodeStatus={nodeStatusArr}>
         <p>Child</p>
       </StatusToolTip>
@@ -80,7 +80,7 @@ describe('test status tooltip used in the facets form on the left.', () => {
   });
 
   it('renders component with check circle icon', () => {
-    const { getByRole } = customRenderKeycloak(
+    const { getByRole } = customRender(
       <StatusToolTip dataNode="aims3.llnl.gov" nodeStatus={nodeStatusArr}>
         <p>Child</p>
       </StatusToolTip>
@@ -93,7 +93,7 @@ describe('test status tooltip used in the facets form on the left.', () => {
   });
 
   it('renders component with close circle icon', () => {
-    const { getByRole } = customRenderKeycloak(
+    const { getByRole } = customRender(
       <StatusToolTip dataNode="esgf1.dkrz.de" nodeStatus={nodeStatusArr}>
         <p>Child</p>
       </StatusToolTip>

@@ -2,12 +2,12 @@ import { act, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import Button from './Button';
-import { customRenderKeycloak } from '../../test/custom-render';
+import customRender from '../../test/custom-render';
 
 const user = userEvent.setup();
 
 it('renders component', () => {
-  const { getByRole } = customRenderKeycloak(<Button type="primary"></Button>);
+  const { getByRole } = customRender(<Button type="primary"></Button>);
 
   // Check button rendered
   const button = getByRole('button');
@@ -15,7 +15,7 @@ it('renders component', () => {
 });
 
 it('returns string "clicked" onClick', async () => {
-  const { getByRole } = customRenderKeycloak(
+  const { getByRole } = customRender(
     <Button type="primary" onClick={jest.fn()}></Button>
   );
 

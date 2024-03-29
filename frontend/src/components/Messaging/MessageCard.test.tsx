@@ -1,9 +1,9 @@
 import React from 'react';
 import MessageCard from './MessageCard';
-import { customRenderKeycloak } from '../../test/custom-render';
+import customRender from '../../test/custom-render';
 
 it('renders message component with default markdown when file is wrong.', () => {
-  const { getByText } = customRenderKeycloak(
+  const { getByText } = customRender(
     <MessageCard title="test title" fileName="badFile.md" />
   );
 

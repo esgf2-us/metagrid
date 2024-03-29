@@ -4,7 +4,7 @@ import { act } from '@testing-library/react';
 import { getCurrentAppPage, TourTitles } from '../../common/reactJoyrideSteps';
 import { AppPage } from '../../common/types';
 import Support from './index';
-import { customRenderKeycloak } from '../../test/custom-render';
+import customRender from '../../test/custom-render';
 
 // Test page names
 const mainPagePath = 'testing/search';
@@ -28,9 +28,7 @@ describe('Testing the support form and buttons', () => {
   });
 
   it('renders support component', () => {
-    const { getByTestId } = customRenderKeycloak(
-      <Support open onClose={jest.fn()} />
-    );
+    const { getByTestId } = customRender(<Support open onClose={jest.fn()} />);
 
     // Check support form rendered
     const support = getByTestId('support-form');
@@ -41,7 +39,7 @@ describe('Testing the support form and buttons', () => {
     // Set location then render modal
     window.location.pathname = mainPagePath;
     expect(getCurrentAppPage()).toEqual(AppPage.Main);
-    const { getByTestId, getByRole } = customRenderKeycloak(
+    const { getByTestId, getByRole } = customRender(
       <Support open onClose={jest.fn()} />
     );
 
@@ -67,7 +65,7 @@ describe('Testing the support form and buttons', () => {
     // Set location then render modal
     window.location.pathname = cartPagePath;
     expect(getCurrentAppPage()).toEqual(AppPage.Cart);
-    const { getByTestId, getByRole } = customRenderKeycloak(
+    const { getByTestId, getByRole } = customRender(
       <Support open onClose={jest.fn()} />
     );
 
@@ -91,7 +89,7 @@ describe('Testing the support form and buttons', () => {
     // Set location then render modal
     window.location.pathname = savedSearchesPath;
     expect(getCurrentAppPage()).toEqual(AppPage.SavedSearches);
-    const { getByTestId, getByRole } = customRenderKeycloak(
+    const { getByTestId, getByRole } = customRender(
       <Support open onClose={jest.fn()} />
     );
 
@@ -115,7 +113,7 @@ describe('Testing the support form and buttons', () => {
     // Set location then render modal
     window.location.pathname = nodeStatusPath;
     expect(getCurrentAppPage()).toEqual(AppPage.NodeStatus);
-    const { getByTestId, getByRole } = customRenderKeycloak(
+    const { getByTestId, getByRole } = customRender(
       <Support open onClose={jest.fn()} />
     );
 

@@ -18,6 +18,7 @@ import { getSearchFromUrl } from '../common/utils';
 
 // For mocking environment variables
 export type MockConfig = {
+  authenticationMethod: string;
   globusEnabledNodes: string[];
 };
 
@@ -138,7 +139,10 @@ export async function submitKeywordSearch(
     getByPlaceholderText('Search for a keyword')
   );
   expect(freeTextForm).toBeTruthy();
-  await user.type(freeTextForm, inputText);
+
+  await act(async () => {
+    await user.type(freeTextForm, inputText);
+  });
 
   // Submit the form
   const submitBtn = within(leftMenuComponent).getByRole('img', {
@@ -158,7 +162,9 @@ export async function openDropdownList(
 ): Promise<void> {
   await waitFor(async () => {
     dropdown.focus();
-    await user.keyboard('[ArrowDown]');
+    await act(async () => {
+      await user.keyboard('[ArrowDown]');
+    });
   });
 }
 

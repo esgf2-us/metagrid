@@ -2,7 +2,7 @@ import React from 'react';
 import { fireEvent, waitFor } from '@testing-library/react';
 import { projectsFixture } from '../../api/mock/fixtures';
 import LeftMenu, { Props } from './LeftMenu';
-import { customRenderKeycloak } from '../../test/custom-render';
+import customRender from '../../test/custom-render';
 
 const defaultProps: Props = {
   projects: projectsFixture(),
@@ -15,13 +15,13 @@ it('renders search input', () => {
   // NOTE: Since the Select component can't be set, this test only checks if
   // the Search form field's value changes. It does not test calling the
   // onFinish function when the user submits the form.
-  const { getByTestId } = customRenderKeycloak(<LeftMenu {...defaultProps} />);
+  const { getByTestId } = customRender(<LeftMenu {...defaultProps} />);
 
   expect(getByTestId('left-menu')).toBeTruthy();
 });
 
 it('renders no component if there is no error, not loading, and no projects fetched', () => {
-  const { container } = customRenderKeycloak(
+  const { container } = customRender(
     <LeftMenu {...defaultProps} projects={undefined} />
   );
 
@@ -29,7 +29,7 @@ it('renders no component if there is no error, not loading, and no projects fetc
 });
 
 it('successfully submits search form and resets current text with onFinish', async () => {
-  const { getByPlaceholderText, getByRole } = customRenderKeycloak(
+  const { getByPlaceholderText, getByRole } = customRender(
     <LeftMenu {...defaultProps} />
   );
 

@@ -1,17 +1,17 @@
 import { act, waitFor } from '@testing-library/react';
 import React from 'react';
-import {
-  customRenderGlobus,
-  customRenderKeycloak,
-} from '../test/custom-render';
+import customRender from '../test/custom-render';
+import { mockConfig } from '../test/jestTestFunctions';
 
 describe('test AuthProvider', () => {
   it('renders using keycloak provider', async () => {
+    mockConfig.authenticationMethod = 'keycloak';
+
     jest.useFakeTimers();
 
-    const { getByTestId, getByText } = customRenderKeycloak(
+    const { getByTestId, getByText } = customRender(
       <div data-testid="authProvider">
-        <p>renders</p>
+        <p>renders keycloak</p>
       </div>
     );
 
@@ -23,7 +23,7 @@ describe('test AuthProvider', () => {
     await waitFor(() => getByTestId('authProvider'));
 
     // Check children renders
-    const renderResult = await waitFor(() => getByText('renders'));
+    const renderResult = await waitFor(() => getByText('renders keycloak'));
     expect(renderResult).toBeTruthy();
 
     act(() => {
@@ -34,11 +34,13 @@ describe('test AuthProvider', () => {
   });
 
   it('renders using globus auth provider', async () => {
+    mockConfig.authenticationMethod = 'globus';
+
     jest.useFakeTimers();
 
-    const { getByTestId, getByText } = customRenderGlobus(
+    const { getByTestId, getByText } = customRender(
       <div data-testid="authProvider">
-        <p>renders</p>
+        <p>renders globus</p>
       </div>
     );
 
@@ -50,7 +52,7 @@ describe('test AuthProvider', () => {
     await waitFor(() => getByTestId('authProvider'));
 
     // Check children renders
-    const renderResult = await waitFor(() => getByText('renders'));
+    const renderResult = await waitFor(() => getByText('renders globus'));
     expect(renderResult).toBeTruthy();
 
     act(() => {
