@@ -15,6 +15,7 @@ import {
   Select,
   Tooltip,
   RadioChangeEvent,
+  message,
 } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 import React from 'react';
@@ -98,6 +99,8 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
   onSetGeneralFacets,
   onSetActiveFacets,
 }) => {
+  const [messageApi, contextHolder] = message.useMessage();
+
   const [generalFacetsForm] = Form.useForm();
   const [availableFacetsForm] = Form.useForm();
   const [filenameVarForm] = Form.useForm();
@@ -251,6 +254,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
 
   return (
     <div data-testid="facets-form">
+      {contextHolder}
       <Form
         form={availableFacetsForm}
         initialValues={{
@@ -373,6 +377,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                                       .join('\n')
                                   );
                                   showNotice(
+                                    messageApi,
                                     `${facetNameHumanized}s copied to clipboard!`,
                                     {
                                       icon: (

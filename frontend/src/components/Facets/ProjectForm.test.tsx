@@ -9,7 +9,7 @@ import {
 import { mapHTTPErrorCodes } from '../../api/routes';
 import ProjectsForm, { Props } from './ProjectForm';
 import customRender from '../../test/custom-render';
-import { showNotice } from '../../common/utils';
+import { showNoticeStatic } from '../../test/jestTestFunctions';
 
 const defaultProps: Props = {
   activeSearchQuery: activeSearchQueryFixture(),
@@ -37,8 +37,8 @@ it('Runs project form submit when changing projects', async () => {
       {...defaultProps}
       projectsFetched={{ results: projectsFixture() }}
       onFinish={(projName) => {
-        showNotice(`${projName} was selected!`, {
-          duration: 0,
+        showNoticeStatic(`${projName} was selected!`, {
+          duration: 1,
           type: 'success',
         });
       }}

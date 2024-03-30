@@ -5,7 +5,7 @@ import {
   PlusOutlined,
   RightCircleOutlined,
 } from '@ant-design/icons';
-import { Form, Select, Table as TableD, Tooltip } from 'antd';
+import { Form, Select, Table as TableD, Tooltip, message } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
@@ -51,6 +51,8 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
   onPageChange,
   onPageSizeChange,
 }) => {
+  const [messageApi, contextHolder] = message.useMessage();
+
   // Add options to this constant as needed
   type DatasetDownloadTypes = 'wget' | 'Globus';
 
@@ -264,12 +266,13 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
           /* istanbul ignore else */
           if (downloadType === 'wget') {
             showNotice(
+              messageApi,
               'The wget script is generating, please wait momentarily.',
               { type: 'info' }
             );
             fetchWgetScript([record.id], filenameVars).catch(
               (error: ResponseError) => {
-                showError(error.message);
+                showError(messageApi, error.message);
               }
             );
           }
@@ -277,6 +280,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
 
         return (
           <>
+            {contextHolder}
             <Form
               className={topDataRowTargets.downloadScriptForm.class()}
               layout="inline"

@@ -1,5 +1,5 @@
 import { CSSProperties, ReactNode } from 'react';
-import { message } from 'antd';
+import { MessageInstance } from 'antd/es/message/interface';
 import { UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
 import { ActiveFacets } from '../components/Facets/types';
 import {
@@ -14,6 +14,7 @@ import messageDisplayData from '../components/Messaging/messageDisplayData';
 
 export type NotificationType = 'success' | 'info' | 'warning' | 'error';
 export async function showNotice(
+  msgApi: MessageInstance,
   content: React.ReactNode | string,
   config?: {
     duration?: number;
@@ -29,40 +30,41 @@ export async function showNotice(
     icon: config?.icon,
     style: {
       marginTop: '60px',
-      marginLeft: '20%',
-      width: '60%',
-      height: '500px',
       overflow: 'auto',
       ...config?.style,
     },
     key: config?.key,
   };
 
+  // allow only one message at a time
+  msgApi.destroy();
+
   switch (config?.type) {
     case 'success':
-      await message.success(msgConfig);
+      await msgApi.success(msgConfig);
       /* istanbul ignore next */
       return;
     case 'warning':
-      await message.warning(msgConfig);
+      await msgApi.warning(msgConfig);
       /* istanbul ignore next */
       return;
     case 'error':
-      await message.error(msgConfig);
+      await msgApi.error(msgConfig);
       /* istanbul ignore next */
       return;
     case 'info':
-      await message.info(msgConfig);
+      await msgApi.info(msgConfig);
       /* istanbul ignore next */
       return;
     default:
-      await message.info(msgConfig);
+      await msgApi.info(msgConfig);
       /* istanbul ignore next */
       break;
   }
 }
 
 export async function showError(
+  msgApi: MessageInstance,
   errorMsg: React.ReactNode | string
 ): Promise<void> {
   let msg = errorMsg;
@@ -70,7 +72,7 @@ export async function showError(
   if (!errorMsg || errorMsg === '') {
     msg = 'An unknown error has occurred.';
   }
-  await showNotice(msg, { duration: 5, type: 'error' });
+  await showNotice(msgApi, msg, { duration: 5, type: 'error' });
 }
 
 /**

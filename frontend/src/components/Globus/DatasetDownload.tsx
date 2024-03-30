@@ -1,7 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { CheckCircleFilled, DownloadOutlined } from '@ant-design/icons';
-import { Button, Divider, Modal, Radio, Select, Space, Tooltip } from 'antd';
+import {
+  Button,
+  Divider,
+  Modal,
+  Radio,
+  Select,
+  Space,
+  Tooltip,
+  message,
+} from 'antd';
 import PKCE from 'js-pkce';
 import React, { useEffect } from 'react';
 import { useRecoilState, useSetRecoilState } from 'recoil';
@@ -84,6 +93,8 @@ async function createGlobusAuthObject(): Promise<PKCE> {
 }
 
 const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
+  const [messageApi, contextHolder] = message.useMessage();
+
   // User wants to use default endpoint
   const [
     useGlobusDefaultEndpoint,
@@ -259,21 +270,25 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         return item !== undefined && item !== null;
       });
       const ids = itemSelections.map((item) => item.id);
-      showNotice('The wget script is generating, please wait momentarily.', {
-        duration: 3,
-        type: 'info',
-      });
+      showNotice(
+        messageApi,
+        'The wget script is generating, please wait momentarily.',
+        {
+          duration: 3,
+          type: 'info',
+        }
+      );
       setDownloadIsLoading(true);
       fetchWgetScript(ids)
         .then(() => {
           setDownloadIsLoading(false);
-          showNotice('Wget script downloaded successfully!', {
+          showNotice(messageApi, 'Wget script downloaded successfully!', {
             duration: 4,
             type: 'success',
           });
         })
         .catch((error: ResponseError) => {
-          showError(error.message);
+          showError(messageApi, error.message);
           setDownloadIsLoading(false);
         });
     }
@@ -357,7 +372,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           .finally(async () => {
             setDownloadIsLoading(false);
             setDownloadActive(false);
-            await showNotice(messageContent, {
+            await showNotice(messageApi, messageContent, {
               duration: durationVal,
               type: messageType,
             });
@@ -620,7 +635,10 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       }
     } catch (error: unknown) {
       /* istanbul ignore next */
-      showError('Error occured when obtaining transfer permissions.');
+      showError(
+        messageApi,
+        'Error occured when obtaining transfer permissions.'
+      );
     } finally {
       // This isn't strictly necessary but it ensures no code reuse.
       sessionStorage.removeItem('pkce_code_verifier');
@@ -813,6 +831,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
   return (
     <>
+      {contextHolder}
       <Space>
         <Select
           className={cartTourTargets.downloadAllType.class()}
