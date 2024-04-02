@@ -44,7 +44,7 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
-describe.only('test Search component', () => {
+describe('test Search component', () => {
   it('renders component', async () => {
     const { getByTestId } = customRender(<Search {...defaultProps} />);
 

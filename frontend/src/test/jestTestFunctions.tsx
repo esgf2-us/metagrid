@@ -13,8 +13,10 @@ import {
   act,
 } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event/dist/types/setup/setup';
+import { message } from 'antd';
+import { ReactNode, CSSProperties } from 'react';
 import * as enviroConfig from '../env';
-import { getSearchFromUrl } from '../common/utils';
+import { NotificationType, getSearchFromUrl } from '../common/utils';
 
 // For mocking environment variables
 export type MockConfig = {
@@ -94,6 +96,55 @@ export function mockFunction<T extends (...args: unknown[]) => unknown>(
 
 export function printElementContents(element: HTMLElement | undefined): void {
   screen.debug(element, Number.POSITIVE_INFINITY);
+}
+
+export async function showNoticeStatic(
+  content: React.ReactNode | string,
+  config?: {
+    duration?: number;
+    icon?: ReactNode;
+    type?: NotificationType;
+    style?: CSSProperties;
+    key?: string | number;
+  }
+): Promise<void> {
+  const msgConfig = {
+    content,
+    duration: config?.duration,
+    icon: config?.icon,
+    style: {
+      marginTop: '60px',
+      marginLeft: '20%',
+      width: '60%',
+      height: '500px',
+      overflow: 'auto',
+      ...config?.style,
+    },
+    key: config?.key,
+  };
+
+  switch (config?.type) {
+    case 'success':
+      await message.success(msgConfig);
+      /* istanbul ignore next */
+      return;
+    case 'warning':
+      await message.warning(msgConfig);
+      /* istanbul ignore next */
+      return;
+    case 'error':
+      await message.error(msgConfig);
+      /* istanbul ignore next */
+      return;
+    case 'info':
+      await message.info(msgConfig);
+      /* istanbul ignore next */
+      return;
+    default:
+      await message.info(msgConfig);
+      /* istanbul ignore next */
+      break;
+  }
 }
 
 /**

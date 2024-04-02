@@ -1,5 +1,7 @@
 import { render } from '@testing-library/react';
 import React from 'react';
+import { MessageInstance } from 'antd/es/message/interface';
+import { message } from 'antd';
 import { rawProjectFixture } from '../api/mock/fixtures';
 import { UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
 import {
@@ -349,19 +351,21 @@ describe('Test unsavedLocal searches', () => {
 
 describe('Test show notices function', () => {
   // Creating a test component to render the messages and verify they're rendered
-  type Props = { testFunc: () => void };
+  type Props = { testFunc: (msgApi: MessageInstance) => void };
   const TestComponent: React.FC<React.PropsWithChildren<Props>> = ({
     testFunc,
   }) => {
+    const [messageApi, contextHolder] = message.useMessage();
+
     React.useEffect(() => {
-      testFunc();
+      testFunc(messageApi);
     }, []);
-    return <div></div>;
+    return <div>{contextHolder}</div>;
   };
 
   it('Shows a success message', async () => {
-    const notice = (): void => {
-      showNotice('Test notification successful', {
+    const notice = (msgApi: MessageInstance): void => {
+      showNotice(msgApi, 'Test notification successful', {
         duration: 5,
         type: 'success',
       });
@@ -372,8 +376,8 @@ describe('Test show notices function', () => {
   });
 
   it('Shows a warning message', async () => {
-    const notice = (): void => {
-      showNotice('Test warning notification', {
+    const notice = (msgApi: MessageInstance): void => {
+      showNotice(msgApi, 'Test warning notification', {
         duration: 5,
         type: 'warning',
       });
@@ -384,8 +388,8 @@ describe('Test show notices function', () => {
   });
 
   it('Shows a error message', async () => {
-    const notice = (): void => {
-      showNotice('Test error notification', {
+    const notice = (msgApi: MessageInstance): void => {
+      showNotice(msgApi, 'Test error notification', {
         duration: 5,
         type: 'error',
       });
@@ -396,8 +400,8 @@ describe('Test show notices function', () => {
   });
 
   it('Shows an info message', async () => {
-    const notice = (): void => {
-      showNotice('Test info notification', {
+    const notice = (msgApi: MessageInstance): void => {
+      showNotice(msgApi, 'Test info notification', {
         duration: 5,
         type: 'info',
       });
@@ -408,8 +412,8 @@ describe('Test show notices function', () => {
   });
 
   it('Shows a default message', async () => {
-    const notice = (): void => {
-      showNotice('Test default notification');
+    const notice = (msgApi: MessageInstance): void => {
+      showNotice(msgApi, 'Test default notification');
     };
 
     const { findByText } = render(<TestComponent testFunc={notice} />);
@@ -417,8 +421,8 @@ describe('Test show notices function', () => {
   });
 
   it('Shows a error notification', async () => {
-    const notice = (): void => {
-      showError('');
+    const notice = (msgApi: MessageInstance): void => {
+      showError(msgApi, '');
     };
 
     const { findByText } = render(<TestComponent testFunc={notice} />);

@@ -164,9 +164,6 @@ describe('test main components', () => {
     // Change value for free-text input
     await submitKeywordSearch(renderedApp, 'foo', user);
 
-    // Wait for components to rerender
-    await waitFor(() => getByTestId('search'));
-
     // Check tag renders
     const tag = await waitFor(() => getByTestId('foo'));
     expect(tag).toBeTruthy();
@@ -339,24 +336,18 @@ describe('test main components', () => {
 });
 
 describe('User cart', () => {
-  xit('handles authenticated user adding and removing items from cart', async () => {
-    const renderedApp = customRender(<App searchQuery={activeSearch} />, {
-      token: 'token',
-    });
-    const { getByRole, getByTestId, getByText } = renderedApp;
-
-    // Change value for free-text input
-    await submitKeywordSearch(renderedApp, 'foo', user);
+  jest.setTimeout(45000);
+  it('handles authenticated user adding and removing items from cart', async () => {
+    const renderedApp = customRender(<App searchQuery={activeSearch} />);
+    const { getByRole, getByText } = renderedApp;
 
     // Wait for components to rerender
-    await waitFor(() => getByTestId('search'));
+    await waitFor(() => getByText('Query String:', { exact: false }));
 
     // Check first row exists
-    const firstRow = await waitFor(() =>
-      getByRole('row', {
-        name: getRowName('plus', 'close', 'bar', '2', '1', '1'),
-      })
-    );
+    const firstRow = getByRole('row', {
+      name: getRowName('plus', 'close', 'bar', '2', '1', '1'),
+    });
     expect(firstRow).toBeTruthy();
 
     // Check first row has add button and click it
@@ -388,30 +379,26 @@ describe('User cart', () => {
     expect(removeText).toBeTruthy();
   });
 
-  xit("displays authenticated user's number of files in the cart summary and handles clearing the cart", async () => {
-    const renderedApp = customRender(<App searchQuery={activeSearch} />, {
-      token: 'token',
-    });
-    const { getByRole, getByTestId, getByText, findByText } = renderedApp;
-
-    // Change value for free-text input
-    await submitKeywordSearch(renderedApp, 'foo', user);
+  it("displays authenticated user's number of files in the cart summary and handles clearing the cart", async () => {
+    const renderedApp = customRender(<App searchQuery={activeSearch} />);
+    const { getByRole, getByText, getByTestId, findByText } = renderedApp;
 
     // Wait for components to rerender
-    await waitFor(() => getByTestId('search'));
+    await waitFor(() => getByText('Query String:', { exact: false }));
 
     // Check first row exists
-    const firstRow = await waitFor(() =>
-      getByRole('row', {
-        name: getRowName('plus', 'close', 'bar', '2', '1', '1'),
-      })
-    );
+    const firstRow = getByRole('row', {
+      name: getRowName('plus', 'close', 'bar', '2', '1', '1'),
+    });
     expect(firstRow).toBeTruthy();
 
     // Check first row has add button and click it
     const addBtn = within(firstRow).getByRole('img', { name: 'plus' });
     expect(addBtn).toBeTruthy();
-    user.click(addBtn);
+
+    await act(async () => {
+      await user.click(addBtn);
+    });
 
     // Check 'Added items(s) to the cart' message appears
     const addText = await waitFor(() =>
@@ -481,28 +468,23 @@ describe('User cart', () => {
     expect(emptyAlert).toBeTruthy();
   });
 
-  xit('handles anonymous user adding and removing items from cart', async () => {
+  it('handles anonymous user adding and removing items from cart', async () => {
     // Render component as anonymous
     const renderedApp = customRender(
       <App searchQuery={activeSearch} />,
       {},
-      true
+      false
     );
 
-    const { getByRole, getByTestId } = renderedApp;
-
-    // Change value for free-text input
-    await submitKeywordSearch(renderedApp, 'foo', user);
+    const { getByRole, getByText } = renderedApp;
 
     // Wait for components to rerender
-    await waitFor(() => getByTestId('search'));
+    await waitFor(() => getByText('Query String:', { exact: false }));
 
     // Check first row exists
-    const firstRow = await waitFor(() =>
-      getByRole('row', {
-        name: getRowName('plus', 'check', 'foo', '3', '1', '1'),
-      })
-    );
+    const firstRow = getByRole('row', {
+      name: getRowName('plus', 'check', 'foo', '3', '1', '1'),
+    });
     expect(firstRow).toBeTruthy();
 
     // Check first row has add button and click it
@@ -522,29 +504,21 @@ describe('User cart', () => {
     });
   });
 
-  xit('displays anonymous user"s number of files in the cart summary and handles clearing the cart', async () => {
-    // Render component as anonymous
-    const { getByRole, getByTestId, getByText } = customRender(
+  it('displays anonymous user"s number of files in the cart summary and handles clearing the cart', async () => {
+    const renderedApp = customRender(
       <App searchQuery={activeSearch} />,
       {},
-      true
+      false
     );
-
-    // Check applicable components render
-    const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
-    expect(leftMenuComponent).toBeTruthy();
-    const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
-    expect(leftMenuComponent).toBeTruthy();
+    const { getByRole, getByText, getByTestId, findByText } = renderedApp;
 
     // Wait for components to rerender
-    await waitFor(() => getByTestId('search'));
+    await waitFor(() => getByText('Query String:', { exact: false }));
 
     // Check first row exists
-    const firstRow = await waitFor(() =>
-      getByRole('row', {
-        name: getRowName('plus', 'check', 'foo', '3', '1', '1'),
-      })
-    );
+    const firstRow = getByRole('row', {
+      name: getRowName('plus', 'close', 'bar', '2', '1', '1'),
+    });
     expect(firstRow).toBeTruthy();
 
     // Check first row has add button and click it
@@ -554,6 +528,16 @@ describe('User cart', () => {
     await act(async () => {
       await user.click(addBtn);
     });
+
+    // Check 'Added items(s) to the cart' message appears
+    const addText = await waitFor(() =>
+      getByText('Added item(s) to your cart')
+    );
+    expect(addText).toBeTruthy();
+
+    // Check applicable components render
+    const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
+    expect(rightMenuComponent).toBeTruthy();
 
     // Click on the cart link
     const cartLink = within(rightMenuComponent).getByRole('img', {
@@ -579,7 +563,7 @@ describe('User cart', () => {
     );
 
     expect(numDatasetsField.textContent).toEqual('Number of Datasets: 1');
-    expect(numFilesText.textContent).toEqual('Number of Files: 3');
+    expect(numFilesText.textContent).toEqual('Number of Files: 2');
 
     // Check "Remove All Items" button renders with cart > 0 items and click it
     const clearCartBtn = within(cart).getByRole('button', {
@@ -600,7 +584,6 @@ describe('User cart', () => {
       })
     );
     expect(confirmBtn).toBeTruthy();
-
     await act(async () => {
       await user.click(confirmBtn);
     });
@@ -610,7 +593,7 @@ describe('User cart', () => {
     expect(numFilesText.textContent).toEqual('Number of Files: 0');
 
     // Check empty alert renders
-    const emptyAlert = getByText('Your cart is empty');
+    const emptyAlert = await findByText('Your cart is empty');
     expect(emptyAlert).toBeTruthy();
   });
 
@@ -650,16 +633,14 @@ describe('User search library', () => {
     const renderedApp = customRender(<App searchQuery={activeSearch} />, {
       token: 'token',
     });
-    // Change value for free-text input
-    await submitKeywordSearch(renderedApp, 'foo', user);
-    const { getByTestId, getByRole } = renderedApp;
+    const { getByTestId, getByRole, getByText } = renderedApp;
+
+    // Wait for components to rerender
+    await waitFor(() => getByText('Query String:', { exact: false }));
 
     // Check applicable components render
     const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
     expect(rightMenuComponent).toBeTruthy();
-
-    // Wait for components to rerender
-    await waitFor(() => getByTestId('search'));
 
     // Check Save Search button exists and click it
     const saveSearch = await waitFor(() =>
@@ -672,7 +653,9 @@ describe('User search library', () => {
     });
 
     // Click Save Search button again to check if duplicates are saved
-    await delay(500);
+    await act(async () => {
+      await delay(500);
+    });
 
     await act(async () => {
       await user.click(saveSearch);
@@ -815,17 +798,14 @@ describe('User search library', () => {
       {},
       true
     );
-    const { getByRole, getByTestId } = renderedApp;
+    const { getByRole, getByTestId, getByText } = renderedApp;
 
-    // Change value for free-text input
-    await submitKeywordSearch(renderedApp, 'foo', user);
+    // Wait for components to rerender
+    await waitFor(() => getByText('Query String:', { exact: false }));
 
     // Check applicable components render
     const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
     expect(rightMenuComponent).toBeTruthy();
-
-    // Wait for components to rerender
-    await waitFor(() => getByTestId('search'));
 
     // Check Save Search button exists and click it
     const saveSearch = await waitFor(() =>
@@ -895,7 +875,7 @@ describe('User search library', () => {
   });
 
   describe('Error handling', () => {
-    xit('displays error message after failing to fetch authenticated user"s saved search queries', async () => {
+    it('displays error message after failing to fetch authenticated user"s saved search queries', async () => {
       server.use(
         rest.get(apiRoutes.userSearches.path, (_req, res, ctx) =>
           res(ctx.status(404))
@@ -903,10 +883,7 @@ describe('User search library', () => {
       );
 
       const { getByText, getByTestId } = customRender(
-        <App searchQuery={activeSearch} />,
-        {
-          token: 'token',
-        }
+        <App searchQuery={activeSearch} />
       );
 
       // Check applicable components render
@@ -924,7 +901,7 @@ describe('User search library', () => {
       const renderedApp = customRender(<App searchQuery={activeSearch} />, {
         token: 'token',
       });
-      const { getByRole } = renderedApp;
+      const { getByRole, getByText } = renderedApp;
 
       server.use(
         rest.post(apiRoutes.userSearches.path, (_req, res, ctx) =>
@@ -932,8 +909,8 @@ describe('User search library', () => {
         )
       );
 
-      // Change value for free-text input
-      await submitKeywordSearch(renderedApp, 'foo', user);
+      // Wait for components to rerender
+      await waitFor(() => getByText('Query String:', { exact: false }));
 
       // Check Save Search button exists and click it
       const saveSearch = await waitFor(() =>
@@ -1007,7 +984,7 @@ describe('User search library', () => {
 });
 
 describe('User support', () => {
-  xit('renders user support modal when clicking help button and is closeable', async () => {
+  it('renders user support modal when clicking help button and is closeable', async () => {
     const { getByRole, getByText, findByText } = customRender(
       <App searchQuery={activeSearch} />
     );
@@ -1022,7 +999,9 @@ describe('User support', () => {
     });
 
     // GitHub icon renders
-    const metagridSupportHeader = findByText(' MetaGrid Support');
+    const metagridSupportHeader = findByText(' MetaGrid Support', {
+      exact: false,
+    });
     expect(metagridSupportHeader).toBeTruthy();
 
     // click close button

@@ -16,6 +16,7 @@ import {
   FloatButton,
   Layout,
   Result,
+  message,
 } from 'antd';
 import React, { ReactElement } from 'react';
 import { useAsync } from 'react-async';
@@ -99,6 +100,8 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   // Third-party tool integration
   useHotjar();
 
+  const [messageApi, contextHolder] = message.useMessage();
+
   // User's authentication state
   const authState = React.useContext(AuthContext);
   const { access_token: accessToken, pk } = authState;
@@ -166,7 +169,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
           setUserCart(combinedCarts);
         })
         .catch((error: ResponseError) => {
-          showError(error.message);
+          showError(messageApi, error.message);
         });
 
       void fetchUserSearchQueries(accessToken)
@@ -187,7 +190,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
           setUserSearchQueries(databaseItems.concat(searchQueriesToAdd));
         })
         .catch((error: ResponseError) => {
-          showError(error.message);
+          showError(messageApi, error.message);
         });
     }
   }, [isAuthenticated, pk, accessToken]);
@@ -232,7 +235,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
       .catch(
         /* istanbul ignore next */
         (error: ResponseError) => {
-          showError(error.message);
+          showError(messageApi, error.message);
         }
       );
   }, [fetchProjects]);
@@ -242,7 +245,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     text: string
   ): void => {
     if (activeSearchQuery.textInputs.includes(text as never)) {
-      showError(`Input "${text}" has already been applied`);
+      showError(messageApi, `Input "${text}" has already been applied`);
     } else {
       setActiveSearchQuery({
         ...activeSearchQuery,
@@ -254,7 +257,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
 
   const handleOnSetFilenameVars = (filenameVar: string): void => {
     if (activeSearchQuery.filenameVars.includes(filenameVar as never)) {
-      showError(`Input "${filenameVar}" has already been applied`);
+      showError(messageApi, `Input "${filenameVar}" has already been applied`);
     } else {
       setActiveSearchQuery({
         ...activeSearchQuery,
@@ -349,7 +352,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
 
       newCart = [...userCart, ...itemsNotInCart];
       setUserCart(newCart);
-      showNotice('Added item(s) to your cart', {
+      showNotice(messageApi, 'Added item(s) to your cart', {
         icon: <ShoppingCartOutlined style={styles.messageAddIcon} />,
       });
     } else if (operation === 'remove') {
@@ -358,7 +361,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
       );
       setUserCart(newCart);
 
-      showNotice('Removed item(s) from your cart', {
+      showNotice(messageApi, 'Removed item(s) from your cart', {
         icon: <DeleteOutlined style={styles.messageRemoveIcon} />,
       });
     }
@@ -395,7 +398,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     };
 
     if (searchAlreadyExists(userSearchQueries, savedSearch)) {
-      showNotice('Search query is already in your library', {
+      showNotice(messageApi, 'Search query is already in your library', {
         icon: <BookOutlined style={styles.messageAddIcon} />,
         type: 'info',
       });
@@ -404,7 +407,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
 
     const saveSuccess = (): void => {
       setUserSearchQueries([...userSearchQueries, savedSearch]);
-      showNotice('Saved search query to your library', {
+      showNotice(messageApi, 'Saved search query to your library', {
         icon: <BookOutlined style={styles.messageAddIcon} />,
       });
     };
@@ -417,7 +420,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
         .catch(
           /* istanbul ignore next */
           (error: ResponseError) => {
-            showError(error.message);
+            showError(messageApi, error.message);
           }
         );
     } else {
@@ -429,7 +432,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     /* istanbul ignore else */
     if (navigator && navigator.clipboard) {
       navigator.clipboard.writeText(getUrlFromSearch(activeSearchQuery));
-      showNotice('Search copied to clipboard!', {
+      showNotice(messageApi, 'Search copied to clipboard!', {
         icon: <ShareAltOutlined style={styles.messageAddIcon} />,
       });
     }
@@ -442,7 +445,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
           (searchItem: UserSearchQuery) => searchItem.uuid !== searchUUID
         )
       );
-      showNotice('Removed search query from your library', {
+      showNotice(messageApi, 'Removed search query from your library', {
         icon: <DeleteOutlined style={styles.messageRemoveIcon} />,
       });
     };
@@ -453,7 +456,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
           deleteSuccess();
         })
         .catch((error: ResponseError) => {
-          showError(error.message);
+          showError(messageApi, error.message);
         });
     } else {
       deleteSuccess();
@@ -511,6 +514,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
           />
         </Routes>
         <Layout id="body-layout">
+          {contextHolder}
           <Routes>
             <Route path="/" element={<Navigate to="/search" />} />
             <Route path="/cart" element={<Navigate to="/cart/items" />} />
