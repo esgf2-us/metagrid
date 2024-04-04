@@ -273,7 +273,7 @@ xdescribe('DatasetDownload form tests', () => {
 
     // Expect the steps popup to show with a different message
     const warningPopup2 = getByText(
-      /One of your selected items cannot be transfered via Globus./i
+      /One of your selected items cannot be transferred via Globus./i
     );
     expect(warningPopup2).toBeTruthy();
     await user.click(getByText('Cancel'));
