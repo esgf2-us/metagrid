@@ -26,16 +26,16 @@ export type GlobusEndpointSearch = {
 
 export type GlobusEndpointSearchArray = GlobusEndpointSearch[];
 
-export type GlobusStateValue =
-  | null
-  | boolean
-  | string
-  | GlobusEndpointData
-  | GlobusTokenResponse
-  | Record<string, unknown>;
-
 export type GlobusTaskItem = {
   taskId: string;
   submitDate: string;
   taskStatusURL: string;
+};
+
+export type GlobusEndpoint = {
+  contact_email: string;
+  entity_type: string;
+  label: string; // display_name
+  key: string; // id
+  subscription_id: string;
 };

@@ -3,17 +3,20 @@
 import { CheckCircleFilled, DownloadOutlined } from '@ant-design/icons';
 import {
   Button,
+  Collapse,
   Divider,
+  Input,
   Modal,
   Radio,
   Select,
   Space,
+  Table,
   Tooltip,
   message,
 } from 'antd';
 import PKCE from 'js-pkce';
 import React, { useEffect } from 'react';
-import { useRecoilState, useSetRecoilState } from 'recoil';
+import { useRecoilState } from 'recoil';
 import {
   saveSessionValue,
   loadSessionValue,
@@ -37,13 +40,14 @@ import GlobusStateKeys, {
   globusUseDefaultEndpoint,
   globusDefaultEndpoint,
   globusTaskItems,
+  globusSavedEndpoints,
 } from './recoil/atom';
 import {
-  GlobusStateValue,
   GlobusTokenResponse,
   GlobusEndpointData,
   GlobusTaskItem,
   MAX_TASK_LIST_LENGTH,
+  GlobusEndpoint,
 } from './types';
 import { NotificationType, showError, showNotice } from '../../common/utils';
 
@@ -68,13 +72,7 @@ type AlertModalState = {
   content: React.ReactNode;
 };
 
-type Endpoint = {
-  contact_email: string;
-  entity_type: string;
-  label: string; // display_name
-  value: string; // id
-  subscription_id: string;
-};
+const ENDPOINT_SEARCH_PAGE_SIZE = 5;
 
 // Statically defined list of dataset download options
 const downloadOptions = ['Globus', 'wget'];
@@ -101,9 +99,10 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     setUseGlobusDefaultEndpoint,
   ] = useRecoilState<boolean>(globusUseDefaultEndpoint);
 
-  const setDefaultGlobusEndpoint = useSetRecoilState<GlobusStateValue>(
-    globusDefaultEndpoint
-  );
+  const [
+    defaultGlobusEndpoint,
+    setDefaultGlobusEndpoint,
+  ] = useRecoilState<GlobusEndpointData>(globusDefaultEndpoint);
 
   const [taskItems, setTaskItems] = useRecoilState<GlobusTaskItem[]>(
     globusTaskItems
@@ -117,11 +116,28 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     cartDownloadIsLoading
   );
 
+  const [savedGlobusEndpoints, setSavedGlobusEndpoints] = useRecoilState<
+    GlobusEndpoint[] | []
+  >(globusSavedEndpoints);
+
   // Component internal state
-  const [downloadActive, setDownloadActive] = React.useState<boolean>(true);
+  const [endpointSearchOpen, setEndpointSearchOpen] = React.useState<boolean>(
+    false
+  );
+
+  const [endpointSearchValue, setEndpointSearchValue] = React.useState<string>(
+    ''
+  );
+
+  // const [downloadActive, setDownloadActive] = React.useState<boolean>(true);
+
+  const [
+    loadingEndpointSearchResults,
+    setLoadingEndpointSearchResults,
+  ] = React.useState<boolean>(false);
 
   const [globusEndpoints, setGlobusEndpoints] = React.useState<
-    Endpoint[] | []
+    GlobusEndpoint[] | []
   >();
 
   const [
@@ -371,12 +387,10 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           })
           .finally(async () => {
             setDownloadIsLoading(false);
-            setDownloadActive(false);
             await showNotice(messageApi, messageContent, {
               duration: durationVal,
               type: messageType,
             });
-            setDownloadActive(true);
             await endDownloadSteps();
           });
       }
@@ -413,7 +427,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       if (globusDisabledCount > 1) {
         state = 'Some';
       }
-      let content = `${state} of your selected items cannot be transfered via Globus. Would you like to continue the Globus transfer with the 'Globus Ready' items?`;
+      let content = `${state} of your selected items cannot be transferred via Globus. Would you like to continue the Globus transfer with the 'Globus Ready' items?`;
 
       if (globusDisabledCount === itemSelections.length) {
         state = 'None';
@@ -469,8 +483,14 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   };
 
   const changeGlobusEndpoint = async (value: string): Promise<void> => {
-    const checkEndpoint = globusEndpoints?.find(
-      (endpoint) => endpoint.value === value
+    if (value === '') {
+      setEndpointSearchOpen(true);
+      setEndpointSearchValue('');
+      setGlobusEndpoints([]);
+      return;
+    }
+    const checkEndpoint = savedGlobusEndpoints?.find(
+      (endpoint: GlobusEndpoint) => endpoint.key === value
     );
 
     if (
@@ -489,13 +509,14 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
   const searchGlobusEndpoints = async (value: string): Promise<void> => {
     if (value) {
+      setLoadingEndpointSearchResults(true);
       const endpoints = await startSearchGlobusEndpoints(value);
       const mappedEndpoints = endpoints.data.map((endpoint) => {
         return {
           contact_email: endpoint.contact_email,
           entity_type: endpoint.entity_type,
           label: endpoint.display_name,
-          value: endpoint.id,
+          key: endpoint.id,
           subscription_id: endpoint.subscription_id,
         };
       });
@@ -505,11 +526,12 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           mappedEndpoints.splice(i, 1);
         }
       }
-
       setGlobusEndpoints(mappedEndpoints);
     } else {
+      setEndpointSearchValue('');
       setGlobusEndpoints([]);
     }
+    setLoadingEndpointSearchResults(false);
   };
 
   const showGlobusSigninPrompt = (formState: ModalFormState): void => {
@@ -668,7 +690,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   }
 
   async function saveEndpointAsDefault(
-    userEndpoint: GlobusStateValue
+    userEndpoint: GlobusEndpointData
   ): Promise<void> {
     if (userEndpoint) {
       setDefaultGlobusEndpoint(userEndpoint);
@@ -801,7 +823,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       const itemCartSelections = await loadSessionValue<RawSearchResults>(
         CartStateKeys.cartItemSelections
       );
-      const defaultEndpoint = await loadSessionValue<GlobusStateValue>(
+      const defaultEndpoint = await loadSessionValue<GlobusEndpointData>(
         GlobusStateKeys.defaultEndpoint
       );
       const useDefaultEndpoint = await loadSessionValue<boolean>(
@@ -809,6 +831,9 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       );
       const savedTaskItems = await loadSessionValue<GlobusTaskItem[]>(
         GlobusStateKeys.globusTaskItems
+      );
+      const savedGlobusEndpointList = await loadSessionValue<GlobusEndpoint[]>(
+        GlobusStateKeys.savedGlobusEndpoints
       );
       if (itemCartSelections) {
         setItemSelections(itemCartSelections);
@@ -821,6 +846,9 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       }
       if (savedTaskItems) {
         setTaskItems(savedTaskItems);
+      }
+      if (savedGlobusEndpointList) {
+        setSavedGlobusEndpoints(savedGlobusEndpointList);
       }
       if (continueProcess) {
         await performGlobusDownloadStep();
@@ -850,47 +878,56 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             label: option,
           }))}
         />
-        {!useGlobusDefaultEndpoint && selectedDownloadType === 'Globus' && (
+        {selectedDownloadType === 'Globus' && !useGlobusDefaultEndpoint && (
           <Select
             data-testid="searchEndpointInput"
             defaultActiveFirstOption={false}
             filterOption={false}
-            onChange={changeGlobusEndpoint}
-            onSearch={searchGlobusEndpoints}
+            onSelect={changeGlobusEndpoint}
             notFoundContent={null}
-            placeholder="Search for a Globus Collection"
+            placeholder="Select Globus Collection"
             showSearch
             style={{ width: '450px' }}
             value={
               chosenGlobusEndpoint !== '' ? chosenGlobusEndpoint : undefined
             }
-            options={(globusEndpoints || []).map((d) => ({
-              contact_email: d.contact_email,
-              entity_type: d.entity_type,
-              label: d.label,
-              value: d.value,
-            }))}
+            options={savedGlobusEndpoints?.map((endpoint: GlobusEndpoint) => {
+              if (endpoint && endpoint.key !== '') {
+                return {
+                  value: endpoint.key,
+                  label: endpoint.label,
+                };
+              }
+              return {
+                value: '',
+                label: 'Select New Globus Collection',
+              };
+            })}
             optionLabelProp="label"
-            optionRender={(option) => (
-              <>
-                <strong>{option.data.label}</strong>
-                <br />
-                ID: {option.data.value}
-                <br />
-                <span>
-                  {option.data?.entity_type === 'GCSv5_mapped_collection' &&
-                    option.data?.subscription_id !== '' &&
-                    'Managed '}
-                  {option.data?.entity_type === 'GCSv5_guest_collection'
-                    ? 'Guest Collection'
-                    : 'Mapped Collection'}{' '}
+            optionRender={(option) =>
+              option.key === '' ? (
+                <strong>{option.label}</strong>
+              ) : (
+                <>
+                  <strong>{option.label}</strong>
                   <br />
-                  {option.data?.contact_email !== null &&
-                    option.data?.contact_email}
-                </span>
-                <Divider style={{ marginBottom: '0px', marginTop: '0px' }} />
-              </>
-            )}
+                  ID: {option.key}
+                  <br />
+                  <span>
+                    {option.data?.entity_type === 'GCSv5_mapped_collection' &&
+                      option.data?.subscription_id !== '' &&
+                      'Managed '}
+                    {option.data?.entity_type === 'GCSv5_guest_collection'
+                      ? 'Guest Collection'
+                      : 'Mapped Collection'}{' '}
+                    <br />
+                    {option.data?.contact_email !== null &&
+                      option.data?.contact_email}
+                  </span>
+                  <Divider style={{ marginBottom: '0px', marginTop: '0px' }} />
+                </>
+              )
+            }
           ></Select>
         )}
         <Button
@@ -903,7 +940,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           icon={<DownloadOutlined />}
           disabled={
             itemSelections.length === 0 ||
-            !downloadActive ||
             (!useGlobusDefaultEndpoint &&
               selectedDownloadType === 'Globus' &&
               chosenGlobusEndpoint === '')
@@ -914,7 +950,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         </Button>
         {selectedDownloadType === 'Globus' &&
           itemSelections.length !== 0 &&
-          downloadActive && (
+          defaultGlobusEndpoint && (
             <Radio.Group
               onChange={(e) => {
                 setUseGlobusDefaultEndpoint(e.target.value as boolean);
@@ -968,16 +1004,150 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           </li>
           <li>
             {globusStepsModal.state === 'endpoint' && '-> '}
-            Redirect to select an endpoint in Globus.
+            Redirect to select download path.
             {(globusStepsModal.state === 'none' ||
               globusStepsModal.state === 'signin') && <CheckCircleFilled />}
           </li>
-
           <li>
             {globusStepsModal.state === 'none' && '-> '} Start Globus transfer.
           </li>
         </ol>
         <p>Do you wish to proceed?</p>
+      </Modal>
+      <Modal
+        title="Endpoint Search"
+        open={endpointSearchOpen}
+        onOk={async () => {
+          setEndpointSearchOpen(false);
+          setChosenGlobusEndpoint('');
+          await saveSessionValue<GlobusEndpoint[]>(
+            GlobusStateKeys.savedGlobusEndpoints,
+            savedGlobusEndpoints
+          );
+        }}
+        onCancel={() => {
+          setEndpointSearchOpen(false);
+          setChosenGlobusEndpoint('');
+        }}
+        width={1000}
+      >
+        <Input.Search
+          value={endpointSearchValue}
+          onChange={(e) => {
+            setEndpointSearchValue(e.target.value);
+          }}
+          placeholder="Search for a Globus Collection"
+          onSearch={searchGlobusEndpoints}
+          loading={loadingEndpointSearchResults}
+          enterButton
+        />
+        <Collapse
+          size="small"
+          defaultActiveKey={1}
+          items={[
+            {
+              key: '1',
+              label: 'Globus Endpoint Search Results',
+              children: (
+                <Table
+                  loading={loadingEndpointSearchResults}
+                  size="small"
+                  pagination={
+                    globusEndpoints &&
+                    globusEndpoints.length > ENDPOINT_SEARCH_PAGE_SIZE
+                      ? {
+                          pageSize: ENDPOINT_SEARCH_PAGE_SIZE,
+                          position: ['bottomRight'],
+                        }
+                      : {
+                          pageSize: ENDPOINT_SEARCH_PAGE_SIZE,
+                          position: ['none'],
+                        }
+                  }
+                  dataSource={globusEndpoints?.filter((searchEndpoint) => {
+                    return !(savedGlobusEndpoints as GlobusEndpoint[])
+                      .map((savedEndpoint) => savedEndpoint.key)
+                      .includes(searchEndpoint.key);
+                  })}
+                  columns={[
+                    {
+                      title: '',
+                      dataIndex: 'addBox',
+                      key: 'addBox',
+                      render: (_, endpoint) => (
+                        <Button
+                          type="primary"
+                          onClick={() => {
+                            setSavedGlobusEndpoints([
+                              ...savedGlobusEndpoints,
+                              endpoint,
+                            ]);
+                          }}
+                        >
+                          Add
+                        </Button>
+                      ),
+                    },
+                    { title: 'ID', dataIndex: 'key', key: 'id' },
+                    { title: 'Name', dataIndex: 'label', key: 'label' },
+                  ]}
+                />
+              ),
+            },
+            {
+              key: '2',
+              label: 'Saved Globus Endpoints',
+              children: (
+                <Table
+                  size="small"
+                  pagination={
+                    savedGlobusEndpoints &&
+                    savedGlobusEndpoints.length > ENDPOINT_SEARCH_PAGE_SIZE
+                      ? {
+                          pageSize: ENDPOINT_SEARCH_PAGE_SIZE,
+                          position: ['bottomRight'],
+                        }
+                      : {
+                          pageSize: ENDPOINT_SEARCH_PAGE_SIZE,
+                          position: ['none'],
+                        }
+                  }
+                  dataSource={savedGlobusEndpoints
+                    .filter((savedEndpoint) => {
+                      return savedEndpoint.key !== '';
+                    })
+                    .map((endpoint) => {
+                      return { ...endpoint, key: endpoint.key };
+                    })}
+                  columns={[
+                    {
+                      title: '',
+                      dataIndex: 'addBox',
+                      key: 'addBox',
+                      render: (_, endpoint) => (
+                        <Button
+                          type="primary"
+                          danger
+                          onClick={() => {
+                            setSavedGlobusEndpoints(
+                              savedGlobusEndpoints.filter((savedEndpoint) => {
+                                return savedEndpoint.key !== endpoint.key;
+                              })
+                            );
+                          }}
+                        >
+                          Remove
+                        </Button>
+                      ),
+                    },
+                    { title: 'ID', dataIndex: 'key', key: 'id' },
+                    { title: 'Name', dataIndex: 'label', key: 'label' },
+                  ]}
+                />
+              ),
+            },
+          ]}
+        />
       </Modal>
       <Modal
         okText="Ok"
