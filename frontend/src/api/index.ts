@@ -29,25 +29,7 @@ import {
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
 import { metagridApiURL } from '../env';
 import apiRoutes, { ApiRoute, HTTPCodeType } from './routes';
-
-export interface Endpoint {
-  canonical_name: string;
-  contact_email: string;
-  display_name: string;
-  entity_type: string;
-  id: string;
-  owner_id: string;
-  owner_string: string;
-  subscription_id: string;
-}
-
-export interface GlobusEndpoint {
-  data: Endpoint[];
-  status: number;
-  statusText: string;
-  headers: object;
-  config: object;
-}
+import { GlobusEndpointSearchResults } from '../components/Globus/types';
 
 export interface ResponseError extends Error {
   status?: number;
@@ -714,7 +696,7 @@ export const startGlobusTransfer = async (
 
 export const startSearchGlobusEndpoints = async (
   searchText: string
-): Promise<GlobusEndpoint> => {
+): Promise<GlobusEndpointSearchResults> => {
   return axios
     .get(apiRoutes.globusSearchEndpoints.path, {
       params: { search_text: searchText },

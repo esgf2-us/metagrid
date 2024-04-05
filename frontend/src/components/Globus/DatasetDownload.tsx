@@ -47,7 +47,8 @@ import {
   GlobusEndpointData,
   GlobusTaskItem,
   MAX_TASK_LIST_LENGTH,
-  GlobusEndpoint,
+  SavedEndpoint,
+  GlobusEndpointSearchResults,
 } from './types';
 import { NotificationType, showError, showNotice } from '../../common/utils';
 
@@ -117,7 +118,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   );
 
   const [savedGlobusEndpoints, setSavedGlobusEndpoints] = useRecoilState<
-    GlobusEndpoint[] | []
+    SavedEndpoint[] | []
   >(globusSavedEndpoints);
 
   // Component internal state
@@ -129,15 +130,13 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     ''
   );
 
-  // const [downloadActive, setDownloadActive] = React.useState<boolean>(true);
-
   const [
     loadingEndpointSearchResults,
     setLoadingEndpointSearchResults,
   ] = React.useState<boolean>(false);
 
   const [globusEndpoints, setGlobusEndpoints] = React.useState<
-    GlobusEndpoint[] | []
+    SavedEndpoint[] | []
   >();
 
   const [
@@ -490,7 +489,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       return;
     }
     const checkEndpoint = savedGlobusEndpoints?.find(
-      (endpoint: GlobusEndpoint) => endpoint.key === value
+      (endpoint: SavedEndpoint) => endpoint.key === value
     );
 
     if (
@@ -510,7 +509,9 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   const searchGlobusEndpoints = async (value: string): Promise<void> => {
     if (value) {
       setLoadingEndpointSearchResults(true);
-      const endpoints = await startSearchGlobusEndpoints(value);
+      const endpoints: GlobusEndpointSearchResults = await startSearchGlobusEndpoints(
+        value
+      );
       const mappedEndpoints = endpoints.data.map((endpoint) => {
         return {
           contact_email: endpoint.contact_email,
@@ -518,6 +519,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           label: endpoint.display_name,
           key: endpoint.id,
           subscription_id: endpoint.subscription_id,
+          path: '',
         };
       });
 
@@ -832,9 +834,10 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       const savedTaskItems = await loadSessionValue<GlobusTaskItem[]>(
         GlobusStateKeys.globusTaskItems
       );
-      const savedGlobusEndpointList = await loadSessionValue<GlobusEndpoint[]>(
+      const savedGlobusEndpointList = await loadSessionValue<SavedEndpoint[]>(
         GlobusStateKeys.savedGlobusEndpoints
       );
+
       if (itemCartSelections) {
         setItemSelections(itemCartSelections);
       }
@@ -885,13 +888,13 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             filterOption={false}
             onSelect={changeGlobusEndpoint}
             notFoundContent={null}
-            placeholder="Select Globus Collection"
+            placeholder="Select Globus Transfer Endpoint"
             showSearch
             style={{ width: '450px' }}
             value={
               chosenGlobusEndpoint !== '' ? chosenGlobusEndpoint : undefined
             }
-            options={savedGlobusEndpoints?.map((endpoint: GlobusEndpoint) => {
+            options={savedGlobusEndpoints?.map((endpoint: SavedEndpoint) => {
               if (endpoint && endpoint.key !== '') {
                 return {
                   value: endpoint.key,
@@ -900,7 +903,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
               }
               return {
                 value: '',
-                label: 'Select New Globus Collection',
+                label: 'Manage Endpoints List',
               };
             })}
             optionLabelProp="label"
@@ -1020,7 +1023,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         onOk={async () => {
           setEndpointSearchOpen(false);
           setChosenGlobusEndpoint('');
-          await saveSessionValue<GlobusEndpoint[]>(
+          await saveSessionValue<SavedEndpoint[]>(
             GlobusStateKeys.savedGlobusEndpoints,
             savedGlobusEndpoints
           );
@@ -1064,31 +1067,50 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                           position: ['none'],
                         }
                   }
-                  dataSource={globusEndpoints?.filter((searchEndpoint) => {
-                    return !(savedGlobusEndpoints as GlobusEndpoint[])
-                      .map((savedEndpoint) => savedEndpoint.key)
-                      .includes(searchEndpoint.key);
-                  })}
+                  dataSource={globusEndpoints}
                   columns={[
                     {
                       title: '',
                       dataIndex: 'addBox',
                       key: 'addBox',
-                      render: (_, endpoint) => (
-                        <Button
-                          type="primary"
-                          onClick={() => {
-                            setSavedGlobusEndpoints([
-                              ...savedGlobusEndpoints,
-                              endpoint,
-                            ]);
-                          }}
-                        >
-                          Add
-                        </Button>
-                      ),
+                      width: 35,
+                      render: (_, endpoint) => {
+                        if (
+                          savedGlobusEndpoints.findIndex((savedEndpoint) => {
+                            return savedEndpoint.key === endpoint.key;
+                          }) === -1
+                        ) {
+                          return (
+                            <Button
+                              type="primary"
+                              onClick={() => {
+                                setSavedGlobusEndpoints([
+                                  ...savedGlobusEndpoints,
+                                  endpoint,
+                                ]);
+                              }}
+                            >
+                              Add
+                            </Button>
+                          );
+                        }
+                        return (
+                          <Button
+                            type="primary"
+                            disabled
+                            onClick={() => {
+                              setSavedGlobusEndpoints([
+                                ...savedGlobusEndpoints,
+                                endpoint,
+                              ]);
+                            }}
+                          >
+                            Added
+                          </Button>
+                        );
+                      },
                     },
-                    { title: 'ID', dataIndex: 'key', key: 'id' },
+                    { title: 'ID', dataIndex: 'key', key: 'id', width: 350 },
                     { title: 'Name', dataIndex: 'label', key: 'label' },
                   ]}
                 />
@@ -1124,6 +1146,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                       title: '',
                       dataIndex: 'addBox',
                       key: 'addBox',
+                      width: 70,
                       render: (_, endpoint) => (
                         <Button
                           type="primary"
@@ -1140,7 +1163,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                         </Button>
                       ),
                     },
-                    { title: 'ID', dataIndex: 'key', key: 'id' },
+                    { title: 'ID', dataIndex: 'key', key: 'id', width: 350 },
                     { title: 'Name', dataIndex: 'label', key: 'label' },
                   ]}
                 />
