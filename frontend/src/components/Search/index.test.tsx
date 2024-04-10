@@ -5,7 +5,6 @@ import {
   activeSearchQueryFixture,
   ESGFSearchAPIFixture,
   rawSearchResultFixture,
-  userCartFixture,
 } from '../../api/mock/fixtures';
 import { rest, server } from '../../api/mock/server';
 import apiRoutes from '../../api/routes';
@@ -86,8 +85,8 @@ describe('test Search component', () => {
     expect(jsonBtn).toBeTruthy();
   });
 
-  xit('renders query string', async () => {
-    const { getByRole, getByTestId, getByText, rerender } = customRender(
+  it('renders query string', async () => {
+    const { getByRole, getByTestId, getByText } = customRender(
       <Search {...defaultProps} />
     );
 
@@ -104,15 +103,17 @@ describe('test Search component', () => {
     expect(strResults).toBeTruthy();
 
     // Check renders query string
-    let queryString = await waitFor(() =>
+    const queryString = await waitFor(() =>
       getByText(
         'latest = true AND min_version = 20200101 AND max_version = 20201231 AND (Text Input = foo) AND (foo = option1 OR option2) AND (baz = option1)'
       )
     );
     expect(queryString).toBeTruthy();
+  });
 
+  it('renders an empty query string when no search parameters are set', async () => {
     // Rerender with no filters applied
-    const activeSearchQuery: ActiveSearchQuery = {
+    const emptySearchQuery: ActiveSearchQuery = {
       ...activeSearchQueryFixture(),
       versionType: 'all',
       minVersionDate: null,
@@ -121,12 +122,12 @@ describe('test Search component', () => {
       textInputs: [],
     };
 
-    rerender(
-      <Search {...defaultProps} activeSearchQuery={activeSearchQuery} />
+    const { getByText } = customRender(
+      <Search {...defaultProps} activeSearchQuery={emptySearchQuery} />
     );
 
     // Check renders query string
-    queryString = await waitFor(() => getByText('No filters applied'));
+    const queryString = await waitFor(() => getByText('No filters applied'));
     expect(queryString).toBeTruthy();
   });
 
@@ -151,7 +152,7 @@ describe('test Search component', () => {
     await waitFor(() => getByTestId('search'));
   });
 
-  xit('handles pagination and page size changes', async () => {
+  it('handles pagination and page size changes', async () => {
     // Update api to return 20 search results, which enables pagination if 10/page selected
     const data = ESGFSearchAPIFixture();
     const response = {
