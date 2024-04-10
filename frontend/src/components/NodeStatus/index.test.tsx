@@ -24,7 +24,7 @@ it('renders the loading table', () => {
   expect(header).toBeTruthy();
 });
 
-xit('renders the node status and columns sort', async () => {
+it('renders the node status and columns sort', async () => {
   const { getByRole } = customRender(
     <NodeStatus {...defaultProps}></NodeStatus>
   );
@@ -34,7 +34,7 @@ xit('renders the node status and columns sort', async () => {
   });
   expect(header).toBeTruthy();
 
-  const nodeColHeader = getByRole('columnheader', { name: 'Node caret-down' });
+  const nodeColHeader = getByRole('columnheader', { name: 'Node' });
 
   expect(nodeColHeader).toBeTruthy();
 
@@ -43,7 +43,7 @@ xit('renders the node status and columns sort', async () => {
   });
 
   const isOnlineColHeader = getByRole('columnheader', {
-    name: 'Online caret-up caret-down',
+    name: 'Online',
   });
   expect(isOnlineColHeader).toBeTruthy();
 
