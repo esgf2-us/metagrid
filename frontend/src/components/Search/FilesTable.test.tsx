@@ -160,6 +160,9 @@ describe('test FilesTable component', () => {
     await act(async () => {
       await user.click(copyBtn);
     });
+
+    // Wait for component to re-render
+    await waitFor(() => getByTestId('filesTable'));
   });
 
   it('handles pagination and page size changes', async () => {
@@ -212,15 +215,12 @@ describe('test FilesTable component', () => {
 
     // Select the 'Next Page' button (only enabled if there are > 10 results)
     const nextPage = await waitFor(() =>
-      getByRole('listitem', { name: 'Next Page' })
+      within(getByRole('listitem', { name: 'Next Page' })).getByRole('button')
     );
 
     await act(async () => {
       await user.click(nextPage);
     });
-
-    // Wait for component to re-render
-    await waitFor(() => getByTestId('filesTable'));
   });
 
   it('handles clicking the expandable icon', async () => {

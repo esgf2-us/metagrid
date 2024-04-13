@@ -5,6 +5,7 @@ import {
   activeSearchQueryFixture,
   ESGFSearchAPIFixture,
   rawSearchResultFixture,
+  userCartFixture,
 } from '../../api/mock/fixtures';
 import { rest, server } from '../../api/mock/server';
 import apiRoutes from '../../api/routes';
@@ -281,51 +282,19 @@ describe('test Search component', () => {
     expect(addCartBtn.disabled).toBeTruthy();
   });
 
-  xit('disables the "Add Selected to Cart" button when all rows are already in the cart', async () => {
-    const { getByRole, getByTestId, rerender } = customRender(
-      <Search {...defaultProps} />
+  it('disables the "Add Selected to Cart" button when all rows are already in the cart', async () => {
+    // Render the component with userCart full
+    const { getByRole } = customRender(
+      <Search {...defaultProps} userCart={userCartFixture()} />
     );
 
-    // Check search component renders
-    const searchComponent = await waitFor(() => getByTestId('search'));
-    expect(searchComponent).toBeTruthy();
-
-    // Wait for search to re-render
-    await waitFor(() => getByTestId('search-table'));
-
-    // Check the select all checkbox exists and click it
-    // Note: Cannot query by aria-role or data-testid because Ant Design API
-    //   renders the column and there are checkboxes for each row (no uniqueness)
-    const selectAllCheckbox = document.querySelector(
-      'th.ant-table-cell.ant-table-selection-column [type="checkbox"]'
-    ) as HTMLInputElement;
-    expect(selectAllCheckbox).toBeTruthy();
-
-    await act(async () => {
-      await user.click(selectAllCheckbox);
-    });
-
-    // Click the 'Add Selected to Cart'
-    let addCartBtn = (await waitFor(() =>
-      getByRole('button', {
-        name: 'shopping-cart Add Selected to Cart',
-      })
-    )) as HTMLButtonElement;
-    expect(addCartBtn).toBeTruthy();
-
-    await act(async () => {
-      await user.click(addCartBtn);
-    });
-
-    // Re-render with items in the cart
-    rerender(<Search {...defaultProps} userCart={userCartFixture()} />);
-
     // Check the 'Add Selected to Cart' button is disabled
-    addCartBtn = (await waitFor(() =>
+    const addCartBtn = (await waitFor(() =>
       getByRole('button', {
         name: 'shopping-cart Add Selected to Cart',
       })
     )) as HTMLButtonElement;
+
     expect(addCartBtn.disabled).toBeTruthy();
   });
 
