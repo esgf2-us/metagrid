@@ -33,7 +33,7 @@ const NavBar: React.FC<React.PropsWithChildren<Props>> = ({
       <div className="navbar-container">
         <div className="navbar-logo">
           <Link
-            href="https://www.esgf.io/nodes.html"
+            href="https://esgf.github.io/nodes.html"
             style={{
               fontWeight: 'bold',
               fontSize: '.9em',
