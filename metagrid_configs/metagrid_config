@@ -1,6 +1,5 @@
 # =====================TREAFIK CONFIG=====================
-
-DOMAIN_NAME=example.com
+DOMAIN_NAME=aims2.llnl.gov
 PUBLIC_URL=
 PREVIOUS_URL=metagrid
 DOMAIN_SUBDIRECTORY=metagrid-backend
@@ -9,20 +8,20 @@ DOMAIN_SUBDIRECTORY=metagrid-backend
 
 # General
 DJANGO_SETTINGS_MODULE=config.settings.production
-DJANGO_SECRET_KEY=
-DJANGO_ADMIN_URL=
-DJANGO_ALLOWED_HOSTS=
+DJANGO_SECRET_KEY=838e5e25e62ac8a041c32adfec9a838b42f6f6504074e350fc5716bd4539942196215f46f217410617cd3b6180ef881bd702120f216eb6e19b359563f2f7b5dc2d78fb75853ab297f340cc8cf2082266dd2f7596fce87cea4a4c832907151a3fe05aae47
+DJANGO_ADMIN_URL=de2231a977c7a236e34c0f9b11846c1136f5c2d1b59ccb96e77ae71944a3239398121c02b9763ca9a4990ac4c076b329ae9c58e225ca795c99fa02972955522ac71408f18bfaf7b27e976abb37d4ca5f34a4028dc19ee84cb02a1de7130b8c6b0b68d57a
+DJANGO_ALLOWED_HOSTS=aims2.llnl.gov,198.128.245.179
 
 # Security
 DJANGO_SECURE_SSL_REDIRECT=False
 
 # django-cors-headers
-CORS_ORIGIN_WHITELIST=https://localhost:3000
+CORS_ORIGIN_WHITELIST=https://localhost:3000,https://aims2.llnl.gov
 
 # django-all-auth
-KEYCLOAK_URL=
-KEYCLOAK_REALM=
-KEYCLOAK_CLIENT_ID=
+KEYCLOAK_URL=https://esgf-login.ceda.ac.uk/
+KEYCLOAK_REALM=esgf
+KEYCLOAK_CLIENT_ID=metagrid-react-aims2-llnl-gov
 
 # Django redirects
 # https://docs.djangoproject.com/en/4.2/ref/settings/#logout-redirect-url
@@ -44,40 +43,39 @@ POSTGRES_PASSWORD=postgres
 # =====================FRONTEND CONFIG====================
 
 # Redirect the frontend to home page when old subdirectory is used (optional)
+
 REACT_APP_PREVIOUS_URL=metagrid
 
 # MetaGrid API
 # https://github.com/aims-group/metagrid/tree/master/backend
-REACT_APP_METAGRID_API_URL=
+REACT_APP_METAGRID_API_URL=https://aims2.llnl.gov/metagrid-backend
 
 # Authentication Method
 REACT_APP_AUTHENTICATION_METHOD=globus
 
 # Globus
-REACT_APP_GLOBUS_REDIRECT=http://localhost:3000/cart/items
-REACT_APP_CLIENT_ID=7fa7ac4a-a051-4b26-836f-b292b5c5b268
-REACT_APP_GLOBUS_NODES=
+REACT_APP_GLOBUS_REDIRECT=https://aims2.llnl.gov/cart/items
+REACT_APP_CLIENT_ID=b610b638-2521-430c-a4dd-51a86950b485
+REACT_APP_GLOBUS_NODES=aims3.llnl.gov,esgf-data1.llnl.gov,esgf-data2.llnl.gov
 
 # ESGF wget API
 # https://github.com/ESGF/esgf-wget
-REACT_APP_WGET_API_URL=
+REACT_APP_WGET_API_URL=https://esgf-node.llnl.gov/esg-search/wget
 
 # ESGF Search API
 # https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
-REACT_APP_ESGF_NODE_URL=https://esgf-fedtest.llnl.gov/esg-search/search
-
-# https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
-REACT_APP_SEARCH_URL=
+REACT_APP_SEARCH_URL=https://esgf-node.llnl.gov/esg-search/search
+REACT_APP_ESGF_SOLR_URL=https://esgf-node.llnl.gov/solr
 
 # ESGF Node Status API
 # https://github.com/ESGF/esgf-utils/blob/master/node_status/query_prom.py
-REACT_APP_ESGF_NODE_STATUS_URL=
+REACT_APP_ESGF_NODE_STATUS_URL=https://aims4.llnl.gov/prometheus/api/v1/query?query=probe_success%7Bjob%3D%22http_2xx%22%2C+target%3D~%22.%2Athredds.%2A%22%7D
 
 # Keycloak
 # https://github.com/keycloak/keycloak
-REACT_APP_KEYCLOAK_URL=
-REACT_APP_KEYCLOAK_REALM=
-REACT_APP_KEYCLOAK_CLIENT_ID=
+REACT_APP_KEYCLOAK_URL=https://esgf-login.ceda.ac.uk/
+REACT_APP_KEYCLOAK_REALM=esgf
+REACT_APP_KEYCLOAK_CLIENT_ID=metagrid-react-aims2-llnl-gov
 
 # Django All Auth URLs
 REACT_APP_DJANGO_LOGIN_URL=
@@ -85,9 +83,24 @@ REACT_APP_DJANGO_LOGOUT_URL=
 
 # react-hotjar
 # https://github.com/abdalla/react-hotjar
-REACT_APP_HOTJAR_ID=
-REACT_APP_HOTJAR_SV=
+REACT_APP_HOTJAR_ID=2079136
+REACT_APP_HOTJAR_SV=6
 
 # react-ga
 # https://github.com/react-ga/react-ga
-REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID=
+REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID=G-515H3RKZYX
+
+# Django Auth URLs
+REACT_APP_DJANGO_LOGIN_URL=http://aims2.llnl.gov/metagrid-backend/login/globus/
+REACT_APP_DJANGO_LOGOUT_URL=http://aims2.llnl.gov/metagrid-backend/proxy/globus-logout/
+
+# Authentication Method
+REACT_APP_AUTHENTICATION_METHOD=globus
+
+# https://docs.djangoproject.com/en/4.2/ref/settings/#logout-redirect-url
+DJANGO_LOGIN_REDIRECT_URL=http://aims2.llnl.gov/search
+DJANGO_LOGOUT_REDIRECT_URL=http://aims2.llnl.gov/search
+
+# https://app.globus.org/settings/developers/registration/confidential_client
+GLOBUS_CLIENT_KEY=871f801f-e2cf-45b2-8a3e-58561378897f
+GLOBUS_CLIENT_SECRET=0oy2vE5q3rWeEBFX6ONN+ExNP3iKCUkzFONP3h49nMU=
