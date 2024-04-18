@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { CheckCircleFilled, DownloadOutlined } from '@ant-design/icons';
 import {
   Button,
@@ -1139,7 +1137,10 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                       return savedEndpoint.key !== '';
                     })
                     .map((endpoint) => {
-                      return { ...endpoint, key: endpoint.key };
+                      return {
+                        ...endpoint,
+                        key: endpoint.key,
+                      } as SavedEndpoint;
                     })}
                   columns={[
                     {
