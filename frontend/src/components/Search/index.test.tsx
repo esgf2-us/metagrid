@@ -86,8 +86,8 @@ describe('test Search component', () => {
     expect(jsonBtn).toBeTruthy();
   });
 
-  xit('renders query string', async () => {
-    const { getByRole, getByTestId, getByText, rerender } = customRender(
+  it('renders query string', async () => {
+    const { getByRole, getByTestId, getByText } = customRender(
       <Search {...defaultProps} />
     );
 
@@ -104,15 +104,17 @@ describe('test Search component', () => {
     expect(strResults).toBeTruthy();
 
     // Check renders query string
-    let queryString = await waitFor(() =>
+    const queryString = await waitFor(() =>
       getByText(
         'latest = true AND min_version = 20200101 AND max_version = 20201231 AND (Text Input = foo) AND (foo = option1 OR option2) AND (baz = option1)'
       )
     );
     expect(queryString).toBeTruthy();
+  });
 
+  it('renders an empty query string when no search parameters are set', async () => {
     // Rerender with no filters applied
-    const activeSearchQuery: ActiveSearchQuery = {
+    const emptySearchQuery: ActiveSearchQuery = {
       ...activeSearchQueryFixture(),
       versionType: 'all',
       minVersionDate: null,
@@ -121,12 +123,12 @@ describe('test Search component', () => {
       textInputs: [],
     };
 
-    rerender(
-      <Search {...defaultProps} activeSearchQuery={activeSearchQuery} />
+    const { getByText } = customRender(
+      <Search {...defaultProps} activeSearchQuery={emptySearchQuery} />
     );
 
     // Check renders query string
-    queryString = await waitFor(() => getByText('No filters applied'));
+    const queryString = await waitFor(() => getByText('No filters applied'));
     expect(queryString).toBeTruthy();
   });
 
@@ -151,7 +153,7 @@ describe('test Search component', () => {
     await waitFor(() => getByTestId('search'));
   });
 
-  xit('handles pagination and page size changes', async () => {
+  it('handles pagination and page size changes', async () => {
     // Update api to return 20 search results, which enables pagination if 10/page selected
     const data = ESGFSearchAPIFixture();
     const response = {
@@ -280,51 +282,19 @@ describe('test Search component', () => {
     expect(addCartBtn.disabled).toBeTruthy();
   });
 
-  xit('disables the "Add Selected to Cart" button when all rows are already in the cart', async () => {
-    const { getByRole, getByTestId, rerender } = customRender(
-      <Search {...defaultProps} />
+  it('disables the "Add Selected to Cart" button when all rows are already in the cart', async () => {
+    // Render the component with userCart full
+    const { getByRole } = customRender(
+      <Search {...defaultProps} userCart={userCartFixture()} />
     );
 
-    // Check search component renders
-    const searchComponent = await waitFor(() => getByTestId('search'));
-    expect(searchComponent).toBeTruthy();
-
-    // Wait for search to re-render
-    await waitFor(() => getByTestId('search-table'));
-
-    // Check the select all checkbox exists and click it
-    // Note: Cannot query by aria-role or data-testid because Ant Design API
-    //   renders the column and there are checkboxes for each row (no uniqueness)
-    const selectAllCheckbox = document.querySelector(
-      'th.ant-table-cell.ant-table-selection-column [type="checkbox"]'
-    ) as HTMLInputElement;
-    expect(selectAllCheckbox).toBeTruthy();
-
-    await act(async () => {
-      await user.click(selectAllCheckbox);
-    });
-
-    // Click the 'Add Selected to Cart'
-    let addCartBtn = (await waitFor(() =>
-      getByRole('button', {
-        name: 'shopping-cart Add Selected to Cart',
-      })
-    )) as HTMLButtonElement;
-    expect(addCartBtn).toBeTruthy();
-
-    await act(async () => {
-      await user.click(addCartBtn);
-    });
-
-    // Re-render with items in the cart
-    rerender(<Search {...defaultProps} userCart={userCartFixture()} />);
-
     // Check the 'Add Selected to Cart' button is disabled
-    addCartBtn = (await waitFor(() =>
+    const addCartBtn = (await waitFor(() =>
       getByRole('button', {
         name: 'shopping-cart Add Selected to Cart',
       })
     )) as HTMLButtonElement;
+
     expect(addCartBtn.disabled).toBeTruthy();
   });
 

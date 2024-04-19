@@ -160,9 +160,12 @@ describe('test FilesTable component', () => {
     await act(async () => {
       await user.click(copyBtn);
     });
+
+    // Wait for component to re-render
+    await waitFor(() => getByTestId('filesTable'));
   });
 
-  xit('handles pagination and page size changes', async () => {
+  it('handles pagination and page size changes', async () => {
     // Update api to return 20 search results, which enables pagination if 10/page selected
     const data = ESGFSearchAPIFixture();
 
@@ -212,15 +215,12 @@ describe('test FilesTable component', () => {
 
     // Select the 'Next Page' button (only enabled if there are > 10 results)
     const nextPage = await waitFor(() =>
-      getByRole('listitem', { name: 'Next Page' })
+      within(getByRole('listitem', { name: 'Next Page' })).getByRole('button')
     );
 
     await act(async () => {
       await user.click(nextPage);
     });
-
-    // Wait for component to re-render
-    await waitFor(() => getByTestId('filesTable'));
   });
 
   it('handles clicking the expandable icon', async () => {

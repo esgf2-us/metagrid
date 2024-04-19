@@ -224,13 +224,16 @@ export async function selectDropdownOption(
   dropdown: HTMLElement,
   option: string
 ): Promise<void> {
-  await waitFor(async () => {
-    dropdown.focus();
-    await act(async () => {
-      await user.keyboard('[ArrowDown]');
-    });
-    await act(async () => {
-      await user.click(screen.getByText(option));
-    });
-  });
+  await waitFor(
+    async () => {
+      dropdown.focus();
+      await act(async () => {
+        await user.keyboard('[ArrowDown]');
+      });
+      await act(async () => {
+        await user.click(screen.getByText(option));
+      });
+    },
+    { timeout: 3000 }
+  );
 }

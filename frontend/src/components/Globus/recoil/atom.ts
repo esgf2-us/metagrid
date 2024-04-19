@@ -1,5 +1,5 @@
 import { atom } from 'recoil';
-import { GlobusEndpoint, GlobusEndpointData, GlobusTaskItem } from '../types';
+import { SavedEndpoint, GlobusEndpointData, GlobusTaskItem } from '../types';
 
 // Folder structure based on: https://wes-rast.medium.com/recoil-project-structure-best-practices-79e74a475caa
 
@@ -33,7 +33,7 @@ export const globusTaskItems = atom<GlobusTaskItem[]>({
   default: [],
 });
 
-export const globusSavedEndpoints = atom<GlobusEndpoint[]>({
+export const globusSavedEndpoints = atom<SavedEndpoint[]>({
   key: GlobusStateKeys.savedGlobusEndpoints,
   default: [
     {
@@ -42,6 +42,7 @@ export const globusSavedEndpoints = atom<GlobusEndpoint[]>({
       key: '',
       label: 'Select Globus Endpoint',
       subscription_id: '',
+      path: '',
     },
   ],
 });

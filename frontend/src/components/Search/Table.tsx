@@ -254,7 +254,6 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       key: 'download',
       width: 180,
       render: (record: RawSearchResult) => {
-        const supportedDownloadTypes = record.access;
         const formKey = `download-${record.id}`;
 
         /**
@@ -294,17 +293,13 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
                   disabled={record.retracted === true}
                   className={topDataRowTargets.downloadScriptOptions.class()}
                   style={{ width: 100 }}
-                  options={allowedDownloadTypes
-                    .filter((type) => {
-                      return supportedDownloadTypes.includes(type);
-                    })
-                    .map((option) => {
-                      return {
-                        key: `${formKey}-${option}`,
-                        value: option,
-                        label: option,
-                      };
-                    })}
+                  options={allowedDownloadTypes.map((option) => {
+                    return {
+                      key: `${formKey}-${option}`,
+                      value: option,
+                      label: option,
+                    };
+                  })}
                 />
               </Form.Item>
               <Form.Item>

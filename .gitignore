@@ -189,3 +189,4 @@ tags
 .env
 .envs/*
 !.envs/.local/
+frontend/public/runtime_env.js
