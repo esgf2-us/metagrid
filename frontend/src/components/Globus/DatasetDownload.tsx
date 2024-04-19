@@ -505,7 +505,11 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   };
 
   const searchGlobusEndpoints = async (value: string): Promise<void> => {
-    if (value) {
+    const token = await getGlobusTransferToken();
+    if (token === null) {
+      await performGlobusDownloadStep();
+    }
+    if (token && value) {
       setLoadingEndpointSearchResults(true);
       const endpoints: GlobusEndpointSearchResults = await startSearchGlobusEndpoints(
         value
