@@ -145,6 +145,9 @@ export const fetchUserInfo = async (args: [string]): Promise<RawUserInfo> =>
     .get(apiRoutes.userInfo.path, {
       headers: {
         Authorization: `Bearer ${args[0]}`,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        'X-CSRFToken': getCookie('csrftoken'),
       },
     })
     .then((res) => res.data as Promise<RawUserInfo>)
@@ -168,6 +171,9 @@ export const fetchUserCart = async (
     .get(`${apiRoutes.userCart.path.replace(':pk', pk)}`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        'X-CSRFToken': getCookie('csrftoken'),
       },
     })
     .then(
@@ -234,6 +240,9 @@ export const fetchUserSearchQueries = async (
     .get(apiRoutes.userSearches.path, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        'X-CSRFToken': getCookie('csrftoken'),
       },
       transformResponse: (res: string) => {
         try {
@@ -299,6 +308,9 @@ export const deleteUserSearchQuery = async (
       data: {},
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        'X-CSRFToken': getCookie('csrftoken'),
       },
     })
     .then((res) => res.data as Promise<''>)
