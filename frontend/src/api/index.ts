@@ -273,6 +273,9 @@ export const addUserSearchQuery = async (
     .post(apiRoutes.userSearches.path, decamelizedPayload, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        'X-CSRFToken': getCookie('csrftoken'),
       },
     })
     .then((res) => res.data as Promise<RawUserSearchQuery>)
