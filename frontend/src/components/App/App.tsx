@@ -138,6 +138,11 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     setActiveSearchQuery,
   ] = React.useState<ActiveSearchQuery>(projectBaseQuery({}));
 
+  const [
+    savedSearchQuery,
+    setSavedSearchQuery,
+  ] = React.useState<ActiveSearchQuery | null>(null);
+
   const [availableFacets, setAvailableFacets] = React.useState<
     ParsedFacets | Record<string, unknown>
   >({});
@@ -290,6 +295,12 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   };
 
   const handleProjectChange = (selectedProject: RawProject): void => {
+    if (savedSearchQuery) {
+      setSavedSearchQuery(null);
+      setActiveSearchQuery(savedSearchQuery);
+      return;
+    }
+
     if (selectedProject.pk !== activeSearchQuery.project.pk) {
       setActiveSearchQuery(projectBaseQuery(selectedProject));
     } else {
@@ -465,7 +476,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
 
   // This converts a saved search to the active search query
   const handleRunSearchQuery = (savedSearch: UserSearchQuery): void => {
-    setActiveSearchQuery({
+    setSavedSearchQuery({
       project: savedSearch.project,
       versionType: savedSearch.versionType,
       resultType: 'all',

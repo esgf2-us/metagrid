@@ -1,8 +1,7 @@
 # =====================TREAFIK CONFIG=====================
-
-DOMAIN_NAME=example.com
+DOMAIN_NAME=
 PUBLIC_URL=
-PREVIOUS_URL=metagrid
+PREVIOUS_URL=
 DOMAIN_SUBDIRECTORY=metagrid-backend
 
 # =====================BACKEND CONFIG====================
@@ -44,7 +43,8 @@ POSTGRES_PASSWORD=postgres
 # =====================FRONTEND CONFIG====================
 
 # Redirect the frontend to home page when old subdirectory is used (optional)
-REACT_APP_PREVIOUS_URL=metagrid
+
+REACT_APP_PREVIOUS_URL=
 
 # MetaGrid API
 # https://github.com/aims-group/metagrid/tree/master/backend
@@ -54,8 +54,8 @@ REACT_APP_METAGRID_API_URL=
 REACT_APP_AUTHENTICATION_METHOD=globus
 
 # Globus
-REACT_APP_GLOBUS_REDIRECT=http://localhost:3000/cart/items
-REACT_APP_CLIENT_ID=7fa7ac4a-a051-4b26-836f-b292b5c5b268
+REACT_APP_GLOBUS_REDIRECT=
+REACT_APP_CLIENT_ID=
 REACT_APP_GLOBUS_NODES=
 
 # ESGF wget API
@@ -64,10 +64,8 @@ REACT_APP_WGET_API_URL=
 
 # ESGF Search API
 # https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
-REACT_APP_ESGF_NODE_URL=https://esgf-fedtest.llnl.gov/esg-search/search
-
-# https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
 REACT_APP_SEARCH_URL=
+REACT_APP_ESGF_SOLR_URL=
 
 # ESGF Node Status API
 # https://github.com/ESGF/esgf-utils/blob/master/node_status/query_prom.py
@@ -79,7 +77,7 @@ REACT_APP_KEYCLOAK_URL=
 REACT_APP_KEYCLOAK_REALM=
 REACT_APP_KEYCLOAK_CLIENT_ID=
 
-# Django All Auth URLs
+# Django Auth URLs
 REACT_APP_DJANGO_LOGIN_URL=
 REACT_APP_DJANGO_LOGOUT_URL=
 

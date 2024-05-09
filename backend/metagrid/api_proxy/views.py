@@ -48,8 +48,7 @@ def do_globus_auth(request):
 def do_globus_logout(request):
     logout(request)
     homepage_url = getattr(
-        settings, "DJANGO_LOGOUT_REDIRECT_URL", "http://localhost:3000/search/"
-    )
+        settings, "LOGOUT_REDIRECT_URL")
     return redirect(homepage_url)
 
 
