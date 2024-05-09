@@ -1,11 +1,7 @@
-# Welcome to the Metagrid Major Release v1.1.0
+# Welcome to the Metagrid Major Release v1.1.2-RC
 
 To view the latest documentation and FAQ, please visit this page:
 [https://esgf.github.io/esgf-user-support/metagrid.html](https://esgf.github.io/esgf-user-support/metagrid.html)
-
-## Globus Auth
-
-We now support logins via Globus Auth at LLNL!
 
 ## Globus Transfers enabled
 

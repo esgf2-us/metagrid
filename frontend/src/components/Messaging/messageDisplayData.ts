@@ -5,7 +5,9 @@ export const rightDrawerMessages: MarkdownMessage[] = [
 ];
 
 export const rightDrawerChanges: MarkdownMessage[] = [
-  { title: 'V1.1.0-pre', fileName: 'changelog/v1.1.0.md' },
+  { title: 'V1.1.2-rc', fileName: 'changelog/v1.1.2-rc.md' },
+  { title: 'V1.1.1-pre', fileName: 'changelog/v1.1.1-pre.md' },
+  { title: 'V1.1.0', fileName: 'changelog/v1.1.0.md' },
   { title: 'V1.0.10', fileName: 'changelog/v1.0.10-beta.md' },
   { title: 'V1.0.9', fileName: 'changelog/v1.0.9-beta.md' },
   { title: 'V1.0.8', fileName: 'changelog/v1.0.8-beta.md' },
@@ -13,16 +15,34 @@ export const rightDrawerChanges: MarkdownMessage[] = [
 ];
 
 const startupMessages: StartPopupData = {
-  messageToShow: 'v1.1.0-pre',
+  messageToShow: 'v1.1.2-rc',
   defaultMessageId: 'welcome',
   messageData: [
     {
-      messageId: 'v1.1.0-pre',
+      messageId: 'v1.1.2-rc',
+      template: MessageTemplates.ChangeLog,
+      style: { minWidth: '700px' },
+      data: {
+        changesFile: 'changelog/v1.1.2-rc.md',
+        version: '1.1.2-rc',
+      },
+    },
+    {
+      messageId: 'v1.1.1-pre',
+      template: MessageTemplates.ChangeLog,
+      style: { minWidth: '700px' },
+      data: {
+        changesFile: 'changelog/v1.1.1-pre.md',
+        version: '1.1.1-pre',
+      },
+    },
+    {
+      messageId: 'v1.1.0',
       template: MessageTemplates.ChangeLog,
       style: { minWidth: '700px' },
       data: {
         changesFile: 'changelog/v1.1.0.md',
-        version: '1.1.0-pre',
+        version: '1.1.0',
       },
     },
     {
