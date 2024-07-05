@@ -8,6 +8,7 @@ import { rest } from 'msw';
 import apiRoutes from '../routes';
 import {
   ESGFSearchAPIFixture,
+  frontendConfigFixture,
   globusTransferResponseFixture,
   projectsFixture,
   rawCitationFixture,
@@ -124,13 +125,18 @@ const handlers = [
   rest.get(apiRoutes.nodeStatus.path, (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(rawNodeStatusFixture()))
   ),
+  rest.get(apiRoutes.frontendConfig.path, (_req, res, ctx) =>
+    res(ctx.status(200), ctx.json(frontendConfigFixture()))
+  ),
   // Default fallback handler
   rest.get('*', (req, res, ctx) => {
     // eslint-disable-next-line no-console
     // console.error(`Please add request handler for ${req.url.toString()}`);
     return res(
       ctx.status(500),
-      ctx.json({ error: 'You must add request handler.' })
+      ctx.json({
+        error: `You must add request handler for ${req.url.toString()}`,
+      })
     );
   }),
 ];

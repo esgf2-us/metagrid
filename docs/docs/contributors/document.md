@@ -2,7 +2,7 @@
 
 This project uses [MkDocs](https://www.mkdocs.org/) documentation generator.
 
-If you set up your project by walking through [Getting Started For Local Development](../getting_started_local), run the following command:
+If you set up your project by walking through [Getting Started For Local Development](getting_started_local.md), run the following command:
 
      cd docs
      docker compose -p metagrid_docs_dev up

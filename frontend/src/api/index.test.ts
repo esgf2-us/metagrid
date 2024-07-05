@@ -777,3 +777,10 @@ describe('testing session storage', () => {
     );
   });
 });
+
+describe('frontend configuration', () => {
+  it('exists as an object on the window object', () => {
+    expect(window.METAGRID).toBeDefined();
+    expect(typeof window.METAGRID).toBe('object');
+  });
+});

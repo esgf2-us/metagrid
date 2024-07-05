@@ -124,7 +124,7 @@ frontend
   - `assets/` - stores assets used when the app is compiled
   - `common/` - stores common code used between components such as utility functions
   - `components/` - contains React components and related files.
-    Follow [React Components File Structure](#react-components-file-structure)
+    Follow [React Components File Structure](#file-structure)
   - `contexts/` - stores React [Context](https://reactjs.org/docs/context.html) components, such as for authentication state
   - `lib/` - stores initialized instances of third party library that are exported for use in the codebase (e.g. Axios, Keycloak)
   - `test/` - contains related files and functions shared among tests

@@ -27,13 +27,11 @@
     -->
     <title>ESGF MetaGrid</title>
 
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=%REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID%"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', '%REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID%');
+    <!-- Load config from backend -->
+    <script type="text/javascript">
+      window.METAGRID = fetch('/frontend-config.js').then((response) =>
+        response.json()
+      );
     </script>
   </head>
   <body>

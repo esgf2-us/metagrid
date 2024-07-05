@@ -4,6 +4,7 @@
  * Fixtures allows tests to be maintainable (especially in the case of updated
  * APIs) and reduce duplicate hard-coded dummy data.
  */
+import { FrontendConfig } from '../../common/types';
 import {
   RawUserCart,
   UserCart,
@@ -347,5 +348,23 @@ export const globusEndpointFixture = (): GlobusEndpointData => {
     path: 'test/path',
     globfs: 'test/data',
     endpointId: '1234567',
+  };
+};
+
+export const frontendConfigFixture = (): FrontendConfig => {
+  return {
+    REACT_APP_AUTHENTICATION_METHOD: 'keycloak',
+    REACT_APP_KEYCLOAK_REALM: 'esgf',
+    REACT_APP_KEYCLOAK_URL: 'https://esgf-login.ceda.ac.uk/',
+    REACT_APP_KEYCLOAK_CLIENT_ID: 'frontend',
+    REACT_APP_GLOBUS_CLIENT_ID: 'frontend',
+    REACT_APP_HOTJAR_ID: 12345,
+    REACT_APP_HOTJAR_SV: 12345,
+    REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID: 'UA-XXXXXXXXX-YY',
+    REACT_APP_GLOBUS_NODES: [
+      'aims3.llnl.gov',
+      'esgf-data1.llnl.gov',
+      'esgf-data2.llnl.gov',
+    ],
   };
 };

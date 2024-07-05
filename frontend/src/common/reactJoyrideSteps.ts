@@ -1,4 +1,3 @@
-import { globusEnabledNodes } from '../env';
 import { JoyrideTour } from './JoyrideTour';
 import { TargetObject } from './TargetObject';
 import { AppPage } from './types';
@@ -446,7 +445,7 @@ export const createMainPageTour = (): JoyrideTour => {
   );
 
   // Add tour elements for globus ready filter (if globus enabled nodes has been configured)
-  if (globusEnabledNodes.length > 0) {
+  if (window.METAGRID.REACT_APP_GLOBUS_NODES.length > 0) {
     tour
       .addNextStep(
         leftSidebarTargets.filterByGlobusTransfer.selector(),

@@ -11,11 +11,6 @@ import {
   startGlobusTransfer,
 } from '../../api';
 import { cartTourTargets } from '../../common/reactJoyrideSteps';
-import {
-  globusClientID,
-  globusEnabledNodes,
-  globusRedirectUrl,
-} from '../../env';
 import { RawSearchResults } from '../Search/types';
 import CartStateKeys, {
   cartItemSelections,
@@ -35,9 +30,11 @@ import {
 } from './types';
 import { NotificationType, showError, showNotice } from '../../common/utils';
 
+const globusRedirectUrl = `${window.location.origin}/cart/items`;
+
 // Reference: https://github.com/bpedroza/js-pkce
 const GlobusAuth = new PKCE({
-  client_id: globusClientID, // Update this using your native client ID
+  client_id: window.METAGRID.REACT_APP_GLOBUS_CLIENT_ID, // Update this using your native client ID
   redirect_uri: globusRedirectUrl, // Update this if you are deploying this anywhere else (Globus Auth will redirect back here once you have logged in)
   authorization_endpoint: 'https://auth.globus.org/v2/oauth2/authorize', // No changes needed
   token_endpoint: 'https://auth.globus.org/v2/oauth2/token', // No changes needed
@@ -316,13 +313,9 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             }
           })
           .catch(async (error: ResponseError) => {
-            if (error.message !== '') {
-              messageContent = `Globus transfer task failed: ${error.message}`;
-            } else {
-              messageContent = `Globus transfer task failed. Resetting tokens.`;
-              // eslint-disable-next-line no-console
-              console.error(error);
-            }
+            messageContent = `Globus transfer task failed. Resetting tokens.`;
+            // eslint-disable-next-line no-console
+            console.error(error);
             messageType = 'error';
             await resetTokens();
           })
@@ -346,7 +339,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
    * @returns False if one or more items are not Globus Ready
    */
   const checkItemsAreGlobusEnabled = (): boolean => {
-    if (globusEnabledNodes.length === 0) {
+    if (window.METAGRID.REACT_APP_GLOBUS_NODES.length === 0) {
       return true;
     }
     const globusReadyItems: RawSearchResults = [];
@@ -357,7 +350,10 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     itemSelections.forEach((selection) => {
       const data = selection as Record<string, unknown>;
       const dataNode = data.data_node as string;
-      if (dataNode && globusEnabledNodes.includes(dataNode)) {
+      if (
+        dataNode &&
+        window.METAGRID.REACT_APP_GLOBUS_NODES.includes(dataNode)
+      ) {
         globusReadyItems.push(selection);
       }
     });

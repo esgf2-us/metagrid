@@ -29,7 +29,6 @@ import {
   VersionType,
 } from '../Search/types';
 import { ActiveFacets, ParsedFacets } from './types';
-import { globusEnabledNodes } from '../../env';
 
 const styles: CSSinJS = {
   container: {
@@ -197,7 +196,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
       const newActiveFacets = activeSearchQuery.activeFacets as ActiveFacets;
       onSetActiveFacets({
         ...newActiveFacets,
-        dataNode: globusEnabledNodes,
+        dataNode: window.METAGRID.REACT_APP_GLOBUS_NODES,
       } as ActiveFacets);
     } else {
       const newActiveFacets = activeSearchQuery.activeFacets as ActiveFacets;
@@ -255,7 +254,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
           ...activeSearchQuery.activeFacets,
         }}
       >
-        {globusEnabledNodes.length > 0 && (
+        {window.METAGRID.REACT_APP_GLOBUS_NODES.length > 0 && (
           <div className={leftSidebarTargets.filterByGlobusTransfer.class()}>
             <h3>Filter By Transfer Options</h3>
             <Row>

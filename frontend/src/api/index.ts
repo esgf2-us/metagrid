@@ -27,7 +27,6 @@ import {
   TextInputs,
 } from '../components/Search/types';
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
-import { metagridApiURL } from '../env';
 import apiRoutes, { ApiRoute, HTTPCodeType } from './routes';
 
 export interface ResponseError extends Error {
@@ -489,7 +488,7 @@ export const fetchDatasetCitation = async ({
   [key: string]: string;
 }): Promise<{ [key: string]: unknown }> =>
   axios
-    .post(`${metagridApiURL}/proxy/citation`, {
+    .post('proxy/citation', {
       citurl: url,
     })
     .then((res) => {

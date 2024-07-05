@@ -138,7 +138,7 @@ describe('DatasetDownload form tests', () => {
   });
 
   it("Alert popup doesn't show if no globus enabled nodes are configured.", async () => {
-    mockConfig.globusEnabledNodes = [];
+    mockConfig.REACT_APP_GLOBUS_NODES = [];
     const {
       getByTestId,
       getByRole,
@@ -981,7 +981,7 @@ describe('DatasetDownload form tests', () => {
         assign: () => {},
         pathname: '/cart/items',
         href:
-          'https://localhost:3000/cart/items?endpoint=dummyEndpoint&label=dummy&path=nowhere&globfs=empty&endpointid=endpoint1',
+          'http://localhost:8080/cart/items?endpoint=dummyEndpoint&label=dummy&path=nowhere&globfs=empty&endpointid=endpoint1',
         search:
           '?endpoint=dummyEndpoint&label=dummy&path=nowhere&globfs=empty&endpointid=endpoint1',
         replace: () => {},
@@ -1075,7 +1075,7 @@ describe('DatasetDownload form tests', () => {
         assign: () => {},
         pathname: '/cart/items',
         href:
-          'https://localhost:3000/cart/items?endpoint=dummyEndpoint&label=dummy&path=nowhere&globfs=empty&endpointid=endpoint1',
+          'http://localhost:8080/cart/items?endpoint=dummyEndpoint&label=dummy&path=nowhere&globfs=empty&endpointid=endpoint1',
         search:
           '?endpoint=dummyEndpoint&label=dummy&path=nowhere&globfs=empty&endpointid=endpoint1',
         replace: () => {},

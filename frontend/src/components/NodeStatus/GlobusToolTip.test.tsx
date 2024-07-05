@@ -1,7 +1,7 @@
 import React from 'react';
 import { customRenderKeycloak } from '../../test/custom-render';
 import GlobusToolTip from './GlobusToolTip';
-import { originalEnabledNodes } from '../../test/jestTestFunctions';
+import { originalGlobusEnabledNodes } from '../../test/jestTestFunctions';
 
 describe('Testing the GlobusToolTip component', () => {
   it('Renders the GlobusToolTip component properly with empty node and no children', () => {
@@ -43,7 +43,7 @@ describe('Testing the GlobusToolTip component', () => {
 
   it('Renders the GlobusToolTip component properly with globus enabled node and no children', () => {
     const { getByRole } = customRenderKeycloak(
-      <GlobusToolTip dataNode={originalEnabledNodes[0]}></GlobusToolTip>
+      <GlobusToolTip dataNode={originalGlobusEnabledNodes[0]}></GlobusToolTip>
     );
     // Should show globus as available status
     const status = getByRole('img', { name: 'check-circle' });
@@ -52,7 +52,7 @@ describe('Testing the GlobusToolTip component', () => {
 
   it('Renders the GlobusToolTip component properly with globus enabled node and children', () => {
     const { getByRole, getByText } = customRenderKeycloak(
-      <GlobusToolTip dataNode={originalEnabledNodes[0]}>
+      <GlobusToolTip dataNode={originalGlobusEnabledNodes[0]}>
         <p>Click Me!</p>
       </GlobusToolTip>
     );

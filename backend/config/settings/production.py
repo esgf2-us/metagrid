@@ -4,18 +4,29 @@ from .base import env
 # GENERAL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
+# Unset default to force user to set it for production deployments
+DEBUG = False
 SECRET_KEY = env("DJANGO_SECRET_KEY")
-# https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["example.com"])
 
 # DATABASES
 # ------------------------------------------------------------------------------
-DATABASES["default"] = env.db("DATABASE_URL")  # noqa F405
-DATABASES["default"]["ATOMIC_REQUESTS"] = True  # noqa F405
-DATABASES["default"]["CONN_MAX_AGE"] = env.int(  # noqa F405
+DATABASES["default"]["CONN_MAX_AGE"] = env.int(  # noqa: F405
     "CONN_MAX_AGE", default=60
 )
 
+# django-rest-framework - https://www.django-rest-framework.org/api-guide/settings/
+
+# -------------------------------------------------------------------------------
+DEFAULT_RENDERER_CLASSES = ["rest_framework.renderers.BrowsableAPIRenderer"]
+
+
+# EMAIL
+# ------------------------------------------------------------------------------
+# https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
+EMAIL_BACKEND = env(
+    "DJANGO_EMAIL_BACKEND",
+    default="django.core.mail.backends.smtp.EmailBackend",
+)
 # SECURITY
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#secure-proxy-ssl-header
@@ -41,21 +52,12 @@ SECURE_CONTENT_TYPE_NOSNIFF = env.bool(
     "DJANGO_SECURE_CONTENT_TYPE_NOSNIFF", default=True
 )
 
+# social_django
+# -------------------------------------------------------------------------------
+# This is a general Django setting if views need to redirect to login
+# https://docs.djangoproject.com/en/3.2/ref/settings/#login-url
+SOCIAL_AUTH_REDIRECT_IS_HTTPS = True
+
 # STATIC
 # ------------------------
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
-# MEDIA
-# ------------------------------------------------------------------------------
-# No media is served in this project since it is a pure REST API backend
-
-# APPS
-# ------------------------------------------------------------------------------
-INSTALLED_APPS += ["gunicorn"]  # noqa F405
-
-# ADMIN
-# ------------------------------------------------------------------------------
-# Django Admin URL regex.
-ADMIN_URL = env("DJANGO_ADMIN_URL")
-
-CORS_ORIGIN_ALLOW_ALL = False
