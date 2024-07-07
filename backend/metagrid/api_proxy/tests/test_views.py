@@ -147,3 +147,11 @@ class TestProxyViewSet(APITestCase):
         test_data = {"dataKey": "temp_storage", "dataValue": None}
         response = self.client.post(setUrl, test_data, format="json")
         assert response.status_code == status.HTTP_200_OK
+
+    @override_settings(FRONTEND_SETTINGS={"key1": "value1", "key2": "value2"})
+    def test_frontend_config_returns_frontend_settings_as_json(self) -> None:
+        url = reverse("frontend_config")
+        response = self.client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+        assert response["content-type"] == "application/json"
+        assert response.json() == {"key1": "value1", "key2": "value2"}

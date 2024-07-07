@@ -8,7 +8,7 @@ import { server } from './api/mock/server';
 import messageDisplayData from './components/Messaging/messageDisplayData';
 import {
   mockConfig,
-  originalEnabledNodes,
+  originalGlobusEnabledNodes,
   sessionStorageMock,
 } from './test/jestTestFunctions';
 
@@ -26,27 +26,11 @@ global.matchMedia =
     };
   };
 
-// Mock the globusEnabledNodes variable to simulate configuration
-jest.mock('./env', () => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const originalModule = jest.requireActual('./env');
-
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return {
-    __esModule: true,
-    ...originalModule,
-    globusEnabledNodes: [
-      'aims3.llnl.gov',
-      'esgf-data1.llnl.gov',
-      'esgf-data2.llnl.gov',
-    ],
-  };
-});
-
 // Used to restore window.location after each test
 const location = JSON.stringify(window.location);
 
 Object.defineProperty(window, 'localStorage', { value: sessionStorageMock });
+Object.defineProperty(window, 'METAGRID', { value: mockConfig });
 
 beforeAll(() => {
   server.listen();
@@ -71,7 +55,7 @@ afterEach(() => {
   window.location.assign = jest.fn();
 
   // Reset mock values
-  mockConfig.globusEnabledNodes = originalEnabledNodes;
+  window.METAGRID.REACT_APP_GLOBUS_NODES = originalGlobusEnabledNodes;
 
   // Clear localStorage between tests
   localStorage.clear();

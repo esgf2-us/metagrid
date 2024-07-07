@@ -20,11 +20,6 @@ import Button from '../General/Button';
 import RightDrawer from '../Messaging/RightDrawer';
 
 import { AuthContext } from '../../contexts/AuthContext';
-import {
-  authenticationMethod,
-  djangoLoginUrl,
-  djangoLogoutUrl,
-} from '../../env';
 
 const menuItemStyling: CSSProperties = { margin: '8px' };
 
@@ -55,7 +50,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
   let logoutBtn: JSX.Element;
   let userInfo = { email: '', given_name: '' };
 
-  if (authenticationMethod === 'keycloak') {
+  if (window.METAGRID.REACT_APP_AUTHENTICATION_METHOD === 'keycloak') {
     const { keycloak } = useKeycloak();
     loginBtn = (
       <Button
@@ -84,18 +79,18 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
         given_name: string;
       };
     }
-  } else if (authenticationMethod === 'globus') {
+  } else if (window.METAGRID.REACT_APP_AUTHENTICATION_METHOD === 'globus') {
     loginBtn = (
       <Button
         type="text"
         icon={<UserOutlined style={{ fontSize: '18px', margin: 0 }} />}
-        href={djangoLoginUrl}
+        href="login/globus"
       >
         Sign In
       </Button>
     );
     logoutBtn = (
-      <Button type="text" href={djangoLogoutUrl}>
+      <Button type="text" href="proxy/globus-logout/">
         Sign Out
       </Button>
     );

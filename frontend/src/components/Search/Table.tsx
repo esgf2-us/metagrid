@@ -20,7 +20,6 @@ import './Search.css';
 import Tabs from './Tabs';
 import { RawSearchResult, RawSearchResults, TextInputs } from './types';
 import GlobusToolTip from '../NodeStatus/GlobusToolTip';
-import { globusEnabledNodes } from '../../env';
 
 export type Props = {
   loading: boolean;
@@ -318,7 +317,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
         );
       },
     },
-    globusEnabledNodes
+    window.METAGRID.REACT_APP_GLOBUS_NODES
       ? {
           align: 'center' as AlignType,
           fixed: 'right' as FixedType,

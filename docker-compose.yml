@@ -1,0 +1,80 @@
+version: "3"
+
+networks:
+  metagrid:
+    ipam:
+      config:
+        - subnet: 10.89.9.81/24
+
+volumes:
+  local_postgres_data: {}
+  local_postgres_data_backups: {}
+
+services:
+  postgres:
+    # This service uses the production Postgres Dockerfile as a base
+    # Some tweaks are applied to support the Keycloak service, including the init.sql script
+    build: postgres
+    image: metagrid_local_postgres
+    volumes:
+      - local_postgres_data:/var/lib/postgresql/data
+      - local_postgres_data_backups:/backups
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    env_file:
+      - ./backend/.envs/.postgres
+    ports:
+      - 5432
+    healthcheck:
+      test: pg_isready
+      start_period: 5s
+      interval: 5s
+      timeout: 2s
+      retries: 6
+
+  django:
+    build: backend
+    image: metagrid_local_django
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    env_file:
+      - ./backend/.envs/.postgres
+    ports:
+      - 5000:5000
+    networks:
+      metagrid:
+        ipv4_address: 10.89.9.82
+        aliases:
+          - django
+
+  react:
+    build: frontend
+    image: metagrid_local_react
+    depends_on:
+      - django
+    networks:
+      metagrid:
+        ipv4_address: 10.89.9.83
+    ports:
+      - 8080:8080
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0.6
+    command: start-dev --import-realm
+    volumes:
+      - ./keycloak/realm.json:/opt/keycloak/data/import/realm.json
+    ports:
+      - 1337:1337
+    networks:
+      metagrid:
+        ipv4_address: 10.89.9.84
+
+  docs:
+    build: docs
+    image: metagrid_local_docs
+    volumes:
+      - ./docs:/docs
+    ports:
+      - "8001:8001"

@@ -24,6 +24,7 @@ django-allauth==0.54.0  # https://github.com/pennersr/django-allauth
 dj-rest-auth==2.2.8  # https://github.com/jazzband/dj-rest-auth
 djangorestframework-simplejwt==5.2.2  # https://github.com/SimpleJWT/django-rest-framework-simplejwt/
 drf-yasg==1.21.5  # https://github.com/axnsan12/drf-yasg
+django-extensions==3.2.3  # https://github.com/django-extensions/django-extensions
 
 # Code quality
 # ------------------------------------------------------------------------------
@@ -34,3 +35,7 @@ pre-commit==3.1.1  # https://github.com/pre-commit/pre-commit
 django-model-utils==4.3.1  # https://github.com/jazzband/django-model-utils
 django_unique_upload==0.2.1   # https://github.com/agconti/django-unique-upload
 globus-sdk==3.13.0
+
+# SBOM
+# ------------------------------------------------------------------------------
+cyclonedx-bom==4.5.0  # https://github.com/CycloneDX/cyclonedx-python/

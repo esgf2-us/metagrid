@@ -7,23 +7,27 @@
  */
 import { waitFor, within, screen, RenderResult } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event/dist/types/setup/setup';
-import * as enviroConfig from '../env';
 import { getSearchFromUrl } from '../common/utils';
+import { FrontendConfig } from '../common/types';
 
-// For mocking environment variables
-export type MockConfig = {
-  globusEnabledNodes: string[];
-};
-
-// For mocking environment variables
 // https://www.mikeborozdin.com/post/changing-jest-mocks-between-tests
-export const mockConfig: MockConfig = enviroConfig;
-
-export const originalEnabledNodes = [
+export const originalGlobusEnabledNodes = [
   'aims3.llnl.gov',
   'esgf-data1.llnl.gov',
   'esgf-data2.llnl.gov',
 ];
+
+export const mockConfig: FrontendConfig = {
+  REACT_APP_GLOBUS_CLIENT_ID: 'frontend',
+  REACT_APP_GLOBUS_NODES: originalGlobusEnabledNodes,
+  REACT_APP_KEYCLOAK_REALM: 'esgf',
+  REACT_APP_KEYCLOAK_URL: 'https://esgf-login.ceda.ac.uk/',
+  REACT_APP_KEYCLOAK_CLIENT_ID: 'frontend',
+  REACT_APP_HOTJAR_ID: 1234,
+  REACT_APP_HOTJAR_SV: 1234,
+  REACT_APP_AUTHENTICATION_METHOD: 'keycloak',
+  REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID: 'UA-XXXXXXXXX-YY',
+};
 
 export const activeSearch = getSearchFromUrl();
 

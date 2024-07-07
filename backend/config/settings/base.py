@@ -1,6 +1,7 @@
 """
 Base settings to build other settings files upon.
 """
+
 from datetime import timedelta
 from typing import List  # noqa
 
@@ -21,7 +22,7 @@ if READ_DOT_ENV_FILE:
 # ------------------------------------------------------------------------------
 # Set DEBUG to False as a default for safety
 # https://docs.djangoproject.com/en/dev/ref/settings/#debug
-DEBUG = env.bool("DJANGO_DEBUG", default=False)
+DEBUG = env.bool("DJANGO_DEBUG", default=True)
 APPEND_SLASH = False
 TIME_ZONE = "UTC"
 LANGUAGE_CODE = "en-us"
@@ -51,6 +52,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "whitenoise.runserver_nostatic",
+    "django_extensions",
     # Third party apps
     "rest_framework",  # utilities for rest apis
     "rest_framework.authtoken",
@@ -63,6 +66,7 @@ INSTALLED_APPS = [
     "dj_rest_auth",
     "drf_yasg",
     "social_django",
+    "gunicorn",
     # Your apps
     "metagrid.api_proxy",
     "metagrid.users",
@@ -98,12 +102,21 @@ AUTHENTICATION_BACKENDS = [
 ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1"]
 ROOT_URLCONF = "config.urls"
 
+# https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
+SECRET_KEY = env(
+    "DJANGO_SECRET_KEY",
+    default="7LynCTKfcjH6p2Nz77YM9XzSnTSvpPVUNz4bHEScGJ6flWcOslxGNMdAhsDioJFJ",
+)
+
 WSGI_APPLICATION = "config.wsgi.application"
 
 # EMAIL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_BACKEND = env(
+    "DJANGO_EMAIL_BACKEND",
+    default="django.core.mail.backends.console.EmailBackend",
+)
 # https://docs.djangoproject.com/en/2.2/ref/settings/#email-timeout
 EMAIL_TIMEOUT = 5
 
@@ -116,11 +129,20 @@ ADMINS = (("Author", "vo13@llnl.gov"), ("Author", "downie4@llnl.gov"))
 # https://docs.djangoproject.com/en/dev/ref/settings/#managers
 MANAGERS = ADMINS
 
+CORS_ORIGIN_ALLOW_ALL = True
+
 # DATABASES
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
-DATABASES = {"default": env.db("DATABASE_URL")}
-DATABASES["default"]["ATOMIC_REQUESTS"] = True
+# Default to allowing the standard Postgres variables to configure the default database
+# https://www.postgresql.org/docs/current/libpq-envars.html
+
+DATABASES = {
+    "default": {
+        "ATOMIC_REQUESTS": True,
+        **env.db("DATABASE_URL", default="pgsql:///postgres"),
+    }
+}
 
 # STATIC
 # ------------------------------------------------------------------------------
@@ -184,7 +206,7 @@ PASSWORD_HASHERS = [
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth-password-validators
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
     },
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {
@@ -250,7 +272,10 @@ LOGGING = {
 
 # django-rest-framework - https://www.django-rest-framework.org/api-guide/settings/
 # -------------------------------------------------------------------------------
-DEFAULT_RENDERER_CLASSES = ["rest_framework.renderers.JSONRenderer"]
+DEFAULT_RENDERER_CLASSES = [
+    "rest_framework.renderers.JSONRenderer",
+    "rest_framework.renderers.BrowsableAPIRenderer",
+]
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": int(env("DJANGO_PAGINATION_LIMIT", default=10)),
@@ -281,15 +306,13 @@ SIMPLE_JWT = {
 SOCIALACCOUNT_PROVIDERS = {
     "keycloak": {
         "KEYCLOAK_URL": env(
-            "KEYCLOAK_URL",
+            "KEYCLOAK_URL", default="https://esgf-login.ceda.ac.uk/"
         ),
-        "KEYCLOAK_REALM": env(
-            "KEYCLOAK_REALM",
-        ),
+        "KEYCLOAK_REALM": env("KEYCLOAK_REALM", default="esgf"),
     },
 }
 # Used in data migration to register Keycloak social app
-KEYCLOAK_CLIENT_ID = env("KEYCLOAK_CLIENT_ID")
+KEYCLOAK_CLIENT_ID = env("KEYCLOAK_CLIENT_ID", default="metagrid-localhost")
 
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
@@ -305,8 +328,12 @@ ACCOUNT_EMAIL_VERIFICATION = "none"
 # https://docs.djangoproject.com/en/3.2/ref/settings/#login-url
 LOGIN_URL = "/login/globus/"
 
-LOGIN_REDIRECT_URL = env("DJANGO_LOGIN_REDIRECT_URL")
-LOGOUT_REDIRECT_URL = env("DJANGO_LOGOUT_REDIRECT_URL")
+LOGIN_REDIRECT_URL = env(
+    "DJANGO_LOGIN_REDIRECT_URL", default="http://localhost:8080/search"
+)
+LOGOUT_REDIRECT_URL = env(
+    "DJANGO_LOGOUT_REDIRECT_URL", default="http://localhost:8080/search"
+)
 
 # This dictates which scopes will be requested on each user login
 SOCIAL_AUTH_GLOBUS_SCOPE = [
@@ -317,13 +344,14 @@ SOCIAL_AUTH_GLOBUS_SCOPE = [
     "urn:globus:auth:scope:transfer.api.globus.org:all",
 ]
 
-SOCIAL_AUTH_GLOBUS_KEY = env("GLOBUS_CLIENT_KEY")
-SOCIAL_AUTH_GLOBUS_SECRET = env("GLOBUS_CLIENT_SECRET")
+SOCIAL_AUTH_GLOBUS_KEY = env("GLOBUS_CLIENT_KEY", default=12345)
+SOCIAL_AUTH_GLOBUS_SECRET = env("GLOBUS_CLIENT_SECRET", default=12345)
 SOCIAL_AUTH_GLOBUS_AUTH_EXTRA_ARGUMENTS = {
     "requested_scopes": SOCIAL_AUTH_GLOBUS_SCOPE,
     "prompt": None,
 }
 SOCIAL_AUTH_JSONFIELD_ENABLED = True
+SOCIAL_AUTH_REDIRECT_IS_HTTPS = False
 
 # dj-rest-auth
 # -------------------------------------------------------------------------------
@@ -335,12 +363,71 @@ JWT_AUTH_COOKIE = "jwt-auth"
 # -------------------------------------------------------------------------------
 # https://github.com/adamchainz/django-cors-headers#setup
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
+    "http://localhost:8080",
 ]
 CORS_ALLOW_CREDENTIALS = True
-CORS_ORIGIN_WHITELIST = env.list("CORS_ORIGIN_WHITELIST")
+CORS_ORIGIN_WHITELIST = env.list(
+    "CORS_ORIGIN_WHITELIST", default="http://localhost:8080"
+)
+CSRF_TRUSTED_ORIGINS = ["http://localhost:8080"]
 
-SEARCH_URL = env("REACT_APP_SEARCH_URL")
-WGET_URL = env("REACT_APP_WGET_API_URL")
-STATUS_URL = env("REACT_APP_ESGF_NODE_STATUS_URL")
-SOLR_URL = env("REACT_APP_ESGF_SOLR_URL")
+SEARCH_URL = env(
+    "REACT_APP_SEARCH_URL",
+    default="https://esgf-node.ornl.gov/esg-search/search",
+)
+WGET_URL = env(
+    "REACT_APP_WGET_API_URL",
+    default="https://esgf-node.ornl.gov/esg-search/wget",
+)
+STATUS_URL = env(
+    "REACT_APP_ESGF_NODE_STATUS_URL",
+    default="https://esgf-node.ornl.gov/proxy/status",
+)
+SOLR_URL = env(
+    "REACT_APP_ESGF_SOLR_URL", default="https://esgf-node.ornl.gov/esg-search"
+)
+
+FRONTEND_SETTINGS = {
+    "REACT_APP_CLIENT_ID": env("REACT_APP_CLIENT_ID", default="frontend"),
+    "REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID": env(
+        "REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID", default=""
+    ),
+    "REACT_APP_GLOBUS_NODES": env.list(
+        "REACT_APP_GLOBUS_NODES",
+        default=[
+            "aims3.llnl.gov",
+            "esgf-data1.llnl.gov",
+            "esgf-data2.llnl.gov",
+        ],
+    ),
+    "REACT_APP_KEYCLOAK_REALM": env(
+        "REACT_APP_KEYCLOAK_REALM", default="esgf"
+    ),
+    "REACT_APP_KEYCLOAK_URL": env(
+        "REACT_APP_KEYCLOAK_URL", default="https://esgf-login.ceda.ac.uk/"
+    ),
+    "REACT_APP_KEYCLOAK_CLIENT_ID": env(
+        "REACT_APP_KEYCLOAK_CLIENT_ID", default="frontend"
+    ),
+    "REACT_APP_HOTJAR_ID": env("REACT_APP_HOTJAR_ID", default=1234),
+    "REACT_APP_HOTJAR_SV": env("REACT_APP_HOTJAR_SV", default=1234),
+    "REACT_APP_AUTHENTICATION_METHOD": env(
+        "REACT_APP_AUTHENTICATION_METHOD", default="keycloak"
+    ),
+}
+
+if not isinstance(FRONTEND_SETTINGS["REACT_APP_GLOBUS_NODES"], list):
+    raise environ.ImproperlyConfigured(
+        f"REACT_APP_GLOBUS_NODES must be of type list, not "
+        f"{FRONTEND_SETTINGS['REACT_APP_GLOBUS_NODES']} of type "
+        f"{type(FRONTEND_SETTINGS['REACT_APP_GLOBUS_NODES'])}"
+    )
+
+if FRONTEND_SETTINGS["REACT_APP_AUTHENTICATION_METHOD"] not in (
+    "keycloak",
+    "globus",
+):
+    raise environ.ImproperlyConfigured(
+        f"REACT_APP_AUTHENTICATION_METHOD must be one of keycloak or globus, "
+        f"not {FRONTEND_SETTINGS['REACT_APP_AUTHENTICATION_METHOD']}"
+    )

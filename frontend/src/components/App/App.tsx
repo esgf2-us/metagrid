@@ -8,7 +8,7 @@ import {
   ShoppingCartOutlined,
 } from '@ant-design/icons';
 import { Affix, Breadcrumb, Button, Layout, Result } from 'antd';
-import React, { ReactElement } from 'react';
+import React from 'react';
 import { useAsync } from 'react-async';
 import { hotjar } from 'react-hotjar';
 import { Link, Navigate, Route, Routes } from 'react-router-dom';
@@ -33,7 +33,6 @@ import {
   unsavedLocalSearches,
 } from '../../common/utils';
 import { AuthContext } from '../../contexts/AuthContext';
-import { hjid, hjsv, previousPublicUrl, publicUrl } from '../../env';
 import Cart from '../Cart';
 import Summary from '../Cart/Summary';
 import { UserCart, UserSearchQueries, UserSearchQuery } from '../Cart/types';
@@ -74,8 +73,14 @@ const styles: CSSinJS = {
 const useHotjar = (): void => {
   React.useEffect(() => {
     /* istanbul ignore next */
-    if (hjid && hjsv) {
-      hotjar.initialize(hjid, hjsv);
+    if (
+      window.METAGRID.REACT_APP_HOTJAR_ID &&
+      window.METAGRID.REACT_APP_HOTJAR_SV
+    ) {
+      hotjar.initialize(
+        window.METAGRID.REACT_APP_HOTJAR_ID,
+        window.METAGRID.REACT_APP_HOTJAR_SV
+      );
     }
   }, []);
 };
@@ -462,20 +467,6 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     });
   };
 
-  /* istanbul ignore next */
-  const generateRedirects = (): ReactElement => {
-    if (!publicUrl && previousPublicUrl) {
-      return (
-        <Route
-          path={`${previousPublicUrl}/*`}
-          element={<Navigate to="/search" />}
-        />
-      );
-    }
-
-    return <></>;
-  };
-
   return (
     <>
       <div>
@@ -496,7 +487,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
           <Routes>
             <Route path="/" element={<Navigate to="/search" />} />
             <Route path="/cart" element={<Navigate to="/cart/items" />} />
-            {generateRedirects()}
+            <></>
             <Route
               path="/search/*"
               element={

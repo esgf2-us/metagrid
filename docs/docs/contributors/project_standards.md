@@ -11,7 +11,7 @@ GitHub Flow aligns with **continuous delivery** of modern web applications where
 
 ### How to Use GitHub Flow
 
-![GitHub Flow Diagram](https://i.stack.imgur.com/ChShh.png)
+![GitHub Flow Diagram](../images/gitflow.png)
 
 1. Fork the repo and create a support branch
    - Forking ensures the upstream repository can only be affected through a pull request (PR)
@@ -162,7 +162,7 @@ Source: [https://blog.carbonfive.com/always-squash-and-rebase-your-git-commits/]
 
 ##### Ways to Run Tools
 
-1. Using `pre-commit` - recommend in most cases, commands found [here](../getting_started_local#helpful-commands)
+1. Using `pre-commit` - recommend in most cases, commands found [here](getting_started_local.md#23-helpful-commands)
 2. Using IDE/text editor - recommended alongside #1 for integrated linting and formatting, only VSCode `settings.json` file provided for configuration
 3. Using terminal to run standalone tool - useful to test configs. Visit the tool's site for a list of commands
 

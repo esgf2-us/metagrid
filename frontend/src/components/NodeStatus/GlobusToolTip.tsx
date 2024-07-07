@@ -1,7 +1,6 @@
 import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
 import React from 'react';
 import { Tooltip } from 'antd';
-import { globusEnabledNodes } from '../../env';
 
 export type Props = {
   dataNode: string;
@@ -10,7 +9,7 @@ export type Props = {
 
 export function globusEnabled(node: string | null | undefined): boolean {
   if (node) {
-    return globusEnabledNodes.includes(node);
+    return window.METAGRID.REACT_APP_GLOBUS_NODES.includes(node);
   }
   return false;
 }
