@@ -45,8 +45,10 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({
     cartItemSelections
   );
 
-  const handleRowSelect = (selectedRows: RawSearchResults | []): void => {
-    saveSessionValue(CartStateKeys.cartItemSelections, selectedRows);
+  const handleRowSelect = async (
+    selectedRows: RawSearchResults | []
+  ): Promise<void> => {
+    await saveSessionValue(CartStateKeys.cartItemSelections, selectedRows);
     setItemSelections(selectedRows);
   };
 

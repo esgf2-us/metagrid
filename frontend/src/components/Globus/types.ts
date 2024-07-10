@@ -11,26 +11,6 @@ export interface GlobusTokenResponse extends ITokenResponse {
   error?: unknown;
 }
 
-export interface GlobusEndpoint {
-  canonical_name: string;
-  contact_email: string;
-  display_name: string;
-  entity_type: string;
-  id: string;
-  owner_id: string;
-  owner_string: string;
-  subscription_id: string;
-}
-
-export type SavedEndpoint = {
-  contact_email: string;
-  entity_type: string;
-  label: string; // display_name
-  key: string; // id
-  subscription_id: string;
-  path: string;
-};
-
 export interface GlobusEndpointSearchResults {
   data: GlobusEndpoint[];
   status: number;
@@ -39,13 +19,17 @@ export interface GlobusEndpointSearchResults {
   config: object;
 }
 
-export type GlobusEndpointData = {
-  endpoint: string | null;
-  label: string | null;
+export interface GlobusEndpoint {
+  canonical_name: string;
+  contact_email: string;
+  display_name: string;
+  entity_type: string;
+  id: string;
+  owner_id: string;
+  owner_string: string;
   path: string | null;
-  globfs: string | null;
-  endpointId?: string | null;
-};
+  subscription_id: string;
+}
 
 export type GlobusTaskItem = {
   taskId: string;

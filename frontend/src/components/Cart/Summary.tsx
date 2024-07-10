@@ -52,9 +52,9 @@ const Summary: React.FC<React.PropsWithChildren<Props>> = ({ userCart }) => {
     totalDataSize = formatBytes(rawDataSize);
   }
 
-  const clearAllTasks = (): void => {
+  const clearAllTasks = async (): Promise<void> => {
     setTaskItems([]);
-    saveSessionValue(GlobusStateKeys.globusTaskItems, []);
+    await saveSessionValue(GlobusStateKeys.globusTaskItems, []);
   };
 
   return (
