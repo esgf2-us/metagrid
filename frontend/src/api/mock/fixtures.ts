@@ -16,10 +16,7 @@ import {
   RawProject,
   RawProjects,
 } from '../../components/Facets/types';
-import {
-  GlobusEndpointData,
-  GlobusTokenResponse,
-} from '../../components/Globus/types';
+import { GlobusTokenResponse } from '../../components/Globus/types';
 import {
   NodeStatusArray,
   RawNodeStatus,
@@ -341,14 +338,4 @@ export const globusEnabledDatasetFixture = (): RawSearchResult[] => {
       xlink: ['url.com|PID|pid'],
     },
   ];
-};
-
-export const globusEndpointFixture = (): GlobusEndpointData => {
-  return {
-    endpoint: 'globus endpoint',
-    label: 'Globus Test Endpoint',
-    path: 'test/path',
-    globfs: 'test/data',
-    endpointId: '1234567',
-  };
 };

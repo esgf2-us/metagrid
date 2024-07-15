@@ -24,6 +24,9 @@ docker compose -p metagrid_backend_dev build --no-cache
 # Run pyTest (May need to rebuild container before tests)
 docker compose -p metagrid_backend_dev run --rm django pytest
 
+# Run pyTest for a specific test (example)
+docker compose -p metagrid_backend_dev run --rm django pytest metagrid/api_proxy/tests/test_views.py::TestProxyViewSet::test_do_globus_auth
+
 # Run manage.py function
 docker compose -p metagrid_backend_dev run --rm django python manage.py <function>
 

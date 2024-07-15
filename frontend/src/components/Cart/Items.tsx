@@ -11,9 +11,9 @@ import Button from '../General/Button';
 import Table from '../Search/Table';
 import { RawSearchResults } from '../Search/types';
 import DatasetDownload from '../Globus/DatasetDownload';
-import { saveSessionValue } from '../../api';
 import CartStateKeys, { cartItemSelections } from './recoil/atoms';
 import { NodeStatusArray } from '../NodeStatus/types';
+import { addPersistVar, setPersistVal } from '../../common/persistData';
 
 const styles: CSSinJS = {
   summary: {
@@ -44,10 +44,16 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({
   const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(
     cartItemSelections
   );
+  addPersistVar<RawSearchResults>(
+    CartStateKeys.cartItemSelections,
+    [],
+    setItemSelections
+  );
 
-  const handleRowSelect = (selectedRows: RawSearchResults | []): void => {
-    saveSessionValue(CartStateKeys.cartItemSelections, selectedRows);
-    setItemSelections(selectedRows);
+  const handleRowSelect = async (
+    selectedRows: RawSearchResults | []
+  ): Promise<void> => {
+    await setPersistVal(CartStateKeys.cartItemSelections, selectedRows, true);
   };
 
   return (

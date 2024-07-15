@@ -653,7 +653,7 @@ export const saveSessionValue = async <T>(
     dataKey: key,
     dataValue: 'None',
   };
-  if (value !== null) {
+  if (value !== null && value !== undefined) {
     data = { ...data, dataValue: value };
   }
   return axios

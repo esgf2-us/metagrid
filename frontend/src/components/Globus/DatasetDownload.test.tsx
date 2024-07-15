@@ -18,7 +18,6 @@ import { GlobusTokenResponse } from './types';
 import GlobusStateKeys from './recoil/atom';
 import CartStateKeys from '../Cart/recoil/atoms';
 import {
-  globusEndpointFixture,
   globusRefeshTokenFixture,
   globusTransferTokenFixture,
   userCartFixture,
@@ -61,8 +60,8 @@ jest.mock('../../api/index', () => {
 
 beforeEach(() => {
   // Set default values for recoil atoms
-  tempStorageSetMock(GlobusStateKeys.defaultEndpoint, null);
-  tempStorageSetMock(GlobusStateKeys.useDefaultEndpoint, false);
+  // tempStorageSetMock(GlobusStateKeys.defaultEndpoint, null);
+  // tempStorageSetMock(GlobusStateKeys.useDefaultEndpoint, false);
   tempStorageSetMock(GlobusStateKeys.globusTaskItems, []);
   tempStorageSetMock(CartStateKeys.cartItemSelections, []);
   tempStorageSetMock(CartStateKeys.cartDownloadIsLoading, false);
@@ -513,7 +512,6 @@ xdescribe('DatasetDownload form tests', () => {
         'openid profile email offline_access urn:globus:auth:scope:transfer.api.globus.org:all',
       token_type: '',
     } as GlobusTokenResponse);
-    mockSaveValue(GlobusStateKeys.continueGlobusPrepSteps, true);
 
     const { getByTestId, getByRole, getByText, getAllByText } = customRender(
       <App searchQuery={activeSearch} />
@@ -600,7 +598,6 @@ xdescribe('DatasetDownload form tests', () => {
         'openid profile email offline_access urn:globus:auth:scope:transfer.api.globus.org:all',
       token_type: '',
     } as GlobusTokenResponse);
-    mockSaveValue(GlobusStateKeys.continueGlobusPrepSteps, true);
 
     const { getByTestId, getByRole, getByText, getAllByText } = customRender(
       <App searchQuery={activeSearch} />
@@ -688,7 +685,6 @@ xdescribe('DatasetDownload form tests', () => {
         'openid profile email offline_access urn:globus:auth:scope:transfer.api.globus.org:all',
       token_type: '',
     } as GlobusTokenResponse);
-    mockSaveValue(GlobusStateKeys.continueGlobusPrepSteps, true);
 
     const { getByTestId, getByRole, getByText, getAllByText } = customRender(
       <App searchQuery={activeSearch} />
@@ -759,7 +755,6 @@ xdescribe('DatasetDownload form tests', () => {
   it('Collects url tokens for globus transfer steps', async () => {
     // Setting the tokens so that the sign-in step should be skipped
     mockSaveValue(CartStateKeys.cartItemSelections, userCartFixture());
-    mockSaveValue(GlobusStateKeys.continueGlobusPrepSteps, true);
 
     const { getByTestId, getByRole, getByText, getAllByText } = customRender(
       <App searchQuery={activeSearch} />
@@ -844,12 +839,6 @@ xdescribe('DatasetDownload form tests', () => {
 
   it('Globus Transfer steps popup has endpoint checked if endpoint available', async () => {
     // Setting the tokens so that the endpoint step is completed
-    mockSaveValue(GlobusStateKeys.useDefaultEndpoint, false);
-    mockSaveValue(GlobusStateKeys.defaultEndpoint, null);
-    mockSaveValue(
-      GlobusStateKeys.userSelectedEndpoint,
-      globusEndpointFixture()
-    );
 
     const { getByTestId, getByRole, getByText, getAllByText } = customRender(
       <App searchQuery={activeSearch} />
@@ -920,7 +909,6 @@ xdescribe('DatasetDownload form tests', () => {
   it('If endpoint URL is available, process it and continue with sign-in', async () => {
     // Setting the tokens so that the sign-in step should be completed
     mockSaveValue(CartStateKeys.cartItemSelections, userCartFixture());
-    mockSaveValue(GlobusStateKeys.continueGlobusPrepSteps, true);
 
     const { getByTestId, getByRole, getByText, getAllByText } = customRender(
       <App searchQuery={activeSearch} />
@@ -1011,7 +999,6 @@ xdescribe('DatasetDownload form tests', () => {
         'openid profile email offline_access urn:globus:auth:scope:transfer.api.globus.org:all',
       token_type: '',
     } as GlobusTokenResponse);
-    mockSaveValue(GlobusStateKeys.continueGlobusPrepSteps, true);
 
     const { getByTestId, getByRole, getByText, getAllByText } = customRender(
       <App searchQuery={activeSearch} />
@@ -1105,11 +1092,6 @@ xdescribe('DatasetDownload form tests', () => {
 
   it('If endpoint URL is set, and sign in tokens in URL, continue to select endpoint', async () => {
     // Setting the tokens so that the sign-in step should be completed
-    mockSaveValue(
-      GlobusStateKeys.userSelectedEndpoint,
-      globusEndpointFixture()
-    );
-    mockSaveValue(GlobusStateKeys.continueGlobusPrepSteps, true);
 
     const { getByTestId, getByRole, getByText, getAllByText } = customRender(
       <App searchQuery={activeSearch} />
@@ -1206,11 +1188,6 @@ xdescribe('DatasetDownload form tests', () => {
         'openid profile email offline_access urn:globus:auth:scope:transfer.api.globus.org:all',
       token_type: '',
     } as GlobusTokenResponse);
-    mockSaveValue(
-      GlobusStateKeys.userSelectedEndpoint,
-      globusEndpointFixture()
-    );
-    mockSaveValue(GlobusStateKeys.continueGlobusPrepSteps, true);
 
     const { getByTestId, getByRole, getByText, getAllByText } = customRender(
       <App searchQuery={activeSearch} />
@@ -1274,7 +1251,6 @@ xdescribe('DatasetDownload form tests', () => {
         'openid profile email offline_access urn:globus:auth:scope:transfer.api.globus.org:all',
       token_type: '',
     } as GlobusTokenResponse);
-    mockSaveValue(GlobusStateKeys.defaultEndpoint, globusEndpointFixture());
     mockSaveValue(GlobusStateKeys.globusTaskItems, [
       {
         submitDate: '11/30/2023, 3:10:00 PM',
@@ -1327,7 +1303,6 @@ xdescribe('DatasetDownload form tests', () => {
         taskStatusURL: 'https://app.globus.org/activity/1011121/overview',
       },
     ]);
-    mockSaveValue(GlobusStateKeys.continueGlobusPrepSteps, false);
 
     const { getByTestId, getByRole, getByText, getAllByText } = customRender(
       <App searchQuery={activeSearch} />
@@ -1438,11 +1413,6 @@ xdescribe('Testing globus transfer related failures', () => {
       scope: 'openid profile email offline_access ',
       token_type: '',
     } as GlobusTokenResponse);
-    mockSaveValue(
-      GlobusStateKeys.userSelectedEndpoint,
-      globusEndpointFixture()
-    );
-    mockSaveValue(GlobusStateKeys.continueGlobusPrepSteps, true);
 
     const { getByTestId, getByRole, getByText, getAllByText } = customRender(
       <App searchQuery={activeSearch} />
@@ -1489,7 +1459,6 @@ xdescribe('Testing globus transfer related failures', () => {
   xit('Shows error message if url tokens are not valid for transfer', async () => {
     // Setting the tokens so that the sign-in step should be skipped
     mockSaveValue(CartStateKeys.cartItemSelections, userCartFixture());
-    mockSaveValue(GlobusStateKeys.continueGlobusPrepSteps, true);
 
     tempStorageSetMock('pkce-pass', false);
 
