@@ -1,6 +1,6 @@
 import logging
 import urllib.parse
-from typing import Dict, List, Union
+from typing import Dict, List, Union  # noqa: F401
 
 from django.db import models
 

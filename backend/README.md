@@ -13,7 +13,7 @@ deactivate
 black .
 
 # Run Flake8 to linter in backend, cd to backend
-Flake8 .
+flake8 .
 
 # Update virtual environment with current requirements (after activating it)
 pip install -r requirements/local.txt

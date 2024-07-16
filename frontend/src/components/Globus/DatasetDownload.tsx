@@ -565,6 +565,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         setGlobusEndpoints([]);
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error(error);
     } finally {
       setLoadingEndpointSearchResults(false);
