@@ -24,8 +24,8 @@ env:
   REACT_APP_ESGF_SOLR_URL: https://esgf-fedtest.llnl.gov/solr
   DJANGO_LOGIN_REDIRECT_URL: http://localhost:3000/search
   DJANGO_LOGOUT_REDIRECT_URL: http://localhost:3000/search
-  GLOBUS_CLIENT_KEY: 12345
-  GLOBUS_CLIENT_SECRET: 12345
+  GLOBUS_CLIENT_KEY: ${{ secrets.GLOBUS_KEY }}
+  GLOBUS_CLIENT_SECRET: ${{ secrets.GLOBUS_SECRET }}
 
 jobs:
   build:
