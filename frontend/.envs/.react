@@ -56,5 +56,3 @@ REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID=
 # ------------------------------------------------------------------------------
 # https://github.com/react-keycloak/react-keycloak/issues/176
 GENERATE_SOURCEMAP=false
-
-
