@@ -1,4 +1,4 @@
-FROM python:3.9-slim-buster
+FROM python:3.12-slim
 
 ENV DATABASE_URL postgres://postgres:postgres@postgres:5432/postgres
 ENV PYTHONUNBUFFERED 1
@@ -17,6 +17,7 @@ RUN apt-get update \
 
 # Requirements are installed here to ensure they will be cached.
 COPY ./requirements /requirements
+RUN pip3 install setuptools
 RUN pip3 install -r /requirements/local.txt
 
 COPY ./docker/production/django/entrypoint /entrypoint
