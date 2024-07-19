@@ -11,7 +11,7 @@ import { RawSearchResult, RawSearchResults } from '../Search/types';
 import { UserCart } from './types';
 import { GlobusTaskItem } from '../Globus/types';
 import GlobusStateKeys, { globusTaskItems } from '../Globus/recoil/atom';
-import { addPersistVar, setPersistVal } from '../../common/persistData';
+import { DataPersister } from '../../common/DataPersister';
 
 const styles: CSSinJS = {
   headerContainer: { display: 'flex', justifyContent: 'center' },
@@ -31,11 +31,13 @@ export type Props = {
   userCart: UserCart | [];
 };
 
+const dp: DataPersister = DataPersister.Instance;
+
 const Summary: React.FC<React.PropsWithChildren<Props>> = ({ userCart }) => {
   const [taskItems, setTaskItems] = useRecoilState<GlobusTaskItem[]>(
     globusTaskItems
   );
-  addPersistVar(GlobusStateKeys.globusTaskItems, [], setTaskItems);
+  dp.addNewVar(GlobusStateKeys.globusTaskItems, [], setTaskItems);
 
   let numFiles = 0;
   let totalDataSize = '0';
@@ -54,7 +56,7 @@ const Summary: React.FC<React.PropsWithChildren<Props>> = ({ userCart }) => {
   }
 
   const clearAllTasks = async (): Promise<void> => {
-    await setPersistVal(GlobusStateKeys.globusTaskItems, [], true);
+    await dp.setValue(GlobusStateKeys.globusTaskItems, [], true);
   };
 
   return (

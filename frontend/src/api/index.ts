@@ -9,6 +9,7 @@ import 'setimmediate'; // Added because in Jest 27, setImmediate is not defined,
 import humps from 'humps';
 import queryString from 'query-string';
 import { AxiosResponse, AxiosError } from 'axios';
+import PKCE from 'js-pkce';
 import axios from '../lib/axios';
 import {
   RawUserCart,
@@ -27,9 +28,14 @@ import {
   TextInputs,
 } from '../components/Search/types';
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
-import { metagridApiURL } from '../env';
+import { globusClientID, globusRedirectUrl, metagridApiURL } from '../env';
 import apiRoutes, { ApiRoute, HTTPCodeType } from './routes';
 import { GlobusEndpointSearchResults } from '../components/Globus/types';
+import GlobusStateKeys from '../components/Globus/recoil/atom';
+
+// Reference: https://github.com/bpedroza/js-pkce
+export const REQUESTED_SCOPES =
+  'openid profile email urn:globus:auth:scope:transfer.api.globus.org:all';
 
 export interface ResponseError extends Error {
   status?: number;
@@ -670,6 +676,30 @@ export const saveSessionValue = async <T>(
       }
     );
 };
+
+export const saveSessionValues = async (
+  data: { key: string; value: unknown }[]
+): Promise<void> => {
+  const saveFuncs: Promise<AxiosResponse>[] = [];
+  data.forEach((value) => {
+    saveFuncs.push(saveSessionValue(value.key, value.value));
+  });
+
+  await Promise.all(saveFuncs);
+};
+
+// Creates an auth object using desired authentication scope
+export async function createGlobusAuthObject(): Promise<PKCE> {
+  const authScope = await loadSessionValue<string>(GlobusStateKeys.globusAuth);
+
+  return new PKCE({
+    client_id: globusClientID, // Update this using your native client ID
+    redirect_uri: globusRedirectUrl, // Update this if you are deploying this anywhere else (Globus Auth will redirect back here once you have logged in)
+    authorization_endpoint: 'https://auth.globus.org/v2/oauth2/authorize', // No changes needed
+    token_endpoint: 'https://auth.globus.org/v2/oauth2/token', // No changes needed
+    requested_scopes: authScope || REQUESTED_SCOPES, // Update with any scopes you would need, e.g. transfer
+  });
+}
 
 /**
  * Performs validation against the globus API to ensure a 200 response.

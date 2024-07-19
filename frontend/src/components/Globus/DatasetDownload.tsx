@@ -1,6 +1,7 @@
 import { DownloadOutlined } from '@ant-design/icons';
 import {
   Button,
+  Card,
   Collapse,
   Divider,
   Input,
@@ -11,10 +12,8 @@ import {
   Table,
   message,
 } from 'antd';
-import PKCE from 'js-pkce';
 import React, { useEffect } from 'react';
 import { useRecoilState } from 'recoil';
-import { AxiosResponse } from 'axios';
 import {
   saveSessionValue,
   loadSessionValue,
@@ -22,13 +21,12 @@ import {
   ResponseError,
   startGlobusTransfer,
   startSearchGlobusEndpoints,
+  saveSessionValues,
+  REQUESTED_SCOPES,
+  createGlobusAuthObject,
 } from '../../api';
 import { cartTourTargets } from '../../common/reactJoyrideSteps';
-import {
-  globusClientID,
-  globusEnabledNodes,
-  globusRedirectUrl,
-} from '../../env';
+import { globusEnabledNodes, globusRedirectUrl } from '../../env';
 import { RawSearchResults } from '../Search/types';
 import CartStateKeys, {
   cartDownloadIsLoading,
@@ -43,18 +41,7 @@ import {
   GlobusEndpoint,
 } from './types';
 import { NotificationType, showError, showNotice } from '../../common/utils';
-import {
-  addPersistVar,
-  setPersistVal,
-  getPersistVal,
-  saveAllPersistVals,
-  loadAllPersistVals,
-  loadPersistVal,
-} from '../../common/persistData';
-
-// Reference: https://github.com/bpedroza/js-pkce
-const REQUESTED_SCOPES =
-  'openid profile email urn:globus:auth:scope:transfer.api.globus.org:all';
+import { DataPersister } from '../../common/DataPersister';
 
 type ModalFormState = 'signin' | 'endpoint' | 'both' | 'none';
 
@@ -83,29 +70,8 @@ enum GlobusGoals {
 // Statically defined list of dataset download options
 const downloadOptions = ['Globus', 'wget'];
 
-// Creates an auth object using desired authentication scope
-async function createGlobusAuthObject(): Promise<PKCE> {
-  const authScope = await loadSessionValue<string>(GlobusStateKeys.globusAuth);
-
-  return new PKCE({
-    client_id: globusClientID, // Update this using your native client ID
-    redirect_uri: globusRedirectUrl, // Update this if you are deploying this anywhere else (Globus Auth will redirect back here once you have logged in)
-    authorization_endpoint: 'https://auth.globus.org/v2/oauth2/authorize', // No changes needed
-    token_endpoint: 'https://auth.globus.org/v2/oauth2/token', // No changes needed
-    requested_scopes: authScope || REQUESTED_SCOPES, // Update with any scopes you would need, e.g. transfer
-  });
-}
-
-async function saveSessionValues(
-  data: { key: string; value: unknown }[]
-): Promise<void> {
-  const saveFuncs: Promise<AxiosResponse>[] = [];
-  data.forEach((value) => {
-    saveFuncs.push(saveSessionValue(value.key, value.value));
-  });
-
-  await Promise.all(saveFuncs);
-}
+// The persistent, static, data storage singleton
+const dp: DataPersister = DataPersister.Instance;
 
 const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   const [messageApi, contextHolder] = message.useMessage();
@@ -114,7 +80,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   const [taskItems, setTaskItems] = useRecoilState<GlobusTaskItem[]>(
     globusTaskItems
   );
-  addPersistVar<GlobusTaskItem[]>(
+  dp.addNewVar<GlobusTaskItem[]>(
     GlobusStateKeys.globusTaskItems,
     [],
     setTaskItems
@@ -124,7 +90,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(
     cartItemSelections
   );
-  addPersistVar<RawSearchResults>(
+  dp.addNewVar<RawSearchResults>(
     CartStateKeys.cartItemSelections,
     [],
     setItemSelections
@@ -160,7 +126,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   const [savedGlobusEndpoints, setSavedGlobusEndpoints] = React.useState<
     GlobusEndpoint[] | []
   >([]);
-  addPersistVar(
+  dp.addNewVar(
     GlobusStateKeys.savedGlobusEndpoints,
     [],
     setSavedGlobusEndpoints
@@ -171,7 +137,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     chosenGlobusEndpoint,
     setChosenGlobusEndpoint,
   ] = React.useState<GlobusEndpoint | null>();
-  addPersistVar(
+  dp.addNewVar(
     GlobusStateKeys.userChosenEndpoint,
     null,
     setChosenGlobusEndpoint
@@ -233,7 +199,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       newItemsList.pop();
     }
     newItemsList.unshift(newTask);
-    await setPersistVal(GlobusStateKeys.globusTaskItems, newItemsList, true);
+    await dp.setValue(GlobusStateKeys.globusTaskItems, newItemsList, true);
   }
 
   function redirectToNewURL(newUrl: string): void {
@@ -273,8 +239,8 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     return null;
   }
 
-  addPersistVar(GlobusStateKeys.accessToken, null, () => {});
-  addPersistVar(
+  dp.addNewVar(GlobusStateKeys.accessToken, null, () => {});
+  dp.addNewVar(
     GlobusStateKeys.transferToken,
     null,
     () => {},
@@ -293,8 +259,8 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   }
 
   function getGlobusTokens(): [GlobusTokenResponse | null, string | null] {
-    const accessToken = getPersistVal<string>(GlobusStateKeys.accessToken);
-    const transferToken = getPersistVal<GlobusTokenResponse | null>(
+    const accessToken = dp.getValue<string>(GlobusStateKeys.accessToken);
+    const transferToken = dp.getValue<GlobusTokenResponse | null>(
       GlobusStateKeys.transferToken
     );
 
@@ -326,7 +292,20 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           });
         })
         .catch((error: ResponseError) => {
-          showError(messageApi, error.message);
+          showError(
+            messageApi,
+            <Card
+              title="Wget Script Error"
+              style={{
+                maxWidth: '500px',
+                maxHeight: '400px',
+                overflowY: 'auto',
+                overflowX: 'auto',
+              }}
+            >
+              {error.message}
+            </Card>
+          );
           setDownloadIsLoading(false);
         });
     }
@@ -340,7 +319,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   ): Promise<void> => {
     setDownloadIsLoading(true);
 
-    const cartSelections = getPersistVal<RawSearchResults>(
+    const cartSelections = dp.getValue<RawSearchResults>(
       CartStateKeys.cartItemSelections
     );
     if (cartSelections && cartSelections.length > 0) {
@@ -359,7 +338,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         )
           .then(async (resp) => {
             if (resp.status === 200) {
-              await setPersistVal(CartStateKeys.cartItemSelections, [], true);
+              await dp.setValue(CartStateKeys.cartItemSelections, [], true);
 
               const transRespData = resp.data as Record<string, unknown>;
               if (transRespData && transRespData.taskid) {
@@ -396,7 +375,18 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           })
           .catch(async (error: ResponseError) => {
             if (error.message !== '') {
-              messageContent = `Globus transfer task failed. ${error.message} is your error code.  Please contact ESGF support.`;
+              messageContent = (
+                <div
+                  style={{
+                    width: '500px',
+                    height: '400px',
+                    overflowY: 'auto',
+                    overflowX: 'hidden',
+                  }}
+                >
+                  ${error.message} is your error. Please contact ESGF support.
+                </div>
+              );
               durationVal = 5;
             } else {
               messageContent = `Globus transfer task failed. Resetting tokens.`;
@@ -465,7 +455,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         },
         onOkAction: async () => {
           setAlertPopupState({ ...alertPopupState, show: false });
-          await setPersistVal(
+          await dp.setValue(
             CartStateKeys.cartItemSelections,
             globusReadyItems,
             true
@@ -524,11 +514,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       await saveSessionValue<string>(GlobusStateKeys.globusAuth, SCOPES);
     }
 
-    await setPersistVal(
-      GlobusStateKeys.userChosenEndpoint,
-      checkEndpoint,
-      true
-    );
+    await dp.setValue(GlobusStateKeys.userChosenEndpoint, checkEndpoint, true);
   };
 
   const searchGlobusEndpoints = async (value: string): Promise<void> => {
@@ -615,13 +601,13 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       if (tokenResponse) {
         /* istanbul ignore else */
         if (tokenResponse.access_token) {
-          await setPersistVal(
+          await dp.setValue(
             GlobusStateKeys.accessToken,
             tokenResponse.access_token,
             true
           );
         } else {
-          await setPersistVal(GlobusStateKeys.accessToken, null, true);
+          await dp.setValue(GlobusStateKeys.accessToken, null, true);
         }
 
         // Try to find and get the transfer token
@@ -639,7 +625,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
               const newTransferToken = { ...tokenBlob };
               newTransferToken.created_on = Math.floor(Date.now() / 1000);
 
-              await setPersistVal(
+              await dp.setValue(
                 GlobusStateKeys.transferToken,
                 newTransferToken,
                 true
@@ -647,7 +633,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             }
           });
         } else {
-          await setPersistVal(GlobusStateKeys.transferToken, null, true);
+          await dp.setValue(GlobusStateKeys.transferToken, null, true);
         }
       }
     } catch (error: unknown) {
@@ -668,9 +654,9 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     const endpointSearchURL = `https://app.globus.org/file-manager?action=${globusRedirectUrl}&method=GET&cancelUrl=${globusRedirectUrl}`;
 
     setLoadingPage(true);
-    await saveAllPersistVals();
+    await dp.saveAllValues();
     setLoadingPage(false);
-    const chosenEndpoint = getPersistVal<GlobusEndpoint>(
+    const chosenEndpoint = dp.getValue<GlobusEndpoint>(
       GlobusStateKeys.userChosenEndpoint
     );
     if (chosenEndpoint) {
@@ -687,7 +673,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     const pkce = await createGlobusAuthObject();
     const authUrl: string = pkce.authorizeUrl();
     setLoadingPage(true);
-    await saveAllPersistVals();
+    await dp.saveAllValues();
     setLoadingPage(false);
     redirectToNewURL(authUrl);
   }
@@ -695,8 +681,8 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   async function endDownloadSteps(): Promise<void> {
     setDownloadIsLoading(false);
     setLoadingPage(true);
-    await setPersistVal(GlobusStateKeys.userChosenEndpoint, null, true);
-    await saveAllPersistVals();
+    await dp.setValue(GlobusStateKeys.userChosenEndpoint, null, true);
+    await dp.saveAllValues();
     setLoadingPage(false);
     setCurrentGoal(GlobusGoals.None);
     redirectToRootUrl();
@@ -707,7 +693,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
     if (!varsLoaded) {
       setVarsLoaded(true);
-      await loadAllPersistVals();
+      await dp.loadAllValues();
     }
 
     // Obtain URL params if applicable
@@ -725,8 +711,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     }
 
     const savedEndpoints: GlobusEndpoint[] =
-      getPersistVal<GlobusEndpoint[]>(GlobusStateKeys.savedGlobusEndpoints) ||
-      [];
+      dp.getValue<GlobusEndpoint[]>(GlobusStateKeys.savedGlobusEndpoints) || [];
 
     // Goal is to set the path for chosen endpoint
     if (goal === GlobusGoals.SetEndpointPath) {
@@ -738,17 +723,31 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           setCurrentGoal(GlobusGoals.None);
         }
 
+        const updatedEndpointList = savedEndpoints.map((endpoint) => {
+          if (endpoint && endpoint.id === endpointId) {
+            return { ...endpoint, path };
+          }
+          return endpoint;
+        });
+
         // Set path for endpoint
-        await setPersistVal(
+        await dp.setValue(
           GlobusStateKeys.savedGlobusEndpoints,
-          savedEndpoints.map((endpoint) => {
-            if (endpoint && endpoint.id === endpointId) {
-              return { ...endpoint, path };
-            }
-            return endpoint;
-          }),
+          updatedEndpointList,
           true
         );
+
+        // If endpoint was updated, set it as chosen endpoint
+        const updatedEndpoint = updatedEndpointList.find(
+          (endpoint: GlobusEndpoint) => endpoint.id === endpointId
+        );
+        if (updatedEndpoint) {
+          await dp.setValue(
+            GlobusStateKeys.userChosenEndpoint,
+            updatedEndpoint,
+            true
+          );
+        }
 
         setCurrentGoal(GlobusGoals.None);
         redirectToRootUrl();
@@ -804,7 +803,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         return;
       }
 
-      const chosenEndpoint: GlobusEndpoint | null = getPersistVal<GlobusEndpoint>(
+      const chosenEndpoint: GlobusEndpoint | null = dp.getValue<GlobusEndpoint>(
         GlobusStateKeys.userChosenEndpoint
       );
 
@@ -842,7 +841,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         });
 
         if (updatedEndpoint) {
-          await setPersistVal(
+          await dp.setValue(
             GlobusStateKeys.userChosenEndpoint,
             {
               ...updatedEndpoint,
@@ -851,7 +850,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             true
           );
         } else {
-          await setPersistVal<GlobusEndpoint>(
+          await dp.setValue<GlobusEndpoint>(
             GlobusStateKeys.userChosenEndpoint,
             {
               canonical_name: '',
@@ -869,7 +868,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         }
 
         setLoadingPage(true);
-        await saveAllPersistVals();
+        await dp.saveAllValues();
         setLoadingPage(false);
         redirectToRootUrl();
         return;
@@ -970,17 +969,27 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                   ID: {option.key}
                   <br />
                   <span>
-                    {option.data?.path && `Path: ${option.data?.path}`}
-                    {option.data?.path && <br />}
-                    {option.data?.entity_type === 'GCSv5_mapped_collection' &&
-                      option.data?.subscription_id !== '' &&
+                    {((option.data as unknown) as GlobusEndpoint)?.path &&
+                      `Path: ${
+                        ((option.data as unknown) as GlobusEndpoint)?.path
+                      }`}
+                    {((option.data as unknown) as GlobusEndpoint)?.path && (
+                      <br />
+                    )}
+                    {((option.data as unknown) as GlobusEndpoint)
+                      ?.entity_type === 'GCSv5_mapped_collection' &&
+                      ((option.data as unknown) as GlobusEndpoint)
+                        ?.subscription_id !== '' &&
                       'Managed '}
-                    {option.data?.entity_type === 'GCSv5_guest_collection'
+                    {((option.data as unknown) as GlobusEndpoint)
+                      ?.entity_type === 'GCSv5_guest_collection'
                       ? 'Guest Collection'
                       : 'Mapped Collection'}{' '}
                     <br />
-                    {option.data?.contact_email !== null &&
-                      option.data?.contact_email}
+                    {((option.data as unknown) as GlobusEndpoint)
+                      ?.contact_email !== null &&
+                      ((option.data as unknown) as GlobusEndpoint)
+                        ?.contact_email}
                   </span>
                   <Divider style={{ marginBottom: '0px', marginTop: '0px' }} />
                 </>
@@ -1012,12 +1021,12 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         okText="Save"
         onOk={async () => {
           setEndpointSearchOpen(false);
-          await setPersistVal(
+          await dp.setValue(
             GlobusStateKeys.userChosenEndpoint,
             undefined,
             true
           );
-          await setPersistVal(
+          await dp.setValue(
             GlobusStateKeys.savedGlobusEndpoints,
             savedGlobusEndpoints,
             true
@@ -1026,12 +1035,12 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         cancelText="Cancel Changes"
         onCancel={async () => {
           setEndpointSearchOpen(false);
-          await setPersistVal(
+          await dp.setValue(
             GlobusStateKeys.userChosenEndpoint,
             undefined,
             true
           );
-          await loadPersistVal(GlobusStateKeys.savedGlobusEndpoints);
+          await dp.loadValue(GlobusStateKeys.savedGlobusEndpoints);
         }}
         width={1000}
       >
@@ -1087,7 +1096,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                             <Button
                               type="primary"
                               onClick={async () => {
-                                await setPersistVal(
+                                await dp.setValue(
                                   GlobusStateKeys.savedGlobusEndpoints,
                                   [...savedGlobusEndpoints, endpoint],
                                   true
@@ -1153,8 +1162,8 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                         <Button
                           type="primary"
                           danger
-                          onClick={() => {
-                            setPersistVal(
+                          onClick={async () => {
+                            await dp.setValue(
                               GlobusStateKeys.savedGlobusEndpoints,
                               savedGlobusEndpoints.filter((savedEndpoint) => {
                                 return savedEndpoint.id !== endpoint.id;
@@ -1184,7 +1193,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                           type="primary"
                           danger
                           onClick={async () => {
-                            await setPersistVal(
+                            await dp.setValue(
                               GlobusStateKeys.userChosenEndpoint,
                               endpoint,
                               true
