@@ -15,16 +15,16 @@ export const rightDrawerChanges: MarkdownMessage[] = [
 ];
 
 const startupMessages: StartPopupData = {
-  messageToShow: 'v1.1.2-rc',
+  messageToShow: 'v1.1.2-pre',
   defaultMessageId: 'welcome',
   messageData: [
     {
-      messageId: 'v1.1.2-rc',
+      messageId: 'v1.1.2-pre',
       template: MessageTemplates.ChangeLog,
       style: { minWidth: '700px' },
       data: {
         changesFile: 'changelog/v1.1.2-rc.md',
-        version: '1.1.2-rc',
+        version: '1.1.2-pre',
       },
     },
     {
