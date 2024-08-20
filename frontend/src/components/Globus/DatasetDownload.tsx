@@ -43,15 +43,6 @@ import {
 import { NotificationType, showError, showNotice } from '../../common/utils';
 import { DataPersister } from '../../common/DataPersister';
 
-type ModalFormState = 'signin' | 'endpoint' | 'both' | 'none';
-
-type ModalState = {
-  onCancelAction: () => void;
-  onOkAction: () => void;
-  show: boolean;
-  state: ModalFormState;
-};
-
 type AlertModalState = {
   onCancelAction: () => void;
   onOkAction: () => void;
@@ -76,7 +67,11 @@ const dp: DataPersister = DataPersister.Instance;
 const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   const [messageApi, contextHolder] = message.useMessage();
 
-  // Persist
+  const [downloadIsLoading, setDownloadIsLoading] = useRecoilState<boolean>(
+    cartDownloadIsLoading
+  );
+
+  // Persistent vars
   const [taskItems, setTaskItems] = useRecoilState<GlobusTaskItem[]>(
     globusTaskItems
   );
@@ -86,7 +81,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     setTaskItems
   );
 
-  // Persist
   const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(
     cartItemSelections
   );
@@ -96,14 +90,31 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     setItemSelections
   );
 
-  const [downloadIsLoading, setDownloadIsLoading] = useRecoilState<boolean>(
-    cartDownloadIsLoading
+  const [savedGlobusEndpoints, setSavedGlobusEndpoints] = React.useState<
+    GlobusEndpoint[] | []
+  >(dp.getValue(GlobusStateKeys.savedGlobusEndpoints) || []);
+  dp.addNewVar(
+    GlobusStateKeys.savedGlobusEndpoints,
+    [],
+    setSavedGlobusEndpoints
+  );
+
+  const [
+    chosenGlobusEndpoint,
+    setChosenGlobusEndpoint,
+  ] = React.useState<GlobusEndpoint | null>(
+    dp.getValue(GlobusStateKeys.userChosenEndpoint)
+  );
+  dp.addNewVar(
+    GlobusStateKeys.userChosenEndpoint,
+    null,
+    setChosenGlobusEndpoint
   );
 
   // Component internal state
-  const [loadingPage, setLoadingPage] = React.useState<boolean>(false);
-
   const [varsLoaded, setVarsLoaded] = React.useState<boolean>(false);
+
+  const [loadingPage, setLoadingPage] = React.useState<boolean>(false);
 
   const [endpointSearchOpen, setEndpointSearchOpen] = React.useState<boolean>(
     false
@@ -122,58 +133,10 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     GlobusEndpoint[] | []
   >();
 
-  // Persist
-  const [savedGlobusEndpoints, setSavedGlobusEndpoints] = React.useState<
-    GlobusEndpoint[] | []
-  >([]);
-  dp.addNewVar(
-    GlobusStateKeys.savedGlobusEndpoints,
-    [],
-    setSavedGlobusEndpoints
-  );
-
-  // Persist
-  const [
-    chosenGlobusEndpoint,
-    setChosenGlobusEndpoint,
-  ] = React.useState<GlobusEndpoint | null>();
-  dp.addNewVar(
-    GlobusStateKeys.userChosenEndpoint,
-    null,
-    setChosenGlobusEndpoint
-  );
-
   const [
     selectedDownloadType,
     setSelectedDownloadType,
   ] = React.useState<string>(downloadOptions[0]);
-
-  const [globusStepsModal, setGlobusStepsModal] = React.useState<ModalState>({
-    show: false,
-    state: 'both',
-    onOkAction:
-      // istanbul ignore next
-      () => {
-        setGlobusStepsModal({ ...globusStepsModal, show: false });
-      },
-    onCancelAction: () => {
-      setGlobusStepsModal({ ...globusStepsModal, show: false });
-      endDownloadSteps();
-    },
-  });
-  const [
-    useDefaultConfirmModal,
-    setUseDefaultConfirmModal,
-  ] = React.useState<ModalState>({
-    show: false,
-    state: 'none',
-    onOkAction: /* istanbul ignore next */ () => {
-      setUseDefaultConfirmModal({ ...useDefaultConfirmModal, show: false });
-    },
-    onCancelAction: /* istanbul ignore next */ () => {
-      setUseDefaultConfirmModal({ ...useDefaultConfirmModal, show: false });
-    },
-  });
 
   const [alertPopupState, setAlertPopupState] = React.useState<AlertModalState>(
     {
@@ -193,15 +156,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     }
   );
 
-  async function addNewTask(newTask: GlobusTaskItem): Promise<void> {
-    const newItemsList = [...taskItems];
-    if (taskItems.length >= MAX_TASK_LIST_LENGTH) {
-      newItemsList.pop();
-    }
-    newItemsList.unshift(newTask);
-    await dp.setValue(GlobusStateKeys.globusTaskItems, newItemsList, true);
-  }
-
   function redirectToNewURL(newUrl: string): void {
     setTimeout(() => {
       window.location.replace(newUrl);
@@ -218,6 +172,15 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         redirectToNewURL(newUrl);
       }
     }
+  }
+
+  async function addNewTask(newTask: GlobusTaskItem): Promise<void> {
+    const newItemsList = [...taskItems];
+    if (taskItems.length >= MAX_TASK_LIST_LENGTH) {
+      newItemsList.pop();
+    }
+    newItemsList.unshift(newTask);
+    await dp.setValue(GlobusStateKeys.globusTaskItems, newItemsList, true);
   }
 
   async function getGlobusTransferToken(): Promise<GlobusTokenResponse | null> {
