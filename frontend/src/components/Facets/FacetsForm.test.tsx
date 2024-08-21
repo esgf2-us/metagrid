@@ -42,7 +42,7 @@ describe('test FacetsForm component', () => {
 
     // Open filename collapse panel
     const filenameSearchPanel = getByRole('button', {
-      name: 'right Filename',
+      name: 'collapsed Filename',
     });
 
     await act(async () => {
@@ -183,7 +183,7 @@ describe('test FacetsForm component', () => {
 
     // Open additional properties collapse panel
     const additionalPropertiesPanel = getByRole('button', {
-      name: 'right Additional Properties',
+      name: 'expanded Additional Properties',
     });
 
     await act(async () => {

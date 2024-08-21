@@ -60,8 +60,6 @@ jest.mock('../../api/index', () => {
 
 beforeEach(() => {
   // Set default values for recoil atoms
-  // tempStorageSetMock(GlobusStateKeys.defaultEndpoint, null);
-  // tempStorageSetMock(GlobusStateKeys.useDefaultEndpoint, false);
   tempStorageSetMock(GlobusStateKeys.globusTaskItems, []);
   tempStorageSetMock(CartStateKeys.cartItemSelections, []);
   tempStorageSetMock(CartStateKeys.cartDownloadIsLoading, false);

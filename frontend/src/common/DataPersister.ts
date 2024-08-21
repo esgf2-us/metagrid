@@ -5,7 +5,6 @@ import { loadSessionValue, saveSessionValue } from '../api';
 export type PersistData<T> = {
   loader: () => Promise<T>;
   saver: () => Promise<void>;
-  getter: () => T;
   setter: (value: T) => void;
   value: T;
 };
@@ -37,7 +36,7 @@ export class DataPersister {
   addNewVar<T>(
     varKey: string,
     defaultVal: T,
-    setterFunc: SetterOrUpdater<T>,
+    setterFunc: SetterOrUpdater<T> | ((val: T) => void),
     loaderFunc?: () => Promise<T>
   ): void {
     if (Object.hasOwn(this._PERSISTENT_STORE, varKey)) {
@@ -52,39 +51,25 @@ export class DataPersister {
         val = await loadSessionValue<T>(varKey);
       }
 
-      if (this._PERSISTENT_STORE[varKey]) {
-        this._PERSISTENT_STORE[varKey].value = val || defaultVal;
-        setterFunc(val || defaultVal);
-      }
+      this._PERSISTENT_STORE[varKey].value = val || defaultVal;
+      setterFunc(val || defaultVal);
+
       return val || defaultVal;
     };
 
     const saver = async (): Promise<void> => {
-      if (this._PERSISTENT_STORE[varKey]) {
-        await saveSessionValue<T>(
-          varKey,
-          this._PERSISTENT_STORE[varKey].value as T
-        );
-      } else {
-        await saveSessionValue<T>(varKey, defaultVal);
-      }
+      await saveSessionValue<T>(
+        varKey,
+        this._PERSISTENT_STORE[varKey].value as T
+      );
     };
 
     const setter = (val: T): void => {
-      if (this._PERSISTENT_STORE[varKey]) {
-        this._PERSISTENT_STORE[varKey].value = val;
-        setterFunc(val);
-      }
+      this._PERSISTENT_STORE[varKey].value = val;
+      setterFunc(val);
     };
 
-    const getter = (): T => {
-      if (this._PERSISTENT_STORE[varKey]) {
-        return this._PERSISTENT_STORE[varKey].value as T;
-      }
-      return defaultVal;
-    };
-
-    const newVar = { loader, saver, getter, setter, value: defaultVal };
+    const newVar = { loader, saver, setter, value: defaultVal };
     this._PERSISTENT_STORE[varKey] = newVar as PersistData<unknown>;
   }
 
@@ -115,9 +100,7 @@ export class DataPersister {
   async loadAllValues(): Promise<void> {
     const loadFuncs: Promise<unknown>[] = [];
     Object.values(this._PERSISTENT_STORE).forEach((persistVar) => {
-      if (persistVar && persistVar.loader) {
-        loadFuncs.push(persistVar.loader());
-      }
+      loadFuncs.push(persistVar.loader());
     });
 
     await Promise.all(loadFuncs);
@@ -126,9 +109,7 @@ export class DataPersister {
   async saveAllValues(): Promise<void> {
     const saveFuncs: Promise<void>[] = [];
     Object.values(this._PERSISTENT_STORE).forEach((persistVar) => {
-      if (persistVar && persistVar.saver) {
-        saveFuncs.push(persistVar.saver());
-      }
+      saveFuncs.push(persistVar.saver());
     });
 
     await Promise.all(saveFuncs);
