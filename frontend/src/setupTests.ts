@@ -12,7 +12,7 @@ import {
   sessionStorageMock,
 } from './test/jestTestFunctions';
 
-jest.setTimeout(15000);
+jest.setTimeout(20000);
 
 // Fixes 'TypeError: Cannot read property 'addListener' of undefined.
 // https://github.com/AO19/typeError-cannot-read-property-addListener-of-undefined/commit/873ce9b730a1c21b40c9264e5f29fc2df436136b

@@ -114,7 +114,7 @@ describe('test main components', () => {
 
     // Open filename collapse panel
     const filenameSearchPanel = within(facetsForm).getByRole('button', {
-      name: 'right Filename',
+      name: 'collapsed Filename',
     });
 
     await act(async () => {
@@ -206,7 +206,7 @@ describe('test main components', () => {
 
     // Open additional properties collapse panel
     const additionalPropertiesPanel = within(facetsForm).getByRole('button', {
-      name: 'right Additional Properties',
+      name: 'expanded Additional Properties',
     });
     await act(async () => {
       await user.click(additionalPropertiesPanel);
@@ -244,7 +244,7 @@ describe('test main components', () => {
 
     // Open top collapse panel
     const group1Panel = within(facetsComponent).getByRole('button', {
-      name: 'right Group1',
+      name: 'collapsed Group1',
     });
 
     await act(async () => {

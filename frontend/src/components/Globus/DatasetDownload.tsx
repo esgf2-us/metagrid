@@ -1166,7 +1166,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                             await performStepsForGlobusGoals();
                           }}
                         >
-                          {endpoint.path ? 'Update Path' : 'Set New Path'}
+                          {endpoint.path ? 'Update Path' : 'Set Path'}
                         </Button>
                       ),
                     },

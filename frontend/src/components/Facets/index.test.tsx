@@ -48,7 +48,7 @@ it('handles facets form auto-filtering', async () => {
 
   // Open top collapse panel
   const group1Panel = within(facetsForm).getByRole('button', {
-    name: 'right Group1',
+    name: 'collapsed Group1',
   });
 
   await act(async () => {
@@ -109,7 +109,7 @@ it('handles facets form submission, including a facet key that is undefined', as
 
   // Open top collapse panel
   const group1Panel = within(facetsForm).getByRole('button', {
-    name: 'right Group1',
+    name: 'collapsed Group1',
   });
 
   await act(async () => {
@@ -144,7 +144,7 @@ it('handles facets form submission, including a facet key that is undefined', as
   // Open Collapse Panel for  in Collapse component for the facet2 form to render
   // Open additional properties collapse panel
   const collapse2 = getByRole('button', {
-    name: 'right Group2',
+    name: 'collapsed Group2',
   });
 
   await act(async () => {

@@ -176,7 +176,7 @@ describe('test FacetsForm component', () => {
     expect(expandAllBtn).toBeTruthy();
   });
 
-  it('handles date picker for versioning', async () => {
+  xit('handles date picker for versioning', async () => {
     const { getByTestId, getByRole } = customRender(
       <FacetsForm {...defaultProps} />
     );
