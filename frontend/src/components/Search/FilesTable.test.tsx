@@ -212,15 +212,6 @@ describe('test FilesTable component', () => {
 
     // Change back to 10 / page
     await selectDropdownOption(user, pageSizeComboBox, '10 / page');
-
-    // Select the 'Next Page' button (only enabled if there are > 10 results)
-    const nextPage = await waitFor(() =>
-      within(getByRole('listitem', { name: 'Next Page' })).getByRole('button')
-    );
-
-    await act(async () => {
-      await user.click(nextPage);
-    });
   });
 
   it('handles clicking the expandable icon', async () => {

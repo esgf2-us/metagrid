@@ -379,7 +379,7 @@ describe('test main table UI', () => {
       },
     });
 
-    const { getByRole } = customRender(
+    const { getByRole, getByText } = customRender(
       <Table {...defaultProps} userCart={[defaultProps.results[0]]} />
     );
 
@@ -400,6 +400,12 @@ describe('test main table UI', () => {
 
     // Wait component to re-render
     await waitFor(() => getByRole('table'));
+
+    // Check success message renders
+    const successMsg = await waitFor(() =>
+      getByText('Wget script downloaded successfully!')
+    );
+    expect(successMsg).toBeTruthy();
   });
 
   it('displays an error when unable to access download via wget', async () => {

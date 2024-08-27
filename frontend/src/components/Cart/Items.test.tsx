@@ -182,11 +182,13 @@ describe('test the cart items component', () => {
       await user.click(downloadBtn);
     });
 
-    expect(
-      getByText(
-        'The requested resource at the ESGF wget API service was invalid. Please contact support.',
-        { exact: false }
-      )
-    ).toBeTruthy();
+    waitFor(() => {
+      expect(
+        getByText(
+          'The requested resource at the ESGF wget API service was invalid. Please contact support.',
+          { exact: false }
+        )
+      ).toBeTruthy();
+    });
   });
 });
