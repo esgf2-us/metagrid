@@ -5,7 +5,7 @@ import { ResponseError } from '../../api';
 import {
   activeSearchQueryFixture,
   projectsFixture,
-} from '../../api/mock/fixtures';
+} from '../../test/mock/fixtures';
 import { mapHTTPErrorCodes } from '../../api/routes';
 import ProjectsForm, { Props } from './ProjectForm';
 import customRender from '../../test/custom-render';

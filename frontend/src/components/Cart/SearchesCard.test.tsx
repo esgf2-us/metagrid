@@ -1,8 +1,8 @@
 import { act, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { userSearchQueryFixture } from '../../api/mock/fixtures';
-import { rest, server } from '../../api/mock/server';
+import { userSearchQueryFixture } from '../../test/mock/fixtures';
+import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import SearchesCard, { Props } from './SearchesCard';
 import customRender from '../../test/custom-render';

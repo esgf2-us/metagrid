@@ -1,5 +1,5 @@
 import React from 'react';
-import { parsedNodeStatusFixture } from '../../api/mock/fixtures';
+import { parsedNodeStatusFixture } from '../../test/mock/fixtures';
 import StatusToolTip from './StatusToolTip';
 import { NodeStatusArray } from './types';
 import customRender from '../../test/custom-render';

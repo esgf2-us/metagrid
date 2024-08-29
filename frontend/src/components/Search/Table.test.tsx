@@ -4,8 +4,8 @@ import React from 'react';
 import {
   rawSearchResultFixture,
   rawSearchResultsFixture,
-} from '../../api/mock/fixtures';
-import { rest, server } from '../../api/mock/server';
+} from '../../test/mock/fixtures';
+import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
 import Table, { Props } from './Table';

@@ -1,5 +1,5 @@
 import React from 'react';
-import { userSearchQueriesFixture } from '../../api/mock/fixtures';
+import { userSearchQueriesFixture } from '../../test/mock/fixtures';
 import Searches, { Props } from './Searches';
 import customRender from '../../test/custom-render';
 

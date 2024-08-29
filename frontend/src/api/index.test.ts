@@ -41,8 +41,8 @@ import {
   userInfoFixture,
   userSearchQueriesFixture,
   userSearchQueryFixture,
-} from './mock/fixtures';
-import { rest, server } from './mock/server';
+} from '../test/mock/fixtures';
+import { rest, server } from '../test/mock/server';
 import apiRoutes from './routes';
 
 const genericNetworkErrorMsg = 'Failed to Connect';

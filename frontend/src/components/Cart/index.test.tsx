@@ -4,7 +4,7 @@ import { act } from '@testing-library/react';
 import {
   userCartFixture,
   userSearchQueriesFixture,
-} from '../../api/mock/fixtures';
+} from '../../test/mock/fixtures';
 import Cart, { Props } from './index';
 import customRender from '../../test/custom-render';
 

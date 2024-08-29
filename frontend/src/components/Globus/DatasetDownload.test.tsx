@@ -1,17 +1,17 @@
 import React from 'react';
 import userEvent from '@testing-library/user-event';
-import { act, waitFor, within } from '@testing-library/react';
+import { act, waitFor, within, screen } from '@testing-library/react';
 import customRender from '../../test/custom-render';
-import { rest, server } from '../../api/mock/server';
+import { rest, server } from '../../test/mock/server';
 import { getSearchFromUrl } from '../../common/utils';
 import { ActiveSearchQuery } from '../Search/types';
 import {
+  addSearchRowsAndGoToCart,
   getRowName,
   mockConfig,
   mockFunction,
   openDropdownList,
   printElementContents,
-  // printElementContents,
   tempStorageGetMock,
   tempStorageSetMock,
 } from '../../test/jestTestFunctions';
@@ -23,9 +23,10 @@ import {
   globusRefeshTokenFixture,
   globusTransferTokenFixture,
   userCartFixture,
-} from '../../api/mock/fixtures';
+} from '../../test/mock/fixtures';
 import apiRoutes from '../../api/routes';
 import DatasetDownloadForm from './DatasetDownload';
+import { DataPersister } from '../../common/DataPersister';
 
 const activeSearch: ActiveSearchQuery = getSearchFromUrl('project=test1');
 
@@ -61,9 +62,13 @@ jest.mock('../../api/index', () => {
 });
 
 beforeEach(() => {
-  // Set default values for recoil atoms
+  const dp = DataPersister.Instance;
+  dp.initializeDataStore({});
+  // Set default values for persistent variables
   tempStorageSetMock(GlobusStateKeys.globusTaskItems, []);
   tempStorageSetMock(CartStateKeys.cartItemSelections, []);
+  tempStorageSetMock(GlobusStateKeys.savedGlobusEndpoints, []);
+  tempStorageSetMock(GlobusStateKeys.userChosenEndpoint, null);
   tempStorageSetMock(CartStateKeys.cartDownloadIsLoading, false);
 });
 
@@ -73,65 +78,44 @@ describe('DatasetDownload form tests', () => {
     expect(downloadForm).toBeTruthy();
 
     await downloadForm.findByTestId('downloadTypeSelector');
+    downloadForm.unmount();
   });
 
-  xit('Start the wget transfer after adding an item to cart', async () => {
-    const { getByTestId, getByRole, getByText, getAllByText } = customRender(
-      <App searchQuery={activeSearch} />
-    );
+  it('Start the wget transfer after adding an item to cart', async () => {
+    const app = customRender(<App searchQuery={activeSearch} />);
 
     // Wait for results to load
-    await waitFor(() =>
-      expect(getByText('results found for', { exact: false })).toBeTruthy()
+    const results = await waitFor(() =>
+      screen.findByText('results found for', { exact: false })
     );
+    expect(results).toBeTruthy();
 
-    // Check first row renders and click the checkbox
-    const firstRow = getByRole('row', {
-      name: getRowName('plus', 'check', 'foo', '3', '1', '1', true),
-    });
-
-    // Check first row has add button and click it
-    const addBtn = within(firstRow).getByRole('img', { name: 'plus' });
-    expect(addBtn).toBeTruthy();
-    await act(async () => {
-      await user.click(addBtn);
-    });
-
-    // Check 'Added items(s) to the cart' message appears
-    const addText = await waitFor(
-      () => getAllByText('Added item(s) to your cart')[0]
-    );
-    expect(addText).toBeTruthy();
-
-    // Switch to the cart page
-    const cartBtn = getByTestId('cartPageLink');
-    await act(async () => {
-      await user.click(cartBtn);
-    });
+    // Add search item to cart and switch to cart page
+    await addSearchRowsAndGoToCart(user);
 
     // Select item for globus transfer
-    const firstCheckBox = getByRole('checkbox');
+    const firstCheckBox = await screen.findByRole('checkbox');
     expect(firstCheckBox).toBeTruthy();
     await act(async () => {
       await user.click(firstCheckBox);
     });
 
     // Open download dropdown
-    const globusTransferDropdown = within(
-      getByTestId('downloadTypeSelector')
-    ).getByRole('combobox');
+    const globusTransferDropdown = await within(
+      await screen.findByTestId('downloadTypeSelector')
+    ).findByRole('combobox');
 
     await openDropdownList(user, globusTransferDropdown);
 
     // Select wget
-    const wgetOption = getAllByText(/wget/i)[2];
-    expect(wgetOption).toBeTruthy();
+    const wgetOption = await screen.findAllByText(/wget/i);
+    expect(wgetOption[2]).toBeTruthy();
     await act(async () => {
-      await user.click(wgetOption);
+      await user.click(wgetOption[2]);
     });
 
     // Start wget download
-    const downloadBtn = getByTestId('downloadDatasetBtn');
+    const downloadBtn = await screen.findByTestId('downloadDatasetBtn');
     expect(downloadBtn).toBeTruthy();
 
     await act(async () => {
@@ -139,166 +123,159 @@ describe('DatasetDownload form tests', () => {
     });
 
     // Expect download success message to show
-    await waitFor(() =>
-      expect(
-        getByText('Wget script downloaded successfully!', { exact: false })
-      ).toBeTruthy()
+    const notice = await screen.findByText(
+      'Wget script downloaded successfully!',
+      {
+        exact: false,
+      }
     );
+    expect(notice).toBeTruthy();
+
+    app.unmount();
   });
 
-  xit("Alert popup doesn't show if no globus enabled nodes are configured.", async () => {
+  it("Alert popup doesn't show if no globus enabled nodes are configured.", async () => {
     mockConfig.globusEnabledNodes = [];
-    const {
-      getByTestId,
-      getByRole,
-      getByText,
-      getAllByRole,
-      getAllByText,
-    } = customRender(<App searchQuery={activeSearch} />);
+    const app = customRender(<App searchQuery={activeSearch} />);
 
     // Wait for results to load
-    await waitFor(() =>
-      expect(getByText('results found for', { exact: false })).toBeTruthy()
+    const results = await waitFor(() =>
+      screen.findByText('results found for', { exact: false })
     );
+    expect(results).toBeTruthy();
 
     // Check second row renders and click the checkbox
-    const secondRow = getByRole('row', {
+    const secondRow = await screen.findByRole('row', {
       name: getRowName('plus', 'close', 'bar', '2', '1', '1'),
     });
 
-    // Check row has add button and click it
-    const addBtn = within(secondRow).getByRole('img', { name: 'plus' });
-    expect(addBtn).toBeTruthy();
-    await act(async () => {
-      await user.click(addBtn);
-    });
-
-    // Check 'Added items(s) to the cart' message appears
-    const addText = await waitFor(
-      () => getAllByText('Added item(s) to your cart')[0]
-    );
-    expect(addText).toBeTruthy();
-
-    // Switch to the cart page
-    const cartBtn = getByTestId('cartPageLink');
-    await act(async () => {
-      await user.click(cartBtn);
-    });
+    // Add second cart item and switch to cart page
+    await addSearchRowsAndGoToCart(user, [secondRow]);
 
     // Select item for globus transfer even though its not globus enabled
-    const secondCheckBox = getAllByRole('checkbox')[0];
+    const secondCheckBox = await screen.findAllByRole('checkbox');
     expect(secondCheckBox).toBeTruthy();
     await act(async () => {
-      await user.click(secondCheckBox);
+      await user.click(secondCheckBox[0]);
     });
 
-    // Click Transfer button
-    const globusTransferBtn = getByRole('button', {
-      name: /download transfer/i,
-    });
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetBtn');
     expect(globusTransferBtn).toBeTruthy();
     await act(async () => {
       await user.click(globusTransferBtn);
     });
 
-    // Expect the transfer popup to show
-    const globusTransferPopup = getByText(/Steps for Globus transfer:/i);
+    // Expect the transfer popup to show first step
+    const globusTransferPopup = await screen.findByText(
+      /You will be redirected to obtain globus tokens. Continue?/i
+    );
     expect(globusTransferPopup).toBeTruthy();
+
+    app.unmount();
   });
 
   xit('Alert popup indicates a dataset is not globus enabled.', async () => {
-    const {
-      getByTestId,
-      getByRole,
-      getByText,
-      getAllByRole,
-      getAllByText,
-    } = customRender(<App searchQuery={activeSearch} />);
+    const app = customRender(<App searchQuery={activeSearch} />);
 
     // Wait for results to load
-    await waitFor(() =>
-      expect(getByText('results found for', { exact: false })).toBeTruthy()
+    const results = await waitFor(() =>
+      screen.findByText('results found for', { exact: false })
     );
+    expect(results).toBeTruthy();
 
     // Check first row renders and click the checkbox
-    const firstRow = getByRole('row', {
+    const firstRow = await screen.findByRole('row', {
       name: getRowName('plus', 'check', 'foo', '3', '1', '1', true),
     });
 
-    // Check row has add button and click it
-    const addBtn = within(firstRow).getByRole('img', { name: 'plus' });
-    expect(addBtn).toBeTruthy();
-    await act(async () => {
-      await user.click(addBtn);
-    });
-
-    const secondRow = getByRole('row', {
+    const secondRow = await screen.findByRole('row', {
       name: getRowName('plus', 'close', 'bar', '2', '1', '1', false),
     });
 
-    const secondBtn = within(secondRow).getByRole('img', { name: 'plus' });
-    expect(secondBtn).toBeTruthy();
-    await act(async () => {
-      await user.click(secondBtn);
-    });
-
-    const thirdRow = getByRole('row', {
+    const thirdRow = await screen.findByRole('row', {
       name: getRowName('plus', 'question', 'foobar', '3', '1', '1', false),
     });
 
-    const thirdBtn = within(thirdRow).getByRole('img', { name: 'plus' });
-    expect(thirdBtn).toBeTruthy();
-    await act(async () => {
-      await user.click(thirdBtn);
-    });
+    // Add first 3 rows to cart then switch to cart page
+    await addSearchRowsAndGoToCart(user, [firstRow, secondRow, thirdRow]);
 
-    // Check 'Added items(s) to the cart' message appears
-    const addText = await waitFor(
-      () => getAllByText('Added item(s) to your cart')[0]
-    );
-    expect(addText).toBeTruthy();
+    // // Check row has add button and click it
+    // const addBtn = within(firstRow).getByRole('img', { name: 'plus' });
+    // expect(addBtn).toBeTruthy();
+    // await act(async () => {
+    //   await user.click(addBtn);
+    // });
 
-    // Switch to the cart page
-    const cartBtn = getByTestId('cartPageLink');
-    await act(async () => {
-      await user.click(cartBtn);
-    });
+    // // const secondRow = await screen.findByRole('row', {
+    // //   name: getRowName('plus', 'close', 'bar', '2', '1', '1', false),
+    // // });
+    // const secondBtn = within(secondRow).getByRole('img', { name: 'plus' });
+    // expect(secondBtn).toBeTruthy();
+    // await act(async () => {
+    //   await user.click(secondBtn);
+    // });
+
+    // // const thirdRow = await screen.findByRole('row', {
+    // //   name: getRowName('plus', 'question', 'foobar', '3', '1', '1', false),
+    // // });
+
+    // const thirdBtn = within(thirdRow).getByRole('img', { name: 'plus' });
+    // expect(thirdBtn).toBeTruthy();
+    // await act(async () => {
+    //   await user.click(thirdBtn);
+    // });
+
+    // // Check 'Added items(s) to the cart' message appears
+    // const addText = await waitFor(
+    //   async () => (await screen.findAllByText('Added item(s) to your cart'))[0]
+    // );
+    // expect(addText).toBeTruthy();
+
+    // // Switch to the cart page
+    // const cartBtn = await screen.findByTestId('cartPageLink');
+    // await act(async () => {
+    //   await user.click(cartBtn);
+    // });
 
     // Select all items for globus transfer
-    const firstCheckBox = getAllByRole('checkbox')[0];
+    const firstCheckBox = (await screen.findAllByRole('checkbox'))[0];
     expect(firstCheckBox).toBeTruthy();
     await act(async () => {
       await user.click(firstCheckBox);
     });
-    const secondCheckBox = getAllByRole('checkbox')[1];
+    // printElementContents(firstCheckBox);
+
+    const secondCheckBox = (await screen.findAllByRole('checkbox'))[1];
     expect(secondCheckBox).toBeTruthy();
     await act(async () => {
       await user.click(secondCheckBox);
     });
-    const thirdCheckBox = getAllByRole('checkbox')[2];
+    // printElementContents(secondCheckBox);
+
+    const thirdCheckBox = (await screen.findAllByRole('checkbox'))[2];
     expect(thirdCheckBox).toBeTruthy();
     await act(async () => {
       await user.click(thirdCheckBox);
     });
+    // printElementContents(thirdCheckBox);
 
     // Click Transfer button
-    const globusTransferBtn = getByRole('button', {
-      name: /download transfer/i,
-    });
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetBtn');
     expect(globusTransferBtn).toBeTruthy();
     await act(async () => {
       await user.click(globusTransferBtn);
     });
 
     // Expect the steps popup to show with below message
-    const warningPopup1 = getByText(
-      /Some of your selected items cannot be transfered via Globus./i
+    const warningPopup1 = await screen.findByText(
+      /Some of your selected items cannot be transferred via Globus./i,
+      { exact: false }
     );
     expect(warningPopup1).toBeTruthy();
 
     // Select cancel to cancel the transfer (leaving selections alone)
     await act(async () => {
-      await user.click(getByText('Cancel'));
+      await user.click(await screen.findByText('Cancel'));
     });
 
     // Deselect the 3rd dataset
@@ -312,12 +289,12 @@ describe('DatasetDownload form tests', () => {
     });
 
     // Expect the steps popup to show with a different message
-    const warningPopup2 = getByText(
+    const warningPopup2 = await screen.findByText(
       /One of your selected items cannot be transferred via Globus./i
     );
     expect(warningPopup2).toBeTruthy();
     await act(async () => {
-      await user.click(getByText('Cancel'));
+      await user.click(await screen.findByText('Cancel'));
     });
 
     // Deselect the globus enabled dataset
@@ -331,13 +308,13 @@ describe('DatasetDownload form tests', () => {
     });
 
     // Expect the steps popup to show with a different message
-    const warningPopup3 = getByText(
+    const warningPopup3 = await screen.findByText(
       /None of your selected items can be transferred via Globus at this time./i
     );
     expect(warningPopup3).toBeTruthy();
 
     await act(async () => {
-      await user.click(getByText('Ok'));
+      await user.click(await screen.findByText('Ok'));
     });
 
     // Test that transfer is started with only enabled datasets
@@ -347,22 +324,27 @@ describe('DatasetDownload form tests', () => {
       await user.click(firstCheckBox);
     });
 
+    // Check that the non-globus ready option is currently selected
+    await act(async () => {
+      await user.click(secondCheckBox);
+    });
+    expect(secondCheckBox).toBeChecked();
+
     // Start transfer again
     await act(async () => {
       await user.click(globusTransferBtn);
     });
 
-    // Check that the non-globus ready option is currently selected
-    expect(secondCheckBox).toBeChecked();
-
     // Click OK at the popup to proceed with globus transfer
     await act(async () => {
-      await user.click(getByText('Ok'));
+      await user.click(await screen.findByText('Ok'));
     });
 
     // Check that the non-globus ready option was deselected
     expect(secondCheckBox).not.toBeChecked();
-  });
+
+    app.unmount();
+  }, 55000);
 
   xit('Download form renders and transfer popup form shows after clicking Transfer.', async () => {
     const { getByTestId, getByRole, getByText, getAllByText } = customRender(

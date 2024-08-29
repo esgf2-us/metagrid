@@ -8,7 +8,7 @@
 import { act, fireEvent, waitFor, within } from '@testing-library/react';
 import React from 'react';
 import userEvent from '@testing-library/user-event';
-import { rest, server } from '../../api/mock/server';
+import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import { delay } from '../../common/reactJoyrideSteps';
 import { getSearchFromUrl } from '../../common/utils';

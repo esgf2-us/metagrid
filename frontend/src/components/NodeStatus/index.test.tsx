@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import NodeStatus, { Props } from '.';
 import { ResponseError } from '../../api';
-import { parsedNodeStatusFixture } from '../../api/mock/fixtures';
+import { parsedNodeStatusFixture } from '../../test/mock/fixtures';
 import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
 

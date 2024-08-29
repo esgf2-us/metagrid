@@ -2,7 +2,7 @@ import { render } from '@testing-library/react';
 import React from 'react';
 import { MessageInstance } from 'antd/es/message/interface';
 import { message } from 'antd';
-import { rawProjectFixture } from '../api/mock/fixtures';
+import { rawProjectFixture } from '../test/mock/fixtures';
 import { UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
 import {
   ActiveSearchQuery,

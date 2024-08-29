@@ -2,7 +2,7 @@ import React from 'react';
 import {
   rawSearchResultFixture,
   userCartFixture,
-} from '../../api/mock/fixtures';
+} from '../../test/mock/fixtures';
 import Summary, { Props } from './Summary';
 import customRender from '../../test/custom-render';
 

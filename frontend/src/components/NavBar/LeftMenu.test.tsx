@@ -1,6 +1,6 @@
 import React from 'react';
 import { fireEvent, waitFor } from '@testing-library/react';
-import { projectsFixture } from '../../api/mock/fixtures';
+import { projectsFixture } from '../../test/mock/fixtures';
 import LeftMenu, { Props } from './LeftMenu';
 import customRender from '../../test/custom-render';
 

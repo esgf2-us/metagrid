@@ -324,7 +324,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
         );
       },
     },
-    globusEnabledNodes
+    globusEnabledNodes.length > 0
       ? {
           align: 'center' as AlignType,
           fixed: 'right' as FixedType,
@@ -338,7 +338,15 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
             </div>
           ),
         }
-      : {},
+      : {
+          align: 'center' as AlignType,
+          fixed: 'right' as FixedType,
+          title: '',
+          dataIndex: 'data_node',
+          key: 'globus_enabled',
+          width: 1,
+          render: () => <div></div>,
+        },
   ];
 
   return (

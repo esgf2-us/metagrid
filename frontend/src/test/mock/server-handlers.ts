@@ -5,7 +5,7 @@
  * HTTP response from an API (404).
  */
 import { rest } from 'msw';
-import apiRoutes from '../routes';
+import apiRoutes from '../../api/routes';
 import {
   ESGFSearchAPIFixture,
   globusTransferResponseFixture,
@@ -18,10 +18,7 @@ import {
   userSearchQueriesFixture,
   userSearchQueryFixture,
 } from './fixtures';
-import {
-  tempStorageGetMock,
-  tempStorageSetMock,
-} from '../../test/jestTestFunctions';
+import { tempStorageGetMock, tempStorageSetMock } from '../jestTestFunctions';
 
 const handlers = [
   rest.post(apiRoutes.keycloakAuth.path, (_req, res, ctx) =>

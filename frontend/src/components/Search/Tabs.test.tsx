@@ -1,7 +1,7 @@
 import React from 'react';
 import customRender from '../../test/custom-render';
 import Tabs from './Tabs';
-import { rawSearchResultFixture } from '../../api/mock/fixtures';
+import { rawSearchResultFixture } from '../../test/mock/fixtures';
 
 // Reset all mocks after each test
 afterEach(() => {

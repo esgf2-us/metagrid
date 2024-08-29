@@ -163,12 +163,12 @@ export function getRowName(
   if (Number.isNaN(Number(totalSize))) {
     totalBytes = totalSize;
   }
-  let globusReadyCheck = '.*';
+  let globusReadyCheck = mockConfig.globusEnabledNodes.length > 0 ? ' .*' : '';
   if (globusReady !== undefined) {
-    globusReadyCheck = globusReady ? 'check-circle' : 'close-circle';
+    globusReadyCheck = globusReady ? ' check-circle' : ' close-circle';
   }
   const newRegEx = new RegExp(
-    `right-circle ${cartButton} ${nodeCircleType}-circle ${title} ${fileCount} ${totalBytes} ${version} wget download ${globusReadyCheck}`
+    `right-circle ${cartButton} ${nodeCircleType}-circle ${title} ${fileCount} ${totalBytes} ${version} wget download${globusReadyCheck}`
   );
 
   return newRegEx;
@@ -236,4 +236,54 @@ export async function selectDropdownOption(
     },
     { timeout: 3000 }
   );
+}
+
+export async function addSearchRowsAndGoToCart(
+  user: UserEvent,
+  rows?: HTMLElement[]
+): Promise<void> {
+  let rowsToAdd: HTMLElement[] = [];
+
+  // Get the rows we need to add
+  if (rows) {
+    rowsToAdd = rowsToAdd.concat(rows);
+  } else {
+    const defaultRow = await screen.findByRole('row', {
+      name: getRowName('plus', 'check', 'foo', '3', '1', '1', true),
+    });
+    rowsToAdd.push(defaultRow);
+  }
+
+  // Add the rows by clicking plus button
+  const clickBtns: Promise<void>[] = [];
+  rowsToAdd.forEach((row) => {
+    expect(row).toBeTruthy();
+    const clickBtnFunc = async (): Promise<void> => {
+      const addBtn = (await within(row).findAllByRole('button'))[0];
+      expect(addBtn).toBeTruthy();
+      await act(async () => {
+        await user.click(addBtn);
+      });
+    };
+    clickBtns.push(clickBtnFunc());
+  });
+  await Promise.all(clickBtns);
+
+  // Check 'Added items(s) to the cart' message appears
+  const addText = waitFor(async () => {
+    await screen.findAllByText('Added item(s) to your cart', {
+      exact: false,
+    });
+  });
+  expect(addText).toBeTruthy();
+
+  // Switch to the cart page
+  const cartBtn = await screen.findByTestId('cartPageLink');
+  await act(async () => {
+    await user.click(cartBtn);
+  });
+
+  // Wait for cart page to render
+  const summary = await waitFor(() => screen.findByTestId('summary'));
+  expect(summary).toBeTruthy();
 }

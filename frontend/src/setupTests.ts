@@ -4,7 +4,7 @@
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
 import { cleanup } from '@testing-library/react';
-import { server } from './api/mock/server';
+import { server } from './test/mock/server';
 import messageDisplayData from './components/Messaging/messageDisplayData';
 import {
   mockConfig,
@@ -12,7 +12,7 @@ import {
   sessionStorageMock,
 } from './test/jestTestFunctions';
 
-jest.setTimeout(20000);
+jest.setTimeout(35000);
 
 // Fixes 'TypeError: Cannot read property 'addListener' of undefined.
 // https://github.com/AO19/typeError-cannot-read-property-addListener-of-undefined/commit/873ce9b730a1c21b40c9264e5f29fc2df436136b

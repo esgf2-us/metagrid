@@ -16,7 +16,10 @@ import {
   RawProject,
   RawProjects,
 } from '../../components/Facets/types';
-import { GlobusTokenResponse } from '../../components/Globus/types';
+import {
+  GlobusEndpoint,
+  GlobusTokenResponse,
+} from '../../components/Globus/types';
 import {
   NodeStatusArray,
   RawNodeStatus,
@@ -322,6 +325,35 @@ export const globusTokenResponseFixture = (): GlobusTokenResponse => {
     error: '',
   };
 };
+
+export const globusEndpointFixture = (
+  canonicalName?: string,
+  displayName?: string,
+  entityType?: string,
+  id?: string,
+  ownerId?: string,
+  subscriptionId?: string,
+  path?: string
+): GlobusEndpoint => {
+  return {
+    canonical_name: canonicalName || '',
+    contact_email: 'globus-admin@llnl.gov',
+    display_name: displayName || 'LC Public',
+    entity_type: entityType || 'GCSv5_mapped_collection',
+    id: id || '0247816e-cc0d-4e03-a509-10903f6dde11',
+    owner_id: ownerId || '51245285-9ea1-4e56-a0c4-4de744f7c39f',
+    owner_string:
+      '51245285-9ea1-4e56-a0c4-4de744f7c39f@clients.auth.globus.org',
+    subscription_id: subscriptionId || '45620f77-bc3a-4e6f-b730-3ef5babe69ad',
+    path: path || '',
+  };
+};
+
+// export type GlobusTaskItem = {
+//   taskId: string;
+//   submitDate: string;
+//   taskStatusURL: string;
+// };
 
 export const globusEnabledDatasetFixture = (): RawSearchResult[] => {
   return [

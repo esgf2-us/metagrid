@@ -1,8 +1,8 @@
 import { waitFor, within, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { userCartFixture } from '../../api/mock/fixtures';
-import { rest, server } from '../../api/mock/server';
+import { userCartFixture } from '../../test/mock/fixtures';
+import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
 import Items, { Props } from './Items';

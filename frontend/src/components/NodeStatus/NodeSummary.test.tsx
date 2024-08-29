@@ -1,6 +1,6 @@
 import { within } from '@testing-library/react';
 import React from 'react';
-import { parsedNodeStatusFixture } from '../../api/mock/fixtures';
+import { parsedNodeStatusFixture } from '../../test/mock/fixtures';
 import NodeSummary, { Props } from './NodeSummary';
 import customRender from '../../test/custom-render';
 

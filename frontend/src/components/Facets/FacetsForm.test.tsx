@@ -5,7 +5,7 @@ import {
   activeSearchQueryFixture,
   parsedFacetsFixture,
   parsedNodeStatusFixture,
-} from '../../api/mock/fixtures';
+} from '../../test/mock/fixtures';
 import FacetsForm, { humanizeFacetNames, Props } from './FacetsForm';
 import customRender from '../../test/custom-render';
 

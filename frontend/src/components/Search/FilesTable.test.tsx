@@ -4,8 +4,8 @@ import React from 'react';
 import {
   ESGFSearchAPIFixture,
   rawSearchResultFixture,
-} from '../../api/mock/fixtures';
-import { rest, server } from '../../api/mock/server';
+} from '../../test/mock/fixtures';
+import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import FilesTable, { DownloadUrls, genDownloadUrls, Props } from './FilesTable';
 import { RawSearchResult } from './types';
