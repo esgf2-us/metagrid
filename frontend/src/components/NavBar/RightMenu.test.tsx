@@ -9,7 +9,6 @@ import RightMenu, { Props } from './RightMenu';
 import {
   mockConfig,
   mockKeycloakToken,
-  printElementContents,
   tempStorageSetMock,
 } from '../../test/jestTestFunctions';
 
@@ -102,8 +101,6 @@ it('display the users email after authentication if they did not provide a name 
   // Check applicable components render
   const rightMenuComponent = await findByTestId('right-menu');
   expect(rightMenuComponent).toBeTruthy();
-
-  printElementContents(undefined);
 
   // Check user logged in and hover
   const greeting = await findByText('Hi, johnd@email.gov');

@@ -397,6 +397,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
     // If there are non-Globus Ready selections, show alert
     const globusDisabledCount = itemSelections.length - globusReadyItems.length;
+
     if (globusDisabledCount > 0) {
       let state = 'One';
       if (globusDisabledCount > 1) {

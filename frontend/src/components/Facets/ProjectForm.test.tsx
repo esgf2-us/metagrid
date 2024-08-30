@@ -37,9 +37,11 @@ it('Runs project form submit when changing projects', async () => {
       {...defaultProps}
       projectsFetched={{ results: projectsFixture() }}
       onFinish={(projName) => {
-        showNoticeStatic(`${projName} was selected!`, {
-          duration: 1,
-          type: 'success',
+        act(() => {
+          showNoticeStatic(`${projName} was selected!`, {
+            duration: 1,
+            type: 'success',
+          });
         });
       }}
     />
