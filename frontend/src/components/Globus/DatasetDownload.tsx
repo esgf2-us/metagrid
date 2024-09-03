@@ -72,6 +72,14 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   );
 
   // Persistent vars
+  dp.addNewVar(GlobusStateKeys.accessToken, null, () => {});
+  dp.addNewVar(
+    GlobusStateKeys.transferToken,
+    null,
+    () => {},
+    getGlobusTransferToken
+  );
+
   const [taskItems, setTaskItems] = useRecoilState<GlobusTaskItem[]>(
     globusTaskItems
   );
@@ -202,21 +210,12 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     return null;
   }
 
-  dp.addNewVar(GlobusStateKeys.accessToken, null, () => {});
-  dp.addNewVar(
-    GlobusStateKeys.transferToken,
-    null,
-    () => {},
-    getGlobusTransferToken
-  );
-
   async function resetTokens(): Promise<void> {
     setCurrentGoal(GlobusGoals.None);
     setLoadingPage(false);
     await saveSessionValues([
       { key: GlobusStateKeys.accessToken, value: null },
       { key: GlobusStateKeys.globusAuth, value: null },
-      { key: GlobusStateKeys.refreshToken, value: null },
       { key: GlobusStateKeys.transferToken, value: null },
     ]);
   }
@@ -418,14 +417,19 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           setCurrentGoal(GlobusGoals.None);
         },
         onOkAction: async () => {
-          setAlertPopupState({ ...alertPopupState, show: false });
-          await dp.setValue(
-            CartStateKeys.cartItemSelections,
-            globusReadyItems,
-            true
-          );
-          setCurrentGoal(GlobusGoals.DoGlobusTransfer);
-          await performStepsForGlobusGoals();
+          if (state === 'None') {
+            setAlertPopupState({ ...alertPopupState, show: false });
+            setCurrentGoal(GlobusGoals.None);
+          } else {
+            setAlertPopupState({ ...alertPopupState, show: false });
+            await dp.setValue(
+              CartStateKeys.cartItemSelections,
+              globusReadyItems,
+              true
+            );
+            setCurrentGoal(GlobusGoals.DoGlobusTransfer);
+            await performStepsForGlobusGoals();
+          }
         },
         show: true,
       };

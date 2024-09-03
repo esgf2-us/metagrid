@@ -295,7 +295,7 @@ export const parsedNodeStatusFixture = (): NodeStatusArray => [
   },
 ];
 
-export const globusRefeshTokenFixture = 'validRefreshToken';
+export const globusAccessTokenFixture = 'validAccessToken';
 export const globusTransferTokenFixture: GlobusTokenResponse = {
   access_token: '',
   refresh_expires_in: 0,
@@ -314,7 +314,7 @@ export const globusTokenResponseFixture = (): GlobusTokenResponse => {
   return {
     access_token: '',
     refresh_expires_in: 0,
-    refresh_token: globusRefeshTokenFixture,
+    refresh_token: globusAccessTokenFixture,
     scope: '',
     token_type: '',
     id_token: '',

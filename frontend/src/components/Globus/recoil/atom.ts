@@ -11,7 +11,6 @@ enum GlobusStateKeys {
   globusTransferGoalsState = 'globusTransferGoalsState',
   globusAuth = 'globusAuth',
   globusTaskItems = 'globusTaskItems',
-  refreshToken = 'globusRefreshToken',
   tokenResponse = 'tokenResponse',
   transferToken = 'globusTransferToken',
   savedGlobusEndpoints = 'savedGlobusEndpoints',

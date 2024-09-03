@@ -2,7 +2,7 @@
 
 DEBUG="${DEBUG:-false}"
 
-[ "${DEBUG}" == "true" ] && set -x
+[ "${DEBUG}" = "true" ] && set -x
 
 TMP_PATH=/tmp
 
@@ -65,7 +65,7 @@ sed -i"" "s/\"\/static\//\"\$PUBLIC_URL\/static\//g" "${TMP_PATH}/index.html"
 
 envsubst '$STATIC_URL,$PUBLIC_URL,$REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID' < "${TMP_PATH}/index.html" > "${HTML_PATH}/index.html"
 
-if [ "${DEBUG}" == "true" ]; then
+if [ "${DEBUG}" = "true" ]; then
     cat "${HTML_PATH}/index.html"
     cat "/etc/nginx/conf.d/default.conf"
 fi
