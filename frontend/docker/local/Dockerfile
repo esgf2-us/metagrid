@@ -1,5 +1,6 @@
 # Pull official base image
-FROM node@sha256:8d5c168087c841ac367468f77935aa78eff3195b48bf9eb05cbc761e6b9db507
+# FROM node@sha256:8d5c168087c841ac367468f77935aa78eff3195b48bf9eb05cbc761e6b9db507
+FROM node:slim
 
 # Set working directory
 WORKDIR /app
