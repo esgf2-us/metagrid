@@ -52,7 +52,7 @@ type AlertModalState = {
 
 const COLLECTION_SEARCH_PAGE_SIZE = 5;
 
-enum GlobusGoals {
+export enum GlobusGoals {
   None = 'none',
   DoGlobusTransfer = 'doTransfer',
   SetEndpointPath = 'setEndpoints',
@@ -550,6 +550,8 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   }
 
   function endpointUrlReady(params: URLSearchParams): boolean {
+    // console.log(params.toString());
+
     return params.has('endpoint_id');
   }
 
@@ -659,6 +661,8 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   async function performStepsForGlobusGoals(): Promise<void> {
     const goal = getCurrentGoal();
 
+    // console.log(goal);
+
     if (!varsLoaded) {
       setVarsLoaded(true);
       await dp.loadAllValues();
@@ -666,6 +670,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
     // Obtain URL params if applicable
     const urlParams = new URLSearchParams(window.location.search);
+
     const tUrlReady = tokenUrlReady(urlParams);
     const eUrlReady = endpointUrlReady(urlParams);
 
@@ -680,13 +685,13 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
     const savedEndpoints: GlobusEndpoint[] =
       dp.getValue<GlobusEndpoint[]>(GlobusStateKeys.savedGlobusEndpoints) || [];
-
     // Goal is to set the path for chosen endpoint
     if (goal === GlobusGoals.SetEndpointPath) {
       // If endpoint urls are ready, update related values
       if (eUrlReady) {
         const path = urlParams.get('path');
         const endpointId = urlParams.get('endpoint_id');
+        console.log(urlParams);
         if (path === null) {
           setCurrentGoal(GlobusGoals.None);
         }
@@ -823,7 +828,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             {
               canonical_name: '',
               contact_email: '',
-              display_name: 'Other Endpoint',
+              display_name: 'Unsaved Collection',
               entity_type: '',
               id: endpointId,
               owner_id: '',
@@ -909,7 +914,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             placeholder="Select Globus Collection"
             showSearch
             style={{ width: '450px' }}
-            value={chosenGlobusEndpoint?.id}
+            value={chosenGlobusEndpoint?.display_name}
             options={[
               {
                 key: '',
@@ -1191,7 +1196,11 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       >
         {alertPopupState.content}
       </Modal>
-      <Spin spinning={loadingPage} fullscreen />
+      <Spin
+        datatest-id="fullscreenLoadingSpinner"
+        spinning={loadingPage}
+        fullscreen
+      />
     </>
   );
 };

@@ -297,24 +297,28 @@ export const parsedNodeStatusFixture = (): NodeStatusArray => [
 
 export const globusAccessTokenFixture = 'validAccessToken';
 export const globusTransferTokenFixture: GlobusTokenResponse = {
-  access_token: '',
+  access_token: globusAccessTokenFixture,
   refresh_expires_in: 0,
-  refresh_token: 'validTransferToken',
-  scope: '',
+  refresh_token: '',
+  scope:
+    'openid profile email offline_access urn:globus:auth:scope:transfer.api.globus.org:all',
   token_type: '',
   id_token: '',
   resource_server: 'transfer.api.globus.org',
-  other_tokens: [],
-  created_on: 0,
-  expires_in: 0,
+  other_tokens: {
+    refresh_token: 'refreshToken',
+    transfer_token: 'transferToken',
+  },
+  created_on: 10000,
+  expires_in: 11000,
   error: '',
 };
 
 export const globusTokenResponseFixture = (): GlobusTokenResponse => {
   return {
-    access_token: '',
+    access_token: globusAccessTokenFixture,
     refresh_expires_in: 0,
-    refresh_token: globusAccessTokenFixture,
+    refresh_token: '',
     scope: '',
     token_type: '',
     id_token: '',
@@ -345,15 +349,9 @@ export const globusEndpointFixture = (
     owner_string:
       '51245285-9ea1-4e56-a0c4-4de744f7c39f@clients.auth.globus.org',
     subscription_id: subscriptionId || '45620f77-bc3a-4e6f-b730-3ef5babe69ad',
-    path: path || '',
+    path: path || null,
   };
 };
-
-// export type GlobusTaskItem = {
-//   taskId: string;
-//   submitDate: string;
-//   taskStatusURL: string;
-// };
 
 export const globusEnabledDatasetFixture = (): RawSearchResult[] => {
   return [
