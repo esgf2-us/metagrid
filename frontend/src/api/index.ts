@@ -739,23 +739,6 @@ export const startGlobusTransfer = async (
     });
 };
 
-export const getGlobusEndpoints = async (
-  endpointId: string
-): Promise<GlobusEndpointSearchResults> => {
-  return axios
-    .get(apiRoutes.globusGetEndpoint.path, {
-      params: { endpoint_id: endpointId },
-    })
-    .then((resp) => {
-      return resp;
-    })
-    .catch((error: ResponseError) => {
-      throw new Error(
-        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusGetEndpoint)
-      );
-    });
-};
-
 export const startSearchGlobusEndpoints = async (
   searchText: string
 ): Promise<GlobusEndpointSearchResults> => {

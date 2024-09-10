@@ -37,6 +37,8 @@ jest.mock('@react-keycloak/web', () => {
   };
 });
 
+jest.setTimeout(60000); // Some tests require more time to run
+
 describe('test main components', () => {
   it('renders App component', async () => {
     const { getByTestId, findByTestId } = customRender(

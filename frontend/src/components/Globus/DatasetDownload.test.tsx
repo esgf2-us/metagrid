@@ -541,8 +541,6 @@ describe('DatasetDownload form tests', () => {
     expect(transferToken).toEqual(globusTransferTokenFixture);
 
     tempStorageSetMock('pkce-pass', undefined);
-
-    printElementContents(undefined);
   });
 
   it('Collects the endpoint path for globus transfer', async () => {
@@ -615,6 +613,101 @@ describe('DatasetDownload form tests', () => {
     expect(
       dp.getValue<GlobusEndpoint>(GlobusStateKeys.userChosenEndpoint)?.path
     ).toEqual(testEndpointPath);
+  });
+
+  it('Performs endpoint search and selects and saves the endpoint.', async () => {
+    await initializeComponentForTest({
+      ...defaultTestConfig,
+      savedEndpoints: [],
+      chosenEndpoint: null,
+    });
+
+    // Open download dropdown
+    const collectionDropdown = await screen.findByTestId(
+      'searchCollectionInput'
+    );
+    const selectEndpoint = await within(collectionDropdown).findByRole(
+      'combobox'
+    );
+    await openDropdownList(user, selectEndpoint);
+
+    // Select manage collections
+    const manageEndpointsBtn = await screen.findByText('Manage Collections');
+    expect(manageEndpointsBtn).toBeTruthy();
+    await act(async () => {
+      await user.click(manageEndpointsBtn);
+    });
+
+    const manageCollectionsForm = await screen.findByTestId(
+      'manageCollectionsForm'
+    );
+    expect(manageCollectionsForm).toBeTruthy();
+
+    // Type in endpoint search text
+    const endpointSearchInput = await waitFor(
+      async () =>
+        await screen.findByPlaceholderText('Search for a Globus Collection')
+    );
+    expect(endpointSearchInput).toBeTruthy();
+    await act(async () => {
+      await user.type(endpointSearchInput, 'lc public{enter}');
+    });
+
+    // Add endpoint from search results
+    const searchResults = await screen.findByTestId(
+      'globusEndpointSearchResults'
+    );
+    expect(searchResults).toBeTruthy();
+    const addBtn = await within(searchResults).findByText('Add');
+    await act(async () => {
+      await user.click(addBtn);
+    });
+
+    // The endpoint add button should now show 'Added'
+    const addedBtn = await within(searchResults).findByText('Added');
+    expect(addedBtn).toBeTruthy();
+
+    // click collapsible to view My Saved Collections
+    const mySavedCollections = await screen.findByText(
+      'My Saved Globus Collections'
+    );
+    expect(mySavedCollections).toBeTruthy();
+    await act(async () => {
+      await user.click(mySavedCollections);
+    });
+
+    // Endpoint should now be found within saved globus endpoints table
+    const savedEndpoints = await screen.findByTestId('savedGlobusEndpoints');
+    expect(savedEndpoints).toBeTruthy();
+    const endpoint = await within(savedEndpoints).findByText('LC Public');
+    expect(endpoint).toBeTruthy();
+
+    // Save changes to close form
+    const saveBtn = await within(manageCollectionsForm).findByText('Save');
+    await act(async () => {
+      await user.click(saveBtn);
+    });
+
+    // Current user chosen endpoint should be undefined
+    expect(
+      dp.getValue<GlobusEndpoint>(GlobusStateKeys.userChosenEndpoint)
+    ).toBeUndefined();
+
+    // Open endpoint dropdown and select the endpoint
+    await openDropdownList(user, selectEndpoint);
+
+    // Select LC Public endpoint
+    const lcPublicOption = (await screen.findAllByText('LC Public'))[0];
+    expect(lcPublicOption).toBeTruthy();
+    await act(async () => {
+      await user.click(lcPublicOption);
+    });
+
+    // The user chose endpoint should now be LC Public
+    expect(
+      dp.getValue<GlobusEndpoint>(GlobusStateKeys.userChosenEndpoint)
+        ?.display_name
+    ).toEqual('LC Public');
   });
 
   xit('If endpoint URL is available, process it and continue to Transfer process', async () => {

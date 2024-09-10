@@ -33,7 +33,6 @@ export type ApiRoute = {
 type ApiRoutes = {
   globusAuth: ApiRoute;
   keycloakAuth: ApiRoute;
-  globusGetEndpoint: ApiRoute;
   globusSearchEndpoints: ApiRoute;
   globusTransfer: ApiRoute;
   userInfo: ApiRoute;
@@ -64,10 +63,10 @@ const apiRoutes: ApiRoutes = {
     path: `${metagridApiURL}/proxy/globus-auth/`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Globus', HTTPCode),
   },
-  globusGetEndpoint: {
-    path: `${metagridApiURL}/proxy/globus-get-endpoint/`,
-    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Globus', HTTPCode),
-  },
+  // globusGetEndpoint: {
+  //   path: `${metagridApiURL}/proxy/globus-get-endpoint/`,
+  //   handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Globus', HTTPCode),
+  // },
   globusSearchEndpoints: {
     path: `${metagridApiURL}/proxy/globus-search-endpoints/`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Globus', HTTPCode),

@@ -8,6 +8,7 @@ import { rest } from 'msw';
 import apiRoutes from '../../api/routes';
 import {
   ESGFSearchAPIFixture,
+  globusEndpointFixture,
   globusTransferResponseFixture,
   projectsFixture,
   rawCitationFixture,
@@ -27,6 +28,55 @@ const handlers = [
   rest.get(apiRoutes.globusAuth.path, (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(userAuthFixture()))
   ),
+  rest.get(apiRoutes.globusSearchEndpoints.path, (_req, res, ctx) => {
+    // For testing multiple search results
+    const data = new URLSearchParams(_req.url.search);
+
+    const searchText = data.get('search_text')?.toLowerCase();
+
+    // Depending on search text, give back results
+    switch (searchText) {
+      case null:
+        return res(ctx.status(200), ctx.json([]));
+      case 'lc public':
+        return res(ctx.status(200), ctx.json([globusEndpointFixture()]));
+      case 'multiple endpoints':
+        return res(
+          ctx.status(200),
+          ctx.json([
+            globusEndpointFixture(
+              'endpoint1',
+              'Endpoint 1',
+              'GCSv5_mapped_collection',
+              'id1234567',
+              'ownerId123',
+              'subscriptId123'
+            ),
+            globusEndpointFixture(
+              'endpoint2',
+              'Endpoint 2',
+              'GCSv5_endpoint',
+              'id2345678',
+              'ownerId234',
+              'subscriptId234',
+              'path2'
+            ),
+            globusEndpointFixture(
+              'endpoint3',
+              'Endpoint 3',
+              'unknown',
+              'id1234567',
+              'ownerId123',
+              ''
+            ),
+          ])
+        );
+      case 'error404':
+        return res(ctx.status(404), ctx.json({ error: 'search error.' }));
+      default:
+        return res(ctx.status(200), ctx.json([]));
+    }
+  }),
   rest.post(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(globusTransferResponseFixture()))
   ),

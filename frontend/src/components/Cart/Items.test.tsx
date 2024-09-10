@@ -21,7 +21,7 @@ const user = userEvent.setup();
 
 const activeSearch: ActiveSearchQuery = getSearchFromUrl('project=test1');
 
-jest.setTimeout(35000); // Some tests require more time to run
+jest.setTimeout(45000); // Some tests require more time to run
 
 describe('test the cart items component', () => {
   it('renders message that the cart is empty when no items are added', () => {

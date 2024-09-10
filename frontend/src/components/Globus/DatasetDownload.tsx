@@ -229,13 +229,19 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     return [transferToken, accessToken];
   }
 
-  const handleWgetDownload = (): void => {
+  const handleWgetDownload = async (): Promise<void> => {
     /* istanbul ignore else */
     if (itemSelections !== null) {
-      itemSelections.filter((item) => {
+      const cleanedSelections = itemSelections.filter((item) => {
         return item !== undefined && item !== null;
       });
-      const ids = itemSelections.map((item) => item.id);
+      await dp.setValue(
+        CartStateKeys.cartItemSelections,
+        cleanedSelections,
+        true
+      );
+
+      const ids = cleanedSelections.map((item) => item.id);
       showNotice(
         messageApi,
         'The wget script is generating, please wait momentarily.',
@@ -550,8 +556,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   }
 
   function endpointUrlReady(params: URLSearchParams): boolean {
-    // console.log(params.toString());
-
     return params.has('endpoint_id');
   }
 
@@ -661,8 +665,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   async function performStepsForGlobusGoals(): Promise<void> {
     const goal = getCurrentGoal();
 
-    // console.log(goal);
-
     if (!varsLoaded) {
       setVarsLoaded(true);
       await dp.loadAllValues();
@@ -670,7 +672,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
     // Obtain URL params if applicable
     const urlParams = new URLSearchParams(window.location.search);
-
     const tUrlReady = tokenUrlReady(urlParams);
     const eUrlReady = endpointUrlReady(urlParams);
 
@@ -691,7 +692,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       if (eUrlReady) {
         const path = urlParams.get('path');
         const endpointId = urlParams.get('endpoint_id');
-        console.log(urlParams);
         if (path === null) {
           setCurrentGoal(GlobusGoals.None);
         }
@@ -989,6 +989,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         </Button>
       </Space>
       <Modal
+        data-testid="manageCollectionsForm"
         title="Manage My Collections"
         open={endpointSearchOpen}
         okText="Save"
@@ -1036,6 +1037,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
               label: 'Globus Collection Search Results',
               children: (
                 <Table
+                  data-testid="globusEndpointSearchResults"
                   loading={loadingEndpointSearchResults}
                   size="small"
                   pagination={
@@ -1103,6 +1105,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
               label: 'My Saved Globus Collections',
               children: (
                 <Table
+                  data-testid="savedGlobusEndpoints"
                   size="small"
                   pagination={
                     savedGlobusEndpoints.length > COLLECTION_SEARCH_PAGE_SIZE
