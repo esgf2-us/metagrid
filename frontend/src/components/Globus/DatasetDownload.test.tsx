@@ -7,10 +7,11 @@ import { getSearchFromUrl } from '../../common/utils';
 import { ActiveSearchQuery, RawSearchResults } from '../Search/types';
 import {
   getRowName,
+  globusReadyNode,
+  makeCartItem,
   mockConfig,
   mockFunction,
   openDropdownList,
-  printElementContents,
   tempStorageGetMock,
   tempStorageSetMock,
 } from '../../test/jestTestFunctions';
@@ -22,7 +23,6 @@ import {
   globusEndpointFixture,
   globusAccessTokenFixture,
   globusTransferTokenFixture,
-  rawSearchResultFixture,
   userCartFixture,
 } from '../../test/mock/fixtures';
 import apiRoutes from '../../api/routes';
@@ -67,18 +67,6 @@ const dp = DataPersister.Instance;
 
 const testEndpointPath = 'testPathValid';
 const testEndpointId = 'endpoint1';
-const globusReadyNode = 'nodeIsGlobusReady';
-const nodeNotGlobusReady = 'nodeIsNotGlobusReady';
-
-function makeCartItem(id: string, globusReady: boolean) {
-  return rawSearchResultFixture({
-    id,
-    title: id,
-    master_id: id,
-    number_of_files: 3,
-    data_node: globusReady ? globusReadyNode : nodeNotGlobusReady,
-  });
-}
 
 beforeEach(() => {
   // Ensure persistent storage is clear before each test

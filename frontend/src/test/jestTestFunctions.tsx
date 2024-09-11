@@ -5,18 +5,14 @@
  * in order to mock their behaviors.
  *
  */
-import {
-  waitFor,
-  within,
-  screen,
-  RenderResult,
-  act,
-} from '@testing-library/react';
+import { waitFor, within, screen, act } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event/dist/types/setup/setup';
 import { message } from 'antd';
 import { ReactNode, CSSProperties } from 'react';
 import * as enviroConfig from '../env';
 import { NotificationType, getSearchFromUrl } from '../common/utils';
+import { RawSearchResult } from '../components/Search/types';
+import { rawSearchResultFixture } from './mock/fixtures';
 
 // For mocking environment variables
 export type MockConfig = {
@@ -147,6 +143,22 @@ export async function showNoticeStatic(
   }
 }
 
+export const globusReadyNode = 'nodeIsGlobusReady';
+export const nodeNotGlobusReady = 'nodeIsNotGlobusReady';
+
+export function makeCartItem(
+  id: string,
+  globusReady: boolean
+): RawSearchResult {
+  return rawSearchResultFixture({
+    id,
+    title: id,
+    master_id: id,
+    number_of_files: 3,
+    data_node: globusReady ? globusReadyNode : nodeNotGlobusReady,
+  });
+}
+
 /**
  * Creates the appropriate name string when performing getByRole('row')
  */
@@ -175,19 +187,20 @@ export function getRowName(
 }
 
 export async function submitKeywordSearch(
-  renderedApp: RenderResult,
   inputText: string,
   user: UserEvent
 ): Promise<void> {
-  const { getByTestId, getByPlaceholderText } = renderedApp;
+  // const { getByTestId, getByPlaceholderText } = renderedApp;
 
   // Check left menu rendered
-  const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
+  const leftMenuComponent = await waitFor(() =>
+    screen.findByTestId('left-menu')
+  );
   expect(leftMenuComponent).toBeTruthy();
 
   // Type in value for free-text input
   const freeTextForm = await waitFor(() =>
-    getByPlaceholderText('Search for a keyword')
+    screen.findByPlaceholderText('Search for a keyword')
   );
   expect(freeTextForm).toBeTruthy();
 
@@ -196,7 +209,7 @@ export async function submitKeywordSearch(
   });
 
   // Submit the form
-  const submitBtn = within(leftMenuComponent).getByRole('img', {
+  const submitBtn = await within(leftMenuComponent).findByRole('img', {
     name: 'search',
   });
 
@@ -204,7 +217,7 @@ export async function submitKeywordSearch(
     await user.click(submitBtn);
   });
 
-  await waitFor(() => getByTestId('search'));
+  await waitFor(() => screen.findByTestId('search'));
 }
 
 export async function openDropdownList(
@@ -229,8 +242,6 @@ export async function selectDropdownOption(
       dropdown.focus();
       await act(async () => {
         await user.keyboard('[ArrowDown]');
-      });
-      await act(async () => {
         await user.click(screen.getByText(option));
       });
     },
