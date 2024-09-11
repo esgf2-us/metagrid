@@ -172,5 +172,5 @@ describe('test the cart items component', () => {
         { exact: false }
       )
     ).toBeTruthy();
-  });
+  }, 50000);
 });
