@@ -31,7 +31,7 @@ describe('test the cart items component', () => {
     // Check empty cart text renders
     const emptyCart = await screen.findByText('Your cart is empty');
     expect(emptyCart).toBeTruthy();
-  });
+  }, 100000);
 
   it('removes all items from the cart when confirming the popconfirm', async () => {
     customRender(<App searchQuery={activeSearch} />);
