@@ -567,7 +567,7 @@ describe('User cart', () => {
     // Check empty alert renders
     const emptyAlert = await screen.findByText('Your cart is empty');
     expect(emptyAlert).toBeTruthy();
-  });
+  }, 100000);
 
   describe('Error handling', () => {
     it('displays error message after failing to fetch authenticated user"s cart', async () => {

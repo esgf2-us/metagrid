@@ -1,10 +1,4 @@
-import {
-  act,
-  fireEvent,
-  screen,
-  waitFor,
-  within,
-} from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import {
@@ -14,7 +8,6 @@ import {
 } from '../../test/mock/fixtures';
 import FacetsForm, { humanizeFacetNames, Props } from './FacetsForm';
 import customRender from '../../test/custom-render';
-import { printElementContents } from '../../test/jestTestFunctions';
 
 const user = userEvent.setup();
 
