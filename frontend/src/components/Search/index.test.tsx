@@ -1,4 +1,4 @@
-import { act, waitFor, within } from '@testing-library/react';
+import { act, within, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import {
@@ -46,14 +46,14 @@ afterEach(() => {
 
 describe('test Search component', () => {
   it('renders component', async () => {
-    const { getByTestId } = customRender(<Search {...defaultProps} />);
+    customRender(<Search {...defaultProps} />);
 
     // Check search component renders
-    const searchComponent = await waitFor(() => getByTestId('search'));
+    const searchComponent = await screen.findByTestId('search');
     expect(searchComponent).toBeTruthy();
 
     // Check search table renders
-    const searchTable = await waitFor(() => getByTestId('search-table'));
+    const searchTable = await screen.findByTestId('search-table');
     expect(searchTable).toBeTruthy();
   });
 
@@ -65,49 +65,41 @@ describe('test Search component', () => {
       )
     );
 
-    const { getByTestId } = customRender(<Search {...defaultProps} />);
+    customRender(<Search {...defaultProps} />);
 
     // Check if Alert component renders
-    const alert = await waitFor(() => getByTestId('alert-fetching'));
+    const alert = await screen.findByTestId('alert-fetching');
     expect(alert).toBeTruthy();
   });
 
   it('runs the side effect to set the current url when there is an activeProject object with a facetsUrl key', async () => {
-    const { getByRole, getByTestId } = customRender(
-      <Search {...defaultProps} />
-    );
+    customRender(<Search {...defaultProps} />);
 
     // Check search component renders
-    const searchComponent = await waitFor(() => getByTestId('search'));
+    const searchComponent = await screen.findByTestId('search');
     expect(searchComponent).toBeTruthy();
 
     // Check if the 'Open as Json' button renders
-    const jsonBtn = await waitFor(() => getByRole('img', { name: 'export' }));
+    const jsonBtn = await screen.findByRole('img', { name: 'export' });
     expect(jsonBtn).toBeTruthy();
   });
 
   it('renders query string', async () => {
-    const { getByRole, getByTestId, getByText } = customRender(
-      <Search {...defaultProps} />
-    );
+    customRender(<Search {...defaultProps} />);
 
     // Check search component renders
-    const searchComponent = await waitFor(() => getByTestId('search'));
+    const searchComponent = await screen.findByTestId('search');
     expect(searchComponent).toBeTruthy();
 
     // Check renders results string
-    const strResults = await waitFor(() =>
-      getByRole('heading', {
-        name: '3 results found for test1',
-      })
-    );
+    const strResults = await screen.findByRole('heading', {
+      name: '3 results found for test1',
+    });
     expect(strResults).toBeTruthy();
 
     // Check renders query string
-    const queryString = await waitFor(() =>
-      getByText(
-        'latest = true AND min_version = 20200101 AND max_version = 20201231 AND (Text Input = foo) AND (foo = option1 OR option2) AND (baz = option1)'
-      )
+    const queryString = await screen.findByText(
+      'latest = true AND min_version = 20200101 AND max_version = 20201231 AND (Text Input = foo) AND (foo = option1 OR option2) AND (baz = option1)'
     );
     expect(queryString).toBeTruthy();
   });
@@ -123,26 +115,24 @@ describe('test Search component', () => {
       textInputs: [],
     };
 
-    const { getByText } = customRender(
+    customRender(
       <Search {...defaultProps} activeSearchQuery={emptySearchQuery} />
     );
 
     // Check renders query string
-    const queryString = await waitFor(() => getByText('No filters applied'));
+    const queryString = await screen.findByText('No filters applied');
     expect(queryString).toBeTruthy();
   });
 
   it('clears all tags when selecting the "Clear All" tag', async () => {
-    const { getByText, getByTestId } = customRender(
-      <Search {...defaultProps} />
-    );
+    customRender(<Search {...defaultProps} />);
 
     // Check search component renders
-    const searchComponent = await waitFor(() => getByTestId('search'));
+    const searchComponent = await screen.findByTestId('search');
     expect(searchComponent).toBeTruthy();
 
     // Check if 'Clear All' button exists, then click it
-    const clearAllBtn = await waitFor(() => getByText('Clear All'));
+    const clearAllBtn = await screen.findByText('Clear All');
     expect(clearAllBtn).toBeTruthy();
 
     await act(async () => {
@@ -150,7 +140,7 @@ describe('test Search component', () => {
     });
 
     // Wait for search component to re-render
-    await waitFor(() => getByTestId('search'));
+    await screen.findByTestId('search');
   });
 
   it('handles pagination and page size changes', async () => {
@@ -174,24 +164,22 @@ describe('test Search component', () => {
       )
     );
 
-    const { getByRole, getByTestId } = customRender(
-      <Search {...defaultProps} />
-    );
+    customRender(<Search {...defaultProps} />);
 
     // Check search component renders
-    const searchComponent = await waitFor(() => getByTestId('search'));
+    const searchComponent = await screen.findByTestId('search');
     expect(searchComponent).toBeTruthy();
 
     // Wait for search to re-render
-    await waitFor(() => getByTestId('search-table'));
+    await screen.findByTestId('search-table');
 
     // Select the combobox drop down and update its value to render options
-    const paginationList = await waitFor(() => getByRole('list'));
+    const paginationList = await screen.findByRole('list');
     expect(paginationList).toBeTruthy();
 
     // Select the combobox drop down, update its value, then click it
-    const pageSizeComboBox = await waitFor(() =>
-      within(paginationList).getByRole('combobox')
+    const pageSizeComboBox = await within(paginationList).findByRole(
+      'combobox'
     );
     expect(pageSizeComboBox).toBeTruthy();
 
@@ -202,47 +190,42 @@ describe('test Search component', () => {
     await selectDropdownOption(user, pageSizeComboBox, '10 / page');
 
     // Select the 'Next Page' button (only enabled if there are > 10 results)
-    const nextPage = await waitFor(() =>
-      getByRole('listitem', { name: 'Next Page' })
-    );
+    const nextPage = await screen.findByRole('listitem', { name: 'Next Page' });
+    const nextPageBtn = await within(nextPage).findByRole('button');
 
     await act(async () => {
-      await user.click(nextPage);
+      await user.click(nextPageBtn);
     });
 
     // Wait for search table to re-render
-    await waitFor(() => getByTestId('search-table'));
+    await screen.findByTestId('search-table');
   });
 
   it('handles selecting a row"s checkbox in the table and adding to the cart', async () => {
-    const { getByRole, getByTestId } = customRender(
-      <Search {...defaultProps} />
-    );
+    customRender(<Search {...defaultProps} />);
 
     // Check search component renders
-    const searchComponent = await waitFor(() => getByTestId('search'));
+    const searchComponent = await screen.findByTestId('search');
     expect(searchComponent).toBeTruthy();
 
     // Wait for search to re-render from side-effect
-    await waitFor(() => getByTestId('search-table'));
+    await screen.findByTestId('search-table');
 
     // Check the 'Add Selected to Cart' button is disabled
-    const addCartBtn = (await waitFor(() =>
-      getByRole('button', {
-        name: 'shopping-cart Add Selected to Cart',
-      })
-    )) as HTMLButtonElement;
+    const addCartBtn: HTMLButtonElement = await screen.findByRole('button', {
+      name: 'shopping-cart Add Selected to Cart',
+    });
     expect(addCartBtn).toBeTruthy();
     expect(addCartBtn.disabled).toBeTruthy();
 
     // Select the first row
-    const firstRow = getByRole('row', {
+    const firstRow = await screen.findByRole('row', {
       name: getRowName('plus', 'question', 'foo', '3', '1', '1'),
     });
     expect(firstRow).toBeTruthy();
 
     // Select the first row's checkbox
-    const firstCheckBox = within(firstRow).getByRole('checkbox');
+    const firstCheckBox = await within(firstRow).findByRole('checkbox');
     expect(firstCheckBox).toBeTruthy();
 
     await act(async () => {
@@ -257,63 +240,53 @@ describe('test Search component', () => {
     });
 
     // Wait for search component to re-render
-    await waitFor(() => getByTestId('search'));
+    await screen.findByTestId('search');
   });
 
   it('disables the "Add Selected to Cart" button when no items are in the cart', async () => {
-    const { getByRole, getByTestId } = customRender(
-      <Search {...defaultProps} />
-    );
+    customRender(<Search {...defaultProps} />);
 
     // Check search component renders
-    const searchComponent = await waitFor(() => getByTestId('search'));
+    const searchComponent = await screen.findByTestId('search');
     expect(searchComponent).toBeTruthy();
 
     // Wait for search to re-render
-    await waitFor(() => getByTestId('search-table'));
+    await screen.findByTestId('search-table');
 
     // Check the 'Add Selected to Cart' button is disabled
-    const addCartBtn = (await waitFor(() =>
-      getByRole('button', {
-        name: 'shopping-cart Add Selected to Cart',
-      })
-    )) as HTMLButtonElement;
+    const addCartBtn: HTMLButtonElement = await screen.findByRole('button', {
+      name: 'shopping-cart Add Selected to Cart',
+    });
     expect(addCartBtn).toBeTruthy();
     expect(addCartBtn.disabled).toBeTruthy();
   });
 
   it('disables the "Add Selected to Cart" button when all rows are already in the cart', async () => {
     // Render the component with userCart full
-    const { getByRole } = customRender(
-      <Search {...defaultProps} userCart={userCartFixture()} />
-    );
+    customRender(<Search {...defaultProps} userCart={userCartFixture()} />);
 
     // Check the 'Add Selected to Cart' button is disabled
-    const addCartBtn = (await waitFor(() =>
-      getByRole('button', {
-        name: 'shopping-cart Add Selected to Cart',
-      })
-    )) as HTMLButtonElement;
+    const addCartBtn: HTMLButtonElement = await screen.findByRole('button', {
+      name: 'shopping-cart Add Selected to Cart',
+    });
 
     expect(addCartBtn.disabled).toBeTruthy();
   });
 
   it('handles saving a search query', async () => {
-    const { getByRole, getByTestId } = customRender(
-      <Search {...defaultProps} />
-    );
+    customRender(<Search {...defaultProps} />);
 
     // Check search component renders
-    const searchComponent = await waitFor(() => getByTestId('search'));
+    const searchComponent = await screen.findByTestId('search');
     expect(searchComponent).toBeTruthy();
 
     // Wait for search table to render
-    await waitFor(() => getByTestId('search-table'));
+    await screen.findByTestId('search-table');
 
     // Click on save button
-    const saveBtn = await waitFor(() =>
-      getByRole('button', { name: 'book Save Search' })
-    );
+    const saveBtn = await screen.findByRole('button', {
+      name: 'book Save Search',
+    });
     expect(saveBtn).toBeTruthy();
 
     await act(async () => {
@@ -321,25 +294,23 @@ describe('test Search component', () => {
     });
 
     // Wait for search component to re-render
-    await waitFor(() => getByTestId('search'));
+    await screen.findByTestId('search');
   });
 
   it('handles copying search query to clipboard', async () => {
-    const { getByRole, getByTestId } = customRender(
-      <Search {...defaultProps} />
-    );
+    customRender(<Search {...defaultProps} />);
 
     // Check search component renders
-    const searchComponent = await waitFor(() => getByTestId('search'));
+    const searchComponent = await screen.findByTestId('search');
     expect(searchComponent).toBeTruthy();
 
     // Wait for search table to render
-    await waitFor(() => getByTestId('search-table'));
+    await screen.findByTestId('search-table');
 
     // Click on cop button
-    const copyBtn = await waitFor(() =>
-      getByRole('button', { name: 'share-alt Copy Search' })
-    );
+    const copyBtn = await screen.findByRole('button', {
+      name: 'share-alt Copy Search',
+    });
     expect(copyBtn).toBeTruthy();
 
     await act(async () => {
@@ -347,7 +318,7 @@ describe('test Search component', () => {
     });
 
     // Wait for search component to re-render
-    await waitFor(() => getByTestId('search'));
+    await screen.findByTestId('search');
   });
 });
 

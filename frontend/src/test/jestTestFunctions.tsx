@@ -5,7 +5,7 @@
  * in order to mock their behaviors.
  *
  */
-import { waitFor, within, screen, act } from '@testing-library/react';
+import { within, screen, act } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event/dist/types/setup/setup';
 import { message } from 'antd';
 import { ReactNode, CSSProperties } from 'react';
@@ -190,17 +190,13 @@ export async function submitKeywordSearch(
   inputText: string,
   user: UserEvent
 ): Promise<void> {
-  // const { getByTestId, getByPlaceholderText } = renderedApp;
-
   // Check left menu rendered
-  const leftMenuComponent = await waitFor(() =>
-    screen.findByTestId('left-menu')
-  );
+  const leftMenuComponent = await screen.findByTestId('left-menu');
   expect(leftMenuComponent).toBeTruthy();
 
   // Type in value for free-text input
-  const freeTextForm = await waitFor(() =>
-    screen.findByPlaceholderText('Search for a keyword')
+  const freeTextForm = await screen.findByPlaceholderText(
+    'Search for a keyword'
   );
   expect(freeTextForm).toBeTruthy();
 
@@ -217,18 +213,16 @@ export async function submitKeywordSearch(
     await user.click(submitBtn);
   });
 
-  await waitFor(() => screen.findByTestId('search'));
+  await screen.findByTestId('search');
 }
 
 export async function openDropdownList(
   user: UserEvent,
   dropdown: HTMLElement
 ): Promise<void> {
-  await waitFor(async () => {
-    dropdown.focus();
-    await act(async () => {
-      await user.keyboard('[ArrowDown]');
-    });
+  dropdown.focus();
+  await act(async () => {
+    await user.keyboard('[ArrowDown]');
   });
 }
 
@@ -237,16 +231,17 @@ export async function selectDropdownOption(
   dropdown: HTMLElement,
   option: string
 ): Promise<void> {
-  await waitFor(
-    async () => {
-      dropdown.focus();
-      await act(async () => {
-        await user.keyboard('[ArrowDown]');
-        await user.click(screen.getByText(option));
-      });
-    },
-    { timeout: 3000 }
-  );
+  act(() => {
+    dropdown.focus();
+  });
+
+  await act(async () => {
+    await user.keyboard('[ArrowDown]');
+  });
+  await act(async () => {
+    const opt = await screen.findByText(option);
+    await user.click(opt);
+  });
 }
 
 export async function addSearchRowsAndGoToCart(
@@ -281,10 +276,8 @@ export async function addSearchRowsAndGoToCart(
   await Promise.all(clickBtns);
 
   // Check 'Added items(s) to the cart' message appears
-  const addText = waitFor(async () => {
-    await screen.findAllByText('Added item(s) to your cart', {
-      exact: false,
-    });
+  const addText = await screen.findAllByText('Added item(s) to your cart', {
+    exact: false,
   });
   expect(addText).toBeTruthy();
 
@@ -295,6 +288,6 @@ export async function addSearchRowsAndGoToCart(
   });
 
   // Wait for cart page to render
-  const summary = await waitFor(() => screen.findByTestId('summary'));
+  const summary = await screen.findByTestId('summary');
   expect(summary).toBeTruthy();
 }

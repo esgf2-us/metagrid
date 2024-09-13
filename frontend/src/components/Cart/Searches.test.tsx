@@ -1,4 +1,5 @@
 import React from 'react';
+import { screen } from '@testing-library/react';
 import { userSearchQueriesFixture } from '../../test/mock/fixtures';
 import Searches, { Props } from './Searches';
 import customRender from '../../test/custom-render';
@@ -14,10 +15,8 @@ const defaultProps: Props = {
 };
 
 it('renders component with empty savedSearches', async () => {
-  const { findByText } = customRender(
-    <Searches {...defaultProps} userSearchQueries={[]} />
-  );
+  customRender(<Searches {...defaultProps} userSearchQueries={[]} />);
 
-  const emptyText = await findByText('Your search library is empty');
+  const emptyText = await screen.findByText('Your search library is empty');
   expect(emptyText).toBeTruthy();
 });

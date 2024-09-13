@@ -5,13 +5,7 @@
  * in order to mock their behaviors.
  *
  */
-import {
-  act,
-  fireEvent,
-  waitFor,
-  within,
-  screen,
-} from '@testing-library/react';
+import { act, fireEvent, within, screen } from '@testing-library/react';
 import React from 'react';
 import userEvent from '@testing-library/user-event';
 import { rest, server } from '../../test/mock/server';
@@ -47,10 +41,6 @@ jest.setTimeout(60000); // Some tests require more time to run
 
 describe('test main components', () => {
   it('renders App component', async () => {
-    // const { getByTestId, findByTestId } = customRender(
-    //   <App searchQuery={activeSearch} />
-    // );
-
     customRender(<App searchQuery={activeSearch} />);
 
     // Check applicable components render
@@ -67,11 +57,9 @@ describe('test main components', () => {
     );
 
     // Check applicable components render
-    const navComponent = await waitFor(() => screen.findByTestId('nav-bar'));
+    const navComponent = await screen.findByTestId('nav-bar');
     expect(navComponent).toBeTruthy();
-    const facetsComponent = await waitFor(() =>
-      screen.findByTestId('search-facets')
-    );
+    const facetsComponent = await screen.findByTestId('search-facets');
     expect(facetsComponent).toBeTruthy();
     expect(await screen.findByTestId('search')).toBeTruthy();
   });
@@ -80,18 +68,15 @@ describe('test main components', () => {
     customRender(<App searchQuery={getSearchFromUrl('?project=CMIP5')} />);
 
     // Check applicable components render
-    const navComponent = await waitFor(() => screen.findByTestId('nav-bar'));
+    const navComponent = await screen.findByTestId('nav-bar');
     expect(navComponent).toBeTruthy();
-    const facetsComponent = await waitFor(() =>
-      screen.findByTestId('search-facets')
-    );
+    const facetsComponent = await screen.findByTestId('search-facets');
     expect(facetsComponent).toBeTruthy();
     expect(await screen.findByTestId('search')).toBeTruthy();
   });
 
   it('shows duplicate error when search keyword is typed in twice', async () => {
     customRender(<App searchQuery={activeSearch} />);
-    // const { getByText } = renderedApp;
 
     const input = 'foo';
     await submitKeywordSearch(input, user);
@@ -100,27 +85,24 @@ describe('test main components', () => {
     await submitKeywordSearch(input, user);
 
     // Check error message appears that input has already been applied
-    const errorMsg = await waitFor(() =>
-      screen.findByText(`Input "${input}" has already been applied`)
+    const errorMsg = await screen.findByText(
+      `Input "${input}" has already been applied`
     );
     expect(errorMsg).toBeTruthy();
   });
 
   it('handles setting filename searches and duplicates', async () => {
     customRender(<App searchQuery={activeSearch} />);
-    // const { getByTestId, getByText } = renderedApp;
 
     // Check applicable components render
-    const leftSearchColumn = await waitFor(() =>
-      screen.findByTestId('search-facets')
-    );
+    const leftSearchColumn = await screen.findByTestId('search-facets');
     expect(leftSearchColumn).toBeTruthy();
 
     // Wait for components to rerender
-    await waitFor(() => screen.findByTestId('search'));
-    await waitFor(() => screen.getByTestId('facets-form'));
+    await screen.findByTestId('search');
+    await screen.findByTestId('facets-form');
 
-    const facetsForm = await waitFor(() => screen.findByTestId('facets-form'));
+    const facetsForm = await screen.findByTestId('facets-form');
     expect(facetsForm).toBeTruthy();
 
     // Check error message appears that input has already been applied
@@ -154,7 +136,7 @@ describe('test main components', () => {
     });
 
     // Wait for components to rerender
-    await waitFor(() => screen.findByTestId('search'));
+    await screen.findByTestId('search');
 
     await act(async () => {
       await user.type(inputField, input);
@@ -164,11 +146,11 @@ describe('test main components', () => {
     });
 
     // Wait for components to rerender
-    await waitFor(() => screen.findByTestId('search'));
+    await screen.findByTestId('search');
 
     // Check error message appears that input has already been applied
-    const errorMsg = await waitFor(() =>
-      screen.findByText(`Input "${input}" has already been applied`)
+    const errorMsg = await screen.findByText(
+      `Input "${input}" has already been applied`
     );
     expect(errorMsg).toBeTruthy();
   });
@@ -176,17 +158,15 @@ describe('test main components', () => {
   it('handles setting and removing text input filters and clearing all search filters', async () => {
     customRender(<App searchQuery={activeSearch} />);
 
-    // const { getByTestId, getByText } = renderedApp;
-
     // Change value for free-text input
     await submitKeywordSearch('foo', user);
 
     // Check tag renders
-    const tag = await waitFor(() => screen.findByTestId('foo'));
+    const tag = await screen.findByTestId('foo');
     expect(tag).toBeTruthy();
 
     // Click on the ClearAllTag
-    const clearAllTag = await waitFor(() => screen.findByText('Clear All'));
+    const clearAllTag = await screen.findByText('Clear All');
     expect(clearAllTag).toBeTruthy();
 
     await act(async () => {
@@ -197,10 +177,10 @@ describe('test main components', () => {
     await submitKeywordSearch('baz', user);
 
     // Wait for components to rerender
-    await waitFor(() => screen.findByTestId('search'));
+    await screen.findByTestId('search');
 
     // Check baz tag exists
-    const bazTag = await waitFor(() => screen.findByTestId('baz'));
+    const bazTag = await screen.findByTestId('baz');
     expect(bazTag).toBeTruthy();
 
     // Close the baz tag
@@ -209,14 +189,14 @@ describe('test main components', () => {
     });
 
     // Wait for components to rerender
-    await waitFor(() => screen.findByTestId('search'));
+    await screen.findByTestId('search');
   });
 
   it('handles applying general facets', async () => {
     customRender(<App searchQuery={activeSearch} />);
 
     // Wait for facets forms to rerender
-    const facetsForm = await waitFor(() => screen.findByTestId('facets-form'));
+    const facetsForm = await screen.findByTestId('facets-form');
     expect(facetsForm).toBeTruthy();
 
     // Open additional properties collapse panel
@@ -238,30 +218,26 @@ describe('test main components', () => {
     fireEvent.mouseDown(resultTypeSelect.firstElementChild as HTMLInputElement);
 
     // Select the first facet option
-    const resultTypeOption = await waitFor(() =>
-      screen.findByText('Originals only')
-    );
+    const resultTypeOption = await screen.findByText('Originals only');
     expect(resultTypeOption).toBeTruthy();
 
     await act(async () => {
       await user.click(resultTypeOption);
     });
-    await waitFor(() => screen.findByTestId('facets-form'));
+    await screen.findByTestId('facets-form');
 
-    await waitFor(() => screen.findByTestId('search'));
+    await screen.findByTestId('search');
   });
 
   it('handles applying and removing project facets', async () => {
     customRender(<App searchQuery={activeSearch} />);
 
     // Check applicable components render
-    const facetsComponent = await waitFor(() =>
-      screen.findByTestId('search-facets')
-    );
+    const facetsComponent = await screen.findByTestId('search-facets');
     expect(facetsComponent).toBeTruthy();
 
     // Wait for project form to render
-    const facetsForm = await waitFor(() => screen.findByTestId('facets-form'));
+    const facetsForm = await screen.findByTestId('facets-form');
     expect(facetsForm).toBeTruthy();
 
     // Open top collapse panel
@@ -286,9 +262,7 @@ describe('test main components', () => {
     fireEvent.mouseDown(facetFormSelect.firstElementChild as HTMLInputElement);
 
     // Select the first facet option
-    const facetOption = await waitFor(() =>
-      screen.findByTestId('data_node_aims3.llnl.gov')
-    );
+    const facetOption = await screen.findByTestId('data_node_aims3.llnl.gov');
     expect(facetOption).toBeTruthy();
     await act(async () => {
       await user.click(facetOption);
@@ -303,10 +277,10 @@ describe('test main components', () => {
     });
 
     // Wait for components to rerender
-    await waitFor(() => screen.findByTestId('search'));
+    await screen.findByTestId('search');
 
     // Check facet option applied
-    const tag = await waitFor(() => screen.findByTestId('aims3.llnl.gov'));
+    const tag = await screen.findByTestId('aims3.llnl.gov');
     expect(tag).toBeTruthy();
 
     // Check facets select form rerenders and mouseDown to expand list of options
@@ -319,12 +293,12 @@ describe('test main components', () => {
     );
 
     // Check option is selected and remove it
-    const facetOptionRerender = await waitFor(() =>
-      within(facetFormSelectRerender).findByRole('img', {
-        name: 'close',
-        hidden: true,
-      })
-    );
+    const facetOptionRerender = await within(
+      facetFormSelectRerender
+    ).findByRole('img', {
+      name: 'close',
+      hidden: true,
+    });
     expect(facetOptionRerender).toBeTruthy();
 
     await act(async () => {
@@ -340,7 +314,7 @@ describe('test main components', () => {
     });
 
     // Wait for component to rerender
-    await waitFor(() => screen.findByTestId('search'));
+    await screen.findByTestId('search');
   });
 
   it('fetches the data node status every defined interval', async () => {
@@ -354,21 +328,17 @@ describe('test main components', () => {
     });
 
     // Check applicable components render
-    const facetsComponent = await waitFor(() =>
-      screen.findByTestId('search-facets')
-    );
+    const facetsComponent = await screen.findByTestId('search-facets');
     expect(facetsComponent).toBeTruthy();
   });
 });
 
 describe('User cart', () => {
-  jest.setTimeout(45000);
   it('handles authenticated user adding and removing items from cart', async () => {
     customRender(<App searchQuery={activeSearch} />);
-    // const { getByRole, getByText } = renderedApp;
 
     // Wait for components to rerender
-    await waitFor(() => screen.findByText('Query String:', { exact: false }));
+    await screen.findByText('Query String:', { exact: false });
 
     // Check first row exists
     const firstRow = await screen.findByRole('row', {
@@ -385,9 +355,7 @@ describe('User cart', () => {
     });
 
     // Check 'Added items(s) to the cart' message appears
-    const addText = await waitFor(() =>
-      screen.findByText('Added item(s) to your cart')
-    );
+    const addText = await screen.findByText('Added item(s) to your cart');
     expect(addText).toBeTruthy();
 
     // Check first row has remove button and click it
@@ -399,18 +367,17 @@ describe('User cart', () => {
     });
 
     // Check 'Removed items(s) from the cart' message appears
-    const removeText = await waitFor(() =>
-      screen.findByText('Removed item(s) from your cart')
+    const removeText = await screen.findByText(
+      'Removed item(s) from your cart'
     );
     expect(removeText).toBeTruthy();
   });
 
   it("displays authenticated user's number of files in the cart summary and handles clearing the cart", async () => {
     customRender(<App searchQuery={activeSearch} />);
-    // const { getByRole, getByText, getByTestId, findByText } = renderedApp;
 
     // Wait for components to rerender
-    await waitFor(() => screen.findByText('Query String:', { exact: false }));
+    await screen.findByText('Query String:', { exact: false });
 
     // Check first row exists
     const firstRow = await screen.findByRole('row', {
@@ -427,15 +394,11 @@ describe('User cart', () => {
     });
 
     // Check 'Added items(s) to the cart' message appears
-    const addText = await waitFor(() =>
-      screen.findByText('Added item(s) to your cart')
-    );
+    const addText = await screen.findByText('Added item(s) to your cart');
     expect(addText).toBeTruthy();
 
     // Check applicable components render
-    const rightMenuComponent = await waitFor(() =>
-      screen.findByTestId('right-menu')
-    );
+    const rightMenuComponent = await screen.findByTestId('right-menu');
     expect(rightMenuComponent).toBeTruthy();
 
     // Click on the cart link
@@ -449,18 +412,17 @@ describe('User cart', () => {
     });
 
     // Check number of files and datasets are correctly displayed
-    const cart = await waitFor(() => screen.findByTestId('cart'));
+    const cart = await screen.findByTestId('cart');
     expect(cart).toBeTruthy();
-    const cartSummary = await waitFor(() => screen.findByTestId('summary'));
+    const cartSummary = await screen.findByTestId('summary');
     expect(cartSummary).toBeTruthy();
 
-    const numDatasetsField = await waitFor(() =>
-      within(cartSummary).findByText('Number of Datasets:')
+    const numDatasetsField = await within(cartSummary).findByText(
+      'Number of Datasets:'
     );
-    const numFilesText = await waitFor(() =>
-      within(cartSummary).findByText('Number of Files:')
+    const numFilesText = await within(cartSummary).findByText(
+      'Number of Files:'
     );
-
     expect(numDatasetsField.textContent).toEqual('Number of Datasets: 1');
     expect(numFilesText.textContent).toEqual('Number of Files: 2');
 
@@ -474,7 +436,7 @@ describe('User cart', () => {
       await user.click(clearCartBtn);
     });
 
-    await waitFor(() => screen.findByTestId('cart'));
+    await screen.findByTestId('cart');
 
     // Check confirmBtn exists in popover and click it
     const confirmBtn = await screen.findByRole('button', {
@@ -498,10 +460,8 @@ describe('User cart', () => {
     // Render component as anonymous
     customRender(<App searchQuery={activeSearch} />, {}, false);
 
-    // const { getByRole, getByText } = renderedApp;
-
     // Wait for components to rerender
-    await waitFor(() => screen.findByText('Query String:', { exact: false }));
+    await screen.findByText('Query String:', { exact: false });
 
     // Check first row exists
     const firstRow = await screen.findByRole('row', {
@@ -526,7 +486,7 @@ describe('User cart', () => {
     });
   });
 
-  it.only('displays anonymous user"s number of files in the cart summary and handles clearing the cart', async () => {
+  it('displays anonymous user"s number of files in the cart summary and handles clearing the cart', async () => {
     customRender(<App searchQuery={activeSearch} />, {}, false);
 
     // Wait for components to rerender
@@ -547,9 +507,7 @@ describe('User cart', () => {
     });
 
     // Check 'Added items(s) to the cart' message appears
-    const addText = await waitFor(() =>
-      screen.findByText('Added item(s) to your cart')
-    );
+    const addText = await screen.findByText('Added item(s) to your cart');
     expect(addText).toBeTruthy();
 
     // Check applicable components render
@@ -627,12 +585,12 @@ describe('User cart', () => {
       });
 
       // Check applicable components render
-      const navComponent = await waitFor(() => screen.findByTestId('nav-bar'));
+      const navComponent = await screen.findByTestId('nav-bar');
       expect(navComponent).toBeTruthy();
 
       // Check error message renders after failing to fetch cart from API
-      const errorMsg = await waitFor(() =>
-        screen.findByText(apiRoutes.userCart.handleErrorMsg(404))
+      const errorMsg = await screen.findByText(
+        apiRoutes.userCart.handleErrorMsg(404)
       );
       expect(errorMsg).toBeTruthy();
     });
@@ -646,12 +604,10 @@ describe('User search library', () => {
     });
 
     // Wait for components to rerender
-    await waitFor(() => screen.findByText('Query String:', { exact: false }));
+    await screen.findByText('Query String:', { exact: false });
 
     // Check applicable components render
-    const rightMenuComponent = await waitFor(() =>
-      screen.findByTestId('right-menu')
-    );
+    const rightMenuComponent = await screen.findByTestId('right-menu');
     expect(rightMenuComponent).toBeTruthy();
 
     // Check Save Search button exists and click it
@@ -706,20 +662,17 @@ describe('User search library', () => {
     });
 
     // Check applicable components render
-    const navComponent = await waitFor(() => screen.findByTestId('nav-bar'));
+    const navComponent = await screen.findByTestId('nav-bar');
     expect(navComponent).toBeTruthy();
-    const leftMenuComponent = await waitFor(() =>
-      screen.findByTestId('left-menu')
-    );
+    const leftMenuComponent = await screen.findByTestId('left-menu');
     expect(leftMenuComponent).toBeTruthy();
-    const rightMenuComponent = await waitFor(() =>
-      screen.findByTestId('right-menu')
-    );
+    const rightMenuComponent = await screen.findByTestId('right-menu');
     expect(rightMenuComponent).toBeTruthy();
 
     // Go directly to the search library since user already has items in their cart
-    const searchLibraryLink = await waitFor(() =>
-      within(rightMenuComponent).findByRole('img', { name: 'file-search' })
+    const searchLibraryLink = await within(rightMenuComponent).findByRole(
+      'img',
+      { name: 'file-search' }
     );
     expect(searchLibraryLink).toBeTruthy();
 
@@ -728,24 +681,25 @@ describe('User search library', () => {
     });
 
     // Check number of files and datasets are correctly displayed
-    const cart = await waitFor(() => screen.findByTestId('cart'));
+    const cart = await screen.findByTestId('cart');
     expect(cart).toBeTruthy();
 
     // Check delete button renders for the saved search and click it
-    const deleteBtn = await waitFor(() =>
-      screen.findByRole('img', { name: 'delete', hidden: true })
-    );
+    const deleteBtn = await screen.findByRole('img', {
+      name: 'delete',
+      hidden: true,
+    });
     expect(deleteBtn).toBeTruthy();
 
     await act(async () => {
       await user.click(deleteBtn);
     });
 
-    await waitFor(() => screen.findByTestId('cart'));
+    await screen.findByTestId('cart');
 
     // Check removed message appears
-    const removeText = await waitFor(() =>
-      screen.findByText('Removed search query from your library')
+    const removeText = await screen.findByText(
+      'Removed search query from your library'
     );
     expect(removeText).toBeTruthy();
   });
@@ -810,12 +764,10 @@ describe('User search library', () => {
     customRender(<App searchQuery={activeSearch} />, {}, true);
 
     // Wait for components to rerender
-    await waitFor(() => screen.findByText('Query String:', { exact: false }));
+    await screen.findByText('Query String:', { exact: false });
 
     // Check applicable components render
-    const rightMenuComponent = await waitFor(() =>
-      screen.findByTestId('right-menu')
-    );
+    const rightMenuComponent = await screen.findByTestId('right-menu');
     expect(rightMenuComponent).toBeTruthy();
 
     // Check Save Search button exists and click it
@@ -839,7 +791,7 @@ describe('User search library', () => {
       await user.click(searchLibraryLink);
     });
 
-    const cart = await waitFor(() => screen.findByTestId('cart'));
+    const cart = await screen.findByTestId('cart');
     expect(cart).toBeTruthy();
 
     // Check delete button renders for the saved search and click it
@@ -850,7 +802,7 @@ describe('User search library', () => {
       await user.click(deleteBtn);
     });
 
-    await waitFor(() => screen.findByTestId('cart'));
+    await screen.findByTestId('cart');
   });
 
   it('handles anonymous user copying search to clipboard', async () => {
