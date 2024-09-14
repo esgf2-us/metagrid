@@ -325,7 +325,7 @@ export const globusTokenResponseFixture = (): GlobusTokenResponse => {
     resource_server: '',
     other_tokens: [globusTransferTokenFixture],
     created_on: 0,
-    expires_in: 0,
+    expires_in: 1,
     error: '',
   };
 };

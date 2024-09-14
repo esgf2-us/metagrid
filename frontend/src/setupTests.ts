@@ -52,6 +52,8 @@ beforeAll(() => {
   server.listen();
 });
 beforeEach(() => {
+  sessionStorageMock.clear();
+
   // Set start up messages as 'seen' so start popup won't show
   localStorage.setItem('lastMessageSeen', messageDisplayData.messageToShow);
 });

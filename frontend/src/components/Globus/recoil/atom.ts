@@ -6,12 +6,9 @@ import { GlobusEndpoint, GlobusTaskItem } from '../types';
 enum GlobusStateKeys {
   accessToken = 'globusAccessToken',
   userChosenEndpoint = 'globusChosenEndpoint',
-  continueGlobusPrep = 'continueGlobusPrepSteps',
-  continueGlobusDownload = 'continueDownloadSteps',
   globusTransferGoalsState = 'globusTransferGoalsState',
   globusAuth = 'globusAuth',
   globusTaskItems = 'globusTaskItems',
-  tokenResponse = 'tokenResponse',
   transferToken = 'globusTransferToken',
   savedGlobusEndpoints = 'savedGlobusEndpoints',
 }
