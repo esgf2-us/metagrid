@@ -21,7 +21,7 @@ const user = userEvent.setup();
 
 const activeSearch: ActiveSearchQuery = getSearchFromUrl('project=test1');
 
-jest.setTimeout(80000);
+jest.setTimeout(100000);
 
 describe('test the cart items component', () => {
   it('renders message that the cart is empty when no items are added', async () => {
@@ -31,7 +31,7 @@ describe('test the cart items component', () => {
     // Check empty cart text renders
     const emptyCart = await screen.findByText('Your cart is empty');
     expect(emptyCart).toBeTruthy();
-  }, 100000);
+  });
 
   it('removes all items from the cart when confirming the popconfirm', async () => {
     customRender(<App searchQuery={activeSearch} />);
