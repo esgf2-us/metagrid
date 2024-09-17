@@ -1,10 +1,10 @@
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { act } from '@testing-library/react';
+import { act, screen } from '@testing-library/react';
 import {
   userCartFixture,
   userSearchQueriesFixture,
-} from '../../api/mock/fixtures';
+} from '../../test/mock/fixtures';
 import Cart, { Props } from './index';
 import customRender from '../../test/custom-render';
 
@@ -39,14 +39,14 @@ afterEach(() => {
 });
 
 it('handles tab switching and saved search actions', async () => {
-  const { findByRole, findByTestId } = customRender(<Cart {...defaultProps} />);
+  customRender(<Cart {...defaultProps} />);
 
   // Check cart tab renders
-  const cart = await findByTestId('cart');
+  const cart = await screen.findByTestId('cart');
   expect(cart).toBeTruthy();
 
   // Check Search Library Tab renders and click it
-  const searchLibraryTab = await findByRole('tab', {
+  const searchLibraryTab = await screen.findByRole('tab', {
     name: 'book Search Library',
     hidden: true,
   });
@@ -57,16 +57,19 @@ it('handles tab switching and saved search actions', async () => {
   });
 
   // Check JSON link renders and click it
-  const jsonLink = await findByRole('link');
+  const jsonLink = await screen.findByRole('link');
   expect(jsonLink).toBeTruthy();
   await act(async () => {
     await user.click(jsonLink);
   });
 
   // Wait for cart to re-render
-  await findByTestId('cart');
+  await screen.findByTestId('cart');
   // Check apply search button renders and click it
-  const applyBtn = await findByRole('img', { name: 'search', hidden: true });
+  const applyBtn = await screen.findByRole('img', {
+    name: 'search',
+    hidden: true,
+  });
   expect(applyBtn).toBeTruthy();
 
   await act(async () => {
@@ -74,10 +77,13 @@ it('handles tab switching and saved search actions', async () => {
   });
 
   // Wait for cart to re-render
-  await findByTestId('cart');
+  await screen.findByTestId('cart');
 
   // Check delete button renders and click it
-  const deleteBtn = await findByRole('img', { name: 'delete', hidden: true });
+  const deleteBtn = await screen.findByRole('img', {
+    name: 'delete',
+    hidden: true,
+  });
   expect(deleteBtn).toBeTruthy();
 
   await act(async () => {

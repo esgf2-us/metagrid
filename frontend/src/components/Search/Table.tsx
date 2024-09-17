@@ -267,13 +267,21 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
             showNotice(
               messageApi,
               'The wget script is generating, please wait momentarily.',
-              { type: 'info' }
-            );
-            fetchWgetScript([record.id], filenameVars).catch(
-              (error: ResponseError) => {
-                showError(messageApi, error.message);
+              {
+                duration: 3,
+                type: 'info',
               }
             );
+            fetchWgetScript([record.id], filenameVars)
+              .then(() => {
+                showNotice(messageApi, 'Wget script downloaded successfully!', {
+                  duration: 3,
+                  type: 'success',
+                });
+              })
+              .catch((error: ResponseError) => {
+                showError(messageApi, error.message);
+              });
           }
         };
 
@@ -316,7 +324,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
         );
       },
     },
-    globusEnabledNodes
+    globusEnabledNodes.length > 0
       ? {
           align: 'center' as AlignType,
           fixed: 'right' as FixedType,
@@ -330,7 +338,15 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
             </div>
           ),
         }
-      : {},
+      : {
+          align: 'center' as AlignType,
+          fixed: 'right' as FixedType,
+          title: '',
+          dataIndex: 'data_node',
+          key: 'globus_enabled',
+          width: 1,
+          render: () => <div></div>,
+        },
   ];
 
   return (

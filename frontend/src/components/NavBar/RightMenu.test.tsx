@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
-import { act, render, waitFor } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import customRender from '../../test/custom-render';
@@ -9,7 +9,6 @@ import RightMenu, { Props } from './RightMenu';
 import {
   mockConfig,
   mockKeycloakToken,
-  printElementContents,
   tempStorageSetMock,
 } from '../../test/jestTestFunctions';
 
@@ -36,20 +35,18 @@ jest.mock('@react-keycloak/web', () => {
 });
 
 it('sets the active menu item based on the location pathname', async () => {
-  const { getByRole } = customRender(<RightMenu {...rightMenuProps} />);
+  customRender(<RightMenu {...rightMenuProps} />);
 
-  const cartItemsLink = await waitFor(() =>
-    getByRole('img', { name: 'shopping-cart' })
-  );
+  const cartItemsLink = await screen.findByRole('img', {
+    name: 'shopping-cart',
+  });
   expect(cartItemsLink).toBeTruthy();
 
   await act(async () => {
     await user.click(cartItemsLink);
   });
 
-  const savedSearchLink = await waitFor(() =>
-    getByRole('img', { name: 'search' })
-  );
+  const savedSearchLink = await screen.findByRole('img', { name: 'search' });
   expect(savedSearchLink).toBeTruthy();
 
   await act(async () => {
@@ -68,18 +65,14 @@ it('display the users given name after authentication with keycloak', async () =
     },
   });
 
-  const { getByTestId, getByText } = customRender(
-    <RightMenu {...rightMenuProps} />
-  );
+  customRender(<RightMenu {...rightMenuProps} />);
 
   // Check applicable components render
-  const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
+  const rightMenuComponent = await screen.findByTestId('right-menu');
   expect(rightMenuComponent).toBeTruthy();
 
   // Check user logged in and hover
-  const greeting = await waitFor(() =>
-    getByText('Hi, John Doe', { exact: false })
-  );
+  const greeting = await screen.findByText('Hi, John Doe', { exact: false });
   expect(greeting).toBeTruthy();
 });
 
@@ -94,33 +87,26 @@ it('display the users email after authentication if they did not provide a name 
     },
   });
 
-  const { findByTestId, findByText } = customRender(
-    <RightMenu {...rightMenuProps} />,
-    {}
-  );
+  customRender(<RightMenu {...rightMenuProps} />, {});
 
   // Check applicable components render
-  const rightMenuComponent = await findByTestId('right-menu');
+  const rightMenuComponent = await screen.findByTestId('right-menu');
   expect(rightMenuComponent).toBeTruthy();
 
-  printElementContents(undefined);
-
   // Check user logged in and hover
-  const greeting = await findByText('Hi, johnd@email.gov');
+  const greeting = await screen.findByText('Hi, johnd@email.gov');
   expect(greeting).toBeTruthy();
 });
 
 it('displays sign in button when user hasn"t logged in', async () => {
-  const { getByRole, getByTestId } = customRender(
-    <RightMenu {...rightMenuProps} />
-  );
+  customRender(<RightMenu {...rightMenuProps} />);
 
   // Check applicable components render
-  const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
+  const rightMenuComponent = await screen.findByTestId('right-menu');
   expect(rightMenuComponent).toBeTruthy();
 
   // Click the sign in button
-  const signInBtn = await waitFor(() => getByRole('img', { name: 'user' }));
+  const signInBtn = await screen.findByRole('img', { name: 'user' });
   expect(signInBtn).toBeTruthy();
 
   await act(async () => {
@@ -129,16 +115,14 @@ it('displays sign in button when user hasn"t logged in', async () => {
 });
 
 it('displays help menu when help button is clicked', async () => {
-  const { getByText, getByTestId } = customRender(
-    <RightMenu {...rightMenuProps} />
-  );
+  customRender(<RightMenu {...rightMenuProps} />);
 
   // Check applicable components render
-  const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
+  const rightMenuComponent = await screen.findByTestId('right-menu');
   expect(rightMenuComponent).toBeTruthy();
 
   // Click the help button
-  const helpBtn = await waitFor(() => getByText('Help'));
+  const helpBtn = await screen.findByText('Help');
   expect(helpBtn).toBeTruthy();
 
   await act(async () => {
@@ -146,21 +130,19 @@ it('displays help menu when help button is clicked', async () => {
   });
 
   // Check support form rendered
-  const support = getByTestId('support-form');
+  const support = await screen.findByTestId('support-form');
   expect(support).toBeTruthy();
 });
 
 it('the the right drawer display for news button and hide news button', async () => {
-  const { getByText, getByTestId } = customRender(
-    <RightMenu {...rightMenuProps} />
-  );
+  customRender(<RightMenu {...rightMenuProps} />);
 
   // Check applicable components render
-  const rightMenuComponent = await waitFor(() => getByTestId('right-menu'));
+  const rightMenuComponent = await screen.findByTestId('right-menu');
   expect(rightMenuComponent).toBeTruthy();
 
   // Click the news button
-  const newsBtn = await waitFor(() => getByText('News'));
+  const newsBtn = await screen.findByText('News');
   expect(newsBtn).toBeTruthy();
 
   await act(async () => {
@@ -168,7 +150,7 @@ it('the the right drawer display for news button and hide news button', async ()
   });
 
   // Click hide button
-  const hideBtn = await waitFor(() => getByText('Hide'));
+  const hideBtn = await screen.findByText('Hide');
   expect(hideBtn).toBeTruthy();
 
   await act(async () => {

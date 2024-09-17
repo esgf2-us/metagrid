@@ -5,18 +5,14 @@
  * in order to mock their behaviors.
  *
  */
-import {
-  waitFor,
-  within,
-  screen,
-  RenderResult,
-  act,
-} from '@testing-library/react';
+import { within, screen, act } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event/dist/types/setup/setup';
 import { message } from 'antd';
 import { ReactNode, CSSProperties } from 'react';
 import * as enviroConfig from '../env';
 import { NotificationType, getSearchFromUrl } from '../common/utils';
+import { RawSearchResult } from '../components/Search/types';
+import { rawSearchResultFixture } from './mock/fixtures';
 
 // For mocking environment variables
 export type MockConfig = {
@@ -147,6 +143,22 @@ export async function showNoticeStatic(
   }
 }
 
+export const globusReadyNode = 'nodeIsGlobusReady';
+export const nodeNotGlobusReady = 'nodeIsNotGlobusReady';
+
+export function makeCartItem(
+  id: string,
+  globusReady: boolean
+): RawSearchResult {
+  return rawSearchResultFixture({
+    id,
+    title: id,
+    master_id: id,
+    number_of_files: 3,
+    data_node: globusReady ? globusReadyNode : nodeNotGlobusReady,
+  });
+}
+
 /**
  * Creates the appropriate name string when performing getByRole('row')
  */
@@ -163,31 +175,28 @@ export function getRowName(
   if (Number.isNaN(Number(totalSize))) {
     totalBytes = totalSize;
   }
-  let globusReadyCheck = '.*';
+  let globusReadyCheck = mockConfig.globusEnabledNodes.length > 0 ? ' .*' : '';
   if (globusReady !== undefined) {
-    globusReadyCheck = globusReady ? 'check-circle' : 'close-circle';
+    globusReadyCheck = globusReady ? ' check-circle' : ' close-circle';
   }
   const newRegEx = new RegExp(
-    `right-circle ${cartButton} ${nodeCircleType}-circle ${title} ${fileCount} ${totalBytes} ${version} wget download ${globusReadyCheck}`
+    `right-circle ${cartButton} ${nodeCircleType}-circle ${title} ${fileCount} ${totalBytes} ${version} wget download${globusReadyCheck}`
   );
 
   return newRegEx;
 }
 
 export async function submitKeywordSearch(
-  renderedApp: RenderResult,
   inputText: string,
   user: UserEvent
 ): Promise<void> {
-  const { getByTestId, getByPlaceholderText } = renderedApp;
-
   // Check left menu rendered
-  const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
+  const leftMenuComponent = await screen.findByTestId('left-menu');
   expect(leftMenuComponent).toBeTruthy();
 
   // Type in value for free-text input
-  const freeTextForm = await waitFor(() =>
-    getByPlaceholderText('Search for a keyword')
+  const freeTextForm = await screen.findByPlaceholderText(
+    'Search for a keyword'
   );
   expect(freeTextForm).toBeTruthy();
 
@@ -196,7 +205,7 @@ export async function submitKeywordSearch(
   });
 
   // Submit the form
-  const submitBtn = within(leftMenuComponent).getByRole('img', {
+  const submitBtn = await within(leftMenuComponent).findByRole('img', {
     name: 'search',
   });
 
@@ -204,18 +213,16 @@ export async function submitKeywordSearch(
     await user.click(submitBtn);
   });
 
-  await waitFor(() => getByTestId('search'));
+  await screen.findByTestId('search');
 }
 
 export async function openDropdownList(
   user: UserEvent,
   dropdown: HTMLElement
 ): Promise<void> {
-  await waitFor(async () => {
-    dropdown.focus();
-    await act(async () => {
-      await user.keyboard('[ArrowDown]');
-    });
+  dropdown.focus();
+  await act(async () => {
+    await user.keyboard('[ArrowDown]');
   });
 }
 
@@ -224,16 +231,63 @@ export async function selectDropdownOption(
   dropdown: HTMLElement,
   option: string
 ): Promise<void> {
-  await waitFor(
-    async () => {
-      dropdown.focus();
+  act(() => {
+    dropdown.focus();
+  });
+
+  await act(async () => {
+    await user.keyboard('[ArrowDown]');
+  });
+  await act(async () => {
+    const opt = await screen.findByText(option);
+    await user.click(opt);
+  });
+}
+
+export async function addSearchRowsAndGoToCart(
+  user: UserEvent,
+  rows?: HTMLElement[]
+): Promise<void> {
+  let rowsToAdd: HTMLElement[] = [];
+
+  // Get the rows we need to add
+  if (rows) {
+    rowsToAdd = rowsToAdd.concat(rows);
+  } else {
+    const defaultRow = await screen.findByRole('row', {
+      name: getRowName('plus', 'check', 'foo', '3', '1', '1', true),
+    });
+    rowsToAdd.push(defaultRow);
+  }
+
+  // Add the rows by clicking plus button
+  const clickBtns: Promise<void>[] = [];
+  rowsToAdd.forEach((row) => {
+    expect(row).toBeTruthy();
+    const clickBtnFunc = async (): Promise<void> => {
+      const addBtn = (await within(row).findAllByRole('button'))[0];
+      expect(addBtn).toBeTruthy();
       await act(async () => {
-        await user.keyboard('[ArrowDown]');
+        await user.click(addBtn);
       });
-      await act(async () => {
-        await user.click(screen.getByText(option));
-      });
-    },
-    { timeout: 3000 }
-  );
+    };
+    clickBtns.push(clickBtnFunc());
+  });
+  await Promise.all(clickBtns);
+
+  // Check 'Added items(s) to the cart' message appears
+  const addText = await screen.findAllByText('Added item(s) to your cart', {
+    exact: false,
+  });
+  expect(addText).toBeTruthy();
+
+  // Switch to the cart page
+  const cartBtn = await screen.findByTestId('cartPageLink');
+  await act(async () => {
+    await user.click(cartBtn);
+  });
+
+  // Wait for cart page to render
+  const summary = await screen.findByTestId('summary');
+  expect(summary).toBeTruthy();
 }

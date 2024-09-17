@@ -1,7 +1,8 @@
 import React from 'react';
+import { screen } from '@testing-library/react';
 import customRender from '../../test/custom-render';
 import Tabs from './Tabs';
-import { rawSearchResultFixture } from '../../api/mock/fixtures';
+import { rawSearchResultFixture } from '../../test/mock/fixtures';
 
 // Reset all mocks after each test
 afterEach(() => {
@@ -9,16 +10,16 @@ afterEach(() => {
 });
 
 describe('test Tab component', () => {
-  it('renders standard tab component', () => {
-    const { getByRole } = customRender(
+  it('renders standard tab component', async () => {
+    customRender(
       <Tabs filenameVars={undefined} record={rawSearchResultFixture()} />
     );
 
-    const tabList = getByRole('tablist');
+    const tabList = await screen.findByRole('tablist');
     expect(tabList).toBeTruthy();
   });
-  it('renders tab component with quality_control_flags in record', () => {
-    const { getByRole } = customRender(
+  it('renders tab component with quality_control_flags in record', async () => {
+    customRender(
       <Tabs
         filenameVars={undefined}
         record={{
@@ -28,11 +29,11 @@ describe('test Tab component', () => {
       />
     );
 
-    const tabList = getByRole('tablist');
+    const tabList = await screen.findByRole('tablist');
     expect(tabList).toBeTruthy();
   });
-  it('renders tab component with further_info_url in record', () => {
-    const { getByRole } = customRender(
+  it('renders tab component with further_info_url in record', async () => {
+    customRender(
       <Tabs
         filenameVars={undefined}
         record={{
@@ -42,11 +43,11 @@ describe('test Tab component', () => {
       />
     );
 
-    const tabList = getByRole('tablist');
+    const tabList = await screen.findByRole('tablist');
     expect(tabList).toBeTruthy();
   });
-  it('renders tab component with retracted = true in record', () => {
-    const { getByRole } = customRender(
+  it('renders tab component with retracted = true in record', async () => {
+    customRender(
       <Tabs
         filenameVars={undefined}
         record={{
@@ -56,7 +57,7 @@ describe('test Tab component', () => {
       />
     );
 
-    const tabList = getByRole('tablist');
+    const tabList = await screen.findByRole('tablist');
     expect(tabList).toBeTruthy();
   });
 });

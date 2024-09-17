@@ -1,6 +1,6 @@
-import { waitFor } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import React from 'react';
-import { rest, server } from '../../api/mock/server';
+import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import Citation, { CitationInfo } from './Citation';
 import customRender from '../../test/custom-render';
@@ -12,45 +12,37 @@ afterEach(() => {
 
 describe('test Citation component', () => {
   it('renders component', async () => {
-    const { getByRole, getByText } = customRender(
-      <Citation url="citation_url" />
-    );
+    customRender(<Citation url="citation_url" />);
 
     // Check for skeleton header, which indicates loading
-    const skeletonHeading = getByRole('heading');
+    const skeletonHeading = await screen.findByRole('heading');
     expect(skeletonHeading).toBeTruthy();
 
     // Check citation information rendered correctly
-    const citationCreators = await waitFor(() => getByText('Bob; Tom'));
+    const citationCreators = await screen.findByText('Bob; Tom');
     expect(citationCreators).toBeInTheDocument();
   });
   it('renders component with 3 creators, no et al.', async () => {
-    const { getByRole, getByText } = customRender(
-      <Citation url="citation_a" />
-    );
+    customRender(<Citation url="citation_a" />);
 
     // Check for skeleton header, which indicates loading
-    const skeletonHeading = getByRole('heading');
+    const skeletonHeading = await screen.findByRole('heading');
     expect(skeletonHeading).toBeTruthy();
 
     // Check citation information rendered correctly
-    const citationCreators = await waitFor(() =>
-      getByText('Bobby; Tommy; Joey')
-    );
+    const citationCreators = await screen.findByText('Bobby; Tommy; Joey');
     expect(citationCreators).toBeInTheDocument();
   });
   it('renders component with three creators and et al.', async () => {
-    const { getByRole, getByText } = customRender(
-      <Citation url="citation_b" />
-    );
+    customRender(<Citation url="citation_b" />);
 
     // Check for skeleton header, which indicates loading
-    const skeletonHeading = getByRole('heading');
+    const skeletonHeading = await screen.findByRole('heading');
     expect(skeletonHeading).toBeTruthy();
 
     // Check citation information rendered correctly
-    const citationCreators = await waitFor(() =>
-      getByText('Bobby; Tommy; Timmy; et al.')
+    const citationCreators = await screen.findByText(
+      'Bobby; Tommy; Timmy; et al.'
     );
     expect(citationCreators).toBeInTheDocument();
   });
@@ -61,42 +53,36 @@ describe('test Citation component', () => {
         res(ctx.status(404))
       )
     );
-    const { getByRole } = customRender(<Citation url="citation_a" />);
+    customRender(<Citation url="citation_a" />);
 
     // Wait for Alert error to render
-    const alert = await waitFor(() =>
-      getByRole('img', { name: 'close-circle' })
-    );
+    const alert = await screen.findByRole('img', { name: 'close-circle' });
     expect(alert).toBeTruthy();
   });
 });
 
 describe('test CitationInfo component', () => {
-  it('returns component', () => {
-    const { getByText } = customRender(
-      <CitationInfo title="title">children</CitationInfo>
-    );
+  it('returns component', async () => {
+    customRender(<CitationInfo title="title">children</CitationInfo>);
 
     // Check title in the document
-    const title = getByText('title', { exact: false });
+    const title = await screen.findByText('title', { exact: false });
     expect(title).toBeInTheDocument();
 
     // Check children in the document
-    const children = getByText('children');
+    const children = await screen.findByText('children');
     expect(children).toBeInTheDocument();
   });
 
-  it('returns component with max of 3 creators', () => {
-    const { getByText } = customRender(
-      <CitationInfo title="title">children</CitationInfo>
-    );
+  it('returns component with max of 3 creators', async () => {
+    customRender(<CitationInfo title="title">children</CitationInfo>);
 
     // Check title in the document
-    const title = getByText('title', { exact: false });
+    const title = await screen.findByText('title', { exact: false });
     expect(title).toBeInTheDocument();
 
     // Check children in the document
-    const children = getByText('children');
+    const children = await screen.findByText('children');
     expect(children).toBeInTheDocument();
   });
 });
