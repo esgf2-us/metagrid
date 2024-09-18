@@ -1,4 +1,4 @@
-# Welcome to the Metagrid Major Release v1.1.2-Pre (Pre-Release)
+# Welcome to the Metagrid Release v1.1.3-Pre (Pre-Release)
 
 To view the latest documentation and FAQ, please visit this page:
 [https://esgf.github.io/esgf-user-support/metagrid.html](https://esgf.github.io/esgf-user-support/metagrid.html)
