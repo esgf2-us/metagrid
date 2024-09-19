@@ -686,7 +686,7 @@ export const startGlobusTransfer = async (
       let message = '';
       /* istanbul ignore else */
       if (error.response) {
-        message = error.response.data;
+        message = error.response.data as string;
       }
       throw new Error(message);
     });
