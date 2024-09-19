@@ -5,7 +5,7 @@ export const rightDrawerMessages: MarkdownMessage[] = [
 ];
 
 export const rightDrawerChanges: MarkdownMessage[] = [
-  { title: 'V1.1.3-pre', fileName: 'changelog/v1.1.3-pre.md' },
+  { title: 'V1.1.3-pre', fileName: 'changelog/v1.1.3-rc.md' },
   { title: 'V1.1.2-rc', fileName: 'changelog/v1.1.2-rc.md' },
   { title: 'V1.1.1-pre', fileName: 'changelog/v1.1.1-pre.md' },
   { title: 'V1.1.0', fileName: 'changelog/v1.1.0.md' },
