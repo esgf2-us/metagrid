@@ -78,7 +78,7 @@ it('renders warning that dataset is retracted', async () => {
   // Check the dataset title include retracted warning
   const cell = within(table).getByRole('cell', {
     name:
-      'foo IMPORTANT! This dataset has been retracted and is no longer avaiable for download.',
+      'foo IMPORTANT! This dataset has been retracted and is no longer available for download.',
   });
   expect(cell).toBeTruthy();
 
