@@ -23,10 +23,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Use Node.js 22.8
+      - name: Use Node.js 22.x
         uses: actions/setup-node@v4
         with:
-          node-version: "22.8"
+          node-version: "22.x"
 
       - name: Cache node modules
         uses: actions/cache@v4
@@ -55,7 +55,7 @@ jobs:
           yarn test:coverage
 
       - name: Upload Coverage Report
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
