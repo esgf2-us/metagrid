@@ -706,7 +706,7 @@ describe('User search library', () => {
 
   it('handles anonymous user saving and applying searches', async () => {
     // Render component as anonymous
-    customRender(<App searchQuery={activeSearch} />, {}, true);
+    customRender(<App searchQuery={activeSearch} />, {}, false);
 
     // Check applicable components render
     const leftMenuComponent = await screen.findByTestId('left-menu');
@@ -761,7 +761,7 @@ describe('User search library', () => {
 
   it('handles anonymous user removing searches from the search library', async () => {
     // Render component as anonymous
-    customRender(<App searchQuery={activeSearch} />, {}, true);
+    customRender(<App searchQuery={activeSearch} />, {}, false);
 
     // Wait for components to rerender
     await screen.findByText('Query String:', { exact: false });
@@ -806,7 +806,7 @@ describe('User search library', () => {
   });
 
   it('handles anonymous user copying search to clipboard', async () => {
-    customRender(<App searchQuery={activeSearch} />, {}, true);
+    customRender(<App searchQuery={activeSearch} />, {}, false);
 
     // Check applicable components render
     const rightMenuComponent = await screen.findByTestId('right-menu');

@@ -1,4 +1,4 @@
-import { act, waitFor, within } from '@testing-library/react';
+import { act, waitFor, within, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import {
@@ -94,11 +94,9 @@ const defaultProps: Props = {
 
 describe('test FilesTable component', () => {
   it('renders an empty data table when no results are available', async () => {
-    const { getByRole } = customRender(
-      <FilesTable {...defaultProps} numResults={undefined} />
-    );
+    customRender(<FilesTable {...defaultProps} numResults={undefined} />);
 
-    const component = await waitFor(() => getByRole('table'));
+    const component = await screen.findByRole('table');
     expect(component).toBeTruthy();
   });
 
@@ -109,22 +107,23 @@ describe('test FilesTable component', () => {
       )
     );
 
-    const { getByRole } = customRender(<FilesTable {...defaultProps} />);
-    const alertMsg = await waitFor(() =>
-      getByRole('img', { name: 'close-circle', hidden: true })
-    );
+    customRender(<FilesTable {...defaultProps} />);
+    const alertMsg = await screen.findByRole('img', {
+      name: 'close-circle',
+      hidden: true,
+    });
     expect(alertMsg).toBeTruthy();
   });
 
   it('handles downloading data with httpserver', async () => {
-    const { getByTestId } = customRender(<FilesTable {...defaultProps} />);
+    customRender(<FilesTable {...defaultProps} />);
 
     // Check component renders
-    const component = await waitFor(() => getByTestId('filesTable'));
+    const component = await screen.findByTestId('filesTable');
     expect(component).toBeTruthy();
 
     // Wait for component to re-render
-    await waitFor(() => getByTestId('filesTable'));
+    await screen.findByTestId('filesTable');
 
     // Check a record row exist
     let row = await waitFor(
@@ -162,7 +161,7 @@ describe('test FilesTable component', () => {
     });
 
     // Wait for component to re-render
-    await waitFor(() => getByTestId('filesTable'));
+    await screen.findByTestId('filesTable');
   });
 
   it('handles pagination and page size changes', async () => {
@@ -186,24 +185,22 @@ describe('test FilesTable component', () => {
       )
     );
 
-    const { getByRole, getByTestId } = customRender(
-      <FilesTable {...defaultProps} numResults={numFound} />
-    );
+    customRender(<FilesTable {...defaultProps} numResults={numFound} />);
 
     // Check component renders
-    const component = await waitFor(() => getByTestId('filesTable'));
+    const component = await screen.findByTestId('filesTable');
     expect(component).toBeTruthy();
 
     // Wait for component to re-render
-    await waitFor(() => getByTestId('filesTable'));
+    await screen.findByTestId('filesTable');
 
     // Select the combobox drop down and update its value to render options
-    const paginationList = await waitFor(() => getByRole('list'));
+    const paginationList = await screen.findByRole('list');
     expect(paginationList).toBeTruthy();
 
     // Select the combobox drop down, update its value, then click it
-    const pageSizeComboBox = await waitFor(() =>
-      within(paginationList).getByRole('combobox')
+    const pageSizeComboBox = await within(paginationList).findByRole(
+      'combobox'
     );
     expect(pageSizeComboBox).toBeTruthy();
 
@@ -215,14 +212,14 @@ describe('test FilesTable component', () => {
   });
 
   it('handles clicking the expandable icon', async () => {
-    const { getByTestId } = customRender(<FilesTable {...defaultProps} />);
+    customRender(<FilesTable {...defaultProps} />);
 
     // Check component renders
-    const component = await waitFor(() => getByTestId('filesTable'));
+    const component = await screen.findByTestId('filesTable');
     expect(component).toBeTruthy();
 
     // Wait for component to re-render
-    await waitFor(() => getByTestId('filesTable'));
+    await screen.findByTestId('filesTable');
 
     // Check a record row exist
     let row = await waitFor(

@@ -65,8 +65,8 @@ it('Runs project form submit when changing projects', async () => {
   expect(option3Selected).toBeTruthy();
 });
 
-it('renders error message when projects can"t be fetched', () => {
-  const { getByRole } = customRender(
+it('renders error message when projects can"t be fetched', async () => {
+  customRender(
     <ProjectsForm
       {...defaultProps}
       apiError={
@@ -75,6 +75,8 @@ it('renders error message when projects can"t be fetched', () => {
     />
   );
 
-  const alertComponent = getByRole('img', { name: 'close-circle' });
+  const alertComponent = await screen.findByRole('img', {
+    name: 'close-circle',
+  });
   expect(alertComponent).toBeTruthy();
 });

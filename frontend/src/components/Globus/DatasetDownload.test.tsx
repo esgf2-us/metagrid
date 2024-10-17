@@ -132,7 +132,7 @@ function setAuthTokensUrl(): void {
 
 async function initializeComponentForTest(
   testConfig?: typeof defaultTestConfig
-) {
+): Promise<void> {
   const config = testConfig || defaultTestConfig;
 
   // Set names of the globus enabled nodes
@@ -186,11 +186,11 @@ async function initializeComponentForTest(
   // Set the URL that will exist when component is rendered
   if (config.testUrlState.authTokensUrlReady) {
     setAuthTokensUrl();
-  } else if (config.testUrlState.endpointPathUrlReady) {
-    if (config.chosenEndpoint) {
-      setEndpointUrl(config.chosenEndpoint.id, config.chosenEndpoint.path);
-    } else {
-    }
+  } else if (
+    config.testUrlState.endpointPathUrlReady &&
+    config.chosenEndpoint
+  ) {
+    setEndpointUrl(config.chosenEndpoint.id, config.chosenEndpoint.path);
   }
 
   // Finally render the component
@@ -654,9 +654,8 @@ describe('DatasetDownload form tests', () => {
     expect(manageCollectionsForm).toBeTruthy();
 
     // Type in endpoint search text
-    const endpointSearchInput = await waitFor(
-      async () =>
-        await screen.findByPlaceholderText('Search for a Globus Collection')
+    const endpointSearchInput = await screen.findByPlaceholderText(
+      'Search for a Globus Collection'
     );
     expect(endpointSearchInput).toBeTruthy();
     await act(async () => {

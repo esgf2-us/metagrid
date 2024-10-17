@@ -64,14 +64,15 @@ it('displays alert error when api fails to return response', async () => {
   expect(alert).toBeTruthy();
 });
 
-it('displays "N/A" for Filename Searches when none are applied', () => {
-  const { getByText } = customRender(
+it('displays "N/A" for Filename Searches when none are applied', async () => {
+  customRender(
     <SearchesCard
       {...defaultProps}
       searchQuery={userSearchQueryFixture({ filenameVars: undefined })}
     />
   );
   // Shows number of files
-  const filenameSearchesField = getByText('Filename Searches:').parentNode;
+  const filenameSearchesField = (await screen.findByText('Filename Searches:'))
+    .parentNode;
   expect(filenameSearchesField?.textContent).toEqual('Filename Searches: N/A');
 });
