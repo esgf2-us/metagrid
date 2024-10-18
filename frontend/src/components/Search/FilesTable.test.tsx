@@ -126,18 +126,8 @@ describe('test FilesTable component', () => {
     await screen.findByTestId('filesTable');
 
     // Check a record row exist
-    let row = await waitFor(
-      () =>
-        document.getElementsByClassName('ant-table-row').item(0) as HTMLElement
-    );
-    if (row === null) {
-      row = await waitFor(
-        () =>
-          document
-            .getElementsByClassName('ant-table-row')
-            .item(0) as HTMLElement
-      );
-    }
+    const rows = await screen.findAllByRole('row');
+    const row = rows[0];
     expect(row).toBeTruthy();
 
     // Get the download button
@@ -222,19 +212,8 @@ describe('test FilesTable component', () => {
     await screen.findByTestId('filesTable');
 
     // Check a record row exist
-    let row = await waitFor(
-      () =>
-        document.getElementsByClassName('ant-table-row').item(0) as HTMLElement
-    );
-
-    if (row === null) {
-      row = await waitFor(
-        () =>
-          document
-            .getElementsByClassName('ant-table-row')
-            .item(0) as HTMLElement
-      );
-    }
+    const rows = await screen.findAllByRole('row');
+    const row = rows[0];
     expect(row).toBeTruthy();
 
     // Get the expandable cell

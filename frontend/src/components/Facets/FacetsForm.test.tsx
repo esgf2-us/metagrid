@@ -59,7 +59,6 @@ describe('test FacetsForm component', () => {
     await act(async () => {
       await user.click(submitBtn);
     });
-    // fireEvent.submit(submitBtn);
 
     // Check if the input value resets back to blank
     await waitFor(() => expect(input.value).toEqual(''));
