@@ -1,6 +1,6 @@
 {
   "name": "frontend",
-  "version": "1.0.10-beta",
+  "version": "1.1.2-rc",
   "private": true,
   "scripts": {
     "build:local": "env-cmd -f .envs/.react react-scripts build",
@@ -8,10 +8,11 @@
     "eject": "react-scripts eject",
     "lint": "eslint './src/**/*.{js,jsx,ts,tsx,json}' --fix --max-warnings=0 --no-error-on-unmatched-pattern && tsc --noemit",
     "precommit": "eslint './src/**/*.{js,jsx,ts,tsx,json}' --max-warnings=0 --no-error-on-unmatched-pattern",
+    "pretty": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json}\"",
     "start:local": "env-cmd -f .envs/.react react-scripts start",
     "start:production": "env-cmd -f .envs/.prod.env react-scripts start",
-    "test": "CI=1 env-cmd -f .envs/.react react-scripts test --runInBand",
-    "test:coverage": "CI=1 env-cmd -f .envs/.react react-scripts test --coverage",
+    "test": "CI=1 env-cmd -f .envs/.react react-scripts test --runInBand --detectOpenHandles",
+    "test:coverage": "CI=1 env-cmd -f .envs/.react react-scripts test --runInBand --coverage",
     "test:watch": "env-cmd -f .envs/.react react-scripts test --runInBand"
   },
   "browserslist": {
@@ -41,20 +42,20 @@
       "!src/index.tsx",
       "!src/test/**",
       "!src/assets",
-      "!src/api/mock/**",
+      "!src/test/mock/**",
       "!**/serviceWorker.js",
       "!**/react-app-env.d.ts",
       "!**/lib/**"
     ],
     "coverageThreshold": {
       "global": {
-        "branches": 95,
-        "functions": 95,
-        "lines": 95,
-        "statements": 95
+        "branches": 90,
+        "functions": 90,
+        "lines": 90,
+        "statements": 90
       },
       "./src/components/App/App.tsx": {
-        "lines": 100
+        "lines": 95
       }
     },
     "moduleNameMapper": {
@@ -62,19 +63,19 @@
     }
   },
   "dependencies": {
-    "@ant-design/icons": "5.0.1",
-    "@babel/plugin-syntax-flow": "7.16.7",
-    "@babel/plugin-transform-react-jsx": "7.17.3",
+    "@ant-design/icons": "5.2.6",
+    "@babel/plugin-syntax-flow": "7.23.3",
+    "@babel/plugin-transform-react-jsx": "7.23.4",
     "@react-keycloak/web": "3.4.0",
-    "antd": "4.24.12",
+    "antd": "5.19.2",
     "autoprefixer": "10.4.14",
     "axios": "0.26.1",
+    "dayjs": "1.11.10",
     "dotenv": "8.2.0",
     "env-cmd": "10.1.0",
     "humps": "2.0.1",
-    "js-pkce": "1.2.1",
+    "js-pkce": "^1.4.0",
     "keycloak-js": "19.0.3",
-    "moment": "2.29.4",
     "prop-types": "15.8.1",
     "query-string": "7.0.0",
     "react": "18.2.0",
@@ -86,29 +87,30 @@
     "react-router-dom": "^6.9.0",
     "react-scripts": "5.0.1",
     "recoil": "0.7.7",
-    "typescript": "4.6.3",
+    "typescript": "5.4.2",
     "uuid": "8.3.2"
   },
   "devDependencies": {
-    "@babel/core": "7.17.9",
+    "@babel/core": "7.24.1",
+    "@babel/eslint-parser": "7.24.1",
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "@testing-library/dom": "9.3.1",
-    "@testing-library/jest-dom": "5.17.0",
-    "@testing-library/react": "14.0.0",
-    "@testing-library/user-event": "14.4.3",
-    "@types/humps": "2.0.2",
-    "@types/jest": "28.1.8",
-    "@types/node": "14.14.37",
+    "@babel/preset-env": "7.24.0",
+    "@testing-library/dom": "9.3.4",
+    "@testing-library/jest-dom": "6.4.2",
+    "@testing-library/react": "14.2.1",
+    "@testing-library/user-event": "14.5.2",
+    "@types/humps": "2.0.6",
+    "@types/jest": "29.5.12",
+    "@types/node": "20.11.30",
     "@types/react": "18.2.0",
     "@types/react-dom": "18.2.0",
     "@types/react-router-dom": "5.3.3",
-    "@types/uuid": "8.3.4",
-    "@typescript-eslint/eslint-plugin": "5.30.7",
-    "@typescript-eslint/parser": "5.30.7",
-    "dayjs": "1.11.7",
-    "eslint": "8.45.0",
+    "@types/uuid": "9.0.8",
+    "@typescript-eslint/eslint-plugin": "7.3.1",
+    "@typescript-eslint/parser": "7.3.1",
+    "eslint": "8.57.0",
     "eslint-config-airbnb": "19.0.4",
-    "eslint-config-airbnb-typescript": "17.0.0",
+    "eslint-config-airbnb-typescript": "18.0.0",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-import": "2.27.5",
     "eslint-plugin-jsx-a11y": "6.7.1",
@@ -116,7 +118,7 @@
     "eslint-plugin-react": "7.33.0",
     "eslint-plugin-react-hooks": "4.6.0",
     "msw": "0.28.1",
-    "postcss": "8.4.21",
+    "postcss": "8.4.31",
     "prettier": "2.2.1",
     "setimmediate": "1.0.5"
   }

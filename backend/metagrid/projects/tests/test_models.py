@@ -1,6 +1,11 @@
 import pytest
 
-from metagrid.projects.models import Facet, FacetGroup, Project, ProjectFacet
+from metagrid.projects.models import (  # noqa: F401
+    Facet,
+    FacetGroup,
+    Project,
+    ProjectFacet,
+)
 from metagrid.projects.tests.factories import (
     FacetFactory,
     FacetGroupFactory,

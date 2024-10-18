@@ -8,7 +8,8 @@
 import 'setimmediate'; // Added because in Jest 27, setImmediate is not defined, causing test errors
 import humps from 'humps';
 import queryString from 'query-string';
-import { AxiosResponse } from 'axios';
+import { AxiosResponse, AxiosError } from 'axios';
+import PKCE from 'js-pkce';
 import axios from '../lib/axios';
 import {
   RawUserCart,
@@ -27,17 +28,24 @@ import {
   TextInputs,
 } from '../components/Search/types';
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
-import { metagridApiURL } from '../env';
+import { globusClientID, globusRedirectUrl, metagridApiURL } from '../env';
 import apiRoutes, { ApiRoute, HTTPCodeType } from './routes';
+import { GlobusEndpointSearchResults } from '../components/Globus/types';
+import GlobusStateKeys from '../components/Globus/recoil/atom';
+
+// Reference: https://github.com/bpedroza/js-pkce
+export const REQUESTED_SCOPES =
+  'openid profile email urn:globus:auth:scope:transfer.api.globus.org:all';
 
 export interface ResponseError extends Error {
   status?: number;
+  /* eslint-disable @typescript-eslint/no-redundant-type-constituents */
   response: { status: HTTPCodeType; [key: string]: string | HTTPCodeType };
 }
 
 const getCookie = (name: string): null | string => {
   let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
+  if (document && document.cookie && document.cookie !== '') {
     const cookies = document.cookie.split(';');
     for (let i = 0; i < cookies.length; i += 1) {
       const cookie = cookies[i].trim();
@@ -125,6 +133,9 @@ export const fetchUserInfo = async (args: [string]): Promise<RawUserInfo> =>
     .get(apiRoutes.userInfo.path, {
       headers: {
         Authorization: `Bearer ${args[0]}`,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        'X-CSRFToken': getCookie('csrftoken'),
       },
     })
     .then((res) => res.data as Promise<RawUserInfo>)
@@ -148,6 +159,9 @@ export const fetchUserCart = async (
     .get(`${apiRoutes.userCart.path.replace(':pk', pk)}`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        'X-CSRFToken': getCookie('csrftoken'),
       },
     })
     .then(
@@ -214,6 +228,9 @@ export const fetchUserSearchQueries = async (
     .get(apiRoutes.userSearches.path, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        'X-CSRFToken': getCookie('csrftoken'),
       },
       transformResponse: (res: string) => {
         try {
@@ -253,6 +270,9 @@ export const addUserSearchQuery = async (
     .post(apiRoutes.userSearches.path, decamelizedPayload, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        'X-CSRFToken': getCookie('csrftoken'),
       },
     })
     .then((res) => res.data as Promise<RawUserSearchQuery>)
@@ -276,6 +296,9 @@ export const deleteUserSearchQuery = async (
       data: {},
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        'X-CSRFToken': getCookie('csrftoken'),
       },
     })
     .then((res) => res.data as Promise<''>)
@@ -636,7 +659,7 @@ export const saveSessionValue = async <T>(
     dataKey: key,
     dataValue: 'None',
   };
-  if (value !== null) {
+  if (value !== null && value !== undefined) {
     data = { ...data, dataValue: value };
   }
   return axios
@@ -654,47 +677,81 @@ export const saveSessionValue = async <T>(
     );
 };
 
+export const saveSessionValues = async (
+  data: { key: string; value: unknown }[]
+): Promise<void> => {
+  const saveFuncs: Promise<AxiosResponse>[] = [];
+  data.forEach((value) => {
+    saveFuncs.push(saveSessionValue(value.key, value.value));
+  });
+
+  await Promise.all(saveFuncs);
+};
+
+// Creates an auth object using desired authentication scope
+export async function createGlobusAuthObject(): Promise<PKCE> {
+  const authScope = await loadSessionValue<string>(GlobusStateKeys.globusAuth);
+
+  return new PKCE({
+    client_id: globusClientID, // Update this using your native client ID
+    redirect_uri: globusRedirectUrl, // Update this if you are deploying this anywhere else (Globus Auth will redirect back here once you have logged in)
+    authorization_endpoint: 'https://auth.globus.org/v2/oauth2/authorize', // No changes needed
+    token_endpoint: 'https://auth.globus.org/v2/oauth2/token', // No changes needed
+    requested_scopes: authScope || REQUESTED_SCOPES, // Update with any scopes you would need, e.g. transfer
+  });
+}
+
 /**
  * Performs validation against the globus API to ensure a 200 response.
  *
  * If the API returns a 200, it returns the axios response.
  */
 export const startGlobusTransfer = async (
+  transferAccessToken: string,
   accessToken: string,
-  refreshToken: string,
   endpointId: string,
   path: string,
   ids: string[] | string,
   filenameVars?: string[]
 ): Promise<AxiosResponse> => {
-  let url = queryString.stringifyUrl({
-    url: apiRoutes.globusTransfer.path,
-    query: {
-      access_token: accessToken,
-      refresh_token: refreshToken,
-      endpointId,
-      path,
-      dataset_id: ids,
-    },
-  });
-  if (filenameVars && filenameVars.length > 0) {
-    const filenameVarsParam = queryString.stringify(
-      { query: filenameVars },
-      {
-        arrayFormat: 'comma',
-      }
-    );
-    url += `&${filenameVarsParam}`;
-  }
-
   return axios
-    .get(url)
+    .post(
+      apiRoutes.globusTransfer.path,
+      JSON.stringify({
+        access_token: transferAccessToken,
+        refresh_token: accessToken,
+        endpointId,
+        path,
+        dataset_id: ids,
+        filenameVars,
+      })
+    )
+    .then((resp) => {
+      return resp;
+    })
+    .catch((error: AxiosError) => {
+      let message = '';
+      /* istanbul ignore else */
+      if (error.response) {
+        message = error.response.data;
+      }
+      throw new Error(message);
+    });
+};
+
+export const startSearchGlobusEndpoints = async (
+  searchText: string
+): Promise<GlobusEndpointSearchResults> => {
+  return axios
+    .get(apiRoutes.globusSearchEndpoints.path, {
+      params: { search_text: searchText },
+    })
     .then((resp) => {
       return resp;
     })
     .catch((error: ResponseError) => {
       throw new Error(
-        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusTransfer)
+        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusSearchEndpoints)
       );
     });
 };

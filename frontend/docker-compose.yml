@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   react:
     build:
@@ -7,6 +5,11 @@ services:
       dockerfile: ./docker/local/Dockerfile
     image: metagrid_local_react
     container_name: react
+    environment:
+      - DEBUG=true
+      - RELEASE=dev
+      - HTML_PATH=/app/public
+      - ENV_FILE=/app/.envs/.react
     env_file:
       - .envs/.react
     volumes:

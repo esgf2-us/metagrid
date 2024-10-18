@@ -1,4 +1,4 @@
-from metagrid.cart.models import Cart, Search
+from metagrid.cart.models import Cart, Search  # noqa: F401
 from metagrid.cart.tests.factories import CartFactory, SearchFactory
 
 

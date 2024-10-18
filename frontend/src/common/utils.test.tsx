@@ -1,4 +1,8 @@
-import { rawProjectFixture } from '../api/mock/fixtures';
+import { render } from '@testing-library/react';
+import React from 'react';
+import { MessageInstance } from 'antd/es/message/interface';
+import { message } from 'antd';
+import { rawProjectFixture } from '../test/mock/fixtures';
 import { UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
 import {
   ActiveSearchQuery,
@@ -346,34 +350,82 @@ describe('Test unsavedLocal searches', () => {
 });
 
 describe('Test show notices function', () => {
-  it('Shows a success message', () => {
-    showNotice('Test notification successful', {
-      duration: 5,
-      type: 'success',
-    });
+  // Creating a test component to render the messages and verify they're rendered
+  type Props = { testFunc: (msgApi: MessageInstance) => void };
+  const TestComponent: React.FC<React.PropsWithChildren<Props>> = ({
+    testFunc,
+  }) => {
+    const [messageApi, contextHolder] = message.useMessage();
+
+    React.useEffect(() => {
+      testFunc(messageApi);
+    }, []);
+    return <div>{contextHolder}</div>;
+  };
+
+  it('Shows a success message', async () => {
+    const notice = (msgApi: MessageInstance): void => {
+      showNotice(msgApi, 'Test notification successful', {
+        duration: 5,
+        type: 'success',
+      });
+    };
+
+    const { findByText } = render(<TestComponent testFunc={notice} />);
+    expect(await findByText('Test notification successful')).toBeTruthy();
   });
-  it('Shows a warning message', () => {
-    showNotice('Test warning notification', {
-      duration: 5,
-      type: 'warning',
-    });
+
+  it('Shows a warning message', async () => {
+    const notice = (msgApi: MessageInstance): void => {
+      showNotice(msgApi, 'Test warning notification', {
+        duration: 5,
+        type: 'warning',
+      });
+    };
+
+    const { findByText } = render(<TestComponent testFunc={notice} />);
+    expect(await findByText('Test warning notification')).toBeTruthy();
   });
-  it('Shows a error message', () => {
-    showNotice('Test error notification', {
-      duration: 5,
-      type: 'error',
-    });
+
+  it('Shows a error message', async () => {
+    const notice = (msgApi: MessageInstance): void => {
+      showNotice(msgApi, 'Test error notification', {
+        duration: 5,
+        type: 'error',
+      });
+    };
+
+    const { findByText } = render(<TestComponent testFunc={notice} />);
+    expect(await findByText('Test error notification')).toBeTruthy();
   });
-  it('Shows a success message', () => {
-    showNotice('Test info notification', {
-      duration: 5,
-      type: 'info',
-    });
+
+  it('Shows an info message', async () => {
+    const notice = (msgApi: MessageInstance): void => {
+      showNotice(msgApi, 'Test info notification', {
+        duration: 5,
+        type: 'info',
+      });
+    };
+
+    const { findByText } = render(<TestComponent testFunc={notice} />);
+    expect(await findByText('Test info notification')).toBeTruthy();
   });
-  it('Shows a default message', () => {
-    showNotice('Test info notification');
+
+  it('Shows a default message', async () => {
+    const notice = (msgApi: MessageInstance): void => {
+      showNotice(msgApi, 'Test default notification');
+    };
+
+    const { findByText } = render(<TestComponent testFunc={notice} />);
+    expect(await findByText('Test default notification')).toBeTruthy();
   });
-  it('Shows a error notification', () => {
-    showError('');
+
+  it('Shows a error notification', async () => {
+    const notice = (msgApi: MessageInstance): void => {
+      showError(msgApi, '');
+    };
+
+    const { findByText } = render(<TestComponent testFunc={notice} />);
+    expect(await findByText('An unknown error has occurred.')).toBeTruthy();
   });
 });
