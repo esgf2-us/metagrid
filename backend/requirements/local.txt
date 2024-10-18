@@ -2,7 +2,7 @@
 
 # Code quality
 # ------------------------------------------------------------------------------
-flake8==7.1.0  # https://github.com/PyCQA/flake8
+flake8==7.1.1  # https://github.com/PyCQA/flake8
 flake8-isort==6.1.1  # https://github.com/gforcada/flake8-isort
 black==24.4.2  # https://github.com/ambv/black
 mypy==1.10.1  # https://github.com/python/mypy
