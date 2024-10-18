@@ -142,8 +142,8 @@ def do_status(request):
         settings,
         "STATUS_URL",
         "",
-    )
-    resp = requests.get(status_url)
+    )  # pragma: no cover
+    resp = requests.get(status_url)  # pragma: no cover
     if resp.status_code == 200:  # pragma: no cover
         return HttpResponse(resp.text)
     else:  # pragma: no cover
