@@ -74,11 +74,9 @@ jobs:
           pytest
 
       - name: Upload Coverage Report
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v3
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           file: "./backend/coverage.xml"
           flags: backend
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: false
