@@ -1,32 +1,33 @@
 import React from 'react';
+import { screen } from '@testing-library/react';
 import {
   rawSearchResultFixture,
   userCartFixture,
-} from '../../api/mock/fixtures';
+} from '../../test/mock/fixtures';
 import Summary, { Props } from './Summary';
-import { customRenderKeycloak } from '../../test/custom-render';
+import customRender from '../../test/custom-render';
 
 const defaultProps: Props = {
   userCart: userCartFixture(),
 };
 
-test('renders component', () => {
-  const { getByTestId } = customRenderKeycloak(<Summary {...defaultProps} />);
-  expect(getByTestId('summary')).toBeTruthy();
+test('renders component', async () => {
+  customRender(<Summary {...defaultProps} />);
+  expect(await screen.findByTestId('summary')).toBeTruthy();
 });
 
-it('shows the correct number of datasets and files', () => {
-  const { getByText } = customRenderKeycloak(<Summary {...defaultProps} />);
+it('shows the correct number of datasets and files', async () => {
+  customRender(<Summary {...defaultProps} />);
   // Shows number of files
-  const numDatasetsField = getByText('Number of Datasets:');
-  const numFilesText = getByText('Number of Files:');
+  const numDatasetsField = await screen.findByText('Number of Datasets:');
+  const numFilesText = await screen.findByText('Number of Files:');
 
   expect(numDatasetsField.textContent).toEqual('Number of Datasets: 3');
   expect(numFilesText.textContent).toEqual('Number of Files: 8');
 });
 
-it('renders component with correct calculations when a dataset doesn"t have size or number_of_files attributes', () => {
-  const { getByText } = customRenderKeycloak(
+it('renders component with correct calculations when a dataset doesn"t have size or number_of_files attributes', async () => {
+  customRender(
     <Summary
       userCart={[
         rawSearchResultFixture(),
@@ -38,8 +39,8 @@ it('renders component with correct calculations when a dataset doesn"t have size
     />
   );
   // Shows number of files
-  const numDatasetsField = getByText('Number of Datasets:');
-  const numFilesText = getByText('Number of Files:');
+  const numDatasetsField = await screen.findByText('Number of Datasets:');
+  const numFilesText = await screen.findByText('Number of Files:');
 
   expect(numDatasetsField.textContent).toEqual('Number of Datasets: 2');
   expect(numFilesText.textContent).toEqual('Number of Files: 3');

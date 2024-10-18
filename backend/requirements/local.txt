@@ -2,24 +2,24 @@
 
 # Code quality
 # ------------------------------------------------------------------------------
-flake8==6.0.0  # https://github.com/PyCQA/flake8
-flake8-isort==6.0.0  # https://github.com/gforcada/flake8-isort
-black==23.7.0  # https://github.com/ambv/black
-mypy==1.4.1  # https://github.com/python/mypy
+flake8==7.1.0  # https://github.com/PyCQA/flake8
+flake8-isort==6.1.1  # https://github.com/gforcada/flake8-isort
+black==24.4.2  # https://github.com/ambv/black
+mypy==1.10.1  # https://github.com/python/mypy
 mypy-extensions==1.0.0 # https://pypi.org/project/mypy-extensions/
 
 # Testing
 # ------------------------------------------------------------------------------
-django-stubs==4.2.3  # https://github.com/typeddjango/django-stubs
-pytest==7.3.2  # https://github.com/pytest-dev/pytest
-pytest-cov==4.1.0  # https://github.com/pytest-dev/pytest-cov
-pytest-django==4.5.2  # https://github.com/pytest-dev/pytest-django
-pytest-sugar==0.9.7  # https://github.com/Frozenball/pytest-sugar
+django-stubs==5.0.2  # https://github.com/typeddjango/django-stubs
+pytest==8.2.2  # https://github.com/pytest-dev/pytest
+pytest-cov==5.0.0  # https://github.com/pytest-dev/pytest-cov
+pytest-django==4.8.0  # https://github.com/pytest-dev/pytest-django
+pytest-sugar==1.0.0  # https://github.com/Frozenball/pytest-sugar
 pytest-watch==4.2.0  # https://github.com/joeyespo/pytest-watch
-factory-boy==3.2.1  # https://github.com/FactoryBoy/factory_boy
+factory-boy==3.3.0  # https://github.com/FactoryBoy/factory_boy
 
 # Developer Tools
 # ------------------------------------------------------------------------------
 ipdb==0.13.13  # https://github.com/gotcha/ipdb
-ipython==8.11.0  # https://github.com/ipython/ipython
+ipython==8.26.0  # https://github.com/ipython/ipython
 django-extensions==3.2.3  # https://github.com/django-extensions/django-extensions

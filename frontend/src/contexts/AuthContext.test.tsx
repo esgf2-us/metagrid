@@ -1,62 +1,64 @@
-import { act, waitFor } from '@testing-library/react';
+import { act, screen } from '@testing-library/react';
 import React from 'react';
-import {
-  customRenderGlobus,
-  customRenderKeycloak,
-} from '../test/custom-render';
+import customRender from '../test/custom-render';
+import { mockConfig } from '../test/jestTestFunctions';
 
 describe('test AuthProvider', () => {
   it('renders using keycloak provider', async () => {
+    mockConfig.authenticationMethod = 'keycloak';
+
     jest.useFakeTimers();
 
-    const { getByTestId, getByText } = customRenderKeycloak(
+    customRender(
       <div data-testid="authProvider">
-        <p>renders</p>
+        <p>renders keycloak</p>
       </div>
     );
 
     // Wait for render to get user auth info
-    const authProvider = await waitFor(() => getByTestId('authProvider'));
+    const authProvider = await screen.findByTestId('authProvider');
     expect(authProvider).toBeTruthy();
 
     // Wait for re-render to get user info
-    await waitFor(() => getByTestId('authProvider'));
+    await screen.findByTestId('authProvider');
 
     // Check children renders
-    const renderResult = await waitFor(() => getByText('renders'));
+    const renderResult = await screen.findByText('renders keycloak');
     expect(renderResult).toBeTruthy();
 
     act(() => {
       jest.advanceTimersByTime(295000);
     });
 
-    await waitFor(() => getByTestId('authProvider'));
+    await screen.findByTestId('authProvider');
   });
 
   it('renders using globus auth provider', async () => {
+    mockConfig.authenticationMethod = 'globus';
+
     jest.useFakeTimers();
 
-    const { getByTestId, getByText } = customRenderGlobus(
+    customRender(
       <div data-testid="authProvider">
-        <p>renders</p>
+        <p>renders globus</p>
       </div>
     );
 
     // Wait for render to get user auth info
-    const authProvider = await waitFor(() => getByTestId('authProvider'));
+    const authProvider = await screen.findByTestId('authProvider');
     expect(authProvider).toBeTruthy();
 
     // Wait for re-render to get user info
-    await waitFor(() => getByTestId('authProvider'));
+    await screen.findByTestId('authProvider');
 
     // Check children renders
-    const renderResult = await waitFor(() => getByText('renders'));
+    const renderResult = await screen.findByText('renders globus');
     expect(renderResult).toBeTruthy();
 
     act(() => {
       jest.advanceTimersByTime(295000);
     });
 
-    await waitFor(() => getByTestId('authProvider'));
+    await screen.findByTestId('authProvider');
   });
 });

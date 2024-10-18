@@ -6,7 +6,7 @@ import {
   RightCircleOutlined,
   ShareAltOutlined,
 } from '@ant-design/icons';
-import { Alert, Form, Table as TableD, Tooltip } from 'antd';
+import { Alert, Form, Table as TableD, Tooltip, message } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
@@ -86,6 +86,8 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
   numResults = 0,
   filenameVars,
 }) => {
+  const [messageApi, contextHolder] = message.useMessage();
+
   // Add options to this constant as needed.
   // This variable populates the download drop downs and is used in conditionals.
   const metadataKeysToDisplay = [
@@ -229,6 +231,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
         const downloadUrls = genDownloadUrls(record.url);
         return (
           <span>
+            {contextHolder}
             <Form
               layout="inline"
               onFinish={() => openDownloadURL(downloadUrls.HTTPServer)}
@@ -259,13 +262,19 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
                           void navigator.clipboard
                             .writeText(downloadUrls.OPENDAP)
                             .catch((e: PromiseRejectedResult) => {
-                              showError(e.reason as string);
+                              showError(messageApi, e.reason as string);
                             });
-                          showNotice('OPENDAP URL copied to clipboard!', {
-                            icon: (
-                              <ShareAltOutlined style={styles.messageAddIcon} />
-                            ),
-                          });
+                          showNotice(
+                            messageApi,
+                            'OPENDAP URL copied to clipboard!',
+                            {
+                              icon: (
+                                <ShareAltOutlined
+                                  style={styles.messageAddIcon}
+                                />
+                              ),
+                            }
+                          );
                         }
                       }}
                       icon={<CopyOutlined />}

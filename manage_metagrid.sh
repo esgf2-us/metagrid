@@ -117,6 +117,11 @@ function toggleLocalContainers() {
     fi
 }
 
+function runPreCommit() {
+    clear
+    pre-commit run --all-files
+}
+
 # Main Menu
 function mainMenu() {
     echo "Main Menu Options:"
@@ -126,7 +131,8 @@ function mainMenu() {
     echo "4 Stop all containers"
     echo "5 Start / Stop Local Dev Containers"
     echo "6 Container Start / Stop Menu"
-    echo "7 Exit"
+    echo "7 Run pre-commit"
+    echo "8 Exit"
     read option
     if [ -z $option ]; then
         clear
@@ -157,12 +163,15 @@ function mainMenu() {
             clear
             containersMenu
         elif [ "$option" = "7" ]; then
+            runPreCommit
+            return 0
+        elif [ "$option" = "8" ]; then
             clear
             return 0
         else
             clear
             echo "You entered: $option"
-            echo "Please enter a number from 1 to 6"
+            echo "Please enter a number from 1 to 8"
             mainMenu
         fi
     fi

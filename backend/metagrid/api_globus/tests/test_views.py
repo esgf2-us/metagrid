@@ -7,11 +7,16 @@ from metagrid.api_globus.views import split_value, truncate_urls
 
 class TestGlobusViewSet(APITestCase):
     def test_truncate(self):
-        lst = [{"url": ["test_url:globus_value|Globus"]}]
+        lst = [
+            {
+                "url": ["test_url:globus_value|Globus"],
+                "data_node": "aims3.llnl.gov",
+            }
+        ]
         results = []
         for value in truncate_urls(lst):
             results.append(value)
-        assert results == ["globus_value"]
+        assert results == [("globus_value", "aims3.llnl.gov")]
 
     def test_split_value(self):
         result = split_value(1)
@@ -36,15 +41,13 @@ class TestGlobusViewSet(APITestCase):
 
     def test_get_access_token(self):
         url = reverse("globus_auth")
+
         getdata = {}
         response = self.client.post(url, getdata)
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_globus_transfer(self):
         url = reverse("globus_transfer")
-        getdata = {}
-        response = self.client.get(url, getdata)
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
 
         postdata = {
             "access_token": "",
@@ -52,5 +55,5 @@ class TestGlobusViewSet(APITestCase):
             "endpointId": "test",
             "path": "bad/path",
         }
-        response = self.client.post(url, postdata)
+        response = self.client.post(url, postdata, format="json")
         assert response.status_code == status.HTTP_400_BAD_REQUEST

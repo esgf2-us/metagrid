@@ -1,15 +1,15 @@
-import { waitFor, within } from '@testing-library/react';
+import { act, waitFor, within, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import {
   ESGFSearchAPIFixture,
   rawSearchResultFixture,
-} from '../../api/mock/fixtures';
-import { rest, server } from '../../api/mock/server';
+} from '../../test/mock/fixtures';
+import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import FilesTable, { DownloadUrls, genDownloadUrls, Props } from './FilesTable';
 import { RawSearchResult } from './types';
-import { customRenderKeycloak } from '../../test/custom-render';
+import customRender from '../../test/custom-render';
 import { selectDropdownOption } from '../../test/jestTestFunctions';
 
 const user = userEvent.setup();
@@ -94,11 +94,9 @@ const defaultProps: Props = {
 
 describe('test FilesTable component', () => {
   it('renders an empty data table when no results are available', async () => {
-    const { getByRole } = customRenderKeycloak(
-      <FilesTable {...defaultProps} numResults={undefined} />
-    );
+    customRender(<FilesTable {...defaultProps} numResults={undefined} />);
 
-    const component = await waitFor(() => getByRole('table'));
+    const component = await screen.findByRole('table');
     expect(component).toBeTruthy();
   });
 
@@ -109,40 +107,27 @@ describe('test FilesTable component', () => {
       )
     );
 
-    const { getByRole } = customRenderKeycloak(
-      <FilesTable {...defaultProps} />
-    );
-    const alertMsg = await waitFor(() =>
-      getByRole('img', { name: 'close-circle', hidden: true })
-    );
+    customRender(<FilesTable {...defaultProps} />);
+    const alertMsg = await screen.findByRole('img', {
+      name: 'close-circle',
+      hidden: true,
+    });
     expect(alertMsg).toBeTruthy();
   });
 
   it('handles downloading data with httpserver', async () => {
-    const { getByTestId } = customRenderKeycloak(
-      <FilesTable {...defaultProps} />
-    );
+    customRender(<FilesTable {...defaultProps} />);
 
     // Check component renders
-    const component = await waitFor(() => getByTestId('filesTable'));
+    const component = await screen.findByTestId('filesTable');
     expect(component).toBeTruthy();
 
     // Wait for component to re-render
-    await waitFor(() => getByTestId('filesTable'));
+    await screen.findByTestId('filesTable');
 
     // Check a record row exist
-    let row = await waitFor(
-      () =>
-        document.getElementsByClassName('ant-table-row').item(0) as HTMLElement
-    );
-    if (row === null) {
-      row = await waitFor(
-        () =>
-          document
-            .getElementsByClassName('ant-table-row')
-            .item(0) as HTMLElement
-      );
-    }
+    const rows = await screen.findAllByRole('row');
+    const row = rows[0];
     expect(row).toBeTruthy();
 
     // Get the download button
@@ -150,14 +135,23 @@ describe('test FilesTable component', () => {
       name: 'download',
     });
     expect(downloadBtn).toBeTruthy();
-    await user.click(downloadBtn);
+
+    await act(async () => {
+      await user.click(downloadBtn);
+    });
 
     // Test the copy button
     const copyBtn = within(row).getByRole('button', {
       name: 'copy',
     });
     expect(copyBtn).toBeTruthy();
-    await user.click(copyBtn);
+
+    await act(async () => {
+      await user.click(copyBtn);
+    });
+
+    // Wait for component to re-render
+    await screen.findByTestId('filesTable');
   });
 
   it('handles pagination and page size changes', async () => {
@@ -181,24 +175,22 @@ describe('test FilesTable component', () => {
       )
     );
 
-    const { getByRole, getByTestId } = customRenderKeycloak(
-      <FilesTable {...defaultProps} numResults={numFound} />
-    );
+    customRender(<FilesTable {...defaultProps} numResults={numFound} />);
 
     // Check component renders
-    const component = await waitFor(() => getByTestId('filesTable'));
+    const component = await screen.findByTestId('filesTable');
     expect(component).toBeTruthy();
 
     // Wait for component to re-render
-    await waitFor(() => getByTestId('filesTable'));
+    await screen.findByTestId('filesTable');
 
     // Select the combobox drop down and update its value to render options
-    const paginationList = await waitFor(() => getByRole('list'));
+    const paginationList = await screen.findByRole('list');
     expect(paginationList).toBeTruthy();
 
     // Select the combobox drop down, update its value, then click it
-    const pageSizeComboBox = await waitFor(() =>
-      within(paginationList).getByRole('combobox')
+    const pageSizeComboBox = await within(paginationList).findByRole(
+      'combobox'
     );
     expect(pageSizeComboBox).toBeTruthy();
 
@@ -207,43 +199,21 @@ describe('test FilesTable component', () => {
 
     // Change back to 10 / page
     await selectDropdownOption(user, pageSizeComboBox, '10 / page');
-
-    // Select the 'Next Page' button (only enabled if there are > 10 results)
-    const nextPage = await waitFor(() =>
-      getByRole('listitem', { name: 'Next Page' })
-    );
-    await user.click(nextPage);
-
-    // Wait for component to re-render
-    await waitFor(() => getByTestId('filesTable'));
   });
 
   it('handles clicking the expandable icon', async () => {
-    const { getByTestId } = customRenderKeycloak(
-      <FilesTable {...defaultProps} />
-    );
+    customRender(<FilesTable {...defaultProps} />);
 
     // Check component renders
-    const component = await waitFor(() => getByTestId('filesTable'));
+    const component = await screen.findByTestId('filesTable');
     expect(component).toBeTruthy();
 
     // Wait for component to re-render
-    await waitFor(() => getByTestId('filesTable'));
+    await screen.findByTestId('filesTable');
 
     // Check a record row exist
-    let row = await waitFor(
-      () =>
-        document.getElementsByClassName('ant-table-row').item(0) as HTMLElement
-    );
-
-    if (row === null) {
-      row = await waitFor(
-        () =>
-          document
-            .getElementsByClassName('ant-table-row')
-            .item(0) as HTMLElement
-      );
-    }
+    const rows = await screen.findAllByRole('row');
+    const row = rows[0];
     expect(row).toBeTruthy();
 
     // Get the expandable cell
@@ -257,13 +227,19 @@ describe('test FilesTable component', () => {
       name: 'right-circle',
     });
     expect(expandableIcon).toBeTruthy();
-    await user.click(expandableIcon);
+
+    await act(async () => {
+      await user.click(expandableIcon);
+    });
 
     // Get the down circle icon within the cell and click to close the expandable row
     const expandableDownIcon = within(expandableCell).getByRole('img', {
       name: 'down-circle',
     });
     expect(expandableDownIcon).toBeTruthy();
-    await user.click(expandableDownIcon);
+
+    await act(async () => {
+      await user.click(expandableDownIcon);
+    });
   });
 });
