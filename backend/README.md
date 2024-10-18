@@ -9,6 +9,9 @@ source backend/venv/bin/activate
 # Deactivate virtual env
 deactivate
 
+# Run pre-commit process on all files (will run flake8, black etc.)
+pre-commit run --all-files
+
 # Use Black formatting, cd to backend
 black .
 
