@@ -1,33 +1,38 @@
 import { atom } from 'recoil';
-import { GlobusStateValue, GlobusTaskItem } from '../types';
+import { GlobusEndpoint, GlobusTaskItem } from '../types';
 
 // Folder structure based on: https://wes-rast.medium.com/recoil-project-structure-best-practices-79e74a475caa
 
 enum GlobusStateKeys {
   accessToken = 'globusAccessToken',
-  continueGlobusPrepSteps = 'continueGlobusPreparationSteps',
-  useDefaultEndpoint = 'useDefaultEndpoint',
-  defaultEndpoint = 'defaultGlobusEndpoint',
-  userSelectedEndpoint = 'userSelectedEndpoint',
-  refreshToken = 'globusRefreshToken',
-  tokenResponse = 'tokenResponse',
-  transferToken = 'globusTransferToken',
+  userChosenEndpoint = 'globusChosenEndpoint',
+  globusTransferGoalsState = 'globusTransferGoalsState',
+  globusAuth = 'globusAuth',
   globusTaskItems = 'globusTaskItems',
+  transferToken = 'globusTransferToken',
+  savedGlobusEndpoints = 'savedGlobusEndpoints',
 }
-
-export const globusDefaultEndpoint = atom<GlobusStateValue>({
-  key: GlobusStateKeys.defaultEndpoint,
-  default: null,
-});
-
-export const globusUseDefaultEndpoint = atom<boolean>({
-  key: GlobusStateKeys.useDefaultEndpoint,
-  default: false,
-});
 
 export const globusTaskItems = atom<GlobusTaskItem[]>({
   key: GlobusStateKeys.globusTaskItems,
   default: [],
+});
+
+export const globusSavedEndpoints = atom<GlobusEndpoint[]>({
+  key: GlobusStateKeys.savedGlobusEndpoints,
+  default: [
+    {
+      canonical_name: '',
+      contact_email: '',
+      display_name: 'Select Globus Collection',
+      entity_type: '',
+      id: '',
+      owner_id: '',
+      owner_string: '',
+      path: '',
+      subscription_id: '',
+    },
+  ],
 });
 
 export default GlobusStateKeys;

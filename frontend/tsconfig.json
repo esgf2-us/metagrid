@@ -15,7 +15,8 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "types": ["@testing-library/jest-dom"]
   },
   "include": ["src", "src/test/__mocks__/js-pkce.ts"]
 }

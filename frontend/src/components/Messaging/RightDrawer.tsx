@@ -29,29 +29,34 @@ const RightDrawer: React.FC<React.PropsWithChildren<Props>> = ({
       }
     >
       <Card title="Metagrid Messages">
-        <Collapse defaultActiveKey={[rightDrawerMessages[0].fileName]}>
-          {rightDrawerMessages.map((message: MarkdownMessage) => {
-            return (
-              <Collapse.Panel key={message.fileName} header={message.title}>
+        <Collapse
+          defaultActiveKey={[rightDrawerMessages[0].fileName]}
+          items={rightDrawerMessages.map((message: MarkdownMessage) => {
+            return {
+              key: message.fileName,
+              label: message.title,
+              children: (
                 <MessageCard
                   title={message.title}
                   fileName={message.fileName}
                 />
-              </Collapse.Panel>
-            );
+              ),
+            };
           })}
-        </Collapse>
+        />
       </Card>
       <Card title="Metagrid Version History">
-        <Collapse>
-          {rightDrawerChanges.map((change: MarkdownMessage) => {
-            return (
-              <Collapse.Panel key={change.fileName} header={change.title}>
+        <Collapse
+          items={rightDrawerChanges.map((change: MarkdownMessage) => {
+            return {
+              key: change.fileName,
+              label: change.title,
+              children: (
                 <MessageCard title={change.title} fileName={change.fileName} />
-              </Collapse.Panel>
-            );
+              ),
+            };
           })}
-        </Collapse>
+        />
       </Card>
     </Drawer>
   );

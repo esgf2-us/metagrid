@@ -24,7 +24,7 @@ class TestUserManager:
 
         # Check user exists
         user = User.objects.filter(pk=user.pk).first()
-        assert User
+        assert user
 
         # Check user is a superuser
         assert user.is_superuser

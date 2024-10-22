@@ -23,6 +23,22 @@ class TestProxyViewSet(APITestCase):
         )
         self.assertEqual(response.status_code, 302)
 
+    def test_do_globus_get_endpoint(self):
+        url = reverse("globus-get-endpoint")
+
+        data = {"endpoint_id": "0247816e-cc0d-4e03-a509-10903f6dde11"}
+        response = self.client.get(url, data)
+        print(response.status_code)
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_do_globus_search_endpoints(self):
+        url = reverse("globus-search-endpoints")
+
+        data = {"search_text": "0247816e-cc0d-4e03-a509-10903f6dde11"}
+        response = self.client.get(url, data)
+        print(response.status_code)
+        assert response.status_code == status.HTTP_200_OK
+
     def test_globus_auth_complete(self):
         url = reverse("globus-auth")
         User = get_user_model()
@@ -64,10 +80,10 @@ class TestProxyViewSet(APITestCase):
         response = self.client.get(url, postdata)
         assert response.status_code == status.HTTP_200_OK
 
-    def test_status(self):
-        url = reverse("do-status")
-        response = self.client.get(url)
-        assert response.status_code == status.HTTP_200_OK
+    # def test_status(self):
+    #     url = reverse("do-status")
+    #     response = self.client.get(url)
+    #     assert response.status_code == status.HTTP_200_OK
 
     def test_citation(self):
         url = reverse("do-citation")

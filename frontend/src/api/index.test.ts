@@ -20,7 +20,9 @@ import {
   parseNodeStatus,
   processCitation,
   saveSessionValue,
+  saveSessionValues,
   startGlobusTransfer,
+  startSearchGlobusEndpoints,
   updateUserCart,
 } from '.';
 import {
@@ -32,6 +34,7 @@ import {
 import {
   activeSearchQueryFixture,
   ESGFSearchAPIFixture,
+  globusEndpointFixture,
   parsedNodeStatusFixture,
   projectsFixture,
   rawCitationFixture,
@@ -41,8 +44,8 @@ import {
   userInfoFixture,
   userSearchQueriesFixture,
   userSearchQueryFixture,
-} from './mock/fixtures';
-import { rest, server } from './mock/server';
+} from '../test/mock/fixtures';
+import { rest, server } from '../test/mock/server';
 import apiRoutes from './routes';
 
 const genericNetworkErrorMsg = 'Failed to Connect';
@@ -134,6 +137,7 @@ describe('test fetching projects', () => {
     const projects = await fetchProjects();
     expect(projects).toEqual({ results: projectsFixture() });
   });
+
   it('catches and throws an error based on HTTP status code', async () => {
     server.use(
       rest.get(apiRoutes.projects.path, (_req, res, ctx) =>
@@ -650,6 +654,41 @@ describe('test opening download url', () => {
   });
 });
 
+describe('test user endpoint search', () => {
+  it('returns empty endpoint list if no results found, or empty search text', async () => {
+    const resp = await startSearchGlobusEndpoints('blah blah');
+    expect(resp.data).toEqual([]);
+
+    const resp2 = await startSearchGlobusEndpoints('');
+    expect(resp2.data).toEqual([]);
+  });
+
+  it('returns a single endpoint when search text receives a match', async () => {
+    const resp = await startSearchGlobusEndpoints('lc public');
+    expect(resp.data).toEqual([globusEndpointFixture()]);
+  });
+  it('returns multiple endpoints when search text receives multiple matches', async () => {
+    const resp = await startSearchGlobusEndpoints('multiple endpoints');
+    expect(resp.data.length).toEqual(3);
+  });
+  it('returns error if there is an error', async () => {
+    await expect(startSearchGlobusEndpoints('error404')).rejects.toThrow(
+      apiRoutes.globusSearchEndpoints.handleErrorMsg(404)
+    );
+  });
+  it('throws 404 error', async () => {
+    server.use(
+      rest.get(apiRoutes.globusSearchEndpoints.path, (_req, res, ctx) =>
+        res(ctx.status(404))
+      )
+    );
+
+    await expect(startSearchGlobusEndpoints('lc public')).rejects.toThrow(
+      apiRoutes.globusSearchEndpoints.handleErrorMsg(404)
+    );
+  });
+});
+
 describe('test startGlobusTransfer function', () => {
   it('performs a transfer with a filename variable', async () => {
     const resp = await startGlobusTransfer(
@@ -679,7 +718,7 @@ describe('test startGlobusTransfer function', () => {
 
   it('catches and throws an error based on HTTP status code', async () => {
     server.use(
-      rest.get(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
+      rest.post(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
         res(ctx.status(404))
       )
     );
@@ -688,7 +727,7 @@ describe('test startGlobusTransfer function', () => {
       startGlobusTransfer('asdfs', 'asdfs', 'endpointTest', 'path', 'id', [
         'clt',
       ])
-    ).rejects.toThrow(apiRoutes.globusTransfer.handleErrorMsg(404));
+    ).rejects.toThrow(apiRoutes.globusTransfer.handleErrorMsg(408));
   });
 });
 
@@ -751,6 +790,22 @@ describe('testing session storage', () => {
 
     const loadRes: string | null = await loadSessionValue('dataValue');
     expect(loadRes).toEqual('value');
+  });
+  it('Test saving several values together using saveAll, then loading each one to verify', async () => {
+    // Save several key and value pairs
+    await saveSessionValues([
+      { key: 'accessToken', value: 'access123' },
+      { key: 'transferToken', value: 'transfer123' },
+      { key: 'endpoints', value: [] },
+    ]);
+
+    const accessToken = await loadSessionValue('accessToken');
+    const transferToken = await loadSessionValue('transferToken');
+    const endpoints = await loadSessionValue('endpoints');
+
+    expect(accessToken).toEqual('access123');
+    expect(transferToken).toEqual('transfer123');
+    expect(endpoints).toEqual([]);
   });
   it('Test loading non-existent key from session store returns null', async () => {
     const loadRes: string | null = await loadSessionValue('badKey');

@@ -408,37 +408,6 @@ export const createMainPageTour = (): JoyrideTour => {
       'right'
     );
 
-  /* istanbul ignore if */
-  if (mainTableEmpty()) {
-    tour
-      .addNextStep(
-        leftSidebarTargets.projectSelectLeftSideBtn.selector(),
-        'Then you click this button to load the results for the project you selected...',
-        'right',
-        () => {
-          clickFirstElement(
-            leftSidebarTargets.projectSelectLeftSideBtn.selector()
-          );
-        }
-      )
-      .addNextStep(
-        leftSidebarTargets.projectSelectLeftSideBtn.selector(),
-        "NOTE: The search results may take a few seconds to load... Click 'next' to continue.",
-        'right',
-        async () => {
-          if (mainTableEmpty()) {
-            await delay(1000);
-          }
-        }
-      );
-  } else {
-    tour.addNextStep(
-      leftSidebarTargets.projectSelectLeftSideBtn.selector(),
-      'Then you click this button to load results for the project you selected.',
-      'right'
-    );
-  }
-
   tour.addNextStep(
     leftSidebarTargets.projectWebsiteBtn.selector(),
     'Once a project is selected, if you wish, you can go view the project website by clicking this button.',

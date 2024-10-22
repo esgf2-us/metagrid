@@ -28,9 +28,9 @@ EMAIL_BACKEND = env(
 DEFAULT_RENDERER_CLASSES.append(  # noqa F405
     "rest_framework.renderers.BrowsableAPIRenderer",
 )
-REST_FRAMEWORK[  # noqa F405
-    "DEFAULT_RENDERER_CLASSES"
-] = DEFAULT_RENDERER_CLASSES  # noqa F405
+REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = (  # noqa F405
+    DEFAULT_RENDERER_CLASSES  # noqa F405
+)
 
 # WhiteNoise
 # ------------------------------------------------------------------------------

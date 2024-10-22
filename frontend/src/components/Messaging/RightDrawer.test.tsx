@@ -1,13 +1,12 @@
 import React from 'react';
+import { screen } from '@testing-library/react';
 import RightDrawer from './RightDrawer';
-import { customRenderKeycloak } from '../../test/custom-render';
+import customRender from '../../test/custom-render';
 
-it('renders right drawer component.', () => {
-  const { getByText } = customRenderKeycloak(
-    <RightDrawer open onClose={() => {}} />
-  );
+it('renders right drawer component.', async () => {
+  customRender(<RightDrawer open onClose={() => {}} />);
 
   // Check component renders
-  const text = getByText('Notifications');
+  const text = await screen.findByText('Notifications');
   expect(text).toBeTruthy();
 });

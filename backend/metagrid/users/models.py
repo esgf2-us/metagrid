@@ -1,5 +1,5 @@
 import uuid
-from typing import List
+from typing import List  # noqa: F401
 
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models

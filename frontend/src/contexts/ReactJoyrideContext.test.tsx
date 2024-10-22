@@ -1,32 +1,30 @@
-import { waitFor } from '@testing-library/react';
+import { act, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { getCurrentAppPage, TourTitles } from '../common/reactJoyrideSteps';
 import { AppPage } from '../common/types';
 import Support from '../components/Support';
-import { customRenderKeycloak } from '../test/custom-render';
+import customRender from '../test/custom-render';
 
 const user = userEvent.setup();
 
 describe('test ReactJoyrideProvider', () => {
   it('renders using provider', async () => {
-    const { getByTestId, getByText } = customRenderKeycloak(
+    customRender(
       <div data-testid="reactJoyrideProvider">
         <p>renders</p>
       </div>
     );
 
     // Wait for render to get user auth info
-    const joyrideProvider = await waitFor(() =>
-      getByTestId('reactJoyrideProvider')
-    );
+    const joyrideProvider = await screen.findByTestId('reactJoyrideProvider');
     expect(joyrideProvider).toBeTruthy();
 
     // Wait for re-render to get user info
-    await waitFor(() => getByTestId('reactJoyrideProvider'));
+    await screen.findByTestId('reactJoyrideProvider');
 
     // Check children renders
-    const renderResult = await waitFor(() => getByText('renders'));
+    const renderResult = await screen.findByText('renders');
     expect(renderResult).toBeTruthy();
   });
 
@@ -47,31 +45,34 @@ describe('test ReactJoyrideProvider', () => {
     // Set location then render modal
     window.location.pathname = 'testing/search';
     expect(getCurrentAppPage()).toEqual(AppPage.Main);
-    const { getByTestId, getByRole } = customRenderKeycloak(
-      <Support open onClose={jest.fn()} />
-    );
+
+    customRender(<Support open onClose={jest.fn()} />);
 
     // Check support modal rendered
-    const support = getByTestId('support-form');
+    const support = await screen.findByTestId('support-form');
     expect(support).toBeTruthy();
 
     // Check appropriate tutorial button rendered
-    const button = getByRole('button', { name: TourTitles.Main });
+    const button = await screen.findByRole('button', { name: TourTitles.Main });
     expect(button).toBeTruthy();
 
     // Start tutorial and check that it renders
-    await user.click(button);
-    await waitFor(() => button);
-    const tourModal = getByRole('heading', { name: TourTitles.Main });
+    await act(async () => {
+      await user.click(button);
+    });
+    const tourModal = await screen.findByRole('heading', {
+      name: TourTitles.Main,
+    });
     expect(tourModal).toBeTruthy();
 
     // Click 'Next' to make sure it can move forward in the tour
-    let nextBtn = getByRole('button', { name: 'Next' });
+    let nextBtn = await screen.findByRole('button', { name: 'Next' });
     expect(nextBtn).toBeTruthy();
 
-    await user.click(button);
-    await waitFor(() => button);
-    nextBtn = getByRole('button', { name: 'Next' });
+    await act(async () => {
+      await user.click(button);
+    });
+    nextBtn = await screen.findByRole('button', { name: 'Next' });
 
     expect(nextBtn).toBeTruthy();
   });
