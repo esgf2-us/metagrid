@@ -15,7 +15,7 @@ export const rightDrawerChanges: MarkdownMessage[] = [
 ];
 
 const startupMessages: StartPopupData = {
-  messageToShow: 'v1.1.3-pre',
+  messageToShow: 'v1.2.0', // This is the version number that appears in the footer
   defaultMessageId: 'welcome',
   messageData: [
     {
