@@ -72,7 +72,6 @@ describe('test ReactJoyrideProvider', () => {
     await act(async () => {
       await user.click(button);
     });
-    // await waitFor(() => button);
     nextBtn = await screen.findByRole('button', { name: 'Next' });
 
     expect(nextBtn).toBeTruthy();

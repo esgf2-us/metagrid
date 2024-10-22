@@ -79,7 +79,7 @@ describe('test main table UI', () => {
     // Check the dataset title include retracted warning
     const cell = await within(table).findByRole('cell', {
       name:
-        'foo IMPORTANT! This dataset has been retracted and is no longer avaiable for download.',
+        'foo IMPORTANT! This dataset has been retracted and is no longer available for download.',
     });
     expect(cell).toBeTruthy();
 

@@ -23,10 +23,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Use Node.js 22.8
+      - name: Use Node.js 22.x
         uses: actions/setup-node@v4
         with:
-          node-version: "22.8"
+          node-version: "22.x"
 
       - name: Cache node modules
         uses: actions/cache@v4
@@ -61,4 +61,3 @@ jobs:
         with:
           file: "./frontend/coverage/coverage-final.json"
           flags: frontend
-          fail_ci_if_error: true

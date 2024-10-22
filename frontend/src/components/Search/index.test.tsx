@@ -216,7 +216,7 @@ describe('test Search component', () => {
       name: 'shopping-cart Add Selected to Cart',
     });
     expect(addCartBtn).toBeTruthy();
-    expect(addCartBtn.disabled).toBeTruthy();
+    expect(addCartBtn).toBeDisabled();
 
     // Select the first row
     const firstRow = await screen.findByRole('row', {
@@ -233,7 +233,8 @@ describe('test Search component', () => {
     });
 
     // Check 'Add Selected to Cart' button is enabled and click it
-    expect(addCartBtn.disabled).toBeFalsy();
+    expect(addCartBtn).toBeTruthy();
+    expect(addCartBtn).toBeEnabled();
 
     await act(async () => {
       await user.click(addCartBtn);
@@ -258,7 +259,7 @@ describe('test Search component', () => {
       name: 'shopping-cart Add Selected to Cart',
     });
     expect(addCartBtn).toBeTruthy();
-    expect(addCartBtn.disabled).toBeTruthy();
+    expect(addCartBtn).toBeDisabled();
   });
 
   it('disables the "Add Selected to Cart" button when all rows are already in the cart', async () => {
@@ -270,7 +271,8 @@ describe('test Search component', () => {
       name: 'shopping-cart Add Selected to Cart',
     });
 
-    expect(addCartBtn.disabled).toBeTruthy();
+    expect(addCartBtn).toBeTruthy();
+    expect(addCartBtn).toBeDisabled();
   });
 
   it('handles saving a search query', async () => {

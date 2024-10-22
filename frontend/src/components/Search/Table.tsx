@@ -197,7 +197,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       render: (title: string, record: RawSearchResult) => {
         if (record && record.retracted) {
           const msg =
-            'IMPORTANT! This dataset has been retracted and is no longer avaiable for download.';
+            'IMPORTANT! This dataset has been retracted and is no longer available for download.';
           return (
             <div className={topDataRowTargets.datasetTitle.class()}>
               <p>

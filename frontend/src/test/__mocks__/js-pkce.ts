@@ -1,7 +1,7 @@
 /* eslint-disable class-methods-use-this */
 
 import { GlobusTokenResponse } from '../../components/Globus/types';
-import { globusTokenResponseFixture } from '../../test/mock/fixtures';
+import { globusTokenResponseFixture } from '../mock/fixtures';
 import { tempStorageGetMock } from '../jestTestFunctions';
 
 class PKCE {

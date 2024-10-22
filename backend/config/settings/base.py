@@ -1,6 +1,7 @@
 """
 Base settings to build other settings files upon.
 """
+
 from datetime import timedelta
 from typing import List  # noqa
 

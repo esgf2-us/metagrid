@@ -1,4 +1,4 @@
-FROM python:3.11-slim-bookworm
+FROM python:3.12
 
 ENV DATABASE_URL postgres://postgres:postgres@postgres:5432/postgres
 ENV PYTHONUNBUFFERED 1
