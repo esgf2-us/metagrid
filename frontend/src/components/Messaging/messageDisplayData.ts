@@ -5,6 +5,7 @@ export const rightDrawerMessages: MarkdownMessage[] = [
 ];
 
 export const rightDrawerChanges: MarkdownMessage[] = [
+  { title: 'V1.2.0', fileName: 'changelog/v1.2.0.md' },
   { title: 'V1.1.3-pre', fileName: 'changelog/v1.1.3-pre.md' },
   { title: 'V1.1.2-pre', fileName: 'changelog/v1.1.2-pre.md' },
   { title: 'V1.1.1-pre', fileName: 'changelog/v1.1.1-pre.md' },
@@ -15,9 +16,18 @@ export const rightDrawerChanges: MarkdownMessage[] = [
 ];
 
 const startupMessages: StartPopupData = {
-  messageToShow: 'v1.1.3-rc',
+  messageToShow: 'v1.2.0',
   defaultMessageId: 'welcome',
   messageData: [
+    {
+      messageId: 'v1.2.0',
+      template: MessageTemplates.ChangeLog,
+      style: { minWidth: '700px' },
+      data: {
+        changesFile: 'changelog/v1.2.0.md',
+        version: '1.2.0',
+      },
+    },
     {
       messageId: 'v1.1.3-rc',
       template: MessageTemplates.ChangeLog,
