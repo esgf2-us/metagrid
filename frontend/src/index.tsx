@@ -11,7 +11,7 @@ import {
 } from './contexts/AuthContext';
 import { ReactJoyrideProvider } from './contexts/ReactJoyrideContext';
 import { keycloak, keycloakProviderInitConfig } from './lib/keycloak';
-import { authenticationMethod } from './env';
+import { authenticationMethod, publicUrl } from './env';
 import './index.css';
 
 const container = document.getElementById('root');
@@ -19,7 +19,7 @@ const container = document.getElementById('root');
 const root = createRoot(container!);
 
 const appRouter = (
-  <BrowserRouter basename={process.env.PUBLIC_URL}>
+  <BrowserRouter basename={publicUrl}>
     <ReactJoyrideProvider>
       <App searchQuery={getSearchFromUrl()} />
     </ReactJoyrideProvider>

@@ -30,7 +30,7 @@ REACT_APP_SEARCH_URL=https://esgf-node.llnl.gov/esg-search/search
 REACT_APP_ESGF_NODE_STATUS_URL=https://aims2.llnl.gov/metagrid-backend/proxy/status
 
 # ESGF Solr URL
-REACT_APP_ESGF_SOLR_URL=https://esgf-fedtest.llnl.gov/solr
+REACT_APP_ESGF_SOLR_URL=http://esgf-node.llnl.gov/solr/files/select
 
 # https://docs.djangoproject.com/en/4.2/ref/settings/#login-redirect-url
 # https://docs.djangoproject.com/en/4.2/ref/settings/#logout-redirect-url

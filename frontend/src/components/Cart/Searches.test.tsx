@@ -1,7 +1,8 @@
 import React from 'react';
-import { userSearchQueriesFixture } from '../../api/mock/fixtures';
+import { screen } from '@testing-library/react';
+import { userSearchQueriesFixture } from '../../test/mock/fixtures';
 import Searches, { Props } from './Searches';
-import { customRenderKeycloak } from '../../test/custom-render';
+import customRender from '../../test/custom-render';
 
 afterEach(() => {
   jest.clearAllMocks();
@@ -13,11 +14,9 @@ const defaultProps: Props = {
   onRemoveSearchQuery: jest.fn(),
 };
 
-it('renders component with empty savedSearches', () => {
-  const { getByText } = customRenderKeycloak(
-    <Searches {...defaultProps} userSearchQueries={[]} />
-  );
+it('renders component with empty savedSearches', async () => {
+  customRender(<Searches {...defaultProps} userSearchQueries={[]} />);
 
-  const emptyText = getByText('Your search library is empty');
+  const emptyText = await screen.findByText('Your search library is empty');
   expect(emptyText).toBeTruthy();
 });

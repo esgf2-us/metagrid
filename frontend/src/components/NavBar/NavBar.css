@@ -8,20 +8,18 @@
 }
 
 .navbar-logo {
-  width: 128px;
-  float: left;
+  min-width: 150px;
   margin-left: 10px;
 }
 
 .navbar-container .navbar-left {
-  width: 40%;
   height: 65px;
-  min-width: 400px;
+  min-width: 450px;
   flex-wrap: nowrap;
 }
 
 .navbar-container .navbar-right {
-  width: 60%;
+  width: calc(100% - 550px);
   height: 65px;
 }
 
@@ -33,12 +31,11 @@
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
-  margin-right: 130px;
+  margin-right: 50px;
 }
 
 .navbar-mobile-button {
   display: none !important; /* use of important to overwrite ant-btn */
-  background: #3e91f7;
 }
 
 .navbar-drawer .ant-drawer-body {
@@ -50,7 +47,7 @@
   padding: 12px 24px !important;
 }
 
-@media (max-width: 825px) {
+@media (max-width: 800px) {
   .navbar-mobile-button {
     display: inline-flex !important;
     float: right;
