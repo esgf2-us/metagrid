@@ -38,7 +38,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.12
+          python-version: 3.11
 
       # Run all pre-commit hooks on all the files.
       # Getting only staged files can be tricky in case a new PR is opened

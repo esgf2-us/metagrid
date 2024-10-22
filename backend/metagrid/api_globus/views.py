@@ -271,7 +271,7 @@ def submit_transfer(
     """
 
     # maximum time for completing the transfer
-    deadline = datetime.utcnow() + timedelta(days=10)
+    deadline = datetime.now(datetime.timezone.utc) + timedelta(days=10)
 
     # create a transfer request
     if "%23" in target_endpoint:
