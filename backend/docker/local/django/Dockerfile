@@ -1,4 +1,4 @@
-FROM python:3.12
+FROM python:3.11-slim
 
 ENV DATABASE_URL postgres://postgres:postgres@postgres:5432/postgres
 ENV PYTHONUNBUFFERED 1
