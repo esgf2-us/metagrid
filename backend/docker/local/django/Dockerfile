@@ -12,14 +12,19 @@ RUN apt-get update \
     # Translations dependencies
     && apt-get install -y gettext \
     # cleaning up unused files
+    && apt-get install -y git \
     && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
     && rm -rf /var/lib/apt/lists/*
 
-# Requirements are installed here to ensure they will be cached.
+
+
+    # Requirements are installed here to ensure they will be cached.
+
+
 COPY ./requirements /requirements
 RUN pip3 install setuptools
 RUN pip3 install -r /requirements/local.txt
-
+RUN pip3 install 'git+https://github.com/sashakames/esg-publisher@globus-query-enhance#egg=esgcet&subdirectory=src/python'
 COPY ./docker/production/django/entrypoint /entrypoint
 RUN sed -i 's/\r$//g' /entrypoint
 RUN chmod +x /entrypoint

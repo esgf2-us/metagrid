@@ -18,6 +18,11 @@ from globus_sdk import AccessTokenAuthorizer, TransferClient, TransferData
 
 from metagrid.api_proxy.views import do_request
 
+from esgcet.globus_query import ESGGlobusQuery
+UUID = "5cc79324-1b74-4a77-abc3-838aba2fc734"
+GLOBUS = "Globus"
+HTTP = "HTTPServer"
+
 ENDPOINT_MAP = {
     "415a6320-e49c-11e5-9798-22000b9da45e": "1889ea03-25ad-4f9f-8110-1ce8833a9d7e"
 }
@@ -25,6 +30,43 @@ ENDPOINT_MAP = {
 DATANODE_MAP = {"esgf-node.ornl.gov": "dea29ae8-bb92-4c63-bdbc-260522c92fe8"}
 
 TEST_SHARDS_MAP = {"esgf-fedtest.llnl.gov": "esgf-node.llnl.gov"}
+
+def truncate_urls(lst, match):
+    for x in lst:
+        for y in x["url"]:
+            parts = y.split("|")
+            if parts[2] == match:
+                if match == "Globus":
+                    yield (parts[0].split(":")[1])
+                elif match == "HTTPServer":
+                    yield (parts[0])
+                    
+def check_dataset_id(dsid):
+    
+    id_pat = r"^[-\w]+(\.[-\w]+)*\.v\d{8}\|[-\w]+(\.[-\w]+)*$"
+    id_regex = re.compile(id_pat)
+    msg = (
+        "The dataset_id, {id}, does not follow the format of "
+        "<facet1>.<facet2>...<facetn>.v<version>|<data_node>"
+    )
+    for v in split_value_list:
+        if not id_regex.match(v):
+            return msg.format(v) 
+    return ""
+            
+def get_files(url_params):
+    dsid = None
+    if "id" in url_params:
+        # TODO check dataset_id
+        
+        #if type(url_params["id"]) is list:
+        dsid = url_params["id"]
+        # else:
+        #     dsid = [url_params["id"]]
+    
+    qo = ESGGlobusQuery(UUID, "" )
+    res = qo.query_file_records(dsid, crit=url_params)
+    return list([x for x in truncate_urls(res, HTTP)])
 
 
 # reserved query keywords
@@ -55,209 +97,6 @@ KEYWORDS = [
     A_TOKEN,
     R_TOKEN,
 ]
-
-
-def truncate_urls(lst):
-    for x in lst:
-        z = x["data_node"]
-        for y in x["url"]:
-            parts = y.split("|")
-            if parts[1] == "Globus":
-                yield (parts[0].split(":")[1], z)
-
-
-def split_value(value):
-    """
-    Utility method to split an HTTP parameter value into comma-separated
-    values but keep intact patterns such as "CESM1(CAM5.1,FV2)
-    """
-
-    if type(value) == int or type(value) == float:
-        return value
-
-    # first split by comma
-    values = [v.strip() for v in value.split(",")]
-    values_length = len(values)
-
-    if len(values) == 1:  # no splitting occurred
-        return values
-    else:  # possibly re-assemble broken pieces
-        _values = []
-        i = 0
-        while i < values_length:
-            if i < values_length - 1:
-                if (
-                    values[i].find("(") >= 0
-                    and values[i].find(")") < 0
-                    and values[i + 1].find(")") >= 0
-                    and values[i + 1].find("(") < 0
-                ):
-                    _values.append(
-                        values[i] + "," + values[i + 1]
-                    )  # re-assemble
-                    i += 1  # skip next value
-                elif (
-                    values[i].find("[") >= 0
-                    and values[i].find("]") < 0
-                    and values[i + 1].find("]") >= 0
-                    and values[i + 1].find("[") < 0
-                ):
-                    _values.append(
-                        values[i] + "," + values[i + 1]
-                    )  # re-assemble
-                    i += 1  # skip next value
-                elif (
-                    values[i].find("{") >= 0
-                    and values[i].find("}") < 0
-                    and values[i + 1].find("}") >= 0
-                    and values[i + 1].find("{") < 0
-                ):
-                    _values.append(
-                        values[i] + "," + values[i + 1]
-                    )  # re-assemble
-                    i += 1  # skip next value
-                else:
-                    _values.append(values[i])
-            else:
-                _values.append(values[i])
-            i += 1
-
-        # convert listo into array
-        return _values
-
-
-# flake8: noqa
-def get_files(url_params):  # pragma: no cover
-    solr_url = getattr(
-        settings,
-        "SOLR_URL",
-        "",
-    )
-    query_url = solr_url + "/files/select"
-    file_limit = 10000
-    file_offset = 0
-    use_distrib = True
-
-    port = "80"
-
-    try:
-        res = urllib.parse.urlparse(query_url)
-        hostname = (
-            res.hostname
-        )  # TODO need to populate the shards based on the Solr URL
-        if res.port:
-            port = res.port
-    except RuntimeError as e:
-        return HttpResponseServerError(f"Malformed URL in search results {e}")
-    if hostname in TEST_SHARDS_MAP:
-        hostname = TEST_SHARDS_MAP[hostname]
-    xml_shards = [f"{hostname}:{port}/solr"]
-    querys = []
-    file_query = ["type:File"]
-
-    # If no parameters were passed to the API,
-    # then default to limit=1 and distrib=false
-    if len(url_params.keys()) == 0:
-        url_params.update(dict(limit=1, distrib="false"))
-
-    # Catch invalid parameters
-    for param in url_params.keys():
-        if param[-1] == "!":
-            param = param[:-1]
-
-    # Set a Solr query string
-    if url_params.get(QUERY):
-        _query = url_params.pop(QUERY)[0]
-        querys.append(_query)
-
-    if len(querys) == 0:
-        querys.append("*:*")
-    query_string = " AND ".join(querys)
-
-    # Enable distributed search
-    use_distrib = True
-    # Use Solr shards requested from GET/POST
-
-    # Set boolean constraints
-
-    # Get directory structure for downloaded files
-
-    # Collect remaining constraints
-
-    for param in url_params:
-        value_list = url_params[param]
-        # Split values separated by commas
-        # but don't split at commas inside parentheses
-        # (i.e. cases such as "CESM1(CAM5.1,FV2)")
-
-        split_value_list = []
-
-        for v in value_list:
-            for sv in split_value(v):
-                split_value_list.append(sv)
-
-        # If dataset_id values were passed
-        # then check if they follow the expected pattern
-        # (i.e. <facet1>.<facet2>...<facetn>.v<version>|<data_node>)
-        if param == FIELD_DATASET_ID:
-            id_pat = r"^[-\w]+(\.[-\w]+)*\.v\d{8}\|[-\w]+(\.[-\w]+)*$"
-            id_regex = re.compile(id_pat)
-            msg = (
-                "The dataset_id, {id}, does not follow the format of "
-                "<facet1>.<facet2>...<facetn>.v<version>|<data_node>"
-            )
-            for v in split_value_list:
-                if not id_regex.match(v):
-                    return HttpResponseBadRequest(msg.format(id=v))
-
-        # If the list of allowed projects is not empty,
-        # then check if the query is accessing projects not in the list
-
-        if len(split_value_list) == 1:
-            fq = "{}:{}".format(param, split_value_list[0])
-        else:
-            fq = "{}:({})".format(param, " || ".join(split_value_list))
-        file_query.append(fq)
-
-    # If the projects were not passed and the allowed projects list exists,
-    # then use the allowed projects as the project query
-
-    # Get facets for the file name, URL, checksum
-    file_attributes = ["url", "data_node"]
-
-    # Solr query parameters
-    query_params = dict(
-        q=query_string,
-        wt="json",
-        facet="true",
-        fl=file_attributes,
-        fq=file_query,
-        start=file_offset,
-        limit=file_limit,
-        rows=file_limit,
-    )
-
-    # Sort by timestamp descending if enabled, otherwise sort by id ascending
-    # Use shards for distributed search if 'distrib' is true,
-    # otherwise use only local search
-    if use_distrib:
-        if len(xml_shards) > 0:
-            shards = ",".join([s + "/files" for s in xml_shards])
-            query_params.update(dict(shards=shards))
-
-    # Fetch files for the query
-    query_encoded = urllib.parse.urlencode(query_params, doseq=True).encode()
-    req = urllib.request.Request(query_url, query_encoded)
-    print(f"QUERY_URL: {query_url}  QUERY: {query_encoded}")
-    with urllib.request.urlopen(req) as response:
-        results = json.loads(response.read().decode())
-
-    # Warning message about the number of files retrieved
-    # being smaller than the total number found for the query
-    #    values = {"files": results["response"]["docs"], "wget_info": [wget_empty_path, url_params_list],            "file_info": [num_files_found, file_limit]}
-
-    return truncate_urls(results["response"]["docs"])
-
 
 def submit_transfer(
     transfer_client,
