@@ -806,13 +806,19 @@ export const createCollectionsFormTour = (): JoyrideTour => {
     .addNextStep(
       manageCollectionsTourTargets.mySavedCollections.selector(),
       "Your currently saved collections are displayed in this table, where you can also 'Set' or 'Update' the file path to use for a specific collection. If the path is set for a specific collection, you won't have to set the path again when doing transfers to that collection.",
-      'auto',
+      'auto'
+    )
+    .addNextStep('body', 'This concludes the cart page tour.', 'center')
+    .setOnFinish(
       /* istanbul ignore next */
-      async () => {
-        clickFirstElement(
-          manageCollectionsTourTargets.mySavedCollectionsPanel.selector()
-        );
-        await delay(300);
+      () => {
+        // Clean-up step for when the tour is complete (or skipped)
+        return async () => {
+          clickFirstElement(
+            manageCollectionsTourTargets.mySavedCollectionsPanel.selector()
+          );
+          await delay(300);
+        };
       }
     );
 
