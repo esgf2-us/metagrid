@@ -3,9 +3,7 @@
 # Redirect the frontend to home page when old subdirectory is used (optional)
 REACT_APP_PREVIOUS_URL=metagrid
 
-# MetaGrid API
-# https://github.com/aims-group/metagrid/tree/master/backend
-REACT_APP_METAGRID_API_URL=
+
 
 # Authentication Method
 REACT_APP_AUTHENTICATION_METHOD=globus

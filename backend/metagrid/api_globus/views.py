@@ -4,7 +4,7 @@ import re
 import urllib.parse
 import urllib.request
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from django.conf import settings
 from django.http import (
@@ -37,7 +37,7 @@ def truncate_urls(lst, match):
             parts = y.split("|")
             if parts[2] == match:
                 if match == "Globus":
-                    yield (parts[0].split(":")[1])
+                    yield (parts[0].split(":")[1],x["data_node"])
                 elif match == "HTTPServer":
                     yield (parts[0])
                     
@@ -66,7 +66,7 @@ def get_files(url_params):
     
     qo = ESGGlobusQuery(UUID, "" )
     res = qo.query_file_records(dsid, crit=url_params)
-    return list([x for x in truncate_urls(res, HTTP)])
+    return list([x for x in truncate_urls(res, GLOBUS)])
 
 
 # reserved query keywords
@@ -110,7 +110,7 @@ def submit_transfer(
     """
 
     # maximum time for completing the transfer
-    deadline = datetime.now(datetime.timezone.utc) + timedelta(days=10)
+    deadline = datetime.now(timezone.utc) + timedelta(days=10)
 
     # create a transfer request
     if "%23" in target_endpoint:
@@ -181,6 +181,7 @@ def do_globus_transfer(request):  # pragma: no cover
 
     resp = get_files(url_params)
     files_list = resp
+    print(files_list)
 
     task_ids = []  # list of submitted task ids
 
