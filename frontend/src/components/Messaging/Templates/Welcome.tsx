@@ -1,3 +1,5 @@
+// eslint-disable @typescript-eslint/no-unsafe-argument
+
 import { Button, Card, Col, Row } from 'antd';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';

@@ -30,7 +30,7 @@ describe('Test TourTarget class', () => {
     createTestTour('testGroup', {});
   });
 
-  it('Successfully creates joyride tour fron test targets', () => {
+  it('Successfully creates joyride tour from test targets', () => {
     const testTargets = {
       test1: new TargetObject('test1'),
       test2: new TargetObject('test2'),

@@ -1,4 +1,4 @@
-import { DownloadOutlined } from '@ant-design/icons';
+import { DownloadOutlined, QuestionOutlined } from '@ant-design/icons';
 import {
   Button,
   Card,
@@ -25,7 +25,11 @@ import {
   REQUESTED_SCOPES,
   createGlobusAuthObject,
 } from '../../api';
-import { cartTourTargets } from '../../common/reactJoyrideSteps';
+import {
+  cartTourTargets,
+  createCollectionsFormTour,
+  manageCollectionsTourTargets,
+} from '../../common/reactJoyrideSteps';
 import { globusEnabledNodes, globusRedirectUrl } from '../../env';
 import { RawSearchResults } from '../Search/types';
 import CartStateKeys, {
@@ -42,6 +46,10 @@ import {
 } from './types';
 import { NotificationType, showError, showNotice } from '../../common/utils';
 import { DataPersister } from '../../common/DataPersister';
+import {
+  RawTourState,
+  ReactJoyrideContext,
+} from '../../contexts/ReactJoyrideContext';
 
 type AlertModalState = {
   onCancelAction: () => void;
@@ -66,6 +74,10 @@ const dp: DataPersister = DataPersister.Instance;
 
 const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   const [messageApi, contextHolder] = message.useMessage();
+
+  // Tutorial state
+  const tourState: RawTourState = React.useContext(ReactJoyrideContext);
+  const { startSpecificTour } = tourState;
 
   const [downloadIsLoading, setDownloadIsLoading] = useRecoilState<boolean>(
     cartDownloadIsLoading
@@ -904,6 +916,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         />
         {selectedDownloadType === 'Globus' && (
           <Select
+            className={cartTourTargets.globusCollectionDropdown.class()}
             data-testid="searchCollectionInput"
             defaultActiveFirstOption={false}
             filterOption={false}
@@ -989,10 +1002,31 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         </Button>
       </Space>
       <Modal
+        className={manageCollectionsTourTargets.globusCollectionsForm.class()}
         data-testid="manageCollectionsForm"
-        title="Manage My Collections"
+        title={
+          <>
+            Manage My Collections{' '}
+            <Button
+              shape="circle"
+              type="primary"
+              icon={
+                <QuestionOutlined
+                  color="primary"
+                  style={{ fontSize: '20px' }}
+                />
+              }
+              onClick={() => {
+                startSpecificTour(createCollectionsFormTour());
+              }}
+            ></Button>
+          </>
+        }
         open={endpointSearchOpen}
         okText="Save"
+        okButtonProps={{
+          className: manageCollectionsTourTargets.saveCollectionBtn.class(),
+        }}
         onOk={async () => {
           setEndpointSearchOpen(false);
           await dp.setValue(
@@ -1007,6 +1041,9 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           );
         }}
         cancelText="Cancel Changes"
+        cancelButtonProps={{
+          className: manageCollectionsTourTargets.cancelCollectionBtn.class(),
+        }}
         onCancel={async () => {
           setEndpointSearchOpen(false);
           await dp.setValue(
@@ -1019,6 +1056,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         width={1000}
       >
         <Input.Search
+          className={manageCollectionsTourTargets.searchCollectionInput.class()}
           value={endpointSearchValue}
           onChange={(e) => {
             setEndpointSearchValue(e.target.value);
@@ -1034,9 +1072,16 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           items={[
             {
               key: '1',
-              label: 'Globus Collection Search Results',
+              label: (
+                <div
+                  className={manageCollectionsTourTargets.globusSearchResultsPanel.class()}
+                >
+                  Globus Collection Search Results
+                </div>
+              ),
               children: (
                 <Table
+                  className={manageCollectionsTourTargets.globusSearchResults.class()}
                   data-testid="globusEndpointSearchResults"
                   loading={loadingEndpointSearchResults}
                   size="small"
@@ -1102,9 +1147,16 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             },
             {
               key: '2',
-              label: 'My Saved Globus Collections',
+              label: (
+                <div
+                  className={manageCollectionsTourTargets.mySavedCollectionsPanel.class()}
+                >
+                  My Saved Globus Collections
+                </div>
+              ),
               children: (
                 <Table
+                  className={manageCollectionsTourTargets.mySavedCollections.class()}
                   data-testid="savedGlobusEndpoints"
                   size="small"
                   pagination={
