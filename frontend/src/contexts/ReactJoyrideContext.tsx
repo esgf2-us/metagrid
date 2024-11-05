@@ -10,6 +10,7 @@ export type RawTourState = {
   setTour: (tour: JoyrideTour) => void;
   startTour: () => void;
   setCurrentAppPage: (page: number) => void;
+  startSpecificTour: (tour: JoyrideTour) => void;
 };
 
 /* istanbul ignore next */
@@ -18,6 +19,7 @@ export const ReactJoyrideContext = React.createContext<RawTourState>({
   setTour: () => {},
   startTour: () => {},
   setCurrentAppPage: () => {},
+  startSpecificTour: () => {},
 });
 
 type Props = { children: React.ReactNode };
@@ -114,6 +116,12 @@ export const ReactJoyrideProvider: React.FC<React.PropsWithChildren<Props>> = ({
     }
   };
 
+  /* istanbul ignore next */
+  const startSpecificTour = (tour: JoyrideTour): void => {
+    setTour(tour);
+    startTour();
+  };
+
   return (
     <ReactJoyrideContext.Provider
       value={{
@@ -121,6 +129,7 @@ export const ReactJoyrideProvider: React.FC<React.PropsWithChildren<Props>> = ({
         setTour,
         startTour,
         setCurrentAppPage,
+        startSpecificTour,
       }}
     >
       <Joyride
