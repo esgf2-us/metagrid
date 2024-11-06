@@ -17,6 +17,7 @@ export type FrontendConfig = {
   // Globus
   REACT_APP_GLOBUS_NODES: string[];
   REACT_APP_GLOBUS_CLIENT_ID: string;
+  REACT_APP_GLOBUS_REDIRECT: string;
 
   // Keycloak
   REACT_APP_KEYCLOAK_REALM: string;

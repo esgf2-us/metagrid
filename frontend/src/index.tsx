@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { RecoilRoot } from 'recoil';
@@ -5,10 +7,7 @@ import { ReactKeycloakProvider } from '@react-keycloak/web';
 import { BrowserRouter } from 'react-router-dom';
 import { getSearchFromUrl } from './common/utils';
 import App from './components/App/App';
-import {
-  GlobusAuthProvider,
-  KeycloakAuthProvider,
-} from './contexts/AuthContext';
+import { GlobusAuthProvider, KeycloakAuthProvider } from './contexts/AuthContext';
 import { ReactJoyrideProvider } from './contexts/ReactJoyrideContext';
 import { keycloak, keycloakProviderInitConfig } from './lib/keycloak';
 import './index.css';
@@ -45,10 +44,7 @@ const appRouter = (
 if (window.METAGRID.REACT_APP_AUTHENTICATION_METHOD === 'keycloak') {
   root.render(
     <RecoilRoot>
-      <ReactKeycloakProvider
-        authClient={keycloak}
-        initOptions={keycloakProviderInitConfig}
-      >
+      <ReactKeycloakProvider authClient={keycloak} initOptions={keycloakProviderInitConfig}>
         <KeycloakAuthProvider>{appRouter}</KeycloakAuthProvider>
       </ReactKeycloakProvider>
     </RecoilRoot>

@@ -16,7 +16,9 @@ from metagrid.api_globus.views import do_globus_transfer, get_access_token
 from metagrid.api_proxy.views import (
     do_citation,
     do_globus_auth,
+    do_globus_get_endpoint,
     do_globus_logout,
+    do_globus_search_endpoints,
     do_search,
     do_status,
     do_wget,
@@ -57,6 +59,16 @@ urlpatterns = [
     path("", include("social_django.urls", namespace="social")),
     path("proxy/globus-logout/", do_globus_logout, name="globus-logout"),
     path("proxy/globus-auth/", do_globus_auth, name="globus-auth"),
+    path(
+        "proxy/globus-get-endpoint/",
+        do_globus_get_endpoint,
+        name="globus-get-endpoint",
+    ),
+    path(
+        "proxy/globus-search-endpoints/",
+        do_globus_search_endpoints,
+        name="globus-search-endpoints",
+    ),
     # all-auth
     path("accounts/", include("allauth.urls"), name="socialaccount_signup"),
     # dj-rest-auth

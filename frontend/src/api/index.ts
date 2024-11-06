@@ -8,7 +8,8 @@
 import 'setimmediate'; // Added because in Jest 27, setImmediate is not defined, causing test errors
 import humps from 'humps';
 import queryString from 'query-string';
-import { AxiosResponse } from 'axios';
+import { AxiosResponse, AxiosError } from 'axios';
+import PKCE from 'js-pkce';
 import axios from '../lib/axios';
 import {
   RawUserCart,
@@ -28,15 +29,22 @@ import {
 } from '../components/Search/types';
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
 import apiRoutes, { ApiRoute, HTTPCodeType } from './routes';
+import { GlobusEndpointSearchResults } from '../components/Globus/types';
+import GlobusStateKeys from '../components/Globus/recoil/atom';
+
+// Reference: https://github.com/bpedroza/js-pkce
+export const REQUESTED_SCOPES =
+  'openid profile email urn:globus:auth:scope:transfer.api.globus.org:all';
 
 export interface ResponseError extends Error {
   status?: number;
+  /* eslint-disable @typescript-eslint/no-redundant-type-constituents */
   response: { status: HTTPCodeType; [key: string]: string | HTTPCodeType };
 }
 
 const getCookie = (name: string): null | string => {
   let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
+  if (document && document.cookie && document.cookie !== '') {
     const cookies = document.cookie.split(';');
     for (let i = 0; i < cookies.length; i += 1) {
       const cookie = cookies[i].trim();
@@ -72,10 +80,7 @@ export const openDownloadURL = (url: string): void => {
 /**
  * https://github.com/axios/axios#handling-errors
  */
-export const errorMsgBasedOnHTTPStatusCode = (
-  error: ResponseError,
-  route: ApiRoute
-): string => {
+export const errorMsgBasedOnHTTPStatusCode = (error: ResponseError, route: ApiRoute): string => {
   // Indicates that an HTTP response status code was returned from the server
   if (error.response) {
     return route.handleErrorMsg(error.response.status);
@@ -96,9 +101,7 @@ export const fetchGlobusAuth = async (): Promise<RawUserAuth> =>
       return resp.data as Promise<RawUserAuth>;
     })
     .catch((error: ResponseError) => {
-      throw new Error(
-        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusAuth)
-      );
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusAuth));
     });
 
 /**
@@ -110,9 +113,7 @@ export const fetchUserAuth = async (args: [string]): Promise<RawUserAuth> =>
     .post(apiRoutes.keycloakAuth.path, { access_token: args[0] })
     .then((res) => res.data as Promise<RawUserAuth>)
     .catch((error: ResponseError) => {
-      throw new Error(
-        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.keycloakAuth)
-      );
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.keycloakAuth));
     });
 
 /**
@@ -124,6 +125,9 @@ export const fetchUserInfo = async (args: [string]): Promise<RawUserInfo> =>
     .get(apiRoutes.userInfo.path, {
       headers: {
         Authorization: `Bearer ${args[0]}`,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        'X-CSRFToken': getCookie('csrftoken'),
       },
     })
     .then((res) => res.data as Promise<RawUserInfo>)
@@ -147,6 +151,9 @@ export const fetchUserCart = async (
     .get(`${apiRoutes.userCart.path.replace(':pk', pk)}`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        'X-CSRFToken': getCookie('csrftoken'),
       },
     })
     .then(
@@ -213,6 +220,9 @@ export const fetchUserSearchQueries = async (
     .get(apiRoutes.userSearches.path, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        'X-CSRFToken': getCookie('csrftoken'),
       },
       transformResponse: (res: string) => {
         try {
@@ -230,9 +240,7 @@ export const fetchUserSearchQueries = async (
         }>
     )
     .catch((error: ResponseError) => {
-      throw new Error(
-        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userSearches)
-      );
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userSearches));
     });
 
 /**
@@ -252,13 +260,14 @@ export const addUserSearchQuery = async (
     .post(apiRoutes.userSearches.path, decamelizedPayload, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        'X-CSRFToken': getCookie('csrftoken'),
       },
     })
     .then((res) => res.data as Promise<RawUserSearchQuery>)
     .catch((error: ResponseError) => {
-      throw new Error(
-        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userSearches)
-      );
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userSearches));
     });
 };
 
@@ -266,22 +275,20 @@ export const addUserSearchQuery = async (
  * HTTP Request Method: DELETE
  * HTTP Response: 204 No Content
  */
-export const deleteUserSearchQuery = async (
-  pk: string,
-  accessToken: string
-): Promise<''> =>
+export const deleteUserSearchQuery = async (pk: string, accessToken: string): Promise<''> =>
   axios
     .delete(`${apiRoutes.userSearch.path.replace(':pk', pk)}`, {
       data: {},
       headers: {
         Authorization: `Bearer ${accessToken}`,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        'X-CSRFToken': getCookie('csrftoken'),
       },
     })
     .then((res) => res.data as Promise<''>)
     .catch((error: ResponseError) => {
-      throw new Error(
-        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userSearch)
-      );
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userSearch));
     });
 
 /**
@@ -337,12 +344,8 @@ export const convertResultTypeToReplicaParam = (
   return param && isLabel ? param.replace('=', ' = ') : param;
 };
 
-export const updatePaginationParams = (
-  url: string,
-  pagination: Pagination
-): string => {
-  const paginationOffset =
-    pagination.page > 1 ? (pagination.page - 1) * pagination.pageSize : 0;
+export const updatePaginationParams = (url: string, pagination: Pagination): string => {
+  const paginationOffset = pagination.page > 1 ? (pagination.page - 1) * pagination.pageSize : 0;
 
   const baseParams = url
     .replace('limit=0', `limit=${pagination.pageSize}`)
@@ -373,10 +376,7 @@ export const generateSearchURLQuery = (
   const replicaParam = convertResultTypeToReplicaParam(resultType);
 
   // The base params include facet fields to return for each dataset and the pagination options
-  let baseParams = updatePaginationParams(
-    project.facetsUrl as string,
-    pagination
-  );
+  let baseParams = updatePaginationParams(project.facetsUrl as string, pagination);
 
   if (versionType === 'latest') {
     baseParams += `latest=true&`;
@@ -442,9 +442,7 @@ export const fetchSearchResults = async (
         res.data as Promise<{ [key: string]: any }>
     )
     .catch((error: ResponseError) => {
-      throw new Error(
-        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearch)
-      );
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearch));
     });
 };
 
@@ -458,9 +456,7 @@ export const processCitation = (citation: RawCitation): RawCitation => {
     newCitation.identifier.id
   }`;
 
-  newCitation.license = newCitation.rightsList
-    .map((elem) => elem.rights)
-    .join('; ');
+  newCitation.license = newCitation.rightsList.map((elem) => elem.rights).join('; ');
 
   // Allow a max of 3 creators to be displayed
   if (newCitation.creators.length > 3) {
@@ -470,9 +466,7 @@ export const processCitation = (citation: RawCitation): RawCitation => {
       .join('; ')
       .concat('; et al.');
   } else {
-    newCitation.creatorsList = newCitation.creators
-      .map((elem) => elem.creatorName)
-      .join('; ');
+    newCitation.creatorsList = newCitation.creators.map((elem) => elem.creatorName).join('; ');
   }
 
   return newCitation;
@@ -555,9 +549,7 @@ export const fetchDatasetFiles = async (
         res.data as Promise<{ [key: string]: any }>
     )
     .catch((error: ResponseError) => {
-      throw new Error(
-        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearch)
-      );
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearch));
     });
 };
 
@@ -585,10 +577,7 @@ const returnFileToUser = (fileContent: string): void => {
  * Performs wget request from the API.
  *
  */
-export const fetchWgetScript = async (
-  ids: string[],
-  filenameVars?: string[]
-): Promise<void> => {
+export const fetchWgetScript = async (ids: string[], filenameVars?: string[]): Promise<void> => {
   const data = {
     dataset_id: ids,
     query: filenameVars,
@@ -620,22 +609,17 @@ export const loadSessionValue = async <T>(key: string): Promise<T | null> => {
     .catch(
       /* istanbul ignore next */
       (error: ResponseError) => {
-        throw new Error(
-          errorMsgBasedOnHTTPStatusCode(error, apiRoutes.tempStorageGet)
-        );
+        throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.tempStorageGet));
       }
     );
 };
 
-export const saveSessionValue = async <T>(
-  key: string,
-  value: T
-): Promise<AxiosResponse> => {
+export const saveSessionValue = async <T>(key: string, value: T): Promise<AxiosResponse> => {
   let data: { dataKey: string; dataValue: T | string } = {
     dataKey: key,
     dataValue: 'None',
   };
-  if (value !== null) {
+  if (value !== null && value !== undefined) {
     data = { ...data, dataValue: value };
   }
   return axios
@@ -646,12 +630,32 @@ export const saveSessionValue = async <T>(
     .catch(
       /* istanbul ignore next */
       (error: ResponseError) => {
-        throw new Error(
-          errorMsgBasedOnHTTPStatusCode(error, apiRoutes.tempStorageSet)
-        );
+        throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.tempStorageSet));
       }
     );
 };
+
+export const saveSessionValues = async (data: { key: string; value: unknown }[]): Promise<void> => {
+  const saveFuncs: Promise<AxiosResponse>[] = [];
+  data.forEach((value) => {
+    saveFuncs.push(saveSessionValue(value.key, value.value));
+  });
+
+  await Promise.all(saveFuncs);
+};
+
+// Creates an auth object using desired authentication scope
+export async function createGlobusAuthObject(): Promise<PKCE> {
+  const authScope = await loadSessionValue<string>(GlobusStateKeys.globusAuth);
+
+  return new PKCE({
+    client_id: window.METAGRID.REACT_APP_GLOBUS_CLIENT_ID, // Update this using your native client ID
+    redirect_uri: window.METAGRID.REACT_APP_GLOBUS_REDIRECT, // Update this if you are deploying this anywhere else (Globus Auth will redirect back here once you have logged in)
+    authorization_endpoint: 'https://auth.globus.org/v2/oauth2/authorize', // No changes needed
+    token_endpoint: 'https://auth.globus.org/v2/oauth2/token', // No changes needed
+    requested_scopes: authScope || REQUESTED_SCOPES, // Update with any scopes you would need, e.g. transfer
+  });
+}
 
 /**
  * Performs validation against the globus API to ensure a 200 response.
@@ -659,42 +663,50 @@ export const saveSessionValue = async <T>(
  * If the API returns a 200, it returns the axios response.
  */
 export const startGlobusTransfer = async (
+  transferAccessToken: string,
   accessToken: string,
-  refreshToken: string,
   endpointId: string,
   path: string,
   ids: string[] | string,
   filenameVars?: string[]
 ): Promise<AxiosResponse> => {
-  let url = queryString.stringifyUrl({
-    url: apiRoutes.globusTransfer.path,
-    query: {
-      access_token: accessToken,
-      refresh_token: refreshToken,
-      endpointId,
-      path,
-      dataset_id: ids,
-    },
-  });
-  if (filenameVars && filenameVars.length > 0) {
-    const filenameVarsParam = queryString.stringify(
-      { query: filenameVars },
-      {
-        arrayFormat: 'comma',
-      }
-    );
-    url += `&${filenameVarsParam}`;
-  }
-
   return axios
-    .get(url)
+    .post(
+      apiRoutes.globusTransfer.path,
+      JSON.stringify({
+        access_token: transferAccessToken,
+        refresh_token: accessToken,
+        endpointId,
+        path,
+        dataset_id: ids,
+        filenameVars,
+      })
+    )
+    .then((resp) => {
+      return resp;
+    })
+    .catch((error: AxiosError) => {
+      let message = '';
+      /* istanbul ignore else */
+      if (error.response) {
+        message = error.response.data;
+      }
+      throw new Error(message);
+    });
+};
+
+export const startSearchGlobusEndpoints = async (
+  searchText: string
+): Promise<GlobusEndpointSearchResults> => {
+  return axios
+    .get(apiRoutes.globusSearchEndpoints.path, {
+      params: { search_text: searchText },
+    })
     .then((resp) => {
       return resp;
     })
     .catch((error: ResponseError) => {
-      throw new Error(
-        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusTransfer)
-      );
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusSearchEndpoints));
     });
 };
 
@@ -732,7 +744,5 @@ export const fetchNodeStatus = async (): Promise<NodeStatusArray> =>
     .get(`${apiRoutes.nodeStatus.path}`)
     .then((res) => parseNodeStatus(res.data as RawNodeStatus))
     .catch((error: ResponseError) => {
-      throw new Error(
-        errorMsgBasedOnHTTPStatusCode(error, apiRoutes.nodeStatus)
-      );
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.nodeStatus));
     });

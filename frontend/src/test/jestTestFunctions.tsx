@@ -5,10 +5,22 @@
  * in order to mock their behaviors.
  *
  */
-import { waitFor, within, screen, RenderResult } from '@testing-library/react';
+import { within, screen, act } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event/dist/types/setup/setup';
-import { getSearchFromUrl } from '../common/utils';
+import { message } from 'antd';
+import { ReactNode, CSSProperties } from 'react';
+import { NotificationType, getSearchFromUrl } from '../common/utils';
+import { RawSearchResult } from '../components/Search/types';
+import { rawSearchResultFixture } from './mock/fixtures';
+
+// For mocking environment variables
 import { FrontendConfig } from '../common/types';
+
+// For mocking environment variables
+export type MockConfig = {
+  authenticationMethod: string;
+  globusEnabledNodes: string[];
+};
 
 // https://www.mikeborozdin.com/post/changing-jest-mocks-between-tests
 export const originalGlobusEnabledNodes = [
@@ -19,6 +31,7 @@ export const originalGlobusEnabledNodes = [
 
 export const mockConfig: FrontendConfig = {
   REACT_APP_GLOBUS_CLIENT_ID: 'frontend',
+  REACT_APP_GLOBUS_REDIRECT: 'http://localhost:3000/cart/items',
   REACT_APP_GLOBUS_NODES: originalGlobusEnabledNodes,
   REACT_APP_KEYCLOAK_REALM: 'esgf',
   REACT_APP_KEYCLOAK_URL: 'https://esgf-login.ceda.ac.uk/',
@@ -57,6 +70,22 @@ export const sessionStorageMock = (() => {
   };
 })();
 
+// This will get a mock value from temp storage to use for keycloak
+export const mockKeycloakToken = mockFunction(() => {
+  const loginFixture = tempStorageGetMock('keycloakFixture');
+
+  if (loginFixture) {
+    return loginFixture;
+  }
+  return {
+    keycloak: {
+      login: jest.fn(),
+      logout: jest.fn(),
+      idTokenParsed: { given_name: 'John' },
+    },
+  };
+});
+
 export function tempStorageGetMock<T>(key: string): T {
   const value = sessionStorageMock.getItem<T>(key);
   // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
@@ -77,6 +106,68 @@ export function printElementContents(element: HTMLElement | undefined): void {
   screen.debug(element, Number.POSITIVE_INFINITY);
 }
 
+export async function showNoticeStatic(
+  content: React.ReactNode | string,
+  config?: {
+    duration?: number;
+    icon?: ReactNode;
+    type?: NotificationType;
+    style?: CSSProperties;
+    key?: string | number;
+  }
+): Promise<void> {
+  const msgConfig = {
+    content,
+    duration: config?.duration,
+    icon: config?.icon,
+    style: {
+      marginTop: '60px',
+      marginLeft: '20%',
+      width: '60%',
+      height: '500px',
+      overflow: 'auto',
+      ...config?.style,
+    },
+    key: config?.key,
+  };
+
+  switch (config?.type) {
+    case 'success':
+      await message.success(msgConfig);
+      /* istanbul ignore next */
+      return;
+    case 'warning':
+      await message.warning(msgConfig);
+      /* istanbul ignore next */
+      return;
+    case 'error':
+      await message.error(msgConfig);
+      /* istanbul ignore next */
+      return;
+    case 'info':
+      await message.info(msgConfig);
+      /* istanbul ignore next */
+      return;
+    default:
+      await message.info(msgConfig);
+      /* istanbul ignore next */
+      break;
+  }
+}
+
+export const globusReadyNode = 'nodeIsGlobusReady';
+export const nodeNotGlobusReady = 'nodeIsNotGlobusReady';
+
+export function makeCartItem(id: string, globusReady: boolean): RawSearchResult {
+  return rawSearchResultFixture({
+    id,
+    title: id,
+    master_id: id,
+    number_of_files: 3,
+    data_node: globusReady ? globusReadyNode : nodeNotGlobusReady,
+  });
+}
+
 /**
  * Creates the appropriate name string when performing getByRole('row')
  */
@@ -93,50 +184,45 @@ export function getRowName(
   if (Number.isNaN(Number(totalSize))) {
     totalBytes = totalSize;
   }
-  let globusReadyCheck = '.*';
+  let globusReadyCheck = mockConfig.REACT_APP_GLOBUS_NODES.length > 0 ? ' .*' : '';
   if (globusReady !== undefined) {
-    globusReadyCheck = globusReady ? 'check-circle' : 'close-circle';
+    globusReadyCheck = globusReady ? ' check-circle' : ' close-circle';
   }
   const newRegEx = new RegExp(
-    `right-circle ${cartButton} ${nodeCircleType}-circle ${title} ${fileCount} ${totalBytes} ${version} wget download ${globusReadyCheck}`
+    `right-circle ${cartButton} ${nodeCircleType}-circle ${title} ${fileCount} ${totalBytes} ${version} wget download${globusReadyCheck}`
   );
 
   return newRegEx;
 }
 
-export async function submitKeywordSearch(
-  renderedApp: RenderResult,
-  inputText: string,
-  user: UserEvent
-): Promise<void> {
-  const { getByTestId, getByPlaceholderText } = renderedApp;
-
+export async function submitKeywordSearch(inputText: string, user: UserEvent): Promise<void> {
   // Check left menu rendered
-  const leftMenuComponent = await waitFor(() => getByTestId('left-menu'));
+  const leftMenuComponent = await screen.findByTestId('left-menu');
   expect(leftMenuComponent).toBeTruthy();
 
   // Type in value for free-text input
-  const freeTextForm = await waitFor(() =>
-    getByPlaceholderText('Search for a keyword')
-  );
+  const freeTextForm = await screen.findByPlaceholderText('Search for a keyword');
   expect(freeTextForm).toBeTruthy();
-  await user.type(freeTextForm, inputText);
+
+  await act(async () => {
+    await user.type(freeTextForm, inputText);
+  });
 
   // Submit the form
-  const submitBtn = within(leftMenuComponent).getByRole('img', {
+  const submitBtn = await within(leftMenuComponent).findByRole('img', {
     name: 'search',
   });
-  await user.click(submitBtn);
 
-  await waitFor(() => getByTestId('search'));
+  await act(async () => {
+    await user.click(submitBtn);
+  });
+
+  await screen.findByTestId('search');
 }
 
-export async function openDropdownList(
-  user: UserEvent,
-  dropdown: HTMLElement
-): Promise<void> {
-  await waitFor(async () => {
-    dropdown.focus();
+export async function openDropdownList(user: UserEvent, dropdown: HTMLElement): Promise<void> {
+  dropdown.focus();
+  await act(async () => {
     await user.keyboard('[ArrowDown]');
   });
 }
@@ -146,9 +232,63 @@ export async function selectDropdownOption(
   dropdown: HTMLElement,
   option: string
 ): Promise<void> {
-  await waitFor(async () => {
+  act(() => {
     dropdown.focus();
-    await user.keyboard('[ArrowDown]');
-    await user.click(screen.getByText(option));
   });
+
+  await act(async () => {
+    await user.keyboard('[ArrowDown]');
+  });
+  await act(async () => {
+    const opt = await screen.findByText(option);
+    await user.click(opt);
+  });
+}
+
+export async function addSearchRowsAndGoToCart(
+  user: UserEvent,
+  rows?: HTMLElement[]
+): Promise<void> {
+  let rowsToAdd: HTMLElement[] = [];
+
+  // Get the rows we need to add
+  if (rows) {
+    rowsToAdd = rowsToAdd.concat(rows);
+  } else {
+    const defaultRow = await screen.findByRole('row', {
+      name: getRowName('plus', 'check', 'foo', '3', '1', '1', true),
+    });
+    rowsToAdd.push(defaultRow);
+  }
+
+  // Add the rows by clicking plus button
+  const clickBtns: Promise<void>[] = [];
+  rowsToAdd.forEach((row) => {
+    expect(row).toBeTruthy();
+    const clickBtnFunc = async (): Promise<void> => {
+      const addBtn = (await within(row).findAllByRole('button'))[0];
+      expect(addBtn).toBeTruthy();
+      await act(async () => {
+        await user.click(addBtn);
+      });
+    };
+    clickBtns.push(clickBtnFunc());
+  });
+  await Promise.all(clickBtns);
+
+  // Check 'Added items(s) to the cart' message appears
+  const addText = await screen.findAllByText('Added item(s) to your cart', {
+    exact: false,
+  });
+  expect(addText).toBeTruthy();
+
+  // Switch to the cart page
+  const cartBtn = await screen.findByTestId('cartPageLink');
+  await act(async () => {
+    await user.click(cartBtn);
+  });
+
+  // Wait for cart page to render
+  const summary = await screen.findByTestId('summary');
+  expect(summary).toBeTruthy();
 }

@@ -186,3 +186,4 @@ tags
 
 # Documentation artifacts
 docs/site
+frontend/public/runtime_env.js

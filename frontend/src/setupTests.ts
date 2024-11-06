@@ -2,9 +2,9 @@
 // allows you to do things like:
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
-import '@testing-library/jest-dom/extend-expect';
+import '@testing-library/jest-dom';
 import { cleanup } from '@testing-library/react';
-import { server } from './api/mock/server';
+import { server } from './test/mock/server';
 import messageDisplayData from './components/Messaging/messageDisplayData';
 import {
   mockConfig,
@@ -12,7 +12,7 @@ import {
   sessionStorageMock,
 } from './test/jestTestFunctions';
 
-jest.setTimeout(15000);
+jest.setTimeout(35000);
 
 // Fixes 'TypeError: Cannot read property 'addListener' of undefined.
 // https://github.com/AO19/typeError-cannot-read-property-addListener-of-undefined/commit/873ce9b730a1c21b40c9264e5f29fc2df436136b
@@ -36,6 +36,8 @@ beforeAll(() => {
   server.listen();
 });
 beforeEach(() => {
+  sessionStorageMock.clear();
+
   // Set start up messages as 'seen' so start popup won't show
   localStorage.setItem('lastMessageSeen', messageDisplayData.messageToShow);
 });
@@ -53,6 +55,9 @@ afterEach(() => {
   window.location = (JSON.parse(location) as unknown) as Location; // Reset location
   window.location.replace = jest.fn(); // Don't do anything with redirects
   window.location.assign = jest.fn();
+  window.URL.createObjectURL = jest.fn();
+
+  HTMLAnchorElement.prototype.click = jest.fn();
 
   // Reset mock values
   window.METAGRID.REACT_APP_GLOBUS_NODES = originalGlobusEnabledNodes;

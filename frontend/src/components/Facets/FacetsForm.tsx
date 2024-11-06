@@ -1,4 +1,5 @@
 import {
+  CopyOutlined,
   InfoCircleOutlined,
   RightCircleOutlined,
   SearchOutlined,
@@ -14,8 +15,16 @@ import {
   Select,
   Tooltip,
   RadioChangeEvent,
+  message,
 } from 'antd';
-import moment from 'moment';
+import dayjs, { Dayjs } from 'dayjs';
+import advancedFormat from 'dayjs/plugin/advancedFormat';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+import localeData from 'dayjs/plugin/localeData';
+import weekday from 'dayjs/plugin/weekday';
+import weekOfYear from 'dayjs/plugin/weekOfYear';
+import weekYear from 'dayjs/plugin/weekYear';
+
 import React from 'react';
 import { leftSidebarTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
@@ -29,6 +38,14 @@ import {
   VersionType,
 } from '../Search/types';
 import { ActiveFacets, ParsedFacets } from './types';
+import { showNotice } from '../../common/utils';
+
+dayjs.extend(customParseFormat);
+dayjs.extend(advancedFormat);
+dayjs.extend(weekday);
+dayjs.extend(localeData);
+dayjs.extend(weekOfYear);
+dayjs.extend(weekYear);
 
 const styles: CSSinJS = {
   container: {
@@ -76,15 +93,15 @@ export const humanizeFacetNames = (str: string): string => {
 };
 
 export const formatDate = (
-  date: string | moment.Moment,
+  date: string | Dayjs,
   toString: boolean
-): string | moment.Moment => {
+): string | Dayjs => {
   const format = 'YYYYMMDD';
 
   if (toString) {
-    return moment(date).format(format);
+    return dayjs(date).format(format);
   }
-  return moment(date, format);
+  return dayjs(date, format);
 };
 
 const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
@@ -95,6 +112,8 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
   onSetGeneralFacets,
   onSetActiveFacets,
 }) => {
+  const [messageApi, contextHolder] = message.useMessage();
+
   const [generalFacetsForm] = Form.useForm();
   const [availableFacetsForm] = Form.useForm();
   const [filenameVarForm] = Form.useForm();
@@ -120,9 +139,9 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
 
   type DatePickerReturnType =
     | [null, null]
-    | [moment.Moment, null]
-    | [null, moment.Moment]
-    | [moment.Moment, moment.Moment];
+    | [Dayjs, null]
+    | [null, Dayjs]
+    | [Dayjs, Dayjs];
 
   // Convert using moment.js to for the initial value of the date picker
   const { minVersionDate, maxVersionDate } = activeSearchQuery;
@@ -248,6 +267,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
 
   return (
     <div data-testid="facets-form">
+      {contextHolder}
       <Form
         form={availableFacetsForm}
         initialValues={{
@@ -324,132 +344,161 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                 setExpandAll(false);
               }
             }}
-          >
-            {facetsByGroup &&
-              Object.keys(facetsByGroup).map((group) => (
-                <Collapse.Panel
-                  header={
-                    <div
-                      className={leftSidebarTargets.facetFormGeneral.class()}
-                    >
-                      {humanizeFacetNames(group)}
-                    </div>
-                  }
-                  key={group}
-                  className={`site-collapse-custom-collapse ${leftSidebarTargets.facetFormFields.class()}`}
-                >
-                  {Object.keys(availableFacets).map((facet) => {
-                    if (facetsByGroup[group].includes(facet)) {
-                      const facetOptions = availableFacets[facet];
+            items={Object.keys(facetsByGroup).map((group) => {
+              return {
+                key: group,
+                label: (
+                  <div className={leftSidebarTargets.facetFormGeneral.class()}>
+                    {humanizeFacetNames(group)}
+                  </div>
+                ),
+                className: `site-collapse-custom-collapse ${leftSidebarTargets.facetFormFields.class()}`,
+                children: Object.keys(availableFacets).map((facet) => {
+                  if (facetsByGroup[group].includes(facet)) {
+                    const facetOptions = availableFacets[facet];
 
-                      const isOptionalforDatasets =
-                        facetOptions.length > 0 &&
-                        facetOptions[0].includes('none');
-                      return (
-                        <Form.Item
-                          key={facet}
-                          name={facet}
-                          label={
-                            humanizeFacetNames(facet) +
-                            (isOptionalforDatasets ? ' (Optional)' : '')
-                          }
-                          style={{ marginBottom: '0px' }}
-                          tooltip={
-                            isOptionalforDatasets
-                              ? {
-                                  title:
-                                    'Selecting the "none" option filters for datasets that do not use this facet.',
-                                  icon: <InfoCircleOutlined />,
+                    const isOptionalforDatasets =
+                      facetOptions.length > 0 &&
+                      facetOptions[0].includes('none');
+                    const facetNameHumanized = humanizeFacetNames(facet);
+                    return (
+                      <Form.Item
+                        key={facet}
+                        name={facet}
+                        label={
+                          <div>
+                            {humanizeFacetNames(facet)}
+                            <Button
+                              size="small"
+                              style={{ marginLeft: '5px' }}
+                              icon={
+                                <Tooltip
+                                  title={`Copy ${facetNameHumanized}s to clipboard`}
+                                >
+                                  <CopyOutlined style={{ fontSize: '12px' }} />
+                                </Tooltip>
+                              }
+                              onClick={() => {
+                                // copy link to clipboard
+                                /* istanbul ignore else */
+                                if (navigator && navigator.clipboard) {
+                                  navigator.clipboard.writeText(
+                                    facetOptions
+                                      .map((item) => {
+                                        return `${item[0]} (${item[1]})`;
+                                      })
+                                      .join('\n')
+                                  );
+                                  showNotice(
+                                    messageApi,
+                                    `${facetNameHumanized}s copied to clipboard!`,
+                                    {
+                                      icon: (
+                                        <CopyOutlined
+                                          style={styles.messageAddIcon}
+                                        />
+                                      ),
+                                    }
+                                  );
                                 }
-                              : undefined
+                              }}
+                            ></Button>
+                          </div>
+                        }
+                        style={{ marginBottom: 0 }}
+                        tooltip={
+                          isOptionalforDatasets
+                            ? {
+                                title:
+                                  'Selecting the "none" option filters for datasets that do not use this facet.',
+                                icon: <InfoCircleOutlined />,
+                              }
+                            : undefined
+                        }
+                      >
+                        <Select
+                          data-testid={`${facet}-form-select`}
+                          size="small"
+                          placeholder="Select option(s)"
+                          mode="multiple"
+                          style={{ width: '100%' }}
+                          tokenSeparators={[',']}
+                          getPopupContainer={(triggerNode) =>
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
+                            triggerNode.parentElement
                           }
-                        >
-                          <Select
-                            data-testid={`${facet}-form-select`}
-                            size="small"
-                            placeholder="Select option(s)"
-                            mode="multiple"
-                            style={{ width: '100%' }}
-                            tokenSeparators={[',']}
-                            showArrow
-                            getPopupContainer={(triggerNode) =>
-                              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
-                              triggerNode.parentElement
-                            }
-                            onDropdownVisibleChange={(open) =>
-                              setDropdownIsOpen(open)
-                            }
-                            onChange={(value: string[] | []) => {
-                              handleOnSelectAvailableFacetsForm(facet, value);
-                            }}
-                          >
-                            {facetOptions.map((variable) => {
-                              let optionOutput: string | React.ReactElement = (
-                                <>
-                                  {variable[0]}
+                          onDropdownVisibleChange={(open) =>
+                            setDropdownIsOpen(open)
+                          }
+                          onChange={(value: string[] | []) => {
+                            handleOnSelectAvailableFacetsForm(facet, value);
+                          }}
+                          options={facetOptions.map((variable) => {
+                            let optionOutput: string | React.ReactElement = (
+                              <>
+                                {variable[0]}
+                                <span style={styles.facetCount}>
+                                  ({variable[1]})
+                                </span>
+                              </>
+                            );
+
+                            // If the option output name is very long, use a tooltip
+                            const vLength = variable[0].length - 2;
+                            const cLength =
+                              variable[1].toString().length * 1.5 + 2;
+                            if (vLength > maxItemLength - cLength) {
+                              const innerTitle = variable[0].substring(
+                                0,
+                                maxItemLength - cLength
+                              );
+                              optionOutput = (
+                                <Tooltip
+                                  overlayInnerStyle={{
+                                    width: 'max-content',
+                                  }}
+                                  title={variable[0]}
+                                >
+                                  {innerTitle}...
                                   <span style={styles.facetCount}>
                                     ({variable[1]})
                                   </span>
-                                </>
+                                </Tooltip>
                               );
+                            }
 
-                              // If the option output name is very long, use a tooltip
-                              const vLength = variable[0].length - 2;
-                              const cLength =
-                                variable[1].toString().length * 1.5 + 2;
-                              if (vLength > maxItemLength - cLength) {
-                                const innerTitle = variable[0].substring(
-                                  0,
-                                  maxItemLength - cLength
-                                );
-                                optionOutput = (
-                                  <Tooltip
-                                    overlayInnerStyle={{
-                                      width: 'max-content',
-                                    }}
-                                    title={variable[0]}
-                                  >
-                                    {innerTitle}...
-                                    <span style={styles.facetCount}>
-                                      ({variable[1]})
-                                    </span>
-                                  </Tooltip>
-                                );
-                              }
-
-                              // The data node facet has a unique tooltip overlay to show the status of the highlighted node
-                              if (facet === 'data_node') {
-                                optionOutput = (
-                                  <StatusToolTip
-                                    nodeStatus={nodeStatus}
-                                    dataNode={variable[0]}
-                                  >
-                                    <span style={styles.facetCount}>
-                                      ({variable[1]})
-                                    </span>
-                                  </StatusToolTip>
-                                );
-                              }
-                              return (
-                                <Select.Option
-                                  key={variable[0]}
-                                  value={variable[0]}
+                            // The data node facet has a unique tooltip overlay to show the status of the highlighted node
+                            if (facet === 'data_node') {
+                              optionOutput = (
+                                <StatusToolTip
+                                  nodeStatus={nodeStatus}
+                                  dataNode={variable[0]}
                                 >
-                                  <span data-testid={`${facet}_${variable[0]}`}>
-                                    {optionOutput}
+                                  <span style={styles.facetCount}>
+                                    ({variable[1]})
                                   </span>
-                                </Select.Option>
+                                </StatusToolTip>
                               );
-                            })}
-                          </Select>
-                        </Form.Item>
-                      );
-                    }
-                    return null;
-                  })}
-                </Collapse.Panel>
-              ))}
-          </Collapse>
+                            }
+                            return {
+                              key: variable[0],
+                              value: variable[0],
+                              label: (
+                                <span data-testid={`${facet}_${variable[0]}`}>
+                                  {optionOutput}{' '}
+                                </span>
+                              ),
+                            };
+                          })}
+                        />
+                      </Form.Item>
+                    );
+                  }
+                  return null;
+                }),
+              };
+            })}
+          />
         </div>
       </Form>
       <Form
@@ -467,67 +516,80 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
           handleOnChangeGeneralFacetsForm(allValues);
         }}
       >
-        <Collapse defaultActiveKey="additional_properties">
-          <Collapse.Panel
-            header={
-              <div className={leftSidebarTargets.facetFormAdditional.class()}>
-                {humanizeFacetNames('additional_properties')}
-              </div>
-            }
-            key="additional_properties"
-            className={`site-collapse-custom-collapse ${leftSidebarTargets.facetFormAdditionalFields.class()}`}
-          >
-            <Form.Item
-              label="Version Type"
-              name="versionType"
-              tooltip={{
-                title:
-                  'By default, only the latest version of a dataset is returned',
-                trigger: 'hover',
-              }}
-            >
-              <Select data-testid="version-type-form-select">
-                <Select.Option value={'latest' as ResultType}>
-                  Latest
-                </Select.Option>
-                <Select.Option value={'all' as ResultType}>All</Select.Option>
-              </Select>
-            </Form.Item>
-            <Form.Item
-              label="Result Type"
-              name="resultType"
-              tooltip={{
-                title:
-                  'Datasets can be replicated from the source node (original) to other nodes (replica)',
-                trigger: 'hover',
-              }}
-            >
-              <Select data-testid="result-type-form-select">
-                <Select.Option value={'all' as ResultType}>
-                  Originals and Replicas
-                </Select.Option>
-                <Select.Option value={'originals only' as ResultType}>
-                  Originals only
-                </Select.Option>
-                <Select.Option value={'replicas only' as ResultType}>
-                  Replicas only
-                </Select.Option>
-              </Select>
-            </Form.Item>
-            <Form.Item
-              data-testid="version-range-datepicker"
-              label="Version Date Range"
-              name="versionDateRange"
-              tooltip={{
-                title:
-                  'Specify the versions of datasets using a single min/max date or a date range. ',
-                trigger: 'hover',
-              }}
-            >
-              <DatePicker.RangePicker allowEmpty={[true, true]} />
-            </Form.Item>
-          </Collapse.Panel>
-        </Collapse>
+        <Collapse
+          defaultActiveKey="additional_properties"
+          items={[
+            {
+              key: 'additional_properties',
+              className: `site-collapse-custom-collapse ${leftSidebarTargets.facetFormAdditionalFields.class()}`,
+              label: (
+                <div className={leftSidebarTargets.facetFormAdditional.class()}>
+                  {humanizeFacetNames('additional_properties')}
+                </div>
+              ),
+              children: (
+                <>
+                  <Form.Item
+                    label="Version Type"
+                    name="versionType"
+                    tooltip={{
+                      title:
+                        'By default, only the latest version of a dataset is returned',
+                      trigger: 'hover',
+                    }}
+                  >
+                    <Select
+                      data-testid="version-type-form-select"
+                      options={[
+                        { value: 'latest' as ResultType, label: 'Latest' },
+                        { value: 'all' as ResultType, label: 'All' },
+                      ]}
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    label="Result Type"
+                    name="resultType"
+                    tooltip={{
+                      title:
+                        'Datasets can be replicated from the source node (original) to other nodes (replica)',
+                      trigger: 'hover',
+                    }}
+                  >
+                    <Select
+                      data-testid="result-type-form-select"
+                      options={[
+                        {
+                          value: 'all' as ResultType,
+                          label: 'Originals and Replicas',
+                        },
+                        {
+                          value: 'originals only' as ResultType,
+                          label: 'Originals only',
+                        },
+                        {
+                          value: 'replicas only' as ResultType,
+                          label: 'Originals and Replicas',
+                        },
+                      ]}
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    data-testid="version-range-datepicker"
+                    label="Version Date Range"
+                    name="versionDateRange"
+                    tooltip={{
+                      title:
+                        'Specify the versions of datasets using a single min/max date or a date range. ',
+                      trigger: 'hover',
+                    }}
+                  >
+                    <DatePicker.RangePicker allowEmpty={[true, true]} />
+                  </Form.Item>
+                </>
+              ),
+            },
+          ]}
+        />
       </Form>
       <Form
         form={filenameVarForm}
@@ -536,52 +598,56 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
         onFinish={handleOnFinishFilenameVarForm}
         style={styles.filenameVarForm}
       >
-        <Collapse>
-          <Collapse.Panel
-            header={
-              <div className={leftSidebarTargets.facetFormFilename.class()}>
-                {humanizeFacetNames('filename')}
-              </div>
-            }
-            key="filename"
-            className={`site-collapse-custom-collapse ${leftSidebarTargets.facetFormFilenameFields.class()}`}
-          >
-            <Form.Item
-              name="filenameVar"
-              label="Filter by Filename"
-              rules={[{ required: true, message: 'Variable is required' }]}
-              tooltip={{
-                title: (
-                  <p>
-                    Use file or variable names to filter a dataset&apos;s files
-                    under the <RightCircleOutlined></RightCircleOutlined> icon.
-                    For multiple names, add them individually or as a single
-                    comma-separated input (e.g. cct, cl).
-                  </p>
-                ),
-                trigger: 'hover',
-              }}
-            >
-              <Row gutter={5}>
-                <Col>
-                  <Input
-                    data-testid="filename-search-input"
-                    value={filenameVars}
-                    style={{ width: '140px' }}
-                    onChange={(e) => setFilenameVar(e.target.value)}
-                  />
-                </Col>
-                <Col>
-                  <Button
-                    type="primary"
-                    htmlType="submit"
-                    icon={<SearchOutlined />}
-                  ></Button>
-                </Col>
-              </Row>
-            </Form.Item>
-          </Collapse.Panel>
-        </Collapse>
+        <Collapse
+          items={[
+            {
+              key: 'filename',
+              label: (
+                <div className={leftSidebarTargets.facetFormFilename.class()}>
+                  {humanizeFacetNames('filename')}
+                </div>
+              ),
+              className: `site-collapse-custom-collapse ${leftSidebarTargets.facetFormFilenameFields.class()}`,
+              children: (
+                <Form.Item
+                  name="filenameVar"
+                  label="Filter by Filename"
+                  rules={[{ required: true, message: 'Variable is required' }]}
+                  tooltip={{
+                    title: (
+                      <p>
+                        Use file or variable names to filter a dataset&apos;s
+                        files under the{' '}
+                        <RightCircleOutlined></RightCircleOutlined> icon. For
+                        multiple names, add them individually or as a single
+                        comma-separated input (e.g. cct, cl).
+                      </p>
+                    ),
+                    trigger: 'hover',
+                  }}
+                >
+                  <Row gutter={5}>
+                    <Col>
+                      <Input
+                        data-testid="filename-search-input"
+                        value={filenameVars}
+                        style={{ width: '140px' }}
+                        onChange={(e) => setFilenameVar(e.target.value)}
+                      />
+                    </Col>
+                    <Col>
+                      <Button
+                        type="primary"
+                        htmlType="submit"
+                        icon={<SearchOutlined />}
+                      ></Button>
+                    </Col>
+                  </Row>
+                </Form.Item>
+              ),
+            },
+          ]}
+        />
       </Form>
     </div>
   );

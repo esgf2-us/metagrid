@@ -11,21 +11,25 @@ export interface GlobusTokenResponse extends ITokenResponse {
   error?: unknown;
 }
 
-export type GlobusEndpointData = {
-  endpoint: string | null;
-  label: string | null;
-  path: string | null;
-  globfs: string | null;
-  endpointId?: string | null;
-};
+export interface GlobusEndpointSearchResults {
+  data: GlobusEndpoint[];
+  status: number;
+  statusText: string;
+  headers: object;
+  config: object;
+}
 
-export type GlobusStateValue =
-  | null
-  | boolean
-  | string
-  | GlobusEndpointData
-  | GlobusTokenResponse
-  | Record<string, unknown>;
+export interface GlobusEndpoint {
+  canonical_name: string;
+  contact_email: string;
+  display_name: string;
+  entity_type: string;
+  id: string;
+  owner_id: string;
+  owner_string: string;
+  path: string | null;
+  subscription_id: string;
+}
 
 export type GlobusTaskItem = {
   taskId: string;

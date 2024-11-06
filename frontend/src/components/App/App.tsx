@@ -1,4 +1,5 @@
 /* eslint-disable no-void */
+
 import {
   BookOutlined,
   DeleteOutlined,
@@ -7,7 +8,16 @@ import {
   ShareAltOutlined,
   ShoppingCartOutlined,
 } from '@ant-design/icons';
-import { Affix, Breadcrumb, Button, Layout, Result } from 'antd';
+import {
+  Affix,
+  Breadcrumb,
+  Button,
+  ConfigProvider,
+  FloatButton,
+  Layout,
+  Result,
+  message,
+} from 'antd';
 import React from 'react';
 import { useAsync } from 'react-async';
 import { hotjar } from 'react-hotjar';
@@ -39,7 +49,7 @@ import { UserCart, UserSearchQueries, UserSearchQuery } from '../Cart/types';
 import { TagType, TagValue } from '../DataDisplay/Tag';
 import Facets from '../Facets';
 import { ActiveFacets, ParsedFacets, RawProject } from '../Facets/types';
-import NavBar from '../NavBar';
+import NavBar from '../NavBar/index';
 import NodeStatus from '../NodeStatus';
 import NodeSummary from '../NodeStatus/NodeSummary';
 import Search from '../Search';
@@ -95,6 +105,8 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   // Third-party tool integration
   useHotjar();
 
+  const [messageApi, contextHolder] = message.useMessage();
+
   // User's authentication state
   const authState = React.useContext(AuthContext);
   const { access_token: accessToken, pk } = authState;
@@ -131,6 +143,11 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     setActiveSearchQuery,
   ] = React.useState<ActiveSearchQuery>(projectBaseQuery({}));
 
+  const [
+    savedSearchQuery,
+    setSavedSearchQuery,
+  ] = React.useState<ActiveSearchQuery | null>(null);
+
   const [availableFacets, setAvailableFacets] = React.useState<
     ParsedFacets | Record<string, unknown>
   >({});
@@ -162,7 +179,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
           setUserCart(combinedCarts);
         })
         .catch((error: ResponseError) => {
-          showError(error.message);
+          showError(messageApi, error.message);
         });
 
       void fetchUserSearchQueries(accessToken)
@@ -183,7 +200,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
           setUserSearchQueries(databaseItems.concat(searchQueriesToAdd));
         })
         .catch((error: ResponseError) => {
-          showError(error.message);
+          showError(messageApi, error.message);
         });
     }
   }, [isAuthenticated, pk, accessToken]);
@@ -228,7 +245,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
       .catch(
         /* istanbul ignore next */
         (error: ResponseError) => {
-          showError(error.message);
+          showError(messageApi, error.message);
         }
       );
   }, [fetchProjects]);
@@ -238,7 +255,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     text: string
   ): void => {
     if (activeSearchQuery.textInputs.includes(text as never)) {
-      showError(`Input "${text}" has already been applied`);
+      showError(messageApi, `Input "${text}" has already been applied`);
     } else {
       setActiveSearchQuery({
         ...activeSearchQuery,
@@ -250,7 +267,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
 
   const handleOnSetFilenameVars = (filenameVar: string): void => {
     if (activeSearchQuery.filenameVars.includes(filenameVar as never)) {
-      showError(`Input "${filenameVar}" has already been applied`);
+      showError(messageApi, `Input "${filenameVar}" has already been applied`);
     } else {
       setActiveSearchQuery({
         ...activeSearchQuery,
@@ -283,7 +300,17 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   };
 
   const handleProjectChange = (selectedProject: RawProject): void => {
-    setActiveSearchQuery(projectBaseQuery(selectedProject));
+    if (savedSearchQuery) {
+      setSavedSearchQuery(null);
+      setActiveSearchQuery(savedSearchQuery);
+      return;
+    }
+
+    if (selectedProject.pk !== activeSearchQuery.project.pk) {
+      setActiveSearchQuery(projectBaseQuery(selectedProject));
+    } else {
+      setActiveSearchQuery({ ...activeSearchQuery, project: selectedProject });
+    }
   };
 
   const handleRemoveFilter = (removedTag: TagValue, type: TagType): void => {
@@ -341,7 +368,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
 
       newCart = [...userCart, ...itemsNotInCart];
       setUserCart(newCart);
-      showNotice('Added item(s) to your cart', {
+      showNotice(messageApi, 'Added item(s) to your cart', {
         icon: <ShoppingCartOutlined style={styles.messageAddIcon} />,
       });
     } else if (operation === 'remove') {
@@ -350,7 +377,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
       );
       setUserCart(newCart);
 
-      showNotice('Removed item(s) from your cart', {
+      showNotice(messageApi, 'Removed item(s) from your cart', {
         icon: <DeleteOutlined style={styles.messageRemoveIcon} />,
       });
     }
@@ -387,7 +414,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     };
 
     if (searchAlreadyExists(userSearchQueries, savedSearch)) {
-      showNotice('Search query is already in your library', {
+      showNotice(messageApi, 'Search query is already in your library', {
         icon: <BookOutlined style={styles.messageAddIcon} />,
         type: 'info',
       });
@@ -396,7 +423,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
 
     const saveSuccess = (): void => {
       setUserSearchQueries([...userSearchQueries, savedSearch]);
-      showNotice('Saved search query to your library', {
+      showNotice(messageApi, 'Saved search query to your library', {
         icon: <BookOutlined style={styles.messageAddIcon} />,
       });
     };
@@ -406,26 +433,25 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
         .then(() => {
           saveSuccess();
         })
-        .catch((error: ResponseError) => {
-          showError(error.message);
-        });
+        .catch(
+          /* istanbul ignore next */
+          (error: ResponseError) => {
+            showError(messageApi, error.message);
+          }
+        );
     } else {
       saveSuccess();
     }
   };
 
   const handleShareSearchQuery = (): void => {
-    const shareSuccess = (): void => {
-      // copy link to clipboard
-      /* istanbul ignore next */
-      if (navigator && navigator.clipboard) {
-        navigator.clipboard.writeText(getUrlFromSearch(activeSearchQuery));
-        showNotice('Search copied to clipboard!', {
-          icon: <ShareAltOutlined style={styles.messageAddIcon} />,
-        });
-      }
-    };
-    shareSuccess();
+    /* istanbul ignore else */
+    if (navigator && navigator.clipboard) {
+      navigator.clipboard.writeText(getUrlFromSearch(activeSearchQuery));
+      showNotice(messageApi, 'Search copied to clipboard!', {
+        icon: <ShareAltOutlined style={styles.messageAddIcon} />,
+      });
+    }
   };
 
   const handleRemoveSearchQuery = (searchUUID: string): void => {
@@ -435,7 +461,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
           (searchItem: UserSearchQuery) => searchItem.uuid !== searchUUID
         )
       );
-      showNotice('Removed search query from your library', {
+      showNotice(messageApi, 'Removed search query from your library', {
         icon: <DeleteOutlined style={styles.messageRemoveIcon} />,
       });
     };
@@ -446,7 +472,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
           deleteSuccess();
         })
         .catch((error: ResponseError) => {
-          showError(error.message);
+          showError(messageApi, error.message);
         });
     } else {
       deleteSuccess();
@@ -455,7 +481,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
 
   // This converts a saved search to the active search query
   const handleRunSearchQuery = (savedSearch: UserSearchQuery): void => {
-    setActiveSearchQuery({
+    setSavedSearchQuery({
       project: savedSearch.project,
       versionType: savedSearch.versionType,
       resultType: 'all',
@@ -468,7 +494,13 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   };
 
   return (
-    <>
+    <ConfigProvider
+      theme={{
+        token: {
+          borderRadius: 3,
+        },
+      }}
+    >
       <div>
         <Routes>
           <Route
@@ -484,6 +516,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
           />
         </Routes>
         <Layout id="body-layout">
+          {contextHolder}
           <Routes>
             <Route path="/" element={<Navigate to="/search" />} />
             <Route path="/cart" element={<Navigate to="/cart/items" />} />
@@ -537,11 +570,17 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
                   path="/search/*"
                   element={
                     <>
-                      <Breadcrumb>
-                        <Breadcrumb.Item>
-                          <HomeOutlined /> Home
-                        </Breadcrumb.Item>
-                      </Breadcrumb>
+                      <Breadcrumb
+                        items={[
+                          {
+                            title: (
+                              <>
+                                <HomeOutlined /> Home
+                              </>
+                            ),
+                          },
+                        ]}
+                      />
                       <Search
                         activeSearchQuery={activeSearchQuery}
                         userCart={userCart}
@@ -562,14 +601,18 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
                   path="/nodes"
                   element={
                     <>
-                      <Breadcrumb>
-                        <Breadcrumb.Item>
-                          <Link to="/">
-                            <HomeOutlined /> Home
-                          </Link>
-                        </Breadcrumb.Item>
-                        <Breadcrumb.Item>Data Node Status</Breadcrumb.Item>
-                      </Breadcrumb>
+                      <Breadcrumb
+                        items={[
+                          {
+                            title: (
+                              <Link to="/">
+                                <HomeOutlined /> Home
+                              </Link>
+                            ),
+                          },
+                          { title: 'Data Node Status' },
+                        ]}
+                      ></Breadcrumb>
                       <NodeStatus
                         nodeStatus={nodeStatus}
                         apiError={nodeStatusApiError as ResponseError}
@@ -582,14 +625,18 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
                   path="/cart/*"
                   element={
                     <>
-                      <Breadcrumb>
-                        <Breadcrumb.Item>
-                          <Link to="/">
-                            <HomeOutlined /> Home
-                          </Link>
-                        </Breadcrumb.Item>
-                        <Breadcrumb.Item>Cart</Breadcrumb.Item>
-                      </Breadcrumb>
+                      <Breadcrumb
+                        items={[
+                          {
+                            title: (
+                              <Link to="/">
+                                <HomeOutlined /> Home
+                              </Link>
+                            ),
+                          },
+                          { title: 'Cart' },
+                        ]}
+                      />
                       <Cart
                         userCart={userCart}
                         userSearchQueries={userSearchQueries}
@@ -640,18 +687,22 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
         <Affix
           className={miscTargets.questionBtn.class()}
           style={{
-            position: 'fixed',
-            bottom: 75,
+            position: 'absolute',
+            bottom: 50,
             right: 50,
           }}
         >
-          <Button
+          <FloatButton
             type="primary"
             shape="circle"
             style={{ width: '48px', height: '48px' }}
-            icon={<QuestionOutlined style={{ fontSize: '28px' }} />}
+            icon={
+              <QuestionOutlined
+                style={{ fontSize: '28px', marginLeft: '-5px' }}
+              />
+            }
             onClick={() => setSupportModalVisible(true)}
-          ></Button>
+          ></FloatButton>
         </Affix>
         <Support
           open={supportModalVisible}
@@ -659,7 +710,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
         />
         <StartPopup />
       </div>
-    </>
+    </ConfigProvider>
   );
 };
 

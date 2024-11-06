@@ -156,7 +156,19 @@ export const cartTourTargets = {
   libraryBtn: new TargetObject(),
   downloadAllType: new TargetObject(),
   downloadAllBtn: new TargetObject(),
+  globusCollectionDropdown: new TargetObject(),
   removeItemsBtn: new TargetObject(),
+};
+
+export const manageCollectionsTourTargets = {
+  globusCollectionsForm: new TargetObject(),
+  searchCollectionInput: new TargetObject(),
+  globusSearchResultsPanel: new TargetObject(),
+  globusSearchResults: new TargetObject(),
+  mySavedCollectionsPanel: new TargetObject(),
+  mySavedCollections: new TargetObject(),
+  saveCollectionBtn: new TargetObject(),
+  cancelCollectionBtn: new TargetObject(),
 };
 
 export const savedSearchTourTargets = {
@@ -180,6 +192,7 @@ export const nodeTourTargets = {
 export enum TourTitles {
   Main = 'Main Search Page Tour',
   Cart = 'Data Cart Tour',
+  ManageCollections = 'Manage My Collections Tour',
   Searches = 'Saved Searches Tour',
   Node = 'Node Status Tour',
   Welcome = 'Welcome Tour',
@@ -406,37 +419,6 @@ export const createMainPageTour = (): JoyrideTour => {
       'To begin a search, you would first select a project from this drop-down.',
       'right'
     );
-
-  /* istanbul ignore if */
-  if (mainTableEmpty()) {
-    tour
-      .addNextStep(
-        leftSidebarTargets.projectSelectLeftSideBtn.selector(),
-        'Then you click this button to load the results for the project you selected...',
-        'right',
-        () => {
-          clickFirstElement(
-            leftSidebarTargets.projectSelectLeftSideBtn.selector()
-          );
-        }
-      )
-      .addNextStep(
-        leftSidebarTargets.projectSelectLeftSideBtn.selector(),
-        "NOTE: The search results may take a few seconds to load... Click 'next' to continue.",
-        'right',
-        async () => {
-          if (mainTableEmpty()) {
-            await delay(1000);
-          }
-        }
-      );
-  } else {
-    tour.addNextStep(
-      leftSidebarTargets.projectSelectLeftSideBtn.selector(),
-      'Then you click this button to load results for the project you selected.',
-      'right'
-    );
-  }
 
   tour.addNextStep(
     leftSidebarTargets.projectWebsiteBtn.selector(),
@@ -744,13 +726,28 @@ export const createCartItemsTour = (
       }
     )
     .addNextStep(
+      cartTourTargets.removeItemsBtn.selector(),
+      'We can remove all items from the cart with this button.',
+      'right-start'
+    )
+    .addNextStep(
       cartTourTargets.downloadAllType.selector(),
-      'This will select which download script to use (only wget is available currently).',
+      'This will select which download method to use. The Globus download method is the default.',
+      'top-start',
+      /* istanbul ignore next */
+      async () => {
+        clickFirstElement(cartTourTargets.downloadAllType.selector());
+        await delay(500);
+      }
+    )
+    .addNextStep(
+      cartTourTargets.globusCollectionDropdown.selector(),
+      "For Globus downloads, you need to select a saved collection from this drop-down. If you haven't saved any collections, you can do so by clicking the 'Manage Collections' option.",
       'top-start'
     )
     .addNextStep(
       cartTourTargets.downloadAllBtn.selector(),
-      'Then you would click this button to get the download script needed for all currently selected datasets in the cart.',
+      'After selecting your collection, click this button to start the download for your selected cart items.',
       'top-start',
       /* istanbul ignore next */
       async () => {
@@ -759,11 +756,6 @@ export const createCartItemsTour = (
         tour.setTourFlag('boxes-checked', false);
         await delay(300);
       }
-    )
-    .addNextStep(
-      cartTourTargets.removeItemsBtn.selector(),
-      'We can remove all items from the cart with this button.',
-      'right-start'
     )
     .addNextStep('body', 'This concludes the cart page tour.', 'center')
     .setOnFinish(
@@ -781,6 +773,50 @@ export const createCartItemsTour = (
             clickFirstElement('#root .ant-checkbox');
             await delay(300);
           }
+        };
+      }
+    );
+
+  return tour;
+};
+
+export const createCollectionsFormTour = (): JoyrideTour => {
+  const tour = new JoyrideTour(TourTitles.ManageCollections)
+    .addNextStep(
+      manageCollectionsTourTargets.globusCollectionsForm.selector(),
+      "The 'Manage My Collections' form allows you to search for and save Globus collections which you can then select to perform Globus transfers."
+    )
+    .addNextStep(
+      manageCollectionsTourTargets.searchCollectionInput.selector(),
+      "First, type your search text in here, then press 'Enter' or click the blue search button to the right."
+    )
+    .addNextStep(
+      manageCollectionsTourTargets.globusSearchResults.selector(),
+      "The search results will be displayed in this table, where you can click 'Add' for the collections you wish to save.",
+      'auto',
+      /* istanbul ignore next */
+      async () => {
+        clickFirstElement(
+          manageCollectionsTourTargets.mySavedCollectionsPanel.selector()
+        );
+        await delay(500);
+      }
+    )
+    .addNextStep(
+      manageCollectionsTourTargets.mySavedCollections.selector(),
+      "Your currently saved collections are displayed in this table, where you can also 'Set' or 'Update' the file path to use for a specific collection. If the path is set for a specific collection, you won't have to set the path again when doing transfers to that collection.",
+      'auto'
+    )
+    .addNextStep('body', 'This concludes the cart page tour.', 'center')
+    .setOnFinish(
+      /* istanbul ignore next */
+      () => {
+        // Clean-up step for when the tour is complete (or skipped)
+        return async () => {
+          clickFirstElement(
+            manageCollectionsTourTargets.mySavedCollectionsPanel.selector()
+          );
+          await delay(300);
         };
       }
     );

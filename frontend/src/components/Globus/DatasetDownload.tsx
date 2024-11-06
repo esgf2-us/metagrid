@@ -1,6 +1,17 @@
-import { CheckCircleFilled, DownloadOutlined } from '@ant-design/icons';
-import { Button, Modal, Radio, Select, Space, Tooltip } from 'antd';
-import PKCE from 'js-pkce';
+import { DownloadOutlined, QuestionOutlined } from '@ant-design/icons';
+import {
+  Button,
+  Card,
+  Collapse,
+  Divider,
+  Input,
+  Modal,
+  Select,
+  Space,
+  Spin,
+  Table,
+  message,
+} from 'antd';
 import React, { useEffect } from 'react';
 import { useRecoilState } from 'recoil';
 import {
@@ -9,24 +20,29 @@ import {
   fetchWgetScript,
   ResponseError,
   startGlobusTransfer,
+  startSearchGlobusEndpoints,
+  saveSessionValues,
+  REQUESTED_SCOPES,
+  createGlobusAuthObject,
 } from '../../api';
-import { cartTourTargets } from '../../common/reactJoyrideSteps';
+import { cartTourTargets, manageCollectionsTourTargets } from '../../common/reactJoyrideSteps';
+import {
+  globusClientID,
+  globusEnabledNodes,
+  globusRedirectUrl,
+} from '../../env';
 import { RawSearchResults } from '../Search/types';
 import CartStateKeys, {
-  cartItemSelections,
   cartDownloadIsLoading,
+  cartItemSelections,
 } from '../Cart/recoil/atoms';
-import GlobusStateKeys, {
-  globusUseDefaultEndpoint,
-  globusDefaultEndpoint,
-  globusTaskItems,
-} from './recoil/atom';
+import GlobusStateKeys, { globusTaskItems } from './recoil/atom';
 import {
-  GlobusStateValue,
   GlobusTokenResponse,
-  GlobusEndpointData,
   GlobusTaskItem,
   MAX_TASK_LIST_LENGTH,
+  GlobusEndpointSearchResults,
+  GlobusEndpoint,
 } from './types';
 import { NotificationType, showError, showNotice } from '../../common/utils';
 
@@ -50,76 +66,118 @@ type ModalState = {
   show: boolean;
   state: ModalFormState;
 };
+import { DataPersister } from '../../common/DataPersister';
+import {
+  RawTourState,
+  ReactJoyrideContext,
+} from '../../contexts/ReactJoyrideContext';
 
 type AlertModalState = {
   onCancelAction: () => void;
   onOkAction: () => void;
   show: boolean;
-  state: string;
   content: React.ReactNode;
 };
+
+const COLLECTION_SEARCH_PAGE_SIZE = 5;
+
+export enum GlobusGoals {
+  None = 'none',
+  DoGlobusTransfer = 'doTransfer',
+  SetEndpointPath = 'setEndpoints',
+}
 
 // Statically defined list of dataset download options
 const downloadOptions = ['Globus', 'wget'];
 
+// The persistent, static, data storage singleton
+const dp: DataPersister = DataPersister.Instance;
+
 const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
-  // User wants to use default endpoint
-  const [
-    useGlobusDefaultEndpoint,
-    setUseGlobusDefaultEndpoint,
-  ] = useRecoilState<boolean>(globusUseDefaultEndpoint);
+  const [messageApi, contextHolder] = message.useMessage();
 
-  const [
-    defaultGlobusEndpoint,
-    setDefaultGlobusEndpoint,
-  ] = useRecoilState<GlobusStateValue>(globusDefaultEndpoint);
-
-  const [taskItems, setTaskItems] = useRecoilState<GlobusTaskItem[]>(
-    globusTaskItems
-  );
-
-  const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(
-    cartItemSelections
-  );
+  // Tutorial state
+  const tourState: RawTourState = React.useContext(ReactJoyrideContext);
+  const { startSpecificTour } = tourState;
 
   const [downloadIsLoading, setDownloadIsLoading] = useRecoilState<boolean>(
     cartDownloadIsLoading
   );
 
+  // Persistent vars
+  dp.addNewVar(GlobusStateKeys.accessToken, null, () => {});
+  dp.addNewVar(
+    GlobusStateKeys.transferToken,
+    null,
+    () => {},
+    getGlobusTransferToken
+  );
+
+  const [taskItems, setTaskItems] = useRecoilState<GlobusTaskItem[]>(
+    globusTaskItems
+  );
+  dp.addNewVar<GlobusTaskItem[]>(
+    GlobusStateKeys.globusTaskItems,
+    [],
+    setTaskItems
+  );
+
+  const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(
+    cartItemSelections
+  );
+  dp.addNewVar<RawSearchResults>(
+    CartStateKeys.cartItemSelections,
+    [],
+    setItemSelections
+  );
+
+  const [savedGlobusEndpoints, setSavedGlobusEndpoints] = React.useState<
+    GlobusEndpoint[] | []
+  >(dp.getValue(GlobusStateKeys.savedGlobusEndpoints) || []);
+  dp.addNewVar(
+    GlobusStateKeys.savedGlobusEndpoints,
+    [],
+    setSavedGlobusEndpoints
+  );
+
+  const [
+    chosenGlobusEndpoint,
+    setChosenGlobusEndpoint,
+  ] = React.useState<GlobusEndpoint | null>(
+    dp.getValue(GlobusStateKeys.userChosenEndpoint)
+  );
+  dp.addNewVar(
+    GlobusStateKeys.userChosenEndpoint,
+    null,
+    setChosenGlobusEndpoint
+  );
+
   // Component internal state
-  const [downloadActive, setDownloadActive] = React.useState<boolean>(true);
+  const [varsLoaded, setVarsLoaded] = React.useState<boolean>(false);
+
+  const [loadingPage, setLoadingPage] = React.useState<boolean>(false);
+
+  const [endpointSearchOpen, setEndpointSearchOpen] = React.useState<boolean>(
+    false
+  );
+
+  const [endpointSearchValue, setEndpointSearchValue] = React.useState<string>(
+    ''
+  );
+
+  const [
+    loadingEndpointSearchResults,
+    setLoadingEndpointSearchResults,
+  ] = React.useState<boolean>(false);
+
+  const [globusEndpoints, setGlobusEndpoints] = React.useState<
+    GlobusEndpoint[] | []
+  >();
 
   const [
     selectedDownloadType,
     setSelectedDownloadType,
   ] = React.useState<string>(downloadOptions[0]);
-
-  const [globusStepsModal, setGlobusStepsModal] = React.useState<ModalState>({
-    show: false,
-    state: 'both',
-    onOkAction:
-      // istanbul ignore next
-      () => {
-        setGlobusStepsModal({ ...globusStepsModal, show: false });
-      },
-    onCancelAction: async () => {
-      setGlobusStepsModal({ ...globusStepsModal, show: false });
-      await endDownloadSteps();
-    },
-  });
-  const [
-    useDefaultConfirmModal,
-    setUseDefaultConfirmModal,
-  ] = React.useState<ModalState>({
-    show: false,
-    state: 'none',
-    onOkAction: /* istanbul ignore next */ () => {
-      setUseDefaultConfirmModal({ ...useDefaultConfirmModal, show: false });
-    },
-    onCancelAction: /* istanbul ignore next */ () => {
-      setUseDefaultConfirmModal({ ...useDefaultConfirmModal, show: false });
-    },
-  });
 
   const [alertPopupState, setAlertPopupState] = React.useState<AlertModalState>(
     {
@@ -136,24 +194,13 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           setAlertPopupState({ ...alertPopupState, show: false });
         },
       show: false,
-      state: 'none',
     }
   );
-
-  function addNewTask(newTask: GlobusTaskItem): void {
-    const newItemsList = [...taskItems];
-    if (taskItems.length >= MAX_TASK_LIST_LENGTH) {
-      newItemsList.pop();
-    }
-    newItemsList.unshift(newTask);
-    setTaskItems(newItemsList);
-    saveSessionValue(GlobusStateKeys.globusTaskItems, newItemsList);
-  }
 
   function redirectToNewURL(newUrl: string): void {
     setTimeout(() => {
       window.location.replace(newUrl);
-    }, 200);
+    }, 100);
   }
 
   function redirectToRootUrl(): void {
@@ -168,12 +215,21 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     }
   }
 
+  async function addNewTask(newTask: GlobusTaskItem): Promise<void> {
+    const newItemsList = [...taskItems];
+    if (taskItems.length >= MAX_TASK_LIST_LENGTH) {
+      newItemsList.pop();
+    }
+    newItemsList.unshift(newTask);
+    await dp.setValue(GlobusStateKeys.globusTaskItems, newItemsList, true);
+  }
+
   async function getGlobusTransferToken(): Promise<GlobusTokenResponse | null> {
     const token = await loadSessionValue<GlobusTokenResponse>(
       GlobusStateKeys.transferToken
     );
 
-    if (token && token.expires_in && token.created_on) {
+    if (token && token.expires_in) {
       const createTime = token.created_on;
       const lifeTime = token.expires_in;
       const expires = createTime + lifeTime;
@@ -188,96 +244,102 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   }
 
   async function resetTokens(): Promise<void> {
-    await saveSessionValue<null>(GlobusStateKeys.accessToken, null);
-    await saveSessionValue<null>(GlobusStateKeys.refreshToken, null);
-    await saveSessionValue<null>(GlobusStateKeys.transferToken, null);
-    await saveSessionValue<null>(GlobusStateKeys.defaultEndpoint, null);
-    await saveSessionValue<null>(GlobusStateKeys.userSelectedEndpoint, null);
+    setCurrentGoal(GlobusGoals.None);
+    setLoadingPage(false);
+    await saveSessionValues([
+      { key: GlobusStateKeys.accessToken, value: null },
+      { key: GlobusStateKeys.globusAuth, value: null },
+      { key: GlobusStateKeys.transferToken, value: null },
+    ]);
   }
 
-  async function getGlobusTokens(): Promise<
-    [GlobusTokenResponse | null, string | null]
-  > {
-    const refreshToken = await loadSessionValue<string>(
-      GlobusStateKeys.refreshToken
+  function getGlobusTokens(): [GlobusTokenResponse | null, string | null] {
+    const accessToken = dp.getValue<string>(GlobusStateKeys.accessToken);
+    const transferToken = dp.getValue<GlobusTokenResponse | null>(
+      GlobusStateKeys.transferToken
     );
-    const transferToken = await getGlobusTransferToken();
-    return [transferToken, refreshToken];
+
+    return [transferToken, accessToken];
   }
 
-  async function getEndpointData(): Promise<
-    [boolean | null, GlobusEndpointData | null, GlobusEndpointData | null]
-  > {
-    const useDefault = await loadSessionValue<boolean>(
-      GlobusStateKeys.useDefaultEndpoint
-    );
-    const defaultEndpoint = await loadSessionValue<GlobusEndpointData>(
-      GlobusStateKeys.defaultEndpoint
-    );
-    const selectedEndpoint = await loadSessionValue<GlobusEndpointData>(
-      GlobusStateKeys.userSelectedEndpoint
-    );
-
-    return [useDefault, defaultEndpoint, selectedEndpoint];
-  }
-
-  const handleWgetDownload = (): void => {
+  const handleWgetDownload = async (): Promise<void> => {
     /* istanbul ignore else */
     if (itemSelections !== null) {
-      itemSelections.filter((item) => {
+      const cleanedSelections = itemSelections.filter((item) => {
         return item !== undefined && item !== null;
       });
-      const ids = itemSelections.map((item) => item.id);
-      showNotice('The wget script is generating, please wait momentarily.', {
-        duration: 3,
-        type: 'info',
-      });
+      await dp.setValue(
+        CartStateKeys.cartItemSelections,
+        cleanedSelections,
+        true
+      );
+
+      const ids = cleanedSelections.map((item) => item.id);
+      showNotice(
+        messageApi,
+        'The wget script is generating, please wait momentarily.',
+        {
+          duration: 3,
+          type: 'info',
+        }
+      );
       setDownloadIsLoading(true);
       fetchWgetScript(ids)
         .then(() => {
           setDownloadIsLoading(false);
-          showNotice('Wget script downloaded successfully!', {
+          showNotice(messageApi, 'Wget script downloaded successfully!', {
             duration: 4,
             type: 'success',
           });
         })
         .catch((error: ResponseError) => {
-          showError(error.message);
+          showError(
+            messageApi,
+            <Card
+              title="Wget Script Error"
+              style={{
+                maxWidth: '500px',
+                maxHeight: '400px',
+                overflowY: 'auto',
+                overflowX: 'auto',
+              }}
+            >
+              {error.message}
+            </Card>
+          );
           setDownloadIsLoading(false);
         });
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleGlobusDownload = async (
     globusTransferToken: GlobusTokenResponse | null,
-    refreshToken: string | null,
-    endpoint: GlobusEndpointData | null
+    accessToken: string | null,
+    endpoint: GlobusEndpoint | null
   ): Promise<void> => {
     setDownloadIsLoading(true);
 
-    const loadedSelections = await loadSessionValue<RawSearchResults>(
+    const cartSelections = dp.getValue<RawSearchResults>(
       CartStateKeys.cartItemSelections
     );
-    if (loadedSelections && loadedSelections.length > 0) {
-      setItemSelections(loadedSelections);
-      const ids = loadedSelections.map((item) => (item ? item.id : ''));
+    if (cartSelections && cartSelections.length > 0) {
+      const ids = cartSelections.map((item) => (item ? item.id : ''));
 
-      if (globusTransferToken && refreshToken) {
+      if (globusTransferToken && accessToken) {
         let messageContent: React.ReactNode | string = null;
         let messageType: NotificationType = 'success';
-
+        let durationVal = 5;
         startGlobusTransfer(
           globusTransferToken.access_token,
-          refreshToken,
-          endpoint?.endpointId || '',
+          accessToken,
+          endpoint?.id || '',
           endpoint?.path || '',
           ids
         )
-          .then((resp) => {
+          .then(async (resp) => {
             if (resp.status === 200) {
-              setItemSelections([]);
-              setDownloadIsLoading(false);
-              saveSessionValue(CartStateKeys.cartItemSelections, []);
+              await dp.setValue(CartStateKeys.cartItemSelections, [], true);
 
               const transRespData = resp.data as Record<string, unknown>;
               if (transRespData && transRespData.taskid) {
@@ -287,7 +349,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                   taskId,
                   taskStatusURL: `https://app.globus.org/activity/${taskId}/overview`,
                 };
-                addNewTask(taskItem);
+                await addNewTask(taskItem);
 
                 if (taskItem.taskStatusURL !== '') {
                   messageContent = (
@@ -313,19 +375,34 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             }
           })
           .catch(async (error: ResponseError) => {
-            messageContent = `Globus transfer task failed. Resetting tokens.`;
-            // eslint-disable-next-line no-console
-            console.error(error);
+            if (error.message !== '') {
+              messageContent = (
+                <div
+                  style={{
+                    width: '500px',
+                    height: '400px',
+                    overflowY: 'auto',
+                    overflowX: 'hidden',
+                  }}
+                >
+                  ${error.message} is your error. Please contact ESGF support.
+                </div>
+              );
+              durationVal = 5;
+            } else {
+              messageContent = `Globus transfer task failed. Resetting tokens.`;
+              // eslint-disable-next-line no-console
+              console.error(error);
+            }
             messageType = 'error';
             await resetTokens();
           })
           .finally(async () => {
-            setDownloadActive(false);
-            await showNotice(messageContent, {
-              duration: 3,
+            setDownloadIsLoading(false);
+            await showNotice(messageApi, messageContent, {
+              duration: durationVal,
               type: messageType,
             });
-            setDownloadActive(true);
             await endDownloadSteps();
           });
       }
@@ -348,24 +425,26 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       return item !== undefined && item !== null;
     });
     itemSelections.forEach((selection) => {
-      const data = selection as Record<string, unknown>;
-      const dataNode = data.data_node as string;
-      if (
+      if (selection) {
+        const dataNode = selection.data_node as string;
+        if (
         dataNode &&
         window.METAGRID.REACT_APP_GLOBUS_NODES.includes(dataNode)
       ) {
-        globusReadyItems.push(selection);
+          globusReadyItems.push(selection);
+        }
       }
     });
 
     // If there are non-Globus Ready selections, show alert
     const globusDisabledCount = itemSelections.length - globusReadyItems.length;
+
     if (globusDisabledCount > 0) {
       let state = 'One';
       if (globusDisabledCount > 1) {
         state = 'Some';
       }
-      let content = `${state} of your selected items cannot be transfered via Globus. Would you like to continue the Globus transfer with the 'Globus Ready' items?`;
+      let content = `${state} of your selected items cannot be transferred via Globus. Would you like to continue the Globus transfer with the 'Globus Ready' items?`;
 
       if (globusDisabledCount === itemSelections.length) {
         state = 'None';
@@ -377,28 +456,29 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         content,
         onCancelAction: () => {
           setAlertPopupState({ ...alertPopupState, show: false });
+          setCurrentGoal(GlobusGoals.None);
         },
         onOkAction: async () => {
-          setAlertPopupState({ ...alertPopupState, show: false });
-          if (state !== 'None') {
-            // Select only globus enabled items, save to session memory
-            setItemSelections(globusReadyItems);
-            await saveSessionValue<RawSearchResults>(
+          if (state === 'None') {
+            setAlertPopupState({ ...alertPopupState, show: false });
+            setCurrentGoal(GlobusGoals.None);
+          } else {
+            setAlertPopupState({ ...alertPopupState, show: false });
+            await dp.setValue(
               CartStateKeys.cartItemSelections,
-              globusReadyItems
+              globusReadyItems,
+              true
             );
-            // Starting globus download process
-            const prepareDownload = async (): Promise<void> => {
-              await performGlobusDownloadStep();
-            };
-            prepareDownload();
+            setCurrentGoal(GlobusGoals.DoGlobusTransfer);
+            await performStepsForGlobusGoals();
           }
         },
         show: true,
-        state,
       };
 
-      setAlertPopupState(newAlertPopupState);
+      if (!alertPopupState.show) {
+        setAlertPopupState(newAlertPopupState);
+      }
       return false;
     }
 
@@ -413,107 +493,131 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       const itemsReady = checkItemsAreGlobusEnabled();
       if (itemsReady) {
         const prepareDownload = async (): Promise<void> => {
-          await performGlobusDownloadStep();
+          setCurrentGoal(GlobusGoals.DoGlobusTransfer);
+          await performStepsForGlobusGoals();
         };
         prepareDownload();
       }
     }
   };
 
-  const showGlobusSigninPrompt = (formState: ModalFormState): void => {
-    setGlobusStepsModal({
-      ...globusStepsModal,
-      onOkAction: async () => {
-        setGlobusStepsModal({ ...globusStepsModal, show: false });
-        await loginWithGlobus();
-      },
-      show: true,
-      state: formState,
-    });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const changeGlobusEndpoint = async (value: string): Promise<void> => {
+    if (value === '') {
+      setEndpointSearchValue('');
+      setGlobusEndpoints([]);
+      setEndpointSearchOpen(true);
+      return;
+    }
+
+    const checkEndpoint = savedGlobusEndpoints?.find(
+      (endpoint: GlobusEndpoint) => endpoint.id === value
+    );
+
+    if (
+      checkEndpoint?.entity_type === 'GCSv5_mapped_collection' &&
+      checkEndpoint.subscription_id
+    ) {
+      const DATA_ACCESS_SCOPE = `urn:globus:auth:scope:transfer.api.globus.org:all[*https://auth.globus.org/scopes/${value}/data_access]`;
+      const SCOPES = REQUESTED_SCOPES.concat(' ', DATA_ACCESS_SCOPE);
+
+      await saveSessionValue<string>(GlobusStateKeys.globusAuth, SCOPES);
+    }
+
+    await dp.setValue(GlobusStateKeys.userChosenEndpoint, checkEndpoint, true);
   };
 
-  const showGlobusEndpointPrompt = (): void => {
-    setGlobusStepsModal({
-      ...globusStepsModal,
-      onOkAction: async () => {
-        setGlobusStepsModal({ ...globusStepsModal, show: false });
-        await redirectToSelectGlobusEndpoint();
-      },
-      show: true,
-      state: 'endpoint',
-    });
-  };
+  const searchGlobusEndpoints = async (value: string): Promise<void> => {
+    try {
+      if (value) {
+        setLoadingEndpointSearchResults(true);
+        const endpoints: GlobusEndpointSearchResults = await startSearchGlobusEndpoints(
+          value
+        );
+        const mappedEndpoints: GlobusEndpoint[] = endpoints.data.map(
+          (endpointInfo) => {
+            return {
+              canonical_name: endpointInfo.canonical_name,
+              contact_email: endpointInfo.contact_email,
+              display_name: endpointInfo.display_name,
+              entity_type: endpointInfo.entity_type,
+              id: endpointInfo.id,
+              owner_id: endpointInfo.owner_id,
+              owner_string: endpointInfo.owner_string,
+              path: endpointInfo.path,
+              subscription_id: endpointInfo.subscription_id,
+            };
+          }
+        );
 
-  const showGlobusDownloadPrompt = (
-    transferToken: GlobusTokenResponse | null,
-    refreshToken: string | null,
-    endpoint: GlobusEndpointData | null
-  ): void => {
-    setGlobusStepsModal({
-      ...globusStepsModal,
-      onOkAction: () => {
-        setGlobusStepsModal({ ...globusStepsModal, show: false });
-        handleGlobusDownload(transferToken, refreshToken, endpoint);
-      },
-      show: true,
-      state: 'none',
-    });
+        for (let i = 0; i < mappedEndpoints.length; i += 1) {
+          if (mappedEndpoints[i].entity_type === 'GCSv5_endpoint') {
+            mappedEndpoints.splice(i, 1);
+          }
+        }
+        setGlobusEndpoints(mappedEndpoints);
+      } else {
+        setEndpointSearchValue('');
+        setGlobusEndpoints([]);
+      }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+    } finally {
+      setLoadingEndpointSearchResults(false);
+    }
   };
 
   function tokensReady(
-    refreshToken: string | null,
+    accessToken: string | null,
     globusTransferToken: GlobusTokenResponse | null
   ): boolean {
-    if (refreshToken && globusTransferToken) {
+    if (accessToken && globusTransferToken) {
       return true;
     }
     return false;
   }
 
-  function endpointIsReady(
-    useDefault: boolean | null,
-    defaultEndpoint: GlobusEndpointData | null,
-    userEndpoint: GlobusEndpointData | null
-  ): boolean {
-    if (useDefault !== null) {
-      if ((useDefault && defaultEndpoint) || userEndpoint) {
-        return true;
-      }
-    }
-    // Check the UI state as backup if state wasn't saved
-    if ((useGlobusDefaultEndpoint && defaultEndpoint) || userEndpoint) {
-      return true;
+  function getCurrentGoal(): GlobusGoals {
+    const goal = localStorage.getItem(GlobusStateKeys.globusTransferGoalsState);
+    if (goal !== null) {
+      return goal as GlobusGoals;
     }
 
-    return false;
+    return GlobusGoals.None;
+  }
+
+  function setCurrentGoal(goal: GlobusGoals): void {
+    localStorage.setItem(GlobusStateKeys.globusTransferGoalsState, goal);
   }
 
   function endpointUrlReady(params: URLSearchParams): boolean {
-    return params.has('endpoint');
+    return params.has('endpoint_id');
   }
 
   function tokenUrlReady(params: URLSearchParams): boolean {
     return params.has('code') && params.has('state');
   }
 
-  async function getUrlTokens(): Promise<void> {
+  async function getUrlAuthTokens(): Promise<void> {
     try {
       const url = window.location.href;
-
-      const tokenResponse = (await GlobusAuth.exchangeForAccessToken(
+      const pkce = await createGlobusAuthObject(); // Create pkce with saved scope
+      const tokenResponse = (await pkce.exchangeForAccessToken(
         url
       )) as GlobusTokenResponse;
 
       /* istanbul ignore else */
       if (tokenResponse) {
         /* istanbul ignore else */
-        if (tokenResponse.refresh_token) {
-          await saveSessionValue(
-            GlobusStateKeys.refreshToken,
-            tokenResponse.refresh_token
+        if (tokenResponse.access_token) {
+          await dp.setValue(
+            GlobusStateKeys.accessToken,
+            tokenResponse.access_token,
+            true
           );
         } else {
-          await saveSessionValue(GlobusStateKeys.refreshToken, null);
+          await dp.setValue(GlobusStateKeys.accessToken, null, true);
         }
 
         // Try to find and get the transfer token
@@ -530,19 +634,25 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             ) {
               const newTransferToken = { ...tokenBlob };
               newTransferToken.created_on = Math.floor(Date.now() / 1000);
-              await saveSessionValue(
+
+              await dp.setValue(
                 GlobusStateKeys.transferToken,
-                newTransferToken
+                newTransferToken,
+                true
               );
             }
           });
         } else {
-          await saveSessionValue(GlobusStateKeys.transferToken, null);
+          await dp.setValue(GlobusStateKeys.transferToken, null, true);
         }
       }
     } catch (error: unknown) {
       /* istanbul ignore next */
-      showError('Error occured when obtaining transfer permissions.');
+      showError(
+        messageApi,
+        'Error occured when obtaining transfer permissions.'
+      );
+      await resetTokens();
     } finally {
       // This isn't strictly necessary but it ensures no code reuse.
       sessionStorage.removeItem('pkce_code_verifier');
@@ -550,179 +660,266 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     }
   }
 
-  async function getUrlEndpoint(
-    params: URLSearchParams
-  ): Promise<GlobusEndpointData> {
-    // The url has endpoint information, so process it
-    const endpoint = params.get('endpoint');
-    const label = params.get('label');
-    const path = params.get('path');
-    const globfs = params.get('globfs');
-    const endpointId = params.get('endpoint_id');
+  async function redirectToSelectGlobusEndpointPath(): Promise<void> {
+    const endpointSearchURL = `https://app.globus.org/file-manager?action=${globusRedirectUrl}&method=GET&cancelUrl=${globusRedirectUrl}`;
 
-    const endpointInfo: GlobusEndpointData = {
-      endpoint,
-      label,
-      path,
-      globfs,
-      endpointId,
-    };
-    await saveSessionValue(GlobusStateKeys.userSelectedEndpoint, endpointInfo);
-    return endpointInfo;
-  }
-
-  async function saveEndpointAsDefault(
-    userEndpoint: GlobusStateValue
-  ): Promise<void> {
-    if (userEndpoint) {
-      setDefaultGlobusEndpoint(userEndpoint);
-      await saveSessionValue(GlobusStateKeys.defaultEndpoint, userEndpoint);
+    setLoadingPage(true);
+    await dp.saveAllValues();
+    setLoadingPage(false);
+    const chosenEndpoint = dp.getValue<GlobusEndpoint>(
+      GlobusStateKeys.userChosenEndpoint
+    );
+    if (chosenEndpoint) {
+      redirectToNewURL(`${endpointSearchURL}&origin_id=${chosenEndpoint.id}`);
+    } else {
+      redirectToNewURL(endpointSearchURL);
     }
   }
 
-  async function redirectToSelectGlobusEndpoint(): Promise<void> {
-    await saveSessionValue(GlobusStateKeys.continueGlobusPrepSteps, true);
-    const endpointSearchURL = `https://app.globus.org/file-manager?action=${globusRedirectUrl}&method=GET&cancelUrl=${globusRedirectUrl}`;
-    redirectToNewURL(endpointSearchURL);
-  }
-
   async function loginWithGlobus(): Promise<void> {
-    await saveSessionValue(GlobusStateKeys.continueGlobusPrepSteps, true);
     sessionStorage.removeItem('pkce_code_verifier');
     sessionStorage.removeItem('pkce_state');
-    const authUrl: string = GlobusAuth.authorizeUrl();
+
+    const pkce = await createGlobusAuthObject();
+    const authUrl: string = pkce.authorizeUrl();
+    setLoadingPage(true);
+    await dp.saveAllValues();
+    setLoadingPage(false);
     redirectToNewURL(authUrl);
   }
 
   async function endDownloadSteps(): Promise<void> {
     setDownloadIsLoading(false);
-    await saveSessionValue(GlobusStateKeys.userSelectedEndpoint, null);
-    await saveSessionValue(GlobusStateKeys.continueGlobusPrepSteps, false);
+    setLoadingPage(true);
+    await dp.setValue(GlobusStateKeys.userChosenEndpoint, null, true);
+    await dp.saveAllValues();
+    setLoadingPage(false);
+    setCurrentGoal(GlobusGoals.None);
     redirectToRootUrl();
   }
 
-  async function performGlobusDownloadStep(): Promise<void> {
-    const [transferToken, refreshToken] = await getGlobusTokens();
-    const [
-      useDefaultEndpoint,
-      defaultEndpoint,
-      userSelectedEndpoint,
-    ] = await getEndpointData();
-    const tReady = tokensReady(refreshToken, transferToken);
-    const eReady = endpointIsReady(
-      useDefaultEndpoint,
-      defaultEndpoint,
-      userSelectedEndpoint
-    );
+  async function performStepsForGlobusGoals(): Promise<void> {
+    const goal = getCurrentGoal();
+
+    if (!varsLoaded) {
+      setVarsLoaded(true);
+      await dp.loadAllValues();
+    }
+
+    // Obtain URL params if applicable
     const urlParams = new URLSearchParams(window.location.search);
     const tUrlReady = tokenUrlReady(urlParams);
     const eUrlReady = endpointUrlReady(urlParams);
 
-    if (tReady && eReady) {
-      if (useDefaultEndpoint) {
-        handleGlobusDownload(transferToken, refreshToken, defaultEndpoint);
-      } else {
-        handleGlobusDownload(transferToken, refreshToken, userSelectedEndpoint);
+    // If globusGoal state is none, do nothing
+    if (goal === GlobusGoals.None) {
+      if (urlParams.size > 0) {
+        redirectToRootUrl();
       }
-    } else if (tReady) {
-      if (endpointUrlReady(urlParams)) {
-        const userEndpoint = await getUrlEndpoint(urlParams);
-        setUseDefaultConfirmModal({
-          ...useDefaultConfirmModal,
-          onOkAction: async () => {
-            await saveEndpointAsDefault(userEndpoint);
-            setUseDefaultConfirmModal({
-              ...useDefaultConfirmModal,
-              show: false,
-            });
-            showGlobusDownloadPrompt(transferToken, refreshToken, userEndpoint);
+      setLoadingPage(false);
+      return;
+    }
+
+    const savedEndpoints: GlobusEndpoint[] =
+      dp.getValue<GlobusEndpoint[]>(GlobusStateKeys.savedGlobusEndpoints) || [];
+    // Goal is to set the path for chosen endpoint
+    if (goal === GlobusGoals.SetEndpointPath) {
+      // If endpoint urls are ready, update related values
+      if (eUrlReady) {
+        const path = urlParams.get('path');
+        const endpointId = urlParams.get('endpoint_id');
+        if (path === null) {
+          setCurrentGoal(GlobusGoals.None);
+        }
+
+        const updatedEndpointList = savedEndpoints.map((endpoint) => {
+          if (endpoint && endpoint.id === endpointId) {
+            return { ...endpoint, path };
+          }
+          return endpoint;
+        });
+
+        // Set path for endpoint
+        await dp.setValue(
+          GlobusStateKeys.savedGlobusEndpoints,
+          updatedEndpointList,
+          true
+        );
+
+        // If endpoint was updated, set it as chosen endpoint
+        const updatedEndpoint = updatedEndpointList.find(
+          (endpoint: GlobusEndpoint) => endpoint.id === endpointId
+        );
+        if (updatedEndpoint) {
+          await dp.setValue(
+            GlobusStateKeys.userChosenEndpoint,
+            updatedEndpoint,
+            true
+          );
+        }
+
+        setCurrentGoal(GlobusGoals.None);
+        redirectToRootUrl();
+        return;
+      }
+
+      if (!alertPopupState.show) {
+        setAlertPopupState({
+          onCancelAction: () => {
+            setCurrentGoal(GlobusGoals.None);
+            setAlertPopupState({ ...alertPopupState, show: false });
           },
-          onCancelAction: (): void => {
-            setUseDefaultConfirmModal({
-              ...useDefaultConfirmModal,
-              show: false,
-            });
-            showGlobusDownloadPrompt(transferToken, refreshToken, userEndpoint);
+          onOkAction: async () => {
+            await redirectToSelectGlobusEndpointPath();
           },
           show: true,
-          state: 'none',
+          content:
+            'You will be redirected to set the path for the collection. Continue?',
         });
-      } else {
-        showGlobusEndpointPrompt();
       }
-    } else if (eReady) {
-      if (tokenUrlReady(urlParams)) {
-        await getUrlTokens();
-        showGlobusDownloadPrompt(
-          transferToken,
-          refreshToken,
-          userSelectedEndpoint
-        );
-      } else {
-        showGlobusSigninPrompt('signin');
+      return;
+    }
+
+    const [transferToken, accessToken] = getGlobusTokens();
+    const tknsReady = tokensReady(accessToken, transferToken);
+
+    // Goal is to perform a transfer
+    if (goal === GlobusGoals.DoGlobusTransfer) {
+      // Get tokens if they aren't ready
+      if (!tknsReady) {
+        // If auth token urls are ready, update related tokens
+        if (tUrlReady) {
+          // Token URL is ready get tokens
+          await getUrlAuthTokens();
+          redirectToRootUrl();
+          return;
+        }
+
+        if (!alertPopupState.show) {
+          setAlertPopupState({
+            onCancelAction: () => {
+              setCurrentGoal(GlobusGoals.None);
+              setAlertPopupState({ ...alertPopupState, show: false });
+            },
+            onOkAction: async () => {
+              await loginWithGlobus();
+            },
+            show: true,
+            content:
+              'You will be redirected to obtain globus tokens. Continue?',
+          });
+        }
+        return;
       }
-    } else if (tUrlReady) {
-      await getUrlTokens();
-      showGlobusEndpointPrompt();
-    } else if (eUrlReady) {
-      const userEndpoint = await getUrlEndpoint(urlParams);
-      setUseDefaultConfirmModal({
-        ...useDefaultConfirmModal,
-        onOkAction: async () => {
-          await saveEndpointAsDefault(userEndpoint);
-          setUseDefaultConfirmModal({ ...useDefaultConfirmModal, show: false });
-          showGlobusSigninPrompt('signin');
-        },
-        onCancelAction: (): void => {
-          setUseDefaultConfirmModal({ ...useDefaultConfirmModal, show: false });
-          showGlobusSigninPrompt('signin');
-        },
-        show: true,
-        state: 'both',
-      });
-    } else {
-      showGlobusSigninPrompt('both');
+
+      const chosenEndpoint: GlobusEndpoint | null = dp.getValue<GlobusEndpoint>(
+        GlobusStateKeys.userChosenEndpoint
+      );
+
+      // If there is no chosen endpoint, give notice
+      if (!chosenEndpoint || chosenEndpoint.id === '') {
+        setLoadingPage(false);
+        if (!alertPopupState.show) {
+          setAlertPopupState({
+            onCancelAction: () => {
+              setCurrentGoal(GlobusGoals.None);
+              setAlertPopupState({ ...alertPopupState, show: false });
+            },
+            onOkAction: () => {
+              setCurrentGoal(GlobusGoals.None);
+              setAlertPopupState({ ...alertPopupState, show: false });
+              setEndpointSearchOpen(true);
+            },
+            show: true,
+            content:
+              'You need to select a Globus Collection. Would you like to search for a new Globus Collection?',
+          });
+        }
+        return;
+      }
+
+      // If endpoint urls are ready, update related values
+      if (eUrlReady) {
+        const path = urlParams.get('path');
+        const endpointId = urlParams.get('endpoint_id');
+        if (path === null) {
+          setCurrentGoal(GlobusGoals.None);
+        }
+        const updatedEndpoint = savedEndpoints.find((endpoint) => {
+          return endpoint.id === endpointId;
+        });
+
+        if (updatedEndpoint) {
+          await dp.setValue(
+            GlobusStateKeys.userChosenEndpoint,
+            {
+              ...updatedEndpoint,
+              path,
+            } as GlobusEndpoint,
+            true
+          );
+        } else {
+          await dp.setValue<GlobusEndpoint>(
+            GlobusStateKeys.userChosenEndpoint,
+            {
+              canonical_name: '',
+              contact_email: '',
+              display_name: 'Unsaved Collection',
+              entity_type: '',
+              id: endpointId,
+              owner_id: '',
+              owner_string: '',
+              path,
+              subscription_id: '',
+            } as GlobusEndpoint,
+            true
+          );
+        }
+
+        setLoadingPage(true);
+        await dp.saveAllValues();
+        setLoadingPage(false);
+        redirectToRootUrl();
+        return;
+      }
+
+      // Check chosen endpoint path is ready
+      if (chosenEndpoint.path) {
+        setCurrentGoal(GlobusGoals.None);
+        await handleGlobusDownload(transferToken, accessToken, chosenEndpoint);
+      } else {
+        // Setting endpoint path
+        setLoadingPage(false);
+        if (!alertPopupState.show) {
+          setAlertPopupState({
+            onCancelAction: () => {
+              setCurrentGoal(GlobusGoals.None);
+              setAlertPopupState({ ...alertPopupState, show: false });
+            },
+            onOkAction: async () => {
+              await redirectToSelectGlobusEndpointPath();
+            },
+            show: true,
+            content:
+              'You will be redirected to set the path for your selected collection. Continue?',
+          });
+        }
+      }
     }
   }
 
   useEffect(() => {
     const initializePage = async (): Promise<void> => {
-      const continueProcess = await loadSessionValue<boolean>(
-        GlobusStateKeys.continueGlobusPrepSteps
-      );
-      const itemCartSelections = await loadSessionValue<RawSearchResults>(
-        CartStateKeys.cartItemSelections
-      );
-      const defaultEndpoint = await loadSessionValue<GlobusStateValue>(
-        GlobusStateKeys.defaultEndpoint
-      );
-      const useDefaultEndpoint = await loadSessionValue<boolean>(
-        GlobusStateKeys.useDefaultEndpoint
-      );
-      const savedTaskItems = await loadSessionValue<GlobusTaskItem[]>(
-        GlobusStateKeys.globusTaskItems
-      );
-      if (itemCartSelections) {
-        setItemSelections(itemCartSelections);
-      }
-      if (defaultEndpoint) {
-        setDefaultGlobusEndpoint(defaultEndpoint);
-      }
-      if (useDefaultEndpoint) {
-        setUseGlobusDefaultEndpoint(useDefaultEndpoint);
-      }
-      if (savedTaskItems) {
-        setTaskItems(savedTaskItems);
-      }
-      if (continueProcess) {
-        await performGlobusDownloadStep();
-      }
+      setLoadingPage(true);
+
+      await performStepsForGlobusGoals();
     };
     initializePage();
   }, []);
 
   return (
     <>
+      {contextHolder}
       <Space>
         <Select
           className={cartTourTargets.downloadAllType.class()}
@@ -735,13 +932,81 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
               setSelectedDownloadType(downloadType);
             }
           }}
-        >
-          {downloadOptions.map((option) => (
-            <Select.Option key={option} value={option}>
-              {option}
-            </Select.Option>
-          ))}
-        </Select>
+          options={downloadOptions.map((option) => ({
+            key: option,
+            value: option,
+            label: option,
+          }))}
+        />
+        {selectedDownloadType === 'Globus' && (
+          <Select
+            className={cartTourTargets.globusCollectionDropdown.class()}
+            data-testid="searchCollectionInput"
+            defaultActiveFirstOption={false}
+            filterOption={false}
+            onSelect={(value) => {
+              changeGlobusEndpoint(value);
+            }}
+            notFoundContent={null}
+            placeholder="Select Globus Collection"
+            showSearch
+            style={{ width: '450px' }}
+            value={chosenGlobusEndpoint?.display_name}
+            options={[
+              {
+                key: '',
+                value: '',
+                path: '',
+                label: 'Manage Collections',
+              },
+              ...savedGlobusEndpoints.map((endpoint: GlobusEndpoint) => {
+                return {
+                  key: endpoint.id,
+                  value: endpoint.id,
+                  path: endpoint.path,
+                  label: endpoint.display_name,
+                };
+              }),
+            ]}
+            optionLabelProp="label"
+            optionRender={(option) =>
+              option.key === '' ? (
+                <strong>{option.label}</strong>
+              ) : (
+                <>
+                  <strong>{option.label}</strong>
+                  <br />
+                  ID: {option.key}
+                  <br />
+                  <span>
+                    {((option.data as unknown) as GlobusEndpoint)?.path &&
+                      `Path: ${
+                        ((option.data as unknown) as GlobusEndpoint)?.path
+                      }`}
+                    {((option.data as unknown) as GlobusEndpoint)?.path && (
+                      <br />
+                    )}
+                    {((option.data as unknown) as GlobusEndpoint)
+                      ?.entity_type === 'GCSv5_mapped_collection' &&
+                      ((option.data as unknown) as GlobusEndpoint)
+                        ?.subscription_id !== '' &&
+                      'Managed '}
+                    {((option.data as unknown) as GlobusEndpoint)
+                      ?.entity_type === 'GCSv5_guest_collection'
+                      ? 'Guest Collection'
+                      : 'Mapped Collection'}{' '}
+                    <br />
+                    {((option.data as unknown) as GlobusEndpoint)
+                      ?.contact_email !== null &&
+                      ((option.data as unknown) as GlobusEndpoint)
+                        ?.contact_email}
+                  </span>
+                  <Divider style={{ marginBottom: '0px', marginTop: '0px' }} />
+                </>
+              )
+            }
+          ></Select>
+        )}
         <Button
           data-testid="downloadDatasetBtn"
           className={cartTourTargets.downloadAllBtn.class()}
@@ -750,78 +1015,256 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             handleDownloadForm(selectedDownloadType as 'wget' | 'Globus');
           }}
           icon={<DownloadOutlined />}
-          disabled={itemSelections.length === 0 || !downloadActive}
+          disabled={
+            itemSelections.length === 0 ||
+            (selectedDownloadType === 'Globus' &&
+              chosenGlobusEndpoint === undefined)
+          }
           loading={downloadIsLoading}
         >
           {selectedDownloadType === 'Globus' ? 'Transfer' : 'Download'}
         </Button>
-        {selectedDownloadType === 'Globus' &&
-          defaultGlobusEndpoint &&
-          itemSelections.length !== 0 &&
-          downloadActive && (
-            <Radio.Group
-              onChange={(e) => {
-                setUseGlobusDefaultEndpoint(e.target.value as boolean);
-                saveSessionValue(
-                  GlobusStateKeys.useDefaultEndpoint,
-                  e.target.value as boolean
-                );
-              }}
-              value={useGlobusDefaultEndpoint}
-            >
-              <Space direction="vertical">
-                <Tooltip title="This option will use your currently saved default endpoint for the Globus transfer">
-                  <Radio value defaultChecked>
-                    Default Endpoint
-                  </Radio>
-                </Tooltip>
-                <Tooltip title="This option will let you specify an endpoint for the Globus transfer">
-                  <Radio value={false}>Specify Endpoint</Radio>
-                </Tooltip>
-              </Space>
-            </Radio.Group>
-          )}
       </Space>
       <Modal
-        title="Save Endpoint"
-        open={useDefaultConfirmModal.show}
-        onOk={useDefaultConfirmModal.onOkAction}
-        onCancel={useDefaultConfirmModal.onCancelAction}
-        okText="Yes"
-        cancelText="No"
+        className={manageCollectionsTourTargets.globusCollectionsForm.class()}
+        data-testid="manageCollectionsForm"
+        title={
+          <>
+            Manage My Collections{' '}
+            <Button
+              shape="circle"
+              type="primary"
+              icon={
+                <QuestionOutlined
+                  color="primary"
+                  style={{ fontSize: '20px' }}
+                />
+              }
+              onClick={() => {
+                startSpecificTour(createCollectionsFormTour());
+              }}
+            ></Button>
+          </>
+        }
+        open={endpointSearchOpen}
+        okText="Save"
+        okButtonProps={{
+          className: manageCollectionsTourTargets.saveCollectionBtn.class(),
+        }}
+        onOk={async () => {
+          setEndpointSearchOpen(false);
+          await dp.setValue(
+            GlobusStateKeys.userChosenEndpoint,
+            undefined,
+            true
+          );
+          await dp.setValue(
+            GlobusStateKeys.savedGlobusEndpoints,
+            savedGlobusEndpoints,
+            true
+          );
+        }}
+        cancelText="Cancel Changes"
+        cancelButtonProps={{
+          className: manageCollectionsTourTargets.cancelCollectionBtn.class(),
+        }}
+        onCancel={async () => {
+          setEndpointSearchOpen(false);
+          await dp.setValue(
+            GlobusStateKeys.userChosenEndpoint,
+            undefined,
+            true
+          );
+          await dp.loadValue(GlobusStateKeys.savedGlobusEndpoints);
+        }}
+        width={1000}
       >
-        <p>Do you want to save this endpoint as default?</p>
-      </Modal>
-      <Modal
-        title="Globus Transfer"
-        open={globusStepsModal.show}
-        onOk={globusStepsModal.onOkAction}
-        onCancel={globusStepsModal.onCancelAction}
-        okText="Yes"
-        cancelText="Cancel"
-      >
-        <p>Steps for Globus transfer:</p>
-        <ol>
-          <li>
-            {(globusStepsModal.state === 'both' ||
-              globusStepsModal.state === 'signin') &&
-              '-> '}
-            Redirect to obtain transfer permission from Globus.
-            {(globusStepsModal.state === 'none' ||
-              globusStepsModal.state === 'endpoint') && <CheckCircleFilled />}
-          </li>
-          <li>
-            {globusStepsModal.state === 'endpoint' && '-> '}
-            Redirect to select an endpoint in Globus.
-            {(globusStepsModal.state === 'none' ||
-              globusStepsModal.state === 'signin') && <CheckCircleFilled />}
-          </li>
-
-          <li>
-            {globusStepsModal.state === 'none' && '-> '} Start Globus transfer.
-          </li>
-        </ol>
-        <p>Do you wish to proceed?</p>
+        <Input.Search
+          className={manageCollectionsTourTargets.searchCollectionInput.class()}
+          value={endpointSearchValue}
+          onChange={(e) => {
+            setEndpointSearchValue(e.target.value);
+          }}
+          placeholder="Search for a Globus Collection"
+          onSearch={searchGlobusEndpoints}
+          loading={loadingEndpointSearchResults}
+          enterButton
+        />
+        <Collapse
+          size="small"
+          defaultActiveKey={1}
+          items={[
+            {
+              key: '1',
+              label: (
+                <div
+                  className={manageCollectionsTourTargets.globusSearchResultsPanel.class()}
+                >
+                  Globus Collection Search Results
+                </div>
+              ),
+              children: (
+                <Table
+                  className={manageCollectionsTourTargets.globusSearchResults.class()}
+                  data-testid="globusEndpointSearchResults"
+                  loading={loadingEndpointSearchResults}
+                  size="small"
+                  pagination={
+                    globusEndpoints &&
+                    globusEndpoints.length > COLLECTION_SEARCH_PAGE_SIZE
+                      ? {
+                          pageSize: COLLECTION_SEARCH_PAGE_SIZE,
+                          position: ['bottomRight'],
+                        }
+                      : {
+                          pageSize: COLLECTION_SEARCH_PAGE_SIZE,
+                          position: ['none'],
+                        }
+                  }
+                  dataSource={globusEndpoints?.map((endpoint) => {
+                    return { ...endpoint, key: endpoint.id };
+                  })}
+                  columns={[
+                    {
+                      title: '',
+                      dataIndex: 'addBox',
+                      key: 'addBox',
+                      width: 35,
+                      render: (_, endpoint) => {
+                        if (
+                          savedGlobusEndpoints.findIndex((savedEndpoint) => {
+                            return savedEndpoint.id === endpoint.id;
+                          }) === -1
+                        ) {
+                          return (
+                            <Button
+                              type="primary"
+                              onClick={async () => {
+                                await dp.setValue(
+                                  GlobusStateKeys.savedGlobusEndpoints,
+                                  [...savedGlobusEndpoints, endpoint],
+                                  true
+                                );
+                              }}
+                            >
+                              Add
+                            </Button>
+                          );
+                        }
+                        return (
+                          <Button type="primary" disabled>
+                            Added
+                          </Button>
+                        );
+                      },
+                    },
+                    {
+                      title: 'ID',
+                      dataIndex: 'id',
+                      key: 'id',
+                      width: 350,
+                    },
+                    { title: 'Name', dataIndex: 'display_name', key: 'label' },
+                  ]}
+                />
+              ),
+            },
+            {
+              key: '2',
+              label: (
+                <div
+                  className={manageCollectionsTourTargets.mySavedCollectionsPanel.class()}
+                >
+                  My Saved Globus Collections
+                </div>
+              ),
+              children: (
+                <Table
+                  className={manageCollectionsTourTargets.mySavedCollections.class()}
+                  data-testid="savedGlobusEndpoints"
+                  size="small"
+                  pagination={
+                    savedGlobusEndpoints.length > COLLECTION_SEARCH_PAGE_SIZE
+                      ? {
+                          pageSize: COLLECTION_SEARCH_PAGE_SIZE,
+                          position: ['bottomRight'],
+                        }
+                      : {
+                          pageSize: COLLECTION_SEARCH_PAGE_SIZE,
+                          position: ['none'],
+                        }
+                  }
+                  dataSource={savedGlobusEndpoints
+                    .filter((savedEndpoint) => {
+                      return savedEndpoint.id !== '';
+                    })
+                    .map((endpoint) => {
+                      return {
+                        ...endpoint,
+                        key: endpoint.id,
+                      } as GlobusEndpoint;
+                    })}
+                  columns={[
+                    {
+                      title: '',
+                      dataIndex: 'removeBox',
+                      key: 'removeBox',
+                      width: 70,
+                      render: (_, endpoint) => (
+                        <Button
+                          type="primary"
+                          danger
+                          onClick={async () => {
+                            await dp.setValue(
+                              GlobusStateKeys.savedGlobusEndpoints,
+                              savedGlobusEndpoints.filter((savedEndpoint) => {
+                                return savedEndpoint.id !== endpoint.id;
+                              }),
+                              false
+                            );
+                          }}
+                        >
+                          Remove
+                        </Button>
+                      ),
+                    },
+                    {
+                      title: 'ID',
+                      dataIndex: 'id',
+                      key: 'id',
+                      width: 350,
+                    },
+                    { title: 'Name', dataIndex: 'display_name', key: 'label' },
+                    {
+                      title: 'Path',
+                      dataIndex: 'setPath',
+                      key: 'setPath',
+                      width: 70,
+                      render: (_, endpoint) => (
+                        <Button
+                          type="primary"
+                          danger
+                          onClick={async () => {
+                            await dp.setValue(
+                              GlobusStateKeys.userChosenEndpoint,
+                              endpoint,
+                              true
+                            );
+                            setEndpointSearchOpen(false);
+                            setCurrentGoal(GlobusGoals.SetEndpointPath);
+                            await performStepsForGlobusGoals();
+                          }}
+                        >
+                          {endpoint.path ? 'Update Path' : 'Set Path'}
+                        </Button>
+                      ),
+                    },
+                  ]}
+                />
+              ),
+            },
+          ]}
+        />
       </Modal>
       <Modal
         okText="Ok"
@@ -832,6 +1275,11 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       >
         {alertPopupState.content}
       </Modal>
+      <Spin
+        datatest-id="fullscreenLoadingSpinner"
+        spinning={loadingPage}
+        fullscreen
+      />
     </>
   );
 };

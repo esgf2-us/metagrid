@@ -1,5 +1,5 @@
 import { SearchOutlined } from '@ant-design/icons';
-import { Alert, Form, Input, Select, Spin } from 'antd';
+import { Alert, Form, Input, Select, Space, Spin } from 'antd';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ResponseError } from '../../api';
@@ -77,40 +77,41 @@ const LeftMenu: React.FC<React.PropsWithChildren<Props>> = ({
           form={form}
           onFinish={onFinish}
         >
-          <Input.Group compact>
+          <Space size="small">
             <Form.Item
               name="projectTextInput"
               rules={[{ required: true, message: 'Project is required' }]}
-              style={{ width: '15%', minWidth: '100px', margin: '0 5px' }}
             >
-              <Select>
-                {projects.map((projObj) => (
-                  <Select.Option key={projObj.name} value={projObj.name}>
-                    {projObj.name}
-                  </Select.Option>
-                ))}
-              </Select>
+              <Select
+                style={{ minWidth: '110px' }}
+                options={projects.map((projObj) => {
+                  return {
+                    key: projObj.name,
+                    value: projObj.name,
+                    label: projObj.name,
+                  };
+                })}
+              />
             </Form.Item>
             <Form.Item
               name="text"
               rules={[{ required: true, message: 'Text is required' }]}
-              style={{ width: '40%', margin: '0 5px' }}
             >
               <Input
-                width="50"
+                style={{ minWidth: '200px' }}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder="Search for a keyword"
               />
             </Form.Item>
-            <Form.Item style={{ width: '15px', margin: '0 5px' }}>
+            <Form.Item>
               <Button
                 type="primary"
                 htmlType="submit"
                 icon={<SearchOutlined />}
               ></Button>
             </Form.Item>
-          </Input.Group>
+          </Space>
         </Form>
       </div>
     );

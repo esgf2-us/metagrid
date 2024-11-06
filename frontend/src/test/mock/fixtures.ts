@@ -4,7 +4,6 @@
  * Fixtures allows tests to be maintainable (especially in the case of updated
  * APIs) and reduce duplicate hard-coded dummy data.
  */
-import { FrontendConfig } from '../../common/types';
 import {
   RawUserCart,
   UserCart,
@@ -18,7 +17,7 @@ import {
   RawProjects,
 } from '../../components/Facets/types';
 import {
-  GlobusEndpointData,
+  GlobusEndpoint,
   GlobusTokenResponse,
 } from '../../components/Globus/types';
 import {
@@ -53,8 +52,8 @@ export const rawProjectFixture = (
 
 export const projectsFixture = (): RawProjects => [
   rawProjectFixture(),
-  rawProjectFixture({ name: 'test2' }),
-  rawProjectFixture({ name: 'test3' }),
+  rawProjectFixture({ name: 'test2', fullName: 'test2' }),
+  rawProjectFixture({ name: 'test3', fullName: 'test3' }),
 ];
 
 /**
@@ -68,6 +67,7 @@ export const rawSearchResultFixture = (
   const defaults: RawSearchResult = {
     id: 'foo',
     title: 'foo',
+    master_id: 'foo',
     url: ['foo.bar|HTTPServer', 'http://test.com/file.nc|OPENDAP'],
     number_of_files: 3,
     data_node: 'aims3.llnl.gov',
@@ -85,6 +85,7 @@ export const rawSearchResultsFixture = (): Array<RawSearchResult> => [
   rawSearchResultFixture({
     id: 'bar',
     title: 'bar',
+    master_id: 'bar',
     number_of_files: 2,
     data_node: 'esgf1.dkrz.de',
     access: ['wget', 'HTTPServer', 'OPENDAP'],
@@ -92,6 +93,7 @@ export const rawSearchResultsFixture = (): Array<RawSearchResult> => [
   rawSearchResultFixture({
     id: 'foobar',
     title: 'foobar',
+    master_id: 'foobar',
     number_of_files: 3,
     data_node: 'esgf1.test.de',
     access: ['wget', 'HTTPServer', 'OPENDAP'],
@@ -293,34 +295,61 @@ export const parsedNodeStatusFixture = (): NodeStatusArray => [
   },
 ];
 
-export const globusRefeshTokenFixture = 'validRefreshToken';
+export const globusAccessTokenFixture = 'validAccessToken';
 export const globusTransferTokenFixture: GlobusTokenResponse = {
-  access_token: '',
+  access_token: globusAccessTokenFixture,
   refresh_expires_in: 0,
-  refresh_token: 'validTransferToken',
-  scope: '',
+  refresh_token: '',
+  scope:
+    'openid profile email offline_access urn:globus:auth:scope:transfer.api.globus.org:all',
   token_type: '',
   id_token: '',
   resource_server: 'transfer.api.globus.org',
-  other_tokens: [],
-  created_on: 0,
-  expires_in: 0,
+  other_tokens: {
+    refresh_token: 'refreshToken',
+    transfer_token: 'transferToken',
+  },
+  created_on: 10000,
+  expires_in: 11000,
   error: '',
 };
 
 export const globusTokenResponseFixture = (): GlobusTokenResponse => {
   return {
-    access_token: '',
+    access_token: globusAccessTokenFixture,
     refresh_expires_in: 0,
-    refresh_token: globusRefeshTokenFixture,
+    refresh_token: '',
     scope: '',
     token_type: '',
     id_token: '',
     resource_server: '',
     other_tokens: [globusTransferTokenFixture],
     created_on: 0,
-    expires_in: 0,
+    expires_in: 1,
     error: '',
+  };
+};
+
+export const globusEndpointFixture = (
+  canonicalName?: string,
+  displayName?: string,
+  entityType?: string,
+  id?: string,
+  ownerId?: string,
+  subscriptionId?: string,
+  path?: string
+): GlobusEndpoint => {
+  return {
+    canonical_name: canonicalName || '',
+    contact_email: 'globus-admin@llnl.gov',
+    display_name: displayName || 'LC Public',
+    entity_type: entityType || 'GCSv5_mapped_collection',
+    id: id || '0247816e-cc0d-4e03-a509-10903f6dde11',
+    owner_id: ownerId || '51245285-9ea1-4e56-a0c4-4de744f7c39f',
+    owner_string:
+      '51245285-9ea1-4e56-a0c4-4de744f7c39f@clients.auth.globus.org',
+    subscription_id: subscriptionId || '45620f77-bc3a-4e6f-b730-3ef5babe69ad',
+    path: path || null,
   };
 };
 
@@ -339,32 +368,4 @@ export const globusEnabledDatasetFixture = (): RawSearchResult[] => {
       xlink: ['url.com|PID|pid'],
     },
   ];
-};
-
-export const globusEndpointFixture = (): GlobusEndpointData => {
-  return {
-    endpoint: 'globus endpoint',
-    label: 'Globus Test Endpoint',
-    path: 'test/path',
-    globfs: 'test/data',
-    endpointId: '1234567',
-  };
-};
-
-export const frontendConfigFixture = (): FrontendConfig => {
-  return {
-    REACT_APP_AUTHENTICATION_METHOD: 'keycloak',
-    REACT_APP_KEYCLOAK_REALM: 'esgf',
-    REACT_APP_KEYCLOAK_URL: 'https://esgf-login.ceda.ac.uk/',
-    REACT_APP_KEYCLOAK_CLIENT_ID: 'frontend',
-    REACT_APP_GLOBUS_CLIENT_ID: 'frontend',
-    REACT_APP_HOTJAR_ID: 12345,
-    REACT_APP_HOTJAR_SV: 12345,
-    REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID: 'UA-XXXXXXXXX-YY',
-    REACT_APP_GLOBUS_NODES: [
-      'aims3.llnl.gov',
-      'esgf-data1.llnl.gov',
-      'esgf-data2.llnl.gov',
-    ],
-  };
 };

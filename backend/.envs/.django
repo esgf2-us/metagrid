@@ -1,0 +1,42 @@
+# General
+# ------------------------------------------------------------------------------
+DJANGO_SETTINGS_MODULE=config.settings.local
+DOMAIN_NAME=http://localhost:8000
+
+# Security
+# ------------------------------------------------------------------------------
+DJANGO_SECURE_SSL_REDIRECT=False
+
+# django-cors-headers
+# ------------------------------------------------------------------------------
+CORS_ORIGIN_WHITELIST=http://localhost:3000
+
+# django-all-auth
+# ------------------------------------------------------------------------------
+KEYCLOAK_URL=https://esgf-login.ceda.ac.uk/
+KEYCLOAK_REALM=esgf
+KEYCLOAK_CLIENT_ID=metagrid-localhost
+
+# ESGF wget API
+# https://github.com/ESGF/esgf-wget
+REACT_APP_WGET_API_URL=https://esgf-node.llnl.gov/esg-search/wget
+
+# ESGF Search API
+# https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
+REACT_APP_SEARCH_URL=https://esgf-node.llnl.gov/esg-search/search
+
+# ESGF Node Status API
+# https://github.com/ESGF/esgf-utils/blob/master/node_status/query_prom.py
+REACT_APP_ESGF_NODE_STATUS_URL=https://aims2.llnl.gov/metagrid-backend/proxy/status
+
+# ESGF Solr URL
+REACT_APP_ESGF_SOLR_URL=http://esgf-node.llnl.gov/solr/files/select
+
+# https://docs.djangoproject.com/en/4.2/ref/settings/#login-redirect-url
+# https://docs.djangoproject.com/en/4.2/ref/settings/#logout-redirect-url
+DJANGO_LOGIN_REDIRECT_URL=http://localhost:3000/search
+DJANGO_LOGOUT_REDIRECT_URL=http://localhost:3000/search
+
+# https://app.globus.org/settings/developers/registration/confidential_client
+GLOBUS_CLIENT_KEY=12345
+GLOBUS_CLIENT_SECRET=12345

@@ -3,17 +3,29 @@ import os
 import re
 import urllib.parse
 import urllib.request
-from datetime import datetime, timedelta
+import uuid
+from datetime import datetime, timedelta, timezone
 
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import (
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseServerError,
+)
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from globus_sdk import AccessTokenAuthorizer, TransferClient, TransferData
 
 from metagrid.api_proxy.views import do_request
 
-TRANSFER_TEMP_ENDPOINT = "1889ea03-25ad-4f9f-8110-1ce8833a9d7e"
+ENDPOINT_MAP = {
+    "415a6320-e49c-11e5-9798-22000b9da45e": "1889ea03-25ad-4f9f-8110-1ce8833a9d7e"
+}
+
+DATANODE_MAP = {"esgf-node.ornl.gov": "dea29ae8-bb92-4c63-bdbc-260522c92fe8"}
+
+TEST_SHARDS_MAP = {"esgf-fedtest.llnl.gov": "esgf-node.llnl.gov"}
+
 
 # reserved query keywords
 OFFSET = "offset"
@@ -47,10 +59,11 @@ KEYWORDS = [
 
 def truncate_urls(lst):
     for x in lst:
+        z = x["data_node"]
         for y in x["url"]:
             parts = y.split("|")
             if parts[1] == "Globus":
-                yield (parts[0].split(":")[1])
+                yield (parts[0].split(":")[1], z)
 
 
 def split_value(value):
@@ -113,6 +126,7 @@ def split_value(value):
         return _values
 
 
+# flake8: noqa
 def get_files(url_params):  # pragma: no cover
     solr_url = getattr(
         settings,
@@ -124,8 +138,20 @@ def get_files(url_params):  # pragma: no cover
     file_offset = 0
     use_distrib = True
 
-    #    xml_shards = get_solr_shards_from_xml()
-    xml_shards = ["esgf-node.llnl.gov:80/solr"]
+    port = "80"
+
+    try:
+        res = urllib.parse.urlparse(query_url)
+        hostname = (
+            res.hostname
+        )  # TODO need to populate the shards based on the Solr URL
+        if res.port:
+            port = res.port
+    except RuntimeError as e:
+        return HttpResponseServerError(f"Malformed URL in search results {e}")
+    if hostname in TEST_SHARDS_MAP:
+        hostname = TEST_SHARDS_MAP[hostname]
+    xml_shards = [f"{hostname}:{port}/solr"]
     querys = []
     file_query = ["type:File"]
 
@@ -139,20 +165,10 @@ def get_files(url_params):  # pragma: no cover
         if param[-1] == "!":
             param = param[:-1]
 
-    # Create list of parameters to be saved in the script
-    url_params_list = []
-    for param, value_list in url_params.lists():
-        for v in value_list:
-            url_params_list.append("{}={}".format(param, v))
-
     # Set a Solr query string
     if url_params.get(QUERY):
         _query = url_params.pop(QUERY)[0]
         querys.append(_query)
-
-    # Set range for timestamps to query
-
-    # Set datetime start and stop
 
     if len(querys) == 0:
         querys.append("*:*")
@@ -167,11 +183,9 @@ def get_files(url_params):  # pragma: no cover
     # Get directory structure for downloaded files
 
     # Collect remaining constraints
-    for param, value_list in url_params.lists():
-        # Check for negative constraints
-        if param[-1] == "!":
-            param = "-" + param[:-1]
 
+    for param in url_params:
+        value_list = url_params[param]
         # Split values separated by commas
         # but don't split at commas inside parentheses
         # (i.e. cases such as "CESM1(CAM5.1,FV2)")
@@ -209,7 +223,7 @@ def get_files(url_params):  # pragma: no cover
     # then use the allowed projects as the project query
 
     # Get facets for the file name, URL, checksum
-    file_attributes = ["url"]
+    file_attributes = ["url", "data_node"]
 
     # Solr query parameters
     query_params = dict(
@@ -236,8 +250,7 @@ def get_files(url_params):  # pragma: no cover
     req = urllib.request.Request(query_url, query_encoded)
     print(f"QUERY_URL: {query_url}  QUERY: {query_encoded}")
     with urllib.request.urlopen(req) as response:
-        decoded = response.read().decode()
-        results = json.loads(decoded)
+        results = json.loads(response.read().decode())
 
     # Warning message about the number of files retrieved
     # being smaller than the total number found for the query
@@ -258,7 +271,7 @@ def submit_transfer(
     """
 
     # maximum time for completing the transfer
-    deadline = datetime.utcnow() + timedelta(days=10)
+    deadline = datetime.now(timezone.utc) + timedelta(days=10)
 
     # create a transfer request
     if "%23" in target_endpoint:
@@ -277,25 +290,33 @@ def submit_transfer(
         transfer_task.add_item(source_file, target_file)
 
     # submit the transfer request
+    response = {}
     try:
         data = transfer_client.submit_transfer(transfer_task)
-        task_id = data["task_id"]
-        print("Submitted transfer task with id: %s" % task_id)
+        response["success"] = True
+        response["task_id"] = data["task_id"]
+        print("Submitted transfer task with id: %s" % response["task_id"])
     except Exception as e:
-        print("Could not submit the transfer. Error: %s" % str(e))
-        task_id = "Error"
-    return task_id
+        response["success"] = False
+        error_uuid = uuid.uuid4()
+        print(f"Could not submit the transfer. Error: {e} - ID {error_uuid}")
+        response["error_uuid"] = error_uuid
+    return response
 
 
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
 def do_globus_transfer(request):  # pragma: no cover
+    print(request.body)
+
     if request.method == "POST":
-        url_params = request.POST.copy()
+        url_params = json.loads(request.body)
     elif request.method == "GET":
         url_params = request.GET.copy()
     else:  # pragma: no cover
         return HttpResponseBadRequest("Request method must be POST or GET.")
+
+    print(url_params)
 
     # check for bearer token and set if present
     access_token = None
@@ -303,13 +324,13 @@ def do_globus_transfer(request):  # pragma: no cover
     target_endpoint = None
     target_folder = None
     if A_TOKEN in url_params:
-        access_token = url_params.pop(A_TOKEN)[0]
+        access_token = url_params.pop(A_TOKEN)
     if R_TOKEN in url_params:
-        refresh_token = url_params.pop(R_TOKEN)[0]
+        refresh_token = url_params.pop(R_TOKEN)
     if "endpointId" in url_params:
-        target_endpoint = url_params.pop("endpointId")[0]
+        target_endpoint = url_params.pop("endpointId")
     if "path" in url_params:
-        target_folder = url_params.pop("path")[0]
+        target_folder = url_params.pop("path")
 
     if (
         (not target_endpoint)
@@ -324,34 +345,44 @@ def do_globus_transfer(request):  # pragma: no cover
 
     task_ids = []  # list of submitted task ids
 
-    urls = []
     endpoint_id = ""
     download_map = {}
-    for file in files_list:
+    for file, data_node in files_list:
         parts = file.split("/")
-        if endpoint_id == "":
+        if data_node in DATANODE_MAP:
+            endpoint_id = DATANODE_MAP[data_node]
+            print("Data node mapping.....")
+        else:
             endpoint_id = parts[0]
-        urls.append("/" + "/".join(parts[1:]))
-    download_map[endpoint_id] = urls
+            if endpoint_id in ENDPOINT_MAP:
+                endpoint_id = ENDPOINT_MAP[endpoint_id]
+        if endpoint_id not in download_map:
+            download_map[endpoint_id] = []
+
+        download_map[endpoint_id].append("/" + "/".join(parts[1:]))
 
     token_authorizer = AccessTokenAuthorizer(access_token)
     transfer_client = TransferClient(authorizer=token_authorizer)
+    print()
+    print("   ---  DEBUG  ---")
+    print(download_map)
+    print()
 
     for source_endpoint, source_files in list(download_map.items()):
         # submit transfer request
-        task_id = submit_transfer(
+        task_response = submit_transfer(
             transfer_client,
-            TRANSFER_TEMP_ENDPOINT,
+            source_endpoint,
             source_files,
             target_endpoint,
             target_folder,
         )
-        if task_id == "Error":
-            return HttpResponseBadRequest("Error")
+        if not task_response["success"]:
+            return HttpResponseBadRequest(task_response["error_uuid"])
 
-        task_ids.append(task_id)
+        task_ids.append(task_response["task_id"])
 
-    return HttpResponse(json.dumps({"status": "OK", "taskid": task_id}))
+    return HttpResponse(json.dumps({"status": "OK", "taskid": task_ids}))
 
 
 @require_http_methods(["POST"])

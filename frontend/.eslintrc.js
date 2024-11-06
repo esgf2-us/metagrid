@@ -29,6 +29,7 @@ module.exports = {
     'react/prop-types': 'off',
     '@typescript-eslint/no-misused-promises': 'off',
     '@typescript-eslint/no-floating-promises': 'off',
+    '@typescript-eslint/no-unsafe-enum-comparison': 'off',
     'react/self-closing-comp': 'off',
     // https://github.com/facebook/create-react-app/issues/6560#issuecomment-524688843
     'spaced-comment': [

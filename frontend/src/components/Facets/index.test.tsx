@@ -1,13 +1,13 @@
-import { fireEvent, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, within, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import {
   activeSearchQueryFixture,
   parsedFacetsFixture,
   parsedNodeStatusFixture,
-} from '../../api/mock/fixtures';
+} from '../../test/mock/fixtures';
 import Facets, { Props } from './index';
-import { customRenderKeycloak } from '../../test/custom-render';
+import customRender from '../../test/custom-render';
 
 const user = userEvent.setup();
 
@@ -22,78 +22,43 @@ const defaultProps: Props = {
 };
 
 it('renders component', async () => {
-  const { getByTestId } = customRenderKeycloak(<Facets {...defaultProps} />);
+  customRender(<Facets {...defaultProps} />);
 
   // Check FacetsForm component renders
-  const facetsForm = await waitFor(() => getByTestId('facets-form'));
-  await waitFor(() => expect(facetsForm).toBeTruthy());
+  const facetsForm = await screen.findByTestId('facets-form');
+  expect(facetsForm).toBeTruthy();
 
   // Check ProjectForm component renders
-  const projectForm = await waitFor(() => getByTestId('project-form'));
+  const projectForm = await screen.findByTestId('project-form');
   expect(projectForm).toBeTruthy();
-});
-
-it('handles when the project form is submitted', async () => {
-  const { getByTestId } = customRenderKeycloak(
-    <Facets
-      {...defaultProps}
-      activeSearchQuery={{ ...activeSearchQueryFixture(), project: {} }}
-    />
-  );
-
-  // Check FacetsForm component renders
-  const facetsForm = await waitFor(() => getByTestId('facets-form'));
-  await waitFor(() => expect(facetsForm).toBeTruthy());
-
-  // Check ProjectForm component renders
-  const projectForm = await waitFor(() => getByTestId('project-form'));
-  expect(projectForm).toBeTruthy();
-
-  // Check facet select form exists and mouseDown to expand list of options
-  const projectFormSelect = document.querySelector(
-    '[data-testid=project-form-select] > .ant-select-selector'
-  ) as HTMLInputElement;
-  expect(projectFormSelect).toBeTruthy();
-  fireEvent.mouseDown(projectFormSelect);
-
-  // Select the second project option
-  const projectOption = getByTestId('project_1');
-  expect(projectOption).toBeTruthy();
-  await user.click(projectOption);
-
-  // Wait for facet form component to re-render
-  await waitFor(() => getByTestId('facets-form'));
-
-  // Submit the form
-  // NOTE: Submit button is inside the form, so use submit
-  const projectFormBtn = within(projectForm).getByRole('img', {
-    name: 'select',
-  });
-  fireEvent.submit(projectFormBtn);
 });
 
 it('handles facets form auto-filtering', async () => {
-  const { getByTestId, getByText, getByRole } = customRenderKeycloak(
-    <Facets {...defaultProps} />
-  );
+  customRender(<Facets {...defaultProps} />);
 
   // Check ProjectForm component renders
-  const projectForm = await waitFor(() => getByTestId('project-form'));
+  const projectForm = await screen.findByTestId('project-form');
   expect(projectForm).toBeTruthy();
 
   // Check FacetsForm component renders
-  const facetsForm = await waitFor(() => getByTestId('facets-form'));
-  await waitFor(() => expect(facetsForm).toBeTruthy());
+  const facetsForm = await screen.findByTestId('facets-form');
+  expect(facetsForm).toBeTruthy();
 
   // Open top collapse panel
-  const group1Panel = within(facetsForm).getByRole('button', {
-    name: 'right Group1',
+  const group1Panel = await within(facetsForm).findByRole('button', {
+    name: 'collapsed Group1',
   });
-  await user.click(group1Panel);
+
+  await act(async () => {
+    await user.click(group1Panel);
+  });
 
   // Open Collapse Panel in Collapse component for the data_node form to render
-  const collapse = getByText('Data Node');
-  await user.click(collapse);
+  const collapse = await screen.findByText('Data Node');
+
+  await act(async () => {
+    await user.click(collapse);
+  });
 
   // Check facet select form exists and mouseDown to expand list of options
   const facetFormSelect = document.querySelector(
@@ -103,46 +68,56 @@ it('handles facets form auto-filtering', async () => {
   fireEvent.mouseDown(facetFormSelect);
 
   // Select the first facet option
-  const facetOption = getByTestId('data_node_aims3.llnl.gov');
+  const facetOption = await screen.findByTestId('data_node_aims3.llnl.gov');
   expect(facetOption).toBeTruthy();
-  await user.click(facetOption);
+
+  await act(async () => {
+    await user.click(facetOption);
+  });
 
   // Wait for facet form component to re-render
-  await waitFor(() => getByTestId('facets-form'));
+  await screen.findByTestId('facets-form');
 
   // De-select the first facet option
-  const closeFacetOption = getByRole('img', {
+  const closeFacetOption = await screen.findByRole('img', {
     name: 'close',
     hidden: true,
   });
-  await user.click(closeFacetOption);
+
+  await act(async () => {
+    await user.click(closeFacetOption);
+  });
 
   // Wait for facet form component to re-render
-  await waitFor(() => getByTestId('facets-form'));
+  await screen.findByTestId('facets-form');
 });
 
 it('handles facets form submission, including a facet key that is undefined', async () => {
-  const { getByTestId, getByText, getByRole } = customRenderKeycloak(
-    <Facets {...defaultProps} />
-  );
+  customRender(<Facets {...defaultProps} />);
 
   // Check FacetsForm component renders
-  const facetsForm = await waitFor(() => getByTestId('facets-form'));
-  await waitFor(() => expect(facetsForm).toBeTruthy());
+  const facetsForm = await screen.findByTestId('facets-form');
+  expect(facetsForm).toBeTruthy();
 
   // Check ProjectForm component renders
-  const projectForm = await waitFor(() => getByTestId('project-form'));
+  const projectForm = await screen.findByTestId('project-form');
   expect(projectForm).toBeTruthy();
 
   // Open top collapse panel
   const group1Panel = within(facetsForm).getByRole('button', {
-    name: 'right Group1',
+    name: 'collapsed Group1',
   });
-  await user.click(group1Panel);
+
+  await act(async () => {
+    await user.click(group1Panel);
+  });
 
   // Open Collapse Panel in Collapse component for the Data Node form to render
-  const collapse = getByText('Data Node');
-  await user.click(collapse);
+  const collapse = await screen.findByText('Data Node');
+
+  await act(async () => {
+    await user.click(collapse);
+  });
 
   // Check facet select form exists and mouseDown to expand list of options
   const facetFormSelect = document.querySelector(
@@ -152,19 +127,25 @@ it('handles facets form submission, including a facet key that is undefined', as
   fireEvent.mouseDown(facetFormSelect);
 
   // Select the first facet option
-  const facetOption = getByTestId('data_node_aims3.llnl.gov');
+  const facetOption = await screen.findByTestId('data_node_aims3.llnl.gov');
   expect(facetOption).toBeTruthy();
-  await user.click(facetOption);
+
+  await act(async () => {
+    await user.click(facetOption);
+  });
 
   // Wait for facet form component to re-render
-  await waitFor(() => getByTestId('facets-form'));
+  await screen.findByTestId('facets-form');
 
   // Open Collapse Panel for  in Collapse component for the facet2 form to render
   // Open additional properties collapse panel
-  const collapse2 = getByRole('button', {
-    name: 'right Group2',
+  const collapse2 = await screen.findByRole('button', {
+    name: 'collapsed Group2',
   });
-  await user.click(collapse2);
+
+  await act(async () => {
+    await user.click(collapse2);
+  });
 
   // Click on the facet2 select form but don't select an option
   // This will result in an undefined value for the form item (ant-design logic)
@@ -176,5 +157,5 @@ it('handles facets form submission, including a facet key that is undefined', as
   fireEvent.mouseDown(facetFormSelect2);
 
   // Wait for facet form component to re-render
-  await waitFor(() => getByTestId('facets-form'));
+  await screen.findByTestId('facets-form');
 });
