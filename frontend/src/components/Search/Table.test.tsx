@@ -1,10 +1,7 @@
 import { act, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import {
-  rawSearchResultFixture,
-  rawSearchResultsFixture,
-} from '../../test/mock/fixtures';
+import { rawSearchResultFixture, rawSearchResultsFixture } from '../../test/mock/fixtures';
 import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
@@ -66,10 +63,7 @@ describe('test main table UI', () => {
 
   it('renders warning that dataset is retracted', async () => {
     customRender(
-      <Table
-        {...defaultProps}
-        results={[rawSearchResultFixture({ retracted: true })]}
-      />
+      <Table {...defaultProps} results={[rawSearchResultFixture({ retracted: true })]} />
     );
 
     // Check table exists
@@ -148,9 +142,7 @@ describe('test main table UI', () => {
     });
 
     // Check metadata panel contains metadata
-    const id = await screen.findByText(
-      (_, node) => node?.textContent === 'id: foo'
-    );
+    const id = await screen.findByText((_, node) => node?.textContent === 'id: foo');
     expect(id).toBeInTheDocument();
 
     // Open up the Autocomplete form and change the input to look up 'i'
@@ -293,9 +285,7 @@ describe('test main table UI', () => {
   });
 
   it('renders add or remove button for items in or not in the cart respectively, and handles clicking them', async () => {
-    customRender(
-      <Table {...defaultProps} userCart={[defaultProps.results[0]]} />
-    );
+    customRender(<Table {...defaultProps} userCart={[defaultProps.results[0]]} />);
 
     // Check table exists
     const table = await screen.findByRole('table');
@@ -380,9 +370,7 @@ describe('test main table UI', () => {
       },
     });
 
-    customRender(
-      <Table {...defaultProps} userCart={[defaultProps.results[0]]} />
-    );
+    customRender(<Table {...defaultProps} userCart={[defaultProps.results[0]]} />);
 
     // Check table renders
     const tableComponent = await screen.findByRole('table');
@@ -408,20 +396,14 @@ describe('test main table UI', () => {
     await screen.findByRole('table');
 
     // Check success message renders
-    const successMsg = await screen.findByText(
-      'Wget script downloaded successfully!'
-    );
+    const successMsg = await screen.findByText('Wget script downloaded successfully!');
     expect(successMsg).toBeTruthy();
   });
 
   it('displays an error when unable to access download via wget', async () => {
-    server.use(
-      rest.post(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404)))
-    );
+    server.use(rest.post(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404))));
 
-    customRender(
-      <Table {...defaultProps} userCart={[defaultProps.results[0]]} />
-    );
+    customRender(<Table {...defaultProps} userCart={[defaultProps.results[0]]} />);
 
     // Check table renders
     const tableComponent = await screen.findByRole('table');
@@ -446,9 +428,7 @@ describe('test main table UI', () => {
     await screen.findByRole('table');
 
     // Check error message renders
-    const errorMsg = await screen.findByText(
-      apiRoutes.wget.handleErrorMsg(404)
-    );
+    const errorMsg = await screen.findByText(apiRoutes.wget.handleErrorMsg(404));
     expect(errorMsg).toBeTruthy();
   });
 });

@@ -388,10 +388,15 @@ SOLR_URL = env(
 )
 
 FRONTEND_SETTINGS = {
-    "REACT_APP_CLIENT_ID": env("REACT_APP_CLIENT_ID", default="frontend"),
-    "REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID": env(
-        "REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID", default=""
+    "REACT_APP_PREVIOUS_URL": env("REACT_APP_PREVIOUS_URL", default=""),
+    "REACT_APP_AUTHENTICATION_METHOD": env(
+        "REACT_APP_AUTHENTICATION_METHOD", default="keycloak"
     ),
+    "REACT_APP_GLOBUS_REDIRECT": env(
+        "REACT_APP_GLOBUS_REDIRECT",
+        default="https://localhost:8080/cart/items",
+    ),
+    "REACT_APP_CLIENT_ID": env("REACT_APP_CLIENT_ID", default="frontend"),
     "REACT_APP_GLOBUS_NODES": env.list(
         "REACT_APP_GLOBUS_NODES",
         default=[
@@ -399,6 +404,9 @@ FRONTEND_SETTINGS = {
             "esgf-data1.llnl.gov",
             "esgf-data2.llnl.gov",
         ],
+    ),
+    "REACT_APP_ESGF_SOLR_URL": env(
+        "REACT_APP_ESGF_SOLR_URL", default="https://esgf-node.llnl.gov/solr"
     ),
     "REACT_APP_KEYCLOAK_REALM": env(
         "REACT_APP_KEYCLOAK_REALM", default="esgf"
@@ -411,8 +419,8 @@ FRONTEND_SETTINGS = {
     ),
     "REACT_APP_HOTJAR_ID": env("REACT_APP_HOTJAR_ID", default=1234),
     "REACT_APP_HOTJAR_SV": env("REACT_APP_HOTJAR_SV", default=1234),
-    "REACT_APP_AUTHENTICATION_METHOD": env(
-        "REACT_APP_AUTHENTICATION_METHOD", default="keycloak"
+    "REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID": env(
+        "REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID", default=""
     ),
 }
 

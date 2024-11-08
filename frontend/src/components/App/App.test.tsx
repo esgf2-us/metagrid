@@ -52,9 +52,7 @@ describe('test main components', () => {
   });
 
   it('renders App component with undefined search query', async () => {
-    customRender(
-      <App searchQuery={(undefined as unknown) as ActiveSearchQuery} />
-    );
+    customRender(<App searchQuery={(undefined as unknown) as ActiveSearchQuery} />);
 
     // Check applicable components render
     const navComponent = await screen.findByTestId('nav-bar');
@@ -85,9 +83,7 @@ describe('test main components', () => {
     await submitKeywordSearch(input, user);
 
     // Check error message appears that input has already been applied
-    const errorMsg = await screen.findByText(
-      `Input "${input}" has already been applied`
-    );
+    const errorMsg = await screen.findByText(`Input "${input}" has already been applied`);
     expect(errorMsg).toBeTruthy();
   });
 
@@ -125,12 +121,9 @@ describe('test main components', () => {
     });
 
     // Submit the form
-    const filenameVarsSubmitBtn = await within(facetsForm).findByRole(
-      'button',
-      {
-        name: 'search',
-      }
-    );
+    const filenameVarsSubmitBtn = await within(facetsForm).findByRole('button', {
+      name: 'search',
+    });
     await act(async () => {
       await user.click(filenameVarsSubmitBtn);
     });
@@ -149,9 +142,7 @@ describe('test main components', () => {
     await screen.findByTestId('search');
 
     // Check error message appears that input has already been applied
-    const errorMsg = await screen.findByText(
-      `Input "${input}" has already been applied`
-    );
+    const errorMsg = await screen.findByText(`Input "${input}" has already been applied`);
     expect(errorMsg).toBeTruthy();
   });
 
@@ -200,20 +191,15 @@ describe('test main components', () => {
     expect(facetsForm).toBeTruthy();
 
     // Open additional properties collapse panel
-    const additionalPropertiesPanel = await within(facetsForm).findByRole(
-      'button',
-      {
-        name: 'expanded Additional Properties',
-      }
-    );
+    const additionalPropertiesPanel = await within(facetsForm).findByRole('button', {
+      name: 'expanded Additional Properties',
+    });
     await act(async () => {
       await user.click(additionalPropertiesPanel);
     });
 
     // Check facet select form exists and mouseDown to expand list of options
-    const resultTypeSelect = await screen.findByTestId(
-      'result-type-form-select'
-    );
+    const resultTypeSelect = await screen.findByTestId('result-type-form-select');
     expect(resultTypeSelect).toBeTruthy();
     fireEvent.mouseDown(resultTypeSelect.firstElementChild as HTMLInputElement);
 
@@ -284,18 +270,12 @@ describe('test main components', () => {
     expect(tag).toBeTruthy();
 
     // Check facets select form rerenders and mouseDown to expand list of options
-    const facetFormSelectRerender = await screen.findByTestId(
-      'data_node-form-select'
-    );
+    const facetFormSelectRerender = await screen.findByTestId('data_node-form-select');
     expect(facetFormSelectRerender).toBeTruthy();
-    fireEvent.mouseDown(
-      facetFormSelectRerender.firstElementChild as HTMLInputElement
-    );
+    fireEvent.mouseDown(facetFormSelectRerender.firstElementChild as HTMLInputElement);
 
     // Check option is selected and remove it
-    const facetOptionRerender = await within(
-      facetFormSelectRerender
-    ).findByRole('img', {
+    const facetOptionRerender = await within(facetFormSelectRerender).findByRole('img', {
       name: 'close',
       hidden: true,
     });
@@ -367,9 +347,7 @@ describe('User cart', () => {
     });
 
     // Check 'Removed items(s) from the cart' message appears
-    const removeText = await screen.findByText(
-      'Removed item(s) from your cart'
-    );
+    const removeText = await screen.findByText('Removed item(s) from your cart');
     expect(removeText).toBeTruthy();
   });
 
@@ -417,12 +395,8 @@ describe('User cart', () => {
     const cartSummary = await screen.findByTestId('summary');
     expect(cartSummary).toBeTruthy();
 
-    const numDatasetsField = await within(cartSummary).findByText(
-      'Number of Datasets:'
-    );
-    const numFilesText = await within(cartSummary).findByText(
-      'Number of Files:'
-    );
+    const numDatasetsField = await within(cartSummary).findByText('Number of Datasets:');
+    const numFilesText = await within(cartSummary).findByText('Number of Files:');
     expect(numDatasetsField.textContent).toEqual('Number of Datasets: 1');
     expect(numFilesText.textContent).toEqual('Number of Files: 2');
 
@@ -530,12 +504,8 @@ describe('User cart', () => {
     const cartSummary = await screen.findByTestId('summary');
     expect(cartSummary).toBeTruthy();
 
-    const numDatasetsField = await within(cartSummary).findByText(
-      'Number of Datasets:'
-    );
-    const numFilesText = await within(cartSummary).findByText(
-      'Number of Files:'
-    );
+    const numDatasetsField = await within(cartSummary).findByText('Number of Datasets:');
+    const numFilesText = await within(cartSummary).findByText('Number of Files:');
     expect(numDatasetsField.textContent).toEqual('Number of Datasets: 1');
     expect(numFilesText.textContent).toEqual('Number of Files: 2');
 
@@ -572,12 +542,8 @@ describe('User cart', () => {
   describe('Error handling', () => {
     it('displays error message after failing to fetch authenticated user"s cart', async () => {
       server.use(
-        rest.get(apiRoutes.userCart.path, (_req, res, ctx) =>
-          res(ctx.status(404))
-        ),
-        rest.post(apiRoutes.userCart.path, (_req, res, ctx) =>
-          res(ctx.status(404))
-        )
+        rest.get(apiRoutes.userCart.path, (_req, res, ctx) => res(ctx.status(404))),
+        rest.post(apiRoutes.userCart.path, (_req, res, ctx) => res(ctx.status(404)))
       );
 
       customRender(<App searchQuery={activeSearch} />, {
@@ -589,9 +555,7 @@ describe('User cart', () => {
       expect(navComponent).toBeTruthy();
 
       // Check error message renders after failing to fetch cart from API
-      const errorMsg = await screen.findByText(
-        apiRoutes.userCart.handleErrorMsg(404)
-      );
+      const errorMsg = await screen.findByText(apiRoutes.userCart.handleErrorMsg(404));
       expect(errorMsg).toBeTruthy();
     });
   });
@@ -630,10 +594,9 @@ describe('User search library', () => {
     });
 
     // Click on the search library link
-    const searchLibraryLink = await within(rightMenuComponent).findByRole(
-      'img',
-      { name: 'file-search' }
-    );
+    const searchLibraryLink = await within(rightMenuComponent).findByRole('img', {
+      name: 'file-search',
+    });
     expect(searchLibraryLink).toBeTruthy();
 
     await act(async () => {
@@ -670,10 +633,9 @@ describe('User search library', () => {
     expect(rightMenuComponent).toBeTruthy();
 
     // Go directly to the search library since user already has items in their cart
-    const searchLibraryLink = await within(rightMenuComponent).findByRole(
-      'img',
-      { name: 'file-search' }
-    );
+    const searchLibraryLink = await within(rightMenuComponent).findByRole('img', {
+      name: 'file-search',
+    });
     expect(searchLibraryLink).toBeTruthy();
 
     await act(async () => {
@@ -698,9 +660,7 @@ describe('User search library', () => {
     await screen.findByTestId('cart');
 
     // Check removed message appears
-    const removeText = await screen.findByText(
-      'Removed search query from your library'
-    );
+    const removeText = await screen.findByText('Removed search query from your library');
     expect(removeText).toBeTruthy();
   });
 
@@ -729,10 +689,9 @@ describe('User search library', () => {
     });
 
     // Click on the search library link
-    const searchLibraryLink = await within(rightMenuComponent).findByRole(
-      'img',
-      { name: 'file-search' }
-    );
+    const searchLibraryLink = await within(rightMenuComponent).findByRole('img', {
+      name: 'file-search',
+    });
     expect(searchLibraryLink).toBeTruthy();
 
     await act(async () => {
@@ -780,10 +739,10 @@ describe('User search library', () => {
       await user.click(saveSearch);
     });
 
-    const searchLibraryLink = await within(rightMenuComponent).findByRole(
-      'img',
-      { name: 'file-search', hidden: true }
-    );
+    const searchLibraryLink = await within(rightMenuComponent).findByRole('img', {
+      name: 'file-search',
+      hidden: true,
+    });
 
     expect(searchLibraryLink).toBeTruthy();
 
@@ -831,11 +790,7 @@ describe('User search library', () => {
 
   describe('Error handling', () => {
     it('displays error message after failing to fetch authenticated user"s saved search queries', async () => {
-      server.use(
-        rest.get(apiRoutes.userSearches.path, (_req, res, ctx) =>
-          res(ctx.status(404))
-        )
-      );
+      server.use(rest.get(apiRoutes.userSearches.path, (_req, res, ctx) => res(ctx.status(404))));
 
       customRender(<App searchQuery={activeSearch} />);
 
@@ -844,9 +799,7 @@ describe('User search library', () => {
       expect(navComponent).toBeTruthy();
 
       // Check error message renders after failing to fetch cart from API
-      const errorMsg = await screen.findByText(
-        apiRoutes.userSearches.handleErrorMsg(404)
-      );
+      const errorMsg = await screen.findByText(apiRoutes.userSearches.handleErrorMsg(404));
       expect(errorMsg).toBeTruthy();
     });
 
@@ -855,11 +808,7 @@ describe('User search library', () => {
         token: 'token',
       });
 
-      server.use(
-        rest.post(apiRoutes.userSearches.path, (_req, res, ctx) =>
-          res(ctx.status(404))
-        )
-      );
+      server.use(rest.post(apiRoutes.userSearches.path, (_req, res, ctx) => res(ctx.status(404))));
 
       // Wait for components to rerender
       await screen.findByText('Query String:', { exact: false });
@@ -877,11 +826,7 @@ describe('User search library', () => {
 
     it('displays error message after failing to remove authenticated user"s saved search', async () => {
       // Override API response with 404
-      server.use(
-        rest.delete(apiRoutes.userSearch.path, (_req, res, ctx) =>
-          res(ctx.status(404))
-        )
-      );
+      server.use(rest.delete(apiRoutes.userSearch.path, (_req, res, ctx) => res(ctx.status(404))));
 
       customRender(<App searchQuery={activeSearch} />, {
         token: 'token',
@@ -897,9 +842,10 @@ describe('User search library', () => {
       expect(rightMenuComponent).toBeTruthy();
 
       // Go to the search library
-      const searchLibraryLink = await within(
-        rightMenuComponent
-      ).findByRole('img', { name: 'file-search', hidden: true });
+      const searchLibraryLink = await within(rightMenuComponent).findByRole('img', {
+        name: 'file-search',
+        hidden: true,
+      });
       expect(searchLibraryLink).toBeTruthy();
       await act(async () => {
         await user.click(searchLibraryLink);
@@ -922,9 +868,7 @@ describe('User search library', () => {
         await user.click(deleteBtn);
       });
 
-      const errorMsg = await screen.findAllByText(
-        apiRoutes.userSearch.handleErrorMsg(404)
-      );
+      const errorMsg = await screen.findAllByText(apiRoutes.userSearch.handleErrorMsg(404));
       expect(errorMsg).toBeTruthy();
     });
   });

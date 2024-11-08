@@ -27,9 +27,7 @@ export class DataPersister {
     return this._instance;
   }
 
-  initializeDataStore(dataStore: {
-    [key: string]: PersistData<unknown>;
-  }): void {
+  initializeDataStore(dataStore: { [key: string]: PersistData<unknown> }): void {
     this._PERSISTENT_STORE = dataStore;
   }
 
@@ -58,10 +56,7 @@ export class DataPersister {
     };
 
     const saver = async (): Promise<void> => {
-      await saveSessionValue<T>(
-        varKey,
-        this._PERSISTENT_STORE[varKey].value as T
-      );
+      await saveSessionValue<T>(varKey, this._PERSISTENT_STORE[varKey].value as T);
     };
 
     const setter = (val: T): void => {

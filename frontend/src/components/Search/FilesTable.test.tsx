@@ -1,10 +1,7 @@
 import { act, within, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import {
-  ESGFSearchAPIFixture,
-  rawSearchResultFixture,
-} from '../../test/mock/fixtures';
+import { ESGFSearchAPIFixture, rawSearchResultFixture } from '../../test/mock/fixtures';
 import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import FilesTable, { DownloadUrls, genDownloadUrls, Props } from './FilesTable';
@@ -101,11 +98,7 @@ describe('test FilesTable component', () => {
   });
 
   it('returns Alert when there is an error fetching files', async () => {
-    server.use(
-      rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
-        res(ctx.status(404))
-      )
-    );
+    server.use(rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) => res(ctx.status(404))));
 
     customRender(<FilesTable {...defaultProps} />);
     const alertMsg = await screen.findByRole('img', {
@@ -189,9 +182,7 @@ describe('test FilesTable component', () => {
     expect(paginationList).toBeTruthy();
 
     // Select the combobox drop down, update its value, then click it
-    const pageSizeComboBox = await within(paginationList).findByRole(
-      'combobox'
-    );
+    const pageSizeComboBox = await within(paginationList).findByRole('combobox');
     expect(pageSizeComboBox).toBeTruthy();
 
     // Wait for the options to render, then select 20 / page

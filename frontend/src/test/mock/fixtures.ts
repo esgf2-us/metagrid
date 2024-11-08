@@ -10,20 +10,9 @@ import {
   UserSearchQueries,
   UserSearchQuery,
 } from '../../components/Cart/types';
-import {
-  ParsedFacets,
-  RawFacets,
-  RawProject,
-  RawProjects,
-} from '../../components/Facets/types';
-import {
-  GlobusEndpoint,
-  GlobusTokenResponse,
-} from '../../components/Globus/types';
-import {
-  NodeStatusArray,
-  RawNodeStatus,
-} from '../../components/NodeStatus/types';
+import { ParsedFacets, RawFacets, RawProject, RawProjects } from '../../components/Facets/types';
+import { GlobusEndpoint, GlobusTokenResponse } from '../../components/Globus/types';
+import { NodeStatusArray, RawNodeStatus } from '../../components/NodeStatus/types';
 import {
   ActiveSearchQuery,
   RawCitation,
@@ -32,9 +21,7 @@ import {
 } from '../../components/Search/types';
 import { RawUserAuth, RawUserInfo } from '../../contexts/types';
 
-export const rawProjectFixture = (
-  props: Partial<RawProject> = {}
-): RawProject => {
+export const rawProjectFixture = (props: Partial<RawProject> = {}): RawProject => {
   const defaults: RawProject = {
     pk: '1',
     name: 'test1',
@@ -61,9 +48,7 @@ export const projectsFixture = (): RawProjects => [
  * In the API, this value is stored in an array of objects under the 'docs' key
  * of the HTTP  response object.
  */
-export const rawSearchResultFixture = (
-  props: Partial<RawSearchResult> = {}
-): RawSearchResult => {
+export const rawSearchResultFixture = (props: Partial<RawSearchResult> = {}): RawSearchResult => {
   const defaults: RawSearchResult = {
     id: 'foo',
     title: 'foo',
@@ -109,9 +94,7 @@ export const rawFacetsFixture = (props: Partial<RawFacets> = {}): RawFacets => {
   return { ...defaults, ...props } as RawFacets;
 };
 
-export const parsedFacetsFixture = (
-  props: Partial<ParsedFacets> = {}
-): ParsedFacets => {
+export const parsedFacetsFixture = (props: Partial<ParsedFacets> = {}): ParsedFacets => {
   const defaults: ParsedFacets = {
     data_node: [
       ['aims3.llnl.gov', 3],
@@ -129,24 +112,20 @@ export const parsedFacetsFixture = (
 
 export const userCartFixture = (): UserCart => rawSearchResultsFixture();
 
-export const rawCitationFixture = (
-  props: Partial<RawCitation> = {}
-): RawCitation => {
+export const rawCitationFixture = (props: Partial<RawCitation> = {}): RawCitation => {
   const defaults: RawCitation = {
     identifier: { id: 'an_id', identifierType: 'DOI' },
     creators: [{ creatorName: 'Bob' }, { creatorName: 'Tom' }],
     identifierDOI: '',
     creatorsList: '',
-    license:
-      'Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA 4.0)',
+    license: 'Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA 4.0)',
     titles: 'title',
     publisher: 'publisher',
     publicationYear: 2020,
     rightsList: [
       {
         rightsURI: 'http://creativecommons.org/licenses/by-sa/4.0/',
-        rights:
-          'Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA 4.0)',
+        rights: 'Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA 4.0)',
       },
     ],
   };
@@ -170,9 +149,7 @@ export const activeSearchQueryFixture = (
   return { ...defaults, ...props } as ActiveSearchQuery;
 };
 
-export const userSearchQueryFixture = (
-  props: Partial<UserSearchQuery> = {}
-): UserSearchQuery => {
+export const userSearchQueryFixture = (props: Partial<UserSearchQuery> = {}): UserSearchQuery => {
   const defaults: UserSearchQuery = {
     uuid: 'uuid',
     user: 'user',
@@ -191,9 +168,7 @@ export const userSearchQueryFixture = (
   return { ...defaults, ...props } as UserSearchQuery;
 };
 
-export const userSearchQueriesFixture = (): UserSearchQueries => [
-  userSearchQueryFixture(),
-];
+export const userSearchQueriesFixture = (): UserSearchQueries => [userSearchQueryFixture()];
 
 type ESGFSearchAPIResponse = {
   response: { numFound: number; docs: RawSearchResults };
@@ -210,9 +185,7 @@ export const ESGFSearchAPIFixture = (): ESGFSearchAPIResponse => ({
   },
 });
 
-export const userAuthFixture = (
-  props: Partial<RawUserAuth> = {}
-): RawUserAuth => {
+export const userAuthFixture = (props: Partial<RawUserAuth> = {}): RawUserAuth => {
   const defaults: RawUserAuth = {
     access_token: 'access_token',
     email: 'email',
@@ -230,27 +203,21 @@ export const globusTransferResponseFixture = (): {
   return { status: 'OK', taskid: '1234567' };
 };
 
-export const userInfoFixture = (
-  props: Partial<RawUserInfo> = {}
-): RawUserInfo => {
+export const userInfoFixture = (props: Partial<RawUserInfo> = {}): RawUserInfo => {
   const defaults: RawUserInfo = {
     pk: 'pk',
   };
   return { ...defaults, ...props } as RawUserInfo;
 };
 
-export const rawUserCartFixture = (
-  props: Partial<RawUserCart> = {}
-): RawUserCart => {
+export const rawUserCartFixture = (props: Partial<RawUserCart> = {}): RawUserCart => {
   const defaults: RawUserCart = {
     items: [],
   };
   return { ...defaults, ...props } as RawUserCart;
 };
 
-export const rawNodeStatusFixture = (
-  props: Partial<RawNodeStatus> = {}
-): RawNodeStatus => {
+export const rawNodeStatusFixture = (props: Partial<RawNodeStatus> = {}): RawNodeStatus => {
   const defaults: RawNodeStatus = {
     status: 'success',
     data: {
@@ -300,8 +267,7 @@ export const globusTransferTokenFixture: GlobusTokenResponse = {
   access_token: globusAccessTokenFixture,
   refresh_expires_in: 0,
   refresh_token: '',
-  scope:
-    'openid profile email offline_access urn:globus:auth:scope:transfer.api.globus.org:all',
+  scope: 'openid profile email offline_access urn:globus:auth:scope:transfer.api.globus.org:all',
   token_type: '',
   id_token: '',
   resource_server: 'transfer.api.globus.org',
@@ -346,8 +312,7 @@ export const globusEndpointFixture = (
     entity_type: entityType || 'GCSv5_mapped_collection',
     id: id || '0247816e-cc0d-4e03-a509-10903f6dde11',
     owner_id: ownerId || '51245285-9ea1-4e56-a0c4-4de744f7c39f',
-    owner_string:
-      '51245285-9ea1-4e56-a0c4-4de744f7c39f@clients.auth.globus.org',
+    owner_string: '51245285-9ea1-4e56-a0c4-4de744f7c39f@clients.auth.globus.org',
     subscription_id: subscriptionId || '45620f77-bc3a-4e6f-b730-3ef5babe69ad',
     path: path || null,
   };

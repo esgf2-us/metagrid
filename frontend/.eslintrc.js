@@ -7,6 +7,7 @@ module.exports = {
   },
   extends: [
     'airbnb',
+    'prettier',
     'airbnb-typescript',
     'plugin:@typescript-eslint/eslint-recommended',
     'plugin:@typescript-eslint/recommended',
@@ -19,12 +20,10 @@ module.exports = {
     project: './tsconfig.json',
   },
   rules: {
+    'prettier/prettier': ['error'],
     'import/no-extraneous-dependencies': ['error', { devDependencies: true }],
     'react/destructuring-assignment': 'off',
-    'react/jsx-filename-extension': [
-      1,
-      { extensions: ['.js', '.jsx', '.ts', '.tsx'] },
-    ],
+    'react/jsx-filename-extension': [1, { extensions: ['.js', '.jsx', '.ts', '.tsx'] }],
     'react/jsx-props-no-spreading': 'off',
     'react/prop-types': 'off',
     '@typescript-eslint/no-misused-promises': 'off',

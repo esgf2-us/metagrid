@@ -14,10 +14,7 @@ export function globusEnabled(node: string | null | undefined): boolean {
   return false;
 }
 
-const GlobusToolTip: React.FC<React.PropsWithChildren<Props>> = ({
-  dataNode,
-  children,
-}) => {
+const GlobusToolTip: React.FC<React.PropsWithChildren<Props>> = ({ dataNode, children }) => {
   /* istanbul ignore else*/
   if (globusEnabled(dataNode)) {
     if (children) {

@@ -11,19 +11,8 @@ import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
 import { ActiveFacets, RawFacets } from '../Facets/types';
-import Search, {
-  checkFiltersExist,
-  parseFacets,
-  Props,
-  stringifyFilters,
-} from './index';
-import {
-  ActiveSearchQuery,
-  RawSearchResult,
-  ResultType,
-  TextInputs,
-  VersionType,
-} from './types';
+import Search, { checkFiltersExist, parseFacets, Props, stringifyFilters } from './index';
+import { ActiveSearchQuery, RawSearchResult, ResultType, TextInputs, VersionType } from './types';
 import { getRowName, selectDropdownOption } from '../../test/jestTestFunctions';
 
 const user = userEvent.setup();
@@ -60,9 +49,7 @@ describe('test Search component', () => {
   it('renders Alert component if there is an error fetching results', async () => {
     server.use(
       // ESGF Search API - datasets
-      rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
-        res(ctx.status(404))
-      )
+      rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) => res(ctx.status(404)))
     );
 
     customRender(<Search {...defaultProps} />);
@@ -115,9 +102,7 @@ describe('test Search component', () => {
       textInputs: [],
     };
 
-    customRender(
-      <Search {...defaultProps} activeSearchQuery={emptySearchQuery} />
-    );
+    customRender(<Search {...defaultProps} activeSearchQuery={emptySearchQuery} />);
 
     // Check renders query string
     const queryString = await screen.findByText('No filters applied');
@@ -151,9 +136,7 @@ describe('test Search component', () => {
       response: {
         docs: new Array(20)
           .fill(rawSearchResultFixture())
-          .map(
-            (obj, index) => ({ ...obj, id: `id_${index}` } as RawSearchResult)
-          ),
+          .map((obj, index) => ({ ...obj, id: `id_${index}` } as RawSearchResult)),
         numFound: 20,
       },
     };
@@ -178,9 +161,7 @@ describe('test Search component', () => {
     expect(paginationList).toBeTruthy();
 
     // Select the combobox drop down, update its value, then click it
-    const pageSizeComboBox = await within(paginationList).findByRole(
-      'combobox'
-    );
+    const pageSizeComboBox = await within(paginationList).findByRole('combobox');
     expect(pageSizeComboBox).toBeTruthy();
 
     // Wait for the options to render, then select 20 / page

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import React from 'react';
@@ -26,7 +27,9 @@ gaScript.src = `//www.googletagmanager.com/gtag/js?id=${window.METAGRID.REACT_AP
 document.getElementsByTagName('head')[0].appendChild(gaScript);
 
 window.dataLayer = [];
-const gtag: Gtag.Gtag = function gtag(...args) {
+/* @ts-ignore */
+const gtag: Gtag.Gtag = function gtag(...args): void {
+  /* @ts-ignore */
   window.dataLayer.push(args);
 };
 window.gtag = gtag;

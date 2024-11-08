@@ -4,11 +4,7 @@ import Keycloak from 'keycloak-js';
 import React from 'react';
 import { MutableSnapshot, RecoilRoot } from 'recoil';
 import { MemoryRouter } from 'react-router-dom';
-import {
-  GlobusAuthProvider,
-  AuthContext,
-  KeycloakAuthProvider,
-} from '../contexts/AuthContext';
+import { GlobusAuthProvider, AuthContext, KeycloakAuthProvider } from '../contexts/AuthContext';
 import { keycloakProviderInitConfig } from '../lib/keycloak';
 import { ReactJoyrideProvider } from '../contexts/ReactJoyrideContext';
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
@@ -50,10 +46,7 @@ const AuthProvider = ({
   if (window.METAGRID.REACT_APP_AUTHENTICATION_METHOD === 'keycloak') {
     return (
       <RecoilRoot initializeState={snapshotSetFunc}>
-        <ReactKeycloakProvider
-          authClient={keycloak}
-          initOptions={keycloakProviderInitConfig}
-        >
+        <ReactKeycloakProvider authClient={keycloak} initOptions={keycloakProviderInitConfig}>
           <KeycloakAuthProvider>
             <AuthContext.Provider value={authInfo}>
               <MemoryRouter basename={process.env.PUBLIC_URL}>
@@ -87,10 +80,7 @@ const customRender = (
 ): RenderResult =>
   render(ui, {
     wrapper: () => (
-      <AuthProvider
-        authenticated={authenticated}
-        snapshotSetFunc={snapshotFunc}
-      >
+      <AuthProvider authenticated={authenticated} snapshotSetFunc={snapshotFunc}>
         {ui}
       </AuthProvider>
     ),

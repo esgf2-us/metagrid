@@ -48,9 +48,7 @@ describe('test FacetsForm component', () => {
     });
 
     // Change form field values
-    const input: HTMLInputElement = await screen.findByTestId(
-      'filename-search-input'
-    );
+    const input: HTMLInputElement = await screen.findByTestId('filename-search-input');
     fireEvent.change(input, { target: { value: 'var' } });
     expect(input.value).toEqual('var');
 
@@ -67,9 +65,7 @@ describe('test FacetsForm component', () => {
   it('handles setting the globusReady option on and off', async () => {
     customRender(<FacetsForm {...defaultProps} />);
 
-    const globusReadyRadioOption = await screen.findByLabelText(
-      'Only Globus Transferrable'
-    );
+    const globusReadyRadioOption = await screen.findByLabelText('Only Globus Transferrable');
     const anyRadioOption = await screen.findByLabelText('Any');
     expect(anyRadioOption).toBeTruthy();
     expect(globusReadyRadioOption).toBeTruthy();
@@ -140,9 +136,7 @@ describe('test FacetsForm component', () => {
     expect(items).toEqual('aims3.llnl.gov (3)\nesgf1.dkrz.de (5)');
 
     // Expect result message to show
-    const resultNotification = await screen.findByText(
-      'Data Nodes copied to clipboard!'
-    );
+    const resultNotification = await screen.findByText('Data Nodes copied to clipboard!');
     expect(resultNotification).toBeTruthy();
 
     await act(async () => {
@@ -199,14 +193,10 @@ describe('test FacetsForm component', () => {
     });
 
     // Check date picker renders
-    const datePickerComponent = await screen.findByTestId(
-      'version-range-datepicker'
-    );
+    const datePickerComponent = await screen.findByTestId('version-range-datepicker');
     expect(datePickerComponent).toBeTruthy();
 
-    const datePickerComponentInput = datePickerComponent.querySelectorAll(
-      'input'
-    )[0];
+    const datePickerComponentInput = datePickerComponent.querySelectorAll('input')[0];
 
     act(() => {
       fireEvent.mouseDown(datePickerComponentInput);
@@ -219,9 +209,7 @@ describe('test FacetsForm component', () => {
 
     // Open calendar, select the set value, and click it
     await act(async () => {
-      await user.click(
-        document.querySelector('.ant-picker-cell-selected') as HTMLInputElement
-      );
+      await user.click(document.querySelector('.ant-picker-cell-selected') as HTMLInputElement);
     });
 
     await screen.findByTestId('facets-form');

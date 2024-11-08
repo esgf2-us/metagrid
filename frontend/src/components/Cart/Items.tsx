@@ -1,7 +1,4 @@
-import {
-  CloudDownloadOutlined,
-  QuestionCircleOutlined,
-} from '@ant-design/icons';
+import { CloudDownloadOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { Col, Empty, Popconfirm, Row } from 'antd';
 import React from 'react';
 import { useRecoilState } from 'recoil';
@@ -43,26 +40,16 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({
   onClearCart,
   nodeStatus,
 }) => {
-  const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(
-    cartItemSelections
-  );
-  dp.addNewVar<RawSearchResults>(
-    CartStateKeys.cartItemSelections,
-    [],
-    setItemSelections
-  );
+  const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(cartItemSelections);
+  dp.addNewVar<RawSearchResults>(CartStateKeys.cartItemSelections, [], setItemSelections);
 
-  const handleRowSelect = async (
-    selectedRows: RawSearchResults | []
-  ): Promise<void> => {
+  const handleRowSelect = async (selectedRows: RawSearchResults | []): Promise<void> => {
     await dp.setValue(CartStateKeys.cartItemSelections, selectedRows, true);
   };
 
   return (
     <div data-testid="cartItems">
-      {userCart.length === 0 && (
-        <Empty description="Your cart is empty"></Empty>
-      )}
+      {userCart.length === 0 && <Empty description="Your cart is empty"></Empty>}
       {userCart.length > 0 && (
         <>
           <div style={styles.summary}>
@@ -78,10 +65,7 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({
                 onConfirm={onClearCart}
               >
                 <span>
-                  <Button
-                    className={cartTourTargets.removeItemsBtn.class()}
-                    danger
-                  >
+                  <Button className={cartTourTargets.removeItemsBtn.class()} danger>
                     Remove All Items
                   </Button>
                 </span>
@@ -107,9 +91,8 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({
               <CloudDownloadOutlined /> Download Your Cart
             </h1>
             <p>
-              Select datasets in your cart and confirm your download preference.
-              Speeds will vary based on your bandwidth and distance from the
-              data node serving the files.
+              Select datasets in your cart and confirm your download preference. Speeds will vary
+              based on your bandwidth and distance from the data node serving the files.
             </p>
             <DatasetDownload />
           </div>

@@ -34,17 +34,14 @@ export type Props = {
 const dp: DataPersister = DataPersister.Instance;
 
 const Summary: React.FC<React.PropsWithChildren<Props>> = ({ userCart }) => {
-  const [taskItems, setTaskItems] = useRecoilState<GlobusTaskItem[]>(
-    globusTaskItems
-  );
+  const [taskItems, setTaskItems] = useRecoilState<GlobusTaskItem[]>(globusTaskItems);
   dp.addNewVar(GlobusStateKeys.globusTaskItems, [], setTaskItems);
 
   let numFiles = 0;
   let totalDataSize = '0';
   if (userCart.length > 0) {
     numFiles = (userCart as RawSearchResults).reduce(
-      (acc: number, dataset: RawSearchResult) =>
-        acc + (dataset.number_of_files || 0),
+      (acc: number, dataset: RawSearchResult) => acc + (dataset.number_of_files || 0),
       0
     );
 
@@ -71,8 +68,7 @@ const Summary: React.FC<React.PropsWithChildren<Props>> = ({ userCart }) => {
       <Divider />
 
       <h1>
-        Number of Datasets:{' '}
-        <span style={styles.statistic}>{userCart.length}</span>
+        Number of Datasets: <span style={styles.statistic}>{userCart.length}</span>
       </h1>
       <h1>
         Number of Files: <span style={styles.statistic}>{numFiles}</span>
@@ -91,12 +87,7 @@ const Summary: React.FC<React.PropsWithChildren<Props>> = ({ userCart }) => {
                 label: (
                   <h3 style={{ margin: 0 }}>
                     Task Submit History
-                    <Button
-                      size="small"
-                      danger
-                      style={{ float: 'right' }}
-                      onClick={clearAllTasks}
-                    >
+                    <Button size="small" danger style={{ float: 'right' }} onClick={clearAllTasks}>
                       Clear All
                     </Button>
                   </h3>
@@ -112,11 +103,7 @@ const Summary: React.FC<React.PropsWithChildren<Props>> = ({ userCart }) => {
                           <List.Item.Meta
                             title={`Submitted: ${task.submitDate}`}
                             description={
-                              <a
-                                href={task.taskStatusURL}
-                                target="_blank"
-                                rel="noreferrer"
-                              >
+                              <a href={task.taskStatusURL} target="_blank" rel="noreferrer">
                                 View Task In Globus
                               </a>
                             }

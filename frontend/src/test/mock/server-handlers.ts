@@ -119,9 +119,7 @@ const handlers = [
   rest.post(apiRoutes.userSearches.path, (_req, res, ctx) =>
     res(ctx.status(201), ctx.json(userSearchQueryFixture()))
   ),
-  rest.delete(apiRoutes.userSearch.path, (_req, res, ctx) =>
-    res(ctx.status(204))
-  ),
+  rest.delete(apiRoutes.userSearch.path, (_req, res, ctx) => res(ctx.status(204))),
   rest.get(apiRoutes.projects.path, (_req, res, ctx) =>
     res(ctx.status(200), ctx.json({ results: projectsFixture() }))
   ),
@@ -175,10 +173,7 @@ const handlers = [
   rest.get('*', (req, res, ctx) => {
     // eslint-disable-next-line no-console
     // console.error(`Please add request handler for ${req.url.toString()}`);
-    return res(
-      ctx.status(500),
-      ctx.json({ error: 'You must add request handler.' })
-    );
+    return res(ctx.status(500), ctx.json({ error: 'You must add request handler.' }));
   }),
 ];
 

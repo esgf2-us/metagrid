@@ -63,10 +63,7 @@ it('renders an error message when there is an api error', async () => {
   const errorMsg = 'Node status information is currently unavailable.';
 
   customRender(
-    <NodeStatus
-      isLoading={false}
-      apiError={Error(errorMsg) as ResponseError}
-    ></NodeStatus>
+    <NodeStatus isLoading={false} apiError={Error(errorMsg) as ResponseError}></NodeStatus>
   );
 
   const alertMsg = await screen.findByRole('alert');

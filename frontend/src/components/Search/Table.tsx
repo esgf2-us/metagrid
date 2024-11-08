@@ -66,18 +66,13 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       total: totalResults,
       position: ['bottomCenter'],
       showSizeChanger: true,
-      onChange: (page: number, pageSize: number) =>
-        onPageChange && onPageChange(page, pageSize),
+      onChange: (page: number, pageSize: number) => onPageChange && onPageChange(page, pageSize),
       onShowSizeChange: (_current: number, size: number) =>
         onPageSizeChange && onPageSizeChange(size),
     } as TablePaginationConfig,
     expandable: {
       expandedRowRender: (record: RawSearchResult) => (
-        <Tabs
-          data-test-id="extra-tabs"
-          record={record}
-          filenameVars={filenameVars}
-        ></Tabs>
+        <Tabs data-test-id="extra-tabs" record={record} filenameVars={filenameVars}></Tabs>
       ),
       expandIcon: ({
         expanded,
@@ -97,10 +92,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
             onClick={(e) => onExpand(record, e)}
           />
         ) : (
-          <Tooltip
-            title="View this dataset's metadata, files or additional info."
-            trigger="hover"
-          >
+          <Tooltip title="View this dataset's metadata, files or additional info." trigger="hover">
             <RightCircleOutlined
               className={topDataRowTargets.searchResultsRowExpandIcon.class()}
               onClick={(e) => onExpand(record, e)}
@@ -127,8 +119,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       getCheckboxProps: (record: RawSearchResult) => ({
         disabled:
           canDisableRows &&
-          (userCart.some((item) => item.id === record.id) ||
-            record.retracted === true),
+          (userCart.some((item) => item.id === record.id) || record.retracted === true),
       }),
     },
     hasData: results.length > 0,
@@ -145,9 +136,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       key: 'cart',
       width: 50,
       render: (record: RawSearchResult) => {
-        if (
-          userCart.some((dataset: RawSearchResult) => dataset.id === record.id)
-        ) {
+        if (userCart.some((dataset: RawSearchResult) => dataset.id === record.id)) {
           return (
             <>
               <Button
@@ -164,11 +153,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
             <Button
               type="primary"
               disabled={record.retracted === true}
-              icon={
-                <PlusOutlined
-                  className={topDataRowTargets.cartAddBtn.class('plus')}
-                />
-              }
+              icon={<PlusOutlined className={topDataRowTargets.cartAddBtn.class('plus')} />}
               onClick={() => onUpdateCart([record], 'add')}
             />
           </>
@@ -207,9 +192,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
             </div>
           );
         }
-        return (
-          <div className={topDataRowTargets.datasetTitle.class()}>{title}</div>
-        );
+        return <div className={topDataRowTargets.datasetTitle.class()}>{title}</div>;
       },
     },
     {
@@ -219,9 +202,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       key: 'number_of_files',
       width: 70,
       render: (numberOfFiles: number) => (
-        <p className={topDataRowTargets.fileCount.class()}>
-          {numberOfFiles || 'N/A'}
-        </p>
+        <p className={topDataRowTargets.fileCount.class()}>{numberOfFiles || 'N/A'}</p>
       ),
     },
     {
@@ -231,9 +212,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       key: 'size',
       width: 120,
       render: (size: number) => (
-        <p className={topDataRowTargets.totalSize.class()}>
-          {size ? formatBytes(size) : 'N/A'}
-        </p>
+        <p className={topDataRowTargets.totalSize.class()}>{size ? formatBytes(size) : 'N/A'}</p>
       ),
     },
     {
@@ -258,19 +237,13 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
         /**
          * Handle the download form for datasets
          */
-        const handleDownloadForm = (
-          downloadType: DatasetDownloadTypes
-        ): void => {
+        const handleDownloadForm = (downloadType: DatasetDownloadTypes): void => {
           /* istanbul ignore else */
           if (downloadType === 'wget') {
-            showNotice(
-              messageApi,
-              'The wget script is generating, please wait momentarily.',
-              {
-                duration: 3,
-                type: 'info',
-              }
-            );
+            showNotice(messageApi, 'The wget script is generating, please wait momentarily.', {
+              duration: 3,
+              type: 'info',
+            });
             fetchWgetScript([record.id], filenameVars)
               .then(() => {
                 showNotice(messageApi, 'Wget script downloaded successfully!', {
@@ -323,7 +296,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
         );
       },
     },
-    window.METAGRID.REACT_APP_GLOBUS_NODES.length > 0
+    (window.METAGRID.REACT_APP_GLOBUS_NODES?.length || 0) > 0
       ? {
           align: 'center' as AlignType,
           fixed: 'right' as FixedType,

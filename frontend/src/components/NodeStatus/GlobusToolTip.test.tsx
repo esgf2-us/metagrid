@@ -41,9 +41,7 @@ describe('Testing the GlobusToolTip component', () => {
   });
 
   it('Renders the GlobusToolTip component properly with globus enabled node and no children', async () => {
-    customRender(
-      <GlobusToolTip dataNode={originalGlobusEnabledNodes[0]}></GlobusToolTip>
-    );
+    customRender(<GlobusToolTip dataNode={originalGlobusEnabledNodes[0]}></GlobusToolTip>);
     // Should show globus as available status
     const status = await screen.findByRole('img', { name: 'check-circle' });
     expect(status).toBeTruthy();

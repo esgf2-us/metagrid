@@ -37,9 +37,7 @@ describe('test the cart items component', () => {
     customRender(<App searchQuery={activeSearch} />);
 
     // Wait for results to load
-    expect(
-      await screen.findByText('results found for', { exact: false })
-    ).toBeTruthy();
+    expect(await screen.findByText('results found for', { exact: false })).toBeTruthy();
 
     // Check first row exists
     const firstRow = await screen.findByRole('row', {
@@ -55,9 +53,7 @@ describe('test the cart items component', () => {
     });
 
     // Check 'Added items(s) to the cart' message appears
-    const addText = (
-      await screen.findAllByText('Added item(s) to your cart')
-    )[0];
+    const addText = (await screen.findAllByText('Added item(s) to your cart'))[0];
     expect(addText).toBeTruthy();
 
     // Switch to the cart page
@@ -94,9 +90,7 @@ describe('test the cart items component', () => {
     customRender(<App searchQuery={activeSearch} />);
 
     // Wait for results to load
-    expect(
-      await screen.findByText('results found for', { exact: false })
-    ).toBeTruthy();
+    expect(await screen.findByText('results found for', { exact: false })).toBeTruthy();
 
     // Check first row has add button and click it
     const firstRow = await screen.findByRole('row', {
@@ -109,9 +103,7 @@ describe('test the cart items component', () => {
     });
 
     // Check 'Added items(s) to the cart' message appears
-    const addText = (
-      await screen.findAllByText('Added item(s) to your cart')
-    )[0];
+    const addText = (await screen.findAllByText('Added item(s) to your cart'))[0];
     expect(addText).toBeTruthy();
 
     // Switch to the cart page
@@ -143,9 +135,7 @@ describe('test the cart items component', () => {
 
   it('handles error selecting items in the cart and downloading them via wget', async () => {
     // Override route HTTP response
-    server.use(
-      rest.post(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404)))
-    );
+    server.use(rest.post(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404))));
 
     customRender(<Items {...defaultProps} />);
 

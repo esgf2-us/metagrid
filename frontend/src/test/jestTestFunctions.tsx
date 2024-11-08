@@ -17,10 +17,10 @@ import { rawSearchResultFixture } from './mock/fixtures';
 import { FrontendConfig } from '../common/types';
 
 // For mocking environment variables
-export type MockConfig = {
-  authenticationMethod: string;
-  globusEnabledNodes: string[];
-};
+// export type MockConfig = {
+//   authenticationMethod: string;
+//   globusEnabledNodes: string[];
+// };
 
 // https://www.mikeborozdin.com/post/changing-jest-mocks-between-tests
 export const originalGlobusEnabledNodes = [
@@ -31,7 +31,7 @@ export const originalGlobusEnabledNodes = [
 
 export const mockConfig: FrontendConfig = {
   REACT_APP_GLOBUS_CLIENT_ID: 'frontend',
-  REACT_APP_GLOBUS_REDIRECT: 'http://localhost:3000/cart/items',
+  REACT_APP_GLOBUS_REDIRECT: 'http://localhost:8080/cart/items',
   REACT_APP_GLOBUS_NODES: originalGlobusEnabledNodes,
   REACT_APP_KEYCLOAK_REALM: 'esgf',
   REACT_APP_KEYCLOAK_URL: 'https://esgf-login.ceda.ac.uk/',

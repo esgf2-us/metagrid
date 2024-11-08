@@ -11,9 +11,7 @@ afterEach(() => {
 
 describe('test Tab component', () => {
   it('renders standard tab component', async () => {
-    customRender(
-      <Tabs filenameVars={undefined} record={rawSearchResultFixture()} />
-    );
+    customRender(<Tabs filenameVars={undefined} record={rawSearchResultFixture()} />);
 
     const tabList = await screen.findByRole('tablist');
     expect(tabList).toBeTruthy();

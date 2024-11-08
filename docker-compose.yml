@@ -1,10 +1,8 @@
-version: "3"
-
 networks:
   metagrid:
     ipam:
       config:
-        - subnet: 10.89.9.81/24
+        - subnet: 10.89.9.0/24
 
 volumes:
   local_postgres_data: {}
@@ -23,9 +21,9 @@ services:
     env_file:
       - ./backend/.envs/.postgres
     ports:
-      - 5432
+      - 5432:5432
     healthcheck:
-      test: pg_isready
+      test: [ "CMD", "pg_isready", "-U", "postgres", "-d", "postgres" ]
       start_period: 5s
       interval: 5s
       timeout: 2s
@@ -62,6 +60,8 @@ services:
 
   keycloak:
     image: quay.io/keycloak/keycloak:23.0.6
+    depends_on:
+      - react
     command: start-dev --import-realm
     volumes:
       - ./keycloak/realm.json:/opt/keycloak/data/import/realm.json
