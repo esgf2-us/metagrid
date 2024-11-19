@@ -1,7 +1,8 @@
-import { GithubOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+// eslint-disable @typescript-eslint/no-unsafe-argument
+
+import { GithubOutlined } from '@ant-design/icons';
 import { Button, Card } from 'antd';
 import React from 'react';
-import { JoyrideTour } from '../../common/JoyrideTour';
 import {
   createSearchCardTour,
   createMainPageTour,
@@ -28,14 +29,9 @@ const Support: React.FC<React.PropsWithChildren<Props>> = ({
 }) => {
   // Tutorial state
   const tourState: RawTourState = React.useContext(ReactJoyrideContext);
-  const { setTour, startTour, setCurrentAppPage } = tourState;
+  const { setCurrentAppPage, startSpecificTour } = tourState;
 
   const curPage = getCurrentAppPage();
-
-  const startSpecificTour = (tour: JoyrideTour): void => {
-    setTour(tour);
-    startTour();
-  };
 
   const startMainPageTour = (): void => {
     startSpecificTour(createMainPageTour());
@@ -65,9 +61,7 @@ const Support: React.FC<React.PropsWithChildren<Props>> = ({
           closeText="Close Support"
           title={
             <div>
-              <h2>
-                <QuestionCircleOutlined /> MetaGrid Support
-              </h2>
+              <h2>MetaGrid Support</h2>
               <h3>Documentation</h3>
               <p style={{ fontSize: '14px' }}>
                 Welcome to Metagrid Support! To view the latest documentation
