@@ -686,8 +686,8 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
                 <br />
                 Learn about the Department of Energy&apos;s Vulnerability
                 Disclosure Program (VDP):{' '}
-                <a href="https://doe.responsibledisclosure.com/hc/en-us">
-                  http://www.energy.gov/vulnerability-disclosure-policy
+                <a href="https://www.energy.gov/vulnerability-disclosure-policy">
+                  https://www.energy.gov/vulnerability-disclosure-policy
                 </a>
               </p>
             </Layout.Footer>
