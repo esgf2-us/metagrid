@@ -1,7 +1,11 @@
-# Welcome to the Metagrid Release v1.2.0
+# Welcome to the Metagrid Release v1.3.0
 
 To view the latest documentation and FAQ, please visit this page:
 [https://esgf.github.io/esgf-user-support/metagrid.html](https://esgf.github.io/esgf-user-support/metagrid.html)
+
+## Deployment Process Updated
+
+This update includes numerous changes to how the Metagrid application is deployed, with enhancements to security, improvements to the configuration process and consolidation of configuration files. 
 
 ## Globus Transfers enhanced
 
