@@ -202,7 +202,7 @@ def do_request(request, urlbase):
         resp = requests.get(urlbase)
 
     #    print(resp.text)
-    httpresp = HttpResponse(resp.text)
+    httpresp = HttpResponse(resp.text, content_type="text/json")
     httpresp.status_code = resp.status_code
 
     return httpresp

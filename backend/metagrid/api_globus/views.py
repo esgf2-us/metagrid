@@ -4,7 +4,7 @@ import re
 import urllib.parse
 import urllib.request
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from django.conf import settings
 from django.http import (
@@ -271,7 +271,7 @@ def submit_transfer(
     """
 
     # maximum time for completing the transfer
-    deadline = datetime.now(datetime.timezone.utc) + timedelta(days=10)
+    deadline = datetime.now(timezone.utc) + timedelta(days=10)
 
     # create a transfer request
     if "%23" in target_endpoint:

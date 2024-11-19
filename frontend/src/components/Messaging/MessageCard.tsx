@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import ReactMarkdown from 'react-markdown';
+import Markdown from 'react-markdown';
 import { MarkdownMessage } from './types';
 
 const MessageCard: React.FC<React.PropsWithChildren<MarkdownMessage>> = ({
@@ -18,7 +18,7 @@ const MessageCard: React.FC<React.PropsWithChildren<MarkdownMessage>> = ({
       });
   }, []);
 
-  return <ReactMarkdown>{content}</ReactMarkdown>;
+  return <Markdown>{content}</Markdown>;
 };
 
 export default MessageCard;
