@@ -12,6 +12,7 @@
     "test:coverage": "CI=1 react-scripts test --coverage",
     "test:watch": "react-scripts test --runInBand"
   },
+  "proxy": "http://django:5000",
   "browserslist": {
     "production": [
       ">0.2%",
@@ -77,6 +78,7 @@
     "react": "18.2.0",
     "react-async": "10.0.1",
     "react-dom": "18.2.0",
+    "react-ga4": "^2.1.0",
     "react-hotjar": "2.2.1",
     "react-joyride": "2.5.3",
     "react-markdown": "9.0.1",

@@ -5,7 +5,7 @@ FROM node:slim AS build
 WORKDIR /app
 
 # Add `/app/node_modules/.bin` to $PATH
-ENV PATH /app/node_modules/.bin:$PATH
+ENV PATH=/app/node_modules/.bin:$PATH
 
 # Install app dependencies
 COPY package.json ./
@@ -15,9 +15,10 @@ RUN yarn install --frozen-lock-file --network-timeout=1000000
 # Add app
 COPY . ./
 RUN yarn build
+CMD [ "yarn", "start" ]
 
 # Build production environment
-FROM nginxinc/nginx-unprivileged:stable
+FROM nginxinc/nginx-unprivileged:stable AS prod
 COPY --from=build /app/build /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 

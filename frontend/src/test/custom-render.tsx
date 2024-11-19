@@ -1,16 +1,13 @@
 import { ReactKeycloakProvider } from '@react-keycloak/web';
 import { render, RenderResult } from '@testing-library/react';
-import Keycloak from 'keycloak-js';
 import React from 'react';
 import { MutableSnapshot, RecoilRoot } from 'recoil';
 import { MemoryRouter } from 'react-router-dom';
+import Keycloak from 'keycloak-js';
 import { GlobusAuthProvider, AuthContext, KeycloakAuthProvider } from '../contexts/AuthContext';
-import { keycloakProviderInitConfig } from '../lib/keycloak';
 import { ReactJoyrideProvider } from '../contexts/ReactJoyrideContext';
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
-
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-const keycloak = new Keycloak();
+import { mockConfig } from './jestTestFunctions';
 
 /**
  * Wraps components in all implemented React Context Providers for testing using keycloak or globus
@@ -43,7 +40,22 @@ const AuthProvider = ({
     };
   }
 
+  Object.assign(window.METAGRID, mockConfig);
+
   if (window.METAGRID.REACT_APP_AUTHENTICATION_METHOD === 'keycloak') {
+    // Setup Keycloak instance as needed
+    // Pass initialization options as required or leave blank to load from 'keycloak.json'
+    // Source: https://github.com/panz3r/react-keycloak/blob/master/packages/web/README.md
+    const keycloak = new Keycloak({
+      realm: window.METAGRID.REACT_APP_KEYCLOAK_REALM,
+      url: window.METAGRID.REACT_APP_KEYCLOAK_URL,
+      clientId: window.METAGRID.REACT_APP_KEYCLOAK_CLIENT_ID,
+    });
+
+    const keycloakProviderInitConfig = {
+      onLoad: 'check-sso',
+      flow: 'standard',
+    };
     return (
       <RecoilRoot initializeState={snapshotSetFunc}>
         <ReactKeycloakProvider authClient={keycloak} initOptions={keycloakProviderInitConfig}>
@@ -63,7 +75,7 @@ const AuthProvider = ({
     <RecoilRoot initializeState={snapshotSetFunc}>
       <GlobusAuthProvider>
         <AuthContext.Provider value={authInfo}>
-          <MemoryRouter basename={process.env.PUBLIC_URL}>
+          <MemoryRouter basename="/">
             <ReactJoyrideProvider>{children}</ReactJoyrideProvider>
           </MemoryRouter>
         </AuthContext.Provider>

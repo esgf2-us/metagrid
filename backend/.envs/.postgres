@@ -3,3 +3,6 @@ POSTGRES_PORT=5432
 POSTGRES_DB=postgres
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
+PGHOST=postgres
+PGPASSWORD=postgres
+PGUSER=postgres

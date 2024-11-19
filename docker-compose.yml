@@ -23,7 +23,7 @@ services:
     ports:
       - 5432:5432
     healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "postgres", "-d", "postgres" ]
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "postgres"]
       start_period: 5s
       interval: 5s
       timeout: 2s
@@ -48,8 +48,12 @@ services:
           - django
 
   react:
-    build: frontend
+    build:
+      context: frontend
+      target: build
     image: metagrid_local_react
+    environment:
+      - PORT=8080
     depends_on:
       - django
     networks:
@@ -66,7 +70,7 @@ services:
     volumes:
       - ./keycloak/realm.json:/opt/keycloak/data/import/realm.json
     ports:
-      - 1337:1337
+      - 1337:8080
     networks:
       metagrid:
         ipv4_address: 10.89.9.84

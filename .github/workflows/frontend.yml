@@ -12,11 +12,6 @@ defaults:
   run:
     working-directory: frontend
 
-env:
-  REACT_APP_KEYCLOAK_REALM: esgf
-  REACT_APP_KEYCLOAK_URL: https://esgf-login.ceda.ac.uk/
-  REACT_APP_KEYCLOAK_CLIENT_ID: metagrid-localhost
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -46,13 +41,8 @@ jobs:
       - name: Run Tests
         env:
           RELEASE: dev
-          ENV_FILE: .envs/.react
           HTML_PATH: public
-        run: |
-          # Replaces react-scripts substitution during build for index.html and generates runtime_env.js
-          docker/production/react/entrypoint
-
-          yarn test:coverage
+        run: yarn test:coverage
 
       - name: Upload Coverage Report
         uses: codecov/codecov-action@v3

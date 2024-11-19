@@ -99,7 +99,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1"]
+ALLOWED_HOSTS = ["django", "localhost", "0.0.0.0", "127.0.0.1"]
 ROOT_URLCONF = "config.urls"
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
@@ -344,8 +344,8 @@ SOCIAL_AUTH_GLOBUS_SCOPE = [
     "urn:globus:auth:scope:transfer.api.globus.org:all",
 ]
 
-SOCIAL_AUTH_GLOBUS_KEY = env("GLOBUS_CLIENT_KEY", default=12345)
-SOCIAL_AUTH_GLOBUS_SECRET = env("GLOBUS_CLIENT_SECRET", default=12345)
+SOCIAL_AUTH_GLOBUS_KEY = env("GLOBUS_CLIENT_KEY", default="12345")
+SOCIAL_AUTH_GLOBUS_SECRET = env("GLOBUS_CLIENT_SECRET", default="12345")
 SOCIAL_AUTH_GLOBUS_AUTH_EXTRA_ARGUMENTS = {
     "requested_scopes": SOCIAL_AUTH_GLOBUS_SCOPE,
     "prompt": None,
@@ -394,7 +394,7 @@ FRONTEND_SETTINGS = {
     ),
     "REACT_APP_GLOBUS_REDIRECT": env(
         "REACT_APP_GLOBUS_REDIRECT",
-        default="https://localhost:8080/cart/items",
+        default="http://localhost:8080/cart/items",
     ),
     "REACT_APP_CLIENT_ID": env("REACT_APP_CLIENT_ID", default="frontend"),
     "REACT_APP_GLOBUS_NODES": env.list(
@@ -412,15 +412,15 @@ FRONTEND_SETTINGS = {
         "REACT_APP_KEYCLOAK_REALM", default="esgf"
     ),
     "REACT_APP_KEYCLOAK_URL": env(
-        "REACT_APP_KEYCLOAK_URL", default="https://esgf-login.ceda.ac.uk/"
+        "REACT_APP_KEYCLOAK_URL", default="http://localhost:1337"
     ),
     "REACT_APP_KEYCLOAK_CLIENT_ID": env(
         "REACT_APP_KEYCLOAK_CLIENT_ID", default="frontend"
     ),
-    "REACT_APP_HOTJAR_ID": env("REACT_APP_HOTJAR_ID", default=1234),
-    "REACT_APP_HOTJAR_SV": env("REACT_APP_HOTJAR_SV", default=1234),
+    "REACT_APP_HOTJAR_ID": env("REACT_APP_HOTJAR_ID", default="1234"),
+    "REACT_APP_HOTJAR_SV": env("REACT_APP_HOTJAR_SV", default="1234"),
     "REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID": env(
-        "REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID", default=""
+        "REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID", default="GA-XXXXXX"
     ),
 }
 

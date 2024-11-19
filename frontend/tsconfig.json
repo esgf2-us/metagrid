@@ -15,8 +15,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "noFallthroughCasesInSwitch": true,
-    "types": ["@testing-library/jest-dom", "@types/gtag.js"]
+    "noFallthroughCasesInSwitch": true
   },
   "include": ["src", "src/test/__mocks__/js-pkce.ts"]
 }
