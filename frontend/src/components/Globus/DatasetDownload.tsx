@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { DownloadOutlined, QuestionOutlined } from '@ant-design/icons';
 import {
   Button,

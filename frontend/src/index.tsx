@@ -11,7 +11,7 @@ import { GlobusAuthProvider, KeycloakAuthProvider } from './contexts/AuthContext
 import { ReactJoyrideProvider } from './contexts/ReactJoyrideContext';
 import './index.css';
 import axios from './lib/axios';
-import { FrontendConfig } from './contexts/types';
+import { FrontendConfig } from './common/types';
 
 const container = document.getElementById('root');
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
