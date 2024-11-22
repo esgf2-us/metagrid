@@ -1,11 +1,12 @@
 # Pull official base image
-FROM node:slim AS build
+FROM node:23.1.0-slim AS build
 
 # Set working directory
 WORKDIR /app
 
 # Add `/app/node_modules/.bin` to $PATH
 ENV PATH=/app/node_modules/.bin:$PATH
+ENV GENERATE_SOURCEMAP=false
 
 # Install app dependencies
 COPY package.json ./

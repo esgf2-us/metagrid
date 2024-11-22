@@ -6,9 +6,9 @@
  *
  */
 import { within, screen, act } from '@testing-library/react';
-import { UserEvent } from '@testing-library/user-event/dist/types/setup/setup';
 import { message } from 'antd';
 import { ReactNode, CSSProperties } from 'react';
+import { UserEvent } from '@testing-library/user-event';
 import { NotificationType, getSearchFromUrl } from '../common/utils';
 import { RawSearchResult } from '../components/Search/types';
 import { rawSearchResultFixture } from './mock/fixtures';

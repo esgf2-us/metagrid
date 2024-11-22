@@ -1,23 +1,27 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { RecoilRoot } from 'recoil';
 import { ReactKeycloakProvider } from '@react-keycloak/web';
 import { BrowserRouter } from 'react-router-dom';
-import Keycloak from 'keycloak-js';
 import ReactGA from 'react-ga4';
+import Keycloak from 'keycloak-js';
 import { getSearchFromUrl } from './common/utils';
 import App from './components/App/App';
 import { GlobusAuthProvider, KeycloakAuthProvider } from './contexts/AuthContext';
 import { ReactJoyrideProvider } from './contexts/ReactJoyrideContext';
 import './index.css';
 import axios from './lib/axios';
+import { FrontendConfig } from './contexts/types';
 
 const container = document.getElementById('root');
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const root = createRoot(container!);
+
+declare global {
+  interface Window {
+    METAGRID: FrontendConfig;
+  }
+}
 
 const appRouter = (
   <BrowserRouter basename={process.env.PUBLIC_URL}>
@@ -28,6 +32,7 @@ const appRouter = (
 );
 
 axios.get('/frontend-config.js').then((response) => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   window.METAGRID = response.data;
 
   // Setup Google Analytics

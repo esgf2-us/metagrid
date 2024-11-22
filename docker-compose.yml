@@ -16,18 +16,22 @@ services:
     image: metagrid_local_postgres
     volumes:
       - local_postgres_data:/var/lib/postgresql/data
-      - local_postgres_data_backups:/backups
-      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - local_postgres_data_backups:/local_postgres_data_backups
     env_file:
       - ./backend/.envs/.postgres
     ports:
       - 5432:5432
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "postgres"]
+      test: [ "CMD", "pg_isready", "-U", "postgres", "-d", "postgres" ]
       start_period: 5s
       interval: 5s
       timeout: 2s
       retries: 6
+    networks:
+      metagrid:
+        ipv4_address: 10.89.9.81
+        aliases:
+          - postgres
 
   django:
     build: backend
