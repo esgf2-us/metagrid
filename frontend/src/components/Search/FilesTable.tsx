@@ -147,7 +147,29 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
     pagination: {
       total: numResults,
       position: ['bottomCenter'],
-      showSizeChanger: true,
+      options: [
+        {
+          label: '10 / page',
+          value: '10',
+        },
+        {
+          label: '20 / page',
+          value: '20',
+        },
+        {
+          label: '50 / page',
+          value: '50',
+        },
+        {
+          label: '100 / page',
+          value: '100',
+        },
+      ],
+      showSizeChanger: {
+        optionRender: (option) => {
+          return <span data-testid={`pageSize-option-${option.value}`}>{option.label}</span>;
+        },
+      },
       onChange: (page: number, pageSize: number) => handlePageChange(page, pageSize),
       onShowSizeChange: (_current: number, size: number) => handlePageSizeChange(size),
     } as TablePaginationConfig,
@@ -262,7 +284,19 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
     },
   ];
 
-  return <TableD data-testid="filesTable" {...tableConfig} columns={columns} />;
+  return (
+    <TableD
+      data-testid="filesTable"
+      {...tableConfig}
+      columns={columns}
+      onRow={(record, rowIndex) => {
+        return {
+          id: `search-items-row-${rowIndex}`,
+          'data-testid': `search-items-row-${rowIndex}`,
+        };
+      }}
+    />
+  );
 };
 
 export default FilesTable;

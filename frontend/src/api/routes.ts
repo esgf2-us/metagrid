@@ -42,6 +42,7 @@ type ApiRoutes = {
   tempStorageGet: ApiRoute;
   tempStorageSet: ApiRoute;
   frontendConfig: ApiRoute;
+  introMarkdown: ApiRoute;
 };
 
 /**
@@ -123,6 +124,10 @@ const apiRoutes: ApiRoutes = {
   frontendConfig: {
     path: `${window.location.origin}/frontend-config.js`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Frontend Config', HTTPCode),
+  },
+  introMarkdown: {
+    path: `${window.location.origin}/messages/metagrid_messages.md`,
+    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Introduction Markdown', HTTPCode),
   },
 };
 

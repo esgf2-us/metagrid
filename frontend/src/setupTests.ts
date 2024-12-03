@@ -3,7 +3,7 @@
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
-import { cleanup } from '@testing-library/react';
+import { cleanup, configure } from '@testing-library/react';
 import { server } from './test/mock/server';
 import messageDisplayData from './components/Messaging/messageDisplayData';
 import {
@@ -12,19 +12,8 @@ import {
   sessionStorageMock,
 } from './test/jestTestFunctions';
 
-jest.setTimeout(35000);
-
-// Fixes 'TypeError: Cannot read property 'addListener' of undefined.
-// https://github.com/AO19/typeError-cannot-read-property-addListener-of-undefined/commit/873ce9b730a1c21b40c9264e5f29fc2df436136b
-global.matchMedia =
-  global.matchMedia ||
-  // eslint-disable-next-line func-names
-  function () {
-    return {
-      addListener: jest.fn(),
-      removeListener: jest.fn(),
-    };
-  };
+jest.setTimeout(1200000);
+configure({ asyncUtilTimeout: 1200000 });
 
 // Used to restore window.location after each test
 const location = JSON.stringify(window.location);

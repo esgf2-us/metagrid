@@ -62,7 +62,14 @@
   "eslint.workingDirectories": ["./frontend/"],
   // Jest
   // -----------------------------
-  "jest.pathToJest": "yarn test:watch",
+  "jest.rootPath": "./frontend/src",
+  "jest.jestCommandLine": "yarn jest  --runInBand",
+  "jest.monitorLongRun": "off",
+  "jest.enable": true,
+  "jest.runMode": {
+    "type": "on-demand",
+    "coverage": true
+  },
   // HTML, CSS, JSON
   // -----------------------------
   "[html]": {
@@ -78,9 +85,6 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "python.analysis.extraPaths": ["backend/venv/bin/python"],
-  "jest.rootPath": "./frontend/src",
-  "jest.jestCommandLine": "yarn test",
   "python.testing.pytestEnabled": true,
-  "python.testing.pytestArgs": ["backend/"],
-  "jest.monitorLongRun": "off"
+  "python.testing.pytestArgs": ["backend"]
 }

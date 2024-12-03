@@ -6,7 +6,6 @@ import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
 import Items, { Props } from './Items';
-import { getRowName } from '../../test/jestTestFunctions';
 import { getSearchFromUrl } from '../../common/utils';
 import App from '../App/App';
 import { ActiveSearchQuery } from '../Search/types';
@@ -20,9 +19,6 @@ const defaultProps: Props = {
 const user = userEvent.setup();
 
 const activeSearch: ActiveSearchQuery = getSearchFromUrl('project=test1');
-
-jest.setTimeout(100000);
-
 describe('test the cart items component', () => {
   it('renders message that the cart is empty when no items are added', async () => {
     const props = { ...defaultProps, userCart: [] };
@@ -40,9 +36,7 @@ describe('test the cart items component', () => {
     expect(await screen.findByText('results found for', { exact: false })).toBeTruthy();
 
     // Check first row exists
-    const firstRow = await screen.findByRole('row', {
-      name: getRowName('plus', 'close', 'bar', '2', '1', '1'),
-    });
+    const firstRow = await screen.findByTestId('cart-items-row-1');
     expect(firstRow).toBeTruthy();
 
     // Check first row has add button and click it
@@ -93,9 +87,7 @@ describe('test the cart items component', () => {
     expect(await screen.findByText('results found for', { exact: false })).toBeTruthy();
 
     // Check first row has add button and click it
-    const firstRow = await screen.findByRole('row', {
-      name: getRowName('plus', 'close', 'bar', '2', '1', '1'),
-    });
+    const firstRow = await screen.findByTestId('cart-items-row-1');
     const addBtn = await within(firstRow).findByRole('img', { name: 'plus' });
     expect(addBtn).toBeTruthy();
     await act(async () => {
@@ -140,22 +132,20 @@ describe('test the cart items component', () => {
     customRender(<Items {...defaultProps} />);
 
     // Check first row renders and click the checkbox
-    const firstRow = await screen.findByRole('row', {
-      name: getRowName('minus', 'question', 'foo', '3', '1', '1', true),
-    });
+    const firstRow = await screen.findByTestId('cart-items-row-1');
     const firstCheckBox = await within(firstRow).findByRole('checkbox');
     expect(firstCheckBox).toBeTruthy();
     await act(async () => {
-      await user.click(firstCheckBox);
+      await userEvent.click(firstCheckBox);
     });
 
     const downloadBtn = (
-      await screen.findAllByRole('button', {
+      await within(firstRow).findAllByRole('button', {
         name: 'download',
       })
     )[0];
     await act(async () => {
-      await user.click(downloadBtn);
+      await userEvent.click(downloadBtn);
     });
 
     expect(
