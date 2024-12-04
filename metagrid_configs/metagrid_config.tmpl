@@ -1,0 +1,91 @@
+# =====================TREAFIK CONFIG=====================
+DOMAIN_NAME=
+PUBLIC_URL=
+PREVIOUS_URL=
+DOMAIN_SUBDIRECTORY=metagrid-backend
+
+# =====================BACKEND CONFIG====================
+
+# General
+DJANGO_SETTINGS_MODULE=config.settings.production
+DJANGO_SECRET_KEY=
+DJANGO_ADMIN_URL=
+DJANGO_ALLOWED_HOSTS=
+
+# Security
+DJANGO_SECURE_SSL_REDIRECT=False
+
+# django-cors-headers
+CORS_ORIGIN_WHITELIST=http://localhost:8080
+
+# django-all-auth
+KEYCLOAK_URL=
+KEYCLOAK_REALM=
+KEYCLOAK_CLIENT_ID=
+
+# Django redirects
+# https://docs.djangoproject.com/en/4.2/ref/settings/#logout-redirect-url
+DJANGO_LOGIN_REDIRECT_URL=
+DJANGO_LOGOUT_REDIRECT_URL=
+
+# Globus
+# https://app.globus.org/settings/developers/registration/confidential_client
+GLOBUS_CLIENT_KEY=
+GLOBUS_CLIENT_SECRET=
+
+# postgress
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+POSTGRES_DB=postgres
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+
+# =====================FRONTEND CONFIG====================
+
+# Redirect the frontend to home page when old subdirectory is used (optional)
+
+REACT_APP_PREVIOUS_URL=
+
+# MetaGrid API
+# https://github.com/aims-group/metagrid/tree/master/backend
+REACT_APP_METAGRID_API_URL=
+
+# Authentication Method
+REACT_APP_AUTHENTICATION_METHOD=globus
+
+# Globus
+REACT_APP_GLOBUS_REDIRECT=
+REACT_APP_GLOBUS_CLIENT_ID=
+REACT_APP_GLOBUS_NODES=
+
+# ESGF wget API
+# https://github.com/ESGF/esgf-wget
+REACT_APP_WGET_API_URL=
+
+# ESGF Search API
+# https://esgf.github.io/esg-search/ESGF_Search_RESTful_API.html
+REACT_APP_SEARCH_URL=
+REACT_APP_ESGF_SOLR_URL=
+
+# ESGF Node Status API
+# https://github.com/ESGF/esgf-utils/blob/master/node_status/query_prom.py
+REACT_APP_ESGF_NODE_STATUS_URL=
+
+# Keycloak
+# https://github.com/keycloak/keycloak
+REACT_APP_KEYCLOAK_URL=
+REACT_APP_KEYCLOAK_REALM=
+REACT_APP_KEYCLOAK_CLIENT_ID=
+
+# Django Auth URLs
+REACT_APP_DJANGO_LOGIN_URL=
+REACT_APP_DJANGO_LOGOUT_URL=
+
+# react-hotjar
+# https://github.com/abdalla/react-hotjar
+REACT_APP_HOTJAR_ID=
+REACT_APP_HOTJAR_SV=
+
+# react-ga
+# https://github.com/react-ga/react-ga
+REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID=

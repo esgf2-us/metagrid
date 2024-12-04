@@ -43,8 +43,8 @@ KEYCLOAK_REALM=esgf
 KEYCLOAK_CLIENT_ID=metagrid-localhost
 
 # Globus Auth
-GLOBUS_CLIENT_KEY=d09a7432-d475-41be-9dda-0006d6a69fac
-GLOBUS_CLIENT_SECRET=UL9/CclKBDXqYnv0vV2ZQRjL/lns7wOtkFV2rFCBtUs=
+GLOBUS_CLIENT_KEY=871f801f-e2cf-45b2-8a3e-58561378897f
+GLOBUS_CLIENT_SECRET=tZhoRTvFac812pN9USP+gOpUlqjAb0Wo6DR/j32g818=
 
 # =====================FRONTEND CONFIG====================
 
@@ -52,7 +52,7 @@ GLOBUS_CLIENT_SECRET=UL9/CclKBDXqYnv0vV2ZQRjL/lns7wOtkFV2rFCBtUs=
 REACT_APP_PREVIOUS_URL=metagrid
 
 # Authentication Method
-REACT_APP_AUTHENTICATION_METHOD=globus
+REACT_APP_AUTHENTICATION_METHOD=keycloak
 
 # Globus
 # ------------------------------------------------------------------------------
