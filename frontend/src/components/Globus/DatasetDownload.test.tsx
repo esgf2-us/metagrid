@@ -103,7 +103,7 @@ function setEndpointUrl(endpointId?: string, path?: string | null): void {
     value: {
       assign: () => {},
       pathname: '/cart/items',
-      href: `https://localhost:3000/cart/items?endpoint=testEndpoint&label=test&path=${
+      href: `http://localhost:8080/cart/items?endpoint=testEndpoint&label=test&path=${
         path || testEndpointPath
       }&globfs=empty&endpoint_id=${endpointId || testEndpointId}`,
       search: `?endpoint=testEndpoint&label=test&path=${
@@ -119,7 +119,7 @@ function setAuthTokensUrl(): void {
     value: {
       assign: () => {},
       pathname: '/cart/items',
-      href: 'https://localhost:3000/cart/items?code=testCode123&state=testingTransferTokens',
+      href: 'http://localhost:8080/cart/items?code=testCode123&state=testingTransferTokens',
       search: '?code=testCode1234&state=testingTransferTokens',
       replace: () => {},
     },
@@ -859,7 +859,7 @@ xit('If endpoint URL is available, process it and continue to Transfer process',
       assign: () => {},
       pathname: '/cart/items',
       href:
-        'https://localhost:3000/cart/items?endpoint=dummyEndpoint&label=dummy&path=nowhere&globfs=empty&endpointid=endpoint1',
+        'http://localhost:8080/cart/items?endpoint=dummyEndpoint&label=dummy&path=nowhere&globfs=empty&endpointid=endpoint1',
       search: '?endpoint=dummyEndpoint&label=dummy&path=nowhere&globfs=empty&endpointid=endpoint1',
       replace: () => {},
     },
@@ -1169,7 +1169,7 @@ xdescribe('Testing globus transfer related failures', () => {
       value: {
         assign: () => {},
         pathname: '/cart/items',
-        href: 'https://localhost:3000/cart/items?code=12kj3kjh4&state=testingTransferTokens',
+        href: 'http://localhost:8080/cart/items?code=12kj3kjh4&state=testingTransferTokens',
         search: '?code=12kj3kjh4&state=testingTransferTokens',
         replace: () => {},
       },

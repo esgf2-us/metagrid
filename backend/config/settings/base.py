@@ -125,7 +125,7 @@ EMAIL_TIMEOUT = 5
 # Django Admin URL.
 ADMIN_URL = "admin/"
 # https://docs.djangoproject.com/en/dev/ref/settings/#admins
-ADMINS = (("Author", "vo13@llnl.gov"), ("Author", "downie4@llnl.gov"))
+ADMINS = [("Author", "downie4@llnl.gov"), ("Author", "ames4@llnl.gov")]
 # https://docs.djangoproject.com/en/dev/ref/settings/#managers
 MANAGERS = ADMINS
 
@@ -373,18 +373,18 @@ CSRF_TRUSTED_ORIGINS = ["http://localhost:8080"]
 
 SEARCH_URL = env(
     "REACT_APP_SEARCH_URL",
-    default="https://esgf-node.ornl.gov/esg-search/search",
+    default="https://esgf-node.llnl.gov/esg-search/search",
 )
 WGET_URL = env(
     "REACT_APP_WGET_API_URL",
-    default="https://esgf-node.ornl.gov/esg-search/wget",
+    default="https://esgf-node.llnl.gov/esg-search/wget",
 )
 STATUS_URL = env(
     "REACT_APP_ESGF_NODE_STATUS_URL",
-    default="https://esgf-node.ornl.gov/proxy/status",
+    default="https://esgf-node.llnl.gov/proxy/status",
 )
 SOLR_URL = env(
-    "REACT_APP_ESGF_SOLR_URL", default="https://esgf-node.ornl.gov/esg-search"
+    "REACT_APP_ESGF_SOLR_URL", default="https://esgf-node.llnl.gov/esg-search"
 )
 
 FRONTEND_SETTINGS = {
@@ -396,13 +396,16 @@ FRONTEND_SETTINGS = {
         "REACT_APP_GLOBUS_REDIRECT",
         default="http://localhost:8080/cart/items",
     ),
-    "REACT_APP_CLIENT_ID": env("REACT_APP_CLIENT_ID", default="frontend"),
+    "REACT_APP_GLOBUS_CLIENT_ID": env(
+        "REACT_APP_GLOBUS_CLIENT_ID", default="frontend"
+    ),
     "REACT_APP_GLOBUS_NODES": env.list(
         "REACT_APP_GLOBUS_NODES",
         default=[
             "aims3.llnl.gov",
             "esgf-data1.llnl.gov",
             "esgf-data2.llnl.gov",
+            "esgf-node.ornl.gov",
         ],
     ),
     "REACT_APP_ESGF_SOLR_URL": env(

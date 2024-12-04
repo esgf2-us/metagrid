@@ -80,7 +80,7 @@ DJANGO_SECURE_SSL_REDIRECT=False
 
 # django-cors-headers
 
-CORS_ORIGIN_WHITELIST=https://localhost:3000,https://esgf-dev1.llnl.gov  
+CORS_ORIGIN_WHITELIST=http://localhost:3000,https://esgf-dev1.llnl.gov  
 
 # django-all-auth  - Configure your Keycloak here
 
@@ -111,7 +111,7 @@ REACT_APP_METAGRID_API_URL=https://esgf-dev1.llnl.gov/metagrid-backend
 # Globus
 
 REACT_APP_GLOBUS_REDIRECT=https://esgf-dev1.llnl.gov/cart/items
-REACT_APP_CLIENT_ID=   #  Generate a client ID at Globus for your Native App
+REACT_APP_GLOBUS_CLIENT_ID=   #  Generate a client ID at Globus for your Native App
 REACT_APP_GLOBUS_NODES=aims3.llnl.gov,esgf-data1.llnl.gov,esgf-data2.llnl.gov
 
 # ESGF wget API
