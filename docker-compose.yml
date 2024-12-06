@@ -18,7 +18,7 @@ services:
       - local_postgres_data:/var/lib/postgresql/data
       - local_postgres_data_backups:/local_postgres_data_backups
     env_file:
-      - ./backend/.envs/.postgres
+      - ./metagrid_configs/.local_config
     ports:
       - 5432:5432
     healthcheck:
@@ -42,7 +42,7 @@ services:
     volumes:
       - ./backend:/app
     env_file:
-      - ./backend/.envs/.postgres
+      - ./metagrid_configs/.local_config
     ports:
       - 5000:5000
     networks:
