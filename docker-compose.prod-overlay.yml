@@ -1,8 +1,24 @@
 services:
+  postgres:
+    environment:
+      # The dev config uses trust auth so we set that blank here to keep it
+      # from accidentally making its way to production without proper
+      # authentication
+      POSTGRES_HOST_AUTH_METHOD: ""
+
+  django:
+    volumes: [] # Don't mount the source files from the server in production
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+
   keycloak:
     command: start
     volumes: []
 
   react:
     build:
+      # The prod build target includes a production ready nginx server
       target: prod
+    volumes:
+      [] # The prod server doesn't watch and recompile the source files
+      # so don't mount them to the container
