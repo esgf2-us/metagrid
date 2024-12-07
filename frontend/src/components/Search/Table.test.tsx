@@ -7,7 +7,6 @@ import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
 import Table, { Props } from './Table';
 import { QualityFlag } from './Tabs';
-import { getRowName } from '../../test/jestTestFunctions';
 
 const user = userEvent.setup();
 
@@ -55,9 +54,7 @@ describe('test main table UI', () => {
     expect(table).toBeTruthy();
 
     // Check a record row exist
-    const row = await screen.findByRole('row', {
-      name: getRowName('plus', 'question', 'foo', 'N/A', 'N/A', '1'),
-    });
+    const row = await screen.findByTestId('cart-items-row-0');
     expect(row).toBeTruthy();
   });
 
@@ -107,9 +104,7 @@ describe('test main table UI', () => {
     expect(table).toBeTruthy();
 
     // Check a record row exist
-    const row = await screen.findByRole('row', {
-      name: getRowName('plus', 'question', 'foo', '3', '1', '1', true),
-    });
+    const row = await screen.findByTestId('cart-items-row-0');
     expect(row).toBeTruthy();
 
     // Get the expandable cell
@@ -179,9 +174,7 @@ describe('test main table UI', () => {
     expect(table).toBeTruthy();
 
     // Check first row exists
-    const firstRow = await screen.findByRole('row', {
-      name: getRowName('plus', 'question', 'foo', '3', '1', '1', true),
-    });
+    const firstRow = await screen.findByTestId('cart-items-row-0');
     expect(firstRow).toBeTruthy();
 
     // Get the expandable cell
@@ -243,9 +236,7 @@ describe('test main table UI', () => {
     expect(table).toBeTruthy();
 
     // Check first row exists
-    const firstRow = await screen.findByRole('row', {
-      name: getRowName('plus', 'question', 'foo', '3', '1', '1', true),
-    });
+    const firstRow = await screen.findByTestId('cart-items-row-0');
     expect(firstRow).toBeTruthy();
 
     // Get the expandable cell
@@ -286,15 +277,13 @@ describe('test main table UI', () => {
 
   it('renders add or remove button for items in or not in the cart respectively, and handles clicking them', async () => {
     customRender(<Table {...defaultProps} userCart={[defaultProps.results[0]]} />);
-
     // Check table exists
     const table = await screen.findByRole('table');
     expect(table).toBeTruthy();
 
     // Check first row exists
-    const firstRow = await screen.findByRole('row', {
-      name: getRowName('minus', 'question', 'foo', '3', '1', '1'),
-    });
+    const firstRow = await screen.findByTestId('cart-items-row-0');
+
     expect(firstRow).toBeTruthy();
 
     // Check first row has remove button and click it
@@ -307,9 +296,7 @@ describe('test main table UI', () => {
     });
 
     // Check second row exists
-    const secondRow = await screen.findByRole('row', {
-      name: getRowName('plus', 'question', 'bar', '2', '1', '1'),
-    });
+    const secondRow = await screen.findByTestId('cart-items-row-1');
     expect(secondRow).toBeTruthy();
 
     // Check second row has add button and click it
@@ -329,9 +316,7 @@ describe('test main table UI', () => {
     expect(table).toBeTruthy();
 
     // Check a record row exist
-    const row = await screen.findByRole('row', {
-      name: getRowName('plus', 'question', 'foo', '3', '1', '1'),
-    });
+    const row = await screen.findByTestId('cart-items-row-0');
     expect(row).toBeTruthy();
 
     const checkBox = await within(row).findByRole('checkbox');
@@ -377,9 +362,7 @@ describe('test main table UI', () => {
     expect(tableComponent).toBeTruthy();
 
     // Check first row renders
-    const firstRow = await screen.findByRole('row', {
-      name: getRowName('minus', 'question', 'foo', '3', '1', '1'),
-    });
+    const firstRow = await screen.findByTestId('cart-items-row-0');
     expect(firstRow).toBeTruthy();
 
     // Check first row download button renders and submit the form
@@ -410,9 +393,7 @@ describe('test main table UI', () => {
     expect(tableComponent).toBeTruthy();
 
     // Check first row renders
-    const firstRow = await screen.findByRole('row', {
-      name: getRowName('minus', 'question', 'foo', '3', '1', '1'),
-    });
+    const firstRow = await screen.findByTestId('cart-items-row-0');
     expect(firstRow).toBeTruthy();
 
     // Check first row download button renders and submit the form

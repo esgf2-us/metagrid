@@ -63,8 +63,11 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({
                 }
                 icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
                 onConfirm={onClearCart}
+                okButtonProps={{
+                  'data-testid': 'clear-all-cart-items-confirm-button',
+                }}
               >
-                <span>
+                <span data-testid="clear-cart-button">
                   <Button className={cartTourTargets.removeItemsBtn.class()} danger>
                     Remove All Items
                   </Button>

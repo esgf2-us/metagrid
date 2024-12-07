@@ -698,6 +698,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           setAlertPopupState({
             onCancelAction: () => {
               setCurrentGoal(GlobusGoals.None);
+              setLoadingPage(false);
               setAlertPopupState({ ...alertPopupState, show: false });
             },
             onOkAction: async () => {

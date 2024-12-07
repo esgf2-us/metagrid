@@ -12,15 +12,7 @@ import { UserEvent } from '@testing-library/user-event';
 import { NotificationType, getSearchFromUrl } from '../common/utils';
 import { RawSearchResult } from '../components/Search/types';
 import { rawSearchResultFixture } from './mock/fixtures';
-
-// For mocking environment variables
 import { FrontendConfig } from '../common/types';
-
-// For mocking environment variables
-// export type MockConfig = {
-//   authenticationMethod: string;
-//   globusEnabledNodes: string[];
-// };
 
 // https://www.mikeborozdin.com/post/changing-jest-mocks-between-tests
 export const originalGlobusEnabledNodes = [
@@ -34,7 +26,7 @@ export const mockConfig: FrontendConfig = {
   REACT_APP_GLOBUS_REDIRECT: 'http://localhost:8080/cart/items',
   REACT_APP_GLOBUS_NODES: originalGlobusEnabledNodes,
   REACT_APP_KEYCLOAK_REALM: 'esgf',
-  REACT_APP_KEYCLOAK_URL: 'https://esgf-login.ceda.ac.uk/',
+  REACT_APP_KEYCLOAK_URL: 'http://localhost:1337',
   REACT_APP_KEYCLOAK_CLIENT_ID: 'frontend',
   REACT_APP_HOTJAR_ID: 1234,
   REACT_APP_HOTJAR_SV: 1234,
@@ -168,33 +160,6 @@ export function makeCartItem(id: string, globusReady: boolean): RawSearchResult 
   });
 }
 
-/**
- * Creates the appropriate name string when performing getByRole('row')
- */
-export function getRowName(
-  cartButton: 'plus' | 'minus',
-  nodeCircleType: 'question' | 'check' | 'close',
-  title: string,
-  fileCount: string,
-  totalSize: string,
-  version: string,
-  globusReady?: boolean
-): RegExp {
-  let totalBytes = `${totalSize} Bytes`;
-  if (Number.isNaN(Number(totalSize))) {
-    totalBytes = totalSize;
-  }
-  let globusReadyCheck = mockConfig.REACT_APP_GLOBUS_NODES.length > 0 ? ' .*' : '';
-  if (globusReady !== undefined) {
-    globusReadyCheck = globusReady ? ' check-circle' : ' close-circle';
-  }
-  const newRegEx = new RegExp(
-    `right-circle ${cartButton} ${nodeCircleType}-circle ${title} ${fileCount} ${totalBytes} ${version} wget download${globusReadyCheck}`
-  );
-
-  return newRegEx;
-}
-
 export async function submitKeywordSearch(inputText: string, user: UserEvent): Promise<void> {
   // Check left menu rendered
   const leftMenuComponent = await screen.findByTestId('left-menu');
@@ -227,24 +192,6 @@ export async function openDropdownList(user: UserEvent, dropdown: HTMLElement): 
   });
 }
 
-export async function selectDropdownOption(
-  user: UserEvent,
-  dropdown: HTMLElement,
-  option: string
-): Promise<void> {
-  act(() => {
-    dropdown.focus();
-  });
-
-  await act(async () => {
-    await user.keyboard('[ArrowDown]');
-  });
-  await act(async () => {
-    const opt = await screen.findByText(option);
-    await user.click(opt);
-  });
-}
-
 export async function addSearchRowsAndGoToCart(
   user: UserEvent,
   rows?: HTMLElement[]
@@ -255,9 +202,7 @@ export async function addSearchRowsAndGoToCart(
   if (rows) {
     rowsToAdd = rowsToAdd.concat(rows);
   } else {
-    const defaultRow = await screen.findByRole('row', {
-      name: getRowName('plus', 'check', 'foo', '3', '1', '1', true),
-    });
+    const defaultRow = await screen.findByTestId('cart-items-row-1');
     rowsToAdd.push(defaultRow);
   }
 

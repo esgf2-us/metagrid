@@ -24,15 +24,14 @@ declare global {
 }
 
 const appRouter = (
-  <BrowserRouter basename={process.env.PUBLIC_URL}>
+  <BrowserRouter basename="/">
     <ReactJoyrideProvider>
       <App searchQuery={getSearchFromUrl()} />
     </ReactJoyrideProvider>
   </BrowserRouter>
 );
 
-axios.get('/frontend-config.js').then((response) => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+axios.get<FrontendConfig>('/frontend-config.js').then((response) => {
   window.METAGRID = response.data;
 
   // Setup Google Analytics

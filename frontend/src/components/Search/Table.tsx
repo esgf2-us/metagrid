@@ -65,7 +65,11 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
     pagination: {
       total: totalResults,
       position: ['bottomCenter'],
-      showSizeChanger: true,
+      showSizeChanger: {
+        optionRender: (option) => {
+          return <span data-testid={`pageSize-option-${option.value}`}>{option.label}</span>;
+        },
+      },
       onChange: (page: number, pageSize: number) => onPageChange && onPageChange(page, pageSize),
       onShowSizeChange: (_current: number, size: number) =>
         onPageSizeChange && onPageSizeChange(size),
@@ -329,6 +333,12 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       rowKey="id"
       size="small"
       scroll={{ x: '1200px', y: 'calc(70vh)' }}
+      onRow={(record, rowIndex) => {
+        return {
+          id: `cart-items-row-${rowIndex}`,
+          'data-testid': `cart-items-row-${rowIndex}`,
+        };
+      }}
     />
   );
 };

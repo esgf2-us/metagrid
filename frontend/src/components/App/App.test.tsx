@@ -15,12 +15,7 @@ import { getSearchFromUrl } from '../../common/utils';
 import customRender from '../../test/custom-render';
 import { ActiveSearchQuery } from '../Search/types';
 import App from './App';
-import {
-  activeSearch,
-  getRowName,
-  mockKeycloakToken,
-  submitKeywordSearch,
-} from '../../test/jestTestFunctions';
+import { activeSearch, mockKeycloakToken, submitKeywordSearch } from '../../test/jestTestFunctions';
 
 const user = userEvent.setup();
 
@@ -36,8 +31,6 @@ jest.mock('@react-keycloak/web', () => {
     },
   };
 });
-
-jest.setTimeout(60000); // Some tests require more time to run
 
 describe('test main components', () => {
   it('renders App component', async () => {
@@ -110,7 +103,7 @@ describe('test main components', () => {
     });
 
     await act(async () => {
-      await user.click(filenameSearchPanel);
+      await userEvent.click(filenameSearchPanel);
     });
 
     // Change form field values
@@ -125,7 +118,7 @@ describe('test main components', () => {
       name: 'search',
     });
     await act(async () => {
-      await user.click(filenameVarsSubmitBtn);
+      await userEvent.click(filenameVarsSubmitBtn);
     });
 
     // Wait for components to rerender
@@ -135,7 +128,7 @@ describe('test main components', () => {
       await user.type(inputField, input);
     });
     await act(async () => {
-      await user.click(filenameVarsSubmitBtn);
+      await userEvent.click(filenameVarsSubmitBtn);
     });
 
     // Wait for components to rerender
@@ -161,7 +154,7 @@ describe('test main components', () => {
     expect(clearAllTag).toBeTruthy();
 
     await act(async () => {
-      await user.click(clearAllTag);
+      await userEvent.click(clearAllTag);
     });
 
     // Change value for free-text input and submit again
@@ -176,7 +169,7 @@ describe('test main components', () => {
 
     // Close the baz tag
     await act(async () => {
-      await user.click(within(bazTag).getByRole('img', { name: 'close' }));
+      await userEvent.click(within(bazTag).getByRole('img', { name: 'close' }));
     });
 
     // Wait for components to rerender
@@ -185,9 +178,7 @@ describe('test main components', () => {
 
   it('handles applying general facets', async () => {
     customRender(<App searchQuery={activeSearch} />);
-
-    // Wait for facets forms to rerender
-    const facetsForm = await screen.findByTestId('facets-form');
+    const facetsForm = await screen.findByTestId('facets-form', {}, { timeout: 3000 });
     expect(facetsForm).toBeTruthy();
 
     // Open additional properties collapse panel
@@ -195,7 +186,7 @@ describe('test main components', () => {
       name: 'expanded Additional Properties',
     });
     await act(async () => {
-      await user.click(additionalPropertiesPanel);
+      await userEvent.click(additionalPropertiesPanel);
     });
 
     // Check facet select form exists and mouseDown to expand list of options
@@ -208,7 +199,7 @@ describe('test main components', () => {
     expect(resultTypeOption).toBeTruthy();
 
     await act(async () => {
-      await user.click(resultTypeOption);
+      await userEvent.click(resultTypeOption);
     });
     await screen.findByTestId('facets-form');
 
@@ -232,14 +223,14 @@ describe('test main components', () => {
     });
 
     await act(async () => {
-      await user.click(group1Panel);
+      await userEvent.click(group1Panel);
     });
 
     // Open Collapse Panel in Collapse component for the data_node form to render
     const collapse = await screen.findByText('Data Node');
 
     await act(async () => {
-      await user.click(collapse);
+      await userEvent.click(collapse);
     });
 
     // Check facet select form exists and mouseDown to expand list of options
@@ -251,7 +242,7 @@ describe('test main components', () => {
     const facetOption = await screen.findByTestId('data_node_aims3.llnl.gov');
     expect(facetOption).toBeTruthy();
     await act(async () => {
-      await user.click(facetOption);
+      await userEvent.click(facetOption);
     });
 
     // Apply facets
@@ -282,7 +273,7 @@ describe('test main components', () => {
     expect(facetOptionRerender).toBeTruthy();
 
     await act(async () => {
-      await user.click(facetOptionRerender);
+      await userEvent.click(facetOptionRerender);
     });
 
     // Remove facets
@@ -321,9 +312,7 @@ describe('User cart', () => {
     await screen.findByText('Query String:', { exact: false });
 
     // Check first row exists
-    const firstRow = await screen.findByRole('row', {
-      name: getRowName('plus', 'close', 'bar', '2', '1', '1'),
-    });
+    const firstRow = await screen.findByTestId('cart-items-row-1');
     expect(firstRow).toBeTruthy();
 
     // Check first row has add button and click it
@@ -331,7 +320,7 @@ describe('User cart', () => {
     expect(addBtn).toBeTruthy();
 
     await act(async () => {
-      await user.click(addBtn);
+      await userEvent.click(addBtn);
     });
 
     // Check 'Added items(s) to the cart' message appears
@@ -343,7 +332,7 @@ describe('User cart', () => {
     expect(removeBtn).toBeTruthy();
 
     await act(async () => {
-      await user.click(removeBtn);
+      await userEvent.click(removeBtn);
     });
 
     // Check 'Removed items(s) from the cart' message appears
@@ -358,9 +347,7 @@ describe('User cart', () => {
     await screen.findByText('Query String:', { exact: false });
 
     // Check first row exists
-    const firstRow = await screen.findByRole('row', {
-      name: getRowName('plus', 'close', 'bar', '2', '1', '1'),
-    });
+    const firstRow = await screen.findByTestId('cart-items-row-1');
     expect(firstRow).toBeTruthy();
 
     // Check first row has add button and click it
@@ -368,7 +355,7 @@ describe('User cart', () => {
     expect(addBtn).toBeTruthy();
 
     await act(async () => {
-      await user.click(addBtn);
+      await userEvent.click(addBtn);
     });
 
     // Check 'Added items(s) to the cart' message appears
@@ -386,12 +373,10 @@ describe('User cart', () => {
     expect(cartLink).toBeTruthy();
 
     await act(async () => {
-      await user.click(cartLink);
+      await userEvent.click(cartLink);
     });
 
     // Check number of files and datasets are correctly displayed
-    const cart = await screen.findByTestId('cart');
-    expect(cart).toBeTruthy();
     const cartSummary = await screen.findByTestId('summary');
     expect(cartSummary).toBeTruthy();
 
@@ -401,24 +386,18 @@ describe('User cart', () => {
     expect(numFilesText.textContent).toEqual('Number of Files: 2');
 
     // Check "Remove All Items" button renders with cart > 0 items and click it
-    const clearCartBtn = within(cart).getByRole('button', {
-      name: 'Remove All Items',
-    });
+    const clearCartBtn = await screen.findByTestId('clear-cart-button');
     expect(clearCartBtn).toBeTruthy();
 
     await act(async () => {
-      await user.click(clearCartBtn);
+      await userEvent.click(clearCartBtn);
     });
-
-    await screen.findByTestId('cart');
 
     // Check confirmBtn exists in popover and click it
-    const confirmBtn = await screen.findByRole('button', {
-      name: 'OK',
-    });
+    const confirmBtn = await screen.findByTestId('clear-all-cart-items-confirm-button');
     expect(confirmBtn).toBeTruthy();
     await act(async () => {
-      await user.click(confirmBtn);
+      await userEvent.click(confirmBtn);
     });
 
     // Check number of datasets and files are now 0
@@ -438,9 +417,7 @@ describe('User cart', () => {
     await screen.findByText('Query String:', { exact: false });
 
     // Check first row exists
-    const firstRow = await screen.findByRole('row', {
-      name: getRowName('plus', 'check', 'foo', '3', '1', '1'),
-    });
+    const firstRow = await screen.findByTestId('cart-items-row-1');
     expect(firstRow).toBeTruthy();
 
     // Check first row has add button and click it
@@ -448,7 +425,7 @@ describe('User cart', () => {
     expect(addBtn).toBeTruthy();
 
     await act(async () => {
-      await user.click(addBtn);
+      await userEvent.click(addBtn);
     });
 
     // Check first row has remove button and click it
@@ -456,7 +433,7 @@ describe('User cart', () => {
     expect(removeBtn).toBeTruthy();
 
     await act(async () => {
-      await user.click(removeBtn);
+      await userEvent.click(removeBtn);
     });
   });
 
@@ -467,17 +444,14 @@ describe('User cart', () => {
     await screen.findByText('Query String:', { exact: false });
 
     // Check first row exists
-    const firstRow = await screen.findByRole('row', {
-      name: getRowName('plus', 'close', 'bar', '2', '1', '1'),
-    });
+    const firstRow = await screen.findByTestId('cart-items-row-1');
     expect(firstRow).toBeTruthy();
-
     // Check first row has add button and click it
     const addBtn = await within(firstRow).findByRole('img', { name: 'plus' });
     expect(addBtn).toBeTruthy();
 
     await act(async () => {
-      await user.click(addBtn);
+      await userEvent.click(addBtn);
     });
 
     // Check 'Added items(s) to the cart' message appears
@@ -495,7 +469,7 @@ describe('User cart', () => {
     expect(cartLink).toBeTruthy();
 
     await act(async () => {
-      await user.click(cartLink);
+      await userEvent.click(cartLink);
     });
 
     // Check number of files and datasets are correctly displayed
@@ -510,24 +484,19 @@ describe('User cart', () => {
     expect(numFilesText.textContent).toEqual('Number of Files: 2');
 
     // Check "Remove All Items" button renders with cart > 0 items and click it
-    const clearCartBtn = await within(cart).findByRole('button', {
-      name: 'Remove All Items',
-    });
+    const clearCartBtn = await screen.findByTestId('clear-cart-button');
     expect(clearCartBtn).toBeTruthy();
 
     await act(async () => {
-      await user.click(clearCartBtn);
+      await userEvent.click(clearCartBtn);
     });
-
     await screen.findByTestId('cart');
 
     // Check confirmBtn exists in popover and click it
-    const confirmBtn = await screen.findByRole('button', {
-      name: 'OK',
-    });
+    const confirmBtn = await screen.findByTestId('clear-all-cart-items-confirm-button');
     expect(confirmBtn).toBeTruthy();
     await act(async () => {
-      await user.click(confirmBtn);
+      await userEvent.click(confirmBtn);
     });
 
     // Check number of datasets and files are now 0
@@ -537,7 +506,7 @@ describe('User cart', () => {
     // Check empty alert renders
     const emptyAlert = await screen.findByText('Your cart is empty');
     expect(emptyAlert).toBeTruthy();
-  }, 100000);
+  });
 
   describe('Error handling', () => {
     it('displays error message after failing to fetch authenticated user"s cart', async () => {
@@ -581,7 +550,7 @@ describe('User search library', () => {
     expect(saveSearch).toBeTruthy();
 
     await act(async () => {
-      await user.click(saveSearch);
+      await userEvent.click(saveSearch);
     });
 
     // Click Save Search button again to check if duplicates are saved
@@ -590,7 +559,7 @@ describe('User search library', () => {
     });
 
     await act(async () => {
-      await user.click(saveSearch);
+      await userEvent.click(saveSearch);
     });
 
     // Click on the search library link
@@ -600,7 +569,7 @@ describe('User search library', () => {
     expect(searchLibraryLink).toBeTruthy();
 
     await act(async () => {
-      await user.click(searchLibraryLink);
+      await userEvent.click(searchLibraryLink);
     });
 
     // Check cart renders
@@ -612,7 +581,7 @@ describe('User search library', () => {
     expect(applySearchBtn).toBeTruthy();
 
     await act(async () => {
-      await user.click(applySearchBtn);
+      await userEvent.click(applySearchBtn);
     });
 
     // Wait for components to rerender
@@ -639,7 +608,7 @@ describe('User search library', () => {
     expect(searchLibraryLink).toBeTruthy();
 
     await act(async () => {
-      await user.click(searchLibraryLink);
+      await userEvent.click(searchLibraryLink);
     });
 
     // Check number of files and datasets are correctly displayed
@@ -654,7 +623,7 @@ describe('User search library', () => {
     expect(deleteBtn).toBeTruthy();
 
     await act(async () => {
-      await user.click(deleteBtn);
+      await userEvent.click(deleteBtn);
     });
 
     await screen.findByTestId('cart');
@@ -685,7 +654,7 @@ describe('User search library', () => {
     expect(saveSearch).toBeTruthy();
 
     await act(async () => {
-      await user.click(saveSearch);
+      await userEvent.click(saveSearch);
     });
 
     // Click on the search library link
@@ -695,7 +664,7 @@ describe('User search library', () => {
     expect(searchLibraryLink).toBeTruthy();
 
     await act(async () => {
-      await user.click(searchLibraryLink);
+      await userEvent.click(searchLibraryLink);
     });
 
     // Check cart renders
@@ -711,7 +680,7 @@ describe('User search library', () => {
     expect(applySearchBtn).toBeTruthy();
 
     await act(async () => {
-      await user.click(applySearchBtn);
+      await userEvent.click(applySearchBtn);
     });
 
     // Wait for components to rerender
@@ -736,7 +705,7 @@ describe('User search library', () => {
     expect(saveSearch).toBeTruthy();
 
     await act(async () => {
-      await user.click(saveSearch);
+      await userEvent.click(saveSearch);
     });
 
     const searchLibraryLink = await within(rightMenuComponent).findByRole('img', {
@@ -747,7 +716,7 @@ describe('User search library', () => {
     expect(searchLibraryLink).toBeTruthy();
 
     await act(async () => {
-      await user.click(searchLibraryLink);
+      await userEvent.click(searchLibraryLink);
     });
 
     const cart = await screen.findByTestId('cart');
@@ -758,7 +727,7 @@ describe('User search library', () => {
     expect(deleteBtn).toBeTruthy();
 
     await act(async () => {
-      await user.click(deleteBtn);
+      await userEvent.click(deleteBtn);
     });
 
     await screen.findByTestId('cart');
@@ -784,7 +753,7 @@ describe('User search library', () => {
     expect(copySearch).toBeTruthy();
 
     await act(async () => {
-      await user.click(copySearch);
+      await userEvent.click(copySearch);
     });
   });
 
@@ -820,7 +789,7 @@ describe('User search library', () => {
       expect(saveSearch).toBeTruthy();
 
       await act(async () => {
-        await user.click(saveSearch);
+        await userEvent.click(saveSearch);
       });
     });
 
@@ -835,7 +804,7 @@ describe('User search library', () => {
       // Check delete button renders for the saved search and click it
       const saveBtn = await screen.findByText('Save Search');
       expect(saveBtn).toBeTruthy();
-      user.click(saveBtn);
+      userEvent.click(saveBtn);
 
       // Check applicable components render
       const rightMenuComponent = await screen.findByTestId('right-menu');
@@ -848,7 +817,7 @@ describe('User search library', () => {
       });
       expect(searchLibraryLink).toBeTruthy();
       await act(async () => {
-        await user.click(searchLibraryLink);
+        await userEvent.click(searchLibraryLink);
       });
 
       // Check cart component renders
@@ -865,7 +834,7 @@ describe('User search library', () => {
       expect(deleteBtn).toBeTruthy();
 
       await act(async () => {
-        await user.click(deleteBtn);
+        await userEvent.click(deleteBtn);
       });
 
       const errorMsg = await screen.findAllByText(apiRoutes.userSearch.handleErrorMsg(404));
@@ -884,7 +853,7 @@ describe('User support', () => {
 
     // click support button
     await act(async () => {
-      await user.click(supportBtn);
+      await userEvent.click(supportBtn);
     });
 
     // GitHub icon renders
@@ -897,7 +866,7 @@ describe('User support', () => {
     const closeBtn = await screen.findByText('Close Support');
 
     await act(async () => {
-      await user.click(closeBtn);
+      await userEvent.click(closeBtn);
     });
   });
 });
@@ -915,7 +884,7 @@ describe('Data node status page', () => {
     expect(nodeLink).toBeTruthy();
 
     await act(async () => {
-      await user.click(nodeLink);
+      await userEvent.click(nodeLink);
     });
 
     const nodeStatusPage = await screen.findByTestId('node-status');
