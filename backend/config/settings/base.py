@@ -344,8 +344,8 @@ SOCIAL_AUTH_GLOBUS_SCOPE = [
     "urn:globus:auth:scope:transfer.api.globus.org:all",
 ]
 
-SOCIAL_AUTH_GLOBUS_KEY = env("GLOBUS_CLIENT_KEY", default="12345")
-SOCIAL_AUTH_GLOBUS_SECRET = env("GLOBUS_CLIENT_SECRET", default="12345")
+SOCIAL_AUTH_GLOBUS_KEY = env("GLOBUS_CLIENT_KEY", default="unset")
+SOCIAL_AUTH_GLOBUS_SECRET = env("GLOBUS_CLIENT_SECRET", default="unset")
 SOCIAL_AUTH_GLOBUS_AUTH_EXTRA_ARGUMENTS = {
     "requested_scopes": SOCIAL_AUTH_GLOBUS_SCOPE,
     "prompt": None,
@@ -427,6 +427,9 @@ FRONTEND_SETTINGS = {
     ),
 }
 
+# Custom settings validation
+# -------------------------------------------------------------------------------
+
 if not isinstance(FRONTEND_SETTINGS["REACT_APP_GLOBUS_NODES"], list):
     raise environ.ImproperlyConfigured(
         f"REACT_APP_GLOBUS_NODES must be of type list, not "
@@ -441,4 +444,11 @@ if FRONTEND_SETTINGS["REACT_APP_AUTHENTICATION_METHOD"] not in (
     raise environ.ImproperlyConfigured(
         f"REACT_APP_AUTHENTICATION_METHOD must be one of keycloak or globus, "
         f"not {FRONTEND_SETTINGS['REACT_APP_AUTHENTICATION_METHOD']}"
+    )
+
+if FRONTEND_SETTINGS["REACT_APP_AUTHENTICATION_METHOD"] == "globus" and (
+    SOCIAL_AUTH_GLOBUS_KEY == "unset" or SOCIAL_AUTH_GLOBUS_SECRET == "unset"
+):
+    raise environ.ImproperlyConfigured(
+        "When REACT_APP_AUTHENTICATION_METHOD is 'globus', both SOCIAL_AUTH_GLOBUS_KEY and SOCIAL_AUTH_GLOBUS_SECRET must be set via the environment variables GLOBUS_CLIENT_KEY and GLOBUS_CLIENT_SECRET respectively. You must obtain these credentials by registering a Portal at https://app.globus.org/settings/developers"
     )

@@ -6,3 +6,4 @@ services:
   react:
     build:
       target: prod
+    volumes: []
