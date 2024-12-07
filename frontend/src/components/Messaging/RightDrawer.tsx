@@ -9,10 +9,7 @@ export type Props = {
   onClose: () => void;
 };
 
-const RightDrawer: React.FC<React.PropsWithChildren<Props>> = ({
-  open,
-  onClose,
-}) => {
+const RightDrawer: React.FC<React.PropsWithChildren<Props>> = ({ open, onClose }) => {
   return (
     <Drawer
       title="Notifications"
@@ -35,12 +32,7 @@ const RightDrawer: React.FC<React.PropsWithChildren<Props>> = ({
             return {
               key: message.fileName,
               label: message.title,
-              children: (
-                <MessageCard
-                  title={message.title}
-                  fileName={message.fileName}
-                />
-              ),
+              children: <MessageCard title={message.title} fileName={message.fileName} />,
             };
           })}
         />
@@ -51,9 +43,7 @@ const RightDrawer: React.FC<React.PropsWithChildren<Props>> = ({
             return {
               key: change.fileName,
               label: change.title,
-              children: (
-                <MessageCard title={change.title} fileName={change.fileName} />
-              ),
+              children: <MessageCard title={change.title} fileName={change.fileName} />,
             };
           })}
         />

@@ -18,7 +18,7 @@ import {
   Result,
   message,
 } from 'antd';
-import React, { ReactElement } from 'react';
+import React from 'react';
 import { useAsync } from 'react-async';
 import { hotjar } from 'react-hotjar';
 import { Link, Navigate, Route, Routes } from 'react-router-dom';
@@ -43,7 +43,6 @@ import {
   unsavedLocalSearches,
 } from '../../common/utils';
 import { AuthContext } from '../../contexts/AuthContext';
-import { hjid, hjsv, previousPublicUrl, publicUrl } from '../../env';
 import Cart from '../Cart';
 import Summary from '../Cart/Summary';
 import { UserCart, UserSearchQueries, UserSearchQuery } from '../Cart/types';
@@ -84,8 +83,8 @@ const styles: CSSinJS = {
 const useHotjar = (): void => {
   React.useEffect(() => {
     /* istanbul ignore next */
-    if (hjid && hjsv) {
-      hotjar.initialize(hjid, hjsv);
+    if (window.METAGRID.REACT_APP_HOTJAR_ID && window.METAGRID.REACT_APP_HOTJAR_SV) {
+      hotjar.initialize(window.METAGRID.REACT_APP_HOTJAR_ID, window.METAGRID.REACT_APP_HOTJAR_SV);
     }
   }, []);
 };
@@ -107,9 +106,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   const { access_token: accessToken, pk } = authState;
   const isAuthenticated = accessToken && pk;
 
-  const [supportModalVisible, setSupportModalVisible] = React.useState<boolean>(
-    false
-  );
+  const [supportModalVisible, setSupportModalVisible] = React.useState<boolean>(false);
 
   const {
     run: runFetchNodeStatus,
@@ -120,9 +117,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     deferFn: fetchNodeStatus,
   });
 
-  const projectBaseQuery = (
-    project: Record<string, unknown> | RawProject
-  ): ActiveSearchQuery => ({
+  const projectBaseQuery = (project: Record<string, unknown> | RawProject): ActiveSearchQuery => ({
     project,
     versionType: 'latest',
     resultType: 'all',
@@ -133,15 +128,11 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     textInputs: [],
   });
 
-  const [
-    activeSearchQuery,
-    setActiveSearchQuery,
-  ] = React.useState<ActiveSearchQuery>(projectBaseQuery({}));
+  const [activeSearchQuery, setActiveSearchQuery] = React.useState<ActiveSearchQuery>(
+    projectBaseQuery({})
+  );
 
-  const [
-    savedSearchQuery,
-    setSavedSearchQuery,
-  ] = React.useState<ActiveSearchQuery | null>(null);
+  const [savedSearchQuery, setSavedSearchQuery] = React.useState<ActiveSearchQuery | null>(null);
 
   const [availableFacets, setAvailableFacets] = React.useState<
     ParsedFacets | Record<string, unknown>
@@ -151,12 +142,8 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     JSON.parse(localStorage.getItem('userCart') || '[]') as RawSearchResults
   );
 
-  const [userSearchQueries, setUserSearchQueries] = React.useState<
-    UserSearchQueries | []
-  >(
-    JSON.parse(
-      localStorage.getItem('userSearchQueries') || '[]'
-    ) as UserSearchQueries
+  const [userSearchQueries, setUserSearchQueries] = React.useState<UserSearchQueries | []>(
+    JSON.parse(localStorage.getItem('userSearchQueries') || '[]') as UserSearchQueries
   );
 
   React.useEffect(() => {
@@ -184,10 +171,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
             localStorage.getItem('userSearchQueries') || '[]'
           ) as UserSearchQueries;
           const databaseItems = rawUserSearches.results;
-          const searchQueriesToAdd = unsavedLocalSearches(
-            databaseItems,
-            localItems
-          );
+          const searchQueriesToAdd = unsavedLocalSearches(databaseItems, localItems);
           /* istanbul ignore next */
           searchQueriesToAdd.forEach((query) => {
             void addUserSearchQuery(pk, accessToken, query);
@@ -205,10 +189,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   }, [isAuthenticated, userCart]);
 
   React.useEffect(() => {
-    localStorage.setItem(
-      'userSearchQueries',
-      JSON.stringify(userSearchQueries)
-    );
+    localStorage.setItem('userSearchQueries', JSON.stringify(userSearchQueries));
   }, [isAuthenticated, userSearchQueries]);
 
   React.useEffect(() => {
@@ -227,9 +208,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
         /* istanbul ignore else */
         if (data && projectName && projectName !== '') {
           const rawProj: RawProject | undefined = data.results.find((proj) => {
-            return (
-              proj.name.toLowerCase() === (projectName as string).toLowerCase()
-            );
+            return proj.name.toLowerCase() === (projectName as string).toLowerCase();
           });
           /* istanbul ignore next */
           if (rawProj) {
@@ -245,10 +224,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
       );
   }, [fetchProjects]);
 
-  const handleTextSearch = (
-    selectedProject: RawProject,
-    text: string
-  ): void => {
+  const handleTextSearch = (selectedProject: RawProject, text: string): void => {
     if (activeSearchQuery.textInputs.includes(text as never)) {
       showError(messageApi, `Input "${text}" has already been applied`);
     } else {
@@ -313,16 +289,12 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     if (type === 'text') {
       setActiveSearchQuery({
         ...activeSearchQuery,
-        textInputs: activeSearchQuery.textInputs.filter(
-          (input) => input !== removedTag
-        ),
+        textInputs: activeSearchQuery.textInputs.filter((input) => input !== removedTag),
       });
     } else if (type === 'filenameVar') {
       setActiveSearchQuery({
         ...activeSearchQuery,
-        filenameVars: activeSearchQuery.filenameVars.filter(
-          (input) => input !== removedTag
-        ),
+        filenameVars: activeSearchQuery.filenameVars.filter((input) => input !== removedTag),
       });
     } else if (type === 'facet') {
       const prevActiveFacets = activeSearchQuery.activeFacets as ActiveFacets;
@@ -348,17 +320,13 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     }
   };
 
-  const handleUpdateCart = (
-    selectedItems: RawSearchResults,
-    operation: 'add' | 'remove'
-  ): void => {
+  const handleUpdateCart = (selectedItems: RawSearchResults, operation: 'add' | 'remove'): void => {
     let newCart: UserCart = [];
 
     /* istanbul ignore else */
     if (operation === 'add') {
       const itemsNotInCart = selectedItems.filter(
-        (item: RawSearchResult) =>
-          !userCart.some((dataset) => dataset.id === item.id)
+        (item: RawSearchResult) => !userCart.some((dataset) => dataset.id === item.id)
       );
 
       newCart = [...userCart, ...itemsNotInCart];
@@ -452,9 +420,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   const handleRemoveSearchQuery = (searchUUID: string): void => {
     const deleteSuccess = (): void => {
       setUserSearchQueries(
-        userSearchQueries.filter(
-          (searchItem: UserSearchQuery) => searchItem.uuid !== searchUUID
-        )
+        userSearchQueries.filter((searchItem: UserSearchQuery) => searchItem.uuid !== searchUUID)
       );
       showNotice(messageApi, 'Removed search query from your library', {
         icon: <DeleteOutlined style={styles.messageRemoveIcon} />,
@@ -488,20 +454,6 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     });
   };
 
-  /* istanbul ignore next */
-  const generateRedirects = (): ReactElement => {
-    if (!publicUrl && previousPublicUrl) {
-      return (
-        <Route
-          path={`${previousPublicUrl}/*`}
-          element={<Navigate to="/search" />}
-        />
-      );
-    }
-
-    return <></>;
-  };
-
   return (
     <ConfigProvider
       theme={{
@@ -529,14 +481,11 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
           <Routes>
             <Route path="/" element={<Navigate to="/search" />} />
             <Route path="/cart" element={<Navigate to="/cart/items" />} />
-            {generateRedirects()}
+            <></>
             <Route
               path="/search/*"
               element={
-                <Layout.Sider
-                  style={styles.bodySider}
-                  width={styles.bodySider.width as number}
-                >
+                <Layout.Sider style={styles.bodySider} width={styles.bodySider.width as number}>
                   <Facets
                     activeSearchQuery={activeSearchQuery}
                     availableFacets={availableFacets}
@@ -552,10 +501,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
             <Route
               path="/nodes"
               element={
-                <Layout.Sider
-                  style={styles.bodySider}
-                  width={styles.bodySider.width as number}
-                >
+                <Layout.Sider style={styles.bodySider} width={styles.bodySider.width as number}>
                   <NodeSummary nodeStatus={nodeStatus} />
                 </Layout.Sider>
               }
@@ -563,10 +509,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
             <Route
               path="/cart/*"
               element={
-                <Layout.Sider
-                  style={styles.bodySider}
-                  width={styles.bodySider.width as number}
-                >
+                <Layout.Sider style={styles.bodySider} width={styles.bodySider.width as number}>
                   <Summary userCart={userCart} />
                 </Layout.Sider>
               }
@@ -594,9 +537,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
                         activeSearchQuery={activeSearchQuery}
                         userCart={userCart}
                         nodeStatus={nodeStatus}
-                        onUpdateAvailableFacets={(facets) =>
-                          setAvailableFacets(facets)
-                        }
+                        onUpdateAvailableFacets={(facets) => setAvailableFacets(facets)}
                         onUpdateCart={handleUpdateCart}
                         onRemoveFilter={handleRemoveFilter}
                         onClearFilters={handleClearFilters}
@@ -684,10 +625,9 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
                   https://www.llnl.gov/disclaimer.html
                 </a>
                 <br />
-                Learn about the Department of Energy&apos;s Vulnerability
-                Disclosure Program (VDP):{' '}
-                <a href="https://www.energy.gov/vulnerability-disclosure-policy">
-                  https://www.energy.gov/vulnerability-disclosure-policy
+                Learn about the Department of Energy&apos;s Vulnerability Disclosure Program (VDP):{' '}
+                <a href="https://doe.responsibledisclosure.com/hc/en-us">
+                  https://doe.responsibledisclosure.com/hc/en-us
                 </a>
               </p>
             </Layout.Footer>
@@ -705,18 +645,11 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
             type="primary"
             shape="circle"
             style={{ width: '48px', height: '48px' }}
-            icon={
-              <QuestionOutlined
-                style={{ fontSize: '28px', marginLeft: '-5px' }}
-              />
-            }
+            icon={<QuestionOutlined style={{ fontSize: '28px', marginLeft: '-5px' }} />}
             onClick={() => setSupportModalVisible(true)}
           ></FloatButton>
         </Affix>
-        <Support
-          open={supportModalVisible}
-          onClose={() => setSupportModalVisible(false)}
-        />
+        <Support open={supportModalVisible} onClose={() => setSupportModalVisible(false)} />
         <StartPopup />
       </div>
     </ConfigProvider>

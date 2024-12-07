@@ -5,10 +5,9 @@ import StartPopup from './StartPopup';
 import StartupMessages from './messageDisplayData';
 import { TourTitles } from '../../common/reactJoyrideSteps';
 import customRender from '../../test/custom-render';
+import { rest, server } from '../../test/mock/server';
 
 const { defaultMessageId, messageToShow } = StartupMessages;
-
-const user = userEvent.setup();
 
 let mockNavigate: () => void;
 
@@ -25,10 +24,6 @@ beforeEach(() => {
       } as Record<string, unknown>)
   );
   window.localStorage.clear();
-});
-
-afterEach(() => {
-  jest.clearAllMocks();
 });
 
 describe('Start popup tests', () => {
@@ -51,7 +46,7 @@ describe('Start popup tests', () => {
     expect(welcomeHeader).toBeTruthy();
 
     await act(async () => {
-      await user.click(searchTourBtn);
+      await userEvent.click(searchTourBtn);
     });
   });
 
@@ -66,7 +61,7 @@ describe('Start popup tests', () => {
     expect(welcomeHeader).toBeTruthy();
 
     await act(async () => {
-      await user.click(cartTourBtn);
+      await userEvent.click(cartTourBtn);
     });
   });
 
@@ -81,7 +76,7 @@ describe('Start popup tests', () => {
     expect(welcomeHeader).toBeTruthy();
 
     await act(async () => {
-      await user.click(searchesTourBtn);
+      await userEvent.click(searchesTourBtn);
     });
   });
 
@@ -96,7 +91,7 @@ describe('Start popup tests', () => {
     expect(welcomeHeader).toBeTruthy();
 
     await act(async () => {
-      await user.click(nodeTourBtn);
+      await userEvent.click(nodeTourBtn);
     });
   });
 
@@ -111,6 +106,8 @@ describe('Start popup tests', () => {
   });
 
   it('renders start popup with wrong version specified', async () => {
+    server.use(rest.get('/changelog/v*.md', (_req, res, ctx) => res(ctx.body('Some changes'))));
+
     window.localStorage.setItem('lastMessageSeen', 'test');
     customRender(<StartPopup />);
 

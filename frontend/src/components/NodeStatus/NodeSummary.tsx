@@ -20,9 +20,7 @@ export type Props = {
   nodeStatus?: NodeStatusArray;
 };
 
-const NodeSummary: React.FC<React.PropsWithChildren<Props>> = ({
-  nodeStatus,
-}) => {
+const NodeSummary: React.FC<React.PropsWithChildren<Props>> = ({ nodeStatus }) => {
   type NodeStat = number | string;
 
   let numNodes: NodeStat = 'N/A';
@@ -36,10 +34,7 @@ const NodeSummary: React.FC<React.PropsWithChildren<Props>> = ({
   }
 
   return (
-    <div
-      data-testid="summary"
-      className={nodeTourTargets.nodeStatusSummary.class()}
-    >
+    <div data-testid="summary" className={nodeTourTargets.nodeStatusSummary.class()}>
       <div style={styles.headerContainer}>
         <img style={styles.image} src={nodeImg} alt="Node" />
       </div>

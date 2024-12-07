@@ -1,0 +1,8 @@
+services:
+  keycloak:
+    command: start
+    volumes: []
+
+  react:
+    build:
+      target: prod

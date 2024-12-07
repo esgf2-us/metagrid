@@ -3,50 +3,23 @@
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
-import { cleanup } from '@testing-library/react';
+import { cleanup, configure } from '@testing-library/react';
 import { server } from './test/mock/server';
 import messageDisplayData from './components/Messaging/messageDisplayData';
 import {
   mockConfig,
-  originalEnabledNodes,
+  originalGlobusEnabledNodes,
   sessionStorageMock,
 } from './test/jestTestFunctions';
 
-jest.setTimeout(35000);
-
-// Fixes 'TypeError: Cannot read property 'addListener' of undefined.
-// https://github.com/AO19/typeError-cannot-read-property-addListener-of-undefined/commit/873ce9b730a1c21b40c9264e5f29fc2df436136b
-global.matchMedia =
-  global.matchMedia ||
-  // eslint-disable-next-line func-names
-  function () {
-    return {
-      addListener: jest.fn(),
-      removeListener: jest.fn(),
-    };
-  };
-
-// Mock the globusEnabledNodes variable to simulate configuration
-jest.mock('./env', () => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const originalModule = jest.requireActual('./env');
-
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return {
-    __esModule: true,
-    ...originalModule,
-    globusEnabledNodes: [
-      'aims3.llnl.gov',
-      'esgf-data1.llnl.gov',
-      'esgf-data2.llnl.gov',
-    ],
-  };
-});
+jest.setTimeout(1200000);
+configure({ asyncUtilTimeout: 1200000 });
 
 // Used to restore window.location after each test
 const location = JSON.stringify(window.location);
 
 Object.defineProperty(window, 'localStorage', { value: sessionStorageMock });
+Object.defineProperty(window, 'METAGRID', { value: mockConfig });
 
 beforeAll(() => {
   server.listen();
@@ -76,7 +49,7 @@ afterEach(() => {
   HTMLAnchorElement.prototype.click = jest.fn();
 
   // Reset mock values
-  mockConfig.globusEnabledNodes = originalEnabledNodes;
+  window.METAGRID.REACT_APP_GLOBUS_NODES = originalGlobusEnabledNodes;
 
   // Clear localStorage between tests
   localStorage.clear();

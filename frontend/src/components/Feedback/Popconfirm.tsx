@@ -30,12 +30,7 @@ const Popconfirm: React.FC<React.PropsWithChildren<Props>> = ({
   onConfirm,
   children,
 }) => (
-  <PopconfirmD
-    title={title}
-    icon={icon}
-    placement={placement}
-    onConfirm={onConfirm}
-  >
+  <PopconfirmD title={title} icon={icon} placement={placement} onConfirm={onConfirm}>
     {children}
   </PopconfirmD>
 );

@@ -4,11 +4,7 @@ import { MessageInstance } from 'antd/es/message/interface';
 import { message } from 'antd';
 import { rawProjectFixture } from '../test/mock/fixtures';
 import { UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
-import {
-  ActiveSearchQuery,
-  RawSearchResult,
-  RawSearchResults,
-} from '../components/Search/types';
+import { ActiveSearchQuery, RawSearchResult, RawSearchResults } from '../components/Search/types';
 import {
   combineCarts,
   formatBytes,
@@ -53,10 +49,7 @@ describe('Test splitStringByChar', () => {
     url = 'first.com|second.com';
   });
   it('returns split string if no index specified', () => {
-    expect(splitStringByChar(url, '|') as string).toEqual([
-      'first.com',
-      'second.com',
-    ]);
+    expect(splitStringByChar(url, '|') as string).toEqual(['first.com', 'second.com']);
   });
   it('returns first half of the split', () => {
     expect(splitStringByChar(url, '|', '0') as string).toEqual('first.com');
@@ -164,15 +157,11 @@ describe('Test getSearchFromUrl', () => {
     expect(getSearchFromUrl('?project=CMIP6&versionType=all')).toBeTruthy();
   });
   it('returns search object of specific result type', () => {
-    expect(
-      getSearchFromUrl('?project=CMIP6&resultType=originals+only')
-    ).toBeTruthy();
+    expect(getSearchFromUrl('?project=CMIP6&resultType=originals+only')).toBeTruthy();
   });
   it('returns search object of version date range', () => {
     expect(
-      getSearchFromUrl(
-        '?project=CMIP6&minVersionDate=20210401&maxVersionDate=20220401'
-      )
+      getSearchFromUrl('?project=CMIP6&minVersionDate=20210401&maxVersionDate=20220401')
     ).toBeTruthy();
   });
   it('returns search object containing active facets, filenames and text input', () => {
@@ -286,9 +275,7 @@ describe('Test combineCarts', () => {
     expect(combineCarts(emptySearchResults, emptySearchResults)).toEqual([]);
   });
   it('returns results without duplicates', () => {
-    expect(combineCarts(searchResults1, searchResults1)).toEqual(
-      searchResults1
-    );
+    expect(combineCarts(searchResults1, searchResults1)).toEqual(searchResults1);
   });
   it('returns combined results of 3 items (one duplicate removed)', () => {
     expect(combineCarts(searchResults1, searchResults2).length).toEqual(3);
@@ -343,18 +330,14 @@ describe('Test unsavedLocal searches', () => {
   const databaseResults: UserSearchQueries = [secondResult, thirdResult];
 
   it('returns the first result because it is not currently in database', () => {
-    expect(unsavedLocalSearches(databaseResults, localResults)).toEqual([
-      firstResult,
-    ]);
+    expect(unsavedLocalSearches(databaseResults, localResults)).toEqual([firstResult]);
   });
 });
 
 describe('Test show notices function', () => {
   // Creating a test component to render the messages and verify they're rendered
   type Props = { testFunc: (msgApi: MessageInstance) => void };
-  const TestComponent: React.FC<React.PropsWithChildren<Props>> = ({
-    testFunc,
-  }) => {
+  const TestComponent: React.FC<React.PropsWithChildren<Props>> = ({ testFunc }) => {
     const [messageApi, contextHolder] = message.useMessage();
 
     React.useEffect(() => {

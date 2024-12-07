@@ -1,21 +1,13 @@
 import { ReactKeycloakProvider } from '@react-keycloak/web';
 import { render, RenderResult } from '@testing-library/react';
-import Keycloak from 'keycloak-js';
 import React from 'react';
 import { MutableSnapshot, RecoilRoot } from 'recoil';
 import { MemoryRouter } from 'react-router-dom';
-import {
-  GlobusAuthProvider,
-  AuthContext,
-  KeycloakAuthProvider,
-} from '../contexts/AuthContext';
-import { keycloakProviderInitConfig } from '../lib/keycloak';
+import Keycloak from 'keycloak-js';
+import { GlobusAuthProvider, AuthContext, KeycloakAuthProvider } from '../contexts/AuthContext';
 import { ReactJoyrideProvider } from '../contexts/ReactJoyrideContext';
-import { authenticationMethod, publicUrl } from '../env';
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
-
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-const keycloak = new Keycloak();
+import { mockConfig } from './jestTestFunctions';
 
 /**
  * Wraps components in all implemented React Context Providers for testing using keycloak or globus
@@ -48,16 +40,42 @@ const AuthProvider = ({
     };
   }
 
-  if (authenticationMethod === 'keycloak') {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: jest.fn().mockImplementation((query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: jest.fn(), // deprecated
+      removeListener: jest.fn(), // deprecated
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    })),
+  });
+
+  Object.defineProperty(window, 'METAGRID', { value: mockConfig });
+
+  if (window.METAGRID.REACT_APP_AUTHENTICATION_METHOD === 'keycloak') {
+    // Setup Keycloak instance as needed
+    // Pass initialization options as required or leave blank to load from 'keycloak.json'
+    // Source: https://github.com/panz3r/react-keycloak/blob/master/packages/web/README.md
+    const keycloak = new Keycloak({
+      realm: window.METAGRID.REACT_APP_KEYCLOAK_REALM,
+      url: window.METAGRID.REACT_APP_KEYCLOAK_URL,
+      clientId: window.METAGRID.REACT_APP_KEYCLOAK_CLIENT_ID,
+    });
+
+    const keycloakProviderInitConfig = {
+      onLoad: 'check-sso',
+      flow: 'standard',
+    };
     return (
       <RecoilRoot initializeState={snapshotSetFunc}>
-        <ReactKeycloakProvider
-          authClient={keycloak}
-          initOptions={keycloakProviderInitConfig}
-        >
+        <ReactKeycloakProvider authClient={keycloak} initOptions={keycloakProviderInitConfig}>
           <KeycloakAuthProvider>
             <AuthContext.Provider value={authInfo}>
-              <MemoryRouter basename={publicUrl}>
+              <MemoryRouter basename={process.env.PUBLIC_URL}>
                 <ReactJoyrideProvider>{children}</ReactJoyrideProvider>
               </MemoryRouter>
             </AuthContext.Provider>
@@ -71,7 +89,7 @@ const AuthProvider = ({
     <RecoilRoot initializeState={snapshotSetFunc}>
       <GlobusAuthProvider>
         <AuthContext.Provider value={authInfo}>
-          <MemoryRouter basename={process.env.PUBLIC_URL}>
+          <MemoryRouter basename="/">
             <ReactJoyrideProvider>{children}</ReactJoyrideProvider>
           </MemoryRouter>
         </AuthContext.Provider>
@@ -88,10 +106,7 @@ const customRender = (
 ): RenderResult =>
   render(ui, {
     wrapper: () => (
-      <AuthProvider
-        authenticated={authenticated}
-        snapshotSetFunc={snapshotFunc}
-      >
+      <AuthProvider authenticated={authenticated} snapshotSetFunc={snapshotFunc}>
         {ui}
       </AuthProvider>
     ),

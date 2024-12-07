@@ -6,29 +6,33 @@
  *
  */
 import { within, screen, act } from '@testing-library/react';
-import { UserEvent } from '@testing-library/user-event/dist/types/setup/setup';
 import { message } from 'antd';
 import { ReactNode, CSSProperties } from 'react';
-import * as enviroConfig from '../env';
+import { UserEvent } from '@testing-library/user-event';
 import { NotificationType, getSearchFromUrl } from '../common/utils';
 import { RawSearchResult } from '../components/Search/types';
 import { rawSearchResultFixture } from './mock/fixtures';
+import { FrontendConfig } from '../common/types';
 
-// For mocking environment variables
-export type MockConfig = {
-  authenticationMethod: string;
-  globusEnabledNodes: string[];
-};
-
-// For mocking environment variables
 // https://www.mikeborozdin.com/post/changing-jest-mocks-between-tests
-export const mockConfig: MockConfig = enviroConfig;
-
-export const originalEnabledNodes = [
+export const originalGlobusEnabledNodes = [
   'aims3.llnl.gov',
   'esgf-data1.llnl.gov',
   'esgf-data2.llnl.gov',
 ];
+
+export const mockConfig: FrontendConfig = {
+  REACT_APP_GLOBUS_CLIENT_ID: 'frontend',
+  REACT_APP_GLOBUS_REDIRECT: 'http://localhost:8080/cart/items',
+  REACT_APP_GLOBUS_NODES: originalGlobusEnabledNodes,
+  REACT_APP_KEYCLOAK_REALM: 'esgf',
+  REACT_APP_KEYCLOAK_URL: 'http://localhost:1337',
+  REACT_APP_KEYCLOAK_CLIENT_ID: 'frontend',
+  REACT_APP_HOTJAR_ID: 1234,
+  REACT_APP_HOTJAR_SV: 1234,
+  REACT_APP_AUTHENTICATION_METHOD: 'keycloak',
+  REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID: 'UA-XXXXXXXXX-YY',
+};
 
 export const activeSearch = getSearchFromUrl();
 
@@ -146,10 +150,7 @@ export async function showNoticeStatic(
 export const globusReadyNode = 'nodeIsGlobusReady';
 export const nodeNotGlobusReady = 'nodeIsNotGlobusReady';
 
-export function makeCartItem(
-  id: string,
-  globusReady: boolean
-): RawSearchResult {
+export function makeCartItem(id: string, globusReady: boolean): RawSearchResult {
   return rawSearchResultFixture({
     id,
     title: id,
@@ -159,45 +160,13 @@ export function makeCartItem(
   });
 }
 
-/**
- * Creates the appropriate name string when performing getByRole('row')
- */
-export function getRowName(
-  cartButton: 'plus' | 'minus',
-  nodeCircleType: 'question' | 'check' | 'close',
-  title: string,
-  fileCount: string,
-  totalSize: string,
-  version: string,
-  globusReady?: boolean
-): RegExp {
-  let totalBytes = `${totalSize} Bytes`;
-  if (Number.isNaN(Number(totalSize))) {
-    totalBytes = totalSize;
-  }
-  let globusReadyCheck = mockConfig.globusEnabledNodes.length > 0 ? ' .*' : '';
-  if (globusReady !== undefined) {
-    globusReadyCheck = globusReady ? ' check-circle' : ' close-circle';
-  }
-  const newRegEx = new RegExp(
-    `right-circle ${cartButton} ${nodeCircleType}-circle ${title} ${fileCount} ${totalBytes} ${version} wget download${globusReadyCheck}`
-  );
-
-  return newRegEx;
-}
-
-export async function submitKeywordSearch(
-  inputText: string,
-  user: UserEvent
-): Promise<void> {
+export async function submitKeywordSearch(inputText: string, user: UserEvent): Promise<void> {
   // Check left menu rendered
   const leftMenuComponent = await screen.findByTestId('left-menu');
   expect(leftMenuComponent).toBeTruthy();
 
   // Type in value for free-text input
-  const freeTextForm = await screen.findByPlaceholderText(
-    'Search for a keyword'
-  );
+  const freeTextForm = await screen.findByPlaceholderText('Search for a keyword');
   expect(freeTextForm).toBeTruthy();
 
   await act(async () => {
@@ -216,31 +185,10 @@ export async function submitKeywordSearch(
   await screen.findByTestId('search');
 }
 
-export async function openDropdownList(
-  user: UserEvent,
-  dropdown: HTMLElement
-): Promise<void> {
+export async function openDropdownList(user: UserEvent, dropdown: HTMLElement): Promise<void> {
   dropdown.focus();
   await act(async () => {
     await user.keyboard('[ArrowDown]');
-  });
-}
-
-export async function selectDropdownOption(
-  user: UserEvent,
-  dropdown: HTMLElement,
-  option: string
-): Promise<void> {
-  act(() => {
-    dropdown.focus();
-  });
-
-  await act(async () => {
-    await user.keyboard('[ArrowDown]');
-  });
-  await act(async () => {
-    const opt = await screen.findByText(option);
-    await user.click(opt);
   });
 }
 
@@ -254,9 +202,7 @@ export async function addSearchRowsAndGoToCart(
   if (rows) {
     rowsToAdd = rowsToAdd.concat(rows);
   } else {
-    const defaultRow = await screen.findByRole('row', {
-      name: getRowName('plus', 'check', 'foo', '3', '1', '1', true),
-    });
+    const defaultRow = await screen.findByTestId('cart-items-row-1');
     rowsToAdd.push(defaultRow);
   }
 

@@ -58,34 +58,26 @@ function setCurrentConfig() {
 #Arg2 optional '-d' to perform service in background
 function startService() {
     echo "Starting $1"
-    cd $1
     docker compose -f docker-compose.prod.yml up --build $2
-    cd ..
 }
 
 #Arg1 name of service top stop: frontend, backend or traefik
 function stopService() {
     echo "Stopping $1"
-    cd $1
     docker compose -f docker-compose.prod.yml down --remove-orphans
-    cd ..
 }
 
 #Arg1 name of service to start: frontend, backend or traefik
 #Arg2 optional '-d' to perform service in background
 function startLocalService() {
     echo "Starting $1"
-    cd $1
     docker compose -f docker-compose.yml up --build $2
-    cd ..
 }
 
 #Arg1 name of service top stop: frontend, backend or traefik
 function stopLocalService() {
     echo "Stopping $1"
-    cd $1
     docker compose -f docker-compose.yml down --remove-orphans
-    cd ..
 }
 
 function startMetagridContainers() {
@@ -106,7 +98,7 @@ function stopMetagridContainers() {
 function toggleLocalContainers() {
     clear
     # If frontend container is up, stop all services
-    if docker ps -a --format '{{.Names}}' | grep -Eq "^react\$"; then
+    if docker ps -a --format '{{.Names}}' | grep "metagrid-react"; then
         stopLocalService frontend -d
         stopLocalService backend -d
     else

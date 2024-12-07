@@ -26,9 +26,7 @@ it('renders LeftMenu and RightMenu components', async () => {
 });
 
 it('renders error message when projects can"t be fetched', async () => {
-  server.use(
-    rest.get(apiRoutes.projects.path, (_req, res, ctx) => res(ctx.status(404)))
-  );
+  server.use(rest.get(apiRoutes.projects.path, (_req, res, ctx) => res(ctx.status(404))));
   customRender(<NavBar {...defaultProps} />);
 
   const alertComponent = await screen.findByRole('img', {

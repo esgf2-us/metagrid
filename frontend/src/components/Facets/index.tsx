@@ -6,12 +6,7 @@ import { leftSidebarTargets } from '../../common/reactJoyrideSteps';
 import { objectIsEmpty } from '../../common/utils';
 import Divider from '../General/Divider';
 import { NodeStatusArray } from '../NodeStatus/types';
-import {
-  ActiveSearchQuery,
-  ResultType,
-  VersionDate,
-  VersionType,
-} from '../Search/types';
+import { ActiveSearchQuery, ResultType, VersionDate, VersionType } from '../Search/types';
 import FacetsForm from './FacetsForm';
 import ProjectForm from './ProjectForm';
 import { ActiveFacets, ParsedFacets, RawProject } from './types';

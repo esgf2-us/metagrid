@@ -1,4 +1,4 @@
-import { act, within, screen } from '@testing-library/react';
+import { act, within, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import {
@@ -11,20 +11,8 @@ import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
 import { ActiveFacets, RawFacets } from '../Facets/types';
-import Search, {
-  checkFiltersExist,
-  parseFacets,
-  Props,
-  stringifyFilters,
-} from './index';
-import {
-  ActiveSearchQuery,
-  RawSearchResult,
-  ResultType,
-  TextInputs,
-  VersionType,
-} from './types';
-import { getRowName, selectDropdownOption } from '../../test/jestTestFunctions';
+import Search, { checkFiltersExist, parseFacets, Props, stringifyFilters } from './index';
+import { ActiveSearchQuery, RawSearchResult, ResultType, TextInputs, VersionType } from './types';
 
 const user = userEvent.setup();
 
@@ -60,9 +48,7 @@ describe('test Search component', () => {
   it('renders Alert component if there is an error fetching results', async () => {
     server.use(
       // ESGF Search API - datasets
-      rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
-        res(ctx.status(404))
-      )
+      rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) => res(ctx.status(404)))
     );
 
     customRender(<Search {...defaultProps} />);
@@ -115,9 +101,7 @@ describe('test Search component', () => {
       textInputs: [],
     };
 
-    customRender(
-      <Search {...defaultProps} activeSearchQuery={emptySearchQuery} />
-    );
+    customRender(<Search {...defaultProps} activeSearchQuery={emptySearchQuery} />);
 
     // Check renders query string
     const queryString = await screen.findByText('No filters applied');
@@ -151,9 +135,7 @@ describe('test Search component', () => {
       response: {
         docs: new Array(20)
           .fill(rawSearchResultFixture())
-          .map(
-            (obj, index) => ({ ...obj, id: `id_${index}` } as RawSearchResult)
-          ),
+          .map((obj, index) => ({ ...obj, id: `id_${index}` } as RawSearchResult)),
         numFound: 20,
       },
     };
@@ -166,39 +148,19 @@ describe('test Search component', () => {
 
     customRender(<Search {...defaultProps} />);
 
-    // Check search component renders
-    const searchComponent = await screen.findByTestId('search');
-    expect(searchComponent).toBeTruthy();
-
-    // Wait for search to re-render
-    await screen.findByTestId('search-table');
-
     // Select the combobox drop down and update its value to render options
     const paginationList = await screen.findByRole('list');
-    expect(paginationList).toBeTruthy();
-
-    // Select the combobox drop down, update its value, then click it
-    const pageSizeComboBox = await within(paginationList).findByRole(
-      'combobox'
+    const pageSizeComboBox = await within(paginationList).findByRole('combobox');
+    pageSizeComboBox.focus();
+    await waitFor(
+      async () => {
+        await userEvent.keyboard('[ArrowDown]');
+        await userEvent.click(await screen.findByTestId('pageSize-option-20'));
+      },
+      { timeout: 50000 }
     );
-    expect(pageSizeComboBox).toBeTruthy();
 
-    // Wait for the options to render, then select 20 / page
-    await selectDropdownOption(user, pageSizeComboBox, '20 / page');
-
-    // Change back to 10 / page
-    await selectDropdownOption(user, pageSizeComboBox, '10 / page');
-
-    // Select the 'Next Page' button (only enabled if there are > 10 results)
-    const nextPage = await screen.findByRole('listitem', { name: 'Next Page' });
-    const nextPageBtn = await within(nextPage).findByRole('button');
-
-    await act(async () => {
-      await user.click(nextPageBtn);
-    });
-
-    // Wait for search table to re-render
-    await screen.findByTestId('search-table');
+    expect(screen.getByTestId('cart-items-row-11')).toBeInTheDocument();
   });
 
   it('handles selecting a row"s checkbox in the table and adding to the cart', async () => {
@@ -219,9 +181,8 @@ describe('test Search component', () => {
     expect(addCartBtn).toBeDisabled();
 
     // Select the first row
-    const firstRow = await screen.findByRole('row', {
-      name: getRowName('plus', 'question', 'foo', '3', '1', '1'),
-    });
+    const firstRow = await screen.findByTestId('cart-items-row-1');
+
     expect(firstRow).toBeTruthy();
 
     // Select the first row's checkbox

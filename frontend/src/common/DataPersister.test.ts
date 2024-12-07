@@ -1,8 +1,4 @@
-import {
-  mockFunction,
-  tempStorageGetMock,
-  tempStorageSetMock,
-} from '../test/jestTestFunctions';
+import { mockFunction, tempStorageGetMock, tempStorageSetMock } from '../test/jestTestFunctions';
 import { DataPersister } from './DataPersister';
 
 const mockLoadValue = mockFunction((key: unknown) => {

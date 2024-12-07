@@ -6,11 +6,7 @@ import React from 'react';
 import customRender from '../../test/custom-render';
 import Support from '../Support';
 import RightMenu, { Props } from './RightMenu';
-import {
-  mockConfig,
-  mockKeycloakToken,
-  tempStorageSetMock,
-} from '../../test/jestTestFunctions';
+import { mockConfig, mockKeycloakToken, tempStorageSetMock } from '../../test/jestTestFunctions';
 
 const user = userEvent.setup();
 
@@ -55,7 +51,7 @@ it('sets the active menu item based on the location pathname', async () => {
 });
 
 it('display the users given name after authentication with keycloak', async () => {
-  mockConfig.authenticationMethod = 'keycloak';
+  mockConfig.REACT_APP_AUTHENTICATION_METHOD = 'keycloak';
 
   tempStorageSetMock('keycloakFixture', {
     keycloak: {
@@ -77,7 +73,7 @@ it('display the users given name after authentication with keycloak', async () =
 });
 
 it('display the users email after authentication if they did not provide a name in keycloak', async () => {
-  mockConfig.authenticationMethod = 'keycloak';
+  mockConfig.REACT_APP_AUTHENTICATION_METHOD = 'keycloak';
 
   tempStorageSetMock('keycloakFixture', {
     keycloak: {

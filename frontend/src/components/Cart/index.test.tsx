@@ -1,10 +1,7 @@
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { act, screen } from '@testing-library/react';
-import {
-  userCartFixture,
-  userSearchQueriesFixture,
-} from '../../test/mock/fixtures';
+import { userCartFixture, userSearchQueriesFixture } from '../../test/mock/fixtures';
 import Cart, { Props } from './index';
 import customRender from '../../test/custom-render';
 

@@ -2,10 +2,7 @@ import React from 'react';
 import { act, fireEvent, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ResponseError } from '../../api';
-import {
-  activeSearchQueryFixture,
-  projectsFixture,
-} from '../../test/mock/fixtures';
+import { activeSearchQueryFixture, projectsFixture } from '../../test/mock/fixtures';
 import { mapHTTPErrorCodes } from '../../api/routes';
 import ProjectsForm, { Props } from './ProjectForm';
 import customRender from '../../test/custom-render';
@@ -69,9 +66,7 @@ it('renders error message when projects can"t be fetched', async () => {
   customRender(
     <ProjectsForm
       {...defaultProps}
-      apiError={
-        new Error(mapHTTPErrorCodes('service', 'generic')) as ResponseError
-      }
+      apiError={new Error(mapHTTPErrorCodes('service', 'generic')) as ResponseError}
     />
   );
 

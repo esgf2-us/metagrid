@@ -1,4 +1,4 @@
-FROM python:3.9-slim-buster
+FROM python:3-slim
 
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -19,8 +19,8 @@ COPY requirements.txt requirements.txt
 # All imports needed for autodoc.
 RUN pip install -r requirements.txt
 
-COPY start /start-docs
-RUN sed -i 's/\r$//g' /start-docs
-RUN chmod +x /start-docs
-
 WORKDIR /docs
+COPY . .
+RUN mkdocs build --strict
+
+CMD [ "mkdocs", "serve" ]

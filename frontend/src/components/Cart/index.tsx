@@ -83,12 +83,7 @@ const Cart: React.FC<React.PropsWithChildren<Props>> = ({
 
   return (
     <div data-testid="cart">
-      <Tabs
-        activeKey={activeTab}
-        animated={false}
-        onTabClick={handleTabClick}
-        items={tabItems}
-      />
+      <Tabs activeKey={activeTab} animated={false} onTabClick={handleTabClick} items={tabItems} />
     </div>
   );
 };

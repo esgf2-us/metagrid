@@ -49,19 +49,14 @@ const NodeStatus: React.FC<React.PropsWithChildren<Props>> = ({
 
     const columns = [
       {
-        title: (
-          <div className={nodeTourTargets.nodeColHeader.class()}>Node</div>
-        ),
+        title: <div className={nodeTourTargets.nodeColHeader.class()}>Node</div>,
         dataIndex: 'name',
         align: 'center' as const,
         sortDirections: ['descend'] as SortOrder[],
-        sorter: (a: NodeStatusElement, b: NodeStatusElement) =>
-          a.name.localeCompare(b.name),
+        sorter: (a: NodeStatusElement, b: NodeStatusElement) => a.name.localeCompare(b.name),
       },
       {
-        title: (
-          <div className={nodeTourTargets.onlineColHeader.class()}>Online</div>
-        ),
+        title: <div className={nodeTourTargets.onlineColHeader.class()}>Online</div>,
         dataIndex: 'isOnline',
         align: 'center' as const,
         width: 50,
@@ -100,23 +95,16 @@ const NodeStatus: React.FC<React.PropsWithChildren<Props>> = ({
         <TableD
           title={() => (
             <div style={styles.headerContainer}>
-              <h1 className={nodeTourTargets.updateTime.class()}>
-                Status as of {timestamp}
-              </h1>
+              <h1 className={nodeTourTargets.updateTime.class()}>Status as of {timestamp}</h1>
               <p>
-                The status is automatically refreshed every five minutes. You
-                can also manually refresh your browser for the latest update.
+                The status is automatically refreshed every five minutes. You can also manually
+                refresh your browser for the latest update.
               </p>
-              <p>
-                If you are attempting to download data hosted on an offline
-                server, you can:
-              </p>
+              <p>If you are attempting to download data hosted on an offline server, you can:</p>
               <ol>
                 <li>Try to find a replica dataset</li>
                 <li>Wait until the node is back online</li>
-                <li>
-                  Contact support if the node is offline for more than a day
-                </li>
+                <li>Contact support if the node is offline for more than a day</li>
               </ol>
             </div>
           )}

@@ -5,7 +5,7 @@ import { mockConfig } from '../test/jestTestFunctions';
 
 describe('test AuthProvider', () => {
   it('renders using keycloak provider', async () => {
-    mockConfig.authenticationMethod = 'keycloak';
+    mockConfig.REACT_APP_AUTHENTICATION_METHOD = 'keycloak';
 
     jest.useFakeTimers();
 
@@ -34,7 +34,7 @@ describe('test AuthProvider', () => {
   });
 
   it('renders using globus auth provider', async () => {
-    mockConfig.authenticationMethod = 'globus';
+    mockConfig.REACT_APP_AUTHENTICATION_METHOD = 'globus';
 
     jest.useFakeTimers();
 

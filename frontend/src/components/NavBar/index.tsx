@@ -68,11 +68,7 @@ const NavBar: React.FC<React.PropsWithChildren<Props>> = ({
             supportModalVisible={supportModalVisible}
           ></RightMenu>
         </div>
-        <Button
-          className="navbar-mobile-button"
-          type="default"
-          onClick={() => setShowDrawer(true)}
-        >
+        <Button className="navbar-mobile-button" type="default" onClick={() => setShowDrawer(true)}>
           <MenuUnfoldOutlined />
         </Button>
         <Drawer

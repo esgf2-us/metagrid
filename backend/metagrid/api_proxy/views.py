@@ -9,6 +9,7 @@ from django.http import (
     HttpResponse,
     HttpResponseBadRequest,
     HttpResponseServerError,
+    JsonResponse,
 )
 from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
@@ -325,3 +326,7 @@ def set_temp_storage(request):
         )
 
     return HttpResponse(json.dumps(response))
+
+
+def get_frontend_config(_) -> JsonResponse:
+    return JsonResponse(settings.FRONTEND_SETTINGS)

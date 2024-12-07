@@ -51,11 +51,7 @@ it('renders component and handles button clicks', async () => {
 });
 
 it('displays alert error when api fails to return response', async () => {
-  server.use(
-    rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
-      res(ctx.status(404))
-    )
-  );
+  server.use(rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) => res(ctx.status(404))));
 
   customRender(<SearchesCard {...defaultProps} />);
 
@@ -72,7 +68,6 @@ it('displays "N/A" for Filename Searches when none are applied', async () => {
     />
   );
   // Shows number of files
-  const filenameSearchesField = (await screen.findByText('Filename Searches:'))
-    .parentNode;
+  const filenameSearchesField = (await screen.findByText('Filename Searches:')).parentNode;
   expect(filenameSearchesField?.textContent).toEqual('Filename Searches: N/A');
 });
