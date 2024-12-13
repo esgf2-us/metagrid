@@ -10,9 +10,14 @@ services:
       - local_postgres_data:/var/lib/postgresql/data
       - local_postgres_data_backups:/local_postgres_data_backups
     environment:
-      - PGHOST=${PGHOST:-localhost}
-      - PGPASSWORD=${PGPASSWORD:-postgres}
-      - PGUSER=${PGUSER:-postgres}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - PGHOST=postgres
+      - PGPASSWORD=postgres
+      - PGUSER=postgres
     ports:
       - 5432:5432
     healthcheck:
@@ -55,15 +60,6 @@ services:
     ports:
       - 8080:8080
 
-  keycloak:
-    image: quay.io/keycloak/keycloak:23.0.6
-    depends_on:
-      - react
-    command: start-dev --import-realm
-    volumes:
-      - ./keycloak/realm.json:/opt/keycloak/data/import/realm.json
-    ports:
-      - 1337:8080
 
   docs:
     build: docs
