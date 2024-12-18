@@ -15,7 +15,8 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "sourceMap": true
   },
-  "include": ["src", "src/test/__mocks__/js-pkce.ts"]
+  "include": ["src", "src/test/__mocks__/js-pkce.ts", "vite.config.js", ".eslintrc.js"]
 }

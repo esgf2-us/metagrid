@@ -4,8 +4,6 @@ import React from 'react';
 import Popconfirm from './Popconfirm';
 import customRender from '../../test/custom-render';
 
-const user = userEvent.setup();
-
 it('renders component with default exclamation circle', async () => {
   customRender(
     <Popconfirm onConfirm={jest.fn}>
@@ -18,7 +16,7 @@ it('renders component with default exclamation circle', async () => {
   expect(text).toBeTruthy();
 
   await act(async () => {
-    await user.click(text);
+    await userEvent.click(text);
   });
 
   //   Check icon defaults to exclamation circle

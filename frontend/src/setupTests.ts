@@ -3,7 +3,7 @@
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
-import { cleanup, configure } from '@testing-library/react';
+import { cleanup } from '@testing-library/react';
 import { server } from './test/mock/server';
 import messageDisplayData from './components/Messaging/messageDisplayData';
 import {
@@ -12,8 +12,7 @@ import {
   sessionStorageMock,
 } from './test/jestTestFunctions';
 
-jest.setTimeout(1200000);
-configure({ asyncUtilTimeout: 1200000 });
+jest.setTimeout(60000);
 
 // Used to restore window.location after each test
 const location = JSON.stringify(window.location);

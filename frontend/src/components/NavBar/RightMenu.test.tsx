@@ -94,7 +94,27 @@ it('display the users email after authentication if they did not provide a name 
   expect(greeting).toBeTruthy();
 });
 
-it('displays sign in button when user hasn"t logged in', async () => {
+it("displays sign in button when user hasn't logged in via keycloak", async () => {
+  mockConfig.REACT_APP_AUTHENTICATION_METHOD = 'keycloak';
+
+  customRender(<RightMenu {...rightMenuProps} />);
+
+  // Check applicable components render
+  const rightMenuComponent = await screen.findByTestId('right-menu');
+  expect(rightMenuComponent).toBeTruthy();
+
+  // Click the sign in button
+  const signInBtn = await screen.findByRole('img', { name: 'user' });
+  expect(signInBtn).toBeTruthy();
+
+  await act(async () => {
+    await user.click(signInBtn);
+  });
+});
+
+it("displays sign in button when user hasn't logged in via globus", async () => {
+  mockConfig.REACT_APP_AUTHENTICATION_METHOD = 'globus';
+
   customRender(<RightMenu {...rightMenuProps} />);
 
   // Check applicable components render
