@@ -187,8 +187,7 @@ export const getUrlFromSearch = (search: ActiveSearchQuery): string => {
     // Convert array values to string if they are of size 1
     Object.keys(search.activeFacets).forEach((key) => {
       if ((newSearch.activeFacets[key] as string[]).length === 1) {
-        // eslint-disable-next-line
-        newSearch.activeFacets[key] = (search.activeFacets[key] as string[])[0];
+        [newSearch.activeFacets[key]] = search.activeFacets[key] as string[];
       }
     });
     params.set('activeFacets', JSON.stringify(newSearch.activeFacets));
@@ -214,15 +213,14 @@ export const getAltSearchFromUrl = (url?: string): ActiveSearchQuery => {
   };
 
   const params = new URLSearchParams(url || window.location.search);
-  // eslint-disable-next-line
+
   const paramEntries: { [k: string]: string } = Object.fromEntries(params.entries());
-  // eslint-disable-next-line
+
   const activeFacets: { [k: string]: string[] } = {};
   Object.keys(paramEntries).forEach((key: string) => {
     activeFacets[key] = [paramEntries[key]];
   });
 
-  // eslint-disable-next-line
   const projName = (url || window.location.pathname).split('/').filter(Boolean).at(-1);
 
   if (projName) {
@@ -277,7 +275,6 @@ export const getSearchFromUrl = (url?: string): ActiveSearchQuery => {
       // Convert string values to array
       Object.keys(searchQuery.activeFacets).forEach((key) => {
         if (!Array.isArray(searchQuery.activeFacets[key])) {
-          // eslint-disable-next-line
           searchQuery.activeFacets[key] = [searchQuery.activeFacets[key]] as string[];
         }
       });

@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 import { SetterOrUpdater } from 'recoil';
 import { loadSessionValue, saveSessionValue } from '../api';
 
@@ -10,25 +9,25 @@ export type PersistData<T> = {
 };
 
 export class DataPersister {
-  private static _instance: DataPersister;
+  private static instance: DataPersister;
 
-  private _PERSISTENT_STORE: {
+  private PERSISTENT_STORE: {
     [key: string]: PersistData<unknown>;
   } = {};
 
   private constructor() {
-    this._PERSISTENT_STORE = {};
+    this.PERSISTENT_STORE = {};
   }
 
   public static get Instance(): DataPersister {
-    if (!this._instance) {
-      this._instance = new this();
+    if (!this.instance) {
+      this.instance = new this();
     }
-    return this._instance;
+    return this.instance;
   }
 
   initializeDataStore(dataStore: { [key: string]: PersistData<unknown> }): void {
-    this._PERSISTENT_STORE = dataStore;
+    this.PERSISTENT_STORE = dataStore;
   }
 
   addNewVar<T>(
@@ -37,7 +36,7 @@ export class DataPersister {
     setterFunc: SetterOrUpdater<T> | ((val: T) => void),
     loaderFunc?: () => Promise<T>
   ): void {
-    if (Object.hasOwn(this._PERSISTENT_STORE, varKey)) {
+    if (Object.hasOwn(this.PERSISTENT_STORE, varKey)) {
       return;
     }
 
@@ -49,52 +48,52 @@ export class DataPersister {
         val = await loadSessionValue<T>(varKey);
       }
 
-      this._PERSISTENT_STORE[varKey].value = val || defaultVal;
+      this.PERSISTENT_STORE[varKey].value = val || defaultVal;
       setterFunc(val || defaultVal);
 
       return val || defaultVal;
     };
 
     const saver = async (): Promise<void> => {
-      await saveSessionValue<T>(varKey, this._PERSISTENT_STORE[varKey].value as T);
+      await saveSessionValue<T>(varKey, this.PERSISTENT_STORE[varKey].value as T);
     };
 
     const setter = (val: T): void => {
-      this._PERSISTENT_STORE[varKey].value = val;
+      this.PERSISTENT_STORE[varKey].value = val;
       setterFunc(val);
     };
 
     const newVar = { loader, saver, setter, value: defaultVal };
-    this._PERSISTENT_STORE[varKey] = newVar as PersistData<unknown>;
+    this.PERSISTENT_STORE[varKey] = newVar as PersistData<unknown>;
   }
 
   getValue<T>(varKey: string): T | null {
-    if (this._PERSISTENT_STORE[varKey]) {
-      return this._PERSISTENT_STORE[varKey].value as T;
+    if (this.PERSISTENT_STORE[varKey]) {
+      return this.PERSISTENT_STORE[varKey].value as T;
     }
     return null;
   }
 
   async loadValue<T>(varKey: string): Promise<T | null> {
-    if (this._PERSISTENT_STORE[varKey]) {
-      return this._PERSISTENT_STORE[varKey].loader() as Promise<T>;
+    if (this.PERSISTENT_STORE[varKey]) {
+      return this.PERSISTENT_STORE[varKey].loader() as Promise<T>;
     }
     return null;
   }
 
   async setValue<T>(varKey: string, value: T, save: boolean): Promise<void> {
-    if (this._PERSISTENT_STORE[varKey]) {
-      this._PERSISTENT_STORE[varKey].setter(value);
+    if (this.PERSISTENT_STORE[varKey]) {
+      this.PERSISTENT_STORE[varKey].setter(value);
 
       if (save) {
-        await this._PERSISTENT_STORE[varKey].saver();
+        await this.PERSISTENT_STORE[varKey].saver();
       }
     }
   }
 
   async loadAllValues(): Promise<void> {
     const loadFuncs: Promise<unknown>[] = [];
-    Object.values(this._PERSISTENT_STORE).forEach((persistVar) => {
+    Object.values(this.PERSISTENT_STORE).forEach((persistVar) => {
       loadFuncs.push(persistVar.loader());
     });
 
@@ -103,7 +102,7 @@ export class DataPersister {
 
   async saveAllValues(): Promise<void> {
     const saveFuncs: Promise<void>[] = [];
-    Object.values(this._PERSISTENT_STORE).forEach((persistVar) => {
+    Object.values(this.PERSISTENT_STORE).forEach((persistVar) => {
       saveFuncs.push(persistVar.saver());
     });
 
