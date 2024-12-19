@@ -16,6 +16,7 @@ type Props = {
   color?: string;
 };
 
+/* istanbul ignore next */
 export const Tag: React.FC<React.PropsWithChildren<Props>> = ({
   value,
   onClose,

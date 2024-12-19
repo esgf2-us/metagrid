@@ -26,7 +26,9 @@ import {
 } from '../../test/mock/fixtures';
 import apiRoutes from '../../api/routes';
 import DatasetDownloadForm, { GlobusGoals } from './DatasetDownload';
+import getGlobusTransferToken from './utils';
 import { DataPersister } from '../../common/DataPersister';
+import { saveSessionValue } from '../../api';
 
 const activeSearch: ActiveSearchQuery = getSearchFromUrl('project=test1');
 
@@ -244,6 +246,37 @@ describe('DatasetDownload form tests', () => {
     const notice = await screen.findByText('Wget script downloaded successfully!', {
       exact: false,
     });
+    expect(notice).toBeTruthy();
+  });
+
+  it('displays an error when wget script fails to fetch', async () => {
+    await initializeComponentForTest();
+    server.use(rest.post(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404))));
+
+    // Open download dropdown
+    const globusTransferDropdown = await within(
+      await screen.findByTestId('downloadTypeSelector')
+    ).findByRole('combobox');
+
+    await openDropdownList(user, globusTransferDropdown);
+
+    // Select wget
+    const wgetOption = (await screen.findAllByText(/wget/i))[1];
+    expect(wgetOption).toBeTruthy();
+    await act(async () => {
+      await user.click(wgetOption);
+    });
+
+    // Start wget download
+    const downloadBtn = await screen.findByTestId('downloadDatasetBtn');
+    expect(downloadBtn).toBeTruthy();
+
+    await act(async () => {
+      await user.click(downloadBtn);
+    });
+
+    // Expect error message to show
+    const notice = await screen.findByText('Wget Script Error');
     expect(notice).toBeTruthy();
   });
 
@@ -566,6 +599,26 @@ describe('DatasetDownload form tests', () => {
     expect(globusTransferPopup).toBeTruthy();
   });
 
+  it('displays an error when Globus Transfer submission fails', async () => {
+    server.use(rest.post(apiRoutes.globusTransfer.path, (_req, res, ctx) => res(ctx.status(404))));
+
+    await initializeComponentForTest();
+
+    // Click Transfer button
+    const globusTransferBtn = await screen.findByRole('button', {
+      name: /download transfer/i,
+    });
+    expect(globusTransferBtn).toBeTruthy();
+    await act(async () => {
+      await user.click(globusTransferBtn);
+    });
+
+    const globusTransferPopup = await screen.findByText(
+      'Globus transfer task failed. Resetting tokens.'
+    );
+    expect(globusTransferPopup).toBeTruthy();
+  });
+
   it('If endpoint URL is available, process it and continue with sign-in', async () => {
     await initializeComponentForTest({
       ...defaultTestConfig,
@@ -812,6 +865,28 @@ describe('DatasetDownload form tests', () => {
 
     // The last task should have been popped, and first should be 2nd
     expect(taskItemsNow[1].innerHTML).toEqual('Submitted: 11/30/2023, 3:10:00 PM');
+  });
+
+  it('shows the Manage Collections tour', async () => {
+    customRender(<DatasetDownloadForm />);
+    // Open download dropdown
+    const collectionDropdown = await screen.findByTestId('searchCollectionInput');
+    const selectEndpoint = await within(collectionDropdown).findByRole('combobox');
+    await openDropdownList(user, selectEndpoint);
+
+    // Select manage collections
+    const manageEndpointsBtn = await screen.findByText('Manage Collections');
+    expect(manageEndpointsBtn).toBeTruthy();
+    await act(async () => {
+      await user.click(manageEndpointsBtn);
+    });
+    const collectionsModal = await screen.findByTestId('manageCollectionsForm');
+    const tourBtn = await within(collectionsModal).findByRole('img', { name: 'question' });
+    await act(async () => {
+      await user.click(tourBtn);
+    });
+    const tourModal = await screen.findByRole('heading', { name: 'Manage My Collections Tour' });
+    expect(tourModal).toBeInTheDocument();
   });
 });
 
@@ -1112,7 +1187,7 @@ xdescribe('Testing globus transfer related failures', () => {
 
     // Check 'Globus transfer task failed' message appears
     const taskMsg = await waitFor(() =>
-      screen.getByText('Globus transfer task failed', {
+      screen.getByText('Please contact ESGF support', {
         exact: false,
       })
     );
@@ -1253,5 +1328,36 @@ xdescribe('Testing wget transfer related failures', () => {
         })
       ).toBeTruthy()
     );
+  });
+});
+
+describe('getGlobusTransferToken function', () => {
+  const validToken = {
+    id_token: '',
+    resource_server: '',
+    other_tokens: { refresh_token: 'something', transfer_token: 'something' },
+    created_on: Math.floor(Date.now() / 1000),
+    expires_in: Math.floor(Date.now() / 1000) + 100,
+    access_token: '',
+    refresh_expires_in: 0,
+    refresh_token: 'something',
+    scope: 'openid profile email offline_access urn:globus:auth:scope:transfer.api.globus.org:all',
+    token_type: '',
+  };
+
+  it('should return token when valid', async () => {
+    await saveSessionValue(GlobusStateKeys.transferToken, validToken);
+    expect(await getGlobusTransferToken()).toBe(validToken);
+  });
+
+  it('should return null when token is expired', async () => {
+    const expiredToken = { ...validToken, expires_in: -1 };
+    await saveSessionValue(GlobusStateKeys.transferToken, expiredToken);
+    expect(await getGlobusTransferToken()).toBe(null);
+  });
+
+  it('should return null when no token is set', async () => {
+    await saveSessionValue(GlobusStateKeys.transferToken, null);
+    expect(await getGlobusTransferToken()).toBe(null);
   });
 });

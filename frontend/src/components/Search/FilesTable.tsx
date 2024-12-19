@@ -1,4 +1,3 @@
-/* eslint-disable no-void */
 import {
   CopyOutlined,
   DownCircleOutlined,
@@ -254,7 +253,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
                       onClick={() => {
                         /* istanbul ignore next */
                         if (navigator && navigator.clipboard) {
-                          void navigator.clipboard
+                          navigator.clipboard
                             .writeText(downloadUrls.OPENDAP)
                             .catch((e: PromiseRejectedResult) => {
                               showError(messageApi, e.reason as string);
