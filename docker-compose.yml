@@ -1,27 +1,37 @@
+networks:
+  metagrid:
+    ipam:
+      config:
+        - subnet: 10.89.9.0/24
+
 volumes:
   local_postgres_data: {}
   local_postgres_data_backups: {}
 
 services:
   postgres:
+    # This service uses the production Postgres Dockerfile as a base
+    # Some tweaks are applied to support the Keycloak service, including the init.sql script
     build: postgres
     image: metagrid_local_postgres
     volumes:
       - local_postgres_data:/var/lib/postgresql/data
       - local_postgres_data_backups:/local_postgres_data_backups
-    environment:
-      # This allows any service on localhost to connect to the database as
-      # the postgres user without authentication. This is fine for development
-      # as long as we unset it in production to enforce authentication again.
-      POSTGRES_HOST_AUTH_METHOD: ${POSTGRES_HOST_AUTH_METHOD:-trust}
+    env_file:
+      - ./metagrid_configs/.local_config
     ports:
       - 5432:5432
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "postgres"]
+      test: [ "CMD", "pg_isready", "-U", "postgres", "-d", "postgres" ]
       start_period: 5s
       interval: 5s
       timeout: 2s
       retries: 6
+    networks:
+      metagrid:
+        ipv4_address: 10.89.9.81
+        aliases:
+          - postgres
 
   django:
     build: backend
@@ -30,43 +40,29 @@ services:
       postgres:
         condition: service_healthy
     volumes:
-      # Mount in the source files so that they can be edited and reloaded
-      # from outside the container during development.
       - ./backend:/app
+    env_file:
+      - ./metagrid_configs/.local_config
     ports:
       - 5000:5000
-    # Required for React and Django to communicate using podman compose rootless.
-    # Is this necessary using docker compose?
-    network_mode: host
-    environment:
-      # The Django SQLAlchemy postgres uri is minimal which allows using standard
-      # libpq environment variables to configure the connection.
-      # Ref: https://www.postgresql.org/docs/current/libpq-envars.html
-      PGHOST: ${PGHOST:-localhost}
-      PGPASSWORD: ${PGPASSWORD:-postgres}
-      PGUSER: ${PGUSER:-postgres}
-    env_file:
-      - .env
+    networks:
+      metagrid:
+        ipv4_address: 10.89.9.82
+        aliases:
+          - django
 
   react:
     build:
       context: frontend
-      # Stop at the "build" stage before the production server is added
-      # so we can use the Vite dev server during development
       target: build
     image: metagrid_local_react
     environment:
-      # Tell the development server to run on the same port as in production
       - PORT=8080
     depends_on:
       - django
-    volumes:
-      # Mount in the source files so that they can be edited and reloaded
-      # from outside the container during development.
-      - ./frontend:/app
-    # Required for React and Django to communicate using podman compose rootless.
-    # Is this necessary using docker compose?
-    network_mode: host
+    networks:
+      metagrid:
+        ipv4_address: 10.89.9.83
     ports:
       - 8080:8080
 
@@ -79,13 +75,14 @@ services:
       - ./keycloak/realm.json:/opt/keycloak/data/import/realm.json
     ports:
       - 1337:8080
+    networks:
+      metagrid:
+        ipv4_address: 10.89.9.84
 
   docs:
     build: docs
     image: metagrid_local_docs
     volumes:
-      # Mount in the source files so that they can be edited and reloaded
-      # from outside the container during development.
       - ./docs:/docs
     ports:
       - "8001:8001"
