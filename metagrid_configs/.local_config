@@ -1,0 +1,71 @@
+# =====================POSTGRES CONFIG===================
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+POSTGRES_DB=postgres
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+PGHOST=postgres
+PGPASSWORD=postgres
+PGUSER=postgres
+
+# =====================BACKEND CONFIG====================
+
+# Domain
+DOMAIN_NAME=http://localhost:8080
+DOMAIN_SUBDIRECTORY=""
+
+# Django
+DJANGO_SECRET_KEY=7LynCTKfcjH6p2Nz77YM9XzSnTSvpPVUNz4bHEScGJ6flWcOslxGNMdAhsDioJFJ
+DJANGO_LOGIN_REDIRECT_URL=http://localhost:8080/search
+DJANGO_LOGOUT_REDIRECT_URL=http://localhost:8080/search
+
+# CORS Settings
+CORS_ALLOW_CREDENTIALS=True
+CORS_ALLOWED_ORIGINS=http://localhost:8080,http://localhost:1337
+CORS_ORIGIN_WHITELIST=http://localhost:8080,http://localhost:1337
+CSRF_TRUSTED_ORIGINS=http://localhost:8080,http://localhost:1337
+
+# ESGF Search API
+REACT_APP_SEARCH_URL=https://esgf-node.llnl.gov/esg-search/search
+
+# ESGF Solr URL
+REACT_APP_ESGF_SOLR_URL=https://esgf-node.llnl.gov/solr
+
+# ESGF wget API
+REACT_APP_WGET_API_URL=https://esgf-node.llnl.gov/esg-search/wget
+
+# ESGF Node Status API
+REACT_APP_ESGF_NODE_STATUS_URL=https://aims2.llnl.gov/metagrid-backend/proxy/status
+
+# Keycloak Auth
+KEYCLOAK_URL=https://esgf-login.ceda.ac.uk/
+KEYCLOAK_REALM=esgf
+KEYCLOAK_CLIENT_ID=metagrid-localhost
+
+# Globus Auth
+GLOBUS_CLIENT_KEY=d09a7432-d475-41be-9dda-0006d6a69fac
+GLOBUS_CLIENT_SECRET=UL9/CclKBDXqYnv0vV2ZQRjL/lns7wOtkFV2rFCBtUs=
+
+# =====================FRONTEND CONFIG====================
+
+# Redirect the frontend to home page when old subdirectory is used (optional)
+REACT_APP_PREVIOUS_URL=metagrid
+
+# Authentication Method
+REACT_APP_AUTHENTICATION_METHOD=globus
+
+# Globus
+# ------------------------------------------------------------------------------
+REACT_APP_GLOBUS_REDIRECT=http://localhost:8080/cart/items
+REACT_APP_GLOBUS_CLIENT_ID=8286db4d-269e-4c68-88a1-2af9a20f7f09
+REACT_APP_GLOBUS_NODES=aims3.llnl.gov,esgf-data1.llnl.gov,esgf-data2.llnl.gov
+
+# Keycloak
+REACT_APP_KEYCLOAK_REALM=esgf
+REACT_APP_KEYCLOAK_URL=http://localhost:1337
+REACT_APP_KEYCLOAK_CLIENT_ID=frontend
+
+# Temporary fix to remove Keycloak sourcemap error
+# ------------------------------------------------------------------------------
+# https://github.com/react-keycloak/react-keycloak/issues/176
+GENERATE_SOURCEMAP=false

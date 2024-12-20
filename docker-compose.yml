@@ -40,8 +40,6 @@ services:
       postgres:
         condition: service_healthy
     volumes:
-      # Mount in the source files so that they can be edited and reloaded
-      # from outside the container during development.
       - ./backend:/app
     env_file:
       - ./metagrid_configs/.local_config
@@ -56,12 +54,9 @@ services:
   react:
     build:
       context: frontend
-      # Stop at the "build" stage before the production server is added
-      # so we can use the Vite dev server during development
       target: build
     image: metagrid_local_react
     environment:
-      # Tell the development server to run on the same port as in production
       - PORT=8080
     depends_on:
       - django
@@ -88,8 +83,6 @@ services:
     build: docs
     image: metagrid_local_docs
     volumes:
-      # Mount in the source files so that they can be edited and reloaded
-      # from outside the container during development.
       - ./docs:/docs
     ports:
       - "8001:8001"
