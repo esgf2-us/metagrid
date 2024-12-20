@@ -6,7 +6,7 @@ import {
   parsedFacetsFixture,
   parsedNodeStatusFixture,
 } from '../../test/mock/fixtures';
-import FacetsForm, { humanizeFacetNames, Props } from './FacetsForm';
+import FacetsForm, { formatDate, humanizeFacetNames, Props } from './FacetsForm';
 import customRender from '../../test/custom-render';
 
 const user = userEvent.setup();
@@ -22,6 +22,12 @@ describe('Test humanizeFacetNames', () => {
 
   it('converts acronyms to uppercase', () => {
     expect(humanizeFacetNames('facet_id')).toEqual('Facet ID');
+  });
+});
+
+describe('formatDate', () => {
+  it('standardizes date strings', () => {
+    expect(formatDate('2024-12-18', true)).toEqual('20241218');
   });
 });
 

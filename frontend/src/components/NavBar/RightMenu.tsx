@@ -84,7 +84,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
       <Button
         type="text"
         icon={<UserOutlined style={{ fontSize: '18px', margin: 0 }} />}
-        href="login/globus"
+        href="login/globus/"
       >
         Sign In
       </Button>

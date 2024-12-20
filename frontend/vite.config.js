@@ -7,6 +7,7 @@ export default defineConfig(() => {
       host: true,
       port: 8080,
       strictPort: true,
+      watch: true,
       proxy: {
         '/frontend-config.js': 'http://django:5000',
         '/api': 'http://django:5000',
@@ -16,6 +17,9 @@ export default defineConfig(() => {
         '/redoc': 'http://django:5000',
         '/proxy': 'http://django:5000',
         '/tempStorage': 'http://django:5000',
+        '/login': 'http://django:5000',
+        '/complete': 'http://django:5000',
+        '/globus': 'http://django:5000',
       },
     },
     build: {

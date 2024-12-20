@@ -7,6 +7,7 @@ import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
 import Table, { Props } from './Table';
 import { QualityFlag } from './Tabs';
+import { mockConfig } from '../../test/jestTestFunctions';
 
 const user = userEvent.setup();
 
@@ -23,6 +24,15 @@ const defaultProps: Props = {
 
 describe('test main table UI', () => {
   it('renders component', async () => {
+    customRender(<Table {...defaultProps} />);
+
+    // Check table exists
+    const table = await screen.findByRole('table');
+    expect(table).toBeTruthy();
+  });
+
+  it('renders component when globus nodes is empty', async () => {
+    mockConfig.REACT_APP_GLOBUS_NODES = [];
     customRender(<Table {...defaultProps} />);
 
     // Check table exists
