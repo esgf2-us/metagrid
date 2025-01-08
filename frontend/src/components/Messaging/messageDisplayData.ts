@@ -5,6 +5,7 @@ export const rightDrawerMessages: MarkdownMessage[] = [
 ];
 
 export const rightDrawerChanges: MarkdownMessage[] = [
+  { title: 'V1.2.2', fileName: 'changelog/v1.2.2.md' },
   { title: 'V1.2.1', fileName: 'changelog/v1.2.1.md' },
   { title: 'V1.2.0', fileName: 'changelog/v1.2.0.md' },
   { title: 'V1.1.3-pre', fileName: 'changelog/v1.1.3-pre.md' },
@@ -17,9 +18,18 @@ export const rightDrawerChanges: MarkdownMessage[] = [
 ];
 
 const startupMessages: StartPopupData = {
-  messageToShow: 'v1.2.1', // This is the version number that appears in the footer
+  messageToShow: 'v1.2.2', // This is the version number that appears in the footer
   defaultMessageId: 'welcome',
   messageData: [
+    {
+      messageId: 'v1.2.2',
+      template: MessageTemplates.ChangeLog,
+      style: { minWidth: '700px' },
+      data: {
+        changesFile: 'changelog/v1.2.2.md',
+        version: '1.2.2',
+      },
+    },
     {
       messageId: 'v1.2.1',
       template: MessageTemplates.ChangeLog,
