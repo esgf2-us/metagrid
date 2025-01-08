@@ -176,6 +176,8 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     }
   );
 
+  const [searchResultsPage, setSearchResultsPage] = React.useState<number>(1);
+
   function redirectToNewURL(newUrl: string): void {
     setTimeout(() => {
       window.location.replace(newUrl);
@@ -532,6 +534,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           }
         }
         setGlobusEndpoints(mappedEndpoints);
+        setSearchResultsPage(1);
       } else {
         setEndpointSearchValue('');
         setGlobusEndpoints([]);
@@ -1085,18 +1088,12 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                   data-testid="globusEndpointSearchResults"
                   loading={loadingEndpointSearchResults}
                   size="small"
-                  pagination={
-                    globusEndpoints &&
-                    globusEndpoints.length > COLLECTION_SEARCH_PAGE_SIZE
-                      ? {
-                          pageSize: COLLECTION_SEARCH_PAGE_SIZE,
-                          position: ['bottomRight'],
-                        }
-                      : {
-                          pageSize: COLLECTION_SEARCH_PAGE_SIZE,
-                          position: ['none'],
-                        }
-                  }
+                  pagination={{
+                    current: searchResultsPage,
+                    pageSize: COLLECTION_SEARCH_PAGE_SIZE,
+                    onChange: (page) => setSearchResultsPage(page),
+                    position: ['bottomRight'],
+                  }}
                   dataSource={globusEndpoints?.map((endpoint) => {
                     return { ...endpoint, key: endpoint.id };
                   })}
