@@ -270,10 +270,8 @@ describe('test Search component', () => {
     // Wait for search table to render
     await screen.findByTestId('search-table');
 
-    // Click on cop button
-    const copyBtn = await screen.findByRole('button', {
-      name: 'share-alt Copy Search',
-    });
+    // Click on copy button
+    const copyBtn = await screen.findByTestId('share-search-btn');
     expect(copyBtn).toBeTruthy();
 
     await act(async () => {

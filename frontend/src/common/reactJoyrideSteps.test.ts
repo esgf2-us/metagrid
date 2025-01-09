@@ -91,13 +91,13 @@ describe('Test reactJoyrideStep util functions', () => {
     document.body.appendChild(root);
 
     // Test main tour that has no globus nodes
-    mockConfig.REACT_APP_GLOBUS_NODES = [];
+    mockConfig.GLOBUS_NODES = [];
 
     const mainTourNoGlobus = createMainPageTour();
     expect(mainTourNoGlobus).toBeTruthy();
 
     // Test main tour that includes globus options
-    mockConfig.REACT_APP_GLOBUS_NODES = ['node1', 'node2', 'node3'];
+    mockConfig.GLOBUS_NODES = ['node1', 'node2', 'node3'];
 
     const mainTourWithGlobus = createMainPageTour();
     expect(mainTourWithGlobus).toBeTruthy();

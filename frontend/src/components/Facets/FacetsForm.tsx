@@ -180,7 +180,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
       const newActiveFacets = activeSearchQuery.activeFacets as ActiveFacets;
       onSetActiveFacets({
         ...newActiveFacets,
-        dataNode: window.METAGRID.REACT_APP_GLOBUS_NODES,
+        dataNode: window.METAGRID.GLOBUS_NODES,
       } as ActiveFacets);
     } else {
       const newActiveFacets = activeSearchQuery.activeFacets as ActiveFacets;
@@ -239,7 +239,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
           ...activeSearchQuery.activeFacets,
         }}
       >
-        {window.METAGRID.REACT_APP_GLOBUS_NODES.length > 0 && (
+        {window.METAGRID.GLOBUS_NODES.length > 0 && (
           <div className={leftSidebarTargets.filterByGlobusTransfer.class()}>
             <h3>Filter By Transfer Options</h3>
             <Row>
@@ -535,7 +535,10 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
             {
               key: 'filename',
               label: (
-                <div className={leftSidebarTargets.facetFormFilename.class()}>
+                <div
+                  className={leftSidebarTargets.facetFormFilename.class()}
+                  data-testid="filename-collapse"
+                >
                   {humanizeFacetNames('filename')}
                 </div>
               ),
@@ -566,7 +569,11 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                       />
                     </Col>
                     <Col>
-                      <Button type="primary" htmlType="submit" icon={<SearchOutlined />}></Button>
+                      <Button
+                        type="primary"
+                        htmlType="submit"
+                        icon={<SearchOutlined data-testid="filename-search-submit-btn" />}
+                      ></Button>
                     </Col>
                   </Row>
                 </Form.Item>

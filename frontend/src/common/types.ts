@@ -11,20 +11,20 @@ export enum AppPage {
 
 export type FrontendConfig = {
   // General
-  REACT_APP_AUTHENTICATION_METHOD: 'keycloak' | 'globus';
-  REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID: string;
+  AUTHENTICATION_METHOD: 'keycloak' | 'globus';
+  GOOGLE_ANALYTICS_TRACKING_ID: string | null;
 
   // Globus
-  REACT_APP_GLOBUS_NODES: string[];
-  REACT_APP_GLOBUS_CLIENT_ID: string;
-  REACT_APP_GLOBUS_REDIRECT: string;
+  GLOBUS_NODES: string[];
+  GLOBUS_CLIENT_ID: string;
+  GLOBUS_REDIRECT: string;
 
   // Keycloak
-  REACT_APP_KEYCLOAK_REALM: string;
-  REACT_APP_KEYCLOAK_URL: string;
-  REACT_APP_KEYCLOAK_CLIENT_ID: string;
+  KEYCLOAK_REALM: string;
+  KEYCLOAK_URL: string;
+  KEYCLOAK_CLIENT_ID: string;
 
   // HotJar
-  REACT_APP_HOTJAR_ID?: number;
-  REACT_APP_HOTJAR_SV?: number;
+  HOTJAR_ID: number | null;
+  HOTJAR_SV: number | null;
 };

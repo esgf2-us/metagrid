@@ -39,3 +39,8 @@ globus-sdk==3.46.0
 # SBOM
 # ------------------------------------------------------------------------------
 cyclonedx-bom==4.5.0  # https://github.com/CycloneDX/cyclonedx-python/
+
+# Configuration
+# ------------------------------------------------------------------------------
+pydantic~=2.10.4
+pydantic-settings~=2.7.0

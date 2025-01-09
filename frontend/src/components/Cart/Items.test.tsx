@@ -33,7 +33,7 @@ describe('test the cart items component', () => {
     customRender(<App searchQuery={activeSearch} />);
 
     // Wait for results to load
-    expect(await screen.findByText('results found for', { exact: false })).toBeTruthy();
+    expect(await screen.findByTestId('search-results-span')).toBeInTheDocument();
 
     // Check first row exists
     const firstRow = await screen.findByTestId('cart-items-row-1');
@@ -57,9 +57,7 @@ describe('test the cart items component', () => {
     });
 
     // Click the Remove All Items button
-    const removeAllBtn = await screen.findByRole('button', {
-      name: 'Remove All Items',
-    });
+    const removeAllBtn = await screen.findByTestId('clear-cart-button');
     expect(removeAllBtn).toBeTruthy();
     await act(async () => {
       await user.click(removeAllBtn);
@@ -70,7 +68,7 @@ describe('test the cart items component', () => {
     expect(popOver).toBeInTheDocument();
 
     // Submit the popover
-    const submitPopOverBtn = await screen.findByRole('button', { name: /ok/i });
+    const submitPopOverBtn = await screen.findByTestId('clear-all-cart-items-confirm-button');
     expect(submitPopOverBtn).toBeInTheDocument();
     await act(async () => {
       await user.click(submitPopOverBtn);

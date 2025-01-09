@@ -131,7 +131,7 @@ async function initializeComponentForTest(testConfig?: typeof defaultTestConfig)
   const config = testConfig || defaultTestConfig;
 
   // Set names of the globus enabled nodes
-  mockConfig.REACT_APP_GLOBUS_NODES = config.globusEnabledNodes;
+  mockConfig.GLOBUS_NODES = config.globusEnabledNodes;
 
   // Set the Globus Goals
   tempStorageSetMock(GlobusStateKeys.globusTransferGoalsState, config.globusGoals);

@@ -183,6 +183,7 @@ tags
 .env
 .envs/*
 !.envs/.local/
+docker-compose.*-overlay.yml
 
 # Documentation artifacts
 docs/site

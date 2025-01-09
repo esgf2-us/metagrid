@@ -51,7 +51,7 @@ it('sets the active menu item based on the location pathname', async () => {
 });
 
 it('display the users given name after authentication with keycloak', async () => {
-  mockConfig.REACT_APP_AUTHENTICATION_METHOD = 'keycloak';
+  mockConfig.AUTHENTICATION_METHOD = 'keycloak';
 
   tempStorageSetMock('keycloakFixture', {
     keycloak: {
@@ -73,7 +73,7 @@ it('display the users given name after authentication with keycloak', async () =
 });
 
 it('display the users email after authentication if they did not provide a name in keycloak', async () => {
-  mockConfig.REACT_APP_AUTHENTICATION_METHOD = 'keycloak';
+  mockConfig.AUTHENTICATION_METHOD = 'keycloak';
 
   tempStorageSetMock('keycloakFixture', {
     keycloak: {

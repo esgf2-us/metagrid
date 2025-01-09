@@ -15,22 +15,9 @@ import { getSearchFromUrl } from '../../common/utils';
 import customRender from '../../test/custom-render';
 import { ActiveSearchQuery } from '../Search/types';
 import App from './App';
-import { activeSearch, mockKeycloakToken, submitKeywordSearch } from '../../test/jestTestFunctions';
+import { activeSearch, submitKeywordSearch } from '../../test/jestTestFunctions';
 
 const user = userEvent.setup();
-
-jest.mock('@react-keycloak/web', () => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const originalModule = jest.requireActual('@react-keycloak/web');
-
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return {
-    ...originalModule,
-    useKeycloak: () => {
-      return mockKeycloakToken();
-    },
-  };
-});
 
 describe('test main components', () => {
   it('renders App component', async () => {
@@ -98,9 +85,7 @@ describe('test main components', () => {
     const input = 'var';
 
     // Open filename collapse panel
-    const filenameSearchPanel = await within(facetsForm).findByRole('button', {
-      name: 'collapsed Filename',
-    });
+    const filenameSearchPanel = await screen.findByTestId('filename-collapse');
 
     await act(async () => {
       await userEvent.click(filenameSearchPanel);
@@ -114,9 +99,8 @@ describe('test main components', () => {
     });
 
     // Submit the form
-    const filenameVarsSubmitBtn = await within(facetsForm).findByRole('button', {
-      name: 'search',
-    });
+    const filenameVarsSubmitBtn = await screen.findByTestId('filename-search-submit-btn');
+
     await act(async () => {
       await userEvent.click(filenameVarsSubmitBtn);
     });
@@ -213,10 +197,6 @@ describe('test main components', () => {
     const facetsComponent = await screen.findByTestId('search-facets');
     expect(facetsComponent).toBeTruthy();
 
-    // Wait for project form to render
-    const facetsForm = await screen.findByTestId('facets-form');
-    expect(facetsForm).toBeTruthy();
-
     // Open top collapse panel
     const group1Panel = await within(facetsComponent).findByRole('button', {
       name: 'collapsed Group1',
@@ -263,6 +243,7 @@ describe('test main components', () => {
     // Check facets select form rerenders and mouseDown to expand list of options
     const facetFormSelectRerender = await screen.findByTestId('data_node-form-select');
     expect(facetFormSelectRerender).toBeTruthy();
+
     fireEvent.mouseDown(facetFormSelectRerender.firstElementChild as HTMLInputElement);
 
     // Check option is selected and remove it
@@ -309,14 +290,10 @@ describe('User cart', () => {
     customRender(<App searchQuery={activeSearch} />);
 
     // Wait for components to rerender
-    await screen.findByText('Query String:', { exact: false });
-
-    // Check first row exists
-    const firstRow = await screen.findByTestId('cart-items-row-1');
-    expect(firstRow).toBeTruthy();
+    await screen.findByTestId('main-query-string-label');
 
     // Check first row has add button and click it
-    const addBtn = await within(firstRow).findByRole('img', { name: 'plus' });
+    const addBtn = await screen.findByTestId('row-0-add-to-cart');
     expect(addBtn).toBeTruthy();
 
     await act(async () => {
@@ -328,7 +305,7 @@ describe('User cart', () => {
     expect(addText).toBeTruthy();
 
     // Check first row has remove button and click it
-    const removeBtn = within(firstRow).getByRole('img', { name: 'minus' });
+    const removeBtn = await screen.findByTestId('row-0-remove-from-cart');
     expect(removeBtn).toBeTruthy();
 
     await act(async () => {
@@ -344,14 +321,10 @@ describe('User cart', () => {
     customRender(<App searchQuery={activeSearch} />);
 
     // Wait for components to rerender
-    await screen.findByText('Query String:', { exact: false });
-
-    // Check first row exists
-    const firstRow = await screen.findByTestId('cart-items-row-1');
-    expect(firstRow).toBeTruthy();
+    await screen.findByTestId('main-query-string-label');
 
     // Check first row has add button and click it
-    const addBtn = await within(firstRow).findByRole('img', { name: 'plus' });
+    const addBtn = await screen.findByTestId('row-1-add-to-cart');
     expect(addBtn).toBeTruthy();
 
     await act(async () => {
@@ -414,14 +387,10 @@ describe('User cart', () => {
     customRender(<App searchQuery={activeSearch} />, {}, false);
 
     // Wait for components to rerender
-    await screen.findByText('Query String:', { exact: false });
-
-    // Check first row exists
-    const firstRow = await screen.findByTestId('cart-items-row-1');
-    expect(firstRow).toBeTruthy();
+    await screen.findByTestId('main-query-string-label');
 
     // Check first row has add button and click it
-    const addBtn = within(firstRow).getByRole('img', { name: 'plus' });
+    const addBtn = await screen.findByTestId('row-0-add-to-cart');
     expect(addBtn).toBeTruthy();
 
     await act(async () => {
@@ -429,7 +398,7 @@ describe('User cart', () => {
     });
 
     // Check first row has remove button and click it
-    const removeBtn = within(firstRow).getByRole('img', { name: 'minus' });
+    const removeBtn = await screen.findByTestId('row-0-remove-from-cart');
     expect(removeBtn).toBeTruthy();
 
     await act(async () => {
@@ -441,13 +410,10 @@ describe('User cart', () => {
     customRender(<App searchQuery={activeSearch} />, {}, false);
 
     // Wait for components to rerender
-    await screen.findByText('Query String:', { exact: false });
+    await screen.findByTestId('main-query-string-label');
 
-    // Check first row exists
-    const firstRow = await screen.findByTestId('cart-items-row-1');
-    expect(firstRow).toBeTruthy();
     // Check first row has add button and click it
-    const addBtn = await within(firstRow).findByRole('img', { name: 'plus' });
+    const addBtn = await screen.findByTestId('row-1-add-to-cart');
     expect(addBtn).toBeTruthy();
 
     await act(async () => {
@@ -537,16 +503,14 @@ describe('User search library', () => {
     });
 
     // Wait for components to rerender
-    await screen.findByText('Query String:', { exact: false });
+    await screen.findByTestId('main-query-string-label');
 
     // Check applicable components render
     const rightMenuComponent = await screen.findByTestId('right-menu');
     expect(rightMenuComponent).toBeTruthy();
 
     // Check Save Search button exists and click it
-    const saveSearch = await screen.findByRole('button', {
-      name: 'book Save Search',
-    });
+    const saveSearch = await screen.findByTestId('save-search-btn');
     expect(saveSearch).toBeTruthy();
 
     await act(async () => {
@@ -648,9 +612,7 @@ describe('User search library', () => {
     await screen.findByTestId('search');
 
     // Check Save Search button exists and click it
-    const saveSearch = await screen.findByRole('button', {
-      name: 'book Save Search',
-    });
+    const saveSearch = await screen.findByTestId('save-search-btn');
     expect(saveSearch).toBeTruthy();
 
     await act(async () => {
@@ -692,16 +654,14 @@ describe('User search library', () => {
     customRender(<App searchQuery={activeSearch} />, {}, false);
 
     // Wait for components to rerender
-    await screen.findByText('Query String:', { exact: false });
+    await screen.findByTestId('main-query-string-label');
 
     // Check applicable components render
     const rightMenuComponent = await screen.findByTestId('right-menu');
     expect(rightMenuComponent).toBeTruthy();
 
     // Check Save Search button exists and click it
-    const saveSearch = await screen.findByRole('button', {
-      name: 'book Save Search',
-    });
+    const saveSearch = await screen.findByTestId('save-search-btn');
     expect(saveSearch).toBeTruthy();
 
     await act(async () => {
@@ -747,9 +707,7 @@ describe('User search library', () => {
     await screen.findByTestId('search');
 
     // Check Save Search button exists and click it
-    const copySearch = await screen.findByRole('button', {
-      name: 'share-alt Copy Search',
-    });
+    const copySearch = await screen.findByTestId('share-search-btn');
     expect(copySearch).toBeTruthy();
 
     await act(async () => {
@@ -780,12 +738,10 @@ describe('User search library', () => {
       server.use(rest.post(apiRoutes.userSearches.path, (_req, res, ctx) => res(ctx.status(404))));
 
       // Wait for components to rerender
-      await screen.findByText('Query String:', { exact: false });
+      await screen.findByTestId('main-query-string-label');
 
       // Check Save Search button exists and click it
-      const saveSearch = await screen.findByRole('button', {
-        name: 'book Save Search',
-      });
+      const saveSearch = await screen.findByTestId('save-search-btn');
       expect(saveSearch).toBeTruthy();
 
       await act(async () => {

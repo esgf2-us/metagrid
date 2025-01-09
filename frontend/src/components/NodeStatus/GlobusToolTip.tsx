@@ -9,7 +9,7 @@ export type Props = {
 
 export function globusEnabled(node: string | null | undefined): boolean {
   if (node) {
-    return window.METAGRID.REACT_APP_GLOBUS_NODES.includes(node);
+    return window.METAGRID.GLOBUS_NODES.includes(node);
   }
   return false;
 }

@@ -1,37 +1,27 @@
-networks:
-  metagrid:
-    ipam:
-      config:
-        - subnet: 10.89.9.0/24
-
 volumes:
   local_postgres_data: {}
   local_postgres_data_backups: {}
 
 services:
   postgres:
-    # This service uses the production Postgres Dockerfile as a base
-    # Some tweaks are applied to support the Keycloak service, including the init.sql script
     build: postgres
     image: metagrid_local_postgres
     volumes:
       - local_postgres_data:/var/lib/postgresql/data
       - local_postgres_data_backups:/local_postgres_data_backups
-    env_file:
-      - ./metagrid_configs/.local_config
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+      PGHOST: localhost
+      PGPASSWORD: postgres
+      PGUSER: postgres
     ports:
       - 5432:5432
     healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "postgres", "-d", "postgres" ]
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "postgres"]
       start_period: 5s
       interval: 5s
       timeout: 2s
       retries: 6
-    networks:
-      metagrid:
-        ipv4_address: 10.89.9.81
-        aliases:
-          - postgres
 
   django:
     build: backend
@@ -41,15 +31,13 @@ services:
         condition: service_healthy
     volumes:
       - ./backend:/app
-    env_file:
-      - ./metagrid_configs/.local_config
+    environment:
+      PGHOST: localhost
+      PGPASSWORD: postgres
+      PGUSER: postgres
     ports:
       - 5000:5000
-    networks:
-      metagrid:
-        ipv4_address: 10.89.9.82
-        aliases:
-          - django
+    network_mode: host
 
   react:
     build:
@@ -60,9 +48,10 @@ services:
       - PORT=8080
     depends_on:
       - django
-    networks:
-      metagrid:
-        ipv4_address: 10.89.9.83
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    network_mode: host
     ports:
       - 8080:8080
 
@@ -75,9 +64,9 @@ services:
       - ./keycloak/realm.json:/opt/keycloak/data/import/realm.json
     ports:
       - 1337:8080
-    networks:
-      metagrid:
-        ipv4_address: 10.89.9.84
+    environment:
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
 
   docs:
     build: docs

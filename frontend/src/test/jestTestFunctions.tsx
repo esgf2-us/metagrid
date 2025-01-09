@@ -22,16 +22,16 @@ export const originalGlobusEnabledNodes = [
 ];
 
 export const mockConfig: FrontendConfig = {
-  REACT_APP_GLOBUS_CLIENT_ID: 'frontend',
-  REACT_APP_GLOBUS_REDIRECT: 'http://localhost:8080/cart/items',
-  REACT_APP_GLOBUS_NODES: originalGlobusEnabledNodes,
-  REACT_APP_KEYCLOAK_REALM: 'esgf',
-  REACT_APP_KEYCLOAK_URL: 'http://localhost:1337',
-  REACT_APP_KEYCLOAK_CLIENT_ID: 'frontend',
-  REACT_APP_HOTJAR_ID: 1234,
-  REACT_APP_HOTJAR_SV: 1234,
-  REACT_APP_AUTHENTICATION_METHOD: 'keycloak',
-  REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID: 'UA-XXXXXXXXX-YY',
+  GLOBUS_CLIENT_ID: 'frontend',
+  GLOBUS_REDIRECT: 'http://localhost:8080/cart/items',
+  GLOBUS_NODES: originalGlobusEnabledNodes,
+  KEYCLOAK_REALM: 'esgf',
+  KEYCLOAK_URL: 'http://localhost:1337',
+  KEYCLOAK_CLIENT_ID: 'frontend',
+  HOTJAR_ID: 1234,
+  HOTJAR_SV: 1234,
+  AUTHENTICATION_METHOD: 'keycloak',
+  GOOGLE_ANALYTICS_TRACKING_ID: 'UA-XXXXXXXXX-YY',
 };
 
 export const activeSearch = getSearchFromUrl();
@@ -166,7 +166,7 @@ export async function submitKeywordSearch(inputText: string, user: UserEvent): P
   expect(leftMenuComponent).toBeTruthy();
 
   // Type in value for free-text input
-  const freeTextForm = await screen.findByPlaceholderText('Search for a keyword');
+  const freeTextForm = await screen.findByTestId('left-menu-keyword-search-input');
   expect(freeTextForm).toBeTruthy();
 
   await act(async () => {
@@ -174,9 +174,7 @@ export async function submitKeywordSearch(inputText: string, user: UserEvent): P
   });
 
   // Submit the form
-  const submitBtn = await within(leftMenuComponent).findByRole('img', {
-    name: 'search',
-  });
+  const submitBtn = await screen.findByTestId('left-menu-keyword-search-submit');
 
   await act(async () => {
     await user.click(submitBtn);
