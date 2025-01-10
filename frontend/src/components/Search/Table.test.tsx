@@ -32,7 +32,7 @@ describe('test main table UI', () => {
   });
 
   it('renders component when globus nodes is empty', async () => {
-    mockConfig.REACT_APP_GLOBUS_NODES = [];
+    mockConfig.GLOBUS_NODES = [];
     customRender(<Table {...defaultProps} />);
 
     // Check table exists

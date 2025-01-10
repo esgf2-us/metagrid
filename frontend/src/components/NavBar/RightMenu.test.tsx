@@ -95,7 +95,7 @@ it('display the users email after authentication if they did not provide a name 
 });
 
 it("displays sign in button when user hasn't logged in via keycloak", async () => {
-  mockConfig.REACT_APP_AUTHENTICATION_METHOD = 'keycloak';
+  mockConfig.AUTHENTICATION_METHOD = 'keycloak';
 
   customRender(<RightMenu {...rightMenuProps} />);
 
@@ -113,7 +113,7 @@ it("displays sign in button when user hasn't logged in via keycloak", async () =
 });
 
 it("displays sign in button when user hasn't logged in via globus", async () => {
-  mockConfig.REACT_APP_AUTHENTICATION_METHOD = 'globus';
+  mockConfig.AUTHENTICATION_METHOD = 'globus';
 
   customRender(<RightMenu {...rightMenuProps} />);
 

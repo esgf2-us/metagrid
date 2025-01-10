@@ -287,9 +287,7 @@ describe('DatasetDownload form tests', () => {
     });
 
     // Click Transfer button
-    const globusTransferBtn = await screen.findByRole('button', {
-      name: /download transfer/i,
-    });
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetBtn');
     expect(globusTransferBtn).toBeTruthy();
     await act(async () => {
       await user.click(globusTransferBtn);
@@ -463,9 +461,7 @@ describe('DatasetDownload form tests', () => {
     });
 
     // Click Transfer button
-    const globusTransferBtn = await screen.findByRole('button', {
-      name: /download transfer/i,
-    });
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetBtn');
     expect(globusTransferBtn).toBeTruthy();
     await act(async () => {
       await user.click(globusTransferBtn);
@@ -488,9 +484,7 @@ describe('DatasetDownload form tests', () => {
     });
 
     // Click Transfer button
-    const globusTransferBtn = await screen.findByRole('button', {
-      name: /download transfer/i,
-    });
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetBtn');
     expect(globusTransferBtn).toBeTruthy();
     await act(async () => {
       await user.click(globusTransferBtn);
@@ -510,9 +504,7 @@ describe('DatasetDownload form tests', () => {
     });
 
     // Click Transfer button
-    const globusTransferBtn = await screen.findByRole('button', {
-      name: /download transfer/i,
-    });
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetBtn');
     expect(globusTransferBtn).toBeTruthy();
     await act(async () => {
       await user.click(globusTransferBtn);
@@ -562,9 +554,7 @@ describe('DatasetDownload form tests', () => {
     });
 
     // Click Transfer button
-    const globusTransferBtn = await screen.findByRole('button', {
-      name: /download transfer/i,
-    });
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetBtn');
     expect(globusTransferBtn).toBeTruthy();
     await act(async () => {
       await user.click(globusTransferBtn);
@@ -584,9 +574,7 @@ describe('DatasetDownload form tests', () => {
     await initializeComponentForTest();
 
     // Click Transfer button
-    const globusTransferBtn = await screen.findByRole('button', {
-      name: /download transfer/i,
-    });
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetBtn');
     expect(globusTransferBtn).toBeTruthy();
     await act(async () => {
       await user.click(globusTransferBtn);
@@ -605,16 +593,15 @@ describe('DatasetDownload form tests', () => {
     await initializeComponentForTest();
 
     // Click Transfer button
-    const globusTransferBtn = await screen.findByRole('button', {
-      name: /download transfer/i,
-    });
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetBtn');
     expect(globusTransferBtn).toBeTruthy();
     await act(async () => {
       await user.click(globusTransferBtn);
     });
 
     const globusTransferPopup = await screen.findByText(
-      'Globus transfer task failed. Resetting tokens.'
+      'is your error. Please contact ESGF support.',
+      { exact: false }
     );
     expect(globusTransferPopup).toBeTruthy();
   });
@@ -1029,9 +1016,7 @@ xit('If endpoint URL is set, and sign in tokens in URL, continue to select endpo
   });
 
   // Click Transfer button
-  const globusTransferBtn = screen.getByRole('button', {
-    name: /download transfer/i,
-  });
+  const globusTransferBtn = await screen.findByTestId('downloadDatasetBtn');
   expect(globusTransferBtn).toBeTruthy();
   await act(async () => {
     await user.click(globusTransferBtn);

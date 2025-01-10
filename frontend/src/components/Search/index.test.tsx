@@ -1,4 +1,4 @@
-import { act, within, screen, waitFor } from '@testing-library/react';
+import { act, within, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import {
@@ -152,13 +152,9 @@ describe('test Search component', () => {
     const paginationList = await screen.findByRole('list');
     const pageSizeComboBox = await within(paginationList).findByRole('combobox');
     pageSizeComboBox.focus();
-    await waitFor(
-      async () => {
-        await userEvent.keyboard('[ArrowDown]');
-        await userEvent.click(await screen.findByTestId('pageSize-option-20'));
-      },
-      { timeout: 50000 }
-    );
+
+    await userEvent.keyboard('[ArrowDown]');
+    await userEvent.click(await screen.findByTestId('pageSize-option-20'));
 
     expect(screen.getByTestId('cart-items-row-11')).toBeInTheDocument();
   });
