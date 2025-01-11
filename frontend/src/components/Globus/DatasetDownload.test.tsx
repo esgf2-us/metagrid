@@ -1,12 +1,11 @@
 import React from 'react';
 import userEvent from '@testing-library/user-event';
-import { act, waitFor, within, screen } from '@testing-library/react';
+import { act, within, screen } from '@testing-library/react';
 import customRender from '../../test/custom-render';
 import { rest, server } from '../../test/mock/server';
 import { getSearchFromUrl } from '../../common/utils';
 import { ActiveSearchQuery, RawSearchResults } from '../Search/types';
 import {
-  getRowName,
   globusReadyNode,
   makeCartItem,
   mockConfig,
@@ -23,7 +22,6 @@ import {
   globusEndpointFixture,
   globusAccessTokenFixture,
   globusTransferTokenFixture,
-  userCartFixture,
 } from '../../test/mock/fixtures';
 import apiRoutes from '../../api/routes';
 import DatasetDownloadForm, { GlobusGoals } from './DatasetDownload';
