@@ -59,11 +59,6 @@ urlpatterns = [
     path("proxy/globus-logout/", do_globus_logout, name="globus-logout"),
     path("proxy/globus-auth/", do_globus_auth, name="globus-auth"),
     path(
-        "proxy/globus-get-endpoint/",
-        do_globus_get_endpoint,
-        name="globus-get-endpoint",
-    ),
-    path(
         "proxy/globus-search-endpoints/",
         do_globus_search_endpoints,
         name="globus-search-endpoints",

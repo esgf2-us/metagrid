@@ -542,6 +542,17 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error);
+      setAlertPopupState({
+        content:
+          'An error occurred while searching for collections. Please try again later.',
+        onCancelAction: () => {
+          setAlertPopupState({ ...alertPopupState, show: false });
+        },
+        onOkAction: () => {
+          setAlertPopupState({ ...alertPopupState, show: false });
+        },
+        show: true,
+      });
     } finally {
       setLoadingEndpointSearchResults(false);
     }
