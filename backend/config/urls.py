@@ -16,7 +16,6 @@ from metagrid.api_globus.views import do_globus_transfer, get_access_token
 from metagrid.api_proxy.views import (
     do_citation,
     do_globus_auth,
-    do_globus_get_endpoint,
     do_globus_logout,
     do_globus_search_endpoints,
     do_search,
