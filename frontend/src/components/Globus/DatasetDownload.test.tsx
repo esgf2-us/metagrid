@@ -927,7 +927,7 @@ describe('DatasetDownload form tests', () => {
 
     // Expect an alert to show up
     const alertPopup = await screen.findByText(
-      'An error occurred while searching for collections. Please try again.'
+      'An error occurred while searching for collections. Please try again later.'
     );
     expect(alertPopup).toBeTruthy();
   });
