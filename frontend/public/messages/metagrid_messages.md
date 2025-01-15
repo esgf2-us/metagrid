@@ -5,7 +5,7 @@ To view the latest documentation and FAQ, please visit this page:
 
 ## Deployment Process Updated
 
-This update includes numerous changes to how the Metagrid application is deployed, with enhancements to security, improvements to the configuration process and consolidation of configuration files. 
+This update includes numerous changes to how the Metagrid application is deployed, with enhancements to security, improvements to the configuration process and consolidation of configuration files.
 
 ## Globus Transfers enhanced
 

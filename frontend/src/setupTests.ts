@@ -11,6 +11,7 @@ import {
   originalGlobusEnabledNodes,
   sessionStorageMock,
 } from './test/jestTestFunctions';
+import 'cross-fetch/polyfill';
 
 jest.setTimeout(60000);
 
@@ -19,6 +20,19 @@ const location = JSON.stringify(window.location);
 
 Object.defineProperty(window, 'localStorage', { value: sessionStorageMock });
 Object.defineProperty(window, 'METAGRID', { value: mockConfig });
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: jest.fn().mockImplementation((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: jest.fn(), // deprecated
+    removeListener: jest.fn(), // deprecated
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  })),
+});
 
 beforeAll(() => {
   server.listen();
@@ -48,7 +62,7 @@ afterEach(() => {
   HTMLAnchorElement.prototype.click = jest.fn();
 
   // Reset mock values
-  window.METAGRID.REACT_APP_GLOBUS_NODES = originalGlobusEnabledNodes;
+  window.METAGRID.GLOBUS_NODES = originalGlobusEnabledNodes;
 
   // Clear localStorage between tests
   localStorage.clear();

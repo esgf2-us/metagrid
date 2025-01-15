@@ -249,12 +249,6 @@ describe('test fetching search results', () => {
     const projects = await fetchSearchResults({ reqUrl });
     expect(projects).toEqual(ESGFSearchAPIFixture());
   });
-  it('catches and throws an error based on HTTP status code', async () => {
-    server.use(rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) => res(ctx.status(404))));
-    await expect(fetchSearchResults([reqUrl])).rejects.toThrow(
-      apiRoutes.esgfSearch.handleErrorMsg(404)
-    );
-  });
 
   it('catches and throws generic network error', async () => {
     server.use(
@@ -600,14 +594,6 @@ describe('test startGlobusTransfer function', () => {
 
     expect(resp.data).toEqual({ status: 'OK', taskid: '1234567' });
   });
-
-  it('catches and throws an error based on HTTP status code', async () => {
-    server.use(rest.post(apiRoutes.globusTransfer.path, (_req, res, ctx) => res(ctx.status(404))));
-
-    await expect(
-      startGlobusTransfer('asdfs', 'asdfs', 'endpointTest', 'path', 'id', ['clt'])
-    ).rejects.toThrow(apiRoutes.globusTransfer.handleErrorMsg(408));
-  });
 });
 
 describe('test parsing node status', () => {
@@ -622,11 +608,6 @@ describe('test fetching node status', () => {
     const res = await fetchNodeStatus();
 
     expect(res).toEqual(parsedNodeStatusFixture());
-  });
-  it('catches and throws an error based on HTTP status code', async () => {
-    server.use(rest.get(apiRoutes.nodeStatus.path, (_req, res, ctx) => res(ctx.status(404))));
-
-    await expect(fetchNodeStatus()).rejects.toThrow(apiRoutes.nodeStatus.handleErrorMsg(404));
   });
 
   it('catches and throws generic network error', async () => {

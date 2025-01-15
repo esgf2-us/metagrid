@@ -15,9 +15,7 @@ it('renders component with default exclamation circle', async () => {
   const text = await screen.findByText('Click here');
   expect(text).toBeTruthy();
 
-  await act(async () => {
-    await userEvent.click(text);
-  });
+  await userEvent.click(text);
 
   //   Check icon defaults to exclamation circle
   const icon = await screen.findByRole('img', { name: 'exclamation-circle' });

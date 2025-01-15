@@ -92,6 +92,7 @@ const LeftMenu: React.FC<React.PropsWithChildren<Props>> = ({
             </Form.Item>
             <Form.Item name="text" rules={[{ required: true, message: 'Text is required' }]}>
               <Input
+                data-testid="left-menu-keyword-search-input"
                 style={{ minWidth: '200px' }}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
@@ -99,7 +100,11 @@ const LeftMenu: React.FC<React.PropsWithChildren<Props>> = ({
               />
             </Form.Item>
             <Form.Item>
-              <Button type="primary" htmlType="submit" icon={<SearchOutlined />}></Button>
+              <Button
+                type="primary"
+                htmlType="submit"
+                icon={<SearchOutlined data-testid="left-menu-keyword-search-submit" />}
+              ></Button>
             </Form.Item>
           </Space>
         </Form>

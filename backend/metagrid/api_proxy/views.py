@@ -5,12 +5,7 @@ import globus_sdk
 import requests
 from django.conf import settings
 from django.contrib.auth import logout
-from django.http import (
-    HttpResponse,
-    HttpResponseBadRequest,
-    HttpResponseServerError,
-    JsonResponse,
-)
+from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -18,6 +13,8 @@ from globus_portal_framework.gclients import load_transfer_client
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+
+from config.settings.site_specific import MetagridFrontendSettings
 
 
 @api_view()
@@ -167,42 +164,23 @@ def do_wget(request):
 def do_request(request, urlbase):
     resp = None
 
-    if len(urlbase) < 1:  # pragma: no cover
-        print(
-            "ERROR:  urlbase string empty, ensure you have the settings loaded"
-        )
-        return HttpResponseServerError(
-            "ERROR: missing url configuration for request"
-        )
-    if request:
-        if request.method == "POST":  # pragma: no cover
-            jo = {}
-            try:
-                jo = json.loads(request.body)
-            except Exception:
-                return HttpResponseBadRequest()
-            if "query" in jo:
-                query = jo["query"]
-                #   print(query)
-                if type(query) is list and len(query) > 0:
-                    jo["query"] = query[0]
-            if "dataset_id" in jo:
-                jo["dataset_id"] = ",".join(jo["dataset_id"])
-            #            print(f"DEBUG: {jo}")
-            resp = requests.post(urlbase, data=jo)
+    if request.method == "POST":  # pragma: no cover
+        jo = request.POST.dict()
 
-        elif request.method == "GET":
-            url_params = request.GET.copy()
-            resp = requests.get(urlbase, params=url_params)
-        else:  # pragma: no cover
-            return HttpResponseBadRequest(
-                "Request method must be POST or GET."
-            )
+        if "query" in jo:
+            query = jo["query"]
+            if type(query) is list and len(query) > 0:
+                jo["query"] = query[0]
+        if "dataset_id" in jo:
+            jo["dataset_id"] = ",".join(jo["dataset_id"])
+        resp = requests.post(urlbase, data=jo)
 
+    elif request.method == "GET":
+        url_params = request.GET.copy()
+        resp = requests.get(urlbase, params=url_params)
     else:  # pragma: no cover
-        resp = requests.get(urlbase)
+        return HttpResponseBadRequest("Request method must be POST or GET.")
 
-    #    print(resp.text)
     httpresp = HttpResponse(resp.text, content_type="text/json")
     httpresp.status_code = resp.status_code
 
@@ -329,4 +307,4 @@ def set_temp_storage(request):
 
 
 def get_frontend_config(_) -> JsonResponse:
-    return JsonResponse(settings.FRONTEND_SETTINGS)
+    return JsonResponse(MetagridFrontendSettings().model_dump())

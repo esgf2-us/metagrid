@@ -8,7 +8,7 @@
 import 'setimmediate'; // Added because in Jest 27, setImmediate is not defined, causing test errors
 import humps from 'humps';
 import queryString from 'query-string';
-import { AxiosResponse, AxiosError } from 'axios';
+import { AxiosResponse } from 'axios';
 import PKCE from 'js-pkce';
 import axios from '../lib/axios';
 import {
@@ -434,13 +434,10 @@ export const fetchSearchResults = async (
     reqUrlStr = args.reqUrl;
   }
 
-  return axios
-    .get(`${reqUrlStr}`)
-    .then(
-      (res) =>
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        res.data as Promise<{ [key: string]: any }>
-    )
+  return fetch(reqUrlStr)
+    .then((results) => {
+      return results.json();
+    })
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearch));
     });
@@ -649,8 +646,8 @@ export async function createGlobusAuthObject(): Promise<PKCE> {
   const authScope = await loadSessionValue<string>(GlobusStateKeys.globusAuth);
 
   return new PKCE({
-    client_id: window.METAGRID.REACT_APP_GLOBUS_CLIENT_ID, // Update this using your native client ID
-    redirect_uri: window.METAGRID.REACT_APP_GLOBUS_REDIRECT, // Update this if you are deploying this anywhere else (Globus Auth will redirect back here once you have logged in)
+    client_id: window.METAGRID.GLOBUS_CLIENT_ID, // Update this using your native client ID
+    redirect_uri: `${window.location.origin}/cart/items`, // Update this if you are deploying this anywhere else (Globus Auth will redirect back here once you have logged in)
     authorization_endpoint: 'https://auth.globus.org/v2/oauth2/authorize', // No changes needed
     token_endpoint: 'https://auth.globus.org/v2/oauth2/token', // No changes needed
     requested_scopes: authScope || REQUESTED_SCOPES, // Update with any scopes you would need, e.g. transfer
@@ -684,14 +681,6 @@ export const startGlobusTransfer = async (
     )
     .then((resp) => {
       return resp;
-    })
-    .catch((error: AxiosError) => {
-      let message = '';
-      /* istanbul ignore else */
-      if (error.response) {
-        message = error.response.data;
-      }
-      throw new Error(message);
     });
 };
 

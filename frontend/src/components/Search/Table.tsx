@@ -139,13 +139,13 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       title: 'Cart',
       key: 'cart',
       width: 50,
-      render: (record: RawSearchResult) => {
+      render: (value: string, record: RawSearchResult, index: number) => {
         if (userCart.some((dataset: RawSearchResult) => dataset.id === record.id)) {
           return (
             <>
               <Button
                 className={topDataRowTargets.cartAddBtn.class('minus')}
-                icon={<MinusOutlined />}
+                icon={<MinusOutlined data-testid={`row-${index}-remove-from-cart`} />}
                 onClick={() => onUpdateCart([record], 'remove')}
                 danger
               />
@@ -157,7 +157,12 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
             <Button
               type="primary"
               disabled={record.retracted === true}
-              icon={<PlusOutlined className={topDataRowTargets.cartAddBtn.class('plus')} />}
+              icon={
+                <PlusOutlined
+                  className={topDataRowTargets.cartAddBtn.class('plus')}
+                  data-testid={`row-${index}-add-to-cart`}
+                />
+              }
               onClick={() => onUpdateCart([record], 'add')}
             />
           </>
@@ -300,7 +305,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
         );
       },
     },
-    (window.METAGRID.REACT_APP_GLOBUS_NODES?.length || 0) > 0
+    (window.METAGRID.GLOBUS_NODES?.length || 0) > 0
       ? {
           align: 'center' as AlignType,
           fixed: 'right' as FixedType,

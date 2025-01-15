@@ -392,10 +392,6 @@ FRONTEND_SETTINGS = {
     "REACT_APP_AUTHENTICATION_METHOD": env(
         "REACT_APP_AUTHENTICATION_METHOD", default="keycloak"
     ),
-    "REACT_APP_GLOBUS_REDIRECT": env(
-        "REACT_APP_GLOBUS_REDIRECT",
-        default="http://localhost:8080/cart/items",
-    ),
     "REACT_APP_GLOBUS_CLIENT_ID": env(
         "REACT_APP_GLOBUS_CLIENT_ID", default="frontend"
     ),

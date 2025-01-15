@@ -32,7 +32,7 @@ describe('test main table UI', () => {
   });
 
   it('renders component when globus nodes is empty', async () => {
-    mockConfig.REACT_APP_GLOBUS_NODES = [];
+    mockConfig.GLOBUS_NODES = [];
     customRender(<Table {...defaultProps} />);
 
     // Check table exists
@@ -95,9 +95,7 @@ describe('test main table UI', () => {
       name: 'right-circle',
     });
     expect(expandableIcon).toBeTruthy();
-    await act(async () => {
-      await user.click(expandableIcon);
-    });
+    await user.click(expandableIcon);
 
     // Get the expandable row that was rendered and click on it
     const expandableRow = document.querySelector(
@@ -128,9 +126,7 @@ describe('test main table UI', () => {
       name: 'right-circle',
     });
     expect(expandableIcon).toBeTruthy();
-    await act(async () => {
-      await user.click(expandableIcon);
-    });
+    await user.click(expandableIcon);
 
     // Get the expandable row that was rendered and click on it
     const expandableRow = document.querySelector(
@@ -142,9 +138,7 @@ describe('test main table UI', () => {
     const panel = await within(expandableRow).findByText('Metadata');
     expect(panel).toBeTruthy();
 
-    await act(async () => {
-      await user.click(panel);
-    });
+    await user.click(panel);
 
     // Check metadata panel contains metadata
     const id = await screen.findByText((_, node) => node?.textContent === 'id: foo');
@@ -154,9 +148,7 @@ describe('test main table UI', () => {
     const form = await within(expandableRow).findByRole('combobox');
     expect(form).toBeTruthy();
 
-    await act(async () => {
-      await user.type(form, 'i');
-    });
+    await user.type(form, 'i');
 
     // Get the down circle icon within the cell and click to close the expandable row
     const expandableDownIcon = await within(expandableCell).findByRole('img', {
@@ -164,9 +156,7 @@ describe('test main table UI', () => {
     });
     expect(expandableDownIcon).toBeTruthy();
 
-    await act(async () => {
-      await user.click(expandableDownIcon);
-    });
+    await user.click(expandableDownIcon);
   });
 
   it('renders "PID" button when the record has a "xlink" key/value, vice versa', async () => {
@@ -199,9 +189,7 @@ describe('test main table UI', () => {
     });
     expect(expandableIcon).toBeTruthy();
 
-    await act(async () => {
-      await user.click(expandableIcon);
-    });
+    await user.click(expandableIcon);
 
     // Get the expandable row that was rendered and click on it
     const expandableRow = document.querySelector(
@@ -213,9 +201,7 @@ describe('test main table UI', () => {
     const panel = await within(expandableRow).findByText('Additional');
     expect(panel).toBeTruthy();
 
-    await act(async () => {
-      await user.click(panel);
-    });
+    await user.click(panel);
 
     // Check Additional panel contains PID and ES-DOC
     const firstPidBtn = await within(expandableRow).findByText('PID');
@@ -260,9 +246,7 @@ describe('test main table UI', () => {
       name: 'right-circle',
     });
     expect(expandableIcon).toBeTruthy();
-    await act(async () => {
-      await user.click(expandableIcon);
-    });
+    await user.click(expandableIcon);
 
     // Get the expandable row that was rendered and click on it
     const expandableRow = document.querySelector(
@@ -273,9 +257,7 @@ describe('test main table UI', () => {
     // Get the Additional panel and click on it
     const panel = await screen.findByText('Additional');
     expect(panel).toBeTruthy();
-    await act(async () => {
-      await user.click(panel);
-    });
+    await user.click(panel);
 
     // Check Additional panel contains quality flags
     const firstFlag = await within(expandableRow).findByTestId('qualityFlag1');
@@ -301,9 +283,7 @@ describe('test main table UI', () => {
       name: 'minus',
     });
     expect(removeBtn).toBeTruthy();
-    await act(async () => {
-      await user.click(removeBtn);
-    });
+    await user.click(removeBtn);
 
     // Check second row exists
     const secondRow = await screen.findByTestId('cart-items-row-1');
@@ -313,9 +293,7 @@ describe('test main table UI', () => {
     const addBtn = await within(secondRow).findByRole('img', { name: 'plus' });
     expect(addBtn).toBeTruthy();
 
-    await act(async () => {
-      await user.click(addBtn);
-    });
+    await user.click(addBtn);
   });
 
   it('handles when clicking the select checkbox for a row', async () => {
@@ -332,9 +310,7 @@ describe('test main table UI', () => {
     const checkBox = await within(row).findByRole('checkbox');
     expect(checkBox).toBeTruthy();
 
-    await act(async () => {
-      await user.click(checkBox);
-    });
+    await user.click(checkBox);
   });
 
   it('handles when clicking the select all checkbox in the table"s header', async () => {
@@ -352,9 +328,7 @@ describe('test main table UI', () => {
     ) as HTMLInputElement;
     expect(selectAllCheckbox).toBeTruthy();
 
-    await act(async () => {
-      await user.click(selectAllCheckbox);
-    });
+    await user.click(selectAllCheckbox);
   });
 
   it('handles downloading an item via wget', async () => {
@@ -381,9 +355,7 @@ describe('test main table UI', () => {
     });
     expect(firstRowBtn).toBeTruthy();
 
-    await act(async () => {
-      await user.click(firstRowBtn);
-    });
+    await user.click(firstRowBtn);
 
     // Wait component to re-render
     await screen.findByRole('table');
@@ -411,9 +383,7 @@ describe('test main table UI', () => {
       name: 'download',
     });
     expect(firstRowBtn).toBeTruthy();
-    await act(async () => {
-      await user.click(firstRowBtn);
-    });
+    await user.click(firstRowBtn);
 
     // Wait component to re-render
     await screen.findByRole('table');

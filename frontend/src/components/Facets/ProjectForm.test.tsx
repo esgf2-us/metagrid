@@ -32,11 +32,9 @@ it('Runs project form submit when changing projects', async () => {
       {...defaultProps}
       projectsFetched={{ results: projectsFixture() }}
       onFinish={(projName) => {
-        act(() => {
-          showNoticeStatic(`${projName} was selected!`, {
-            duration: 1,
-            type: 'success',
-          });
+        showNoticeStatic(`${projName} was selected!`, {
+          duration: 1,
+          type: 'success',
         });
       }}
     />
@@ -53,9 +51,7 @@ it('Runs project form submit when changing projects', async () => {
 
   // Select the 3rd project in the drop-down
   const option3 = await screen.findByText('test3');
-  await act(async () => {
-    await user.click(option3);
-  });
+  await user.click(option3);
 
   // The 3rd project should now be selected
   const option3Selected = await screen.findByText('test3 was selected!');

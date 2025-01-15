@@ -79,12 +79,12 @@ const styles: CSSinJS = {
 };
 
 const useHotjar = (): void => {
-  React.useEffect(() => {
-    /* istanbul ignore next */
-    if (window.METAGRID.REACT_APP_HOTJAR_ID && window.METAGRID.REACT_APP_HOTJAR_SV) {
-      hotjar.initialize(window.METAGRID.REACT_APP_HOTJAR_ID, window.METAGRID.REACT_APP_HOTJAR_SV);
-    }
-  }, []);
+  if (window.METAGRID.HOTJAR_ID != null && window.METAGRID.HOTJAR_SV != null) {
+    React.useEffect(() => {
+      /* istanbul ignore next */
+      hotjar.initialize(Number(window.METAGRID.HOTJAR_ID), Number(window.METAGRID.HOTJAR_SV));
+    }, []);
+  }
 };
 
 export type Props = {

@@ -262,6 +262,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
             <span
               className={searchTableTargets.resultsFoundText.class()}
               style={styles.resultsHeader}
+              data-testid="search-results-span"
             >
               {numFound.toLocaleString()} results found for{' '}
             </span>
@@ -291,7 +292,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
                 onClick={() => onSaveSearchQuery(currentRequestURL as string)}
                 disabled={isLoading || numFound === 0}
               >
-                <BookOutlined />
+                <BookOutlined data-testid="save-search-btn" />
                 Save Search
               </Button>{' '}
               <Button
@@ -300,7 +301,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
                 onClick={() => onShareSearchQuery()}
                 disabled={isLoading || numFound === 0}
               >
-                <ShareAltOutlined />
+                <ShareAltOutlined data-testid="share-search-btn" />
                 Copy Search
               </Button>
             </div>
@@ -311,7 +312,9 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
         {results && (
           <>
             <p>
-              <span style={styles.subtitles}>Query String: </span>
+              <span style={styles.subtitles} data-testid="main-query-string-label">
+                Query String:{' '}
+              </span>
               <Typography.Text className={searchTableTargets.queryString.class()} code>
                 {stringifyFilters(
                   versionType,

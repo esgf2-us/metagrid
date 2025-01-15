@@ -1,4 +1,4 @@
-import { act, within, screen } from '@testing-library/react';
+import { within, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { rest, server } from '../../test/mock/server';
@@ -7,6 +7,9 @@ import FilesTable, { DownloadUrls, genDownloadUrls, Props } from './FilesTable';
 import customRender from '../../test/custom-render';
 import { ESGFSearchAPIFixture, rawSearchResultFixture } from '../../test/mock/fixtures';
 import { RawSearchResult } from './types';
+import { openDropdownList } from '../../test/jestTestFunctions';
+
+const user = userEvent.setup();
 
 describe('test genDownloadUrls()', () => {
   let urls: string[];
@@ -121,9 +124,7 @@ describe('test FilesTable component', () => {
     });
     expect(downloadBtn).toBeTruthy();
 
-    await act(async () => {
-      await userEvent.click(downloadBtn);
-    });
+    await user.click(downloadBtn);
 
     // Test the copy button
     const copyBtn = within(row).getByRole('button', {
@@ -131,9 +132,7 @@ describe('test FilesTable component', () => {
     });
     expect(copyBtn).toBeTruthy();
 
-    await act(async () => {
-      await userEvent.click(copyBtn);
-    });
+    await user.click(copyBtn);
 
     // Wait for component to re-render
     await screen.findByTestId('filesTable');
@@ -165,9 +164,10 @@ describe('test FilesTable component', () => {
     // Select the combobox drop down and update its value to render options
     const paginationList = await screen.findByRole('list');
     const pageSizeComboBox = await within(paginationList).findByRole('combobox');
-    pageSizeComboBox.focus();
-    await userEvent.keyboard('[ArrowDown]');
-    await userEvent.click(await screen.findByTestId('pageSize-option-20'));
+
+    await openDropdownList(user, pageSizeComboBox);
+
+    await user.click(await screen.findByTestId('pageSize-option-20'));
 
     expect(screen.getByTestId('search-items-row-11')).toBeInTheDocument();
   });
@@ -199,9 +199,7 @@ describe('test FilesTable component', () => {
     });
     expect(expandableIcon).toBeTruthy();
 
-    await act(async () => {
-      await userEvent.click(expandableIcon);
-    });
+    await user.click(expandableIcon);
 
     // Get the down circle icon within the cell and click to close the expandable row
     const expandableDownIcon = within(expandableCell).getByRole('img', {
@@ -209,8 +207,6 @@ describe('test FilesTable component', () => {
     });
     expect(expandableDownIcon).toBeTruthy();
 
-    await act(async () => {
-      await userEvent.click(expandableDownIcon);
-    });
+    await user.click(expandableDownIcon);
   });
 });

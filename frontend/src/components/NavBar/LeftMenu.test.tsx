@@ -35,16 +35,13 @@ it('successfully submits search form and resets current text with onFinish', asy
   // Change form field values
   const input: HTMLInputElement = await screen.findByPlaceholderText('Search for a keyword');
 
-  await act(async () => {
-    await user.type(input, 'Solar');
-  });
+  await user.type(input, 'Solar');
   expect(input.value).toEqual('Solar');
 
   // Submit the form
   const submitBtn = await screen.findByRole('img', { name: 'search' });
-  await act(async () => {
-    await user.click(submitBtn);
-  });
+
+  await user.click(submitBtn);
 
   // Check if the input value resets back to blank
   expect(input.value).toEqual('');

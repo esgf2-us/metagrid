@@ -1,24 +1,39 @@
 services:
   postgres:
+    restart: unless-stopped
     environment:
-      # The dev config uses trust auth so we set that blank here to keep it
-      # from accidentally making its way to production without proper
-      # authentication
       POSTGRES_HOST_AUTH_METHOD: ""
+      PGPASSWORD: ""
+      PGUSER: ""
 
   django:
-    volumes: [] # Don't mount the source files from the server in production
+    restart: unless-stopped
     environment:
-      DJANGO_SETTINGS_MODULE: config.settings.production
+      DJANGO_DEBUG: False
+      DJANGO_SECRET_KEY: ""
+      DJANGO_EMAIL_BACKEND: "django.core.mail.backends.smtp.EmailBackend"
+      DJANGO_SOCIAL_AUTH_REDIRECT_IS_HTTPS: True
+      DJANGO_SECURE_PROXY_SSL_HEADER: '["HTTP_X_FORWARDED_PROTO", "https"]'
+      DJANGO_SECURE_SSL_REDIRECT: True
+      DJANGO_SESSION_COOKIE_SECURE: True
+      DJANGO_CSRF_COOKIE_SECURE: True
+      DJANGO_SECURE_HSTS_SECONDS: 518400
+      DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS: True
+      DJANGO_SECURE_HSTS_PRELOAD: True
 
   keycloak:
     command: start
     volumes: []
+    restart: unless-stopped
+    environment:
+      KEYCLOAK_USER: ""
+      KEYCLOAK_PASSWORD: ""
 
   react:
     build:
       # The prod build target includes a production ready nginx server
       target: prod
-    volumes:
-      [] # The prod server doesn't watch and recompile the source files
-      # so don't mount them to the container
+    restart: unless-stopped
+
+  docs:
+    restart: unless-stopped

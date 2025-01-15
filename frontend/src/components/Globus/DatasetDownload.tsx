@@ -308,7 +308,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
    * @returns False if one or more items are not Globus Ready
    */
   const checkItemsAreGlobusEnabled = (): boolean => {
-    if (window.METAGRID.REACT_APP_GLOBUS_NODES.length === 0) {
+    if (window.METAGRID.GLOBUS_NODES.length === 0) {
       return true;
     }
     const globusReadyItems: RawSearchResults = [];
@@ -319,7 +319,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     itemSelections.forEach((selection) => {
       if (selection) {
         const dataNode = selection.data_node as string;
-        if (dataNode && window.METAGRID.REACT_APP_GLOBUS_NODES.includes(dataNode)) {
+        if (dataNode && window.METAGRID.GLOBUS_NODES.includes(dataNode)) {
           globusReadyItems.push(selection);
         }
       }
