@@ -108,14 +108,14 @@ def search_files(
     The function first constructs a set of default query parameters for the ESGF search API. If no parameters are provided in `url_params`, it defaults to searching for a single file with a limit of 1 and disabling distribution. It then sends a GET request to the ESGF search API with the combined query parameters and processes the JSON response to extract the necessary information.
 
     Example:
-    >>> url_params = {"type": "File", "format": "application%2Fsolr%2Bjson", "fields": "url,data_node", "limit": "10000"}
+    >>> url_params = {"type": "File", "format": "application/solr+json", "fields": "url,data_node", "limit": "10000"}
     >>> for endpoint_id, file_path in search_files(url_params):
     ...     print(endpoint_id, file_path)
     """
     query_defaults: dict[str, str] = {
         # https://esgf-node.ornl.gov/esg-search/search?type=File&format=application%2Fsolr%2Bjson&fields=url,data_node&limit=10000
         "type": "File",
-        "format": "application/solr+json",  # NB: the %2F can be decoded to / but the %2B must remain as the esg_search api will not tolerate the + character that the underlying Solr expects
+        "format": "application/solr+json",
         "fields": "url,data_node",
         "limit": "10000",
     }

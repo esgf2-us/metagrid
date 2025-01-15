@@ -240,7 +240,7 @@ def test_search_files_single_file_with_empty_params(json_fixture):
     call_params = responses.calls[0].request.params
     assert call_params["limit"] == "1"
     assert call_params["distrib"] == "false"
-    assert call_params["format"] == "application%2Fsolr%2Bjson"
+    assert call_params["format"] == "application/solr+json"
     assert call_params["type"] == "File"
     assert call_params["fields"] == "url,data_node"
 
@@ -267,7 +267,7 @@ def test_search_files_multiple_results(json_fixture):
 
     call_params = responses.calls[0].request.params
     assert call_params["limit"] == "10000"
-    assert call_params["format"] == "application%2Fsolr%2Bjson"
+    assert call_params["format"] == "application/solr+json"
     assert call_params["type"] == "File"
     assert call_params["fields"] == "url,data_node"
     assert call_params["project"] == "CMIP6"
