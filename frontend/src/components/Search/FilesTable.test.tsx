@@ -165,7 +165,7 @@ describe('test FilesTable component', () => {
     const paginationList = await screen.findByRole('list');
     const pageSizeComboBox = await within(paginationList).findByRole('combobox');
 
-    openDropdownList(user, pageSizeComboBox);
+    await openDropdownList(user, pageSizeComboBox);
 
     await user.click(await screen.findByTestId('pageSize-option-20'));
 

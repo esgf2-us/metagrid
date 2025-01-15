@@ -151,7 +151,7 @@ describe('test Search component', () => {
     const paginationList = await screen.findByRole('list');
     const pageSizeComboBox = await within(paginationList).findByRole('combobox');
 
-    openDropdownList(user, pageSizeComboBox);
+    await openDropdownList(user, pageSizeComboBox);
 
     await userEvent.click(await screen.findByTestId('pageSize-option-20'));
 
