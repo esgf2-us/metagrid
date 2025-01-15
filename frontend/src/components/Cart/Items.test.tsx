@@ -1,4 +1,4 @@
-import { within, screen, act } from '@testing-library/react';
+import { within, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { userCartFixture } from '../../test/mock/fixtures';
@@ -42,9 +42,7 @@ describe('test the cart items component', () => {
     // Check first row has add button and click it
     const addBtn = await within(firstRow).findByRole('img', { name: 'plus' });
     expect(addBtn).toBeTruthy();
-    await act(async () => {
-      await user.click(addBtn);
-    });
+    await user.click(addBtn);
 
     // Check 'Added items(s) to the cart' message appears
     const addText = (await screen.findAllByText('Added item(s) to your cart'))[0];
@@ -52,16 +50,12 @@ describe('test the cart items component', () => {
 
     // Switch to the cart page
     const cartBtn = await screen.findByTestId('cartPageLink');
-    await act(async () => {
-      await user.click(cartBtn);
-    });
+    await user.click(cartBtn);
 
     // Click the Remove All Items button
     const removeAllBtn = await screen.findByTestId('clear-cart-button');
     expect(removeAllBtn).toBeTruthy();
-    await act(async () => {
-      await user.click(removeAllBtn);
-    });
+    await user.click(removeAllBtn);
 
     // Check popover appears
     const popOver = await screen.findByRole('tooltip');
@@ -70,9 +64,7 @@ describe('test the cart items component', () => {
     // Submit the popover
     const submitPopOverBtn = await screen.findByTestId('clear-all-cart-items-confirm-button');
     expect(submitPopOverBtn).toBeInTheDocument();
-    await act(async () => {
-      await user.click(submitPopOverBtn);
-    });
+    await user.click(submitPopOverBtn);
 
     // Expect cart to now be empty
     expect(await screen.findByText('Your cart is empty')).toBeTruthy();
@@ -88,9 +80,7 @@ describe('test the cart items component', () => {
     const firstRow = await screen.findByTestId('cart-items-row-1');
     const addBtn = await within(firstRow).findByRole('img', { name: 'plus' });
     expect(addBtn).toBeTruthy();
-    await act(async () => {
-      await user.click(addBtn);
-    });
+    await user.click(addBtn);
 
     // Check 'Added items(s) to the cart' message appears
     const addText = (await screen.findAllByText('Added item(s) to your cart'))[0];
@@ -98,9 +88,7 @@ describe('test the cart items component', () => {
 
     // Switch to the cart page
     const cartBtn = await screen.findByTestId('cartPageLink');
-    await act(async () => {
-      await user.click(cartBtn);
-    });
+    await user.click(cartBtn);
 
     // Check download form renders
     const downloadForm = await screen.findByTestId('downloadForm');
@@ -118,9 +106,7 @@ describe('test the cart items component', () => {
       name: 'download',
     });
     expect(downloadBtn).toBeTruthy();
-    await act(async () => {
-      await user.click(downloadBtn);
-    });
+    await user.click(downloadBtn);
   });
 
   it('handles error selecting items in the cart and downloading them via wget', async () => {
@@ -133,18 +119,14 @@ describe('test the cart items component', () => {
     const firstRow = await screen.findByTestId('cart-items-row-1');
     const firstCheckBox = await within(firstRow).findByRole('checkbox');
     expect(firstCheckBox).toBeTruthy();
-    await act(async () => {
-      await userEvent.click(firstCheckBox);
-    });
+    await userEvent.click(firstCheckBox);
 
     const downloadBtn = (
       await within(firstRow).findAllByRole('button', {
         name: 'download',
       })
     )[0];
-    await act(async () => {
-      await userEvent.click(downloadBtn);
-    });
+    await userEvent.click(downloadBtn);
 
     expect(
       await screen.findByText(

@@ -49,9 +49,7 @@ describe('test FacetsForm component', () => {
       name: 'collapsed Filename',
     });
 
-    await act(async () => {
-      await user.click(filenameSearchPanel);
-    });
+    await user.click(filenameSearchPanel);
 
     // Change form field values
     const input: HTMLInputElement = await screen.findByTestId('filename-search-input');
@@ -60,9 +58,7 @@ describe('test FacetsForm component', () => {
 
     // Submit the form
     const submitBtn = await screen.findByRole('img', { name: 'search' });
-    await act(async () => {
-      await user.click(submitBtn);
-    });
+    await user.click(submitBtn);
 
     // Check if the input value resets back to blank
     await waitFor(() => expect(input.value).toEqual(''));
@@ -76,23 +72,17 @@ describe('test FacetsForm component', () => {
     expect(anyRadioOption).toBeTruthy();
     expect(globusReadyRadioOption).toBeTruthy();
 
-    await act(async () => {
-      await user.click(anyRadioOption);
-    });
+    await user.click(anyRadioOption);
 
     expect(anyRadioOption).toBeChecked();
     expect(globusReadyRadioOption).not.toBeChecked();
 
-    await act(async () => {
-      await user.click(globusReadyRadioOption);
-    });
+    await user.click(globusReadyRadioOption);
 
     expect(anyRadioOption).not.toBeChecked();
     expect(globusReadyRadioOption).toBeChecked();
 
-    await act(async () => {
-      await user.click(anyRadioOption);
-    });
+    await user.click(anyRadioOption);
 
     expect(anyRadioOption).toBeChecked();
     expect(globusReadyRadioOption).not.toBeChecked();
@@ -105,37 +95,29 @@ describe('test FacetsForm component', () => {
     const expandAllBtn = await screen.findByText('Expand All');
     expect(expandAllBtn).toBeTruthy();
 
-    await act(async () => {
-      await user.click(expandAllBtn);
-    });
+    await user.click(expandAllBtn);
 
-    // Click the collaps all button
+    // Click the collapse all button
     const collapseAllBtn = await screen.findByText('Collapse All');
     expect(collapseAllBtn).toBeTruthy();
 
-    await act(async () => {
-      await user.click(collapseAllBtn);
-    });
+    await user.click(collapseAllBtn);
   });
 
-  it('handles copying facet items to clip board', async () => {
+  it('handles copying facet items to clipboard', async () => {
     customRender(<FacetsForm {...defaultProps} />);
 
     // Expand the group1 panel
     const group1Btn = await screen.findByText('Group1');
     expect(group1Btn).toBeTruthy();
 
-    await act(async () => {
-      await user.click(group1Btn);
-    });
+    await user.click(group1Btn);
 
     // Click the copy facets button
     const copyBtn = await screen.findByRole('img', { name: 'copy' });
     expect(copyBtn).toBeTruthy();
 
-    await act(async () => {
-      await user.click(copyBtn);
-    });
+    await user.click(copyBtn);
 
     // Check the clipboard has items
     const items = await navigator.clipboard.readText();
@@ -145,41 +127,31 @@ describe('test FacetsForm component', () => {
     const resultNotification = await screen.findByText('Data Nodes copied to clipboard!');
     expect(resultNotification).toBeTruthy();
 
-    await act(async () => {
-      await user.click(resultNotification);
-    });
+    await user.click(resultNotification);
   });
 
-  it('handles changing expand to collapse and vice-versa base on user actions', async () => {
+  it('handles changing expand to collapse and vice-versa based on user actions', async () => {
     customRender(<FacetsForm {...defaultProps} />);
 
     // Expand the group1 panel
     const group1Btn = await screen.findByText('Group1');
     expect(group1Btn).toBeTruthy();
 
-    await act(async () => {
-      await user.click(group1Btn);
-    });
+    await user.click(group1Btn);
 
     // Expand the group2 panel
     const group2Btn = await screen.findByText('Group2');
     expect(group2Btn).toBeTruthy();
 
-    await act(async () => {
-      await user.click(group2Btn);
-    });
+    await user.click(group2Btn);
 
     // The collapse all button should now show since 2 panels are expanded
     const collapseAllBtn = await screen.findByText('Collapse All');
     expect(collapseAllBtn).toBeTruthy();
 
     // Collapse group 1 and 2 panels
-    await act(async () => {
-      await user.click(group1Btn);
-    });
-    await act(async () => {
-      await user.click(group2Btn);
-    });
+    await user.click(group1Btn);
+    await user.click(group2Btn);
 
     // The expand all button should show since all panels are collapsed
     const expandAllBtn = await screen.findByText('Expand All');
@@ -194,9 +166,7 @@ describe('test FacetsForm component', () => {
       name: 'expanded Additional Properties',
     });
 
-    await act(async () => {
-      await user.click(additionalPropertiesPanel);
-    });
+    await user.click(additionalPropertiesPanel);
 
     // Check date picker renders
     const datePickerComponent = await screen.findByTestId('version-range-datepicker');
@@ -204,19 +174,15 @@ describe('test FacetsForm component', () => {
 
     const datePickerComponentInput = datePickerComponent.querySelectorAll('input')[0];
 
-    act(() => {
-      fireEvent.mouseDown(datePickerComponentInput);
+    fireEvent.mouseDown(datePickerComponentInput);
 
-      // Set date as input value
-      fireEvent.change(datePickerComponentInput, {
-        target: { value: '2020-01-15' },
-      });
+    // Set date as input value
+    fireEvent.change(datePickerComponentInput, {
+      target: { value: '2020-01-15' },
     });
 
     // Open calendar, select the set value, and click it
-    await act(async () => {
-      await user.click(document.querySelector('.ant-picker-cell-selected') as HTMLInputElement);
-    });
+    await user.click(document.querySelector('.ant-picker-cell-selected') as HTMLInputElement);
 
     await screen.findByTestId('facets-form');
   });

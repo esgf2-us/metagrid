@@ -13,6 +13,7 @@ import customRender from '../../test/custom-render';
 import { ActiveFacets, RawFacets } from '../Facets/types';
 import Search, { checkFiltersExist, parseFacets, Props, stringifyFilters } from './index';
 import { ActiveSearchQuery, RawSearchResult, ResultType, TextInputs, VersionType } from './types';
+import { openDropdownList } from '../../test/jestTestFunctions';
 
 const user = userEvent.setup();
 
@@ -119,9 +120,7 @@ describe('test Search component', () => {
     const clearAllBtn = await screen.findByText('Clear All');
     expect(clearAllBtn).toBeTruthy();
 
-    await act(async () => {
-      await user.click(clearAllBtn);
-    });
+    await user.click(clearAllBtn);
 
     // Wait for search component to re-render
     await screen.findByTestId('search');
@@ -151,9 +150,9 @@ describe('test Search component', () => {
     // Select the combobox drop down and update its value to render options
     const paginationList = await screen.findByRole('list');
     const pageSizeComboBox = await within(paginationList).findByRole('combobox');
-    pageSizeComboBox.focus();
 
-    await userEvent.keyboard('[ArrowDown]');
+    openDropdownList(user, pageSizeComboBox);
+
     await userEvent.click(await screen.findByTestId('pageSize-option-20'));
 
     expect(screen.getByTestId('cart-items-row-11')).toBeInTheDocument();
@@ -185,17 +184,11 @@ describe('test Search component', () => {
     const firstCheckBox = await within(firstRow).findByRole('checkbox');
     expect(firstCheckBox).toBeTruthy();
 
-    await act(async () => {
-      await user.click(firstCheckBox);
-    });
+    await user.click(firstCheckBox);
 
     // Check 'Add Selected to Cart' button is enabled and click it
-    expect(addCartBtn).toBeTruthy();
     expect(addCartBtn).toBeEnabled();
-
-    await act(async () => {
-      await user.click(addCartBtn);
-    });
+    await user.click(addCartBtn);
 
     // Wait for search component to re-render
     await screen.findByTestId('search');
@@ -248,9 +241,7 @@ describe('test Search component', () => {
     });
     expect(saveBtn).toBeTruthy();
 
-    await act(async () => {
-      await user.click(saveBtn);
-    });
+    await user.click(saveBtn);
 
     // Wait for search component to re-render
     await screen.findByTestId('search');
@@ -270,9 +261,7 @@ describe('test Search component', () => {
     const copyBtn = await screen.findByTestId('share-search-btn');
     expect(copyBtn).toBeTruthy();
 
-    await act(async () => {
-      await user.click(copyBtn);
-    });
+    await user.click(copyBtn);
 
     // Wait for search component to re-render
     await screen.findByTestId('search');

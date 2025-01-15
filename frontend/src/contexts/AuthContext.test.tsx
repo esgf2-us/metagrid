@@ -26,9 +26,7 @@ describe('test AuthProvider', () => {
     const renderResult = await screen.findByText('renders keycloak');
     expect(renderResult).toBeTruthy();
 
-    act(() => {
-      jest.advanceTimersByTime(295000);
-    });
+    jest.advanceTimersByTime(295000);
 
     await screen.findByTestId('authProvider');
   });
@@ -55,9 +53,7 @@ describe('test AuthProvider', () => {
     const renderResult = await screen.findByText('renders globus');
     expect(renderResult).toBeTruthy();
 
-    act(() => {
-      jest.advanceTimersByTime(295000);
-    });
+    jest.advanceTimersByTime(295000);
 
     await screen.findByTestId('authProvider');
   });

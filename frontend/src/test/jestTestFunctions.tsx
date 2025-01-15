@@ -168,25 +168,17 @@ export async function submitKeywordSearch(inputText: string, user: UserEvent): P
   const freeTextForm = await screen.findByTestId('left-menu-keyword-search-input');
   expect(freeTextForm).toBeTruthy();
 
-  await act(async () => {
-    await user.type(freeTextForm, inputText);
-  });
+  await user.type(freeTextForm, inputText);
 
   // Submit the form
   const submitBtn = await screen.findByTestId('left-menu-keyword-search-submit');
-
-  await act(async () => {
-    await user.click(submitBtn);
-  });
+  await user.click(submitBtn);
 
   await screen.findByTestId('search');
 }
 
 export async function openDropdownList(user: UserEvent, dropdown: HTMLElement): Promise<void> {
-  dropdown.focus();
-  await act(async () => {
-    await user.keyboard('[ArrowDown]');
-  });
+  await user.click(dropdown);
 }
 
 export async function addSearchRowsAndGoToCart(
@@ -210,9 +202,7 @@ export async function addSearchRowsAndGoToCart(
     const clickBtnFunc = async (): Promise<void> => {
       const addBtn = (await within(row).findAllByRole('button'))[0];
       expect(addBtn).toBeTruthy();
-      await act(async () => {
-        await user.click(addBtn);
-      });
+      await user.click(addBtn);
     };
     clickBtns.push(clickBtnFunc());
   });
@@ -226,9 +216,7 @@ export async function addSearchRowsAndGoToCart(
 
   // Switch to the cart page
   const cartBtn = await screen.findByTestId('cartPageLink');
-  await act(async () => {
-    await user.click(cartBtn);
-  });
+  await user.click(cartBtn);
 
   // Wait for cart page to render
   const summary = await screen.findByTestId('summary');

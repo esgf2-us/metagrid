@@ -45,9 +45,7 @@ describe('Start popup tests', () => {
     const searchTourBtn = await screen.findByText(TourTitles.Main);
     expect(welcomeHeader).toBeTruthy();
 
-    await act(async () => {
-      await userEvent.click(searchTourBtn);
-    });
+    await userEvent.click(searchTourBtn);
   });
 
   it('renders start popup with welcome message and starts cart tour.', async () => {
@@ -60,9 +58,7 @@ describe('Start popup tests', () => {
     const cartTourBtn = await screen.findByText(TourTitles.Cart);
     expect(welcomeHeader).toBeTruthy();
 
-    await act(async () => {
-      await userEvent.click(cartTourBtn);
-    });
+    await userEvent.click(cartTourBtn);
   });
 
   it('renders start popup with welcome message and starts saved search tour.', async () => {
@@ -75,9 +71,7 @@ describe('Start popup tests', () => {
     const searchesTourBtn = await screen.findByText(TourTitles.Searches);
     expect(welcomeHeader).toBeTruthy();
 
-    await act(async () => {
-      await userEvent.click(searchesTourBtn);
-    });
+    await userEvent.click(searchesTourBtn);
   });
 
   it('renders start popup with welcome message and starts node page tour.', async () => {
@@ -90,9 +84,7 @@ describe('Start popup tests', () => {
     const nodeTourBtn = await screen.findByText(TourTitles.Node);
     expect(welcomeHeader).toBeTruthy();
 
-    await act(async () => {
-      await userEvent.click(nodeTourBtn);
-    });
+    await userEvent.click(nodeTourBtn);
   });
 
   it('renders start popup with message data missing.', async () => {
