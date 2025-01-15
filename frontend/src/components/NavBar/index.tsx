@@ -3,7 +3,7 @@ import { Drawer, Typography } from 'antd';
 import React from 'react';
 import { useAsync } from 'react-async';
 import { fetchProjects, ResponseError } from '../../api';
-import esgfLogo from '../../assets/img/esgf_logo.png';
+import esgfLogo from '../../assets/img/esgf.png';
 import { RawProject } from '../Facets/types';
 import Button from '../General/Button';
 import LeftMenu from './LeftMenu';
@@ -41,9 +41,10 @@ const NavBar: React.FC<React.PropsWithChildren<Props>> = ({
           >
             <img
               style={{
-                height: '42px',
+                height: '82px',
                 marginLeft: '-5px',
-                marginBottom: '-10px',
+                marginBottom: '-30px',
+                marginTop: '-20px',
               }}
               src={esgfLogo}
               alt="ESGF Federated Nodes"

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Collapse, Divider, List } from 'antd';
+import { Card, Collapse, Divider, List, Typography } from 'antd';
 import { useRecoilState } from 'recoil';
 import Button from '../General/Button';
 import cartImg from '../../assets/img/cart.svg';
@@ -12,6 +12,8 @@ import { UserCart } from './types';
 import { GlobusTaskItem } from '../Globus/types';
 import GlobusStateKeys, { globusTaskItems } from '../Globus/recoil/atom';
 import { DataPersister } from '../../common/DataPersister';
+
+const { Title } = Typography;
 
 const styles: CSSinJS = {
   headerContainer: { display: 'flex', justifyContent: 'center' },
@@ -63,19 +65,21 @@ const Summary: React.FC<React.PropsWithChildren<Props>> = ({ userCart }) => {
         <img style={styles.image} src={folderImg} alt="Folder" />
       </div>
 
-      <h1 style={styles.summaryHeader}>Your Cart Summary</h1>
+      <Title level={3} style={styles.summaryHeader}>
+        Your Cart Summary
+      </Title>
 
       <Divider />
 
-      <h1>
+      <Title level={4}>
         Number of Datasets: <span style={styles.statistic}>{userCart.length}</span>
-      </h1>
-      <h1>
+      </Title>
+      <Title level={4}>
         Number of Files: <span style={styles.statistic}>{numFiles}</span>
-      </h1>
-      <h1>
+      </Title>
+      <Title level={4}>
         Total File Size: <span style={styles.statistic}>{totalDataSize}</span>
-      </h1>
+      </Title>
       <Divider />
 
       {taskItems.length > 0 && (

@@ -1,6 +1,6 @@
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { act, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import StartPopup from './StartPopup';
 import StartupMessages from './messageDisplayData';
 import { TourTitles } from '../../common/reactJoyrideSteps';
