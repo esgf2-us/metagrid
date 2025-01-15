@@ -15,8 +15,10 @@ import {
   Layout,
   Result,
   message,
+  theme,
 } from 'antd';
 import React from 'react';
+import { useRecoilState } from 'recoil';
 import { useAsync } from 'react-async';
 import { hotjar } from 'react-hotjar';
 import { Link, Navigate, Route, Routes } from 'react-router-dom';
@@ -64,10 +66,11 @@ import StartPopup from '../Messaging/StartPopup';
 import startupDisplayData from '../Messaging/messageDisplayData';
 import './App.css';
 import { miscTargets } from '../../common/reactJoyrideSteps';
+import { isDarkModeAtom } from './recoil/atoms';
 
 const styles: CSSinJS = {
   bodySider: {
-    background: '#fff',
+    background: 'rgba(255, 255, 255, 0.2)',
     padding: '12px 12px 12px 12px',
     width: '384px',
     marginRight: '2px',
@@ -143,6 +146,9 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   const [userSearchQueries, setUserSearchQueries] = React.useState<UserSearchQueries | []>(
     JSON.parse(localStorage.getItem('userSearchQueries') || '[]') as UserSearchQueries
   );
+
+  const { defaultAlgorithm, darkAlgorithm } = theme;
+  const [isDarkMode] = useRecoilState<boolean>(isDarkModeAtom);
 
   React.useEffect(() => {
     /* istanbul ignore else */
@@ -458,9 +464,10 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
         token: {
           borderRadius: 3,
         },
+        algorithm: isDarkMode ? darkAlgorithm : defaultAlgorithm,
       }}
     >
-      <div>
+      <Layout>
         <Routes>
           <Route
             path="*"
@@ -649,7 +656,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
         </Affix>
         <Support open={supportModalVisible} onClose={() => setSupportModalVisible(false)} />
         <StartPopup />
-      </div>
+      </Layout>
     </ConfigProvider>
   );
 };

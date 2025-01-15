@@ -1,18 +1,22 @@
 import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
-import { Divider } from 'antd';
+import { Divider, Typography } from 'antd';
 import React from 'react';
 import nodeImg from '../../assets/img/nodes.svg';
 import { nodeTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import { NodeStatusArray } from './types';
 
+const { Title } = Typography;
 const styles: CSSinJS = {
   headerContainer: { display: 'flex', justifyContent: 'center' },
   summaryHeader: {
     fontWeight: 'bold',
     textAlign: 'center',
   },
-  image: { margin: '1em', width: '25%' },
+  image: {
+    margin: '1em',
+    width: '25%',
+  },
   statistic: { float: 'right' },
 };
 
@@ -39,27 +43,29 @@ const NodeSummary: React.FC<React.PropsWithChildren<Props>> = ({ nodeStatus }) =
         <img style={styles.image} src={nodeImg} alt="Node" />
       </div>
 
-      <h1 style={styles.summaryHeader}>Node Status Summary</h1>
+      <Title level={3} style={styles.summaryHeader}>
+        Node Status Summary
+      </Title>
 
       <Divider />
-      <h1>
+      <Title level={3}>
         Number of Nodes:{' '}
         <span style={styles.statistic} data-testid="numNodes">
           {numNodes}
         </span>
-      </h1>
-      <h1>
+      </Title>
+      <Title level={3}>
         Online <CheckCircleTwoTone twoToneColor="#52c41a" />:
         <span style={styles.statistic} data-testid="numOnline">
           {numOnline}
         </span>
-      </h1>
-      <h1>
+      </Title>
+      <Title level={3}>
         Offline <CloseCircleTwoTone twoToneColor="#eb2f96" />:
         <span style={styles.statistic} data-testid="numOffline">
           {numOffline}
         </span>
-      </h1>
+      </Title>
       <Divider />
     </div>
   );
