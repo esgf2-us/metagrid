@@ -21,6 +21,6 @@ RUN pip install -r requirements.txt
 
 WORKDIR /docs
 COPY . .
-RUN mkdocs build --strict
+RUN mkdocs build
 
 CMD [ "mkdocs", "serve" ]

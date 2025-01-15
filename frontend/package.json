@@ -64,6 +64,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "5.2.6",
+    "@ctrl/tinycolor": "^4.1.0",
     "@react-keycloak/web": "3.4.0",
     "antd": "^5.22.2",
     "autoprefixer": "10.4.14",

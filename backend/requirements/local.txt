@@ -24,4 +24,4 @@ responses==0.25.0  # https://github.com/getsentry/responses
 ipdb==0.13.13  # https://github.com/gotcha/ipdb
 ipython==8.26.0  # https://github.com/ipython/ipython
 django-extensions==3.2.3  # https://github.com/django-extensions/django-extensions
-settings-doc~=4.3.1  # https://github.com/radeklat/settings-doc
+settings-doc==4.3.1  # https://github.com/radeklat/settings-doc

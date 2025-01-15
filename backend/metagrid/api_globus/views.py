@@ -115,7 +115,7 @@ def search_files(
     query_defaults: dict[str, str] = {
         # https://esgf-node.ornl.gov/esg-search/search?type=File&format=application%2Fsolr%2Bjson&fields=url,data_node&limit=10000
         "type": "File",
-        "format": "application%2Fsolr%2Bjson",  # NB: the %2F can be decoded to / but the %2B must remain as the esg_search api will not tolerate the + character that the underlying Solr expects
+        "format": "application/solr+json",  # NB: the %2F can be decoded to / but the %2B must remain as the esg_search api will not tolerate the + character that the underlying Solr expects
         "fields": "url,data_node",
         "limit": "10000",
     }
