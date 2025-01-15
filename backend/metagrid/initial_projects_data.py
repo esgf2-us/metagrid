@@ -209,23 +209,20 @@ projects = [
                 "realm",
                 "data_node",
             ],
-            GROUPS[1]: ["source_id"],
+            GROUPS[1]: ["source_id"
+                "institution_id",
+                "region",
+                "source_type",
+],
             GROUPS[4]: [
                 "variable",
                 "variable_long_name",
                 "cf_standard_name",
             ],
-            GROUPS[5]: [
-                "institute",
-                "time_frequency",
-            ],
-            GROUPS[6]: [
-                "institution_id",
+            GROUPS[3]: [
                 "frequency",
                 "grid_label",
                 "nominal_resolution",
-                "region",
-                "source_type",
                 "variant_label",
             ],
         },
@@ -257,6 +254,22 @@ projects = [
         },
     },
     {
+        "name": "DRCDP",
+        "description" : "Downscaled CMIP data for North America",
+        "facets_by_group" :{
+            "Search Properties": [ 
+                "downscaling_source_id",
+                "institution_id",
+                "driving_source_id",
+                "driving_experiment_id",
+                "source_id",
+                "version_realization",
+                "variable_id",
+                "driving_activity_id"
+            ]
+        }
+    },
+    {
         "name": "All (except CMIP6)",
         "description": "Cross project search for all projects except CMIP6.",
         "facets_by_group": {
@@ -281,16 +294,6 @@ projects = [
                 "variable_long_name",
                 "cf_standard_name",
                 "driving_model",
-            ],
-            "ISIMIP-FT": [
-                "impact_model",
-                "sector",
-                "social_forcing",
-                "co2_forcing",
-                "irrigation_forcing",
-                "crop",
-                "pft",
-                "vegetation",
             ],
             "CORDEX": [
                 "domain",
