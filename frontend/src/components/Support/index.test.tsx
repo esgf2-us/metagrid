@@ -1,6 +1,6 @@
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { act, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { getCurrentAppPage, TourTitles } from '../../common/reactJoyrideSteps';
 import { AppPage } from '../../common/types';
 import Support from './index';

@@ -1,4 +1,4 @@
-import { act, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import React from 'react';
 import customRender from '../test/custom-render';
 import { mockConfig } from '../test/jestTestFunctions';
