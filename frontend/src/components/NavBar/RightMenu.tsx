@@ -50,7 +50,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
   let logoutBtn: JSX.Element;
   let userInfo = { email: '', given_name: '' };
 
-  if (window.METAGRID.REACT_APP_AUTHENTICATION_METHOD === 'keycloak') {
+  if (window.METAGRID.AUTHENTICATION_METHOD === 'keycloak') {
     const { keycloak } = useKeycloak();
     loginBtn = (
       <Button
@@ -79,12 +79,12 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
         given_name: string;
       };
     }
-  } else if (window.METAGRID.REACT_APP_AUTHENTICATION_METHOD === 'globus') {
+  } else if (window.METAGRID.AUTHENTICATION_METHOD === 'globus') {
     loginBtn = (
       <Button
         type="text"
         icon={<UserOutlined style={{ fontSize: '18px', margin: 0 }} />}
-        href="login/globus"
+        href="login/globus/"
       >
         Sign In
       </Button>

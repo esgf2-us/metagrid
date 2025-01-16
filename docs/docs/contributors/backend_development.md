@@ -31,57 +31,42 @@ This page will show you how to contribute to MetaGrid's back-end. You'll learn a
 
 Adapted from [Cookiecutter Django's](https://github.com/pydanny/cookiecutter-django/tree/master/%7B%7Bcookiecutter.project_slug%7D%7D) file structure scheme
 
+<!-- generated with tree backend --gitignore -I "__init__.py" -I tests -L 2 -->
+
 ```scaffold
 backend
-├── .envs
-│ ├── .django
-│ ├── .keykloak
-│ ├── .postgres
 ├── config
-│ ├── settings
-│ │ ├── base.py
-│ │ ├── local.py
-│ │ ├── production.py
-│ │ └── test.py
-│ ├── urls.py
-│ └── wsgi.py
-├── docker
-│ ├── local
-│ └── production
-├── metagrid
-│ ├── initial_projects_data.py
-│ ├── api_proxy
-│ ├── cart
-│ ├── mysites
-│ ├── projects
-│ └── users
-├── requirements
-│ ├── base.txt
-│ ├── local.txt
-│ └── production.txt
-├── .coveragerc
-├── .dockerignore
-├── .editorconfig
-├── .gitignore
-├── docker-compose.prod.yml
-├── docker-compose.yml
+│   ├── settings
+│   ├── urls.py
+│   └── wsgi.py
+├── Dockerfile
+├── gunicorn_conf.py
 ├── manage.py
-├── mkdocs.yml
+├── metagrid
+│   ├── api_globus
+│   ├── api_proxy
+│   ├── cart
+│   ├── initial_projects_data.py
+│   ├── mysites
+│   ├── projects
+│   └── users
 ├── pyproject.toml
+├── README.md
+├── requirements
+│   ├── base.txt
+│   └── local.txt
 ├── setup.cfg
+├── UpdateProjectData_README.txt
 └── updateProjects.sh
 ```
 
-- `.envs/` - stores environment variables for each microservice found in the docker-compose files, for use in local development.
 - `config/` - stores Django configuration files
   - `settings/` - stores Django settings files
-    - `base.py` - base setting shared across local development and production environments
-    - `local.py` - extends `base.py` with local development environment settings
-    - `production.py` - extends `base.py` with production environment settings
-    - `test.py` - extends `base.py` with test environment settings
+    - `static.py` - Settings that are changed from their Django defaults but are unlikely to change from site to site.
+    - `site_specific.py` - Settings that are likely to need to be configured per site.
   - `urls.py` - provides URL mapping to Django views
-  - `wsgi.py` - interface between application server to connect with Django. Used primarily in deployment.
-- `docker/` - stores files used by each microservice found in the docker-compose files, including DockerFiles, start scripts, etc, separated by environment and service
+  - `wsgi.py` - interface between application server to connect with Django.
+- `Dockerfile` - The Dockerfile used for the backend Django service
 - `docs/` - stores documentation files for the project
 - `metagrid/` - stores Django apps
   - `initial_projects_data.py` - used to pre-populate the postgres database with project related groups, facets etc. If modified, then you must run the updateProjects.sh script for the database to be updated.
@@ -93,7 +78,7 @@ backend
 - `.coveragerc` - configuration file for coverage.py (used by pytest-cov)
 - `.dockerignore` - files and folders to ignore when building docker containers
 - `.editorconfig` - configuration file for unifying coding style for different editors and IDEs
-- `docker-compose.prod.yml` - the production build of docker-compose
+- `docker-compose.prod.yml` - The Production overlay used to reset settings that are fine in developement but dangerous in production.
 - `docker-compose.yml` - the local development build of docker-compose
 - `manage.py` - a command-line utility that lets you interact with this Django project in various ways, such as starting the project or running migrations
 - `mkdocs.yml` - configuration file for [MkDocs](https://www.mkdocs.org/user-guide/configuration/)
@@ -110,7 +95,7 @@ backend
 - Django apps should by tightly focused on its task rather than a combination of multiple tasks
 - Keep Django apps small. If an app becomes too complex, break it up.
 - App's name should be a plural version of the app's main model (e.g. `users` for `User` model)
-  - Use valid, PEP8 complain and importable Python package names, which are short, all-lowercase names
+  - Use valid, PEP8 compliant and importable Python package names, which are short, all-lowercase names
   - Use underscores for readability, but avoid in most cases.
 
 #### Starting an App
@@ -118,8 +103,7 @@ backend
 Run the command to start an app
 
 ```bash
-cd metagrid
-docker compose -p metagrid_backend_dev run --rm django python manage.py startapp <app_name>
+docker compose run --rm django python manage.py startapp <app_name>
 ```
 
 Register the app under `INSTALLED_APPS`
@@ -136,6 +120,8 @@ INSTALLED_APPS =[
 #### App File Structure
 
 Below is an example of how MetaGrid scaffolds Django apps.
+
+<!-- generated with tree backend --gitignore -I "__init__.py" -I tests -L 2 -->
 
 ```scaffold
 backend
@@ -203,14 +189,14 @@ After adding an app, you can start building REST APIs for the frontend. Here's t
 
 MetaGrid's back-end follows the [Black](https://black.readthedocs.io/en/stable/the_black_code_style.html) code style. Please read through Black's code style guide.
 
-**Style guide and linting rules are enforced in CI test builds.**.
+**Style guide and linting rules are enforced in CI test builds.**
 
 ## Useful Django Commands
 
 Run a command inside the docker container:
 
 ```bash
-docker compose -p metagrid_backend_dev run --rm django [command]
+docker compose run --rm django [command]
 ```
 
 ### Django migrations
@@ -278,9 +264,9 @@ To run the tests, check your test coverage, and generate an HTML coverage report
 
 ```bash
 # Optional, stop existing Django containers so tests can run without conflicts
-docker compose -f docker-compose.yml down
+docker compose down
 # Runs the tests
-docker compose -p metagrid_backend_dev run --rm django pytest
+docker compose run --rm django pytest
 ```
 
 Note: Run commands above within the 'metagrid/backend' directory.

@@ -7,7 +7,6 @@ import Keycloak from 'keycloak-js';
 import { GlobusAuthProvider, AuthContext, KeycloakAuthProvider } from '../contexts/AuthContext';
 import { ReactJoyrideProvider } from '../contexts/ReactJoyrideContext';
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
-import { mockConfig } from './jestTestFunctions';
 
 /**
  * Wraps components in all implemented React Context Providers for testing using keycloak or globus
@@ -40,30 +39,14 @@ const AuthProvider = ({
     };
   }
 
-  Object.defineProperty(window, 'matchMedia', {
-    writable: true,
-    value: jest.fn().mockImplementation((query: string) => ({
-      matches: false,
-      media: query,
-      onchange: null,
-      addListener: jest.fn(), // deprecated
-      removeListener: jest.fn(), // deprecated
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
-      dispatchEvent: jest.fn(),
-    })),
-  });
-
-  Object.defineProperty(window, 'METAGRID', { value: mockConfig });
-
-  if (window.METAGRID.REACT_APP_AUTHENTICATION_METHOD === 'keycloak') {
+  if (window.METAGRID.AUTHENTICATION_METHOD === 'keycloak') {
     // Setup Keycloak instance as needed
     // Pass initialization options as required or leave blank to load from 'keycloak.json'
     // Source: https://github.com/panz3r/react-keycloak/blob/master/packages/web/README.md
     const keycloak = new Keycloak({
-      realm: window.METAGRID.REACT_APP_KEYCLOAK_REALM,
-      url: window.METAGRID.REACT_APP_KEYCLOAK_URL,
-      clientId: window.METAGRID.REACT_APP_KEYCLOAK_CLIENT_ID,
+      realm: window.METAGRID.KEYCLOAK_REALM,
+      url: window.METAGRID.KEYCLOAK_URL,
+      clientId: window.METAGRID.KEYCLOAK_CLIENT_ID,
     });
 
     const keycloakProviderInitConfig = {
@@ -75,7 +58,7 @@ const AuthProvider = ({
         <ReactKeycloakProvider authClient={keycloak} initOptions={keycloakProviderInitConfig}>
           <KeycloakAuthProvider>
             <AuthContext.Provider value={authInfo}>
-              <MemoryRouter basename={process.env.PUBLIC_URL}>
+              <MemoryRouter>
                 <ReactJoyrideProvider>{children}</ReactJoyrideProvider>
               </MemoryRouter>
             </AuthContext.Provider>
@@ -89,7 +72,7 @@ const AuthProvider = ({
     <RecoilRoot initializeState={snapshotSetFunc}>
       <GlobusAuthProvider>
         <AuthContext.Provider value={authInfo}>
-          <MemoryRouter basename="/">
+          <MemoryRouter>
             <ReactJoyrideProvider>{children}</ReactJoyrideProvider>
           </MemoryRouter>
         </AuthContext.Provider>

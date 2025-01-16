@@ -10,18 +10,10 @@ import App from './components/App/App';
 import { GlobusAuthProvider, KeycloakAuthProvider } from './contexts/AuthContext';
 import { ReactJoyrideProvider } from './contexts/ReactJoyrideContext';
 import './index.css';
-import axios from './lib/axios';
 import { FrontendConfig } from './common/types';
 
 const container = document.getElementById('root');
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const root = createRoot(container!);
-
-declare global {
-  interface Window {
-    METAGRID: FrontendConfig;
-  }
-}
 
 const appRouter = (
   <BrowserRouter basename="/">
@@ -31,45 +23,49 @@ const appRouter = (
   </BrowserRouter>
 );
 
-axios.get<FrontendConfig>('/frontend-config.js').then((response) => {
-  window.METAGRID = response.data;
+fetch('/frontend-config.js')
+  .then((response) => response.json() as Promise<FrontendConfig>)
+  .then((response) => {
+    window.METAGRID = response;
 
-  // Setup Google Analytics
-  ReactGA.initialize(window.METAGRID.REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID);
+    if (window.METAGRID.GOOGLE_ANALYTICS_TRACKING_ID != null) {
+      // Setup Google Analytics
+      ReactGA.initialize(window.METAGRID.GOOGLE_ANALYTICS_TRACKING_ID);
+    }
 
-  const authMethod = window.METAGRID.REACT_APP_AUTHENTICATION_METHOD;
+    const authMethod = window.METAGRID.AUTHENTICATION_METHOD;
 
-  if (authMethod === 'keycloak') {
-    // TODO: these 2 consts are duplicated from ./lib/keycloak which is now only
-    // used in tests. The keycloak client needs to be created only after the
-    // config is fetched from the backend above. Can they be consolidated?
+    if (authMethod === 'keycloak') {
+      // TODO: these 2 consts are duplicated from ./lib/keycloak which is now only
+      // used in tests. The keycloak client needs to be created only after the
+      // config is fetched from the backend above. Can they be consolidated?
 
-    // Setup Keycloak instance as needed
-    // Pass initialization options as required or leave blank to load from 'keycloak.json'
-    // Source: https://github.com/panz3r/react-keycloak/blob/master/packages/web/README.md
-    const keycloak = new Keycloak({
-      realm: window.METAGRID.REACT_APP_KEYCLOAK_REALM,
-      url: window.METAGRID.REACT_APP_KEYCLOAK_URL,
-      clientId: window.METAGRID.REACT_APP_KEYCLOAK_CLIENT_ID,
-    });
+      // Setup Keycloak instance as needed
+      // Pass initialization options as required or leave blank to load from 'keycloak.json'
+      // Source: https://github.com/panz3r/react-keycloak/blob/master/packages/web/README.md
+      const keycloak = new Keycloak({
+        realm: window.METAGRID.KEYCLOAK_REALM,
+        url: window.METAGRID.KEYCLOAK_URL,
+        clientId: window.METAGRID.KEYCLOAK_CLIENT_ID,
+      });
 
-    const keycloakProviderInitConfig = {
-      onLoad: 'check-sso',
-      flow: 'standard',
-    };
+      const keycloakProviderInitConfig = {
+        onLoad: 'check-sso',
+        flow: 'standard',
+      };
 
-    root.render(
-      <RecoilRoot>
-        <ReactKeycloakProvider authClient={keycloak} initOptions={keycloakProviderInitConfig}>
-          <KeycloakAuthProvider>{appRouter}</KeycloakAuthProvider>
-        </ReactKeycloakProvider>
-      </RecoilRoot>
-    );
-  } else {
-    root.render(
-      <RecoilRoot>
-        <GlobusAuthProvider>{appRouter}</GlobusAuthProvider>
-      </RecoilRoot>
-    );
-  }
-});
+      root.render(
+        <RecoilRoot>
+          <ReactKeycloakProvider authClient={keycloak} initOptions={keycloakProviderInitConfig}>
+            <KeycloakAuthProvider>{appRouter}</KeycloakAuthProvider>
+          </ReactKeycloakProvider>
+        </RecoilRoot>
+      );
+    } else {
+      root.render(
+        <RecoilRoot>
+          <GlobusAuthProvider>{appRouter}</GlobusAuthProvider>
+        </RecoilRoot>
+      );
+    }
+  });

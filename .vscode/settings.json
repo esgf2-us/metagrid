@@ -63,7 +63,7 @@
   // Jest
   // -----------------------------
   "jest.rootPath": "./frontend/src",
-  "jest.jestCommandLine": "yarn jest  --runInBand",
+  "jest.jestCommandLine": "yarn jest",
   "jest.monitorLongRun": "off",
   "jest.enable": true,
   "jest.runMode": {

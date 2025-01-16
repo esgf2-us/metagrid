@@ -1,5 +1,3 @@
-/* eslint-disable no-void */
-
 import {
   BookOutlined,
   DeleteOutlined,
@@ -81,12 +79,12 @@ const styles: CSSinJS = {
 };
 
 const useHotjar = (): void => {
-  React.useEffect(() => {
-    /* istanbul ignore next */
-    if (window.METAGRID.REACT_APP_HOTJAR_ID && window.METAGRID.REACT_APP_HOTJAR_SV) {
-      hotjar.initialize(window.METAGRID.REACT_APP_HOTJAR_ID, window.METAGRID.REACT_APP_HOTJAR_SV);
-    }
-  }, []);
+  if (window.METAGRID.HOTJAR_ID != null && window.METAGRID.HOTJAR_SV != null) {
+    React.useEffect(() => {
+      /* istanbul ignore next */
+      hotjar.initialize(Number(window.METAGRID.HOTJAR_ID), Number(window.METAGRID.HOTJAR_SV));
+    }, []);
+  }
 };
 
 export type Props = {
@@ -149,7 +147,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   React.useEffect(() => {
     /* istanbul ignore else */
     if (isAuthenticated) {
-      void fetchUserCart(pk, accessToken)
+      fetchUserCart(pk, accessToken)
         .then((rawUserCart) => {
           /* istanbul ignore next */
           const localItems = JSON.parse(
@@ -157,14 +155,14 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
           ) as RawSearchResults;
           const databaseItems = rawUserCart.items as RawSearchResults;
           const combinedCarts = combineCarts(databaseItems, localItems);
-          void updateUserCart(pk, accessToken, combinedCarts);
+          updateUserCart(pk, accessToken, combinedCarts);
           setUserCart(combinedCarts);
         })
         .catch((error: ResponseError) => {
           showError(messageApi, error.message);
         });
 
-      void fetchUserSearchQueries(accessToken)
+      fetchUserSearchQueries(accessToken)
         .then((rawUserSearches) => {
           /* istanbul ignore next */
           const localItems = JSON.parse(
@@ -174,7 +172,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
           const searchQueriesToAdd = unsavedLocalSearches(databaseItems, localItems);
           /* istanbul ignore next */
           searchQueriesToAdd.forEach((query) => {
-            void addUserSearchQuery(pk, accessToken, query);
+            addUserSearchQuery(pk, accessToken, query);
           });
           setUserSearchQueries(databaseItems.concat(searchQueriesToAdd));
         })
@@ -347,7 +345,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
 
     /* istanbul ignore else */
     if (isAuthenticated) {
-      void updateUserCart(pk, accessToken, newCart);
+      updateUserCart(pk, accessToken, newCart);
     }
   };
 
@@ -356,7 +354,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
 
     /* istanbul ignore else */
     if (isAuthenticated) {
-      void updateUserCart(pk, accessToken, []);
+      updateUserCart(pk, accessToken, []);
     }
   };
 
@@ -392,7 +390,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     };
 
     if (isAuthenticated) {
-      void addUserSearchQuery(pk, accessToken, savedSearch)
+      addUserSearchQuery(pk, accessToken, savedSearch)
         .then(() => {
           saveSuccess();
         })
@@ -428,7 +426,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     };
 
     if (isAuthenticated) {
-      void deleteUserSearchQuery(searchUUID, accessToken)
+      deleteUserSearchQuery(searchUUID, accessToken)
         .then(() => {
           deleteSuccess();
         })

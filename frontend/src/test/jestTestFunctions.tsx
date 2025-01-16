@@ -22,16 +22,15 @@ export const originalGlobusEnabledNodes = [
 ];
 
 export const mockConfig: FrontendConfig = {
-  REACT_APP_GLOBUS_CLIENT_ID: 'frontend',
-  REACT_APP_GLOBUS_REDIRECT: 'http://localhost:8080/cart/items',
-  REACT_APP_GLOBUS_NODES: originalGlobusEnabledNodes,
-  REACT_APP_KEYCLOAK_REALM: 'esgf',
-  REACT_APP_KEYCLOAK_URL: 'http://localhost:1337',
-  REACT_APP_KEYCLOAK_CLIENT_ID: 'frontend',
-  REACT_APP_HOTJAR_ID: 1234,
-  REACT_APP_HOTJAR_SV: 1234,
-  REACT_APP_AUTHENTICATION_METHOD: 'keycloak',
-  REACT_APP_GOOGLE_ANALYTICS_TRACKING_ID: 'UA-XXXXXXXXX-YY',
+  GLOBUS_CLIENT_ID: 'frontend',
+  GLOBUS_NODES: originalGlobusEnabledNodes,
+  KEYCLOAK_REALM: 'esgf',
+  KEYCLOAK_URL: 'http://localhost:1337',
+  KEYCLOAK_CLIENT_ID: 'frontend',
+  HOTJAR_ID: 1234,
+  HOTJAR_SV: 1234,
+  AUTHENTICATION_METHOD: 'keycloak',
+  GOOGLE_ANALYTICS_TRACKING_ID: 'UA-XXXXXXXXX-YY',
 };
 
 export const activeSearch = getSearchFromUrl();
@@ -166,30 +165,20 @@ export async function submitKeywordSearch(inputText: string, user: UserEvent): P
   expect(leftMenuComponent).toBeTruthy();
 
   // Type in value for free-text input
-  const freeTextForm = await screen.findByPlaceholderText('Search for a keyword');
+  const freeTextForm = await screen.findByTestId('left-menu-keyword-search-input');
   expect(freeTextForm).toBeTruthy();
 
-  await act(async () => {
-    await user.type(freeTextForm, inputText);
-  });
+  await user.type(freeTextForm, inputText);
 
   // Submit the form
-  const submitBtn = await within(leftMenuComponent).findByRole('img', {
-    name: 'search',
-  });
-
-  await act(async () => {
-    await user.click(submitBtn);
-  });
+  const submitBtn = await screen.findByTestId('left-menu-keyword-search-submit');
+  await user.click(submitBtn);
 
   await screen.findByTestId('search');
 }
 
 export async function openDropdownList(user: UserEvent, dropdown: HTMLElement): Promise<void> {
-  dropdown.focus();
-  await act(async () => {
-    await user.keyboard('[ArrowDown]');
-  });
+  await user.click(dropdown);
 }
 
 export async function addSearchRowsAndGoToCart(
@@ -213,9 +202,7 @@ export async function addSearchRowsAndGoToCart(
     const clickBtnFunc = async (): Promise<void> => {
       const addBtn = (await within(row).findAllByRole('button'))[0];
       expect(addBtn).toBeTruthy();
-      await act(async () => {
-        await user.click(addBtn);
-      });
+      await user.click(addBtn);
     };
     clickBtns.push(clickBtnFunc());
   });
@@ -229,9 +216,7 @@ export async function addSearchRowsAndGoToCart(
 
   // Switch to the cart page
   const cartBtn = await screen.findByTestId('cartPageLink');
-  await act(async () => {
-    await user.click(cartBtn);
-  });
+  await user.click(cartBtn);
 
   // Wait for cart page to render
   const summary = await screen.findByTestId('summary');

@@ -49,16 +49,12 @@ it('handles tab switching and saved search actions', async () => {
   });
 
   expect(searchLibraryTab).toBeTruthy();
-  await act(async () => {
-    await user.click(searchLibraryTab);
-  });
+  await user.click(searchLibraryTab);
 
   // Check JSON link renders and click it
   const jsonLink = await screen.findByRole('link');
   expect(jsonLink).toBeTruthy();
-  await act(async () => {
-    await user.click(jsonLink);
-  });
+  await user.click(jsonLink);
 
   // Wait for cart to re-render
   await screen.findByTestId('cart');
@@ -69,9 +65,7 @@ it('handles tab switching and saved search actions', async () => {
   });
   expect(applyBtn).toBeTruthy();
 
-  await act(async () => {
-    await user.click(applyBtn);
-  });
+  await user.click(applyBtn);
 
   // Wait for cart to re-render
   await screen.findByTestId('cart');
@@ -83,7 +77,5 @@ it('handles tab switching and saved search actions', async () => {
   });
   expect(deleteBtn).toBeTruthy();
 
-  await act(async () => {
-    await user.click(deleteBtn);
-  });
+  await user.click(deleteBtn);
 });

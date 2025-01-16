@@ -53,38 +53,6 @@ These hooks help enforce software standards and identify simple issues at the co
 
 ![GitHub Flow Diagram](../images/pre-commit-flow.svg)
 
-#### Helpful Commands
-
-Install into your cloned repo
-
-```bash
-# Activate virtual environment
-source activate backend/venv/bin/activate
-# Install into your repo's .git directory
-pre-commit install
-```
-
-Automatically run all pre-commit hooks (just commit)
-
-```bash
-git commit -m '...'
-```
-
-![Pre-commit Output](../images/pre-commit-passing.png)
-
-Manually run all pre-commit hooks
-
-```bash
-pre-commit run --all-files.
-```
-
-Run individual hook
-
-```bash
-# Available hook ids: trailing-whitespace, end-of-file-fixer, check-yaml, black, isort, flake8, mypy
-pre-commit run <hook_id>.
-```
-
 ### Branching
 
 #### Types of Support Branches

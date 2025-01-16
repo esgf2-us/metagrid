@@ -37,17 +37,13 @@ it('renders component and handles button clicks', async () => {
   const searchBtn = await screen.findByRole('img', { name: 'search' });
   expect(searchBtn).toBeTruthy();
 
-  await act(async () => {
-    await user.click(searchBtn);
-  });
+  await user.click(searchBtn);
 
   // Check delete button renders and click it
   const deleteBtn = await screen.findByRole('img', { name: 'delete' });
   expect(deleteBtn).toBeTruthy();
 
-  await act(async () => {
-    await user.click(deleteBtn);
-  });
+  await user.click(deleteBtn);
 });
 
 it('displays alert error when api fails to return response', async () => {

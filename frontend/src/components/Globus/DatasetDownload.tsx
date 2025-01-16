@@ -18,7 +18,6 @@ import React, { useEffect } from 'react';
 import { useRecoilState } from 'recoil';
 import {
   saveSessionValue,
-  loadSessionValue,
   fetchWgetScript,
   ResponseError,
   startGlobusTransfer,
@@ -45,27 +44,9 @@ import {
 import { NotificationType, showError, showNotice } from '../../common/utils';
 import { DataPersister } from '../../common/DataPersister';
 import { RawTourState, ReactJoyrideContext } from '../../contexts/ReactJoyrideContext';
+import getGlobusTransferToken from './utils';
 
 const globusRedirectUrl = `${window.location.origin}/cart/items`;
-
-// Reference: https://github.com/bpedroza/js-pkce
-// const GlobusAuth = new PKCE({
-//   client_id: window.METAGRID.REACT_APP_GLOBUS_CLIENT_ID, // Update this using your native client ID
-//   redirect_uri: globusRedirectUrl, // Update this if you are deploying this anywhere else (Globus Auth will redirect back here once you have logged in)
-//   authorization_endpoint: 'https://auth.globus.org/v2/oauth2/authorize', // No changes needed
-//   token_endpoint: 'https://auth.globus.org/v2/oauth2/token', // No changes needed
-//   requested_scopes:
-//     'openid profile email offline_access urn:globus:auth:scope:transfer.api.globus.org:all', // Update with any scopes you would need, e.g. transfer
-// });
-
-// type ModalFormState = 'signin' | 'endpoint' | 'both' | 'none';
-
-// type ModalState = {
-//   onCancelAction: () => void;
-//   onOkAction: () => void;
-//   show: boolean;
-//   state: ModalFormState;
-// };
 
 type AlertModalState = {
   onCancelAction: () => void;
@@ -87,6 +68,30 @@ const downloadOptions = ['Globus', 'wget'];
 
 // The persistent, static, data storage singleton
 const dp: DataPersister = DataPersister.Instance;
+
+function redirectToNewURL(newUrl: string): void {
+  window.location.replace(newUrl);
+}
+
+function endpointUrlReady(params: URLSearchParams): boolean {
+  return params.has('endpoint_id');
+}
+
+function tokenUrlReady(params: URLSearchParams): boolean {
+  return params.has('code') && params.has('state');
+}
+
+function redirectToRootUrl(): void {
+  // Redirect back to the root URL (simple but brittle way to clear the query params)
+  const splitUrl = window.location.href.split('?');
+  if (splitUrl.length > 1) {
+    const params = new URLSearchParams(window.location.search);
+    if (endpointUrlReady(params) || tokenUrlReady(params)) {
+      const newUrl = splitUrl[0];
+      redirectToNewURL(newUrl);
+    }
+  }
+}
 
 const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   const [messageApi, contextHolder] = message.useMessage();
@@ -152,24 +157,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     show: false,
   });
 
-  function redirectToNewURL(newUrl: string): void {
-    setTimeout(() => {
-      window.location.replace(newUrl);
-    }, 100);
-  }
-
-  function redirectToRootUrl(): void {
-    // Redirect back to the root URL (simple but brittle way to clear the query params)
-    const splitUrl = window.location.href.split('?');
-    if (splitUrl.length > 1) {
-      const params = new URLSearchParams(window.location.search);
-      if (endpointUrlReady(params) || tokenUrlReady(params)) {
-        const newUrl = splitUrl[0];
-        redirectToNewURL(newUrl);
-      }
-    }
-  }
-
   async function addNewTask(newTask: GlobusTaskItem): Promise<void> {
     const newItemsList = [...taskItems];
     if (taskItems.length >= MAX_TASK_LIST_LENGTH) {
@@ -177,23 +164,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     }
     newItemsList.unshift(newTask);
     await dp.setValue(GlobusStateKeys.globusTaskItems, newItemsList, true);
-  }
-
-  async function getGlobusTransferToken(): Promise<GlobusTokenResponse | null> {
-    const token = await loadSessionValue<GlobusTokenResponse>(GlobusStateKeys.transferToken);
-
-    if (token && token.expires_in) {
-      const createTime = token.created_on;
-      const lifeTime = token.expires_in;
-      const expires = createTime + lifeTime;
-      const curTime = Math.floor(Date.now() / 1000);
-
-      if (curTime <= expires) {
-        return token;
-      }
-      return null;
-    }
-    return null;
   }
 
   async function resetTokens(): Promise<void> {
@@ -214,137 +184,122 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   }
 
   const handleWgetDownload = async (): Promise<void> => {
-    /* istanbul ignore else */
-    if (itemSelections !== null) {
-      const cleanedSelections = itemSelections.filter((item) => {
-        return item !== undefined && item !== null;
-      });
-      await dp.setValue(CartStateKeys.cartItemSelections, cleanedSelections, true);
+    const cleanedSelections = itemSelections.filter((item) => {
+      return item !== undefined && item !== null;
+    });
+    await dp.setValue(CartStateKeys.cartItemSelections, cleanedSelections, true);
 
-      const ids = cleanedSelections.map((item) => item.id);
-      showNotice(messageApi, 'The wget script is generating, please wait momentarily.', {
-        duration: 3,
-        type: 'info',
-      });
-      setDownloadIsLoading(true);
-      fetchWgetScript(ids)
-        .then(() => {
-          setDownloadIsLoading(false);
-          showNotice(messageApi, 'Wget script downloaded successfully!', {
-            duration: 4,
-            type: 'success',
-          });
-        })
-        .catch((error: ResponseError) => {
-          showError(
-            messageApi,
-            <Card
-              title="Wget Script Error"
-              style={{
-                maxWidth: '500px',
-                maxHeight: '400px',
-                overflowY: 'auto',
-                overflowX: 'auto',
-              }}
-            >
-              {error.message}
-            </Card>
-          );
-          setDownloadIsLoading(false);
+    const ids = cleanedSelections.map((item) => item.id);
+    showNotice(messageApi, 'The wget script is generating, please wait momentarily.', {
+      duration: 3,
+      type: 'info',
+    });
+    setDownloadIsLoading(true);
+    fetchWgetScript(ids)
+      .then(() => {
+        setDownloadIsLoading(false);
+        showNotice(messageApi, 'Wget script downloaded successfully!', {
+          duration: 4,
+          type: 'success',
         });
-    }
+      })
+      .catch((error: ResponseError) => {
+        showError(
+          messageApi,
+          <Card
+            title="Wget Script Error"
+            style={{
+              maxWidth: '500px',
+              maxHeight: '400px',
+              overflowY: 'auto',
+              overflowX: 'auto',
+            }}
+          >
+            {error.message}
+          </Card>
+        );
+        setDownloadIsLoading(false);
+      });
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleGlobusDownload = async (
+  const handleGlobusDownload = (
     globusTransferToken: GlobusTokenResponse | null,
     accessToken: string | null,
     endpoint: GlobusEndpoint | null
-  ): Promise<void> => {
+  ): void => {
     setDownloadIsLoading(true);
 
     const cartSelections = dp.getValue<RawSearchResults>(CartStateKeys.cartItemSelections);
-    if (cartSelections && cartSelections.length > 0) {
-      const ids = cartSelections.map((item) => (item ? item.id : ''));
+    const ids = cartSelections?.map((item) => (item ? item.id : '')) ?? [];
 
-      if (globusTransferToken && accessToken) {
-        let messageContent: React.ReactNode | string = null;
-        let messageType: NotificationType = 'success';
-        let durationVal = 5;
-        startGlobusTransfer(
-          globusTransferToken.access_token,
-          accessToken,
-          endpoint?.id || '',
-          endpoint?.path || '',
-          ids
-        )
-          .then(async (resp) => {
-            if (resp.status === 200) {
-              await dp.setValue(CartStateKeys.cartItemSelections, [], true);
+    if (globusTransferToken && accessToken) {
+      let messageContent: React.ReactNode | string = null;
+      let messageType: NotificationType = 'success';
+      let durationVal = 5;
+      startGlobusTransfer(
+        globusTransferToken.access_token,
+        accessToken,
+        endpoint?.id || '',
+        endpoint?.path || '',
+        ids
+      )
+        .then(async (resp) => {
+          await dp.setValue(CartStateKeys.cartItemSelections, [], true);
 
-              const transRespData = resp.data as Record<string, unknown>;
-              if (transRespData && transRespData.taskid) {
-                const taskId = transRespData.taskid as string;
-                const taskItem: GlobusTaskItem = {
-                  submitDate: new Date(Date.now()).toLocaleString(),
-                  taskId,
-                  taskStatusURL: `https://app.globus.org/activity/${taskId}/overview`,
-                };
-                await addNewTask(taskItem);
+          const transRespData = resp.data as Record<string, unknown>;
+          const taskId = transRespData.taskid as string;
+          const taskItem: GlobusTaskItem = {
+            submitDate: new Date(Date.now()).toLocaleString(),
+            taskId,
+            taskStatusURL: `https://app.globus.org/activity/${taskId}/overview`,
+          };
+          await addNewTask(taskItem);
 
-                if (taskItem.taskStatusURL !== '') {
-                  messageContent = (
-                    <p>
-                      Globus transfer task submitted successfully!
-                      <br />
-                      <a href={taskItem.taskStatusURL} target="_blank" rel="noreferrer">
-                        View Task Status
-                      </a>
-                    </p>
-                  );
-                }
-              } else {
-                messageContent = `Globus transfer task submitted successfully!`;
-              }
-            } else {
-              messageContent = `Globus transfer task struggled: ${resp.statusText}`;
-              messageType = 'warning';
-            }
-          })
-          .catch(async (error: ResponseError) => {
-            if (error.message !== '') {
-              messageContent = (
-                <div
-                  style={{
-                    width: '500px',
-                    height: '400px',
-                    overflowY: 'auto',
-                    overflowX: 'hidden',
-                  }}
-                >
-                  ${error.message} is your error. Please contact ESGF support.
-                </div>
-              );
-              durationVal = 5;
-            } else {
-              messageContent = `Globus transfer task failed. Resetting tokens.`;
-              // eslint-disable-next-line no-console
-              console.error(error);
-            }
-            messageType = 'error';
-            await resetTokens();
-          })
-          .finally(async () => {
-            setDownloadIsLoading(false);
-            await showNotice(messageApi, messageContent, {
-              duration: durationVal,
-              type: messageType,
-            });
-            await endDownloadSteps();
+          if (taskItem.taskStatusURL !== '') {
+            messageContent = (
+              <p>
+                Globus transfer task submitted successfully!
+                <br />
+                <a href={taskItem.taskStatusURL} target="_blank" rel="noreferrer">
+                  View Task Status
+                </a>
+              </p>
+            );
+          }
+        })
+        .catch(async (error: ResponseError) => {
+          messageType = 'error';
+          await resetTokens();
+
+          if (error.message !== '') {
+            messageContent = (
+              <div
+                style={{
+                  width: '500px',
+                  height: '400px',
+                  overflowY: 'auto',
+                  overflowX: 'hidden',
+                }}
+              >
+                ${error.message} is your error. Please contact ESGF support.
+              </div>
+            );
+            durationVal = 5;
+          } else {
+            messageContent = `Globus transfer task failed. Resetting tokens.`;
+            // eslint-disable-next-line no-console
+            console.error(error);
+          }
+        })
+        .finally(async () => {
+          setDownloadIsLoading(false);
+          await showNotice(messageApi, messageContent, {
+            duration: durationVal,
+            type: messageType,
           });
-      }
-    } else {
-      await endDownloadSteps();
+          await endDownloadSteps();
+        });
     }
   };
 
@@ -353,7 +308,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
    * @returns False if one or more items are not Globus Ready
    */
   const checkItemsAreGlobusEnabled = (): boolean => {
-    if (window.METAGRID.REACT_APP_GLOBUS_NODES.length === 0) {
+    if (window.METAGRID.GLOBUS_NODES.length === 0) {
       return true;
     }
     const globusReadyItems: RawSearchResults = [];
@@ -364,7 +319,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     itemSelections.forEach((selection) => {
       if (selection) {
         const dataNode = selection.data_node as string;
-        if (dataNode && window.METAGRID.REACT_APP_GLOBUS_NODES.includes(dataNode)) {
+        if (dataNode && window.METAGRID.GLOBUS_NODES.includes(dataNode)) {
           globusReadyItems.push(selection);
         }
       }
@@ -512,14 +467,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
   function setCurrentGoal(goal: GlobusGoals): void {
     localStorage.setItem(GlobusStateKeys.globusTransferGoalsState, goal);
-  }
-
-  function endpointUrlReady(params: URLSearchParams): boolean {
-    return params.has('endpoint_id');
-  }
-
-  function tokenUrlReady(params: URLSearchParams): boolean {
-    return params.has('code') && params.has('state');
   }
 
   async function getUrlAuthTokens(): Promise<void> {
@@ -785,7 +732,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       // Check chosen endpoint path is ready
       if (chosenEndpoint.path) {
         setCurrentGoal(GlobusGoals.None);
-        await handleGlobusDownload(transferToken, accessToken, chosenEndpoint);
+        handleGlobusDownload(transferToken, accessToken, chosenEndpoint);
       } else {
         // Setting endpoint path
         setLoadingPage(false);

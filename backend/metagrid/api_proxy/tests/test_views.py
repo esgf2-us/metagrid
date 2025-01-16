@@ -10,6 +10,8 @@ from globus_sdk._testing import load_response
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from config.settings.site_specific import MetagridFrontendSettings
+
 
 class TestProxyViewSet(APITestCase):
     fixtures = ["users.json"]
@@ -201,10 +203,9 @@ class TestProxyViewSet(APITestCase):
         response = self.client.post(setUrl, test_data, format="json")
         assert response.status_code == status.HTTP_200_OK
 
-    @override_settings(FRONTEND_SETTINGS={"key1": "value1", "key2": "value2"})
     def test_frontend_config_returns_frontend_settings_as_json(self) -> None:
         url = reverse("frontend_config")
         response = self.client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response["content-type"] == "application/json"
-        assert response.json() == {"key1": "value1", "key2": "value2"}
+        assert response.json() == MetagridFrontendSettings().model_dump()

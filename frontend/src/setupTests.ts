@@ -3,7 +3,7 @@
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
-import { cleanup, configure } from '@testing-library/react';
+import { cleanup } from '@testing-library/react';
 import { server } from './test/mock/server';
 import messageDisplayData from './components/Messaging/messageDisplayData';
 import {
@@ -11,15 +11,28 @@ import {
   originalGlobusEnabledNodes,
   sessionStorageMock,
 } from './test/jestTestFunctions';
+import 'cross-fetch/polyfill';
 
-jest.setTimeout(1200000);
-configure({ asyncUtilTimeout: 1200000 });
+jest.setTimeout(60000);
 
 // Used to restore window.location after each test
 const location = JSON.stringify(window.location);
 
 Object.defineProperty(window, 'localStorage', { value: sessionStorageMock });
 Object.defineProperty(window, 'METAGRID', { value: mockConfig });
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: jest.fn().mockImplementation((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: jest.fn(), // deprecated
+    removeListener: jest.fn(), // deprecated
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  })),
+});
 
 beforeAll(() => {
   server.listen();
@@ -49,7 +62,7 @@ afterEach(() => {
   HTMLAnchorElement.prototype.click = jest.fn();
 
   // Reset mock values
-  window.METAGRID.REACT_APP_GLOBUS_NODES = originalGlobusEnabledNodes;
+  window.METAGRID.GLOBUS_NODES = originalGlobusEnabledNodes;
 
   // Clear localStorage between tests
   localStorage.clear();

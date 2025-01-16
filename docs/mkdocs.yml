@@ -2,8 +2,7 @@ site_name: MetaGrid
 site_description: ESGF Search UI
 repo_url: https://github.com/esgf2-us/metagrid
 site_dir: site
-copyright: Copyright &copy; 2019, <a href="https://github.com/aims-group">aims-group</a>.
-dev_addr: 127.0.0.1:8001
+dev_addr: 0.0.0.0:8001
 theme: readthedocs
 markdown_extensions:
 - mdx_truly_sane_lists
@@ -13,14 +12,17 @@ markdown_extensions:
 
 nav:
 - Home: "index.md"
+- User Guide:
+  - Quickstart: "users/quickstart.md"
+  - Moving to Production: "users/moving_to_production.md"
+  - Configurable environment variables: "users/configurable_environment_variables.md"
 - Contributor Guide:
   - Project Standards: "contributors/project_standards.md"
   - Architecture Design: "contributors/architecture_design.md"
   - Getting Started For Local Development: "contributors/getting_started_local.md"
   - Back-end Development: "contributors/backend_development.md"
   - Front-end Development: "contributors/frontend_development.md"
-  - Getting Started For Production: "contributors/getting_started_production.md"
-  - Document: "contributors/document.md"
+  - Documentation: "contributors/document.md"
 
 validation:
   omitted_files: warn
