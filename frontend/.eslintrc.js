@@ -7,6 +7,7 @@ module.exports = {
   },
   extends: [
     'airbnb',
+    'prettier',
     'airbnb-typescript',
     'plugin:@typescript-eslint/eslint-recommended',
     'plugin:@typescript-eslint/recommended',
@@ -19,12 +20,10 @@ module.exports = {
     project: './tsconfig.json',
   },
   rules: {
+    'prettier/prettier': ['error'],
     'import/no-extraneous-dependencies': ['error', { devDependencies: true }],
     'react/destructuring-assignment': 'off',
-    'react/jsx-filename-extension': [
-      1,
-      { extensions: ['.js', '.jsx', '.ts', '.tsx'] },
-    ],
+    'react/jsx-filename-extension': [1, { extensions: ['.js', '.jsx', '.ts', '.tsx'] }],
     'react/jsx-props-no-spreading': 'off',
     'react/prop-types': 'off',
     '@typescript-eslint/no-misused-promises': 'off',
@@ -40,7 +39,6 @@ module.exports = {
       },
     ],
     '@typescript-eslint/camelcase': 'off',
-    '@typescript-eslint/explicit-function-return-type': ['error'],
     // Makes no sense to allow type inferrence for expression parameters, but require typing the response (https://github.com/iamturns/create-exposed-app/blob/master/.eslintrc.js)
     '@typescript-eslint/explicit-function-return-type': [
       'error',

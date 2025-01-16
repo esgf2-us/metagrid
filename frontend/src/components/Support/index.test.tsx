@@ -53,9 +53,7 @@ describe('Testing the support form and buttons', () => {
     expect(button).toBeTruthy();
 
     // Start tutorial and check that it renders
-    await act(async () => {
-      await user.click(button);
-    });
+    await user.click(button);
     const tourModal = await screen.findByRole('heading', {
       name: TourTitles.Main,
     });
@@ -78,9 +76,7 @@ describe('Testing the support form and buttons', () => {
     expect(button).toBeTruthy();
 
     // Start tutorial and check that it renders
-    await act(async () => {
-      await user.click(button);
-    });
+    await user.click(button);
     const tourModal = await screen.findByRole('heading', {
       name: TourTitles.Cart,
     });
@@ -105,9 +101,7 @@ describe('Testing the support form and buttons', () => {
     expect(button).toBeTruthy();
 
     // Start tutorial and check that it renders
-    await act(async () => {
-      await user.click(button);
-    });
+    await user.click(button);
     const tourModal = await screen.findByRole('heading', {
       name: TourTitles.Searches,
     });
@@ -130,9 +124,7 @@ describe('Testing the support form and buttons', () => {
     expect(button).toBeTruthy();
 
     // Start tutorial and check that it renders
-    await act(async () => {
-      await user.click(button);
-    });
+    await user.click(button);
     const tourModal = await screen.findByRole('heading', {
       name: TourTitles.Node,
     });

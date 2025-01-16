@@ -1,9 +1,6 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
-import {
-  rawSearchResultFixture,
-  userCartFixture,
-} from '../../test/mock/fixtures';
+import { rawSearchResultFixture, userCartFixture } from '../../test/mock/fixtures';
 import Summary, { Props } from './Summary';
 import customRender from '../../test/custom-render';
 

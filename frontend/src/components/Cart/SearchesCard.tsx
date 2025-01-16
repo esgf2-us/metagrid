@@ -64,16 +64,9 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
 
   let numResults;
   if (error) {
-    numResults = (
-      <Alert
-        message="There was an issue fetching the result count."
-        type="error"
-      />
-    );
+    numResults = <Alert message="There was an issue fetching the result count." type="error" />;
   } else if (isLoading) {
-    numResults = (
-      <Skeleton title={{ width: '100%' }} paragraph={{ rows: 0 }} active />
-    );
+    numResults = <Skeleton title={{ width: '100%' }} paragraph={{ rows: 0 }} active />;
   } else {
     numResults = (
       <p>
@@ -151,9 +144,7 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
         <p>
           <span style={styles.category}>Filename Searches: </span>
           <Typography.Text code>
-            {filenameVars && filenameVars.length > 0
-              ? filenameVars.join(', ')
-              : 'N/A'}
+            {filenameVars && filenameVars.length > 0 ? filenameVars.join(', ') : 'N/A'}
           </Typography.Text>
         </p>
       </Card>

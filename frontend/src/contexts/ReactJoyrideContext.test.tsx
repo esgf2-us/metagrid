@@ -57,9 +57,9 @@ describe('test ReactJoyrideProvider', () => {
     expect(button).toBeTruthy();
 
     // Start tutorial and check that it renders
-    await act(async () => {
-      await user.click(button);
-    });
+
+    await user.click(button);
+
     const tourModal = await screen.findByRole('heading', {
       name: TourTitles.Main,
     });
@@ -69,9 +69,7 @@ describe('test ReactJoyrideProvider', () => {
     let nextBtn = await screen.findByRole('button', { name: 'Next' });
     expect(nextBtn).toBeTruthy();
 
-    await act(async () => {
-      await user.click(button);
-    });
+    await user.click(button);
     nextBtn = await screen.findByRole('button', { name: 'Next' });
 
     expect(nextBtn).toBeTruthy();

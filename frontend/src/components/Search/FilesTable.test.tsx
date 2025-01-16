@@ -1,23 +1,15 @@
-import { act, within, screen } from '@testing-library/react';
+import { within, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import {
-  ESGFSearchAPIFixture,
-  rawSearchResultFixture,
-} from '../../test/mock/fixtures';
 import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import FilesTable, { DownloadUrls, genDownloadUrls, Props } from './FilesTable';
-import { RawSearchResult } from './types';
 import customRender from '../../test/custom-render';
-import { selectDropdownOption } from '../../test/jestTestFunctions';
+import { ESGFSearchAPIFixture, rawSearchResultFixture } from '../../test/mock/fixtures';
+import { RawSearchResult } from './types';
+import { openDropdownList } from '../../test/jestTestFunctions';
 
 const user = userEvent.setup();
-
-// Reset all mocks after each test
-afterEach(() => {
-  jest.clearAllMocks();
-});
 
 describe('test genDownloadUrls()', () => {
   let urls: string[];
@@ -101,11 +93,7 @@ describe('test FilesTable component', () => {
   });
 
   it('returns Alert when there is an error fetching files', async () => {
-    server.use(
-      rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
-        res(ctx.status(404))
-      )
-    );
+    server.use(rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) => res(ctx.status(404))));
 
     customRender(<FilesTable {...defaultProps} />);
     const alertMsg = await screen.findByRole('img', {
@@ -136,9 +124,7 @@ describe('test FilesTable component', () => {
     });
     expect(downloadBtn).toBeTruthy();
 
-    await act(async () => {
-      await user.click(downloadBtn);
-    });
+    await user.click(downloadBtn);
 
     // Test the copy button
     const copyBtn = within(row).getByRole('button', {
@@ -146,9 +132,7 @@ describe('test FilesTable component', () => {
     });
     expect(copyBtn).toBeTruthy();
 
-    await act(async () => {
-      await user.click(copyBtn);
-    });
+    await user.click(copyBtn);
 
     // Wait for component to re-render
     await screen.findByTestId('filesTable');
@@ -177,28 +161,15 @@ describe('test FilesTable component', () => {
 
     customRender(<FilesTable {...defaultProps} numResults={numFound} />);
 
-    // Check component renders
-    const component = await screen.findByTestId('filesTable');
-    expect(component).toBeTruthy();
-
-    // Wait for component to re-render
-    await screen.findByTestId('filesTable');
-
     // Select the combobox drop down and update its value to render options
     const paginationList = await screen.findByRole('list');
-    expect(paginationList).toBeTruthy();
+    const pageSizeComboBox = await within(paginationList).findByRole('combobox');
 
-    // Select the combobox drop down, update its value, then click it
-    const pageSizeComboBox = await within(paginationList).findByRole(
-      'combobox'
-    );
-    expect(pageSizeComboBox).toBeTruthy();
+    await openDropdownList(user, pageSizeComboBox);
 
-    // Wait for the options to render, then select 20 / page
-    await selectDropdownOption(user, pageSizeComboBox, '20 / page');
+    await user.click(await screen.findByTestId('pageSize-option-20'));
 
-    // Change back to 10 / page
-    await selectDropdownOption(user, pageSizeComboBox, '10 / page');
+    expect(screen.getByTestId('search-items-row-11')).toBeInTheDocument();
   });
 
   it('handles clicking the expandable icon', async () => {
@@ -228,9 +199,7 @@ describe('test FilesTable component', () => {
     });
     expect(expandableIcon).toBeTruthy();
 
-    await act(async () => {
-      await user.click(expandableIcon);
-    });
+    await user.click(expandableIcon);
 
     // Get the down circle icon within the cell and click to close the expandable row
     const expandableDownIcon = within(expandableCell).getByRole('img', {
@@ -238,8 +207,6 @@ describe('test FilesTable component', () => {
     });
     expect(expandableDownIcon).toBeTruthy();
 
-    await act(async () => {
-      await user.click(expandableDownIcon);
-    });
+    await user.click(expandableDownIcon);
   });
 });

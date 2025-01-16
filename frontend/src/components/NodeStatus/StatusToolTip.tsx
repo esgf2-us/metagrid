@@ -1,8 +1,4 @@
-import {
-  CheckCircleTwoTone,
-  CloseCircleTwoTone,
-  QuestionCircleTwoTone,
-} from '@ant-design/icons';
+import { CheckCircleTwoTone, CloseCircleTwoTone, QuestionCircleTwoTone } from '@ant-design/icons';
 import React from 'react';
 import { Tooltip } from 'antd';
 import { NodeStatusArray, NodeStatusElement } from './types';
@@ -19,9 +15,7 @@ const StatusToolTip: React.FC<React.PropsWithChildren<Props>> = ({
   children,
 }) => {
   if (nodeStatus) {
-    const node = (nodeStatus.find(
-      (obj) => obj.name === dataNode
-    ) as unknown) as NodeStatusElement;
+    const node = (nodeStatus.find((obj) => obj.name === dataNode) as unknown) as NodeStatusElement;
 
     /* istanbul ignore else*/
     if (node) {
@@ -41,8 +35,7 @@ const StatusToolTip: React.FC<React.PropsWithChildren<Props>> = ({
                 color="green"
               >
                 <span>
-                  <CheckCircleTwoTone twoToneColor="#52c41a" /> {dataNode}{' '}
-                  {children}
+                  <CheckCircleTwoTone twoToneColor="#52c41a" /> {dataNode} {children}
                 </span>
               </Tooltip>
             ) : (
@@ -56,8 +49,7 @@ const StatusToolTip: React.FC<React.PropsWithChildren<Props>> = ({
                 color="red"
               >
                 <span>
-                  <CloseCircleTwoTone twoToneColor="#eb2f96" /> {dataNode}{' '}
-                  {children}
+                  <CloseCircleTwoTone twoToneColor="#eb2f96" /> {dataNode} {children}
                 </span>
               </Tooltip>
             )}
@@ -106,8 +98,8 @@ const StatusToolTip: React.FC<React.PropsWithChildren<Props>> = ({
       <Tooltip
         title={
           <>
-            Could not fetch status. Please contact support or try again later.
-            Data Node:<div>{dataNode}</div>
+            Could not fetch status. Please contact support or try again later. Data Node:
+            <div>{dataNode}</div>
           </>
         }
       >
@@ -122,8 +114,8 @@ const StatusToolTip: React.FC<React.PropsWithChildren<Props>> = ({
     <Tooltip
       title={
         <>
-          Could not fetch status. Please contact support or try again later.
-          Data Node:<div>{dataNode}</div>
+          Could not fetch status. Please contact support or try again later. Data Node:
+          <div>{dataNode}</div>
         </>
       }
     >

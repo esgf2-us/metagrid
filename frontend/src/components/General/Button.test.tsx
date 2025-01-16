@@ -20,7 +20,5 @@ it('returns string "clicked" onClick', async () => {
   // Click on the button
   const button = await screen.findByRole('button');
 
-  await act(async () => {
-    await user.click(button);
-  });
+  await user.click(button);
 });

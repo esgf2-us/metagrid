@@ -1,44 +1,81 @@
 exclude: "docs|node_modules|migrations|.git|.tox"
-default_stages: [commit]
+default_stages: [ commit ]
 fail_fast: true
 
 repos:
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
-    hooks:
-      - id: trailing-whitespace
-      - id: end-of-file-fixer
-      - id: check-yaml
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v5.0.0
+  hooks:
+  - id: trailing-whitespace
+  - id: end-of-file-fixer
+  - id: check-yaml
 
-  # Back-end
-  # ------------------------------------------------------------------------------
-  - repo: https://github.com/pycqa/flake8
-    rev: 7.1.1
-    hooks:
-      - id: flake8
-        args: ["--config=backend/setup.cfg"]
-        additional_dependencies: [flake8-isort]
+# Back-end
+# ------------------------------------------------------------------------------
+- repo: https://github.com/pycqa/flake8
+  rev: 7.1.1
+  hooks:
+  - id: flake8
+    args: [ "--config=backend/setup.cfg" ]
+    additional_dependencies: [ flake8-isort ]
 
-  - repo: https://github.com/psf/black
-    rev: 24.10.0
-    hooks:
-      - id: black
-        args: ["--config=backend/pyproject.toml"]
+- repo: https://github.com/psf/black
+  rev: 24.10.0
+  hooks:
+  - id: black
+    args: [ "--config=backend/pyproject.toml" ]
 
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.12.0
-    hooks:
-      - id: mypy
-        additional_dependencies: ["types-requests"]
+- repo: https://github.com/pre-commit/mirrors-mypy
+  rev: v1.12.0
+  hooks:
+  - id: mypy
+    additional_dependencies: [ "types-requests" ]
 
-  # Front-end
-  # ------------------------------------------------------------------------------
-  # Runs the local node `lint` script to avoid dependencies being out of sync with `frontend/package.json`
-  # https://github.com/pre-commit/pre-commit/issues/945
-  - repo: local
-    hooks:
-      - id: eslint_and_tsc
-        name: eslint_and_tsc
-        language: system
-        files: .+(js|jsx|ts|tsx|json)$
-        entry: bash -c 'cd frontend && yarn precommit'
+- repo: https://github.com/radeklat/settings-doc
+  rev: '4.3.1'
+  hooks:
+  - id: settings-doc-markdown
+    name: Generate backend settings markdown
+    language: system
+    entry: env PYTHONPATH=$PYTHONPATH:backend settings-doc generate --output-format markdown
+    args:
+    - '--class'
+    - 'config.settings.site_specific.MetagridBackendSettings'
+    - '--update'
+    - 'docs/docs/users/configurable_environment_variables.md'
+    - '--between'
+    - '<!-- start generated backend settings markdown -->'
+    - '<!-- end generated backend settings markdown -->'
+    - '--templates'
+    - 'docs/custom_templates'
+    - '--heading-offset'
+    - '3'
+
+  - id: settings-doc-markdown
+    name: Generate frontend settings markdown
+    language: system
+    entry: env PYTHONPATH=$PYTHONPATH:backend settings-doc generate --output-format markdown
+    args:
+    - '--class'
+    - 'config.settings.site_specific.MetagridFrontendSettings'
+    - '--update'
+    - 'docs/docs/users/configurable_environment_variables.md'
+    - '--between'
+    - '<!-- start generated frontend settings markdown -->'
+    - '<!-- end generated frontend settings markdown -->'
+    - '--templates'
+    - 'docs/custom_templates'
+    - '--heading-offset'
+    - '3'
+
+# Front-end
+# ------------------------------------------------------------------------------
+# Runs the local node `lint` script to avoid dependencies being out of sync with `frontend/package.json`
+# https://github.com/pre-commit/pre-commit/issues/945
+- repo: local
+  hooks:
+  - id: eslint_and_tsc
+    name: eslint_and_tsc
+    language: system
+    files: .+(js|jsx|ts|tsx|json)$
+    entry: bash -c 'cd frontend && yarn precommit'

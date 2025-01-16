@@ -20,11 +20,6 @@ import Button from '../General/Button';
 import RightDrawer from '../Messaging/RightDrawer';
 
 import { AuthContext } from '../../contexts/AuthContext';
-import {
-  authenticationMethod,
-  djangoLoginUrl,
-  djangoLogoutUrl,
-} from '../../env';
 
 const menuItemStyling: CSSProperties = { margin: '8px' };
 
@@ -55,7 +50,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
   let logoutBtn: JSX.Element;
   let userInfo = { email: '', given_name: '' };
 
-  if (authenticationMethod === 'keycloak') {
+  if (window.METAGRID.AUTHENTICATION_METHOD === 'keycloak') {
     const { keycloak } = useKeycloak();
     loginBtn = (
       <Button
@@ -84,18 +79,18 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
         given_name: string;
       };
     }
-  } else if (authenticationMethod === 'globus') {
+  } else if (window.METAGRID.AUTHENTICATION_METHOD === 'globus') {
     loginBtn = (
       <Button
         type="text"
         icon={<UserOutlined style={{ fontSize: '18px', margin: 0 }} />}
-        href={djangoLoginUrl}
+        href="login/globus/"
       >
         Sign In
       </Button>
     );
     logoutBtn = (
-      <Button type="text" href={djangoLogoutUrl}>
+      <Button type="text" href="proxy/globus-logout/">
         Sign Out
       </Button>
     );
@@ -124,10 +119,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
         icon: <UserOutlined style={{ fontSize: '18px' }} />,
         label: (
           <span className="submenu-title-wrapper">
-            Hi,{' '}
-            {userInfo && userInfo.given_name
-              ? userInfo.given_name
-              : userInfo?.email}
+            Hi, {userInfo && userInfo.given_name ? userInfo.given_name : userInfo?.email}
           </span>
         ),
         children: [
@@ -162,12 +154,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
       label: (
         <Link data-testid="cartPageLink" to="/cart/items">
           <ShoppingCartOutlined style={{ fontSize: '20px' }} />
-          <Badge
-            count={numCartItems}
-            className="badge"
-            offset={[-5, 3]}
-            showZero
-          ></Badge>
+          <Badge count={numCartItems} className="badge" offset={[-5, 3]} showZero></Badge>
           Cart
         </Link>
       ),
@@ -179,12 +166,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
       label: (
         <Link to="/cart/searches">
           <FileSearchOutlined style={{ fontSize: '20px' }} />{' '}
-          <Badge
-            count={numSavedSearches}
-            className="badge"
-            offset={[-5, 3]}
-            showZero
-          ></Badge>
+          <Badge count={numSavedSearches} className="badge" offset={[-5, 3]} showZero></Badge>
           Saved Searches
         </Link>
       ),
@@ -221,9 +203,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
       label: (
         <Button
           type="text"
-          icon={
-            <QuestionCircleOutlined style={{ fontSize: '18px', margin: 0 }} />
-          }
+          icon={<QuestionCircleOutlined style={{ fontSize: '18px', margin: 0 }} />}
           onClick={() => supportModalVisible(true)}
         >
           Help
@@ -260,9 +240,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
             ? { textAlign: 'left', justifyContent: 'flex-end' }
             : { textAlign: 'right', justifyContent: 'flex-end' }
         }
-        overflowedIndicator={
-          <BarsOutlined style={{ fontSize: '24px', margin: '20px 0' }} />
-        }
+        overflowedIndicator={<BarsOutlined style={{ fontSize: '24px', margin: '20px 0' }} />}
         items={menuItems}
       />
       <RightDrawer open={noticesOpen} onClose={hideNotices} />
