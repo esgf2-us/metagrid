@@ -5,7 +5,7 @@
  * in order to mock their behaviors.
  *
  */
-import { within, screen, act } from '@testing-library/react';
+import { within, screen } from '@testing-library/react';
 import { message } from 'antd';
 import { ReactNode, CSSProperties } from 'react';
 import { UserEvent } from '@testing-library/user-event';

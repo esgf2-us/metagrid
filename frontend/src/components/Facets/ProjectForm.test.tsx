@@ -1,5 +1,5 @@
 import React from 'react';
-import { act, fireEvent, screen } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ResponseError } from '../../api';
 import { activeSearchQueryFixture, projectsFixture } from '../../test/mock/fixtures';

@@ -1,4 +1,4 @@
-import { act, screen, within } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { rawSearchResultFixture, rawSearchResultsFixture } from '../../test/mock/fixtures';
