@@ -12,7 +12,7 @@ from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 from rest_framework.routers import DefaultRouter
 
-from metagrid.api_globus.views import do_globus_transfer, get_access_token
+from metagrid.api_globus.views import create_globus_transfer, get_access_token
 from metagrid.api_proxy.views import (
     do_citation,
     do_globus_auth,
@@ -22,6 +22,7 @@ from metagrid.api_proxy.views import (
     do_search,
     do_status,
     do_wget,
+    get_frontend_config,
     get_temp_storage,
     set_temp_storage,
 )
@@ -82,7 +83,8 @@ urlpatterns = [
     path("tempStorage/get", get_temp_storage, name="temp_storage_get"),
     path("tempStorage/set", set_temp_storage, name="temp_storage_set"),
     path("globus/auth", get_access_token, name="globus_auth"),
-    path("globus/transfer", do_globus_transfer, name="globus_transfer"),
+    path("globus/transfer", create_globus_transfer, name="globus_transfer"),
+    path("frontend-config.js", get_frontend_config, name="frontend_config"),
     re_path(
         r"^account-confirm-email/",
         VerifyEmailView.as_view(),
@@ -127,11 +129,3 @@ urlpatterns += [
         name="schema-redoc",
     ),
 ]
-
-# In a production environment, the site may be hosted in a subdirectory
-# of a domain. The subdirectory must be prepended to each of the urls
-# for the routes to be valid.
-if settings.DOMAIN_SUBDIRECTORY:
-    urlpatterns = [
-        path(f"{settings.DOMAIN_SUBDIRECTORY}/", include(urlpatterns))
-    ]

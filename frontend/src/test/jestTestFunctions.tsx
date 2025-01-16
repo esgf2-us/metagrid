@@ -6,29 +6,32 @@
  *
  */
 import { within, screen, act } from '@testing-library/react';
-import { UserEvent } from '@testing-library/user-event/dist/types/setup/setup';
 import { message } from 'antd';
 import { ReactNode, CSSProperties } from 'react';
-import * as enviroConfig from '../env';
+import { UserEvent } from '@testing-library/user-event';
 import { NotificationType, getSearchFromUrl } from '../common/utils';
 import { RawSearchResult } from '../components/Search/types';
 import { rawSearchResultFixture } from './mock/fixtures';
+import { FrontendConfig } from '../common/types';
 
-// For mocking environment variables
-export type MockConfig = {
-  authenticationMethod: string;
-  globusEnabledNodes: string[];
-};
-
-// For mocking environment variables
 // https://www.mikeborozdin.com/post/changing-jest-mocks-between-tests
-export const mockConfig: MockConfig = enviroConfig;
-
-export const originalEnabledNodes = [
+export const originalGlobusEnabledNodes = [
   'aims3.llnl.gov',
   'esgf-data1.llnl.gov',
   'esgf-data2.llnl.gov',
 ];
+
+export const mockConfig: FrontendConfig = {
+  GLOBUS_CLIENT_ID: 'frontend',
+  GLOBUS_NODES: originalGlobusEnabledNodes,
+  KEYCLOAK_REALM: 'esgf',
+  KEYCLOAK_URL: 'http://localhost:1337',
+  KEYCLOAK_CLIENT_ID: 'frontend',
+  HOTJAR_ID: 1234,
+  HOTJAR_SV: 1234,
+  AUTHENTICATION_METHOD: 'keycloak',
+  GOOGLE_ANALYTICS_TRACKING_ID: 'UA-XXXXXXXXX-YY',
+};
 
 export const activeSearch = getSearchFromUrl();
 
@@ -146,10 +149,7 @@ export async function showNoticeStatic(
 export const globusReadyNode = 'nodeIsGlobusReady';
 export const nodeNotGlobusReady = 'nodeIsNotGlobusReady';
 
-export function makeCartItem(
-  id: string,
-  globusReady: boolean
-): RawSearchResult {
+export function makeCartItem(id: string, globusReady: boolean): RawSearchResult {
   return rawSearchResultFixture({
     id,
     title: id,
@@ -159,89 +159,26 @@ export function makeCartItem(
   });
 }
 
-/**
- * Creates the appropriate name string when performing getByRole('row')
- */
-export function getRowName(
-  cartButton: 'plus' | 'minus',
-  nodeCircleType: 'question' | 'check' | 'close',
-  title: string,
-  fileCount: string,
-  totalSize: string,
-  version: string,
-  globusReady?: boolean
-): RegExp {
-  let totalBytes = `${totalSize} Bytes`;
-  if (Number.isNaN(Number(totalSize))) {
-    totalBytes = totalSize;
-  }
-  let globusReadyCheck = mockConfig.globusEnabledNodes.length > 0 ? ' .*' : '';
-  if (globusReady !== undefined) {
-    globusReadyCheck = globusReady ? ' check-circle' : ' close-circle';
-  }
-  const newRegEx = new RegExp(
-    `right-circle ${cartButton} ${nodeCircleType}-circle ${title} ${fileCount} ${totalBytes} ${version} wget download${globusReadyCheck}`
-  );
-
-  return newRegEx;
-}
-
-export async function submitKeywordSearch(
-  inputText: string,
-  user: UserEvent
-): Promise<void> {
+export async function submitKeywordSearch(inputText: string, user: UserEvent): Promise<void> {
   // Check left menu rendered
   const leftMenuComponent = await screen.findByTestId('left-menu');
   expect(leftMenuComponent).toBeTruthy();
 
   // Type in value for free-text input
-  const freeTextForm = await screen.findByPlaceholderText(
-    'Search for a keyword'
-  );
+  const freeTextForm = await screen.findByTestId('left-menu-keyword-search-input');
   expect(freeTextForm).toBeTruthy();
 
-  await act(async () => {
-    await user.type(freeTextForm, inputText);
-  });
+  await user.type(freeTextForm, inputText);
 
   // Submit the form
-  const submitBtn = await within(leftMenuComponent).findByRole('img', {
-    name: 'search',
-  });
-
-  await act(async () => {
-    await user.click(submitBtn);
-  });
+  const submitBtn = await screen.findByTestId('left-menu-keyword-search-submit');
+  await user.click(submitBtn);
 
   await screen.findByTestId('search');
 }
 
-export async function openDropdownList(
-  user: UserEvent,
-  dropdown: HTMLElement
-): Promise<void> {
-  dropdown.focus();
-  await act(async () => {
-    await user.keyboard('[ArrowDown]');
-  });
-}
-
-export async function selectDropdownOption(
-  user: UserEvent,
-  dropdown: HTMLElement,
-  option: string
-): Promise<void> {
-  act(() => {
-    dropdown.focus();
-  });
-
-  await act(async () => {
-    await user.keyboard('[ArrowDown]');
-  });
-  await act(async () => {
-    const opt = await screen.findByText(option);
-    await user.click(opt);
-  });
+export async function openDropdownList(user: UserEvent, dropdown: HTMLElement): Promise<void> {
+  await user.click(dropdown);
 }
 
 export async function addSearchRowsAndGoToCart(
@@ -254,9 +191,7 @@ export async function addSearchRowsAndGoToCart(
   if (rows) {
     rowsToAdd = rowsToAdd.concat(rows);
   } else {
-    const defaultRow = await screen.findByRole('row', {
-      name: getRowName('plus', 'check', 'foo', '3', '1', '1', true),
-    });
+    const defaultRow = await screen.findByTestId('cart-items-row-1');
     rowsToAdd.push(defaultRow);
   }
 
@@ -267,9 +202,7 @@ export async function addSearchRowsAndGoToCart(
     const clickBtnFunc = async (): Promise<void> => {
       const addBtn = (await within(row).findAllByRole('button'))[0];
       expect(addBtn).toBeTruthy();
-      await act(async () => {
-        await user.click(addBtn);
-      });
+      await user.click(addBtn);
     };
     clickBtns.push(clickBtnFunc());
   });
@@ -283,9 +216,7 @@ export async function addSearchRowsAndGoToCart(
 
   // Switch to the cart page
   const cartBtn = await screen.findByTestId('cartPageLink');
-  await act(async () => {
-    await user.click(cartBtn);
-  });
+  await user.click(cartBtn);
 
   // Wait for cart page to render
   const summary = await screen.findByTestId('summary');

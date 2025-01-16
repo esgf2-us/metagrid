@@ -1,16 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
-import { act, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import customRender from '../../test/custom-render';
 import Support from '../Support';
 import RightMenu, { Props } from './RightMenu';
-import {
-  mockConfig,
-  mockKeycloakToken,
-  tempStorageSetMock,
-} from '../../test/jestTestFunctions';
+import { mockConfig, mockKeycloakToken, tempStorageSetMock } from '../../test/jestTestFunctions';
 
 const user = userEvent.setup();
 
@@ -42,20 +38,16 @@ it('sets the active menu item based on the location pathname', async () => {
   });
   expect(cartItemsLink).toBeTruthy();
 
-  await act(async () => {
-    await user.click(cartItemsLink);
-  });
+  await user.click(cartItemsLink);
 
   const savedSearchLink = await screen.findByRole('img', { name: 'search' });
   expect(savedSearchLink).toBeTruthy();
 
-  await act(async () => {
-    await user.click(savedSearchLink);
-  });
+  await user.click(savedSearchLink);
 });
 
 it('display the users given name after authentication with keycloak', async () => {
-  mockConfig.authenticationMethod = 'keycloak';
+  mockConfig.AUTHENTICATION_METHOD = 'keycloak';
 
   tempStorageSetMock('keycloakFixture', {
     keycloak: {
@@ -77,7 +69,7 @@ it('display the users given name after authentication with keycloak', async () =
 });
 
 it('display the users email after authentication if they did not provide a name in keycloak', async () => {
-  mockConfig.authenticationMethod = 'keycloak';
+  mockConfig.AUTHENTICATION_METHOD = 'keycloak';
 
   tempStorageSetMock('keycloakFixture', {
     keycloak: {
@@ -98,7 +90,9 @@ it('display the users email after authentication if they did not provide a name 
   expect(greeting).toBeTruthy();
 });
 
-it('displays sign in button when user hasn"t logged in', async () => {
+it("displays sign in button when user hasn't logged in via keycloak", async () => {
+  mockConfig.AUTHENTICATION_METHOD = 'keycloak';
+
   customRender(<RightMenu {...rightMenuProps} />);
 
   // Check applicable components render
@@ -109,9 +103,23 @@ it('displays sign in button when user hasn"t logged in', async () => {
   const signInBtn = await screen.findByRole('img', { name: 'user' });
   expect(signInBtn).toBeTruthy();
 
-  await act(async () => {
-    await user.click(signInBtn);
-  });
+  await user.click(signInBtn);
+});
+
+it("displays sign in button when user hasn't logged in via globus", async () => {
+  mockConfig.AUTHENTICATION_METHOD = 'globus';
+
+  customRender(<RightMenu {...rightMenuProps} />);
+
+  // Check applicable components render
+  const rightMenuComponent = await screen.findByTestId('right-menu');
+  expect(rightMenuComponent).toBeTruthy();
+
+  // Click the sign in button
+  const signInBtn = await screen.findByRole('img', { name: 'user' });
+  expect(signInBtn).toBeTruthy();
+
+  await user.click(signInBtn);
 });
 
 it('displays help menu when help button is clicked', async () => {
@@ -125,9 +133,7 @@ it('displays help menu when help button is clicked', async () => {
   const helpBtn = await screen.findByText('Help');
   expect(helpBtn).toBeTruthy();
 
-  await act(async () => {
-    await user.click(helpBtn);
-  });
+  await user.click(helpBtn);
 
   // Check support form rendered
   const support = await screen.findByTestId('support-form');
@@ -145,15 +151,11 @@ it('the the right drawer display for news button and hide news button', async ()
   const newsBtn = await screen.findByText('News');
   expect(newsBtn).toBeTruthy();
 
-  await act(async () => {
-    await user.click(newsBtn);
-  });
+  await user.click(newsBtn);
 
   // Click hide button
   const hideBtn = await screen.findByText('Hide');
   expect(hideBtn).toBeTruthy();
 
-  await act(async () => {
-    await user.click(hideBtn);
-  });
+  await user.click(hideBtn);
 });

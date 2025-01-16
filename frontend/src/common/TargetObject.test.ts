@@ -12,12 +12,8 @@ describe('Test TourTarget class', () => {
     expect(targetObject).toBeTruthy();
     expect(targetObject.class()).toEqual('testClass');
     expect(targetObject.selector()).toEqual('#root .testClass');
-    expect(targetObject.class('testState')).toEqual(
-      'testClass target-state_testState'
-    );
-    expect(targetObject.selector('testState')).toEqual(
-      '#root .testClass .target-state_testState'
-    );
+    expect(targetObject.class('testState')).toEqual('testClass target-state_testState');
+    expect(targetObject.selector('testState')).toEqual('#root .testClass .target-state_testState');
   });
   it('returns target object with uuid', () => {
     const targetObject: TargetObject = new TargetObject('testGroup', 'testId');

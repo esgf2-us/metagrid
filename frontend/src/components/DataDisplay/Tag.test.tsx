@@ -15,9 +15,7 @@ it('renders component with onClose prop', async () => {
 
   const closeBtn = await screen.findByRole('img', { name: 'close' });
 
-  await act(async () => {
-    await user.click(closeBtn);
-  });
+  await user.click(closeBtn);
 });
 
 it('renders component without onClose prop', async () => {
@@ -30,7 +28,5 @@ it('renders component without onClose prop', async () => {
 
   const closeBtn = await screen.findByRole('img', { name: 'close' });
 
-  await act(async () => {
-    await user.click(closeBtn);
-  });
+  await user.click(closeBtn);
 });

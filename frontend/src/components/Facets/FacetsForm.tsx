@@ -31,14 +31,8 @@ import { CSSinJS } from '../../common/types';
 import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
 import { NodeStatusArray } from '../NodeStatus/types';
-import {
-  ActiveSearchQuery,
-  ResultType,
-  VersionDate,
-  VersionType,
-} from '../Search/types';
+import { ActiveSearchQuery, ResultType, VersionDate, VersionType } from '../Search/types';
 import { ActiveFacets, ParsedFacets } from './types';
-import { globusEnabledNodes } from '../../env';
 import { showNotice } from '../../common/utils';
 
 dayjs.extend(customParseFormat);
@@ -93,10 +87,7 @@ export const humanizeFacetNames = (str: string): string => {
   return frags.join(' ');
 };
 
-export const formatDate = (
-  date: string | Dayjs,
-  toString: boolean
-): string | Dayjs => {
+export const formatDate = (date: string | Dayjs, toString: boolean): string | Dayjs => {
   const format = 'YYYYMMDD';
 
   if (toString) {
@@ -138,26 +129,16 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
   >([]);
   const [expandAll, setExpandAll] = React.useState<boolean>(true);
 
-  type DatePickerReturnType =
-    | [null, null]
-    | [Dayjs, null]
-    | [null, Dayjs]
-    | [Dayjs, Dayjs];
+  type DatePickerReturnType = [null, null] | [Dayjs, null] | [null, Dayjs] | [Dayjs, Dayjs];
 
   // Convert using moment.js to for the initial value of the date picker
   const { minVersionDate, maxVersionDate } = activeSearchQuery;
   const initialVersionDateRange = [
-    minVersionDate
-      ? formatDate(minVersionDate, false)
-      : (minVersionDate as null),
-    maxVersionDate
-      ? formatDate(maxVersionDate, false)
-      : (maxVersionDate as null),
+    minVersionDate ? formatDate(minVersionDate, false) : (minVersionDate as null),
+    maxVersionDate ? formatDate(maxVersionDate, false) : (maxVersionDate as null),
   ];
 
-  const handleOnFinishFilenameVarForm = (values: {
-    [key: string]: string;
-  }): void => {
+  const handleOnFinishFilenameVarForm = (values: { [key: string]: string }): void => {
     onSetFilenameVars(values.filenameVar);
 
     setFilenameVar('');
@@ -168,12 +149,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
     versionType: VersionType;
     resultType: ResultType;
     versionDateRange: DatePickerReturnType;
-    [key: string]:
-      | VersionType
-      | ResultType
-      | ActiveFacets
-      | []
-      | DatePickerReturnType;
+    [key: string]: VersionType | ResultType | ActiveFacets | [] | DatePickerReturnType;
   }): void => {
     const {
       versionType: newVersionType,
@@ -185,26 +161,14 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
     /* istanbul ignore else */
     if (versionDateRange) {
       const [minDate, maxDate] = versionDateRange;
-      newMinVersionDate = minDate
-        ? (formatDate(minDate, true) as string)
-        : minDate;
-      newMaxVersionDate = maxDate
-        ? (formatDate(maxDate, true) as string)
-        : maxDate;
+      newMinVersionDate = minDate ? (formatDate(minDate, true) as string) : minDate;
+      newMaxVersionDate = maxDate ? (formatDate(maxDate, true) as string) : maxDate;
     }
 
-    onSetGeneralFacets(
-      newVersionType,
-      newResultType,
-      newMinVersionDate,
-      newMaxVersionDate
-    );
+    onSetGeneralFacets(newVersionType, newResultType, newMinVersionDate, newMaxVersionDate);
   };
 
-  const handleOnSelectAvailableFacetsForm = (
-    facet: string,
-    options: string[] | []
-  ): void => {
+  const handleOnSelectAvailableFacetsForm = (facet: string, options: string[] | []): void => {
     setActiveDropdownValue([facet, options]);
   };
 
@@ -216,7 +180,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
       const newActiveFacets = activeSearchQuery.activeFacets as ActiveFacets;
       onSetActiveFacets({
         ...newActiveFacets,
-        dataNode: globusEnabledNodes,
+        dataNode: window.METAGRID.GLOBUS_NODES,
       } as ActiveFacets);
     } else {
       const newActiveFacets = activeSearchQuery.activeFacets as ActiveFacets;
@@ -275,25 +239,19 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
           ...activeSearchQuery.activeFacets,
         }}
       >
-        {globusEnabledNodes.length > 0 && (
+        {window.METAGRID.GLOBUS_NODES.length > 0 && (
           <div className={leftSidebarTargets.filterByGlobusTransfer.class()}>
             <h3>Filter By Transfer Options</h3>
             <Row>
               <Col>
-                <Radio.Group
-                  onChange={handleOnGlobusReadyChanged}
-                  value={globusReadyOnly}
-                >
+                <Radio.Group onChange={handleOnGlobusReadyChanged} value={globusReadyOnly}>
                   <Radio
                     value={false}
                     className={leftSidebarTargets.filterByGlobusTransferAny.class()}
                   >
                     Any
                   </Radio>
-                  <Radio
-                    value
-                    className={leftSidebarTargets.filterByGlobusTransferOnly.class()}
-                  >
+                  <Radio value className={leftSidebarTargets.filterByGlobusTransferOnly.class()}>
                     Only Globus Transferrable
                   </Radio>
                 </Radio.Group>
@@ -312,9 +270,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                 className={leftSidebarTargets.facetFormExpandAllBtn.class()}
                 size="small"
                 onClick={() => {
-                  setActivePanels(
-                    Object.keys(facetsByGroup).map((panel) => panel)
-                  );
+                  setActivePanels(Object.keys(facetsByGroup).map((panel) => panel));
                   setExpandAll(false);
                 }}
               >
@@ -359,8 +315,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                     const facetOptions = availableFacets[facet];
 
                     const isOptionalforDatasets =
-                      facetOptions.length > 0 &&
-                      facetOptions[0].includes('none');
+                      facetOptions.length > 0 && facetOptions[0].includes('none');
                     const facetNameHumanized = humanizeFacetNames(facet);
                     return (
                       <Form.Item
@@ -373,9 +328,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                               size="small"
                               style={{ marginLeft: '5px' }}
                               icon={
-                                <Tooltip
-                                  title={`Copy ${facetNameHumanized}s to clipboard`}
-                                >
+                                <Tooltip title={`Copy ${facetNameHumanized}s to clipboard`}>
                                   <CopyOutlined style={{ fontSize: '12px' }} />
                                 </Tooltip>
                               }
@@ -394,11 +347,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                                     messageApi,
                                     `${facetNameHumanized}s copied to clipboard!`,
                                     {
-                                      icon: (
-                                        <CopyOutlined
-                                          style={styles.messageAddIcon}
-                                        />
-                                      ),
+                                      icon: <CopyOutlined style={styles.messageAddIcon} />,
                                     }
                                   );
                                 }
@@ -428,9 +377,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
                             triggerNode.parentElement
                           }
-                          onDropdownVisibleChange={(open) =>
-                            setDropdownIsOpen(open)
-                          }
+                          onDropdownVisibleChange={(open) => setDropdownIsOpen(open)}
                           onChange={(value: string[] | []) => {
                             handleOnSelectAvailableFacetsForm(facet, value);
                           }}
@@ -438,21 +385,15 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                             let optionOutput: string | React.ReactElement = (
                               <>
                                 {variable[0]}
-                                <span style={styles.facetCount}>
-                                  ({variable[1]})
-                                </span>
+                                <span style={styles.facetCount}>({variable[1]})</span>
                               </>
                             );
 
                             // If the option output name is very long, use a tooltip
                             const vLength = variable[0].length - 2;
-                            const cLength =
-                              variable[1].toString().length * 1.5 + 2;
+                            const cLength = variable[1].toString().length * 1.5 + 2;
                             if (vLength > maxItemLength - cLength) {
-                              const innerTitle = variable[0].substring(
-                                0,
-                                maxItemLength - cLength
-                              );
+                              const innerTitle = variable[0].substring(0, maxItemLength - cLength);
                               optionOutput = (
                                 <Tooltip
                                   overlayInnerStyle={{
@@ -461,9 +402,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                                   title={variable[0]}
                                 >
                                   {innerTitle}...
-                                  <span style={styles.facetCount}>
-                                    ({variable[1]})
-                                  </span>
+                                  <span style={styles.facetCount}>({variable[1]})</span>
                                 </Tooltip>
                               );
                             }
@@ -471,13 +410,8 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                             // The data node facet has a unique tooltip overlay to show the status of the highlighted node
                             if (facet === 'data_node') {
                               optionOutput = (
-                                <StatusToolTip
-                                  nodeStatus={nodeStatus}
-                                  dataNode={variable[0]}
-                                >
-                                  <span style={styles.facetCount}>
-                                    ({variable[1]})
-                                  </span>
+                                <StatusToolTip nodeStatus={nodeStatus} dataNode={variable[0]}>
+                                  <span style={styles.facetCount}>({variable[1]})</span>
                                 </StatusToolTip>
                               );
                             }
@@ -485,9 +419,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                               key: variable[0],
                               value: variable[0],
                               label: (
-                                <span data-testid={`${facet}_${variable[0]}`}>
-                                  {optionOutput}{' '}
-                                </span>
+                                <span data-testid={`${facet}_${variable[0]}`}>{optionOutput} </span>
                               ),
                             };
                           })}
@@ -534,8 +466,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                     label="Version Type"
                     name="versionType"
                     tooltip={{
-                      title:
-                        'By default, only the latest version of a dataset is returned',
+                      title: 'By default, only the latest version of a dataset is returned',
                       trigger: 'hover',
                     }}
                   >
@@ -604,7 +535,10 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
             {
               key: 'filename',
               label: (
-                <div className={leftSidebarTargets.facetFormFilename.class()}>
+                <div
+                  className={leftSidebarTargets.facetFormFilename.class()}
+                  data-testid="filename-collapse"
+                >
                   {humanizeFacetNames('filename')}
                 </div>
               ),
@@ -617,11 +551,9 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                   tooltip={{
                     title: (
                       <p>
-                        Use file or variable names to filter a dataset&apos;s
-                        files under the{' '}
-                        <RightCircleOutlined></RightCircleOutlined> icon. For
-                        multiple names, add them individually or as a single
-                        comma-separated input (e.g. cct, cl).
+                        Use file or variable names to filter a dataset&apos;s files under the{' '}
+                        <RightCircleOutlined></RightCircleOutlined> icon. For multiple names, add
+                        them individually or as a single comma-separated input (e.g. cct, cl).
                       </p>
                     ),
                     trigger: 'hover',
@@ -640,7 +572,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                       <Button
                         type="primary"
                         htmlType="submit"
-                        icon={<SearchOutlined />}
+                        icon={<SearchOutlined data-testid="filename-search-submit-btn" />}
                       ></Button>
                     </Col>
                   </Row>

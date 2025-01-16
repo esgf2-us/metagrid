@@ -8,45 +8,31 @@ import { server } from './test/mock/server';
 import messageDisplayData from './components/Messaging/messageDisplayData';
 import {
   mockConfig,
-  originalEnabledNodes,
+  originalGlobusEnabledNodes,
   sessionStorageMock,
 } from './test/jestTestFunctions';
+import 'cross-fetch/polyfill';
 
-jest.setTimeout(35000);
-
-// Fixes 'TypeError: Cannot read property 'addListener' of undefined.
-// https://github.com/AO19/typeError-cannot-read-property-addListener-of-undefined/commit/873ce9b730a1c21b40c9264e5f29fc2df436136b
-global.matchMedia =
-  global.matchMedia ||
-  // eslint-disable-next-line func-names
-  function () {
-    return {
-      addListener: jest.fn(),
-      removeListener: jest.fn(),
-    };
-  };
-
-// Mock the globusEnabledNodes variable to simulate configuration
-jest.mock('./env', () => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const originalModule = jest.requireActual('./env');
-
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return {
-    __esModule: true,
-    ...originalModule,
-    globusEnabledNodes: [
-      'aims3.llnl.gov',
-      'esgf-data1.llnl.gov',
-      'esgf-data2.llnl.gov',
-    ],
-  };
-});
+jest.setTimeout(60000);
 
 // Used to restore window.location after each test
 const location = JSON.stringify(window.location);
 
 Object.defineProperty(window, 'localStorage', { value: sessionStorageMock });
+Object.defineProperty(window, 'METAGRID', { value: mockConfig });
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: jest.fn().mockImplementation((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: jest.fn(), // deprecated
+    removeListener: jest.fn(), // deprecated
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  })),
+});
 
 beforeAll(() => {
   server.listen();
@@ -76,7 +62,7 @@ afterEach(() => {
   HTMLAnchorElement.prototype.click = jest.fn();
 
   // Reset mock values
-  mockConfig.globusEnabledNodes = originalEnabledNodes;
+  window.METAGRID.GLOBUS_NODES = originalGlobusEnabledNodes;
 
   // Clear localStorage between tests
   localStorage.clear();

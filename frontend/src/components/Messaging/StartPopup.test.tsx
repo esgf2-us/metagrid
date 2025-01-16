@@ -5,10 +5,9 @@ import StartPopup from './StartPopup';
 import StartupMessages from './messageDisplayData';
 import { TourTitles } from '../../common/reactJoyrideSteps';
 import customRender from '../../test/custom-render';
+import { rest, server } from '../../test/mock/server';
 
 const { defaultMessageId, messageToShow } = StartupMessages;
-
-const user = userEvent.setup();
 
 let mockNavigate: () => void;
 
@@ -25,10 +24,6 @@ beforeEach(() => {
       } as Record<string, unknown>)
   );
   window.localStorage.clear();
-});
-
-afterEach(() => {
-  jest.clearAllMocks();
 });
 
 describe('Start popup tests', () => {
@@ -50,9 +45,7 @@ describe('Start popup tests', () => {
     const searchTourBtn = await screen.findByText(TourTitles.Main);
     expect(welcomeHeader).toBeTruthy();
 
-    await act(async () => {
-      await user.click(searchTourBtn);
-    });
+    await userEvent.click(searchTourBtn);
   });
 
   it('renders start popup with welcome message and starts cart tour.', async () => {
@@ -65,9 +58,7 @@ describe('Start popup tests', () => {
     const cartTourBtn = await screen.findByText(TourTitles.Cart);
     expect(welcomeHeader).toBeTruthy();
 
-    await act(async () => {
-      await user.click(cartTourBtn);
-    });
+    await userEvent.click(cartTourBtn);
   });
 
   it('renders start popup with welcome message and starts saved search tour.', async () => {
@@ -80,9 +71,7 @@ describe('Start popup tests', () => {
     const searchesTourBtn = await screen.findByText(TourTitles.Searches);
     expect(welcomeHeader).toBeTruthy();
 
-    await act(async () => {
-      await user.click(searchesTourBtn);
-    });
+    await userEvent.click(searchesTourBtn);
   });
 
   it('renders start popup with welcome message and starts node page tour.', async () => {
@@ -95,9 +84,7 @@ describe('Start popup tests', () => {
     const nodeTourBtn = await screen.findByText(TourTitles.Node);
     expect(welcomeHeader).toBeTruthy();
 
-    await act(async () => {
-      await user.click(nodeTourBtn);
-    });
+    await userEvent.click(nodeTourBtn);
   });
 
   it('renders start popup with message data missing.', async () => {
@@ -111,6 +98,8 @@ describe('Start popup tests', () => {
   });
 
   it('renders start popup with wrong version specified', async () => {
+    server.use(rest.get('/changelog/v*.md', (_req, res, ctx) => res(ctx.body('Some changes'))));
+
     window.localStorage.setItem('lastMessageSeen', 'test');
     customRender(<StartPopup />);
 

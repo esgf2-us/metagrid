@@ -19,12 +19,7 @@ import { CSSinJS } from '../../common/types';
 import { objectIsEmpty } from '../../common/utils';
 import { UserCart } from '../Cart/types';
 import { Tag, TagType, TagValue } from '../DataDisplay/Tag';
-import {
-  ActiveFacets,
-  ParsedFacets,
-  RawFacets,
-  RawProject,
-} from '../Facets/types';
+import { ActiveFacets, ParsedFacets, RawFacets, RawProject } from '../Facets/types';
 import Button from '../General/Button'; // Note, tooltips do not work for this button
 import { NodeStatusArray } from '../NodeStatus/types';
 import Table from './Table';
@@ -112,17 +107,12 @@ export const stringifyFilters = (
   if (!objectIsEmpty(activeFacets)) {
     Object.keys(activeFacets).forEach((key: string) => {
       filtersArr.push(
-        `(${humps.decamelize(key)} = ${(activeFacets as ActiveFacets)[key].join(
-          ' OR '
-        )})`
+        `(${humps.decamelize(key)} = ${(activeFacets as ActiveFacets)[key].join(' OR ')})`
       );
     });
   }
 
-  const filtersStr =
-    filtersArr.length > 0
-      ? `${filtersArr.join(' AND ')}`
-      : 'No filters applied';
+  const filtersStr = filtersArr.length > 0 ? `${filtersArr.join(' AND ')}` : 'No filters applied';
   return filtersStr;
 };
 
@@ -137,10 +127,7 @@ export type Props = {
   nodeStatus?: NodeStatusArray;
   onRemoveFilter: (removedTag: TagValue, type: TagType) => void;
   onClearFilters: () => void;
-  onUpdateCart: (
-    selectedItems: RawSearchResults,
-    operation: 'add' | 'remove'
-  ) => void;
+  onUpdateCart: (selectedItems: RawSearchResults, operation: 'add' | 'remove') => void;
   onUpdateAvailableFacets: (parsedFacets: ParsedFacets) => void;
   onSaveSearchQuery: (url: string) => void;
   onShareSearchQuery: () => void;
@@ -169,20 +156,14 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
   } = activeSearchQuery;
 
   const { data: results, error, isLoading, run } = useAsync({
-    deferFn: (fetchSearchResults as unknown) as DeferFn<
-      Record<string, unknown>
-    >,
+    deferFn: (fetchSearchResults as unknown) as DeferFn<Record<string, unknown>>,
   });
   const [filtersExist, setFiltersExist] = React.useState<boolean>(false);
-  const [parsedFacets, setParsedFacets] = React.useState<
-    ParsedFacets | Record<string, unknown>
-  >({});
-  const [currentRequestURL, setCurrentRequestURL] = React.useState<
-    string | null
-  >(null);
-  const [selectedItems, setSelectedItems] = React.useState<
-    RawSearchResults | []
-  >([]);
+  const [parsedFacets, setParsedFacets] = React.useState<ParsedFacets | Record<string, unknown>>(
+    {}
+  );
+  const [currentRequestURL, setCurrentRequestURL] = React.useState<string | null>(null);
+  const [selectedItems, setSelectedItems] = React.useState<RawSearchResults | []>([]);
 
   const [paginationOptions, setPaginationOptions] = React.useState<Pagination>({
     page: 1,
@@ -192,10 +173,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
   // Generate the current request URL based on filters
   React.useEffect(() => {
     if (!objectIsEmpty(project)) {
-      const reqUrl = generateSearchURLQuery(
-        activeSearchQuery,
-        paginationOptions
-      );
+      const reqUrl = generateSearchURLQuery(activeSearchQuery, paginationOptions);
       setCurrentRequestURL(reqUrl);
     }
   }, [activeSearchQuery, project, paginationOptions]);
@@ -259,8 +237,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
   let numFound = 0;
   let docs: RawSearchResults = [];
   if (results) {
-    numFound = (results as { response: { numFound: number } }).response
-      .numFound;
+    numFound = (results as { response: { numFound: number } }).response.numFound;
     docs = (results as { response: { docs: RawSearchResults } }).response.docs;
   }
 
@@ -274,35 +251,23 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
     ).length === 0;
 
   return (
-    <div
-      data-testid="search"
-      className={searchTableTargets.searchResultsTable.class()}
-    >
+    <div data-testid="search" className={searchTableTargets.searchResultsTable.class()}>
       <div style={styles.summary}>
         {objectIsEmpty(project) && (
-          <Alert
-            message="Select a project to search for results"
-            type="info"
-            showIcon
-          />
+          <Alert message="Select a project to search for results" type="info" showIcon />
         )}
         <h3>
-          {isLoading && (
-            <span style={styles.resultsHeader}>
-              Loading latest results for{' '}
-            </span>
-          )}
+          {isLoading && <span style={styles.resultsHeader}>Loading latest results for </span>}
           {results && !isLoading && (
             <span
               className={searchTableTargets.resultsFoundText.class()}
               style={styles.resultsHeader}
+              data-testid="search-results-span"
             >
               {numFound.toLocaleString()} results found for{' '}
             </span>
           )}
-          <span style={styles.resultsHeader}>
-            {(project as RawProject).name}
-          </span>
+          <span style={styles.resultsHeader}>{(project as RawProject).name}</span>
         </h3>
         <div>
           {results && (
@@ -327,7 +292,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
                 onClick={() => onSaveSearchQuery(currentRequestURL as string)}
                 disabled={isLoading || numFound === 0}
               >
-                <BookOutlined />
+                <BookOutlined data-testid="save-search-btn" />
                 Save Search
               </Button>{' '}
               <Button
@@ -336,7 +301,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
                 onClick={() => onShareSearchQuery()}
                 disabled={isLoading || numFound === 0}
               >
-                <ShareAltOutlined />
+                <ShareAltOutlined data-testid="share-search-btn" />
                 Copy Search
               </Button>
             </div>
@@ -347,11 +312,10 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
         {results && (
           <>
             <p>
-              <span style={styles.subtitles}>Query String: </span>
-              <Typography.Text
-                className={searchTableTargets.queryString.class()}
-                code
-              >
+              <span style={styles.subtitles} data-testid="main-query-string-label">
+                Query String:{' '}
+              </span>
+              <Typography.Text className={searchTableTargets.queryString.class()} code>
                 {stringifyFilters(
                   versionType,
                   resultType,
@@ -372,11 +336,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
             Object.keys(activeFacets).map((facet: string) =>
               (activeFacets as ActiveFacets)[facet].map((variable: string) => (
                 <div key={variable} data-testid={variable}>
-                  <Tag
-                    value={[facet, variable]}
-                    onClose={onRemoveFilter}
-                    type="facet"
-                  >
+                  <Tag value={[facet, variable]} onClose={onRemoveFilter} type="facet">
                     {variable}
                   </Tag>
                 </div>
@@ -399,12 +359,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
               </div>
             ))}
           {filtersExist && (
-            <Button
-              type="primary"
-              danger
-              size="small"
-              onClick={() => onClearFilters()}
-            >
+            <Button type="primary" danger size="small" onClick={() => onClearFilters()}>
               Clear All
             </Button>
           )}

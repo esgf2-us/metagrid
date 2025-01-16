@@ -38,18 +38,14 @@ it('renders the node status and columns sort', async () => {
 
   expect(nodeColHeader).toBeTruthy();
 
-  await act(async () => {
-    await user.click(nodeColHeader);
-  });
+  await user.click(nodeColHeader);
 
   const isOnlineColHeader = await screen.findByRole('columnheader', {
     name: 'Online',
   });
   expect(isOnlineColHeader).toBeTruthy();
 
-  await act(async () => {
-    await user.click(isOnlineColHeader);
-  });
+  await user.click(isOnlineColHeader);
 });
 
 it('renders an error message when no node status information is available', async () => {
@@ -63,10 +59,7 @@ it('renders an error message when there is an api error', async () => {
   const errorMsg = 'Node status information is currently unavailable.';
 
   customRender(
-    <NodeStatus
-      isLoading={false}
-      apiError={Error(errorMsg) as ResponseError}
-    ></NodeStatus>
+    <NodeStatus isLoading={false} apiError={Error(errorMsg) as ResponseError}></NodeStatus>
   );
 
   const alertMsg = await screen.findByRole('alert');
