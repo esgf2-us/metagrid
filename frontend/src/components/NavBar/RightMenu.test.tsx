@@ -1,8 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
+import { MemoryRouter } from 'react-router-dom';
+import { RecoilRoot } from 'recoil';
+import { setMedia } from 'mock-match-media';
 import customRender from '../../test/custom-render';
 import Support from '../Support';
 import RightMenu, { Props } from './RightMenu';
@@ -158,4 +161,90 @@ it('the the right drawer display for news button and hide news button', async ()
   expect(hideBtn).toBeTruthy();
 
   await user.click(hideBtn);
+});
+
+describe('Dark Mode', () => {
+  it('respects (prefers-color-scheme: dark) when preference unset', () => {
+    setMedia({
+      'prefers-color-scheme': 'dark',
+    });
+    localStorage.clear();
+    render(
+      <RecoilRoot>
+        <MemoryRouter>
+          <RightMenu
+            mode="vertical"
+            numCartItems={0}
+            numSavedSearches={0}
+            supportModalVisible={() => false}
+          ></RightMenu>
+        </MemoryRouter>
+      </RecoilRoot>
+    );
+    expect(screen.getByTestId('isDarkModeSwitch')).not.toBeChecked();
+  });
+
+  it('respects (prefers-color-scheme: light) when preference unset', () => {
+    setMedia({
+      'prefers-color-scheme': 'light',
+    });
+    localStorage.clear();
+    render(
+      <RecoilRoot>
+        <MemoryRouter>
+          <RightMenu
+            mode="vertical"
+            numCartItems={0}
+            numSavedSearches={0}
+            supportModalVisible={() => false}
+          ></RightMenu>
+        </MemoryRouter>
+      </RecoilRoot>
+    );
+    expect(screen.getByTestId('isDarkModeSwitch')).toBeChecked();
+  });
+
+  it('gives precedence to stored preference over prefers-color-scheme', () => {
+    setMedia({
+      'prefers-color-scheme': 'dark',
+    });
+    localStorage.setItem('isDarkMode', 'false');
+    render(
+      <RecoilRoot>
+        <MemoryRouter>
+          <RightMenu
+            mode="vertical"
+            numCartItems={0}
+            numSavedSearches={0}
+            supportModalVisible={() => false}
+          ></RightMenu>
+        </MemoryRouter>
+      </RecoilRoot>
+    );
+    expect(screen.getByTestId('isDarkModeSwitch')).toBeChecked();
+  });
+
+  it('stores preference when selected', async () => {
+    setMedia({});
+    localStorage.clear();
+    render(
+      <RecoilRoot>
+        <MemoryRouter>
+          <RightMenu
+            mode="vertical"
+            numCartItems={0}
+            numSavedSearches={0}
+            supportModalVisible={() => false}
+          ></RightMenu>
+        </MemoryRouter>
+      </RecoilRoot>
+    );
+    const isDarkModeSwitch = await screen.findByTestId('isDarkModeSwitch');
+    expect(isDarkModeSwitch).not.toBeChecked();
+    waitFor(() => {
+      fireEvent.click(isDarkModeSwitch);
+    });
+    expect(await screen.findByTestId('isDarkModeSwitch')).toBeChecked();
+    expect(localStorage.getItem('isDarkMode')).toBe('false');
+  });
 });

@@ -12,6 +12,7 @@ import {
   sessionStorageMock,
 } from './test/jestTestFunctions';
 import 'cross-fetch/polyfill';
+import 'mock-match-media/jest-setup';
 
 jest.setTimeout(60000);
 
@@ -20,19 +21,6 @@ const location = JSON.stringify(window.location);
 
 Object.defineProperty(window, 'localStorage', { value: sessionStorageMock });
 Object.defineProperty(window, 'METAGRID', { value: mockConfig });
-Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: jest.fn().mockImplementation((query: string) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: jest.fn(), // deprecated
-    removeListener: jest.fn(), // deprecated
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
-  })),
-});
 
 beforeAll(() => {
   server.listen();

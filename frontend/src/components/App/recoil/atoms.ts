@@ -4,6 +4,9 @@ export const localStorageEffect = (key: string): AtomEffect<boolean> => ({ setSe
   const savedValue = localStorage.getItem(key);
   if (savedValue != null) {
     setSelf(savedValue === 'true');
+  } else {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    setSelf(mediaQuery.matches);
   }
 
   onSet((newValue, _, isReset) => {

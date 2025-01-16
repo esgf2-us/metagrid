@@ -225,6 +225,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
             unCheckedChildren="Dark"
             onChange={(checked) => setIsDarkMode(!checked)}
             defaultChecked={!isDarkMode}
+            data-testid="isDarkModeSwitch"
           ></Switch>
           <span>Theme</span>
         </Space>
