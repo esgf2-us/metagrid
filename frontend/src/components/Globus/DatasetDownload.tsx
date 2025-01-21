@@ -242,7 +242,12 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       .then(async (resp) => {
         await dp.setValue(CartStateKeys.cartItemSelections, [], true);
 
-        const newTasks = resp.successes.map((submission) => {
+        const updatedResp = { ...resp };
+        if (resp.successes.length === 0 && resp.failures.length === 0) {
+          updatedResp.status = 204;
+        }
+
+        const newTasks = updatedResp.successes.map((submission) => {
           const taskId = submission.task_id as string;
           return {
             submitDate: new Date(Date.now()).toLocaleString(),
@@ -255,18 +260,28 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
         await dp.setValue(GlobusStateKeys.globusTaskItems, nMostRecentTasks, true);
 
-        switch (resp.status) {
+        switch (updatedResp.status) {
           case 200:
             await showNotice(messageApi, 'Globus download initiated successfully!', {
               type: 'success',
             });
             break;
 
+          case 204:
+            await showNotice(
+              messageApi,
+              'Globus download requested, however no transfer occurred.',
+              {
+                type: 'warning',
+              }
+            );
+            break;
+
           case 207:
             await showNotice(
               messageApi,
               <span data-testid="207-globus-failures-msg">
-                {`One or more Globus submissions failed: \n${resp.failures.join('\n')}`}
+                {`One or more Globus submissions failed: \n${updatedResp.failures.join('\n')}`}
               </span>,
               {
                 type: 'error',
@@ -278,7 +293,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             await showNotice(
               messageApi,
               <span data-testid="unhandled-status-globus-failures-msg">
-                {`Globus download returned unexpected response: ${resp.status}`}
+                {`Globus download returned unexpected response: ${updatedResp.status}`}
               </span>,
               {
                 type: 'error',
@@ -731,7 +746,11 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       // Check chosen endpoint path is ready
       if (chosenEndpoint.path) {
         setCurrentGoal(GlobusGoals.None);
-        handleGlobusDownload(transferToken, accessToken, chosenEndpoint);
+        handleGlobusDownload(
+          transferToken as GlobusTokenResponse,
+          accessToken as string,
+          chosenEndpoint
+        );
       } else {
         // Setting endpoint path
         setLoadingPage(false);
