@@ -304,9 +304,7 @@ describe('DatasetDownload form tests', () => {
     await user.click(globusTransferBtn);
 
     // Expect the transfer popup to show first step
-    const globusTransferPopup = await screen.findByText(
-      /Globus transfer task submitted successfully!/i
-    );
+    const globusTransferPopup = await screen.findByText('Globus download initiated successfully!');
     expect(globusTransferPopup).toBeTruthy();
   });
 
@@ -414,7 +412,7 @@ describe('DatasetDownload form tests', () => {
     // expect(dp.getValue<RawSearchResults>(CartStateKeys.cartItemSelections)?.length).toEqual(1);
 
     // Begin the transfer
-    const transferPopup = await screen.findByText(/Globus transfer task submitted successfully!/i);
+    const transferPopup = await screen.findByText('Globus download initiated successfully!');
     expect(transferPopup).toBeTruthy();
     await user.click(await screen.findByText('Ok'));
   });
@@ -532,13 +530,11 @@ describe('DatasetDownload form tests', () => {
     await user.click(globusTransferBtn);
 
     // Expect the transfer popup to show first step
-    const globusTransferPopup = await screen.findByText(
-      /Globus transfer task submitted successfully!/i
-    );
+    const globusTransferPopup = await screen.findByText('Globus download initiated successfully!');
     expect(globusTransferPopup).toBeTruthy();
   });
 
-  it('displays an error when Globus Transfer submission fails', async () => {
+  it('displays an error when Globus Transfer submission fails to reach backend', async () => {
     server.use(rest.post(apiRoutes.globusTransfer.path, (_req, res, ctx) => res(ctx.status(404))));
 
     await initializeComponentForTest();
@@ -548,10 +544,46 @@ describe('DatasetDownload form tests', () => {
     expect(globusTransferBtn).toBeTruthy();
     await user.click(globusTransferBtn);
 
-    const globusTransferPopup = await screen.findByText(
-      'is your error. Please contact ESGF support.',
-      { exact: false }
+    const globusTransferPopup = await screen.findByTestId('globus-transfer-backend-error-msg');
+    expect(globusTransferPopup).toBeTruthy();
+  });
+
+  it('displays an error when one or more Globus Transfer submissions fail', async () => {
+    server.use(
+      rest.post(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
+        res(
+          ctx.status(207),
+          ctx.json({ status: 207, successes: [], failures: ['transfer failed'] })
+        )
+      )
     );
+
+    await initializeComponentForTest();
+
+    // Click Transfer button
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetBtn');
+    expect(globusTransferBtn).toBeTruthy();
+    await user.click(globusTransferBtn);
+
+    const globusTransferPopup = await screen.findByTestId('207-globus-failures-msg');
+    expect(globusTransferPopup).toBeTruthy();
+  });
+
+  it('displays an error when Globus Transfer returns unhandled status code', async () => {
+    server.use(
+      rest.post(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
+        res(ctx.status(207), ctx.json({ status: 500, successes: [], failures: [] }))
+      )
+    );
+
+    await initializeComponentForTest();
+
+    // Click Transfer button
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetBtn');
+    expect(globusTransferBtn).toBeTruthy();
+    await user.click(globusTransferBtn);
+
+    const globusTransferPopup = await screen.findByTestId('unhandled-status-globus-failures-msg');
     expect(globusTransferPopup).toBeTruthy();
   });
 
@@ -630,7 +662,7 @@ describe('DatasetDownload form tests', () => {
     expect(lcPublicOption).toBeTruthy();
     await user.click(lcPublicOption);
 
-    // The user chose endpoint should now be LC Public
+    // The user chosen endpoint should now be LC Public
     expect(dp.getValue<GlobusEndpoint>(GlobusStateKeys.userChosenEndpoint)?.display_name).toEqual(
       'LC Public'
     );
@@ -685,7 +717,7 @@ describe('DatasetDownload form tests', () => {
     );
   });
 
-  it('Perform Transfer will pop a task if max tasks was reached, to keep 10 tasks at most', async () => {
+  it('displays 10 tasks at most in the submit history', async () => {
     tempStorageSetMock(GlobusStateKeys.globusTaskItems, [
       {
         submitDate: '11/30/2023, 3:10:00 PM',
@@ -763,9 +795,7 @@ describe('DatasetDownload form tests', () => {
     await user.click(globusTransferBtn);
 
     // Expect the transfer to complete successfully
-    const globusTransferPopup = await screen.findByText(
-      /Globus transfer task submitted successfully!/i
-    );
+    const globusTransferPopup = await screen.findByText('Globus download initiated successfully!');
     expect(globusTransferPopup).toBeTruthy();
 
     // There should still only be 10 tasks in task history
@@ -794,6 +824,50 @@ describe('DatasetDownload form tests', () => {
     await user.click(tourBtn);
     const tourModal = await screen.findByRole('heading', { name: 'Manage My Collections Tour' });
     expect(tourModal).toBeInTheDocument();
+  });
+
+  it('removes all tasks when clicking the Clear All button', async () => {
+    tempStorageSetMock(GlobusStateKeys.globusTaskItems, [
+      {
+        submitDate: '11/30/2023, 3:10:00 PM',
+        taskId: '0123456',
+        taskStatusURL: 'https://app.globus.org/activity/0123456/overview',
+      },
+      {
+        submitDate: '11/30/2023, 3:15:00 PM',
+        taskId: '2345678',
+        taskStatusURL: 'https://app.globus.org/activity/2345678/overview',
+      },
+      {
+        submitDate: '11/30/2023, 3:20:00 PM',
+        taskId: '3456789',
+        taskStatusURL: 'https://app.globus.org/activity/3456789/overview',
+      },
+    ]);
+
+    await initializeComponentForTest({
+      ...defaultTestConfig,
+      renderFullApp: true,
+    });
+
+    // Expand submit history
+    const submitHistory = await screen.findByText('Task Submit History', {
+      exact: false,
+    });
+    expect(submitHistory).toBeInTheDocument();
+    await user.click(submitHistory);
+
+    // There should be 3 tasks in task history
+    const taskItems = await screen.findAllByText('Submitted: ', { exact: false });
+    expect(taskItems).toHaveLength(3);
+
+    // Click clear all button
+    const clearAllBtn = await screen.findByTestId('clear-all-submitted-globus-tasks');
+    await user.click(clearAllBtn);
+
+    // There should be 0 tasks in task history
+    const taskItemsNow = screen.queryAllByText('Submitted: ', { exact: false });
+    expect(taskItemsNow).toHaveLength(0);
   });
 });
 

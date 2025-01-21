@@ -40,7 +40,7 @@ describe('test the cart items component', () => {
     expect(firstRow).toBeTruthy();
 
     // Check first row has add button and click it
-    const addBtn = await within(firstRow).findByRole('img', { name: 'plus' });
+    const addBtn = await screen.findByTestId('row-0-add-to-cart');
     expect(addBtn).toBeTruthy();
     await user.click(addBtn);
 
@@ -74,11 +74,11 @@ describe('test the cart items component', () => {
     customRender(<App searchQuery={activeSearch} />);
 
     // Wait for results to load
-    expect(await screen.findByText('results found for', { exact: false })).toBeTruthy();
+    expect(await screen.findByTestId('search-results-span')).toBeInTheDocument();
 
     // Check first row has add button and click it
     const firstRow = await screen.findByTestId('cart-items-row-1');
-    const addBtn = await within(firstRow).findByRole('img', { name: 'plus' });
+    const addBtn = await screen.findByTestId('row-0-add-to-cart');
     expect(addBtn).toBeTruthy();
     await user.click(addBtn);
 

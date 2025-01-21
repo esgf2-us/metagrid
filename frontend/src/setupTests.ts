@@ -4,6 +4,7 @@
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
 import { cleanup } from '@testing-library/react';
+import { TextEncoder } from 'util';
 import { server } from './test/mock/server';
 import messageDisplayData from './components/Messaging/messageDisplayData';
 import {
@@ -33,6 +34,8 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: jest.fn(),
   })),
 });
+
+globalThis.TextEncoder = TextEncoder;
 
 beforeAll(() => {
   server.listen();

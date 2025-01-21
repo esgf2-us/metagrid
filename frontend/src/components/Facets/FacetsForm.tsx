@@ -396,9 +396,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                               const innerTitle = variable[0].substring(0, maxItemLength - cLength);
                               optionOutput = (
                                 <Tooltip
-                                  overlayInnerStyle={{
-                                    width: 'max-content',
-                                  }}
+                                  styles={{ body: { width: 'max-content' } }}
                                   title={variable[0]}
                                 >
                                   {innerTitle}...

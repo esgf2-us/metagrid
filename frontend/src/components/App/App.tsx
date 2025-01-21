@@ -570,14 +570,14 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
                   }
                 />
                 <Route
-                  path="/cart/*"
+                  path="/cart"
                   element={
                     <>
                       <Breadcrumb
                         items={[
                           {
                             title: (
-                              <Link to="/">
+                              <Link to="../">
                                 <HomeOutlined /> Home
                               </Link>
                             ),
@@ -596,7 +596,9 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
                       />
                     </>
                   }
-                />
+                >
+                  <Route path="*" element={<></>} />
+                </Route>
                 <Route
                   path="*"
                   element={

@@ -74,10 +74,6 @@ describe('test main components', () => {
     const leftSearchColumn = await screen.findByTestId('search-facets');
     expect(leftSearchColumn).toBeTruthy();
 
-    // Wait for components to rerender
-    await screen.findByTestId('search');
-    await screen.findByTestId('facets-form');
-
     const facetsForm = await screen.findByTestId('facets-form');
     expect(facetsForm).toBeTruthy();
 
