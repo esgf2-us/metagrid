@@ -18,7 +18,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install requirements
-        run: pip install -r requirements.txt
+        run: pip install -r backend/requirements/local.txt
 
       - name: Run pre-commit
         run: pre-commit run --all-files
