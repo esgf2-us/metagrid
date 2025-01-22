@@ -201,7 +201,7 @@ class GlobusMultiTransfer:
                 submission: GlobusHTTPResponse = self.client.submit_transfer(
                     task
                 )
-                results["successes"].append(submission)
+                results["successes"].append(submission.data)
             except Exception as e:
                 results["failures"].append(repr(e))
 

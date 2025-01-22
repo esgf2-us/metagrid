@@ -16,7 +16,7 @@ const container = document.getElementById('root');
 const root = createRoot(container!);
 
 const appRouter = (
-  <BrowserRouter basename="/">
+  <BrowserRouter>
     <ReactJoyrideProvider>
       <App searchQuery={getSearchFromUrl()} />
     </ReactJoyrideProvider>

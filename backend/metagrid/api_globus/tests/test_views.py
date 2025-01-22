@@ -52,7 +52,7 @@ def test_globus_transfer_missing_required_parameter_returns_400(
 
 @responses.activate
 @pytest.mark.django_db
-@patch("globus_sdk.TransferClient.submit_transfer", return_value="")
+@patch("globus_sdk.TransferClient.submit_transfer")
 @pytest.mark.parametrize(
     "json_fixture", ["esgsearch_multiple_results.json"], indirect=True
 )
@@ -146,18 +146,23 @@ def test_globus_transfer_returns_207_when_submission_errors(
 
 @responses.activate
 @pytest.mark.django_db
-@patch("globus_sdk.TransferClient.submit_transfer", return_value="")
 @pytest.mark.parametrize(
     "json_fixture", ["esgsearch_multiple_results.json"], indirect=True
 )
 def test_globus_transfer_returns_200_when_submissions_all_succeed(
-    submit_mock, json_fixture, api_client
+    json_fixture, api_client
 ):
     responses.add(responses.GET, settings.SEARCH_URL, json=json_fixture)
     responses.add(
         responses.GET,
         "https://transfer.api.globus.org/v0.10/submission_id",
         json={"value": "someid"},
+    )
+    responses.add(
+        responses.POST, "https://transfer.api.globus.org/v0.10/submission_id"
+    )
+    responses.add(
+        responses.POST, "https://transfer.api.globus.org/v0.10/transfer"
     )
 
     response = api_client.post(

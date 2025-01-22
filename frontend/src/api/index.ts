@@ -42,6 +42,12 @@ export interface ResponseError extends Error {
   response: { status: HTTPCodeType; [key: string]: string | HTTPCodeType };
 }
 
+export interface SubmissionResult {
+  status: number;
+  successes: Record<string, unknown>[];
+  failures: string[];
+}
+
 const getCookie = (name: string): null | string => {
   let cookieValue = null;
   if (document && document.cookie && document.cookie !== '') {
@@ -653,36 +659,6 @@ export async function createGlobusAuthObject(): Promise<PKCE> {
     requested_scopes: authScope || REQUESTED_SCOPES, // Update with any scopes you would need, e.g. transfer
   });
 }
-
-/**
- * Performs validation against the globus API to ensure a 200 response.
- *
- * If the API returns a 200, it returns the axios response.
- */
-export const startGlobusTransfer = async (
-  transferAccessToken: string,
-  accessToken: string,
-  endpointId: string,
-  path: string,
-  ids: string[] | string,
-  filenameVars?: string[]
-): Promise<AxiosResponse> => {
-  return axios
-    .post(
-      apiRoutes.globusTransfer.path,
-      JSON.stringify({
-        access_token: transferAccessToken,
-        refresh_token: accessToken,
-        endpointId,
-        path,
-        dataset_id: ids,
-        filenameVars,
-      })
-    )
-    .then((resp) => {
-      return resp;
-    });
-};
 
 export const startSearchGlobusEndpoints = async (
   searchText: string
