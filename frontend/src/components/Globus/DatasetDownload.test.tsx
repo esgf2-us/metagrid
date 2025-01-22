@@ -590,7 +590,7 @@ describe('DatasetDownload form tests', () => {
   it('shows a warning message when Globus transfer response has no data in successes or failures', async () => {
     server.use(
       rest.post(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
-        res(ctx.status(204), ctx.json({ successes: [], failures: [] }))
+        res(ctx.status(200), ctx.json({ status: 200, successes: [], failures: [] }))
       )
     );
 
