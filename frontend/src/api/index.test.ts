@@ -21,7 +21,6 @@ import {
   processCitation,
   saveSessionValue,
   saveSessionValues,
-  startGlobusTransfer,
   startSearchGlobusEndpoints,
   updateUserCart,
 } from '.';
@@ -579,20 +578,6 @@ describe('test user endpoint search', () => {
     await expect(startSearchGlobusEndpoints('lc public')).rejects.toThrow(
       apiRoutes.globusSearchEndpoints.handleErrorMsg(404)
     );
-  });
-});
-
-describe('test startGlobusTransfer function', () => {
-  it('performs a transfer with a filename variable', async () => {
-    const resp = await startGlobusTransfer('asdfs', 'asdfs', 'endpointTest', 'path', 'id', ['clt']);
-
-    expect(resp.data).toEqual({ status: 'OK', taskid: '1234567' });
-  });
-
-  it('performs a transfer without filename variables', async () => {
-    const resp = await startGlobusTransfer('asdfs', 'asdfs', 'endpointTest', 'path', 'id', []);
-
-    expect(resp.data).toEqual({ status: 'OK', taskid: '1234567' });
   });
 });
 

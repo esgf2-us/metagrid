@@ -20,6 +20,7 @@ import {
   RawSearchResults,
 } from '../../components/Search/types';
 import { RawUserAuth, RawUserInfo } from '../../contexts/types';
+import { SubmissionResult } from '../../api';
 
 export const rawProjectFixture = (props: Partial<RawProject> = {}): RawProject => {
   const defaults: RawProject = {
@@ -196,11 +197,8 @@ export const userAuthFixture = (props: Partial<RawUserAuth> = {}): RawUserAuth =
   return { ...defaults, ...props };
 };
 
-export const globusTransferResponseFixture = (): {
-  status: string;
-  taskid: string;
-} => {
-  return { status: 'OK', taskid: '1234567' };
+export const globusTransferResponseFixture = (): SubmissionResult => {
+  return { status: 200, successes: [{ taskid: '1234567' }], failures: [] };
 };
 
 export const userInfoFixture = (props: Partial<RawUserInfo> = {}): RawUserInfo => {
