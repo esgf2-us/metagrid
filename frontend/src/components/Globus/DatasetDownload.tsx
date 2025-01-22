@@ -257,9 +257,20 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
         switch (resp.status) {
           case 200:
-            await showNotice(messageApi, 'Globus download initiated successfully!', {
-              type: 'success',
-            });
+            if (resp.successes.length === 0) {
+              await showNotice(
+                messageApi,
+                'Globus download requested, however no transfer occurred.',
+                {
+                  type: 'warning',
+                }
+              );
+            } else {
+              await showNotice(messageApi, 'Globus download initiated successfully!', {
+                type: 'success',
+              });
+            }
+
             break;
 
           case 207:
@@ -731,7 +742,11 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       // Check chosen endpoint path is ready
       if (chosenEndpoint.path) {
         setCurrentGoal(GlobusGoals.None);
-        handleGlobusDownload(transferToken, accessToken, chosenEndpoint);
+        handleGlobusDownload(
+          transferToken as GlobusTokenResponse,
+          accessToken as string,
+          chosenEndpoint
+        );
       } else {
         // Setting endpoint path
         setLoadingPage(false);

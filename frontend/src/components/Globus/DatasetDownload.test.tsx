@@ -587,6 +587,26 @@ describe('DatasetDownload form tests', () => {
     expect(globusTransferPopup).toBeTruthy();
   });
 
+  it('shows a warning message when Globus transfer response has no data in successes or failures', async () => {
+    server.use(
+      rest.post(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
+        res(ctx.status(200), ctx.json({ status: 200, successes: [], failures: [] }))
+      )
+    );
+
+    await initializeComponentForTest();
+
+    // Click Transfer button
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetBtn');
+    expect(globusTransferBtn).toBeTruthy();
+    await user.click(globusTransferBtn);
+
+    const warningMessage = await screen.findByText(
+      'Globus download requested, however no transfer occurred.'
+    );
+    expect(warningMessage).toBeInTheDocument();
+  });
+
   it('If endpoint URL is available, process it and continue with sign-in', async () => {
     await initializeComponentForTest({
       ...defaultTestConfig,

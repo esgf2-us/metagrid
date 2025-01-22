@@ -6,17 +6,17 @@ on:
     branches: [master]
 
 jobs:
-  pre-commit-hooks:
+  pre-commit:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code Repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
       # Required to run the local ESLint hook
-      - name: Use Node.js 23.x
+      - name: Use Node.js 22.x
         uses: actions/setup-node@v4
         with:
-          node-version: "23.x"
+          node-version: '22.x'
 
       - name: Cache node modules
         uses: actions/cache@v4
@@ -36,12 +36,12 @@ jobs:
           yarn install --frozen-lockfile
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.11
+          python-version: '3.11'
 
-      # Run all pre-commit hooks on all the files.
-      # Getting only staged files can be tricky in case a new PR is opened
-      # since the action is run on a branch in detached head state
-      - name: Install and Run Pre-commit
-        uses: pre-commit/action@v3.0.1
+      - name: Install requirements
+        run: pip install -r backend/requirements/local.txt
+
+      - name: Run pre-commit
+        run: pre-commit run --all-files
