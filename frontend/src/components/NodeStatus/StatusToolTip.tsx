@@ -19,8 +19,8 @@ const StatusToolTip: React.FC<React.PropsWithChildren<Props>> = ({
   children,
 }) => {
   if (nodeStatus) {
-    const node = (nodeStatus.find(
-      (obj) => obj.name === dataNode
+    const node = (nodeStatus.find((obj) =>
+      obj.name.includes(dataNode)
     ) as unknown) as NodeStatusElement;
 
     /* istanbul ignore else*/
@@ -107,7 +107,8 @@ const StatusToolTip: React.FC<React.PropsWithChildren<Props>> = ({
         title={
           <>
             Could not fetch status. Please contact support or try again later.
-            Data Node:<div>{dataNode}</div>
+            Data Node:
+            <div>{dataNode}</div>
           </>
         }
       >
@@ -123,7 +124,8 @@ const StatusToolTip: React.FC<React.PropsWithChildren<Props>> = ({
       title={
         <>
           Could not fetch status. Please contact support or try again later.
-          Data Node:<div>{dataNode}</div>
+          Data Node:
+          <div>{dataNode}</div>
         </>
       }
     >

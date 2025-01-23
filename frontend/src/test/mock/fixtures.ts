@@ -259,7 +259,7 @@ export const rawNodeStatusFixture = (
         {
           metric: {
             __name__: 'probe_success',
-            instance: 'aims3.llnl.gov',
+            instance: 'https://aims3.llnl.gov',
             job: 'http_2xx',
             target: 'https://aims3.llnl.gov/thredds/catalog/catalog.html',
           },
@@ -268,7 +268,7 @@ export const rawNodeStatusFixture = (
         {
           metric: {
             __name__: 'probe_success',
-            instance: 'esgf1.dkrz.de',
+            instance: 'https://esgf1.dkrz.de',
             job: 'http_2xx',
             target: 'https://esgf1.dkrz.de/thredds/catalog/catalog.html',
           },
@@ -282,13 +282,13 @@ export const rawNodeStatusFixture = (
 };
 export const parsedNodeStatusFixture = (): NodeStatusArray => [
   {
-    name: 'aims3.llnl.gov',
+    name: 'https://aims3.llnl.gov',
     source: 'https://aims3.llnl.gov/thredds/catalog/catalog.html',
     timestamp: 'Wed, 21 Oct 2020 21:23:50 GMT',
     isOnline: true,
   },
   {
-    name: 'esgf1.dkrz.de',
+    name: 'https://esgf1.dkrz.de',
     source: 'https://esgf1.dkrz.de/thredds/catalog/catalog.html',
     timestamp: 'Wed, 21 Oct 2020 21:23:50 GMT',
     isOnline: false,

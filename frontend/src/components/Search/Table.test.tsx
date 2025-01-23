@@ -10,7 +10,7 @@ import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
 import Table, { Props } from './Table';
 import { QualityFlag } from './Tabs';
-import { getRowName } from '../../test/jestTestFunctions';
+import { getRowName, mockConfig } from '../../test/jestTestFunctions';
 
 const user = userEvent.setup();
 
@@ -450,6 +450,27 @@ describe('test main table UI', () => {
       apiRoutes.wget.handleErrorMsg(404)
     );
     expect(errorMsg).toBeTruthy();
+  });
+
+  it('does not render Globus Ready column when globusEnabledNodes is empty', async () => {
+    // Set names of the globus enabled nodes
+    mockConfig.globusEnabledNodes = [];
+
+    customRender(<Table {...defaultProps} />);
+
+    // Check table exists
+    const table = await screen.findByRole('table');
+    expect(table).toBeTruthy();
+
+    // Check first row exists
+    const firstRow = await screen.findByRole('row', {
+      name: getRowName('plus', 'question', 'foo', '3', '1', '1'),
+    });
+    expect(firstRow).toBeTruthy();
+
+    // Check Globus Ready column does not exist
+    const globusReadyColumn = screen.queryByText('Globus Ready');
+    expect(globusReadyColumn).toBeNull();
   });
 });
 
