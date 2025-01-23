@@ -77,5 +77,6 @@
   "[jsonc]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "python.analysis.extraPaths": ["backend/venv/bin/python"]
+  "python.analysis.extraPaths": ["backend/venv/bin/python"],
+  "editor.formatOnSave": true
 }
