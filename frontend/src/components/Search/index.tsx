@@ -78,7 +78,7 @@ export const stringifyFilters = (
   resultType: ResultType,
   minVersionDate: VersionDate,
   maxVersionDate: VersionDate,
-  activeFacets: ActiveFacets | Record<string, unknown>,
+  activeFacets: ActiveFacets,
   textInputs: TextInputs | []
 ): string => {
   const filtersArr: string[] = [];
@@ -106,9 +106,7 @@ export const stringifyFilters = (
 
   if (!objectIsEmpty(activeFacets)) {
     Object.keys(activeFacets).forEach((key: string) => {
-      filtersArr.push(
-        `(${humps.decamelize(key)} = ${(activeFacets as ActiveFacets)[key].join(' OR ')})`
-      );
+      filtersArr.push(`(${humps.decamelize(key)} = ${activeFacets[key].join(' OR ')})`);
     });
   }
 
@@ -334,7 +332,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
         <Row style={styles.filtersContainer}>
           {Object.keys(activeFacets).length !== 0 &&
             Object.keys(activeFacets).map((facet: string) =>
-              (activeFacets as ActiveFacets)[facet].map((variable: string) => (
+              activeFacets[facet].map((variable: string) => (
                 <div key={variable} data-testid={variable}>
                   <Tag value={[facet, variable]} onClose={onRemoveFilter} type="facet">
                     {variable}

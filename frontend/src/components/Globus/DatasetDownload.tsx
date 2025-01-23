@@ -143,6 +143,8 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     downloadOptions[0]
   );
 
+  const [searchResultsPage, setSearchResultsPage] = React.useState<number>(1);
+
   const [alertPopupState, setAlertPopupState] = React.useState<AlertModalState>({
     content: '',
 
@@ -956,11 +958,15 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                   pagination={
                     globusEndpoints && globusEndpoints.length > COLLECTION_SEARCH_PAGE_SIZE
                       ? {
+                          current: searchResultsPage,
                           pageSize: COLLECTION_SEARCH_PAGE_SIZE,
+                          onChange: (page) => setSearchResultsPage(page),
                           position: ['bottomRight'],
                         }
                       : {
+                          current: searchResultsPage,
                           pageSize: COLLECTION_SEARCH_PAGE_SIZE,
+                          onChange: (page) => setSearchResultsPage(page),
                           position: ['none'],
                         }
                   }
