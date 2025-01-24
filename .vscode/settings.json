@@ -81,6 +81,5 @@
   },
   "python.analysis.extraPaths": ["backend/venv/bin/python"],
   "python.testing.pytestEnabled": true,
-  "python.testing.pytestArgs": ["backend"],
-  "editor.formatOnSave": true
+  "python.testing.pytestArgs": ["backend"]
 }
