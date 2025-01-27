@@ -15,7 +15,9 @@ const StatusToolTip: React.FC<React.PropsWithChildren<Props>> = ({
   children,
 }) => {
   if (nodeStatus) {
-    const node = (nodeStatus.find((obj) => obj.name === dataNode) as unknown) as NodeStatusElement;
+    const node = (nodeStatus.find((obj) =>
+      obj.name.includes(dataNode)
+    ) as unknown) as NodeStatusElement;
 
     /* istanbul ignore else*/
     if (node) {

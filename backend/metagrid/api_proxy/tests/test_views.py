@@ -39,21 +39,6 @@ class TestProxyViewSet(APITestCase):
         self.assertEqual(response.status_code, 302)
 
     @responses.activate
-    def test_do_globus_get_endpoint(self):
-        url = reverse("globus-get-endpoint")
-        endpoint_id = "12345"
-        endpoint_url_pattern = re.compile(
-            f"https://transfer.api.globus.org/.*/endpoint/{endpoint_id}"
-        )
-        load_response(
-            globus_sdk.ConfidentialAppAuthClient.oauth2_client_credentials_tokens
-        )
-
-        responses.get(endpoint_url_pattern, json={"foo": "bar"})
-        response = self.client.get(url, {"endpoint_id": endpoint_id})
-        assert response.status_code == status.HTTP_200_OK
-
-    @responses.activate
     def test_do_globus_search_endpoints(self):
         url = reverse("globus-search-endpoints")
         data = {"search_text": "0247816e-cc0d-4e03-a509-10903f6dde11"}

@@ -177,13 +177,13 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
     setGlobusReadyOnly(globusOnly);
 
     if (globusOnly) {
-      const newActiveFacets = activeSearchQuery.activeFacets as ActiveFacets;
+      const newActiveFacets = activeSearchQuery.activeFacets;
       onSetActiveFacets({
         ...newActiveFacets,
         dataNode: window.METAGRID.GLOBUS_NODES,
       } as ActiveFacets);
     } else {
-      const newActiveFacets = activeSearchQuery.activeFacets as ActiveFacets;
+      const newActiveFacets = activeSearchQuery.activeFacets;
       delete newActiveFacets.dataNode;
       onSetActiveFacets(newActiveFacets);
     }
@@ -201,7 +201,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
   React.useEffect(() => {
     if (!dropdownIsOpen && activeDropdownValue) {
       const [facet, options] = activeDropdownValue;
-      const newActiveFacets = activeSearchQuery.activeFacets as ActiveFacets;
+      const newActiveFacets = activeSearchQuery.activeFacets;
       /* istanbul ignore else */
       if (options.length === 0) {
         delete newActiveFacets[facet];

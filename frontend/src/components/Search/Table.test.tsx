@@ -392,6 +392,24 @@ describe('test main table UI', () => {
     const errorMsg = await screen.findByText(apiRoutes.wget.handleErrorMsg(404));
     expect(errorMsg).toBeTruthy();
   });
+  it('does not render Globus Ready column when globusEnabledNodes is empty', async () => {
+    // Set names of the globus enabled nodes
+    mockConfig.GLOBUS_NODES = [];
+
+    customRender(<Table {...defaultProps} />);
+
+    // Check table renders
+    const table = await screen.findByRole('table');
+    expect(table).toBeTruthy();
+
+    // Check first row renders
+    const firstRow = await screen.findByTestId('cart-items-row-0');
+    expect(firstRow).toBeTruthy();
+
+    // Check Globus Ready column does not exist
+    const globusReadyColumn = screen.queryByText('Globus Ready');
+    expect(globusReadyColumn).toBeNull();
+  });
 });
 
 describe('test QualityFlag', () => {

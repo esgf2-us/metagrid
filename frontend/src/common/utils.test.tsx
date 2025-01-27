@@ -86,7 +86,10 @@ describe('Test shallowCompareObjects', () => {
 
 describe('Test getUrlFromSearch', () => {
   it('returns basic url when active search is empty', () => {
-    expect(getUrlFromSearch({} as ActiveSearchQuery)).toBeTruthy();
+    const url = getUrlFromSearch({} as ActiveSearchQuery);
+    expect(url).toBe(
+      `${window.location.protocol}//${window.location.host}${window.location.pathname}`
+    );
   });
   it('returns basic url if active search is default object', () => {
     expect(
@@ -188,7 +191,10 @@ describe('Test getSearchFromUrl', () => {
 
 describe('Test getUrlFromSearch', () => {
   it('returns basic url when active search is empty', () => {
-    expect(getUrlFromSearch({} as ActiveSearchQuery)).toBeTruthy();
+    const url = getUrlFromSearch({} as ActiveSearchQuery);
+    expect(url).toBe(
+      `${window.location.protocol}//${window.location.host}${window.location.pathname}`
+    );
   });
   it('returns basic url if active search is default object', () => {
     expect(
@@ -221,23 +227,22 @@ describe('Test getUrlFromSearch', () => {
     ).toBeTruthy();
   });
   it('returns url with filname variables, active facets and text inputs.', () => {
-    expect(
-      getUrlFromSearch({
-        project: { name: 'CMIP6' },
-        versionType: 'latest',
-        resultType: 'all',
-        minVersionDate: '',
-        maxVersionDate: '',
-        filenameVars: ['clt', 'tsc'],
-        activeFacets: {
-          activity_id: ['CDRMIP', 'CFMIP'],
-          source_id: ['ACCESS-ESM1-5'],
-        },
-        textInputs: ['CSIRO'],
-      } as ActiveSearchQuery).includes(
-        '?project=CMIP6&filenameVars=%5B%22clt%22%2C%22tsc%22%5D&activeFacets=%7B%22activity_id%22%3A%5B%22CDRMIP%22%2C%22CFMIP%22%5D%2C%22source_id%22%3A%22ACCESS-ESM1-5%22%7D&textInputs=%5B%22CSIRO%22%5D'
-      )
-    ).toBeTruthy();
+    const url = getUrlFromSearch({
+      project: { name: 'CMIP6' },
+      versionType: 'latest',
+      resultType: 'all',
+      minVersionDate: '',
+      maxVersionDate: '',
+      filenameVars: ['clt', 'tsc'],
+      activeFacets: {
+        activity_id: ['CDRMIP', 'CFMIP'],
+        source_id: ['ACCESS-ESM1-5'],
+      },
+      textInputs: ['CSIRO'],
+    } as ActiveSearchQuery);
+    expect(url).toContain(
+      '?project=CMIP6&filenameVars=%5B%22clt%22%2C%22tsc%22%5D&activeFacets=%7B%22activity_id%22%3A%5B%22CDRMIP%22%2C%22CFMIP%22%5D%2C%22source_id%22%3A%22ACCESS-ESM1-5%22%7D&textInputs=%5B%22CSIRO%22%5D'
+    );
   });
   it('returns basic url with project parameter when search contains project', () => {
     expect(
