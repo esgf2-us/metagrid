@@ -25,7 +25,7 @@ export type ActiveSearchQuery = {
   minVersionDate: VersionDate;
   maxVersionDate: VersionDate;
   filenameVars: TextInputs | [];
-  activeFacets: ActiveFacets | Record<string, unknown>;
+  activeFacets: ActiveFacets;
   textInputs: TextInputs | [];
 };
 

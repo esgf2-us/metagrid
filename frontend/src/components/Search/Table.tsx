@@ -305,19 +305,29 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
         );
       },
     },
-    {
-      align: 'center' as AlignType,
-      fixed: 'right' as FixedType,
-      title: 'Globus Ready',
-      dataIndex: 'data_node',
-      key: 'globus_enabled',
-      width: 110,
-      render: (data_node: string) => (
-        <div className={topDataRowTargets.globusReadyStatusIcon.class()}>
-          <GlobusToolTip dataNode={data_node} />
-        </div>
-      ),
-    },
+    window.METAGRID.GLOBUS_NODES.length > 0
+      ? {
+          align: 'center' as AlignType,
+          fixed: 'right' as FixedType,
+          title: 'Globus Ready',
+          dataIndex: 'data_node',
+          key: 'globus_enabled',
+          width: 110,
+          render: (data_node: string) => (
+            <div className={topDataRowTargets.globusReadyStatusIcon.class()}>
+              <GlobusToolTip dataNode={data_node} />
+            </div>
+          ),
+        }
+      : {
+          align: 'center' as AlignType,
+          fixed: 'right' as FixedType,
+          title: '',
+          dataIndex: 'data_node',
+          key: 'globus_enabled',
+          width: 1,
+          render: () => <div></div>,
+        },
   ];
 
   return (

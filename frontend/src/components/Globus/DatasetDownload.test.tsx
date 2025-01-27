@@ -846,6 +846,45 @@ describe('DatasetDownload form tests', () => {
     expect(tourModal).toBeInTheDocument();
   });
 
+  it('Shows an alert when a collection search fails in the manage collections form', async () => {
+    server.use(
+      rest.get(apiRoutes.globusSearchEndpoints.path, (_req, res, ctx) => res(ctx.status(500)))
+    );
+
+    await initializeComponentForTest({
+      ...defaultTestConfig,
+      savedEndpoints: [],
+      chosenEndpoint: null,
+    });
+
+    // Open download dropdown
+    const collectionDropdown = await screen.findByTestId('searchCollectionInput');
+    const selectEndpoint = await within(collectionDropdown).findByRole('combobox');
+    await openDropdownList(user, selectEndpoint);
+
+    // Select manage collections
+    const manageEndpointsBtn = await screen.findByText('Manage Collections');
+    expect(manageEndpointsBtn).toBeTruthy();
+
+    await user.click(manageEndpointsBtn);
+
+    const manageCollectionsForm = await screen.findByTestId('manageCollectionsForm');
+    expect(manageCollectionsForm).toBeTruthy();
+
+    // Type in endpoint search text
+    const endpointSearchInput = await screen.findByPlaceholderText(
+      'Search for a Globus Collection'
+    );
+    expect(endpointSearchInput).toBeTruthy();
+    await user.type(endpointSearchInput, 'lc public{enter}');
+
+    // Expect an alert to show up
+    const alertPopup = await screen.findByText(
+      'An error occurred while searching for collections. Please try again later.'
+    );
+    expect(alertPopup).toBeTruthy();
+  });
+
   it('removes all tasks when clicking the Clear All button', async () => {
     tempStorageSetMock(GlobusStateKeys.globusTaskItems, [
       {

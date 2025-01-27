@@ -295,7 +295,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
         filenameVars: activeSearchQuery.filenameVars.filter((input) => input !== removedTag),
       });
     } else if (type === 'facet') {
-      const prevActiveFacets = activeSearchQuery.activeFacets as ActiveFacets;
+      const prevActiveFacets = activeSearchQuery.activeFacets;
 
       const facet = (removedTag[0] as unknown) as string;
       const facetOption = (removedTag[1] as unknown) as string;
