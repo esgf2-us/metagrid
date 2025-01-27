@@ -33,6 +33,7 @@ export type Props = {
   userCart: UserCart | [];
 };
 
+const { Title, Link } = Typography;
 const dp: DataPersister = DataPersister.Instance;
 
 const Summary: React.FC<React.PropsWithChildren<Props>> = ({ userCart }) => {
@@ -89,12 +90,12 @@ const Summary: React.FC<React.PropsWithChildren<Props>> = ({ userCart }) => {
               {
                 key: '1',
                 label: (
-                  <h3 style={{ margin: 0 }}>
+                  <Title level={5} style={{ margin: 0 }}>
                     Task Submit History
                     <Button size="small" danger style={{ float: 'right' }} onClick={clearAllTasks}>
-                      Clear All
+                      <span data-testid="clear-all-submitted-globus-tasks">Clear All</span>
                     </Button>
-                  </h3>
+                  </Title>
                 ),
                 children: (
                   <List
@@ -107,9 +108,9 @@ const Summary: React.FC<React.PropsWithChildren<Props>> = ({ userCart }) => {
                           <List.Item.Meta
                             title={`Submitted: ${task.submitDate}`}
                             description={
-                              <a href={task.taskStatusURL} target="_blank" rel="noreferrer">
+                              <Link href={task.taskStatusURL} target="_blank" rel="noreferrer">
                                 View Task In Globus
-                              </a>
+                              </Link>
                             }
                           />
                         </Card>

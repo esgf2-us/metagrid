@@ -26,7 +26,7 @@ function startLocalService() {
 
 function stopLocalService() {
     echo "Stopping Metagrid"
-    docker compose -f docker-compose.yml -f docker-compose.local-overlay.yml down --remove-orphans
+    docker compose down --remove-orphans
 }
 
 function toggleLocalContainers() {
@@ -45,14 +45,29 @@ function runPreCommit() {
     pre-commit run --all-files
 }
 
+function runBackendTests() {
+    clear
+    stopLocalService
+    docker compose -f docker-compose.yml -f docker-compose.local-overlay.yml run --rm django pytest
+    stopLocalService
+}
+
+function runFrontendTests() {
+    clear
+    stopLocalService
+    docker compose -f docker-compose.yml -f docker-compose.local-overlay.yml run --rm react 'jest'
+    stopLocalService
+}
+
 # Main Menu
 function mainMenu() {
     echo "Main Menu Options:"
     echo "1 Start Metagrid - Production"
     echo "2 Stop Metagrid - Production"
     echo "3 Start / Stop Local Dev Containers"
-    echo "4 Run pre-commit"
-    echo "5 Exit"
+    echo "4 Run pre-commit and tests"
+    echo "5 Developer Actions"
+    echo "6 Exit"
     read option
     if [ -z $option ]; then
         clear
@@ -72,73 +87,53 @@ function mainMenu() {
             clear
             mainMenu
         elif [ "$option" = "4" ]; then
-            runPreCommit
+            clear
+            runPreCommit && runBackendTests && runFrontendTests && echo "All tests passed!"
             return 0
         elif [ "$option" = "5" ]; then
+            clear
+            devActionsMenu
+        elif [ "$option" = "6" ]; then
             clear
             return 0
         else
             clear
             echo "You entered: $option"
-            echo "Please enter a number from 1 to 5"
+            echo "Please enter a number from 1 to 6"
             mainMenu
         fi
     fi
 }
 
 #Container Menu
-function containersMenu() {
-    echo "Container Start/Stop"
-    echo "1 Start Frontend"
-    echo "2 Stop Frontend"
-    echo "3 Start Backend"
-    echo "4 Stop Backend"
-    echo "5 Start Traefik"
-    echo "6 Stop Traefik"
-    echo "7 Start Documentation"
-    echo "8 Stop Documentation"
-    echo "9 Back to Main Menu"
+function devActionsMenu() {
+    echo "Local Dev Actions:"
+    echo "1 Run pre-commit"
+    echo "2 Test Backend"
+    echo "3 Test Frontend"
+    echo "4 Back to Main Menu"
     read option
     if [ -z $option ]; then
         clear
         echo "Please enter a number corresponding to the menu item."
-        containersMenu
+        devActionsMenu
     else
         if [ "$option" = "1" ]; then
-            startService frontend
-            mainMenu
+            runPreCommit
+            return 0
         elif [ "$option" = "2" ]; then
-            stopService frontend
-            clear
-            mainMenu
+            runBackendTests
+            return 0
         elif [ "$option" = "3" ]; then
-            startService backend
-            mainMenu
+            runFrontendTests
+            return 0
         elif [ "$option" = "4" ]; then
-            stopService backend
-            clear
-            mainMenu
-        elif [ "$option" = "5" ]; then
-            startService traefik
-            mainMenu
-        elif [ "$option" = "6" ]; then
-            stopService traefik
-            clear
-            mainMenu
-        elif [ "$option" = "7" ]; then
-            startLocalService docs -d
-            mainMenu
-        elif [ "$option" = "8" ]; then
-            stopLocalService docs -d
-            clear
-            mainMenu
-        elif [ "$option" = "9" ]; then
             clear
             mainMenu
         else
             clear
             echo "You entered: $option"
-            echo "Please enter a number from 1 to 9"
+            echo "Please enter a number from 1 to 4"
             containersMenu
         fi
     fi

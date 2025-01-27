@@ -20,6 +20,7 @@ import {
   RawSearchResults,
 } from '../../components/Search/types';
 import { RawUserAuth, RawUserInfo } from '../../contexts/types';
+import { SubmissionResult } from '../../api';
 
 export const rawProjectFixture = (props: Partial<RawProject> = {}): RawProject => {
   const defaults: RawProject = {
@@ -196,11 +197,8 @@ export const userAuthFixture = (props: Partial<RawUserAuth> = {}): RawUserAuth =
   return { ...defaults, ...props };
 };
 
-export const globusTransferResponseFixture = (): {
-  status: string;
-  taskid: string;
-} => {
-  return { status: 'OK', taskid: '1234567' };
+export const globusTransferResponseFixture = (): SubmissionResult => {
+  return { status: 200, successes: [{ taskid: '1234567' }], failures: [] };
 };
 
 export const userInfoFixture = (props: Partial<RawUserInfo> = {}): RawUserInfo => {
@@ -226,7 +224,7 @@ export const rawNodeStatusFixture = (props: Partial<RawNodeStatus> = {}): RawNod
         {
           metric: {
             __name__: 'probe_success',
-            instance: 'aims3.llnl.gov',
+            instance: 'https://aims3.llnl.gov',
             job: 'http_2xx',
             target: 'https://aims3.llnl.gov/thredds/catalog/catalog.html',
           },
@@ -235,7 +233,7 @@ export const rawNodeStatusFixture = (props: Partial<RawNodeStatus> = {}): RawNod
         {
           metric: {
             __name__: 'probe_success',
-            instance: 'esgf1.dkrz.de',
+            instance: 'https://esgf1.dkrz.de',
             job: 'http_2xx',
             target: 'https://esgf1.dkrz.de/thredds/catalog/catalog.html',
           },
@@ -249,13 +247,13 @@ export const rawNodeStatusFixture = (props: Partial<RawNodeStatus> = {}): RawNod
 };
 export const parsedNodeStatusFixture = (): NodeStatusArray => [
   {
-    name: 'aims3.llnl.gov',
+    name: 'https://aims3.llnl.gov',
     source: 'https://aims3.llnl.gov/thredds/catalog/catalog.html',
     timestamp: 'Wed, 21 Oct 2020 21:23:50 GMT',
     isOnline: true,
   },
   {
-    name: 'esgf1.dkrz.de',
+    name: 'https://esgf1.dkrz.de',
     source: 'https://esgf1.dkrz.de/thredds/catalog/catalog.html',
     timestamp: 'Wed, 21 Oct 2020 21:23:50 GMT',
     isOnline: false,

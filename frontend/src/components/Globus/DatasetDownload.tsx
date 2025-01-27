@@ -20,11 +20,11 @@ import {
   saveSessionValue,
   fetchWgetScript,
   ResponseError,
-  startGlobusTransfer,
   startSearchGlobusEndpoints,
   saveSessionValues,
   REQUESTED_SCOPES,
   createGlobusAuthObject,
+  SubmissionResult,
 } from '../../api';
 import {
   cartTourTargets,
@@ -41,10 +41,12 @@ import {
   GlobusEndpointSearchResults,
   GlobusEndpoint,
 } from './types';
-import { NotificationType, showError, showNotice } from '../../common/utils';
+import { showError, showNotice } from '../../common/utils';
 import { DataPersister } from '../../common/DataPersister';
 import { RawTourState, ReactJoyrideContext } from '../../contexts/ReactJoyrideContext';
 import getGlobusTransferToken from './utils';
+import axios from '../../lib/axios';
+import apiRoutes from '../../api/routes';
 
 const globusRedirectUrl = `${window.location.origin}/cart/items`;
 
@@ -141,6 +143,8 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     downloadOptions[0]
   );
 
+  const [searchResultsPage, setSearchResultsPage] = React.useState<number>(1);
+
   const [alertPopupState, setAlertPopupState] = React.useState<AlertModalState>({
     content: '',
 
@@ -156,15 +160,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       },
     show: false,
   });
-
-  async function addNewTask(newTask: GlobusTaskItem): Promise<void> {
-    const newItemsList = [...taskItems];
-    if (taskItems.length >= MAX_TASK_LIST_LENGTH) {
-      newItemsList.pop();
-    }
-    newItemsList.unshift(newTask);
-    await dp.setValue(GlobusStateKeys.globusTaskItems, newItemsList, true);
-  }
 
   async function resetTokens(): Promise<void> {
     setCurrentGoal(GlobusGoals.None);
@@ -222,85 +217,102 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       });
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleGlobusDownload = (
-    globusTransferToken: GlobusTokenResponse | null,
-    accessToken: string | null,
-    endpoint: GlobusEndpoint | null
+    globusTransferToken: GlobusTokenResponse,
+    accessToken: string,
+    endpoint: GlobusEndpoint
   ): void => {
     setDownloadIsLoading(true);
 
     const cartSelections = dp.getValue<RawSearchResults>(CartStateKeys.cartItemSelections);
     const ids = cartSelections?.map((item) => (item ? item.id : '')) ?? [];
 
-    if (globusTransferToken && accessToken) {
-      let messageContent: React.ReactNode | string = null;
-      let messageType: NotificationType = 'success';
-      let durationVal = 5;
-      startGlobusTransfer(
-        globusTransferToken.access_token,
-        accessToken,
-        endpoint?.id || '',
-        endpoint?.path || '',
-        ids
+    axios
+      .post<SubmissionResult>(
+        apiRoutes.globusTransfer.path,
+        JSON.stringify({
+          access_token: globusTransferToken.access_token,
+          refresh_token: accessToken,
+          endpointId: endpoint.id,
+          path: endpoint.path || '',
+          dataset_id: ids,
+        })
       )
-        .then(async (resp) => {
-          await dp.setValue(CartStateKeys.cartItemSelections, [], true);
+      .then((resp) => {
+        return resp.data;
+      })
+      .then(async (resp) => {
+        await dp.setValue(CartStateKeys.cartItemSelections, [], true);
 
-          const transRespData = resp.data as Record<string, unknown>;
-          const taskId = transRespData.taskid as string;
-          const taskItem: GlobusTaskItem = {
+        const newTasks = resp.successes.map((submission) => {
+          const taskId = submission.task_id as string;
+          return {
             submitDate: new Date(Date.now()).toLocaleString(),
             taskId,
             taskStatusURL: `https://app.globus.org/activity/${taskId}/overview`,
           };
-          await addNewTask(taskItem);
-
-          if (taskItem.taskStatusURL !== '') {
-            messageContent = (
-              <p>
-                Globus transfer task submitted successfully!
-                <br />
-                <a href={taskItem.taskStatusURL} target="_blank" rel="noreferrer">
-                  View Task Status
-                </a>
-              </p>
-            );
-          }
-        })
-        .catch(async (error: ResponseError) => {
-          messageType = 'error';
-          await resetTokens();
-
-          if (error.message !== '') {
-            messageContent = (
-              <div
-                style={{
-                  width: '500px',
-                  height: '400px',
-                  overflowY: 'auto',
-                  overflowX: 'hidden',
-                }}
-              >
-                ${error.message} is your error. Please contact ESGF support.
-              </div>
-            );
-            durationVal = 5;
-          } else {
-            messageContent = `Globus transfer task failed. Resetting tokens.`;
-            // eslint-disable-next-line no-console
-            console.error(error);
-          }
-        })
-        .finally(async () => {
-          setDownloadIsLoading(false);
-          await showNotice(messageApi, messageContent, {
-            duration: durationVal,
-            type: messageType,
-          });
-          await endDownloadSteps();
         });
-    }
+
+        const nMostRecentTasks = [...newTasks, ...taskItems].slice(0, MAX_TASK_LIST_LENGTH);
+
+        await dp.setValue(GlobusStateKeys.globusTaskItems, nMostRecentTasks, true);
+
+        switch (resp.status) {
+          case 200:
+            if (resp.successes.length === 0) {
+              await showNotice(
+                messageApi,
+                'Globus download requested, however no transfer occurred.',
+                {
+                  type: 'warning',
+                }
+              );
+            } else {
+              await showNotice(messageApi, 'Globus download initiated successfully!', {
+                type: 'success',
+              });
+            }
+
+            break;
+
+          case 207:
+            await showNotice(
+              messageApi,
+              <span data-testid="207-globus-failures-msg">
+                {`One or more Globus submissions failed: \n${resp.failures.join('\n')}`}
+              </span>,
+              {
+                type: 'error',
+              }
+            );
+            break;
+
+          default:
+            await showNotice(
+              messageApi,
+              <span data-testid="unhandled-status-globus-failures-msg">
+                {`Globus download returned unexpected response: ${resp.status}`}
+              </span>,
+              {
+                type: 'error',
+              }
+            );
+            break;
+        }
+      })
+      .catch(async (error: ResponseError) => {
+        await showNotice(
+          messageApi,
+          <span data-testid="globus-transfer-backend-error-msg">{error.message}</span>,
+          {
+            type: 'error',
+          }
+        );
+      })
+      .finally(async () => {
+        setDownloadIsLoading(false);
+        await endDownloadSteps();
+      });
   };
 
   /**
@@ -434,6 +446,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           }
         }
         setGlobusEndpoints(mappedEndpoints);
+        setSearchResultsPage(1);
       } else {
         setEndpointSearchValue('');
         setGlobusEndpoints([]);
@@ -441,6 +454,16 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error);
+      setAlertPopupState({
+        content: 'An error occurred while searching for collections. Please try again later.',
+        onCancelAction: () => {
+          setAlertPopupState({ ...alertPopupState, show: false });
+        },
+        onOkAction: () => {
+          setAlertPopupState({ ...alertPopupState, show: false });
+        },
+        show: true,
+      });
     } finally {
       setLoadingEndpointSearchResults(false);
     }
@@ -732,7 +755,11 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       // Check chosen endpoint path is ready
       if (chosenEndpoint.path) {
         setCurrentGoal(GlobusGoals.None);
-        handleGlobusDownload(transferToken, accessToken, chosenEndpoint);
+        handleGlobusDownload(
+          transferToken as GlobusTokenResponse,
+          accessToken as string,
+          chosenEndpoint
+        );
       } else {
         // Setting endpoint path
         setLoadingPage(false);
@@ -931,11 +958,15 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                   pagination={
                     globusEndpoints && globusEndpoints.length > COLLECTION_SEARCH_PAGE_SIZE
                       ? {
+                          current: searchResultsPage,
                           pageSize: COLLECTION_SEARCH_PAGE_SIZE,
+                          onChange: (page) => setSearchResultsPage(page),
                           position: ['bottomRight'],
                         }
                       : {
+                          current: searchResultsPage,
                           pageSize: COLLECTION_SEARCH_PAGE_SIZE,
+                          onChange: (page) => setSearchResultsPage(page),
                           position: ['none'],
                         }
                   }

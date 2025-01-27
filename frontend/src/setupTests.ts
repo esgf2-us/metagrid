@@ -4,6 +4,7 @@
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
 import { cleanup } from '@testing-library/react';
+import { TextEncoder } from 'util';
 import { server } from './test/mock/server';
 import messageDisplayData from './components/Messaging/messageDisplayData';
 import {
@@ -21,6 +22,8 @@ const location = JSON.stringify(window.location);
 
 Object.defineProperty(window, 'localStorage', { value: sessionStorageMock });
 Object.defineProperty(window, 'METAGRID', { value: mockConfig });
+
+globalThis.TextEncoder = TextEncoder;
 
 beforeAll(() => {
   server.listen();

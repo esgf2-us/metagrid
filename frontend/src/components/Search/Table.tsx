@@ -305,7 +305,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
         );
       },
     },
-    (window.METAGRID.GLOBUS_NODES?.length || 0) > 0
+    window.METAGRID.GLOBUS_NODES.length > 0
       ? {
           align: 'center' as AlignType,
           fixed: 'right' as FixedType,
