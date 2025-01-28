@@ -1,10 +1,13 @@
 import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
 import { Divider, Typography } from 'antd';
 import React from 'react';
+import { useRecoilState } from 'recoil';
 import nodeImg from '../../assets/img/nodes.svg';
 import { nodeTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import { NodeStatusArray } from './types';
+import { isDarkModeAtom } from '../App/recoil/atoms';
+import { lightModeGreen, lightModeRed, darkModeGreen, darkModeRed } from './StatusToolTip';
 
 const { Title } = Typography;
 const styles: CSSinJS = {
@@ -37,6 +40,16 @@ const NodeSummary: React.FC<React.PropsWithChildren<Props>> = ({ nodeStatus }) =
     numOffline = numNodes - numOnline;
   }
 
+  const [isDarkMode] = useRecoilState<boolean>(isDarkModeAtom);
+
+  let onlineCol = lightModeGreen;
+  let offlineCol = lightModeRed;
+
+  if (isDarkMode) {
+    onlineCol = darkModeGreen;
+    offlineCol = darkModeRed;
+  }
+
   return (
     <div data-testid="summary" className={nodeTourTargets.nodeStatusSummary.class()}>
       <div style={styles.headerContainer}>
@@ -55,13 +68,13 @@ const NodeSummary: React.FC<React.PropsWithChildren<Props>> = ({ nodeStatus }) =
         </span>
       </Title>
       <Title level={3}>
-        Online <CheckCircleTwoTone twoToneColor="#52c41a" />:
+        Online <CheckCircleTwoTone twoToneColor={onlineCol} />:
         <span style={styles.statistic} data-testid="numOnline">
           {numOnline}
         </span>
       </Title>
       <Title level={3}>
-        Offline <CloseCircleTwoTone twoToneColor="#eb2f96" />:
+        Offline <CloseCircleTwoTone twoToneColor={offlineCol} />:
         <span style={styles.statistic} data-testid="numOffline">
           {numOffline}
         </span>

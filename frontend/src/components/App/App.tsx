@@ -68,17 +68,18 @@ import './App.css';
 import { miscTargets } from '../../common/reactJoyrideSteps';
 import { isDarkModeAtom } from './recoil/atoms';
 
-const styles: CSSinJS = {
-  bodySider: {
-    background: 'rgba(255, 255, 255, 0.2)',
-    padding: '12px 12px 12px 12px',
-    width: '384px',
-    marginRight: '2px',
-    boxShadow: '2px 0 4px 0 rgba(0, 0, 0, 0.2)',
-  },
-  bodyContent: { padding: '12px 12px', margin: 0 },
-  messageAddIcon: { color: '#90EE90' },
-  messageRemoveIcon: { color: '#ff0000' },
+const bodySider = {
+  padding: '12px 12px 12px 12px',
+  width: '384px',
+  marginRight: '2px',
+};
+
+const bodySiderDark = {
+  background: 'rgba(255, 255, 255, 0.1)',
+};
+const bodySiderLight = {
+  background: 'rgba(255, 255, 255, 0.9)',
+  boxShadow: '2px 0 4px 0 rgba(0, 0, 0, 0.2)',
 };
 
 const useHotjar = (): void => {
@@ -89,6 +90,22 @@ const useHotjar = (): void => {
     }, []);
   }
 };
+
+// Provides appropriate styling based on current theme
+function getStyle(isDark: boolean): CSSinJS {
+  const colorsToUse = isDark ? bodySiderDark : bodySiderLight;
+  const styles: CSSinJS = {
+    bodySider: {
+      ...bodySider,
+      ...colorsToUse,
+    },
+    bodyContent: { padding: '12px 12px', margin: 0 },
+    messageAddIcon: { color: '#90EE90' },
+    messageRemoveIcon: { color: '#ff0000' },
+  };
+
+  return styles;
+}
 
 export type Props = {
   searchQuery: ActiveSearchQuery;
@@ -149,6 +166,8 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
 
   const { defaultAlgorithm, darkAlgorithm } = theme;
   const [isDarkMode] = useRecoilState<boolean>(isDarkModeAtom);
+
+  const styles = getStyle(isDarkMode);
 
   React.useEffect(() => {
     /* istanbul ignore else */

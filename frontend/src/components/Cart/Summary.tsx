@@ -13,8 +13,6 @@ import { GlobusTaskItem } from '../Globus/types';
 import GlobusStateKeys, { globusTaskItems } from '../Globus/recoil/atom';
 import { DataPersister } from '../../common/DataPersister';
 
-const { Title } = Typography;
-
 const styles: CSSinJS = {
   headerContainer: { display: 'flex', justifyContent: 'center' },
   summaryHeader: {
