@@ -40,6 +40,20 @@ function toggleLocalContainers() {
     fi
 }
 
+function installPackagesForLocalDev() {
+    clear
+    pip install -r backend/requirements/local.txt
+    yarn install --cwd frontend
+    echo "Packages installed"
+}
+
+function runMigrations() {
+    clear
+    stopLocalService
+    docker compose -f docker-compose.yml -f docker-compose.local-overlay.yml run --rm django python manage.py migrate
+    stopLocalService
+}
+
 function runPreCommit() {
     clear
     pre-commit run --all-files
@@ -111,7 +125,9 @@ function devActionsMenu() {
     echo "1 Run pre-commit"
     echo "2 Test Backend"
     echo "3 Test Frontend"
-    echo "4 Back to Main Menu"
+    echo "4 Run Migrations"
+    echo "5 Install Packages for Local Dev"
+    echo "6 Back to Main Menu"
     read option
     if [ -z $option ]; then
         clear
@@ -128,13 +144,19 @@ function devActionsMenu() {
             runFrontendTests
             return 0
         elif [ "$option" = "4" ]; then
+            runMigrations
+            return 0
+        elif [ "$option" = "5" ]; then
+            installPackagesForLocalDev
+            return 0
+        elif [ "$option" = "6" ]; then
             clear
             mainMenu
         else
             clear
             echo "You entered: $option"
-            echo "Please enter a number from 1 to 4"
-            containersMenu
+            echo "Please enter a number from 1 to 6"
+            devActionsMenu
         fi
     fi
 }
