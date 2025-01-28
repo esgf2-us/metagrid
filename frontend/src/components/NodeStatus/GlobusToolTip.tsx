@@ -1,35 +1,40 @@
 import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
 import React from 'react';
 import { Tooltip } from 'antd';
-
-const enabledMode = {
-  color: 'green',
-  title: 'Globus Transfer Available',
-  icon: <CheckCircleTwoTone twoToneColor="#52c41a" />,
-};
-
-const disabledMode = {
-  color: 'red',
-  title: 'Globus Transfer Unavailable',
-  icon: <CloseCircleTwoTone twoToneColor="#eb2f96" />,
-};
+import { useRecoilState } from 'recoil';
+import { isDarkModeAtom } from '../App/recoil/atoms';
+import { lightModeGreen, lightModeRed, darkModeGreen, darkModeRed } from './StatusToolTip';
 
 export type Props = { dataNode: string };
 
 const GlobusToolTip: React.FC<Props> = ({ dataNode }) => {
-  const mode = window.METAGRID.GLOBUS_NODES.includes(dataNode) ? enabledMode : disabledMode;
+  const isEnabled = window.METAGRID.GLOBUS_NODES.includes(dataNode);
+  const [isDarkMode] = useRecoilState<boolean>(isDarkModeAtom);
+
+  const enabledColor = isDarkMode ? darkModeGreen : lightModeGreen;
+  const disabledColor = isDarkMode ? darkModeRed : lightModeRed;
+
+  let title = 'Globus Transfer Unavailable';
+  let color = disabledColor;
+  let icon = <CloseCircleTwoTone twoToneColor={disabledColor} />;
+
+  if (isEnabled) {
+    title = 'Globus Transfer Available';
+    color = enabledColor;
+    icon = <CheckCircleTwoTone twoToneColor={enabledColor} />;
+  }
 
   return (
     <Tooltip
-      color={mode.color}
+      color={color}
       title={
         <>
           Data Node:<div>{dataNode}</div>
-          {mode.title}
+          {title}
         </>
       }
     >
-      <span>{mode.icon}</span>
+      <span>{icon}</span>
     </Tooltip>
   );
 };

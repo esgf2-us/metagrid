@@ -10,16 +10,18 @@ import {
 } from '@ant-design/icons';
 
 import { useKeycloak } from '@react-keycloak/web';
-import { Badge, Menu, MenuProps } from 'antd';
+import { Badge, Menu, MenuProps, Space, Switch } from 'antd';
 import { KeycloakTokenParsed } from 'keycloak-js';
 
 import React, { CSSProperties } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useRecoilState } from 'recoil';
 import { navBarTargets } from '../../common/reactJoyrideSteps';
 import Button from '../General/Button';
 import RightDrawer from '../Messaging/RightDrawer';
 
 import { AuthContext } from '../../contexts/AuthContext';
+import { isDarkModeAtom } from '../App/recoil/atoms';
 
 const menuItemStyling: CSSProperties = { margin: '8px' };
 
@@ -109,6 +111,8 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
   const hideNotices = (): void => {
     setShowNotices(false);
   };
+
+  const [isDarkMode, setIsDarkMode] = useRecoilState<boolean>(isDarkModeAtom);
 
   type MenuItem = Required<MenuProps>['items'][number];
 
@@ -212,6 +216,22 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
       key: 'help',
       style: menuItemStyling,
       className: navBarTargets.helpBtn.class(),
+    },
+    {
+      label: (
+        <Space>
+          <Switch
+            checkedChildren="Light"
+            unCheckedChildren="Dark"
+            onChange={(checked) => setIsDarkMode(!checked)}
+            defaultChecked={!isDarkMode}
+            data-testid="isDarkModeSwitch"
+          ></Switch>
+          <span>Theme</span>
+        </Space>
+      ),
+      key: 'display-mode',
+      style: menuItemStyling,
     },
   ];
 
