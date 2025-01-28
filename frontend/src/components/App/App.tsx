@@ -15,8 +15,10 @@ import {
   Layout,
   Result,
   message,
+  theme,
 } from 'antd';
 import React from 'react';
+import { useRecoilState } from 'recoil';
 import { useAsync } from 'react-async';
 import { hotjar } from 'react-hotjar';
 import { Link, Navigate, Route, Routes } from 'react-router-dom';
@@ -64,18 +66,20 @@ import StartPopup from '../Messaging/StartPopup';
 import startupDisplayData from '../Messaging/messageDisplayData';
 import './App.css';
 import { miscTargets } from '../../common/reactJoyrideSteps';
+import { isDarkModeAtom } from './recoil/atoms';
 
-const styles: CSSinJS = {
-  bodySider: {
-    background: '#fff',
-    padding: '12px 12px 12px 12px',
-    width: '384px',
-    marginRight: '2px',
-    boxShadow: '2px 0 4px 0 rgba(0, 0, 0, 0.2)',
-  },
-  bodyContent: { padding: '12px 12px', margin: 0 },
-  messageAddIcon: { color: '#90EE90' },
-  messageRemoveIcon: { color: '#ff0000' },
+const bodySider = {
+  padding: '12px 12px 12px 12px',
+  width: '384px',
+  marginRight: '2px',
+};
+
+const bodySiderDark = {
+  background: 'rgba(255, 255, 255, 0.1)',
+};
+const bodySiderLight = {
+  background: 'rgba(255, 255, 255, 0.9)',
+  boxShadow: '2px 0 4px 0 rgba(0, 0, 0, 0.2)',
 };
 
 const useHotjar = (): void => {
@@ -86,6 +90,22 @@ const useHotjar = (): void => {
     }, []);
   }
 };
+
+// Provides appropriate styling based on current theme
+function getStyle(isDark: boolean): CSSinJS {
+  const colorsToUse = isDark ? bodySiderDark : bodySiderLight;
+  const styles: CSSinJS = {
+    bodySider: {
+      ...bodySider,
+      ...colorsToUse,
+    },
+    bodyContent: { padding: '12px 12px', margin: 0 },
+    messageAddIcon: { color: '#90EE90' },
+    messageRemoveIcon: { color: '#ff0000' },
+  };
+
+  return styles;
+}
 
 export type Props = {
   searchQuery: ActiveSearchQuery;
@@ -143,6 +163,11 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   const [userSearchQueries, setUserSearchQueries] = React.useState<UserSearchQueries | []>(
     JSON.parse(localStorage.getItem('userSearchQueries') || '[]') as UserSearchQueries
   );
+
+  const { defaultAlgorithm, darkAlgorithm } = theme;
+  const [isDarkMode] = useRecoilState<boolean>(isDarkModeAtom);
+
+  const styles = getStyle(isDarkMode);
 
   React.useEffect(() => {
     /* istanbul ignore else */
@@ -458,9 +483,10 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
         token: {
           borderRadius: 3,
         },
+        algorithm: isDarkMode ? darkAlgorithm : defaultAlgorithm,
       }}
     >
-      <div>
+      <Layout>
         <Routes>
           <Route
             path="*"
@@ -651,7 +677,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
         </Affix>
         <Support open={supportModalVisible} onClose={() => setSupportModalVisible(false)} />
         <StartPopup />
-      </div>
+      </Layout>
     </ConfigProvider>
   );
 };

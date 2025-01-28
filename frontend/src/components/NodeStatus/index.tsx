@@ -2,11 +2,14 @@ import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
 import { Alert, Table as TableD } from 'antd';
 import { SortOrder } from 'antd/lib/table/interface';
 import React from 'react';
+import { useRecoilState } from 'recoil';
 import { ResponseError } from '../../api';
 import apiRoutes from '../../api/routes';
 import { nodeTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import { NodeStatusArray, NodeStatusElement } from './types';
+import { isDarkModeAtom } from '../App/recoil/atoms';
+import { lightModeGreen, lightModeRed, darkModeGreen, darkModeRed } from './StatusToolTip';
 
 const styles = { headerContainer: { margin: '12px' } } as CSSinJS;
 
@@ -24,6 +27,16 @@ const NodeStatus: React.FC<React.PropsWithChildren<Props>> = ({
   // If the API returns a response but there is no data, that means the feature
   // is disabled
   const featureIsDisabled = nodeStatus && nodeStatus.length === 0;
+
+  const [isDarkMode] = useRecoilState<boolean>(isDarkModeAtom);
+
+  let onlineCol = lightModeGreen;
+  let offlineCol = lightModeRed;
+
+  if (isDarkMode) {
+    onlineCol = darkModeGreen;
+    offlineCol = darkModeRed;
+  }
 
   if (isLoading) {
     return (
@@ -66,11 +79,11 @@ const NodeStatus: React.FC<React.PropsWithChildren<Props>> = ({
         render: (isOnline: boolean) =>
           isOnline ? (
             <>
-              <CheckCircleTwoTone twoToneColor="#52c41a" /> Yes
+              <CheckCircleTwoTone twoToneColor={onlineCol} /> Yes
             </>
           ) : (
             <>
-              <CloseCircleTwoTone twoToneColor="#eb2f96" /> No
+              <CloseCircleTwoTone twoToneColor={offlineCol} /> No
             </>
           ),
       },

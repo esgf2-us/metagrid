@@ -3,6 +3,14 @@
   margin-right: 0;
 }
 
+.ant-layout-content {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.ant-layout-footer {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
 #body-layout.ant-layout {
   min-height: calc(100vh - 68px);
 }

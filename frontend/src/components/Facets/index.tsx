@@ -1,4 +1,4 @@
-import { Button, Tooltip } from 'antd';
+import { Button, Tooltip, Typography } from 'antd';
 import React, { useEffect } from 'react';
 import { useAsync } from 'react-async';
 import { fetchProjects, ResponseError } from '../../api';
@@ -43,6 +43,8 @@ const Facets: React.FC<React.PropsWithChildren<Props>> = ({
 }) => {
   const { data, error, isLoading } = useAsync(fetchProjects);
 
+  const { Title } = Typography;
+
   const [curProject, setCurProject] = React.useState<RawProject>();
 
   const handleSubmitProjectForm = (selectedProject: string): void => {
@@ -72,7 +74,7 @@ const Facets: React.FC<React.PropsWithChildren<Props>> = ({
       style={styles.form}
       className={leftSidebarTargets.leftSideBar.class()}
     >
-      <h3>Select a Project</h3>
+      <Title level={5}>Select a Project</Title>
       <ProjectForm
         activeSearchQuery={activeSearchQuery}
         projectsFetched={data}
