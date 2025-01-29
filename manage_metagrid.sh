@@ -73,6 +73,11 @@ function runFrontendTests() {
     stopLocalService
 }
 
+function configureLocal() {
+    clear
+    ./configHelper.sh
+}
+
 # Main Menu
 function mainMenu() {
     echo "Main Menu Options:"
@@ -127,7 +132,8 @@ function devActionsMenu() {
     echo "3 Test Frontend"
     echo "4 Run Migrations"
     echo "5 Install Packages for Local Dev"
-    echo "6 Back to Main Menu"
+    echo "6 Configure Local"
+    echo "7 Back to Main Menu"
     read option
     if [ -z $option ]; then
         clear
@@ -150,12 +156,15 @@ function devActionsMenu() {
             installPackagesForLocalDev
             return 0
         elif [ "$option" = "6" ]; then
+            configureLocal
+            return 0
+        elif [ "$option" = "7" ]; then
             clear
             mainMenu
         else
             clear
             echo "You entered: $option"
-            echo "Please enter a number from 1 to 6"
+            echo "Please enter a number from 1 to 7"
             devActionsMenu
         fi
     fi

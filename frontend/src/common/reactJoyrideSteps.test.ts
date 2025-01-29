@@ -1,4 +1,3 @@
-import { mockConfig } from '../test/jestTestFunctions';
 import {
   getCurrentAppPage,
   delay,
@@ -11,6 +10,7 @@ import {
   createNodeStatusTour,
 } from './reactJoyrideSteps';
 import { AppPage } from './types';
+import { mockConfig } from '../test/jestTestFunctions';
 
 describe('Test reactJoyrideStep util functions', () => {
   it('returns a promise of specific delay length', async () => {
