@@ -30,6 +30,7 @@ export const mockConfig: FrontendConfig = {
   HOTJAR_ID: 1234,
   HOTJAR_SV: 1234,
   AUTHENTICATION_METHOD: 'keycloak',
+  FOOTER_TEXT: 'Footer text',
   GOOGLE_ANALYTICS_TRACKING_ID: 'UA-XXXXXXXXX-YY',
 };
 

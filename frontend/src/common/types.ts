@@ -13,6 +13,7 @@ export type FrontendConfig = {
   // General
   AUTHENTICATION_METHOD: 'keycloak' | 'globus';
   GOOGLE_ANALYTICS_TRACKING_ID: string | null;
+  FOOTER_TEXT: string | null;
 
   // Globus
   GLOBUS_NODES: string[];

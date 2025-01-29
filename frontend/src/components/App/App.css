@@ -8,11 +8,16 @@
 }
 
 .ant-layout-footer {
+  padding-top: 0;
   background-color: rgba(255, 255, 255, 0.05);
 }
 
 #body-layout.ant-layout {
-  min-height: calc(100vh - 68px);
+  min-height: calc(100vh - 72px);
+}
+
+.footerMarkdown p {
+  margin: 0;
 }
 
 .no-padding .ant-collapse-content-box {

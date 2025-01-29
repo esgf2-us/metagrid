@@ -67,6 +67,7 @@ import startupDisplayData from '../Messaging/messageDisplayData';
 import './App.css';
 import { miscTargets } from '../../common/reactJoyrideSteps';
 import { isDarkModeAtom } from './recoil/atoms';
+import Footer from '../Footer/Footer';
 
 const bodySider = {
   padding: '12px 12px 12px 12px',
@@ -643,19 +644,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
               </Routes>
             </Layout.Content>
             <Layout.Footer>
-              <p style={{ fontSize: '10px' }}>
-                Metagrid Version: {metagridVersion}
-                <br />
-                Privacy &amp; Legal Notice:{' '}
-                <a href="https://www.llnl.gov/disclaimer.html">
-                  https://www.llnl.gov/disclaimer.html
-                </a>
-                <br />
-                Learn about the Department of Energy&apos;s Vulnerability Disclosure Program (VDP):{' '}
-                <a href="https://doe.responsibledisclosure.com/hc/en-us">
-                  https://doe.responsibledisclosure.com/hc/en-us
-                </a>
-              </p>
+              <Footer metagridVersion={metagridVersion} />
             </Layout.Footer>
           </Layout>
         </Layout>

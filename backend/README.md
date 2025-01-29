@@ -43,3 +43,7 @@ docker compose -f docker-compose.yml -f docker-compose.local-overlay.yml run --r
 # Run manage.py function
 
 docker compose -f docker-compose.yml -f docker-compose.local-overlay.yml run --rm django python manage.py
+
+# Run migrations
+
+docker compose -f docker-compose.yml -f docker-compose.local-overlay.yml run --rm django python manage.py migrate

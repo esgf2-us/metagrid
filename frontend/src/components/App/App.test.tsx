@@ -751,3 +751,46 @@ describe('Data node status page', () => {
     expect(nodeStatusPage).toBeTruthy();
   });
 });
+
+describe('Theme switch', () => {
+  it('switches to dark mode', async () => {
+    customRender(<App searchQuery={activeSearch} />);
+
+    // Check applicable components render
+    const navComponent = await screen.findByTestId('nav-bar');
+    expect(navComponent).toBeTruthy();
+
+    // Find and click the theme switch button
+    const rightMenuComponent = await screen.findByTestId('right-menu');
+    expect(rightMenuComponent).toBeTruthy();
+    const themeSwitch = await within(rightMenuComponent).findByTestId('isDarkModeSwitch');
+    expect(themeSwitch).toBeTruthy();
+
+    await userEvent.click(themeSwitch);
+
+    // Check if the dark mode class is applied
+    expect(navComponent).toHaveClass('dark-mode');
+  });
+
+  it('switches to light mode', async () => {
+    customRender(<App searchQuery={activeSearch} />);
+
+    // Check applicable components render
+    const navComponent = await screen.findByTestId('nav-bar');
+    expect(navComponent).toBeTruthy();
+
+    // Find and click the theme switch button to switch to dark mode first
+    const rightMenuComponent = await screen.findByTestId('right-menu');
+    expect(rightMenuComponent).toBeTruthy();
+    const themeSwitch = await within(rightMenuComponent).findByTestId('isDarkModeSwitch');
+    expect(themeSwitch).toBeTruthy();
+
+    await userEvent.click(themeSwitch);
+
+    // Find and click the theme switch button again to switch back to light mode
+    await userEvent.click(themeSwitch);
+
+    // Check if the light mode class is applied
+    expect(navComponent).not.toHaveClass('dark-mode');
+  });
+});

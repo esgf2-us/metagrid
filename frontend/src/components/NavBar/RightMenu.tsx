@@ -221,6 +221,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
       label: (
         <Space>
           <Switch
+            className={navBarTargets.themeSwitchBtn.class()}
             checkedChildren="Light"
             unCheckedChildren="Dark"
             onChange={(checked) => setIsDarkMode(!checked)}

@@ -107,6 +107,18 @@
 >
 >     The list of data nodes known to be Globus enabled. A data node must be in this list in order to transfer files from it via Globus.
 
+
+#### `METAGRID_FOOTER_TEXT`
+
+> !!! example "_Optional_"
+> **Default:** `None`
+>
+>     Text to display in the footer of the frontend. Useful for adding a link to the terms of service or other legal information. The string should be formatted as MarkDown and will be rendered as such.
+>
+>     __Example Values__
+>
+>     `Privacy & Legal Notice: [https://www.llnl.gov/disclaimer.html](https://www.llnl.gov/disclaimer.html)`
+
 #### `METAGRID_KEYCLOAK_REALM`
 
 > !!! example "*Optional*"
