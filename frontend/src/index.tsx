@@ -15,7 +15,7 @@ import { FrontendConfig } from './common/types';
 const container = document.getElementById('root');
 const root = createRoot(container!);
 
-const appRouter = (
+const appRouter: React.ReactNode = (
   <BrowserRouter>
     <ReactJoyrideProvider>
       <App searchQuery={getSearchFromUrl()} />

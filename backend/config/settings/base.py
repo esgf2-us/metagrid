@@ -404,6 +404,7 @@ FRONTEND_SETTINGS = {
             "esgf-node.ornl.gov",
         ],
     ),
+    "REACT_APP_FOOTER_TEXT": env("REACT_APP_FOOTER_TEXT", default=""),
     "REACT_APP_ESGF_SOLR_URL": env(
         "REACT_APP_ESGF_SOLR_URL", default="https://esgf-node.llnl.gov/solr"
     ),

@@ -86,6 +86,7 @@ export const navBarTargets = {
   newsBtn: new TargetObject(),
   signInBtn: new TargetObject(),
   helpBtn: new TargetObject(),
+  themeSwitchBtn: new TargetObject(),
 };
 
 export const searchTableTargets = {
@@ -398,6 +399,11 @@ export const createMainPageTour = (): JoyrideTour => {
     .addNextStep(
       navBarTargets.helpBtn.selector(),
       "Clicking this 'Help' button will open the support dialog, where you can view interface tours (like this), or get links to helpful documentation.",
+      'bottom'
+    )
+    .addNextStep(
+      navBarTargets.themeSwitchBtn.selector(),
+      'This button allows you to switch between light and dark themes for Metagrid.',
       'bottom'
     )
     .addNextStep(
