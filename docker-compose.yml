@@ -35,15 +35,18 @@ services:
       PGHOST: localhost
       PGPASSWORD: postgres
       PGUSER: postgres
+    network_mode: host
     ports:
       - 5000:5000
-    network_mode: host
 
   react:
     build:
       context: frontend
       target: build
     image: metagrid_local_react
+    labels:
+      - "traefik.enable=true"
+      - traefik.http.routers.react.rule=Host(`localhost`)
     environment:
       - PORT=8080
     depends_on:
@@ -60,6 +63,9 @@ services:
     depends_on:
       - react
     command: start-dev --import-realm
+    labels:
+      - "traefik.enable=true"
+      - traefik.http.routers.keycloak.rule=Host(`example.com`)
     volumes:
       - ./keycloak/realm.json:/opt/keycloak/data/import/realm.json
     ports:
@@ -70,8 +76,29 @@ services:
 
   docs:
     build: docs
+    depends_on:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - traefik.http.routers.doc.rule=Host(`localhost`)
     image: metagrid_local_docs
     volumes:
       - ./docs:/docs
     ports:
       - "8001:8001"
+
+  traefik:
+    # The official v3 Traefik docker image
+    image: traefik:v3.3
+    depends_on:
+      - react
+    # Enables the web UI and tells Traefik to listen to docker
+    command: --api.insecure=true --providers.docker
+    ports:
+      # The HTTP port
+      - "80:80"
+      # The Web UI (enabled by --api.insecure=true)
+      - "8002:8002"
+    volumes:
+      # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock
