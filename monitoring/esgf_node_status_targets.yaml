@@ -1,0 +1,300 @@
+- labels:
+    instance: aims3.llnl.gov
+  targets:
+    - https://aims3.llnl.gov/thredds/catalog/catalog.html
+    - https://aims3.llnl.gov/esg-orp/home.htm
+- labels:
+    instance: cmip.bcc.cma.cn
+  targets:
+    - https://cmip.bcc.cma.cn/thredds/catalog/catalog.html
+    - https://cmip.bcc.cma.cn/esg-orp/home.htm
+- labels:
+    instance: cmip.dess.tsinghua.edu.cn
+  targets:
+    - https://cmip.dess.tsinghua.edu.cn/thredds/catalog/catalog.html
+    - https://cmip.dess.tsinghua.edu.cn/esg-orp/home.htm
+- labels:
+    instance: cmip.fio.org.cn
+  targets:
+    - https://cmip.fio.org.cn/thredds/catalog/catalog.html
+    - https://cmip.fio.org.cn/esg-orp/home.htm
+- labels:
+    instance: cordexesg.dmi.dk
+  targets:
+    - https://cordexesg.dmi.dk/thredds/catalog/catalog.html
+    - https://cordexesg.dmi.dk/esg-orp/home.htm
+- labels:
+    instance: crd-esgf-drc.ec.gc.ca
+  targets:
+    - https://crd-esgf-drc.ec.gc.ca/thredds/catalog/catalog.html
+    - https://crd-esgf-drc.ec.gc.ca/esg-orp/home.htm
+- labels:
+    instance: data.meteo.unican.es
+  targets:
+    - https://data.meteo.unican.es/thredds/catalog/catalog.html
+    - https://data.meteo.unican.es/esg-orp/home.htm
+- labels:
+    instance: dataserver.nccs.nasa.gov
+  targets:
+    - https://dataserver.nccs.nasa.gov/thredds/catalog/catalog.html
+    - https://dataserver.nccs.nasa.gov/esg-orp/home.htm
+- labels:
+    instance: dist.nmlab.snu.ac.kr
+  targets:
+    - https://dist.nmlab.snu.ac.kr/thredds/catalog/catalog.html
+    - https://dist.nmlab.snu.ac.kr/esg-orp/home.htm
+- labels:
+    instance: dpesgf03.nccs.nasa.gov
+  targets:
+    - https://dpesgf03.nccs.nasa.gov/thredds/catalog/catalog.html
+    - https://dpesgf03.nccs.nasa.gov/esg-orp/home.htm
+- labels:
+    instance: eridanus.eoc.dlr.de
+  targets:
+    - https://eridanus.eoc.dlr.de/thredds/catalog/catalog.html
+    - https://eridanus.eoc.dlr.de/esg-orp/home.htm
+- labels:
+    instance: esg-cccr.tropmet.res.in
+  targets:
+    - https://esg-cccr.tropmet.res.in/thredds/catalog/catalog.html
+    - https://esg-cccr.tropmet.res.in/esg-orp/home.htm
+- labels:
+    instance: esg-dn1.nsc.liu.se
+  targets:
+    - https://esg-dn1.nsc.liu.se/thredds/catalog/catalog.html
+    - https://esg-dn1.nsc.liu.se/esg-orp/home.htm
+- labels:
+    instance: esg-dn1.ru.ac.th
+  targets:
+    - https://esg-dn1.ru.ac.th/thredds/catalog/catalog.html
+    - https://esg-dn1.ru.ac.th/esg-orp/home.htm
+- labels:
+    instance: esg-dn2.nsc.liu.se
+  targets:
+    - https://esg-dn2.nsc.liu.se/thredds/catalog/catalog.html
+    - https://esg-dn2.nsc.liu.se/esg-orp/home.htm
+- labels:
+    instance: esg-dn3.nsc.liu.se
+  targets:
+    - https://esg-dn3.nsc.liu.se/thredds/catalog/catalog.html
+    - https://esg-dn3.nsc.liu.se/esg-orp/home.htm
+- labels:
+    instance: esg.camscma.cn
+  targets:
+    - https://esg.camscma.cn/thredds/catalog/catalog.html
+    - https://esg.camscma.cn/esg-orp/home.htm
+- labels:
+    instance: esg.lasg.ac.cn
+  targets:
+    - https://esg.lasg.ac.cn/thredds/catalog/catalog.html
+    - https://esg.lasg.ac.cn/esg-orp/home.htm
+- labels:
+    instance: esg.pik-potsdam.de
+  targets:
+    - https://esg.pik-potsdam.de/thredds/catalog/catalog.html
+    - https://esg.pik-potsdam.de/esg-orp/home.htm
+- labels:
+    instance: esg1.umr-cnrm.fr
+  targets:
+    - https://esg1.umr-cnrm.fr/thredds/catalog/catalog.html
+    - https://esg1.umr-cnrm.fr/esg-orp/home.htm
+- labels:
+    instance: esg2.umr-cnrm.fr
+  targets:
+    - https://esg2.umr-cnrm.fr/thredds/catalog/catalog.html
+    - https://esg2.umr-cnrm.fr/esg-orp/home.htm
+- labels:
+    instance: esgdata.gfdl.noaa.gov
+  targets:
+    - https://esgdata.gfdl.noaa.gov/thredds/catalog/catalog.html
+    - https://esgdata.gfdl.noaa.gov/esg-orp/home.htm
+- labels:
+    instance: esgf-cnr.hpc.cineca.it
+  targets:
+    - https://esgf-cnr.hpc.cineca.it/thredds/catalog/catalog.html
+    - https://esgf-cnr.hpc.cineca.it/esg-orp/home.htm
+- labels:
+    instance: esgf-data.csc.fi
+  targets:
+    - https://esgf-data.csc.fi/thredds/catalog/catalog.html
+    - https://esgf-data.csc.fi/esg-orp/home.htm
+- labels:
+    instance: esgf-data.ucar.edu
+  targets:
+    - https://esgf-data.ucar.edu/thredds/catalog/catalog.html
+    - https://esgf-data.ucar.edu/esg-orp/home.htm
+- labels:
+    instance: esgf.ceda.ac.uk
+  targets:
+    - https://esgf.ceda.ac.uk/thredds/catalog/catalog.html
+    - https://esgf.ceda.ac.uk/esg-orp/home.htm
+- labels:
+    instance: esgf-data1.diasjp.net
+  targets:
+    - https://esgf-data1.diasjp.net/thredds/catalog/catalog.html
+    - https://esgf-data1.diasjp.net/esg-orp/home.htm
+- labels:
+    instance: esgf-data01.diasjp.net
+  targets:
+    - https://esgf-data01.diasjp.net/thredds/catalog/catalog.html
+    - https://esgf-data01.diasjp.net/esg-orp/home.htm
+- labels:
+    instance: esgf-data02.diasjp.net
+  targets:
+    - https://esgf-data02.diasjp.net/thredds/catalog/catalog.html
+    - https://esgf-data02.diasjp.net/esg-orp/home.htm
+- labels:
+    instance: esgf-data1.llnl.gov
+  targets:
+    - https://esgf-data1.llnl.gov/thredds/catalog/catalog.html
+    - https://esgf-data1.llnl.gov/esg-orp/home.htm
+- labels:
+    instance: esgf-data2.llnl.gov
+  targets:
+    - https://esgf-data2.llnl.gov/thredds/catalog/catalog.html
+    - https://esgf-data2.llnl.gov/esg-orp/home.htm
+- labels:
+    instance: esgf-data03.diasjp.net
+  targets:
+    - https://esgf-data03.diasjp.net/thredds/catalog/catalog.html
+    - https://esgf-data03.diasjp.net/esg-orp/home.htm
+- labels:
+    instance: esgf-data04.diasjp.net
+  targets:
+    - https://esgf-data04.diasjp.net/thredds/catalog/catalog.html
+    - https://esgf-data04.diasjp.net/esg-orp/home.htm
+- labels:
+    instance: esgf-ictp.hpc.cineca.it
+  targets:
+    - https://esgf-ictp.hpc.cineca.it/thredds/catalog/catalog.html
+    - https://esgf-ictp.hpc.cineca.it/esg-orp/home.htm
+- labels:
+    instance: esgf-nimscmip6.apcc21.org
+  targets:
+    - https://esgf-nimscmip6.apcc21.org/thredds/catalog/catalog.html
+    - https://esgf-nimscmip6.apcc21.org/esg-orp/home.htm
+- labels:
+    instance: esgf-node.cmcc.it
+  targets:
+    - https://esgf-node.cmcc.it/thredds/catalog/catalog.html
+    - https://esgf-node.cmcc.it/esg-orp/home.htm
+- labels:
+    instance: esgf-node2.cmcc.it
+  targets:
+    - https://esgf-node2.cmcc.it/thredds/catalog/catalog.html
+    - https://esgf-node2.cmcc.it/esg-orp/home.htm
+- labels:
+    instance: esgf.anl.gov
+  targets:
+    - https://esgf.anl.gov/thredds/catalog/catalog.html
+    - https://esgf.anl.gov/esg-orp/home.htm
+- labels:
+    instance: esgf.apcc21.org
+  targets:
+    - https://esgf.apcc21.org/thredds/catalog/catalog.html
+    - https://esgf.apcc21.org/esg-orp/home.htm
+- labels:
+    instance: esgf.bsc.es
+  targets:
+    - https://esgf.bsc.es/thredds/catalog/catalog.html
+    - https://esgf.bsc.es/esg-orp/home.htm
+- labels:
+    instance: esgf.dwd.de
+  targets:
+    - https://esgf.dwd.de/thredds/catalog/catalog.html
+    - https://esgf.dwd.de/esg-orp/home.htm
+- labels:
+    instance: esgf.ichec.ie
+  targets:
+    - https://esgf.ichec.ie/thredds/catalog/catalog.html
+    - https://esgf.ichec.ie/esg-orp/home.htm
+- labels:
+    instance: esgf.nccs.nasa.gov
+  targets:
+    - https://esgf.nccs.nasa.gov/thredds/catalog/catalog.html
+    - https://esgf.nccs.nasa.gov/esg-orp/home.htm
+- labels:
+    instance: esgf.nci.org.au
+  targets:
+    - https://esgf.nci.org.au/thredds/catalog/catalog.html
+    - https://esgf.nci.org.au/esg-orp/home.htm
+- labels:
+    instance: esgf.rcec.sinica.edu.tw
+  targets:
+    - https://esgf.rcec.sinica.edu.tw/thredds/catalog/catalog.html
+    - https://esgf.rcec.sinica.edu.tw/esg-orp/home.htm
+- labels:
+    instance: esgf1.dkrz.de
+  targets:
+    - https://esgf1.dkrz.de/thredds/catalog/catalog.html
+    - https://esgf1.dkrz.de/esg-orp/home.htm
+- labels:
+    instance: esgf2.dkrz.de
+  targets:
+    - https://esgf2.dkrz.de/thredds/catalog/catalog.html
+    - https://esgf2.dkrz.de/esg-orp/home.htm
+- labels:
+    instance: esgf3.dkrz.de
+  targets:
+    - https://esgf3.dkrz.de/thredds/catalog/catalog.html
+    - https://esgf3.dkrz.de/esg-orp/home.htm
+- labels:
+    instance: noresg.nird.sigma2.no
+  targets:
+    - https://noresg.nird.sigma2.no/thredds/catalog/catalog.html
+    - https://noresg.nird.sigma2.no/esg-orp/home.htm
+- labels:
+    instance: polaris.pknu.ac.kr
+  targets:
+    - https://polaris.pknu.ac.kr/thredds/catalog/catalog.html
+    - https://polaris.pknu.ac.kr/esg-orp/home.htm
+- labels:
+    instance: vesg.ipsl.upmc.fr
+  targets:
+    - https://vesg.ipsl.upmc.fr/thredds/catalog/catalog.html
+    - https://vesg.ipsl.upmc.fr/esg-orp/home.htm
+- labels:
+    instance: esgf-node.ornl.gov
+  targets:
+    - https://esgf-node.ornl.gov/thredds/catalog/catalog.html
+    - https://esgf-node.ornl.gov/esg-orp/home.htm
+- labels:
+    instance: dmiesgf0.dmi.dk
+  targets:
+    - https://dmiesgf0.dmi.dk/thredds/catalog/catalog.html
+    - https://dmiesgf0.dmi.dk/esg-orp/home.htm
+- labels:
+    instance: esg-dn1.nsc.liu.se
+  targets:
+    - https://esg-dn1.nsc.liu.se/esg-search/search/?limit=0&format=application%2Fsolr%2Bjson&distrib=false&query=na:na
+    - https://esg-dn1.nsc.liu.se/
+- labels:
+    instance: esgdata.gfdl.noaa.gov
+  targets:
+    - https://esgdata.gfdl.noaa.gov/esg-search/search/?limit=0&format=application%2Fsolr%2Bjson&distrib=false&query=na:na
+    - https://esgdata.gfdl.noaa.gov/
+- labels:
+    instance: esgf-data.dkrz.de
+  targets:
+    - https://esgf-data.dkrz.de/esg-search/search/?limit=0&format=application%2Fsolr%2Bjson&distrib=false&query=na:na
+    - https://esgf-data.dkrz.de/
+- labels:
+    instance: esgf.ceda.ac.uk
+  targets:
+    - https://esgf.ceda.ac.uk/esg-search/search/?limit=0&format=application%2Fsolr%2Bjson&distrib=false&query=na:na
+    - https://esgf.ceda.ac.uk/
+- labels:
+    instance: esgf-node.ipsl.upmc.fr
+  targets:
+    - https://esgf-node.ipsl.upmc.fr/esg-search/search/?limit=0&format=application%2Fsolr%2Bjson&distrib=false&query=na:na
+    - https://esgf-node.ipsl.upmc.fr/
+- labels:
+    instance: esgf-node.llnl.gov
+  targets:
+    - https://esgf-node.llnl.gov/esg-search/search/?limit=0&format=application%2Fsolr%2Bjson&distrib=false&query=na:na
+    - https://esgf-node.llnl.gov/
+- labels:
+    instance: esgf.nci.org.au
+  targets:
+    - https://esgf.nci.org.au/esg-search/search/?limit=0&format=application%2Fsolr%2Bjson&distrib=false&query=na:na
+    - https://esgf.nci.org.au/

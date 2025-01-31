@@ -75,3 +75,21 @@ services:
       - ./docs:/docs
     ports:
       - "8001:8001"
+
+  prometheus:
+    image: prom/prometheus
+    network_mode: host
+    command:
+    - --config.file=/etc/prometheus/prometheus.yaml
+    - --web.enable-remote-write-receiver
+    - --enable-feature=exemplar-storage
+    volumes:
+    - ./monitoring/prometheus.yaml:/etc/prometheus/prometheus.yaml
+    - ./monitoring/esgf_node_status_targets.yaml:/etc/prometheus/esgf_node_status_targets.yaml
+    ports:
+    - "9090:9090"
+
+  blackbox_exporter:
+    image: prom/blackbox-exporter:latest
+    ports:
+      - "9115:9115"
