@@ -26,6 +26,9 @@ services:
   django:
     build: backend
     image: metagrid_local_django
+    labels:
+      - "traefik.enable=true"
+      - traefik.http.routers.react.rule=Host(`esgf-dev1.llnl.gov`)
     depends_on:
       postgres:
         condition: service_healthy
@@ -44,6 +47,9 @@ services:
       context: frontend
       target: build
     image: metagrid_local_react
+    labels:
+      - "traefik.enable=true"
+      - traefik.http.routers.react.rule=Host(`esgf-dev1.llnl.gov`)
     environment:
       - PORT=8080
     depends_on:
@@ -60,6 +66,9 @@ services:
     depends_on:
       - react
     command: start-dev --import-realm
+    labels:
+      - "traefik.enable=true"
+      - traefik.http.routers.keycloak.rule=Host(`esgf-dev1.llnl.gov`)
     volumes:
       - ./keycloak/realm.json:/opt/keycloak/data/import/realm.json
     ports:
@@ -70,8 +79,29 @@ services:
 
   docs:
     build: docs
+    depends_on:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - traefik.http.routers.doc.rule=Host(`esgf-dev1.llnl.gov`)
     image: metagrid_local_docs
     volumes:
       - ./docs:/docs
     ports:
       - "8001:8001"
+
+  traefik:
+    # The official v3 Traefik docker image
+    image: traefik:v3.3
+    depends_on:
+      - react
+    # Enables the web UI and tells Traefik to listen to docker
+    command: --api.insecure=true --providers.docker
+    ports:
+      # The HTTP port
+      - "80:80"
+      # The Web UI (enabled by --api.insecure=true)
+      - "8002:8002"
+    volumes:
+      # So that Traefik can listen to the Docker events
+      - /var/run/docker.sock:/var/run/docker.sock

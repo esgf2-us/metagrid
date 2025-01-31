@@ -6,3 +6,119 @@ providers:
 # API and dashboard configuration
 api:
   insecure: true
+
+  log:
+  level: INFO
+
+entryPoints:
+  web:
+    # http
+    address: ":80"
+
+  web-secure:
+    # https
+    address: ":443"
+
+certificatesResolvers:
+  letsencrypt:
+    # https://docs.traefik.io/master/https/acme/#lets-encrypt
+    acme:
+      email: ""
+      storage: /etc/traefik/acme/acme.json
+      # https://docs.traefik.io/master/https/acme/#httpchallenge
+      httpChallenge:
+        entryPoint: web
+
+http:
+  routers:
+    web-backend-router:
+      rule: "Host(`esgf-dev1.llnl.gov`)"
+
+      entryPoints:
+        - web
+      middlewares:
+        - redirect
+        - csrf
+      service: django
+
+    web-backend-secure-router:
+      rule: "Host(`esgf-dev1.llnl.gov`)"
+
+      entryPoints:
+        - web-secure
+      middlewares:
+        - csrf
+        - secure-headers
+      service: django
+      tls:
+        # https://docs.traefik.io/master/routing/routers/#certresolver
+        certResolver: letsencrypt
+
+    web-frontend-router:
+      rule: "Host(`esgf-dev1.llnl.gov`)"
+
+      entryPoints:
+        - web
+      middlewares:
+        - redirect
+      service: react
+
+    web-frontend-secure-router:
+      rule: "Host(`esgf-dev1.llnl.gov`)"
+
+      entryPoints:
+        - web-secure
+      middlewares:
+        - secure-headers
+      service: react
+      tls:
+        # https://docs.traefik.io/master/routing/routers/#certresolver
+        certResolver: letsencrypt
+
+  middlewares:
+    redirect:
+      # https://docs.traefik.io/master/middlewares/redirectscheme/
+      redirectScheme:
+        scheme: https
+        permanent: true
+    secure-headers:
+      # https://doc.traefik.io/traefik/middlewares/headers/#stsseconds
+      # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security
+      headers:
+        stsPreload: true
+        stsIncludeSubdomains: true
+        stsSeconds: 31536000
+        forceSTSHeader: true
+    csrf:
+      # https://docs.traefik.io/master/middlewares/headers/#hostsproxyheaders
+      # https://docs.djangoproject.com/en/dev/ref/csrf/#ajax
+      headers:
+        hostsProxyHeaders: ["X-CSRFToken"]
+
+  services:
+    django:
+      loadBalancer:
+        servers:
+          - url: http://django:5000
+    react:
+      loadBalancer:
+        servers:
+          - url: http://react:8080
+
+providers:
+  # https://docs.traefik.io/master/providers/file/
+  file:
+    filename: traefik.yml
+    watch: true
+
+tls:
+  options:
+    default:
+      minVersion: VersionTLS12
+      cipherSuites:
+        - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
+        - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305
