@@ -1,0 +1,99 @@
+{{- if .Values.ingress.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "metagrid.fullname" . }}
+  labels:
+    {{- include "metagrid.labels" . | nindent 4 }}
+  {{- with .Values.ingress.labels }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with .Values.ingress.className }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  {{- if .Values.ingress.tls -}}
+  tls:
+  - hosts:
+    - {{ .Values.ingress.host | quote }}
+    secretName: {{ include "metagrid.fullname" . }}-ingress-cert
+  {{- end}}
+  rules:
+  - host: {{ .Values.ingress.host | quote }}
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: {{ include "metagrid.fullname" . }}-frontend
+            port:
+              number: {{ .Values.frontend.service.port }}
+      - path: /frontend-config.js
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: {{ include "metagrid.fullname" . }}-backend
+            port:
+              number: {{ .Values.backend.service.port }}
+      - path: /api
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: {{ include "metagrid.fullname" . }}-backend
+            port:
+              number: {{ .Values.backend.service.port }}
+      - path: /accounts
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: {{ include "metagrid.fullname" . }}-backend
+            port:
+              number: {{ .Values.backend.service.port }}
+      - path: /account-confirm-email
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: {{ include "metagrid.fullname" . }}-backend
+            port:
+              number: {{ .Values.backend.service.port }}
+      - path: /proxy
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: {{ include "metagrid.fullname" . }}-backend
+            port:
+              number: {{ .Values.backend.service.port }}
+      - path: /tempStorage
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: {{ include "metagrid.fullname" . }}-backend
+            port:
+              number: {{ .Values.backend.service.port }}
+      - path: /login
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: {{ include "metagrid.fullname" . }}-backend
+            port:
+              number: {{ .Values.backend.service.port }}
+      - path: /complete
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: {{ include "metagrid.fullname" . }}-backend
+            port:
+              number: {{ .Values.backend.service.port }}
+      - path: /globus
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: {{ include "metagrid.fullname" . }}-backend
+            port:
+              number: {{ .Values.backend.service.port }}
+{{- end }}

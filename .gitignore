@@ -188,3 +188,6 @@ docker-compose.*-overlay.yml
 # Documentation artifacts
 docs/site
 frontend/public/runtime_env.js
+
+#Helm chart deps
+helm/charts/*
