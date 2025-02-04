@@ -1,19 +1,19 @@
 volumes:
-  local_postgres_data: {}
-  local_postgres_data_backups: {}
+  postgres_data: {}
+  postgres_data_backups: {}
 
 services:
   postgres:
     build: postgres
-    image: metagrid_local_postgres
+    image: metagrid_postgres
+    restart: unless-stopped
     volumes:
-      - local_postgres_data:/var/lib/postgresql/data
-      - local_postgres_data_backups:/local_postgres_data_backups
+      - postgres_data:/var/lib/postgresql/data
+      - postgres_data_backups:/postgres_data_backups
     environment:
-      POSTGRES_HOST_AUTH_METHOD: trust
-      PGHOST: localhost
-      PGPASSWORD: postgres
-      PGUSER: postgres
+      POSTGRES_HOST_AUTH_METHOD: ""
+      PGPASSWORD: ""
+      PGUSER: ""
     ports:
       - 5432:5432
     healthcheck:
@@ -25,10 +25,12 @@ services:
 
   django:
     build: backend
-    image: metagrid_local_django
-    labels:
-      - "traefik.enable=true"
-      - traefik.http.routers.react.rule=Host(`esgf-dev1.llnl.gov`)
+    image: metagrid_django
+    restart: unless-stopped
+    # labels:
+    #   - "traefik.enable=true"
+    #   - "traefik.http.services.django.loadbalancer.server.port=5000"
+    #   - "traefik.http.routers.django.rule=Host(`esgf-dev1.llnl.gov`)"
     depends_on:
       postgres:
         condition: service_healthy
@@ -38,18 +40,43 @@ services:
       PGHOST: localhost
       PGPASSWORD: postgres
       PGUSER: postgres
-    network_mode: host
+      # DJANGO_DEBUG: False
+      # DJANGO_SECRET_KEY: ""
+      # DJANGO_EMAIL_BACKEND: "django.core.mail.backends.smtp.EmailBackend"
+      # DJANGO_SOCIAL_AUTH_REDIRECT_IS_HTTPS: True
+      # DJANGO_SECURE_PROXY_SSL_HEADER: '["HTTP_X_FORWARDED_PROTO", "https"]'
+      # DJANGO_SECURE_SSL_REDIRECT: True
+      # DJANGO_SESSION_COOKIE_SECURE: True
+      # DJANGO_CSRF_COOKIE_SECURE: True
+      # DJANGO_SECURE_HSTS_SECONDS: 518400
+      # DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS: True
+      # DJANGO_SECURE_HSTS_PRELOAD: True
+      METAGRID_SEARCH_URL: https://esgf-node.llnl.gov/esg-search/search
+      METAGRID_WGET_URL: https://esgf-node.llnl.gov/esg-search/wget
+      METAGRID_STATUS_URL: https://nimbus-dev.llnl.gov/metagrid-backend/proxy/status
+      METAGRID_SOLR_URL: https://esgf-node.llnl.gov/esg-search
+      METAGRID_SOCIAL_AUTH_GLOBUS_KEY: d09a7432-d475-41be-9dda-0006d6a69fac
+      METAGRID_SOCIAL_AUTH_GLOBUS_SECRET: rDUOeRcoNjQduEY5OYhcV3z6ec+wk2T9QzW1X97cR88=
+      METAGRID_GLOBUS_CLIENT_ID: 8286db4d-269e-4c68-88a1-2af9a20f7f09
+      METAGRID_AUTHENTICATION_METHOD: globus
+      METAGRID_FOOTER_TEXT: |
+        Privacy & Legal Notice: [https://www.llnl.gov/disclaimer.html](https://www.llnl.gov/disclaimer.html)    
+        Learn about the Department of Energy's Vulnerability Disclosure Program (VDP): 
+        [https://doe.responsibledisclosure.com/hc/en-us](https://doe.responsibledisclosure.com/hc/en-us)
     ports:
       - 5000:5000
 
   react:
     build:
       context: frontend
-      target: build
-    image: metagrid_local_react
-    labels:
-      - "traefik.enable=true"
-      - traefik.http.routers.react.rule=Host(`esgf-dev1.llnl.gov`)
+      target: prod
+    image: metagrid_react
+    # restart: unless-stopped
+    # labels:
+    #   - "traefik.enable=true"
+    #   - traefik.docker.network=metagrid
+    #   - "traefik.http.services.react.loadbalancer.server.port=8080"
+    #   - "traefik.http.routers.react.rule=Host(`esgf-dev1.llnl.gov`)"
     environment:
       - PORT=8080
     depends_on:
@@ -57,34 +84,18 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
-    network_mode: host
     ports:
       - 8080:8080
 
-  keycloak:
-    image: quay.io/keycloak/keycloak:23.0.6
-    depends_on:
-      - react
-    command: start-dev --import-realm
-    labels:
-      - "traefik.enable=true"
-      - traefik.http.routers.keycloak.rule=Host(`esgf-dev1.llnl.gov`)
-    volumes:
-      - ./keycloak/realm.json:/opt/keycloak/data/import/realm.json
-    ports:
-      - 1337:8080
-    environment:
-      KEYCLOAK_USER: admin
-      KEYCLOAK_PASSWORD: admin
-
   docs:
     build: docs
-    depends_on:
-      - traefik
-    labels:
-      - "traefik.enable=true"
-      - traefik.http.routers.doc.rule=Host(`esgf-dev1.llnl.gov`)
+    # labels:
+    #   - "traefik.enable=true"
+    #   - "traefik.http.services.docs.loadbalancer.server.port=8001"
+    #   - "traefik.http.routers.doc.rule=Host(`esgf-dev1.llnl.gov`)"
+    #   - "traefik.docker.network=metagrid"
     image: metagrid_local_docs
+    restart: unless-stopped
     volumes:
       - ./docs:/docs
     ports:
@@ -93,10 +104,19 @@ services:
   traefik:
     # The official v3 Traefik docker image
     image: traefik:v3.3
+    container_name: traefik
+    # labels:
+    #   - "traefik.http.routers.dashboard.rule=Host(`traefik.esgf-dev1.llnl.gov`)"
+    #   - "traefik.http.middlewares.test-redirectscheme.redirectscheme.scheme=https"
+    #   - "traefik.http.middlewares.test-redirectscheme.redirectscheme.permanent=true"
+    #   - "traefik.http.routers.dashboard.service=api@internal"
+    #   - "traefik.http.routers.dashboard.middlewares=auth"
+    #   - "traefik.http.middlewares.auth.basicauth.users=test:$$2y$$05$$q4KagWMdQqhGw/xa51DMTOutOqFVF6bw3AIIhog0FRHX6rWv9CHA6"
     depends_on:
       - react
+      - django
     # Enables the web UI and tells Traefik to listen to docker
-    command: --api.insecure=true --providers.docker
+    # command: --providers.docker --entrypoints.web.address=:80 --entrypoints.web-secure.address=:443
     ports:
       # The HTTP port
       - "80:80"

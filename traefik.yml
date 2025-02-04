@@ -1,29 +1,22 @@
-# Docker configuration backend
-providers:
-  docker:
-    defaultRule: "Host(`{{ trimPrefix `/` .Name }}.docker.localhost`)"
-
 # API and dashboard configuration
 api:
-  insecure: true
-
   log:
   level: INFO
 
 entryPoints:
   web:
     # http
-    address: ":80"
+    address: ':80'
 
   web-secure:
     # https
-    address: ":443"
+    address: ':443'
 
 certificatesResolvers:
   letsencrypt:
     # https://docs.traefik.io/master/https/acme/#lets-encrypt
     acme:
-      email: ""
+      email: ''
       storage: /etc/traefik/acme/acme.json
       # https://docs.traefik.io/master/https/acme/#httpchallenge
       httpChallenge:
@@ -32,22 +25,14 @@ certificatesResolvers:
 http:
   routers:
     web-backend-router:
-      rule: "Host(`esgf-dev1.llnl.gov`)"
-
-      entryPoints:
-        - web
+      rule: 'Host(`esgf-dev1.llnl.gov/`)'
       middlewares:
         - redirect
-        - csrf
       service: django
 
     web-backend-secure-router:
-      rule: "Host(`esgf-dev1.llnl.gov`)"
-
-      entryPoints:
-        - web-secure
+      rule: 'Host(`esgf-dev1.llnl.gov/`)'
       middlewares:
-        - csrf
         - secure-headers
       service: django
       tls:
@@ -55,7 +40,7 @@ http:
         certResolver: letsencrypt
 
     web-frontend-router:
-      rule: "Host(`esgf-dev1.llnl.gov`)"
+      rule: 'Host(`esgf-dev1.llnl.gov/`)'
 
       entryPoints:
         - web
@@ -64,7 +49,7 @@ http:
       service: react
 
     web-frontend-secure-router:
-      rule: "Host(`esgf-dev1.llnl.gov`)"
+      rule: 'Host(`esgf-dev1.llnl.gov/`)'
 
       entryPoints:
         - web-secure
@@ -93,13 +78,9 @@ http:
       # https://docs.traefik.io/master/middlewares/headers/#hostsproxyheaders
       # https://docs.djangoproject.com/en/dev/ref/csrf/#ajax
       headers:
-        hostsProxyHeaders: ["X-CSRFToken"]
+        hostsProxyHeaders: ['X-CSRFToken']
 
   services:
-    django:
-      loadBalancer:
-        servers:
-          - url: http://django:5000
     react:
       loadBalancer:
         servers:
