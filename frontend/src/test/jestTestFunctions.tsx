@@ -5,10 +5,11 @@
  * in order to mock their behaviors.
  *
  */
+import React, { ReactNode, CSSProperties } from 'react';
 import { within, screen } from '@testing-library/react';
 import { message } from 'antd';
-import { ReactNode, CSSProperties } from 'react';
 import { UserEvent } from '@testing-library/user-event';
+import { RecoilRoot, RecoilState } from 'recoil';
 import { NotificationType, getSearchFromUrl } from '../common/utils';
 import { RawSearchResult } from '../components/Search/types';
 import { rawSearchResultFixture } from './mock/fixtures';
@@ -222,4 +223,21 @@ export async function addSearchRowsAndGoToCart(
   // Wait for cart page to render
   const summary = await screen.findByTestId('summary');
   expect(summary).toBeTruthy();
+}
+
+export function withRecoilState(
+  initialState: Map<RecoilState<unknown>, unknown>,
+  children: ReactNode
+): JSX.Element {
+  return (
+    <RecoilRoot
+      initializeState={({ set }) => {
+        initialState.forEach((value, state) => {
+          set(state, value);
+        });
+      }}
+    >
+      {children}
+    </RecoilRoot>
+  );
 }

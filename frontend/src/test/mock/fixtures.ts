@@ -4,6 +4,7 @@
  * Fixtures allows tests to be maintainable (especially in the case of updated
  * APIs) and reduce duplicate hard-coded dummy data.
  */
+import { atom } from 'recoil';
 import {
   RawUserCart,
   UserCart,

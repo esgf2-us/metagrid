@@ -8,9 +8,10 @@ import Button from '../General/Button';
 import Table from '../Search/Table';
 import { RawSearchResults } from '../Search/types';
 import DatasetDownload from '../Globus/DatasetDownload';
-import CartStateKeys, { cartItemSelections } from './recoil/atoms';
+import CartStateKeys, { cartSelectionIds, userCartItems } from './recoil/atoms';
 import { NodeStatusArray } from '../NodeStatus/types';
 import { DataPersister } from '../../common/DataPersister';
+import { getCartItemsFromIds } from '../../common/utils';
 
 const styles: CSSinJS = {
   summary: {
@@ -26,7 +27,6 @@ const styles: CSSinJS = {
 };
 
 export type Props = {
-  userCart: RawSearchResults | [];
   onUpdateCart: (item: RawSearchResults, operation: 'add' | 'remove') => void;
   onClearCart: () => void;
   nodeStatus?: NodeStatusArray;
@@ -35,16 +35,18 @@ export type Props = {
 const dp: DataPersister = DataPersister.Instance;
 
 const Items: React.FC<React.PropsWithChildren<Props>> = ({
-  userCart,
   onUpdateCart,
   onClearCart,
   nodeStatus,
 }) => {
-  const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(cartItemSelections);
-  dp.addNewVar<RawSearchResults>(CartStateKeys.cartItemSelections, [], setItemSelections);
+  const [selectionIds, setSelectionIds] = useRecoilState<string[]>(cartSelectionIds);
+  const [userCart] = useRecoilState<RawSearchResults>(userCartItems);
 
-  const handleRowSelect = async (selectedRows: RawSearchResults | []): Promise<void> => {
-    await dp.setValue(CartStateKeys.cartItemSelections, selectedRows, true);
+  dp.addNewVar<string[]>(CartStateKeys.cartSelectionIds, [], setSelectionIds);
+
+  const handleRowSelect = async (selectedRows: RawSearchResults): Promise<void> => {
+    const selections = selectedRows.filter((row) => row !== undefined);
+    await dp.setValue<RawSearchResults>(CartStateKeys.cartSelectionIds, selections, true);
   };
 
   return (
@@ -82,10 +84,9 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({
                 canDisableRows={false}
                 nodeStatus={nodeStatus}
                 results={userCart}
-                userCart={userCart}
                 onUpdateCart={onUpdateCart}
                 onRowSelect={handleRowSelect}
-                selections={itemSelections}
+                selections={getCartItemsFromIds(userCart, selectionIds)}
               />
             </Col>
           </Row>

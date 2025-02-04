@@ -1,13 +1,15 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
+import { RecoilState } from 'recoil';
 import { rawSearchResultFixture, rawSearchResultsFixture } from '../../test/mock/fixtures';
 import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
 import Table, { Props } from './Table';
 import { QualityFlag } from './Tabs';
-import { mockConfig } from '../../test/jestTestFunctions';
+import { mockConfig, withRecoilState } from '../../test/jestTestFunctions';
+import { userCartItems } from '../Cart/recoil/atoms';
 
 const user = userEvent.setup();
 
@@ -15,7 +17,6 @@ const defaultProps: Props = {
   loading: false,
   results: rawSearchResultsFixture(),
   totalResults: rawSearchResultsFixture().length,
-  userCart: [],
   onUpdateCart: jest.fn(),
   onRowSelect: jest.fn(),
   onPageChange: jest.fn(),
@@ -268,14 +269,16 @@ describe('test main table UI', () => {
   });
 
   it('renders add or remove button for items in or not in the cart respectively, and handles clicking them', async () => {
-    customRender(<Table {...defaultProps} userCart={[defaultProps.results[0]]} />);
+    const initialState: Map<RecoilState<unknown>, unknown> = new Map();
+    initialState.set(userCartItems as RecoilState<unknown>, [defaultProps.results[0]]);
+
+    customRender(withRecoilState(initialState, <Table {...defaultProps} />));
     // Check table exists
     const table = await screen.findByRole('table');
     expect(table).toBeTruthy();
 
     // Check first row exists
     const firstRow = await screen.findByTestId('cart-items-row-0');
-
     expect(firstRow).toBeTruthy();
 
     // Check first row has remove button and click it
@@ -292,7 +295,6 @@ describe('test main table UI', () => {
     // Check second row has add button and click it
     const addBtn = await within(secondRow).findByRole('img', { name: 'plus' });
     expect(addBtn).toBeTruthy();
-
     await user.click(addBtn);
   });
 
@@ -339,7 +341,10 @@ describe('test main table UI', () => {
       },
     });
 
-    customRender(<Table {...defaultProps} userCart={[defaultProps.results[0]]} />);
+    const initialState: Map<RecoilState<unknown>, unknown> = new Map();
+    initialState.set(userCartItems as RecoilState<unknown>, [defaultProps.results[0]]);
+
+    customRender(withRecoilState(initialState, <Table {...defaultProps} />));
 
     // Check table renders
     const tableComponent = await screen.findByRole('table');
@@ -368,7 +373,10 @@ describe('test main table UI', () => {
   it('displays an error when unable to access download via wget', async () => {
     server.use(rest.post(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404))));
 
-    customRender(<Table {...defaultProps} userCart={[defaultProps.results[0]]} />);
+    const initialState: Map<RecoilState<unknown>, unknown> = new Map();
+    initialState.set(userCartItems as RecoilState<unknown>, [defaultProps.results[0]]);
+
+    customRender(withRecoilState(initialState, <Table {...defaultProps} />));
 
     // Check table renders
     const tableComponent = await screen.findByRole('table');

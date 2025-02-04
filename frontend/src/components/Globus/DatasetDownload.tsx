@@ -32,7 +32,11 @@ import {
   manageCollectionsTourTargets,
 } from '../../common/reactJoyrideSteps';
 import { RawSearchResults } from '../Search/types';
-import CartStateKeys, { cartDownloadIsLoading, cartItemSelections } from '../Cart/recoil/atoms';
+import CartStateKeys, {
+  cartDownloadIsLoading,
+  cartSelectionIds,
+  userCartItems,
+} from '../Cart/recoil/atoms';
 import GlobusStateKeys, { globusTaskItems } from './recoil/atom';
 import {
   GlobusTokenResponse,
@@ -104,6 +108,8 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
   const [downloadIsLoading, setDownloadIsLoading] = useRecoilState<boolean>(cartDownloadIsLoading);
 
+  const [userCart] = useRecoilState<RawSearchResults>(userCartItems);
+
   // Persistent vars
   dp.addNewVar(GlobusStateKeys.accessToken, null, () => {});
   dp.addNewVar(GlobusStateKeys.transferToken, null, () => {}, getGlobusTransferToken);
@@ -111,8 +117,8 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   const [taskItems, setTaskItems] = useRecoilState<GlobusTaskItem[]>(globusTaskItems);
   dp.addNewVar<GlobusTaskItem[]>(GlobusStateKeys.globusTaskItems, [], setTaskItems);
 
-  const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(cartItemSelections);
-  dp.addNewVar<RawSearchResults>(CartStateKeys.cartItemSelections, [], setItemSelections);
+  const [selectionIds, setSelectionIds] = useRecoilState<string[]>(cartSelectionIds);
+  dp.addNewVar<string[]>(CartStateKeys.cartSelectionIds, [], setSelectionIds);
 
   const [savedGlobusEndpoints, setSavedGlobusEndpoints] = React.useState<GlobusEndpoint[] | []>(
     dp.getValue(GlobusStateKeys.savedGlobusEndpoints) || []
@@ -178,19 +184,19 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     return [transferToken, accessToken];
   }
 
-  const handleWgetDownload = async (): Promise<void> => {
-    const cleanedSelections = itemSelections.filter((item) => {
-      return item !== undefined && item !== null;
-    });
-    await dp.setValue(CartStateKeys.cartItemSelections, cleanedSelections, true);
+  const handleWgetDownload = (): void => {
+    // const selectionIds = selectionIds.filter((id) => {
+    //   return id !== undefined && id !== null && id !== '';
+    // });
+    // await dp.setValue<string[]>(CartStateKeys.cartSelectionIds, selectionIds, true);
 
-    const ids = cleanedSelections.map((item) => item.id);
+    // const ids = selectionIds.map((item) => item.id);
     showNotice(messageApi, 'The wget script is generating, please wait momentarily.', {
       duration: 3,
       type: 'info',
     });
     setDownloadIsLoading(true);
-    fetchWgetScript(ids)
+    fetchWgetScript(selectionIds.filter((id) => id !== '' && id !== undefined))
       .then(() => {
         setDownloadIsLoading(false);
         showNotice(messageApi, 'Wget script downloaded successfully!', {
@@ -224,8 +230,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   ): void => {
     setDownloadIsLoading(true);
 
-    const cartSelections = dp.getValue<RawSearchResults>(CartStateKeys.cartItemSelections);
-    const ids = cartSelections?.map((item) => (item ? item.id : '')) ?? [];
+    const cartSelectedItemIds = dp.getValue<string[]>(CartStateKeys.cartSelectionIds);
 
     axios
       .post<SubmissionResult>(
@@ -235,14 +240,14 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           refresh_token: accessToken,
           endpointId: endpoint.id,
           path: endpoint.path || '',
-          dataset_id: ids,
+          dataset_id: cartSelectedItemIds,
         })
       )
       .then((resp) => {
         return resp.data;
       })
       .then(async (resp) => {
-        await dp.setValue(CartStateKeys.cartItemSelections, [], true);
+        await dp.setValue(CartStateKeys.cartSelectionIds, [], true);
 
         const newTasks = resp.successes.map((submission) => {
           const taskId = submission.task_id as string;
@@ -323,22 +328,22 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     if (window.METAGRID.GLOBUS_NODES.length === 0) {
       return true;
     }
-    const globusReadyItems: RawSearchResults = [];
+    const globusReadyItems: string[] = [];
 
-    itemSelections.filter((item) => {
-      return item !== undefined && item !== null;
-    });
-    itemSelections.forEach((selection) => {
-      if (selection) {
-        const dataNode = selection.data_node as string;
+    // selectionIds.filter((item) => {
+    //   return item !== undefined && item !== null;
+    // });
+    userCart.forEach((cartItem) => {
+      if (cartItem && selectionIds.includes(cartItem.id)) {
+        const dataNode = cartItem.data_node as string;
         if (dataNode && window.METAGRID.GLOBUS_NODES.includes(dataNode)) {
-          globusReadyItems.push(selection);
+          globusReadyItems.push(cartItem.id);
         }
       }
     });
 
     // If there are non-Globus Ready selections, show alert
-    const globusDisabledCount = itemSelections.length - globusReadyItems.length;
+    const globusDisabledCount = selectionIds.length - globusReadyItems.length;
 
     if (globusDisabledCount > 0) {
       let state = 'One';
@@ -347,7 +352,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       }
       let content = `${state} of your selected items cannot be transferred via Globus. Would you like to continue the Globus transfer with the 'Globus Ready' items?`;
 
-      if (globusDisabledCount === itemSelections.length) {
+      if (globusDisabledCount === selectionIds.length) {
         state = 'None';
         content =
           "None of your selected items can be transferred via Globus at this time. When choosing the Globus Transfer option, make sure your selections are 'Globus Ready'.";
@@ -365,7 +370,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             setCurrentGoal(GlobusGoals.None);
           } else {
             setAlertPopupState({ ...alertPopupState, show: false });
-            await dp.setValue(CartStateKeys.cartItemSelections, globusReadyItems, true);
+            await dp.setValue<string[]>(CartStateKeys.cartSelectionIds, globusReadyItems, true);
             setCurrentGoal(GlobusGoals.DoGlobusTransfer);
             await performStepsForGlobusGoals();
           }
@@ -882,7 +887,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           }}
           icon={<DownloadOutlined />}
           disabled={
-            itemSelections.length === 0 ||
+            selectionIds.length === 0 ||
             (selectedDownloadType === 'Globus' && chosenGlobusEndpoint === undefined)
           }
           loading={downloadIsLoading}

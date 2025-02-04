@@ -68,6 +68,7 @@ import './App.css';
 import { miscTargets } from '../../common/reactJoyrideSteps';
 import { isDarkModeAtom } from './recoil/atoms';
 import Footer from '../Footer/Footer';
+import { userCartItems } from '../Cart/recoil/atoms';
 
 const bodySider = {
   padding: '12px 12px 12px 12px',
@@ -157,9 +158,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     ParsedFacets | Record<string, unknown>
   >({});
 
-  const [userCart, setUserCart] = React.useState<UserCart | []>(
-    JSON.parse(localStorage.getItem('userCart') || '[]') as RawSearchResults
-  );
+  const [userCart, setUserCart] = useRecoilState<RawSearchResults>(userCartItems);
 
   const [userSearchQueries, setUserSearchQueries] = React.useState<UserSearchQueries | []>(
     JSON.parse(localStorage.getItem('userSearchQueries') || '[]') as UserSearchQueries
@@ -560,7 +559,6 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
                       />
                       <Search
                         activeSearchQuery={activeSearchQuery}
-                        userCart={userCart}
                         nodeStatus={nodeStatus}
                         onUpdateAvailableFacets={(facets) => setAvailableFacets(facets)}
                         onUpdateCart={handleUpdateCart}
@@ -613,7 +611,6 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
                         ]}
                       />
                       <Cart
-                        userCart={userCart}
                         userSearchQueries={userSearchQueries}
                         onUpdateCart={handleUpdateCart}
                         onClearCart={handleClearCart}

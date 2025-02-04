@@ -8,6 +8,7 @@ import { Alert, Col, Row, Typography } from 'antd';
 import humps from 'humps';
 import React from 'react';
 import { DeferFn, useAsync } from 'react-async';
+import { useRecoilState } from 'recoil';
 import {
   convertResultTypeToReplicaParam,
   fetchSearchResults,
@@ -17,7 +18,6 @@ import { clickableRoute } from '../../api/routes';
 import { searchTableTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import { objectIsEmpty } from '../../common/utils';
-import { UserCart } from '../Cart/types';
 import { Tag, TagType, TagValue } from '../DataDisplay/Tag';
 import { ActiveFacets, ParsedFacets, RawFacets, RawProject } from '../Facets/types';
 import Button from '../General/Button'; // Note, tooltips do not work for this button
@@ -33,6 +33,7 @@ import {
   VersionDate,
   VersionType,
 } from './types';
+import { userCartItems } from '../Cart/recoil/atoms';
 
 const styles: CSSinJS = {
   summary: {
@@ -121,7 +122,6 @@ export const checkFiltersExist = (
 
 export type Props = {
   activeSearchQuery: ActiveSearchQuery;
-  userCart: UserCart | [];
   nodeStatus?: NodeStatusArray;
   onRemoveFilter: (removedTag: TagValue, type: TagType) => void;
   onClearFilters: () => void;
@@ -133,7 +133,6 @@ export type Props = {
 
 const Search: React.FC<React.PropsWithChildren<Props>> = ({
   activeSearchQuery,
-  userCart,
   nodeStatus,
   onRemoveFilter,
   onClearFilters,
@@ -156,6 +155,9 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
   const { data: results, error, isLoading, run } = useAsync({
     deferFn: (fetchSearchResults as unknown) as DeferFn<Record<string, unknown>>,
   });
+
+  const [userCart] = useRecoilState<RawSearchResults>(userCartItems);
+
   const [filtersExist, setFiltersExist] = React.useState<boolean>(false);
   const [parsedFacets, setParsedFacets] = React.useState<ParsedFacets | Record<string, unknown>>(
     {}
@@ -372,7 +374,6 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
                 loading={false}
                 results={docs}
                 totalResults={numFound}
-                userCart={userCart}
                 nodeStatus={nodeStatus}
                 filenameVars={activeSearchQuery.filenameVars}
                 onUpdateCart={onUpdateCart}
@@ -385,7 +386,6 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
                 loading={isLoading}
                 results={[]}
                 totalResults={paginationOptions.pageSize}
-                userCart={userCart}
                 onUpdateCart={onUpdateCart}
               />
             )}

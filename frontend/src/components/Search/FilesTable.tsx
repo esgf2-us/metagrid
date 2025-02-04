@@ -163,6 +163,10 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
           label: '100 / page',
           value: '100',
         },
+        {
+          label: '500 / page',
+          value: '500',
+        },
       ],
       showSizeChanger: {
         optionRender: (option) => {

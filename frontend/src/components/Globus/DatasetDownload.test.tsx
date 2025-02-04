@@ -144,7 +144,7 @@ async function initializeComponentForTest(testConfig?: typeof defaultTestConfig)
   }
 
   // Set the selected cart items
-  tempStorageSetMock(CartStateKeys.cartItemSelections, config.itemSelections);
+  tempStorageSetMock(CartStateKeys.cartItemSelectionIds, config.itemSelections);
 
   // Set the saved endpoints
   tempStorageSetMock(GlobusStateKeys.savedGlobusEndpoints, config.savedEndpoints);

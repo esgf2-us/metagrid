@@ -2,7 +2,8 @@ import { atom } from 'recoil';
 import { RawSearchResults } from '../../Search/types';
 
 enum CartStateKeys {
-  cartItemSelections = 'cartItemSelections',
+  userCartItems = 'userCartItems',
+  cartSelectionIds = 'cartSelectionIds',
   cartDownloadIsLoading = 'downloadIsLoading',
 }
 
@@ -11,8 +12,13 @@ export const cartDownloadIsLoading = atom<boolean>({
   default: false,
 });
 
-export const cartItemSelections = atom<RawSearchResults>({
-  key: CartStateKeys.cartItemSelections,
+export const userCartItems = atom<RawSearchResults>({
+  key: CartStateKeys.userCartItems,
+  default: [],
+});
+
+export const cartSelectionIds = atom<string[]>({
+  key: CartStateKeys.cartSelectionIds,
   default: [],
 });
 

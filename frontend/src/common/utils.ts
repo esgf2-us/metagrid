@@ -147,6 +147,22 @@ export const formatBytes = (bytes: number, decimals = 2): string => {
   return `${parseFloat((bytes / k ** i).toFixed(dm))} ${sizes[i]}`;
 };
 
+export const getCartItemsFromIds = (
+  cartItems: RawSearchResults,
+  ids: string[]
+): RawSearchResults => {
+  const cartItemsList = ids.map((id) => {
+    const cartItem: RawSearchResult | undefined = cartItems.find((item) => item.id === id);
+    return cartItem;
+  });
+  cartItemsList.filter((item) => item !== undefined);
+  return cartItemsList as RawSearchResults;
+};
+/*
+export const getIdsFromSearchResults = (results: RawSearchResults): string[] => {
+  return results.filter((result) => result !== undefined).map((result) => result.id);
+}; */
+
 export const getUrlFromSearch = (search: ActiveSearchQuery): string => {
   const urlString = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
 

@@ -9,10 +9,10 @@ import { Form, Select, Table as TableD, Tooltip, message } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
+import { useRecoilState } from 'recoil';
 import { fetchWgetScript, ResponseError } from '../../api';
 import { topDataRowTargets } from '../../common/reactJoyrideSteps';
 import { formatBytes, showError, showNotice } from '../../common/utils';
-import { UserCart } from '../Cart/types';
 import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
 import { NodeStatusArray } from '../NodeStatus/types';
@@ -20,13 +20,13 @@ import './Search.css';
 import Tabs from './Tabs';
 import { RawSearchResult, RawSearchResults, TextInputs } from './types';
 import GlobusToolTip from '../NodeStatus/GlobusToolTip';
+import { userCartItems } from '../Cart/recoil/atoms';
 
 export type Props = {
   loading: boolean;
   canDisableRows?: boolean;
   results: RawSearchResults | [];
   totalResults?: number;
-  userCart: UserCart | [];
   selections?: RawSearchResults | [];
   nodeStatus?: NodeStatusArray;
   filenameVars?: TextInputs | [];
@@ -41,7 +41,6 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
   canDisableRows = true,
   results,
   totalResults,
-  userCart,
   selections,
   nodeStatus,
   filenameVars,
@@ -51,6 +50,8 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
   onPageSizeChange,
 }) => {
   const [messageApi, contextHolder] = message.useMessage();
+
+  const [userCart] = useRecoilState<RawSearchResults>(userCartItems);
 
   // Add options to this constant as needed
   type DatasetDownloadTypes = 'wget' | 'Globus';
@@ -65,6 +66,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
     pagination: {
       total: totalResults,
       position: ['bottomCenter'],
+      pageSizeOptions: [10, 20, 50, 100, 500],
       showSizeChanger: {
         optionRender: (option) => {
           return <span data-testid={`pageSize-option-${option.value}`}>{option.label}</span>;
@@ -105,7 +107,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
         ),
     },
     rowSelection: {
-      selectedRowKeys: selections?.map((item) => (item ? item.id : '')),
+      selectedRowKeys: selections?.map((id) => id || ''),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onSelect: (_record: any, _selected: any, selectedRows: any) => {
         /* istanbul ignore else */
