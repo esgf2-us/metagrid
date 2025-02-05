@@ -55,6 +55,19 @@ services:
     ports:
       - 8080:8080
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0.6
+    depends_on:
+      - react
+    command: start-dev --import-realm
+    volumes:
+      - ./keycloak/realm.json:/opt/keycloak/data/import/realm.json
+    ports:
+      - 1337:8080
+    environment:
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+
   docs:
     build: docs
     image: metagrid_local_docs

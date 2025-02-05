@@ -21,6 +21,14 @@ services:
       DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS: True
       DJANGO_SECURE_HSTS_PRELOAD: True
 
+  keycloak:
+    command: start
+    volumes: []
+    restart: unless-stopped
+    environment:
+      KEYCLOAK_USER: ""
+      KEYCLOAK_PASSWORD: ""
+
   react:
     build:
       # The prod build target includes a production ready nginx server
