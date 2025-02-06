@@ -12,19 +12,19 @@ set -e
 function startProductionService() {
     clear
     echo "Choose production deployment type:"
-    echo "1 Standard"
-    echo "2 Traefik"
+    echo "1 Traefik"
+    echo "2 Local Site Ingress"
     echo "3 Keycloak"
     read -r deployment_choice
 
     case $deployment_choice in
         1)
-            echo "Starting Metagrid with Standard deployment"
-            docker compose -f docker-compose.yml -f docker-compose.prod-overlay.yml up --build -d
-            ;;
-        2)
             echo "Starting Metagrid with Traefik deployment"
             docker compose -f docker-compose.traefik.yml -f docker-compose.traefik-prod-overlay.yml up --build -d
+            ;;
+        2)
+            echo "Starting Metagrid with Local Site Ingress deployment"
+            docker compose -f docker-compose.yml -f docker-compose.prod-overlay.yml up --build -d
             ;;
         3)
             echo "Starting Metagrid with Keycloak deployment"
