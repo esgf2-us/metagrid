@@ -1,0 +1,29 @@
+services:
+
+  django:
+    environment:
+      METAGRID_SEARCH_URL: https://esgf-node.llnl.gov/esg-search/search
+      METAGRID_WGET_URL: https://esgf-node.llnl.gov/esg-search/wget
+      METAGRID_STATUS_URL: https://nimbus-dev.llnl.gov/metagrid-backend/proxy/status
+      METAGRID_SOLR_URL: https://esgf-node.llnl.gov/esg-search
+      METAGRID_SOCIAL_AUTH_GLOBUS_KEY: ""
+      METAGRID_SOCIAL_AUTH_GLOBUS_SECRET: ""
+      METAGRID_GLOBUS_CLIENT_ID: ""
+      METAGRID_AUTHENTICATION_METHOD: keycloak
+      METAGRID_FOOTER_TEXT: |
+        Privacy & Legal Notice: [https://www.llnl.gov/disclaimer.html](https://www.llnl.gov/disclaimer.html)    
+        Learn about the Department of Energy's Vulnerability Disclosure Program (VDP): 
+        [https://doe.responsibledisclosure.com/hc/en-us](https://doe.responsibledisclosure.com/hc/en-us)
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0.6
+    depends_on:
+      - react
+    command: start-dev --import-realm
+    volumes:
+      - ./keycloak/realm.json:/opt/keycloak/data/import/realm.json
+    ports:
+      - 1337:8080
+    environment:
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin

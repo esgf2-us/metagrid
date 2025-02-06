@@ -1,0 +1,8 @@
+services:
+  keycloak:
+    command: start
+    volumes: []
+    restart: unless-stopped
+    environment:
+      KEYCLOAK_USER: ""
+      KEYCLOAK_PASSWORD: ""
