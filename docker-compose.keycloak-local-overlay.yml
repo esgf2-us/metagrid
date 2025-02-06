@@ -11,8 +11,8 @@ services:
       METAGRID_GLOBUS_CLIENT_ID: ""
       METAGRID_AUTHENTICATION_METHOD: keycloak
       METAGRID_FOOTER_TEXT: |
-        Privacy & Legal Notice: [https://www.llnl.gov/disclaimer.html](https://www.llnl.gov/disclaimer.html)    
-        Learn about the Department of Energy's Vulnerability Disclosure Program (VDP): 
+        Privacy & Legal Notice: [https://www.llnl.gov/disclaimer.html](https://www.llnl.gov/disclaimer.html)
+        Learn about the Department of Energy's Vulnerability Disclosure Program (VDP):
         [https://doe.responsibledisclosure.com/hc/en-us](https://doe.responsibledisclosure.com/hc/en-us)
 
   keycloak:
