@@ -9,8 +9,12 @@ services:
   django:
     restart: unless-stopped
     environment:
-      DJANGO_DEBUG: False
+      DOMAIN_NAME: example.com
       DJANGO_SECRET_KEY: ""
+      DJANGO_ALLOWED_HOSTS: '["example.com", "localhost"]'
+      DJANGO_LOGIN_REDIRECT_URL: https://example.com/search
+      DJANGO_LOGOUT_REDIRECT_URL: https://example.com/search
+      DJANGO_DEBUG: False
       DJANGO_EMAIL_BACKEND: "django.core.mail.backends.smtp.EmailBackend"
       DJANGO_SOCIAL_AUTH_REDIRECT_IS_HTTPS: True
       DJANGO_SECURE_PROXY_SSL_HEADER: '["HTTP_X_FORWARDED_PROTO", "https"]'

@@ -10,13 +10,36 @@ set -e
 #Custom functions
 
 function startProductionService() {
-    echo "Starting Metagrid"
-    docker compose -f docker-compose.yml -f docker-compose.prod-overlay.yml up --build -d
+    clear
+    echo "Choose production deployment type:"
+    echo "1 Standard"
+    echo "2 Traefik"
+    echo "3 Keycloak"
+    read -r deployment_choice
+
+    case $deployment_choice in
+        1)
+            echo "Starting Metagrid with Standard deployment"
+            docker compose -f docker-compose.yml -f docker-compose.prod-overlay.yml up --build -d
+            ;;
+        2)
+            echo "Starting Metagrid with Traefik deployment"
+            docker compose -f docker-compose.traefik.yml -f docker-compose.traefik-prod-overlay.yml up --build -d
+            ;;
+        3)
+            echo "Starting Metagrid with Keycloak deployment"
+            docker compose -f docker-compose.yml -f docker-compose.prod-overlay.yml -f docker-compose.keycloak-local-overlay.yml -f docker-compose.keycloak-prod-overlay.yml up --build -d
+            ;;
+        *)
+            echo "Invalid choice. Please select 1, 2, or 3."
+            startProductionService
+            ;;
+    esac
 }
 
 function stopProductionService() {
-    echo "Stopping Metagrid"
-    docker compose -f docker-compose.yml -f docker-compose.prod-overlay.yml down --remove-orphans
+    echo "Stopping Metagrid Production"
+    docker compose down --remove-orphans
 }
 
 function startLocalService() {

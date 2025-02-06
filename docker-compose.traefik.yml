@@ -5,30 +5,29 @@ volumes:
 
 services:
   traefik:
+    container_name: traefik-prod
     restart: unless-stopped
     build:
-      context: ./traefik
+      context: traefik
       dockerfile: Dockerfile
-      args:
-        host_name: example.com
-        frontend_prefix: ""
-        backend_prefix: frontend-config.js
     image: metagrid_production_traefik
     volumes:
       - production_traefik:/etc/traefik/acme
     ports:
       - "0.0.0.0:80:8080"
       - "0.0.0.0:443:443"
+
   postgres:
+    container_name: postgres-prod
     restart: unless-stopped
     build: postgres
-    image: metagrid_local_postgres
+    image: metagrid_production_postgres
     volumes:
       - local_postgres_data:/var/lib/postgresql/data
       - local_postgres_data_backups:/local_postgres_data_backups
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
-      PGHOST: localhost
+      PGHOST: postgres
       PGPASSWORD: postgres
       PGUSER: postgres
     ports:
@@ -41,23 +40,22 @@ services:
       retries: 6
 
   django:
+    container_name: django-prod
     restart: unless-stopped
     build: backend
-    image: metagrid_local_django
+    image: metagrid_production_django
     depends_on:
       postgres:
         condition: service_healthy
     volumes:
       - ./backend:/app
+    ports:
+      - 5000:5000
     environment:
-      PGHOST: localhost
+      PGHOST: postgres
       PGPASSWORD: postgres
       PGUSER: postgres
-      DOMAIN_NAME: example.com
-      DOMAIN_SUBDIRECTORY: ""
-      DJANGO_ALLOWED_HOSTS: '["example.com", "localhost"]'
       DJANGO_DEBUG: False
-      DJANGO_SECRET_KEY: ""
       DJANGO_EMAIL_BACKEND: "django.core.mail.backends.smtp.EmailBackend"
       DJANGO_SOCIAL_AUTH_REDIRECT_IS_HTTPS: True
       DJANGO_SECURE_PROXY_SSL_HEADER: '["HTTP_X_FORWARDED_PROTO", "https"]'
@@ -67,27 +65,14 @@ services:
       DJANGO_SECURE_HSTS_SECONDS: 518400
       DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS: True
       DJANGO_SECURE_HSTS_PRELOAD: True
-      METAGRID_SEARCH_URL: https://esgf-node.llnl.gov/esg-search/search
-      METAGRID_WGET_URL: https://esgf-node.llnl.gov/esg-search/wget
-      METAGRID_STATUS_URL: https://nimbus-dev.llnl.gov/metagrid-backend/proxy/status
-      METAGRID_SOLR_URL: https://esgf-node.llnl.gov/esg-search
-      METAGRID_SOCIAL_AUTH_GLOBUS_KEY: ""
-      METAGRID_SOCIAL_AUTH_GLOBUS_SECRET: ""
-      METAGRID_GLOBUS_CLIENT_ID: ""
-      METAGRID_AUTHENTICATION_METHOD: globus
-      METAGRID_FOOTER_TEXT: |
-        Privacy & Legal Notice: [https://www.llnl.gov/disclaimer.html](https://www.llnl.gov/disclaimer.html)    
-        Learn about the Department of Energy's Vulnerability Disclosure Program (VDP): 
-        [https://doe.responsibledisclosure.com/hc/en-us](https://doe.responsibledisclosure.com/hc/en-us)
-    ports:
-      - 5000:5000
 
   react:
+    container_name: react-prod
     restart: unless-stopped
     build:
       context: frontend
       target: prod
-    image: metagrid_local_react
+    image: metagrid_production_react
     environment:
       - PORT=8080
     depends_on:
@@ -97,4 +82,3 @@ services:
       - /app/node_modules
     ports:
       - 8080:8080
-
