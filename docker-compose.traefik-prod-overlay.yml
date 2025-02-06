@@ -11,10 +11,10 @@ services:
       DJANGO_SECRET_KEY: ""
       DJANGO_LOGIN_REDIRECT_URL: https://example.com/search
       DJANGO_LOGOUT_REDIRECT_URL: https://example.com/search
-      METAGRID_SEARCH_URL: https://esgf-node.llnl.gov/esg-search/search
-      METAGRID_WGET_URL: https://esgf-node.llnl.gov/esg-search/wget
+      METAGRID_SEARCH_URL: ""
+      METAGRID_WGET_URL: ""
       METAGRID_STATUS_URL: https://nimbus-dev.llnl.gov/metagrid-backend/proxy/status
-      METAGRID_SOLR_URL: https://esgf-node.llnl.gov/esg-search
+      METAGRID_SOLR_URL: ""
       METAGRID_SOCIAL_AUTH_GLOBUS_KEY: ""
       METAGRID_SOCIAL_AUTH_GLOBUS_SECRET: ""
       METAGRID_GLOBUS_CLIENT_ID: ""
