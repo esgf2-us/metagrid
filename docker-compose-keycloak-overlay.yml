@@ -1,0 +1,20 @@
+services:
+  django:
+    environment:
+      METAGRID_AUTHENTICATION_METHOD: keycloak
+      METAGRID_KEYCLOAK_URL: ""
+      METAGRID_KEYCLOAK_REALM: ""
+      METAGRID_KEYCLOAK_CLIENT_ID: ""
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0.6
+    depends_on:
+      - react
+    command: start-dev --import-realm
+    volumes:
+      - ./keycloak/realm.json:/opt/keycloak/data/import/realm.json
+    ports:
+      - 1337:8080
+    environment:
+      KEYCLOAK_USER: ""
+      KEYCLOAK_PASSWORD: ""

@@ -1,0 +1,33 @@
+volumes:
+  production_traefik: {}
+
+services:
+  traefik:
+    container_name: traefik-prod
+    image: metagrid_production_traefik
+    restart: unless-stopped
+    build:
+      context: traefik
+      dockerfile: Dockerfile
+    args:
+      host_name: esgf-dev1.llnl.gov
+    volumes:
+      - production_traefik:/etc/traefik/acme
+    ports:
+      - '0.0.0.0:80:8080'
+      - '0.0.0.0:443:443'
+
+  django:
+    network_mode: bridge
+    environment:
+      DOMAIN_NAME: example.com
+      DJANGO_ALLOWED_HOSTS: '["example.com", "localhost"]'
+      DJANGO_SECRET_KEY: ""
+      DJANGO_LOGIN_REDIRECT_URL: ""
+      DJANGO_LOGOUT_REDIRECT_URL: ""
+      METAGRID_GLOBUS_CLIENT_ID: ""
+      METAGRID_SOCIAL_AUTH_GLOBUS_KEY: ""
+      METAGRID_SOCIAL_AUTH_GLOBUS_SECRET: ""
+
+  react:
+    network_mode: bridge

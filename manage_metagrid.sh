@@ -11,43 +11,78 @@ set -e
 
 function startProductionService() {
     clear
-    echo "Choose production deployment type:"
-    echo "1 Standard"
-    echo "2 Traefik"
-    echo "3 Keycloak"
+    echo "Choose authentication method:"
+    echo "1 Globus"
+    echo "2 Keycloak"
+    read -r auth_choice
+
+    base_overlays="-f docker-compose.yml -f docker-compose-local-overlay.yml -f docker-compose-prod-overlay.yml"
+
+    case $auth_choice in
+    1)
+        auth_overlay=""
+        echo "Globus selected!"
+        ;;
+    2)
+        auth_overlay="-f docker-compose-keycloak-overlay.yml -f docker-compose-keycloak-prod-overlay.yml"
+        echo "Keycloak selected!"
+        ;;
+    *)
+        echo "Invalid choice. Please select 1 or 2."
+        startProductionService
+        return
+        ;;
+    esac
+    echo ""
+    echo "Choose deployment type:"
+    echo "1 Traefik"
+    echo "2 Local Site Ingress"
     read -r deployment_choice
 
     case $deployment_choice in
-        1)
-            echo "Starting Metagrid with Standard deployment"
-            docker compose -f docker-compose.yml -f docker-compose.prod-overlay.yml up --build -d
-            ;;
-        2)
-            echo "Starting Metagrid with Traefik deployment"
-            docker compose -f docker-compose.traefik.yml -f docker-compose.traefik-prod-overlay.yml up --build -d
-            ;;
-        3)
-            echo "Starting Metagrid with Keycloak deployment"
-            docker compose -f docker-compose.yml -f docker-compose.prod-overlay.yml -f docker-compose.keycloak-local-overlay.yml -f docker-compose.keycloak-prod-overlay.yml up --build -d
-            ;;
-        *)
-            echo "Invalid choice. Please select 1, 2, or 3."
-            startProductionService
-            ;;
+    1)
+        echo "Starting Metagrid with Traefik deployment"
+        docker compose $base_overlays $auth_overlay -f docker-compose-traefik-prod-overlay.yml up --build -d
+        ;;
+    2)
+        echo "Starting Metagrid with Standard deployment"
+        docker compose $base_overlays $auth_overlay -f docker-compose-site-ingress-overlay.yml up --build -d
+        ;;
+    *)
+        echo "Invalid choice. Please select 1 or 2."
+        startProductionService
+        ;;
     esac
 }
 
-function stopProductionService() {
-    echo "Stopping Metagrid Production"
-    docker compose down --remove-orphans
-}
-
 function startLocalService() {
-    echo "Starting Metagrid"
-    docker compose -f docker-compose.yml -f docker-compose.local-overlay.yml up --build -d
+    clear
+    echo "Choose local deployment auth method:"
+    echo "1 Globus"
+    echo "2 Keycloak"
+    read -r auth_choice
+
+    case $auth_choice in
+    1)
+        echo "Starting Metagrid with Globus auth"
+        docker compose -f docker-compose.yml -f docker-compose-local-overlay.yml up --build -d
+        echo "Command used:"
+        echo "docker compose -f docker-compose.yml -f docker-compose-local-overlay.yml up --build -d"
+        ;;
+    2)
+        echo "Starting Metagrid with Keycloak auth"
+        docker compose -f docker-compose.yml -f docker-compose-local-overlay.yml -f docker-compose-keycloak-overlay.yml up --build -d
+        echo "Command used:"
+        echo "docker compose -f docker-compose.yml -f docker-compose-local-overlay.yml -f docker-compose-keycloak-overlay.yml up --build -d"
+        ;;
+    *)
+        echo "Invalid choice. Please select 1 or 2."
+        startLocalService
+        ;;
+    esac
 }
 
-function stopLocalService() {
+function stopDockerContainers() {
     echo "Stopping Metagrid"
     docker compose down --remove-orphans
 }
@@ -55,8 +90,8 @@ function stopLocalService() {
 function toggleLocalContainers() {
     clear
     # If frontend container is up, stop all services
-    if docker ps -a --format '{{.Names}}' | grep "metagrid-react"; then
-        stopLocalService
+    if docker ps -a --format '{{.Names}}' | grep "react-local"; then
+        stopDockerContainers
     else
         # Otherwise stop any remaining services and start them up again
         startLocalService
@@ -72,9 +107,9 @@ function installPackagesForLocalDev() {
 
 function runMigrations() {
     clear
-    stopLocalService
-    docker compose -f docker-compose.yml -f docker-compose.local-overlay.yml run --rm django python manage.py migrate
-    stopLocalService
+    stopDockerContainers
+    docker compose -f docker-compose.yml -f docker-compose-local-overlay.yml run --rm django python manage.py migrate
+    stopDockerContainers
 }
 
 function runPreCommit() {
@@ -84,16 +119,16 @@ function runPreCommit() {
 
 function runBackendTests() {
     clear
-    stopLocalService
-    docker compose -f docker-compose.yml -f docker-compose.local-overlay.yml run --rm django pytest
-    stopLocalService
+    stopDockerContainers
+    docker compose -f docker-compose.yml -f docker-compose-local-overlay.yml run --rm django pytest
+    stopDockerContainers
 }
 
 function runFrontendTests() {
     clear
-    stopLocalService
-    docker compose -f docker-compose.yml -f docker-compose.local-overlay.yml run --rm react 'jest'
-    stopLocalService
+    stopDockerContainers
+    docker compose -f docker-compose.yml -f docker-compose-local-overlay.yml run --rm react 'jest'
+    stopDockerContainers
 }
 
 function configureLocal() {
@@ -105,7 +140,7 @@ function configureLocal() {
 function mainMenu() {
     echo "Main Menu Options:"
     echo "1 Start Metagrid - Production"
-    echo "2 Stop Metagrid - Production"
+    echo "2 Stop Metagrid Containers"
     echo "3 Start / Stop Local Dev Containers"
     echo "4 Run pre-commit and tests"
     echo "5 Developer Actions"
@@ -118,16 +153,13 @@ function mainMenu() {
     else
         if [ "$option" = "1" ]; then
             startProductionService
-            clear
-            mainMenu
+            return 0
         elif [ "$option" = "2" ]; then
-            stopProductionService
-            clear
-            mainMenu
+            stopDockerContainers
+            return 0
         elif [ "$option" = "3" ]; then
             toggleLocalContainers
-            clear
-            mainMenu
+            return 0
         elif [ "$option" = "4" ]; then
             clear
             runPreCommit && runBackendTests && runFrontendTests && echo "All tests passed!"

@@ -1,21 +1,24 @@
 services:
   postgres:
+    container_name: postgres-prod
+    image: metagrid_production_postgres
     restart: unless-stopped
     environment:
-      POSTGRES_HOST_AUTH_METHOD: ""
-      PGPASSWORD: ""
-      PGUSER: ""
+      POSTGRES_HOST_AUTH_METHOD: trust
+      PGHOST: postgres
+      PGPASSWORD: postgres
+      PGUSER: postgres
 
   django:
+    container_name: django-prod
+    image: metagrid_production_django
     restart: unless-stopped
     environment:
-      DOMAIN_NAME: example.com
-      DJANGO_SECRET_KEY: ""
-      DJANGO_ALLOWED_HOSTS: '["example.com", "localhost"]'
-      DJANGO_LOGIN_REDIRECT_URL: https://example.com/search
-      DJANGO_LOGOUT_REDIRECT_URL: https://example.com/search
+      PGHOST: postgres
+      PGPASSWORD: postgres
+      PGUSER: postgres
       DJANGO_DEBUG: False
-      DJANGO_EMAIL_BACKEND: "django.core.mail.backends.smtp.EmailBackend"
+      DJANGO_EMAIL_BACKEND: 'django.core.mail.backends.smtp.EmailBackend'
       DJANGO_SOCIAL_AUTH_REDIRECT_IS_HTTPS: True
       DJANGO_SECURE_PROXY_SSL_HEADER: '["HTTP_X_FORWARDED_PROTO", "https"]'
       DJANGO_SECURE_SSL_REDIRECT: True
@@ -26,6 +29,8 @@ services:
       DJANGO_SECURE_HSTS_PRELOAD: True
 
   react:
+    container_name: react-prod
+    image: metagrid_production_react
     build:
       # The prod build target includes a production ready nginx server
       target: prod

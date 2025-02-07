@@ -1,4 +1,11 @@
 services:
+
+  django:
+    environment:
+      METAGRID_KEYCLOAK_URL: ""
+      METAGRID_KEYCLOAK_REALM: ""
+      METAGRID_KEYCLOAK_CLIENT_ID: ""
+
   keycloak:
     command: start
     volumes: []
