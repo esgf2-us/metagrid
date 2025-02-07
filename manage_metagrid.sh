@@ -16,8 +16,6 @@ function startProductionService() {
     echo "2 Keycloak"
     read -r auth_choice
 
-    base_overlays="-f docker-compose.yml -f docker-compose-local-overlay.yml -f docker-compose-prod-overlay.yml"
-
     case $auth_choice in
     1)
         auth_overlay=""
@@ -39,14 +37,17 @@ function startProductionService() {
     echo "2 Local Site Ingress"
     read -r deployment_choice
 
+    base_network_host_off="-f docker-compose.yml -f docker-compose-prod-overlay.yml"
+    base_network_host_on="-f docker-compose.yml -f docker-compose-local-overlay.yml -f docker-compose-prod-overlay.yml"
+
     case $deployment_choice in
     1)
         echo "Starting Metagrid with Traefik deployment"
-        docker compose $base_overlays $auth_overlay -f docker-compose-traefik-prod-overlay.yml up --build -d
+        docker compose $base_network_host_off $auth_overlay -f docker-compose-traefik-prod-overlay.yml up --build -d
         ;;
     2)
         echo "Starting Metagrid with Standard deployment"
-        docker compose $base_overlays $auth_overlay -f docker-compose-site-ingress-overlay.yml up --build -d
+        docker compose $base_network_host_on -f docker-compose-site-ingress-overlay.yml up --build -d
         ;;
     *)
         echo "Invalid choice. Please select 1 or 2."

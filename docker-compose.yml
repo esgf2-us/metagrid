@@ -18,7 +18,7 @@ services:
     ports:
       - 5432:5432
     healthcheck:
-      test: ['CMD', 'pg_isready', '-U', 'postgres', '-d', 'postgres']
+      test: [ 'CMD', 'pg_isready', '-U', 'postgres', '-d', 'postgres' ]
       start_period: 5s
       interval: 5s
       timeout: 2s
@@ -38,7 +38,6 @@ services:
       PGPASSWORD: postgres
       PGUSER: postgres
       METAGRID_AUTHENTICATION_METHOD: globus
-    network_mode: host
     ports:
       - 5000:5000
 
@@ -55,7 +54,6 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
-    network_mode: host
     ports:
       - 8080:8080
 

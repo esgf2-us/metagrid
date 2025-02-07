@@ -7,6 +7,7 @@ services:
       METAGRID_KEYCLOAK_CLIENT_ID: ""
 
   keycloak:
+    container_name: keycloak-local
     image: quay.io/keycloak/keycloak:23.0.6
     depends_on:
       - react

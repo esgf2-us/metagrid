@@ -9,8 +9,8 @@ services:
     build:
       context: traefik
       dockerfile: Dockerfile
-    args:
-      host_name: esgf-dev1.llnl.gov
+      args:
+        host_name: example.com
     volumes:
       - production_traefik:/etc/traefik/acme
     ports:
@@ -18,16 +18,18 @@ services:
       - '0.0.0.0:443:443'
 
   django:
-    network_mode: bridge
     environment:
       DOMAIN_NAME: example.com
       DJANGO_ALLOWED_HOSTS: '["example.com", "localhost"]'
       DJANGO_SECRET_KEY: ""
       DJANGO_LOGIN_REDIRECT_URL: ""
       DJANGO_LOGOUT_REDIRECT_URL: ""
+      METAGRID_SEARCH_URL: ""
+      METAGRID_WGET_URL: ""
+      METAGRID_STATUS_URL: https://nimbus-dev.llnl.gov/metagrid-backend/proxy/status
+      METAGRID_SOLR_URL: ""
       METAGRID_GLOBUS_CLIENT_ID: ""
       METAGRID_SOCIAL_AUTH_GLOBUS_KEY: ""
       METAGRID_SOCIAL_AUTH_GLOBUS_SECRET: ""
-
-  react:
-    network_mode: bridge
+      METAGRID_FOOTER_TEXT: |
+        Custom Footer Markdown Here

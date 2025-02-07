@@ -37,4 +37,5 @@ services:
     restart: unless-stopped
 
   docs:
+    container_name: docs-prod
     restart: unless-stopped

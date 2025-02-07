@@ -7,6 +7,7 @@ services:
       METAGRID_KEYCLOAK_CLIENT_ID: ""
 
   keycloak:
+    container_name: keycloak-prod
     command: start
     volumes: []
     restart: unless-stopped

@@ -1,5 +1,6 @@
 services:
   django:
+    network_mode: host
     environment:
       METAGRID_SEARCH_URL: ""
       METAGRID_WGET_URL: ""
@@ -10,3 +11,6 @@ services:
       METAGRID_SOCIAL_AUTH_GLOBUS_SECRET: ""
       METAGRID_FOOTER_TEXT: |
         Custom Footer Markdown Here
+
+  react:
+    network_mode: host
