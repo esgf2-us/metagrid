@@ -4,7 +4,7 @@ This page provides a high-level overview of the project architecture.
 
 ## Overview
 
-The project repo is a mono-repo split up between directories for the `/frontend`, `/backend`, `/traefik`, and `/docs`. Each directory contains its own microservice(s). The `/traefik` directory is intended for deployment in a production environment.
+The project repo is a mono-repo split up between directories for the `/frontend`, `/backend`, `/traefik`, and `/docs`. Each directory contains its own microservice(s).
 
 **Why a mono-repo?**
 
@@ -44,8 +44,8 @@ MetaGrid's Django REST Framework back-end serves REST APIs, which send and recei
 
 ### Traefik
 
-Traefik is a modern HTTP reverse proxy and load balancer that makes deploying microservices easy. Traefik is used in the production deployment of MetaGrid.
+Traefik is a modern HTTP reverse proxy and load balancer that makes deploying microservices easy.
 
 ### Docs
 
-Stores document related files for the entire project using Markdown and MkDocs.
+Stores documentation related files for the entire project using Markdown and MkDocs.

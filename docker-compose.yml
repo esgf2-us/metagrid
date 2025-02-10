@@ -32,12 +32,11 @@ services:
     volumes:
       - ./backend:/app
     environment:
-      PGHOST: localhost
+      PGHOST: postgres
       PGPASSWORD: postgres
       PGUSER: postgres
     ports:
       - 5000:5000
-    network_mode: host
 
   react:
     build:
@@ -51,7 +50,6 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
-    network_mode: host
     ports:
       - 8080:8080
 
@@ -75,3 +73,17 @@ services:
       - ./docs:/docs
     ports:
       - "8001:8001"
+
+  traefik:
+    image: traefik:latest
+    depends_on:
+      - react
+      - django
+      - docs
+    volumes:
+      - ./traefik/traefik.yaml:/etc/traefik/traefik.yaml
+    environment:
+      HOST_DOMAIN: localhost
+    ports:
+      - "9080:9080"
+      - "9443:9443"

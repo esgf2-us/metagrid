@@ -18,7 +18,6 @@ services:
       METAGRID_SEARCH_URL: https://esgf-node.llnl.gov/esg-search/search
       METAGRID_WGET_URL: https://esgf-node.llnl.gov/esg-search/wget
       METAGRID_STATUS_URL: https://esgf-node.llnl.gov/proxy/status
-      METAGRID_SOLR_URL: https://esgf-node.llnl.gov/esg-search
       METAGRID_SOCIAL_AUTH_GLOBUS_KEY: 94c44808-9efd-4236-bffd-1185b1071736
       METAGRID_SOCIAL_AUTH_GLOBUS_SECRET: 34364292-2752-4d5e-8295
 ```
@@ -28,11 +27,31 @@ Now that you have your site overlay file created, you'll use it and the provided
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.prod-overlay.yml -f docker-compose.SITENAME-overlay.yml up
 ```
-With the stack running in production mode, you should be able to access the frontend at <http://localhost:8080>
+With the stack running in production mode, you should be able to access the frontend at <http://localhost:9080>
 
 ## Exposing it to the outside world
 
-TODO: Instructions for reverse proxying and cert configuration
+You can use the provided Traefik configuration to serve as a reverse proxy and provide a Let's Encrypt certificate (provided you have a public DNS entry pointed to port 80 on the machine running the stack that Let's Encrypt can use to verify control of the domain).
+
+Modify your site overlay to set the HOST_DOMAIN environment variable and service ports for Traefik:
+```yaml
+services:
+  django:
+    environment:
+      METAGRID_SEARCH_URL: https://esgf-node.llnl.gov/esg-search/search
+      METAGRID_WGET_URL: https://esgf-node.llnl.gov/esg-search/wget
+      METAGRID_STATUS_URL: https://esgf-node.llnl.gov/proxy/status
+      METAGRID_SOCIAL_AUTH_GLOBUS_KEY: 94c44808-9efd-4236-bffd-1185b1071736
+      METAGRID_SOCIAL_AUTH_GLOBUS_SECRET: 34364292-2752-4d5e-8295
+  traefik:
+    environment:
+      HOST_DOMAIN: my-domain.com
+    ports:
+    - 80:9080
+    - 443:9443
+```
+
+And Traefik should now be serving on 80 and 443
 
 ## Helpful Commands
 
