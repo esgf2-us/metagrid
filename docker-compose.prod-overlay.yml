@@ -1,3 +1,6 @@
+volumes:
+  traefik_certs: {}
+
 services:
   postgres:
     restart: unless-stopped
@@ -37,3 +40,9 @@ services:
 
   docs:
     restart: unless-stopped
+
+  traefik:
+    restart: unless-stopped
+    volumes:
+      - traefik_certs:/etc/traefik/acme
+      - ./traefik/traefik.yaml:/etc/traefik/traefik.yaml
