@@ -305,9 +305,7 @@ SIMPLE_JWT = {
 # https://django-allauth.readthedocs.io/en/latest/providers.html#keycloak
 SOCIALACCOUNT_PROVIDERS = {
     "keycloak": {
-        "KEYCLOAK_URL": env(
-            "KEYCLOAK_URL", default="http://localhost:1337"
-        ),
+        "KEYCLOAK_URL": env("KEYCLOAK_URL", default="http://localhost:1337"),
         "KEYCLOAK_REALM": env("KEYCLOAK_REALM", default="metagrid"),
     },
 }

@@ -1,6 +1,6 @@
 # Constants
-LOCAL_COMPOSE="-f docker-compose.yml -f docker-compose.local-overlay.yml"
-PROD_COMPOSE="-f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.prod-overlay.yml"
+LOCAL_COMPOSE="-f docker-compose.yml -f docker-compose-local-overlay.yml"
+PROD_COMPOSE="-f docker-compose.yml -f docker-compose.prod.yml -f docker-compose-prod-overlay.yml"
 KEYCLOAK_COMPOSE="-f docker-compose.keycloak.yml"
 
 set -e
@@ -59,7 +59,7 @@ function startLocalService() {
 
 function stopDockerContainers() {
     echo "Stopping Metagrid"
-    docker compose down --remove-orphans
+    docker compose --profile "*" down --remove-orphans
 }
 
 function toggleLocalContainers() {
@@ -83,7 +83,7 @@ function installPackagesForLocalDev() {
 function runMigrations() {
     clear
     stopDockerContainers
-    docker compose -f docker-compose.yml -f docker-compose-local-overlay.yml run --rm django python manage.py migrate
+    docker compose $LOCAL_COMPOSE run --rm django python manage.py migrate
     stopDockerContainers
 }
 
@@ -95,15 +95,15 @@ function runPreCommit() {
 function runBackendTests() {
     clear
     stopDockerContainers
-    docker compose -f docker-compose.yml -f docker-compose-local-overlay.yml run --rm django pytest
+    docker compose $LOCAL_COMPOSE --profile local run --rm django pytest
     stopDockerContainers
 }
 
 function runFrontendTests() {
     clear
-    stopDockerContainers
-    docker compose -f docker-compose.yml -f docker-compose-local-overlay.yml run --rm react 'jest'
-    stopDockerContainers
+    cd frontend
+    yarn run test
+    cd ..
 }
 
 function configureLocal() {
