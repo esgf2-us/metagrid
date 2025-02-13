@@ -17,10 +17,14 @@ function startProductionService() {
     1)
         echo "Starting Metagrid production deployment with Globus"
         docker compose $PROD_COMPOSE up --build -d
+        echo "Command used:"
+        echo "docker compose $PROD_COMPOSE up --build -d"
         ;;
     2)
         echo "Starting Metagrid production deployment with Keycloak"
         docker compose $PROD_COMPOSE $KEYCLOAK_COMPOSE --profile keycloak up --build -d
+        echo "Command used:"
+        echo "docker compose $PROD_COMPOSE $KEYCLOAK_COMPOSE --profile keycloak up --build -d"
         ;;
     *)
         echo "Invalid choice. Please select 1 or 2."
@@ -40,15 +44,15 @@ function startLocalService() {
     case $auth_choice in
     1)
         echo "Starting Metagrid with Globus auth"
-        docker compose $LOCAL_COMPOSE --profile local up --build -d
+        docker compose $LOCAL_COMPOSE --profile docs up --build -d
         echo "Command used:"
-        echo "docker compose $LOCAL_COMPOSE --profile local up --build -d"
+        echo "docker compose $LOCAL_COMPOSE --profile docs up --build -d"
         ;;
     2)
         echo "Starting Metagrid with Keycloak auth"
-        docker compose $LOCAL_COMPOSE $KEYCLOAK_COMPOSE --profile local --profile keycloak up --build -d
+        docker compose $LOCAL_COMPOSE $KEYCLOAK_COMPOSE --profile docs --profile keycloak up --build -d
         echo "Command used:"
-        echo "docker compose $LOCAL_COMPOSE $KEYCLOAK_COMPOSE --profile local --profile keycloak up --build -d"
+        echo "docker compose $LOCAL_COMPOSE $KEYCLOAK_COMPOSE --profile docs --profile keycloak up --build -d"
         ;;
     *)
         echo "Invalid choice. Please select 1 or 2."
@@ -135,7 +139,7 @@ function mainMenu() {
             mainMenu
         elif [ "$option" = "3" ]; then
             toggleLocalContainers
-            mainMenu
+            return 0
         elif [ "$option" = "4" ]; then
             clear
             runPreCommit && runBackendTests && runFrontendTests && echo "All tests passed!"

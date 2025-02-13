@@ -6,7 +6,7 @@ services:
     restart: unless-stopped
     volumes:
       - traefik_certs:/etc/traefik/acme
-      - ./traefik/prod_traefik.yml:/etc/traefik/traefik.yml
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml
     ports:
       - "0.0.0.0:80:9080"
       - "0.0.0.0:443:9443"
@@ -29,6 +29,12 @@ services:
       DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS: True
       DJANGO_SECURE_HSTS_PRELOAD: True
 
+  react:
+    build:
+      # The prod build target includes a production ready nginx server
+      target: prod
+    restart: unless-stopped
+
   keycloak:
     profiles: [ "keycloak" ]
     command: start
@@ -37,9 +43,3 @@ services:
     environment:
       KEYCLOAK_USER: ""
       KEYCLOAK_PASSWORD: ""
-
-  react:
-    build:
-      # The prod build target includes a production ready nginx server
-      target: prod
-    restart: unless-stopped

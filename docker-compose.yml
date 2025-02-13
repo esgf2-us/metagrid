@@ -8,12 +8,22 @@ services:
     container_name: traefik
     image: traefik:3.3
     volumes:
-      - ./traefik/local_traefik.yml:/etc/traefik/traefik.yml
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml
     environment:
       HOST_DOMAIN: localhost
     ports:
       - "9080:9080"
       - "9443:9443"
+
+  docs:
+    container_name: docs
+    profiles: [ "docs" ]
+    build: docs
+    image: metagrid_local_docs
+    volumes:
+      - ./docs:/docs
+    ports:
+      - "8001:8001"
 
   postgres:
     container_name: postgres
@@ -71,12 +81,20 @@ services:
     ports:
       - 8080:8080
 
-  docs:
-    container_name: docs
-    profiles: [ "local" ]
-    build: docs
-    image: metagrid_local_docs
+  keycloak:
+    profiles: [ "keycloak" ]
+    image: quay.io/keycloak/keycloak:26.1.2
+    depends_on:
+      - react
+    command: start-dev --import-realm
     volumes:
-      - ./docs:/docs
+      - ./keycloak/realm.json:/opt/keycloak/data/import/realm.json
     ports:
-      - "8001:8001"
+      - 1337:8080
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KEYCLOAK_CLIENT_ID: metagrid-localhost
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+      KC_HOSTNAME: localhost
