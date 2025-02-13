@@ -13,10 +13,6 @@ services:
 
   postgres:
     restart: unless-stopped
-    environment:
-      POSTGRES_HOST_AUTH_METHOD: ""
-      PGPASSWORD: ""
-      PGUSER: ""
 
   django:
     restart: unless-stopped

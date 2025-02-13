@@ -1,6 +1,6 @@
 # Constants
-LOCAL_COMPOSE="-f docker-compose.yml -f docker-compose-local-overlay.yml"
-PROD_COMPOSE="-f docker-compose.yml -f docker-compose.prod.yml -f docker-compose-prod-overlay.yml"
+LOCAL_COMPOSE="-f docker-compose.yml -f docker-compose.local-overlay.yml"
+PROD_COMPOSE="-f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.prod-overlay.yml"
 KEYCLOAK_COMPOSE="-f docker-compose.keycloak.yml"
 
 set -e
@@ -15,12 +15,12 @@ function startProductionService() {
 
     case $auth_choice in
     1)
-        auth_overlay=""
-        echo "Globus selected!"
+        echo "Starting Metagrid production deployment with Globus"
+        docker compose $PROD_COMPOSE up --build -d
         ;;
     2)
-        auth_overlay=$KEYCLOAK_COMPOSE
-        echo "Keycloak selected!"
+        echo "Starting Metagrid production deployment with Keycloak"
+        docker compose $PROD_COMPOSE $KEYCLOAK_COMPOSE --profile keycloak up --build -d
         ;;
     *)
         echo "Invalid choice. Please select 1 or 2."
@@ -28,9 +28,6 @@ function startProductionService() {
         return
         ;;
     esac
-
-    echo "Starting Metagrid production deployment"
-    docker compose $PROD_COMPOSE $auth_overlay up --build -d
 }
 
 function startLocalService() {
@@ -43,15 +40,15 @@ function startLocalService() {
     case $auth_choice in
     1)
         echo "Starting Metagrid with Globus auth"
-        docker compose $LOCAL_COMPOSE up --build -d
+        docker compose $LOCAL_COMPOSE --profile local up --build -d
         echo "Command used:"
-        echo "docker compose $LOCAL_COMPOSE up --build -d"
+        echo "docker compose $LOCAL_COMPOSE --profile local up --build -d"
         ;;
     2)
         echo "Starting Metagrid with Keycloak auth"
         docker compose $LOCAL_COMPOSE $KEYCLOAK_COMPOSE --profile local --profile keycloak up --build -d
         echo "Command used:"
-        echo "docker compose -f docker-compose.yml -f docker-compose.keycloak.yml -f docker-compose-local-overlay.yml --profile keycloak up --build -d"
+        echo "docker compose $LOCAL_COMPOSE $KEYCLOAK_COMPOSE --profile local --profile keycloak up --build -d"
         ;;
     *)
         echo "Invalid choice. Please select 1 or 2."

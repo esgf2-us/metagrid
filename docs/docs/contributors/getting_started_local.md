@@ -126,7 +126,7 @@ This user will be used for logging into registered Keycloak clients, including t
 
 ### 3.3 Accessible Services
 
-- Frontend: <http://localhost:9080>
+- Frontend: <http://localhost:9443>
 - Keycloak: <http://localhost:1337>
 - Docs: <http://localhost:8001>
 
@@ -174,7 +174,7 @@ docker compose up --build
 
 ### 4.2 Accessible Services
 
-- React: `localhost:9080`
+- React: `localhost:9443`
 
 ---
 

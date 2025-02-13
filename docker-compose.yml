@@ -24,11 +24,13 @@ services:
       - local_postgres_data_backups:/local_postgres_data_backups
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
-      PGHOST: localhost
+      PGHOST: postgres
       PGPASSWORD: postgres
       PGUSER: postgres
     ports:
       - 5432:5432
+    depends_on:
+      - traefik
     healthcheck:
       test: [ "CMD", "pg_isready", "-U", "postgres", "-d", "postgres" ]
       start_period: 5s

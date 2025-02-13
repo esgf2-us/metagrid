@@ -1,6 +1,6 @@
 # Getting Started for Production
 
-While the stack runs out of the box, there are some settings you'll want to change before moving to production. All of these settings can be configured through environment variables. The easiest way to set these is through docker compose overlay files. The repository contains one such file: `docker-compose.prod-overlay.yml`. This production overlay blanks out a few unsafe settings used for development in order to ensure that they are properly configured in production. You'll create another overlay file with your own settings to be merged in with the production overlay and default settings at run time.
+While the stack runs out of the box, there are some settings you'll want to change before moving to production. All of these settings can be configured through environment variables. The easiest way to set these is through docker compose overlay files. The repository contains one such file: `docker-compose.prod.yml`. This production overlay blanks out a few unsafe settings used for development in order to ensure that they are properly configured in production. You'll create another overlay file with your own settings to be merged in with the production overlay and default settings at run time.
 
 ## Creating your site overlay file
 
@@ -25,9 +25,9 @@ services:
 
 Now that you have your site overlay file created, you'll use it and the provided Production overlay to bring the stack online:
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.prod-overlay.yml -f docker-compose.SITENAME-overlay.yml up
+docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.SITENAME-overlay.yml up
 ```
-With the stack running in production mode, you should be able to access the frontend at <http://localhost:9080>
+With the stack running in production mode, you should be able to access the frontend at <http://localhost:9443>
 
 ## Exposing it to the outside world
 
