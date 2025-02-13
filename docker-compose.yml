@@ -16,8 +16,8 @@ services:
       - "9443:9443"
 
   postgres:
-    build: postgres
     container_name: postgres
+    build: postgres
     image: metagrid_local_postgres
     volumes:
       - local_postgres_data:/var/lib/postgresql/data
@@ -32,15 +32,15 @@ services:
     depends_on:
       - traefik
     healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "postgres", "-d", "postgres" ]
+      test: [ 'CMD', 'pg_isready', '-U', 'postgres', '-d', 'postgres' ]
       start_period: 5s
       interval: 5s
       timeout: 2s
       retries: 6
 
   django:
-    build: backend
     container_name: django
+    build: backend
     image: metagrid_local_django
     depends_on:
       postgres:
@@ -56,10 +56,10 @@ services:
       - 5000:5000
 
   react:
+    container_name: react
     build:
       context: frontend
       target: build
-    container_name: react
     image: metagrid_local_react
     environment:
       - PORT=8080
@@ -72,9 +72,9 @@ services:
       - 8080:8080
 
   docs:
+    container_name: docs
     profiles: [ "local" ]
     build: docs
-    container_name: docs
     image: metagrid_local_docs
     volumes:
       - ./docs:/docs

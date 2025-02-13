@@ -13,7 +13,7 @@
 }
 
 #body-layout.ant-layout {
-  min-height: calc(100vh - 72px);
+  min-height: calc(100vh - 68px);
 }
 
 .footerMarkdown p {

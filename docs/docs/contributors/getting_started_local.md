@@ -72,7 +72,7 @@ pip install -r requirements/local.txt
 pre-commit install
 ```
 
-**Note: any update to `.pre-commit.config.yaml` requires a reinstallation of the hooks**
+**Note: any update to `.pre-commit.config.yml` requires a reinstallation of the hooks**
 
 ### 2.3 Helpful Commands
 

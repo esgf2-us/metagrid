@@ -1,0 +1,35 @@
+services:
+
+  traefik:
+    environment:
+      HOST_DOMAIN: esgf-dev1.llnl.gov
+
+  django:
+    environment:
+      DOMAIN_NAME: esgf-dev1.llnl.gov
+      DJANGO_ALLOWED_HOSTS: '["esgf-dev1.llnl.gov", "198.128.245.131", "localhost"]'
+      DJANGO_SECRET_KEY: RxPYuuqUmCK2VHHwyqab7tt7PrL-ktuGmOPncb_wwFM
+      DJANGO_LOGIN_REDIRECT_URL: https://esgf-dev1.llnl.gov/search
+      DJANGO_LOGOUT_REDIRECT_URL: https://esgf-dev1.llnl.gov/search
+
+      METAGRID_KEYCLOAK_URL: https://esgf-login.ceda.ac.uk/
+      METAGRID_KEYCLOAK_REALM: esgf
+      METAGRID_KEYCLOAK_CLIENT_ID: esgf-dev1-metagrid
+
+      METAGRID_SEARCH_URL: https://esgf-node.llnl.gov/esg-search/search
+      METAGRID_WGET_URL: https://esgf-node.llnl.gov/esg-search/wget
+      METAGRID_STATUS_URL: https://nimbus-dev.llnl.gov/metagrid-backend/proxy/status
+      METAGRID_SOLR_URL: https://esgf-node.llnl.gov/esg-search
+      METAGRID_GLOBUS_CLIENT_ID: 7fa7ac4a-a051-4b26-836f-b292b5c5b268
+      METAGRID_SOCIAL_AUTH_GLOBUS_KEY: e53b4d70-745a-4cc0-a881-4ffead6679ff
+      METAGRID_SOCIAL_AUTH_GLOBUS_SECRET: Rvs7z5gNhs7/L2ZWJEFbyY5YnvvfWUq75kh3fPF7A6k=
+      METAGRID_FOOTER_TEXT: |
+        Privacy & Legal Notice: [https://www.llnl.gov/disclaimer.html](https://www.llnl.gov/disclaimer.html)    
+        Learn about the Department of Energy's Vulnerability Disclosure Program (VDP): 
+        [https://doe.responsibledisclosure.com/hc/en-us](https://doe.responsibledisclosure.com/hc/en-us)
+
+  keycloak:
+    profiles: [ "keycloak" ]
+    environment:
+      KEYCLOAK_USER: ""
+      KEYCLOAK_PASSWORD: ""
