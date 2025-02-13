@@ -2,62 +2,65 @@ log:
   level: INFO
 
 entryPoints:
-  http:
+  web:
+    # http
     address: ':9080'
 
-  https:
+  web-secure:
+    # https
     address: ':9443'
-
-certificatesResolvers:
-  letsencrypt:
-    # https://docs.traefik.io/master/https/acme/#lets-encrypt
-    acme:
-      email: ''
-      storage: /etc/traefik/acme/acme.json
-      # https://docs.traefik.io/master/https/acme/#httpchallenge
-      httpChallenge:
-        entryPoint: http
 
 http:
   routers:
     backend:
       service: django
       rule: >-
-        Host(`{{ env "HOST_DOMAIN" }}`) &&     (
-          PathPrefix(`/frontend-config.js`)    ||
-          PathPrefix(`/api`)                   ||
-          PathPrefix(`/accounts`)              ||
-          PathPrefix(`/account-confirm-email`) ||
-          PathPrefix(`/proxy`)                 ||
-          PathPrefix(`/tempStorage`)           ||
-          PathPrefix(`/login`)                 ||
-          PathPrefix(`/complete`)              ||
-          PathPrefix(`/globus`)                )
-
+        Host(`{{ env "HOST_DOMAIN" }}`) &&   (
+        PathPrefix(`/account-confirm-email`) ||
+        PathPrefix(`/accounts`)              ||
+        PathPrefix(`/api`)                   ||
+        PathPrefix(`/complete`)              ||
+        PathPrefix(`/frontend-config.js`)    ||
+        PathPrefix(`/globus`)                ||
+        PathPrefix(`/login`)                 ||
+        PathPrefix(`/proxy`)                 ||
+        PathPrefix(`/redoc`)                 ||
+        PathPrefix(`/swagger`)               ||
+        PathPrefix(`/tempStorage`)            )
       entryPoints:
-        - http
-        - https
+        - web
+
+    backend-secure:
+      service: django
+      rule: >-
+        Host(`{{ env "HOST_DOMAIN" }}`) &&   (
+        PathPrefix(`/account-confirm-email`) ||
+        PathPrefix(`/accounts`)              ||
+        PathPrefix(`/api`)                   ||
+        PathPrefix(`/complete`)              ||
+        PathPrefix(`/frontend-config.js`)    ||
+        PathPrefix(`/globus`)                ||
+        PathPrefix(`/login`)                 ||
+        PathPrefix(`/proxy`)                 ||
+        PathPrefix(`/redoc`)                 ||
+        PathPrefix(`/swagger`)               ||
+        PathPrefix(`/tempStorage`)            )
+      entryPoints:
+        - web-secure
 
     frontend:
       service: react
       rule: >-
         Host(`{{ env "HOST_DOMAIN" }}`) && PathPrefix(`/`)
-
       entryPoints:
-        - https
-      middlewares:
-        - secure-headers
+        - web
 
-  middlewares:
-    secure-headers:
-      # https://doc.traefik.io/traefik/middlewares/headers/#stsseconds
-      # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security
-      headers:
-        stsPreload: true
-        stsIncludeSubdomains: true
-        stsSeconds: 31536000
-        forceSTSHeader: true
-
+    frontend-secure:
+      service: react
+      rule: >-
+        Host(`{{ env "HOST_DOMAIN" }}`) && PathPrefix(`/`)
+      entryPoints:
+        - web-secure
   services:
     django:
       loadBalancer:
@@ -72,15 +75,4 @@ providers:
   # https://docs.traefik.io/master/providers/file/
   file:
     filename: /etc/traefik/traefik.yml
-
-tls:
-  options:
-    default:
-      minVersion: VersionTLS12
-      cipherSuites:
-        - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
-        - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
-        - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
-        - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-        - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
-        - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305
+    watch: true

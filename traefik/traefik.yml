@@ -23,6 +23,7 @@ certificatesResolvers:
 http:
   routers:
     backend:
+      service: django
       rule: >-
         Host(`{{ env "HOST_DOMAIN" }}`) &&   (
         PathPrefix(`/account-confirm-email`) ||
@@ -36,15 +37,14 @@ http:
         PathPrefix(`/redoc`)                 ||
         PathPrefix(`/swagger`)               ||
         PathPrefix(`/tempStorage`)            )
-
       entryPoints:
         - web
       middlewares:
         - redirect
         - csrf
-      service: django
 
     backend-secure:
+      service: django
       rule: >-
         Host(`{{ env "HOST_DOMAIN" }}`) &&   (
         PathPrefix(`/account-confirm-email`) ||
@@ -58,24 +58,17 @@ http:
         PathPrefix(`/redoc`)                 ||
         PathPrefix(`/swagger`)               ||
         PathPrefix(`/tempStorage`)            )
-
       entryPoints:
         - web-secure
       middlewares:
         - csrf
         - secure-headers
-      service: django
-      # If HOST_DOMAIN is left at localhost, obviously the cert issuance from
-      # Let's Encrypt will fail. What isn't obvious is that this will cause the
-      # route to return 404 even though it would otherwise work fine. To address
-      # that, we only set the tls certResolver if HOST_DOMAIN has been set
-      # {{ if not (eq (env "HOST_DOMAIN") "localhost") }}
-      # tls:
-      #   certResolver: "letsencrypt"
-      # {{ end }}
-      # https://docs.traefik.io/master/routing/routers/#certresolver
+      tls:
+        # https://docs.traefik.io/master/routing/routers/#certresolver
+        certResolver: letsencrypt
 
     frontend:
+      service: react
       rule: >-
         Host(`{{ env "HOST_DOMAIN" }}`) && PathPrefix(`/`)
 
@@ -83,9 +76,9 @@ http:
         - web
       middlewares:
         - redirect
-      service: react
 
     frontend-secure:
+      service: react
       rule: >-
         Host(`{{ env "HOST_DOMAIN" }}`) && PathPrefix(`/`)
 
@@ -93,26 +86,15 @@ http:
         - web-secure
       middlewares:
         - secure-headers
-      service: react
-      # If HOST_DOMAIN is left at localhost, obviously the cert issuance from
-      # Let's Encrypt will fail. What isn't obvious is that this will cause the
-      # route to return 404 even though it would otherwise work fine. To address
-      # that, we only set the tls certResolver if HOST_DOMAIN has been set
-      # {{ if not (eq (env "HOST_DOMAIN") "localhost") }}
-      # tls:
-      #   certResolver: "letsencrypt"
-      # {{ end }}
-      # https://docs.traefik.io/master/routing/routers/#certresolver
+      tls:
+        # https://docs.traefik.io/master/routing/routers/#certresolver
+        certResolver: letsencrypt
   middlewares:
-    # {{ if not (eq (env "HOST_DOMAIN") "localhost") }}
-    # redirect:
-    #   # https://docs.traefik.io/master/middlewares/redirectscheme/
-    #   redirectScheme:
-    #     scheme: https
-    #     permanent: true
-    # {{ end }}
-    # https://docs.traefik.io/master/routing/routers/#certresolver
-
+    redirect:
+      # https://docs.traefik.io/master/middlewares/redirectscheme/
+      redirectScheme:
+        scheme: https
+        permanent: true
     secure-headers:
       # https://doc.traefik.io/traefik/middlewares/headers/#stsseconds
       # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security

@@ -1,7 +1,9 @@
 # Constants
-LOCAL_COMPOSE="-f docker-compose.yml -f docker-compose-local-overlay.yml"
-PROD_COMPOSE="-f docker-compose.yml -f docker-compose.prod.yml -f docker-compose-prod-overlay.yml"
+LOCAL_COMPOSE="-f docker-compose.yml"
+PROD_COMPOSE="-f docker-compose.yml -f docker-compose.prod.yml"
 KEYCLOAK_COMPOSE="-f docker-compose.keycloak.yml"
+LOCAL_OVERLAY="-f docker-compose-local-overlay.yml"
+PROD_OVERLAY="-f docker-compose-prod-overlay.yml"
 
 set -e
 
@@ -16,15 +18,15 @@ function startProductionService() {
     case $auth_choice in
     1)
         echo "Starting Metagrid production deployment with Globus"
-        docker compose $PROD_COMPOSE up --build -d
+        docker compose $PROD_COMPOSE $PROD_OVERLAY up --build -d
         echo "Command used:"
-        echo "docker compose $PROD_COMPOSE up --build -d"
+        echo "docker compose $PROD_COMPOSE $PROD_OVERLAY up --build -d"
         ;;
     2)
         echo "Starting Metagrid production deployment with Keycloak"
-        docker compose $PROD_COMPOSE $KEYCLOAK_COMPOSE --profile keycloak up --build -d
+        docker compose $PROD_COMPOSE $KEYCLOAK_COMPOSE $PROD_OVERLAY --profile keycloak up --build -d
         echo "Command used:"
-        echo "docker compose $PROD_COMPOSE $KEYCLOAK_COMPOSE --profile keycloak up --build -d"
+        echo "docker compose $PROD_COMPOSE $KEYCLOAK_COMPOSE $PROD_OVERLAY --profile keycloak up --build -d"
         ;;
     *)
         echo "Invalid choice. Please select 1 or 2."
@@ -44,15 +46,15 @@ function startLocalService() {
     case $auth_choice in
     1)
         echo "Starting Metagrid with Globus auth"
-        docker compose $LOCAL_COMPOSE --profile docs up --build -d
+        docker compose $LOCAL_COMPOSE $LOCAL_OVERLAY --profile docs up --build -d
         echo "Command used:"
-        echo "docker compose $LOCAL_COMPOSE --profile docs up --build -d"
+        echo "docker compose $LOCAL_COMPOSE $LOCAL_OVERLAY --profile docs up --build -d"
         ;;
     2)
         echo "Starting Metagrid with Keycloak auth"
-        docker compose $LOCAL_COMPOSE $KEYCLOAK_COMPOSE --profile docs --profile keycloak up --build -d
+        docker compose $LOCAL_COMPOSE $KEYCLOAK_COMPOSE $LOCAL_OVERLAY --profile docs --profile keycloak up --build -d
         echo "Command used:"
-        echo "docker compose $LOCAL_COMPOSE $KEYCLOAK_COMPOSE --profile docs --profile keycloak up --build -d"
+        echo "docker compose $LOCAL_COMPOSE $KEYCLOAK_COMPOSE $LOCAL_OVERLAY --profile docs --profile keycloak up --build -d"
         ;;
     *)
         echo "Invalid choice. Please select 1 or 2."
@@ -99,7 +101,7 @@ function runPreCommit() {
 function runBackendTests() {
     clear
     stopDockerContainers
-    docker compose $LOCAL_COMPOSE --profile local run --rm django pytest
+    docker compose $LOCAL_COMPOSE --profile docs run --rm django pytest
     stopDockerContainers
 }
 
