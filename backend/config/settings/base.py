@@ -306,9 +306,9 @@ SIMPLE_JWT = {
 SOCIALACCOUNT_PROVIDERS = {
     "keycloak": {
         "KEYCLOAK_URL": env(
-            "KEYCLOAK_URL", default="https://esgf-login.ceda.ac.uk/"
+            "KEYCLOAK_URL", default="http://localhost:1337"
         ),
-        "KEYCLOAK_REALM": env("KEYCLOAK_REALM", default="esgf"),
+        "KEYCLOAK_REALM": env("KEYCLOAK_REALM", default="metagrid"),
     },
 }
 # Used in data migration to register Keycloak social app
@@ -329,10 +329,10 @@ ACCOUNT_EMAIL_VERIFICATION = "none"
 LOGIN_URL = "/login/globus/"
 
 LOGIN_REDIRECT_URL = env(
-    "DJANGO_LOGIN_REDIRECT_URL", default="http://localhost:8080/search"
+    "DJANGO_LOGIN_REDIRECT_URL", default="http://localhost:9443/search"
 )
 LOGOUT_REDIRECT_URL = env(
-    "DJANGO_LOGOUT_REDIRECT_URL", default="http://localhost:8080/search"
+    "DJANGO_LOGOUT_REDIRECT_URL", default="http://localhost:9443/search"
 )
 
 # This dictates which scopes will be requested on each user login

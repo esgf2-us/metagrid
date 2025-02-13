@@ -1,30 +1,66 @@
 # Constants
-METAGRID_CONFIG=metagrid_config
-DEFAULT_EDITOR=emacs
-CONFIG_DIR=metagrid_configs
-BACKUP_DIR=$CONFIG_DIR/backups
-BACKUP_FORMAT=config_backup_$(date +'%F_%I-%M-%S')
+LOCAL_COMPOSE="-f docker-compose.yml -f docker-compose-local-overlay.yml"
+PROD_COMPOSE="-f docker-compose.yml -f docker-compose.prod.yml -f docker-compose-prod-overlay.yml"
+KEYCLOAK_COMPOSE="-f docker-compose.keycloak.yml"
 
 set -e
 
 #Custom functions
-
 function startProductionService() {
-    echo "Starting Metagrid"
-    docker compose -f docker-compose.yml -f docker-compose.prod-overlay.yml up --build -d
-}
+    clear
+    echo "Choose authentication method:"
+    echo "1 Globus"
+    echo "2 Keycloak"
+    read -r auth_choice
 
-function stopProductionService() {
-    echo "Stopping Metagrid"
-    docker compose -f docker-compose.yml -f docker-compose.prod-overlay.yml down --remove-orphans
+    case $auth_choice in
+    1)
+        auth_overlay=""
+        echo "Globus selected!"
+        ;;
+    2)
+        auth_overlay=$KEYCLOAK_COMPOSE
+        echo "Keycloak selected!"
+        ;;
+    *)
+        echo "Invalid choice. Please select 1 or 2."
+        startProductionService
+        return
+        ;;
+    esac
+
+    echo "Starting Metagrid production deployment"
+    docker compose $PROD_COMPOSE $auth_overlay up --build -d
 }
 
 function startLocalService() {
-    echo "Starting Metagrid"
-    docker compose -f docker-compose.yml -f docker-compose.local-overlay.yml up --build -d
+    clear
+    echo "Choose local deployment auth method:"
+    echo "1 Globus"
+    echo "2 Keycloak"
+    read -r auth_choice
+
+    case $auth_choice in
+    1)
+        echo "Starting Metagrid with Globus auth"
+        docker compose $LOCAL_COMPOSE up --build -d
+        echo "Command used:"
+        echo "docker compose $LOCAL_COMPOSE up --build -d"
+        ;;
+    2)
+        echo "Starting Metagrid with Keycloak auth"
+        docker compose $LOCAL_COMPOSE $KEYCLOAK_COMPOSE --profile local --profile keycloak up --build -d
+        echo "Command used:"
+        echo "docker compose -f docker-compose.yml -f docker-compose.keycloak.yml -f docker-compose-local-overlay.yml --profile keycloak up --build -d"
+        ;;
+    *)
+        echo "Invalid choice. Please select 1 or 2."
+        startLocalService
+        ;;
+    esac
 }
 
-function stopLocalService() {
+function stopDockerContainers() {
     echo "Stopping Metagrid"
     docker compose down --remove-orphans
 }
@@ -32,8 +68,8 @@ function stopLocalService() {
 function toggleLocalContainers() {
     clear
     # If frontend container is up, stop all services
-    if docker ps -a --format '{{.Names}}' | grep "metagrid-react"; then
-        stopLocalService
+    if docker ps -a --format '{{.Names}}' | grep "react"; then
+        stopDockerContainers
     else
         # Otherwise stop any remaining services and start them up again
         startLocalService
@@ -49,9 +85,9 @@ function installPackagesForLocalDev() {
 
 function runMigrations() {
     clear
-    stopLocalService
-    docker compose -f docker-compose.yml -f docker-compose.local-overlay.yml run --rm django python manage.py migrate
-    stopLocalService
+    stopDockerContainers
+    docker compose -f docker-compose.yml -f docker-compose-local-overlay.yml run --rm django python manage.py migrate
+    stopDockerContainers
 }
 
 function runPreCommit() {
@@ -61,16 +97,16 @@ function runPreCommit() {
 
 function runBackendTests() {
     clear
-    stopLocalService
-    docker compose -f docker-compose.yml -f docker-compose.local-overlay.yml run --rm django pytest
-    stopLocalService
+    stopDockerContainers
+    docker compose -f docker-compose.yml -f docker-compose-local-overlay.yml run --rm django pytest
+    stopDockerContainers
 }
 
 function runFrontendTests() {
     clear
-    stopLocalService
-    docker compose -f docker-compose.yml -f docker-compose.local-overlay.yml run --rm react 'jest'
-    stopLocalService
+    stopDockerContainers
+    docker compose -f docker-compose.yml -f docker-compose-local-overlay.yml run --rm react 'jest'
+    stopDockerContainers
 }
 
 function configureLocal() {
@@ -80,9 +116,10 @@ function configureLocal() {
 
 # Main Menu
 function mainMenu() {
+    clear
     echo "Main Menu Options:"
     echo "1 Start Metagrid - Production"
-    echo "2 Stop Metagrid - Production"
+    echo "2 Stop Metagrid Containers"
     echo "3 Start / Stop Local Dev Containers"
     echo "4 Run pre-commit and tests"
     echo "5 Developer Actions"
@@ -95,15 +132,12 @@ function mainMenu() {
     else
         if [ "$option" = "1" ]; then
             startProductionService
-            clear
-            mainMenu
+            return 0
         elif [ "$option" = "2" ]; then
-            stopProductionService
-            clear
+            stopDockerContainers
             mainMenu
         elif [ "$option" = "3" ]; then
             toggleLocalContainers
-            clear
             mainMenu
         elif [ "$option" = "4" ]; then
             clear

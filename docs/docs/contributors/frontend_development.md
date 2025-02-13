@@ -198,7 +198,7 @@ docker compose run --rm react [command]
 ### `yarn start`
 
 Runs the app in the development mode using the Vite dev server<br />
-Open <http://localhost:8080> to view it in the browser.
+Open <http://localhost:9443> to view it in the browser.
 
 The page will reload if you make edits.<br />
 You will also see any lint errors in the console.

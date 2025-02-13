@@ -2,6 +2,15 @@ volumes:
   traefik_certs: {}
 
 services:
+  traefik:
+    restart: unless-stopped
+    volumes:
+      - traefik_certs:/etc/traefik/acme
+      - ./traefik/prod_traefik.yml:/etc/traefik/traefik.yml
+    ports:
+      - "0.0.0.0:80:9080"
+      - "0.0.0.0:443:9443"
+
   postgres:
     restart: unless-stopped
     environment:
@@ -25,6 +34,7 @@ services:
       DJANGO_SECURE_HSTS_PRELOAD: True
 
   keycloak:
+    profiles: [ "keycloak" ]
     command: start
     volumes: []
     restart: unless-stopped
@@ -37,12 +47,3 @@ services:
       # The prod build target includes a production ready nginx server
       target: prod
     restart: unless-stopped
-
-  docs:
-    restart: unless-stopped
-
-  traefik:
-    restart: unless-stopped
-    volumes:
-      - traefik_certs:/etc/traefik/acme
-      - ./traefik/traefik.yaml:/etc/traefik/traefik.yaml
