@@ -121,12 +121,14 @@ function updateProjectTable() {
     case $env_choice in
     1)
         stopDockerContainers
+        docker compose $LOCAL_COMPOSE $LOCAL_OVERLAY build django
         docker compose $LOCAL_COMPOSE $LOCAL_OVERLAY run --rm django python manage.py migrate --fake projects 0001_initial
         docker compose $LOCAL_COMPOSE $LOCAL_OVERLAY run --rm django python manage.py migrate projects
         stopDockerContainers
         ;;
     2)
         stopDockerContainers
+        docker compose $PROD_COMPOSE $PROD_OVERLAY build django
         docker compose $PROD_COMPOSE $PROD_OVERLAY run --rm django python manage.py migrate --fake projects 0001_initial
         docker compose $PROD_COMPOSE $PROD_OVERLAY run --rm django python manage.py migrate projects
         stopDockerContainers

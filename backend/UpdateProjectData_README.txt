@@ -47,4 +47,3 @@ DONE!
 
 MIGRATION FILE ISSUES:
 If there are issues when attempting the steps above, make sure you don't have obsolete or modified migration files that don't match what's in the latest repository.
-
