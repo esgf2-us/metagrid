@@ -89,7 +89,7 @@ function installPackagesForLocalDev() {
 function runMigrations() {
     clear
     stopDockerContainers
-    docker compose $LOCAL_COMPOSE run --rm django python manage.py migrate
+    docker compose $LOCAL_COMPOSE $LOCAL_OVERLAY run --rm django python manage.py migrate
     stopDockerContainers
 }
 
@@ -101,7 +101,7 @@ function runPreCommit() {
 function runBackendTests() {
     clear
     stopDockerContainers
-    docker compose $LOCAL_COMPOSE --profile docs run --rm django pytest
+    docker compose $LOCAL_COMPOSE $LOCAL_OVERLAY --profile docs run --rm django pytest
     stopDockerContainers
 }
 
@@ -112,7 +112,7 @@ function runFrontendTests() {
     cd ..
 }
 
-function configureLocal() {
+function configureProduction() {
     clear
     ./configHelper.sh
 }
@@ -169,7 +169,7 @@ function devActionsMenu() {
     echo "3 Test Frontend"
     echo "4 Run Migrations"
     echo "5 Install Packages for Local Dev"
-    echo "6 Configure Local"
+    echo "6 Configure Production"
     echo "7 Back to Main Menu"
     read option
     if [ -z $option ]; then
@@ -193,7 +193,7 @@ function devActionsMenu() {
             installPackagesForLocalDev
             return 0
         elif [ "$option" = "6" ]; then
-            configureLocal
+            configureProduction
             return 0
         elif [ "$option" = "7" ]; then
             clear

@@ -11,10 +11,17 @@ services:
       - "0.0.0.0:80:9080"
       - "0.0.0.0:443:9443"
 
+  docs:
+    profiles: [ "docs" ]
+    image: metagrid_prod_docs
+    restart: unless-stopped
+
   postgres:
+    image: metagrid_prod_postgres
     restart: unless-stopped
 
   django:
+    image: metagrid_prod_django
     restart: unless-stopped
     environment:
       DJANGO_DEBUG: False
@@ -30,6 +37,7 @@ services:
       DJANGO_SECURE_HSTS_PRELOAD: True
 
   react:
+    image: metagrid_prod_react
     build:
       # The prod build target includes a production ready nginx server
       target: prod
