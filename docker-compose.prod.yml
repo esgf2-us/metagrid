@@ -19,9 +19,10 @@ services:
   postgres:
     image: metagrid_prod_postgres
     restart: unless-stopped
-    POSTGRES_HOST_AUTH_METHOD: ""
-    PGPASSWORD: ""
-    PGUSER: ""
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: ""
+      PGPASSWORD: ""
+      PGUSER: ""
 
   django:
     image: metagrid_prod_django
