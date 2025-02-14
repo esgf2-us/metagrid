@@ -90,7 +90,7 @@ const Facets: React.FC<React.PropsWithChildren<Props>> = ({
             target="_blank"
             style={{ marginTop: '10px' }}
           >
-            {curProject.name} Website
+            {curProject.name} Data Info
           </Button>
         </Tooltip>
       )}

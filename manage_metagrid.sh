@@ -88,9 +88,54 @@ function installPackagesForLocalDev() {
 
 function runMigrations() {
     clear
-    stopDockerContainers
-    docker compose $LOCAL_COMPOSE $LOCAL_OVERLAY run --rm django python manage.py migrate
-    stopDockerContainers
+    echo "Choose environment:"
+    echo "1 Local"
+    echo "2 Production"
+    read -r env_choice
+
+    case $env_choice in
+    1)
+        stopDockerContainers
+        docker compose $LOCAL_COMPOSE $LOCAL_OVERLAY run --rm django python manage.py migrate
+        stopDockerContainers
+        ;;
+    2)
+        stopDockerContainers
+        docker compose $PROD_COMPOSE $PROD_OVERLAY run --rm django python manage.py migrate
+        stopDockerContainers
+        ;;
+    *)
+        echo "Invalid choice. Please select 1 or 2."
+        runMigrations
+        ;;
+    esac
+}
+
+function updateProjectTable() {
+    clear
+    echo "Choose environment:"
+    echo "1 Local"
+    echo "2 Production"
+    read -r env_choice
+
+    case $env_choice in
+    1)
+        stopDockerContainers
+        docker compose $LOCAL_COMPOSE $LOCAL_OVERLAY run --rm django python manage.py migrate --fake projects 0001_initial
+        docker compose $LOCAL_COMPOSE $LOCAL_OVERLAY run --rm django python manage.py migrate projects
+        stopDockerContainers
+        ;;
+    2)
+        stopDockerContainers
+        docker compose $PROD_COMPOSE $PROD_OVERLAY run --rm django python manage.py migrate --fake projects 0001_initial
+        docker compose $PROD_COMPOSE $PROD_OVERLAY run --rm django python manage.py migrate projects
+        stopDockerContainers
+        ;;
+    *)
+        echo "Invalid choice. Please select 1 or 2."
+        updateProjectTable
+        ;;
+    esac
 }
 
 function runPreCommit() {
@@ -168,9 +213,10 @@ function devActionsMenu() {
     echo "2 Test Backend"
     echo "3 Test Frontend"
     echo "4 Run Migrations"
-    echo "5 Install Packages for Local Dev"
-    echo "6 Configure Production"
-    echo "7 Back to Main Menu"
+    echo "5 Update Project Table"
+    echo "6 Install Packages for Local Dev"
+    echo "7 Configure Production"
+    echo "8 Back to Main Menu"
     read option
     if [ -z $option ]; then
         clear
@@ -190,18 +236,21 @@ function devActionsMenu() {
             runMigrations
             return 0
         elif [ "$option" = "5" ]; then
-            installPackagesForLocalDev
+            updateProjectTable
             return 0
         elif [ "$option" = "6" ]; then
-            configureProduction
+            installPackagesForLocalDev
             return 0
         elif [ "$option" = "7" ]; then
+            configureProduction
+            return 0
+        elif [ "$option" = "8" ]; then
             clear
             mainMenu
         else
             clear
             echo "You entered: $option"
-            echo "Please enter a number from 1 to 7"
+            echo "Please enter a number from 1 to 8"
             devActionsMenu
         fi
     fi

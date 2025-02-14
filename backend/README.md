@@ -1,5 +1,12 @@
 # MetaGrid API Back-end
 
+# STEPS TO UPDATE PROJECTS, FACETS OR CATEGORIES
+
+1. Edit the initial data file with the desired changes: metagrid/backend/metagrid/initial_projects_data.py
+2. Start the manage_metagrid.sh script in the root directory (use sudo if needed): ./manage_metagrid.sh
+3. Select 'Developer Actions', then choose "Update Project Table" option. The commands to update should run.
+DONE!
+
 # Create a new python virtual environment for testing
 
 python3 -m venv backend/venv

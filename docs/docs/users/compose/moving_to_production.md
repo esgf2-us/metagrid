@@ -22,12 +22,13 @@ services:
       METAGRID_SOCIAL_AUTH_GLOBUS_SECRET: 34364292-2752-4d5e-8295
 ```
 ## Bringing up the stack in production
-
+Note: you will need to run admin related commands with sudo.
 Now that you have your site overlay file created, you'll use it and the provided Production overlay to bring the stack online:
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.SITENAME-overlay.yml up
 ```
-With the stack running in production mode, you should be able to access the frontend at <http://localhost:443>
+
+With the stack running in production mode, you should be able to access the frontend at <https://sitename.com>
 
 ## Exposing it to the outside world
 
