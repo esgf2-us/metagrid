@@ -81,7 +81,7 @@ prompt_optional AUTHENTICATION_METHOD "Enter the Globus Authentication Method" "
 prompt_optional FOOTER_TEXT "Enter the Footer Text (if it's a single line of markdown). If you need a more complex footer, skip for now and you can update the overlay file with your desired footer markdown afterwards." "Privacy & Legal Notice: [https://www.llnl.gov/disclaimer.html](https://www.llnl.gov/disclaimer.html)" "Text to display in the footer of the frontend. Useful for adding a link to the terms of service or other legal information. The string should be formatted as MarkDown and will be rendered as such."
 
 # Prompt for Keycloak deployment
-echo "(Optional) Will you be deploying with Keycloak social auth? (yes/no)"
+echo "(Optional) Do you wish to add Keycloak social auth settings? (yes/no)"
 read -r USE_KEYCLOAK
 
 if [ "$USE_KEYCLOAK" == "yes" ]; then
@@ -100,15 +100,15 @@ prompt_required DJANGO_LOGOUT_REDIRECT_URL "Enter the Django Logout Redirect URL
 
 # Prompt for output file name
 echo
-echo "Enter the name for this overlay.yml file (default: docker-compose-prod-overlay.yml):"
+echo "Enter the name for this overlay.yml file (default: docker-compose.generated-by-helper.yml):"
 read -r OUTPUT_FILE
-OUTPUT_FILE=${OUTPUT_FILE:-docker-compose-prod-overlay.yml}
+OUTPUT_FILE=${OUTPUT_FILE:-docker-compose.generated-by-helper.yml}
 
 cat <<EOF >$OUTPUT_FILE
 services:
   traefik:
     environment:
-      HOST_DOMAIN: $DOMAIN_NAME
+      DOMAIN_NAME: $DOMAIN_NAME
 
   django:
     environment:

@@ -15,7 +15,7 @@ http:
     backend:
       service: django
       rule: >-
-        Host(`{{ env "HOST_DOMAIN" }}`) &&   (
+        Host(`{{ env "DOMAIN_NAME" }}`) &&   (
         PathPrefix(`/account-confirm-email`) ||
         PathPrefix(`/accounts`)              ||
         PathPrefix(`/api`)                   ||
@@ -33,7 +33,7 @@ http:
     backend-secure:
       service: django
       rule: >-
-        Host(`{{ env "HOST_DOMAIN" }}`) &&   (
+        Host(`{{ env "DOMAIN_NAME" }}`) &&   (
         PathPrefix(`/account-confirm-email`) ||
         PathPrefix(`/accounts`)              ||
         PathPrefix(`/api`)                   ||
@@ -51,14 +51,14 @@ http:
     frontend:
       service: react
       rule: >-
-        Host(`{{ env "HOST_DOMAIN" }}`) && PathPrefix(`/`)
+        Host(`{{ env "DOMAIN_NAME" }}`) && PathPrefix(`/`)
       entryPoints:
         - web
 
     frontend-secure:
       service: react
       rule: >-
-        Host(`{{ env "HOST_DOMAIN" }}`) && PathPrefix(`/`)
+        Host(`{{ env "DOMAIN_NAME" }}`) && PathPrefix(`/`)
       entryPoints:
         - web-secure
   services:

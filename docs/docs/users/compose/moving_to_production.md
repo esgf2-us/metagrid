@@ -27,13 +27,13 @@ Now that you have your site overlay file created, you'll use it and the provided
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.SITENAME-overlay.yml up
 ```
-With the stack running in production mode, you should be able to access the frontend at <http://localhost:9443>
+With the stack running in production mode, you should be able to access the frontend at <http://localhost:443>
 
 ## Exposing it to the outside world
 
 You can use the provided Traefik configuration to serve as a reverse proxy and provide a Let's Encrypt certificate (provided you have a public DNS entry pointed to port 80 on the machine running the stack that Let's Encrypt can use to verify control of the domain).
 
-Modify your site overlay to set the HOST_DOMAIN environment variable and service ports for Traefik:
+Modify your site overlay to set the DOMAIN_NAME environment variable and service ports for Traefik:
 ```yaml
 services:
   django:
@@ -45,7 +45,7 @@ services:
       METAGRID_SOCIAL_AUTH_GLOBUS_SECRET: 34364292-2752-4d5e-8295
   traefik:
     environment:
-      HOST_DOMAIN: my-domain.com
+      DOMAIN_NAME: my-domain.com
     ports:
     - 80:9080
     - 443:9443

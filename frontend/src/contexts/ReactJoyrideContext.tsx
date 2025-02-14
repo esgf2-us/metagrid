@@ -139,7 +139,7 @@ export const ReactJoyrideProvider: React.FC<React.PropsWithChildren<Props>> = ({
         stepIndex={getStepIndex}
         styles={{
           tooltip: {
-            backgroundColor: isDarkMode ? '#111' : '#fff',
+            backgroundColor: isDarkMode ? '#222' : '#fff',
             color: isDarkMode ? '#eee' : '#333',
           },
           buttonNext: {
@@ -147,7 +147,7 @@ export const ReactJoyrideProvider: React.FC<React.PropsWithChildren<Props>> = ({
             color: isDarkMode ? '#b00' : '#fff',
           },
           buttonSkip: {
-            backgroundColor: isDarkMode ? '#111' : '#fff',
+            backgroundColor: isDarkMode ? '#222' : '#fff',
             color: isDarkMode ? '#eee' : '#333',
           },
         }}

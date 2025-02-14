@@ -6,7 +6,7 @@ services:
     restart: unless-stopped
     volumes:
       - traefik_certs:/etc/traefik/acme
-      - ./traefik/traefik.yml:/etc/traefik/traefik.yml
+      - ./traefik/traefik.prod.yml:/etc/traefik/traefik.yml
     ports:
       - "0.0.0.0:80:9080"
       - "0.0.0.0:443:9443"
@@ -19,6 +19,9 @@ services:
   postgres:
     image: metagrid_prod_postgres
     restart: unless-stopped
+    POSTGRES_HOST_AUTH_METHOD: ""
+    PGPASSWORD: ""
+    PGUSER: ""
 
   django:
     image: metagrid_prod_django

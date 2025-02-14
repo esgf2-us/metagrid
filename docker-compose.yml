@@ -8,9 +8,9 @@ services:
     container_name: traefik
     image: traefik:3.3
     volumes:
-      - ./traefik/local_traefik.yml:/etc/traefik/traefik.yml
+      - ./traefik/traefik.local.yml:/etc/traefik/traefik.yml
     environment:
-      HOST_DOMAIN: localhost
+      DOMAIN_NAME: localhost
     ports:
       - "9080:9080"
       - "9443:9443"
@@ -61,7 +61,6 @@ services:
       PGHOST: postgres
       PGPASSWORD: postgres
       PGUSER: postgres
-      METAGRID_AUTHENTICATION_METHOD: globus
     ports:
       - 5000:5000
 
