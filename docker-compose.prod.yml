@@ -13,11 +13,9 @@ services:
 
   docs:
     profiles: [ "docs" ]
-    image: metagrid_prod_docs
     restart: unless-stopped
 
   postgres:
-    image: metagrid_prod_postgres
     restart: unless-stopped
     environment:
       POSTGRES_HOST_AUTH_METHOD: ""
@@ -25,7 +23,6 @@ services:
       PGUSER: ""
 
   django:
-    image: metagrid_prod_django
     restart: unless-stopped
     environment:
       DJANGO_DEBUG: False
