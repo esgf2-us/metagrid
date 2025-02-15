@@ -19,7 +19,6 @@ services:
       METAGRID_SEARCH_URL: https://esgf-node.llnl.gov/esg-search/search
       METAGRID_WGET_URL: https://esgf-node.llnl.gov/esg-search/wget
       METAGRID_STATUS_URL: https://esgf-node.llnl.gov/proxy/status
-      METAGRID_SOLR_URL: https://esgf-node.llnl.gov/esg-search
       METAGRID_SOCIAL_AUTH_GLOBUS_KEY: 94c44808-9efd-4236-bffd-1185b1071736
       METAGRID_SOCIAL_AUTH_GLOBUS_SECRET: 34364292-2752-4d5e-8295
 ```
@@ -35,4 +34,4 @@ docker compose -f docker-compose.yml -f docker-compose.SITENAME-overlay.yml run 
 ```
 
 ### Access the site
-- <http://localhost:9080>
+- <http://localhost:9443>

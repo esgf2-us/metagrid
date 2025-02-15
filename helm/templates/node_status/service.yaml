@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "metagrid.fullname" . }}-node-status-backend
+  labels:
+    app.kubernetes.io/component: node-status-backend
+    {{- include "metagrid.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.nodeStatusBackend.service.type }}
+  ports:
+  - port: {{ .Values.nodeStatusBackend.service.port }}
+    targetPort: http
+    protocol: TCP
+    name: http
+  selector:
+    app.kubernetes.io/component: node-status-backend
+    {{- include "metagrid.selectorLabels" . | nindent 4 }}

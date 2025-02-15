@@ -251,8 +251,8 @@ class DjangoStaticSettings(BaseSettings):
     # https://django-allauth.readthedocs.io/en/latest/providers.html#keycloak
     SOCIALACCOUNT_PROVIDERS: dict[str, dict[str, str]] = {
         "keycloak": {
-            "KEYCLOAK_URL": "https://esgf-login.ceda.ac.uk/",
-            "KEYCLOAK_REALM": "esgf",
+            "KEYCLOAK_URL": "http://localhost:1337/",
+            "KEYCLOAK_REALM": "metagrid",
         },
     }
 
@@ -270,8 +270,8 @@ class DjangoStaticSettings(BaseSettings):
     # https://docs.djangoproject.com/en/3.2/ref/settings/#login-url
     LOGIN_URL: str = "/login/globus/"
 
-    LOGIN_REDIRECT_URL: str = "http://localhost:8080/search"
-    LOGOUT_REDIRECT_URL: str = "http://localhost:8080/search"
+    LOGIN_REDIRECT_URL: str = "http://localhost:9443/search"
+    LOGOUT_REDIRECT_URL: str = "http://localhost:9443/search"
 
     SOCIAL_AUTH_GLOBUS_SCOPE: list[str] = [
         "openid",

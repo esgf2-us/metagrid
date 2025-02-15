@@ -87,7 +87,7 @@
 >     __Default:__ `globus`
 >
 >     Which authentication method to enable for user sign in on the frontend.
-
+>
 >     __Possible values__
 >     `keycloak`, `globus`
 
@@ -107,11 +107,10 @@
 >
 >     The list of data nodes known to be Globus enabled. A data node must be in this list in order to transfer files from it via Globus.
 
-
 #### `METAGRID_FOOTER_TEXT`
 
-> !!! example "_Optional_"
-> **Default:** `None`
+> !!! example "*Optional*"
+>     __Default:__ `None`
 >
 >     Text to display in the footer of the frontend. Useful for adding a link to the terms of service or other legal information. The string should be formatted as MarkDown and will be rendered as such.
 >
@@ -124,34 +123,64 @@
 > !!! example "*Optional*"
 >     __Default:__ `None`
 >
+>     The Keycloak realm to use for authentication.
+>
+>     __Example Values__
+>
+>     `myrealm`
 
 #### `METAGRID_KEYCLOAK_URL`
 
 > !!! example "*Optional*"
 >     __Default:__ `None`
 >
+>     The URL of the Keycloak server.
+>
+>     __Example Values__
+>
+>     `https://keycloak.example.com`
 
 #### `METAGRID_KEYCLOAK_CLIENT_ID`
 
 > !!! example "*Optional*"
 >     __Default:__ ``
 >
+>     The Keycloak client ID to use for authentication.
+>
+>     __Example Values__
+>
+>     `myclientid`
 
 #### `METAGRID_HOTJAR_ID`
 
 > !!! example "*Optional*"
 >     __Default:__ `None`
 >
+>     The Hotjar ID for tracking user interactions.
+>
+>     __Example Values__
+>
+>     `123456`
 
 #### `METAGRID_HOTJAR_SV`
 
 > !!! example "*Optional*"
 >     __Default:__ `None`
 >
+>     The Hotjar SV for tracking user interactions.
+>
+>     __Example Values__
+>
+>     `7`
 
 #### `METAGRID_GOOGLE_ANALYTICS_TRACKING_ID`
 
 > !!! example "*Optional*"
 >     __Default:__ `None`
 >
+>     The Google Analytics tracking ID for tracking user interactions.
+>
+>     __Example Values__
+>
+>     `UA-12345678-1`
 <!-- end generated frontend settings markdown -->

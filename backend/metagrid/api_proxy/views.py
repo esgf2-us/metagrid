@@ -45,8 +45,7 @@ def do_globus_auth(request):
 @csrf_exempt
 def do_globus_logout(request):
     logout(request)
-    homepage_url = getattr(settings, "LOGOUT_REDIRECT_URL")
-    return redirect(homepage_url)
+    return redirect(settings.LOGOUT_REDIRECT_URL)
 
 
 @api_view()
@@ -75,12 +74,7 @@ def do_globus_search_endpoints(request):
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
 def do_search(request):
-    esgf_host = getattr(
-        settings,
-        "SEARCH_URL",
-        "",
-    )
-    return do_request(request, esgf_host)
+    return do_request(request, settings.SEARCH_URL)
 
 
 @require_http_methods(["POST"])
@@ -115,12 +109,7 @@ def do_citation(request):
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
 def do_status(request):
-    status_url = getattr(
-        settings,
-        "STATUS_URL",
-        "",
-    )  # pragma: no cover
-    resp = requests.get(status_url)  # pragma: no cover
+    resp = requests.get(settings.STATUS_URL)  # pragma: no cover
     if resp.status_code == 200:  # pragma: no cover
         return HttpResponse(resp.text)
     else:  # pragma: no cover
@@ -130,14 +119,7 @@ def do_status(request):
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
 def do_wget(request):
-    return do_request(
-        request,
-        getattr(
-            settings,
-            "WGET_URL",
-            "",
-        ),
-    )
+    return do_request(request, settings.WGET_URL)
 
 
 def do_request(request, urlbase):
@@ -178,7 +160,6 @@ def get_temp_storage(request):
         data_key = request_body["dataKey"]
 
         if "temp_storage" not in request.session:
-            print({"msg": "Temporary storage empty.", data_key: "None"})
             return HttpResponse(
                 json.dumps(
                     {"msg": "Temporary storage empty.", data_key: "None"}

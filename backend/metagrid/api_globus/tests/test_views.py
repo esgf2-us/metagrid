@@ -1,4 +1,3 @@
-from typing import Any, Generator
 from unittest.mock import patch
 
 import pytest
@@ -9,15 +8,6 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from metagrid.api_globus.views import globus_info_from_doc, search_files
-
-
-@pytest.fixture(scope="function")
-def api_client() -> Generator[APIClient, Any, Any]:
-    """
-    Fixture to provide an API client
-    :return: APIClient
-    """
-    yield APIClient()
 
 
 @responses.activate

@@ -103,7 +103,7 @@ function setEndpointUrl(endpointId?: string, path?: string | null): void {
     value: {
       assign: () => {},
       pathname: '/cart/items',
-      href: `http://localhost:8080/cart/items?endpoint=testEndpoint&label=test&path=${
+      href: `http://localhost:9443/cart/items?endpoint=testEndpoint&label=test&path=${
         path || testEndpointPath
       }&globfs=empty&endpoint_id=${endpointId || testEndpointId}`,
       search: `?endpoint=testEndpoint&label=test&path=${
@@ -119,7 +119,7 @@ function setAuthTokensUrl(): void {
     value: {
       assign: () => {},
       pathname: '/cart/items',
-      href: 'http://localhost:8080/cart/items?code=testCode123&state=testingTransferTokens',
+      href: 'http://localhost:9443/cart/items?code=testCode123&state=testingTransferTokens',
       search: '?code=testCode1234&state=testingTransferTokens',
       replace: () => {},
     },

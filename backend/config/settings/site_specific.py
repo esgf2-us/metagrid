@@ -92,9 +92,33 @@ class MetagridFrontendSettings(BaseSettings):
         ],
         description="The list of data nodes known to be Globus enabled. A data node must be in this list in order to transfer files from it via Globus.",
     )
-    KEYCLOAK_REALM: Optional[str] = None
-    KEYCLOAK_URL: Optional[str] = None
-    KEYCLOAK_CLIENT_ID: str = ""
-    HOTJAR_ID: Optional[int] = None
-    HOTJAR_SV: Optional[int] = None
-    GOOGLE_ANALYTICS_TRACKING_ID: Optional[str] = None
+    KEYCLOAK_REALM: Optional[str] = Field(
+        default=None,
+        examples=["myrealm"],
+        description="The Keycloak realm to use for authentication.",
+    )
+    KEYCLOAK_URL: Optional[str] = Field(
+        default=None,
+        examples=["https://keycloak.example.com"],
+        description="The URL of the Keycloak server.",
+    )
+    KEYCLOAK_CLIENT_ID: Optional[str] = Field(
+        default="",
+        examples=["myclientid"],
+        description="The Keycloak client ID to use for authentication.",
+    )
+    HOTJAR_ID: Optional[int] = Field(
+        default=None,
+        examples=[123456],
+        description="The Hotjar ID for tracking user interactions.",
+    )
+    HOTJAR_SV: Optional[int] = Field(
+        default=None,
+        examples=[7],
+        description="The Hotjar SV for tracking user interactions.",
+    )
+    GOOGLE_ANALYTICS_TRACKING_ID: Optional[str] = Field(
+        default=None,
+        examples=["UA-12345678-1"],
+        description="The Google Analytics tracking ID for tracking user interactions.",
+    )

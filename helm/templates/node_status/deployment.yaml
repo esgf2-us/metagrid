@@ -1,0 +1,114 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "metagrid.fullname" . }}-node-status-backend
+  labels:
+    app.kubernetes.io/component: node-status-backend
+    {{- include "metagrid.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.nodeStatusBackend.autoscaling.enabled }}
+  replicas: {{ .Values.nodeStatusBackend.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: node-status-backend
+      {{- include "metagrid.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.nodeStatusBackend.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app.kubernetes.io/component: node-status-backend
+        {{- include "metagrid.labels" . | nindent 8 }}
+        {{- with .Values.nodeStatusBackend.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.nodeStatusBackend.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "metagrid.fullname" . }}-node-status-backend
+      securityContext:
+        {{- toYaml .Values.nodeStatusBackend.podSecurityContext | nindent 8 }}
+      containers:
+      - name: prometheus
+        securityContext:
+          {{- toYaml .Values.nodeStatusBackend.prometheus.securityContext | nindent 12 }}
+        image: "{{ .Values.nodeStatusBackend.prometheus.image.repository }}:{{ .Values.nodeStatusBackend.prometheus.image.tag }}"
+        imagePullPolicy: {{ .Values.nodeStatusBackend.prometheus.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.nodeStatusBackend.service.port }}
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /-/healthy
+            port: http
+            scheme: HTTP
+        readinessProbe:
+          httpGet:
+            path: /-/ready
+            port: http
+            scheme: HTTP
+        resources:
+          {{- toYaml .Values.nodeStatusBackend.prometheus.resources | nindent 12 }}
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/prometheus/prometheus.yml
+          subPath: prometheus.yml
+        - name: config-volume
+          mountPath: /etc/prometheus/esgf_node_status_targets.yml
+          subPath: esgf_node_status_targets.yml
+        - name: prom-data
+          mountPath: /prometheus
+        {{- with .Values.nodeStatusBackend.prometheus.volumeMounts }}
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+      - name: blackbox
+        securityContext:
+          {{- toYaml .Values.nodeStatusBackend.blackbox.securityContext | nindent 12 }}
+        image: "{{ .Values.nodeStatusBackend.blackbox.image.repository }}:{{ .Values.nodeStatusBackend.blackbox.image.tag }}"
+        imagePullPolicy: {{ .Values.nodeStatusBackend.blackbox.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: 9115
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /-/healthy
+            port: http
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /-/healthy
+            port: http
+        resources:
+          {{- toYaml .Values.nodeStatusBackend.blackbox.resources | nindent 12 }}
+        {{- with .Values.nodeStatusBackend.blackbox.volumeMounts }}
+        volumeMounts:
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+      volumes:
+      - name: config-volume
+        secret:
+          secretName: {{ include "metagrid.fullname" . }}-node-status-backend-config
+      - name: prom-data
+        emptyDir: {}
+      {{- with .Values.nodeStatusBackend.volumes }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeStatusBackend.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeStatusBackend.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeStatusBackend.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
