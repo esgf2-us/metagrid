@@ -26,6 +26,7 @@ from metagrid.api_proxy.views import (
     set_temp_storage,
 )
 from metagrid.cart.views import CartViewSet, SearchViewSet
+from metagrid.observability.views import liveness, readiness
 from metagrid.projects.views import ProjectsViewSet
 from metagrid.users.views import UserCreateViewSet, UserViewSet
 
@@ -79,6 +80,8 @@ urlpatterns = [
     path("globus/auth", get_access_token, name="globus_auth"),
     path("globus/transfer", create_globus_transfer, name="globus_transfer"),
     path("frontend-config.js", get_frontend_config, name="frontend_config"),
+    path("liveness", liveness, name="liveness"),
+    path("readiness", readiness, name="readiness"),
     re_path(
         r"^account-confirm-email/",
         VerifyEmailView.as_view(),

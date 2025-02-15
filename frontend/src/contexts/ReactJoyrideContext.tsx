@@ -1,9 +1,11 @@
 import React from 'react';
 import Joyride, { ACTIONS, CallBackProps, EVENTS, STATUS } from 'react-joyride';
 import { useNavigate } from 'react-router-dom';
+import { useRecoilState } from 'recoil';
 import { JoyrideTour } from '../common/JoyrideTour';
 import { getCurrentAppPage } from '../common/reactJoyrideSteps';
 import { AppPage } from '../common/types';
+import { isDarkModeAtom } from '../components/App/recoil/atoms';
 
 export type RawTourState = {
   getTour: JoyrideTour;
@@ -31,6 +33,8 @@ export const ReactJoyrideProvider: React.FC<React.PropsWithChildren<Props>> = ({
   const [running, setRunning] = React.useState<boolean>(false);
   const [getTour, setTour] = React.useState<JoyrideTour>(defaultTour);
   const [getStepIndex, setStepIndex] = React.useState<number>(0);
+
+  const [isDarkMode] = useRecoilState<boolean>(isDarkModeAtom);
 
   /* istanbul ignore next */
   const nextStep = (index: number): void => {
@@ -133,6 +137,20 @@ export const ReactJoyrideProvider: React.FC<React.PropsWithChildren<Props>> = ({
       <Joyride
         steps={getTour.getSteps()}
         stepIndex={getStepIndex}
+        styles={{
+          tooltip: {
+            backgroundColor: isDarkMode ? '#222' : '#fff',
+            color: isDarkMode ? '#eee' : '#333',
+          },
+          buttonNext: {
+            backgroundColor: isDarkMode ? '#eee' : '#f04',
+            color: isDarkMode ? '#b00' : '#fff',
+          },
+          buttonSkip: {
+            backgroundColor: isDarkMode ? '#222' : '#fff',
+            color: isDarkMode ? '#eee' : '#333',
+          },
+        }}
         run={running}
         callback={handleJoyrideCallback}
         locale={getTour.getLocale()}

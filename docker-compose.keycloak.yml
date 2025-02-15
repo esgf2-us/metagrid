@@ -1,0 +1,8 @@
+services:
+  django:
+    profiles: [ "keycloak" ]
+    environment:
+      METAGRID_KEYCLOAK_CLIENT_ID: metagrid-localhost
+      METAGRID_KEYCLOAK_REALM: metagrid
+      METAGRID_KEYCLOAK_URL: http://localhost:1337/auth
+      METAGRID_AUTHENTICATION_METHOD: keycloak
