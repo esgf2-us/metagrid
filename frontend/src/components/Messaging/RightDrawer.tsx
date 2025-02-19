@@ -1,8 +1,8 @@
 import React from 'react';
 import { Drawer, Space, Button, Collapse, Card } from 'antd';
-import { rightDrawerChanges, rightDrawerMessages } from './messageDisplayData';
+import { changeLogMessages, messageDataJSON } from './messageDisplayData';
 import MessageCard from './MessageCard';
-import { MarkdownMessage } from './types';
+import { MessageData } from './types';
 
 export type Props = {
   open: boolean;
@@ -27,23 +27,23 @@ const RightDrawer: React.FC<React.PropsWithChildren<Props>> = ({ open, onClose }
     >
       <Card title="Metagrid Messages">
         <Collapse
-          defaultActiveKey={[rightDrawerMessages[0].fileName]}
-          items={rightDrawerMessages.map((message: MarkdownMessage) => {
+          defaultActiveKey={[messageDataJSON.messages[0].fileName]}
+          items={messageDataJSON.messages.map((message) => {
             return {
               key: message.fileName,
               label: message.title,
-              children: <MessageCard title={message.title} fileName={message.fileName} />,
+              children: <MessageCard fileName={message.fileName} />,
             };
           })}
         />
       </Card>
       <Card title="Metagrid Version History">
         <Collapse
-          items={rightDrawerChanges.map((change: MarkdownMessage) => {
+          items={changeLogMessages().map((change: MessageData) => {
             return {
               key: change.fileName,
-              label: change.title,
-              children: <MessageCard title={change.title} fileName={change.fileName} />,
+              label: change.messageId,
+              children: <MessageCard fileName={change.fileName} />,
             };
           })}
         />
