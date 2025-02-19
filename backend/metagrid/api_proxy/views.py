@@ -126,7 +126,7 @@ def do_request(request, urlbase):
     resp = None
 
     if request.method == "POST":  # pragma: no cover
-        jo = request.POST.dict()
+        jo = json.loads(request.body)
 
         if "query" in jo:
             query = jo["query"]
