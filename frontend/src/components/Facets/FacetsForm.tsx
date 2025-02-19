@@ -494,7 +494,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                         },
                         {
                           value: 'originals only' as ResultType,
-                          label: 'Originals only',
+                          label: 'Originals Only',
                         },
                         {
                           value: 'replicas only' as ResultType,

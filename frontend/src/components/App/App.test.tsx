@@ -159,7 +159,7 @@ describe('test main components', () => {
     fireEvent.mouseDown(resultTypeSelect.firstElementChild as HTMLInputElement);
 
     // Select the first facet option
-    const resultTypeOption = await screen.findByText('Originals only');
+    const resultTypeOption = await screen.findByText('Originals Only');
     expect(resultTypeOption).toBeTruthy();
 
     await userEvent.click(resultTypeOption);
