@@ -1,5 +1,6 @@
 {
   "changelogVersions": [
+    "v1.3.3",
     "v1.3.2",
     "v1.3.1",
     "v1.3.0",
@@ -14,5 +15,5 @@
     "v1.0.9",
     "v1.0.8"
   ],
-  "messages": [{ "title": "Messages", "fileName": "messages/metagrid_messages.md" }]
+  "messages": [{ "title": "Current Release News", "fileName": "messages/metagrid_messages.md" }]
 }

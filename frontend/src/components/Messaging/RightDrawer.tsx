@@ -25,29 +25,32 @@ const RightDrawer: React.FC<React.PropsWithChildren<Props>> = ({ open, onClose }
         </Space>
       }
     >
-      <Card title="Metagrid Messages">
-        <Collapse
-          defaultActiveKey={[messageDataJSON.messages[0].fileName]}
-          items={messageDataJSON.messages.map((message) => {
-            return {
-              key: message.fileName,
-              label: message.title,
-              children: <MessageCard fileName={message.fileName} />,
-            };
-          })}
-        />
-      </Card>
-      <Card title="Metagrid Version History">
-        <Collapse
-          items={changeLogMessages().map((change: MessageData) => {
-            return {
-              key: change.fileName,
-              label: change.messageId,
-              children: <MessageCard fileName={change.fileName} />,
-            };
-          })}
-        />
-      </Card>
+      <Collapse defaultActiveKey={['1']}>
+        <Collapse.Panel header="Metagrid Messages" key="1">
+          <Collapse
+            defaultActiveKey={[messageDataJSON.messages[0].fileName]}
+            items={messageDataJSON.messages.map((message) => {
+              return {
+                key: message.fileName,
+                label: message.title,
+                children: <MessageCard fileName={message.fileName} />,
+              };
+            })}
+          />
+        </Collapse.Panel>
+        <Collapse.Panel header="Metagrid Version History" key="2">
+          <Collapse
+            defaultActiveKey={[]}
+            items={changeLogMessages().map((change: MessageData) => {
+              return {
+                key: change.fileName,
+                label: change.messageId,
+                children: <MessageCard fileName={change.fileName} />,
+              };
+            })}
+          />
+        </Collapse.Panel>
+      </Collapse>
     </Drawer>
   );
 };
