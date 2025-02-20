@@ -174,6 +174,35 @@ function configureProduction() {
     ./configHelper.sh
 }
 
+function updateVersion() {
+    clear
+    read -p "Enter the new version number (e.g., v1.0.0): " new_version
+
+    # Remove 'v' prefix for package.json version
+    package_version=${new_version#v}
+
+    # Update package.json
+    jq --arg new_version "$package_version" '.version = $new_version' frontend/package.json > tmp.$$.json && mv tmp.$$.json frontend/package.json
+    echo "Updated package.json to version $package_version"
+
+    # Create new changelog file
+    changelog_file="frontend/public/changelog/$new_version.md"
+    if [ -f "$changelog_file" ]; then
+        echo "Warning: Changelog file for version $new_version already exists!"
+    else
+        touch "$changelog_file"
+        echo "Created new changelog file: $changelog_file"
+    fi
+
+    # Update messageData.json
+    if jq -e --arg new_version "$new_version" '.changelogVersions | index($new_version)' frontend/messageData.json > /dev/null; then
+        echo "Version $new_version already exists in messageData.json"
+    else
+        jq --arg new_version "$new_version" '.changelogVersions |= [$new_version] + .' frontend/messageData.json > tmp.$$.json && mv tmp.$$.json frontend/messageData.json
+        echo "Updated messageData.json with new version $new_version"
+    fi
+}
+
 # Main Menu
 function mainMenu() {
     clear
@@ -228,7 +257,8 @@ function devActionsMenu() {
     echo "5 Update Project Table"
     echo "6 Install Packages for Local Dev"
     echo "7 Configure Production"
-    echo "8 Back to Main Menu"
+    echo "8 Update Version"
+    echo "9 Back to Main Menu"
     read option
     if [ -z $option ]; then
         clear
@@ -257,12 +287,15 @@ function devActionsMenu() {
             configureProduction
             return 0
         elif [ "$option" = "8" ]; then
+            updateVersion
+            return 0
+        elif [ "$option" = "9" ]; then
             clear
             mainMenu
         else
             clear
             echo "You entered: $option"
-            echo "Please enter a number from 1 to 8"
+            echo "Please enter a number from 1 to 9"
             devActionsMenu
         fi
     fi
