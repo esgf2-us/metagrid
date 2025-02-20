@@ -119,14 +119,17 @@ def do_status(request):
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
 def do_wget(request):
-    return do_request(request, settings.WGET_URL)
+    return do_request(request, settings.WGET_URL, True)
 
 
-def do_request(request, urlbase):
+def do_request(request, urlbase, useBody=False):
     resp = None
 
     if request.method == "POST":  # pragma: no cover
-        jo = json.loads(request.body)
+        if useBody:
+            jo = json.loads(request.body)
+        else:
+            jo = request.POST.dict()
 
         if "query" in jo:
             query = jo["query"]

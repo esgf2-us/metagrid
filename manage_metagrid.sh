@@ -148,15 +148,25 @@ function runPreCommit() {
 function runBackendTests() {
     clear
     stopDockerContainers
-    docker compose $LOCAL_COMPOSE $LOCAL_OVERLAY --profile docs run --rm django pytest
+    if ! docker compose $LOCAL_COMPOSE $LOCAL_OVERLAY --profile docs run --rm django pytest; then
+        echo "Some backend tests failed!"
+        stopDockerContainers
+        return 1
+    fi
     stopDockerContainers
+    return 0
 }
 
 function runFrontendTests() {
     clear
     cd frontend
-    yarn run test
+    if ! yarn run test; then
+        echo "Some frontend tests failed!"
+        cd ..
+        return 1
+    fi
     cd ..
+    return 0
 }
 
 function configureProduction() {
@@ -191,7 +201,7 @@ function mainMenu() {
             return 0
         elif [ "$option" = "4" ]; then
             clear
-            runPreCommit && runBackendTests && runFrontendTests && echo "All tests passed!"
+            runPreCommit && runBackendTests && runFrontendTests && echo "All tests passed!" || echo "Some tests failed!"
             return 0
         elif [ "$option" = "5" ]; then
             clear
