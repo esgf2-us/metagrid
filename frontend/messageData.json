@@ -15,5 +15,10 @@
     "v1.0.9",
     "v1.0.8"
   ],
-  "messages": [{ "title": "Current Release News", "fileName": "messages/metagrid_messages.md" }]
+  "messages": [
+    {
+      "title": "Current Release News",
+      "fileName": "messages/metagrid_messages.md"
+    }
+  ]
 }
