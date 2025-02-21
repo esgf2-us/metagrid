@@ -16,12 +16,12 @@ spec:
   {{- with .Values.ingress.className }}
   ingressClassName: {{ . }}
   {{- end }}
-  {{- if .Values.ingress.tls -}}
+  {{- if .Values.ingress.tls }}
   tls:
   - hosts:
     - {{ .Values.ingress.host | quote }}
     secretName: {{ include "metagrid.fullname" . }}-ingress-cert
-  {{- end}}
+  {{- end }}
   rules:
   - host: {{ .Values.ingress.host | quote }}
     http:
