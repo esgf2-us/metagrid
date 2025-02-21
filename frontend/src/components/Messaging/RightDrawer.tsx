@@ -1,5 +1,5 @@
 import React from 'react';
-import { Drawer, Space, Button, Collapse, Card } from 'antd';
+import { Drawer, Space, Button, Collapse } from 'antd';
 import { changeLogMessages, messageDataJSON } from './messageDisplayData';
 import MessageCard from './MessageCard';
 import { MessageData } from './types';

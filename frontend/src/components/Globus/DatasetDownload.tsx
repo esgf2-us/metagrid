@@ -604,7 +604,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     if (goal === GlobusGoals.SetEndpointPath) {
       // If endpoint urls are ready, update related values
       if (eUrlReady) {
-        const path = urlParams.get('path');
+        const path = urlParams.get('origin_path');
         const endpointId = urlParams.get('endpoint_id');
         if (path === null) {
           setCurrentGoal(GlobusGoals.None);
@@ -629,6 +629,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         }
 
         setCurrentGoal(GlobusGoals.None);
+        await dp.saveAllValues();
         redirectToRootUrl();
         return;
       }
@@ -660,6 +661,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         if (tUrlReady) {
           // Token URL is ready get tokens
           await getUrlAuthTokens();
+          await dp.saveAllValues();
           redirectToRootUrl();
           return;
         }
