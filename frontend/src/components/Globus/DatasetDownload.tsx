@@ -709,7 +709,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
       // If endpoint urls are ready, update related values
       if (eUrlReady) {
-        const path = urlParams.get('path');
+        const path = urlParams.get('origin_path');
         const endpointId = urlParams.get('endpoint_id');
         if (path === null) {
           setCurrentGoal(GlobusGoals.None);
