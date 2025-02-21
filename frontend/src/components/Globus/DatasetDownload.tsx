@@ -598,6 +598,37 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       return;
     }
 
+    const [transferToken, accessToken] = getGlobusTokens();
+    const tknsReady = tokensReady(accessToken, transferToken);
+
+    // Get tokens if they aren't ready
+    if (!tknsReady) {
+      // If auth token urls are ready, update related tokens
+      if (tUrlReady) {
+        // Token URL is ready get tokens
+        await getUrlAuthTokens();
+        await dp.saveAllValues();
+        redirectToRootUrl();
+        return;
+      }
+
+      if (!alertPopupState.show) {
+        setAlertPopupState({
+          onCancelAction: () => {
+            setCurrentGoal(GlobusGoals.None);
+            setLoadingPage(false);
+            setAlertPopupState({ ...alertPopupState, show: false });
+          },
+          onOkAction: async () => {
+            await loginWithGlobus();
+          },
+          show: true,
+          content: 'You will be redirected to obtain globus tokens. Continue?',
+        });
+      }
+      return;
+    }
+
     const savedEndpoints: GlobusEndpoint[] =
       dp.getValue<GlobusEndpoint[]>(GlobusStateKeys.savedGlobusEndpoints) || [];
     // Goal is to set the path for chosen endpoint
@@ -650,38 +681,35 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       return;
     }
 
-    const [transferToken, accessToken] = getGlobusTokens();
-    const tknsReady = tokensReady(accessToken, transferToken);
-
     // Goal is to perform a transfer
     if (goal === GlobusGoals.DoGlobusTransfer) {
       // Get tokens if they aren't ready
-      if (!tknsReady) {
-        // If auth token urls are ready, update related tokens
-        if (tUrlReady) {
-          // Token URL is ready get tokens
-          await getUrlAuthTokens();
-          await dp.saveAllValues();
-          redirectToRootUrl();
-          return;
-        }
+      // if (!tknsReady) {
+      //   // If auth token urls are ready, update related tokens
+      //   if (tUrlReady) {
+      //     // Token URL is ready get tokens
+      //     await getUrlAuthTokens();
+      //     await dp.saveAllValues();
+      //     redirectToRootUrl();
+      //     return;
+      //   }
 
-        if (!alertPopupState.show) {
-          setAlertPopupState({
-            onCancelAction: () => {
-              setCurrentGoal(GlobusGoals.None);
-              setLoadingPage(false);
-              setAlertPopupState({ ...alertPopupState, show: false });
-            },
-            onOkAction: async () => {
-              await loginWithGlobus();
-            },
-            show: true,
-            content: 'You will be redirected to obtain globus tokens. Continue?',
-          });
-        }
-        return;
-      }
+      //   if (!alertPopupState.show) {
+      //     setAlertPopupState({
+      //       onCancelAction: () => {
+      //         setCurrentGoal(GlobusGoals.None);
+      //         setLoadingPage(false);
+      //         setAlertPopupState({ ...alertPopupState, show: false });
+      //       },
+      //       onOkAction: async () => {
+      //         await loginWithGlobus();
+      //       },
+      //       show: true,
+      //       content: 'You will be redirected to obtain globus tokens. Continue?',
+      //     });
+      //   }
+      //   return;
+      // }
 
       const chosenEndpoint: GlobusEndpoint | null = dp.getValue<GlobusEndpoint>(
         GlobusStateKeys.userChosenEndpoint
