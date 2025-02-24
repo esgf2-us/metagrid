@@ -5,6 +5,8 @@ metadata:
   labels:
     app.kubernetes.io/component: node-status-backend
     {{- include "metagrid.labels" . | nindent 4 }}
+    config.txt/hash: {{ include (print $.Template.BasePath "/node_status/secret.yaml") . | sha256sum }}
+
 spec:
   {{- if not .Values.nodeStatusBackend.autoscaling.enabled }}
   replicas: {{ .Values.nodeStatusBackend.replicaCount }}

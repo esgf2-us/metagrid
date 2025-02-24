@@ -270,8 +270,8 @@ class DjangoStaticSettings(BaseSettings):
     # https://docs.djangoproject.com/en/3.2/ref/settings/#login-url
     LOGIN_URL: str = "/login/globus/"
 
-    LOGIN_REDIRECT_URL: str = "http://localhost:9443/search"
-    LOGOUT_REDIRECT_URL: str = "http://localhost:9443/search"
+    LOGIN_REDIRECT_URL: str = "/search"
+    LOGOUT_REDIRECT_URL: str = "/search"
 
     SOCIAL_AUTH_GLOBUS_SCOPE: list[str] = [
         "openid",
