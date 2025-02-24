@@ -95,8 +95,6 @@ fi
 prompt_required DOMAIN_NAME "Enter the Domain Name" "esgf-dev1.llnl.gov" "The domain name for the Django application."
 prompt_required DJANGO_ALLOWED_HOSTS "Enter the Django Allowed Hosts" '["esgf-dev1.llnl.gov", "198.128.245.131", "localhost"]' "A list of strings representing the host/domain names that this Django site can serve."
 prompt_required DJANGO_SECRET_KEY "Enter the Django Secret Key" "RxPYuuqUmCK2VHHwyqab7tt7PrL-ktuGmOPncb_wwFM" "A secret key for a particular Django installation."
-prompt_required DJANGO_LOGIN_REDIRECT_URL "Enter the Django Login Redirect URL" "https://esgf-dev1.llnl.gov/search" "The URL to redirect to after login."
-prompt_required DJANGO_LOGOUT_REDIRECT_URL "Enter the Django Logout Redirect URL" "https://esgf-dev1.llnl.gov/search" "The URL to redirect to after logout."
 
 # Prompt for output file name
 echo
