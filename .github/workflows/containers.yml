@@ -34,7 +34,8 @@ jobs:
         with:
           images: ghcr.io/esgf2-us/metagrid-frontend
           tags: |
-            type=semver,pattern={{version}}
+            type=ref,event=pr
+            type=ref,event=tag
       - uses: docker/build-push-action@v4
         with:
           cache-from: type=gha
@@ -62,7 +63,8 @@ jobs:
         with:
           images: ghcr.io/esgf2-us/metagrid-backend
           tags: |
-            type=semver,pattern={{version}}
+            type=ref,event=pr
+            type=ref,event=tag
       - uses: docker/build-push-action@v4
         with:
           cache-from: type=gha
