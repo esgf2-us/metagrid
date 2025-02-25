@@ -8,6 +8,8 @@ on:
       - 'v*'
 
   pull_request:
+    branches:
+      - '*-release'
 
   workflow_dispatch:
 
@@ -39,7 +41,7 @@ jobs:
           cache-to: type=gha,mode=max
           context: frontend/
           file: frontend/Dockerfile
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
   backend:
@@ -67,6 +69,6 @@ jobs:
           cache-to: type=gha,mode=max
           context: backend/
           file: backend/Dockerfile
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
