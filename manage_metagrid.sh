@@ -185,6 +185,10 @@ function updateVersion() {
     jq --arg new_version "$package_version" '.version = $new_version' frontend/package.json > tmp.$$.json && mv tmp.$$.json frontend/package.json
     echo "Updated package.json to version $package_version"
 
+    # Update helm/Chart.yaml
+    sed -i '' "s/^appVersion:.*/appVersion: \"$package_version\"/" helm/Chart.yaml
+    echo "Updated helm/Chart.yaml appVersion to $package_version"
+
     # Create new changelog file
     changelog_file="frontend/public/changelog/$new_version.md"
     if [ -f "$changelog_file" ]; then
