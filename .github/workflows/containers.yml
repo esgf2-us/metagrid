@@ -95,7 +95,6 @@ jobs:
         helm dependency build
 
         helm install test . \
-          --values test.yaml \
           --set frontend.image.tag=pr-${PR_NUMBER} \
           --set backend.image.tag=pr-${PR_NUMBER} \
           --wait
