@@ -186,6 +186,8 @@ function updateVersion() {
     echo "Updated package.json to version $package_version"
 
     # Update helm/Chart.yaml
+    sed -i '' "s/^version:.*/version: \"$package_version\"/" helm/Chart.yaml
+    echo "Updated helm/Chart.yaml version to $package_version"
     sed -i '' "s/^appVersion:.*/appVersion: \"$package_version\"/" helm/Chart.yaml
     echo "Updated helm/Chart.yaml appVersion to $package_version"
 
