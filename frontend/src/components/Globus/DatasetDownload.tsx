@@ -88,7 +88,7 @@ function redirectToRootUrl(): void {
   const splitUrl = window.location.href.split('?');
   if (splitUrl.length > 1) {
     const params = new URLSearchParams(window.location.search);
-    if (endpointUrlReady(params) || tokenUrlReady(params)) {
+    if (params.has('cancelled') || endpointUrlReady(params) || tokenUrlReady(params)) {
       const newUrl = splitUrl[0];
       redirectToNewURL(newUrl);
     }
@@ -285,6 +285,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                 type: 'error',
               }
             );
+            await resetTokens();
             break;
 
           default:
@@ -297,6 +298,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                 type: 'error',
               }
             );
+            await resetTokens();
             break;
         }
       })
@@ -308,6 +310,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             type: 'error',
           }
         );
+        await resetTokens();
       })
       .finally(async () => {
         setDownloadIsLoading(false);
@@ -480,6 +483,14 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   }
 
   function getCurrentGoal(): GlobusGoals {
+    const urlParams = new URLSearchParams(window.location.search);
+
+    // If cancelled key is in URL, set goal to none
+    if (urlParams.has('cancelled')) {
+      setCurrentGoal(GlobusGoals.None);
+      return GlobusGoals.None;
+    }
+
     const goal = localStorage.getItem(GlobusStateKeys.globusTransferGoalsState);
     if (goal !== null) {
       return goal as GlobusGoals;
@@ -541,12 +552,13 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   }
 
   async function redirectToSelectGlobusEndpointPath(): Promise<void> {
-    const endpointSearchURL = `https://app.globus.org/file-manager?action=${globusRedirectUrl}&method=GET&cancelUrl=${globusRedirectUrl}`;
+    const endpointSearchURL = `https://app.globus.org/helpers/browse-collections?action=${globusRedirectUrl}&method=GET&cancelurl=${globusRedirectUrl}?cancelled&filelimit=0`;
 
     setLoadingPage(true);
     await dp.saveAllValues();
     setLoadingPage(false);
     const chosenEndpoint = dp.getValue<GlobusEndpoint>(GlobusStateKeys.userChosenEndpoint);
+
     if (chosenEndpoint) {
       redirectToNewURL(`${endpointSearchURL}&origin_id=${chosenEndpoint.id}`);
     } else {
