@@ -27,7 +27,7 @@ helmfile apply --set frontend.image.tag=pr-<number> --set backend.image.tag=pr-<
 ```
 
 ### Use minikube
-After launching the tunnerl you can open https://localhost/search
+After launching the tunnel you can open https://localhost/search
 
 ```shell
 minikube tunnel
