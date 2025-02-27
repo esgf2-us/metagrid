@@ -5,7 +5,6 @@ metadata:
   labels:
     app.kubernetes.io/component: backend
     {{- include "metagrid.labels" . | nindent 4 }}
-    config.txt/hash: {{ include (print $.Template.BasePath "/backend/secret.yaml") . | sha256sum }}
 spec:
   {{- if not .Values.backend.autoscaling.enabled }}
   replicas: {{ .Values.backend.replicaCount }}
@@ -16,8 +15,9 @@ spec:
       {{- include "metagrid.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.backend.podAnnotations }}
       annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/backend/secret.yaml") . | sha256sum }}
+      {{- with .Values.backend.podAnnotations }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:

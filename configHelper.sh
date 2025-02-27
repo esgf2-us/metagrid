@@ -98,9 +98,9 @@ prompt_required DJANGO_SECRET_KEY "Enter the Django Secret Key" "RxPYuuqUmCK2VHH
 
 # Prompt for output file name
 echo
-echo "Enter the name for this overlay.yml file (default: docker-compose.generated-by-helper.yml):"
+echo "Enter the name for this overlay.yml file (default: docker-compose-local-overlay.yml):"
 read -r OUTPUT_FILE
-OUTPUT_FILE=${OUTPUT_FILE:-docker-compose.generated-by-helper.yml}
+OUTPUT_FILE=${OUTPUT_FILE:-docker-compose-local-overlay.yml}
 
 cat <<EOF >$OUTPUT_FILE
 services:

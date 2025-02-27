@@ -1,20 +1,18 @@
-TAG ?= v1.1.0-beta
+TAG ?= latest
 IMAGE ?= ghcr.io/esgf2-us/metagrid-frontend:$(TAG)
 
 .PHONY: build
 build:
-	docker build $(ARGS) -t $(IMAGE) -f docker/production/react/Dockerfile .
+	docker build $(ARGS) -t $(IMAGE) --target build .
 
-.PHONY: build-local
-build-local:
-	docker build $(ARGS) -t $(IMAGE) -f docker/local/Dockerfile .
+.PHONY: build-prod
+build-prod:
+	docker build $(ARGS) -t $(IMAGE) --target prod .
 
-.PHONY: run
-run: ARGS ?= -e RELEASE=production
-run:
-	docker run $(ARGS) -it --rm -p 3000:3000 $(IMAGE)
+.PHONY: run-%
+run-%:
+	docker run $(ARGS) -it --rm -p 8080:8080 -e RELEASE=$* $(IMAGE)
 
-.PHONY: shell
-run: ARGS ?= -e RELEASE=production
-shell:
-	docker run $(ARGS) -it --rm -p 3000:3000 --entrypoint /bin/sh $(IMAGE)
+.PHONY: shell-%
+shell-*:
+	docker run $(ARGS) -it --rm -p 8080:8080 -e RELEASE=$* --entrypoint /bin/sh $(IMAGE)
