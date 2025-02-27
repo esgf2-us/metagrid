@@ -343,3 +343,6 @@ class DjangoStaticSettings(BaseSettings):
     STATICFILES_STORAGE: str = (
         "whitenoise.storage.CompressedManifestStaticFilesStorage"
     )
+
+    # https://docs.djangoproject.com/en/5.1/ref/settings/#force-script-name
+    FORCE_SCRIPT_NAME: Optional[str] = None

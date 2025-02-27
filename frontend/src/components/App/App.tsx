@@ -506,7 +506,6 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
           <Routes>
             <Route path="/" element={<Navigate to="/search" />} />
             <Route path="/cart" element={<Navigate to="/cart/items" />} />
-            <></>
             <Route
               path="/search/*"
               element={

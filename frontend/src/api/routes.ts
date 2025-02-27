@@ -56,77 +56,77 @@ export const clickableRoute = (route: string): string => route.replace('/proxy/s
 const apiRoutes: ApiRoutes = {
   // Globus APIs
   globusAuth: {
-    path: `${window.location.origin}/proxy/globus-auth/`,
+    path: 'proxy/globus-auth/',
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Globus', HTTPCode),
   },
   globusSearchEndpoints: {
-    path: `${window.location.origin}/proxy/globus-search-endpoints/`,
+    path: `proxy/globus-search-endpoints/`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Globus', HTTPCode),
   },
   // MetaGrid APIs
   keycloakAuth: {
-    path: `${window.location.origin}/dj-rest-auth/keycloak`,
+    path: `dj-rest-auth/keycloak`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Keycloak', HTTPCode),
   },
   globusTransfer: {
-    path: `${window.location.origin}/globus/transfer`,
+    path: `globus/transfer`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Globus transfer', HTTPCode),
   },
   userInfo: {
-    path: `${window.location.origin}/dj-rest-auth/user/`,
+    path: `dj-rest-auth/user/`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('user authentication', HTTPCode),
   },
   userCart: {
-    path: `${window.location.origin}/api/v1/carts/datasets/:pk/`,
+    path: `api/v1/carts/datasets/:pk/`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('user cart', HTTPCode),
   },
   userSearches: {
-    path: `${window.location.origin}/api/v1/carts/searches/`,
+    path: `api/v1/carts/searches/`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('user saved searches', HTTPCode),
   },
   userSearch: {
-    path: `${window.location.origin}/api/v1/carts/searches/:pk/`,
+    path: `api/v1/carts/searches/:pk/`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('user saved searches', HTTPCode),
   },
   projects: {
-    path: `${window.location.origin}/api/v1/projects/`,
+    path: `api/v1/projects/`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('MetaGrid projects API', HTTPCode),
   },
   // ESGF Search API
   esgfSearch: {
-    path: `${window.location.origin}/proxy/search`,
+    path: `proxy/search`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('ESGF Search API', HTTPCode),
   },
   // ESGF Citation API (uses dummy path 'citation_url' for testing since the
   // URL is included in each Search API dataset result)
   citation: {
-    path: `${window.location.origin}/proxy/citation`,
+    path: `proxy/citation`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('ESGF Citation API', HTTPCode),
   },
   // ESGF wget API
   wget: {
-    path: `${window.location.origin}/proxy/wget`,
+    path: `proxy/wget`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('ESGF wget API', HTTPCode),
   },
   // ESGF Node Status API
   nodeStatus: {
-    path: `${window.location.origin}/proxy/status`,
+    path: `proxy/status`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('ESGF Node Status API', HTTPCode),
   },
   tempStorageGet: {
-    path: `${window.location.origin}/tempStorage/get`,
+    path: `tempStorage/get`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Temp Storage Get', HTTPCode),
   },
   tempStorageSet: {
-    path: `${window.location.origin}/tempStorage/set`,
+    path: `tempStorage/set`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Temp Storage Set', HTTPCode),
   },
   frontendConfig: {
-    path: `${window.location.origin}/frontend-config.js`,
+    path: `frontend-config.js`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Frontend Config', HTTPCode),
   },
   introMarkdown: {
-    path: `${window.location.origin}/messages/metagrid_messages.md`,
+    path: `messages/metagrid_messages.md`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Introduction Markdown', HTTPCode),
   },
 };

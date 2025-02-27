@@ -9,6 +9,7 @@ export default defineConfig(() => {
       strictPort: true,
       watch: true,
     },
+    base: process.env.HOST_SUBPATH || '/',
     build: {
       outDir: 'build',
     },
