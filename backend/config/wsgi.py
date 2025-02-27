@@ -17,6 +17,7 @@ framework.
 import os
 import sys
 
+from django.conf import settings
 from django.core.wsgi import get_wsgi_application
 
 app_path = os.path.abspath(
@@ -32,7 +33,19 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 # This application object is used by any WSGI server configured to use this
 # file. This includes Django's development server, if the WSGI_APPLICATION
 # setting points here.
-application = get_wsgi_application()
-# Apply WSGI middleware here.
-# from helloworld.wsgi import HelloWorldApplication
-# application = HelloWorldApplication(application)
+_application = get_wsgi_application()
+
+
+def application(environ, start_response):
+    script_name = settings.FORCE_SCRIPT_NAME
+    if script_name:
+        environ["SCRIPT_NAME"] = script_name
+        path_info = environ["PATH_INFO"]
+        if path_info.startswith(script_name):
+            environ["PATH_INFO"] = path_info[len(script_name) :]
+
+    scheme = environ.get("HTTP_X_SCHEME", "")
+    if scheme:
+        environ["wsgi.url_scheme"] = scheme
+
+    return _application(environ, start_response)

@@ -15,18 +15,18 @@ import { FrontendConfig } from './common/types';
 const container = document.getElementById('root');
 const root = createRoot(container!);
 
-const appRouter: React.ReactNode = (
-  <BrowserRouter>
-    <ReactJoyrideProvider>
-      <App searchQuery={getSearchFromUrl()} />
-    </ReactJoyrideProvider>
-  </BrowserRouter>
-);
-
-fetch('/frontend-config.js')
+fetch('./frontend-config.js')
   .then((response) => response.json() as Promise<FrontendConfig>)
   .then((response) => {
     window.METAGRID = response;
+
+    const appRouter: React.ReactNode = (
+      <BrowserRouter basename={window.METAGRID.HOST_SUBPATH}>
+        <ReactJoyrideProvider>
+          <App searchQuery={getSearchFromUrl()} />
+        </ReactJoyrideProvider>
+      </BrowserRouter>
+    );
 
     if (window.METAGRID.GOOGLE_ANALYTICS_TRACKING_ID != null) {
       // Setup Google Analytics

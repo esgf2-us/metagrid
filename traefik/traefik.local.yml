@@ -16,49 +16,53 @@ http:
       service: django
       rule: >-
         Host(`{{ env "DOMAIN_NAME" }}`) &&   (
-        PathPrefix(`/account-confirm-email`) ||
-        PathPrefix(`/accounts`)              ||
-        PathPrefix(`/api`)                   ||
-        PathPrefix(`/complete`)              ||
-        PathPrefix(`/frontend-config.js`)    ||
-        PathPrefix(`/globus`)                ||
-        PathPrefix(`/login`)                 ||
-        PathPrefix(`/proxy`)                 ||
-        PathPrefix(`/redoc`)                 ||
-        PathPrefix(`/swagger`)               ||
-        PathPrefix(`/tempStorage`)            )
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/account-confirm-email`) ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/accounts`)              ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/api`)                   ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/complete`)              ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/frontend-config.js`)    ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/globus`)                ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/login`)                 ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/proxy`)                 ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/redoc`)                 ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/swagger`)               ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/tempStorage`)            )
       entryPoints:
         - web
+      middlewares:
+      - subpathHeader
 
     backend-secure:
       service: django
       rule: >-
         Host(`{{ env "DOMAIN_NAME" }}`) &&   (
-        PathPrefix(`/account-confirm-email`) ||
-        PathPrefix(`/accounts`)              ||
-        PathPrefix(`/api`)                   ||
-        PathPrefix(`/complete`)              ||
-        PathPrefix(`/frontend-config.js`)    ||
-        PathPrefix(`/globus`)                ||
-        PathPrefix(`/login`)                 ||
-        PathPrefix(`/proxy`)                 ||
-        PathPrefix(`/redoc`)                 ||
-        PathPrefix(`/swagger`)               ||
-        PathPrefix(`/tempStorage`)            )
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/account-confirm-email`) ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/accounts`)              ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/api`)                   ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/complete`)              ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/frontend-config.js`)    ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/globus`)                ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/login`)                 ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/proxy`)                 ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/redoc`)                 ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/swagger`)               ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/tempStorage`)            )
       entryPoints:
         - web-secure
+      middlewares:
+      - subpathHeader
 
     frontend:
       service: react
       rule: >-
-        Host(`{{ env "DOMAIN_NAME" }}`) && PathPrefix(`/`)
+        Host(`{{ env "DOMAIN_NAME" }}`) && PathPrefix(`{{ env "HOST_SUBPATH" }}/`)
       entryPoints:
         - web
 
     frontend-secure:
       service: react
       rule: >-
-        Host(`{{ env "DOMAIN_NAME" }}`) && PathPrefix(`/`)
+        Host(`{{ env "DOMAIN_NAME" }}`) && PathPrefix(`{{ env "HOST_SUBPATH" }}/`)
       entryPoints:
         - web-secure
   services:
@@ -70,6 +74,14 @@ http:
       loadBalancer:
         servers:
           - url: http://react:8080
+  middlewares:
+    subpathHeader:
+      # Add a custom middleware to add the 'X-Forwarded-Prefix' header to the request
+      # This header is used by Django's middleware to determine the request's full URL
+      # and extract the subpath
+      headers:
+        customRequestHeaders:
+          SCRIPT_NAME: '{{ env "HOST_SUBPATH" }}'
 
 providers:
   # https://docs.traefik.io/master/providers/file/

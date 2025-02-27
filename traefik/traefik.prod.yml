@@ -26,43 +26,45 @@ http:
       service: django
       rule: >-
         Host(`{{ env "DOMAIN_NAME" }}`) &&   (
-        PathPrefix(`/account-confirm-email`) ||
-        PathPrefix(`/accounts`)              ||
-        PathPrefix(`/api`)                   ||
-        PathPrefix(`/complete`)              ||
-        PathPrefix(`/frontend-config.js`)    ||
-        PathPrefix(`/globus`)                ||
-        PathPrefix(`/login`)                 ||
-        PathPrefix(`/proxy`)                 ||
-        PathPrefix(`/redoc`)                 ||
-        PathPrefix(`/swagger`)               ||
-        PathPrefix(`/tempStorage`)            )
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/account-confirm-email`) ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/accounts`)              ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/api`)                   ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/complete`)              ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/frontend-config.js`)    ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/globus`)                ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/login`)                 ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/proxy`)                 ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/redoc`)                 ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/swagger`)               ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/tempStorage`)            )
       entryPoints:
         - web
       middlewares:
         - redirect
         - csrf
+        - subpathHeader
 
     backend-secure:
       service: django
       rule: >-
         Host(`{{ env "DOMAIN_NAME" }}`) &&   (
-        PathPrefix(`/account-confirm-email`) ||
-        PathPrefix(`/accounts`)              ||
-        PathPrefix(`/api`)                   ||
-        PathPrefix(`/complete`)              ||
-        PathPrefix(`/frontend-config.js`)    ||
-        PathPrefix(`/globus`)                ||
-        PathPrefix(`/login`)                 ||
-        PathPrefix(`/proxy`)                 ||
-        PathPrefix(`/redoc`)                 ||
-        PathPrefix(`/swagger`)               ||
-        PathPrefix(`/tempStorage`)            )
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/account-confirm-email`) ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/accounts`)              ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/api`)                   ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/complete`)              ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/frontend-config.js`)    ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/globus`)                ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/login`)                 ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/proxy`)                 ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/redoc`)                 ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/swagger`)               ||
+        PathPrefix(`{{ env "HOST_SUBPATH" }}/tempStorage`)            )
       entryPoints:
         - web-secure
       middlewares:
         - csrf
         - secure-headers
+        - subpathHeader
       tls:
         # https://docs.traefik.io/master/routing/routers/#certresolver
         certResolver: letsencrypt
@@ -70,26 +72,35 @@ http:
     frontend:
       service: react
       rule: >-
-        Host(`{{ env "DOMAIN_NAME" }}`) && PathPrefix(`/`)
+        Host(`{{ env "DOMAIN_NAME" }}`) && PathPrefix(`{{ env "HOST_SUBPATH" }}/`)
 
       entryPoints:
         - web
       middlewares:
         - redirect
+        - subpathHeader
 
     frontend-secure:
       service: react
       rule: >-
-        Host(`{{ env "DOMAIN_NAME" }}`) && PathPrefix(`/`)
+        Host(`{{ env "DOMAIN_NAME" }}`) && PathPrefix(`{{ env "HOST_SUBPATH" }}/`)
 
       entryPoints:
         - web-secure
       middlewares:
         - secure-headers
+        - subpathHeader
       tls:
         # https://docs.traefik.io/master/routing/routers/#certresolver
         certResolver: letsencrypt
   middlewares:
+    subpathHeader:
+      # Add a custom middleware to add the 'X-Forwarded-Prefix' header to the request
+      # This header is used by Django's middleware to determine the request's full URL
+      # and extract the subpath
+      headers:
+        customRequestHeaders:
+          SCRIPT_NAME: '{{ env "HOST_SUBPATH" }}'
     redirect:
       # https://docs.traefik.io/master/middlewares/redirectscheme/
       redirectScheme:
