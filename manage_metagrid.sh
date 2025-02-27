@@ -191,6 +191,10 @@ function updateVersion() {
     sed -i '' "s/^appVersion:.*/appVersion: \"$package_version\"/" helm/Chart.yaml
     echo "Updated helm/Chart.yaml appVersion to $package_version"
 
+    # Update helm/helmfile.yaml
+    sed -i '' "11s/^  version:.*/  version: \"$package_version\"/" helm/helmfile.yaml
+    echo "Updated helm/helmfile.yaml version to $package_version"
+
     # Create new changelog file
     changelog_file="frontend/public/changelog/$new_version.md"
     if [ -f "$changelog_file" ]; then
