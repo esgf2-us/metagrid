@@ -21,3 +21,6 @@
 .idea/
 *.tmproj
 .vscode/
+# Other files
+helmfile.yaml
+test.yaml
