@@ -32,9 +32,7 @@ class PKCE {
   exchangeForAccessToken(): Promise<GlobusTokenResponse> {
     const test = tempStorageGetMock('pkce-pass');
     if (test === true) {
-      return (
-        Promise.resolve(globusTokenResponseFixture()) || Promise.resolve({})
-      );
+      return Promise.resolve(globusTokenResponseFixture()) || Promise.resolve({});
     }
     return Promise.reject();
   }

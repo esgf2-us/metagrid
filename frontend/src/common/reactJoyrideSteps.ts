@@ -1,4 +1,3 @@
-import { globusEnabledNodes } from '../env';
 import { JoyrideTour } from './JoyrideTour';
 import { TargetObject } from './TargetObject';
 import { AppPage } from './types';
@@ -31,9 +30,7 @@ export const elementExists = (className: string): boolean => {
 };
 
 export const elementHasState = (classname: string, state: string): boolean => {
-  const elem: HTMLElement = document.getElementsByClassName(
-    classname
-  )[0] as HTMLElement;
+  const elem: HTMLElement = document.getElementsByClassName(classname)[0] as HTMLElement;
   if (elem && elem.classList) {
     return elem.classList.contains(`target-state_${state}`);
   }
@@ -56,9 +53,7 @@ const mainTableEmpty = (): boolean => {
 
 /* istanbul ignore next */
 const cartIsEmpty = (): boolean => {
-  const elem = document.querySelector(
-    '#root .ant-tabs-tabpane-active .ant-empty-description'
-  );
+  const elem = document.querySelector('#root .ant-tabs-tabpane-active .ant-empty-description');
   if (elem) {
     return elem.innerHTML === 'Your cart is empty';
   }
@@ -67,9 +62,7 @@ const cartIsEmpty = (): boolean => {
 
 /* istanbul ignore next */
 const searchLibraryIsEmpty = (): boolean => {
-  const elem = document.querySelector(
-    '#root .ant-tabs-tabpane-active .ant-empty-description'
-  );
+  const elem = document.querySelector('#root .ant-tabs-tabpane-active .ant-empty-description');
   if (elem) {
     return elem.innerHTML === 'Your search library is empty';
   }
@@ -93,6 +86,7 @@ export const navBarTargets = {
   newsBtn: new TargetObject(),
   signInBtn: new TargetObject(),
   helpBtn: new TargetObject(),
+  themeSwitchBtn: new TargetObject(),
 };
 
 export const searchTableTargets = {
@@ -252,9 +246,7 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
       'top-start',
       /* istanbul ignore next */
       async () => {
-        clickFirstElement(
-          topDataRowTargets.searchResultsRowExpandIcon.selector()
-        );
+        clickFirstElement(topDataRowTargets.searchResultsRowExpandIcon.selector());
         await delay(500);
       }
     )
@@ -308,9 +300,7 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
         if (elementExists(innerDataRowTargets.citationTab.class())) {
           clickFirstElement(innerDataRowTargets.citationTab.selector());
         } else if (!elementExists(innerDataRowTargets.additionalTab.class())) {
-          clickFirstElement(
-            topDataRowTargets.searchResultsRowContractIcon.selector()
-          );
+          clickFirstElement(topDataRowTargets.searchResultsRowContractIcon.selector());
         }
       }
     )
@@ -324,9 +314,7 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
         if (elementExists(innerDataRowTargets.additionalTab.class())) {
           clickFirstElement(innerDataRowTargets.additionalTab.selector());
         } else {
-          clickFirstElement(
-            topDataRowTargets.searchResultsRowContractIcon.selector()
-          );
+          clickFirstElement(topDataRowTargets.searchResultsRowContractIcon.selector());
         }
       }
     )
@@ -336,9 +324,7 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
       'top-start',
       /* istanbul ignore next */
       async () => {
-        clickFirstElement(
-          topDataRowTargets.searchResultsRowContractIcon.selector()
-        );
+        clickFirstElement(topDataRowTargets.searchResultsRowContractIcon.selector());
         await delay(300);
       }
     );
@@ -416,6 +402,11 @@ export const createMainPageTour = (): JoyrideTour => {
       'bottom'
     )
     .addNextStep(
+      navBarTargets.themeSwitchBtn.selector(),
+      'This button allows you to switch between light and dark themes for Metagrid.',
+      'bottom'
+    )
+    .addNextStep(
       leftSidebarTargets.selectProjectBtn.selector(),
       'To begin a search, you would first select a project from this drop-down.',
       'right'
@@ -428,7 +419,7 @@ export const createMainPageTour = (): JoyrideTour => {
   );
 
   // Add tour elements for globus ready filter (if globus enabled nodes has been configured)
-  if (globusEnabledNodes.length > 0) {
+  if (window.METAGRID.GLOBUS_NODES.length > 0) {
     tour
       .addNextStep(
         leftSidebarTargets.filterByGlobusTransfer.selector(),
@@ -475,9 +466,7 @@ export const createMainPageTour = (): JoyrideTour => {
         await delay(300);
         // Close facet panels if more than one is open
         if (elementExists(leftSidebarTargets.facetFormCollapseAllBtn.class())) {
-          clickFirstElement(
-            leftSidebarTargets.facetFormCollapseAllBtn.selector()
-          );
+          clickFirstElement(leftSidebarTargets.facetFormCollapseAllBtn.selector());
           await delay(50);
         }
       }
@@ -500,9 +489,7 @@ export const createMainPageTour = (): JoyrideTour => {
       /* istanbul ignore next */
       async () => {
         // Open general facets
-        clickFirstElement(
-          leftSidebarTargets.facetFormCollapseAllBtn.selector()
-        );
+        clickFirstElement(leftSidebarTargets.facetFormCollapseAllBtn.selector());
         await delay(300);
       }
     )
@@ -609,9 +596,7 @@ export const createMainPageTour = (): JoyrideTour => {
   return tour;
 };
 
-export const createCartItemsTour = (
-  setCurrentPage: (page: number) => void
-): JoyrideTour => {
+export const createCartItemsTour = (setCurrentPage: (page: number) => void): JoyrideTour => {
   let cartItemsAdded = false;
 
   const tour = new JoyrideTour(TourTitles.Cart)
@@ -658,9 +643,7 @@ export const createCartItemsTour = (
           'First we will click this button to load results from a project into the search table...',
           'right',
           () => {
-            clickFirstElement(
-              leftSidebarTargets.projectSelectLeftSideBtn.selector()
-            );
+            clickFirstElement(leftSidebarTargets.projectSelectLeftSideBtn.selector());
           }
         )
         .addNextStep(
@@ -797,9 +780,7 @@ export const createCollectionsFormTour = (): JoyrideTour => {
       'auto',
       /* istanbul ignore next */
       async () => {
-        clickFirstElement(
-          manageCollectionsTourTargets.mySavedCollectionsPanel.selector()
-        );
+        clickFirstElement(manageCollectionsTourTargets.mySavedCollectionsPanel.selector());
         await delay(500);
       }
     )
@@ -814,9 +795,7 @@ export const createCollectionsFormTour = (): JoyrideTour => {
       () => {
         // Clean-up step for when the tour is complete (or skipped)
         return async () => {
-          clickFirstElement(
-            manageCollectionsTourTargets.mySavedCollectionsPanel.selector()
-          );
+          clickFirstElement(manageCollectionsTourTargets.mySavedCollectionsPanel.selector());
           await delay(300);
         };
       }
@@ -825,9 +804,7 @@ export const createCollectionsFormTour = (): JoyrideTour => {
   return tour;
 };
 
-export const createSearchCardTour = (
-  setCurrentPage: (page: number) => void
-): JoyrideTour => {
+export const createSearchCardTour = (setCurrentPage: (page: number) => void): JoyrideTour => {
   let searchSaved = false;
   const tour = new JoyrideTour(TourTitles.Searches)
     .addNextStep(
@@ -873,9 +850,7 @@ export const createSearchCardTour = (
           'First we will click this button to load results from a project into the search table...',
           'right',
           () => {
-            clickFirstElement(
-              leftSidebarTargets.projectSelectLeftSideBtn.selector()
-            );
+            clickFirstElement(leftSidebarTargets.projectSelectLeftSideBtn.selector());
           }
         )
         .addNextStep(
@@ -1003,11 +978,7 @@ export const createNodeStatusTour = (): JoyrideTour => {
       nodeTourTargets.sourceColHeader.selector(),
       'This column shows links to the THREDDS catalog of its respective node.'
     )
-    .addNextStep(
-      'body',
-      'This concludes the overview of the node status page.',
-      'center'
-    );
+    .addNextStep('body', 'This concludes the overview of the node status page.', 'center');
 
   return tour;
 };

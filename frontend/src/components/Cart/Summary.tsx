@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Collapse, Divider, List } from 'antd';
+import { Card, Collapse, Divider, List, Typography } from 'antd';
 import { useRecoilState } from 'recoil';
 import Button from '../General/Button';
 import cartImg from '../../assets/img/cart.svg';
@@ -31,20 +31,18 @@ export type Props = {
   userCart: UserCart | [];
 };
 
+const { Title, Link } = Typography;
 const dp: DataPersister = DataPersister.Instance;
 
 const Summary: React.FC<React.PropsWithChildren<Props>> = ({ userCart }) => {
-  const [taskItems, setTaskItems] = useRecoilState<GlobusTaskItem[]>(
-    globusTaskItems
-  );
+  const [taskItems, setTaskItems] = useRecoilState<GlobusTaskItem[]>(globusTaskItems);
   dp.addNewVar(GlobusStateKeys.globusTaskItems, [], setTaskItems);
 
   let numFiles = 0;
   let totalDataSize = '0';
   if (userCart.length > 0) {
     numFiles = (userCart as RawSearchResults).reduce(
-      (acc: number, dataset: RawSearchResult) =>
-        acc + (dataset.number_of_files || 0),
+      (acc: number, dataset: RawSearchResult) => acc + (dataset.number_of_files || 0),
       0
     );
 
@@ -66,20 +64,21 @@ const Summary: React.FC<React.PropsWithChildren<Props>> = ({ userCart }) => {
         <img style={styles.image} src={folderImg} alt="Folder" />
       </div>
 
-      <h1 style={styles.summaryHeader}>Your Cart Summary</h1>
+      <Title level={3} style={styles.summaryHeader}>
+        Your Cart Summary
+      </Title>
 
       <Divider />
 
-      <h1>
-        Number of Datasets:{' '}
-        <span style={styles.statistic}>{userCart.length}</span>
-      </h1>
-      <h1>
+      <Title level={4}>
+        Number of Datasets: <span style={styles.statistic}>{userCart.length}</span>
+      </Title>
+      <Title level={4}>
         Number of Files: <span style={styles.statistic}>{numFiles}</span>
-      </h1>
-      <h1>
+      </Title>
+      <Title level={4}>
         Total File Size: <span style={styles.statistic}>{totalDataSize}</span>
-      </h1>
+      </Title>
       <Divider />
 
       {taskItems.length > 0 && (
@@ -89,17 +88,12 @@ const Summary: React.FC<React.PropsWithChildren<Props>> = ({ userCart }) => {
               {
                 key: '1',
                 label: (
-                  <h3 style={{ margin: 0 }}>
+                  <Title level={5} style={{ margin: 0 }}>
                     Task Submit History
-                    <Button
-                      size="small"
-                      danger
-                      style={{ float: 'right' }}
-                      onClick={clearAllTasks}
-                    >
-                      Clear All
+                    <Button size="small" danger style={{ float: 'right' }} onClick={clearAllTasks}>
+                      <span data-testid="clear-all-submitted-globus-tasks">Clear All</span>
                     </Button>
-                  </h3>
+                  </Title>
                 ),
                 children: (
                   <List
@@ -112,13 +106,9 @@ const Summary: React.FC<React.PropsWithChildren<Props>> = ({ userCart }) => {
                           <List.Item.Meta
                             title={`Submitted: ${task.submitDate}`}
                             description={
-                              <a
-                                href={task.taskStatusURL}
-                                target="_blank"
-                                rel="noreferrer"
-                              >
+                              <Link href={task.taskStatusURL} target="_blank" rel="noreferrer">
                                 View Task In Globus
-                              </a>
+                              </Link>
                             }
                           />
                         </Card>

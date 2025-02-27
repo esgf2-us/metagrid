@@ -11,7 +11,7 @@ GitHub Flow aligns with **continuous delivery** of modern web applications where
 
 ### How to Use GitHub Flow
 
-![GitHub Flow Diagram](https://i.stack.imgur.com/ChShh.png)
+![GitHub Flow Diagram](../images/gitflow.png)
 
 1. Fork the repo and create a support branch
    - Forking ensures the upstream repository can only be affected through a pull request (PR)
@@ -52,38 +52,6 @@ The repository uses the `pre-commit` package to manage pre-commit hooks for the 
 These hooks help enforce software standards and identify simple issues at the commit level before submitting code reviews.
 
 ![GitHub Flow Diagram](../images/pre-commit-flow.svg)
-
-#### Helpful Commands
-
-Install into your cloned repo
-
-```bash
-# Activate virtual environment
-source activate backend/venv/bin/activate
-# Install into your repo's .git directory
-pre-commit install
-```
-
-Automatically run all pre-commit hooks (just commit)
-
-```bash
-git commit -m '...'
-```
-
-![Pre-commit Output](../images/pre-commit-passing.png)
-
-Manually run all pre-commit hooks
-
-```bash
-pre-commit run --all-files.
-```
-
-Run individual hook
-
-```bash
-# Available hook ids: trailing-whitespace, end-of-file-fixer, check-yaml, black, isort, flake8, mypy
-pre-commit run <hook_id>.
-```
 
 ### Branching
 
@@ -162,7 +130,7 @@ Source: [https://blog.carbonfive.com/always-squash-and-rebase-your-git-commits/]
 
 ##### Ways to Run Tools
 
-1. Using `pre-commit` - recommend in most cases, commands found [here](../getting_started_local#helpful-commands)
+1. Using `pre-commit` - recommend in most cases, commands found [here](getting_started_local.md#23-helpful-commands)
 2. Using IDE/text editor - recommended alongside #1 for integrated linting and formatting, only VSCode `settings.json` file provided for configuration
 3. Using terminal to run standalone tool - useful to test configs. Visit the tool's site for a list of commands
 

@@ -1,4 +1,3 @@
-import { mockConfig } from '../test/jestTestFunctions';
 import {
   getCurrentAppPage,
   delay,
@@ -11,6 +10,7 @@ import {
   createNodeStatusTour,
 } from './reactJoyrideSteps';
 import { AppPage } from './types';
+import { mockConfig } from '../test/jestTestFunctions';
 
 describe('Test reactJoyrideStep util functions', () => {
   it('returns a promise of specific delay length', async () => {
@@ -69,9 +69,7 @@ describe('Test reactJoyrideStep util functions', () => {
 
     expect(elementExists('testElement')).toEqual(true);
     expect(elementHasState('invalidClass', 'target')).toEqual(false);
-    expect(
-      elementHasState('testElement target-state_testing', 'testing')
-    ).toEqual(true);
+    expect(elementHasState('testElement target-state_testing', 'testing')).toEqual(true);
   });
 
   it('clicks the specified element', () => {
@@ -93,13 +91,13 @@ describe('Test reactJoyrideStep util functions', () => {
     document.body.appendChild(root);
 
     // Test main tour that has no globus nodes
-    mockConfig.globusEnabledNodes = [];
+    mockConfig.GLOBUS_NODES = [];
 
     const mainTourNoGlobus = createMainPageTour();
     expect(mainTourNoGlobus).toBeTruthy();
 
     // Test main tour that includes globus options
-    mockConfig.globusEnabledNodes = ['node1', 'node2', 'node3'];
+    mockConfig.GLOBUS_NODES = ['node1', 'node2', 'node3'];
 
     const mainTourWithGlobus = createMainPageTour();
     expect(mainTourWithGlobus).toBeTruthy();

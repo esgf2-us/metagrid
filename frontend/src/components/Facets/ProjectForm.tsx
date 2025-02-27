@@ -56,8 +56,7 @@ const ProjectsForm: React.FC<React.PropsWithChildren<Props>> = ({
   if (projectsFetched) {
     const { results } = projectsFetched;
     const initialValues = {
-      project:
-        (activeSearchQuery.project as RawProject).name || results[0].name,
+      project: (activeSearchQuery.project as RawProject).name || results[0].name,
     };
     const projectOptions = results.map((project) => {
       return { value: project.name, label: project.name };

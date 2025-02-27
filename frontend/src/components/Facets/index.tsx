@@ -1,4 +1,4 @@
-import { Button, Tooltip } from 'antd';
+import { Button, Tooltip, Typography } from 'antd';
 import React, { useEffect } from 'react';
 import { useAsync } from 'react-async';
 import { fetchProjects, ResponseError } from '../../api';
@@ -6,12 +6,7 @@ import { leftSidebarTargets } from '../../common/reactJoyrideSteps';
 import { objectIsEmpty } from '../../common/utils';
 import Divider from '../General/Divider';
 import { NodeStatusArray } from '../NodeStatus/types';
-import {
-  ActiveSearchQuery,
-  ResultType,
-  VersionDate,
-  VersionType,
-} from '../Search/types';
+import { ActiveSearchQuery, ResultType, VersionDate, VersionType } from '../Search/types';
 import FacetsForm from './FacetsForm';
 import ProjectForm from './ProjectForm';
 import { ActiveFacets, ParsedFacets, RawProject } from './types';
@@ -48,6 +43,8 @@ const Facets: React.FC<React.PropsWithChildren<Props>> = ({
 }) => {
   const { data, error, isLoading } = useAsync(fetchProjects);
 
+  const { Title } = Typography;
+
   const [curProject, setCurProject] = React.useState<RawProject>();
 
   const handleSubmitProjectForm = (selectedProject: string): void => {
@@ -77,7 +74,7 @@ const Facets: React.FC<React.PropsWithChildren<Props>> = ({
       style={styles.form}
       className={leftSidebarTargets.leftSideBar.class()}
     >
-      <h3>Select a Project</h3>
+      <Title level={5}>Select a Project</Title>
       <ProjectForm
         activeSearchQuery={activeSearchQuery}
         projectsFetched={data}
@@ -93,7 +90,7 @@ const Facets: React.FC<React.PropsWithChildren<Props>> = ({
             target="_blank"
             style={{ marginTop: '10px' }}
           >
-            {curProject.name} Website
+            {curProject.name} Data Info
           </Button>
         </Tooltip>
       )}

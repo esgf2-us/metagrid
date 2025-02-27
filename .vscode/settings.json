@@ -53,16 +53,18 @@
   "typescript.updateImportsOnFileMove.enabled": "always",
   // ESLint
   // -----------------------------
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact"
-  ],
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
   "eslint.workingDirectories": ["./frontend/"],
   // Jest
   // -----------------------------
-  "jest.pathToJest": "yarn test:watch",
+  "jest.rootPath": "./frontend/src",
+  "jest.jestCommandLine": "yarn jest",
+  "jest.monitorLongRun": "off",
+  "jest.enable": true,
+  "jest.runMode": {
+    "type": "on-demand",
+    "coverage": true
+  },
   // HTML, CSS, JSON
   // -----------------------------
   "[html]": {
@@ -78,5 +80,6 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "python.analysis.extraPaths": ["backend/venv/bin/python"],
-  "editor.formatOnSave": true
+  "python.testing.pytestEnabled": true,
+  "python.testing.pytestArgs": ["backend"]
 }

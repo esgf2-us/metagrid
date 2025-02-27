@@ -5,15 +5,9 @@ import messageDisplayData from './messageDisplayData';
 import WelcomeTemplate from './Templates/Welcome';
 import ChangeLogTemplate from './Templates/ChangeLog';
 import { MessageActions, MessageData, MessageTemplates } from './types';
-import {
-  RawTourState,
-  ReactJoyrideContext,
-} from '../../contexts/ReactJoyrideContext';
+import { RawTourState, ReactJoyrideContext } from '../../contexts/ReactJoyrideContext';
 import { welcomeTour } from '../../common/reactJoyrideSteps';
-import {
-  getLastMessageSeen,
-  setStartupMessageAsSeen,
-} from '../../common/utils';
+import { getLastMessageSeen, setStartupMessageAsSeen } from '../../common/utils';
 
 const getMessageData = (msgId: string): MessageData | undefined => {
   const messages: MessageData[] = messageDisplayData.messageData;
@@ -33,13 +27,9 @@ const getMessageTemplate = (
   const { template, data: props } = msgData;
   switch (template) {
     case MessageTemplates.ChangeLog:
-      return (
-        <ChangeLogTemplate templateData={props} templateActions={msgActions} />
-      );
+      return <ChangeLogTemplate templateData={props} templateActions={msgActions} />;
     default:
-      return (
-        <WelcomeTemplate templateData={props} templateActions={msgActions} />
-      );
+      return <WelcomeTemplate templateData={props} templateActions={msgActions} />;
   }
 };
 
@@ -98,10 +88,7 @@ const StartPopup: React.FC<React.PropsWithChildren<unknown>> = () => {
         style={style}
         centered
       >
-        <p>
-          Questions, suggestions, or problems? Please visit our GitHub page to
-          open an issue.
-        </p>
+        <p>Questions, suggestions, or problems? Please visit our GitHub page to open an issue.</p>
         <div
           style={{
             display: 'flex',

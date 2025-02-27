@@ -11,10 +11,7 @@ import {
   createNodeStatusTour,
   TourTitles,
 } from '../../../common/reactJoyrideSteps';
-import {
-  RawTourState,
-  ReactJoyrideContext,
-} from '../../../contexts/ReactJoyrideContext';
+import { RawTourState, ReactJoyrideContext } from '../../../contexts/ReactJoyrideContext';
 import { MessageActions, TemplateProps, WelcomeData } from '../types';
 
 const WelcomeTemplate: React.FC<React.PropsWithChildren<TemplateProps>> = ({
@@ -62,34 +59,22 @@ const WelcomeTemplate: React.FC<React.PropsWithChildren<TemplateProps>> = ({
       <Card>
         <Row gutter={[16, 16]}>
           <Col span={12}>
-            <Button
-              style={{ marginLeft: '10px', width: '180px' }}
-              onClick={startMainPageTour}
-            >
+            <Button style={{ marginLeft: '10px', width: '180px' }} onClick={startMainPageTour}>
               {TourTitles.Main}
             </Button>
           </Col>
           <Col span={12}>
-            <Button
-              style={{ marginLeft: '10px', width: '180px' }}
-              onClick={startCartPageTour}
-            >
+            <Button style={{ marginLeft: '10px', width: '180px' }} onClick={startCartPageTour}>
               {TourTitles.Cart}
             </Button>
           </Col>
           <Col span={12}>
-            <Button
-              style={{ marginLeft: '10px', width: '180px' }}
-              onClick={startSearchCardTour}
-            >
+            <Button style={{ marginLeft: '10px', width: '180px' }} onClick={startSearchCardTour}>
               {TourTitles.Searches}
             </Button>
           </Col>
           <Col span={12}>
-            <Button
-              style={{ marginLeft: '10px', width: '180px' }}
-              onClick={startNodeStatusTour}
-            >
+            <Button style={{ marginLeft: '10px', width: '180px' }} onClick={startNodeStatusTour}>
               {TourTitles.Node}
             </Button>
           </Col>

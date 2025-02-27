@@ -1,0 +1,206 @@
+nameOverride: ""
+fullnameOverride: ""
+
+ingress:
+  enabled: false
+  tls: false
+  host:
+  className: ""
+  labels: {}
+  annotations: {}
+
+config:
+  PGHOST: '{{ include "postgresql-ha.pgpool" .Subcharts.postgresql }}'
+  PGUSER: '{{ include "postgresql-ha.postgresqlUsername" .Subcharts.postgresql }}'
+  PGPASSWORD: '{{ include "postgresql-ha.postgresqlPassword" .Subcharts.postgresql }}'
+  GUNICORN_WORKERS: '2'
+  METAGRID_SEARCH_URL: https://esgf-node.ornl.gov/esg-search/search
+  METAGRID_WGET_URL: https://esgf-node.ornl.gov/esg-search/wget
+  METAGRID_STATUS_URL: http://{{ include "metagrid.fullname" . }}-node-status-backend:9090/api/v1/query?query=probe_success%7Bjob%3D%22http_2xx%22%2C+target%3D~%22.%2Athredds.%2A%22%7D
+  # TODO implement logic to require these when using globus only, for now adding placeholders
+  METAGRID_SOCIAL_AUTH_GLOBUS_KEY: "key"
+  METAGRID_SOCIAL_AUTH_GLOBUS_SECRET: "secret"
+  METAGRID_GLOBUS_CLIENT_ID: "clientID"
+
+frontend:
+  replicaCount: 1
+
+  image:
+    repository: ghcr.io/esgf2-us/metagrid-frontend
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+
+  imagePullSecrets: []
+
+  serviceAccount:
+    create: true
+    automount: false
+    annotations: {}
+
+  podAnnotations: {}
+  podLabels: {}
+  podSecurityContext: {}
+
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+  service:
+    type: ClusterIP
+    port: 8080
+
+  resources: {}
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+
+  volumes: []
+  volumeMounts: []
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+backend:
+  admin:
+    create: false
+  migrateJob:
+    enabled: true
+    backoffLimit: 4
+
+  projects: # Example projects
+  #
+  # projects: |
+  #   group_descriptions = {
+  #     "General": "Least verbose, typically returns many results",
+  #   }
+  #   projects = [
+  #     {
+  #       "name": "Example",
+  #       "full_name": "Example project",
+  #       ...
+  #       "facets_by_group": {
+  #         "General": ["activity_id", "data_node"],
+  #       }
+  #     }
+  #   ]
+
+  replicaCount: 1
+
+  image:
+    repository: ghcr.io/esgf2-us/metagrid-backend
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: ""
+
+  imagePullSecrets: []
+
+  serviceAccount:
+    create: true
+    automount: false
+    annotations: {}
+
+  podAnnotations: {}
+  podLabels: {}
+  podSecurityContext: {}
+  securityContext: {}
+
+  service:
+    type: ClusterIP
+    port: 5000
+
+  resources: {}
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+
+  volumes: []
+  volumeMounts: []
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+postgresql:
+  enabled: true
+  nameOverride: pg
+  backup:
+    enabled: true
+    cronjob:
+      podSecurityContext:
+        enabled: false
+
+  # -- Enabled persistence
+  persistence:
+    enabled: true
+
+  postgresql:
+    replicaCount: 1
+    username: postgres
+    password: postgres
+    repmgrPassword: repmgr
+
+  pgpool:
+    adminPassword: pgpool-admin
+
+nodeStatusBackend:
+  enabled: true
+
+  replicaCount: 1
+  podAnnotations: {}
+  podLabels: {}
+
+  serviceAccount:
+    create: true
+    automount: false
+    annotations: {}
+
+  imagePullSecrets: []
+  podSecurityContext: {}
+  volumeMounts: []
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+  service:
+    type: ClusterIP
+    port: 9090
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 100
+    targetCPUUtilizationPercentage: 80
+    # targetMemoryUtilizationPercentage: 80
+
+  prometheus:
+    image:
+      repository: quay.io/prometheus/prometheus
+      pullPolicy: IfNotPresent
+      tag: latest
+
+    volumes: []
+    securityContext: {}
+    resources: {}
+
+  blackbox:
+    image:
+      repository: quay.io/prometheus/blackbox-exporter
+      pullPolicy: IfNotPresent
+      tag: latest
+
+    volumes: []
+    securityContext: {}
+    resources: {}

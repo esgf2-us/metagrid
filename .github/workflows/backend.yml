@@ -10,22 +10,17 @@ defaults:
     working-directory: backend
 
 env:
-  DJANGO_SETTINGS_MODULE: metagrid.config.local
-  DOMAIN_NAME: http://localhost:8000
-  DJANGO_SECURE_SSL_REDIRECT: False
-  CORS_ORIGIN_WHITELIST: http://localhost:3000
-  KEYCLOAK_URL: https://esgf-login.ceda.ac.uk/
-  KEYCLOAK_REALM: esgf
-  KEYCLOAK_CLIENT_ID: metagrid-localhost
-  DATABASE_URL: pgsql://postgres:postgres@localhost:5432/postgres
-  REACT_APP_SEARCH_URL: https://esgf-node.llnl.gov/esg-search/search
-  REACT_APP_WGET_API_URL: https://esgf-node.llnl.gov/esg-search/wget
-  REACT_APP_ESGF_NODE_STATUS_URL: https://aims2.llnl.gov/metagrid-backend/proxy/status
-  REACT_APP_ESGF_SOLR_URL: https://esgf-fedtest.llnl.gov/solr
-  DJANGO_LOGIN_REDIRECT_URL: http://localhost:3000/search
-  DJANGO_LOGOUT_REDIRECT_URL: http://localhost:3000/search
-  GLOBUS_CLIENT_KEY: ${{ secrets.GLOBUS_KEY }}
-  GLOBUS_CLIENT_SECRET: ${{ secrets.GLOBUS_SECRET }}
+  DJANGO_SETTINGS_MODULE: config.settings
+  PGHOST: localhost
+  PGPASSWORD: postgres
+  PGUSER: postgres
+  METAGRID_SEARCH_URL: https://esgf-node.llnl.gov/esg-search/search
+  METAGRID_WGET_URL: https://esgf-node.llnl.gov/esg-search/wget
+  METAGRID_STATUS_URL: https://esgf-node.llnl.gov/proxy/status
+  METAGRID_SOLR_URL: https://esgf-node.llnl.gov/esg-search
+  METAGRID_SOCIAL_AUTH_GLOBUS_KEY: ${{ secrets.GLOBUS_KEY }}
+  METAGRID_SOCIAL_AUTH_GLOBUS_SECRET: ${{ secrets.GLOBUS_SECRET }}
+  METAGRID_GLOBUS_CLIENT_ID: 21982de0-2b7a-4ba8-bef5-5606ae098201
 
 jobs:
   build:

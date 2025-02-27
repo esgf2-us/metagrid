@@ -1,16 +1,13 @@
-import { act, screen, within } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import {
-  rawSearchResultFixture,
-  rawSearchResultsFixture,
-} from '../../test/mock/fixtures';
+import { rawSearchResultFixture, rawSearchResultsFixture } from '../../test/mock/fixtures';
 import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
 import Table, { Props } from './Table';
 import { QualityFlag } from './Tabs';
-import { getRowName, mockConfig } from '../../test/jestTestFunctions';
+import { mockConfig } from '../../test/jestTestFunctions';
 
 const user = userEvent.setup();
 
@@ -27,6 +24,15 @@ const defaultProps: Props = {
 
 describe('test main table UI', () => {
   it('renders component', async () => {
+    customRender(<Table {...defaultProps} />);
+
+    // Check table exists
+    const table = await screen.findByRole('table');
+    expect(table).toBeTruthy();
+  });
+
+  it('renders component when globus nodes is empty', async () => {
+    mockConfig.GLOBUS_NODES = [];
     customRender(<Table {...defaultProps} />);
 
     // Check table exists
@@ -58,18 +64,13 @@ describe('test main table UI', () => {
     expect(table).toBeTruthy();
 
     // Check a record row exist
-    const row = await screen.findByRole('row', {
-      name: getRowName('plus', 'question', 'foo', 'N/A', 'N/A', '1'),
-    });
+    const row = await screen.findByTestId('cart-items-row-0');
     expect(row).toBeTruthy();
   });
 
   it('renders warning that dataset is retracted', async () => {
     customRender(
-      <Table
-        {...defaultProps}
-        results={[rawSearchResultFixture({ retracted: true })]}
-      />
+      <Table {...defaultProps} results={[rawSearchResultFixture({ retracted: true })]} />
     );
 
     // Check table exists
@@ -94,9 +95,7 @@ describe('test main table UI', () => {
       name: 'right-circle',
     });
     expect(expandableIcon).toBeTruthy();
-    await act(async () => {
-      await user.click(expandableIcon);
-    });
+    await user.click(expandableIcon);
 
     // Get the expandable row that was rendered and click on it
     const expandableRow = document.querySelector(
@@ -113,9 +112,7 @@ describe('test main table UI', () => {
     expect(table).toBeTruthy();
 
     // Check a record row exist
-    const row = await screen.findByRole('row', {
-      name: getRowName('plus', 'question', 'foo', '3', '1', '1', true),
-    });
+    const row = await screen.findByTestId('cart-items-row-0');
     expect(row).toBeTruthy();
 
     // Get the expandable cell
@@ -129,9 +126,7 @@ describe('test main table UI', () => {
       name: 'right-circle',
     });
     expect(expandableIcon).toBeTruthy();
-    await act(async () => {
-      await user.click(expandableIcon);
-    });
+    await user.click(expandableIcon);
 
     // Get the expandable row that was rendered and click on it
     const expandableRow = document.querySelector(
@@ -143,23 +138,17 @@ describe('test main table UI', () => {
     const panel = await within(expandableRow).findByText('Metadata');
     expect(panel).toBeTruthy();
 
-    await act(async () => {
-      await user.click(panel);
-    });
+    await user.click(panel);
 
     // Check metadata panel contains metadata
-    const id = await screen.findByText(
-      (_, node) => node?.textContent === 'id: foo'
-    );
+    const id = await screen.findByText((_, node) => node?.textContent === 'id: foo');
     expect(id).toBeInTheDocument();
 
     // Open up the Autocomplete form and change the input to look up 'i'
     const form = await within(expandableRow).findByRole('combobox');
     expect(form).toBeTruthy();
 
-    await act(async () => {
-      await user.type(form, 'i');
-    });
+    await user.type(form, 'i');
 
     // Get the down circle icon within the cell and click to close the expandable row
     const expandableDownIcon = await within(expandableCell).findByRole('img', {
@@ -167,9 +156,7 @@ describe('test main table UI', () => {
     });
     expect(expandableDownIcon).toBeTruthy();
 
-    await act(async () => {
-      await user.click(expandableDownIcon);
-    });
+    await user.click(expandableDownIcon);
   });
 
   it('renders "PID" button when the record has a "xlink" key/value, vice versa', async () => {
@@ -187,9 +174,7 @@ describe('test main table UI', () => {
     expect(table).toBeTruthy();
 
     // Check first row exists
-    const firstRow = await screen.findByRole('row', {
-      name: getRowName('plus', 'question', 'foo', '3', '1', '1', true),
-    });
+    const firstRow = await screen.findByTestId('cart-items-row-0');
     expect(firstRow).toBeTruthy();
 
     // Get the expandable cell
@@ -204,9 +189,7 @@ describe('test main table UI', () => {
     });
     expect(expandableIcon).toBeTruthy();
 
-    await act(async () => {
-      await user.click(expandableIcon);
-    });
+    await user.click(expandableIcon);
 
     // Get the expandable row that was rendered and click on it
     const expandableRow = document.querySelector(
@@ -218,9 +201,7 @@ describe('test main table UI', () => {
     const panel = await within(expandableRow).findByText('Additional');
     expect(panel).toBeTruthy();
 
-    await act(async () => {
-      await user.click(panel);
-    });
+    await user.click(panel);
 
     // Check Additional panel contains PID and ES-DOC
     const firstPidBtn = await within(expandableRow).findByText('PID');
@@ -251,9 +232,7 @@ describe('test main table UI', () => {
     expect(table).toBeTruthy();
 
     // Check first row exists
-    const firstRow = await screen.findByRole('row', {
-      name: getRowName('plus', 'question', 'foo', '3', '1', '1', true),
-    });
+    const firstRow = await screen.findByTestId('cart-items-row-0');
     expect(firstRow).toBeTruthy();
 
     // Get the expandable cell
@@ -267,9 +246,7 @@ describe('test main table UI', () => {
       name: 'right-circle',
     });
     expect(expandableIcon).toBeTruthy();
-    await act(async () => {
-      await user.click(expandableIcon);
-    });
+    await user.click(expandableIcon);
 
     // Get the expandable row that was rendered and click on it
     const expandableRow = document.querySelector(
@@ -280,9 +257,7 @@ describe('test main table UI', () => {
     // Get the Additional panel and click on it
     const panel = await screen.findByText('Additional');
     expect(panel).toBeTruthy();
-    await act(async () => {
-      await user.click(panel);
-    });
+    await user.click(panel);
 
     // Check Additional panel contains quality flags
     const firstFlag = await within(expandableRow).findByTestId('qualityFlag1');
@@ -293,18 +268,14 @@ describe('test main table UI', () => {
   });
 
   it('renders add or remove button for items in or not in the cart respectively, and handles clicking them', async () => {
-    customRender(
-      <Table {...defaultProps} userCart={[defaultProps.results[0]]} />
-    );
-
+    customRender(<Table {...defaultProps} userCart={[defaultProps.results[0]]} />);
     // Check table exists
     const table = await screen.findByRole('table');
     expect(table).toBeTruthy();
 
     // Check first row exists
-    const firstRow = await screen.findByRole('row', {
-      name: getRowName('minus', 'question', 'foo', '3', '1', '1'),
-    });
+    const firstRow = await screen.findByTestId('cart-items-row-0');
+
     expect(firstRow).toBeTruthy();
 
     // Check first row has remove button and click it
@@ -312,23 +283,17 @@ describe('test main table UI', () => {
       name: 'minus',
     });
     expect(removeBtn).toBeTruthy();
-    await act(async () => {
-      await user.click(removeBtn);
-    });
+    await user.click(removeBtn);
 
     // Check second row exists
-    const secondRow = await screen.findByRole('row', {
-      name: getRowName('plus', 'question', 'bar', '2', '1', '1'),
-    });
+    const secondRow = await screen.findByTestId('cart-items-row-1');
     expect(secondRow).toBeTruthy();
 
     // Check second row has add button and click it
     const addBtn = await within(secondRow).findByRole('img', { name: 'plus' });
     expect(addBtn).toBeTruthy();
 
-    await act(async () => {
-      await user.click(addBtn);
-    });
+    await user.click(addBtn);
   });
 
   it('handles when clicking the select checkbox for a row', async () => {
@@ -339,17 +304,13 @@ describe('test main table UI', () => {
     expect(table).toBeTruthy();
 
     // Check a record row exist
-    const row = await screen.findByRole('row', {
-      name: getRowName('plus', 'question', 'foo', '3', '1', '1'),
-    });
+    const row = await screen.findByTestId('cart-items-row-0');
     expect(row).toBeTruthy();
 
     const checkBox = await within(row).findByRole('checkbox');
     expect(checkBox).toBeTruthy();
 
-    await act(async () => {
-      await user.click(checkBox);
-    });
+    await user.click(checkBox);
   });
 
   it('handles when clicking the select all checkbox in the table"s header', async () => {
@@ -367,9 +328,7 @@ describe('test main table UI', () => {
     ) as HTMLInputElement;
     expect(selectAllCheckbox).toBeTruthy();
 
-    await act(async () => {
-      await user.click(selectAllCheckbox);
-    });
+    await user.click(selectAllCheckbox);
   });
 
   it('handles downloading an item via wget', async () => {
@@ -380,18 +339,14 @@ describe('test main table UI', () => {
       },
     });
 
-    customRender(
-      <Table {...defaultProps} userCart={[defaultProps.results[0]]} />
-    );
+    customRender(<Table {...defaultProps} userCart={[defaultProps.results[0]]} />);
 
     // Check table renders
     const tableComponent = await screen.findByRole('table');
     expect(tableComponent).toBeTruthy();
 
     // Check first row renders
-    const firstRow = await screen.findByRole('row', {
-      name: getRowName('minus', 'question', 'foo', '3', '1', '1'),
-    });
+    const firstRow = await screen.findByTestId('cart-items-row-0');
     expect(firstRow).toBeTruthy();
 
     // Check first row download button renders and submit the form
@@ -400,37 +355,27 @@ describe('test main table UI', () => {
     });
     expect(firstRowBtn).toBeTruthy();
 
-    await act(async () => {
-      await user.click(firstRowBtn);
-    });
+    await user.click(firstRowBtn);
 
     // Wait component to re-render
     await screen.findByRole('table');
 
     // Check success message renders
-    const successMsg = await screen.findByText(
-      'Wget script downloaded successfully!'
-    );
+    const successMsg = await screen.findByText('Wget script downloaded successfully!');
     expect(successMsg).toBeTruthy();
   });
 
   it('displays an error when unable to access download via wget', async () => {
-    server.use(
-      rest.post(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404)))
-    );
+    server.use(rest.post(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404))));
 
-    customRender(
-      <Table {...defaultProps} userCart={[defaultProps.results[0]]} />
-    );
+    customRender(<Table {...defaultProps} userCart={[defaultProps.results[0]]} />);
 
     // Check table renders
     const tableComponent = await screen.findByRole('table');
     expect(tableComponent).toBeTruthy();
 
     // Check first row renders
-    const firstRow = await screen.findByRole('row', {
-      name: getRowName('minus', 'question', 'foo', '3', '1', '1'),
-    });
+    const firstRow = await screen.findByTestId('cart-items-row-0');
     expect(firstRow).toBeTruthy();
 
     // Check first row download button renders and submit the form
@@ -438,34 +383,27 @@ describe('test main table UI', () => {
       name: 'download',
     });
     expect(firstRowBtn).toBeTruthy();
-    await act(async () => {
-      await user.click(firstRowBtn);
-    });
+    await user.click(firstRowBtn);
 
     // Wait component to re-render
     await screen.findByRole('table');
 
     // Check error message renders
-    const errorMsg = await screen.findByText(
-      apiRoutes.wget.handleErrorMsg(404)
-    );
+    const errorMsg = await screen.findByText(apiRoutes.wget.handleErrorMsg(404));
     expect(errorMsg).toBeTruthy();
   });
-
   it('does not render Globus Ready column when globusEnabledNodes is empty', async () => {
     // Set names of the globus enabled nodes
-    mockConfig.globusEnabledNodes = [];
+    mockConfig.GLOBUS_NODES = [];
 
     customRender(<Table {...defaultProps} />);
 
-    // Check table exists
+    // Check table renders
     const table = await screen.findByRole('table');
     expect(table).toBeTruthy();
 
-    // Check first row exists
-    const firstRow = await screen.findByRole('row', {
-      name: getRowName('plus', 'question', 'foo', '3', '1', '1'),
-    });
+    // Check first row renders
+    const firstRow = await screen.findByTestId('cart-items-row-0');
     expect(firstRow).toBeTruthy();
 
     // Check Globus Ready column does not exist

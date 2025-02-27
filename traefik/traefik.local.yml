@@ -1,0 +1,78 @@
+log:
+  level: INFO
+
+entryPoints:
+  web:
+    # http
+    address: ':9080'
+
+  web-secure:
+    # https
+    address: ':9443'
+
+http:
+  routers:
+    backend:
+      service: django
+      rule: >-
+        Host(`{{ env "DOMAIN_NAME" }}`) &&   (
+        PathPrefix(`/account-confirm-email`) ||
+        PathPrefix(`/accounts`)              ||
+        PathPrefix(`/api`)                   ||
+        PathPrefix(`/complete`)              ||
+        PathPrefix(`/frontend-config.js`)    ||
+        PathPrefix(`/globus`)                ||
+        PathPrefix(`/login`)                 ||
+        PathPrefix(`/proxy`)                 ||
+        PathPrefix(`/redoc`)                 ||
+        PathPrefix(`/swagger`)               ||
+        PathPrefix(`/tempStorage`)            )
+      entryPoints:
+        - web
+
+    backend-secure:
+      service: django
+      rule: >-
+        Host(`{{ env "DOMAIN_NAME" }}`) &&   (
+        PathPrefix(`/account-confirm-email`) ||
+        PathPrefix(`/accounts`)              ||
+        PathPrefix(`/api`)                   ||
+        PathPrefix(`/complete`)              ||
+        PathPrefix(`/frontend-config.js`)    ||
+        PathPrefix(`/globus`)                ||
+        PathPrefix(`/login`)                 ||
+        PathPrefix(`/proxy`)                 ||
+        PathPrefix(`/redoc`)                 ||
+        PathPrefix(`/swagger`)               ||
+        PathPrefix(`/tempStorage`)            )
+      entryPoints:
+        - web-secure
+
+    frontend:
+      service: react
+      rule: >-
+        Host(`{{ env "DOMAIN_NAME" }}`) && PathPrefix(`/`)
+      entryPoints:
+        - web
+
+    frontend-secure:
+      service: react
+      rule: >-
+        Host(`{{ env "DOMAIN_NAME" }}`) && PathPrefix(`/`)
+      entryPoints:
+        - web-secure
+  services:
+    django:
+      loadBalancer:
+        servers:
+          - url: http://django:5000
+    react:
+      loadBalancer:
+        servers:
+          - url: http://react:8080
+
+providers:
+  # https://docs.traefik.io/master/providers/file/
+  file:
+    filename: /etc/traefik/traefik.yml
+    watch: true

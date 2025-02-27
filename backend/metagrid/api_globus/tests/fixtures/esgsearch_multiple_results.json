@@ -1,0 +1,31 @@
+{
+  "responseHeader": {},
+  "response": {
+    "numFound": 42469744,
+    "start": 0,
+    "maxScore": 1.0,
+    "docs": [
+      {
+        "data_node": "esgf-node.ornl.gov",
+        "url": [
+          "https://esgf-node.ornl.gov/thredds/fileServer/css03_data/CMIP6/AerChemMIP/EC-Earth-Consortium/EC-Earth3-AerChem/histSST-piAer/r1i1p1f1/Amon/prsn/gr/v20210831/prsn_Amon_EC-Earth3-AerChem_histSST-piAer_r1i1p1f1_gr_199901-199912.nc|application/netcdf|HTTPServer",
+          "https://esgf-node.ornl.gov/thredds/dodsC/css03_data/CMIP6/AerChemMIP/EC-Earth-Consortium/EC-Earth3-AerChem/histSST-piAer/r1i1p1f1/Amon/prsn/gr/v20210831/prsn_Amon_EC-Earth3-AerChem_histSST-piAer_r1i1p1f1_gr_199901-199912.nc|application/opendap-html|OPENDAP",
+          "gsiftp://esgf-node.ornl.gov/css03_data/CMIP6/AerChemMIP/EC-Earth-Consortium/EC-Earth3-AerChem/histSST-piAer/r1i1p1f1/Amon/prsn/gr/v20210831/prsn_Amon_EC-Earth3-AerChem_histSST-piAer_r1i1p1f1_gr_199901-199912.nc|application/gridftp|GridFTP",
+          "globus:dea29ae8-bb92-4c63-bdbc-260522c92fe8/css03_data/CMIP6/AerChemMIP/EC-Earth-Consortium/EC-Earth3-AerChem/histSST-piAer/r1i1p1f1/Amon/prsn/gr/v20210831/prsn_Amon_EC-Earth3-AerChem_histSST-piAer_r1i1p1f1_gr_199901-199912.nc|Globus|Globus"
+        ],
+        "score": 1.0
+      },
+      {
+        "data_node": "esgf-node.ornl.gov",
+        "url": [
+          "https://esgf-node.ornl.gov/thredds/fileServer/css03_data/CMIP6/AerChemMIP/EC-Earth-Consortium/EC-Earth3-AerChem/histSST-piAer/r1i1p1f1/Amon/prsn/gr/v20210831/prsn_Amon_EC-Earth3-AerChem_histSST-piAer_r1i1p1f1_gr_200001-200012.nc|application/netcdf|HTTPServer",
+          "https://esgf-node.ornl.gov/thredds/dodsC/css03_data/CMIP6/AerChemMIP/EC-Earth-Consortium/EC-Earth3-AerChem/histSST-piAer/r1i1p1f1/Amon/prsn/gr/v20210831/prsn_Amon_EC-Earth3-AerChem_histSST-piAer_r1i1p1f1_gr_200001-200012.nc|application/opendap-html|OPENDAP",
+          "gsiftp://esgf-node.ornl.gov/css03_data/CMIP6/AerChemMIP/EC-Earth-Consortium/EC-Earth3-AerChem/histSST-piAer/r1i1p1f1/Amon/prsn/gr/v20210831/prsn_Amon_EC-Earth3-AerChem_histSST-piAer_r1i1p1f1_gr_200001-200012.nc|application/gridftp|GridFTP",
+          "globus:dea29ae8-bb92-4c63-bdbc-260522c92fe8/css03_data/CMIP6/AerChemMIP/EC-Earth-Consortium/EC-Earth3-AerChem/histSST-piAer/r1i1p1f1/Amon/prsn/gr/v20210831/prsn_Amon_EC-Earth3-AerChem_histSST-piAer_r1i1p1f1_gr_200001-200012.nc|Globus|Globus"
+        ],
+        "score": 1.0
+      }
+    ]
+  },
+  "facet_counts": {}
+}

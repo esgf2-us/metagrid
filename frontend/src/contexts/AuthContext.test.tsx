@@ -1,11 +1,11 @@
-import { act, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import React from 'react';
 import customRender from '../test/custom-render';
 import { mockConfig } from '../test/jestTestFunctions';
 
 describe('test AuthProvider', () => {
   it('renders using keycloak provider', async () => {
-    mockConfig.authenticationMethod = 'keycloak';
+    mockConfig.AUTHENTICATION_METHOD = 'keycloak';
 
     jest.useFakeTimers();
 
@@ -26,15 +26,13 @@ describe('test AuthProvider', () => {
     const renderResult = await screen.findByText('renders keycloak');
     expect(renderResult).toBeTruthy();
 
-    act(() => {
-      jest.advanceTimersByTime(295000);
-    });
+    jest.advanceTimersByTime(295000);
 
     await screen.findByTestId('authProvider');
   });
 
   it('renders using globus auth provider', async () => {
-    mockConfig.authenticationMethod = 'globus';
+    mockConfig.AUTHENTICATION_METHOD = 'globus';
 
     jest.useFakeTimers();
 
@@ -55,9 +53,7 @@ describe('test AuthProvider', () => {
     const renderResult = await screen.findByText('renders globus');
     expect(renderResult).toBeTruthy();
 
-    act(() => {
-      jest.advanceTimersByTime(295000);
-    });
+    jest.advanceTimersByTime(295000);
 
     await screen.findByTestId('authProvider');
   });

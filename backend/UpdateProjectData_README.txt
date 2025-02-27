@@ -1,43 +1,47 @@
 STEPS TO UPDATE PROJECTS, FACETS OR CATEGORIES
 
 1. Edit the initial data file with the desired changes: metagrid/backend/metagrid/initial_projects_data.py
-2. Change to the backend directory:
-cd metagrid/backend/
-3. Make sure the docker traefik and backend containers are up and running.
-If not running, you can run the containers by going to the traefik directory first and running this command:
-sudo docker compose -f docker-compose.prod.yml up --build -d
-Then do the same in the backend directory (production backend depends on traefik)
-
-RUN UPDATE AND CLEAR TABLES
-If you need to clear tables to remove existing facets/projects or change their order then do the steps below:
-
-Option 1:
-4. Use the updateProjects.sh script. Just run the script using clear option:
-sudo ./updateProject.sh --clear
-
-DONE!
-
-Option 2: Manually update without the script and clear tables:
-4. sudo docker compose -f docker-compose.prod.yml build django # Build the container
-5. sudo docker compose -f docker-compose.prod.yml run --rm django python manage.py migrate projects zero
-6. sudo docker compose -f docker-compose.prod.yml run --rm django python manage.py migrate projects
-
-DONE!
+2. Go to the root directory so you can perform the steps below (you may need sudo privileges)
 
 RUN UPDATE WITHOUT CLEARING TABLES
 If your update is small and only involves minor modifications or additions to existing projects then you don't need to clear the tables.
-If there are deletions or more significant changes, run steps above which include clearing tables otherwise do steps below:
+If there are deletions or more significant changes, run steps further below which include clearing tables, otherwise:
 
 Option 1:
-4. Use the updateProjects.sh script. Just run the default script:
-sudo ./updateProject.sh
+3. Start the manage_metagrid.sh script in the root directory (use sudo if needed): ./manage_metagrid.sh
+4. Select 'Developer Actions', then choose "Update Project Table" option. The commands to update should run.
 
 DONE!
 
-Option 2: Manually update without the script and don't clear tables:
-4. sudo docker compose -f docker-compose.prod.yml build django # Build the container
-5. sudo docker compose -f docker-compose.prod.yml run --rm django python manage.py migrate --fake projects 0001_initial
-6. sudo docker compose -f docker-compose.prod.yml run --rm django python manage.py migrate projects
+Option 2: Manually update without the script and don't clear tables (LOCAL):
+3. docker compose -f docker-compose.yml -f docker-compose-local-overlay.yml build django # Build the container
+4. docker compose -f docker-compose.yml -f docker-compose-local-overlay.yml run --rm django python manage.py migrate --fake projects 0001_initial # Fake projects so it does migration
+5. docker compose -f docker-compose.yml -f docker-compose-local-overlay.yml run --rm django python manage.py migrate projects # Run migration
+6. docker compose --profile "*" down --remove-orphans # Stop all containers
+
+Option 2: Manually update without the script and don't clear tables (PRODUCTION):
+3. docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose-prod-overlay.yml build django # Build the container
+4. docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose-prod-overlay.yml run --rm django python manage.py migrate --fake projects 0001_initial # Fake projects so it does migration
+5. docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose-prod-overlay.yml run --rm django python manage.py migrate projects # Run migration
+6. docker compose --profile "*" down --remove-orphans # Stop all containers
+
+
+DONE!
+
+RUN UPDATE AND CLEAR TABLES, WARNING ISSUES COULD ARISE WITH THIS AND USER CARTS MAY BE AFFECTED
+If you need to clear tables to remove existing facets/projects or change their order then do the steps below:
+
+Manually update and clear tables (LOCAL):
+3. docker compose -f docker-compose.yml -f docker-compose-local-overlay.yml build django  #Build the container
+4. docker compose -f docker-compose.yml -f docker-compose-local-overlay.yml run --rm django python manage.py migrate projects zero # Zero the project table (will also affect cart items that refer to a specific project)
+5. docker compose -f docker-compose.yml -f docker-compose-local-overlay.yml run --rm django python manage.py migrate projects # Run migration
+6. docker compose --profile "*" down --remove-orphans # Stop all containers
+
+Manually update and clear tables (PRODUCTION):
+3. docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose-prod-overlay.yml build django  #Build the container
+4. docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose-prod-overlay.yml run --rm django python manage.py migrate projects zero # Zero the project table (will also affect cart items that refer to a specific project)
+5. docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose-prod-overlay.yml run --rm django python manage.py migrate projects # Run migration
+6. docker compose --profile "*" down --remove-orphans # Stop all containers
 
 DONE!
 

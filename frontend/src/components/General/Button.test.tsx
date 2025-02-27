@@ -1,4 +1,4 @@
-import { act, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import Button from './Button';
@@ -20,7 +20,5 @@ it('returns string "clicked" onClick', async () => {
   // Click on the button
   const button = await screen.findByRole('button');
 
-  await act(async () => {
-    await user.click(button);
-  });
+  await user.click(button);
 });

@@ -129,9 +129,7 @@ export const shallowCompareObjects = (
   obj2: { [key: string]: any }
 ): boolean =>
   Object.keys(obj1).length === Object.keys(obj2).length &&
-  Object.keys(obj1).every(
-    (key) => obj2.hasOwnProperty.call(obj2, key) && obj1[key] === obj2[key]
-  );
+  Object.keys(obj1).every((key) => obj2.hasOwnProperty.call(obj2, key) && obj1[key] === obj2[key]);
 
 /**
  * Converts binary bytes into another size
@@ -177,10 +175,7 @@ export const getUrlFromSearch = (search: ActiveSearchQuery): string => {
     params.set('maxVersionDate', newSearch.maxVersionDate);
   }
 
-  if (
-    Array.isArray(newSearch.filenameVars) &&
-    newSearch.filenameVars.length > 0
-  ) {
+  if (Array.isArray(newSearch.filenameVars) && newSearch.filenameVars.length > 0) {
     params.set('filenameVars', JSON.stringify(newSearch.filenameVars));
   }
 
@@ -190,13 +185,13 @@ export const getUrlFromSearch = (search: ActiveSearchQuery): string => {
     Object.keys(newSearch.activeFacets).length > 0
   ) {
     // Convert array values to string if they are of size 1
+    const facetsToStringify: { [x: string]: string[] | string } = newSearch.activeFacets;
     Object.keys(search.activeFacets).forEach((key) => {
-      if ((newSearch.activeFacets[key] as string[]).length === 1) {
-        // eslint-disable-next-line
-        newSearch.activeFacets[key] = (search.activeFacets[key] as string[])[0];
+      if (newSearch.activeFacets[key].length === 1) {
+        facetsToStringify[key] = (newSearch.activeFacets[key][0] as unknown) as string;
       }
     });
-    params.set('activeFacets', JSON.stringify(newSearch.activeFacets));
+    params.set('activeFacets', JSON.stringify(facetsToStringify));
   }
 
   if (Array.isArray(newSearch.textInputs) && newSearch.textInputs.length > 0) {
@@ -219,21 +214,15 @@ export const getAltSearchFromUrl = (url?: string): ActiveSearchQuery => {
   };
 
   const params = new URLSearchParams(url || window.location.search);
-  // eslint-disable-next-line
-  const paramEntries: { [k: string]: string } = Object.fromEntries(
-    params.entries()
-  );
-  // eslint-disable-next-line
+
+  const paramEntries: { [k: string]: string } = Object.fromEntries(params.entries());
+
   const activeFacets: { [k: string]: string[] } = {};
   Object.keys(paramEntries).forEach((key: string) => {
     activeFacets[key] = [paramEntries[key]];
   });
 
-  // eslint-disable-next-line
-  const projName = (url || window.location.pathname)
-    .split('/')
-    .filter(Boolean)
-    .at(-1);
+  const projName = (url || window.location.pathname).split('/').filter(Boolean).at(-1);
 
   if (projName) {
     searchQuery = { ...searchQuery, project: { name: projName }, activeFacets };
@@ -287,10 +276,7 @@ export const getSearchFromUrl = (url?: string): ActiveSearchQuery => {
       // Convert string values to array
       Object.keys(searchQuery.activeFacets).forEach((key) => {
         if (!Array.isArray(searchQuery.activeFacets[key])) {
-          // eslint-disable-next-line
-          searchQuery.activeFacets[key] = [
-            searchQuery.activeFacets[key],
-          ] as string[];
+          searchQuery.activeFacets[key] = [searchQuery.activeFacets[key]] as string[];
         }
       });
     }
@@ -309,8 +295,7 @@ export const combineCarts = (
   localItems: RawSearchResults
 ): RawSearchResults => {
   const itemsNotInDatabase = localItems.filter(
-    (item: RawSearchResult) =>
-      !databaseItems.some((dataset) => dataset.id === item.id)
+    (item: RawSearchResult) => !databaseItems.some((dataset) => dataset.id === item.id)
   );
   const combinedItems = databaseItems.concat(itemsNotInDatabase);
   return combinedItems;
@@ -351,8 +336,7 @@ export const unsavedLocalSearches = (
   localItems: UserSearchQueries
 ): UserSearchQueries => {
   const itemsNotInDatabase = localItems.filter(
-    (localSearchQuery: UserSearchQuery) =>
-      !searchAlreadyExists(databaseItems, localSearchQuery)
+    (localSearchQuery: UserSearchQuery) => !searchAlreadyExists(databaseItems, localSearchQuery)
   );
   return itemsNotInDatabase;
 };

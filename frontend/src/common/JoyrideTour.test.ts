@@ -38,14 +38,9 @@ describe('Test JoyrideTour class', () => {
 
     testTour.addNextStep('testTarget1', 'This is a test.');
     testTour.addNextStep('testTarget2', 'This is a test too.');
-    testTour.addNextStep(
-      'testTarget3',
-      'This is a test as well.',
-      'auto',
-      () => {
-        testValue = 5;
-      }
-    );
+    testTour.addNextStep('testTarget3', 'This is a test as well.', 'auto', () => {
+      testValue = 5;
+    });
 
     // Make sure tour steps added and step index is counting up
     expect(testTour.getSteps().length).toEqual(3);

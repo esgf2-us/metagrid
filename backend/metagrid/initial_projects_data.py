@@ -229,7 +229,7 @@ projects = [
     {
         "name": "obs4MIPs",
         "full_name": "observations for Model Intercomparison Projects",
-        "project_url": "https://pcmdi.github.io/obs4MIPs/",
+        "project_url": "https://pcmdi.github.io/obs4MIPs/dataOnESGF.html",
         "description": (
             "Obs4MIPs (Observations for Model Intercomparisons Project) is an activity to make observational products more "
             "accessible for climate model intercomparisons via the same searchable distributed system used to serve and "
