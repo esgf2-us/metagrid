@@ -12,6 +12,7 @@ import {
   Space,
   Spin,
   Table,
+  Tooltip,
   message,
 } from 'antd';
 import React, { useEffect } from 'react';
@@ -88,7 +89,7 @@ function redirectToRootUrl(): void {
   const splitUrl = window.location.href.split('?');
   if (splitUrl.length > 1) {
     const params = new URLSearchParams(window.location.search);
-    if (endpointUrlReady(params) || tokenUrlReady(params)) {
+    if (params.has('cancelled') || endpointUrlReady(params) || tokenUrlReady(params)) {
       const newUrl = splitUrl[0];
       redirectToNewURL(newUrl);
     }
@@ -285,6 +286,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                 type: 'error',
               }
             );
+            await resetTokens();
             break;
 
           default:
@@ -297,6 +299,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                 type: 'error',
               }
             );
+            await resetTokens();
             break;
         }
       })
@@ -308,6 +311,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             type: 'error',
           }
         );
+        await resetTokens();
       })
       .finally(async () => {
         setDownloadIsLoading(false);
@@ -480,6 +484,14 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   }
 
   function getCurrentGoal(): GlobusGoals {
+    const urlParams = new URLSearchParams(window.location.search);
+
+    // If cancelled key is in URL, set goal to none
+    if (urlParams.has('cancelled')) {
+      setCurrentGoal(GlobusGoals.None);
+      return GlobusGoals.None;
+    }
+
     const goal = localStorage.getItem(GlobusStateKeys.globusTransferGoalsState);
     if (goal !== null) {
       return goal as GlobusGoals;
@@ -541,12 +553,13 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   }
 
   async function redirectToSelectGlobusEndpointPath(): Promise<void> {
-    const endpointSearchURL = `https://app.globus.org/file-manager?action=${globusRedirectUrl}&method=GET&cancelUrl=${globusRedirectUrl}`;
+    const endpointSearchURL = `https://app.globus.org/helpers/browse-collections?action=${globusRedirectUrl}&method=GET&cancelurl=${globusRedirectUrl}?cancelled&filelimit=0`;
 
     setLoadingPage(true);
     await dp.saveAllValues();
     setLoadingPage(false);
     const chosenEndpoint = dp.getValue<GlobusEndpoint>(GlobusStateKeys.userChosenEndpoint);
+
     if (chosenEndpoint) {
       redirectToNewURL(`${endpointSearchURL}&origin_id=${chosenEndpoint.id}`);
     } else {
@@ -668,6 +681,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       if (!alertPopupState.show) {
         setAlertPopupState({
           onCancelAction: () => {
+            setLoadingPage(false);
             setCurrentGoal(GlobusGoals.None);
             setAlertPopupState({ ...alertPopupState, show: false });
           },
@@ -683,34 +697,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
     // Goal is to perform a transfer
     if (goal === GlobusGoals.DoGlobusTransfer) {
-      // Get tokens if they aren't ready
-      // if (!tknsReady) {
-      //   // If auth token urls are ready, update related tokens
-      //   if (tUrlReady) {
-      //     // Token URL is ready get tokens
-      //     await getUrlAuthTokens();
-      //     await dp.saveAllValues();
-      //     redirectToRootUrl();
-      //     return;
-      //   }
-
-      //   if (!alertPopupState.show) {
-      //     setAlertPopupState({
-      //       onCancelAction: () => {
-      //         setCurrentGoal(GlobusGoals.None);
-      //         setLoadingPage(false);
-      //         setAlertPopupState({ ...alertPopupState, show: false });
-      //       },
-      //       onOkAction: async () => {
-      //         await loginWithGlobus();
-      //       },
-      //       show: true,
-      //       content: 'You will be redirected to obtain globus tokens. Continue?',
-      //     });
-      //   }
-      //   return;
-      // }
-
       const chosenEndpoint: GlobusEndpoint | null = dp.getValue<GlobusEndpoint>(
         GlobusStateKeys.userChosenEndpoint
       );
@@ -775,10 +761,11 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           );
         }
 
-        setLoadingPage(true);
         await dp.saveAllValues();
         setLoadingPage(false);
-        redirectToRootUrl();
+        setTimeout(() => {
+          redirectToRootUrl();
+        }, 750);
         return;
       }
 
@@ -796,6 +783,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         if (!alertPopupState.show) {
           setAlertPopupState({
             onCancelAction: () => {
+              setLoadingPage(false);
               setCurrentGoal(GlobusGoals.None);
               setAlertPopupState({ ...alertPopupState, show: false });
             },
@@ -810,6 +798,18 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       }
     }
   }
+
+  const downloadBtnTooltip = (): string => {
+    if (itemSelections.length === 0) {
+      return 'Please select at least one dataset to download in your cart above.';
+    }
+    if (selectedDownloadType === 'Globus') {
+      if (!chosenGlobusEndpoint || savedGlobusEndpoints.length === 0) {
+        return 'Please select a Globus Collection.';
+      }
+    }
+    return '';
+  };
 
   useEffect(() => {
     const initializePage = async (): Promise<void> => {
@@ -903,22 +903,25 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             }
           ></Select>
         )}
-        <Button
-          data-testid="downloadDatasetBtn"
-          className={cartTourTargets.downloadAllBtn.class()}
-          type="primary"
-          onClick={() => {
-            handleDownloadForm(selectedDownloadType as 'wget' | 'Globus');
-          }}
-          icon={<DownloadOutlined />}
-          disabled={
-            itemSelections.length === 0 ||
-            (selectedDownloadType === 'Globus' && chosenGlobusEndpoint === undefined)
-          }
-          loading={downloadIsLoading}
-        >
-          {selectedDownloadType === 'Globus' ? 'Transfer' : 'Download'}
-        </Button>
+        <Tooltip title={downloadBtnTooltip()} placement="top">
+          <Button
+            data-testid="downloadDatasetBtn"
+            className={cartTourTargets.downloadAllBtn.class()}
+            type="primary"
+            onClick={() => {
+              handleDownloadForm(selectedDownloadType as 'wget' | 'Globus');
+            }}
+            icon={<DownloadOutlined />}
+            disabled={
+              itemSelections.length === 0 ||
+              (selectedDownloadType === 'Globus' &&
+                (!chosenGlobusEndpoint || savedGlobusEndpoints.length === 0))
+            }
+            loading={downloadIsLoading}
+          >
+            {selectedDownloadType === 'Globus' ? 'Transfer' : 'Download'}
+          </Button>
+        </Tooltip>
       </Space>
       <Modal
         className={manageCollectionsTourTargets.globusCollectionsForm.class()}
