@@ -649,7 +649,7 @@ export const saveSessionValues = async (data: { key: string; value: unknown }[])
 
 // Creates an auth object using desired authentication scope
 export async function createGlobusAuthObject(): Promise<PKCE> {
-  const authScope = await loadSessionValue<string>(GlobusStateKeys.globusAuth);
+  const authScope = await loadSessionValue<string>(GlobusStateKeys.globusAuthScope);
 
   return new PKCE({
     client_id: window.METAGRID.GLOBUS_CLIENT_ID, // Update this using your native client ID

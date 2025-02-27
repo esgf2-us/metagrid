@@ -24,6 +24,7 @@ export interface GlobusEndpoint {
   contact_email: string;
   display_name: string;
   entity_type: string;
+  high_assurance: boolean;
   id: string;
   owner_id: string;
   owner_string: string;
