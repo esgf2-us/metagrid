@@ -664,3 +664,242 @@ describe('frontend configuration', () => {
     expect(typeof window.METAGRID).toBe('object');
   });
 });
+
+describe('test mapHTTPErrorCodes function', () => {
+  it('returns correct message for HTTP 400', () => {
+    const message = apiRoutes.globusAuth.handleErrorMsg(400);
+    expect(message).toBe('Your request to the Globus service was invalid. Please contact support.');
+  });
+
+  it('returns correct message for HTTP 401', () => {
+    const message = apiRoutes.globusAuth.handleErrorMsg(401);
+    expect(message).toBe(
+      'Your request to the Globus service was unauthorized. Please contact support.'
+    );
+  });
+
+  it('returns correct message for HTTP 403', () => {
+    const message = apiRoutes.globusAuth.handleErrorMsg(403);
+    expect(message).toBe(
+      'Your request to the Globus service was forbidden. Please contact support.'
+    );
+  });
+
+  it('returns correct message for HTTP 404', () => {
+    const message = apiRoutes.globusAuth.handleErrorMsg(404);
+    expect(message).toBe(
+      'The requested resource at the Globus service was invalid. Please contact support.'
+    );
+  });
+
+  it('returns correct message for HTTP 405', () => {
+    const message = apiRoutes.globusAuth.handleErrorMsg(405);
+    expect(message).toBe(
+      'Could not perform operation at the Globus service. Please contact support'
+    );
+  });
+
+  it('returns correct message for HTTP 408', () => {
+    const message = apiRoutes.globusAuth.handleErrorMsg(408);
+    expect(message).toBe('');
+  });
+
+  it('returns correct message for generic error', () => {
+    const message = apiRoutes.globusAuth.handleErrorMsg('generic');
+    expect(message).toBe(
+      "We couldn't reach the Globus service and are working on it. If the problem persists for awhile, please contact support."
+    );
+  });
+
+  it('returns correct message for Globus Transfer HTTP 400', () => {
+    const message = apiRoutes.globusTransfer.handleErrorMsg(400);
+    expect(message).toBe(
+      'Your request to the Globus transfer service was invalid. Please contact support.'
+    );
+  });
+
+  it('returns correct message for Globus Transfer HTTP 401', () => {
+    const message = apiRoutes.globusTransfer.handleErrorMsg(401);
+    expect(message).toBe(
+      'Your request to the Globus transfer service was unauthorized. Please contact support.'
+    );
+  });
+
+  it('returns correct message for Globus Transfer HTTP 403', () => {
+    const message = apiRoutes.globusTransfer.handleErrorMsg(403);
+    expect(message).toBe(
+      'Your request to the Globus transfer service was forbidden. Please contact support.'
+    );
+  });
+
+  it('returns correct message for Globus Transfer HTTP 404', () => {
+    const message = apiRoutes.globusTransfer.handleErrorMsg(404);
+    expect(message).toBe(
+      'The requested resource at the Globus transfer service was invalid. Please contact support.'
+    );
+  });
+
+  it('returns correct message for Globus Transfer HTTP 405', () => {
+    const message = apiRoutes.globusTransfer.handleErrorMsg(405);
+    expect(message).toBe(
+      'Could not perform operation at the Globus transfer service. Please contact support'
+    );
+  });
+
+  it('returns correct message for Globus Transfer HTTP 408', () => {
+    const message = apiRoutes.globusTransfer.handleErrorMsg(408);
+    expect(message).toBe('');
+  });
+
+  it('returns correct message for Globus Transfer generic error', () => {
+    const message = apiRoutes.globusTransfer.handleErrorMsg('generic');
+    expect(message).toBe(
+      "We couldn't reach the Globus transfer service and are working on it. If the problem persists for awhile, please contact support."
+    );
+  });
+
+  it('returns correct message for Frontend Config HTTP 400', () => {
+    const message = apiRoutes.frontendConfig.handleErrorMsg(400);
+    expect(message).toBe(
+      'Your request to the Frontend Config service was invalid. Please contact support.'
+    );
+  });
+
+  it('returns correct message for Frontend Config HTTP 401', () => {
+    const message = apiRoutes.frontendConfig.handleErrorMsg(401);
+    expect(message).toBe(
+      'Your request to the Frontend Config service was unauthorized. Please contact support.'
+    );
+  });
+
+  it('returns correct message for Frontend Config HTTP 403', () => {
+    const message = apiRoutes.frontendConfig.handleErrorMsg(403);
+    expect(message).toBe(
+      'Your request to the Frontend Config service was forbidden. Please contact support.'
+    );
+  });
+
+  it('returns correct message for Frontend Config HTTP 404', () => {
+    const message = apiRoutes.frontendConfig.handleErrorMsg(404);
+    expect(message).toBe(
+      'The requested resource at the Frontend Config service was invalid. Please contact support.'
+    );
+  });
+
+  it('returns correct message for Frontend Config HTTP 405', () => {
+    const message = apiRoutes.frontendConfig.handleErrorMsg(405);
+    expect(message).toBe(
+      'Could not perform operation at the Frontend Config service. Please contact support'
+    );
+  });
+
+  it('returns correct message for Frontend Config HTTP 408', () => {
+    const message = apiRoutes.frontendConfig.handleErrorMsg(408);
+    expect(message).toBe('');
+  });
+
+  it('returns correct message for Frontend Config generic error', () => {
+    const message = apiRoutes.frontendConfig.handleErrorMsg('generic');
+    expect(message).toBe(
+      "We couldn't reach the Frontend Config service and are working on it. If the problem persists for awhile, please contact support."
+    );
+  });
+
+  it('returns correct message for Introduction Markdown HTTP 400', () => {
+    const message = apiRoutes.introMarkdown.handleErrorMsg(400);
+    expect(message).toBe(
+      'Your request to the Introduction Markdown service was invalid. Please contact support.'
+    );
+  });
+
+  it('returns correct message for Introduction Markdown HTTP 401', () => {
+    const message = apiRoutes.introMarkdown.handleErrorMsg(401);
+    expect(message).toBe(
+      'Your request to the Introduction Markdown service was unauthorized. Please contact support.'
+    );
+  });
+
+  it('returns correct message for Introduction Markdown HTTP 403', () => {
+    const message = apiRoutes.introMarkdown.handleErrorMsg(403);
+    expect(message).toBe(
+      'Your request to the Introduction Markdown service was forbidden. Please contact support.'
+    );
+  });
+
+  it('returns correct message for Introduction Markdown HTTP 404', () => {
+    const message = apiRoutes.introMarkdown.handleErrorMsg(404);
+    expect(message).toBe(
+      'The requested resource at the Introduction Markdown service was invalid. Please contact support.'
+    );
+  });
+
+  it('returns correct message for Introduction Markdown HTTP 405', () => {
+    const message = apiRoutes.introMarkdown.handleErrorMsg(405);
+    expect(message).toBe(
+      'Could not perform operation at the Introduction Markdown service. Please contact support'
+    );
+  });
+
+  it('returns correct message for Introduction Markdown HTTP 408', () => {
+    const message = apiRoutes.introMarkdown.handleErrorMsg(408);
+    expect(message).toBe('');
+  });
+
+  it('returns correct message for Introduction Markdown generic error', () => {
+    const message = apiRoutes.introMarkdown.handleErrorMsg('generic');
+    expect(message).toBe(
+      "We couldn't reach the Introduction Markdown service and are working on it. If the problem persists for awhile, please contact support."
+    );
+  });
+});
+
+describe('test fetching temp storage get', () => {
+  it('returns temp storage get response', async () => {
+    await saveSessionValue('testKey', 'testValue');
+    const response = await loadSessionValue('testKey');
+    expect(response).toEqual('testValue');
+  });
+
+  it('catches and throws an error based on HTTP status code', async () => {
+    server.use(rest.post(apiRoutes.tempStorageGet.path, (_req, res, ctx) => res(ctx.status(404))));
+    await expect(loadSessionValue('testKey')).rejects.toThrow(
+      apiRoutes.tempStorageGet.handleErrorMsg(404)
+    );
+  });
+
+  it('catches and throws generic network error', async () => {
+    server.use(
+      rest.post(apiRoutes.tempStorageGet.path, (_req, res) =>
+        res.networkError(genericNetworkErrorMsg)
+      )
+    );
+    await expect(loadSessionValue('testKey')).rejects.toThrow(
+      apiRoutes.tempStorageGet.handleErrorMsg('generic')
+    );
+  });
+});
+
+describe('test fetching temp storage set', () => {
+  it('returns temp storage set response', async () => {
+    const response = await saveSessionValue('testKey', 'testValue');
+    expect(response).toEqual({ data: 'Save success!' });
+  });
+
+  it('catches and throws an error based on HTTP status code', async () => {
+    server.use(rest.post(apiRoutes.tempStorageSet.path, (_req, res, ctx) => res(ctx.status(404))));
+    await expect(saveSessionValue('testKey', 'testValue')).rejects.toThrow(
+      apiRoutes.tempStorageSet.handleErrorMsg(404)
+    );
+  });
+
+  it('catches and throws generic network error', async () => {
+    server.use(
+      rest.post(apiRoutes.tempStorageSet.path, (_req, res) =>
+        res.networkError(genericNetworkErrorMsg)
+      )
+    );
+    await expect(saveSessionValue('testKey', 'testValue')).rejects.toThrow(
+      apiRoutes.tempStorageSet.handleErrorMsg('generic')
+    );
+  });
+});

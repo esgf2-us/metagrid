@@ -151,7 +151,7 @@ postgresql:
     username: postgres
     password: postgres
     repmgrPassword: repmgr
-    
+
   pgpool:
     adminPassword: pgpool-admin
 
