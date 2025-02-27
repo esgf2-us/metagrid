@@ -1,0 +1,19 @@
+repositories:
+- name: traefik
+  url: https://traefik.github.io/charts
+
+releases:
+- name: traefik
+  chart: traefik/traefik
+  version: v34.4.0
+- name: metagrid
+  chart: .
+  version: 0.1.0
+  values:
+    - ingress:
+        enabled: true
+        tls: false
+        host: localhost
+        className: traefik
+  needs:
+    - traefik
