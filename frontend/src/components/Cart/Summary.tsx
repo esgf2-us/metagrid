@@ -11,7 +11,8 @@ import { RawSearchResult, RawSearchResults } from '../Search/types';
 import { UserCart } from './types';
 import { GlobusTaskItem } from '../Globus/types';
 import GlobusStateKeys, { globusTaskItems } from '../Globus/recoil/atom';
-import { DataPersister } from '../../common/DataPersister';
+// import { DataPersister } from '../../common/DataPersister';
+import DataBundlePersister from '../../common/DataBundlePersister';
 
 const styles: CSSinJS = {
   headerContainer: { display: 'flex', justifyContent: 'center' },
@@ -32,11 +33,13 @@ export type Props = {
 };
 
 const { Title, Link } = Typography;
-const dp: DataPersister = DataPersister.Instance;
+// const dp: DataPersister = DataPersister.Instance;
+const db: DataBundlePersister = DataBundlePersister.Instance;
 
 const Summary: React.FC<React.PropsWithChildren<Props>> = ({ userCart }) => {
   const [taskItems, setTaskItems] = useRecoilState<GlobusTaskItem[]>(globusTaskItems);
-  dp.addNewVar(GlobusStateKeys.globusTaskItems, [], setTaskItems);
+  // dp.addNewVar(GlobusStateKeys.globusTaskItems, [], setTaskItems);
+  db.addVar<GlobusTaskItem[]>(GlobusStateKeys.globusTaskItems, [], setTaskItems);
 
   let numFiles = 0;
   let totalDataSize = '0';
@@ -54,7 +57,8 @@ const Summary: React.FC<React.PropsWithChildren<Props>> = ({ userCart }) => {
   }
 
   const clearAllTasks = async (): Promise<void> => {
-    await dp.setValue(GlobusStateKeys.globusTaskItems, [], true);
+    // await dp.setValue(GlobusStateKeys.globusTaskItems, [], true);
+    await db.setAndSave<GlobusTaskItem[]>(GlobusStateKeys.globusTaskItems, []);
   };
 
   return (

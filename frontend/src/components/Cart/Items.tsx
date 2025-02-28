@@ -10,7 +10,7 @@ import { RawSearchResults } from '../Search/types';
 import DatasetDownload from '../Globus/DatasetDownload';
 import CartStateKeys, { cartItemSelections } from './recoil/atoms';
 import { NodeStatusArray } from '../NodeStatus/types';
-import { DataPersister } from '../../common/DataPersister';
+import DataBundlePersister from '../../common/DataBundlePersister';
 
 const styles: CSSinJS = {
   summary: {
@@ -32,7 +32,8 @@ export type Props = {
   nodeStatus?: NodeStatusArray;
 };
 
-const dp: DataPersister = DataPersister.Instance;
+// const dp: DataPersister = DataPersister.Instance;
+const db: DataBundlePersister = DataBundlePersister.Instance;
 
 const Items: React.FC<React.PropsWithChildren<Props>> = ({
   userCart,
@@ -41,10 +42,12 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({
   nodeStatus,
 }) => {
   const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(cartItemSelections);
-  dp.addNewVar<RawSearchResults>(CartStateKeys.cartItemSelections, [], setItemSelections);
+  // dp.addNewVar<RawSearchResults>(CartStateKeys.cartItemSelections, [], setItemSelections);
+  db.addVar<RawSearchResults>(CartStateKeys.cartItemSelections, [], setItemSelections);
 
-  const handleRowSelect = async (selectedRows: RawSearchResults | []): Promise<void> => {
-    await dp.setValue(CartStateKeys.cartItemSelections, selectedRows, true);
+  const handleRowSelect = async (selectedRows: RawSearchResults): Promise<void> => {
+    // await dp.setValue(CartStateKeys.cartItemSelections, selectedRows, true);
+    await db.setAndSave<RawSearchResults>(CartStateKeys.cartItemSelections, selectedRows);
   };
 
   return (
