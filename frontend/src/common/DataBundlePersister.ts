@@ -58,6 +58,8 @@ export default class DataBundlePersister {
   }
 
   set<T>(key: string, value: T): void {
+    console.info('Setting key: ', key);
+    console.info('Value: ', value);
     if (Object.hasOwn(this.BUNDLED_DATA_STORE, key)) {
       this.BUNDLED_DATA_STORE[key].setter(value);
     } else {
@@ -67,17 +69,23 @@ export default class DataBundlePersister {
 
   async setAndSave<T>(key: string, value: T): Promise<void> {
     this.set<T>(key, value);
-    await this.save();
+    console.info('Saving key: ', key);
+    console.info('Value: ', value);
+    await this.saveAll();
   }
 
-  get<T>(key: string): T | null {
+  get<T>(key: string, defaultVal: T): T {
     if (Object.hasOwn(this.BUNDLED_DATA_STORE, key)) {
       return this.BUNDLED_DATA_STORE[key].value as T;
     }
-    return null;
+    return defaultVal;
   }
 
-  async save(): Promise<void> {
+  async saveAll(): Promise<void> {
+    if (Object.keys(this.BUNDLED_DATA_STORE).length === 0) {
+      return;
+    }
+
     // Create a bundle of all the data
     const dataBundle: { [key: string]: unknown } = {};
     Object.entries(this.BUNDLED_DATA_STORE).forEach(([key, value]) => {
@@ -88,7 +96,7 @@ export default class DataBundlePersister {
     await saveSessionValue(DataBundlePersister.DEFAULT_KEY, JSON.stringify(dataBundle));
   }
 
-  async load(): Promise<void> {
+  async loadAll(): Promise<void> {
     // Load the bundle from session storage
     const loadedJSON: string | null = await loadSessionValue<string>(
       DataBundlePersister.DEFAULT_KEY
