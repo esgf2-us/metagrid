@@ -7,13 +7,10 @@ import { cleanup } from '@testing-library/react';
 import { TextEncoder } from 'util';
 import { server } from './test/mock/server';
 import messageDisplayData from './components/Messaging/messageDisplayData';
-import {
-  mockConfig,
-  originalGlobusEnabledNodes,
-  sessionStorageMock,
-} from './test/jestTestFunctions';
+import { mockConfig, originalGlobusEnabledNodes } from './test/jestTestFunctions';
 import 'cross-fetch/polyfill';
 import 'mock-match-media/jest-setup';
+import { sessionStorageMock } from './test/mock/mockStorage';
 
 jest.setTimeout(60000);
 

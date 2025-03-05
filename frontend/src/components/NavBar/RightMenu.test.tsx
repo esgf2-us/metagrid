@@ -9,7 +9,8 @@ import { setMedia } from 'mock-match-media';
 import customRender from '../../test/custom-render';
 import Support from '../Support';
 import RightMenu, { Props } from './RightMenu';
-import { mockConfig, mockKeycloakToken, tempStorageSetMock } from '../../test/jestTestFunctions';
+import { mockConfig, mockKeycloakToken } from '../../test/jestTestFunctions';
+import { tempStorageSetMock } from '../../test/mock/mockStorage';
 
 const user = userEvent.setup();
 

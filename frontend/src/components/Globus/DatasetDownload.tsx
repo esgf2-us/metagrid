@@ -17,14 +17,11 @@ import {
 } from 'antd';
 import React, { useEffect } from 'react';
 import { useRecoilState } from 'recoil';
+import PKCE from 'js-pkce';
 import {
-  saveSessionValue,
   fetchWgetScript,
   ResponseError,
   startSearchGlobusEndpoints,
-  // saveSessionValues,
-  REQUESTED_SCOPES,
-  createGlobusAuthObject,
   SubmissionResult,
 } from '../../api';
 import {
@@ -33,8 +30,8 @@ import {
   manageCollectionsTourTargets,
 } from '../../common/reactJoyrideSteps';
 import { RawSearchResults } from '../Search/types';
-import CartStateKeys, { cartDownloadIsLoading, cartItemSelections } from '../Cart/recoil/atoms';
-import GlobusStateKeys, { globusTaskItems } from './recoil/atom';
+import { cartDownloadIsLoading, cartItemSelections } from '../Cart/recoil/atoms';
+import GlobusStateKeys, { globusSavedEndpoints, globusTaskItems } from './recoil/atom';
 import {
   GlobusTokenResponse,
   GlobusTaskItem,
@@ -42,15 +39,18 @@ import {
   GlobusEndpointSearchResults,
   GlobusEndpoint,
 } from './types';
-import { showError, showNotice } from '../../common/utils';
-// import { DataPersister } from '../../common/DataPersister';
+import { getCurrentAppPage, showError, showNotice } from '../../common/utils';
 import { RawTourState, ReactJoyrideContext } from '../../contexts/ReactJoyrideContext';
-// import getGlobusTransferToken from './utils';
 import axios from '../../lib/axios';
 import apiRoutes from '../../api/routes';
 import DataBundlePersister from '../../common/DataBundlePersister';
+import { AppPage } from '../../common/types';
 
 const globusRedirectUrl = `${window.location.origin}/cart/items`;
+
+// Reference: https://github.com/bpedroza/js-pkce
+export const REQUESTED_SCOPES =
+  'openid profile email urn:globus:auth:scope:transfer.api.globus.org:all';
 
 type AlertModalState = {
   onCancelAction: () => void;
@@ -71,7 +71,6 @@ export enum GlobusGoals {
 const downloadOptions = ['Globus', 'wget'];
 
 // The persistent, static, data storage singleton
-// const dp: DataPersister = DataPersister.Instance;
 const db: DataBundlePersister = DataBundlePersister.Instance;
 
 function redirectToNewURL(newUrl: string): void {
@@ -108,39 +107,20 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   const [downloadIsLoading, setDownloadIsLoading] = useRecoilState<boolean>(cartDownloadIsLoading);
 
   // Persistent vars
+  const [taskItems, setTaskItems] = useRecoilState<GlobusTaskItem[]>(globusTaskItems);
+  const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(cartItemSelections);
+  const [savedGlobusEndpoints, setSavedGlobusEndpoints] = useRecoilState<GlobusEndpoint[]>(
+    globusSavedEndpoints
+  );
+
   db.addVar<string | null>(GlobusStateKeys.accessToken, null);
   db.addVar<string | null>(GlobusStateKeys.globusAuth, null);
   db.addVar<GlobusTokenResponse | null>(GlobusStateKeys.transferToken, null);
-  // dp.addNewVar(GlobusStateKeys.accessToken, null, () => {});
-  // dp.addNewVar(GlobusStateKeys.transferToken, null, () => {}, getGlobusTransferToken);
-
-  const [taskItems, setTaskItems] = useRecoilState<GlobusTaskItem[]>(globusTaskItems);
-  db.addVar<GlobusTaskItem[]>(GlobusStateKeys.globusTaskItems, [], setTaskItems);
-  // dp.addNewVar<GlobusTaskItem[]>(GlobusStateKeys.globusTaskItems, [], setTaskItems);
-
-  const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(cartItemSelections);
-  db.addVar<RawSearchResults>(CartStateKeys.cartItemSelections, [], setItemSelections);
-  // dp.addNewVar<RawSearchResults>(CartStateKeys.cartItemSelections, [], setItemSelections);
-
-  // const [savedGlobusEndpoints, setSavedGlobusEndpoints] = React.useState<GlobusEndpoint[] | []>(
-  //   dp.getValue(GlobusStateKeys.savedGlobusEndpoints) || []
-  // );
-  // dp.addNewVar(GlobusStateKeys.savedGlobusEndpoints, [], setSavedGlobusEndpoints);
-  const [savedGlobusEndpoints, setSavedGlobusEndpoints] = React.useState<GlobusEndpoint[]>(
-    db.get(GlobusStateKeys.savedGlobusEndpoints, [])
-  );
-  db.addVar(GlobusStateKeys.savedGlobusEndpoints, [], setSavedGlobusEndpoints);
-
-  // const [chosenGlobusEndpoint, setChosenGlobusEndpoint] = React.useState<GlobusEndpoint | null>(
-  //   dp.getValue(GlobusStateKeys.userChosenEndpoint)
-  // );
-  // dp.addNewVar(GlobusStateKeys.userChosenEndpoint, null, setChosenGlobusEndpoint);
-  const [chosenGlobusEndpoint, setChosenGlobusEndpoint] = React.useState<GlobusEndpoint | null>(
-    db.get(GlobusStateKeys.userChosenEndpoint, null)
-  );
-  db.addVar(GlobusStateKeys.userChosenEndpoint, null, setChosenGlobusEndpoint);
 
   // Component internal state
+  const [chosenGlobusEndpoint, setChosenGlobusEndpoint] = React.useState<GlobusEndpoint | null>();
+  db.addVar(GlobusStateKeys.userChosenEndpoint, null, setChosenGlobusEndpoint);
+
   const [varsLoaded, setVarsLoaded] = React.useState<boolean>(false);
 
   const [loadingPage, setLoadingPage] = React.useState<boolean>(false);
@@ -181,22 +161,26 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     setCurrentGoal(GlobusGoals.None);
     setLoadingPage(false);
 
-    // dp.setValue(GlobusStateKeys.accessToken, null, false);
-    // dp.setValue(GlobusStateKeys.globusAuth, null, false);
-    // dp.setValue(GlobusStateKeys.transferToken, null, false);
-
-    // await dp.saveAllValues();
-
     db.set<string | null>(GlobusStateKeys.accessToken, null);
-    db.set<string | null>(GlobusStateKeys.globusAuth, null);
+    db.set<string | null>(GlobusStateKeys.globusAuth, REQUESTED_SCOPES);
     db.set<GlobusTokenResponse | null>(GlobusStateKeys.transferToken, null);
     await db.saveAll();
   }
 
-  function getGlobusTokens(): [GlobusTokenResponse | null, string | null] {
-    // const accessToken = dp.getValue<string>(GlobusStateKeys.accessToken);
-    // const transferToken = dp.getValue<GlobusTokenResponse | null>(GlobusStateKeys.transferToken);
+  // Creates an auth object using desired authentication scope
+  function createGlobusAuthObject(): PKCE {
+    const authScope = db.get<string>(GlobusStateKeys.globusAuth, REQUESTED_SCOPES);
 
+    return new PKCE({
+      client_id: window.METAGRID.GLOBUS_CLIENT_ID, // Update this using your native client ID
+      redirect_uri: `${window.location.origin}/cart/items`, // Update this if you are deploying this anywhere else (Globus Auth will redirect back here once you have logged in)
+      authorization_endpoint: 'https://auth.globus.org/v2/oauth2/authorize', // No changes needed
+      token_endpoint: 'https://auth.globus.org/v2/oauth2/token', // No changes needed
+      requested_scopes: authScope, // Update with any scopes you would need, e.g. transfer
+    });
+  }
+
+  function getGlobusTokens(): [GlobusTokenResponse | null, string | null] {
     const accessToken = db.get<string>(GlobusStateKeys.accessToken, '');
     const transferToken = db.get<GlobusTokenResponse | null>(GlobusStateKeys.transferToken, null);
 
@@ -206,17 +190,15 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   async function getUrlAuthTokens(): Promise<void> {
     try {
       const url = window.location.href;
-      const pkce = await createGlobusAuthObject(); // Create pkce with saved scope
+      const pkce = createGlobusAuthObject(); // Create pkce with saved scope
       const tokenResponse = (await pkce.exchangeForAccessToken(url)) as GlobusTokenResponse;
 
       /* istanbul ignore else */
       if (tokenResponse) {
         /* istanbul ignore else */
         if (tokenResponse.access_token) {
-          // dp.setValue(GlobusStateKeys.accessToken, tokenResponse.access_token, false);
           db.set<string | null>(GlobusStateKeys.accessToken, tokenResponse.access_token);
         } else {
-          // dp.setValue(GlobusStateKeys.accessToken, null, false);
           db.set<string | null>(GlobusStateKeys.accessToken, null);
         }
 
@@ -235,16 +217,12 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
               const newTransferToken = { ...tokenBlob };
               newTransferToken.created_on = Math.floor(Date.now() / 1000);
 
-              // dp.setValue(GlobusStateKeys.transferToken, newTransferToken, false);
               db.set<GlobusTokenResponse | null>(GlobusStateKeys.transferToken, newTransferToken);
             }
           });
         } else {
-          // dp.setValue(GlobusStateKeys.transferToken, null, false);
           db.set<GlobusTokenResponse | null>(GlobusStateKeys.transferToken, null);
         }
-
-        // await dp.saveAllValues();
         await db.saveAll();
       }
     } catch (error: unknown) {
@@ -258,12 +236,11 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     }
   }
 
-  const handleWgetDownload = async (): Promise<void> => {
+  const handleWgetDownload = (): void => {
     const cleanedSelections = itemSelections.filter((item) => {
       return item !== undefined && item !== null;
     });
-    // await dp.setValue(CartStateKeys.cartItemSelections, cleanedSelections, true);
-    await db.setAndSave<RawSearchResults>(CartStateKeys.cartItemSelections, cleanedSelections);
+    setItemSelections(cleanedSelections);
 
     const ids = cleanedSelections.map((item) => item.id);
     showNotice(messageApi, 'The wget script is generating, please wait momentarily.', {
@@ -305,10 +282,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   ): void => {
     setDownloadIsLoading(true);
 
-    // const cartSelections = dp.getValue<RawSearchResults>(CartStateKeys.cartItemSelections);
-    // const ids = cartSelections?.map((item) => (item ? item.id : '')) ?? [];
-    const cartSelections = db.get<RawSearchResults>(CartStateKeys.cartItemSelections, []);
-    const ids = cartSelections?.map((item) => (item ? item.id : '')) ?? [];
+    const ids = itemSelections?.map((item) => (item ? item.id : '')) ?? [];
 
     axios
       .post<SubmissionResult>(
@@ -325,9 +299,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         return resp.data;
       })
       .then(async (resp) => {
-        // await dp.setValue(CartStateKeys.cartItemSelections, [], true);
-        await db.setAndSave<RawSearchResults>(CartStateKeys.cartItemSelections, []);
-
+        setItemSelections([]);
         const newTasks = resp.successes.map((submission) => {
           const taskId = submission.task_id as string;
           return {
@@ -339,8 +311,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
         const nMostRecentTasks = [...newTasks, ...taskItems].slice(0, MAX_TASK_LIST_LENGTH);
 
-        // await dp.setValue(GlobusStateKeys.globusTaskItems, nMostRecentTasks, true);
-        await db.setAndSave<GlobusTaskItem[]>(GlobusStateKeys.globusTaskItems, nMostRecentTasks);
+        setTaskItems(nMostRecentTasks);
 
         switch (resp.status) {
           case 200:
@@ -453,11 +424,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             setCurrentGoal(GlobusGoals.None);
           } else {
             setAlertPopupState({ ...alertPopupState, show: false });
-            // await dp.setValue(CartStateKeys.cartItemSelections, globusReadyItems, true);
-            await db.setAndSave<RawSearchResults>(
-              CartStateKeys.cartItemSelections,
-              globusReadyItems
-            );
+            setItemSelections(globusReadyItems);
             setCurrentGoal(GlobusGoals.DoGlobusTransfer);
             await performStepsForGlobusGoals();
           }
@@ -490,6 +457,45 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     }
   };
 
+  const updateScopes = (): void => {
+    // Save the endpoint in the list
+
+    // Create list of endpoints that require data access scope
+    const dataAccessEndpoints: GlobusEndpoint[] = [];
+    savedGlobusEndpoints.forEach((endpoint) => {
+      if (endpoint.entity_type === 'GCSv5_mapped_collection' && endpoint.subscription_id) {
+        dataAccessEndpoints.push(endpoint);
+      }
+    });
+
+    // Previous scope
+    const oldScope = db.get<string>(GlobusStateKeys.globusAuth, REQUESTED_SCOPES);
+    let newScope = REQUESTED_SCOPES;
+    if (dataAccessEndpoints.length > 0) {
+      // Create a new scope string
+      const DATA_ACCESS_SCOPE = `${dataAccessEndpoints
+        .reduce((acc, endpoint) => {
+          const ACCESS_SCOPE = `*https://auth.globus.org/scopes/${endpoint.id}/data_access`;
+          return `${acc + ACCESS_SCOPE} `;
+        }, 'urn:globus:auth:scope:transfer.api.globus.org:all[')
+        .trimEnd()}]`;
+      newScope = newScope.concat(' ', DATA_ACCESS_SCOPE);
+    }
+
+    // Reset tokens if the SCOPES changed
+    if (oldScope !== newScope) {
+      db.set<string | null>(GlobusStateKeys.accessToken, null);
+      db.set<GlobusTokenResponse | null>(GlobusStateKeys.transferToken, null);
+      db.set<string>(GlobusStateKeys.globusAuth, newScope);
+    }
+  };
+
+  const saveGlobusEndpoint = (newEndpoint: GlobusEndpoint): void => {
+    // Add the endpoint to the list
+    const newEndpointsList = [...savedGlobusEndpoints, newEndpoint];
+    setSavedGlobusEndpoints(newEndpointsList);
+  };
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const changeGlobusEndpoint = async (value: string): Promise<void> => {
     if (value === '') {
@@ -503,14 +509,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       (endpoint: GlobusEndpoint) => endpoint.id === value
     );
 
-    if (checkEndpoint?.entity_type === 'GCSv5_mapped_collection' && checkEndpoint.subscription_id) {
-      const DATA_ACCESS_SCOPE = `urn:globus:auth:scope:transfer.api.globus.org:all[*https://auth.globus.org/scopes/${value}/data_access]`;
-      const SCOPES = REQUESTED_SCOPES.concat(' ', DATA_ACCESS_SCOPE);
-
-      await saveSessionValue<string>(GlobusStateKeys.globusAuth, SCOPES);
-    }
-
-    // await dp.setValue(GlobusStateKeys.userChosenEndpoint, checkEndpoint, true);
     await db.setAndSave<GlobusEndpoint | undefined>(
       GlobusStateKeys.userChosenEndpoint,
       checkEndpoint
@@ -569,17 +567,27 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     accessToken: string | null,
     globusTransferToken: GlobusTokenResponse | null
   ): boolean {
-    if (accessToken && globusTransferToken) {
-      return true;
+    // Test if the current transfer token is expired
+    let globusTokenReady = false;
+    if (globusTransferToken && globusTransferToken.expires_in) {
+      const createTime = globusTransferToken.created_on;
+      const lifeTime = globusTransferToken.expires_in;
+      const expires = createTime + lifeTime;
+      const curTime = Math.floor(Date.now() / 1000);
+
+      if (curTime <= expires) {
+        globusTokenReady = true;
+      }
     }
-    return false;
+
+    return accessToken !== null && globusTokenReady;
   }
 
   function getCurrentGoal(): GlobusGoals {
     const urlParams = new URLSearchParams(window.location.search);
-
+    const curPage = getCurrentAppPage();
     // If cancelled key is in URL, set goal to none
-    if (urlParams.has('cancelled')) {
+    if (urlParams.has('cancelled') || curPage !== AppPage.Cart) {
       setCurrentGoal(GlobusGoals.None);
       return GlobusGoals.None;
     }
@@ -600,10 +608,8 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     const endpointSearchURL = `https://app.globus.org/helpers/browse-collections?action=${globusRedirectUrl}&method=GET&cancelurl=${globusRedirectUrl}?cancelled&filelimit=0`;
 
     setLoadingPage(true);
-    // await dp.saveAllValues();
     await db.saveAll();
     setLoadingPage(false);
-    // const chosenEndpoint = dp.getValue<GlobusEndpoint>(GlobusStateKeys.userChosenEndpoint);
     const chosenEndpoint = db.get<GlobusEndpoint | null>(GlobusStateKeys.userChosenEndpoint, null);
 
     if (chosenEndpoint) {
@@ -617,10 +623,9 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     sessionStorage.removeItem('pkce_code_verifier');
     sessionStorage.removeItem('pkce_state');
 
-    const pkce = await createGlobusAuthObject();
+    const pkce = createGlobusAuthObject();
     const authUrl: string = pkce.authorizeUrl();
     setLoadingPage(true);
-    // await dp.saveAllValues();
     await db.saveAll();
     setLoadingPage(false);
     redirectToNewURL(authUrl);
@@ -629,8 +634,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   async function endDownloadSteps(): Promise<void> {
     setDownloadIsLoading(false);
     setLoadingPage(true);
-    // await dp.setValue(GlobusStateKeys.userChosenEndpoint, null, true);
-    // await dp.saveAllValues();
     await db.setAndSave<GlobusEndpoint | undefined>(GlobusStateKeys.userChosenEndpoint, undefined);
     setLoadingPage(false);
     setCurrentGoal(GlobusGoals.None);
@@ -642,15 +645,8 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
     if (!varsLoaded) {
       setVarsLoaded(true);
-      // await Promise.all([
-      //   dp.loadValue(GlobusStateKeys.savedGlobusEndpoints),
-      //   dp.loadValue(GlobusStateKeys.userChosenEndpoint),
-      //   dp.loadValue(GlobusStateKeys.accessToken),
-      //   dp.loadValue(GlobusStateKeys.transferToken),
-      //   dp.loadValue(GlobusStateKeys.globusAuth),
-      // ]);
-      // await dp.loadAllValues();
       await db.loadAll();
+      // eslint-disable-next-line no-console
     }
 
     // Obtain URL params if applicable
@@ -666,14 +662,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       return;
     }
 
-    // const savedEndpoints: GlobusEndpoint[] =
-    //   dp.getValue<GlobusEndpoint[]>(GlobusStateKeys.savedGlobusEndpoints) || [];
-
-    const savedEndpoints: GlobusEndpoint[] = db.get<GlobusEndpoint[]>(
-      GlobusStateKeys.savedGlobusEndpoints,
-      []
-    );
-
     // Goal is to set the path for chosen endpoint
     if (goal === GlobusGoals.SetEndpointPath) {
       // If endpoint urls are ready, update related values
@@ -684,7 +672,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           setCurrentGoal(GlobusGoals.None);
         }
 
-        const updatedEndpointList = savedEndpoints.map((endpoint) => {
+        const updatedEndpointList = savedGlobusEndpoints.map((endpoint) => {
           if (endpoint && endpoint.id === endpointId) {
             return { ...endpoint, path };
           }
@@ -692,20 +680,17 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         });
 
         // Set path for endpoint
-        // await dp.setValue(GlobusStateKeys.savedGlobusEndpoints, updatedEndpointList, true);
-        db.set<GlobusEndpoint[]>(GlobusStateKeys.savedGlobusEndpoints, updatedEndpointList);
+        setSavedGlobusEndpoints(updatedEndpointList);
 
         // If endpoint was updated, set it as chosen endpoint
         const updatedEndpoint = updatedEndpointList.find(
           (endpoint: GlobusEndpoint) => endpoint.id === endpointId
         );
         if (updatedEndpoint) {
-          // await dp.setValue(GlobusStateKeys.userChosenEndpoint, updatedEndpoint, true);
           db.set<GlobusEndpoint>(GlobusStateKeys.userChosenEndpoint, updatedEndpoint);
         }
 
         setCurrentGoal(GlobusGoals.None);
-        // await dp.saveAllValues();
         await db.saveAll();
         redirectToRootUrl();
         return;
@@ -730,9 +715,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
     // Goal is to perform a transfer
     if (goal === GlobusGoals.DoGlobusTransfer) {
-      // const chosenEndpoint: GlobusEndpoint | null = dp.getValue<GlobusEndpoint>(
-      //   GlobusStateKeys.userChosenEndpoint
-      // );
       const chosenEndpoint: GlobusEndpoint | null = db.get<GlobusEndpoint | null>(
         GlobusStateKeys.userChosenEndpoint,
         null
@@ -760,12 +742,16 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         return;
       }
 
+      // Update scopes
+      updateScopes();
+
       const [transferToken, accessToken] = getGlobusTokens();
       const tknsReady = tokensReady(accessToken, transferToken);
 
       // Get tokens if they aren't ready
       if (!tknsReady) {
         const tUrlReady = tokenUrlReady(urlParams);
+
         // If auth token urls are ready, update related tokens
         if (tUrlReady) {
           // Token URL is ready get tokens
@@ -788,6 +774,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             content: 'You will be redirected to obtain globus tokens. Continue?',
           });
         }
+
         return;
       }
 
@@ -798,39 +785,16 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         if (path === null) {
           setCurrentGoal(GlobusGoals.None);
         }
-        const updatedEndpoint = savedEndpoints.find((endpoint) => {
+        const updatedEndpoint = savedGlobusEndpoints.find((endpoint) => {
           return endpoint.id === endpointId;
         });
 
         if (updatedEndpoint) {
-          // await dp.setValue(
-          //   GlobusStateKeys.userChosenEndpoint,
-          //   {
-          //     ...updatedEndpoint,
-          //     path,
-          //   } as GlobusEndpoint,
-          //   true
-          // );
           db.set<GlobusEndpoint>(GlobusStateKeys.userChosenEndpoint, {
             ...updatedEndpoint,
             path,
           } as GlobusEndpoint);
         } else {
-          // await dp.setValue<GlobusEndpoint>(
-          //   GlobusStateKeys.userChosenEndpoint,
-          //   {
-          //     canonical_name: '',
-          //     contact_email: '',
-          //     display_name: 'Unsaved Collection',
-          //     entity_type: '',
-          //     id: endpointId,
-          //     owner_id: '',
-          //     owner_string: '',
-          //     path,
-          //     subscription_id: '',
-          //   } as GlobusEndpoint,
-          //   true
-          // );
           db.set<GlobusEndpoint>(GlobusStateKeys.userChosenEndpoint, {
             canonical_name: '',
             contact_email: '',
@@ -844,7 +808,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           } as GlobusEndpoint);
         }
 
-        // await dp.saveAllValues();
         await db.saveAll();
         setLoadingPage(false);
         redirectToRootUrl();
@@ -882,13 +845,9 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   }
 
   const downloadBtnTooltip = (): string => {
-    const chosenEndpoint = db.get<GlobusEndpoint | null>(
-      GlobusStateKeys.savedGlobusEndpoints,
-      null
-    );
-    const selections = db.get<RawSearchResults>(CartStateKeys.cartItemSelections, []);
+    const chosenEndpoint = db.get<GlobusEndpoint | null>(GlobusStateKeys.userChosenEndpoint, null);
 
-    if (selections.length === 0) {
+    if (itemSelections.length === 0) {
       return 'Please select at least one dataset to download in your cart above.';
     }
     if (selectedDownloadType === 'Globus') {
@@ -1024,7 +983,17 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
               onClick={() => {
                 startSpecificTour(createCollectionsFormTour());
               }}
-            ></Button>
+            />
+            <Button
+              type="primary"
+              danger
+              onClick={async () => {
+                await resetTokens();
+                setEndpointSearchOpen(false);
+              }}
+            >
+              Reset Tokens
+            </Button>
           </>
         }
         open={endpointSearchOpen}
@@ -1034,11 +1003,9 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         }}
         onOk={async () => {
           setEndpointSearchOpen(false);
-          // await dp.setValue(GlobusStateKeys.userChosenEndpoint, undefined, true);
-          // await dp.setValue(GlobusStateKeys.savedGlobusEndpoints, savedGlobusEndpoints, true);
           db.set<GlobusEndpoint | undefined>(GlobusStateKeys.userChosenEndpoint, undefined);
-          db.set<GlobusEndpoint[]>(GlobusStateKeys.savedGlobusEndpoints, savedGlobusEndpoints);
-          await db.saveAll();
+
+          await db.saveAll(); // save all the values after the form is closed
         }}
         cancelText="Cancel Changes"
         cancelButtonProps={{
@@ -1046,9 +1013,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         }}
         onCancel={async () => {
           setEndpointSearchOpen(false);
-          // await dp.setValue(GlobusStateKeys.userChosenEndpoint, undefined, true);
-          // await dp.loadValue(GlobusStateKeys.savedGlobusEndpoints);
-          await db.loadAll();
+          await db.loadAll(); // Reset values from before the form was opened
           await db.setAndSave<GlobusEndpoint | undefined>(
             GlobusStateKeys.userChosenEndpoint,
             undefined
@@ -1118,15 +1083,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                             <Button
                               type="primary"
                               onClick={() => {
-                                // await dp.setValue(
-                                //   GlobusStateKeys.savedGlobusEndpoints,
-                                //   [...savedGlobusEndpoints, endpoint],
-                                //   true
-                                // );
-                                db.set<GlobusEndpoint[]>(GlobusStateKeys.savedGlobusEndpoints, [
-                                  ...savedGlobusEndpoints,
-                                  endpoint,
-                                ]);
+                                saveGlobusEndpoint(endpoint);
                               }}
                             >
                               Add
@@ -1195,15 +1152,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                           type="primary"
                           danger
                           onClick={() => {
-                            // await dp.setValue(
-                            //   GlobusStateKeys.savedGlobusEndpoints,
-                            //   savedGlobusEndpoints.filter((savedEndpoint) => {
-                            //     return savedEndpoint.id !== endpoint.id;
-                            //   }),
-                            //   false
-                            // );
-                            db.set<GlobusEndpoint[]>(
-                              GlobusStateKeys.savedGlobusEndpoints,
+                            setSavedGlobusEndpoints(
                               savedGlobusEndpoints.filter((savedEndpoint) => {
                                 return savedEndpoint.id !== endpoint.id;
                               })
@@ -1227,31 +1176,18 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                       key: 'setPath',
                       width: 70,
                       render: (_, endpoint) => (
-                        <div>
-                          <Button
-                            type="primary"
-                            danger
-                            onClick={async () => {
-                              // await dp.setValue(GlobusStateKeys.userChosenEndpoint, endpoint, true);
-                              db.set<GlobusEndpoint>(GlobusStateKeys.userChosenEndpoint, endpoint);
-                              setEndpointSearchOpen(false);
-                              setCurrentGoal(GlobusGoals.SetEndpointPath);
-                              await performStepsForGlobusGoals();
-                            }}
-                          >
-                            {endpoint.path ? 'Update Path' : 'Set Path'}
-                          </Button>
-                          <Button
-                            type="primary"
-                            danger
-                            onClick={async () => {
-                              await resetTokens();
-                              setEndpointSearchOpen(false);
-                            }}
-                          >
-                            Reset Tokens
-                          </Button>
-                        </div>
+                        <Button
+                          type="primary"
+                          danger
+                          onClick={async () => {
+                            db.set<GlobusEndpoint>(GlobusStateKeys.userChosenEndpoint, endpoint);
+                            setEndpointSearchOpen(false);
+                            setCurrentGoal(GlobusGoals.SetEndpointPath);
+                            await performStepsForGlobusGoals();
+                          }}
+                        >
+                          {endpoint.path ? 'Update Path' : 'Set Path'}
+                        </Button>
                       ),
                     },
                   ]}

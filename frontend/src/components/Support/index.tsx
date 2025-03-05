@@ -6,7 +6,6 @@ import React from 'react';
 import {
   createSearchCardTour,
   createMainPageTour,
-  getCurrentAppPage,
   createCartItemsTour,
   createNodeStatusTour,
   TourTitles,
@@ -14,6 +13,7 @@ import {
 import { AppPage } from '../../common/types';
 import { RawTourState, ReactJoyrideContext } from '../../contexts/ReactJoyrideContext';
 import Modal from '../Feedback/Modal';
+import { getCurrentAppPage } from '../../common/utils';
 
 export type Props = {
   open: boolean;

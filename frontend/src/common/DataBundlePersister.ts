@@ -2,7 +2,6 @@ import { SetterOrUpdater } from 'recoil';
 import { loadSessionValue, saveSessionValue } from '../api';
 
 type DataVar<T> = {
-  key: string;
   value: T;
   setter: (value: T) => void;
 };
@@ -31,46 +30,50 @@ export default class DataBundlePersister {
     this.BUNDLED_DATA_STORE = dataStore;
   }
 
+  peekAtDataStore(): { [key: string]: DataVar<unknown> } {
+    return this.BUNDLED_DATA_STORE;
+  }
+
   addVar<T>(
     key: string,
     defaultVal: T,
     setterFunc: SetterOrUpdater<T> | undefined = undefined
   ): void {
-    // Avoid overriding existing variables
-    if (Object.hasOwn(this.BUNDLED_DATA_STORE, key)) {
-      return;
-    }
-
     // Create setter function
-    const setter = (val: T): void => {
-      this.BUNDLED_DATA_STORE[key].value = val;
-      if (setterFunc) {
-        setterFunc(val);
+    const setter = (newValue: T): void => {
+      // Update the value only if it is different from the previous value
+      // This is to avoid calling the setter function multiple times
+      const currentValue = this.BUNDLED_DATA_STORE[key].value;
+      if (currentValue !== newValue) {
+        this.BUNDLED_DATA_STORE[key].value = newValue;
+        if (setterFunc) {
+          setterFunc(newValue);
+        }
       }
     };
 
-    // Update data store
+    let valueToSet: T = defaultVal;
+    if (Object.hasOwn(this.BUNDLED_DATA_STORE, key)) {
+      valueToSet = this.BUNDLED_DATA_STORE[key].value as T;
+    }
+
+    // Update data store if the key does not exist
     this.BUNDLED_DATA_STORE[key] = {
-      key,
-      value: defaultVal,
+      value: valueToSet,
       setter,
     } as DataVar<unknown>;
   }
 
   set<T>(key: string, value: T): void {
-    console.info('Setting key: ', key);
-    console.info('Value: ', value);
     if (Object.hasOwn(this.BUNDLED_DATA_STORE, key)) {
       this.BUNDLED_DATA_STORE[key].setter(value);
     } else {
-      this.addVar(key, value, undefined);
+      this.addVar(key, value);
     }
   }
 
   async setAndSave<T>(key: string, value: T): Promise<void> {
     this.set<T>(key, value);
-    console.info('Saving key: ', key);
-    console.info('Value: ', value);
     await this.saveAll();
   }
 
@@ -97,6 +100,7 @@ export default class DataBundlePersister {
   }
 
   async loadAll(): Promise<void> {
+    // console.info('Loading data bundle...');
     // Load the bundle from session storage
     const loadedJSON: string | null = await loadSessionValue<string>(
       DataBundlePersister.DEFAULT_KEY

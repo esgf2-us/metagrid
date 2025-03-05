@@ -2,23 +2,6 @@ import { JoyrideTour } from './JoyrideTour';
 import { TargetObject } from './TargetObject';
 import { AppPage } from './types';
 
-export const getCurrentAppPage = (): number => {
-  const { pathname } = window.location;
-  if (pathname.endsWith('/search') || pathname.includes('/search/')) {
-    return AppPage.Main;
-  }
-  if (pathname.endsWith('/cart/items')) {
-    return AppPage.Cart;
-  }
-  if (pathname.endsWith('/nodes')) {
-    return AppPage.NodeStatus;
-  }
-  if (pathname.endsWith('/cart/searches')) {
-    return AppPage.SavedSearches;
-  }
-  return -1;
-};
-
 export const delay = (ms: number): Promise<void> => {
   return new Promise((res) => {
     setTimeout(res, ms);
