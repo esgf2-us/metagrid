@@ -260,6 +260,8 @@ export const parsedNodeStatusFixture = (): NodeStatusArray => [
   },
 ];
 
+export const globusAuthScopeFixure =
+  'openid profile email urn:globus:auth:scope:transfer.api.globus.org:all urn:globus:auth:scope:transfer.api.globus.org:all[*https://auth.globus.org/scopes/id1234567/data_access *https://auth.globus.org/scopes/id2345678/data_access]';
 export const globusAccessTokenFixture = 'validAccessToken';
 export const globusTransferTokenFixture: GlobusTokenResponse = {
   access_token: globusAccessTokenFixture,
@@ -273,7 +275,7 @@ export const globusTransferTokenFixture: GlobusTokenResponse = {
     refresh_token: 'refreshToken',
     transfer_token: 'transferToken',
   },
-  created_on: 10000,
+  created_on: 1000,
   expires_in: 11000,
   error: '',
 };

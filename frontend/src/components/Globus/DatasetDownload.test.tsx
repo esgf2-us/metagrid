@@ -4,30 +4,30 @@ import { within, screen } from '@testing-library/react';
 import customRender from '../../test/custom-render';
 import { rest, server } from '../../test/mock/server';
 import { getSearchFromUrl } from '../../common/utils';
-import { ActiveSearchQuery } from '../Search/types';
+import { ActiveSearchQuery, RawSearchResults } from '../Search/types';
 import {
   globusReadyNode,
   makeCartItem,
   mockConfig,
   mockFunction,
   openDropdownList,
-  tempStorageGetMock,
-  tempStorageSetMock,
+  printElementContents,
 } from '../../test/jestTestFunctions';
 import App from '../App/App';
-import { GlobusEndpoint, GlobusTokenResponse } from './types';
+import { GlobusEndpoint, GlobusTaskItem, GlobusTokenResponse } from './types';
 import GlobusStateKeys from './recoil/atom';
 import CartStateKeys from '../Cart/recoil/atoms';
 import {
   globusEndpointFixture,
   globusAccessTokenFixture,
   globusTransferTokenFixture,
+  globusAuthScopeFixure,
 } from '../../test/mock/fixtures';
 import apiRoutes from '../../api/routes';
 import DatasetDownloadForm, { GlobusGoals } from './DatasetDownload';
-import getGlobusTransferToken from './utils';
-import { DataPersister } from '../../common/DataPersister';
-import { saveSessionValue } from '../../api';
+import DataBundlePersister from '../../common/DataBundlePersister';
+import { tempStorageGetMock, tempStorageSetMock } from '../../test/mock/mockStorage';
+import { AppPage } from '../../common/types';
 
 const activeSearch: ActiveSearchQuery = getSearchFromUrl('project=test1');
 
@@ -62,8 +62,22 @@ jest.mock('../../api/index', () => {
   };
 });
 
+jest.mock('../../common/utils', () => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const originalModule = jest.requireActual('../../common/utils');
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return {
+    __esModule: true,
+    ...originalModule,
+    getCurrentAppPage: () => {
+      return AppPage.Cart;
+    },
+  };
+});
+
 // Create fixtures to use in tests
-const dp = DataPersister.Instance;
+const db = DataBundlePersister.Instance;
 
 const testEndpointPath = 'testPathValid';
 const testEndpointId = 'endpoint1';
@@ -89,6 +103,7 @@ const validEndpointWithPathSet = globusEndpointFixture(
 
 const defaultTestConfig = {
   renderFullApp: false,
+  authenticated: false,
   globusEnabledNodes: [globusReadyNode],
   globusGoals: GlobusGoals.None,
   testUrlState: { authTokensUrlReady: false, endpointPathUrlReady: false },
@@ -96,6 +111,8 @@ const defaultTestConfig = {
   itemSelections: [makeCartItem('globusReadyItem1', true), makeCartItem('globusReadyItem2', true)],
   savedEndpoints: [validEndpointNoPathSet, validEndpointWithPathSet],
   chosenEndpoint: validEndpointWithPathSet as GlobusEndpoint | null,
+  cartDownloadIsLoading: false,
+  globusTaskItems: [] as GlobusTaskItem[],
 };
 
 function setEndpointUrl(endpointId?: string, path?: string | null): void {
@@ -126,35 +143,49 @@ function setAuthTokensUrl(): void {
   });
 }
 
+function initRecoilValue<T>(key: string, value: T): void {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
 async function initializeComponentForTest(testConfig?: typeof defaultTestConfig): Promise<void> {
   const config = testConfig || defaultTestConfig;
 
   // Set names of the globus enabled nodes
   mockConfig.GLOBUS_NODES = config.globusEnabledNodes;
 
-  // Set the Globus Goals
-  tempStorageSetMock(GlobusStateKeys.globusTransferGoalsState, config.globusGoals);
+  // Set the auth scope by default
+  db.set(GlobusStateKeys.globusAuth, globusAuthScopeFixure);
 
   // Set the auth token state
   if (config.tokensReady.access) {
-    dp.addNewVar(GlobusStateKeys.accessToken, globusAccessTokenFixture, () => {});
+    db.set(GlobusStateKeys.accessToken, globusAccessTokenFixture);
   }
   if (config.tokensReady.transfer) {
-    dp.addNewVar(GlobusStateKeys.transferToken, globusTransferTokenFixture, () => {});
+    const transferToken = { ...globusTransferTokenFixture };
+    transferToken.created_on = Math.floor(Date.now() / 1000);
+
+    db.set(GlobusStateKeys.transferToken, transferToken);
   }
 
+  // Set the Globus Goals
+  initRecoilValue<GlobusGoals>(GlobusStateKeys.globusTransferGoalsState, config.globusGoals);
+  initRecoilValue<boolean>(CartStateKeys.cartDownloadIsLoading, config.cartDownloadIsLoading);
+
   // Set the selected cart items
-  tempStorageSetMock(CartStateKeys.cartItemSelections, config.itemSelections);
+  initRecoilValue<RawSearchResults>(CartStateKeys.cartItemSelections, config.itemSelections);
 
   // Set the saved endpoints
-  tempStorageSetMock(GlobusStateKeys.savedGlobusEndpoints, config.savedEndpoints);
+  initRecoilValue<GlobusEndpoint[]>(GlobusStateKeys.savedGlobusEndpoints, config.savedEndpoints);
+
+  // Set the globus task items
+  initRecoilValue<GlobusTaskItem[]>(GlobusStateKeys.globusTaskItems, config.globusTaskItems);
 
   // Default display name if no endpoint is chosen
   let displayName = 'Select Globus Collection';
 
   // Set the chosen endpoint and display name if it's not null
   if (config.chosenEndpoint !== null) {
-    tempStorageSetMock(GlobusStateKeys.userChosenEndpoint, config.chosenEndpoint);
+    db.set(GlobusStateKeys.userChosenEndpoint, config.chosenEndpoint);
 
     // If setup has endpoint chosen, set display name to know when component is loaded
     displayName = config.chosenEndpoint.display_name;
@@ -166,6 +197,8 @@ async function initializeComponentForTest(testConfig?: typeof defaultTestConfig)
   } else if (config.testUrlState.endpointPathUrlReady && config.chosenEndpoint) {
     setEndpointUrl(config.chosenEndpoint.id, config.chosenEndpoint.path);
   }
+
+  db.saveAll();
 
   // Finally render the component
   if (config.renderFullApp) {
@@ -201,7 +234,7 @@ async function initializeComponentForTest(testConfig?: typeof defaultTestConfig)
 
 beforeEach(() => {
   // Ensure persistent storage is clear before each test
-  dp.initializeDataStore({});
+  db.initializeDataStore({});
 });
 
 describe('DatasetDownload form tests', () => {
@@ -231,6 +264,8 @@ describe('DatasetDownload form tests', () => {
     const downloadBtn = await screen.findByTestId('downloadDatasetBtn');
     expect(downloadBtn).toBeTruthy();
     await user.click(downloadBtn);
+
+    printElementContents(undefined);
 
     // Expect download success message to show
     const notice = await screen.findByText('Wget script downloaded successfully!', {
@@ -406,10 +441,8 @@ describe('DatasetDownload form tests', () => {
     expect(warningPopup).toBeTruthy();
 
     // Click OK at the popup to proceed with globus transfer
-    await user.click(await screen.findByText('Ok'));
-
-    // If clicking 'OK' the non-globus-ready items should be removed, leaving only 1
-    // expect(dp.getValue<RawSearchResults>(CartStateKeys.cartItemSelections)?.length).toEqual(1);
+    const okBtn = await screen.findByText('Ok');
+    await user.click(okBtn);
 
     // Begin the transfer
     const transferPopup = await screen.findByText('Globus download initiated successfully!');
@@ -479,12 +512,13 @@ describe('DatasetDownload form tests', () => {
       testUrlState: { authTokensUrlReady: true, endpointPathUrlReady: false },
     });
 
-    const accessToken = dp.getValue(GlobusStateKeys.accessToken);
-    const transferToken = (await dp.getValue(GlobusStateKeys.transferToken)) as GlobusTokenResponse;
+    const accessToken = db.get<string>(GlobusStateKeys.accessToken, '');
+    const transferToken = db.get<GlobusTokenResponse | null>(GlobusStateKeys.transferToken, null);
 
     if (transferToken && transferToken.created_on) {
-      transferToken.created_on = 0; // Resets the token's time for comparison equality
+      transferToken.created_on = 1000; // Resets the token's time for comparison equality
     }
+
     expect(accessToken).toEqual(globusAccessTokenFixture);
     expect(transferToken).toEqual(globusTransferTokenFixture);
 
@@ -497,7 +531,7 @@ describe('DatasetDownload form tests', () => {
       testUrlState: { authTokensUrlReady: false, endpointPathUrlReady: true },
     });
 
-    const userEndpoint = dp.getValue<GlobusEndpoint>(GlobusStateKeys.userChosenEndpoint);
+    const userEndpoint = db.get<GlobusEndpoint | null>(GlobusStateKeys.userChosenEndpoint, null);
 
     expect(userEndpoint?.path).toEqual(testEndpointPath);
   });
@@ -613,8 +647,7 @@ describe('DatasetDownload form tests', () => {
       globusGoals: GlobusGoals.DoGlobusTransfer,
       testUrlState: { authTokensUrlReady: false, endpointPathUrlReady: true },
     });
-
-    expect(dp.getValue<GlobusEndpoint>(GlobusStateKeys.userChosenEndpoint)?.path).toEqual(
+    expect(db.get<GlobusEndpoint | null>(GlobusStateKeys.userChosenEndpoint, null)?.path).toEqual(
       testEndpointPath
     );
   });
@@ -672,7 +705,9 @@ describe('DatasetDownload form tests', () => {
     await user.click(saveBtn);
 
     // Current user chosen endpoint should be undefined
-    expect(dp.getValue<GlobusEndpoint>(GlobusStateKeys.userChosenEndpoint)).toBeUndefined();
+    expect(
+      db.get<GlobusEndpoint | undefined>(GlobusStateKeys.userChosenEndpoint, undefined)
+    ).toBeUndefined();
 
     // Open endpoint dropdown and select the endpoint
     await openDropdownList(user, selectEndpoint);
@@ -683,9 +718,9 @@ describe('DatasetDownload form tests', () => {
     await user.click(lcPublicOption);
 
     // The user chosen endpoint should now be LC Public
-    expect(dp.getValue<GlobusEndpoint>(GlobusStateKeys.userChosenEndpoint)?.display_name).toEqual(
-      'LC Public'
-    );
+    expect(
+      db.get<GlobusEndpoint | null>(GlobusStateKeys.userChosenEndpoint, null)?.display_name
+    ).toEqual('LC Public');
   });
 
   it('Performs sets the path of already saved endpoint.', async () => {
@@ -738,62 +773,61 @@ describe('DatasetDownload form tests', () => {
   });
 
   it('displays 10 tasks at most in the submit history', async () => {
-    tempStorageSetMock(GlobusStateKeys.globusTaskItems, [
-      {
-        submitDate: '11/30/2023, 3:10:00 PM',
-        taskId: '0123456',
-        taskStatusURL: 'https://app.globus.org/activity/0123456/overview',
-      },
-      {
-        submitDate: '11/30/2023, 3:15:00 PM',
-        taskId: '2345678',
-        taskStatusURL: 'https://app.globus.org/activity/2345678/overview',
-      },
-      {
-        submitDate: '11/30/2023, 3:20:00 PM',
-        taskId: '3456789',
-        taskStatusURL: 'https://app.globus.org/activity/3456789/overview',
-      },
-      {
-        submitDate: '11/30/2023, 3:25:00 PM',
-        taskId: '4567891',
-        taskStatusURL: 'https://app.globus.org/activity/4567891/overview',
-      },
-      {
-        submitDate: '11/30/2023, 3:30:00 PM',
-        taskId: '5678910',
-        taskStatusURL: 'https://app.globus.org/activity/5678910/overview',
-      },
-      {
-        submitDate: '11/30/2023, 3:35:00 PM',
-        taskId: '6789101',
-        taskStatusURL: 'https://app.globus.org/activity/6789101/overview',
-      },
-      {
-        submitDate: '11/30/2023, 3:40:00 PM',
-        taskId: '7891011',
-        taskStatusURL: 'https://app.globus.org/activity/7891011/overview',
-      },
-      {
-        submitDate: '11/30/2023, 3:45:00 PM',
-        taskId: '8910111',
-        taskStatusURL: 'https://app.globus.org/activity/8910111/overview',
-      },
-      {
-        submitDate: '11/30/2023, 3:50:00 PM',
-        taskId: '9101112',
-        taskStatusURL: 'https://app.globus.org/activity/9101112/overview',
-      },
-      {
-        submitDate: '11/30/2023, 3:55:00 PM',
-        taskId: '1011121',
-        taskStatusURL: 'https://app.globus.org/activity/1011121/overview',
-      },
-    ]);
-
     await initializeComponentForTest({
       ...defaultTestConfig,
       renderFullApp: true,
+      globusTaskItems: [
+        {
+          submitDate: '3/4/2025, 3:55:00 PM',
+          taskId: '1011121',
+          taskStatusURL: 'https://app.globus.org/activity/1011121/overview',
+        },
+        {
+          submitDate: '3/4/2025, 3:50:00 PM',
+          taskId: '9101112',
+          taskStatusURL: 'https://app.globus.org/activity/9101112/overview',
+        },
+        {
+          submitDate: '3/4/2025, 3:45:00 PM',
+          taskId: '8910111',
+          taskStatusURL: 'https://app.globus.org/activity/8910111/overview',
+        },
+        {
+          submitDate: '3/4/2025, 3:40:00 PM',
+          taskId: '7891011',
+          taskStatusURL: 'https://app.globus.org/activity/7891011/overview',
+        },
+        {
+          submitDate: '3/4/2025, 3:35:00 PM',
+          taskId: '6789101',
+          taskStatusURL: 'https://app.globus.org/activity/6789101/overview',
+        },
+        {
+          submitDate: '3/4/2025, 3:30:00 PM',
+          taskId: '5678910',
+          taskStatusURL: 'https://app.globus.org/activity/5678910/overview',
+        },
+        {
+          submitDate: '3/4/2025, 3:25:00 PM',
+          taskId: '4567891',
+          taskStatusURL: 'https://app.globus.org/activity/4567891/overview',
+        },
+        {
+          submitDate: '3/4/2025, 3:20:00 PM',
+          taskId: '3456789',
+          taskStatusURL: 'https://app.globus.org/activity/3456789/overview',
+        },
+        {
+          submitDate: '3/4/2025, 3:15:00 PM',
+          taskId: '2345678',
+          taskStatusURL: 'https://app.globus.org/activity/2345678/overview',
+        },
+        {
+          submitDate: '3/4/2025, 3:10:00 PM',
+          taskId: '0123456',
+          taskStatusURL: 'https://app.globus.org/activity/0123456/overview',
+        },
+      ],
     });
 
     // Expand submit history
@@ -825,7 +859,7 @@ describe('DatasetDownload form tests', () => {
     expect(taskItemsNow).toHaveLength(10);
 
     // The last task should have been popped, and first should be 2nd
-    expect(taskItemsNow[1].innerHTML).toEqual('Submitted: 11/30/2023, 3:10:00 PM');
+    expect(taskItemsNow[1].innerHTML).toEqual('Submitted: 3/4/2025, 3:55:00 PM');
   });
 
   it('shows the Manage Collections tour', async () => {
@@ -886,27 +920,26 @@ describe('DatasetDownload form tests', () => {
   });
 
   it('removes all tasks when clicking the Clear All button', async () => {
-    tempStorageSetMock(GlobusStateKeys.globusTaskItems, [
-      {
-        submitDate: '11/30/2023, 3:10:00 PM',
-        taskId: '0123456',
-        taskStatusURL: 'https://app.globus.org/activity/0123456/overview',
-      },
-      {
-        submitDate: '11/30/2023, 3:15:00 PM',
-        taskId: '2345678',
-        taskStatusURL: 'https://app.globus.org/activity/2345678/overview',
-      },
-      {
-        submitDate: '11/30/2023, 3:20:00 PM',
-        taskId: '3456789',
-        taskStatusURL: 'https://app.globus.org/activity/3456789/overview',
-      },
-    ]);
-
     await initializeComponentForTest({
       ...defaultTestConfig,
       renderFullApp: true,
+      globusTaskItems: [
+        {
+          submitDate: '3/4/2025, 3:20:00 PM',
+          taskId: '3456789',
+          taskStatusURL: 'https://app.globus.org/activity/3456789/overview',
+        },
+        {
+          submitDate: '3/4/2025, 3:15:00 PM',
+          taskId: '2345678',
+          taskStatusURL: 'https://app.globus.org/activity/2345678/overview',
+        },
+        {
+          submitDate: '3/4/2025, 3:10:00 PM',
+          taskId: '0123456',
+          taskStatusURL: 'https://app.globus.org/activity/0123456/overview',
+        },
+      ],
     });
 
     // Expand submit history
@@ -927,36 +960,5 @@ describe('DatasetDownload form tests', () => {
     // There should be 0 tasks in task history
     const taskItemsNow = screen.queryAllByText('Submitted: ', { exact: false });
     expect(taskItemsNow).toHaveLength(0);
-  });
-});
-
-describe('getGlobusTransferToken function', () => {
-  const validToken = {
-    id_token: '',
-    resource_server: '',
-    other_tokens: { refresh_token: 'something', transfer_token: 'something' },
-    created_on: Math.floor(Date.now() / 1000),
-    expires_in: Math.floor(Date.now() / 1000) + 100,
-    access_token: '',
-    refresh_expires_in: 0,
-    refresh_token: 'something',
-    scope: 'openid profile email offline_access urn:globus:auth:scope:transfer.api.globus.org:all',
-    token_type: '',
-  };
-
-  it('should return token when valid', async () => {
-    await saveSessionValue(GlobusStateKeys.transferToken, validToken);
-    expect(await getGlobusTransferToken()).toBe(validToken);
-  });
-
-  it('should return null when token is expired', async () => {
-    const expiredToken = { ...validToken, expires_in: -1 };
-    await saveSessionValue(GlobusStateKeys.transferToken, expiredToken);
-    expect(await getGlobusTransferToken()).toBe(null);
-  });
-
-  it('should return null when no token is set', async () => {
-    await saveSessionValue(GlobusStateKeys.transferToken, null);
-    expect(await getGlobusTransferToken()).toBe(null);
   });
 });

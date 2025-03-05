@@ -1,8 +1,10 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { rawSearchResultFixture, userCartFixture } from '../../test/mock/fixtures';
 import Summary, { Props } from './Summary';
 import customRender from '../../test/custom-render';
+import CartStateKeys from './recoil/atoms';
 
 const defaultProps: Props = {
   userCart: userCartFixture(),
@@ -16,11 +18,11 @@ test('renders component', async () => {
 it('shows the correct number of datasets and files', async () => {
   customRender(<Summary {...defaultProps} />);
   // Shows number of files
-  const numDatasetsField = await screen.findByText('Number of Datasets:');
-  const numFilesText = await screen.findByText('Number of Files:');
+  const numDatasetsField = await screen.findByText('Total Number of Datasets:');
+  const numFilesText = await screen.findByText('Total Number of Files:');
 
-  expect(numDatasetsField.textContent).toEqual('Number of Datasets: 3');
-  expect(numFilesText.textContent).toEqual('Number of Files: 8');
+  expect(numDatasetsField.textContent).toEqual('Total Number of Datasets: 3');
+  expect(numFilesText.textContent).toEqual('Total Number of Files: 8');
 });
 
 it('renders component with correct calculations when a dataset doesn"t have size or number_of_files attributes', async () => {
@@ -36,9 +38,74 @@ it('renders component with correct calculations when a dataset doesn"t have size
     />
   );
   // Shows number of files
-  const numDatasetsField = await screen.findByText('Number of Datasets:');
-  const numFilesText = await screen.findByText('Number of Files:');
+  const numDatasetsField = await screen.findByText('Total Number of Datasets:');
+  const numFilesText = await screen.findByText('Total Number of Files:');
 
-  expect(numDatasetsField.textContent).toEqual('Number of Datasets: 2');
-  expect(numFilesText.textContent).toEqual('Number of Files: 3');
+  expect(numDatasetsField.textContent).toEqual('Total Number of Datasets: 2');
+  expect(numFilesText.textContent).toEqual('Total Number of Files: 3');
+});
+
+it('shows the correct number of datasets and files when cart is empty', async () => {
+  customRender(<Summary userCart={[]} />);
+  const numDatasetsField = await screen.findByText('Total Number of Datasets:');
+  const numFilesText = await screen.findByText('Total Number of Files:');
+
+  expect(numDatasetsField.textContent).toEqual('Total Number of Datasets: 0');
+  expect(numFilesText.textContent).toEqual('Total Number of Files: 0');
+});
+
+describe('shows the correct selected datasets and files', () => {
+  it('when no items are selected', async () => {
+    customRender(<Summary {...defaultProps} />);
+    const numSelectedDatasetsField = await screen.findByText('Selected Number of Datasets:');
+    const numSelectedFilesText = await screen.findByText('Selected Number of Files:');
+
+    expect(numSelectedDatasetsField.textContent).toEqual('Selected Number of Datasets: 0');
+    expect(numSelectedFilesText.textContent).toEqual('Selected Number of Files: 0');
+  });
+
+  it('when items are selected', async () => {
+    localStorage.setItem(
+      CartStateKeys.cartItemSelections,
+      JSON.stringify([rawSearchResultFixture(), rawSearchResultFixture(), rawSearchResultFixture()])
+    );
+    customRender(<Summary {...defaultProps} />);
+    const numSelectedDatasetsField = await screen.findByText('Selected Number of Datasets:');
+    const numSelectedFilesText = await screen.findByText('Selected Number of Files:');
+
+    expect(numSelectedDatasetsField.textContent).toEqual('Selected Number of Datasets: 3');
+    expect(numSelectedFilesText.textContent).toEqual('Selected Number of Files: 9');
+  });
+});
+
+it('renders task submit history when tasks are present', async () => {
+  const taskItems = [
+    {
+      taskId: '1',
+      submitDate: '2023-01-01',
+      taskStatusURL: 'http://example.com/task/1',
+    },
+  ];
+  localStorage.setItem('globusTaskItems', JSON.stringify(taskItems));
+  customRender(<Summary {...defaultProps} />);
+
+  const taskHistoryTitle = await screen.findByText('Task Submit History');
+  expect(taskHistoryTitle).toBeTruthy();
+});
+
+it('clears all tasks when clear button is clicked', async () => {
+  const taskItems = [
+    {
+      taskId: '1',
+      submitDate: '2023-01-01',
+      taskStatusURL: 'http://example.com/task/1',
+    },
+  ];
+  localStorage.setItem('globusTaskItems', JSON.stringify(taskItems));
+  const { getByTestId } = customRender(<Summary {...defaultProps} />);
+
+  const clearButton = getByTestId('clear-all-submitted-globus-tasks');
+  await userEvent.click(clearButton);
+
+  expect(screen.queryByText('Task Submit History')).toBeNull();
 });

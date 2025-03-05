@@ -313,10 +313,16 @@ describe('User cart', () => {
     const cartSummary = await screen.findByTestId('summary');
     expect(cartSummary).toBeTruthy();
 
-    const numDatasetsField = await within(cartSummary).findByText('Number of Datasets:');
-    const numFilesText = await within(cartSummary).findByText('Number of Files:');
-    expect(numDatasetsField.textContent).toEqual('Number of Datasets: 1');
-    expect(numFilesText.textContent).toEqual('Number of Files: 2');
+    const numDatasetsField = await within(cartSummary).findByText('Total Number of Datasets:');
+    const numFilesText = await within(cartSummary).findByText('Total Number of Files:');
+    expect(numDatasetsField.textContent).toEqual('Total Number of Datasets: 1');
+    expect(numFilesText.textContent).toEqual('Total Number of Files: 2');
+    const numSelectedDatasetsField = await within(cartSummary).findByText(
+      'Selected Number of Datasets:'
+    );
+    const numSelectedFilesText = await within(cartSummary).findByText('Selected Number of Files:');
+    expect(numSelectedDatasetsField.textContent).toEqual('Selected Number of Datasets: 0');
+    expect(numSelectedFilesText.textContent).toEqual('Selected Number of Files: 0');
 
     // Check "Remove All Items" button renders with cart > 0 items and click it
     const clearCartBtn = await screen.findByTestId('clear-cart-button');
@@ -330,8 +336,8 @@ describe('User cart', () => {
     await userEvent.click(confirmBtn);
 
     // Check number of datasets and files are now 0
-    expect(numDatasetsField.textContent).toEqual('Number of Datasets: 0');
-    expect(numFilesText.textContent).toEqual('Number of Files: 0');
+    expect(numDatasetsField.textContent).toEqual('Total Number of Datasets: 0');
+    expect(numFilesText.textContent).toEqual('Total Number of Files: 0');
 
     // Check empty alert renders
     const emptyAlert = await screen.findByText('Your cart is empty');
@@ -392,10 +398,17 @@ describe('User cart', () => {
     const cartSummary = await screen.findByTestId('summary');
     expect(cartSummary).toBeTruthy();
 
-    const numDatasetsField = await within(cartSummary).findByText('Number of Datasets:');
-    const numFilesText = await within(cartSummary).findByText('Number of Files:');
-    expect(numDatasetsField.textContent).toEqual('Number of Datasets: 1');
-    expect(numFilesText.textContent).toEqual('Number of Files: 2');
+    const numDatasetsField = await within(cartSummary).findByText('Total Number of Datasets:');
+    const numFilesText = await within(cartSummary).findByText('Total Number of Files:');
+    expect(numDatasetsField.textContent).toEqual('Total Number of Datasets: 1');
+    expect(numFilesText.textContent).toEqual('Total Number of Files: 2');
+
+    const numSelectedDatasetsField = await within(cartSummary).findByText(
+      'Selected Number of Datasets:'
+    );
+    const numSelectedFilesText = await within(cartSummary).findByText('Selected Number of Files:');
+    expect(numSelectedDatasetsField.textContent).toEqual('Selected Number of Datasets: 0');
+    expect(numSelectedFilesText.textContent).toEqual('Selected Number of Files: 0');
 
     // Check "Remove All Items" button renders with cart > 0 items and click it
     const clearCartBtn = await screen.findByTestId('clear-cart-button');
@@ -410,8 +423,8 @@ describe('User cart', () => {
     await userEvent.click(confirmBtn);
 
     // Check number of datasets and files are now 0
-    expect(numDatasetsField.textContent).toEqual('Number of Datasets: 0');
-    expect(numFilesText.textContent).toEqual('Number of Files: 0');
+    expect(numDatasetsField.textContent).toEqual('Total Number of Datasets: 0');
+    expect(numFilesText.textContent).toEqual('Total Number of Files: 0');
 
     // Check empty alert renders
     const emptyAlert = await screen.findByText('Your cart is empty');
