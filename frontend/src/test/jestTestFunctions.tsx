@@ -13,6 +13,7 @@ import { NotificationType, getSearchFromUrl } from '../common/utils';
 import { RawSearchResult } from '../components/Search/types';
 import { rawSearchResultFixture } from './mock/fixtures';
 import { FrontendConfig } from '../common/types';
+import { tempStorageGetMock } from './mock/mockStorage';
 
 // https://www.mikeborozdin.com/post/changing-jest-mocks-between-tests
 export const originalGlobusEnabledNodes = [
@@ -36,32 +37,6 @@ export const mockConfig: FrontendConfig = {
 
 export const activeSearch = getSearchFromUrl();
 
-export const sessionStorageMock = (() => {
-  let store: { [key: string]: unknown } = {};
-
-  return {
-    getItem<T>(key: string): T {
-      return store[key] as T;
-    },
-
-    setItem<T>(key: string, value: T): void {
-      store[key] = value;
-    },
-
-    clear() {
-      store = {};
-    },
-
-    removeItem(key: string) {
-      delete store[key];
-    },
-
-    getAll() {
-      return store;
-    },
-  };
-})();
-
 // This will get a mock value from temp storage to use for keycloak
 export const mockKeycloakToken = mockFunction(() => {
   const loginFixture = tempStorageGetMock('keycloakFixture');
@@ -78,23 +53,13 @@ export const mockKeycloakToken = mockFunction(() => {
   };
 });
 
-export function tempStorageGetMock<T>(key: string): T {
-  const value = sessionStorageMock.getItem<T>(key);
-  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-  return value;
-}
-
-export function tempStorageSetMock<T>(key: string, value: T): void {
-  sessionStorageMock.setItem<T>(key, value);
-}
-
 export function mockFunction<T extends (...args: unknown[]) => unknown>(
   fn: T
 ): jest.MockedFunction<T> {
   return fn as jest.MockedFunction<T>;
 }
 
-export function printElementContents(element: HTMLElement | undefined): void {
+export function printElementContents(element: HTMLElement | undefined = undefined): void {
   screen.debug(element, Number.POSITIVE_INFINITY);
 }
 
@@ -147,8 +112,8 @@ export async function showNoticeStatic(
   }
 }
 
-export const globusReadyNode = 'nodeIsGlobusReady';
-export const nodeNotGlobusReady = 'nodeIsNotGlobusReady';
+export const globusReadyNode: string = 'nodeIsGlobusReady';
+export const nodeNotGlobusReady: string = 'nodeIsNotGlobusReady';
 
 export function makeCartItem(id: string, globusReady: boolean): RawSearchResult {
   return rawSearchResultFixture({
@@ -180,6 +145,10 @@ export async function submitKeywordSearch(inputText: string, user: UserEvent): P
 
 export async function openDropdownList(user: UserEvent, dropdown: HTMLElement): Promise<void> {
   await user.click(dropdown);
+}
+
+export function initRecoilValue<T>(key: string, value: T): void {
+  localStorage.setItem(key, JSON.stringify(value));
 }
 
 export async function addSearchRowsAndGoToCart(

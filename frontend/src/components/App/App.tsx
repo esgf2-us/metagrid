@@ -66,7 +66,7 @@ import StartPopup from '../Messaging/StartPopup';
 import startupDisplayData from '../Messaging/messageDisplayData';
 import './App.css';
 import { miscTargets } from '../../common/reactJoyrideSteps';
-import { isDarkModeAtom } from './recoil/atoms';
+import isDarkModeAtom from './recoil/atoms';
 import Footer from '../Footer/Footer';
 
 const bodySider = {

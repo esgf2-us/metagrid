@@ -19,7 +19,7 @@ import {
   userSearchQueriesFixture,
   userSearchQueryFixture,
 } from './fixtures';
-import { tempStorageGetMock, tempStorageSetMock } from '../jestTestFunctions';
+import { tempStorageGetMock, tempStorageSetMock } from './mockStorage';
 
 const handlers = [
   rest.post(apiRoutes.keycloakAuth.path, async (_req, res, ctx) =>
