@@ -2,6 +2,7 @@ import { render } from '@testing-library/react';
 import React from 'react';
 import { MessageInstance } from 'antd/es/message/interface';
 import { message } from 'antd';
+import { atom, RecoilRoot, useRecoilState } from 'recoil';
 import { rawProjectFixture } from '../test/mock/fixtures';
 import { UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
 import { ActiveSearchQuery, RawSearchResult, RawSearchResults } from '../components/Search/types';
@@ -18,6 +19,7 @@ import {
   showNotice,
   splitStringByChar,
   unsavedLocalSearches,
+  localStorageEffect,
 } from './utils';
 import { AppPage } from './types';
 
@@ -447,5 +449,31 @@ describe('Test show notices function', () => {
 
     const { findByText } = render(<TestComponent testFunc={notice} />);
     expect(await findByText('An unknown error has occurred.')).toBeTruthy();
+  });
+});
+
+describe('Test localStorageEffect', () => {
+  const key = 'testKey';
+  const defaultVal = 'defaultValue';
+
+  const testAtom = atom({
+    key: 'testAtom',
+    default: defaultVal,
+    effects_UNSTABLE: [localStorageEffect(key, defaultVal)],
+  });
+
+  const TestComponent: React.FC = () => {
+    const [value] = useRecoilState(testAtom);
+    return <div>{value}</div>;
+  };
+
+  it('sets to default value when JSON.parse throws an error', () => {
+    localStorage.setItem(key, 'invalid JSON');
+    const { getByText } = render(
+      <RecoilRoot>
+        <TestComponent />
+      </RecoilRoot>
+    );
+    expect(getByText(defaultVal)).toBeTruthy();
   });
 });

@@ -147,6 +147,10 @@ export async function openDropdownList(user: UserEvent, dropdown: HTMLElement): 
   await user.click(dropdown);
 }
 
+export function initRecoilValue<T>(key: string, value: T): void {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
 export async function addSearchRowsAndGoToCart(
   user: UserEvent,
   rows?: HTMLElement[]

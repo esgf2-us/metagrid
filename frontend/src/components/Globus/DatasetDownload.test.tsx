@@ -7,6 +7,7 @@ import { getSearchFromUrl } from '../../common/utils';
 import { ActiveSearchQuery, RawSearchResults } from '../Search/types';
 import {
   globusReadyNode,
+  initRecoilValue,
   makeCartItem,
   mockConfig,
   mockFunction,
@@ -141,10 +142,6 @@ function setAuthTokensUrl(): void {
       replace: () => {},
     },
   });
-}
-
-function initRecoilValue<T>(key: string, value: T): void {
-  localStorage.setItem(key, JSON.stringify(value));
 }
 
 async function initializeComponentForTest(testConfig?: typeof defaultTestConfig): Promise<void> {

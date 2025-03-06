@@ -128,12 +128,8 @@ export const localStorageEffect = <T>(key: string, defaultVal: T): AtomEffect<T>
     setSelf(defaultVal);
   }
 
-  onSet((newValue, _, isReset) => {
-    if (isReset) {
-      localStorage.removeItem(key);
-    } else {
-      localStorage.setItem(key, JSON.stringify(newValue));
-    }
+  onSet((newValue) => {
+    localStorage.setItem(key, JSON.stringify(newValue));
   });
 };
 

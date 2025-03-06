@@ -7,6 +7,7 @@ import {
   createCartItemsTour,
   createSearchCardTour,
   createNodeStatusTour,
+  defaultTarget,
 } from './reactJoyrideSteps';
 import { mockConfig } from '../test/jestTestFunctions';
 
@@ -80,5 +81,9 @@ describe('Test reactJoyrideStep util functions', () => {
 
     // Made the main table empty
     document.getElementById('root')?.appendChild(mainTable);
+  });
+
+  it('defaultTarget should have correct selector', () => {
+    expect(defaultTarget.selector()).toBe('#root .navbar-logo');
   });
 });

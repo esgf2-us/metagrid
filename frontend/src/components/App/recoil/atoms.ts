@@ -1,6 +1,6 @@
 import { atom, AtomEffect } from 'recoil';
 
-export const darkModeStorageEffect = (key: string): AtomEffect<boolean> => ({ setSelf, onSet }) => {
+const darkModeStorageEffect = (key: string): AtomEffect<boolean> => ({ setSelf, onSet }) => {
   const savedValue = localStorage.getItem(key);
   if (savedValue != null) {
     setSelf(savedValue === 'true');
@@ -9,16 +9,12 @@ export const darkModeStorageEffect = (key: string): AtomEffect<boolean> => ({ se
     setSelf(mediaQuery.matches);
   }
 
-  onSet((newValue, _, isReset) => {
-    if (isReset) {
-      localStorage.removeItem(key);
-    } else {
-      localStorage.setItem(key, newValue.toString());
-    }
+  onSet((newValue) => {
+    localStorage.setItem(key, newValue.toString());
   });
 };
 
-export const isDarkModeAtom = atom<boolean>({
+const isDarkModeAtom = atom<boolean>({
   key: 'isDarkMode',
   default: false,
   effects: [darkModeStorageEffect('isDarkMode')],

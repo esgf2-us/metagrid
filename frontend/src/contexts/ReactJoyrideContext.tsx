@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
 import { JoyrideTour } from '../common/JoyrideTour';
 import { AppPage } from '../common/types';
-import { isDarkModeAtom } from '../components/App/recoil/atoms';
+import isDarkModeAtom from '../components/App/recoil/atoms';
 import { getCurrentAppPage } from '../common/utils';
 
 export type RawTourState = {

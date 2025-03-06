@@ -3,7 +3,7 @@ import React from 'react';
 import { Tooltip } from 'antd';
 import { useRecoilState } from 'recoil';
 import { NodeStatusArray, NodeStatusElement } from './types';
-import { isDarkModeAtom } from '../App/recoil/atoms';
+import isDarkModeAtom from '../App/recoil/atoms';
 
 export type Props = {
   nodeStatus?: NodeStatusArray;
