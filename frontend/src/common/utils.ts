@@ -1,5 +1,6 @@
 import { CSSProperties, ReactNode } from 'react';
 import { MessageInstance } from 'antd/es/message/interface';
+import { AtomEffect } from 'recoil';
 import { UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
 import { ActiveFacets } from '../components/Facets/types';
 import {
@@ -11,8 +12,10 @@ import {
   VersionType,
 } from '../components/Search/types';
 import messageDisplayData from '../components/Messaging/messageDisplayData';
+import { AppPage } from './types';
 
 export type NotificationType = 'success' | 'info' | 'warning' | 'error';
+
 export async function showNotice(
   msgApi: MessageInstance,
   content: React.ReactNode | string,
@@ -76,6 +79,23 @@ export async function showError(
   await showNotice(msgApi, msg, { duration: 5, type: 'error' });
 }
 
+export const getCurrentAppPage = (): number => {
+  const { pathname } = window.location;
+  if (pathname.endsWith('/search') || pathname.includes('/search/')) {
+    return AppPage.Main;
+  }
+  if (pathname.endsWith('/cart/items')) {
+    return AppPage.Cart;
+  }
+  if (pathname.endsWith('/nodes')) {
+    return AppPage.NodeStatus;
+  }
+  if (pathname.endsWith('/cart/searches')) {
+    return AppPage.SavedSearches;
+  }
+  return -1;
+};
+
 /**
  * Checks if an object is empty.
  */
@@ -91,6 +111,27 @@ export const objectHasKey = (
   obj: Record<any, any>,
   key: string | number
 ): boolean => Object.prototype.hasOwnProperty.call(obj, key);
+
+export const localStorageEffect = <T>(key: string, defaultVal: T): AtomEffect<T> => ({
+  setSelf,
+  onSet,
+}) => {
+  const savedValue = localStorage.getItem(key);
+  if (savedValue != null) {
+    try {
+      const parsedValue = JSON.parse(savedValue) as T;
+      setSelf(parsedValue);
+    } catch (error) {
+      setSelf(defaultVal);
+    }
+  } else {
+    setSelf(defaultVal);
+  }
+
+  onSet((newValue) => {
+    localStorage.setItem(key, JSON.stringify(newValue));
+  });
+};
 
 /**
  * For a record's 'xlink' attribute, it will be split into an array of

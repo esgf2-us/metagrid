@@ -1,10 +1,11 @@
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { getCurrentAppPage, TourTitles } from '../common/reactJoyrideSteps';
+import { TourTitles } from '../common/reactJoyrideSteps';
 import { AppPage } from '../common/types';
 import Support from '../components/Support';
 import customRender from '../test/custom-render';
+import { getCurrentAppPage } from '../common/utils';
 
 const user = userEvent.setup();
 

@@ -1,10 +1,11 @@
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { screen } from '@testing-library/react';
-import { getCurrentAppPage, TourTitles } from '../../common/reactJoyrideSteps';
+import { TourTitles } from '../../common/reactJoyrideSteps';
 import { AppPage } from '../../common/types';
 import Support from './index';
 import customRender from '../../test/custom-render';
+import { getCurrentAppPage } from '../../common/utils';
 
 // Test page names
 const mainPagePath = 'testing/search';

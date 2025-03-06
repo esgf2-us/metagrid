@@ -8,7 +8,7 @@ it('renders message component with default markdown when file is wrong.', async 
   server.use(rest.get('badFile.md', (_req, res, ctx) => res(ctx.status(404))));
   const consoleErrorMock = jest.spyOn(console, 'error').mockImplementation();
 
-  customRender(<MessageCard title="test title" fileName="badFile.md" />);
+  customRender(<MessageCard fileName="badFile.md" />);
 
   // Check component renders
   const text = await screen.findByText('Content is empty.');

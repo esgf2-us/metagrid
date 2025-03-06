@@ -2,7 +2,7 @@ import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
 import React from 'react';
 import { Tooltip } from 'antd';
 import { useRecoilState } from 'recoil';
-import { isDarkModeAtom } from '../App/recoil/atoms';
+import isDarkModeAtom from '../App/recoil/atoms';
 import { lightModeGreen, lightModeRed, darkModeGreen, darkModeRed } from './StatusToolTip';
 
 export type Props = { dataNode: string };

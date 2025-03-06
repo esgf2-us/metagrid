@@ -3,9 +3,9 @@ import Joyride, { ACTIONS, CallBackProps, EVENTS, STATUS } from 'react-joyride';
 import { useNavigate } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
 import { JoyrideTour } from '../common/JoyrideTour';
-import { getCurrentAppPage } from '../common/reactJoyrideSteps';
 import { AppPage } from '../common/types';
-import { isDarkModeAtom } from '../components/App/recoil/atoms';
+import isDarkModeAtom from '../components/App/recoil/atoms';
+import { getCurrentAppPage } from '../common/utils';
 
 export type RawTourState = {
   getTour: JoyrideTour;

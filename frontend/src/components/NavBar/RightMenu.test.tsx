@@ -9,7 +9,8 @@ import { setMedia } from 'mock-match-media';
 import customRender from '../../test/custom-render';
 import Support from '../Support';
 import RightMenu, { Props } from './RightMenu';
-import { mockConfig, mockKeycloakToken, tempStorageSetMock } from '../../test/jestTestFunctions';
+import { mockConfig, mockKeycloakToken } from '../../test/jestTestFunctions';
+import { tempStorageSetMock } from '../../test/mock/mockStorage';
 
 const user = userEvent.setup();
 
@@ -161,6 +162,34 @@ it('the the right drawer display for news button and hide news button', async ()
   expect(hideBtn).toBeTruthy();
 
   await user.click(hideBtn);
+});
+
+it('toggles theme switch between light and dark modes', async () => {
+  customRender(<RightMenu {...rightMenuProps} />);
+
+  const themeSwitch = await screen.findByTestId('isDarkModeSwitch');
+  expect(themeSwitch).toBeTruthy();
+
+  // Initial state should be light mode
+  expect(themeSwitch).toBeChecked();
+
+  // Toggle to dark mode
+  await user.click(themeSwitch);
+  expect(themeSwitch).not.toBeChecked();
+
+  // Toggle back to light mode
+  await user.click(themeSwitch);
+  expect(themeSwitch).toBeChecked();
+});
+
+it('displays correct cart and saved searches badge counts', async () => {
+  customRender(<RightMenu {...rightMenuProps} />);
+
+  const cartBadge = await screen.findByText('4');
+  expect(cartBadge).toBeTruthy();
+
+  const savedSearchesBadge = await screen.findByText('1');
+  expect(savedSearchesBadge).toBeTruthy();
 });
 
 describe('Dark Mode', () => {
