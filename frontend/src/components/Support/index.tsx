@@ -70,7 +70,9 @@ const Support: React.FC<React.PropsWithChildren<Props>> = ({ open, onClose }) =>
                 </a>
               </p>
               <p style={{ fontSize: '14px' }}>
-                If you need help on Globus Transfers, please visit this page for more information:
+                If you need help on Globus Transfers (
+                <b>following successful submission to Globus</b>), please visit this page for more
+                information:
                 <a href="https://app.globus.org/help">https://app.globus.org/help</a>
               </p>
               <div>

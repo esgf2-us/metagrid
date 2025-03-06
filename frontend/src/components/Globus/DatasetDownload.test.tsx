@@ -261,7 +261,7 @@ describe('DatasetDownload form tests', () => {
     await user.click(wgetOption);
 
     // Start wget download
-    const downloadBtn = await screen.findByTestId('downloadDatasetBtn');
+    const downloadBtn = await screen.findByTestId('downloadDatasetWgetBtn');
     expect(downloadBtn).toBeTruthy();
     await user.click(downloadBtn);
 
@@ -291,7 +291,7 @@ describe('DatasetDownload form tests', () => {
     await user.click(wgetOption);
 
     // Start wget download
-    const downloadBtn = await screen.findByTestId('downloadDatasetBtn');
+    const downloadBtn = await screen.findByTestId('downloadDatasetWgetBtn');
     expect(downloadBtn).toBeTruthy();
     await user.click(downloadBtn);
 
@@ -307,7 +307,7 @@ describe('DatasetDownload form tests', () => {
     });
 
     // Click Transfer button
-    const globusTransferBtn = await screen.findByTestId('downloadDatasetBtn');
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetTransferBtn');
     expect(globusTransferBtn).toBeTruthy();
     await user.click(globusTransferBtn);
 
@@ -334,7 +334,7 @@ describe('DatasetDownload form tests', () => {
     });
 
     // Select transfer button and click it
-    const globusTransferBtn = await screen.findByTestId('downloadDatasetBtn');
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetTransferBtn');
     expect(globusTransferBtn).toBeTruthy();
     await user.click(globusTransferBtn);
 
@@ -356,7 +356,7 @@ describe('DatasetDownload form tests', () => {
     });
 
     // Click Transfer button
-    const globusTransferBtn = await screen.findByTestId('downloadDatasetBtn');
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetTransferBtn');
     expect(globusTransferBtn).toBeTruthy();
     await user.click(globusTransferBtn);
 
@@ -380,7 +380,7 @@ describe('DatasetDownload form tests', () => {
     });
 
     // Click Transfer button
-    const globusTransferBtn = await screen.findByTestId('downloadDatasetBtn');
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetTransferBtn');
     expect(globusTransferBtn).toBeTruthy();
     await user.click(globusTransferBtn);
 
@@ -404,7 +404,7 @@ describe('DatasetDownload form tests', () => {
     });
 
     // Click Transfer button
-    const globusTransferBtn = await screen.findByTestId('downloadDatasetBtn');
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetTransferBtn');
     expect(globusTransferBtn).toBeTruthy();
     await user.click(globusTransferBtn);
 
@@ -429,7 +429,7 @@ describe('DatasetDownload form tests', () => {
     });
 
     // Click Transfer button
-    const globusTransferBtn = await screen.findByTestId('downloadDatasetBtn');
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetTransferBtn');
     expect(globusTransferBtn).toBeTruthy();
     await user.click(globusTransferBtn);
 
@@ -457,7 +457,7 @@ describe('DatasetDownload form tests', () => {
     });
 
     // Click Transfer button
-    const globusTransferBtn = await screen.findByTestId('downloadDatasetBtn');
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetTransferBtn');
     expect(globusTransferBtn).toBeTruthy();
     await user.click(globusTransferBtn);
 
@@ -476,7 +476,7 @@ describe('DatasetDownload form tests', () => {
     });
 
     // Click Transfer button
-    const globusTransferBtn = await screen.findByTestId('downloadDatasetBtn');
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetTransferBtn');
     expect(globusTransferBtn).toBeTruthy();
     await user.click(globusTransferBtn);
 
@@ -494,7 +494,7 @@ describe('DatasetDownload form tests', () => {
     });
 
     // Click Transfer button
-    const globusTransferBtn = await screen.findByTestId('downloadDatasetBtn');
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetTransferBtn');
     expect(globusTransferBtn).toBeTruthy();
     await user.click(globusTransferBtn);
 
@@ -543,7 +543,7 @@ describe('DatasetDownload form tests', () => {
     });
 
     // Click Transfer button
-    const globusTransferBtn = await screen.findByTestId('downloadDatasetBtn');
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetTransferBtn');
     expect(globusTransferBtn).toBeTruthy();
     await user.click(globusTransferBtn);
 
@@ -559,7 +559,7 @@ describe('DatasetDownload form tests', () => {
     await initializeComponentForTest();
 
     // Click Transfer button
-    const globusTransferBtn = await screen.findByTestId('downloadDatasetBtn');
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetTransferBtn');
     expect(globusTransferBtn).toBeTruthy();
     await user.click(globusTransferBtn);
 
@@ -574,7 +574,7 @@ describe('DatasetDownload form tests', () => {
     await initializeComponentForTest();
 
     // Click Transfer button
-    const globusTransferBtn = await screen.findByTestId('downloadDatasetBtn');
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetTransferBtn');
     expect(globusTransferBtn).toBeTruthy();
     await user.click(globusTransferBtn);
 
@@ -595,7 +595,7 @@ describe('DatasetDownload form tests', () => {
     await initializeComponentForTest();
 
     // Click Transfer button
-    const globusTransferBtn = await screen.findByTestId('downloadDatasetBtn');
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetTransferBtn');
     expect(globusTransferBtn).toBeTruthy();
     await user.click(globusTransferBtn);
 
@@ -613,7 +613,7 @@ describe('DatasetDownload form tests', () => {
     await initializeComponentForTest();
 
     // Click Transfer button
-    const globusTransferBtn = await screen.findByTestId('downloadDatasetBtn');
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetTransferBtn');
     expect(globusTransferBtn).toBeTruthy();
     await user.click(globusTransferBtn);
 
@@ -631,7 +631,7 @@ describe('DatasetDownload form tests', () => {
     await initializeComponentForTest();
 
     // Click Transfer button
-    const globusTransferBtn = await screen.findByTestId('downloadDatasetBtn');
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetTransferBtn');
     expect(globusTransferBtn).toBeTruthy();
     await user.click(globusTransferBtn);
 
@@ -844,7 +844,7 @@ describe('DatasetDownload form tests', () => {
     expect(taskItems).toHaveLength(10);
 
     // Select transfer button and click it
-    const globusTransferBtn = await screen.findByTestId('downloadDatasetBtn');
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetTransferBtn');
     expect(globusTransferBtn).toBeTruthy();
     await user.click(globusTransferBtn);
 
@@ -960,5 +960,82 @@ describe('DatasetDownload form tests', () => {
     // There should be 0 tasks in task history
     const taskItemsNow = screen.queryAllByText('Submitted: ', { exact: false });
     expect(taskItemsNow).toHaveLength(0);
+  });
+
+  it('shows a confirmation dialog when Reset Tokens is clicked', async () => {
+    await initializeComponentForTest();
+
+    // Open the dropdown menu
+    const globusTransferDropdown = await within(
+      await screen.findByTestId('downloadTypeSelector')
+    ).findByRole('combobox');
+    await openDropdownList(user, globusTransferDropdown);
+
+    // Select Globus
+    const globusOption = (await screen.findAllByText(/Globus/i))[1];
+    expect(globusOption).toBeTruthy();
+    await user.click(globusOption);
+
+    // Open the transfer button menu
+    const transferButtonMenu = (await screen.findByTestId('downloadDatasetTransferBtns'))
+      .lastElementChild;
+    expect(transferButtonMenu).toBeTruthy();
+    if (transferButtonMenu) {
+      await user.click(transferButtonMenu);
+    }
+
+    // Click Reset Tokens
+    const resetTokensOption = await screen.findByText('Reset Tokens');
+    expect(resetTokensOption).toBeTruthy();
+    await user.click(resetTokensOption);
+
+    // Expect confirmation dialog to show
+    const confirmationDialog = await screen.findByText(
+      /If you haven't performed a Globus transfer in a while, or you ran into some issues, it may help to get new tokens./i
+    );
+    expect(confirmationDialog).toBeTruthy();
+  });
+
+  it('resets tokens when Reset Tokens confirmation dialog Ok is clicked', async () => {
+    await initializeComponentForTest();
+
+    // Open the dropdown menu
+    const globusTransferDropdown = await within(
+      await screen.findByTestId('downloadTypeSelector')
+    ).findByRole('combobox');
+    await openDropdownList(user, globusTransferDropdown);
+
+    // Select Globus
+    const globusOption = (await screen.findAllByText(/Globus/i))[1];
+    expect(globusOption).toBeTruthy();
+    await user.click(globusOption);
+
+    // Open the transfer button menu
+    const transferButtonMenu = (await screen.findByTestId('downloadDatasetTransferBtns'))
+      .lastElementChild;
+    expect(transferButtonMenu).toBeTruthy();
+    if (transferButtonMenu) {
+      await user.click(transferButtonMenu);
+    }
+
+    // Click Reset Tokens
+    const resetTokensOption = await screen.findByText('Reset Tokens');
+    expect(resetTokensOption).toBeTruthy();
+    await user.click(resetTokensOption);
+
+    // Confirm reset tokens
+    const okButton = await screen.findByText('Ok');
+    expect(okButton).toBeTruthy();
+    await user.click(okButton);
+
+    // Expect tokens to be reset
+    const accessToken = db.get<string | null>(GlobusStateKeys.accessToken, null);
+    const transferToken = db.get<GlobusTokenResponse | null>(GlobusStateKeys.transferToken, null);
+    expect(accessToken).toBeNull();
+    expect(transferToken).toBeNull();
+
+    // Expect reset notice to show
+    const resetNotice = await screen.findByText('Globus Auth tokens reset!', { exact: false });
+    expect(resetNotice).toBeTruthy();
   });
 });

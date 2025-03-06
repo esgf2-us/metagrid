@@ -133,7 +133,8 @@ export const cartTourTargets = {
   datasetBtn: new TargetObject(),
   libraryBtn: new TargetObject(),
   downloadAllType: new TargetObject(),
-  downloadAllBtn: new TargetObject(),
+  downloadWgetBtn: new TargetObject(),
+  downloadTransferBtn: new TargetObject(),
   globusCollectionDropdown: new TargetObject(),
   removeItemsBtn: new TargetObject(),
 };
@@ -666,7 +667,7 @@ export const createCartItemsTour = (setCurrentPage: (page: number) => void): Joy
   tour
     .addNextStep(
       cartTourTargets.cartSummary.selector(),
-      'This shows a summary of all the datasets in the cart. From here you can see the total datasets, files and total file size at a glance. Note: The summary is visible to both the data cart and search library.'
+      "This shows a summary of all the datasets you've added and selected in the cart. From here you can see the number of datasets, files and file size of both the cart and your selected datasets at a glance. Note: The summary is visible to both the data cart and search library."
     )
     .addNextStep(
       '.ant-table-container',
@@ -713,7 +714,7 @@ export const createCartItemsTour = (setCurrentPage: (page: number) => void): Joy
       'top-start'
     )
     .addNextStep(
-      cartTourTargets.downloadAllBtn.selector(),
+      cartTourTargets.downloadTransferBtn.selector(),
       'After selecting your collection, click this button to start the download for your selected cart items.',
       'top-start',
       /* istanbul ignore next */
@@ -872,7 +873,7 @@ export const createSearchCardTour = (setCurrentPage: (page: number) => void): Jo
   tour
     .addNextStep(
       cartTourTargets.cartSummary.selector(),
-      'This shows a summary of all the datasets in the data cart. The summary is visible to both the data cart and search library.'
+      "This shows a summary of all the datasets you've added and selected in the data cart. The summary is visible to both the data cart and search library."
     )
     .addNextStep(
       savedSearchTourTargets.savedSearches.selector(),

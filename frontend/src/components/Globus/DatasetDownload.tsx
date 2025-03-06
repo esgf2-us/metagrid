@@ -6,6 +6,7 @@ import {
   Card,
   Collapse,
   Divider,
+  Dropdown,
   Input,
   Modal,
   Select,
@@ -275,11 +276,14 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       });
   };
 
-  const handleGlobusDownload = (
-    globusTransferToken: GlobusTokenResponse,
-    accessToken: string,
-    endpoint: GlobusEndpoint
-  ): void => {
+  const handleGlobusDownload = (endpoint: GlobusEndpoint): void => {
+    const [globusTransferToken, accessToken] = getGlobusTokens();
+
+    // Cancel the download if tokens are not ready
+    if (globusTransferToken === null || accessToken === null) {
+      return;
+    }
+
     setDownloadIsLoading(true);
 
     const ids = itemSelections?.map((item) => (item ? item.id : '')) ?? [];
@@ -563,10 +567,9 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     }
   };
 
-  function tokensReady(
-    accessToken: string | null,
-    globusTransferToken: GlobusTokenResponse | null
-  ): boolean {
+  function tokensReady(): boolean {
+    const [globusTransferToken, accessToken] = getGlobusTokens();
+
     // Test if the current transfer token is expired
     let globusTokenReady = false;
     if (globusTransferToken && globusTransferToken.expires_in) {
@@ -745,8 +748,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       // Update scopes
       updateScopes();
 
-      const [transferToken, accessToken] = getGlobusTokens();
-      const tknsReady = tokensReady(accessToken, transferToken);
+      const tknsReady = tokensReady();
 
       // Get tokens if they aren't ready
       if (!tknsReady) {
@@ -817,11 +819,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       // Check chosen endpoint path is ready
       if (chosenEndpoint.path) {
         setCurrentGoal(GlobusGoals.None);
-        handleGlobusDownload(
-          transferToken as GlobusTokenResponse,
-          accessToken as string,
-          chosenEndpoint
-        );
+        handleGlobusDownload(chosenEndpoint);
       } else {
         // Setting endpoint path
         setLoadingPage(false);
@@ -857,6 +855,38 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     }
     return '';
   };
+
+  const globusTransferButtonMenu = [
+    {
+      key: '1',
+      label: 'Reset Tokens',
+      danger: true,
+      disabled: !tokensReady(),
+      onClick: () => {
+        const newAlertPopupState: AlertModalState = {
+          content:
+            "If you haven't performed a Globus transfer in a while, or you ran into some issues, it may help to get new tokens. Click 'Ok' if you wish to to reset tokens.",
+
+          onCancelAction: () => {
+            setAlertPopupState({ ...alertPopupState, show: false });
+          },
+          onOkAction: async () => {
+            await resetTokens();
+            setAlertPopupState({ ...alertPopupState, show: false });
+            showNotice(messageApi, 'Globus Auth tokens reset!', {
+              duration: 3,
+              type: 'info',
+            });
+          },
+          show: true,
+        };
+
+        if (!alertPopupState.show) {
+          setAlertPopupState(newAlertPopupState);
+        }
+      },
+    },
+  ];
 
   useEffect(() => {
     const initializePage = async (): Promise<void> => {
@@ -950,25 +980,47 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             }
           ></Select>
         )}
-        <Tooltip title={downloadBtnTooltip()} placement="top">
-          <Button
-            data-testid="downloadDatasetBtn"
-            className={cartTourTargets.downloadAllBtn.class()}
-            type="primary"
-            onClick={() => {
-              handleDownloadForm(selectedDownloadType as 'wget' | 'Globus');
-            }}
-            icon={<DownloadOutlined />}
-            disabled={
-              itemSelections.length === 0 ||
-              (selectedDownloadType === 'Globus' &&
-                (!chosenGlobusEndpoint || savedGlobusEndpoints.length === 0))
-            }
-            loading={downloadIsLoading}
-          >
-            {selectedDownloadType === 'Globus' ? 'Transfer' : 'Download'}
-          </Button>
-        </Tooltip>
+        {selectedDownloadType === 'Globus' ? (
+          <Tooltip title={downloadBtnTooltip()} placement="top">
+            <Dropdown.Button
+              data-testid="downloadDatasetTransferBtns"
+              type="primary"
+              onClick={() => {
+                handleDownloadForm('Globus');
+              }}
+              disabled={
+                itemSelections.length === 0 ||
+                !chosenGlobusEndpoint ||
+                savedGlobusEndpoints.length === 0
+              }
+              loading={downloadIsLoading}
+              menu={{ items: globusTransferButtonMenu }}
+            >
+              <div
+                data-testid="downloadDatasetTransferBtn"
+                className={cartTourTargets.downloadTransferBtn.class()}
+              >
+                <DownloadOutlined /> Transfer
+              </div>
+            </Dropdown.Button>
+          </Tooltip>
+        ) : (
+          <Tooltip title={downloadBtnTooltip()} placement="top">
+            <Button
+              data-testid="downloadDatasetWgetBtn"
+              className={cartTourTargets.downloadWgetBtn.class()}
+              type="primary"
+              onClick={() => {
+                handleDownloadForm('wget');
+              }}
+              icon={<DownloadOutlined />}
+              disabled={itemSelections.length === 0}
+              loading={downloadIsLoading}
+            >
+              Download
+            </Button>
+          </Tooltip>
+        )}
       </Space>
       <Modal
         className={manageCollectionsTourTargets.globusCollectionsForm.class()}
@@ -984,16 +1036,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                 startSpecificTour(createCollectionsFormTour());
               }}
             />
-            <Button
-              type="primary"
-              danger
-              onClick={async () => {
-                await resetTokens();
-                setEndpointSearchOpen(false);
-              }}
-            >
-              Reset Tokens
-            </Button>
           </>
         }
         open={endpointSearchOpen}
