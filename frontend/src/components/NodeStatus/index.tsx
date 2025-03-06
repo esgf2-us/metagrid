@@ -8,7 +8,7 @@ import apiRoutes from '../../api/routes';
 import { nodeTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import { NodeStatusArray, NodeStatusElement } from './types';
-import { isDarkModeAtom } from '../App/recoil/atoms';
+import isDarkModeAtom from '../App/recoil/atoms';
 import { lightModeGreen, lightModeRed, darkModeGreen, darkModeRed } from './StatusToolTip';
 
 const styles = { headerContainer: { margin: '12px' } } as CSSinJS;

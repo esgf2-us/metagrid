@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, Collapse, Divider, List, Typography } from 'antd';
-import { useRecoilState } from 'recoil';
+import { useRecoilState, useRecoilValue } from 'recoil';
 import Button from '../General/Button';
 import cartImg from '../../assets/img/cart.svg';
 import folderImg from '../../assets/img/folder.svg';
@@ -10,8 +10,8 @@ import { formatBytes } from '../../common/utils';
 import { RawSearchResult, RawSearchResults } from '../Search/types';
 import { UserCart } from './types';
 import { GlobusTaskItem } from '../Globus/types';
-import GlobusStateKeys, { globusTaskItems } from '../Globus/recoil/atom';
-import { DataPersister } from '../../common/DataPersister';
+import { globusTaskItems } from '../Globus/recoil/atom';
+import { cartItemSelections } from './recoil/atoms';
 
 const styles: CSSinJS = {
   headerContainer: { display: 'flex', justifyContent: 'center' },
@@ -28,33 +28,47 @@ const styles: CSSinJS = {
 };
 
 export type Props = {
-  userCart: UserCart | [];
+  userCart: UserCart;
 };
 
 const { Title, Link } = Typography;
-const dp: DataPersister = DataPersister.Instance;
 
 const Summary: React.FC<React.PropsWithChildren<Props>> = ({ userCart }) => {
+  const cartItems = useRecoilValue<RawSearchResults>(cartItemSelections);
   const [taskItems, setTaskItems] = useRecoilState<GlobusTaskItem[]>(globusTaskItems);
-  dp.addNewVar(GlobusStateKeys.globusTaskItems, [], setTaskItems);
 
-  let numFiles = 0;
-  let totalDataSize = '0';
-  if (userCart.length > 0) {
-    numFiles = (userCart as RawSearchResults).reduce(
+  let numSelectedFiles = 0;
+  let totalSelectedDataSize = '0';
+  if (cartItems.length > 0) {
+    numSelectedFiles = cartItems.reduce(
       (acc: number, dataset: RawSearchResult) => acc + (dataset.number_of_files || 0),
       0
     );
 
-    const rawDataSize = (userCart as RawSearchResults).reduce(
+    const rawDataSize = cartItems.reduce(
+      (acc: number, dataset: RawSearchResult) => acc + (dataset.size || 0),
+      0
+    );
+    totalSelectedDataSize = formatBytes(rawDataSize);
+  }
+
+  let numFiles = 0;
+  let totalDataSize = '0';
+  if (userCart.length > 0) {
+    numFiles = userCart.reduce(
+      (acc: number, dataset: RawSearchResult) => acc + (dataset.number_of_files || 0),
+      0
+    );
+
+    const rawDataSize = userCart.reduce(
       (acc: number, dataset: RawSearchResult) => acc + (dataset.size || 0),
       0
     );
     totalDataSize = formatBytes(rawDataSize);
   }
 
-  const clearAllTasks = async (): Promise<void> => {
-    await dp.setValue(GlobusStateKeys.globusTaskItems, [], true);
+  const clearAllTasks = (): void => {
+    setTaskItems([]);
   };
 
   return (
@@ -71,13 +85,25 @@ const Summary: React.FC<React.PropsWithChildren<Props>> = ({ userCart }) => {
       <Divider />
 
       <Title level={4}>
-        Number of Datasets: <span style={styles.statistic}>{userCart.length}</span>
+        Total Number of Datasets: <span style={styles.statistic}>{userCart.length}</span>
       </Title>
       <Title level={4}>
-        Number of Files: <span style={styles.statistic}>{numFiles}</span>
+        Total Number of Files: <span style={styles.statistic}>{numFiles}</span>
       </Title>
       <Title level={4}>
-        Total File Size: <span style={styles.statistic}>{totalDataSize}</span>
+        Total Cart File Size: <span style={styles.statistic}>{totalDataSize}</span>
+      </Title>
+
+      <Divider />
+
+      <Title level={4}>
+        Selected Number of Datasets: <span style={styles.statistic}>{cartItems.length}</span>
+      </Title>
+      <Title level={4}>
+        Selected Number of Files: <span style={styles.statistic}>{numSelectedFiles}</span>
+      </Title>
+      <Title level={4}>
+        Selected Files Size: <span style={styles.statistic}>{totalSelectedDataSize}</span>
       </Title>
       <Divider />
 

@@ -79,6 +79,7 @@ prompt_required GLOBUS_CLIENT_SECRET "Enter the Globus Social Auth Secret" "6aWj
 prompt_required SOLR_URL "Enter the SOLR URL \(default: https://esgf-node.llnl.gov/esg-search\)" "https://esgf-node.llnl.gov/esg-search" "https://esgf-node.llnl.gov/esg-search" "The URL at which the SOLR endpoint can be reached."
 prompt_optional AUTHENTICATION_METHOD "Enter the Globus Authentication Method" "globus" "Which authentication method to enable for user sign in on the frontend."
 prompt_optional FOOTER_TEXT "Enter the Footer Text (if it's a single line of markdown). If you need a more complex footer, skip for now and you can update the overlay file with your desired footer markdown afterwards." "Privacy & Legal Notice: [https://www.llnl.gov/disclaimer.html](https://www.llnl.gov/disclaimer.html)" "Text to display in the footer of the frontend. Useful for adding a link to the terms of service or other legal information. The string should be formatted as MarkDown and will be rendered as such."
+prompt_optional GLOBUS_NODES "Enter a list of Globus enabled nodes (comma-separated)" "[ 'node1', 'node2' ]" "A comma-separated list of Globus enabled nodes."
 
 # Prompt for Keycloak deployment
 echo "(Optional) Do you wish to add Keycloak social auth settings? (yes/no)"
@@ -122,6 +123,7 @@ services:
       METAGRID_SOCIAL_AUTH_GLOBUS_SECRET: $GLOBUS_CLIENT_SECRET
       METAGRID_AUTHENTICATION_METHOD: $AUTHENTICATION_METHOD
       METAGRID_FOOTER_TEXT: $FOOTER_TEXT
+      METAGRID_GLOBUS_NODES: $GLOBUS_NODES
 EOF
 
 if [ "$USE_KEYCLOAK" == "yes" ]; then

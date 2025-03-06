@@ -21,7 +21,7 @@ import Button from '../General/Button';
 import RightDrawer from '../Messaging/RightDrawer';
 
 import { AuthContext } from '../../contexts/AuthContext';
-import { isDarkModeAtom } from '../App/recoil/atoms';
+import isDarkModeAtom from '../App/recoil/atoms';
 
 const menuItemStyling: CSSProperties = { margin: '8px' };
 
