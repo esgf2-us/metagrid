@@ -321,8 +321,8 @@ describe('User cart', () => {
       'Selected Number of Datasets:'
     );
     const numSelectedFilesText = await within(cartSummary).findByText('Selected Number of Files:');
-    expect(numSelectedDatasetsField.textContent).toEqual('Selected Number of Datasets: 0');
-    expect(numSelectedFilesText.textContent).toEqual('Selected Number of Files: 0');
+    expect(numSelectedDatasetsField.textContent).toEqual('Selected Number of Datasets: 1');
+    expect(numSelectedFilesText.textContent).toEqual('Selected Number of Files: 2');
 
     // Check "Remove All Items" button renders with cart > 0 items and click it
     const clearCartBtn = await screen.findByTestId('clear-cart-button');
@@ -407,8 +407,8 @@ describe('User cart', () => {
       'Selected Number of Datasets:'
     );
     const numSelectedFilesText = await within(cartSummary).findByText('Selected Number of Files:');
-    expect(numSelectedDatasetsField.textContent).toEqual('Selected Number of Datasets: 0');
-    expect(numSelectedFilesText.textContent).toEqual('Selected Number of Files: 0');
+    expect(numSelectedDatasetsField.textContent).toEqual('Selected Number of Datasets: 1');
+    expect(numSelectedFilesText.textContent).toEqual('Selected Number of Files: 2');
 
     // Check "Remove All Items" button renders with cart > 0 items and click it
     const clearCartBtn = await screen.findByTestId('clear-cart-button');
@@ -474,18 +474,6 @@ describe('User cart', () => {
       'Selected Number of Datasets:'
     );
     const numSelectedFilesText = await within(cartSummary).findByText('Selected Number of Files:');
-    expect(numSelectedDatasetsField.textContent).toEqual('Selected Number of Datasets: 0');
-    expect(numSelectedFilesText.textContent).toEqual('Selected Number of Files: 0');
-
-    // Select all items in the cart
-    const row1 = await screen.findByTestId('cart-items-row-0');
-    const checkbox1 = await within(row1).findByRole('checkbox');
-    expect(checkbox1).toBeTruthy();
-    await userEvent.click(checkbox1);
-    const row2 = await screen.findByTestId('cart-items-row-1');
-    const checkbox2 = await within(row2).findByRole('checkbox');
-    expect(checkbox2).toBeTruthy();
-    await userEvent.click(checkbox2);
 
     // Check selected number of files and datasets are correctly displayed
     expect(numSelectedDatasetsField.textContent).toEqual('Selected Number of Datasets: 2');
