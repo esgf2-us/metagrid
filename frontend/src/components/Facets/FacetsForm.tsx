@@ -26,6 +26,7 @@ import weekOfYear from 'dayjs/plugin/weekOfYear';
 import weekYear from 'dayjs/plugin/weekYear';
 
 import React from 'react';
+import { useRecoilValue } from 'recoil';
 import { leftSidebarTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import Button from '../General/Button';
@@ -34,6 +35,7 @@ import { NodeStatusArray } from '../NodeStatus/types';
 import { ActiveSearchQuery, ResultType, VersionDate, VersionType } from '../Search/types';
 import { ActiveFacets, ParsedFacets } from './types';
 import { showNotice } from '../../common/utils';
+import { availableFacetsAtom } from '../App/recoil/atoms';
 
 dayjs.extend(customParseFormat);
 dayjs.extend(advancedFormat);
@@ -55,7 +57,6 @@ const styles: CSSinJS = {
 
 export type Props = {
   activeSearchQuery: ActiveSearchQuery;
-  availableFacets: ParsedFacets;
   nodeStatus?: NodeStatusArray;
   onSetFilenameVars: (filenameVar: string) => void;
   onSetGeneralFacets: (
@@ -98,7 +99,6 @@ export const formatDate = (date: string | Dayjs, toString: boolean): string | Da
 
 const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
   activeSearchQuery,
-  availableFacets,
   nodeStatus,
   onSetFilenameVars,
   onSetGeneralFacets,
@@ -128,6 +128,8 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
     string | number | (string | number)[] | undefined
   >([]);
   const [expandAll, setExpandAll] = React.useState<boolean>(true);
+
+  const availableFacets: ParsedFacets = useRecoilValue(availableFacetsAtom) as ParsedFacets;
 
   type DatePickerReturnType = [null, null] | [Dayjs, null] | [null, Dayjs] | [Dayjs, Dayjs];
 
@@ -196,16 +198,17 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
   React.useEffect(() => {
     generalFacetsForm.resetFields();
     availableFacetsForm.resetFields();
-  }, [generalFacetsForm, availableFacetsForm, activeSearchQuery]);
+  }, [generalFacetsForm, availableFacetsForm]);
 
   React.useEffect(() => {
     if (!dropdownIsOpen && activeDropdownValue) {
       const [facet, options] = activeDropdownValue;
-      const newActiveFacets = activeSearchQuery.activeFacets;
+      const newActiveFacets: ActiveFacets = activeSearchQuery.activeFacets;
       /* istanbul ignore else */
       if (options.length === 0) {
-        delete newActiveFacets[facet];
-        onSetActiveFacets(newActiveFacets);
+        const { [facet]: remove, ...updatedFacets } = newActiveFacets;
+
+        onSetActiveFacets(updatedFacets);
       } else if (options.length > 0) {
         onSetActiveFacets({
           ...newActiveFacets,
@@ -214,13 +217,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
       }
       setActiveDropdownValue(null);
     }
-  }, [
-    dropdownIsOpen,
-    onSetActiveFacets,
-    activeSearchQuery,
-    activeDropdownValue,
-    setActiveDropdownValue,
-  ]);
+  }, [dropdownIsOpen, activeDropdownValue, setActiveDropdownValue]);
 
   const facetsByGroup = activeSearchQuery.project.facetsByGroup as {
     [key: string]: string[];

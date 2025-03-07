@@ -2,7 +2,7 @@ import { RecoilRoot, useRecoilState } from 'recoil';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 import userEvent from '@testing-library/user-event';
-import isDarkModeAtom from './atoms';
+import { isDarkModeAtom } from './atoms';
 
 const TestComponent = (): React.ReactNode => {
   const [isDarkMode, setIsDarkMode] = useRecoilState(isDarkModeAtom);

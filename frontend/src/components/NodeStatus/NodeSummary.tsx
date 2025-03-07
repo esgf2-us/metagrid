@@ -6,7 +6,7 @@ import nodeImg from '../../assets/img/nodes.svg';
 import { nodeTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import { NodeStatusArray } from './types';
-import isDarkModeAtom from '../App/recoil/atoms';
+import { isDarkModeAtom } from '../App/recoil/atoms';
 import { lightModeGreen, lightModeRed, darkModeGreen, darkModeRed } from './StatusToolTip';
 
 const { Title } = Typography;

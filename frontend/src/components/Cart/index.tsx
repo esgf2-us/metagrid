@@ -6,7 +6,7 @@ import { cartTourTargets } from '../../common/reactJoyrideSteps';
 import { RawSearchResults } from '../Search/types';
 import Items from './Items';
 import Searches from './Searches';
-import { UserSearchQueries, UserSearchQuery } from './types';
+import { UserSearchQueries } from './types';
 import { NodeStatusArray } from '../NodeStatus/types';
 
 export type Props = {
@@ -14,7 +14,6 @@ export type Props = {
   userSearchQueries: UserSearchQueries | [];
   onUpdateCart: (item: RawSearchResults, operation: 'add' | 'remove') => void;
   onClearCart: () => void;
-  onRunSearchQuery: (savedSearch: UserSearchQuery) => void;
   onRemoveSearchQuery: (uuid: string) => void;
   nodeStatus?: NodeStatusArray;
 };
@@ -24,7 +23,6 @@ const Cart: React.FC<React.PropsWithChildren<Props>> = ({
   userSearchQueries,
   onUpdateCart,
   onClearCart,
-  onRunSearchQuery,
   onRemoveSearchQuery,
   nodeStatus,
 }) => {
@@ -72,11 +70,7 @@ const Cart: React.FC<React.PropsWithChildren<Props>> = ({
         </span>
       ),
       children: (
-        <Searches
-          userSearchQueries={userSearchQueries}
-          onRunSearchQuery={onRunSearchQuery}
-          onRemoveSearchQuery={onRemoveSearchQuery}
-        />
+        <Searches userSearchQueries={userSearchQueries} onRemoveSearchQuery={onRemoveSearchQuery} />
       ),
     },
   ];

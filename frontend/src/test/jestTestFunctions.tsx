@@ -7,8 +7,9 @@
  */
 import { within, screen } from '@testing-library/react';
 import { message } from 'antd';
-import { ReactNode, CSSProperties } from 'react';
+import React, { ReactNode, CSSProperties } from 'react';
 import { UserEvent } from '@testing-library/user-event';
+import { RecoilState, RecoilRoot } from 'recoil';
 import { NotificationType, getSearchFromUrl } from '../common/utils';
 import { RawSearchResult } from '../components/Search/types';
 import { rawSearchResultFixture } from './mock/fixtures';
@@ -115,6 +116,32 @@ export async function showNoticeStatic(
 export const globusReadyNode: string = 'nodeIsGlobusReady';
 export const nodeNotGlobusReady: string = 'nodeIsNotGlobusReady';
 
+export class RecoilWrapper {
+  settings: Array<{ atom: RecoilState<unknown>; value: unknown }> = [];
+
+  addSetting<T>(recoilAtom: RecoilState<T>, value: T, persistent: boolean = true): void {
+    if (persistent) {
+      saveToLocalStorage(recoilAtom.key, value);
+      return;
+    }
+    this.settings.push({ atom: recoilAtom as RecoilState<unknown>, value: value as unknown });
+  }
+
+  wrap(children: React.ReactElement): React.ReactElement {
+    return (
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          this.settings.forEach((setting) => {
+            snapshot.set(setting.atom, setting.value);
+          });
+        }}
+      >
+        {children}
+      </RecoilRoot>
+    );
+  }
+}
+
 export function makeCartItem(id: string, globusReady: boolean): RawSearchResult {
   return rawSearchResultFixture({
     id,
@@ -147,7 +174,7 @@ export async function openDropdownList(user: UserEvent, dropdown: HTMLElement): 
   await user.click(dropdown);
 }
 
-export function initRecoilValue<T>(key: string, value: T): void {
+export function saveToLocalStorage<T>(key: string, value: T): void {
   localStorage.setItem(key, JSON.stringify(value));
 }
 

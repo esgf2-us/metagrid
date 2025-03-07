@@ -46,9 +46,8 @@ import { AuthContext } from '../../contexts/AuthContext';
 import Cart from '../Cart';
 import Summary from '../Cart/Summary';
 import { UserCart, UserSearchQueries, UserSearchQuery } from '../Cart/types';
-import { TagType, TagValue } from '../DataDisplay/Tag';
 import Facets from '../Facets';
-import { ActiveFacets, ParsedFacets, RawProject } from '../Facets/types';
+import { ActiveFacets, RawProject } from '../Facets/types';
 import NavBar from '../NavBar/index';
 import NodeStatus from '../NodeStatus';
 import NodeSummary from '../NodeStatus/NodeSummary';
@@ -66,7 +65,13 @@ import StartPopup from '../Messaging/StartPopup';
 import startupDisplayData from '../Messaging/messageDisplayData';
 import './App.css';
 import { miscTargets } from '../../common/reactJoyrideSteps';
-import isDarkModeAtom from './recoil/atoms';
+import {
+  activeSearchQueryAtom,
+  isDarkModeAtom,
+  supportModalVisibleAtom,
+  userCartAtom,
+  userSearchQueriesAtom,
+} from './recoil/atoms';
 import Footer from '../Footer/Footer';
 
 const bodySider = {
@@ -125,7 +130,26 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   const { access_token: accessToken, pk } = authState;
   const isAuthenticated = accessToken && pk;
 
-  const [supportModalVisible, setSupportModalVisible] = React.useState<boolean>(false);
+  // Recoil state
+  const [userCart, setUserCart] = useRecoilState<UserCart>(userCartAtom);
+
+  const [userSearchQueries, setUserSearchQueries] = useRecoilState<UserSearchQueries>(
+    userSearchQueriesAtom
+  );
+
+  const [activeSearchQuery, setActiveSearchQuery] = useRecoilState<ActiveSearchQuery>(
+    activeSearchQueryAtom
+  );
+
+  const [supportModalVisible, setSupportModalVisible] = useRecoilState<boolean>(
+    supportModalVisibleAtom
+  );
+
+  const [isDarkMode] = useRecoilState<boolean>(isDarkModeAtom);
+
+  const { defaultAlgorithm, darkAlgorithm } = theme;
+
+  const styles = getStyle(isDarkMode);
 
   const {
     run: runFetchNodeStatus,
@@ -135,40 +159,6 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   } = useAsync({
     deferFn: fetchNodeStatus,
   });
-
-  const projectBaseQuery = (project: Record<string, unknown> | RawProject): ActiveSearchQuery => ({
-    project,
-    versionType: 'latest',
-    resultType: 'all',
-    minVersionDate: null,
-    maxVersionDate: null,
-    filenameVars: [],
-    activeFacets: {},
-    textInputs: [],
-  });
-
-  const [activeSearchQuery, setActiveSearchQuery] = React.useState<ActiveSearchQuery>(
-    projectBaseQuery({})
-  );
-
-  const [savedSearchQuery, setSavedSearchQuery] = React.useState<ActiveSearchQuery | null>(null);
-
-  const [availableFacets, setAvailableFacets] = React.useState<
-    ParsedFacets | Record<string, unknown>
-  >({});
-
-  const [userCart, setUserCart] = React.useState<UserCart | []>(
-    JSON.parse(localStorage.getItem('userCart') || '[]') as RawSearchResults
-  );
-
-  const [userSearchQueries, setUserSearchQueries] = React.useState<UserSearchQueries | []>(
-    JSON.parse(localStorage.getItem('userSearchQueries') || '[]') as UserSearchQueries
-  );
-
-  const { defaultAlgorithm, darkAlgorithm } = theme;
-  const [isDarkMode] = useRecoilState<boolean>(isDarkModeAtom);
-
-  const styles = getStyle(isDarkMode);
 
   React.useEffect(() => {
     /* istanbul ignore else */
@@ -207,14 +197,6 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
         });
     }
   }, [isAuthenticated, pk, accessToken]);
-
-  React.useEffect(() => {
-    localStorage.setItem('userCart', JSON.stringify(userCart));
-  }, [isAuthenticated, userCart]);
-
-  React.useEffect(() => {
-    localStorage.setItem('userSearchQueries', JSON.stringify(userSearchQueries));
-  }, [isAuthenticated, userSearchQueries]);
 
   React.useEffect(() => {
     /* istanbul ignore else */
@@ -260,90 +242,6 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     }
   };
 
-  const handleOnSetFilenameVars = (filenameVar: string): void => {
-    if (activeSearchQuery.filenameVars.includes(filenameVar as never)) {
-      showError(messageApi, `Input "${filenameVar}" has already been applied`);
-    } else {
-      setActiveSearchQuery({
-        ...activeSearchQuery,
-        filenameVars: [...activeSearchQuery.filenameVars, filenameVar],
-      });
-    }
-  };
-
-  const handleOnSetGeneralFacets = (
-    versionType: VersionType,
-    resultType: ResultType,
-    minVersionDate: VersionDate,
-    maxVersionDate: VersionDate
-  ): void => {
-    setActiveSearchQuery({
-      ...activeSearchQuery,
-      versionType,
-      resultType,
-      minVersionDate,
-      maxVersionDate,
-    });
-  };
-
-  const handleOnSetActiveFacets = (activeFacets: ActiveFacets): void => {
-    setActiveSearchQuery({ ...activeSearchQuery, activeFacets });
-  };
-
-  const handleClearFilters = (): void => {
-    setActiveSearchQuery(projectBaseQuery(activeSearchQuery.project));
-  };
-
-  const handleProjectChange = (selectedProject: RawProject): void => {
-    if (savedSearchQuery) {
-      setSavedSearchQuery(null);
-      setActiveSearchQuery(savedSearchQuery);
-      return;
-    }
-
-    if (selectedProject.pk !== activeSearchQuery.project.pk) {
-      setActiveSearchQuery(projectBaseQuery(selectedProject));
-    } else {
-      setActiveSearchQuery({ ...activeSearchQuery, project: selectedProject });
-    }
-  };
-
-  const handleRemoveFilter = (removedTag: TagValue, type: TagType): void => {
-    /* istanbul ignore else */
-    if (type === 'text') {
-      setActiveSearchQuery({
-        ...activeSearchQuery,
-        textInputs: activeSearchQuery.textInputs.filter((input) => input !== removedTag),
-      });
-    } else if (type === 'filenameVar') {
-      setActiveSearchQuery({
-        ...activeSearchQuery,
-        filenameVars: activeSearchQuery.filenameVars.filter((input) => input !== removedTag),
-      });
-    } else if (type === 'facet') {
-      const prevActiveFacets = activeSearchQuery.activeFacets;
-
-      const facet = (removedTag[0] as unknown) as string;
-      const facetOption = (removedTag[1] as unknown) as string;
-      const updateFacet = {
-        [facet]: prevActiveFacets[facet].filter((item) => item !== facetOption),
-      };
-
-      if (updateFacet[facet].length === 0) {
-        delete prevActiveFacets[facet];
-        setActiveSearchQuery({
-          ...activeSearchQuery,
-          activeFacets: { ...prevActiveFacets },
-        });
-      } else {
-        setActiveSearchQuery({
-          ...activeSearchQuery,
-          activeFacets: { ...prevActiveFacets, ...updateFacet },
-        });
-      }
-    }
-  };
-
   const handleUpdateCart = (selectedItems: RawSearchResults, operation: 'add' | 'remove'): void => {
     let newCart: UserCart = [];
 
@@ -355,6 +253,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
 
       newCart = [...userCart, ...itemsNotInCart];
       setUserCart(newCart);
+
       showNotice(messageApi, 'Added item(s) to your cart', {
         icon: <ShoppingCartOutlined style={styles.messageAddIcon} />,
       });
@@ -464,18 +363,34 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     }
   };
 
-  // This converts a saved search to the active search query
-  const handleRunSearchQuery = (savedSearch: UserSearchQuery): void => {
-    setSavedSearchQuery({
-      project: savedSearch.project,
-      versionType: savedSearch.versionType,
-      resultType: 'all',
-      minVersionDate: savedSearch.minVersionDate,
-      maxVersionDate: savedSearch.maxVersionDate,
-      filenameVars: savedSearch.filenameVars,
-      activeFacets: savedSearch.activeFacets,
-      textInputs: savedSearch.textInputs,
+  const handleOnSetFilenameVars = (filenameVar: string): void => {
+    if (activeSearchQuery.filenameVars.includes(filenameVar as never)) {
+      showError(messageApi, `Input "${filenameVar}" has already been applied`);
+    } else {
+      setActiveSearchQuery({
+        ...activeSearchQuery,
+        filenameVars: [...activeSearchQuery.filenameVars, filenameVar],
+      });
+    }
+  };
+
+  const handleOnSetGeneralFacets = (
+    versionType: VersionType,
+    resultType: ResultType,
+    minVersionDate: VersionDate,
+    maxVersionDate: VersionDate
+  ): void => {
+    setActiveSearchQuery({
+      ...activeSearchQuery,
+      versionType,
+      resultType,
+      minVersionDate,
+      maxVersionDate,
     });
+  };
+
+  const handleOnSetActiveFacets = (activeFacets: ActiveFacets): void => {
+    setActiveSearchQuery({ ...activeSearchQuery, activeFacets });
   };
 
   return (
@@ -512,10 +427,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
               element={
                 <Layout.Sider style={styles.bodySider} width={styles.bodySider.width as number}>
                   <Facets
-                    activeSearchQuery={activeSearchQuery}
-                    availableFacets={availableFacets}
                     nodeStatus={nodeStatus}
-                    onProjectChange={handleProjectChange}
                     onSetFilenameVars={handleOnSetFilenameVars}
                     onSetGeneralFacets={handleOnSetGeneralFacets}
                     onSetActiveFacets={handleOnSetActiveFacets}
@@ -562,10 +474,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
                         activeSearchQuery={activeSearchQuery}
                         userCart={userCart}
                         nodeStatus={nodeStatus}
-                        onUpdateAvailableFacets={(facets) => setAvailableFacets(facets)}
                         onUpdateCart={handleUpdateCart}
-                        onRemoveFilter={handleRemoveFilter}
-                        onClearFilters={handleClearFilters}
                         onSaveSearchQuery={handleSaveSearchQuery}
                         onShareSearchQuery={handleShareSearchQuery}
                       ></Search>
@@ -617,7 +526,6 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
                         userSearchQueries={userSearchQueries}
                         onUpdateCart={handleUpdateCart}
                         onClearCart={handleClearCart}
-                        onRunSearchQuery={handleRunSearchQuery}
                         onRemoveSearchQuery={handleRemoveSearchQuery}
                         nodeStatus={nodeStatus}
                       />

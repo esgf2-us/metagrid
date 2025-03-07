@@ -8,21 +8,24 @@ import {
 } from '../../test/mock/fixtures';
 import Facets, { Props } from './index';
 import customRender from '../../test/custom-render';
+import { activeSearchQueryAtom, availableFacetsAtom } from '../App/recoil/atoms';
+import { RecoilWrapper } from '../../test/jestTestFunctions';
 
 const user = userEvent.setup();
 
 const defaultProps: Props = {
-  activeSearchQuery: activeSearchQueryFixture(),
-  availableFacets: parsedFacetsFixture(),
   nodeStatus: parsedNodeStatusFixture(),
-  onProjectChange: jest.fn(),
   onSetFilenameVars: jest.fn(),
   onSetGeneralFacets: jest.fn(),
   onSetActiveFacets: jest.fn(),
 };
 
+const recoil = new RecoilWrapper();
+recoil.addSetting(activeSearchQueryAtom, activeSearchQueryFixture(), false);
+recoil.addSetting(availableFacetsAtom, parsedFacetsFixture(), false);
+
 it('renders component', async () => {
-  customRender(<Facets {...defaultProps} />);
+  customRender(recoil.wrap(<Facets {...defaultProps} />));
 
   // Check FacetsForm component renders
   const facetsForm = await screen.findByTestId('facets-form');
@@ -34,7 +37,7 @@ it('renders component', async () => {
 });
 
 it('handles facets form auto-filtering', async () => {
-  customRender(<Facets {...defaultProps} />);
+  customRender(recoil.wrap(<Facets {...defaultProps} />));
 
   // Check ProjectForm component renders
   const projectForm = await screen.findByTestId('project-form');
@@ -85,7 +88,7 @@ it('handles facets form auto-filtering', async () => {
 });
 
 it('handles facets form submission, including a facet key that is undefined', async () => {
-  customRender(<Facets {...defaultProps} />);
+  customRender(recoil.wrap(<Facets {...defaultProps} />));
 
   // Check FacetsForm component renders
   const facetsForm = await screen.findByTestId('facets-form');

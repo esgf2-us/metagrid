@@ -10,7 +10,7 @@ import Button from '../General/Button';
 import LeftMenu from './LeftMenu';
 import './NavBar.css';
 import RightMenu from './RightMenu';
-import isDarkModeAtom from '../App/recoil/atoms';
+import { isDarkModeAtom } from '../App/recoil/atoms';
 
 const { Link } = Typography;
 

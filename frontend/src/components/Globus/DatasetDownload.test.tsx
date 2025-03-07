@@ -1,23 +1,29 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import React from 'react';
 import userEvent from '@testing-library/user-event';
 import { within, screen } from '@testing-library/react';
 import customRender from '../../test/custom-render';
 import { rest, server } from '../../test/mock/server';
 import { getSearchFromUrl } from '../../common/utils';
-import { ActiveSearchQuery, RawSearchResults } from '../Search/types';
+import { ActiveSearchQuery } from '../Search/types';
 import {
   globusReadyNode,
-  initRecoilValue,
+  saveToLocalStorage,
   makeCartItem,
   mockConfig,
   mockFunction,
   openDropdownList,
   printElementContents,
+  RecoilWrapper,
 } from '../../test/jestTestFunctions';
 import App from '../App/App';
 import { GlobusEndpoint, GlobusTaskItem, GlobusTokenResponse } from './types';
-import GlobusStateKeys from './recoil/atom';
-import CartStateKeys from '../Cart/recoil/atoms';
+import GlobusStateKeys, { globusSavedEndpoints, globusTaskItems } from './recoil/atom';
+import { cartDownloadIsLoading, cartItemSelections } from '../Cart/recoil/atoms';
 import {
   globusEndpointFixture,
   globusAccessTokenFixture,
@@ -164,18 +170,25 @@ async function initializeComponentForTest(testConfig?: typeof defaultTestConfig)
     db.set(GlobusStateKeys.transferToken, transferToken);
   }
 
+  const recoilWrapper = new RecoilWrapper();
+
   // Set the Globus Goals
-  initRecoilValue<GlobusGoals>(GlobusStateKeys.globusTransferGoalsState, config.globusGoals);
-  initRecoilValue<boolean>(CartStateKeys.cartDownloadIsLoading, config.cartDownloadIsLoading);
+  saveToLocalStorage<GlobusGoals>(GlobusStateKeys.globusTransferGoalsState, config.globusGoals);
+
+  recoilWrapper.addSetting(cartDownloadIsLoading, config.cartDownloadIsLoading);
+  // saveToLocalStorage<boolean>(CartStateKeys.cartDownloadIsLoading, config.cartDownloadIsLoading);
 
   // Set the selected cart items
-  initRecoilValue<RawSearchResults>(CartStateKeys.cartItemSelections, config.itemSelections);
+  // saveToLocalStorage<RawSearchResults>(CartStateKeys.cartItemSelections, config.itemSelections);
+  recoilWrapper.addSetting(cartItemSelections, config.itemSelections);
 
   // Set the saved endpoints
-  initRecoilValue<GlobusEndpoint[]>(GlobusStateKeys.savedGlobusEndpoints, config.savedEndpoints);
+  recoilWrapper.addSetting(globusSavedEndpoints, config.savedEndpoints);
+  // saveToLocalStorage<GlobusEndpoint[]>(GlobusStateKeys.savedGlobusEndpoints, config.savedEndpoints);
 
   // Set the globus task items
-  initRecoilValue<GlobusTaskItem[]>(GlobusStateKeys.globusTaskItems, config.globusTaskItems);
+  recoilWrapper.addSetting(globusTaskItems, config.globusTaskItems);
+  // saveToLocalStorage<GlobusTaskItem[]>(GlobusStateKeys.globusTaskItems, config.globusTaskItems);
 
   // Default display name if no endpoint is chosen
   let displayName = 'Select Globus Collection';
@@ -199,7 +212,7 @@ async function initializeComponentForTest(testConfig?: typeof defaultTestConfig)
 
   // Finally render the component
   if (config.renderFullApp) {
-    customRender(<App searchQuery={activeSearch} />);
+    customRender(recoilWrapper.wrap(<App searchQuery={activeSearch} />));
 
     await screen.findByText('results found for', { exact: false });
 
@@ -222,7 +235,7 @@ async function initializeComponentForTest(testConfig?: typeof defaultTestConfig)
     // Wait for cart summary to load
     await screen.findByText('Your Cart Summary', { exact: false });
   } else {
-    customRender(<DatasetDownloadForm />);
+    customRender(recoilWrapper.wrap(<DatasetDownloadForm />));
 
     // Wait for component to load
     await screen.findAllByText(new RegExp(displayName, 'i'));

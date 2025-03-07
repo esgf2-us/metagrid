@@ -1,6 +1,7 @@
 import { Button, Tooltip, Typography } from 'antd';
 import React, { useEffect } from 'react';
 import { useAsync } from 'react-async';
+import { useRecoilState, useRecoilValue } from 'recoil';
 import { fetchProjects, ResponseError } from '../../api';
 import { leftSidebarTargets } from '../../common/reactJoyrideSteps';
 import { objectIsEmpty } from '../../common/utils';
@@ -9,7 +10,13 @@ import { NodeStatusArray } from '../NodeStatus/types';
 import { ActiveSearchQuery, ResultType, VersionDate, VersionType } from '../Search/types';
 import FacetsForm from './FacetsForm';
 import ProjectForm from './ProjectForm';
-import { ActiveFacets, ParsedFacets, RawProject } from './types';
+import { ActiveFacets, RawProject } from './types';
+import {
+  activeSearchQueryAtom,
+  availableFacetsAtom,
+  projectBaseQuery,
+  savedSearchQueryAtom,
+} from '../App/recoil/atoms';
 
 const styles = {
   form: {
@@ -18,10 +25,7 @@ const styles = {
 };
 
 export type Props = {
-  activeSearchQuery: ActiveSearchQuery;
-  availableFacets: ParsedFacets | Record<string, unknown>;
   nodeStatus?: NodeStatusArray;
-  onProjectChange: (selectedProj: RawProject) => void;
   onSetFilenameVars: (filenameVar: string) => void;
   onSetGeneralFacets: (
     versionType: VersionType,
@@ -33,10 +37,7 @@ export type Props = {
 };
 
 const Facets: React.FC<React.PropsWithChildren<Props>> = ({
-  activeSearchQuery,
-  availableFacets,
   nodeStatus,
-  onProjectChange,
   onSetFilenameVars,
   onSetGeneralFacets,
   onSetActiveFacets,
@@ -45,7 +46,31 @@ const Facets: React.FC<React.PropsWithChildren<Props>> = ({
 
   const { Title } = Typography;
 
+  const availableFacets = useRecoilValue(availableFacetsAtom);
+
+  const [activeSearchQuery, setActiveSearchQuery] = useRecoilState<ActiveSearchQuery>(
+    activeSearchQueryAtom
+  );
+
+  const [savedSearchQuery, setSavedSearchQuery] = useRecoilState<ActiveSearchQuery | null>(
+    savedSearchQueryAtom
+  );
+
   const [curProject, setCurProject] = React.useState<RawProject>();
+
+  const handleProjectChange = (selectedProject: RawProject): void => {
+    if (savedSearchQuery) {
+      setSavedSearchQuery(null);
+      setActiveSearchQuery(savedSearchQuery);
+      return;
+    }
+
+    if (selectedProject.pk !== activeSearchQuery.project.pk) {
+      setActiveSearchQuery(projectBaseQuery(selectedProject));
+    } else {
+      setActiveSearchQuery({ ...activeSearchQuery, project: selectedProject });
+    }
+  };
 
   const handleSubmitProjectForm = (selectedProject: string): void => {
     /* istanbul ignore else */
@@ -55,7 +80,7 @@ const Facets: React.FC<React.PropsWithChildren<Props>> = ({
       );
       /* istanbul ignore else */
       if (selectedProj && activeSearchQuery.textInputs) {
-        onProjectChange(selectedProj);
+        handleProjectChange(selectedProj);
         setCurProject(selectedProj);
       }
     }
@@ -64,7 +89,7 @@ const Facets: React.FC<React.PropsWithChildren<Props>> = ({
   useEffect(() => {
     if (!isLoading && data && data.results.length > 0) {
       setCurProject(data.results[0]);
-      onProjectChange(data.results[0]);
+      handleProjectChange(data.results[0]);
     }
   }, [isLoading]);
 
@@ -99,11 +124,10 @@ const Facets: React.FC<React.PropsWithChildren<Props>> = ({
         <div className={leftSidebarTargets.searchFacetsForm.class()}>
           <FacetsForm
             activeSearchQuery={activeSearchQuery}
-            availableFacets={availableFacets as ParsedFacets}
-            nodeStatus={nodeStatus}
+            onSetActiveFacets={onSetActiveFacets}
             onSetFilenameVars={onSetFilenameVars}
             onSetGeneralFacets={onSetGeneralFacets}
-            onSetActiveFacets={onSetActiveFacets}
+            nodeStatus={nodeStatus}
           />
         </div>
       )}

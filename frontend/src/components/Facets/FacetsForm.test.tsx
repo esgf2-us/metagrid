@@ -8,6 +8,8 @@ import {
 } from '../../test/mock/fixtures';
 import FacetsForm, { formatDate, humanizeFacetNames, Props } from './FacetsForm';
 import customRender from '../../test/custom-render';
+import { RecoilWrapper } from '../../test/jestTestFunctions';
+import { availableFacetsAtom } from '../App/recoil/atoms';
 
 const user = userEvent.setup();
 
@@ -33,7 +35,6 @@ describe('formatDate', () => {
 
 const defaultProps: Props = {
   activeSearchQuery: activeSearchQueryFixture(),
-  availableFacets: parsedFacetsFixture(),
   nodeStatus: parsedNodeStatusFixture(),
   onSetFilenameVars: jest.fn(),
   onSetGeneralFacets: jest.fn(),
@@ -105,7 +106,9 @@ describe('test FacetsForm component', () => {
   });
 
   it('handles copying facet items to clipboard', async () => {
-    customRender(<FacetsForm {...defaultProps} />);
+    const recoil = new RecoilWrapper();
+    recoil.addSetting(availableFacetsAtom, parsedFacetsFixture(), false);
+    customRender(recoil.wrap(<FacetsForm {...defaultProps} />));
 
     // Expand the group1 panel
     const group1Btn = await screen.findByText('Group1');

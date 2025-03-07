@@ -8,6 +8,7 @@ import { Alert, Col, Row, Typography } from 'antd';
 import humps from 'humps';
 import React from 'react';
 import { DeferFn, useAsync } from 'react-async';
+import { useSetRecoilState } from 'recoil';
 import {
   convertResultTypeToReplicaParam,
   fetchSearchResults,
@@ -33,6 +34,7 @@ import {
   VersionDate,
   VersionType,
 } from './types';
+import { activeSearchQueryAtom, availableFacetsAtom, projectBaseQuery } from '../App/recoil/atoms';
 
 const styles: CSSinJS = {
   summary: {
@@ -123,10 +125,7 @@ export type Props = {
   activeSearchQuery: ActiveSearchQuery;
   userCart: UserCart | [];
   nodeStatus?: NodeStatusArray;
-  onRemoveFilter: (removedTag: TagValue, type: TagType) => void;
-  onClearFilters: () => void;
   onUpdateCart: (selectedItems: RawSearchResults, operation: 'add' | 'remove') => void;
-  onUpdateAvailableFacets: (parsedFacets: ParsedFacets) => void;
   onSaveSearchQuery: (url: string) => void;
   onShareSearchQuery: () => void;
 };
@@ -135,10 +134,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
   activeSearchQuery,
   userCart,
   nodeStatus,
-  onRemoveFilter,
-  onClearFilters,
   onUpdateCart,
-  onUpdateAvailableFacets,
   onSaveSearchQuery,
   onShareSearchQuery,
 }) => {
@@ -167,6 +163,18 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
     page: 1,
     pageSize: 10,
   });
+
+  const setActiveSearchQuery = useSetRecoilState<ActiveSearchQuery>(activeSearchQueryAtom);
+
+  const setAvailableFacets = useSetRecoilState<ParsedFacets | Record<string, unknown>>(
+    availableFacetsAtom
+  );
+
+  const onUpdateAvailableFacets = (facets: ParsedFacets): void => setAvailableFacets(facets);
+
+  const handleClearFilters = (): void => {
+    setActiveSearchQuery(projectBaseQuery(activeSearchQuery.project));
+  };
 
   // Generate the current request URL based on filters
   React.useEffect(() => {
@@ -200,6 +208,42 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
   React.useEffect(() => {
     onUpdateAvailableFacets(parsedFacets as ParsedFacets);
   }, [parsedFacets, onUpdateAvailableFacets]);
+
+  const handleRemoveFilter = (removedTag: TagValue, type: TagType): void => {
+    /* istanbul ignore else */
+    if (type === 'text') {
+      setActiveSearchQuery({
+        ...activeSearchQuery,
+        textInputs: activeSearchQuery.textInputs.filter((input) => input !== removedTag),
+      });
+    } else if (type === 'filenameVar') {
+      setActiveSearchQuery({
+        ...activeSearchQuery,
+        filenameVars: activeSearchQuery.filenameVars.filter((input) => input !== removedTag),
+      });
+    } else if (type === 'facet') {
+      const prevActiveFacets = activeSearchQuery.activeFacets;
+
+      const facet = (removedTag[0] as unknown) as string;
+      const facetOption = (removedTag[1] as unknown) as string;
+      const updateFacet = {
+        [facet]: prevActiveFacets[facet].filter((item) => item !== facetOption),
+      };
+
+      if (updateFacet[facet].length === 0) {
+        delete prevActiveFacets[facet];
+        setActiveSearchQuery({
+          ...activeSearchQuery,
+          activeFacets: { ...prevActiveFacets },
+        });
+      } else {
+        setActiveSearchQuery({
+          ...activeSearchQuery,
+          activeFacets: { ...prevActiveFacets, ...updateFacet },
+        });
+      }
+    }
+  };
 
   const handleRowSelect = (selectedRows: RawSearchResults | []): void => {
     // If you select rows on one page of the table, then go to another page
@@ -334,7 +378,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
             Object.keys(activeFacets).map((facet: string) =>
               activeFacets[facet].map((variable: string) => (
                 <div key={variable} data-testid={variable}>
-                  <Tag value={[facet, variable]} onClose={onRemoveFilter} type="facet">
+                  <Tag value={[facet, variable]} onClose={handleRemoveFilter} type="facet">
                     {variable}
                   </Tag>
                 </div>
@@ -343,7 +387,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
           {textInputs.length !== 0 &&
             (textInputs as TextInputs).map((input: string) => (
               <div key={input} data-testid={input}>
-                <Tag value={input} onClose={onRemoveFilter} type="text">
+                <Tag value={input} onClose={handleRemoveFilter} type="text">
                   {input}
                 </Tag>
               </div>
@@ -351,13 +395,13 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
           {filenameVars.length !== 0 &&
             (filenameVars as TextInputs).map((input: string) => (
               <div key={input} data-testid={input}>
-                <Tag value={input} onClose={onRemoveFilter} type="filenameVar">
+                <Tag value={input} onClose={handleRemoveFilter} type="filenameVar">
                   Filename Search: {input}
                 </Tag>
               </div>
             ))}
           {filtersExist && (
-            <Button type="primary" danger size="small" onClick={() => onClearFilters()}>
+            <Button type="primary" danger size="small" onClick={handleClearFilters}>
               Clear All
             </Button>
           )}
