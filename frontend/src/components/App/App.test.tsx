@@ -431,25 +431,106 @@ describe('User cart', () => {
     expect(emptyAlert).toBeTruthy();
   });
 
-  describe('Error handling', () => {
-    it('displays error message after failing to fetch authenticated user"s cart', async () => {
-      server.use(
-        rest.get(apiRoutes.userCart.path, (_req, res, ctx) => res(ctx.status(404))),
-        rest.post(apiRoutes.userCart.path, (_req, res, ctx) => res(ctx.status(404)))
-      );
+  it('resets cart totals and selections to 0 when all items are removed', async () => {
+    customRender(<App searchQuery={activeSearch} />);
 
-      customRender(<App searchQuery={activeSearch} />, {
-        token: 'token',
-      });
+    // Wait for components to rerender
+    await screen.findByTestId('main-query-string-label');
 
-      // Check applicable components render
-      const navComponent = await screen.findByTestId('nav-bar');
-      expect(navComponent).toBeTruthy();
+    // Check first row has add button and click it
+    const addBtn = await screen.findByTestId('row-1-add-to-cart');
+    expect(addBtn).toBeTruthy();
+    await userEvent.click(addBtn);
 
-      // Check error message renders after failing to fetch cart from API
-      const errorMsg = await screen.findByText(apiRoutes.userCart.handleErrorMsg(404));
-      expect(errorMsg).toBeTruthy();
+    // Check second row has add button and click it
+    const addBtn2 = await screen.findByTestId('row-2-add-to-cart');
+    expect(addBtn2).toBeTruthy();
+    await userEvent.click(addBtn2);
+
+    // Check 'Added item(s) to your cart' message appears
+    const addText = await screen.findByText('Added item(s) to your cart');
+    expect(addText).toBeTruthy();
+
+    // Check applicable components render
+    const rightMenuComponent = await screen.findByTestId('right-menu');
+    expect(rightMenuComponent).toBeTruthy();
+
+    // Click on the cart link
+    const cartLink = await within(rightMenuComponent).findByRole('img', {
+      name: 'shopping-cart',
     });
+    expect(cartLink).toBeTruthy();
+    await userEvent.click(cartLink);
+
+    // Check number of files and datasets are correctly displayed
+    const cartSummary = await screen.findByTestId('summary');
+    expect(cartSummary).toBeTruthy();
+
+    const numDatasetsField = await within(cartSummary).findByText('Total Number of Datasets:');
+    const numFilesText = await within(cartSummary).findByText('Total Number of Files:');
+    expect(numDatasetsField.textContent).toEqual('Total Number of Datasets: 2');
+    expect(numFilesText.textContent).toEqual('Total Number of Files: 5');
+    const numSelectedDatasetsField = await within(cartSummary).findByText(
+      'Selected Number of Datasets:'
+    );
+    const numSelectedFilesText = await within(cartSummary).findByText('Selected Number of Files:');
+    expect(numSelectedDatasetsField.textContent).toEqual('Selected Number of Datasets: 0');
+    expect(numSelectedFilesText.textContent).toEqual('Selected Number of Files: 0');
+
+    // Select all items in the cart
+    const row1 = await screen.findByTestId('cart-items-row-0');
+    const checkbox1 = await within(row1).findByRole('checkbox');
+    expect(checkbox1).toBeTruthy();
+    await userEvent.click(checkbox1);
+    const row2 = await screen.findByTestId('cart-items-row-1');
+    const checkbox2 = await within(row2).findByRole('checkbox');
+    expect(checkbox2).toBeTruthy();
+    await userEvent.click(checkbox2);
+
+    // Check selected number of files and datasets are correctly displayed
+    expect(numSelectedDatasetsField.textContent).toEqual('Selected Number of Datasets: 2');
+    expect(numSelectedFilesText.textContent).toEqual('Selected Number of Files: 5');
+
+    // Check "Remove All Items" button renders with cart > 0 items and click it
+    const clearCartBtn = await screen.findByTestId('clear-cart-button');
+    expect(clearCartBtn).toBeTruthy();
+    await userEvent.click(clearCartBtn);
+
+    // Check confirmBtn exists in popover and click it
+    const confirmBtn = await screen.findByTestId('clear-all-cart-items-confirm-button');
+    expect(confirmBtn).toBeTruthy();
+    await userEvent.click(confirmBtn);
+
+    // Check number of datasets and files are now 0
+    expect(numDatasetsField.textContent).toEqual('Total Number of Datasets: 0');
+    expect(numFilesText.textContent).toEqual('Total Number of Files: 0');
+    expect(numSelectedDatasetsField.textContent).toEqual('Selected Number of Datasets: 0');
+    expect(numSelectedFilesText.textContent).toEqual('Selected Number of Files: 0');
+
+    // Check empty alert renders
+    const emptyAlert = await screen.findByText('Your cart is empty');
+    expect(emptyAlert).toBeTruthy();
+  });
+});
+
+describe('Error handling', () => {
+  it('displays error message after failing to fetch authenticated user"s cart', async () => {
+    server.use(
+      rest.get(apiRoutes.userCart.path, (_req, res, ctx) => res(ctx.status(404))),
+      rest.post(apiRoutes.userCart.path, (_req, res, ctx) => res(ctx.status(404)))
+    );
+
+    customRender(<App searchQuery={activeSearch} />, {
+      token: 'token',
+    });
+
+    // Check applicable components render
+    const navComponent = await screen.findByTestId('nav-bar');
+    expect(navComponent).toBeTruthy();
+
+    // Check error message renders after failing to fetch cart from API
+    const errorMsg = await screen.findByText(apiRoutes.userCart.handleErrorMsg(404));
+    expect(errorMsg).toBeTruthy();
   });
 });
 

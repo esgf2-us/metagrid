@@ -18,7 +18,7 @@ import {
   theme,
 } from 'antd';
 import React from 'react';
-import { useRecoilState } from 'recoil';
+import { useRecoilState, useRecoilValue } from 'recoil';
 import { useAsync } from 'react-async';
 import { hotjar } from 'react-hotjar';
 import { Link, Navigate, Route, Routes } from 'react-router-dom';
@@ -68,6 +68,7 @@ import './App.css';
 import { miscTargets } from '../../common/reactJoyrideSteps';
 import isDarkModeAtom from './recoil/atoms';
 import Footer from '../Footer/Footer';
+import { cartItemSelections } from '../Cart/recoil/atoms';
 
 const bodySider = {
   padding: '12px 12px 12px 12px',
@@ -166,7 +167,9 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   );
 
   const { defaultAlgorithm, darkAlgorithm } = theme;
-  const [isDarkMode] = useRecoilState<boolean>(isDarkModeAtom);
+  const isDarkMode = useRecoilValue<boolean>(isDarkModeAtom);
+
+  const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(cartItemSelections);
 
   const styles = getStyle(isDarkMode);
 
@@ -346,6 +349,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
 
   const handleUpdateCart = (selectedItems: RawSearchResults, operation: 'add' | 'remove'): void => {
     let newCart: UserCart = [];
+    let newSelections: RawSearchResults = [];
 
     /* istanbul ignore else */
     if (operation === 'add') {
@@ -354,7 +358,10 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
       );
 
       newCart = [...userCart, ...itemsNotInCart];
+      newSelections = [...itemSelections, ...itemsNotInCart];
       setUserCart(newCart);
+      setItemSelections(newSelections);
+
       showNotice(messageApi, 'Added item(s) to your cart', {
         icon: <ShoppingCartOutlined style={styles.messageAddIcon} />,
       });
@@ -362,7 +369,13 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
       newCart = userCart.filter((item) =>
         selectedItems.some((dataset: RawSearchResult) => dataset.id !== item.id)
       );
+
+      newSelections = itemSelections.filter((item) =>
+        selectedItems.some((dataset: RawSearchResult) => dataset.id !== item.id)
+      );
+
       setUserCart(newCart);
+      setItemSelections(newSelections);
 
       showNotice(messageApi, 'Removed item(s) from your cart', {
         icon: <DeleteOutlined style={styles.messageRemoveIcon} />,
@@ -377,6 +390,8 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
 
   const handleClearCart = (): void => {
     setUserCart([]);
+
+    setItemSelections([]);
 
     /* istanbul ignore else */
     if (isAuthenticated) {
