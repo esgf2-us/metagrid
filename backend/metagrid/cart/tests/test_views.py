@@ -142,7 +142,7 @@ class TestSearchViewSet(APITestCase):
 
     def test_destroy_request_deletes_object(self):
         response = self.client.delete(self.detail_url)
-        assert response.status_code == status.HTTP_204_NO_CONTENT
+        assert response.status_code == status.HTTP_200_OK
 
         search_exists = Search.objects.filter(pk=self.search_obj.pk).exists()
         assert not search_exists

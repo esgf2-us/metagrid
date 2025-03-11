@@ -845,6 +845,17 @@ describe('DatasetDownload form tests', () => {
     expect(globusTransferBtn).toBeTruthy();
     await user.click(globusTransferBtn);
 
+    // Expect the steps popup to show with below message
+    const warningPopup = await screen.findByText(
+      /One of your selected items cannot be transferred via Globus./i,
+      { exact: false }
+    );
+    expect(warningPopup).toBeTruthy();
+
+    // Click OK at the popup to proceed with globus transfer
+    const okBtn = await screen.findByText('Ok');
+    await user.click(okBtn);
+
     // Expect the transfer to complete successfully
     const globusTransferPopup = await screen.findByText('Globus download initiated successfully!');
     expect(globusTransferPopup).toBeTruthy();
