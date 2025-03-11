@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from rest_framework import mixins, viewsets
 
 from metagrid.cart.models import Cart, Search
@@ -29,3 +30,13 @@ class SearchViewSet(viewsets.ModelViewSet):
         user = self.request.user
         queryset = self.queryset.filter(user=user).prefetch_related()
         return queryset
+
+    def destroy(self, request, *args, **kwargs):
+        user = self.request.user
+        queryset = self.queryset.filter(user=user).prefetch_related()
+        to_delete = queryset.filter(uuid=kwargs["uuid"])
+        deleted_uuids = []
+        for record in to_delete:
+            deleted_uuids.append(record.uuid)
+        to_delete.delete()
+        return JsonResponse({"deleted": deleted_uuids})
