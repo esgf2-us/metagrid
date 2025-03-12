@@ -13,7 +13,6 @@ import {
   fetchSearchResults,
   generateSearchURLQuery,
 } from '../../api';
-import { clickableRoute } from '../../api/routes';
 import { searchTableTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import { objectIsEmpty } from '../../common/utils';
@@ -392,12 +391,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
           </div>
         </Col>
         {results && currentRequestURL && (
-          <Button
-            type="default"
-            href={clickableRoute(currentRequestURL)}
-            target="_blank"
-            icon={<ExportOutlined />}
-          >
+          <Button type="default" href={currentRequestURL} target="_blank" icon={<ExportOutlined />}>
             Open as JSON
           </Button>
         )}
