@@ -36,6 +36,7 @@ type ApiRoutes = {
   userSearch: ApiRoute;
   projects: ApiRoute;
   esgfSearch: ApiRoute;
+  esgfSearchSTAC: ApiRoute;
   citation: ApiRoute;
   wget: ApiRoute;
   nodeStatus: ApiRoute;
@@ -96,6 +97,11 @@ const apiRoutes: ApiRoutes = {
   esgfSearch: {
     path: `${window.location.origin}/proxy/search`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('ESGF Search API', HTTPCode),
+  },
+  // ESGF Search API
+  esgfSearchSTAC: {
+    path: `${window.location.origin}/proxy/stac/search`,
+    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('ESGF STAC Search API', HTTPCode),
   },
   // ESGF Citation API (uses dummy path 'citation_url' for testing since the
   // URL is included in each Search API dataset result)

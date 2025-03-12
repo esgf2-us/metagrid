@@ -1,15 +1,17 @@
 import { Button, Tooltip, Typography } from 'antd';
 import React, { useEffect } from 'react';
 import { useAsync } from 'react-async';
+import { useRecoilState } from 'recoil';
 import { fetchProjects, ResponseError } from '../../api';
 import { leftSidebarTargets } from '../../common/reactJoyrideSteps';
-import { objectIsEmpty } from '../../common/utils';
+import { isStacProject, objectIsEmpty, STAC_PROJECTS } from '../../common/utils';
 import Divider from '../General/Divider';
 import { NodeStatusArray } from '../NodeStatus/types';
 import { ActiveSearchQuery, ResultType, VersionDate, VersionType } from '../Search/types';
 import FacetsForm from './FacetsForm';
 import ProjectForm from './ProjectForm';
 import { ActiveFacets, ParsedFacets, RawProject } from './types';
+import { isSTACmodeAtom } from '../App/recoil/atoms';
 
 const styles = {
   form: {
@@ -42,6 +44,7 @@ const Facets: React.FC<React.PropsWithChildren<Props>> = ({
   onSetActiveFacets,
 }) => {
   const { data, error, isLoading } = useAsync(fetchProjects);
+  const [useSTAC, setUseSTAC] = useRecoilState(isSTACmodeAtom);
 
   const { Title } = Typography;
 
@@ -55,6 +58,9 @@ const Facets: React.FC<React.PropsWithChildren<Props>> = ({
       );
       /* istanbul ignore else */
       if (selectedProj && activeSearchQuery.textInputs) {
+        if (isStacProject(selectedProj) && !useSTAC) {
+          setUseSTAC(true);
+        }
         onProjectChange(selectedProj);
         setCurProject(selectedProj);
       }
@@ -63,6 +69,11 @@ const Facets: React.FC<React.PropsWithChildren<Props>> = ({
 
   useEffect(() => {
     if (!isLoading && data && data.results.length > 0) {
+      // Append STAC projects to fetched projects
+      if (useSTAC) {
+        data.results = [...STAC_PROJECTS];
+      }
+
       setCurProject(data.results[0]);
       onProjectChange(data.results[0]);
     }
@@ -99,7 +110,7 @@ const Facets: React.FC<React.PropsWithChildren<Props>> = ({
         <div className={leftSidebarTargets.searchFacetsForm.class()}>
           <FacetsForm
             activeSearchQuery={activeSearchQuery}
-            availableFacets={availableFacets as ParsedFacets}
+            availableFacets={availableFacets}
             nodeStatus={nodeStatus}
             onSetFilenameVars={onSetFilenameVars}
             onSetGeneralFacets={onSetGeneralFacets}

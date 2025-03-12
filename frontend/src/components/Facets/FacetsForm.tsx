@@ -26,6 +26,7 @@ import weekOfYear from 'dayjs/plugin/weekOfYear';
 import weekYear from 'dayjs/plugin/weekYear';
 
 import React from 'react';
+import { useRecoilValue } from 'recoil';
 import { leftSidebarTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import Button from '../General/Button';
@@ -33,6 +34,7 @@ import StatusToolTip from '../NodeStatus/StatusToolTip';
 import { NodeStatusArray } from '../NodeStatus/types';
 import { ActiveSearchQuery, ResultType, VersionDate, VersionType } from '../Search/types';
 import { ActiveFacets, ParsedFacets } from './types';
+import { isSTACmodeAtom } from '../App/recoil/atoms';
 import { showNotice } from '../../common/utils';
 
 dayjs.extend(customParseFormat);
@@ -55,7 +57,7 @@ const styles: CSSinJS = {
 
 export type Props = {
   activeSearchQuery: ActiveSearchQuery;
-  availableFacets: ParsedFacets;
+  availableFacets: ParsedFacets | Record<string, unknown>;
   nodeStatus?: NodeStatusArray;
   onSetFilenameVars: (filenameVar: string) => void;
   onSetGeneralFacets: (
@@ -111,6 +113,8 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
   const [filenameVarForm] = Form.useForm();
   const [filenameVars, setFilenameVar] = React.useState('');
   const [globusReadyOnly, setGlobusReadyOnly] = React.useState(false);
+
+  const useSTAC = useRecoilValue(isSTACmodeAtom);
 
   // Manually handles the state of individual dropdowns to capture all selected
   // options as an array, rather than using the Form component to handle form
@@ -226,9 +230,82 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
     [key: string]: string[];
   };
 
-  // Used to control text length of the drop-down items
-  // Tooltip is shown if the length is above this threshold
-  const maxItemLength = 22;
+  const generateStacFacetOptions = (
+    facet: string,
+    facetOptions: Record<string, unknown>
+  ): { key: string; value: string; label: JSX.Element }[] => {
+    // console.log(facetOptions);
+    // Object.entries(facetOptions).forEach(([key, value]) => {
+    //   console.log(key, value);
+    // });
+    const facetList = (facetOptions as unknown) as string[];
+
+    return facetList.map((variable) => {
+      const optionOutput: string | React.ReactElement = <>{variable}</>;
+
+      return {
+        key: variable,
+        value: variable,
+        label: <span data-testid={`${facet}_${variable}`}>{optionOutput} </span>,
+      };
+    });
+
+    return [];
+    // return facetOptions.map((variable) => {
+    //   const optionOutput: string | React.ReactElement = <>{variable}</>;
+
+    //   return {
+    //     key: variable,
+    //     value: variable,
+    //     label: <span data-testid={`${facet}_${variable[0]}`}>{optionOutput} </span>,
+    //   };
+    // });
+  };
+
+  const generateFacetOptions = (
+    facet: string,
+    facetOptions: [string, number][]
+  ): { key: string; value: string; label: JSX.Element }[] => {
+    // Used to control text length of the drop-down items
+    // Tooltip is shown if the length is above this threshold
+    const maxItemLength = 22;
+
+    return facetOptions.map((variable) => {
+      let optionOutput: string | React.ReactElement = (
+        <>
+          {variable[0]}
+          <span style={styles.facetCount}>({variable[1]})</span>
+        </>
+      );
+
+      // If the option output name is very long, use a tooltip
+      const vLength = variable[0].length - 2;
+      const cLength = variable[1].toString().length * 1.5 + 2;
+      if (vLength > maxItemLength - cLength) {
+        const innerTitle = variable[0].substring(0, maxItemLength - cLength);
+        optionOutput = (
+          <Tooltip styles={{ body: { width: 'max-content' } }} title={variable[0]}>
+            {innerTitle}...
+            <span style={styles.facetCount}>({variable[1]})</span>
+          </Tooltip>
+        );
+      }
+
+      // The data node facet has a unique tooltip overlay to show the status of the highlighted node
+      if (facet === 'data_node') {
+        optionOutput = (
+          <StatusToolTip nodeStatus={nodeStatus} dataNode={variable[0]}>
+            <span style={styles.facetCount}>({variable[1]})</span>
+          </StatusToolTip>
+        );
+      }
+      return {
+        key: variable[0],
+        value: variable[0],
+        label: <span data-testid={`${facet}_${variable[0]}`}>{optionOutput} </span>,
+      };
+    });
+  };
 
   return (
     <div data-testid="facets-form">
@@ -315,7 +392,9 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                     const facetOptions = availableFacets[facet];
 
                     const isOptionalforDatasets =
-                      facetOptions.length > 0 && facetOptions[0].includes('none');
+                      Array.isArray(facetOptions) &&
+                      facetOptions.length > 0 &&
+                      (facetOptions as [string, number][])[0][0].includes('none');
                     const facetNameHumanized = humanizeFacetNames(facet);
                     return (
                       <Form.Item
@@ -333,16 +412,29 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                                 </Tooltip>
                               }
                               onClick={() => {
+                                showNotice(
+                                  messageApi,
+                                  `${facetNameHumanized}s copied to clipboard!`,
+                                  {
+                                    icon: <CopyOutlined style={styles.messageAddIcon} />,
+                                  }
+                                );
                                 // copy link to clipboard
                                 /* istanbul ignore else */
                                 if (navigator && navigator.clipboard) {
-                                  navigator.clipboard.writeText(
-                                    facetOptions
-                                      .map((item) => {
-                                        return `${item[0]} (${item[1]})`;
-                                      })
-                                      .join('\n')
-                                  );
+                                  if (useSTAC) {
+                                    navigator.clipboard.writeText(
+                                      (facetOptions as string[]).join('\n')
+                                    );
+                                  } else {
+                                    navigator.clipboard.writeText(
+                                      (facetOptions as [string, number][])
+                                        .map((item) => {
+                                          return `${item[0]} (${item[1]})`;
+                                        })
+                                        .join('\n')
+                                    );
+                                  }
                                   showNotice(
                                     messageApi,
                                     `${facetNameHumanized}s copied to clipboard!`,
@@ -381,46 +473,14 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                           onChange={(value: string[] | []) => {
                             handleOnSelectAvailableFacetsForm(facet, value);
                           }}
-                          options={facetOptions.map((variable) => {
-                            let optionOutput: string | React.ReactElement = (
-                              <>
-                                {variable[0]}
-                                <span style={styles.facetCount}>({variable[1]})</span>
-                              </>
-                            );
-
-                            // If the option output name is very long, use a tooltip
-                            const vLength = variable[0].length - 2;
-                            const cLength = variable[1].toString().length * 1.5 + 2;
-                            if (vLength > maxItemLength - cLength) {
-                              const innerTitle = variable[0].substring(0, maxItemLength - cLength);
-                              optionOutput = (
-                                <Tooltip
-                                  styles={{ body: { width: 'max-content' } }}
-                                  title={variable[0]}
-                                >
-                                  {innerTitle}...
-                                  <span style={styles.facetCount}>({variable[1]})</span>
-                                </Tooltip>
-                              );
-                            }
-
-                            // The data node facet has a unique tooltip overlay to show the status of the highlighted node
-                            if (facet === 'data_node') {
-                              optionOutput = (
-                                <StatusToolTip nodeStatus={nodeStatus} dataNode={variable[0]}>
-                                  <span style={styles.facetCount}>({variable[1]})</span>
-                                </StatusToolTip>
-                              );
-                            }
-                            return {
-                              key: variable[0],
-                              value: variable[0],
-                              label: (
-                                <span data-testid={`${facet}_${variable[0]}`}>{optionOutput} </span>
-                              ),
-                            };
-                          })}
+                          options={
+                            useSTAC
+                              ? generateStacFacetOptions(
+                                  facet,
+                                  facetOptions as Record<string, unknown>
+                                )
+                              : generateFacetOptions(facet, facetOptions as [string, number][])
+                          }
                         />
                       </Form.Item>
                     );

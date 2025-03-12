@@ -37,6 +37,7 @@ import { CSSinJS } from '../../common/types';
 import {
   combineCarts,
   getUrlFromSearch,
+  isStacProject,
   searchAlreadyExists,
   showError,
   showNotice,
@@ -66,7 +67,7 @@ import StartPopup from '../Messaging/StartPopup';
 import startupDisplayData from '../Messaging/messageDisplayData';
 import './App.css';
 import { miscTargets } from '../../common/reactJoyrideSteps';
-import isDarkModeAtom from './recoil/atoms';
+import isDarkModeAtom, { isSTACmodeAtom } from './recoil/atoms';
 import Footer from '../Footer/Footer';
 import { cartItemSelections } from '../Cart/recoil/atoms';
 
@@ -127,6 +128,8 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   const isAuthenticated = accessToken && pk;
 
   const [supportModalVisible, setSupportModalVisible] = React.useState<boolean>(false);
+
+  const [useSTAC, setUseSTAC] = useRecoilState<boolean>(isSTACmodeAtom);
 
   const {
     run: runFetchNodeStatus,
@@ -310,6 +313,10 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   };
 
   const handleProjectChange = (selectedProject: RawProject): void => {
+    if (isStacProject(selectedProject) && !useSTAC) {
+      setUseSTAC(true);
+    }
+
     if (savedSearchQuery) {
       setSavedSearchQuery(null);
       setActiveSearchQuery(savedSearchQuery);

@@ -8,15 +8,18 @@ import { Alert, Col, Row, Typography } from 'antd';
 import humps from 'humps';
 import React from 'react';
 import { DeferFn, useAsync } from 'react-async';
+import { useRecoilValue } from 'recoil';
 import {
   convertResultTypeToReplicaParam,
   fetchSearchResults,
+  fetchSTACSearchResults,
+  generateSearchSTACQuery,
   generateSearchURLQuery,
 } from '../../api';
 import { clickableRoute } from '../../api/routes';
 import { searchTableTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
-import { objectIsEmpty } from '../../common/utils';
+import { isStacProject, objectIsEmpty } from '../../common/utils';
 import { UserCart } from '../Cart/types';
 import { Tag, TagType, TagValue } from '../DataDisplay/Tag';
 import { ActiveFacets, ParsedFacets, RawFacets, RawProject } from '../Facets/types';
@@ -33,6 +36,7 @@ import {
   VersionDate,
   VersionType,
 } from './types';
+import { isSTACmodeAtom } from '../App/recoil/atoms';
 
 const styles: CSSinJS = {
   summary: {
@@ -153,9 +157,14 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
     textInputs,
   } = activeSearchQuery;
 
+  const useSTAC = useRecoilValue<boolean>(isSTACmodeAtom);
+
+  const fetch = useSTAC ? fetchSTACSearchResults : fetchSearchResults;
+
   const { data: results, error, isLoading, run } = useAsync({
-    deferFn: (fetchSearchResults as unknown) as DeferFn<Record<string, unknown>>,
+    deferFn: (fetch as unknown) as DeferFn<Record<string, unknown>>,
   });
+
   const [filtersExist, setFiltersExist] = React.useState<boolean>(false);
   const [parsedFacets, setParsedFacets] = React.useState<ParsedFacets | Record<string, unknown>>(
     {}
@@ -169,12 +178,18 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
   });
 
   // Generate the current request URL based on filters
-  React.useEffect(() => {
-    if (!objectIsEmpty(project)) {
-      const reqUrl = generateSearchURLQuery(activeSearchQuery, paginationOptions);
-      setCurrentRequestURL(reqUrl);
-    }
-  }, [activeSearchQuery, project, paginationOptions]);
+  // React.useEffect(() => {
+  //   if (!objectIsEmpty(project)) {
+  //     let reqUrl = generateSearchURLQuery(activeSearchQuery, paginationOptions);
+  //     if (isStacProject(project)) {
+  //       if (!useSTAC) {
+  //         setUseSTAC(true);
+  //       }
+  //       reqUrl = generateSearchSTACQuery(activeSearchQuery, paginationOptions);
+  //     }
+  //     setCurrentRequestURL(reqUrl);
+  //   }
+  // }, [activeSearchQuery, project, paginationOptions]);
 
   React.useEffect(() => {
     setFiltersExist(checkFiltersExist(activeFacets, textInputs));
@@ -182,18 +197,29 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
 
   // Fetch search results
   React.useEffect(() => {
-    if (!objectIsEmpty(project) && currentRequestURL) {
-      run(currentRequestURL);
+    if (useSTAC && !objectIsEmpty(project)) {
+      setCurrentRequestURL(generateSearchSTACQuery(activeSearchQuery, paginationOptions));
+      run(generateSearchSTACQuery(activeSearchQuery, paginationOptions));
+    } else if (!objectIsEmpty(project)) {
+      setCurrentRequestURL(generateSearchURLQuery(activeSearchQuery, paginationOptions));
+      run(generateSearchURLQuery(activeSearchQuery, paginationOptions));
     }
-  }, [run, currentRequestURL, project]);
+  }, [run, activeSearchQuery, project, paginationOptions]);
 
   // Update the available facets based on the returned results
   React.useEffect(() => {
     if (results && !objectIsEmpty(results)) {
-      const { facet_fields: facetFields } = (results as {
-        facet_counts: { facet_fields: RawFacets };
-      }).facet_counts;
-      setParsedFacets(parseFacets(facetFields));
+      if (isStacProject(project)) {
+        const { summaries: facetFields } = results as {
+          summaries: RawFacets;
+        };
+        setParsedFacets(facetFields);
+      } else {
+        const { facet_fields: facetFields } = (results as {
+          facet_counts: { facet_fields: RawFacets };
+        }).facet_counts;
+        setParsedFacets(parseFacets(facetFields));
+      }
     }
   }, [results]);
 
@@ -234,7 +260,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
 
   let numFound = 0;
   let docs: RawSearchResults = [];
-  if (results) {
+  if (results && !isStacProject(project)) {
     numFound = (results as { response: { numFound: number } }).response.numFound;
     docs = (results as { response: { docs: RawSearchResults } }).response.docs;
   }

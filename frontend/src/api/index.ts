@@ -412,6 +412,63 @@ export const generateSearchURLQuery = (
 };
 
 /**
+ * Query string parameters use the logical OR operator, so queries are inclusive.
+ *
+ * Example output: https://esgf-node.llnl.gov/esg-search/search/?replica=false&offset=0&limit=10&query=foo&baz=option1&foo=option1
+ */
+export const generateSearchSTACQuery = (
+  activeSearchQuery: ActiveSearchQuery | UserSearchQuery,
+  pagination: { page: number; pageSize: number }
+): string => {
+  const {
+    project,
+    versionType,
+    resultType,
+    minVersionDate,
+    maxVersionDate,
+    activeFacets,
+    textInputs,
+  } = activeSearchQuery;
+  const baseRoute = `${apiRoutes.esgfSearchSTAC.path}?`;
+  // const replicaParam = convertResultTypeToReplicaParam(resultType);
+
+  // // The base params include facet fields to return for each dataset and the pagination options
+  // let baseParams = updatePaginationParams(project.facetsUrl as string, pagination);
+
+  // if (versionType === 'latest') {
+  //   baseParams += `latest=true&`;
+  // }
+  // if (replicaParam) {
+  //   baseParams += `${replicaParam}&`;
+  // }
+  // if (minVersionDate) {
+  //   baseParams += `min_version=${minVersionDate}&`;
+  // }
+  // if (maxVersionDate) {
+  //   baseParams += `max_version=${maxVersionDate}&`;
+  // }
+
+  // let textInputsParams = 'query=*';
+  // if (textInputs.length > 0) {
+  //   textInputsParams = queryString.stringify(
+  //     { query: textInputs },
+  //     {
+  //       arrayFormat: 'comma',
+  //     }
+  //   );
+  // }
+
+  // const activeFacetsParams = queryString.stringify(
+  //   humps.decamelizeKeys(activeFacets) as ActiveFacets,
+  //   {
+  //     arrayFormat: 'comma',
+  //   }
+  // );
+  return `${baseRoute}`;
+  // return `${baseRoute}${baseParams}${textInputsParams}&${activeFacetsParams}`;
+};
+
+/**
  * HTTP Request Method: GET
  * HTTP Response: 200 OK
  *
@@ -436,10 +493,46 @@ export const fetchSearchResults = async (
 
   return fetch(reqUrlStr)
     .then((results) => {
-      return results.json();
+      const resultsJson = results.json();
+      console.log(resultsJson);
+      return resultsJson;
     })
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearch));
+    });
+};
+
+/**
+ * HTTP Request Method: GET
+ * HTTP Response: 200 OK
+ *
+ * This function can be called with either PromiseFn or DeferFn.
+ * With PromiseFn, arguments are passed in as an object ({reqUrl: string}).
+ * Source: https://docs.react-async.com/api/options#promisefn
+ * With DeferFn, arguments are passed in as an array ([string]).
+ * Source: https://docs.react-async.com/api/options#deferfn
+ */
+export const fetchSTACSearchResults = async (
+  args: [string] | Record<string, string>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): Promise<{ [key: string]: any }> => {
+  let reqUrlStr;
+
+  if (Array.isArray(args)) {
+    // eslint-disable-next-line prefer-destructuring
+    reqUrlStr = args[0];
+  } else {
+    reqUrlStr = args.reqUrl;
+  }
+
+  return fetch(reqUrlStr)
+    .then((results) => {
+      const resultsJson = results.json();
+      console.log(resultsJson);
+      return resultsJson;
+    })
+    .catch((error: ResponseError) => {
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearchSTAC));
     });
 };
 
@@ -500,7 +593,7 @@ export type FetchDatasetFilesProps = {
  * HTTP Request Method: GET
  * HTTP Response: 200 OK
  *
- * This function is invokved by react-async package's deferFn method.
+ * This function is invoked by react-async package's deferFn method.
  * https://docs.react-async.com/api/options#deferfn
  *
  * Example output: https://esgf-node.llnl.gov/esg-search/search/?dataset_id=cmip5.output1.BCC.bcc-csm1-1.abrupt4xCO2.mon.ocean.Omon.r2i1p1.v20120202%7Caims3.llnl.gov&format=application%2Fsolr%2Bjson&type=File&query=hfds,Omon

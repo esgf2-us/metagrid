@@ -77,6 +77,12 @@ def do_search(request):
     return do_request(request, settings.SEARCH_URL)
 
 
+@require_http_methods(["GET", "POST"])
+@csrf_exempt
+def do_stac_search(request):
+    return do_request(request, settings.STAC_URL)
+
+
 @require_http_methods(["POST"])
 @csrf_exempt
 def do_citation(request):

@@ -2,7 +2,7 @@ import { CSSProperties, ReactNode } from 'react';
 import { MessageInstance } from 'antd/es/message/interface';
 import { AtomEffect } from 'recoil';
 import { UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
-import { ActiveFacets } from '../components/Facets/types';
+import { ActiveFacets, RawProject } from '../components/Facets/types';
 import {
   ActiveSearchQuery,
   RawSearchResult,
@@ -94,6 +94,45 @@ export const getCurrentAppPage = (): number => {
     return AppPage.SavedSearches;
   }
   return -1;
+};
+
+const StacProjectNames = ['STAC CMIP6'];
+export const STAC_PROJECTS: RawProject[] = [
+  {
+    pk: '10',
+    name: StacProjectNames[0],
+    facetsUrl: '.language=en',
+    fullName: 'Coupled Model Intercomparison Project Phase 6',
+    projectUrl: 'https://pcmdi.llnl.gov/CMIP6/',
+
+    facetsByGroup: {
+      General: ['activity_id', 'data_specs_version', 'mip_era', 'grid'],
+      Identifiers: [
+        'source_id',
+        'source_type',
+        'instance_id',
+        'institution_id',
+        'source_type',
+        'experiment_id',
+        'sub_experiment_id',
+      ],
+      Labels: ['variant_label', 'grid_label', 'experiment_title'],
+      Classifications: [
+        'table_id',
+        'frequency',
+        'variable_id',
+        'cf_standard_name',
+        'variable_units',
+      ],
+    },
+  },
+];
+
+export const isStacProject = (project: RawProject | Record<string, unknown>): boolean => {
+  if (project && typeof project === 'object' && !('name' in project)) {
+    return false;
+  }
+  return StacProjectNames.includes((project as RawProject).name);
 };
 
 /**

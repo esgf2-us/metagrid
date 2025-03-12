@@ -20,4 +20,9 @@ const isDarkModeAtom = atom<boolean>({
   effects: [darkModeStorageEffect('isDarkMode')],
 });
 
+export const isSTACmodeAtom = atom<boolean>({
+  key: 'isSTACmode',
+  default: true,
+});
+
 export default isDarkModeAtom;
