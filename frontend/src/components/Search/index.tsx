@@ -15,7 +15,7 @@ import {
 } from '../../api';
 import { searchTableTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
-import { objectIsEmpty } from '../../common/utils';
+import { createSearchRouteURL, objectIsEmpty } from '../../common/utils';
 import { UserCart } from '../Cart/types';
 import { Tag, TagType, TagValue } from '../DataDisplay/Tag';
 import { ActiveFacets, ParsedFacets, RawFacets, RawProject } from '../Facets/types';
@@ -391,7 +391,12 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
           </div>
         </Col>
         {results && currentRequestURL && (
-          <Button type="default" href={currentRequestURL} target="_blank" icon={<ExportOutlined />}>
+          <Button
+            type="default"
+            href={createSearchRouteURL(currentRequestURL)}
+            target="_blank"
+            icon={<ExportOutlined />}
+          >
             Open as JSON
           </Button>
         )}
