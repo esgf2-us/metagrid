@@ -73,6 +73,7 @@ import {
   userSearchQueriesAtom,
 } from './recoil/atoms';
 import Footer from '../Footer/Footer';
+import { cartItemSelections } from '../Cart/recoil/atoms';
 
 const bodySider = {
   padding: '12px 12px 12px 12px',
@@ -133,6 +134,8 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   // Recoil state
   const [userCart, setUserCart] = useRecoilState<UserCart>(userCartAtom);
 
+  const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(cartItemSelections);
+
   const [userSearchQueries, setUserSearchQueries] = useRecoilState<UserSearchQueries>(
     userSearchQueriesAtom
   );
@@ -190,7 +193,19 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
           searchQueriesToAdd.forEach((query) => {
             addUserSearchQuery(pk, accessToken, query);
           });
-          setUserSearchQueries(databaseItems.concat(searchQueriesToAdd));
+
+          // Combine local and database saved searches
+          const combinedItems = [...searchQueriesToAdd, ...databaseItems];
+
+          // Remove all duplicates
+          const dedupedSearches: UserSearchQueries = [];
+          combinedItems.forEach((search) => {
+            if (!searchAlreadyExists(dedupedSearches, search)) {
+              dedupedSearches.push(search);
+            }
+          });
+
+          setUserSearchQueries(dedupedSearches);
         })
         .catch((error: ResponseError) => {
           showError(messageApi, error.message);
@@ -244,6 +259,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
 
   const handleUpdateCart = (selectedItems: RawSearchResults, operation: 'add' | 'remove'): void => {
     let newCart: UserCart = [];
+    let newSelections: RawSearchResults = [];
 
     /* istanbul ignore else */
     if (operation === 'add') {
@@ -252,7 +268,9 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
       );
 
       newCart = [...userCart, ...itemsNotInCart];
+      newSelections = [...itemSelections, ...itemsNotInCart];
       setUserCart(newCart);
+      setItemSelections(newSelections);
 
       showNotice(messageApi, 'Added item(s) to your cart', {
         icon: <ShoppingCartOutlined style={styles.messageAddIcon} />,
@@ -261,7 +279,13 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
       newCart = userCart.filter((item) =>
         selectedItems.some((dataset: RawSearchResult) => dataset.id !== item.id)
       );
+
+      newSelections = itemSelections.filter((item) =>
+        selectedItems.some((dataset: RawSearchResult) => dataset.id !== item.id)
+      );
+
       setUserCart(newCart);
+      setItemSelections(newSelections);
 
       showNotice(messageApi, 'Removed item(s) from your cart', {
         icon: <DeleteOutlined style={styles.messageRemoveIcon} />,
@@ -276,6 +300,8 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
 
   const handleClearCart = (): void => {
     setUserCart([]);
+
+    setItemSelections([]);
 
     /* istanbul ignore else */
     if (isAuthenticated) {
