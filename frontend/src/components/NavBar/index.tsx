@@ -43,6 +43,7 @@ const NavBar: React.FC<React.PropsWithChildren<Props>> = ({
         <div className="navbar-logo">
           <Link
             href="https://esgf.github.io/nodes.html"
+            target="_blank"
             style={{
               fontWeight: 'bold',
               fontSize: '.9em',
