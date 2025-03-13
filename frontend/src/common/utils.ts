@@ -96,6 +96,13 @@ export const getCurrentAppPage = (): number => {
   return -1;
 };
 
+/** Creates a route that will access the JSON search results */
+export const createSearchRouteURL = (url: string): string => {
+  const { pathname, searchParams } = new URL(url);
+
+  return `${window.location.origin}${pathname}?${searchParams.toString()}`;
+};
+
 /**
  * Checks if an object is empty.
  */

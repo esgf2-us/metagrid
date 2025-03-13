@@ -20,6 +20,7 @@ import {
   splitStringByChar,
   unsavedLocalSearches,
   localStorageEffect,
+  createSearchRouteURL,
 } from './utils';
 import { AppPage } from './types';
 
@@ -304,7 +305,7 @@ describe('Test unsavedLocal searches', () => {
     filenameVars: ['var'],
     activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
     textInputs: ['foo'],
-    url: 'url.com',
+    url: 'https://localhost/url.com',
   };
   const secondResult: UserSearchQuery = {
     uuid: 'uuid2',
@@ -318,7 +319,7 @@ describe('Test unsavedLocal searches', () => {
     filenameVars: ['var'],
     activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
     textInputs: ['foo'],
-    url: 'url.com',
+    url: 'https://localhost/url.com',
   };
   const thirdResult: UserSearchQuery = {
     uuid: 'uuid3',
@@ -332,7 +333,7 @@ describe('Test unsavedLocal searches', () => {
     filenameVars: ['var'],
     activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
     textInputs: ['foo'],
-    url: 'url.com',
+    url: 'https://localhost/url.com',
   };
 
   const localResults: UserSearchQueries = [firstResult, secondResult];
@@ -475,5 +476,25 @@ describe('Test localStorageEffect', () => {
       </RecoilRoot>
     );
     expect(getByText(defaultVal)).toBeTruthy();
+  });
+});
+
+describe('Test createSearchRouteURL', () => {
+  it('returns the correct URL with search parameters', () => {
+    const url = 'https://example.com/path?param1=value1&param2=value2';
+    const result = createSearchRouteURL(url);
+    expect(result).toBe(`${window.location.origin}/path?param1=value1&param2=value2`);
+  });
+
+  it('returns the correct URL without search parameters', () => {
+    const url = 'https://example.com/path';
+    const result = createSearchRouteURL(url);
+    expect(result).toBe(`${window.location.origin}/path?`);
+  });
+
+  it('returns the correct URL with complex search parameters', () => {
+    const url = 'https://example.com/path?param1=value1&param2=value2&param3=value3';
+    const result = createSearchRouteURL(url);
+    expect(result).toBe(`${window.location.origin}/path?param1=value1&param2=value2&param3=value3`);
   });
 });
