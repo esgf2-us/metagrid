@@ -10,7 +10,6 @@ afterEach(() => {
 
 const defaultProps: Props = {
   userSearchQueries: userSearchQueriesFixture(),
-  onRunSearchQuery: jest.fn(),
   onRemoveSearchQuery: jest.fn(),
 };
 

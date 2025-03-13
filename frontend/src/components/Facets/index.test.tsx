@@ -25,7 +25,7 @@ recoil.addSetting(activeSearchQueryAtom, activeSearchQueryFixture(), false);
 recoil.addSetting(availableFacetsAtom, parsedFacetsFixture(), false);
 
 it('renders component', async () => {
-  customRender(recoil.wrap(<Facets {...defaultProps} />));
+  customRender(<Facets {...defaultProps} />, { recoilWrapper: recoil });
 
   // Check FacetsForm component renders
   const facetsForm = await screen.findByTestId('facets-form');

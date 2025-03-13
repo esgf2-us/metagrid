@@ -1,26 +1,27 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { RecoilRoot } from 'recoil';
 import { setMedia } from 'mock-match-media';
 import customRender from '../../test/custom-render';
-import Support from '../Support';
 import RightMenu, { Props } from './RightMenu';
-import { mockConfig, mockKeycloakToken } from '../../test/jestTestFunctions';
+import { mockConfig, mockKeycloakToken, RecoilWrapper } from '../../test/jestTestFunctions';
 import { tempStorageSetMock } from '../../test/mock/mockStorage';
+import { isDarkModeAtom, userCartAtom, userSearchQueriesAtom } from '../App/recoil/atoms';
+import {
+  activeSearchQueryFixture,
+  userCartFixture,
+  userSearchQueriesFixture,
+} from '../../test/mock/fixtures';
+import App from '../App/App';
 
 const user = userEvent.setup();
 
 const rightMenuProps: Props = {
   mode: 'horizontal',
-  numCartItems: 4,
-  numSavedSearches: 1,
-  supportModalVisible: () => {
-    render(<Support open onClose={jest.fn()} />);
-  },
 };
 
 jest.mock('@react-keycloak/web', () => {
@@ -33,6 +34,10 @@ jest.mock('@react-keycloak/web', () => {
     },
   };
 });
+
+const recoil = new RecoilWrapper();
+recoil.addSetting(userCartAtom, userCartFixture());
+recoil.addSetting(userSearchQueriesAtom, userSearchQueriesFixture());
 
 it('sets the active menu item based on the location pathname', async () => {
   customRender(<RightMenu {...rightMenuProps} />);
@@ -83,7 +88,7 @@ it('display the users email after authentication if they did not provide a name 
     },
   });
 
-  customRender(<RightMenu {...rightMenuProps} />, {});
+  customRender(<RightMenu {...rightMenuProps} />);
 
   // Check applicable components render
   const rightMenuComponent = await screen.findByTestId('right-menu');
@@ -127,7 +132,7 @@ it("displays sign in button when user hasn't logged in via globus", async () => 
 });
 
 it('displays help menu when help button is clicked', async () => {
-  customRender(<RightMenu {...rightMenuProps} />);
+  customRender(<App searchQuery={activeSearchQueryFixture()} />);
 
   // Check applicable components render
   const rightMenuComponent = await screen.findByTestId('right-menu');
@@ -136,7 +141,6 @@ it('displays help menu when help button is clicked', async () => {
   // Click the help button
   const helpBtn = await screen.findByText('Help');
   expect(helpBtn).toBeTruthy();
-
   await user.click(helpBtn);
 
   // Check support form rendered
@@ -183,9 +187,9 @@ it('toggles theme switch between light and dark modes', async () => {
 });
 
 it('displays correct cart and saved searches badge counts', async () => {
-  customRender(<RightMenu {...rightMenuProps} />);
+  customRender(<RightMenu {...rightMenuProps} />, { recoilWrapper: recoil });
 
-  const cartBadge = await screen.findByText('4');
+  const cartBadge = await screen.findByText('3');
   expect(cartBadge).toBeTruthy();
 
   const savedSearchesBadge = await screen.findByText('1');
@@ -198,18 +202,7 @@ describe('Dark Mode', () => {
       'prefers-color-scheme': 'dark',
     });
     localStorage.clear();
-    render(
-      <RecoilRoot>
-        <MemoryRouter>
-          <RightMenu
-            mode="vertical"
-            numCartItems={0}
-            numSavedSearches={0}
-            supportModalVisible={() => false}
-          ></RightMenu>
-        </MemoryRouter>
-      </RecoilRoot>
-    );
+    customRender(<RightMenu mode="vertical"></RightMenu>);
     expect(screen.getByTestId('isDarkModeSwitch')).not.toBeChecked();
   });
 
@@ -217,19 +210,7 @@ describe('Dark Mode', () => {
     setMedia({
       'prefers-color-scheme': 'light',
     });
-    localStorage.clear();
-    render(
-      <RecoilRoot>
-        <MemoryRouter>
-          <RightMenu
-            mode="vertical"
-            numCartItems={0}
-            numSavedSearches={0}
-            supportModalVisible={() => false}
-          ></RightMenu>
-        </MemoryRouter>
-      </RecoilRoot>
-    );
+    customRender(<RightMenu mode="vertical"></RightMenu>);
     expect(screen.getByTestId('isDarkModeSwitch')).toBeChecked();
   });
 
@@ -237,16 +218,11 @@ describe('Dark Mode', () => {
     setMedia({
       'prefers-color-scheme': 'dark',
     });
-    localStorage.setItem('isDarkMode', 'false');
+    localStorage.setItem(isDarkModeAtom.key, 'false');
     render(
       <RecoilRoot>
         <MemoryRouter>
-          <RightMenu
-            mode="vertical"
-            numCartItems={0}
-            numSavedSearches={0}
-            supportModalVisible={() => false}
-          ></RightMenu>
+          <RightMenu mode="vertical"></RightMenu>
         </MemoryRouter>
       </RecoilRoot>
     );
@@ -256,24 +232,13 @@ describe('Dark Mode', () => {
   it('stores preference when selected', async () => {
     setMedia({});
     localStorage.clear();
-    render(
-      <RecoilRoot>
-        <MemoryRouter>
-          <RightMenu
-            mode="vertical"
-            numCartItems={0}
-            numSavedSearches={0}
-            supportModalVisible={() => false}
-          ></RightMenu>
-        </MemoryRouter>
-      </RecoilRoot>
-    );
+    customRender(<RightMenu mode="vertical"></RightMenu>);
     const isDarkModeSwitch = await screen.findByTestId('isDarkModeSwitch');
     expect(isDarkModeSwitch).not.toBeChecked();
     waitFor(() => {
       fireEvent.click(isDarkModeSwitch);
     });
     expect(await screen.findByTestId('isDarkModeSwitch')).toBeChecked();
-    expect(localStorage.getItem('isDarkMode')).toBe('false');
+    expect(localStorage.getItem(isDarkModeAtom.key)).toBe('false');
   });
 });

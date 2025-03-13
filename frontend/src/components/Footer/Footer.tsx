@@ -1,11 +1,10 @@
 import React from 'react';
 import Markdown from 'react-markdown';
+import startupDisplayData from '../Messaging/messageDisplayData';
 
-export type Props = {
-  metagridVersion: string;
-};
+const metagridVersion: string = startupDisplayData.messageToShow;
 
-const Footer: React.FC<React.PropsWithChildren<Props>> = ({ metagridVersion }) => {
+const Footer: React.FC = () => {
   return (
     <footer style={{ fontSize: '11px' }}>
       Metagrid Version: {metagridVersion}

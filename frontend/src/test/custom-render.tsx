@@ -1,12 +1,13 @@
 import { ReactKeycloakProvider } from '@react-keycloak/web';
 import { render, RenderResult } from '@testing-library/react';
 import React from 'react';
-import { MutableSnapshot, RecoilRoot } from 'recoil';
 import { MemoryRouter } from 'react-router-dom';
 import Keycloak from 'keycloak-js';
+import { RecoilRoot } from 'recoil';
 import { GlobusAuthProvider, AuthContext, KeycloakAuthProvider } from '../contexts/AuthContext';
 import { ReactJoyrideProvider } from '../contexts/ReactJoyrideContext';
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
+import { RecoilWrapper } from './jestTestFunctions';
 
 /**
  * Wraps components in all implemented React Context Providers for testing using keycloak or globus
@@ -15,11 +16,9 @@ import { RawUserAuth, RawUserInfo } from '../contexts/types';
 const AuthProvider = ({
   children,
   authenticated,
-  snapshotSetFunc,
 }: {
   children: React.ReactNode;
   authenticated: boolean;
-  snapshotSetFunc: ((mutableSnapshot: MutableSnapshot) => void) | undefined;
 }): React.ReactElement => {
   let authInfo: RawUserAuth & RawUserInfo = {
     access_token: null,
@@ -54,46 +53,49 @@ const AuthProvider = ({
       flow: 'standard',
     };
     return (
-      <RecoilRoot initializeState={snapshotSetFunc}>
-        <ReactKeycloakProvider authClient={keycloak} initOptions={keycloakProviderInitConfig}>
-          <KeycloakAuthProvider>
-            <AuthContext.Provider value={authInfo}>
-              <MemoryRouter>
-                <ReactJoyrideProvider>{children}</ReactJoyrideProvider>
-              </MemoryRouter>
-            </AuthContext.Provider>
-          </KeycloakAuthProvider>
-        </ReactKeycloakProvider>
-      </RecoilRoot>
+      <ReactKeycloakProvider authClient={keycloak} initOptions={keycloakProviderInitConfig}>
+        <KeycloakAuthProvider>
+          <AuthContext.Provider value={authInfo}>
+            <MemoryRouter>
+              <ReactJoyrideProvider>{children}</ReactJoyrideProvider>
+            </MemoryRouter>
+          </AuthContext.Provider>
+        </KeycloakAuthProvider>
+      </ReactKeycloakProvider>
     );
   }
 
   return (
-    <RecoilRoot initializeState={snapshotSetFunc}>
-      <GlobusAuthProvider>
-        <AuthContext.Provider value={authInfo}>
-          <MemoryRouter>
-            <ReactJoyrideProvider>{children}</ReactJoyrideProvider>
-          </MemoryRouter>
-        </AuthContext.Provider>
-      </GlobusAuthProvider>
-    </RecoilRoot>
+    <GlobusAuthProvider>
+      <AuthContext.Provider value={authInfo}>
+        <MemoryRouter>
+          <ReactJoyrideProvider>{children}</ReactJoyrideProvider>
+        </MemoryRouter>
+      </AuthContext.Provider>
+    </GlobusAuthProvider>
   );
 };
 
 const customRender = (
   ui: React.ReactElement,
-  options?: Record<string, unknown>,
-  authenticated = true,
-  snapshotFunc?: ((mutableSnapshot: MutableSnapshot) => void) | undefined
+  options: {
+    authenticated?: boolean;
+    recoilWrapper?: RecoilWrapper;
+    options?: Record<string, unknown>;
+  } = { authenticated: true, recoilWrapper: undefined, options: {} }
 ): RenderResult =>
   render(ui, {
-    wrapper: () => (
-      <AuthProvider authenticated={authenticated} snapshotSetFunc={snapshotFunc}>
-        {ui}
-      </AuthProvider>
-    ),
-    ...options,
+    wrapper: () =>
+      options.recoilWrapper ? (
+        options.recoilWrapper.wrap(
+          <AuthProvider authenticated={options.authenticated || true}>{ui}</AuthProvider>
+        )
+      ) : (
+        <RecoilRoot>
+          <AuthProvider authenticated={options.authenticated || true}>{ui}</AuthProvider>
+        </RecoilRoot>
+      ),
+    ...options.options,
   });
 
 export default customRender;

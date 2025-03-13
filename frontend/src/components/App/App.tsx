@@ -18,7 +18,7 @@ import {
   theme,
 } from 'antd';
 import React from 'react';
-import { useRecoilState } from 'recoil';
+import { useRecoilState, useSetRecoilState } from 'recoil';
 import { useAsync } from 'react-async';
 import { hotjar } from 'react-hotjar';
 import { Link, Navigate, Route, Routes } from 'react-router-dom';
@@ -62,7 +62,6 @@ import {
 } from '../Search/types';
 import Support from '../Support';
 import StartPopup from '../Messaging/StartPopup';
-import startupDisplayData from '../Messaging/messageDisplayData';
 import './App.css';
 import { miscTargets } from '../../common/reactJoyrideSteps';
 import {
@@ -118,20 +117,10 @@ export type Props = {
   searchQuery: ActiveSearchQuery;
 };
 
-const metagridVersion: string = startupDisplayData.messageToShow;
-
 const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
-  // Third-party tool integration
-  useHotjar();
-
-  const [messageApi, contextHolder] = message.useMessage();
-
-  // User's authentication state
-  const authState = React.useContext(AuthContext);
-  const { access_token: accessToken, pk } = authState;
-  const isAuthenticated = accessToken && pk;
-
   // Recoil state
+  const [isDarkMode] = useRecoilState<boolean>(isDarkModeAtom);
+
   const [userCart, setUserCart] = useRecoilState<UserCart>(userCartAtom);
 
   const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(cartItemSelections);
@@ -144,11 +133,17 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     activeSearchQueryAtom
   );
 
-  const [supportModalVisible, setSupportModalVisible] = useRecoilState<boolean>(
-    supportModalVisibleAtom
-  );
+  const setSupportModalVisible = useSetRecoilState<boolean>(supportModalVisibleAtom);
 
-  const [isDarkMode] = useRecoilState<boolean>(isDarkModeAtom);
+  // Third-party tool integration
+  useHotjar();
+
+  const [messageApi, contextHolder] = message.useMessage();
+
+  // User's authentication state
+  const authState = React.useContext(AuthContext);
+  const { access_token: accessToken, pk } = authState;
+  const isAuthenticated = accessToken && pk;
 
   const { defaultAlgorithm, darkAlgorithm } = theme;
 
@@ -430,17 +425,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     >
       <Layout>
         <Routes>
-          <Route
-            path="*"
-            element={
-              <NavBar
-                numCartItems={userCart.length}
-                numSavedSearches={userSearchQueries.length}
-                onTextSearch={handleTextSearch}
-                supportModalVisible={setSupportModalVisible}
-              ></NavBar>
-            }
-          />
+          <Route path="*" element={<NavBar onTextSearch={handleTextSearch}></NavBar>} />
         </Routes>
         <Layout id="body-layout">
           {contextHolder}
@@ -578,7 +563,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
               </Routes>
             </Layout.Content>
             <Layout.Footer>
-              <Footer metagridVersion={metagridVersion} />
+              <Footer />
             </Layout.Footer>
           </Layout>
         </Layout>
@@ -598,7 +583,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
             onClick={() => setSupportModalVisible(true)}
           ></FloatButton>
         </Affix>
-        <Support open={supportModalVisible} onClose={() => setSupportModalVisible(false)} />
+        <Support />
         <StartPopup />
       </Layout>
     </ConfigProvider>

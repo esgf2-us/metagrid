@@ -20,10 +20,7 @@ const user = userEvent.setup();
 const defaultProps: Props = {
   activeSearchQuery: activeSearchQueryFixture(),
   userCart: [],
-  onRemoveFilter: jest.fn(),
-  onClearFilters: jest.fn(),
   onUpdateCart: jest.fn(),
-  onUpdateAvailableFacets: jest.fn(),
   onSaveSearchQuery: jest.fn(),
   onShareSearchQuery: jest.fn(),
 };

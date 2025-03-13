@@ -6,6 +6,8 @@ import { AppPage } from '../common/types';
 import Support from '../components/Support';
 import customRender from '../test/custom-render';
 import { getCurrentAppPage } from '../common/utils';
+import { RecoilWrapper } from '../test/jestTestFunctions';
+import { supportModalVisibleAtom } from '../components/App/recoil/atoms';
 
 const user = userEvent.setup();
 
@@ -30,8 +32,11 @@ describe('test ReactJoyrideProvider', () => {
   });
 
   it('Can render a tour properly', async () => {
-    // Create window object to set the pathname manually
 
+    const recoil = new RecoilWrapper();
+    recoil.addSetting(supportModalVisibleAtom, true);
+
+    // Create window object to set the pathname manually
     // eslint-disable-next-line
     window = Object.create(window);
     const url = 'https://test.com/search';
@@ -47,7 +52,7 @@ describe('test ReactJoyrideProvider', () => {
     window.location.pathname = 'testing/search';
     expect(getCurrentAppPage()).toEqual(AppPage.Main);
 
-    customRender(<Support open onClose={jest.fn()} />);
+    customRender(<Support />, { recoilWrapper: recoil });
 
     // Check support modal rendered
     const support = await screen.findByTestId('support-form');

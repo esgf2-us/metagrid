@@ -346,7 +346,7 @@ describe('User cart', () => {
 
   it('handles anonymous user adding and removing items from cart', async () => {
     // Render component as anonymous
-    customRender(<App searchQuery={activeSearch} />, {}, false);
+    customRender(<App searchQuery={activeSearch} />, { authenticated: false });
 
     // Wait for components to rerender
     await screen.findByTestId('main-query-string-label');
@@ -365,7 +365,7 @@ describe('User cart', () => {
   });
 
   it('displays anonymous user"s number of files in the cart summary and handles clearing the cart', async () => {
-    customRender(<App searchQuery={activeSearch} />, {}, false);
+    customRender(<App searchQuery={activeSearch} />, { authenticated: false });
 
     // Wait for components to rerender
     await screen.findByTestId('main-query-string-label');
@@ -509,7 +509,9 @@ describe('Error handling', () => {
     );
 
     customRender(<App searchQuery={activeSearch} />, {
-      token: 'token',
+      options: {
+        token: 'token',
+      },
     });
 
     // Check applicable components render
@@ -525,7 +527,9 @@ describe('Error handling', () => {
 describe('User search library', () => {
   it('handles authenticated user saving and applying searches', async () => {
     customRender(<App searchQuery={activeSearch} />, {
-      token: 'token',
+      options: {
+        token: 'token',
+      },
     });
 
     // Wait for components to rerender
@@ -570,7 +574,9 @@ describe('User search library', () => {
 
   it('handles authenticated user removing searches from the search library', async () => {
     customRender(<App searchQuery={activeSearch} />, {
-      token: 'token',
+      options: {
+        token: 'token',
+      },
     });
 
     // Check applicable components render
@@ -611,7 +617,7 @@ describe('User search library', () => {
 
   it('handles anonymous user saving and applying searches', async () => {
     // Render component as anonymous
-    customRender(<App searchQuery={activeSearch} />, {}, false);
+    customRender(<App searchQuery={activeSearch} />, { authenticated: false });
 
     // Check applicable components render
     const leftMenuComponent = await screen.findByTestId('left-menu');
@@ -657,7 +663,7 @@ describe('User search library', () => {
 
   it('handles anonymous user removing searches from the search library', async () => {
     // Render component as anonymous
-    customRender(<App searchQuery={activeSearch} />, {}, false);
+    customRender(<App searchQuery={activeSearch} />, { authenticated: false });
 
     // Wait for components to rerender
     await screen.findByTestId('main-query-string-label');
@@ -694,7 +700,7 @@ describe('User search library', () => {
   });
 
   it('handles anonymous user copying search to clipboard', async () => {
-    customRender(<App searchQuery={activeSearch} />, {}, false);
+    customRender(<App searchQuery={activeSearch} />, { authenticated: false });
 
     // Check applicable components render
     const rightMenuComponent = await screen.findByTestId('right-menu');
@@ -730,7 +736,9 @@ describe('User search library', () => {
 
     it('shows a disabled save search button due to failed search results', async () => {
       customRender(<App searchQuery={activeSearch} />, {
-        token: 'token',
+        options: {
+          token: 'token',
+        },
       });
 
       server.use(rest.post(apiRoutes.userSearches.path, (_req, res, ctx) => res(ctx.status(404))));
@@ -750,7 +758,7 @@ describe('User search library', () => {
       server.use(rest.delete(apiRoutes.userSearch.path, (_req, res, ctx) => res(ctx.status(404))));
 
       customRender(<App searchQuery={activeSearch} />, {
-        token: 'token',
+        options: { token: 'token' },
       });
 
       // Check delete button renders for the saved search and click it

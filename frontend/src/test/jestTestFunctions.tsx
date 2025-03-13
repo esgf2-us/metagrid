@@ -117,17 +117,22 @@ export const globusReadyNode: string = 'nodeIsGlobusReady';
 export const nodeNotGlobusReady: string = 'nodeIsNotGlobusReady';
 
 export class RecoilWrapper {
-  settings: Array<{ atom: RecoilState<unknown>; value: unknown }> = [];
+  settings: Array<{ atom: RecoilState<unknown>; value: unknown; persist: boolean }> = [];
 
-  addSetting<T>(recoilAtom: RecoilState<T>, value: T, persistent: boolean = true): void {
-    if (persistent) {
-      saveToLocalStorage(recoilAtom.key, value);
-      return;
-    }
-    this.settings.push({ atom: recoilAtom as RecoilState<unknown>, value: value as unknown });
+  addSetting<T>(recoilAtom: RecoilState<T>, value: T, persist: boolean = true): void {
+    this.settings.push({
+      atom: recoilAtom as RecoilState<unknown>,
+      value: value as unknown,
+      persist,
+    });
   }
 
   wrap(children: React.ReactElement): React.ReactElement {
+    this.settings.forEach((setting) => {
+      if (setting.persist) {
+        saveToLocalStorage(setting.atom.key, setting.value);
+      }
+    });
     return (
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -178,44 +183,7 @@ export function saveToLocalStorage<T>(key: string, value: T): void {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
-export async function addSearchRowsAndGoToCart(
-  user: UserEvent,
-  rows?: HTMLElement[]
-): Promise<void> {
-  let rowsToAdd: HTMLElement[] = [];
-
-  // Get the rows we need to add
-  if (rows) {
-    rowsToAdd = rowsToAdd.concat(rows);
-  } else {
-    const defaultRow = await screen.findByTestId('cart-items-row-1');
-    rowsToAdd.push(defaultRow);
-  }
-
-  // Add the rows by clicking plus button
-  const clickBtns: Promise<void>[] = [];
-  rowsToAdd.forEach((row) => {
-    expect(row).toBeTruthy();
-    const clickBtnFunc = async (): Promise<void> => {
-      const addBtn = (await within(row).findAllByRole('button'))[0];
-      expect(addBtn).toBeTruthy();
-      await user.click(addBtn);
-    };
-    clickBtns.push(clickBtnFunc());
-  });
-  await Promise.all(clickBtns);
-
-  // Check 'Added items(s) to the cart' message appears
-  const addText = await screen.findAllByText('Added item(s) to your cart', {
-    exact: false,
-  });
-  expect(addText).toBeTruthy();
-
-  // Switch to the cart page
-  const cartBtn = await screen.findByTestId('cartPageLink');
-  await user.click(cartBtn);
-
-  // Wait for cart page to render
-  const summary = await screen.findByTestId('summary');
-  expect(summary).toBeTruthy();
+export function getFromLocalStorage<T>(key: string): T | null {
+  const items = localStorage.getItem(key);
+  return items ? (JSON.parse(items) as T) : null;
 }

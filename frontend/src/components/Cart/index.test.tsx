@@ -10,7 +10,6 @@ const defaultProps: Props = {
   userSearchQueries: userSearchQueriesFixture(),
   onUpdateCart: jest.fn(),
   onClearCart: jest.fn(),
-  onRunSearchQuery: jest.fn(),
   onRemoveSearchQuery: jest.fn(),
 };
 

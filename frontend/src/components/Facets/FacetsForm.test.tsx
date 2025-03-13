@@ -108,7 +108,7 @@ describe('test FacetsForm component', () => {
   it('handles copying facet items to clipboard', async () => {
     const recoil = new RecoilWrapper();
     recoil.addSetting(availableFacetsAtom, parsedFacetsFixture(), false);
-    customRender(recoil.wrap(<FacetsForm {...defaultProps} />));
+    customRender(<FacetsForm {...defaultProps} />, { recoilWrapper: recoil });
 
     // Expand the group1 panel
     const group1Btn = await screen.findByText('Group1');
