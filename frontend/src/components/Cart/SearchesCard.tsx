@@ -9,11 +9,11 @@ import React from 'react';
 import { useAsync } from 'react-async';
 import { useNavigate } from 'react-router-dom';
 import { fetchSearchResults, generateSearchURLQuery } from '../../api';
-import { clickableRoute } from '../../api/routes';
 import { savedSearchTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import { stringifyFilters } from '../Search';
 import { UserSearchQuery } from './types';
+import { createSearchRouteURL } from '../../common/utils';
 
 const styles: CSSinJS = {
   category: {
@@ -104,7 +104,7 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
           <Tooltip title="View results in JSON format">
             <a
               className={savedSearchTourTargets.jsonBtn.class()}
-              href={clickableRoute(url)}
+              href={createSearchRouteURL(url)}
               rel="noopener noreferrer"
               target="blank_"
             >

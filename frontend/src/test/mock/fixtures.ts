@@ -61,7 +61,7 @@ export const rawSearchResultFixture = (props: Partial<RawSearchResult> = {}): Ra
     size: 1,
     access: ['wget', 'HTTPServer', 'OPENDAP', 'Globus'],
     citation_url: ['https://foo.bar'],
-    xlink: ['url.com|PID|pid'],
+    xlink: ['https://localhost/url.com|PID|pid'],
   };
   return { ...defaults, ...props };
 };
@@ -163,7 +163,7 @@ export const userSearchQueryFixture = (props: Partial<UserSearchQuery> = {}): Us
     filenameVars: ['var'],
     activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
     textInputs: ['foo'],
-    url: 'url.com',
+    url: 'https://localhost/url.com',
   };
 
   return { ...defaults, ...props } as UserSearchQuery;
@@ -330,7 +330,7 @@ export const globusEnabledDatasetFixture = (): RawSearchResult[] => {
       size: 1,
       access: ['HTTPServer', 'OPENDAP', 'Globus'],
       citation_url: ['https://foo.bar'],
-      xlink: ['url.com|PID|pid'],
+      xlink: ['https://localhost/url.com|PID|pid'],
     },
   ];
 };

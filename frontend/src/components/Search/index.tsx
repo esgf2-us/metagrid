@@ -14,10 +14,9 @@ import {
   fetchSearchResults,
   generateSearchURLQuery,
 } from '../../api';
-import { clickableRoute } from '../../api/routes';
 import { searchTableTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
-import { objectIsEmpty } from '../../common/utils';
+import { createSearchRouteURL, objectIsEmpty } from '../../common/utils';
 import { UserCart } from '../Cart/types';
 import { Tag, TagType, TagValue } from '../DataDisplay/Tag';
 import { ActiveFacets, ParsedFacets, RawFacets, RawProject } from '../Facets/types';
@@ -438,7 +437,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
         {results && currentRequestURL && (
           <Button
             type="default"
-            href={clickableRoute(currentRequestURL)}
+            href={createSearchRouteURL(currentRequestURL)}
             target="_blank"
             icon={<ExportOutlined />}
           >
