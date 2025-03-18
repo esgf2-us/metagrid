@@ -8,14 +8,10 @@ import { RecoilRoot } from 'recoil';
 import { setMedia } from 'mock-match-media';
 import customRender from '../../test/custom-render';
 import RightMenu, { Props } from './RightMenu';
-import { mockConfig, mockKeycloakToken, RecoilWrapper } from '../../test/jestTestFunctions';
+import { mockConfig, mockKeycloakToken } from '../../test/jestTestFunctions';
 import { tempStorageSetMock } from '../../test/mock/mockStorage';
-import { isDarkModeAtom, userCartAtom, userSearchQueriesAtom } from '../App/recoil/atoms';
-import {
-  activeSearchQueryFixture,
-  userCartFixture,
-  userSearchQueriesFixture,
-} from '../../test/mock/fixtures';
+import { isDarkModeAtom } from '../App/recoil/atoms';
+import { activeSearchQueryFixture } from '../../test/mock/fixtures';
 import App from '../App/App';
 
 const user = userEvent.setup();
@@ -34,10 +30,6 @@ jest.mock('@react-keycloak/web', () => {
     },
   };
 });
-
-const recoil = new RecoilWrapper();
-recoil.addSetting(userCartAtom, userCartFixture());
-recoil.addSetting(userSearchQueriesAtom, userSearchQueriesFixture());
 
 it('sets the active menu item based on the location pathname', async () => {
   customRender(<RightMenu {...rightMenuProps} />);
@@ -187,7 +179,7 @@ it('toggles theme switch between light and dark modes', async () => {
 });
 
 it('displays correct cart and saved searches badge counts', async () => {
-  customRender(<RightMenu {...rightMenuProps} />, { recoilWrapper: recoil });
+  customRender(<RightMenu {...rightMenuProps} />, { usesRecoil: true });
 
   const cartBadge = await screen.findByText('3');
   expect(cartBadge).toBeTruthy();

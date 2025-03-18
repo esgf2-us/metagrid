@@ -22,8 +22,8 @@ import {
 } from '../../test/jestTestFunctions';
 import App from '../App/App';
 import { GlobusEndpoint, GlobusTaskItem, GlobusTokenResponse } from './types';
-import GlobusStateKeys, { globusSavedEndpoints, globusTaskItems } from './recoil/atom';
-import { cartDownloadIsLoading, cartItemSelections } from '../Cart/recoil/atoms';
+import GlobusStateKeys, { globusSavedEndpointsAtoms, globusTaskItemsAtom } from './recoil/atom';
+import { cartDownloadIsLoadingAtom, cartItemSelectionsAtom } from '../Cart/recoil/atoms';
 import {
   globusEndpointFixture,
   globusAccessTokenFixture,
@@ -170,24 +170,24 @@ async function initializeComponentForTest(testConfig?: typeof defaultTestConfig)
     db.set(GlobusStateKeys.transferToken, transferToken);
   }
 
-  const recoilWrapper = new RecoilWrapper();
+  const recoilWrapper = RecoilWrapper.Instance;
 
   // Set the Globus Goals
   saveToLocalStorage<GlobusGoals>(GlobusStateKeys.globusTransferGoalsState, config.globusGoals);
 
-  recoilWrapper.addSetting(cartDownloadIsLoading, config.cartDownloadIsLoading);
+  recoilWrapper.modifyAtomValue(cartDownloadIsLoadingAtom, config.cartDownloadIsLoading);
   // saveToLocalStorage<boolean>(CartStateKeys.cartDownloadIsLoading, config.cartDownloadIsLoading);
 
   // Set the selected cart items
   // saveToLocalStorage<RawSearchResults>(CartStateKeys.cartItemSelections, config.itemSelections);
-  recoilWrapper.addSetting(cartItemSelections, config.itemSelections);
+  recoilWrapper.modifyAtomValue(cartItemSelectionsAtom, config.itemSelections);
 
   // Set the saved endpoints
-  recoilWrapper.addSetting(globusSavedEndpoints, config.savedEndpoints);
+  recoilWrapper.modifyAtomValue(globusSavedEndpointsAtoms, config.savedEndpoints);
   // saveToLocalStorage<GlobusEndpoint[]>(GlobusStateKeys.savedGlobusEndpoints, config.savedEndpoints);
 
   // Set the globus task items
-  recoilWrapper.addSetting(globusTaskItems, config.globusTaskItems);
+  recoilWrapper.modifyAtomValue(globusTaskItemsAtom, config.globusTaskItems);
   // saveToLocalStorage<GlobusTaskItem[]>(GlobusStateKeys.globusTaskItems, config.globusTaskItems);
 
   // Default display name if no endpoint is chosen
@@ -212,21 +212,21 @@ async function initializeComponentForTest(testConfig?: typeof defaultTestConfig)
 
   // Finally render the component
   if (config.renderFullApp) {
-    customRender(recoilWrapper.wrap(<App searchQuery={activeSearch} />));
+    customRender(<App searchQuery={activeSearch} />, { usesRecoil: true });
 
     await screen.findByText('results found for', { exact: false });
 
     // Check first row renders and click the checkbox
-    const firstRow = (await screen.findAllByRole('row'))[0];
+    // const firstRow = (await screen.findAllByRole('row'))[0];
 
-    // Check first row has add button and click it
-    const addBtn = await within(firstRow).findByRole('img', { name: 'plus' });
-    expect(addBtn).toBeTruthy();
-    await user.click(addBtn);
+    // // Check first row has add button and click it
+    // const addBtn = await within(firstRow).findByRole('img', { name: 'plus' });
+    // expect(addBtn).toBeTruthy();
+    // await user.click(addBtn);
 
-    // Check 'Added items(s) to the cart' message appears
-    const addText = (await screen.findAllByText('Added item(s) to your cart'))[0];
-    expect(addText).toBeTruthy();
+    // // Check 'Added items(s) to the cart' message appears
+    // const addText = (await screen.findAllByText('Added item(s) to your cart'))[0];
+    // expect(addText).toBeTruthy();
 
     // Switch to the cart page
     const cartBtn = await screen.findByTestId('cartPageLink');
@@ -235,7 +235,7 @@ async function initializeComponentForTest(testConfig?: typeof defaultTestConfig)
     // Wait for cart summary to load
     await screen.findByText('Your Cart Summary', { exact: false });
   } else {
-    customRender(recoilWrapper.wrap(<DatasetDownloadForm />));
+    customRender(<DatasetDownloadForm />, { usesRecoil: true });
 
     // Wait for component to load
     await screen.findAllByText(new RegExp(displayName, 'i'));

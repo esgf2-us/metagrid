@@ -3,6 +3,7 @@ import { UserCart, UserSearchQueries } from '../../Cart/types';
 import { localStorageEffect } from '../../../common/utils';
 import { ActiveSearchQuery } from '../../Search/types';
 import { ParsedFacets, RawProject } from '../../Facets/types';
+import { NodeStatusArray } from '../../NodeStatus/types';
 
 enum AppStateKeys {
   isDarkMode = 'isDarkMode',
@@ -77,6 +78,11 @@ export const savedSearchQueryAtom = atom<ActiveSearchQuery | null>({
 export const availableFacetsAtom = atom<ParsedFacets | Record<string, unknown>>({
   key: AppStateKeys.availableFacets,
   default: {},
+});
+
+export const nodeStatusAtom = atom<NodeStatusArray>({
+  key: 'nodeStatus',
+  default: [], // Add a default value for node status
 });
 
 export default AppStateKeys;

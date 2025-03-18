@@ -233,8 +233,8 @@ export const getUrlFromSearch = (search: ActiveSearchQuery): string => {
     Object.keys(newSearch.activeFacets).length > 0
   ) {
     // Convert array values to string if they are of size 1
-    const facetsToStringify: { [x: string]: string[] | string } = newSearch.activeFacets;
-    Object.keys(search.activeFacets).forEach((key) => {
+    const facetsToStringify: { [x: string]: string[] | string } = { ...newSearch.activeFacets };
+    Object.keys(newSearch.activeFacets).forEach((key) => {
       if (newSearch.activeFacets[key].length === 1) {
         facetsToStringify[key] = (newSearch.activeFacets[key][0] as unknown) as string;
       }

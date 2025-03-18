@@ -47,19 +47,12 @@ import Cart from '../Cart';
 import Summary from '../Cart/Summary';
 import { UserCart, UserSearchQueries, UserSearchQuery } from '../Cart/types';
 import Facets from '../Facets';
-import { ActiveFacets, RawProject } from '../Facets/types';
+import { RawProject } from '../Facets/types';
 import NavBar from '../NavBar/index';
 import NodeStatus from '../NodeStatus';
 import NodeSummary from '../NodeStatus/NodeSummary';
 import Search from '../Search';
-import {
-  ActiveSearchQuery,
-  RawSearchResult,
-  RawSearchResults,
-  ResultType,
-  VersionDate,
-  VersionType,
-} from '../Search/types';
+import { ActiveSearchQuery, RawSearchResult, RawSearchResults } from '../Search/types';
 import Support from '../Support';
 import StartPopup from '../Messaging/StartPopup';
 import './App.css';
@@ -72,7 +65,7 @@ import {
   userSearchQueriesAtom,
 } from './recoil/atoms';
 import Footer from '../Footer/Footer';
-import { cartItemSelections } from '../Cart/recoil/atoms';
+import { cartItemSelectionsAtom } from '../Cart/recoil/atoms';
 
 const bodySider = {
   padding: '12px 12px 12px 12px',
@@ -123,7 +116,9 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
 
   const [userCart, setUserCart] = useRecoilState<UserCart>(userCartAtom);
 
-  const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(cartItemSelections);
+  const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(
+    cartItemSelectionsAtom
+  );
 
   const [userSearchQueries, setUserSearchQueries] = useRecoilState<UserSearchQueries>(
     userSearchQueriesAtom
@@ -384,36 +379,6 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     }
   };
 
-  const handleOnSetFilenameVars = (filenameVar: string): void => {
-    if (activeSearchQuery.filenameVars.includes(filenameVar as never)) {
-      showError(messageApi, `Input "${filenameVar}" has already been applied`);
-    } else {
-      setActiveSearchQuery({
-        ...activeSearchQuery,
-        filenameVars: [...activeSearchQuery.filenameVars, filenameVar],
-      });
-    }
-  };
-
-  const handleOnSetGeneralFacets = (
-    versionType: VersionType,
-    resultType: ResultType,
-    minVersionDate: VersionDate,
-    maxVersionDate: VersionDate
-  ): void => {
-    setActiveSearchQuery({
-      ...activeSearchQuery,
-      versionType,
-      resultType,
-      minVersionDate,
-      maxVersionDate,
-    });
-  };
-
-  const handleOnSetActiveFacets = (activeFacets: ActiveFacets): void => {
-    setActiveSearchQuery({ ...activeSearchQuery, activeFacets });
-  };
-
   return (
     <ConfigProvider
       theme={{
@@ -432,17 +397,11 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
           <Routes>
             <Route path="/" element={<Navigate to="/search" />} />
             <Route path="/cart" element={<Navigate to="/cart/items" />} />
-            <></>
             <Route
               path="/search/*"
               element={
                 <Layout.Sider style={styles.bodySider} width={styles.bodySider.width as number}>
-                  <Facets
-                    nodeStatus={nodeStatus}
-                    onSetFilenameVars={handleOnSetFilenameVars}
-                    onSetGeneralFacets={handleOnSetGeneralFacets}
-                    onSetActiveFacets={handleOnSetActiveFacets}
-                  />
+                  <Facets />
                 </Layout.Sider>
               }
             />
@@ -484,7 +443,6 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
                       <Search
                         activeSearchQuery={activeSearchQuery}
                         userCart={userCart}
-                        nodeStatus={nodeStatus}
                         onUpdateCart={handleUpdateCart}
                         onSaveSearchQuery={handleSaveSearchQuery}
                         onShareSearchQuery={handleShareSearchQuery}
@@ -509,7 +467,6 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
                         ]}
                       ></Breadcrumb>
                       <NodeStatus
-                        nodeStatus={nodeStatus}
                         apiError={nodeStatusApiError as ResponseError}
                         isLoading={nodeStatusIsLoading}
                       />
@@ -538,7 +495,6 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
                         onUpdateCart={handleUpdateCart}
                         onClearCart={handleClearCart}
                         onRemoveSearchQuery={handleRemoveSearchQuery}
-                        nodeStatus={nodeStatus}
                       />
                     </>
                   }

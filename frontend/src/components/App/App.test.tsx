@@ -15,13 +15,20 @@ import { getSearchFromUrl } from '../../common/utils';
 import customRender from '../../test/custom-render';
 import { ActiveSearchQuery } from '../Search/types';
 import App from './App';
-import { activeSearch, submitKeywordSearch } from '../../test/jestTestFunctions';
+import {
+  activeSearch,
+  printElementContents,
+  RecoilWrapper,
+  submitKeywordSearch,
+} from '../../test/jestTestFunctions';
+import { cartItemSelectionsAtom } from '../Cart/recoil/atoms';
+import { userCartAtom } from './recoil/atoms';
 
 const user = userEvent.setup();
 
 describe('test main components', () => {
   it('renders App component', async () => {
-    customRender(<App searchQuery={activeSearch} />);
+    customRender(<App searchQuery={activeSearch} />, { usesRecoil: true });
 
     // Check applicable components render
     const navComponent = await screen.findByTestId('nav-bar');
@@ -32,7 +39,9 @@ describe('test main components', () => {
   });
 
   it('renders App component with undefined search query', async () => {
-    customRender(<App searchQuery={(undefined as unknown) as ActiveSearchQuery} />);
+    customRender(<App searchQuery={(undefined as unknown) as ActiveSearchQuery} />, {
+      usesRecoil: true,
+    });
 
     // Check applicable components render
     const navComponent = await screen.findByTestId('nav-bar');
@@ -43,7 +52,7 @@ describe('test main components', () => {
   });
 
   it('renders App component with project only search query', async () => {
-    customRender(<App searchQuery={getSearchFromUrl('?project=CMIP5')} />);
+    customRender(<App searchQuery={getSearchFromUrl('?project=CMIP5')} />, { usesRecoil: true });
 
     // Check applicable components render
     const navComponent = await screen.findByTestId('nav-bar');
@@ -54,7 +63,7 @@ describe('test main components', () => {
   });
 
   it('shows duplicate error when search keyword is typed in twice', async () => {
-    customRender(<App searchQuery={activeSearch} />);
+    customRender(<App searchQuery={activeSearch} />, { usesRecoil: true });
 
     const input = 'foo';
     await submitKeywordSearch(input, user);
@@ -68,7 +77,7 @@ describe('test main components', () => {
   });
 
   it('handles setting filename searches and duplicates', async () => {
-    customRender(<App searchQuery={activeSearch} />);
+    customRender(<App searchQuery={activeSearch} />, { usesRecoil: true });
 
     // Check applicable components render
     const leftSearchColumn = await screen.findByTestId('search-facets');
@@ -110,7 +119,7 @@ describe('test main components', () => {
   });
 
   it('handles setting and removing text input filters and clearing all search filters', async () => {
-    customRender(<App searchQuery={activeSearch} />);
+    customRender(<App searchQuery={activeSearch} />, { usesRecoil: true });
 
     // Change value for free-text input
     await submitKeywordSearch('foo', user);
@@ -143,7 +152,7 @@ describe('test main components', () => {
   });
 
   it('handles applying general facets', async () => {
-    customRender(<App searchQuery={activeSearch} />);
+    customRender(<App searchQuery={activeSearch} />, { usesRecoil: true });
     const facetsForm = await screen.findByTestId('facets-form', {}, { timeout: 3000 });
     expect(facetsForm).toBeTruthy();
 
@@ -169,7 +178,7 @@ describe('test main components', () => {
   });
 
   it('handles applying and removing project facets', async () => {
-    customRender(<App searchQuery={activeSearch} />);
+    customRender(<App searchQuery={activeSearch} />, { usesRecoil: true });
 
     // Check applicable components render
     const facetsComponent = await screen.findByTestId('search-facets');
@@ -242,7 +251,7 @@ describe('test main components', () => {
   it('fetches the data node status every defined interval', async () => {
     jest.useFakeTimers();
 
-    customRender(<App searchQuery={activeSearch} />);
+    customRender(<App searchQuery={activeSearch} />, { usesRecoil: true });
 
     jest.advanceTimersByTime(295000);
     jest.useRealTimers();
@@ -255,7 +264,7 @@ describe('test main components', () => {
 
 describe('User cart', () => {
   it('handles authenticated user adding and removing items from cart', async () => {
-    customRender(<App searchQuery={activeSearch} />);
+    customRender(<App searchQuery={activeSearch} />, { usesRecoil: true });
 
     // Wait for components to rerender
     await screen.findByTestId('main-query-string-label');
@@ -282,7 +291,7 @@ describe('User cart', () => {
   });
 
   it("displays authenticated user's number of files in the cart summary and handles clearing the cart", async () => {
-    customRender(<App searchQuery={activeSearch} />);
+    customRender(<App searchQuery={activeSearch} />, { usesRecoil: true });
 
     // Wait for components to rerender
     await screen.findByTestId('main-query-string-label');
@@ -346,7 +355,7 @@ describe('User cart', () => {
 
   it('handles anonymous user adding and removing items from cart', async () => {
     // Render component as anonymous
-    customRender(<App searchQuery={activeSearch} />, { authenticated: false });
+    customRender(<App searchQuery={activeSearch} />, { usesRecoil: true, authenticated: false });
 
     // Wait for components to rerender
     await screen.findByTestId('main-query-string-label');
@@ -365,7 +374,7 @@ describe('User cart', () => {
   });
 
   it('displays anonymous user"s number of files in the cart summary and handles clearing the cart', async () => {
-    customRender(<App searchQuery={activeSearch} />, { authenticated: false });
+    customRender(<App searchQuery={activeSearch} />, { usesRecoil: true, authenticated: false });
 
     // Wait for components to rerender
     await screen.findByTestId('main-query-string-label');
@@ -431,11 +440,15 @@ describe('User cart', () => {
     expect(emptyAlert).toBeTruthy();
   });
 
-  it('resets cart totals and selections to 0 when all items are removed', async () => {
-    customRender(<App searchQuery={activeSearch} />);
+  it.only('resets cart totals and selections to 0 when all items are removed', async () => {
+    RecoilWrapper.Instance.modifyAtomValue(userCartAtom, []);
+    RecoilWrapper.Instance.modifyAtomValue(cartItemSelectionsAtom, []);
+    customRender(<App searchQuery={activeSearch} />, { usesRecoil: true });
 
     // Wait for components to rerender
-    await screen.findByTestId('main-query-string-label');
+    await screen.findByText('results found for', { exact: false });
+
+    printElementContents();
 
     // Check first row has add button and click it
     const addBtn = await screen.findByTestId('row-1-add-to-cart');
@@ -509,6 +522,7 @@ describe('Error handling', () => {
     );
 
     customRender(<App searchQuery={activeSearch} />, {
+      usesRecoil: true,
       options: {
         token: 'token',
       },
@@ -527,6 +541,7 @@ describe('Error handling', () => {
 describe('User search library', () => {
   it('handles authenticated user saving and applying searches', async () => {
     customRender(<App searchQuery={activeSearch} />, {
+      usesRecoil: true,
       options: {
         token: 'token',
       },
@@ -574,6 +589,7 @@ describe('User search library', () => {
 
   it('handles authenticated user removing searches from the search library', async () => {
     customRender(<App searchQuery={activeSearch} />, {
+      usesRecoil: true,
       options: {
         token: 'token',
       },
@@ -617,7 +633,7 @@ describe('User search library', () => {
 
   it('handles anonymous user saving and applying searches', async () => {
     // Render component as anonymous
-    customRender(<App searchQuery={activeSearch} />, { authenticated: false });
+    customRender(<App searchQuery={activeSearch} />, { usesRecoil: true, authenticated: false });
 
     // Check applicable components render
     const leftMenuComponent = await screen.findByTestId('left-menu');
@@ -663,7 +679,7 @@ describe('User search library', () => {
 
   it('handles anonymous user removing searches from the search library', async () => {
     // Render component as anonymous
-    customRender(<App searchQuery={activeSearch} />, { authenticated: false });
+    customRender(<App searchQuery={activeSearch} />, { usesRecoil: true, authenticated: false });
 
     // Wait for components to rerender
     await screen.findByTestId('main-query-string-label');
@@ -700,7 +716,7 @@ describe('User search library', () => {
   });
 
   it('handles anonymous user copying search to clipboard', async () => {
-    customRender(<App searchQuery={activeSearch} />, { authenticated: false });
+    customRender(<App searchQuery={activeSearch} />, { usesRecoil: true, authenticated: false });
 
     // Check applicable components render
     const rightMenuComponent = await screen.findByTestId('right-menu');
@@ -736,6 +752,7 @@ describe('User search library', () => {
 
     it('shows a disabled save search button due to failed search results', async () => {
       customRender(<App searchQuery={activeSearch} />, {
+        usesRecoil: true,
         options: {
           token: 'token',
         },
@@ -758,6 +775,7 @@ describe('User search library', () => {
       server.use(rest.delete(apiRoutes.userSearch.path, (_req, res, ctx) => res(ctx.status(404))));
 
       customRender(<App searchQuery={activeSearch} />, {
+        usesRecoil: true,
         options: { token: 'token' },
       });
 
@@ -801,7 +819,7 @@ describe('User search library', () => {
 
 describe('User support', () => {
   it('renders user support modal when clicking help button and is closeable', async () => {
-    customRender(<App searchQuery={activeSearch} />);
+    customRender(<App searchQuery={activeSearch} />, { usesRecoil: true });
 
     // support button renders
     const supportBtn = await screen.findByRole('img', { name: 'question' });
@@ -825,7 +843,7 @@ describe('User support', () => {
 
 describe('Data node status page', () => {
   it('renders the node status page after clicking the link', async () => {
-    customRender(<App searchQuery={activeSearch} />);
+    customRender(<App searchQuery={activeSearch} />, { usesRecoil: true });
 
     const rightMenuComponent = await screen.findByTestId('right-menu');
     expect(rightMenuComponent).toBeTruthy();
@@ -844,7 +862,7 @@ describe('Data node status page', () => {
 
 describe('Theme switch', () => {
   it('switches to dark mode', async () => {
-    customRender(<App searchQuery={activeSearch} />);
+    customRender(<App searchQuery={activeSearch} />, { usesRecoil: true });
 
     // Check applicable components render
     const navComponent = await screen.findByTestId('nav-bar');
@@ -863,7 +881,7 @@ describe('Theme switch', () => {
   });
 
   it('switches to light mode', async () => {
-    customRender(<App searchQuery={activeSearch} />);
+    customRender(<App searchQuery={activeSearch} />, { usesRecoil: true });
 
     // Check applicable components render
     const navComponent = await screen.findByTestId('nav-bar');

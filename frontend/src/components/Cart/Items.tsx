@@ -8,8 +8,7 @@ import Button from '../General/Button';
 import Table from '../Search/Table';
 import { RawSearchResults } from '../Search/types';
 import DatasetDownload from '../Globus/DatasetDownload';
-import { cartItemSelections } from './recoil/atoms';
-import { NodeStatusArray } from '../NodeStatus/types';
+import { cartItemSelectionsAtom } from './recoil/atoms';
 
 const styles: CSSinJS = {
   summary: {
@@ -28,16 +27,16 @@ export type Props = {
   userCart: RawSearchResults | [];
   onUpdateCart: (item: RawSearchResults, operation: 'add' | 'remove') => void;
   onClearCart: () => void;
-  nodeStatus?: NodeStatusArray;
 };
 
 const Items: React.FC<React.PropsWithChildren<Props>> = ({
   userCart,
   onUpdateCart,
   onClearCart,
-  nodeStatus,
 }) => {
-  const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(cartItemSelections);
+  const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(
+    cartItemSelectionsAtom
+  );
 
   const handleRowSelect = (selectedRows: RawSearchResults): void => {
     setItemSelections(selectedRows);
@@ -76,7 +75,6 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({
               <Table
                 loading={false}
                 canDisableRows={false}
-                nodeStatus={nodeStatus}
                 results={userCart}
                 userCart={userCart}
                 onUpdateCart={onUpdateCart}

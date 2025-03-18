@@ -21,7 +21,6 @@ import { UserCart } from '../Cart/types';
 import { Tag, TagType, TagValue } from '../DataDisplay/Tag';
 import { ActiveFacets, ParsedFacets, RawFacets, RawProject } from '../Facets/types';
 import Button from '../General/Button'; // Note, tooltips do not work for this button
-import { NodeStatusArray } from '../NodeStatus/types';
 import Table from './Table';
 import {
   ActiveSearchQuery,
@@ -123,7 +122,6 @@ export const checkFiltersExist = (
 export type Props = {
   activeSearchQuery: ActiveSearchQuery;
   userCart: UserCart | [];
-  nodeStatus?: NodeStatusArray;
   onUpdateCart: (selectedItems: RawSearchResults, operation: 'add' | 'remove') => void;
   onSaveSearchQuery: (url: string) => void;
   onShareSearchQuery: () => void;
@@ -132,7 +130,6 @@ export type Props = {
 const Search: React.FC<React.PropsWithChildren<Props>> = ({
   activeSearchQuery,
   userCart,
-  nodeStatus,
   onUpdateCart,
   onSaveSearchQuery,
   onShareSearchQuery,
@@ -416,7 +413,6 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
                 results={docs}
                 totalResults={numFound}
                 userCart={userCart}
-                nodeStatus={nodeStatus}
                 filenameVars={activeSearchQuery.filenameVars}
                 onUpdateCart={onUpdateCart}
                 onRowSelect={handleRowSelect}

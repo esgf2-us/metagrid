@@ -6,11 +6,10 @@ import { fetchProjects, ResponseError } from '../../api';
 import { leftSidebarTargets } from '../../common/reactJoyrideSteps';
 import { objectIsEmpty } from '../../common/utils';
 import Divider from '../General/Divider';
-import { NodeStatusArray } from '../NodeStatus/types';
-import { ActiveSearchQuery, ResultType, VersionDate, VersionType } from '../Search/types';
+import { ActiveSearchQuery } from '../Search/types';
 import FacetsForm from './FacetsForm';
 import ProjectForm from './ProjectForm';
-import { ActiveFacets, RawProject } from './types';
+import { RawProject } from './types';
 import {
   activeSearchQueryAtom,
   availableFacetsAtom,
@@ -24,24 +23,7 @@ const styles = {
   },
 };
 
-export type Props = {
-  nodeStatus?: NodeStatusArray;
-  onSetFilenameVars: (filenameVar: string) => void;
-  onSetGeneralFacets: (
-    versionType: VersionType,
-    resultType: ResultType,
-    minVersionDate: VersionDate,
-    maxVersionDate: VersionDate
-  ) => void;
-  onSetActiveFacets: (activeFacets: ActiveFacets) => void;
-};
-
-const Facets: React.FC<React.PropsWithChildren<Props>> = ({
-  nodeStatus,
-  onSetFilenameVars,
-  onSetGeneralFacets,
-  onSetActiveFacets,
-}) => {
+const Facets: React.FC = () => {
   const { data, error, isLoading } = useAsync(fetchProjects);
 
   const { Title } = Typography;
@@ -122,13 +104,7 @@ const Facets: React.FC<React.PropsWithChildren<Props>> = ({
       <Divider />
       {!objectIsEmpty(availableFacets) && (
         <div className={leftSidebarTargets.searchFacetsForm.class()}>
-          <FacetsForm
-            activeSearchQuery={activeSearchQuery}
-            onSetActiveFacets={onSetActiveFacets}
-            onSetFilenameVars={onSetFilenameVars}
-            onSetGeneralFacets={onSetGeneralFacets}
-            nodeStatus={nodeStatus}
-          />
+          <FacetsForm />
         </div>
       )}
     </div>

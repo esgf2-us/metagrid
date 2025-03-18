@@ -9,17 +9,19 @@ import { Form, Select, Table as TableD, Tooltip, message } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
+import { useRecoilValue } from 'recoil';
 import { fetchWgetScript, ResponseError } from '../../api';
 import { topDataRowTargets } from '../../common/reactJoyrideSteps';
 import { formatBytes, showError, showNotice } from '../../common/utils';
 import { UserCart } from '../Cart/types';
 import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
-import { NodeStatusArray } from '../NodeStatus/types';
 import './Search.css';
 import Tabs from './Tabs';
 import { RawSearchResult, RawSearchResults, TextInputs } from './types';
 import GlobusToolTip from '../NodeStatus/GlobusToolTip';
+import { nodeStatusAtom } from '../App/recoil/atoms';
+import { NodeStatusArray } from '../NodeStatus/types';
 
 export type Props = {
   loading: boolean;
@@ -28,7 +30,6 @@ export type Props = {
   totalResults?: number;
   userCart: UserCart | [];
   selections?: RawSearchResults | [];
-  nodeStatus?: NodeStatusArray;
   filenameVars?: TextInputs | [];
   onUpdateCart: (item: RawSearchResults, operation: 'add' | 'remove') => void;
   onRowSelect?: (selectedRows: RawSearchResults | []) => void;
@@ -43,13 +44,13 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
   totalResults,
   userCart,
   selections,
-  nodeStatus,
   filenameVars,
   onUpdateCart,
   onRowSelect,
   onPageChange,
   onPageSizeChange,
 }) => {
+  const nodeStatus = useRecoilValue<NodeStatusArray>(nodeStatusAtom); // Use nodeStatusAtom recoil state
   const [messageApi, contextHolder] = message.useMessage();
 
   // Add options to this constant as needed

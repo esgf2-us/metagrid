@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * This file contains tests for the App component.
  *
@@ -5,7 +6,7 @@
  * in order to mock their behaviors.
  *
  */
-import { within, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { message } from 'antd';
 import React, { ReactNode, CSSProperties } from 'react';
 import { UserEvent } from '@testing-library/user-event';
@@ -117,27 +118,81 @@ export const globusReadyNode: string = 'nodeIsGlobusReady';
 export const nodeNotGlobusReady: string = 'nodeIsNotGlobusReady';
 
 export class RecoilWrapper {
-  settings: Array<{ atom: RecoilState<unknown>; value: unknown; persist: boolean }> = [];
+  private static instance: RecoilWrapper;
 
-  addSetting<T>(recoilAtom: RecoilState<T>, value: T, persist: boolean = true): void {
-    this.settings.push({
+  private modified = false;
+
+  private restore = false;
+
+  private ATOMS: {
+    [key: string]: {
+      atom: RecoilState<unknown>;
+      value: unknown;
+      prevValue: unknown;
+      saveLocal: boolean;
+    };
+  } = {};
+
+  private constructor() {
+    this.ATOMS = {};
+  }
+
+  public static get Instance(): RecoilWrapper {
+    if (!this.instance) {
+      this.instance = new this();
+    }
+    return this.instance;
+  }
+
+  setAtomValue<T>(recoilAtom: RecoilState<T>, value: T, saveLocal: boolean): RecoilWrapper {
+    this.ATOMS[recoilAtom.key] = {
       atom: recoilAtom as RecoilState<unknown>,
-      value: value as unknown,
-      persist,
-    });
+      value,
+      prevValue: value,
+      saveLocal,
+    };
+    return this;
+  }
+
+  modifyAtomValue<T>(recoilAtom: RecoilState<T>, value: T): RecoilWrapper {
+    if (this.ATOMS[recoilAtom.key]) {
+      this.ATOMS[recoilAtom.key].prevValue = this.ATOMS[recoilAtom.key].value;
+      this.ATOMS[recoilAtom.key].value = value;
+      this.modified = true;
+    } else {
+      console.error(
+        `Atom ${recoilAtom.key} not found in RecoilWrapper. Please set the atom value first.`
+      );
+    }
+
+    return this;
   }
 
   wrap(children: React.ReactElement): React.ReactElement {
-    this.settings.forEach((setting) => {
-      if (setting.persist) {
-        saveToLocalStorage(setting.atom.key, setting.value);
+    Object.keys(this.ATOMS).forEach((key) => {
+      const atomInfo = this.ATOMS[key];
+
+      if (this.restore) {
+        atomInfo.value = atomInfo.prevValue;
+      }
+
+      // Save the atoms to the local storage
+      if (atomInfo.saveLocal) {
+        saveToLocalStorage(key, atomInfo.value);
       }
     });
+
+    if (this.modified) {
+      this.restore = true;
+      this.modified = false;
+    }
+
     return (
       <RecoilRoot
         initializeState={(snapshot) => {
-          this.settings.forEach((setting) => {
-            snapshot.set(setting.atom, setting.value);
+          Object.keys(this.ATOMS).forEach((key) => {
+            const atomInfo = this.ATOMS[key];
+            snapshot.set(atomInfo.atom, atomInfo.value);
           });
         }}
       >

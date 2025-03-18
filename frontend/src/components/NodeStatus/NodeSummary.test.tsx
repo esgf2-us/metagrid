@@ -37,10 +37,8 @@ it('renders component placeholder with no node status information', async () => 
 });
 
 it('renders component with dark mode enabled', async () => {
-  // saveToLocalStorage(isDarkModeAtom.key, true);
-  const recoil = new RecoilWrapper();
-  recoil.addSetting(isDarkModeAtom, true);
-  customRender(recoil.wrap(<NodeSummary {...defaultProps} />));
+  RecoilWrapper.Instance.modifyAtomValue(isDarkModeAtom, true);
+  customRender(<NodeSummary {...defaultProps} />, { usesRecoil: true });
 
   const numNodes = await screen.findByTestId('numNodes');
   expect(within(numNodes).getByText('2')).toBeTruthy();

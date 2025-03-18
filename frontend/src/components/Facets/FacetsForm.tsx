@@ -26,16 +26,15 @@ import weekOfYear from 'dayjs/plugin/weekOfYear';
 import weekYear from 'dayjs/plugin/weekYear';
 
 import React from 'react';
-import { useRecoilValue } from 'recoil';
+import { useRecoilState, useRecoilValue } from 'recoil';
 import { leftSidebarTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
-import { NodeStatusArray } from '../NodeStatus/types';
-import { ActiveSearchQuery, ResultType, VersionDate, VersionType } from '../Search/types';
+import { ActiveSearchQuery, ResultType, VersionType } from '../Search/types';
 import { ActiveFacets, ParsedFacets } from './types';
-import { showNotice } from '../../common/utils';
-import { availableFacetsAtom } from '../App/recoil/atoms';
+import { showError, showNotice } from '../../common/utils';
+import { activeSearchQueryAtom, availableFacetsAtom } from '../App/recoil/atoms';
 
 dayjs.extend(customParseFormat);
 dayjs.extend(advancedFormat);
@@ -53,19 +52,6 @@ const styles: CSSinJS = {
   formTitle: { fontWeight: 'bold', textTransform: 'capitalize' },
   applyBtn: { marginBottom: '12px' },
   collapseContainer: { marginTop: '5px' },
-};
-
-export type Props = {
-  activeSearchQuery: ActiveSearchQuery;
-  nodeStatus?: NodeStatusArray;
-  onSetFilenameVars: (filenameVar: string) => void;
-  onSetGeneralFacets: (
-    versionType: VersionType,
-    resultType: ResultType,
-    minVersionDate: VersionDate,
-    maxVersionDate: VersionDate
-  ) => void;
-  onSetActiveFacets: (activeFacets: ActiveFacets) => void;
 };
 
 /**
@@ -97,13 +83,14 @@ export const formatDate = (date: string | Dayjs, toString: boolean): string | Da
   return dayjs(date, format);
 };
 
-const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
-  activeSearchQuery,
-  nodeStatus,
-  onSetFilenameVars,
-  onSetGeneralFacets,
-  onSetActiveFacets,
-}) => {
+const FacetsForm: React.FC = () => {
+  // Recoil state
+  const [activeSearchQuery, setActiveSearchQuery] = useRecoilState<ActiveSearchQuery>(
+    activeSearchQueryAtom
+  );
+
+  // Local variables
+
   const [messageApi, contextHolder] = message.useMessage();
 
   const [generalFacetsForm] = Form.useForm();
@@ -140,12 +127,47 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
     maxVersionDate ? formatDate(maxVersionDate, false) : (maxVersionDate as null),
   ];
 
+  // const handleOnSetFilenameVars = (filenameVar: string): void => {
+  //   if (activeSearchQuery.filenameVars.includes(filenameVar as never)) {
+  //     showError(messageApi, `Input "${filenameVar}" has already been applied`);
+  //   } else {
+  //     setActiveSearchQuery({
+  //       ...activeSearchQuery,
+  //       filenameVars: [...activeSearchQuery.filenameVars, filenameVar],
+  //     });
+  //   }
+  // };
+
   const handleOnFinishFilenameVarForm = (values: { [key: string]: string }): void => {
-    onSetFilenameVars(values.filenameVar);
+    // handleOnSetFilenameVars(values.filenameVar);
+
+    if (activeSearchQuery.filenameVars.includes(values.filenameVar as never)) {
+      showError(messageApi, `Input "${values.filenameVar}" has already been applied`);
+    } else {
+      setActiveSearchQuery({
+        ...activeSearchQuery,
+        filenameVars: [...activeSearchQuery.filenameVars, values.filenameVar],
+      });
+    }
 
     setFilenameVar('');
     filenameVarForm.setFieldsValue({ filenameVar: '' });
   };
+
+  // const handleOnSetGeneralFacets = (
+  //   versionType: VersionType,
+  //   resultType: ResultType,
+  //   minVersionDate: VersionDate,
+  //   maxVersionDate: VersionDate
+  // ): void => {
+  //   setActiveSearchQuery({
+  //     ...activeSearchQuery,
+  //     versionType,
+  //     resultType,
+  //     minVersionDate,
+  //     maxVersionDate,
+  //   });
+  // };
 
   const handleOnChangeGeneralFacetsForm = (selectedFacets: {
     versionType: VersionType;
@@ -167,7 +189,14 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
       newMaxVersionDate = maxDate ? (formatDate(maxDate, true) as string) : maxDate;
     }
 
-    onSetGeneralFacets(newVersionType, newResultType, newMinVersionDate, newMaxVersionDate);
+    setActiveSearchQuery({
+      ...activeSearchQuery,
+      versionType: newVersionType,
+      resultType: newResultType,
+      minVersionDate: newMinVersionDate,
+      maxVersionDate: newMaxVersionDate,
+    });
+    // onSetGeneralFacets(newVersionType, newResultType, newMinVersionDate, newMaxVersionDate);
   };
 
   const handleOnSelectAvailableFacetsForm = (facet: string, options: string[] | []): void => {
@@ -180,16 +209,28 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
 
     if (globusOnly) {
       const newActiveFacets = activeSearchQuery.activeFacets;
-      onSetActiveFacets({
-        ...newActiveFacets,
-        dataNode: window.METAGRID.GLOBUS_NODES,
-      } as ActiveFacets);
+      // onSetActiveFacets({
+      //   ...newActiveFacets,
+      //   dataNode: window.METAGRID.GLOBUS_NODES,
+      // } as ActiveFacets);
+      setActiveSearchQuery({
+        ...activeSearchQuery,
+        activeFacets: {
+          ...newActiveFacets,
+          dataNode: window.METAGRID.GLOBUS_NODES,
+        },
+      });
     } else {
-      const newActiveFacets = activeSearchQuery.activeFacets;
-      delete newActiveFacets.dataNode;
-      onSetActiveFacets(newActiveFacets);
+      const { dataNode, ...newActiveFacets } = activeSearchQuery.activeFacets;
+      // delete newActiveFacets.dataNode;
+      setActiveSearchQuery({ ...activeSearchQuery, activeFacets: newActiveFacets });
+      // onSetActiveFacets(newActiveFacets);
     }
   };
+
+  // const handleOnSetActiveFacets = (activeFacets: ActiveFacets): void => {
+  //   setActiveSearchQuery({ ...activeSearchQuery, activeFacets });
+  // };
 
   /**
    * Need to reset the form fields when the active search query updates to
@@ -208,12 +249,20 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
       if (options.length === 0) {
         const { [facet]: remove, ...updatedFacets } = newActiveFacets;
 
-        onSetActiveFacets(updatedFacets);
+        setActiveSearchQuery({ ...activeSearchQuery, activeFacets: updatedFacets });
+        // onSetActiveFacets(updatedFacets);
       } else if (options.length > 0) {
-        onSetActiveFacets({
-          ...newActiveFacets,
-          [facet]: options,
-        } as ActiveFacets);
+        // onSetActiveFacets({
+        //   ...newActiveFacets,
+        //   [facet]: options,
+        // } as ActiveFacets);
+        setActiveSearchQuery({
+          ...activeSearchQuery,
+          activeFacets: {
+            ...newActiveFacets,
+            [facet]: options,
+          },
+        });
       }
       setActiveDropdownValue(null);
     }
@@ -405,7 +454,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                             // The data node facet has a unique tooltip overlay to show the status of the highlighted node
                             if (facet === 'data_node') {
                               optionOutput = (
-                                <StatusToolTip nodeStatus={nodeStatus} dataNode={variable[0]}>
+                                <StatusToolTip dataNode={variable[0]}>
                                   <span style={styles.facetCount}>({variable[1]})</span>
                                 </StatusToolTip>
                               );

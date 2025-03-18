@@ -3,14 +3,12 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import NodeStatus, { Props } from '.';
 import { ResponseError } from '../../api';
-import { parsedNodeStatusFixture } from '../../test/mock/fixtures';
 import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
 
 const user = userEvent.setup();
 
 const defaultProps: Props = {
-  nodeStatus: parsedNodeStatusFixture(),
   apiError: undefined,
   isLoading: false,
 };
@@ -25,7 +23,7 @@ it('renders the loading table', async () => {
 });
 
 it('renders the node status and columns sort', async () => {
-  customRender(<NodeStatus {...defaultProps}></NodeStatus>);
+  customRender(<NodeStatus {...defaultProps}></NodeStatus>, { usesRecoil: true });
 
   const header = await screen.findByRole('heading', {
     name: 'Status as of Wed, 21 Oct 2020 21:23:50 GMT',
@@ -73,7 +71,7 @@ it('renders error message that feature is disabled', async () => {
   const errorMsg =
     'This feature is not enabled on this node or status information is currently unavailable.';
 
-  customRender(<NodeStatus isLoading={false} nodeStatus={[]}></NodeStatus>);
+  customRender(<NodeStatus isLoading={false} />, { usesRecoil: true });
 
   const alertMsg = await screen.findByRole('alert');
   expect(alertMsg).toBeTruthy();

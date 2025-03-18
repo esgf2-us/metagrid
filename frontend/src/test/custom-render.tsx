@@ -79,23 +79,29 @@ const AuthProvider = ({
 const customRender = (
   ui: React.ReactElement,
   options: {
+    usesRecoil: boolean;
     authenticated?: boolean;
-    recoilWrapper?: RecoilWrapper;
     options?: Record<string, unknown>;
-  } = { authenticated: true, recoilWrapper: undefined, options: {} }
-): RenderResult =>
-  render(ui, {
-    wrapper: () =>
-      options.recoilWrapper ? (
-        options.recoilWrapper.wrap(
+  } = { usesRecoil: true, authenticated: true, options: {} }
+): RenderResult => {
+  const recoilWrapper = RecoilWrapper.Instance;
+  if (options.usesRecoil) {
+    return render(ui, {
+      wrapper: () =>
+        recoilWrapper.wrap(
           <AuthProvider authenticated={options.authenticated || true}>{ui}</AuthProvider>
-        )
-      ) : (
-        <RecoilRoot>
-          <AuthProvider authenticated={options.authenticated || true}>{ui}</AuthProvider>
-        </RecoilRoot>
-      ),
+        ),
+      ...options.options,
+    });
+  }
+  return render(ui, {
+    wrapper: () => (
+      <RecoilRoot>
+        <AuthProvider authenticated={options.authenticated || true}>{ui}</AuthProvider>
+      </RecoilRoot>
+    ),
     ...options.options,
   });
+};
 
 export default customRender;
