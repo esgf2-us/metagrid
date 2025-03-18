@@ -1,12 +1,15 @@
 import { AutoComplete, Button, Divider, Popover, Tabs as TabsD } from 'antd';
 import React from 'react';
+import { useRecoilValue } from 'recoil';
 import { objectHasKey, splitStringByChar } from '../../common/utils';
 import qualityFlagsImg from '../../assets/img/climate_indicators_table.png';
 import Citation from './Citation';
 import FilesTable from './FilesTable';
-import { RawSearchResult, TextInputs } from './types';
+import { RawSearchResult, RawSTACSearchResult, TextInputs } from './types';
 import { CSSinJS } from '../../common/types';
 import { innerDataRowTargets } from '../../common/reactJoyrideSteps';
+import { isSTACmodeAtom } from '../App/recoil/atoms';
+import FilesTableSTAC from './FilesTableSTAC';
 
 const styles: CSSinJS = {
   qualityFlagsRow: { display: 'flex' },
@@ -21,7 +24,10 @@ const styles: CSSinJS = {
   },
 };
 
-export type Props = { record: RawSearchResult; filenameVars?: TextInputs | [] };
+export type Props = {
+  record: RawSearchResult | RawSTACSearchResult;
+  filenameVars?: TextInputs | [];
+};
 
 export type QualityFlagProps = { index: string; color: string };
 
@@ -35,9 +41,37 @@ export const QualityFlag: React.FC<
 );
 
 const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }) => {
-  const metaData = Object.entries(record).map(([k, v]) => ({
-    value: `${k}: ${v as string}`,
-  }));
+  const useSTAC = useRecoilValue<boolean>(isSTACmodeAtom);
+
+  const metaData: { key: string; value: string }[] = [];
+
+  Object.entries(record).forEach(([k, v]) => {
+    if (Array.isArray(v)) {
+      v.forEach((item, idx) => {
+        const value = { key: `${idx}-${item}`, value: `${idx}: ${item}` };
+        metaData.push(value);
+      });
+
+      return { key: k, value: `${k}:` };
+    }
+
+    if (typeof v === 'object') {
+      if (v) {
+        Object.entries(v).forEach(([k2, v2]) => {
+          const value = { key: `${k}-${k2}`, value: `${k2}: ${v2}` };
+          metaData.push(value);
+        });
+      }
+
+      return { key: k, value: `${k}:` };
+    }
+
+    if (typeof v === 'string') {
+      return { key: k, value: `${k}: ${v}` };
+    }
+
+    return { key: k, value: `${k}: ${v as string}` };
+  });
 
   // Have to parse and format since 'xlink' attribute is poorly structured
   // in the Search API
@@ -91,23 +125,53 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
 
   const showCitation = objectHasKey(record, 'citation_url');
   const showESDOC =
-    objectHasKey(record, 'further_info_url') &&
-    ((record.further_info_url as unknown) as string)[0] !== '';
+    objectHasKey(record, 'further_info_url') && (record.further_info_url as string)[0] !== '';
   const showQualityFlags = Object.keys(qualityFlags).length > 0;
   const showAdditionalLinks = urlCount > 0;
   const showAdditionalTab = showESDOC || showQualityFlags || showAdditionalLinks;
+
+  let numberOfFiles = 0;
+  if (useSTAC) {
+    const { assets } = record as RawSTACSearchResult;
+    Object.keys(assets).forEach((key) => {
+      const asset = assets[key];
+      if (asset.type === 'application/netcdf') {
+        numberOfFiles += 1;
+      }
+    });
+  } else {
+    numberOfFiles = record.number_of_files as number;
+  }
+
+  let citationUrl = '';
+  if (useSTAC) {
+    const { properties } = record as RawSTACSearchResult;
+    if (properties.citation_url) {
+      citationUrl = properties.citation_url;
+    }
+  } else if ((record as RawSearchResult).citation_url) {
+    citationUrl = record.citation_url as string;
+  }
+
+  let furtherInfoUrl = '';
+  if (useSTAC) {
+    const { properties } = record as RawSTACSearchResult;
+    if (properties.further_info_url) {
+      furtherInfoUrl = properties.further_info_url;
+    }
+  } else if ((record as RawSearchResult).further_info_url) {
+    furtherInfoUrl = record.further_info_url as string;
+  }
 
   const tabList = [
     {
       key: '1',
       disabled: record.retracted === true,
       label: <div className={innerDataRowTargets.filesTab.class()}>Files</div>,
-      children: (
-        <FilesTable
-          id={record.id}
-          numResults={record.number_of_files}
-          filenameVars={filenameVars}
-        />
+      children: useSTAC ? (
+        <FilesTableSTAC inputRecord={record as RawSTACSearchResult} />
+      ) : (
+        <FilesTable id={record.id} numResults={numberOfFiles} filenameVars={filenameVars} />
       ),
     },
     {
@@ -115,7 +179,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
       disabled: record.retracted === true,
       label: <div className={innerDataRowTargets.metadataTab.class()}>Metadata</div>,
       children: (
-        <>
+        <div key={record.id}>
           <h4>Displaying {Object.keys(record).length} keys</h4>
           <AutoComplete
             style={{ width: '100%' }}
@@ -130,12 +194,48 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
             }
           />
           <Divider />
-          {Object.keys(record).map((key) => (
-            <p key={key} style={{ margin: 0 }}>
-              <span style={{ fontWeight: 'bold' }}>{key}</span>: {String(record[key])}
-            </p>
-          ))}
-        </>
+          {Object.entries(record).map(([k, v]) => {
+            if (k === 'assets') {
+              return null;
+            }
+            if (typeof v === 'object') {
+              if (v !== null && v !== undefined) {
+                return (
+                  <div key={k}>
+                    <p style={{ margin: 0 }}>
+                      <span style={{ fontWeight: 'bold' }}>{k}</span>:
+                    </p>
+                    <ol style={{ margin: 0, listStyleType: 'none' }}>
+                      {Object.entries(v).map((item) => {
+                        const newKey = `${k}-${item[0]}`;
+                        return (
+                          <li key={newKey}>
+                            <span style={{ fontWeight: 'bold' }}>{item[0]}</span>:{' '}
+                            {JSON.stringify(item[1])}
+                          </li>
+                        );
+                      })}
+                    </ol>
+                  </div>
+                );
+              }
+            }
+
+            if (typeof v === 'string') {
+              return (
+                <p key={k} style={{ margin: 0 }}>
+                  <span style={{ fontWeight: 'bold' }}>{k}</span>: {v}
+                </p>
+              );
+            }
+
+            return (
+              <p key={k} style={{ margin: 0 }}>
+                <span style={{ fontWeight: 'bold' }}>{k}</span>: {JSON.stringify(v)}
+              </p>
+            );
+          })}
+        </div>
       ),
     },
   ];
@@ -148,7 +248,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
       children: (
         <Citation
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          url={record.citation_url![0]}
+          url={citationUrl}
         />
       ),
     });
@@ -162,11 +262,11 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
       children: (
         <>
           {showAdditionalLinks && additionalLinks}
-          {showESDOC && ((record.further_info_url as unknown) as string)[0] !== '' && (
+          {showESDOC && furtherInfoUrl !== '' && (
             <Button
               type="link"
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              href={record.further_info_url![0]}
+              href={furtherInfoUrl}
               target="_blank"
             >
               ES-DOC
@@ -196,115 +296,6 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
   }
 
   return <TabsD activeKey={record.retracted === true ? '2' : undefined} items={tabList} />;
-  // Disable all tabs excep metadata if the record is retracted
-  /* <TabsD activeKey={record.retracted === true ? '2' : undefined} />;
-  <TabsD.TabPane
-        disabled={record.retracted === true}
-        tab={<div className={innerDataRowTargets.filesTab.class()}>Files</div>}
-        key="1"
-      >
-        <FilesTable
-          id={record.id}
-          numResults={record.number_of_files}
-          filenameVars={filenameVars}
-        />
-      </TabsD.TabPane>
-  <TabsD.TabPane
-        tab={
-          <div className={innerDataRowTargets.metadataTab.class()}>
-            Metadata
-          </div>
-        }
-        key="2"
-      >
-        <h4>Displaying {Object.keys(record).length} keys</h4>
-        <AutoComplete
-          style={{ width: '100%' }}
-          className={innerDataRowTargets.metadataLookupField.class()}
-          options={metaData}
-          placeholder="Lookup a key..."
-          filterOption={
-            /* istanbul ignore next  (inputValue, option) =>
-              (option as Record<'value', string>).value
-                .toUpperCase()
-                .indexOf(inputValue.toUpperCase()) !== -1
-          }
-        />
-        <Divider />
-        {Object.keys(record).map((key) => (
-          <p key={key} style={{ margin: 0 }}>
-            <span style={{ fontWeight: 'bold' }}>{key}</span>:{' '}
-            {String(record[key])}
-          </p>
-        ))}
-      </TabsD.TabPane>
-  {showCitation && (
-        <TabsD.TabPane
-          disabled={record.retracted === true}
-          tab={
-            <div className={innerDataRowTargets.citationTab.class()}>
-              Citation
-            </div>
-          }
-          key="3"
-        >
-          <Citation
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            url={record.citation_url![0]}
-          />
-        </TabsD.TabPane>
-      )}
-  {showAdditionalTab && (
-        <TabsD.TabPane
-          disabled={record.retracted === true}
-          tab={
-            <div className={innerDataRowTargets.additionalTab.class()}>
-              Additional
-            </div>
-          }
-          key="4"
-        >
-          {showAdditionalLinks && additionalLinks}
-          {showESDOC &&
-            ((record.further_info_url as unknown) as string)[0] !== '' && (
-              <Button
-                type="link"
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                href={record.further_info_url![0]}
-                target="_blank"
-              >
-                ES-DOC
-              </Button>
-            )}
-          {showQualityFlags && (
-            <Button
-              type="link"
-              href="https://esgf-node.llnl.gov/projects/obs4mips/DatasetIndicators"
-              target="_blank"
-            >
-              <Popover
-                placement="topLeft"
-                content={
-                  <img
-                    src={qualityFlagsImg}
-                    alt="Quality Flags Indicator"
-                  ></img>
-                }
-              >
-                <span style={styles.qualityFlagsRow}>
-                  {Object.keys(qualityFlags).map((key) => (
-                    <QualityFlag
-                      index={key}
-                      color={qualityFlags[key]}
-                      key={key}
-                    />
-                  ))}
-                </span>
-              </Popover>
-            </Button>
-          )}
-        </TabsD.TabPane>
-      )}*/
 };
 
 export default Tabs;

@@ -7,8 +7,9 @@ import {
 } from '@ant-design/icons';
 import { Form, Select, Table as TableD, Tooltip, message } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
-import { TablePaginationConfig } from 'antd/lib/table';
+import { ColumnsType, TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
+import { useRecoilValue } from 'recoil';
 import { fetchWgetScript, ResponseError } from '../../api';
 import { topDataRowTargets } from '../../common/reactJoyrideSteps';
 import { formatBytes, showError, showNotice } from '../../common/utils';
@@ -18,20 +19,28 @@ import StatusToolTip from '../NodeStatus/StatusToolTip';
 import { NodeStatusArray } from '../NodeStatus/types';
 import './Search.css';
 import Tabs from './Tabs';
-import { RawSearchResult, RawSearchResults, TextInputs } from './types';
+import {
+  FeatureAssets,
+  FeaturePropertiesSTAC,
+  RawSearchResult,
+  RawSearchResults,
+  RawSTACSearchResult,
+  TextInputs,
+} from './types';
 import GlobusToolTip from '../NodeStatus/GlobusToolTip';
+import { isSTACmodeAtom } from '../App/recoil/atoms';
 
 export type Props = {
   loading: boolean;
   canDisableRows?: boolean;
-  results: RawSearchResults | [];
+  results: RawSearchResults;
   totalResults?: number;
-  userCart: UserCart | [];
-  selections?: RawSearchResults | [];
+  userCart: UserCart;
+  selections?: RawSearchResults;
   nodeStatus?: NodeStatusArray;
   filenameVars?: TextInputs | [];
   onUpdateCart: (item: RawSearchResults, operation: 'add' | 'remove') => void;
-  onRowSelect?: (selectedRows: RawSearchResults | []) => void;
+  onRowSelect?: (selectedRows: RawSearchResults) => void;
   onPageChange?: (page: number, pageSize: number) => void;
   onPageSizeChange?: (size: number) => void;
 };
@@ -51,6 +60,8 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
   onPageSizeChange,
 }) => {
   const [messageApi, contextHolder] = message.useMessage();
+
+  const useSTAC = useRecoilValue<boolean>(isSTACmodeAtom);
 
   // Add options to this constant as needed
   type DatasetDownloadTypes = 'wget' | 'Globus';
@@ -75,7 +86,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
         onPageSizeChange && onPageSizeChange(size),
     } as TablePaginationConfig,
     expandable: {
-      expandedRowRender: (record: RawSearchResult) => (
+      expandedRowRender: (record: RawSearchResult | RawSTACSearchResult) => (
         <Tabs data-test-id="extra-tabs" record={record} filenameVars={filenameVars}></Tabs>
       ),
       expandIcon: ({
@@ -85,10 +96,10 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       }: {
         expanded: boolean;
         onExpand: (
-          rowRecord: RawSearchResult,
+          rowRecord: RawSearchResult | RawSTACSearchResult,
           e: React.MouseEvent<HTMLSpanElement, MouseEvent>
         ) => void;
-        record: RawSearchResult;
+        record: RawSearchResult | RawSTACSearchResult;
       }): React.ReactElement =>
         expanded ? (
           <DownCircleOutlined
@@ -120,10 +131,11 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
           onRowSelect(selectedRows as RawSearchResults);
         }
       },
-      getCheckboxProps: (record: RawSearchResult) => ({
+      getCheckboxProps: (record: RawSearchResult | RawSTACSearchResult) => ({
         disabled:
           canDisableRows &&
-          (userCart.some((item) => item.id === record.id) || record.retracted === true),
+          (userCart.some((item) => item.id === record.id) ||
+            ('retracted' in record && record.retracted === true)),
       }),
     },
     hasData: results.length > 0,
@@ -132,7 +144,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
   type AlignType = 'left' | 'center' | 'right';
   type FixedType = 'left' | 'right' | boolean;
 
-  const columns = [
+  const columns: ColumnsType<RawSearchResult> = [
     {
       align: 'right' as AlignType,
       fixed: 'left' as FixedType,
@@ -140,7 +152,16 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       key: 'cart',
       width: 50,
       render: (value: string, record: RawSearchResult, index: number) => {
-        if (userCart.some((dataset: RawSearchResult) => dataset.id === record.id)) {
+        let disabled = false;
+        if (record.retracted) {
+          disabled = true;
+        }
+
+        if (
+          userCart.some(
+            (dataset: RawSearchResult | RawSTACSearchResult) => dataset.id === record.id
+          )
+        ) {
           return (
             <>
               <Button
@@ -156,7 +177,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
           <>
             <Button
               type="primary"
-              disabled={record.retracted === true}
+              disabled={disabled}
               icon={
                 <PlusOutlined
                   className={topDataRowTargets.cartAddBtn.class('plus')}
@@ -330,10 +351,91 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
         },
   ];
 
+  const stacColumns: ColumnsType<RawSTACSearchResult> = [
+    {
+      align: 'right' as AlignType,
+      fixed: 'left' as FixedType,
+      title: 'Cart',
+      key: 'cart',
+      render: (value: string, record: RawSearchResult | RawSTACSearchResult, index: number) => {
+        if (
+          userCart.some(
+            (dataset: RawSearchResult | RawSTACSearchResult) => dataset.id === record.id
+          )
+        ) {
+          return (
+            <>
+              <Button
+                className={topDataRowTargets.cartAddBtn.class('minus')}
+                icon={<MinusOutlined data-testid={`row-${index}-remove-from-cart`} />}
+                onClick={() => onUpdateCart([record], 'remove')}
+                danger
+              />
+            </>
+          );
+        }
+        return (
+          <>
+            <Button
+              type="primary"
+              icon={
+                <PlusOutlined
+                  className={topDataRowTargets.cartAddBtn.class('plus')}
+                  data-testid={`row-${index}-add-to-cart`}
+                />
+              }
+              onClick={() => onUpdateCart([record], 'add')}
+            />
+          </>
+        );
+      },
+    },
+    {
+      title: 'Dataset ID',
+      dataIndex: 'id',
+      key: 'title',
+      width: 'auto',
+      render: (title: string) => {
+        return <div className={topDataRowTargets.datasetTitle.class()}>{title}</div>;
+      },
+    },
+    {
+      align: 'center' as AlignType,
+      title: 'Files',
+      dataIndex: 'assets',
+      key: 'assets',
+      width: 70,
+      render: (assets: FeatureAssets) => {
+        let numberOfFiles = 0;
+        Object.keys(assets).forEach((key) => {
+          const asset = assets[key];
+          if (asset.type === 'application/netcdf') {
+            numberOfFiles += 1;
+          }
+        });
+        return <p className={topDataRowTargets.fileCount.class()}>{numberOfFiles || 'N/A'}</p>;
+      },
+    },
+    {
+      align: 'center' as AlignType,
+      title: 'Version',
+      dataIndex: 'properties',
+      key: 'version',
+      width: 130,
+      render: (properties: FeaturePropertiesSTAC) => (
+        <p className={topDataRowTargets.versionText.class()}>{properties.version}</p>
+      ),
+    },
+  ];
+
+  const columnsToRender: ColumnsType<RawSearchResult | RawSTACSearchResult> | undefined = useSTAC
+    ? (stacColumns as ColumnsType<RawSearchResult | RawSTACSearchResult>)
+    : (columns as ColumnsType<RawSearchResult | RawSTACSearchResult>);
+
   return (
     <TableD
       {...tableConfig}
-      columns={columns}
+      columns={columnsToRender}
       dataSource={results}
       rowKey="id"
       size="small"

@@ -58,6 +58,7 @@ import {
   ActiveSearchQuery,
   RawSearchResult,
   RawSearchResults,
+  RawSTACSearchResult,
   ResultType,
   VersionDate,
   VersionType,
@@ -373,7 +374,8 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     /* istanbul ignore else */
     if (operation === 'add') {
       const itemsNotInCart = selectedItems.filter(
-        (item: RawSearchResult) => !userCart.some((dataset) => dataset.id === item.id)
+        (item: RawSearchResult | RawSTACSearchResult) =>
+          !userCart.some((dataset) => dataset.id === item.id)
       );
 
       newCart = [...userCart, ...itemsNotInCart];
@@ -386,11 +388,15 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
       });
     } else if (operation === 'remove') {
       newCart = userCart.filter((item) =>
-        selectedItems.some((dataset: RawSearchResult) => dataset.id !== item.id)
+        selectedItems.some(
+          (dataset: RawSearchResult | RawSTACSearchResult) => dataset.id !== item.id
+        )
       );
 
       newSelections = itemSelections.filter((item) =>
-        selectedItems.some((dataset: RawSearchResult) => dataset.id !== item.id)
+        selectedItems.some(
+          (dataset: RawSearchResult | RawSTACSearchResult) => dataset.id !== item.id
+        )
       );
 
       setUserCart(newCart);
@@ -596,7 +602,9 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
                         activeSearchQuery={activeSearchQuery}
                         userCart={userCart}
                         nodeStatus={nodeStatus}
-                        onUpdateAvailableFacets={(facets) => setAvailableFacets(facets)}
+                        onUpdateAvailableFacets={(facets: ParsedFacets) =>
+                          setAvailableFacets(facets)
+                        }
                         onUpdateCart={handleUpdateCart}
                         onRemoveFilter={handleRemoveFilter}
                         onClearFilters={handleClearFilters}

@@ -416,56 +416,10 @@ export const generateSearchURLQuery = (
  *
  * Example output: https://esgf-node.llnl.gov/esg-search/search/?replica=false&offset=0&limit=10&query=foo&baz=option1&foo=option1
  */
-export const generateSearchSTACQuery = (
-  activeSearchQuery: ActiveSearchQuery | UserSearchQuery,
-  pagination: { page: number; pageSize: number }
-): string => {
-  const {
-    project,
-    versionType,
-    resultType,
-    minVersionDate,
-    maxVersionDate,
-    activeFacets,
-    textInputs,
-  } = activeSearchQuery;
-  const baseRoute = `${apiRoutes.esgfSearchSTAC.path}?`;
-  // const replicaParam = convertResultTypeToReplicaParam(resultType);
+export const generateSearchSTACQuery = (): string => {
+  const baseRoute = `${apiRoutes.esgfSearchSTAC.path}`;
 
-  // // The base params include facet fields to return for each dataset and the pagination options
-  // let baseParams = updatePaginationParams(project.facetsUrl as string, pagination);
-
-  // if (versionType === 'latest') {
-  //   baseParams += `latest=true&`;
-  // }
-  // if (replicaParam) {
-  //   baseParams += `${replicaParam}&`;
-  // }
-  // if (minVersionDate) {
-  //   baseParams += `min_version=${minVersionDate}&`;
-  // }
-  // if (maxVersionDate) {
-  //   baseParams += `max_version=${maxVersionDate}&`;
-  // }
-
-  // let textInputsParams = 'query=*';
-  // if (textInputs.length > 0) {
-  //   textInputsParams = queryString.stringify(
-  //     { query: textInputs },
-  //     {
-  //       arrayFormat: 'comma',
-  //     }
-  //   );
-  // }
-
-  // const activeFacetsParams = queryString.stringify(
-  //   humps.decamelizeKeys(activeFacets) as ActiveFacets,
-  //   {
-  //     arrayFormat: 'comma',
-  //   }
-  // );
   return `${baseRoute}`;
-  // return `${baseRoute}${baseParams}${textInputsParams}&${activeFacetsParams}`;
 };
 
 /**
@@ -494,7 +448,6 @@ export const fetchSearchResults = async (
   return fetch(reqUrlStr)
     .then((results) => {
       const resultsJson = results.json();
-      console.log(resultsJson);
       return resultsJson;
     })
     .catch((error: ResponseError) => {
@@ -525,15 +478,25 @@ export const fetchSTACSearchResults = async (
     reqUrlStr = args.reqUrl;
   }
 
-  return fetch(reqUrlStr)
+  const facetSummary = await fetch(
+    'https://data-challenge-01.api.stac.esgf-west.org/collections/CMIP6'
+  )
     .then((results) => {
-      const resultsJson = results.json();
-      console.log(resultsJson);
-      return resultsJson;
+      return results.json();
     })
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearchSTAC));
     });
+
+  const searchResults = await fetch(reqUrlStr)
+    .then((results) => {
+      return results.json();
+    })
+    .catch((error: ResponseError) => {
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearchSTAC));
+    });
+
+  return { search: searchResults, facets: facetSummary };
 };
 
 /**

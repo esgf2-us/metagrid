@@ -31,6 +31,7 @@ import {
   Pagination,
   RawSearchResult,
   RawSearchResults,
+  RawSTACSearchResult,
   ResultType,
   TextInputs,
   VersionDate,
@@ -170,26 +171,12 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
     {}
   );
   const [currentRequestURL, setCurrentRequestURL] = React.useState<string | null>(null);
-  const [selectedItems, setSelectedItems] = React.useState<RawSearchResults | []>([]);
+  const [selectedItems, setSelectedItems] = React.useState<RawSearchResults>([]);
 
   const [paginationOptions, setPaginationOptions] = React.useState<Pagination>({
     page: 1,
     pageSize: 10,
   });
-
-  // Generate the current request URL based on filters
-  // React.useEffect(() => {
-  //   if (!objectIsEmpty(project)) {
-  //     let reqUrl = generateSearchURLQuery(activeSearchQuery, paginationOptions);
-  //     if (isStacProject(project)) {
-  //       if (!useSTAC) {
-  //         setUseSTAC(true);
-  //       }
-  //       reqUrl = generateSearchSTACQuery(activeSearchQuery, paginationOptions);
-  //     }
-  //     setCurrentRequestURL(reqUrl);
-  //   }
-  // }, [activeSearchQuery, project, paginationOptions]);
 
   React.useEffect(() => {
     setFiltersExist(checkFiltersExist(activeFacets, textInputs));
@@ -198,8 +185,9 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
   // Fetch search results
   React.useEffect(() => {
     if (useSTAC && !objectIsEmpty(project)) {
-      setCurrentRequestURL(generateSearchSTACQuery(activeSearchQuery, paginationOptions));
-      run(generateSearchSTACQuery(activeSearchQuery, paginationOptions));
+      const query = generateSearchSTACQuery();
+      setCurrentRequestURL(query);
+      run(generateSearchSTACQuery());
     } else if (!objectIsEmpty(project)) {
       setCurrentRequestURL(generateSearchURLQuery(activeSearchQuery, paginationOptions));
       run(generateSearchURLQuery(activeSearchQuery, paginationOptions));
@@ -210,10 +198,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
   React.useEffect(() => {
     if (results && !objectIsEmpty(results)) {
       if (isStacProject(project)) {
-        const { summaries: facetFields } = results as {
-          summaries: RawFacets;
-        };
-        setParsedFacets(facetFields);
+        const facets = (results as { facets: { summaries: RawFacets } }).facets.summaries;
+        setParsedFacets(facets);
       } else {
         const { facet_fields: facetFields } = (results as {
           facet_counts: { facet_fields: RawFacets };
@@ -234,7 +220,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
     // undefined values.
     // https://github.com/ant-design/ant-design/issues/24243
     const rows = (selectedRows as RawSearchResults).filter(
-      (row: RawSearchResult) => row !== undefined
+      (row: RawSearchResult | RawSTACSearchResult) => row !== undefined
     );
     setSelectedItems(rows);
   };
@@ -260,17 +246,22 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
 
   let numFound = 0;
   let docs: RawSearchResults = [];
-  if (results && !isStacProject(project)) {
-    numFound = (results as { response: { numFound: number } }).response.numFound;
-    docs = (results as { response: { docs: RawSearchResults } }).response.docs;
+  if (results) {
+    if (isStacProject(project)) {
+      numFound = (results as { search: { numReturned: number } }).search.numReturned;
+      docs = (results as { search: { features: RawSTACSearchResult[] } }).search.features;
+    } else {
+      numFound = (results as { response: { numFound: number } }).response.numFound;
+      docs = (results as { response: { docs: RawSearchResults } }).response.docs;
+    }
   }
 
   const allSelectedItemsInCart =
     selectedItems.filter(
-      (item: RawSearchResult) =>
+      (item: RawSearchResult | RawSTACSearchResult) =>
         !userCart.some(
           /* istanbul ignore next */
-          (dataset: RawSearchResult) => dataset.id === item.id
+          (dataset: RawSearchResult | RawSTACSearchResult) => dataset.id === item.id
         )
     ).length === 0;
 

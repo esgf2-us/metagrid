@@ -7,6 +7,7 @@ import {
   ActiveSearchQuery,
   RawSearchResult,
   RawSearchResults,
+  RawSTACSearchResult,
   ResultType,
   TextInputs,
   VersionType,
@@ -375,7 +376,8 @@ export const combineCarts = (
   localItems: RawSearchResults
 ): RawSearchResults => {
   const itemsNotInDatabase = localItems.filter(
-    (item: RawSearchResult) => !databaseItems.some((dataset) => dataset.id === item.id)
+    (item: RawSearchResult | RawSTACSearchResult) =>
+      !databaseItems.some((dataset) => dataset.id === item.id)
   );
   const combinedItems = databaseItems.concat(itemsNotInDatabase);
   return combinedItems;

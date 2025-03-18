@@ -15,7 +15,7 @@ import { innerDataRowTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import { formatBytes, showError, showNotice, splitStringByChar } from '../../common/utils';
 import Button from '../General/Button';
-import { Pagination, RawSearchResult, RawSearchResults, TextInputs } from './types';
+import { Pagination, RawSearchResult, TextInputs } from './types';
 
 export type DownloadUrls = {
   HTTPServer: string;
@@ -130,10 +130,10 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
     );
   }
 
-  let docs: RawSearchResults | [] = [];
+  let docs: RawSearchResult[] = [];
   if (data) {
     docs = (data as {
-      response: { docs: RawSearchResults };
+      response: { docs: RawSearchResult[] };
     }).response.docs;
   }
 

@@ -42,7 +42,37 @@ export type RawSearchResult = {
   [key: string]: boolean | string | string[] | number | undefined;
 };
 
-export type RawSearchResults = Array<RawSearchResult>;
+export type FeatureAssetSTAC = {
+  description: string;
+  name: string;
+  href: string;
+  type: string;
+  title?: string;
+  [key: string]: boolean | string | string[] | number | undefined;
+};
+
+export type FeaturePropertiesSTAC = {
+  access: string[];
+  citation_url: string;
+  further_info_url: string;
+  version: string;
+  [key: string]: boolean | string | string[] | number | undefined;
+};
+
+export type FeatureAssets = {
+  [key: string]: FeatureAssetSTAC;
+};
+
+export type RawSTACSearchResult = {
+  id: string;
+  assets: FeatureAssets;
+  properties: FeaturePropertiesSTAC;
+  collection: string[];
+  links: { [key: string]: boolean | string | string[] | number | undefined };
+  [key: string]: unknown;
+};
+
+export type RawSearchResults = (RawSearchResult | RawSTACSearchResult)[];
 
 export type Pagination = {
   page: number;
