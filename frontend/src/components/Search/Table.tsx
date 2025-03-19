@@ -174,19 +174,17 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
           );
         }
         return (
-          <>
-            <Button
-              type="primary"
-              disabled={disabled}
-              icon={
-                <PlusOutlined
-                  className={topDataRowTargets.cartAddBtn.class('plus')}
-                  data-testid={`row-${index}-add-to-cart`}
-                />
-              }
-              onClick={() => onUpdateCart([record], 'add')}
-            />
-          </>
+          <Button
+            type="primary"
+            disabled={disabled}
+            icon={
+              <PlusOutlined
+                className={topDataRowTargets.cartAddBtn.class('plus')}
+                data-testid={`row-${index}-add-to-cart`}
+              />
+            }
+            onClick={() => onUpdateCart([record], 'add')}
+          />
         );
       },
     },
@@ -407,12 +405,14 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       width: 70,
       render: (assets: FeatureAssets) => {
         let numberOfFiles = 0;
-        Object.keys(assets).forEach((key) => {
-          const asset = assets[key];
-          if (asset.type === 'application/netcdf') {
-            numberOfFiles += 1;
-          }
-        });
+        if (assets && Object.keys(assets as Record<string, unknown>).length > 0) {
+          Object.keys(assets as Record<string, unknown>).forEach((key) => {
+            const asset = (assets as Record<string, { type: string }>)[key];
+            if (asset.type === 'application/netcdf') {
+              numberOfFiles += 1;
+            }
+          });
+        }
         return <p className={topDataRowTargets.fileCount.class()}>{numberOfFiles || 'N/A'}</p>;
       },
     },
@@ -423,7 +423,9 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       key: 'version',
       width: 130,
       render: (properties: FeaturePropertiesSTAC) => (
-        <p className={topDataRowTargets.versionText.class()}>{properties.version}</p>
+        <p className={topDataRowTargets.versionText.class()}>
+          {properties ? properties.version : ''}
+        </p>
       ),
     },
   ];

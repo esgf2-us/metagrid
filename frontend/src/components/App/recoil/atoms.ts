@@ -22,7 +22,7 @@ const isDarkModeAtom = atom<boolean>({
 
 export const isSTACmodeAtom = atom<boolean>({
   key: 'isSTACmode',
-  default: false,
+  default: true,
 });
 
 export default isDarkModeAtom;

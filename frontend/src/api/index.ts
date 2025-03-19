@@ -417,7 +417,7 @@ export const generateSearchURLQuery = (
  * Example output: https://esgf-node.llnl.gov/esg-search/search/?replica=false&offset=0&limit=10&query=foo&baz=option1&foo=option1
  */
 export const generateSearchSTACQuery = (): string => {
-  const baseRoute = `${apiRoutes.esgfSearchSTAC.path}`;
+  const baseRoute = `${apiRoutes.esgfSearchSTAC.path}?limit=25`;
 
   return `${baseRoute}`;
 };

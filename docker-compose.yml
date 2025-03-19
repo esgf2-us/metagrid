@@ -38,7 +38,7 @@ services:
       PGPASSWORD: postgres
       PGUSER: postgres
     ports:
-      - 5432:5432
+      - "127.0.0.1:5432:5432"
     depends_on:
       - traefik
     healthcheck:
@@ -62,7 +62,7 @@ services:
       PGPASSWORD: postgres
       PGUSER: postgres
     ports:
-      - 5000:5000
+      - "127.0.0.1:5000:5000"
 
   react:
     container_name: react

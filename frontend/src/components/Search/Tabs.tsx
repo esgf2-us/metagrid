@@ -146,6 +146,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
   let citationUrl = '';
   if (useSTAC) {
     const { properties } = record as RawSTACSearchResult;
+    console.log(record);
     if (properties.citation_url) {
       citationUrl = properties.citation_url;
     }

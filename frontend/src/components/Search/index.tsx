@@ -245,7 +245,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
   }
 
   let numFound = 0;
-  let docs: RawSearchResults = [];
+  let docs: RawSearchResults | RawSTACSearchResult[] = [];
   if (results) {
     if (isStacProject(project)) {
       numFound = (results as { search: { numReturned: number } }).search.numReturned;
