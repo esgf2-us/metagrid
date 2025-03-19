@@ -23,7 +23,7 @@ services:
     volumes:
       - ./docs:/docs
     ports:
-      - "8001:8001"
+      - "127.0.0.1:8001:8001"
 
   postgres:
     container_name: postgres
@@ -38,7 +38,7 @@ services:
       PGPASSWORD: postgres
       PGUSER: postgres
     ports:
-      - 5432:5432
+      - "127.0.0.1:5432:5432"
     depends_on:
       - traefik
     healthcheck:
@@ -62,7 +62,7 @@ services:
       PGPASSWORD: postgres
       PGUSER: postgres
     ports:
-      - 5000:5000
+      - "127.0.0.1:5000:5000"
 
   react:
     container_name: react
@@ -78,7 +78,7 @@ services:
       - ./frontend:/app
       - /app/node_modules
     ports:
-      - 8080:8080
+      - "127.0.0.1:8080:8080"
 
   keycloak:
     profiles: [ "keycloak" ]
@@ -89,7 +89,7 @@ services:
     volumes:
       - ./keycloak/realm.json:/opt/keycloak/data/import/realm.json
     ports:
-      - 1337:8080
+      - "127.0.0.1:1337:8080"
     environment:
       KEYCLOAK_CLIENT_ID: metagrid-localhost
       KEYCLOAK_USER: admin
