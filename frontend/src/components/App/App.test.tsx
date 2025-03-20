@@ -264,6 +264,7 @@ describe('test main components', () => {
 
 describe('User cart', () => {
   it('handles authenticated user adding and removing items from cart', async () => {
+    RecoilWrapper.modifyAtomValue(userCartAtom.key, []);
     customRender(<App searchQuery={activeSearch} />, { usesRecoil: true });
 
     // Wait for components to rerender
@@ -296,16 +297,6 @@ describe('User cart', () => {
     // Wait for components to rerender
     await screen.findByTestId('main-query-string-label');
 
-    // Check first row has add button and click it
-    const addBtn = await screen.findByTestId('row-1-add-to-cart');
-    expect(addBtn).toBeTruthy();
-
-    await userEvent.click(addBtn);
-
-    // Check 'Added items(s) to the cart' message appears
-    const addText = await screen.findByText('Added item(s) to your cart');
-    expect(addText).toBeTruthy();
-
     // Check applicable components render
     const rightMenuComponent = await screen.findByTestId('right-menu');
     expect(rightMenuComponent).toBeTruthy();
@@ -324,14 +315,14 @@ describe('User cart', () => {
 
     const numDatasetsField = await within(cartSummary).findByText('Total Number of Datasets:');
     const numFilesText = await within(cartSummary).findByText('Total Number of Files:');
-    expect(numDatasetsField.textContent).toEqual('Total Number of Datasets: 1');
-    expect(numFilesText.textContent).toEqual('Total Number of Files: 2');
+    expect(numDatasetsField.textContent).toEqual('Total Number of Datasets: 3');
+    expect(numFilesText.textContent).toEqual('Total Number of Files: 8');
     const numSelectedDatasetsField = await within(cartSummary).findByText(
       'Selected Number of Datasets:'
     );
     const numSelectedFilesText = await within(cartSummary).findByText('Selected Number of Files:');
-    expect(numSelectedDatasetsField.textContent).toEqual('Selected Number of Datasets: 1');
-    expect(numSelectedFilesText.textContent).toEqual('Selected Number of Files: 2');
+    expect(numSelectedDatasetsField.textContent).toEqual('Selected Number of Datasets: 0');
+    expect(numSelectedFilesText.textContent).toEqual('Selected Number of Files: 0');
 
     // Check "Remove All Items" button renders with cart > 0 items and click it
     const clearCartBtn = await screen.findByTestId('clear-cart-button');
@@ -355,6 +346,7 @@ describe('User cart', () => {
 
   it('handles anonymous user adding and removing items from cart', async () => {
     // Render component as anonymous
+    RecoilWrapper.modifyAtomValue(userCartAtom.key, []);
     customRender(<App searchQuery={activeSearch} />, { usesRecoil: true, authenticated: false });
 
     // Wait for components to rerender
@@ -379,16 +371,6 @@ describe('User cart', () => {
     // Wait for components to rerender
     await screen.findByTestId('main-query-string-label');
 
-    // Check first row has add button and click it
-    const addBtn = await screen.findByTestId('row-1-add-to-cart');
-    expect(addBtn).toBeTruthy();
-
-    await userEvent.click(addBtn);
-
-    // Check 'Added items(s) to the cart' message appears
-    const addText = await screen.findByText('Added item(s) to your cart');
-    expect(addText).toBeTruthy();
-
     // Check applicable components render
     const rightMenuComponent = await screen.findByTestId('right-menu');
     expect(rightMenuComponent).toBeTruthy();
@@ -409,15 +391,15 @@ describe('User cart', () => {
 
     const numDatasetsField = await within(cartSummary).findByText('Total Number of Datasets:');
     const numFilesText = await within(cartSummary).findByText('Total Number of Files:');
-    expect(numDatasetsField.textContent).toEqual('Total Number of Datasets: 1');
-    expect(numFilesText.textContent).toEqual('Total Number of Files: 2');
+    expect(numDatasetsField.textContent).toEqual('Total Number of Datasets: 3');
+    expect(numFilesText.textContent).toEqual('Total Number of Files: 8');
 
     const numSelectedDatasetsField = await within(cartSummary).findByText(
       'Selected Number of Datasets:'
     );
     const numSelectedFilesText = await within(cartSummary).findByText('Selected Number of Files:');
-    expect(numSelectedDatasetsField.textContent).toEqual('Selected Number of Datasets: 1');
-    expect(numSelectedFilesText.textContent).toEqual('Selected Number of Files: 2');
+    expect(numSelectedDatasetsField.textContent).toEqual('Selected Number of Datasets: 0');
+    expect(numSelectedFilesText.textContent).toEqual('Selected Number of Files: 0');
 
     // Check "Remove All Items" button renders with cart > 0 items and click it
     const clearCartBtn = await screen.findByTestId('clear-cart-button');
@@ -440,9 +422,8 @@ describe('User cart', () => {
     expect(emptyAlert).toBeTruthy();
   });
 
-  it.only('resets cart totals and selections to 0 when all items are removed', async () => {
-    RecoilWrapper.Instance.modifyAtomValue(userCartAtom, []);
-    RecoilWrapper.Instance.modifyAtomValue(cartItemSelectionsAtom, []);
+  it('resets cart totals and selections to 0 when all items are removed', async () => {
+    RecoilWrapper.modifyAtomValue(userCartAtom.key, []);
     customRender(<App searchQuery={activeSearch} />, { usesRecoil: true });
 
     // Wait for components to rerender

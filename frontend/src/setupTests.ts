@@ -49,32 +49,30 @@ beforeAll(() => {
   server.listen();
 
   // Initialize recoil state values
-  const recoilTest = RecoilWrapper.Instance;
-
-  recoilTest.setAtomValue<ActiveSearchQuery>(
+  RecoilWrapper.setAtomValue<ActiveSearchQuery>(
     activeSearchQueryAtom,
     activeSearchQueryFixture(),
     false
   );
-  recoilTest.setAtomValue<ParsedFacets | Record<string, unknown>>(
+  RecoilWrapper.setAtomValue<ParsedFacets | Record<string, unknown>>(
     availableFacetsAtom,
     parsedFacetsFixture(),
     false
   );
-  recoilTest.setAtomValue<NodeStatusArray>(nodeStatusAtom, parsedNodeStatusFixture(), false);
-  recoilTest.setAtomValue<boolean>(supportModalVisibleAtom, false, false);
-  recoilTest.setAtomValue<boolean>(isDarkModeAtom, false, false);
+  RecoilWrapper.setAtomValue<NodeStatusArray>(nodeStatusAtom, parsedNodeStatusFixture(), false);
+  RecoilWrapper.setAtomValue<boolean>(supportModalVisibleAtom, false, false);
+  RecoilWrapper.setAtomValue<boolean>(isDarkModeAtom, false, false);
 
-  recoilTest.setAtomValue<UserCart>(userCartAtom, userCartFixture(), true);
-  recoilTest.setAtomValue<UserSearchQueries>(
+  RecoilWrapper.setAtomValue<UserCart>(userCartAtom, userCartFixture(), true);
+  RecoilWrapper.setAtomValue<UserSearchQueries>(
     userSearchQueriesAtom,
     userSearchQueriesFixture(),
     true
   );
-  recoilTest.setAtomValue<boolean>(cartDownloadIsLoadingAtom, false, true);
-  recoilTest.setAtomValue<RawSearchResults>(cartItemSelectionsAtom, [], true);
-  recoilTest.setAtomValue<GlobusEndpoint[]>(globusSavedEndpointsAtoms, [], true);
-  recoilTest.setAtomValue<GlobusTaskItem[]>(globusTaskItemsAtom, [], true);
+  RecoilWrapper.setAtomValue<boolean>(cartDownloadIsLoadingAtom, false, true);
+  RecoilWrapper.setAtomValue<RawSearchResults>(cartItemSelectionsAtom, [], true);
+  RecoilWrapper.setAtomValue<GlobusEndpoint[]>(globusSavedEndpointsAtoms, [], true);
+  RecoilWrapper.setAtomValue<GlobusTaskItem[]>(globusTaskItemsAtom, [], true);
 });
 beforeEach(() => {
   sessionStorageMock.clear();
@@ -110,6 +108,8 @@ afterEach(() => {
   jest.clearAllMocks();
 
   server.resetHandlers();
+
+  RecoilWrapper.restoreValues();
 
   cleanup();
 });

@@ -120,10 +120,6 @@ export const nodeNotGlobusReady: string = 'nodeIsNotGlobusReady';
 export class RecoilWrapper {
   private static instance: RecoilWrapper;
 
-  private modified = false;
-
-  private restore = false;
-
   private ATOMS: {
     [key: string]: {
       atom: RecoilState<unknown>;
@@ -144,37 +140,61 @@ export class RecoilWrapper {
     return this.instance;
   }
 
-  setAtomValue<T>(recoilAtom: RecoilState<T>, value: T, saveLocal: boolean): RecoilWrapper {
-    this.ATOMS[recoilAtom.key] = {
+  public static listEntries(): void {
+    const instance = this.Instance;
+    Object.keys(instance.ATOMS).forEach((key) => {
+      const atomInfo = instance.ATOMS[key];
+      console.log(`Key: ${key}`);
+      console.log(`Value: ${JSON.stringify(atomInfo.value)}`);
+      console.log(`Previous Value: ${JSON.stringify(atomInfo.prevValue)}`);
+      console.log(`Save Local: ${atomInfo.saveLocal}`);
+      console.log('-------------------');
+    });
+  }
+
+  public static setAtomValue<T>(
+    recoilAtom: RecoilState<T>,
+    value: T,
+    saveLocal: boolean
+  ): RecoilWrapper {
+    const instance = this.Instance;
+    instance.ATOMS[recoilAtom.key] = {
       atom: recoilAtom as RecoilState<unknown>,
       value,
-      prevValue: value,
+      prevValue: null,
       saveLocal,
     };
-    return this;
+    return instance;
   }
 
-  modifyAtomValue<T>(recoilAtom: RecoilState<T>, value: T): RecoilWrapper {
-    if (this.ATOMS[recoilAtom.key]) {
-      this.ATOMS[recoilAtom.key].prevValue = this.ATOMS[recoilAtom.key].value;
-      this.ATOMS[recoilAtom.key].value = value;
-      this.modified = true;
+  public static modifyAtomValue<T>(key: string, value: T): RecoilWrapper {
+    const instance = this.Instance;
+    if (instance.ATOMS[key]) {
+      instance.ATOMS[key].prevValue = instance.ATOMS[key].value;
+      instance.ATOMS[key].value = value;
     } else {
-      console.error(
-        `Atom ${recoilAtom.key} not found in RecoilWrapper. Please set the atom value first.`
-      );
+      console.error(`Atom ${key} not found in RecoilWrapper. Please set the atom value first.`);
     }
 
-    return this;
+    return instance;
   }
 
-  wrap(children: React.ReactElement): React.ReactElement {
-    Object.keys(this.ATOMS).forEach((key) => {
-      const atomInfo = this.ATOMS[key];
-
-      if (this.restore) {
+  public static restoreValues(): RecoilWrapper {
+    const instance = this.Instance;
+    Object.keys(instance.ATOMS).forEach((key) => {
+      const atomInfo = instance.ATOMS[key];
+      if (atomInfo.prevValue) {
         atomInfo.value = atomInfo.prevValue;
+        atomInfo.prevValue = null;
       }
+    });
+    return instance;
+  }
+
+  public static wrap(children: React.ReactElement): React.ReactElement {
+    const instance = this.Instance;
+    Object.keys(instance.ATOMS).forEach((key) => {
+      const atomInfo = instance.ATOMS[key];
 
       // Save the atoms to the local storage
       if (atomInfo.saveLocal) {
@@ -182,16 +202,11 @@ export class RecoilWrapper {
       }
     });
 
-    if (this.modified) {
-      this.restore = true;
-      this.modified = false;
-    }
-
     return (
       <RecoilRoot
         initializeState={(snapshot) => {
-          Object.keys(this.ATOMS).forEach((key) => {
-            const atomInfo = this.ATOMS[key];
+          Object.keys(instance.ATOMS).forEach((key) => {
+            const atomInfo = instance.ATOMS[key];
             snapshot.set(atomInfo.atom, atomInfo.value);
           });
         }}

@@ -37,7 +37,7 @@ it('renders component placeholder with no node status information', async () => 
 });
 
 it('renders component with dark mode enabled', async () => {
-  RecoilWrapper.Instance.modifyAtomValue(isDarkModeAtom, true);
+  RecoilWrapper.modifyAtomValue(isDarkModeAtom.key, true);
   customRender(<NodeSummary {...defaultProps} />, { usesRecoil: true });
 
   const numNodes = await screen.findByTestId('numNodes');

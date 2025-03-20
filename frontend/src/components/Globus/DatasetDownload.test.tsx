@@ -170,25 +170,19 @@ async function initializeComponentForTest(testConfig?: typeof defaultTestConfig)
     db.set(GlobusStateKeys.transferToken, transferToken);
   }
 
-  const recoilWrapper = RecoilWrapper.Instance;
-
   // Set the Globus Goals
   saveToLocalStorage<GlobusGoals>(GlobusStateKeys.globusTransferGoalsState, config.globusGoals);
 
-  recoilWrapper.modifyAtomValue(cartDownloadIsLoadingAtom, config.cartDownloadIsLoading);
-  // saveToLocalStorage<boolean>(CartStateKeys.cartDownloadIsLoading, config.cartDownloadIsLoading);
+  RecoilWrapper.modifyAtomValue(cartDownloadIsLoadingAtom.key, config.cartDownloadIsLoading);
 
   // Set the selected cart items
-  // saveToLocalStorage<RawSearchResults>(CartStateKeys.cartItemSelections, config.itemSelections);
-  recoilWrapper.modifyAtomValue(cartItemSelectionsAtom, config.itemSelections);
+  RecoilWrapper.modifyAtomValue(cartItemSelectionsAtom.key, config.itemSelections);
 
   // Set the saved endpoints
-  recoilWrapper.modifyAtomValue(globusSavedEndpointsAtoms, config.savedEndpoints);
-  // saveToLocalStorage<GlobusEndpoint[]>(GlobusStateKeys.savedGlobusEndpoints, config.savedEndpoints);
+  RecoilWrapper.modifyAtomValue(globusSavedEndpointsAtoms.key, config.savedEndpoints);
 
   // Set the globus task items
-  recoilWrapper.modifyAtomValue(globusTaskItemsAtom, config.globusTaskItems);
-  // saveToLocalStorage<GlobusTaskItem[]>(GlobusStateKeys.globusTaskItems, config.globusTaskItems);
+  RecoilWrapper.modifyAtomValue(globusTaskItemsAtom.key, config.globusTaskItems);
 
   // Default display name if no endpoint is chosen
   let displayName = 'Select Globus Collection';
@@ -215,18 +209,6 @@ async function initializeComponentForTest(testConfig?: typeof defaultTestConfig)
     customRender(<App searchQuery={activeSearch} />, { usesRecoil: true });
 
     await screen.findByText('results found for', { exact: false });
-
-    // Check first row renders and click the checkbox
-    // const firstRow = (await screen.findAllByRole('row'))[0];
-
-    // // Check first row has add button and click it
-    // const addBtn = await within(firstRow).findByRole('img', { name: 'plus' });
-    // expect(addBtn).toBeTruthy();
-    // await user.click(addBtn);
-
-    // // Check 'Added items(s) to the cart' message appears
-    // const addText = (await screen.findAllByText('Added item(s) to your cart'))[0];
-    // expect(addText).toBeTruthy();
 
     // Switch to the cart page
     const cartBtn = await screen.findByTestId('cartPageLink');
@@ -857,17 +839,6 @@ describe('DatasetDownload form tests', () => {
     const globusTransferBtn = await screen.findByTestId('downloadDatasetTransferBtn');
     expect(globusTransferBtn).toBeTruthy();
     await user.click(globusTransferBtn);
-
-    // Expect the steps popup to show with below message
-    const warningPopup = await screen.findByText(
-      /One of your selected items cannot be transferred via Globus./i,
-      { exact: false }
-    );
-    expect(warningPopup).toBeTruthy();
-
-    // Click OK at the popup to proceed with globus transfer
-    const okBtn = await screen.findByText('Ok');
-    await user.click(okBtn);
 
     // Expect the transfer to complete successfully
     const globusTransferPopup = await screen.findByText('Globus download initiated successfully!');

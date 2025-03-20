@@ -60,12 +60,14 @@ import { miscTargets } from '../../common/reactJoyrideSteps';
 import {
   activeSearchQueryAtom,
   isDarkModeAtom,
+  nodeStatusAtom,
   supportModalVisibleAtom,
   userCartAtom,
   userSearchQueriesAtom,
 } from './recoil/atoms';
 import Footer from '../Footer/Footer';
 import { cartItemSelectionsAtom } from '../Cart/recoil/atoms';
+import { NodeStatusArray } from '../NodeStatus/types';
 
 const bodySider = {
   padding: '12px 12px 12px 12px',
@@ -128,6 +130,8 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     activeSearchQueryAtom
   );
 
+  const setNodeStatus = useSetRecoilState<NodeStatusArray>(nodeStatusAtom);
+
   const setSupportModalVisible = useSetRecoilState<boolean>(supportModalVisibleAtom);
 
   // Third-party tool integration
@@ -152,6 +156,8 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   } = useAsync({
     deferFn: fetchNodeStatus,
   });
+
+  setNodeStatus(nodeStatus || []);
 
   React.useEffect(() => {
     /* istanbul ignore else */
@@ -206,8 +212,10 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   React.useEffect(() => {
     /* istanbul ignore else */
     runFetchNodeStatus();
+    setNodeStatus(nodeStatus || []);
     const interval = setInterval(() => {
       runFetchNodeStatus();
+      setNodeStatus(nodeStatus || []);
     }, 295000);
     return () => clearInterval(interval);
   }, [runFetchNodeStatus]);

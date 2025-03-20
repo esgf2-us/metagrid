@@ -7,7 +7,7 @@ import { ResponseError } from '../../api';
 import apiRoutes from '../../api/routes';
 import { nodeTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
-import { NodeStatusElement } from './types';
+import { NodeStatusArray, NodeStatusElement } from './types';
 import { isDarkModeAtom, nodeStatusAtom } from '../App/recoil/atoms';
 import { lightModeGreen, lightModeRed, darkModeGreen, darkModeRed } from './StatusToolTip';
 
@@ -19,7 +19,7 @@ export type Props = {
 };
 
 const NodeStatus: React.FC<React.PropsWithChildren<Props>> = ({ apiError, isLoading }) => {
-  const nodeStatus = useRecoilValue(nodeStatusAtom); // Use nodeStatusAtom recoil state
+  const nodeStatus = useRecoilValue<NodeStatusArray>(nodeStatusAtom); // Use nodeStatusAtom recoil state
   // If the API returns a response but there is no data, that means the feature
   // is disabled
   const featureIsDisabled = nodeStatus && nodeStatus.length === 0;
@@ -143,14 +143,12 @@ const NodeStatus: React.FC<React.PropsWithChildren<Props>> = ({ apiError, isLoad
   }
 
   return (
-    <>
-      <TableD
-        title={() => <Alert message={errorMsg} type="error" />}
-        data-testid="nodeStatusTable"
-        size="small"
-        rowKey="name"
-      />
-    </>
+    <TableD
+      title={() => <Alert message={errorMsg} type="error" />}
+      data-testid="nodeStatusTable"
+      size="small"
+      rowKey="name"
+    />
   );
 };
 

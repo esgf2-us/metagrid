@@ -6,7 +6,8 @@ import { AppPage } from '../../common/types';
 import Support from './index';
 import customRender from '../../test/custom-render';
 import { getCurrentAppPage } from '../../common/utils';
-import { printElementContents } from '../../test/jestTestFunctions';
+import { printElementContents, RecoilWrapper } from '../../test/jestTestFunctions';
+import { supportModalVisibleAtom } from '../App/recoil/atoms';
 
 // Test page names
 const mainPagePath = 'testing/search';
@@ -27,6 +28,10 @@ describe('Testing the support form and buttons', () => {
       pathname: 'testing/search',
     },
     writable: true,
+  });
+
+  beforeEach(() => {
+    RecoilWrapper.modifyAtomValue(supportModalVisibleAtom.key, true);
   });
 
   it('renders support component', async () => {
@@ -89,7 +94,6 @@ describe('Testing the support form and buttons', () => {
     // Set location then render modal
     window.location.pathname = savedSearchesPath;
     expect(getCurrentAppPage()).toEqual(AppPage.SavedSearches);
-
     customRender(<Support />, { usesRecoil: true });
 
     // Check support modal rendered
@@ -110,14 +114,12 @@ describe('Testing the support form and buttons', () => {
     expect(tourModal).toBeTruthy();
   });
 
-  it('renders starts cart page tutorial', async () => {
+  it('renders starts node status page tutorial', async () => {
     // Set location then render modal
     window.location.pathname = nodeStatusPath;
     expect(getCurrentAppPage()).toEqual(AppPage.NodeStatus);
 
     customRender(<Support />, { usesRecoil: true });
-
-    printElementContents();
 
     // Check support modal rendered
     const support = await screen.findByTestId('support-form');

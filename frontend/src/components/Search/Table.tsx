@@ -9,7 +9,6 @@ import { Form, Select, Table as TableD, Tooltip, message } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
-import { useRecoilValue } from 'recoil';
 import { fetchWgetScript, ResponseError } from '../../api';
 import { topDataRowTargets } from '../../common/reactJoyrideSteps';
 import { formatBytes, showError, showNotice } from '../../common/utils';
@@ -20,8 +19,6 @@ import './Search.css';
 import Tabs from './Tabs';
 import { RawSearchResult, RawSearchResults, TextInputs } from './types';
 import GlobusToolTip from '../NodeStatus/GlobusToolTip';
-import { nodeStatusAtom } from '../App/recoil/atoms';
-import { NodeStatusArray } from '../NodeStatus/types';
 
 export type Props = {
   loading: boolean;
@@ -50,7 +47,6 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
   onPageChange,
   onPageSizeChange,
 }) => {
-  const nodeStatus = useRecoilValue<NodeStatusArray>(nodeStatusAtom); // Use nodeStatusAtom recoil state
   const [messageApi, contextHolder] = message.useMessage();
 
   // Add options to this constant as needed
@@ -179,7 +175,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       width: 35,
       render: (data_node: string) => (
         <div className={topDataRowTargets.nodeStatusIcon.class()}>
-          <StatusToolTip nodeStatus={nodeStatus} dataNode={data_node} />
+          <StatusToolTip dataNode={data_node} />
         </div>
       ),
     },

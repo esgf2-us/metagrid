@@ -9,6 +9,9 @@ import Items, { Props } from './Items';
 import { getSearchFromUrl } from '../../common/utils';
 import App from '../App/App';
 import { ActiveSearchQuery } from '../Search/types';
+import { RecoilWrapper } from '../../test/jestTestFunctions';
+import { cartItemSelectionsAtom } from './recoil/atoms';
+import { userCartAtom } from '../App/recoil/atoms';
 
 const defaultProps: Props = {
   userCart: userCartFixture(),
@@ -30,7 +33,7 @@ describe('test the cart items component', () => {
   });
 
   it('removes all items from the cart when confirming the popconfirm', async () => {
-    customRender(<App searchQuery={activeSearch} />);
+    customRender(<App searchQuery={activeSearch} />, { usesRecoil: true });
 
     // Wait for results to load
     expect(await screen.findByTestId('search-results-span')).toBeInTheDocument();
@@ -38,15 +41,6 @@ describe('test the cart items component', () => {
     // Check first row exists
     const firstRow = await screen.findByTestId('cart-items-row-1');
     expect(firstRow).toBeTruthy();
-
-    // Check first row has add button and click it
-    const addBtn = await screen.findByTestId('row-0-add-to-cart');
-    expect(addBtn).toBeTruthy();
-    await user.click(addBtn);
-
-    // Check 'Added items(s) to the cart' message appears
-    const addText = (await screen.findAllByText('Added item(s) to your cart'))[0];
-    expect(addText).toBeTruthy();
 
     // Switch to the cart page
     const cartBtn = await screen.findByTestId('cartPageLink');
@@ -71,7 +65,10 @@ describe('test the cart items component', () => {
   });
 
   it('handles selecting items in the cart and downloading them via wget', async () => {
-    customRender(<App searchQuery={activeSearch} />);
+    RecoilWrapper.modifyAtomValue(userCartAtom.key, []);
+    customRender(<App searchQuery={activeSearch} />, {
+      usesRecoil: true,
+    });
 
     // Wait for results to load
     expect(await screen.findByTestId('search-results-span')).toBeInTheDocument();

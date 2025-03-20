@@ -32,8 +32,6 @@ describe('test ReactJoyrideProvider', () => {
   });
 
   it('Can render a tour properly', async () => {
-    RecoilWrapper.Instance.modifyAtomValue(supportModalVisibleAtom, true);
-
     // Create window object to set the pathname manually
     // eslint-disable-next-line
     window = Object.create(window);
@@ -50,6 +48,7 @@ describe('test ReactJoyrideProvider', () => {
     window.location.pathname = 'testing/search';
     expect(getCurrentAppPage()).toEqual(AppPage.Main);
 
+    RecoilWrapper.modifyAtomValue(supportModalVisibleAtom.key, true);
     customRender(<Support />, { usesRecoil: true });
 
     // Check support modal rendered

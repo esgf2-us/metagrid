@@ -84,11 +84,10 @@ const customRender = (
     options?: Record<string, unknown>;
   } = { usesRecoil: true, authenticated: true, options: {} }
 ): RenderResult => {
-  const recoilWrapper = RecoilWrapper.Instance;
   if (options.usesRecoil) {
     return render(ui, {
       wrapper: () =>
-        recoilWrapper.wrap(
+        RecoilWrapper.wrap(
           <AuthProvider authenticated={options.authenticated || true}>{ui}</AuthProvider>
         ),
       ...options.options,
