@@ -23,7 +23,7 @@ services:
     volumes:
       - ./docs:/docs
     ports:
-      - "8001:8001"
+      - 8001:8001
 
   postgres:
     container_name: postgres
@@ -62,7 +62,7 @@ services:
       PGPASSWORD: postgres
       PGUSER: postgres
     ports:
-      - 5000:5000
+      - "127.0.0.1:5000:5000"
 
   react:
     container_name: react
@@ -78,7 +78,7 @@ services:
       - ./frontend:/app
       - /app/node_modules
     ports:
-      - 8080:8080
+      - "127.0.0.1:8080:8080"
 
   keycloak:
     profiles: [ "keycloak" ]
