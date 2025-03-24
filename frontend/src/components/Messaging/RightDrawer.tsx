@@ -10,6 +10,41 @@ export type Props = {
 };
 
 const RightDrawer: React.FC<React.PropsWithChildren<Props>> = ({ open, onClose }) => {
+  const panels = [
+    {
+      key: '1',
+      label: 'Metagrid Messages',
+      children: (
+        <Collapse
+          defaultActiveKey={[messageDataJSON.messages[0].fileName]}
+          items={messageDataJSON.messages.map((message) => {
+            return {
+              key: message.fileName,
+              label: message.title,
+              children: <MessageCard fileName={message.fileName} />,
+            };
+          })}
+        />
+      ),
+    },
+    {
+      key: '2',
+      label: 'Metagrid Version History',
+      children: (
+        <Collapse
+          defaultActiveKey={[]}
+          items={changeLogMessages().map((change: MessageData) => {
+            return {
+              key: change.fileName,
+              label: change.messageId,
+              children: <MessageCard fileName={change.fileName} />,
+            };
+          })}
+        />
+      ),
+    },
+  ];
+
   return (
     <Drawer
       title="Notifications"
@@ -25,32 +60,7 @@ const RightDrawer: React.FC<React.PropsWithChildren<Props>> = ({ open, onClose }
         </Space>
       }
     >
-      <Collapse defaultActiveKey={['1']}>
-        <Collapse.Panel header="Metagrid Messages" key="1">
-          <Collapse
-            defaultActiveKey={[messageDataJSON.messages[0].fileName]}
-            items={messageDataJSON.messages.map((message) => {
-              return {
-                key: message.fileName,
-                label: message.title,
-                children: <MessageCard fileName={message.fileName} />,
-              };
-            })}
-          />
-        </Collapse.Panel>
-        <Collapse.Panel header="Metagrid Version History" key="2">
-          <Collapse
-            defaultActiveKey={[]}
-            items={changeLogMessages().map((change: MessageData) => {
-              return {
-                key: change.fileName,
-                label: change.messageId,
-                children: <MessageCard fileName={change.fileName} />,
-              };
-            })}
-          />
-        </Collapse.Panel>
-      </Collapse>
+      <Collapse defaultActiveKey={['1']} items={panels} accordion />
     </Drawer>
   );
 };

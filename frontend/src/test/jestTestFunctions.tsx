@@ -167,6 +167,10 @@ export class RecoilWrapper {
     return instance;
   }
 
+  public static getAtomValue<T>(key: string): T {
+    return this.Instance.ATOMS[key].value as T;
+  }
+
   public static modifyAtomValue<T>(key: string, value: T): RecoilWrapper {
     const instance = this.Instance;
     if (instance.ATOMS[key]) {

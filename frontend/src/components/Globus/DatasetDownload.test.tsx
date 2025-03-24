@@ -1,8 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import React from 'react';
 import userEvent from '@testing-library/user-event';
 import { within, screen } from '@testing-library/react';
@@ -206,7 +201,7 @@ async function initializeComponentForTest(testConfig?: typeof defaultTestConfig)
 
   // Finally render the component
   if (config.renderFullApp) {
-    customRender(<App searchQuery={activeSearch} />, { usesRecoil: true });
+    customRender(<App searchQuery={activeSearch} />);
 
     await screen.findByText('results found for', { exact: false });
 
@@ -217,7 +212,7 @@ async function initializeComponentForTest(testConfig?: typeof defaultTestConfig)
     // Wait for cart summary to load
     await screen.findByText('Your Cart Summary', { exact: false });
   } else {
-    customRender(<DatasetDownloadForm />, { usesRecoil: true });
+    customRender(<DatasetDownloadForm />);
 
     // Wait for component to load
     await screen.findAllByText(new RegExp(displayName, 'i'));

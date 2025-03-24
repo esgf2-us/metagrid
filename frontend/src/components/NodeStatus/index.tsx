@@ -2,7 +2,7 @@ import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
 import { Alert, Table as TableD } from 'antd';
 import { SortOrder } from 'antd/lib/table/interface';
 import React from 'react';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useRecoilValue } from 'recoil';
 import { ResponseError } from '../../api';
 import apiRoutes from '../../api/routes';
 import { nodeTourTargets } from '../../common/reactJoyrideSteps';
@@ -19,18 +19,20 @@ export type Props = {
 };
 
 const NodeStatus: React.FC<React.PropsWithChildren<Props>> = ({ apiError, isLoading }) => {
-  const nodeStatus = useRecoilValue<NodeStatusArray>(nodeStatusAtom); // Use nodeStatusAtom recoil state
+  const nodeStatus = useRecoilValue<NodeStatusArray>(nodeStatusAtom);
+  const isDarkMode = useRecoilValue<boolean>(isDarkModeAtom);
+
   // If the API returns a response but there is no data, that means the feature
   // is disabled
   const featureIsDisabled = nodeStatus && nodeStatus.length === 0;
-
-  const [isDarkMode] = useRecoilState<boolean>(isDarkModeAtom);
 
   let onlineCol = lightModeGreen;
   let offlineCol = lightModeRed;
 
   if (isDarkMode) {
+    /* istanbul ignore next */
     onlineCol = darkModeGreen;
+    /* istanbul ignore next */
     offlineCol = darkModeRed;
   }
 

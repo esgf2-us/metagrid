@@ -1,16 +1,11 @@
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { screen } from '@testing-library/react';
-import { userCartFixture, userSearchQueriesFixture } from '../../test/mock/fixtures';
 import Cart, { Props } from './index';
 import customRender from '../../test/custom-render';
 
 const defaultProps: Props = {
-  userCart: userCartFixture(),
-  userSearchQueries: userSearchQueriesFixture(),
   onUpdateCart: jest.fn(),
-  onClearCart: jest.fn(),
-  onRemoveSearchQuery: jest.fn(),
 };
 
 const user = userEvent.setup();

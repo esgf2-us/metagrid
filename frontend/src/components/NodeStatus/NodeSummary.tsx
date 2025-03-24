@@ -1,12 +1,12 @@
 import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
 import { Divider, Typography } from 'antd';
 import React from 'react';
-import { useRecoilState } from 'recoil';
+import { useRecoilValue } from 'recoil';
 import nodeImg from '../../assets/img/nodes.svg';
 import { nodeTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import { NodeStatusArray } from './types';
-import { isDarkModeAtom } from '../App/recoil/atoms';
+import { isDarkModeAtom, nodeStatusAtom } from '../App/recoil/atoms';
 import { lightModeGreen, lightModeRed, darkModeGreen, darkModeRed } from './StatusToolTip';
 
 const { Title } = Typography;
@@ -23,24 +23,21 @@ const styles: CSSinJS = {
   statistic: { float: 'right' },
 };
 
-export type Props = {
-  nodeStatus?: NodeStatusArray;
-};
+const NodeSummary: React.FC = () => {
+  const nodeStatus = useRecoilValue<NodeStatusArray>(nodeStatusAtom);
+  const isDarkMode = useRecoilValue<boolean>(isDarkModeAtom);
 
-const NodeSummary: React.FC<React.PropsWithChildren<Props>> = ({ nodeStatus }) => {
   type NodeStat = number | string;
 
   let numNodes: NodeStat = 'N/A';
   let numOnline: NodeStat = 'N/A';
   let numOffline: NodeStat = 'N/A';
 
-  if (nodeStatus) {
+  if (nodeStatus && nodeStatus.length > 0) {
     numNodes = nodeStatus.length;
     numOnline = nodeStatus.reduce((acc, cur) => acc + Number(cur.isOnline), 0);
     numOffline = numNodes - numOnline;
   }
-
-  const [isDarkMode] = useRecoilState<boolean>(isDarkModeAtom);
 
   let onlineCol = lightModeGreen;
   let offlineCol = lightModeRed;

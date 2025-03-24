@@ -25,7 +25,7 @@ it('renders the loading table', async () => {
 });
 
 it('renders the node status and columns sort', async () => {
-  customRender(<NodeStatus {...defaultProps}></NodeStatus>, { usesRecoil: true });
+  customRender(<NodeStatus {...defaultProps}></NodeStatus>);
 
   const header = await screen.findByRole('heading', {
     name: 'Status as of Wed, 21 Oct 2020 21:23:50 GMT',
@@ -50,7 +50,7 @@ it('renders the node status and columns sort', async () => {
 
 it('renders an error message when no node status information is available', async () => {
   RecoilWrapper.modifyAtomValue(nodeStatusAtom.key, []);
-  customRender(<NodeStatus isLoading={false} />, { usesRecoil: true });
+  customRender(<NodeStatus isLoading={false} />);
 
   const alertMsg = await screen.findByRole('alert');
   expect(alertMsg).toBeTruthy();
@@ -92,7 +92,7 @@ it('renders fallback network error msg', async () => {
   const errorMsg = apiRoutes.nodeStatus.handleErrorMsg('generic');
 
   RecoilWrapper.modifyAtomValue(nodeStatusAtom.key, (undefined as unknown) as []);
-  customRender(<NodeStatus isLoading={false} />, { usesRecoil: true });
+  customRender(<NodeStatus isLoading={false} />);
 
   const alertMsg = await screen.findByRole('alert');
   expect(alertMsg).toBeTruthy();

@@ -13,6 +13,7 @@ enum AppStateKeys {
   supportModalVisible = 'supportModalVisible',
   savedSeachQuery = 'savedSeachQuery',
   availableFacets = 'availableFacets',
+  nodeStatus = 'nodeStatus',
 }
 
 const darkModeStorageEffect = (key: string): AtomEffect<boolean> => ({ setSelf, onSet }) => {
@@ -81,8 +82,6 @@ export const availableFacetsAtom = atom<ParsedFacets | Record<string, unknown>>(
 });
 
 export const nodeStatusAtom = atom<NodeStatusArray>({
-  key: 'nodeStatus',
-  default: [], // Add a default value for node status
+  key: AppStateKeys.nodeStatus,
+  default: [],
 });
-
-export default AppStateKeys;

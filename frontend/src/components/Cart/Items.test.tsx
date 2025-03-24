@@ -1,7 +1,6 @@
 import { within, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { userCartFixture } from '../../test/mock/fixtures';
 import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
@@ -10,13 +9,10 @@ import { getSearchFromUrl } from '../../common/utils';
 import App from '../App/App';
 import { ActiveSearchQuery } from '../Search/types';
 import { RecoilWrapper } from '../../test/jestTestFunctions';
-import { cartItemSelectionsAtom } from './recoil/atoms';
 import { userCartAtom } from '../App/recoil/atoms';
 
 const defaultProps: Props = {
-  userCart: userCartFixture(),
   onUpdateCart: jest.fn(),
-  onClearCart: jest.fn(),
 };
 
 const user = userEvent.setup();
@@ -24,8 +20,8 @@ const user = userEvent.setup();
 const activeSearch: ActiveSearchQuery = getSearchFromUrl('project=test1');
 describe('test the cart items component', () => {
   it('renders message that the cart is empty when no items are added', async () => {
-    const props = { ...defaultProps, userCart: [] };
-    customRender(<Items {...props} />);
+    RecoilWrapper.modifyAtomValue(userCartAtom.key, []);
+    customRender(<Items {...defaultProps} />);
 
     // Check empty cart text renders
     const emptyCart = await screen.findByText('Your cart is empty');
@@ -33,7 +29,7 @@ describe('test the cart items component', () => {
   });
 
   it('removes all items from the cart when confirming the popconfirm', async () => {
-    customRender(<App searchQuery={activeSearch} />, { usesRecoil: true });
+    customRender(<App searchQuery={activeSearch} />);
 
     // Wait for results to load
     expect(await screen.findByTestId('search-results-span')).toBeInTheDocument();

@@ -90,7 +90,6 @@ const FacetsForm: React.FC = () => {
   );
 
   // Local variables
-
   const [messageApi, contextHolder] = message.useMessage();
 
   const [generalFacetsForm] = Form.useForm();
@@ -127,20 +126,7 @@ const FacetsForm: React.FC = () => {
     maxVersionDate ? formatDate(maxVersionDate, false) : (maxVersionDate as null),
   ];
 
-  // const handleOnSetFilenameVars = (filenameVar: string): void => {
-  //   if (activeSearchQuery.filenameVars.includes(filenameVar as never)) {
-  //     showError(messageApi, `Input "${filenameVar}" has already been applied`);
-  //   } else {
-  //     setActiveSearchQuery({
-  //       ...activeSearchQuery,
-  //       filenameVars: [...activeSearchQuery.filenameVars, filenameVar],
-  //     });
-  //   }
-  // };
-
   const handleOnFinishFilenameVarForm = (values: { [key: string]: string }): void => {
-    // handleOnSetFilenameVars(values.filenameVar);
-
     if (activeSearchQuery.filenameVars.includes(values.filenameVar as never)) {
       showError(messageApi, `Input "${values.filenameVar}" has already been applied`);
     } else {
@@ -153,21 +139,6 @@ const FacetsForm: React.FC = () => {
     setFilenameVar('');
     filenameVarForm.setFieldsValue({ filenameVar: '' });
   };
-
-  // const handleOnSetGeneralFacets = (
-  //   versionType: VersionType,
-  //   resultType: ResultType,
-  //   minVersionDate: VersionDate,
-  //   maxVersionDate: VersionDate
-  // ): void => {
-  //   setActiveSearchQuery({
-  //     ...activeSearchQuery,
-  //     versionType,
-  //     resultType,
-  //     minVersionDate,
-  //     maxVersionDate,
-  //   });
-  // };
 
   const handleOnChangeGeneralFacetsForm = (selectedFacets: {
     versionType: VersionType;
@@ -196,7 +167,6 @@ const FacetsForm: React.FC = () => {
       minVersionDate: newMinVersionDate,
       maxVersionDate: newMaxVersionDate,
     });
-    // onSetGeneralFacets(newVersionType, newResultType, newMinVersionDate, newMaxVersionDate);
   };
 
   const handleOnSelectAvailableFacetsForm = (facet: string, options: string[] | []): void => {
@@ -209,10 +179,6 @@ const FacetsForm: React.FC = () => {
 
     if (globusOnly) {
       const newActiveFacets = activeSearchQuery.activeFacets;
-      // onSetActiveFacets({
-      //   ...newActiveFacets,
-      //   dataNode: window.METAGRID.GLOBUS_NODES,
-      // } as ActiveFacets);
       setActiveSearchQuery({
         ...activeSearchQuery,
         activeFacets: {
@@ -222,9 +188,7 @@ const FacetsForm: React.FC = () => {
       });
     } else {
       const { dataNode, ...newActiveFacets } = activeSearchQuery.activeFacets;
-      // delete newActiveFacets.dataNode;
       setActiveSearchQuery({ ...activeSearchQuery, activeFacets: newActiveFacets });
-      // onSetActiveFacets(newActiveFacets);
     }
   };
 
@@ -250,12 +214,7 @@ const FacetsForm: React.FC = () => {
         const { [facet]: remove, ...updatedFacets } = newActiveFacets;
 
         setActiveSearchQuery({ ...activeSearchQuery, activeFacets: updatedFacets });
-        // onSetActiveFacets(updatedFacets);
       } else if (options.length > 0) {
-        // onSetActiveFacets({
-        //   ...newActiveFacets,
-        //   [facet]: options,
-        // } as ActiveFacets);
         setActiveSearchQuery({
           ...activeSearchQuery,
           activeFacets: {

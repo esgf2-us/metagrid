@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
@@ -8,7 +8,7 @@ import { RecoilRoot } from 'recoil';
 import { setMedia } from 'mock-match-media';
 import customRender from '../../test/custom-render';
 import RightMenu, { Props } from './RightMenu';
-import { mockConfig, mockKeycloakToken } from '../../test/jestTestFunctions';
+import { mockConfig, mockKeycloakToken, RecoilWrapper } from '../../test/jestTestFunctions';
 import { tempStorageSetMock } from '../../test/mock/mockStorage';
 import { isDarkModeAtom } from '../App/recoil/atoms';
 import { activeSearchQueryFixture } from '../../test/mock/fixtures';
@@ -179,7 +179,7 @@ it('toggles theme switch between light and dark modes', async () => {
 });
 
 it('displays correct cart and saved searches badge counts', async () => {
-  customRender(<RightMenu {...rightMenuProps} />, { usesRecoil: true });
+  customRender(<RightMenu {...rightMenuProps} />);
 
   const cartBadge = await screen.findByText('3');
   expect(cartBadge).toBeTruthy();
@@ -224,12 +224,11 @@ describe('Dark Mode', () => {
   it('stores preference when selected', async () => {
     setMedia({});
     localStorage.clear();
+    RecoilWrapper.modifyAtomValue(isDarkModeAtom.key, true);
     customRender(<RightMenu mode="vertical"></RightMenu>);
     const isDarkModeSwitch = await screen.findByTestId('isDarkModeSwitch');
     expect(isDarkModeSwitch).not.toBeChecked();
-    waitFor(() => {
-      fireEvent.click(isDarkModeSwitch);
-    });
+    await user.click(isDarkModeSwitch);
     expect(await screen.findByTestId('isDarkModeSwitch')).toBeChecked();
     expect(localStorage.getItem(isDarkModeAtom.key)).toBe('false');
   });

@@ -18,5 +18,3 @@ export const cartItemSelectionsAtom = atom<RawSearchResults>({
   default: [],
   effects: [localStorageEffect<RawSearchResults>(CartStateKeys.cartItemSelections, [])],
 });
-
-export default CartStateKeys;

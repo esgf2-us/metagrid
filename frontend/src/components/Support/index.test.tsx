@@ -6,7 +6,7 @@ import { AppPage } from '../../common/types';
 import Support from './index';
 import customRender from '../../test/custom-render';
 import { getCurrentAppPage } from '../../common/utils';
-import { printElementContents, RecoilWrapper } from '../../test/jestTestFunctions';
+import { RecoilWrapper } from '../../test/jestTestFunctions';
 import { supportModalVisibleAtom } from '../App/recoil/atoms';
 
 // Test page names
@@ -47,7 +47,7 @@ describe('Testing the support form and buttons', () => {
     window.location.pathname = mainPagePath;
     expect(getCurrentAppPage()).toEqual(AppPage.Main);
 
-    customRender(<Support />, { usesRecoil: true });
+    customRender(<Support />);
 
     // Check support modal rendered
     const support = await screen.findByTestId('support-form');
@@ -72,7 +72,7 @@ describe('Testing the support form and buttons', () => {
     window.location.pathname = cartPagePath;
     expect(getCurrentAppPage()).toEqual(AppPage.Cart);
 
-    customRender(<Support />, { usesRecoil: true });
+    customRender(<Support />);
 
     // Check support modal rendered
     const support = await screen.findByTestId('support-form');
@@ -94,7 +94,7 @@ describe('Testing the support form and buttons', () => {
     // Set location then render modal
     window.location.pathname = savedSearchesPath;
     expect(getCurrentAppPage()).toEqual(AppPage.SavedSearches);
-    customRender(<Support />, { usesRecoil: true });
+    customRender(<Support />);
 
     // Check support modal rendered
     const support = await screen.findByTestId('support-form');
@@ -119,7 +119,7 @@ describe('Testing the support form and buttons', () => {
     window.location.pathname = nodeStatusPath;
     expect(getCurrentAppPage()).toEqual(AppPage.NodeStatus);
 
-    customRender(<Support />, { usesRecoil: true });
+    customRender(<Support />);
 
     // Check support modal rendered
     const support = await screen.findByTestId('support-form');

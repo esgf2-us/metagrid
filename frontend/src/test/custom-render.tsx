@@ -79,7 +79,7 @@ const AuthProvider = ({
 const customRender = (
   ui: React.ReactElement,
   options: {
-    usesRecoil: boolean;
+    usesRecoil?: boolean;
     authenticated?: boolean;
     options?: Record<string, unknown>;
   } = { usesRecoil: true, authenticated: true, options: {} }
@@ -88,7 +88,11 @@ const customRender = (
     return render(ui, {
       wrapper: () =>
         RecoilWrapper.wrap(
-          <AuthProvider authenticated={options.authenticated || true}>{ui}</AuthProvider>
+          <AuthProvider
+            authenticated={options.authenticated !== undefined ? options.authenticated : true}
+          >
+            {ui}
+          </AuthProvider>
         ),
       ...options.options,
     });
@@ -96,7 +100,11 @@ const customRender = (
   return render(ui, {
     wrapper: () => (
       <RecoilRoot>
-        <AuthProvider authenticated={options.authenticated || true}>{ui}</AuthProvider>
+        <AuthProvider
+          authenticated={options.authenticated !== undefined ? options.authenticated : true}
+        >
+          {ui}
+        </AuthProvider>
       </RecoilRoot>
     ),
     ...options.options,

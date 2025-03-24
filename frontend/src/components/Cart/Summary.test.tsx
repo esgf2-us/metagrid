@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { rawSearchResultFixture, userCartFixture } from '../../test/mock/fixtures';
 import Summary, { Props } from './Summary';
 import customRender from '../../test/custom-render';
-import CartStateKeys, { cartItemSelectionsAtom } from './recoil/atoms';
+import { cartItemSelectionsAtom } from './recoil/atoms';
 import { RecoilWrapper } from '../../test/jestTestFunctions';
 import { globusTaskItemsAtom } from '../Globus/recoil/atom';
 
@@ -40,6 +40,25 @@ it('renders component with correct calculations when a dataset doesn"t have size
     />
   );
   // Shows number of files
+  const numDatasetsField = await screen.findByText('Total Number of Datasets:');
+  const numFilesText = await screen.findByText('Total Number of Files:');
+
+  expect(numDatasetsField.textContent).toEqual('Total Number of Datasets: 2');
+  expect(numFilesText.textContent).toEqual('Total Number of Files: 3');
+});
+
+it('handles null number_of_files and size attributes gracefully', async () => {
+  customRender(
+    <Summary
+      userCart={[
+        rawSearchResultFixture(),
+        rawSearchResultFixture({
+          size: null,
+          number_of_files: null,
+        }),
+      ]}
+    />
+  );
   const numDatasetsField = await screen.findByText('Total Number of Datasets:');
   const numFilesText = await screen.findByText('Total Number of Files:');
 

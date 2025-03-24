@@ -12,7 +12,7 @@ import {
   VersionType,
 } from '../components/Search/types';
 import messageDisplayData from '../components/Messaging/messageDisplayData';
-import { AppPage } from './types';
+import { AppPage, CSSinJS } from './types';
 
 export type NotificationType = 'success' | 'info' | 'warning' | 'error';
 
@@ -64,6 +64,36 @@ export async function showNotice(
       /* istanbul ignore next */
       break;
   }
+}
+
+const bodySider = {
+  padding: '12px 12px 12px 12px',
+  width: '384px',
+  marginRight: '2px',
+};
+
+const bodySiderDark = {
+  background: 'rgba(255, 255, 255, 0.1)',
+};
+const bodySiderLight = {
+  background: 'rgba(255, 255, 255, 0.9)',
+  boxShadow: '2px 0 4px 0 rgba(0, 0, 0, 0.2)',
+};
+
+// Provides appropriate styling based on current theme
+export function getStyle(isDark: boolean): CSSinJS {
+  const colorsToUse = isDark ? bodySiderDark : bodySiderLight;
+  const styles: CSSinJS = {
+    bodySider: {
+      ...bodySider,
+      ...colorsToUse,
+    },
+    bodyContent: { padding: '12px 12px', margin: 0 },
+    messageAddIcon: { color: '#90EE90' },
+    messageRemoveIcon: { color: '#ff0000' },
+  };
+
+  return styles;
 }
 
 export async function showError(
