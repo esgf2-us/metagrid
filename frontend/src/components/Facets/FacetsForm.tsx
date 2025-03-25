@@ -89,6 +89,17 @@ const FacetsForm: React.FC = () => {
     activeSearchQueryAtom
   );
 
+  // let setGlobusReady = false;
+  // if (
+  //   activeSearchQuery.activeFacets.data_node &&
+  //   window.METAGRID.GLOBUS_NODES.length &&
+  //   window.METAGRID.GLOBUS_NODES.length > 0
+  // ) {
+  //   setGlobusReady = window.METAGRID.GLOBUS_NODES.every((node: string) =>
+  //     activeSearchQuery.activeFacets.data_node.includes(node)
+  //   );
+  // }
+
   // Local variables
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -118,6 +129,10 @@ const FacetsForm: React.FC = () => {
   const availableFacets: ParsedFacets = useRecoilValue(availableFacetsAtom) as ParsedFacets;
 
   type DatePickerReturnType = [null, null] | [Dayjs, null] | [null, Dayjs] | [Dayjs, Dayjs];
+
+  const facetsByGroup = activeSearchQuery.project.facetsByGroup as {
+    [key: string]: string[];
+  };
 
   // Convert using moment.js to for the initial value of the date picker
   const { minVersionDate, maxVersionDate } = activeSearchQuery;
@@ -176,25 +191,26 @@ const FacetsForm: React.FC = () => {
   const handleOnGlobusReadyChanged = (event: RadioChangeEvent): void => {
     const globusOnly = event.target.value as boolean;
     setGlobusReadyOnly(globusOnly);
-
     if (globusOnly) {
-      const newActiveFacets = activeSearchQuery.activeFacets;
       setActiveSearchQuery({
         ...activeSearchQuery,
         activeFacets: {
-          ...newActiveFacets,
-          dataNode: window.METAGRID.GLOBUS_NODES,
+          ...activeSearchQuery.activeFacets,
+          data_node: window.METAGRID.GLOBUS_NODES,
         },
       });
+      setActiveDropdownValue(['data_node', window.METAGRID.GLOBUS_NODES]);
     } else {
-      const { dataNode, ...newActiveFacets } = activeSearchQuery.activeFacets;
-      setActiveSearchQuery({ ...activeSearchQuery, activeFacets: newActiveFacets });
+      setActiveSearchQuery({
+        ...activeSearchQuery,
+        activeFacets: {
+          ...activeSearchQuery.activeFacets,
+          data_node: [],
+        },
+      } as ActiveSearchQuery);
+      setActiveDropdownValue(['data_node', []]);
     }
   };
-
-  // const handleOnSetActiveFacets = (activeFacets: ActiveFacets): void => {
-  //   setActiveSearchQuery({ ...activeSearchQuery, activeFacets });
-  // };
 
   /**
    * Need to reset the form fields when the active search query updates to
@@ -203,7 +219,21 @@ const FacetsForm: React.FC = () => {
   React.useEffect(() => {
     generalFacetsForm.resetFields();
     availableFacetsForm.resetFields();
-  }, [generalFacetsForm, availableFacetsForm]);
+    if (window.METAGRID.GLOBUS_NODES && window.METAGRID.GLOBUS_NODES.length > 0) {
+      if (
+        activeSearchQuery &&
+        activeSearchQuery.activeFacets &&
+        activeSearchQuery.activeFacets.data_node &&
+        activeSearchQuery.activeFacets.data_node.every((node: string) =>
+          window.METAGRID.GLOBUS_NODES.includes(node)
+        )
+      ) {
+        setGlobusReadyOnly(true);
+      } else {
+        setGlobusReadyOnly(false);
+      }
+    }
+  }, [generalFacetsForm, availableFacetsForm, activeSearchQuery]);
 
   React.useEffect(() => {
     if (!dropdownIsOpen && activeDropdownValue) {
@@ -227,10 +257,6 @@ const FacetsForm: React.FC = () => {
     }
   }, [dropdownIsOpen, activeDropdownValue, setActiveDropdownValue]);
 
-  const facetsByGroup = activeSearchQuery.project.facetsByGroup as {
-    [key: string]: string[];
-  };
-
   // Used to control text length of the drop-down items
   // Tooltip is shown if the length is above this threshold
   const maxItemLength = 22;
@@ -251,12 +277,17 @@ const FacetsForm: React.FC = () => {
               <Col>
                 <Radio.Group onChange={handleOnGlobusReadyChanged} value={globusReadyOnly}>
                   <Radio
+                    key="any"
                     value={false}
                     className={leftSidebarTargets.filterByGlobusTransferAny.class()}
                   >
                     Any
                   </Radio>
-                  <Radio value className={leftSidebarTargets.filterByGlobusTransferOnly.class()}>
+                  <Radio
+                    key="globus-ready"
+                    value
+                    className={leftSidebarTargets.filterByGlobusTransferOnly.class()}
+                  >
                     Only Globus Transferrable
                   </Radio>
                 </Radio.Group>
