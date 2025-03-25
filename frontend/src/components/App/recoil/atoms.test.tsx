@@ -4,7 +4,7 @@ import React from 'react';
 import userEvent from '@testing-library/user-event';
 import { isDarkModeAtom } from './atoms';
 
-const TestComponent = (): React.ReactNode => {
+const TestComponent = (): JSX.Element => {
   const [isDarkMode, setIsDarkMode] = useRecoilState(isDarkModeAtom);
   return (
     <div>
