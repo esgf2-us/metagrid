@@ -188,8 +188,10 @@ function updateVersion() {
     # Update helm/Chart.yaml
     sed -i '' "s/^version:.*/version: \"$package_version\"/" helm/Chart.yaml
     echo "Updated helm/Chart.yaml version to $package_version"
-    sed -i '' "s/^appVersion:.*/appVersion: \"$package_version\"/" helm/Chart.yaml
-    echo "Updated helm/Chart.yaml appVersion to $package_version"
+    sed -i '' "s/^appVersion:.*/appVersion: \"$new_version\"/" helm/Chart.yaml
+    echo "Updated helm/Chart.yaml appVersion to $new_version"
+    sed -i '' "s/\(.*--version\).*/\1 $new_version/g" helm/README.md
+    echo "Updated helm/README.md version to $new_version"
 
     # Update helm/helmfile.yaml
     sed -i '' "11s/^  version:.*/  version: \"$package_version\"/" helm/helmfile.yaml
