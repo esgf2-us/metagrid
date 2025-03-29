@@ -7,6 +7,7 @@ import FilesTable from './FilesTable';
 import { RawSearchResult, TextInputs } from './types';
 import { CSSinJS } from '../../common/types';
 import { innerDataRowTargets } from '../../common/reactJoyrideSteps';
+import { checkIsStac } from '../../common/STAC';
 
 const styles: CSSinJS = {
   qualityFlagsRow: { display: 'flex' },
@@ -23,6 +24,12 @@ const styles: CSSinJS = {
 
 export type Props = { record: RawSearchResult; filenameVars?: TextInputs | [] };
 
+type DisplayMetaData = {
+  key: string;
+  display: JSX.Element;
+  value: string | string[] | DisplayMetaData[];
+};
+
 export type QualityFlagProps = { index: string; color: string };
 
 export const QualityFlag: React.FC<
@@ -34,10 +41,121 @@ export const QualityFlag: React.FC<
   ></div>
 );
 
+const buildDisplayData = (
+  record: RawSearchResult
+): { keys: string[]; displayData: DisplayMetaData[] } => {
+  const displayData: DisplayMetaData[] = [];
+  const keys: string[] = [];
+
+  const buildElement = (key: string, title: string, value: unknown): JSX.Element => {
+    if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
+      return (
+        <div key={`top-${key}`}>
+          <span style={{ fontWeight: 'bold' }}>{title}</span>:
+          {Object.entries(value).map(([subKey, subValue]) => (
+            <div key={`div-${key}-${subKey}`} style={{ margin: '0 0 0 15px' }}>
+              {buildElement(`${key}-${subKey}`, subKey, subValue)}
+            </div>
+          ))}
+        </div>
+      );
+    }
+    if (Array.isArray(value)) {
+      return (
+        <div key={`top-${key}`} style={{ margin: 0 }}>
+          <span style={{ fontWeight: 'bold' }}>{title}</span>:
+          <ul
+            key={`ul-${key}`}
+            style={{
+              margin: '0 0 0 15px',
+              padding: 0,
+              listStyle: 'none',
+            }}
+          >
+            {value.map((item, idx) => (
+              // eslint-disable-next-line react/no-array-index-key
+              <li key={idx}>{buildElement(`${key}-${idx}`, `${title}[${idx}]`, item)}</li>
+            ))}
+          </ul>
+        </div>
+      );
+    }
+    return (
+      <p key={key} style={{ margin: 0 }}>
+        <span style={{ fontWeight: 'bold' }}>{title}</span>: {String(value)}
+      </p>
+    );
+  };
+
+  const addValues = (
+    key: string,
+    title: string,
+    value: unknown,
+    array: DisplayMetaData[]
+  ): void => {
+    if (value && value !== 'null' && value !== null) {
+      keys.push(key);
+      const element = buildElement(key, title, value || 'test');
+      if (typeof value !== 'object') {
+        array.push({ key, display: element, value: String(value) });
+      } else if (Array.isArray(value)) {
+        const subMetaData: DisplayMetaData[] = [];
+        value.forEach((item, idx) => {
+          addValues(`${key}-${idx}`, `${title}[${idx}]`, item, subMetaData);
+        });
+        array.push({ key, display: element, value: subMetaData });
+      } else {
+        const subMetaData: DisplayMetaData[] = [];
+        Object.entries(value).forEach(([subK, subV]) => {
+          addValues(`${key}-${subK}`, subK, subV, subMetaData);
+        });
+        array.push({ key, display: element, value: subMetaData });
+      }
+    }
+  };
+
+  Object.entries(record).forEach(([key, value], idx) => {
+    addValues(`${key}-${idx}`, key, value, displayData);
+  });
+
+  return { keys, displayData };
+};
+
 const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }) => {
-  const metaData = Object.entries(record).map(([k, v]) => ({
-    value: `${k}: ${v as string}`,
-  }));
+  const [metaDataDisplayed, setMetaDataDisplayed] = React.useState<DisplayMetaData[]>();
+
+  const { keys, displayData } = buildDisplayData(record);
+
+  React.useEffect(() => {
+    setMetaDataDisplayed(displayData);
+  }, [record]);
+
+  // Handle selection of metadata
+  const handleAutocompleteChange = (value: string): void => {
+    if (value === '') {
+      setMetaDataDisplayed(displayData);
+      return;
+    }
+    const filteredKeys = keys.filter((item) => {
+      return item.toUpperCase().indexOf(value.toUpperCase()) !== -1;
+    });
+    const filteredDisplayItems: DisplayMetaData[] = [];
+    displayData.forEach((item) => {
+      if (filteredKeys.includes(item.key)) {
+        filteredDisplayItems.push(item);
+      } else if (Array.isArray(item.value)) {
+        item.value.forEach((val) => {
+          if (typeof val !== 'string') {
+            if (filteredKeys.includes(val.key)) {
+              filteredDisplayItems.push(val);
+            }
+          }
+        });
+      }
+    });
+
+    setMetaDataDisplayed(filteredDisplayItems);
+  };
 
   // Have to parse and format since 'xlink' attribute is poorly structured
   // in the Search API
@@ -89,10 +207,12 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
     return null;
   });
 
-  const showCitation = objectHasKey(record, 'citation_url');
+  const showCitation = record.citation_url !== undefined && record.citation_url.length > 0;
   const showESDOC =
-    objectHasKey(record, 'further_info_url') &&
-    ((record.further_info_url as unknown) as string)[0] !== '';
+    record &&
+    record.further_info_url !== undefined &&
+    record.further_info_url.length > 0 &&
+    record.further_info_url[0] !== '';
   const showQualityFlags = Object.keys(qualityFlags).length > 0;
   const showAdditionalLinks = urlCount > 0;
   const showAdditionalTab = showESDOC || showQualityFlags || showAdditionalLinks;
@@ -107,6 +227,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
           id={record.id}
           numResults={record.number_of_files}
           filenameVars={filenameVars}
+          stacRecord={checkIsStac(record) ? record : undefined}
         />
       ),
     },
@@ -120,21 +241,23 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
           <AutoComplete
             style={{ width: '100%' }}
             className={innerDataRowTargets.metadataLookupField.class()}
-            options={metaData}
+            options={keys.map((item, idx) => ({
+              key: idx,
+              value: item,
+            }))}
             placeholder="Lookup a key..."
             filterOption={
-              /* istanbul ignore next */ (inputValue, option) =>
-                (option as Record<'value', string>).value
-                  .toUpperCase()
-                  .indexOf(inputValue.toUpperCase()) !== -1
+              /* istanbul ignore next */ (inputValue, option) => {
+                return option?.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1;
+              }
             }
+            onChange={handleAutocompleteChange}
           />
           <Divider />
-          {Object.keys(record).map((key) => (
-            <p key={key} style={{ margin: 0 }}>
-              <span style={{ fontWeight: 'bold' }}>{key}</span>: {String(record[key])}
-            </p>
-          ))}
+          {metaDataDisplayed &&
+            metaDataDisplayed.map((item) => {
+              return item.display;
+            })}
         </>
       ),
     },

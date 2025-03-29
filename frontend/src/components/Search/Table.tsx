@@ -6,9 +6,10 @@ import {
   RightCircleOutlined,
 } from '@ant-design/icons';
 import { Form, Select, Table as TableD, Tooltip, message } from 'antd';
+import type { TableColumnsType, TableProps } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
-import React from 'react';
+import React, { useState } from 'react';
 import { fetchWgetScript, ResponseError } from '../../api';
 import { topDataRowTargets } from '../../common/reactJoyrideSteps';
 import { formatBytes, showError, showNotice } from '../../common/utils';
@@ -19,6 +20,7 @@ import './Search.css';
 import Tabs from './Tabs';
 import { RawSearchResult, RawSearchResults, TextInputs } from './types';
 import GlobusToolTip from '../NodeStatus/GlobusToolTip';
+import { checkIsStac } from '../../common/STAC';
 
 export type Props = {
   loading: boolean;
@@ -33,6 +35,11 @@ export type Props = {
   onPageChange?: (page: number, pageSize: number) => void;
   onPageSizeChange?: (size: number) => void;
 };
+
+type OnChange = NonNullable<TableProps<RawSearchResult>['onChange']>;
+
+type GetSingle<T> = T extends (infer U)[] ? U : never;
+type Sorts = GetSingle<Parameters<OnChange>[2]>;
 
 const Table: React.FC<React.PropsWithChildren<Props>> = ({
   loading,
@@ -49,12 +56,18 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
 }) => {
   const [messageApi, contextHolder] = message.useMessage();
 
+  const [sortedInfo, setSortedInfo] = useState<Sorts>({});
+
   // Add options to this constant as needed
   type DatasetDownloadTypes = 'wget' | 'Globus';
 
   // If a record supports downloads from the allowed downloads, it will render
   // in the drop downs
   const allowedDownloadTypes: DatasetDownloadTypes[] = ['wget'];
+
+  const handleChange: OnChange = (pagination, filters, sorter) => {
+    setSortedInfo(sorter as Sorts);
+  };
 
   const tableConfig = {
     size: 'small' as SizeType,
@@ -129,14 +142,13 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
   type AlignType = 'left' | 'center' | 'right';
   type FixedType = 'left' | 'right' | boolean;
 
-  const columns = [
+  const columns: TableColumnsType<RawSearchResult> = [
     {
       align: 'right' as AlignType,
       fixed: 'left' as FixedType,
       title: 'Cart',
       key: 'cart',
-      width: 50,
-      render: (value: string, record: RawSearchResult, index: number) => {
+      render: (value: unknown, record: RawSearchResult, index: number) => {
         if (userCart.some((dataset: RawSearchResult) => dataset.id === record.id)) {
           return (
             <>
@@ -172,18 +184,27 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       title: '',
       dataIndex: 'data_node',
       key: 'node_status',
-      width: 35,
-      render: (data_node: string) => (
-        <div className={topDataRowTargets.nodeStatusIcon.class()}>
-          <StatusToolTip dataNode={data_node} />
-        </div>
-      ),
+      render: (data_node: string, record: RawSearchResult) => {
+        if (checkIsStac(record)) {
+          return <>STAC</>;
+        }
+        return (
+          <div className={topDataRowTargets.nodeStatusIcon.class()}>
+            <StatusToolTip dataNode={data_node} />
+          </div>
+        );
+      },
     },
     {
       title: 'Dataset ID',
       dataIndex: 'master_id',
       key: 'title',
-      width: 'auto',
+      sorter: (a: RawSearchResult, b: RawSearchResult) => {
+        const idA = a.master_id ?? '';
+        const idB = b.master_id ?? '';
+        return idA.localeCompare(idB);
+      },
+      sortOrder: sortedInfo.columnKey === 'title' ? sortedInfo.order : null,
       render: (title: string, record: RawSearchResult) => {
         if (record && record.retracted) {
           const msg =
@@ -206,7 +227,9 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       title: 'Files',
       dataIndex: 'number_of_files',
       key: 'number_of_files',
-      width: 70,
+      sorter: (a: RawSearchResult, b: RawSearchResult) =>
+        (a.number_of_files || 0) - (b.number_of_files || 0),
+      sortOrder: sortedInfo.columnKey === 'number_of_files' ? sortedInfo.order : null,
       render: (numberOfFiles: number) => (
         <p className={topDataRowTargets.fileCount.class()}>{numberOfFiles || 'N/A'}</p>
       ),
@@ -216,19 +239,30 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       title: 'Total Size',
       dataIndex: 'size',
       key: 'size',
-      width: 120,
-      render: (size: number) => (
-        <p className={topDataRowTargets.totalSize.class()}>{size ? formatBytes(size) : 'N/A'}</p>
-      ),
+      sorter: (a: RawSearchResult, b: RawSearchResult) => (a.size || 0) - (b.size || 0),
+      sortOrder: sortedInfo.columnKey === 'size' ? sortedInfo.order : null,
+      render: (size: number, record: RawSearchResult) => {
+        if (checkIsStac(record)) {
+          return <p>N/A</p>;
+        }
+        return (
+          <p className={topDataRowTargets.totalSize.class()}>{size ? formatBytes(size) : 'N/A'}</p>
+        );
+      },
     },
     {
       align: 'center' as AlignType,
       title: 'Version',
       dataIndex: 'version',
       key: 'version',
-      width: 130,
+      sorter: (a: RawSearchResult, b: RawSearchResult) => {
+        const idA = a.version ?? '';
+        const idB = b.version ?? '';
+        return idA.localeCompare(idB);
+      },
+      sortOrder: sortedInfo.columnKey === 'version' ? sortedInfo.order : null,
       render: (version: string) => (
-        <p className={topDataRowTargets.versionText.class()}>{version}</p>
+        <p className={topDataRowTargets.versionText.class()}>{version || 'N/A'}</p>
       ),
     },
     {
@@ -236,8 +270,23 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       fixed: 'right' as FixedType,
       title: 'Download Options',
       key: 'download',
-      width: 180,
       render: (record: RawSearchResult) => {
+        if (checkIsStac(record)) {
+          if (record.globus_link) {
+            return (
+              <Button
+                type="link"
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                href={record.globus_link}
+                target="_blank"
+              >
+                GLOBUS
+              </Button>
+            );
+          }
+          return <p>N/A</p>;
+        }
+
         const formKey = `download-${record.id}`;
 
         /**
@@ -310,9 +359,9 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
           dataIndex: 'data_node',
           key: 'globus_enabled',
           width: 110,
-          render: (data_node: string) => (
+          render: (data_node: string, record: RawSearchResult) => (
             <div className={topDataRowTargets.globusReadyStatusIcon.class()}>
-              <GlobusToolTip dataNode={data_node} />
+              <GlobusToolTip dataNode={data_node} isStac={checkIsStac(record)} />
             </div>
           ),
         }
@@ -322,8 +371,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
           title: '',
           dataIndex: 'data_node',
           key: 'globus_enabled',
-          width: 1,
-          render: () => <div></div>,
+          render: () => <></>,
         },
   ];
 
@@ -332,9 +380,11 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       {...tableConfig}
       columns={columns}
       dataSource={results}
+      onChange={handleChange}
       rowKey="id"
       size="small"
-      scroll={{ x: '1200px', y: 'calc(70vh)' }}
+      scroll={{ x: 'max-content' }}
+      tableLayout="auto"
       onRow={(record, rowIndex) => {
         return {
           id: `cart-items-row-${rowIndex}`,

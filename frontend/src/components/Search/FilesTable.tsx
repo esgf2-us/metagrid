@@ -15,7 +15,7 @@ import { innerDataRowTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import { formatBytes, showError, showNotice, splitStringByChar } from '../../common/utils';
 import Button from '../General/Button';
-import { Pagination, RawSearchResult, RawSearchResults, TextInputs } from './types';
+import { Pagination, RawSearchResult, RawSearchResults, StacAsset, TextInputs } from './types';
 
 export type DownloadUrls = {
   HTTPServer: string;
@@ -68,12 +68,14 @@ export type Props = {
   id: string;
   numResults?: number;
   filenameVars?: TextInputs | [];
+  stacRecord?: RawSearchResult;
 };
 
 const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
   id,
   numResults = 0,
   filenameVars,
+  stacRecord,
 }) => {
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -92,6 +94,12 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
     'variable_long_name',
     'variable_units',
     'version',
+    'alternate:name',
+    'description',
+    'href',
+    'roles',
+    'name',
+    'type',
   ];
 
   const [paginationOptions, setPaginationOptions] = React.useState<Pagination>({
@@ -108,7 +116,9 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
   });
 
   React.useEffect(() => {
-    runFetchDatasetFiles();
+    if (stacRecord === undefined) {
+      runFetchDatasetFiles();
+    }
   }, [runFetchDatasetFiles, id, paginationOptions, filenameVars]);
 
   const handlePageChange = (page: number, pageSize: number): void => {
@@ -131,14 +141,17 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
   }
 
   let docs: RawSearchResults | [] = [];
+  let stacDocs: StacAsset[] = [];
   if (data) {
     docs = (data as {
       response: { docs: RawSearchResults };
     }).response.docs;
+  } else if (stacRecord?.assets) {
+    stacDocs = Object.values(stacRecord.assets);
   }
 
   const tableConfig = {
-    dataSource: docs,
+    dataSource: stacDocs.length > 0 ? stacDocs : docs,
     size: 'small' as SizeType,
     loading: isLoading,
     rowKey: 'id',
@@ -175,10 +188,10 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
     expandable: {
       expandedRowRender: (record: RawSearchResult) =>
         Object.keys(record).map((key) => {
-          if (metadataKeysToDisplay.includes(key)) {
+          if (record[key] && record[key] !== 'null' && metadataKeysToDisplay.includes(key)) {
             return (
               <p key={key} style={{ margin: 0 }}>
-                <span style={{ fontWeight: 'bold' }}>{key}</span>: {record[key]}
+                <span style={{ fontWeight: 'bold' }}>{key}</span>: {JSON.stringify(record[key])}
               </p>
             );
           }
@@ -211,7 +224,6 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
     {
       title: 'File Title',
       dataIndex: 'title',
-      size: 400,
       key: 'title',
       render: (title: string) => {
         return <div className={innerDataRowTargets.filesTitle.class()}>{title}</div>;
@@ -220,20 +232,22 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
     {
       title: 'Size',
       dataIndex: 'size',
-      width: 100,
       key: 'size',
       render: (size: number) => {
-        return <div className={innerDataRowTargets.dataSize.class()}>{formatBytes(size)}</div>;
+        return (
+          <div className={innerDataRowTargets.dataSize.class()}>
+            {size ? formatBytes(size) : 'N/A'}
+          </div>
+        );
       },
     },
     {
       title: 'Download / Copy URL',
       key: 'download',
-      width: 200,
       render: (record: { url: string[] }) => {
         const downloadUrls = genDownloadUrls(record.url);
         return (
-          <span>
+          <span style={{ alignItems: 'center' }}>
             {contextHolder}
             <Form
               layout="inline"
@@ -242,7 +256,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
             >
               <Tooltip title="Download the data file via Http." trigger="hover">
                 <Form.Item className={innerDataRowTargets.downloadDataBtn.class()}>
-                  <Button type="primary" htmlType="submit" icon={<DownloadOutlined />}></Button>
+                  <Button type="primary" htmlType="submit" icon={<DownloadOutlined />} />
                 </Form.Item>
               </Tooltip>
               {downloadUrls.OPENDAP !== '' && (
@@ -283,11 +297,76 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
     },
   ];
 
+  const stacColumns = [
+    {
+      title: 'File Title',
+      dataIndex: 'name',
+      key: 'name',
+      render: (title: string) => {
+        return <div className={innerDataRowTargets.filesTitle.class()}>{title}</div>;
+      },
+    },
+    {
+      title: 'Description',
+      dataIndex: 'description',
+      key: 'description',
+      render: (description: string) => {
+        return <div>{description}</div>;
+      },
+    },
+    {
+      title: 'Download / Copy URL',
+      key: 'download',
+      render: (record: { href: string }) => {
+        return (
+          <span style={{ alignItems: 'center' }}>
+            {contextHolder}
+            <Form layout="inline">
+              <Tooltip title="Download the data file via Http." trigger="hover">
+                <Form.Item className={innerDataRowTargets.downloadDataBtn.class()}>
+                  <Button
+                    type="primary"
+                    href={record.href}
+                    target="_blank"
+                    icon={<DownloadOutlined />}
+                  />
+                </Form.Item>
+              </Tooltip>
+              <Tooltip title="Copy a shareable URL to the clipboard." trigger="hover">
+                <Form.Item className={innerDataRowTargets.copyUrlBtn.class()}>
+                  <Button
+                    type="primary"
+                    onClick={() => {
+                      /* istanbul ignore next */
+                      if (navigator && navigator.clipboard) {
+                        navigator.clipboard
+                          .writeText(record.href)
+                          .catch((e: PromiseRejectedResult) => {
+                            showError(messageApi, e.reason as string);
+                          });
+                        showNotice(messageApi, 'URL copied to clipboard!', {
+                          icon: <ShareAltOutlined style={styles.messageAddIcon} />,
+                        });
+                      }
+                    }}
+                    icon={<CopyOutlined />}
+                  />
+                </Form.Item>
+              </Tooltip>
+            </Form>
+          </span>
+        );
+      },
+    },
+  ];
+
   return (
     <TableD
       data-testid="filesTable"
       {...tableConfig}
-      columns={columns}
+      scroll={{ x: 'max-content' }}
+      tableLayout="auto"
+      columns={stacDocs.length > 0 ? stacColumns : columns}
       onRow={(record, rowIndex) => {
         return {
           id: `search-items-row-${rowIndex}`,

@@ -29,9 +29,70 @@ export type ActiveSearchQuery = {
   textInputs: TextInputs | [];
 };
 
+export type SearchResults = { [key: string]: unknown };
+
+export type StacLink = {
+  rel: string;
+  type: string;
+  href: string;
+};
+
+export type StacAsset = {
+  id: string;
+  access: string[];
+  description: string;
+  alternatename: string;
+  name: string;
+  roles: string[];
+  href: string;
+  type: string;
+  title?: string;
+  [key: string]: boolean | string | string[] | number | undefined;
+};
+
+export type StacProperties = {
+  access: string[];
+  citation_url: string;
+  further_info_url: string;
+  version: string;
+  [key: string]: boolean | string | string[] | number | undefined;
+};
+
+export type StacFeature = {
+  id: string;
+  bbox: number[];
+  geometry: { type: string; coordinates: number[][][] };
+  links: StacLink[];
+  type: string;
+  assets: { [name: string]: StacAsset };
+  properties: StacProperties;
+  collection: string[];
+  stac_version: string;
+  [key: string]: unknown;
+};
+
+export type StacSearchResponse = {
+  features: StacFeature[];
+  links: [{ rel: string; type: string; href: string }];
+  numMatched: number;
+  numReturned: number;
+  type: string;
+  [key: string]: unknown;
+};
+
+export type StacFacetsData = {
+  [key: string]: string[];
+};
+
+export type StacResponse = {
+  facets: StacFacetsData;
+  search: StacSearchResponse;
+};
+
 export type RawSearchResult = {
   id: string;
-  url: string[];
+  master_id?: string;
+  url?: string[];
   access: string[];
   xlink?: string[] | [];
   citation_url?: string[] | [];
@@ -39,7 +100,12 @@ export type RawSearchResult = {
   number_of_files?: number;
   size?: number;
   retracted?: boolean;
-  [key: string]: boolean | string | string[] | number | undefined;
+  properties?: StacProperties;
+  links?: StacLink[];
+  globus_link?: string;
+  assets?: { [name: string]: StacAsset };
+  version?: string;
+  [key: string]: unknown;
 };
 
 export type RawSearchResults = Array<RawSearchResult>;

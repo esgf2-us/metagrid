@@ -5,10 +5,10 @@ import { useRecoilState } from 'recoil';
 import { isDarkModeAtom } from '../App/recoil/atoms';
 import { lightModeGreen, lightModeRed, darkModeGreen, darkModeRed } from './StatusToolTip';
 
-export type Props = { dataNode: string };
+export type Props = { dataNode: string; isStac: boolean };
 
-const GlobusToolTip: React.FC<Props> = ({ dataNode }) => {
-  const isEnabled = window.METAGRID.GLOBUS_NODES.includes(dataNode);
+const GlobusToolTip: React.FC<Props> = ({ dataNode, isStac }) => {
+  const isEnabled = isStac || window.METAGRID.GLOBUS_NODES.includes(dataNode);
   const [isDarkMode] = useRecoilState<boolean>(isDarkModeAtom);
 
   const enabledColor = isDarkMode ? darkModeGreen : lightModeGreen;

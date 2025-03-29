@@ -77,6 +77,18 @@ def do_search(request):
     return do_request(request, settings.SEARCH_URL)
 
 
+@require_http_methods(["GET", "POST"])
+@csrf_exempt
+def do_stac_search(request):
+    return do_request(request, settings.STAC_URL + "/search")
+
+
+@require_http_methods(["GET", "POST"])
+@csrf_exempt
+def fetch_stac_facets(request):
+    return do_request(request, settings.STAC_URL + "/collections/CMIP6")
+
+
 @require_http_methods(["POST"])
 @csrf_exempt
 def do_citation(request):
