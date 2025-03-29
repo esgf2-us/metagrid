@@ -102,14 +102,14 @@ class TestProxyViewSet(APITestCase):
     @responses.activate
     def test_stac_search(self):
         url = reverse("do-stac-search")
-        responses.get(settings.STAC_URL)
+        responses.get(settings.STAC_URL + "/search")
         response = self.client.get(url)
         assert response.status_code == status.HTTP_200_OK
 
     @responses.activate
     def test_fetch_stac_facets(self):
         url = reverse("fetch-stac-facets")
-        responses.get(settings.STAC_URL)
+        responses.get(settings.STAC_URL + "/collections/CMIP6")
         response = self.client.get(url)
         assert response.status_code == status.HTTP_200_OK
 

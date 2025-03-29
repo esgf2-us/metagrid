@@ -72,7 +72,7 @@ urlpatterns = [
     re_path(r"^dj-rest-auth/", include("dj_rest_auth.urls")),
     path("proxy/search", do_search, name="do-search"),
     path("proxy/stac/search", do_stac_search, name="do-stac-search"),
-    path("proxy/stac/facets", fetch_stac_facets, name="do-stac-search"),
+    path("proxy/stac/facets", fetch_stac_facets, name="fetch-stac-facets"),
     path("proxy/citation", do_citation, name="do-citation"),
     path("proxy/wget", do_wget, name="do-wget"),
     path("proxy/status", do_status, name="do-status"),

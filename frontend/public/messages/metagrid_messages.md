@@ -1,21 +1,15 @@
-# Welcome to the Metagrid Release v1.3.x
+# Welcome to the Metagrid Release v1.5.x
 
 To view the latest documentation and FAQ, please visit this page:
 [https://esgf.github.io/esgf-user-support/metagrid.html](https://esgf.github.io/esgf-user-support/metagrid.html)
 
-## Deployment Process Updated
+## STAC Search API integration
 
-This update includes numerous changes to how the Metagrid application is deployed, with enhancements to security, improvements to the configuration process and consolidation of configuration files.
+This update includes numerous changes to how the Metagrid application handles search results and includes support for STAC search api requests. STAC and non-STAC search results can both be viewed and are rendered/handled intidivdually in on the Metagrid search results tables.
 
-## Light and Dark Themes
+## U.I Improvements
 
-If you checkout the top-right corner, you'll see we now have a switch to allow you to choose the display theme from Light to Dark.
-
-## Upcoming changes to ESGF @LLNL
-
-We are excited to be planning to have an official release of the Metagrid platform onto scalable infrastructure. In the meantime we will be testing new features.
-
-- Improved redundancy and backend deployment enhancements utilizing our Kubernetes cluster.
+We added some improvements the the U.I. as part of our overhaul of the frontend when integrating STAC data.
 
 ## WGET script reminder
 

@@ -322,7 +322,7 @@ export const fetchProjects = async (): Promise<{
       if (data.results) {
         return {
           ...res,
-          results: [...STAC_PROJECTS, ...data.results],
+          results: [...data.results, ...STAC_PROJECTS],
         };
       }
       return { ...res, results: STAC_PROJECTS };

@@ -9,6 +9,15 @@
 >
 >     `https://esgf-node.llnl.gov/esg-search/search`
 
+#### `METAGRID_STAC_URL`
+
+> !!! example "**Required**"
+>     The STAC URL at which the ESG-Search api can be queried. A suitable endpoint will return JSON in the browser.
+>
+>     __Example Values__
+>
+>     `https://api.stac.esgf-west.org/`
+
 #### `METAGRID_WGET_URL`
 
 > !!! example "**Required**"
