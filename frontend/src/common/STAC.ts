@@ -51,7 +51,6 @@ export const STAC_PROJECTS: RawProject[] = [
     facetsUrl: '.language=en',
     fullName: 'Coupled Model Intercomparison Project Phase 6',
     projectUrl: 'https://pcmdi.llnl.gov/CMIP6/',
-
     facetsByGroup: {
       General: ['activity_id', 'data_specs_version', 'mip_era', 'grid'],
       Identifiers: [

@@ -23,8 +23,16 @@ import {
   saveSessionValues,
   startSearchGlobusEndpoints,
   updateUserCart,
+  fetchSTACSearchResults,
 } from '.';
-import { ActiveSearchQuery, Pagination, RawCitation, ResultType } from '../components/Search/types';
+import { STAC_PROJECTS, convertStacToRawSearchResult } from '../common/STAC';
+import {
+  ActiveSearchQuery,
+  Pagination,
+  RawCitation,
+  ResultType,
+  StacFeature,
+} from '../components/Search/types';
 import {
   activeSearchQueryFixture,
   ESGFSearchAPIFixture,
@@ -34,6 +42,7 @@ import {
   rawCitationFixture,
   rawNodeStatusFixture,
   rawUserCartFixture,
+  stacSearchResultsFixture,
   userAuthFixture,
   userInfoFixture,
   userSearchQueriesFixture,
@@ -107,9 +116,9 @@ describe('test fetching user info', () => {
 });
 
 describe('test fetching projects', () => {
-  xit('returns projects', async () => {
+  it('returns projects', async () => {
     const projects = await fetchProjects();
-    expect(projects).toEqual({ results: projectsFixture() });
+    expect(projects.results).toEqual([...projectsFixture(), ...STAC_PROJECTS]);
   });
 
   it('catches and throws an error based on HTTP status code', async () => {
@@ -256,6 +265,122 @@ describe('test fetching search results', () => {
     await expect(fetchSearchResults([reqUrl])).rejects.toThrow(
       apiRoutes.esgfSearch.handleErrorMsg('generic')
     );
+  });
+});
+
+describe('test fetching STAC search results', () => {
+  xit('returns STAC search results', async () => {
+    const reqUrl = 'https://example.com/proxy/stac/search';
+    // server.use(rest.get(reqUrl, (_req, res, ctx) => res(ctx.json(stacSearchResultsFixture()))));
+
+    const results = await fetchSTACSearchResults([reqUrl]);
+    expect(results).toEqual(stacSearchResultsFixture());
+  });
+
+  xit('catches and throws an error based on HTTP status code', async () => {
+    const reqUrl = 'https://example.com/proxy/stac/search';
+    server.use(rest.get(reqUrl, (_req, res, ctx) => res(ctx.status(404))));
+
+    await expect(fetchSTACSearchResults([reqUrl])).rejects.toThrow(
+      apiRoutes.esgfSearchSTAC.handleErrorMsg(404)
+    );
+  });
+
+  it('catches and throws generic network error', async () => {
+    const reqUrl = 'https://example.com/stac/search';
+    server.use(rest.get(reqUrl, (_req, res) => res.networkError(genericNetworkErrorMsg)));
+
+    await expect(fetchSTACSearchResults([reqUrl])).rejects.toThrow(
+      apiRoutes.esgfSearchSTAC.handleErrorMsg('generic')
+    );
+  });
+});
+
+describe('test converting STAC feature to raw search result', () => {
+  it('converts a STAC feature to a raw search result', () => {
+    const stacFeature: StacFeature = {
+      id: 'test-id',
+      bbox: [0, 0, 10, 10],
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [0, 0],
+            [10, 0],
+            [10, 10],
+            [0, 10],
+            [0, 0],
+          ],
+        ],
+      },
+      links: [],
+      type: 'Feature',
+      assets: {
+        asset1: {
+          id: 'asset1',
+          access: ['public'],
+          description: 'Test asset',
+          alternatename: 'Alternate name',
+          name: 'Asset 1',
+          roles: ['data'],
+          href: 'https://example.com/asset1',
+          type: 'image/png',
+        },
+      },
+      properties: {
+        access: ['public'],
+        citation_url: 'https://example.com/citation',
+        further_info_url: 'https://example.com/info',
+        version: '1.0',
+      },
+      collection: ['test-collection'],
+      stac_version: '1.0.0',
+    };
+
+    const rawResult = convertStacToRawSearchResult(stacFeature);
+    expect(rawResult).toMatchObject({
+      id: 'test-id',
+      master_id: 'test-id',
+      access: ['public'],
+      assets: {
+        asset1: {
+          id: 'Asset 1',
+          access: ['public'],
+          description: 'Test asset',
+          alternatename: 'Alternate name',
+          name: 'Asset 1',
+          roles: ['data'],
+          href: 'https://example.com/asset1',
+          type: 'image/png',
+        },
+      },
+      bbox: [0, 0, 10, 10],
+      citation_url: ['https://example.com/citation'],
+      further_info_url: ['https://example.com/info'],
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [0, 0],
+            [10, 0],
+            [10, 10],
+            [0, 10],
+            [0, 0],
+          ],
+        ],
+      },
+      links: [],
+      number_of_files: 1,
+      version: '1.0',
+      properties: {
+        access: ['public'],
+        citation_url: 'https://example.com/citation',
+        further_info_url: 'https://example.com/info',
+        version: '1.0',
+      },
+      stac_version: '1.0.0',
+      type: 'Feature',
+    });
   });
 });
 

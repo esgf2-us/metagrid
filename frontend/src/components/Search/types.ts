@@ -73,7 +73,7 @@ export type StacFeature = {
 
 export type StacSearchResponse = {
   features: StacFeature[];
-  links: [{ rel: string; type: string; href: string }];
+  links: StacLink[];
   numMatched: number;
   numReturned: number;
   type: string;
@@ -87,6 +87,7 @@ export type StacFacetsData = {
 export type StacResponse = {
   facets: StacFacetsData;
   search: StacSearchResponse;
+  stac: boolean;
 };
 
 export type RawSearchResult = {
@@ -104,7 +105,7 @@ export type RawSearchResult = {
   links?: StacLink[];
   globus_link?: string;
   assets?: { [name: string]: StacAsset };
-  version?: string;
+  version?: string | number;
   [key: string]: unknown;
 };
 

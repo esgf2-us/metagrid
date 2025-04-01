@@ -103,7 +103,7 @@ describe('test FilesTable component', () => {
     expect(alertMsg).toBeTruthy();
   });
 
-  xit('handles downloading data with httpserver', async () => {
+  it('handles downloading data with httpserver', async () => {
     customRender(<FilesTable {...defaultProps} />);
 
     // Check component renders
@@ -115,7 +115,7 @@ describe('test FilesTable component', () => {
 
     // Check a record row exist
     const rows = await screen.findAllByRole('row');
-    const row = rows[0];
+    const row = rows[1];
     expect(row).toBeTruthy();
 
     // Get the download button
@@ -172,7 +172,7 @@ describe('test FilesTable component', () => {
     expect(screen.getByTestId('search-items-row-11')).toBeInTheDocument();
   });
 
-  xit('handles clicking the expandable icon', async () => {
+  it('handles clicking the expandable icon', async () => {
     customRender(<FilesTable {...defaultProps} />);
 
     // Check component renders
@@ -184,7 +184,7 @@ describe('test FilesTable component', () => {
 
     // Check a record row exist
     const rows = await screen.findAllByRole('row');
-    const row = rows[0];
+    const row = rows[1];
     expect(row).toBeTruthy();
 
     // Get the expandable cell
