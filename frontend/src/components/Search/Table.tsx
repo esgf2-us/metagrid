@@ -202,7 +202,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       sorter: (a: RawSearchResult, b: RawSearchResult) => {
         const idA = a.master_id ?? '';
         const idB = b.master_id ?? '';
-        return idA.localeCompare(idB);
+        return idA.toString().localeCompare(idB.toString());
       },
       sortOrder: sortedInfo.columnKey === 'title' ? sortedInfo.order : null,
       render: (title: string, record: RawSearchResult) => {
@@ -258,7 +258,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       sorter: (a: RawSearchResult, b: RawSearchResult) => {
         const idA = a.version ?? '';
         const idB = b.version ?? '';
-        return idA.localeCompare(idB);
+        return idA.toString().localeCompare(idB.toString());
       },
       sortOrder: sortedInfo.columnKey === 'version' ? sortedInfo.order : null,
       render: (version: string) => (
