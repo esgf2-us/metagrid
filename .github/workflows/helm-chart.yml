@@ -5,12 +5,27 @@ on:
     tags:
     - 'v*'
 
+  pull_request:
+
 jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+    - uses: actions/checkout@v4
+    - uses: azure/setup-helm@v4.3.0
+    - name: Chart | Lint
+      run: |
+        helm repo add bitnami https://charts.bitnami.com/bitnami
+        helm dep build helm/
+        helm lint helm/
   publish:
     name: Publish
     runs-on: ubuntu-latest
     permissions:
       packages: write
+    if: github.event_name != 'pull_request'
     steps:
     - uses: actions/checkout@v4
     - name: Chart | Push
