@@ -1,13 +1,13 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import Footer, { Props } from './Footer';
+import Footer from './Footer';
 import { mockConfig } from '../../test/jestTestFunctions';
+import startupDisplayData from '../Messaging/messageDisplayData';
+
+const metagridVersion: string = startupDisplayData.messageToShow;
 
 describe('Footer Component', () => {
   const mockFooterText = 'This is a footer text';
-  const props: Props = {
-    metagridVersion: '1.3.0',
-  };
 
   beforeAll(() => {
     // Mock the window.METAGRID object
@@ -15,12 +15,12 @@ describe('Footer Component', () => {
   });
 
   it('renders the metagrid version correctly', () => {
-    render(<Footer {...props} />);
-    expect(screen.getByText(`Metagrid Version: ${props.metagridVersion}`)).toBeInTheDocument();
+    render(<Footer />);
+    expect(screen.getByText(`Metagrid Version: ${metagridVersion}`)).toBeInTheDocument();
   });
 
   it('renders the footer text correctly', () => {
-    render(<Footer {...props} />);
+    render(<Footer />);
     expect(screen.getByText(mockFooterText)).toBeInTheDocument();
   });
 });

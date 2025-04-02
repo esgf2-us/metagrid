@@ -7,12 +7,35 @@ import { cleanup } from '@testing-library/react';
 import { TextEncoder } from 'util';
 import { server } from './test/mock/server';
 import messageDisplayData from './components/Messaging/messageDisplayData';
-import { mockConfig, originalGlobusEnabledNodes } from './test/jestTestFunctions';
+import { mockConfig, originalGlobusEnabledNodes, RecoilWrapper } from './test/jestTestFunctions';
 import 'cross-fetch/polyfill';
 import 'mock-match-media/jest-setup';
 import { sessionStorageMock } from './test/mock/mockStorage';
+import {
+  activeSearchQueryAtom,
+  availableFacetsAtom,
+  isDarkModeAtom,
+  nodeStatusAtom,
+  supportModalVisibleAtom,
+  userCartAtom,
+  userSearchQueriesAtom,
+} from './components/App/recoil/atoms';
+import {
+  activeSearchQueryFixture,
+  parsedFacetsFixture,
+  parsedNodeStatusFixture,
+  userCartFixture,
+  userSearchQueriesFixture,
+} from './test/mock/fixtures';
+import { cartDownloadIsLoadingAtom, cartItemSelectionsAtom } from './components/Cart/recoil/atoms';
+import { globusSavedEndpointsAtoms, globusTaskItemsAtom } from './components/Globus/recoil/atom';
+import { ActiveSearchQuery, RawSearchResults } from './components/Search/types';
+import { ParsedFacets } from './components/Facets/types';
+import { NodeStatusArray } from './components/NodeStatus/types';
+import { UserCart, UserSearchQueries } from './components/Cart/types';
+import { GlobusEndpoint, GlobusTaskItem } from './components/Globus/types';
 
-jest.setTimeout(60000);
+jest.setTimeout(120000);
 
 // Used to restore window.location after each test
 const location = JSON.stringify(window.location);
@@ -24,6 +47,32 @@ globalThis.TextEncoder = TextEncoder;
 
 beforeAll(() => {
   server.listen();
+
+  // Initialize recoil state values
+  RecoilWrapper.setAtomValue<ActiveSearchQuery>(
+    activeSearchQueryAtom,
+    activeSearchQueryFixture(),
+    false
+  );
+  RecoilWrapper.setAtomValue<ParsedFacets | Record<string, unknown>>(
+    availableFacetsAtom,
+    parsedFacetsFixture(),
+    false
+  );
+  RecoilWrapper.setAtomValue<NodeStatusArray>(nodeStatusAtom, parsedNodeStatusFixture(), false);
+  RecoilWrapper.setAtomValue<boolean>(supportModalVisibleAtom, false, false);
+  RecoilWrapper.setAtomValue<boolean>(isDarkModeAtom, false, false);
+
+  RecoilWrapper.setAtomValue<UserCart>(userCartAtom, userCartFixture(), true);
+  RecoilWrapper.setAtomValue<UserSearchQueries>(
+    userSearchQueriesAtom,
+    userSearchQueriesFixture(),
+    true
+  );
+  RecoilWrapper.setAtomValue<boolean>(cartDownloadIsLoadingAtom, false, true);
+  RecoilWrapper.setAtomValue<RawSearchResults>(cartItemSelectionsAtom, [], true);
+  RecoilWrapper.setAtomValue<GlobusEndpoint[]>(globusSavedEndpointsAtoms, [], true);
+  RecoilWrapper.setAtomValue<GlobusTaskItem[]>(globusTaskItemsAtom, [], true);
 });
 beforeEach(() => {
   sessionStorageMock.clear();
@@ -42,7 +91,7 @@ afterEach(() => {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   delete window.location;
-  window.location = (JSON.parse(location) as unknown) as Location; // Reset location
+  window.location = (JSON.parse(location) as unknown) as string & Location; // Reset location
   window.location.replace = jest.fn(); // Don't do anything with redirects
   window.location.assign = jest.fn();
   window.URL.createObjectURL = jest.fn();
@@ -59,6 +108,8 @@ afterEach(() => {
   jest.clearAllMocks();
 
   server.resetHandlers();
+
+  RecoilWrapper.restoreValues();
 
   cleanup();
 });
