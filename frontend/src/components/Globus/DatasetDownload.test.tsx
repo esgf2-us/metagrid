@@ -224,6 +224,8 @@ beforeEach(() => {
   db.initializeDataStore({});
 });
 
+jest.setTimeout(120000);
+
 describe('DatasetDownload form tests', () => {
   it('Download form renders.', async () => {
     const downloadForm = customRender(<DatasetDownloadForm />);

@@ -35,7 +35,7 @@ import { NodeStatusArray } from './components/NodeStatus/types';
 import { UserCart, UserSearchQueries } from './components/Cart/types';
 import { GlobusEndpoint, GlobusTaskItem } from './components/Globus/types';
 
-jest.setTimeout(75000);
+jest.setTimeout(60000);
 
 // Used to restore window.location after each test
 const location = JSON.stringify(window.location);
