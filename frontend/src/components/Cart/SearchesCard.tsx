@@ -8,12 +8,16 @@ import { Alert, Card, Col, Skeleton, Typography, Tooltip } from 'antd';
 import React from 'react';
 import { useAsync } from 'react-async';
 import { useNavigate } from 'react-router-dom';
+import { useSetRecoilState } from 'recoil';
 import { fetchSearchResults, generateSearchURLQuery } from '../../api';
 import { savedSearchTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import { stringifyFilters } from '../Search';
 import { UserSearchQuery } from './types';
 import { createSearchRouteURL } from '../../common/utils';
+
+import { savedSearchQueryAtom } from '../App/recoil/atoms';
+import { ActiveSearchQuery } from '../Search/types';
 
 const styles: CSSinJS = {
   category: {
@@ -26,16 +30,14 @@ const styles: CSSinJS = {
 
 export type Props = {
   searchQuery: UserSearchQuery;
+  onHandleRemoveSearchQuery: (searchUUID: string) => void;
   index: number;
-  onRunSearchQuery: (savedSearch: UserSearchQuery) => void;
-  onRemoveSearchQuery: (uuid: string) => void;
 };
 
 const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
   searchQuery,
+  onHandleRemoveSearchQuery,
   index,
-  onRunSearchQuery,
-  onRemoveSearchQuery,
 }) => {
   const navigate = useNavigate();
   const {
@@ -50,6 +52,22 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
     activeFacets,
     url,
   } = searchQuery;
+
+  const setSavedSearchQuery = useSetRecoilState<ActiveSearchQuery | null>(savedSearchQueryAtom);
+
+  // This converts a saved search to the active search query
+  const handleRunSearchQuery = (savedSearch: UserSearchQuery): void => {
+    setSavedSearchQuery({
+      project: savedSearch.project,
+      versionType: savedSearch.versionType,
+      resultType: 'all',
+      minVersionDate: savedSearch.minVersionDate,
+      maxVersionDate: savedSearch.maxVersionDate,
+      filenameVars: savedSearch.filenameVars,
+      activeFacets: savedSearch.activeFacets,
+      textInputs: savedSearch.textInputs,
+    });
+  };
 
   // Generate the URL for receiving only the result count to reduce response time
 
@@ -97,7 +115,7 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
               key="search"
               onClick={() => {
                 navigate('/search');
-                onRunSearchQuery(searchQuery);
+                handleRunSearchQuery(searchQuery);
               }}
             />
           </Tooltip>,
@@ -115,7 +133,7 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
             <DeleteOutlined
               className={savedSearchTourTargets.removeBtn.class()}
               data-testid={`remove-${index + 1}`}
-              onClick={() => onRemoveSearchQuery(uuid)}
+              onClick={() => onHandleRemoveSearchQuery(uuid)}
               style={{ color: 'red' }}
               key="remove"
             />

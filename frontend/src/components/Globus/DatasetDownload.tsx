@@ -31,8 +31,8 @@ import {
   manageCollectionsTourTargets,
 } from '../../common/reactJoyrideSteps';
 import { RawSearchResults } from '../Search/types';
-import { cartDownloadIsLoading, cartItemSelections } from '../Cart/recoil/atoms';
-import GlobusStateKeys, { globusSavedEndpoints, globusTaskItems } from './recoil/atom';
+import { cartDownloadIsLoadingAtom, cartItemSelectionsAtom } from '../Cart/recoil/atoms';
+import GlobusStateKeys, { globusSavedEndpointsAtoms, globusTaskItemsAtom } from './recoil/atom';
 import {
   GlobusTokenResponse,
   GlobusTaskItem,
@@ -105,13 +105,17 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   const tourState: RawTourState = React.useContext(ReactJoyrideContext);
   const { startSpecificTour } = tourState;
 
-  const [downloadIsLoading, setDownloadIsLoading] = useRecoilState<boolean>(cartDownloadIsLoading);
+  const [downloadIsLoading, setDownloadIsLoading] = useRecoilState<boolean>(
+    cartDownloadIsLoadingAtom
+  );
 
   // Persistent vars
-  const [taskItems, setTaskItems] = useRecoilState<GlobusTaskItem[]>(globusTaskItems);
-  const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(cartItemSelections);
+  const [taskItems, setTaskItems] = useRecoilState<GlobusTaskItem[]>(globusTaskItemsAtom);
+  const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(
+    cartItemSelectionsAtom
+  );
   const [savedGlobusEndpoints, setSavedGlobusEndpoints] = useRecoilState<GlobusEndpoint[]>(
-    globusSavedEndpoints
+    globusSavedEndpointsAtoms
   );
 
   db.addVar<string | null>(GlobusStateKeys.accessToken, null);

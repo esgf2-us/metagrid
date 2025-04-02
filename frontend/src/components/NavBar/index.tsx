@@ -10,27 +10,20 @@ import Button from '../General/Button';
 import LeftMenu from './LeftMenu';
 import './NavBar.css';
 import RightMenu from './RightMenu';
-import isDarkModeAtom from '../App/recoil/atoms';
+import { isDarkModeAtom } from '../App/recoil/atoms';
 
 const { Link } = Typography;
 
 export type Props = {
-  numCartItems: number;
-  numSavedSearches: number;
   onTextSearch: (selectedProject: RawProject, text: string) => void;
-  supportModalVisible: (visible: boolean) => void;
 };
 
-const NavBar: React.FC<React.PropsWithChildren<Props>> = ({
-  numCartItems,
-  numSavedSearches,
-  onTextSearch,
-  supportModalVisible,
-}) => {
+const NavBar: React.FC<React.PropsWithChildren<Props>> = ({ onTextSearch }) => {
+  // Recoil state
+  const [isDarkMode] = useRecoilState<boolean>(isDarkModeAtom);
+
   const { data, error, isLoading } = useAsync(fetchProjects);
   const [showDrawer, setShowDrawer] = React.useState(false);
-
-  const [isDarkMode] = useRecoilState<boolean>(isDarkModeAtom);
 
   let className = 'navbar';
   if (isDarkMode) {
@@ -72,12 +65,7 @@ const NavBar: React.FC<React.PropsWithChildren<Props>> = ({
           ></LeftMenu>
         </div>
         <div className="navbar-right">
-          <RightMenu
-            mode="horizontal"
-            numCartItems={numCartItems}
-            numSavedSearches={numSavedSearches}
-            supportModalVisible={supportModalVisible}
-          ></RightMenu>
+          <RightMenu mode="horizontal"></RightMenu>
         </div>
         <Button className="navbar-mobile-button" type="default" onClick={() => setShowDrawer(true)}>
           <MenuUnfoldOutlined />
@@ -89,12 +77,7 @@ const NavBar: React.FC<React.PropsWithChildren<Props>> = ({
           onClose={() => setShowDrawer(false)}
           open={showDrawer}
         >
-          <RightMenu
-            mode="inline"
-            numCartItems={numCartItems}
-            numSavedSearches={numSavedSearches}
-            supportModalVisible={supportModalVisible}
-          ></RightMenu>
+          <RightMenu mode="inline"></RightMenu>
         </Drawer>
       </div>
     </nav>

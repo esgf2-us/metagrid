@@ -4,7 +4,9 @@ import userEvent from '@testing-library/user-event';
 import { rawSearchResultFixture, userCartFixture } from '../../test/mock/fixtures';
 import Summary, { Props } from './Summary';
 import customRender from '../../test/custom-render';
-import CartStateKeys from './recoil/atoms';
+import { cartItemSelectionsAtom } from './recoil/atoms';
+import { RecoilWrapper } from '../../test/jestTestFunctions';
+import { globusTaskItemsAtom } from '../Globus/recoil/atom';
 
 const defaultProps: Props = {
   userCart: userCartFixture(),
@@ -45,6 +47,25 @@ it('renders component with correct calculations when a dataset doesn"t have size
   expect(numFilesText.textContent).toEqual('Total Number of Files: 3');
 });
 
+it('handles null number_of_files and size attributes gracefully', async () => {
+  customRender(
+    <Summary
+      userCart={[
+        rawSearchResultFixture(),
+        rawSearchResultFixture({
+          size: null,
+          number_of_files: null,
+        }),
+      ]}
+    />
+  );
+  const numDatasetsField = await screen.findByText('Total Number of Datasets:');
+  const numFilesText = await screen.findByText('Total Number of Files:');
+
+  expect(numDatasetsField.textContent).toEqual('Total Number of Datasets: 2');
+  expect(numFilesText.textContent).toEqual('Total Number of Files: 3');
+});
+
 it('shows the correct number of datasets and files when cart is empty', async () => {
   customRender(<Summary userCart={[]} />);
   const numDatasetsField = await screen.findByText('Total Number of Datasets:');
@@ -65,10 +86,11 @@ describe('shows the correct selected datasets and files', () => {
   });
 
   it('when items are selected', async () => {
-    localStorage.setItem(
-      CartStateKeys.cartItemSelections,
-      JSON.stringify([rawSearchResultFixture(), rawSearchResultFixture(), rawSearchResultFixture()])
-    );
+    RecoilWrapper.modifyAtomValue(cartItemSelectionsAtom.key, [
+      rawSearchResultFixture(),
+      rawSearchResultFixture(),
+      rawSearchResultFixture(),
+    ]);
     customRender(<Summary {...defaultProps} />);
     const numSelectedDatasetsField = await screen.findByText('Selected Number of Datasets:');
     const numSelectedFilesText = await screen.findByText('Selected Number of Files:');
@@ -86,7 +108,7 @@ it('renders task submit history when tasks are present', async () => {
       taskStatusURL: 'http://example.com/task/1',
     },
   ];
-  localStorage.setItem('globusTaskItems', JSON.stringify(taskItems));
+  RecoilWrapper.modifyAtomValue(globusTaskItemsAtom.key, taskItems);
   customRender(<Summary {...defaultProps} />);
 
   const taskHistoryTitle = await screen.findByText('Task Submit History');
@@ -101,7 +123,7 @@ it('clears all tasks when clear button is clicked', async () => {
       taskStatusURL: 'http://example.com/task/1',
     },
   ];
-  localStorage.setItem('globusTaskItems', JSON.stringify(taskItems));
+  RecoilWrapper.modifyAtomValue(globusTaskItemsAtom.key, taskItems);
   const { getByTestId } = customRender(<Summary {...defaultProps} />);
 
   const clearButton = getByTestId('clear-all-submitted-globus-tasks');

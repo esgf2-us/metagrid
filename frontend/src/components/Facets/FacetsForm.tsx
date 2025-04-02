@@ -26,14 +26,15 @@ import weekOfYear from 'dayjs/plugin/weekOfYear';
 import weekYear from 'dayjs/plugin/weekYear';
 
 import React from 'react';
+import { useRecoilState, useRecoilValue } from 'recoil';
 import { leftSidebarTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
-import { NodeStatusArray } from '../NodeStatus/types';
-import { ActiveSearchQuery, ResultType, VersionDate, VersionType } from '../Search/types';
+import { ActiveSearchQuery, ResultType, VersionType } from '../Search/types';
 import { ActiveFacets, ParsedFacets } from './types';
-import { showNotice } from '../../common/utils';
+import { showError, showNotice } from '../../common/utils';
+import { activeSearchQueryAtom, availableFacetsAtom } from '../App/recoil/atoms';
 
 dayjs.extend(customParseFormat);
 dayjs.extend(advancedFormat);
@@ -51,20 +52,6 @@ const styles: CSSinJS = {
   formTitle: { fontWeight: 'bold', textTransform: 'capitalize' },
   applyBtn: { marginBottom: '12px' },
   collapseContainer: { marginTop: '5px' },
-};
-
-export type Props = {
-  activeSearchQuery: ActiveSearchQuery;
-  availableFacets: ParsedFacets;
-  nodeStatus?: NodeStatusArray;
-  onSetFilenameVars: (filenameVar: string) => void;
-  onSetGeneralFacets: (
-    versionType: VersionType,
-    resultType: ResultType,
-    minVersionDate: VersionDate,
-    maxVersionDate: VersionDate
-  ) => void;
-  onSetActiveFacets: (activeFacets: ActiveFacets) => void;
 };
 
 /**
@@ -96,14 +83,24 @@ export const formatDate = (date: string | Dayjs, toString: boolean): string | Da
   return dayjs(date, format);
 };
 
-const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
-  activeSearchQuery,
-  availableFacets,
-  nodeStatus,
-  onSetFilenameVars,
-  onSetGeneralFacets,
-  onSetActiveFacets,
-}) => {
+const FacetsForm: React.FC = () => {
+  // Recoil state
+  const [activeSearchQuery, setActiveSearchQuery] = useRecoilState<ActiveSearchQuery>(
+    activeSearchQueryAtom
+  );
+
+  // let setGlobusReady = false;
+  // if (
+  //   activeSearchQuery.activeFacets.data_node &&
+  //   window.METAGRID.GLOBUS_NODES.length &&
+  //   window.METAGRID.GLOBUS_NODES.length > 0
+  // ) {
+  //   setGlobusReady = window.METAGRID.GLOBUS_NODES.every((node: string) =>
+  //     activeSearchQuery.activeFacets.data_node.includes(node)
+  //   );
+  // }
+
+  // Local variables
   const [messageApi, contextHolder] = message.useMessage();
 
   const [generalFacetsForm] = Form.useForm();
@@ -129,7 +126,13 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
   >([]);
   const [expandAll, setExpandAll] = React.useState<boolean>(true);
 
+  const availableFacets: ParsedFacets = useRecoilValue(availableFacetsAtom) as ParsedFacets;
+
   type DatePickerReturnType = [null, null] | [Dayjs, null] | [null, Dayjs] | [Dayjs, Dayjs];
+
+  const facetsByGroup = activeSearchQuery.project.facetsByGroup as {
+    [key: string]: string[];
+  };
 
   // Convert using moment.js to for the initial value of the date picker
   const { minVersionDate, maxVersionDate } = activeSearchQuery;
@@ -139,7 +142,14 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
   ];
 
   const handleOnFinishFilenameVarForm = (values: { [key: string]: string }): void => {
-    onSetFilenameVars(values.filenameVar);
+    if (activeSearchQuery.filenameVars.includes(values.filenameVar as never)) {
+      showError(messageApi, `Input "${values.filenameVar}" has already been applied`);
+    } else {
+      setActiveSearchQuery({
+        ...activeSearchQuery,
+        filenameVars: [...activeSearchQuery.filenameVars, values.filenameVar],
+      });
+    }
 
     setFilenameVar('');
     filenameVarForm.setFieldsValue({ filenameVar: '' });
@@ -165,7 +175,13 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
       newMaxVersionDate = maxDate ? (formatDate(maxDate, true) as string) : maxDate;
     }
 
-    onSetGeneralFacets(newVersionType, newResultType, newMinVersionDate, newMaxVersionDate);
+    setActiveSearchQuery({
+      ...activeSearchQuery,
+      versionType: newVersionType,
+      resultType: newResultType,
+      minVersionDate: newMinVersionDate,
+      maxVersionDate: newMaxVersionDate,
+    });
   };
 
   const handleOnSelectAvailableFacetsForm = (facet: string, options: string[] | []): void => {
@@ -175,17 +191,24 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
   const handleOnGlobusReadyChanged = (event: RadioChangeEvent): void => {
     const globusOnly = event.target.value as boolean;
     setGlobusReadyOnly(globusOnly);
-
     if (globusOnly) {
-      const newActiveFacets = activeSearchQuery.activeFacets;
-      onSetActiveFacets({
-        ...newActiveFacets,
-        dataNode: window.METAGRID.GLOBUS_NODES,
-      } as ActiveFacets);
+      setActiveSearchQuery({
+        ...activeSearchQuery,
+        activeFacets: {
+          ...activeSearchQuery.activeFacets,
+          data_node: window.METAGRID.GLOBUS_NODES,
+        },
+      });
+      setActiveDropdownValue(['data_node', window.METAGRID.GLOBUS_NODES]);
     } else {
-      const newActiveFacets = activeSearchQuery.activeFacets;
-      delete newActiveFacets.dataNode;
-      onSetActiveFacets(newActiveFacets);
+      setActiveSearchQuery({
+        ...activeSearchQuery,
+        activeFacets: {
+          ...activeSearchQuery.activeFacets,
+          data_node: [],
+        },
+      } as ActiveSearchQuery);
+      setActiveDropdownValue(['data_node', []]);
     }
   };
 
@@ -196,35 +219,43 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
   React.useEffect(() => {
     generalFacetsForm.resetFields();
     availableFacetsForm.resetFields();
+    if (window.METAGRID.GLOBUS_NODES && window.METAGRID.GLOBUS_NODES.length > 0) {
+      if (
+        activeSearchQuery &&
+        activeSearchQuery.activeFacets &&
+        activeSearchQuery.activeFacets.data_node &&
+        activeSearchQuery.activeFacets.data_node.every((node: string) =>
+          window.METAGRID.GLOBUS_NODES.includes(node)
+        )
+      ) {
+        setGlobusReadyOnly(true);
+      } else {
+        setGlobusReadyOnly(false);
+      }
+    }
   }, [generalFacetsForm, availableFacetsForm, activeSearchQuery]);
 
   React.useEffect(() => {
     if (!dropdownIsOpen && activeDropdownValue) {
       const [facet, options] = activeDropdownValue;
-      const newActiveFacets = activeSearchQuery.activeFacets;
+      const newActiveFacets: ActiveFacets = activeSearchQuery.activeFacets;
       /* istanbul ignore else */
       if (options.length === 0) {
-        delete newActiveFacets[facet];
-        onSetActiveFacets(newActiveFacets);
+        const { [facet]: remove, ...updatedFacets } = newActiveFacets;
+
+        setActiveSearchQuery({ ...activeSearchQuery, activeFacets: updatedFacets });
       } else if (options.length > 0) {
-        onSetActiveFacets({
-          ...newActiveFacets,
-          [facet]: options,
-        } as ActiveFacets);
+        setActiveSearchQuery({
+          ...activeSearchQuery,
+          activeFacets: {
+            ...newActiveFacets,
+            [facet]: options,
+          },
+        });
       }
       setActiveDropdownValue(null);
     }
-  }, [
-    dropdownIsOpen,
-    onSetActiveFacets,
-    activeSearchQuery,
-    activeDropdownValue,
-    setActiveDropdownValue,
-  ]);
-
-  const facetsByGroup = activeSearchQuery.project.facetsByGroup as {
-    [key: string]: string[];
-  };
+  }, [dropdownIsOpen, activeDropdownValue, setActiveDropdownValue]);
 
   // Used to control text length of the drop-down items
   // Tooltip is shown if the length is above this threshold
@@ -246,12 +277,17 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
               <Col>
                 <Radio.Group onChange={handleOnGlobusReadyChanged} value={globusReadyOnly}>
                   <Radio
+                    key="any"
                     value={false}
                     className={leftSidebarTargets.filterByGlobusTransferAny.class()}
                   >
                     Any
                   </Radio>
-                  <Radio value className={leftSidebarTargets.filterByGlobusTransferOnly.class()}>
+                  <Radio
+                    key="globus-ready"
+                    value
+                    className={leftSidebarTargets.filterByGlobusTransferOnly.class()}
+                  >
                     Only Globus Transferrable
                   </Radio>
                 </Radio.Group>
@@ -408,7 +444,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                             // The data node facet has a unique tooltip overlay to show the status of the highlighted node
                             if (facet === 'data_node') {
                               optionOutput = (
-                                <StatusToolTip nodeStatus={nodeStatus} dataNode={variable[0]}>
+                                <StatusToolTip dataNode={variable[0]}>
                                   <span style={styles.facetCount}>({variable[1]})</span>
                                 </StatusToolTip>
                               );

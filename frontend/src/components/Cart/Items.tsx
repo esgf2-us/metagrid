@@ -8,8 +8,11 @@ import Button from '../General/Button';
 import Table from '../Search/Table';
 import { RawSearchResults } from '../Search/types';
 import DatasetDownload from '../Globus/DatasetDownload';
-import { cartItemSelections } from './recoil/atoms';
-import { NodeStatusArray } from '../NodeStatus/types';
+import { cartItemSelectionsAtom } from './recoil/atoms';
+import { UserCart } from './types';
+import { userCartAtom } from '../App/recoil/atoms';
+import { AuthContext } from '../../contexts/AuthContext';
+import { updateUserCart } from '../../api';
 
 const styles: CSSinJS = {
   summary: {
@@ -25,22 +28,34 @@ const styles: CSSinJS = {
 };
 
 export type Props = {
-  userCart: RawSearchResults | [];
   onUpdateCart: (item: RawSearchResults, operation: 'add' | 'remove') => void;
-  onClearCart: () => void;
-  nodeStatus?: NodeStatusArray;
 };
 
-const Items: React.FC<React.PropsWithChildren<Props>> = ({
-  userCart,
-  onUpdateCart,
-  onClearCart,
-  nodeStatus,
-}) => {
-  const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(cartItemSelections);
+const Items: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
+  // User's authentication state
+  const authState = React.useContext(AuthContext);
+  const { access_token: accessToken, pk } = authState;
+  const isAuthenticated = accessToken && pk;
+
+  // Recoil states
+  const [userCart, setUserCart] = useRecoilState<UserCart>(userCartAtom);
+
+  const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(
+    cartItemSelectionsAtom
+  );
 
   const handleRowSelect = (selectedRows: RawSearchResults): void => {
     setItemSelections(selectedRows);
+  };
+
+  const handleClearCart = (): void => {
+    setUserCart([]);
+    setItemSelections([]);
+
+    /* istanbul ignore else */
+    if (isAuthenticated) {
+      updateUserCart(pk, accessToken, []);
+    }
   };
 
   return (
@@ -58,7 +73,7 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({
                   </p>
                 }
                 icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
-                onConfirm={onClearCart}
+                onConfirm={handleClearCart}
                 okButtonProps={{
                   'data-testid': 'clear-all-cart-items-confirm-button',
                 }}
@@ -76,7 +91,6 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({
               <Table
                 loading={false}
                 canDisableRows={false}
-                nodeStatus={nodeStatus}
                 results={userCart}
                 userCart={userCart}
                 onUpdateCart={onUpdateCart}

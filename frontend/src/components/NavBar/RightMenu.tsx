@@ -15,29 +15,36 @@ import { KeycloakTokenParsed } from 'keycloak-js';
 
 import React, { CSSProperties } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useRecoilState } from 'recoil';
+import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { navBarTargets } from '../../common/reactJoyrideSteps';
 import Button from '../General/Button';
 import RightDrawer from '../Messaging/RightDrawer';
 
 import { AuthContext } from '../../contexts/AuthContext';
-import isDarkModeAtom from '../App/recoil/atoms';
+import {
+  isDarkModeAtom,
+  supportModalVisibleAtom,
+  userCartAtom,
+  userSearchQueriesAtom,
+} from '../App/recoil/atoms';
+import { UserCart, UserSearchQueries } from '../Cart/types';
 
 const menuItemStyling: CSSProperties = { margin: '8px' };
 
 export type Props = {
   mode: 'horizontal' | 'vertical' | 'inline';
-  numCartItems: number;
-  numSavedSearches: number;
-  supportModalVisible: (visible: boolean) => void;
 };
 
-const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
-  mode,
-  numCartItems,
-  numSavedSearches,
-  supportModalVisible,
-}) => {
+const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
+  // Recoil state
+  const [isDarkMode, setIsDarkMode] = useRecoilState<boolean>(isDarkModeAtom);
+
+  const userCart = useRecoilValue<UserCart>(userCartAtom);
+
+  const userSearchQueries = useRecoilValue<UserSearchQueries>(userSearchQueriesAtom);
+
+  const setSupportModalVisible = useSetRecoilState<boolean>(supportModalVisibleAtom);
+
   const [activeMenuItem, setActiveMenuItem] = React.useState<string>('search');
 
   const [noticesOpen, setShowNotices] = React.useState(false);
@@ -58,9 +65,11 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
       <Button
         type="text"
         icon={<UserOutlined style={{ fontSize: '18px', margin: 0 }} />}
-        onClick={() => {
-          keycloak.login();
-        }}
+        onClick={
+          /* istanbul ignore next */ () => {
+            keycloak.login();
+          }
+        }
       >
         Sign In
       </Button>
@@ -68,9 +77,11 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
     logoutBtn = (
       <Button
         type="text"
-        onClick={() => {
-          keycloak.logout();
-        }}
+        onClick={
+          /* istanbul ignore next */ () => {
+            keycloak.logout();
+          }
+        }
       >
         Sign Out
       </Button>
@@ -112,8 +123,6 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
     setShowNotices(false);
   };
 
-  const [isDarkMode, setIsDarkMode] = useRecoilState<boolean>(isDarkModeAtom);
-
   type MenuItem = Required<MenuProps>['items'][number];
 
   function getSignInItem(): MenuItem {
@@ -121,6 +130,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
       return {
         key: 'greeting',
         icon: <UserOutlined style={{ fontSize: '18px' }} />,
+        className: navBarTargets.signInBtn.class(),
         label: (
           <span className="submenu-title-wrapper">
             Hi, {userInfo && userInfo.given_name ? userInfo.given_name : userInfo?.email}
@@ -158,7 +168,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
       label: (
         <Link data-testid="cartPageLink" to="/cart/items">
           <ShoppingCartOutlined style={{ fontSize: '20px' }} />
-          <Badge count={numCartItems} className="badge" offset={[-5, 3]} showZero></Badge>
+          <Badge count={userCart.length} className="badge" offset={[-5, 3]} showZero></Badge>
           Cart
         </Link>
       ),
@@ -170,7 +180,12 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
       label: (
         <Link to="/cart/searches">
           <FileSearchOutlined style={{ fontSize: '20px' }} />{' '}
-          <Badge count={numSavedSearches} className="badge" offset={[-5, 3]} showZero></Badge>
+          <Badge
+            count={userSearchQueries.length}
+            className="badge"
+            offset={[-5, 3]}
+            showZero
+          ></Badge>
           Saved Searches
         </Link>
       ),
@@ -208,7 +223,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
         <Button
           type="text"
           icon={<QuestionCircleOutlined style={{ fontSize: '18px', margin: 0 }} />}
-          onClick={() => supportModalVisible(true)}
+          onClick={() => setSupportModalVisible(true)}
         >
           Help
         </Button>
