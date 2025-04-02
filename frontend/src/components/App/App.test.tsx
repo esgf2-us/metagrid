@@ -15,7 +15,12 @@ import { getSearchFromUrl } from '../../common/utils';
 import customRender from '../../test/custom-render';
 import { ActiveSearchQuery } from '../Search/types';
 import App from './App';
-import { activeSearch, submitKeywordSearch } from '../../test/jestTestFunctions';
+import {
+  activeSearch,
+  RecoilWrapper,
+  submitKeywordSearch,
+} from '../../test/jestTestFunctions';
+import { userCartAtom } from './recoil/atoms';
 
 const user = userEvent.setup();
 
@@ -32,7 +37,9 @@ describe('test main components', () => {
   });
 
   it('renders App component with undefined search query', async () => {
-    customRender(<App searchQuery={(undefined as unknown) as ActiveSearchQuery} />);
+    customRender(<App searchQuery={(undefined as unknown) as ActiveSearchQuery} />, {
+      usesRecoil: true,
+    });
 
     // Check applicable components render
     const navComponent = await screen.findByTestId('nav-bar');
@@ -255,6 +262,7 @@ describe('test main components', () => {
 
 describe('User cart', () => {
   it('handles authenticated user adding and removing items from cart', async () => {
+    RecoilWrapper.modifyAtomValue(userCartAtom.key, []);
     customRender(<App searchQuery={activeSearch} />);
 
     // Wait for components to rerender
@@ -287,16 +295,6 @@ describe('User cart', () => {
     // Wait for components to rerender
     await screen.findByTestId('main-query-string-label');
 
-    // Check first row has add button and click it
-    const addBtn = await screen.findByTestId('row-1-add-to-cart');
-    expect(addBtn).toBeTruthy();
-
-    await userEvent.click(addBtn);
-
-    // Check 'Added items(s) to the cart' message appears
-    const addText = await screen.findByText('Added item(s) to your cart');
-    expect(addText).toBeTruthy();
-
     // Check applicable components render
     const rightMenuComponent = await screen.findByTestId('right-menu');
     expect(rightMenuComponent).toBeTruthy();
@@ -315,14 +313,14 @@ describe('User cart', () => {
 
     const numDatasetsField = await within(cartSummary).findByText('Total Number of Datasets:');
     const numFilesText = await within(cartSummary).findByText('Total Number of Files:');
-    expect(numDatasetsField.textContent).toEqual('Total Number of Datasets: 1');
-    expect(numFilesText.textContent).toEqual('Total Number of Files: 2');
+    expect(numDatasetsField.textContent).toEqual('Total Number of Datasets: 3');
+    expect(numFilesText.textContent).toEqual('Total Number of Files: 8');
     const numSelectedDatasetsField = await within(cartSummary).findByText(
       'Selected Number of Datasets:'
     );
     const numSelectedFilesText = await within(cartSummary).findByText('Selected Number of Files:');
-    expect(numSelectedDatasetsField.textContent).toEqual('Selected Number of Datasets: 1');
-    expect(numSelectedFilesText.textContent).toEqual('Selected Number of Files: 2');
+    expect(numSelectedDatasetsField.textContent).toEqual('Selected Number of Datasets: 0');
+    expect(numSelectedFilesText.textContent).toEqual('Selected Number of Files: 0');
 
     // Check "Remove All Items" button renders with cart > 0 items and click it
     const clearCartBtn = await screen.findByTestId('clear-cart-button');
@@ -346,7 +344,8 @@ describe('User cart', () => {
 
   it('handles anonymous user adding and removing items from cart', async () => {
     // Render component as anonymous
-    customRender(<App searchQuery={activeSearch} />, {}, false);
+    RecoilWrapper.modifyAtomValue(userCartAtom.key, []);
+    customRender(<App searchQuery={activeSearch} />, { authenticated: false });
 
     // Wait for components to rerender
     await screen.findByTestId('main-query-string-label');
@@ -365,20 +364,10 @@ describe('User cart', () => {
   });
 
   it('displays anonymous user"s number of files in the cart summary and handles clearing the cart', async () => {
-    customRender(<App searchQuery={activeSearch} />, {}, false);
+    customRender(<App searchQuery={activeSearch} />, { usesRecoil: true, authenticated: false });
 
     // Wait for components to rerender
     await screen.findByTestId('main-query-string-label');
-
-    // Check first row has add button and click it
-    const addBtn = await screen.findByTestId('row-1-add-to-cart');
-    expect(addBtn).toBeTruthy();
-
-    await userEvent.click(addBtn);
-
-    // Check 'Added items(s) to the cart' message appears
-    const addText = await screen.findByText('Added item(s) to your cart');
-    expect(addText).toBeTruthy();
 
     // Check applicable components render
     const rightMenuComponent = await screen.findByTestId('right-menu');
@@ -400,15 +389,15 @@ describe('User cart', () => {
 
     const numDatasetsField = await within(cartSummary).findByText('Total Number of Datasets:');
     const numFilesText = await within(cartSummary).findByText('Total Number of Files:');
-    expect(numDatasetsField.textContent).toEqual('Total Number of Datasets: 1');
-    expect(numFilesText.textContent).toEqual('Total Number of Files: 2');
+    expect(numDatasetsField.textContent).toEqual('Total Number of Datasets: 3');
+    expect(numFilesText.textContent).toEqual('Total Number of Files: 8');
 
     const numSelectedDatasetsField = await within(cartSummary).findByText(
       'Selected Number of Datasets:'
     );
     const numSelectedFilesText = await within(cartSummary).findByText('Selected Number of Files:');
-    expect(numSelectedDatasetsField.textContent).toEqual('Selected Number of Datasets: 1');
-    expect(numSelectedFilesText.textContent).toEqual('Selected Number of Files: 2');
+    expect(numSelectedDatasetsField.textContent).toEqual('Selected Number of Datasets: 0');
+    expect(numSelectedFilesText.textContent).toEqual('Selected Number of Files: 0');
 
     // Check "Remove All Items" button renders with cart > 0 items and click it
     const clearCartBtn = await screen.findByTestId('clear-cart-button');
@@ -432,10 +421,11 @@ describe('User cart', () => {
   });
 
   it('resets cart totals and selections to 0 when all items are removed', async () => {
+    RecoilWrapper.modifyAtomValue(userCartAtom.key, []);
     customRender(<App searchQuery={activeSearch} />);
 
     // Wait for components to rerender
-    await screen.findByTestId('main-query-string-label');
+    await screen.findByText('results found for', { exact: false });
 
     // Check first row has add button and click it
     const addBtn = await screen.findByTestId('row-1-add-to-cart');
@@ -509,7 +499,10 @@ describe('Error handling', () => {
     );
 
     customRender(<App searchQuery={activeSearch} />, {
-      token: 'token',
+      usesRecoil: true,
+      options: {
+        token: 'token',
+      },
     });
 
     // Check applicable components render
@@ -525,7 +518,10 @@ describe('Error handling', () => {
 describe('User search library', () => {
   it('handles authenticated user saving and applying searches', async () => {
     customRender(<App searchQuery={activeSearch} />, {
-      token: 'token',
+      usesRecoil: true,
+      options: {
+        token: 'token',
+      },
     });
 
     // Wait for components to rerender
@@ -570,7 +566,10 @@ describe('User search library', () => {
 
   it('handles authenticated user removing searches from the search library', async () => {
     customRender(<App searchQuery={activeSearch} />, {
-      token: 'token',
+      usesRecoil: true,
+      options: {
+        token: 'token',
+      },
     });
 
     // Check applicable components render
@@ -593,6 +592,11 @@ describe('User search library', () => {
     const cart = await screen.findByTestId('cart');
     expect(cart).toBeTruthy();
 
+    // Check there is a saved search card
+    const savedSearches = await screen.findByTestId('saved-search-library');
+    expect(savedSearches).toBeTruthy();
+    expect(within(savedSearches).getByText('Search #', { exact: false })).toBeTruthy();
+
     // Check delete button renders for the saved search and click it
     const deleteBtn = await screen.findByRole('img', {
       name: 'delete',
@@ -601,17 +605,16 @@ describe('User search library', () => {
     expect(deleteBtn).toBeTruthy();
 
     await userEvent.click(deleteBtn);
-
     await screen.findByTestId('cart');
 
     // Check removed message appears
-    const removeText = await screen.findByText('Removed search query from your library');
+    const removeText = await screen.findByText('Your search library is empty');
     expect(removeText).toBeTruthy();
   });
 
   it('handles anonymous user saving and applying searches', async () => {
     // Render component as anonymous
-    customRender(<App searchQuery={activeSearch} />, {}, false);
+    customRender(<App searchQuery={activeSearch} />, { authenticated: false });
 
     // Check applicable components render
     const leftMenuComponent = await screen.findByTestId('left-menu');
@@ -657,7 +660,7 @@ describe('User search library', () => {
 
   it('handles anonymous user removing searches from the search library', async () => {
     // Render component as anonymous
-    customRender(<App searchQuery={activeSearch} />, {}, false);
+    customRender(<App searchQuery={activeSearch} />, { authenticated: false });
 
     // Wait for components to rerender
     await screen.findByTestId('main-query-string-label');
@@ -694,7 +697,7 @@ describe('User search library', () => {
   });
 
   it('handles anonymous user copying search to clipboard', async () => {
-    customRender(<App searchQuery={activeSearch} />, {}, false);
+    customRender(<App searchQuery={activeSearch} />, { authenticated: false });
 
     // Check applicable components render
     const rightMenuComponent = await screen.findByTestId('right-menu');
@@ -730,7 +733,10 @@ describe('User search library', () => {
 
     it('shows a disabled save search button due to failed search results', async () => {
       customRender(<App searchQuery={activeSearch} />, {
-        token: 'token',
+        usesRecoil: true,
+        options: {
+          token: 'token',
+        },
       });
 
       server.use(rest.post(apiRoutes.userSearches.path, (_req, res, ctx) => res(ctx.status(404))));
@@ -750,7 +756,8 @@ describe('User search library', () => {
       server.use(rest.delete(apiRoutes.userSearch.path, (_req, res, ctx) => res(ctx.status(404))));
 
       customRender(<App searchQuery={activeSearch} />, {
-        token: 'token',
+        usesRecoil: true,
+        options: { token: 'token' },
       });
 
       // Check delete button renders for the saved search and click it

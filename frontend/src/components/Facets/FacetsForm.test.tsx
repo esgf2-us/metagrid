@@ -1,12 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import {
-  activeSearchQueryFixture,
-  parsedFacetsFixture,
-  parsedNodeStatusFixture,
-} from '../../test/mock/fixtures';
-import FacetsForm, { formatDate, humanizeFacetNames, Props } from './FacetsForm';
+import FacetsForm, { formatDate, humanizeFacetNames } from './FacetsForm';
 import customRender from '../../test/custom-render';
 
 const user = userEvent.setup();
@@ -31,18 +26,9 @@ describe('formatDate', () => {
   });
 });
 
-const defaultProps: Props = {
-  activeSearchQuery: activeSearchQueryFixture(),
-  availableFacets: parsedFacetsFixture(),
-  nodeStatus: parsedNodeStatusFixture(),
-  onSetFilenameVars: jest.fn(),
-  onSetGeneralFacets: jest.fn(),
-  onSetActiveFacets: jest.fn(),
-};
-
 describe('test FacetsForm component', () => {
   it('handles submitting filename', async () => {
-    customRender(<FacetsForm {...defaultProps} />);
+    customRender(<FacetsForm />);
 
     // Open filename collapse panel
     const filenameSearchPanel = await screen.findByRole('button', {
@@ -65,7 +51,7 @@ describe('test FacetsForm component', () => {
   });
 
   it('handles setting the globusReady option on and off', async () => {
-    customRender(<FacetsForm {...defaultProps} />);
+    customRender(<FacetsForm />);
 
     const globusReadyRadioOption = await screen.findByLabelText('Only Globus Transferrable');
     const anyRadioOption = await screen.findByLabelText('Any');
@@ -89,7 +75,7 @@ describe('test FacetsForm component', () => {
   });
 
   it('handles expand and collapse facet panels', async () => {
-    customRender(<FacetsForm {...defaultProps} />);
+    customRender(<FacetsForm />);
 
     // Click the expand all button
     const expandAllBtn = await screen.findByText('Expand All');
@@ -105,7 +91,7 @@ describe('test FacetsForm component', () => {
   });
 
   it('handles copying facet items to clipboard', async () => {
-    customRender(<FacetsForm {...defaultProps} />);
+    customRender(<FacetsForm />);
 
     // Expand the group1 panel
     const group1Btn = await screen.findByText('Group1');
@@ -131,7 +117,7 @@ describe('test FacetsForm component', () => {
   });
 
   it('handles changing expand to collapse and vice-versa based on user actions', async () => {
-    customRender(<FacetsForm {...defaultProps} />);
+    customRender(<FacetsForm />);
 
     // Expand the group1 panel
     const group1Btn = await screen.findByText('Group1');
@@ -159,7 +145,7 @@ describe('test FacetsForm component', () => {
   });
 
   it('handles date picker for versioning', async () => {
-    customRender(<FacetsForm {...defaultProps} />);
+    customRender(<FacetsForm />);
 
     // Open additional properties collapse panel
     const additionalPropertiesPanel = await screen.findByRole('button', {

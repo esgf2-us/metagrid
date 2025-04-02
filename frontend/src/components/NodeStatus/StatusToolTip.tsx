@@ -1,12 +1,11 @@
 import { CheckCircleTwoTone, CloseCircleTwoTone, QuestionCircleTwoTone } from '@ant-design/icons';
 import React from 'react';
 import { Tooltip } from 'antd';
-import { useRecoilState } from 'recoil';
+import { useRecoilValue } from 'recoil';
 import { NodeStatusArray, NodeStatusElement } from './types';
-import isDarkModeAtom from '../App/recoil/atoms';
+import { isDarkModeAtom, nodeStatusAtom } from '../App/recoil/atoms';
 
 export type Props = {
-  nodeStatus?: NodeStatusArray;
   dataNode: string;
   children?: React.ReactNode;
 };
@@ -17,12 +16,9 @@ export const darkModeRed = '#8c0e14';
 export const lightModeGreen = '#52c41a';
 export const lightModeRed = '#eb2f38';
 
-const StatusToolTip: React.FC<React.PropsWithChildren<Props>> = ({
-  nodeStatus,
-  dataNode,
-  children,
-}) => {
-  const [isDarkMode] = useRecoilState<boolean>(isDarkModeAtom);
+const StatusToolTip: React.FC<React.PropsWithChildren<Props>> = ({ dataNode, children }) => {
+  const nodeStatus = useRecoilValue<NodeStatusArray>(nodeStatusAtom);
+  const isDarkMode = useRecoilValue<boolean>(isDarkModeAtom);
 
   let onlineCol = lightModeGreen;
   let offlineCol = lightModeRed;

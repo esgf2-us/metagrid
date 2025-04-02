@@ -15,7 +15,6 @@ import { formatBytes, showError, showNotice } from '../../common/utils';
 import { UserCart } from '../Cart/types';
 import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
-import { NodeStatusArray } from '../NodeStatus/types';
 import './Search.css';
 import Tabs from './Tabs';
 import { RawSearchResult, RawSearchResults, TextInputs } from './types';
@@ -28,7 +27,6 @@ export type Props = {
   totalResults?: number;
   userCart: UserCart | [];
   selections?: RawSearchResults | [];
-  nodeStatus?: NodeStatusArray;
   filenameVars?: TextInputs | [];
   onUpdateCart: (item: RawSearchResults, operation: 'add' | 'remove') => void;
   onRowSelect?: (selectedRows: RawSearchResults | []) => void;
@@ -43,7 +41,6 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
   totalResults,
   userCart,
   selections,
-  nodeStatus,
   filenameVars,
   onUpdateCart,
   onRowSelect,
@@ -142,30 +139,22 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       render: (value: string, record: RawSearchResult, index: number) => {
         if (userCart.some((dataset: RawSearchResult) => dataset.id === record.id)) {
           return (
-            <>
-              <Button
-                className={topDataRowTargets.cartAddBtn.class('minus')}
-                icon={<MinusOutlined data-testid={`row-${index}-remove-from-cart`} />}
-                onClick={() => onUpdateCart([record], 'remove')}
-                danger
-              />
-            </>
+            <Button
+              className={topDataRowTargets.cartAddBtn.class('minus')}
+              icon={<MinusOutlined data-testid={`row-${index}-remove-from-cart`} />}
+              onClick={() => onUpdateCart([record], 'remove')}
+              danger
+            />
           );
         }
         return (
-          <>
-            <Button
-              type="primary"
-              disabled={record.retracted === true}
-              icon={
-                <PlusOutlined
-                  className={topDataRowTargets.cartAddBtn.class('plus')}
-                  data-testid={`row-${index}-add-to-cart`}
-                />
-              }
-              onClick={() => onUpdateCart([record], 'add')}
-            />
-          </>
+          <Button
+            type="primary"
+            className={topDataRowTargets.cartAddBtn.class('plus')}
+            disabled={record.retracted === true}
+            icon={<PlusOutlined data-testid={`row-${index}-add-to-cart`} />}
+            onClick={() => onUpdateCart([record], 'add')}
+          />
         );
       },
     },
@@ -178,7 +167,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       width: 35,
       render: (data_node: string) => (
         <div className={topDataRowTargets.nodeStatusIcon.class()}>
-          <StatusToolTip nodeStatus={nodeStatus} dataNode={data_node} />
+          <StatusToolTip dataNode={data_node} />
         </div>
       ),
     },

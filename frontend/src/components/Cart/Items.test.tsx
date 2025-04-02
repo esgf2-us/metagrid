@@ -1,7 +1,6 @@
 import { within, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { userCartFixture } from '../../test/mock/fixtures';
 import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
@@ -9,11 +8,11 @@ import Items, { Props } from './Items';
 import { getSearchFromUrl } from '../../common/utils';
 import App from '../App/App';
 import { ActiveSearchQuery } from '../Search/types';
+import { RecoilWrapper } from '../../test/jestTestFunctions';
+import { userCartAtom } from '../App/recoil/atoms';
 
 const defaultProps: Props = {
-  userCart: userCartFixture(),
   onUpdateCart: jest.fn(),
-  onClearCart: jest.fn(),
 };
 
 const user = userEvent.setup();
@@ -21,8 +20,8 @@ const user = userEvent.setup();
 const activeSearch: ActiveSearchQuery = getSearchFromUrl('project=test1');
 describe('test the cart items component', () => {
   it('renders message that the cart is empty when no items are added', async () => {
-    const props = { ...defaultProps, userCart: [] };
-    customRender(<Items {...props} />);
+    RecoilWrapper.modifyAtomValue(userCartAtom.key, []);
+    customRender(<Items {...defaultProps} />);
 
     // Check empty cart text renders
     const emptyCart = await screen.findByText('Your cart is empty');
@@ -38,15 +37,6 @@ describe('test the cart items component', () => {
     // Check first row exists
     const firstRow = await screen.findByTestId('cart-items-row-1');
     expect(firstRow).toBeTruthy();
-
-    // Check first row has add button and click it
-    const addBtn = await screen.findByTestId('row-0-add-to-cart');
-    expect(addBtn).toBeTruthy();
-    await user.click(addBtn);
-
-    // Check 'Added items(s) to the cart' message appears
-    const addText = (await screen.findAllByText('Added item(s) to your cart'))[0];
-    expect(addText).toBeTruthy();
 
     // Switch to the cart page
     const cartBtn = await screen.findByTestId('cartPageLink');
@@ -71,7 +61,10 @@ describe('test the cart items component', () => {
   });
 
   it('handles selecting items in the cart and downloading them via wget', async () => {
-    customRender(<App searchQuery={activeSearch} />);
+    RecoilWrapper.modifyAtomValue(userCartAtom.key, []);
+    customRender(<App searchQuery={activeSearch} />, {
+      usesRecoil: true,
+    });
 
     // Wait for results to load
     expect(await screen.findByTestId('search-results-span')).toBeInTheDocument();

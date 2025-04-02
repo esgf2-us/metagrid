@@ -5,7 +5,6 @@ import {
   activeSearchQueryFixture,
   ESGFSearchAPIFixture,
   rawSearchResultFixture,
-  userCartFixture,
 } from '../../test/mock/fixtures';
 import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
@@ -13,19 +12,13 @@ import customRender from '../../test/custom-render';
 import { ActiveFacets, RawFacets } from '../Facets/types';
 import Search, { checkFiltersExist, parseFacets, Props, stringifyFilters } from './index';
 import { ActiveSearchQuery, RawSearchResult, ResultType, TextInputs, VersionType } from './types';
-import { openDropdownList } from '../../test/jestTestFunctions';
+import { openDropdownList, RecoilWrapper } from '../../test/jestTestFunctions';
+import { activeSearchQueryAtom, userCartAtom } from '../App/recoil/atoms';
 
 const user = userEvent.setup();
 
 const defaultProps: Props = {
-  activeSearchQuery: activeSearchQueryFixture(),
-  userCart: [],
-  onRemoveFilter: jest.fn(),
-  onClearFilters: jest.fn(),
   onUpdateCart: jest.fn(),
-  onUpdateAvailableFacets: jest.fn(),
-  onSaveSearchQuery: jest.fn(),
-  onShareSearchQuery: jest.fn(),
 };
 
 // Reset all mocks after each test
@@ -102,7 +95,8 @@ describe('test Search component', () => {
       textInputs: [],
     };
 
-    customRender(<Search {...defaultProps} activeSearchQuery={emptySearchQuery} />);
+    RecoilWrapper.modifyAtomValue(activeSearchQueryAtom.key, emptySearchQuery);
+    customRender(<Search {...defaultProps} />);
 
     // Check renders query string
     const queryString = await screen.findByText('No filters applied');
@@ -159,6 +153,7 @@ describe('test Search component', () => {
   });
 
   it('handles selecting a row"s checkbox in the table and adding to the cart', async () => {
+    RecoilWrapper.modifyAtomValue(userCartAtom.key, []);
     customRender(<Search {...defaultProps} />);
 
     // Check search component renders
@@ -214,7 +209,7 @@ describe('test Search component', () => {
 
   it('disables the "Add Selected to Cart" button when all rows are already in the cart', async () => {
     // Render the component with userCart full
-    customRender(<Search {...defaultProps} userCart={userCartFixture()} />);
+    customRender(<Search {...defaultProps} />);
 
     // Check the 'Add Selected to Cart' button is disabled
     const addCartBtn: HTMLButtonElement = await screen.findByRole('button', {
@@ -227,6 +222,28 @@ describe('test Search component', () => {
 
   it('handles saving a search query', async () => {
     customRender(<Search {...defaultProps} />);
+
+    // Check search component renders
+    const searchComponent = await screen.findByTestId('search');
+    expect(searchComponent).toBeTruthy();
+
+    // Wait for search table to render
+    await screen.findByTestId('search-table');
+
+    // Click on save button
+    const saveBtn = await screen.findByRole('button', {
+      name: 'book Save Search',
+    });
+    expect(saveBtn).toBeTruthy();
+
+    await user.click(saveBtn);
+
+    // Wait for search component to re-render
+    await screen.findByTestId('search');
+  });
+
+  it('handles saving a search query when unauthenticated', async () => {
+    customRender(<Search {...defaultProps} />, { usesRecoil: true, authenticated: true });
 
     // Check search component renders
     const searchComponent = await screen.findByTestId('search');

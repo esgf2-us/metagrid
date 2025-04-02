@@ -1,9 +1,7 @@
 import {
-  BookOutlined,
   DeleteOutlined,
   HomeOutlined,
   QuestionOutlined,
-  ShareAltOutlined,
   ShoppingCartOutlined,
 } from '@ant-design/icons';
 import {
@@ -18,14 +16,12 @@ import {
   theme,
 } from 'antd';
 import React from 'react';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { useAsync } from 'react-async';
 import { hotjar } from 'react-hotjar';
 import { Link, Navigate, Route, Routes } from 'react-router-dom';
-import { v4 as uuidv4 } from 'uuid';
 import {
   addUserSearchQuery,
-  deleteUserSearchQuery,
   fetchNodeStatus,
   fetchProjects,
   fetchUserCart,
@@ -33,10 +29,9 @@ import {
   ResponseError,
   updateUserCart,
 } from '../../api';
-import { CSSinJS } from '../../common/types';
 import {
   combineCarts,
-  getUrlFromSearch,
+  getStyle,
   searchAlreadyExists,
   showError,
   showNotice,
@@ -45,44 +40,29 @@ import {
 import { AuthContext } from '../../contexts/AuthContext';
 import Cart from '../Cart';
 import Summary from '../Cart/Summary';
-import { UserCart, UserSearchQueries, UserSearchQuery } from '../Cart/types';
-import { TagType, TagValue } from '../DataDisplay/Tag';
+import { UserCart, UserSearchQueries } from '../Cart/types';
 import Facets from '../Facets';
-import { ActiveFacets, ParsedFacets, RawProject } from '../Facets/types';
+import { RawProject } from '../Facets/types';
 import NavBar from '../NavBar/index';
 import NodeStatus from '../NodeStatus';
 import NodeSummary from '../NodeStatus/NodeSummary';
 import Search from '../Search';
-import {
-  ActiveSearchQuery,
-  RawSearchResult,
-  RawSearchResults,
-  ResultType,
-  VersionDate,
-  VersionType,
-} from '../Search/types';
+import { ActiveSearchQuery, RawSearchResult, RawSearchResults } from '../Search/types';
 import Support from '../Support';
 import StartPopup from '../Messaging/StartPopup';
-import startupDisplayData from '../Messaging/messageDisplayData';
 import './App.css';
 import { miscTargets } from '../../common/reactJoyrideSteps';
-import isDarkModeAtom from './recoil/atoms';
+import {
+  activeSearchQueryAtom,
+  isDarkModeAtom,
+  nodeStatusAtom,
+  supportModalVisibleAtom,
+  userCartAtom,
+  userSearchQueriesAtom,
+} from './recoil/atoms';
 import Footer from '../Footer/Footer';
-import { cartItemSelections } from '../Cart/recoil/atoms';
-
-const bodySider = {
-  padding: '12px 12px 12px 12px',
-  width: '384px',
-  marginRight: '2px',
-};
-
-const bodySiderDark = {
-  background: 'rgba(255, 255, 255, 0.1)',
-};
-const bodySiderLight = {
-  background: 'rgba(255, 255, 255, 0.9)',
-  boxShadow: '2px 0 4px 0 rgba(0, 0, 0, 0.2)',
-};
+import { cartItemSelectionsAtom } from '../Cart/recoil/atoms';
+import { NodeStatusArray } from '../NodeStatus/types';
 
 const useHotjar = (): void => {
   if (window.METAGRID.HOTJAR_ID != null && window.METAGRID.HOTJAR_SV != null) {
@@ -93,29 +73,28 @@ const useHotjar = (): void => {
   }
 };
 
-// Provides appropriate styling based on current theme
-function getStyle(isDark: boolean): CSSinJS {
-  const colorsToUse = isDark ? bodySiderDark : bodySiderLight;
-  const styles: CSSinJS = {
-    bodySider: {
-      ...bodySider,
-      ...colorsToUse,
-    },
-    bodyContent: { padding: '12px 12px', margin: 0 },
-    messageAddIcon: { color: '#90EE90' },
-    messageRemoveIcon: { color: '#ff0000' },
-  };
-
-  return styles;
-}
-
 export type Props = {
   searchQuery: ActiveSearchQuery;
 };
 
-const metagridVersion: string = startupDisplayData.messageToShow;
-
 const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
+  // Recoil state
+  const isDarkMode = useRecoilValue<boolean>(isDarkModeAtom);
+
+  const [userCart, setUserCart] = useRecoilState<UserCart>(userCartAtom);
+
+  const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(
+    cartItemSelectionsAtom
+  );
+
+  const setUserSearchQueries = useSetRecoilState<UserSearchQueries>(userSearchQueriesAtom);
+
+  const [activeSearchQuery, setActiveSearchQuery] = useRecoilState<ActiveSearchQuery>(
+    activeSearchQueryAtom
+  );
+
+  const setSupportModalVisible = useSetRecoilState<boolean>(supportModalVisibleAtom);
+
   // Third-party tool integration
   useHotjar();
 
@@ -126,52 +105,20 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   const { access_token: accessToken, pk } = authState;
   const isAuthenticated = accessToken && pk;
 
-  const [supportModalVisible, setSupportModalVisible] = React.useState<boolean>(false);
+  const { defaultAlgorithm, darkAlgorithm } = theme;
 
   const {
     run: runFetchNodeStatus,
-    data: nodeStatus,
+    data: loadedNodeStatus,
     error: nodeStatusApiError,
     isLoading: nodeStatusIsLoading,
   } = useAsync({
     deferFn: fetchNodeStatus,
   });
 
-  const projectBaseQuery = (project: Record<string, unknown> | RawProject): ActiveSearchQuery => ({
-    project,
-    versionType: 'latest',
-    resultType: 'all',
-    minVersionDate: null,
-    maxVersionDate: null,
-    filenameVars: [],
-    activeFacets: {},
-    textInputs: [],
-  });
-
-  const [activeSearchQuery, setActiveSearchQuery] = React.useState<ActiveSearchQuery>(
-    projectBaseQuery({})
-  );
-
-  const [savedSearchQuery, setSavedSearchQuery] = React.useState<ActiveSearchQuery | null>(null);
-
-  const [availableFacets, setAvailableFacets] = React.useState<
-    ParsedFacets | Record<string, unknown>
-  >({});
-
-  const [userCart, setUserCart] = React.useState<UserCart | []>(
-    JSON.parse(localStorage.getItem('userCart') || '[]') as RawSearchResults
-  );
-
-  const [userSearchQueries, setUserSearchQueries] = React.useState<UserSearchQueries | []>(
-    JSON.parse(localStorage.getItem('userSearchQueries') || '[]') as UserSearchQueries
-  );
-
-  const { defaultAlgorithm, darkAlgorithm } = theme;
-  const isDarkMode = useRecoilValue<boolean>(isDarkModeAtom);
-
-  const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(cartItemSelections);
-
   const styles = getStyle(isDarkMode);
+
+  const setNodeStatus = useSetRecoilState<NodeStatusArray>(nodeStatusAtom);
 
   React.useEffect(() => {
     /* istanbul ignore else */
@@ -224,14 +171,6 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   }, [isAuthenticated, pk, accessToken]);
 
   React.useEffect(() => {
-    localStorage.setItem('userCart', JSON.stringify(userCart));
-  }, [isAuthenticated, userCart]);
-
-  React.useEffect(() => {
-    localStorage.setItem('userSearchQueries', JSON.stringify(userSearchQueries));
-  }, [isAuthenticated, userSearchQueries]);
-
-  React.useEffect(() => {
     /* istanbul ignore else */
     runFetchNodeStatus();
     const interval = setInterval(() => {
@@ -263,6 +202,12 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
       );
   }, [fetchProjects]);
 
+  React.useEffect(() => {
+    if (loadedNodeStatus) {
+      setNodeStatus(loadedNodeStatus);
+    }
+  }, [loadedNodeStatus]);
+
   const handleTextSearch = (selectedProject: RawProject, text: string): void => {
     if (activeSearchQuery.textInputs.includes(text as never)) {
       showError(messageApi, `Input "${text}" has already been applied`);
@@ -272,90 +217,6 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
         project: selectedProject,
         textInputs: [...activeSearchQuery.textInputs, text],
       });
-    }
-  };
-
-  const handleOnSetFilenameVars = (filenameVar: string): void => {
-    if (activeSearchQuery.filenameVars.includes(filenameVar as never)) {
-      showError(messageApi, `Input "${filenameVar}" has already been applied`);
-    } else {
-      setActiveSearchQuery({
-        ...activeSearchQuery,
-        filenameVars: [...activeSearchQuery.filenameVars, filenameVar],
-      });
-    }
-  };
-
-  const handleOnSetGeneralFacets = (
-    versionType: VersionType,
-    resultType: ResultType,
-    minVersionDate: VersionDate,
-    maxVersionDate: VersionDate
-  ): void => {
-    setActiveSearchQuery({
-      ...activeSearchQuery,
-      versionType,
-      resultType,
-      minVersionDate,
-      maxVersionDate,
-    });
-  };
-
-  const handleOnSetActiveFacets = (activeFacets: ActiveFacets): void => {
-    setActiveSearchQuery({ ...activeSearchQuery, activeFacets });
-  };
-
-  const handleClearFilters = (): void => {
-    setActiveSearchQuery(projectBaseQuery(activeSearchQuery.project));
-  };
-
-  const handleProjectChange = (selectedProject: RawProject): void => {
-    if (savedSearchQuery) {
-      setSavedSearchQuery(null);
-      setActiveSearchQuery(savedSearchQuery);
-      return;
-    }
-
-    if (selectedProject.pk !== activeSearchQuery.project.pk) {
-      setActiveSearchQuery(projectBaseQuery(selectedProject));
-    } else {
-      setActiveSearchQuery({ ...activeSearchQuery, project: selectedProject });
-    }
-  };
-
-  const handleRemoveFilter = (removedTag: TagValue, type: TagType): void => {
-    /* istanbul ignore else */
-    if (type === 'text') {
-      setActiveSearchQuery({
-        ...activeSearchQuery,
-        textInputs: activeSearchQuery.textInputs.filter((input) => input !== removedTag),
-      });
-    } else if (type === 'filenameVar') {
-      setActiveSearchQuery({
-        ...activeSearchQuery,
-        filenameVars: activeSearchQuery.filenameVars.filter((input) => input !== removedTag),
-      });
-    } else if (type === 'facet') {
-      const prevActiveFacets = activeSearchQuery.activeFacets;
-
-      const facet = (removedTag[0] as unknown) as string;
-      const facetOption = (removedTag[1] as unknown) as string;
-      const updateFacet = {
-        [facet]: prevActiveFacets[facet].filter((item) => item !== facetOption),
-      };
-
-      if (updateFacet[facet].length === 0) {
-        delete prevActiveFacets[facet];
-        setActiveSearchQuery({
-          ...activeSearchQuery,
-          activeFacets: { ...prevActiveFacets },
-        });
-      } else {
-        setActiveSearchQuery({
-          ...activeSearchQuery,
-          activeFacets: { ...prevActiveFacets, ...updateFacet },
-        });
-      }
     }
   };
 
@@ -400,111 +261,6 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     }
   };
 
-  const handleClearCart = (): void => {
-    setUserCart([]);
-
-    setItemSelections([]);
-
-    /* istanbul ignore else */
-    if (isAuthenticated) {
-      updateUserCart(pk, accessToken, []);
-    }
-  };
-
-  const handleSaveSearchQuery = (url: string): void => {
-    const savedSearch: UserSearchQuery = {
-      uuid: uuidv4(),
-      user: pk,
-      project: activeSearchQuery.project as RawProject,
-      projectId: activeSearchQuery.project.pk as string,
-      versionType: activeSearchQuery.versionType,
-      resultType: activeSearchQuery.resultType,
-      minVersionDate: activeSearchQuery.minVersionDate,
-      maxVersionDate: activeSearchQuery.maxVersionDate,
-      filenameVars: activeSearchQuery.filenameVars,
-      activeFacets: activeSearchQuery.activeFacets,
-      textInputs: activeSearchQuery.textInputs,
-      url,
-    };
-
-    if (searchAlreadyExists(userSearchQueries, savedSearch)) {
-      showNotice(messageApi, 'Search query is already in your library', {
-        icon: <BookOutlined style={styles.messageAddIcon} />,
-        type: 'info',
-      });
-      return;
-    }
-
-    const saveSuccess = (): void => {
-      setUserSearchQueries([...userSearchQueries, savedSearch]);
-      showNotice(messageApi, 'Saved search query to your library', {
-        icon: <BookOutlined style={styles.messageAddIcon} />,
-      });
-    };
-
-    if (isAuthenticated) {
-      addUserSearchQuery(pk, accessToken, savedSearch)
-        .then(() => {
-          saveSuccess();
-        })
-        .catch(
-          /* istanbul ignore next */
-          (error: ResponseError) => {
-            showError(messageApi, error.message);
-          }
-        );
-    } else {
-      saveSuccess();
-    }
-  };
-
-  const handleShareSearchQuery = (): void => {
-    /* istanbul ignore else */
-    if (navigator && navigator.clipboard) {
-      navigator.clipboard.writeText(getUrlFromSearch(activeSearchQuery));
-      showNotice(messageApi, 'Search copied to clipboard!', {
-        icon: <ShareAltOutlined style={styles.messageAddIcon} />,
-      });
-    }
-  };
-
-  const handleRemoveSearchQuery = (searchUUID: string): void => {
-    const deleteSuccess = (): void => {
-      setUserSearchQueries(
-        userSearchQueries.filter((searchItem: UserSearchQuery) => searchItem.uuid !== searchUUID)
-      );
-      showNotice(messageApi, 'Removed search query from your library', {
-        icon: <DeleteOutlined style={styles.messageRemoveIcon} />,
-      });
-    };
-
-    if (isAuthenticated) {
-      deleteUserSearchQuery(searchUUID, accessToken)
-        .then(() => {
-          deleteSuccess();
-        })
-        .catch((error: ResponseError) => {
-          showError(messageApi, error.message);
-        });
-    } else {
-      deleteSuccess();
-    }
-  };
-
-  // This converts a saved search to the active search query
-  const handleRunSearchQuery = (savedSearch: UserSearchQuery): void => {
-    setSavedSearchQuery({
-      project: savedSearch.project,
-      versionType: savedSearch.versionType,
-      resultType: 'all',
-      minVersionDate: savedSearch.minVersionDate,
-      maxVersionDate: savedSearch.maxVersionDate,
-      filenameVars: savedSearch.filenameVars,
-      activeFacets: savedSearch.activeFacets,
-      textInputs: savedSearch.textInputs,
-    });
-  };
-
   return (
     <ConfigProvider
       theme={{
@@ -516,37 +272,18 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     >
       <Layout>
         <Routes>
-          <Route
-            path="*"
-            element={
-              <NavBar
-                numCartItems={userCart.length}
-                numSavedSearches={userSearchQueries.length}
-                onTextSearch={handleTextSearch}
-                supportModalVisible={setSupportModalVisible}
-              ></NavBar>
-            }
-          />
+          <Route path="*" element={<NavBar onTextSearch={handleTextSearch}></NavBar>} />
         </Routes>
         <Layout id="body-layout">
           {contextHolder}
           <Routes>
             <Route path="/" element={<Navigate to="/search" />} />
             <Route path="/cart" element={<Navigate to="/cart/items" />} />
-            <></>
             <Route
               path="/search/*"
               element={
                 <Layout.Sider style={styles.bodySider} width={styles.bodySider.width as number}>
-                  <Facets
-                    activeSearchQuery={activeSearchQuery}
-                    availableFacets={availableFacets}
-                    nodeStatus={nodeStatus}
-                    onProjectChange={handleProjectChange}
-                    onSetFilenameVars={handleOnSetFilenameVars}
-                    onSetGeneralFacets={handleOnSetGeneralFacets}
-                    onSetActiveFacets={handleOnSetActiveFacets}
-                  />
+                  <Facets />
                 </Layout.Sider>
               }
             />
@@ -554,7 +291,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
               path="/nodes"
               element={
                 <Layout.Sider style={styles.bodySider} width={styles.bodySider.width as number}>
-                  <NodeSummary nodeStatus={nodeStatus} />
+                  <NodeSummary />
                 </Layout.Sider>
               }
             />
@@ -585,17 +322,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
                           },
                         ]}
                       />
-                      <Search
-                        activeSearchQuery={activeSearchQuery}
-                        userCart={userCart}
-                        nodeStatus={nodeStatus}
-                        onUpdateAvailableFacets={(facets) => setAvailableFacets(facets)}
-                        onUpdateCart={handleUpdateCart}
-                        onRemoveFilter={handleRemoveFilter}
-                        onClearFilters={handleClearFilters}
-                        onSaveSearchQuery={handleSaveSearchQuery}
-                        onShareSearchQuery={handleShareSearchQuery}
-                      ></Search>
+                      <Search onUpdateCart={handleUpdateCart} />
                     </>
                   }
                 />
@@ -616,7 +343,6 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
                         ]}
                       ></Breadcrumb>
                       <NodeStatus
-                        nodeStatus={nodeStatus}
                         apiError={nodeStatusApiError as ResponseError}
                         isLoading={nodeStatusIsLoading}
                       />
@@ -639,15 +365,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
                           { title: 'Cart' },
                         ]}
                       />
-                      <Cart
-                        userCart={userCart}
-                        userSearchQueries={userSearchQueries}
-                        onUpdateCart={handleUpdateCart}
-                        onClearCart={handleClearCart}
-                        onRunSearchQuery={handleRunSearchQuery}
-                        onRemoveSearchQuery={handleRemoveSearchQuery}
-                        nodeStatus={nodeStatus}
-                      />
+                      <Cart onUpdateCart={handleUpdateCart} />
                     </>
                   }
                 >
@@ -671,7 +389,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
               </Routes>
             </Layout.Content>
             <Layout.Footer>
-              <Footer metagridVersion={metagridVersion} />
+              <Footer />
             </Layout.Footer>
           </Layout>
         </Layout>
@@ -691,7 +409,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
             onClick={() => setSupportModalVisible(true)}
           ></FloatButton>
         </Affix>
-        <Support open={supportModalVisible} onClose={() => setSupportModalVisible(false)} />
+        <Support />
         <StartPopup />
       </Layout>
     </ConfigProvider>

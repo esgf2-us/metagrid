@@ -10,8 +10,8 @@ import { formatBytes } from '../../common/utils';
 import { RawSearchResult, RawSearchResults } from '../Search/types';
 import { UserCart } from './types';
 import { GlobusTaskItem } from '../Globus/types';
-import { globusTaskItems } from '../Globus/recoil/atom';
-import { cartItemSelections } from './recoil/atoms';
+import { globusTaskItemsAtom } from '../Globus/recoil/atom';
+import { cartItemSelectionsAtom } from './recoil/atoms';
 
 const styles: CSSinJS = {
   headerContainer: { display: 'flex', justifyContent: 'center' },
@@ -34,8 +34,8 @@ export type Props = {
 const { Title, Link } = Typography;
 
 const Summary: React.FC<React.PropsWithChildren<Props>> = ({ userCart }) => {
-  const cartItems = useRecoilValue<RawSearchResults>(cartItemSelections);
-  const [taskItems, setTaskItems] = useRecoilState<GlobusTaskItem[]>(globusTaskItems);
+  const cartItems = useRecoilValue<RawSearchResults>(cartItemSelectionsAtom);
+  const [taskItems, setTaskItems] = useRecoilState<GlobusTaskItem[]>(globusTaskItemsAtom);
 
   let numSelectedFiles = 0;
   let totalSelectedDataSize = '0';

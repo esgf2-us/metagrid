@@ -3,6 +3,7 @@
 import { GithubOutlined } from '@ant-design/icons';
 import { Button, Card } from 'antd';
 import React from 'react';
+import { useRecoilState } from 'recoil';
 import {
   createSearchCardTour,
   createMainPageTour,
@@ -14,13 +15,14 @@ import { AppPage } from '../../common/types';
 import { RawTourState, ReactJoyrideContext } from '../../contexts/ReactJoyrideContext';
 import Modal from '../Feedback/Modal';
 import { getCurrentAppPage } from '../../common/utils';
+import { supportModalVisibleAtom } from '../App/recoil/atoms';
 
-export type Props = {
-  open: boolean;
-  onClose: () => void;
-};
+const Support: React.FC = () => {
+  // Recoil state
+  const [supportModalVisible, setSupportModalVisible] = useRecoilState<boolean>(
+    supportModalVisibleAtom
+  );
 
-const Support: React.FC<React.PropsWithChildren<Props>> = ({ open, onClose }) => {
   // Tutorial state
   const tourState: RawTourState = React.useContext(ReactJoyrideContext);
   const { setCurrentAppPage, startSpecificTour } = tourState;
@@ -29,29 +31,29 @@ const Support: React.FC<React.PropsWithChildren<Props>> = ({ open, onClose }) =>
 
   const startMainPageTour = (): void => {
     startSpecificTour(createMainPageTour());
-    onClose();
+    setSupportModalVisible(false);
   };
 
   const startCartPageTour = (): void => {
     startSpecificTour(createCartItemsTour(setCurrentAppPage));
-    onClose();
+    setSupportModalVisible(false);
   };
 
   const startSearchCardTour = (): void => {
     startSpecificTour(createSearchCardTour(setCurrentAppPage));
-    onClose();
+    setSupportModalVisible(false);
   };
 
   const startNodeStatusTour = (): void => {
     startSpecificTour(createNodeStatusTour());
-    onClose();
+    setSupportModalVisible(false);
   };
 
   return (
     <>
       <div data-testid="support-form">
         <Modal
-          open={open}
+          open={supportModalVisible}
           closeText="Close Support"
           title={
             <div>
@@ -106,7 +108,9 @@ const Support: React.FC<React.PropsWithChildren<Props>> = ({ open, onClose }) =>
               </Card>
             </div>
           }
-          onClose={onClose}
+          onClose={() => {
+            setSupportModalVisible(false);
+          }}
           centered
         >
           <p>Questions, suggestions, or problems? Please visit our GitHub page to open an issue.</p>

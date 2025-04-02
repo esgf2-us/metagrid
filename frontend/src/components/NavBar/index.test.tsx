@@ -9,10 +9,7 @@ import NavBar, { Props } from './index';
 const user = userEvent.setup();
 
 const defaultProps: Props = {
-  numCartItems: 0,
-  numSavedSearches: 0,
   onTextSearch: jest.fn(),
-  supportModalVisible: jest.fn(),
 };
 
 it('renders LeftMenu and RightMenu components', async () => {

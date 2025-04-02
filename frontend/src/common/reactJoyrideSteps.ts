@@ -180,13 +180,13 @@ export enum TourTitles {
 const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
   tour
     .addNextStep(
-      topDataRowTargets.datasetTitle.selector(),
-      'Each row provides access to a specific dataset. The title of the dataset is shown here.',
+      topDataRowTargets.nodeStatusIcon.selector(),
+      "This icon shows the current status of the node which hosts this dataset. When hovering over the icon you will see more detail as to the node's status.",
       'top-start'
     )
     .addNextStep(
-      topDataRowTargets.nodeStatusIcon.selector(),
-      "This icon shows the current status of the node which hosts this dataset. When hovering over the icon you will see more detail as to the node's status.",
+      topDataRowTargets.datasetTitle.selector(),
+      'Each row provides access to a specific dataset. The title of the dataset is shown here.',
       'top-start'
     )
     .addNextStep(
@@ -377,7 +377,7 @@ export const createMainPageTour = (): JoyrideTour => {
     )
     .addNextStep(
       navBarTargets.signInBtn.selector(),
-      'Clicking this button will allow you to sign in to your profile.',
+      'Clicking this button will allow you to sign in to your profile. Or if you are already signed in, it will display you user name.',
       'bottom'
     )
     .addNextStep(

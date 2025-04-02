@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * This file contains tests for the App component.
  *
@@ -5,10 +6,11 @@
  * in order to mock their behaviors.
  *
  */
-import { within, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { message } from 'antd';
-import { ReactNode, CSSProperties } from 'react';
+import React, { ReactNode, CSSProperties } from 'react';
 import { UserEvent } from '@testing-library/user-event';
+import { RecoilState, RecoilRoot } from 'recoil';
 import { NotificationType, getSearchFromUrl } from '../common/utils';
 import { RawSearchResult } from '../components/Search/types';
 import { rawSearchResultFixture } from './mock/fixtures';
@@ -115,6 +117,110 @@ export async function showNoticeStatic(
 export const globusReadyNode: string = 'nodeIsGlobusReady';
 export const nodeNotGlobusReady: string = 'nodeIsNotGlobusReady';
 
+export class RecoilWrapper {
+  private static instance: RecoilWrapper;
+
+  private ATOMS: {
+    [key: string]: {
+      atom: RecoilState<unknown>;
+      value: unknown;
+      prevValue: unknown;
+      saveLocal: boolean;
+    };
+  } = {};
+
+  private constructor() {
+    this.ATOMS = {};
+  }
+
+  public static get Instance(): RecoilWrapper {
+    if (!this.instance) {
+      this.instance = new this();
+    }
+    return this.instance;
+  }
+
+  public static listEntries(): void {
+    const instance = this.Instance;
+    Object.keys(instance.ATOMS).forEach((key) => {
+      const atomInfo = instance.ATOMS[key];
+      console.log(`Key: ${key}`);
+      console.log(`Value: ${JSON.stringify(atomInfo.value)}`);
+      console.log(`Previous Value: ${JSON.stringify(atomInfo.prevValue)}`);
+      console.log(`Save Local: ${atomInfo.saveLocal}`);
+      console.log('-------------------');
+    });
+  }
+
+  public static setAtomValue<T>(
+    recoilAtom: RecoilState<T>,
+    value: T,
+    saveLocal: boolean
+  ): RecoilWrapper {
+    const instance = this.Instance;
+    instance.ATOMS[recoilAtom.key] = {
+      atom: recoilAtom as RecoilState<unknown>,
+      value,
+      prevValue: null,
+      saveLocal,
+    };
+    return instance;
+  }
+
+  public static getAtomValue<T>(key: string): T {
+    return this.Instance.ATOMS[key].value as T;
+  }
+
+  public static modifyAtomValue<T>(key: string, value: T): RecoilWrapper {
+    const instance = this.Instance;
+    if (instance.ATOMS[key]) {
+      instance.ATOMS[key].prevValue = instance.ATOMS[key].value;
+      instance.ATOMS[key].value = value;
+    } else {
+      console.error(`Atom ${key} not found in RecoilWrapper. Please set the atom value first.`);
+    }
+
+    return instance;
+  }
+
+  public static restoreValues(): RecoilWrapper {
+    const instance = this.Instance;
+    Object.keys(instance.ATOMS).forEach((key) => {
+      const atomInfo = instance.ATOMS[key];
+      if (atomInfo.prevValue) {
+        atomInfo.value = atomInfo.prevValue;
+        atomInfo.prevValue = null;
+      }
+    });
+    return instance;
+  }
+
+  public static wrap(children: React.ReactElement): React.ReactElement {
+    const instance = this.Instance;
+    Object.keys(instance.ATOMS).forEach((key) => {
+      const atomInfo = instance.ATOMS[key];
+
+      // Save the atoms to the local storage
+      if (atomInfo.saveLocal) {
+        saveToLocalStorage(key, atomInfo.value);
+      }
+    });
+
+    return (
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          Object.keys(instance.ATOMS).forEach((key) => {
+            const atomInfo = instance.ATOMS[key];
+            snapshot.set(atomInfo.atom, atomInfo.value);
+          });
+        }}
+      >
+        {children}
+      </RecoilRoot>
+    );
+  }
+}
+
 export function makeCartItem(id: string, globusReady: boolean): RawSearchResult {
   return rawSearchResultFixture({
     id,
@@ -147,48 +253,11 @@ export async function openDropdownList(user: UserEvent, dropdown: HTMLElement): 
   await user.click(dropdown);
 }
 
-export function initRecoilValue<T>(key: string, value: T): void {
+export function saveToLocalStorage<T>(key: string, value: T): void {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
-export async function addSearchRowsAndGoToCart(
-  user: UserEvent,
-  rows?: HTMLElement[]
-): Promise<void> {
-  let rowsToAdd: HTMLElement[] = [];
-
-  // Get the rows we need to add
-  if (rows) {
-    rowsToAdd = rowsToAdd.concat(rows);
-  } else {
-    const defaultRow = await screen.findByTestId('cart-items-row-1');
-    rowsToAdd.push(defaultRow);
-  }
-
-  // Add the rows by clicking plus button
-  const clickBtns: Promise<void>[] = [];
-  rowsToAdd.forEach((row) => {
-    expect(row).toBeTruthy();
-    const clickBtnFunc = async (): Promise<void> => {
-      const addBtn = (await within(row).findAllByRole('button'))[0];
-      expect(addBtn).toBeTruthy();
-      await user.click(addBtn);
-    };
-    clickBtns.push(clickBtnFunc());
-  });
-  await Promise.all(clickBtns);
-
-  // Check 'Added items(s) to the cart' message appears
-  const addText = await screen.findAllByText('Added item(s) to your cart', {
-    exact: false,
-  });
-  expect(addText).toBeTruthy();
-
-  // Switch to the cart page
-  const cartBtn = await screen.findByTestId('cartPageLink');
-  await user.click(cartBtn);
-
-  // Wait for cart page to render
-  const summary = await screen.findByTestId('summary');
-  expect(summary).toBeTruthy();
+export function getFromLocalStorage<T>(key: string): T | null {
+  const items = localStorage.getItem(key);
+  return items ? (JSON.parse(items) as T) : null;
 }

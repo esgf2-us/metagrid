@@ -14,13 +14,13 @@ enum GlobusStateKeys {
   savedGlobusEndpoints = 'savedGlobusEndpoints',
 }
 
-export const globusTaskItems = atom<GlobusTaskItem[]>({
+export const globusTaskItemsAtom = atom<GlobusTaskItem[]>({
   key: GlobusStateKeys.globusTaskItems,
   default: [],
   effects: [localStorageEffect<GlobusTaskItem[]>(GlobusStateKeys.globusTaskItems, [])],
 });
 
-export const globusSavedEndpoints = atom<GlobusEndpoint[]>({
+export const globusSavedEndpointsAtoms = atom<GlobusEndpoint[]>({
   key: GlobusStateKeys.savedGlobusEndpoints,
   default: [
     {
