@@ -761,6 +761,10 @@ describe('DatasetDownload form tests', () => {
     await initializeComponentForTest({
       ...defaultTestConfig,
       renderFullApp: true,
+      itemSelections: [
+        makeCartItem('globusReadyItem1', true),
+        makeCartItem('globusReadyItem2', true),
+      ],
       globusTaskItems: [
         {
           submitDate: '3/4/2025, 3:55:00 PM',
@@ -828,13 +832,18 @@ describe('DatasetDownload form tests', () => {
     });
     expect(taskItems).toHaveLength(10);
 
+    console.log("================BEFORE TRANSFER==============");
+    printElementContents(undefined);
+
     // Select transfer button and click it
     const globusTransferBtn = await screen.findByTestId('downloadDatasetTransferBtn');
     expect(globusTransferBtn).toBeTruthy();
     await user.click(globusTransferBtn);
 
-    // Expect the transfer to complete successfully
+    console.log("================AFTER TRANSFER==============");
     printElementContents(undefined);
+
+    // Expect the transfer to complete successfully
     const globusTransferPopup = await screen.findByText('Globus download initiated successfully!');
     expect(globusTransferPopup).toBeTruthy();
 
