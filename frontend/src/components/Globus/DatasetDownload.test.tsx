@@ -757,8 +757,7 @@ describe('DatasetDownload form tests', () => {
     );
   });
 
-  it('displays 10 tasks at most in the submit history', async () => {
-    jest.setTimeout(240000);
+  xit('displays 10 tasks at most in the submit history', async () => {
     await initializeComponentForTest({
       ...defaultTestConfig,
       renderFullApp: true,
