@@ -6,8 +6,8 @@ import { AppPage } from '../common/types';
 import Support from '../components/Support';
 import customRender from '../test/custom-render';
 import { getCurrentAppPage } from '../common/utils';
-import { activeSearch, printElementContents, RecoilWrapper } from '../test/jestTestFunctions';
-import { supportModalVisibleAtom, isDarkModeAtom } from '../components/App/recoil/atoms';
+import { activeSearch, RecoilWrapper } from '../test/jestTestFunctions';
+import { supportModalVisibleAtom } from '../components/App/recoil/atoms';
 import App from '../components/App/App';
 
 const user = userEvent.setup();
@@ -128,8 +128,6 @@ describe('test ReactJoyrideProvider', () => {
 
     // Check if the dark mode class is applied
     expect(navComponent).toHaveClass('dark-mode');
-
-    printElementContents();
 
     // Check support modal rendered
     const support = await screen.findByTestId('support-form');

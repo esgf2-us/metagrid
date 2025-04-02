@@ -12,8 +12,8 @@ import {
   mockConfig,
   mockFunction,
   openDropdownList,
-  printElementContents,
   RecoilWrapper,
+  printElementContents,
 } from '../../test/jestTestFunctions';
 import App from '../App/App';
 import { GlobusEndpoint, GlobusTaskItem, GlobusTokenResponse } from './types';
@@ -224,8 +224,6 @@ beforeEach(() => {
   db.initializeDataStore({});
 });
 
-jest.setTimeout(120000);
-
 describe('DatasetDownload form tests', () => {
   it('Download form renders.', async () => {
     const downloadForm = customRender(<DatasetDownloadForm />);
@@ -253,8 +251,6 @@ describe('DatasetDownload form tests', () => {
     const downloadBtn = await screen.findByTestId('downloadDatasetWgetBtn');
     expect(downloadBtn).toBeTruthy();
     await user.click(downloadBtn);
-
-    printElementContents(undefined);
 
     // Expect download success message to show
     const notice = await screen.findByText('Wget script downloaded successfully!', {
@@ -838,6 +834,7 @@ describe('DatasetDownload form tests', () => {
     await user.click(globusTransferBtn);
 
     // Expect the transfer to complete successfully
+    printElementContents(undefined);
     const globusTransferPopup = await screen.findByText('Globus download initiated successfully!');
     expect(globusTransferPopup).toBeTruthy();
 

@@ -4,7 +4,6 @@ import NodeSummary from './NodeSummary';
 import customRender from '../../test/custom-render';
 import { isDarkModeAtom, nodeStatusAtom } from '../App/recoil/atoms';
 import {
-  printElementContents,
   RecoilWrapper,
   saveToLocalStorage,
 } from '../../test/jestTestFunctions';
@@ -50,8 +49,6 @@ it('renders component with dark mode enabled', async () => {
 
   const numOffline = await screen.findByTestId('numOffline');
   expect(within(numOffline).getByText('1')).toBeTruthy();
-
-  printElementContents();
 
   // Verify dark mode styling for close and check circles
   const closeCircle = await screen.findByRole('img', { name: 'close-circle' });

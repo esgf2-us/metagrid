@@ -17,7 +17,6 @@ import { ActiveSearchQuery } from '../Search/types';
 import App from './App';
 import {
   activeSearch,
-  printElementContents,
   RecoilWrapper,
   submitKeywordSearch,
 } from '../../test/jestTestFunctions';
@@ -427,8 +426,6 @@ describe('User cart', () => {
 
     // Wait for components to rerender
     await screen.findByText('results found for', { exact: false });
-
-    printElementContents();
 
     // Check first row has add button and click it
     const addBtn = await screen.findByTestId('row-1-add-to-cart');
