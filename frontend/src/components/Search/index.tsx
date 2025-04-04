@@ -50,12 +50,13 @@ import {
   activeSearchQueryAtom,
   availableFacetsAtom,
   isDarkModeAtom,
+  isSTACAtom,
   projectBaseQuery,
   userCartAtom,
   userSearchQueriesAtom,
 } from '../App/recoil/atoms';
 import { AuthContext } from '../../contexts/AuthContext';
-import { checkIsStac, convertStacToRawSearchResult } from '../../common/STAC';
+import { convertStacToRawSearchResult } from '../../common/STAC';
 
 const styles: CSSinJS = {
   summary: {
@@ -164,6 +165,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   const isDarkMode = useRecoilValue<boolean>(isDarkModeAtom);
 
+  const isStac = useRecoilValue<boolean>(isSTACAtom);
+
   const {
     project,
     versionType,
@@ -227,7 +230,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         }).facet_counts;
         setParsedFacets(parseFacets(facetFields));
       } else {
-        const facets = (data as { facets: { summaries: RawFacets } }).facets.summaries;
+        const { facets } = data as { facets: RawFacets };
         setParsedFacets(facets);
       }
     }
@@ -368,7 +371,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   let numFound = 0;
   let docs: RawSearchResults = [];
   if (data) {
-    if (checkIsStac(data)) {
+    if (isStac) {
       const searchResults = data as StacResponse;
       if (searchResults.search) {
         const stacResults = searchResults.search;

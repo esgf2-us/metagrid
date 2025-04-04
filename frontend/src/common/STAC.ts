@@ -1,13 +1,15 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { RawProject } from '../components/Facets/types';
-import { RawSearchResult, StacFeature, SearchResults, StacAsset } from '../components/Search/types';
+import { RawSearchResult, StacFeature, StacAsset } from '../components/Search/types';
 
-export const checkIsStac = (stac: SearchResults | RawSearchResult | undefined): boolean => {
-  if (!stac) {
-    return false;
-  }
-  return Object.hasOwn(stac, 'stac_version') || Object.hasOwn(stac, 'stac');
-};
+// export const checkIsStac = (stac: SearchResults | RawSearchResult | undefined): boolean => {
+//   if (!stac) {
+//     return false;
+//   }
+//   console.log('This is stac');
+//   console.log(stac);
+//   return Object.hasOwn(stac, 'stac_version') || Object.hasOwn(stac, 'stac');
+// };
 
 export const convertStacToRawSearchResult = (stacResult: StacFeature): RawSearchResult => {
   const { id, assets, bbox, geometry, links, properties, stac_version, type } = stacResult;
@@ -71,5 +73,6 @@ export const STAC_PROJECTS: RawProject[] = [
         'variable_units',
       ],
     },
+    isSTAC: true,
   },
 ];

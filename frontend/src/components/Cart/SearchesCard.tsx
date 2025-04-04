@@ -8,7 +8,7 @@ import { Alert, Card, Col, Skeleton, Typography, Tooltip } from 'antd';
 import React from 'react';
 import { useAsync } from 'react-async';
 import { useNavigate } from 'react-router-dom';
-import { useSetRecoilState } from 'recoil';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { fetchSearchResults, generateSearchURLQuery } from '../../api';
 import { savedSearchTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
@@ -16,9 +16,8 @@ import { stringifyFilters } from '../Search';
 import { UserSearchQuery } from './types';
 import { createSearchRouteURL } from '../../common/utils';
 
-import { savedSearchQueryAtom } from '../App/recoil/atoms';
+import { isSTACAtom, savedSearchQueryAtom } from '../App/recoil/atoms';
 import { ActiveSearchQuery, SearchResults, StacSearchResponse } from '../Search/types';
-import { checkIsStac } from '../../common/STAC';
 
 const styles: CSSinJS = {
   category: {
@@ -54,6 +53,7 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
     url,
   } = searchQuery;
 
+  const isStac = useRecoilValue<boolean>(isSTACAtom);
   const setSavedSearchQuery = useSetRecoilState<ActiveSearchQuery | null>(savedSearchQueryAtom);
 
   // This converts a saved search to the active search query
@@ -85,7 +85,7 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
     numResults = <Alert message="There was an issue fetching the result count." type="error" />;
   } else if (isLoading) {
     numResults = <Skeleton title={{ width: '100%' }} paragraph={{ rows: 0 }} active />;
-  } else if (checkIsStac(data)) {
+  } else if (isStac) {
     const num = (data as StacSearchResponse).numMatched;
     numResults = (
       <p>

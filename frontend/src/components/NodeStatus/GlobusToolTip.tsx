@@ -1,15 +1,18 @@
 import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
 import React from 'react';
 import { Tooltip } from 'antd';
-import { useRecoilState } from 'recoil';
-import { isDarkModeAtom } from '../App/recoil/atoms';
+import { useRecoilState, useRecoilValue } from 'recoil';
+import { isDarkModeAtom, isSTACAtom } from '../App/recoil/atoms';
 import { lightModeGreen, lightModeRed, darkModeGreen, darkModeRed } from './StatusToolTip';
 
-export type Props = { dataNode: string; isStac: boolean };
+export type Props = { dataNode: string };
 
-const GlobusToolTip: React.FC<Props> = ({ dataNode, isStac }) => {
-  const isEnabled = isStac || window.METAGRID.GLOBUS_NODES.includes(dataNode);
+const GlobusToolTip: React.FC<Props> = ({ dataNode }) => {
   const [isDarkMode] = useRecoilState<boolean>(isDarkModeAtom);
+
+  const isStac = useRecoilValue<boolean>(isSTACAtom);
+
+  const isEnabled = isStac || window.METAGRID.GLOBUS_NODES.includes(dataNode);
 
   const enabledColor = isDarkMode ? darkModeGreen : lightModeGreen;
   const disabledColor = isDarkMode ? darkModeRed : lightModeRed;

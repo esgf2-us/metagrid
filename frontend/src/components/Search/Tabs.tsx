@@ -1,5 +1,6 @@
 import { AutoComplete, Button, Divider, Popover, Tabs as TabsD } from 'antd';
 import React from 'react';
+import { useRecoilValue } from 'recoil';
 import { objectHasKey, splitStringByChar } from '../../common/utils';
 import qualityFlagsImg from '../../assets/img/climate_indicators_table.png';
 import Citation from './Citation';
@@ -7,7 +8,7 @@ import FilesTable from './FilesTable';
 import { RawSearchResult, TextInputs } from './types';
 import { CSSinJS } from '../../common/types';
 import { innerDataRowTargets } from '../../common/reactJoyrideSteps';
-import { checkIsStac } from '../../common/STAC';
+import { isSTACAtom } from '../App/recoil/atoms';
 
 const styles: CSSinJS = {
   qualityFlagsRow: { display: 'flex' },
@@ -124,6 +125,8 @@ const buildDisplayData = (
 const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }) => {
   const [metaDataDisplayed, setMetaDataDisplayed] = React.useState<DisplayMetaData[]>();
 
+  const isStac = useRecoilValue<boolean>(isSTACAtom);
+
   const { keys, displayData } = buildDisplayData(record);
 
   React.useEffect(() => {
@@ -227,7 +230,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
           id={record.id}
           numResults={record.number_of_files}
           filenameVars={filenameVars}
-          stacRecord={checkIsStac(record) ? record : undefined}
+          stacRecord={isStac ? record : undefined}
         />
       ),
     },

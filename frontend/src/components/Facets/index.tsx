@@ -1,7 +1,7 @@
 import { Button, Tooltip, Typography } from 'antd';
 import React, { useEffect } from 'react';
 import { useAsync } from 'react-async';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { fetchProjects, ResponseError } from '../../api';
 import { leftSidebarTargets } from '../../common/reactJoyrideSteps';
 import { objectIsEmpty } from '../../common/utils';
@@ -13,6 +13,7 @@ import { RawProject } from './types';
 import {
   activeSearchQueryAtom,
   availableFacetsAtom,
+  isSTACAtom,
   projectBaseQuery,
   savedSearchQueryAtom,
 } from '../App/recoil/atoms';
@@ -30,6 +31,8 @@ const Facets: React.FC = () => {
 
   const availableFacets = useRecoilValue(availableFacetsAtom);
 
+  const setIsStac = useSetRecoilState<boolean>(isSTACAtom);
+
   const [activeSearchQuery, setActiveSearchQuery] = useRecoilState<ActiveSearchQuery>(
     activeSearchQueryAtom
   );
@@ -41,6 +44,10 @@ const Facets: React.FC = () => {
   const [curProject, setCurProject] = React.useState<RawProject>();
 
   const handleProjectChange = (selectedProject: RawProject): void => {
+    if (selectedProject.isSTAC) {
+      setIsStac(true);
+    }
+
     if (savedSearchQuery) {
       setSavedSearchQuery(null);
       setActiveSearchQuery(savedSearchQuery);

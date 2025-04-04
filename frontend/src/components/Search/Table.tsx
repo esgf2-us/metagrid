@@ -10,6 +10,7 @@ import type { TableColumnsType, TableProps } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React, { useState } from 'react';
+import { useRecoilValue } from 'recoil';
 import { fetchWgetScript, ResponseError } from '../../api';
 import { topDataRowTargets } from '../../common/reactJoyrideSteps';
 import { formatBytes, showError, showNotice } from '../../common/utils';
@@ -20,7 +21,7 @@ import './Search.css';
 import Tabs from './Tabs';
 import { RawSearchResult, RawSearchResults, TextInputs } from './types';
 import GlobusToolTip from '../NodeStatus/GlobusToolTip';
-import { checkIsStac } from '../../common/STAC';
+import { isSTACAtom } from '../App/recoil/atoms';
 
 export type Props = {
   loading: boolean;
@@ -54,6 +55,8 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
   onPageChange,
   onPageSizeChange,
 }) => {
+  const isStac = useRecoilValue<boolean>(isSTACAtom);
+
   const [messageApi, contextHolder] = message.useMessage();
 
   const [sortedInfo, setSortedInfo] = useState<Sorts>({});
@@ -184,8 +187,8 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       title: '',
       dataIndex: 'data_node',
       key: 'node_status',
-      render: (data_node: string, record: RawSearchResult) => {
-        if (checkIsStac(record)) {
+      render: (data_node: string) => {
+        if (isStac) {
           return <>STAC</>;
         }
         return (
@@ -241,8 +244,8 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       key: 'size',
       sorter: (a: RawSearchResult, b: RawSearchResult) => (a.size || 0) - (b.size || 0),
       sortOrder: sortedInfo.columnKey === 'size' ? sortedInfo.order : null,
-      render: (size: number, record: RawSearchResult) => {
-        if (checkIsStac(record)) {
+      render: (size: number) => {
+        if (isStac) {
           return <p>N/A</p>;
         }
         return (
@@ -271,7 +274,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       title: 'Download Options',
       key: 'download',
       render: (record: RawSearchResult) => {
-        if (checkIsStac(record)) {
+        if (isStac) {
           if (record.globus_link) {
             return (
               <Button
@@ -359,9 +362,9 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
           dataIndex: 'data_node',
           key: 'globus_enabled',
           width: 110,
-          render: (data_node: string, record: RawSearchResult) => (
+          render: (data_node: string) => (
             <div className={topDataRowTargets.globusReadyStatusIcon.class()}>
-              <GlobusToolTip dataNode={data_node} isStac={checkIsStac(record)} />
+              <GlobusToolTip dataNode={data_node} />
             </div>
           ),
         }
