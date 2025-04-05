@@ -1,18 +1,17 @@
 import { CloudDownloadOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { Col, Empty, Popconfirm, Row } from 'antd';
 import React from 'react';
-import { useRecoilState } from 'recoil';
-import { cartTourTargets } from '../../common/reactJoyrideSteps';
+import { useAtom } from 'jotai';
+import { cartTourTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import Button from '../General/Button';
 import Table from '../Search/Table';
 import { RawSearchResults } from '../Search/types';
 import DatasetDownload from '../Globus/DatasetDownload';
-import { cartItemSelectionsAtom } from './recoil/atoms';
 import { UserCart } from './types';
-import { userCartAtom } from '../App/recoil/atoms';
 import { AuthContext } from '../../contexts/AuthContext';
 import { updateUserCart } from '../../api';
+import { cartItemSelectionsAtom, userCartAtom } from '../../common/atoms';
 
 const styles: CSSinJS = {
   summary: {
@@ -37,12 +36,10 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   const { access_token: accessToken, pk } = authState;
   const isAuthenticated = accessToken && pk;
 
-  // Recoil states
-  const [userCart, setUserCart] = useRecoilState<UserCart>(userCartAtom);
+  // Global states
+  const [userCart, setUserCart] = useAtom<UserCart>(userCartAtom);
 
-  const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(
-    cartItemSelectionsAtom
-  );
+  const [itemSelections, setItemSelections] = useAtom<RawSearchResults>(cartItemSelectionsAtom);
 
   const handleRowSelect = (selectedRows: RawSearchResults): void => {
     setItemSelections(selectedRows);

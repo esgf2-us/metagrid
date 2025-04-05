@@ -8,8 +8,15 @@ import { Alert, Col, message, Row, Typography } from 'antd';
 import humps from 'humps';
 import React from 'react';
 import { DeferFn, useAsync } from 'react-async';
-import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { v4 as uuidv4 } from 'uuid';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import {
+  activeSearchQueryAtom,
+  availableFacetsAtom,
+  isDarkModeAtom,
+  userCartAtom,
+  userSearchQueriesAtom,
+} from '../../common/atoms';
 import {
   addUserSearchQuery,
   convertResultTypeToReplicaParam,
@@ -17,13 +24,14 @@ import {
   generateSearchURLQuery,
   ResponseError,
 } from '../../api';
-import { searchTableTargets } from '../../common/reactJoyrideSteps';
+import { searchTableTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import {
   createSearchRouteURL,
   getStyle,
   getUrlFromSearch,
   objectIsEmpty,
+  projectBaseQuery,
   searchAlreadyExists,
   showError,
   showNotice,
@@ -43,14 +51,6 @@ import {
   VersionDate,
   VersionType,
 } from './types';
-import {
-  activeSearchQueryAtom,
-  availableFacetsAtom,
-  isDarkModeAtom,
-  projectBaseQuery,
-  userCartAtom,
-  userSearchQueriesAtom,
-} from '../App/recoil/atoms';
 import { AuthContext } from '../../contexts/AuthContext';
 
 const styles: CSSinJS = {
@@ -143,22 +143,20 @@ export type Props = {
 };
 
 const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
-  // Recoil states
-  const setAvailableFacets = useSetRecoilState<ParsedFacets | Record<string, unknown>>(
-    availableFacetsAtom
-  );
+  // Global states
+  const setAvailableFacets = useSetAtom(availableFacetsAtom);
 
-  const userCart = useRecoilValue<UserCart>(userCartAtom);
+  const userCart = useAtomValue<UserCart>(userCartAtom);
 
-  const [userSearchQueries, setUserSearchQueries] = useRecoilState<UserSearchQueries>(
+  const [userSearchQueries, setUserSearchQueries] = useAtom<UserSearchQueries>(
     userSearchQueriesAtom
   );
 
-  const [activeSearchQuery, setActiveSearchQuery] = useRecoilState<ActiveSearchQuery>(
+  const [activeSearchQuery, setActiveSearchQuery] = useAtom<ActiveSearchQuery>(
     activeSearchQueryAtom
   );
 
-  const isDarkMode = useRecoilValue<boolean>(isDarkModeAtom);
+  const isDarkMode = useAtomValue<boolean>(isDarkModeAtom);
 
   const {
     project,

@@ -12,13 +12,11 @@ import {
   mockConfig,
   mockFunction,
   openDropdownList,
-  RecoilWrapper,
+  AtomWrapper,
   printElementContents,
 } from '../../test/jestTestFunctions';
 import App from '../App/App';
 import { GlobusEndpoint, GlobusTaskItem, GlobusTokenResponse } from './types';
-import GlobusStateKeys, { globusSavedEndpointsAtoms, globusTaskItemsAtom } from './recoil/atom';
-import { cartDownloadIsLoadingAtom, cartItemSelectionsAtom } from '../Cart/recoil/atoms';
 import {
   globusEndpointFixture,
   globusAccessTokenFixture,
@@ -30,6 +28,14 @@ import DatasetDownloadForm, { GlobusGoals } from './DatasetDownload';
 import DataBundlePersister from '../../common/DataBundlePersister';
 import { tempStorageGetMock, tempStorageSetMock } from '../../test/mock/mockStorage';
 import { AppPage } from '../../common/types';
+import {
+  CartStateKeys,
+  GlobusStateKeys,
+  cartDownloadIsLoadingAtom,
+  cartItemSelectionsAtom,
+  globusSavedEndpointsAtoms,
+  globusTaskItemsAtom,
+} from '../../common/atoms';
 
 const activeSearch: ActiveSearchQuery = getSearchFromUrl('project=test1');
 
@@ -168,16 +174,16 @@ async function initializeComponentForTest(testConfig?: typeof defaultTestConfig)
   // Set the Globus Goals
   saveToLocalStorage<GlobusGoals>(GlobusStateKeys.globusTransferGoalsState, config.globusGoals);
 
-  RecoilWrapper.modifyAtomValue(cartDownloadIsLoadingAtom.key, config.cartDownloadIsLoading);
+  AtomWrapper.modifyAtomValue(CartStateKeys.cartDownloadIsLoading, config.cartDownloadIsLoading);
 
   // Set the selected cart items
-  RecoilWrapper.modifyAtomValue(cartItemSelectionsAtom.key, config.itemSelections);
+  AtomWrapper.modifyAtomValue(CartStateKeys.cartItemSelections, config.itemSelections);
 
   // Set the saved endpoints
-  RecoilWrapper.modifyAtomValue(globusSavedEndpointsAtoms.key, config.savedEndpoints);
+  AtomWrapper.modifyAtomValue(GlobusStateKeys.savedGlobusEndpoints, config.savedEndpoints);
 
   // Set the globus task items
-  RecoilWrapper.modifyAtomValue(globusTaskItemsAtom.key, config.globusTaskItems);
+  AtomWrapper.modifyAtomValue(GlobusStateKeys.globusTaskItems, config.globusTaskItems);
 
   // Default display name if no endpoint is chosen
   let displayName = 'Select Globus Collection';
@@ -832,7 +838,7 @@ describe('DatasetDownload form tests', () => {
     });
     expect(taskItems).toHaveLength(10);
 
-    console.log("================BEFORE TRANSFER==============");
+    console.log('================BEFORE TRANSFER==============');
     printElementContents(undefined);
 
     // Select transfer button and click it
@@ -840,7 +846,7 @@ describe('DatasetDownload form tests', () => {
     expect(globusTransferBtn).toBeTruthy();
     await user.click(globusTransferBtn);
 
-    console.log("================AFTER TRANSFER==============");
+    console.log('================AFTER TRANSFER==============');
     printElementContents(undefined);
 
     // Expect the transfer to complete successfully

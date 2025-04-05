@@ -2,7 +2,7 @@ import { CSSProperties, ReactNode } from 'react';
 import { MessageInstance } from 'antd/es/message/interface';
 import { AtomEffect } from 'recoil';
 import { UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
-import { ActiveFacets } from '../components/Facets/types';
+import { ActiveFacets, RawProject } from '../components/Facets/types';
 import {
   ActiveSearchQuery,
   RawSearchResult,
@@ -65,6 +65,19 @@ export async function showNotice(
       break;
   }
 }
+
+export const projectBaseQuery = (
+  project: Record<string, unknown> | RawProject
+): ActiveSearchQuery => ({
+  project,
+  versionType: 'latest',
+  resultType: 'all',
+  minVersionDate: null,
+  maxVersionDate: null,
+  filenameVars: [],
+  activeFacets: {},
+  textInputs: [],
+});
 
 const bodySider = {
   padding: '12px 12px 12px 12px',

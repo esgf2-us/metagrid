@@ -10,7 +10,6 @@ import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
 import { fetchWgetScript, ResponseError } from '../../api';
-import { topDataRowTargets } from '../../common/reactJoyrideSteps';
 import { formatBytes, showError, showNotice } from '../../common/utils';
 import { UserCart } from '../Cart/types';
 import Button from '../General/Button';
@@ -19,6 +18,7 @@ import './Search.css';
 import Tabs from './Tabs';
 import { RawSearchResult, RawSearchResults, TextInputs } from './types';
 import GlobusToolTip from '../NodeStatus/GlobusToolTip';
+import { topDataRowTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
 export type Props = {
   loading: boolean;
@@ -86,7 +86,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
           e: React.MouseEvent<HTMLSpanElement, MouseEvent>
         ) => void;
         record: RawSearchResult;
-      }): React.ReactElement =>
+      }): React.ReactNode =>
         expanded ? (
           <DownCircleOutlined
             className={topDataRowTargets.searchResultsRowContractIcon.class()}

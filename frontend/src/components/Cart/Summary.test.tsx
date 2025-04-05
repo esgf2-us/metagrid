@@ -4,9 +4,8 @@ import userEvent from '@testing-library/user-event';
 import { rawSearchResultFixture, userCartFixture } from '../../test/mock/fixtures';
 import Summary, { Props } from './Summary';
 import customRender from '../../test/custom-render';
-import { cartItemSelectionsAtom } from './recoil/atoms';
-import { RecoilWrapper } from '../../test/jestTestFunctions';
-import { globusTaskItemsAtom } from '../Globus/recoil/atom';
+import { CartStateKeys, GlobusStateKeys } from '../../common/atoms';
+import { AtomWrapper } from '../../test/jestTestFunctions';
 
 const defaultProps: Props = {
   userCart: userCartFixture(),
@@ -47,14 +46,14 @@ it('renders component with correct calculations when a dataset doesn"t have size
   expect(numFilesText.textContent).toEqual('Total Number of Files: 3');
 });
 
-it('handles null number_of_files and size attributes gracefully', async () => {
+it('handles undefined number_of_files and size attributes gracefully', async () => {
   customRender(
     <Summary
       userCart={[
         rawSearchResultFixture(),
         rawSearchResultFixture({
-          size: null,
-          number_of_files: null,
+          size: undefined,
+          number_of_files: undefined,
         }),
       ]}
     />
@@ -86,7 +85,7 @@ describe('shows the correct selected datasets and files', () => {
   });
 
   it('when items are selected', async () => {
-    RecoilWrapper.modifyAtomValue(cartItemSelectionsAtom.key, [
+    AtomWrapper.modifyAtomValue(CartStateKeys.cartItemSelections, [
       rawSearchResultFixture(),
       rawSearchResultFixture(),
       rawSearchResultFixture(),
@@ -108,7 +107,7 @@ it('renders task submit history when tasks are present', async () => {
       taskStatusURL: 'http://example.com/task/1',
     },
   ];
-  RecoilWrapper.modifyAtomValue(globusTaskItemsAtom.key, taskItems);
+  AtomWrapper.modifyAtomValue(GlobusStateKeys.globusTaskItems, taskItems);
   customRender(<Summary {...defaultProps} />);
 
   const taskHistoryTitle = await screen.findByText('Task Submit History');
@@ -123,7 +122,7 @@ it('clears all tasks when clear button is clicked', async () => {
       taskStatusURL: 'http://example.com/task/1',
     },
   ];
-  RecoilWrapper.modifyAtomValue(globusTaskItemsAtom.key, taskItems);
+  AtomWrapper.modifyAtomValue(GlobusStateKeys.globusTaskItems, taskItems);
   const { getByTestId } = customRender(<Summary {...defaultProps} />);
 
   const clearButton = getByTestId('clear-all-submitted-globus-tasks');

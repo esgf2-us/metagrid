@@ -17,22 +17,15 @@ import {
   message,
 } from 'antd';
 import React, { useEffect } from 'react';
-import { useRecoilState } from 'recoil';
 import PKCE from 'js-pkce';
+import { useAtom } from 'jotai';
 import {
   fetchWgetScript,
   ResponseError,
   startSearchGlobusEndpoints,
   SubmissionResult,
 } from '../../api';
-import {
-  cartTourTargets,
-  createCollectionsFormTour,
-  manageCollectionsTourTargets,
-} from '../../common/reactJoyrideSteps';
 import { RawSearchResults } from '../Search/types';
-import { cartDownloadIsLoadingAtom, cartItemSelectionsAtom } from '../Cart/recoil/atoms';
-import GlobusStateKeys, { globusSavedEndpointsAtoms, globusTaskItemsAtom } from './recoil/atom';
 import {
   GlobusTokenResponse,
   GlobusTaskItem,
@@ -46,6 +39,18 @@ import axios from '../../lib/axios';
 import apiRoutes from '../../api/routes';
 import DataBundlePersister from '../../common/DataBundlePersister';
 import { AppPage } from '../../common/types';
+import {
+  cartDownloadIsLoadingAtom,
+  cartItemSelectionsAtom,
+  globusSavedEndpointsAtoms,
+  globusTaskItemsAtom,
+  GlobusStateKeys,
+} from '../../common/atoms';
+import {
+  cartTourTargets,
+  manageCollectionsTourTargets,
+  createCollectionsFormTour,
+} from '../../common/joyrideTutorials/reactJoyrideSteps';
 
 const globusRedirectUrl = `${window.location.origin}/cart/items`;
 
@@ -105,16 +110,12 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   const tourState: RawTourState = React.useContext(ReactJoyrideContext);
   const { startSpecificTour } = tourState;
 
-  const [downloadIsLoading, setDownloadIsLoading] = useRecoilState<boolean>(
-    cartDownloadIsLoadingAtom
-  );
+  const [downloadIsLoading, setDownloadIsLoading] = useAtom<boolean>(cartDownloadIsLoadingAtom);
 
   // Persistent vars
-  const [taskItems, setTaskItems] = useRecoilState<GlobusTaskItem[]>(globusTaskItemsAtom);
-  const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(
-    cartItemSelectionsAtom
-  );
-  const [savedGlobusEndpoints, setSavedGlobusEndpoints] = useRecoilState<GlobusEndpoint[]>(
+  const [taskItems, setTaskItems] = useAtom<GlobusTaskItem[]>(globusTaskItemsAtom);
+  const [itemSelections, setItemSelections] = useAtom<RawSearchResults>(cartItemSelectionsAtom);
+  const [savedGlobusEndpoints, setSavedGlobusEndpoints] = useAtom<GlobusEndpoint[]>(
     globusSavedEndpointsAtoms
   );
 

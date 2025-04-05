@@ -6,7 +6,7 @@ import Citation from './Citation';
 import FilesTable from './FilesTable';
 import { RawSearchResult, TextInputs } from './types';
 import { CSSinJS } from '../../common/types';
-import { innerDataRowTargets } from '../../common/reactJoyrideSteps';
+import { innerDataRowTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
 const styles: CSSinJS = {
   qualityFlagsRow: { display: 'flex' },

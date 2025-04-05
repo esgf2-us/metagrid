@@ -1,9 +1,9 @@
 import { Alert, Form, Select, Spin } from 'antd';
 import React from 'react';
 import { ResponseError } from '../../api';
-import { leftSidebarTargets } from '../../common/reactJoyrideSteps';
 import { ActiveSearchQuery } from '../Search/types';
 import { RawProject, RawProjects } from './types';
+import { leftSidebarTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
 const styles = {
   form: { width: '360px' },

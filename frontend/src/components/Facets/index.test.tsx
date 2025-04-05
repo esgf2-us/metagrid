@@ -3,12 +3,10 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import Facets from './index';
 import customRender from '../../test/custom-render';
-import { RecoilRoot } from 'recoil';
-import { useRecoilState } from 'recoil';
-import { activeSearchQueryAtom, projectBaseQuery } from '../App/recoil/atoms';
 import { RawProject } from './types';
 import { rawProjectFixture } from '../../test/mock/fixtures';
-import { RecoilWrapper } from '../../test/jestTestFunctions';
+import { AppStateKeys } from '../../common/atoms';
+import { AtomWrapper } from '../../test/jestTestFunctions';
 
 const user = userEvent.setup();
 
@@ -26,7 +24,7 @@ it('renders component', async () => {
 
 it('handles facets form auto-filtering', async () => {
   customRender(<Facets />, {
-    usesRecoil: true,
+    usesAtoms: true,
   });
 
   // Check ProjectForm component renders
@@ -79,7 +77,7 @@ it('handles facets form auto-filtering', async () => {
 
 it('handles facets form submission, including a facet key that is undefined', async () => {
   customRender(<Facets />, {
-    usesRecoil: true,
+    usesAtoms: true,
   });
 
   // Check FacetsForm component renders
@@ -145,11 +143,11 @@ it('handles project change when selectedProject.pk !== activeSearchQuery.project
     name: 'Project2',
     projectUrl: '',
   });
-  RecoilWrapper.modifyAtomValue(activeSearchQueryAtom.key, {
+  AtomWrapper.modifyAtomValue(AppStateKeys.activeSearchQuery, {
     project: initialProject,
   });
   customRender(<Facets />, {
-    usesRecoil: true,
+    usesAtoms: true,
   });
 
   // Check FacetsForm component renders

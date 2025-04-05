@@ -1,18 +1,18 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
-import { RecoilRoot } from 'recoil';
 import { setMedia } from 'mock-match-media';
 import customRender from '../../test/custom-render';
 import RightMenu, { Props } from './RightMenu';
-import { mockConfig, mockKeycloakToken, RecoilWrapper } from '../../test/jestTestFunctions';
+import { mockConfig, mockKeycloakToken, AtomWrapper } from '../../test/jestTestFunctions';
 import { tempStorageSetMock } from '../../test/mock/mockStorage';
-import { isDarkModeAtom } from '../App/recoil/atoms';
 import { activeSearchQueryFixture } from '../../test/mock/fixtures';
 import App from '../App/App';
+import { Provider } from 'jotai';
+import { AppStateKeys } from '../../common/atoms';
 
 const user = userEvent.setup();
 
@@ -210,13 +210,13 @@ describe('Dark Mode', () => {
     setMedia({
       'prefers-color-scheme': 'dark',
     });
-    localStorage.setItem(isDarkModeAtom.key, 'false');
+    localStorage.setItem(AppStateKeys.isDarkMode, 'false');
     render(
-      <RecoilRoot>
+      <Provider>
         <MemoryRouter>
           <RightMenu mode="vertical"></RightMenu>
         </MemoryRouter>
-      </RecoilRoot>
+      </Provider>
     );
     expect(screen.getByTestId('isDarkModeSwitch')).toBeChecked();
   });
@@ -224,12 +224,12 @@ describe('Dark Mode', () => {
   it('stores preference when selected', async () => {
     setMedia({});
     localStorage.clear();
-    RecoilWrapper.modifyAtomValue(isDarkModeAtom.key, true);
+    AtomWrapper.modifyAtomValue(AppStateKeys.isDarkMode, true);
     customRender(<RightMenu mode="vertical"></RightMenu>);
     const isDarkModeSwitch = await screen.findByTestId('isDarkModeSwitch');
     expect(isDarkModeSwitch).not.toBeChecked();
     await user.click(isDarkModeSwitch);
     expect(await screen.findByTestId('isDarkModeSwitch')).toBeChecked();
-    expect(localStorage.getItem(isDarkModeAtom.key)).toBe('false');
+    expect(localStorage.getItem(AppStateKeys.isDarkMode)).toBe('false');
   });
 });

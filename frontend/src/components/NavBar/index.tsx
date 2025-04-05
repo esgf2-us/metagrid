@@ -2,7 +2,7 @@ import { MenuUnfoldOutlined } from '@ant-design/icons';
 import { Drawer, Typography } from 'antd';
 import React from 'react';
 import { useAsync } from 'react-async';
-import { useRecoilState } from 'recoil';
+import { useAtom } from 'jotai';
 import { fetchProjects, ResponseError } from '../../api';
 import esgfLogo from '../../assets/img/esgf.png';
 import { RawProject } from '../Facets/types';
@@ -10,7 +10,7 @@ import Button from '../General/Button';
 import LeftMenu from './LeftMenu';
 import './NavBar.css';
 import RightMenu from './RightMenu';
-import { isDarkModeAtom } from '../App/recoil/atoms';
+import { isDarkModeAtom } from '../../common/atoms';
 
 const { Link } = Typography;
 
@@ -19,8 +19,8 @@ export type Props = {
 };
 
 const NavBar: React.FC<React.PropsWithChildren<Props>> = ({ onTextSearch }) => {
-  // Recoil state
-  const [isDarkMode] = useRecoilState<boolean>(isDarkModeAtom);
+  // Global states
+  const [isDarkMode] = useAtom<boolean>(isDarkModeAtom);
 
   const { data, error, isLoading } = useAsync(fetchProjects);
   const [showDrawer, setShowDrawer] = React.useState(false);
