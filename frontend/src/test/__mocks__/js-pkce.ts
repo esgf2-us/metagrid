@@ -2,7 +2,7 @@
 
 import { GlobusTokenResponse } from '../../components/Globus/types';
 import { globusTokenResponseFixture } from '../mock/fixtures';
-import { tempStorageGetMock } from '../jestTestFunctions';
+import { tempStorageGetMock } from '../mock/mockStorage';
 
 class PKCE {
   client_id = '';
@@ -32,9 +32,7 @@ class PKCE {
   exchangeForAccessToken(): Promise<GlobusTokenResponse> {
     const test = tempStorageGetMock('pkce-pass');
     if (test === true) {
-      return (
-        Promise.resolve(globusTokenResponseFixture()) || Promise.resolve({})
-      );
+      return Promise.resolve(globusTokenResponseFixture()) || Promise.resolve({});
     }
     return Promise.reject();
   }

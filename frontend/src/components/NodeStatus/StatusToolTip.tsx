@@ -1,23 +1,33 @@
-import {
-  CheckCircleTwoTone,
-  CloseCircleTwoTone,
-  QuestionCircleTwoTone,
-} from '@ant-design/icons';
+import { CheckCircleTwoTone, CloseCircleTwoTone, QuestionCircleTwoTone } from '@ant-design/icons';
 import React from 'react';
 import { Tooltip } from 'antd';
+import { useRecoilValue } from 'recoil';
 import { NodeStatusArray, NodeStatusElement } from './types';
+import { isDarkModeAtom, nodeStatusAtom } from '../App/recoil/atoms';
 
 export type Props = {
-  nodeStatus?: NodeStatusArray;
   dataNode: string;
   children?: React.ReactNode;
 };
 
-const StatusToolTip: React.FC<React.PropsWithChildren<Props>> = ({
-  nodeStatus,
-  dataNode,
-  children,
-}) => {
+export const darkModeGreen = '#1a8011';
+export const darkModeRed = '#8c0e14';
+
+export const lightModeGreen = '#52c41a';
+export const lightModeRed = '#eb2f38';
+
+const StatusToolTip: React.FC<React.PropsWithChildren<Props>> = ({ dataNode, children }) => {
+  const nodeStatus = useRecoilValue<NodeStatusArray>(nodeStatusAtom);
+  const isDarkMode = useRecoilValue<boolean>(isDarkModeAtom);
+
+  let onlineCol = lightModeGreen;
+  let offlineCol = lightModeRed;
+
+  if (isDarkMode) {
+    onlineCol = darkModeGreen;
+    offlineCol = darkModeRed;
+  }
+
   if (nodeStatus) {
     const node = (nodeStatus.find((obj) =>
       obj.name.includes(dataNode)
@@ -38,11 +48,10 @@ const StatusToolTip: React.FC<React.PropsWithChildren<Props>> = ({
                     Online as of:<div>{timestamp}</div>
                   </>
                 }
-                color="green"
+                color={onlineCol}
               >
                 <span>
-                  <CheckCircleTwoTone twoToneColor="#52c41a" /> {dataNode}{' '}
-                  {children}
+                  <CheckCircleTwoTone twoToneColor={onlineCol} /> {dataNode} {children}
                 </span>
               </Tooltip>
             ) : (
@@ -53,11 +62,10 @@ const StatusToolTip: React.FC<React.PropsWithChildren<Props>> = ({
                     Offline as of:<div>{timestamp}</div>
                   </>
                 }
-                color="red"
+                color={offlineCol}
               >
                 <span>
-                  <CloseCircleTwoTone twoToneColor="#eb2f96" /> {dataNode}{' '}
-                  {children}
+                  <CloseCircleTwoTone twoToneColor={offlineCol} /> {dataNode} {children}
                 </span>
               </Tooltip>
             )}
@@ -75,10 +83,10 @@ const StatusToolTip: React.FC<React.PropsWithChildren<Props>> = ({
                   Online as of:<div>{timestamp}</div>
                 </>
               }
-              color="green"
+              color={onlineCol}
             >
               <span>
-                <CheckCircleTwoTone twoToneColor="#52c41a" />
+                <CheckCircleTwoTone twoToneColor={onlineCol} />
               </span>
             </Tooltip>
           ) : (
@@ -89,10 +97,10 @@ const StatusToolTip: React.FC<React.PropsWithChildren<Props>> = ({
                   Offline as of:<div>{timestamp}</div>
                 </>
               }
-              color="red"
+              color={offlineCol}
             >
               <span>
-                <CloseCircleTwoTone twoToneColor="#eb2f96" />
+                <CloseCircleTwoTone twoToneColor={offlineCol} />
               </span>
             </Tooltip>
           )}
@@ -106,8 +114,7 @@ const StatusToolTip: React.FC<React.PropsWithChildren<Props>> = ({
       <Tooltip
         title={
           <>
-            Could not fetch status. Please contact support or try again later.
-            Data Node:
+            Could not fetch status. Please contact support or try again later. Data Node:
             <div>{dataNode}</div>
           </>
         }
@@ -123,8 +130,7 @@ const StatusToolTip: React.FC<React.PropsWithChildren<Props>> = ({
     <Tooltip
       title={
         <>
-          Could not fetch status. Please contact support or try again later.
-          Data Node:
+          Could not fetch status. Please contact support or try again later. Data Node:
           <div>{dataNode}</div>
         </>
       }

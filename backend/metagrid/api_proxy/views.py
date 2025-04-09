@@ -5,11 +5,7 @@ import globus_sdk
 import requests
 from django.conf import settings
 from django.contrib.auth import logout
-from django.http import (
-    HttpResponse,
-    HttpResponseBadRequest,
-    HttpResponseServerError,
-)
+from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -17,6 +13,8 @@ from globus_portal_framework.gclients import load_transfer_client
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+
+from config.settings.site_specific import MetagridFrontendSettings
 
 
 @api_view()
@@ -47,8 +45,7 @@ def do_globus_auth(request):
 @csrf_exempt
 def do_globus_logout(request):
     logout(request)
-    homepage_url = getattr(settings, "LOGOUT_REDIRECT_URL")
-    return redirect(homepage_url)
+    return redirect(settings.LOGOUT_REDIRECT_URL)
 
 
 @api_view()
@@ -77,12 +74,7 @@ def do_globus_search_endpoints(request):
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
 def do_search(request):
-    esgf_host = getattr(
-        settings,
-        "SEARCH_URL",
-        "",
-    )
-    return do_request(request, esgf_host)
+    return do_request(request, settings.SEARCH_URL)
 
 
 @require_http_methods(["POST"])
@@ -117,12 +109,7 @@ def do_citation(request):
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
 def do_status(request):
-    status_url = getattr(
-        settings,
-        "STATUS_URL",
-        "",
-    )  # pragma: no cover
-    resp = requests.get(status_url)  # pragma: no cover
+    resp = requests.get(settings.STATUS_URL)  # pragma: no cover
     if resp.status_code == 200:  # pragma: no cover
         return HttpResponse(resp.text)
     else:  # pragma: no cover
@@ -132,55 +119,32 @@ def do_status(request):
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
 def do_wget(request):
-    return do_request(
-        request,
-        getattr(
-            settings,
-            "WGET_URL",
-            "",
-        ),
-    )
+    return do_request(request, settings.WGET_URL, True)
 
 
-def do_request(request, urlbase):
+def do_request(request, urlbase, useBody=False):
     resp = None
 
-    if len(urlbase) < 1:  # pragma: no cover
-        print(
-            "ERROR:  urlbase string empty, ensure you have the settings loaded"
-        )
-        return HttpResponseServerError(
-            "ERROR: missing url configuration for request"
-        )
-    if request:
-        if request.method == "POST":  # pragma: no cover
-            jo = {}
-            try:
-                jo = json.loads(request.body)
-            except Exception:
-                return HttpResponseBadRequest()
-            if "query" in jo:
-                query = jo["query"]
-                #   print(query)
-                if type(query) is list and len(query) > 0:
-                    jo["query"] = query[0]
-            if "dataset_id" in jo:
-                jo["dataset_id"] = ",".join(jo["dataset_id"])
-            #            print(f"DEBUG: {jo}")
-            resp = requests.post(urlbase, data=jo)
+    if request.method == "POST":  # pragma: no cover
+        if useBody:
+            jo = json.loads(request.body)
+        else:
+            jo = request.POST.dict()
 
-        elif request.method == "GET":
-            url_params = request.GET.copy()
-            resp = requests.get(urlbase, params=url_params)
-        else:  # pragma: no cover
-            return HttpResponseBadRequest(
-                "Request method must be POST or GET."
-            )
+        if "query" in jo:
+            query = jo["query"]
+            if type(query) is list and len(query) > 0:
+                jo["query"] = query[0]
+        if "dataset_id" in jo:
+            jo["dataset_id"] = ",".join(jo["dataset_id"])
+        resp = requests.post(urlbase, data=jo)
 
+    elif request.method == "GET":
+        url_params = request.GET.copy()
+        resp = requests.get(urlbase, params=url_params)
     else:  # pragma: no cover
-        resp = requests.get(urlbase)
+        return HttpResponseBadRequest("Request method must be POST or GET.")
 
-    #    print(resp.text)
     httpresp = HttpResponse(resp.text, content_type="text/json")
     httpresp.status_code = resp.status_code
 
@@ -199,7 +163,6 @@ def get_temp_storage(request):
         data_key = request_body["dataKey"]
 
         if "temp_storage" not in request.session:
-            print({"msg": "Temporary storage empty.", data_key: "None"})
             return HttpResponse(
                 json.dumps(
                     {"msg": "Temporary storage empty.", data_key: "None"}
@@ -304,3 +267,7 @@ def set_temp_storage(request):
         )
 
     return HttpResponse(json.dumps(response))
+
+
+def get_frontend_config(_) -> JsonResponse:
+    return JsonResponse(MetagridFrontendSettings().model_dump())

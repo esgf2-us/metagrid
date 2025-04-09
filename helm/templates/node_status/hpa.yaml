@@ -1,0 +1,33 @@
+{{- if .Values.nodeStatusBackend.autoscaling.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "metagrid.fullname" . }}-node-status-backend
+  labels:
+    app.kubernetes.io/component: node-status-backend
+    {{- include "metagrid.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "metagrid.fullname" . }}-node-status-backend
+  minReplicas: {{ .Values.nodeStatusBackend.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.nodeStatusBackend.autoscaling.maxReplicas }}
+  metrics:
+    {{- if .Values.nodeStatusBackend.autoscaling.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.nodeStatusBackend.autoscaling.targetCPUUtilizationPercentage }}
+    {{- end }}
+    {{- if .Values.nodeStatusBackend.autoscaling.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.nodeStatusBackend.autoscaling.targetMemoryUtilizationPercentage }}
+    {{- end }}
+{{- end }}

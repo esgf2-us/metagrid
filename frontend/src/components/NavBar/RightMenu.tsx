@@ -10,37 +10,41 @@ import {
 } from '@ant-design/icons';
 
 import { useKeycloak } from '@react-keycloak/web';
-import { Badge, Menu, MenuProps } from 'antd';
+import { Badge, Menu, MenuProps, Space, Switch } from 'antd';
 import { KeycloakTokenParsed } from 'keycloak-js';
 
 import React, { CSSProperties } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { navBarTargets } from '../../common/reactJoyrideSteps';
 import Button from '../General/Button';
 import RightDrawer from '../Messaging/RightDrawer';
 
 import { AuthContext } from '../../contexts/AuthContext';
 import {
-  authenticationMethod,
-  djangoLoginUrl,
-  djangoLogoutUrl,
-} from '../../env';
+  isDarkModeAtom,
+  supportModalVisibleAtom,
+  userCartAtom,
+  userSearchQueriesAtom,
+} from '../App/recoil/atoms';
+import { UserCart, UserSearchQueries } from '../Cart/types';
 
 const menuItemStyling: CSSProperties = { margin: '8px' };
 
 export type Props = {
   mode: 'horizontal' | 'vertical' | 'inline';
-  numCartItems: number;
-  numSavedSearches: number;
-  supportModalVisible: (visible: boolean) => void;
 };
 
-const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
-  mode,
-  numCartItems,
-  numSavedSearches,
-  supportModalVisible,
-}) => {
+const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
+  // Recoil state
+  const [isDarkMode, setIsDarkMode] = useRecoilState<boolean>(isDarkModeAtom);
+
+  const userCart = useRecoilValue<UserCart>(userCartAtom);
+
+  const userSearchQueries = useRecoilValue<UserSearchQueries>(userSearchQueriesAtom);
+
+  const setSupportModalVisible = useSetRecoilState<boolean>(supportModalVisibleAtom);
+
   const [activeMenuItem, setActiveMenuItem] = React.useState<string>('search');
 
   const [noticesOpen, setShowNotices] = React.useState(false);
@@ -55,15 +59,17 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
   let logoutBtn: JSX.Element;
   let userInfo = { email: '', given_name: '' };
 
-  if (authenticationMethod === 'keycloak') {
+  if (window.METAGRID.AUTHENTICATION_METHOD === 'keycloak') {
     const { keycloak } = useKeycloak();
     loginBtn = (
       <Button
         type="text"
         icon={<UserOutlined style={{ fontSize: '18px', margin: 0 }} />}
-        onClick={() => {
-          keycloak.login();
-        }}
+        onClick={
+          /* istanbul ignore next */ () => {
+            keycloak.login();
+          }
+        }
       >
         Sign In
       </Button>
@@ -71,9 +77,11 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
     logoutBtn = (
       <Button
         type="text"
-        onClick={() => {
-          keycloak.logout();
-        }}
+        onClick={
+          /* istanbul ignore next */ () => {
+            keycloak.logout();
+          }
+        }
       >
         Sign Out
       </Button>
@@ -84,18 +92,18 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
         given_name: string;
       };
     }
-  } else if (authenticationMethod === 'globus') {
+  } else if (window.METAGRID.AUTHENTICATION_METHOD === 'globus') {
     loginBtn = (
       <Button
         type="text"
         icon={<UserOutlined style={{ fontSize: '18px', margin: 0 }} />}
-        href={djangoLoginUrl}
+        href="login/globus/"
       >
         Sign In
       </Button>
     );
     logoutBtn = (
-      <Button type="text" href={djangoLogoutUrl}>
+      <Button type="text" href="proxy/globus-logout/">
         Sign Out
       </Button>
     );
@@ -122,12 +130,10 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
       return {
         key: 'greeting',
         icon: <UserOutlined style={{ fontSize: '18px' }} />,
+        className: navBarTargets.signInBtn.class(),
         label: (
           <span className="submenu-title-wrapper">
-            Hi,{' '}
-            {userInfo && userInfo.given_name
-              ? userInfo.given_name
-              : userInfo?.email}
+            Hi, {userInfo && userInfo.given_name ? userInfo.given_name : userInfo?.email}
           </span>
         ),
         children: [
@@ -162,12 +168,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
       label: (
         <Link data-testid="cartPageLink" to="/cart/items">
           <ShoppingCartOutlined style={{ fontSize: '20px' }} />
-          <Badge
-            count={numCartItems}
-            className="badge"
-            offset={[-5, 3]}
-            showZero
-          ></Badge>
+          <Badge count={userCart.length} className="badge" offset={[-5, 3]} showZero></Badge>
           Cart
         </Link>
       ),
@@ -180,7 +181,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
         <Link to="/cart/searches">
           <FileSearchOutlined style={{ fontSize: '20px' }} />{' '}
           <Badge
-            count={numSavedSearches}
+            count={userSearchQueries.length}
             className="badge"
             offset={[-5, 3]}
             showZero
@@ -221,10 +222,8 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
       label: (
         <Button
           type="text"
-          icon={
-            <QuestionCircleOutlined style={{ fontSize: '18px', margin: 0 }} />
-          }
-          onClick={() => supportModalVisible(true)}
+          icon={<QuestionCircleOutlined style={{ fontSize: '18px', margin: 0 }} />}
+          onClick={() => setSupportModalVisible(true)}
         >
           Help
         </Button>
@@ -232,6 +231,23 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
       key: 'help',
       style: menuItemStyling,
       className: navBarTargets.helpBtn.class(),
+    },
+    {
+      label: (
+        <Space>
+          <Switch
+            className={navBarTargets.themeSwitchBtn.class()}
+            checkedChildren="Light"
+            unCheckedChildren="Dark"
+            onChange={(checked) => setIsDarkMode(!checked)}
+            defaultChecked={!isDarkMode}
+            data-testid="isDarkModeSwitch"
+          ></Switch>
+          <span>Theme</span>
+        </Space>
+      ),
+      key: 'display-mode',
+      style: menuItemStyling,
     },
   ];
 
@@ -260,9 +276,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({
             ? { textAlign: 'left', justifyContent: 'flex-end' }
             : { textAlign: 'right', justifyContent: 'flex-end' }
         }
-        overflowedIndicator={
-          <BarsOutlined style={{ fontSize: '24px', margin: '20px 0' }} />
-        }
+        overflowedIndicator={<BarsOutlined style={{ fontSize: '24px', margin: '20px 0' }} />}
         items={menuItems}
       />
       <RightDrawer open={noticesOpen} onClose={hideNotices} />

@@ -1,42 +1,24 @@
-import { act, within, screen } from '@testing-library/react';
+import { within, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import {
   activeSearchQueryFixture,
   ESGFSearchAPIFixture,
   rawSearchResultFixture,
-  userCartFixture,
 } from '../../test/mock/fixtures';
 import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
 import { ActiveFacets, RawFacets } from '../Facets/types';
-import Search, {
-  checkFiltersExist,
-  parseFacets,
-  Props,
-  stringifyFilters,
-} from './index';
-import {
-  ActiveSearchQuery,
-  RawSearchResult,
-  ResultType,
-  TextInputs,
-  VersionType,
-} from './types';
-import { getRowName, selectDropdownOption } from '../../test/jestTestFunctions';
+import Search, { checkFiltersExist, parseFacets, Props, stringifyFilters } from './index';
+import { ActiveSearchQuery, RawSearchResult, ResultType, TextInputs, VersionType } from './types';
+import { openDropdownList, RecoilWrapper } from '../../test/jestTestFunctions';
+import { activeSearchQueryAtom, userCartAtom } from '../App/recoil/atoms';
 
 const user = userEvent.setup();
 
 const defaultProps: Props = {
-  activeSearchQuery: activeSearchQueryFixture(),
-  userCart: [],
-  onRemoveFilter: jest.fn(),
-  onClearFilters: jest.fn(),
   onUpdateCart: jest.fn(),
-  onUpdateAvailableFacets: jest.fn(),
-  onSaveSearchQuery: jest.fn(),
-  onShareSearchQuery: jest.fn(),
 };
 
 // Reset all mocks after each test
@@ -60,9 +42,7 @@ describe('test Search component', () => {
   it('renders Alert component if there is an error fetching results', async () => {
     server.use(
       // ESGF Search API - datasets
-      rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
-        res(ctx.status(404))
-      )
+      rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) => res(ctx.status(404)))
     );
 
     customRender(<Search {...defaultProps} />);
@@ -115,9 +95,8 @@ describe('test Search component', () => {
       textInputs: [],
     };
 
-    customRender(
-      <Search {...defaultProps} activeSearchQuery={emptySearchQuery} />
-    );
+    RecoilWrapper.modifyAtomValue(activeSearchQueryAtom.key, emptySearchQuery);
+    customRender(<Search {...defaultProps} />);
 
     // Check renders query string
     const queryString = await screen.findByText('No filters applied');
@@ -135,9 +114,7 @@ describe('test Search component', () => {
     const clearAllBtn = await screen.findByText('Clear All');
     expect(clearAllBtn).toBeTruthy();
 
-    await act(async () => {
-      await user.click(clearAllBtn);
-    });
+    await user.click(clearAllBtn);
 
     // Wait for search component to re-render
     await screen.findByTestId('search');
@@ -151,9 +128,7 @@ describe('test Search component', () => {
       response: {
         docs: new Array(20)
           .fill(rawSearchResultFixture())
-          .map(
-            (obj, index) => ({ ...obj, id: `id_${index}` } as RawSearchResult)
-          ),
+          .map((obj, index) => ({ ...obj, id: `id_${index}` } as RawSearchResult)),
         numFound: 20,
       },
     };
@@ -166,42 +141,19 @@ describe('test Search component', () => {
 
     customRender(<Search {...defaultProps} />);
 
-    // Check search component renders
-    const searchComponent = await screen.findByTestId('search');
-    expect(searchComponent).toBeTruthy();
-
-    // Wait for search to re-render
-    await screen.findByTestId('search-table');
-
     // Select the combobox drop down and update its value to render options
     const paginationList = await screen.findByRole('list');
-    expect(paginationList).toBeTruthy();
+    const pageSizeComboBox = await within(paginationList).findByRole('combobox');
 
-    // Select the combobox drop down, update its value, then click it
-    const pageSizeComboBox = await within(paginationList).findByRole(
-      'combobox'
-    );
-    expect(pageSizeComboBox).toBeTruthy();
+    await openDropdownList(user, pageSizeComboBox);
 
-    // Wait for the options to render, then select 20 / page
-    await selectDropdownOption(user, pageSizeComboBox, '20 / page');
+    await userEvent.click(await screen.findByTestId('pageSize-option-20'));
 
-    // Change back to 10 / page
-    await selectDropdownOption(user, pageSizeComboBox, '10 / page');
-
-    // Select the 'Next Page' button (only enabled if there are > 10 results)
-    const nextPage = await screen.findByRole('listitem', { name: 'Next Page' });
-    const nextPageBtn = await within(nextPage).findByRole('button');
-
-    await act(async () => {
-      await user.click(nextPageBtn);
-    });
-
-    // Wait for search table to re-render
-    await screen.findByTestId('search-table');
+    expect(screen.getByTestId('cart-items-row-11')).toBeInTheDocument();
   });
 
   it('handles selecting a row"s checkbox in the table and adding to the cart', async () => {
+    RecoilWrapper.modifyAtomValue(userCartAtom.key, []);
     customRender(<Search {...defaultProps} />);
 
     // Check search component renders
@@ -219,26 +171,19 @@ describe('test Search component', () => {
     expect(addCartBtn).toBeDisabled();
 
     // Select the first row
-    const firstRow = await screen.findByRole('row', {
-      name: getRowName('plus', 'question', 'foo', '3', '1', '1'),
-    });
+    const firstRow = await screen.findByTestId('cart-items-row-1');
+
     expect(firstRow).toBeTruthy();
 
     // Select the first row's checkbox
     const firstCheckBox = await within(firstRow).findByRole('checkbox');
     expect(firstCheckBox).toBeTruthy();
 
-    await act(async () => {
-      await user.click(firstCheckBox);
-    });
+    await user.click(firstCheckBox);
 
     // Check 'Add Selected to Cart' button is enabled and click it
-    expect(addCartBtn).toBeTruthy();
     expect(addCartBtn).toBeEnabled();
-
-    await act(async () => {
-      await user.click(addCartBtn);
-    });
+    await user.click(addCartBtn);
 
     // Wait for search component to re-render
     await screen.findByTestId('search');
@@ -264,7 +209,7 @@ describe('test Search component', () => {
 
   it('disables the "Add Selected to Cart" button when all rows are already in the cart', async () => {
     // Render the component with userCart full
-    customRender(<Search {...defaultProps} userCart={userCartFixture()} />);
+    customRender(<Search {...defaultProps} />);
 
     // Check the 'Add Selected to Cart' button is disabled
     const addCartBtn: HTMLButtonElement = await screen.findByRole('button', {
@@ -291,9 +236,29 @@ describe('test Search component', () => {
     });
     expect(saveBtn).toBeTruthy();
 
-    await act(async () => {
-      await user.click(saveBtn);
+    await user.click(saveBtn);
+
+    // Wait for search component to re-render
+    await screen.findByTestId('search');
+  });
+
+  it('handles saving a search query when unauthenticated', async () => {
+    customRender(<Search {...defaultProps} />, { usesRecoil: true, authenticated: true });
+
+    // Check search component renders
+    const searchComponent = await screen.findByTestId('search');
+    expect(searchComponent).toBeTruthy();
+
+    // Wait for search table to render
+    await screen.findByTestId('search-table');
+
+    // Click on save button
+    const saveBtn = await screen.findByRole('button', {
+      name: 'book Save Search',
     });
+    expect(saveBtn).toBeTruthy();
+
+    await user.click(saveBtn);
 
     // Wait for search component to re-render
     await screen.findByTestId('search');
@@ -309,15 +274,11 @@ describe('test Search component', () => {
     // Wait for search table to render
     await screen.findByTestId('search-table');
 
-    // Click on cop button
-    const copyBtn = await screen.findByRole('button', {
-      name: 'share-alt Copy Search',
-    });
+    // Click on copy button
+    const copyBtn = await screen.findByTestId('share-search-btn');
     expect(copyBtn).toBeTruthy();
 
-    await act(async () => {
-      await user.click(copyBtn);
-    });
+    await user.click(copyBtn);
 
     // Wait for search component to re-render
     await screen.findByTestId('search');

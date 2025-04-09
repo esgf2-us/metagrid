@@ -1,5 +1,5 @@
 import React from 'react';
-import { act, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
@@ -9,10 +9,7 @@ import NavBar, { Props } from './index';
 const user = userEvent.setup();
 
 const defaultProps: Props = {
-  numCartItems: 0,
-  numSavedSearches: 0,
   onTextSearch: jest.fn(),
-  supportModalVisible: jest.fn(),
 };
 
 it('renders LeftMenu and RightMenu components', async () => {
@@ -26,9 +23,7 @@ it('renders LeftMenu and RightMenu components', async () => {
 });
 
 it('renders error message when projects can"t be fetched', async () => {
-  server.use(
-    rest.get(apiRoutes.projects.path, (_req, res, ctx) => res(ctx.status(404)))
-  );
+  server.use(rest.get(apiRoutes.projects.path, (_req, res, ctx) => res(ctx.status(404))));
   customRender(<NavBar {...defaultProps} />);
 
   const alertComponent = await screen.findByRole('img', {
@@ -47,9 +42,7 @@ it('opens the drawer onClick and closes with onClose', async () => {
   const drawerBtn = await screen.findByRole('img', { name: 'menu-unfold' });
   expect(drawerBtn).toBeTruthy();
 
-  await act(async () => {
-    await user.click(drawerBtn);
-  });
+  await user.click(drawerBtn);
 
   // Close drawer by clicking on mask
   // It is not best practice to use querySelect to query elements. However, this
@@ -61,8 +54,6 @@ it('opens the drawer onClick and closes with onClose', async () => {
   const drawerMask = document.querySelector('div.ant-drawer-mask');
   expect(drawerMask).not.toBeNull();
   if (drawerMask !== null) {
-    await act(async () => {
-      await user.click(drawerMask);
-    });
+    await user.click(drawerMask);
   }
 });
