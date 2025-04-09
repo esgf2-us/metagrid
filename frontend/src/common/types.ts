@@ -8,3 +8,23 @@ export enum AppPage {
   'SavedSearches',
   'NodeStatus',
 }
+
+export type FrontendConfig = {
+  // General
+  AUTHENTICATION_METHOD: 'keycloak' | 'globus';
+  GOOGLE_ANALYTICS_TRACKING_ID: string | null;
+  FOOTER_TEXT: string | null;
+
+  // Globus
+  GLOBUS_NODES: string[];
+  GLOBUS_CLIENT_ID: string;
+
+  // Keycloak
+  KEYCLOAK_REALM: string;
+  KEYCLOAK_URL: string;
+  KEYCLOAK_CLIENT_ID: string;
+
+  // HotJar
+  HOTJAR_ID: number | null;
+  HOTJAR_SV: number | null;
+};

@@ -1,4 +1,4 @@
-import { act, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { userSearchQueryFixture } from '../../test/mock/fixtures';
@@ -11,9 +11,8 @@ const user = userEvent.setup();
 
 const defaultProps: Props = {
   searchQuery: userSearchQueryFixture(),
+  onHandleRemoveSearchQuery: jest.fn(),
   index: 0,
-  onRunSearchQuery: jest.fn(),
-  onRemoveSearchQuery: jest.fn(),
 };
 
 beforeEach(() => {
@@ -30,32 +29,26 @@ beforeEach(() => {
   );
 });
 
-it('renders component and handles button clicks', async () => {
+it('renders components', async () => {
   customRender(<SearchesCard {...defaultProps} />);
 
-  // Check search button renders and click it
+  // Check search button renders
   const searchBtn = await screen.findByRole('img', { name: 'search' });
   expect(searchBtn).toBeTruthy();
 
-  await act(async () => {
-    await user.click(searchBtn);
-  });
+  // Shows number of files
+  const filenameSearchesField = (await screen.findByText('Filename Searches:')).parentNode;
+  expect(filenameSearchesField?.textContent).toEqual('Filename Searches: var');
 
   // Check delete button renders and click it
   const deleteBtn = await screen.findByRole('img', { name: 'delete' });
   expect(deleteBtn).toBeTruthy();
 
-  await act(async () => {
-    await user.click(deleteBtn);
-  });
+  await user.click(deleteBtn);
 });
 
 it('displays alert error when api fails to return response', async () => {
-  server.use(
-    rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
-      res(ctx.status(404))
-    )
-  );
+  server.use(rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) => res(ctx.status(404))));
 
   customRender(<SearchesCard {...defaultProps} />);
 
@@ -69,10 +62,10 @@ it('displays "N/A" for Filename Searches when none are applied', async () => {
     <SearchesCard
       {...defaultProps}
       searchQuery={userSearchQueryFixture({ filenameVars: undefined })}
-    />
+    />,
+    { usesRecoil: true }
   );
   // Shows number of files
-  const filenameSearchesField = (await screen.findByText('Filename Searches:'))
-    .parentNode;
+  const filenameSearchesField = (await screen.findByText('Filename Searches:')).parentNode;
   expect(filenameSearchesField?.textContent).toEqual('Filename Searches: N/A');
 });

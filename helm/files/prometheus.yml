@@ -1,0 +1,22 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+# The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+- job_name: 'http_2xx'
+  metrics_path: /probe
+  scrape_interval: 3m
+  params:
+    module: [ http_2xx ] # Look for an HTTP 2xx response.
+  file_sd_configs:
+  - files:
+    - /etc/prometheus/esgf_node_status_targets.yml
+
+  relabel_configs:
+  - source_labels: [ __address__ ]
+    target_label: __param_target
+  - source_labels: [ __param_target ]
+    target_label: target
+  - target_label: __address__
+    replacement: localhost:9115

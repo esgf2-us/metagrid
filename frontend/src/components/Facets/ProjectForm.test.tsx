@@ -1,11 +1,8 @@
 import React from 'react';
-import { act, fireEvent, screen } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ResponseError } from '../../api';
-import {
-  activeSearchQueryFixture,
-  projectsFixture,
-} from '../../test/mock/fixtures';
+import { activeSearchQueryFixture, projectsFixture } from '../../test/mock/fixtures';
 import { mapHTTPErrorCodes } from '../../api/routes';
 import ProjectsForm, { Props } from './ProjectForm';
 import customRender from '../../test/custom-render';
@@ -35,11 +32,9 @@ it('Runs project form submit when changing projects', async () => {
       {...defaultProps}
       projectsFetched={{ results: projectsFixture() }}
       onFinish={(projName) => {
-        act(() => {
-          showNoticeStatic(`${projName} was selected!`, {
-            duration: 1,
-            type: 'success',
-          });
+        showNoticeStatic(`${projName} was selected!`, {
+          duration: 1,
+          type: 'success',
         });
       }}
     />
@@ -56,9 +51,7 @@ it('Runs project form submit when changing projects', async () => {
 
   // Select the 3rd project in the drop-down
   const option3 = await screen.findByText('test3');
-  await act(async () => {
-    await user.click(option3);
-  });
+  await user.click(option3);
 
   // The 3rd project should now be selected
   const option3Selected = await screen.findByText('test3 was selected!');
@@ -69,9 +62,7 @@ it('renders error message when projects can"t be fetched', async () => {
   customRender(
     <ProjectsForm
       {...defaultProps}
-      apiError={
-        new Error(mapHTTPErrorCodes('service', 'generic')) as ResponseError
-      }
+      apiError={new Error(mapHTTPErrorCodes('service', 'generic')) as ResponseError}
     />
   );
 

@@ -65,10 +65,7 @@ const LeftMenu: React.FC<React.PropsWithChildren<Props>> = ({
 
   if (projects) {
     return (
-      <div
-        data-testid="left-menu"
-        className={navBarTargets.topSearchBar.class()}
-      >
+      <div data-testid="left-menu" className={navBarTargets.topSearchBar.class()}>
         <Form
           initialValues={{
             projectTextInput: projects[0].name,
@@ -93,11 +90,9 @@ const LeftMenu: React.FC<React.PropsWithChildren<Props>> = ({
                 })}
               />
             </Form.Item>
-            <Form.Item
-              name="text"
-              rules={[{ required: true, message: 'Text is required' }]}
-            >
+            <Form.Item name="text" rules={[{ required: true, message: 'Text is required' }]}>
               <Input
+                data-testid="left-menu-keyword-search-input"
                 style={{ minWidth: '200px' }}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
@@ -108,7 +103,7 @@ const LeftMenu: React.FC<React.PropsWithChildren<Props>> = ({
               <Button
                 type="primary"
                 htmlType="submit"
-                icon={<SearchOutlined />}
+                icon={<SearchOutlined data-testid="left-menu-keyword-search-submit" />}
               ></Button>
             </Form.Item>
           </Space>

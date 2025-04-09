@@ -1,10 +1,14 @@
 /* Component styling */
 .navbar {
-  margin-top: 5px;
   margin-bottom: 3px;
   width: 100%;
   height: 65px;
   box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+  background: #fff;
+}
+
+.dark-mode {
+  background: #141414;
 }
 
 .navbar-logo {
@@ -74,16 +78,22 @@
 
 .badge .ant-badge-count {
   background-color: #fff;
-  color: #999;
+  color: #777;
   box-shadow: 0 0 1px 1px #d9d9d9 inset;
 }
 
-.ant-menu-item:hover button:hover {
-  background-color: #fff;
+.dark-mode .badge .ant-badge-count {
+  background-color: #555;
+  color: #fff;
 }
 
 .ant-menu-item:hover .ant-badge .ant-badge-count {
-  background-color: #fff;
-  color: #999;
+  background-color: #ddd;
+  color: #333;
   box-shadow: 0 0 1px 1px #d9d9d9 inset;
+}
+
+.dark-mode .ant-menu-item:hover .ant-badge .ant-badge-count {
+  background-color: #ddd;
+  color: #555;
 }

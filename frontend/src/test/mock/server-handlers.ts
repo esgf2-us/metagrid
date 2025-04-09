@@ -19,16 +19,16 @@ import {
   userSearchQueriesFixture,
   userSearchQueryFixture,
 } from './fixtures';
-import { tempStorageGetMock, tempStorageSetMock } from '../jestTestFunctions';
+import { tempStorageGetMock, tempStorageSetMock } from './mockStorage';
 
 const handlers = [
-  rest.post(apiRoutes.keycloakAuth.path, (_req, res, ctx) =>
+  rest.post(apiRoutes.keycloakAuth.path, async (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(userAuthFixture()))
   ),
-  rest.get(apiRoutes.globusAuth.path, (_req, res, ctx) =>
+  rest.get(apiRoutes.globusAuth.path, async (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(userAuthFixture()))
   ),
-  rest.get(apiRoutes.globusSearchEndpoints.path, (_req, res, ctx) => {
+  rest.get(apiRoutes.globusSearchEndpoints.path, async (_req, res, ctx) => {
     // For testing multiple search results
     const data = new URLSearchParams(_req.url.search);
 
@@ -77,13 +77,13 @@ const handlers = [
         return res(ctx.status(200), ctx.json([]));
     }
   }),
-  rest.post(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
+  rest.post(apiRoutes.globusTransfer.path, async (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(globusTransferResponseFixture()))
   ),
-  rest.get(apiRoutes.userInfo.path, (_req, res, ctx) =>
+  rest.get(apiRoutes.userInfo.path, async (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(userInfoFixture()))
   ),
-  rest.post(apiRoutes.tempStorageGet.path, (_req, res, ctx) => {
+  rest.post(apiRoutes.tempStorageGet.path, async (_req, res, ctx) => {
     const data = _req.body as { dataKey: string; dataValue: unknown };
     if (data && data.dataKey) {
       const keyName = data.dataKey;
@@ -93,7 +93,7 @@ const handlers = [
     }
     return res(ctx.status(400), ctx.json('Load failed!'));
   }),
-  rest.post(apiRoutes.tempStorageSet.path, (_req, res, ctx) => {
+  rest.post(apiRoutes.tempStorageSet.path, async (_req, res, ctx) => {
     const reqBody = _req.body as string;
     const data = JSON.parse(reqBody) as { dataKey: string; dataValue: unknown };
     if (data && data.dataKey && data.dataValue) {
@@ -104,31 +104,29 @@ const handlers = [
     }
     return res(ctx.status(400), ctx.json({ data: 'Save failed!' }));
   }),
-  rest.get(apiRoutes.userInfo.path, (_req, res, ctx) =>
+  rest.get(apiRoutes.userInfo.path, async (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(userInfoFixture()))
   ),
-  rest.get(apiRoutes.userCart.path, (_req, res, ctx) =>
+  rest.get(apiRoutes.userCart.path, async (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(rawUserCartFixture()))
   ),
-  rest.patch(apiRoutes.userCart.path, (_req, res, ctx) =>
+  rest.patch(apiRoutes.userCart.path, async (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(rawUserCartFixture()))
   ),
-  rest.get(apiRoutes.userSearches.path, (_req, res, ctx) =>
+  rest.get(apiRoutes.userSearches.path, async (_req, res, ctx) =>
     res(ctx.status(200), ctx.json({ results: userSearchQueriesFixture() }))
   ),
-  rest.post(apiRoutes.userSearches.path, (_req, res, ctx) =>
+  rest.post(apiRoutes.userSearches.path, async (_req, res, ctx) =>
     res(ctx.status(201), ctx.json(userSearchQueryFixture()))
   ),
-  rest.delete(apiRoutes.userSearch.path, (_req, res, ctx) =>
-    res(ctx.status(204))
-  ),
-  rest.get(apiRoutes.projects.path, (_req, res, ctx) =>
+  rest.delete(apiRoutes.userSearch.path, async (_req, res, ctx) => res(ctx.status(204))),
+  rest.get(apiRoutes.projects.path, async (_req, res, ctx) =>
     res(ctx.status(200), ctx.json({ results: projectsFixture() }))
   ),
-  rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
+  rest.get(apiRoutes.esgfSearch.path, async (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(ESGFSearchAPIFixture()))
   ),
-  rest.post(apiRoutes.citation.path, (_req, res, ctx) => {
+  rest.post(apiRoutes.citation.path, async (_req, res, ctx) => {
     // For testing more than one set of creators
     const data = _req.body as { [key: string]: unknown };
     if (data && data.citurl) {
@@ -167,18 +165,18 @@ const handlers = [
 
     return res(ctx.status(200), ctx.json(rawCitationFixture()));
   }),
-  rest.post(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(200))),
-  rest.get(apiRoutes.nodeStatus.path, (_req, res, ctx) =>
+  rest.post(apiRoutes.wget.path, async (_req, res, ctx) => res(ctx.status(200))),
+  rest.get(apiRoutes.nodeStatus.path, async (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(rawNodeStatusFixture()))
   ),
+  rest.get(apiRoutes.introMarkdown.path, async (_req, res, ctx) =>
+    res(ctx.status(200), ctx.body('Some Markdown'))
+  ),
   // Default fallback handler
-  rest.get('*', (req, res, ctx) => {
+  rest.get('*', async (req, res, ctx) => {
     // eslint-disable-next-line no-console
     // console.error(`Please add request handler for ${req.url.toString()}`);
-    return res(
-      ctx.status(500),
-      ctx.json({ error: 'You must add request handler.' })
-    );
+    return res(ctx.status(500), ctx.json({ error: 'You must add request handler.' }));
   }),
 ];
 

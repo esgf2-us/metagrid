@@ -26,20 +26,15 @@ import weekOfYear from 'dayjs/plugin/weekOfYear';
 import weekYear from 'dayjs/plugin/weekYear';
 
 import React from 'react';
+import { useRecoilState, useRecoilValue } from 'recoil';
 import { leftSidebarTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
-import { NodeStatusArray } from '../NodeStatus/types';
-import {
-  ActiveSearchQuery,
-  ResultType,
-  VersionDate,
-  VersionType,
-} from '../Search/types';
+import { ActiveSearchQuery, ResultType, VersionType } from '../Search/types';
 import { ActiveFacets, ParsedFacets } from './types';
-import { globusEnabledNodes } from '../../env';
-import { showNotice } from '../../common/utils';
+import { showError, showNotice } from '../../common/utils';
+import { activeSearchQueryAtom, availableFacetsAtom } from '../App/recoil/atoms';
 
 dayjs.extend(customParseFormat);
 dayjs.extend(advancedFormat);
@@ -57,20 +52,6 @@ const styles: CSSinJS = {
   formTitle: { fontWeight: 'bold', textTransform: 'capitalize' },
   applyBtn: { marginBottom: '12px' },
   collapseContainer: { marginTop: '5px' },
-};
-
-export type Props = {
-  activeSearchQuery: ActiveSearchQuery;
-  availableFacets: ParsedFacets;
-  nodeStatus?: NodeStatusArray;
-  onSetFilenameVars: (filenameVar: string) => void;
-  onSetGeneralFacets: (
-    versionType: VersionType,
-    resultType: ResultType,
-    minVersionDate: VersionDate,
-    maxVersionDate: VersionDate
-  ) => void;
-  onSetActiveFacets: (activeFacets: ActiveFacets) => void;
 };
 
 /**
@@ -93,10 +74,7 @@ export const humanizeFacetNames = (str: string): string => {
   return frags.join(' ');
 };
 
-export const formatDate = (
-  date: string | Dayjs,
-  toString: boolean
-): string | Dayjs => {
+export const formatDate = (date: string | Dayjs, toString: boolean): string | Dayjs => {
   const format = 'YYYYMMDD';
 
   if (toString) {
@@ -105,14 +83,24 @@ export const formatDate = (
   return dayjs(date, format);
 };
 
-const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
-  activeSearchQuery,
-  availableFacets,
-  nodeStatus,
-  onSetFilenameVars,
-  onSetGeneralFacets,
-  onSetActiveFacets,
-}) => {
+const FacetsForm: React.FC = () => {
+  // Recoil state
+  const [activeSearchQuery, setActiveSearchQuery] = useRecoilState<ActiveSearchQuery>(
+    activeSearchQueryAtom
+  );
+
+  // let setGlobusReady = false;
+  // if (
+  //   activeSearchQuery.activeFacets.data_node &&
+  //   window.METAGRID.GLOBUS_NODES.length &&
+  //   window.METAGRID.GLOBUS_NODES.length > 0
+  // ) {
+  //   setGlobusReady = window.METAGRID.GLOBUS_NODES.every((node: string) =>
+  //     activeSearchQuery.activeFacets.data_node.includes(node)
+  //   );
+  // }
+
+  // Local variables
   const [messageApi, contextHolder] = message.useMessage();
 
   const [generalFacetsForm] = Form.useForm();
@@ -138,27 +126,30 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
   >([]);
   const [expandAll, setExpandAll] = React.useState<boolean>(true);
 
-  type DatePickerReturnType =
-    | [null, null]
-    | [Dayjs, null]
-    | [null, Dayjs]
-    | [Dayjs, Dayjs];
+  const availableFacets: ParsedFacets = useRecoilValue(availableFacetsAtom) as ParsedFacets;
+
+  type DatePickerReturnType = [null, null] | [Dayjs, null] | [null, Dayjs] | [Dayjs, Dayjs];
+
+  const facetsByGroup = activeSearchQuery.project.facetsByGroup as {
+    [key: string]: string[];
+  };
 
   // Convert using moment.js to for the initial value of the date picker
   const { minVersionDate, maxVersionDate } = activeSearchQuery;
   const initialVersionDateRange = [
-    minVersionDate
-      ? formatDate(minVersionDate, false)
-      : (minVersionDate as null),
-    maxVersionDate
-      ? formatDate(maxVersionDate, false)
-      : (maxVersionDate as null),
+    minVersionDate ? formatDate(minVersionDate, false) : (minVersionDate as null),
+    maxVersionDate ? formatDate(maxVersionDate, false) : (maxVersionDate as null),
   ];
 
-  const handleOnFinishFilenameVarForm = (values: {
-    [key: string]: string;
-  }): void => {
-    onSetFilenameVars(values.filenameVar);
+  const handleOnFinishFilenameVarForm = (values: { [key: string]: string }): void => {
+    if (activeSearchQuery.filenameVars.includes(values.filenameVar as never)) {
+      showError(messageApi, `Input "${values.filenameVar}" has already been applied`);
+    } else {
+      setActiveSearchQuery({
+        ...activeSearchQuery,
+        filenameVars: [...activeSearchQuery.filenameVars, values.filenameVar],
+      });
+    }
 
     setFilenameVar('');
     filenameVarForm.setFieldsValue({ filenameVar: '' });
@@ -168,12 +159,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
     versionType: VersionType;
     resultType: ResultType;
     versionDateRange: DatePickerReturnType;
-    [key: string]:
-      | VersionType
-      | ResultType
-      | ActiveFacets
-      | []
-      | DatePickerReturnType;
+    [key: string]: VersionType | ResultType | ActiveFacets | [] | DatePickerReturnType;
   }): void => {
     const {
       versionType: newVersionType,
@@ -185,43 +171,44 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
     /* istanbul ignore else */
     if (versionDateRange) {
       const [minDate, maxDate] = versionDateRange;
-      newMinVersionDate = minDate
-        ? (formatDate(minDate, true) as string)
-        : minDate;
-      newMaxVersionDate = maxDate
-        ? (formatDate(maxDate, true) as string)
-        : maxDate;
+      newMinVersionDate = minDate ? (formatDate(minDate, true) as string) : minDate;
+      newMaxVersionDate = maxDate ? (formatDate(maxDate, true) as string) : maxDate;
     }
 
-    onSetGeneralFacets(
-      newVersionType,
-      newResultType,
-      newMinVersionDate,
-      newMaxVersionDate
-    );
+    setActiveSearchQuery({
+      ...activeSearchQuery,
+      versionType: newVersionType,
+      resultType: newResultType,
+      minVersionDate: newMinVersionDate,
+      maxVersionDate: newMaxVersionDate,
+    });
   };
 
-  const handleOnSelectAvailableFacetsForm = (
-    facet: string,
-    options: string[] | []
-  ): void => {
+  const handleOnSelectAvailableFacetsForm = (facet: string, options: string[] | []): void => {
     setActiveDropdownValue([facet, options]);
   };
 
   const handleOnGlobusReadyChanged = (event: RadioChangeEvent): void => {
     const globusOnly = event.target.value as boolean;
     setGlobusReadyOnly(globusOnly);
-
     if (globusOnly) {
-      const newActiveFacets = activeSearchQuery.activeFacets as ActiveFacets;
-      onSetActiveFacets({
-        ...newActiveFacets,
-        dataNode: globusEnabledNodes,
-      } as ActiveFacets);
+      setActiveSearchQuery({
+        ...activeSearchQuery,
+        activeFacets: {
+          ...activeSearchQuery.activeFacets,
+          data_node: window.METAGRID.GLOBUS_NODES,
+        },
+      });
+      setActiveDropdownValue(['data_node', window.METAGRID.GLOBUS_NODES]);
     } else {
-      const newActiveFacets = activeSearchQuery.activeFacets as ActiveFacets;
-      delete newActiveFacets.dataNode;
-      onSetActiveFacets(newActiveFacets);
+      setActiveSearchQuery({
+        ...activeSearchQuery,
+        activeFacets: {
+          ...activeSearchQuery.activeFacets,
+          data_node: [],
+        },
+      } as ActiveSearchQuery);
+      setActiveDropdownValue(['data_node', []]);
     }
   };
 
@@ -232,35 +219,43 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
   React.useEffect(() => {
     generalFacetsForm.resetFields();
     availableFacetsForm.resetFields();
+    if (window.METAGRID.GLOBUS_NODES && window.METAGRID.GLOBUS_NODES.length > 0) {
+      if (
+        activeSearchQuery &&
+        activeSearchQuery.activeFacets &&
+        activeSearchQuery.activeFacets.data_node &&
+        activeSearchQuery.activeFacets.data_node.every((node: string) =>
+          window.METAGRID.GLOBUS_NODES.includes(node)
+        )
+      ) {
+        setGlobusReadyOnly(true);
+      } else {
+        setGlobusReadyOnly(false);
+      }
+    }
   }, [generalFacetsForm, availableFacetsForm, activeSearchQuery]);
 
   React.useEffect(() => {
     if (!dropdownIsOpen && activeDropdownValue) {
       const [facet, options] = activeDropdownValue;
-      const newActiveFacets = activeSearchQuery.activeFacets as ActiveFacets;
+      const newActiveFacets: ActiveFacets = activeSearchQuery.activeFacets;
       /* istanbul ignore else */
       if (options.length === 0) {
-        delete newActiveFacets[facet];
-        onSetActiveFacets(newActiveFacets);
+        const { [facet]: remove, ...updatedFacets } = newActiveFacets;
+
+        setActiveSearchQuery({ ...activeSearchQuery, activeFacets: updatedFacets });
       } else if (options.length > 0) {
-        onSetActiveFacets({
-          ...newActiveFacets,
-          [facet]: options,
-        } as ActiveFacets);
+        setActiveSearchQuery({
+          ...activeSearchQuery,
+          activeFacets: {
+            ...newActiveFacets,
+            [facet]: options,
+          },
+        });
       }
       setActiveDropdownValue(null);
     }
-  }, [
-    dropdownIsOpen,
-    onSetActiveFacets,
-    activeSearchQuery,
-    activeDropdownValue,
-    setActiveDropdownValue,
-  ]);
-
-  const facetsByGroup = activeSearchQuery.project.facetsByGroup as {
-    [key: string]: string[];
-  };
+  }, [dropdownIsOpen, activeDropdownValue, setActiveDropdownValue]);
 
   // Used to control text length of the drop-down items
   // Tooltip is shown if the length is above this threshold
@@ -275,22 +270,21 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
           ...activeSearchQuery.activeFacets,
         }}
       >
-        {globusEnabledNodes.length > 0 && (
+        {window.METAGRID.GLOBUS_NODES.length > 0 && (
           <div className={leftSidebarTargets.filterByGlobusTransfer.class()}>
             <h3>Filter By Transfer Options</h3>
             <Row>
               <Col>
-                <Radio.Group
-                  onChange={handleOnGlobusReadyChanged}
-                  value={globusReadyOnly}
-                >
+                <Radio.Group onChange={handleOnGlobusReadyChanged} value={globusReadyOnly}>
                   <Radio
+                    key="any"
                     value={false}
                     className={leftSidebarTargets.filterByGlobusTransferAny.class()}
                   >
                     Any
                   </Radio>
                   <Radio
+                    key="globus-ready"
                     value
                     className={leftSidebarTargets.filterByGlobusTransferOnly.class()}
                   >
@@ -312,9 +306,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                 className={leftSidebarTargets.facetFormExpandAllBtn.class()}
                 size="small"
                 onClick={() => {
-                  setActivePanels(
-                    Object.keys(facetsByGroup).map((panel) => panel)
-                  );
+                  setActivePanels(Object.keys(facetsByGroup).map((panel) => panel));
                   setExpandAll(false);
                 }}
               >
@@ -359,8 +351,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                     const facetOptions = availableFacets[facet];
 
                     const isOptionalforDatasets =
-                      facetOptions.length > 0 &&
-                      facetOptions[0].includes('none');
+                      facetOptions.length > 0 && facetOptions[0].includes('none');
                     const facetNameHumanized = humanizeFacetNames(facet);
                     return (
                       <Form.Item
@@ -373,9 +364,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                               size="small"
                               style={{ marginLeft: '5px' }}
                               icon={
-                                <Tooltip
-                                  title={`Copy ${facetNameHumanized}s to clipboard`}
-                                >
+                                <Tooltip title={`Copy ${facetNameHumanized}s to clipboard`}>
                                   <CopyOutlined style={{ fontSize: '12px' }} />
                                 </Tooltip>
                               }
@@ -394,11 +383,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                                     messageApi,
                                     `${facetNameHumanized}s copied to clipboard!`,
                                     {
-                                      icon: (
-                                        <CopyOutlined
-                                          style={styles.messageAddIcon}
-                                        />
-                                      ),
+                                      icon: <CopyOutlined style={styles.messageAddIcon} />,
                                     }
                                   );
                                 }
@@ -428,9 +413,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
                             triggerNode.parentElement
                           }
-                          onDropdownVisibleChange={(open) =>
-                            setDropdownIsOpen(open)
-                          }
+                          onDropdownVisibleChange={(open) => setDropdownIsOpen(open)}
                           onChange={(value: string[] | []) => {
                             handleOnSelectAvailableFacetsForm(facet, value);
                           }}
@@ -438,32 +421,22 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                             let optionOutput: string | React.ReactElement = (
                               <>
                                 {variable[0]}
-                                <span style={styles.facetCount}>
-                                  ({variable[1]})
-                                </span>
+                                <span style={styles.facetCount}>({variable[1]})</span>
                               </>
                             );
 
                             // If the option output name is very long, use a tooltip
                             const vLength = variable[0].length - 2;
-                            const cLength =
-                              variable[1].toString().length * 1.5 + 2;
+                            const cLength = variable[1].toString().length * 1.5 + 2;
                             if (vLength > maxItemLength - cLength) {
-                              const innerTitle = variable[0].substring(
-                                0,
-                                maxItemLength - cLength
-                              );
+                              const innerTitle = variable[0].substring(0, maxItemLength - cLength);
                               optionOutput = (
                                 <Tooltip
-                                  overlayInnerStyle={{
-                                    width: 'max-content',
-                                  }}
+                                  styles={{ body: { width: 'max-content' } }}
                                   title={variable[0]}
                                 >
                                   {innerTitle}...
-                                  <span style={styles.facetCount}>
-                                    ({variable[1]})
-                                  </span>
+                                  <span style={styles.facetCount}>({variable[1]})</span>
                                 </Tooltip>
                               );
                             }
@@ -471,13 +444,8 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                             // The data node facet has a unique tooltip overlay to show the status of the highlighted node
                             if (facet === 'data_node') {
                               optionOutput = (
-                                <StatusToolTip
-                                  nodeStatus={nodeStatus}
-                                  dataNode={variable[0]}
-                                >
-                                  <span style={styles.facetCount}>
-                                    ({variable[1]})
-                                  </span>
+                                <StatusToolTip dataNode={variable[0]}>
+                                  <span style={styles.facetCount}>({variable[1]})</span>
                                 </StatusToolTip>
                               );
                             }
@@ -485,9 +453,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                               key: variable[0],
                               value: variable[0],
                               label: (
-                                <span data-testid={`${facet}_${variable[0]}`}>
-                                  {optionOutput}{' '}
-                                </span>
+                                <span data-testid={`${facet}_${variable[0]}`}>{optionOutput} </span>
                               ),
                             };
                           })}
@@ -534,8 +500,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                     label="Version Type"
                     name="versionType"
                     tooltip={{
-                      title:
-                        'By default, only the latest version of a dataset is returned',
+                      title: 'By default, only the latest version of a dataset is returned',
                       trigger: 'hover',
                     }}
                   >
@@ -565,11 +530,11 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                         },
                         {
                           value: 'originals only' as ResultType,
-                          label: 'Originals only',
+                          label: 'Originals Only',
                         },
                         {
                           value: 'replicas only' as ResultType,
-                          label: 'Originals and Replicas',
+                          label: 'Replicas Only',
                         },
                       ]}
                     />
@@ -604,7 +569,10 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
             {
               key: 'filename',
               label: (
-                <div className={leftSidebarTargets.facetFormFilename.class()}>
+                <div
+                  className={leftSidebarTargets.facetFormFilename.class()}
+                  data-testid="filename-collapse"
+                >
                   {humanizeFacetNames('filename')}
                 </div>
               ),
@@ -617,11 +585,9 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                   tooltip={{
                     title: (
                       <p>
-                        Use file or variable names to filter a dataset&apos;s
-                        files under the{' '}
-                        <RightCircleOutlined></RightCircleOutlined> icon. For
-                        multiple names, add them individually or as a single
-                        comma-separated input (e.g. cct, cl).
+                        Use file or variable names to filter a dataset&apos;s files under the{' '}
+                        <RightCircleOutlined></RightCircleOutlined> icon. For multiple names, add
+                        them individually or as a single comma-separated input (e.g. cct, cl).
                       </p>
                     ),
                     trigger: 'hover',
@@ -640,7 +606,7 @@ const FacetsForm: React.FC<React.PropsWithChildren<Props>> = ({
                       <Button
                         type="primary"
                         htmlType="submit"
-                        icon={<SearchOutlined />}
+                        icon={<SearchOutlined data-testid="filename-search-submit-btn" />}
                       ></Button>
                     </Col>
                   </Row>

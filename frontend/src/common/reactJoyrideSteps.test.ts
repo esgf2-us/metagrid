@@ -1,6 +1,4 @@
-import { mockConfig } from '../test/jestTestFunctions';
 import {
-  getCurrentAppPage,
   delay,
   elementExists,
   elementHasState,
@@ -9,8 +7,9 @@ import {
   createCartItemsTour,
   createSearchCardTour,
   createNodeStatusTour,
+  defaultTarget,
 } from './reactJoyrideSteps';
-import { AppPage } from './types';
+import { mockConfig } from '../test/jestTestFunctions';
 
 describe('Test reactJoyrideStep util functions', () => {
   it('returns a promise of specific delay length', async () => {
@@ -20,34 +19,6 @@ describe('Test reactJoyrideStep util functions', () => {
 
     expect(nextTime - time).toBeGreaterThanOrEqual(450);
     expect(nextTime - time).toBeLessThan(1000);
-  });
-
-  it('returns appropriate page name based on window location', () => {
-    expect(getCurrentAppPage()).toEqual(-1);
-
-    // eslint-disable-next-line
-    window = Object.create(window);
-    const url = 'https://test.com/search';
-    Object.defineProperty(window, 'location', {
-      value: {
-        href: url,
-        pathname: 'testing/search',
-      },
-      writable: true,
-    });
-    expect(window.location.href).toEqual(url);
-    expect(window.location.pathname).toEqual('testing/search');
-
-    // Test page names
-    expect(getCurrentAppPage()).toEqual(AppPage.Main);
-    window.location.pathname = 'testing/cart/items';
-    expect(getCurrentAppPage()).toEqual(AppPage.Cart);
-    window.location.pathname = 'testing/cart/searches';
-    expect(getCurrentAppPage()).toEqual(AppPage.SavedSearches);
-    window.location.pathname = 'testing/cart/nodes';
-    expect(getCurrentAppPage()).toEqual(AppPage.NodeStatus);
-    window.location.pathname = 'testing/bad';
-    expect(getCurrentAppPage()).toEqual(-1);
   });
 
   it('returns true if an element exists, otherwise false', () => {
@@ -69,9 +40,7 @@ describe('Test reactJoyrideStep util functions', () => {
 
     expect(elementExists('testElement')).toEqual(true);
     expect(elementHasState('invalidClass', 'target')).toEqual(false);
-    expect(
-      elementHasState('testElement target-state_testing', 'testing')
-    ).toEqual(true);
+    expect(elementHasState('testElement target-state_testing', 'testing')).toEqual(true);
   });
 
   it('clicks the specified element', () => {
@@ -93,13 +62,13 @@ describe('Test reactJoyrideStep util functions', () => {
     document.body.appendChild(root);
 
     // Test main tour that has no globus nodes
-    mockConfig.globusEnabledNodes = [];
+    mockConfig.GLOBUS_NODES = [];
 
     const mainTourNoGlobus = createMainPageTour();
     expect(mainTourNoGlobus).toBeTruthy();
 
     // Test main tour that includes globus options
-    mockConfig.globusEnabledNodes = ['node1', 'node2', 'node3'];
+    mockConfig.GLOBUS_NODES = ['node1', 'node2', 'node3'];
 
     const mainTourWithGlobus = createMainPageTour();
     expect(mainTourWithGlobus).toBeTruthy();
@@ -112,5 +81,9 @@ describe('Test reactJoyrideStep util functions', () => {
 
     // Made the main table empty
     document.getElementById('root')?.appendChild(mainTable);
+  });
+
+  it('defaultTarget should have correct selector', () => {
+    expect(defaultTarget.selector()).toBe('#root .navbar-logo');
   });
 });

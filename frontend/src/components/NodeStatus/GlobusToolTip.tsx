@@ -1,98 +1,41 @@
 import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
 import React from 'react';
 import { Tooltip } from 'antd';
-import { globusEnabledNodes } from '../../env';
+import { useRecoilState } from 'recoil';
+import { isDarkModeAtom } from '../App/recoil/atoms';
+import { lightModeGreen, lightModeRed, darkModeGreen, darkModeRed } from './StatusToolTip';
 
-export type Props = {
-  dataNode: string;
-  children?: React.ReactNode;
-};
+export type Props = { dataNode: string };
 
-export function globusEnabled(node: string | null | undefined): boolean {
-  if (node) {
-    return globusEnabledNodes.includes(node);
-  }
-  return false;
-}
+const GlobusToolTip: React.FC<Props> = ({ dataNode }) => {
+  const isEnabled = window.METAGRID.GLOBUS_NODES.includes(dataNode);
+  const [isDarkMode] = useRecoilState<boolean>(isDarkModeAtom);
 
-const GlobusToolTip: React.FC<React.PropsWithChildren<Props>> = ({
-  dataNode,
-  children,
-}) => {
-  /* istanbul ignore else*/
-  if (globusEnabled(dataNode)) {
-    if (children) {
-      return (
-        <Tooltip
-          title={
-            <>
-              Data Node:<div>{dataNode}</div>
-              Globus Transfer Available
-            </>
-          }
-          color="green"
-        >
-          <span>
-            <CheckCircleTwoTone twoToneColor="#52c41a" />
-            {dataNode}
-            {children}
-          </span>
-        </Tooltip>
-      );
-    }
-    return (
-      <Tooltip
-        title={
-          <>
-            Data Node:<div>{dataNode}</div>
-            Globus Transfer Available
-          </>
-        }
-        color="green"
-      >
-        <span>
-          <CheckCircleTwoTone twoToneColor="#52c41a" />
-        </span>
-      </Tooltip>
-    );
-  }
+  const enabledColor = isDarkMode ? darkModeGreen : lightModeGreen;
+  const disabledColor = isDarkMode ? darkModeRed : lightModeRed;
 
-  if (children) {
-    return (
-      <>
-        <Tooltip
-          title={
-            <>
-              Data Node:<div>{dataNode}</div>
-              Globus Transfer Unavailable
-            </>
-          }
-          color="red"
-        >
-          <span>
-            <CloseCircleTwoTone twoToneColor="#eb2f96" /> {dataNode} {children}
-          </span>
-        </Tooltip>
-      </>
-    );
+  let title = 'Globus Transfer Unavailable';
+  let color = disabledColor;
+  let icon = <CloseCircleTwoTone twoToneColor={disabledColor} />;
+
+  if (isEnabled) {
+    title = 'Globus Transfer Available';
+    color = enabledColor;
+    icon = <CheckCircleTwoTone twoToneColor={enabledColor} />;
   }
 
   return (
-    <>
-      <Tooltip
-        title={
-          <>
-            Data Node:<div>{dataNode}</div>
-            Globus Transfer Unavailable
-          </>
-        }
-        color="red"
-      >
-        <span>
-          <CloseCircleTwoTone twoToneColor="#eb2f96" />
-        </span>
-      </Tooltip>
-    </>
+    <Tooltip
+      color={color}
+      title={
+        <>
+          Data Node:<div>{dataNode}</div>
+          {title}
+        </>
+      }
+    >
+      <span>{icon}</span>
+    </Tooltip>
   );
 };
 

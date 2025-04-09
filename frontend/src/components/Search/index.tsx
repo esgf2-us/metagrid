@@ -4,29 +4,34 @@ import {
   ShareAltOutlined,
   ShoppingCartOutlined,
 } from '@ant-design/icons';
-import { Alert, Col, Row, Typography } from 'antd';
+import { Alert, Col, message, Row, Typography } from 'antd';
 import humps from 'humps';
 import React from 'react';
 import { DeferFn, useAsync } from 'react-async';
+import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
+import { v4 as uuidv4 } from 'uuid';
 import {
+  addUserSearchQuery,
   convertResultTypeToReplicaParam,
   fetchSearchResults,
   generateSearchURLQuery,
+  ResponseError,
 } from '../../api';
-import { clickableRoute } from '../../api/routes';
 import { searchTableTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
-import { objectIsEmpty } from '../../common/utils';
-import { UserCart } from '../Cart/types';
-import { Tag, TagType, TagValue } from '../DataDisplay/Tag';
 import {
-  ActiveFacets,
-  ParsedFacets,
-  RawFacets,
-  RawProject,
-} from '../Facets/types';
+  createSearchRouteURL,
+  getStyle,
+  getUrlFromSearch,
+  objectIsEmpty,
+  searchAlreadyExists,
+  showError,
+  showNotice,
+} from '../../common/utils';
+import { UserCart, UserSearchQueries, UserSearchQuery } from '../Cart/types';
+import { Tag, TagType, TagValue } from '../DataDisplay/Tag';
+import { ActiveFacets, ParsedFacets, RawFacets, RawProject } from '../Facets/types';
 import Button from '../General/Button'; // Note, tooltips do not work for this button
-import { NodeStatusArray } from '../NodeStatus/types';
 import Table from './Table';
 import {
   ActiveSearchQuery,
@@ -38,6 +43,15 @@ import {
   VersionDate,
   VersionType,
 } from './types';
+import {
+  activeSearchQueryAtom,
+  availableFacetsAtom,
+  isDarkModeAtom,
+  projectBaseQuery,
+  userCartAtom,
+  userSearchQueriesAtom,
+} from '../App/recoil/atoms';
+import { AuthContext } from '../../contexts/AuthContext';
 
 const styles: CSSinJS = {
   summary: {
@@ -83,7 +97,7 @@ export const stringifyFilters = (
   resultType: ResultType,
   minVersionDate: VersionDate,
   maxVersionDate: VersionDate,
-  activeFacets: ActiveFacets | Record<string, unknown>,
+  activeFacets: ActiveFacets,
   textInputs: TextInputs | []
 ): string => {
   const filtersArr: string[] = [];
@@ -111,18 +125,11 @@ export const stringifyFilters = (
 
   if (!objectIsEmpty(activeFacets)) {
     Object.keys(activeFacets).forEach((key: string) => {
-      filtersArr.push(
-        `(${humps.decamelize(key)} = ${(activeFacets as ActiveFacets)[key].join(
-          ' OR '
-        )})`
-      );
+      filtersArr.push(`(${humps.decamelize(key)} = ${activeFacets[key].join(' OR ')})`);
     });
   }
 
-  const filtersStr =
-    filtersArr.length > 0
-      ? `${filtersArr.join(' AND ')}`
-      : 'No filters applied';
+  const filtersStr = filtersArr.length > 0 ? `${filtersArr.join(' AND ')}` : 'No filters applied';
   return filtersStr;
 };
 
@@ -132,31 +139,27 @@ export const checkFiltersExist = (
 ): boolean => !(objectIsEmpty(activeFacets) && textInputs.length === 0);
 
 export type Props = {
-  activeSearchQuery: ActiveSearchQuery;
-  userCart: UserCart | [];
-  nodeStatus?: NodeStatusArray;
-  onRemoveFilter: (removedTag: TagValue, type: TagType) => void;
-  onClearFilters: () => void;
-  onUpdateCart: (
-    selectedItems: RawSearchResults,
-    operation: 'add' | 'remove'
-  ) => void;
-  onUpdateAvailableFacets: (parsedFacets: ParsedFacets) => void;
-  onSaveSearchQuery: (url: string) => void;
-  onShareSearchQuery: () => void;
+  onUpdateCart: (selectedItems: RawSearchResults, operation: 'add' | 'remove') => void;
 };
 
-const Search: React.FC<React.PropsWithChildren<Props>> = ({
-  activeSearchQuery,
-  userCart,
-  nodeStatus,
-  onRemoveFilter,
-  onClearFilters,
-  onUpdateCart,
-  onUpdateAvailableFacets,
-  onSaveSearchQuery,
-  onShareSearchQuery,
-}) => {
+const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
+  // Recoil states
+  const setAvailableFacets = useSetRecoilState<ParsedFacets | Record<string, unknown>>(
+    availableFacetsAtom
+  );
+
+  const userCart = useRecoilValue<UserCart>(userCartAtom);
+
+  const [userSearchQueries, setUserSearchQueries] = useRecoilState<UserSearchQueries>(
+    userSearchQueriesAtom
+  );
+
+  const [activeSearchQuery, setActiveSearchQuery] = useRecoilState<ActiveSearchQuery>(
+    activeSearchQueryAtom
+  );
+
+  const isDarkMode = useRecoilValue<boolean>(isDarkModeAtom);
+
   const {
     project,
     versionType,
@@ -168,21 +171,24 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
     textInputs,
   } = activeSearchQuery;
 
+  const [messageApi, contextHolder] = message.useMessage();
+
+  // User's authentication state
+  const authState = React.useContext(AuthContext);
+  const { access_token: accessToken, pk } = authState;
+  const isAuthenticated = accessToken && pk;
+
+  const appStyles = getStyle(isDarkMode);
+
   const { data: results, error, isLoading, run } = useAsync({
-    deferFn: (fetchSearchResults as unknown) as DeferFn<
-      Record<string, unknown>
-    >,
+    deferFn: (fetchSearchResults as unknown) as DeferFn<Record<string, unknown>>,
   });
   const [filtersExist, setFiltersExist] = React.useState<boolean>(false);
-  const [parsedFacets, setParsedFacets] = React.useState<
-    ParsedFacets | Record<string, unknown>
-  >({});
-  const [currentRequestURL, setCurrentRequestURL] = React.useState<
-    string | null
-  >(null);
-  const [selectedItems, setSelectedItems] = React.useState<
-    RawSearchResults | []
-  >([]);
+  const [parsedFacets, setParsedFacets] = React.useState<ParsedFacets | Record<string, unknown>>(
+    {}
+  );
+  const [currentRequestURL, setCurrentRequestURL] = React.useState<string | null>(null);
+  const [selectedItems, setSelectedItems] = React.useState<RawSearchResults | []>([]);
 
   const [paginationOptions, setPaginationOptions] = React.useState<Pagination>({
     page: 1,
@@ -192,10 +198,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
   // Generate the current request URL based on filters
   React.useEffect(() => {
     if (!objectIsEmpty(project)) {
-      const reqUrl = generateSearchURLQuery(
-        activeSearchQuery,
-        paginationOptions
-      );
+      const reqUrl = generateSearchURLQuery(activeSearchQuery, paginationOptions);
       setCurrentRequestURL(reqUrl);
     }
   }, [activeSearchQuery, project, paginationOptions]);
@@ -222,8 +225,105 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
   }, [results]);
 
   React.useEffect(() => {
-    onUpdateAvailableFacets(parsedFacets as ParsedFacets);
-  }, [parsedFacets, onUpdateAvailableFacets]);
+    setAvailableFacets(parsedFacets as ParsedFacets);
+  }, [parsedFacets, setAvailableFacets]);
+
+  const handleClearFilters = (): void => {
+    setActiveSearchQuery(projectBaseQuery(activeSearchQuery.project));
+  };
+
+  const handleSaveSearchQuery = (url: string): void => {
+    const savedSearch: UserSearchQuery = {
+      uuid: uuidv4(),
+      user: pk,
+      project: activeSearchQuery.project as RawProject,
+      projectId: activeSearchQuery.project.pk as string,
+      versionType: activeSearchQuery.versionType,
+      resultType: activeSearchQuery.resultType,
+      minVersionDate: activeSearchQuery.minVersionDate,
+      maxVersionDate: activeSearchQuery.maxVersionDate,
+      filenameVars: activeSearchQuery.filenameVars,
+      activeFacets: activeSearchQuery.activeFacets,
+      textInputs: activeSearchQuery.textInputs,
+      url,
+    };
+
+    if (searchAlreadyExists(userSearchQueries, savedSearch)) {
+      showNotice(messageApi, 'Search query is already in your library', {
+        icon: <BookOutlined style={appStyles.messageAddIcon} />,
+        type: 'info',
+      });
+      return;
+    }
+
+    const saveSuccess = (): void => {
+      setUserSearchQueries([...userSearchQueries, savedSearch]);
+      showNotice(messageApi, 'Saved search query to your library', {
+        icon: <BookOutlined style={appStyles.messageAddIcon} />,
+      });
+    };
+
+    if (isAuthenticated) {
+      addUserSearchQuery(pk, accessToken, savedSearch)
+        .then(() => {
+          saveSuccess();
+        })
+        .catch(
+          /* istanbul ignore next */
+          (respError: ResponseError) => {
+            showError(messageApi, respError.message);
+          }
+        );
+    } else {
+      saveSuccess();
+    }
+  };
+
+  const handleShareSearchQuery = (): void => {
+    /* istanbul ignore else */
+    if (navigator && navigator.clipboard) {
+      navigator.clipboard.writeText(getUrlFromSearch(activeSearchQuery));
+      showNotice(messageApi, 'Search copied to clipboard!', {
+        icon: <ShareAltOutlined style={styles.messageAddIcon} />,
+      });
+    }
+  };
+
+  const handleRemoveFilter = (removedTag: TagValue, type: TagType): void => {
+    /* istanbul ignore else */
+    if (type === 'text') {
+      setActiveSearchQuery({
+        ...activeSearchQuery,
+        textInputs: activeSearchQuery.textInputs.filter((input) => input !== removedTag),
+      });
+    } else if (type === 'filenameVar') {
+      setActiveSearchQuery({
+        ...activeSearchQuery,
+        filenameVars: activeSearchQuery.filenameVars.filter((input) => input !== removedTag),
+      });
+    } else if (type === 'facet') {
+      const prevActiveFacets = activeSearchQuery.activeFacets;
+
+      const facet = (removedTag[0] as unknown) as string;
+      const facetOption = (removedTag[1] as unknown) as string;
+      const updateFacet = {
+        [facet]: prevActiveFacets[facet].filter((item) => item !== facetOption),
+      };
+
+      if (updateFacet[facet].length === 0) {
+        delete prevActiveFacets[facet];
+        setActiveSearchQuery({
+          ...activeSearchQuery,
+          activeFacets: { ...prevActiveFacets },
+        });
+      } else {
+        setActiveSearchQuery({
+          ...activeSearchQuery,
+          activeFacets: { ...prevActiveFacets, ...updateFacet },
+        });
+      }
+    }
+  };
 
   const handleRowSelect = (selectedRows: RawSearchResults | []): void => {
     // If you select rows on one page of the table, then go to another page
@@ -259,8 +359,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
   let numFound = 0;
   let docs: RawSearchResults = [];
   if (results) {
-    numFound = (results as { response: { numFound: number } }).response
-      .numFound;
+    numFound = (results as { response: { numFound: number } }).response.numFound;
     docs = (results as { response: { docs: RawSearchResults } }).response.docs;
   }
 
@@ -274,35 +373,24 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
     ).length === 0;
 
   return (
-    <div
-      data-testid="search"
-      className={searchTableTargets.searchResultsTable.class()}
-    >
+    <div data-testid="search" className={searchTableTargets.searchResultsTable.class()}>
+      {contextHolder}
       <div style={styles.summary}>
         {objectIsEmpty(project) && (
-          <Alert
-            message="Select a project to search for results"
-            type="info"
-            showIcon
-          />
+          <Alert message="Select a project to search for results" type="info" showIcon />
         )}
         <h3>
-          {isLoading && (
-            <span style={styles.resultsHeader}>
-              Loading latest results for{' '}
-            </span>
-          )}
+          {isLoading && <span style={styles.resultsHeader}>Loading latest results for </span>}
           {results && !isLoading && (
             <span
               className={searchTableTargets.resultsFoundText.class()}
               style={styles.resultsHeader}
+              data-testid="search-results-span"
             >
               {numFound.toLocaleString()} results found for{' '}
             </span>
           )}
-          <span style={styles.resultsHeader}>
-            {(project as RawProject).name}
-          </span>
+          <span style={styles.resultsHeader}>{(project as RawProject).name}</span>
         </h3>
         <div>
           {results && (
@@ -324,19 +412,19 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
               <Button
                 className={searchTableTargets.saveSearchBtn.class()}
                 type="default"
-                onClick={() => onSaveSearchQuery(currentRequestURL as string)}
+                onClick={() => handleSaveSearchQuery(currentRequestURL as string)}
                 disabled={isLoading || numFound === 0}
               >
-                <BookOutlined />
+                <BookOutlined data-testid="save-search-btn" />
                 Save Search
               </Button>{' '}
               <Button
                 type="default"
                 className={searchTableTargets.copySearchLinkBtn.class()}
-                onClick={() => onShareSearchQuery()}
+                onClick={() => handleShareSearchQuery()}
                 disabled={isLoading || numFound === 0}
               >
-                <ShareAltOutlined />
+                <ShareAltOutlined data-testid="share-search-btn" />
                 Copy Search
               </Button>
             </div>
@@ -347,11 +435,10 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
         {results && (
           <>
             <p>
-              <span style={styles.subtitles}>Query String: </span>
-              <Typography.Text
-                className={searchTableTargets.queryString.class()}
-                code
-              >
+              <span style={styles.subtitles} data-testid="main-query-string-label">
+                Query String:{' '}
+              </span>
+              <Typography.Text className={searchTableTargets.queryString.class()} code>
                 {stringifyFilters(
                   versionType,
                   resultType,
@@ -370,13 +457,9 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
         <Row style={styles.filtersContainer}>
           {Object.keys(activeFacets).length !== 0 &&
             Object.keys(activeFacets).map((facet: string) =>
-              (activeFacets as ActiveFacets)[facet].map((variable: string) => (
+              activeFacets[facet].map((variable: string) => (
                 <div key={variable} data-testid={variable}>
-                  <Tag
-                    value={[facet, variable]}
-                    onClose={onRemoveFilter}
-                    type="facet"
-                  >
+                  <Tag value={[facet, variable]} onClose={handleRemoveFilter} type="facet">
                     {variable}
                   </Tag>
                 </div>
@@ -385,7 +468,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
           {textInputs.length !== 0 &&
             (textInputs as TextInputs).map((input: string) => (
               <div key={input} data-testid={input}>
-                <Tag value={input} onClose={onRemoveFilter} type="text">
+                <Tag value={input} onClose={handleRemoveFilter} type="text">
                   {input}
                 </Tag>
               </div>
@@ -393,18 +476,13 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
           {filenameVars.length !== 0 &&
             (filenameVars as TextInputs).map((input: string) => (
               <div key={input} data-testid={input}>
-                <Tag value={input} onClose={onRemoveFilter} type="filenameVar">
+                <Tag value={input} onClose={handleRemoveFilter} type="filenameVar">
                   Filename Search: {input}
                 </Tag>
               </div>
             ))}
           {filtersExist && (
-            <Button
-              type="primary"
-              danger
-              size="small"
-              onClick={() => onClearFilters()}
-            >
+            <Button type="primary" danger size="small" onClick={handleClearFilters}>
               Clear All
             </Button>
           )}
@@ -420,7 +498,6 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
                 results={docs}
                 totalResults={numFound}
                 userCart={userCart}
-                nodeStatus={nodeStatus}
                 filenameVars={activeSearchQuery.filenameVars}
                 onUpdateCart={onUpdateCart}
                 onRowSelect={handleRowSelect}
@@ -441,7 +518,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({
         {results && currentRequestURL && (
           <Button
             type="default"
-            href={clickableRoute(currentRequestURL)}
+            href={createSearchRouteURL(currentRequestURL)}
             target="_blank"
             icon={<ExportOutlined />}
           >

@@ -1,4 +1,3 @@
-/* eslint-disable no-void */
 import {
   CopyOutlined,
   DownCircleOutlined,
@@ -14,19 +13,9 @@ import { DeferFn, useAsync } from 'react-async';
 import { fetchDatasetFiles, openDownloadURL } from '../../api';
 import { innerDataRowTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
-import {
-  formatBytes,
-  showError,
-  showNotice,
-  splitStringByChar,
-} from '../../common/utils';
+import { formatBytes, showError, showNotice, splitStringByChar } from '../../common/utils';
 import Button from '../General/Button';
-import {
-  Pagination,
-  RawSearchResult,
-  RawSearchResults,
-  TextInputs,
-} from './types';
+import { Pagination, RawSearchResult, RawSearchResults, TextInputs } from './types';
 
 export type DownloadUrls = {
   HTTPServer: string;
@@ -157,11 +146,31 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
     pagination: {
       total: numResults,
       position: ['bottomCenter'],
-      showSizeChanger: true,
-      onChange: (page: number, pageSize: number) =>
-        handlePageChange(page, pageSize),
-      onShowSizeChange: (_current: number, size: number) =>
-        handlePageSizeChange(size),
+      options: [
+        {
+          label: '10 / page',
+          value: '10',
+        },
+        {
+          label: '20 / page',
+          value: '20',
+        },
+        {
+          label: '50 / page',
+          value: '50',
+        },
+        {
+          label: '100 / page',
+          value: '100',
+        },
+      ],
+      showSizeChanger: {
+        optionRender: (option) => {
+          return <span data-testid={`pageSize-option-${option.value}`}>{option.label}</span>;
+        },
+      },
+      onChange: (page: number, pageSize: number) => handlePageChange(page, pageSize),
+      onShowSizeChange: (_current: number, size: number) => handlePageSizeChange(size),
     } as TablePaginationConfig,
     expandable: {
       expandedRowRender: (record: RawSearchResult) =>
@@ -205,9 +214,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
       size: 400,
       key: 'title',
       render: (title: string) => {
-        return (
-          <div className={innerDataRowTargets.filesTitle.class()}>{title}</div>
-        );
+        return <div className={innerDataRowTargets.filesTitle.class()}>{title}</div>;
       },
     },
     {
@@ -216,11 +223,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
       width: 100,
       key: 'size',
       render: (size: number) => {
-        return (
-          <div className={innerDataRowTargets.dataSize.class()}>
-            {formatBytes(size)}
-          </div>
-        );
+        return <div className={innerDataRowTargets.dataSize.class()}>{formatBytes(size)}</div>;
       },
     },
     {
@@ -238,43 +241,26 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
               initialValues={{ download: downloadUrls.HTTPServer }}
             >
               <Tooltip title="Download the data file via Http." trigger="hover">
-                <Form.Item
-                  className={innerDataRowTargets.downloadDataBtn.class()}
-                >
-                  <Button
-                    type="primary"
-                    htmlType="submit"
-                    icon={<DownloadOutlined />}
-                  ></Button>
+                <Form.Item className={innerDataRowTargets.downloadDataBtn.class()}>
+                  <Button type="primary" htmlType="submit" icon={<DownloadOutlined />}></Button>
                 </Form.Item>
               </Tooltip>
               {downloadUrls.OPENDAP !== '' && (
-                <Tooltip
-                  title="Copy a shareable OPENDAP URL to the clipboard."
-                  trigger="hover"
-                >
+                <Tooltip title="Copy a shareable OPENDAP URL to the clipboard." trigger="hover">
                   <Form.Item className={innerDataRowTargets.copyUrlBtn.class()}>
                     <Button
                       type="primary"
                       onClick={() => {
                         /* istanbul ignore next */
                         if (navigator && navigator.clipboard) {
-                          void navigator.clipboard
+                          navigator.clipboard
                             .writeText(downloadUrls.OPENDAP)
                             .catch((e: PromiseRejectedResult) => {
                               showError(messageApi, e.reason as string);
                             });
-                          showNotice(
-                            messageApi,
-                            'OPENDAP URL copied to clipboard!',
-                            {
-                              icon: (
-                                <ShareAltOutlined
-                                  style={styles.messageAddIcon}
-                                />
-                              ),
-                            }
-                          );
+                          showNotice(messageApi, 'OPENDAP URL copied to clipboard!', {
+                            icon: <ShareAltOutlined style={styles.messageAddIcon} />,
+                          });
                         }
                       }}
                       icon={<CopyOutlined />}
@@ -292,14 +278,24 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
       dataIndex: 'checksum',
       key: 'checksum',
       render: (checksum: string) => {
-        return (
-          <div className={innerDataRowTargets.checksum.class()}>{checksum}</div>
-        );
+        return <div className={innerDataRowTargets.checksum.class()}>{checksum}</div>;
       },
     },
   ];
 
-  return <TableD data-testid="filesTable" {...tableConfig} columns={columns} />;
+  return (
+    <TableD
+      data-testid="filesTable"
+      {...tableConfig}
+      columns={columns}
+      onRow={(record, rowIndex) => {
+        return {
+          id: `search-items-row-${rowIndex}`,
+          'data-testid': `search-items-row-${rowIndex}`,
+        };
+      }}
+    />
+  );
 };
 
 export default FilesTable;

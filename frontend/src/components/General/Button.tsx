@@ -8,9 +8,7 @@ type Props = {
   target?: string | undefined;
   htmlType?: 'button' | 'submit' | 'reset' | undefined;
   icon?: React.ReactNode;
-  onClick?:
-    | ((event: React.MouseEvent<HTMLElement, MouseEvent>) => void)
-    | undefined;
+  onClick?: ((event: React.MouseEvent<HTMLElement, MouseEvent>) => void) | undefined;
   disabled?: boolean | undefined;
   danger?: boolean;
   children?: React.ReactElement | React.ReactNode | string;

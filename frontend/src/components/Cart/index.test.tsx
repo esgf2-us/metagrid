@@ -1,20 +1,11 @@
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { act, screen } from '@testing-library/react';
-import {
-  userCartFixture,
-  userSearchQueriesFixture,
-} from '../../test/mock/fixtures';
+import { screen } from '@testing-library/react';
 import Cart, { Props } from './index';
 import customRender from '../../test/custom-render';
 
 const defaultProps: Props = {
-  userCart: userCartFixture(),
-  userSearchQueries: userSearchQueriesFixture(),
   onUpdateCart: jest.fn(),
-  onClearCart: jest.fn(),
-  onRunSearchQuery: jest.fn(),
-  onRemoveSearchQuery: jest.fn(),
 };
 
 const user = userEvent.setup();
@@ -52,16 +43,12 @@ it('handles tab switching and saved search actions', async () => {
   });
 
   expect(searchLibraryTab).toBeTruthy();
-  await act(async () => {
-    await user.click(searchLibraryTab);
-  });
+  await user.click(searchLibraryTab);
 
   // Check JSON link renders and click it
   const jsonLink = await screen.findByRole('link');
   expect(jsonLink).toBeTruthy();
-  await act(async () => {
-    await user.click(jsonLink);
-  });
+  await user.click(jsonLink);
 
   // Wait for cart to re-render
   await screen.findByTestId('cart');
@@ -72,9 +59,7 @@ it('handles tab switching and saved search actions', async () => {
   });
   expect(applyBtn).toBeTruthy();
 
-  await act(async () => {
-    await user.click(applyBtn);
-  });
+  await user.click(applyBtn);
 
   // Wait for cart to re-render
   await screen.findByTestId('cart');
@@ -86,7 +71,5 @@ it('handles tab switching and saved search actions', async () => {
   });
   expect(deleteBtn).toBeTruthy();
 
-  await act(async () => {
-    await user.click(deleteBtn);
-  });
+  await user.click(deleteBtn);
 });

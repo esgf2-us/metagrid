@@ -1,10 +1,13 @@
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { act, screen } from '@testing-library/react';
-import { getCurrentAppPage, TourTitles } from '../../common/reactJoyrideSteps';
+import { screen } from '@testing-library/react';
+import { TourTitles } from '../../common/reactJoyrideSteps';
 import { AppPage } from '../../common/types';
 import Support from './index';
 import customRender from '../../test/custom-render';
+import { getCurrentAppPage } from '../../common/utils';
+import { RecoilWrapper } from '../../test/jestTestFunctions';
+import { supportModalVisibleAtom } from '../App/recoil/atoms';
 
 // Test page names
 const mainPagePath = 'testing/search';
@@ -27,8 +30,12 @@ describe('Testing the support form and buttons', () => {
     writable: true,
   });
 
+  beforeEach(() => {
+    RecoilWrapper.modifyAtomValue(supportModalVisibleAtom.key, true);
+  });
+
   it('renders support component', async () => {
-    customRender(<Support open onClose={jest.fn()} />);
+    customRender(<Support />);
 
     // Check support form rendered
     const support = await screen.findByTestId('support-form');
@@ -40,7 +47,7 @@ describe('Testing the support form and buttons', () => {
     window.location.pathname = mainPagePath;
     expect(getCurrentAppPage()).toEqual(AppPage.Main);
 
-    customRender(<Support open onClose={jest.fn()} />);
+    customRender(<Support />);
 
     // Check support modal rendered
     const support = await screen.findByTestId('support-form');
@@ -53,9 +60,7 @@ describe('Testing the support form and buttons', () => {
     expect(button).toBeTruthy();
 
     // Start tutorial and check that it renders
-    await act(async () => {
-      await user.click(button);
-    });
+    await user.click(button);
     const tourModal = await screen.findByRole('heading', {
       name: TourTitles.Main,
     });
@@ -67,7 +72,7 @@ describe('Testing the support form and buttons', () => {
     window.location.pathname = cartPagePath;
     expect(getCurrentAppPage()).toEqual(AppPage.Cart);
 
-    customRender(<Support open onClose={jest.fn()} />);
+    customRender(<Support />);
 
     // Check support modal rendered
     const support = await screen.findByTestId('support-form');
@@ -78,9 +83,7 @@ describe('Testing the support form and buttons', () => {
     expect(button).toBeTruthy();
 
     // Start tutorial and check that it renders
-    await act(async () => {
-      await user.click(button);
-    });
+    await user.click(button);
     const tourModal = await screen.findByRole('heading', {
       name: TourTitles.Cart,
     });
@@ -91,8 +94,7 @@ describe('Testing the support form and buttons', () => {
     // Set location then render modal
     window.location.pathname = savedSearchesPath;
     expect(getCurrentAppPage()).toEqual(AppPage.SavedSearches);
-
-    customRender(<Support open onClose={jest.fn()} />);
+    customRender(<Support />);
 
     // Check support modal rendered
     const support = await screen.findByTestId('support-form');
@@ -105,21 +107,19 @@ describe('Testing the support form and buttons', () => {
     expect(button).toBeTruthy();
 
     // Start tutorial and check that it renders
-    await act(async () => {
-      await user.click(button);
-    });
+    await user.click(button);
     const tourModal = await screen.findByRole('heading', {
       name: TourTitles.Searches,
     });
     expect(tourModal).toBeTruthy();
   });
 
-  it('renders starts cart page tutorial', async () => {
+  it('renders starts node status page tutorial', async () => {
     // Set location then render modal
     window.location.pathname = nodeStatusPath;
     expect(getCurrentAppPage()).toEqual(AppPage.NodeStatus);
 
-    customRender(<Support open onClose={jest.fn()} />);
+    customRender(<Support />);
 
     // Check support modal rendered
     const support = await screen.findByTestId('support-form');
@@ -130,9 +130,7 @@ describe('Testing the support form and buttons', () => {
     expect(button).toBeTruthy();
 
     // Start tutorial and check that it renders
-    await act(async () => {
-      await user.click(button);
-    });
+    await user.click(button);
     const tourModal = await screen.findByRole('heading', {
       name: TourTitles.Node,
     });

@@ -1,18 +1,50 @@
 import React from 'react';
-import { Drawer, Space, Button, Collapse, Card } from 'antd';
-import { rightDrawerChanges, rightDrawerMessages } from './messageDisplayData';
+import { Drawer, Space, Button, Collapse } from 'antd';
+import { changeLogMessages, messageDataJSON } from './messageDisplayData';
 import MessageCard from './MessageCard';
-import { MarkdownMessage } from './types';
+import { MessageData } from './types';
 
 export type Props = {
   open: boolean;
   onClose: () => void;
 };
 
-const RightDrawer: React.FC<React.PropsWithChildren<Props>> = ({
-  open,
-  onClose,
-}) => {
+const RightDrawer: React.FC<React.PropsWithChildren<Props>> = ({ open, onClose }) => {
+  const panels = [
+    {
+      key: '1',
+      label: 'Metagrid Messages',
+      children: (
+        <Collapse
+          defaultActiveKey={[messageDataJSON.messages[0].fileName]}
+          items={messageDataJSON.messages.map((message) => {
+            return {
+              key: message.fileName,
+              label: message.title,
+              children: <MessageCard fileName={message.fileName} />,
+            };
+          })}
+        />
+      ),
+    },
+    {
+      key: '2',
+      label: 'Metagrid Version History',
+      children: (
+        <Collapse
+          defaultActiveKey={[]}
+          items={changeLogMessages().map((change: MessageData) => {
+            return {
+              key: change.fileName,
+              label: change.messageId,
+              children: <MessageCard fileName={change.fileName} />,
+            };
+          })}
+        />
+      ),
+    },
+  ];
+
   return (
     <Drawer
       title="Notifications"
@@ -28,36 +60,7 @@ const RightDrawer: React.FC<React.PropsWithChildren<Props>> = ({
         </Space>
       }
     >
-      <Card title="Metagrid Messages">
-        <Collapse
-          defaultActiveKey={[rightDrawerMessages[0].fileName]}
-          items={rightDrawerMessages.map((message: MarkdownMessage) => {
-            return {
-              key: message.fileName,
-              label: message.title,
-              children: (
-                <MessageCard
-                  title={message.title}
-                  fileName={message.fileName}
-                />
-              ),
-            };
-          })}
-        />
-      </Card>
-      <Card title="Metagrid Version History">
-        <Collapse
-          items={rightDrawerChanges.map((change: MarkdownMessage) => {
-            return {
-              key: change.fileName,
-              label: change.title,
-              children: (
-                <MessageCard title={change.title} fileName={change.fileName} />
-              ),
-            };
-          })}
-        />
-      </Card>
+      <Collapse defaultActiveKey={['1']} items={panels} accordion />
     </Drawer>
   );
 };

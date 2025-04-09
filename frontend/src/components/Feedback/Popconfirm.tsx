@@ -23,6 +23,7 @@ type Props = {
   children: React.ReactElement;
 };
 
+/* istanbul ignore next */
 const Popconfirm: React.FC<React.PropsWithChildren<Props>> = ({
   title = 'Are you sure?',
   icon = <ExclamationCircleOutlined />,
@@ -30,12 +31,7 @@ const Popconfirm: React.FC<React.PropsWithChildren<Props>> = ({
   onConfirm,
   children,
 }) => (
-  <PopconfirmD
-    title={title}
-    icon={icon}
-    placement={placement}
-    onConfirm={onConfirm}
-  >
+  <PopconfirmD title={title} icon={icon} placement={placement} onConfirm={onConfirm}>
     {children}
   </PopconfirmD>
 );

@@ -2,16 +2,14 @@ import { render } from '@testing-library/react';
 import React from 'react';
 import { MessageInstance } from 'antd/es/message/interface';
 import { message } from 'antd';
+import { atom, RecoilRoot, useRecoilState } from 'recoil';
 import { rawProjectFixture } from '../test/mock/fixtures';
 import { UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
-import {
-  ActiveSearchQuery,
-  RawSearchResult,
-  RawSearchResults,
-} from '../components/Search/types';
+import { ActiveSearchQuery, RawSearchResult, RawSearchResults } from '../components/Search/types';
 import {
   combineCarts,
   formatBytes,
+  getCurrentAppPage,
   getSearchFromUrl,
   getUrlFromSearch,
   objectHasKey,
@@ -21,7 +19,10 @@ import {
   showNotice,
   splitStringByChar,
   unsavedLocalSearches,
+  localStorageEffect,
+  createSearchRouteURL,
 } from './utils';
+import { AppPage } from './types';
 
 describe('Test objectIsEmpty', () => {
   it('returns true with empty object', () => {
@@ -53,10 +54,7 @@ describe('Test splitStringByChar', () => {
     url = 'first.com|second.com';
   });
   it('returns split string if no index specified', () => {
-    expect(splitStringByChar(url, '|') as string).toEqual([
-      'first.com',
-      'second.com',
-    ]);
+    expect(splitStringByChar(url, '|') as string).toEqual(['first.com', 'second.com']);
   });
   it('returns first half of the split', () => {
     expect(splitStringByChar(url, '|', '0') as string).toEqual('first.com');
@@ -93,7 +91,10 @@ describe('Test shallowCompareObjects', () => {
 
 describe('Test getUrlFromSearch', () => {
   it('returns basic url when active search is empty', () => {
-    expect(getUrlFromSearch({} as ActiveSearchQuery)).toBeTruthy();
+    const url = getUrlFromSearch({} as ActiveSearchQuery);
+    expect(url).toBe(
+      `${window.location.protocol}//${window.location.host}${window.location.pathname}`
+    );
   });
   it('returns basic url if active search is default object', () => {
     expect(
@@ -164,15 +165,11 @@ describe('Test getSearchFromUrl', () => {
     expect(getSearchFromUrl('?project=CMIP6&versionType=all')).toBeTruthy();
   });
   it('returns search object of specific result type', () => {
-    expect(
-      getSearchFromUrl('?project=CMIP6&resultType=originals+only')
-    ).toBeTruthy();
+    expect(getSearchFromUrl('?project=CMIP6&resultType=originals+only')).toBeTruthy();
   });
   it('returns search object of version date range', () => {
     expect(
-      getSearchFromUrl(
-        '?project=CMIP6&minVersionDate=20210401&maxVersionDate=20220401'
-      )
+      getSearchFromUrl('?project=CMIP6&minVersionDate=20210401&maxVersionDate=20220401')
     ).toBeTruthy();
   });
   it('returns search object containing active facets, filenames and text input', () => {
@@ -199,7 +196,10 @@ describe('Test getSearchFromUrl', () => {
 
 describe('Test getUrlFromSearch', () => {
   it('returns basic url when active search is empty', () => {
-    expect(getUrlFromSearch({} as ActiveSearchQuery)).toBeTruthy();
+    const url = getUrlFromSearch({} as ActiveSearchQuery);
+    expect(url).toBe(
+      `${window.location.protocol}//${window.location.host}${window.location.pathname}`
+    );
   });
   it('returns basic url if active search is default object', () => {
     expect(
@@ -232,23 +232,22 @@ describe('Test getUrlFromSearch', () => {
     ).toBeTruthy();
   });
   it('returns url with filname variables, active facets and text inputs.', () => {
-    expect(
-      getUrlFromSearch({
-        project: { name: 'CMIP6' },
-        versionType: 'latest',
-        resultType: 'all',
-        minVersionDate: '',
-        maxVersionDate: '',
-        filenameVars: ['clt', 'tsc'],
-        activeFacets: {
-          activity_id: ['CDRMIP', 'CFMIP'],
-          source_id: ['ACCESS-ESM1-5'],
-        },
-        textInputs: ['CSIRO'],
-      } as ActiveSearchQuery).includes(
-        '?project=CMIP6&filenameVars=%5B%22clt%22%2C%22tsc%22%5D&activeFacets=%7B%22activity_id%22%3A%5B%22CDRMIP%22%2C%22CFMIP%22%5D%2C%22source_id%22%3A%22ACCESS-ESM1-5%22%7D&textInputs=%5B%22CSIRO%22%5D'
-      )
-    ).toBeTruthy();
+    const url = getUrlFromSearch({
+      project: { name: 'CMIP6' },
+      versionType: 'latest',
+      resultType: 'all',
+      minVersionDate: '',
+      maxVersionDate: '',
+      filenameVars: ['clt', 'tsc'],
+      activeFacets: {
+        activity_id: ['CDRMIP', 'CFMIP'],
+        source_id: ['ACCESS-ESM1-5'],
+      },
+      textInputs: ['CSIRO'],
+    } as ActiveSearchQuery);
+    expect(url).toContain(
+      '?project=CMIP6&filenameVars=%5B%22clt%22%2C%22tsc%22%5D&activeFacets=%7B%22activity_id%22%3A%5B%22CDRMIP%22%2C%22CFMIP%22%5D%2C%22source_id%22%3A%22ACCESS-ESM1-5%22%7D&textInputs=%5B%22CSIRO%22%5D'
+    );
   });
   it('returns basic url with project parameter when search contains project', () => {
     expect(
@@ -286,9 +285,7 @@ describe('Test combineCarts', () => {
     expect(combineCarts(emptySearchResults, emptySearchResults)).toEqual([]);
   });
   it('returns results without duplicates', () => {
-    expect(combineCarts(searchResults1, searchResults1)).toEqual(
-      searchResults1
-    );
+    expect(combineCarts(searchResults1, searchResults1)).toEqual(searchResults1);
   });
   it('returns combined results of 3 items (one duplicate removed)', () => {
     expect(combineCarts(searchResults1, searchResults2).length).toEqual(3);
@@ -308,7 +305,7 @@ describe('Test unsavedLocal searches', () => {
     filenameVars: ['var'],
     activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
     textInputs: ['foo'],
-    url: 'url.com',
+    url: 'https://localhost/url.com',
   };
   const secondResult: UserSearchQuery = {
     uuid: 'uuid2',
@@ -322,7 +319,7 @@ describe('Test unsavedLocal searches', () => {
     filenameVars: ['var'],
     activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
     textInputs: ['foo'],
-    url: 'url.com',
+    url: 'https://localhost/url.com',
   };
   const thirdResult: UserSearchQuery = {
     uuid: 'uuid3',
@@ -336,25 +333,51 @@ describe('Test unsavedLocal searches', () => {
     filenameVars: ['var'],
     activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
     textInputs: ['foo'],
-    url: 'url.com',
+    url: 'https://localhost/url.com',
   };
 
   const localResults: UserSearchQueries = [firstResult, secondResult];
   const databaseResults: UserSearchQueries = [secondResult, thirdResult];
 
   it('returns the first result because it is not currently in database', () => {
-    expect(unsavedLocalSearches(databaseResults, localResults)).toEqual([
-      firstResult,
-    ]);
+    expect(unsavedLocalSearches(databaseResults, localResults)).toEqual([firstResult]);
+  });
+});
+
+describe('Test getCurrentAppPage', () => {
+  it('returns appropriate page name based on window location', () => {
+    expect(getCurrentAppPage()).toEqual(-1);
+
+    // eslint-disable-next-line
+    window = Object.create(window);
+    const url = 'https://test.com/search';
+    Object.defineProperty(window, 'location', {
+      value: {
+        href: url,
+        pathname: 'testing/search',
+      },
+      writable: true,
+    });
+    expect(window.location.href).toEqual(url);
+    expect(window.location.pathname).toEqual('testing/search');
+
+    // Test page names
+    expect(getCurrentAppPage()).toEqual(AppPage.Main);
+    window.location.pathname = 'testing/cart/items';
+    expect(getCurrentAppPage()).toEqual(AppPage.Cart);
+    window.location.pathname = 'testing/cart/searches';
+    expect(getCurrentAppPage()).toEqual(AppPage.SavedSearches);
+    window.location.pathname = 'testing/cart/nodes';
+    expect(getCurrentAppPage()).toEqual(AppPage.NodeStatus);
+    window.location.pathname = 'testing/bad';
+    expect(getCurrentAppPage()).toEqual(-1);
   });
 });
 
 describe('Test show notices function', () => {
   // Creating a test component to render the messages and verify they're rendered
   type Props = { testFunc: (msgApi: MessageInstance) => void };
-  const TestComponent: React.FC<React.PropsWithChildren<Props>> = ({
-    testFunc,
-  }) => {
+  const TestComponent: React.FC<React.PropsWithChildren<Props>> = ({ testFunc }) => {
     const [messageApi, contextHolder] = message.useMessage();
 
     React.useEffect(() => {
@@ -427,5 +450,51 @@ describe('Test show notices function', () => {
 
     const { findByText } = render(<TestComponent testFunc={notice} />);
     expect(await findByText('An unknown error has occurred.')).toBeTruthy();
+  });
+});
+
+describe('Test localStorageEffect', () => {
+  const key = 'testKey';
+  const defaultVal = 'defaultValue';
+
+  const testAtom = atom({
+    key: 'testAtom',
+    default: defaultVal,
+    effects_UNSTABLE: [localStorageEffect(key, defaultVal)],
+  });
+
+  const TestComponent: React.FC = () => {
+    const [value] = useRecoilState(testAtom);
+    return <div>{value}</div>;
+  };
+
+  it('sets to default value when JSON.parse throws an error', () => {
+    localStorage.setItem(key, 'invalid JSON');
+    const { getByText } = render(
+      <RecoilRoot>
+        <TestComponent />
+      </RecoilRoot>
+    );
+    expect(getByText(defaultVal)).toBeTruthy();
+  });
+});
+
+describe('Test createSearchRouteURL', () => {
+  it('returns the correct URL with search parameters', () => {
+    const url = 'https://example.com/path?param1=value1&param2=value2';
+    const result = createSearchRouteURL(url);
+    expect(result).toBe(`${window.location.origin}/path?param1=value1&param2=value2`);
+  });
+
+  it('returns the correct URL without search parameters', () => {
+    const url = 'https://example.com/path';
+    const result = createSearchRouteURL(url);
+    expect(result).toBe(`${window.location.origin}/path?`);
+  });
+
+  it('returns the correct URL with complex search parameters', () => {
+    const url = 'https://example.com/path?param1=value1&param2=value2&param3=value3';
+    const result = createSearchRouteURL(url);
+    expect(result).toBe(`${window.location.origin}/path?param1=value1&param2=value2&param3=value3`);
   });
 });

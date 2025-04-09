@@ -1,0 +1,96 @@
+volumes:
+  local_postgres_data: {}
+  local_postgres_data_backups: {}
+
+services:
+
+  traefik:
+    container_name: traefik
+    image: traefik:3.3
+    volumes:
+      - ./traefik/traefik.local.yml:/etc/traefik/traefik.yml
+    environment:
+      DOMAIN_NAME: localhost
+    ports:
+      - "9080:9080"
+      - "9443:9443"
+
+  docs:
+    container_name: docs
+    profiles: [ "docs" ]
+    build: docs
+    image: metagrid_local_docs
+    volumes:
+      - ./docs:/docs
+    ports:
+      - 8001:8001
+
+  postgres:
+    container_name: postgres
+    build: postgres
+    image: metagrid_local_postgres
+    volumes:
+      - local_postgres_data:/var/lib/postgresql/data
+      - local_postgres_data_backups:/local_postgres_data_backups
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+      PGHOST: postgres
+      PGPASSWORD: postgres
+      PGUSER: postgres
+    ports:
+      - "127.0.0.1:5432:5432"
+    depends_on:
+      - traefik
+    healthcheck:
+      test: [ 'CMD', 'pg_isready', '-U', 'postgres', '-d', 'postgres' ]
+      start_period: 5s
+      interval: 5s
+      timeout: 2s
+      retries: 6
+
+  django:
+    container_name: django
+    build: backend
+    image: metagrid_local_django
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    environment:
+      PGHOST: postgres
+      PGPASSWORD: postgres
+      PGUSER: postgres
+    ports:
+      - "127.0.0.1:5000:5000"
+
+  react:
+    container_name: react
+    build:
+      context: frontend
+      target: build
+    image: metagrid_local_react
+    environment:
+      - PORT=8080
+    depends_on:
+      - django
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "127.0.0.1:8080:8080"
+
+  keycloak:
+    profiles: [ "keycloak" ]
+    image: quay.io/keycloak/keycloak:26.1.2
+    depends_on:
+      - react
+    command: start-dev --import-realm
+    volumes:
+      - ./keycloak/realm.json:/opt/keycloak/data/import/realm.json
+    ports:
+      - "127.0.0.1:1337:8080"
+    environment:
+      KEYCLOAK_CLIENT_ID: metagrid-localhost
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin

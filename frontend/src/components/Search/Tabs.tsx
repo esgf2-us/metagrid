@@ -34,20 +34,14 @@ export const QualityFlag: React.FC<
   ></div>
 );
 
-const Tabs: React.FC<React.PropsWithChildren<Props>> = ({
-  record,
-  filenameVars,
-}) => {
+const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }) => {
   const metaData = Object.entries(record).map(([k, v]) => ({
     value: `${k}: ${v as string}`,
   }));
 
   // Have to parse and format since 'xlink' attribute is poorly structured
   // in the Search API
-  const xlinkTypesToOutput: Record<
-    string,
-    { label: string; url: null | string }
-  > = {
+  const xlinkTypesToOutput: Record<string, { label: string; url: null | string }> = {
     pid: { label: 'PID', url: null },
     // Some technical notes are published as "summary"
     summary: { label: 'Technical Notes', url: null },
@@ -101,8 +95,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({
     ((record.further_info_url as unknown) as string)[0] !== '';
   const showQualityFlags = Object.keys(qualityFlags).length > 0;
   const showAdditionalLinks = urlCount > 0;
-  const showAdditionalTab =
-    showESDOC || showQualityFlags || showAdditionalLinks;
+  const showAdditionalTab = showESDOC || showQualityFlags || showAdditionalLinks;
 
   const tabList = [
     {
@@ -120,9 +113,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({
     {
       key: '2',
       disabled: record.retracted === true,
-      label: (
-        <div className={innerDataRowTargets.metadataTab.class()}>Metadata</div>
-      ),
+      label: <div className={innerDataRowTargets.metadataTab.class()}>Metadata</div>,
       children: (
         <>
           <h4>Displaying {Object.keys(record).length} keys</h4>
@@ -141,8 +132,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({
           <Divider />
           {Object.keys(record).map((key) => (
             <p key={key} style={{ margin: 0 }}>
-              <span style={{ fontWeight: 'bold' }}>{key}</span>:{' '}
-              {String(record[key])}
+              <span style={{ fontWeight: 'bold' }}>{key}</span>: {String(record[key])}
             </p>
           ))}
         </>
@@ -154,9 +144,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({
     tabList.push({
       key: '3',
       disabled: record.retracted === true,
-      label: (
-        <div className={innerDataRowTargets.citationTab.class()}>Citation</div>
-      ),
+      label: <div className={innerDataRowTargets.citationTab.class()}>Citation</div>,
       children: (
         <Citation
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -170,25 +158,20 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({
     tabList.push({
       key: '4',
       disabled: record.retracted === true,
-      label: (
-        <div className={innerDataRowTargets.additionalTab.class()}>
-          Additional
-        </div>
-      ),
+      label: <div className={innerDataRowTargets.additionalTab.class()}>Additional</div>,
       children: (
         <>
           {showAdditionalLinks && additionalLinks}
-          {showESDOC &&
-            ((record.further_info_url as unknown) as string)[0] !== '' && (
-              <Button
-                type="link"
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                href={record.further_info_url![0]}
-                target="_blank"
-              >
-                ES-DOC
-              </Button>
-            )}
+          {showESDOC && ((record.further_info_url as unknown) as string)[0] !== '' && (
+            <Button
+              type="link"
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              href={record.further_info_url![0]}
+              target="_blank"
+            >
+              ES-DOC
+            </Button>
+          )}
           {showQualityFlags && (
             <Button
               type="link"
@@ -197,20 +180,11 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({
             >
               <Popover
                 placement="topLeft"
-                content={
-                  <img
-                    src={qualityFlagsImg}
-                    alt="Quality Flags Indicator"
-                  ></img>
-                }
+                content={<img src={qualityFlagsImg} alt="Quality Flags Indicator"></img>}
               >
                 <span style={styles.qualityFlagsRow}>
                   {Object.keys(qualityFlags).map((key) => (
-                    <QualityFlag
-                      index={key}
-                      color={qualityFlags[key]}
-                      key={key}
-                    />
+                    <QualityFlag index={key} color={qualityFlags[key]} key={key} />
                   ))}
                 </span>
               </Popover>
@@ -221,121 +195,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({
     });
   }
 
-  return (
-    <TabsD
-      activeKey={record.retracted === true ? '2' : undefined}
-      items={tabList}
-    />
-  );
-  // Disable all tabs excep metadata if the record is retracted
-  /* <TabsD activeKey={record.retracted === true ? '2' : undefined} />;
-  <TabsD.TabPane
-        disabled={record.retracted === true}
-        tab={<div className={innerDataRowTargets.filesTab.class()}>Files</div>}
-        key="1"
-      >
-        <FilesTable
-          id={record.id}
-          numResults={record.number_of_files}
-          filenameVars={filenameVars}
-        />
-      </TabsD.TabPane>
-  <TabsD.TabPane
-        tab={
-          <div className={innerDataRowTargets.metadataTab.class()}>
-            Metadata
-          </div>
-        }
-        key="2"
-      >
-        <h4>Displaying {Object.keys(record).length} keys</h4>
-        <AutoComplete
-          style={{ width: '100%' }}
-          className={innerDataRowTargets.metadataLookupField.class()}
-          options={metaData}
-          placeholder="Lookup a key..."
-          filterOption={
-            /* istanbul ignore next  (inputValue, option) =>
-              (option as Record<'value', string>).value
-                .toUpperCase()
-                .indexOf(inputValue.toUpperCase()) !== -1
-          }
-        />
-        <Divider />
-        {Object.keys(record).map((key) => (
-          <p key={key} style={{ margin: 0 }}>
-            <span style={{ fontWeight: 'bold' }}>{key}</span>:{' '}
-            {String(record[key])}
-          </p>
-        ))}
-      </TabsD.TabPane>
-  {showCitation && (
-        <TabsD.TabPane
-          disabled={record.retracted === true}
-          tab={
-            <div className={innerDataRowTargets.citationTab.class()}>
-              Citation
-            </div>
-          }
-          key="3"
-        >
-          <Citation
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            url={record.citation_url![0]}
-          />
-        </TabsD.TabPane>
-      )}
-  {showAdditionalTab && (
-        <TabsD.TabPane
-          disabled={record.retracted === true}
-          tab={
-            <div className={innerDataRowTargets.additionalTab.class()}>
-              Additional
-            </div>
-          }
-          key="4"
-        >
-          {showAdditionalLinks && additionalLinks}
-          {showESDOC &&
-            ((record.further_info_url as unknown) as string)[0] !== '' && (
-              <Button
-                type="link"
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                href={record.further_info_url![0]}
-                target="_blank"
-              >
-                ES-DOC
-              </Button>
-            )}
-          {showQualityFlags && (
-            <Button
-              type="link"
-              href="https://esgf-node.llnl.gov/projects/obs4mips/DatasetIndicators"
-              target="_blank"
-            >
-              <Popover
-                placement="topLeft"
-                content={
-                  <img
-                    src={qualityFlagsImg}
-                    alt="Quality Flags Indicator"
-                  ></img>
-                }
-              >
-                <span style={styles.qualityFlagsRow}>
-                  {Object.keys(qualityFlags).map((key) => (
-                    <QualityFlag
-                      index={key}
-                      color={qualityFlags[key]}
-                      key={key}
-                    />
-                  ))}
-                </span>
-              </Popover>
-            </Button>
-          )}
-        </TabsD.TabPane>
-      )}*/
+  return <TabsD activeKey={record.retracted === true ? '2' : undefined} items={tabList} />;
 };
 
 export default Tabs;

@@ -1,0 +1,54 @@
+volumes:
+  traefik_certs: {}
+
+services:
+  traefik:
+    restart: unless-stopped
+    volumes:
+      - traefik_certs:/etc/traefik/acme
+      - ./traefik/traefik.prod.yml:/etc/traefik/traefik.yml
+    ports:
+      - "0.0.0.0:80:9080"
+      - "0.0.0.0:443:9443"
+
+  docs:
+    profiles: [ "docs" ]
+    restart: unless-stopped
+
+  postgres:
+    restart: unless-stopped
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: ""
+      PGPASSWORD: ""
+      PGUSER: ""
+
+  django:
+    restart: unless-stopped
+    environment:
+      DJANGO_DEBUG: False
+      DJANGO_SECRET_KEY: ""
+      DJANGO_EMAIL_BACKEND: "django.core.mail.backends.smtp.EmailBackend"
+      DJANGO_SOCIAL_AUTH_REDIRECT_IS_HTTPS: True
+      DJANGO_SECURE_PROXY_SSL_HEADER: '["HTTP_X_FORWARDED_PROTO", "https"]'
+      DJANGO_SECURE_SSL_REDIRECT: True
+      DJANGO_SESSION_COOKIE_SECURE: True
+      DJANGO_CSRF_COOKIE_SECURE: True
+      DJANGO_SECURE_HSTS_SECONDS: 518400
+      DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS: True
+      DJANGO_SECURE_HSTS_PRELOAD: True
+
+  react:
+    image: metagrid_prod_react
+    build:
+      # The prod build target includes a production ready nginx server
+      target: prod
+    restart: unless-stopped
+
+  keycloak:
+    profiles: [ "keycloak" ]
+    command: start
+    volumes: []
+    restart: unless-stopped
+    environment:
+      KEYCLOAK_USER: ""
+      KEYCLOAK_PASSWORD: ""

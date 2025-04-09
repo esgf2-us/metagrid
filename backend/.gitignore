@@ -90,3 +90,6 @@ ENV/
 .env
 .envs/.production/.django
 .envs/.production/.postgres
+
+# Helm
+helm/charts/*

@@ -1,16 +1,16 @@
-import { act, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import NodeStatus, { Props } from '.';
 import { ResponseError } from '../../api';
-import { parsedNodeStatusFixture } from '../../test/mock/fixtures';
 import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
+import { RecoilWrapper } from '../../test/jestTestFunctions';
+import { nodeStatusAtom } from '../App/recoil/atoms';
 
 const user = userEvent.setup();
 
 const defaultProps: Props = {
-  nodeStatus: parsedNodeStatusFixture(),
   apiError: undefined,
   isLoading: false,
 };
@@ -38,21 +38,18 @@ it('renders the node status and columns sort', async () => {
 
   expect(nodeColHeader).toBeTruthy();
 
-  await act(async () => {
-    await user.click(nodeColHeader);
-  });
+  await user.click(nodeColHeader);
 
   const isOnlineColHeader = await screen.findByRole('columnheader', {
     name: 'Online',
   });
   expect(isOnlineColHeader).toBeTruthy();
 
-  await act(async () => {
-    await user.click(isOnlineColHeader);
-  });
+  await user.click(isOnlineColHeader);
 });
 
 it('renders an error message when no node status information is available', async () => {
+  RecoilWrapper.modifyAtomValue(nodeStatusAtom.key, []);
   customRender(<NodeStatus isLoading={false} />);
 
   const alertMsg = await screen.findByRole('alert');
@@ -62,11 +59,10 @@ it('renders an error message when no node status information is available', asyn
 it('renders an error message when there is an api error', async () => {
   const errorMsg = 'Node status information is currently unavailable.';
 
+  RecoilWrapper.modifyAtomValue(nodeStatusAtom.key, []);
   customRender(
-    <NodeStatus
-      isLoading={false}
-      apiError={Error(errorMsg) as ResponseError}
-    ></NodeStatus>
+    <NodeStatus isLoading={false} apiError={Error(errorMsg) as ResponseError}></NodeStatus>,
+    { usesRecoil: true }
   );
 
   const alertMsg = await screen.findByRole('alert');
@@ -80,7 +76,10 @@ it('renders error message that feature is disabled', async () => {
   const errorMsg =
     'This feature is not enabled on this node or status information is currently unavailable.';
 
-  customRender(<NodeStatus isLoading={false} nodeStatus={[]}></NodeStatus>);
+  RecoilWrapper.modifyAtomValue(nodeStatusAtom.key, []);
+  customRender(<NodeStatus isLoading={false} />, {
+    usesRecoil: true,
+  });
 
   const alertMsg = await screen.findByRole('alert');
   expect(alertMsg).toBeTruthy();
@@ -92,7 +91,8 @@ it('renders error message that feature is disabled', async () => {
 it('renders fallback network error msg', async () => {
   const errorMsg = apiRoutes.nodeStatus.handleErrorMsg('generic');
 
-  customRender(<NodeStatus isLoading={false}></NodeStatus>);
+  RecoilWrapper.modifyAtomValue(nodeStatusAtom.key, (undefined as unknown) as []);
+  customRender(<NodeStatus isLoading={false} />);
 
   const alertMsg = await screen.findByRole('alert');
   expect(alertMsg).toBeTruthy();
