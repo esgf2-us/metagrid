@@ -10,6 +10,7 @@ export enum AppPage {
 }
 
 export type FrontendConfig = {
+  HOST_SUBPATH: string;
   // General
   AUTHENTICATION_METHOD: 'keycloak' | 'globus';
   GOOGLE_ANALYTICS_TRACKING_ID: string | null;

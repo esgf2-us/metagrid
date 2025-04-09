@@ -122,3 +122,8 @@ class MetagridFrontendSettings(BaseSettings):
         examples=["UA-12345678-1"],
         description="The Google Analytics tracking ID for tracking user interactions.",
     )
+    HOST_SUBPATH: str = Field(
+        default="/",
+        examples=["/", "/metagrid"],
+        description="The subpath at which metagrid is hosted.",
+    )
