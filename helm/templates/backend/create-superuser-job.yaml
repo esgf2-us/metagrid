@@ -1,0 +1,53 @@
+{{- if .Values.backend.admin.create }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "metagrid.fullname" $ }}-create-django-superuser
+  labels:
+    app.kubernetes.io/component: migrate-job
+    {{- include "metagrid.labels" . | nindent 4 }}
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": post-install
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: {{ .Values.backend.migrateJob.backoffLimit }}
+  template:
+    spec:
+      restartPolicy: OnFailure
+      {{- with .Values.backend.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "metagrid.fullname" . }}-backend
+      securityContext:
+        {{- toYaml .Values.backend.podSecurityContext | nindent 8 }}
+      containers:
+      - name: migrations
+        securityContext:
+          {{- toYaml .Values.backend.securityContext | nindent 12 }}
+        image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+        envFrom:
+        - secretRef:
+            name: {{ include "metagrid.fullname" . }}-config
+        command: ['/bin/bash', '-c']
+        args:
+        - python manage.py createsuperuser --noinput
+        resources:
+          {{- toYaml .Values.backend.resources | nindent 12 }}
+      {{- with .Values.backend.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.backend.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.backend.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end -}}

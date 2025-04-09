@@ -1,5 +1,6 @@
 import { atom } from 'recoil';
 import { GlobusEndpoint, GlobusTaskItem } from '../types';
+import { localStorageEffect } from '../../../common/utils';
 
 // Folder structure based on: https://wes-rast.medium.com/recoil-project-structure-best-practices-79e74a475caa
 
@@ -13,12 +14,13 @@ enum GlobusStateKeys {
   savedGlobusEndpoints = 'savedGlobusEndpoints',
 }
 
-export const globusTaskItems = atom<GlobusTaskItem[]>({
+export const globusTaskItemsAtom = atom<GlobusTaskItem[]>({
   key: GlobusStateKeys.globusTaskItems,
   default: [],
+  effects: [localStorageEffect<GlobusTaskItem[]>(GlobusStateKeys.globusTaskItems, [])],
 });
 
-export const globusSavedEndpoints = atom<GlobusEndpoint[]>({
+export const globusSavedEndpointsAtoms = atom<GlobusEndpoint[]>({
   key: GlobusStateKeys.savedGlobusEndpoints,
   default: [
     {
@@ -33,6 +35,7 @@ export const globusSavedEndpoints = atom<GlobusEndpoint[]>({
       subscription_id: '',
     },
   ],
+  effects: [localStorageEffect<GlobusEndpoint[]>(GlobusStateKeys.savedGlobusEndpoints, [])],
 });
 
 export default GlobusStateKeys;

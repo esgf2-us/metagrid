@@ -10,9 +10,10 @@ type CitationInfoProps = {
   children: React.ReactNode;
 };
 
-export const CitationInfo: React.FC<
-  React.PropsWithChildren<CitationInfoProps>
-> = ({ title, children }) => (
+export const CitationInfo: React.FC<React.PropsWithChildren<CitationInfoProps>> = ({
+  title,
+  children,
+}) => (
   <p style={{ margin: 0 }}>
     <span style={{ fontWeight: 'bold' }}>{title}: </span>
     {children}
@@ -23,9 +24,7 @@ type CitationProps = {
   url: string;
 };
 
-const Citation: React.FC<React.PropsWithChildren<CitationProps>> = ({
-  url,
-}) => {
+const Citation: React.FC<React.PropsWithChildren<CitationProps>> = ({ url }) => {
   const { data, error, isLoading } = useAsync({
     promiseFn: (fetchDatasetCitation as unknown) as PromiseFn<RawCitation>,
     url,
@@ -54,20 +53,14 @@ const Citation: React.FC<React.PropsWithChildren<CitationProps>> = ({
       {data && (
         <div>
           <CitationInfo title="Identifier DOI">
-            <a
-              href={data.identifierDOI}
-              rel="noopener noreferrer"
-              target="_blank"
-            >
+            <a href={data.identifierDOI} rel="noopener noreferrer" target="_blank">
               {data.identifierDOI}
             </a>
           </CitationInfo>
           <CitationInfo title="Creators">{data.creatorsList}</CitationInfo>
           <CitationInfo title="Titles">{data.titles}</CitationInfo>
           <CitationInfo title="Publisher">{data.publisher}</CitationInfo>
-          <CitationInfo title="Publication Year">
-            {data.publicationYear}
-          </CitationInfo>
+          <CitationInfo title="Publication Year">{data.publicationYear}</CitationInfo>
           <CitationInfo title="License">{data.license}</CitationInfo>
         </div>
       )}

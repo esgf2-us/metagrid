@@ -29,6 +29,7 @@ export type TemplateProps = {
 
 export type MessageData = {
   messageId: string;
+  fileName: string;
   template: MessageTemplates;
   data: ValidTemplateData;
   style?: CSSProperties;
@@ -40,7 +41,10 @@ export type StartPopupData = {
   messageData: MessageData[];
 };
 
-export type MarkdownMessage = {
-  fileName: string;
-  title: string;
+export type MessageJSON = {
+  changelogVersions: string[];
+  messages: {
+    title: string;
+    fileName: string;
+  }[];
 };

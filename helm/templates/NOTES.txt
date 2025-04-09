@@ -1,0 +1,20 @@
+___  ___     _                   _     _
+|  \/  |    | |                 (_)   | |
+| .  . | ___| |_ __ _  __ _ _ __ _  __| |
+| |\/| |/ _ \ __/ _` |/ _` | '__| |/ _` |
+| |  | |  __/ || (_| | (_| | |  | | (_| |
+\_|  |_/\___|\__\__,_|\__, |_|  |_|\__,_|
+                       __/ |
+                      |___/
+-----------------------------------------
+
+{{- if .Values.ingress.enabled }}
+1. Visit the following URL for the application:
+  http{{ if .Values.ingress.tls }}s{{ end }}://{{ .Values.ingress.host }}/search
+{{- else }}
+Configurations not utilizing an ingress are not officially supported.
+
+-- WARNING -----------------------------------------------------------------
+| The frontend components require the backend to be under the same domain. |
+----------------------------------------------------------------------------
+{{- end }}

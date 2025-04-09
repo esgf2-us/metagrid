@@ -41,17 +41,13 @@ describe('test Citation component', () => {
     expect(skeletonHeading).toBeTruthy();
 
     // Check citation information rendered correctly
-    const citationCreators = await screen.findByText(
-      'Bobby; Tommy; Timmy; et al.'
-    );
+    const citationCreators = await screen.findByText('Bobby; Tommy; Timmy; et al.');
     expect(citationCreators).toBeInTheDocument();
   });
   it('renders Alert error fetching citation data ', async () => {
     server.use(
       // ESGF Citation API (uses dummy link)
-      rest.post(apiRoutes.citation.path, (_req, res, ctx) =>
-        res(ctx.status(404))
-      )
+      rest.post(apiRoutes.citation.path, (_req, res, ctx) => res(ctx.status(404)))
     );
     customRender(<Citation url="citation_a" />);
 

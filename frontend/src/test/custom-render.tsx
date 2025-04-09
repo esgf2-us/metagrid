@@ -1,21 +1,13 @@
 import { ReactKeycloakProvider } from '@react-keycloak/web';
 import { render, RenderResult } from '@testing-library/react';
-import Keycloak from 'keycloak-js';
 import React from 'react';
-import { MutableSnapshot, RecoilRoot } from 'recoil';
 import { MemoryRouter } from 'react-router-dom';
-import {
-  GlobusAuthProvider,
-  AuthContext,
-  KeycloakAuthProvider,
-} from '../contexts/AuthContext';
-import { keycloakProviderInitConfig } from '../lib/keycloak';
+import Keycloak from 'keycloak-js';
+import { RecoilRoot } from 'recoil';
+import { GlobusAuthProvider, AuthContext, KeycloakAuthProvider } from '../contexts/AuthContext';
 import { ReactJoyrideProvider } from '../contexts/ReactJoyrideContext';
-import { authenticationMethod, publicUrl } from '../env';
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
-
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-const keycloak = new Keycloak();
+import { RecoilWrapper } from './jestTestFunctions';
 
 /**
  * Wraps components in all implemented React Context Providers for testing using keycloak or globus
@@ -24,11 +16,9 @@ const keycloak = new Keycloak();
 const AuthProvider = ({
   children,
   authenticated,
-  snapshotSetFunc,
 }: {
   children: React.ReactNode;
   authenticated: boolean;
-  snapshotSetFunc: ((mutableSnapshot: MutableSnapshot) => void) | undefined;
 }): React.ReactElement => {
   let authInfo: RawUserAuth & RawUserInfo = {
     access_token: null,
@@ -48,54 +38,77 @@ const AuthProvider = ({
     };
   }
 
-  if (authenticationMethod === 'keycloak') {
+  if (window.METAGRID.AUTHENTICATION_METHOD === 'keycloak') {
+    // Setup Keycloak instance as needed
+    // Pass initialization options as required or leave blank to load from 'keycloak.json'
+    // Source: https://github.com/panz3r/react-keycloak/blob/master/packages/web/README.md
+    const keycloak = new Keycloak({
+      realm: window.METAGRID.KEYCLOAK_REALM,
+      url: window.METAGRID.KEYCLOAK_URL,
+      clientId: window.METAGRID.KEYCLOAK_CLIENT_ID,
+    });
+
+    const keycloakProviderInitConfig = {
+      onLoad: 'check-sso',
+      flow: 'standard',
+    };
     return (
-      <RecoilRoot initializeState={snapshotSetFunc}>
-        <ReactKeycloakProvider
-          authClient={keycloak}
-          initOptions={keycloakProviderInitConfig}
-        >
-          <KeycloakAuthProvider>
-            <AuthContext.Provider value={authInfo}>
-              <MemoryRouter basename={publicUrl}>
-                <ReactJoyrideProvider>{children}</ReactJoyrideProvider>
-              </MemoryRouter>
-            </AuthContext.Provider>
-          </KeycloakAuthProvider>
-        </ReactKeycloakProvider>
-      </RecoilRoot>
+      <ReactKeycloakProvider authClient={keycloak} initOptions={keycloakProviderInitConfig}>
+        <KeycloakAuthProvider>
+          <AuthContext.Provider value={authInfo}>
+            <MemoryRouter>
+              <ReactJoyrideProvider>{children}</ReactJoyrideProvider>
+            </MemoryRouter>
+          </AuthContext.Provider>
+        </KeycloakAuthProvider>
+      </ReactKeycloakProvider>
     );
   }
 
   return (
-    <RecoilRoot initializeState={snapshotSetFunc}>
-      <GlobusAuthProvider>
-        <AuthContext.Provider value={authInfo}>
-          <MemoryRouter basename={process.env.PUBLIC_URL}>
-            <ReactJoyrideProvider>{children}</ReactJoyrideProvider>
-          </MemoryRouter>
-        </AuthContext.Provider>
-      </GlobusAuthProvider>
-    </RecoilRoot>
+    <GlobusAuthProvider>
+      <AuthContext.Provider value={authInfo}>
+        <MemoryRouter>
+          <ReactJoyrideProvider>{children}</ReactJoyrideProvider>
+        </MemoryRouter>
+      </AuthContext.Provider>
+    </GlobusAuthProvider>
   );
 };
 
 const customRender = (
   ui: React.ReactElement,
-  options?: Record<string, unknown>,
-  authenticated = true,
-  snapshotFunc?: ((mutableSnapshot: MutableSnapshot) => void) | undefined
-): RenderResult =>
-  render(ui, {
+  options: {
+    usesRecoil?: boolean;
+    authenticated?: boolean;
+    options?: Record<string, unknown>;
+  } = { usesRecoil: true, authenticated: true, options: {} }
+): RenderResult => {
+  if (options.usesRecoil) {
+    return render(ui, {
+      wrapper: () =>
+        RecoilWrapper.wrap(
+          <AuthProvider
+            authenticated={options.authenticated !== undefined ? options.authenticated : true}
+          >
+            {ui}
+          </AuthProvider>
+        ),
+      ...options.options,
+    });
+  }
+  return render(ui, {
     wrapper: () => (
-      <AuthProvider
-        authenticated={authenticated}
-        snapshotSetFunc={snapshotFunc}
-      >
-        {ui}
-      </AuthProvider>
+      <RecoilRoot>
+        <AuthProvider
+          authenticated={options.authenticated !== undefined ? options.authenticated : true}
+        >
+          {ui}
+        </AuthProvider>
+      </RecoilRoot>
     ),
-    ...options,
+    ...options.options,
   });
+};
 
 export default customRender;

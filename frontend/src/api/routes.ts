@@ -1,15 +1,10 @@
-import { esgfSearchURL, metagridApiURL } from '../env';
-
 export type HTTPCodeType = 400 | 401 | 403 | 404 | 405 | 408 | 'generic';
 
 /**
  * Update this function if more API HTTP codes need to be handled.
  * https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
  */
-export const mapHTTPErrorCodes = (
-  service: string,
-  HTTPCode: HTTPCodeType
-): string => {
+export const mapHTTPErrorCodes = (service: string, HTTPCode: HTTPCodeType): string => {
   const HTTPCodes = {
     400: `Your request to the ${service} service was invalid. Please contact support.`,
     401: `Your request to the ${service} service was unauthorized. Please contact support.`,
@@ -46,98 +41,87 @@ type ApiRoutes = {
   nodeStatus: ApiRoute;
   tempStorageGet: ApiRoute;
   tempStorageSet: ApiRoute;
+  frontendConfig: ApiRoute;
+  introMarkdown: ApiRoute;
 };
-
-/**
- * Stripping the prefix proxy string is necessary if the route needs to be
- * served as a clickable link within the browser.
- */
-export const clickableRoute = (route: string): string =>
-  route.replace(`${metagridApiURL}/proxy/search`, `${esgfSearchURL}`);
 
 // Any path with parameters (e.g. '/:datasetID/') must be in camelCase
 // https://mswjs.io/docs/basics/path-matching#path-with-parameters
 const apiRoutes: ApiRoutes = {
   // Globus APIs
   globusAuth: {
-    path: `${metagridApiURL}/proxy/globus-auth/`,
+    path: `${window.location.origin}/proxy/globus-auth/`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Globus', HTTPCode),
   },
-  // globusGetEndpoint: {
-  //   path: `${metagridApiURL}/proxy/globus-get-endpoint/`,
-  //   handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Globus', HTTPCode),
-  // },
   globusSearchEndpoints: {
-    path: `${metagridApiURL}/proxy/globus-search-endpoints/`,
+    path: `${window.location.origin}/proxy/globus-search-endpoints/`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Globus', HTTPCode),
   },
   // MetaGrid APIs
   keycloakAuth: {
-    path: `${metagridApiURL}/dj-rest-auth/keycloak`,
+    path: `${window.location.origin}/dj-rest-auth/keycloak`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Keycloak', HTTPCode),
   },
   globusTransfer: {
-    path: `${metagridApiURL}/globus/transfer`,
-    handleErrorMsg: (HTTPCode) =>
-      mapHTTPErrorCodes('Globus transfer', HTTPCode),
+    path: `${window.location.origin}/globus/transfer`,
+    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Globus transfer', HTTPCode),
   },
   userInfo: {
-    path: `${metagridApiURL}/dj-rest-auth/user/`,
-    handleErrorMsg: (HTTPCode) =>
-      mapHTTPErrorCodes('user authentication', HTTPCode),
+    path: `${window.location.origin}/dj-rest-auth/user/`,
+    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('user authentication', HTTPCode),
   },
   userCart: {
-    path: `${metagridApiURL}/api/v1/carts/datasets/:pk/`,
+    path: `${window.location.origin}/api/v1/carts/datasets/:pk/`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('user cart', HTTPCode),
   },
   userSearches: {
-    path: `${metagridApiURL}/api/v1/carts/searches/`,
-    handleErrorMsg: (HTTPCode) =>
-      mapHTTPErrorCodes('user saved searches', HTTPCode),
+    path: `${window.location.origin}/api/v1/carts/searches/`,
+    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('user saved searches', HTTPCode),
   },
   userSearch: {
-    path: `${metagridApiURL}/api/v1/carts/searches/:pk/`,
-    handleErrorMsg: (HTTPCode) =>
-      mapHTTPErrorCodes('user saved searches', HTTPCode),
+    path: `${window.location.origin}/api/v1/carts/searches/:pk/`,
+    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('user saved searches', HTTPCode),
   },
   projects: {
-    path: `${metagridApiURL}/api/v1/projects/`,
-    handleErrorMsg: (HTTPCode) =>
-      mapHTTPErrorCodes('MetaGrid projects API', HTTPCode),
+    path: `${window.location.origin}/api/v1/projects/`,
+    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('MetaGrid projects API', HTTPCode),
   },
   // ESGF Search API
   esgfSearch: {
-    path: `${metagridApiURL}/proxy/search`,
-    handleErrorMsg: (HTTPCode) =>
-      mapHTTPErrorCodes('ESGF Search API', HTTPCode),
+    path: `${window.location.origin}/proxy/search`,
+    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('ESGF Search API', HTTPCode),
   },
   // ESGF Citation API (uses dummy path 'citation_url' for testing since the
   // URL is included in each Search API dataset result)
   citation: {
-    path: `${metagridApiURL}/proxy/citation`,
-    handleErrorMsg: (HTTPCode) =>
-      mapHTTPErrorCodes('ESGF Citation API', HTTPCode),
+    path: `${window.location.origin}/proxy/citation`,
+    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('ESGF Citation API', HTTPCode),
   },
   // ESGF wget API
   wget: {
-    path: `${metagridApiURL}/proxy/wget`,
+    path: `${window.location.origin}/proxy/wget`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('ESGF wget API', HTTPCode),
   },
   // ESGF Node Status API
   nodeStatus: {
-    path: `${metagridApiURL}/proxy/status`,
-    handleErrorMsg: (HTTPCode) =>
-      mapHTTPErrorCodes('ESGF Node Status API', HTTPCode),
+    path: `${window.location.origin}/proxy/status`,
+    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('ESGF Node Status API', HTTPCode),
   },
   tempStorageGet: {
-    path: `${metagridApiURL}/tempStorage/get`,
-    handleErrorMsg: (HTTPCode) =>
-      mapHTTPErrorCodes('Temp Storage Get', HTTPCode),
+    path: `${window.location.origin}/tempStorage/get`,
+    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Temp Storage Get', HTTPCode),
   },
   tempStorageSet: {
-    path: `${metagridApiURL}/tempStorage/set`,
-    handleErrorMsg: (HTTPCode) =>
-      mapHTTPErrorCodes('Temp Storage Set', HTTPCode),
+    path: `${window.location.origin}/tempStorage/set`,
+    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Temp Storage Set', HTTPCode),
+  },
+  frontendConfig: {
+    path: `${window.location.origin}/frontend-config.js`,
+    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Frontend Config', HTTPCode),
+  },
+  introMarkdown: {
+    path: `${window.location.origin}/messages/metagrid_messages.md`,
+    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Introduction Markdown', HTTPCode),
   },
 };
 

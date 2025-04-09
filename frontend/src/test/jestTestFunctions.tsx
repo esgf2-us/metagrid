@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * This file contains tests for the App component.
  *
@@ -5,58 +6,38 @@
  * in order to mock their behaviors.
  *
  */
-import { within, screen, act } from '@testing-library/react';
-import { UserEvent } from '@testing-library/user-event/dist/types/setup/setup';
+import { screen } from '@testing-library/react';
 import { message } from 'antd';
-import { ReactNode, CSSProperties } from 'react';
-import * as enviroConfig from '../env';
+import React, { ReactNode, CSSProperties } from 'react';
+import { UserEvent } from '@testing-library/user-event';
+import { RecoilState, RecoilRoot } from 'recoil';
 import { NotificationType, getSearchFromUrl } from '../common/utils';
 import { RawSearchResult } from '../components/Search/types';
 import { rawSearchResultFixture } from './mock/fixtures';
+import { FrontendConfig } from '../common/types';
+import { tempStorageGetMock } from './mock/mockStorage';
 
-// For mocking environment variables
-export type MockConfig = {
-  authenticationMethod: string;
-  globusEnabledNodes: string[];
-};
-
-// For mocking environment variables
 // https://www.mikeborozdin.com/post/changing-jest-mocks-between-tests
-export const mockConfig: MockConfig = enviroConfig;
-
-export const originalEnabledNodes = [
+export const originalGlobusEnabledNodes = [
   'aims3.llnl.gov',
   'esgf-data1.llnl.gov',
   'esgf-data2.llnl.gov',
 ];
 
+export const mockConfig: FrontendConfig = {
+  GLOBUS_CLIENT_ID: 'frontend',
+  GLOBUS_NODES: originalGlobusEnabledNodes,
+  KEYCLOAK_REALM: 'esgf',
+  KEYCLOAK_URL: 'http://localhost:1337',
+  KEYCLOAK_CLIENT_ID: 'frontend',
+  HOTJAR_ID: 1234,
+  HOTJAR_SV: 1234,
+  AUTHENTICATION_METHOD: 'keycloak',
+  FOOTER_TEXT: 'Footer text',
+  GOOGLE_ANALYTICS_TRACKING_ID: 'UA-XXXXXXXXX-YY',
+};
+
 export const activeSearch = getSearchFromUrl();
-
-export const sessionStorageMock = (() => {
-  let store: { [key: string]: unknown } = {};
-
-  return {
-    getItem<T>(key: string): T {
-      return store[key] as T;
-    },
-
-    setItem<T>(key: string, value: T): void {
-      store[key] = value;
-    },
-
-    clear() {
-      store = {};
-    },
-
-    removeItem(key: string) {
-      delete store[key];
-    },
-
-    getAll() {
-      return store;
-    },
-  };
-})();
 
 // This will get a mock value from temp storage to use for keycloak
 export const mockKeycloakToken = mockFunction(() => {
@@ -74,23 +55,13 @@ export const mockKeycloakToken = mockFunction(() => {
   };
 });
 
-export function tempStorageGetMock<T>(key: string): T {
-  const value = sessionStorageMock.getItem<T>(key);
-  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-  return value;
-}
-
-export function tempStorageSetMock<T>(key: string, value: T): void {
-  sessionStorageMock.setItem<T>(key, value);
-}
-
 export function mockFunction<T extends (...args: unknown[]) => unknown>(
   fn: T
 ): jest.MockedFunction<T> {
   return fn as jest.MockedFunction<T>;
 }
 
-export function printElementContents(element: HTMLElement | undefined): void {
+export function printElementContents(element: HTMLElement | undefined = undefined): void {
   screen.debug(element, Number.POSITIVE_INFINITY);
 }
 
@@ -143,13 +114,114 @@ export async function showNoticeStatic(
   }
 }
 
-export const globusReadyNode = 'nodeIsGlobusReady';
-export const nodeNotGlobusReady = 'nodeIsNotGlobusReady';
+export const globusReadyNode: string = 'nodeIsGlobusReady';
+export const nodeNotGlobusReady: string = 'nodeIsNotGlobusReady';
 
-export function makeCartItem(
-  id: string,
-  globusReady: boolean
-): RawSearchResult {
+export class RecoilWrapper {
+  private static instance: RecoilWrapper;
+
+  private ATOMS: {
+    [key: string]: {
+      atom: RecoilState<unknown>;
+      value: unknown;
+      prevValue: unknown;
+      saveLocal: boolean;
+    };
+  } = {};
+
+  private constructor() {
+    this.ATOMS = {};
+  }
+
+  public static get Instance(): RecoilWrapper {
+    if (!this.instance) {
+      this.instance = new this();
+    }
+    return this.instance;
+  }
+
+  public static listEntries(): void {
+    const instance = this.Instance;
+    Object.keys(instance.ATOMS).forEach((key) => {
+      const atomInfo = instance.ATOMS[key];
+      console.log(`Key: ${key}`);
+      console.log(`Value: ${JSON.stringify(atomInfo.value)}`);
+      console.log(`Previous Value: ${JSON.stringify(atomInfo.prevValue)}`);
+      console.log(`Save Local: ${atomInfo.saveLocal}`);
+      console.log('-------------------');
+    });
+  }
+
+  public static setAtomValue<T>(
+    recoilAtom: RecoilState<T>,
+    value: T,
+    saveLocal: boolean
+  ): RecoilWrapper {
+    const instance = this.Instance;
+    instance.ATOMS[recoilAtom.key] = {
+      atom: recoilAtom as RecoilState<unknown>,
+      value,
+      prevValue: null,
+      saveLocal,
+    };
+    return instance;
+  }
+
+  public static getAtomValue<T>(key: string): T {
+    return this.Instance.ATOMS[key].value as T;
+  }
+
+  public static modifyAtomValue<T>(key: string, value: T): RecoilWrapper {
+    const instance = this.Instance;
+    if (instance.ATOMS[key]) {
+      instance.ATOMS[key].prevValue = instance.ATOMS[key].value;
+      instance.ATOMS[key].value = value;
+    } else {
+      console.error(`Atom ${key} not found in RecoilWrapper. Please set the atom value first.`);
+    }
+
+    return instance;
+  }
+
+  public static restoreValues(): RecoilWrapper {
+    const instance = this.Instance;
+    Object.keys(instance.ATOMS).forEach((key) => {
+      const atomInfo = instance.ATOMS[key];
+      if (atomInfo.prevValue) {
+        atomInfo.value = atomInfo.prevValue;
+        atomInfo.prevValue = null;
+      }
+    });
+    return instance;
+  }
+
+  public static wrap(children: React.ReactElement): React.ReactElement {
+    const instance = this.Instance;
+    Object.keys(instance.ATOMS).forEach((key) => {
+      const atomInfo = instance.ATOMS[key];
+
+      // Save the atoms to the local storage
+      if (atomInfo.saveLocal) {
+        saveToLocalStorage(key, atomInfo.value);
+      }
+    });
+
+    return (
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          Object.keys(instance.ATOMS).forEach((key) => {
+            const atomInfo = instance.ATOMS[key];
+            snapshot.set(atomInfo.atom, atomInfo.value);
+          });
+        }}
+      >
+        {children}
+      </RecoilRoot>
+    );
+  }
+}
+
+export function makeCartItem(id: string, globusReady: boolean): RawSearchResult {
   return rawSearchResultFixture({
     id,
     title: id,
@@ -159,135 +231,33 @@ export function makeCartItem(
   });
 }
 
-/**
- * Creates the appropriate name string when performing getByRole('row')
- */
-export function getRowName(
-  cartButton: 'plus' | 'minus',
-  nodeCircleType: 'question' | 'check' | 'close',
-  title: string,
-  fileCount: string,
-  totalSize: string,
-  version: string,
-  globusReady?: boolean
-): RegExp {
-  let totalBytes = `${totalSize} Bytes`;
-  if (Number.isNaN(Number(totalSize))) {
-    totalBytes = totalSize;
-  }
-  let globusReadyCheck = mockConfig.globusEnabledNodes.length > 0 ? ' .*' : '';
-  if (globusReady !== undefined) {
-    globusReadyCheck = globusReady ? ' check-circle' : ' close-circle';
-  }
-  const newRegEx = new RegExp(
-    `right-circle ${cartButton} ${nodeCircleType}-circle ${title} ${fileCount} ${totalBytes} ${version} wget download${globusReadyCheck}`
-  );
-
-  return newRegEx;
-}
-
-export async function submitKeywordSearch(
-  inputText: string,
-  user: UserEvent
-): Promise<void> {
+export async function submitKeywordSearch(inputText: string, user: UserEvent): Promise<void> {
   // Check left menu rendered
   const leftMenuComponent = await screen.findByTestId('left-menu');
   expect(leftMenuComponent).toBeTruthy();
 
   // Type in value for free-text input
-  const freeTextForm = await screen.findByPlaceholderText(
-    'Search for a keyword'
-  );
+  const freeTextForm = await screen.findByTestId('left-menu-keyword-search-input');
   expect(freeTextForm).toBeTruthy();
 
-  await act(async () => {
-    await user.type(freeTextForm, inputText);
-  });
+  await user.type(freeTextForm, inputText);
 
   // Submit the form
-  const submitBtn = await within(leftMenuComponent).findByRole('img', {
-    name: 'search',
-  });
-
-  await act(async () => {
-    await user.click(submitBtn);
-  });
+  const submitBtn = await screen.findByTestId('left-menu-keyword-search-submit');
+  await user.click(submitBtn);
 
   await screen.findByTestId('search');
 }
 
-export async function openDropdownList(
-  user: UserEvent,
-  dropdown: HTMLElement
-): Promise<void> {
-  dropdown.focus();
-  await act(async () => {
-    await user.keyboard('[ArrowDown]');
-  });
+export async function openDropdownList(user: UserEvent, dropdown: HTMLElement): Promise<void> {
+  await user.click(dropdown);
 }
 
-export async function selectDropdownOption(
-  user: UserEvent,
-  dropdown: HTMLElement,
-  option: string
-): Promise<void> {
-  act(() => {
-    dropdown.focus();
-  });
-
-  await act(async () => {
-    await user.keyboard('[ArrowDown]');
-  });
-  await act(async () => {
-    const opt = await screen.findByText(option);
-    await user.click(opt);
-  });
+export function saveToLocalStorage<T>(key: string, value: T): void {
+  localStorage.setItem(key, JSON.stringify(value));
 }
 
-export async function addSearchRowsAndGoToCart(
-  user: UserEvent,
-  rows?: HTMLElement[]
-): Promise<void> {
-  let rowsToAdd: HTMLElement[] = [];
-
-  // Get the rows we need to add
-  if (rows) {
-    rowsToAdd = rowsToAdd.concat(rows);
-  } else {
-    const defaultRow = await screen.findByRole('row', {
-      name: getRowName('plus', 'check', 'foo', '3', '1', '1', true),
-    });
-    rowsToAdd.push(defaultRow);
-  }
-
-  // Add the rows by clicking plus button
-  const clickBtns: Promise<void>[] = [];
-  rowsToAdd.forEach((row) => {
-    expect(row).toBeTruthy();
-    const clickBtnFunc = async (): Promise<void> => {
-      const addBtn = (await within(row).findAllByRole('button'))[0];
-      expect(addBtn).toBeTruthy();
-      await act(async () => {
-        await user.click(addBtn);
-      });
-    };
-    clickBtns.push(clickBtnFunc());
-  });
-  await Promise.all(clickBtns);
-
-  // Check 'Added items(s) to the cart' message appears
-  const addText = await screen.findAllByText('Added item(s) to your cart', {
-    exact: false,
-  });
-  expect(addText).toBeTruthy();
-
-  // Switch to the cart page
-  const cartBtn = await screen.findByTestId('cartPageLink');
-  await act(async () => {
-    await user.click(cartBtn);
-  });
-
-  // Wait for cart page to render
-  const summary = await screen.findByTestId('summary');
-  expect(summary).toBeTruthy();
+export function getFromLocalStorage<T>(key: string): T | null {
+  const items = localStorage.getItem(key);
+  return items ? (JSON.parse(items) as T) : null;
 }

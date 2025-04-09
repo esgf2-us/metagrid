@@ -1,9 +1,11 @@
 import React from 'react';
 import Joyride, { ACTIONS, CallBackProps, EVENTS, STATUS } from 'react-joyride';
 import { useNavigate } from 'react-router-dom';
+import { useRecoilValue } from 'recoil';
 import { JoyrideTour } from '../common/JoyrideTour';
-import { getCurrentAppPage } from '../common/reactJoyrideSteps';
 import { AppPage } from '../common/types';
+import { isDarkModeAtom } from '../components/App/recoil/atoms';
+import { getCurrentAppPage } from '../common/utils';
 
 export type RawTourState = {
   getTour: JoyrideTour;
@@ -16,23 +18,25 @@ export type RawTourState = {
 /* istanbul ignore next */
 export const ReactJoyrideContext = React.createContext<RawTourState>({
   getTour: new JoyrideTour('Empty Tour'),
-  setTour: () => {},
+  /* istanbul ignore next */ setTour: () => {},
+  /* istanbul ignore next */
   startTour: () => {},
+  /* istanbul ignore next */
   setCurrentAppPage: () => {},
-  startSpecificTour: () => {},
+  /* istanbul ignore next */ startSpecificTour: () => {},
 });
 
 type Props = { children: React.ReactNode };
 
 const defaultTour = new JoyrideTour('Empty Tour');
 
-export const ReactJoyrideProvider: React.FC<React.PropsWithChildren<Props>> = ({
-  children,
-}) => {
+export const ReactJoyrideProvider: React.FC<React.PropsWithChildren<Props>> = ({ children }) => {
   const navigate = useNavigate();
   const [running, setRunning] = React.useState<boolean>(false);
   const [getTour, setTour] = React.useState<JoyrideTour>(defaultTour);
   const [getStepIndex, setStepIndex] = React.useState<number>(0);
+
+  const isDarkMode = useRecoilValue<boolean>(isDarkModeAtom);
 
   /* istanbul ignore next */
   const nextStep = (index: number): void => {
@@ -135,6 +139,20 @@ export const ReactJoyrideProvider: React.FC<React.PropsWithChildren<Props>> = ({
       <Joyride
         steps={getTour.getSteps()}
         stepIndex={getStepIndex}
+        styles={{
+          tooltip: {
+            backgroundColor: isDarkMode ? '#222' : '#fff',
+            color: isDarkMode ? '#eee' : '#333',
+          },
+          buttonNext: {
+            backgroundColor: isDarkMode ? '#eee' : '#f04',
+            color: isDarkMode ? '#b00' : '#fff',
+          },
+          buttonSkip: {
+            backgroundColor: isDarkMode ? '#222' : '#fff',
+            color: isDarkMode ? '#eee' : '#333',
+          },
+        }}
         run={running}
         callback={handleJoyrideCallback}
         locale={getTour.getLocale()}

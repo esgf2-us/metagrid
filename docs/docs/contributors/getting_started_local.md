@@ -72,23 +72,17 @@ pip install -r requirements/local.txt
 pre-commit install
 ```
 
-**Note: any update to `.pre-commit.config.yaml` requires a reinstallation of the hooks**
+**Note: any update to `.pre-commit.config.yml` requires a reinstallation of the hooks**
 
 ### 2.3 Helpful Commands
-
-Automatically run all pre-commit hooks (just commit)
-
-```bash
-git commit -m '...'
-```
-
-![Pre-commit Output](../images/pre-commit-passing.png)
 
 Manually run all pre-commit hooks
 
 ```bash
 pre-commit run --all-files.
 ```
+
+![Pre-commit Output](../images/pre-commit-passing.png)
 
 Run individual hook
 
@@ -99,34 +93,32 @@ pre-commit run <hook_id>.
 
 ## 3. Set up Back-end
 
-Open the project in a terminal and `cd backend`.
-
 ### 3.1 Build and Run the Stack
 
 This can take a while, especially the first time you run this particular command on your development system but subsequent runs will occur quickly:
 
 ```bash
-docker compose -p metagrid_backend_dev up --build
+docker compose up --build
 ```
 
 ### 3.2 Additional Configuration
 
 #### Update `/etc/hosts` file
 
-The Keycloak docker service can be accessed by other containers over a shared network using its docker service name and port, `keycloak:8080`. More information on how this works can be found in Docker's [networking guide](https://docs.docker.com/compose/networking/).
+The backend Django service can be accessed by other containers over a shared network using its docker service name and port, `django:5000`. More information on how this works can be found in Docker's [networking guide](https://docs.docker.com/compose/networking/).
 
-You will need to bind the hostname `keycloak` to `localhost` to allow the browser to make requests to the Keycloak service. Otherwise, it will not recognize the hostname and a network connection won't be established.
+You will need to bind the hostname `django` to `localhost` to allow the browser to make requests to the backend Django service. Otherwise, it will not recognize the hostname and a network connection won't be established.
 
 1. Open your hosts file with admin privileges
    1. Mac/Linux: `/etc/hosts`
    2. Windows: `C:\Windows\System32\drivers\etc\hosts`
-2. Append `127.0.0.1 keycloak` to the end of the file and save
+2. Append `127.0.0.1 django` to the end of the file and save
 
 #### Create user on Keycloak for authentication
 
 This user will be used for logging into registered Keycloak clients, including the React and Django services.
 
-1. Head over to `localhost:8080`/`keycloak:8080`
+1. Head over to <http://localhost:1337>
 2. Login with admin credentials (automatically created)
    - username: admin
    - password: admin
@@ -134,8 +126,9 @@ This user will be used for logging into registered Keycloak clients, including t
 
 ### 3.3 Accessible Services
 
-- Django: `localhost:8000`
-- Keycloak: `localhost:8080`/`keycloak:8080`
+- Frontend: <http://localhost:9443>
+- Keycloak: <http://localhost:1337>
+- Docs: <http://localhost:8001>
 
 ### 3.4 Troubleshooting
 
@@ -148,17 +141,21 @@ As a result, the Keycloak docker service will not start and outputs the error **
 If you run into this problem, follow these workaround steps:
 
 1. Stop all back-end containers
-   `docker compose -p metagrid_backend_dev down`
-2. Comment out the two relevant lines (`./backend/.envs/.local/.keycloak`)
+
+      docker compose down
+
+2. Comment out the two relevant lines in `docker-compose.yml`:
 
    - `#KEYCLOAK_USER: admin`
-   - `#KEYCLOAK_PASSWORD: pass`
+   - `#KEYCLOAK_PASSWORD: admin`
 
 3. Rebuild and restart the containers
-   `docker compose -p metagrid_backend_dev up --build`
+
+      docker compose up --build
+
 4. Un-do commenting
    - `KEYCLOAK_USER: admin`
-   - `KEYCLOAK_PASSWORD: pass`
+   - `KEYCLOAK_PASSWORD: admin`
 
 Source:
 
@@ -167,29 +164,19 @@ Source:
 
 ## 4. Set up Front-end
 
-Open the project in a terminal and `cd frontend`.
-
 ### 4.1 Build and Run the Stack
 
 This can take a while, especially the first time you run this particular command on your development system but subsequent runs will occur quickly:
 
 ```bash
-docker compose -p metagrid_frontend_dev up --build
+docker compose up --build
 ```
 
 ### 4.2 Accessible Services
 
-- React: `localhost:3000`
+- React: `localhost:9443`
 
 ---
-
-## Convenience Script for Common Tasks
-
-If you cd to the root project directory for metagrid, you'll see there is a `manage_metagrid.sh` script. 
-
-This script provides some convenience functions for common tasks related to running Metagrid. Selecting the 'Start / Stop Local Dev Containers' option in the main menu will automatically build the frontend and backend local containers using the same commands described earlier on this page. If the containers are already running, then the same option will stop the containers instead.
-
-This is a quick way to start and stop the Metagrid app for local development. The other functions in the script are related to production mode and are explained further here: [Getting Started for Production](getting_started_production.md)
 
 ## VSCode Configuration
 

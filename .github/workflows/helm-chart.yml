@@ -1,0 +1,41 @@
+name: Helm chart
+
+on:
+  push:
+    tags:
+    - 'v*'
+
+  pull_request:
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+    - uses: actions/checkout@v4
+    - uses: azure/setup-helm@v4.3.0
+    - name: Chart | Lint
+      run: |
+        helm repo add bitnami https://charts.bitnami.com/bitnami
+        helm dep build helm/
+        helm lint helm/
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    if: github.event_name != 'pull_request'
+    steps:
+    - uses: actions/checkout@v4
+    - name: Chart | Push
+      uses: appany/helm-oci-chart-releaser@v0.4.2
+      with:
+        name: metagrid
+        repository: esgf2-us
+        tag: ${{ github.ref_name }}
+        path: helm
+        registry: ghcr.io
+        registry_username: ${{ github.actor }}
+        registry_password: ${{ secrets.GITHUB_TOKEN }}
+        update_dependencies: 'true'

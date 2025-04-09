@@ -39,23 +39,18 @@ Adapted from sources:
 
 ```scaffold
 frontend
-├── .envs
-│ └── .react
-├── docker
-│ ├── local
-│ └── production
 ├── public
+│ ├── changelog
+│ │ ├── ...previous changelogs
+│ │ └── v1.3.4.md
+│ ├── messages
+│ │ └── metagrid_messages.md
 │ ├── favicon.ico
 │ ├── index.html
-│ └── manifest.json
+│ ├── manifest.json
+│ └── robots.txt
 ├── src
 │ ├── api
-│ │ ├── mock
-│ │ │ ├── fixtures.ts
-│ │ │ ├── server-handlers.test.ts
-│ │ │ ├── server-handlers.ts
-│ │ │ ├── server.ts
-│ │ │ └── setup-env.ts
 │ │ ├── index.test.ts
 │ │ ├── index.ts
 │ │ └── routes.ts
@@ -73,9 +68,11 @@ frontend
 │ │ └── utils.ts
 │ ├── components
 │ │ ├── App
+│ │ │ ├── recoil
+│ │ │ │ └── atoms.ts
 │ │ │ ├── App.css
-│ │ │ ├── App.tsx
-│ │ │ └── App.test.tsx
+│ │ │ ├── App.test.tsx
+│ │ │ └── App.tsx
 │ │ ├── Cart
 │ │ └── ...
 │ ├── contexts
@@ -91,8 +88,22 @@ frontend
 │ │ ├── keycloak
 │ │ │ └── index.ts
 │ ├── test
-│ │ └── custom-render.tsx
-│ ├── env.ts
+│ │ ├── __mocks__
+│ │ │ ├── assetFileMock.js
+│ │ │ ├── js-pkce.ts
+│ │ │ ├── keycloak-js.tsx
+│ │ │ └── ReactMarkdownMock.tsx
+│ │ ├── mock
+│ │ │ ├── fixtures.ts
+│ │ │ ├── mockStorage.ts
+│ │ │ ├── server-handlers.test.ts
+│ │ │ ├── server-handlers.ts
+│ │ │ ├── server.ts
+│ │ │ └── setup-env.ts
+│ │ ├── custom-render.tsx
+│ │ └── jestTestFunction.tsx
+│ ├── types
+│ │ └── globals.ts
 │ ├── index.css
 │ ├── index.tsx
 │ └── setupTests.ts
@@ -101,42 +112,46 @@ frontend
 ├── .gitignore
 ├── .prettierignore
 ├── .prettierrc
-├── docker-compose.prod.yml
-├── docker-compose.yml
+├── Dockerfile
+├── index.html
+├── Makefile
+├── messageData.json
+├── nginx.conf
 ├── package.json
 ├── README.md
 ├── tsconfig.json
+├── vite.config.js
 └── yarn.lock
 ```
 
-- `.envs/` - stores environment variables for each microservice found in the docker-compose files.
-- `docker/` - stores files used by each microservice found in the docker-compose files, including DockerFiles, start scripts, etc, separated by environment and service
-- `public/` - stores static files used before app is compiled [https://create-react-app.dev/docs/using-the-public-folder/#when-to-use-the-public-folder](https://create-react-app.dev/docs/using-the-public-folder/#when-to-use-the-public-folder)
+- `Dockerfile` - The Dockerfile used by docker compose for the frontend
+- `public/` - stores static files used before app is compiled
 - `src/` - where dynamic files reside, the **bulk of your work is done here**
   - `api/` - contains API related files
-    - `mock/` - API mocking using [_mock-service-worker_](https://mswjs.io/docs/) package to avoid making real requests in test suites. More info [here](https://kentcdodds.com/blog/stop-mocking-fetch)
-      - `fixtures.ts` - stores objects that resemble API response data
-      - `server-handlers.ts` - handles requests to routes by mapping fixtures as responses to each route endpoint
-      - `server.ts` - sets up mock service worker server with server-handlers for tests. Essentially, it creates a mock server that intercepts all requests and handle it as if it were a real server
-      - `setup-envs.ts` - imports the mock service worker server to all tests before initialization
     - `index.ts` - contains promise-based HTTP client request functions to APIs, references `routes.ts` for API URL endpoints
     - `routes.ts` - contains routes to APIs and error-handling
   - `assets/` - stores assets used when the app is compiled
   - `common/` - stores common code used between components such as utility functions
   - `components/` - contains React components and related files.
-    Follow [React Components File Structure](#react-components-file-structure)
+    Follow [React Components File Structure](#file-structure)
   - `contexts/` - stores React [Context](https://reactjs.org/docs/context.html) components, such as for authentication state
   - `lib/` - stores initialized instances of third party library that are exported for use in the codebase (e.g. Axios, Keycloak)
   - `test/` - contains related files and functions shared among tests
+    - `__mocks__/` - Directory containing mock versions of required dependencies to ensure they work with tests
+      - `js-pkce.ts` - A mock of the js-pkce.ts library used for Globus transfer steps
+      - `keycloak-js.tsx` - A mock of the keycloak-js library used for Keycloak authentication
+    - `mock/` - API mocking using [_mock-service-worker_](https://mswjs.io/docs/) package to avoid making real requests in test suites. More info [here](https://kentcdodds.com/blog/stop-mocking-fetch)
+      - `fixtures.ts` - stores objects that resemble API response data
+      - `mockStorage.ts` - functions and code that handles persistent storage requests for the test suite
+      - `server-handlers.ts` - handles requests to routes by mapping fixtures as responses to each route endpoint
+      - `server.ts` - sets up mock service worker server with server-handlers for tests. Essentially, it creates a mock server that intercepts all requests and handle it as if it were a real server
     - `custom-render.tsx` - wraps the react-testing-library render method with contexts from `/context`
-  - `env.ts` - converts environment variables into constants for reusability
+    - `jestTestFunctions.tsx` - contains a set of helper functions that are used by various tests
   - `setupTests.ts` - configuration for additional test environment settings for jest
 - `.dockerignore` - files and folders to ignore when building docker containers
-- `eslintrc.js` - configuration file for ESLint
+- `.eslintrc.js` - configuration file for ESLint
 - `.prettierignore` - files and folders to ignore when running prettier
 - `.prettierrc` - configuration file for prettier
-- `docker-compose.prod.yml` - the production build of docker-compose
-- `docker-compose.yml` - the local development build of docker-compose
 - `tsconfig.json` - configuration file for TypeScript
 - `yarn.lock` - the purpose of a lock file is to lock down the versions of the dependencies specified in a package.json file. This means that in a yarn.lock file, there is an identifier for every dependency and sub dependency that is used for a project
 
@@ -198,21 +213,13 @@ The MetaGrid front-end follows the Airbnb JavaScript and React/JSX style guides.
 Run a command inside the docker container:
 
 ```bash
-docker compose -p metagrid_frontend_dev run --rm react [command]
+docker compose run --rm react [command]
 ```
 
-### `yarn start:local`
+### `yarn start`
 
-Runs the app in the development mode using `.local` environment settings.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
-
-### `yarn start:production`
-
-Runs the app in the development mode using `.production` environment settings.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Runs the app in the development mode using the Vite dev server<br />
+Open <http://localhost:9443> to view it in the browser.
 
 The page will reload if you make edits.<br />
 You will also see any lint errors in the console.
@@ -241,19 +248,9 @@ Runs linters to display violations.<br />
 Runs linters against staged git files and attempts to fix as many issues as possible.<br />
 https://github.com/okonet/lint-staged
 
-### `yarn run build:local`
+### `yarn run build`
 
-Builds the app for production to the `build` folder using `.local` environment settings.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `yarn run build:production`
-
-Builds the app for production to the `build` folder using `.production` environment settings.<br />
+Builds the app for production to the `build` folder.<br />
 It correctly bundles React in production mode and optimizes the build for the best performance.
 
 The build is minified and the filenames include the hashes.<br />
