@@ -125,7 +125,11 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
   // Component internal state
   const [chosenGlobusEndpoint, setChosenGlobusEndpoint] = React.useState<GlobusEndpoint | null>();
-  db.addVar(GlobusStateKeys.userChosenEndpoint, null, setChosenGlobusEndpoint);
+  db.addVar<GlobusEndpoint | null | undefined>(
+    GlobusStateKeys.userChosenEndpoint,
+    null,
+    setChosenGlobusEndpoint
+  );
 
   const [varsLoaded, setVarsLoaded] = React.useState<boolean>(false);
 

@@ -763,7 +763,7 @@ describe('DatasetDownload form tests', () => {
     );
   });
 
-  xit('displays 10 tasks at most in the submit history', async () => {
+  it('displays 10 tasks at most in the submit history', async () => {
     await initializeComponentForTest({
       ...defaultTestConfig,
       renderFullApp: true,

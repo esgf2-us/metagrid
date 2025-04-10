@@ -1,4 +1,3 @@
-import { SetterOrUpdater } from 'recoil';
 import { loadSessionValue, saveSessionValue } from '../api';
 
 type DataVar<T> = {
@@ -37,7 +36,7 @@ export default class DataBundlePersister {
   addVar<T>(
     key: string,
     defaultVal: T,
-    setterFunc: SetterOrUpdater<T> | undefined = undefined
+    setterFunc: React.Dispatch<React.SetStateAction<T>> | undefined = undefined
   ): void {
     // Create setter function
     const setter = (newValue: T): void => {

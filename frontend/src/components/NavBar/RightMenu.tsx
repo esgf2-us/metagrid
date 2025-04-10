@@ -242,7 +242,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
             onChange={(checked) => setIsDarkMode(!checked)}
             defaultChecked={!isDarkMode}
             data-testid="isDarkModeSwitch"
-          ></Switch>
+          />
           <span>Theme</span>
         </Space>
       ),

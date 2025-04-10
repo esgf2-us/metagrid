@@ -1,7 +1,7 @@
 import { Empty, message, Row } from 'antd';
 import React from 'react';
 import { DeleteOutlined } from '@ant-design/icons';
-import { useAtom } from 'jotai';
+import { useAtom, useAtomValue } from 'jotai';
 import SearchesCard from './SearchesCard';
 import { UserSearchQueries, UserSearchQuery } from './types';
 import { deleteUserSearchQuery, ResponseError } from '../../api';
@@ -19,7 +19,7 @@ const Searches: React.FC = () => {
   const isAuthenticated = accessToken && pk;
 
   // Global states
-  const [isDarkMode] = useAtom<boolean>(isDarkModeAtom);
+  const isDarkMode = useAtomValue<boolean>(isDarkModeAtom);
 
   const [userSearchQueries, setUserSearchQueries] = useAtom<UserSearchQueries>(
     userSearchQueriesAtom

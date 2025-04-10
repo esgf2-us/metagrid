@@ -84,7 +84,7 @@ const customRender = (
     options?: Record<string, unknown>;
   } = { usesAtoms: true, authenticated: true, options: {} }
 ): RenderResult => {
-  if (options.usesAtoms) {
+  if (options.usesAtoms === true) {
     return render(ui, {
       wrapper: () =>
         AtomWrapper.wrap(

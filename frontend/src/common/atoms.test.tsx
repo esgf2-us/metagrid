@@ -53,6 +53,7 @@ describe('isDarkModeAtom', () => {
     render(<TestComponent />);
     const setDarkModeTrueButton = await screen.findByTestId('setDarkModeTrue');
     await userEvent.click(setDarkModeTrueButton);
+    expect(localStorage.getItem('isDarkMode')).toBe('true');
 
     const setDarkModeFalseButton = await screen.findByTestId('setDarkModeFalse');
     await userEvent.click(setDarkModeFalseButton);

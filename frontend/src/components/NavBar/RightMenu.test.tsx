@@ -1,17 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
-import { render, screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { MemoryRouter } from 'react-router-dom';
-import { setMedia } from 'mock-match-media';
 import customRender from '../../test/custom-render';
+import { matchMedia, setMedia } from 'mock-match-media';
 import RightMenu, { Props } from './RightMenu';
 import { mockConfig, mockKeycloakToken, AtomWrapper } from '../../test/jestTestFunctions';
 import { tempStorageSetMock } from '../../test/mock/mockStorage';
 import { activeSearchQueryFixture } from '../../test/mock/fixtures';
 import App from '../App/App';
-import { Provider } from 'jotai';
 import { AppStateKeys } from '../../common/atoms';
 
 const user = userEvent.setup();
@@ -189,47 +187,52 @@ it('displays correct cart and saved searches badge counts', async () => {
 });
 
 describe('Dark Mode', () => {
-  it('respects (prefers-color-scheme: dark) when preference unset', () => {
-    setMedia({
-      'prefers-color-scheme': 'dark',
-    });
-    localStorage.clear();
-    customRender(<RightMenu mode="vertical"></RightMenu>);
-    expect(screen.getByTestId('isDarkModeSwitch')).not.toBeChecked();
-  });
-
-  it('respects (prefers-color-scheme: light) when preference unset', () => {
-    setMedia({
-      'prefers-color-scheme': 'light',
-    });
-    customRender(<RightMenu mode="vertical"></RightMenu>);
-    expect(screen.getByTestId('isDarkModeSwitch')).toBeChecked();
-  });
-
   it('gives precedence to stored preference over prefers-color-scheme', () => {
-    setMedia({
-      'prefers-color-scheme': 'dark',
+    // Set the initial preference to dark mode
+    setMedia({ 'prefers-color-scheme': 'dark' });
+    expect(matchMedia('(prefers-color-scheme: dark)').matches).toBe(true);
+
+    AtomWrapper.modifyAtomValue(AppStateKeys.isDarkMode, false);
+    customRender(<RightMenu mode="vertical"></RightMenu>, { usesAtoms: true });
+    waitFor(() => {
+      expect(screen.getByTestId('isDarkModeSwitch')).toBeChecked();
     });
-    localStorage.setItem(AppStateKeys.isDarkMode, 'false');
-    render(
-      <Provider>
-        <MemoryRouter>
-          <RightMenu mode="vertical"></RightMenu>
-        </MemoryRouter>
-      </Provider>
-    );
-    expect(screen.getByTestId('isDarkModeSwitch')).toBeChecked();
   });
 
   it('stores preference when selected', async () => {
-    setMedia({});
-    localStorage.clear();
     AtomWrapper.modifyAtomValue(AppStateKeys.isDarkMode, true);
-    customRender(<RightMenu mode="vertical"></RightMenu>);
+    customRender(<RightMenu mode="vertical"></RightMenu>, { usesAtoms: true });
+
     const isDarkModeSwitch = await screen.findByTestId('isDarkModeSwitch');
     expect(isDarkModeSwitch).not.toBeChecked();
+    expect(localStorage.getItem(AppStateKeys.isDarkMode)).toBe('true');
+
     await user.click(isDarkModeSwitch);
-    expect(await screen.findByTestId('isDarkModeSwitch')).toBeChecked();
+    expect(isDarkModeSwitch).toBeChecked();
     expect(localStorage.getItem(AppStateKeys.isDarkMode)).toBe('false');
+  });
+
+  it('respects (prefers-color-scheme: dark) when no user preference is set', async () => {
+    setMedia({ 'prefers-color-scheme': 'dark' });
+    expect(matchMedia('(prefers-color-scheme: dark)').matches).toBe(true);
+
+    AtomWrapper.modifyAtomValue(AppStateKeys.isDarkMode, undefined);
+    customRender(<RightMenu {...rightMenuProps} />, { usesAtoms: true });
+
+    waitFor(() => {
+      expect(screen.findByTestId('isDarkModeSwitch')).toBeChecked(); // Dark mode should be enabled
+    });
+  });
+
+  it('respects (prefers-color-scheme: light) when no user preference is set', async () => {
+    setMedia({ 'prefers-color-scheme': 'light' });
+    expect(matchMedia('(prefers-color-scheme: light)').matches).toBe(true);
+
+    AtomWrapper.modifyAtomValue(AppStateKeys.isDarkMode, undefined);
+    customRender(<RightMenu {...rightMenuProps} />, { usesAtoms: true });
+
+    waitFor(() => {
+      expect(screen.findByTestId('isDarkModeSwitch')).toBeChecked(); // Dark mode should be enabled
+    });
   });
 });

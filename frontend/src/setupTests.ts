@@ -53,7 +53,7 @@ globalThis.TextEncoder = TextEncoder;
 beforeAll(() => {
   server.listen();
 
-  // Initialize recoil state values
+  // Initialize jotai state values
   AtomWrapper.setAtomValue<ActiveSearchQuery>(
     activeSearchQueryAtom,
     AppStateKeys.activeSearchQuery,
@@ -78,7 +78,7 @@ beforeAll(() => {
     false,
     false
   );
-  AtomWrapper.setAtomValue<boolean>(isDarkModeAtom, AppStateKeys.isDarkMode, false, false);
+  AtomWrapper.setAtomValue<boolean>(isDarkModeAtom, AppStateKeys.isDarkMode, false, true);
   AtomWrapper.setAtomValue<UserCart>(userCartAtom, AppStateKeys.userCart, userCartFixture(), true);
   AtomWrapper.setAtomValue<UserSearchQueries>(
     userSearchQueriesAtom,

@@ -79,6 +79,7 @@ const ProjectsForm: React.FC<React.PropsWithChildren<Props>> = ({
             initialValue={initialValues.project}
           >
             <Select
+              data-testid="project-select-dropdown"
               className={leftSidebarTargets.selectProjectBtn.class()}
               style={styles.form}
               onChange={() => {

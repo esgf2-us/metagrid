@@ -2,7 +2,7 @@ import { MenuUnfoldOutlined } from '@ant-design/icons';
 import { Drawer, Typography } from 'antd';
 import React from 'react';
 import { useAsync } from 'react-async';
-import { useAtom } from 'jotai';
+import { useAtomValue } from 'jotai';
 import { fetchProjects, ResponseError } from '../../api';
 import esgfLogo from '../../assets/img/esgf.png';
 import { RawProject } from '../Facets/types';
@@ -20,7 +20,7 @@ export type Props = {
 
 const NavBar: React.FC<React.PropsWithChildren<Props>> = ({ onTextSearch }) => {
   // Global states
-  const [isDarkMode] = useAtom<boolean>(isDarkModeAtom);
+  const isDarkMode = useAtomValue<boolean>(isDarkModeAtom);
 
   const { data, error, isLoading } = useAsync(fetchProjects);
   const [showDrawer, setShowDrawer] = React.useState(false);

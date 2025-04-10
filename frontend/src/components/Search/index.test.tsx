@@ -95,7 +95,7 @@ describe('test Search component', () => {
       textInputs: [],
     };
 
-    AtomWrapper.modifyAtomValue(AppStateKeys.userSearchQuery, emptySearchQuery);
+    AtomWrapper.modifyAtomValue(AppStateKeys.activeSearchQuery, emptySearchQuery);
     customRender(<Search {...defaultProps} />);
 
     // Check renders query string
@@ -153,7 +153,7 @@ describe('test Search component', () => {
   });
 
   it('handles selecting a row"s checkbox in the table and adding to the cart', async () => {
-    // RecoilWrapper.modifyAtomValue(userCartAtom.key, []);
+    AtomWrapper.modifyAtomValue(AppStateKeys.userCart, []);
     customRender(<Search {...defaultProps} />);
 
     // Check search component renders
@@ -172,7 +172,6 @@ describe('test Search component', () => {
 
     // Select the first row
     const firstRow = await screen.findByTestId('cart-items-row-1');
-
     expect(firstRow).toBeTruthy();
 
     // Select the first row's checkbox

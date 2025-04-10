@@ -1,6 +1,5 @@
 import { CSSProperties, ReactNode } from 'react';
 import { MessageInstance } from 'antd/es/message/interface';
-import { AtomEffect } from 'recoil';
 import { UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
 import { ActiveFacets, RawProject } from '../components/Facets/types';
 import {
@@ -161,27 +160,6 @@ export const objectHasKey = (
   obj: Record<any, any>,
   key: string | number
 ): boolean => Object.prototype.hasOwnProperty.call(obj, key);
-
-export const localStorageEffect = <T>(key: string, defaultVal: T): AtomEffect<T> => ({
-  setSelf,
-  onSet,
-}) => {
-  const savedValue = localStorage.getItem(key);
-  if (savedValue != null) {
-    try {
-      const parsedValue = JSON.parse(savedValue) as T;
-      setSelf(parsedValue);
-    } catch (error) {
-      setSelf(defaultVal);
-    }
-  } else {
-    setSelf(defaultVal);
-  }
-
-  onSet((newValue) => {
-    localStorage.setItem(key, JSON.stringify(newValue));
-  });
-};
 
 /**
  * For a record's 'xlink' attribute, it will be split into an array of
