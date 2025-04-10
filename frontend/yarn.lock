@@ -4317,12 +4317,7 @@ jest@^29.7.0:
     import-local "^3.0.2"
     jest-cli "^29.7.0"
 
-jotai-effect@^2.0.2:
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/jotai-effect/-/jotai-effect-2.0.2.tgz#0746b9e45988a5703b3a89ee40253cf870b5e144"
-  integrity sha512-bk5J9YreQjenxoss+9gHtH1KEHpznXVq0JlThbhSmsX+0lbBZoMbJrJNspd4UOqMS3gesmpP/ea8cCaPK3AkEw==
-
-jotai@^2.12.2:
+jotai@2.12.2:
   version "2.12.2"
   resolved "https://registry.yarnpkg.com/jotai/-/jotai-2.12.2.tgz#21626f5f019fc971b4da6bc528790a02d1448e3c"
   integrity sha512-oN8715y7MkjXlSrpyjlR887TOuc/NLZMs9gvgtfWH/JP47ChwO0lR2ijSwBvPMYyXRAPT+liIAhuBavluKGgtA==
