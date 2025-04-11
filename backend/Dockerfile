@@ -18,6 +18,8 @@ RUN addgroup --system django \
 
 # Requirements are installed here to ensure they will be cached.
 COPY requirements /requirements
+RUN pip3 install --upgrade pip
+RUN pip3 install setuptools --upgrade
 RUN pip3 install --no-cache-dir -r /requirements/local.txt
 
 COPY . /app
