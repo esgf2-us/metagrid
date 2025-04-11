@@ -1,17 +1,16 @@
 import React from 'react';
 import { Card, Collapse, Divider, List, Typography } from 'antd';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useAtom, useAtomValue } from 'jotai';
 import Button from '../General/Button';
 import cartImg from '../../assets/img/cart.svg';
 import folderImg from '../../assets/img/folder.svg';
-import { cartTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import { formatBytes } from '../../common/utils';
 import { RawSearchResult, RawSearchResults } from '../Search/types';
 import { UserCart } from './types';
 import { GlobusTaskItem } from '../Globus/types';
-import { globusTaskItemsAtom } from '../Globus/recoil/atom';
-import { cartItemSelectionsAtom } from './recoil/atoms';
+import { cartItemSelectionsAtom, globusTaskItemsAtom, userCartAtom } from '../../common/atoms';
+import { cartTourTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
 const styles: CSSinJS = {
   headerContainer: { display: 'flex', justifyContent: 'center' },
@@ -27,15 +26,12 @@ const styles: CSSinJS = {
   },
 };
 
-export type Props = {
-  userCart: UserCart;
-};
-
 const { Title, Link } = Typography;
 
-const Summary: React.FC<React.PropsWithChildren<Props>> = ({ userCart }) => {
-  const cartItems = useRecoilValue<RawSearchResults>(cartItemSelectionsAtom);
-  const [taskItems, setTaskItems] = useRecoilState<GlobusTaskItem[]>(globusTaskItemsAtom);
+const Summary: React.FC = () => {
+  const cartItems = useAtomValue<RawSearchResults>(cartItemSelectionsAtom);
+  const userCart = useAtomValue<UserCart>(userCartAtom);
+  const [taskItems, setTaskItems] = useAtom<GlobusTaskItem[]>(globusTaskItemsAtom);
 
   let numSelectedFiles = 0;
   let totalSelectedDataSize = '0';

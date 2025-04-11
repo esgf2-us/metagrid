@@ -63,7 +63,7 @@ it('displays "N/A" for Filename Searches when none are applied', async () => {
       {...defaultProps}
       searchQuery={userSearchQueryFixture({ filenameVars: undefined })}
     />,
-    { usesRecoil: true }
+    { usesAtoms: true }
   );
   // Shows number of files
   const filenameSearchesField = (await screen.findByText('Filename Searches:')).parentNode;

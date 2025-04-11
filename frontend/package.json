@@ -72,6 +72,7 @@
     "dayjs": "1.11.10",
     "dotenv": "8.2.0",
     "humps": "2.0.1",
+    "jotai": "2.12.2",
     "js-pkce": "^1.4.0",
     "keycloak-js": "19.0.3",
     "prop-types": "15.8.1",

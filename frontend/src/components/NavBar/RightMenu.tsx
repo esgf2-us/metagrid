@@ -15,19 +15,19 @@ import { KeycloakTokenParsed } from 'keycloak-js';
 
 import React, { CSSProperties } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
-import { navBarTargets } from '../../common/reactJoyrideSteps';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { navBarTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 import Button from '../General/Button';
 import RightDrawer from '../Messaging/RightDrawer';
 
 import { AuthContext } from '../../contexts/AuthContext';
+import { UserCart, UserSearchQueries } from '../Cart/types';
 import {
   isDarkModeAtom,
-  supportModalVisibleAtom,
   userCartAtom,
   userSearchQueriesAtom,
-} from '../App/recoil/atoms';
-import { UserCart, UserSearchQueries } from '../Cart/types';
+  supportModalVisibleAtom,
+} from '../../common/atoms';
 
 const menuItemStyling: CSSProperties = { margin: '8px' };
 
@@ -36,14 +36,14 @@ export type Props = {
 };
 
 const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
-  // Recoil state
-  const [isDarkMode, setIsDarkMode] = useRecoilState<boolean>(isDarkModeAtom);
+  // Global states
+  const [isDarkMode, setIsDarkMode] = useAtom<boolean>(isDarkModeAtom);
 
-  const userCart = useRecoilValue<UserCart>(userCartAtom);
+  const userCart = useAtomValue<UserCart>(userCartAtom);
 
-  const userSearchQueries = useRecoilValue<UserSearchQueries>(userSearchQueriesAtom);
+  const userSearchQueries = useAtomValue<UserSearchQueries>(userSearchQueriesAtom);
 
-  const setSupportModalVisible = useSetRecoilState<boolean>(supportModalVisibleAtom);
+  const setSupportModalVisible = useSetAtom(supportModalVisibleAtom);
 
   const [activeMenuItem, setActiveMenuItem] = React.useState<string>('search');
 
@@ -242,7 +242,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
             onChange={(checked) => setIsDarkMode(!checked)}
             defaultChecked={!isDarkMode}
             data-testid="isDarkModeSwitch"
-          ></Switch>
+          />
           <span>Theme</span>
         </Space>
       ),

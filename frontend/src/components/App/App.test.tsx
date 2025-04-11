@@ -10,17 +10,13 @@ import React from 'react';
 import userEvent from '@testing-library/user-event';
 import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
-import { delay } from '../../common/reactJoyrideSteps';
 import { getSearchFromUrl } from '../../common/utils';
 import customRender from '../../test/custom-render';
 import { ActiveSearchQuery } from '../Search/types';
 import App from './App';
-import {
-  activeSearch,
-  RecoilWrapper,
-  submitKeywordSearch,
-} from '../../test/jestTestFunctions';
-import { userCartAtom } from './recoil/atoms';
+import { activeSearch, AtomWrapper, submitKeywordSearch } from '../../test/jestTestFunctions';
+import { AppStateKeys } from '../../common/atoms';
+import { delay } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
 const user = userEvent.setup();
 
@@ -38,7 +34,7 @@ describe('test main components', () => {
 
   it('renders App component with undefined search query', async () => {
     customRender(<App searchQuery={(undefined as unknown) as ActiveSearchQuery} />, {
-      usesRecoil: true,
+      usesAtoms: true,
     });
 
     // Check applicable components render
@@ -262,7 +258,7 @@ describe('test main components', () => {
 
 describe('User cart', () => {
   it('handles authenticated user adding and removing items from cart', async () => {
-    RecoilWrapper.modifyAtomValue(userCartAtom.key, []);
+    AtomWrapper.modifyAtomValue(AppStateKeys.userCart, []);
     customRender(<App searchQuery={activeSearch} />);
 
     // Wait for components to rerender
@@ -344,7 +340,7 @@ describe('User cart', () => {
 
   it('handles anonymous user adding and removing items from cart', async () => {
     // Render component as anonymous
-    RecoilWrapper.modifyAtomValue(userCartAtom.key, []);
+    AtomWrapper.modifyAtomValue(AppStateKeys.userCart, []);
     customRender(<App searchQuery={activeSearch} />, { authenticated: false });
 
     // Wait for components to rerender
@@ -364,7 +360,7 @@ describe('User cart', () => {
   });
 
   it('displays anonymous user"s number of files in the cart summary and handles clearing the cart', async () => {
-    customRender(<App searchQuery={activeSearch} />, { usesRecoil: true, authenticated: false });
+    customRender(<App searchQuery={activeSearch} />, { usesAtoms: true, authenticated: false });
 
     // Wait for components to rerender
     await screen.findByTestId('main-query-string-label');
@@ -421,7 +417,7 @@ describe('User cart', () => {
   });
 
   it('resets cart totals and selections to 0 when all items are removed', async () => {
-    RecoilWrapper.modifyAtomValue(userCartAtom.key, []);
+    AtomWrapper.modifyAtomValue(AppStateKeys.userCart, []);
     customRender(<App searchQuery={activeSearch} />);
 
     // Wait for components to rerender
@@ -499,7 +495,7 @@ describe('Error handling', () => {
     );
 
     customRender(<App searchQuery={activeSearch} />, {
-      usesRecoil: true,
+      usesAtoms: true,
       options: {
         token: 'token',
       },
@@ -518,7 +514,7 @@ describe('Error handling', () => {
 describe('User search library', () => {
   it('handles authenticated user saving and applying searches', async () => {
     customRender(<App searchQuery={activeSearch} />, {
-      usesRecoil: true,
+      usesAtoms: true,
       options: {
         token: 'token',
       },
@@ -566,7 +562,7 @@ describe('User search library', () => {
 
   it('handles authenticated user removing searches from the search library', async () => {
     customRender(<App searchQuery={activeSearch} />, {
-      usesRecoil: true,
+      usesAtoms: true,
       options: {
         token: 'token',
       },
@@ -733,7 +729,7 @@ describe('User search library', () => {
 
     it('shows a disabled save search button due to failed search results', async () => {
       customRender(<App searchQuery={activeSearch} />, {
-        usesRecoil: true,
+        usesAtoms: true,
         options: {
           token: 'token',
         },
@@ -756,7 +752,7 @@ describe('User search library', () => {
       server.use(rest.delete(apiRoutes.userSearch.path, (_req, res, ctx) => res(ctx.status(404))));
 
       customRender(<App searchQuery={activeSearch} />, {
-        usesRecoil: true,
+        usesAtoms: true,
         options: { token: 'token' },
       });
 
