@@ -3,11 +3,11 @@ import { render, RenderResult } from '@testing-library/react';
 import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import Keycloak from 'keycloak-js';
-import { RecoilRoot } from 'recoil';
+import { Provider } from 'jotai';
 import { GlobusAuthProvider, AuthContext, KeycloakAuthProvider } from '../contexts/AuthContext';
 import { ReactJoyrideProvider } from '../contexts/ReactJoyrideContext';
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
-import { RecoilWrapper } from './jestTestFunctions';
+import { AtomWrapper } from './jestTestFunctions';
 
 /**
  * Wraps components in all implemented React Context Providers for testing using keycloak or globus
@@ -79,15 +79,15 @@ const AuthProvider = ({
 const customRender = (
   ui: React.ReactElement,
   options: {
-    usesRecoil?: boolean;
+    usesAtoms?: boolean;
     authenticated?: boolean;
     options?: Record<string, unknown>;
-  } = { usesRecoil: true, authenticated: true, options: {} }
+  } = { usesAtoms: true, authenticated: true, options: {} }
 ): RenderResult => {
-  if (options.usesRecoil) {
+  if (options.usesAtoms === true) {
     return render(ui, {
       wrapper: () =>
-        RecoilWrapper.wrap(
+        AtomWrapper.wrap(
           <AuthProvider
             authenticated={options.authenticated !== undefined ? options.authenticated : true}
           >
@@ -99,13 +99,13 @@ const customRender = (
   }
   return render(ui, {
     wrapper: () => (
-      <RecoilRoot>
+      <Provider>
         <AuthProvider
           authenticated={options.authenticated !== undefined ? options.authenticated : true}
         >
           {ui}
         </AuthProvider>
-      </RecoilRoot>
+      </Provider>
     ),
     ...options.options,
   });

@@ -1,14 +1,14 @@
 import { Empty, message, Row } from 'antd';
 import React from 'react';
-import { useRecoilState } from 'recoil';
 import { DeleteOutlined } from '@ant-design/icons';
-import { savedSearchTourTargets } from '../../common/reactJoyrideSteps';
+import { useAtom, useAtomValue } from 'jotai';
 import SearchesCard from './SearchesCard';
 import { UserSearchQueries, UserSearchQuery } from './types';
-import { isDarkModeAtom, userSearchQueriesAtom } from '../App/recoil/atoms';
 import { deleteUserSearchQuery, ResponseError } from '../../api';
 import { showNotice, showError, getStyle } from '../../common/utils';
 import { AuthContext } from '../../contexts/AuthContext';
+import { isDarkModeAtom, userSearchQueriesAtom } from '../../common/atoms';
+import { savedSearchTourTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
 const Searches: React.FC = () => {
   const [messageApi, contextHolder] = message.useMessage();
@@ -18,10 +18,10 @@ const Searches: React.FC = () => {
   const { access_token: accessToken, pk } = authState;
   const isAuthenticated = accessToken && pk;
 
-  // Recoil states
-  const [isDarkMode] = useRecoilState<boolean>(isDarkModeAtom);
+  // Global states
+  const isDarkMode = useAtomValue<boolean>(isDarkModeAtom);
 
-  const [userSearchQueries, setUserSearchQueries] = useRecoilState<UserSearchQueries>(
+  const [userSearchQueries, setUserSearchQueries] = useAtom<UserSearchQueries>(
     userSearchQueriesAtom
   );
 
