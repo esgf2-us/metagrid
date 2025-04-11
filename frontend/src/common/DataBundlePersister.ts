@@ -99,7 +99,6 @@ export default class DataBundlePersister {
   }
 
   async loadAll(): Promise<void> {
-    // console.info('Loading data bundle...');
     // Load the bundle from session storage
     const loadedJSON: string | null = await loadSessionValue<string>(
       DataBundlePersister.DEFAULT_KEY

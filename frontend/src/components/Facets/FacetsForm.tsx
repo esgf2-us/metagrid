@@ -89,17 +89,6 @@ const FacetsForm: React.FC = () => {
     activeSearchQueryAtom
   );
 
-  // let setGlobusReady = false;
-  // if (
-  //   activeSearchQuery.activeFacets.data_node &&
-  //   window.METAGRID.GLOBUS_NODES.length &&
-  //   window.METAGRID.GLOBUS_NODES.length > 0
-  // ) {
-  //   setGlobusReady = window.METAGRID.GLOBUS_NODES.every((node: string) =>
-  //     activeSearchQuery.activeFacets.data_node.includes(node)
-  //   );
-  // }
-
   // Local variables
   const [messageApi, contextHolder] = message.useMessage();
 
