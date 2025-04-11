@@ -2,23 +2,18 @@ import React from 'react';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { rawSearchResultFixture, userCartFixture } from '../../test/mock/fixtures';
-import Summary, { Props } from './Summary';
+import Summary from './Summary';
 import customRender from '../../test/custom-render';
-import { cartItemSelectionsAtom } from './recoil/atoms';
-import { RecoilWrapper } from '../../test/jestTestFunctions';
-import { globusTaskItemsAtom } from '../Globus/recoil/atom';
-
-const defaultProps: Props = {
-  userCart: userCartFixture(),
-};
+import { AppStateKeys, CartStateKeys, GlobusStateKeys } from '../../common/atoms';
+import { AtomWrapper } from '../../test/jestTestFunctions';
 
 test('renders component', async () => {
-  customRender(<Summary {...defaultProps} />);
+  customRender(<Summary />);
   expect(await screen.findByTestId('summary')).toBeTruthy();
 });
 
 it('shows the correct number of datasets and files', async () => {
-  customRender(<Summary {...defaultProps} />);
+  customRender(<Summary />);
   // Shows number of files
   const numDatasetsField = await screen.findByText('Total Number of Datasets:');
   const numFilesText = await screen.findByText('Total Number of Files:');
@@ -28,17 +23,14 @@ it('shows the correct number of datasets and files', async () => {
 });
 
 it('renders component with correct calculations when a dataset doesn"t have size or number_of_files attributes', async () => {
-  customRender(
-    <Summary
-      userCart={[
-        rawSearchResultFixture(),
-        rawSearchResultFixture({
-          size: undefined,
-          number_of_files: undefined,
-        }),
-      ]}
-    />
-  );
+  AtomWrapper.modifyAtomValue(AppStateKeys.userCart, [
+    rawSearchResultFixture(),
+    rawSearchResultFixture({
+      size: undefined,
+      number_of_files: undefined,
+    }),
+  ]);
+  customRender(<Summary />);
   // Shows number of files
   const numDatasetsField = await screen.findByText('Total Number of Datasets:');
   const numFilesText = await screen.findByText('Total Number of Files:');
@@ -47,18 +39,15 @@ it('renders component with correct calculations when a dataset doesn"t have size
   expect(numFilesText.textContent).toEqual('Total Number of Files: 3');
 });
 
-it('handles null number_of_files and size attributes gracefully', async () => {
-  customRender(
-    <Summary
-      userCart={[
-        rawSearchResultFixture(),
-        rawSearchResultFixture({
-          size: null,
-          number_of_files: null,
-        }),
-      ]}
-    />
-  );
+it('handles undefined number_of_files and size attributes gracefully', async () => {
+  AtomWrapper.modifyAtomValue(AppStateKeys.userCart, [
+    rawSearchResultFixture(),
+    rawSearchResultFixture({
+      size: undefined,
+      number_of_files: undefined,
+    }),
+  ]);
+  customRender(<Summary />);
   const numDatasetsField = await screen.findByText('Total Number of Datasets:');
   const numFilesText = await screen.findByText('Total Number of Files:');
 
@@ -67,7 +56,8 @@ it('handles null number_of_files and size attributes gracefully', async () => {
 });
 
 it('shows the correct number of datasets and files when cart is empty', async () => {
-  customRender(<Summary userCart={[]} />);
+  AtomWrapper.modifyAtomValue(AppStateKeys.userCart, []);
+  customRender(<Summary />);
   const numDatasetsField = await screen.findByText('Total Number of Datasets:');
   const numFilesText = await screen.findByText('Total Number of Files:');
 
@@ -77,7 +67,7 @@ it('shows the correct number of datasets and files when cart is empty', async ()
 
 describe('shows the correct selected datasets and files', () => {
   it('when no items are selected', async () => {
-    customRender(<Summary {...defaultProps} />);
+    customRender(<Summary />);
     const numSelectedDatasetsField = await screen.findByText('Selected Number of Datasets:');
     const numSelectedFilesText = await screen.findByText('Selected Number of Files:');
 
@@ -86,12 +76,12 @@ describe('shows the correct selected datasets and files', () => {
   });
 
   it('when items are selected', async () => {
-    RecoilWrapper.modifyAtomValue(cartItemSelectionsAtom.key, [
+    AtomWrapper.modifyAtomValue(CartStateKeys.cartItemSelections, [
       rawSearchResultFixture(),
       rawSearchResultFixture(),
       rawSearchResultFixture(),
     ]);
-    customRender(<Summary {...defaultProps} />);
+    customRender(<Summary />);
     const numSelectedDatasetsField = await screen.findByText('Selected Number of Datasets:');
     const numSelectedFilesText = await screen.findByText('Selected Number of Files:');
 
@@ -108,8 +98,8 @@ it('renders task submit history when tasks are present', async () => {
       taskStatusURL: 'http://example.com/task/1',
     },
   ];
-  RecoilWrapper.modifyAtomValue(globusTaskItemsAtom.key, taskItems);
-  customRender(<Summary {...defaultProps} />);
+  AtomWrapper.modifyAtomValue(GlobusStateKeys.globusTaskItems, taskItems);
+  customRender(<Summary />);
 
   const taskHistoryTitle = await screen.findByText('Task Submit History');
   expect(taskHistoryTitle).toBeTruthy();
@@ -123,8 +113,8 @@ it('clears all tasks when clear button is clicked', async () => {
       taskStatusURL: 'http://example.com/task/1',
     },
   ];
-  RecoilWrapper.modifyAtomValue(globusTaskItemsAtom.key, taskItems);
-  const { getByTestId } = customRender(<Summary {...defaultProps} />);
+  AtomWrapper.modifyAtomValue(GlobusStateKeys.globusTaskItems, taskItems);
+  const { getByTestId } = customRender(<Summary />);
 
   const clearButton = getByTestId('clear-all-submitted-globus-tasks');
   await userEvent.click(clearButton);

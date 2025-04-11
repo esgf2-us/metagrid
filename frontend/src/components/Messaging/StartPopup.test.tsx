@@ -3,9 +3,9 @@ import React from 'react';
 import { screen } from '@testing-library/react';
 import StartPopup from './StartPopup';
 import StartupMessages from './messageDisplayData';
-import { TourTitles } from '../../common/reactJoyrideSteps';
 import customRender from '../../test/custom-render';
 import { rest, server } from '../../test/mock/server';
+import { TourTitles } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
 const { defaultMessageId, messageToShow } = StartupMessages;
 

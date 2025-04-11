@@ -1,13 +1,13 @@
 import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
 import { Divider, Typography } from 'antd';
 import React from 'react';
-import { useRecoilValue } from 'recoil';
+import { useAtomValue } from 'jotai';
 import nodeImg from '../../assets/img/nodes.svg';
-import { nodeTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import { NodeStatusArray } from './types';
-import { isDarkModeAtom, nodeStatusAtom } from '../App/recoil/atoms';
 import { lightModeGreen, lightModeRed, darkModeGreen, darkModeRed } from './StatusToolTip';
+import { nodeStatusAtom, isDarkModeAtom } from '../../common/atoms';
+import { nodeTourTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
 const { Title } = Typography;
 const styles: CSSinJS = {
@@ -24,8 +24,8 @@ const styles: CSSinJS = {
 };
 
 const NodeSummary: React.FC = () => {
-  const nodeStatus = useRecoilValue<NodeStatusArray>(nodeStatusAtom);
-  const isDarkMode = useRecoilValue<boolean>(isDarkModeAtom);
+  const nodeStatus = useAtomValue<NodeStatusArray>(nodeStatusAtom);
+  const isDarkMode = useAtomValue<boolean>(isDarkModeAtom);
 
   type NodeStat = number | string;
 

@@ -12,8 +12,8 @@ import customRender from '../../test/custom-render';
 import { ActiveFacets, RawFacets } from '../Facets/types';
 import Search, { checkFiltersExist, parseFacets, Props, stringifyFilters } from './index';
 import { ActiveSearchQuery, RawSearchResult, ResultType, TextInputs, VersionType } from './types';
-import { openDropdownList, RecoilWrapper } from '../../test/jestTestFunctions';
-import { activeSearchQueryAtom, userCartAtom } from '../App/recoil/atoms';
+import { openDropdownList, AtomWrapper } from '../../test/jestTestFunctions';
+import { AppStateKeys } from '../../common/atoms';
 
 const user = userEvent.setup();
 
@@ -95,7 +95,7 @@ describe('test Search component', () => {
       textInputs: [],
     };
 
-    RecoilWrapper.modifyAtomValue(activeSearchQueryAtom.key, emptySearchQuery);
+    AtomWrapper.modifyAtomValue(AppStateKeys.activeSearchQuery, emptySearchQuery);
     customRender(<Search {...defaultProps} />);
 
     // Check renders query string
@@ -153,7 +153,7 @@ describe('test Search component', () => {
   });
 
   it('handles selecting a row"s checkbox in the table and adding to the cart', async () => {
-    RecoilWrapper.modifyAtomValue(userCartAtom.key, []);
+    AtomWrapper.modifyAtomValue(AppStateKeys.userCart, []);
     customRender(<Search {...defaultProps} />);
 
     // Check search component renders
@@ -172,7 +172,6 @@ describe('test Search component', () => {
 
     // Select the first row
     const firstRow = await screen.findByTestId('cart-items-row-1');
-
     expect(firstRow).toBeTruthy();
 
     // Select the first row's checkbox
@@ -243,7 +242,7 @@ describe('test Search component', () => {
   });
 
   it('handles saving a search query when unauthenticated', async () => {
-    customRender(<Search {...defaultProps} />, { usesRecoil: true, authenticated: true });
+    customRender(<Search {...defaultProps} />, { usesAtoms: true, authenticated: true });
 
     // Check search component renders
     const searchComponent = await screen.findByTestId('search');

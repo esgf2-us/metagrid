@@ -11,11 +11,11 @@ import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
 import { DeferFn, useAsync } from 'react-async';
 import { fetchDatasetFiles, openDownloadURL } from '../../api';
-import { innerDataRowTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import { formatBytes, showError, showNotice, splitStringByChar } from '../../common/utils';
 import Button from '../General/Button';
 import { Pagination, RawSearchResult, RawSearchResults, TextInputs } from './types';
+import { innerDataRowTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
 export type DownloadUrls = {
   HTTPServer: string;
@@ -196,7 +196,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
           e: React.MouseEvent<HTMLSpanElement, MouseEvent>
         ) => void;
         record: RawSearchResult;
-      }): React.ReactElement =>
+      }): React.ReactNode =>
         expanded ? (
           <DownCircleOutlined onClick={(e) => onExpand(record, e)} />
         ) : (

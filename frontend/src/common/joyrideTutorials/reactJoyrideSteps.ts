@@ -1,6 +1,6 @@
+import { AppPage } from '../types';
 import { JoyrideTour } from './JoyrideTour';
 import { TargetObject } from './TargetObject';
-import { AppPage } from './types';
 
 export const delay = (ms: number): Promise<void> => {
   return new Promise((res) => {

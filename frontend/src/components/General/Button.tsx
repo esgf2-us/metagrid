@@ -11,7 +11,7 @@ type Props = {
   onClick?: ((event: React.MouseEvent<HTMLElement, MouseEvent>) => void) | undefined;
   disabled?: boolean | undefined;
   danger?: boolean;
-  children?: React.ReactElement | React.ReactNode | string;
+  children?: React.ReactNode | string;
   loading?: boolean;
   shape?: 'circle' | 'round';
   size?: 'large' | 'middle' | 'small';

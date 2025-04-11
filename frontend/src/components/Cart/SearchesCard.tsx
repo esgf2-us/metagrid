@@ -8,16 +8,14 @@ import { Alert, Card, Col, Skeleton, Typography, Tooltip } from 'antd';
 import React from 'react';
 import { useAsync } from 'react-async';
 import { useNavigate } from 'react-router-dom';
-import { useSetRecoilState } from 'recoil';
+import { useSetAtom } from 'jotai';
 import { fetchSearchResults, generateSearchURLQuery } from '../../api';
-import { savedSearchTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import { stringifyFilters } from '../Search';
 import { UserSearchQuery } from './types';
 import { createSearchRouteURL } from '../../common/utils';
-
-import { savedSearchQueryAtom } from '../App/recoil/atoms';
-import { ActiveSearchQuery } from '../Search/types';
+import { savedSearchQueryAtom } from '../../common/atoms';
+import { savedSearchTourTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
 const styles: CSSinJS = {
   category: {
@@ -53,7 +51,7 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
     url,
   } = searchQuery;
 
-  const setSavedSearchQuery = useSetRecoilState<ActiveSearchQuery | null>(savedSearchQueryAtom);
+  const setSavedSearchQuery = useSetAtom(savedSearchQueryAtom);
 
   // This converts a saved search to the active search query
   const handleRunSearchQuery = (savedSearch: UserSearchQuery): void => {
