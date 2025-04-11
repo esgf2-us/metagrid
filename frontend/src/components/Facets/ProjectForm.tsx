@@ -1,16 +1,16 @@
 import { Alert, Form, Select, Spin } from 'antd';
 import React from 'react';
+import { useAtomValue } from 'jotai';
 import { ResponseError } from '../../api';
-import { leftSidebarTargets } from '../../common/reactJoyrideSteps';
-import { ActiveSearchQuery } from '../Search/types';
 import { RawProject, RawProjects } from './types';
+import { leftSidebarTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
+import { activeSearchQueryAtom } from '../../common/atoms';
 
 const styles = {
   form: { width: '360px' },
 };
 
 export type Props = {
-  activeSearchQuery: ActiveSearchQuery;
   projectsFetched?: {
     results: RawProjects;
   };
@@ -20,13 +20,13 @@ export type Props = {
 };
 
 const ProjectsForm: React.FC<React.PropsWithChildren<Props>> = ({
-  activeSearchQuery,
   projectsFetched,
   apiIsLoading,
   apiError,
   onFinish,
 }) => {
   const [projectForm] = Form.useForm();
+  const activeSearchQuery = useAtomValue(activeSearchQueryAtom);
   /**
    * Reset projectForm based on the activeProject
    */
@@ -79,6 +79,7 @@ const ProjectsForm: React.FC<React.PropsWithChildren<Props>> = ({
             initialValue={initialValues.project}
           >
             <Select
+              data-testid="project-select-dropdown"
               className={leftSidebarTargets.selectProjectBtn.class()}
               style={styles.form}
               onChange={() => {

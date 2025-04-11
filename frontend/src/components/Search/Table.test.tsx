@@ -7,7 +7,8 @@ import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
 import Table, { Props } from './Table';
 import { QualityFlag } from './Tabs';
-import { mockConfig } from '../../test/jestTestFunctions';
+import { AtomWrapper, mockConfig } from '../../test/jestTestFunctions';
+import { AppStateKeys } from '../../common/atoms';
 
 const user = userEvent.setup();
 
@@ -15,7 +16,6 @@ const defaultProps: Props = {
   loading: false,
   results: rawSearchResultsFixture(),
   totalResults: rawSearchResultsFixture().length,
-  userCart: [],
   onUpdateCart: jest.fn(),
   onRowSelect: jest.fn(),
   onPageChange: jest.fn(),
@@ -268,7 +268,8 @@ describe('test main table UI', () => {
   });
 
   it('renders add or remove button for items in or not in the cart respectively, and handles clicking them', async () => {
-    customRender(<Table {...defaultProps} userCart={[defaultProps.results[0]]} />);
+    AtomWrapper.modifyAtomValue(AppStateKeys.userCart, [defaultProps.results[0]]);
+    customRender(<Table {...defaultProps} />);
     // Check table exists
     const table = await screen.findByRole('table');
     expect(table).toBeTruthy();
@@ -297,6 +298,7 @@ describe('test main table UI', () => {
   });
 
   it('handles when clicking the select checkbox for a row', async () => {
+    AtomWrapper.modifyAtomValue(AppStateKeys.userCart, []);
     customRender(<Table {...defaultProps} />);
 
     // Check table exists
@@ -314,6 +316,7 @@ describe('test main table UI', () => {
   });
 
   it('handles when clicking the select all checkbox in the table"s header', async () => {
+    AtomWrapper.modifyAtomValue(AppStateKeys.userCart, []);
     customRender(<Table {...defaultProps} />);
 
     // Check table exists
@@ -339,7 +342,8 @@ describe('test main table UI', () => {
       },
     });
 
-    customRender(<Table {...defaultProps} userCart={[defaultProps.results[0]]} />);
+    AtomWrapper.modifyAtomValue(AppStateKeys.userCart, [defaultProps.results[0]]);
+    customRender(<Table {...defaultProps} />);
 
     // Check table renders
     const tableComponent = await screen.findByRole('table');
@@ -368,7 +372,8 @@ describe('test main table UI', () => {
   it('displays an error when unable to access download via wget', async () => {
     server.use(rest.post(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404))));
 
-    customRender(<Table {...defaultProps} userCart={[defaultProps.results[0]]} />);
+    AtomWrapper.modifyAtomValue(AppStateKeys.userCart, [defaultProps.results[0]]);
+    customRender(<Table {...defaultProps} />);
 
     // Check table renders
     const tableComponent = await screen.findByRole('table');

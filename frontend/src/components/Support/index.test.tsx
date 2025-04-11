@@ -1,13 +1,13 @@
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { screen } from '@testing-library/react';
-import { TourTitles } from '../../common/reactJoyrideSteps';
 import { AppPage } from '../../common/types';
 import Support from './index';
 import customRender from '../../test/custom-render';
 import { getCurrentAppPage } from '../../common/utils';
-import { RecoilWrapper } from '../../test/jestTestFunctions';
-import { supportModalVisibleAtom } from '../App/recoil/atoms';
+import { AtomWrapper } from '../../test/jestTestFunctions';
+import { AppStateKeys } from '../../common/atoms';
+import { TourTitles } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
 // Test page names
 const mainPagePath = 'testing/search';
@@ -31,7 +31,7 @@ describe('Testing the support form and buttons', () => {
   });
 
   beforeEach(() => {
-    RecoilWrapper.modifyAtomValue(supportModalVisibleAtom.key, true);
+    AtomWrapper.modifyAtomValue(AppStateKeys.supportModalVisible, true);
   });
 
   it('renders support component', async () => {

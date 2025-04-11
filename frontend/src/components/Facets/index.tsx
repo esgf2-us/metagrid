@@ -1,21 +1,20 @@
 import { Button, Tooltip, Typography } from 'antd';
 import React, { useEffect } from 'react';
 import { useAsync } from 'react-async';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useAtom, useAtomValue } from 'jotai';
 import { fetchProjects, ResponseError } from '../../api';
-import { leftSidebarTargets } from '../../common/reactJoyrideSteps';
-import { objectIsEmpty } from '../../common/utils';
+import { objectIsEmpty, projectBaseQuery } from '../../common/utils';
 import Divider from '../General/Divider';
 import { ActiveSearchQuery } from '../Search/types';
 import FacetsForm from './FacetsForm';
 import ProjectForm from './ProjectForm';
 import { RawProject } from './types';
 import {
-  activeSearchQueryAtom,
   availableFacetsAtom,
-  projectBaseQuery,
+  activeSearchQueryAtom,
   savedSearchQueryAtom,
-} from '../App/recoil/atoms';
+} from '../../common/atoms';
+import { leftSidebarTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
 const styles = {
   form: {
@@ -28,13 +27,13 @@ const Facets: React.FC = () => {
 
   const { Title } = Typography;
 
-  const availableFacets = useRecoilValue(availableFacetsAtom);
+  const availableFacets = useAtomValue(availableFacetsAtom);
 
-  const [activeSearchQuery, setActiveSearchQuery] = useRecoilState<ActiveSearchQuery>(
+  const [activeSearchQuery, setActiveSearchQuery] = useAtom<ActiveSearchQuery>(
     activeSearchQueryAtom
   );
 
-  const [savedSearchQuery, setSavedSearchQuery] = useRecoilState<ActiveSearchQuery | null>(
+  const [savedSearchQuery, setSavedSearchQuery] = useAtom<ActiveSearchQuery | null>(
     savedSearchQueryAtom
   );
 
@@ -83,7 +82,6 @@ const Facets: React.FC = () => {
     >
       <Title level={5}>Select a Project</Title>
       <ProjectForm
-        activeSearchQuery={activeSearchQuery}
         projectsFetched={data}
         apiIsLoading={isLoading}
         apiError={error as ResponseError}
