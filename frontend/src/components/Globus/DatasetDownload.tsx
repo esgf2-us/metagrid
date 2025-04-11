@@ -42,7 +42,7 @@ import { AppPage } from '../../common/types';
 import {
   cartDownloadIsLoadingAtom,
   cartItemSelectionsAtom,
-  globusSavedEndpointsAtoms,
+  savedGlobusEndpointsAtom,
   globusTaskItemsAtom,
   GlobusStateKeys,
 } from '../../common/atoms';
@@ -116,7 +116,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   const [taskItems, setTaskItems] = useAtom<GlobusTaskItem[]>(globusTaskItemsAtom);
   const [itemSelections, setItemSelections] = useAtom<RawSearchResults>(cartItemSelectionsAtom);
   const [savedGlobusEndpoints, setSavedGlobusEndpoints] = useAtom<GlobusEndpoint[]>(
-    globusSavedEndpointsAtoms
+    savedGlobusEndpointsAtom
   );
 
   db.addVar<string | null>(GlobusStateKeys.accessToken, null);

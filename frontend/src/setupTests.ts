@@ -32,7 +32,7 @@ import {
   userSearchQueriesAtom,
   cartDownloadIsLoadingAtom,
   cartItemSelectionsAtom,
-  globusSavedEndpointsAtoms,
+  savedGlobusEndpointsAtom,
   globusTaskItemsAtom,
   activeSearchQueryAtom,
   CartStateKeys,
@@ -99,7 +99,7 @@ beforeAll(() => {
     true
   );
   AtomWrapper.setAtomValue<GlobusEndpoint[]>(
-    globusSavedEndpointsAtoms,
+    savedGlobusEndpointsAtom,
     GlobusStateKeys.savedGlobusEndpoints,
     [],
     true

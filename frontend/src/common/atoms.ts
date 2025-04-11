@@ -33,19 +33,7 @@ export enum GlobusStateKeys {
   savedGlobusEndpoints = 'savedGlobusEndpoints',
 }
 
-const isDarkModeSaved = localStorage.getItem(AppStateKeys.isDarkMode);
-let darkModeDefault = window.matchMedia('(prefers-color-scheme: dark)').matches;
-if (isDarkModeSaved === 'true' || isDarkModeSaved === 'false') {
-  darkModeDefault = isDarkModeSaved === 'true';
-}
-export const isDarkModeAtom = atomWithStorage<boolean>(AppStateKeys.isDarkMode, darkModeDefault);
-
-export const userCartAtom = atomWithStorage<UserCart>(AppStateKeys.userCart, []);
-
-export const userSearchQueriesAtom = atomWithStorage<UserSearchQueries>(
-  AppStateKeys.userSearchQuery,
-  []
-);
+const darkModeDefault = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
 export const activeSearchQueryAtom = atom<ActiveSearchQuery>(projectBaseQuery({}));
 
@@ -57,34 +45,48 @@ export const availableFacetsAtom = atom<ParsedFacets | Record<string, unknown>>(
 
 export const nodeStatusAtom = atom<NodeStatusArray>([]);
 
+export const isDarkModeAtom = atomWithStorage<boolean>(
+  AppStateKeys.isDarkMode,
+  darkModeDefault,
+  undefined,
+  { getOnInit: true }
+);
+
+export const userCartAtom = atomWithStorage<UserCart>(AppStateKeys.userCart, [], undefined, {
+  getOnInit: true,
+});
+
+export const userSearchQueriesAtom = atomWithStorage<UserSearchQueries>(
+  AppStateKeys.userSearchQuery,
+  [],
+  undefined,
+  { getOnInit: true }
+);
+
 export const cartDownloadIsLoadingAtom = atomWithStorage<boolean>(
   CartStateKeys.cartDownloadIsLoading,
-  false
+  false,
+  undefined,
+  { getOnInit: true }
 );
 
 export const cartItemSelectionsAtom = atomWithStorage<RawSearchResults>(
   CartStateKeys.cartItemSelections,
-  []
+  [],
+  undefined,
+  { getOnInit: true }
 );
 
 export const globusTaskItemsAtom = atomWithStorage<GlobusTaskItem[]>(
   GlobusStateKeys.globusTaskItems,
-  []
+  [],
+  undefined,
+  { getOnInit: true }
 );
 
-export const globusSavedEndpointsAtoms = atomWithStorage<GlobusEndpoint[]>(
+export const savedGlobusEndpointsAtom = atomWithStorage<GlobusEndpoint[]>(
   GlobusStateKeys.savedGlobusEndpoints,
-  [
-    {
-      canonical_name: '',
-      contact_email: '',
-      display_name: 'Select Globus Collection',
-      entity_type: '',
-      id: '',
-      owner_id: '',
-      owner_string: '',
-      path: '',
-      subscription_id: '',
-    },
-  ]
+  [],
+  undefined,
+  { getOnInit: true }
 );

@@ -89,7 +89,6 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                 loading={false}
                 canDisableRows={false}
                 results={userCart}
-                userCart={userCart}
                 onUpdateCart={onUpdateCart}
                 onRowSelect={handleRowSelect}
                 selections={itemSelections}

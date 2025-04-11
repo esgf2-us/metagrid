@@ -28,14 +28,7 @@ import DatasetDownloadForm, { GlobusGoals } from './DatasetDownload';
 import DataBundlePersister from '../../common/DataBundlePersister';
 import { tempStorageGetMock, tempStorageSetMock } from '../../test/mock/mockStorage';
 import { AppPage } from '../../common/types';
-import {
-  CartStateKeys,
-  GlobusStateKeys,
-  cartDownloadIsLoadingAtom,
-  cartItemSelectionsAtom,
-  globusSavedEndpointsAtoms,
-  globusTaskItemsAtom,
-} from '../../common/atoms';
+import { CartStateKeys, GlobusStateKeys } from '../../common/atoms';
 
 const activeSearch: ActiveSearchQuery = getSearchFromUrl('project=test1');
 

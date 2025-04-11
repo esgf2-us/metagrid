@@ -9,6 +9,7 @@ import { Form, Select, Table as TableD, Tooltip, message } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
+import { useAtomValue } from 'jotai';
 import { fetchWgetScript, ResponseError } from '../../api';
 import { formatBytes, showError, showNotice } from '../../common/utils';
 import { UserCart } from '../Cart/types';
@@ -19,13 +20,13 @@ import Tabs from './Tabs';
 import { RawSearchResult, RawSearchResults, TextInputs } from './types';
 import GlobusToolTip from '../NodeStatus/GlobusToolTip';
 import { topDataRowTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
+import { userCartAtom } from '../../common/atoms';
 
 export type Props = {
   loading: boolean;
   canDisableRows?: boolean;
   results: RawSearchResults | [];
   totalResults?: number;
-  userCart: UserCart | [];
   selections?: RawSearchResults | [];
   filenameVars?: TextInputs | [];
   onUpdateCart: (item: RawSearchResults, operation: 'add' | 'remove') => void;
@@ -39,7 +40,6 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
   canDisableRows = true,
   results,
   totalResults,
-  userCart,
   selections,
   filenameVars,
   onUpdateCart,
@@ -48,6 +48,9 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
   onPageSizeChange,
 }) => {
   const [messageApi, contextHolder] = message.useMessage();
+
+  // Global states
+  const userCart = useAtomValue<UserCart>(userCartAtom);
 
   // Add options to this constant as needed
   type DatasetDownloadTypes = 'wget' | 'Globus';

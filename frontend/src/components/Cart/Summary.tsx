@@ -9,7 +9,7 @@ import { formatBytes } from '../../common/utils';
 import { RawSearchResult, RawSearchResults } from '../Search/types';
 import { UserCart } from './types';
 import { GlobusTaskItem } from '../Globus/types';
-import { cartItemSelectionsAtom, globusTaskItemsAtom } from '../../common/atoms';
+import { cartItemSelectionsAtom, globusTaskItemsAtom, userCartAtom } from '../../common/atoms';
 import { cartTourTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
 const styles: CSSinJS = {
@@ -26,14 +26,11 @@ const styles: CSSinJS = {
   },
 };
 
-export type Props = {
-  userCart: UserCart;
-};
-
 const { Title, Link } = Typography;
 
-const Summary: React.FC<React.PropsWithChildren<Props>> = ({ userCart }) => {
+const Summary: React.FC = () => {
   const cartItems = useAtomValue<RawSearchResults>(cartItemSelectionsAtom);
+  const userCart = useAtomValue<UserCart>(userCartAtom);
   const [taskItems, setTaskItems] = useAtom<GlobusTaskItem[]>(globusTaskItemsAtom);
 
   let numSelectedFiles = 0;

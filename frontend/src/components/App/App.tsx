@@ -84,7 +84,9 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
 
   const [itemSelections, setItemSelections] = useAtom<RawSearchResults>(cartItemSelectionsAtom);
 
-  const setUserSearchQueries = useSetAtom(userSearchQueriesAtom);
+  const [userSearchQueries, setUserSearchQueries] = useAtom<UserSearchQueries>(
+    userSearchQueriesAtom
+  );
 
   const [activeSearchQuery, setActiveSearchQuery] = useAtom<ActiveSearchQuery>(
     activeSearchQueryAtom
@@ -137,12 +139,8 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
 
       fetchUserSearchQueries(accessToken)
         .then((rawUserSearches) => {
-          /* istanbul ignore next */
-          const localItems = JSON.parse(
-            localStorage.getItem('userSearchQueries') || '[]'
-          ) as UserSearchQueries;
           const databaseItems = rawUserSearches.results;
-          const searchQueriesToAdd = unsavedLocalSearches(databaseItems, localItems);
+          const searchQueriesToAdd = unsavedLocalSearches(databaseItems, userSearchQueries);
           /* istanbul ignore next */
           searchQueriesToAdd.forEach((query) => {
             addUserSearchQuery(pk, accessToken, query);
@@ -296,7 +294,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
               path="/cart/*"
               element={
                 <Layout.Sider style={styles.bodySider} width={styles.bodySider.width as number}>
-                  <Summary userCart={userCart} />
+                  <Summary />
                 </Layout.Sider>
               }
             />

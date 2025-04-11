@@ -82,7 +82,6 @@ const Facets: React.FC = () => {
     >
       <Title level={5}>Select a Project</Title>
       <ProjectForm
-        activeSearchQuery={activeSearchQuery}
         projectsFetched={data}
         apiIsLoading={isLoading}
         apiError={error as ResponseError}

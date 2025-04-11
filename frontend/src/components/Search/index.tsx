@@ -495,7 +495,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                 loading={false}
                 results={docs}
                 totalResults={numFound}
-                userCart={userCart}
+                // userCart={userCart}
                 filenameVars={activeSearchQuery.filenameVars}
                 onUpdateCart={onUpdateCart}
                 onRowSelect={handleRowSelect}
@@ -507,7 +507,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                 loading={isLoading}
                 results={[]}
                 totalResults={paginationOptions.pageSize}
-                userCart={userCart}
+                // userCart={userCart}
                 onUpdateCart={onUpdateCart}
               />
             )}
