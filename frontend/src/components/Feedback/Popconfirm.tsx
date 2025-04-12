@@ -20,7 +20,7 @@ type Props = {
     | 'rightBottom'
     | undefined;
   onConfirm: () => void;
-  children: React.ReactElement;
+  children: React.ReactNode;
 };
 
 /* istanbul ignore next */
