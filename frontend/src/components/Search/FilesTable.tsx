@@ -8,13 +8,21 @@ import {
 import { Alert, Form, Table as TableD, Tooltip, message } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
-import React from 'react';
+import React, { useState } from 'react';
 import { DeferFn, useAsync } from 'react-async';
 import { fetchDatasetFiles, openDownloadURL } from '../../api';
 import { CSSinJS } from '../../common/types';
 import { formatBytes, showError, showNotice, splitStringByChar } from '../../common/utils';
 import Button from '../General/Button';
-import { Pagination, RawSearchResult, RawSearchResults, TextInputs } from './types';
+import {
+  AlignType,
+  OnChange,
+  Pagination,
+  RawSearchResult,
+  RawSearchResults,
+  Sorts,
+  TextInputs,
+} from './types';
 import { innerDataRowTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
 export type DownloadUrls = {
@@ -75,6 +83,8 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
   numResults = 0,
   filenameVars,
 }) => {
+  const [sortedInfo, setSortedInfo] = useState<Sorts>({});
+
   const [messageApi, contextHolder] = message.useMessage();
 
   // Add options to this constant as needed.
@@ -110,6 +120,10 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
   React.useEffect(() => {
     runFetchDatasetFiles();
   }, [runFetchDatasetFiles, id, paginationOptions, filenameVars]);
+
+  const handleChange: OnChange = (pagination, filters, sorter) => {
+    setSortedInfo(sorter as Sorts);
+  };
 
   const handlePageChange = (page: number, pageSize: number): void => {
     setPaginationOptions({ page, pageSize });
@@ -211,25 +225,32 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
     {
       title: 'File Title',
       dataIndex: 'title',
-      size: 400,
       key: 'title',
+      sorter: (a: RawSearchResult, b: RawSearchResult) => {
+        const idA = a.title ?? '';
+        const idB = b.title ?? '';
+        return idA.toString().localeCompare(idB.toString());
+      },
+      sortOrder: sortedInfo.columnKey === 'title' ? sortedInfo.order : null,
       render: (title: string) => {
         return <div className={innerDataRowTargets.filesTitle.class()}>{title}</div>;
       },
     },
     {
+      align: 'center' as AlignType,
       title: 'Size',
       dataIndex: 'size',
-      width: 100,
       key: 'size',
+      sorter: (a: RawSearchResult, b: RawSearchResult) => (a.size || 0) - (b.size || 0),
+      sortOrder: sortedInfo.columnKey === 'size' ? sortedInfo.order : null,
       render: (size: number) => {
         return <div className={innerDataRowTargets.dataSize.class()}>{formatBytes(size)}</div>;
       },
     },
     {
+      align: 'center' as AlignType,
       title: 'Download / Copy URL',
       key: 'download',
-      width: 200,
       render: (record: { url: string[] }) => {
         const downloadUrls = genDownloadUrls(record.url);
         return (
@@ -237,17 +258,24 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
             {contextHolder}
             <Form
               layout="inline"
+              style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
               onFinish={() => openDownloadURL(downloadUrls.HTTPServer)}
               initialValues={{ download: downloadUrls.HTTPServer }}
             >
               <Tooltip title="Download the data file via Http." trigger="hover">
-                <Form.Item className={innerDataRowTargets.downloadDataBtn.class()}>
+                <Form.Item
+                  style={{ margin: 0 }}
+                  className={innerDataRowTargets.downloadDataBtn.class()}
+                >
                   <Button type="primary" htmlType="submit" icon={<DownloadOutlined />}></Button>
                 </Form.Item>
               </Tooltip>
               {downloadUrls.OPENDAP !== '' && (
                 <Tooltip title="Copy a shareable OPENDAP URL to the clipboard." trigger="hover">
-                  <Form.Item className={innerDataRowTargets.copyUrlBtn.class()}>
+                  <Form.Item
+                    style={{ margin: '0 0 0 15px' }}
+                    className={innerDataRowTargets.copyUrlBtn.class()}
+                  >
                     <Button
                       type="primary"
                       onClick={() => {
@@ -288,6 +316,8 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
       data-testid="filesTable"
       {...tableConfig}
       columns={columns}
+      onChange={handleChange}
+      scroll={{ x: 'max-content' }}
       onRow={(record, rowIndex) => {
         return {
           id: `search-items-row-${rowIndex}`,
