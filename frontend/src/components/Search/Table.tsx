@@ -17,7 +17,15 @@ import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
 import './Search.css';
 import Tabs from './Tabs';
-import { RawSearchResult, RawSearchResults, TextInputs } from './types';
+import {
+  AlignType,
+  FixedType,
+  OnChange,
+  RawSearchResult,
+  RawSearchResults,
+  Sorts,
+  TextInputs,
+} from './types';
 import GlobusToolTip from '../NodeStatus/GlobusToolTip';
 import { topDataRowTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 import { userCartAtom } from '../../common/atoms';
@@ -49,6 +57,8 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
 }) => {
   const [messageApi, contextHolder] = message.useMessage();
 
+  const [sortedInfo, setSortedInfo] = React.useState<Sorts>({});
+
   // Global states
   const userCart = useAtomValue<UserCart>(userCartAtom);
 
@@ -58,6 +68,10 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
   // If a record supports downloads from the allowed downloads, it will render
   // in the drop downs
   const allowedDownloadTypes: DatasetDownloadTypes[] = ['wget'];
+
+  const handleChange: OnChange = (pagination, filters, sorter) => {
+    setSortedInfo(sorter as Sorts);
+  };
 
   const tableConfig = {
     size: 'small' as SizeType,
@@ -132,9 +146,6 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
     hasData: results.length > 0,
   };
 
-  type AlignType = 'left' | 'center' | 'right';
-  type FixedType = 'left' | 'right' | boolean;
-
   const columns = [
     {
       align: 'right' as AlignType,
@@ -181,7 +192,12 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       title: 'Dataset ID',
       dataIndex: 'master_id',
       key: 'title',
-      width: 'auto',
+      sorter: (a: RawSearchResult, b: RawSearchResult) => {
+        const idA = a.master_id ?? '';
+        const idB = b.master_id ?? '';
+        return idA.toString().localeCompare(idB.toString());
+      },
+      sortOrder: sortedInfo.columnKey === 'title' ? sortedInfo.order : null,
       render: (title: string, record: RawSearchResult) => {
         if (record && record.retracted) {
           const msg =
@@ -204,7 +220,10 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       title: 'Files',
       dataIndex: 'number_of_files',
       key: 'number_of_files',
-      width: 70,
+      sorter: (a: RawSearchResult, b: RawSearchResult) => {
+        return (a.number_of_files || 0) - (b.number_of_files || 0);
+      },
+      sortOrder: sortedInfo.columnKey === 'number_of_files' ? sortedInfo.order : null,
       render: (numberOfFiles: number) => (
         <p className={topDataRowTargets.fileCount.class()}>{numberOfFiles || 'N/A'}</p>
       ),
@@ -214,7 +233,10 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       title: 'Total Size',
       dataIndex: 'size',
       key: 'size',
-      width: 120,
+      sorter: (a: RawSearchResult, b: RawSearchResult) => {
+        return (a.size || 0) - (b.size || 0);
+      },
+      sortOrder: sortedInfo.columnKey === 'size' ? sortedInfo.order : null,
       render: (size: number) => (
         <p className={topDataRowTargets.totalSize.class()}>{size ? formatBytes(size) : 'N/A'}</p>
       ),
@@ -224,7 +246,12 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       title: 'Version',
       dataIndex: 'version',
       key: 'version',
-      width: 130,
+      sorter: (a: RawSearchResult, b: RawSearchResult) => {
+        const idA = a.version ?? '';
+        const idB = b.version ?? '';
+        return idA.toString().localeCompare(idB.toString());
+      },
+      sortOrder: sortedInfo.columnKey === 'version' ? sortedInfo.order : null,
       render: (version: string) => (
         <p className={topDataRowTargets.versionText.class()}>{version}</p>
       ),
@@ -267,6 +294,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
             <Form
               className={topDataRowTargets.downloadScriptForm.class()}
               layout="inline"
+              style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
               onFinish={({ [formKey]: download }) =>
                 handleDownloadForm(download as DatasetDownloadTypes)
               }
@@ -286,7 +314,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
                   })}
                 />
               </Form.Item>
-              <Form.Item>
+              <Form.Item style={{ margin: 0 }}>
                 <Button
                   disabled={record.retracted === true}
                   className={topDataRowTargets.downloadScriptBtn.class()}
@@ -330,9 +358,10 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       {...tableConfig}
       columns={columns}
       dataSource={results}
+      onChange={handleChange}
       rowKey="id"
       size="small"
-      scroll={{ x: '1200px', y: 'calc(70vh)' }}
+      scroll={{ x: 'max-content' }}
       onRow={(record, rowIndex) => {
         return {
           id: `cart-items-row-${rowIndex}`,
