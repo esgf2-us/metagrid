@@ -52,7 +52,7 @@ export type Pagination = {
 
 export type OnChange = NonNullable<TableProps<RawSearchResult>['onChange']>;
 
-type GetSingle<T> = T extends (infer U)[] ? U : never;
+export type GetSingle<T> = T extends (infer U)[] ? U : never;
 export type Sorts = GetSingle<Parameters<OnChange>[2]>;
 
 export type AlignType = 'left' | 'center' | 'right';

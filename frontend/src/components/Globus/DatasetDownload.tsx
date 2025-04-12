@@ -55,6 +55,7 @@ import {
 const globusRedirectUrl = `${window.location.origin}/cart/items`;
 
 // Reference: https://github.com/bpedroza/js-pkce
+/* istanbul ignore next */
 export const REQUESTED_SCOPES =
   'openid profile email urn:globus:auth:scope:transfer.api.globus.org:all';
 

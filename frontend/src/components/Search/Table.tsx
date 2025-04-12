@@ -8,7 +8,7 @@ import {
 import { Form, Select, Table as TableD, Tooltip, message } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
-import React, { useState } from 'react';
+import React from 'react';
 import { useAtomValue } from 'jotai';
 import { fetchWgetScript, ResponseError } from '../../api';
 import { formatBytes, showError, showNotice } from '../../common/utils';
@@ -57,7 +57,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
 }) => {
   const [messageApi, contextHolder] = message.useMessage();
 
-  const [sortedInfo, setSortedInfo] = useState<Sorts>({});
+  const [sortedInfo, setSortedInfo] = React.useState<Sorts>({});
 
   // Global states
   const userCart = useAtomValue<UserCart>(userCartAtom);
@@ -220,8 +220,9 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       title: 'Files',
       dataIndex: 'number_of_files',
       key: 'number_of_files',
-      sorter: (a: RawSearchResult, b: RawSearchResult) =>
-        (a.number_of_files || 0) - (b.number_of_files || 0),
+      sorter: (a: RawSearchResult, b: RawSearchResult) => {
+        return (a.number_of_files || 0) - (b.number_of_files || 0);
+      },
       sortOrder: sortedInfo.columnKey === 'number_of_files' ? sortedInfo.order : null,
       render: (numberOfFiles: number) => (
         <p className={topDataRowTargets.fileCount.class()}>{numberOfFiles || 'N/A'}</p>
@@ -232,7 +233,9 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       title: 'Total Size',
       dataIndex: 'size',
       key: 'size',
-      sorter: (a: RawSearchResult, b: RawSearchResult) => (a.size || 0) - (b.size || 0),
+      sorter: (a: RawSearchResult, b: RawSearchResult) => {
+        return (a.size || 0) - (b.size || 0);
+      },
       sortOrder: sortedInfo.columnKey === 'size' ? sortedInfo.order : null,
       render: (size: number) => (
         <p className={topDataRowTargets.totalSize.class()}>{size ? formatBytes(size) : 'N/A'}</p>
