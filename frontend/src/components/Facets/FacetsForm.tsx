@@ -473,7 +473,6 @@ const FacetsForm: React.FC = () => {
           versionDateRange: initialVersionDateRange,
         }}
         onValuesChange={(_changedValues, allValues) => {
-          console.log(allValues);
           // eslint-disable-next-line
           handleOnChangeGeneralFacetsForm(allValues);
         }}
