@@ -1,11 +1,11 @@
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import NodeStatus, { Props } from '.';
 import { ResponseError } from '../../api';
 import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
-import { AtomWrapper } from '../../test/jestTestFunctions';
+import { AtomWrapper, printElementContents } from '../../test/jestTestFunctions';
 import { AppStateKeys } from '../../common/atoms';
 
 const user = userEvent.setup();
@@ -46,6 +46,26 @@ it('renders the node status and columns sort', async () => {
   expect(isOnlineColHeader).toBeTruthy();
 
   await user.click(isOnlineColHeader);
+});
+
+it('renders the node status in dark mode', async () => {
+  AtomWrapper.modifyAtomValue(AppStateKeys.isDarkMode, true);
+  customRender(<NodeStatus {...defaultProps}></NodeStatus>);
+
+  const header = await screen.findByRole('heading', {
+    name: 'Status as of Wed, 21 Oct 2020 21:23:50 GMT',
+  });
+  expect(header).toBeTruthy();
+
+  const onlineStatus = await within((await screen.findAllByRole('row'))[1]).findByText('yes', {
+    exact: false,
+  });
+  expect(onlineStatus).toHaveStyle({ color: 'darkModeGreen' }); // Expect dark green color value
+
+  const offlineStatus = await within((await screen.findAllByRole('row'))[2]).findByText('no', {
+    exact: false,
+  });
+  expect(offlineStatus).toHaveStyle({ color: 'darkModeRed' }); // Expect dark red color value
 });
 
 it('renders an error message when no node status information is available', async () => {

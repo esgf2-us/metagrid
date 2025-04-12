@@ -157,11 +157,16 @@ const FacetsForm: React.FC = () => {
     } = selectedFacets;
     let newMinVersionDate = null;
     let newMaxVersionDate = null;
+
     /* istanbul ignore else */
     if (versionDateRange) {
       const [minDate, maxDate] = versionDateRange;
-      newMinVersionDate = minDate ? (formatDate(minDate, true) as string) : minDate;
-      newMaxVersionDate = maxDate ? (formatDate(maxDate, true) as string) : maxDate;
+      if (minDate) {
+        newMinVersionDate = formatDate(minDate, true) as string;
+      }
+      if (maxDate) {
+        newMaxVersionDate = formatDate(maxDate, true) as string;
+      }
     }
 
     setActiveSearchQuery({
@@ -468,6 +473,7 @@ const FacetsForm: React.FC = () => {
           versionDateRange: initialVersionDateRange,
         }}
         onValuesChange={(_changedValues, allValues) => {
+          console.log(allValues);
           // eslint-disable-next-line
           handleOnChangeGeneralFacetsForm(allValues);
         }}
