@@ -425,3 +425,223 @@ describe('test QualityFlag', () => {
     expect(component).toBeTruthy();
   });
 });
+
+describe('test column sorting', () => {
+  it('sorts by Dataset ID column', async () => {
+    const colIdx = 4; // The column that Total Size is in
+    customRender(
+      <Table
+        {...defaultProps}
+        results={[
+          rawSearchResultFixture({ master_id: 'zyx' }),
+          rawSearchResultFixture({ master_id: 'abc' }),
+        ]}
+      />
+    );
+
+    // Check table exists
+    const table = await screen.findByRole('table');
+    expect(table).toBeTruthy();
+
+    // First row in table
+    const firstRow = (await screen.findAllByRole('row'))[1];
+    expect(firstRow).toBeTruthy();
+
+    // Verify current row value
+    const cell = (await within(firstRow).findAllByRole('cell'))[colIdx];
+    expect(cell).toBeTruthy();
+    expect(cell).toHaveTextContent('zyx');
+
+    // Click on the column header to sort
+    const tableHeader = await screen.findByText('Dataset ID');
+    expect(tableHeader).toBeTruthy();
+    await user.click(tableHeader);
+
+    // Updated first row in table
+    const updatedRow = (await screen.findAllByRole('row'))[1];
+    expect(updatedRow).toBeTruthy();
+
+    // Verify current row value
+    const updatedCell = (await within(updatedRow).findAllByRole('cell'))[colIdx];
+    expect(updatedCell).toBeTruthy();
+
+    // Verify sorting by checking the row value changed
+    expect(updatedCell).toHaveTextContent('abc');
+  });
+
+  it('sorts by Files column', async () => {
+    const colIdx = 5; // The column that Total Size is in
+    customRender(
+      <Table
+        {...defaultProps}
+        results={[
+          rawSearchResultFixture({ number_of_files: 18 }),
+          rawSearchResultFixture({ number_of_files: 7 }),
+        ]}
+      />
+    );
+
+    // Check table exists
+    const table = await screen.findByRole('table');
+    expect(table).toBeTruthy();
+
+    // First row in table
+    const firstRow = (await screen.findAllByRole('row'))[1];
+    expect(firstRow).toBeTruthy();
+
+    // Verify current row value
+    const cell = (await within(firstRow).findAllByRole('cell'))[colIdx];
+    expect(cell).toBeTruthy();
+    expect(cell).toHaveTextContent('18');
+
+    // Click on the column header to sort
+    const tableHeader = await screen.findByText('Files');
+    expect(tableHeader).toBeTruthy();
+    await user.click(tableHeader);
+
+    // Updated first row in table
+    const updatedRow = (await screen.findAllByRole('row'))[1];
+    expect(updatedRow).toBeTruthy();
+
+    // Verify current row value
+    const updatedCell = (await within(updatedRow).findAllByRole('cell'))[colIdx];
+    expect(updatedCell).toBeTruthy();
+
+    // Verify sorting by checking the row value changed
+    expect(updatedCell).toHaveTextContent('7');
+  });
+
+  it('sorts by Total Size column', async () => {
+    const colIdx = 6; // The column that Total Size is in
+    customRender(
+      <Table
+        {...defaultProps}
+        results={[rawSearchResultFixture({ size: 5678 }), rawSearchResultFixture({ size: 1234 })]}
+      />
+    );
+
+    // Check table exists
+    const table = await screen.findByRole('table');
+    expect(table).toBeTruthy();
+
+    // First row in table
+    const firstRow = (await screen.findAllByRole('row'))[1];
+    expect(firstRow).toBeTruthy();
+
+    // Verify current row value
+    const cell = (await within(firstRow).findAllByRole('cell'))[colIdx];
+    expect(cell).toBeTruthy();
+    expect(cell).toHaveTextContent('5.54 KB');
+
+    // Click on the column header to sort
+    const tableHeader = await screen.findByText('Total Size');
+    expect(tableHeader).toBeTruthy();
+    await user.click(tableHeader);
+
+    // Updated first row in table
+    const updatedRow = (await screen.findAllByRole('row'))[1];
+    expect(updatedRow).toBeTruthy();
+
+    // Verify current row value
+    const updatedCell = (await within(updatedRow).findAllByRole('cell'))[colIdx];
+    expect(updatedCell).toBeTruthy();
+
+    // Verify sorting by checking the row value changed
+    expect(updatedCell).toHaveTextContent('1.21 KB');
+  });
+
+  it('sorts by Version column', async () => {
+    const colIdx = 7; // The column that version is in
+    customRender(
+      <Table
+        {...defaultProps}
+        results={[
+          rawSearchResultFixture({ version: '5678' }),
+          rawSearchResultFixture({ version: '1234' }),
+        ]}
+      />
+    );
+
+    // Check table exists
+    const table = await screen.findByRole('table');
+    expect(table).toBeTruthy();
+
+    // First row in table
+    const firstRow = (await screen.findAllByRole('row'))[1];
+    expect(firstRow).toBeTruthy();
+
+    // Verify current row value
+    const cell = (await within(firstRow).findAllByRole('cell'))[colIdx];
+    expect(cell).toBeTruthy();
+    expect(cell).toHaveTextContent('5678');
+
+    // Click on the column header to sort
+    const tableHeader = await screen.findByText('Version');
+    expect(tableHeader).toBeTruthy();
+    await user.click(tableHeader);
+
+    // Updated first row in table
+    const updatedRow = (await screen.findAllByRole('row'))[1];
+    expect(updatedRow).toBeTruthy();
+
+    // Verify current row value
+    const updatedCell = (await within(updatedRow).findAllByRole('cell'))[colIdx];
+    expect(updatedCell).toBeTruthy();
+
+    // Verify sorting by checking the row value changed
+    expect(updatedCell).toHaveTextContent('1234');
+  });
+
+  it('Handles sorting without breaking even if values are undefined', async () => {
+    const colIdx = 4; // The column that Total Size is in
+    customRender(
+      <Table
+        {...defaultProps}
+        results={[
+          rawSearchResultFixture({
+            id: 'first',
+            master_id: undefined,
+            number_of_files: undefined,
+            size: undefined,
+            version: undefined,
+          }),
+          rawSearchResultFixture({
+            id: 'second',
+            master_id: undefined,
+            number_of_files: undefined,
+            size: undefined,
+            version: undefined,
+          }),
+        ]}
+      />
+    );
+
+    // Check table exists
+    const table = await screen.findByRole('table');
+    expect(table).toBeTruthy();
+
+    // First row in table
+    const firstRow = (await screen.findAllByRole('row'))[1];
+    expect(firstRow).toBeTruthy();
+
+    // Click on the column header to sort
+    const tableDatasetId = await screen.findByText('Dataset ID');
+    expect(tableDatasetId).toBeTruthy();
+    await user.click(tableDatasetId);
+
+    // Click on the column header to sort
+    const files = await screen.findByText('Files');
+    expect(files).toBeTruthy();
+    await user.click(files);
+
+    // Click on the column header to sort
+    const totalSize = await screen.findByText('Total Size');
+    expect(totalSize).toBeTruthy();
+    await user.click(totalSize);
+
+    // Click on the column header to sort
+    const version = await screen.findByText('Version');
+    expect(version).toBeTruthy();
+    await user.click(version);
+  });
+});
