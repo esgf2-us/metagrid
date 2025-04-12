@@ -16,13 +16,15 @@ export type RawTourState = {
 };
 
 /* istanbul ignore next */
-export const ReactJoyrideContext = React.createContext<RawTourState>({
+const emptyTour = {
   getTour: new JoyrideTour('Empty Tour'),
-  /* istanbul ignore next */ setTour: () => {},
-  /* istanbul ignore next */ startTour: () => {},
-  /* istanbul ignore next */ setCurrentAppPage: () => {},
-  /* istanbul ignore next */ startSpecificTour: () => {},
-});
+  setTour: () => {},
+  startTour: () => {},
+  setCurrentAppPage: () => {},
+  startSpecificTour: () => {},
+};
+
+export const ReactJoyrideContext = React.createContext<RawTourState>(emptyTour);
 
 type Props = { children: React.ReactNode };
 

@@ -5,7 +5,7 @@ import { rawSearchResultFixture, userCartFixture } from '../../test/mock/fixture
 import Summary from './Summary';
 import customRender from '../../test/custom-render';
 import { AppStateKeys, CartStateKeys, GlobusStateKeys } from '../../common/atoms';
-import { AtomWrapper } from '../../test/jestTestFunctions';
+import { AtomWrapper, printElementContents } from '../../test/jestTestFunctions';
 
 test('renders component', async () => {
   customRender(<Summary />);
@@ -72,6 +72,19 @@ describe('shows the correct selected datasets and files', () => {
     const numSelectedFilesText = await screen.findByText('Selected Number of Files:');
 
     expect(numSelectedDatasetsField.textContent).toEqual('Selected Number of Datasets: 0');
+    expect(numSelectedFilesText.textContent).toEqual('Selected Number of Files: 0');
+  });
+
+  it('when items are selected but number_of_files and size are undefined', async () => {
+    AtomWrapper.modifyAtomValue(CartStateKeys.cartItemSelections, [
+      rawSearchResultFixture({ number_of_files: undefined, size: undefined }),
+    ]);
+    customRender(<Summary />);
+
+    const numSelectedDatasetsField = await screen.findByText('Selected Number of Datasets:');
+    const numSelectedFilesText = await screen.findByText('Selected Number of Files:');
+
+    expect(numSelectedDatasetsField.textContent).toEqual('Selected Number of Datasets: 1');
     expect(numSelectedFilesText.textContent).toEqual('Selected Number of Files: 0');
   });
 

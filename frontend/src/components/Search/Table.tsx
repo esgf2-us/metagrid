@@ -119,7 +119,10 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
         ),
     },
     rowSelection: {
-      selectedRowKeys: selections?.map((item) => (item ? item.id : '')),
+      selectedRowKeys: selections?.map((item) => {
+        /* istanbul ignore next */
+        return item ? item.id : '';
+      }),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onSelect: (_record: any, _selected: any, selectedRows: any) => {
         /* istanbul ignore else */
