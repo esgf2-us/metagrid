@@ -196,6 +196,11 @@ nodeStatusBackend:
     resources: {}
 
   blackbox:
+    probe:
+      timeout:
+      followRedirects: true
+      insecureSkipVerify: false
+
     image:
       repository: quay.io/prometheus/blackbox-exporter
       pullPolicy: IfNotPresent
