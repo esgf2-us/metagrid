@@ -62,6 +62,8 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
   // Global states
   const userCart = useAtomValue<UserCart>(userCartAtom);
 
+  const showStatus = window.METAGRID.STATUS_URL !== null;
+
   // Add options to this constant as needed
   type DatasetDownloadTypes = 'wget' | 'Globus';
 
@@ -175,19 +177,23 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
         );
       },
     },
-    {
-      align: 'center' as AlignType,
-      fixed: 'left' as FixedType,
-      title: '',
-      dataIndex: 'data_node',
-      key: 'node_status',
-      width: 35,
-      render: (data_node: string) => (
-        <div className={topDataRowTargets.nodeStatusIcon.class()}>
-          <StatusToolTip dataNode={data_node} />
-        </div>
-      ),
-    },
+    ...(showStatus
+      ? [
+          {
+            align: 'center' as AlignType,
+            fixed: 'left' as FixedType,
+            title: '',
+            dataIndex: 'data_node',
+            key: 'node_status',
+            width: 35,
+            render: (data_node: string) => (
+              <div className={topDataRowTargets.nodeStatusIcon.class()}>
+                <StatusToolTip dataNode={data_node} />
+              </div>
+            ),
+          },
+        ]
+      : []),
     {
       title: 'Dataset ID',
       dataIndex: 'master_id',
