@@ -1,4 +1,5 @@
 import {
+  DatabaseTwoTone,
   DownCircleOutlined,
   DownloadOutlined,
   MinusOutlined,
@@ -177,23 +178,34 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
         );
       },
     },
-    ...(showStatus
-      ? [
-          {
-            align: 'center' as AlignType,
-            fixed: 'left' as FixedType,
-            title: '',
-            dataIndex: 'data_node',
-            key: 'node_status',
-            width: 35,
-            render: (data_node: string) => (
-              <div className={topDataRowTargets.nodeStatusIcon.class()}>
-                <StatusToolTip dataNode={data_node} />
-              </div>
-            ),
-          },
-        ]
-      : []),
+    {
+      align: 'center' as AlignType,
+      fixed: 'left' as FixedType,
+      title: '',
+      dataIndex: 'data_node',
+      key: 'node_status',
+      width: 35,
+      render: (data_node: string) => {
+        if (!showStatus) {
+          return (
+            <Tooltip
+              title={
+                <>
+                  Data Node:<div style={{ fontWeight: 'bold' }}>{data_node}</div>
+                </>
+              }
+            >
+              <DatabaseTwoTone />
+            </Tooltip>
+          );
+        }
+        return (
+          <div className={topDataRowTargets.nodeStatusIcon.class()}>
+            <StatusToolTip dataNode={data_node} />
+          </div>
+        );
+      },
+    },
     {
       title: 'Dataset ID',
       dataIndex: 'master_id',
