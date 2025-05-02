@@ -62,6 +62,7 @@ import {
   supportModalVisibleAtom,
   nodeStatusAtom,
 } from '../../common/atoms';
+import Banner from '../Messaging/Banner';
 
 const useHotjar = (): void => {
   if (window.METAGRID.HOTJAR_ID != null && window.METAGRID.HOTJAR_SV != null) {
@@ -301,6 +302,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
           </Routes>
           <Layout>
             <Layout.Content style={styles.bodyContent}>
+              <Banner />
               <Routes>
                 <Route
                   path="/search/*"

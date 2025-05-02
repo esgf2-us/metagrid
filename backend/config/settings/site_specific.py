@@ -75,6 +75,10 @@ class MetagridFrontendSettings(BaseSettings):
         default="globus",
         description="Which authentication method to enable for user sign in on the frontend.",
     )
+    BANNER_TEXT: Optional[str] = Field(
+        default="",
+        description="Text to display as a banner above the main body. Useful for providing maintenance notices or important news.",
+    )
     FOOTER_TEXT: str = Field(
         default="",
         description="Text to display in the footer of the frontend. Useful for adding a link to the terms of service or other legal information. The string should be formatted as MarkDown and will be rendered as such.",
