@@ -76,7 +76,7 @@ class MetagridFrontendSettings(BaseSettings):
         description="Which authentication method to enable for user sign in on the frontend.",
     )
     BANNER_TEXT: Optional[str] = Field(
-        default="",
+        examples=["My banner text."],
         description="Text to display as a banner above the main body. Useful for providing maintenance notices or important news.",
     )
     FOOTER_TEXT: str = Field(

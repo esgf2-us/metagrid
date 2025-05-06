@@ -107,6 +107,17 @@
 >
 >     The list of data nodes known to be Globus enabled. A data node must be in this list in order to transfer files from it via Globus.
 
+#### `METAGRID_BANNER_TEXT`
+
+> !!! example "*Optional*"
+>     __Default:__ `None`
+>
+>     Text to display as a banner above the main body. Useful for providing maintenance notices or important news.
+>
+>     __Example Values__
+>
+>     `My banner text.`
+
 #### `METAGRID_FOOTER_TEXT`
 
 > !!! example "*Optional*"
