@@ -109,6 +109,17 @@
 >
 >     `536321f7-c0e9-462c-b5c6-34d4a3672076`
 
+#### `METAGRID_STATUS_URL`
+
+> !!! example "*Optional*"
+>     __Default:__ `None`
+>
+>     The URL at which the backend can reach the Node Status API.
+>
+>     __Example Values__
+>
+>     `https://esgf-node.llnl.gov/proxy/status`
+
 #### `METAGRID_GLOBUS_NODES`
 
 > !!! example "*Optional*"
