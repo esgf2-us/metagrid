@@ -153,6 +153,8 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
     };
   }
 
+  const showStatus = window.METAGRID.STATUS_URL !== null;
+
   const menuItems: MenuItem[] = [
     {
       label: (
@@ -193,16 +195,20 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
       style: menuItemStyling,
       className: `modified-item ${navBarTargets.savedSearchPageBtn.class()}`,
     },
-    {
-      label: (
-        <Link to="/nodes">
-          <NodeIndexOutlined /> Node Status
-        </Link>
-      ),
-      key: 'nodes',
-      style: menuItemStyling,
-      className: navBarTargets.nodeStatusBtn.class(),
-    },
+    ...(showStatus
+      ? [
+          {
+            label: (
+              <Link to="/nodes">
+                <NodeIndexOutlined /> Node Status
+              </Link>
+            ),
+            key: 'nodes',
+            style: menuItemStyling,
+            className: navBarTargets.nodeStatusBtn.class(),
+          },
+        ]
+      : []),
     {
       label: (
         <Button

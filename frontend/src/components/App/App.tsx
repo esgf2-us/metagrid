@@ -168,9 +168,14 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
 
   React.useEffect(() => {
     /* istanbul ignore else */
-    runFetchNodeStatus();
-    const interval = setInterval(() => {
+    const showStatus = window.METAGRID.STATUS_URL !== null;
+    if (showStatus) {
       runFetchNodeStatus();
+    }
+    const interval = setInterval(() => {
+      if (window.METAGRID.STATUS_URL !== null) {
+        runFetchNodeStatus();
+      }
     }, 295000);
     return () => clearInterval(interval);
   }, [runFetchNodeStatus]);

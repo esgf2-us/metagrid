@@ -1,4 +1,5 @@
 import {
+  DatabaseTwoTone,
   DownCircleOutlined,
   DownloadOutlined,
   MinusOutlined,
@@ -61,6 +62,8 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
 
   // Global states
   const userCart = useAtomValue<UserCart>(userCartAtom);
+
+  const showStatus = window.METAGRID.STATUS_URL !== null;
 
   // Add options to this constant as needed
   type DatasetDownloadTypes = 'wget' | 'Globus';
@@ -182,11 +185,26 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       dataIndex: 'data_node',
       key: 'node_status',
       width: 35,
-      render: (data_node: string) => (
-        <div className={topDataRowTargets.nodeStatusIcon.class()}>
-          <StatusToolTip dataNode={data_node} />
-        </div>
-      ),
+      render: (data_node: string) => {
+        if (!showStatus) {
+          return (
+            <Tooltip
+              title={
+                <>
+                  Data Node:<div style={{ fontWeight: 'bold' }}>{data_node}</div>
+                </>
+              }
+            >
+              <DatabaseTwoTone />
+            </Tooltip>
+          );
+        }
+        return (
+          <div className={topDataRowTargets.nodeStatusIcon.class()}>
+            <StatusToolTip dataNode={data_node} />
+          </div>
+        );
+      },
     },
     {
       title: 'Dataset ID',

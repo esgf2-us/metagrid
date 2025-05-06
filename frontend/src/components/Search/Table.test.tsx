@@ -7,7 +7,7 @@ import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
 import Table, { Props } from './Table';
 import { QualityFlag } from './Tabs';
-import { AtomWrapper, mockConfig } from '../../test/jestTestFunctions';
+import { AtomWrapper, mockConfig, printElementContents } from '../../test/jestTestFunctions';
 import { AppStateKeys } from '../../common/atoms';
 
 const user = userEvent.setup();
@@ -44,6 +44,17 @@ describe('test main table UI', () => {
     customRender(<Table {...defaultProps} results={[]} />);
     const row = (await screen.findAllByRole('row'))[1];
     expect(row).toHaveClass('ant-table-placeholder');
+  });
+
+  it('renders component without node status (showing only the node value with database icon)', async () => {
+    window.METAGRID.STATUS_URL = null;
+    customRender(<Table {...defaultProps} />);
+    const databaseIcon = (
+      await screen.findAllByRole('img', {
+        name: 'database',
+      })
+    )[0];
+    expect(databaseIcon).toBeTruthy();
   });
 
   it('renders not available for total size and number of files columns when dataset doesn"t have those attributes', async () => {

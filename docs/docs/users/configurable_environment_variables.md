@@ -18,15 +18,6 @@
 >
 >     `https://esgf-node.llnl.gov/esg-search/wget`
 
-#### `METAGRID_STATUS_URL`
-
-> !!! example "**Required**"
->     The URL at which the backend can reach the Node Status API.
->
->     __Example Values__
->
->     `https://esgf-node.llnl.gov/proxy/status`
-
 #### `METAGRID_KEYCLOAK_CLIENT_ID`
 
 > !!! example "*Optional*"
@@ -117,6 +108,17 @@
 >     __Example Values__
 >
 >     `536321f7-c0e9-462c-b5c6-34d4a3672076`
+
+#### `METAGRID_STATUS_URL`
+
+> !!! example "*Optional*"
+>     __Default:__ `None`
+>
+>     The URL at which the backend can reach the Node Status API.
+>
+>     __Example Values__
+>
+>     `https://esgf-node.llnl.gov/proxy/status`
 
 #### `METAGRID_GLOBUS_NODES`
 
