@@ -138,42 +138,6 @@ projects = [
         },
     },
     {
-        "name": "E3SM",
-        "full_name": "Energy Exascale Earth System Model",
-        "project_url": "https://e3sm.org/",
-        "description": (
-            "The Energy Exascale Earth System Model (E3SM), formerly known as Accelerated Climate Modeling for "
-            "Energy (ACME) project is an ongoing, state-of-the-science Earth system modeling, simulation, and "
-            "prediction project, sponsored by the U.S. Department of Energy's (DOE's) Office of Biological and "
-            "Environmental Research (BER), that optimizes the use of DOE laboratory computational resources to "
-            "meet the science needs of the nation and the mission needs of DOE."
-        ),
-        "facets_by_group": {
-            GROUPS[0]: ["data_node"],
-            GROUPS[1]: [
-                "experiment",
-                "science_driver",
-                "model_version",
-            ],
-            GROUPS[4]: [
-                "realm",
-                "regridding",
-                "time_frequency",
-                "data_type",
-                "ensemble_member",
-                "tuning",
-                "campaign",
-                "period",
-            ],
-            GROUPS[2]: [
-                "atmos_grid_resolution",
-                "ocean_grid_resolution",
-                "land_grid_resolution",
-                "seaice_grid_resolution",
-            ],
-        },
-    },
-    {
         "name": "CMIP3",
         "full_name": "Coupled Model Intercomparison Project Phase 3",
         "project_url": "https://pcmdi.llnl.gov/mips/cmip3/",
