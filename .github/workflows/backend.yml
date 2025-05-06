@@ -72,5 +72,5 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
-          file: "./backend/coverage.xml"
+          file: './backend/coverage.xml'
           flags: backend

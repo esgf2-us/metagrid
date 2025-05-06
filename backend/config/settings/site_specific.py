@@ -21,10 +21,6 @@ class MetagridBackendSettings(BaseSettings):
         description="The URL at which the ESG-Search wget endpoint can be reached.",
         examples=["https://esgf-node.llnl.gov/esg-search/wget"],
     )
-    STATUS_URL: str = Field(
-        description="The URL at which the backend can reach the Node Status API.",
-        examples=["https://esgf-node.llnl.gov/proxy/status"],
-    )
     KEYCLOAK_CLIENT_ID: str = Field(
         default="metagrid-localhost",
         examples=["metagrid-localhost"],
@@ -87,6 +83,11 @@ class MetagridFrontendSettings(BaseSettings):
     GLOBUS_CLIENT_ID: str = Field(
         examples=["536321f7-c0e9-462c-b5c6-34d4a3672076"],
         description="The `Client UUID` obtained by registering a `a thick client or script that will be installed and run by users on their devices` with Globus at <https://app.globus.org/settings/developers>  This is required even if signing in with Globus is not enabled. It is used for browsing Globus Collections to which files may be sent.",
+    )
+    STATUS_URL: Optional[str] = Field(
+        default=None,
+        description="The URL at which the backend can reach the Node Status API.",
+        examples=["https://esgf-node.llnl.gov/proxy/status"],
     )
     GLOBUS_NODES: Sequence[str] = Field(
         default=[
