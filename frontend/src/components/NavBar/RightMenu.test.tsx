@@ -6,7 +6,12 @@ import React from 'react';
 import customRender from '../../test/custom-render';
 import { matchMedia, setMedia } from 'mock-match-media';
 import RightMenu, { Props } from './RightMenu';
-import { mockConfig, mockKeycloakToken, AtomWrapper } from '../../test/jestTestFunctions';
+import {
+  mockConfig,
+  mockKeycloakToken,
+  AtomWrapper,
+  printElementContents,
+} from '../../test/jestTestFunctions';
 import { tempStorageSetMock } from '../../test/mock/mockStorage';
 import { activeSearchQueryFixture } from '../../test/mock/fixtures';
 import App from '../App/App';
@@ -43,6 +48,22 @@ it('sets the active menu item based on the location pathname', async () => {
   expect(savedSearchLink).toBeTruthy();
 
   await user.click(savedSearchLink);
+});
+
+it('Renders the node status link if node status url is configured', async () => {
+  window.METAGRID.STATUS_URL = 'https://example.com/status';
+  customRender(<RightMenu {...rightMenuProps} />);
+
+  const nodeStatusLink = await screen.findByText('Node Status', { exact: false });
+  expect(nodeStatusLink).toBeTruthy();
+});
+
+it('Does not render the node status link if node status url is not configured', async () => {
+  window.METAGRID.STATUS_URL = null;
+  customRender(<RightMenu {...rightMenuProps} />);
+
+  const nodeStatusLink = screen.queryByText('Node Status', { exact: false });
+  expect(nodeStatusLink).not.toBeInTheDocument();
 });
 
 it('display the users given name after authentication with keycloak', async () => {
