@@ -417,3 +417,32 @@ export const getLastMessageSeen = (): string | null => {
 export const setStartupMessageAsSeen = (): void => {
   localStorage.setItem('lastMessageSeen', messageDisplayData.messageToShow);
 };
+
+export const showBanner = (): boolean => {
+  const currentBannerText = localStorage.getItem('showBanner');
+
+  // Check if the banner should be shown
+  if (
+    window.METAGRID.BANNER_TEXT !== null &&
+    window.METAGRID.BANNER_TEXT !== '' &&
+    currentBannerText !== window.METAGRID.BANNER_TEXT
+  ) {
+    return true;
+  }
+
+  if (window.METAGRID.BANNER_TEXT === null || window.METAGRID.BANNER_TEXT !== '') {
+    localStorage.removeItem('showBanner');
+  }
+
+  return false;
+};
+
+export const saveBannerText = (): void => {
+  // Set the banner text in localStorage
+
+  /* istanbul ignore next */
+  localStorage.setItem(
+    'showBanner',
+    window.METAGRID.BANNER_TEXT ? window.METAGRID.BANNER_TEXT : ''
+  );
+};
