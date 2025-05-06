@@ -78,9 +78,27 @@
 >     __Default:__ `globus`
 >
 >     Which authentication method to enable for user sign in on the frontend.
->
+
 >     __Possible values__
 >     `keycloak`, `globus`
+
+#### `METAGRID_BANNER_TEXT`
+
+> !!! example "*Optional*"
+>     __Default:__ `None`
+>
+>     Text to display as a banner above the main body. Useful for providing maintenance notices or important news. The banner will be hidden permanently if the user clicks the close button.
+>
+>     __Example Values__
+>
+>     `My banner notification text.`
+
+#### `METAGRID_FOOTER_TEXT`
+
+> !!! example "*Optional*"
+>     __Default:__ ``
+>
+>     Text to display in the footer of the frontend. Useful for adding a link to the terms of service or other legal information. The string should be formatted as MarkDown and will be rendered as such.
 
 #### `METAGRID_GLOBUS_CLIENT_ID`
 
@@ -97,17 +115,6 @@
 >     __Default:__ `['aims3.llnl.gov', 'esgf-data1.llnl.gov', 'esgf-data2.llnl.gov', 'esgf-node.ornl.gov']`
 >
 >     The list of data nodes known to be Globus enabled. A data node must be in this list in order to transfer files from it via Globus.
-
-#### `METAGRID_FOOTER_TEXT`
-
-> !!! example "*Optional*"
->     __Default:__ `None`
->
->     Text to display in the footer of the frontend. Useful for adding a link to the terms of service or other legal information. The string should be formatted as MarkDown and will be rendered as such.
->
->     __Example Values__
->
->     `Privacy & Legal Notice: [https://www.llnl.gov/disclaimer.html](https://www.llnl.gov/disclaimer.html)`
 
 #### `METAGRID_KEYCLOAK_REALM`
 
