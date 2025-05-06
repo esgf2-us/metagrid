@@ -35,7 +35,7 @@ import {
 } from './types';
 import { getCurrentAppPage, showError, showNotice } from '../../common/utils';
 import { RawTourState, ReactJoyrideContext } from '../../contexts/ReactJoyrideContext';
-import axios from '../../lib/axios';
+import axios from 'axios';
 import apiRoutes from '../../api/routes';
 import DataBundlePersister from '../../common/DataBundlePersister';
 import { AppPage } from '../../common/types';
