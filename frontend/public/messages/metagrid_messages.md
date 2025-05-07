@@ -1,4 +1,4 @@
-# Welcome to the Metagrid Release v1.5.x
+# Welcome to the Metagrid Release v1.4.0-beta
 
 To view the latest documentation and FAQ, please visit this page:
 [https://esgf.github.io/esgf-user-support/metagrid.html](https://esgf.github.io/esgf-user-support/metagrid.html)
