@@ -17,7 +17,7 @@ import {
   message,
 } from 'antd';
 import React, { useEffect } from 'react';
-import PKCE from 'js-pkce';
+import createPKCE from 'js-pkce';
 import { useAtom } from 'jotai';
 import {
   fetchWgetScript,
@@ -179,10 +179,10 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   }
 
   // Creates an auth object using desired authentication scope
-  function createGlobusAuthObject(): PKCE {
+  function createGlobusAuthObject(): createPKCE {
     const authScope = db.get<string>(GlobusStateKeys.globusAuth, REQUESTED_SCOPES);
 
-    return new PKCE({
+    return new createPKCE({
       client_id: window.METAGRID.GLOBUS_CLIENT_ID, // Update this using your native client ID
       redirect_uri: `${window.location.origin}/cart/items`, // Update this if you are deploying this anywhere else (Globus Auth will redirect back here once you have logged in)
       authorization_endpoint: 'https://auth.globus.org/v2/oauth2/authorize', // No changes needed

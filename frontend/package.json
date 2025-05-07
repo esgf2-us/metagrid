@@ -73,7 +73,7 @@
     "dotenv": "16.5.0",
     "humps": "2.0.1",
     "jotai": "2.12.4",
-    "js-pkce": "^1.4.0",
+    "js-pkce": "^2.0.0",
     "keycloak-js": "19.0.3",
     "prop-types": "15.8.1",
     "query-string": "7.0.0",
