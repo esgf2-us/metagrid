@@ -88,8 +88,11 @@ spec:
             port: http
         resources:
           {{- toYaml .Values.nodeStatusBackend.blackbox.resources | nindent 12 }}
-        {{- with .Values.nodeStatusBackend.blackbox.volumeMounts }}
         volumeMounts:
+        - name: config-volume
+          mountPath: /etc/blackbox_exporter/config.yml
+          subPath: config.yml
+        {{- with .Values.nodeStatusBackend.blackbox.volumeMounts }}
           {{- toYaml . | nindent 12 }}
         {{- end }}
       volumes:
