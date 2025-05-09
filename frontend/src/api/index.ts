@@ -9,7 +9,7 @@ import 'setimmediate'; // Added because in Jest 27, setImmediate is not defined,
 import humps from 'humps';
 import queryString from 'query-string';
 import { AxiosResponse } from 'axios';
-import axios from '../lib/axios';
+import axios from 'axios';
 import {
   RawUserCart,
   RawUserSearchQuery,
