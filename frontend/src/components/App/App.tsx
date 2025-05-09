@@ -18,7 +18,7 @@ import {
 import React from 'react';
 import { useAsync } from 'react-async';
 import { hotjar } from 'react-hotjar';
-import { Link, Navigate, Route, Routes } from 'react-router-dom';
+import { Link, Navigate, Route, Routes } from 'react-router';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import {
   addUserSearchQuery,

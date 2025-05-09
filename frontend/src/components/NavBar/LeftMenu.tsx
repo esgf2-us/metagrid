@@ -1,7 +1,7 @@
 import { SearchOutlined } from '@ant-design/icons';
 import { Alert, Form, Input, Select, Space, Spin } from 'antd';
 import React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router';
 import { ResponseError } from '../../api';
 import { RawProject, RawProjects } from '../Facets/types';
 import Button from '../General/Button';

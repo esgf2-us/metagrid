@@ -1,7 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { ReactKeycloakProvider } from '@react-keycloak/web';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router';
 import ReactGA from 'react-ga4';
 import Keycloak from 'keycloak-js';
 import { Provider } from 'jotai';

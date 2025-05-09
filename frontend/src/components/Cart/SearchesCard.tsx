@@ -7,7 +7,7 @@ import {
 import { Alert, Card, Col, Skeleton, Typography, Tooltip } from 'antd';
 import React from 'react';
 import { useAsync } from 'react-async';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useSetAtom } from 'jotai';
 import { fetchSearchResults, generateSearchURLQuery } from '../../api';
 import { CSSinJS } from '../../common/types';
