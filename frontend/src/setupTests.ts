@@ -7,19 +7,10 @@ import { cleanup } from '@testing-library/react';
 import { TextEncoder } from 'util';
 import { server } from './test/mock/server';
 import messageDisplayData from './components/Messaging/messageDisplayData';
-import { mockConfig, originalGlobusEnabledNodes, RecoilWrapper } from './test/jestTestFunctions';
+import { mockConfig, originalGlobusEnabledNodes, AtomWrapper } from './test/jestTestFunctions';
 import 'cross-fetch/polyfill';
 import 'mock-match-media/jest-setup';
 import { sessionStorageMock } from './test/mock/mockStorage';
-import {
-  activeSearchQueryAtom,
-  availableFacetsAtom,
-  isDarkModeAtom,
-  nodeStatusAtom,
-  supportModalVisibleAtom,
-  userCartAtom,
-  userSearchQueriesAtom,
-} from './components/App/recoil/atoms';
 import {
   activeSearchQueryFixture,
   parsedFacetsFixture,
@@ -27,13 +18,27 @@ import {
   userCartFixture,
   userSearchQueriesFixture,
 } from './test/mock/fixtures';
-import { cartDownloadIsLoadingAtom, cartItemSelectionsAtom } from './components/Cart/recoil/atoms';
-import { globusSavedEndpointsAtoms, globusTaskItemsAtom } from './components/Globus/recoil/atom';
 import { ActiveSearchQuery, RawSearchResults } from './components/Search/types';
 import { ParsedFacets } from './components/Facets/types';
 import { NodeStatusArray } from './components/NodeStatus/types';
 import { UserCart, UserSearchQueries } from './components/Cart/types';
 import { GlobusEndpoint, GlobusTaskItem } from './components/Globus/types';
+import {
+  AppStateKeys,
+  availableFacetsAtom,
+  nodeStatusAtom,
+  supportModalVisibleAtom,
+  isDarkModeAtom,
+  userSearchQueriesAtom,
+  cartDownloadIsLoadingAtom,
+  cartItemSelectionsAtom,
+  savedGlobusEndpointsAtom,
+  globusTaskItemsAtom,
+  activeSearchQueryAtom,
+  CartStateKeys,
+  GlobusStateKeys,
+  userCartAtom,
+} from './common/atoms';
 
 jest.setTimeout(120000);
 
@@ -48,31 +53,63 @@ globalThis.TextEncoder = TextEncoder;
 beforeAll(() => {
   server.listen();
 
-  // Initialize recoil state values
-  RecoilWrapper.setAtomValue<ActiveSearchQuery>(
+  // Initialize jotai state values
+  AtomWrapper.setAtomValue<ActiveSearchQuery>(
     activeSearchQueryAtom,
+    AppStateKeys.activeSearchQuery,
     activeSearchQueryFixture(),
     false
   );
-  RecoilWrapper.setAtomValue<ParsedFacets | Record<string, unknown>>(
+  AtomWrapper.setAtomValue<ParsedFacets | Record<string, unknown>>(
     availableFacetsAtom,
+    AppStateKeys.availableFacets,
     parsedFacetsFixture(),
     false
   );
-  RecoilWrapper.setAtomValue<NodeStatusArray>(nodeStatusAtom, parsedNodeStatusFixture(), false);
-  RecoilWrapper.setAtomValue<boolean>(supportModalVisibleAtom, false, false);
-  RecoilWrapper.setAtomValue<boolean>(isDarkModeAtom, false, false);
-
-  RecoilWrapper.setAtomValue<UserCart>(userCartAtom, userCartFixture(), true);
-  RecoilWrapper.setAtomValue<UserSearchQueries>(
+  AtomWrapper.setAtomValue<NodeStatusArray>(
+    nodeStatusAtom,
+    AppStateKeys.nodeStatus,
+    parsedNodeStatusFixture(),
+    false
+  );
+  AtomWrapper.setAtomValue<boolean>(
+    supportModalVisibleAtom,
+    AppStateKeys.supportModalVisible,
+    false,
+    false
+  );
+  AtomWrapper.setAtomValue<boolean>(isDarkModeAtom, AppStateKeys.isDarkMode, false, true);
+  AtomWrapper.setAtomValue<UserCart>(userCartAtom, AppStateKeys.userCart, userCartFixture(), true);
+  AtomWrapper.setAtomValue<UserSearchQueries>(
     userSearchQueriesAtom,
+    AppStateKeys.userSearchQuery,
     userSearchQueriesFixture(),
     true
   );
-  RecoilWrapper.setAtomValue<boolean>(cartDownloadIsLoadingAtom, false, true);
-  RecoilWrapper.setAtomValue<RawSearchResults>(cartItemSelectionsAtom, [], true);
-  RecoilWrapper.setAtomValue<GlobusEndpoint[]>(globusSavedEndpointsAtoms, [], true);
-  RecoilWrapper.setAtomValue<GlobusTaskItem[]>(globusTaskItemsAtom, [], true);
+  AtomWrapper.setAtomValue<boolean>(
+    cartDownloadIsLoadingAtom,
+    CartStateKeys.cartDownloadIsLoading,
+    false,
+    true
+  );
+  AtomWrapper.setAtomValue<RawSearchResults>(
+    cartItemSelectionsAtom,
+    CartStateKeys.cartItemSelections,
+    [],
+    true
+  );
+  AtomWrapper.setAtomValue<GlobusEndpoint[]>(
+    savedGlobusEndpointsAtom,
+    GlobusStateKeys.savedGlobusEndpoints,
+    [],
+    true
+  );
+  AtomWrapper.setAtomValue<GlobusTaskItem[]>(
+    globusTaskItemsAtom,
+    GlobusStateKeys.globusTaskItems,
+    [],
+    true
+  );
 });
 beforeEach(() => {
   sessionStorageMock.clear();
@@ -109,7 +146,7 @@ afterEach(() => {
 
   server.resetHandlers();
 
-  RecoilWrapper.restoreValues();
+  AtomWrapper.restoreValues();
 
   cleanup();
 });

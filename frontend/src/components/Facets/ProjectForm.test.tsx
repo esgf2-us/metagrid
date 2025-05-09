@@ -2,14 +2,13 @@ import React from 'react';
 import { fireEvent, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ResponseError } from '../../api';
-import { activeSearchQueryFixture, projectsFixture } from '../../test/mock/fixtures';
+import { projectsFixture } from '../../test/mock/fixtures';
 import { mapHTTPErrorCodes } from '../../api/routes';
 import ProjectsForm, { Props } from './ProjectForm';
 import customRender from '../../test/custom-render';
 import { showNoticeStatic } from '../../test/jestTestFunctions';
 
 const defaultProps: Props = {
-  activeSearchQuery: activeSearchQueryFixture(),
   projectsFetched: { results: projectsFixture() },
   apiIsLoading: false,
   apiError: undefined,

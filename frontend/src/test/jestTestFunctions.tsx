@@ -10,7 +10,8 @@ import { screen } from '@testing-library/react';
 import { message } from 'antd';
 import React, { ReactNode, CSSProperties } from 'react';
 import { UserEvent } from '@testing-library/user-event';
-import { RecoilState, RecoilRoot } from 'recoil';
+import { Provider, WritableAtom } from 'jotai';
+import { useHydrateAtoms } from 'jotai/utils';
 import { NotificationType, getSearchFromUrl } from '../common/utils';
 import { RawSearchResult } from '../components/Search/types';
 import { rawSearchResultFixture } from './mock/fixtures';
@@ -66,7 +67,7 @@ export function printElementContents(element: HTMLElement | undefined = undefine
 }
 
 export async function showNoticeStatic(
-  content: React.ReactNode | string,
+  content: React.ReactElement | string,
   config?: {
     duration?: number;
     icon?: ReactNode;
@@ -117,12 +118,38 @@ export async function showNoticeStatic(
 export const globusReadyNode: string = 'nodeIsGlobusReady';
 export const nodeNotGlobusReady: string = 'nodeIsNotGlobusReady';
 
-export class RecoilWrapper {
-  private static instance: RecoilWrapper;
+type AnyWritableAtom = WritableAtom<unknown, never[], unknown>;
+export type InitialAtomValues = Array<readonly [AnyWritableAtom, unknown]>;
+
+const HydrateAtoms = ({
+  children,
+  initialValues,
+}: {
+  children: React.ReactElement;
+  initialValues: InitialAtomValues;
+}): React.ReactElement => {
+  useHydrateAtoms(new Map(initialValues));
+  return <>{children}</>;
+};
+
+const TestProvider = ({
+  initialValues,
+  children,
+}: {
+  children: React.ReactElement;
+  initialValues: InitialAtomValues;
+}): React.ReactElement => (
+  <Provider>
+    <HydrateAtoms initialValues={initialValues}>{children}</HydrateAtoms>
+  </Provider>
+);
+
+export class AtomWrapper {
+  private static instance: AtomWrapper;
 
   private ATOMS: {
     [key: string]: {
-      atom: RecoilState<unknown>;
+      atom: AnyWritableAtom;
       value: unknown;
       prevValue: unknown;
       saveLocal: boolean;
@@ -133,7 +160,7 @@ export class RecoilWrapper {
     this.ATOMS = {};
   }
 
-  public static get Instance(): RecoilWrapper {
+  public static get Instance(): AtomWrapper {
     if (!this.instance) {
       this.instance = new this();
     }
@@ -145,6 +172,7 @@ export class RecoilWrapper {
     Object.keys(instance.ATOMS).forEach((key) => {
       const atomInfo = instance.ATOMS[key];
       console.log(`Key: ${key}`);
+      console.log(`Atom: ${atomInfo.atom.toString()}`);
       console.log(`Value: ${JSON.stringify(atomInfo.value)}`);
       console.log(`Previous Value: ${JSON.stringify(atomInfo.prevValue)}`);
       console.log(`Save Local: ${atomInfo.saveLocal}`);
@@ -153,13 +181,14 @@ export class RecoilWrapper {
   }
 
   public static setAtomValue<T>(
-    recoilAtom: RecoilState<T>,
+    atom: AnyWritableAtom,
+    key: string,
     value: T,
     saveLocal: boolean
-  ): RecoilWrapper {
+  ): AtomWrapper {
     const instance = this.Instance;
-    instance.ATOMS[recoilAtom.key] = {
-      atom: recoilAtom as RecoilState<unknown>,
+    instance.ATOMS[key] = {
+      atom,
       value,
       prevValue: null,
       saveLocal,
@@ -171,19 +200,19 @@ export class RecoilWrapper {
     return this.Instance.ATOMS[key].value as T;
   }
 
-  public static modifyAtomValue<T>(key: string, value: T): RecoilWrapper {
+  public static modifyAtomValue<T>(key: string, value: T): AtomWrapper {
     const instance = this.Instance;
     if (instance.ATOMS[key]) {
       instance.ATOMS[key].prevValue = instance.ATOMS[key].value;
       instance.ATOMS[key].value = value;
     } else {
-      console.error(`Atom ${key} not found in RecoilWrapper. Please set the atom value first.`);
+      console.error(`Atom ${key} not found in AtomWrapper. Please set the atom value first.`);
     }
 
     return instance;
   }
 
-  public static restoreValues(): RecoilWrapper {
+  public static restoreValues(): AtomWrapper {
     const instance = this.Instance;
     Object.keys(instance.ATOMS).forEach((key) => {
       const atomInfo = instance.ATOMS[key];
@@ -197,6 +226,8 @@ export class RecoilWrapper {
 
   public static wrap(children: React.ReactElement): React.ReactElement {
     const instance = this.Instance;
+    const initValues: InitialAtomValues = [];
+
     Object.keys(instance.ATOMS).forEach((key) => {
       const atomInfo = instance.ATOMS[key];
 
@@ -204,20 +235,10 @@ export class RecoilWrapper {
       if (atomInfo.saveLocal) {
         saveToLocalStorage(key, atomInfo.value);
       }
+      initValues.push([atomInfo.atom, atomInfo.value]);
     });
 
-    return (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          Object.keys(instance.ATOMS).forEach((key) => {
-            const atomInfo = instance.ATOMS[key];
-            snapshot.set(atomInfo.atom, atomInfo.value);
-          });
-        }}
-      >
-        {children}
-      </RecoilRoot>
-    );
+    return <TestProvider initialValues={initValues}>{children}</TestProvider>;
   }
 }
 

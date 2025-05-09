@@ -1,8 +1,11 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import FacetsForm, { formatDate, humanizeFacetNames } from './FacetsForm';
 import customRender from '../../test/custom-render';
+import { AtomWrapper, printElementContents } from '../../test/jestTestFunctions';
+import { activeSearchQueryAtom, AppStateKeys } from '../../common/atoms';
+import { activeSearchQueryFixture } from '../../test/mock/fixtures';
 
 const user = userEvent.setup();
 
@@ -39,6 +42,29 @@ describe('test FacetsForm component', () => {
 
     // Change form field values
     const input: HTMLInputElement = await screen.findByTestId('filename-search-input');
+    fireEvent.change(input, { target: { value: 'newVar' } });
+    expect(input.value).toEqual('newVar');
+
+    // Submit the form
+    const submitBtn = await screen.findByRole('img', { name: 'search' });
+    await user.click(submitBtn);
+
+    // Check if the input value resets back to blank
+    await waitFor(() => expect(input.value).toEqual(''));
+  });
+
+  it('handles case when filename var is already set in the active search query.', async () => {
+    customRender(<FacetsForm />);
+
+    // Open filename collapse panel
+    const filenameSearchPanel = await screen.findByRole('button', {
+      name: 'collapsed Filename',
+    });
+
+    await user.click(filenameSearchPanel);
+
+    // Change form field values
+    const input: HTMLInputElement = await screen.findByTestId('filename-search-input');
     fireEvent.change(input, { target: { value: 'var' } });
     expect(input.value).toEqual('var');
 
@@ -48,6 +74,9 @@ describe('test FacetsForm component', () => {
 
     // Check if the input value resets back to blank
     await waitFor(() => expect(input.value).toEqual(''));
+
+    // Check that notice was given that variable was already applied
+    expect(await screen.findByText('Input "var" has already been applied')).toBeTruthy();
   });
 
   it('handles setting the globusReady option on and off', async () => {
@@ -144,6 +173,31 @@ describe('test FacetsForm component', () => {
     expect(expandAllBtn).toBeTruthy();
   });
 
+  it('Shows empty range if activeSearchQuery has no min and max version date range set', async () => {
+    AtomWrapper.modifyAtomValue(
+      AppStateKeys.activeSearchQuery,
+      activeSearchQueryFixture({ minVersionDate: undefined, maxVersionDate: undefined })
+    );
+    customRender(<FacetsForm />);
+
+    // Open additional properties collapse panel
+    const additionalPropertiesPanel = await screen.findByRole('button', {
+      name: 'expanded Additional Properties',
+    });
+
+    await user.click(additionalPropertiesPanel);
+
+    // Check date picker renders
+    const datePickerComponent = await screen.findByTestId('version-range-datepicker');
+    expect(datePickerComponent).toBeTruthy();
+
+    // Check start and end date input values are empty
+    const startDate = await within(datePickerComponent).findByPlaceholderText('Start date');
+    expect(startDate).toHaveValue('');
+    const endDate = await within(datePickerComponent).findByPlaceholderText('End date');
+    expect(endDate).toHaveValue('');
+  });
+
   it('handles date picker for versioning', async () => {
     customRender(<FacetsForm />);
 
@@ -169,6 +223,9 @@ describe('test FacetsForm component', () => {
 
     // Open calendar, select the set value, and click it
     await user.click(document.querySelector('.ant-picker-cell-selected') as HTMLInputElement);
+
+    const startDate = await within(datePickerComponent).findByPlaceholderText('Start date');
+    expect(startDate).toHaveValue('2020-01-15');
 
     await screen.findByTestId('facets-form');
   });

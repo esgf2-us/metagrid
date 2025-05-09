@@ -1,8 +1,7 @@
 import { CSSProperties, ReactNode } from 'react';
 import { MessageInstance } from 'antd/es/message/interface';
-import { AtomEffect } from 'recoil';
 import { UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
-import { ActiveFacets } from '../components/Facets/types';
+import { ActiveFacets, RawProject } from '../components/Facets/types';
 import {
   ActiveSearchQuery,
   RawSearchResult,
@@ -65,6 +64,19 @@ export async function showNotice(
       break;
   }
 }
+
+export const projectBaseQuery = (
+  project: Record<string, unknown> | RawProject
+): ActiveSearchQuery => ({
+  project,
+  versionType: 'latest',
+  resultType: 'all',
+  minVersionDate: null,
+  maxVersionDate: null,
+  filenameVars: [],
+  activeFacets: {},
+  textInputs: [],
+});
 
 const bodySider = {
   padding: '12px 12px 12px 12px',
@@ -148,27 +160,6 @@ export const objectHasKey = (
   obj: Record<any, any>,
   key: string | number
 ): boolean => Object.prototype.hasOwnProperty.call(obj, key);
-
-export const localStorageEffect = <T>(key: string, defaultVal: T): AtomEffect<T> => ({
-  setSelf,
-  onSet,
-}) => {
-  const savedValue = localStorage.getItem(key);
-  if (savedValue != null) {
-    try {
-      const parsedValue = JSON.parse(savedValue) as T;
-      setSelf(parsedValue);
-    } catch (error) {
-      setSelf(defaultVal);
-    }
-  } else {
-    setSelf(defaultVal);
-  }
-
-  onSet((newValue) => {
-    localStorage.setItem(key, JSON.stringify(newValue));
-  });
-};
 
 /**
  * For a record's 'xlink' attribute, it will be split into an array of
@@ -425,4 +416,33 @@ export const getLastMessageSeen = (): string | null => {
 
 export const setStartupMessageAsSeen = (): void => {
   localStorage.setItem('lastMessageSeen', messageDisplayData.messageToShow);
+};
+
+export const showBanner = (): boolean => {
+  const currentBannerText = localStorage.getItem('showBanner');
+
+  // Check if the banner should be shown
+  if (
+    window.METAGRID.BANNER_TEXT !== null &&
+    window.METAGRID.BANNER_TEXT !== '' &&
+    currentBannerText !== window.METAGRID.BANNER_TEXT
+  ) {
+    return true;
+  }
+
+  if (window.METAGRID.BANNER_TEXT === null || window.METAGRID.BANNER_TEXT !== '') {
+    localStorage.removeItem('showBanner');
+  }
+
+  return false;
+};
+
+export const saveBannerText = (): void => {
+  // Set the banner text in localStorage
+
+  /* istanbul ignore next */
+  localStorage.setItem(
+    'showBanner',
+    window.METAGRID.BANNER_TEXT ? window.METAGRID.BANNER_TEXT : ''
+  );
 };
