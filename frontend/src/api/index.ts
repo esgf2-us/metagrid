@@ -29,6 +29,7 @@ import {
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
 import apiRoutes, { ApiRoute, HTTPCodeType } from './routes';
 import { GlobusEndpointSearchResults } from '../components/Globus/types';
+import { getCachedSearchResults, objectIsEmpty } from '../common/utils';
 
 export interface ResponseError extends Error {
   status?: number;
@@ -425,14 +426,27 @@ export const fetchSearchResults = async (
   args: [string] | Record<string, string>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<{ [key: string]: any }> => {
+  // Check if the request URL is passed in as an array or an object
   let reqUrlStr;
-
   if (Array.isArray(args)) {
     // eslint-disable-next-line prefer-destructuring
     reqUrlStr = args[0];
   } else {
     reqUrlStr = args.reqUrl;
   }
+
+  // Check if a request URL is already in local storage
+  const loadedReqStr = localStorage.getItem('savedSearchQuery');
+  const cachedResults = getCachedSearchResults();
+
+  // If reqest URL matches the one in local storage, return the cached results
+  if (!objectIsEmpty(cachedResults) && loadedReqStr && reqUrlStr === loadedReqStr) {
+    // If there was no change to the request URL, return the cached results
+    return cachedResults;
+  }
+
+  // If the request URL is not in local storage, save it
+  localStorage.setItem('savedSearchQuery', reqUrlStr);
 
   return fetch(reqUrlStr)
     .then((results) => {

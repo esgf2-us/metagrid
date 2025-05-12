@@ -12,7 +12,7 @@ afterEach(() => {
 });
 
 it('renders component with empty savedSearches', async () => {
-  AtomWrapper.modifyAtomValue(AppStateKeys.userSearchQuery, []);
+  AtomWrapper.modifyAtomValue(AppStateKeys.userSearchQueries, []);
   customRender(<Searches />);
 
   const emptyText = await screen.findByText('Your search library is empty');
@@ -20,15 +20,21 @@ it('renders component with empty savedSearches', async () => {
 });
 
 it('removes a search query when user is not authenticated', async () => {
-  AtomWrapper.modifyAtomValue(AppStateKeys.userSearchQuery, [
-    userSearchQueryFixture({ uuid: '1', filenameVars: [] }),
-    userSearchQueryFixture({ uuid: '2' }),
-  ]);
+  const firstQuery = userSearchQueryFixture({ uuid: '1', filenameVars: [] });
+  const secondQuery = userSearchQueryFixture({ uuid: '2' });
+  AtomWrapper.modifyAtomValue(AppStateKeys.userSearchQueries, [firstQuery, secondQuery]);
   customRender(<Searches />, { usesAtoms: true, authenticated: false });
+
+  // Verify user queries count is 2
+  const userQueries: [] = getFromLocalStorage(AppStateKeys.userSearchQueries) || [];
+  expect(userQueries.length).toEqual(2);
 
   const removeButton = await screen.findByTestId('remove-1'); // Assuming the button has a test ID
   await userEvent.click(removeButton);
 
-  const updatedSearchQueries = getFromLocalStorage(AppStateKeys.userSearchQuery);
-  expect(updatedSearchQueries).toEqual([userSearchQueryFixture({ uuid: '2' })]);
+  // Verify user queries count is 2
+  const userQueriesUpdated: [] = getFromLocalStorage(AppStateKeys.userSearchQueries) || [];
+  const queryList = [secondQuery];
+  expect(userQueriesUpdated.length).toEqual(1);
+  expect(userQueriesUpdated).toEqual(queryList);
 });

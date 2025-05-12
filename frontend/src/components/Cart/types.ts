@@ -45,6 +45,7 @@ export type UserSearchQuery = {
   activeFacets: ActiveFacets;
   textInputs: TextInputs | [];
   url: string;
+  resultsCount: number | null;
 };
 
 export type UserSearchQueries = Array<UserSearchQuery>;

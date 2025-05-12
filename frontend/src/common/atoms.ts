@@ -1,6 +1,6 @@
 import { atomWithStorage } from 'jotai/utils';
 import { atom } from 'jotai';
-import { UserCart, UserSearchQueries } from '../components/Cart/types';
+import { UserCart, UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
 import { ParsedFacets } from '../components/Facets/types';
 import { GlobusTaskItem, GlobusEndpoint } from '../components/Globus/types';
 import { NodeStatusArray } from '../components/NodeStatus/types';
@@ -10,10 +10,10 @@ import { projectBaseQuery } from './utils';
 export enum AppStateKeys {
   isDarkMode = 'isDarkMode',
   userCart = 'userCart',
-  userSearchQuery = 'userSearchQuery',
+  userSearchQueries = 'userSearchQuery',
   activeSearchQuery = 'activeSearchQuery',
   supportModalVisible = 'supportModalVisible',
-  savedSeachQuery = 'savedSeachQuery',
+  savedSearchQuery = 'savedSearchQuery',
   availableFacets = 'availableFacets',
   nodeStatus = 'nodeStatus',
 }
@@ -35,15 +35,20 @@ export enum GlobusStateKeys {
 
 const darkModeDefault = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-export const activeSearchQueryAtom = atom<ActiveSearchQuery>(projectBaseQuery({}));
-
 export const supportModalVisibleAtom = atom<boolean>(false);
 
-export const savedSearchQueryAtom = atom<ActiveSearchQuery | null>(null);
+export const savedSearchQueryAtom = atom<UserSearchQuery | undefined>();
 
 export const availableFacetsAtom = atom<ParsedFacets | Record<string, unknown>>({});
 
 export const nodeStatusAtom = atom<NodeStatusArray>([]);
+
+export const activeSearchQueryAtom = atomWithStorage<ActiveSearchQuery>(
+  AppStateKeys.activeSearchQuery,
+  projectBaseQuery({}),
+  undefined,
+  { getOnInit: true }
+);
 
 export const isDarkModeAtom = atomWithStorage<boolean>(
   AppStateKeys.isDarkMode,
@@ -57,7 +62,7 @@ export const userCartAtom = atomWithStorage<UserCart>(AppStateKeys.userCart, [],
 });
 
 export const userSearchQueriesAtom = atomWithStorage<UserSearchQueries>(
-  AppStateKeys.userSearchQuery,
+  AppStateKeys.userSearchQueries,
   [],
   undefined,
   { getOnInit: true }

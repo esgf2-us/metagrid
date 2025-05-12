@@ -27,6 +27,7 @@ import {
 import { searchTableTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import {
+  cacheSearchResults,
   createSearchRouteURL,
   getStyle,
   getUrlFromSearch,
@@ -36,13 +37,12 @@ import {
   showError,
   showNotice,
 } from '../../common/utils';
-import { UserCart, UserSearchQueries, UserSearchQuery } from '../Cart/types';
+import { UserCart, UserSearchQuery } from '../Cart/types';
 import { Tag, TagType, TagValue } from '../DataDisplay/Tag';
 import { ActiveFacets, ParsedFacets, RawFacets, RawProject } from '../Facets/types';
 import Button from '../General/Button'; // Note, tooltips do not work for this button
 import Table from './Table';
 import {
-  ActiveSearchQuery,
   Pagination,
   RawSearchResult,
   RawSearchResults,
@@ -148,13 +148,9 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   const userCart = useAtomValue<UserCart>(userCartAtom);
 
-  const [userSearchQueries, setUserSearchQueries] = useAtom<UserSearchQueries>(
-    userSearchQueriesAtom
-  );
+  const [userSearchQueries, setUserSearchQueries] = useAtom(userSearchQueriesAtom);
 
-  const [activeSearchQuery, setActiveSearchQuery] = useAtom<ActiveSearchQuery>(
-    activeSearchQueryAtom
-  );
+  const [activeSearchQuery, setActiveSearchQuery] = useAtom(activeSearchQueryAtom);
 
   const isDarkMode = useAtomValue<boolean>(isDarkModeAtom);
 
@@ -215,6 +211,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   // Update the available facets based on the returned results
   React.useEffect(() => {
     if (results && !objectIsEmpty(results)) {
+      cacheSearchResults(results);
       const { facet_fields: facetFields } = (results as {
         facet_counts: { facet_fields: RawFacets };
       }).facet_counts;
@@ -244,6 +241,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       activeFacets: activeSearchQuery.activeFacets,
       textInputs: activeSearchQuery.textInputs,
       url,
+      resultsCount: null,
     };
 
     if (searchAlreadyExists(userSearchQueries, savedSearch)) {

@@ -164,6 +164,7 @@ export const userSearchQueryFixture = (props: Partial<UserSearchQuery> = {}): Us
     activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
     textInputs: ['foo'],
     url: 'https://localhost/url.com',
+    resultsCount: 3,
   };
 
   return { ...defaults, ...props } as UserSearchQuery;

@@ -418,6 +418,53 @@ export const setStartupMessageAsSeen = (): void => {
   localStorage.setItem('lastMessageSeen', messageDisplayData.messageToShow);
 };
 
+export const cacheSearchResults = (fetchedResults: Record<string, unknown> | undefined): void => {
+  if (fetchedResults) {
+    // Convert the fetched results to a string and store it in localStorage
+    const oneHourFromNow = Date.now() + 60 * 60 * 1000;
+    const fetchedResultsString = JSON.stringify({
+      results: fetchedResults,
+      expires: oneHourFromNow,
+    }); // Cache for 1 hour
+    localStorage.setItem('cachedSearchResults', fetchedResultsString);
+  }
+};
+
+export const getCachedSearchResults = (): Record<string, unknown> => {
+  const fetchedResultsString = localStorage.getItem('cachedSearchResults');
+  if (fetchedResultsString) {
+    const fetchedResults = JSON.parse(fetchedResultsString);
+    const now = Date.now();
+    // Check if the cached results have expired
+    if (fetchedResults.expires && now > fetchedResults.expires) {
+      // If expired, remove from localStorage
+      localStorage.removeItem('cachedSearchResults');
+      return {};
+    }
+    // If not expired, return the cached results
+    return fetchedResults.results;
+  }
+  return {};
+};
+
+export const getCachedProjectName = (): string => {
+  const fetchedResultsString = localStorage.getItem('cachedSearchResults');
+  if (fetchedResultsString) {
+    const fetchedResults = JSON.parse(fetchedResultsString);
+    if (
+      fetchedResults.response &&
+      fetchedResults.response.docs &&
+      fetchedResults.response.docs.length > 0
+    ) {
+      const firstDoc = fetchedResults.response.docs[0];
+      if (firstDoc.project && firstDoc.project.length > 0) {
+        return firstDoc.project[0];
+      }
+    }
+  }
+  return '';
+};
+
 export const showBanner = (): boolean => {
   const currentBannerText = localStorage.getItem('showBanner');
 

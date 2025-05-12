@@ -55,6 +55,16 @@ const Searches: React.FC = () => {
     }
   };
 
+  const updateSearchQuery = (searchQuery: UserSearchQuery): void => {
+    const updatedSearchQueries = userSearchQueries.map((query: UserSearchQuery) => {
+      if (query.uuid === searchQuery.uuid) {
+        return searchQuery;
+      }
+      return query;
+    });
+    setUserSearchQueries(updatedSearchQueries);
+  };
+
   return (
     <div
       data-testid="saved-search-library"
@@ -65,6 +75,7 @@ const Searches: React.FC = () => {
         {userSearchQueries.map((searchQuery: UserSearchQuery, index: number) => (
           <SearchesCard
             key={searchQuery.uuid}
+            updateSearchQuery={updateSearchQuery}
             searchQuery={searchQuery}
             index={index}
             onHandleRemoveSearchQuery={handleRemoveSearchQuery}
