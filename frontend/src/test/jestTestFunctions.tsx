@@ -36,6 +36,8 @@ export const mockConfig: FrontendConfig = {
   AUTHENTICATION_METHOD: 'keycloak',
   FOOTER_TEXT: 'Footer text',
   GOOGLE_ANALYTICS_TRACKING_ID: 'UA-XXXXXXXXX-YY',
+  STATUS_URL: 'https://node-status',
+  BANNER_TEXT: null,
 };
 
 export const activeSearch = getSearchFromUrl();

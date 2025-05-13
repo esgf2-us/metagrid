@@ -418,12 +418,16 @@ export const setStartupMessageAsSeen = (): void => {
   localStorage.setItem('lastMessageSeen', messageDisplayData.messageToShow);
 };
 
-export const cacheSearchResults = (fetchedResults: Record<string, unknown> | undefined): void => {
-  if (fetchedResults) {
+export const cacheSearchResults = (
+  fetchedResults: Record<string, unknown> | undefined,
+  cachedURL: string
+): void => {
+  if (fetchedResults && !Object.hasOwn(fetchedResults, 'cachedURL')) {
     // Convert the fetched results to a string and store it in localStorage
     const oneHourFromNow = Date.now() + 60 * 60 * 1000;
     const fetchedResultsString = JSON.stringify({
       results: fetchedResults,
+      cachedURL,
       expires: oneHourFromNow,
     }); // Cache for 1 hour
     localStorage.setItem('cachedSearchResults', fetchedResultsString);
@@ -442,9 +446,18 @@ export const getCachedSearchResults = (): Record<string, unknown> => {
       return {};
     }
     // If not expired, return the cached results
-    return fetchedResults.results;
+    return {
+      cachedURL: fetchedResults.cachedURL,
+      pagination: fetchedResults.pagination,
+      ...fetchedResults.results,
+    };
   }
   return {};
+};
+
+export const clearCachedSearchResults = (): void => {
+  // Clear the cached search results from localStorage
+  localStorage.removeItem('cachedSearchResults');
 };
 
 export const getCachedProjectName = (): string => {

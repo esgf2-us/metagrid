@@ -12,6 +12,7 @@ export enum AppStateKeys {
   userCart = 'userCart',
   userSearchQueries = 'userSearchQuery',
   activeSearchQuery = 'activeSearchQuery',
+  currentRequestURL = 'currentRequestURL',
   supportModalVisible = 'supportModalVisible',
   savedSearchQuery = 'savedSearchQuery',
   availableFacets = 'availableFacets',
@@ -46,6 +47,13 @@ export const nodeStatusAtom = atom<NodeStatusArray>([]);
 export const activeSearchQueryAtom = atomWithStorage<ActiveSearchQuery>(
   AppStateKeys.activeSearchQuery,
   projectBaseQuery({}),
+  undefined,
+  { getOnInit: true }
+);
+
+export const currentRequestQueryAtom = atomWithStorage<string>(
+  AppStateKeys.currentRequestURL,
+  '',
   undefined,
   { getOnInit: true }
 );

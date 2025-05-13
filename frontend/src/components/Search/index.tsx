@@ -13,6 +13,7 @@ import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import {
   activeSearchQueryAtom,
   availableFacetsAtom,
+  currentRequestQueryAtom,
   isDarkModeAtom,
   userCartAtom,
   userSearchQueriesAtom,
@@ -152,6 +153,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   const [activeSearchQuery, setActiveSearchQuery] = useAtom(activeSearchQueryAtom);
 
+  const [currentRequestURL, setCurrentRequestURL] = useAtom(currentRequestQueryAtom);
+
   const isDarkMode = useAtomValue<boolean>(isDarkModeAtom);
 
   const {
@@ -181,7 +184,6 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   const [parsedFacets, setParsedFacets] = React.useState<ParsedFacets | Record<string, unknown>>(
     {}
   );
-  const [currentRequestURL, setCurrentRequestURL] = React.useState<string | null>(null);
   const [selectedItems, setSelectedItems] = React.useState<RawSearchResults | []>([]);
 
   const [paginationOptions, setPaginationOptions] = React.useState<Pagination>({
@@ -191,7 +193,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   // Generate the current request URL based on filters
   React.useEffect(() => {
-    if (!objectIsEmpty(project)) {
+    if (!objectIsEmpty(project) && paginationOptions) {
       const reqUrl = generateSearchURLQuery(activeSearchQuery, paginationOptions);
       setCurrentRequestURL(reqUrl);
     }
@@ -210,8 +212,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   // Update the available facets based on the returned results
   React.useEffect(() => {
-    if (results && !objectIsEmpty(results)) {
-      cacheSearchResults(results);
+    if (results && currentRequestURL && !objectIsEmpty(results)) {
+      cacheSearchResults(results, currentRequestURL);
       const { facet_fields: facetFields } = (results as {
         facet_counts: { facet_fields: RawFacets };
       }).facet_counts;
@@ -354,9 +356,13 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   let numFound = 0;
   let docs: RawSearchResults = [];
+  type LoadedResults = {
+    cachedURL: string;
+    response: { docs: RawSearchResults; numFound: number };
+  };
   if (results) {
-    numFound = (results as { response: { numFound: number } }).response.numFound;
-    docs = (results as { response: { docs: RawSearchResults } }).response.docs;
+    numFound = (results as LoadedResults).response.numFound;
+    docs = (results as LoadedResults).response.docs;
   }
 
   const allSelectedItemsInCart =
@@ -408,7 +414,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
               <Button
                 className={searchTableTargets.saveSearchBtn.class()}
                 type="default"
-                onClick={() => handleSaveSearchQuery(currentRequestURL as string)}
+                onClick={() => handleSaveSearchQuery(currentRequestURL)}
                 disabled={isLoading || numFound === 0}
               >
                 <BookOutlined data-testid="save-search-btn" />

@@ -435,18 +435,14 @@ export const fetchSearchResults = async (
     reqUrlStr = args.reqUrl;
   }
 
-  // Check if a request URL is already in local storage
-  const loadedReqStr = localStorage.getItem('savedSearchQuery');
+  // Get cached search results
   const cachedResults = getCachedSearchResults();
 
   // If reqest URL matches the one in local storage, return the cached results
-  if (!objectIsEmpty(cachedResults) && loadedReqStr && reqUrlStr === loadedReqStr) {
+  if (!objectIsEmpty(cachedResults) && reqUrlStr === cachedResults.cachedURL) {
     // If there was no change to the request URL, return the cached results
     return cachedResults;
   }
-
-  // If the request URL is not in local storage, save it
-  localStorage.setItem('savedSearchQuery', reqUrlStr);
 
   return fetch(reqUrlStr)
     .then((results) => {
