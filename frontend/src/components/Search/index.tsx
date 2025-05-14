@@ -193,7 +193,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   // Generate the current request URL based on filters
   React.useEffect(() => {
-    if (!objectIsEmpty(project) && paginationOptions) {
+    if (!objectIsEmpty(project)) {
       const reqUrl = generateSearchURLQuery(activeSearchQuery, paginationOptions);
       setCurrentRequestURL(reqUrl);
     }
