@@ -76,11 +76,14 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
     setSortedInfo(sorter as Sorts);
   };
 
+  const resultSize: number = results.length > 0 ? results.length : 10;
+
   const tableConfig = {
     size: 'small' as SizeType,
     loading,
     pagination: {
       total: totalResults,
+      pageSize: resultSize,
       position: ['bottomCenter'],
       showSizeChanger: {
         optionRender: (option) => {
