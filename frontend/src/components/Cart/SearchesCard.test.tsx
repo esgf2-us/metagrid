@@ -11,6 +11,7 @@ const user = userEvent.setup();
 
 const defaultProps: Props = {
   searchQuery: userSearchQueryFixture(),
+  updateSearchQuery: jest.fn(),
   onHandleRemoveSearchQuery: jest.fn(),
   index: 0,
 };
@@ -50,7 +51,12 @@ it('renders components', async () => {
 it('displays alert error when api fails to return response', async () => {
   server.use(rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) => res(ctx.status(404))));
 
-  customRender(<SearchesCard {...defaultProps} />);
+  customRender(
+    <SearchesCard
+      {...defaultProps}
+      searchQuery={userSearchQueryFixture({ resultsCount: undefined })}
+    />
+  );
 
   // Check alert renders
   const alert = await screen.findByRole('alert');

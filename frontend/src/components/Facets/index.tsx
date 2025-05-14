@@ -5,7 +5,6 @@ import { useAtom, useAtomValue } from 'jotai';
 import { fetchProjects, ResponseError } from '../../api';
 import { objectIsEmpty, projectBaseQuery } from '../../common/utils';
 import Divider from '../General/Divider';
-import { ActiveSearchQuery } from '../Search/types';
 import FacetsForm from './FacetsForm';
 import ProjectForm from './ProjectForm';
 import { RawProject } from './types';
@@ -29,19 +28,16 @@ const Facets: React.FC = () => {
 
   const availableFacets = useAtomValue(availableFacetsAtom);
 
-  const [activeSearchQuery, setActiveSearchQuery] = useAtom<ActiveSearchQuery>(
-    activeSearchQueryAtom
-  );
+  const [activeSearchQuery, setActiveSearchQuery] = useAtom(activeSearchQueryAtom);
 
-  const [savedSearchQuery, setSavedSearchQuery] = useAtom<ActiveSearchQuery | null>(
-    savedSearchQueryAtom
-  );
+  const [savedSearchQuery, setSavedSearchQuery] = useAtom(savedSearchQueryAtom);
 
   const [curProject, setCurProject] = React.useState<RawProject>();
 
   const handleProjectChange = (selectedProject: RawProject): void => {
     if (savedSearchQuery) {
-      setSavedSearchQuery(null);
+      setSavedSearchQuery(undefined);
+      setCurProject(savedSearchQuery.project);
       setActiveSearchQuery(savedSearchQuery);
       return;
     }
@@ -51,6 +47,7 @@ const Facets: React.FC = () => {
     } else {
       setActiveSearchQuery({ ...activeSearchQuery, project: selectedProject });
     }
+    setCurProject(selectedProject);
   };
 
   const handleSubmitProjectForm = (selectedProject: string): void => {
@@ -62,15 +59,19 @@ const Facets: React.FC = () => {
       /* istanbul ignore else */
       if (selectedProj && activeSearchQuery.textInputs) {
         handleProjectChange(selectedProj);
-        setCurProject(selectedProj);
       }
     }
   };
 
   useEffect(() => {
     if (!isLoading && data && data.results.length > 0) {
-      setCurProject(data.results[0]);
-      handleProjectChange(data.results[0]);
+      const findProj = data.results.find(
+        (obj: RawProject) => obj.name === activeSearchQuery.project.name
+      );
+
+      const selectedProj: RawProject = findProj || data.results[0];
+      setCurProject(selectedProj);
+      handleProjectChange(selectedProj);
     }
   }, [isLoading]);
 

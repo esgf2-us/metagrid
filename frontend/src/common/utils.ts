@@ -373,7 +373,14 @@ export const combineCarts = (
 const convertSearchToHash = (query: UserSearchQuery): number => {
   /* eslint-disable */
   let hash: number = 0;
-  const nonUniqueQuery: UserSearchQuery = { ...query, uuid: '', user: null };
+  const nonUniqueQuery: UserSearchQuery = {
+    ...query,
+    resultsCount: 0,
+    searchTime: null,
+    uuid: '',
+    user: null,
+    url: '',
+  };
   const queryStr = JSON.stringify(nonUniqueQuery);
   let i, chr;
 
@@ -416,6 +423,65 @@ export const getLastMessageSeen = (): string | null => {
 
 export const setStartupMessageAsSeen = (): void => {
   localStorage.setItem('lastMessageSeen', messageDisplayData.messageToShow);
+};
+
+export const cacheSearchResults = (
+  fetchedResults: Record<string, unknown> | undefined,
+  cachedURL: string
+): void => {
+  if (fetchedResults && !Object.hasOwn(fetchedResults, 'cachedURL')) {
+    // Convert the fetched results to a string and store it in localStorage
+    const fetchedResultsString = JSON.stringify({
+      results: fetchedResults,
+      cachedURL,
+      expires: Date.now() + 60 * 60 * 1000, // Expires after an hour
+    });
+    localStorage.setItem('cachedSearchResults', fetchedResultsString);
+  }
+};
+
+export const getCachedSearchResults = (): Record<string, unknown> => {
+  const fetchedResultsString = localStorage.getItem('cachedSearchResults');
+  if (fetchedResultsString) {
+    const fetchedResults = JSON.parse(fetchedResultsString);
+    const now = Date.now();
+    // Check if the cached results have expired
+    if (fetchedResults.expires && now > fetchedResults.expires) {
+      // If expired, remove from localStorage
+      localStorage.removeItem('cachedSearchResults');
+      return {};
+    }
+    // If not expired, return the cached results
+    return {
+      cachedURL: fetchedResults.cachedURL,
+      pagination: fetchedResults.pagination,
+      ...fetchedResults.results,
+    };
+  }
+  return {};
+};
+
+export const clearCachedSearchResults = (): void => {
+  // Clear the cached search results from localStorage
+  localStorage.removeItem('cachedSearchResults');
+};
+
+export const getCachedProjectName = (): string => {
+  const fetchedResultsString = localStorage.getItem('cachedSearchResults');
+  if (fetchedResultsString) {
+    const fetchedResults = JSON.parse(fetchedResultsString);
+    if (
+      fetchedResults.response &&
+      fetchedResults.response.docs &&
+      fetchedResults.response.docs.length > 0
+    ) {
+      const firstDoc = fetchedResults.response.docs[0];
+      if (firstDoc.project && firstDoc.project.length > 0) {
+        return firstDoc.project[0];
+      }
+    }
+  }
+  return '';
 };
 
 export const showBanner = (): boolean => {
