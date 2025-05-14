@@ -373,7 +373,14 @@ export const combineCarts = (
 const convertSearchToHash = (query: UserSearchQuery): number => {
   /* eslint-disable */
   let hash: number = 0;
-  const nonUniqueQuery: UserSearchQuery = { ...query, uuid: '', user: null };
+  const nonUniqueQuery: UserSearchQuery = {
+    ...query,
+    resultsCount: 0,
+    searchTime: null,
+    uuid: '',
+    user: null,
+    url: '',
+  };
   const queryStr = JSON.stringify(nonUniqueQuery);
   let i, chr;
 
@@ -424,12 +431,11 @@ export const cacheSearchResults = (
 ): void => {
   if (fetchedResults && !Object.hasOwn(fetchedResults, 'cachedURL')) {
     // Convert the fetched results to a string and store it in localStorage
-    const oneHourFromNow = Date.now() + 60 * 60 * 1000;
     const fetchedResultsString = JSON.stringify({
       results: fetchedResults,
       cachedURL,
-      expires: oneHourFromNow,
-    }); // Cache for 1 hour
+      expires: Date.now() + 60 * 60 * 1000, // Expires after an hour
+    });
     localStorage.setItem('cachedSearchResults', fetchedResultsString);
   }
 };

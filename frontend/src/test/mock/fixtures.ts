@@ -165,6 +165,7 @@ export const userSearchQueryFixture = (props: Partial<UserSearchQuery> = {}): Us
     textInputs: ['foo'],
     url: 'https://localhost/url.com',
     resultsCount: 3,
+    searchTime: 100000,
   };
 
   return { ...defaults, ...props } as UserSearchQuery;

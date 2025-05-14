@@ -52,17 +52,20 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
     activeFacets,
     url,
     resultsCount,
+    searchTime,
   } = searchQuery;
 
   const setSavedSearchQuery = useSetAtom(savedSearchQueryAtom);
 
-  // Only call useAsync if resultsCount is null
-  const numResultsUrl = resultsCount
-    ? null
-    : generateSearchURLQuery(searchQuery, {
+  // Only call useAsync if resultsCount is null or searchTime is an hour old
+  const expirationTime = (searchTime || 0) + 60 * 60 * 1000; // Expires after an hour
+  const getUrlResults: boolean = !resultsCount || expirationTime < Date.now();
+  const numResultsUrl = getUrlResults
+    ? generateSearchURLQuery(searchQuery, {
         page: 0,
         pageSize: 0,
-      });
+      })
+    : null;
 
   const { data, isLoading, error } = useAsync({
     promiseFn: numResultsUrl ? fetchSearchResults : undefined,
@@ -78,6 +81,7 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
       updateSearchQuery({
         ...searchQuery,
         resultsCount: loadedCount,
+        searchTime: Date.now(),
       });
     }
   }, [isLoading, data]);
@@ -92,6 +96,21 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
     } else if (isLoading) {
       numResultsText = <Skeleton title={{ width: '100%' }} paragraph={{ rows: 0 }} active />;
     }
+  } else if (searchTime) {
+    const formattedDateTime = new Date(searchTime).toLocaleString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    });
+    numResultsText = (
+      <p>
+        <span style={{ fontWeight: 'bold' }}>{resultsCount}</span> results found for {project.name}{' '}
+        as of {formattedDateTime}
+      </p>
+    );
   } else {
     numResultsText = (
       <p>
@@ -117,6 +136,11 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
               key="search"
               onClick={() => {
                 navigate('/search');
+                // Set searchTime to 0 so that it'll be considered expired and updated
+                updateSearchQuery({
+                  ...searchQuery,
+                  searchTime: 0,
+                });
                 setSavedSearchQuery(searchQuery);
               }}
             />

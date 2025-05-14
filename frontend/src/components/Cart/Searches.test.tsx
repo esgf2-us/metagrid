@@ -6,6 +6,7 @@ import { userSearchQueryFixture } from '../../test/mock/fixtures';
 import userEvent from '@testing-library/user-event';
 import { AppStateKeys } from '../../common/atoms';
 import { AtomWrapper, getFromLocalStorage } from '../../test/jestTestFunctions';
+import { UserSearchQueries } from './types';
 
 afterEach(() => {
   jest.clearAllMocks();
@@ -32,9 +33,9 @@ it('removes a search query when user is not authenticated', async () => {
   const removeButton = await screen.findByTestId('remove-1'); // Assuming the button has a test ID
   await userEvent.click(removeButton);
 
-  // Verify user queries count is 2
-  const userQueriesUpdated: [] = getFromLocalStorage(AppStateKeys.userSearchQueries) || [];
-  const queryList = [secondQuery];
+  // Verify user queries count is now 1 and that it is 2nd query
+  const userQueriesUpdated: UserSearchQueries =
+    getFromLocalStorage(AppStateKeys.userSearchQueries) || [];
   expect(userQueriesUpdated.length).toEqual(1);
-  expect(userQueriesUpdated).toEqual(queryList);
+  expect(userQueriesUpdated[0].uuid).toEqual(secondQuery.uuid);
 });

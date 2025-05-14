@@ -229,7 +229,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     setActiveSearchQuery(projectBaseQuery(activeSearchQuery.project));
   };
 
-  const handleSaveSearchQuery = (url: string): void => {
+  const handleSaveSearchQuery = (url: string, numFound: number): void => {
     const savedSearch: UserSearchQuery = {
       uuid: uuidv4(),
       user: pk,
@@ -243,7 +243,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       activeFacets: activeSearchQuery.activeFacets,
       textInputs: activeSearchQuery.textInputs,
       url,
-      resultsCount: null,
+      resultsCount: numFound,
+      searchTime: Date.now(),
     };
 
     if (searchAlreadyExists(userSearchQueries, savedSearch)) {
@@ -414,7 +415,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
               <Button
                 className={searchTableTargets.saveSearchBtn.class()}
                 type="default"
-                onClick={() => handleSaveSearchQuery(currentRequestURL)}
+                onClick={() => handleSaveSearchQuery(currentRequestURL, numFound)}
                 disabled={isLoading || numFound === 0}
               >
                 <BookOutlined data-testid="save-search-btn" />
