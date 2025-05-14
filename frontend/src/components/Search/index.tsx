@@ -13,6 +13,7 @@ import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import {
   activeSearchQueryAtom,
   availableFacetsAtom,
+  currentRequestQueryAtom,
   isDarkModeAtom,
   userCartAtom,
   userSearchQueriesAtom,
@@ -27,6 +28,7 @@ import {
 import { searchTableTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import {
+  cacheSearchResults,
   createSearchRouteURL,
   getStyle,
   getUrlFromSearch,
@@ -36,13 +38,12 @@ import {
   showError,
   showNotice,
 } from '../../common/utils';
-import { UserCart, UserSearchQueries, UserSearchQuery } from '../Cart/types';
+import { UserCart, UserSearchQuery } from '../Cart/types';
 import { Tag, TagType, TagValue } from '../DataDisplay/Tag';
 import { ActiveFacets, ParsedFacets, RawFacets, RawProject } from '../Facets/types';
 import Button from '../General/Button'; // Note, tooltips do not work for this button
 import Table from './Table';
 import {
-  ActiveSearchQuery,
   Pagination,
   RawSearchResult,
   RawSearchResults,
@@ -148,13 +149,11 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   const userCart = useAtomValue<UserCart>(userCartAtom);
 
-  const [userSearchQueries, setUserSearchQueries] = useAtom<UserSearchQueries>(
-    userSearchQueriesAtom
-  );
+  const [userSearchQueries, setUserSearchQueries] = useAtom(userSearchQueriesAtom);
 
-  const [activeSearchQuery, setActiveSearchQuery] = useAtom<ActiveSearchQuery>(
-    activeSearchQueryAtom
-  );
+  const [activeSearchQuery, setActiveSearchQuery] = useAtom(activeSearchQueryAtom);
+
+  const [currentRequestURL, setCurrentRequestURL] = useAtom(currentRequestQueryAtom);
 
   const isDarkMode = useAtomValue<boolean>(isDarkModeAtom);
 
@@ -185,7 +184,6 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   const [parsedFacets, setParsedFacets] = React.useState<ParsedFacets | Record<string, unknown>>(
     {}
   );
-  const [currentRequestURL, setCurrentRequestURL] = React.useState<string | null>(null);
   const [selectedItems, setSelectedItems] = React.useState<RawSearchResults | []>([]);
 
   const [paginationOptions, setPaginationOptions] = React.useState<Pagination>({
@@ -214,7 +212,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   // Update the available facets based on the returned results
   React.useEffect(() => {
-    if (results && !objectIsEmpty(results)) {
+    if (results && currentRequestURL && !objectIsEmpty(results)) {
+      cacheSearchResults(results, currentRequestURL);
       const { facet_fields: facetFields } = (results as {
         facet_counts: { facet_fields: RawFacets };
       }).facet_counts;
@@ -230,7 +229,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     setActiveSearchQuery(projectBaseQuery(activeSearchQuery.project));
   };
 
-  const handleSaveSearchQuery = (url: string): void => {
+  const handleSaveSearchQuery = (url: string, numFound: number): void => {
     const savedSearch: UserSearchQuery = {
       uuid: uuidv4(),
       user: pk,
@@ -244,6 +243,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       activeFacets: activeSearchQuery.activeFacets,
       textInputs: activeSearchQuery.textInputs,
       url,
+      resultsCount: numFound,
+      searchTime: Date.now(),
     };
 
     if (searchAlreadyExists(userSearchQueries, savedSearch)) {
@@ -356,9 +357,13 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   let numFound = 0;
   let docs: RawSearchResults = [];
+  type LoadedResults = {
+    cachedURL: string;
+    response: { docs: RawSearchResults; numFound: number };
+  };
   if (results) {
-    numFound = (results as { response: { numFound: number } }).response.numFound;
-    docs = (results as { response: { docs: RawSearchResults } }).response.docs;
+    numFound = (results as LoadedResults).response.numFound;
+    docs = (results as LoadedResults).response.docs;
   }
 
   const allSelectedItemsInCart =
@@ -410,7 +415,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
               <Button
                 className={searchTableTargets.saveSearchBtn.class()}
                 type="default"
-                onClick={() => handleSaveSearchQuery(currentRequestURL as string)}
+                onClick={() => handleSaveSearchQuery(currentRequestURL, numFound)}
                 disabled={isLoading || numFound === 0}
               >
                 <BookOutlined data-testid="save-search-btn" />

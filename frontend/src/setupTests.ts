@@ -82,7 +82,7 @@ beforeAll(() => {
   AtomWrapper.setAtomValue<UserCart>(userCartAtom, AppStateKeys.userCart, userCartFixture(), true);
   AtomWrapper.setAtomValue<UserSearchQueries>(
     userSearchQueriesAtom,
-    AppStateKeys.userSearchQuery,
+    AppStateKeys.userSearchQueries,
     userSearchQueriesFixture(),
     true
   );

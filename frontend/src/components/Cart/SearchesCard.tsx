@@ -5,7 +5,7 @@ import {
   SearchOutlined,
 } from '@ant-design/icons';
 import { Alert, Card, Col, Skeleton, Typography, Tooltip } from 'antd';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAsync } from 'react-async';
 import { useNavigate } from 'react-router-dom';
 import { useSetAtom } from 'jotai';
@@ -28,12 +28,14 @@ const styles: CSSinJS = {
 
 export type Props = {
   searchQuery: UserSearchQuery;
+  updateSearchQuery: (searchQuery: UserSearchQuery) => void;
   onHandleRemoveSearchQuery: (searchUUID: string) => void;
   index: number;
 };
 
 const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
   searchQuery,
+  updateSearchQuery,
   onHandleRemoveSearchQuery,
   index,
 }) => {
@@ -49,49 +51,70 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
     textInputs,
     activeFacets,
     url,
+    resultsCount,
+    searchTime,
   } = searchQuery;
 
   const setSavedSearchQuery = useSetAtom(savedSearchQueryAtom);
 
-  // This converts a saved search to the active search query
-  const handleRunSearchQuery = (savedSearch: UserSearchQuery): void => {
-    setSavedSearchQuery({
-      project: savedSearch.project,
-      versionType: savedSearch.versionType,
-      resultType: 'all',
-      minVersionDate: savedSearch.minVersionDate,
-      maxVersionDate: savedSearch.maxVersionDate,
-      filenameVars: savedSearch.filenameVars,
-      activeFacets: savedSearch.activeFacets,
-      textInputs: savedSearch.textInputs,
-    });
-  };
+  // Only call useAsync if resultsCount is null or searchTime is an hour old
+  const expirationTime = (searchTime || 0) + 60 * 60 * 1000; // Expires after an hour
+  const getUrlResults: boolean = !resultsCount || expirationTime < Date.now();
+  const numResultsUrl = getUrlResults
+    ? generateSearchURLQuery(searchQuery, {
+        page: 0,
+        pageSize: 0,
+      })
+    : null;
 
-  // Generate the URL for receiving only the result count to reduce response time
-
-  const numResultsUrl = generateSearchURLQuery(searchQuery, {
-    page: 0,
-    pageSize: 0,
-  });
   const { data, isLoading, error } = useAsync({
-    promiseFn: fetchSearchResults,
+    promiseFn: numResultsUrl ? fetchSearchResults : undefined,
     reqUrl: numResultsUrl,
   });
 
-  let numResults;
-  if (error) {
-    numResults = <Alert message="There was an issue fetching the result count." type="error" />;
-  } else if (isLoading) {
-    numResults = <Skeleton title={{ width: '100%' }} paragraph={{ rows: 0 }} active />;
-  } else {
-    numResults = (
+  // Update the search query with the results count if it was fetched
+  useEffect(() => {
+    if (!isLoading && data) {
+      const loadedCount = (data as {
+        response: { numFound: number };
+      }).response.numFound;
+      updateSearchQuery({
+        ...searchQuery,
+        resultsCount: loadedCount,
+        searchTime: Date.now(),
+      });
+    }
+  }, [isLoading, data]);
+
+  let numResultsText;
+
+  if (!resultsCount) {
+    if (error) {
+      numResultsText = (
+        <Alert message="There was an issue fetching the result count." type="error" />
+      );
+    } else if (isLoading) {
+      numResultsText = <Skeleton title={{ width: '100%' }} paragraph={{ rows: 0 }} active />;
+    }
+  } else if (searchTime) {
+    const formattedDateTime = new Date(searchTime).toLocaleString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    });
+    numResultsText = (
       <p>
-        <span style={{ fontWeight: 'bold' }}>
-          {(data as {
-            response: { numFound: number };
-          }).response.numFound.toLocaleString()}
-        </span>{' '}
-        results found for {project.name}
+        <span style={{ fontWeight: 'bold' }}>{resultsCount}</span> results found for {project.name}{' '}
+        as of {formattedDateTime}
+      </p>
+    );
+  } else {
+    numResultsText = (
+      <p>
+        <span style={{ fontWeight: 'bold' }}>{resultsCount}</span> results found for {project.name}
       </p>
     );
   }
@@ -113,7 +136,12 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
               key="search"
               onClick={() => {
                 navigate('/search');
-                handleRunSearchQuery(searchQuery);
+                // Set searchTime to 0 so that it'll be considered expired and updated
+                updateSearchQuery({
+                  ...searchQuery,
+                  searchTime: 0,
+                });
+                setSavedSearchQuery(searchQuery);
               }}
             />
           </Tooltip>,
@@ -138,7 +166,7 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
           </Tooltip>,
         ]}
       >
-        {numResults}
+        {numResultsText}
         <p className={savedSearchTourTargets.projectDescription.class()}>
           <span style={styles.category}>Project: </span>
           {project.fullName}
