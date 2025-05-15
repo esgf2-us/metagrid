@@ -349,8 +349,10 @@ describe('test main table UI', () => {
     // Mock window.location.href
     Object.defineProperty(window, 'location', {
       value: {
-        href: jest.fn(),
+        href: 'https://test.com/search',
+        pathname: 'testing/search',
       },
+      writable: true,
     });
 
     AtomWrapper.modifyAtomValue(AppStateKeys.userCart, [defaultProps.results[0]]);

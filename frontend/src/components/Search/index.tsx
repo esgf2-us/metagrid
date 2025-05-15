@@ -28,8 +28,10 @@ import {
 import { searchTableTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import {
+  cachePagination,
   cacheSearchResults,
   createSearchRouteURL,
+  getCachedPagination,
   getStyle,
   getUrlFromSearch,
   objectIsEmpty,
@@ -186,14 +188,17 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   );
   const [selectedItems, setSelectedItems] = React.useState<RawSearchResults | []>([]);
 
-  const [paginationOptions, setPaginationOptions] = React.useState<Pagination>({
-    page: 1,
-    pageSize: 10,
-  });
+  const [paginationOptions, setPaginationOptions] = React.useState<Pagination>(
+    getCachedPagination()
+  );
 
   // Generate the current request URL based on filters
   React.useEffect(() => {
     if (!objectIsEmpty(project)) {
+      // Cache the pagination options in case they were changed
+      cachePagination(paginationOptions);
+
+      // Generate the search URL
       const reqUrl = generateSearchURLQuery(activeSearchQuery, paginationOptions);
       setCurrentRequestURL(reqUrl);
     }
@@ -206,14 +211,17 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   // Fetch search results
   React.useEffect(() => {
     if (!objectIsEmpty(project) && currentRequestURL) {
+      // Fetch search results (cached or not)
       run(currentRequestURL);
+      // Update displayed pagination in case the cachedPagination was changed
+      setPaginationOptions(getCachedPagination());
     }
   }, [run, currentRequestURL, project]);
 
   // Update the available facets based on the returned results
   React.useEffect(() => {
     if (results && currentRequestURL && !objectIsEmpty(results)) {
-      cacheSearchResults(results, currentRequestURL);
+      cacheSearchResults(results, paginationOptions, currentRequestURL);
       const { facet_fields: facetFields } = (results as {
         facet_counts: { facet_fields: RawFacets };
       }).facet_counts;
