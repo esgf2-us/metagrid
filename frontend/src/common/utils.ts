@@ -4,6 +4,7 @@ import { UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
 import { ActiveFacets, RawProject } from '../components/Facets/types';
 import {
   ActiveSearchQuery,
+  Pagination,
   RawSearchResult,
   RawSearchResults,
   ResultType,
@@ -425,8 +426,26 @@ export const setStartupMessageAsSeen = (): void => {
   localStorage.setItem('lastMessageSeen', messageDisplayData.messageToShow);
 };
 
+export const cachePagination = (pagination: Pagination): void => {
+  // Convert the pagination to a string and store it in localStorage
+  const paginationString = JSON.stringify(pagination);
+  // Store the pagination in localStorage
+  localStorage.setItem('cachedSearchPagination', paginationString);
+};
+
+export const getCachedPagination = (): Pagination => {
+  const paginationString = localStorage.getItem('cachedSearchPagination');
+  if (paginationString) {
+    const pagination = JSON.parse(paginationString);
+    return pagination as Pagination;
+  }
+
+  return { page: 1, pageSize: 10 };
+};
+
 export const cacheSearchResults = (
   fetchedResults: Record<string, unknown> | undefined,
+  pagination: Pagination,
   cachedURL: string
 ): void => {
   if (fetchedResults && !Object.hasOwn(fetchedResults, 'cachedURL')) {
@@ -436,7 +455,11 @@ export const cacheSearchResults = (
       cachedURL,
       expires: Date.now() + 60 * 60 * 1000, // Expires after an hour
     });
+    // Store the fetched results in localStorage
     localStorage.setItem('cachedSearchResults', fetchedResultsString);
+
+    // Cache the pagination
+    cachePagination(pagination);
   }
 };
 
@@ -449,6 +472,9 @@ export const getCachedSearchResults = (): Record<string, unknown> => {
     if (fetchedResults.expires && now > fetchedResults.expires) {
       // If expired, remove from localStorage
       localStorage.removeItem('cachedSearchResults');
+      // If expired remove the pagination
+      localStorage.removeItem('cachedSearchPagination');
+
       return {};
     }
     // If not expired, return the cached results
@@ -464,24 +490,7 @@ export const getCachedSearchResults = (): Record<string, unknown> => {
 export const clearCachedSearchResults = (): void => {
   // Clear the cached search results from localStorage
   localStorage.removeItem('cachedSearchResults');
-};
-
-export const getCachedProjectName = (): string => {
-  const fetchedResultsString = localStorage.getItem('cachedSearchResults');
-  if (fetchedResultsString) {
-    const fetchedResults = JSON.parse(fetchedResultsString);
-    if (
-      fetchedResults.response &&
-      fetchedResults.response.docs &&
-      fetchedResults.response.docs.length > 0
-    ) {
-      const firstDoc = fetchedResults.response.docs[0];
-      if (firstDoc.project && firstDoc.project.length > 0) {
-        return firstDoc.project[0];
-      }
-    }
-  }
-  return '';
+  localStorage.removeItem('cachedSearchPagination');
 };
 
 export const showBanner = (): boolean => {
