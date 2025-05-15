@@ -306,6 +306,8 @@ describe('Test unsavedLocal searches', () => {
     activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
     textInputs: ['foo'],
     url: 'https://localhost/url.com',
+    resultsCount: 200,
+    searchTime: 100000,
   };
   const secondResult: UserSearchQuery = {
     uuid: 'uuid2',
@@ -320,6 +322,8 @@ describe('Test unsavedLocal searches', () => {
     activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
     textInputs: ['foo'],
     url: 'https://localhost/url.com',
+    resultsCount: 200,
+    searchTime: 100000,
   };
   const thirdResult: UserSearchQuery = {
     uuid: 'uuid3',
@@ -334,6 +338,8 @@ describe('Test unsavedLocal searches', () => {
     activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
     textInputs: ['foo'],
     url: 'https://localhost/url.com',
+    resultsCount: 200,
+    searchTime: 100000,
   };
 
   const localResults: UserSearchQueries = [firstResult, secondResult];

@@ -28,6 +28,7 @@ import {
 import { searchTableTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import {
+  cachePagination,
   cacheSearchResults,
   createSearchRouteURL,
   getCachedPagination,
@@ -194,6 +195,10 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   // Generate the current request URL based on filters
   React.useEffect(() => {
     if (!objectIsEmpty(project)) {
+      // Cache the pagination options in case they were changed
+      cachePagination(paginationOptions);
+
+      // Generate the search URL
       const reqUrl = generateSearchURLQuery(activeSearchQuery, paginationOptions);
       setCurrentRequestURL(reqUrl);
     }
@@ -206,7 +211,10 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   // Fetch search results
   React.useEffect(() => {
     if (!objectIsEmpty(project) && currentRequestURL) {
+      // Fetch search results (cached or not)
       run(currentRequestURL);
+      // Update displayed pagination in case the cachedPagination was changed
+      setPaginationOptions(getCachedPagination());
     }
   }, [run, currentRequestURL, project]);
 
