@@ -1,27 +1,24 @@
 // eslint-disable @typescript-eslint/no-unsafe-argument
-
 import { GithubOutlined } from '@ant-design/icons';
 import { Button, Card } from 'antd';
 import React from 'react';
-import { useRecoilState } from 'recoil';
-import {
-  createSearchCardTour,
-  createMainPageTour,
-  createCartItemsTour,
-  createNodeStatusTour,
-  TourTitles,
-} from '../../common/reactJoyrideSteps';
+import { useAtom } from 'jotai';
 import { AppPage } from '../../common/types';
 import { RawTourState, ReactJoyrideContext } from '../../contexts/ReactJoyrideContext';
 import Modal from '../Feedback/Modal';
 import { getCurrentAppPage } from '../../common/utils';
-import { supportModalVisibleAtom } from '../App/recoil/atoms';
+import { supportModalVisibleAtom } from '../../common/atoms';
+import {
+  createMainPageTour,
+  createCartItemsTour,
+  createSearchCardTour,
+  createNodeStatusTour,
+  TourTitles,
+} from '../../common/joyrideTutorials/reactJoyrideSteps';
 
 const Support: React.FC = () => {
-  // Recoil state
-  const [supportModalVisible, setSupportModalVisible] = useRecoilState<boolean>(
-    supportModalVisibleAtom
-  );
+  // Global states
+  const [supportModalVisible, setSupportModalVisible] = useAtom<boolean>(supportModalVisibleAtom);
 
   // Tutorial state
   const tourState: RawTourState = React.useContext(ReactJoyrideContext);

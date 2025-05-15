@@ -41,7 +41,9 @@ jobs:
           python-version: '3.11'
 
       - name: Install requirements
-        run: pip install -r backend/requirements/local.txt
+        run: pip3 install --upgrade pip &
+          pip3 install setuptools --upgrade &
+          pip3 install --no-cache-dir -r backend/requirements/local.txt
 
       - name: Run pre-commit
         run: pre-commit run --all-files

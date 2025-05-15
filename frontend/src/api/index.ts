@@ -29,6 +29,7 @@ import {
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
 import apiRoutes, { ApiRoute, HTTPCodeType } from './routes';
 import { GlobusEndpointSearchResults } from '../components/Globus/types';
+import { cachePagination, getCachedPagination, getCachedSearchResults } from '../common/utils';
 
 export interface ResponseError extends Error {
   status?: number;
@@ -425,8 +426,8 @@ export const fetchSearchResults = async (
   args: [string] | Record<string, string>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<{ [key: string]: any }> => {
+  // Check if the request URL is passed in as an array or an object
   let reqUrlStr;
-
   if (Array.isArray(args)) {
     // eslint-disable-next-line prefer-destructuring
     reqUrlStr = args[0];
@@ -434,7 +435,31 @@ export const fetchSearchResults = async (
     reqUrlStr = args.reqUrl;
   }
 
-  return fetch(reqUrlStr)
+  // Get cached search results
+  const cachedResults = getCachedSearchResults();
+  const cachedURL = (cachedResults?.cachedURL as string) || '';
+  const reqUrlOffset = reqUrlStr.match(/offset=\d+/)?.[0];
+  const cachedUrlOffset = cachedURL.match(/offset=\d+/)?.[0];
+
+  // If reqest URL matches the one in local storage, return the cached results
+  if (reqUrlStr === cachedURL) {
+    // If there was no change to the request URL, return the cached results
+    return cachedResults;
+  }
+
+  let finalUrl = reqUrlStr;
+  // If the change to the request URL was not the offset, reset the offset to 0
+  if (reqUrlOffset === cachedUrlOffset) {
+    finalUrl = reqUrlStr.replace(/offset=\d+/, 'offset=0');
+    // Cache the new offset value so it is reflected in the pagination
+    const pagination = getCachedPagination();
+    cachePagination({
+      page: 1,
+      pageSize: pagination.pageSize,
+    });
+  }
+
+  return fetch(finalUrl)
     .then((results) => {
       return results.json();
     })
