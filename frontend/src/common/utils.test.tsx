@@ -2,7 +2,6 @@ import { render } from '@testing-library/react';
 import React from 'react';
 import { MessageInstance } from 'antd/es/message/interface';
 import { message } from 'antd';
-import { atom, RecoilRoot, useRecoilState } from 'recoil';
 import { rawProjectFixture } from '../test/mock/fixtures';
 import { UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
 import { ActiveSearchQuery, RawSearchResult, RawSearchResults } from '../components/Search/types';
@@ -19,10 +18,11 @@ import {
   showNotice,
   splitStringByChar,
   unsavedLocalSearches,
-  localStorageEffect,
   createSearchRouteURL,
 } from './utils';
 import { AppPage } from './types';
+import { Provider, useAtom } from 'jotai';
+import { atomWithStorage } from 'jotai/utils';
 
 describe('Test objectIsEmpty', () => {
   it('returns true with empty object', () => {
@@ -306,6 +306,8 @@ describe('Test unsavedLocal searches', () => {
     activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
     textInputs: ['foo'],
     url: 'https://localhost/url.com',
+    resultsCount: 200,
+    searchTime: 100000,
   };
   const secondResult: UserSearchQuery = {
     uuid: 'uuid2',
@@ -320,6 +322,8 @@ describe('Test unsavedLocal searches', () => {
     activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
     textInputs: ['foo'],
     url: 'https://localhost/url.com',
+    resultsCount: 200,
+    searchTime: 100000,
   };
   const thirdResult: UserSearchQuery = {
     uuid: 'uuid3',
@@ -334,6 +338,8 @@ describe('Test unsavedLocal searches', () => {
     activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
     textInputs: ['foo'],
     url: 'https://localhost/url.com',
+    resultsCount: 200,
+    searchTime: 100000,
   };
 
   const localResults: UserSearchQueries = [firstResult, secondResult];
@@ -452,28 +458,32 @@ describe('Test show notices function', () => {
     expect(await findByText('An unknown error has occurred.')).toBeTruthy();
   });
 });
-
 describe('Test localStorageEffect', () => {
   const key = 'testKey';
   const defaultVal = 'defaultValue';
-
-  const testAtom = atom({
-    key: 'testAtom',
-    default: defaultVal,
-    effects_UNSTABLE: [localStorageEffect(key, defaultVal)],
-  });
+  const testAtom = atomWithStorage(key, defaultVal);
 
   const TestComponent: React.FC = () => {
-    const [value] = useRecoilState(testAtom);
+    const [value] = useAtom(testAtom);
     return <div>{value}</div>;
   };
+
+  it('sets to default value when localStorage is empty', () => {
+    localStorage.removeItem(key);
+    const { getByText } = render(
+      <Provider>
+        <TestComponent />
+      </Provider>
+    );
+    expect(getByText(defaultVal)).toBeTruthy();
+  });
 
   it('sets to default value when JSON.parse throws an error', () => {
     localStorage.setItem(key, 'invalid JSON');
     const { getByText } = render(
-      <RecoilRoot>
+      <Provider>
         <TestComponent />
-      </RecoilRoot>
+      </Provider>
     );
     expect(getByText(defaultVal)).toBeTruthy();
   });
