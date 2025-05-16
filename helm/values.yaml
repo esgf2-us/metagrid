@@ -12,7 +12,7 @@ ingress:
 config:
   PGHOST: '{{ include "postgresql-ha.pgpool" .Subcharts.postgresql }}'
   PGUSER: '{{ include "postgresql-ha.postgresqlUsername" .Subcharts.postgresql }}'
-  PGPASSWORD: '{{ include "postgresql-ha.postgresqlPassword" .Subcharts.postgresql }}'
+  PGPASSWORD: '{{ coalesce .Values.postgresql.global.postgresql.password .Values.postgresql.postgresql.password }}'
   GUNICORN_WORKERS: '2'
   METAGRID_SEARCH_URL: https://esgf-node.ornl.gov/esg-search/search
   METAGRID_WGET_URL: https://esgf-node.ornl.gov/esg-search/wget
