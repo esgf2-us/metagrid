@@ -134,7 +134,7 @@ postgresql:
   enabled: true
   nameOverride: pg
   backup:
-    enabled: true
+    enabled: false
     cronjob:
       podSecurityContext:
         enabled: false
