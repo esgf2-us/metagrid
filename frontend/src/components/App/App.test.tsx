@@ -14,7 +14,12 @@ import { getSearchFromUrl } from '../../common/utils';
 import customRender from '../../test/custom-render';
 import { ActiveSearchQuery } from '../Search/types';
 import App from './App';
-import { activeSearch, AtomWrapper, submitKeywordSearch } from '../../test/jestTestFunctions';
+import {
+  activeSearch,
+  AtomWrapper,
+  printElementContents,
+  submitKeywordSearch,
+} from '../../test/jestTestFunctions';
 import { AppStateKeys } from '../../common/atoms';
 import { delay } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
@@ -692,7 +697,7 @@ describe('User search library', () => {
     await screen.findByTestId('cart');
   });
 
-  it('handles anonymous user copying search to clipboard', async () => {
+  it.only('handles anonymous user copying search to clipboard', async () => {
     customRender(<App searchQuery={activeSearch} />, { authenticated: false });
 
     // Check applicable components render
@@ -701,6 +706,8 @@ describe('User search library', () => {
 
     // Change value for free-text input
     await submitKeywordSearch('foo', user);
+
+    printElementContents();
 
     // Wait for components to rerender
     await screen.findByTestId('search');

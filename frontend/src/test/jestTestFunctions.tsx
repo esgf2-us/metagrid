@@ -12,7 +12,7 @@ import React, { ReactNode, CSSProperties } from 'react';
 import { UserEvent } from '@testing-library/user-event';
 import { Provider, WritableAtom } from 'jotai';
 import { useHydrateAtoms } from 'jotai/utils';
-import { NotificationType, getSearchFromUrl } from '../common/utils';
+import { NotificationType, getSearchFromUrl, saveToLocalStorage } from '../common/utils';
 import { RawSearchResult } from '../components/Search/types';
 import { rawSearchResultFixture } from './mock/fixtures';
 import { FrontendConfig } from '../common/types';
@@ -274,13 +274,4 @@ export async function submitKeywordSearch(inputText: string, user: UserEvent): P
 
 export async function openDropdownList(user: UserEvent, dropdown: HTMLElement): Promise<void> {
   await user.click(dropdown);
-}
-
-export function saveToLocalStorage<T>(key: string, value: T): void {
-  localStorage.setItem(key, JSON.stringify(value));
-}
-
-export function getFromLocalStorage<T>(key: string): T | null {
-  const items = localStorage.getItem(key);
-  return items ? (JSON.parse(items) as T) : null;
 }

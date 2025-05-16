@@ -2,9 +2,10 @@ import { within, screen } from '@testing-library/react';
 import React from 'react';
 import NodeSummary from './NodeSummary';
 import customRender from '../../test/custom-render';
-import { AtomWrapper, saveToLocalStorage } from '../../test/jestTestFunctions';
+import { AtomWrapper } from '../../test/jestTestFunctions';
 import { darkModeGreen, darkModeRed } from './StatusToolTip';
-import { AppStateKeys, isDarkModeAtom } from '../../common/atoms';
+import { AppStateKeys } from '../../common/atoms';
+import { saveToLocalStorage } from '../../common/utils';
 
 it('renders component with node status information', async () => {
   customRender(<NodeSummary />);

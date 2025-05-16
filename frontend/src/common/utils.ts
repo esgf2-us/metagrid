@@ -1,5 +1,7 @@
 import { CSSProperties, ReactNode } from 'react';
 import { MessageInstance } from 'antd/es/message/interface';
+import pako, { Data } from 'pako';
+import { Buffer } from 'buffer';
 import { UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
 import { ActiveFacets, RawProject } from '../components/Facets/types';
 import {
@@ -426,21 +428,94 @@ export const setStartupMessageAsSeen = (): void => {
   localStorage.setItem('lastMessageSeen', messageDisplayData.messageToShow);
 };
 
+// This is meant to clear out any deprecated keys in localStorage
+// that are no longer used in the application.
+export const clearDeprecatedStorageKeys = (): void => {
+  const deprecatedLocalStorageKeys = [
+    'cachedSearchResults',
+    'cachedSearchPagination',
+    'globusTransferGoalsState',
+    'userSearchQuery',
+    'showBanner',
+  ];
+
+  deprecatedLocalStorageKeys.forEach((key) => {
+    if (localStorage.getItem(key)) {
+      localStorage.removeItem(key);
+    }
+  });
+};
+
+export const getStrSizeInKb = (str: string): number => {
+  // Convert the string to a Blob and get its size
+  const sizeInBytes = new Blob([str]).size;
+  // Convert bytes to kilobytes
+  return sizeInBytes / 1024;
+};
+
+export function compressData<T>(data: T): string {
+  const jsonStr = JSON.stringify(data);
+  const compressedData = pako.deflate(jsonStr);
+  const base64String = Buffer.from(compressedData).toString('base64');
+  const compressedStr = JSON.stringify({ zip: base64String });
+
+  // Calculate the size of the original and compressed data
+  const kiloBytes = getStrSizeInKb(jsonStr);
+  const compressedSize = getStrSizeInKb(compressedStr);
+
+  // If the compressed data is larger than the original data, return the original data
+  if (compressedSize > kiloBytes) {
+    return jsonStr;
+  }
+  return compressedStr;
+}
+
+export function decompressData<T>(compressedStr: string): T {
+  const parsedData = JSON.parse(compressedStr);
+
+  // No compressed data, return the original data
+  if (parsedData.zip === undefined) {
+    return parsedData as T;
+  }
+
+  // Decompress the data
+  const compressedData = Buffer.from(parsedData.zip, 'base64').buffer as Data;
+  const decompressedStr = pako.inflate(compressedData, { to: 'string' });
+  const decompressedData = JSON.parse(decompressedStr);
+  return decompressedData as T;
+}
+
+export function saveToLocalStorage<T>(key: string, value: T): void {
+  const jsonStr = JSON.stringify(value);
+  localStorage.setItem(key, jsonStr);
+}
+
+export function getFromLocalStorage<T>(key: string): T | null {
+  const items = localStorage.getItem(key);
+  return items ? (JSON.parse(items) as T) : null;
+}
+
+export function saveToSessionStorage<T>(key: string, value: T): void {
+  // If the size is greater than 5KB,
+  sessionStorage.setItem(key, compressData(value));
+}
+
+export function getFromSessionStorage<T>(key: string): T | null {
+  const value = sessionStorage.getItem(key);
+  return value ? decompressData<T>(value) : null;
+}
+
 export const cachePagination = (pagination: Pagination): void => {
-  // Convert the pagination to a string and store it in localStorage
-  const paginationString = JSON.stringify(pagination);
-  // Store the pagination in localStorage
-  localStorage.setItem('cachedSearchPagination', paginationString);
+  saveToSessionStorage('cachedSearchPagination', pagination);
 };
 
 export const getCachedPagination = (): Pagination => {
-  const paginationString = localStorage.getItem('cachedSearchPagination');
-  if (paginationString) {
-    const pagination = JSON.parse(paginationString);
-    return pagination as Pagination;
-  }
-
-  return { page: 1, pageSize: 10 };
+  return (
+    getFromSessionStorage<Pagination>('cachedSearchPagination') || {
+      page: 1,
+      pageSize: 10,
+    }
+  );
 };
 
 export const cacheSearchResults = (
@@ -449,14 +524,11 @@ export const cacheSearchResults = (
   cachedURL: string
 ): void => {
   if (fetchedResults && !Object.hasOwn(fetchedResults, 'cachedURL')) {
-    // Convert the fetched results to a string and store it in localStorage
-    const fetchedResultsString = JSON.stringify({
+    saveToSessionStorage('cachedSearchResults', {
       results: fetchedResults,
       cachedURL,
       expires: Date.now() + 60 * 60 * 1000, // Expires after an hour
     });
-    // Store the fetched results in localStorage
-    localStorage.setItem('cachedSearchResults', fetchedResultsString);
 
     // Cache the pagination
     cachePagination(pagination);
@@ -464,37 +536,34 @@ export const cacheSearchResults = (
 };
 
 export const getCachedSearchResults = (): Record<string, unknown> => {
-  const fetchedResultsString = localStorage.getItem('cachedSearchResults');
-  if (fetchedResultsString) {
-    const fetchedResults = JSON.parse(fetchedResultsString);
-    const now = Date.now();
-    // Check if the cached results have expired
-    if (fetchedResults.expires && now > fetchedResults.expires) {
-      // If expired, remove from localStorage
-      localStorage.removeItem('cachedSearchResults');
-      // If expired remove the pagination
-      localStorage.removeItem('cachedSearchPagination');
+  const fetchedResults: Record<string, unknown> =
+    getFromSessionStorage('cachedSearchResults') || {};
+  const now = Date.now();
+  // Check if the cached results have expired
+  if (fetchedResults.expires && now > (fetchedResults.expires as number)) {
+    // If expired, remove from session storage
+    clearCachedSearchResults();
 
-      return {};
-    }
-    // If not expired, return the cached results
-    return {
-      cachedURL: fetchedResults.cachedURL,
-      pagination: fetchedResults.pagination,
-      ...fetchedResults.results,
-    };
+    return {};
   }
-  return {};
+
+  // If not expired, return the cached results
+  return {
+    cachedURL: fetchedResults.cachedURL,
+    ...(typeof fetchedResults.results === 'object' && fetchedResults.results !== null
+      ? fetchedResults.results
+      : {}),
+  };
 };
 
 export const clearCachedSearchResults = (): void => {
-  // Clear the cached search results from localStorage
-  localStorage.removeItem('cachedSearchResults');
-  localStorage.removeItem('cachedSearchPagination');
+  // Clear the cached search results from sessionStorage
+  sessionStorage.removeItem('cachedSearchResults');
+  sessionStorage.removeItem('cachedSearchPagination');
 };
 
 export const showBanner = (): boolean => {
-  const currentBannerText = localStorage.getItem('showBanner');
+  const currentBannerText = sessionStorage.getItem('showBanner');
 
   // Check if the banner should be shown
   if (
@@ -505,18 +574,18 @@ export const showBanner = (): boolean => {
     return true;
   }
 
-  if (window.METAGRID.BANNER_TEXT === null || window.METAGRID.BANNER_TEXT !== '') {
-    localStorage.removeItem('showBanner');
+  if (window.METAGRID.BANNER_TEXT === null || window.METAGRID.BANNER_TEXT === '') {
+    sessionStorage.removeItem('showBanner');
   }
 
   return false;
 };
 
 export const saveBannerText = (): void => {
-  // Set the banner text in localStorage
+  // Set the banner text in sessionStorage
 
   /* istanbul ignore next */
-  localStorage.setItem(
+  sessionStorage.setItem(
     'showBanner',
     window.METAGRID.BANNER_TEXT ? window.METAGRID.BANNER_TEXT : ''
   );

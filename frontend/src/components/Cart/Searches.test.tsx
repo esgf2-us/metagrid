@@ -5,8 +5,9 @@ import customRender from '../../test/custom-render';
 import { userSearchQueryFixture } from '../../test/mock/fixtures';
 import userEvent from '@testing-library/user-event';
 import { AppStateKeys } from '../../common/atoms';
-import { AtomWrapper, getFromLocalStorage } from '../../test/jestTestFunctions';
+import { AtomWrapper } from '../../test/jestTestFunctions';
 import { UserSearchQueries } from './types';
+import { getFromLocalStorage } from '../../common/utils';
 
 afterEach(() => {
   jest.clearAllMocks();

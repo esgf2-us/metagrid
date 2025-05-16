@@ -353,6 +353,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   };
 
   if (error) {
+    console.log(error);
     return (
       <div data-testid="alert-fetching">
         <Alert

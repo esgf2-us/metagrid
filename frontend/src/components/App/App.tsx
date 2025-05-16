@@ -30,6 +30,7 @@ import {
   updateUserCart,
 } from '../../api';
 import {
+  clearDeprecatedStorageKeys,
   combineCarts,
   getStyle,
   searchAlreadyExists,
@@ -78,6 +79,9 @@ export type Props = {
 };
 
 const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
+  // Clear deprectated local storage
+  clearDeprecatedStorageKeys();
+
   // Global states
   const isDarkMode = useAtomValue<boolean>(isDarkModeAtom);
 

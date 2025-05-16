@@ -10,7 +10,7 @@ import { projectBaseQuery } from './utils';
 export enum AppStateKeys {
   isDarkMode = 'isDarkMode',
   userCart = 'userCart',
-  userSearchQueries = 'userSearchQuery',
+  userSearchQueries = 'userSearchQueries',
   activeSearchQuery = 'activeSearchQuery',
   currentRequestURL = 'currentRequestURL',
   supportModalVisible = 'supportModalVisible',

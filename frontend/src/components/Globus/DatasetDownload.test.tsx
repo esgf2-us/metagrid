@@ -3,11 +3,10 @@ import userEvent from '@testing-library/user-event';
 import { within, screen } from '@testing-library/react';
 import customRender from '../../test/custom-render';
 import { rest, server } from '../../test/mock/server';
-import { getSearchFromUrl } from '../../common/utils';
+import { getSearchFromUrl, saveToSessionStorage } from '../../common/utils';
 import { ActiveSearchQuery } from '../Search/types';
 import {
   globusReadyNode,
-  saveToLocalStorage,
   makeCartItem,
   mockConfig,
   mockFunction,
@@ -165,7 +164,7 @@ async function initializeComponentForTest(testConfig?: typeof defaultTestConfig)
   }
 
   // Set the Globus Goals
-  saveToLocalStorage<GlobusGoals>(GlobusStateKeys.globusTransferGoalsState, config.globusGoals);
+  saveToSessionStorage<GlobusGoals>(GlobusStateKeys.globusTransferGoalsState, config.globusGoals);
 
   AtomWrapper.modifyAtomValue(CartStateKeys.cartDownloadIsLoading, config.cartDownloadIsLoading);
 

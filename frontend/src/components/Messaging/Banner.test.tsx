@@ -8,7 +8,7 @@ import { darkModeRed, lightModeRed } from '../NodeStatus/StatusToolTip';
 describe('Banner Component', () => {
   beforeEach(() => {
     window.METAGRID.BANNER_TEXT = ''; // Reset banner text before each test
-    localStorage.clear(); // Clear local storage to ensure no previous state affects the tests
+    sessionStorage.clear(); // Clear local storage to ensure no previous state affects the tests
   });
 
   it('renders the banner with the correct message', () => {
@@ -33,14 +33,14 @@ describe('Banner Component', () => {
 
   it('Does not render the banner if banner text is empty', () => {
     window.METAGRID.BANNER_TEXT = null;
-    localStorage.setItem('showBanner', 'This is a test banner.');
+    sessionStorage.setItem('showBanner', 'This is a test banner.');
     customRender(<Banner />);
     expect(screen.queryByText('This is a test banner.')).not.toBeInTheDocument();
   });
 
   it('Does not render the banner if banner text was saved (meaning banner was seen and closed)', () => {
     window.METAGRID.BANNER_TEXT = 'This is a test banner.';
-    localStorage.setItem('showBanner', 'This is a test banner.');
+    sessionStorage.setItem('showBanner', 'This is a test banner.');
     customRender(<Banner />);
     expect(screen.queryByText('This is a test banner.')).not.toBeInTheDocument();
   });
