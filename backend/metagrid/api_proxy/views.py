@@ -97,7 +97,7 @@ def do_citation(request):
         return HttpResponseBadRequest()
 
     try:
-        resp = requests.get(url)
+        resp = requests.get(url, verify=False)
     except Exception:  # pragma: no cover
         return HttpResponseBadRequest()
 
