@@ -6,7 +6,7 @@ import apiRoutes from '../../api/routes';
 import FilesTable, { DownloadUrls, genDownloadUrls, Props } from './FilesTable';
 import customRender from '../../test/custom-render';
 import { ESGFSearchAPIFixture, rawSearchResultFixture } from '../../test/mock/fixtures';
-import { RawSearchResult } from './types';
+import { RawSearchResult, RawSearchResults } from './types';
 import { openDropdownList } from '../../test/jestTestFunctions';
 
 const user = userEvent.setup();
@@ -115,7 +115,7 @@ describe('test FilesTable component', () => {
 
     // Check a record row exist
     const rows = await screen.findAllByRole('row');
-    const row = rows[0];
+    const row = rows[1];
     expect(row).toBeTruthy();
 
     // Get the download button
@@ -184,7 +184,7 @@ describe('test FilesTable component', () => {
 
     // Check a record row exist
     const rows = await screen.findAllByRole('row');
-    const row = rows[0];
+    const row = rows[1];
     expect(row).toBeTruthy();
 
     // Get the expandable cell
@@ -208,5 +208,164 @@ describe('test FilesTable component', () => {
     expect(expandableDownIcon).toBeTruthy();
 
     await user.click(expandableDownIcon);
+  });
+});
+
+describe('test column sorting', () => {
+  const response = {
+    response: {
+      docs: [
+        rawSearchResultFixture({
+          id: 'zyx',
+          title: 'zyx_first',
+          size: 5678,
+          checksum: 'abcdefghijk',
+        }),
+        rawSearchResultFixture({
+          id: 'abc',
+          title: 'abc_last',
+          size: 1234,
+          checksum: 'abcdefghijk',
+        }),
+      ],
+      numFound: 2,
+    },
+  } as {
+    response: { docs: RawSearchResults };
+  };
+
+  it('sorts by File Title column', async () => {
+    server.use(
+      rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
+        res(ctx.status(200), ctx.json(response))
+      )
+    );
+    const colIdx = 1; // The column that File Title is in
+    customRender(<FilesTable id="test" numResults={2} />);
+
+    // Check table exists
+    const table = await screen.findByRole('table');
+    expect(table).toBeTruthy();
+
+    // Make sure files are loaded
+    const loadedRow = await screen.findByText('zyx_first');
+    expect(loadedRow).toBeTruthy();
+
+    // First row in table
+    const firstRow = (await screen.findAllByRole('row'))[1];
+    expect(firstRow).toBeTruthy();
+
+    // Verify current row value
+    const cell = (await within(firstRow).findAllByRole('cell'))[colIdx];
+    expect(cell).toBeTruthy();
+    expect(cell).toHaveTextContent('zyx');
+
+    // Click on the column header to sort
+    const tableHeader = await screen.findByText('File Title');
+    expect(tableHeader).toBeTruthy();
+    await user.click(tableHeader);
+
+    // Updated first row in table
+    const updatedRow = (await screen.findAllByRole('row'))[1];
+    expect(updatedRow).toBeTruthy();
+
+    // Verify current row value
+    const updatedCell = (await within(updatedRow).findAllByRole('cell'))[colIdx];
+    expect(updatedCell).toBeTruthy();
+
+    // Verify sorting by checking the row value changed
+    expect(updatedCell).toHaveTextContent('abc');
+  });
+
+  it('sorts by Size column', async () => {
+    server.use(
+      rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
+        res(ctx.status(200), ctx.json(response))
+      )
+    );
+    const colIdx = 2; // The column that Size is in
+    customRender(<FilesTable {...defaultProps} numResults={2} />);
+
+    // Check table exists
+    const table = await screen.findByRole('table');
+    expect(table).toBeTruthy();
+
+    // Make sure files are loaded
+    const loadedRow = await screen.findByText('zyx_first');
+    expect(loadedRow).toBeTruthy();
+
+    // First row in table
+    const firstRow = (await screen.findAllByRole('row'))[1];
+    expect(firstRow).toBeTruthy();
+
+    // Verify current row value
+    const cell = (await within(firstRow).findAllByRole('cell'))[colIdx];
+    expect(cell).toBeTruthy();
+    expect(cell).toHaveTextContent('5.54 KB');
+
+    // Click on the column header to sort
+    const tableHeader = await screen.findByText('Size');
+    expect(tableHeader).toBeTruthy();
+    await user.click(tableHeader);
+
+    // Updated first row in table
+    const updatedRow = (await screen.findAllByRole('row'))[1];
+    expect(updatedRow).toBeTruthy();
+
+    // Verify current row value
+    const updatedCell = (await within(updatedRow).findAllByRole('cell'))[colIdx];
+    expect(updatedCell).toBeTruthy();
+
+    // Verify sorting by checking the row value changed
+    expect(updatedCell).toHaveTextContent('1.21 KB');
+  });
+
+  it('Handles sorting without breaking even if values are undefined', async () => {
+    const response = {
+      response: {
+        docs: [
+          rawSearchResultFixture({
+            id: 'zyx',
+            title: undefined,
+            size: undefined,
+            checksum: 'abcdefghijk',
+          }),
+          rawSearchResultFixture({
+            id: 'abc',
+            title: undefined,
+            size: undefined,
+            checksum: 'lmnopqrstuv',
+          }),
+        ],
+        numFound: 2,
+      },
+    } as {
+      response: { docs: RawSearchResults };
+    };
+
+    server.use(
+      rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
+        res(ctx.status(200), ctx.json(response))
+      )
+    );
+    customRender(<FilesTable {...defaultProps} numResults={2} />);
+
+    // Check table exists
+    const table = await screen.findByRole('table');
+    expect(table).toBeTruthy();
+
+    // First row in table
+    const firstRow = (await screen.findAllByRole('row'))[1];
+    expect(firstRow).toBeTruthy();
+
+    // Click on the column header to sort
+    const tableDatasetId = await screen.findByText('File Title');
+    expect(tableDatasetId).toBeTruthy();
+    await user.click(tableDatasetId);
+
+    // Click on the column header to sort
+    const files = await screen.findByText('Size');
+    expect(files).toBeTruthy();
+    await user.click(files);
   });
 });

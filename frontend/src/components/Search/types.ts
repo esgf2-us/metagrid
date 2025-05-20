@@ -1,3 +1,4 @@
+import { TableProps } from 'antd';
 import { ActiveFacets, RawProject } from '../Facets/types';
 
 export type TextInputs = string[];
@@ -48,3 +49,11 @@ export type Pagination = {
   page: number;
   pageSize: number;
 };
+
+export type OnChange = NonNullable<TableProps<RawSearchResult>['onChange']>;
+
+export type GetSingle<T> = T extends (infer U)[] ? U : never;
+export type Sorts = GetSingle<Parameters<OnChange>[2]>;
+
+export type AlignType = 'left' | 'center' | 'right';
+export type FixedType = 'left' | 'right' | boolean;
