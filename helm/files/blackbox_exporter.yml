@@ -1,0 +1,11 @@
+modules:
+  http_2xx:
+    prober: http
+    {{- with .Values.nodeStatusBackend.blackbox.probe.timeout }}
+    timeout: {{ . }}
+    {{- end }}
+    http:
+      preferred_ip_protocol: "ip4"
+      follow_redirects: {{ .Values.nodeStatusBackend.blackbox.probe.followRedirects }}
+      tls_config:
+        insecure_skip_verify: {{ .Values.nodeStatusBackend.blackbox.probe.insecureSkipVerify }}
