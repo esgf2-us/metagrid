@@ -514,10 +514,8 @@ export const showBanner = (): boolean => {
 
 export const saveBannerText = (): void => {
   // Set the banner text in localStorage
+  const bannerText = window.METAGRID.BANNER_TEXT || '';
 
   /* istanbul ignore next */
-  localStorage.setItem(
-    'showBanner',
-    window.METAGRID.BANNER_TEXT ? window.METAGRID.BANNER_TEXT : ''
-  );
+  localStorage.setItem('showBanner', bannerText);
 };
