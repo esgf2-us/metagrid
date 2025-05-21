@@ -505,7 +505,7 @@ export const showBanner = (): boolean => {
     return true;
   }
 
-  if (window.METAGRID.BANNER_TEXT === null || window.METAGRID.BANNER_TEXT !== '') {
+  if (window.METAGRID.BANNER_TEXT === null || window.METAGRID.BANNER_TEXT === '') {
     localStorage.removeItem('showBanner');
   }
 
@@ -514,10 +514,8 @@ export const showBanner = (): boolean => {
 
 export const saveBannerText = (): void => {
   // Set the banner text in localStorage
+  const bannerText = window.METAGRID.BANNER_TEXT || '';
 
   /* istanbul ignore next */
-  localStorage.setItem(
-    'showBanner',
-    window.METAGRID.BANNER_TEXT ? window.METAGRID.BANNER_TEXT : ''
-  );
+  localStorage.setItem('showBanner', bannerText);
 };
