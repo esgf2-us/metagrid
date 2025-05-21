@@ -3,12 +3,13 @@ name: Container release
 on:
   push:
     branches:
-      - 'main'
+      - 'master'
     tags:
       - 'v*'
 
   pull_request:
     branches:
+      - 'master'
       - 'v*-release'
       - 'v*-beta'
       - 'v*-alpha'
