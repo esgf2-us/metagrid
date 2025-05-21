@@ -16,10 +16,10 @@ import {
   theme,
 } from 'antd';
 import React from 'react';
-import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { useAsync } from 'react-async';
 import { hotjar } from 'react-hotjar';
 import { Link, Navigate, Route, Routes } from 'react-router-dom';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import {
   addUserSearchQuery,
   fetchNodeStatus,
@@ -51,18 +51,18 @@ import { ActiveSearchQuery, RawSearchResult, RawSearchResults } from '../Search/
 import Support from '../Support';
 import StartPopup from '../Messaging/StartPopup';
 import './App.css';
-import { miscTargets } from '../../common/reactJoyrideSteps';
-import {
-  activeSearchQueryAtom,
-  isDarkModeAtom,
-  nodeStatusAtom,
-  supportModalVisibleAtom,
-  userCartAtom,
-  userSearchQueriesAtom,
-} from './recoil/atoms';
+import { miscTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 import Footer from '../Footer/Footer';
-import { cartItemSelectionsAtom } from '../Cart/recoil/atoms';
-import { NodeStatusArray } from '../NodeStatus/types';
+import {
+  isDarkModeAtom,
+  userCartAtom,
+  cartItemSelectionsAtom,
+  userSearchQueriesAtom,
+  activeSearchQueryAtom,
+  supportModalVisibleAtom,
+  nodeStatusAtom,
+} from '../../common/atoms';
+import Banner from '../Messaging/Banner';
 
 const useHotjar = (): void => {
   if (window.METAGRID.HOTJAR_ID != null && window.METAGRID.HOTJAR_SV != null) {
@@ -78,22 +78,22 @@ export type Props = {
 };
 
 const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
-  // Recoil state
-  const isDarkMode = useRecoilValue<boolean>(isDarkModeAtom);
+  // Global states
+  const isDarkMode = useAtomValue<boolean>(isDarkModeAtom);
 
-  const [userCart, setUserCart] = useRecoilState<UserCart>(userCartAtom);
+  const [userCart, setUserCart] = useAtom<UserCart>(userCartAtom);
 
-  const [itemSelections, setItemSelections] = useRecoilState<RawSearchResults>(
-    cartItemSelectionsAtom
+  const [itemSelections, setItemSelections] = useAtom<RawSearchResults>(cartItemSelectionsAtom);
+
+  const [userSearchQueries, setUserSearchQueries] = useAtom<UserSearchQueries>(
+    userSearchQueriesAtom
   );
 
-  const setUserSearchQueries = useSetRecoilState<UserSearchQueries>(userSearchQueriesAtom);
-
-  const [activeSearchQuery, setActiveSearchQuery] = useRecoilState<ActiveSearchQuery>(
+  const [activeSearchQuery, setActiveSearchQuery] = useAtom<ActiveSearchQuery>(
     activeSearchQueryAtom
   );
 
-  const setSupportModalVisible = useSetRecoilState<boolean>(supportModalVisibleAtom);
+  const setSupportModalVisible = useSetAtom(supportModalVisibleAtom);
 
   // Third-party tool integration
   useHotjar();
@@ -118,7 +118,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
 
   const styles = getStyle(isDarkMode);
 
-  const setNodeStatus = useSetRecoilState<NodeStatusArray>(nodeStatusAtom);
+  const setNodeStatus = useSetAtom(nodeStatusAtom);
 
   React.useEffect(() => {
     /* istanbul ignore else */
@@ -140,12 +140,8 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
 
       fetchUserSearchQueries(accessToken)
         .then((rawUserSearches) => {
-          /* istanbul ignore next */
-          const localItems = JSON.parse(
-            localStorage.getItem('userSearchQueries') || '[]'
-          ) as UserSearchQueries;
           const databaseItems = rawUserSearches.results;
-          const searchQueriesToAdd = unsavedLocalSearches(databaseItems, localItems);
+          const searchQueriesToAdd = unsavedLocalSearches(databaseItems, userSearchQueries);
           /* istanbul ignore next */
           searchQueriesToAdd.forEach((query) => {
             addUserSearchQuery(pk, accessToken, query);
@@ -172,9 +168,14 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
 
   React.useEffect(() => {
     /* istanbul ignore else */
-    runFetchNodeStatus();
-    const interval = setInterval(() => {
+    const showStatus = window.METAGRID.STATUS_URL !== null;
+    if (showStatus) {
       runFetchNodeStatus();
+    }
+    const interval = setInterval(() => {
+      if (window.METAGRID.STATUS_URL !== null) {
+        runFetchNodeStatus();
+      }
     }, 295000);
     return () => clearInterval(interval);
   }, [runFetchNodeStatus]);
@@ -299,13 +300,14 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
               path="/cart/*"
               element={
                 <Layout.Sider style={styles.bodySider} width={styles.bodySider.width as number}>
-                  <Summary userCart={userCart} />
+                  <Summary />
                 </Layout.Sider>
               }
             />
           </Routes>
           <Layout>
             <Layout.Content style={styles.bodyContent}>
+              <Banner />
               <Routes>
                 <Route
                   path="/search/*"

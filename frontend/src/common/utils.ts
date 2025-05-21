@@ -1,10 +1,10 @@
 import { CSSProperties, ReactNode } from 'react';
 import { MessageInstance } from 'antd/es/message/interface';
-import { AtomEffect } from 'recoil';
 import { UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
-import { ActiveFacets } from '../components/Facets/types';
+import { ActiveFacets, RawProject } from '../components/Facets/types';
 import {
   ActiveSearchQuery,
+  Pagination,
   RawSearchResult,
   RawSearchResults,
   ResultType,
@@ -65,6 +65,19 @@ export async function showNotice(
       break;
   }
 }
+
+export const projectBaseQuery = (
+  project: Record<string, unknown> | RawProject
+): ActiveSearchQuery => ({
+  project,
+  versionType: 'latest',
+  resultType: 'all',
+  minVersionDate: null,
+  maxVersionDate: null,
+  filenameVars: [],
+  activeFacets: {},
+  textInputs: [],
+});
 
 const bodySider = {
   padding: '12px 12px 12px 12px',
@@ -148,27 +161,6 @@ export const objectHasKey = (
   obj: Record<any, any>,
   key: string | number
 ): boolean => Object.prototype.hasOwnProperty.call(obj, key);
-
-export const localStorageEffect = <T>(key: string, defaultVal: T): AtomEffect<T> => ({
-  setSelf,
-  onSet,
-}) => {
-  const savedValue = localStorage.getItem(key);
-  if (savedValue != null) {
-    try {
-      const parsedValue = JSON.parse(savedValue) as T;
-      setSelf(parsedValue);
-    } catch (error) {
-      setSelf(defaultVal);
-    }
-  } else {
-    setSelf(defaultVal);
-  }
-
-  onSet((newValue) => {
-    localStorage.setItem(key, JSON.stringify(newValue));
-  });
-};
 
 /**
  * For a record's 'xlink' attribute, it will be split into an array of
@@ -382,7 +374,14 @@ export const combineCarts = (
 const convertSearchToHash = (query: UserSearchQuery): number => {
   /* eslint-disable */
   let hash: number = 0;
-  const nonUniqueQuery: UserSearchQuery = { ...query, uuid: '', user: null };
+  const nonUniqueQuery: UserSearchQuery = {
+    ...query,
+    resultsCount: 0,
+    searchTime: null,
+    uuid: '',
+    user: null,
+    url: '',
+  };
   const queryStr = JSON.stringify(nonUniqueQuery);
   let i, chr;
 
@@ -425,4 +424,98 @@ export const getLastMessageSeen = (): string | null => {
 
 export const setStartupMessageAsSeen = (): void => {
   localStorage.setItem('lastMessageSeen', messageDisplayData.messageToShow);
+};
+
+export const cachePagination = (pagination: Pagination): void => {
+  // Convert the pagination to a string and store it in localStorage
+  const paginationString = JSON.stringify(pagination);
+  // Store the pagination in localStorage
+  localStorage.setItem('cachedSearchPagination', paginationString);
+};
+
+export const getCachedPagination = (): Pagination => {
+  const paginationString = localStorage.getItem('cachedSearchPagination');
+  if (paginationString) {
+    const pagination = JSON.parse(paginationString);
+    return pagination as Pagination;
+  }
+
+  return { page: 1, pageSize: 10 };
+};
+
+export const cacheSearchResults = (
+  fetchedResults: Record<string, unknown> | undefined,
+  pagination: Pagination,
+  cachedURL: string
+): void => {
+  if (fetchedResults && !Object.hasOwn(fetchedResults, 'cachedURL')) {
+    // Convert the fetched results to a string and store it in localStorage
+    const fetchedResultsString = JSON.stringify({
+      results: fetchedResults,
+      cachedURL,
+      expires: Date.now() + 60 * 60 * 1000, // Expires after an hour
+    });
+    // Store the fetched results in localStorage
+    localStorage.setItem('cachedSearchResults', fetchedResultsString);
+
+    // Cache the pagination
+    cachePagination(pagination);
+  }
+};
+
+export const getCachedSearchResults = (): Record<string, unknown> => {
+  const fetchedResultsString = localStorage.getItem('cachedSearchResults');
+  if (fetchedResultsString) {
+    const fetchedResults = JSON.parse(fetchedResultsString);
+    const now = Date.now();
+    // Check if the cached results have expired
+    if (fetchedResults.expires && now > fetchedResults.expires) {
+      // If expired, remove from localStorage
+      localStorage.removeItem('cachedSearchResults');
+      // If expired remove the pagination
+      localStorage.removeItem('cachedSearchPagination');
+
+      return {};
+    }
+    // If not expired, return the cached results
+    return {
+      cachedURL: fetchedResults.cachedURL,
+      pagination: fetchedResults.pagination,
+      ...fetchedResults.results,
+    };
+  }
+  return {};
+};
+
+export const clearCachedSearchResults = (): void => {
+  // Clear the cached search results from localStorage
+  localStorage.removeItem('cachedSearchResults');
+  localStorage.removeItem('cachedSearchPagination');
+};
+
+export const showBanner = (): boolean => {
+  const currentBannerText = localStorage.getItem('showBanner');
+
+  // Check if the banner should be shown
+  if (
+    window.METAGRID.BANNER_TEXT !== null &&
+    window.METAGRID.BANNER_TEXT !== '' &&
+    currentBannerText !== window.METAGRID.BANNER_TEXT
+  ) {
+    return true;
+  }
+
+  if (window.METAGRID.BANNER_TEXT === null || window.METAGRID.BANNER_TEXT === '') {
+    localStorage.removeItem('showBanner');
+  }
+
+  return false;
+};
+
+export const saveBannerText = (): void => {
+  // Set the banner text in localStorage
+  const bannerText = window.METAGRID.BANNER_TEXT || '';
+
+  /* istanbul ignore next */
+  localStorage.setItem('showBanner', bannerText);
 };

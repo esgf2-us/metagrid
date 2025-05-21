@@ -33,6 +33,12 @@
     <title>ESGF MetaGrid</title>
   </head>
   <body>
+    <script is:inline>
+      // The configured mode is stored in local storage
+      const isDarkMode = localStorage.getItem('isDarkMode') === 'true';
+      // Put dark class on html tag to enable dark mode
+      document.body.style.backgroundColor = isDarkMode ? '#0d0d0d' : '#f6f6f6';
+    </script>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
     <script type="module" src="/src/index.tsx"></script>

@@ -7,7 +7,8 @@ import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
 import Table, { Props } from './Table';
 import { QualityFlag } from './Tabs';
-import { mockConfig } from '../../test/jestTestFunctions';
+import { AtomWrapper, mockConfig, printElementContents } from '../../test/jestTestFunctions';
+import { AppStateKeys } from '../../common/atoms';
 
 const user = userEvent.setup();
 
@@ -15,7 +16,6 @@ const defaultProps: Props = {
   loading: false,
   results: rawSearchResultsFixture(),
   totalResults: rawSearchResultsFixture().length,
-  userCart: [],
   onUpdateCart: jest.fn(),
   onRowSelect: jest.fn(),
   onPageChange: jest.fn(),
@@ -44,6 +44,17 @@ describe('test main table UI', () => {
     customRender(<Table {...defaultProps} results={[]} />);
     const row = (await screen.findAllByRole('row'))[1];
     expect(row).toHaveClass('ant-table-placeholder');
+  });
+
+  it('renders component without node status (showing only the node value with database icon)', async () => {
+    window.METAGRID.STATUS_URL = null;
+    customRender(<Table {...defaultProps} />);
+    const databaseIcon = (
+      await screen.findAllByRole('img', {
+        name: 'database',
+      })
+    )[0];
+    expect(databaseIcon).toBeTruthy();
   });
 
   it('renders not available for total size and number of files columns when dataset doesn"t have those attributes', async () => {
@@ -268,7 +279,8 @@ describe('test main table UI', () => {
   });
 
   it('renders add or remove button for items in or not in the cart respectively, and handles clicking them', async () => {
-    customRender(<Table {...defaultProps} userCart={[defaultProps.results[0]]} />);
+    AtomWrapper.modifyAtomValue(AppStateKeys.userCart, [defaultProps.results[0]]);
+    customRender(<Table {...defaultProps} />);
     // Check table exists
     const table = await screen.findByRole('table');
     expect(table).toBeTruthy();
@@ -297,6 +309,7 @@ describe('test main table UI', () => {
   });
 
   it('handles when clicking the select checkbox for a row', async () => {
+    AtomWrapper.modifyAtomValue(AppStateKeys.userCart, []);
     customRender(<Table {...defaultProps} />);
 
     // Check table exists
@@ -314,6 +327,7 @@ describe('test main table UI', () => {
   });
 
   it('handles when clicking the select all checkbox in the table"s header', async () => {
+    AtomWrapper.modifyAtomValue(AppStateKeys.userCart, []);
     customRender(<Table {...defaultProps} />);
 
     // Check table exists
@@ -335,11 +349,14 @@ describe('test main table UI', () => {
     // Mock window.location.href
     Object.defineProperty(window, 'location', {
       value: {
-        href: jest.fn(),
+        href: 'https://test.com/search',
+        pathname: 'testing/search',
       },
+      writable: true,
     });
 
-    customRender(<Table {...defaultProps} userCart={[defaultProps.results[0]]} />);
+    AtomWrapper.modifyAtomValue(AppStateKeys.userCart, [defaultProps.results[0]]);
+    customRender(<Table {...defaultProps} />);
 
     // Check table renders
     const tableComponent = await screen.findByRole('table');
@@ -368,7 +385,8 @@ describe('test main table UI', () => {
   it('displays an error when unable to access download via wget', async () => {
     server.use(rest.post(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404))));
 
-    customRender(<Table {...defaultProps} userCart={[defaultProps.results[0]]} />);
+    AtomWrapper.modifyAtomValue(AppStateKeys.userCart, [defaultProps.results[0]]);
+    customRender(<Table {...defaultProps} />);
 
     // Check table renders
     const tableComponent = await screen.findByRole('table');
@@ -418,5 +436,225 @@ describe('test QualityFlag', () => {
 
     const component = await screen.findByTestId('qualityFlag1');
     expect(component).toBeTruthy();
+  });
+});
+
+describe('test column sorting', () => {
+  it('sorts by Dataset ID column', async () => {
+    const colIdx = 4; // The column that Total Size is in
+    customRender(
+      <Table
+        {...defaultProps}
+        results={[
+          rawSearchResultFixture({ master_id: 'zyx' }),
+          rawSearchResultFixture({ master_id: 'abc' }),
+        ]}
+      />
+    );
+
+    // Check table exists
+    const table = await screen.findByRole('table');
+    expect(table).toBeTruthy();
+
+    // First row in table
+    const firstRow = (await screen.findAllByRole('row'))[1];
+    expect(firstRow).toBeTruthy();
+
+    // Verify current row value
+    const cell = (await within(firstRow).findAllByRole('cell'))[colIdx];
+    expect(cell).toBeTruthy();
+    expect(cell).toHaveTextContent('zyx');
+
+    // Click on the column header to sort
+    const tableHeader = await screen.findByText('Dataset ID');
+    expect(tableHeader).toBeTruthy();
+    await user.click(tableHeader);
+
+    // Updated first row in table
+    const updatedRow = (await screen.findAllByRole('row'))[1];
+    expect(updatedRow).toBeTruthy();
+
+    // Verify current row value
+    const updatedCell = (await within(updatedRow).findAllByRole('cell'))[colIdx];
+    expect(updatedCell).toBeTruthy();
+
+    // Verify sorting by checking the row value changed
+    expect(updatedCell).toHaveTextContent('abc');
+  });
+
+  it('sorts by Files column', async () => {
+    const colIdx = 5; // The column that Total Size is in
+    customRender(
+      <Table
+        {...defaultProps}
+        results={[
+          rawSearchResultFixture({ number_of_files: 18 }),
+          rawSearchResultFixture({ number_of_files: 7 }),
+        ]}
+      />
+    );
+
+    // Check table exists
+    const table = await screen.findByRole('table');
+    expect(table).toBeTruthy();
+
+    // First row in table
+    const firstRow = (await screen.findAllByRole('row'))[1];
+    expect(firstRow).toBeTruthy();
+
+    // Verify current row value
+    const cell = (await within(firstRow).findAllByRole('cell'))[colIdx];
+    expect(cell).toBeTruthy();
+    expect(cell).toHaveTextContent('18');
+
+    // Click on the column header to sort
+    const tableHeader = await screen.findByText('Files');
+    expect(tableHeader).toBeTruthy();
+    await user.click(tableHeader);
+
+    // Updated first row in table
+    const updatedRow = (await screen.findAllByRole('row'))[1];
+    expect(updatedRow).toBeTruthy();
+
+    // Verify current row value
+    const updatedCell = (await within(updatedRow).findAllByRole('cell'))[colIdx];
+    expect(updatedCell).toBeTruthy();
+
+    // Verify sorting by checking the row value changed
+    expect(updatedCell).toHaveTextContent('7');
+  });
+
+  it('sorts by Total Size column', async () => {
+    const colIdx = 6; // The column that Total Size is in
+    customRender(
+      <Table
+        {...defaultProps}
+        results={[rawSearchResultFixture({ size: 5678 }), rawSearchResultFixture({ size: 1234 })]}
+      />
+    );
+
+    // Check table exists
+    const table = await screen.findByRole('table');
+    expect(table).toBeTruthy();
+
+    // First row in table
+    const firstRow = (await screen.findAllByRole('row'))[1];
+    expect(firstRow).toBeTruthy();
+
+    // Verify current row value
+    const cell = (await within(firstRow).findAllByRole('cell'))[colIdx];
+    expect(cell).toBeTruthy();
+    expect(cell).toHaveTextContent('5.54 KB');
+
+    // Click on the column header to sort
+    const tableHeader = await screen.findByText('Total Size');
+    expect(tableHeader).toBeTruthy();
+    await user.click(tableHeader);
+
+    // Updated first row in table
+    const updatedRow = (await screen.findAllByRole('row'))[1];
+    expect(updatedRow).toBeTruthy();
+
+    // Verify current row value
+    const updatedCell = (await within(updatedRow).findAllByRole('cell'))[colIdx];
+    expect(updatedCell).toBeTruthy();
+
+    // Verify sorting by checking the row value changed
+    expect(updatedCell).toHaveTextContent('1.21 KB');
+  });
+
+  it('sorts by Version column', async () => {
+    const colIdx = 7; // The column that version is in
+    customRender(
+      <Table
+        {...defaultProps}
+        results={[
+          rawSearchResultFixture({ version: '5678' }),
+          rawSearchResultFixture({ version: '1234' }),
+        ]}
+      />
+    );
+
+    // Check table exists
+    const table = await screen.findByRole('table');
+    expect(table).toBeTruthy();
+
+    // First row in table
+    const firstRow = (await screen.findAllByRole('row'))[1];
+    expect(firstRow).toBeTruthy();
+
+    // Verify current row value
+    const cell = (await within(firstRow).findAllByRole('cell'))[colIdx];
+    expect(cell).toBeTruthy();
+    expect(cell).toHaveTextContent('5678');
+
+    // Click on the column header to sort
+    const tableHeader = await screen.findByText('Version');
+    expect(tableHeader).toBeTruthy();
+    await user.click(tableHeader);
+
+    // Updated first row in table
+    const updatedRow = (await screen.findAllByRole('row'))[1];
+    expect(updatedRow).toBeTruthy();
+
+    // Verify current row value
+    const updatedCell = (await within(updatedRow).findAllByRole('cell'))[colIdx];
+    expect(updatedCell).toBeTruthy();
+
+    // Verify sorting by checking the row value changed
+    expect(updatedCell).toHaveTextContent('1234');
+  });
+
+  it('Handles sorting without breaking even if values are undefined', async () => {
+    const colIdx = 4; // The column that Total Size is in
+    customRender(
+      <Table
+        {...defaultProps}
+        results={[
+          rawSearchResultFixture({
+            id: 'first',
+            master_id: undefined,
+            number_of_files: undefined,
+            size: undefined,
+            version: undefined,
+          }),
+          rawSearchResultFixture({
+            id: 'second',
+            master_id: undefined,
+            number_of_files: undefined,
+            size: undefined,
+            version: undefined,
+          }),
+        ]}
+      />
+    );
+
+    // Check table exists
+    const table = await screen.findByRole('table');
+    expect(table).toBeTruthy();
+
+    // First row in table
+    const firstRow = (await screen.findAllByRole('row'))[1];
+    expect(firstRow).toBeTruthy();
+
+    // Click on the column header to sort
+    const tableDatasetId = await screen.findByText('Dataset ID');
+    expect(tableDatasetId).toBeTruthy();
+    await user.click(tableDatasetId);
+
+    // Click on the column header to sort
+    const files = await screen.findByText('Files');
+    expect(files).toBeTruthy();
+    await user.click(files);
+
+    // Click on the column header to sort
+    const totalSize = await screen.findByText('Total Size');
+    expect(totalSize).toBeTruthy();
+    await user.click(totalSize);
+
+    // Click on the column header to sort
+    const version = await screen.findByText('Version');
+    expect(version).toBeTruthy();
+    await user.click(version);
   });
 });
