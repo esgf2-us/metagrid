@@ -24,4 +24,3 @@ Starting in v1.4.0, Metagrid now includes several improvements to the user exper
 We are excited to announce the Metagrid platform has been migrated onto scalable infrastructure. We will continue testing old and new features to ensure they are working as intended.
 
 - Improved redundancy and backend deployment enhancements utilizing our Kubernetes cluster.
-
