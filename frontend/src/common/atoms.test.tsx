@@ -3,6 +3,7 @@ import React from 'react';
 import userEvent from '@testing-library/user-event';
 import { isDarkModeAtom } from './atoms';
 import { Provider, useAtom } from 'jotai';
+import { localStorageMock } from '../test/mock/mockStorage';
 
 const TestComponent = (): JSX.Element => {
   const [isDarkMode, setIsDarkMode] = useAtom(isDarkModeAtom);
@@ -21,7 +22,7 @@ const TestComponent = (): JSX.Element => {
 
 describe('isDarkModeAtom', () => {
   beforeEach(() => {
-    localStorage.clear();
+    localStorageMock.clear();
   });
 
   it('should initialize with default value', () => {
@@ -37,11 +38,11 @@ describe('isDarkModeAtom', () => {
     const setDarkModeTrueButton = await screen.findByTestId('setDarkModeTrue');
     await userEvent.click(setDarkModeTrueButton);
 
-    expect(localStorage.getItem('isDarkMode')).toBe('true');
+    expect(localStorageMock.getItem('isDarkMode')).toBe('true');
   });
 
   it('should read value from localStorage', () => {
-    localStorage.setItem('isDarkMode', 'true');
+    localStorageMock.setItem('isDarkMode', 'true');
 
     render(<TestComponent />);
 
@@ -53,11 +54,11 @@ describe('isDarkModeAtom', () => {
     render(<TestComponent />);
     const setDarkModeTrueButton = await screen.findByTestId('setDarkModeTrue');
     await userEvent.click(setDarkModeTrueButton);
-    expect(localStorage.getItem('isDarkMode')).toBe('true');
+    expect(localStorageMock.getItem('isDarkMode')).toBe('true');
 
     const setDarkModeFalseButton = await screen.findByTestId('setDarkModeFalse');
     await userEvent.click(setDarkModeFalseButton);
 
-    expect(localStorage.getItem('isDarkMode')).toBe('false');
+    expect(localStorageMock.getItem('isDarkMode')).toBe('false');
   });
 });

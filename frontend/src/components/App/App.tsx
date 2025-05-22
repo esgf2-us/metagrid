@@ -30,6 +30,7 @@ import {
   updateUserCart,
 } from '../../api';
 import {
+  clearDeprecatedStorageKeys,
   combineCarts,
   getStyle,
   searchAlreadyExists,
@@ -78,6 +79,9 @@ export type Props = {
 };
 
 const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
+  // Clear deprectated local storage
+  clearDeprecatedStorageKeys();
+
   // Global states
   const isDarkMode = useAtomValue<boolean>(isDarkModeAtom);
 
@@ -125,12 +129,8 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     if (isAuthenticated) {
       fetchUserCart(pk, accessToken)
         .then((rawUserCart) => {
-          /* istanbul ignore next */
-          const localItems = JSON.parse(
-            localStorage.getItem('userCart') || '[]'
-          ) as RawSearchResults;
           const databaseItems = rawUserCart.items as RawSearchResults;
-          const combinedCarts = combineCarts(databaseItems, localItems);
+          const combinedCarts = combineCarts(databaseItems, userCart);
           updateUserCart(pk, accessToken, combinedCarts);
           setUserCart(combinedCarts);
         })

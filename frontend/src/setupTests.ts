@@ -10,7 +10,6 @@ import messageDisplayData from './components/Messaging/messageDisplayData';
 import { mockConfig, originalGlobusEnabledNodes, AtomWrapper } from './test/jestTestFunctions';
 import 'cross-fetch/polyfill';
 import 'mock-match-media/jest-setup';
-import { sessionStorageMock } from './test/mock/mockStorage';
 import {
   activeSearchQueryFixture,
   parsedFacetsFixture,
@@ -39,13 +38,15 @@ import {
   GlobusStateKeys,
   userCartAtom,
 } from './common/atoms';
+import { localStorageMock, sessionStorageMock } from './test/mock/mockStorage';
 
 jest.setTimeout(120000);
 
 // Used to restore window.location after each test
 const location = JSON.stringify(window.location);
 
-Object.defineProperty(window, 'localStorage', { value: sessionStorageMock });
+Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+Object.defineProperty(window, 'sessionStorage', { value: sessionStorageMock });
 Object.defineProperty(window, 'METAGRID', { value: mockConfig });
 
 globalThis.TextEncoder = TextEncoder;
@@ -112,10 +113,11 @@ beforeAll(() => {
   );
 });
 beforeEach(() => {
+  localStorageMock.clear();
   sessionStorageMock.clear();
 
   // Set start up messages as 'seen' so start popup won't show
-  localStorage.setItem('lastMessageSeen', messageDisplayData.messageToShow);
+  localStorageMock.setItem('lastMessageSeen', messageDisplayData.messageToShow);
 });
 afterEach(() => {
   // Routes are already declared in the App component using BrowserRouter, so MemoryRouter does
@@ -138,8 +140,9 @@ afterEach(() => {
   // Reset mock values
   window.METAGRID.GLOBUS_NODES = originalGlobusEnabledNodes;
 
-  // Clear localStorage between tests
-  localStorage.clear();
+  // Clear storage between tests
+  localStorageMock.clear();
+  sessionStorageMock.clear();
 
   // Reset all mocks after each test
   jest.clearAllMocks();
