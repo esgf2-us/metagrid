@@ -430,13 +430,7 @@ export const setStartupMessageAsSeen = (): void => {
 // This is meant to clear out any deprecated keys in localStorage
 // that are no longer used in the application.
 export const clearDeprecatedStorageKeys = (): void => {
-  const deprecatedLocalStorageKeys = [
-    'cachedSearchResults',
-    'cachedSearchPagination',
-    'globusTransferGoalsState',
-    'userSearchQuery',
-    'showBanner',
-  ];
+  const deprecatedLocalStorageKeys = ['globusTransferGoalsState', 'userSearchQuery', 'showBanner'];
 
   deprecatedLocalStorageKeys.forEach((key) => {
     if (localStorage.getItem(key)) {
@@ -466,20 +460,20 @@ export function decompressData<T>(compressedStr: string): T {
   return decompressedData as T;
 }
 
-export function saveToSessionStorage<T>(key: string, value: T, compress = false): void {
+export function saveToLocalStorage<T>(key: string, value: T, compress = false): void {
   if (compress) {
     const compressedValue = compressData<T>(value);
-    sessionStorage.setItem(key, compressedValue);
+    localStorage.setItem(key, compressedValue);
     return;
   }
 
   const jsonStr = JSON.stringify(value);
-  sessionStorage.setItem(key, jsonStr);
+  localStorage.setItem(key, jsonStr);
 }
 
-export function getFromSessionStorage<T>(key: string, decompress = false): T | null {
+export function getFromLocalStorage<T>(key: string, decompress = false): T | null {
   if (decompress) {
-    const value = sessionStorage.getItem(key);
+    const value = localStorage.getItem(key);
     if (!value) {
       return null;
     }
@@ -488,17 +482,17 @@ export function getFromSessionStorage<T>(key: string, decompress = false): T | n
     return decompressedValue;
   }
 
-  const value = sessionStorage.getItem(key);
+  const value = localStorage.getItem(key);
   return value ? (JSON.parse(value) as T) : null;
 }
 
 export const cachePagination = (pagination: Pagination): void => {
-  saveToSessionStorage('cachedSearchPagination', pagination);
+  saveToLocalStorage('cachedSearchPagination', pagination);
 };
 
 export const getCachedPagination = (): Pagination => {
   return (
-    getFromSessionStorage<Pagination>('cachedSearchPagination') || {
+    getFromLocalStorage<Pagination>('cachedSearchPagination') || {
       page: 1,
       pageSize: 10,
     }
@@ -511,7 +505,7 @@ export const cacheSearchResults = (
   cachedURL: string
 ): void => {
   if (fetchedResults && !Object.hasOwn(fetchedResults, 'cachedURL')) {
-    saveToSessionStorage(
+    saveToLocalStorage(
       'cachedSearchResults',
       {
         results: fetchedResults,
@@ -528,7 +522,7 @@ export const cacheSearchResults = (
 
 export const getCachedSearchResults = (): Record<string, unknown> => {
   const fetchedResults: Record<string, unknown> =
-    getFromSessionStorage('cachedSearchResults', true) || {};
+    getFromLocalStorage('cachedSearchResults', true) || {};
   const now = Date.now();
   if (fetchedResults.expires && now > (fetchedResults.expires as number)) {
     // If expired, remove from session storage
@@ -548,8 +542,8 @@ export const getCachedSearchResults = (): Record<string, unknown> => {
 
 export const clearCachedSearchResults = (): void => {
   // Clear the cached search results from sessionStorage
-  sessionStorage.removeItem('cachedSearchResults');
-  sessionStorage.removeItem('cachedSearchPagination');
+  localStorage.removeItem('cachedSearchResults');
+  localStorage.removeItem('cachedSearchPagination');
 };
 
 export const showBanner = (): boolean => {

@@ -22,8 +22,8 @@ import {
   getStrSizeInKb,
   compressData,
   decompressData,
-  saveToSessionStorage,
-  getFromSessionStorage,
+  saveToLocalStorage,
+  getFromLocalStorage,
   cachePagination,
   getCachedPagination,
   cacheSearchResults,
@@ -40,7 +40,7 @@ import { mockConfig } from '../test/jestTestFunctions';
 import {
   localStorageMock,
   sessionStorageMock,
-  tempSessionStorageGetMock,
+  tempStorageGetMock,
 } from '../test/mock/mockStorage';
 
 describe('Test objectIsEmpty', () => {
@@ -545,28 +545,28 @@ describe('Test compressData and decompressData', () => {
   });
 });
 
-describe('Test saveToSessionStorage and getFromSessionStorage', () => {
-  const key = 'testSessionKey';
+describe('Test saveToLocalStorage and getFromLocalStorage', () => {
+  const key = 'testLocalKey';
   const value = { a: 1, b: 2 };
 
   afterEach(() => {
-    sessionStorage.removeItem(key);
+    localStorage.removeItem(key);
   });
 
   it('saves and retrieves JSON data', () => {
-    saveToSessionStorage(key, value);
-    const result = getFromSessionStorage<typeof value>(key);
+    saveToLocalStorage(key, value);
+    const result = getFromLocalStorage<typeof value>(key);
     expect(result).toEqual(value);
   });
 
   it('saves and retrieves compressed data', () => {
-    saveToSessionStorage(key, value, true);
-    const result = getFromSessionStorage<typeof value>(key, true);
+    saveToLocalStorage(key, value, true);
+    const result = getFromLocalStorage<typeof value>(key, true);
     expect(result).toEqual(value);
   });
 
   it('returns null if key does not exist', () => {
-    expect(getFromSessionStorage('nonexistent')).toBeNull();
+    expect(getFromLocalStorage('nonexistent')).toBeNull();
   });
 });
 
@@ -574,7 +574,7 @@ describe('Test cachePagination and getCachedPagination', () => {
   const pagination = { page: 2, pageSize: 20 };
 
   afterEach(() => {
-    sessionStorage.removeItem('cachedSearchPagination');
+    localStorage.removeItem('cachedSearchPagination');
   });
 
   it('caches and retrieves pagination', () => {
@@ -583,7 +583,7 @@ describe('Test cachePagination and getCachedPagination', () => {
   });
 
   it('returns default pagination if not set', () => {
-    sessionStorage.removeItem('cachedSearchPagination');
+    localStorage.removeItem('cachedSearchPagination');
     expect(getCachedPagination()).toEqual({ page: 1, pageSize: 10 });
   });
 });
@@ -614,7 +614,7 @@ describe('Test cacheSearchResults, getCachedSearchResults, and clearCachedSearch
     cacheSearchResults(results, pagination, cachedURL);
 
     // Expect the cache to be set
-    expect(tempSessionStorageGetMock('cachedSearchResults')).toBeTruthy();
+    expect(tempStorageGetMock('cachedSearchResults')).toBeTruthy();
 
     // Simulate time passing
     jest.useFakeTimers();
@@ -622,8 +622,8 @@ describe('Test cacheSearchResults, getCachedSearchResults, and clearCachedSearch
     const cached = getCachedSearchResults();
     expect(cached).toEqual({});
 
-    // Should also remove from sessionStorage
-    const cachedItem = tempSessionStorageGetMock('cachedSearchResults');
+    // Should also remove from localStorage
+    const cachedItem = tempStorageGetMock('cachedSearchResults');
     expect(cachedItem).toBeUndefined();
   });
 });
@@ -650,13 +650,7 @@ describe('Test showBanner and saveBannerText', () => {
 
 describe('Test clearDeprecatedStorageKeys', () => {
   it('removes deprecated keys from localStorage', () => {
-    const keys = [
-      'cachedSearchResults',
-      'cachedSearchPagination',
-      'globusTransferGoalsState',
-      'userSearchQuery',
-      'showBanner',
-    ];
+    const keys = ['globusTransferGoalsState', 'userSearchQuery', 'showBanner'];
     keys.forEach((key) => localStorageMock.setItem(key, 'test'));
     clearDeprecatedStorageKeys();
     keys.forEach((key) => {
