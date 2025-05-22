@@ -3,8 +3,8 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import FacetsForm, { formatDate, humanizeFacetNames } from './FacetsForm';
 import customRender from '../../test/custom-render';
-import { AtomWrapper, printElementContents } from '../../test/jestTestFunctions';
-import { activeSearchQueryAtom, AppStateKeys } from '../../common/atoms';
+import { AtomWrapper } from '../../test/jestTestFunctions';
+import { AppStateKeys } from '../../common/atoms';
 import { activeSearchQueryFixture } from '../../test/mock/fixtures';
 
 const user = userEvent.setup();

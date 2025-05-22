@@ -2,9 +2,10 @@ import { within, screen } from '@testing-library/react';
 import React from 'react';
 import NodeSummary from './NodeSummary';
 import customRender from '../../test/custom-render';
-import { AtomWrapper, saveToLocalStorage } from '../../test/jestTestFunctions';
+import { AtomWrapper } from '../../test/jestTestFunctions';
 import { darkModeGreen, darkModeRed } from './StatusToolTip';
-import { AppStateKeys, isDarkModeAtom } from '../../common/atoms';
+import { AppStateKeys } from '../../common/atoms';
+import { localStorageMock } from '../../test/mock/mockStorage';
 
 it('renders component with node status information', async () => {
   customRender(<NodeSummary />);
@@ -35,7 +36,8 @@ it('renders component placeholder with no node status information', async () => 
 
 it('renders component with dark mode enabled', async () => {
   AtomWrapper.modifyAtomValue(AppStateKeys.isDarkMode, true);
-  saveToLocalStorage(AppStateKeys.isDarkMode, true);
+  const jsonStr = JSON.stringify(true);
+  localStorageMock.setItem(AppStateKeys.isDarkMode, jsonStr);
   customRender(<NodeSummary />);
 
   const numNodes = await screen.findByTestId('numNodes');

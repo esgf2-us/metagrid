@@ -242,7 +242,7 @@ describe('test Search component', () => {
   });
 
   it('handles saving a search query when unauthenticated', async () => {
-    customRender(<Search {...defaultProps} />, { usesAtoms: true, authenticated: true });
+    customRender(<Search {...defaultProps} />, { usesAtoms: true, authenticated: false });
 
     // Check search component renders
     const searchComponent = await screen.findByTestId('search');

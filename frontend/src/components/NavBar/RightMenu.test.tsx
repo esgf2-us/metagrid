@@ -6,13 +6,8 @@ import React from 'react';
 import customRender from '../../test/custom-render';
 import { matchMedia, setMedia } from 'mock-match-media';
 import RightMenu, { Props } from './RightMenu';
-import {
-  mockConfig,
-  mockKeycloakToken,
-  AtomWrapper,
-  printElementContents,
-} from '../../test/jestTestFunctions';
-import { tempStorageSetMock } from '../../test/mock/mockStorage';
+import { mockConfig, mockKeycloakToken, AtomWrapper } from '../../test/jestTestFunctions';
+import { localStorageMock, tempStorageSetMock } from '../../test/mock/mockStorage';
 import { activeSearchQueryFixture } from '../../test/mock/fixtures';
 import App from '../App/App';
 import { AppStateKeys } from '../../common/atoms';
@@ -51,7 +46,7 @@ it('sets the active menu item based on the location pathname', async () => {
 });
 
 it('Renders the node status link if node status url is configured', async () => {
-  window.METAGRID.STATUS_URL = 'https://example.com/status';
+  mockConfig.STATUS_URL = 'https://example.com/status';
   customRender(<RightMenu {...rightMenuProps} />);
 
   const nodeStatusLink = await screen.findByText('Node Status', { exact: false });
@@ -59,7 +54,7 @@ it('Renders the node status link if node status url is configured', async () => 
 });
 
 it('Does not render the node status link if node status url is not configured', async () => {
-  window.METAGRID.STATUS_URL = null;
+  mockConfig.STATUS_URL = null;
   customRender(<RightMenu {...rightMenuProps} />);
 
   const nodeStatusLink = screen.queryByText('Node Status', { exact: false });
@@ -226,11 +221,11 @@ describe('Dark Mode', () => {
 
     const isDarkModeSwitch = await screen.findByTestId('isDarkModeSwitch');
     expect(isDarkModeSwitch).not.toBeChecked();
-    expect(localStorage.getItem(AppStateKeys.isDarkMode)).toBe('true');
+    expect(localStorageMock.getItem(AppStateKeys.isDarkMode)).toBe('true');
 
     await user.click(isDarkModeSwitch);
     expect(isDarkModeSwitch).toBeChecked();
-    expect(localStorage.getItem(AppStateKeys.isDarkMode)).toBe('false');
+    expect(localStorageMock.getItem(AppStateKeys.isDarkMode)).toBe('false');
   });
 
   it('respects (prefers-color-scheme: dark) when no user preference is set', async () => {
