@@ -583,10 +583,8 @@ export const showBanner = (): boolean => {
 
 export const saveBannerText = (): void => {
   // Set the banner text in sessionStorage
+  const bannerText = window.METAGRID.BANNER_TEXT || '';
 
   /* istanbul ignore next */
-  sessionStorage.setItem(
-    'showBanner',
-    window.METAGRID.BANNER_TEXT ? window.METAGRID.BANNER_TEXT : ''
-  );
+  sessionStorage.setItem('showBanner', bannerText);
 };
