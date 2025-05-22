@@ -12,11 +12,11 @@ import React, { ReactNode, CSSProperties } from 'react';
 import { UserEvent } from '@testing-library/user-event';
 import { Provider, WritableAtom } from 'jotai';
 import { useHydrateAtoms } from 'jotai/utils';
-import { NotificationType, getSearchFromUrl, saveToLocalStorage } from '../common/utils';
+import { NotificationType, getSearchFromUrl } from '../common/utils';
 import { RawSearchResult } from '../components/Search/types';
 import { rawSearchResultFixture } from './mock/fixtures';
 import { FrontendConfig } from '../common/types';
-import { tempStorageGetMock } from './mock/mockStorage';
+import { localStorageMock, tempStorageGetMock } from './mock/mockStorage';
 
 // https://www.mikeborozdin.com/post/changing-jest-mocks-between-tests
 export const originalGlobusEnabledNodes = [
@@ -235,7 +235,8 @@ export class AtomWrapper {
 
       // Save the atoms to the local storage
       if (atomInfo.saveLocal) {
-        saveToLocalStorage(key, atomInfo.value);
+        const jsonStr = JSON.stringify(atomInfo.value);
+        localStorageMock.setItem(key, jsonStr);
       }
       initValues.push([atomInfo.atom, atomInfo.value]);
     });

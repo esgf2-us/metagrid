@@ -7,7 +7,7 @@ import userEvent from '@testing-library/user-event';
 import { AppStateKeys } from '../../common/atoms';
 import { AtomWrapper } from '../../test/jestTestFunctions';
 import { UserSearchQueries } from './types';
-import { getFromLocalStorage } from '../../common/utils';
+import { localStorageMock } from '../../test/mock/mockStorage';
 
 afterEach(() => {
   jest.clearAllMocks();
@@ -28,15 +28,16 @@ it('removes a search query when user is not authenticated', async () => {
   customRender(<Searches />, { usesAtoms: true, authenticated: false });
 
   // Verify user queries count is 2
-  const userQueries: [] = getFromLocalStorage(AppStateKeys.userSearchQueries) || [];
+  const userQueriesStr = localStorageMock.getItem<string>(AppStateKeys.userSearchQueries);
+  const userQueries: [] = JSON.parse(userQueriesStr || '') || [];
   expect(userQueries.length).toEqual(2);
 
   const removeButton = await screen.findByTestId('remove-1'); // Assuming the button has a test ID
   await userEvent.click(removeButton);
 
   // Verify user queries count is now 1 and that it is 2nd query
-  const userQueriesUpdated: UserSearchQueries =
-    getFromLocalStorage(AppStateKeys.userSearchQueries) || [];
+  const userQueriesUpdatedStr = localStorageMock.getItem<string>(AppStateKeys.userSearchQueries);
+  const userQueriesUpdated: UserSearchQueries = JSON.parse(userQueriesUpdatedStr || '') || [];
   expect(userQueriesUpdated.length).toEqual(1);
   expect(userQueriesUpdated[0].uuid).toEqual(secondQuery.uuid);
 });

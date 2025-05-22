@@ -5,7 +5,7 @@ import customRender from '../../test/custom-render';
 import { AtomWrapper } from '../../test/jestTestFunctions';
 import { darkModeGreen, darkModeRed } from './StatusToolTip';
 import { AppStateKeys } from '../../common/atoms';
-import { saveToLocalStorage } from '../../common/utils';
+import { localStorageMock } from '../../test/mock/mockStorage';
 
 it('renders component with node status information', async () => {
   customRender(<NodeSummary />);
@@ -36,7 +36,8 @@ it('renders component placeholder with no node status information', async () => 
 
 it('renders component with dark mode enabled', async () => {
   AtomWrapper.modifyAtomValue(AppStateKeys.isDarkMode, true);
-  saveToLocalStorage(AppStateKeys.isDarkMode, true);
+  const jsonStr = JSON.stringify(true);
+  localStorageMock.setItem(AppStateKeys.isDarkMode, jsonStr);
   customRender(<NodeSummary />);
 
   const numNodes = await screen.findByTestId('numNodes');

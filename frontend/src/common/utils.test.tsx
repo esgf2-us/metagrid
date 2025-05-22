@@ -19,10 +19,29 @@ import {
   splitStringByChar,
   unsavedLocalSearches,
   createSearchRouteURL,
+  getStrSizeInKb,
+  compressData,
+  decompressData,
+  saveToSessionStorage,
+  getFromSessionStorage,
+  cachePagination,
+  getCachedPagination,
+  cacheSearchResults,
+  getCachedSearchResults,
+  clearCachedSearchResults,
+  showBanner,
+  saveBannerText,
+  clearDeprecatedStorageKeys,
 } from './utils';
 import { AppPage } from './types';
 import { Provider, useAtom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
+import { mockConfig } from '../test/jestTestFunctions';
+import {
+  localStorageMock,
+  sessionStorageMock,
+  tempSessionStorageGetMock,
+} from '../test/mock/mockStorage';
 
 describe('Test objectIsEmpty', () => {
   it('returns true with empty object', () => {
@@ -469,7 +488,7 @@ describe('Test localStorageEffect', () => {
   };
 
   it('sets to default value when localStorage is empty', () => {
-    localStorage.removeItem(key);
+    localStorageMock.removeItem(key);
     const { getByText } = render(
       <Provider>
         <TestComponent />
@@ -479,7 +498,7 @@ describe('Test localStorageEffect', () => {
   });
 
   it('sets to default value when JSON.parse throws an error', () => {
-    localStorage.setItem(key, 'invalid JSON');
+    localStorageMock.setItem(key, 'invalid JSON');
     const { getByText } = render(
       <Provider>
         <TestComponent />
@@ -506,5 +525,142 @@ describe('Test createSearchRouteURL', () => {
     const url = 'https://example.com/path?param1=value1&param2=value2&param3=value3';
     const result = createSearchRouteURL(url);
     expect(result).toBe(`${window.location.origin}/path?param1=value1&param2=value2&param3=value3`);
+  });
+});
+
+describe('Test getStrSizeInKb', () => {
+  it('returns correct size in KB for a string', () => {
+    expect(getStrSizeInKb('a')).toBeGreaterThan(0);
+    expect(getStrSizeInKb('')).toBe(0);
+  });
+});
+
+describe('Test compressData and decompressData', () => {
+  it('compresses and decompresses data correctly', () => {
+    const obj = { foo: 'bar', num: 42 };
+    const compressed = compressData(obj);
+    expect(typeof compressed).toBe('string');
+    const decompressed = decompressData<typeof obj>(compressed);
+    expect(decompressed).toEqual(obj);
+  });
+});
+
+describe('Test saveToSessionStorage and getFromSessionStorage', () => {
+  const key = 'testSessionKey';
+  const value = { a: 1, b: 2 };
+
+  afterEach(() => {
+    sessionStorage.removeItem(key);
+  });
+
+  it('saves and retrieves JSON data', () => {
+    saveToSessionStorage(key, value);
+    const result = getFromSessionStorage<typeof value>(key);
+    expect(result).toEqual(value);
+  });
+
+  it('saves and retrieves compressed data', () => {
+    saveToSessionStorage(key, value, true);
+    const result = getFromSessionStorage<typeof value>(key, true);
+    expect(result).toEqual(value);
+  });
+
+  it('returns null if key does not exist', () => {
+    expect(getFromSessionStorage('nonexistent')).toBeNull();
+  });
+});
+
+describe('Test cachePagination and getCachedPagination', () => {
+  const pagination = { page: 2, pageSize: 20 };
+
+  afterEach(() => {
+    sessionStorage.removeItem('cachedSearchPagination');
+  });
+
+  it('caches and retrieves pagination', () => {
+    cachePagination(pagination);
+    expect(getCachedPagination()).toEqual(pagination);
+  });
+
+  it('returns default pagination if not set', () => {
+    sessionStorage.removeItem('cachedSearchPagination');
+    expect(getCachedPagination()).toEqual({ page: 1, pageSize: 10 });
+  });
+});
+
+describe('Test cacheSearchResults, getCachedSearchResults, and clearCachedSearchResults', () => {
+  const results = { response: { docs: [], numFound: 0 } };
+  const pagination = { page: 1, pageSize: 10 };
+  const cachedURL = 'http://test.com';
+
+  afterEach(() => {
+    clearCachedSearchResults();
+  });
+
+  it('caches and retrieves search results', () => {
+    cacheSearchResults(results, pagination, cachedURL);
+    const cached = getCachedSearchResults();
+    expect(cached.cachedURL).toBe(cachedURL);
+    expect(cached.response).toBeDefined();
+  });
+
+  it('clears cached search results', () => {
+    cacheSearchResults(results, pagination, cachedURL);
+    clearCachedSearchResults();
+    expect(getCachedSearchResults()).toEqual({});
+  });
+
+  it('clears cache when expired', () => {
+    cacheSearchResults(results, pagination, cachedURL);
+
+    // Expect the cache to be set
+    expect(tempSessionStorageGetMock('cachedSearchResults')).toBeTruthy();
+
+    // Simulate time passing
+    jest.useFakeTimers();
+    jest.setSystemTime(Date.now() + 60 * 60 * 2000); // Move time forward by 2 hours
+    const cached = getCachedSearchResults();
+    expect(cached).toEqual({});
+
+    // Should also remove from sessionStorage
+    const cachedItem = tempSessionStorageGetMock('cachedSearchResults');
+    expect(cachedItem).toBeUndefined();
+  });
+});
+
+describe('Test showBanner and saveBannerText', () => {
+  beforeEach(() => {
+    mockConfig.BANNER_TEXT = 'Test Banner';
+    sessionStorageMock.removeItem('showBanner');
+  });
+
+  it('returns true if banner text is new', () => {
+    expect(showBanner()).toBe(true);
+  });
+  it('returns false if banner text is empty', () => {
+    mockConfig.BANNER_TEXT = '';
+    expect(showBanner()).toBe(false);
+  });
+  it('saves banner text to sessionStorage if present', () => {
+    mockConfig.BANNER_TEXT = 'Test Banner';
+    saveBannerText();
+    expect(sessionStorageMock.getItem('showBanner')).toBe('Test Banner');
+  });
+});
+
+describe('Test clearDeprecatedStorageKeys', () => {
+  it('removes deprecated keys from localStorage', () => {
+    const keys = [
+      'cachedSearchResults',
+      'cachedSearchPagination',
+      'globusTransferGoalsState',
+      'userSearchQuery',
+      'showBanner',
+    ];
+    keys.forEach((key) => localStorageMock.setItem(key, 'test'));
+    clearDeprecatedStorageKeys();
+    keys.forEach((key) => {
+      expect(localStorageMock.getItem(key)).toBeUndefined();
+    });
   });
 });

@@ -5,7 +5,7 @@ import NodeStatus, { Props } from '.';
 import { ResponseError } from '../../api';
 import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
-import { AtomWrapper, printElementContents } from '../../test/jestTestFunctions';
+import { AtomWrapper } from '../../test/jestTestFunctions';
 import { AppStateKeys } from '../../common/atoms';
 
 const user = userEvent.setup();

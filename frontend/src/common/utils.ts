@@ -1,7 +1,6 @@
 import { CSSProperties, ReactNode } from 'react';
 import { MessageInstance } from 'antd/es/message/interface';
-import pako, { Data } from 'pako';
-import { Buffer } from 'buffer';
+import LZString from 'lz-string';
 import { UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
 import { ActiveFacets, RawProject } from '../components/Facets/types';
 import {
@@ -455,54 +454,42 @@ export const getStrSizeInKb = (str: string): number => {
 
 export function compressData<T>(data: T): string {
   const jsonStr = JSON.stringify(data);
-  const compressedData = pako.deflate(jsonStr);
-  const base64String = Buffer.from(compressedData).toString('base64');
-  const compressedStr = JSON.stringify({ zip: base64String });
+  const compressedData = LZString.compress(jsonStr);
 
-  // Calculate the size of the original and compressed data
-  const kiloBytes = getStrSizeInKb(jsonStr);
-  const compressedSize = getStrSizeInKb(compressedStr);
-
-  // If the compressed data is larger than the original data, return the original data
-  if (compressedSize > kiloBytes) {
-    return jsonStr;
-  }
-  return compressedStr;
+  return compressedData;
 }
 
 export function decompressData<T>(compressedStr: string): T {
-  const parsedData = JSON.parse(compressedStr);
-
-  // No compressed data, return the original data
-  if (parsedData.zip === undefined) {
-    return parsedData as T;
-  }
-
   // Decompress the data
-  const compressedData = Buffer.from(parsedData.zip, 'base64').buffer as Data;
-  const decompressedStr = pako.inflate(compressedData, { to: 'string' });
+  const decompressedStr = LZString.decompress(compressedStr);
   const decompressedData = JSON.parse(decompressedStr);
   return decompressedData as T;
 }
 
-export function saveToLocalStorage<T>(key: string, value: T): void {
+export function saveToSessionStorage<T>(key: string, value: T, compress = false): void {
+  if (compress) {
+    const compressedValue = compressData<T>(value);
+    sessionStorage.setItem(key, compressedValue);
+    return;
+  }
+
   const jsonStr = JSON.stringify(value);
-  localStorage.setItem(key, jsonStr);
+  sessionStorage.setItem(key, jsonStr);
 }
 
-export function getFromLocalStorage<T>(key: string): T | null {
-  const items = localStorage.getItem(key);
-  return items ? (JSON.parse(items) as T) : null;
-}
+export function getFromSessionStorage<T>(key: string, decompress = false): T | null {
+  if (decompress) {
+    const value = sessionStorage.getItem(key);
+    if (!value) {
+      return null;
+    }
+    // Decompress the data
+    const decompressedValue = decompressData<T>(value);
+    return decompressedValue;
+  }
 
-export function saveToSessionStorage<T>(key: string, value: T): void {
-  // If the size is greater than 5KB,
-  sessionStorage.setItem(key, compressData(value));
-}
-
-export function getFromSessionStorage<T>(key: string): T | null {
   const value = sessionStorage.getItem(key);
-  return value ? decompressData<T>(value) : null;
+  return value ? (JSON.parse(value) as T) : null;
 }
 
 export const cachePagination = (pagination: Pagination): void => {
@@ -524,11 +511,15 @@ export const cacheSearchResults = (
   cachedURL: string
 ): void => {
   if (fetchedResults && !Object.hasOwn(fetchedResults, 'cachedURL')) {
-    saveToSessionStorage('cachedSearchResults', {
-      results: fetchedResults,
-      cachedURL,
-      expires: Date.now() + 60 * 60 * 1000, // Expires after an hour
-    });
+    saveToSessionStorage(
+      'cachedSearchResults',
+      {
+        results: fetchedResults,
+        cachedURL,
+        expires: Date.now() + 60 * 60 * 1000, // Expires after an hour
+      },
+      true
+    );
 
     // Cache the pagination
     cachePagination(pagination);
@@ -537,9 +528,8 @@ export const cacheSearchResults = (
 
 export const getCachedSearchResults = (): Record<string, unknown> => {
   const fetchedResults: Record<string, unknown> =
-    getFromSessionStorage('cachedSearchResults') || {};
+    getFromSessionStorage('cachedSearchResults', true) || {};
   const now = Date.now();
-  // Check if the cached results have expired
   if (fetchedResults.expires && now > (fetchedResults.expires as number)) {
     // If expired, remove from session storage
     clearCachedSearchResults();
@@ -583,8 +573,9 @@ export const showBanner = (): boolean => {
 
 export const saveBannerText = (): void => {
   // Set the banner text in sessionStorage
-  const bannerText = window.METAGRID.BANNER_TEXT || '';
+  const bannerText = window.METAGRID.BANNER_TEXT;
 
-  /* istanbul ignore next */
-  sessionStorage.setItem('showBanner', bannerText);
+  if (bannerText) {
+    sessionStorage.setItem('showBanner', bannerText);
+  }
 };
