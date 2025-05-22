@@ -16,7 +16,7 @@ import { NotificationType, getSearchFromUrl } from '../common/utils';
 import { RawSearchResult } from '../components/Search/types';
 import { rawSearchResultFixture } from './mock/fixtures';
 import { FrontendConfig } from '../common/types';
-import { tempStorageGetMock } from './mock/mockStorage';
+import { localStorageMock, tempStorageGetMock } from './mock/mockStorage';
 
 // https://www.mikeborozdin.com/post/changing-jest-mocks-between-tests
 export const originalGlobusEnabledNodes = [
@@ -235,7 +235,8 @@ export class AtomWrapper {
 
       // Save the atoms to the local storage
       if (atomInfo.saveLocal) {
-        saveToLocalStorage(key, atomInfo.value);
+        const jsonStr = JSON.stringify(atomInfo.value);
+        localStorageMock.setItem(key, jsonStr);
       }
       initValues.push([atomInfo.atom, atomInfo.value]);
     });
@@ -274,13 +275,4 @@ export async function submitKeywordSearch(inputText: string, user: UserEvent): P
 
 export async function openDropdownList(user: UserEvent, dropdown: HTMLElement): Promise<void> {
   await user.click(dropdown);
-}
-
-export function saveToLocalStorage<T>(key: string, value: T): void {
-  localStorage.setItem(key, JSON.stringify(value));
-}
-
-export function getFromLocalStorage<T>(key: string): T | null {
-  const items = localStorage.getItem(key);
-  return items ? (JSON.parse(items) as T) : null;
 }
