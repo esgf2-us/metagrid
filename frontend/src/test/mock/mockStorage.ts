@@ -2,7 +2,7 @@ const localStorage = {};
 const sessionStorage = {};
 
 const storageMock = (
-  initStore: Record<string, unknown>
+  initStore: Record<string, unknown>,
 ): {
   getItem<T>(key: string): T;
   setItem<T>(key: string, value: T): void;

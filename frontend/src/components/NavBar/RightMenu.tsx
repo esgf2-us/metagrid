@@ -14,7 +14,7 @@ import { Badge, Menu, MenuProps, Space, Switch } from 'antd';
 import { KeycloakTokenParsed } from 'keycloak-js';
 
 import React, { CSSProperties } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { navBarTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 import Button from '../General/Button';

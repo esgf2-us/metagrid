@@ -26,7 +26,7 @@ export async function showNotice(
     type?: NotificationType;
     style?: CSSProperties;
     key?: string | number;
-  }
+  },
 ): Promise<void> {
   const msgConfig = {
     content,
@@ -68,7 +68,7 @@ export async function showNotice(
 }
 
 export const projectBaseQuery = (
-  project: Record<string, unknown> | RawProject
+  project: Record<string, unknown> | RawProject,
 ): ActiveSearchQuery => ({
   project,
   versionType: 'latest',
@@ -112,7 +112,7 @@ export function getStyle(isDark: boolean): CSSinJS {
 
 export async function showError(
   msgApi: MessageInstance,
-  errorMsg: React.ReactNode | string
+  errorMsg: React.ReactNode | string,
 ): Promise<void> {
   let msg = errorMsg;
 
@@ -160,7 +160,7 @@ export const objectIsEmpty = (obj: Record<any, any>): boolean =>
 export const objectHasKey = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   obj: Record<any, any>,
-  key: string | number
+  key: string | number,
 ): boolean => Object.prototype.hasOwnProperty.call(obj, key);
 
 /**
@@ -174,7 +174,7 @@ export const objectHasKey = (
 export const splitStringByChar = (
   url: string,
   char: '|' | '.json' | ':',
-  returnIndex?: '0' | '1' | '2'
+  returnIndex?: '0' | '1' | '2',
 ): string[] | string => {
   const splitURL = url.split(char);
 
@@ -197,7 +197,7 @@ export const shallowCompareObjects = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   obj1: { [key: string]: any },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  obj2: { [key: string]: any }
+  obj2: { [key: string]: any },
 ): boolean =>
   Object.keys(obj1).length === Object.keys(obj2).length &&
   Object.keys(obj1).every((key) => obj2.hasOwnProperty.call(obj2, key) && obj1[key] === obj2[key]);
@@ -259,7 +259,7 @@ export const getUrlFromSearch = (search: ActiveSearchQuery): string => {
     const facetsToStringify: { [x: string]: string[] | string } = { ...newSearch.activeFacets };
     Object.keys(newSearch.activeFacets).forEach((key) => {
       if (newSearch.activeFacets[key].length === 1) {
-        facetsToStringify[key] = (newSearch.activeFacets[key][0] as unknown) as string;
+        facetsToStringify[key] = newSearch.activeFacets[key][0] as unknown as string;
       }
     });
     params.set('activeFacets', JSON.stringify(facetsToStringify));
@@ -363,10 +363,10 @@ export const getSearchFromUrl = (url?: string): ActiveSearchQuery => {
 
 export const combineCarts = (
   databaseItems: RawSearchResults,
-  localItems: RawSearchResults
+  localItems: RawSearchResults,
 ): RawSearchResults => {
   const itemsNotInDatabase = localItems.filter(
-    (item: RawSearchResult) => !databaseItems.some((dataset) => dataset.id === item.id)
+    (item: RawSearchResult) => !databaseItems.some((dataset) => dataset.id === item.id),
   );
   const combinedItems = databaseItems.concat(itemsNotInDatabase);
   return combinedItems;

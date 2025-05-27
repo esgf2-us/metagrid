@@ -59,25 +59,25 @@ beforeAll(() => {
     activeSearchQueryAtom,
     AppStateKeys.activeSearchQuery,
     activeSearchQueryFixture(),
-    false
+    false,
   );
   AtomWrapper.setAtomValue<ParsedFacets | Record<string, unknown>>(
     availableFacetsAtom,
     AppStateKeys.availableFacets,
     parsedFacetsFixture(),
-    false
+    false,
   );
   AtomWrapper.setAtomValue<NodeStatusArray>(
     nodeStatusAtom,
     AppStateKeys.nodeStatus,
     parsedNodeStatusFixture(),
-    false
+    false,
   );
   AtomWrapper.setAtomValue<boolean>(
     supportModalVisibleAtom,
     AppStateKeys.supportModalVisible,
     false,
-    false
+    false,
   );
   AtomWrapper.setAtomValue<boolean>(isDarkModeAtom, AppStateKeys.isDarkMode, false, true);
   AtomWrapper.setAtomValue<UserCart>(userCartAtom, AppStateKeys.userCart, userCartFixture(), true);
@@ -85,31 +85,31 @@ beforeAll(() => {
     userSearchQueriesAtom,
     AppStateKeys.userSearchQueries,
     userSearchQueriesFixture(),
-    true
+    true,
   );
   AtomWrapper.setAtomValue<boolean>(
     cartDownloadIsLoadingAtom,
     CartStateKeys.cartDownloadIsLoading,
     false,
-    true
+    true,
   );
   AtomWrapper.setAtomValue<RawSearchResults>(
     cartItemSelectionsAtom,
     CartStateKeys.cartItemSelections,
     [],
-    true
+    true,
   );
   AtomWrapper.setAtomValue<GlobusEndpoint[]>(
     savedGlobusEndpointsAtom,
     GlobusStateKeys.savedGlobusEndpoints,
     [],
-    true
+    true,
   );
   AtomWrapper.setAtomValue<GlobusTaskItem[]>(
     globusTaskItemsAtom,
     GlobusStateKeys.globusTaskItems,
     [],
-    true
+    true,
   );
 });
 beforeEach(() => {
@@ -130,7 +130,7 @@ afterEach(() => {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   delete window.location;
-  window.location = (JSON.parse(location) as unknown) as string & Location; // Reset location
+  window.location = JSON.parse(location) as unknown as string & Location; // Reset location
   window.location.replace = jest.fn(); // Don't do anything with redirects
   window.location.assign = jest.fn();
   window.URL.createObjectURL = jest.fn();

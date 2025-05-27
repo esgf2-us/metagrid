@@ -21,9 +21,8 @@ const Searches: React.FC = () => {
   // Global states
   const isDarkMode = useAtomValue<boolean>(isDarkModeAtom);
 
-  const [userSearchQueries, setUserSearchQueries] = useAtom<UserSearchQueries>(
-    userSearchQueriesAtom
-  );
+  const [userSearchQueries, setUserSearchQueries] =
+    useAtom<UserSearchQueries>(userSearchQueriesAtom);
 
   const appStyles = getStyle(isDarkMode);
 
@@ -35,7 +34,7 @@ const Searches: React.FC = () => {
   const handleRemoveSearchQuery = (searchUUID: string): void => {
     const deleteSuccess = (): void => {
       setUserSearchQueries(
-        userSearchQueries.filter((searchItem: UserSearchQuery) => searchItem.uuid !== searchUUID)
+        userSearchQueries.filter((searchItem: UserSearchQuery) => searchItem.uuid !== searchUUID),
       );
       showNotice(messageApi, 'Removed search query from your library', {
         icon: <DeleteOutlined style={appStyles.messageRemoveIcon} />,

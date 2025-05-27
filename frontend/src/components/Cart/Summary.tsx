@@ -38,12 +38,12 @@ const Summary: React.FC = () => {
   if (cartItems.length > 0) {
     numSelectedFiles = cartItems.reduce(
       (acc: number, dataset: RawSearchResult) => acc + (dataset.number_of_files || 0),
-      0
+      0,
     );
 
     const rawDataSize = cartItems.reduce(
       (acc: number, dataset: RawSearchResult) => acc + (dataset.size || 0),
-      0
+      0,
     );
     totalSelectedDataSize = formatBytes(rawDataSize);
   }
@@ -53,12 +53,12 @@ const Summary: React.FC = () => {
   if (userCart.length > 0) {
     numFiles = userCart.reduce(
       (acc: number, dataset: RawSearchResult) => acc + (dataset.number_of_files || 0),
-      0
+      0,
     );
 
     const rawDataSize = userCart.reduce(
       (acc: number, dataset: RawSearchResult) => acc + (dataset.size || 0),
-      0
+      0,
     );
     totalDataSize = formatBytes(rawDataSize);
   }
