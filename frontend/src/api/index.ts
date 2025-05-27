@@ -8,8 +8,7 @@
 import 'setimmediate'; // Added because in Jest 27, setImmediate is not defined, causing test errors
 import humps from 'humps';
 import queryString from 'query-string';
-import { AxiosResponse } from 'axios';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import {
   RawUserCart,
   RawUserSearchQuery,

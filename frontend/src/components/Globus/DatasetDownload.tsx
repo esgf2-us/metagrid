@@ -19,6 +19,7 @@ import {
 import React, { useEffect } from 'react';
 import createPKCE from 'js-pkce';
 import { useAtom } from 'jotai';
+import axios from 'axios';
 import {
   fetchWgetScript,
   ResponseError,
@@ -35,7 +36,6 @@ import {
 } from './types';
 import { getCurrentAppPage, showError, showNotice } from '../../common/utils';
 import { RawTourState, ReactJoyrideContext } from '../../contexts/ReactJoyrideContext';
-import axios from 'axios';
 import apiRoutes from '../../api/routes';
 import DataBundlePersister from '../../common/DataBundlePersister';
 import { AppPage } from '../../common/types';
@@ -182,6 +182,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   function createGlobusAuthObject(): createPKCE {
     const authScope = db.get<string>(GlobusStateKeys.globusAuth, REQUESTED_SCOPES);
 
+    // eslint-disable-next-line new-cap
     return new createPKCE({
       client_id: window.METAGRID.GLOBUS_CLIENT_ID, // Update this using your native client ID
       redirect_uri: `${window.location.origin}/cart/items`, // Update this if you are deploying this anywhere else (Globus Auth will redirect back here once you have logged in)

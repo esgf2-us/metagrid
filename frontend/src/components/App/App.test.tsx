@@ -139,7 +139,7 @@ describe('test main components', () => {
     expect(bazTag).toBeTruthy();
 
     // Close the baz tag
-    await userEvent.click(within(bazTag).getByRole('img', { name: 'Close' }));
+    await userEvent.click(within(bazTag).getByRole('img', { name: 'close' }));
 
     // Wait for components to rerender
     await screen.findByTestId('search');
