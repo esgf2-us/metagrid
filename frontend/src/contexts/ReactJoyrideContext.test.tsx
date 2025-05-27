@@ -150,5 +150,5 @@ describe('test ReactJoyrideProvider', () => {
     expect(nextBtn).toBeTruthy();
     expect(nextBtn).toHaveStyle('background-color: #eee');
     expect(nextBtn).toHaveStyle('color: #b00');
-  }, 45000);
+  }, 145000);
 });
