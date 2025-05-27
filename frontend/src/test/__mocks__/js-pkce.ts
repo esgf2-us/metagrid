@@ -34,6 +34,7 @@ class PKCE {
     if (test === true) {
       return Promise.resolve(globusTokenResponseFixture()) || Promise.resolve({});
     }
+    // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
     return Promise.reject();
   }
 

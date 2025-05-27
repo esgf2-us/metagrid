@@ -234,6 +234,7 @@ const FacetsForm: React.FC = () => {
       const newActiveFacets: ActiveFacets = activeSearchQuery.activeFacets;
       /* istanbul ignore else */
       if (options.length === 0) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [facet]: remove, ...updatedFacets } = newActiveFacets;
         setActiveSearchQuery({ ...activeSearchQuery, activeFacets: updatedFacets });
       } else if (options.length > 0) {
