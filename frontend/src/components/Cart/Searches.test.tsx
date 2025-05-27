@@ -5,14 +5,16 @@ import customRender from '../../test/custom-render';
 import { userSearchQueryFixture } from '../../test/mock/fixtures';
 import userEvent from '@testing-library/user-event';
 import { AppStateKeys } from '../../common/atoms';
-import { AtomWrapper, getFromLocalStorage } from '../../test/jestTestFunctions';
+import { AtomWrapper } from '../../test/jestTestFunctions';
+import { UserSearchQueries } from './types';
+import { localStorageMock } from '../../test/mock/mockStorage';
 
 afterEach(() => {
   jest.clearAllMocks();
 });
 
 it('renders component with empty savedSearches', async () => {
-  AtomWrapper.modifyAtomValue(AppStateKeys.userSearchQuery, []);
+  AtomWrapper.modifyAtomValue(AppStateKeys.userSearchQueries, []);
   customRender(<Searches />);
 
   const emptyText = await screen.findByText('Your search library is empty');
@@ -20,15 +22,22 @@ it('renders component with empty savedSearches', async () => {
 });
 
 it('removes a search query when user is not authenticated', async () => {
-  AtomWrapper.modifyAtomValue(AppStateKeys.userSearchQuery, [
-    userSearchQueryFixture({ uuid: '1', filenameVars: [] }),
-    userSearchQueryFixture({ uuid: '2' }),
-  ]);
+  const firstQuery = userSearchQueryFixture({ uuid: '1', filenameVars: [] });
+  const secondQuery = userSearchQueryFixture({ uuid: '2' });
+  AtomWrapper.modifyAtomValue(AppStateKeys.userSearchQueries, [firstQuery, secondQuery]);
   customRender(<Searches />, { usesAtoms: true, authenticated: false });
+
+  // Verify user queries count is 2
+  const userQueriesStr = localStorageMock.getItem<string>(AppStateKeys.userSearchQueries);
+  const userQueries: [] = JSON.parse(userQueriesStr || '') || [];
+  expect(userQueries.length).toEqual(2);
 
   const removeButton = await screen.findByTestId('remove-1'); // Assuming the button has a test ID
   await userEvent.click(removeButton);
 
-  const updatedSearchQueries = getFromLocalStorage(AppStateKeys.userSearchQuery);
-  expect(updatedSearchQueries).toEqual([userSearchQueryFixture({ uuid: '2' })]);
+  // Verify user queries count is now 1 and that it is 2nd query
+  const userQueriesUpdatedStr = localStorageMock.getItem<string>(AppStateKeys.userSearchQueries);
+  const userQueriesUpdated: UserSearchQueries = JSON.parse(userQueriesUpdatedStr || '') || [];
+  expect(userQueriesUpdated.length).toEqual(1);
+  expect(userQueriesUpdated[0].uuid).toEqual(secondQuery.uuid);
 });

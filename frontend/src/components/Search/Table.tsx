@@ -12,7 +12,13 @@ import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
 import { useAtomValue } from 'jotai';
 import { fetchWgetScript, ResponseError } from '../../api';
-import { formatBytes, showError, showNotice } from '../../common/utils';
+import {
+  formatBytes,
+  getCachedPagination,
+  getCurrentAppPage,
+  showError,
+  showNotice,
+} from '../../common/utils';
 import { UserCart } from '../Cart/types';
 import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
@@ -30,6 +36,7 @@ import {
 import GlobusToolTip from '../NodeStatus/GlobusToolTip';
 import { topDataRowTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 import { userCartAtom } from '../../common/atoms';
+import { AppPage } from '../../common/types';
 
 export type Props = {
   loading: boolean;
@@ -76,11 +83,21 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
     setSortedInfo(sorter as Sorts);
   };
 
+  let cachedPage: number | undefined;
+  let cachedSize: number | undefined;
+  if (getCurrentAppPage() !== AppPage.Cart) {
+    const pagination = getCachedPagination();
+    cachedPage = pagination.page;
+    cachedSize = pagination.pageSize;
+  }
+
   const tableConfig = {
     size: 'small' as SizeType,
     loading,
     pagination: {
       total: totalResults,
+      current: cachedPage,
+      pageSize: cachedSize,
       position: ['bottomCenter'],
       showSizeChanger: {
         optionRender: (option) => {

@@ -7,7 +7,7 @@ import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
 import Table, { Props } from './Table';
 import { QualityFlag } from './Tabs';
-import { AtomWrapper, mockConfig, printElementContents } from '../../test/jestTestFunctions';
+import { AtomWrapper, mockConfig } from '../../test/jestTestFunctions';
 import { AppStateKeys } from '../../common/atoms';
 
 const user = userEvent.setup();
@@ -47,7 +47,7 @@ describe('test main table UI', () => {
   });
 
   it('renders component without node status (showing only the node value with database icon)', async () => {
-    window.METAGRID.STATUS_URL = null;
+    mockConfig.STATUS_URL = null;
     customRender(<Table {...defaultProps} />);
     const databaseIcon = (
       await screen.findAllByRole('img', {
@@ -349,8 +349,10 @@ describe('test main table UI', () => {
     // Mock window.location.href
     Object.defineProperty(window, 'location', {
       value: {
-        href: jest.fn(),
+        href: 'https://test.com/search',
+        pathname: 'testing/search',
       },
+      writable: true,
     });
 
     AtomWrapper.modifyAtomValue(AppStateKeys.userCart, [defaultProps.results[0]]);
