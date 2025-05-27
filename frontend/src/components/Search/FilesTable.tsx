@@ -65,7 +65,7 @@ export const genDownloadUrls = (urls: string[]): DownloadUrls => {
     if (downloadType === 'OPENDAP') {
       downloadUrl = downloadUrl.replace(
         /(\.dods\.nc|\.nc\.dods|\.nc\.html|\.dods\.html|\.dods)/g,
-        '.nc'
+        '.nc',
       );
       newUrls.OPENDAP = downloadUrl;
     }
@@ -109,9 +109,14 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
     pageSize: 10,
   });
 
-  const { data, error, isLoading, run: runFetchDatasetFiles } = useAsync({
+  const {
+    data,
+    error,
+    isLoading,
+    run: runFetchDatasetFiles,
+  } = useAsync({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    deferFn: (fetchDatasetFiles as unknown) as DeferFn<Record<string, any>>,
+    deferFn: fetchDatasetFiles as unknown as DeferFn<Record<string, any>>,
     id,
     paginationOptions,
     filenameVars,
@@ -146,9 +151,11 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
 
   let docs: RawSearchResults | [] = [];
   if (data) {
-    docs = (data as {
-      response: { docs: RawSearchResults };
-    }).response.docs;
+    docs = (
+      data as {
+        response: { docs: RawSearchResults };
+      }
+    ).response.docs;
   }
 
   const tableConfig = {
@@ -207,7 +214,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
         expanded: boolean;
         onExpand: (
           rowRecord: RawSearchResult,
-          e: React.MouseEvent<HTMLSpanElement, MouseEvent>
+          e: React.MouseEvent<HTMLSpanElement, MouseEvent>,
         ) => void;
         record: RawSearchResult;
       }): React.ReactNode =>

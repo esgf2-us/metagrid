@@ -92,13 +92,11 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
 
   const [itemSelections, setItemSelections] = useAtom<RawSearchResults>(cartItemSelectionsAtom);
 
-  const [userSearchQueries, setUserSearchQueries] = useAtom<UserSearchQueries>(
-    userSearchQueriesAtom
-  );
+  const [userSearchQueries, setUserSearchQueries] =
+    useAtom<UserSearchQueries>(userSearchQueriesAtom);
 
-  const [activeSearchQuery, setActiveSearchQuery] = useAtom<ActiveSearchQuery>(
-    activeSearchQueryAtom
-  );
+  const [activeSearchQuery, setActiveSearchQuery] =
+    useAtom<ActiveSearchQuery>(activeSearchQueryAtom);
 
   const setSupportModalVisible = useSetAtom(supportModalVisibleAtom);
 
@@ -202,7 +200,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
         /* istanbul ignore next */
         (error: ResponseError) => {
           showError(messageApi, error.message);
-        }
+        },
       );
   }, [fetchProjects]);
 
@@ -231,7 +229,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     /* istanbul ignore else */
     if (operation === 'add') {
       const itemsNotInCart = selectedItems.filter(
-        (item: RawSearchResult) => !userCart.some((dataset) => dataset.id === item.id)
+        (item: RawSearchResult) => !userCart.some((dataset) => dataset.id === item.id),
       );
 
       newCart = [...userCart, ...itemsNotInCart];
@@ -244,11 +242,11 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
       });
     } else if (operation === 'remove') {
       newCart = userCart.filter((item) =>
-        selectedItems.some((dataset: RawSearchResult) => dataset.id !== item.id)
+        selectedItems.some((dataset: RawSearchResult) => dataset.id !== item.id),
       );
 
       newSelections = itemSelections.filter((item) =>
-        selectedItems.some((dataset: RawSearchResult) => dataset.id !== item.id)
+        selectedItems.some((dataset: RawSearchResult) => dataset.id !== item.id),
       );
 
       setUserCart(newCart);

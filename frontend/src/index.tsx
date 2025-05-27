@@ -59,13 +59,13 @@ fetch('/frontend-config.js')
           <ReactKeycloakProvider authClient={keycloak} initOptions={keycloakProviderInitConfig}>
             <KeycloakAuthProvider>{appRouter}</KeycloakAuthProvider>
           </ReactKeycloakProvider>
-        </Provider>
+        </Provider>,
       );
     } else {
       root.render(
         <Provider>
           <GlobusAuthProvider>{appRouter}</GlobusAuthProvider>
-        </Provider>
+        </Provider>,
       );
     }
   });

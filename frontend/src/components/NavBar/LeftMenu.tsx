@@ -41,7 +41,7 @@ const LeftMenu: React.FC<React.PropsWithChildren<Props>> = ({
     }
 
     const selectedProj: RawProject | undefined = (projects as RawProjects).find(
-      (obj) => obj.name === values.projectTextInput
+      (obj) => obj.name === values.projectTextInput,
     );
 
     onTextSearch(selectedProj as RawProject, values.text);

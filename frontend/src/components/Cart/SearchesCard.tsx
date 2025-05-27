@@ -75,9 +75,11 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
   // Update the search query with the results count if it was fetched
   useEffect(() => {
     if (!isLoading && data) {
-      const loadedCount = (data as {
-        response: { numFound: number };
-      }).response.numFound;
+      const loadedCount = (
+        data as {
+          response: { numFound: number };
+        }
+      ).response.numFound;
       updateSearchQuery({
         ...searchQuery,
         resultsCount: loadedCount,
@@ -181,7 +183,7 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
               minVersionDate,
               maxVersionDate,
               activeFacets,
-              textInputs
+              textInputs,
             )}
           </Typography.Text>
         </p>

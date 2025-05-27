@@ -82,7 +82,7 @@ const customRender = (
     usesAtoms?: boolean;
     authenticated?: boolean;
     options?: Record<string, unknown>;
-  } = { usesAtoms: true, authenticated: true, options: {} }
+  } = { usesAtoms: true, authenticated: true, options: {} },
 ): RenderResult => {
   if (options.usesAtoms === true) {
     return render(ui, {
@@ -92,7 +92,7 @@ const customRender = (
             authenticated={options.authenticated !== undefined ? options.authenticated : true}
           >
             {ui}
-          </AuthProvider>
+          </AuthProvider>,
         ),
       ...options.options,
     });
