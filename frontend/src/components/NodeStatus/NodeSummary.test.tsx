@@ -3,10 +3,7 @@ import React from 'react';
 import NodeSummary from './NodeSummary';
 import customRender from '../../test/custom-render';
 import { isDarkModeAtom, nodeStatusAtom } from '../App/recoil/atoms';
-import {
-  RecoilWrapper,
-  saveToLocalStorage,
-} from '../../test/jestTestFunctions';
+import { RecoilWrapper, saveToLocalStorage } from '../../test/jestTestFunctions';
 import { darkModeGreen, darkModeRed } from './StatusToolTip';
 
 it('renders component with node status information', async () => {

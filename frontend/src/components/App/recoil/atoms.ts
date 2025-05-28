@@ -7,6 +7,7 @@ import { NodeStatusArray } from '../../NodeStatus/types';
 
 enum AppStateKeys {
   isDarkMode = 'isDarkMode',
+  isSTAC = 'isStac',
   userCart = 'userCart',
   userSearchQuery = 'userSearchQuery',
   activeSearchQuery = 'activeSearchQuery',
@@ -64,6 +65,11 @@ export const userSearchQueriesAtom = atom<UserSearchQueries>({
 export const activeSearchQueryAtom = atom<ActiveSearchQuery>({
   key: AppStateKeys.activeSearchQuery,
   default: projectBaseQuery({}),
+});
+
+export const isSTACAtom = atom<boolean>({
+  key: AppStateKeys.isSTAC,
+  default: false,
 });
 
 export const supportModalVisibleAtom = atom<boolean>({

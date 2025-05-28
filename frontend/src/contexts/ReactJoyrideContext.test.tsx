@@ -17,7 +17,7 @@ describe('test ReactJoyrideProvider', () => {
     customRender(
       <div data-testid="reactJoyrideProvider">
         <p>renders</p>
-      </div>
+      </div>,
     );
 
     // Wait for render to get user auth info
@@ -82,7 +82,7 @@ describe('test ReactJoyrideProvider', () => {
     customRender(
       <div data-testid="reactJoyrideProvider">
         <p>Empty Tour Test</p>
-      </div>
+      </div>,
     );
 
     // Verify the provider renders correctly

@@ -8,7 +8,7 @@ import { Alert, Card, Col, Skeleton, Typography, Tooltip } from 'antd';
 import React from 'react';
 import { useAsync } from 'react-async';
 import { useNavigate } from 'react-router-dom';
-import { useSetRecoilState } from 'recoil';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { fetchSearchResults, generateSearchURLQuery } from '../../api';
 import { savedSearchTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
@@ -16,8 +16,8 @@ import { stringifyFilters } from '../Search';
 import { UserSearchQuery } from './types';
 import { createSearchRouteURL } from '../../common/utils';
 
-import { savedSearchQueryAtom } from '../App/recoil/atoms';
-import { ActiveSearchQuery } from '../Search/types';
+import { isSTACAtom, savedSearchQueryAtom } from '../App/recoil/atoms';
+import { ActiveSearchQuery, SearchResults, StacSearchResponse } from '../Search/types';
 
 const styles: CSSinJS = {
   category: {
@@ -53,6 +53,7 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
     url,
   } = searchQuery;
 
+  const isStac = useRecoilValue<boolean>(isSTACAtom);
   const setSavedSearchQuery = useSetRecoilState<ActiveSearchQuery | null>(savedSearchQueryAtom);
 
   // This converts a saved search to the active search query
@@ -70,12 +71,11 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
   };
 
   // Generate the URL for receiving only the result count to reduce response time
-
   const numResultsUrl = generateSearchURLQuery(searchQuery, {
     page: 0,
     pageSize: 0,
   });
-  const { data, isLoading, error } = useAsync({
+  const { data, isLoading, error } = useAsync<SearchResults>({
     promiseFn: fetchSearchResults,
     reqUrl: numResultsUrl,
   });
@@ -85,17 +85,29 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
     numResults = <Alert message="There was an issue fetching the result count." type="error" />;
   } else if (isLoading) {
     numResults = <Skeleton title={{ width: '100%' }} paragraph={{ rows: 0 }} active />;
-  } else {
+  } else if (isStac) {
+    const num = (data as StacSearchResponse).numMatched;
     numResults = (
       <p>
-        <span style={{ fontWeight: 'bold' }}>
-          {(data as {
-            response: { numFound: number };
-          }).response.numFound.toLocaleString()}
-        </span>{' '}
-        results found for {project.name}
+        <span style={{ fontWeight: 'bold' }}>{num || '?'}</span> results found for {project.name}
       </p>
     );
+  } else {
+    const results = data as { response: { numFound: number } };
+    if (results && results.response && results.response.numFound) {
+      numResults = (
+        <p>
+          <span style={{ fontWeight: 'bold' }}>
+            {(data as {
+              response: { numFound: number };
+            }).response.numFound.toLocaleString()}
+          </span>{' '}
+          results found for {project.name}
+        </p>
+      );
+    } else {
+      numResults = <p>No results found for {project.name}</p>;
+    }
   }
 
   return (

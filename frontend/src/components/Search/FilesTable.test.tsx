@@ -115,7 +115,7 @@ describe('test FilesTable component', () => {
 
     // Check a record row exist
     const rows = await screen.findAllByRole('row');
-    const row = rows[0];
+    const row = rows[1];
     expect(row).toBeTruthy();
 
     // Get the download button
@@ -184,7 +184,7 @@ describe('test FilesTable component', () => {
 
     // Check a record row exist
     const rows = await screen.findAllByRole('row');
-    const row = rows[0];
+    const row = rows[1];
     expect(row).toBeTruthy();
 
     // Get the expandable cell

@@ -14,6 +14,7 @@ import {
   openDropdownList,
   RecoilWrapper,
   printElementContents,
+  RecoilWrapper,
 } from '../../test/jestTestFunctions';
 import App from '../App/App';
 import { GlobusEndpoint, GlobusTaskItem, GlobusTokenResponse } from './types';
@@ -832,16 +833,10 @@ describe('DatasetDownload form tests', () => {
     });
     expect(taskItems).toHaveLength(10);
 
-    console.log("================BEFORE TRANSFER==============");
-    printElementContents(undefined);
-
     // Select transfer button and click it
     const globusTransferBtn = await screen.findByTestId('downloadDatasetTransferBtn');
     expect(globusTransferBtn).toBeTruthy();
     await user.click(globusTransferBtn);
-
-    console.log("================AFTER TRANSFER==============");
-    printElementContents(undefined);
 
     // Expect the transfer to complete successfully
     const globusTransferPopup = await screen.findByText('Globus download initiated successfully!');

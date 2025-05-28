@@ -17,18 +17,20 @@ import {
   UserSearchQueries,
   UserSearchQuery,
 } from '../components/Cart/types';
-import { ActiveFacets, RawProjects } from '../components/Facets/types';
+import { ActiveFacets, RawFacets, RawProjects } from '../components/Facets/types';
 import { NodeStatusArray, RawNodeStatus } from '../components/NodeStatus/types';
 import {
   ActiveSearchQuery,
   Pagination,
   RawCitation,
   ResultType,
+  SearchResults,
   TextInputs,
 } from '../components/Search/types';
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
 import apiRoutes, { ApiRoute, HTTPCodeType } from './routes';
 import { GlobusEndpointSearchResults } from '../components/Globus/types';
+import { STAC_PROJECTS } from '../common/STAC';
 
 export interface ResponseError extends Error {
   status?: number;
@@ -310,14 +312,21 @@ export const fetchProjects = async (): Promise<{
         }
       },
     })
-    .then(
-      (res) =>
-        res.data as Promise<{
-          results: RawProjects;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          [key: string]: any;
-        }>
-    )
+    .then(async (res) => {
+      const data = (await res.data) as {
+        results: RawProjects;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        [key: string]: any;
+      };
+
+      if (data.results) {
+        return {
+          ...res,
+          results: [...data.results, ...STAC_PROJECTS],
+        };
+      }
+      return { ...res, results: STAC_PROJECTS };
+    })
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.projects));
     });
@@ -354,6 +363,36 @@ export const updatePaginationParams = (url: string, pagination: Pagination): str
   return `${baseParams}&`;
 };
 
+// const createStacSearchQuery = (
+//   activeSearchQuery: ActiveSearchQuery | UserSearchQuery,
+//   pagination: { page: number; pageSize: number }
+// ): string => {
+//   if (pagination.pageSize === 0) {
+//     return `${apiRoutes.esgfSearchSTAC.path}?limit=1`;
+//   }
+
+//   const { activeFacets } = activeSearchQuery;
+//   const entries = Object.entries(activeFacets);
+//   let firstFacet = { key: 'noFacets', val: '' };
+
+//   if (entries.length > 0) {
+//     const [entry] = entries;
+//     if (entry[1].length > 0) {
+//       firstFacet = { key: entry[0], val: entry[1][0] };
+//     }
+//   }
+
+//   const activeFacetsParams = queryString.stringify(
+//     humps.decamelizeKeys(firstFacet) as ActiveFacets,
+//     {
+//       arrayFormat: 'comma',
+//     }
+//   );
+
+//   const baseRoute = `${apiRoutes.esgfSearchSTAC.path}&project=CMIP6&${activeFacetsParams}`;
+//   return baseRoute;
+// };
+
 /**
  * Query string parameters use the logical OR operator, so queries are inclusive.
  *
@@ -372,7 +411,15 @@ export const generateSearchURLQuery = (
     activeFacets,
     textInputs,
   } = activeSearchQuery;
-  const baseRoute = `${apiRoutes.esgfSearch.path}?`;
+
+  // if (project && STAC_PROJECTS.some((p) => p.name === project.name)) {
+  //   return createStacSearchQuery(activeSearchQuery, pagination);
+  // }
+  // const isStac = checkIsStac(activeSearchQuery);
+  // console.log(isStac);
+  const isStac = activeSearchQuery.project.isSTAC;
+
+  const baseRoute = isStac ? `${apiRoutes.esgfSearchSTAC.path}?` : `${apiRoutes.esgfSearch.path}?`;
   const replicaParam = convertResultTypeToReplicaParam(resultType);
 
   // The base params include facet fields to return for each dataset and the pagination options
@@ -412,6 +459,84 @@ export const generateSearchURLQuery = (
 };
 
 /**
+ * HTTP Request Method: POST
+ * HTTP Response Code: 200 OK
+ */
+export const postSTACSearch = async (
+  limit: number,
+  filter: { op: string; args: unknown } | unknown
+): Promise<Record<string, unknown>> => {
+  return axios
+    .post(
+      apiRoutes.esgfSearchSTAC.path,
+      {
+        collections: ['CMIP6'],
+        limit,
+        filter,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    )
+    .then((res) => res.data as Promise<Record<string, unknown>>)
+    .catch((error: ResponseError) => {
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearchSTAC));
+    });
+};
+
+export const fetchSTACSearchResults = async (
+  args: [string] | Record<string, string>
+): // eslint-disable-next-line @typescript-eslint/no-explicit-any
+Promise<{ [key: string]: any }> => {
+  let reqUrlStr;
+
+  if (Array.isArray(args)) {
+    // eslint-disable-next-line prefer-destructuring
+    reqUrlStr = args[0];
+  } else {
+    reqUrlStr = args.reqUrl;
+  }
+
+  const facetSummary: { summaries: RawFacets } = await fetch(apiRoutes.esgfFacetsSTAC.path)
+    .then((results) => {
+      return results.json();
+    })
+    .catch((error: ResponseError) => {
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfFacetsSTAC));
+    });
+  const facetNames: string[] = Object.keys(facetSummary.summaries);
+
+  const params: URLSearchParams = new URLSearchParams(reqUrlStr);
+  // let filter = {
+  //   op: 'not',
+  //   args: [{ op: 'isNull', args: [{ property: 'citation_url' }] }],
+  // } as { op: string; args: unknown };
+  // if (params.has('key') && params.get('key') !== 'noFacets') {
+  //   filter = { op: '>=', args: [{ property: params.get('key') }, params.get('val')] };
+  // }
+  let filter = {};
+  const filterFacets: { key: string; value: unknown }[] = [];
+
+  const setFilter = Array.from(params.entries()).every(([key, value]) => {
+    if (facetNames.includes(key)) {
+      filterFacets.push({ key, value });
+      return true;
+    }
+    return false;
+  });
+
+  if (setFilter) {
+    filter = { op: '>=', args: [{ property: filterFacets[0].key }, filterFacets[0].value] };
+  }
+
+  const searchResults = await postSTACSearch(10, filter);
+
+  return { search: searchResults, facets: facetSummary.summaries, stac: true };
+};
+
+/**
  * HTTP Request Method: GET
  * HTTP Response: 200 OK
  *
@@ -424,7 +549,11 @@ export const generateSearchURLQuery = (
 export const fetchSearchResults = async (
   args: [string] | Record<string, string>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Promise<{ [key: string]: any }> => {
+): Promise<SearchResults> => {
+  if (args && args[0] && args[0].includes('/stac/search?')) {
+    return fetchSTACSearchResults(args);
+  }
+
   let reqUrlStr;
 
   if (Array.isArray(args)) {
@@ -436,7 +565,8 @@ export const fetchSearchResults = async (
 
   return fetch(reqUrlStr)
     .then((results) => {
-      return results.json();
+      const resultsJson = results.json();
+      return resultsJson;
     })
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearch));
@@ -500,7 +630,7 @@ export type FetchDatasetFilesProps = {
  * HTTP Request Method: GET
  * HTTP Response: 200 OK
  *
- * This function is invokved by react-async package's deferFn method.
+ * This function is invoked by react-async package's deferFn method.
  * https://docs.react-async.com/api/options#deferfn
  *
  * Example output: https://esgf-node.llnl.gov/esg-search/search/?dataset_id=cmip5.output1.BCC.bcc-csm1-1.abrupt4xCO2.mon.ocean.Omon.r2i1p1.v20120202%7Caims3.llnl.gov&format=application%2Fsolr%2Bjson&type=File&query=hfds,Omon

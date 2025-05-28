@@ -257,9 +257,69 @@ const FacetsForm: React.FC = () => {
     }
   }, [dropdownIsOpen, activeDropdownValue, setActiveDropdownValue]);
 
-  // Used to control text length of the drop-down items
-  // Tooltip is shown if the length is above this threshold
-  const maxItemLength = 22;
+  const generateStacFacetOptions = (
+    facet: string,
+    facetOptions: string[]
+  ): { key: string; value: string; label: JSX.Element }[] => {
+    return facetOptions.map((variable) => {
+      const optionOutput: string | React.ReactElement = <>{variable}</>;
+
+      return {
+        key: variable,
+        value: variable,
+        label: <span data-testid={`${facet}_${variable}`}>{optionOutput} </span>,
+      };
+    });
+  };
+
+  const generateFacetOptions = (
+    facet: string,
+    facetOptions: [string, number][] | string[]
+  ): { key: string; value: string; label: JSX.Element }[] => {
+    if (facetOptions.length > 0 && typeof facetOptions[0] === 'string') {
+      return generateStacFacetOptions(facet, facetOptions as string[]);
+    }
+
+    // Used to control text length of the drop-down items
+    // Tooltip is shown if the length is above this threshold
+    const maxItemLength = 22;
+
+    return facetOptions.map((variable) => {
+      let optionOutput: string | React.ReactElement = (
+        <>
+          {variable[0]}
+          <span style={styles.facetCount}>({variable[1]})</span>
+        </>
+      );
+
+      // If the option output name is very long, use a tooltip
+      const vLength = variable[0].length - 2;
+      const cLength = variable[1].toString().length * 1.5 + 2;
+      if (vLength > maxItemLength - cLength) {
+        const innerTitle = variable[0].substring(0, maxItemLength - cLength);
+        optionOutput = (
+          <Tooltip styles={{ body: { width: 'max-content' } }} title={variable[0]}>
+            {innerTitle}...
+            <span style={styles.facetCount}>({variable[1]})</span>
+          </Tooltip>
+        );
+      }
+
+      // The data node facet has a unique tooltip overlay to show the status of the highlighted node
+      if (facet === 'data_node') {
+        optionOutput = (
+          <StatusToolTip dataNode={variable[0]}>
+            <span style={styles.facetCount}>({variable[1]})</span>
+          </StatusToolTip>
+        );
+      }
+      return {
+        key: variable[0],
+        value: variable[0],
+        label: <span data-testid={`${facet}_${variable[0]}`}>{optionOutput} </span>,
+      };
+    });
+  };
 
   return (
     <div data-testid="facets-form">
@@ -417,46 +477,7 @@ const FacetsForm: React.FC = () => {
                           onChange={(value: string[] | []) => {
                             handleOnSelectAvailableFacetsForm(facet, value);
                           }}
-                          options={facetOptions.map((variable) => {
-                            let optionOutput: string | React.ReactElement = (
-                              <>
-                                {variable[0]}
-                                <span style={styles.facetCount}>({variable[1]})</span>
-                              </>
-                            );
-
-                            // If the option output name is very long, use a tooltip
-                            const vLength = variable[0].length - 2;
-                            const cLength = variable[1].toString().length * 1.5 + 2;
-                            if (vLength > maxItemLength - cLength) {
-                              const innerTitle = variable[0].substring(0, maxItemLength - cLength);
-                              optionOutput = (
-                                <Tooltip
-                                  styles={{ body: { width: 'max-content' } }}
-                                  title={variable[0]}
-                                >
-                                  {innerTitle}...
-                                  <span style={styles.facetCount}>({variable[1]})</span>
-                                </Tooltip>
-                              );
-                            }
-
-                            // The data node facet has a unique tooltip overlay to show the status of the highlighted node
-                            if (facet === 'data_node') {
-                              optionOutput = (
-                                <StatusToolTip dataNode={variable[0]}>
-                                  <span style={styles.facetCount}>({variable[1]})</span>
-                                </StatusToolTip>
-                              );
-                            }
-                            return {
-                              key: variable[0],
-                              value: variable[0],
-                              label: (
-                                <span data-testid={`${facet}_${variable[0]}`}>{optionOutput} </span>
-                              ),
-                            };
-                          })}
+                          options={generateFacetOptions(facet, facetOptions)}
                         />
                       </Form.Item>
                     );

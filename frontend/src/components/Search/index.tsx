@@ -39,6 +39,9 @@ import {
   RawSearchResult,
   RawSearchResults,
   ResultType,
+  StacFeature,
+  SearchResults,
+  StacResponse,
   TextInputs,
   VersionDate,
   VersionType,
@@ -47,11 +50,13 @@ import {
   activeSearchQueryAtom,
   availableFacetsAtom,
   isDarkModeAtom,
+  isSTACAtom,
   projectBaseQuery,
   userCartAtom,
   userSearchQueriesAtom,
 } from '../App/recoil/atoms';
 import { AuthContext } from '../../contexts/AuthContext';
+import { convertStacToRawSearchResult } from '../../common/STAC';
 
 const styles: CSSinJS = {
   summary: {
@@ -160,6 +165,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   const isDarkMode = useRecoilValue<boolean>(isDarkModeAtom);
 
+  const isStac = useRecoilValue<boolean>(isSTACAtom);
+
   const {
     project,
     versionType,
@@ -180,8 +187,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   const appStyles = getStyle(isDarkMode);
 
-  const { data: results, error, isLoading, run } = useAsync({
-    deferFn: (fetchSearchResults as unknown) as DeferFn<Record<string, unknown>>,
+  const { data, error, isLoading, run } = useAsync<SearchResults>({
+    deferFn: (fetchSearchResults as unknown) as DeferFn<SearchResults>,
   });
   const [filtersExist, setFiltersExist] = React.useState<boolean>(false);
   const [parsedFacets, setParsedFacets] = React.useState<ParsedFacets | Record<string, unknown>>(
@@ -216,13 +223,18 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   // Update the available facets based on the returned results
   React.useEffect(() => {
-    if (results && !objectIsEmpty(results)) {
-      const { facet_fields: facetFields } = (results as {
-        facet_counts: { facet_fields: RawFacets };
-      }).facet_counts;
-      setParsedFacets(parseFacets(facetFields));
+    if (data && !objectIsEmpty(data)) {
+      if (data.facet_counts) {
+        const { facet_fields: facetFields } = (data as {
+          facet_counts: { facet_fields: RawFacets };
+        }).facet_counts;
+        setParsedFacets(parseFacets(facetFields));
+      } else {
+        const { facets } = data as { facets: RawFacets };
+        setParsedFacets(facets);
+      }
     }
-  }, [results]);
+  }, [data]);
 
   React.useEffect(() => {
     setAvailableFacets(parsedFacets as ParsedFacets);
@@ -358,9 +370,23 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   let numFound = 0;
   let docs: RawSearchResults = [];
-  if (results) {
-    numFound = (results as { response: { numFound: number } }).response.numFound;
-    docs = (results as { response: { docs: RawSearchResults } }).response.docs;
+  if (data) {
+    if (isStac) {
+      const searchResults = data as StacResponse;
+      if (searchResults.search) {
+        const stacResults = searchResults.search;
+        if (stacResults.numReturned > 0 && stacResults.features) {
+          numFound = stacResults.numReturned;
+          docs = stacResults.features.map((stacResult: StacFeature) =>
+            convertStacToRawSearchResult(stacResult)
+          );
+        }
+      }
+    } else {
+      const results = data as { response: { numFound: number; docs: RawSearchResults } };
+      numFound = results.response.numFound;
+      docs = results.response.docs;
+    }
   }
 
   const allSelectedItemsInCart =
@@ -381,7 +407,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         )}
         <h3>
           {isLoading && <span style={styles.resultsHeader}>Loading latest results for </span>}
-          {results && !isLoading && (
+          {data && !isLoading && (
             <span
               className={searchTableTargets.resultsFoundText.class()}
               style={styles.resultsHeader}
@@ -393,7 +419,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           <span style={styles.resultsHeader}>{(project as RawProject).name}</span>
         </h3>
         <div>
-          {results && (
+          {data && (
             <div>
               <Button
                 type="default"
@@ -432,7 +458,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         </div>
       </div>
       <div>
-        {results && (
+        {data && (
           <>
             <p>
               <span style={styles.subtitles} data-testid="main-query-string-label">
@@ -453,7 +479,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         )}
       </div>
 
-      {results && (
+      {data && (
         <Row style={styles.filtersContainer}>
           {Object.keys(activeFacets).length !== 0 &&
             Object.keys(activeFacets).map((facet: string) =>
@@ -492,7 +518,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       <Row gutter={[24, 16]} justify="space-around">
         <Col lg={24}>
           <div data-testid="search-table">
-            {results && !isLoading ? (
+            {data && !isLoading ? (
               <Table
                 loading={false}
                 results={docs}
@@ -515,7 +541,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
             )}
           </div>
         </Col>
-        {results && currentRequestURL && (
+        {data && currentRequestURL && (
           <Button
             type="default"
             href={createSearchRouteURL(currentRequestURL)}
