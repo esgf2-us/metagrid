@@ -499,8 +499,6 @@ Promise<{ [key: string]: any }> => {
     reqUrlStr = args.reqUrl;
   }
 
-  console.log(reqUrlStr);
-
   const facetSummary: { summaries: RawFacets } = await fetch(apiRoutes.esgfFacetsSTAC.path)
     .then((results) => {
       return results.json();
@@ -521,10 +519,7 @@ Promise<{ [key: string]: any }> => {
   let filter = {};
   const filterFacets: { key: string; value: unknown }[] = [];
 
-  // console.log(facetNames);
   const setFilter = Array.from(params.entries()).every(([key, value]) => {
-    console.log(`key: ${key}, value: ${value}`);
-    console.log(value);
     if (facetNames.includes(key)) {
       filterFacets.push({ key, value });
       return true;

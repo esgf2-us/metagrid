@@ -154,30 +154,22 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       render: (value: unknown, record: RawSearchResult, index: number) => {
         if (userCart.some((dataset: RawSearchResult) => dataset.id === record.id)) {
           return (
-            <>
-              <Button
-                className={topDataRowTargets.cartAddBtn.class('minus')}
-                icon={<MinusOutlined data-testid={`row-${index}-remove-from-cart`} />}
-                onClick={() => onUpdateCart([record], 'remove')}
-                danger
-              />
-            </>
+            <Button
+              className={topDataRowTargets.cartAddBtn.class('minus')}
+              icon={<MinusOutlined data-testid={`row-${index}-remove-from-cart`} />}
+              onClick={() => onUpdateCart([record], 'remove')}
+              danger
+            />
           );
         }
         return (
-          <>
-            <Button
-              type="primary"
-              disabled={record.retracted === true}
-              icon={
-                <PlusOutlined
-                  className={topDataRowTargets.cartAddBtn.class('plus')}
-                  data-testid={`row-${index}-add-to-cart`}
-                />
-              }
-              onClick={() => onUpdateCart([record], 'add')}
-            />
-          </>
+          <Button
+            type="primary"
+            className={topDataRowTargets.cartAddBtn.class('plus')}
+            disabled={record.retracted === true}
+            icon={<PlusOutlined data-testid={`row-${index}-add-to-cart`} />}
+            onClick={() => onUpdateCart([record], 'add')}
+          />
         );
       },
     },

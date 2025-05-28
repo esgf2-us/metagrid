@@ -130,6 +130,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
       return {
         key: 'greeting',
         icon: <UserOutlined style={{ fontSize: '18px' }} />,
+        className: navBarTargets.signInBtn.class(),
         label: (
           <span className="submenu-title-wrapper">
             Hi, {userInfo && userInfo.given_name ? userInfo.given_name : userInfo?.email}

@@ -32,7 +32,7 @@ export class TargetObject {
   }
 
   selector(state?: string): string {
-    return `${this.selectorName}${state ? ` .target-state_${state}` : ''}`;
+    return `${this.selectorName}${state ? `.target-state_${state}` : ''}`;
   }
 }
 
