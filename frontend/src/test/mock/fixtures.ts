@@ -40,8 +40,8 @@ export const rawProjectFixture = (props: Partial<RawProject> = {}): RawProject =
 
 export const projectsFixture = (): RawProjects => [
   rawProjectFixture(),
-  rawProjectFixture({ name: 'test2', fullName: 'test2' }),
-  rawProjectFixture({ name: 'test3', fullName: 'test3' }),
+  rawProjectFixture({ pk: '2', name: 'test2', fullName: 'test2' }),
+  rawProjectFixture({ pk: '3', name: 'test3', fullName: 'test3' }),
 ];
 
 /**
@@ -164,6 +164,8 @@ export const userSearchQueryFixture = (props: Partial<UserSearchQuery> = {}): Us
     activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
     textInputs: ['foo'],
     url: 'https://localhost/url.com',
+    resultsCount: 3,
+    searchTime: 100000,
   };
 
   return { ...defaults, ...props } as UserSearchQuery;

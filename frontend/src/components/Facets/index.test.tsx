@@ -1,14 +1,10 @@
-import { fireEvent, within, screen, waitFor } from '@testing-library/react';
+import { fireEvent, within, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import Facets from './index';
 import customRender from '../../test/custom-render';
-import { RecoilRoot } from 'recoil';
-import { useRecoilState } from 'recoil';
-import { activeSearchQueryAtom, projectBaseQuery } from '../App/recoil/atoms';
-import { RawProject } from './types';
-import { rawProjectFixture } from '../../test/mock/fixtures';
-import { RecoilWrapper } from '../../test/jestTestFunctions';
+import { activeSearch } from '../../test/jestTestFunctions';
+import App from '../App/App';
 
 const user = userEvent.setup();
 
@@ -26,7 +22,7 @@ it('renders component', async () => {
 
 it('handles facets form auto-filtering', async () => {
   customRender(<Facets />, {
-    usesRecoil: true,
+    usesAtoms: true,
   });
 
   // Check ProjectForm component renders
@@ -79,7 +75,7 @@ it('handles facets form auto-filtering', async () => {
 
 it('handles facets form submission, including a facet key that is undefined', async () => {
   customRender(<Facets />, {
-    usesRecoil: true,
+    usesAtoms: true,
   });
 
   // Check FacetsForm component renders
@@ -140,34 +136,29 @@ it('handles facets form submission, including a facet key that is undefined', as
 });
 
 it('handles project change when selectedProject.pk !== activeSearchQuery.project.pk', async () => {
-  const initialProject: RawProject = rawProjectFixture({
-    pk: '2',
-    name: 'Project2',
-    projectUrl: '',
+  customRender(<App searchQuery={activeSearch} />, {
+    usesAtoms: true,
   });
-  RecoilWrapper.modifyAtomValue(activeSearchQueryAtom.key, {
-    project: initialProject,
-  });
-  customRender(<Facets />, {
-    usesRecoil: true,
-  });
+
+  // Wait for components to rerender
+  await screen.findByTestId('main-query-string-label');
 
   // Check FacetsForm component renders
-  const facetsForm = await screen.findByTestId('facets-form');
+  const facetsForm = await screen.findByTestId('search-facets');
   expect(facetsForm).toBeTruthy();
 
-  // Check ProjectForm component renders
-  const projectForm = await screen.findByTestId('project-form');
-  expect(projectForm).toBeTruthy();
+  // Expect the current selected project to be test1
+  const test1 = await within(facetsForm).findByText('test1 Data Info');
+  expect(test1).toBeTruthy();
 
   // Open the project dropdown
-  const projectDropDown = (await screen.findAllByRole('combobox'))[0];
-  expect(projectDropDown).toBeTruthy();
-  fireEvent.mouseDown(projectDropDown);
+  const option1 = await within(facetsForm).findByText('test1');
+  await user.click(option1);
 
-  // Select the 2nd project in the drop-down
-  const option2 = await screen.findByRole('option', {
-    name: 'test2',
-  });
-  await user.click(option2);
+  // Click the test2 ptoject from the dropdown
+  await user.click(await screen.findByTitle('test2'));
+
+  // Expect the current selected project to now be test2
+  const test2 = await within(facetsForm).findByText('test2 Data Info');
+  expect(test2).toBeTruthy();
 });

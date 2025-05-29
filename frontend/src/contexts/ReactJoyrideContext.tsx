@@ -1,11 +1,11 @@
 import React from 'react';
 import Joyride, { ACTIONS, CallBackProps, EVENTS, STATUS } from 'react-joyride';
 import { useNavigate } from 'react-router-dom';
-import { useRecoilValue } from 'recoil';
-import { JoyrideTour } from '../common/JoyrideTour';
+import { useAtomValue } from 'jotai';
 import { AppPage } from '../common/types';
-import { isDarkModeAtom } from '../components/App/recoil/atoms';
 import { getCurrentAppPage } from '../common/utils';
+import { isDarkModeAtom } from '../common/atoms';
+import { JoyrideTour } from '../common/joyrideTutorials/JoyrideTour';
 
 export type RawTourState = {
   getTour: JoyrideTour;
@@ -16,15 +16,15 @@ export type RawTourState = {
 };
 
 /* istanbul ignore next */
-export const ReactJoyrideContext = React.createContext<RawTourState>({
+const emptyTour = {
   getTour: new JoyrideTour('Empty Tour'),
-  /* istanbul ignore next */ setTour: () => {},
-  /* istanbul ignore next */
+  setTour: () => {},
   startTour: () => {},
-  /* istanbul ignore next */
   setCurrentAppPage: () => {},
-  /* istanbul ignore next */ startSpecificTour: () => {},
-});
+  startSpecificTour: () => {},
+};
+
+export const ReactJoyrideContext = React.createContext<RawTourState>(emptyTour);
 
 type Props = { children: React.ReactNode };
 
@@ -36,7 +36,7 @@ export const ReactJoyrideProvider: React.FC<React.PropsWithChildren<Props>> = ({
   const [getTour, setTour] = React.useState<JoyrideTour>(defaultTour);
   const [getStepIndex, setStepIndex] = React.useState<number>(0);
 
-  const isDarkMode = useRecoilValue<boolean>(isDarkModeAtom);
+  const isDarkMode = useAtomValue<boolean>(isDarkModeAtom);
 
   /* istanbul ignore next */
   const nextStep = (index: number): void => {

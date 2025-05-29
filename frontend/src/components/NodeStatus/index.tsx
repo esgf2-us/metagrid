@@ -2,14 +2,14 @@ import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
 import { Alert, Table as TableD } from 'antd';
 import { SortOrder } from 'antd/lib/table/interface';
 import React from 'react';
-import { useRecoilValue } from 'recoil';
+import { useAtomValue } from 'jotai';
 import { ResponseError } from '../../api';
 import apiRoutes from '../../api/routes';
-import { nodeTourTargets } from '../../common/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import { NodeStatusArray, NodeStatusElement } from './types';
-import { isDarkModeAtom, nodeStatusAtom } from '../App/recoil/atoms';
 import { lightModeGreen, lightModeRed, darkModeGreen, darkModeRed } from './StatusToolTip';
+import { nodeStatusAtom, isDarkModeAtom } from '../../common/atoms';
+import { nodeTourTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
 const styles = { headerContainer: { margin: '12px' } } as CSSinJS;
 
@@ -19,8 +19,8 @@ export type Props = {
 };
 
 const NodeStatus: React.FC<React.PropsWithChildren<Props>> = ({ apiError, isLoading }) => {
-  const nodeStatus = useRecoilValue<NodeStatusArray>(nodeStatusAtom);
-  const isDarkMode = useRecoilValue<boolean>(isDarkModeAtom);
+  const nodeStatus = useAtomValue<NodeStatusArray>(nodeStatusAtom);
+  const isDarkMode = useAtomValue<boolean>(isDarkModeAtom);
 
   // If the API returns a response but there is no data, that means the feature
   // is disabled
