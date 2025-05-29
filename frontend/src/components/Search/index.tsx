@@ -32,6 +32,7 @@ import {
   cacheSearchResults,
   createSearchRouteURL,
   getCachedPagination,
+  getCachedSearchResults,
   getStyle,
   getUrlFromSearch,
   objectIsEmpty,
@@ -179,7 +180,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   const appStyles = getStyle(isDarkMode);
 
-  const { data: results, error, isLoading, run } = useAsync({
+  const { data, error, isLoading, run } = useAsync({
     deferFn: (fetchSearchResults as unknown) as DeferFn<Record<string, unknown>>,
   });
   const [filtersExist, setFiltersExist] = React.useState<boolean>(false);
@@ -191,6 +192,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   const [paginationOptions, setPaginationOptions] = React.useState<Pagination>(
     getCachedPagination()
   );
+
+  let results: Record<string, unknown> | undefined = data;
 
   // Generate the current request URL based on filters
   React.useEffect(() => {
@@ -352,15 +355,41 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     setPaginationOptions({ page: 1, pageSize });
   };
 
+  // Used cached results if the request fails
   if (error) {
-    return (
-      <div data-testid="alert-fetching">
-        <Alert
-          message="There was an issue fetching search results. Please contact support or try again later."
-          type="error"
-        />
-      </div>
-    );
+    // Get cached values
+    const cachedResults = getCachedSearchResults();
+    const cachedURL = (cachedResults?.cachedURL as string) || '';
+    const pagination = getCachedPagination();
+
+    // If there are cached results, use them
+    if (cachedURL !== '') {
+      const cachedUrlOffset = cachedURL.match(/offset=\d+/)?.[0];
+      const cachedPage = cachedUrlOffset
+        ? Number(cachedUrlOffset.split('=')[1]) / pagination.pageSize + 1
+        : 1;
+
+      // Reset the pagination to the cached value
+      cachePagination({
+        page: cachedPage,
+        pageSize: pagination.pageSize,
+      }); // Reset the pagination to the cached value
+      setCurrentRequestURL(cachedURL);
+      showError(
+        messageApi,
+        'There was an issue fetching search results. Using cached results instead.'
+      );
+      results = cachedResults;
+    } else {
+      return (
+        <div data-testid="alert-fetching">
+          <Alert
+            message="There was an issue fetching search results. Please contact support or try again later."
+            type="error"
+          />
+        </div>
+      );
+    }
   }
 
   let numFound = 0;
