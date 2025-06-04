@@ -17,7 +17,7 @@
 
 ## Install
 ```shell
-helm install <name> oci://ghcr.io/esgf2-us/metagrid --version v1.3.5
+helm install <name> oci://ghcr.io/esgf2-us/metagrid --version v1.5.1
 ```
 
 ## Testing locally
