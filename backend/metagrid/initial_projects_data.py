@@ -96,7 +96,6 @@ projects = [
                 "variable_id",
                 "cf_standard_name",
             ],
-
         },
     },
     {
@@ -167,7 +166,6 @@ projects = [
                 "variable_id",
                 "cf_standard_name",
             ],
-
         },
     },
     {
