@@ -25,7 +25,7 @@ import apiRoutes from '../../api/routes';
 import DatasetDownloadForm, { GlobusGoals } from './DatasetDownload';
 import DataBundlePersister from '../../common/DataBundlePersister';
 import {
-  tempSessionStorageGetMock,
+  localStorageMock,
   tempStorageGetMock,
   tempStorageSetMock,
 } from '../../test/mock/mockStorage';
@@ -167,7 +167,7 @@ async function initializeComponentForTest(testConfig?: typeof defaultTestConfig)
   }
 
   // Set the Globus Goals
-  saveToLocalStorage<GlobusGoals>(GlobusStateKeys.globusTransferGoalsState, config.globusGoals);
+  localStorageMock.setItem(GlobusStateKeys.globusTransferGoalsState, config.globusGoals);
 
   AtomWrapper.modifyAtomValue(CartStateKeys.cartDownloadIsLoading, config.cartDownloadIsLoading);
 
@@ -753,7 +753,7 @@ describe('DatasetDownload form tests', () => {
     await user.click(await screen.findByText('Ok'));
 
     // The Globus Goals should be set to set path
-    expect(tempSessionStorageGetMock(GlobusStateKeys.globusTransferGoalsState)).toEqual(
+    expect(tempStorageGetMock(GlobusStateKeys.globusTransferGoalsState)).toEqual(
       GlobusGoals.SetEndpointPath
     );
   });
@@ -833,14 +833,10 @@ describe('DatasetDownload form tests', () => {
     });
     expect(taskItems).toHaveLength(10);
 
-    console.log('================BEFORE TRANSFER==============');
-
     // Select transfer button and click it
     const globusTransferBtn = await screen.findByTestId('downloadDatasetTransferBtn');
     expect(globusTransferBtn).toBeTruthy();
     await user.click(globusTransferBtn);
-
-    console.log('================AFTER TRANSFER==============');
 
     // Expect the transfer to complete successfully
     const globusTransferPopup = await screen.findByText('Globus download initiated successfully!');

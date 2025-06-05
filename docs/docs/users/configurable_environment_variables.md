@@ -123,7 +123,7 @@
 #### `METAGRID_GLOBUS_NODES`
 
 > !!! example "*Optional*"
->     __Default:__ `['aims3.llnl.gov', 'esgf-data1.llnl.gov', 'esgf-data2.llnl.gov', 'esgf-node.ornl.gov']`
+>     __Default:__ `['aims3.llnl.gov', 'esgf-data1.llnl.gov', 'esgf-data2.llnl.gov', 'esgf-node.ornl.gov', 'eagle.alcf.anl.gov']`
 >
 >     The list of data nodes known to be Globus enabled. A data node must be in this list in order to transfer files from it via Globus.
 
