@@ -430,7 +430,7 @@ export const setStartupMessageAsSeen = (): void => {
 // This is meant to clear out any deprecated keys in localStorage
 // that are no longer used in the application.
 export const clearDeprecatedStorageKeys = (): void => {
-  const deprecatedLocalStorageKeys = ['globusTransferGoalsState', 'userSearchQuery', 'showBanner'];
+  const deprecatedLocalStorageKeys = ['userSearchQuery', 'showBanner'];
 
   deprecatedLocalStorageKeys.forEach((key) => {
     if (localStorage.getItem(key)) {
