@@ -96,6 +96,7 @@ projects = [
                 "variable_id",
                 "cf_standard_name",
             ],
+
         },
     },
     {
@@ -135,6 +136,38 @@ projects = [
                 "variable_long_name",
                 "cf_standard_name",
             ],
+        },
+    },
+    {
+        "name": "E3SM",
+        "full_name": "Energy Exascale Earth System Model",
+        "project_url": "https://e3sm.org/",
+        "description": (
+            "The Energy Exascale Earth System Model (E3SM), formerly known as Accelerated Climate Modeling for "
+            "Energy (ACME) project is an ongoing, state-of-the-science Earth system modeling, simulation, and "
+            "prediction project, sponsored by the U.S. Department of Energy's (DOE's) Office of Biological and "
+            "Environmental Research (BER), that optimizes the use of DOE laboratory computational resources to "
+            "meet the science needs of the nation and the mission needs of DOE."
+        ),
+        "facets_by_group": {
+            GROUPS[0]: ["activity_id", "data_node"],
+            GROUPS[1]: [
+                "source_id",
+                "institution_id",
+                "source_type",
+                "experiment_id",
+                "sub_experiment_id",
+            ],
+            GROUPS[2]: ["nominal_resolution"],
+            GROUPS[3]: ["variant_label", "grid_label"],
+            GROUPS[4]: [
+                "table_id",
+                "frequency",
+                "realm",
+                "variable_id",
+                "cf_standard_name",
+            ],
+
         },
     },
     {
