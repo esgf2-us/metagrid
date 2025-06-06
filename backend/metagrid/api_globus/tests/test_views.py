@@ -276,3 +276,44 @@ def test_search_files_multiple_results(json_fixture):
             "/css03_data/CMIP6/AerChemMIP/EC-Earth-Consortium/EC-Earth3-AerChem/histSST-piAer/r1i1p1f1/Amon/prsn/gr/v20210831/prsn_Amon_EC-Earth3-AerChem_histSST-piAer_r1i1p1f1_gr_200001-200012.nc",
         ),
     ]
+
+
+@responses.activate
+@pytest.mark.parametrize(
+    "json_fixture", ["esgsearch_multiple_results.json"], indirect=True
+)
+def test_search_dataset_multiple_results(json_fixture):
+    responses.add(
+        responses.GET,
+        settings.SEARCH_URL,
+        json=json_fixture,
+    )
+    url_params = {
+        "dataset_id": [
+            "CMIP6.r281i1p1f2.Emon.grassFracC3.gr",
+            "CMIP6.PAMIP.CNRM-CERFACS.CNRM-CM6-1.pdSST-pdSIC.r282i1p1f2.Emon.mrtws.gr",
+        ]
+    }
+    globus_info = list(search_files(url_params))
+
+    call_params = responses.calls[0].request.params
+    assert call_params["limit"] == "10000"
+    assert call_params["format"] == "application/solr+json"
+    assert call_params["type"] == "File"
+    assert call_params["fields"] == "url,data_node"
+    assert call_params["dataset_id"] == ",".join(
+        [
+            "CMIP6.r281i1p1f2.Emon.grassFracC3.gr",
+            "CMIP6.PAMIP.CNRM-CERFACS.CNRM-CM6-1.pdSST-pdSIC.r282i1p1f2.Emon.mrtws.gr",
+        ]
+    )
+    assert globus_info == [
+        (
+            "dea29ae8-bb92-4c63-bdbc-260522c92fe8",
+            "/css03_data/CMIP6/AerChemMIP/EC-Earth-Consortium/EC-Earth3-AerChem/histSST-piAer/r1i1p1f1/Amon/prsn/gr/v20210831/prsn_Amon_EC-Earth3-AerChem_histSST-piAer_r1i1p1f1_gr_199901-199912.nc",
+        ),
+        (
+            "dea29ae8-bb92-4c63-bdbc-260522c92fe8",
+            "/css03_data/CMIP6/AerChemMIP/EC-Earth-Consortium/EC-Earth3-AerChem/histSST-piAer/r1i1p1f1/Amon/prsn/gr/v20210831/prsn_Amon_EC-Earth3-AerChem_histSST-piAer_r1i1p1f1_gr_200001-200012.nc",
+        ),
+    ]
