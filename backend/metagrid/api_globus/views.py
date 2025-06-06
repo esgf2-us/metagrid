@@ -125,10 +125,12 @@ def search_files(
     if not url_params:
         query_defaults |= {"limit": "1", "distrib": "false"}
 
-    datasets = {"dataset_id": ",".join(url_params["dataset_id"])}
+    if url_params.get("dataset_id") is not None:
+        url_params["dataset_id"] = ",".join(url_params["dataset_id"])
+
     results: ESGSearchResponse = requests.get(
         url=settings.SEARCH_URL,
-        params=query_defaults | datasets,
+        params=query_defaults | url_params,
     ).json()
 
     # Warning message about the number of files retrieved
