@@ -10,9 +10,6 @@ ingress:
   annotations: {}
 
 config:
-  PGHOST: '{{ include "postgresql-ha.pgpool" .Subcharts.postgresql }}'
-  PGUSER: '{{ include "postgresql-ha.postgresqlUsername" .Subcharts.postgresql }}'
-  PGPASSWORD: '{{ include "postgresql-ha.postgresqlPassword" .Subcharts.postgresql }}'
   GUNICORN_WORKERS: '2'
   METAGRID_SEARCH_URL: https://esgf-node.ornl.gov/esg-search/search
   METAGRID_WGET_URL: https://esgf-node.ornl.gov/esg-search/wget
@@ -137,7 +134,7 @@ postgresql:
   enabled: true
   nameOverride: pg
   backup:
-    enabled: true
+    enabled: false
     cronjob:
       podSecurityContext:
         enabled: false
@@ -196,6 +193,11 @@ nodeStatusBackend:
     resources: {}
 
   blackbox:
+    probe:
+      timeout:
+      followRedirects: true
+      insecureSkipVerify: false
+
     image:
       repository: quay.io/prometheus/blackbox-exporter
       pullPolicy: IfNotPresent

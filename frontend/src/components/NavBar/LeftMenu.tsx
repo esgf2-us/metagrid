@@ -3,9 +3,9 @@ import { Alert, Form, Input, Select, Space, Spin } from 'antd';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ResponseError } from '../../api';
-import { navBarTargets } from '../../common/reactJoyrideSteps';
 import { RawProject, RawProjects } from '../Facets/types';
 import Button from '../General/Button';
+import { navBarTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
 const styles = {
   spin: { display: 'flex', justifyContent: 'center' },

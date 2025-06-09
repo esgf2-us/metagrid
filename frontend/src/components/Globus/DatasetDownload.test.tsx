@@ -3,22 +3,18 @@ import userEvent from '@testing-library/user-event';
 import { within, screen } from '@testing-library/react';
 import customRender from '../../test/custom-render';
 import { rest, server } from '../../test/mock/server';
-import { getSearchFromUrl } from '../../common/utils';
+import { getSearchFromUrl, saveToLocalStorage } from '../../common/utils';
 import { ActiveSearchQuery } from '../Search/types';
 import {
   globusReadyNode,
-  saveToLocalStorage,
   makeCartItem,
   mockConfig,
   mockFunction,
   openDropdownList,
-  RecoilWrapper,
-  printElementContents,
+  AtomWrapper,
 } from '../../test/jestTestFunctions';
 import App from '../App/App';
 import { GlobusEndpoint, GlobusTaskItem, GlobusTokenResponse } from './types';
-import GlobusStateKeys, { globusSavedEndpointsAtoms, globusTaskItemsAtom } from './recoil/atom';
-import { cartDownloadIsLoadingAtom, cartItemSelectionsAtom } from '../Cart/recoil/atoms';
 import {
   globusEndpointFixture,
   globusAccessTokenFixture,
@@ -28,8 +24,13 @@ import {
 import apiRoutes from '../../api/routes';
 import DatasetDownloadForm, { GlobusGoals } from './DatasetDownload';
 import DataBundlePersister from '../../common/DataBundlePersister';
-import { tempStorageGetMock, tempStorageSetMock } from '../../test/mock/mockStorage';
+import {
+  tempSessionStorageGetMock,
+  tempStorageGetMock,
+  tempStorageSetMock,
+} from '../../test/mock/mockStorage';
 import { AppPage } from '../../common/types';
+import { CartStateKeys, GlobusStateKeys } from '../../common/atoms';
 
 const activeSearch: ActiveSearchQuery = getSearchFromUrl('project=test1');
 
@@ -168,16 +169,16 @@ async function initializeComponentForTest(testConfig?: typeof defaultTestConfig)
   // Set the Globus Goals
   saveToLocalStorage<GlobusGoals>(GlobusStateKeys.globusTransferGoalsState, config.globusGoals);
 
-  RecoilWrapper.modifyAtomValue(cartDownloadIsLoadingAtom.key, config.cartDownloadIsLoading);
+  AtomWrapper.modifyAtomValue(CartStateKeys.cartDownloadIsLoading, config.cartDownloadIsLoading);
 
   // Set the selected cart items
-  RecoilWrapper.modifyAtomValue(cartItemSelectionsAtom.key, config.itemSelections);
+  AtomWrapper.modifyAtomValue(CartStateKeys.cartItemSelections, config.itemSelections);
 
   // Set the saved endpoints
-  RecoilWrapper.modifyAtomValue(globusSavedEndpointsAtoms.key, config.savedEndpoints);
+  AtomWrapper.modifyAtomValue(GlobusStateKeys.savedGlobusEndpoints, config.savedEndpoints);
 
   // Set the globus task items
-  RecoilWrapper.modifyAtomValue(globusTaskItemsAtom.key, config.globusTaskItems);
+  AtomWrapper.modifyAtomValue(GlobusStateKeys.globusTaskItems, config.globusTaskItems);
 
   // Default display name if no endpoint is chosen
   let displayName = 'Select Globus Collection';
@@ -752,12 +753,12 @@ describe('DatasetDownload form tests', () => {
     await user.click(await screen.findByText('Ok'));
 
     // The Globus Goals should be set to set path
-    expect(tempStorageGetMock(GlobusStateKeys.globusTransferGoalsState)).toEqual(
+    expect(tempSessionStorageGetMock(GlobusStateKeys.globusTransferGoalsState)).toEqual(
       GlobusGoals.SetEndpointPath
     );
   });
 
-  xit('displays 10 tasks at most in the submit history', async () => {
+  it('displays 10 tasks at most in the submit history', async () => {
     await initializeComponentForTest({
       ...defaultTestConfig,
       renderFullApp: true,
@@ -832,16 +833,14 @@ describe('DatasetDownload form tests', () => {
     });
     expect(taskItems).toHaveLength(10);
 
-    console.log("================BEFORE TRANSFER==============");
-    printElementContents(undefined);
+    console.log('================BEFORE TRANSFER==============');
 
     // Select transfer button and click it
     const globusTransferBtn = await screen.findByTestId('downloadDatasetTransferBtn');
     expect(globusTransferBtn).toBeTruthy();
     await user.click(globusTransferBtn);
 
-    console.log("================AFTER TRANSFER==============");
-    printElementContents(undefined);
+    console.log('================AFTER TRANSFER==============');
 
     // Expect the transfer to complete successfully
     const globusTransferPopup = await screen.findByText('Globus download initiated successfully!');

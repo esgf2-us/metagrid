@@ -89,11 +89,6 @@
     - https://esg.lasg.ac.cn/thredds/catalog/catalog.html
     - https://esg.lasg.ac.cn/esg-orp/home.htm
 - labels:
-    instance: esg.pik-potsdam.de
-  targets:
-    - https://esg.pik-potsdam.de/thredds/catalog/catalog.html
-    - https://esg.pik-potsdam.de/esg-orp/home.htm
-- labels:
     instance: esg1.umr-cnrm.fr
   targets:
     - https://esg1.umr-cnrm.fr/thredds/catalog/catalog.html
