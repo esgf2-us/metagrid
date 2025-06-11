@@ -79,6 +79,18 @@ def do_search(request):
 
 @require_http_methods(["POST"])
 @csrf_exempt
+def do_stac_search(request):
+    return do_request(request, settings.STAC_URL + "/search", True)
+
+
+@require_http_methods(["GET", "POST"])
+@csrf_exempt
+def fetch_stac_facets(request):
+    return do_request(request, settings.STAC_URL + "/collections/CMIP6")
+
+
+@require_http_methods(["POST"])
+@csrf_exempt
 def do_citation(request):
     jo = {}
     try:
@@ -137,13 +149,25 @@ def do_request(request, urlbase, useBody=False):
                 jo["query"] = query[0]
         if "dataset_id" in jo:
             jo["dataset_id"] = ",".join(jo["dataset_id"])
-        resp = requests.post(urlbase, data=jo)
+        try:
+            resp = requests.post(urlbase, data=jo)
+        except Exception as e:
+            print(f"Error during POST request: {e}")
+            return HttpResponseBadRequest(f"Error during POST request: {e}")
 
     elif request.method == "GET":
         url_params = request.GET.copy()
-        resp = requests.get(urlbase, params=url_params)
+        try:
+            resp = requests.get(urlbase, params=url_params)
+        except Exception as e:
+            print(f"Error during GET request: {e}")
+            return HttpResponseBadRequest(f"Error during GET request: {e}")
     else:  # pragma: no cover
+        print("Request method must be POST or GET.")
         return HttpResponseBadRequest("Request method must be POST or GET.")
+
+    if resp.status_code != 200:
+        print(f"Request failed with status {resp.status_code}: {resp.text}")
 
     httpresp = HttpResponse(resp.text, content_type="text/json")
     httpresp.status_code = resp.status_code

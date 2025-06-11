@@ -17,6 +17,10 @@ class MetagridBackendSettings(BaseSettings):
         description="The URL at which the ESG-Search api can be queried. A suitable endpoint will return XML in the browser.",
         examples=["https://esgf-node.llnl.gov/esg-search/search"],
     )
+    STAC_URL: str = Field(
+        description="The STAC URL at which the ESG-Search api can be queried. A suitable endpoint will return JSON in the browser.",
+        examples=["https://api.stac.esgf-west.org/"],
+    )
     WGET_URL: str = Field(
         description="The URL at which the ESG-Search wget endpoint can be reached.",
         examples=["https://esgf-node.llnl.gov/esg-search/wget"],

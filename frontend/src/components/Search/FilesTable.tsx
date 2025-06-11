@@ -192,7 +192,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
           if (metadataKeysToDisplay.includes(key)) {
             return (
               <p key={key} style={{ margin: 0 }}>
-                <span style={{ fontWeight: 'bold' }}>{key}</span>: {record[key]}
+                <span style={{ fontWeight: 'bold' }}>{key}</span>: {String(record[key])}
               </p>
             );
           }
@@ -227,9 +227,9 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
       dataIndex: 'title',
       key: 'title',
       sorter: (a: RawSearchResult, b: RawSearchResult) => {
-        const idA = a.title ?? '';
-        const idB = b.title ?? '';
-        return idA.toString().localeCompare(idB.toString());
+        const idA = typeof a.title === 'string' ? a.title : '';
+        const idB = typeof b.title === 'string' ? b.title : '';
+        return idA.localeCompare(idB);
       },
       sortOrder: sortedInfo.columnKey === 'title' ? sortedInfo.order : null,
       render: (title: string) => {

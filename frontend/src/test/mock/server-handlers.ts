@@ -14,6 +14,7 @@ import {
   rawCitationFixture,
   rawNodeStatusFixture,
   rawUserCartFixture,
+  stacSearchResultsFixture,
   userAuthFixture,
   userInfoFixture,
   userSearchQueriesFixture,
@@ -172,6 +173,12 @@ const handlers = [
   rest.get(apiRoutes.introMarkdown.path, async (_req, res, ctx) =>
     res(ctx.status(200), ctx.body('Some Markdown'))
   ),
+  rest.get(apiRoutes.esgfFacetsSTAC.path, async (_req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(stacSearchResultsFixture()));
+  }),
+  rest.get(apiRoutes.esgfSearchSTAC.path, async (_req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(stacSearchResultsFixture()));
+  }),
   // Default fallback handler
   rest.get('*', async (req, res, ctx) => {
     // eslint-disable-next-line no-console
