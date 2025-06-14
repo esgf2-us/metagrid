@@ -11,24 +11,15 @@ export type Props = {
 
 const RightDrawer: React.FC<React.PropsWithChildren<Props>> = ({ open, onClose }) => {
   const panels = [
+    ...messageDataJSON.messages.map((message, idx) => {
+      return {
+        key: idx,
+        label: message.title,
+        children: <MessageCard fileName={message.fileName} />,
+      };
+    }),
     {
-      key: '1',
-      label: 'Metagrid Messages',
-      children: (
-        <Collapse
-          defaultActiveKey={[messageDataJSON.messages[0].fileName]}
-          items={messageDataJSON.messages.map((message) => {
-            return {
-              key: message.fileName,
-              label: message.title,
-              children: <MessageCard fileName={message.fileName} />,
-            };
-          })}
-        />
-      ),
-    },
-    {
-      key: '2',
+      key: messageDataJSON.messages.length,
       label: 'Metagrid Version History',
       children: (
         <Collapse
@@ -60,7 +51,7 @@ const RightDrawer: React.FC<React.PropsWithChildren<Props>> = ({ open, onClose }
         </Space>
       }
     >
-      <Collapse defaultActiveKey={['1']} items={panels} accordion />
+      <Collapse defaultActiveKey={[0]} items={panels} accordion />
     </Drawer>
   );
 };

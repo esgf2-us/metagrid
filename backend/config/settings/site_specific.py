@@ -21,10 +21,6 @@ class MetagridBackendSettings(BaseSettings):
         description="The URL at which the ESG-Search wget endpoint can be reached.",
         examples=["https://esgf-node.llnl.gov/esg-search/wget"],
     )
-    STATUS_URL: str = Field(
-        description="The URL at which the backend can reach the Node Status API.",
-        examples=["https://esgf-node.llnl.gov/proxy/status"],
-    )
     KEYCLOAK_CLIENT_ID: str = Field(
         default="metagrid-localhost",
         examples=["metagrid-localhost"],
@@ -75,6 +71,11 @@ class MetagridFrontendSettings(BaseSettings):
         default="globus",
         description="Which authentication method to enable for user sign in on the frontend.",
     )
+    BANNER_TEXT: Optional[str] = Field(
+        default=None,
+        examples=["My banner notification text."],
+        description="Text to display as a banner above the main body. Useful for providing maintenance notices or important news. The banner will be hidden permanently if the user clicks the close button.",
+    )
     FOOTER_TEXT: str = Field(
         default="",
         description="Text to display in the footer of the frontend. Useful for adding a link to the terms of service or other legal information. The string should be formatted as MarkDown and will be rendered as such.",
@@ -83,12 +84,18 @@ class MetagridFrontendSettings(BaseSettings):
         examples=["536321f7-c0e9-462c-b5c6-34d4a3672076"],
         description="The `Client UUID` obtained by registering a `a thick client or script that will be installed and run by users on their devices` with Globus at <https://app.globus.org/settings/developers>  This is required even if signing in with Globus is not enabled. It is used for browsing Globus Collections to which files may be sent.",
     )
+    STATUS_URL: Optional[str] = Field(
+        default=None,
+        description="The URL at which the backend can reach the Node Status API.",
+        examples=["https://esgf-node.llnl.gov/proxy/status"],
+    )
     GLOBUS_NODES: Sequence[str] = Field(
         default=[
             "aims3.llnl.gov",
             "esgf-data1.llnl.gov",
             "esgf-data2.llnl.gov",
             "esgf-node.ornl.gov",
+            "eagle.alcf.anl.gov",
         ],
         description="The list of data nodes known to be Globus enabled. A data node must be in this list in order to transfer files from it via Globus.",
     )
