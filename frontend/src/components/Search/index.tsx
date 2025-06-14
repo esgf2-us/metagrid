@@ -32,7 +32,6 @@ import {
   cacheSearchResults,
   createSearchRouteURL,
   getCachedPagination,
-  getCachedSearchResults,
   getStyle,
   getUrlFromSearch,
   objectIsEmpty,
@@ -193,7 +192,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     getCachedPagination()
   );
 
-  let results: Record<string, unknown> | undefined = data;
+  const results: Record<string, unknown> | undefined = data;
 
   // Generate the current request URL based on filters
   React.useEffect(() => {
@@ -216,6 +215,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     if (!objectIsEmpty(project) && currentRequestURL) {
       // Fetch search results (cached or not)
       run(currentRequestURL);
+
       // Update displayed pagination in case the cachedPagination was changed
       setPaginationOptions(getCachedPagination());
     }
@@ -357,39 +357,14 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   // Used cached results if the request fails
   if (error) {
-    // Get cached values
-    const cachedResults = getCachedSearchResults();
-    const cachedURL = (cachedResults?.cachedURL as string) || '';
-    const pagination = getCachedPagination();
-
-    // If there are cached results, use them
-    if (cachedURL !== '') {
-      const cachedUrlOffset = cachedURL.match(/offset=\d+/)?.[0];
-      const cachedPage = cachedUrlOffset
-        ? Number(cachedUrlOffset.split('=')[1]) / pagination.pageSize + 1
-        : 1;
-
-      // Reset the pagination to the cached value
-      cachePagination({
-        page: cachedPage,
-        pageSize: pagination.pageSize,
-      }); // Reset the pagination to the cached value
-      setCurrentRequestURL(cachedURL);
-      showError(
-        messageApi,
-        'There was an issue fetching search results. Using cached results instead.'
-      );
-      results = cachedResults;
-    } else {
-      return (
-        <div data-testid="alert-fetching">
-          <Alert
-            message="There was an issue fetching search results. Please contact support or try again later."
-            type="error"
-          />
-        </div>
-      );
-    }
+    return (
+      <div data-testid="alert-fetching">
+        <Alert
+          message="There was an issue fetching search results. Please contact support or try again later."
+          type="error"
+        />
+      </div>
+    );
   }
 
   let numFound = 0;
