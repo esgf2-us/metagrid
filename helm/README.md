@@ -75,10 +75,10 @@ This document describes the configurable values available in the `values.yaml` f
 ---
 ## Features
 
-| Parameter                          | Description                                                                | Type        | Default |    
+| Parameter                          | Description                                                                | Type        | Default |
 |------------------------------------|----------------------------------------------------------------------------|-------------|---------|
-| `features.nodeStatus.enabled`      | Enables node status feature, deploying Prometheus and blackbox exporter.   | `boolean`   | `true`  |         
-| `features.nodeStatus.url`          | Overrides and disables the default Prometheus deployment.                  | `string`    | N/A     |  
+| `features.nodeStatus.enabled`      | Enables node status feature, deploying Prometheus and blackbox exporter.   | `boolean`   | `true`  |
+| `features.nodeStatus.url`          | Overrides and disables the default Prometheus deployment.                  | `string`    | N/A     |
 
 ---
 ## Config
