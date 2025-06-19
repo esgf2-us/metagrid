@@ -112,7 +112,7 @@ def test_globus_multi_transfer_submits_tasks(
 def test_globus_transfer_returns_207_when_submission_errors(
     submit_mock, json_fixture, api_client
 ):
-    responses.add(responses.GET, settings.SEARCH_URL, json=json_fixture)
+    responses.add(responses.POST, settings.SEARCH_URL, json=json_fixture)
     responses.add(
         responses.GET,
         "https://transfer.api.globus.org/v0.10/submission_id",
@@ -142,7 +142,7 @@ def test_globus_transfer_returns_207_when_submission_errors(
 def test_globus_transfer_returns_200_when_submissions_all_succeed(
     json_fixture, api_client
 ):
-    responses.add(responses.GET, settings.SEARCH_URL, json=json_fixture)
+    responses.add(responses.POST, settings.SEARCH_URL, json=json_fixture)
     responses.add(
         responses.GET,
         "https://transfer.api.globus.org/v0.10/submission_id",
@@ -225,7 +225,7 @@ def test_globus_transfer_respects_endpoint_id_remapping(json_fixture):
 )
 def test_search_files_single_file_with_empty_params(json_fixture):
     responses.add(
-        responses.GET,
+        responses.POST,
         settings.SEARCH_URL,
         json=json_fixture,
     )
@@ -253,7 +253,7 @@ def test_search_files_single_file_with_empty_params(json_fixture):
 )
 def test_search_files_multiple_results(json_fixture):
     responses.add(
-        responses.GET,
+        responses.POST,
         settings.SEARCH_URL,
         json=json_fixture,
     )
@@ -284,7 +284,7 @@ def test_search_files_multiple_results(json_fixture):
 )
 def test_search_dataset_multiple_results(json_fixture):
     responses.add(
-        responses.GET,
+        responses.POST,
         settings.SEARCH_URL,
         json=json_fixture,
     )
@@ -317,3 +317,14 @@ def test_search_dataset_multiple_results(json_fixture):
             "/css03_data/CMIP6/AerChemMIP/EC-Earth-Consortium/EC-Earth3-AerChem/histSST-piAer/r1i1p1f1/Amon/prsn/gr/v20210831/prsn_Amon_EC-Earth3-AerChem_histSST-piAer_r1i1p1f1_gr_200001-200012.nc",
         ),
     ]
+
+
+def test_globus_info_from_doc_raises_value_error():
+    doc = {
+        "url": ["not_a_globus_url|NotGlobus|NotGlobus"],
+        "data_node": "some_node",
+    }
+    with pytest.raises(
+        ValueError, match="Unable to find Globus info from doc urls"
+    ):
+        globus_info_from_doc(doc)
