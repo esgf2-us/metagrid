@@ -19,7 +19,7 @@ const getMessageData = (msgId: string): MessageData | undefined => {
 
 const getMessageTemplate = (
   msgData: MessageData | undefined,
-  msgActions: MessageActions
+  msgActions: MessageActions,
 ): JSX.Element => {
   if (!msgData) {
     return <h1>Message Data Missing</h1>;

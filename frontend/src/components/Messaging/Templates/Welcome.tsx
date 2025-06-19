@@ -2,7 +2,7 @@
 
 import { Button, Card, Col, Row } from 'antd';
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { RawTourState, ReactJoyrideContext } from '../../../contexts/ReactJoyrideContext';
 import { MessageActions, TemplateProps, WelcomeData } from '../types';
 import { JoyrideTour } from '../../../common/joyrideTutorials/JoyrideTour';

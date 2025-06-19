@@ -120,7 +120,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
         expanded: boolean;
         onExpand: (
           rowRecord: RawSearchResult,
-          e: React.MouseEvent<HTMLSpanElement, MouseEvent>
+          e: React.MouseEvent<HTMLSpanElement, MouseEvent>,
         ) => void;
         record: RawSearchResult;
       }): React.ReactNode =>
