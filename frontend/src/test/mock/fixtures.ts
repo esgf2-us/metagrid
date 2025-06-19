@@ -137,7 +137,7 @@ export const rawCitationFixture = (props: Partial<RawCitation> = {}): RawCitatio
 };
 
 export const activeSearchQueryFixture = (
-  props: Partial<ActiveSearchQuery> = {}
+  props: Partial<ActiveSearchQuery> = {},
 ): ActiveSearchQuery => {
   const defaults: ActiveSearchQuery = {
     project: rawProjectFixture(),
@@ -307,7 +307,7 @@ export const globusEndpointFixture = (
   id?: string,
   ownerId?: string,
   subscriptionId?: string,
-  path?: string
+  path?: string,
 ): GlobusEndpoint => {
   return {
     canonical_name: canonicalName || '',

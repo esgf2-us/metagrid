@@ -24,10 +24,10 @@ import { tempStorageGetMock, tempStorageSetMock } from './mockStorage';
 
 const handlers = [
   rest.post(apiRoutes.keycloakAuth.path, async (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json(userAuthFixture()))
+    res(ctx.status(200), ctx.json(userAuthFixture())),
   ),
   rest.get(apiRoutes.globusAuth.path, async (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json(userAuthFixture()))
+    res(ctx.status(200), ctx.json(userAuthFixture())),
   ),
   rest.get(apiRoutes.globusSearchEndpoints.path, async (_req, res, ctx) => {
     // For testing multiple search results
@@ -51,7 +51,7 @@ const handlers = [
               'GCSv5_mapped_collection',
               'id1234567',
               'ownerId123',
-              'subscriptId123'
+              'subscriptId123',
             ),
             globusEndpointFixture(
               'endpoint2',
@@ -60,7 +60,7 @@ const handlers = [
               'id2345678',
               'ownerId234',
               'subscriptId234',
-              'path2'
+              'path2',
             ),
             globusEndpointFixture(
               'endpoint3',
@@ -68,9 +68,9 @@ const handlers = [
               'unknown',
               'id1234567',
               'ownerId123',
-              ''
+              '',
             ),
-          ])
+          ]),
         );
       case 'error404':
         return res(ctx.status(404), ctx.json({ error: 'search error.' }));
@@ -79,10 +79,10 @@ const handlers = [
     }
   }),
   rest.post(apiRoutes.globusTransfer.path, async (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json(globusTransferResponseFixture()))
+    res(ctx.status(200), ctx.json(globusTransferResponseFixture())),
   ),
   rest.get(apiRoutes.userInfo.path, async (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json(userInfoFixture()))
+    res(ctx.status(200), ctx.json(userInfoFixture())),
   ),
   rest.post(apiRoutes.tempStorageGet.path, async (_req, res, ctx) => {
     const data = _req.body as { dataKey: string; dataValue: unknown };
@@ -106,26 +106,26 @@ const handlers = [
     return res(ctx.status(400), ctx.json({ data: 'Save failed!' }));
   }),
   rest.get(apiRoutes.userInfo.path, async (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json(userInfoFixture()))
+    res(ctx.status(200), ctx.json(userInfoFixture())),
   ),
   rest.get(apiRoutes.userCart.path, async (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json(rawUserCartFixture()))
+    res(ctx.status(200), ctx.json(rawUserCartFixture())),
   ),
   rest.patch(apiRoutes.userCart.path, async (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json(rawUserCartFixture()))
+    res(ctx.status(200), ctx.json(rawUserCartFixture())),
   ),
   rest.get(apiRoutes.userSearches.path, async (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json({ results: userSearchQueriesFixture() }))
+    res(ctx.status(200), ctx.json({ results: userSearchQueriesFixture() })),
   ),
   rest.post(apiRoutes.userSearches.path, async (_req, res, ctx) =>
-    res(ctx.status(201), ctx.json(userSearchQueryFixture()))
+    res(ctx.status(201), ctx.json(userSearchQueryFixture())),
   ),
   rest.delete(apiRoutes.userSearch.path, async (_req, res, ctx) => res(ctx.status(204))),
   rest.get(apiRoutes.projects.path, async (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json({ results: projectsFixture() }))
+    res(ctx.status(200), ctx.json({ results: projectsFixture() })),
   ),
   rest.get(apiRoutes.esgfSearch.path, async (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json(ESGFSearchAPIFixture()))
+    res(ctx.status(200), ctx.json(ESGFSearchAPIFixture())),
   ),
   rest.post(apiRoutes.citation.path, async (_req, res, ctx) => {
     // For testing more than one set of creators
@@ -142,8 +142,8 @@ const handlers = [
                 { creatorName: 'Tommy' },
                 { creatorName: 'Joey' },
               ],
-            })
-          )
+            }),
+          ),
         );
       }
       /* istanbul ignore next */
@@ -158,8 +158,8 @@ const handlers = [
                 { creatorName: 'Timmy' },
                 { creatorName: 'Joey' },
               ],
-            })
-          )
+            }),
+          ),
         );
       }
     }
@@ -168,10 +168,10 @@ const handlers = [
   }),
   rest.post(apiRoutes.wget.path, async (_req, res, ctx) => res(ctx.status(200))),
   rest.get(apiRoutes.nodeStatus.path, async (_req, res, ctx) =>
-    res(ctx.status(200), ctx.json(rawNodeStatusFixture()))
+    res(ctx.status(200), ctx.json(rawNodeStatusFixture())),
   ),
   rest.get(apiRoutes.introMarkdown.path, async (_req, res, ctx) =>
-    res(ctx.status(200), ctx.body('Some Markdown'))
+    res(ctx.status(200), ctx.body('Some Markdown')),
   ),
   rest.get(apiRoutes.esgfFacetsSTAC.path, async (_req, res, ctx) => {
     return res(ctx.status(200), ctx.json(stacSearchResultsFixture()));

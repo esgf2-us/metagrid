@@ -8,8 +8,7 @@
 import 'setimmediate'; // Added because in Jest 27, setImmediate is not defined, causing test errors
 import humps from 'humps';
 import queryString from 'query-string';
-import { AxiosResponse } from 'axios';
-import axios from '../lib/axios';
+import axios, { AxiosResponse } from 'axios';
 import {
   RawUserCart,
   RawUserSearchQuery,
@@ -143,7 +142,7 @@ export const fetchUserInfo = async (args: [string]): Promise<RawUserInfo> =>
  */
 export const fetchUserCart = async (
   pk: string,
-  accessToken: string
+  accessToken: string,
 ): Promise<{
   results: RawUserCart;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -164,7 +163,7 @@ export const fetchUserCart = async (
           results: RawUserCart;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           [key: string]: any;
-        }>
+        }>,
     )
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userCart));
@@ -177,7 +176,7 @@ export const fetchUserCart = async (
 export const updateUserCart = async (
   pk: string,
   accessToken: string,
-  newUserCart: UserCart
+  newUserCart: UserCart,
 ): Promise<{
   results: RawUserCart;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -194,7 +193,7 @@ export const updateUserCart = async (
           // @ts-ignore
           'X-CSRFToken': getCookie('csrftoken'),
         },
-      }
+      },
     )
     .then(
       (res) =>
@@ -202,7 +201,7 @@ export const updateUserCart = async (
           results: RawUserCart;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           [key: string]: any;
-        }>
+        }>,
     )
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userCart));
@@ -213,7 +212,7 @@ export const updateUserCart = async (
  * HTTP Response: 200 OK
  */
 export const fetchUserSearchQueries = async (
-  accessToken: string
+  accessToken: string,
 ): Promise<{
   count: number;
   results: UserSearchQueries;
@@ -239,7 +238,7 @@ export const fetchUserSearchQueries = async (
         res.data as Promise<{
           count: number;
           results: UserSearchQueries;
-        }>
+        }>,
     )
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userSearches));
@@ -252,7 +251,7 @@ export const fetchUserSearchQueries = async (
 export const addUserSearchQuery = async (
   userPk: string,
   accessToken: string,
-  payload: UserSearchQuery
+  payload: UserSearchQuery,
 ): Promise<RawUserSearchQuery> => {
   const decamelizedPayload = humps.decamelizeKeys({
     ...payload,
@@ -341,7 +340,7 @@ export const fetchProjects = async (): Promise<{
  */
 export const convertResultTypeToReplicaParam = (
   resultType: ResultType,
-  isLabel?: boolean
+  isLabel?: boolean,
 ): string | undefined => {
   const replicaParams = {
     all: undefined,
@@ -370,7 +369,7 @@ export const updatePaginationParams = (url: string, pagination: Pagination): str
  */
 export const generateSearchURLQuery = (
   activeSearchQuery: ActiveSearchQuery | UserSearchQuery,
-  pagination: { page: number; pageSize: number }
+  pagination: { page: number; pageSize: number },
 ): string => {
   const {
     project,
@@ -406,7 +405,7 @@ export const generateSearchURLQuery = (
       { query: textInputs },
       {
         arrayFormat: 'comma',
-      }
+      },
     );
   }
 
@@ -414,7 +413,7 @@ export const generateSearchURLQuery = (
     humps.decamelizeKeys(activeFacets) as ActiveFacets,
     {
       arrayFormat: 'comma',
-    }
+    },
   );
 
   return `${baseRoute}${baseParams}${textInputsParams}&${activeFacetsParams}`;
@@ -431,7 +430,7 @@ export const generateSearchURLQuery = (
  * Source: https://docs.react-async.com/api/options#deferfn
  */
 export const fetchSearchResults = async (
-  args: [string] | Record<string, string>
+  args: [string] | Record<string, string>,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<{ [key: string]: any }> => {
   // Check if the request URL is passed in as an array or an object
@@ -618,7 +617,7 @@ export type FetchDatasetFilesProps = {
  */
 export const fetchDatasetFiles = async (
   _args: [],
-  props: FetchDatasetFilesProps
+  props: FetchDatasetFilesProps,
 ): Promise<{ [key: string]: unknown }> => {
   const { id, paginationOptions, filenameVars } = props;
   const queryParams: {
@@ -645,7 +644,7 @@ export const fetchDatasetFiles = async (
       url: apiRoutes.esgfSearch.path,
       query: queryParams,
     },
-    { arrayFormat: 'comma' }
+    { arrayFormat: 'comma' },
   );
   url = updatePaginationParams(url, paginationOptions);
 
@@ -654,7 +653,7 @@ export const fetchDatasetFiles = async (
     .then(
       (res) =>
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        res.data as Promise<{ [key: string]: any }>
+        res.data as Promise<{ [key: string]: any }>,
     )
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearch));
@@ -669,7 +668,7 @@ const returnFileToUser = (fileContent: string): void => {
   const downloadLinkNode = document.createElement('a');
   downloadLinkNode.setAttribute(
     'href',
-    `data:text/plain;charset=utf-8,${encodeURIComponent(fileContent)}`
+    `data:text/plain;charset=utf-8,${encodeURIComponent(fileContent)}`,
   );
   downloadLinkNode.setAttribute('download', fileName);
 
@@ -718,7 +717,7 @@ export const loadSessionValue = async <T>(key: string): Promise<T | null> => {
       /* istanbul ignore next */
       (error: ResponseError) => {
         throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.tempStorageGet));
-      }
+      },
     );
 };
 
@@ -739,7 +738,7 @@ export const saveSessionValue = async <T>(key: string, value: T): Promise<AxiosR
       /* istanbul ignore next */
       (error: ResponseError) => {
         throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.tempStorageSet));
-      }
+      },
     );
 };
 
@@ -753,7 +752,7 @@ export const saveSessionValues = async (data: { key: string; value: unknown }[])
 };
 
 export const startSearchGlobusEndpoints = async (
-  searchText: string
+  searchText: string,
 ): Promise<GlobusEndpointSearchResults> => {
   return axios
     .get(apiRoutes.globusSearchEndpoints.path, {

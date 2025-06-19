@@ -19,10 +19,10 @@ const defaultProps: Props = {
 beforeEach(() => {
   const mockNavigate = jest.fn();
   jest.mock(
-    'react-router-dom',
+    'react-router',
     () =>
       ({
-        ...jest.requireActual('react-router-dom'),
+        ...jest.requireActual('react-router'),
         useNavigate: () => ({
           push: mockNavigate,
         }),

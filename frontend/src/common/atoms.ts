@@ -48,21 +48,21 @@ export const activeSearchQueryAtom = atomWithStorage<ActiveSearchQuery>(
   AppStateKeys.activeSearchQuery,
   projectBaseQuery({}),
   undefined,
-  { getOnInit: true }
+  { getOnInit: true },
 );
 
 export const currentRequestQueryAtom = atomWithStorage<string>(
   AppStateKeys.currentRequestURL,
   '',
   undefined,
-  { getOnInit: true }
+  { getOnInit: true },
 );
 
 export const isDarkModeAtom = atomWithStorage<boolean>(
   AppStateKeys.isDarkMode,
   darkModeDefault,
   undefined,
-  { getOnInit: true }
+  { getOnInit: true },
 );
 
 export const userCartAtom = atomWithStorage<UserCart>(AppStateKeys.userCart, [], undefined, {
@@ -73,33 +73,33 @@ export const userSearchQueriesAtom = atomWithStorage<UserSearchQueries>(
   AppStateKeys.userSearchQueries,
   [],
   undefined,
-  { getOnInit: true }
+  { getOnInit: true },
 );
 
 export const cartDownloadIsLoadingAtom = atomWithStorage<boolean>(
   CartStateKeys.cartDownloadIsLoading,
   false,
   undefined,
-  { getOnInit: true }
+  { getOnInit: true },
 );
 
 export const cartItemSelectionsAtom = atomWithStorage<RawSearchResults>(
   CartStateKeys.cartItemSelections,
   [],
   undefined,
-  { getOnInit: true }
+  { getOnInit: true },
 );
 
 export const globusTaskItemsAtom = atomWithStorage<GlobusTaskItem[]>(
   GlobusStateKeys.globusTaskItems,
   [],
   undefined,
-  { getOnInit: true }
+  { getOnInit: true },
 );
 
 export const savedGlobusEndpointsAtom = atomWithStorage<GlobusEndpoint[]>(
   GlobusStateKeys.savedGlobusEndpoints,
   [],
   undefined,
-  { getOnInit: true }
+  { getOnInit: true },
 );

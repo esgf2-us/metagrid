@@ -54,7 +54,7 @@ const Facets: React.FC = () => {
     /* istanbul ignore else */
     if (data) {
       const selectedProj: RawProject | undefined = data.results.find(
-        (obj: RawProject) => obj.name === selectedProject
+        (obj: RawProject) => obj.name === selectedProject,
       );
       /* istanbul ignore else */
       if (selectedProj && activeSearchQuery.textInputs) {
@@ -66,7 +66,7 @@ const Facets: React.FC = () => {
   useEffect(() => {
     if (!isLoading && data && data.results.length > 0) {
       const findProj = data.results.find(
-        (obj: RawProject) => obj.name === activeSearchQuery.project.name
+        (obj: RawProject) => obj.name === activeSearchQuery.project.name,
       );
 
       const selectedProj: RawProject = findProj || data.results[0];

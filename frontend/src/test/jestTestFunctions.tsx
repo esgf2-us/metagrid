@@ -59,7 +59,7 @@ export const mockKeycloakToken = mockFunction(() => {
 });
 
 export function mockFunction<T extends (...args: unknown[]) => unknown>(
-  fn: T
+  fn: T,
 ): jest.MockedFunction<T> {
   return fn as jest.MockedFunction<T>;
 }
@@ -76,7 +76,7 @@ export async function showNoticeStatic(
     type?: NotificationType;
     style?: CSSProperties;
     key?: string | number;
-  }
+  },
 ): Promise<void> {
   const msgConfig = {
     content,
@@ -186,7 +186,7 @@ export class AtomWrapper {
     atom: AnyWritableAtom,
     key: string,
     value: T,
-    saveLocal: boolean
+    saveLocal: boolean,
   ): AtomWrapper {
     const instance = this.Instance;
     instance.ATOMS[key] = {
