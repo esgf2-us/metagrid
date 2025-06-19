@@ -17,8 +17,9 @@ import {
   message,
 } from 'antd';
 import React, { useEffect } from 'react';
-import PKCE from 'js-pkce';
+import createPKCE from 'js-pkce';
 import { useAtom } from 'jotai';
+import axios from 'axios';
 import {
   fetchWgetScript,
   ResponseError,
@@ -35,7 +36,6 @@ import {
 } from './types';
 import { getCurrentAppPage, showError, showNotice } from '../../common/utils';
 import { RawTourState, ReactJoyrideContext } from '../../contexts/ReactJoyrideContext';
-import axios from '../../lib/axios';
 import apiRoutes from '../../api/routes';
 import DataBundlePersister from '../../common/DataBundlePersister';
 import { AppPage } from '../../common/types';
@@ -116,9 +116,8 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   // Persistent vars
   const [taskItems, setTaskItems] = useAtom<GlobusTaskItem[]>(globusTaskItemsAtom);
   const [itemSelections, setItemSelections] = useAtom<RawSearchResults>(cartItemSelectionsAtom);
-  const [savedGlobusEndpoints, setSavedGlobusEndpoints] = useAtom<GlobusEndpoint[]>(
-    savedGlobusEndpointsAtom
-  );
+  const [savedGlobusEndpoints, setSavedGlobusEndpoints] =
+    useAtom<GlobusEndpoint[]>(savedGlobusEndpointsAtom);
 
   db.addVar<string | null>(GlobusStateKeys.accessToken, null);
   db.addVar<string | null>(GlobusStateKeys.globusAuth, null);
@@ -129,7 +128,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   db.addVar<GlobusEndpoint | null | undefined>(
     GlobusStateKeys.userChosenEndpoint,
     null,
-    setChosenGlobusEndpoint
+    setChosenGlobusEndpoint,
   );
 
   const [varsLoaded, setVarsLoaded] = React.useState<boolean>(false);
@@ -140,14 +139,13 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
   const [endpointSearchValue, setEndpointSearchValue] = React.useState<string>('');
 
-  const [loadingEndpointSearchResults, setLoadingEndpointSearchResults] = React.useState<boolean>(
-    false
-  );
+  const [loadingEndpointSearchResults, setLoadingEndpointSearchResults] =
+    React.useState<boolean>(false);
 
   const [globusEndpoints, setGlobusEndpoints] = React.useState<GlobusEndpoint[] | []>();
 
   const [selectedDownloadType, setSelectedDownloadType] = React.useState<string>(
-    downloadOptions[0]
+    downloadOptions[0],
   );
 
   const [searchResultsPage, setSearchResultsPage] = React.useState<number>(1);
@@ -179,10 +177,11 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   }
 
   // Creates an auth object using desired authentication scope
-  function createGlobusAuthObject(): PKCE {
+  function createGlobusAuthObject(): createPKCE {
     const authScope = db.get<string>(GlobusStateKeys.globusAuth, REQUESTED_SCOPES);
 
-    return new PKCE({
+    // eslint-disable-next-line new-cap
+    return new createPKCE({
       client_id: window.METAGRID.GLOBUS_CLIENT_ID, // Update this using your native client ID
       redirect_uri: `${window.location.origin}/cart/items`, // Update this if you are deploying this anywhere else (Globus Auth will redirect back here once you have logged in)
       authorization_endpoint: 'https://auth.globus.org/v2/oauth2/authorize', // No changes needed
@@ -280,7 +279,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             }}
           >
             {error.message}
-          </Card>
+          </Card>,
         );
         setDownloadIsLoading(false);
       });
@@ -307,7 +306,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           endpointId: endpoint.id,
           path: endpoint.path || '',
           dataset_id: ids,
-        })
+        }),
       )
       .then((resp) => {
         return resp.data;
@@ -335,7 +334,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                 'Globus download requested, however no transfer occurred.',
                 {
                   type: 'warning',
-                }
+                },
               );
             } else {
               await showNotice(messageApi, 'Globus download initiated successfully!', {
@@ -353,7 +352,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
               </span>,
               {
                 type: 'error',
-              }
+              },
             );
             await resetTokens();
             break;
@@ -366,7 +365,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
               </span>,
               {
                 type: 'error',
-              }
+              },
             );
             await resetTokens();
             break;
@@ -378,7 +377,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           <span data-testid="globus-transfer-backend-error-msg">{error.message}</span>,
           {
             type: 'error',
-          }
+          },
         );
         await resetTokens();
       })
@@ -520,12 +519,12 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     }
 
     const checkEndpoint = savedGlobusEndpoints?.find(
-      (endpoint: GlobusEndpoint) => endpoint.id === value
+      (endpoint: GlobusEndpoint) => endpoint.id === value,
     );
 
     await db.setAndSave<GlobusEndpoint | undefined>(
       GlobusStateKeys.userChosenEndpoint,
-      checkEndpoint
+      checkEndpoint,
     );
   };
 
@@ -697,7 +696,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
         // If endpoint was updated, set it as chosen endpoint
         const updatedEndpoint = updatedEndpointList.find(
-          (endpoint: GlobusEndpoint) => endpoint.id === endpointId
+          (endpoint: GlobusEndpoint) => endpoint.id === endpointId,
         );
         if (updatedEndpoint) {
           db.set<GlobusEndpoint>(GlobusStateKeys.userChosenEndpoint, updatedEndpoint);
@@ -730,7 +729,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     if (goal === GlobusGoals.DoGlobusTransfer) {
       const chosenEndpoint: GlobusEndpoint | null = db.get<GlobusEndpoint | null>(
         GlobusStateKeys.userChosenEndpoint,
-        null
+        null,
       );
 
       // If there is no chosen endpoint, give notice
@@ -969,20 +968,20 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                   ID: {option.key}
                   <br />
                   <span>
-                    {((option.data as unknown) as GlobusEndpoint)?.path &&
-                      `Path: ${((option.data as unknown) as GlobusEndpoint)?.path}`}
-                    {((option.data as unknown) as GlobusEndpoint)?.path && <br />}
-                    {((option.data as unknown) as GlobusEndpoint)?.entity_type ===
+                    {(option.data as unknown as GlobusEndpoint)?.path &&
+                      `Path: ${(option.data as unknown as GlobusEndpoint)?.path}`}
+                    {(option.data as unknown as GlobusEndpoint)?.path && <br />}
+                    {(option.data as unknown as GlobusEndpoint)?.entity_type ===
                       'GCSv5_mapped_collection' &&
-                      ((option.data as unknown) as GlobusEndpoint)?.subscription_id !== '' &&
+                      (option.data as unknown as GlobusEndpoint)?.subscription_id !== '' &&
                       'Managed '}
-                    {((option.data as unknown) as GlobusEndpoint)?.entity_type ===
+                    {(option.data as unknown as GlobusEndpoint)?.entity_type ===
                     'GCSv5_guest_collection'
                       ? 'Guest Collection'
                       : 'Mapped Collection'}{' '}
                     <br />
-                    {((option.data as unknown) as GlobusEndpoint)?.contact_email !== null &&
-                      ((option.data as unknown) as GlobusEndpoint)?.contact_email}
+                    {(option.data as unknown as GlobusEndpoint)?.contact_email !== null &&
+                      (option.data as unknown as GlobusEndpoint)?.contact_email}
                   </span>
                   <Divider style={{ marginBottom: '0px', marginTop: '0px' }} />
                 </>
@@ -1068,7 +1067,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           await db.loadAll(); // Reset values from before the form was opened
           await db.setAndSave<GlobusEndpoint | undefined>(
             GlobusStateKeys.userChosenEndpoint,
-            undefined
+            undefined,
           );
         }}
         width={1000}
@@ -1207,7 +1206,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                             setSavedGlobusEndpoints(
                               savedGlobusEndpoints.filter((savedEndpoint) => {
                                 return savedEndpoint.id !== endpoint.id;
-                              })
+                              }),
                             );
                           }}
                         >

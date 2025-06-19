@@ -85,9 +85,8 @@ export const formatDate = (date: string | Dayjs, toString: boolean): string | Da
 
 const FacetsForm: React.FC = () => {
   // Global states
-  const [activeSearchQuery, setActiveSearchQuery] = useAtom<ActiveSearchQuery>(
-    activeSearchQueryAtom
-  );
+  const [activeSearchQuery, setActiveSearchQuery] =
+    useAtom<ActiveSearchQuery>(activeSearchQueryAtom);
 
   // Local variables
   const [messageApi, contextHolder] = message.useMessage();
@@ -219,7 +218,7 @@ const FacetsForm: React.FC = () => {
         activeSearchQuery.activeFacets &&
         activeSearchQuery.activeFacets.data_node &&
         activeSearchQuery.activeFacets.data_node.every((node: string) =>
-          window.METAGRID.GLOBUS_NODES.includes(node)
+          window.METAGRID.GLOBUS_NODES.includes(node),
         )
       ) {
         setGlobusReadyOnly(true);
@@ -235,8 +234,8 @@ const FacetsForm: React.FC = () => {
       const newActiveFacets: ActiveFacets = activeSearchQuery.activeFacets;
       /* istanbul ignore else */
       if (options.length === 0) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [facet]: remove, ...updatedFacets } = newActiveFacets;
-
         setActiveSearchQuery({ ...activeSearchQuery, activeFacets: updatedFacets });
       } else if (options.length > 0) {
         setActiveSearchQuery({
@@ -371,14 +370,14 @@ const FacetsForm: React.FC = () => {
                                       .map((item) => {
                                         return `${item[0]} (${item[1]})`;
                                       })
-                                      .join('\n')
+                                      .join('\n'),
                                   );
                                   showNotice(
                                     messageApi,
                                     `${facetNameHumanized}s copied to clipboard!`,
                                     {
                                       icon: <CopyOutlined style={styles.messageAddIcon} />,
-                                    }
+                                    },
                                   );
                                 }
                               }}

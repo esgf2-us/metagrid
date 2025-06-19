@@ -7,7 +7,7 @@ import {
 import { Alert, Card, Col, Skeleton, Typography, Tooltip } from 'antd';
 import React, { useEffect } from 'react';
 import { useAsync } from 'react-async';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useSetAtom } from 'jotai';
 import { fetchSearchResults, generateSearchURLQuery } from '../../api';
 import { CSSinJS } from '../../common/types';
@@ -75,9 +75,11 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
   // Update the search query with the results count if it was fetched
   useEffect(() => {
     if (!isLoading && data) {
-      const loadedCount = (data as {
-        response: { numFound: number };
-      }).response.numFound;
+      const loadedCount = (
+        data as {
+          response: { numFound: number };
+        }
+      ).response.numFound;
       updateSearchQuery({
         ...searchQuery,
         resultsCount: loadedCount,
@@ -183,7 +185,7 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
               minVersionDate,
               maxVersionDate,
               activeFacets,
-              textInputs
+              textInputs,
             )}
           </Typography.Text>
         </p>

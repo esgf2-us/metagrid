@@ -55,7 +55,7 @@ describe('test fetching user authentication with globus', () => {
   });
   it('catches and throws generic network error', async () => {
     server.use(
-      rest.get(apiRoutes.globusAuth.path, (_req, res) => res.networkError(genericNetworkErrorMsg))
+      rest.get(apiRoutes.globusAuth.path, (_req, res) => res.networkError(genericNetworkErrorMsg)),
     );
     await expect(fetchGlobusAuth()).rejects.toThrow(apiRoutes.globusAuth.handleErrorMsg('generic'));
   });
@@ -69,17 +69,17 @@ describe('test fetching user authentication with keycloak', () => {
   it('catches and throws error based on HTTP status code', async () => {
     server.use(rest.post(apiRoutes.keycloakAuth.path, (_req, res, ctx) => res(ctx.status(404))));
     await expect(fetchUserAuth(['keycloak_token'])).rejects.toThrow(
-      apiRoutes.keycloakAuth.handleErrorMsg(404)
+      apiRoutes.keycloakAuth.handleErrorMsg(404),
     );
   });
   it('catches and throws generic network error', async () => {
     server.use(
       rest.post(apiRoutes.keycloakAuth.path, (_req, res) =>
-        res.networkError(genericNetworkErrorMsg)
-      )
+        res.networkError(genericNetworkErrorMsg),
+      ),
     );
     await expect(fetchUserAuth(['keycloak_token'])).rejects.toThrow(
-      apiRoutes.keycloakAuth.handleErrorMsg('generic')
+      apiRoutes.keycloakAuth.handleErrorMsg('generic'),
     );
   });
 });
@@ -93,15 +93,15 @@ describe('test fetching user info', () => {
   it('returns error', async () => {
     server.use(rest.get(apiRoutes.userInfo.path, (_req, res, ctx) => res(ctx.status(404))));
     await expect(fetchUserInfo(['access_token'])).rejects.toThrow(
-      apiRoutes.userInfo.handleErrorMsg(404)
+      apiRoutes.userInfo.handleErrorMsg(404),
     );
   });
   it('catches and throws generic network error', async () => {
     server.use(
-      rest.get(apiRoutes.userInfo.path, (_req, res) => res.networkError(genericNetworkErrorMsg))
+      rest.get(apiRoutes.userInfo.path, (_req, res) => res.networkError(genericNetworkErrorMsg)),
     );
     await expect(fetchUserInfo(['access_token'])).rejects.toThrow(
-      apiRoutes.userInfo.handleErrorMsg('generic')
+      apiRoutes.userInfo.handleErrorMsg('generic'),
     );
   });
 });
@@ -119,7 +119,7 @@ describe('test fetching projects', () => {
 
   it('catches and throws generic network error', async () => {
     server.use(
-      rest.get(apiRoutes.projects.path, (_req, res) => res.networkError(genericNetworkErrorMsg))
+      rest.get(apiRoutes.projects.path, (_req, res) => res.networkError(genericNetworkErrorMsg)),
     );
     await expect(fetchProjects()).rejects.toThrow(apiRoutes.projects.handleErrorMsg('generic'));
   });
@@ -174,7 +174,7 @@ describe('test generating search url query', () => {
   it('returns formatted url with offset of 0 on page 1', () => {
     const url = generateSearchURLQuery(activeSearchQuery, pagination);
     expect(url).toEqual(
-      `${apiRoutes.esgfSearch.path}?offset=0&limit=10&latest=true&min_version=20200101&max_version=20201231&query=foo&baz=option1&foo=option1,option2`
+      `${apiRoutes.esgfSearch.path}?offset=0&limit=10&latest=true&min_version=20200101&max_version=20201231&query=foo&baz=option1&foo=option1,option2`,
     );
   });
   it('returns formatted url with offset of 200 and limit of 100 on page 3', () => {
@@ -185,46 +185,46 @@ describe('test generating search url query', () => {
 
     const url = generateSearchURLQuery(activeSearchQuery, pagination);
     expect(url).toEqual(
-      `${apiRoutes.esgfSearch.path}?offset=200&limit=100&latest=true&min_version=20200101&max_version=20201231&query=foo&baz=option1&foo=option1,option2`
+      `${apiRoutes.esgfSearch.path}?offset=200&limit=100&latest=true&min_version=20200101&max_version=20201231&query=foo&baz=option1&foo=option1,option2`,
     );
   });
   it('returns formatted url without free-text', () => {
     const url = generateSearchURLQuery({ ...activeSearchQuery, textInputs: [] }, pagination);
     expect(url).toEqual(
-      `${apiRoutes.esgfSearch.path}?offset=0&limit=10&latest=true&min_version=20200101&max_version=20201231&query=*&baz=option1&foo=option1,option2`
+      `${apiRoutes.esgfSearch.path}?offset=0&limit=10&latest=true&min_version=20200101&max_version=20201231&query=*&baz=option1&foo=option1,option2`,
     );
   });
   it('returns formatted url with replica param', () => {
     const url = generateSearchURLQuery(
       { ...activeSearchQuery, resultType: 'originals only' },
-      pagination
+      pagination,
     );
     expect(url).toEqual(
-      `${apiRoutes.esgfSearch.path}?offset=0&limit=10&latest=true&replica=false&min_version=20200101&max_version=20201231&query=foo&baz=option1&foo=option1,option2`
+      `${apiRoutes.esgfSearch.path}?offset=0&limit=10&latest=true&replica=false&min_version=20200101&max_version=20201231&query=foo&baz=option1&foo=option1,option2`,
     );
   });
 
   it('returns formatted url without facets', () => {
     const url = generateSearchURLQuery({ ...activeSearchQuery, activeFacets: {} }, pagination);
     expect(url).toEqual(
-      `${apiRoutes.esgfSearch.path}?offset=0&limit=10&latest=true&min_version=20200101&max_version=20201231&query=foo&`
+      `${apiRoutes.esgfSearch.path}?offset=0&limit=10&latest=true&min_version=20200101&max_version=20201231&query=foo&`,
     );
   });
 
   it('returns formatted url without version type', () => {
     const url = generateSearchURLQuery({ ...activeSearchQuery, versionType: 'all' }, pagination);
     expect(url).toEqual(
-      `${apiRoutes.esgfSearch.path}?offset=0&limit=10&min_version=20200101&max_version=20201231&query=foo&baz=option1&foo=option1,option2`
+      `${apiRoutes.esgfSearch.path}?offset=0&limit=10&min_version=20200101&max_version=20201231&query=foo&baz=option1&foo=option1,option2`,
     );
   });
 
   it('returns formatted url without minVersion and maxVersion date', () => {
     const url = generateSearchURLQuery(
       { ...activeSearchQuery, minVersionDate: '', maxVersionDate: '' },
-      pagination
+      pagination,
     );
     expect(url).toEqual(
-      `${apiRoutes.esgfSearch.path}?offset=0&limit=10&latest=true&query=foo&baz=option1&foo=option1,option2`
+      `${apiRoutes.esgfSearch.path}?offset=0&limit=10&latest=true&query=foo&baz=option1&foo=option1,option2`,
     );
   });
 });
@@ -251,10 +251,10 @@ describe('test fetching search results', () => {
 
   it('catches and throws generic network error', async () => {
     server.use(
-      rest.get(apiRoutes.esgfSearch.path, (_req, res) => res.networkError(genericNetworkErrorMsg))
+      rest.get(apiRoutes.esgfSearch.path, (_req, res) => res.networkError(genericNetworkErrorMsg)),
     );
     await expect(fetchSearchResults([reqUrl])).rejects.toThrow(
-      apiRoutes.esgfSearch.handleErrorMsg('generic')
+      apiRoutes.esgfSearch.handleErrorMsg('generic'),
     );
   });
 });
@@ -327,10 +327,10 @@ describe('test fetching citation', () => {
   });
   it('catches and throws generic network error', async () => {
     server.use(
-      rest.post(apiRoutes.citation.path, (_req, res) => res.networkError(genericNetworkErrorMsg))
+      rest.post(apiRoutes.citation.path, (_req, res) => res.networkError(genericNetworkErrorMsg)),
     );
     await expect(fetchDatasetCitation({})).rejects.toThrow(
-      apiRoutes.citation.handleErrorMsg('generic')
+      apiRoutes.citation.handleErrorMsg('generic'),
     );
   });
 });
@@ -356,16 +356,16 @@ describe('test fetchFiles()', () => {
   it('catches and throws an error based on HTTP status code', async () => {
     server.use(rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) => res(ctx.status(404))));
     await expect(fetchDatasetFiles([], props)).rejects.toThrow(
-      apiRoutes.esgfSearch.handleErrorMsg(404)
+      apiRoutes.esgfSearch.handleErrorMsg(404),
     );
   });
 
   it('catches and throws generic network error', async () => {
     server.use(
-      rest.get(apiRoutes.esgfSearch.path, (_req, res) => res.networkError(genericNetworkErrorMsg))
+      rest.get(apiRoutes.esgfSearch.path, (_req, res) => res.networkError(genericNetworkErrorMsg)),
     );
     await expect(fetchDatasetFiles([], props)).rejects.toThrow(
-      apiRoutes.esgfSearch.handleErrorMsg('generic')
+      apiRoutes.esgfSearch.handleErrorMsg('generic'),
     );
   });
 });
@@ -378,15 +378,15 @@ describe('test fetching user cart', () => {
   it('catches and throws an error based on HTTP status code', async () => {
     server.use(rest.get(apiRoutes.userCart.path, (_req, res, ctx) => res(ctx.status(404))));
     await expect(fetchUserCart('pk', 'access_token')).rejects.toThrow(
-      apiRoutes.userCart.handleErrorMsg(404)
+      apiRoutes.userCart.handleErrorMsg(404),
     );
   });
   it('catches and throws generic network error', async () => {
     server.use(
-      rest.get(apiRoutes.userCart.path, (_req, res) => res.networkError(genericNetworkErrorMsg))
+      rest.get(apiRoutes.userCart.path, (_req, res) => res.networkError(genericNetworkErrorMsg)),
     );
     await expect(fetchUserCart('pk', 'access_token')).rejects.toThrow(
-      apiRoutes.userCart.handleErrorMsg('generic')
+      apiRoutes.userCart.handleErrorMsg('generic'),
     );
   });
 });
@@ -407,15 +407,15 @@ describe('test updating user cart', () => {
   it('catches and throws an error based on HTTP status code', async () => {
     server.use(rest.patch(apiRoutes.userCart.path, (_req, res, ctx) => res(ctx.status(404))));
     await expect(updateUserCart('pk', 'access_token', [])).rejects.toThrow(
-      apiRoutes.userCart.handleErrorMsg(404)
+      apiRoutes.userCart.handleErrorMsg(404),
     );
   });
   it('catches and throws generic network error', async () => {
     server.use(
-      rest.patch(apiRoutes.userCart.path, (_req, res) => res.networkError(genericNetworkErrorMsg))
+      rest.patch(apiRoutes.userCart.path, (_req, res) => res.networkError(genericNetworkErrorMsg)),
     );
     await expect(updateUserCart('pk', 'access_token', [])).rejects.toThrow(
-      apiRoutes.userCart.handleErrorMsg('generic')
+      apiRoutes.userCart.handleErrorMsg('generic'),
     );
   });
 });
@@ -430,15 +430,17 @@ describe('test fetching user searches', () => {
     server.use(rest.get(apiRoutes.userSearches.path, (_req, res, ctx) => res(ctx.status(404))));
 
     await expect(fetchUserSearchQueries('access_token')).rejects.toThrow(
-      apiRoutes.userSearches.handleErrorMsg(404)
+      apiRoutes.userSearches.handleErrorMsg(404),
     );
   });
   it('catches and throws generic network error', async () => {
     server.use(
-      rest.get(apiRoutes.userSearches.path, (_req, res) => res.networkError(genericNetworkErrorMsg))
+      rest.get(apiRoutes.userSearches.path, (_req, res) =>
+        res.networkError(genericNetworkErrorMsg),
+      ),
     );
     await expect(fetchUserSearchQueries('access_token')).rejects.toThrow(
-      apiRoutes.userSearches.handleErrorMsg('generic')
+      apiRoutes.userSearches.handleErrorMsg('generic'),
     );
   });
 });
@@ -455,20 +457,20 @@ describe('test adding user search', () => {
 
     const payload = userSearchQueryFixture();
     await expect(addUserSearchQuery('pk', 'access_token', payload)).rejects.toThrow(
-      apiRoutes.userSearches.handleErrorMsg(404)
+      apiRoutes.userSearches.handleErrorMsg(404),
     );
   });
 
   it('catches and throws generic network error', async () => {
     server.use(
       rest.post(apiRoutes.userSearches.path, (_req, res) =>
-        res.networkError(genericNetworkErrorMsg)
-      )
+        res.networkError(genericNetworkErrorMsg),
+      ),
     );
 
     const payload = userSearchQueryFixture();
     await expect(addUserSearchQuery('pk', 'access_token', payload)).rejects.toThrow(
-      apiRoutes.userSearches.handleErrorMsg('generic')
+      apiRoutes.userSearches.handleErrorMsg('generic'),
     );
   });
 });
@@ -483,18 +485,18 @@ describe('test deleting user search', () => {
     server.use(rest.delete(apiRoutes.userSearch.path, (_req, res, ctx) => res(ctx.status(404))));
 
     await expect(deleteUserSearchQuery('pk', 'access_token')).rejects.toThrow(
-      apiRoutes.userSearch.handleErrorMsg(404)
+      apiRoutes.userSearch.handleErrorMsg(404),
     );
   });
   it('catches and throws generic network error', async () => {
     server.use(
       rest.delete(apiRoutes.userSearch.path, (_req, res) =>
-        res.networkError(genericNetworkErrorMsg)
-      )
+        res.networkError(genericNetworkErrorMsg),
+      ),
     );
 
     await expect(deleteUserSearchQuery('pk', 'access_token')).rejects.toThrow(
-      apiRoutes.userSearch.handleErrorMsg('generic')
+      apiRoutes.userSearch.handleErrorMsg('generic'),
     );
   });
 });
@@ -514,7 +516,7 @@ describe('test fetching wget script', () => {
   });
   it('catches and throws generic network error', async () => {
     server.use(
-      rest.post(apiRoutes.wget.path, (_req, res) => res.networkError(genericNetworkErrorMsg))
+      rest.post(apiRoutes.wget.path, (_req, res) => res.networkError(genericNetworkErrorMsg)),
     );
     await expect(fetchWgetScript(['id'])).rejects.toThrow(apiRoutes.wget.handleErrorMsg('generic'));
   });
@@ -567,16 +569,16 @@ describe('test user endpoint search', () => {
   });
   it('returns error if there is an error', async () => {
     await expect(startSearchGlobusEndpoints('error404')).rejects.toThrow(
-      apiRoutes.globusSearchEndpoints.handleErrorMsg(404)
+      apiRoutes.globusSearchEndpoints.handleErrorMsg(404),
     );
   });
   it('throws 404 error', async () => {
     server.use(
-      rest.get(apiRoutes.globusSearchEndpoints.path, (_req, res, ctx) => res(ctx.status(404)))
+      rest.get(apiRoutes.globusSearchEndpoints.path, (_req, res, ctx) => res(ctx.status(404))),
     );
 
     await expect(startSearchGlobusEndpoints('lc public')).rejects.toThrow(
-      apiRoutes.globusSearchEndpoints.handleErrorMsg(404)
+      apiRoutes.globusSearchEndpoints.handleErrorMsg(404),
     );
   });
 });
@@ -597,7 +599,7 @@ describe('test fetching node status', () => {
 
   it('catches and throws generic network error', async () => {
     server.use(
-      rest.get(apiRoutes.nodeStatus.path, (_req, res) => res.networkError(genericNetworkErrorMsg))
+      rest.get(apiRoutes.nodeStatus.path, (_req, res) => res.networkError(genericNetworkErrorMsg)),
     );
 
     await expect(fetchNodeStatus()).rejects.toThrow(apiRoutes.nodeStatus.handleErrorMsg('generic'));
@@ -653,7 +655,7 @@ describe('testing session storage', () => {
   it('Testing a bad response is received for save', () => {
     server.use(rest.post(apiRoutes.tempStorageSet.path, (_req, res, ctx) => res(ctx.status(400))));
     expect(saveSessionValue('test', 'value')).rejects.toThrow(
-      apiRoutes.tempStorageSet.handleErrorMsg(400)
+      apiRoutes.tempStorageSet.handleErrorMsg(400),
     );
   });
 });
@@ -674,28 +676,28 @@ describe('test mapHTTPErrorCodes function', () => {
   it('returns correct message for HTTP 401', () => {
     const message = apiRoutes.globusAuth.handleErrorMsg(401);
     expect(message).toBe(
-      'Your request to the Globus service was unauthorized. Please contact support.'
+      'Your request to the Globus service was unauthorized. Please contact support.',
     );
   });
 
   it('returns correct message for HTTP 403', () => {
     const message = apiRoutes.globusAuth.handleErrorMsg(403);
     expect(message).toBe(
-      'Your request to the Globus service was forbidden. Please contact support.'
+      'Your request to the Globus service was forbidden. Please contact support.',
     );
   });
 
   it('returns correct message for HTTP 404', () => {
     const message = apiRoutes.globusAuth.handleErrorMsg(404);
     expect(message).toBe(
-      'The requested resource at the Globus service was invalid. Please contact support.'
+      'The requested resource at the Globus service was invalid. Please contact support.',
     );
   });
 
   it('returns correct message for HTTP 405', () => {
     const message = apiRoutes.globusAuth.handleErrorMsg(405);
     expect(message).toBe(
-      'Could not perform operation at the Globus service. Please contact support'
+      'Could not perform operation at the Globus service. Please contact support',
     );
   });
 
@@ -707,42 +709,42 @@ describe('test mapHTTPErrorCodes function', () => {
   it('returns correct message for generic error', () => {
     const message = apiRoutes.globusAuth.handleErrorMsg('generic');
     expect(message).toBe(
-      "We couldn't reach the Globus service and are working on it. If the problem persists for awhile, please contact support."
+      "We couldn't reach the Globus service and are working on it. If the problem persists for awhile, please contact support.",
     );
   });
 
   it('returns correct message for Globus Transfer HTTP 400', () => {
     const message = apiRoutes.globusTransfer.handleErrorMsg(400);
     expect(message).toBe(
-      'Your request to the Globus transfer service was invalid. Please contact support.'
+      'Your request to the Globus transfer service was invalid. Please contact support.',
     );
   });
 
   it('returns correct message for Globus Transfer HTTP 401', () => {
     const message = apiRoutes.globusTransfer.handleErrorMsg(401);
     expect(message).toBe(
-      'Your request to the Globus transfer service was unauthorized. Please contact support.'
+      'Your request to the Globus transfer service was unauthorized. Please contact support.',
     );
   });
 
   it('returns correct message for Globus Transfer HTTP 403', () => {
     const message = apiRoutes.globusTransfer.handleErrorMsg(403);
     expect(message).toBe(
-      'Your request to the Globus transfer service was forbidden. Please contact support.'
+      'Your request to the Globus transfer service was forbidden. Please contact support.',
     );
   });
 
   it('returns correct message for Globus Transfer HTTP 404', () => {
     const message = apiRoutes.globusTransfer.handleErrorMsg(404);
     expect(message).toBe(
-      'The requested resource at the Globus transfer service was invalid. Please contact support.'
+      'The requested resource at the Globus transfer service was invalid. Please contact support.',
     );
   });
 
   it('returns correct message for Globus Transfer HTTP 405', () => {
     const message = apiRoutes.globusTransfer.handleErrorMsg(405);
     expect(message).toBe(
-      'Could not perform operation at the Globus transfer service. Please contact support'
+      'Could not perform operation at the Globus transfer service. Please contact support',
     );
   });
 
@@ -754,42 +756,42 @@ describe('test mapHTTPErrorCodes function', () => {
   it('returns correct message for Globus Transfer generic error', () => {
     const message = apiRoutes.globusTransfer.handleErrorMsg('generic');
     expect(message).toBe(
-      "We couldn't reach the Globus transfer service and are working on it. If the problem persists for awhile, please contact support."
+      "We couldn't reach the Globus transfer service and are working on it. If the problem persists for awhile, please contact support.",
     );
   });
 
   it('returns correct message for Frontend Config HTTP 400', () => {
     const message = apiRoutes.frontendConfig.handleErrorMsg(400);
     expect(message).toBe(
-      'Your request to the Frontend Config service was invalid. Please contact support.'
+      'Your request to the Frontend Config service was invalid. Please contact support.',
     );
   });
 
   it('returns correct message for Frontend Config HTTP 401', () => {
     const message = apiRoutes.frontendConfig.handleErrorMsg(401);
     expect(message).toBe(
-      'Your request to the Frontend Config service was unauthorized. Please contact support.'
+      'Your request to the Frontend Config service was unauthorized. Please contact support.',
     );
   });
 
   it('returns correct message for Frontend Config HTTP 403', () => {
     const message = apiRoutes.frontendConfig.handleErrorMsg(403);
     expect(message).toBe(
-      'Your request to the Frontend Config service was forbidden. Please contact support.'
+      'Your request to the Frontend Config service was forbidden. Please contact support.',
     );
   });
 
   it('returns correct message for Frontend Config HTTP 404', () => {
     const message = apiRoutes.frontendConfig.handleErrorMsg(404);
     expect(message).toBe(
-      'The requested resource at the Frontend Config service was invalid. Please contact support.'
+      'The requested resource at the Frontend Config service was invalid. Please contact support.',
     );
   });
 
   it('returns correct message for Frontend Config HTTP 405', () => {
     const message = apiRoutes.frontendConfig.handleErrorMsg(405);
     expect(message).toBe(
-      'Could not perform operation at the Frontend Config service. Please contact support'
+      'Could not perform operation at the Frontend Config service. Please contact support',
     );
   });
 
@@ -801,42 +803,42 @@ describe('test mapHTTPErrorCodes function', () => {
   it('returns correct message for Frontend Config generic error', () => {
     const message = apiRoutes.frontendConfig.handleErrorMsg('generic');
     expect(message).toBe(
-      "We couldn't reach the Frontend Config service and are working on it. If the problem persists for awhile, please contact support."
+      "We couldn't reach the Frontend Config service and are working on it. If the problem persists for awhile, please contact support.",
     );
   });
 
   it('returns correct message for Introduction Markdown HTTP 400', () => {
     const message = apiRoutes.introMarkdown.handleErrorMsg(400);
     expect(message).toBe(
-      'Your request to the Introduction Markdown service was invalid. Please contact support.'
+      'Your request to the Introduction Markdown service was invalid. Please contact support.',
     );
   });
 
   it('returns correct message for Introduction Markdown HTTP 401', () => {
     const message = apiRoutes.introMarkdown.handleErrorMsg(401);
     expect(message).toBe(
-      'Your request to the Introduction Markdown service was unauthorized. Please contact support.'
+      'Your request to the Introduction Markdown service was unauthorized. Please contact support.',
     );
   });
 
   it('returns correct message for Introduction Markdown HTTP 403', () => {
     const message = apiRoutes.introMarkdown.handleErrorMsg(403);
     expect(message).toBe(
-      'Your request to the Introduction Markdown service was forbidden. Please contact support.'
+      'Your request to the Introduction Markdown service was forbidden. Please contact support.',
     );
   });
 
   it('returns correct message for Introduction Markdown HTTP 404', () => {
     const message = apiRoutes.introMarkdown.handleErrorMsg(404);
     expect(message).toBe(
-      'The requested resource at the Introduction Markdown service was invalid. Please contact support.'
+      'The requested resource at the Introduction Markdown service was invalid. Please contact support.',
     );
   });
 
   it('returns correct message for Introduction Markdown HTTP 405', () => {
     const message = apiRoutes.introMarkdown.handleErrorMsg(405);
     expect(message).toBe(
-      'Could not perform operation at the Introduction Markdown service. Please contact support'
+      'Could not perform operation at the Introduction Markdown service. Please contact support',
     );
   });
 
@@ -848,7 +850,7 @@ describe('test mapHTTPErrorCodes function', () => {
   it('returns correct message for Introduction Markdown generic error', () => {
     const message = apiRoutes.introMarkdown.handleErrorMsg('generic');
     expect(message).toBe(
-      "We couldn't reach the Introduction Markdown service and are working on it. If the problem persists for awhile, please contact support."
+      "We couldn't reach the Introduction Markdown service and are working on it. If the problem persists for awhile, please contact support.",
     );
   });
 });
@@ -863,18 +865,18 @@ describe('test fetching temp storage get', () => {
   it('catches and throws an error based on HTTP status code', async () => {
     server.use(rest.post(apiRoutes.tempStorageGet.path, (_req, res, ctx) => res(ctx.status(404))));
     await expect(loadSessionValue('testKey')).rejects.toThrow(
-      apiRoutes.tempStorageGet.handleErrorMsg(404)
+      apiRoutes.tempStorageGet.handleErrorMsg(404),
     );
   });
 
   it('catches and throws generic network error', async () => {
     server.use(
       rest.post(apiRoutes.tempStorageGet.path, (_req, res) =>
-        res.networkError(genericNetworkErrorMsg)
-      )
+        res.networkError(genericNetworkErrorMsg),
+      ),
     );
     await expect(loadSessionValue('testKey')).rejects.toThrow(
-      apiRoutes.tempStorageGet.handleErrorMsg('generic')
+      apiRoutes.tempStorageGet.handleErrorMsg('generic'),
     );
   });
 });
@@ -888,18 +890,18 @@ describe('test fetching temp storage set', () => {
   it('catches and throws an error based on HTTP status code', async () => {
     server.use(rest.post(apiRoutes.tempStorageSet.path, (_req, res, ctx) => res(ctx.status(404))));
     await expect(saveSessionValue('testKey', 'testValue')).rejects.toThrow(
-      apiRoutes.tempStorageSet.handleErrorMsg(404)
+      apiRoutes.tempStorageSet.handleErrorMsg(404),
     );
   });
 
   it('catches and throws generic network error', async () => {
     server.use(
       rest.post(apiRoutes.tempStorageSet.path, (_req, res) =>
-        res.networkError(genericNetworkErrorMsg)
-      )
+        res.networkError(genericNetworkErrorMsg),
+      ),
     );
     await expect(saveSessionValue('testKey', 'testValue')).rejects.toThrow(
-      apiRoutes.tempStorageSet.handleErrorMsg('generic')
+      apiRoutes.tempStorageSet.handleErrorMsg('generic'),
     );
   });
 });

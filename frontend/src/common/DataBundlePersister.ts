@@ -36,7 +36,7 @@ export default class DataBundlePersister {
   addVar<T>(
     key: string,
     defaultVal: T,
-    setterFunc: React.Dispatch<React.SetStateAction<T>> | undefined = undefined
+    setterFunc: React.Dispatch<React.SetStateAction<T>> | undefined = undefined,
   ): void {
     // Create setter function
     const setter = (newValue: T): void => {
@@ -101,7 +101,7 @@ export default class DataBundlePersister {
   async loadAll(): Promise<void> {
     // Load the bundle from session storage
     const loadedJSON: string | null = await loadSessionValue<string>(
-      DataBundlePersister.DEFAULT_KEY
+      DataBundlePersister.DEFAULT_KEY,
     );
 
     // Parse the loaded JSON

@@ -67,7 +67,7 @@ export class JoyrideTour {
     target: string,
     content: string,
     placement?: Placement | 'auto' | 'center',
-    action?: () => void | Promise<void>
+    action?: () => void | Promise<void>,
   ): JoyrideTour {
     this.actions.push({
       stepIndex: this.stepCount,

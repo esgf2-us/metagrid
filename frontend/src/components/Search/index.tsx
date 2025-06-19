@@ -75,18 +75,21 @@ const styles: CSSinJS = {
  * https://stackoverflow.com/questions/37270508/javascript-function-that-converts-array-to-array-of-2-tuples
  */
 export const parseFacets = (facets: RawFacets): ParsedFacets => {
-  const res = (facets as unknown) as ParsedFacets;
+  const res = facets as unknown as ParsedFacets;
   const keys: string[] = Object.keys(facets);
 
   keys.forEach((key) => {
-    res[key] = res[key].reduce((r, a, i) => {
-      if (i % 2) {
-        r[r.length - 1].push((a as unknown) as number);
-      } else {
-        r.push([a] as never);
-      }
-      return r;
-    }, ([] as unknown) as [string, number][]);
+    res[key] = res[key].reduce(
+      (r, a, i) => {
+        if (i % 2) {
+          r[r.length - 1].push(a as unknown as number);
+        } else {
+          r.push([a] as never);
+        }
+        return r;
+      },
+      [] as unknown as [string, number][],
+    );
   });
   return res;
 };
@@ -101,7 +104,7 @@ export const stringifyFilters = (
   minVersionDate: VersionDate,
   maxVersionDate: VersionDate,
   activeFacets: ActiveFacets,
-  textInputs: TextInputs | []
+  textInputs: TextInputs | [],
 ): string => {
   const filtersArr: string[] = [];
 
@@ -138,7 +141,7 @@ export const stringifyFilters = (
 
 export const checkFiltersExist = (
   activeFacets: ActiveFacets | Record<string, unknown>,
-  textInputs: TextInputs
+  textInputs: TextInputs,
 ): boolean => !(objectIsEmpty(activeFacets) && textInputs.length === 0);
 
 export type Props = {
@@ -180,17 +183,16 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   const appStyles = getStyle(isDarkMode);
 
   const { data, error, isLoading, run } = useAsync({
-    deferFn: (fetchSearchResults as unknown) as DeferFn<Record<string, unknown>>,
+    deferFn: fetchSearchResults as unknown as DeferFn<Record<string, unknown>>,
   });
   const [filtersExist, setFiltersExist] = React.useState<boolean>(false);
   const [parsedFacets, setParsedFacets] = React.useState<ParsedFacets | Record<string, unknown>>(
-    {}
+    {},
   );
   const [selectedItems, setSelectedItems] = React.useState<RawSearchResults | []>([]);
 
-  const [paginationOptions, setPaginationOptions] = React.useState<Pagination>(
-    getCachedPagination()
-  );
+  const [paginationOptions, setPaginationOptions] =
+    React.useState<Pagination>(getCachedPagination());
 
   const results: Record<string, unknown> | undefined = data;
 
@@ -225,9 +227,11 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   React.useEffect(() => {
     if (results && currentRequestURL && !objectIsEmpty(results)) {
       cacheSearchResults(results, paginationOptions, currentRequestURL);
-      const { facet_fields: facetFields } = (results as {
-        facet_counts: { facet_fields: RawFacets };
-      }).facet_counts;
+      const { facet_fields: facetFields } = (
+        results as {
+          facet_counts: { facet_fields: RawFacets };
+        }
+      ).facet_counts;
       setParsedFacets(parseFacets(facetFields));
     }
   }, [results]);
@@ -282,7 +286,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           /* istanbul ignore next */
           (respError: ResponseError) => {
             showError(messageApi, respError.message);
-          }
+          },
         );
     } else {
       saveSuccess();
@@ -314,8 +318,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     } else if (type === 'facet') {
       const prevActiveFacets = activeSearchQuery.activeFacets;
 
-      const facet = (removedTag[0] as unknown) as string;
-      const facetOption = (removedTag[1] as unknown) as string;
+      const facet = removedTag[0] as unknown as string;
+      const facetOption = removedTag[1] as unknown as string;
       const updateFacet = {
         [facet]: prevActiveFacets[facet].filter((item) => item !== facetOption),
       };
@@ -342,7 +346,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     // undefined values.
     // https://github.com/ant-design/ant-design/issues/24243
     const rows = (selectedRows as RawSearchResults).filter(
-      (row: RawSearchResult) => row !== undefined
+      (row: RawSearchResult) => row !== undefined,
     );
     setSelectedItems(rows);
   };
@@ -383,8 +387,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       (item: RawSearchResult) =>
         !userCart.some(
           /* istanbul ignore next */
-          (dataset: RawSearchResult) => dataset.id === item.id
-        )
+          (dataset: RawSearchResult) => dataset.id === item.id,
+        ),
     ).length === 0;
 
   return (
@@ -460,7 +464,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                   minVersionDate,
                   maxVersionDate,
                   activeFacets,
-                  textInputs
+                  textInputs,
                 )}
               </Typography.Text>
             </p>
@@ -478,7 +482,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                     {variable}
                   </Tag>
                 </div>
-              ))
+              )),
             )}
           {textInputs.length !== 0 &&
             (textInputs as TextInputs).map((input: string) => (
