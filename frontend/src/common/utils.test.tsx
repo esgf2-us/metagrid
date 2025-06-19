@@ -650,7 +650,7 @@ describe('Test showBanner and saveBannerText', () => {
 
 describe('Test clearDeprecatedStorageKeys', () => {
   it('removes deprecated keys from localStorage', () => {
-    const keys = ['globusTransferGoalsState', 'userSearchQuery', 'showBanner'];
+    const keys = ['userSearchQuery', 'showBanner'];
     keys.forEach((key) => localStorageMock.setItem(key, 'test'));
     clearDeprecatedStorageKeys();
     keys.forEach((key) => {

@@ -32,7 +32,7 @@ import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
 import { ActiveSearchQuery, ResultType, VersionType } from '../Search/types';
 import { ActiveFacets, ParsedFacets } from './types';
-import { showError, showNotice } from '../../common/utils';
+import { clearCachedSearchResults, showError, showNotice } from '../../common/utils';
 import { activeSearchQueryAtom, availableFacetsAtom } from '../../common/atoms';
 import { leftSidebarTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
@@ -411,6 +411,9 @@ const FacetsForm: React.FC = () => {
                             handleOnSelectAvailableFacetsForm(facet, value);
                           }}
                           options={facetOptions.map((variable) => {
+                            if (typeof variable[0] !== 'string') {
+                              clearCachedSearchResults();
+                            }
                             let optionOutput: string | React.ReactNode = (
                               <>
                                 {variable[0]}

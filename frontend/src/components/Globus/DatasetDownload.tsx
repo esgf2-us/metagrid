@@ -604,7 +604,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       return GlobusGoals.None;
     }
 
-    const goal = sessionStorage.getItem(GlobusStateKeys.globusTransferGoalsState);
+    const goal = localStorage.getItem(GlobusStateKeys.globusTransferGoalsState);
     if (goal !== null) {
       return goal as GlobusGoals;
     }
@@ -613,7 +613,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   }
 
   function setCurrentGoal(goal: GlobusGoals): void {
-    sessionStorage.setItem(GlobusStateKeys.globusTransferGoalsState, goal);
+    localStorage.setItem(GlobusStateKeys.globusTransferGoalsState, goal);
   }
 
   async function redirectToSelectGlobusEndpointPath(): Promise<void> {

@@ -8,7 +8,7 @@ releases:
   version: v34.4.0
 - name: metagrid
   chart: .
-  version: "1.5.1"
+  version: "1.5.2"
   values:
     - ingress:
         enabled: true

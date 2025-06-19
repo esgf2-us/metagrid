@@ -137,13 +137,15 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
               data-testid={`apply-${index + 1}`}
               key="search"
               onClick={() => {
-                navigate('/search');
                 // Set searchTime to 0 so that it'll be considered expired and updated
                 updateSearchQuery({
                   ...searchQuery,
                   searchTime: 0,
                 });
                 setSavedSearchQuery(searchQuery);
+
+                // Navigate to the search page with the query
+                navigate('/search');
               }}
             />
           </Tooltip>,

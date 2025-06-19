@@ -182,12 +182,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   const appStyles = getStyle(isDarkMode);
 
-  const {
-    data: results,
-    error,
-    isLoading,
-    run,
-  } = useAsync({
+  const { data, error, isLoading, run } = useAsync({
     deferFn: fetchSearchResults as unknown as DeferFn<Record<string, unknown>>,
   });
   const [filtersExist, setFiltersExist] = React.useState<boolean>(false);
@@ -198,6 +193,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   const [paginationOptions, setPaginationOptions] =
     React.useState<Pagination>(getCachedPagination());
+
+  const results: Record<string, unknown> | undefined = data;
 
   // Generate the current request URL based on filters
   React.useEffect(() => {
@@ -220,6 +217,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     if (!objectIsEmpty(project) && currentRequestURL) {
       // Fetch search results (cached or not)
       run(currentRequestURL);
+
       // Update displayed pagination in case the cachedPagination was changed
       setPaginationOptions(getCachedPagination());
     }
@@ -361,6 +359,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     setPaginationOptions({ page: 1, pageSize });
   };
 
+  // Used cached results if the request fails
   if (error) {
     return (
       <div data-testid="alert-fetching">
