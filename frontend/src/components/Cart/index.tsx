@@ -1,7 +1,7 @@
 import { BookOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { Tabs, TabsProps } from 'antd';
 import React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router';
 import { RawSearchResults } from '../Search/types';
 import Items from './Items';
 import Searches from './Searches';

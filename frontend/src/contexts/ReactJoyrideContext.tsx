@@ -1,6 +1,6 @@
 import React from 'react';
 import Joyride, { ACTIONS, CallBackProps, EVENTS, STATUS } from 'react-joyride';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useAtomValue } from 'jotai';
 import { AppPage } from '../common/types';
 import { getCurrentAppPage } from '../common/utils';

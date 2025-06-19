@@ -26,7 +26,7 @@ type CitationProps = {
 
 const Citation: React.FC<React.PropsWithChildren<CitationProps>> = ({ url }) => {
   const { data, error, isLoading } = useAsync({
-    promiseFn: (fetchDatasetCitation as unknown) as PromiseFn<RawCitation>,
+    promiseFn: fetchDatasetCitation as unknown as PromiseFn<RawCitation>,
     url,
   });
 
