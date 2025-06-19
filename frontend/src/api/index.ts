@@ -481,7 +481,7 @@ export const fetchSearchResults = async (
  */
 export const postSTACSearch = async (
   limit: number,
-  filter: { op: string; args: unknown } | unknown
+  filter: { op: string; args: unknown } | unknown,
 ): Promise<Record<string, unknown>> => {
   return axios
     .post(
@@ -495,7 +495,7 @@ export const postSTACSearch = async (
         headers: {
           'Content-Type': 'application/json',
         },
-      }
+      },
     )
     .then((res) => res.data as Promise<Record<string, unknown>>)
     .catch((error: ResponseError) => {
@@ -504,7 +504,7 @@ export const postSTACSearch = async (
 };
 
 export const fetchSTACSearchResults = async (
-  args: [string] | Record<string, string>
+  args: [string] | Record<string, string>,
 ): // eslint-disable-next-line @typescript-eslint/no-explicit-any
 Promise<{ [key: string]: any }> => {
   let reqUrlStr;
