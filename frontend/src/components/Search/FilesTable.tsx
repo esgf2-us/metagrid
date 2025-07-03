@@ -10,6 +10,7 @@ import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React, { useState } from 'react';
 import { DeferFn, useAsync } from 'react-async';
+import { useAtomValue } from 'jotai';
 import { fetchDatasetFiles, openDownloadURL } from '../../api';
 import { CSSinJS } from '../../common/types';
 import { formatBytes, showError, showNotice, splitStringByChar } from '../../common/utils';
@@ -21,9 +22,11 @@ import {
   RawSearchResult,
   RawSearchResults,
   Sorts,
+  StacAsset,
   TextInputs,
 } from './types';
 import { innerDataRowTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
+import { currentProjectAtom } from '../../common/atoms';
 
 export type DownloadUrls = {
   HTTPServer: string;
@@ -73,36 +76,44 @@ export const genDownloadUrls = (urls: string[]): DownloadUrls => {
   return newUrls;
 };
 export type Props = {
-  id: string;
-  numResults?: number;
+  inputRecord: RawSearchResult;
   filenameVars?: TextInputs | [];
 };
 
-const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
-  id,
-  numResults = 0,
-  filenameVars,
-}) => {
+// Add options to this constant as needed.
+// This variable populates the download drop downs and is used in conditionals.
+const metadataKeysToDisplay = [
+  'alternate:name',
+  'cf_standard_name',
+  'checksum_type',
+  'dataset_id',
+  'description',
+  'href',
+  'id',
+  'instance_id',
+  'master_id',
+  'name',
+  'roles',
+  'timestamp',
+  'type',
+  'variable',
+  'variable_id',
+  'variable_long_name',
+  'variable_units',
+  'version',
+];
+
+const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, filenameVars }) => {
   const [sortedInfo, setSortedInfo] = useState<Sorts>({});
 
   const [messageApi, contextHolder] = message.useMessage();
 
-  // Add options to this constant as needed.
-  // This variable populates the download drop downs and is used in conditionals.
-  const metadataKeysToDisplay = [
-    'cf_standard_name',
-    'checksum_type',
-    'dataset_id',
-    'id',
-    'instance_id',
-    'master_id',
-    'timestamp',
-    'variable',
-    'variable_id',
-    'variable_long_name',
-    'variable_units',
-    'version',
-  ];
+  const currentProject = useAtomValue(currentProjectAtom);
+  const { isSTAC } = currentProject;
+
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  const { id, number_of_files } = inputRecord;
+  const numberOfFiles = number_of_files || 0;
 
   const [paginationOptions, setPaginationOptions] = React.useState<Pagination>({
     page: 1,
@@ -124,7 +135,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
 
   React.useEffect(() => {
     runFetchDatasetFiles();
-  }, [runFetchDatasetFiles, id, paginationOptions, filenameVars]);
+  }, [runFetchDatasetFiles, inputRecord, paginationOptions, filenameVars]);
 
   const handleChange: OnChange = (pagination, filters, sorter) => {
     setSortedInfo(sorter as Sorts);
@@ -150,22 +161,27 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
   }
 
   let docs: RawSearchResults | [] = [];
+  let stacDocs: StacAsset[] = [];
   if (data) {
-    docs = (
-      data as {
-        response: { docs: RawSearchResults };
-      }
-    ).response.docs;
+    if (isSTAC && inputRecord?.assets) {
+      stacDocs = Object.values(inputRecord.assets);
+    } else {
+      docs = (
+        data as {
+          response: { docs: RawSearchResults };
+        }
+      ).response.docs;
+    }
   }
 
   const tableConfig = {
-    dataSource: docs,
+    dataSource: stacDocs.length > 0 ? stacDocs : docs,
     size: 'small' as SizeType,
     loading: isLoading,
     rowKey: 'id',
     scroll: { y: 1000 },
     pagination: {
-      total: numResults,
+      total: numberOfFiles,
       position: ['bottomCenter'],
       options: [
         {
@@ -196,10 +212,10 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
     expandable: {
       expandedRowRender: (record: RawSearchResult) =>
         Object.keys(record).map((key) => {
-          if (metadataKeysToDisplay.includes(key)) {
+          if (record[key] && record[key] !== 'null' && metadataKeysToDisplay.includes(key)) {
             return (
               <p key={key} style={{ margin: 0 }}>
-                <span style={{ fontWeight: 'bold' }}>{key}</span>: {String(record[key])}
+                <span style={{ fontWeight: 'bold' }}>{key}</span>: {JSON.stringify(record[key])}
               </p>
             );
           }
@@ -230,7 +246,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
 
   const columns = [
     {
-      title: 'File Title',
+      title: isSTAC ? 'Asset Label' : 'File Title',
       dataIndex: 'title',
       key: 'title',
       sorter: (a: RawSearchResult, b: RawSearchResult) => {
@@ -251,7 +267,11 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
       sorter: (a: RawSearchResult, b: RawSearchResult) => (a.size || 0) - (b.size || 0),
       sortOrder: sortedInfo.columnKey === 'size' ? sortedInfo.order : null,
       render: (size: number) => {
-        return <div className={innerDataRowTargets.dataSize.class()}>{formatBytes(size)}</div>;
+        return (
+          <div className={innerDataRowTargets.dataSize.class()}>
+            {size ? formatBytes(size) : 'N/A'}
+          </div>
+        );
       },
     },
     {
@@ -261,7 +281,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
       render: (record: { url: string[] }) => {
         const downloadUrls = genDownloadUrls(record.url);
         return (
-          <span>
+          <span style={{ alignItems: 'center' }}>
             {contextHolder}
             <Form
               layout="inline"
@@ -274,7 +294,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
                   style={{ margin: 0 }}
                   className={innerDataRowTargets.downloadDataBtn.class()}
                 >
-                  <Button type="primary" htmlType="submit" icon={<DownloadOutlined />}></Button>
+                  <Button type="primary" htmlType="submit" icon={<DownloadOutlined />} />
                 </Form.Item>
               </Tooltip>
               {downloadUrls.OPENDAP !== '' && (
@@ -318,13 +338,77 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({
     },
   ];
 
+  const stacColumns = [
+    {
+      title: 'File Title',
+      dataIndex: 'name',
+      key: 'name',
+      render: (title: string) => {
+        return <div className={innerDataRowTargets.filesTitle.class()}>{title}</div>;
+      },
+    },
+    {
+      title: 'Description',
+      dataIndex: 'description',
+      key: 'description',
+      render: (description: string) => {
+        return <div>{description}</div>;
+      },
+    },
+    {
+      title: 'Download / Copy URL',
+      key: 'download',
+      render: (record: { href: string }) => {
+        return (
+          <span style={{ alignItems: 'center' }}>
+            {contextHolder}
+            <Form layout="inline">
+              <Tooltip title="Download the data file via Http." trigger="hover">
+                <Form.Item className={innerDataRowTargets.downloadDataBtn.class()}>
+                  <Button
+                    type="primary"
+                    href={record.href}
+                    target="_blank"
+                    icon={<DownloadOutlined />}
+                  />
+                </Form.Item>
+              </Tooltip>
+              <Tooltip title="Copy a shareable URL to the clipboard." trigger="hover">
+                <Form.Item className={innerDataRowTargets.copyUrlBtn.class()}>
+                  <Button
+                    type="primary"
+                    onClick={() => {
+                      /* istanbul ignore next */
+                      if (navigator && navigator.clipboard) {
+                        navigator.clipboard
+                          .writeText(record.href)
+                          .catch((e: PromiseRejectedResult) => {
+                            showError(messageApi, e.reason as string);
+                          });
+                        showNotice(messageApi, 'URL copied to clipboard!', {
+                          icon: <ShareAltOutlined style={styles.messageAddIcon} />,
+                        });
+                      }
+                    }}
+                    icon={<CopyOutlined />}
+                  />
+                </Form.Item>
+              </Tooltip>
+            </Form>
+          </span>
+        );
+      },
+    },
+  ];
+
   return (
     <TableD
       data-testid="filesTable"
       {...tableConfig}
-      columns={columns}
       onChange={handleChange}
       scroll={{ x: 'max-content' }}
+      tableLayout="auto"
+      columns={stacDocs.length > 0 ? stacColumns : columns}
       onRow={(record, rowIndex) => {
         return {
           id: `search-items-row-${rowIndex}`,

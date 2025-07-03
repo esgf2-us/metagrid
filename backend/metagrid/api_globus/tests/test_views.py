@@ -3,11 +3,13 @@ from unittest.mock import patch
 import pytest
 import responses
 from django.conf import settings
+from django.http import HttpRequest
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
 from metagrid.api_globus.views import globus_info_from_doc, search_files
+from metagrid.api_proxy import views as proxy_views
 
 
 @responses.activate
@@ -328,3 +330,45 @@ def test_globus_info_from_doc_raises_value_error():
         ValueError, match="Unable to find Globus info from doc urls"
     ):
         globus_info_from_doc(doc)
+
+
+@patch("requests.get")
+def test_do_request_get_success(mock_get):
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.text = '{"result": "ok"}'
+    request = HttpRequest()
+    request.method = "GET"
+    request.GET = {}
+    response = proxy_views.do_request(request, "http://example.com/api")
+    assert response.status_code == 200
+    assert "ok" in response.content.decode()
+
+
+@patch("requests.get", side_effect=Exception("fail"))
+def test_do_request_get_exception(mock_get):
+    request = HttpRequest()
+    request.method = "GET"
+    request.GET = {}
+    response = proxy_views.do_request(request, "http://example.com/api")
+    assert response.status_code == 400
+    assert "Error during GET request" in response.content.decode()
+
+
+@patch("requests.get")
+def test_do_request_get_non_200_status(mock_get):
+    mock_get.return_value.status_code = 404
+    mock_get.return_value.text = '{"error": "not found"}'
+    request = HttpRequest()
+    request.method = "GET"
+    request.GET = {}
+    response = proxy_views.do_request(request, "http://example.com/api")
+    assert response.status_code == 404
+    assert "not found" in response.content.decode()
+
+
+def test_do_request_invalid_method():
+    request = HttpRequest()
+    request.method = "PUT"
+    response = proxy_views.do_request(request, "http://example.com/api")
+    assert response.status_code == 400
+    assert "Request method must be POST or GET" in response.content.decode()

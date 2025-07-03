@@ -12,6 +12,7 @@ import {
   availableFacetsAtom,
   activeSearchQueryAtom,
   savedSearchQueryAtom,
+  currentProjectAtom,
 } from '../../common/atoms';
 import { leftSidebarTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
@@ -32,7 +33,7 @@ const Facets: React.FC = () => {
 
   const [savedSearchQuery, setSavedSearchQuery] = useAtom(savedSearchQueryAtom);
 
-  const [curProject, setCurProject] = React.useState<RawProject>();
+  const [curProject, setCurProject] = useAtom(currentProjectAtom);
 
   const handleProjectChange = (selectedProject: RawProject): void => {
     if (savedSearchQuery) {

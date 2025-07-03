@@ -24,6 +24,7 @@ import {
   startSearchGlobusEndpoints,
   updateUserCart,
 } from '.';
+import { STAC_PROJECTS } from '../common/STAC';
 import { ActiveSearchQuery, Pagination, RawCitation, ResultType } from '../components/Search/types';
 import {
   activeSearchQueryFixture,
@@ -108,8 +109,8 @@ describe('test fetching user info', () => {
 
 describe('test fetching projects', () => {
   it('returns projects', async () => {
-    const projects = await fetchProjects();
-    expect(projects).toEqual({ results: projectsFixture() });
+    const projects = (await fetchProjects()).results;
+    expect(projects).toEqual([...projectsFixture(), ...STAC_PROJECTS]);
   });
 
   it('catches and throws an error based on HTTP status code', async () => {

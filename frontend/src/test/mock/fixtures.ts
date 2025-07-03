@@ -393,8 +393,7 @@ export const stacSearchResultsFixture = (): StacResponse => ({
       {
         rel: 'self',
         type: 'application/json',
-        href:
-          'https://data-challenge-01.api.stac.esgf-west.org/search?limit=3&activity_id=CMIP&institution_id=BCC&mip_era=CMIP6',
+        href: 'https://data-challenge-01.api.stac.esgf-west.org/search?limit=3&activity_id=CMIP&institution_id=BCC&mip_era=CMIP6',
       },
     ],
   },

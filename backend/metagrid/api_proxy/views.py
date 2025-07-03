@@ -80,13 +80,17 @@ def do_search(request):
 @require_http_methods(["POST"])
 @csrf_exempt
 def do_stac_search(request):
-    return do_request(request, settings.STAC_URL + "/search", True)
+    print("STAC Search Request:", request.method, request.body)
+    return do_post(request, settings.STAC_URL + "/search")
 
 
-@require_http_methods(["GET", "POST"])
+@require_http_methods(["GET"])
 @csrf_exempt
 def fetch_stac_facets(request):
-    return do_request(request, settings.STAC_URL + "/collections/CMIP6")
+    project_id = request.GET.get("project_id", "CMIP6")
+    return do_request(
+        request, "https://api.stac.esgf-west.org/collections/" + project_id
+    )
 
 
 @require_http_methods(["POST"])
@@ -134,6 +138,32 @@ def do_wget(request):
     return do_request(request, settings.WGET_URL, True)
 
 
+def do_post(request, urlbase):
+    """Helper function to handle POST requests."""
+    if request.method != "POST":  # pragma: no cover
+        return HttpResponseBadRequest("Request method must be POST.")
+
+    try:
+        jo = json.loads(request.body)
+    except json.JSONDecodeError:  # pragma: no cover
+        return HttpResponseBadRequest("Invalid JSON in request body.")
+
+    try:
+        resp = requests.post(urlbase, json=jo)
+    except Exception as e:  # pragma: no cover
+        return HttpResponseBadRequest(f"Error during POST request: {e}")
+
+    if resp.status_code != 200:  # pragma: no cover
+        return HttpResponseBadRequest(
+            f"Request failed with status {resp.status_code}: {resp.text}"
+        )
+
+    httpresp = HttpResponse(resp.text, content_type="text/json")
+    httpresp.status_code = resp.status_code
+
+    return httpresp
+
+
 def do_request(request, urlbase, useBody=False):
     resp = None
 
@@ -151,6 +181,7 @@ def do_request(request, urlbase, useBody=False):
             jo["dataset_id"] = ",".join(jo["dataset_id"])
         try:
             resp = requests.post(urlbase, data=jo)
+            print("resp", resp)
         except Exception as e:
             print(f"Error during POST request: {e}")
             return HttpResponseBadRequest(f"Error during POST request: {e}")

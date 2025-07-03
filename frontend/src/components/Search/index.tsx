@@ -13,6 +13,7 @@ import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import {
   activeSearchQueryAtom,
   availableFacetsAtom,
+  currentProjectAtom,
   currentRequestQueryAtom,
   isDarkModeAtom,
   userCartAtom,
@@ -50,11 +51,14 @@ import {
   RawSearchResult,
   RawSearchResults,
   ResultType,
+  StacFeature,
+  StacResponse,
   TextInputs,
   VersionDate,
   VersionType,
 } from './types';
 import { AuthContext } from '../../contexts/AuthContext';
+import { convertStacToRawSearchResult } from '../../common/STAC';
 
 const styles: CSSinJS = {
   summary: {
@@ -160,6 +164,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   const [currentRequestURL, setCurrentRequestURL] = useAtom(currentRequestQueryAtom);
 
+  const currentProject = useAtomValue(currentProjectAtom);
+
   const isDarkMode = useAtomValue<boolean>(isDarkModeAtom);
 
   const {
@@ -227,12 +233,17 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   React.useEffect(() => {
     if (results && currentRequestURL && !objectIsEmpty(results)) {
       cacheSearchResults(results, paginationOptions, currentRequestURL);
-      const { facet_fields: facetFields } = (
-        results as {
-          facet_counts: { facet_fields: RawFacets };
-        }
-      ).facet_counts;
-      setParsedFacets(parseFacets(facetFields));
+      if (results.facet_counts) {
+        const { facet_fields: facetFields } = (
+          results as {
+            facet_counts: { facet_fields: RawFacets };
+          }
+        ).facet_counts;
+        setParsedFacets(parseFacets(facetFields));
+      } else {
+        const { facets } = results as { facets: RawFacets };
+        setParsedFacets(facets);
+      }
     }
   }, [results]);
 
@@ -378,8 +389,21 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     response: { docs: RawSearchResults; numFound: number };
   };
   if (results) {
-    numFound = (results as LoadedResults).response.numFound;
-    docs = (results as LoadedResults).response.docs;
+    if (currentProject.isSTAC) {
+      const searchResults = results as StacResponse;
+      if (searchResults.search) {
+        const stacResults = searchResults.search;
+        if (stacResults.numReturned > 0 && stacResults.features) {
+          numFound = stacResults.numReturned;
+          docs = stacResults.features.map((stacResult: StacFeature) =>
+            convertStacToRawSearchResult(stacResult),
+          );
+        }
+      }
+    } else if (results.response) {
+      numFound = (results as LoadedResults).response.numFound;
+      docs = (results as LoadedResults).response.docs;
+    }
   }
 
   const allSelectedItemsInCart =

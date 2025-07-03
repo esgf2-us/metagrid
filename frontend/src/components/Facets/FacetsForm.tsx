@@ -250,9 +250,165 @@ const FacetsForm: React.FC = () => {
     }
   }, [dropdownIsOpen, activeDropdownValue, setActiveDropdownValue]);
 
-  // Used to control text length of the drop-down items
-  // Tooltip is shown if the length is above this threshold
-  const maxItemLength = 22;
+  const generateStacFacetOptions = (
+    facet: string,
+    facetOptions: string[],
+  ): { key: string; value: string; label: JSX.Element }[] => {
+    return facetOptions.map((variable) => {
+      const optionOutput: string | React.ReactElement = <>{variable}</>;
+
+      return {
+        key: variable,
+        value: variable,
+        label: <span data-testid={`${facet}_${variable}`}>{optionOutput} </span>,
+      };
+    });
+  };
+
+  const generateFacetOptions = (
+    facet: string,
+    facetOptions: [string, number][] | string[],
+  ): { key: string; value: string; label: JSX.Element }[] => {
+    if (facetOptions.length > 0 && typeof facetOptions[0] === 'string') {
+      return generateStacFacetOptions(facet, facetOptions as string[]);
+    }
+
+    // Used to control text length of the drop-down items
+    // Tooltip is shown if the length is above this threshold
+    const maxItemLength = 22;
+
+    return facetOptions.map((variable) => {
+      if (typeof variable[0] !== 'string') {
+        clearCachedSearchResults();
+      }
+      let optionOutput: string | React.ReactNode = (
+        <>
+          {variable[0]}
+          <span style={styles.facetCount}>({variable[1]})</span>
+        </>
+      );
+
+      // If the option output name is very long, use a tooltip
+      const vLength = variable[0].length - 2;
+      const cLength = variable[1].toString().length * 1.5 + 2;
+      if (vLength > maxItemLength - cLength) {
+        const innerTitle = variable[0].substring(0, maxItemLength - cLength);
+        optionOutput = (
+          <Tooltip styles={{ body: { width: 'max-content' } }} title={variable[0]}>
+            {innerTitle}...
+            <span style={styles.facetCount}>({variable[1]})</span>
+          </Tooltip>
+        );
+      }
+
+      // The data node facet has a unique tooltip overlay to show the status of the highlighted node
+      if (facet === 'data_node') {
+        optionOutput = (
+          <StatusToolTip dataNode={variable[0]}>
+            <span style={styles.facetCount}>({variable[1]})</span>
+          </StatusToolTip>
+        );
+      }
+      return {
+        key: variable[0],
+        value: variable[0],
+        label: <span data-testid={`${facet}_${variable[0]}`}>{optionOutput} </span>,
+      };
+    });
+  };
+
+  const generateFacetGroups = (): {
+    key: string;
+    label: JSX.Element;
+    className: string;
+    children: (JSX.Element | null)[];
+  }[] => {
+    return Object.keys(facetsByGroup).map((group) => {
+      return {
+        key: group,
+        label: (
+          <div className={leftSidebarTargets.facetFormGeneral.class()}>
+            {humanizeFacetNames(group)}
+          </div>
+        ),
+        className: `site-collapse-custom-collapse ${leftSidebarTargets.facetFormFields.class()}`,
+        children: Object.keys(availableFacets).map((facet) => {
+          if (facetsByGroup[group].includes(facet)) {
+            const facetOptions = availableFacets[facet];
+
+            const isOptionalforDatasets =
+              facetOptions.length > 0 && facetOptions[0].includes('none');
+            const facetNameHumanized = humanizeFacetNames(facet);
+            return (
+              <Form.Item
+                key={facet}
+                name={facet}
+                label={
+                  <div>
+                    {humanizeFacetNames(facet)}
+                    <Button
+                      size="small"
+                      style={{ marginLeft: '5px' }}
+                      icon={
+                        <Tooltip title={`Copy ${facetNameHumanized}s to clipboard`}>
+                          <CopyOutlined style={{ fontSize: '12px' }} />
+                        </Tooltip>
+                      }
+                      onClick={() => {
+                        // copy link to clipboard
+                        /* istanbul ignore else */
+                        if (navigator && navigator.clipboard) {
+                          navigator.clipboard.writeText(
+                            facetOptions
+                              .map((item) => {
+                                return `${item[0]} (${item[1]})`;
+                              })
+                              .join('\n'),
+                          );
+                          showNotice(messageApi, `${facetNameHumanized}s copied to clipboard!`, {
+                            icon: <CopyOutlined style={styles.messageAddIcon} />,
+                          });
+                        }
+                      }}
+                    ></Button>
+                  </div>
+                }
+                style={{ marginBottom: 0 }}
+                tooltip={
+                  isOptionalforDatasets
+                    ? {
+                        title:
+                          'Selecting the "none" option filters for datasets that do not use this facet.',
+                        icon: <InfoCircleOutlined />,
+                      }
+                    : undefined
+                }
+              >
+                <Select
+                  data-testid={`${facet}-form-select`}
+                  size="small"
+                  placeholder="Select option(s)"
+                  mode="multiple"
+                  style={{ width: '100%' }}
+                  tokenSeparators={[',']}
+                  getPopupContainer={(triggerNode) =>
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
+                    triggerNode.parentElement
+                  }
+                  onOpenChange={(open) => setDropdownIsOpen(open)}
+                  onChange={(value: string[] | []) => {
+                    handleOnSelectAvailableFacetsForm(facet, value);
+                  }}
+                  options={generateFacetOptions(facet, facetOptions)}
+                />
+              </Form.Item>
+            );
+          }
+          return null;
+        }),
+      };
+    });
+  };
 
   return (
     <div data-testid="facets-form">
@@ -330,137 +486,7 @@ const FacetsForm: React.FC = () => {
                 setExpandAll(false);
               }
             }}
-            items={Object.keys(facetsByGroup).map((group) => {
-              return {
-                key: group,
-                label: (
-                  <div className={leftSidebarTargets.facetFormGeneral.class()}>
-                    {humanizeFacetNames(group)}
-                  </div>
-                ),
-                className: `site-collapse-custom-collapse ${leftSidebarTargets.facetFormFields.class()}`,
-                children: Object.keys(availableFacets).map((facet) => {
-                  if (facetsByGroup[group].includes(facet)) {
-                    const facetOptions = availableFacets[facet];
-
-                    const isOptionalforDatasets =
-                      facetOptions.length > 0 && facetOptions[0].includes('none');
-                    const facetNameHumanized = humanizeFacetNames(facet);
-                    return (
-                      <Form.Item
-                        key={facet}
-                        name={facet}
-                        label={
-                          <div>
-                            {humanizeFacetNames(facet)}
-                            <Button
-                              size="small"
-                              style={{ marginLeft: '5px' }}
-                              icon={
-                                <Tooltip title={`Copy ${facetNameHumanized}s to clipboard`}>
-                                  <CopyOutlined style={{ fontSize: '12px' }} />
-                                </Tooltip>
-                              }
-                              onClick={() => {
-                                // copy link to clipboard
-                                /* istanbul ignore else */
-                                if (navigator && navigator.clipboard) {
-                                  navigator.clipboard.writeText(
-                                    facetOptions
-                                      .map((item) => {
-                                        return `${item[0]} (${item[1]})`;
-                                      })
-                                      .join('\n'),
-                                  );
-                                  showNotice(
-                                    messageApi,
-                                    `${facetNameHumanized}s copied to clipboard!`,
-                                    {
-                                      icon: <CopyOutlined style={styles.messageAddIcon} />,
-                                    },
-                                  );
-                                }
-                              }}
-                            ></Button>
-                          </div>
-                        }
-                        style={{ marginBottom: 0 }}
-                        tooltip={
-                          isOptionalforDatasets
-                            ? {
-                                title:
-                                  'Selecting the "none" option filters for datasets that do not use this facet.',
-                                icon: <InfoCircleOutlined />,
-                              }
-                            : undefined
-                        }
-                      >
-                        <Select
-                          data-testid={`${facet}-form-select`}
-                          size="small"
-                          placeholder="Select option(s)"
-                          mode="multiple"
-                          style={{ width: '100%' }}
-                          tokenSeparators={[',']}
-                          getPopupContainer={(triggerNode) =>
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
-                            triggerNode.parentElement
-                          }
-                          onDropdownVisibleChange={(open) => setDropdownIsOpen(open)}
-                          onChange={(value: string[] | []) => {
-                            handleOnSelectAvailableFacetsForm(facet, value);
-                          }}
-                          options={facetOptions.map((variable) => {
-                            if (typeof variable[0] !== 'string') {
-                              clearCachedSearchResults();
-                            }
-                            let optionOutput: string | React.ReactNode = (
-                              <>
-                                {variable[0]}
-                                <span style={styles.facetCount}>({variable[1]})</span>
-                              </>
-                            );
-
-                            // If the option output name is very long, use a tooltip
-                            const vLength = variable[0].length - 2;
-                            const cLength = variable[1].toString().length * 1.5 + 2;
-                            if (vLength > maxItemLength - cLength) {
-                              const innerTitle = variable[0].substring(0, maxItemLength - cLength);
-                              optionOutput = (
-                                <Tooltip
-                                  styles={{ body: { width: 'max-content' } }}
-                                  title={variable[0]}
-                                >
-                                  {innerTitle}...
-                                  <span style={styles.facetCount}>({variable[1]})</span>
-                                </Tooltip>
-                              );
-                            }
-
-                            // The data node facet has a unique tooltip overlay to show the status of the highlighted node
-                            if (facet === 'data_node') {
-                              optionOutput = (
-                                <StatusToolTip dataNode={variable[0]}>
-                                  <span style={styles.facetCount}>({variable[1]})</span>
-                                </StatusToolTip>
-                              );
-                            }
-                            return {
-                              key: variable[0],
-                              value: variable[0],
-                              label: (
-                                <span data-testid={`${facet}_${variable[0]}`}>{optionOutput} </span>
-                              ),
-                            };
-                          })}
-                        />
-                      </Form.Item>
-                    );
-                  }
-                  return null;
-                }),
-              };
-            })}
+            items={generateFacetGroups()}
           />
         </div>
       </Form>

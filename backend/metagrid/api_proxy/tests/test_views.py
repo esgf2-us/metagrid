@@ -102,8 +102,9 @@ class TestProxyViewSet(APITestCase):
     @responses.activate
     def test_stac_search(self):
         url = reverse("do-stac-search")
-        responses.get(settings.STAC_URL + "/search")
-        response = self.client.get(url)
+        postdata = {"collections": "CMIP6", "limit": 10}
+        responses.post(settings.STAC_URL + "/search", json={})
+        response = self.client.post(url, postdata, format="json")
         assert response.status_code == status.HTTP_200_OK
 
     @responses.activate
