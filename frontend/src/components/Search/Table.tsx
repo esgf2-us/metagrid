@@ -7,6 +7,7 @@ import {
   RightCircleOutlined,
 } from '@ant-design/icons';
 import { Form, Select, Table as TableD, Tooltip, message } from 'antd';
+import type { TableColumnsType } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
@@ -33,9 +34,9 @@ import {
   Sorts,
   TextInputs,
 } from './types';
-import GlobusToolTip from '../NodeStatus/GlobusToolTip';
+import GlobusToolTip from '../Globus/GlobusToolTip';
 import { topDataRowTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
-import { userCartAtom } from '../../common/atoms';
+import { currentProjectAtom, userCartAtom } from '../../common/atoms';
 import { AppPage } from '../../common/types';
 
 export type Props = {
@@ -70,6 +71,9 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
   // Global states
   const userCart = useAtomValue<UserCart>(userCartAtom);
 
+  const currentProject = useAtomValue(currentProjectAtom);
+  const { isSTAC } = currentProject;
+
   const showStatus = window.METAGRID.STATUS_URL !== null;
 
   // Add options to this constant as needed
@@ -85,6 +89,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
 
   let cachedPage: number | undefined;
   let cachedSize: number | undefined;
+
   if (getCurrentAppPage() !== AppPage.Cart) {
     const pagination = getCachedPagination();
     cachedPage = pagination.page;
@@ -166,14 +171,13 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
     hasData: results.length > 0,
   };
 
-  const columns = [
+  const columns: TableColumnsType<RawSearchResult> = [
     {
       align: 'right' as AlignType,
       fixed: 'left' as FixedType,
       title: 'Cart',
       key: 'cart',
-      width: 50,
-      render: (value: string, record: RawSearchResult, index: number) => {
+      render: (value: unknown, record: RawSearchResult, index: number) => {
         if (userCart.some((dataset: RawSearchResult) => dataset.id === record.id)) {
           return (
             <Button
@@ -201,8 +205,10 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       title: '',
       dataIndex: 'data_node',
       key: 'node_status',
-      width: 35,
       render: (data_node: string) => {
+        if (isSTAC) {
+          return <>STAC</>;
+        }
         if (!showStatus) {
           return (
             <Tooltip
@@ -272,9 +278,14 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
         return (a.size || 0) - (b.size || 0);
       },
       sortOrder: sortedInfo.columnKey === 'size' ? sortedInfo.order : null,
-      render: (size: number) => (
-        <p className={topDataRowTargets.totalSize.class()}>{size ? formatBytes(size) : 'N/A'}</p>
-      ),
+      render: (size: number) => {
+        if (isSTAC) {
+          return <p>N/A</p>;
+        }
+        return (
+          <p className={topDataRowTargets.totalSize.class()}>{size ? formatBytes(size) : 'N/A'}</p>
+        );
+      },
     },
     {
       align: 'center' as AlignType,
@@ -288,7 +299,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       },
       sortOrder: sortedInfo.columnKey === 'version' ? sortedInfo.order : null,
       render: (version: string) => (
-        <p className={topDataRowTargets.versionText.class()}>{version}</p>
+        <p className={topDataRowTargets.versionText.class()}>{version || 'N/A'}</p>
       ),
     },
     {
@@ -296,8 +307,23 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       fixed: 'right' as FixedType,
       title: 'Download Options',
       key: 'download',
-      width: 180,
       render: (record: RawSearchResult) => {
+        if (isSTAC) {
+          if (record.globus_link) {
+            return (
+              <Button
+                type="link"
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                href={record.globus_link}
+                target="_blank"
+              >
+                GLOBUS
+              </Button>
+            );
+          }
+          return <p>N/A</p>;
+        }
+
         const formKey = `download-${record.id}`;
 
         /**
@@ -383,8 +409,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
           title: '',
           dataIndex: 'data_node',
           key: 'globus_enabled',
-          width: 1,
-          render: () => <div></div>,
+          render: () => <></>,
         },
   ];
 
@@ -397,6 +422,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       rowKey="id"
       size="small"
       scroll={{ x: 'max-content' }}
+      tableLayout="auto"
       onRow={(record, rowIndex) => {
         return {
           id: `cart-items-row-${rowIndex}`,

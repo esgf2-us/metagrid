@@ -1,7 +1,7 @@
 import { atomWithStorage } from 'jotai/utils';
 import { atom } from 'jotai';
 import { UserCart, UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
-import { ParsedFacets } from '../components/Facets/types';
+import { ParsedFacets, RawProject } from '../components/Facets/types';
 import { GlobusTaskItem, GlobusEndpoint } from '../components/Globus/types';
 import { NodeStatusArray } from '../components/NodeStatus/types';
 import { ActiveSearchQuery, RawSearchResults } from '../components/Search/types';
@@ -9,6 +9,7 @@ import { projectBaseQuery } from './utils';
 
 export enum AppStateKeys {
   isDarkMode = 'isDarkMode',
+  currentProject = 'currentProject',
   userCart = 'userCart',
   userSearchQueries = 'userSearchQueries',
   activeSearchQuery = 'activeSearchQuery',
@@ -61,6 +62,13 @@ export const currentRequestQueryAtom = atomWithStorage<string>(
 export const isDarkModeAtom = atomWithStorage<boolean>(
   AppStateKeys.isDarkMode,
   darkModeDefault,
+  undefined,
+  { getOnInit: true },
+);
+
+export const currentProjectAtom = atomWithStorage<RawProject>(
+  AppStateKeys.currentProject,
+  {} as RawProject,
   undefined,
   { getOnInit: true },
 );

@@ -80,13 +80,18 @@ describe('test genDownloadUrls()', () => {
 });
 
 const defaultProps: Props = {
-  id: 'id',
-  numResults: 1,
+  inputRecord: rawSearchResultFixture(),
+  filenameVars: [],
 };
 
 describe('test FilesTable component', () => {
   it('renders an empty data table when no results are available', async () => {
-    customRender(<FilesTable {...defaultProps} numResults={undefined} />);
+    customRender(
+      <FilesTable
+        {...defaultProps}
+        inputRecord={rawSearchResultFixture({ number_of_files: undefined })}
+      />,
+    );
 
     const component = await screen.findByRole('table');
     expect(component).toBeTruthy();
@@ -144,7 +149,7 @@ describe('test FilesTable component', () => {
 
     const docs = new Array(20)
       .fill(rawSearchResultFixture())
-      .map((obj, index) => ({ ...obj, id: `id_${index}` } as RawSearchResult));
+      .map((obj, index) => ({ ...obj, id: `id_${index}` }) as RawSearchResult);
     const numFound = docs.length;
     const response = {
       ...data,
@@ -155,11 +160,16 @@ describe('test FilesTable component', () => {
     };
     server.use(
       rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
-        res(ctx.status(200), ctx.json(response))
-      )
+        res(ctx.status(200), ctx.json(response)),
+      ),
     );
 
-    customRender(<FilesTable {...defaultProps} numResults={numFound} />);
+    customRender(
+      <FilesTable
+        {...defaultProps}
+        inputRecord={rawSearchResultFixture({ number_of_files: numFound })}
+      />,
+    );
 
     // Select the combobox drop down and update its value to render options
     const paginationList = await screen.findByRole('list');
@@ -237,11 +247,13 @@ describe('test column sorting', () => {
   it('sorts by File Title column', async () => {
     server.use(
       rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
-        res(ctx.status(200), ctx.json(response))
-      )
+        res(ctx.status(200), ctx.json(response)),
+      ),
     );
     const colIdx = 1; // The column that File Title is in
-    customRender(<FilesTable id="test" numResults={2} />);
+    customRender(
+      <FilesTable inputRecord={rawSearchResultFixture({ id: 'test', number_of_files: 2 })} />,
+    );
 
     // Check table exists
     const table = await screen.findByRole('table');
@@ -280,11 +292,13 @@ describe('test column sorting', () => {
   it('sorts by Size column', async () => {
     server.use(
       rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
-        res(ctx.status(200), ctx.json(response))
-      )
+        res(ctx.status(200), ctx.json(response)),
+      ),
     );
     const colIdx = 2; // The column that Size is in
-    customRender(<FilesTable {...defaultProps} numResults={2} />);
+    customRender(
+      <FilesTable {...defaultProps} inputRecord={rawSearchResultFixture({ number_of_files: 2 })} />,
+    );
 
     // Check table exists
     const table = await screen.findByRole('table');
@@ -345,10 +359,12 @@ describe('test column sorting', () => {
 
     server.use(
       rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
-        res(ctx.status(200), ctx.json(response))
-      )
+        res(ctx.status(200), ctx.json(response)),
+      ),
     );
-    customRender(<FilesTable {...defaultProps} numResults={2} />);
+    customRender(
+      <FilesTable {...defaultProps} inputRecord={rawSearchResultFixture({ number_of_files: 2 })} />,
+    );
 
     // Check table exists
     const table = await screen.findByRole('table');

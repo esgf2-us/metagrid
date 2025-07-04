@@ -2,13 +2,20 @@ import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
 import React from 'react';
 import { Tooltip } from 'antd';
 import { useAtomValue } from 'jotai';
-import { lightModeGreen, lightModeRed, darkModeGreen, darkModeRed } from './StatusToolTip';
-import { isDarkModeAtom } from '../../common/atoms';
+import {
+  lightModeGreen,
+  lightModeRed,
+  darkModeGreen,
+  darkModeRed,
+} from '../NodeStatus/StatusToolTip';
+import { currentProjectAtom, isDarkModeAtom } from '../../common/atoms';
 
 export type Props = { dataNode: string };
 
 const GlobusToolTip: React.FC<Props> = ({ dataNode }) => {
-  const isEnabled = window.METAGRID.GLOBUS_NODES.includes(dataNode);
+  const currentProject = useAtomValue(currentProjectAtom);
+
+  const isEnabled = currentProject.isSTAC || window.METAGRID.GLOBUS_NODES.includes(dataNode);
   const isDarkMode = useAtomValue<boolean>(isDarkModeAtom);
 
   const enabledColor = isDarkMode ? darkModeGreen : lightModeGreen;

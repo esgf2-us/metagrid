@@ -37,11 +37,7 @@ import { AppPage } from './types';
 import { Provider, useAtom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
 import { mockConfig } from '../test/jestTestFunctions';
-import {
-  localStorageMock,
-  sessionStorageMock,
-  tempStorageGetMock,
-} from '../test/mock/mockStorage';
+import { localStorageMock, sessionStorageMock, tempStorageGetMock } from '../test/mock/mockStorage';
 
 describe('Test objectIsEmpty', () => {
   it('returns true with empty object', () => {
