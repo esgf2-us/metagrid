@@ -361,6 +361,19 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   // Used cached results if the request fails
   if (error) {
+    if (error.cause === 422) {
+      setTimeout(() => {
+        window.location.reload();
+      }, 5000);
+
+      showError(messageApi, 'The requested page value was unavailable. Resetting to page 1.');
+      return (
+        <div data-testid="alert-fetching">
+          {contextHolder}
+          <Alert message="There was an issue fetching results for requested page." type="error" />
+        </div>
+      );
+    }
     return (
       <div data-testid="alert-fetching">
         <Alert

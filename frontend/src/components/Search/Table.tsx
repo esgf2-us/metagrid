@@ -51,6 +51,8 @@ export type Props = {
   onPageSizeChange?: (size: number) => void;
 };
 
+const MAX_RESULTS = 10000;
+
 const Table: React.FC<React.PropsWithChildren<Props>> = ({
   loading,
   canDisableRows = true,
@@ -91,11 +93,14 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
     cachedSize = pagination.pageSize;
   }
 
+  // Clamp the results count to a maximum of 10,000
+  const clampedResultCount = totalResults ? Math.min(totalResults, MAX_RESULTS) : undefined;
+
   const tableConfig = {
     size: 'small' as SizeType,
     loading,
     pagination: {
-      total: totalResults,
+      total: clampedResultCount,
       current: cachedPage,
       pageSize: cachedSize,
       position: ['bottomCenter'],
