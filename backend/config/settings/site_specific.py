@@ -70,7 +70,7 @@ class MetagridFrontendSettings(BaseSettings):
 
     SEARCH_URL: str = Field(
         description="The URL at which the ESG-Search api can be queried. A suitable endpoint will return XML in the browser.",
-        examples=["https://esgf-node.llnl.gov/esg-search/search"],
+        examples=["https://esgf-node.ornl.gov/esgf-1-5-bridge"],
     )
 
     BANNER_TEXT: Optional[str] = Field(

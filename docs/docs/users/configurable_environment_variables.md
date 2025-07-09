@@ -1,4 +1,5 @@
 # Configurable Environment Variables
+
 <!-- start generated backend settings markdown -->
 #### `METAGRID_WGET_URL`
 
@@ -80,7 +81,7 @@
 >
 >     __Example Values__
 >
->     `https://esgf-node.llnl.gov/esg-search/search`
+>     `https://esgf-node.ornl.gov/esgf-1-5-bridge`
 
 #### `METAGRID_BANNER_TEXT`
 
