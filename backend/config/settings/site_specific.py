@@ -13,10 +13,6 @@ class MetagridBackendSettings(BaseSettings):
         case_sensitive=True,
     )
 
-    SEARCH_URL: str = Field(
-        description="The URL at which the ESG-Search api can be queried. A suitable endpoint will return XML in the browser.",
-        examples=["https://esgf-node.llnl.gov/esg-search/search"],
-    )
     WGET_URL: str = Field(
         description="The URL at which the ESG-Search wget endpoint can be reached.",
         examples=["https://esgf-node.llnl.gov/esg-search/wget"],
@@ -71,6 +67,12 @@ class MetagridFrontendSettings(BaseSettings):
         default="globus",
         description="Which authentication method to enable for user sign in on the frontend.",
     )
+
+    SEARCH_URL: str = Field(
+        description="The URL at which the ESG-Search api can be queried. A suitable endpoint will return XML in the browser.",
+        examples=["https://esgf-node.llnl.gov/esg-search/search"],
+    )
+
     BANNER_TEXT: Optional[str] = Field(
         default=None,
         examples=["My banner notification text."],

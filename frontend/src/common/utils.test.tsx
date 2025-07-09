@@ -37,11 +37,7 @@ import { AppPage } from './types';
 import { Provider, useAtom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
 import { mockConfig } from '../test/jestTestFunctions';
-import {
-  localStorageMock,
-  sessionStorageMock,
-  tempStorageGetMock,
-} from '../test/mock/mockStorage';
+import { localStorageMock, sessionStorageMock, tempStorageGetMock } from '../test/mock/mockStorage';
 
 describe('Test objectIsEmpty', () => {
   it('returns true with empty object', () => {
@@ -112,7 +108,7 @@ describe('Test getUrlFromSearch', () => {
   it('returns basic url when active search is empty', () => {
     const url = getUrlFromSearch({} as ActiveSearchQuery);
     expect(url).toBe(
-      `${window.location.protocol}//${window.location.host}${window.location.pathname}`
+      `${window.location.protocol}//${window.location.host}${window.location.pathname}`,
     );
   });
   it('returns basic url if active search is default object', () => {
@@ -126,7 +122,7 @@ describe('Test getUrlFromSearch', () => {
         filenameVars: [],
         activeFacets: {},
         textInputs: [],
-      } as ActiveSearchQuery).includes('?project=CMIP6')
+      } as ActiveSearchQuery).includes('?project=CMIP6'),
     ).toBeTruthy();
   });
   it('returns basic url with min and max version date', () => {
@@ -141,8 +137,8 @@ describe('Test getUrlFromSearch', () => {
         activeFacets: {},
         textInputs: [],
       } as ActiveSearchQuery).includes(
-        '?project=CMIP6&minVersionDate=20210309&maxVersionDate=20210413'
-      )
+        '?project=CMIP6&minVersionDate=20210309&maxVersionDate=20210413',
+      ),
     ).toBeTruthy();
   });
   it('returns url with filname variables, active facets and text inputs.', () => {
@@ -160,15 +156,15 @@ describe('Test getUrlFromSearch', () => {
         },
         textInputs: ['CSIRO'],
       } as ActiveSearchQuery).includes(
-        '?project=CMIP6&filenameVars=%5B%22clt%22%2C%22tsc%22%5D&activeFacets=%7B%22activity_id%22%3A%5B%22CDRMIP%22%2C%22CFMIP%22%5D%2C%22source_id%22%3A%22ACCESS-ESM1-5%22%7D&textInputs=%5B%22CSIRO%22%5D'
-      )
+        '?project=CMIP6&filenameVars=%5B%22clt%22%2C%22tsc%22%5D&activeFacets=%7B%22activity_id%22%3A%5B%22CDRMIP%22%2C%22CFMIP%22%5D%2C%22source_id%22%3A%22ACCESS-ESM1-5%22%7D&textInputs=%5B%22CSIRO%22%5D',
+      ),
     ).toBeTruthy();
   });
   it('returns basic url with project parameter when search contains project', () => {
     expect(
       getUrlFromSearch({
         project: { name: 'CMIP6' },
-      } as ActiveSearchQuery).includes('?project=CMIP6')
+      } as ActiveSearchQuery).includes('?project=CMIP6'),
     ).toBeTruthy();
   });
 });
@@ -188,14 +184,14 @@ describe('Test getSearchFromUrl', () => {
   });
   it('returns search object of version date range', () => {
     expect(
-      getSearchFromUrl('?project=CMIP6&minVersionDate=20210401&maxVersionDate=20220401')
+      getSearchFromUrl('?project=CMIP6&minVersionDate=20210401&maxVersionDate=20220401'),
     ).toBeTruthy();
   });
   it('returns search object containing active facets, filenames and text input', () => {
     expect(
       getSearchFromUrl(
-        '?project=CMIP6&filenameVars=%5B%22clt%22%2C%22tsc%22%5D&activeFacets=%7B%22activity_id%22%3A%5B%22CDRMIP%22%2C%22CFMIP%22%5D%2C%22source_id%22%3A%22ACCESS-ESM1-5%22%7D&textInputs=%5B%22CSIRO%22%5D'
-      )
+        '?project=CMIP6&filenameVars=%5B%22clt%22%2C%22tsc%22%5D&activeFacets=%7B%22activity_id%22%3A%5B%22CDRMIP%22%2C%22CFMIP%22%5D%2C%22source_id%22%3A%22ACCESS-ESM1-5%22%7D&textInputs=%5B%22CSIRO%22%5D',
+      ),
     ).toBeTruthy();
   });
   it('returns default search if no project was found.', () => {
@@ -207,8 +203,8 @@ describe('Test getSearchFromUrl', () => {
   it('returns search object using alternate url', () => {
     expect(
       getSearchFromUrl(
-        'input4mips/?mip_era=CMIP6&activity_id=input4MIPs&institution_id=PCMDI&target_mip=CMIP&source_id=PCMDI-AMIP-1-1-2'
-      )
+        'input4mips/?mip_era=CMIP6&activity_id=input4MIPs&institution_id=PCMDI&target_mip=CMIP&source_id=PCMDI-AMIP-1-1-2',
+      ),
     ).toBeTruthy();
   });
 });
@@ -217,7 +213,7 @@ describe('Test getUrlFromSearch', () => {
   it('returns basic url when active search is empty', () => {
     const url = getUrlFromSearch({} as ActiveSearchQuery);
     expect(url).toBe(
-      `${window.location.protocol}//${window.location.host}${window.location.pathname}`
+      `${window.location.protocol}//${window.location.host}${window.location.pathname}`,
     );
   });
   it('returns basic url if active search is default object', () => {
@@ -231,7 +227,7 @@ describe('Test getUrlFromSearch', () => {
         filenameVars: [],
         activeFacets: {},
         textInputs: [],
-      } as ActiveSearchQuery).includes('?project=CMIP6')
+      } as ActiveSearchQuery).includes('?project=CMIP6'),
     ).toBeTruthy();
   });
   it('returns basic url with min and max version date', () => {
@@ -246,8 +242,8 @@ describe('Test getUrlFromSearch', () => {
         activeFacets: {},
         textInputs: [],
       } as ActiveSearchQuery).includes(
-        '?project=CMIP6&minVersionDate=20210309&maxVersionDate=20210413'
-      )
+        '?project=CMIP6&minVersionDate=20210309&maxVersionDate=20210413',
+      ),
     ).toBeTruthy();
   });
   it('returns url with filname variables, active facets and text inputs.', () => {
@@ -265,14 +261,14 @@ describe('Test getUrlFromSearch', () => {
       textInputs: ['CSIRO'],
     } as ActiveSearchQuery);
     expect(url).toContain(
-      '?project=CMIP6&filenameVars=%5B%22clt%22%2C%22tsc%22%5D&activeFacets=%7B%22activity_id%22%3A%5B%22CDRMIP%22%2C%22CFMIP%22%5D%2C%22source_id%22%3A%22ACCESS-ESM1-5%22%7D&textInputs=%5B%22CSIRO%22%5D'
+      '?project=CMIP6&filenameVars=%5B%22clt%22%2C%22tsc%22%5D&activeFacets=%7B%22activity_id%22%3A%5B%22CDRMIP%22%2C%22CFMIP%22%5D%2C%22source_id%22%3A%22ACCESS-ESM1-5%22%7D&textInputs=%5B%22CSIRO%22%5D',
     );
   });
   it('returns basic url with project parameter when search contains project', () => {
     expect(
       getUrlFromSearch({
         project: { name: 'CMIP6' },
-      } as ActiveSearchQuery).includes('?project=CMIP6')
+      } as ActiveSearchQuery).includes('?project=CMIP6'),
     ).toBeTruthy();
   });
 });
@@ -492,7 +488,7 @@ describe('Test localStorageEffect', () => {
     const { getByText } = render(
       <Provider>
         <TestComponent />
-      </Provider>
+      </Provider>,
     );
     expect(getByText(defaultVal)).toBeTruthy();
   });
@@ -502,29 +498,30 @@ describe('Test localStorageEffect', () => {
     const { getByText } = render(
       <Provider>
         <TestComponent />
-      </Provider>
+      </Provider>,
     );
     expect(getByText(defaultVal)).toBeTruthy();
   });
 });
 
 describe('Test createSearchRouteURL', () => {
+  window.METAGRID.SEARCH_URL = 'https://example.com';
   it('returns the correct URL with search parameters', () => {
     const url = 'https://example.com/path?param1=value1&param2=value2';
     const result = createSearchRouteURL(url);
-    expect(result).toBe(`${window.location.origin}/path?param1=value1&param2=value2`);
+    expect(result).toBe('https://example.com?param1=value1&param2=value2');
   });
 
   it('returns the correct URL without search parameters', () => {
     const url = 'https://example.com/path';
     const result = createSearchRouteURL(url);
-    expect(result).toBe(`${window.location.origin}/path?`);
+    expect(result).toBe('https://example.com?');
   });
 
   it('returns the correct URL with complex search parameters', () => {
-    const url = 'https://example.com/path?param1=value1&param2=value2&param3=value3';
+    const url = 'https://example.com/search?param1=value1&param2=value2&param3=value3';
     const result = createSearchRouteURL(url);
-    expect(result).toBe(`${window.location.origin}/path?param1=value1&param2=value2&param3=value3`);
+    expect(result).toBe('https://example.com?param1=value1&param2=value2&param3=value3');
   });
 });
 
