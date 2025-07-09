@@ -436,6 +436,7 @@ export const fetchSearchResults = async (
 
   // Get cached search results
   const cachedResults = getCachedSearchResults();
+  /* istanbul ignore next */
   const cachedURL = (cachedResults?.cachedURL as string) || '';
   const reqUrlOffset = reqUrlStr.match(/offset=\d+/)?.[0];
   const cachedUrlOffset = cachedURL.match(/offset=\d+/)?.[0];

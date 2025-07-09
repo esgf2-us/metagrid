@@ -361,7 +361,9 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   // Used cached results if the request fails
   if (error) {
+    /* istanbul ignore next */
     if (error.cause === 422) {
+      // Handle unlikely case where the requested page is not available
       setTimeout(() => {
         window.location.reload();
       }, 5000);

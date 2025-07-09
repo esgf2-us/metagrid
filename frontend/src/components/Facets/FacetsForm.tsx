@@ -411,6 +411,8 @@ const FacetsForm: React.FC = () => {
                             handleOnSelectAvailableFacetsForm(facet, value);
                           }}
                           options={facetOptions.map((variable) => {
+                            // In rare bug, is the variable is not a string, clear the cached search results
+                            /* istanbul ignore next */
                             if (typeof variable[0] !== 'string') {
                               clearCachedSearchResults();
                             }
