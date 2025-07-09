@@ -142,9 +142,9 @@ export const getCurrentAppPage = (): number => {
 
 /** Creates a route that will access the JSON search results */
 export const createSearchRouteURL = (url: string): string => {
-  const { pathname, searchParams } = new URL(url);
+  const { searchParams } = new URL(url);
 
-  return `${window.location.origin}${pathname}?${searchParams.toString()}`;
+  return `${window.METAGRID.SEARCH_URL}?${searchParams.toString()}`;
 };
 
 /**
