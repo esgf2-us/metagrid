@@ -436,6 +436,7 @@ export const fetchSearchResults = async (
 
   // Get cached search results
   const cachedResults = getCachedSearchResults();
+  /* istanbul ignore next */
   const cachedURL = (cachedResults?.cachedURL as string) || '';
   const reqUrlOffset = reqUrlStr.match(/offset=\d+/)?.[0];
   const cachedUrlOffset = cachedURL.match(/offset=\d+/)?.[0];
@@ -447,23 +448,40 @@ export const fetchSearchResults = async (
   }
 
   let finalUrl = reqUrlStr;
+  const cachedPagination = getCachedPagination();
   // If the change to the request URL was not the offset, reset the offset to 0
   if (reqUrlOffset === cachedUrlOffset) {
     finalUrl = reqUrlStr.replace(/offset=\d+/, 'offset=0');
     // Cache the new offset value so it is reflected in the pagination
-    const pagination = getCachedPagination();
     cachePagination({
       page: 1,
-      pageSize: pagination.pageSize,
+      pageSize: cachedPagination.pageSize,
     });
   }
 
   return fetch(finalUrl)
     .then((results) => {
+      // Prevent breaking the app if the response is not successful
+      if (results.status !== 200) {
+        // Handle the case where status is 422 due to a offset value that is too high
+        if (results.status === 422) {
+          cachePagination({
+            page: 1,
+            pageSize: cachedPagination.pageSize,
+          });
+          throw new Error('', { cause: 422 });
+        }
+      }
       return results.json();
     })
     .catch((error: ResponseError) => {
-      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearch));
+      if (error.cause === 422) {
+        throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearch), {
+          cause: 422,
+        });
+      } else {
+        throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearch));
+      }
     });
 };
 
