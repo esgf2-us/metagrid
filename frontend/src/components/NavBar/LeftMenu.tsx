@@ -1,11 +1,11 @@
 import { SearchOutlined } from '@ant-design/icons';
 import { Alert, Form, Input, Select, Space, Spin } from 'antd';
 import React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router';
 import { ResponseError } from '../../api';
-import { navBarTargets } from '../../common/reactJoyrideSteps';
 import { RawProject, RawProjects } from '../Facets/types';
 import Button from '../General/Button';
+import { navBarTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
 const styles = {
   spin: { display: 'flex', justifyContent: 'center' },
@@ -41,7 +41,7 @@ const LeftMenu: React.FC<React.PropsWithChildren<Props>> = ({
     }
 
     const selectedProj: RawProject | undefined = (projects as RawProjects).find(
-      (obj) => obj.name === values.projectTextInput
+      (obj) => obj.name === values.projectTextInput,
     );
 
     onTextSearch(selectedProj as RawProject, values.text);

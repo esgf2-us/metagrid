@@ -149,27 +149,22 @@ projects = [
             "meet the science needs of the nation and the mission needs of DOE."
         ),
         "facets_by_group": {
-            GROUPS[0]: ["data_node"],
+            GROUPS[0]: ["activity_id", "data_node"],
             GROUPS[1]: [
-                "experiment",
-                "science_driver",
-                "model_version",
+                "source_id",
+                "institution_id",
+                "source_type",
+                "experiment_id",
+                "sub_experiment_id",
             ],
+            GROUPS[2]: ["nominal_resolution"],
+            GROUPS[3]: ["variant_label", "grid_label"],
             GROUPS[4]: [
+                "table_id",
+                "frequency",
                 "realm",
-                "regridding",
-                "time_frequency",
-                "data_type",
-                "ensemble_member",
-                "tuning",
-                "campaign",
-                "period",
-            ],
-            GROUPS[2]: [
-                "atmos_grid_resolution",
-                "ocean_grid_resolution",
-                "land_grid_resolution",
-                "seaice_grid_resolution",
+                "variable_id",
+                "cf_standard_name",
             ],
         },
     },
@@ -293,7 +288,7 @@ projects = [
         "name": "DRCDP",
         "description": "Downscaled CMIP data for North America",
         "facets_by_group": {
-            "Search Properties": [
+            "Properties": [
                 "downscaling_source_id",
                 "institution_id",
                 "driving_source_id",
@@ -302,6 +297,7 @@ projects = [
                 "version_realization",
                 "variable_id",
                 "driving_activity_id",
+                "data_node",
             ]
         },
     },
