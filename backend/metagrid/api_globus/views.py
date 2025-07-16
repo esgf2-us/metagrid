@@ -116,7 +116,7 @@ def search_files(
         # https://esgf-node.ornl.gov/esg-search/search?type=File&format=application%2Fsolr%2Bjson&fields=url,data_node&limit=10000
         "type": "File",
         "format": "application/solr+json",
-        "fields": "url,data_node",
+        # "fields": "url,data_node",
         "limit": "10000",
     }
 
@@ -128,16 +128,31 @@ def search_files(
     if url_params.get("dataset_id") is not None:
         url_params["dataset_id"] = ",".join(url_params["dataset_id"])
 
-    results: ESGSearchResponse = requests.post(
+    results = requests.get(
         url=settings.SEARCH_URL,
         params=query_defaults | url_params,
-    ).json()
+    )
+    resultsText = results.text
+
+    try:
+        resultsJson = results.json()
+    except json.JSONDecodeError:
+        print("ESGF search did not return JSON")
+        print("Results Text:", resultsText)
+        resultsJson = {}
 
     # Warning message about the number of files retrieved
     # being smaller than the total number found for the query
     #    values = {"files": results["response"]["docs"], "wget_info": [wget_empty_path, url_params_list],            "file_info": [num_files_found, file_limit]}
 
-    for doc in results["response"]["docs"]:
+    if "response" not in resultsJson or "docs" not in resultsJson.get(
+        "response", {}
+    ):
+        print("ESGF search did not return expected values!")
+        print("Results Text:", resultsText)
+        raise ValueError(f"ESGF search did not return results: {resultsText}")
+
+    for doc in resultsJson["response"]["docs"]:
         yield globus_info_from_doc(doc)
 
 
