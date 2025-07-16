@@ -288,7 +288,7 @@ projects = [
         "name": "DRCDP",
         "description": "Downscaled CMIP data for North America",
         "facets_by_group": {
-            "Search Properties": [
+            "Properties": [
                 "downscaling_source_id",
                 "institution_id",
                 "driving_source_id",
@@ -297,6 +297,7 @@ projects = [
                 "version_realization",
                 "variable_id",
                 "driving_activity_id",
+                "data_node",
             ]
         },
     },
