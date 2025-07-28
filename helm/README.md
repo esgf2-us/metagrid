@@ -17,7 +17,7 @@
 
 ## Install
 ```shell
-helm install <name> oci://ghcr.io/esgf2-us/metagrid --version v1.3.5
+helm install <name> oci://ghcr.io/esgf2-us/metagrid --version v1.5.3
 ```
 
 ## Testing locally
@@ -73,18 +73,21 @@ This document describes the configurable values available in the `values.yaml` f
 | `ingress.annotations` | Custom annotations for ingress resources.                         | `object` | `{}`    |
 
 ---
+## Features
 
+| Parameter                          | Description                                                                | Type        | Default |
+|------------------------------------|----------------------------------------------------------------------------|-------------|---------|
+| `features.nodeStatus.enabled`      | Enables node status feature, deploying Prometheus and blackbox exporter.   | `boolean`   | `true`  |
+| `features.nodeStatus.url`          | Overrides and disables the default Prometheus deployment.                  | `string`    | N/A     |
+
+---
 ## Config
 
 | Parameter                                 | Description                                                                                      | Type     | Default                                         |
 |-------------------------------------------|--------------------------------------------------------------------------------------------------|----------|-------------------------------------------------|
-| `config.PGHOST`                           | PostgreSQL host value, dynamically set using the `postgresql-ha` subchart.                        | `string` | N/A                                             |
-| `config.PGUSER`                           | PostgreSQL username value, dynamically set using the `postgresql-ha` subchart.                    | `string` | N/A                                             |
-| `config.PGPASSWORD`                       | PostgreSQL password value, dynamically set using the `postgresql-ha` subchart.                    | `string` | N/A                                             |
 | `config.GUNICORN_WORKERS`                 | Number of Gunicorn workers for handling requests.                                                 | `string` | `'2'`                                           |
 | `config.METAGRID_SEARCH_URL`              | URL for the Metagrid search service.                                                              | `string` | `https://esgf-node.ornl.gov/esg-search/search`   |
 | `config.METAGRID_WGET_URL`                | URL for the Metagrid wget service.                                                                | `string` | `https://esgf-node.ornl.gov/esg-search/wget`    |
-| `config.METAGRID_STATUS_URL`              | URL for checking Metagrid status, dynamically referenced.                                         | `string` | N/A                                             |
 | `config.METAGRID_SOCIAL_AUTH_GLOBUS_KEY`  | Placeholder key for Globus authentication.                                                        | `string` | `"key"`                                        |
 | `config.METAGRID_SOCIAL_AUTH_GLOBUS_SECRET`| Placeholder secret for Globus authentication.                                                     | `string` | `"secret"`                                     |
 | `config.METAGRID_GLOBUS_CLIENT_ID`        | Client ID for Globus authentication.                                                              | `string` | `"clientID"`                                   |

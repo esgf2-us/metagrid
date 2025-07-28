@@ -94,7 +94,7 @@ def globus_info_from_doc(doc: SolrResultDoc) -> tuple[str, str]:
 
 
 def search_files(
-    url_params: dict[str, str]
+    url_params: dict[str, str],
 ) -> Generator[tuple[str, str], Any, None]:
     """
     This function searches for files in the Earth System Grid Federation (ESGF) repository using the ESGF search API.
@@ -125,7 +125,10 @@ def search_files(
     if not url_params:
         query_defaults |= {"limit": "1", "distrib": "false"}
 
-    results: ESGSearchResponse = requests.get(
+    if url_params.get("dataset_id") is not None:
+        url_params["dataset_id"] = ",".join(url_params["dataset_id"])
+
+    results: ESGSearchResponse = requests.post(
         url=settings.SEARCH_URL,
         params=query_defaults | url_params,
     ).json()

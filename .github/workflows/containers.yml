@@ -3,13 +3,16 @@ name: Container release
 on:
   push:
     branches:
-      - 'main'
+      - 'master'
     tags:
       - 'v*'
 
   pull_request:
     branches:
-      - '*-release'
+      - 'master'
+      - 'v*-release'
+      - 'v*-beta'
+      - 'v*-alpha'
 
   workflow_dispatch:
 

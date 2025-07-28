@@ -26,15 +26,15 @@ import weekOfYear from 'dayjs/plugin/weekOfYear';
 import weekYear from 'dayjs/plugin/weekYear';
 
 import React from 'react';
-import { useRecoilState, useRecoilValue } from 'recoil';
-import { leftSidebarTargets } from '../../common/reactJoyrideSteps';
+import { useAtom, useAtomValue } from 'jotai';
 import { CSSinJS } from '../../common/types';
 import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
 import { ActiveSearchQuery, ResultType, VersionType } from '../Search/types';
 import { ActiveFacets, ParsedFacets } from './types';
-import { showError, showNotice } from '../../common/utils';
-import { activeSearchQueryAtom, availableFacetsAtom } from '../App/recoil/atoms';
+import { clearCachedSearchResults, showError, showNotice } from '../../common/utils';
+import { activeSearchQueryAtom, availableFacetsAtom } from '../../common/atoms';
+import { leftSidebarTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
 dayjs.extend(customParseFormat);
 dayjs.extend(advancedFormat);
@@ -84,21 +84,9 @@ export const formatDate = (date: string | Dayjs, toString: boolean): string | Da
 };
 
 const FacetsForm: React.FC = () => {
-  // Recoil state
-  const [activeSearchQuery, setActiveSearchQuery] = useRecoilState<ActiveSearchQuery>(
-    activeSearchQueryAtom
-  );
-
-  // let setGlobusReady = false;
-  // if (
-  //   activeSearchQuery.activeFacets.data_node &&
-  //   window.METAGRID.GLOBUS_NODES.length &&
-  //   window.METAGRID.GLOBUS_NODES.length > 0
-  // ) {
-  //   setGlobusReady = window.METAGRID.GLOBUS_NODES.every((node: string) =>
-  //     activeSearchQuery.activeFacets.data_node.includes(node)
-  //   );
-  // }
+  // Global states
+  const [activeSearchQuery, setActiveSearchQuery] =
+    useAtom<ActiveSearchQuery>(activeSearchQueryAtom);
 
   // Local variables
   const [messageApi, contextHolder] = message.useMessage();
@@ -126,7 +114,7 @@ const FacetsForm: React.FC = () => {
   >([]);
   const [expandAll, setExpandAll] = React.useState<boolean>(true);
 
-  const availableFacets: ParsedFacets = useRecoilValue(availableFacetsAtom) as ParsedFacets;
+  const availableFacets: ParsedFacets = useAtomValue(availableFacetsAtom) as ParsedFacets;
 
   type DatePickerReturnType = [null, null] | [Dayjs, null] | [null, Dayjs] | [Dayjs, Dayjs];
 
@@ -168,11 +156,16 @@ const FacetsForm: React.FC = () => {
     } = selectedFacets;
     let newMinVersionDate = null;
     let newMaxVersionDate = null;
+
     /* istanbul ignore else */
     if (versionDateRange) {
       const [minDate, maxDate] = versionDateRange;
-      newMinVersionDate = minDate ? (formatDate(minDate, true) as string) : minDate;
-      newMaxVersionDate = maxDate ? (formatDate(maxDate, true) as string) : maxDate;
+      if (minDate) {
+        newMinVersionDate = formatDate(minDate, true) as string;
+      }
+      if (maxDate) {
+        newMaxVersionDate = formatDate(maxDate, true) as string;
+      }
     }
 
     setActiveSearchQuery({
@@ -225,7 +218,7 @@ const FacetsForm: React.FC = () => {
         activeSearchQuery.activeFacets &&
         activeSearchQuery.activeFacets.data_node &&
         activeSearchQuery.activeFacets.data_node.every((node: string) =>
-          window.METAGRID.GLOBUS_NODES.includes(node)
+          window.METAGRID.GLOBUS_NODES.includes(node),
         )
       ) {
         setGlobusReadyOnly(true);
@@ -241,8 +234,8 @@ const FacetsForm: React.FC = () => {
       const newActiveFacets: ActiveFacets = activeSearchQuery.activeFacets;
       /* istanbul ignore else */
       if (options.length === 0) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [facet]: remove, ...updatedFacets } = newActiveFacets;
-
         setActiveSearchQuery({ ...activeSearchQuery, activeFacets: updatedFacets });
       } else if (options.length > 0) {
         setActiveSearchQuery({
@@ -377,14 +370,14 @@ const FacetsForm: React.FC = () => {
                                       .map((item) => {
                                         return `${item[0]} (${item[1]})`;
                                       })
-                                      .join('\n')
+                                      .join('\n'),
                                   );
                                   showNotice(
                                     messageApi,
                                     `${facetNameHumanized}s copied to clipboard!`,
                                     {
                                       icon: <CopyOutlined style={styles.messageAddIcon} />,
-                                    }
+                                    },
                                   );
                                 }
                               }}
@@ -418,7 +411,12 @@ const FacetsForm: React.FC = () => {
                             handleOnSelectAvailableFacetsForm(facet, value);
                           }}
                           options={facetOptions.map((variable) => {
-                            let optionOutput: string | React.ReactElement = (
+                            // In rare bug, is the variable is not a string, clear the cached search results
+                            /* istanbul ignore next */
+                            if (typeof variable[0] !== 'string') {
+                              clearCachedSearchResults();
+                            }
+                            let optionOutput: string | React.ReactNode = (
                               <>
                                 {variable[0]}
                                 <span style={styles.facetCount}>({variable[1]})</span>

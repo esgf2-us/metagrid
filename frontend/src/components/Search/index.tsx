@@ -8,8 +8,16 @@ import { Alert, Col, message, Row, Typography } from 'antd';
 import humps from 'humps';
 import React from 'react';
 import { DeferFn, useAsync } from 'react-async';
-import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { v4 as uuidv4 } from 'uuid';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import {
+  activeSearchQueryAtom,
+  availableFacetsAtom,
+  currentRequestQueryAtom,
+  isDarkModeAtom,
+  userCartAtom,
+  userSearchQueriesAtom,
+} from '../../common/atoms';
 import {
   addUserSearchQuery,
   convertResultTypeToReplicaParam,
@@ -17,24 +25,27 @@ import {
   generateSearchURLQuery,
   ResponseError,
 } from '../../api';
-import { searchTableTargets } from '../../common/reactJoyrideSteps';
+import { searchTableTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import {
+  cachePagination,
+  cacheSearchResults,
   createSearchRouteURL,
+  getCachedPagination,
   getStyle,
   getUrlFromSearch,
   objectIsEmpty,
+  projectBaseQuery,
   searchAlreadyExists,
   showError,
   showNotice,
 } from '../../common/utils';
-import { UserCart, UserSearchQueries, UserSearchQuery } from '../Cart/types';
+import { UserCart, UserSearchQuery } from '../Cart/types';
 import { Tag, TagType, TagValue } from '../DataDisplay/Tag';
 import { ActiveFacets, ParsedFacets, RawFacets, RawProject } from '../Facets/types';
 import Button from '../General/Button'; // Note, tooltips do not work for this button
 import Table from './Table';
 import {
-  ActiveSearchQuery,
   Pagination,
   RawSearchResult,
   RawSearchResults,
@@ -43,14 +54,6 @@ import {
   VersionDate,
   VersionType,
 } from './types';
-import {
-  activeSearchQueryAtom,
-  availableFacetsAtom,
-  isDarkModeAtom,
-  projectBaseQuery,
-  userCartAtom,
-  userSearchQueriesAtom,
-} from '../App/recoil/atoms';
 import { AuthContext } from '../../contexts/AuthContext';
 
 const styles: CSSinJS = {
@@ -72,18 +75,21 @@ const styles: CSSinJS = {
  * https://stackoverflow.com/questions/37270508/javascript-function-that-converts-array-to-array-of-2-tuples
  */
 export const parseFacets = (facets: RawFacets): ParsedFacets => {
-  const res = (facets as unknown) as ParsedFacets;
+  const res = facets as unknown as ParsedFacets;
   const keys: string[] = Object.keys(facets);
 
   keys.forEach((key) => {
-    res[key] = res[key].reduce((r, a, i) => {
-      if (i % 2) {
-        r[r.length - 1].push((a as unknown) as number);
-      } else {
-        r.push([a] as never);
-      }
-      return r;
-    }, ([] as unknown) as [string, number][]);
+    res[key] = res[key].reduce(
+      (r, a, i) => {
+        if (i % 2) {
+          r[r.length - 1].push(a as unknown as number);
+        } else {
+          r.push([a] as never);
+        }
+        return r;
+      },
+      [] as unknown as [string, number][],
+    );
   });
   return res;
 };
@@ -98,7 +104,7 @@ export const stringifyFilters = (
   minVersionDate: VersionDate,
   maxVersionDate: VersionDate,
   activeFacets: ActiveFacets,
-  textInputs: TextInputs | []
+  textInputs: TextInputs | [],
 ): string => {
   const filtersArr: string[] = [];
 
@@ -135,7 +141,7 @@ export const stringifyFilters = (
 
 export const checkFiltersExist = (
   activeFacets: ActiveFacets | Record<string, unknown>,
-  textInputs: TextInputs
+  textInputs: TextInputs,
 ): boolean => !(objectIsEmpty(activeFacets) && textInputs.length === 0);
 
 export type Props = {
@@ -143,22 +149,18 @@ export type Props = {
 };
 
 const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
-  // Recoil states
-  const setAvailableFacets = useSetRecoilState<ParsedFacets | Record<string, unknown>>(
-    availableFacetsAtom
-  );
+  // Global states
+  const setAvailableFacets = useSetAtom(availableFacetsAtom);
 
-  const userCart = useRecoilValue<UserCart>(userCartAtom);
+  const userCart = useAtomValue<UserCart>(userCartAtom);
 
-  const [userSearchQueries, setUserSearchQueries] = useRecoilState<UserSearchQueries>(
-    userSearchQueriesAtom
-  );
+  const [userSearchQueries, setUserSearchQueries] = useAtom(userSearchQueriesAtom);
 
-  const [activeSearchQuery, setActiveSearchQuery] = useRecoilState<ActiveSearchQuery>(
-    activeSearchQueryAtom
-  );
+  const [activeSearchQuery, setActiveSearchQuery] = useAtom(activeSearchQueryAtom);
 
-  const isDarkMode = useRecoilValue<boolean>(isDarkModeAtom);
+  const [currentRequestURL, setCurrentRequestURL] = useAtom(currentRequestQueryAtom);
+
+  const isDarkMode = useAtomValue<boolean>(isDarkModeAtom);
 
   const {
     project,
@@ -180,24 +182,27 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   const appStyles = getStyle(isDarkMode);
 
-  const { data: results, error, isLoading, run } = useAsync({
-    deferFn: (fetchSearchResults as unknown) as DeferFn<Record<string, unknown>>,
+  const { data, error, isLoading, run } = useAsync({
+    deferFn: fetchSearchResults as unknown as DeferFn<Record<string, unknown>>,
   });
   const [filtersExist, setFiltersExist] = React.useState<boolean>(false);
   const [parsedFacets, setParsedFacets] = React.useState<ParsedFacets | Record<string, unknown>>(
-    {}
+    {},
   );
-  const [currentRequestURL, setCurrentRequestURL] = React.useState<string | null>(null);
   const [selectedItems, setSelectedItems] = React.useState<RawSearchResults | []>([]);
 
-  const [paginationOptions, setPaginationOptions] = React.useState<Pagination>({
-    page: 1,
-    pageSize: 10,
-  });
+  const [paginationOptions, setPaginationOptions] =
+    React.useState<Pagination>(getCachedPagination());
+
+  const results: Record<string, unknown> | undefined = data;
 
   // Generate the current request URL based on filters
   React.useEffect(() => {
     if (!objectIsEmpty(project)) {
+      // Cache the pagination options in case they were changed
+      cachePagination(paginationOptions);
+
+      // Generate the search URL
       const reqUrl = generateSearchURLQuery(activeSearchQuery, paginationOptions);
       setCurrentRequestURL(reqUrl);
     }
@@ -210,16 +215,23 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   // Fetch search results
   React.useEffect(() => {
     if (!objectIsEmpty(project) && currentRequestURL) {
+      // Fetch search results (cached or not)
       run(currentRequestURL);
+
+      // Update displayed pagination in case the cachedPagination was changed
+      setPaginationOptions(getCachedPagination());
     }
   }, [run, currentRequestURL, project]);
 
   // Update the available facets based on the returned results
   React.useEffect(() => {
-    if (results && !objectIsEmpty(results)) {
-      const { facet_fields: facetFields } = (results as {
-        facet_counts: { facet_fields: RawFacets };
-      }).facet_counts;
+    if (results && currentRequestURL && !objectIsEmpty(results)) {
+      cacheSearchResults(results, paginationOptions, currentRequestURL);
+      const { facet_fields: facetFields } = (
+        results as {
+          facet_counts: { facet_fields: RawFacets };
+        }
+      ).facet_counts;
       setParsedFacets(parseFacets(facetFields));
     }
   }, [results]);
@@ -232,7 +244,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     setActiveSearchQuery(projectBaseQuery(activeSearchQuery.project));
   };
 
-  const handleSaveSearchQuery = (url: string): void => {
+  const handleSaveSearchQuery = (url: string, numFound: number): void => {
     const savedSearch: UserSearchQuery = {
       uuid: uuidv4(),
       user: pk,
@@ -246,6 +258,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       activeFacets: activeSearchQuery.activeFacets,
       textInputs: activeSearchQuery.textInputs,
       url,
+      resultsCount: numFound,
+      searchTime: Date.now(),
     };
 
     if (searchAlreadyExists(userSearchQueries, savedSearch)) {
@@ -272,7 +286,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           /* istanbul ignore next */
           (respError: ResponseError) => {
             showError(messageApi, respError.message);
-          }
+          },
         );
     } else {
       saveSuccess();
@@ -304,8 +318,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     } else if (type === 'facet') {
       const prevActiveFacets = activeSearchQuery.activeFacets;
 
-      const facet = (removedTag[0] as unknown) as string;
-      const facetOption = (removedTag[1] as unknown) as string;
+      const facet = removedTag[0] as unknown as string;
+      const facetOption = removedTag[1] as unknown as string;
       const updateFacet = {
         [facet]: prevActiveFacets[facet].filter((item) => item !== facetOption),
       };
@@ -332,7 +346,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     // undefined values.
     // https://github.com/ant-design/ant-design/issues/24243
     const rows = (selectedRows as RawSearchResults).filter(
-      (row: RawSearchResult) => row !== undefined
+      (row: RawSearchResult) => row !== undefined,
     );
     setSelectedItems(rows);
   };
@@ -345,7 +359,23 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     setPaginationOptions({ page: 1, pageSize });
   };
 
+  // Used cached results if the request fails
   if (error) {
+    /* istanbul ignore next */
+    if (error.cause === 422) {
+      // Handle unlikely case where the requested page is not available
+      setTimeout(() => {
+        window.location.reload();
+      }, 5000);
+
+      showError(messageApi, 'The requested page value was unavailable. Resetting to page 1.');
+      return (
+        <div data-testid="alert-fetching">
+          {contextHolder}
+          <Alert message="There was an issue fetching results for requested page." type="error" />
+        </div>
+      );
+    }
     return (
       <div data-testid="alert-fetching">
         <Alert
@@ -358,9 +388,13 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   let numFound = 0;
   let docs: RawSearchResults = [];
+  type LoadedResults = {
+    cachedURL: string;
+    response: { docs: RawSearchResults; numFound: number };
+  };
   if (results) {
-    numFound = (results as { response: { numFound: number } }).response.numFound;
-    docs = (results as { response: { docs: RawSearchResults } }).response.docs;
+    numFound = (results as LoadedResults).response.numFound;
+    docs = (results as LoadedResults).response.docs;
   }
 
   const allSelectedItemsInCart =
@@ -368,8 +402,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       (item: RawSearchResult) =>
         !userCart.some(
           /* istanbul ignore next */
-          (dataset: RawSearchResult) => dataset.id === item.id
-        )
+          (dataset: RawSearchResult) => dataset.id === item.id,
+        ),
     ).length === 0;
 
   return (
@@ -412,7 +446,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
               <Button
                 className={searchTableTargets.saveSearchBtn.class()}
                 type="default"
-                onClick={() => handleSaveSearchQuery(currentRequestURL as string)}
+                onClick={() => handleSaveSearchQuery(currentRequestURL, numFound)}
                 disabled={isLoading || numFound === 0}
               >
                 <BookOutlined data-testid="save-search-btn" />
@@ -445,7 +479,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                   minVersionDate,
                   maxVersionDate,
                   activeFacets,
-                  textInputs
+                  textInputs,
                 )}
               </Typography.Text>
             </p>
@@ -463,7 +497,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                     {variable}
                   </Tag>
                 </div>
-              ))
+              )),
             )}
           {textInputs.length !== 0 &&
             (textInputs as TextInputs).map((input: string) => (
@@ -497,7 +531,6 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                 loading={false}
                 results={docs}
                 totalResults={numFound}
-                userCart={userCart}
                 filenameVars={activeSearchQuery.filenameVars}
                 onUpdateCart={onUpdateCart}
                 onRowSelect={handleRowSelect}
@@ -509,7 +542,6 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                 loading={isLoading}
                 results={[]}
                 totalResults={paginationOptions.pageSize}
-                userCart={userCart}
                 onUpdateCart={onUpdateCart}
               />
             )}
