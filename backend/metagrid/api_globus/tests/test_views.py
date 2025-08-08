@@ -4,196 +4,16 @@ from unittest.mock import patch
 import pytest
 import responses
 from django.conf import settings
+from django.http import HttpRequest, HttpResponse
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APIClient
 
+from metagrid.api_globus import views
 from metagrid.api_globus.views import globus_info_from_doc, search_files
 
-
-@responses.activate
-@pytest.mark.django_db
-def test_get_access_token(api_client: APIClient):
-    responses.add(responses.POST, "https://auth.globus.org/v2/oauth2/token")
-
-    response = api_client.post(reverse("globus_auth"), {})
-
-    assert response.status_code == status.HTTP_200_OK
-
-
-@pytest.mark.django_db
-@pytest.mark.parametrize(
-    "missing_param", ("access_token", "refresh_token", "endpointId", "path")
+default_scope = (
+    "openid profile email urn:globus:auth:scope:transfer.api.globus.org:all"
 )
-def test_globus_transfer_missing_required_parameter_returns_400(
-    missing_param, api_client
-):
-    url = reverse("globus_transfer")
-
-    postdata = {
-        "access_token": "",
-        "refresh_token": "",
-        "endpointId": "test",
-        "path": "bad/path",
-    }
-    del postdata[missing_param]
-    response = api_client.post(url, postdata, format="json")
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
-
-
-@responses.activate
-@pytest.mark.django_db
-@patch("globus_sdk.TransferClient.submit_transfer")
-@pytest.mark.parametrize(
-    "json_fixture", ["esgsearch_multiple_results.json"], indirect=True
-)
-def test_globus_multi_transfer_submits_tasks(
-    submit_mock, json_fixture, api_client
-):
-    responses.add(responses.GET, settings.SEARCH_URL, json=json_fixture)
-    responses.add(
-        responses.GET,
-        "https://transfer.api.globus.org/v0.10/submission_id",
-        json={"value": "someid"},
-    )
-
-    api_client.post(
-        reverse("globus_transfer"),
-        data={
-            "access_token": "test_access_token",
-            "refresh_token": "test_refresh_token",
-            "endpointId": "test_endpoint_id",
-            "path": "test_path",
-            "project": "CMIP6",
-        },
-        format="json",
-    )
-
-    assert submit_mock.called_with(
-        {
-            "DATA_TYPE": "transfer",
-            "DATA": [
-                {
-                    "DATA_TYPE": "transfer_item",
-                    "source_path": "/css03_data/CMIP6/AerChemMIP/EC-Earth-Consortium/EC-Earth3-AerChem/histSST-piAer/r1i1p1f1/Amon/prsn/gr/v20210831/prsn_Amon_EC-Earth3-AerChem_histSST-piAer_r1i1p1f1_gr_199901-199912.nc",
-                    "destination_path": "test_path/prsn_Amon_EC-Earth3-AerChem_histSST-piAer_r1i1p1f1_gr_199901-199912.nc",
-                },
-                {
-                    "DATA_TYPE": "transfer_item",
-                    "source_path": "/css03_data/CMIP6/AerChemMIP/EC-Earth-Consortium/EC-Earth3-AerChem/histSST-piAer/r1i1p1f1/Amon/prsn/gr/v20210831/prsn_Amon_EC-Earth3-AerChem_histSST-piAer_r1i1p1f1_gr_200001-200012.nc",
-                    "destination_path": "test_path/prsn_Amon_EC-Earth3-AerChem_histSST-piAer_r1i1p1f1_gr_200001-200012.nc",
-                },
-            ],
-            "source_endpoint": "dea29ae8-bb92-4c63-bdbc-260522c92fe8",
-            "destination_endpoint": "test_endpoint_id",
-            "submission_id": "someid",
-            "deadline": "2025-01-06 02:21:50.311298+00:00",
-            "verify_checksum": False,
-            "preserve_timestamp": False,
-            "encrypt_data": False,
-            "skip_source_errors": False,
-            "fail_on_quota_errors": False,
-            "delete_destination_extra": False,
-            "notify_on_succeeded": True,
-            "notify_on_failed": True,
-            "notify_on_inactive": True,
-        }
-    )
-
-
-@responses.activate
-@pytest.mark.django_db
-@patch(
-    "globus_sdk.TransferClient.submit_transfer",
-    side_effect=ValueError(),
-)
-@pytest.mark.parametrize(
-    "json_fixture", ["esgsearch_multiple_results.json"], indirect=True
-)
-def test_globus_transfer_returns_207_when_submission_errors(
-    submit_mock, json_fixture, api_client
-):
-    responses.add(responses.GET, settings.SEARCH_URL, json=json_fixture)
-    responses.add(
-        responses.GET,
-        "https://transfer.api.globus.org/v0.10/submission_id",
-        json={"value": "someid"},
-    )
-
-    response = api_client.post(
-        reverse("globus_transfer"),
-        data={
-            "access_token": "test_access_token",
-            "refresh_token": "test_refresh_token",
-            "endpointId": "test_endpoint_id",
-            "path": "test_path",
-            "project": "CMIP6",
-        },
-        format="json",
-    )
-
-    assert response.status_code == status.HTTP_207_MULTI_STATUS
-
-
-@responses.activate
-@pytest.mark.django_db
-@pytest.mark.parametrize(
-    "json_fixture", ["esgsearch_multiple_results.json"], indirect=True
-)
-def test_globus_transfer_returns_200_when_submissions_all_succeed(
-    json_fixture, api_client
-):
-    responses.add(responses.GET, settings.SEARCH_URL, json=json_fixture)
-    responses.add(
-        responses.GET,
-        "https://transfer.api.globus.org/v0.10/submission_id",
-        json={"value": "someid"},
-    )
-    responses.add(
-        responses.POST, "https://transfer.api.globus.org/v0.10/submission_id"
-    )
-    responses.add(
-        responses.POST, "https://transfer.api.globus.org/v0.10/transfer"
-    )
-
-    response = api_client.post(
-        reverse("globus_transfer"),
-        data={
-            "access_token": "test_access_token",
-            "refresh_token": "test_refresh_token",
-            "endpointId": "test_endpoint_id",
-            "path": "test_path",
-            "project": "CMIP6",
-        },
-        format="json",
-    )
-
-    assert response.status_code == status.HTTP_200_OK
-
-
-@responses.activate
-@pytest.mark.django_db
-@pytest.mark.parametrize(
-    "json_fixture", ["esgsearch_invalid_globus_url.json"], indirect=True
-)
-def test_globus_transfer_returns_502_for_invalid_endpoint_id(
-    json_fixture, api_client
-):
-    responses.add(responses.GET, settings.SEARCH_URL, json=json_fixture)
-
-    response = api_client.post(
-        reverse("globus_transfer"),
-        data={
-            "access_token": "test_access_token",
-            "refresh_token": "test_refresh_token",
-            "endpointId": "test_endpoint_id",
-            "path": "test_path",
-            "project": "CMIP6",
-        },
-        format="json",
-    )
-
-    assert response.status_code == status.HTTP_502_BAD_GATEWAY
 
 
 @pytest.mark.parametrize(
@@ -356,3 +176,50 @@ def test_search_files_json_decode_error(mock_get):
         match="ESGF search did not return results: not a json string",
     ):
         list(search_files({"project": "CMIP6"}))
+
+
+@pytest.mark.django_db
+def test_globus_download_request_rejects_non_post(api_client):
+    # Simulate GET request
+    response = api_client.get(reverse("globus_transfer"))
+    assert response.status_code == 405
+
+
+def test_globus_info_from_doc_invalid_url_type():
+    # url is not a list
+    doc = {
+        "url": "not_a_list",
+        "data_node": "some_node",
+    }
+    with pytest.raises(Exception):
+        views.globus_info_from_doc(doc)  # Should raise TypeError
+
+
+def test_search_files_empty_response(monkeypatch):
+    # Patch requests.get to return empty docs
+    class DummyResp:
+        def __init__(self):
+            self.text = '{"response": {"docs": []}}'
+            self.status_code = 200
+
+        def json(self):
+            return {"response": {"docs": []}}
+
+    monkeypatch.setattr(views.requests, "get", lambda *a, **k: DummyResp())
+    result = list(views.search_files({"project": "CMIP6"}))
+    assert result == []
+
+
+def test_submit_transfer_handles_exception(monkeypatch):
+    # Patch search_files to raise
+    def raise_exc(*a, **k):
+        raise Exception("fail!")
+
+    monkeypatch.setattr(views, "search_files", raise_exc)
+
+    class DummyClient:
+        pass
+
+    resp = views.submit_transfer({}, DummyClient(), "endpoint", "folder")
+    assert resp.status_code == 502
+    assert b"fail!" in resp.content

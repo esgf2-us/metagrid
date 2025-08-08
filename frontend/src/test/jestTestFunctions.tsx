@@ -26,7 +26,6 @@ export const originalGlobusEnabledNodes = [
 ];
 
 export const mockConfig: FrontendConfig = {
-  GLOBUS_CLIENT_ID: 'frontend',
   GLOBUS_NODES: originalGlobusEnabledNodes,
   KEYCLOAK_REALM: 'esgf',
   KEYCLOAK_URL: 'http://localhost:1337',

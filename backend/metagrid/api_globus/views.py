@@ -146,9 +146,7 @@ class GlobusTransferAuthFlow:
         target_scopes: str = scopes.TransferScopes.all,
     ):
         # Create the confidential app auth client
-        self.auth_client: dict[str, list] = ConfidentialAppAuthClient(
-            clientId, clientSecret
-        )
+        self.auth_client = ConfidentialAppAuthClient(clientId, clientSecret)
         self.auth_redirect_url: str = auth_redirect_url
         self.consent_required_scopes: list[str] = []
         self.key_name = "globus_transfer_token"
@@ -270,7 +268,7 @@ class GlobusTransferAuthFlow:
         return None
 
     def get_transfer_client(
-        self, auth_code: str = None
+        self, auth_code: str | None = None
     ) -> TransferClient | None:
 
         # First try to get an existing transfer client
@@ -280,10 +278,11 @@ class GlobusTransferAuthFlow:
             return transfer_client
 
         # If that failed, try to get a new transfer client with the auth code
-        transfer_client = self.get_transfer_client_second_try(auth_code)
+        if auth_code is not None:
+            transfer_client = self.get_transfer_client_second_try(auth_code)
 
-        if transfer_client is not None:
-            return transfer_client
+            if transfer_client is not None:
+                return transfer_client
 
         return None
 
@@ -422,8 +421,8 @@ def globus_download_request(request):
     target_auth_scope: str = request_body.pop("authScope", None)
     target_endpoint: str = request_body.pop("endpointId", None)
     target_folder: Path = request_body.pop("path", None)
-    auth_code: str = request_body.pop("authCode", None)
     auth_redirect_url: str = request_body.pop("authRedirectUrl", None)
+    auth_code: str = request_body.pop("authCode", None)
 
     if request_body is None:
         return HttpResponseBadRequest("Request method must be POST.")
