@@ -29,7 +29,7 @@ export enum GlobusStateKeys {
   accessToken = 'globusAccessToken',
   userChosenEndpoint = 'globusChosenEndpoint',
   globusTransferGoalsState = 'globusTransferGoalsState',
-  globusAuth = 'globusAuth',
+  globusAuthScope = 'globusAuthScope',
   globusTaskItems = 'globusTaskItems',
   transferToken = 'globusTransferToken',
   savedGlobusEndpoints = 'savedGlobusEndpoints',

@@ -121,31 +121,6 @@ export const fetchGlobusAuth = async (): Promise<RawUserAuth> =>
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusAuth));
     });
 
-export const performGlobusAuthTest = async ({
-  authCode,
-  client_id,
-  redirect_uri,
-  requested_scopes,
-}: {
-  authCode?: string;
-  client_id: string;
-  redirect_uri: string;
-  requested_scopes: string;
-}): Promise<SubmissionResult> =>
-  axios
-    .post<SubmissionResult>(apiRoutes.globusTransferTest.path, {
-      authCode,
-      client_id,
-      redirect_uri,
-      requested_scopes,
-    })
-    .then((resp) => {
-      return resp.data;
-    })
-    .catch((error: ResponseError) => {
-      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusTransferTest));
-    });
-
 /**
  * HTTP Request Method: POST
  * HTTP Response Code: 200 OK

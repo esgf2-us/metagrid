@@ -153,7 +153,7 @@ async function initializeComponentForTest(testConfig?: typeof defaultTestConfig)
   mockConfig.GLOBUS_NODES = config.globusEnabledNodes;
 
   // Set the auth scope by default
-  db.set(GlobusStateKeys.globusAuth, globusAuthScopeFixure);
+  db.set(GlobusStateKeys.globusAuthScope, globusAuthScopeFixure);
 
   // Set the auth token state
   if (config.tokensReady.access) {

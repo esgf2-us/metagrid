@@ -1,18 +1,17 @@
 import json
 import os
 import re
-
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Generator, Sequence, TypedDict
-from globus_portal_framework import load_transfer_client
 
 import requests
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+from globus_portal_framework import load_transfer_client
 from globus_sdk import (
     AccessTokenAuthorizer,
     ConfidentialAppAuthClient,
@@ -132,133 +131,6 @@ class GlobusMultiTransfer:
         return results
 
 
-# class GlobusTransferFlowController:
-#     """
-#     A controller to manage the Globus transfer flow, including login and transfer client retrieval.
-#     """
-
-#     def __init__(
-#         self,
-#         clientId: str,
-#         clientSecret: str,
-#     ):
-#         self.auth_client: dict[str, list] = ConfidentialAppAuthClient(
-#             clientId, clientSecret
-#         )
-#         self.scopes = scopes.TransferScopes.all
-#         self.transfer_client: TransferClient | None = None
-#         self.transfer_tokens: dict[str, Any] | None = None
-#         self.consent_required_scopes: list[str] = []
-
-#     def update_controller(
-#         self,
-#         user: Any = None,
-#         auth_redirect_url: str = "http://localhost:8080/cart/items",
-#     ) -> None:
-#         self.user = user
-#         self.auth_redirect_url: str = auth_redirect_url
-
-#     @csrf_exempt
-#     def login_and_get_transfer_client(
-#         self, auth_code
-#     ) -> TransferClient | None:
-
-#         print("Auth code: ", auth_code)
-
-#         # If auth code is provided, use it to get a transfer client
-#         if auth_code is not None:
-#             print("You have already started a login flow. Using auth code.")
-#             return self.get_transfer_client_from_auth_code(auth_code)
-
-#         print("Starting a new login flow.")
-#         self.auth_client.oauth2_start_flow(
-#             requested_scopes=self.scopes,
-#             redirect_uri=(self.auth_redirect_url),
-#         )
-#         self.auth_url = self.auth_client.oauth2_get_authorize_url()
-#         print("Go to this URL and login: {0}".format(self.auth_url))
-
-#         return None
-
-#     def get_transfer_client_from_auth_code(
-#         self, auth_code: str
-#     ) -> TransferClient | None:
-#         self.auth_client.oauth2_start_flow(
-#             requested_scopes=self.scopes,
-#             redirect_uri=(self.auth_redirect_url),
-#         )
-#         tokens = self.auth_client.oauth2_exchange_code_for_tokens(auth_code)
-#         self.transfer_tokens = tokens.by_resource_server[
-#             "transfer.api.globus.org"
-#         ]
-
-#         print("Setting a new transfer client.")
-
-#         # If successful, return the transfer client
-#         return TransferClient(
-#             authorizer=AccessTokenAuthorizer(
-#                 self.transfer_tokens["access_token"]
-#             )
-#         )
-
-#     def check_for_consent_required(self, target):
-#         # Try to print the contents of the target endpoint
-#         try:
-#             self.transfer_client.operation_ls(target, path="/")
-#         except TransferAPIError as e:
-#             if e.info.consent_required:
-#                 self.consent_required_scopes.extend(
-#                     e.info.consent_required.required_scopes
-#                 )
-#                 print(
-#                     "Updated consents required: ", self.consent_required_scopes
-#                 )
-
-#     def create_transfer_client(self, target, scopes, auth_code) -> None:
-#         self.scopes = scopes
-
-#         print("Getting transfer client for target: ", target)
-
-#         # If transfer client is not set, try to load it from the user or login
-#         if self.transfer_client is None:
-#             print("No transfer client set, trying to load or login.")
-#             if self.user.is_authenticated:
-#                 print("User is authenticated, loading transfer client.")
-#                 self.transfer_client = load_transfer_client(self.user)
-#             else:
-
-#                 print("User is not authenticated, logging in.")
-#                 print("Auth code: ", auth_code)
-#                 self.transfer_client = self.login_and_get_transfer_client(
-#                     auth_code
-#                 )
-
-#         # If transfer client is still not set, we need an auth code, return None
-#         print("Transfer client is still not set, returning None.")
-#         if self.transfer_client is None:
-#             return None
-
-#         # Attempt an ls operation to see if we have access to the target endpoint
-#         self.check_for_consent_required(target)
-
-#         # If consents are required, we need to login again to get them
-#         if self.consent_required_scopes:
-#             print(
-#                 "One of your endpoints requires consent in order to be used.\n"
-#                 "You must login a second time to grant consents.\n\n"
-#             )
-#             print("Auth code: ", auth_code)
-#             self.transfer_client = self.login_and_get_transfer_client(
-#                 auth_code
-#             )
-
-
-# globus_controller = GlobusTransferFlowController(
-#     clientId=settings.SOCIAL_AUTH_GLOBUS_KEY,
-#     clientSecret=settings.SOCIAL_AUTH_GLOBUS_SECRET,
-# )
-
-
 class GlobusTransferAuthFlow:
     """
     A controller to manage the Globus transfer flow, including login and transfer client retrieval.
@@ -293,7 +165,6 @@ class GlobusTransferAuthFlow:
             and self.request.session is not None
             and self.request.session.get(self.key_name) is not None
         ):
-            print("Found saved transfer token in session.")
             return self.request.session.get(self.key_name)
 
         return None
@@ -322,9 +193,6 @@ class GlobusTransferAuthFlow:
             transfer_client.operation_ls(self.target_endpoint, path="/")
         except TransferAPIError as e:
             if e.info.consent_required:
-                print(
-                    "Updated consents required: ", self.consent_required_scopes
-                )
                 self.consent_required_scopes.extend(
                     e.info.consent_required.required_scopes
                 )
@@ -332,24 +200,21 @@ class GlobusTransferAuthFlow:
     def start_oauth_flow(self, auth_redirect_url: str) -> None:
         self.auth_redirect_url = auth_redirect_url
 
-        print("Starting a new login flow.")
         self.auth_client.oauth2_start_flow(
             requested_scopes=self.target_scopes,
             redirect_uri=self.auth_redirect_url,
         )
         self.auth_url = self.auth_client.oauth2_get_authorize_url()
-        print("The auth URL is: {0}".format(self.auth_url))
 
     def get_transfer_client_from_auth_code(
         self, auth_code: str
     ) -> TransferClient | None:
-        print("Restarting the login flow.")
+
         self.auth_client.oauth2_start_flow(
             requested_scopes=self.scopes,
             redirect_uri=(self.auth_redirect_url),
         )
 
-        print("Exchanging auth code for transfer token.")
         tokens = self.auth_client.oauth2_exchange_code_for_tokens(auth_code)
         if tokens is not None:
             transfer_tokens = tokens.by_resource_server[
@@ -357,16 +222,13 @@ class GlobusTransferAuthFlow:
             ]
             transfer_token = transfer_tokens["access_token"]
 
-            print("Saving transfer token to session.")
             self.save_transfer_token(transfer_token)
 
-            print("Creating a new transfer client.")
             # If successful, return the transfer client
             return TransferClient(
                 authorizer=AccessTokenAuthorizer(transfer_token)
             )
 
-        print("Failed to get tokens from auth code.")
         return None
 
     def get_transfer_client_first_try(self) -> TransferClient | None:
@@ -374,16 +236,12 @@ class GlobusTransferAuthFlow:
         transfer_client = self.get_existing_transfer_client()
 
         if transfer_client is None:
-            print("No existing client found, need to login.")
             return None
 
         # Existing client found, check if we have access to the target endpoint
         self.check_for_consent_required(transfer_client)
 
         if self.consent_required_scopes:
-            print(
-                "Consent required for scopes: ", self.consent_required_scopes
-            )
             return None
 
         return transfer_client
@@ -393,29 +251,21 @@ class GlobusTransferAuthFlow:
     ) -> TransferClient | None:
         # If we have an auth code, try to get a new transfer client with it
         if auth_code is not None:
-            print("Auth code provided, trying to get new transfer client.")
-            print("Auth code: ", auth_code)
             transfer_client = self.get_transfer_client_from_auth_code(
                 auth_code
             )
 
             if transfer_client is None:
-                print("Failed to get transfer client from auth code.")
                 return None
 
             # Check if we have access to the target endpoint
             self.check_for_consent_required(transfer_client)
 
             if self.consent_required_scopes:
-                print(
-                    "Consent required for scopes: ",
-                    self.consent_required_scopes,
-                )
                 return None
 
             return transfer_client
 
-        print("No auth code provided, cannot get new transfer client.")
         self.start_oauth_flow(self.auth_redirect_url)
         return None
 
@@ -427,54 +277,15 @@ class GlobusTransferAuthFlow:
         transfer_client = self.get_transfer_client_first_try()
 
         if transfer_client is not None:
-            print("Successfully obtained existing transfer client.")
             return transfer_client
 
         # If that failed, try to get a new transfer client with the auth code
         transfer_client = self.get_transfer_client_second_try(auth_code)
 
         if transfer_client is not None:
-            print("Successfully obtained new transfer client with auth code.")
             return transfer_client
 
-        print("Failed to obtain a transfer client.")
         return None
-
-
-# @require_http_methods(["POST"])
-# @csrf_exempt
-# def create_globus_transfer(request) -> HttpResponse:
-
-#     url_params: dict[str, Any] = json.loads(request.body)
-
-#     access_token: str = url_params.pop("access_token", None)
-#     refresh_token: str = url_params.pop("refresh_token", None)
-#     target_endpoint: str = url_params.pop("endpointId", None)
-#     target_folder: Path = url_params.pop("path", None)
-
-#     if not all(
-#         (
-#             target_endpoint,
-#             access_token,
-#             refresh_token,
-#             target_folder,
-#         )
-#     ):
-#         return HttpResponseBadRequest(
-#             "Request is missing one or more of the following: target_endpoint, target_folder, access_token, or refresh_token."
-#         )
-
-#     try:
-#         authorizer = AccessTokenAuthorizer(access_token)
-#         tc = TransferClient(authorizer=authorizer)
-#         client = GlobusMultiTransfer(tc, target_endpoint, target_folder)
-#         for endpoint, path in search_files(url_params):
-#             client.add_transfer(endpoint, path)
-
-#         result = client.submit_transfers()
-#         return JsonResponse(result, status=result["status"])
-#     except Exception as e:
-#         return HttpResponse(repr(e), status=status.HTTP_502_BAD_GATEWAY)
 
 
 def globus_info_from_doc(doc: SolrResultDoc) -> tuple[str, str]:
@@ -616,9 +427,6 @@ def globus_download_request(request):
 
     if request_body is None:
         return HttpResponseBadRequest("Request method must be POST.")
-
-    print("Auth Code: ", auth_code)
-    print("Auth Redirect URL: ", auth_redirect_url)
 
     # Create globus auth flow controller
     globus_auth_flow = GlobusTransferAuthFlow(
