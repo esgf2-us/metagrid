@@ -91,7 +91,7 @@ const validEndpointNoPathSet = globusEndpointFixture(
   'GCSv5_mapped_collection',
   'id1234567',
   'ownerId123',
-  'subscriptId123'
+  'subscriptId123',
 );
 
 const validEndpointWithPathSet = globusEndpointFixture(
@@ -101,7 +101,7 @@ const validEndpointWithPathSet = globusEndpointFixture(
   'id2345678',
   'ownerId234',
   'subscriptId234',
-  testEndpointPath
+  testEndpointPath,
 );
 
 const defaultTestConfig = {
@@ -185,7 +185,9 @@ async function initializeComponentForTest(testConfig?: typeof defaultTestConfig)
 
   // Set the chosen endpoint and display name if it's not null
   if (config.chosenEndpoint !== null) {
-    db.set(GlobusStateKeys.userChosenEndpoint, config.chosenEndpoint);
+    // Set chosen globus endpoint
+    AtomWrapper.modifyAtomValue(GlobusStateKeys.userChosenEndpoint, config.chosenEndpoint);
+    // db.set(GlobusStateKeys.userChosenEndpoint, config.chosenEndpoint);
 
     // If setup has endpoint chosen, set display name to know when component is loaded
     displayName = config.chosenEndpoint.display_name;
@@ -238,7 +240,7 @@ describe('DatasetDownload form tests', () => {
 
     // Open download dropdown
     const globusTransferDropdown = await within(
-      await screen.findByTestId('downloadTypeSelector')
+      await screen.findByTestId('downloadTypeSelector'),
     ).findByRole('combobox');
 
     await openDropdownList(user, globusTransferDropdown);
@@ -266,7 +268,7 @@ describe('DatasetDownload form tests', () => {
 
     // Open download dropdown
     const globusTransferDropdown = await within(
-      await screen.findByTestId('downloadTypeSelector')
+      await screen.findByTestId('downloadTypeSelector'),
     ).findByRole('combobox');
 
     await openDropdownList(user, globusTransferDropdown);
@@ -299,7 +301,7 @@ describe('DatasetDownload form tests', () => {
 
     // Expect transfer notice for token step
     const transferPopup = await screen.findByText(
-      /You will be redirected to obtain globus tokens. Continue?/i
+      /You will be redirected to obtain globus tokens. Continue?/i,
     );
     expect(transferPopup).toBeTruthy();
     await user.click(await screen.findByText('Ok'));
@@ -349,7 +351,7 @@ describe('DatasetDownload form tests', () => {
     // Expect the steps popup to show with below message
     const warningPopup = await screen.findByText(
       /Some of your selected items cannot be transferred via Globus./i,
-      { exact: false }
+      { exact: false },
     );
     expect(warningPopup).toBeTruthy();
   });
@@ -373,7 +375,7 @@ describe('DatasetDownload form tests', () => {
     // Expect the steps popup to show with below message
     const warningPopup = await screen.findByText(
       /One of your selected items cannot be transferred via Globus./i,
-      { exact: false }
+      { exact: false },
     );
     expect(warningPopup).toBeTruthy();
   });
@@ -397,7 +399,7 @@ describe('DatasetDownload form tests', () => {
     // Expect the steps popup to show with below message
     const warningPopup = await screen.findByText(
       /None of your selected items can be transferred via Globus at this time./i,
-      { exact: false }
+      { exact: false },
     );
     expect(warningPopup).toBeTruthy();
   });
@@ -422,7 +424,7 @@ describe('DatasetDownload form tests', () => {
     // Expect the steps popup to show with below message
     const warningPopup = await screen.findByText(
       /Some of your selected items cannot be transferred via Globus./i,
-      { exact: false }
+      { exact: false },
     );
     expect(warningPopup).toBeTruthy();
 
@@ -449,7 +451,7 @@ describe('DatasetDownload form tests', () => {
 
     // Expect transfer notice for token step
     const transferPopup = await screen.findByText(
-      /You will be redirected to obtain globus tokens. Continue?/i
+      /You will be redirected to obtain globus tokens. Continue?/i,
     );
     expect(transferPopup).toBeTruthy();
     await user.click(await screen.findByText('Ok'));
@@ -468,7 +470,7 @@ describe('DatasetDownload form tests', () => {
 
     // Expect transfer notice for token step
     const transferPopup = await screen.findByText(
-      /You will be redirected to obtain globus tokens. Continue?/i
+      /You will be redirected to obtain globus tokens. Continue?/i,
     );
     expect(transferPopup).toBeTruthy();
   });
@@ -486,7 +488,7 @@ describe('DatasetDownload form tests', () => {
 
     // Expect transfer notice for token step
     const transferPopup = await screen.findByText(
-      /You will be redirected to obtain globus tokens. Continue?/i
+      /You will be redirected to obtain globus tokens. Continue?/i,
     );
     expect(transferPopup).toBeTruthy();
   });
@@ -535,7 +537,7 @@ describe('DatasetDownload form tests', () => {
 
     // Expect transfer notice for endpoint path step
     const transferPopup = await screen.findByText(
-      /You will be redirected to set the path for your selected collection. Continue?/i
+      /You will be redirected to set the path for your selected collection. Continue?/i,
     );
     expect(transferPopup).toBeTruthy();
     await user.click(await screen.findByText('Ok'));
@@ -573,9 +575,9 @@ describe('DatasetDownload form tests', () => {
       rest.post(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
         res(
           ctx.status(207),
-          ctx.json({ status: 207, successes: [], failures: ['transfer failed'] })
-        )
-      )
+          ctx.json({ status: 207, successes: [], failures: ['transfer failed'] }),
+        ),
+      ),
     );
 
     await initializeComponentForTest();
@@ -592,8 +594,8 @@ describe('DatasetDownload form tests', () => {
   it('displays an error when Globus Transfer returns unhandled status code', async () => {
     server.use(
       rest.post(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
-        res(ctx.status(207), ctx.json({ status: 500, successes: [], failures: [] }))
-      )
+        res(ctx.status(207), ctx.json({ status: 500, successes: [], failures: [] })),
+      ),
     );
 
     await initializeComponentForTest();
@@ -610,8 +612,8 @@ describe('DatasetDownload form tests', () => {
   it('shows a warning message when Globus transfer response has no data in successes or failures', async () => {
     server.use(
       rest.post(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
-        res(ctx.status(200), ctx.json({ status: 200, successes: [], failures: [] }))
-      )
+        res(ctx.status(200), ctx.json({ status: 200, successes: [], failures: [] })),
+      ),
     );
 
     await initializeComponentForTest();
@@ -622,7 +624,7 @@ describe('DatasetDownload form tests', () => {
     await user.click(globusTransferBtn);
 
     const warningMessage = await screen.findByText(
-      'Globus download requested, however no transfer occurred.'
+      'Globus download requested, however no transfer occurred.',
     );
     expect(warningMessage).toBeInTheDocument();
   });
@@ -634,7 +636,7 @@ describe('DatasetDownload form tests', () => {
       testUrlState: { authTokensUrlReady: false, endpointPathUrlReady: true },
     });
     expect(db.get<GlobusEndpoint | null>(GlobusStateKeys.userChosenEndpoint, null)?.path).toEqual(
-      testEndpointPath
+      testEndpointPath,
     );
   });
 
@@ -660,7 +662,7 @@ describe('DatasetDownload form tests', () => {
 
     // Type in endpoint search text
     const endpointSearchInput = await screen.findByPlaceholderText(
-      'Search for a Globus Collection'
+      'Search for a Globus Collection',
     );
     expect(endpointSearchInput).toBeTruthy();
     await user.type(endpointSearchInput, 'lc public{enter}');
@@ -692,7 +694,7 @@ describe('DatasetDownload form tests', () => {
 
     // Current user chosen endpoint should be undefined
     expect(
-      db.get<GlobusEndpoint | undefined>(GlobusStateKeys.userChosenEndpoint, undefined)
+      db.get<GlobusEndpoint | undefined>(GlobusStateKeys.userChosenEndpoint, undefined),
     ).toBeUndefined();
 
     // Open endpoint dropdown and select the endpoint
@@ -705,7 +707,7 @@ describe('DatasetDownload form tests', () => {
 
     // The user chosen endpoint should now be LC Public
     expect(
-      db.get<GlobusEndpoint | null>(GlobusStateKeys.userChosenEndpoint, null)?.display_name
+      db.get<GlobusEndpoint | null>(GlobusStateKeys.userChosenEndpoint, null)?.display_name,
     ).toEqual('LC Public');
   });
 
@@ -747,14 +749,14 @@ describe('DatasetDownload form tests', () => {
 
     // Expect a notification that you will be redirected to set the path
     const noticePopup = await screen.findByText(
-      /You will be redirected to set the path for the collection. Continue?/i
+      /You will be redirected to set the path for the collection. Continue?/i,
     );
     expect(noticePopup).toBeTruthy();
     await user.click(await screen.findByText('Ok'));
 
     // The Globus Goals should be set to set path
     expect(tempStorageGetMock(GlobusStateKeys.globusTransferGoalsState)).toEqual(
-      GlobusGoals.SetEndpointPath
+      GlobusGoals.SetEndpointPath,
     );
   });
 
@@ -872,7 +874,7 @@ describe('DatasetDownload form tests', () => {
 
   it('Shows an alert when a collection search fails in the manage collections form', async () => {
     server.use(
-      rest.get(apiRoutes.globusSearchEndpoints.path, (_req, res, ctx) => res(ctx.status(500)))
+      rest.get(apiRoutes.globusSearchEndpoints.path, (_req, res, ctx) => res(ctx.status(500))),
     );
 
     await initializeComponentForTest({
@@ -897,14 +899,14 @@ describe('DatasetDownload form tests', () => {
 
     // Type in endpoint search text
     const endpointSearchInput = await screen.findByPlaceholderText(
-      'Search for a Globus Collection'
+      'Search for a Globus Collection',
     );
     expect(endpointSearchInput).toBeTruthy();
     await user.type(endpointSearchInput, 'lc public{enter}');
 
     // Expect an alert to show up
     const alertPopup = await screen.findByText(
-      'An error occurred while searching for collections. Please try again later.'
+      'An error occurred while searching for collections. Please try again later.',
     );
     expect(alertPopup).toBeTruthy();
   });
@@ -957,7 +959,7 @@ describe('DatasetDownload form tests', () => {
 
     // Open the dropdown menu
     const globusTransferDropdown = await within(
-      await screen.findByTestId('downloadTypeSelector')
+      await screen.findByTestId('downloadTypeSelector'),
     ).findByRole('combobox');
     await openDropdownList(user, globusTransferDropdown);
 
@@ -981,7 +983,7 @@ describe('DatasetDownload form tests', () => {
 
     // Expect confirmation dialog to show
     const confirmationDialog = await screen.findByText(
-      /If you haven't performed a Globus transfer in a while, or you ran into some issues, it may help to get new tokens./i
+      /If you haven't performed a Globus transfer in a while, or you ran into some issues, it may help to get new tokens./i,
     );
     expect(confirmationDialog).toBeTruthy();
   });
@@ -991,7 +993,7 @@ describe('DatasetDownload form tests', () => {
 
     // Open the dropdown menu
     const globusTransferDropdown = await within(
-      await screen.findByTestId('downloadTypeSelector')
+      await screen.findByTestId('downloadTypeSelector'),
     ).findByRole('combobox');
     await openDropdownList(user, globusTransferDropdown);
 

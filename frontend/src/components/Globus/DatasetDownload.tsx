@@ -17,18 +17,25 @@ import {
   message,
 } from 'antd';
 import React, { useEffect } from 'react';
-import createPKCE from 'js-pkce';
+// import createPKCE from 'js-pkce';
 import { useAtom } from 'jotai';
 import axios from 'axios';
+import { log } from 'console';
+import { useLocation } from 'react-router';
 import {
+  deleteCookie,
   fetchWgetScript,
+  getCookie,
+  getLocalGlobusEndpoint,
+  // performGlobusAuthTest,
   ResponseError,
+  setCookie,
   startSearchGlobusEndpoints,
   SubmissionResult,
 } from '../../api';
 import { RawSearchResults } from '../Search/types';
 import {
-  GlobusTokenResponse,
+  // GlobusTokenResponse,
   GlobusTaskItem,
   MAX_TASK_LIST_LENGTH,
   GlobusEndpointSearchResults,
@@ -37,7 +44,7 @@ import {
 import { getCurrentAppPage, showError, showNotice } from '../../common/utils';
 import { RawTourState, ReactJoyrideContext } from '../../contexts/ReactJoyrideContext';
 import apiRoutes from '../../api/routes';
-import DataBundlePersister from '../../common/DataBundlePersister';
+// import DataBundlePersister from '../../common/DataBundlePersister';
 import { AppPage } from '../../common/types';
 import {
   cartDownloadIsLoadingAtom,
@@ -45,12 +52,14 @@ import {
   savedGlobusEndpointsAtom,
   globusTaskItemsAtom,
   GlobusStateKeys,
+  userChosenEndpointAtom,
 } from '../../common/atoms';
 import {
   cartTourTargets,
   manageCollectionsTourTargets,
   createCollectionsFormTour,
 } from '../../common/joyrideTutorials/reactJoyrideSteps';
+import { AuthContext } from '../../contexts/AuthContext';
 
 const globusRedirectUrl = `${window.location.origin}/cart/items`;
 
@@ -78,7 +87,7 @@ export enum GlobusGoals {
 const downloadOptions = ['Globus', 'wget'];
 
 // The persistent, static, data storage singleton
-const db: DataBundlePersister = DataBundlePersister.Instance;
+// const db: DataBundlePersister = DataBundlePersister.Instance;
 
 function redirectToNewURL(newUrl: string): void {
   window.location.replace(newUrl);
@@ -107,6 +116,13 @@ function redirectToRootUrl(): void {
 const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   const [messageApi, contextHolder] = message.useMessage();
 
+  const location = useLocation();
+
+  // User's authentication state
+  const authState = React.useContext(AuthContext);
+  const { access_token: accessToken, pk } = authState;
+  const isAuthenticated = accessToken && pk;
+
   // Tutorial state
   const tourState: RawTourState = React.useContext(ReactJoyrideContext);
   const { startSpecificTour } = tourState;
@@ -118,20 +134,23 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   const [itemSelections, setItemSelections] = useAtom<RawSearchResults>(cartItemSelectionsAtom);
   const [savedGlobusEndpoints, setSavedGlobusEndpoints] =
     useAtom<GlobusEndpoint[]>(savedGlobusEndpointsAtom);
-
-  db.addVar<string | null>(GlobusStateKeys.accessToken, null);
-  db.addVar<string | null>(GlobusStateKeys.globusAuth, null);
-  db.addVar<GlobusTokenResponse | null>(GlobusStateKeys.transferToken, null);
-
-  // Component internal state
-  const [chosenGlobusEndpoint, setChosenGlobusEndpoint] = React.useState<GlobusEndpoint | null>();
-  db.addVar<GlobusEndpoint | null | undefined>(
-    GlobusStateKeys.userChosenEndpoint,
-    null,
-    setChosenGlobusEndpoint,
+  const [chosenGlobusEndpoint, setChosenGlobusEndpoint] = useAtom<GlobusEndpoint | null>(
+    userChosenEndpointAtom,
   );
 
-  const [varsLoaded, setVarsLoaded] = React.useState<boolean>(false);
+  // db.addVar<string | null>(GlobusStateKeys.accessToken, null);
+  // db.addVar<string | null>(GlobusStateKeys.globusAuth, null);
+  // db.addVar<GlobusTokenResponse | null>(GlobusStateKeys.transferToken, null);
+
+  // const [chosenGlobusEndpoint, setChosenGlobusEndpoint] = React.useState<GlobusEndpoint | null>();
+  // db.addVar<GlobusEndpoint | null | undefined>(
+  //   GlobusStateKeys.userChosenEndpoint,
+  //   null,
+  //   setChosenGlobusEndpoint,
+  // );
+
+  // Component internal state
+  // const [varsLoaded, setVarsLoaded] = React.useState<boolean>(false);
 
   const [loadingPage, setLoadingPage] = React.useState<boolean>(false);
 
@@ -166,85 +185,105 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     show: false,
   });
 
-  async function resetTokens(): Promise<void> {
+  function resetTokens(): void {
     setCurrentGoal(GlobusGoals.None);
     setLoadingPage(false);
 
-    db.set<string | null>(GlobusStateKeys.accessToken, null);
-    db.set<string | null>(GlobusStateKeys.globusAuth, REQUESTED_SCOPES);
-    db.set<GlobusTokenResponse | null>(GlobusStateKeys.transferToken, null);
-    await db.saveAll();
+    // deleteCookie(GlobusStateKeys.accessToken, '/cart/items');
+    // deleteCookie(GlobusStateKeys.transferToken, '/cart/items');
+    deleteCookie(GlobusStateKeys.globusAuth, '/cart/items');
+
+    // db.set<string | null>(GlobusStateKeys.accessToken, null);
+    // db.set<string | null>(GlobusStateKeys.globusAuth, REQUESTED_SCOPES);
+    // db.set<GlobusTokenResponse | null>(GlobusStateKeys.transferToken, null);
+    // await db.saveAll();
   }
 
   // Creates an auth object using desired authentication scope
-  function createGlobusAuthObject(): createPKCE {
-    const authScope = db.get<string>(GlobusStateKeys.globusAuth, REQUESTED_SCOPES);
+  // function createGlobusAuthObject(): createPKCE {
+  //   const authScope = getCookie(GlobusStateKeys.globusAuth) ?? REQUESTED_SCOPES;
+  //   // const authScope = db.get<string>(GlobusStateKeys.globusAuth, REQUESTED_SCOPES);
 
-    // eslint-disable-next-line new-cap
-    return new createPKCE({
-      client_id: window.METAGRID.GLOBUS_CLIENT_ID, // Update this using your native client ID
-      redirect_uri: `${window.location.origin}/cart/items`, // Update this if you are deploying this anywhere else (Globus Auth will redirect back here once you have logged in)
-      authorization_endpoint: 'https://auth.globus.org/v2/oauth2/authorize', // No changes needed
-      token_endpoint: 'https://auth.globus.org/v2/oauth2/token', // No changes needed
-      requested_scopes: authScope, // Update with any scopes you would need, e.g. transfer
-    });
-  }
+  //   // eslint-disable-next-line new-cap
+  //   return new createPKCE({
+  //     client_id: window.METAGRID.GLOBUS_CLIENT_ID, // Update this using your native client ID
+  //     redirect_uri: `${window.location.origin}/cart/items`, // Update this if you are deploying this anywhere else (Globus Auth will redirect back here once you have logged in)
+  //     authorization_endpoint: 'https://auth.globus.org/v2/oauth2/authorize', // No changes needed
+  //     token_endpoint: 'https://auth.globus.org/v2/oauth2/token', // No changes needed
+  //     requested_scopes: authScope, // Update with any scopes you would need, e.g. transfer
+  //   });
+  // }
 
-  function getGlobusTokens(): [GlobusTokenResponse | null, string | null] {
-    const accessToken = db.get<string>(GlobusStateKeys.accessToken, '');
-    const transferToken = db.get<GlobusTokenResponse | null>(GlobusStateKeys.transferToken, null);
+  // function getGlobusTokens(): [GlobusTokenResponse | null, string | null] {
+  //   const accessToken = getCookie(GlobusStateKeys.accessToken) ?? null;
+  //   const transferTokenStr = getCookie(GlobusStateKeys.transferToken) ?? null;
+  //   let transferToken: GlobusTokenResponse | null = null;
+  //   if (transferTokenStr) {
+  //     transferToken = JSON.parse(transferTokenStr) as GlobusTokenResponse;
+  //   }
+  //   // const accessToken = db.get<string>(GlobusStateKeys.accessToken, '');
+  //   // const transferToken = db.get<GlobusTokenResponse | null>(GlobusStateKeys.transferToken, null);
 
-    return [transferToken, accessToken];
-  }
+  //   return [transferToken, accessToken];
+  // }
 
-  async function getUrlAuthTokens(): Promise<void> {
-    try {
-      const url = window.location.href;
-      const pkce = createGlobusAuthObject(); // Create pkce with saved scope
-      const tokenResponse = (await pkce.exchangeForAccessToken(url)) as GlobusTokenResponse;
+  // async function getUrlAuthTokens(): Promise<void> {
+  //   try {
+  //     const url = window.location.href;
+  //     const pkce = createGlobusAuthObject(); // Create pkce with saved scope
+  //     const tokenResponse = (await pkce.exchangeForAccessToken(url)) as GlobusTokenResponse;
 
-      /* istanbul ignore else */
-      if (tokenResponse) {
-        /* istanbul ignore else */
-        if (tokenResponse.access_token) {
-          db.set<string | null>(GlobusStateKeys.accessToken, tokenResponse.access_token);
-        } else {
-          db.set<string | null>(GlobusStateKeys.accessToken, null);
-        }
+  //     /* istanbul ignore else */
+  //     if (tokenResponse) {
+  //       /* istanbul ignore else */
+  //       if (tokenResponse.access_token) {
+  //         setCookie(GlobusStateKeys.accessToken, tokenResponse.access_token, 7, '/cart/items');
+  //         // db.set<string | null>(GlobusStateKeys.accessToken, tokenResponse.access_token);
+  //       } else {
+  //         deleteCookie(GlobusStateKeys.accessToken, '/cart/items');
+  //         // db.set<string | null>(GlobusStateKeys.accessToken, null);
+  //       }
 
-        // Try to find and get the transfer token
-        /* istanbul ignore else */
-        if (tokenResponse.other_tokens) {
-          const otherTokens: GlobusTokenResponse[] = [
-            ...(tokenResponse.other_tokens as GlobusTokenResponse[]),
-          ];
-          otherTokens.forEach((tokenBlob) => {
-            /* istanbul ignore else */
-            if (
-              tokenBlob.resource_server &&
-              tokenBlob.resource_server === 'transfer.api.globus.org'
-            ) {
-              const newTransferToken = { ...tokenBlob };
-              newTransferToken.created_on = Math.floor(Date.now() / 1000);
+  //       // Try to find and get the transfer token
+  //       /* istanbul ignore else */
+  //       if (tokenResponse.other_tokens) {
+  //         const otherTokens: GlobusTokenResponse[] = [
+  //           ...(tokenResponse.other_tokens as GlobusTokenResponse[]),
+  //         ];
+  //         otherTokens.forEach((tokenBlob) => {
+  //           /* istanbul ignore else */
+  //           if (
+  //             tokenBlob.resource_server &&
+  //             tokenBlob.resource_server === 'transfer.api.globus.org'
+  //           ) {
+  //             const newTransferToken = { ...tokenBlob };
+  //             newTransferToken.created_on = Math.floor(Date.now() / 1000);
 
-              db.set<GlobusTokenResponse | null>(GlobusStateKeys.transferToken, newTransferToken);
-            }
-          });
-        } else {
-          db.set<GlobusTokenResponse | null>(GlobusStateKeys.transferToken, null);
-        }
-        await db.saveAll();
-      }
-    } catch (error: unknown) {
-      /* istanbul ignore next */
-      showError(messageApi, 'Error occured when obtaining transfer permissions.');
-      await resetTokens();
-    } finally {
-      // This isn't strictly necessary but it ensures no code reuse.
-      sessionStorage.removeItem('pkce_code_verifier');
-      sessionStorage.removeItem('pkce_state');
-    }
-  }
+  //             setCookie(
+  //               GlobusStateKeys.transferToken,
+  //               JSON.stringify(newTransferToken),
+  //               7,
+  //               '/cart/items',
+  //             );
+  //             // db.set<GlobusTokenResponse | null>(GlobusStateKeys.transferToken, newTransferToken);
+  //           }
+  //         });
+  //       } else {
+  //         deleteCookie(GlobusStateKeys.transferToken, '/cart/items');
+  //         // db.set<GlobusTokenResponse | null>(GlobusStateKeys.transferToken, null);
+  //       }
+  //       // await db.saveAll();
+  //     }
+  //   } catch (error: unknown) {
+  //     /* istanbul ignore next */
+  //     showError(messageApi, 'Error occured when obtaining transfer permissions.');
+  //     resetTokens();
+  //   } finally {
+  //     // This isn't strictly necessary but it ensures no code reuse.
+  //     sessionStorage.removeItem('pkce_code_verifier');
+  //     sessionStorage.removeItem('pkce_state');
+  //   }
+  // }
 
   const handleWgetDownload = (): void => {
     const cleanedSelections = itemSelections.filter((item) => {
@@ -285,24 +324,142 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       });
   };
 
-  const handleGlobusDownload = (endpoint: GlobusEndpoint): void => {
-    const [globusTransferToken, accessToken] = getGlobusTokens();
-
-    // Cancel the download if tokens are not ready
-    if (globusTransferToken === null || accessToken === null) {
-      return;
+  const getCurrentScope = (): string => {
+    if (
+      chosenGlobusEndpoint &&
+      chosenGlobusEndpoint.entity_type === 'GCSv5_mapped_collection' &&
+      chosenGlobusEndpoint.subscription_id
+    ) {
+      const dataAccessScope = `urn:globus:auth:scope:transfer.api.globus.org:all[*https://auth.globus.org/scopes/${chosenGlobusEndpoint.id}/data_access]`;
+      return dataAccessScope;
     }
 
-    setDownloadIsLoading(true);
+    return REQUESTED_SCOPES;
+  };
+
+  // const handleGlobusDownload = (endpoint: GlobusEndpoint): void => {
+  //   const [globusTransferToken, accessToken] = getGlobusTokens();
+
+  //   // Cancel the download if tokens are not ready
+  //   if (globusTransferToken === null || accessToken === null) {
+  //     return;
+  //   }
+
+  //   setDownloadIsLoading(true);
+
+  //   const ids = itemSelections?.map((item) => (item ? item.id : '')) ?? [];
+
+  //   axios
+  //     .post<SubmissionResult>(
+  //       apiRoutes.globusTransfer.path,
+  //       JSON.stringify({
+  //         access_token: globusTransferToken.access_token,
+  //         refresh_token: accessToken,
+  //         endpointId: endpoint.id,
+  //         path: endpoint.path || '',
+  //         dataset_id: ids,
+  //       }),
+  //     )
+  //     .then((resp) => {
+  //       return resp.data;
+  //     })
+  //     .then(async (resp) => {
+  //       setItemSelections([]);
+  //       const newTasks = resp.successes.map((submission) => {
+  //         const taskId = submission.task_id as string;
+  //         return {
+  //           submitDate: new Date(Date.now()).toLocaleString(),
+  //           taskId,
+  //           taskStatusURL: `https://app.globus.org/activity/${taskId}/overview`,
+  //         };
+  //       });
+
+  //       const nMostRecentTasks = [...newTasks, ...taskItems].slice(0, MAX_TASK_LIST_LENGTH);
+
+  //       setTaskItems(nMostRecentTasks);
+
+  //       switch (resp.status) {
+  //         case 200:
+  //           if (resp.successes.length === 0) {
+  //             await showNotice(
+  //               messageApi,
+  //               'Globus download requested, however no transfer occurred.',
+  //               {
+  //                 type: 'warning',
+  //               },
+  //             );
+  //           } else {
+  //             await showNotice(messageApi, 'Globus download initiated successfully!', {
+  //               type: 'success',
+  //             });
+  //           }
+
+  //           break;
+
+  //         case 207:
+  //           await showNotice(
+  //             messageApi,
+  //             <span data-testid="207-globus-failures-msg">
+  //               {`One or more Globus submissions failed: \n${resp.failures.join('\n')}`}
+  //             </span>,
+  //             {
+  //               type: 'error',
+  //             },
+  //           );
+  //           resetTokens();
+  //           break;
+
+  //         default:
+  //           await showNotice(
+  //             messageApi,
+  //             <span data-testid="unhandled-status-globus-failures-msg">
+  //               {`Globus download returned unexpected response: ${resp.status}`}
+  //             </span>,
+  //             {
+  //               type: 'error',
+  //             },
+  //           );
+  //           resetTokens();
+  //           break;
+  //       }
+  //     })
+  //     .catch(async (error: ResponseError) => {
+  //       await showNotice(
+  //         messageApi,
+  //         <span data-testid="globus-transfer-backend-error-msg">{error.message}</span>,
+  //         {
+  //           type: 'error',
+  //         },
+  //       );
+  //       resetTokens();
+  //     })
+  //     .finally(() => {
+  //       setDownloadIsLoading(false);
+  //       endDownloadSteps();
+  //     });
+  // };
+
+  const handleGlobusDownloadTest = (endpoint: GlobusEndpoint, authCode?: string): void => {
+    // const [globusTransferToken, accessToken] = getGlobusTokens();
+
+    // Cancel the download if tokens are not ready
+    // if (globusTransferToken === null || accessToken === null) {
+    //   return;
+    // }
 
     const ids = itemSelections?.map((item) => (item ? item.id : '')) ?? [];
 
+    // const authScope = getCookie(GlobusStateKeys.globusAuth) ?? REQUESTED_SCOPES;
+
+    setDownloadIsLoading(true);
+
     axios
       .post<SubmissionResult>(
-        apiRoutes.globusTransfer.path,
+        apiRoutes.globusTransferTest.path,
         JSON.stringify({
-          access_token: globusTransferToken.access_token,
-          refresh_token: accessToken,
+          authCode,
+          authRedirectUrl: `${window.location.origin}/cart/items`,
+          authScope: getCurrentScope(),
           endpointId: endpoint.id,
           path: endpoint.path || '',
           dataset_id: ids,
@@ -312,7 +469,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         return resp.data;
       })
       .then(async (resp) => {
-        setItemSelections([]);
         const newTasks = resp.successes.map((submission) => {
           const taskId = submission.task_id as string;
           return {
@@ -341,10 +497,38 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                 type: 'success',
               });
             }
-
+            endDownloadSteps();
             break;
 
           case 207:
+            if (resp.auth_url) {
+              setLoadingPage(false);
+              setDownloadIsLoading(false);
+              const content = authCode
+                ? 'Permission denied despite consent. Try logging out and logging in again.'
+                : 'You will need to update globus consents. Continue?';
+
+              const authURL = resp.auth_url;
+              if (!alertPopupState.show) {
+                setAlertPopupState({
+                  onCancelAction: () => {
+                    setAlertPopupState({ ...alertPopupState, show: false });
+                    endDownloadSteps();
+                  },
+                  onOkAction: () => {
+                    if (authCode) {
+                      endDownloadSteps();
+                    } else {
+                      redirectToNewURL(authURL);
+                    }
+                  },
+                  show: true,
+                  content,
+                });
+              }
+              return;
+            }
+
             await showNotice(
               messageApi,
               <span data-testid="207-globus-failures-msg">
@@ -354,7 +538,8 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                 type: 'error',
               },
             );
-            await resetTokens();
+
+            resetTokens();
             break;
 
           default:
@@ -367,23 +552,47 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                 type: 'error',
               },
             );
-            await resetTokens();
+            resetTokens();
+            endDownloadSteps();
             break;
         }
       })
       .catch(async (error: ResponseError) => {
+        // const errMsg = error.response && error.response.data ? error.response.data : error.message;
+        // console.error('Globus Transfer Error:', errMsg);
+
+        if (error.response && error.response.status === 401) {
+          // If the error is 401, it means the user needs to re-authenticate
+          setAlertPopupState({
+            content: 'You may need to re-authenticate with Globus to update consents. Continue?',
+            onCancelAction: () => {
+              setAlertPopupState({ ...alertPopupState, show: false });
+            },
+            onOkAction: () => {
+              // setCurrentGoal(GlobusGoals.None);
+              redirectToNewURL(`login/globus/?next=${location.pathname}${location.search}`);
+            },
+            show: true,
+          });
+          return;
+        }
+
         await showNotice(
           messageApi,
-          <span data-testid="globus-transfer-backend-error-msg">{error.message}</span>,
+          <span data-testid="globus-transfer-backend-error-msg">
+            An error occurred while processing your Globus transfer request:
+            {error.message}
+          </span>,
           {
             type: 'error',
           },
         );
-        await resetTokens();
+        resetTokens();
+        endDownloadSteps();
       })
-      .finally(async () => {
+      .finally(() => {
         setDownloadIsLoading(false);
-        await endDownloadSteps();
+        // endDownloadSteps();
       });
   };
 
@@ -431,7 +640,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           setAlertPopupState({ ...alertPopupState, show: false });
           setCurrentGoal(GlobusGoals.None);
         },
-        onOkAction: async () => {
+        onOkAction: () => {
           if (state === 'None') {
             setAlertPopupState({ ...alertPopupState, show: false });
             setCurrentGoal(GlobusGoals.None);
@@ -439,7 +648,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             setAlertPopupState({ ...alertPopupState, show: false });
             setItemSelections(globusReadyItems);
             setCurrentGoal(GlobusGoals.DoGlobusTransfer);
-            await performStepsForGlobusGoals();
+            performStepsForGlobusGoalsTest();
           }
         },
         show: true,
@@ -459,17 +668,33 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     if (downloadType === 'wget') {
       handleWgetDownload();
     } else if (downloadType === 'Globus') {
+      // if (!isAuthenticated) {
+      //   setAlertPopupState({
+      //     content: 'You need to be signed into Globus to transfer. Proceed with transfer?',
+      //     onCancelAction: () => {
+      //       setAlertPopupState({ ...alertPopupState, show: false });
+      //     },
+      //     onOkAction: () => {
+      //       setCurrentGoal(GlobusGoals.DoGlobusTransfer);
+      //       redirectToNewURL(`login/globus/?next=${location.pathname}${location.search}`);
+      //     },
+      //     show: true,
+      //   });
+      //   return;
+      // }
+
       const itemsReady = checkItemsAreGlobusEnabled();
       if (itemsReady) {
-        const prepareDownload = async (): Promise<void> => {
+        const prepareDownload = (): void => {
           setCurrentGoal(GlobusGoals.DoGlobusTransfer);
-          await performStepsForGlobusGoals();
+          performStepsForGlobusGoalsTest();
         };
         prepareDownload();
       }
     }
   };
 
+  /* https://docs.globus.org/globus-connect-server/v5/application/ */
   const updateScopes = (): void => {
     // Save the endpoint in the list
 
@@ -482,7 +707,8 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     });
 
     // Previous scope
-    const oldScope = db.get<string>(GlobusStateKeys.globusAuth, REQUESTED_SCOPES);
+    // const oldScope = db.get<string>(GlobusStateKeys.globusAuth, REQUESTED_SCOPES);
+    const oldScope = getCookie(GlobusStateKeys.globusAuth) ?? REQUESTED_SCOPES;
     let newScope = REQUESTED_SCOPES;
     if (dataAccessEndpoints.length > 0) {
       // Create a new scope string
@@ -497,9 +723,12 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
     // Reset tokens if the SCOPES changed
     if (oldScope !== newScope) {
-      db.set<string | null>(GlobusStateKeys.accessToken, null);
-      db.set<GlobusTokenResponse | null>(GlobusStateKeys.transferToken, null);
-      db.set<string>(GlobusStateKeys.globusAuth, newScope);
+      setCookie(GlobusStateKeys.globusAuth, newScope, 7, '/cart/items');
+      // deleteCookie(GlobusStateKeys.accessToken, '/cart/items');
+      // deleteCookie(GlobusStateKeys.transferToken, '/cart/items');
+      // db.set<string | null>(GlobusStateKeys.accessToken, null);
+      // db.set<GlobusTokenResponse | null>(GlobusStateKeys.transferToken, null);
+      // db.set<string>(GlobusStateKeys.globusAuth, newScope);F
     }
   };
 
@@ -510,7 +739,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const changeGlobusEndpoint = async (value: string): Promise<void> => {
+  const changeGlobusEndpoint = (value: string): void => {
     if (value === '') {
       setEndpointSearchValue('');
       setGlobusEndpoints([]);
@@ -522,10 +751,12 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       (endpoint: GlobusEndpoint) => endpoint.id === value,
     );
 
-    await db.setAndSave<GlobusEndpoint | undefined>(
-      GlobusStateKeys.userChosenEndpoint,
-      checkEndpoint,
-    );
+    setChosenGlobusEndpoint(checkEndpoint || null);
+
+    // await db.setAndSave<GlobusEndpoint | undefined>(
+    //   GlobusStateKeys.userChosenEndpoint,
+    //   checkEndpoint,
+    // );
   };
 
   const searchGlobusEndpoints = async (value: string): Promise<void> => {
@@ -576,24 +807,24 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     }
   };
 
-  function tokensReady(): boolean {
-    const [globusTransferToken, accessToken] = getGlobusTokens();
+  // function tokensReady(): boolean {
+  //   const [globusTransferToken, accessToken] = getGlobusTokens();
 
-    // Test if the current transfer token is expired
-    let globusTokenReady = false;
-    if (globusTransferToken && globusTransferToken.expires_in) {
-      const createTime = globusTransferToken.created_on;
-      const lifeTime = globusTransferToken.expires_in;
-      const expires = createTime + lifeTime;
-      const curTime = Math.floor(Date.now() / 1000);
+  //   // Test if the current transfer token is expired
+  //   let globusTokenReady = false;
+  //   if (globusTransferToken && globusTransferToken.expires_in) {
+  //     const createTime = globusTransferToken.created_on;
+  //     const lifeTime = globusTransferToken.expires_in;
+  //     const expires = createTime + lifeTime;
+  //     const curTime = Math.floor(Date.now() / 1000);
 
-      if (curTime <= expires) {
-        globusTokenReady = true;
-      }
-    }
+  //     if (curTime <= expires) {
+  //       globusTokenReady = true;
+  //     }
+  //   }
 
-    return accessToken !== null && globusTokenReady;
-  }
+  //   return accessToken !== null && globusTokenReady;
+  // }
 
   function getCurrentGoal(): GlobusGoals {
     const urlParams = new URLSearchParams(window.location.search);
@@ -616,61 +847,309 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     localStorage.setItem(GlobusStateKeys.globusTransferGoalsState, goal);
   }
 
-  async function redirectToSelectGlobusEndpointPath(): Promise<void> {
+  function redirectToSelectGlobusEndpointPath(): void {
     const endpointSearchURL = `https://app.globus.org/helpers/browse-collections?action=${globusRedirectUrl}&method=GET&cancelurl=${globusRedirectUrl}?cancelled&filelimit=0`;
 
-    setLoadingPage(true);
-    await db.saveAll();
-    setLoadingPage(false);
-    const chosenEndpoint = db.get<GlobusEndpoint | null>(GlobusStateKeys.userChosenEndpoint, null);
+    // setLoadingPage(true);
+    // await db.saveAll();
+    // setLoadingPage(false);
+    // const chosenEndpoint = db.get<GlobusEndpoint | null>(GlobusStateKeys.userChosenEndpoint, null);
 
-    if (chosenEndpoint) {
-      redirectToNewURL(`${endpointSearchURL}&origin_id=${chosenEndpoint.id}`);
+    if (chosenGlobusEndpoint) {
+      redirectToNewURL(`${endpointSearchURL}&origin_id=${chosenGlobusEndpoint.id}`);
     } else {
       redirectToNewURL(endpointSearchURL);
     }
   }
 
-  async function loginWithGlobus(): Promise<void> {
-    sessionStorage.removeItem('pkce_code_verifier');
-    sessionStorage.removeItem('pkce_state');
+  // function loginWithGlobus(): void {
+  //   sessionStorage.removeItem('pkce_code_verifier');
+  //   sessionStorage.removeItem('pkce_state');
 
-    const pkce = createGlobusAuthObject();
-    const authUrl: string = pkce.authorizeUrl();
-    setLoadingPage(true);
-    await db.saveAll();
-    setLoadingPage(false);
-    redirectToNewURL(authUrl);
-  }
+  //   const pkce = createGlobusAuthObject();
+  //   const authUrl: string = pkce.authorizeUrl();
+  //   setLoadingPage(true);
+  //   // await db.saveAll();
+  //   setLoadingPage(false);
+  //   redirectToNewURL(authUrl);
 
-  async function endDownloadSteps(): Promise<void> {
+  //   // const authScope = getCookie(GlobusStateKeys.globusAuth) ?? REQUESTED_SCOPES;
+
+  //   // performGlobusAuthTest({
+  //   //   client_id: window.METAGRID.GLOBUS_CLIENT_ID, // Update this using your native client ID
+  //   //   redirect_uri: `${window.location.origin}/cart/items`, // Update this if you are deploying this anywhere else (Globus Auth will redirect back here once you have logged in)
+  //   //   // authorization_endpoint: 'https://auth.globus.org/v2/oauth2/authorize', // No changes needed
+  //   //   // token_endpoint: 'https://auth.globus.org/v2/oauth2/token', // No changes needed
+  //   //   requested_scopes: authScope, // Update with any scopes you would need, e.g. transfer
+  //   // });
+  // }
+
+  function endDownloadSteps(): void {
     setDownloadIsLoading(false);
-    setLoadingPage(true);
-    await db.setAndSave<GlobusEndpoint | undefined>(GlobusStateKeys.userChosenEndpoint, undefined);
-    setLoadingPage(false);
+    // setLoadingPage(true);
+    setChosenGlobusEndpoint(null);
+
+    setItemSelections([]);
+    // await db.setAndSave<GlobusEndpoint | undefined>(GlobusStateKeys.userChosenEndpoint, undefined);
+    // setLoadingPage(false);
     setCurrentGoal(GlobusGoals.None);
     redirectToRootUrl();
   }
 
-  async function performStepsForGlobusGoals(): Promise<void> {
+  // async function performStepsForGlobusGoals(): Promise<void> {
+  //   const goal = getCurrentGoal();
+
+  //   if (!varsLoaded) {
+  //     setVarsLoaded(true);
+  //     // await db.loadAll();
+  //     // eslint-disable-next-line no-console
+  //   }
+
+  //   // Obtain URL params if applicable
+  //   const urlParams = new URLSearchParams(window.location.search);
+  //   const eUrlReady = endpointUrlReady(urlParams);
+
+  //   // If globusGoal state is none, do nothing
+  //   if (goal === GlobusGoals.None) {
+  //     if (urlParams.size > 0) {
+  //       redirectToRootUrl();
+  //     }
+  //     setLoadingPage(false);
+  //     return;
+  //   }
+
+  //   // Goal is to set the path for chosen endpoint
+  //   if (goal === GlobusGoals.SetEndpointPath) {
+  //     // If endpoint urls are ready, update related values
+  //     if (eUrlReady) {
+  //       const path = urlParams.get('origin_path');
+  //       const endpointId = urlParams.get('endpoint_id');
+  //       if (path === null) {
+  //         setCurrentGoal(GlobusGoals.None);
+  //       }
+
+  //       const updatedEndpointList = savedGlobusEndpoints.map((endpoint) => {
+  //         if (endpoint && endpoint.id === endpointId) {
+  //           return { ...endpoint, path };
+  //         }
+  //         return endpoint;
+  //       });
+
+  //       // Set path for endpoint
+  //       setSavedGlobusEndpoints(updatedEndpointList);
+
+  //       // If endpoint was updated, set it as chosen endpoint
+  //       const updatedEndpoint = updatedEndpointList.find(
+  //         (endpoint: GlobusEndpoint) => endpoint.id === endpointId,
+  //       );
+  //       if (updatedEndpoint) {
+  //         setChosenGlobusEndpoint(updatedEndpoint);
+  //         // db.set<GlobusEndpoint>(GlobusStateKeys.userChosenEndpoint, updatedEndpoint);
+  //       }
+
+  //       setCurrentGoal(GlobusGoals.None);
+  //       // await db.saveAll();
+  //       redirectToRootUrl();
+  //       return;
+  //     }
+
+  //     if (!alertPopupState.show) {
+  //       setAlertPopupState({
+  //         onCancelAction: () => {
+  //           setLoadingPage(false);
+  //           setCurrentGoal(GlobusGoals.None);
+  //           setAlertPopupState({ ...alertPopupState, show: false });
+  //         },
+  //         onOkAction: () => {
+  //           redirectToSelectGlobusEndpointPath();
+  //         },
+  //         show: true,
+  //         content: 'You will be redirected to set the path for the collection. Continue?',
+  //       });
+  //     }
+  //     return;
+  //   }
+
+  //   // Goal is to perform a transfer
+  //   if (goal === GlobusGoals.DoGlobusTransfer) {
+  //     // const chosenEndpoint: GlobusEndpoint | null = db.get<GlobusEndpoint | null>(
+  //     //   GlobusStateKeys.userChosenEndpoint,
+  //     //   null,
+  //     // );
+
+  //     // If there is no chosen endpoint, give notice
+  //     if (!chosenGlobusEndpoint || chosenGlobusEndpoint.id === '') {
+  //       setLoadingPage(false);
+  //       if (!alertPopupState.show) {
+  //         setAlertPopupState({
+  //           onCancelAction: () => {
+  //             setCurrentGoal(GlobusGoals.None);
+  //             setAlertPopupState({ ...alertPopupState, show: false });
+  //           },
+  //           onOkAction: () => {
+  //             setCurrentGoal(GlobusGoals.None);
+  //             setAlertPopupState({ ...alertPopupState, show: false });
+  //             setEndpointSearchOpen(true);
+  //           },
+  //           show: true,
+  //           content:
+  //             'You need to select a Globus Collection. Would you like to search for a new Globus Collection?',
+  //         });
+  //       }
+  //       return;
+  //     }
+
+  //     // Update scopes
+  updateScopes();
+
+  //     const tknsReady = tokensReady();
+
+  //     // Get tokens if they aren't ready
+  //     if (!tknsReady) {
+  //       const tUrlReady = tokenUrlReady(urlParams);
+
+  //       // If auth token urls are ready, update related tokens
+  //       if (tUrlReady) {
+  //         // Token URL is ready get tokens
+  //         await getUrlAuthTokens();
+  //         redirectToRootUrl();
+  //         return;
+  //       }
+
+  //       if (!alertPopupState.show) {
+  //         setAlertPopupState({
+  //           onCancelAction: () => {
+  //             setCurrentGoal(GlobusGoals.None);
+  //             setLoadingPage(false);
+  //             setAlertPopupState({ ...alertPopupState, show: false });
+  //           },
+  //           onOkAction: () => {
+  //             loginWithGlobus();
+  //           },
+  //           show: true,
+  //           content: 'You will be redirected to obtain globus tokens. Continue?',
+  //         });
+  //       }
+
+  //       return;
+  //     }
+
+  //     // If endpoint urls are ready, update related values
+  //     if (eUrlReady) {
+  //       const path = urlParams.get('origin_path');
+  //       const endpointId = urlParams.get('endpoint_id');
+  //       if (path === null) {
+  //         setCurrentGoal(GlobusGoals.None);
+  //       }
+  //       const updatedEndpoint = savedGlobusEndpoints.find((endpoint) => {
+  //         return endpoint.id === endpointId;
+  //       });
+
+  //       if (updatedEndpoint) {
+  //         setChosenGlobusEndpoint({ ...updatedEndpoint, path } as GlobusEndpoint);
+  //         // db.set<GlobusEndpoint>(GlobusStateKeys.userChosenEndpoint, {
+  //         //   ...updatedEndpoint,
+  //         //   path,
+  //         // } as GlobusEndpoint);
+  //       } else {
+  //         setChosenGlobusEndpoint({
+  //           canonical_name: '',
+  //           contact_email: '',
+  //           display_name: 'Unsaved Collection',
+  //           entity_type: '',
+  //           id: endpointId || '',
+  //           owner_id: '',
+  //           owner_string: '',
+  //           path,
+  //           subscription_id: '',
+  //         } as GlobusEndpoint);
+  //         /* db.set<GlobusEndpoint>(GlobusStateKeys.userChosenEndpoint, {
+  //           canonical_name: '',
+  //           contact_email: '',
+  //           display_name: 'Unsaved Collection',
+  //           entity_type: '',
+  //           id: endpointId,
+  //           owner_id: '',
+  //           owner_string: '',
+  //           path,
+  //           subscription_id: '',
+  //         } as GlobusEndpoint); */
+  //       }
+
+  //       // await db.saveAll();
+  //       setLoadingPage(false);
+  //       redirectToRootUrl();
+  //       return;
+  //     }
+
+  //     // Check chosen endpoint path is ready
+  //     if (chosenGlobusEndpoint.path) {
+  //       setCurrentGoal(GlobusGoals.None);
+  //       handleGlobusDownload(chosenGlobusEndpoint);
+  //     } else {
+  //       // Setting endpoint path
+  //       setLoadingPage(false);
+  //       if (!alertPopupState.show) {
+  //         setAlertPopupState({
+  //           onCancelAction: () => {
+  //             setLoadingPage(false);
+  //             setCurrentGoal(GlobusGoals.None);
+  //             setAlertPopupState({ ...alertPopupState, show: false });
+  //           },
+  //           onOkAction: () => {
+  //             redirectToSelectGlobusEndpointPath();
+  //           },
+  //           show: true,
+  //           content:
+  //             'You will be redirected to set the path for your selected collection. Continue?',
+  //         });
+  //       }
+  //     }
+  //   }
+  // }
+
+  function performStepsForGlobusGoalsTest(): void {
     const goal = getCurrentGoal();
 
-    if (!varsLoaded) {
-      setVarsLoaded(true);
-      await db.loadAll();
-      // eslint-disable-next-line no-console
-    }
+    // if (!varsLoaded) {
+    // setVarsLoaded(true);
+    // setLoadingPage(false);
+    // return;
+    // await db.loadAll();
+    // eslint-disable-next-line no-console
+    // }
 
     // Obtain URL params if applicable
     const urlParams = new URLSearchParams(window.location.search);
     const eUrlReady = endpointUrlReady(urlParams);
 
+    if (urlParams.size > 0) {
+      if (chosenGlobusEndpoint && urlParams.has('state') && urlParams.has('code')) {
+        handleGlobusDownloadTest(chosenGlobusEndpoint, urlParams.get('code') || undefined);
+
+        return;
+        // if (!alertPopupState.show) {
+        //   setAlertPopupState({
+        //     onCancelAction: () => {
+        //       setLoadingPage(false);
+        //       setCurrentGoal(GlobusGoals.None);
+        //       setAlertPopupState({ ...alertPopupState, show: false });
+        //     },
+        //     onOkAction: () => {
+        //       handleGlobusDownloadTest(chosenGlobusEndpoint, urlParams.get('code') || undefined);
+        //     },
+        //     show: true,
+        //     content: 'You will be redirected provide consents. Continue?',
+        //   });
+        // }
+      }
+    }
+
     // If globusGoal state is none, do nothing
     if (goal === GlobusGoals.None) {
-      if (urlParams.size > 0) {
-        redirectToRootUrl();
-      }
+      redirectToRootUrl();
       setLoadingPage(false);
+      setDownloadIsLoading(false);
       return;
     }
 
@@ -699,11 +1178,12 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           (endpoint: GlobusEndpoint) => endpoint.id === endpointId,
         );
         if (updatedEndpoint) {
-          db.set<GlobusEndpoint>(GlobusStateKeys.userChosenEndpoint, updatedEndpoint);
+          setChosenGlobusEndpoint(updatedEndpoint);
+          // db.set<GlobusEndpoint>(GlobusStateKeys.userChosenEndpoint, updatedEndpoint);
         }
 
         setCurrentGoal(GlobusGoals.None);
-        await db.saveAll();
+        // await db.saveAll();
         redirectToRootUrl();
         return;
       }
@@ -715,8 +1195,8 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             setCurrentGoal(GlobusGoals.None);
             setAlertPopupState({ ...alertPopupState, show: false });
           },
-          onOkAction: async () => {
-            await redirectToSelectGlobusEndpointPath();
+          onOkAction: () => {
+            redirectToSelectGlobusEndpointPath();
           },
           show: true,
           content: 'You will be redirected to set the path for the collection. Continue?',
@@ -727,13 +1207,15 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
     // Goal is to perform a transfer
     if (goal === GlobusGoals.DoGlobusTransfer) {
-      const chosenEndpoint: GlobusEndpoint | null = db.get<GlobusEndpoint | null>(
-        GlobusStateKeys.userChosenEndpoint,
-        null,
-      );
+      // const chosenEndpoint: GlobusEndpoint | null = db.get<GlobusEndpoint | null>(
+      //   GlobusStateKeys.userChosenEndpoint,
+      //   null,
+      // );
+
+      // await delay(500);
 
       // If there is no chosen endpoint, give notice
-      if (!chosenEndpoint || chosenEndpoint.id === '') {
+      if (!chosenGlobusEndpoint || chosenGlobusEndpoint.id === '') {
         setLoadingPage(false);
         if (!alertPopupState.show) {
           setAlertPopupState({
@@ -755,22 +1237,24 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       }
 
       // Update scopes
-      updateScopes();
+      // updateScopes();
 
-      const tknsReady = tokensReady();
+      // const tknsReady = tokensReady();
 
       // Get tokens if they aren't ready
-      if (!tknsReady) {
-        const tUrlReady = tokenUrlReady(urlParams);
+      // if (!tknsReady) {
+      //   const tUrlReady = tokenUrlReady(urlParams);
 
-        // If auth token urls are ready, update related tokens
-        if (tUrlReady) {
-          // Token URL is ready get tokens
-          await getUrlAuthTokens();
-          redirectToRootUrl();
-          return;
-        }
+      //   // If auth token urls are ready, update related tokens
+      //   if (tUrlReady) {
+      //     // Token URL is ready get tokens
+      //     await getUrlAuthTokens();
+      //     redirectToRootUrl();
+      //     return;
+      //   }
 
+      /*
+      if (!isAuthenticated) {
         if (!alertPopupState.show) {
           setAlertPopupState({
             onCancelAction: () => {
@@ -778,16 +1262,59 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
               setLoadingPage(false);
               setAlertPopupState({ ...alertPopupState, show: false });
             },
-            onOkAction: async () => {
-              await loginWithGlobus();
+            onOkAction: () => {
+              // setCurrentGoal(GlobusGoals.None);
+              // setLoadingPage(false);
+              // setAlertPopupState({ ...alertPopupState, show: false });
+              redirectToNewURL('login/globus/?next=/cart/items');
             },
             show: true,
-            content: 'You will be redirected to obtain globus tokens. Continue?',
+            content: 'Notice: Globus Transfers require authentication. Do you wish to login?',
           });
         }
-
         return;
+
+        // const tUrlReady = tokenUrlReady(urlParams);
+
+        // If auth token urls are ready, update related tokens
+        // if (!tUrlReady) {
+        //   if (!alertPopupState.show) {
+        //     setAlertPopupState({
+        //       onCancelAction: () => {
+        //         setCurrentGoal(GlobusGoals.None);
+        //         setLoadingPage(false);
+        //         setAlertPopupState({ ...alertPopupState, show: false });
+        //       },
+        //       onOkAction: () => {
+        //         loginWithGlobus();
+        //       },
+        //       show: true,
+        //       content: 'You will be redirected to obtain globus tokens. Continue?',
+        //     });
+        //   }
+        // } else {
+        //   setCookie('authCode', urlParams.get('code') || '', 1, '/cart/items');
+        // }
       }
+      */
+
+      //   if (!alertPopupState.show) {
+      //     setAlertPopupState({
+      //       onCancelAction: () => {
+      //         setCurrentGoal(GlobusGoals.None);
+      //         setLoadingPage(false);
+      //         setAlertPopupState({ ...alertPopupState, show: false });
+      //       },
+      //       onOkAction: () => {
+      //         loginWithGlobus();
+      //       },
+      //       show: true,
+      //       content: 'You will be redirected to obtain globus tokens. Continue?',
+      //     });
+      //   }
+
+      //   return;
+      // }
 
       // If endpoint urls are ready, update related values
       if (eUrlReady) {
@@ -801,12 +1328,24 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         });
 
         if (updatedEndpoint) {
-          db.set<GlobusEndpoint>(GlobusStateKeys.userChosenEndpoint, {
-            ...updatedEndpoint,
-            path,
-          } as GlobusEndpoint);
+          setChosenGlobusEndpoint({ ...updatedEndpoint, path } as GlobusEndpoint);
+          // db.set<GlobusEndpoint>(GlobusStateKeys.userChosenEndpoint, {
+          //   ...updatedEndpoint,
+          //   path,
+          // } as GlobusEndpoint);
         } else {
-          db.set<GlobusEndpoint>(GlobusStateKeys.userChosenEndpoint, {
+          setChosenGlobusEndpoint({
+            canonical_name: '',
+            contact_email: '',
+            display_name: 'Unsaved Collection',
+            entity_type: '',
+            id: endpointId || '',
+            owner_id: '',
+            owner_string: '',
+            path,
+            subscription_id: '',
+          } as GlobusEndpoint);
+          /* db.set<GlobusEndpoint>(GlobusStateKeys.userChosenEndpoint, {
             canonical_name: '',
             contact_email: '',
             display_name: 'Unsaved Collection',
@@ -816,19 +1355,19 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             owner_string: '',
             path,
             subscription_id: '',
-          } as GlobusEndpoint);
+          } as GlobusEndpoint); */
         }
 
-        await db.saveAll();
+        // await db.saveAll();
         setLoadingPage(false);
         redirectToRootUrl();
         return;
       }
 
       // Check chosen endpoint path is ready
-      if (chosenEndpoint.path) {
-        setCurrentGoal(GlobusGoals.None);
-        handleGlobusDownload(chosenEndpoint);
+      if (chosenGlobusEndpoint.path) {
+        // setCurrentGoal(GlobusGoals.None);
+        handleGlobusDownloadTest(chosenGlobusEndpoint);
       } else {
         // Setting endpoint path
         setLoadingPage(false);
@@ -839,8 +1378,8 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
               setCurrentGoal(GlobusGoals.None);
               setAlertPopupState({ ...alertPopupState, show: false });
             },
-            onOkAction: async () => {
-              await redirectToSelectGlobusEndpointPath();
+            onOkAction: () => {
+              redirectToSelectGlobusEndpointPath();
             },
             show: true,
             content:
@@ -852,13 +1391,13 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   }
 
   const downloadBtnTooltip = (): string => {
-    const chosenEndpoint = db.get<GlobusEndpoint | null>(GlobusStateKeys.userChosenEndpoint, null);
+    // const chosenEndpoint = db.get<GlobusEndpoint | null>(GlobusStateKeys.userChosenEndpoint, null);
 
     if (itemSelections.length === 0) {
       return 'Please select at least one dataset to download in your cart above.';
     }
     if (selectedDownloadType === 'Globus') {
-      if (!chosenEndpoint || savedGlobusEndpoints.length === 0) {
+      if (!chosenGlobusEndpoint || savedGlobusEndpoints.length === 0) {
         return 'Please select a Globus Collection.';
       }
     }
@@ -870,7 +1409,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       key: '1',
       label: 'Reset Tokens',
       danger: true,
-      disabled: !tokensReady(),
+      // disabled: !tokensReady(),
       onClick: () => {
         const newAlertPopupState: AlertModalState = {
           content:
@@ -879,8 +1418,9 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           onCancelAction: () => {
             setAlertPopupState({ ...alertPopupState, show: false });
           },
-          onOkAction: async () => {
-            await resetTokens();
+          onOkAction: () => {
+            resetTokens();
+
             setAlertPopupState({ ...alertPopupState, show: false });
             showNotice(messageApi, 'Globus Auth tokens reset!', {
               duration: 3,
@@ -898,10 +1438,10 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   ];
 
   useEffect(() => {
-    const initializePage = async (): Promise<void> => {
+    const initializePage = (): void => {
       setLoadingPage(true);
 
-      await performStepsForGlobusGoals();
+      performStepsForGlobusGoalsTest();
     };
     initializePage();
   }, []);
@@ -1052,23 +1592,25 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         okButtonProps={{
           className: manageCollectionsTourTargets.saveCollectionBtn.class(),
         }}
-        onOk={async () => {
+        onOk={() => {
           setEndpointSearchOpen(false);
-          db.set<GlobusEndpoint | undefined>(GlobusStateKeys.userChosenEndpoint, undefined);
+          setChosenGlobusEndpoint(null);
+          // db.set<GlobusEndpoint | undefined>(GlobusStateKeys.userChosenEndpoint, undefined);
 
-          await db.saveAll(); // save all the values after the form is closed
+          // await db.saveAll(); // save all the values after the form is closed
         }}
         cancelText="Cancel Changes"
         cancelButtonProps={{
           className: manageCollectionsTourTargets.cancelCollectionBtn.class(),
         }}
-        onCancel={async () => {
+        onCancel={() => {
           setEndpointSearchOpen(false);
-          await db.loadAll(); // Reset values from before the form was opened
-          await db.setAndSave<GlobusEndpoint | undefined>(
-            GlobusStateKeys.userChosenEndpoint,
-            undefined,
-          );
+          // await db.loadAll(); // Reset values from before the form was opened
+          // await db.setAndSave<GlobusEndpoint | undefined>(
+          //   GlobusStateKeys.userChosenEndpoint,
+          //   undefined,
+          // );
+          setChosenGlobusEndpoint(null);
         }}
         width={1000}
       >
@@ -1230,11 +1772,12 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                         <Button
                           type="primary"
                           danger
-                          onClick={async () => {
-                            db.set<GlobusEndpoint>(GlobusStateKeys.userChosenEndpoint, endpoint);
+                          onClick={() => {
+                            setChosenGlobusEndpoint(endpoint);
+                            // db.set<GlobusEndpoint>(GlobusStateKeys.userChosenEndpoint, endpoint);
                             setEndpointSearchOpen(false);
                             setCurrentGoal(GlobusGoals.SetEndpointPath);
-                            await performStepsForGlobusGoals();
+                            performStepsForGlobusGoalsTest();
                           }}
                         >
                           {endpoint.path ? 'Update Path' : 'Set Path'}

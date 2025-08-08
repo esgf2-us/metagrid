@@ -10,6 +10,7 @@ import { projectBaseQuery } from './utils';
 export enum AppStateKeys {
   isDarkMode = 'isDarkMode',
   userCart = 'userCart',
+  userChosenEndpoint = 'userChosenEndpoint',
   userSearchQueries = 'userSearchQueries',
   activeSearchQuery = 'activeSearchQuery',
   currentRequestURL = 'currentRequestURL',
@@ -100,6 +101,13 @@ export const globusTaskItemsAtom = atomWithStorage<GlobusTaskItem[]>(
 export const savedGlobusEndpointsAtom = atomWithStorage<GlobusEndpoint[]>(
   GlobusStateKeys.savedGlobusEndpoints,
   [],
+  undefined,
+  { getOnInit: true },
+);
+
+export const userChosenEndpointAtom = atomWithStorage<GlobusEndpoint | null>(
+  AppStateKeys.userChosenEndpoint,
+  null,
   undefined,
   { getOnInit: true },
 );

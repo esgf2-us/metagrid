@@ -267,7 +267,7 @@ class DjangoStaticSettings(BaseSettings):
     # social_django
     # -------------------------------------------------------------------------------
     # This is a general Django setting if views need to redirect to login
-    # https://docs.djangoproject.com/en/3.2/ref/settings/#login-url
+    # https://docs.djangoproject.com/en/5.0/ref/settings/#login-url
     LOGIN_URL: str = "/login/globus/"
 
     LOGIN_REDIRECT_URL: str = "/search"

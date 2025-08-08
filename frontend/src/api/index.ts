@@ -40,22 +40,39 @@ export interface SubmissionResult {
   status: number;
   successes: Record<string, unknown>[];
   failures: string[];
+  auth_url: string | undefined;
 }
 
-const getCookie = (name: string): null | string => {
+export const getCookie = (name: string): null | string => {
   let cookieValue = null;
+  const cookieName = name === 'csrftoken' ? 'csrftoken' : `metagrid_${name}`;
   if (document && document.cookie && document.cookie !== '') {
     const cookies = document.cookie.split(';');
     for (let i = 0; i < cookies.length; i += 1) {
       const cookie = cookies[i].trim();
       // Does this cookie string begin with the name we want?
-      if (cookie.substring(0, name.length + 1) === `${name}=`) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+      if (cookie.substring(0, cookieName.length + 1) === `${cookieName}=`) {
+        cookieValue = decodeURIComponent(cookie.substring(cookieName.length + 1));
         break;
       }
     }
   }
   return cookieValue;
+};
+
+export const setCookie = (name: string, value: string, expDays = 7, path = '/'): void => {
+  let expires = '';
+  if (expDays) {
+    const date = new Date();
+    date.setTime(date.getTime() + expDays * 24 * 60 * 60 * 1000);
+    expires = `expires=${date.toUTCString()}`;
+  }
+  const cookieSettings = 'Secure; SameSite=None;';
+  document.cookie = `metagrid_${name}=${encodeURIComponent(value)}; ${expires}; path=${path}; ${cookieSettings}`;
+};
+
+export const deleteCookie = (name: string, path = '/'): void => {
+  document.cookie = `metagrid_${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path};`;
 };
 
 /**
@@ -102,6 +119,31 @@ export const fetchGlobusAuth = async (): Promise<RawUserAuth> =>
     })
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusAuth));
+    });
+
+export const performGlobusAuthTest = async ({
+  authCode,
+  client_id,
+  redirect_uri,
+  requested_scopes,
+}: {
+  authCode?: string;
+  client_id: string;
+  redirect_uri: string;
+  requested_scopes: string;
+}): Promise<SubmissionResult> =>
+  axios
+    .post<SubmissionResult>(apiRoutes.globusTransferTest.path, {
+      authCode,
+      client_id,
+      redirect_uri,
+      requested_scopes,
+    })
+    .then((resp) => {
+      return resp.data;
+    })
+    .catch((error: ResponseError) => {
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusTransferTest));
     });
 
 /**
@@ -695,6 +737,26 @@ export const startSearchGlobusEndpoints = async (
     })
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusSearchEndpoints));
+    });
+};
+
+export const getLocalGlobusEndpoint = async (scopes: string): Promise<string> => {
+  return axios
+    .post(apiRoutes.globusLocalEndpoint.path, {
+      redirect_uri: `${window.location.origin}/cart/items`,
+      scopes,
+    })
+    .then((resp) => {
+      // The response is a string with the local endpoint ID
+      const localEndpointId = resp.data as string;
+      if (localEndpointId) {
+        return localEndpointId;
+      }
+      return '';
+    })
+    .catch((error: ResponseError) => {
+      // Handle the error and return a meaningful message
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusLocalEndpoint));
     });
 };
 
