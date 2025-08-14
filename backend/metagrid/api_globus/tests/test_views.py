@@ -4,9 +4,7 @@ from unittest.mock import patch
 import pytest
 import responses
 from django.conf import settings
-from django.http import HttpRequest, HttpResponse
 from django.urls import reverse
-from rest_framework import status
 
 from metagrid.api_globus import views
 from metagrid.api_globus.views import globus_info_from_doc, search_files

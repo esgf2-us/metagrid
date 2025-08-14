@@ -54,7 +54,9 @@ import {
   createCollectionsFormTour,
 } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
-const globusRedirectUrl = `${window.location.origin}/cart/items`;
+const GLOBUS_REDIRECT_URL = `${window.location.origin}/cart/items`;
+
+const COLLECTION_SEARCH_PAGE_SIZE = 5;
 
 // Reference: https://github.com/bpedroza/js-pkce
 /* istanbul ignore next */
@@ -67,8 +69,6 @@ type AlertModalState = {
   show: boolean;
   content: React.ReactNode;
 };
-
-const COLLECTION_SEARCH_PAGE_SIZE = 5;
 
 export enum GlobusGoals {
   None = 'none',
@@ -564,7 +564,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   }
 
   function redirectToSelectGlobusEndpointPath(): void {
-    const endpointSearchURL = `https://app.globus.org/helpers/browse-collections?action=${globusRedirectUrl}&method=GET&cancelurl=${globusRedirectUrl}?cancelled&filelimit=0`;
+    const endpointSearchURL = `https://app.globus.org/helpers/browse-collections?action=${GLOBUS_REDIRECT_URL}&method=GET&cancelurl=${GLOBUS_REDIRECT_URL}?cancelled&filelimit=0`;
 
     if (chosenGlobusEndpoint) {
       redirectToNewURL(`${endpointSearchURL}&origin_id=${chosenGlobusEndpoint.id}`);

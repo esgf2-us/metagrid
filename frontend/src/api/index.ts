@@ -715,26 +715,6 @@ export const startSearchGlobusEndpoints = async (
     });
 };
 
-export const getLocalGlobusEndpoint = async (scopes: string): Promise<string> => {
-  return axios
-    .post(apiRoutes.globusLocalEndpoint.path, {
-      redirect_uri: `${window.location.origin}/cart/items`,
-      scopes,
-    })
-    .then((resp) => {
-      // The response is a string with the local endpoint ID
-      const localEndpointId = resp.data as string;
-      if (localEndpointId) {
-        return localEndpointId;
-      }
-      return '';
-    })
-    .catch((error: ResponseError) => {
-      // Handle the error and return a meaningful message
-      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusLocalEndpoint));
-    });
-};
-
 /**
  * Parses the results of the node status API to simplify the data structure.
  */

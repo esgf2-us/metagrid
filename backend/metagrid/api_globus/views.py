@@ -175,6 +175,7 @@ class GlobusTransferAuthFlow:
     def get_existing_transfer_client(self) -> TransferClient | None:
         # Based on user, obtain a transfer client
         if self.request is not None and self.request.user.is_authenticated:
+            print("Found existing transfer client from authenticated user")
             return load_transfer_client(self.request.user)
         else:
             transfer_token = self.get_saved_transfer_token()
@@ -194,37 +195,51 @@ class GlobusTransferAuthFlow:
                 self.consent_required_scopes.extend(
                     e.info.consent_required.required_scopes
                 )
+            else:
+                print("TransferAPIError: ", e)
 
     def start_oauth_flow(self, auth_redirect_url: str) -> None:
         self.auth_redirect_url = auth_redirect_url
 
-        self.auth_client.oauth2_start_flow(
-            requested_scopes=self.target_scopes,
-            redirect_uri=self.auth_redirect_url,
-        )
-        self.auth_url = self.auth_client.oauth2_get_authorize_url()
+        try:
+            self.auth_client.oauth2_start_flow(
+                requested_scopes=self.target_scopes,
+                redirect_uri=self.auth_redirect_url,
+            )
+            self.auth_url = self.auth_client.oauth2_get_authorize_url()
+        except Exception as e:
+            print("Error occurred while starting OAuth flow: ", e)
 
     def get_transfer_client_from_auth_code(
         self, auth_code: str
     ) -> TransferClient | None:
 
-        self.auth_client.oauth2_start_flow(
-            requested_scopes=self.scopes,
-            redirect_uri=(self.auth_redirect_url),
-        )
+        try:
+            self.auth_client.oauth2_start_flow(
+                requested_scopes=self.scopes,
+                redirect_uri=(self.auth_redirect_url),
+            )
 
-        tokens = self.auth_client.oauth2_exchange_code_for_tokens(auth_code)
-        if tokens is not None:
-            transfer_tokens = tokens.by_resource_server[
-                "transfer.api.globus.org"
-            ]
-            transfer_token = transfer_tokens["access_token"]
+            tokens = self.auth_client.oauth2_exchange_code_for_tokens(
+                auth_code
+            )
 
-            self.save_transfer_token(transfer_token)
+            if tokens is not None:
+                transfer_tokens = tokens.by_resource_server[
+                    "transfer.api.globus.org"
+                ]
+                transfer_token = transfer_tokens["access_token"]
 
-            # If successful, return the transfer client
-            return TransferClient(
-                authorizer=AccessTokenAuthorizer(transfer_token)
+                self.save_transfer_token(transfer_token)
+
+                # If successful, return the transfer client
+                return TransferClient(
+                    authorizer=AccessTokenAuthorizer(transfer_token)
+                )
+        except Exception as e:
+            print(
+                "Error occurred while getting transfer client from auth code: ",
+                e,
             )
 
         return None
@@ -278,11 +293,10 @@ class GlobusTransferAuthFlow:
             return transfer_client
 
         # If that failed, try to get a new transfer client with the auth code
-        if auth_code is not None:
-            transfer_client = self.get_transfer_client_second_try(auth_code)
+        transfer_client = self.get_transfer_client_second_try(auth_code)
 
-            if transfer_client is not None:
-                return transfer_client
+        if transfer_client is not None:
+            return transfer_client
 
         return None
 
@@ -438,7 +452,22 @@ def globus_download_request(request):
     )
 
     # Get or create a transfer client
-    transfer_client = globus_auth_flow.get_transfer_client(auth_code)
+    try:
+        transfer_client = globus_auth_flow.get_transfer_client(auth_code)
+    except Exception as e:
+        print("Error occurred while getting transfer client: ", e)
+        results = GlobusSubmissionResult(
+            status=status.HTTP_403_FORBIDDEN,  # Multiple status codes in case of failures
+            successes=[],
+            failures=[],
+            auth_url=globus_auth_flow.auth_url,
+        )
+
+        return JsonResponse(
+            results,
+            status=results["status"],
+            message="Failed to obtain transfer client.",
+        )
 
     # If transfer_client is None, we need to redirect the user to login
     if transfer_client is None:
