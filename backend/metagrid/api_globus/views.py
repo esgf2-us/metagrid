@@ -260,7 +260,7 @@ class GlobusTransferAuthFlow:
         return transfer_client
 
     def get_transfer_client_second_try(
-        self, auth_code: str
+        self, auth_code: str | None = None
     ) -> TransferClient | None:
         # If we have an auth code, try to get a new transfer client with it
         if auth_code is not None:

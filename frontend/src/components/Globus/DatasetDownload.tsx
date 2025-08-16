@@ -545,6 +545,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   function getCurrentGoal(): GlobusGoals {
     const urlParams = new URLSearchParams(window.location.search);
     const curPage = getCurrentAppPage();
+
     // If cancelled key is in URL, set goal to none
     if (urlParams.has('cancelled') || curPage !== AppPage.Cart) {
       setCurrentGoal(GlobusGoals.None);

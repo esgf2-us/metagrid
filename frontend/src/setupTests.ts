@@ -37,6 +37,7 @@ import {
   CartStateKeys,
   GlobusStateKeys,
   userCartAtom,
+  userChosenEndpointAtom,
 } from './common/atoms';
 import { localStorageMock, sessionStorageMock } from './test/mock/mockStorage';
 
@@ -49,7 +50,11 @@ Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 Object.defineProperty(window, 'sessionStorage', { value: sessionStorageMock });
 Object.defineProperty(window, 'METAGRID', { value: mockConfig });
 
-globalThis.TextEncoder = TextEncoder;
+// Assign TextEncoder polyfill only if not present to avoid type conflicts
+if (typeof globalThis.TextEncoder === 'undefined') {
+  // @ts-expect-error: Assigning polyfill for test environment
+  globalThis.TextEncoder = TextEncoder;
+}
 
 beforeAll(() => {
   server.listen();
@@ -97,6 +102,12 @@ beforeAll(() => {
     cartItemSelectionsAtom,
     CartStateKeys.cartItemSelections,
     [],
+    true,
+  );
+  AtomWrapper.setAtomValue<GlobusEndpoint | null>(
+    userChosenEndpointAtom,
+    GlobusStateKeys.userChosenEndpoint,
+    null,
     true,
   );
   AtomWrapper.setAtomValue<GlobusEndpoint[]>(
