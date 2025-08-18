@@ -1,10 +1,11 @@
 import { CSSProperties, ReactNode } from 'react';
 import { MessageInstance } from 'antd/es/message/interface';
-import { AtomEffect } from 'recoil';
+import LZString from 'lz-string';
 import { UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
-import { ActiveFacets } from '../components/Facets/types';
+import { ActiveFacets, RawProject } from '../components/Facets/types';
 import {
   ActiveSearchQuery,
+  Pagination,
   RawSearchResult,
   RawSearchResults,
   ResultType,
@@ -65,6 +66,19 @@ export async function showNotice(
       break;
   }
 }
+
+export const projectBaseQuery = (
+  project: Record<string, unknown> | RawProject
+): ActiveSearchQuery => ({
+  project,
+  versionType: 'latest',
+  resultType: 'all',
+  minVersionDate: null,
+  maxVersionDate: null,
+  filenameVars: [],
+  activeFacets: {},
+  textInputs: [],
+});
 
 const bodySider = {
   padding: '12px 12px 12px 12px',
@@ -148,27 +162,6 @@ export const objectHasKey = (
   obj: Record<any, any>,
   key: string | number
 ): boolean => Object.prototype.hasOwnProperty.call(obj, key);
-
-export const localStorageEffect = <T>(key: string, defaultVal: T): AtomEffect<T> => ({
-  setSelf,
-  onSet,
-}) => {
-  const savedValue = localStorage.getItem(key);
-  if (savedValue != null) {
-    try {
-      const parsedValue = JSON.parse(savedValue) as T;
-      setSelf(parsedValue);
-    } catch (error) {
-      setSelf(defaultVal);
-    }
-  } else {
-    setSelf(defaultVal);
-  }
-
-  onSet((newValue) => {
-    localStorage.setItem(key, JSON.stringify(newValue));
-  });
-};
 
 /**
  * For a record's 'xlink' attribute, it will be split into an array of
@@ -382,7 +375,14 @@ export const combineCarts = (
 const convertSearchToHash = (query: UserSearchQuery): number => {
   /* eslint-disable */
   let hash: number = 0;
-  const nonUniqueQuery: UserSearchQuery = { ...query, uuid: '', user: null };
+  const nonUniqueQuery: UserSearchQuery = {
+    ...query,
+    resultsCount: 0,
+    searchTime: null,
+    uuid: '',
+    user: null,
+    url: '',
+  };
   const queryStr = JSON.stringify(nonUniqueQuery);
   let i, chr;
 
@@ -425,4 +425,151 @@ export const getLastMessageSeen = (): string | null => {
 
 export const setStartupMessageAsSeen = (): void => {
   localStorage.setItem('lastMessageSeen', messageDisplayData.messageToShow);
+};
+
+// This is meant to clear out any deprecated keys in localStorage
+// that are no longer used in the application.
+export const clearDeprecatedStorageKeys = (): void => {
+  const deprecatedLocalStorageKeys = ['userSearchQuery', 'showBanner'];
+
+  deprecatedLocalStorageKeys.forEach((key) => {
+    if (localStorage.getItem(key)) {
+      localStorage.removeItem(key);
+    }
+  });
+};
+
+export const getStrSizeInKb = (str: string): number => {
+  // Convert the string to a Blob and get its size
+  const sizeInBytes = new Blob([str]).size;
+  // Convert bytes to kilobytes
+  return sizeInBytes / 1024;
+};
+
+export function compressData<T>(data: T): string {
+  const jsonStr = JSON.stringify(data);
+  const compressedData = LZString.compress(jsonStr);
+
+  return compressedData;
+}
+
+export function decompressData<T>(compressedStr: string): T {
+  // Decompress the data
+  const decompressedStr = LZString.decompress(compressedStr);
+  const decompressedData = JSON.parse(decompressedStr);
+  return decompressedData as T;
+}
+
+export function saveToLocalStorage<T>(key: string, value: T, compress = false): void {
+  if (compress) {
+    const compressedValue = compressData<T>(value);
+    localStorage.setItem(key, compressedValue);
+    return;
+  }
+
+  const jsonStr = JSON.stringify(value);
+  localStorage.setItem(key, jsonStr);
+}
+
+export function getFromLocalStorage<T>(key: string, decompress = false): T | null {
+  if (decompress) {
+    const value = localStorage.getItem(key);
+    if (!value) {
+      return null;
+    }
+    // Decompress the data
+    const decompressedValue = decompressData<T>(value);
+    return decompressedValue;
+  }
+
+  const value = localStorage.getItem(key);
+  return value ? (JSON.parse(value) as T) : null;
+}
+
+export const cachePagination = (pagination: Pagination): void => {
+  saveToLocalStorage('cachedSearchPagination', pagination);
+};
+
+export const getCachedPagination = (): Pagination => {
+  return (
+    getFromLocalStorage<Pagination>('cachedSearchPagination') || {
+      page: 1,
+      pageSize: 10,
+    }
+  );
+};
+
+export const cacheSearchResults = (
+  fetchedResults: Record<string, unknown> | undefined,
+  pagination: Pagination,
+  cachedURL: string
+): void => {
+  if (fetchedResults && !Object.hasOwn(fetchedResults, 'cachedURL')) {
+    saveToLocalStorage(
+      'cachedSearchResults',
+      {
+        results: fetchedResults,
+        cachedURL,
+        expires: Date.now() + 60 * 60 * 1000, // Expires after an hour
+      },
+      true
+    );
+
+    // Cache the pagination
+    cachePagination(pagination);
+  }
+};
+
+export const getCachedSearchResults = (): Record<string, unknown> => {
+  const fetchedResults: Record<string, unknown> =
+    getFromLocalStorage('cachedSearchResults', true) || {};
+  const now = Date.now();
+  if (fetchedResults.expires && now > (fetchedResults.expires as number)) {
+    // If expired, remove from session storage
+    clearCachedSearchResults();
+
+    return {};
+  }
+
+  // If not expired, return the cached results
+  return {
+    cachedURL: fetchedResults.cachedURL,
+    ...(typeof fetchedResults.results === 'object' && fetchedResults.results !== null
+      ? fetchedResults.results
+      : {}),
+  };
+};
+
+export const clearCachedSearchResults = (): void => {
+  // Clear the cached search results from sessionStorage
+  localStorage.removeItem('cachedSearchResults');
+  localStorage.removeItem('cachedSearchPagination');
+};
+
+export const showBanner = (): boolean => {
+  const currentBannerText = sessionStorage.getItem('showBanner');
+
+  // Check if the banner should be shown
+  if (
+    window.METAGRID.BANNER_TEXT !== null &&
+    window.METAGRID.BANNER_TEXT !== '' &&
+    currentBannerText !== window.METAGRID.BANNER_TEXT
+  ) {
+    return true;
+  }
+
+  if (window.METAGRID.BANNER_TEXT === null || window.METAGRID.BANNER_TEXT === '') {
+    sessionStorage.removeItem('showBanner');
+  }
+
+  return false;
+};
+
+export const saveBannerText = (): void => {
+  // Set the banner text in sessionStorage
+  const bannerText = window.METAGRID.BANNER_TEXT;
+
+  if (bannerText) {
+    sessionStorage.setItem('showBanner', bannerText);
+  }
 };
