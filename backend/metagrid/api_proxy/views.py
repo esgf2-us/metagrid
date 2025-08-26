@@ -45,7 +45,7 @@ def do_globus_auth(request):
 @csrf_exempt
 def do_globus_logout(request):
     logout(request)
-    return redirect(settings.LOGOUT_REDIRECT_URL)
+    return redirect(request.GET.get("next", settings.LOGOUT_REDIRECT_URL))
 
 
 @api_view()
