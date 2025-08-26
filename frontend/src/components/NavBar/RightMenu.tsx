@@ -97,13 +97,13 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
       <Button
         type="text"
         icon={<UserOutlined style={{ fontSize: '18px', margin: 0 }} />}
-        href="login/globus/"
+        href={`login/globus/?next=${location.pathname}${location.search}`}
       >
         Sign In
       </Button>
     );
     logoutBtn = (
-      <Button type="text" href="proxy/globus-logout/">
+      <Button type="text" href={`proxy/globus-logout/?next=${location.pathname}${location.search}`}>
         Sign Out
       </Button>
     );
