@@ -157,10 +157,19 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     show: false,
   });
 
-  function resetAuthScope(): void {
+  function endDownloadSteps(): void {
     setCurrentGoal(GlobusGoals.None);
     setLoadingPage(false);
+    setDownloadIsLoading(false);
+
+    setChosenGlobusEndpoint(null);
+    setItemSelections([]);
+    redirectToRootUrl();
+  }
+
+  function resetCookiesAndTokens(): void {
     deleteCookie(GlobusStateKeys.globusAuthScope, '/cart/items');
+    resetGlobusTokens();
   }
 
   const handleWgetDownload = (): void => {
@@ -306,7 +315,8 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
               },
             );
 
-            resetAuthScope();
+            resetCookiesAndTokens();
+            endDownloadSteps();
             break;
 
           default:
@@ -319,7 +329,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                 type: 'error',
               },
             );
-            resetAuthScope();
+            resetCookiesAndTokens();
             endDownloadSteps();
             break;
         }
@@ -350,7 +360,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             type: 'error',
           },
         );
-        resetAuthScope();
+        resetCookiesAndTokens();
         endDownloadSteps();
       })
       .finally(() => {
@@ -575,15 +585,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     }
   }
 
-  function endDownloadSteps(): void {
-    setDownloadIsLoading(false);
-    setChosenGlobusEndpoint(null);
-
-    setItemSelections([]);
-    setCurrentGoal(GlobusGoals.None);
-    redirectToRootUrl();
-  }
-
   function performStepsForGlobusGoalsTest(): void {
     const goal = getCurrentGoal();
 
@@ -765,15 +766,16 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           onCancelAction: () => {
             setAlertPopupState({ ...alertPopupState, show: false });
           },
-          onOkAction: () => {
-            resetAuthScope();
-            resetGlobusTokens();
+          onOkAction: async () => {
+            resetCookiesAndTokens();
 
             setAlertPopupState({ ...alertPopupState, show: false });
-            showNotice(messageApi, 'Globus tokens reset!', {
-              duration: 3,
+            await showNotice(messageApi, 'Globus tokens reset!', {
+              duration: 2,
               type: 'info',
             });
+
+            endDownloadSteps();
           },
           show: true,
         };
