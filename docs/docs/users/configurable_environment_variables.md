@@ -101,15 +101,6 @@
 >
 >     Text to display in the footer of the frontend. Useful for adding a link to the terms of service or other legal information. The string should be formatted as MarkDown and will be rendered as such.
 
-#### `METAGRID_GLOBUS_CLIENT_ID`
-
-> !!! example "**Required**"
->     The `Client UUID` obtained by registering a `a thick client or script that will be installed and run by users on their devices` with Globus at <https://app.globus.org/settings/developers>  This is required even if signing in with Globus is not enabled. It is used for browsing Globus Collections to which files may be sent.
->
->     __Example Values__
->
->     `536321f7-c0e9-462c-b5c6-34d4a3672076`
-
 #### `METAGRID_STATUS_URL`
 
 > !!! example "*Optional*"

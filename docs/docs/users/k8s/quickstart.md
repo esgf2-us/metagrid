@@ -14,7 +14,6 @@ ingress:
 config:
   METAGRID_SOCIAL_AUTH_GLOBUS_KEY: 94c44808-9efd-4236-bffd-1185b1071736
   METAGRID_SOCIAL_AUTH_GLOBUS_SECRET: 34364292-2752-4d5e-8295
-  METAGRID_GLOBUS_CLIENT_ID: 21982de0-2b7a-4ba8-bef5-5606ae098201
   METAGRID_SEARCH_URL: https://esgf-node.ornl.gov/esg-search/search
   METAGRID_WGET_URL: https://esgf-node.ornl.gov/esg-search/wget
 

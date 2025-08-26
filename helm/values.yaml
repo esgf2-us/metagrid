@@ -21,7 +21,6 @@ config:
   # TODO implement logic to require these when using globus only, for now adding placeholders
   METAGRID_SOCIAL_AUTH_GLOBUS_KEY: "key"
   METAGRID_SOCIAL_AUTH_GLOBUS_SECRET: "secret"
-  METAGRID_GLOBUS_CLIENT_ID: "clientID"
 
 frontend:
   replicaCount: 1
