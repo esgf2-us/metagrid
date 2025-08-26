@@ -15,10 +15,7 @@ import {
 } from '../../test/jestTestFunctions';
 import App from '../App/App';
 import { GlobusEndpoint, GlobusTaskItem } from './types';
-import {
-  globusEndpointFixture,
-  globusAuthScopeFixure,
-} from '../../test/mock/fixtures';
+import { globusEndpointFixture, globusAuthScopeFixure } from '../../test/mock/fixtures';
 import apiRoutes from '../../api/routes';
 import DatasetDownloadForm, { GlobusGoals } from './DatasetDownload';
 import {
@@ -829,7 +826,7 @@ describe('DatasetDownload form tests', () => {
     expect(taskItemsNow).toHaveLength(0);
   });
 
-  it('shows a confirmation dialog when Reset Auth Scope is clicked', async () => {
+  it('shows a confirmation dialog when Reset Tokens is clicked', async () => {
     await initializeComponentForTest();
 
     // Open the dropdown menu
@@ -851,19 +848,19 @@ describe('DatasetDownload form tests', () => {
       await user.click(transferButtonMenu);
     }
 
-    // Click Reset Auth Scope
-    const resetAuthScope = await screen.findByText('Reset Auth Scope');
-    expect(resetAuthScope).toBeTruthy();
-    await user.click(resetAuthScope);
+    // Click Reset Tokens
+    const resetTokens = await screen.findByText('Reset Tokens');
+    expect(resetTokens).toBeTruthy();
+    await user.click(resetTokens);
 
     // Expect confirmation dialog to show
     const confirmationDialog = await screen.findByText(
-      /If you haven't performed a Globus transfer in a while, or you ran into some issues, it may help to reset the authentication scope. Click 'Ok' if you wish to to reset./i,
+      /If you ran into some issues, it may help to reset tokens so you can request new ones. Click 'Ok' if you wish to to reset tokens./i,
     );
     expect(confirmationDialog).toBeTruthy();
   });
 
-  it('resets auth scope when Reset Auth Scope confirmation dialog Ok is clicked', async () => {
+  it('resets globus tokens when Reset tokens confirmation dialog Ok is clicked', async () => {
     await initializeComponentForTest();
 
     // Open the dropdown menu
@@ -885,12 +882,12 @@ describe('DatasetDownload form tests', () => {
       await user.click(transferButtonMenu);
     }
 
-    // Click Reset Auth Scope
-    const resetAuthScope = await screen.findByText('Reset Auth Scope');
-    expect(resetAuthScope).toBeTruthy();
-    await user.click(resetAuthScope);
+    // Click Reset Tokens
+    const resetTokens = await screen.findByText('Reset Tokens');
+    expect(resetTokens).toBeTruthy();
+    await user.click(resetTokens);
 
-    // Confirm reset auth scope
+    // Confirm reset tokens
     const okButton = await screen.findByText('Ok');
     expect(okButton).toBeTruthy();
     await user.click(okButton);
@@ -900,7 +897,7 @@ describe('DatasetDownload form tests', () => {
     expect(authScope).toBeNull();
 
     // Expect reset notice to show
-    const resetNotice = await screen.findByText('Globus Auth scope reset!', { exact: false });
+    const resetNotice = await screen.findByText('Globus tokens reset!', { exact: false });
     expect(resetNotice).toBeTruthy();
   });
 });

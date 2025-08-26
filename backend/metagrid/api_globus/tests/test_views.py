@@ -14,6 +14,8 @@ default_scope = (
     "openid profile email urn:globus:auth:scope:transfer.api.globus.org:all"
 )
 
+REFRESH_KEY_NAME = "globus_refresh_token"
+
 
 # Dummy classes for reuse in tests
 class DummyResp:
@@ -44,10 +46,13 @@ class DummyTransferClient:
         return DummyGlobusHTTPResponse()
 
 
-class DummyTokens:
-    by_resource_server = {
-        "transfer.api.globus.org": {"access_token": "abc123"}
-    }
+# class DummyTokens:
+#     by_resource_server = {
+#         "transfer.api.globus.org": {
+#             "access_token": "abc123",
+#             "refresh_token": "xyz456",
+#         }
+#     }
 
 
 class InfoNoConsent:
@@ -449,10 +454,16 @@ def test_get_transfer_client_from_auth_code_returns_transfer_client(
     # Setup dummy tokens and TransferClient
     class DummyTokens:
         by_resource_server = {
-            "transfer.api.globus.org": {"access_token": "abc123"}
+            "transfer.api.globus.org": {
+                "access_token": "abc123",
+                "refresh_token": "xyz456",
+            }
         }
 
     class DummyAuthClient:
+
+        def __init__(self, *a, **k):
+            pass
 
         def oauth2_start_flow(self, *a, **k):
             pass
@@ -461,23 +472,35 @@ def test_get_transfer_client_from_auth_code_returns_transfer_client(
             assert code == "test_auth_code"
             return DummyTokens()
 
+    class DummyAuthorizer:
+        def __init__(self, *a, **k):
+            pass
+
     class DummyTransferClient:
 
         def __init__(self, authorizer):
             self.authorizer = authorizer
 
     monkeypatch.setattr(
-        views, "ConfidentialAppAuthClient", lambda *a, **k: DummyAuthClient()
+        views,
+        "ConfidentialAppAuthClient",
+        lambda *a, **k: DummyAuthClient(),
+    )
+    monkeypatch.setattr(
+        views,
+        "RefreshTokenAuthorizer",
+        lambda *a, **k: DummyAuthorizer(),
     )
     monkeypatch.setattr(views, "TransferClient", DummyTransferClient)
-    monkeypatch.setattr(views, "AccessTokenAuthorizer", lambda token: token)
 
     flow = views.GlobusTransferAuthFlow(
-        clientId="id", clientSecret="secret", auth_redirect_url="url"
+        clientId="id",
+        clientSecret="secret",
+        auth_redirect_url="url",
     )
     client = flow.get_transfer_client_from_auth_code("test_auth_code")
     assert isinstance(client, DummyTransferClient)
-    assert client.authorizer == "abc123"
+    assert isinstance(client.authorizer, DummyAuthorizer)
 
 
 def test_check_for_consent_required(monkeypatch):

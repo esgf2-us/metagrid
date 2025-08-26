@@ -27,6 +27,7 @@ export type ApiRoute = {
 
 type ApiRoutes = {
   globusAuth: ApiRoute;
+  globusResetTokens: ApiRoute;
   keycloakAuth: ApiRoute;
   globusSearchEndpoints: ApiRoute;
   globusTransfer: ApiRoute;
@@ -52,6 +53,10 @@ const apiRoutes: ApiRoutes = {
   // Globus APIs
   globusAuth: {
     path: `${window.location.origin}/proxy/globus-auth/`,
+    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Globus', HTTPCode),
+  },
+  globusResetTokens: {
+    path: `${window.location.origin}/proxy/globus-reset-tokens/`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Globus', HTTPCode),
   },
   globusSearchEndpoints: {

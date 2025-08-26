@@ -700,6 +700,17 @@ export const saveSessionValues = async (data: { key: string; value: unknown }[])
   await Promise.all(saveFuncs);
 };
 
+export const resetGlobusTokens = async (): Promise<AxiosResponse> => {
+  return axios
+    .get(apiRoutes.globusResetTokens.path)
+    .then((res) => {
+      return res;
+    })
+    .catch((error: ResponseError) => {
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusResetTokens));
+    });
+};
+
 export const startSearchGlobusEndpoints = async (
   searchText: string,
 ): Promise<GlobusEndpointSearchResults> => {

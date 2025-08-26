@@ -13,9 +13,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from globus_portal_framework import load_transfer_client
 from globus_sdk import (
-    AccessTokenAuthorizer,
     ConfidentialAppAuthClient,
     GlobusHTTPResponse,
+    RefreshTokenAuthorizer,
     TransferAPIError,
     TransferClient,
     TransferData,
@@ -30,6 +30,8 @@ ENDPOINT_MAP: dict[str, str] = {
 DATANODE_MAP: dict[str, str] = {
     "esgf-node.ornl.gov": "dea29ae8-bb92-4c63-bdbc-260522c92fe8",
 }
+
+REFRESH_KEY_NAME = "globus_refresh_token"
 
 
 class GlobusSubmissionResult(TypedDict):
@@ -149,28 +151,31 @@ class GlobusTransferAuthFlow:
         self.auth_client = ConfidentialAppAuthClient(clientId, clientSecret)
         self.auth_redirect_url: str = auth_redirect_url
         self.consent_required_scopes: list[str] = []
-        self.key_name = "globus_transfer_token"
         self.request = request
         self.target_endpoint = target_endpoint
         self.target_scopes = target_scopes
         self.scopes = target_scopes
         self.auth_url = None
 
-    # Get transfer token from session
-    def get_saved_transfer_token(self) -> str | None:
+    def get_saved_token(self) -> str | None:
         if (
             self.request is not None
             and self.request.session is not None
-            and self.request.session.get(self.key_name) is not None
+            and self.request.session.get(REFRESH_KEY_NAME) is not None
         ):
-            return self.request.session.get(self.key_name)
+            return self.request.session.get(REFRESH_KEY_NAME)
 
         return None
 
-    # Set transfer token to session
-    def save_transfer_token(self, transfer_token: str) -> None:
+    def delete_token(self) -> None:
         if self.request is not None and self.request.session is not None:
-            self.request.session[self.key_name] = transfer_token
+            if REFRESH_KEY_NAME in self.request.session:
+                del self.request.session[REFRESH_KEY_NAME]
+
+    # Set transfer token to session
+    def save_token(self, token: str) -> None:
+        if self.request is not None and self.request.session is not None:
+            self.request.session[REFRESH_KEY_NAME] = token
 
     def get_existing_transfer_client(self) -> TransferClient | None:
         # Based on user, obtain a transfer client
@@ -178,11 +183,22 @@ class GlobusTransferAuthFlow:
             print("Found existing transfer client from authenticated user")
             return load_transfer_client(self.request.user)
         else:
-            transfer_token = self.get_saved_transfer_token()
-            if transfer_token is not None:
-                return TransferClient(
-                    authorizer=AccessTokenAuthorizer(transfer_token)
-                )
+            refresh_token = self.get_saved_token()
+            if refresh_token is not None:
+                print("Using saved refresh token")
+                try:
+                    client = TransferClient(
+                        authorizer=RefreshTokenAuthorizer(
+                            auth_client=self.auth_client,
+                            refresh_token=refresh_token,
+                        )
+                    )
+                    return client
+                except TransferAPIError as e:
+                    print("Error occurred while creating transfer client: ", e)
+                    print("Deleted transfer token from session.")
+                    self.delete_token()
+                    return None
             else:
                 return None
 
@@ -205,6 +221,7 @@ class GlobusTransferAuthFlow:
             self.auth_client.oauth2_start_flow(
                 requested_scopes=self.target_scopes,
                 redirect_uri=self.auth_redirect_url,
+                refresh_tokens=True,
             )
             self.auth_url = self.auth_client.oauth2_get_authorize_url()
         except Exception as e:
@@ -218,6 +235,7 @@ class GlobusTransferAuthFlow:
             self.auth_client.oauth2_start_flow(
                 requested_scopes=self.scopes,
                 redirect_uri=(self.auth_redirect_url),
+                refresh_tokens=True,
             )
 
             tokens = self.auth_client.oauth2_exchange_code_for_tokens(
@@ -228,13 +246,16 @@ class GlobusTransferAuthFlow:
                 transfer_tokens = tokens.by_resource_server[
                     "transfer.api.globus.org"
                 ]
-                transfer_token = transfer_tokens["access_token"]
+                refresh_token = transfer_tokens["refresh_token"]
 
-                self.save_transfer_token(transfer_token)
+                self.save_token(refresh_token)
 
                 # If successful, return the transfer client
                 return TransferClient(
-                    authorizer=AccessTokenAuthorizer(transfer_token)
+                    authorizer=RefreshTokenAuthorizer(
+                        auth_client=self.auth_client,
+                        refresh_token=refresh_token,
+                    )
                 )
         except Exception as e:
             print(
@@ -291,6 +312,8 @@ class GlobusTransferAuthFlow:
 
         if transfer_client is not None:
             return transfer_client
+
+        print("First attempt to get transfer token failed")
 
         # If that failed, try to get a new transfer client with the auth code
         transfer_client = self.get_transfer_client_second_try(auth_code)
@@ -425,6 +448,27 @@ def submit_transfer(
         return HttpResponse(repr(e), status=status.HTTP_502_BAD_GATEWAY)
 
 
+@require_http_methods(["GET"])
+@csrf_exempt
+def do_globus_reset_tokens(request):
+
+    if not request.method == "GET":
+        return HttpResponseBadRequest("Request method must be GET.")
+
+    # Logic to reset Globus tokens goes here
+    if request.session is not None and REFRESH_KEY_NAME in request.session:
+        del request.session[REFRESH_KEY_NAME]
+        print("Globus tokens reset.")
+        return JsonResponse(
+            {"status": "success", "message": "Tokens reset successfully."}
+        )
+
+    print("No session found or no tokens to reset.")
+    return JsonResponse(
+        {"status": "success", "message": "No tokens to reset."}
+    )
+
+
 @require_http_methods(["POST"])
 @csrf_exempt
 def globus_download_request(request):
@@ -452,22 +496,7 @@ def globus_download_request(request):
     )
 
     # Get or create a transfer client
-    try:
-        transfer_client = globus_auth_flow.get_transfer_client(auth_code)
-    except Exception as e:
-        print("Error occurred while getting transfer client: ", e)
-        results = GlobusSubmissionResult(
-            status=status.HTTP_403_FORBIDDEN,  # Multiple status codes in case of failures
-            successes=[],
-            failures=[],
-            auth_url=globus_auth_flow.auth_url,
-        )
-
-        return JsonResponse(
-            results,
-            status=results["status"],
-            message="Failed to obtain transfer client.",
-        )
+    transfer_client = globus_auth_flow.get_transfer_client(auth_code)
 
     # If transfer_client is None, we need to redirect the user to login
     if transfer_client is None:

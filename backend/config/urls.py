@@ -12,7 +12,10 @@ from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 from rest_framework.routers import DefaultRouter
 
-from metagrid.api_globus.views import globus_download_request
+from metagrid.api_globus.views import (
+    do_globus_reset_tokens,
+    globus_download_request,
+)
 from metagrid.api_proxy.views import (
     do_citation,
     do_globus_auth,
@@ -59,6 +62,11 @@ urlpatterns = [
     path("", include("social_django.urls", namespace="social")),
     path("proxy/globus-logout/", do_globus_logout, name="globus-logout"),
     path("proxy/globus-auth/", do_globus_auth, name="globus-auth"),
+    path(
+        "proxy/globus-reset-tokens/",
+        do_globus_reset_tokens,
+        name="globus_reset_tokens",
+    ),
     path(
         "proxy/globus-search-endpoints/",
         do_globus_search_endpoints,

@@ -24,6 +24,7 @@ import {
   deleteCookie,
   fetchWgetScript,
   getCookie,
+  resetGlobusTokens,
   ResponseError,
   setCookie,
   startSearchGlobusEndpoints,
@@ -754,21 +755,22 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   const globusTransferButtonMenu = [
     {
       key: '1',
-      label: 'Reset Auth Scope',
+      label: 'Reset Tokens',
       danger: true,
       onClick: () => {
         const newAlertPopupState: AlertModalState = {
           content:
-            "If you haven't performed a Globus transfer in a while, or you ran into some issues, it may help to reset the authentication scope. Click 'Ok' if you wish to to reset.",
+            "If you ran into some issues, it may help to reset tokens so you can request new ones. Click 'Ok' if you wish to to reset tokens.",
 
           onCancelAction: () => {
             setAlertPopupState({ ...alertPopupState, show: false });
           },
           onOkAction: () => {
             resetAuthScope();
+            resetGlobusTokens();
 
             setAlertPopupState({ ...alertPopupState, show: false });
-            showNotice(messageApi, 'Globus Auth scope reset!', {
+            showNotice(messageApi, 'Globus tokens reset!', {
               duration: 3,
               type: 'info',
             });
