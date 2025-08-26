@@ -11,7 +11,7 @@ import {
   UserSearchQuery,
 } from '../../components/Cart/types';
 import { ParsedFacets, RawFacets, RawProject, RawProjects } from '../../components/Facets/types';
-import { GlobusEndpoint, GlobusTokenResponse } from '../../components/Globus/types';
+import { GlobusEndpoint } from '../../components/Globus/types';
 import { NodeStatusArray, RawNodeStatus } from '../../components/NodeStatus/types';
 import {
   ActiveSearchQuery,
@@ -202,7 +202,12 @@ export const userAuthFixture = (props: Partial<RawUserAuth> = {}): RawUserAuth =
 };
 
 export const globusTransferResponseFixture = (): SubmissionResult => {
-  return { status: 200, successes: [{ taskid: '1234567' }], failures: [] };
+  return {
+    status: 200,
+    successes: [{ taskid: '1234567' }],
+    failures: [],
+    auth_url: undefined,
+  };
 };
 
 export const userInfoFixture = (props: Partial<RawUserInfo> = {}): RawUserInfo => {
@@ -266,39 +271,6 @@ export const parsedNodeStatusFixture = (): NodeStatusArray => [
 
 export const globusAuthScopeFixure =
   'openid profile email urn:globus:auth:scope:transfer.api.globus.org:all urn:globus:auth:scope:transfer.api.globus.org:all[*https://auth.globus.org/scopes/id1234567/data_access *https://auth.globus.org/scopes/id2345678/data_access]';
-export const globusAccessTokenFixture = 'validAccessToken';
-export const globusTransferTokenFixture: GlobusTokenResponse = {
-  access_token: globusAccessTokenFixture,
-  refresh_expires_in: 0,
-  refresh_token: '',
-  scope: 'openid profile email offline_access urn:globus:auth:scope:transfer.api.globus.org:all',
-  token_type: '',
-  id_token: '',
-  resource_server: 'transfer.api.globus.org',
-  other_tokens: {
-    refresh_token: 'refreshToken',
-    transfer_token: 'transferToken',
-  },
-  created_on: 1000,
-  expires_in: 11000,
-  error: '',
-};
-
-export const globusTokenResponseFixture = (): GlobusTokenResponse => {
-  return {
-    access_token: globusAccessTokenFixture,
-    refresh_expires_in: 0,
-    refresh_token: '',
-    scope: '',
-    token_type: '',
-    id_token: '',
-    resource_server: '',
-    other_tokens: [globusTransferTokenFixture],
-    created_on: 0,
-    expires_in: 1,
-    error: '',
-  };
-};
 
 export const globusEndpointFixture = (
   canonicalName?: string,

@@ -11,6 +11,7 @@ export enum AppStateKeys {
   isDarkMode = 'isDarkMode',
   currentProject = 'currentProject',
   userCart = 'userCart',
+  userChosenEndpoint = 'userChosenEndpoint',
   userSearchQueries = 'userSearchQueries',
   activeSearchQuery = 'activeSearchQuery',
   currentRequestURL = 'currentRequestURL',
@@ -29,7 +30,7 @@ export enum GlobusStateKeys {
   accessToken = 'globusAccessToken',
   userChosenEndpoint = 'globusChosenEndpoint',
   globusTransferGoalsState = 'globusTransferGoalsState',
-  globusAuth = 'globusAuth',
+  globusAuthScope = 'globusAuthScope',
   globusTaskItems = 'globusTaskItems',
   transferToken = 'globusTransferToken',
   savedGlobusEndpoints = 'savedGlobusEndpoints',
@@ -108,6 +109,13 @@ export const globusTaskItemsAtom = atomWithStorage<GlobusTaskItem[]>(
 export const savedGlobusEndpointsAtom = atomWithStorage<GlobusEndpoint[]>(
   GlobusStateKeys.savedGlobusEndpoints,
   [],
+  undefined,
+  { getOnInit: true },
+);
+
+export const userChosenEndpointAtom = atomWithStorage<GlobusEndpoint | null>(
+  AppStateKeys.userChosenEndpoint,
+  null,
   undefined,
   { getOnInit: true },
 );

@@ -41,22 +41,39 @@ export interface SubmissionResult {
   status: number;
   successes: Record<string, unknown>[];
   failures: string[];
+  auth_url: string | undefined;
 }
 
-const getCookie = (name: string): null | string => {
+export const getCookie = (name: string): null | string => {
   let cookieValue = null;
+  const cookieName = name === 'csrftoken' ? 'csrftoken' : `metagrid_${name}`;
   if (document && document.cookie && document.cookie !== '') {
     const cookies = document.cookie.split(';');
     for (let i = 0; i < cookies.length; i += 1) {
       const cookie = cookies[i].trim();
       // Does this cookie string begin with the name we want?
-      if (cookie.substring(0, name.length + 1) === `${name}=`) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+      if (cookie.substring(0, cookieName.length + 1) === `${cookieName}=`) {
+        cookieValue = decodeURIComponent(cookie.substring(cookieName.length + 1));
         break;
       }
     }
   }
   return cookieValue;
+};
+
+export const setCookie = (name: string, value: string, expDays = 7, path = '/'): void => {
+  let expires = '';
+  if (expDays) {
+    const date = new Date();
+    date.setTime(date.getTime() + expDays * 24 * 60 * 60 * 1000);
+    expires = `expires=${date.toUTCString()}`;
+  }
+  const cookieSettings = 'Secure; SameSite=None;';
+  document.cookie = `metagrid_${name}=${encodeURIComponent(value)}; ${expires}; path=${path}; ${cookieSettings}`;
+};
+
+export const deleteCookie = (name: string, path = '/'): void => {
+  document.cookie = `metagrid_${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path};`;
 };
 
 /**
@@ -512,6 +529,7 @@ export const fetchSearchResults = async (
 
   // Get cached search results
   const cachedResults = getCachedSearchResults();
+  /* istanbul ignore next */
   const cachedURL = (cachedResults?.cachedURL as string) || '';
   const reqUrlOffset = reqUrlStr.match(/offset=\d+/)?.[0];
   const cachedUrlOffset = cachedURL.match(/offset=\d+/)?.[0];
@@ -523,14 +541,14 @@ export const fetchSearchResults = async (
   }
 
   let finalUrl = reqUrlStr;
+  const cachedPagination = getCachedPagination();
   // If the change to the request URL was not the offset, reset the offset to 0
   if (reqUrlOffset === cachedUrlOffset) {
     finalUrl = reqUrlStr.replace(/offset=\d+/, 'offset=0');
     // Cache the new offset value so it is reflected in the pagination
-    const pagination = getCachedPagination();
     cachePagination({
       page: 1,
-      pageSize: pagination.pageSize,
+      pageSize: cachedPagination.pageSize,
     });
   }
 
@@ -541,11 +559,27 @@ export const fetchSearchResults = async (
 
   return fetch(finalUrl)
     .then((results) => {
-      const resultsJson = results.json();
-      return resultsJson;
+      // Prevent breaking the app if the response is not successful
+      if (results.status !== 200) {
+        // Handle the case where status is 422 due to a offset value that is too high
+        if (results.status === 422) {
+          cachePagination({
+            page: 1,
+            pageSize: cachedPagination.pageSize,
+          });
+          throw new Error('', { cause: 422 });
+        }
+      }
+      return results.json();
     })
     .catch((error: ResponseError) => {
-      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearch));
+      if (error.cause === 422) {
+        throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearch), {
+          cause: 422,
+        });
+      } else {
+        throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearch));
+      }
     });
 };
 
@@ -745,6 +779,17 @@ export const saveSessionValues = async (data: { key: string; value: unknown }[])
   });
 
   await Promise.all(saveFuncs);
+};
+
+export const resetGlobusTokens = async (): Promise<AxiosResponse> => {
+  return axios
+    .get(apiRoutes.globusResetTokens.path)
+    .then((res) => {
+      return res;
+    })
+    .catch((error: ResponseError) => {
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusResetTokens));
+    });
 };
 
 export const startSearchGlobusEndpoints = async (

@@ -19,6 +19,7 @@ import {
   openDownloadURL,
   parseNodeStatus,
   processCitation,
+  resetGlobusTokens,
   saveSessionValue,
   saveSessionValues,
   startSearchGlobusEndpoints,
@@ -239,21 +240,30 @@ describe('test fetching search results', () => {
   it('returns results', async () => {
     reqUrl += '?query=input1,input2&data_node=var1,var2&facet2=var3,var4';
 
-    const projects = await fetchSearchResults([reqUrl]);
-    expect(projects).toEqual(ESGFSearchAPIFixture());
+    const searchResults = await fetchSearchResults([reqUrl]);
+    expect(searchResults).toEqual(ESGFSearchAPIFixture());
   });
 
   it('returns results without free-text', async () => {
     reqUrl += '?query=*&data_node=var1,var2&facet2=var3,var4';
 
-    const projects = await fetchSearchResults({ reqUrl });
-    expect(projects).toEqual(ESGFSearchAPIFixture());
+    const searchResults = await fetchSearchResults({ reqUrl });
+    expect(searchResults).toEqual(ESGFSearchAPIFixture());
   });
 
   it('catches and throws generic network error', async () => {
     server.use(
       rest.get(apiRoutes.esgfSearch.path, (_req, res) => res.networkError(genericNetworkErrorMsg)),
     );
+    await expect(fetchSearchResults([reqUrl])).rejects.toThrow(
+      apiRoutes.esgfSearch.handleErrorMsg('generic'),
+    );
+  });
+
+  it('throws a user-friendly error when status is 422', async () => {
+    server.use(rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) => res(ctx.status(422))));
+
+    reqUrl += '?offset=9999&limit=10&latest=true';
     await expect(fetchSearchResults([reqUrl])).rejects.toThrow(
       apiRoutes.esgfSearch.handleErrorMsg('generic'),
     );
@@ -904,5 +914,21 @@ describe('test fetching temp storage set', () => {
     await expect(saveSessionValue('testKey', 'testValue')).rejects.toThrow(
       apiRoutes.tempStorageSet.handleErrorMsg('generic'),
     );
+  });
+});
+
+describe('resetGlobusTokens', () => {
+  it('calls the reset tokens function', async () => {
+    const response = await resetGlobusTokens();
+    expect(response.data).toEqual({ status: 'success', message: 'Tokens reset successfully.' });
+  });
+
+  it('throws an error when request fails', async () => {
+    server.use(
+      rest.get(apiRoutes.globusResetTokens.path, (_req, res) =>
+        res.networkError(genericNetworkErrorMsg),
+      ),
+    );
+    await expect(resetGlobusTokens()).rejects.toThrow();
   });
 });

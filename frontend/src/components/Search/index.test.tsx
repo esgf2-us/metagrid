@@ -220,7 +220,8 @@ describe('test Search component', () => {
   });
 
   it('handles saving a search query', async () => {
-    customRender(<Search {...defaultProps} />);
+    AtomWrapper.modifyAtomValue(AppStateKeys.userSearchQueries, []);
+    customRender(<Search {...defaultProps} />, { usesAtoms: true, authenticated: true });
 
     // Check search component renders
     const searchComponent = await screen.findByTestId('search');
