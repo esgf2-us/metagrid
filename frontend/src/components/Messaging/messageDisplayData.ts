@@ -25,8 +25,9 @@ const welcomeMessage: MessageData = {
   },
 };
 
+/* istanbul ignore next */
 const startupMessages: StartPopupData = {
-  messageToShow: (messageDataJSON.changelogVersions.at(0) as string) || '', // Version in footer
+  messageToShow: messageDataJSON.changelogVersions[0] || '', // Version in footer
   defaultMessageId: 'welcome',
   messageData: [welcomeMessage, ...changeLogMessages()],
 };

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import Markdown from 'react-markdown';
-import axios from '../../lib/axios';
+import axios from 'axios';
 
 type Props = {
   fileName: string;

@@ -1,14 +1,6 @@
 # Configurable Environment Variables
+
 <!-- start generated backend settings markdown -->
-#### `METAGRID_SEARCH_URL`
-
-> !!! example "**Required**"
->     The URL at which the ESG-Search api can be queried. A suitable endpoint will return XML in the browser.
->
->     __Example Values__
->
->     `https://esgf-node.llnl.gov/esg-search/search`
-
 #### `METAGRID_WGET_URL`
 
 > !!! example "**Required**"
@@ -17,15 +9,6 @@
 >     __Example Values__
 >
 >     `https://esgf-node.llnl.gov/esg-search/wget`
-
-#### `METAGRID_STATUS_URL`
-
-> !!! example "**Required**"
->     The URL at which the backend can reach the Node Status API.
->
->     __Example Values__
->
->     `https://esgf-node.llnl.gov/proxy/status`
 
 #### `METAGRID_KEYCLOAK_CLIENT_ID`
 
@@ -87,36 +70,54 @@
 >     __Default:__ `globus`
 >
 >     Which authentication method to enable for user sign in on the frontend.
->
+
 >     __Possible values__
 >     `keycloak`, `globus`
 
-#### `METAGRID_GLOBUS_CLIENT_ID`
+#### `METAGRID_SEARCH_URL`
 
 > !!! example "**Required**"
->     The `Client UUID` obtained by registering a `a thick client or script that will be installed and run by users on their devices` with Globus at <https://app.globus.org/settings/developers>  This is required even if signing in with Globus is not enabled. It is used for browsing Globus Collections to which files may be sent.
+>     The URL at which the ESG-Search api can be queried. A suitable endpoint will return XML in the browser.
 >
 >     __Example Values__
 >
->     `536321f7-c0e9-462c-b5c6-34d4a3672076`
+>     `https://esgf-node.ornl.gov/esgf-1-5-bridge`
 
-#### `METAGRID_GLOBUS_NODES`
-
-> !!! example "*Optional*"
->     __Default:__ `['aims3.llnl.gov', 'esgf-data1.llnl.gov', 'esgf-data2.llnl.gov', 'esgf-node.ornl.gov']`
->
->     The list of data nodes known to be Globus enabled. A data node must be in this list in order to transfer files from it via Globus.
-
-#### `METAGRID_FOOTER_TEXT`
+#### `METAGRID_BANNER_TEXT`
 
 > !!! example "*Optional*"
 >     __Default:__ `None`
 >
->     Text to display in the footer of the frontend. Useful for adding a link to the terms of service or other legal information. The string should be formatted as MarkDown and will be rendered as such.
+>     Text to display as a banner above the main body. Useful for providing maintenance notices or important news. The banner will be hidden permanently if the user clicks the close button.
 >
 >     __Example Values__
 >
->     `Privacy & Legal Notice: [https://www.llnl.gov/disclaimer.html](https://www.llnl.gov/disclaimer.html)`
+>     `My banner notification text.`
+
+#### `METAGRID_FOOTER_TEXT`
+
+> !!! example "*Optional*"
+>     __Default:__ ``
+>
+>     Text to display in the footer of the frontend. Useful for adding a link to the terms of service or other legal information. The string should be formatted as MarkDown and will be rendered as such.
+
+#### `METAGRID_STATUS_URL`
+
+> !!! example "*Optional*"
+>     __Default:__ `None`
+>
+>     The URL at which the backend can reach the Node Status API.
+>
+>     __Example Values__
+>
+>     `https://esgf-node.llnl.gov/proxy/status`
+
+#### `METAGRID_GLOBUS_NODES`
+
+> !!! example "*Optional*"
+>     __Default:__ `['aims3.llnl.gov', 'esgf-data1.llnl.gov', 'esgf-data2.llnl.gov', 'esgf-node.ornl.gov', 'eagle.alcf.anl.gov']`
+>
+>     The list of data nodes known to be Globus enabled. A data node must be in this list in order to transfer files from it via Globus.
 
 #### `METAGRID_KEYCLOAK_REALM`
 

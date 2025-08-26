@@ -11,6 +11,7 @@ const user = userEvent.setup();
 
 const defaultProps: Props = {
   searchQuery: userSearchQueryFixture(),
+  updateSearchQuery: jest.fn(),
   onHandleRemoveSearchQuery: jest.fn(),
   index: 0,
 };
@@ -18,10 +19,10 @@ const defaultProps: Props = {
 beforeEach(() => {
   const mockNavigate = jest.fn();
   jest.mock(
-    'react-router-dom',
+    'react-router',
     () =>
       ({
-        ...jest.requireActual('react-router-dom'),
+        ...jest.requireActual('react-router'),
         useNavigate: () => ({
           push: mockNavigate,
         }),
@@ -50,7 +51,12 @@ it('renders components', async () => {
 it('displays alert error when api fails to return response', async () => {
   server.use(rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) => res(ctx.status(404))));
 
-  customRender(<SearchesCard {...defaultProps} />);
+  customRender(
+    <SearchesCard
+      {...defaultProps}
+      searchQuery={userSearchQueryFixture({ resultsCount: undefined })}
+    />
+  );
 
   // Check alert renders
   const alert = await screen.findByRole('alert');
@@ -63,7 +69,7 @@ it('displays "N/A" for Filename Searches when none are applied', async () => {
       {...defaultProps}
       searchQuery={userSearchQueryFixture({ filenameVars: undefined })}
     />,
-    { usesRecoil: true }
+    { usesAtoms: true }
   );
   // Shows number of files
   const filenameSearchesField = (await screen.findByText('Filename Searches:')).parentNode;

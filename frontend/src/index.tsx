@@ -1,10 +1,10 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { RecoilRoot } from 'recoil';
 import { ReactKeycloakProvider } from '@react-keycloak/web';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router';
 import ReactGA from 'react-ga4';
 import Keycloak from 'keycloak-js';
+import { Provider } from 'jotai';
 import { getSearchFromUrl } from './common/utils';
 import App from './components/App/App';
 import { GlobusAuthProvider, KeycloakAuthProvider } from './contexts/AuthContext';
@@ -55,17 +55,17 @@ fetch('/frontend-config.js')
       };
 
       root.render(
-        <RecoilRoot>
+        <Provider>
           <ReactKeycloakProvider authClient={keycloak} initOptions={keycloakProviderInitConfig}>
             <KeycloakAuthProvider>{appRouter}</KeycloakAuthProvider>
           </ReactKeycloakProvider>
-        </RecoilRoot>
+        </Provider>,
       );
     } else {
       root.render(
-        <RecoilRoot>
+        <Provider>
           <GlobusAuthProvider>{appRouter}</GlobusAuthProvider>
-        </RecoilRoot>
+        </Provider>,
       );
     }
   });

@@ -6,8 +6,8 @@ import WelcomeTemplate from './Templates/Welcome';
 import ChangeLogTemplate from './Templates/ChangeLog';
 import { MessageActions, MessageData, MessageTemplates } from './types';
 import { RawTourState, ReactJoyrideContext } from '../../contexts/ReactJoyrideContext';
-import { welcomeTour } from '../../common/reactJoyrideSteps';
 import { getLastMessageSeen, setStartupMessageAsSeen } from '../../common/utils';
+import { welcomeTour } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
 const getMessageData = (msgId: string): MessageData | undefined => {
   const messages: MessageData[] = messageDisplayData.messageData;
@@ -19,7 +19,7 @@ const getMessageData = (msgId: string): MessageData | undefined => {
 
 const getMessageTemplate = (
   msgData: MessageData | undefined,
-  msgActions: MessageActions
+  msgActions: MessageActions,
 ): JSX.Element => {
   if (!msgData) {
     return <h1>Message Data Missing</h1>;
