@@ -38,6 +38,7 @@ import GlobusToolTip from '../Globus/GlobusToolTip';
 import { topDataRowTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 import { currentProjectAtom, userCartAtom } from '../../common/atoms';
 import { AppPage } from '../../common/types';
+import { RawProject } from '../Facets/types';
 
 export type Props = {
   loading: boolean;
@@ -73,7 +74,8 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
   // Global states
   const userCart = useAtomValue<UserCart>(userCartAtom);
 
-  const currentProject = useAtomValue(currentProjectAtom);
+  const currentProject = useAtomValue<RawProject>(currentProjectAtom);
+
   const { isSTAC } = currentProject;
 
   const showStatus = window.METAGRID.STATUS_URL !== null;
@@ -284,9 +286,6 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       },
       sortOrder: sortedInfo.columnKey === 'size' ? sortedInfo.order : null,
       render: (size: number) => {
-        if (isSTAC) {
-          return <p>N/A</p>;
-        }
         return (
           <p className={topDataRowTargets.totalSize.class()}>{size ? formatBytes(size) : 'N/A'}</p>
         );

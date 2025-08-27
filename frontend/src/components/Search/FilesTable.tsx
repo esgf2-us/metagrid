@@ -246,7 +246,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
 
   const columns = [
     {
-      title: isSTAC ? 'Asset Label' : 'File Title',
+      title: 'File Title',
       dataIndex: 'title',
       key: 'title',
       sorter: (a: RawSearchResult, b: RawSearchResult) => {
@@ -340,11 +340,26 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
 
   const stacColumns = [
     {
-      title: 'File Title',
-      dataIndex: 'name',
-      key: 'name',
+      title: 'Asset Title',
+      dataIndex: 'id',
+      key: 'id',
       render: (title: string) => {
         return <div className={innerDataRowTargets.filesTitle.class()}>{title}</div>;
+      },
+    },
+    {
+      align: 'center' as AlignType,
+      title: 'Size',
+      dataIndex: 'file:size',
+      key: 'size',
+      sorter: (a: RawSearchResult, b: RawSearchResult) => (a.size || 0) - (b.size || 0),
+      sortOrder: sortedInfo.columnKey === 'size' ? sortedInfo.order : null,
+      render: (size: number) => {
+        return (
+          <div className={innerDataRowTargets.dataSize.class()}>
+            {size ? formatBytes(size) : 'N/A'}
+          </div>
+        );
       },
     },
     {
@@ -397,6 +412,17 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
             </Form>
           </span>
         );
+      },
+    },
+    {
+      title: 'Checksum',
+      dataIndex: 'file:checksum',
+      key: 'checksum',
+      render: (checksum: string) => {
+        if (!checksum || checksum === '') {
+          return <div>N/A</div>;
+        }
+        return <div className={innerDataRowTargets.checksum.class()}>{checksum}</div>;
       },
     },
   ];

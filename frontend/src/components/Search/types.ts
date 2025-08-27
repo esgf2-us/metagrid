@@ -83,6 +83,8 @@ export type StacAsset = {
   roles: string[];
   href: string;
   type: string;
+  'file:size': number;
+  'file:checksum': string;
   title?: string;
   [key: string]: boolean | string | string[] | number | undefined;
 };
@@ -111,8 +113,8 @@ export type StacFeature = {
 export type StacSearchResponse = {
   features: StacFeature[];
   links: StacLink[];
-  numMatched: number;
-  numReturned: number;
+  // numMatched: number; These were missing from search response
+  // numReturned: number;
   type: string;
   [key: string]: unknown;
 };

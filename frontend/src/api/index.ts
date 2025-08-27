@@ -496,9 +496,10 @@ Promise<{ [key: string]: any }> => {
   });
 
   if (setFilter) {
-    filter = { op: '>=', args: [{ property: filterFacets[0].key }, filterFacets[0].value] };
+    filter = { op: '=', args: [{ property: filterFacets[0].key }, filterFacets[0].value] };
   }
 
+  // const searchResults = await postSTACSearch(10, undefined);
   const searchResults = await postSTACSearch(10, filter);
 
   return { search: searchResults, facets: facetSummary.summaries, stac: true };

@@ -408,8 +408,9 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       const searchResults = results as StacResponse;
       if (searchResults.search) {
         const stacResults = searchResults.search;
-        if (stacResults.numReturned > 0 && stacResults.features) {
-          numFound = stacResults.numReturned;
+
+        if (stacResults.features && stacResults.features.length > 0) {
+          numFound = stacResults.features.length;
           docs = stacResults.features.map((stacResult: StacFeature) =>
             convertStacToRawSearchResult(stacResult),
           );

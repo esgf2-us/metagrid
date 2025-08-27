@@ -89,7 +89,8 @@ def do_stac_search(request):
 def fetch_stac_facets(request):
     project_id = request.GET.get("project_id", "CMIP6")
     return do_request(
-        request, "https://api.stac.esgf-west.org/collections/" + project_id
+        request,
+        settings.STAC_URL + "/collections/" + project_id,
     )
 
 

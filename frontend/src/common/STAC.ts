@@ -16,12 +16,14 @@ export const convertStacToRawSearchResult = (stacResult: StacFeature): RawSearch
   const { access, citation_url, further_info_url, version } = properties;
 
   const numberOfFiles = Object.keys(assets).filter((key) => key !== 'globus').length;
+  const size = Object.values(assets).reduce((acc, asset) => acc + (asset['file:size'] || 0), 0);
 
   const updatedAssets: {
     [name: string]: StacAsset;
   } = {};
   Object.entries(assets).forEach(([key, value]) => {
-    updatedAssets[key] = { ...value, id: value.name, access };
+    // Sometimes the asset has no name, title or id, in which case we'll use the key as a fallback
+    updatedAssets[key] = { ...value, id: value.name || value.title || key, access };
   });
 
   const result: RawSearchResult = {
@@ -39,6 +41,7 @@ export const convertStacToRawSearchResult = (stacResult: StacFeature): RawSearch
     properties,
     stac_version,
     type,
+    size,
   };
   if (assets && assets.globus) {
     result.globus_link = assets.globus.href;
