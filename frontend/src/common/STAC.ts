@@ -148,7 +148,7 @@ export const convertSearchParamsIntoStacFilter = (
     if (validParams.length > 1) {
       return createAndFilter(
         validParams.map((param) => {
-          const values = params.getAll(param);
+          const values = params.get(param)?.split(',') || [];
           const mappedParam = STAC_PROJECT_FACET_MAPPING.CMIP6[param] || param;
           if (values.length > 1) {
             // If there are multiple values for a parameter, create an OR filter
@@ -170,5 +170,5 @@ export const convertSearchParamsIntoStacFilter = (
     return createEqualsFilter(mappedParam, values[0]);
   }
 
-  return { op: 'not', args: [{ op: 'isNull', args: [{ property: 'citation_url' }] }] };
+  return { op: '=', args: [{ property: 'properties.retracted' }, false] };
 };

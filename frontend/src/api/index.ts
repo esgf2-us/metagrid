@@ -477,11 +477,7 @@ Promise<{ [key: string]: any }> => {
 
   const filter = convertSearchParamsIntoStacFilter(reqUrlStr);
 
-  const filterStr = JSON.stringify(filter);
-  console.log('STAC filter: ', filterStr);
-
-  // const searchResults = await postSTACSearch(10, undefined);
-  const searchResults = await postSTACSearch(10, filter);
+  const searchResults = await postSTACSearch(9999, filter);
 
   return { search: searchResults, facets: facetSummary.summaries, stac: true };
 };

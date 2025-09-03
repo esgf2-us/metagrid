@@ -58,7 +58,7 @@ import {
   VersionType,
 } from './types';
 import { AuthContext } from '../../contexts/AuthContext';
-import { convertStacToRawSearchResult } from '../../common/STAC';
+import { convertSearchParamsIntoStacFilter, convertStacToRawSearchResult } from '../../common/STAC';
 
 const styles: CSSinJS = {
   summary: {
@@ -109,7 +109,14 @@ export const stringifyFilters = (
   maxVersionDate: VersionDate,
   activeFacets: ActiveFacets,
   textInputs: TextInputs | [],
+  isSTAC: boolean = false,
+  reqUrlStr: string = '',
 ): string => {
+  if (isSTAC) {
+    const stacFilter = convertSearchParamsIntoStacFilter(reqUrlStr);
+    return JSON.stringify(stacFilter) || 'No filters applied';
+  }
+
   const filtersArr: string[] = [];
 
   if (versionType === 'latest') {
@@ -495,7 +502,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           <>
             <p>
               <span style={styles.subtitles} data-testid="main-query-string-label">
-                Query String:{' '}
+                {currentProject.isSTAC ? 'STAC Filter String:' : 'Query String:'}{' '}
               </span>
               <Typography.Text className={searchTableTargets.queryString.class()} code>
                 {stringifyFilters(
@@ -505,6 +512,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                   maxVersionDate,
                   activeFacets,
                   textInputs,
+                  currentProject.isSTAC,
+                  currentRequestURL,
                 )}
               </Typography.Text>
             </p>

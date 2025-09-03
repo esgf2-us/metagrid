@@ -31,7 +31,7 @@ import { CSSinJS } from '../../common/types';
 import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
 import { ActiveSearchQuery, ResultType, VersionType } from '../Search/types';
-import { ActiveFacets, ParsedFacets } from './types';
+import { ActiveFacets, ParsedFacets, RawProject } from './types';
 import { clearCachedSearchResults, showError, showNotice } from '../../common/utils';
 import { activeSearchQueryAtom, availableFacetsAtom } from '../../common/atoms';
 import { leftSidebarTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
@@ -419,32 +419,33 @@ const FacetsForm: React.FC = () => {
           ...activeSearchQuery.activeFacets,
         }}
       >
-        {window.METAGRID.GLOBUS_NODES.length > 0 && (
-          <div className={leftSidebarTargets.filterByGlobusTransfer.class()}>
-            <h3>Filter By Transfer Options</h3>
-            <Row>
-              <Col>
-                <Radio.Group onChange={handleOnGlobusReadyChanged} value={globusReadyOnly}>
-                  <Radio
-                    key="any"
-                    value={false}
-                    className={leftSidebarTargets.filterByGlobusTransferAny.class()}
-                  >
-                    Any
-                  </Radio>
-                  <Radio
-                    key="globus-ready"
-                    value
-                    className={leftSidebarTargets.filterByGlobusTransferOnly.class()}
-                  >
-                    Only Globus Transferrable
-                  </Radio>
-                </Radio.Group>
-              </Col>
-            </Row>
-            <br />
-          </div>
-        )}
+        {window.METAGRID.GLOBUS_NODES.length > 0 &&
+          !(activeSearchQuery.project as RawProject).isSTAC && (
+            <div className={leftSidebarTargets.filterByGlobusTransfer.class()}>
+              <h3>Filter By Transfer Options</h3>
+              <Row>
+                <Col>
+                  <Radio.Group onChange={handleOnGlobusReadyChanged} value={globusReadyOnly}>
+                    <Radio
+                      key="any"
+                      value={false}
+                      className={leftSidebarTargets.filterByGlobusTransferAny.class()}
+                    >
+                      Any
+                    </Radio>
+                    <Radio
+                      key="globus-ready"
+                      value
+                      className={leftSidebarTargets.filterByGlobusTransferOnly.class()}
+                    >
+                      Only Globus Transferrable
+                    </Radio>
+                  </Radio.Group>
+                </Col>
+              </Row>
+              <br />
+            </div>
+          )}
         <Row justify="end" gutter={8}>
           <Col span={16}>
             <h3>Filter with Facets</h3>
