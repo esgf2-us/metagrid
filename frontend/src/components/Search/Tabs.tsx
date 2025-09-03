@@ -108,6 +108,7 @@ const buildDisplayData = (
         Object.entries(value).forEach(([subK, subV]) => {
           addValues(`${key}-${subK}`, subK, subV, subMetaData);
         });
+        array.push({ key, display: element, value: subMetaData });
       }
     }
   };
@@ -208,9 +209,8 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
   const showCitation = record.citation_url !== undefined && record.citation_url.length > 0;
   const showESDOC =
     record &&
-    record.further_info_url !== undefined &&
-    record.further_info_url.length > 0 &&
-    record.further_info_url[0] !== '';
+    record.properties?.['cmip6:further_info_url'] !== undefined &&
+    record.properties['cmip6:further_info_url'] !== '';
   const showQualityFlags = Object.keys(qualityFlags).length > 0;
   const showAdditionalLinks = urlCount > 0;
   const showAdditionalTab = showESDOC || showQualityFlags || showAdditionalLinks;
@@ -287,7 +287,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
             <Button
               type="link"
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              href={record.further_info_url![0]}
+              href={record.properties!['cmip6:further_info_url'] as string}
               target="_blank"
             >
               ES-DOC
