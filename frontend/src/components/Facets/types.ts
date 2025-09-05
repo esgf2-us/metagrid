@@ -6,6 +6,7 @@ export type RawProject = {
   facetsUrl: string;
   fullName: string;
   isSTAC: boolean;
+  projectName?: string;
 };
 export type RawProjects = Array<RawProject>;
 

@@ -301,37 +301,4 @@ projects = [
             ]
         },
     },
-    {
-        "name": "All (except CMIP6)",
-        "description": "Cross project search for all projects except CMIP6.",
-        "facets_by_group": {
-            GROUPS[0]: [
-                "project",
-                "product",
-                "institute",
-                "model",
-                "data_node",
-            ],
-            GROUPS[1]: [
-                "source_id",
-                "experiment",
-                "experiment_family",
-            ],
-            GROUPS[4]: [
-                "time_frequency",
-                "realm",
-                "cmor_table",
-                "ensemble",
-                "variable",
-                "variable_long_name",
-                "cf_standard_name",
-                "driving_model",
-            ],
-            "CORDEX": [
-                "domain",
-                "rcm_name",
-                "rcm_version",
-            ],
-        },
-    },
 ]

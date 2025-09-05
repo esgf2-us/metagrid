@@ -16,7 +16,7 @@ import {
   UserSearchQueries,
   UserSearchQuery,
 } from '../components/Cart/types';
-import { ActiveFacets, RawFacets, RawProjects } from '../components/Facets/types';
+import { ActiveFacets, RawFacets, RawProject, RawProjects } from '../components/Facets/types';
 import { NodeStatusArray, RawNodeStatus } from '../components/NodeStatus/types';
 import {
   ActiveSearchQuery,
@@ -437,6 +437,10 @@ export const generateSearchURLQuery = (
     },
   );
 
+  if (isSTAC) {
+    return `${baseRoute}${`project_id=${(project as RawProject).projectName}`}&${activeFacetsParams}`;
+  }
+
   return `${baseRoute}${baseParams}${textInputsParams}&${activeFacetsParams}`;
 };
 
@@ -445,12 +449,13 @@ export const generateSearchURLQuery = (
  * HTTP Response Code: 200 OK
  */
 export const postSTACSearch = async (
+  projectName: string,
   limit: number,
   filter: { op: string; args: unknown } | undefined = undefined,
 ): Promise<Record<string, unknown>> => {
   return axios
     .post(apiRoutes.esgfSearchSTAC.path, {
-      collections: ['CMIP6'],
+      collections: [projectName],
       limit,
       filter,
     })
@@ -471,15 +476,24 @@ const fetchSTACFacets = async (projectId: string): Promise<{ summaries: RawFacet
 
 export const fetchSTACSearchResults = async (
   reqUrlStr: string,
+  projectName: string,
 ): // eslint-disable-next-line @typescript-eslint/no-explicit-any
 Promise<{ [key: string]: any }> => {
-  const facetSummary = await fetchSTACFacets('CMIP6');
+  let status = 200;
 
-  const filter = convertSearchParamsIntoStacFilter(reqUrlStr);
+  const facetSummary = await fetchSTACFacets(projectName)
+    .then((res) => {
+      return res;
+    })
+    .catch((error: ResponseError) => {
+      status = error.cause === 422 ? 422 : 500;
+    });
 
-  const searchResults = await postSTACSearch(9999, filter);
+  const filter = convertSearchParamsIntoStacFilter(reqUrlStr, projectName);
 
-  return { search: searchResults, facets: facetSummary.summaries, stac: true };
+  const searchResults = await postSTACSearch(projectName, 9999, filter);
+
+  return { search: searchResults, facets: facetSummary?.summaries, stac: true, status };
 };
 
 /**
@@ -530,9 +544,35 @@ export const fetchSearchResults = async (
     });
   }
 
-  if (args && args[0] && args[0].includes('/stac/search?')) {
+  if (finalUrl.includes('/stac/search?')) {
     // If the request URL is for STAC search, fetch results using the STAC API
-    return fetchSTACSearchResults(finalUrl);
+    const params = new URLSearchParams(reqUrlStr.split('?')[1]);
+    const projectName = params.get('project_id') || 'CMIP6';
+
+    return fetchSTACSearchResults(finalUrl, projectName)
+      .then((results) => {
+        // Prevent breaking the app if the response is not successful
+        if (results.status !== 200) {
+          // Handle the case where status is 422 due to a offset value that is too high
+          if (results.status === 422) {
+            cachePagination({
+              page: 1,
+              pageSize: cachedPagination.pageSize,
+            });
+            throw new Error('', { cause: 422 });
+          }
+        }
+        return results;
+      })
+      .catch((error: ResponseError) => {
+        if (error.cause === 422) {
+          throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearch), {
+            cause: 422,
+          });
+        } else {
+          throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearch));
+        }
+      });
   }
 
   return fetch(finalUrl)

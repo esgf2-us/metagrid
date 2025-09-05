@@ -2,20 +2,12 @@
 import { RawProject } from '../components/Facets/types';
 import { StacFeature, RawSearchResult, StacAsset } from '../components/Search/types';
 
-// export const checkIsStac = (stac: SearchResults | RawSearchResult | undefined): boolean => {
-//   if (!stac) {
-//     return false;
-//   }
-//   console.log('This is stac');
-//   console.log(stac);
-//   return Object.hasOwn(stac, 'stac_version') || Object.hasOwn(stac, 'stac');
-// };
-
 export const STAC_PROJECTS: RawProject[] = [
   {
     pk: '10',
     name: 'CMIP6 STAC',
-    facetsUrl: '.language=en',
+    projectName: 'CMIP6',
+    facetsUrl: 'offset=0&limit=0',
     fullName: 'Coupled Model Intercomparison Project Phase 6',
     projectUrl: 'https://pcmdi.llnl.gov/CMIP6/',
     facetsByGroup: {
@@ -133,12 +125,15 @@ export const createOrFilter = (
 
 export const convertSearchParamsIntoStacFilter = (
   reqUrlStr: string,
+  projectName: string,
 ): { op: string; args: unknown } | undefined => {
-  const params: URLSearchParams = new URLSearchParams(reqUrlStr);
+  const params: URLSearchParams = new URLSearchParams(reqUrlStr.split('?')[1] || '');
 
   const paramKeys = Array.from(params.keys());
 
-  const facetsByGroup = STAC_PROJECTS[0].facetsByGroup as Record<string, string[]>;
+  const stacProject =
+    STAC_PROJECTS.find((project) => project.projectName === projectName) || STAC_PROJECTS[0];
+  const facetsByGroup = stacProject.facetsByGroup as Record<string, string[]>;
   const allFacets: string[] = Object.values(facetsByGroup).flat();
   const validParams = paramKeys.filter((key) => allFacets.includes(key));
 
