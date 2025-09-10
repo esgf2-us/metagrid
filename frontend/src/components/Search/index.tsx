@@ -1,10 +1,13 @@
 import {
   BookOutlined,
+  CodeOutlined,
+  CopyOutlined,
   ExportOutlined,
+  SaveOutlined,
   ShareAltOutlined,
   ShoppingCartOutlined,
 } from '@ant-design/icons';
-import { Alert, Col, message, Row, Typography } from 'antd';
+import { Alert, Col, Dropdown, message, Row, Space, Typography } from 'antd';
 import humps from 'humps';
 import React from 'react';
 import { DeferFn, useAsync } from 'react-async';
@@ -30,6 +33,7 @@ import { CSSinJS } from '../../common/types';
 import {
   cachePagination,
   cacheSearchResults,
+  createEsgpullCommand,
   createSearchRouteURL,
   getCachedPagination,
   getStyle,
@@ -297,8 +301,28 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     /* istanbul ignore else */
     if (navigator && navigator.clipboard) {
       navigator.clipboard.writeText(getUrlFromSearch(activeSearchQuery));
-      showNotice(messageApi, 'Search copied to clipboard!', {
+      showNotice(messageApi, 'Metagrid search URL copied to clipboard!', {
         icon: <ShareAltOutlined style={styles.messageAddIcon} />,
+      });
+    }
+  };
+
+  const handleEsgpullSearchQuery = (): void => {
+    /* istanbul ignore else */
+    if (navigator && navigator.clipboard) {
+      navigator.clipboard.writeText(createEsgpullCommand(activeSearchQuery, false));
+      showNotice(messageApi, 'Esgpull search query copied to clipboard!', {
+        icon: <CodeOutlined style={styles.messageAddIcon} />,
+      });
+    }
+  };
+
+  const handleEsgpullDownloadCmd = (): void => {
+    /* istanbul ignore else */
+    if (navigator && navigator.clipboard) {
+      navigator.clipboard.writeText(createEsgpullCommand(activeSearchQuery, true));
+      showNotice(messageApi, 'Esgpull download command copied to clipboard!', {
+        icon: <CodeOutlined style={styles.messageAddIcon} />,
       });
     }
   };
@@ -406,6 +430,49 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         ),
     ).length === 0;
 
+  const searchActionsMenu = [
+    {
+      key: '1',
+      label: (
+        <Button
+          type="default"
+          className={searchTableTargets.copySearchLinkBtn.class()}
+          onClick={handleShareSearchQuery}
+          disabled={isLoading || numFound === 0}
+        >
+          <ShareAltOutlined data-testid="share-search-btn" />
+          Copy Metagrid search URL
+        </Button>
+      ),
+    },
+    {
+      key: '2',
+      label: (
+        <Button
+          type="default"
+          onClick={handleEsgpullSearchQuery}
+          disabled={isLoading || numFound === 0}
+        >
+          <CodeOutlined />
+          Copy esgpull search query
+        </Button>
+      ),
+    },
+    {
+      key: '3',
+      label: (
+        <Button
+          type="default"
+          onClick={handleEsgpullDownloadCmd}
+          disabled={isLoading || numFound === 0}
+        >
+          <CodeOutlined />
+          Copy esgpull download command
+        </Button>
+      ),
+    },
+  ];
+
   return (
     <div data-testid="search" className={searchTableTargets.searchResultsTable.class()}>
       {contextHolder}
@@ -428,7 +495,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         </h3>
         <div>
           {results && (
-            <div>
+            <Space>
               <Button
                 type="default"
                 className={searchTableTargets.addSelectedToCartBtn.class()}
@@ -443,25 +510,19 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                 <ShoppingCartOutlined />
                 Add Selected to Cart
               </Button>{' '}
-              <Button
+              <Dropdown.Button
                 className={searchTableTargets.saveSearchBtn.class()}
                 type="default"
                 onClick={() => handleSaveSearchQuery(currentRequestURL, numFound)}
                 disabled={isLoading || numFound === 0}
+                menu={{ items: searchActionsMenu }}
+                placement="bottom"
+                icon={<CopyOutlined />}
               >
-                <BookOutlined data-testid="save-search-btn" />
+                <SaveOutlined data-testid="save-search-btn" />
                 Save Search
-              </Button>{' '}
-              <Button
-                type="default"
-                className={searchTableTargets.copySearchLinkBtn.class()}
-                onClick={() => handleShareSearchQuery()}
-                disabled={isLoading || numFound === 0}
-              >
-                <ShareAltOutlined data-testid="share-search-btn" />
-                Copy Search
-              </Button>
-            </div>
+              </Dropdown.Button>
+            </Space>
           )}
         </div>
       </div>

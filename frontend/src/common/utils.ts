@@ -361,6 +361,98 @@ export const getSearchFromUrl = (url?: string): ActiveSearchQuery => {
   return getAltSearchFromUrl(url);
 };
 
+export const createEsgpullCommand = (searchQuery: ActiveSearchQuery, downloadCmd: boolean): string => {
+  const {
+    project,
+    versionType,
+    resultType,
+    minVersionDate,
+    maxVersionDate,
+    filenameVars,
+    activeFacets,
+    textInputs,
+  } = searchQuery;
+
+  // Commented out values were causing KeyError during search
+  const validFacets: string[] = [
+    // 'access',
+    // 'activity_drs',
+    'activity_id',
+    // 'branch_method',
+    // 'cf_standard_name',
+    'data_node',
+    // 'data_specs_version',
+    // 'directory_format_template_',
+    'experiment_id',
+    // 'experiment_title',
+    'frequency',
+    // 'grid',
+    'grid_label',
+    'index_node',
+    'institution_id',
+    'member_id',
+    'mip_era',
+    // 'model_cohort',
+    'nominal_resolution',
+    // 'product',
+    'project',
+    'realm',
+    'source_id',
+    //'source_type',
+    //'sub_experiment_id',
+    'table_id',
+    'variable',
+    'variable_id',
+    'variable_long_name',
+    'variant_label',
+    // 'version',
+  ];
+  const commandParts: string[] = [];
+
+  // Add project name
+  if (project.name) {
+    commandParts.push(`project:${project.name}`);
+  }
+
+  // Add other search parameters
+  if (!objectIsEmpty(activeFacets)) {
+    Object.entries(activeFacets).forEach(([key, value]) => {
+      if (validFacets.includes(key) && value.length > 0) {
+        commandParts.push(`${key}:${value.join(',')}`);
+      }
+    });
+  }
+
+  // Add text inputs
+  if (textInputs.length > 0) {
+    commandParts.push(`${JSON.stringify(textInputs)}`);
+  }
+
+  // Update result type
+  if (versionType && versionType === 'all') {
+    commandParts.push(`--latest false`);
+  } else {
+    commandParts.push(`--latest true`);
+  }
+
+  // Update result type
+  if (resultType && resultType !== 'all') {
+    if (resultType === 'originals only') {
+      commandParts.push(`--replica false`);
+    } else {
+      commandParts.push(`--replica true`);
+    }
+  }
+
+  const pullCmd = `esgpull ${downloadCmd ? 'add' : 'search'} ${commandParts.join(' ')}`;
+
+  if(downloadCmd){
+    return `\`${pullCmd} --track | tail -n1\`; esgpull download --disable-ssl`;
+  }
+
+  return pullCmd;
+};
+
 export const combineCarts = (
   databaseItems: RawSearchResults,
   localItems: RawSearchResults,
@@ -396,7 +488,7 @@ const convertSearchToHash = (query: UserSearchQuery): number => {
 
 export const searchAlreadyExists = (
   existingSearches: UserSearchQueries,
-  newSearch: UserSearchQuery
+  newSearch: UserSearchQuery,
 ): boolean => {
   const hashValueLocal = convertSearchToHash(newSearch);
   return existingSearches.some((search) => {
@@ -411,10 +503,10 @@ export const searchAlreadyExists = (
 
 export const unsavedLocalSearches = (
   databaseItems: UserSearchQueries,
-  localItems: UserSearchQueries
+  localItems: UserSearchQueries,
 ): UserSearchQueries => {
   const itemsNotInDatabase = localItems.filter(
-    (localSearchQuery: UserSearchQuery) => !searchAlreadyExists(databaseItems, localSearchQuery)
+    (localSearchQuery: UserSearchQuery) => !searchAlreadyExists(databaseItems, localSearchQuery),
   );
   return itemsNotInDatabase;
 };
@@ -502,7 +594,7 @@ export const getCachedPagination = (): Pagination => {
 export const cacheSearchResults = (
   fetchedResults: Record<string, unknown> | undefined,
   pagination: Pagination,
-  cachedURL: string
+  cachedURL: string,
 ): void => {
   if (fetchedResults && !Object.hasOwn(fetchedResults, 'cachedURL')) {
     saveToLocalStorage(
@@ -512,7 +604,7 @@ export const cacheSearchResults = (
         cachedURL,
         expires: Date.now() + 60 * 60 * 1000, // Expires after an hour
       },
-      true
+      true,
     );
 
     // Cache the pagination
