@@ -361,7 +361,10 @@ export const getSearchFromUrl = (url?: string): ActiveSearchQuery => {
   return getAltSearchFromUrl(url);
 };
 
-export const createEsgpullCommand = (searchQuery: ActiveSearchQuery, downloadCmd: boolean): string => {
+export const createEsgpullCommand = (
+  searchQuery: ActiveSearchQuery,
+  downloadCmd: boolean,
+): string => {
   const {
     project,
     versionType,
@@ -446,11 +449,49 @@ export const createEsgpullCommand = (searchQuery: ActiveSearchQuery, downloadCmd
 
   const pullCmd = `esgpull ${downloadCmd ? 'add' : 'search'} ${commandParts.join(' ')}`;
 
-  if(downloadCmd){
+  if (downloadCmd) {
     return `\`${pullCmd} --track | tail -n1\`; esgpull download --disable-ssl`;
   }
 
   return pullCmd;
+};
+
+export const createIntakeEsgfSearch = (searchQuery: ActiveSearchQuery): string => {
+  const {
+    project,
+    versionType,
+    resultType,
+    minVersionDate,
+    maxVersionDate,
+    filenameVars,
+    activeFacets,
+    textInputs,
+  } = searchQuery;
+
+  const commandParts: string[] = [];
+
+  // Add other search parameters
+  if (!objectIsEmpty(activeFacets)) {
+    Object.entries(activeFacets).forEach(([key, value]) => {
+      if (value.length > 1) {
+        commandParts.push(`${key}=['${value.join("', '")}']`);
+      } else if (value.length === 1) {
+        commandParts.push(`${key}='${value[0]}'`);
+      }
+    });
+  }
+
+  // Update result type
+  if (versionType && versionType === 'all') {
+    commandParts.push(`latest=False`);
+  } else {
+    commandParts.push(`latest=True`);
+  }
+
+  const intakeHeader = 'from intake_esgf import ESGFCatalog\ncat=ESGFCatalog()';
+  const catalogCmd = `metagrid_search=cat.search(${commandParts.join(', ')})`;
+
+  return `${intakeHeader}\n\n${catalogCmd}`;
 };
 
 export const combineCarts = (

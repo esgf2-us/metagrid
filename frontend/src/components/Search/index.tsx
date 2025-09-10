@@ -34,6 +34,7 @@ import {
   cachePagination,
   cacheSearchResults,
   createEsgpullCommand,
+  createIntakeEsgfSearch,
   createSearchRouteURL,
   getCachedPagination,
   getStyle,
@@ -327,6 +328,16 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     }
   };
 
+  const handleIntakeEsgfSearch = (): void => {
+    /* istanbul ignore else */
+    if (navigator && navigator.clipboard) {
+      navigator.clipboard.writeText(createIntakeEsgfSearch(activeSearchQuery));
+      showNotice(messageApi, 'Intake-ESGF search command copied to clipboard!', {
+        icon: <CodeOutlined style={styles.messageAddIcon} />,
+      });
+    }
+  };
+
   const handleRemoveFilter = (removedTag: TagValue, type: TagType): void => {
     /* istanbul ignore else */
     if (type === 'text') {
@@ -468,6 +479,19 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         >
           <CodeOutlined />
           Copy esgpull download command
+        </Button>
+      ),
+    },
+    {
+      key: '4',
+      label: (
+        <Button
+          type="default"
+          onClick={handleIntakeEsgfSearch}
+          disabled={isLoading || numFound === 0}
+        >
+          <CodeOutlined />
+          Copy Intake-ESGF search command
         </Button>
       ),
     },
