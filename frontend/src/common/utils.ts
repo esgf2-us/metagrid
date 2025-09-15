@@ -365,16 +365,7 @@ export const createEsgpullCommand = (
   searchQuery: ActiveSearchQuery,
   downloadCmd: boolean,
 ): string => {
-  const {
-    project,
-    versionType,
-    resultType,
-    minVersionDate,
-    maxVersionDate,
-    filenameVars,
-    activeFacets,
-    textInputs,
-  } = searchQuery;
+  const { project, versionType, resultType, activeFacets, textInputs } = searchQuery;
 
   // Commented out values were causing KeyError during search
   const validFacets: string[] = [
@@ -401,8 +392,8 @@ export const createEsgpullCommand = (
     'project',
     'realm',
     'source_id',
-    //'source_type',
-    //'sub_experiment_id',
+    // 'source_type',
+    // 'sub_experiment_id',
     'table_id',
     'variable',
     'variable_id',
@@ -413,8 +404,8 @@ export const createEsgpullCommand = (
   const commandParts: string[] = [];
 
   // Add project name
-  if (project.name) {
-    commandParts.push(`project:${project.name}`);
+  if (project && project.name) {
+    commandParts.push(`project:${(project as RawProject).name}`);
   }
 
   // Add other search parameters
@@ -457,16 +448,7 @@ export const createEsgpullCommand = (
 };
 
 export const createIntakeEsgfSearch = (searchQuery: ActiveSearchQuery): string => {
-  const {
-    project,
-    versionType,
-    resultType,
-    minVersionDate,
-    maxVersionDate,
-    filenameVars,
-    activeFacets,
-    textInputs,
-  } = searchQuery;
+  const { versionType, activeFacets } = searchQuery;
 
   const commandParts: string[] = [];
 

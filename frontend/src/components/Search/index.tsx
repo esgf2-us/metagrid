@@ -464,7 +464,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           onClick={handleEsgpullSearchQuery}
           disabled={isLoading || numFound === 0}
         >
-          <CodeOutlined />
+          <CodeOutlined data-testid="copy-esgpull-search-btn" />
           Copy esgpull search query
         </Button>
       ),
@@ -477,7 +477,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           onClick={handleEsgpullDownloadCmd}
           disabled={isLoading || numFound === 0}
         >
-          <CodeOutlined />
+          <CodeOutlined data-testid="copy-esgpull-download-btn" />
           Copy esgpull download command
         </Button>
       ),
@@ -490,7 +490,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           onClick={handleIntakeEsgfSearch}
           disabled={isLoading || numFound === 0}
         >
-          <CodeOutlined />
+          <CodeOutlined data-testid="copy-intake-search-btn" />
           Copy Intake-ESGF search command
         </Button>
       ),
