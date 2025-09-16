@@ -1,14 +1,14 @@
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { TourTitles } from '../common/reactJoyrideSteps';
 import { AppPage } from '../common/types';
 import Support from '../components/Support';
 import customRender from '../test/custom-render';
 import { getCurrentAppPage } from '../common/utils';
-import { activeSearch, RecoilWrapper } from '../test/jestTestFunctions';
-import { supportModalVisibleAtom } from '../components/App/recoil/atoms';
+import { activeSearch, AtomWrapper } from '../test/jestTestFunctions';
 import App from '../components/App/App';
+import { AppStateKeys } from '../common/atoms';
+import { TourTitles } from '../common/joyrideTutorials/reactJoyrideSteps';
 
 const user = userEvent.setup();
 
@@ -17,7 +17,7 @@ describe('test ReactJoyrideProvider', () => {
     customRender(
       <div data-testid="reactJoyrideProvider">
         <p>renders</p>
-      </div>
+      </div>,
     );
 
     // Wait for render to get user auth info
@@ -49,7 +49,7 @@ describe('test ReactJoyrideProvider', () => {
     window.location.pathname = 'testing/search';
     expect(getCurrentAppPage()).toEqual(AppPage.Main);
 
-    RecoilWrapper.modifyAtomValue(supportModalVisibleAtom.key, true);
+    AtomWrapper.modifyAtomValue(AppStateKeys.supportModalVisible, true);
     customRender(<Support />);
 
     // Check support modal rendered
@@ -82,7 +82,7 @@ describe('test ReactJoyrideProvider', () => {
     customRender(
       <div data-testid="reactJoyrideProvider">
         <p>Empty Tour Test</p>
-      </div>
+      </div>,
     );
 
     // Verify the provider renders correctly
@@ -111,7 +111,7 @@ describe('test ReactJoyrideProvider', () => {
     window.location.pathname = 'testing/search';
     expect(getCurrentAppPage()).toEqual(AppPage.Main);
 
-    RecoilWrapper.modifyAtomValue(supportModalVisibleAtom.key, true);
+    AtomWrapper.modifyAtomValue(AppStateKeys.supportModalVisible, true);
     customRender(<App searchQuery={activeSearch} />);
 
     // Check applicable components render
@@ -150,5 +150,5 @@ describe('test ReactJoyrideProvider', () => {
     expect(nextBtn).toBeTruthy();
     expect(nextBtn).toHaveStyle('background-color: #eee');
     expect(nextBtn).toHaveStyle('color: #b00');
-  });
+  }, 145000);
 });

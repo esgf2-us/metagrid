@@ -72,11 +72,10 @@ prompt_optional() {
 # Backend settings
 prompt_required SEARCH_URL "Enter the ESG-Search API URL" "https://esgf-node.llnl.gov/esg-search/search" "The URL at which the ESG-Search api can be queried. A suitable endpoint will return XML in the browser."
 prompt_required WGET_URL "Enter the ESG-Search wget URL" "https://esgf-node.llnl.gov/esg-search/wget" "The URL at which the ESG-Search wget endpoint can be reached."
-prompt_required STATUS_URL "Enter the Node Status API URL" "https://nimbus-dev.llnl.gov/metagrid-backend/proxy/status" "The URL at which the backend can reach the Node Status API."
 prompt_required GLOBUS_CLIENT_ID "Enter the Globus Client ID" "536321f7-c0e9-462c-b5c6-34d4a3672076" "The 'Client UUID' obtained by registering a thick client or script that will be installed and run by users on their devices with Globus at https://app.globus.org/settings/developers. This is required even if signing in with Globus is not enabled. It is used for browsing Globus Collections to which files may be sent."
 prompt_required GLOBUS_CLIENT_KEY "Enter the Globus Social Auth Key" "989830-dasd-b5c6-34d4a3672076" "The Client UUID created for 'SOCIAL_AUTH_GLOBUS_KEY' at https://app.globus.org/settings/developers"
 prompt_required GLOBUS_CLIENT_SECRET "Enter the Globus Social Auth Secret" "6aWj3gBYsxUBO++cSXtPzbl4n/sGJdhAmtn70XRoUMA=" "A 'Client Secret' associated with the Client UUID created for 'SOCIAL_AUTH_GLOBUS_KEY' at https://app.globus.org/settings/developers"
-prompt_required SOLR_URL "Enter the SOLR URL \(default: https://esgf-node.llnl.gov/esg-search\)" "https://esgf-node.llnl.gov/esg-search" "https://esgf-node.llnl.gov/esg-search" "The URL at which the SOLR endpoint can be reached."
+prompt_optional STATUS_URL "Enter the Node Status API URL" "https://nimbus-dev.llnl.gov/metagrid-backend/proxy/status" "The URL at which the backend can reach the Node Status API."
 prompt_optional AUTHENTICATION_METHOD "Enter the Globus Authentication Method" "globus" "Which authentication method to enable for user sign in on the frontend."
 prompt_optional FOOTER_TEXT "Enter the Footer Text (if it's a single line of markdown). If you need a more complex footer, skip for now and you can update the overlay file with your desired footer markdown afterwards." "Privacy & Legal Notice: [https://www.llnl.gov/disclaimer.html](https://www.llnl.gov/disclaimer.html)" "Text to display in the footer of the frontend. Useful for adding a link to the terms of service or other legal information. The string should be formatted as MarkDown and will be rendered as such."
 prompt_optional GLOBUS_NODES "Enter a list of Globus enabled nodes (comma-separated)" "[ 'node1', 'node2' ]" "A comma-separated list of Globus enabled nodes."
@@ -117,7 +116,6 @@ services:
       METAGRID_SEARCH_URL: $SEARCH_URL
       METAGRID_WGET_URL: $WGET_URL
       METAGRID_STATUS_URL: $STATUS_URL
-      METAGRID_SOLR_URL: $SOLR_URL
       METAGRID_GLOBUS_CLIENT_ID: $GLOBUS_CLIENT_ID
       METAGRID_SOCIAL_AUTH_GLOBUS_KEY: $GLOBUS_CLIENT_KEY
       METAGRID_SOCIAL_AUTH_GLOBUS_SECRET: $GLOBUS_CLIENT_SECRET

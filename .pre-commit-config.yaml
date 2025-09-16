@@ -52,6 +52,26 @@ repos:
           - '--heading-offset'
           - '3'
 
+  - repo: https://github.com/radeklat/settings-doc
+    rev: '4.3.1'
+    hooks:
+      - id: settings-doc-markdown
+        name: Generate frontend settings markdown
+        language: system
+        entry: env PYTHONPATH=$PYTHONPATH:backend settings-doc generate --output-format markdown
+        args:
+          - '--class'
+          - 'config.settings.site_specific.MetagridFrontendSettings'
+          - '--update'
+          - 'docs/docs/users/configurable_environment_variables.md'
+          - '--between'
+          - '<!-- start generated frontend settings markdown -->'
+          - '<!-- end generated frontend settings markdown -->'
+          - '--templates'
+          - 'docs/custom_templates'
+          - '--heading-offset'
+          - '3'
+
   # Front-end
   # ------------------------------------------------------------------------------
   # Runs the local node `lint` script to avoid dependencies being out of sync with `frontend/package.json`
