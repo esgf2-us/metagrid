@@ -157,7 +157,7 @@ def test_globus_multi_transfer_submits_tasks(
 def test_globus_transfer_returns_207_when_submission_errors(
     submit_mock, json_fixture, api_client
 ):
-    responses.add(responses.GET, settings.SEARCH_URL, json=json_fixture)
+    responses.add(responses.POST, settings.SEARCH_URL, json=json_fixture)
     responses.add(
         responses.GET,
         "https://transfer.api.globus.org/v0.10/submission_id",
@@ -185,7 +185,7 @@ def test_globus_transfer_returns_207_when_submission_errors(
 def test_globus_transfer_returns_207_when_tokens_are_missing(
     json_fixture, api_client
 ):
-    responses.add(responses.GET, settings.SEARCH_URL, json=json_fixture)
+    responses.add(responses.POST, settings.SEARCH_URL, json=json_fixture)
     responses.add(
         responses.GET,
         "https://transfer.api.globus.org/v0.10/submission_id",
