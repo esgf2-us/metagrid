@@ -26,6 +26,7 @@ module.exports = {
     'react/jsx-filename-extension': [1, { extensions: ['.js', '.jsx', '.ts', '.tsx'] }],
     'react/jsx-props-no-spreading': 'off',
     'react/prop-types': 'off',
+    'react/jsx-curly-brace-presence': 'off',
     '@typescript-eslint/lines-between-class-members': 0,
     '@typescript-eslint/no-throw-literal': 0,
     '@typescript-eslint/no-unused-vars': ['warn', { caughtErrors: 'none' }],

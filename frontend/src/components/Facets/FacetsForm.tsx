@@ -406,7 +406,7 @@ const FacetsForm: React.FC = () => {
                             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
                             triggerNode.parentElement
                           }
-                          onDropdownVisibleChange={(open) => setDropdownIsOpen(open)}
+                          onOpenChange={(open) => setDropdownIsOpen(open)}
                           onChange={(value: string[] | []) => {
                             handleOnSelectAvailableFacetsForm(facet, value);
                           }}

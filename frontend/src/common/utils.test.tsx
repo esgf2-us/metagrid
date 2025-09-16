@@ -32,6 +32,8 @@ import {
   showBanner,
   saveBannerText,
   clearDeprecatedStorageKeys,
+  createEsgpullCommand,
+  createIntakeEsgfSearch,
 } from './utils';
 import { AppPage } from './types';
 import { Provider, useAtom } from 'jotai';
@@ -653,5 +655,111 @@ describe('Test clearDeprecatedStorageKeys', () => {
     keys.forEach((key) => {
       expect(localStorageMock.getItem(key)).toBeUndefined();
     });
+  });
+});
+
+describe('createEsgpullCommand', () => {
+  it('creates a search command with project and facets', () => {
+    const searchQuery = {
+      project: { name: 'CMIP6' },
+      versionType: 'latest',
+      resultType: 'all',
+      minVersionDate: null,
+      maxVersionDate: null,
+      filenameVars: [],
+      activeFacets: { activity_id: ['CFMIP'], experiment_id: ['piControl'] },
+      textInputs: [],
+    } as ActiveSearchQuery;
+    const cmd = createEsgpullCommand(searchQuery, false);
+    expect(cmd).toContain(
+      'esgpull search project:CMIP6 activity_id:CFMIP experiment_id:piControl --latest true',
+    );
+  });
+
+  it('creates a download command with --track and --replica', () => {
+    const searchQuery = {
+      project: { name: 'CMIP6' },
+      versionType: 'all',
+      resultType: 'originals only',
+      minVersionDate: null,
+      maxVersionDate: null,
+      filenameVars: [],
+      activeFacets: {},
+      textInputs: [],
+    } as ActiveSearchQuery;
+    const cmd = createEsgpullCommand(searchQuery, true);
+    expect(cmd).toContain('esgpull add project:CMIP6 --latest false --replica false');
+    expect(cmd).toContain('--track | tail -n1');
+    expect(cmd).toContain('esgpull download --disable-ssl');
+  });
+
+  it('creates a download command with --replica false', () => {
+    const searchQuery = {
+      project: { name: 'CMIP6' },
+      versionType: 'all',
+      resultType: 'replicas only',
+      minVersionDate: null,
+      maxVersionDate: null,
+      filenameVars: [],
+      activeFacets: {},
+      textInputs: [],
+    } as ActiveSearchQuery;
+    const cmd = createEsgpullCommand(searchQuery, true);
+    expect(cmd).toContain('esgpull add project:CMIP6 --latest false --replica true');
+    expect(cmd).toContain('--track | tail -n1');
+    expect(cmd).toContain('esgpull download --disable-ssl');
+  });
+
+  it('includes textInputs in the command', () => {
+    const searchQuery = {
+      project: { name: 'CMIP6' },
+      versionType: 'latest',
+      resultType: 'all',
+      minVersionDate: null,
+      maxVersionDate: null,
+      filenameVars: [],
+      activeFacets: {},
+      textInputs: ['foo', 'bar'],
+    } as ActiveSearchQuery;
+    const cmd = createEsgpullCommand(searchQuery, false);
+    expect(cmd).toContain('["foo","bar"]');
+  });
+});
+
+describe('createIntakeEsgfSearch', () => {
+  it('creates an intake-esgf search command with multiple facets', () => {
+    const searchQuery = {
+      project: { name: 'CMIP6' },
+      versionType: 'all',
+      resultType: 'all',
+      minVersionDate: null,
+      maxVersionDate: null,
+      filenameVars: [],
+      activeFacets: { activity_id: ['CFMIP', 'CDRMIP'], experiment_id: ['piControl'] },
+      textInputs: [],
+    } as ActiveSearchQuery;
+    const cmd = createIntakeEsgfSearch(searchQuery);
+    expect(cmd).toContain("activity_id=['CFMIP', 'CDRMIP']");
+    expect(cmd).toContain("experiment_id='piControl'");
+    expect(cmd).toContain('latest=False');
+    expect(cmd).toContain('from intake_esgf import ESGFCatalog');
+    expect(cmd).toContain('cat=ESGFCatalog()');
+    expect(cmd).toContain('metagrid_search=cat.search(');
+  });
+
+  it('creates an intake-esgf search command with latest=True', () => {
+    const searchQuery = {
+      project: { name: 'CMIP6' },
+      versionType: 'latest',
+      resultType: 'all',
+      minVersionDate: null,
+      maxVersionDate: null,
+      filenameVars: [],
+      activeFacets: { realm: ['atmos'] },
+      textInputs: [],
+    } as ActiveSearchQuery;
+    const cmd = createIntakeEsgfSearch(searchQuery);
+    expect(cmd).toContain("realm='atmos'");
+    expect(cmd).toContain('latest=True');
   });
 });
