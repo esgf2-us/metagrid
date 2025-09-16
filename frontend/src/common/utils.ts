@@ -470,10 +470,10 @@ export const createIntakeEsgfSearch = (searchQuery: ActiveSearchQuery): string =
     commandParts.push(`latest=True`);
   }
 
-  const intakeHeader = 'from intake_esgf import ESGFCatalog\ncat=ESGFCatalog()';
+  const intakeHeader = 'from intake_esgf import ESGFCatalog\ncat=ESGFCatalog()\n\n';
   const catalogCmd = `metagrid_search=cat.search(${commandParts.join(', ')})`;
 
-  return `${intakeHeader}\n\n${catalogCmd}`;
+  return `${intakeHeader}${catalogCmd}`;
 };
 
 export const combineCarts = (

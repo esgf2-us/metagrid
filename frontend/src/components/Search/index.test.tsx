@@ -26,6 +26,16 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
+beforeEach(() => {
+  Object.defineProperty(navigator, 'clipboard', {
+    value: {
+      writeText: jest.fn(),
+      readText: jest.fn(() => Promise.resolve('')), // Mock initial empty clipboard
+    },
+    writable: true,
+  });
+});
+
 describe('test Search component', () => {
   it('renders component', async () => {
     customRender(<Search {...defaultProps} />);
@@ -279,6 +289,97 @@ describe('test Search component', () => {
     expect(copyBtn).toBeTruthy();
 
     await user.click(copyBtn);
+
+    // Check clipboard content
+    const expectedSearchText =
+      'http://localhost/?project=test1&minVersionDate=20200101&maxVersionDate=20201231&filenameVars=%5B%22var%22%5D&activeFacets=%7B%22foo%22%3A%5B%22option1%22%2C%22option2%22%5D%2C%22baz%22%3A%22option1%22%7D&textInputs=%5B%22foo%22%5D';
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith(expectedSearchText);
+
+    // Wait for search component to re-render
+    await screen.findByTestId('search');
+  });
+
+  it('handles copying esgpull search query to clipboard', async () => {
+    customRender(<Search {...defaultProps} />);
+
+    // Check search component renders
+    const searchComponent = await screen.findByTestId('search');
+    expect(searchComponent).toBeTruthy();
+
+    // Wait for search table to render
+    await screen.findByTestId('search-table');
+
+    // Open copy dropdown
+    const copyDropDownIcon = await screen.findByRole('img', { name: 'copy' });
+    await userEvent.click(copyDropDownIcon);
+
+    // Click on copy button
+    const copyBtn = await screen.findByTestId('copy-esgpull-search-btn');
+    expect(copyBtn).toBeTruthy();
+
+    await user.click(copyBtn);
+
+    // Check clipboard content
+    const expectedSearchText = 'esgpull search project:test1 ["foo"] --latest true';
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith(expectedSearchText);
+
+    // Wait for search component to re-render
+    await screen.findByTestId('search');
+  });
+
+  it('handles copying esgpull download command to clipboard', async () => {
+    customRender(<Search {...defaultProps} />);
+
+    // Check search component renders
+    const searchComponent = await screen.findByTestId('search');
+    expect(searchComponent).toBeTruthy();
+
+    // Wait for search table to render
+    await screen.findByTestId('search-table');
+
+    // Open copy dropdown
+    const copyDropDownIcon = await screen.findByRole('img', { name: 'copy' });
+    await userEvent.click(copyDropDownIcon);
+
+    // Click on copy button
+    const copyBtn = await screen.findByTestId('copy-esgpull-download-btn');
+    expect(copyBtn).toBeTruthy();
+
+    await user.click(copyBtn);
+
+    // Check clipboard content
+    const expectedSearchText =
+      '`esgpull add project:test1 ["foo"] --latest true --track | tail -n1`; esgpull download --disable-ssl';
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith(expectedSearchText);
+
+    // Wait for search component to re-render
+    await screen.findByTestId('search');
+  });
+
+  it('handles copying intake search query to clipboard', async () => {
+    customRender(<Search {...defaultProps} />);
+
+    // Check search component renders
+    const searchComponent = await screen.findByTestId('search');
+    expect(searchComponent).toBeTruthy();
+
+    // Wait for search table to render
+    await screen.findByTestId('search-table');
+
+    // Open copy dropdown
+    const copyDropDownIcon = await screen.findByRole('img', { name: 'copy' });
+    await userEvent.click(copyDropDownIcon);
+
+    // Click on copy button
+    const copyBtn = await screen.findByTestId('copy-intake-search-btn');
+    expect(copyBtn).toBeTruthy();
+
+    await user.click(copyBtn);
+
+    // Check clipboard content
+    const expectedSearchText =
+      "from intake_esgf import ESGFCatalog\ncat=ESGFCatalog()\n\nmetagrid_search=cat.search(foo=['option1', 'option2'], baz='option1', latest=True)";
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith(expectedSearchText);
 
     // Wait for search component to re-render
     await screen.findByTestId('search');

@@ -7,7 +7,7 @@ import {
   ShareAltOutlined,
   ShoppingCartOutlined,
 } from '@ant-design/icons';
-import { Alert, Col, Dropdown, message, Row, Space, Typography } from 'antd';
+import { Alert, Col, Dropdown, message, Row, Space, Tooltip, Typography } from 'antd';
 import humps from 'humps';
 import React from 'react';
 import { DeferFn, useAsync } from 'react-async';
@@ -28,7 +28,10 @@ import {
   generateSearchURLQuery,
   ResponseError,
 } from '../../api';
-import { searchTableTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
+import {
+  copySearchOptionsTargets,
+  searchTableTargets,
+} from '../../common/joyrideTutorials/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import {
   cachePagination,
@@ -447,12 +450,16 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       label: (
         <Button
           type="default"
-          className={searchTableTargets.copySearchLinkBtn.class()}
+          className={copySearchOptionsTargets.copySearchLinkBtn.class()}
           onClick={handleShareSearchQuery}
           disabled={isLoading || numFound === 0}
         >
-          <ShareAltOutlined data-testid="share-search-btn" />
-          Copy Metagrid search URL
+          <Tooltip
+            placement="left"
+            title={'Copy a shareable Metagrid search URL to your clipboard.'}
+          >
+            <ShareAltOutlined data-testid="share-search-btn" /> Copy Metagrid search URL
+          </Tooltip>
         </Button>
       ),
     },
@@ -461,11 +468,18 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       label: (
         <Button
           type="default"
+          className={copySearchOptionsTargets.copyEsgpullSearchQueryBtn.class()}
           onClick={handleEsgpullSearchQuery}
           disabled={isLoading || numFound === 0}
         >
-          <CodeOutlined data-testid="copy-esgpull-search-btn" />
-          Copy esgpull search query
+          <Tooltip
+            placement="left"
+            title={
+              'Convert your search into an esgpull search query (search results may vary) and save it to your clipboard.'
+            }
+          >
+            <CodeOutlined data-testid="copy-esgpull-search-btn" /> Copy esgpull search query
+          </Tooltip>
         </Button>
       ),
     },
@@ -474,11 +488,18 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       label: (
         <Button
           type="default"
+          className={copySearchOptionsTargets.copyEsgpullDownloadCommandBtn.class()}
           onClick={handleEsgpullDownloadCmd}
           disabled={isLoading || numFound === 0}
         >
-          <CodeOutlined data-testid="copy-esgpull-download-btn" />
-          Copy esgpull download command
+          <Tooltip
+            placement="left"
+            title={
+              'Convert your search into a download command for esgpull, which can be run in your esgpull shell to download the search results. It is highly recommended to verify the search results with the esgpull search query before running this download command.'
+            }
+          >
+            <CodeOutlined data-testid="copy-esgpull-download-btn" /> Copy esgpull download command
+          </Tooltip>
         </Button>
       ),
     },
@@ -487,11 +508,18 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       label: (
         <Button
           type="default"
+          className={copySearchOptionsTargets.copyIntakeEsgfSearchBtn.class()}
           onClick={handleIntakeEsgfSearch}
           disabled={isLoading || numFound === 0}
         >
-          <CodeOutlined data-testid="copy-intake-search-btn" />
-          Copy Intake-ESGF search command
+          <Tooltip
+            placement="left"
+            title={
+              'Converts your search into Intake ESGF python code and copies it to your clipboard so it can be run in a python shell.'
+            }
+          >
+            <CodeOutlined data-testid="copy-intake-search-btn" /> Copy Intake-ESGF search command
+          </Tooltip>
         </Button>
       ),
     },
@@ -541,7 +569,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                 disabled={isLoading || numFound === 0}
                 menu={{ items: searchActionsMenu }}
                 placement="bottom"
-                icon={<CopyOutlined />}
+                icon={<CopyOutlined className={copySearchOptionsTargets.copyMenuBtn.class()} />}
               >
                 <SaveOutlined data-testid="save-search-btn" />
                 Save Search
