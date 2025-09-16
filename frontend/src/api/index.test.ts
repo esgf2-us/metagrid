@@ -19,6 +19,7 @@ import {
   openDownloadURL,
   parseNodeStatus,
   processCitation,
+  resetGlobusTokens,
   saveSessionValue,
   saveSessionValues,
   startSearchGlobusEndpoints,
@@ -912,5 +913,21 @@ describe('test fetching temp storage set', () => {
     await expect(saveSessionValue('testKey', 'testValue')).rejects.toThrow(
       apiRoutes.tempStorageSet.handleErrorMsg('generic'),
     );
+  });
+});
+
+describe('resetGlobusTokens', () => {
+  it('calls the reset tokens function', async () => {
+    const response = await resetGlobusTokens();
+    expect(response.data).toEqual({ status: 'success', message: 'Tokens reset successfully.' });
+  });
+
+  it('throws an error when request fails', async () => {
+    server.use(
+      rest.get(apiRoutes.globusResetTokens.path, (_req, res) =>
+        res.networkError(genericNetworkErrorMsg),
+      ),
+    );
+    await expect(resetGlobusTokens()).rejects.toThrow();
   });
 });

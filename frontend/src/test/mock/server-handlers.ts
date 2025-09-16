@@ -28,6 +28,9 @@ const handlers = [
   rest.get(apiRoutes.globusAuth.path, async (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(userAuthFixture())),
   ),
+  rest.get(apiRoutes.globusResetTokens.path, async (_req, res, ctx) =>
+    res(ctx.status(200), ctx.json({ status: 'success', message: 'Tokens reset successfully.' })),
+  ),
   rest.get(apiRoutes.globusSearchEndpoints.path, async (_req, res, ctx) => {
     // For testing multiple search results
     const data = new URLSearchParams(_req.url.search);

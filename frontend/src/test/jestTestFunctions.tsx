@@ -26,10 +26,10 @@ export const originalGlobusEnabledNodes = [
 ];
 
 export const mockConfig: FrontendConfig = {
-  GLOBUS_CLIENT_ID: 'frontend',
   GLOBUS_NODES: originalGlobusEnabledNodes,
   KEYCLOAK_REALM: 'esgf',
   KEYCLOAK_URL: 'http://localhost:1337',
+  SEARCH_URL: 'https://esgf-node.ornl.gov/esgf-1-5-bridge',
   KEYCLOAK_CLIENT_ID: 'frontend',
   HOTJAR_ID: 1234,
   HOTJAR_SV: 1234,
@@ -198,8 +198,11 @@ export class AtomWrapper {
     return instance;
   }
 
-  public static getAtomValue<T>(key: string): T {
-    return this.Instance.ATOMS[key].value as T;
+  public static getAtomValue<T>(key: string): T | undefined {
+    if (this.Instance.ATOMS[key]) {
+      return this.Instance.ATOMS[key].value as T;
+    }
+    return undefined;
   }
 
   public static modifyAtomValue<T>(key: string, value: T): AtomWrapper {

@@ -20,7 +20,6 @@ export type FrontendConfig = {
 
   // Globus
   GLOBUS_NODES: string[];
-  GLOBUS_CLIENT_ID: string;
 
   // Keycloak
   KEYCLOAK_REALM: string;
