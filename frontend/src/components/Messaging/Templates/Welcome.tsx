@@ -2,17 +2,17 @@
 
 import { Button, Card, Col, Row } from 'antd';
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { JoyrideTour } from '../../../common/JoyrideTour';
+import { useNavigate } from 'react-router';
+import { RawTourState, ReactJoyrideContext } from '../../../contexts/ReactJoyrideContext';
+import { MessageActions, TemplateProps, WelcomeData } from '../types';
+import { JoyrideTour } from '../../../common/joyrideTutorials/JoyrideTour';
 import {
   createMainPageTour,
   createCartItemsTour,
   createSearchCardTour,
   createNodeStatusTour,
   TourTitles,
-} from '../../../common/reactJoyrideSteps';
-import { RawTourState, ReactJoyrideContext } from '../../../contexts/ReactJoyrideContext';
-import { MessageActions, TemplateProps, WelcomeData } from '../types';
+} from '../../../common/joyrideTutorials/reactJoyrideSteps';
 
 const WelcomeTemplate: React.FC<React.PropsWithChildren<TemplateProps>> = ({
   templateData,

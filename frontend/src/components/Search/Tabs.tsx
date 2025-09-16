@@ -6,7 +6,7 @@ import Citation from './Citation';
 import FilesTable from './FilesTable';
 import { RawSearchResult, TextInputs } from './types';
 import { CSSinJS } from '../../common/types';
-import { innerDataRowTargets } from '../../common/reactJoyrideSteps';
+import { innerDataRowTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
 const styles: CSSinJS = {
   qualityFlagsRow: { display: 'flex' },
@@ -92,7 +92,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
   const showCitation = objectHasKey(record, 'citation_url');
   const showESDOC =
     objectHasKey(record, 'further_info_url') &&
-    ((record.further_info_url as unknown) as string)[0] !== '';
+    (record.further_info_url as unknown as string)[0] !== '';
   const showQualityFlags = Object.keys(qualityFlags).length > 0;
   const showAdditionalLinks = urlCount > 0;
   const showAdditionalTab = showESDOC || showQualityFlags || showAdditionalLinks;
@@ -162,7 +162,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
       children: (
         <>
           {showAdditionalLinks && additionalLinks}
-          {showESDOC && ((record.further_info_url as unknown) as string)[0] !== '' && (
+          {showESDOC && (record.further_info_url as unknown as string)[0] !== '' && (
             <Button
               type="link"
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

@@ -1,21 +1,19 @@
 import { Button, Tooltip, Typography } from 'antd';
 import React, { useEffect } from 'react';
 import { useAsync } from 'react-async';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useAtom, useAtomValue } from 'jotai';
 import { fetchProjects, ResponseError } from '../../api';
-import { leftSidebarTargets } from '../../common/reactJoyrideSteps';
-import { objectIsEmpty } from '../../common/utils';
+import { objectIsEmpty, projectBaseQuery } from '../../common/utils';
 import Divider from '../General/Divider';
-import { ActiveSearchQuery } from '../Search/types';
 import FacetsForm from './FacetsForm';
 import ProjectForm from './ProjectForm';
 import { RawProject } from './types';
 import {
-  activeSearchQueryAtom,
   availableFacetsAtom,
-  projectBaseQuery,
+  activeSearchQueryAtom,
   savedSearchQueryAtom,
-} from '../App/recoil/atoms';
+} from '../../common/atoms';
+import { leftSidebarTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
 const styles = {
   form: {
@@ -28,21 +26,18 @@ const Facets: React.FC = () => {
 
   const { Title } = Typography;
 
-  const availableFacets = useRecoilValue(availableFacetsAtom);
+  const availableFacets = useAtomValue(availableFacetsAtom);
 
-  const [activeSearchQuery, setActiveSearchQuery] = useRecoilState<ActiveSearchQuery>(
-    activeSearchQueryAtom
-  );
+  const [activeSearchQuery, setActiveSearchQuery] = useAtom(activeSearchQueryAtom);
 
-  const [savedSearchQuery, setSavedSearchQuery] = useRecoilState<ActiveSearchQuery | null>(
-    savedSearchQueryAtom
-  );
+  const [savedSearchQuery, setSavedSearchQuery] = useAtom(savedSearchQueryAtom);
 
   const [curProject, setCurProject] = React.useState<RawProject>();
 
   const handleProjectChange = (selectedProject: RawProject): void => {
     if (savedSearchQuery) {
-      setSavedSearchQuery(null);
+      setSavedSearchQuery(undefined);
+      setCurProject(savedSearchQuery.project);
       setActiveSearchQuery(savedSearchQuery);
       return;
     }
@@ -52,26 +47,31 @@ const Facets: React.FC = () => {
     } else {
       setActiveSearchQuery({ ...activeSearchQuery, project: selectedProject });
     }
+    setCurProject(selectedProject);
   };
 
   const handleSubmitProjectForm = (selectedProject: string): void => {
     /* istanbul ignore else */
     if (data) {
       const selectedProj: RawProject | undefined = data.results.find(
-        (obj: RawProject) => obj.name === selectedProject
+        (obj: RawProject) => obj.name === selectedProject,
       );
       /* istanbul ignore else */
       if (selectedProj && activeSearchQuery.textInputs) {
         handleProjectChange(selectedProj);
-        setCurProject(selectedProj);
       }
     }
   };
 
   useEffect(() => {
     if (!isLoading && data && data.results.length > 0) {
-      setCurProject(data.results[0]);
-      handleProjectChange(data.results[0]);
+      const findProj = data.results.find(
+        (obj: RawProject) => obj.name === activeSearchQuery.project.name,
+      );
+
+      const selectedProj: RawProject = findProj || data.results[0];
+      setCurProject(selectedProj);
+      handleProjectChange(selectedProj);
     }
   }, [isLoading]);
 
@@ -83,7 +83,6 @@ const Facets: React.FC = () => {
     >
       <Title level={5}>Select a Project</Title>
       <ProjectForm
-        activeSearchQuery={activeSearchQuery}
         projectsFetched={data}
         apiIsLoading={isLoading}
         apiError={error as ResponseError}

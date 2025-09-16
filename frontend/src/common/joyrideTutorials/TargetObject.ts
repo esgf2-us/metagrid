@@ -40,7 +40,7 @@ export const createTestTour = (
   groupName: string,
   targetGroup: {
     [target: string]: TargetObject;
-  }
+  },
 ): JoyrideTour => {
   const testTour = new JoyrideTour(`Test Tour of ${Object.name} Targets`);
   Object.entries(targetGroup).forEach((entry) => {
@@ -48,7 +48,7 @@ export const createTestTour = (
     const target = entry[1];
     testTour.addNextStep(
       target.selector(),
-      `Group: ${groupName}__ Name: ${name}__ Selector: ${target.selector()}`
+      `Group: ${groupName}__ Name: ${name}__ Selector: ${target.selector()}`,
     );
   });
 
