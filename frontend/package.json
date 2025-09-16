@@ -125,6 +125,6 @@
     "postcss": "8.5.3",
     "prettier": "^3.5.3",
     "setimmediate": "1.0.5",
-    "vite": "^6.3.5"
+    "vite": "^6.3.6"
   }
 }
