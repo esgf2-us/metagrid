@@ -8,8 +8,8 @@ import Items, { Props } from './Items';
 import { getSearchFromUrl } from '../../common/utils';
 import App from '../App/App';
 import { ActiveSearchQuery } from '../Search/types';
-import { RecoilWrapper } from '../../test/jestTestFunctions';
-import { userCartAtom } from '../App/recoil/atoms';
+import { AppStateKeys } from '../../common/atoms';
+import { AtomWrapper } from '../../test/jestTestFunctions';
 
 const defaultProps: Props = {
   onUpdateCart: jest.fn(),
@@ -20,7 +20,7 @@ const user = userEvent.setup();
 const activeSearch: ActiveSearchQuery = getSearchFromUrl('project=test1');
 describe('test the cart items component', () => {
   it('renders message that the cart is empty when no items are added', async () => {
-    RecoilWrapper.modifyAtomValue(userCartAtom.key, []);
+    AtomWrapper.modifyAtomValue(AppStateKeys.userCart, []);
     customRender(<Items {...defaultProps} />);
 
     // Check empty cart text renders
@@ -61,9 +61,9 @@ describe('test the cart items component', () => {
   });
 
   it('handles selecting items in the cart and downloading them via wget', async () => {
-    RecoilWrapper.modifyAtomValue(userCartAtom.key, []);
+    AtomWrapper.modifyAtomValue(AppStateKeys.userCart, []);
     customRender(<App searchQuery={activeSearch} />, {
-      usesRecoil: true,
+      usesAtoms: true,
     });
 
     // Wait for results to load

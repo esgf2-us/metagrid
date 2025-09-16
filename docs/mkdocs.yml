@@ -12,7 +12,7 @@ markdown_extensions:
 
 nav:
 - Home: "index.md"
-- User Guide:
+- Site Administrator Guide:
   - Docker Compose:
     - Quickstart: "users/compose/quickstart.md"
     - Moving to Production: "users/compose/moving_to_production.md"
