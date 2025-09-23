@@ -84,21 +84,25 @@ def do_citation(request):
     try:
         jo = json.loads(request.body)
     except Exception:  # pragma: no cover
+        print(f"ERROR could not load request: {request.body}")
         return HttpResponseBadRequest()
 
     if "citurl" not in jo:  # pragma: no cover
+        print(f"ERROR no citurl in jo {jo}")
         return HttpResponseBadRequest()
 
     url = jo["citurl"]
-
     parsed_url = urlparse(url)
 
-    if not parsed_url.hostname == "cera-www.dkrz.de":
-        return HttpResponseBadRequest()
 
+    if not (parsed_url.hostname in  ["cera-www.dkrz.de", "raw.githubusercontent.com"]):
+        print(f"ERROR hostname {parsed_url.hostname} not in whitelist")
+        return HttpResponseBadRequest()
+        
     try:
         resp = requests.get(url, verify=False)
-    except Exception:  # pragma: no cover
+    except Exception as e:  # pragma: no cover
+        print(f"ERROR cound not fetch {url} {e}")
         return HttpResponseBadRequest()
 
     httpresp = HttpResponse(resp.text)
