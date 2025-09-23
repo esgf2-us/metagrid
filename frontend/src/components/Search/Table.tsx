@@ -12,7 +12,7 @@ import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
 import { useAtomValue } from 'jotai';
-import stacIcon from '../../assets/img/stac-favicon.png';
+import stacIcon from '../../assets/img/STAC-favicon.png';
 import { fetchWgetScript, ResponseError } from '../../api';
 import {
   formatBytes,

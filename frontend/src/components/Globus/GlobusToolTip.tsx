@@ -8,14 +8,12 @@ import {
   darkModeGreen,
   darkModeRed,
 } from '../NodeStatus/StatusToolTip';
-import { currentProjectAtom, isDarkModeAtom } from '../../common/atoms';
+import { isDarkModeAtom } from '../../common/atoms';
 
 export type Props = { dataNode: string };
 
 const GlobusToolTip: React.FC<Props> = ({ dataNode }) => {
-  const currentProject = useAtomValue(currentProjectAtom);
-
-  const isEnabled = currentProject.isSTAC || window.METAGRID.GLOBUS_NODES.includes(dataNode);
+  const isEnabled = window.METAGRID.GLOBUS_NODES.includes(dataNode);
   const isDarkMode = useAtomValue<boolean>(isDarkModeAtom);
 
   const enabledColor = isDarkMode ? darkModeGreen : lightModeGreen;
@@ -36,7 +34,11 @@ const GlobusToolTip: React.FC<Props> = ({ dataNode }) => {
       color={color}
       title={
         <>
-          Data Node:<div>{dataNode}</div>
+          {dataNode && (
+            <>
+              Data Node:<div>{dataNode}</div>
+            </>
+          )}
           {title}
         </>
       }

@@ -9,7 +9,7 @@ import {
 
 export const STAC_PROJECTS: RawProject[] = [
   {
-    pk: '10',
+    pk: '9',
     name: 'CMIP6 STAC',
     projectName: 'CMIP6',
     facetsUrl: 'offset=0&limit=0',
