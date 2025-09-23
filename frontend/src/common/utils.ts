@@ -396,7 +396,7 @@ const convertSearchToHash = (query: UserSearchQuery): number => {
 
 export const searchAlreadyExists = (
   existingSearches: UserSearchQueries,
-  newSearch: UserSearchQuery
+  newSearch: UserSearchQuery,
 ): boolean => {
   const hashValueLocal = convertSearchToHash(newSearch);
   return existingSearches.some((search) => {
@@ -411,10 +411,10 @@ export const searchAlreadyExists = (
 
 export const unsavedLocalSearches = (
   databaseItems: UserSearchQueries,
-  localItems: UserSearchQueries
+  localItems: UserSearchQueries,
 ): UserSearchQueries => {
   const itemsNotInDatabase = localItems.filter(
-    (localSearchQuery: UserSearchQuery) => !searchAlreadyExists(databaseItems, localSearchQuery)
+    (localSearchQuery: UserSearchQuery) => !searchAlreadyExists(databaseItems, localSearchQuery),
   );
   return itemsNotInDatabase;
 };
@@ -502,7 +502,7 @@ export const getCachedPagination = (): Pagination => {
 export const cacheSearchResults = (
   fetchedResults: Record<string, unknown> | undefined,
   pagination: Pagination,
-  cachedURL: string
+  cachedURL: string,
 ): void => {
   if (fetchedResults && !Object.hasOwn(fetchedResults, 'cachedURL')) {
     saveToLocalStorage(
@@ -512,7 +512,7 @@ export const cacheSearchResults = (
         cachedURL,
         expires: Date.now() + 60 * 60 * 1000, // Expires after an hour
       },
-      true
+      true,
     );
 
     // Cache the pagination

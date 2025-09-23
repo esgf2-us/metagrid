@@ -46,6 +46,7 @@ export type RawSearchResult = {
   globus_link?: string;
   assets?: { [name: string]: StacAsset };
   version?: string | number;
+  isStac: boolean;
   [key: string]: unknown;
 };
 
@@ -87,6 +88,16 @@ export type StacAsset = {
   'file:checksum': string;
   title?: string;
   [key: string]: boolean | string | string[] | number | undefined;
+};
+
+export type StacAggregations = {
+  aggregations: {
+    name: string;
+    buckets: {
+      key: string;
+      frequency: number;
+    }[];
+  }[];
 };
 
 export type StacProperties = {

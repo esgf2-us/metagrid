@@ -40,6 +40,7 @@ type ApiRoutes = {
   esgfSearch: ApiRoute;
   esgfSearchSTAC: ApiRoute;
   esgfFacetsSTAC: ApiRoute;
+  esgfAggregationsSTAC: ApiRoute;
   citation: ApiRoute;
   wget: ApiRoute;
   nodeStatus: ApiRoute;
@@ -112,6 +113,11 @@ const apiRoutes: ApiRoutes = {
   esgfFacetsSTAC: {
     path: `${window.location.origin}/proxy/stac/facets`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('ESGF STAC Facets API', HTTPCode),
+  },
+  // ESGF STAC Aggregations
+  esgfAggregationsSTAC: {
+    path: `${window.location.origin}/proxy/stac/aggregations`,
+    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('ESGF STAC Aggregations API', HTTPCode),
   },
   // ESGF Citation API (uses dummy path 'citation_url' for testing since the
   // URL is included in each Search API dataset result)

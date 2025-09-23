@@ -96,6 +96,28 @@ def fetch_stac_facets(request):
 
 @require_http_methods(["POST"])
 @csrf_exempt
+def fetch_stac_aggregations(request):
+    # jo = {}
+    # try:
+    #     jo = json.loads(request.body)
+    # except Exception:  # pragma: no cover
+    #     return HttpResponseBadRequest()
+
+    # print("JSON Object:\n")
+    # print(jo)
+
+    try:
+        summaries = do_post(request, settings.STAC_URL + "/aggregate")
+    except Exception as e:  # pragma: no cover
+        print("Error fetching STAC aggregations:\n", e)
+
+    print("STAC Aggregations:", summaries)
+
+    return summaries
+
+
+@require_http_methods(["POST"])
+@csrf_exempt
 def do_citation(request):
     jo = {}
     try:

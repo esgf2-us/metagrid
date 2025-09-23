@@ -23,13 +23,19 @@ import {
   Pagination,
   RawCitation,
   ResultType,
+  StacAggregations,
   TextInputs,
 } from '../components/Search/types';
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
 import apiRoutes, { ApiRoute, HTTPCodeType } from './routes';
 import { GlobusEndpointSearchResults } from '../components/Globus/types';
 import { cachePagination, getCachedPagination, getCachedSearchResults } from '../common/utils';
-import { convertSearchParamsIntoStacFilter, STAC_PROJECTS } from '../common/STAC';
+import {
+  aggregationsToFacetsData,
+  convertSearchParamsIntoStacFilter,
+  STAC_AGGREGATION_FACETS,
+  STAC_PROJECTS,
+} from '../common/STAC';
 
 export interface ResponseError extends Error {
   status?: number;
@@ -465,10 +471,31 @@ export const postSTACSearch = async (
     });
 };
 
-const fetchSTACFacets = async (projectId: string): Promise<{ summaries: RawFacets }> => {
+// const fetchSTACFacets = async (projectId: string): Promise<{ summaries: RawFacets }> => {
+//   return axios
+//     .get(`${apiRoutes.esgfFacetsSTAC.path}?project_id=${projectId}`)
+//     .then((res) => {
+//       return res.data;
+//     })
+//     .catch((error: ResponseError) => {
+//       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearchSTAC));
+//     });
+// };
+
+const fetchSTACAggregations = async (
+  projectId: string,
+  filter: { op: string; args: unknown } | undefined,
+): Promise<StacAggregations> => {
   return axios
-    .get(`${apiRoutes.esgfFacetsSTAC.path}?project_id=${projectId}`)
-    .then((res) => res.data)
+    .post(`${apiRoutes.esgfAggregationsSTAC.path}`, {
+      collections: [projectId],
+      aggregations: STAC_AGGREGATION_FACETS[projectId],
+      filter,
+      'filter-lang': 'cql2-json',
+    })
+    .then((res) => {
+      return res.data;
+    })
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearchSTAC));
     });
@@ -481,7 +508,17 @@ export const fetchSTACSearchResults = async (
 Promise<{ [key: string]: any }> => {
   let status = 200;
 
-  const facetSummary = await fetchSTACFacets(projectName)
+  const filter = convertSearchParamsIntoStacFilter(reqUrlStr, projectName);
+
+  // const facetSummary = await fetchSTACFacets(projectName)
+  //   .then((res) => {
+  //     return res;
+  //   })
+  //   .catch((error: ResponseError) => {
+  //     status = error.cause === 422 ? 422 : 500;
+  //   });
+
+  const aggregations = await fetchSTACAggregations(projectName, filter)
     .then((res) => {
       return res;
     })
@@ -489,11 +526,11 @@ Promise<{ [key: string]: any }> => {
       status = error.cause === 422 ? 422 : 500;
     });
 
-  const filter = convertSearchParamsIntoStacFilter(reqUrlStr, projectName);
+  const aggregationsToFacets = aggregationsToFacetsData(aggregations || { aggregations: [] });
 
   const searchResults = await postSTACSearch(projectName, 9999, filter);
 
-  return { search: searchResults, facets: facetSummary?.summaries, stac: true, status };
+  return { search: searchResults, facets: aggregationsToFacets, stac: true, status };
 };
 
 /**
@@ -562,6 +599,7 @@ export const fetchSearchResults = async (
             throw new Error('', { cause: 422 });
           }
         }
+
         return results;
       })
       .catch((error: ResponseError) => {
@@ -588,7 +626,10 @@ export const fetchSearchResults = async (
           throw new Error('', { cause: 422 });
         }
       }
-      return results.json();
+
+      const resultsJson = results.json();
+
+      return resultsJson;
     })
     .catch((error: ResponseError) => {
       if (error.cause === 422) {

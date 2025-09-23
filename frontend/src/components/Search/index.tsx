@@ -103,6 +103,7 @@ export const parseFacets = (facets: RawFacets): ParsedFacets => {
  * Example: '(Text Input = 'Solar') AND (source_type = AER OR AOGCM OR BGC)'
  */
 export const stringifyFilters = (
+  projectName: string | undefined,
   versionType: VersionType,
   resultType: ResultType,
   minVersionDate: VersionDate,
@@ -113,7 +114,7 @@ export const stringifyFilters = (
   reqUrlStr: string = '',
 ): string => {
   if (isSTAC) {
-    const stacFilter = convertSearchParamsIntoStacFilter(reqUrlStr);
+    const stacFilter = convertSearchParamsIntoStacFilter(reqUrlStr, projectName);
     return JSON.stringify(stacFilter) || 'No filters applied';
   }
 
@@ -426,6 +427,9 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     } else if (results.response) {
       numFound = (results as LoadedResults).response.numFound;
       docs = (results as LoadedResults).response.docs;
+      docs.forEach((doc) => {
+        doc.isStac = false;
+      });
     }
   }
 
@@ -499,25 +503,24 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       </div>
       <div>
         {results && (
-          <>
-            <p>
-              <span style={styles.subtitles} data-testid="main-query-string-label">
-                {currentProject.isSTAC ? 'STAC Filter String:' : 'Query String:'}{' '}
-              </span>
-              <Typography.Text className={searchTableTargets.queryString.class()} code>
-                {stringifyFilters(
-                  versionType,
-                  resultType,
-                  minVersionDate,
-                  maxVersionDate,
-                  activeFacets,
-                  textInputs,
-                  currentProject.isSTAC,
-                  currentRequestURL,
-                )}
-              </Typography.Text>
-            </p>
-          </>
+          <p>
+            <span style={styles.subtitles} data-testid="main-query-string-label">
+              {currentProject.isSTAC ? 'STAC Filter String:' : 'Query String:'}{' '}
+            </span>
+            <Typography.Text className={searchTableTargets.queryString.class()} code>
+              {stringifyFilters(
+                currentProject.name,
+                versionType,
+                resultType,
+                minVersionDate,
+                maxVersionDate,
+                activeFacets,
+                textInputs,
+                currentProject.isSTAC,
+                currentRequestURL,
+              )}
+            </Typography.Text>
+          </p>
         )}
       </div>
 

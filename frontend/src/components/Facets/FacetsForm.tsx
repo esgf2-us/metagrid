@@ -336,7 +336,7 @@ const FacetsForm: React.FC = () => {
           if (facetsByGroup[group].includes(facet)) {
             const facetOptions = availableFacets[facet];
 
-            const isOptionalforDatasets =
+            const isOptionalForDatasets =
               facetOptions.length > 0 && facetOptions[0].includes('none');
             const facetNameHumanized = humanizeFacetNames(facet);
             return (
@@ -375,7 +375,7 @@ const FacetsForm: React.FC = () => {
                 }
                 style={{ marginBottom: 0 }}
                 tooltip={
-                  isOptionalforDatasets
+                  isOptionalForDatasets
                     ? {
                         title:
                           'Selecting the "none" option filters for datasets that do not use this facet.',

@@ -1,6 +1,11 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { RawProject } from '../components/Facets/types';
-import { StacFeature, RawSearchResult, StacAsset } from '../components/Search/types';
+import {
+  StacFeature,
+  RawSearchResult,
+  StacAsset,
+  StacAggregations,
+} from '../components/Search/types';
 
 export const STAC_PROJECTS: RawProject[] = [
   {
@@ -11,7 +16,7 @@ export const STAC_PROJECTS: RawProject[] = [
     fullName: 'Coupled Model Intercomparison Project Phase 6',
     projectUrl: 'https://pcmdi.llnl.gov/CMIP6/',
     facetsByGroup: {
-      General: ['activity_id', 'data_specs_version', 'mip_era', 'grid'],
+      General: ['activity_id', 'mip_era'],
       Identifiers: [
         'source_id',
         'source_type',
@@ -20,14 +25,8 @@ export const STAC_PROJECTS: RawProject[] = [
         'experiment_id',
         'sub_experiment_id',
       ],
-      Labels: ['variant_label', 'grid_label', 'experiment_title'],
-      Classifications: [
-        'table_id',
-        'frequency',
-        'variable_id',
-        'cf_standard_name',
-        'variable_units',
-      ],
+      Labels: ['variant_label', 'grid_label'],
+      Classifications: ['table_id', 'frequency', 'variable_id', 'cf_standard_name'],
     },
     isSTAC: true,
   },
@@ -38,23 +37,75 @@ export const STAC_PROJECTS: RawProject[] = [
  */
 export const STAC_PROJECT_FACET_MAPPING: { [key: string]: Record<string, string> } = {
   CMIP6: {
-    instance_id: 'properties.instance_id',
-    experiment_title: 'properties.experiment',
-    cf_standard_name: 'properties.cf_standard_name',
-    variable_units: 'properties.variable_units',
     activity_id: 'properties.cmip6:activity_id',
     data_specs_version: 'properties.cmip6:data_specs_version',
     mip_era: 'properties.cmip6:mip_era',
     grid: 'properties.cmip6:grid',
     source_id: 'properties.cmip6:source_id',
     source_type: 'properties.cmip6:source_type',
+    instance_id: 'properties.instance_id',
     institution_id: 'properties.cmip6:institution_id',
     experiment_id: 'properties.cmip6:experiment_id',
     sub_experiment_id: 'properties.cmip6:sub_experiment_id',
+    variant_label: 'properties.cmip6:variant_label',
+    grid_label: 'properties.cmip6:grid_label',
+    experiment_title: 'properties.experiment',
     table_id: 'properties.cmip6:table_id',
     frequency: 'properties.cmip6:frequency',
     variable_id: 'properties.cmip6:variable_id',
+    cf_standard_name: 'properties.cf_standard_name',
+    variable_units: 'properties.variable_units',
   },
+};
+
+export const STAC_AGGREGATION_FACETS: { [key: string]: string[] } = {
+  // Values taken from 'aggregations' list : https://api.stac.esgf.ceda.ac.uk/collections/CMIP6
+  CMIP6: [
+    'cmip6_activity_id_frequency',
+    'cmip6_data_specs_version_frequency',
+    'cmip6_frequency_frequency',
+    'cmip6_further_info_url_frequency',
+    'cmip6_grid_frequency',
+    'cmip6_grid_label_frequency',
+    'cmip6_institution_id_frequency',
+    'cmip6_mip_era_frequency',
+    'cmip6_source_id_frequency',
+    'cmip6_source_type_frequency',
+    'cmip6_experiment_id_frequency',
+    'cmip6_sub_experiment_id_frequency',
+    'cmip6_nominal_resolution_frequency',
+    'cmip6_table_id_frequency',
+    'cmip6_variable_id_frequency',
+    'cmip6_variant_label_frequency',
+    'cmip6_realm_frequency',
+    // 'cmip6_Conventions_frequency',
+    'cmip6_experiment_frequency',
+    // 'cmip6_forcing_index_frequency', These caused a 500 error
+    // 'cmip6_initialization_index_frequency', These caused a 500 error
+    // 'cmip6_realization_index_frequency', These caused a 500 error
+    // 'cmip6_physics_index_frequency', These caused a 500 error
+    // 'cmip6_institution_frequency',
+    // 'cmip6_license_frequency',
+    // 'cmip6_source_frequency',
+    'cmip6_sub_experiment_frequency',
+    // 'cmip6_tracking_id_frequency',
+  ],
+};
+
+export const aggregationsToFacetsData = (
+  aggregations: StacAggregations,
+): {
+  [x: string]: [string, number][];
+} => {
+  const facetsData: { [x: string]: [string, number][] } = {};
+  aggregations.aggregations.forEach((aggregation) => {
+    const facetName = aggregation.name.replace('cmip6_', '').replace('_frequency', '');
+    const facetValues = aggregation.buckets.map(
+      (bucket) => [bucket.key, bucket.frequency] as [string, number],
+    );
+    facetsData[facetName] = facetValues;
+  });
+  return facetsData;
 };
 
 export const convertStacToRawSearchResult = (stacResult: StacFeature): RawSearchResult => {
@@ -88,6 +139,7 @@ export const convertStacToRawSearchResult = (stacResult: StacFeature): RawSearch
     stac_version,
     type,
     size,
+    isStac: true,
   };
   if (assets && assets.globus) {
     result.globus_link = assets.globus.href;
@@ -125,7 +177,7 @@ export const createOrFilter = (
 
 export const convertSearchParamsIntoStacFilter = (
   reqUrlStr: string,
-  projectName: string,
+  projectName: string | undefined,
 ): { op: string; args: unknown } | undefined => {
   const params: URLSearchParams = new URLSearchParams(reqUrlStr.split('?')[1] || '');
 

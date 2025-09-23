@@ -12,6 +12,7 @@ import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
 import { useAtomValue } from 'jotai';
+import stacIcon from '../../assets/img/stac-favicon.png';
 import { fetchWgetScript, ResponseError } from '../../api';
 import {
   formatBytes,
@@ -36,9 +37,9 @@ import {
 } from './types';
 import GlobusToolTip from '../Globus/GlobusToolTip';
 import { topDataRowTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
-import { currentProjectAtom, userCartAtom } from '../../common/atoms';
+import { userCartAtom } from '../../common/atoms';
 import { AppPage } from '../../common/types';
-import { RawProject } from '../Facets/types';
+import { createCustomIcon } from '../NavBar';
 
 export type Props = {
   loading: boolean;
@@ -73,10 +74,6 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
 
   // Global states
   const userCart = useAtomValue<UserCart>(userCartAtom);
-
-  const currentProject = useAtomValue<RawProject>(currentProjectAtom);
-
-  const { isSTAC } = currentProject;
 
   const showStatus = window.METAGRID.STATUS_URL !== null;
 
@@ -212,9 +209,17 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       title: '',
       dataIndex: 'data_node',
       key: 'node_status',
-      render: (data_node: string) => {
-        if (isSTAC) {
-          return <>STAC</>;
+      render: (data_node: string, record: RawSearchResult) => {
+        if (record.isStac) {
+          return (
+            <Tooltip title="STAC Dataset">
+              {createCustomIcon(stacIcon, 'STAC', {
+                height: '24px',
+                width: '32px',
+                marginRight: '0',
+              })}
+            </Tooltip>
+          );
         }
         if (!showStatus) {
           return (
@@ -312,7 +317,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       title: 'Download Options',
       key: 'download',
       render: (record: RawSearchResult) => {
-        if (isSTAC) {
+        if (record.isStac) {
           if (record.globus_link) {
             return (
               <Button
