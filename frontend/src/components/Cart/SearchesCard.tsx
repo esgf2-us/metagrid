@@ -75,11 +75,12 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
   // Update the search query with the results count if it was fetched
   useEffect(() => {
     if (!isLoading && data) {
-      const loadedCount = (
-        data as {
-          response: { numFound: number };
-        }
-      ).response.numFound;
+      let loadedCount = 0;
+      if (project.isSTAC) {
+        loadedCount = (data as { search?: { numMatched?: number } }).search?.numMatched || 0;
+      } else {
+        loadedCount = (data as { numFound?: number }).numFound || 0;
+      }
       updateSearchQuery({
         ...searchQuery,
         resultsCount: loadedCount,
@@ -180,6 +181,7 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
           <span style={styles.category}>Query String: </span>
           <Typography.Text code>
             {stringifyFilters(
+              project.name,
               versionType,
               resultType,
               minVersionDate,

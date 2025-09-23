@@ -13,6 +13,7 @@ import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import {
   activeSearchQueryAtom,
   availableFacetsAtom,
+  currentProjectAtom,
   currentRequestQueryAtom,
   isDarkModeAtom,
   userCartAtom,
@@ -50,11 +51,14 @@ import {
   RawSearchResult,
   RawSearchResults,
   ResultType,
+  StacFeature,
+  StacResponse,
   TextInputs,
   VersionDate,
   VersionType,
 } from './types';
 import { AuthContext } from '../../contexts/AuthContext';
+import { convertSearchParamsIntoStacFilter, convertStacToRawSearchResult } from '../../common/STAC';
 
 const styles: CSSinJS = {
   summary: {
@@ -99,13 +103,21 @@ export const parseFacets = (facets: RawFacets): ParsedFacets => {
  * Example: '(Text Input = 'Solar') AND (source_type = AER OR AOGCM OR BGC)'
  */
 export const stringifyFilters = (
+  projectName: string | undefined,
   versionType: VersionType,
   resultType: ResultType,
   minVersionDate: VersionDate,
   maxVersionDate: VersionDate,
   activeFacets: ActiveFacets,
   textInputs: TextInputs | [],
+  isSTAC: boolean = false,
+  reqUrlStr: string = '',
 ): string => {
+  if (isSTAC) {
+    const stacFilter = convertSearchParamsIntoStacFilter(reqUrlStr, projectName);
+    return JSON.stringify(stacFilter) || 'No filters applied';
+  }
+
   const filtersArr: string[] = [];
 
   if (versionType === 'latest') {
@@ -159,6 +171,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   const [activeSearchQuery, setActiveSearchQuery] = useAtom(activeSearchQueryAtom);
 
   const [currentRequestURL, setCurrentRequestURL] = useAtom(currentRequestQueryAtom);
+
+  const currentProject = useAtomValue(currentProjectAtom);
 
   const isDarkMode = useAtomValue<boolean>(isDarkModeAtom);
 
@@ -227,12 +241,17 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   React.useEffect(() => {
     if (results && currentRequestURL && !objectIsEmpty(results)) {
       cacheSearchResults(results, paginationOptions, currentRequestURL);
-      const { facet_fields: facetFields } = (
-        results as {
-          facet_counts: { facet_fields: RawFacets };
-        }
-      ).facet_counts;
-      setParsedFacets(parseFacets(facetFields));
+      if (results.facet_counts) {
+        const { facet_fields: facetFields } = (
+          results as {
+            facet_counts: { facet_fields: RawFacets };
+          }
+        ).facet_counts;
+        setParsedFacets(parseFacets(facetFields));
+      } else {
+        const { facets } = results as { facets: RawFacets };
+        setParsedFacets(facets);
+      }
     }
   }, [results]);
 
@@ -393,8 +412,25 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     response: { docs: RawSearchResults; numFound: number };
   };
   if (results) {
-    numFound = (results as LoadedResults).response.numFound;
-    docs = (results as LoadedResults).response.docs;
+    if (currentProject.isSTAC) {
+      const searchResults = results as StacResponse;
+      if (searchResults.search) {
+        const stacResults = searchResults.search;
+
+        if (stacResults.features && stacResults.features.length > 0) {
+          numFound = stacResults.features.length;
+          docs = stacResults.features.map((stacResult: StacFeature) =>
+            convertStacToRawSearchResult(stacResult),
+          );
+        }
+      }
+    } else if (results.response) {
+      numFound = (results as LoadedResults).response.numFound;
+      docs = (results as LoadedResults).response.docs;
+      docs.forEach((doc) => {
+        doc.isStac = false;
+      });
+    }
   }
 
   const allSelectedItemsInCart =
@@ -467,23 +503,24 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       </div>
       <div>
         {results && (
-          <>
-            <p>
-              <span style={styles.subtitles} data-testid="main-query-string-label">
-                Query String:{' '}
-              </span>
-              <Typography.Text className={searchTableTargets.queryString.class()} code>
-                {stringifyFilters(
-                  versionType,
-                  resultType,
-                  minVersionDate,
-                  maxVersionDate,
-                  activeFacets,
-                  textInputs,
-                )}
-              </Typography.Text>
-            </p>
-          </>
+          <p>
+            <span style={styles.subtitles} data-testid="main-query-string-label">
+              {currentProject.isSTAC ? 'STAC Filter String:' : 'Query String:'}{' '}
+            </span>
+            <Typography.Text className={searchTableTargets.queryString.class()} code>
+              {stringifyFilters(
+                currentProject.name,
+                versionType,
+                resultType,
+                minVersionDate,
+                maxVersionDate,
+                activeFacets,
+                textInputs,
+                currentProject.isSTAC,
+                currentRequestURL,
+              )}
+            </Typography.Text>
+          </p>
         )}
       </div>
 

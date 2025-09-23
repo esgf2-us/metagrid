@@ -18,6 +18,7 @@ import {
   RawCitation,
   RawSearchResult,
   RawSearchResults,
+  StacResponse,
 } from '../../components/Search/types';
 import { RawUserAuth, RawUserInfo } from '../../contexts/types';
 import { SubmissionResult } from '../../api';
@@ -34,6 +35,7 @@ export const rawProjectFixture = (props: Partial<RawProject> = {}): RawProject =
     facetsUrl: 'offset=0&limit=0',
     projectUrl: 'https://esgf-dev1.llnl.gov/metagrid/search',
     fullName: 'test1',
+    isSTAC: false,
   };
   return { ...defaults, ...props } as RawProject;
 };
@@ -308,3 +310,65 @@ export const globusEnabledDatasetFixture = (): RawSearchResult[] => {
     },
   ];
 };
+
+export const stacSearchResultsFixture = (): StacResponse => ({
+  search: {
+    features: [
+      {
+        id: 'test-id',
+        bbox: [0, 0, 10, 10],
+        geometry: {
+          type: 'Polygon',
+          coordinates: [
+            [
+              [0, 0],
+              [10, 0],
+              [10, 10],
+              [0, 10],
+              [0, 0],
+            ],
+          ],
+        },
+        links: [{ rel: 'self', type: 'application/json', href: 'https://example.com/self' }],
+        type: 'Feature',
+        assets: {
+          asset1: {
+            id: 'asset1',
+            access: ['public'],
+            description: 'Test asset',
+            alternatename: 'Alternate name',
+            name: 'Asset 1',
+            roles: ['data'],
+            href: 'https://example.com/asset1',
+            type: 'image/png',
+          },
+        },
+        properties: {
+          access: ['public'],
+          citation_url: 'https://example.com/citation',
+          further_info_url: 'https://example.com/info',
+          version: '1.0',
+        },
+        collection: ['test-collection'],
+        stac_version: '1.0.0',
+      },
+    ],
+    numMatched: 1,
+    numReturned: 1,
+    type: 'FeatureCollection',
+    links: [
+      {
+        rel: 'root',
+        type: 'application/json',
+        href: 'https://data-challenge-01.api.stac.esgf-west.org/',
+      },
+      {
+        rel: 'self',
+        type: 'application/json',
+        href: 'https://data-challenge-01.api.stac.esgf-west.org/search?limit=3&activity_id=CMIP&institution_id=BCC&mip_era=CMIP6',
+      },
+    ],
+  },
+  facets: {},
+  stac: true,
+});

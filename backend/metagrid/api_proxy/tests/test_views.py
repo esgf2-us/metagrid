@@ -99,10 +99,20 @@ class TestProxyViewSet(APITestCase):
         response = self.client.get(url, postdata)
         assert response.status_code == status.HTTP_200_OK
 
-    # def test_status(self):
-    #     url = reverse("do-status")
-    #     response = self.client.get(url)
-    #     assert response.status_code == status.HTTP_200_OK
+    @responses.activate
+    def test_stac_search(self):
+        url = reverse("do-stac-search")
+        postdata = {"collections": "CMIP6", "limit": 10}
+        responses.post(settings.STAC_URL + "/search", json={})
+        response = self.client.post(url, postdata, format="json")
+        assert response.status_code == status.HTTP_200_OK
+
+    @responses.activate
+    def test_fetch_stac_facets(self):
+        url = reverse("fetch-stac-facets")
+        responses.get(settings.STAC_URL + "/collections/CMIP6")
+        response = self.client.get(url)
+        assert response.status_code == status.HTTP_200_OK
 
     @responses.activate
     def test_citation(self):

@@ -79,6 +79,45 @@ def do_search(request):
 
 @require_http_methods(["POST"])
 @csrf_exempt
+def do_stac_search(request):
+    print("STAC Search Request:", request.method, request.body)
+    return do_post(request, settings.STAC_URL + "/search")
+
+
+@require_http_methods(["GET"])
+@csrf_exempt
+def fetch_stac_facets(request):
+    project_id = request.GET.get("project_id", "CMIP6")
+    return do_request(
+        request,
+        settings.STAC_URL + "/collections/" + project_id,
+    )
+
+
+@require_http_methods(["POST"])
+@csrf_exempt
+def fetch_stac_aggregations(request):
+    # jo = {}
+    # try:
+    #     jo = json.loads(request.body)
+    # except Exception:  # pragma: no cover
+    #     return HttpResponseBadRequest()
+
+    # print("JSON Object:\n")
+    # print(jo)
+
+    try:
+        summaries = do_post(request, settings.STAC_URL + "/aggregate")
+    except Exception as e:  # pragma: no cover
+        print("Error fetching STAC aggregations:\n", e)
+
+    print("STAC Aggregations:", summaries)
+
+    return summaries
+
+
+@require_http_methods(["POST"])
+@csrf_exempt
 def do_citation(request):
     jo = {}
     try:
@@ -126,6 +165,32 @@ def do_wget(request):
     return do_request(request, settings.WGET_URL, True)
 
 
+def do_post(request, urlbase):
+    """Helper function to handle POST requests."""
+    if request.method != "POST":  # pragma: no cover
+        return HttpResponseBadRequest("Request method must be POST.")
+
+    try:
+        jo = json.loads(request.body)
+    except json.JSONDecodeError:  # pragma: no cover
+        return HttpResponseBadRequest("Invalid JSON in request body.")
+
+    try:
+        resp = requests.post(urlbase, json=jo)
+    except Exception as e:  # pragma: no cover
+        return HttpResponseBadRequest(f"Error during POST request: {e}")
+
+    if resp.status_code != 200:  # pragma: no cover
+        return HttpResponseBadRequest(
+            f"Request failed with status {resp.status_code}: {resp.text}"
+        )
+
+    httpresp = HttpResponse(resp.text, content_type="text/json")
+    httpresp.status_code = resp.status_code
+
+    return httpresp
+
+
 def do_request(request, urlbase, useBody=False):
     resp = None
 
@@ -141,13 +206,26 @@ def do_request(request, urlbase, useBody=False):
                 jo["query"] = query[0]
         if "dataset_id" in jo:
             jo["dataset_id"] = ",".join(jo["dataset_id"])
-        resp = requests.post(urlbase, data=jo)
+        try:
+            resp = requests.post(urlbase, data=jo)
+            print("resp", resp)
+        except Exception as e:
+            print(f"Error during POST request: {e}")
+            return HttpResponseBadRequest(f"Error during POST request: {e}")
 
     elif request.method == "GET":
         url_params = request.GET.copy()
-        resp = requests.get(urlbase, params=url_params)
+        try:
+            resp = requests.get(urlbase, params=url_params)
+        except Exception as e:
+            print(f"Error during GET request: {e}")
+            return HttpResponseBadRequest(f"Error during GET request: {e}")
     else:  # pragma: no cover
+        print("Request method must be POST or GET.")
         return HttpResponseBadRequest("Request method must be POST or GET.")
+
+    if resp.status_code != 200:
+        print(f"Request failed with status {resp.status_code}: {resp.text}")
 
     httpresp = HttpResponse(resp.text, content_type="text/json")
     httpresp.status_code = resp.status_code

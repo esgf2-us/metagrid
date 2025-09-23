@@ -5,6 +5,8 @@ export type RawProject = {
   facetsByGroup: { [key: string]: string[] };
   facetsUrl: string;
   fullName: string;
+  isSTAC: boolean;
+  projectName?: string;
 };
 export type RawProjects = Array<RawProject>;
 
