@@ -306,7 +306,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     if (navigator && navigator.clipboard) {
       navigator.clipboard.writeText(getUrlFromSearch(activeSearchQuery));
       showNotice(messageApi, 'Metagrid search URL copied to clipboard!', {
-        icon: <ShareAltOutlined style={styles.messageAddIcon} />,
+        icon: <ShareAltOutlined />,
       });
     }
   };
@@ -316,7 +316,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     if (navigator && navigator.clipboard) {
       navigator.clipboard.writeText(createEsgpullCommand(activeSearchQuery, false));
       showNotice(messageApi, 'Esgpull search query copied to clipboard!', {
-        icon: <CodeOutlined style={styles.messageAddIcon} />,
+        icon: <CodeOutlined />,
       });
     }
   };
@@ -326,7 +326,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     if (navigator && navigator.clipboard) {
       navigator.clipboard.writeText(createEsgpullCommand(activeSearchQuery, true));
       showNotice(messageApi, 'Esgpull download command copied to clipboard!', {
-        icon: <CodeOutlined style={styles.messageAddIcon} />,
+        icon: <CodeOutlined />,
       });
     }
   };
@@ -336,7 +336,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     if (navigator && navigator.clipboard) {
       navigator.clipboard.writeText(createIntakeEsgfSearch(activeSearchQuery));
       showNotice(messageApi, 'Intake-ESGF search command copied to clipboard!', {
-        icon: <CodeOutlined style={styles.messageAddIcon} />,
+        icon: <CodeOutlined />,
       });
     }
   };
@@ -475,7 +475,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           <Tooltip
             placement="left"
             title={
-              'Convert your search into an esgpull search query (search results may vary) and save it to your clipboard.'
+              'Convert your search into an Esgpull search query (search results may vary, not all facets are supported in Esgpull) and save it to your clipboard.'
             }
           >
             <CodeOutlined data-testid="copy-esgpull-search-btn" /> Copy esgpull search query
@@ -495,7 +495,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           <Tooltip
             placement="left"
             title={
-              'Convert your search into a download command for esgpull, which can be run in your esgpull shell to download the search results. It is highly recommended to verify the search results with the esgpull search query before running this download command.'
+              'Convert your search into a download command for Esgpull. We HIGHLY recommended you verify the search results with the Esgpull search query, before running this download command.'
             }
           >
             <CodeOutlined data-testid="copy-esgpull-download-btn" /> Copy esgpull download command

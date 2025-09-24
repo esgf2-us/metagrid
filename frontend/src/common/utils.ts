@@ -369,37 +369,29 @@ export const createEsgpullCommand = (
 
   // Commented out values were causing KeyError during search
   const validFacets: string[] = [
-    // 'access',
-    // 'activity_drs',
     'activity_id',
-    // 'branch_method',
-    // 'cf_standard_name',
     'data_node',
-    // 'data_specs_version',
-    // 'directory_format_template_',
+    'dataset_id',
     'experiment_id',
-    // 'experiment_title',
     'frequency',
-    // 'grid',
     'grid_label',
     'index_node',
+    'instance_id',
     'institution_id',
+    'master_id',
     'member_id',
     'mip_era',
-    // 'model_cohort',
     'nominal_resolution',
-    // 'product',
     'project',
     'realm',
     'source_id',
-    // 'source_type',
-    // 'sub_experiment_id',
     'table_id',
+    'title',
+    'url',
     'variable',
     'variable_id',
     'variable_long_name',
     'variant_label',
-    // 'version',
   ];
   const commandParts: string[] = [];
 
@@ -408,11 +400,16 @@ export const createEsgpullCommand = (
     commandParts.push(`project:${(project as RawProject).name}`);
   }
 
+  // Check if some facets are invalid
+  const invalidFacets: string[] = [];
+
   // Add other search parameters
   if (!objectIsEmpty(activeFacets)) {
     Object.entries(activeFacets).forEach(([key, value]) => {
       if (validFacets.includes(key) && value.length > 0) {
         commandParts.push(`${key}:${value.join(',')}`);
+      } else {
+        invalidFacets.push(`${key}:${value.join(',')}`);
       }
     });
   }
@@ -438,14 +435,18 @@ export const createEsgpullCommand = (
     }
   }
 
+  const ignoredFacetsMsg =
+    invalidFacets.length > 0
+      ? `#${'='.repeat(79)}\n# Facets listed below WERE NOT applied (not supported in Esgpull):\n# UNAPPLIED: ${invalidFacets.join('\n# UNAPPLIED: ')}\n#${'='.repeat(79)}\n`
+      : '';
   const pullCmd = `esgpull ${downloadCmd ? 'add' : 'search'} ${commandParts.join(' ')}`;
 
   if (downloadCmd) {
-    return `\`${pullCmd} --track | tail -n1\`; esgpull download --disable-ssl`;
+    return `${ignoredFacetsMsg}# Espull Download Command:\n\`${pullCmd} --track | tail -n1\`; esgpull download --disable-ssl`;
   }
 
-  return pullCmd;
-};
+  return `${ignoredFacetsMsg}# Esgpull Search Query:\n${pullCmd}`;
+}
 
 export const createIntakeEsgfSearch = (searchQuery: ActiveSearchQuery): string => {
   const { versionType, activeFacets } = searchQuery;
