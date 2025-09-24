@@ -29,6 +29,24 @@ export const clickFirstElement = (selector: string): boolean => {
   return false;
 };
 
+export const hoverFirstElement = (selector: string): boolean => {
+  const elem = document.querySelector(selector) as HTMLElement;
+  if (elem) {
+    elem.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+    return true;
+  }
+  return false;
+};
+
+export const unHoverFirstElement = (selector: string): boolean => {
+  const elem = document.querySelector(selector) as HTMLElement;
+  if (elem) {
+    elem.dispatchEvent(new MouseEvent('mouseout', { bubbles: true }));
+    return true;
+  }
+  return false;
+};
+
 /* istanbul ignore next */
 const mainTableEmpty = (): boolean => {
   return elementExists('ant-empty-image');
@@ -78,7 +96,14 @@ export const searchTableTargets = {
   searchResultsTable: new TargetObject(),
   addSelectedToCartBtn: new TargetObject(),
   saveSearchBtn: new TargetObject(),
+};
+
+export const copySearchOptionsTargets = {
+  copyMenuBtn: new TargetObject(),
   copySearchLinkBtn: new TargetObject(),
+  copyEsgpullSearchQueryBtn: new TargetObject(),
+  copyEsgpullDownloadCommandBtn: new TargetObject(),
+  copyIntakeEsgfSearchBtn: new TargetObject(),
 };
 
 export const leftSidebarTargets = {
@@ -515,9 +540,39 @@ export const createMainPageTour = (): JoyrideTour => {
       'left',
     )
     .addNextStep(
-      searchTableTargets.copySearchLinkBtn.selector(),
-      'You can also share your search with others as a specific URL by clicking this button. The button will copy the link to your clipboard for you to then paste at your convenience.',
-      'bottom-start',
+      copySearchOptionsTargets.copyMenuBtn.selector(),
+      'If you click on the copy icon, a drop-down menu will appear with various options for copying your search query into your clipboard.',
+      'left-start',
+      async () => {
+        // Open general facets
+        hoverFirstElement(copySearchOptionsTargets.copyMenuBtn.selector());
+        await delay(200);
+      },
+    )
+    .addNextStep(
+      copySearchOptionsTargets.copySearchLinkBtn.selector(),
+      'This option creates a shareable link for your search. The Metagrid URL will be copied to your clipboard for you to then paste at your convenience.',
+      'left-start',
+    )
+    .addNextStep(
+      copySearchOptionsTargets.copyEsgpullSearchQueryBtn.selector(),
+      'This option creates an esgpull search query version of your search and copies it to your clipboard. You can run the command in your shell where esgpull is installed.',
+      'left-start',
+    )
+    .addNextStep(
+      copySearchOptionsTargets.copyEsgpullDownloadCommandBtn.selector(),
+      'This option creates a simple esgpull download command to run a download. We highly recommend you review the command and test the search results beforehand with the esgpull search option first.',
+      'left-start',
+    )
+    .addNextStep(
+      copySearchOptionsTargets.copyIntakeEsgfSearchBtn.selector(),
+      'If you need an Intake ESGF search query version of your search, click this button. The python code will attempt to generate the code for a similar search and copy it to your clipboard.',
+      'left-start',
+      async () => {
+        // Open general facets
+        unHoverFirstElement('.ant-dropdown');
+        await delay(200);
+      },
     )
     .addNextStep(
       searchTableTargets.searchResultsTable.selector(),

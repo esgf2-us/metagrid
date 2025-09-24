@@ -361,6 +361,122 @@ export const getSearchFromUrl = (url?: string): ActiveSearchQuery => {
   return getAltSearchFromUrl(url);
 };
 
+export const createEsgpullCommand = (
+  searchQuery: ActiveSearchQuery,
+  downloadCmd: boolean,
+): string => {
+  const { project, versionType, resultType, activeFacets, textInputs } = searchQuery;
+
+  // Commented out values were causing KeyError during search
+  const validFacets: string[] = [
+    'activity_id',
+    'data_node',
+    'dataset_id',
+    'experiment_id',
+    'frequency',
+    'grid_label',
+    'index_node',
+    'instance_id',
+    'institution_id',
+    'master_id',
+    'member_id',
+    'mip_era',
+    'nominal_resolution',
+    'project',
+    'realm',
+    'source_id',
+    'table_id',
+    'title',
+    'url',
+    'variable',
+    'variable_id',
+    'variable_long_name',
+    'variant_label',
+  ];
+  const commandParts: string[] = [];
+
+  // Add project name
+  if (project && project.name) {
+    commandParts.push(`project:${(project as RawProject).name}`);
+  }
+
+  // Check if some facets are invalid
+  const invalidFacets: string[] = [];
+
+  // Add other search parameters
+  if (!objectIsEmpty(activeFacets)) {
+    Object.entries(activeFacets).forEach(([key, value]) => {
+      if (validFacets.includes(key) && value.length > 0) {
+        commandParts.push(`${key}:${value.join(',')}`);
+      } else {
+        invalidFacets.push(`${key}:${value.join(',')}`);
+      }
+    });
+  }
+
+  // Add text inputs
+  if (textInputs.length > 0) {
+    commandParts.push(`${JSON.stringify(textInputs)}`);
+  }
+
+  // Update result type
+  if (versionType && versionType === 'all') {
+    commandParts.push(`--latest false`);
+  } else {
+    commandParts.push(`--latest true`);
+  }
+
+  // Update result type
+  if (resultType && resultType !== 'all') {
+    if (resultType === 'originals only') {
+      commandParts.push(`--replica false`);
+    } else {
+      commandParts.push(`--replica true`);
+    }
+  }
+
+  const ignoredFacetsMsg =
+    invalidFacets.length > 0
+      ? `#${'='.repeat(79)}\n# Facets listed below WERE NOT applied (not supported in Esgpull):\n# UNAPPLIED: ${invalidFacets.join('\n# UNAPPLIED: ')}\n#${'='.repeat(79)}\n`
+      : '';
+  const pullCmd = `esgpull ${downloadCmd ? 'add' : 'search'} ${commandParts.join(' ')}`;
+
+  if (downloadCmd) {
+    return `${ignoredFacetsMsg}# Espull Download Command:\n\`${pullCmd} --track | tail -n1\`; esgpull download --disable-ssl`;
+  }
+
+  return `${ignoredFacetsMsg}# Esgpull Search Query:\n${pullCmd}`;
+}
+
+export const createIntakeEsgfSearch = (searchQuery: ActiveSearchQuery): string => {
+  const { versionType, activeFacets } = searchQuery;
+
+  const commandParts: string[] = [];
+
+  // Add other search parameters
+  if (!objectIsEmpty(activeFacets)) {
+    Object.entries(activeFacets).forEach(([key, value]) => {
+      if (value.length > 1) {
+        commandParts.push(`${key}=['${value.join("', '")}']`);
+      } else if (value.length === 1) {
+        commandParts.push(`${key}='${value[0]}'`);
+      }
+    });
+  }
+
+  // Update result type
+  if (versionType && versionType === 'all') {
+    commandParts.push(`latest=False`);
+  } else {
+    commandParts.push(`latest=True`);
+  }
+
+  const intakeHeader = 'from intake_esgf import ESGFCatalog\ncat=ESGFCatalog()\n\n';
+  const catalogCmd = `metagrid_search=cat.search(${commandParts.join(', ')})`;
+
+  return `${intakeHeader}${catalogCmd}`;
+};
+
 export const combineCarts = (
   databaseItems: RawSearchResults,
   localItems: RawSearchResults,
@@ -396,7 +512,7 @@ const convertSearchToHash = (query: UserSearchQuery): number => {
 
 export const searchAlreadyExists = (
   existingSearches: UserSearchQueries,
-  newSearch: UserSearchQuery
+  newSearch: UserSearchQuery,
 ): boolean => {
   const hashValueLocal = convertSearchToHash(newSearch);
   return existingSearches.some((search) => {
@@ -411,10 +527,10 @@ export const searchAlreadyExists = (
 
 export const unsavedLocalSearches = (
   databaseItems: UserSearchQueries,
-  localItems: UserSearchQueries
+  localItems: UserSearchQueries,
 ): UserSearchQueries => {
   const itemsNotInDatabase = localItems.filter(
-    (localSearchQuery: UserSearchQuery) => !searchAlreadyExists(databaseItems, localSearchQuery)
+    (localSearchQuery: UserSearchQuery) => !searchAlreadyExists(databaseItems, localSearchQuery),
   );
   return itemsNotInDatabase;
 };
@@ -502,7 +618,7 @@ export const getCachedPagination = (): Pagination => {
 export const cacheSearchResults = (
   fetchedResults: Record<string, unknown> | undefined,
   pagination: Pagination,
-  cachedURL: string
+  cachedURL: string,
 ): void => {
   if (fetchedResults && !Object.hasOwn(fetchedResults, 'cachedURL')) {
     saveToLocalStorage(
@@ -512,7 +628,7 @@ export const cacheSearchResults = (
         cachedURL,
         expires: Date.now() + 60 * 60 * 1000, // Expires after an hour
       },
-      true
+      true,
     );
 
     // Cache the pagination

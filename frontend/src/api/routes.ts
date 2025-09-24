@@ -31,7 +31,6 @@ type ApiRoutes = {
   keycloakAuth: ApiRoute;
   globusSearchEndpoints: ApiRoute;
   globusTransfer: ApiRoute;
-  globusLocalEndpoint: ApiRoute;
   userInfo: ApiRoute;
   userCart: ApiRoute;
   userSearches: ApiRoute;
@@ -71,10 +70,6 @@ const apiRoutes: ApiRoutes = {
   globusTransfer: {
     path: `${window.location.origin}/globus/transfer`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Globus transfer', HTTPCode),
-  },
-  globusLocalEndpoint: {
-    path: `${window.location.origin}/globus/get-local-endpoint/`,
-    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Globus get local endpoint', HTTPCode),
   },
   userInfo: {
     path: `${window.location.origin}/dj-rest-auth/user/`,

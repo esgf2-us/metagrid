@@ -26,6 +26,16 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
+beforeEach(() => {
+  Object.defineProperty(navigator, 'clipboard', {
+    value: {
+      writeText: jest.fn(),
+      readText: jest.fn(() => Promise.resolve('')), // Mock initial empty clipboard
+    },
+    writable: true,
+  });
+});
+
 describe('test Search component', () => {
   it('renders component', async () => {
     customRender(<Search {...defaultProps} />);
@@ -42,7 +52,7 @@ describe('test Search component', () => {
   it('renders Alert component if there is an error fetching results', async () => {
     server.use(
       // ESGF Search API - datasets
-      rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) => res(ctx.status(404)))
+      rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) => res(ctx.status(404))),
     );
 
     customRender(<Search {...defaultProps} />);
@@ -79,7 +89,7 @@ describe('test Search component', () => {
 
     // Check renders query string
     const queryString = await screen.findByText(
-      'latest = true AND min_version = 20200101 AND max_version = 20201231 AND (Text Input = foo) AND (foo = option1 OR option2) AND (baz = option1)'
+      'latest = true AND min_version = 20200101 AND max_version = 20201231 AND (Text Input = foo) AND (foo = option1 OR option2) AND (baz = option1)',
     );
     expect(queryString).toBeTruthy();
   });
@@ -128,15 +138,15 @@ describe('test Search component', () => {
       response: {
         docs: new Array(20)
           .fill(rawSearchResultFixture())
-          .map((obj, index) => ({ ...obj, id: `id_${index}` } as RawSearchResult)),
+          .map((obj, index) => ({ ...obj, id: `id_${index}` }) as RawSearchResult),
         numFound: 20,
       },
     };
 
     server.use(
       rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
-        res(ctx.status(200), ctx.json(response))
-      )
+        res(ctx.status(200), ctx.json(response)),
+      ),
     );
 
     customRender(<Search {...defaultProps} />);
@@ -231,9 +241,7 @@ describe('test Search component', () => {
     await screen.findByTestId('search-table');
 
     // Click on save button
-    const saveBtn = await screen.findByRole('button', {
-      name: 'book Save Search',
-    });
+    const saveBtn = await screen.findByTestId('save-search-btn');
     expect(saveBtn).toBeTruthy();
 
     await user.click(saveBtn);
@@ -253,9 +261,7 @@ describe('test Search component', () => {
     await screen.findByTestId('search-table');
 
     // Click on save button
-    const saveBtn = await screen.findByRole('button', {
-      name: 'book Save Search',
-    });
+    const saveBtn = await screen.findByTestId('save-search-btn');
     expect(saveBtn).toBeTruthy();
 
     await user.click(saveBtn);
@@ -274,11 +280,106 @@ describe('test Search component', () => {
     // Wait for search table to render
     await screen.findByTestId('search-table');
 
+    // Open copy dropdown
+    const copyDropDownIcon = await screen.findByRole('img', { name: 'copy' });
+    await userEvent.click(copyDropDownIcon);
+
     // Click on copy button
     const copyBtn = await screen.findByTestId('share-search-btn');
     expect(copyBtn).toBeTruthy();
 
     await user.click(copyBtn);
+
+    // Check clipboard content
+    const expectedSearchText =
+      'http://localhost/?project=test1&minVersionDate=20200101&maxVersionDate=20201231&filenameVars=%5B%22var%22%5D&activeFacets=%7B%22foo%22%3A%5B%22option1%22%2C%22option2%22%5D%2C%22baz%22%3A%22option1%22%7D&textInputs=%5B%22foo%22%5D';
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith(expectedSearchText);
+
+    // Wait for search component to re-render
+    await screen.findByTestId('search');
+  });
+
+  it('handles copying esgpull search query to clipboard', async () => {
+    customRender(<Search {...defaultProps} />);
+
+    // Check search component renders
+    const searchComponent = await screen.findByTestId('search');
+    expect(searchComponent).toBeTruthy();
+
+    // Wait for search table to render
+    await screen.findByTestId('search-table');
+
+    // Open copy dropdown
+    const copyDropDownIcon = await screen.findByRole('img', { name: 'copy' });
+    await userEvent.click(copyDropDownIcon);
+
+    // Click on copy button
+    const copyBtn = await screen.findByTestId('copy-esgpull-search-btn');
+    expect(copyBtn).toBeTruthy();
+
+    await user.click(copyBtn);
+
+    // Check clipboard content
+    const expectedSearchText = 'esgpull search project:test1 ["foo"] --latest true';
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith(expectedSearchText);
+
+    // Wait for search component to re-render
+    await screen.findByTestId('search');
+  });
+
+  it('handles copying esgpull download command to clipboard', async () => {
+    customRender(<Search {...defaultProps} />);
+
+    // Check search component renders
+    const searchComponent = await screen.findByTestId('search');
+    expect(searchComponent).toBeTruthy();
+
+    // Wait for search table to render
+    await screen.findByTestId('search-table');
+
+    // Open copy dropdown
+    const copyDropDownIcon = await screen.findByRole('img', { name: 'copy' });
+    await userEvent.click(copyDropDownIcon);
+
+    // Click on copy button
+    const copyBtn = await screen.findByTestId('copy-esgpull-download-btn');
+    expect(copyBtn).toBeTruthy();
+
+    await user.click(copyBtn);
+
+    // Check clipboard content
+    const expectedSearchText =
+      '`esgpull add project:test1 ["foo"] --latest true --track | tail -n1`; esgpull download --disable-ssl';
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith(expectedSearchText);
+
+    // Wait for search component to re-render
+    await screen.findByTestId('search');
+  });
+
+  it('handles copying intake search query to clipboard', async () => {
+    customRender(<Search {...defaultProps} />);
+
+    // Check search component renders
+    const searchComponent = await screen.findByTestId('search');
+    expect(searchComponent).toBeTruthy();
+
+    // Wait for search table to render
+    await screen.findByTestId('search-table');
+
+    // Open copy dropdown
+    const copyDropDownIcon = await screen.findByRole('img', { name: 'copy' });
+    await userEvent.click(copyDropDownIcon);
+
+    // Click on copy button
+    const copyBtn = await screen.findByTestId('copy-intake-search-btn');
+    expect(copyBtn).toBeTruthy();
+
+    await user.click(copyBtn);
+
+    // Check clipboard content
+    const expectedSearchText =
+      "from intake_esgf import ESGFCatalog\ncat=ESGFCatalog()\n\nmetagrid_search=cat.search(foo=['option1', 'option2'], baz='option1', latest=True)";
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith(expectedSearchText);
 
     // Wait for search component to re-render
     await screen.findByTestId('search');
@@ -331,10 +432,10 @@ describe('test stringifyFilters()', () => {
       minVersionDate,
       maxVersionDate,
       activeFacets,
-      textInputs
+      textInputs,
     );
     expect(strFilters).toEqual(
-      'latest = true AND replica = false AND min_version = 20200101 AND max_version = 20201231 AND (Text Input = foo OR bar) AND (facet_1 = option1 OR option2) AND (facet_2 = option1 OR option2)'
+      'latest = true AND replica = false AND min_version = 20200101 AND max_version = 20201231 AND (Text Input = foo OR bar) AND (facet_1 = option1 OR option2) AND (facet_2 = option1 OR option2)',
     );
   });
   it('generates output w/o textInputs', () => {
@@ -344,10 +445,10 @@ describe('test stringifyFilters()', () => {
       minVersionDate,
       maxVersionDate,
       activeFacets,
-      []
+      [],
     );
     expect(strFilters).toEqual(
-      'latest = true AND replica = false AND min_version = 20200101 AND max_version = 20201231 AND (facet_1 = option1 OR option2) AND (facet_2 = option1 OR option2)'
+      'latest = true AND replica = false AND min_version = 20200101 AND max_version = 20201231 AND (facet_1 = option1 OR option2) AND (facet_2 = option1 OR option2)',
     );
   });
   it('generates output w/o activeFacets', () => {
@@ -357,10 +458,10 @@ describe('test stringifyFilters()', () => {
       minVersionDate,
       maxVersionDate,
       {},
-      textInputs
+      textInputs,
     );
     expect(strFilters).toEqual(
-      'latest = true AND replica = false AND min_version = 20200101 AND max_version = 20201231 AND (Text Input = foo OR bar)'
+      'latest = true AND replica = false AND min_version = 20200101 AND max_version = 20201231 AND (Text Input = foo OR bar)',
     );
   });
   it('generates output w/o version type', () => {
@@ -370,10 +471,10 @@ describe('test stringifyFilters()', () => {
       minVersionDate,
       maxVersionDate,
       {},
-      textInputs
+      textInputs,
     );
     expect(strFilters).toEqual(
-      'replica = false AND min_version = 20200101 AND max_version = 20201231 AND (Text Input = foo OR bar)'
+      'replica = false AND min_version = 20200101 AND max_version = 20201231 AND (Text Input = foo OR bar)',
     );
   });
 });
