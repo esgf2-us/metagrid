@@ -361,11 +361,22 @@ export const getSearchFromUrl = (url?: string): ActiveSearchQuery => {
   return getAltSearchFromUrl(url);
 };
 
-export const createEsgpullCommand = (
-  searchQuery: ActiveSearchQuery,
+export function createEsgpullCommand(
+  searchQuery: ActiveSearchQuery | Record<string, unknown>,
   downloadCmd: boolean,
-): string => {
-  const { project, versionType, resultType, activeFacets, textInputs } = searchQuery;
+  datasetId?: string,
+): string {
+  // If it's a single dataset, just use dataset_id
+  if (datasetId && datasetId !== '') {
+    return `# Esgpull Dataset Download Command:\n\`esgpull add master_id:'"${datasetId}"' --track | tail -n1\`; esgpull download --disable-ssl`;
+  }
+
+  if (objectIsEmpty(searchQuery)) {
+    return '';
+  }
+
+  const { project, versionType, resultType, activeFacets, textInputs } =
+    searchQuery as ActiveSearchQuery;
 
   // Commented out values were causing KeyError during search
   const validFacets: string[] = [
@@ -397,7 +408,7 @@ export const createEsgpullCommand = (
 
   // Add project name
   if (project && project.name) {
-    commandParts.push(`project:${(project as RawProject).name}`);
+    commandParts.push(`project:'"${(project as RawProject).name}"'`);
   }
 
   // Check if some facets are invalid
@@ -407,9 +418,9 @@ export const createEsgpullCommand = (
   if (!objectIsEmpty(activeFacets)) {
     Object.entries(activeFacets).forEach(([key, value]) => {
       if (validFacets.includes(key) && value.length > 0) {
-        commandParts.push(`${key}:${value.join(',')}`);
+        commandParts.push(`${key}:'"${value.join(',')}"'`);
       } else {
-        invalidFacets.push(`${key}:${value.join(',')}`);
+        invalidFacets.push(`${key}:'"${value.join(',')}"'`);
       }
     });
   }
@@ -420,9 +431,7 @@ export const createEsgpullCommand = (
   }
 
   // Update result type
-  if (versionType && versionType === 'all') {
-    commandParts.push(`--latest false`);
-  } else {
+  if (versionType && versionType === 'latest') {
     commandParts.push(`--latest true`);
   }
 
