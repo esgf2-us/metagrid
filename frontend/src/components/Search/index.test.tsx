@@ -320,7 +320,13 @@ describe('test Search component', () => {
     await user.click(copyBtn);
 
     // Check clipboard content
-    const expectedSearchText = 'esgpull search project:test1 ["foo"] --latest true';
+    const expectedSearchText = `#===============================================================================
+# Facets listed below WERE NOT applied (not supported in Esgpull):
+# UNAPPLIED: foo:'\"option1,option2\"'
+# UNAPPLIED: baz:'\"option1\"'
+#===============================================================================
+# Esgpull Search Query:
+esgpull search project:'\"test1\"' [\"foo\"] --latest true`;
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith(expectedSearchText);
 
     // Wait for search component to re-render
@@ -348,8 +354,13 @@ describe('test Search component', () => {
     await user.click(copyBtn);
 
     // Check clipboard content
-    const expectedSearchText =
-      '`esgpull add project:test1 ["foo"] --latest true --track | tail -n1`; esgpull download --disable-ssl';
+    const expectedSearchText = `#===============================================================================
+# Facets listed below WERE NOT applied (not supported in Esgpull):
+# UNAPPLIED: foo:'\"option1,option2\"'
+# UNAPPLIED: baz:'\"option1\"'
+#===============================================================================
+# Espull Download Command:
+\`esgpull add project:'\"test1\"' [\"foo\"] --latest true --track | tail -n1\`; esgpull download --disable-ssl`;
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith(expectedSearchText);
 
     // Wait for search component to re-render

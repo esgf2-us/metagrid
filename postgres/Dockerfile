@@ -1,4 +1,4 @@
-FROM postgres:16
+FROM postgres:16-alpine
 
 COPY ./maintenance /usr/local/bin/maintenance
 RUN chmod +x /usr/local/bin/maintenance/*
