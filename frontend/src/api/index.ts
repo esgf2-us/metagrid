@@ -510,14 +510,6 @@ Promise<{ [key: string]: any }> => {
 
   const filter = convertSearchParamsIntoStacFilter(reqUrlStr, projectName);
 
-  // const facetSummary = await fetchSTACFacets(projectName)
-  //   .then((res) => {
-  //     return res;
-  //   })
-  //   .catch((error: ResponseError) => {
-  //     status = error.cause === 422 ? 422 : 500;
-  //   });
-
   const aggregations = await fetchSTACAggregations(projectName, filter)
     .then((res) => {
       return res;

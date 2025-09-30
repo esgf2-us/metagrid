@@ -426,10 +426,10 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       }
     } else if (results.response) {
       numFound = (results as LoadedResults).response.numFound;
-      docs = (results as LoadedResults).response.docs;
-      docs.forEach((doc) => {
-        doc.isStac = false;
-      });
+      docs = (results as LoadedResults).response.docs.map((doc) => ({
+        ...doc,
+        isStac: false,
+      }));
     }
   }
 
