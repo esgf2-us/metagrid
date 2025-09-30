@@ -97,15 +97,6 @@ def fetch_stac_facets(request):
 @require_http_methods(["POST"])
 @csrf_exempt
 def fetch_stac_aggregations(request):
-    # jo = {}
-    # try:
-    #     jo = json.loads(request.body)
-    # except Exception:  # pragma: no cover
-    #     return HttpResponseBadRequest()
-
-    # print("JSON Object:\n")
-    # print(jo)
-
     try:
         summaries = do_post(request, settings.STAC_URL + "/aggregate")
     except Exception as e:  # pragma: no cover
@@ -133,11 +124,13 @@ def do_citation(request):
     url = jo["citurl"]
     parsed_url = urlparse(url)
 
-
-    if not (parsed_url.hostname in  ["cera-www.dkrz.de", "raw.githubusercontent.com"]):
+    if not (
+        parsed_url.hostname
+        in ["cera-www.dkrz.de", "raw.githubusercontent.com"]
+    ):
         print(f"ERROR hostname {parsed_url.hostname} not in whitelist")
         return HttpResponseBadRequest()
-        
+
     try:
         resp = requests.get(url, verify=False)
     except Exception as e:  # pragma: no cover

@@ -16,7 +16,7 @@ import {
   UserSearchQueries,
   UserSearchQuery,
 } from '../components/Cart/types';
-import { ActiveFacets, RawFacets, RawProject, RawProjects } from '../components/Facets/types';
+import { ActiveFacets, RawProject, RawProjects } from '../components/Facets/types';
 import { NodeStatusArray, RawNodeStatus } from '../components/NodeStatus/types';
 import {
   ActiveSearchQuery,
@@ -470,17 +470,6 @@ export const postSTACSearch = async (
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearchSTAC));
     });
 };
-
-// const fetchSTACFacets = async (projectId: string): Promise<{ summaries: RawFacets }> => {
-//   return axios
-//     .get(`${apiRoutes.esgfFacetsSTAC.path}?project_id=${projectId}`)
-//     .then((res) => {
-//       return res.data;
-//     })
-//     .catch((error: ResponseError) => {
-//       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearchSTAC));
-//     });
-// };
 
 const fetchSTACAggregations = async (
   projectId: string,

@@ -22,7 +22,7 @@
 #### `METAGRID_WGET_URL`
 
 > !!! example "**Required**"
-> The URL at which the ESG-Search wget endpoint can be reached.
+>     The URL at which the ESG-Search wget endpoint can be reached.
 >
 >     __Example Values__
 >
@@ -30,8 +30,8 @@
 
 #### `METAGRID_KEYCLOAK_CLIENT_ID`
 
-> !!! example "_Optional_"
-> **Default:** `metagrid-localhost`
+> !!! example "*Optional*"
+>     __Default:__ `metagrid-localhost`
 >
 >     Used in data migration to register Keycloak social app
 >
@@ -41,9 +41,9 @@
 
 #### `METAGRID_ADMIN_URL`
 
-> !!! example "_Optional_"
-> The default URL for the Django administration interface is `/admin`. This is a well-known fact and attackers will try to access this URL on your site. The solution is to change the URL of the administration interface. If not set, a random secure path will be generated using `secrets.token_urlsafe()` and can be retrieved using a command similar to the following:
-> `docker compose -f docker-compose.yml -f docker-compose.SITENAME-overlay.yml run --rm django python manage.py get_setting ADMIN_URL`
+> !!! example "*Optional*"
+>     The default URL for the Django administration interface is `/admin`. This is a well-known fact and attackers will try to access this URL on your site. The solution is to change the URL of the administration interface. If not set, a random secure path will be generated using `secrets.token_urlsafe()` and can be retrieved using a command similar to the following:
+>     `docker compose -f docker-compose.yml -f docker-compose.SITENAME-overlay.yml run --rm django python manage.py get_setting ADMIN_URL`
 
 >     !!! warning "Note"
 >         This path will change each time the backend is restarted.
@@ -54,8 +54,8 @@
 
 #### `METAGRID_ADMINS`
 
-> !!! example "_Optional_"
-> **Default:** `[]`
+> !!! example "*Optional*"
+>     __Default:__ `[]`
 >
 >     A list of all the people who get code error notifications. When `DEBUG=False` and `AdminEmailHandler` is configured in `LOGGING` (done by default), Django emails these people the details of exceptions raised in the request/response cycle. Each item in the list should be a tuple of (Full name, email address). Reference: <https://docs.djangoproject.com/en/5.1/ref/settings/#admins>
 >
@@ -66,7 +66,7 @@
 #### `METAGRID_SOCIAL_AUTH_GLOBUS_KEY`
 
 > !!! example "**Required**"
-> The `Client UUID` obtained by registering a `portal, science gateway, or other application you host` with Globus at <https://app.globus.org/settings/developers>
+>     The `Client UUID` obtained by registering a `portal, science gateway, or other application you host` with Globus at <https://app.globus.org/settings/developers>
 >
 >     __Example Values__
 >
@@ -75,29 +75,36 @@
 #### `METAGRID_SOCIAL_AUTH_GLOBUS_SECRET`
 
 > !!! example "**Required**"
-> A `Client Secret` associated with the Client UUID created for `SOCIAL_AUTH_GLOBUS_KEY` at https://app.globus.org/settings/developers
+>     A `Client Secret` associated with the Client UUID created for `SOCIAL_AUTH_GLOBUS_KEY` at https://app.globus.org/settings/developers
 >
 >     __Example Values__
 >
 >     `6aWj3gBYsxUBO++cSXtPzbl4n/sGJdhAmtn70XRoUMA=`
-
 <!-- end generated backend settings markdown -->
 <!-- start generated frontend settings markdown -->
-
 #### `METAGRID_AUTHENTICATION_METHOD`
 
-> !!! example "_Optional_"
-> **Default:** `globus`
+> !!! example "*Optional*"
+>     __Default:__ `globus`
 >
 >     Which authentication method to enable for user sign in on the frontend.
 
 >     __Possible values__
 >     `keycloak`, `globus`
 
+#### `METAGRID_SEARCH_URL`
+
+> !!! example "**Required**"
+>     The URL at which the ESG-Search api can be queried. A suitable endpoint will return XML in the browser.
+>
+>     __Example Values__
+>
+>     `https://esgf-node.ornl.gov/esgf-1-5-bridge`
+
 #### `METAGRID_BANNER_TEXT`
 
-> !!! example "_Optional_"
-> **Default:** `None`
+> !!! example "*Optional*"
+>     __Default:__ `None`
 >
 >     Text to display as a banner above the main body. Useful for providing maintenance notices or important news. The banner will be hidden permanently if the user clicks the close button.
 >
@@ -107,15 +114,15 @@
 
 #### `METAGRID_FOOTER_TEXT`
 
-> !!! example "_Optional_"
-> **Default:** ``
+> !!! example "*Optional*"
+>     __Default:__ ``
 >
 >     Text to display in the footer of the frontend. Useful for adding a link to the terms of service or other legal information. The string should be formatted as MarkDown and will be rendered as such.
 
 #### `METAGRID_STATUS_URL`
 
-> !!! example "_Optional_"
-> **Default:** `None`
+> !!! example "*Optional*"
+>     __Default:__ `None`
 >
 >     The URL at which the backend can reach the Node Status API.
 >
@@ -125,15 +132,15 @@
 
 #### `METAGRID_GLOBUS_NODES`
 
-> !!! example "_Optional_"
-> **Default:** `['aims3.llnl.gov', 'esgf-data1.llnl.gov', 'esgf-data2.llnl.gov', 'esgf-node.ornl.gov', 'eagle.alcf.anl.gov']`
+> !!! example "*Optional*"
+>     __Default:__ `['aims3.llnl.gov', 'esgf-data1.llnl.gov', 'esgf-data2.llnl.gov', 'esgf-node.ornl.gov', 'eagle.alcf.anl.gov']`
 >
 >     The list of data nodes known to be Globus enabled. A data node must be in this list in order to transfer files from it via Globus.
 
 #### `METAGRID_KEYCLOAK_REALM`
 
-> !!! example "_Optional_"
-> **Default:** `None`
+> !!! example "*Optional*"
+>     __Default:__ `None`
 >
 >     The Keycloak realm to use for authentication.
 >
@@ -143,8 +150,8 @@
 
 #### `METAGRID_KEYCLOAK_URL`
 
-> !!! example "_Optional_"
-> **Default:** `None`
+> !!! example "*Optional*"
+>     __Default:__ `None`
 >
 >     The URL of the Keycloak server.
 >
@@ -154,8 +161,8 @@
 
 #### `METAGRID_KEYCLOAK_CLIENT_ID`
 
-> !!! example "_Optional_"
-> **Default:** ``
+> !!! example "*Optional*"
+>     __Default:__ ``
 >
 >     The Keycloak client ID to use for authentication.
 >
@@ -165,8 +172,8 @@
 
 #### `METAGRID_HOTJAR_ID`
 
-> !!! example "_Optional_"
-> **Default:** `None`
+> !!! example "*Optional*"
+>     __Default:__ `None`
 >
 >     The Hotjar ID for tracking user interactions.
 >
@@ -176,8 +183,8 @@
 
 #### `METAGRID_HOTJAR_SV`
 
-> !!! example "_Optional_"
-> **Default:** `None`
+> !!! example "*Optional*"
+>     __Default:__ `None`
 >
 >     The Hotjar SV for tracking user interactions.
 >
@@ -187,13 +194,12 @@
 
 #### `METAGRID_GOOGLE_ANALYTICS_TRACKING_ID`
 
-> !!! example "_Optional_"
-> **Default:** `None`
+> !!! example "*Optional*"
+>     __Default:__ `None`
 >
 >     The Google Analytics tracking ID for tracking user interactions.
 >
 >     __Example Values__
 >
 >     `UA-12345678-1`
-
 <!-- end generated frontend settings markdown -->

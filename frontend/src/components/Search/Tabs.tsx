@@ -207,13 +207,21 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
   });
 
   const showCitation = record.citation_url !== undefined && record.citation_url.length > 0;
-  const showESDOC =
+  const furtherInfoUrl =
+    record && record.further_info_url && record.further_info_url.length > 0
+      ? record.further_info_url[0]
+      : '';
+  const propertiesFurtherInfoUrl =
     record &&
-    record.properties?.['cmip6:further_info_url'] !== undefined &&
-    record.properties['cmip6:further_info_url'] !== '';
+    record.properties &&
+    record.properties['cmip6:further_info_url'] &&
+    record.properties['cmip6:further_info_url'] !== ''
+      ? (record.properties['cmip6:further_info_url'] as string)
+      : '';
+  const showESDOC = furtherInfoUrl || propertiesFurtherInfoUrl;
   const showQualityFlags = Object.keys(qualityFlags).length > 0;
   const showAdditionalLinks = urlCount > 0;
-  const showAdditionalTab = showESDOC || showQualityFlags || showAdditionalLinks;
+  const showAdditionalTab = showESDOC !== '' || showQualityFlags || showAdditionalLinks;
 
   const tabList = [
     {
@@ -283,11 +291,11 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
       children: (
         <>
           {showAdditionalLinks && additionalLinks}
-          {showESDOC && (record.further_info_url as unknown as string)[0] !== '' && (
+          {showESDOC !== '' && (
             <Button
               type="link"
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              href={record.properties!['cmip6:further_info_url'] as string}
+              href={showESDOC}
               target="_blank"
             >
               ES-DOC

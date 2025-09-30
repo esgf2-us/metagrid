@@ -1,4 +1,5 @@
 import {
+  CodeOutlined,
   DatabaseTwoTone,
   DownCircleOutlined,
   DownloadOutlined,
@@ -15,6 +16,7 @@ import { useAtomValue } from 'jotai';
 import stacIcon from '../../assets/img/STAC-favicon.png';
 import { fetchWgetScript, ResponseError } from '../../api';
 import {
+  createEsgpullCommand,
   formatBytes,
   getCachedPagination,
   getCurrentAppPage,
@@ -78,11 +80,11 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
   const showStatus = window.METAGRID.STATUS_URL !== null;
 
   // Add options to this constant as needed
-  type DatasetDownloadTypes = 'wget' | 'Globus';
+  type DatasetDownloadTypes = 'wget' | 'Globus' | 'esgpull';
 
   // If a record supports downloads from the allowed downloads, it will render
   // in the drop downs
-  const allowedDownloadTypes: DatasetDownloadTypes[] = ['wget'];
+  const allowedDownloadTypes: DatasetDownloadTypes[] = ['wget', 'esgpull'];
 
   const handleChange: OnChange = (pagination, filters, sorter) => {
     setSortedInfo(sorter as Sorts);
@@ -355,6 +357,18 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
               .catch((error: ResponseError) => {
                 showError(messageApi, error.message);
               });
+          } else if (downloadType === 'esgpull' && record.id) {
+            if (navigator && navigator.clipboard && typeof record.master_id === 'string') {
+              navigator.clipboard
+                .writeText(createEsgpullCommand({}, true, record.master_id))
+                .then(() => {
+                  showNotice(messageApi, 'Esgpull download dataset command copied to clipboard!', {
+                    duration: 3,
+                    type: 'success',
+                    icon: <CodeOutlined />,
+                  });
+                });
+            }
           }
         };
 
