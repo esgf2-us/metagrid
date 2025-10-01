@@ -217,5 +217,5 @@ export const convertSearchParamsIntoStacFilter = (
     return createEqualsFilter(mappedParam, values[0]);
   }
 
-  return { op: '=', args: [{ property: 'properties.retracted' }, false] };
+  return undefined;
 };
