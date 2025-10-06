@@ -6,7 +6,7 @@ To view the latest documentation and FAQ, please visit this page:
 ## Pyesgf package deprecation
 
 The ESGF-Pyclient (pyesgf) package is no longer supported and not compatible with the US index going forward (see the item below).
-We recommed that users migrate to using the `esgpull` CLI or `intake-esgf` Python package.  Improved integration with these packges is coming soon.
+We recommed that users migrate to using the `esgpull` CLI or `intake-esgf` Python package. Improved integration with these packges is coming soon.
 
 ## Changes to US Index search results
 
