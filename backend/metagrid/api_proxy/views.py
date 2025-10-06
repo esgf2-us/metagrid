@@ -94,11 +94,13 @@ def do_citation(request):
     url = jo["citurl"]
     parsed_url = urlparse(url)
 
-
-    if not (parsed_url.hostname in  ["cera-www.dkrz.de", "raw.githubusercontent.com"]):
+    if not (
+        parsed_url.hostname
+        in ["cera-www.dkrz.de", "raw.githubusercontent.com"]
+    ):
         print(f"ERROR hostname {parsed_url.hostname} not in whitelist")
         return HttpResponseBadRequest()
-        
+
     try:
         resp = requests.get(url, verify=False)
     except Exception as e:  # pragma: no cover
