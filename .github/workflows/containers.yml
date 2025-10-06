@@ -100,6 +100,7 @@ jobs:
         helm install test . \
           --set frontend.image.tag=pr-${PR_NUMBER} \
           --set backend.image.tag=pr-${PR_NUMBER} \
-          --wait
+          --wait \
+          --timeout 10m
 
         kubectl get pods
