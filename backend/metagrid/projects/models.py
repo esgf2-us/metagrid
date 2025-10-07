@@ -77,7 +77,7 @@ class Project(models.Model):
         For example, input4MIPs uses 'activity_id' instead of 'project'
         """
         project_params = {
-            "E3SM": {"project": self.name.lower()},
+            "CMIP6-E3SM-Ext": {"project": "e3sm"},
             "All (except CMIP6)": {"project!": "CMIP6"},
             "input4MIPs": {"activity_id": self.name},
             "obs4MIPs": {"activity_id": self.name},

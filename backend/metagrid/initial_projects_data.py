@@ -138,7 +138,7 @@ projects = [
         },
     },
     {
-        "name": "E3SM",
+        "name": "CMIP6-E3SM-Ext",
         "full_name": "Energy Exascale Earth System Model",
         "project_url": "https://e3sm.org/",
         "description": (
