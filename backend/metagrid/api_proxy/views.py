@@ -81,6 +81,10 @@ def do_search(request):
 @csrf_exempt
 def do_stac_search(request):
     print("STAC Search Request:", request.method, request.body)
+
+    if settings.STAC_URL is None:
+        return HttpResponseBadRequest("STAC URL not configured.")
+
     return do_post(request, settings.STAC_URL + "/search")
 
 
@@ -88,6 +92,10 @@ def do_stac_search(request):
 @csrf_exempt
 def fetch_stac_facets(request):
     project_id = request.GET.get("project_id", "CMIP6")
+
+    if settings.STAC_URL is None:
+        return HttpResponseBadRequest("STAC URL not configured.")
+
     return do_request(
         request,
         settings.STAC_URL + "/collections/" + project_id,
@@ -97,6 +105,9 @@ def fetch_stac_facets(request):
 @require_http_methods(["POST"])
 @csrf_exempt
 def fetch_stac_aggregations(request):
+    if settings.STAC_URL is None:
+        return HttpResponseBadRequest("STAC URL not configured.")
+
     try:
         summaries = do_post(request, settings.STAC_URL + "/aggregate")
     except Exception as e:  # pragma: no cover

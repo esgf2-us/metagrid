@@ -12,8 +12,10 @@
 
 #### `METAGRID_STAC_URL`
 
-> !!! example "**Required**"
->     The STAC URL at which the ESG-Search api can be queried. A suitable endpoint will return JSON in the browser.
+> !!! example "*Optional*"
+>     __Default:__ `None`
+>
+>     (Optional) The STAC URL at which the ESG-Search api can be queried. A suitable endpoint will return JSON in the browser.
 >
 >     __Example Values__
 >
@@ -101,12 +103,23 @@
 >
 >     `https://esgf-node.ornl.gov/esgf-1-5-bridge`
 
+#### `METAGRID_STAC_URL`
+
+> !!! example "*Optional*"
+>     __Default:__ `None`
+>
+>     (Optional) The STAC URL at which the ESG-Search api can be queried. A suitable endpoint will return JSON in the browser.
+>
+>     __Example Values__
+>
+>     `https://api.stac.esgf-west.org/`
+
 #### `METAGRID_BANNER_TEXT`
 
 > !!! example "*Optional*"
 >     __Default:__ `None`
 >
->     Text to display as a banner above the main body. Useful for providing maintenance notices or important news. The banner will be hidden permanently if the user clicks the close button.
+>     (Optional) Text to display as a banner above the main body. Useful for providing maintenance notices or important news. The banner will be hidden permanently if the user clicks the close button.
 >
 >     __Example Values__
 >
@@ -124,7 +137,7 @@
 > !!! example "*Optional*"
 >     __Default:__ `None`
 >
->     The URL at which the backend can reach the Node Status API.
+>     (Optional) The URL at which the backend can reach the Node Status API.
 >
 >     __Example Values__
 >
@@ -142,7 +155,7 @@
 > !!! example "*Optional*"
 >     __Default:__ `None`
 >
->     The Keycloak realm to use for authentication.
+>     (Optional) The Keycloak realm to use for authentication.
 >
 >     __Example Values__
 >
@@ -164,7 +177,7 @@
 > !!! example "*Optional*"
 >     __Default:__ ``
 >
->     The Keycloak client ID to use for authentication.
+>     (Optional) The Keycloak client ID to use for authentication.
 >
 >     __Example Values__
 >
@@ -175,7 +188,7 @@
 > !!! example "*Optional*"
 >     __Default:__ `None`
 >
->     The Hotjar ID for tracking user interactions.
+>     (Optional) The Hotjar ID for tracking user interactions.
 >
 >     __Example Values__
 >
@@ -186,7 +199,7 @@
 > !!! example "*Optional*"
 >     __Default:__ `None`
 >
->     The Hotjar SV for tracking user interactions.
+>     (Optional) The Hotjar SV for tracking user interactions.
 >
 >     __Example Values__
 >
@@ -197,7 +210,7 @@
 > !!! example "*Optional*"
 >     __Default:__ `None`
 >
->     The Google Analytics tracking ID for tracking user interactions.
+>     (Optional) The Google Analytics tracking ID for tracking user interactions.
 >
 >     __Example Values__
 >
