@@ -341,13 +341,18 @@ export const fetchProjects = async (): Promise<{
         [key: string]: any;
       };
 
+      const additionalProjects = window.METAGRID.STAC_URL ? STAC_PROJECTS : [];
+
       if (data.results) {
         return {
           ...res,
-          results: [...data.results, ...STAC_PROJECTS],
+          results: [
+            ...data.results.filter((p) => p.name !== 'All (except CMIP6)'),
+            ...additionalProjects,
+          ],
         };
       }
-      return { ...res, results: STAC_PROJECTS };
+      return { ...res, results: additionalProjects };
     })
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.projects));
