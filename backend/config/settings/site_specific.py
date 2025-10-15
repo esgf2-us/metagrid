@@ -79,9 +79,9 @@ class MetagridFrontendSettings(BaseSettings):
         case_sensitive=True,
     )
 
-    AUTHENTICATION_METHOD: Literal["keycloak", "globus"] = Field(
-        default="globus",
-        description="Which authentication method to enable for user sign in on the frontend.",
+    AUTHENTICATION_METHOD: Literal["keycloak", "globus", "none"] = Field(
+        default="none",
+        description="Which authentication method to enable for user sign in on the frontend or 'none' for no sign-in.",
     )
 
     SEARCH_URL: str = Field(

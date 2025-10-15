@@ -27,6 +27,7 @@ import {
 } from '.';
 import { STAC_PROJECTS } from '../common/STAC';
 import { ActiveSearchQuery, Pagination, RawCitation, ResultType } from '../components/Search/types';
+import { mockConfig } from '../test/jestTestFunctions';
 import {
   activeSearchQueryFixture,
   ESGFSearchAPIFixture,
@@ -109,9 +110,18 @@ describe('test fetching user info', () => {
 });
 
 describe('test fetching projects', () => {
-  it('returns projects', async () => {
+  it('returns projects including STAC projects', async () => {
     const projects = (await fetchProjects()).results;
+
     expect(projects).toEqual([...projectsFixture(), ...STAC_PROJECTS]);
+  });
+
+  it('returns projects without including STAC projects', async () => {
+    // Set STAC URL to empty string to not include STAC projects
+    mockConfig.STAC_URL = null;
+    const projects = (await fetchProjects()).results;
+
+    expect(projects).toEqual([...projectsFixture()]);
   });
 
   it('catches and throws an error based on HTTP status code', async () => {

@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { ReactKeycloakProvider } from '@react-keycloak/web';
 import { BrowserRouter } from 'react-router';
 import ReactGA from 'react-ga4';
-import Keycloak from 'keycloak-js';
+import Keycloak, { KeycloakInitOptions } from 'keycloak-js';
 import { Provider } from 'jotai';
 import { getSearchFromUrl } from './common/utils';
 import App from './components/App/App';
@@ -49,9 +49,10 @@ fetch('/frontend-config.js')
         clientId: window.METAGRID.KEYCLOAK_CLIENT_ID,
       });
 
-      const keycloakProviderInitConfig = {
+      const keycloakProviderInitConfig: KeycloakInitOptions = {
         onLoad: 'check-sso',
         flow: 'standard',
+        checkLoginIframe: false,
       };
 
       root.render(

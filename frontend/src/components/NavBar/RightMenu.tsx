@@ -125,7 +125,11 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
 
   type MenuItem = Required<MenuProps>['items'][number];
 
-  function getSignInItem(): MenuItem {
+  function getSignInItem(): MenuItem | null {
+    if (window.METAGRID.AUTHENTICATION_METHOD === 'none') {
+      return null;
+    }
+
     if (authenticated) {
       return {
         key: 'greeting',

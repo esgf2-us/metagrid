@@ -87,12 +87,12 @@
 #### `METAGRID_AUTHENTICATION_METHOD`
 
 > !!! example "*Optional*"
->     __Default:__ `globus`
+>     __Default:__ `none`
 >
->     Which authentication method to enable for user sign in on the frontend.
+>     Which authentication method to enable for user sign in on the frontend or 'none' for no sign-in.
 
 >     __Possible values__
->     `keycloak`, `globus`
+>     `keycloak`, `globus`, `none`
 
 #### `METAGRID_SEARCH_URL`
 
