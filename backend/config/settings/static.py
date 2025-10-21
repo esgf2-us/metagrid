@@ -2,19 +2,28 @@ from datetime import timedelta
 from typing import Any, Optional, Sequence
 
 import environ
-from pydantic import Field
+from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 ROOT_DIR = (
     environ.Path(__file__) - 3
 )  # (config/settings/django.py - 3 = metagrid/)
 
+class DatabaseSettings(BaseModel):
+    ENGINE: str = Field(default="django.db.backends.postgresql", frozen=True)
+    NAME: str = Field(default="postgres", frozen=True)
+    ATOMIC_REQUESTS: bool = Field(default=True, frozen=True)
+    DATABASE_URL: str = "pgsql:///postgres"
+
+class DefaultDatabaseSettings(BaseModel):
+    default: DatabaseSettings = DatabaseSettings()
 
 class DjangoStaticSettings(BaseSettings):
     """Django settings that do not vary by site"""
 
     model_config = SettingsConfigDict(
         env_prefix="DJANGO_",
+        env_nested_delimiter="__",
         case_sensitive=True,
     )
 
@@ -88,14 +97,7 @@ class DjangoStaticSettings(BaseSettings):
     EMAIL_TIMEOUT: int = 5
 
     CORS_ORIGIN_ALLOW_ALL: bool = True
-    DATABASES: dict[str, dict[str, Any]] = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": "postgres",
-            "ATOMIC_REQUESTS": True,
-            "DATABASE_URL": "pgsql:///postgres",
-        }
-    }
+    DATABASES: DefaultDatabaseSettings = DefaultDatabaseSettings()
     STATIC_ROOT: str = ROOT_DIR("staticfiles")
     # https://docs.djangoproject.com/en/dev/ref/settings/#static-url
     STATIC_URL: str = "/static/"
