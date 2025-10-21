@@ -25,7 +25,7 @@ services:
 
 ### Bring up the stack
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.SITENAME-overlay.yml up
+docker compose -f docker-compose.yml -f docker-compose.SITENAME-overlay.yml up --build
 ```
 
 ### Run Django migrations
