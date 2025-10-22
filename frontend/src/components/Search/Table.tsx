@@ -79,6 +79,8 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
 
   const showStatus = window.METAGRID.STATUS_URL !== null;
 
+  const stacDisabled = window.METAGRID.STAC_URL === '' || window.METAGRID.STAC_URL === null;
+
   // Add options to this constant as needed
   type DatasetDownloadTypes = 'wget' | 'Globus' | 'esgpull';
 
@@ -101,6 +103,8 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
 
   // Clamp the results count to a maximum of 10,000
   const clampedResultCount = totalResults ? Math.min(totalResults, MAX_RESULTS) : undefined;
+
+  const filteredResults = results.filter((result) => !result.isStac || !stacDisabled);
 
   const tableConfig = {
     size: 'small' as SizeType,
@@ -174,7 +178,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
           (userCart.some((item) => item.id === record.id) || record.retracted === true),
       }),
     },
-    hasData: results.length > 0,
+    hasData: filteredResults.length > 0,
   };
 
   const columns: TableColumnsType<RawSearchResult> = [
@@ -440,7 +444,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
     <TableD
       {...tableConfig}
       columns={columns}
-      dataSource={results}
+      dataSource={filteredResults}
       onChange={handleChange}
       rowKey="id"
       size="small"

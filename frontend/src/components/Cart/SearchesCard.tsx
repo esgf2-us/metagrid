@@ -188,6 +188,8 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
               maxVersionDate,
               activeFacets,
               textInputs,
+              project.isSTAC,
+              url,
             )}
           </Typography.Text>
         </p>
