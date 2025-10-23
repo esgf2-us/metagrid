@@ -38,7 +38,6 @@ type ApiRoutes = {
   projects: ApiRoute;
   esgfSearch: ApiRoute;
   esgfSearchSTAC: ApiRoute;
-  esgfFacetsSTAC: ApiRoute;
   esgfAggregationsSTAC: ApiRoute;
   citation: ApiRoute;
   wget: ApiRoute;
@@ -103,11 +102,6 @@ const apiRoutes: ApiRoutes = {
   esgfSearchSTAC: {
     path: `${window.location.origin}/proxy/stac/search`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('ESGF STAC Search API', HTTPCode),
-  },
-  // ESGF STAC Facets
-  esgfFacetsSTAC: {
-    path: `${window.location.origin}/proxy/stac/facets`,
-    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('ESGF STAC Facets API', HTTPCode),
   },
   // ESGF STAC Aggregations
   esgfAggregationsSTAC: {

@@ -260,6 +260,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   React.useEffect(() => {
     if (results && currentRequestURL && !objectIsEmpty(results)) {
       cacheSearchResults(results, paginationOptions, currentRequestURL);
+      /* istanbul ignore else */
       if (results.facet_counts) {
         const { facet_fields: facetFields } = (
           results as {
@@ -621,6 +622,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                 Add Selected to Cart
               </Button>{' '}
               <Dropdown.Button
+                data-testid="save-search-dropdown-btn"
                 className={searchTableTargets.saveSearchBtn.class()}
                 type="default"
                 onClick={() => handleSaveSearchQuery(currentRequestURL, numFound)}

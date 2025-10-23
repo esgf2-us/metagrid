@@ -5,9 +5,15 @@ import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import FilesTable, { DownloadUrls, genDownloadUrls, Props } from './FilesTable';
 import customRender from '../../test/custom-render';
-import { ESGFSearchAPIFixture, rawSearchResultFixture } from '../../test/mock/fixtures';
+import {
+  ESGFSearchAPIFixture,
+  rawProjectFixture,
+  rawSearchResultFixture,
+  rawStacAssetFixture,
+} from '../../test/mock/fixtures';
 import { RawSearchResult, RawSearchResults } from './types';
-import { openDropdownList } from '../../test/jestTestFunctions';
+import { AtomWrapper, openDropdownList } from '../../test/jestTestFunctions';
+import { AppStateKeys } from '../../common/atoms';
 
 const user = userEvent.setup();
 
@@ -218,6 +224,48 @@ describe('test FilesTable component', () => {
     expect(expandableDownIcon).toBeTruthy();
 
     await user.click(expandableDownIcon);
+  });
+
+  it('renders files table using STAC search results', async () => {
+    const stacRecord = rawStacAssetFixture({
+      assets: {
+        asset1: {
+          id: 'asset1',
+          access: ['public'],
+          description: 'Test asset 1',
+          type: 'image/png',
+          alternatename: 'alternate_foo',
+          name: 'foo',
+          roles: ['data'],
+          href: 'https://example.com/file1.nc',
+          'file:size': 1024,
+          'file:checksum': 'zyx321',
+        },
+        asset2: {
+          id: 'asset2',
+          access: ['public'],
+          description: 'Test asset 2',
+          type: 'image/png',
+          alternatename: 'alternate_foo',
+          name: 'foo',
+          roles: ['data'],
+          href: 'https://example.com/file2.nc',
+          'file:size': 7,
+          'file:checksum': '',
+        },
+      },
+      number_of_files: 2,
+    });
+
+    AtomWrapper.modifyAtomValue(AppStateKeys.currentProject, rawProjectFixture({ isSTAC: true }));
+    customRender(<FilesTable {...defaultProps} inputRecord={stacRecord} />);
+
+    // Table should render and show the asset titles (ids)
+    const table = await screen.findByRole('table');
+    expect(table).toBeTruthy();
+
+    expect(await screen.findByText('asset1')).toBeTruthy();
+    expect(await screen.findByText('asset2')).toBeTruthy();
   });
 });
 

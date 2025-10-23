@@ -228,14 +228,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
       key: '1',
       disabled: record.retracted === true,
       label: <div className={innerDataRowTargets.filesTab.class()}>Files</div>,
-      children: (
-        <FilesTable
-          // id={record.id}
-          // numResults={record.number_of_files}
-          inputRecord={record}
-          filenameVars={filenameVars}
-        />
-      ),
+      children: <FilesTable inputRecord={record} filenameVars={filenameVars} />,
     },
     {
       key: '2',

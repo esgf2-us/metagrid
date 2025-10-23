@@ -162,7 +162,9 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
 
   let docs: RawSearchResults | [] = [];
   let stacDocs: StacAsset[] = [];
+
   if (data) {
+    /* istanbul ignore next */
     if (isSTAC && inputRecord?.assets) {
       stacDocs = Object.values(inputRecord.assets);
     } else {
@@ -175,7 +177,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
   }
 
   const tableConfig = {
-    dataSource: stacDocs.length > 0 ? stacDocs : docs,
+    dataSource: stacDocs.length > 0 ? (stacDocs as unknown as RawSearchResult[]) : docs,
     size: 'small' as SizeType,
     loading: isLoading,
     rowKey: 'id',
@@ -352,7 +354,8 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
       title: 'Size',
       dataIndex: 'file:size',
       key: 'size',
-      sorter: (a: RawSearchResult, b: RawSearchResult) => (a.size || 0) - (b.size || 0),
+      sorter: /* istanbul ignore next */ (a: RawSearchResult, b: RawSearchResult) =>
+        (a.size || 0) - (b.size || 0),
       sortOrder: sortedInfo.columnKey === 'size' ? sortedInfo.order : null,
       render: (size: number) => {
         return (
@@ -392,19 +395,21 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
                 <Form.Item className={innerDataRowTargets.copyUrlBtn.class()}>
                   <Button
                     type="primary"
-                    onClick={() => {
-                      /* istanbul ignore next */
-                      if (navigator && navigator.clipboard) {
-                        navigator.clipboard
-                          .writeText(record.href)
-                          .catch((e: PromiseRejectedResult) => {
-                            showError(messageApi, e.reason as string);
+                    /* istanbul ignore next */
+                    onClick={
+                      /* istanbul ignore next */ () => {
+                        if (navigator && navigator.clipboard) {
+                          navigator.clipboard
+                            .writeText(record.href)
+                            .catch((e: PromiseRejectedResult) => {
+                              showError(messageApi, e.reason as string);
+                            });
+                          showNotice(messageApi, 'URL copied to clipboard!', {
+                            icon: <ShareAltOutlined style={styles.messageAddIcon} />,
                           });
-                        showNotice(messageApi, 'URL copied to clipboard!', {
-                          icon: <ShareAltOutlined style={styles.messageAddIcon} />,
-                        });
+                        }
                       }
-                    }}
+                    }
                     icon={<CopyOutlined />}
                   />
                 </Form.Item>

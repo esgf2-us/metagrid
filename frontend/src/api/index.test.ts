@@ -135,6 +135,23 @@ describe('test fetching projects', () => {
     );
     await expect(fetchProjects()).rejects.toThrow(apiRoutes.projects.handleErrorMsg('generic'));
   });
+
+  it('returns additional STAC projects when backend returns no results field', async () => {
+    // Ensure STAC inclusion is enabled
+    window.METAGRID.STAC_URL = 'https://stac.example';
+
+    // Mock the projects endpoint to return an object without `results`
+    server.use(
+      rest.get(apiRoutes.projects.path, (_req, res, ctx) =>
+        res(ctx.status(200), ctx.json({ count: 0 })),
+      ),
+    );
+
+    const projects = (await fetchProjects()).results;
+
+    // When backend returns no results, fetchProjects should return only the additional STAC_PROJECTS
+    expect(projects).toEqual([...STAC_PROJECTS]);
+  });
 });
 
 describe('test convertResultTypeToReplica', () => {
@@ -940,5 +957,74 @@ describe('resetGlobusTokens', () => {
       ),
     );
     await expect(resetGlobusTokens()).rejects.toThrow();
+  });
+});
+
+describe('STAC API functions', () => {
+  it('posts STAC filter and returns facets + search results', async () => {
+    const aggregationsResp = {
+      aggregations: [
+        {
+          name: 'cmip6_activity_id_frequency',
+          buckets: [{ key: 'CFMIP', frequency: 5 }],
+        },
+      ],
+    };
+
+    const stacSearchResp = {
+      type: 'FeatureCollection',
+      features: [{ id: 'feat1' }],
+    };
+
+    let capturedAggBody: unknown = null;
+    let capturedSearchBody: { collections: string[]; filter: unknown } | null = null;
+
+    server.use(
+      rest.post(apiRoutes.esgfAggregationsSTAC.path, async (req, res, ctx) => {
+        capturedAggBody = await req.json();
+        return res(ctx.status(200), ctx.json(aggregationsResp));
+      }),
+      rest.post(apiRoutes.esgfSearchSTAC.path, async (req, res, ctx) => {
+        capturedSearchBody = await req.json();
+        return res(ctx.status(200), ctx.json(stacSearchResp));
+      }),
+    );
+
+    const reqUrl = `${apiRoutes.esgfSearchSTAC.path}?project_id=CMIP6&activity_id=CFMIP`;
+    const result = await fetchSearchResults({ reqUrl });
+
+    expect(result.stac).toBe(true);
+    // facets built from aggregations
+    const facets = result.facets as Record<string, [string, number][]>;
+    expect(facets.activity_id).toEqual([['CFMIP', 5]]);
+    // search payload posted should include collections and filter
+    expect(capturedSearchBody).toBeDefined();
+    const csb = capturedSearchBody!;
+    expect(csb.collections).toContain('CMIP6');
+    expect(csb.filter).toBeDefined();
+
+    expect(capturedAggBody).toBeDefined();
+    const cab = capturedAggBody as { filter: unknown; aggregations: string[] };
+    expect(cab.aggregations).toContain('cmip6_activity_id_frequency');
+    expect(cab.filter).toBeDefined();
+  });
+
+  it('returns stac result with empty facets when aggregations endpoint errors (status set accordingly)', async () => {
+    // make aggregations endpoint return 500, search returns an empty feature collection
+    server.use(
+      rest.post(apiRoutes.esgfAggregationsSTAC.path, (_req, res, ctx) => res(ctx.status(500))),
+      rest.post(apiRoutes.esgfSearchSTAC.path, (_req, res, ctx) =>
+        res(ctx.status(200), ctx.json({ type: 'FeatureCollection', features: [] })),
+      ),
+    );
+
+    const reqUrl = `${apiRoutes.esgfSearchSTAC.path}?project_id=CMIP6`;
+    const result = await fetchSearchResults({ reqUrl });
+
+    // stac flag still true, facets empty because aggregations failed
+    expect(result.stac).toBe(true);
+    expect(result.facets).toEqual({});
+    // status should reflect aggregation failure (fetchSTACSearchResults sets non-200 status)
+    expect(result.status).toBe(500);
   });
 });

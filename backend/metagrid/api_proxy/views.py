@@ -88,20 +88,6 @@ def do_stac_search(request):
     return do_post(request, settings.STAC_URL + "/search")
 
 
-@require_http_methods(["GET"])
-@csrf_exempt
-def fetch_stac_facets(request):
-    project_id = request.GET.get("project_id", "CMIP6")
-
-    if settings.STAC_URL is None:
-        return HttpResponseBadRequest("STAC URL not configured.")
-
-    return do_request(
-        request,
-        settings.STAC_URL + "/collections/" + project_id,
-    )
-
-
 @require_http_methods(["POST"])
 @csrf_exempt
 def fetch_stac_aggregations(request):

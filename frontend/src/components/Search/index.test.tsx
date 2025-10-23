@@ -1,10 +1,12 @@
-import { within, screen } from '@testing-library/react';
+import { within, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import {
   activeSearchQueryFixture,
   ESGFSearchAPIFixture,
   rawSearchResultFixture,
+  stacSearchResultsFixture,
+  stacAggregationsFixture,
 } from '../../test/mock/fixtures';
 import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
@@ -12,7 +14,7 @@ import customRender from '../../test/custom-render';
 import { ActiveFacets, RawFacets } from '../Facets/types';
 import Search, { checkFiltersExist, parseFacets, Props, stringifyFilters } from './index';
 import { ActiveSearchQuery, RawSearchResult, ResultType, TextInputs, VersionType } from './types';
-import { openDropdownList, AtomWrapper } from '../../test/jestTestFunctions';
+import { openDropdownList, AtomWrapper, printElementContents } from '../../test/jestTestFunctions';
 import { AppStateKeys } from '../../common/atoms';
 
 const user = userEvent.setup();
@@ -524,5 +526,62 @@ describe('test checkFiltersExist()', () => {
   it('returns false if filters do not exist', () => {
     const filtersExist = checkFiltersExist({}, []);
     expect(filtersExist).toBeFalsy();
+  });
+});
+
+describe('STAC project behavior', () => {
+  it('renders STAC filter string', async () => {
+    // Set atoms to represent a STAC project
+    AtomWrapper.modifyAtomValue(AppStateKeys.currentProject, {
+      name: 'CMIP6',
+      isSTAC: true,
+      projectName: 'CMIP6',
+    });
+
+    const active = activeSearchQueryFixture();
+    AtomWrapper.modifyAtomValue(AppStateKeys.activeSearchQuery, {
+      ...active,
+      project: {
+        name: 'CMIP6',
+        isSTAC: true,
+        projectName: 'CMIP6',
+        facetsUrl: 'offset=0&limit=0',
+      },
+    });
+
+    // Mock STAC aggregations and STAC search endpoints
+    server.use(
+      rest.post(apiRoutes.esgfAggregationsSTAC.path, (_req, res, ctx) =>
+        res(ctx.status(200), ctx.json(stacAggregationsFixture())),
+      ),
+      rest.post(apiRoutes.esgfSearchSTAC.path, (_req, res, ctx) =>
+        res(ctx.status(200), ctx.json(stacSearchResultsFixture().search)),
+      ),
+    );
+
+    customRender(<Search {...defaultProps} />, { usesAtoms: true });
+
+    // Wait for results/table
+    await screen.findByTestId('search-table');
+
+    // STAC label should be shown
+    expect(await screen.findByText('STAC Filter String:')).toBeTruthy();
+
+    // Open save search dropdown to reveal disabled buttons
+    // Wait for the dropdown trigger to be in the DOM then click it
+    await waitFor(() => {
+      const el = document.querySelector('.ant-dropdown-trigger') as HTMLElement | null;
+      if (!el) throw new Error('dropdown trigger not found');
+    });
+    const copyDropDownIcon = document.querySelector('.ant-dropdown-trigger') as HTMLElement;
+    await userEvent.hover(copyDropDownIcon);
+
+    // result count should reflect STAC numMatched
+    const numMatched = stacSearchResultsFixture().search.numMatched;
+    expect(
+      await screen.findByText(
+        (content) => content.includes(`${numMatched}`) && content.includes('results found for'),
+      ),
+    ).toBeTruthy();
   });
 });
