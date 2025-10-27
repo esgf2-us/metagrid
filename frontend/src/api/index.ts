@@ -449,7 +449,7 @@ export const generateSearchURLQuery = (
   );
 
   if (isSTAC) {
-    return `${baseRoute}${`project_id=${(project as RawProject).projectName}`}&${activeFacetsParams}`;
+    return `${baseRoute}${baseParams}${`project_id=${(project as RawProject).projectName}`}&${activeFacetsParams}`;
   }
 
   return `${baseRoute}${baseParams}${textInputsParams}&${activeFacetsParams}`;
@@ -558,7 +558,7 @@ export const fetchSearchResults = async (
   let finalUrl = reqUrlStr;
   const cachedPagination = getCachedPagination();
   // If the change to the request URL was not the offset, reset the offset to 0
-  if (reqUrlOffset === cachedUrlOffset) {
+  if (reqUrlOffset === cachedUrlOffset || (!reqUrlOffset && cachedUrlOffset)) {
     finalUrl = reqUrlStr.replace(/offset=\d+/, 'offset=0');
     // Cache the new offset value so it is reflected in the pagination
     cachePagination({

@@ -115,20 +115,6 @@ class TestProxyViewSet(APITestCase):
             pytest.skip("settings.STAC_URL is not set")
 
     @responses.activate
-    def test_fetch_stac_facets(self):
-        url = reverse("fetch-stac-facets")
-        # Only run if settings.STAC_URL is set
-        if getattr(settings, "STAC_URL", None):
-            responses.get(settings.STAC_URL + "/collections/CMIP6")
-            response = self.client.get(url)
-            assert response.status_code == status.HTTP_200_OK
-        else:
-            # If STAC_URL is None, just skip the test
-            import pytest
-
-            pytest.skip("settings.STAC_URL is not set")
-
-    @responses.activate
     def test_citation(self):
         url = reverse("do-citation")
         jo = {

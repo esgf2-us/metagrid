@@ -26,7 +26,6 @@ from metagrid.api_proxy.views import (
     do_status,
     do_wget,
     fetch_stac_aggregations,
-    fetch_stac_facets,
     get_frontend_config,
     get_temp_storage,
     set_temp_storage,
