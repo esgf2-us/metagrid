@@ -179,7 +179,11 @@ class GlobusTransferAuthFlow:
 
     def get_existing_transfer_client(self) -> TransferClient | None:
         # Based on user, obtain a transfer client
-        if self.request is not None and self.request.user.is_authenticated:
+        if (
+            self.request is not None
+            and self.request.user.is_authenticated
+            and settings.AUTHENTICATION_METHOD == "globus"
+        ):
             print("Found existing transfer client from authenticated user")
             return load_transfer_client(self.request.user)
         else:
