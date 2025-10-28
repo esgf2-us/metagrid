@@ -5,18 +5,15 @@ import environ
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+env = environ.Env()
+
 ROOT_DIR = (
     environ.Path(__file__) - 3
 )  # (config/settings/django.py - 3 = metagrid/)
 
-class DatabaseSettings(BaseModel):
-    ENGINE: str = Field(default="django.db.backends.postgresql", frozen=True)
-    NAME: str = Field(default="postgres", frozen=True)
-    ATOMIC_REQUESTS: bool = Field(default=True, frozen=True)
-    DATABASE_URL: str = "pgsql:///postgres"
-
-class DefaultDatabaseSettings(BaseModel):
-    default: DatabaseSettings = DatabaseSettings()
+# parses DATABASE_URL environment variable
+DATABASES = env.db_url()
+DATABASES.update(ATOMIC_REQUESTS=True)
 
 class DjangoStaticSettings(BaseSettings):
     """Django settings that do not vary by site"""
@@ -97,7 +94,9 @@ class DjangoStaticSettings(BaseSettings):
     EMAIL_TIMEOUT: int = 5
 
     CORS_ORIGIN_ALLOW_ALL: bool = True
-    DATABASES: DefaultDatabaseSettings = DefaultDatabaseSettings()
+
+    DATABASES: dict[str, dict[str, Any]] = {"default": DATABASES}
+
     STATIC_ROOT: str = ROOT_DIR("staticfiles")
     # https://docs.djangoproject.com/en/dev/ref/settings/#static-url
     STATIC_URL: str = "/static/"
