@@ -1,0 +1,8 @@
+services:
+  traefik:
+    volumes:
+      - ./traefik/traefik.keycloak.prod.yml:/etc/traefik/traefik.yml
+
+  django:
+    environment:
+      METAGRID_KEYCLOAK_URL: https://esgf-dev1.llnl.gov:1337

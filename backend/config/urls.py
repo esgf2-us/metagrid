@@ -22,8 +22,10 @@ from metagrid.api_proxy.views import (
     do_globus_logout,
     do_globus_search_endpoints,
     do_search,
+    do_stac_search,
     do_status,
     do_wget,
+    fetch_stac_aggregations,
     get_frontend_config,
     get_temp_storage,
     set_temp_storage,
@@ -77,6 +79,12 @@ urlpatterns = [
     # dj-rest-auth
     re_path(r"^dj-rest-auth/", include("dj_rest_auth.urls")),
     path("proxy/search", do_search, name="do-search"),
+    path("proxy/stac/search", do_stac_search, name="do-stac-search"),
+    path(
+        "proxy/stac/aggregations",
+        fetch_stac_aggregations,
+        name="fetch-stac-aggregations",
+    ),
     path("proxy/citation", do_citation, name="do-citation"),
     path("proxy/wget", do_wget, name="do-wget"),
     path("proxy/status", do_status, name="do-status"),

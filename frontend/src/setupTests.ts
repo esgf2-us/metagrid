@@ -18,7 +18,7 @@ import {
   userSearchQueriesFixture,
 } from './test/mock/fixtures';
 import { ActiveSearchQuery, RawSearchResults } from './components/Search/types';
-import { ParsedFacets } from './components/Facets/types';
+import { ParsedFacets, RawProject } from './components/Facets/types';
 import { NodeStatusArray } from './components/NodeStatus/types';
 import { UserCart, UserSearchQueries } from './components/Cart/types';
 import { GlobusEndpoint, GlobusTaskItem } from './components/Globus/types';
@@ -38,6 +38,7 @@ import {
   GlobusStateKeys,
   userCartAtom,
   userChosenEndpointAtom,
+  currentProjectAtom,
 } from './common/atoms';
 import { localStorageMock, sessionStorageMock } from './test/mock/mockStorage';
 
@@ -85,6 +86,12 @@ beforeAll(() => {
     false,
   );
   AtomWrapper.setAtomValue<boolean>(isDarkModeAtom, AppStateKeys.isDarkMode, false, true);
+  AtomWrapper.setAtomValue<RawProject>(
+    currentProjectAtom,
+    AppStateKeys.currentProject,
+    {} as RawProject,
+    false,
+  );
   AtomWrapper.setAtomValue<UserCart>(userCartAtom, AppStateKeys.userCart, userCartFixture(), true);
   AtomWrapper.setAtomValue<UserSearchQueries>(
     userSearchQueriesAtom,

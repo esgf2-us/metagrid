@@ -26,6 +26,8 @@ const Searches: React.FC = () => {
 
   const appStyles = getStyle(isDarkMode);
 
+  const stacDisabled = window.METAGRID.STAC_URL === '' || window.METAGRID.STAC_URL === null;
+
   if (userSearchQueries.length === 0) {
     return <Empty description="Your search library is empty" />;
   }
@@ -71,15 +73,17 @@ const Searches: React.FC = () => {
     >
       {contextHolder}
       <Row gutter={[18, 18]}>
-        {userSearchQueries.map((searchQuery: UserSearchQuery, index: number) => (
-          <SearchesCard
-            key={searchQuery.uuid}
-            updateSearchQuery={updateSearchQuery}
-            searchQuery={searchQuery}
-            index={index}
-            onHandleRemoveSearchQuery={handleRemoveSearchQuery}
-          />
-        ))}
+        {userSearchQueries
+          .filter((query: UserSearchQuery) => !stacDisabled || !query.project.isSTAC)
+          .map((searchQuery: UserSearchQuery, index: number) => (
+            <SearchesCard
+              key={searchQuery.uuid}
+              updateSearchQuery={updateSearchQuery}
+              searchQuery={searchQuery}
+              index={index}
+              onHandleRemoveSearchQuery={handleRemoveSearchQuery}
+            />
+          ))}
       </Row>
     </div>
   );

@@ -8,26 +8,26 @@ services:
       - traefik_certs:/etc/traefik/acme
       - ./traefik/traefik.prod.yml:/etc/traefik/traefik.yml
     ports:
-      - "0.0.0.0:80:9080"
-      - "0.0.0.0:443:9443"
+      - '0.0.0.0:80:9080'
+      - '0.0.0.0:443:9443'
 
   docs:
-    profiles: [ "docs" ]
+    profiles: ['docs']
     restart: unless-stopped
 
   postgres:
     restart: unless-stopped
     environment:
-      POSTGRES_HOST_AUTH_METHOD: ""
-      PGPASSWORD: ""
-      PGUSER: ""
+      POSTGRES_HOST_AUTH_METHOD: ''
+      PGPASSWORD: ''
+      PGUSER: ''
 
   django:
     restart: unless-stopped
     environment:
       DJANGO_DEBUG: False
-      DJANGO_SECRET_KEY: ""
-      DJANGO_EMAIL_BACKEND: "django.core.mail.backends.smtp.EmailBackend"
+      DJANGO_SECRET_KEY: ''
+      DJANGO_EMAIL_BACKEND: 'django.core.mail.backends.smtp.EmailBackend'
       DJANGO_SOCIAL_AUTH_REDIRECT_IS_HTTPS: True
       DJANGO_SECURE_PROXY_SSL_HEADER: '["HTTP_X_FORWARDED_PROTO", "https"]'
       DJANGO_SECURE_SSL_REDIRECT: True
@@ -45,10 +45,7 @@ services:
     restart: unless-stopped
 
   keycloak:
-    profiles: [ "keycloak" ]
-    command: start
+    profiles: ['keycloak']
+    command: start --import-realm
     volumes: []
     restart: unless-stopped
-    environment:
-      KEYCLOAK_USER: ""
-      KEYCLOAK_PASSWORD: ""

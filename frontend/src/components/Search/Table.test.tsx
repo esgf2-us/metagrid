@@ -7,7 +7,7 @@ import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
 import Table, { Props } from './Table';
 import { QualityFlag } from './Tabs';
-import { AtomWrapper, mockConfig } from '../../test/jestTestFunctions';
+import { AtomWrapper, mockConfig, printElementContents } from '../../test/jestTestFunctions';
 import { AppStateKeys } from '../../common/atoms';
 
 const user = userEvent.setup();
@@ -213,6 +213,8 @@ describe('test main table UI', () => {
     expect(panel).toBeTruthy();
 
     await user.click(panel);
+
+    printElementContents(expandableRow);
 
     // Check Additional panel contains PID and ES-DOC
     const firstPidBtn = await within(expandableRow).findByText('PID');

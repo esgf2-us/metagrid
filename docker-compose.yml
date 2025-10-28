@@ -3,7 +3,6 @@ volumes:
   local_postgres_data_backups: {}
 
 services:
-
   traefik:
     container_name: traefik
     image: traefik:3.3
@@ -12,12 +11,12 @@ services:
     environment:
       DOMAIN_NAME: localhost
     ports:
-      - "9080:9080"
-      - "9443:9443"
+      - '9080:9080'
+      - '9443:9443'
 
   docs:
     container_name: docs
-    profiles: [ "docs" ]
+    profiles: ['docs']
     build: docs
     image: metagrid_local_docs
     volumes:
@@ -38,11 +37,11 @@ services:
       PGPASSWORD: postgres
       PGUSER: postgres
     ports:
-      - "127.0.0.1:5432:5432"
+      - '127.0.0.1:5432:5432'
     depends_on:
       - traefik
     healthcheck:
-      test: [ 'CMD', 'pg_isready', '-U', 'postgres', '-d', 'postgres' ]
+      test: ['CMD', 'pg_isready', '-U', 'postgres', '-d', 'postgres']
       start_period: 5s
       interval: 5s
       timeout: 2s
@@ -62,7 +61,7 @@ services:
       PGPASSWORD: postgres
       PGUSER: postgres
     ports:
-      - "127.0.0.1:5000:5000"
+      - '127.0.0.1:5000:5000'
 
   react:
     container_name: react
@@ -71,26 +70,27 @@ services:
       target: build
     image: metagrid_local_react
     environment:
-      - PORT=8080
+      PORT: 8080
     depends_on:
       - django
     volumes:
       - ./frontend:/app
       - /app/node_modules
     ports:
-      - "127.0.0.1:8080:8080"
+      - '127.0.0.1:8080:8080'
 
   keycloak:
-    profiles: [ "keycloak" ]
+    profiles: ['keycloak']
+    container_name: keycloak
     image: quay.io/keycloak/keycloak:26.1.2
     depends_on:
       - react
     command: start-dev --import-realm
-    volumes:
-      - ./keycloak/realm.json:/opt/keycloak/data/import/realm.json
     ports:
-      - "127.0.0.1:1337:8080"
+      - '127.0.0.1:1337:1337'
     environment:
-      KEYCLOAK_CLIENT_ID: metagrid-localhost
-      KEYCLOAK_USER: admin
-      KEYCLOAK_PASSWORD: admin
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HTTP_PORT: '1337'
+    volumes:
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json

@@ -1,6 +1,6 @@
 import { MenuUnfoldOutlined } from '@ant-design/icons';
 import { Drawer, Typography } from 'antd';
-import React from 'react';
+import React, { CSSProperties, ReactNode } from 'react';
 import { useAsync } from 'react-async';
 import { useAtomValue } from 'jotai';
 import { fetchProjects, ResponseError } from '../../api';
@@ -17,6 +17,14 @@ const { Link } = Typography;
 export type Props = {
   onTextSearch: (selectedProject: RawProject, text: string) => void;
 };
+
+export function createCustomIcon(src: string, alt: string, style?: CSSProperties): ReactNode {
+  return (
+    <div>
+      <img src={src} alt={alt} style={style} />
+    </div>
+  );
+}
 
 const NavBar: React.FC<React.PropsWithChildren<Props>> = ({ onTextSearch }) => {
   // Global states
@@ -42,17 +50,12 @@ const NavBar: React.FC<React.PropsWithChildren<Props>> = ({ onTextSearch }) => {
               fontSize: '.9em',
             }}
           >
-            <img
-              style={{
-                height: '82px',
-                marginLeft: '-5px',
-                marginBottom: '-30px',
-                marginTop: '-20px',
-              }}
-              src={esgfLogo}
-              alt="ESGF Federated Nodes"
-            />
-            <br />
+            {createCustomIcon(esgfLogo, 'ESGF Federated Nodes', {
+              height: '82px',
+              marginLeft: '-5px',
+              marginBottom: '-30px',
+              marginTop: '-20px',
+            })}
             Federated Nodes
           </Link>
         </div>
