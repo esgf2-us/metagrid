@@ -16,6 +16,7 @@ import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import {
   activeSearchQueryAtom,
   availableFacetsAtom,
+  currentProjectAtom,
   currentRequestQueryAtom,
   isDarkModeAtom,
   userCartAtom,
@@ -58,11 +59,25 @@ import {
   RawSearchResult,
   RawSearchResults,
   ResultType,
+  StacFeature,
+  StacResponse,
   TextInputs,
   VersionDate,
   VersionType,
 } from './types';
 import { AuthContext } from '../../contexts/AuthContext';
+import { convertSearchParamsIntoStacFilter, convertStacToRawSearchResult } from '../../common/STAC';
+
+const tooltipText = {
+  featureNotAvailableInStac: 'This feature is not compatible with STAC projects.',
+  metagridSearchLink: 'Copy a shareable Metagrid search URL to your clipboard.',
+  copyEsgpullSearch:
+    'Convert your search into an Esgpull search query (search results may vary, not all facets are supported in Esgpull) and save it to your clipboard.',
+  copyEsgpullDownload:
+    'Convert your search into a download command for Esgpull. We HIGHLY recommended you verify the search results with the Esgpull search query, before running this download command.',
+  copyIntakeEsgfSearch:
+    'Converts your search into Intake ESGF python code and copies it to your clipboard so it can be run in a python shell.',
+};
 
 const styles: CSSinJS = {
   summary: {
@@ -107,13 +122,21 @@ export const parseFacets = (facets: RawFacets): ParsedFacets => {
  * Example: '(Text Input = 'Solar') AND (source_type = AER OR AOGCM OR BGC)'
  */
 export const stringifyFilters = (
+  projectName: string | undefined,
   versionType: VersionType,
   resultType: ResultType,
   minVersionDate: VersionDate,
   maxVersionDate: VersionDate,
   activeFacets: ActiveFacets,
   textInputs: TextInputs | [],
+  isSTAC: boolean = false,
+  reqUrlStr: string = '',
 ): string => {
+  if (isSTAC) {
+    const stacFilter = convertSearchParamsIntoStacFilter(reqUrlStr, projectName);
+    return JSON.stringify(stacFilter) || 'No filters applied';
+  }
+
   const filtersArr: string[] = [];
 
   if (versionType === 'latest') {
@@ -167,6 +190,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   const [activeSearchQuery, setActiveSearchQuery] = useAtom(activeSearchQueryAtom);
 
   const [currentRequestURL, setCurrentRequestURL] = useAtom(currentRequestQueryAtom);
+
+  const currentProject = useAtomValue(currentProjectAtom);
 
   const isDarkMode = useAtomValue<boolean>(isDarkModeAtom);
 
@@ -235,12 +260,18 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   React.useEffect(() => {
     if (results && currentRequestURL && !objectIsEmpty(results)) {
       cacheSearchResults(results, paginationOptions, currentRequestURL);
-      const { facet_fields: facetFields } = (
-        results as {
-          facet_counts: { facet_fields: RawFacets };
-        }
-      ).facet_counts;
-      setParsedFacets(parseFacets(facetFields));
+      /* istanbul ignore else */
+      if (results.facet_counts) {
+        const { facet_fields: facetFields } = (
+          results as {
+            facet_counts: { facet_fields: RawFacets };
+          }
+        ).facet_counts;
+        setParsedFacets(parseFacets(facetFields));
+      } else {
+        const { facets } = results as { facets: RawFacets };
+        setParsedFacets(facets);
+      }
     }
   }, [results]);
 
@@ -431,8 +462,25 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     response: { docs: RawSearchResults; numFound: number };
   };
   if (results) {
-    numFound = (results as LoadedResults).response.numFound;
-    docs = (results as LoadedResults).response.docs;
+    if (currentProject.isSTAC) {
+      const searchResults = results as StacResponse;
+      if (searchResults.search) {
+        const stacResults = searchResults.search;
+
+        if (stacResults.features && stacResults.features.length > 0) {
+          numFound = stacResults.features.length;
+          docs = stacResults.features.map((stacResult: StacFeature) =>
+            convertStacToRawSearchResult(stacResult),
+          );
+        }
+      }
+    } else if (results.response) {
+      numFound = (results as LoadedResults).response.numFound;
+      docs = (results as LoadedResults).response.docs.map((doc) => ({
+        ...doc,
+        isStac: false,
+      }));
+    }
   }
 
   const allSelectedItemsInCart =
@@ -448,79 +496,90 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     {
       key: '1',
       label: (
-        <Button
-          type="default"
-          className={copySearchOptionsTargets.copySearchLinkBtn.class()}
-          onClick={handleShareSearchQuery}
-          disabled={isLoading || numFound === 0}
-        >
-          <Tooltip
-            placement="left"
-            title={'Copy a shareable Metagrid search URL to your clipboard.'}
-          >
-            <ShareAltOutlined data-testid="share-search-btn" /> Copy Metagrid search URL
-          </Tooltip>
-        </Button>
+        <Tooltip placement="left" title={tooltipText.metagridSearchLink}>
+          <span style={{ display: 'inline-block', cursor: 'not-allowed' }}>
+            <Button
+              type="default"
+              className={copySearchOptionsTargets.copySearchLinkBtn.class()}
+              onClick={handleShareSearchQuery}
+              disabled={isLoading || numFound === 0}
+            >
+              <ShareAltOutlined data-testid="share-search-btn" /> Copy Metagrid search URL
+            </Button>
+          </span>
+        </Tooltip>
       ),
     },
     {
       key: '2',
       label: (
-        <Button
-          type="default"
-          className={copySearchOptionsTargets.copyEsgpullSearchQueryBtn.class()}
-          onClick={handleEsgpullSearchQuery}
-          disabled={isLoading || numFound === 0}
+        <Tooltip
+          placement="left"
+          title={
+            currentProject.isSTAC
+              ? tooltipText.featureNotAvailableInStac
+              : tooltipText.copyEsgpullSearch
+          }
         >
-          <Tooltip
-            placement="left"
-            title={
-              'Convert your search into an Esgpull search query (search results may vary, not all facets are supported in Esgpull) and save it to your clipboard.'
-            }
-          >
-            <CodeOutlined data-testid="copy-esgpull-search-btn" /> Copy esgpull search query
-          </Tooltip>
-        </Button>
+          <span style={{ display: 'inline-block', cursor: 'not-allowed' }}>
+            <Button
+              type="default"
+              className={copySearchOptionsTargets.copyEsgpullSearchQueryBtn.class()}
+              onClick={handleEsgpullSearchQuery}
+              disabled={isLoading || numFound === 0 || currentProject.isSTAC}
+            >
+              <CodeOutlined data-testid="copy-esgpull-search-btn" /> Copy esgpull search query
+            </Button>
+          </span>
+        </Tooltip>
       ),
     },
     {
       key: '3',
       label: (
-        <Button
-          type="default"
-          className={copySearchOptionsTargets.copyEsgpullDownloadCommandBtn.class()}
-          onClick={handleEsgpullDownloadCmd}
-          disabled={isLoading || numFound === 0}
+        <Tooltip
+          placement="left"
+          title={
+            currentProject.isSTAC
+              ? tooltipText.featureNotAvailableInStac
+              : tooltipText.copyEsgpullDownload
+          }
         >
-          <Tooltip
-            placement="left"
-            title={
-              'Convert your search into a download command for Esgpull. We HIGHLY recommended you verify the search results with the Esgpull search query, before running this download command.'
-            }
-          >
-            <CodeOutlined data-testid="copy-esgpull-download-btn" /> Copy esgpull download command
-          </Tooltip>
-        </Button>
+          <span style={{ display: 'inline-block', cursor: 'not-allowed' }}>
+            <Button
+              type="default"
+              className={copySearchOptionsTargets.copyEsgpullDownloadCommandBtn.class()}
+              onClick={handleEsgpullDownloadCmd}
+              disabled={isLoading || numFound === 0 || currentProject.isSTAC}
+            >
+              <CodeOutlined data-testid="copy-esgpull-download-btn" /> Copy esgpull download command
+            </Button>
+          </span>
+        </Tooltip>
       ),
     },
     {
       key: '4',
       label: (
-        <Button
-          type="default"
-          className={copySearchOptionsTargets.copyIntakeEsgfSearchBtn.class()}
-          onClick={handleIntakeEsgfSearch}
-          disabled={isLoading || numFound === 0}
+        <Tooltip
+          placement="left"
+          title={
+            currentProject.isSTAC
+              ? tooltipText.featureNotAvailableInStac
+              : tooltipText.copyIntakeEsgfSearch
+          }
         >
-          <Tooltip
-            placement="left"
-            title={
-              'Converts your search into Intake ESGF python code and copies it to your clipboard so it can be run in a python shell.'
-            }
-          >
-            <CodeOutlined data-testid="copy-intake-search-btn" /> Copy Intake-ESGF search command
-          </Tooltip>
-        </Button>
+          <span style={{ display: 'inline-block', cursor: 'not-allowed' }}>
+            <Button
+              type="default"
+              className={copySearchOptionsTargets.copyIntakeEsgfSearchBtn.class()}
+              onClick={handleIntakeEsgfSearch}
+              disabled={isLoading || numFound === 0 || currentProject.isSTAC}
+            >
+              <CodeOutlined data-testid="copy-intake-search-btn" /> Copy Intake-ESGF search command
+            </Button>
+          </span>
+        </Tooltip>
       ),
     },
   ];
@@ -563,6 +622,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                 Add Selected to Cart
               </Button>{' '}
               <Dropdown.Button
+                data-testid="save-search-dropdown-btn"
                 className={searchTableTargets.saveSearchBtn.class()}
                 type="default"
                 onClick={() => handleSaveSearchQuery(currentRequestURL, numFound)}
@@ -580,23 +640,24 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       </div>
       <div>
         {results && (
-          <>
-            <p>
-              <span style={styles.subtitles} data-testid="main-query-string-label">
-                Query String:{' '}
-              </span>
-              <Typography.Text className={searchTableTargets.queryString.class()} code>
-                {stringifyFilters(
-                  versionType,
-                  resultType,
-                  minVersionDate,
-                  maxVersionDate,
-                  activeFacets,
-                  textInputs,
-                )}
-              </Typography.Text>
-            </p>
-          </>
+          <p>
+            <span style={styles.subtitles} data-testid="main-query-string-label">
+              {currentProject.isSTAC ? 'STAC Filter String:' : 'Query String:'}{' '}
+            </span>
+            <Typography.Text className={searchTableTargets.queryString.class()} code>
+              {stringifyFilters(
+                currentProject.name,
+                versionType,
+                resultType,
+                minVersionDate,
+                maxVersionDate,
+                activeFacets,
+                textInputs,
+                currentProject.isSTAC,
+                currentRequestURL,
+              )}
+            </Typography.Text>
+          </p>
         )}
       </div>
 

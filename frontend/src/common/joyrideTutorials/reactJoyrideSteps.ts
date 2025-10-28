@@ -543,6 +543,7 @@ export const createMainPageTour = (): JoyrideTour => {
       copySearchOptionsTargets.copyMenuBtn.selector(),
       'If you click on the copy icon, a drop-down menu will appear with various options for copying your search query into your clipboard.',
       'left-start',
+      /* istanbul ignore next */
       async () => {
         // Open general facets
         hoverFirstElement(copySearchOptionsTargets.copyMenuBtn.selector());
@@ -568,6 +569,7 @@ export const createMainPageTour = (): JoyrideTour => {
       copySearchOptionsTargets.copyIntakeEsgfSearchBtn.selector(),
       'If you need an Intake ESGF search query version of your search, click this button. The python code will attempt to generate the code for a similar search and copy it to your clipboard.',
       'left-start',
+      /* istanbul ignore next */
       async () => {
         // Open general facets
         unHoverFirstElement('.ant-dropdown');

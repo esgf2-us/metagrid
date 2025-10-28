@@ -281,18 +281,21 @@ describe('Test combineCarts', () => {
     id: 'firstResult',
     url: ['test1'],
     access: [],
+    isStac: false
   };
   const secondResult: RawSearchResult = {
     key: undefined,
     id: 'secondResult',
     url: ['test2'],
     access: [],
+    isStac: false
   };
   const thirdResult: RawSearchResult = {
     key: undefined,
     id: 'thirdResult',
     url: ['test3'],
     access: [],
+    isStac: false
   };
   const emptySearchResults: RawSearchResults = [];
   const searchResults1: RawSearchResults = [firstResult, secondResult];
