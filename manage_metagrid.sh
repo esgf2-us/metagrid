@@ -2,6 +2,8 @@
 LOCAL_COMPOSE="-f docker-compose.yml"
 PROD_COMPOSE="-f docker-compose.yml -f docker-compose.prod.yml"
 KEYCLOAK_COMPOSE="-f docker-compose.keycloak.yml"
+GLOBUS_COMPOSE="-f docker-compose.globus.yml"
+KEYCLOAK_PROD_OVERLAY="-f docker-compose.keycloak.prod.yml"
 LOCAL_OVERLAY="-f docker-compose-local-overlay.yml"
 PROD_OVERLAY="-f docker-compose-prod-overlay.yml"
 
@@ -13,23 +15,30 @@ function startProductionService() {
     echo "Choose authentication method:"
     echo "1 Globus"
     echo "2 Keycloak"
+    echo "3 None"
     read -r auth_choice
 
     case $auth_choice in
     1)
         echo "Starting Metagrid production deployment with Globus"
+        docker compose $PROD_COMPOSE $PROD_OVERLAY --profile globus up --build -d
+        echo "Command used:"
+        echo "docker compose $PROD_COMPOSE $PROD_OVERLAY --profile globus up --build -d"
+        ;;
+    2)
+        echo "Starting Metagrid production deployment with Keycloak"
+        docker compose $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $PROD_OVERLAY --profile keycloak up --build -d
+        echo "Command used:"
+        echo "docker compose $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $PROD_OVERLAY --profile keycloak up --build -d"
+        ;;
+    3)
+        echo "Starting Metagrid production deployment with no auth"
         docker compose $PROD_COMPOSE $PROD_OVERLAY up --build -d
         echo "Command used:"
         echo "docker compose $PROD_COMPOSE $PROD_OVERLAY up --build -d"
         ;;
-    2)
-        echo "Starting Metagrid production deployment with Keycloak"
-        docker compose $PROD_COMPOSE $KEYCLOAK_COMPOSE $PROD_OVERLAY --profile keycloak up --build -d
-        echo "Command used:"
-        echo "docker compose $PROD_COMPOSE $KEYCLOAK_COMPOSE $PROD_OVERLAY --profile keycloak up --build -d"
-        ;;
     *)
-        echo "Invalid choice. Please select 1 or 2."
+        echo "Invalid choice. Please select 1, 2, or 3."
         startProductionService
         return
         ;;
@@ -39,25 +48,37 @@ function startProductionService() {
 function startLocalService() {
     clear
     echo "Choose local deployment auth method:"
-    echo "1 Globus"
+    echo "1 Globus - default"
     echo "2 Keycloak"
+    echo "3 None"
     read -r auth_choice
+
+    # Default to 1 (Globus) if no value is entered
+    if [ -z "$auth_choice" ]; then
+        auth_choice=1
+    fi
 
     case $auth_choice in
     1)
         echo "Starting Metagrid with Globus auth"
+        docker compose $LOCAL_COMPOSE $LOCAL_OVERLAY $GLOBUS_COMPOSE --profile docs up --build -d
+        echo "Command used:"
+        echo "docker compose $LOCAL_COMPOSE $LOCAL_OVERLAY $GLOBUS_COMPOSE --profile docs up --build -d"
+        ;;
+    2)
+        echo "Starting Metagrid with Keycloak auth"
+        docker compose $LOCAL_COMPOSE $KEYCLOAK_COMPOSE $LOCAL_OVERLAY  --profile keycloak --profile docs up --build -d
+        echo "Command used:"
+        echo "docker compose $LOCAL_COMPOSE $KEYCLOAK_COMPOSE $LOCAL_OVERLAY --profile keycloak --profile docs up --build -d"
+        ;;
+    3)
+        echo "Starting Metagrid with no auth"
         docker compose $LOCAL_COMPOSE $LOCAL_OVERLAY --profile docs up --build -d
         echo "Command used:"
         echo "docker compose $LOCAL_COMPOSE $LOCAL_OVERLAY --profile docs up --build -d"
         ;;
-    2)
-        echo "Starting Metagrid with Keycloak auth"
-        docker compose $LOCAL_COMPOSE $KEYCLOAK_COMPOSE $LOCAL_OVERLAY --profile docs --profile keycloak up --build -d
-        echo "Command used:"
-        echo "docker compose $LOCAL_COMPOSE $KEYCLOAK_COMPOSE $LOCAL_OVERLAY --profile docs --profile keycloak up --build -d"
-        ;;
     *)
-        echo "Invalid choice. Please select 1 or 2."
+        echo "Invalid choice. Please select 1, 2, or 3."
         startLocalService
         ;;
     esac

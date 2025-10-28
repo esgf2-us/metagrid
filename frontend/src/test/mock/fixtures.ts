@@ -18,6 +18,8 @@ import {
   RawCitation,
   RawSearchResult,
   RawSearchResults,
+  StacResponse,
+  StacAggregations,
 } from '../../components/Search/types';
 import { RawUserAuth, RawUserInfo } from '../../contexts/types';
 import { SubmissionResult } from '../../api';
@@ -34,6 +36,7 @@ export const rawProjectFixture = (props: Partial<RawProject> = {}): RawProject =
     facetsUrl: 'offset=0&limit=0',
     projectUrl: 'https://esgf-dev1.llnl.gov/metagrid/search',
     fullName: 'test1',
+    isSTAC: false,
   };
   return { ...defaults, ...props } as RawProject;
 };
@@ -62,6 +65,7 @@ export const rawSearchResultFixture = (props: Partial<RawSearchResult> = {}): Ra
     access: ['wget', 'HTTPServer', 'OPENDAP', 'Globus'],
     citation_url: ['https://foo.bar'],
     xlink: ['https://localhost/url.com|PID|pid'],
+    isStac: false,
   };
   return { ...defaults, ...props };
 };
@@ -303,8 +307,122 @@ export const globusEnabledDatasetFixture = (): RawSearchResult[] => {
       version: 1,
       size: 1,
       access: ['HTTPServer', 'OPENDAP', 'Globus'],
+      globus_link: 'globus://endpoint1/collection1',
       citation_url: ['https://foo.bar'],
       xlink: ['https://localhost/url.com|PID|pid'],
+      isStac: false,
     },
   ];
 };
+
+export const stacSearchResultsFixture = (): StacResponse => ({
+  search: {
+    features: [
+      {
+        id: 'test-id',
+        bbox: [0, 0, 10, 10],
+        geometry: {
+          type: 'Polygon',
+          coordinates: [
+            [
+              [0, 0],
+              [10, 0],
+              [10, 10],
+              [0, 10],
+              [0, 0],
+            ],
+          ],
+        },
+        links: [{ rel: 'self', type: 'application/json', href: 'https://example.com/self' }],
+        type: 'Feature',
+        assets: {
+          asset1: {
+            id: 'asset1',
+            access: ['public'],
+            description: 'Test asset',
+            alternatename: 'Alternate name',
+            name: 'Asset 1',
+            roles: ['data'],
+            href: 'https://example.com/asset1',
+            type: 'image/png',
+            'file:size': 2048,
+            'file:checksum': 'def456',
+            title: 'Asset 1 Title',
+          },
+        },
+        properties: {
+          access: ['public'],
+          citation_url: 'https://example.com/citation',
+          further_info_url: 'https://example.com/info',
+          version: '1.0',
+        },
+        collection: ['test-collection'],
+        stac_version: '1.0.0',
+      },
+    ],
+    numMatched: 1,
+    numReturned: 1,
+    type: 'FeatureCollection',
+    links: [
+      {
+        rel: 'root',
+        type: 'application/json',
+        href: 'https://data-challenge-01.api.stac.esgf-west.org/',
+      },
+      {
+        rel: 'self',
+        type: 'application/json',
+        href: 'https://data-challenge-01.api.stac.esgf-west.org/search?limit=3&activity_id=CMIP&institution_id=BCC&mip_era=CMIP6',
+      },
+    ],
+  },
+  facets: {},
+  stac: true,
+});
+
+// New fixture: STAC aggregations used by tests
+export const stacAggregationsFixture = (): StacAggregations => ({
+  aggregations: [
+    {
+      name: 'cmip6_activity_id_frequency',
+      buckets: [
+        { key: 'CFMIP', frequency: 5 },
+        { key: 'CDRMIP', frequency: 3 },
+      ],
+    },
+    {
+      name: 'cmip6_source_id_frequency',
+      buckets: [{ key: 'ACCESS-ESM1-5', frequency: 2 }],
+    },
+  ],
+});
+
+export const rawStacAssetFixture = (props: Partial<RawSearchResult> = {}): RawSearchResult => {
+  const defaults: RawSearchResult = {
+    id: 'foo',
+    access: ['HTTPServer', 'OPENDAP'],
+    url: ['foo.bar|HTTPServer', 'http://test.com/file.nc|OPENDAP'],
+    assets: {
+      foo: {
+        id: 'foo',
+        access: ['public'],
+        description: 'test',
+        type: 'image/png',
+        alternatename: 'alternate_foo',
+        name: 'foo',
+        roles: ['data'],
+        href: 'http://test.com/foo',
+        'file:size': 1,
+        'file:checksum': 'abc123',
+      },
+    },
+    title: 'Foo Title',
+    isStac: true,
+  };
+  return { ...defaults, ...props };
+};
+
+export const rawStacResultsFixture = (): Array<RawSearchResult> => [
+  rawStacAssetFixture(),
+  rawStacAssetFixture({ id: 'bar', title: 'Bar Title' }),
+];

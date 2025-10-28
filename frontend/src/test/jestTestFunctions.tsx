@@ -30,6 +30,7 @@ export const mockConfig: FrontendConfig = {
   KEYCLOAK_REALM: 'esgf',
   KEYCLOAK_URL: 'http://localhost:1337',
   SEARCH_URL: 'https://esgf-node.ornl.gov/esgf-1-5-bridge',
+  STAC_URL: 'https://stac.test.url',
   KEYCLOAK_CLIENT_ID: 'frontend',
   HOTJAR_ID: 1234,
   HOTJAR_SV: 1234,

@@ -21,7 +21,7 @@ import Button from '../General/Button';
 import RightDrawer from '../Messaging/RightDrawer';
 
 import { AuthContext } from '../../contexts/AuthContext';
-import { UserCart, UserSearchQueries } from '../Cart/types';
+import { UserCart, UserSearchQueries, UserSearchQuery } from '../Cart/types';
 import {
   isDarkModeAtom,
   userCartAtom,
@@ -54,6 +54,8 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
   const authState = React.useContext(AuthContext);
   const { access_token: accessToken, pk } = authState;
   const authenticated = accessToken && pk;
+
+  const stacDisabled = window.METAGRID.STAC_URL === '' || window.METAGRID.STAC_URL === null;
 
   let loginBtn: JSX.Element;
   let logoutBtn: JSX.Element;
@@ -125,7 +127,11 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
 
   type MenuItem = Required<MenuProps>['items'][number];
 
-  function getSignInItem(): MenuItem {
+  function getSignInItem(): MenuItem | null {
+    if (window.METAGRID.AUTHENTICATION_METHOD === 'none') {
+      return null;
+    }
+
     if (authenticated) {
       return {
         key: 'greeting',
@@ -170,7 +176,12 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
       label: (
         <Link data-testid="cartPageLink" to="/cart/items">
           <ShoppingCartOutlined style={{ fontSize: '20px' }} />
-          <Badge count={userCart.length} className="badge" offset={[-5, 3]} showZero></Badge>
+          <Badge
+            count={userCart.filter((cartItem) => !stacDisabled || !cartItem.isStac).length}
+            className="badge"
+            offset={[-5, 3]}
+            showZero
+          ></Badge>
           Cart
         </Link>
       ),
@@ -183,7 +194,11 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
         <Link to="/cart/searches">
           <FileSearchOutlined style={{ fontSize: '20px' }} />{' '}
           <Badge
-            count={userSearchQueries.length}
+            count={
+              userSearchQueries.filter(
+                (query: UserSearchQuery) => !stacDisabled || !query.project.isSTAC,
+              ).length
+            }
             className="badge"
             offset={[-5, 3]}
             showZero

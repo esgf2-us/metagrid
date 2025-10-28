@@ -15,8 +15,8 @@ env:
   PGPASSWORD: postgres
   PGUSER: postgres
   METAGRID_SEARCH_URL: https://esgf-node.llnl.gov/esg-search/search
-  METAGRID_WGET_URL: https://esgf-node.llnl.gov/esg-search/wget
-  METAGRID_STATUS_URL: https://esgf-node.llnl.gov/proxy/status
+  METAGRID_WGET_URL: https://nimbus.llnl.gov/wget
+  # METAGRID_STATUS_URL: https://esgf-node.llnl.gov/proxy/status
   METAGRID_SOCIAL_AUTH_GLOBUS_KEY: ${{ secrets.GLOBUS_KEY }}
   METAGRID_SOCIAL_AUTH_GLOBUS_SECRET: ${{ secrets.GLOBUS_SECRET }}
 
