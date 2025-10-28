@@ -3,19 +3,17 @@
   // Python
   // -----------------------------
   "[python]": {
-    "editor.rulers": [72, 79, 120],
+    "editor.rulers": [79, 120],
     "editor.wordWrap": "wordWrapColumn",
     "editor.wordWrapColumn": 120,
     "editor.defaultFormatter": "ms-python.black-formatter"
   },
-  // Update as needed
-  "python.pythonPath": "backend/venv/bin/python",
-  // Update as needed
+  "python.analysis.extraPaths": ["backend/venv/bin/python"],
+  "python.testing.pytestEnabled": true,
+  "python.testing.pytestArgs": ["backend"],
   "python.autoComplete.extraPaths": ["backend/venv/bin/python"],
-  "python.linting.flake8Enabled": true,
-  "python.linting.flake8Args": ["--config=backend/setup.cfg"],
-  "python.formatting.provider": "black",
-  "python.linting.mypyEnabled": true,
+  "black-formatter.args": ["--line-length", "79"],
+
   // JavaScript
   // -----------------------------
   "javascript.updateImportsOnFileMove.enabled": "always",
@@ -78,8 +76,5 @@
   },
   "[jsonc]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "python.analysis.extraPaths": ["backend/venv/bin/python"],
-  "python.testing.pytestEnabled": true,
-  "python.testing.pytestArgs": ["backend"]
+  }
 }
