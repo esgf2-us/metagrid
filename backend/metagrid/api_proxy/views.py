@@ -53,7 +53,10 @@ def do_globus_logout(request):
 def do_globus_search_endpoints(request):
     search_text = request.GET.get("search_text", None)
 
-    if request.user.is_authenticated:
+    if (
+        request.user.is_authenticated
+        and settings.AUTHENTICATION_METHOD == "globus"
+    ):
         tc = load_transfer_client(request.user)  # pragma: no cover
     else:
         client = globus_sdk.ConfidentialAppAuthClient(
