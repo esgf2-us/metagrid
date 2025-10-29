@@ -135,25 +135,24 @@ backend:
 
 postgresql:
   enabled: true
-  nameOverride: pg
-  backup:
-    enabled: false
-    cronjob:
-      podSecurityContext:
-        enabled: false
 
-  # -- Enabled persistence
-  persistence:
-    enabled: true
+  username: postgres
+  password: postgres
+  database: postgres
+  
+  imagePullSecrets: []
 
-  postgresql:
-    replicaCount: 1
-    username: postgres
-    password: postgres
-    repmgrPassword: repmgr
+  image:
+    repository: postgres
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: 16.10-bookworm
 
-  pgpool:
-    adminPassword: pgpool-admin
+  serviceAccount:
+    create: true
+
+  service:
+    port: 5432
 
 nodeStatusBackend:
   enabled: true
