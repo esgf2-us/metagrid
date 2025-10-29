@@ -94,8 +94,8 @@ This document describes the configurable values available in the `values.yaml` f
 | Parameter                                 | Description                                                                                      | Type     | Default                                         |
 |-------------------------------------------|--------------------------------------------------------------------------------------------------|----------|-------------------------------------------------|
 | `config.GUNICORN_WORKERS`                 | Number of Gunicorn workers for handling requests.                                                 | `string` | `'2'`                                           |
-| `config.METAGRID_SEARCH_URL`              | URL for the Metagrid search service.                                                              | `string` | `https://esgf-node.ornl.gov/esg-search/search`   |
-| `config.METAGRID_WGET_URL`                | URL for the Metagrid wget service.                                                                | `string` | `https://esgf-node.ornl.gov/esg-search/wget`    |
+| `config.METAGRID_SEARCH_URL`              | URL for the Metagrid search service.                                                              | `string` | `https://esgf-node.ornl.gov/esgf-1-5-bridge`   |
+| `config.METAGRID_WGET_URL`                | URL for the Metagrid wget service.                                                                | `string` | `https://nimbus.llnl.gov/wget`    |
 | `config.METAGRID_SOCIAL_AUTH_GLOBUS_KEY`  | Placeholder key for Globus authentication.                                                        | `string` | `"key"`                                        |
 | `config.METAGRID_SOCIAL_AUTH_GLOBUS_SECRET`| Placeholder secret for Globus authentication.                                                     | `string` | `"secret"`                                     |
 | `config.DATABASE_URL`                     | Optional database URL for self-managed database, see [django-environ docs](https://django-environ.readthedocs.io/en/latest/types.html#term-PostgreSQL). | `string` | `` |
