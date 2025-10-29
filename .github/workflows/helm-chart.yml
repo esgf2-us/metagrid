@@ -28,7 +28,6 @@ jobs:
   test:
     name: Test Helm Chart
     runs-on: ubuntu-latest
-    needs: [frontend, backend]
     if: github.event_name == 'pull_request'
     continue-on-error: true
     steps:
