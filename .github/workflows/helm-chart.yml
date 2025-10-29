@@ -8,7 +8,7 @@ on:
   pull_request:
 
   workflow_run:
-    workflow: [Container release]
+    workflows: [Container release]
     types:
       - completed
 
