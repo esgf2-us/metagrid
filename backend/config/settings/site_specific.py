@@ -24,9 +24,49 @@ class MetagridBackendSettings(BaseSettings):
         examples=["https://api.stac.esgf-west.org/"],
     )
 
-    WGET_URL: str = Field(
-        description="The URL at which the ESG-Search wget endpoint can be reached.",
-        examples=["https://esgf-node.llnl.gov/esg-search/wget"],
+    # Expand the number of fields allowed for wget API payloads (Django's DATA_UPLOAD_MAX_NUMBER_FIELDS)
+    DATA_UPLOAD_MAX_NUMBER_FIELDS: int = Field(
+        default=1024,
+        description="Maximum number of form fields allowed in a single upload. Useful for large wget payloads.",
+        examples=[1024],
+    )
+
+    # === wget related settings ===
+    ESGF_SOLR_URL: Optional[str] = Field(
+        default=None,
+        description="Address of the ESGF Solr endpoint used by the wget helper logic.",
+        examples=["https://esgf-node.llnl.gov/esg-search/solr"],
+    )
+
+    ESGF_SOLR_SHARDS_XML: Optional[str] = Field(
+        default=None,
+        description="Path to the XML file containing Solr shards configuration used to resolve mirrors/shards.",
+        examples=["/etc/metagrid/solr_shards.xml"],
+    )
+
+    ESGF_ALLOWED_PROJECTS_JSON: Optional[str] = Field(
+        default=None,
+        description="Path to a JSON file that lists allowed projects for wget/dataset access checks.",
+        examples=["/etc/metagrid/wget_allowed_projects.json"],
+    )
+
+    WGET_SCRIPT_FILE_DEFAULT_LIMIT: int = Field(
+        default=1000,
+        description="Default limit on the number of files allowed in a generated wget script.",
+        examples=[1000],
+    )
+
+    WGET_SCRIPT_FILE_MAX_LIMIT: int = Field(
+        default=100000,
+        description="Maximum number of files allowed in a generated wget script.",
+        examples=[100000],
+    )
+
+    # Maximum length for facet values used in the wget directory structure
+    WGET_MAX_DIR_LENGTH: int = Field(
+        default=50,
+        description="Maximum character length for facet values when creating directory names for wget downloads.",
+        examples=[50],
     )
 
     KEYCLOAK_CLIENT_ID: str = Field(

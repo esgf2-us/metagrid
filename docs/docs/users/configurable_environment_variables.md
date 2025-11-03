@@ -21,14 +21,82 @@
 >
 >     `https://api.stac.esgf-west.org/`
 
-#### `METAGRID_WGET_URL`
+#### `METAGRID_DATA_UPLOAD_MAX_NUMBER_FIELDS`
 
-> !!! example "**Required**"
->     The URL at which the ESG-Search wget endpoint can be reached.
+> !!! example "*Optional*"
+>     __Default:__ `1024`
+>
+>     Maximum number of form fields allowed in a single upload. Useful for large wget payloads.
 >
 >     __Example Values__
 >
->     `https://esgf-node.llnl.gov/esg-search/wget`
+>     `1024`
+
+#### `METAGRID_ESGF_SOLR_URL`
+
+> !!! example "*Optional*"
+>     __Default:__ `None`
+>
+>     Address of the ESGF Solr endpoint used by the wget helper logic.
+>
+>     __Example Values__
+>
+>     `https://esgf-node.llnl.gov/esg-search/solr`
+
+#### `METAGRID_ESGF_SOLR_SHARDS_XML`
+
+> !!! example "*Optional*"
+>     __Default:__ `None`
+>
+>     Path to the XML file containing Solr shards configuration used to resolve mirrors/shards.
+>
+>     __Example Values__
+>
+>     `/etc/metagrid/solr_shards.xml`
+
+#### `METAGRID_ESGF_ALLOWED_PROJECTS_JSON`
+
+> !!! example "*Optional*"
+>     __Default:__ `None`
+>
+>     Path to a JSON file that lists allowed projects for wget/dataset access checks.
+>
+>     __Example Values__
+>
+>     `/etc/metagrid/wget_allowed_projects.json`
+
+#### `METAGRID_WGET_SCRIPT_FILE_DEFAULT_LIMIT`
+
+> !!! example "*Optional*"
+>     __Default:__ `1000`
+>
+>     Default limit on the number of files allowed in a generated wget script.
+>
+>     __Example Values__
+>
+>     `1000`
+
+#### `METAGRID_WGET_SCRIPT_FILE_MAX_LIMIT`
+
+> !!! example "*Optional*"
+>     __Default:__ `100000`
+>
+>     Maximum number of files allowed in a generated wget script.
+>
+>     __Example Values__
+>
+>     `100000`
+
+#### `METAGRID_WGET_MAX_DIR_LENGTH`
+
+> !!! example "*Optional*"
+>     __Default:__ `50`
+>
+>     Maximum character length for facet values when creating directory names for wget downloads.
+>
+>     __Example Values__
+>
+>     `50`
 
 #### `METAGRID_KEYCLOAK_CLIENT_ID`
 
