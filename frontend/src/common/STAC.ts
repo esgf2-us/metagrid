@@ -92,6 +92,13 @@ export const STAC_AGGREGATION_FACETS: { [key: string]: string[] } = {
   ],
 };
 
+export const getStacGlobusHref = (record: RawSearchResult): string | null => {
+  if (record.assets && record.assets.globus && record.assets.globus.href) {
+    return record.assets.globus.href;
+  }
+  return null;
+};
+
 export const aggregationsToFacetsData = (
   aggregations: StacAggregations,
 ): {

@@ -5,6 +5,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Generator, Sequence, TypedDict
+from urllib.parse import parse_qs, urlparse
 
 import requests
 from django.conf import settings
@@ -400,6 +401,8 @@ def search_files(
 
     if url_params.get("dataset_id") is not None:
         url_params["dataset_id"] = ",".join(url_params["dataset_id"])
+    
+    print("Searching ESGF with parameters:", query_defaults | url_params)
 
     results = requests.get(
         url=settings.SEARCH_URL,
@@ -441,8 +444,23 @@ def submit_transfer(
     )
 
     try:
+        globus_hrefs = request_body.pop("globus_hrefs", None)
+        if globus_hrefs is not None:
+            print("Including globus_hrefs:", globus_hrefs)
+            globus_info = []
+            for href in globus_hrefs:
+                query_params = parse_qs(urlparse(href).query)
+                endpoint = query_params.get("origin_id")[0]
+                path = query_params.get("origin_path")[0]
+                globus_info.append((endpoint, path))
+                # client.add_transfer(endpoint, path)
+            print("Parsed globus_info:", globus_info)
+
+        regular_info = []
         for endpoint, path in search_files(request_body):
+            regular_info.append((endpoint, path))
             client.add_transfer(endpoint, path)
+        print("Regular globus_info:", regular_info)
 
         result = client.submit_transfers()
 

@@ -42,6 +42,7 @@ import { topDataRowTargets } from '../../common/joyrideTutorials/reactJoyrideSte
 import { userCartAtom } from '../../common/atoms';
 import { AppPage } from '../../common/types';
 import { createCustomIcon } from '../NavBar';
+import { getStacGlobusHref } from '../../common/STAC';
 
 export type Props = {
   loading: boolean;
@@ -424,11 +425,24 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
           dataIndex: 'data_node',
           key: 'globus_enabled',
           width: 110,
-          render: (data_node: string) => (
-            <div className={topDataRowTargets.globusReadyStatusIcon.class()}>
-              <GlobusToolTip dataNode={data_node} />
-            </div>
-          ),
+          render: (data_node: string, record: RawSearchResult) => {
+            if (record.isStac) {
+              return (
+                <div className={topDataRowTargets.globusReadyStatusIcon.class()}>
+                  <GlobusToolTip
+                    dataNode={data_node}
+                    stacGlobusAvailable={getStacGlobusHref(record) !== null}
+                  />
+                </div>
+              );
+            }
+
+            return (
+              <div className={topDataRowTargets.globusReadyStatusIcon.class()}>
+                <GlobusToolTip dataNode={data_node} />
+              </div>
+            );
+          },
         }
       : {
           align: 'center' as AlignType,

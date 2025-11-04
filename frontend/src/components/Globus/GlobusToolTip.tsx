@@ -10,9 +10,9 @@ import {
 } from '../NodeStatus/StatusToolTip';
 import { isDarkModeAtom } from '../../common/atoms';
 
-export type Props = { dataNode: string };
+export type Props = { dataNode: string; stacGlobusAvailable?: boolean };
 
-const GlobusToolTip: React.FC<Props> = ({ dataNode }) => {
+const GlobusToolTip: React.FC<Props> = ({ dataNode, stacGlobusAvailable }) => {
   const isEnabled = window.METAGRID.GLOBUS_NODES.includes(dataNode);
   const isDarkMode = useAtomValue<boolean>(isDarkModeAtom);
 
@@ -23,7 +23,7 @@ const GlobusToolTip: React.FC<Props> = ({ dataNode }) => {
   let color = disabledColor;
   let icon = <CloseCircleTwoTone twoToneColor={disabledColor} />;
 
-  if (isEnabled) {
+  if (isEnabled || stacGlobusAvailable) {
     title = 'Globus Transfer Available';
     color = enabledColor;
     icon = <CheckCircleTwoTone twoToneColor={enabledColor} />;
