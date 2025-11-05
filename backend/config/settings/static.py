@@ -9,6 +9,8 @@ ROOT_DIR = (
     environ.Path(__file__) - 3
 )  # (config/settings/django.py - 3 = metagrid/)
 
+TEMPLATE_DIR = ROOT_DIR("metagrid", "wget", "templates")
+
 
 class DjangoStaticSettings(BaseSettings):
     """Django settings that do not vary by site"""
@@ -96,11 +98,12 @@ class DjangoStaticSettings(BaseSettings):
             "DATABASE_URL": "pgsql:///postgres",
         }
     }
+
     STATIC_ROOT: str = ROOT_DIR("staticfiles")
     # https://docs.djangoproject.com/en/dev/ref/settings/#static-url
     STATIC_URL: str = "/static/"
     # https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
-    STATICFILES_DIRS: Sequence[str] = []
+    STATICFILES_DIRS: Sequence[str] = [TEMPLATE_DIR]
     # https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#staticfiles-finders
     STATICFILES_FINDERS: Sequence[str] = [
         "django.contrib.staticfiles.finders.FileSystemFinder",
@@ -121,7 +124,7 @@ class DjangoStaticSettings(BaseSettings):
         {
             "BACKEND": "django.template.backends.django.DjangoTemplates",
             "DIRS": STATICFILES_DIRS,
-            "APP_DIRS": False,
+            "APP_DIRS": True,
             "OPTIONS": {
                 "context_processors": [
                     "django.template.context_processors.debug",

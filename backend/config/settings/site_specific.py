@@ -32,22 +32,10 @@ class MetagridBackendSettings(BaseSettings):
     )
 
     # === wget related settings ===
-    ESGF_SOLR_URL: Optional[str] = Field(
-        default=None,
-        description="Address of the ESGF Solr endpoint used by the wget helper logic.",
-        examples=["https://esgf-node.llnl.gov/esg-search/solr"],
-    )
-
-    ESGF_SOLR_SHARDS_XML: Optional[str] = Field(
-        default=None,
-        description="Path to the XML file containing Solr shards configuration used to resolve mirrors/shards.",
-        examples=["/etc/metagrid/solr_shards.xml"],
-    )
-
-    ESGF_ALLOWED_PROJECTS_JSON: Optional[str] = Field(
-        default=None,
-        description="Path to a JSON file that lists allowed projects for wget/dataset access checks.",
-        examples=["/etc/metagrid/wget_allowed_projects.json"],
+    GLOBUS_PUBLIC_INDEX_ENDPOINT_ID: str = Field(
+        default="a8ef4320-9e5a-4793-837b-c45161ca1845",
+        description="The Globus index ID for the public ESGF2 data.",
+        examples=["a8ef4320-9e5a-4793-837b-c45161ca1845"],
     )
 
     WGET_SCRIPT_FILE_DEFAULT_LIMIT: int = Field(

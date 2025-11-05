@@ -32,38 +32,16 @@
 >
 >     `1024`
 
-#### `METAGRID_ESGF_SOLR_URL`
+#### `METAGRID_GLOBUS_PUBLIC_INDEX_ENDPOINT_ID`
 
 > !!! example "*Optional*"
->     __Default:__ `None`
+>     __Default:__ `a8ef4320-9e5a-4793-837b-c45161ca1845`
 >
->     Address of the ESGF Solr endpoint used by the wget helper logic.
+>     The Globus index ID for the public ESGF2 data.
 >
 >     __Example Values__
 >
->     `https://esgf-node.llnl.gov/esg-search/solr`
-
-#### `METAGRID_ESGF_SOLR_SHARDS_XML`
-
-> !!! example "*Optional*"
->     __Default:__ `None`
->
->     Path to the XML file containing Solr shards configuration used to resolve mirrors/shards.
->
->     __Example Values__
->
->     `/etc/metagrid/solr_shards.xml`
-
-#### `METAGRID_ESGF_ALLOWED_PROJECTS_JSON`
-
-> !!! example "*Optional*"
->     __Default:__ `None`
->
->     Path to a JSON file that lists allowed projects for wget/dataset access checks.
->
->     __Example Values__
->
->     `/etc/metagrid/wget_allowed_projects.json`
+>     `a8ef4320-9e5a-4793-837b-c45161ca1845`
 
 #### `METAGRID_WGET_SCRIPT_FILE_DEFAULT_LIMIT`
 

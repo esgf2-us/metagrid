@@ -1,13 +1,3 @@
-import csv
-import json
-import os
-import urllib.parse
-import urllib.request
-import xml.etree.ElementTree as ET
-from io import StringIO
-
-from django.conf import settings
-
 # reserved query keywords
 OFFSET = "offset"
 LIMIT = "limit"
@@ -243,53 +233,3 @@ def split_value(value):
 
         # convert listo into array
         return _values
-
-
-def get_solr_shards_from_xml():
-    """
-    Get Solr shards from the XML file specified in the settings
-    as ESGF_SOLR_SHARDS_XML
-    """
-
-    shard_list = []
-    if os.path.isfile(settings.ESGF_SOLR_SHARDS_XML):
-        tree = ET.parse(settings.ESGF_SOLR_SHARDS_XML)
-        root = tree.getroot()
-        for value in root:
-            shard_list.append(value.text)
-    return shard_list
-
-
-def get_allowed_projects_from_json():
-    """
-    Get allowed ESGF projects from the JSON file specified in the settings
-    as ESGF_ALLOWED_PROJECTS_JSON
-    """
-
-    allowed_projects_list = []
-    if os.path.isfile(settings.ESGF_ALLOWED_PROJECTS_JSON):
-        with open(settings.ESGF_ALLOWED_PROJECTS_JSON, "r") as js:
-            data = json.load(js)
-            allowed_projects_list = data["allowed_projects"]
-    return allowed_projects_list
-
-
-def get_facets_from_solr():
-    """
-    Get valid facets currently used by the dataset Solr.
-    """
-
-    query_url = settings.ESGF_SOLR_URL + "/datasets/select"
-    query_params = dict(q="*:*", wt="csv", rows=0)
-
-    query_encoded = urllib.parse.urlencode(query_params, doseq=True).encode()
-    req = urllib.request.Request(query_url, query_encoded)
-    with urllib.request.urlopen(req) as response:
-        results = StringIO(response.read().decode())
-        reader = csv.reader(results, delimiter=",")
-        facets = next(reader)
-
-    # Remove fields that should NOT be used as facets
-    _facets = [f for f in facets if f not in NOT_FACETS]
-
-    return _facets
