@@ -43,14 +43,14 @@ spec:
         - name: http
           containerPort: {{ .Values.frontend.service.port }}
           protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
         resources:
           {{- toYaml .Values.frontend.resources | nindent 12 }}
         {{- with .Values.frontend.volumeMounts }}

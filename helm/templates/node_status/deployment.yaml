@@ -75,18 +75,18 @@ spec:
         image: "{{ .Values.nodeStatusBackend.blackbox.image.repository }}:{{ .Values.nodeStatusBackend.blackbox.image.tag }}"
         imagePullPolicy: {{ .Values.nodeStatusBackend.blackbox.image.pullPolicy }}
         ports:
-        - name: http
+        - name: blackbox-http
           containerPort: 9115
           protocol: TCP
         livenessProbe:
           httpGet:
             path: /-/healthy
-            port: http
+            port: blackbox-http
           failureThreshold: 3
         readinessProbe:
           httpGet:
             path: /-/healthy
-            port: http
+            port: blackbox-http
         resources:
           {{- toYaml .Values.nodeStatusBackend.blackbox.resources | nindent 12 }}
         {{- with .Values.nodeStatusBackend.blackbox.volumeMounts }}
