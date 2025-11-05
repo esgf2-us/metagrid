@@ -1,0 +1,75 @@
+{{- if .Values.postgresql.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "metagrid.fullname" . }}-postgresql
+  labels:
+    app.kubernetes.io/component: database
+    {{- include "metagrid.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: database
+      {{- include "metagrid.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/backend/secret.yaml") . | sha256sum }}
+      {{- with .Values.postgresql.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app.kubernetes.io/component: database
+        {{- include "metagrid.labels" . | nindent 8 }}
+        {{- with .Values.postgresql.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.postgresql.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.postgresql.podSecurityContext | nindent 8 }}
+      containers:
+      - name: postgresql
+        securityContext:
+          {{- toYaml .Values.postgresql.securityContext | nindent 12 }}
+        image: "{{ .Values.postgresql.image.repository }}:{{ .Values.postgresql.image.tag }}"
+        imagePullPolicy: {{ .Values.postgresql.image.pullPolicy }}
+        envFrom:
+          - secretRef:
+              name: {{ include "metagrid.fullname" . }}-postgresql-config
+        ports:
+        - name: db
+          containerPort: {{ .Values.postgresql.service.port }}
+          protocol: TCP
+        livenessProbe:
+          tcpSocket:
+            port: {{ .Values.postgresql.service.port }}
+        readinessProbe:
+          tcpSocket:
+            port: {{ .Values.postgresql.service.port }}
+        resources:
+          {{- toYaml .Values.postgresql.resources | nindent 12 }}
+        volumeMounts:
+        {{- with .Values.postgresql.volumeMounts }}
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+      volumes:
+      {{- with .Values.postgresql.volumes }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.postgresql.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.postgresql.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.postgresql.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

@@ -36,6 +36,7 @@ services:
       DJANGO_SECURE_HSTS_SECONDS: 518400
       DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS: True
       DJANGO_SECURE_HSTS_PRELOAD: True
+      DATABASE_URL: "postgresql://<username>:<password>@<host>:<port>/<database>"
 
   react:
     image: metagrid_prod_react
