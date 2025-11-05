@@ -7,7 +7,7 @@ releases:
   chart: traefik/traefik
   version: v34.4.0
 - name: metagrid
-  chart: .
+  chart: ../
   version: "1.5.4"
   values:
     - ingress:
