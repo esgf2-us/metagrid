@@ -2,7 +2,6 @@ import json
 from unittest.mock import patch
 
 import responses
-from django.conf import settings
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -39,40 +38,54 @@ class TestWgetViewSet(APITestCase):
         url = reverse("do-wget")
         resp = self.client.get(url, {"simple": "notaboolean"})
         assert resp.status_code == status.HTTP_400_BAD_REQUEST
-        assert b'must be set to true or false' in resp.content
+        assert b"must be set to true or false" in resp.content
 
-    def test_wget_no_files_found_returns_empty_message(self, monkeypatch):
-        """When ESGGlobusQuery returns no files, view should respond with 'No files found'."""
+    @patch("metagrid.wget.views.ESGGlobusQuery")
+    @patch("metagrid.wget.views.render")
+    def test_wget_permission_error_returns_400(
+        self, mock_render, mock_esgquery
+    ):
+        # Simulate ESGGlobusQuery raising PermissionError during query
+        instance = mock_esgquery.return_value
+        instance.query_file_records.side_effect = PermissionError(
+            "no access to /nonexistent"
+        )
+
         url = reverse("do-wget")
+        resp = self.client.get(url, {"dataset_id": "SOME.DATASET|node.org"})
 
-        class DummyQuery:
-            def __init__(self, *a, **k):
-                pass
+        assert resp.status_code == status.HTTP_400_BAD_REQUEST
+        assert b"unable to access required ESGF helper files" in resp.content
 
-            def query_file_records(self, dsid, wget=True):
-                return []  # no files
+    @patch("metagrid.wget.views.ESGGlobusQuery")
+    @patch("metagrid.wget.views.render")
+    def test_wget_generic_exception_returns_400(
+        self, mock_render, mock_esgquery
+    ):
+        # Simulate ESGGlobusQuery throwing a generic exception
+        instance = mock_esgquery.return_value
+        instance.query_file_records.side_effect = Exception("boom")
 
-        # Patch the ESGGlobusQuery used by the view to our dummy
-        monkeypatch.setattr("metagrid.wget.views.ESGGlobusQuery", DummyQuery)
-
-        resp = self.client.get(url, {"dataset_id": "SOMEDATASET"})
-        assert resp.status_code == status.HTTP_200_OK
-        assert b"No files found for datasets." in resp.content
-
-    def test_wget_generates_script_and_sets_warning_when_exceeds_limit(self, monkeypatch):
-        """When number of files > file_limit ensures script generation path runs and returns attachment."""
         url = reverse("do-wget")
+        resp = self.client.get(url, {"dataset_id": "SOME.DATASET|node.org"})
 
-        # Create two fake file_info entries so num_files > limit (we will set limit to 1)
-        fake_file_info = {
+        assert resp.status_code == status.HTTP_400_BAD_REQUEST
+        assert b"Error querying ESGF metadata" in resp.content
+
+    @patch("metagrid.wget.views.ESGGlobusQuery")
+    @patch("metagrid.wget.views.render")
+    def test_wget_success_generates_script_and_attachment(
+        self, mock_render, mock_esgquery
+    ):
+        # Return two fake file entries so num_files > default limit if we reduce it
+        fake_file_1 = {
             "title": "file1.nc",
             "checksum_type": ["md5"],
             "checksum": ["deadbeef"],
             "url": ["http://example.com/file1.nc|HTTPServer|HTTPServer"],
-            # include some facet used by directory construction if needed
             "activity_id": ["ACT"],
         }
-        fake_file_info_2 = {
+        fake_file_2 = {
             "title": "file2.nc",
             "checksum_type": ["md5"],
             "checksum": ["cafebabe"],
@@ -80,28 +93,36 @@ class TestWgetViewSet(APITestCase):
             "activity_id": ["ACT"],
         }
 
-        class DummyQuery:
-            def __init__(self, *a, **k):
-                pass
+        instance = mock_esgquery.return_value
+        instance.query_file_records.return_value = [fake_file_1, fake_file_2]
 
-            def query_file_records(self, dsid, wget=True):
-                return [fake_file_info, fake_file_info_2]
+        # Patch render to avoid TemplateDoesNotExist
+        mock_render.return_value = "GENERATED_SCRIPT"
 
-        # Patch ESGGlobusQuery to return our two files
-        monkeypatch.setattr("metagrid.wget.views.ESGGlobusQuery", DummyQuery)
+        # set value directly on settings
+        from django.conf import settings as django_settings
 
-        # Reduce the default limit so that num_files > file_limit triggers warning_message logic
-        monkeypatch.setattr(settings, "WGET_SCRIPT_FILE_DEFAULT_LIMIT", 1)
+        # ensure we restore afterwards
+        prev = getattr(django_settings, "WGET_SCRIPT_FILE_DEFAULT_LIMIT", None)
+        django_settings.WGET_SCRIPT_FILE_DEFAULT_LIMIT = 1
 
-        # Patch render in the view module so template file location is not required
-        monkeypatch.setattr("metagrid.wget.views.render", lambda request, tpl, ctx: "GENERATED_SCRIPT")
+        try:
+            url = reverse("do-wget")
+            payload = {
+                "dataset_id": ["SOMEDATASET"],
+                "download_structure": ["activity_id"],
+                "simple": ["false"],
+            }
+            resp = self.client.post(
+                url, data=json.dumps(payload), content_type="application/json"
+            )
 
-        # POST expects JSON body according to the view; send JSON payload
-        payload = {"dataset_id": ["SOMEDATASET"], "download_structure": ["activity_id"], "simple": ["false"]}
-        resp = self.client.post(url, data=json.dumps(payload), content_type="application/json")
-
-        assert resp.status_code == status.HTTP_200_OK
-        # Content disposition should indicate an attachment filename
-        assert "attachment; filename=" in resp["Content-Disposition"]
-        # The returned body should be the rendered template content we patched
-        assert resp.content.decode() == "GENERATED_SCRIPT"
+            assert resp.status_code == status.HTTP_200_OK
+            # Content disposition should indicate an attachment filename
+            assert "attachment; filename=" in resp["Content-Disposition"]
+            # The returned body should be the rendered template content we patched
+            assert resp.content.decode() == "GENERATED_SCRIPT"
+        finally:
+            # restore original limit
+            if prev is not None:
+                django_settings.WGET_SCRIPT_FILE_DEFAULT_LIMIT = prev
