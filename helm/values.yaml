@@ -16,8 +16,8 @@ features:
 
 config:
   GUNICORN_WORKERS: '2'
-  METAGRID_SEARCH_URL: https://esgf-node.ornl.gov/esg-search/search
-  METAGRID_WGET_URL: https://esgf-node.ornl.gov/esg-search/wget
+  METAGRID_SEARCH_URL: https://esgf-node.ornl.gov/esgf-1-5-bridge
+  METAGRID_WGET_URL: https://nimbus.llnl.gov/wget
   # TODO implement logic to require these when using globus only, for now adding placeholders
   METAGRID_SOCIAL_AUTH_GLOBUS_KEY: "key"
   METAGRID_SOCIAL_AUTH_GLOBUS_SECRET: "secret"
@@ -135,25 +135,24 @@ backend:
 
 postgresql:
   enabled: true
-  nameOverride: pg
-  backup:
-    enabled: false
-    cronjob:
-      podSecurityContext:
-        enabled: false
 
-  # -- Enabled persistence
-  persistence:
-    enabled: true
+  username: postgres
+  password: postgres
+  database: postgres
+  
+  imagePullSecrets: []
 
-  postgresql:
-    replicaCount: 1
-    username: postgres
-    password: postgres
-    repmgrPassword: repmgr
+  image:
+    repository: postgres
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: 16.10-bookworm
 
-  pgpool:
-    adminPassword: pgpool-admin
+  serviceAccount:
+    create: true
+
+  service:
+    port: 5432
 
 nodeStatusBackend:
   enabled: true
