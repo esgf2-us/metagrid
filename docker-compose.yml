@@ -58,9 +58,7 @@ services:
       - ./backend:/app
     environment:
       WGET_SCRIPT_FILE_DEFAULT_LIMIT: 1000
-      PGHOST: postgres
-      PGPASSWORD: postgres
-      PGUSER: postgres
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/postgres
     ports:
       - '127.0.0.1:5000:5000'
 
