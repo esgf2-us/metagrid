@@ -1,0 +1,23 @@
+---
+apiVersion: v1
+stringData:
+  username: metagrid
+  password: metagrid
+kind: Secret
+metadata:
+  name: metagrid-cluster-secret
+type: kubernetes.io/basic-auth
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: metagrid-cluster
+spec:
+  instances: 3
+  storage:
+    size: 1Gi
+  bootstrap:
+    initdb:
+      database: metagrid
+      secret:
+        name: metagrid-cluster-secret

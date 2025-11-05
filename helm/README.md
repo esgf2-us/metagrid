@@ -24,7 +24,7 @@ helm install <name> oci://ghcr.io/esgf2-us/metagrid --version v1.5.4
 To test locally, you'll need `minikube`, `helm`, and `helmfile`.
 
 ### Start the Kubernetes cluster.
-Deploy a local Kubernetes cluster.
+Deploy a local Kubernetes cluster using [minikube](https://minikube.sigs.k8s.io/docs/start)
 ```shell
 minikube start
 minikube status
@@ -33,12 +33,20 @@ minikube status
 ### Deploy Metagrid + Traefik
 This will deploy Metagrid and Traefik, the service can be accessed using minikubes tunnel.
 ```shell
-helmfile apply
+helmfile apply -f deploy/helmfile.yaml
 ```
 
+
+### Deploy Metagrid + Traefik w/External Database
+This will deploy Metagrid and Traefik with an external postgresql database, the service can be accessed using minikubes tunnel.
+```shell
+helmfile apply -f deploy/helmfile.cnpg.yaml
+```
+
+### Test with PR images
 If you're testing a PR you can test those container image using the following.
 ```shell
-helmfile apply --set frontend.image.tag=pr-<number> --set backend.image.tag=pr-<number>
+helmfile apply -f deploy/helmfile.yaml --set frontend.image.tag=pr-<number>,backend.image.tag=pr-<number>,frontend.image.pullPolicy=Always,backend.image.pullPolicy=Always
 ```
 
 ### Use minikube
@@ -86,14 +94,13 @@ This document describes the configurable values available in the `values.yaml` f
 | Parameter                                 | Description                                                                                      | Type     | Default                                         |
 |-------------------------------------------|--------------------------------------------------------------------------------------------------|----------|-------------------------------------------------|
 | `config.GUNICORN_WORKERS`                 | Number of Gunicorn workers for handling requests.                                                 | `string` | `'2'`                                           |
-| `config.METAGRID_SEARCH_URL`              | URL for the Metagrid search service.                                                              | `string` | `https://esgf-node.ornl.gov/esg-search/search`   |
-| `config.METAGRID_WGET_URL`                | URL for the Metagrid wget service.                                                                | `string` | `https://esgf-node.ornl.gov/esg-search/wget`    |
+| `config.METAGRID_SEARCH_URL`              | URL for the Metagrid search service.                                                              | `string` | `https://esgf-node.ornl.gov/esgf-1-5-bridge`   |
+| `config.METAGRID_WGET_URL`                | URL for the Metagrid wget service.                                                                | `string` | `https://nimbus.llnl.gov/wget`    |
 | `config.METAGRID_SOCIAL_AUTH_GLOBUS_KEY`  | Placeholder key for Globus authentication.                                                        | `string` | `"key"`                                        |
 | `config.METAGRID_SOCIAL_AUTH_GLOBUS_SECRET`| Placeholder secret for Globus authentication.                                                     | `string` | `"secret"`                                     |
-| `config.METAGRID_GLOBUS_CLIENT_ID`        | Client ID for Globus authentication.                                                              | `string` | `"clientID"`                                   |
+| `config.DATABASE_URL`                     | Optional database URL for self-managed database, see [django-environ docs](https://django-environ.readthedocs.io/en/latest/types.html#term-PostgreSQL). | `string` | `` |
 
 ---
-
 ## Frontend
 
 | Parameter                               | Description                                                           | Type       | Default     |
