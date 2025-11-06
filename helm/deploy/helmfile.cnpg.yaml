@@ -11,7 +11,7 @@ releases:
 - name: cnpg
   namespace: cnpg-system
   chart: cnpg/cloudnative-pg
-  version: "0.26.1"  
+  version: "0.26.1"
   wait: true
   hooks:
     # remove cnpg resources
