@@ -2,18 +2,21 @@ from datetime import timedelta
 from typing import Any, Optional, Sequence
 
 import environ
-from pydantic import BaseModel, Field
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 env = environ.Env()
 
-ROOT_DIR = (
-    environ.Path(__file__) - 3
-)  # (config/settings/django.py - 3 = metagrid/)
+# project root (config/settings/static.py - 3 = metagrid/)
+ROOT_DIR = environ.Path(__file__) - 3
 
-# parses DATABASE_URL environment variable
-DATABASES = env.db_url()
+# Parse DATABASE_URL environment variable; default to an in-memory sqlite DB for tests/local runs.
+# This prevents "Set the DATABASE_URL environment variable" errors when none is provided.
+DATABASES = env.db_url(
+    default="postgresql://postgres:postgres@postgres:5432/postgres"
+)
 DATABASES.update(ATOMIC_REQUESTS=True)
+
 
 class DjangoStaticSettings(BaseSettings):
     """Django settings that do not vary by site"""
