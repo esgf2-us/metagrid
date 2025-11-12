@@ -57,6 +57,12 @@ class MetagridBackendSettings(BaseSettings):
         "Reference: <https://docs.djangoproject.com/en/5.1/ref/settings/#admins>",
     )
 
+    DATABASE_URL: str = Field(
+        default="postgresql://postgres:postgres@postgres:5432/postgres",
+        examples=["postgresql://postgres:postgres@postgres:5432/postgres"],
+        description="The database connection URL for the Metagrid backend database.",
+    )
+
     SOCIAL_AUTH_GLOBUS_KEY: str = Field(
         examples=["94c44808-9efd-4236-bffd-1185b1071736"],
         description="The `Client UUID` obtained by registering a `portal, science gateway, or other application you host` with Globus at <https://app.globus.org/settings/developers>",

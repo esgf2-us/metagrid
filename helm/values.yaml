@@ -139,7 +139,7 @@ postgresql:
   username: postgres
   password: postgres
   database: postgres
-  
+
   imagePullSecrets: []
 
   image:
