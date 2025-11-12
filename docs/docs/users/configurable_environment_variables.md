@@ -65,6 +65,17 @@
 >
 >     `[('Author', 'downie4@llnl.gov'), ('Author', 'ames4@llnl.gov')]`
 
+#### `METAGRID_DATABASE_URL`
+
+> !!! example "*Optional*"
+>     __Default:__ `postgresql://postgres:postgres@postgres:5432/postgres`
+>
+>     The database connection URL for the Metagrid backend database.
+>
+>     __Example Values__
+>
+>     `postgresql://postgres:postgres@postgres:5432/postgres`
+
 #### `METAGRID_SOCIAL_AUTH_GLOBUS_KEY`
 
 > !!! example "**Required**"
