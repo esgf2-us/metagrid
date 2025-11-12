@@ -2,14 +2,19 @@ import json
 from unittest.mock import patch
 
 import responses
+from django.conf import settings
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 
 class TestWgetViewSet(APITestCase):
+    def setUp(self):
+        # Force integrated wget behavior for most tests
+        settings.WGET_URL = None
+
     @responses.activate
-    def test_wget(self):
+    def test_wget_integrated(self):
         url = reverse("do-wget")
         response = self.client.get(
             url,

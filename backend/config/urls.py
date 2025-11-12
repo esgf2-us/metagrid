@@ -24,6 +24,7 @@ from metagrid.api_proxy.views import (
     do_search,
     do_stac_search,
     do_status,
+    do_wget,
     fetch_stac_aggregations,
     get_frontend_config,
     get_temp_storage,
@@ -33,7 +34,6 @@ from metagrid.cart.views import CartViewSet, SearchViewSet
 from metagrid.observability.views import liveness, readiness
 from metagrid.projects.views import ProjectsViewSet
 from metagrid.users.views import UserCreateViewSet, UserViewSet
-from metagrid.wget.views import do_wget
 
 router = DefaultRouter()
 router.register(r"users", UserViewSet)

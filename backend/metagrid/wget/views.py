@@ -21,7 +21,7 @@ from .query_utils import (  # get_allowed_projects_from_json,
 
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
-def do_wget(request):  # noqa: C901
+def do_wget_integrated(request):  # noqa: C901
 
     file_limit = settings.WGET_SCRIPT_FILE_DEFAULT_LIMIT
     wget_path_facets = []

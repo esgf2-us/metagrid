@@ -88,6 +88,24 @@ class TestProxyViewSet(APITestCase):
         assert response.status_code == status.HTTP_200_OK
 
     @responses.activate
+    def test_wget(self):
+        url = reverse("do-wget")
+        if settings.WGET_URL is None:
+            # If WGET_URL is None, skip the test
+            import pytest
+
+            pytest.skip("settings.WGET_URL is not set")
+
+        responses.get(settings.WGET_URL)
+        response = self.client.get(
+            url,
+            {
+                "dataset_id": "CMIP6.CMIP.IPSL.IPSL-CM6A-LR.abrupt-4xCO2.r12i1p1f1.Amon.n2oglobal.gr.v20191003|esgf-data1.llnl.gov"
+            },
+        )
+        assert response.status_code == status.HTTP_200_OK
+
+    @responses.activate
     def test_stac_search(self):
         url = reverse("do-stac-search")
         postdata = {"collections": "CMIP6", "limit": 10}
