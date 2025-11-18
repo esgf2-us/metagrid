@@ -13,8 +13,8 @@ RUN apt-get update \
     && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
     && rm -rf /var/lib/apt/lists/*
 
-RUN addgroup --system django \
-    && adduser --system --ingroup django django
+RUN groupadd --system --gid 1000 django && \
+    useradd --system --create-home --uid 1000 --gid django django
 
 # Requirements are installed here to ensure they will be cached.
 COPY requirements /requirements

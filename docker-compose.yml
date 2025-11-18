@@ -56,6 +56,8 @@ services:
         condition: service_healthy
     volumes:
       - ./backend:/app
+    environment:
+      WGET_SCRIPT_FILE_DEFAULT_LIMIT: 9999
     ports:
       - '127.0.0.1:5000:5000'
 
