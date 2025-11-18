@@ -129,7 +129,7 @@ export const convertStacToRawSearchResult = (stacResult: StacFeature): RawSearch
   if (project && typeof project === 'string') {
     const projVersion =
       properties[`${project.toLowerCase()}:version`] ||
-      properties[`${project.toLowerCase()}:version`];
+      properties[`${project.toUpperCase()}:version`];
     versionProperty = typeof projVersion === 'string' ? projVersion : undefined;
   }
   const versionStr = version || versionProperty || 'N/A';
