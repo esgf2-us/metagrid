@@ -42,6 +42,7 @@ import { topDataRowTargets } from '../../common/joyrideTutorials/reactJoyrideSte
 import { userCartAtom } from '../../common/atoms';
 import { AppPage } from '../../common/types';
 import { createCustomIcon } from '../NavBar';
+import { generateWgetScriptSTAC } from '../../common/STAC';
 
 export type Props = {
   loading: boolean;
@@ -83,10 +84,6 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
 
   // Add options to this constant as needed
   type DatasetDownloadTypes = 'wget' | 'Globus' | 'esgpull';
-
-  // If a record supports downloads from the allowed downloads, it will render
-  // in the drop downs
-  const allowedDownloadTypes: DatasetDownloadTypes[] = ['wget', 'esgpull'];
 
   const handleChange: OnChange = (pagination, filters, sorter) => {
     setSortedInfo(sorter as Sorts);
@@ -323,20 +320,15 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       title: 'Download Options',
       key: 'download',
       render: (record: RawSearchResult) => {
-        if (record.isStac) {
-          if (record.globus_link) {
-            return (
-              <Button
-                type="link"
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                href={record.globus_link}
-                target="_blank"
-              >
-                GLOBUS
-              </Button>
-            );
-          }
-          return <p>N/A</p>;
+        const SUCCESS_MSG = 'Wget script generated successfully!';
+        const STAC_ERROR_MSG =
+          'No file links found in the selected dataset, wget script was not generated.';
+        const downloadTypesAvailable: DatasetDownloadTypes[] = ['wget'];
+
+        if (record.isStac && record.globus_link) {
+          downloadTypesAvailable.push('Globus');
+        } else if (!record.isStac && record.id) {
+          downloadTypesAvailable.push('esgpull');
         }
 
         const formKey = `download-${record.id}`;
@@ -347,20 +339,34 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
         const handleDownloadForm = (downloadType: DatasetDownloadTypes): void => {
           /* istanbul ignore else */
           if (downloadType === 'wget') {
-            showNotice(messageApi, 'The wget script is generating, please wait momentarily.', {
-              duration: 3,
-              type: 'info',
-            });
-            fetchWgetScript([record.id], filenameVars)
-              .then(() => {
-                showNotice(messageApi, 'Wget script downloaded successfully!', {
-                  duration: 3,
+            if (record.isStac) {
+              // Generate file for STAC selections
+              const stacSuccess = generateWgetScriptSTAC([record]);
+
+              if (stacSuccess) {
+                showNotice(messageApi, SUCCESS_MSG, {
+                  duration: 4,
                   type: 'success',
                 });
-              })
-              .catch((error: ResponseError) => {
-                showError(messageApi, error.message);
+              } else {
+                showError(messageApi, STAC_ERROR_MSG);
+              }
+            } else {
+              showNotice(messageApi, 'The wget script is generating, please wait momentarily.', {
+                duration: 3,
+                type: 'info',
               });
+              fetchWgetScript([record.id], filenameVars)
+                .then(() => {
+                  showNotice(messageApi, SUCCESS_MSG, {
+                    duration: 3,
+                    type: 'success',
+                  });
+                })
+                .catch((error: ResponseError) => {
+                  showError(messageApi, error.message);
+                });
+            }
           } else if (downloadType === 'esgpull' && record.id) {
             if (navigator && navigator.clipboard && typeof record.master_id === 'string') {
               navigator.clipboard
@@ -373,6 +379,8 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
                   });
                 });
             }
+          } else if (downloadType === 'Globus' && record.globus_link) {
+            window.open(record.globus_link, '_blank');
           }
         };
 
@@ -386,14 +394,14 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
               onFinish={({ [formKey]: download }) =>
                 handleDownloadForm(download as DatasetDownloadTypes)
               }
-              initialValues={{ [formKey]: allowedDownloadTypes[0] }}
+              initialValues={{ [formKey]: downloadTypesAvailable[0] }}
             >
               <Form.Item name={formKey}>
                 <Select
                   disabled={record.retracted === true}
                   className={topDataRowTargets.downloadScriptOptions.class()}
                   style={{ width: 100 }}
-                  options={allowedDownloadTypes.map((option) => {
+                  options={downloadTypesAvailable.map((option) => {
                     return {
                       key: `${formKey}-${option}`,
                       value: option,

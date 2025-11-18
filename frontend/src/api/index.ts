@@ -29,7 +29,12 @@ import {
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
 import apiRoutes, { ApiRoute, HTTPCodeType } from './routes';
 import { GlobusEndpointSearchResults } from '../components/Globus/types';
-import { cachePagination, getCachedPagination, getCachedSearchResults } from '../common/utils';
+import {
+  cachePagination,
+  downloadFileForUser,
+  getCachedPagination,
+  getCachedSearchResults,
+} from '../common/utils';
 import {
   aggregationsToFacetsData,
   convertSearchParamsIntoStacFilter,
@@ -509,7 +514,7 @@ Promise<{ [key: string]: any }> => {
       return res;
     })
     .catch((error: ResponseError) => {
-      status = error.cause === 422 ? 422 : 500;
+      status = error.cause === 422 ? 422 : (error.cause as number) || 500;
     });
 
   const aggregationsToFacets = aggregationsToFacetsData(aggregations || { aggregations: [] });
@@ -590,11 +595,11 @@ export const fetchSearchResults = async (
       })
       .catch((error: ResponseError) => {
         if (error.cause === 422) {
-          throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearch), {
+          throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearchSTAC), {
             cause: 422,
           });
         } else {
-          throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearch));
+          throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearchSTAC));
         }
       });
   }
@@ -735,26 +740,6 @@ export const fetchDatasetFiles = async (
     });
 };
 
-const returnFileToUser = (fileContent: string): void => {
-  const d = new Date();
-  const fileName = `wget_script_${d.getFullYear()}-${
-    d.getMonth() + 1
-  }-${d.getDate()}_${d.getHours()}-${d.getMinutes()}-${d.getSeconds()}.sh`;
-  const downloadLinkNode = document.createElement('a');
-  downloadLinkNode.setAttribute(
-    'href',
-    `data:text/plain;charset=utf-8,${encodeURIComponent(fileContent)}`,
-  );
-  downloadLinkNode.setAttribute('download', fileName);
-
-  downloadLinkNode.style.display = 'none';
-  document.body.appendChild(downloadLinkNode);
-
-  downloadLinkNode.click();
-
-  document.body.removeChild(downloadLinkNode);
-};
-
 /**
  * Performs wget request from the API.
  *
@@ -765,9 +750,14 @@ export const fetchWgetScript = async (ids: string[], filenameVars?: string[]): P
     query: filenameVars,
   };
 
+  const d = new Date();
+  const fileName = `wget_script_${d.getFullYear()}-${
+    d.getMonth() + 1
+  }-${d.getDate()}_${d.getHours()}-${d.getMinutes()}-${d.getSeconds()}.sh`;
+
   return axios
     .post(apiRoutes.wget.path, data)
-    .then((resp) => returnFileToUser(resp.data as string))
+    .then((resp) => downloadFileForUser(fileName, resp.data as string))
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.wget));
     });

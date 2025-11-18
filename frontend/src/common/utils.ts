@@ -698,3 +698,19 @@ export const saveBannerText = (): void => {
     sessionStorage.setItem('showBanner', bannerText);
   }
 };
+
+export const downloadFileForUser = (filename: string, fileContent: string): void => {
+  const downloadLinkNode = document.createElement('a');
+  downloadLinkNode.setAttribute(
+    'href',
+    `data:text/plain;charset=utf-8,${encodeURIComponent(fileContent)}`,
+  );
+  downloadLinkNode.setAttribute('download', filename);
+
+  downloadLinkNode.style.display = 'none';
+  document.body.appendChild(downloadLinkNode);
+
+  downloadLinkNode.click();
+
+  document.body.removeChild(downloadLinkNode);
+};
