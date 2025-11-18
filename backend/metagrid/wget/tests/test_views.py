@@ -1,7 +1,6 @@
 import json
 from unittest.mock import patch
 
-import responses
 from django.conf import settings
 from django.urls import reverse
 from rest_framework import status
@@ -10,18 +9,51 @@ from rest_framework.test import APITestCase
 
 class TestWgetViewSet(APITestCase):
     def setUp(self):
-        # Force integrated wget behavior for most tests
+        # Save original and force integrated wget behavior for most tests
+        self._orig_wget_url = getattr(settings, "WGET_URL", None)
         settings.WGET_URL = None
 
-    @responses.activate
-    def test_wget_integrated(self):
+        # Dummy ESGGlobusQuery used to avoid real ESGF/Globus login during tests
+        class DummyESGQuery:
+            def __init__(self, *a, **k):
+                pass
+
+            def query_file_records(self, dsid, wget=True):
+                # Return a minimal deterministic result expected by do_wget_integrated
+                return [
+                    {
+                        "title": "file1.nc",
+                        "checksum_type": ["md5"],
+                        "checksum": ["deadbeef"],
+                        "url": [
+                            "http://example.com/file1.nc|HTTPServer|HTTPServer"
+                        ],
+                        "activity_id": ["ACT"],
+                    }
+                ]
+
+        # Patch the ESGGlobusQuery in the view module for all tests in this class
+        self._esg_patcher = patch(
+            "metagrid.wget.views.ESGGlobusQuery", DummyESGQuery
+        )
+        self._esg_patcher.start()
+
+    def tearDown(self):
+        # Restore original WGET_URL after each test
+        settings.WGET_URL = self._orig_wget_url
+        # Stop patching ESGGlobusQuery
+        self._esg_patcher.stop()
+
+    @patch("metagrid.wget.views.render")
+    def test_wget_integrated(self, mock_render):
         url = reverse("do-wget")
         response = self.client.get(
             url,
             {
-                "dataset_id": "CMIP6.CMIP.IPSL.IPSL-CM6A-LR.abrupt-4xCO2.r12i1p1f1.Amon.n2oglobal.gr.v20191003|esgf-data1.llnl.gov"
+                "dataset_id": "CMIP6.PAMIP.NCC.NorESM2-LM.modelSST-futArcSIC.r23i1p1f1.fx.areacella.gn.v20201001|esgf-node.ornl.gov"
             },
         )
+
         assert response.status_code == status.HTTP_200_OK
 
     def test_wget_invalid_param_returns_400(self):

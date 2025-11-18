@@ -111,7 +111,7 @@ export const aggregationsToFacetsData = (
 
 export const convertStacToRawSearchResult = (stacResult: StacFeature): RawSearchResult => {
   const { id, assets, bbox, geometry, links, properties, stac_version, type } = stacResult;
-  const { access, citation_url, further_info_url, version } = properties;
+  const { access, citation_url, further_info_url, version, project } = properties;
 
   const numberOfFiles = Object.keys(assets).filter((key) => key !== 'globus').length;
   const size = Object.values(assets).reduce((acc, asset) => acc + (asset['file:size'] || 0), 0);
@@ -119,10 +119,20 @@ export const convertStacToRawSearchResult = (stacResult: StacFeature): RawSearch
   const updatedAssets: {
     [name: string]: StacAsset;
   } = {};
+
   Object.entries(assets).forEach(([key, value]) => {
     // Sometimes the asset has no name, title or id, in which case we'll use the key as a fallback
     updatedAssets[key] = { ...value, id: value.name || value.title || key, access };
   });
+
+  let versionProperty;
+  if (project && typeof project === 'string') {
+    const projVersion =
+      properties[`${project.toLowerCase()}:version`] ||
+      properties[`${project.toLowerCase()}:version`];
+    versionProperty = typeof projVersion === 'string' ? projVersion : undefined;
+  }
+  const versionStr = version || versionProperty || 'N/A';
 
   const result: RawSearchResult = {
     id,
@@ -135,7 +145,7 @@ export const convertStacToRawSearchResult = (stacResult: StacFeature): RawSearch
     geometry,
     links,
     number_of_files: numberOfFiles,
-    version,
+    version: versionStr,
     properties,
     stac_version,
     type,
