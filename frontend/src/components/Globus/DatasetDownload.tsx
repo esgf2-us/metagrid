@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 import { DownloadOutlined, QuestionOutlined } from '@ant-design/icons';
 import {
+  Alert,
   Button,
   Card,
   Collapse,
@@ -54,6 +55,7 @@ import {
   manageCollectionsTourTargets,
   createCollectionsFormTour,
 } from '../../common/joyrideTutorials/reactJoyrideSteps';
+import { generateWgetScriptSTAC } from '../../common/STAC';
 
 const GLOBUS_REDIRECT_URL = `${window.location.origin}/cart/items`;
 
@@ -173,42 +175,119 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   }
 
   const handleWgetDownload = (): void => {
+    setDownloadIsLoading(true);
+
     const cleanedSelections = itemSelections.filter((item) => {
       return item !== undefined && item !== null;
     });
     setItemSelections(cleanedSelections);
 
-    const ids = cleanedSelections.map((item) => item.id);
-    showNotice(messageApi, 'The wget script is generating, please wait momentarily.', {
-      duration: 3,
-      type: 'info',
-    });
-    setDownloadIsLoading(true);
-    fetchWgetScript(ids)
-      .then(() => {
+    const stacSelections = cleanedSelections.filter((item) => item.isStac);
+    const nonStacSelections = cleanedSelections.filter((item) => !item.isStac);
+
+    const STAC_ERROR_MSG =
+      'No file links found in selected STAC files, wget script was not generated.';
+    const SUCCESS_MSG = 'Wget script downloaded successfully!';
+    const STAC_SUCCESS_MSG = 'Wget script for STAC files downloaded successfully!';
+    const NON_STAC_SUCCESS_MSG = 'Wget script for non-STAC files downloaded successfully!';
+    const BOTH_SUCCESS_MSG =
+      'Wget scripts for both STAC and non-STAC files downloaded successfully!';
+
+    // Generate file for STAC selections
+    let stacSuccess = false;
+
+    if (stacSelections.length > 0) {
+      stacSuccess = generateWgetScriptSTAC(stacSelections);
+
+      if (nonStacSelections.length === 0) {
         setDownloadIsLoading(false);
-        showNotice(messageApi, 'Wget script downloaded successfully!', {
-          duration: 4,
-          type: 'success',
+        if (stacSuccess) {
+          showNotice(messageApi, STAC_SUCCESS_MSG, {
+            duration: 4,
+            type: 'success',
+          });
+        } else {
+          showError(messageApi, STAC_ERROR_MSG);
+        }
+      }
+    }
+
+    // Generate file for non-STAC selections
+    if (nonStacSelections.length > 0) {
+      const ids = nonStacSelections.map((item) => item.id);
+
+      // Generate wget script for download
+      showNotice(
+        messageApi,
+        `The wget script${nonStacSelections.length > 0 ? 's' : ''} generating, please wait momentarily.`,
+        {
+          duration: 3,
+          type: 'info',
+        },
+      );
+
+      fetchWgetScript(ids)
+        .then(() => {
+          setDownloadIsLoading(false);
+          let noticeContent: string | React.ReactNode =
+            stacSelections.length > 0 ? BOTH_SUCCESS_MSG : SUCCESS_MSG;
+          if (stacSelections.length > 0 && !stacSuccess) {
+            noticeContent = (
+              <Card
+                title="STAC Wget Script Error"
+                style={{
+                  maxWidth: '500px',
+                  maxHeight: '400px',
+                  overflowY: 'auto',
+                  overflowX: 'auto',
+                }}
+              >
+                Non-STAC: <Alert closable message={NON_STAC_SUCCESS_MSG} type="success" showIcon />
+                <br />
+                STAC: <Alert closable message={STAC_ERROR_MSG} type="error" showIcon />
+              </Card>
+            );
+          }
+
+          showNotice(messageApi, noticeContent, {
+            duration: 5,
+            type: stacSuccess || stacSelections.length === 0 ? 'success' : 'error',
+          });
+        })
+        .catch((error: ResponseError) => {
+          setDownloadIsLoading(false);
+          const noticeContent: string | React.ReactNode =
+            stacSelections.length > 0 ? (
+              <>
+                STAC:{' '}
+                {stacSuccess ? (
+                  <Alert closable message={STAC_SUCCESS_MSG} type="success" showIcon />
+                ) : (
+                  <Alert closable message={STAC_ERROR_MSG} type="error" showIcon />
+                )}
+                <br />
+                Non-STAC: <Alert closable message={error.message} type="error" showIcon />
+              </>
+            ) : (
+              error.message
+            );
+
+          showError(
+            messageApi,
+            <Card
+              title="Wget Script Error"
+              style={{
+                maxWidth: '500px',
+                maxHeight: '400px',
+                overflowY: 'auto',
+                overflowX: 'auto',
+              }}
+            >
+              {noticeContent}
+            </Card>,
+          );
         });
-      })
-      .catch((error: ResponseError) => {
-        showError(
-          messageApi,
-          <Card
-            title="Wget Script Error"
-            style={{
-              maxWidth: '500px',
-              maxHeight: '400px',
-              overflowY: 'auto',
-              overflowX: 'auto',
-            }}
-          >
-            {error.message}
-          </Card>,
-        );
-        setDownloadIsLoading(false);
-      });
+    }
   };
 
   const getCurrentScope = (): string => {

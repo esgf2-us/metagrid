@@ -380,7 +380,7 @@ describe('test main table UI', () => {
     await screen.findByRole('table');
 
     // Check success message renders
-    const successMsg = await screen.findByText('Wget script downloaded successfully!');
+    const successMsg = await screen.findByText('Wget script generated successfully!');
     expect(successMsg).toBeTruthy();
   });
 

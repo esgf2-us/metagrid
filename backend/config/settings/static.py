@@ -10,6 +10,8 @@ env = environ.Env()
 # project root (config/settings/static.py - 3 = metagrid/)
 ROOT_DIR = environ.Path(__file__) - 3
 
+TEMPLATE_DIR = ROOT_DIR("metagrid", "wget", "templates")
+
 # Parse DATABASE_URL environment variable; default to an in-memory sqlite DB for tests/local runs.
 # This prevents "Set the DATABASE_URL environment variable" errors when none is provided.
 DATABASES = env.db_url(
@@ -104,7 +106,7 @@ class DjangoStaticSettings(BaseSettings):
     # https://docs.djangoproject.com/en/dev/ref/settings/#static-url
     STATIC_URL: str = "/static/"
     # https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
-    STATICFILES_DIRS: Sequence[str] = []
+    STATICFILES_DIRS: Sequence[str] = [TEMPLATE_DIR]
     # https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#staticfiles-finders
     STATICFILES_FINDERS: Sequence[str] = [
         "django.contrib.staticfiles.finders.FileSystemFinder",
@@ -125,7 +127,7 @@ class DjangoStaticSettings(BaseSettings):
         {
             "BACKEND": "django.template.backends.django.DjangoTemplates",
             "DIRS": STATICFILES_DIRS,
-            "APP_DIRS": False,
+            "APP_DIRS": True,
             "OPTIONS": {
                 "context_processors": [
                     "django.template.context_processors.debug",
