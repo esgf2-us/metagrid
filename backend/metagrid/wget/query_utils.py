@@ -178,7 +178,8 @@ UNSUPPORTED_FIELDS = [
 ID_FIELDS = [FIELD_ID, FIELD_DATASET_ID, FIELD_MASTER_ID, FIELD_INSTANCE_ID]
 
 
-def split_value(value):
+# This is a utility method not currently in used.
+def split_value(value):  # pragma: no cover
     """
     Utility method to split an HTTP parameter value into comma-separated
     values but keep intact patterns such as "CESM1(CAM5.1,FV2)
