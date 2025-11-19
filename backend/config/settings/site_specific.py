@@ -141,6 +141,14 @@ class MetagridFrontendSettings(BaseSettings):
         description="(Optional) Text to display as a banner above the main body. Useful for providing maintenance notices or important news. The banner will be hidden permanently if the user clicks the close button.",
     )
 
+    SUPPORT_INFO: Optional[str] = Field(
+        default=None,
+        examples=[
+            "Questions or problems? Please contact the site administrator at: siteadmin@site.org"
+        ],
+        description="(Optional) Text to display site administrator support information. Useful for providing help or contact information to site visitors.",
+    )
+
     FOOTER_TEXT: str = Field(
         default="",
         description="Text to display in the footer of the frontend. Useful for adding a link to the terms of service or other legal information. The string should be formatted as MarkDown and will be rendered as such.",

@@ -17,6 +17,7 @@ export type FrontendConfig = {
   SEARCH_URL: string | null;
   STAC_URL: string | null;
   BANNER_TEXT: string | null;
+  SUPPORT_INFO: string | null;
   FOOTER_TEXT: string | null;
 
   // Globus
