@@ -55,62 +55,67 @@ const Support: React.FC = () => {
           title={
             <div>
               <h2>MetaGrid Support</h2>
-              <h3>Documentation</h3>
-              <p style={{ fontSize: '14px' }}>
-                Welcome to Metagrid Support! To view the latest documentation and FAQ, please visit
-                this page:
-                <br />
-                <a
-                  href=" https://esgf.github.io/esgf-user-support/metagrid.html"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  https://esgf.github.io/esgf-user-support/metagrid.html
-                </a>
-              </p>
-              <p style={{ fontSize: '14px' }}>
-                If you need help on Globus Transfers (
-                <b>following successful submission to Globus</b>), please visit this page for more
-                information:
-                <a href="https://app.globus.org/help">https://app.globus.org/help</a>
-              </p>
-              <div>
-                <h3>User Interface Tours</h3>
-                <p style={{ fontSize: '14px' }}>
-                  If you are new to Metagrid, you can familiarize yourself with the user interface
-                  by clicking on an available tour below.
-                </p>
-              </div>
-              <Card title="">
-                {curPage === AppPage.Main && (
-                  <Button style={{ marginLeft: '10px' }} onClick={startMainPageTour}>
-                    {TourTitles.Main}
-                  </Button>
-                )}
-                {curPage === AppPage.Cart && (
-                  <Button style={{ marginLeft: '10px' }} onClick={startCartPageTour}>
-                    {TourTitles.Cart}
-                  </Button>
-                )}
-                {curPage === AppPage.SavedSearches && (
-                  <Button style={{ marginLeft: '10px' }} onClick={startSearchCardTour}>
-                    {TourTitles.Searches}
-                  </Button>
-                )}
-                {curPage === AppPage.NodeStatus && (
-                  <Button style={{ marginLeft: '10px' }} onClick={startNodeStatusTour}>
-                    {TourTitles.Node}
-                  </Button>
-                )}
-              </Card>
             </div>
           }
           onClose={() => {
             setSupportModalVisible(false);
           }}
           centered
+          style={{ minWidth: '700px' }}
         >
-          <p>Questions, suggestions, or problems? Please visit our GitHub page to open an issue.</p>
+          <h3>Documentation</h3>
+          <p style={{ fontSize: '14px' }}>
+            Welcome to Metagrid Support! To view the latest documentation and FAQ, please visit this
+            page:
+            <br />
+            <a
+              href=" https://esgf.github.io/esgf-user-support/metagrid.html"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              https://esgf.github.io/esgf-user-support/metagrid.html
+            </a>
+          </p>
+          <div>
+            <h3>User Interface Tours</h3>
+            <p style={{ fontSize: '14px' }}>
+              If you are new to Metagrid, you can familiarize yourself with the user interface of
+              this page by clicking on the tour below.
+            </p>
+            <Card title="">
+              <div style={{ display: 'flex', gap: 10 }}>
+                {curPage === AppPage.Main && (
+                  <Button onClick={startMainPageTour}>{TourTitles.Main}</Button>
+                )}
+                {curPage === AppPage.Cart && (
+                  <Button onClick={startCartPageTour}>{TourTitles.Cart}</Button>
+                )}
+                {curPage === AppPage.SavedSearches && (
+                  <Button onClick={startSearchCardTour}>{TourTitles.Searches}</Button>
+                )}
+                {curPage === AppPage.NodeStatus && (
+                  <Button onClick={startNodeStatusTour}>{TourTitles.Node}</Button>
+                )}
+              </div>
+            </Card>
+            {window.METAGRID.SUPPORT_INFO && (
+              <>
+                <h3>Site Admin Support</h3>
+                <p style={{ fontSize: '14px' }}>{window.METAGRID.SUPPORT_INFO}</p>
+              </>
+            )}
+          </div>
+          <h3>Globus Specific Support</h3>
+          <p>
+            If you need help regarding Globus Transfers <b>(not related to the Metagrid site)</b>,
+            please visit this page for more information:
+            <a href="https://app.globus.org/help">https://app.globus.org/help</a>
+          </p>
+          <h3>Metagrid Specific Issues</h3>
+          <p>
+            For Metagrid related suggestions, bugs or concerns that cannot be addressed by site
+            admins, please visit our GitHub page to open an issue for the developer team.
+          </p>
           <div
             style={{
               display: 'flex',
@@ -123,7 +128,7 @@ const Support: React.FC = () => {
               rel="noopener noreferrer"
               target="_blank"
             >
-              <GithubOutlined style={{ fontSize: '32px' }} /> GitHub Issues
+              <GithubOutlined style={{ fontSize: '30px' }} /> GitHub Issues
             </a>
           </div>
         </Modal>
