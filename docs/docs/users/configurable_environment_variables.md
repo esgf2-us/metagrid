@@ -193,6 +193,17 @@
 >
 >     `My banner notification text.`
 
+#### `METAGRID_SUPPORT_INFO`
+
+> !!! example "*Optional*"
+>     __Default:__ `None`
+>
+>     (Optional) Text to display site administrator support information. Useful for providing help or contact information to site visitors.
+>
+>     __Example Values__
+>
+>     - `Questions or problems? Please contact the site administrator at: siteadmin@site.org`
+
 #### `METAGRID_FOOTER_TEXT`
 
 > !!! example "*Optional*"
