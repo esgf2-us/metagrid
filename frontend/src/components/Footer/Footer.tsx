@@ -9,7 +9,7 @@ const Footer: React.FC = () => {
     <footer style={{ fontSize: '11px' }}>
       Metagrid Version: {metagridVersion}
       <div className="footerMarkdown">
-        <Markdown>{window.METAGRID.FOOTER_TEXT}</Markdown>
+        <Markdown>{window.METAGRID ? window.METAGRID.FOOTER_TEXT : ''}</Markdown>
       </div>
     </footer>
   );
