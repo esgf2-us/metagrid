@@ -11,7 +11,6 @@ from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from globus_portal_framework import load_transfer_client
 from globus_sdk import (
     ConfidentialAppAuthClient,
     GlobusHTTPResponse,
@@ -178,33 +177,24 @@ class GlobusTransferAuthFlow:
             self.request.session[REFRESH_KEY_NAME] = token
 
     def get_existing_transfer_client(self) -> TransferClient | None:
-        # Based on user, obtain a transfer client
-        if (
-            self.request is not None
-            and self.request.user.is_authenticated
-            and settings.AUTHENTICATION_METHOD == "globus"
-        ):
-            print("Found existing transfer client from authenticated user")
-            return load_transfer_client(self.request.user)
-        else:
-            refresh_token = self.get_saved_token()
-            if refresh_token is not None:
-                print("Using saved refresh token")
-                try:
-                    client = TransferClient(
-                        authorizer=RefreshTokenAuthorizer(
-                            auth_client=self.auth_client,
-                            refresh_token=refresh_token,
-                        )
+        refresh_token = self.get_saved_token()
+        if refresh_token is not None:
+            print("Using saved refresh token")
+            try:
+                client = TransferClient(
+                    authorizer=RefreshTokenAuthorizer(
+                        auth_client=self.auth_client,
+                        refresh_token=refresh_token,
                     )
-                    return client
-                except TransferAPIError as e:
-                    print("Error occurred while creating transfer client: ", e)
-                    print("Deleted transfer token from session.")
-                    self.delete_token()
-                    return None
-            else:
+                )
+                return client
+            except TransferAPIError as e:
+                print("Error occurred while creating transfer client: ", e)
+                print("Deleted transfer token from session.")
+                self.delete_token()
                 return None
+        else:
+            return None
 
     # Attempt an ls operation to see if we have access to the target endpoint
     def check_for_consent_required(self, transfer_client):
