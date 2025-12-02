@@ -13,10 +13,15 @@ set -e
 function startProductionService() {
     clear
     echo "Choose authentication method:"
-    echo "1 Globus"
+    echo "1 Globus - default"
     echo "2 Keycloak"
     echo "3 None"
     read -r auth_choice
+
+    # Default to 1 (Globus) if no value is entered
+    if [ -z "$auth_choice" ]; then
+        auth_choice=1
+    fi
 
     case $auth_choice in
     1)
