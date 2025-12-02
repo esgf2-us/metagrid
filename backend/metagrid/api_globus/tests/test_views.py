@@ -123,7 +123,7 @@ def test_globus_multi_transfer_submits_tasks(
     assert "auth_url" in data
 
     # Ensure auth_url contains a client_id query parameter (value may vary)
-    from urllib.parse import urlparse, parse_qs
+    from urllib.parse import parse_qs, urlparse
 
     parsed = urlparse(data["auth_url"])
     qs = parse_qs(parsed.query)
