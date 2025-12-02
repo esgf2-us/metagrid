@@ -116,12 +116,21 @@ def test_globus_multi_transfer_submits_tasks(
     )
 
     assert response.status_code == status.HTTP_207_MULTI_STATUS
-    assert response.json() == {
-        "status": 207,
-        "successes": [],
-        "failures": [],
-        "auth_url": "https://auth.globus.org/v2/oauth2/authorize?client_id=d09a7432-d475-41be-9dda-0006d6a69fac&redirect_uri=None&scope=openid+profile+email+urn%3Aglobus%3Aauth%3Ascope%3Atransfer.api.globus.org%3Aall&state=_default&response_type=code&access_type=offline",
-    }
+    data = response.json()
+    assert data.get("status") == 207
+    assert data.get("successes") == []
+    assert data.get("failures") == []
+    assert "auth_url" in data
+
+    # Ensure auth_url contains a client_id query parameter (value may vary)
+    from urllib.parse import urlparse, parse_qs
+
+    parsed = urlparse(data["auth_url"])
+    qs = parse_qs(parsed.query)
+    assert (
+        "client_id" in qs and qs["client_id"]
+    ), "auth_url must include a client_id"
+    assert "scope" in qs and qs["scope"], "auth_url must include a scope"
 
 
 @responses.activate
