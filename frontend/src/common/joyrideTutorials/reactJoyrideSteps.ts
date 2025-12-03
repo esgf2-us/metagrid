@@ -504,7 +504,7 @@ export const createMainPageTour = (): JoyrideTour => {
     )
     .addNextStep(
       leftSidebarTargets.facetFormAdditionalFields.selector(),
-      'This section contains additional properties that you can select to further refine your search results, including the Version Type, Result Type and Version Date Range. Hovering over the question mark icon will further explain the parameter.',
+      'This section contains additional properties that you can select to further refine your search results, including the Version Type, Result Type and Versions. Hovering over the question mark icon will further explain the parameter.',
       'right-end',
       /* istanbul ignore next */
       async () => {
