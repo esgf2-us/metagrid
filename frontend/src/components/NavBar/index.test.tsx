@@ -18,7 +18,7 @@ it('renders LeftMenu and RightMenu components', async () => {
   const rightMenuComponent = await screen.findByTestId('right-menu');
   expect(rightMenuComponent).toBeTruthy();
 
-  const leftMenuComponent = await screen.findByTestId('left-menu');
+  const leftMenuComponent = await screen.findByTestId('nav-bar-logo');
   expect(leftMenuComponent).toBeTruthy();
 });
 
@@ -34,7 +34,7 @@ it('renders error message when projects can"t be fetched', async () => {
 
 it('opens the drawer onClick and closes with onClose', async () => {
   customRender(<NavBar {...defaultProps} />);
-  const leftMenu = await screen.findByTestId('left-menu');
+  const leftMenu = await screen.findByTestId('nav-bar-logo');
   expect(leftMenu).toBeTruthy();
   expect(await screen.findByTestId('right-menu')).toBeTruthy();
 

@@ -32,7 +32,7 @@ const NavBar: React.FC = () => {
   return (
     <nav data-testid="nav-bar" className={className}>
       <div className="navbar-container">
-        <div className="navbar-logo">
+        <div className="navbar-logo" data-testid="nav-bar-logo">
           <Link
             href="https://esgf.github.io/nodes.html"
             target="_blank"

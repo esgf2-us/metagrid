@@ -1,4 +1,9 @@
-import { CopyOutlined, InfoCircleOutlined, SearchOutlined } from '@ant-design/icons';
+import {
+  CopyOutlined,
+  InfoCircleOutlined,
+  // RightCircleOutlined,
+  SearchOutlined,
+} from '@ant-design/icons';
 import {
   Col,
   Collapse,
@@ -93,6 +98,8 @@ const FacetsForm: React.FC = () => {
   // Local variables
   const [messageApi, contextHolder] = message.useMessage();
 
+  // const [filenameVarForm] = Form.useForm();
+  // const [filenameVars, setFilenameVars] = React.useState<string>('');
   const [generalFacetsForm] = Form.useForm();
   const [availableFacetsForm] = Form.useForm();
   const [keywordSearchForm] = Form.useForm();
@@ -132,6 +139,20 @@ const FacetsForm: React.FC = () => {
     minVersionDate ? formatDate(minVersionDate, false) : (minVersionDate as null),
     maxVersionDate ? formatDate(maxVersionDate, false) : (maxVersionDate as null),
   ];
+
+  // const handleOnFinishFilenameVarForm = (values: { [key: string]: string }): void => {
+  //   if (activeSearchQuery.filenameVars.includes(values.filenameVar as never)) {
+  //     showError(messageApi, `Input "${values.filenameVar}" has already been applied`);
+  //   } else {
+  //     setActiveSearchQuery({
+  //       ...activeSearchQuery,
+  //       filenameVars: [...activeSearchQuery.filenameVars, values.filenameVar],
+  //     });
+  //   }
+
+  //   setFilenameVars('');
+  //   filenameVarForm.setFieldsValue({ filenameVar: '' });
+  // };
 
   const handleOnChangeGeneralFacetsForm = (selectedFacets: {
     versionType: VersionType;
@@ -638,6 +659,67 @@ const FacetsForm: React.FC = () => {
           />
         </div>
       </Form>
+      {/* 
+        The filename var filter is currently disabled.
+        <Form
+        form={filenameVarForm}
+        layout="horizontal"
+        size="small"
+        onFinish={handleOnFinishFilenameVarForm}
+        style={styles.filenameVarForm}
+      >
+        <Collapse
+          items={[
+            {
+              key: 'filename',
+              label: (
+                <div
+                  className={leftSidebarTargets.facetFormFilename.class()}
+                  data-testid="filename-collapse"
+                >
+                  {humanizeFacetNames('filename')}
+                </div>
+              ),
+              className: `site-collapse-custom-collapse ${leftSidebarTargets.facetFormFilenameFields.class()}`,
+              children: (
+                <Form.Item
+                  name="filenameVar"
+                  label="Filter by Filename"
+                  rules={[{ required: true, message: 'Variable is required' }]}
+                  tooltip={{
+                    title: (
+                      <p>
+                        Use file or variable names to filter a dataset&apos;s files under the{' '}
+                        <RightCircleOutlined></RightCircleOutlined> icon. For multiple names, add
+                        them individually or as a single comma-separated input (e.g. cct, cl).
+                      </p>
+                    ),
+                    trigger: 'hover',
+                  }}
+                >
+                  <Row gutter={5}>
+                    <Col>
+                      <Input
+                        data-testid="filename-search-input"
+                        value={filenameVars}
+                        style={{ width: '140px' }}
+                        onChange={(e) => setFilenameVars(e.target.value)}
+                      />
+                    </Col>
+                    <Col>
+                      <Button
+                        type="primary"
+                        htmlType="submit"
+                        icon={<SearchOutlined data-testid="filename-search-submit-btn" />}
+                      ></Button>
+                    </Col>
+                  </Row>
+                </Form.Item>
+              ),
+            },
+          ]}
+        />
+      </Form> */}
       <Form
         initialValues={{}}
         style={styles.searchForm}
@@ -667,7 +749,7 @@ const FacetsForm: React.FC = () => {
                     rules={[{ required: true, message: 'Text is required' }]}
                   >
                     <Input
-                      data-testid="left-menu-keyword-search-input"
+                      data-testid="keyword-search-input"
                       size="small"
                       style={{ minWidth: '285px' }}
                       value={keywordSearch}

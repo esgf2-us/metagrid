@@ -468,7 +468,9 @@ describe('test column sorting', () => {
     expect(cell).toHaveTextContent('zyx');
 
     // Click on the column header to sort
-    const tableHeader = await screen.findByText('Dataset ID');
+    const headerRow = (await screen.findAllByRole('row'))[0];
+    expect(headerRow).toBeTruthy();
+    const tableHeader = await within(headerRow).findByText('Dataset ID');
     expect(tableHeader).toBeTruthy();
     await user.click(tableHeader);
 
@@ -510,7 +512,9 @@ describe('test column sorting', () => {
     expect(cell).toHaveTextContent('18');
 
     // Click on the column header to sort
-    const tableHeader = await screen.findByText('Files');
+    const headerRow = (await screen.findAllByRole('row'))[0];
+    expect(headerRow).toBeTruthy();
+    const tableHeader = await within(headerRow).findByText('Files');
     expect(tableHeader).toBeTruthy();
     await user.click(tableHeader);
 
@@ -549,7 +553,9 @@ describe('test column sorting', () => {
     expect(cell).toHaveTextContent('5.54 KB');
 
     // Click on the column header to sort
-    const tableHeader = await screen.findByText('Total Size');
+    const headerRow = (await screen.findAllByRole('row'))[0];
+    expect(headerRow).toBeTruthy();
+    const tableHeader = await within(headerRow).findByText('Total Size');
     expect(tableHeader).toBeTruthy();
     await user.click(tableHeader);
 
@@ -591,7 +597,9 @@ describe('test column sorting', () => {
     expect(cell).toHaveTextContent('5678');
 
     // Click on the column header to sort
-    const tableHeader = await screen.findByText('Version');
+    const headerRow = (await screen.findAllByRole('row'))[0];
+    expect(headerRow).toBeTruthy();
+    const tableHeader = await within(headerRow).findByText('Version');
     expect(tableHeader).toBeTruthy();
     await user.click(tableHeader);
 
@@ -608,7 +616,6 @@ describe('test column sorting', () => {
   });
 
   it('Handles sorting without breaking even if values are undefined', async () => {
-    const colIdx = 4; // The column that Total Size is in
     customRender(
       <Table
         {...defaultProps}
@@ -635,27 +642,27 @@ describe('test column sorting', () => {
     const table = await screen.findByRole('table');
     expect(table).toBeTruthy();
 
-    // First row in table
-    const firstRow = (await screen.findAllByRole('row'))[1];
+    // Header row in table
+    const firstRow = (await screen.findAllByRole('row'))[0];
     expect(firstRow).toBeTruthy();
 
     // Click on the column header to sort
-    const tableDatasetId = await screen.findByText('Dataset ID');
+    const tableDatasetId = await within(firstRow).findByText('Dataset ID');
     expect(tableDatasetId).toBeTruthy();
     await user.click(tableDatasetId);
 
     // Click on the column header to sort
-    const files = await screen.findByText('Files');
+    const files = await within(firstRow).findByText('Files');
     expect(files).toBeTruthy();
     await user.click(files);
 
     // Click on the column header to sort
-    const totalSize = await screen.findByText('Total Size');
+    const totalSize = await within(firstRow).findByText('Total Size');
     expect(totalSize).toBeTruthy();
     await user.click(totalSize);
 
     // Click on the column header to sort
-    const version = await screen.findByText('Version');
+    const version = await within(firstRow).findByText('Version');
     expect(version).toBeTruthy();
     await user.click(version);
   });
