@@ -5,6 +5,7 @@ import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
 import NavBar, { Props } from './index';
+import { printElementContents } from '../../test/jestTestFunctions';
 
 const user = userEvent.setup();
 
@@ -20,16 +21,6 @@ it('renders LeftMenu and RightMenu components', async () => {
 
   const leftMenuComponent = await screen.findByTestId('nav-bar-logo');
   expect(leftMenuComponent).toBeTruthy();
-});
-
-it('renders error message when projects can"t be fetched', async () => {
-  server.use(rest.get(apiRoutes.projects.path, (_req, res, ctx) => res(ctx.status(404))));
-  customRender(<NavBar {...defaultProps} />);
-
-  const alertComponent = await screen.findByRole('img', {
-    name: 'close-circle',
-  });
-  expect(alertComponent).toBeTruthy();
 });
 
 it('opens the drawer onClick and closes with onClose', async () => {

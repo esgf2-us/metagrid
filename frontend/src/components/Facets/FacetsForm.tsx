@@ -369,6 +369,9 @@ const FacetsForm: React.FC = () => {
     className: string;
     children: (JSX.Element | null)[];
   }[] => {
+    if (!facetsByGroup) {
+      return [];
+    }
     return Object.keys(facetsByGroup).map((group) => {
       return {
         key: group,
@@ -659,7 +662,7 @@ const FacetsForm: React.FC = () => {
           />
         </div>
       </Form>
-      {/* 
+      {/*
         The filename var filter is currently disabled.
         <Form
         form={filenameVarForm}

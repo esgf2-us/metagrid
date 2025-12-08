@@ -20,7 +20,7 @@ it('renders search input', async () => {
   // onFinish function when the user submits the form.
   customRender(<LeftMenu {...defaultProps} />);
 
-  expect(await screen.findByTestId('nav-bar-logo')).toBeTruthy();
+  expect(await screen.findByTestId('left-menu')).toBeTruthy();
 });
 
 it('renders no component if there is no error, not loading, and no projects fetched', () => {

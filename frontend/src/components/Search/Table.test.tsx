@@ -7,7 +7,7 @@ import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
 import Table, { Props } from './Table';
 import { QualityFlag } from './Tabs';
-import { AtomWrapper, mockConfig, printElementContents } from '../../test/jestTestFunctions';
+import { AtomWrapper, mockConfig } from '../../test/jestTestFunctions';
 import { AppStateKeys } from '../../common/atoms';
 
 const user = userEvent.setup();
@@ -67,7 +67,7 @@ describe('test main table UI', () => {
             number_of_files: undefined,
           }),
         ]}
-      />
+      />,
     );
 
     // Check table exists
@@ -81,7 +81,7 @@ describe('test main table UI', () => {
 
   it('renders warning that dataset is retracted', async () => {
     customRender(
-      <Table {...defaultProps} results={[rawSearchResultFixture({ retracted: true })]} />
+      <Table {...defaultProps} results={[rawSearchResultFixture({ retracted: true })]} />,
     );
 
     // Check table exists
@@ -90,8 +90,7 @@ describe('test main table UI', () => {
 
     // Check the dataset title include retracted warning
     const cell = await within(table).findByRole('cell', {
-      name:
-        'foo IMPORTANT! This dataset has been retracted and is no longer available for download.',
+      name: 'foo IMPORTANT! This dataset has been retracted and is no longer available for download.',
     });
     expect(cell).toBeTruthy();
 
@@ -110,7 +109,7 @@ describe('test main table UI', () => {
 
     // Get the expandable row that was rendered and click on it
     const expandableRow = document.querySelector(
-      'tr.ant-table-expanded-row.ant-table-expanded-row-level-1'
+      'tr.ant-table-expanded-row.ant-table-expanded-row-level-1',
     ) as HTMLElement;
     expect(expandableRow).toBeTruthy();
   });
@@ -141,7 +140,7 @@ describe('test main table UI', () => {
 
     // Get the expandable row that was rendered and click on it
     const expandableRow = document.querySelector(
-      'tr.ant-table-expanded-row.ant-table-expanded-row-level-1'
+      'tr.ant-table-expanded-row.ant-table-expanded-row-level-1',
     ) as HTMLElement;
     expect(expandableRow).toBeTruthy();
 
@@ -204,7 +203,7 @@ describe('test main table UI', () => {
 
     // Get the expandable row that was rendered and click on it
     const expandableRow = document.querySelector(
-      'tr.ant-table-expanded-row.ant-table-expanded-row-level-1'
+      'tr.ant-table-expanded-row.ant-table-expanded-row-level-1',
     ) as HTMLElement;
     expect(expandableRow).toBeTruthy();
 
@@ -213,8 +212,6 @@ describe('test main table UI', () => {
     expect(panel).toBeTruthy();
 
     await user.click(panel);
-
-    printElementContents(expandableRow);
 
     // Check Additional panel contains PID and ES-DOC
     const firstPidBtn = await within(expandableRow).findByText('PID');
@@ -263,7 +260,7 @@ describe('test main table UI', () => {
 
     // Get the expandable row that was rendered and click on it
     const expandableRow = document.querySelector(
-      'tr.ant-table-expanded-row.ant-table-expanded-row-level-1'
+      'tr.ant-table-expanded-row.ant-table-expanded-row-level-1',
     ) as HTMLElement;
     expect(expandableRow).toBeTruthy();
 
@@ -340,7 +337,7 @@ describe('test main table UI', () => {
     // Note: Cannot query by aria-role or data-testid because Ant Design API
     //   renders the column and there are checkboxes for each row (no uniqueness)
     const selectAllCheckbox = document.querySelector(
-      'th.ant-table-cell.ant-table-selection-column [type="checkbox"]'
+      'th.ant-table-cell.ant-table-selection-column [type="checkbox"]',
     ) as HTMLInputElement;
     expect(selectAllCheckbox).toBeTruthy();
 
@@ -448,10 +445,10 @@ describe('test column sorting', () => {
       <Table
         {...defaultProps}
         results={[
-          rawSearchResultFixture({ master_id: 'zyx' }),
-          rawSearchResultFixture({ master_id: 'abc' }),
+          rawSearchResultFixture({ id: 'foo', master_id: 'zyx' }),
+          rawSearchResultFixture({ id: 'bar', master_id: 'abc' }),
         ]}
-      />
+      />,
     );
 
     // Check table exists
@@ -492,10 +489,10 @@ describe('test column sorting', () => {
       <Table
         {...defaultProps}
         results={[
-          rawSearchResultFixture({ number_of_files: 18 }),
-          rawSearchResultFixture({ number_of_files: 7 }),
+          rawSearchResultFixture({ id: 'foo', number_of_files: 18 }),
+          rawSearchResultFixture({ id: 'bar', number_of_files: 7 }),
         ]}
-      />
+      />,
     );
 
     // Check table exists
@@ -535,8 +532,11 @@ describe('test column sorting', () => {
     customRender(
       <Table
         {...defaultProps}
-        results={[rawSearchResultFixture({ size: 5678 }), rawSearchResultFixture({ size: 1234 })]}
-      />
+        results={[
+          rawSearchResultFixture({ id: 'foo', size: 5678 }),
+          rawSearchResultFixture({ id: 'bar', size: 1234 }),
+        ]}
+      />,
     );
 
     // Check table exists
@@ -577,10 +577,10 @@ describe('test column sorting', () => {
       <Table
         {...defaultProps}
         results={[
-          rawSearchResultFixture({ version: '5678' }),
-          rawSearchResultFixture({ version: '1234' }),
+          rawSearchResultFixture({ id: 'foo', version: '5678' }),
+          rawSearchResultFixture({ id: 'bar', version: '1234' }),
         ]}
-      />
+      />,
     );
 
     // Check table exists
@@ -635,7 +635,7 @@ describe('test column sorting', () => {
             version: undefined,
           }),
         ]}
-      />
+      />,
     );
 
     // Check table exists
