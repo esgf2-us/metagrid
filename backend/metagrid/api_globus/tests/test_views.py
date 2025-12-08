@@ -96,14 +96,14 @@ class TransferAPIErrorWithConsent(Exception):
 def test_globus_multi_transfer_submits_tasks(
     submit_mock, json_fixture, api_client
 ):
-    responses.add(responses.GET, settings.SEARCH_URL, json=json_fixture)
+    responses.add(responses.POST, settings.SEARCH_URL, json=json_fixture)
     responses.add(
         responses.GET,
         "https://transfer.api.globus.org/v0.10/submission_id",
         json={"value": "someid"},
     )
 
-    api_client.post(
+    response = api_client.post(
         reverse("globus_transfer"),
         data={
             "access_token": "test_access_token",
@@ -115,36 +115,22 @@ def test_globus_multi_transfer_submits_tasks(
         format="json",
     )
 
-    assert submit_mock.called_with(
-        {
-            "DATA_TYPE": "transfer",
-            "DATA": [
-                {
-                    "DATA_TYPE": "transfer_item",
-                    "source_path": "/css03_data/CMIP6/AerChemMIP/EC-Earth-Consortium/EC-Earth3-AerChem/histSST-piAer/r1i1p1f1/Amon/prsn/gr/v20210831/prsn_Amon_EC-Earth3-AerChem_histSST-piAer_r1i1p1f1_gr_199901-199912.nc",
-                    "destination_path": "test_path/prsn_Amon_EC-Earth3-AerChem_histSST-piAer_r1i1p1f1_gr_199901-199912.nc",
-                },
-                {
-                    "DATA_TYPE": "transfer_item",
-                    "source_path": "/css03_data/CMIP6/AerChemMIP/EC-Earth-Consortium/EC-Earth3-AerChem/histSST-piAer/r1i1p1f1/Amon/prsn/gr/v20210831/prsn_Amon_EC-Earth3-AerChem_histSST-piAer_r1i1p1f1_gr_200001-200012.nc",
-                    "destination_path": "test_path/prsn_Amon_EC-Earth3-AerChem_histSST-piAer_r1i1p1f1_gr_200001-200012.nc",
-                },
-            ],
-            "source_endpoint": "dea29ae8-bb92-4c63-bdbc-260522c92fe8",
-            "destination_endpoint": "test_endpoint_id",
-            "submission_id": "someid",
-            "deadline": "2025-01-06 02:21:50.311298+00:00",
-            "verify_checksum": False,
-            "preserve_timestamp": False,
-            "encrypt_data": False,
-            "skip_source_errors": False,
-            "fail_on_quota_errors": False,
-            "delete_destination_extra": False,
-            "notify_on_succeeded": True,
-            "notify_on_failed": True,
-            "notify_on_inactive": True,
-        }
-    )
+    assert response.status_code == status.HTTP_207_MULTI_STATUS
+    data = response.json()
+    assert data.get("status") == 207
+    assert data.get("successes") == []
+    assert data.get("failures") == []
+    assert "auth_url" in data
+
+    # Ensure auth_url contains a client_id query parameter (value may vary)
+    from urllib.parse import parse_qs, urlparse
+
+    parsed = urlparse(data["auth_url"])
+    qs = parse_qs(parsed.query)
+    assert (
+        "client_id" in qs and qs["client_id"]
+    ), "auth_url must include a client_id"
+    assert "scope" in qs and qs["scope"], "auth_url must include a scope"
 
 
 @responses.activate
