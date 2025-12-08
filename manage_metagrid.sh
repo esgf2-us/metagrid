@@ -13,10 +13,15 @@ set -e
 function startProductionService() {
     clear
     echo "Choose authentication method:"
-    echo "1 Globus"
+    echo "1 Globus - default"
     echo "2 Keycloak"
     echo "3 None"
     read -r auth_choice
+
+    # Default to 1 (Globus) if no value is entered
+    if [ -z "$auth_choice" ]; then
+        auth_choice=1
+    fi
 
     case $auth_choice in
     1)
@@ -105,6 +110,93 @@ function installPackagesForLocalDev() {
     pip install -r backend/requirements/local.txt
     yarn install --cwd frontend
     echo "Packages installed"
+}
+
+# New function: refresh Postgres collation version and reindex the database.
+# Supports local and production compose sets and optionally creates a SQL backup first.
+function refreshPostgresCollation() {
+    clear
+    echo "Refresh Postgres collation version and reindex database."
+    echo "Choose environment to run this against:"
+    echo "1 Local (default)"
+    echo "2 Production"
+    read -r env_choice
+
+    if [ -z "$env_choice" ]; then
+        env_choice=1
+    fi
+
+    if [ "$env_choice" = "1" ]; then
+        COMPOSE="$LOCAL_COMPOSE $LOCAL_OVERLAY"
+        ENV_NAME="local"
+    elif [ "$env_choice" = "2" ]; then
+        COMPOSE="$PROD_COMPOSE $PROD_OVERLAY"
+        ENV_NAME="production"
+    else
+        echo "Invalid choice. Aborting."
+        return 1
+    fi
+
+    echo
+    echo "Target environment: $ENV_NAME"
+    echo "This will run the following SQL against the 'postgres' database:"
+    echo "  ALTER DATABASE postgres REFRESH COLLATION VERSION;"
+    echo "  REINDEX DATABASE postgres;"
+    echo
+    echo "It is recommended to create a backup first. Create backup? (y/N)"
+    read -r do_backup
+
+    if [ "$do_backup" = "y" ] || [ "$do_backup" = "Y" ]; then
+        default_file="metagrid_${ENV_NAME}_backup_$(date +%Y%m%d_%H%M%S).sql"
+        read -r -p "Enter backup filename (default: $default_file): " backup_file
+        if [ -z "$backup_file" ]; then
+            backup_file="$default_file"
+        fi
+        backup_dir="./db_backups"
+        mkdir -p "$backup_dir"
+
+        echo "Ensuring postgres container is running for backup..."
+        if ! docker compose $COMPOSE up -d postgres; then
+            echo "Failed to start postgres container in $ENV_NAME compose. Aborting backup."
+            return 1
+        fi
+
+        backup_path="$backup_dir/$backup_file"
+        echo "Creating SQL backup to: $backup_path"
+        # Run pg_dumpall inside container and redirect to host file
+        if docker compose $COMPOSE exec -T postgres pg_dumpall -U postgres > "$backup_path"; then
+            echo "Backup created at $backup_path"
+        else
+            echo "Backup failed. Check postgres logs:"
+            echo "  docker compose $COMPOSE logs postgres"
+            return 1
+        fi
+    fi
+
+    echo
+    echo "Proceed with refreshing collation version and reindex? (y/N)"
+    read -r confirm
+    if [ "$confirm" != "y" ] && [ "$confirm" != "Y" ]; then
+        echo "Operation cancelled."
+        return 0
+    fi
+
+    echo "Ensuring postgres container is running..."
+    if ! docker compose $COMPOSE up -d postgres; then
+        echo "Failed to start postgres container for $ENV_NAME. Aborting."
+        return 1
+    fi
+
+    echo "Executing collation refresh and reindex inside the postgres container..."
+    if docker compose $COMPOSE exec -T postgres bash -lc \
+        "psql -U postgres -d postgres -c \"ALTER DATABASE postgres REFRESH COLLATION VERSION;\" && \
+         psql -U postgres -d postgres -c \"REINDEX DATABASE postgres;\""; then
+        echo "Collation refreshed and database reindexed successfully for $ENV_NAME."
+    else
+        echo "Operation failed. Check postgres container logs for details:"
+        echo "  docker compose $COMPOSE logs postgres"
+        return 1
+    fi
 }
 
 function runMigrations() {
@@ -286,10 +378,11 @@ function devActionsMenu() {
     echo "3 Test Frontend"
     echo "4 Run Migrations"
     echo "5 Update Project Table"
-    echo "6 Install Packages for Local Dev"
-    echo "7 Configure Production"
-    echo "8 Update Version"
-    echo "9 Back to Main Menu"
+    echo "6 Refresh Postgres Collation & Reindex"
+    echo "7 Install Packages for Local Dev"
+    echo "8 Configure Production"
+    echo "9 Update Version"
+    echo "10 Back to Main Menu"
     read option
     if [ -z $option ]; then
         clear
@@ -312,21 +405,24 @@ function devActionsMenu() {
             updateProjectTable
             return 0
         elif [ "$option" = "6" ]; then
-            installPackagesForLocalDev
+            refreshPostgresCollation
             return 0
         elif [ "$option" = "7" ]; then
-            configureProduction
+            installPackagesForLocalDev
             return 0
         elif [ "$option" = "8" ]; then
-            updateVersion
+            configureProduction
             return 0
         elif [ "$option" = "9" ]; then
+            updateVersion
+            return 0
+        elif [ "$option" = "10" ]; then
             clear
             mainMenu
         else
             clear
             echo "You entered: $option"
-            echo "Please enter a number from 1 to 9"
+            echo "Please enter a number from 1 to 10"
             devActionsMenu
         fi
     fi
