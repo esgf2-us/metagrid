@@ -154,6 +154,20 @@ postgresql:
   service:
     port: 5432
 
+  persistence:
+    enabled: true
+
+    accessMode: ReadWriteOnce
+    size: 8Gi
+    storageClassName:
+
+  volumes: []
+  volumeMounts: []
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
 nodeStatusBackend:
   enabled: true
 
