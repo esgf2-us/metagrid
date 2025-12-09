@@ -237,11 +237,12 @@ projects = [
                 "institution_id",
                 "region",
                 "source_type",
+                "cmor_version",
             ],
             GROUPS[4]: [
                 "variable",
                 "variable_long_name",
-                "cf_standard_name",
+                "cf_standard_name",                
             ],
             GROUPS[3]: [
                 "frequency",
@@ -300,5 +301,22 @@ projects = [
                 "data_node",
             ]
         },
-    },
+    },{
+        "name": "WrPMIP",
+        "description": "The Warming Permafrost Model Intercomparison Project",
+        "project_url": "https://warmingpermafrost.nau.edu/",
+        "facets_by_group": {
+            "Properties": [
+                "institution_id",
+                "source_id",
+                "experiment_id",
+                "realm",
+                "variable_id",
+                "variable_long_name",
+                "cf_standard_name",
+                "data_node",
+                "grid_label",
+            ]
+        }
+    }
 ]
