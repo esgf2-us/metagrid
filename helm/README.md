@@ -233,3 +233,29 @@ Set the following environment variables under `config:` and enable the account c
 | `config.DJANGO_SUPERUSER_PASSWORD`                   | The password for the superuser account.                                  | `yourpassword`     |
 | `config.DJANGO_SUPERUSER_USERNAME`                   | The username for the superuser account.                                  | `admin`            |
 | `config.DJANGO_SUPERUSER_EMAIL`                      | The email address for the superuser account.                             | `admin@example.com` |
+
+# Upgrading
+
+# v1.5.3 -> v1.5.4
+When upgrading to `v1.5.4` from `v1.5.3` there may be a `collation mismatch` error from PostgreSQL. This issue may be remediated by running two SQL commands.
+
+```bash
+ALTER DATABASE <db_name> REFRESH COLLATION VERSION;
+REINDEX DATABASE <db_name>
+```
+
+If using the default PostgreSQL database, the following can be used.
+
+```bash
+BACKEND_POD=`kubectl get pod --selector app.kubernetes.io/name=metagrid,app.kubernetes.io/component=backend -oname`
+DB_POD=`kubectl get pod --selector app.kubernetes.io/name=metagrid,app.kubernetes.io/component=database -oname`
+SECRET=`kubectl  get secret --selector app.kubernetes.io/name=metagrid,app.kubernetes.io/component=database -oname`
+DB_NAME=`kubectl get $SECRET -ojsonpath="{.data.POSTGRES_DB}" | base64 -d`
+DB_USER=`kubectl get $SECRET -ojsonpath="{.data.POSTGRES_USER}" | base64 -d`
+DB_PASS=`kubectl get $SECRET -ojsonpath="{.data.POSTGRES_PASSWORD}" | base64 -d`
+
+kubectl exec -it $DB_POD -- psql -h localhost -U $DB_USER -d $DB_NAME -c "ALTER DATABASE $DB_NAME REFRESH COLLATION VERSION;"
+kubectl exec -it $DB_POD -- psql -h localhost -U $DB_USER -d $DB_NAME -c "REINDEX DATABASE $DB_NAME;"
+# restart backend pod
+kubectl delete $BACKEND_POD
+```
