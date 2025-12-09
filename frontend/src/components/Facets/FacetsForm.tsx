@@ -55,6 +55,10 @@ const styles: CSSinJS = {
   collapseContainer: { marginTop: '5px' },
 };
 
+// Used to control text length of the drop-down items
+// Tooltip is shown if the length is above this threshold
+const maxItemLength = 75;
+
 /**
  * Converts facet names from snake_case to human readable.
  *
@@ -84,9 +88,79 @@ export const formatDate = (date: string | Dayjs, toString: boolean): string | Da
   return dayjs(date, format);
 };
 
-// Used to control text length of the drop-down items
-// Tooltip is shown if the length is above this threshold
-const maxItemLength = 75;
+export const generateStacFacetOptions = (
+  facet: string,
+  facetOptions: string[],
+): { key: string; value: string; label: JSX.Element }[] => {
+  return facetOptions.map((variable) => {
+    let optionOutput: string | React.ReactElement = <>{variable}</>;
+
+    // If the option output name is very long, use a tooltip
+    const varLength = variable.toString().length;
+    if (varLength >= maxItemLength) {
+      const innerTitle = variable[0].substring(0, maxItemLength - varLength);
+      optionOutput = (
+        <Tooltip styles={{ body: { width: 'max-content' } }} title={variable}>
+          {innerTitle}...
+        </Tooltip>
+      );
+    }
+
+    return {
+      key: variable,
+      value: variable,
+      label: <span data-testid={`${facet}_${variable}`}>{optionOutput}</span>,
+    };
+  });
+};
+
+export const generateFacetOptions = (
+  facet: string,
+  facetOptions: [string, number][] | string[],
+): { key: string; value: string; label: JSX.Element }[] => {
+  if (facetOptions.length > 0 && typeof facetOptions[0] === 'string') {
+    return generateStacFacetOptions(facet, facetOptions as string[]);
+  }
+
+  return facetOptions.map((variable) => {
+    if (typeof variable[0] !== 'string') {
+      clearCachedSearchResults();
+    }
+    let optionOutput: string | React.ReactNode = (
+      <>
+        {variable[0]}
+        <span style={styles.facetCount}>({variable[1]})</span>
+      </>
+    );
+
+    // If the option output name is very long, use a tooltip
+    const vLength = variable[0].length - 2;
+    const cLength = variable[1].toString().length * 1.5 + 2;
+    if (vLength > maxItemLength - cLength) {
+      const innerTitle = variable[0].substring(0, maxItemLength - cLength);
+      optionOutput = (
+        <Tooltip styles={{ body: { width: 'max-content' } }} title={variable[0]}>
+          {innerTitle}...
+          <span style={styles.facetCount}>({variable[1]})</span>
+        </Tooltip>
+      );
+    }
+
+    // The data node facet has a unique tooltip overlay to show the status of the highlighted node
+    if (facet === 'data_node') {
+      optionOutput = (
+        <StatusToolTip dataNode={variable[0]}>
+          <span style={styles.facetCount}>({variable[1]})</span>
+        </StatusToolTip>
+      );
+    }
+    return {
+      key: variable[0],
+      value: variable[0],
+      label: <span data-testid={`${facet}_${variable[0]}`}>{optionOutput}</span>,
+    };
+  });
+};
 
 const FacetsForm: React.FC = () => {
   // Global states
@@ -279,80 +353,6 @@ const FacetsForm: React.FC = () => {
       setActiveDropdownValue(null);
     }
   }, [dropdownIsOpen, activeDropdownValue, setActiveDropdownValue]);
-
-  const generateStacFacetOptions = (
-    facet: string,
-    facetOptions: string[],
-  ): { key: string; value: string; label: JSX.Element }[] => {
-    return facetOptions.map((variable) => {
-      let optionOutput: string | React.ReactElement = <>{variable}</>;
-
-      // If the option output name is very long, use a tooltip
-      const varLength = variable.toString().length;
-      if (varLength >= maxItemLength) {
-        const innerTitle = variable[0].substring(0, maxItemLength - varLength);
-        optionOutput = (
-          <Tooltip styles={{ body: { width: 'max-content' } }} title={variable}>
-            {innerTitle}...
-          </Tooltip>
-        );
-      }
-
-      return {
-        key: variable,
-        value: variable,
-        label: <span data-testid={`${facet}_${variable}`}>{optionOutput}</span>,
-      };
-    });
-  };
-
-  const generateFacetOptions = (
-    facet: string,
-    facetOptions: [string, number][] | string[],
-  ): { key: string; value: string; label: JSX.Element }[] => {
-    if (facetOptions.length > 0 && typeof facetOptions[0] === 'string') {
-      return generateStacFacetOptions(facet, facetOptions as string[]);
-    }
-
-    return facetOptions.map((variable) => {
-      if (typeof variable[0] !== 'string') {
-        clearCachedSearchResults();
-      }
-      let optionOutput: string | React.ReactNode = (
-        <>
-          {variable[0]}
-          <span style={styles.facetCount}>({variable[1]})</span>
-        </>
-      );
-
-      // If the option output name is very long, use a tooltip
-      const vLength = variable[0].length - 2;
-      const cLength = variable[1].toString().length * 1.5 + 2;
-      if (vLength > maxItemLength - cLength) {
-        const innerTitle = variable[0].substring(0, maxItemLength - cLength);
-        optionOutput = (
-          <Tooltip styles={{ body: { width: 'max-content' } }} title={variable[0]}>
-            {innerTitle}...
-            <span style={styles.facetCount}>({variable[1]})</span>
-          </Tooltip>
-        );
-      }
-
-      // The data node facet has a unique tooltip overlay to show the status of the highlighted node
-      if (facet === 'data_node') {
-        optionOutput = (
-          <StatusToolTip dataNode={variable[0]}>
-            <span style={styles.facetCount}>({variable[1]})</span>
-          </StatusToolTip>
-        );
-      }
-      return {
-        key: variable[0],
-        value: variable[0],
-        label: <span data-testid={`${facet}_${variable[0]}`}>{optionOutput}</span>,
-      };
-    });
-  };
 
   function getLongestStringLengthReduce(arr: [string, number][]): number {
     if (arr.length === 0) {

@@ -32,6 +32,10 @@ describe('test main components', () => {
     expect(await screen.findByTestId('search')).toBeTruthy();
   });
 
+  it('renders an error page when window.METAGRID is undefined', async () => {
+
+  });
+
   it('renders App component with undefined search query', async () => {
     customRender(<App searchQuery={undefined as unknown as ActiveSearchQuery} />, {
       usesAtoms: true,

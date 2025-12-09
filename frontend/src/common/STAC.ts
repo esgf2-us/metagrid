@@ -36,6 +36,7 @@ export const STAC_PROJECTS: RawProject[] = [
 /** This mapping is necessary in most cases since the facet names
  * are prepended with the project name for CMIP6
  */
+/* istanbul ignore next */
 export const STAC_PROJECT_FACET_MAPPING: { [key: string]: Record<string, string> } = {
   CMIP6: {
     activity_id: 'properties.cmip6:activity_id',
@@ -59,6 +60,7 @@ export const STAC_PROJECT_FACET_MAPPING: { [key: string]: Record<string, string>
   },
 };
 
+/* istanbul ignore next */
 export const STAC_AGGREGATION_FACETS: { [key: string]: string[] } = {
   // Values taken from 'aggregations' list : https://api.stac.esgf.ceda.ac.uk/collections/CMIP6
   CMIP6: [

@@ -9,6 +9,7 @@ import {
   fetchNodeStatus,
   fetchProjects,
   fetchSearchResults,
+  fetchSTACAggregations,
   fetchUserAuth,
   fetchUserCart,
   fetchUserInfo,
@@ -1041,6 +1042,16 @@ describe('STAC API functions', () => {
     expect(result.facets).toEqual({});
     // status should reflect aggregation failure (fetchSTACSearchResults sets non-200 status)
     expect(result.status).toBe(500);
+  });
+
+  it('throws error when STAC aggregations fails', async () => {
+    server.use(
+      rest.post(apiRoutes.esgfAggregationsSTAC.path, (_req, res, ctx) => res(ctx.status(500))),
+    );
+
+    await expect(fetchSTACAggregations('CMIP6', undefined)).rejects.toThrow(
+      apiRoutes.esgfAggregationsSTAC.handleErrorMsg('generic' as HTTPCodeType),
+    );
   });
 
   it('throws error when STAC search endpoint fails', async () => {

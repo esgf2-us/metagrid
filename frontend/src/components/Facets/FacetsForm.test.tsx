@@ -1,9 +1,14 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import FacetsForm, { formatDate, humanizeFacetNames } from './FacetsForm';
+import FacetsForm, {
+  formatDate,
+  generateFacetOptions,
+  generateStacFacetOptions,
+  humanizeFacetNames,
+} from './FacetsForm';
 import customRender from '../../test/custom-render';
-import { AtomWrapper, printElementContents } from '../../test/jestTestFunctions';
+import { AtomWrapper } from '../../test/jestTestFunctions';
 import { AppStateKeys } from '../../common/atoms';
 import { activeSearchQueryFixture } from '../../test/mock/fixtures';
 
@@ -26,6 +31,34 @@ describe('Test humanizeFacetNames', () => {
 describe('formatDate', () => {
   it('standardizes date strings', () => {
     expect(formatDate('2024-12-18', true)).toEqual('20241218');
+  });
+});
+
+describe('generate facet option helpers', () => {
+  it('generateStacFacetOptions returns proper option objects', () => {
+    const facet = 'stac_var';
+    const opts = generateStacFacetOptions(facet, ['optA', 'optB']);
+    expect(opts).toHaveLength(2);
+    expect(opts[0].key).toBe('optA');
+    expect(opts[0].value).toBe('optA');
+    // label is a React element with data-testid
+    // @ts-ignore access element props for test
+    expect(opts[0].label.props['data-testid']).toBe('stac_var_optA');
+  });
+
+  it('generateFacetOptions returns proper option objects for tuple input', () => {
+    const facet = 'data_node';
+    const tupleOpts: [string, number][] = [
+      ['node1.example', 3],
+      ['node2.example', 5],
+    ];
+    const opts = generateFacetOptions(facet, tupleOpts);
+    expect(opts).toHaveLength(2);
+    expect(opts[0].key).toBe('node1.example');
+    expect(opts[0].value).toBe('node1.example');
+    // label is a React element with data-testid
+    // @ts-ignore access element props for test
+    expect(opts[0].label.props['data-testid']).toBe('data_node_node1.example');
   });
 });
 
