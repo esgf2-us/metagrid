@@ -359,6 +359,9 @@ const FacetsForm: React.FC = () => {
       return 0; // Handle empty array case
     }
     return arr.reduce((maxLength, currentString) => {
+      if (currentString[0] === undefined || currentString[1] === undefined) {
+        return maxLength;
+      }
       return Math.max(maxLength, currentString[0].length + currentString[1].toString().length + 1);
     }, 0); // Initialize maxLength to 0
   }
@@ -743,7 +746,7 @@ const FacetsForm: React.FC = () => {
             {
               key: 'keyword-search',
               label: <div data-testid="keyword-search-collapse">Keyword Search</div>,
-              className: `site-collapse-custom-collapse`,
+              className: `site-collapse-custom-collapse ${leftSidebarTargets.facetFormKeywordSearch.class()}`,
               children: (
                 <Space size="small">
                   <Form.Item
