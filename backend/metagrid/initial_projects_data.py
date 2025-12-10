@@ -242,7 +242,7 @@ projects = [
             GROUPS[4]: [
                 "variable",
                 "variable_long_name",
-                "cf_standard_name",                
+                "cf_standard_name",
             ],
             GROUPS[3]: [
                 "frequency",
@@ -301,7 +301,8 @@ projects = [
                 "data_node",
             ]
         },
-    },{
+    },
+    {
         "name": "WrPMIP",
         "description": "The Warming Permafrost Model Intercomparison Project",
         "project_url": "https://warmingpermafrost.nau.edu/",
@@ -317,6 +318,6 @@ projects = [
                 "data_node",
                 "grid_label",
             ]
-        }
-    }
+        },
+    },
 ]
