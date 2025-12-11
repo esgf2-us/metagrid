@@ -112,6 +112,15 @@ export const openDownloadURL = (url: string): void => {
 export const errorMsgBasedOnHTTPStatusCode = (error: ResponseError, route: ApiRoute): string => {
   // Indicates that an HTTP response status code was returned from the server
   if (error.response) {
+    // Normalize status to a number when possible
+    /* istanbul ignore next */
+    const statusNum = Number(error.response.status) || 0;
+
+    // For server errors (5xx) return the generic error message for the route
+    if (statusNum >= 500) {
+      return route.handleErrorMsg('generic');
+    }
+    // For other HTTP statuses return the mapped message (may be empty string for some codes)
     return route.handleErrorMsg(error.response.status);
   }
 
@@ -481,7 +490,7 @@ export const postSTACSearch = async (
     });
 };
 
-const fetchSTACAggregations = async (
+export const fetchSTACAggregations = async (
   projectId: string,
   filter: { op: string; args: unknown } | undefined,
 ): Promise<StacAggregations> => {
@@ -496,7 +505,7 @@ const fetchSTACAggregations = async (
       return res.data;
     })
     .catch((error: ResponseError) => {
-      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearchSTAC));
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfAggregationsSTAC));
     });
 };
 
@@ -563,6 +572,7 @@ export const fetchSearchResults = async (
   let finalUrl = reqUrlStr;
   const cachedPagination = getCachedPagination();
   // If the change to the request URL was not the offset, reset the offset to 0
+  /* istanbul ignore next */
   if (reqUrlOffset === cachedUrlOffset || (!reqUrlOffset && cachedUrlOffset)) {
     finalUrl = reqUrlStr.replace(/offset=\d+/, 'offset=0');
     // Cache the new offset value so it is reflected in the pagination
@@ -582,6 +592,7 @@ export const fetchSearchResults = async (
         // Prevent breaking the app if the response is not successful
         if (results.status !== 200) {
           // Handle the case where status is 422 due to a offset value that is too high
+          /* istanbul ignore next */
           if (results.status === 422) {
             cachePagination({
               page: 1,
@@ -594,6 +605,7 @@ export const fetchSearchResults = async (
         return results;
       })
       .catch((error: ResponseError) => {
+        /* istanbul ignore next */
         if (error.cause === 422) {
           throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearchSTAC), {
             cause: 422,

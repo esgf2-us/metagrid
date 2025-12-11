@@ -410,7 +410,7 @@ describe('DatasetDownload form tests', () => {
 
     // Expect transfer notice for endpoint path step
     const transferPopup = await screen.findByText(
-      /You will be redirected to set the path for your selected collection. Continue?/i,
+      /You will be redirected to set the path for the collection. Continue?/i,
     );
     expect(transferPopup).toBeTruthy();
     await user.click(await screen.findByText('Ok'));

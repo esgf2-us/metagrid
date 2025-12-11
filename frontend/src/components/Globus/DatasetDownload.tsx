@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
-import { DownloadOutlined, QuestionOutlined } from '@ant-design/icons';
+import { DownloadOutlined, QuestionOutlined, SearchOutlined } from '@ant-design/icons';
 import {
   Alert,
   Button,
@@ -359,11 +359,13 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             if (resp.auth_url) {
               setLoadingPage(false);
               setDownloadIsLoading(false);
+
               const content = authCode
                 ? 'Permission denied despite consent. Try logging out and logging in again.'
                 : 'You will need to provide new consents. Continue?';
 
               const authURL = resp.auth_url;
+
               if (!alertPopupState.show) {
                 setAlertPopupState({
                   onCancelAction: () => {
@@ -428,7 +430,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           });
           return;
         }
-
         await showNotice(
           messageApi,
           <span data-testid="globus-transfer-backend-error-msg">
@@ -632,6 +633,29 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     }
   };
 
+  function setCollectionPath(endpoint: GlobusEndpoint): void {
+    if (!alertPopupState.show) {
+      setAlertPopupState({
+        onCancelAction: () => {
+          setLoadingPage(false);
+          setCurrentGoal(GlobusGoals.None);
+          setAlertPopupState({ ...alertPopupState, show: false });
+        },
+        onOkAction: () => {
+          const endpointSearchURL = `https://app.globus.org/helpers/browse-collections?action=${GLOBUS_REDIRECT_URL}&method=GET&cancelurl=${GLOBUS_REDIRECT_URL}?cancelled&filelimit=0`;
+
+          if (endpoint) {
+            redirectToNewURL(`${endpointSearchURL}&origin_id=${endpoint.id}`);
+          } else {
+            redirectToNewURL(endpointSearchURL);
+          }
+        },
+        show: true,
+        content: 'You will be redirected to set the path for the collection. Continue?',
+      });
+    }
+  }
+
   function getCurrentGoal(): GlobusGoals {
     const urlParams = new URLSearchParams(window.location.search);
     const curPage = getCurrentAppPage();
@@ -652,16 +676,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
   function setCurrentGoal(goal: GlobusGoals): void {
     localStorage.setItem(GlobusStateKeys.globusTransferGoalsState, goal);
-  }
-
-  function redirectToSelectGlobusEndpointPath(): void {
-    const endpointSearchURL = `https://app.globus.org/helpers/browse-collections?action=${GLOBUS_REDIRECT_URL}&method=GET&cancelurl=${GLOBUS_REDIRECT_URL}?cancelled&filelimit=0`;
-
-    if (chosenGlobusEndpoint) {
-      redirectToNewURL(`${endpointSearchURL}&origin_id=${chosenGlobusEndpoint.id}`);
-    } else {
-      redirectToNewURL(endpointSearchURL);
-    }
   }
 
   function performStepsForGlobusGoalsTest(): void {
@@ -719,20 +733,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         return;
       }
 
-      if (!alertPopupState.show) {
-        setAlertPopupState({
-          onCancelAction: () => {
-            setLoadingPage(false);
-            setCurrentGoal(GlobusGoals.None);
-            setAlertPopupState({ ...alertPopupState, show: false });
-          },
-          onOkAction: () => {
-            redirectToSelectGlobusEndpointPath();
-          },
-          show: true,
-          content: 'You will be redirected to set the path for the collection. Continue?',
-        });
-      }
+      setCollectionPath(chosenGlobusEndpoint as GlobusEndpoint);
       return;
     }
 
@@ -801,21 +802,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       } else {
         // Setting endpoint path
         setLoadingPage(false);
-        if (!alertPopupState.show) {
-          setAlertPopupState({
-            onCancelAction: () => {
-              setLoadingPage(false);
-              setCurrentGoal(GlobusGoals.None);
-              setAlertPopupState({ ...alertPopupState, show: false });
-            },
-            onOkAction: () => {
-              redirectToSelectGlobusEndpointPath();
-            },
-            show: true,
-            content:
-              'You will be redirected to set the path for your selected collection. Continue?',
-          });
-        }
+        setCollectionPath(chosenGlobusEndpoint);
       }
     }
   }
@@ -1035,17 +1022,28 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         }}
         width={1000}
       >
-        <Input.Search
-          className={manageCollectionsTourTargets.searchCollectionInput.class()}
-          value={endpointSearchValue}
-          onChange={(e) => {
-            setEndpointSearchValue(e.target.value);
-          }}
-          placeholder="Search for a Globus Collection"
-          onSearch={searchGlobusEndpoints}
-          loading={loadingEndpointSearchResults}
-          enterButton
-        />
+        <Space.Compact style={{ width: '100%' }}>
+          <Input
+            className={manageCollectionsTourTargets.searchCollectionInput.class()}
+            value={endpointSearchValue}
+            onChange={(e) => {
+              setEndpointSearchValue(e.target.value);
+            }}
+            placeholder="Search for a Globus Collection"
+            onPressEnter={() => {
+              searchGlobusEndpoints(endpointSearchValue);
+            }}
+          />
+          <Button
+            icon={<SearchOutlined />}
+            onClick={() => {
+              searchGlobusEndpoints(endpointSearchValue);
+            }}
+            loading={loadingEndpointSearchResults}
+            type="primary"
+            size="large"
+          />
+        </Space.Compact>
         <Collapse
           size="small"
           defaultActiveKey={1}
@@ -1197,7 +1195,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                             setChosenGlobusEndpoint(endpoint);
                             setEndpointSearchOpen(false);
                             setCurrentGoal(GlobusGoals.SetEndpointPath);
-                            performStepsForGlobusGoalsTest();
+                            setCollectionPath(endpoint);
                           }}
                         >
                           {endpoint.path ? 'Update Path' : 'Set Path'}

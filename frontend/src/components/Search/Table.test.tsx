@@ -67,7 +67,7 @@ describe('test main table UI', () => {
             number_of_files: undefined,
           }),
         ]}
-      />
+      />,
     );
 
     // Check table exists
@@ -81,7 +81,7 @@ describe('test main table UI', () => {
 
   it('renders warning that dataset is retracted', async () => {
     customRender(
-      <Table {...defaultProps} results={[rawSearchResultFixture({ retracted: true })]} />
+      <Table {...defaultProps} results={[rawSearchResultFixture({ retracted: true })]} />,
     );
 
     // Check table exists
@@ -90,8 +90,7 @@ describe('test main table UI', () => {
 
     // Check the dataset title include retracted warning
     const cell = await within(table).findByRole('cell', {
-      name:
-        'foo IMPORTANT! This dataset has been retracted and is no longer available for download.',
+      name: 'foo IMPORTANT! This dataset has been retracted and is no longer available for download.',
     });
     expect(cell).toBeTruthy();
 
@@ -110,7 +109,7 @@ describe('test main table UI', () => {
 
     // Get the expandable row that was rendered and click on it
     const expandableRow = document.querySelector(
-      'tr.ant-table-expanded-row.ant-table-expanded-row-level-1'
+      'tr.ant-table-expanded-row.ant-table-expanded-row-level-1',
     ) as HTMLElement;
     expect(expandableRow).toBeTruthy();
   });
@@ -141,7 +140,7 @@ describe('test main table UI', () => {
 
     // Get the expandable row that was rendered and click on it
     const expandableRow = document.querySelector(
-      'tr.ant-table-expanded-row.ant-table-expanded-row-level-1'
+      'tr.ant-table-expanded-row.ant-table-expanded-row-level-1',
     ) as HTMLElement;
     expect(expandableRow).toBeTruthy();
 
@@ -204,7 +203,7 @@ describe('test main table UI', () => {
 
     // Get the expandable row that was rendered and click on it
     const expandableRow = document.querySelector(
-      'tr.ant-table-expanded-row.ant-table-expanded-row-level-1'
+      'tr.ant-table-expanded-row.ant-table-expanded-row-level-1',
     ) as HTMLElement;
     expect(expandableRow).toBeTruthy();
 
@@ -213,8 +212,6 @@ describe('test main table UI', () => {
     expect(panel).toBeTruthy();
 
     await user.click(panel);
-
-    printElementContents(expandableRow);
 
     // Check Additional panel contains PID and ES-DOC
     const firstPidBtn = await within(expandableRow).findByText('PID');
@@ -263,7 +260,7 @@ describe('test main table UI', () => {
 
     // Get the expandable row that was rendered and click on it
     const expandableRow = document.querySelector(
-      'tr.ant-table-expanded-row.ant-table-expanded-row-level-1'
+      'tr.ant-table-expanded-row.ant-table-expanded-row-level-1',
     ) as HTMLElement;
     expect(expandableRow).toBeTruthy();
 
@@ -340,7 +337,7 @@ describe('test main table UI', () => {
     // Note: Cannot query by aria-role or data-testid because Ant Design API
     //   renders the column and there are checkboxes for each row (no uniqueness)
     const selectAllCheckbox = document.querySelector(
-      'th.ant-table-cell.ant-table-selection-column [type="checkbox"]'
+      'th.ant-table-cell.ant-table-selection-column [type="checkbox"]',
     ) as HTMLInputElement;
     expect(selectAllCheckbox).toBeTruthy();
 
@@ -430,6 +427,22 @@ describe('test main table UI', () => {
     const globusReadyColumn = screen.queryByText('Globus Ready');
     expect(globusReadyColumn).toBeNull();
   });
+
+  it('renders STAC icon when record is a STAC dataset', async () => {
+    customRender(
+      <Table
+        {...defaultProps}
+        results={[rawSearchResultFixture({ isStac: true, id: 'stac-1', master_id: 'stac-1' })]}
+      />,
+    );
+
+    const table = await screen.findByRole('table');
+    expect(table).toBeTruthy();
+
+    // The STAC icon is rendered as an img with accessible name 'STAC'
+    const stacIcon = await within(table).findByRole('img', { name: 'STAC' });
+    expect(stacIcon).toBeTruthy();
+  });
 });
 
 describe('test QualityFlag', () => {
@@ -448,10 +461,10 @@ describe('test column sorting', () => {
       <Table
         {...defaultProps}
         results={[
-          rawSearchResultFixture({ master_id: 'zyx' }),
-          rawSearchResultFixture({ master_id: 'abc' }),
+          rawSearchResultFixture({ id: 'foo', master_id: 'zyx' }),
+          rawSearchResultFixture({ id: 'bar', master_id: 'abc' }),
         ]}
-      />
+      />,
     );
 
     // Check table exists
@@ -468,7 +481,9 @@ describe('test column sorting', () => {
     expect(cell).toHaveTextContent('zyx');
 
     // Click on the column header to sort
-    const tableHeader = await screen.findByText('Dataset ID');
+    const headerRow = (await screen.findAllByRole('row'))[0];
+    expect(headerRow).toBeTruthy();
+    const tableHeader = await within(headerRow).findByText('Dataset ID');
     expect(tableHeader).toBeTruthy();
     await user.click(tableHeader);
 
@@ -490,10 +505,10 @@ describe('test column sorting', () => {
       <Table
         {...defaultProps}
         results={[
-          rawSearchResultFixture({ number_of_files: 18 }),
-          rawSearchResultFixture({ number_of_files: 7 }),
+          rawSearchResultFixture({ id: 'foo', number_of_files: 18 }),
+          rawSearchResultFixture({ id: 'bar', number_of_files: 7 }),
         ]}
-      />
+      />,
     );
 
     // Check table exists
@@ -510,7 +525,9 @@ describe('test column sorting', () => {
     expect(cell).toHaveTextContent('18');
 
     // Click on the column header to sort
-    const tableHeader = await screen.findByText('Files');
+    const headerRow = (await screen.findAllByRole('row'))[0];
+    expect(headerRow).toBeTruthy();
+    const tableHeader = await within(headerRow).findByText('Files');
     expect(tableHeader).toBeTruthy();
     await user.click(tableHeader);
 
@@ -531,8 +548,11 @@ describe('test column sorting', () => {
     customRender(
       <Table
         {...defaultProps}
-        results={[rawSearchResultFixture({ size: 5678 }), rawSearchResultFixture({ size: 1234 })]}
-      />
+        results={[
+          rawSearchResultFixture({ id: 'foo', size: 5678 }),
+          rawSearchResultFixture({ id: 'bar', size: 1234 }),
+        ]}
+      />,
     );
 
     // Check table exists
@@ -549,7 +569,9 @@ describe('test column sorting', () => {
     expect(cell).toHaveTextContent('5.54 KB');
 
     // Click on the column header to sort
-    const tableHeader = await screen.findByText('Total Size');
+    const headerRow = (await screen.findAllByRole('row'))[0];
+    expect(headerRow).toBeTruthy();
+    const tableHeader = await within(headerRow).findByText('Total Size');
     expect(tableHeader).toBeTruthy();
     await user.click(tableHeader);
 
@@ -571,10 +593,10 @@ describe('test column sorting', () => {
       <Table
         {...defaultProps}
         results={[
-          rawSearchResultFixture({ version: '5678' }),
-          rawSearchResultFixture({ version: '1234' }),
+          rawSearchResultFixture({ id: 'foo', version: '5678' }),
+          rawSearchResultFixture({ id: 'bar', version: '1234' }),
         ]}
-      />
+      />,
     );
 
     // Check table exists
@@ -591,7 +613,9 @@ describe('test column sorting', () => {
     expect(cell).toHaveTextContent('5678');
 
     // Click on the column header to sort
-    const tableHeader = await screen.findByText('Version');
+    const headerRow = (await screen.findAllByRole('row'))[0];
+    expect(headerRow).toBeTruthy();
+    const tableHeader = await within(headerRow).findByText('Version');
     expect(tableHeader).toBeTruthy();
     await user.click(tableHeader);
 
@@ -608,7 +632,6 @@ describe('test column sorting', () => {
   });
 
   it('Handles sorting without breaking even if values are undefined', async () => {
-    const colIdx = 4; // The column that Total Size is in
     customRender(
       <Table
         {...defaultProps}
@@ -628,34 +651,34 @@ describe('test column sorting', () => {
             version: undefined,
           }),
         ]}
-      />
+      />,
     );
 
     // Check table exists
     const table = await screen.findByRole('table');
     expect(table).toBeTruthy();
 
-    // First row in table
-    const firstRow = (await screen.findAllByRole('row'))[1];
+    // Header row in table
+    const firstRow = (await screen.findAllByRole('row'))[0];
     expect(firstRow).toBeTruthy();
 
     // Click on the column header to sort
-    const tableDatasetId = await screen.findByText('Dataset ID');
+    const tableDatasetId = await within(firstRow).findByText('Dataset ID');
     expect(tableDatasetId).toBeTruthy();
     await user.click(tableDatasetId);
 
     // Click on the column header to sort
-    const files = await screen.findByText('Files');
+    const files = await within(firstRow).findByText('Files');
     expect(files).toBeTruthy();
     await user.click(files);
 
     // Click on the column header to sort
-    const totalSize = await screen.findByText('Total Size');
+    const totalSize = await within(firstRow).findByText('Total Size');
     expect(totalSize).toBeTruthy();
     await user.click(totalSize);
 
     // Click on the column header to sort
-    const version = await screen.findByText('Version');
+    const version = await within(firstRow).findByText('Version');
     expect(version).toBeTruthy();
     await user.click(version);
   });
