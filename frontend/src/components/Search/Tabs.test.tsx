@@ -4,7 +4,6 @@ import userEvent from '@testing-library/user-event';
 import Tabs from './Tabs';
 import customRender from '../../test/custom-render';
 import { rawSearchResultFixture } from '../../test/mock/fixtures';
-import { printElementContents } from '../../test/jestTestFunctions';
 
 const user = userEvent.setup();
 
@@ -112,7 +111,6 @@ describe('Tabs metadata autocomplete filtering', () => {
     const expectedHeader = `Displaying ${Object.keys(record).length} keys`;
 
     // Type a filter to change displayed items
-    printElementContents();
     const beforeText = await screen.findByText(expectedHeader);
     const input = (await screen.findByText('Lookup a key...')).parentNode?.querySelector(
       'input',
@@ -124,9 +122,7 @@ describe('Tabs metadata autocomplete filtering', () => {
     const afterText = await screen.findByRole('option', { name: 'myArray-13-0-subKey' });
 
     // Expect the nested metadata title and value to appear
-    printElementContents(beforeText);
-    printElementContents(afterText);
-    // expect(beforeText).toHaveTextContent('Displaying 14 keys');
-    // expect(await screen.findByText('subValue')).toBeTruthy();
+    expect(beforeText).toHaveTextContent('Displaying 14 keys');
+    expect(afterText).toBeTruthy();
   });
 });

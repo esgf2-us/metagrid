@@ -35,6 +35,7 @@ export const mockConfig: FrontendConfig = {
   HOTJAR_ID: 1234,
   HOTJAR_SV: 1234,
   AUTHENTICATION_METHOD: 'keycloak',
+  SUPPORT_INFO: 'Support info text',
   FOOTER_TEXT: 'Footer text',
   GOOGLE_ANALYTICS_TRACKING_ID: 'UA-XXXXXXXXX-YY',
   STATUS_URL: 'https://node-status',
@@ -260,12 +261,14 @@ export function makeCartItem(id: string, globusReady: boolean): RawSearchResult 
 }
 
 export async function submitKeywordSearch(inputText: string, user: UserEvent): Promise<void> {
-  // Check left menu rendered
-  const leftMenuComponent = await screen.findByTestId('left-menu');
-  expect(leftMenuComponent).toBeTruthy();
+  // Check keyword search menu rendered
+  const keywordSearchCollapsable = await screen.findByTestId('keyword-search-collapse');
+  expect(keywordSearchCollapsable).toBeTruthy();
+
+  await user.click(keywordSearchCollapsable);
 
   // Type in value for free-text input
-  const freeTextForm = await screen.findByTestId('left-menu-keyword-search-input');
+  const freeTextForm = await screen.findByTestId('keyword-search-input');
   expect(freeTextForm).toBeTruthy();
 
   await user.type(freeTextForm, inputText);

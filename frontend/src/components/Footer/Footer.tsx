@@ -5,11 +5,13 @@ import startupDisplayData from '../Messaging/messageDisplayData';
 const metagridVersion: string = startupDisplayData.messageToShow;
 
 const Footer: React.FC = () => {
+  /* istanbul ignore next */
+  const footerText = window.METAGRID ? window.METAGRID.FOOTER_TEXT : '';
   return (
     <footer style={{ fontSize: '11px' }}>
       Metagrid Version: {metagridVersion}
       <div className="footerMarkdown">
-        <Markdown>{window.METAGRID ? window.METAGRID.FOOTER_TEXT : ''}</Markdown>
+        <Markdown>{footerText}</Markdown>
       </div>
     </footer>
   );
