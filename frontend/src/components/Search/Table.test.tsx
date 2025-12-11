@@ -7,7 +7,7 @@ import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
 import Table, { Props } from './Table';
 import { QualityFlag } from './Tabs';
-import { AtomWrapper, mockConfig } from '../../test/jestTestFunctions';
+import { AtomWrapper, mockConfig, printElementContents } from '../../test/jestTestFunctions';
 import { AppStateKeys } from '../../common/atoms';
 
 const user = userEvent.setup();
@@ -426,6 +426,22 @@ describe('test main table UI', () => {
     // Check Globus Ready column does not exist
     const globusReadyColumn = screen.queryByText('Globus Ready');
     expect(globusReadyColumn).toBeNull();
+  });
+
+  it('renders STAC icon when record is a STAC dataset', async () => {
+    customRender(
+      <Table
+        {...defaultProps}
+        results={[rawSearchResultFixture({ isStac: true, id: 'stac-1', master_id: 'stac-1' })]}
+      />,
+    );
+
+    const table = await screen.findByRole('table');
+    expect(table).toBeTruthy();
+
+    // The STAC icon is rendered as an img with accessible name 'STAC'
+    const stacIcon = await within(table).findByRole('img', { name: 'STAC' });
+    expect(stacIcon).toBeTruthy();
   });
 });
 

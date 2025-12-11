@@ -231,7 +231,7 @@ export const convertSearchParamsIntoStacFilter = (
   return undefined;
 };
 
-export const generateWgetScriptSTAC = (searchResults: RawSearchResult[]): boolean => {
+export function generateWgetScriptSTAC(searchResults: RawSearchResult[]): boolean {
   const d = new Date();
   const date_string = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}_${d.getHours()}-${d.getMinutes()}-${d.getSeconds()}`;
   const fileName = `wget_stac_script_${date_string}.sh`;
@@ -263,4 +263,4 @@ export const generateWgetScriptSTAC = (searchResults: RawSearchResult[]): boolea
   }
 
   return hrefs > 0;
-};
+}
