@@ -5,6 +5,7 @@ ingress:
   enabled: false
   tls: false
   host:
+  additionalHost:
   className: ""
   labels: {}
   annotations: {}
@@ -13,14 +14,26 @@ features:
   nodeStatus:
     enabled: true
     url:
+  wget:
+    enabled: true
+
+    uploadMaxFields: 1024
+    globusPublicIndex: a8ef4320-9e5a-4793-837b-c45161ca1845
+    limit:
+      default: 9999
+      max: 100000
+    maxDirLength: 50
 
 config:
   GUNICORN_WORKERS: '2'
   METAGRID_SEARCH_URL: https://esgf-node.ornl.gov/esgf-1-5-bridge
-  METAGRID_WGET_URL: https://nimbus.llnl.gov/wget
+  # METAGRID_WGET_URL: https://nimbus.llnl.gov/wget
   # TODO implement logic to require these when using globus only, for now adding placeholders
   METAGRID_SOCIAL_AUTH_GLOBUS_KEY: "key"
   METAGRID_SOCIAL_AUTH_GLOBUS_SECRET: "secret"
+  # BANNER_TEXT:
+  # SUPPORT_INFO:
+  # FOOTER_TEXT:
 
 frontend:
   replicaCount: 1
@@ -153,6 +166,20 @@ postgresql:
 
   service:
     port: 5432
+
+  persistence:
+    enabled: true
+
+    accessMode: ReadWriteOnce
+    size: 8Gi
+    storageClassName:
+
+  volumes: []
+  volumeMounts: []
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
 
 nodeStatusBackend:
   enabled: true

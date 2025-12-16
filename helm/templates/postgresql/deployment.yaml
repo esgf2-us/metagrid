@@ -53,10 +53,19 @@ spec:
         resources:
           {{- toYaml .Values.postgresql.resources | nindent 12 }}
         volumeMounts:
+        {{- if .Values.postgresql.persistence.enabled }}
+        - name: pgdata
+          mountPath: /var/lib/postgresql/data
+        {{- end }}
         {{- with .Values.postgresql.volumeMounts }}
           {{- toYaml . | nindent 12 }}
         {{- end }}
       volumes:
+      {{- if .Values.postgresql.persistence.enabled }}
+      - name: pgdata
+        persistentVolumeClaim:
+          claimName: {{ include "metagrid.fullname" . }}-postgresql-data
+      {{- end }}
       {{- with .Values.postgresql.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
