@@ -21,7 +21,7 @@ features:
     globusPublicIndex: a8ef4320-9e5a-4793-837b-c45161ca1845
     limit:
       default: 9999
-      limit: 100000
+      max: 100000
     maxDirLength: 50
 
 config:
