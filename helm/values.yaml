@@ -5,6 +5,7 @@ ingress:
   enabled: false
   tls: false
   host:
+  additionalHost:
   className: ""
   labels: {}
   annotations: {}
