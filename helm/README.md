@@ -76,6 +76,7 @@ This document describes the configurable values available in the `values.yaml` f
 | `ingress.enabled`     | Enable or disable ingress resources for the application.          | `boolean`| `false` |
 | `ingress.tls`         | Enable or disable TLS for ingress.                                | `boolean`| `false` |
 | `ingress.host`        | Specify the hostname for ingress.                                 | `string` | N/A     |
+| `ingress.additionalAllowedHost` | Specify an additional allowed host.                     | `string` | N/A     |
 | `ingress.className`   | Set the ingress class name if required.                           | `string` | N/A     |
 | `ingress.labels`      | Custom labels for ingress resources.                              | `object` | `{}`    |
 | `ingress.annotations` | Custom annotations for ingress resources.                         | `object` | `{}`    |
@@ -87,6 +88,12 @@ This document describes the configurable values available in the `values.yaml` f
 |------------------------------------|----------------------------------------------------------------------------|-------------|---------|
 | `features.nodeStatus.enabled`      | Enables node status feature, deploying Prometheus and blackbox exporter.   | `boolean`   | `true`  |
 | `features.nodeStatus.url`          | Overrides and disables the default Prometheus deployment.                  | `string`    | N/A     |
+| `features.wget.enabled`            | Enables builtin Wget freature.                                             | `boolean`   | `true`  |
+| `features.wget.uploadMaxFields`    | Maximum number of form fields allowed in a single upload.                  | `integer`   | `1024`  |
+| `features.wget.globusPublixIndex`  | The Globus index ID for the public ESGF2 data.                             | `string`    | `a8ef4320-9e5a-4793-837b-c45161ca1845` |
+| `features.wget.limit.default`      | Default limit on the number of files allowed in a generated wget script.   | `integer`   | `9999`  |
+| `features.wget.limit.max`          | Maximum number of files allowed in a generated wget script.                | `integer`   | `100000` |
+| `features.wget.maxDirLength`       | Maximum character length for facet values when creating directory names for wget downloads. | `integer` | `50` |
 
 ---
 ## Config
@@ -95,10 +102,13 @@ This document describes the configurable values available in the `values.yaml` f
 |-------------------------------------------|--------------------------------------------------------------------------------------------------|----------|-------------------------------------------------|
 | `config.GUNICORN_WORKERS`                 | Number of Gunicorn workers for handling requests.                                                 | `string` | `'2'`                                           |
 | `config.METAGRID_SEARCH_URL`              | URL for the Metagrid search service.                                                              | `string` | `https://esgf-node.ornl.gov/esgf-1-5-bridge`   |
-| `config.METAGRID_WGET_URL`                | URL for the Metagrid wget service.                                                                | `string` | `https://nimbus.llnl.gov/wget`    |
+| `config.METAGRID_WGET_URL`                | URL for external Wget service.                                                                | `string` | N/A    |
 | `config.METAGRID_SOCIAL_AUTH_GLOBUS_KEY`  | Placeholder key for Globus authentication.                                                        | `string` | `"key"`                                        |
 | `config.METAGRID_SOCIAL_AUTH_GLOBUS_SECRET`| Placeholder secret for Globus authentication.                                                     | `string` | `"secret"`                                     |
 | `config.DATABASE_URL`                     | Optional database URL for self-managed database, see [django-environ docs](https://django-environ.readthedocs.io/en/latest/types.html#term-PostgreSQL). | `string` | `` |
+| `config.BANNER_TEXT`                      | Text to display as a banner.   | `string` | N/A |
+| `config.SUPPORT_INFO`                     | Text to display site administrator support information.   | `string` | N/A |
+| `config.FOOTER_TEXT`                      | Text to display in the footer.                | `string` | N/A |
 
 ---
 ## Frontend
@@ -172,15 +182,24 @@ This document describes the configurable values available in the `values.yaml` f
 | Parameter                                 | Description                                                                     | Type      | Default     |
 |-------------------------------------------|---------------------------------------------------------------------------------|-----------|-------------|
 | `postgresql.enabled`                      | Whether PostgreSQL is enabled as part of the deployment.                        | `boolean` | `true`      |
-| `postgresql.nameOverride`                 | Override the name for PostgreSQL.                                               | `string`  | N/A         |
-| `postgresql.backup.enabled`               | Whether backups are enabled for PostgreSQL.                                     | `boolean` | `false`     |
-| `postgresql.backup.cronjob.podSecurityContext.enabled` | Whether to enable pod security context for backup cronjob.    | `boolean` | `false`     |
-| `postgresql.persistence.enabled`          | Whether to enable persistent storage for PostgreSQL.                            | `boolean` | `true`      |
-| `postgresql.postgresql.replicaCount`      | Number of PostgreSQL replicas.                                                  | `integer` | `1`         |
-| `postgresql.postgresql.username`          | The PostgreSQL username.                                                       | `string`  | `admin`     |
-| `postgresql.postgresql.password`          | The PostgreSQL password.                                                       | `string`  | `password`  |
-| `postgresql.postgresql.repmgrPassword`    | The password for the PostgreSQL repmgr user.                                    | `string`  | `repmgrpassword` |
-| `postgresql.pgpool.adminPassword`         | Admin password for PostgreSQL pgpool.                                           | `string`  | `pgpoolpassword` |
+| `postgresql.username`                     | PostgreSQL database username.                                                   | `string` | `postgres` |
+| `postgresql.password`                     | PostgreSQL database password.                                                 | `string` | `postgres` |
+| `postgresql.database`                     | PostgreSQL database name.                                                     | `string` | `postgres` |
+| `postgresql.imagePullSecrets`             | Image pull secrets for accessing private repositories.            | `array`   | `[]`        |
+| `postgresql.image.repository`             | Image repository.             | `string` | `postgres` |
+| `postgresql.image.pullPolicy`             | Image pull policy.            | `string` | `IfNotPresent` |
+| `postgresql.image.tag`                    | Image tag.                    | `string` | `16.10-bookworm` |
+| `postgresql.serviceAccount.create`        | Create a service account.     | `boolean` | `true` |
+| `postgresql.service.port`                 | Service port.                 | `integer` | `5432` |
+| `postgresql.persistence.enabled`          | Enable PostgreSQL persistence. | `boolean` | `true` |
+| `postgresql.persistence.accessMode`       | Access mode for PVC.  | `string` | `ReadWriteOnce` |
+| `postgresql.persistence.size`             | Size of the PostgreSQL PVC. | `string` | `8Gi` |
+| `postgresql.persistence.storageClassName` | Name of the PVC storage class. | `string` | N/A |
+| `postgresql.volumes`                      | List of additional volumes. | `array` | `[]` |
+| `postgresql.volumeMounts`                 | List of additional volume mounts. | `array` | `[]` |
+| `postgresql.nodeSelector`                 | List of node selectors. | `array` | `[]` |
+| `postgresql.tolerations`                  | List of tolerations.  | `array` | `[]` |
+| `postgresql.affinity`                     | List of affinitys.    | `array` | `[]` |
 
 ---
 
@@ -233,3 +252,29 @@ Set the following environment variables under `config:` and enable the account c
 | `config.DJANGO_SUPERUSER_PASSWORD`                   | The password for the superuser account.                                  | `yourpassword`     |
 | `config.DJANGO_SUPERUSER_USERNAME`                   | The username for the superuser account.                                  | `admin`            |
 | `config.DJANGO_SUPERUSER_EMAIL`                      | The email address for the superuser account.                             | `admin@example.com` |
+
+# Upgrading
+
+# v1.5.3 -> v1.5.4
+When upgrading to `v1.5.4` from `v1.5.3` there may be a `collation mismatch` error from PostgreSQL. This issue may be remediated by running two SQL commands.
+
+```bash
+ALTER DATABASE <db_name> REFRESH COLLATION VERSION;
+REINDEX DATABASE <db_name>
+```
+
+If using the default PostgreSQL database, the following can be used.
+
+```bash
+BACKEND_POD=`kubectl get pod --selector app.kubernetes.io/name=metagrid,app.kubernetes.io/component=backend -oname`
+DB_POD=`kubectl get pod --selector app.kubernetes.io/name=metagrid,app.kubernetes.io/component=database -oname`
+SECRET=`kubectl  get secret --selector app.kubernetes.io/name=metagrid,app.kubernetes.io/component=database -oname`
+DB_NAME=`kubectl get $SECRET -ojsonpath="{.data.POSTGRES_DB}" | base64 -d`
+DB_USER=`kubectl get $SECRET -ojsonpath="{.data.POSTGRES_USER}" | base64 -d`
+DB_PASS=`kubectl get $SECRET -ojsonpath="{.data.POSTGRES_PASSWORD}" | base64 -d`
+
+kubectl exec -it $DB_POD -- psql -h localhost -U $DB_USER -d $DB_NAME -c "ALTER DATABASE $DB_NAME REFRESH COLLATION VERSION;"
+kubectl exec -it $DB_POD -- psql -h localhost -U $DB_USER -d $DB_NAME -c "REINDEX DATABASE $DB_NAME;"
+# restart backend pod
+kubectl delete $BACKEND_POD
+```

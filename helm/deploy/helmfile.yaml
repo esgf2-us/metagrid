@@ -13,7 +13,7 @@ releases:
     - ingress:
         enabled: true
         tls: false
-        host: localhost
+        additionalAllowedHost: "*"
         className: traefik
   needs:
     - traefik

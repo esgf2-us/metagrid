@@ -86,8 +86,6 @@ jobs:
     - uses: azure/setup-helm@v4.3.0
     - name: Chart | Lint
       run: |
-        helm repo add bitnami https://charts.bitnami.com/bitnami
-        helm dep build helm/
         helm lint helm/
   test:
     name: Test Helm Chart
