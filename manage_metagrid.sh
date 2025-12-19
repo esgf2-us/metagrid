@@ -26,9 +26,9 @@ function startProductionService() {
     case $auth_choice in
     1)
         echo "Starting Metagrid production deployment with Globus"
-        docker compose $PROD_COMPOSE $PROD_OVERLAY --profile globus up --build -d
+        docker compose $PROD_COMPOSE $PROD_OVERLAY $GLOBUS_COMPOSE up --build -d
         echo "Command used:"
-        echo "docker compose $PROD_COMPOSE $PROD_OVERLAY --profile globus up --build -d"
+        echo "docker compose $PROD_COMPOSE $PROD_OVERLAY $GLOBUS_COMPOSE up --build -d"
         ;;
     2)
         echo "Starting Metagrid production deployment with Keycloak"
