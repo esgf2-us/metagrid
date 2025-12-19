@@ -184,5 +184,9 @@ fetch('/frontend-config.js')
     console.error(error);
 
     // Render the app-styled maintenance/error page (no sidebar).
-    root.render(<ErrorPage />);
+    root.render(
+      <Provider>
+        <ErrorPage />
+      </Provider>,
+    );
   });
