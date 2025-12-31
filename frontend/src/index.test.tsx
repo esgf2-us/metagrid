@@ -1,6 +1,5 @@
 import { screen, waitFor } from '@testing-library/react';
 import React from 'react';
-import { printElementContents } from './test/jestTestFunctions';
 
 describe('index bootstrap - frontend-config error', () => {
   beforeEach(() => {
