@@ -150,6 +150,7 @@ export const innerDataRowTargets = {
   filesTitle: new TargetObject(),
   dataSize: new TargetObject(),
   downloadDataBtn: new TargetObject(),
+  copyOPeNDAPBtn: new TargetObject(),
   copyUrlBtn: new TargetObject(),
   checksum: new TargetObject(),
 };
@@ -282,7 +283,12 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
     )
     .addNextStep(
       innerDataRowTargets.copyUrlBtn.selector(),
-      'Clicking this button will copy the OPEN DAP URL of this file directly to your clipboard.',
+      'Clicking this button will copy the HTTP URL of this file directly to your clipboard.',
+      'top-start',
+    )
+    .addNextStep(
+      innerDataRowTargets.copyOPeNDAPBtn.selector(),
+      'Clicking this button will copy an OPeNDAP URL of this file directly to your clipboard.',
       'top-start',
     )
     .addNextStep(

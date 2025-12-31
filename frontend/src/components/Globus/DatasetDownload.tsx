@@ -62,9 +62,7 @@ const GLOBUS_REDIRECT_URL = `${window.location.origin}/cart/items`;
 const COLLECTION_SEARCH_PAGE_SIZE = 5;
 
 // Reference: https://github.com/bpedroza/js-pkce
-/* istanbul ignore next */
-export const REQUESTED_SCOPES =
-  'openid profile email urn:globus:auth:scope:transfer.api.globus.org:all';
+const REQUESTED_SCOPES = 'openid profile email urn:globus:auth:scope:transfer.api.globus.org:all';
 
 type AlertModalState = {
   onCancelAction: () => void;
@@ -500,7 +498,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             setAlertPopupState({ ...alertPopupState, show: false });
             setItemSelections(globusReadyItems);
             setCurrentGoal(GlobusGoals.DoGlobusTransfer);
-            performStepsForGlobusGoalsTest();
+            performStepsForGlobusGoals();
           }
         },
         show: true,
@@ -524,7 +522,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       if (itemsReady) {
         const prepareDownload = (): void => {
           setCurrentGoal(GlobusGoals.DoGlobusTransfer);
-          performStepsForGlobusGoalsTest();
+          performStepsForGlobusGoals();
         };
         prepareDownload();
       }
@@ -678,15 +676,17 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     localStorage.setItem(GlobusStateKeys.globusTransferGoalsState, goal);
   }
 
-  function performStepsForGlobusGoalsTest(): void {
+  function performStepsForGlobusGoals(): void {
     const goal = getCurrentGoal();
 
     // Obtain URL params if applicable
     const urlParams = new URLSearchParams(window.location.search);
     const eUrlReady = endpointUrlReady(urlParams);
 
-    if (urlParams.size > 0) {
-      if (chosenGlobusEndpoint && urlParams.has('state') && urlParams.has('code')) {
+    const urlParamsSize = Array.from(urlParams).length;
+
+    if (urlParamsSize > 0) {
+      if (chosenGlobusEndpoint && tokenUrlReady(urlParams)) {
         handleGlobusDownload(chosenGlobusEndpoint, urlParams.get('code') || undefined);
         return;
       }
@@ -857,7 +857,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     const initializePage = (): void => {
       setLoadingPage(true);
 
-      performStepsForGlobusGoalsTest();
+      performStepsForGlobusGoals();
     };
     initializePage();
   }, []);
