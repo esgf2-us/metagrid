@@ -305,8 +305,8 @@ function updateVersion() {
     echo "Updated helm/README.md version to $new_version"
 
     # Update helm/helmfile.yaml
-    sed -i '' "11s/^  version:.*/  version: \"$package_version\"/" helm/helmfile.yaml
-    echo "Updated helm/helmfile.yaml version to $package_version"
+    sed -i '' "11s/^  version:.*/  version: \"$package_version\"/" helm/deploy/helmfile.yaml
+    echo "Updated helm/deploy/helmfile.yaml version to $package_version"
 
     # Create new changelog file
     changelog_file="frontend/public/changelog/$new_version.md"
