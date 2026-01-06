@@ -198,14 +198,22 @@ export const convertSearchParamsIntoStacFilter = (
     STAC_PROJECTS.find((project) => project.projectName === projectName) || STAC_PROJECTS[0];
   const facetsByGroup = stacProject.facetsByGroup as Record<string, string[]>;
   const allFacets: string[] = Object.values(facetsByGroup).flat();
-  const validParams = paramKeys.filter((key) => allFacets.includes(key));
+  const validFacets = paramKeys.filter((key) => allFacets.includes(key));
 
-  // Create a filter if there are valid params
-  if (validParams.length > 0) {
+  if (paramKeys.includes('latest')) {
+    validFacets.push('latest');
+  }
+
+  const versionParams = paramKeys.filter((key) => ['min_version', 'max_version'].includes(key));
+
+  let facetsFilter;
+
+  // Create a filter for facets, if there are valid facets
+  if (validFacets.length > 0) {
     // If there are more than one valid params, create an AND filter between each
-    if (validParams.length > 1) {
-      return createAndFilter(
-        validParams.map((param) => {
+    if (validFacets.length > 1) {
+      facetsFilter = createAndFilter(
+        validFacets.map((param) => {
           const values = params.get(param)?.split(',') || [];
           const mappedParam = STAC_PROJECT_FACET_MAPPING.CMIP6[param] || param;
           if (values.length > 1) {
@@ -215,17 +223,53 @@ export const convertSearchParamsIntoStacFilter = (
           return createEqualsFilter(mappedParam, values[0]);
         }),
       );
-    }
+    } else {
+      const param = validFacets[0];
+      const mappedParam = STAC_PROJECT_FACET_MAPPING.CMIP6[param] || param;
+      const values = params.get(param)?.split(',') || [];
 
-    const param = validParams[0];
-    const mappedParam = STAC_PROJECT_FACET_MAPPING.CMIP6[param] || param;
-    const values = params.get(param)?.split(',') || [];
-
-    if (values.length > 1) {
-      // If there are multiple values for a parameter, create an OR filter
-      return createOrFilter(values.map((value) => createEqualsFilter(mappedParam, value)));
+      if (values.length > 1) {
+        // If there are multiple values for a parameter, create an OR filter
+        facetsFilter = createOrFilter(
+          values.map((value) => createEqualsFilter(mappedParam, value)),
+        );
+      } else {
+        facetsFilter = createEqualsFilter(mappedParam, values[0]);
+      }
     }
-    return createEqualsFilter(mappedParam, values[0]);
+  }
+
+  let versionFilter;
+  // Create a filter for version range, if version params exist
+  if (versionParams.length > 0) {
+    // If there are more than one version params, create an AND filter between each
+    if (versionParams.length > 1) {
+      const minVersion = params.get('min_version');
+      const maxVersion = params.get('max_version');
+      versionFilter = createAndFilter([
+        { op: '>=', args: [{ property: 'version' }, minVersion] },
+        { op: '<=', args: [{ property: 'version' }, maxVersion] },
+      ]);
+    } else {
+      const param = versionParams[0];
+      const value = params.get(param);
+      if (param === 'min_version' && value) {
+        versionFilter = { op: '>=', args: [{ property: 'version' }, value] };
+      }
+      if (param === 'max_version' && value) {
+        versionFilter = { op: '<=', args: [{ property: 'version' }, value] };
+      }
+    }
+  }
+
+  if (facetsFilter && versionFilter) {
+    return createAndFilter([facetsFilter, versionFilter]);
+  }
+  if (facetsFilter) {
+    return facetsFilter;
+  }
+  if (versionFilter) {
+    return versionFilter;
   }
 
   return undefined;
