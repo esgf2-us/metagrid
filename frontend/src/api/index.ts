@@ -24,6 +24,9 @@ import {
   RawCitation,
   ResultType,
   StacAggregations,
+  StacAsset,
+  StacFeature,
+  StacSearchResponse,
   TextInputs,
 } from '../components/Search/types';
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
@@ -529,6 +532,29 @@ Promise<{ [key: string]: any }> => {
   const aggregationsToFacets = aggregationsToFacetsData(aggregations || { aggregations: [] });
 
   const searchResults = await postSTACSearch(projectName, 9999, filter);
+
+  const stacResponse: StacSearchResponse = searchResults as StacSearchResponse;
+
+  const filteredFeatures: StacFeature[] = [];
+
+  // Remove duplicate assets based on the href, if size is greater than 0
+  stacResponse.features.forEach((feature) => {
+    const updatedAssets: { [name: string]: StacAsset } = {};
+    const href: string[] = [];
+    Object.entries(feature.assets).forEach(([key, asset]) => {
+      if (asset['file:size'] && asset['file:size'] > 0) {
+        if (asset.href && !href.includes(asset.href)) {
+          updatedAssets[key] = asset;
+          href.push(asset.href);
+        }
+      } else {
+        updatedAssets[key] = asset;
+      }
+    });
+    filteredFeatures.push({ ...feature, assets: updatedAssets });
+  });
+
+  stacResponse.features = filteredFeatures;
 
   return { search: searchResults, facets: aggregationsToFacets, stac: true, status };
 };

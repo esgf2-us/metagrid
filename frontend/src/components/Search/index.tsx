@@ -2,6 +2,7 @@ import {
   BookOutlined,
   CodeOutlined,
   CopyOutlined,
+  DownloadOutlined,
   ExportOutlined,
   SaveOutlined,
   ShareAltOutlined,
@@ -66,7 +67,13 @@ import {
   VersionType,
 } from './types';
 import { AuthContext } from '../../contexts/AuthContext';
-import { convertSearchParamsIntoStacFilter, convertStacToRawSearchResult } from '../../common/STAC';
+import {
+  convertSearchParamsIntoStacFilter,
+  convertStacToRawSearchResult,
+  generateWgetScriptSTAC,
+  getDownloadSizeFromSTACsearch,
+  getFileCountFromSTACsearch,
+} from '../../common/STAC';
 
 const tooltipText = {
   featureNotAvailableInStac: 'This feature is not compatible with STAC projects.',
@@ -279,6 +286,14 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     setAvailableFacets(parsedFacets as ParsedFacets);
   }, [parsedFacets, setAvailableFacets]);
 
+  const handleDownloadAllSearchResults = (): void => {
+    const stacResults = (results as StacResponse).search;
+
+    generateWgetScriptSTAC(
+      stacResults.features.map((feature: StacFeature) => convertStacToRawSearchResult(feature)),
+    );
+  };
+
   const handleClearFilters = (): void => {
     setActiveSearchQuery(projectBaseQuery(activeSearchQuery.project));
   };
@@ -456,6 +471,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   }
 
   let numFound = 0;
+  let fileCount = 0;
+  let totalFilesSize = 'N/A';
   let docs: RawSearchResults = [];
   type LoadedResults = {
     cachedURL: string;
@@ -472,6 +489,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           docs = stacResults.features.map((stacResult: StacFeature) =>
             convertStacToRawSearchResult(stacResult),
           );
+          fileCount = getFileCountFromSTACsearch(stacResults.features);
+          totalFilesSize = getDownloadSizeFromSTACsearch(stacResults.features);
         }
       }
     } else if (results.response) {
@@ -607,6 +626,18 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         <div>
           {results && (
             <Space>
+              {currentProject.isSTAC && (
+                <Button
+                  type="default"
+                  shape="round"
+                  className={searchTableTargets.addSelectedToCartBtn.class()}
+                  onClick={handleDownloadAllSearchResults}
+                  disabled={isLoading || numFound === 0}
+                >
+                  <DownloadOutlined />
+                  Download All Results ({fileCount.toLocaleString()} Files - Size: {totalFilesSize})
+                </Button>
+              )}
               <Button
                 type="default"
                 className={searchTableTargets.addSelectedToCartBtn.class()}

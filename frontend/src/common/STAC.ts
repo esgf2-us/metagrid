@@ -6,7 +6,7 @@ import {
   StacAsset,
   StacAggregations,
 } from '../components/Search/types';
-import { downloadFileForUser } from './utils';
+import { downloadFileForUser, formatBytes } from './utils';
 
 export const STAC_PROJECTS: RawProject[] = [
   {
@@ -115,7 +115,10 @@ export const convertStacToRawSearchResult = (stacResult: StacFeature): RawSearch
   const { id, assets, bbox, geometry, links, properties, stac_version, type } = stacResult;
   const { access, citation_url, further_info_url, version, project } = properties;
 
-  const numberOfFiles = Object.keys(assets).filter((key) => key !== 'globus').length;
+  const numberOfFiles = Object.values(assets).reduce(
+    (acc, asset) => acc + (asset['file:size'] > 0 ? 1 : 0),
+    0,
+  );
   const size = Object.values(assets).reduce((acc, asset) => acc + (asset['file:size'] || 0), 0);
 
   const updatedAssets: {
@@ -230,6 +233,32 @@ export const convertSearchParamsIntoStacFilter = (
 
   return undefined;
 };
+
+export function getFileCountFromSTACsearch(features: StacFeature[]): number {
+  let totalCount = 0;
+
+  features.forEach((feature: StacFeature) => {
+    totalCount += Object.values(feature.assets).reduce(
+      (acc, asset) => acc + (asset['file:size'] > 0 ? 1 : 0),
+      0,
+    );
+  });
+
+  return totalCount;
+}
+
+export function getDownloadSizeFromSTACsearch(features: StacFeature[]): string {
+  let totalSize = 0;
+
+  features.forEach((feature: StacFeature) => {
+    totalSize += Object.values(feature.assets).reduce(
+      (acc, asset) => acc + (asset['file:size'] > 0 ? asset['file:size'] : 0),
+      0,
+    );
+  });
+
+  return formatBytes(totalSize);
+}
 
 export function generateWgetScriptSTAC(searchResults: RawSearchResult[]): boolean {
   const d = new Date();
