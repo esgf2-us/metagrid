@@ -570,7 +570,6 @@ const FacetsForm: React.FC = () => {
       <Form
         form={generalFacetsForm}
         layout="horizontal"
-        hidden={currentProject.isSTAC}
         initialValues={{
           ...activeSearchQuery.activeFacets,
           versionType: activeSearchQuery.versionType,
@@ -625,6 +624,7 @@ const FacetsForm: React.FC = () => {
                     <Form.Item
                       label="Result Type"
                       name="resultType"
+                      hidden={currentProject.isSTAC}
                       style={{ marginBottom: 0 }}
                       tooltip={{
                         title:
