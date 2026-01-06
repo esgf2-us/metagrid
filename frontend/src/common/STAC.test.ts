@@ -52,7 +52,7 @@ describe('STAC utilities', () => {
       },
       assets: {
         data: { href: 'https://example.org/file.nc', 'file:size': 1024, name: 'data' },
-        thumb: { href: 'https://example.org/thumb.png', 'file:size': 0, title: 'thumb' },
+        thumb: { href: 'https://example.org/thumb.png', 'file:size': 24, title: 'thumb' },
         globus: { href: 'globus://endpoint/collection', 'file:size': 0, name: 'globus' },
       },
     } as unknown as StacFeature;
@@ -63,8 +63,8 @@ describe('STAC utilities', () => {
     expect(Object.keys(res.assets || {})).toContain('data');
     // number_of_files excludes 'globus' asset
     expect(res.number_of_files).toBe(2);
-    // size should be sum of file:size values (1024 + 0)
-    expect(res.size).toBe(1024);
+    // size should be sum of file:size values (1024 + 24)
+    expect(res.size).toBe(1048);
     // globus_link should be set from assets.globus.href
     expect(res.globus_link).toBe('globus://endpoint/collection');
     expect(res.isStac).toBeTruthy();

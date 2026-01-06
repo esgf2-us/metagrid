@@ -94,6 +94,7 @@ export const searchTableTargets = {
   queryString: new TargetObject(),
   resultsFoundText: new TargetObject(),
   searchResultsTable: new TargetObject(),
+  downloadSearchBtn: new TargetObject(),
   addSelectedToCartBtn: new TargetObject(),
   saveSearchBtn: new TargetObject(),
 };
@@ -582,6 +583,11 @@ export const createMainPageTour = (): JoyrideTour => {
       searchTableTargets.searchResultsTable.selector(),
       'These are your search results! Each row in the results table is a specific dataset that matches your criteria.',
       'top-start',
+    )
+    .addNextStep(
+      searchTableTargets.downloadSearchBtn.selector(),
+      'The Download All Results button allows you to download a wget script that will download all datasets returned by your search.',
+      'bottom',
     )
     .addNextStep(
       '#root .ant-checkbox',

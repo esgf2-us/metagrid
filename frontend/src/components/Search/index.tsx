@@ -291,6 +291,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
     generateWgetScriptSTAC(
       stacResults.features.map((feature: StacFeature) => convertStacToRawSearchResult(feature)),
+      getUrlFromSearch(activeSearchQuery),
     );
   };
 
@@ -630,7 +631,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                 <Button
                   type="default"
                   shape="round"
-                  className={searchTableTargets.addSelectedToCartBtn.class()}
+                  className={searchTableTargets.downloadSearchBtn.class()}
                   onClick={handleDownloadAllSearchResults}
                   disabled={isLoading || numFound === 0}
                 >

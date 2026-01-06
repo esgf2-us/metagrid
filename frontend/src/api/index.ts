@@ -541,17 +541,19 @@ Promise<{ [key: string]: any }> => {
   stacResponse.features.forEach((feature) => {
     const updatedAssets: { [name: string]: StacAsset } = {};
     const href: string[] = [];
-    Object.entries(feature.assets).forEach(([key, asset]) => {
-      if (asset['file:size'] && asset['file:size'] > 0) {
-        if (asset.href && !href.includes(asset.href)) {
+    if (feature.assets) {
+      Object.entries(feature.assets).forEach(([key, asset]) => {
+        if (asset['file:size'] && asset['file:size'] > 0) {
+          if (asset.href && !href.includes(asset.href)) {
+            updatedAssets[key] = asset;
+            href.push(asset.href);
+          }
+        } else {
           updatedAssets[key] = asset;
-          href.push(asset.href);
         }
-      } else {
-        updatedAssets[key] = asset;
-      }
-    });
-    filteredFeatures.push({ ...feature, assets: updatedAssets });
+      });
+      filteredFeatures.push({ ...feature, assets: updatedAssets });
+    }
   });
 
   stacResponse.features = filteredFeatures;
