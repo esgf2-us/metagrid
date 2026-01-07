@@ -661,24 +661,24 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                   Add Selected to Cart
                 </Button>{' '}
               </Tooltip>
-              <Tooltip
+              <Dropdown.Button
+                data-testid="save-search-dropdown-btn"
+                className={searchTableTargets.saveSearchBtn.class()}
+                type="default"
+                onClick={() => handleSaveSearchQuery(currentRequestURL, numFound)}
+                disabled={isLoading || numFound === 0}
+                menu={{ items: searchActionsMenu }}
                 placement="bottom"
-                title="Saves your current search parameters to Saved Searches for later use."
+                icon={<CopyOutlined className={copySearchOptionsTargets.copyMenuBtn.class()} />}
               >
-                <Dropdown.Button
-                  data-testid="save-search-dropdown-btn"
-                  className={searchTableTargets.saveSearchBtn.class()}
-                  type="default"
-                  onClick={() => handleSaveSearchQuery(currentRequestURL, numFound)}
-                  disabled={isLoading || numFound === 0}
-                  menu={{ items: searchActionsMenu }}
+                <Tooltip
                   placement="bottom"
-                  icon={<CopyOutlined className={copySearchOptionsTargets.copyMenuBtn.class()} />}
+                  title="Saves your current search parameters to Saved Searches for later use."
                 >
                   <SaveOutlined data-testid="save-search-btn" />
                   Save Search
-                </Dropdown.Button>{' '}
-              </Tooltip>
+                </Tooltip>
+              </Dropdown.Button>{' '}
             </Space>
           )}
         </div>
