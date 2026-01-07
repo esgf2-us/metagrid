@@ -628,44 +628,57 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           {results && (
             <Space>
               {currentProject.isSTAC && (
+                <Tooltip
+                  placement="bottom"
+                  title="Generates a wget download script for the current search results. The total file count and total download size are shown on the button."
+                >
+                  <Button
+                    type="default"
+                    shape="round"
+                    className={searchTableTargets.downloadSearchBtn.class()}
+                    onClick={handleDownloadAllSearchResults}
+                    disabled={isLoading || numFound === 0}
+                  >
+                    <DownloadOutlined />
+                    Download All Results ({fileCount.toLocaleString()} Files - Size:{' '}
+                    {totalFilesSize})
+                  </Button>{' '}
+                </Tooltip>
+              )}
+              <Tooltip placement="bottom" title="Add the selected datasets to your download cart.">
                 <Button
                   type="default"
-                  shape="round"
-                  className={searchTableTargets.downloadSearchBtn.class()}
-                  onClick={handleDownloadAllSearchResults}
-                  disabled={isLoading || numFound === 0}
+                  className={searchTableTargets.addSelectedToCartBtn.class()}
+                  onClick={() => onUpdateCart(selectedItems, 'add')}
+                  disabled={
+                    isLoading ||
+                    numFound === 0 ||
+                    selectedItems.length === 0 ||
+                    allSelectedItemsInCart
+                  }
                 >
-                  <DownloadOutlined />
-                  Download All Results ({fileCount.toLocaleString()} Files - Size: {totalFilesSize})
-                </Button>
-              )}
-              <Button
-                type="default"
-                className={searchTableTargets.addSelectedToCartBtn.class()}
-                onClick={() => onUpdateCart(selectedItems, 'add')}
-                disabled={
-                  isLoading ||
-                  numFound === 0 ||
-                  selectedItems.length === 0 ||
-                  allSelectedItemsInCart
-                }
-              >
-                <ShoppingCartOutlined />
-                Add Selected to Cart
-              </Button>{' '}
-              <Dropdown.Button
-                data-testid="save-search-dropdown-btn"
-                className={searchTableTargets.saveSearchBtn.class()}
-                type="default"
-                onClick={() => handleSaveSearchQuery(currentRequestURL, numFound)}
-                disabled={isLoading || numFound === 0}
-                menu={{ items: searchActionsMenu }}
+                  <ShoppingCartOutlined />
+                  Add Selected to Cart
+                </Button>{' '}
+              </Tooltip>
+              <Tooltip
                 placement="bottom"
-                icon={<CopyOutlined className={copySearchOptionsTargets.copyMenuBtn.class()} />}
+                title="Saves your current search parameters to Saved Searches for later use."
               >
-                <SaveOutlined data-testid="save-search-btn" />
-                Save Search
-              </Dropdown.Button>
+                <Dropdown.Button
+                  data-testid="save-search-dropdown-btn"
+                  className={searchTableTargets.saveSearchBtn.class()}
+                  type="default"
+                  onClick={() => handleSaveSearchQuery(currentRequestURL, numFound)}
+                  disabled={isLoading || numFound === 0}
+                  menu={{ items: searchActionsMenu }}
+                  placement="bottom"
+                  icon={<CopyOutlined className={copySearchOptionsTargets.copyMenuBtn.class()} />}
+                >
+                  <SaveOutlined data-testid="save-search-btn" />
+                  Save Search
+                </Dropdown.Button>{' '}
+              </Tooltip>
             </Space>
           )}
         </div>
