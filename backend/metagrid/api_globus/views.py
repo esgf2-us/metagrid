@@ -401,8 +401,6 @@ def search_files(
 
     if url_params.get("dataset_id") is not None:
         url_params["dataset_id"] = ",".join(url_params["dataset_id"])
-    
-    print("Searching ESGF with parameters:", query_defaults | url_params)
 
     results = requests.get(
         url=settings.SEARCH_URL,

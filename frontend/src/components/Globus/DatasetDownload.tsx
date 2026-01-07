@@ -20,7 +20,6 @@ import React, { useEffect } from 'react';
 import { useAtom } from 'jotai';
 import axios from 'axios';
 import { useLocation } from 'react-router';
-import { get } from 'http';
 import {
   deleteCookie,
   fetchWgetScript,
