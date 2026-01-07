@@ -229,11 +229,16 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   const handleGlobusDownload = (endpoint: GlobusEndpoint, authCode?: string): void => {
     const ids = itemSelections?.map((item) => (item ? item.id : '')) ?? [];
 
-    const globusHrefs: string[] = itemSelections
-      ?.map((item) => {
-        return getStacGlobusHref(item);
-      })
-      .filter((info) => info !== null);
+    const globusHrefs: string[] = [];
+
+    if (itemSelections) {
+      itemSelections.forEach((item) => {
+        const href = getStacGlobusHref(item);
+        if (href !== null) {
+          globusHrefs.push(href);
+        }
+      });
+    }
 
     setDownloadIsLoading(true);
 
