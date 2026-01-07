@@ -11,6 +11,7 @@ import { TablePaginationConfig } from 'antd/lib/table';
 import React, { useState } from 'react';
 import { DeferFn, useAsync } from 'react-async';
 import { useAtomValue } from 'jotai';
+import openDapIcon from '../../assets/img/opendap_logo.png';
 import { fetchDatasetFiles, openDownloadURL } from '../../api';
 import { CSSinJS } from '../../common/types';
 import { formatBytes, showError, showNotice, splitStringByChar } from '../../common/utils';
@@ -27,6 +28,7 @@ import {
 } from './types';
 import { innerDataRowTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 import { currentProjectAtom } from '../../common/atoms';
+import { createCustomIcon } from '../NavBar';
 
 export type DownloadUrls = {
   HTTPServer: string;
@@ -299,11 +301,35 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
                   <Button type="primary" htmlType="submit" icon={<DownloadOutlined />} />
                 </Form.Item>
               </Tooltip>
+              <Tooltip title="Copy the HTTP URL to the clipboard." trigger="hover">
+                <Form.Item
+                  style={{ margin: '0 0 0 15px' }}
+                  className={innerDataRowTargets.copyUrlBtn.class()}
+                >
+                  <Button
+                    type="primary"
+                    onClick={() => {
+                      /* istanbul ignore next */
+                      if (navigator && navigator.clipboard) {
+                        navigator.clipboard
+                          .writeText(downloadUrls.HTTPServer)
+                          .catch((e: PromiseRejectedResult) => {
+                            showError(messageApi, e.reason as string);
+                          });
+                        showNotice(messageApi, 'HTTP URL copied to clipboard!', {
+                          icon: <ShareAltOutlined style={styles.messageAddIcon} />,
+                        });
+                      }
+                    }}
+                    icon={<CopyOutlined />}
+                  />
+                </Form.Item>
+              </Tooltip>
               {downloadUrls.OPENDAP !== '' && (
-                <Tooltip title="Copy a shareable OPENDAP URL to the clipboard." trigger="hover">
+                <Tooltip title="Copy a shareable OPeNDAP URL to the clipboard." trigger="hover">
                   <Form.Item
                     style={{ margin: '0 0 0 15px' }}
-                    className={innerDataRowTargets.copyUrlBtn.class()}
+                    className={innerDataRowTargets.copyOPeNDAPBtn.class()}
                   >
                     <Button
                       type="primary"
@@ -315,12 +341,17 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
                             .catch((e: PromiseRejectedResult) => {
                               showError(messageApi, e.reason as string);
                             });
-                          showNotice(messageApi, 'OPENDAP URL copied to clipboard!', {
+                          showNotice(messageApi, 'OPeNDAP URL copied to clipboard!', {
                             icon: <ShareAltOutlined style={styles.messageAddIcon} />,
                           });
                         }
                       }}
-                      icon={<CopyOutlined />}
+                      icon={createCustomIcon(openDapIcon, 'OPeNDAP', {
+                        height: '24px',
+                        width: '24px',
+                        margin: 0,
+                        verticalAlign: 'middle',
+                      })}
                     ></Button>
                   </Form.Item>
                 </Tooltip>
@@ -391,7 +422,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
                   />
                 </Form.Item>
               </Tooltip>
-              <Tooltip title="Copy a shareable URL to the clipboard." trigger="hover">
+              <Tooltip title="Copy the HTTP URL to the clipboard." trigger="hover">
                 <Form.Item className={innerDataRowTargets.copyUrlBtn.class()}>
                   <Button
                     type="primary"

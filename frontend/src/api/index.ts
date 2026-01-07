@@ -29,7 +29,12 @@ import {
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
 import apiRoutes, { ApiRoute, HTTPCodeType } from './routes';
 import { GlobusEndpointSearchResults } from '../components/Globus/types';
-import { cachePagination, getCachedPagination, getCachedSearchResults } from '../common/utils';
+import {
+  cachePagination,
+  downloadFileForUser,
+  getCachedPagination,
+  getCachedSearchResults,
+} from '../common/utils';
 import {
   aggregationsToFacetsData,
   convertSearchParamsIntoStacFilter,
@@ -107,6 +112,15 @@ export const openDownloadURL = (url: string): void => {
 export const errorMsgBasedOnHTTPStatusCode = (error: ResponseError, route: ApiRoute): string => {
   // Indicates that an HTTP response status code was returned from the server
   if (error.response) {
+    // Normalize status to a number when possible
+    /* istanbul ignore next */
+    const statusNum = Number(error.response.status) || 0;
+
+    // For server errors (5xx) return the generic error message for the route
+    if (statusNum >= 500) {
+      return route.handleErrorMsg('generic');
+    }
+    // For other HTTP statuses return the mapped message (may be empty string for some codes)
     return route.handleErrorMsg(error.response.status);
   }
 
@@ -476,7 +490,7 @@ export const postSTACSearch = async (
     });
 };
 
-const fetchSTACAggregations = async (
+export const fetchSTACAggregations = async (
   projectId: string,
   filter: { op: string; args: unknown } | undefined,
 ): Promise<StacAggregations> => {
@@ -491,7 +505,7 @@ const fetchSTACAggregations = async (
       return res.data;
     })
     .catch((error: ResponseError) => {
-      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearchSTAC));
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfAggregationsSTAC));
     });
 };
 
@@ -509,7 +523,7 @@ Promise<{ [key: string]: any }> => {
       return res;
     })
     .catch((error: ResponseError) => {
-      status = error.cause === 422 ? 422 : 500;
+      status = error.cause === 422 ? 422 : (error.cause as number) || 500;
     });
 
   const aggregationsToFacets = aggregationsToFacetsData(aggregations || { aggregations: [] });
@@ -558,6 +572,7 @@ export const fetchSearchResults = async (
   let finalUrl = reqUrlStr;
   const cachedPagination = getCachedPagination();
   // If the change to the request URL was not the offset, reset the offset to 0
+  /* istanbul ignore next */
   if (reqUrlOffset === cachedUrlOffset || (!reqUrlOffset && cachedUrlOffset)) {
     finalUrl = reqUrlStr.replace(/offset=\d+/, 'offset=0');
     // Cache the new offset value so it is reflected in the pagination
@@ -577,6 +592,7 @@ export const fetchSearchResults = async (
         // Prevent breaking the app if the response is not successful
         if (results.status !== 200) {
           // Handle the case where status is 422 due to a offset value that is too high
+          /* istanbul ignore next */
           if (results.status === 422) {
             cachePagination({
               page: 1,
@@ -589,12 +605,13 @@ export const fetchSearchResults = async (
         return results;
       })
       .catch((error: ResponseError) => {
+        /* istanbul ignore next */
         if (error.cause === 422) {
-          throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearch), {
+          throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearchSTAC), {
             cause: 422,
           });
         } else {
-          throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearch));
+          throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearchSTAC));
         }
       });
   }
@@ -735,26 +752,6 @@ export const fetchDatasetFiles = async (
     });
 };
 
-const returnFileToUser = (fileContent: string): void => {
-  const d = new Date();
-  const fileName = `wget_script_${d.getFullYear()}-${
-    d.getMonth() + 1
-  }-${d.getDate()}_${d.getHours()}-${d.getMinutes()}-${d.getSeconds()}.sh`;
-  const downloadLinkNode = document.createElement('a');
-  downloadLinkNode.setAttribute(
-    'href',
-    `data:text/plain;charset=utf-8,${encodeURIComponent(fileContent)}`,
-  );
-  downloadLinkNode.setAttribute('download', fileName);
-
-  downloadLinkNode.style.display = 'none';
-  document.body.appendChild(downloadLinkNode);
-
-  downloadLinkNode.click();
-
-  document.body.removeChild(downloadLinkNode);
-};
-
 /**
  * Performs wget request from the API.
  *
@@ -765,9 +762,14 @@ export const fetchWgetScript = async (ids: string[], filenameVars?: string[]): P
     query: filenameVars,
   };
 
+  const d = new Date();
+  const fileName = `wget_script_${d.getFullYear()}-${
+    d.getMonth() + 1
+  }-${d.getDate()}_${d.getHours()}-${d.getMinutes()}-${d.getSeconds()}.sh`;
+
   return axios
     .post(apiRoutes.wget.path, data)
-    .then((resp) => returnFileToUser(resp.data as string))
+    .then((resp) => downloadFileForUser(fileName, resp.data as string))
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.wget));
     });

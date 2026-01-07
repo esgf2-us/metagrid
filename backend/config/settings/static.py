@@ -5,9 +5,19 @@ import environ
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-ROOT_DIR = (
-    environ.Path(__file__) - 3
-)  # (config/settings/django.py - 3 = metagrid/)
+env = environ.Env()
+
+# project root (config/settings/static.py - 3 = metagrid/)
+ROOT_DIR = environ.Path(__file__) - 3
+
+TEMPLATE_DIR = ROOT_DIR("metagrid", "wget", "templates")
+
+# Parse DATABASE_URL environment variable; default to an in-memory sqlite DB for tests/local runs.
+# This prevents "Set the DATABASE_URL environment variable" errors when none is provided.
+DATABASES = env.db_url(
+    default="postgresql://postgres:postgres@postgres:5432/postgres"
+)
+DATABASES.update(ATOMIC_REQUESTS=True)
 
 
 class DjangoStaticSettings(BaseSettings):
@@ -15,6 +25,7 @@ class DjangoStaticSettings(BaseSettings):
 
     model_config = SettingsConfigDict(
         env_prefix="DJANGO_",
+        env_nested_delimiter="__",
         case_sensitive=True,
     )
 
@@ -88,19 +99,14 @@ class DjangoStaticSettings(BaseSettings):
     EMAIL_TIMEOUT: int = 5
 
     CORS_ORIGIN_ALLOW_ALL: bool = True
-    DATABASES: dict[str, dict[str, Any]] = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": "postgres",
-            "ATOMIC_REQUESTS": True,
-            "DATABASE_URL": "pgsql:///postgres",
-        }
-    }
+
+    DATABASES: dict[str, dict[str, Any]] = {"default": DATABASES}
+
     STATIC_ROOT: str = ROOT_DIR("staticfiles")
     # https://docs.djangoproject.com/en/dev/ref/settings/#static-url
     STATIC_URL: str = "/static/"
     # https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
-    STATICFILES_DIRS: Sequence[str] = []
+    STATICFILES_DIRS: Sequence[str] = [TEMPLATE_DIR]
     # https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#staticfiles-finders
     STATICFILES_FINDERS: Sequence[str] = [
         "django.contrib.staticfiles.finders.FileSystemFinder",
@@ -121,7 +127,7 @@ class DjangoStaticSettings(BaseSettings):
         {
             "BACKEND": "django.template.backends.django.DjangoTemplates",
             "DIRS": STATICFILES_DIRS,
-            "APP_DIRS": False,
+            "APP_DIRS": True,
             "OPTIONS": {
                 "context_processors": [
                     "django.template.context_processors.debug",

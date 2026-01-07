@@ -1,6 +1,6 @@
 import React from 'react';
 import userEvent from '@testing-library/user-event';
-import { within, screen } from '@testing-library/react';
+import { within, screen, waitFor, waitForElementToBeRemoved, act } from '@testing-library/react';
 import customRender from '../../test/custom-render';
 import { rest, server } from '../../test/mock/server';
 import { getSearchFromUrl } from '../../common/utils';
@@ -12,6 +12,7 @@ import {
   mockFunction,
   openDropdownList,
   AtomWrapper,
+  printElementContents,
 } from '../../test/jestTestFunctions';
 import App from '../App/App';
 import { GlobusEndpoint, GlobusTaskItem } from './types';
@@ -25,7 +26,17 @@ import {
 } from '../../test/mock/mockStorage';
 import { AppPage } from '../../common/types';
 import { CartStateKeys, GlobusStateKeys } from '../../common/atoms';
-import { getCookie, setCookie } from '../../api';
+import { getCookie, setCookie, resetGlobusTokens } from '../../api';
+
+Object.defineProperty(window, 'location', {
+  value: {
+    assign: jest.fn(),
+    pathname: '/cart/items',
+    href: 'http://localhost:9443/cart/items',
+    search: '',
+    replace: jest.fn(),
+  },
+});
 
 const activeSearch: ActiveSearchQuery = getSearchFromUrl('project=test1');
 
@@ -57,6 +68,8 @@ jest.mock('../../api/index', () => {
     saveSessionValue: (key: string, value: unknown) => {
       return mockSaveValue(key, value);
     },
+    // expose a mock so tests can assert it was called when transfers fail
+    resetGlobusTokens: jest.fn(),
   };
 });
 
@@ -272,7 +285,7 @@ describe('DatasetDownload form tests', () => {
     expect(globusTransferBtn).toBeTruthy();
     await user.click(globusTransferBtn);
 
-    // Expect the transfer popup to show first step
+    // Expect the transfer success
     const globusTransferPopup = await screen.findByText('Globus download initiated successfully!');
     expect(globusTransferPopup).toBeTruthy();
   });
@@ -410,7 +423,7 @@ describe('DatasetDownload form tests', () => {
 
     // Expect transfer notice for endpoint path step
     const transferPopup = await screen.findByText(
-      /You will be redirected to set the path for your selected collection. Continue?/i,
+      /You will be redirected to set the path for the collection. Continue?/i,
     );
     expect(transferPopup).toBeTruthy();
     await user.click(await screen.findByText('Ok'));
@@ -462,6 +475,138 @@ describe('DatasetDownload form tests', () => {
 
     const globusTransferPopup = await screen.findByTestId('207-globus-failures-msg');
     expect(globusTransferPopup).toBeTruthy();
+
+    // wait for endDownloadSteps to complete: transfer goal should be set to none
+    await waitFor(
+      () =>
+        expect(localStorageMock.getItem(GlobusStateKeys.globusTransferGoalsState)).toEqual(
+          GlobusGoals.None,
+        ),
+      { timeout: 5000 },
+    );
+  });
+
+  it('prompts user for consents if there is no auth code and transfer was denied due to permissions, then redirects to auth url when clicking OK', async () => {
+    server.use(
+      rest.post(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
+        res(
+          ctx.status(207),
+          ctx.json({
+            status: 207,
+            successes: [],
+            failures: ['permission denied'],
+            auth_url: 'http://test.globus.org/auth',
+          }),
+        ),
+      ),
+    );
+
+    await initializeComponentForTest({
+      ...defaultTestConfig,
+      globusGoals: GlobusGoals.DoGlobusTransfer,
+    });
+
+    // Click Transfer button
+    let globusTransferBtn = await screen.findByTestId('downloadDatasetTransferBtn');
+    expect(globusTransferBtn).toBeTruthy();
+    await user.click(globusTransferBtn);
+
+    // Check globus goals state is set to transfer
+    let globusGoalsState = localStorageMock.getItem(GlobusStateKeys.globusTransferGoalsState);
+    expect(globusGoalsState).toEqual(GlobusGoals.DoGlobusTransfer);
+
+    const consentsMessage = await screen.findByText(
+      'You will need to provide new consents. Continue?',
+    );
+    expect(consentsMessage).toBeInTheDocument();
+
+    // Check globus goals state is still set to transfer after clicking Ok
+    globusGoalsState = localStorageMock.getItem(GlobusStateKeys.globusTransferGoalsState);
+    expect(globusGoalsState).toEqual(GlobusGoals.DoGlobusTransfer);
+
+    // Click Ok to be redirected to auth url
+    const okBtn = await screen.findByText('Ok');
+    await user.click(okBtn);
+
+    // Expect the redirect function to have been called with the auth url
+    expect(window.location.replace).toHaveBeenCalledWith('http://test.globus.org/auth');
+  });
+
+  it('prompts user for consents if there is no auth code and transfer was denied due to permissions, then cancels', async () => {
+    server.use(
+      rest.post(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
+        res(
+          ctx.status(207),
+          ctx.json({
+            status: 207,
+            successes: [],
+            failures: ['permission denied'],
+            auth_url: 'http://test.globus.org/auth',
+          }),
+        ),
+      ),
+    );
+
+    await initializeComponentForTest({
+      ...defaultTestConfig,
+      globusGoals: GlobusGoals.DoGlobusTransfer,
+    });
+
+    // Click Transfer button
+    let globusTransferBtn = await screen.findByTestId('downloadDatasetTransferBtn');
+    expect(globusTransferBtn).toBeTruthy();
+    await user.click(globusTransferBtn);
+
+    // Transfer goal should be set to transfer
+    let globusGoalsState = localStorageMock.getItem(GlobusStateKeys.globusTransferGoalsState);
+    expect(globusGoalsState).toEqual(GlobusGoals.DoGlobusTransfer);
+
+    const consentsMessage = await screen.findByText(
+      'You will need to provide new consents. Continue?',
+    );
+    expect(consentsMessage).toBeInTheDocument();
+
+    // First click cancel to avoid redirect
+    const cancelBtn = await screen.findByText('Cancel');
+    await user.click(cancelBtn);
+
+    // Check globus goals state is set to none after cancelling
+    globusGoalsState = localStorageMock.getItem(GlobusStateKeys.globusTransferGoalsState);
+    expect(globusGoalsState).toEqual(GlobusGoals.None);
+  });
+
+  it('provides error message when permission was denied after receiving auth code', async () => {
+    server.use(
+      rest.post(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
+        res(
+          ctx.status(207),
+          ctx.json({
+            status: 207,
+            successes: [],
+            failures: ['permission denied'],
+            auth_url: 'http://test.globus.org/auth',
+          }),
+        ),
+      ),
+    );
+
+    await initializeComponentForTest({
+      ...defaultTestConfig,
+      testUrlState: { authTokensUrlReady: true, endpointPathUrlReady: false },
+    });
+
+    // Click Transfer button
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetTransferBtn');
+    expect(globusTransferBtn).toBeTruthy();
+    await user.click(globusTransferBtn);
+
+    const consentsErrorMessage = await screen.findByText(
+      'Permission denied despite consent. Try logging out and logging in again.',
+    );
+    expect(consentsErrorMessage).toBeInTheDocument();
+
+    const okBtn = await screen.findByText('Ok');
+    await user.click(okBtn);
   });
 
   it('displays an error when Globus Transfer returns unhandled status code', async () => {
@@ -478,8 +623,21 @@ describe('DatasetDownload form tests', () => {
     expect(globusTransferBtn).toBeTruthy();
     await user.click(globusTransferBtn);
 
+    // Transfer goal should be set to transfer
+    const globusGoalsState = localStorageMock.getItem(GlobusStateKeys.globusTransferGoalsState);
+    expect(globusGoalsState).toEqual(GlobusGoals.DoGlobusTransfer);
+
     const globusTransferPopup = await screen.findByTestId('unhandled-status-globus-failures-msg');
     expect(globusTransferPopup).toBeTruthy();
+
+    // wait for endDownloadSteps to complete: transfer goal should be set to none
+    await waitFor(
+      () =>
+        expect(localStorageMock.getItem(GlobusStateKeys.globusTransferGoalsState)).toEqual(
+          GlobusGoals.None,
+        ),
+      { timeout: 5000 },
+    );
   });
 
   it('shows a warning message when Globus transfer response has no data in successes or failures', async () => {
@@ -496,10 +654,23 @@ describe('DatasetDownload form tests', () => {
     expect(globusTransferBtn).toBeTruthy();
     await user.click(globusTransferBtn);
 
+    // Transfer goal should be set to transfer
+    const globusGoalsState = localStorageMock.getItem(GlobusStateKeys.globusTransferGoalsState);
+    expect(globusGoalsState).toEqual(GlobusGoals.DoGlobusTransfer);
+
     const warningMessage = await screen.findByText(
       'Globus download requested, however no transfer occurred.',
     );
     expect(warningMessage).toBeInTheDocument();
+
+    // wait for endDownloadSteps to complete: transfer goal should be set to none
+    await waitFor(
+      () =>
+        expect(localStorageMock.getItem(GlobusStateKeys.globusTransferGoalsState)).toEqual(
+          GlobusGoals.None,
+        ),
+      { timeout: 5000 },
+    );
   });
 
   it('If endpoint URL is available, process it and continue with sign-in', async () => {

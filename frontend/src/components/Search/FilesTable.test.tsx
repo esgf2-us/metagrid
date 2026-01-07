@@ -320,8 +320,12 @@ describe('test column sorting', () => {
     expect(cell).toBeTruthy();
     expect(cell).toHaveTextContent('zyx');
 
+    // Get the header row
+    const headerRow = (await screen.findAllByRole('row'))[0];
+    expect(headerRow).toBeTruthy();
+
     // Click on the column header to sort
-    const tableHeader = await screen.findByText('File Title');
+    const tableHeader = await within(headerRow).findByText('File Title');
     expect(tableHeader).toBeTruthy();
     await user.click(tableHeader);
 
@@ -365,8 +369,12 @@ describe('test column sorting', () => {
     expect(cell).toBeTruthy();
     expect(cell).toHaveTextContent('5.54 KB');
 
+    // Get the header row
+    const headerRow = (await screen.findAllByRole('row'))[0];
+    expect(headerRow).toBeTruthy();
+
     // Click on the column header to sort
-    const tableHeader = await screen.findByText('Size');
+    const tableHeader = await within(headerRow).findByText('Size');
     expect(tableHeader).toBeTruthy();
     await user.click(tableHeader);
 
@@ -419,16 +427,16 @@ describe('test column sorting', () => {
     expect(table).toBeTruthy();
 
     // First row in table
-    const firstRow = (await screen.findAllByRole('row'))[1];
-    expect(firstRow).toBeTruthy();
+    const headerRow = (await screen.findAllByRole('row'))[0];
+    expect(headerRow).toBeTruthy();
 
     // Click on the column header to sort
-    const tableDatasetId = await screen.findByText('File Title');
+    const tableDatasetId = await within(headerRow).findByText('File Title');
     expect(tableDatasetId).toBeTruthy();
     await user.click(tableDatasetId);
 
     // Click on the column header to sort
-    const files = await screen.findByText('Size');
+    const files = await within(headerRow).findByText('Size');
     expect(files).toBeTruthy();
     await user.click(files);
   });

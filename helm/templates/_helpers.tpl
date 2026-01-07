@@ -1,4 +1,16 @@
 {{/*
+Formats Postgres URI
+*/}}
+{{- define "metagrid.postgresql_uri" -}}
+{{- $username := .Values.postgresql.username -}}
+{{- $password := .Values.postgresql.password -}}
+{{- $database := .Values.postgresql.database -}}
+{{- $url := printf "%s-postgresql.%s.svc" (include "metagrid.fullname" .) .Release.Namespace }}
+{{- $port := .Values.postgresql.service.port | toString }}
+{{- printf "postgresql://%s:%s@%s:%s/%s" $username $password $url $port $database }}
+{{- end }}
+
+{{/*
 Expand the name of the chart.
 */}}
 {{- define "metagrid.name" -}}

@@ -15,6 +15,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from config.settings.site_specific import MetagridFrontendSettings
+from metagrid.wget.views import do_wget_integrated
 
 
 @api_view()
@@ -155,6 +156,9 @@ def do_status(request):
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
 def do_wget(request):
+    if not settings.WGET_URL:
+        return do_wget_integrated(request)
+
     return do_request(request, settings.WGET_URL, True)
 
 

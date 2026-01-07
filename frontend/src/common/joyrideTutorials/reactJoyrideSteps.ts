@@ -121,8 +121,9 @@ export const leftSidebarTargets = {
   facetFormExpandAllBtn: new TargetObject(),
   facetFormAdditional: new TargetObject(),
   facetFormAdditionalFields: new TargetObject(),
-  facetFormFilename: new TargetObject(),
-  facetFormFilenameFields: new TargetObject(),
+  facetFormKeywordSearch: new TargetObject(),
+  // facetFormFilename: new TargetObject(),
+  // facetFormFilenameFields: new TargetObject(),
 };
 
 export const topDataRowTargets = {
@@ -149,6 +150,7 @@ export const innerDataRowTargets = {
   filesTitle: new TargetObject(),
   dataSize: new TargetObject(),
   downloadDataBtn: new TargetObject(),
+  copyOPeNDAPBtn: new TargetObject(),
   copyUrlBtn: new TargetObject(),
   checksum: new TargetObject(),
 };
@@ -281,7 +283,12 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
     )
     .addNextStep(
       innerDataRowTargets.copyUrlBtn.selector(),
-      'Clicking this button will copy the OPEN DAP URL of this file directly to your clipboard.',
+      'Clicking this button will copy the HTTP URL of this file directly to your clipboard.',
+      'top-start',
+    )
+    .addNextStep(
+      innerDataRowTargets.copyOPeNDAPBtn.selector(),
+      'Clicking this button will copy an OPeNDAP URL of this file directly to your clipboard.',
       'top-start',
     )
     .addNextStep(
@@ -364,11 +371,6 @@ export const createMainPageTour = (): JoyrideTour => {
       'body',
       "Welcome to Metagrid! This tour will highlight the main controls and features of the search page. During the tour, click 'Next' to continue, or 'Skip' if you wish to cancel the tour. Let's begin!",
       'center',
-    )
-    .addNextStep(
-      navBarTargets.topSearchBar.selector(),
-      'This is the top search bar! You can select a project, then enter a search term and click the magnifying glass button to quickly start your search and view results in the table below.',
-      'bottom',
     )
     .addNextStep(
       navBarTargets.topNavBar.selector(),
@@ -482,7 +484,7 @@ export const createMainPageTour = (): JoyrideTour => {
     )
     .addNextStep(
       leftSidebarTargets.facetFormExpandAllBtn.selector(),
-      'You can quickly expand all the facet panels by clicking this button.',
+      "You can quickly expand all the facet panels by clicking this button. Note that there is a scroll bar on the right when the panels don't all fit on the page.",
       'right-end',
       /* istanbul ignore next */
       async () => {
@@ -492,8 +494,18 @@ export const createMainPageTour = (): JoyrideTour => {
       },
     )
     .addNextStep(
+      leftSidebarTargets.facetFormAdditionalFields.selector(),
+      'This section contains additional properties that you can select to further refine your search results, including the Version Type, Result Type and Versions. Hovering over the question mark icon will further explain the parameter.',
+      'right-end',
+    )
+    .addNextStep(
+      leftSidebarTargets.facetFormKeywordSearch.selector(),
+      'This input lets you filter your results using a specific keyword. To filter by keyword, you would type in the field then click the magnifying glass icon to add it as a search parameter. Each additional keyword search will be added as an OR to your existing keyword search.',
+      'right-end',
+    )
+    .addNextStep(
       leftSidebarTargets.facetFormCollapseAllBtn.selector(),
-      "Note that there is a scroll bar on the right when the panels don't all fit on the page. Clicking the collapse all button will close all the open facet panels.",
+      'Clicking the collapse all button will close all the open facet panels.',
       'right-end',
       /* istanbul ignore next */
       async () => {
@@ -502,28 +514,18 @@ export const createMainPageTour = (): JoyrideTour => {
         await delay(300);
       },
     )
-    .addNextStep(
-      leftSidebarTargets.facetFormAdditionalFields.selector(),
-      'This section contains additional properties that you can select to further refine your search results, including the Version Type, Result Type and Version Date Range. Hovering over the question mark icon will further explain the parameter.',
-      'right-end',
-      /* istanbul ignore next */
-      async () => {
-        // Open filename section
-        clickFirstElement(leftSidebarTargets.facetFormFilename.selector());
-        await delay(300);
-      },
-    )
-    .addNextStep(
-      leftSidebarTargets.facetFormFilenameFields.selector(),
-      'This section lets you filter your results to include a specific filename. To filter by filename, you would type in the name or names as a list of comma separated values then click the magnifying glass icon to add it as a search parameter.',
-      'right-end',
-      /* istanbul ignore next */
-      () => {
-        // Close filename section
-        clickFirstElement(leftSidebarTargets.facetFormFilename.selector());
-        window.scrollTo(0, 0);
-      },
-    )
+    // Filename search currenty disabled
+    // .addNextStep(
+    //   leftSidebarTargets.facetFormFilenameFields.selector(),
+    //   'This section lets you filter your results to include a specific filename. To filter by filename, you would type in the name or names as a list of comma separated values then click the magnifying glass icon to add it as a search parameter.',
+    //   'right-end',
+    //   /* istanbul ignore next */
+    //   () => {
+    //     // Close filename section
+    //     clickFirstElement(leftSidebarTargets.facetFormFilename.selector());
+    //     window.scrollTo(0, 0);
+    //   },
+    // )
     .addNextStep(
       searchTableTargets.queryString.selector(),
       "When performing a search, you'll be able to view the resulting query generated by your selections here.",

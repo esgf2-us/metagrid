@@ -1,40 +1,24 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { rest, server } from '../../test/mock/server';
-import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
-import NavBar, { Props } from './index';
+import NavBar from './index';
 
 const user = userEvent.setup();
 
-const defaultProps: Props = {
-  onTextSearch: jest.fn(),
-};
-
 it('renders LeftMenu and RightMenu components', async () => {
-  customRender(<NavBar {...defaultProps} />);
+  customRender(<NavBar />);
 
   const rightMenuComponent = await screen.findByTestId('right-menu');
   expect(rightMenuComponent).toBeTruthy();
 
-  const leftMenuComponent = await screen.findByTestId('left-menu');
+  const leftMenuComponent = await screen.findByTestId('nav-bar-logo');
   expect(leftMenuComponent).toBeTruthy();
 });
 
-it('renders error message when projects can"t be fetched', async () => {
-  server.use(rest.get(apiRoutes.projects.path, (_req, res, ctx) => res(ctx.status(404))));
-  customRender(<NavBar {...defaultProps} />);
-
-  const alertComponent = await screen.findByRole('img', {
-    name: 'close-circle',
-  });
-  expect(alertComponent).toBeTruthy();
-});
-
 it('opens the drawer onClick and closes with onClose', async () => {
-  customRender(<NavBar {...defaultProps} />);
-  const leftMenu = await screen.findByTestId('left-menu');
+  customRender(<NavBar />);
+  const leftMenu = await screen.findByTestId('nav-bar-logo');
   expect(leftMenu).toBeTruthy();
   expect(await screen.findByTestId('right-menu')).toBeTruthy();
 

@@ -47,6 +47,8 @@ describe('STAC utilities', () => {
         citation_url: 'https://example.org/cite',
         further_info_url: 'https://example.org/info',
         version: 'v1',
+        project: 'cmip6',
+        'cmip6:version': '123456789',
       },
       assets: {
         data: { href: 'https://example.org/file.nc', 'file:size': 1024, name: 'data' },

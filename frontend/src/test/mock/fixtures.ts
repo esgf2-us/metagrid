@@ -20,6 +20,7 @@ import {
   RawSearchResults,
   StacResponse,
   StacAggregations,
+  StacAsset,
 } from '../../components/Search/types';
 import { RawUserAuth, RawUserInfo } from '../../contexts/types';
 import { SubmissionResult } from '../../api';
@@ -397,24 +398,30 @@ export const stacAggregationsFixture = (): StacAggregations => ({
   ],
 });
 
+export const stacAssetFixture = (props: Partial<StacAsset> = {}): StacAsset => {
+  const defaults: StacAsset = {
+    id: 'foo',
+    access: ['public'],
+    description: 'test',
+    type: 'image/png',
+    alternatename: 'alternate_foo',
+    name: 'foo',
+    roles: ['data'],
+    href: 'http://test.com/foo',
+    'file:size': 1,
+    'file:checksum': 'abc123',
+  };
+
+  return { ...defaults, ...props };
+};
+
 export const rawStacAssetFixture = (props: Partial<RawSearchResult> = {}): RawSearchResult => {
   const defaults: RawSearchResult = {
     id: 'foo',
     access: ['HTTPServer', 'OPENDAP'],
     url: ['foo.bar|HTTPServer', 'http://test.com/file.nc|OPENDAP'],
     assets: {
-      foo: {
-        id: 'foo',
-        access: ['public'],
-        description: 'test',
-        type: 'image/png',
-        alternatename: 'alternate_foo',
-        name: 'foo',
-        roles: ['data'],
-        href: 'http://test.com/foo',
-        'file:size': 1,
-        'file:checksum': 'abc123',
-      },
+      foo: stacAssetFixture(),
     },
     title: 'Foo Title',
     isStac: true,

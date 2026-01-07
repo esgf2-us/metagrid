@@ -1,0 +1,14 @@
+{{- if .Values.postgresql.persistence.enabled -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "metagrid.fullname" . }}-postgresql-data
+spec:
+  accessModes:
+    - {{ .Values.postgresql.persistence.accessMode }}
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: {{ .Values.postgresql.persistence.size }}
+  storageClassName: {{ .Values.postgresql.persistence.storageClassName }}
+{{- end }}

@@ -8,6 +8,9 @@
 metagrid_configs/metagrid_config
 metagrid_configs/backups
 
+# Postgres database backups
+db_backups/
+
 ### Linux template
 *~
 

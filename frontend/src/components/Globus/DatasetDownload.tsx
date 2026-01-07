@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
-import { DownloadOutlined, QuestionOutlined } from '@ant-design/icons';
+import { DownloadOutlined, QuestionOutlined, SearchOutlined } from '@ant-design/icons';
 import {
+  Alert,
   Button,
   Card,
   Collapse,
@@ -54,16 +55,14 @@ import {
   manageCollectionsTourTargets,
   createCollectionsFormTour,
 } from '../../common/joyrideTutorials/reactJoyrideSteps';
-import { getStacGlobusHref } from '../../common/STAC';
+import { getStacGlobusHref, generateWgetScriptSTAC } from '../../common/STAC';
 
 const GLOBUS_REDIRECT_URL = `${window.location.origin}/cart/items`;
 
 const COLLECTION_SEARCH_PAGE_SIZE = 5;
 
 // Reference: https://github.com/bpedroza/js-pkce
-/* istanbul ignore next */
-export const REQUESTED_SCOPES =
-  'openid profile email urn:globus:auth:scope:transfer.api.globus.org:all';
+const REQUESTED_SCOPES = 'openid profile email urn:globus:auth:scope:transfer.api.globus.org:all';
 
 type AlertModalState = {
   onCancelAction: () => void;
@@ -174,42 +173,119 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   }
 
   const handleWgetDownload = (): void => {
+    setDownloadIsLoading(true);
+
     const cleanedSelections = itemSelections.filter((item) => {
       return item !== undefined && item !== null;
     });
     setItemSelections(cleanedSelections);
 
-    const ids = cleanedSelections.map((item) => item.id);
-    showNotice(messageApi, 'The wget script is generating, please wait momentarily.', {
-      duration: 3,
-      type: 'info',
-    });
-    setDownloadIsLoading(true);
-    fetchWgetScript(ids)
-      .then(() => {
+    const stacSelections = cleanedSelections.filter((item) => item.isStac);
+    const nonStacSelections = cleanedSelections.filter((item) => !item.isStac);
+
+    const STAC_ERROR_MSG =
+      'No file links found in selected STAC files, wget script was not generated.';
+    const SUCCESS_MSG = 'Wget script downloaded successfully!';
+    const STAC_SUCCESS_MSG = 'Wget script for STAC files downloaded successfully!';
+    const NON_STAC_SUCCESS_MSG = 'Wget script for non-STAC files downloaded successfully!';
+    const BOTH_SUCCESS_MSG =
+      'Wget scripts for both STAC and non-STAC files downloaded successfully!';
+
+    // Generate file for STAC selections
+    let stacSuccess = false;
+
+    if (stacSelections.length > 0) {
+      stacSuccess = generateWgetScriptSTAC(stacSelections);
+
+      if (nonStacSelections.length === 0) {
         setDownloadIsLoading(false);
-        showNotice(messageApi, 'Wget script downloaded successfully!', {
-          duration: 4,
-          type: 'success',
+        if (stacSuccess) {
+          showNotice(messageApi, STAC_SUCCESS_MSG, {
+            duration: 4,
+            type: 'success',
+          });
+        } else {
+          showError(messageApi, STAC_ERROR_MSG);
+        }
+      }
+    }
+
+    // Generate file for non-STAC selections
+    if (nonStacSelections.length > 0) {
+      const ids = nonStacSelections.map((item) => item.id);
+
+      // Generate wget script for download
+      showNotice(
+        messageApi,
+        `The wget script${nonStacSelections.length > 0 ? 's' : ''} generating, please wait momentarily.`,
+        {
+          duration: 3,
+          type: 'info',
+        },
+      );
+
+      fetchWgetScript(ids)
+        .then(() => {
+          setDownloadIsLoading(false);
+          let noticeContent: string | React.ReactNode =
+            stacSelections.length > 0 ? BOTH_SUCCESS_MSG : SUCCESS_MSG;
+          if (stacSelections.length > 0 && !stacSuccess) {
+            noticeContent = (
+              <Card
+                title="STAC Wget Script Error"
+                style={{
+                  maxWidth: '500px',
+                  maxHeight: '400px',
+                  overflowY: 'auto',
+                  overflowX: 'auto',
+                }}
+              >
+                Non-STAC: <Alert closable message={NON_STAC_SUCCESS_MSG} type="success" showIcon />
+                <br />
+                STAC: <Alert closable message={STAC_ERROR_MSG} type="error" showIcon />
+              </Card>
+            );
+          }
+
+          showNotice(messageApi, noticeContent, {
+            duration: 5,
+            type: stacSuccess || stacSelections.length === 0 ? 'success' : 'error',
+          });
+        })
+        .catch((error: ResponseError) => {
+          setDownloadIsLoading(false);
+          const noticeContent: string | React.ReactNode =
+            stacSelections.length > 0 ? (
+              <>
+                STAC:{' '}
+                {stacSuccess ? (
+                  <Alert closable message={STAC_SUCCESS_MSG} type="success" showIcon />
+                ) : (
+                  <Alert closable message={STAC_ERROR_MSG} type="error" showIcon />
+                )}
+                <br />
+                Non-STAC: <Alert closable message={error.message} type="error" showIcon />
+              </>
+            ) : (
+              error.message
+            );
+
+          showError(
+            messageApi,
+            <Card
+              title="Wget Script Error"
+              style={{
+                maxWidth: '500px',
+                maxHeight: '400px',
+                overflowY: 'auto',
+                overflowX: 'auto',
+              }}
+            >
+              {noticeContent}
+            </Card>,
+          );
         });
-      })
-      .catch((error: ResponseError) => {
-        showError(
-          messageApi,
-          <Card
-            title="Wget Script Error"
-            style={{
-              maxWidth: '500px',
-              maxHeight: '400px',
-              overflowY: 'auto',
-              overflowX: 'auto',
-            }}
-          >
-            {error.message}
-          </Card>,
-        );
-        setDownloadIsLoading(false);
-      });
+    }
   };
 
   const getCurrentScope = (): string => {
@@ -293,11 +369,13 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             if (resp.auth_url) {
               setLoadingPage(false);
               setDownloadIsLoading(false);
+
               const content = authCode
                 ? 'Permission denied despite consent. Try logging out and logging in again.'
                 : 'You will need to provide new consents. Continue?';
 
               const authURL = resp.auth_url;
+
               if (!alertPopupState.show) {
                 setAlertPopupState({
                   onCancelAction: () => {
@@ -362,7 +440,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           });
           return;
         }
-
         await showNotice(
           messageApi,
           <span data-testid="globus-transfer-backend-error-msg">
@@ -435,7 +512,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             setAlertPopupState({ ...alertPopupState, show: false });
             setItemSelections(globusReadyItems);
             setCurrentGoal(GlobusGoals.DoGlobusTransfer);
-            performStepsForGlobusGoalsTest();
+            performStepsForGlobusGoals();
           }
         },
         show: true,
@@ -459,7 +536,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       if (itemsReady) {
         const prepareDownload = (): void => {
           setCurrentGoal(GlobusGoals.DoGlobusTransfer);
-          performStepsForGlobusGoalsTest();
+          performStepsForGlobusGoals();
         };
         prepareDownload();
       }
@@ -568,6 +645,29 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     }
   };
 
+  function setCollectionPath(endpoint: GlobusEndpoint): void {
+    if (!alertPopupState.show) {
+      setAlertPopupState({
+        onCancelAction: () => {
+          setLoadingPage(false);
+          setCurrentGoal(GlobusGoals.None);
+          setAlertPopupState({ ...alertPopupState, show: false });
+        },
+        onOkAction: () => {
+          const endpointSearchURL = `https://app.globus.org/helpers/browse-collections?action=${GLOBUS_REDIRECT_URL}&method=GET&cancelurl=${GLOBUS_REDIRECT_URL}?cancelled&filelimit=0`;
+
+          if (endpoint) {
+            redirectToNewURL(`${endpointSearchURL}&origin_id=${endpoint.id}`);
+          } else {
+            redirectToNewURL(endpointSearchURL);
+          }
+        },
+        show: true,
+        content: 'You will be redirected to set the path for the collection. Continue?',
+      });
+    }
+  }
+
   function getCurrentGoal(): GlobusGoals {
     const urlParams = new URLSearchParams(window.location.search);
     const curPage = getCurrentAppPage();
@@ -590,25 +690,17 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     localStorage.setItem(GlobusStateKeys.globusTransferGoalsState, goal);
   }
 
-  function redirectToSelectGlobusEndpointPath(): void {
-    const endpointSearchURL = `https://app.globus.org/helpers/browse-collections?action=${GLOBUS_REDIRECT_URL}&method=GET&cancelurl=${GLOBUS_REDIRECT_URL}?cancelled&filelimit=0`;
-
-    if (chosenGlobusEndpoint) {
-      redirectToNewURL(`${endpointSearchURL}&origin_id=${chosenGlobusEndpoint.id}`);
-    } else {
-      redirectToNewURL(endpointSearchURL);
-    }
-  }
-
-  function performStepsForGlobusGoalsTest(): void {
+  function performStepsForGlobusGoals(): void {
     const goal = getCurrentGoal();
 
     // Obtain URL params if applicable
     const urlParams = new URLSearchParams(window.location.search);
     const eUrlReady = endpointUrlReady(urlParams);
 
-    if (urlParams.size > 0) {
-      if (chosenGlobusEndpoint && urlParams.has('state') && urlParams.has('code')) {
+    const urlParamsSize = Array.from(urlParams).length;
+
+    if (urlParamsSize > 0) {
+      if (chosenGlobusEndpoint && tokenUrlReady(urlParams)) {
         handleGlobusDownload(chosenGlobusEndpoint, urlParams.get('code') || undefined);
         return;
       }
@@ -655,20 +747,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         return;
       }
 
-      if (!alertPopupState.show) {
-        setAlertPopupState({
-          onCancelAction: () => {
-            setLoadingPage(false);
-            setCurrentGoal(GlobusGoals.None);
-            setAlertPopupState({ ...alertPopupState, show: false });
-          },
-          onOkAction: () => {
-            redirectToSelectGlobusEndpointPath();
-          },
-          show: true,
-          content: 'You will be redirected to set the path for the collection. Continue?',
-        });
-      }
+      setCollectionPath(chosenGlobusEndpoint as GlobusEndpoint);
       return;
     }
 
@@ -737,21 +816,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       } else {
         // Setting endpoint path
         setLoadingPage(false);
-        if (!alertPopupState.show) {
-          setAlertPopupState({
-            onCancelAction: () => {
-              setLoadingPage(false);
-              setCurrentGoal(GlobusGoals.None);
-              setAlertPopupState({ ...alertPopupState, show: false });
-            },
-            onOkAction: () => {
-              redirectToSelectGlobusEndpointPath();
-            },
-            show: true,
-            content:
-              'You will be redirected to set the path for your selected collection. Continue?',
-          });
-        }
+        setCollectionPath(chosenGlobusEndpoint);
       }
     }
   }
@@ -806,7 +871,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     const initializePage = (): void => {
       setLoadingPage(true);
 
-      performStepsForGlobusGoalsTest();
+      performStepsForGlobusGoals();
     };
     initializePage();
   }, []);
@@ -971,17 +1036,28 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         }}
         width={1000}
       >
-        <Input.Search
-          className={manageCollectionsTourTargets.searchCollectionInput.class()}
-          value={endpointSearchValue}
-          onChange={(e) => {
-            setEndpointSearchValue(e.target.value);
-          }}
-          placeholder="Search for a Globus Collection"
-          onSearch={searchGlobusEndpoints}
-          loading={loadingEndpointSearchResults}
-          enterButton
-        />
+        <Space.Compact style={{ width: '100%' }}>
+          <Input
+            className={manageCollectionsTourTargets.searchCollectionInput.class()}
+            value={endpointSearchValue}
+            onChange={(e) => {
+              setEndpointSearchValue(e.target.value);
+            }}
+            placeholder="Search for a Globus Collection"
+            onPressEnter={() => {
+              searchGlobusEndpoints(endpointSearchValue);
+            }}
+          />
+          <Button
+            icon={<SearchOutlined />}
+            onClick={() => {
+              searchGlobusEndpoints(endpointSearchValue);
+            }}
+            loading={loadingEndpointSearchResults}
+            type="primary"
+            size="large"
+          />
+        </Space.Compact>
         <Collapse
           size="small"
           defaultActiveKey={1}
@@ -1133,7 +1209,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                             setChosenGlobusEndpoint(endpoint);
                             setEndpointSearchOpen(false);
                             setCurrentGoal(GlobusGoals.SetEndpointPath);
-                            performStepsForGlobusGoalsTest();
+                            setCollectionPath(endpoint);
                           }}
                         >
                           {endpoint.path ? 'Update Path' : 'Set Path'}

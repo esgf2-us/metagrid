@@ -9,6 +9,7 @@ import {
   fetchNodeStatus,
   fetchProjects,
   fetchSearchResults,
+  fetchSTACAggregations,
   fetchUserAuth,
   fetchUserCart,
   fetchUserInfo,
@@ -25,7 +26,8 @@ import {
   startSearchGlobusEndpoints,
   updateUserCart,
 } from '.';
-import { STAC_PROJECTS } from '../common/STAC';
+import { STAC_PROJECTS, generateWgetScriptSTAC } from '../common/STAC';
+import { downloadFileForUser } from '../common/utils';
 import { ActiveSearchQuery, Pagination, RawCitation, ResultType } from '../components/Search/types';
 import { mockConfig } from '../test/jestTestFunctions';
 import {
@@ -36,16 +38,30 @@ import {
   projectsFixture,
   rawCitationFixture,
   rawNodeStatusFixture,
+  rawStacAssetFixture,
   rawUserCartFixture,
+  stacAssetFixture,
   userAuthFixture,
   userInfoFixture,
   userSearchQueriesFixture,
   userSearchQueryFixture,
 } from '../test/mock/fixtures';
 import { rest, server } from '../test/mock/server';
-import apiRoutes from './routes';
+import apiRoutes, { HTTPCodeType } from './routes';
 
 const genericNetworkErrorMsg = 'Failed to Connect';
+
+jest.mock('../common/utils', () => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const originalModule = jest.requireActual('../common/utils');
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return {
+    __esModule: true,
+    ...originalModule,
+    downloadFileForUser: jest.fn(),
+  };
+});
 
 describe('test fetching user authentication with globus', () => {
   it('returns user authentication tokens', async () => {
@@ -1026,5 +1042,64 @@ describe('STAC API functions', () => {
     expect(result.facets).toEqual({});
     // status should reflect aggregation failure (fetchSTACSearchResults sets non-200 status)
     expect(result.status).toBe(500);
+  });
+
+  it('throws error when STAC aggregations fails', async () => {
+    server.use(
+      rest.post(apiRoutes.esgfAggregationsSTAC.path, (_req, res, ctx) => res(ctx.status(500))),
+    );
+
+    await expect(fetchSTACAggregations('CMIP6', undefined)).rejects.toThrow(
+      apiRoutes.esgfAggregationsSTAC.handleErrorMsg('generic' as HTTPCodeType),
+    );
+  });
+
+  it('throws error when STAC search endpoint fails', async () => {
+    server.use(rest.post(apiRoutes.esgfSearchSTAC.path, (_req, res, ctx) => res(ctx.status(500))));
+
+    const reqUrl = `${apiRoutes.esgfSearchSTAC.path}?project_id=CMIP6`;
+    await expect(fetchSearchResults({ reqUrl })).rejects.toThrow(
+      apiRoutes.esgfSearchSTAC.handleErrorMsg('generic' as HTTPCodeType),
+    );
+  });
+
+  it('generateWgetScriptSTAC downloads script when assets contain .nc hrefs', () => {
+    const searchResults = [
+      rawStacAssetFixture({
+        id: 'bar',
+        title: 'Bar Title',
+        assets: {
+          a1: stacAssetFixture({ id: 'a1', href: 'http://example.com/file1.nc' }),
+          a2: stacAssetFixture({ id: 'a2', href: 'http://example.com/file2.txt' }),
+        },
+      }),
+    ];
+
+    const result = generateWgetScriptSTAC(searchResults);
+    expect(result).toBe(true);
+    expect(downloadFileForUser).toHaveBeenCalledTimes(1);
+    expect(downloadFileForUser).toHaveBeenCalledWith(
+      expect.stringContaining('wget_stac_script'),
+      expect.stringContaining('wget http://example.com/file1.nc'),
+    );
+  });
+
+  it('generateWgetScriptSTAC returns false when no .nc hrefs present', () => {
+    const searchResults = [
+      rawStacAssetFixture({
+        id: 'foo',
+        title: 'Foo Title',
+        assets: {
+          a: stacAssetFixture({ id: 'a', href: 'http://example.com/file2.txt' }),
+        },
+      }),
+    ];
+
+    const spy = jest.fn(downloadFileForUser).mockImplementation(() => {});
+    const result = generateWgetScriptSTAC(searchResults);
+    expect(result).toBe(false);
+    expect(spy).not.toHaveBeenCalled();
+
+    spy.mockRestore();
   });
 });

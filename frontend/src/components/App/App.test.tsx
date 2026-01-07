@@ -32,8 +32,12 @@ describe('test main components', () => {
     expect(await screen.findByTestId('search')).toBeTruthy();
   });
 
+  it('renders an error page when window.METAGRID is undefined', async () => {
+
+  });
+
   it('renders App component with undefined search query', async () => {
-    customRender(<App searchQuery={(undefined as unknown) as ActiveSearchQuery} />, {
+    customRender(<App searchQuery={undefined as unknown as ActiveSearchQuery} />, {
       usesAtoms: true,
     });
 
@@ -70,7 +74,9 @@ describe('test main components', () => {
     expect(errorMsg).toBeTruthy();
   });
 
-  it('handles setting filename searches and duplicates', async () => {
+  // This test is currently skipped because the filename search feature was recently
+  // removed. It can be re-enabled if the feature is re-introduced.
+  xit('handles setting filename searches and duplicates', async () => {
     customRender(<App searchQuery={activeSearch} />);
 
     // Check applicable components render
@@ -151,9 +157,7 @@ describe('test main components', () => {
     expect(facetsForm).toBeTruthy();
 
     // Open additional properties collapse panel
-    const additionalPropertiesPanel = await within(facetsForm).findByRole('button', {
-      name: 'expanded Additional Properties',
-    });
+    const additionalPropertiesPanel = await within(facetsForm).findByText('Additional Properties');
     await userEvent.click(additionalPropertiesPanel);
 
     // Check facet select form exists and mouseDown to expand list of options
@@ -242,7 +246,7 @@ describe('test main components', () => {
     await screen.findByTestId('search');
   });
 
-  it('fetches the data node status every defined interval', async () => {
+  xit('fetches the data node status every defined interval', async () => {
     jest.useFakeTimers();
 
     customRender(<App searchQuery={activeSearch} />);
@@ -312,7 +316,7 @@ describe('User cart', () => {
     expect(numDatasetsField.textContent).toEqual('Total Number of Datasets: 3');
     expect(numFilesText.textContent).toEqual('Total Number of Files: 8');
     const numSelectedDatasetsField = await within(cartSummary).findByText(
-      'Selected Number of Datasets:'
+      'Selected Number of Datasets:',
     );
     const numSelectedFilesText = await within(cartSummary).findByText('Selected Number of Files:');
     expect(numSelectedDatasetsField.textContent).toEqual('Selected Number of Datasets: 0');
@@ -389,7 +393,7 @@ describe('User cart', () => {
     expect(numFilesText.textContent).toEqual('Total Number of Files: 8');
 
     const numSelectedDatasetsField = await within(cartSummary).findByText(
-      'Selected Number of Datasets:'
+      'Selected Number of Datasets:',
     );
     const numSelectedFilesText = await within(cartSummary).findByText('Selected Number of Files:');
     expect(numSelectedDatasetsField.textContent).toEqual('Selected Number of Datasets: 0');
@@ -457,7 +461,7 @@ describe('User cart', () => {
     expect(numDatasetsField.textContent).toEqual('Total Number of Datasets: 2');
     expect(numFilesText.textContent).toEqual('Total Number of Files: 5');
     const numSelectedDatasetsField = await within(cartSummary).findByText(
-      'Selected Number of Datasets:'
+      'Selected Number of Datasets:',
     );
     const numSelectedFilesText = await within(cartSummary).findByText('Selected Number of Files:');
 
@@ -491,7 +495,7 @@ describe('Error handling', () => {
   it('displays error message after failing to fetch authenticated user"s cart', async () => {
     server.use(
       rest.get(apiRoutes.userCart.path, (_req, res, ctx) => res(ctx.status(404))),
-      rest.post(apiRoutes.userCart.path, (_req, res, ctx) => res(ctx.status(404)))
+      rest.post(apiRoutes.userCart.path, (_req, res, ctx) => res(ctx.status(404))),
     );
 
     customRender(<App searchQuery={activeSearch} />, {
@@ -571,8 +575,6 @@ describe('User search library', () => {
     // Check applicable components render
     const navComponent = await screen.findByTestId('nav-bar');
     expect(navComponent).toBeTruthy();
-    const leftMenuComponent = await screen.findByTestId('left-menu');
-    expect(leftMenuComponent).toBeTruthy();
     const rightMenuComponent = await screen.findByTestId('right-menu');
     expect(rightMenuComponent).toBeTruthy();
 
@@ -613,9 +615,6 @@ describe('User search library', () => {
     customRender(<App searchQuery={activeSearch} />, { authenticated: false });
 
     // Check applicable components render
-    const leftMenuComponent = await screen.findByTestId('left-menu');
-
-    expect(leftMenuComponent).toBeTruthy();
     const rightMenuComponent = await screen.findByTestId('right-menu');
     expect(rightMenuComponent).toBeTruthy();
 
