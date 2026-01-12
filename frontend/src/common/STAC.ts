@@ -39,6 +39,7 @@ export const STAC_PROJECTS: RawProject[] = [
 /* istanbul ignore next */
 export const STAC_PROJECT_FACET_MAPPING: { [key: string]: Record<string, string> } = {
   CMIP6: {
+    latest: 'properties.latest',
     activity_id: 'properties.cmip6:activity_id',
     data_specs_version: 'properties.cmip6:data_specs_version',
     mip_era: 'properties.cmip6:mip_era',
