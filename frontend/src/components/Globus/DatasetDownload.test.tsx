@@ -1,6 +1,6 @@
 import React from 'react';
 import userEvent from '@testing-library/user-event';
-import { within, screen, waitFor, waitForElementToBeRemoved, act } from '@testing-library/react';
+import { within, screen, waitFor } from '@testing-library/react';
 import customRender from '../../test/custom-render';
 import { rest, server } from '../../test/mock/server';
 import { getSearchFromUrl } from '../../common/utils';
@@ -12,7 +12,6 @@ import {
   mockFunction,
   openDropdownList,
   AtomWrapper,
-  printElementContents,
 } from '../../test/jestTestFunctions';
 import App from '../App/App';
 import { GlobusEndpoint, GlobusTaskItem } from './types';
@@ -26,7 +25,7 @@ import {
 } from '../../test/mock/mockStorage';
 import { AppPage } from '../../common/types';
 import { CartStateKeys, GlobusStateKeys } from '../../common/atoms';
-import { getCookie, setCookie, resetGlobusTokens } from '../../api';
+import { getCookie, setCookie } from '../../api';
 
 Object.defineProperty(window, 'location', {
   value: {
