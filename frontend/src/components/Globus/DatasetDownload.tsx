@@ -55,7 +55,7 @@ import {
   manageCollectionsTourTargets,
   createCollectionsFormTour,
 } from '../../common/joyrideTutorials/reactJoyrideSteps';
-import { generateWgetScriptSTAC } from '../../common/STAC';
+import { getStacGlobusHref, generateWgetScriptSTAC } from '../../common/STAC';
 
 const GLOBUS_REDIRECT_URL = `${window.location.origin}/cart/items`;
 
@@ -304,6 +304,17 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   const handleGlobusDownload = (endpoint: GlobusEndpoint, authCode?: string): void => {
     const ids = itemSelections?.map((item) => (item ? item.id : '')) ?? [];
 
+    const globusHrefs: string[] = [];
+
+    if (itemSelections) {
+      itemSelections.forEach((item) => {
+        const href = getStacGlobusHref(item);
+        if (href !== null) {
+          globusHrefs.push(href);
+        }
+      });
+    }
+
     setDownloadIsLoading(true);
 
     axios
@@ -316,6 +327,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           endpointId: endpoint.id,
           path: endpoint.path || '',
           dataset_id: ids,
+          globus_hrefs: globusHrefs,
         }),
       )
       .then((resp) => {
@@ -463,6 +475,8 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       if (selection) {
         const dataNode = selection.data_node as string;
         if (dataNode && window.METAGRID.GLOBUS_NODES.includes(dataNode)) {
+          globusReadyItems.push(selection);
+        } else if (selection.isStac && getStacGlobusHref(selection)) {
           globusReadyItems.push(selection);
         }
       }
