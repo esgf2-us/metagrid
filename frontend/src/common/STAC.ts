@@ -39,6 +39,7 @@ export const STAC_PROJECTS: RawProject[] = [
 /* istanbul ignore next */
 export const STAC_PROJECT_FACET_MAPPING: { [key: string]: Record<string, string> } = {
   CMIP6: {
+    latest: 'properties.latest',
     activity_id: 'properties.cmip6:activity_id',
     data_specs_version: 'properties.cmip6:data_specs_version',
     mip_era: 'properties.cmip6:mip_era',
@@ -93,6 +94,13 @@ export const STAC_AGGREGATION_FACETS: { [key: string]: string[] } = {
     'cmip6_sub_experiment_frequency',
     // 'cmip6_tracking_id_frequency',
   ],
+};
+
+export const getStacGlobusHref = (record: RawSearchResult): string | null => {
+  if (record.assets && record.assets.globus && record.assets.globus.href) {
+    return record.assets.globus.href;
+  }
+  return null;
 };
 
 export const aggregationsToFacetsData = (
