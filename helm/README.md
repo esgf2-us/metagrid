@@ -14,6 +14,9 @@
     - [PostgreSQL](#postgresql)
     - [Node Status Backend](#node-status-backend)
 4. [Creating a backend admin account](#creating-a-backend-admin-account)
+5. [FAQ](#faq)
+6. [Upgrading](#upgrading)
+    - [v1.5.3 -> v1.5.4](#v153---v154)
 
 ## Install
 ```shell
