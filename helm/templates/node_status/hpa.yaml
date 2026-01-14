@@ -1,4 +1,4 @@
-{{- if .Values.nodeStatusBackend.autoscaling.enabled }}
+{{- if and .Values.features.nodeStatus.enabled .Values.nodeStatusBackend.autoscaling.enabled }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
