@@ -253,9 +253,21 @@ Set the following environment variables under `config:` and enable the account c
 | `config.DJANGO_SUPERUSER_USERNAME`                   | The username for the superuser account.                                  | `admin`            |
 | `config.DJANGO_SUPERUSER_EMAIL`                      | The email address for the superuser account.                             | `admin@example.com` |
 
+# FAQ
+
+#### Globus login fails with `Mismatching redirect URI` error.
+
+Ensure your Globus auth configuration has the correct redirects.
+- `https://<host>/cart/items`
+- `https://<host>/complete/globus/`.
+
+**Ensure you have the correct paths, including the trailing slash.**
+
+If Metagrid is behind a reverse proxy you may need to set `config.DJANGO_SOCIAL_AUTH_REDIRECT_IS_HTTPS: 'true'` in your Helm chart configuration.
+
 # Upgrading
 
-# v1.5.3 -> v1.5.4
+##  v1.5.3 -> v1.5.4
 When upgrading to `v1.5.4` from `v1.5.3` there may be a `collation mismatch` error from PostgreSQL. This issue may be remediated by running two SQL commands.
 
 ```bash
