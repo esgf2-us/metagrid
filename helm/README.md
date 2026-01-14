@@ -260,13 +260,13 @@ Set the following environment variables under `config:` and enable the account c
 
 #### Globus login fails with `Mismatching redirect URI` error.
 
-Ensure your Globus auth configuration has the correct redirects.
-- `https://<host>/cart/items`
-- `https://<host>/complete/globus/`.
-
-**Ensure you have the correct paths, including the trailing slash.**
-
-If Metagrid is behind a reverse proxy you may need to set `config.DJANGO_SOCIAL_AUTH_REDIRECT_IS_HTTPS: 'true'` in your Helm chart configuration.
+> Ensure your Globus auth configuration has the correct redirects.
+> - `https://<host>/cart/items`
+> - `https://<host>/complete/globus/`.
+> 
+> **Ensure you have the correct paths, including the trailing slash.**
+> 
+> If Metagrid is behind a reverse proxy you may need to set `config.DJANGO_SOCIAL_AUTH_REDIRECT_IS_HTTPS: 'true'` in your Helm chart configuration.
 
 # Upgrading
 
