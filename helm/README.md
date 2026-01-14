@@ -268,6 +268,10 @@ Set the following environment variables under `config:` and enable the account c
 > 
 > If Metagrid is behind a reverse proxy you may need to set `config.DJANGO_SOCIAL_AUTH_REDIRECT_IS_HTTPS: 'true'` in your Helm chart configuration.
 
+#### Globus login or transfers are not working.
+
+> Ensure you have created the Globus auth application using the `Advanced Registration` type. Check that your redirects are correct as seen above.
+
 # Upgrading
 
 ##  v1.5.3 -> v1.5.4
