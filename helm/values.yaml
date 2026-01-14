@@ -12,16 +12,19 @@ ingress:
 
 features:
   nodeStatus:
-    enabled: true
+    enabled: false
     url:
+
   wget:
     enabled: true
 
     uploadMaxFields: 1024
     globusPublicIndex: a8ef4320-9e5a-4793-837b-c45161ca1845
+
     limit:
       default: 9999
       max: 100000
+
     maxDirLength: 50
 
 config:
