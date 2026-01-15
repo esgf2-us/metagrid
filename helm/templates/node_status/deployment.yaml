@@ -1,4 +1,4 @@
-{{- if .Values.features.nodeStatus.enabled }}
+{{- if .Values.nodeStatusBackend.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -17,7 +17,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/node_status/secret.yaml") . | sha256sum }}
+        checksum/config: {{ include (print $.Template.BasePath "/node_status/configmap.yaml") . | sha256sum }}
       {{- with .Values.nodeStatusBackend.podAnnotations }}
         {{- toYaml . | nindent 8 }}
       {{- end }}

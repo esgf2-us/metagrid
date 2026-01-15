@@ -1,4 +1,4 @@
-{{- if and .Values.features.nodeStatus.enabled -}}
+{{- if and .Values.nodeStatusBackend.enabled -}}
 apiVersion: v1
 kind: Service
 metadata:

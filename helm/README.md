@@ -65,10 +65,11 @@ This document describes the configurable values available in the `values.yaml` f
 
 ## Top-Level Configuration
 
-| Parameter         | Description                         |
-|-------------------|-------------------------------------|
-| `nameOverride`    | Override the name of the release.   |
-| `fullnameOverride`| Override the full name of the release. |
+| Parameter         | Description                         | Type    | Default |
+|-------------------|-------------------------------------|---------|---------|
+| `nameOverride`    | Override the name of the release.   | `string`| ``      |
+| `fullnameOverride`| Override the full name of the release. | `string`| ``     |
+| `nodeStatusUrl`   | External node status url, only used if `nodeStatusBackend.enabled` is false. | `string`| ``   |
 
 ---
 
@@ -89,8 +90,6 @@ This document describes the configurable values available in the `values.yaml` f
 
 | Parameter                          | Description                                                                | Type        | Default |
 |------------------------------------|----------------------------------------------------------------------------|-------------|---------|
-| `features.nodeStatus.enabled`      | Enables node status feature, deploying Prometheus and blackbox exporter.   | `boolean`   | `true`  |
-| `features.nodeStatus.url`          | Overrides and disables the default Prometheus deployment.                  | `string`    | N/A     |
 | `features.wget.enabled`            | Enables builtin Wget freature.                                             | `boolean`   | `true`  |
 | `features.wget.uploadMaxFields`    | Maximum number of form fields allowed in a single upload.                  | `integer`   | `1024`  |
 | `features.wget.globusPublixIndex`  | The Globus index ID for the public ESGF2 data.                             | `string`    | `a8ef4320-9e5a-4793-837b-c45161ca1845` |

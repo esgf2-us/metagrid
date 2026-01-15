@@ -1,12 +1,12 @@
 {{- if .Values.features.nodeStatus.enabled }}
 apiVersion: v1
-kind: Secret
+kind: ConfigMap
 metadata:
   name: {{ include "metagrid.fullname" . }}-node-status-backend-config
   labels:
     app.kubernetes.io/component: node-status-backend
     {{- include "metagrid.labels" . | nindent 4 }}
-stringData:
+data:
   prometheus.yml: {{- tpl (toYaml (.Files.Get "files/prometheus.yml") ) . | indent 2 }}
   esgf_node_status_targets.yml: {{- tpl (toYaml (.Files.Get "files/esgf_node_status_targets.yml") ) . | indent 2 }}
 {{- end }}

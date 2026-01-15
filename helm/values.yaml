@@ -10,6 +10,9 @@ ingress:
   labels: {}
   annotations: {}
 
+# External node status url
+nodeStatusUrl:
+
 features:
   nodeStatus:
     enabled: false
@@ -185,7 +188,7 @@ postgresql:
   affinity: {}
 
 nodeStatusBackend:
-  enabled: true
+  enabled: false
 
   replicaCount: 1
   podAnnotations: {}
