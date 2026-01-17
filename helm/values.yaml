@@ -10,36 +10,62 @@ ingress:
   labels: {}
   annotations: {}
 
-# External node status url
+# External node status url, used when `nodeStatusBackend.enabled` is false.
 nodeStatusUrl:
 
-features:
-  nodeStatus:
-    enabled: false
+wget:
+  # External wget url, if empty internal wget is used
+  url:
+
+  uploadMaxFields: 1024
+  globusPublicIndex: a8ef4320-9e5a-4793-837b-c45161ca1845
+
+  limit:
+    default: 9999
+    max: 100000
+
+  maxDirLength: 50
+
+stacUrl:
+searchUrl: https://esgf-node.ornl.gov/esgf-1-5-bridge
+
+auth:
+  enabled: true
+
+  # options are globus, keycloak
+  type: globus
+
+  globus:
+    key:
+    secret:
+
+  keycloak:
     url:
+    realm:
+    clientId:
 
-  wget:
-    enabled: true
+bannerText:
+supportInfo:
+footerText:
 
-    uploadMaxFields: 1024
-    globusPublicIndex: a8ef4320-9e5a-4793-837b-c45161ca1845
+globusNodes:
+  - esgf-node.ornl.gov
+  - eagle.alcf.anl.gov
+  - esgf-data.nersc.gov
 
-    limit:
-      default: 9999
-      max: 100000
+hotjar:
+  id:
+  sv:
 
-    maxDirLength: 50
+googleAnalyticsTrackingId:
 
-config:
-  GUNICORN_WORKERS: '2'
-  METAGRID_SEARCH_URL: https://esgf-node.ornl.gov/esgf-1-5-bridge
-  # METAGRID_WGET_URL: https://nimbus.llnl.gov/wget
-  # TODO implement logic to require these when using globus only, for now adding placeholders
-  METAGRID_SOCIAL_AUTH_GLOBUS_KEY: "key"
-  METAGRID_SOCIAL_AUTH_GLOBUS_SECRET: "secret"
-  # BANNER_TEXT:
-  # SUPPORT_INFO:
-  # FOOTER_TEXT:
+django:
+  gunicornWorkers: '2'
+  secretKey:
+  adminUrl:
+  admins:
+  # should be fully qualified uri postgresql://<user>:<password>@<host>:<port>/<dbname>
+  databaseUri:
 
 frontend:
   replicaCount: 1

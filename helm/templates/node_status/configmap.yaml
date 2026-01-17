@@ -1,4 +1,4 @@
-{{- if .Values.features.nodeStatus.enabled }}
+{{- if .Values.nodeStatusBackend.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:

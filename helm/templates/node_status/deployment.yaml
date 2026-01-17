@@ -95,8 +95,8 @@ spec:
         {{- end }}
       volumes:
       - name: config-volume
-        secret:
-          secretName: {{ include "metagrid.fullname" . }}-node-status-backend-config
+        configMap:
+          name: {{ include "metagrid.fullname" . }}-node-status-backend-config
       - name: prom-data
         emptyDir: {}
       {{- with .Values.nodeStatusBackend.volumes }}
