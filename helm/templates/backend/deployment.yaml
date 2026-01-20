@@ -42,7 +42,9 @@ spec:
         imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
         envFrom:
         - secretRef:
-            name: {{ include "metagrid.fullname" . }}-config
+            name: {{ include "metagrid.fullname" . }}
+        - configMapRef:
+            name: {{ include "metagrid.fullname" . }}
         env:
         - name: THIS_POD_IP
           valueFrom:

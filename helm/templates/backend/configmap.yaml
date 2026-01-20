@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "metagrid.fullname" . }}
+  labels:
+    app.kubernetes.io/component: backend
+    {{- include "metagrid.labels" . | nindent 4 }}
+data:
+  {{- if .Values.nodeStatusBackend.enabled }}
+  {{ $defaultNodeStatusUrl := printf "http://%s-node-status-backend:9090/api/v1/query?query=probe_success&job=http_2xx&target=.*threads.*" (include "metagrid.fullname" .) }}
+  METAGRID_STATUS_URL: {{ $defaultNodeStatusUrl | quote }}
+  {{- else if .Values.nodeStatusUrl }}
+  METAGRID_STATUS_URL: {{ .Values.nodeStatusUrl | quote }}
+  {{- end }}
+  {{- if .Values.wget.url }}
+  METAGRID_WGET_URL: {{ .Values.wget.url }}
+  {{- end }}
+  METAGRID_DATA_UPLOAD_MAX_NUMBER_FIELDS: {{ .Values.wget.uploadMaxFields | quote }}
+  METAGRID_GLOBUS_PUBLIX_INDEX_ENDPOINT_ID: {{ .Values.wget.globusPublixIndex | quote }}
+  METAGRID_WGET_SCRIPT_FILE_DEFAULT_LIMIT: {{ .Values.wget.limit.default | quote }}
+  METAGRID_WGET_SCRIPT_FILE_MAX_LIMIT: {{ .Values.wget.limit.max | quote }}
+  METAGRID_WGET_MAX_DIR_LENGTH: {{ .Values.wget.maxDirLength | quote }}
+  {{- if .Values.stacUrl }}
+  METAGRID_STAC_URL: {{ .Values.stacUrl }}
+  {{- end }}
+  METAGRID_SEARCH_URL: {{ .Values.searchUrl }}
+  {{- if .Values.bannerText }}
+  METAGRID_BANNER_TEXT: |
+  {{ .Values.bannerText | nindent 4 }}
+  {{- end }}
+  {{- if .Values.supportInfo }}
+  METAGRID_SUPPORT_INFO: |
+  {{ .Values.supportInfo | nindent 4 }}
+  {{- end }}
+  {{- if .Values.footerText }}
+  METAGRID_FOOTER_TEXT: |
+  {{ .Values.footerText | nindent 4 }}
+  {{- end }}
+  METAGRID_GLOBUS_NODES: {{ toJson .Values.globusNodes | quote }}
+  DJANGO_GUNICORN_WORKERS: {{ .Values.django.gunicornWorkers | quote }}

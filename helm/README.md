@@ -14,6 +14,9 @@
     - [PostgreSQL](#postgresql)
     - [Node Status Backend](#node-status-backend)
 4. [Creating a backend admin account](#creating-a-backend-admin-account)
+5. [FAQ](#faq)
+6. [Upgrading](#upgrading)
+    - [v1.5.3 -> v1.5.4](#v153---v154)
 
 ## Install
 ```shell
@@ -62,10 +65,11 @@ This document describes the configurable values available in the `values.yaml` f
 
 ## Top-Level Configuration
 
-| Parameter         | Description                         |
-|-------------------|-------------------------------------|
-| `nameOverride`    | Override the name of the release.   |
-| `fullnameOverride`| Override the full name of the release. |
+| Parameter         | Description                         | Type    | Default |
+|-------------------|-------------------------------------|---------|---------|
+| `nameOverride`    | Override the name of the release.   | `string`| ``      |
+| `fullnameOverride`| Override the full name of the release. | `string`| ``     |
+| `nodeStatusUrl`   | External node status url, only used if `nodeStatusBackend.enabled` is false. | `string`| ``   |
 
 ---
 
@@ -86,8 +90,6 @@ This document describes the configurable values available in the `values.yaml` f
 
 | Parameter                          | Description                                                                | Type        | Default |
 |------------------------------------|----------------------------------------------------------------------------|-------------|---------|
-| `features.nodeStatus.enabled`      | Enables node status feature, deploying Prometheus and blackbox exporter.   | `boolean`   | `true`  |
-| `features.nodeStatus.url`          | Overrides and disables the default Prometheus deployment.                  | `string`    | N/A     |
 | `features.wget.enabled`            | Enables builtin Wget freature.                                             | `boolean`   | `true`  |
 | `features.wget.uploadMaxFields`    | Maximum number of form fields allowed in a single upload.                  | `integer`   | `1024`  |
 | `features.wget.globusPublixIndex`  | The Globus index ID for the public ESGF2 data.                             | `string`    | `a8ef4320-9e5a-4793-837b-c45161ca1845` |
@@ -253,9 +255,25 @@ Set the following environment variables under `config:` and enable the account c
 | `config.DJANGO_SUPERUSER_USERNAME`                   | The username for the superuser account.                                  | `admin`            |
 | `config.DJANGO_SUPERUSER_EMAIL`                      | The email address for the superuser account.                             | `admin@example.com` |
 
+# FAQ
+
+#### Globus login fails with `Mismatching redirect URI` error.
+
+> Ensure your Globus auth configuration has the correct redirects.
+> - `https://<host>/cart/items`
+> - `https://<host>/complete/globus/`.
+>
+> **Ensure you have the correct paths, including the trailing slash.**
+>
+> If Metagrid is behind a reverse proxy you may need to set `config.DJANGO_SOCIAL_AUTH_REDIRECT_IS_HTTPS: 'true'` in your Helm chart configuration.
+
+#### Globus login or transfers are not working.
+
+> Ensure you have created the Globus auth application using the `Advanced Registration` type. Check that your redirects are correct as seen above.
+
 # Upgrading
 
-# v1.5.3 -> v1.5.4
+##  v1.5.3 -> v1.5.4
 When upgrading to `v1.5.4` from `v1.5.3` there may be a `collation mismatch` error from PostgreSQL. This issue may be remediated by running two SQL commands.
 
 ```bash
