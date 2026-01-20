@@ -31,6 +31,25 @@ export const STAC_PROJECTS: RawProject[] = [
     },
     isSTAC: true,
   },
+  {
+    pk: '10',
+    name: 'CMIP7 STAC',
+    projectName: 'CMIP7',
+    facetsUrl: 'offset=0&limit=0',
+    fullName: 'Coupled Model Intercomparison Project Phase 7',
+    projectUrl: 'https://wcrp_cmip.org/cmip-phases/cmip7/',
+    facetsByGroup: {
+      General: ['activity_id', 'mip_era'],
+      Identifiers: [
+        'source_id',
+        'institution_id',
+        'experiment_id',
+      ],
+      Labels: ['variant_label', 'grid_label'],
+      Classifications: ['table_id', 'frequency', 'variable_id', 'cf_standard_name'],
+    },
+    isSTAC: true,
+  },
 ];
 
 /** This mapping is necessary in most cases since the facet names
@@ -46,7 +65,6 @@ export const STAC_PROJECT_FACET_MAPPING: { [key: string]: Record<string, string>
     grid: 'properties.cmip6:grid',
     source_id: 'properties.cmip6:source_id',
     source_type: 'properties.cmip6:source_type',
-    instance_id: 'properties.instance_id',
     institution_id: 'properties.cmip6:institution_id',
     experiment_id: 'properties.cmip6:experiment_id',
     sub_experiment_id: 'properties.cmip6:sub_experiment_id',
@@ -59,6 +77,24 @@ export const STAC_PROJECT_FACET_MAPPING: { [key: string]: Record<string, string>
     cf_standard_name: 'properties.cf_standard_name',
     variable_units: 'properties.variable_units',
   },
+  CMIP7: {
+    latest: 'properties.latest',
+    activity_id: 'properties.cmip7:activity_id',
+    data_specs_version: 'properties.cmip7:data_specs_version',
+    mip_era: 'properties.cmip7:mip_era',
+    source_id: 'properties.cmip7:source_id',
+    institution_id: 'properties.cmip7:institution_id',
+    experiment_id: 'properties.cmip7:experiment_id',
+    variant_label: 'properties.cmip7:variant_label',
+    grid_label: 'properties.cmip7:grid_label',
+    experiment_title: 'properties.experiment',
+    table_id: 'properties.cmip7:table_id',
+    frequency: 'properties.cmip7:frequency',
+    variable_id: 'properties.cmip7:variable_id',
+    cf_standard_name: 'properties.cmip7:variable_cf_standard_name',
+    variable_units: 'properties.cmip7:variable_units',
+    branded_suffix: 'properties.cmip7:variable_branded_suffix'
+  },
 };
 
 /* istanbul ignore next */
@@ -68,7 +104,6 @@ export const STAC_AGGREGATION_FACETS: { [key: string]: string[] } = {
     'cmip6_activity_id_frequency',
     'cmip6_data_specs_version_frequency',
     'cmip6_frequency_frequency',
-    'cmip6_further_info_url_frequency',
     'cmip6_grid_frequency',
     'cmip6_grid_label_frequency',
     'cmip6_institution_id_frequency',
@@ -82,17 +117,22 @@ export const STAC_AGGREGATION_FACETS: { [key: string]: string[] } = {
     'cmip6_variable_id_frequency',
     'cmip6_variant_label_frequency',
     'cmip6_realm_frequency',
-    // 'cmip6_Conventions_frequency',
-    'cmip6_experiment_frequency',
-    // 'cmip6_forcing_index_frequency', These caused a 500 error
-    // 'cmip6_initialization_index_frequency', These caused a 500 error
-    // 'cmip6_realization_index_frequency', These caused a 500 error
-    // 'cmip6_physics_index_frequency', These caused a 500 error
-    // 'cmip6_institution_frequency',
-    // 'cmip6_license_frequency',
-    // 'cmip6_source_frequency',
-    'cmip6_sub_experiment_frequency',
-    // 'cmip6_tracking_id_frequency',
+  ],
+  CMIP7: [
+    'cmip7_activity_id_frequency',
+    'cmip7_data_specs_version_frequency',
+    'cmip7_frequency_frequency',
+    'cmip7_grid_frequency',
+    'cmip7_grid_label_frequency',
+    'cmip7_institution_id_frequency',
+    'cmip7_mip_era_frequency',
+    'cmip7_source_id_frequency',
+    'cmip7_experiment_id_frequency',
+    'cmip7_nominal_resolution_frequency',
+    'cmip7_table_id_frequency',
+    'cmip7_variable_id_frequency',
+    'cmip7_variant_label_frequency',
+    'cmip7_realm_frequency',
   ],
 };
 
