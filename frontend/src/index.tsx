@@ -28,6 +28,8 @@ import { FrontendConfig } from './common/types';
 const container = document.getElementById('root');
 const root = createRoot(container!);
 const { Link } = Typography;
+const federatedNodesUrl =
+  import.meta.env.VITE_FEDERATED_NODES_URL || 'https://esgf.github.io/nodes.html';
 
 const appRouter: JSX.Element = (
   <BrowserRouter>
@@ -62,7 +64,7 @@ const ErrorPage: React.FC = () => {
           <div className="navbar-container">
             <div className="navbar-logo">
               <Link
-                href="https://esgf.github.io/nodes.html"
+                href={federatedNodesUrl}
                 target="_blank"
                 style={{
                   fontWeight: 'bold',
@@ -110,7 +112,7 @@ const ErrorPage: React.FC = () => {
                       Retry This Page
                     </Button>
 
-                    <Button type="primary" href="https://esgf.github.io/nodes.html" target="_blank">
+                    <Button type="primary" href={federatedNodesUrl} target="_blank">
                       Other Federated Nodes
                     </Button>
                   </>

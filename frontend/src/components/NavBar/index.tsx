@@ -34,7 +34,7 @@ const NavBar: React.FC = () => {
       <div className="navbar-container">
         <div className="navbar-logo" data-testid="nav-bar-logo">
           <Link
-            href="https://esgf.github.io/nodes.html"
+            href={import.meta.env.VITE_FEDERATED_NODES_URL || 'https://esgf.github.io/nodes.html'}
             target="_blank"
             style={{
               fontWeight: 'bold',
