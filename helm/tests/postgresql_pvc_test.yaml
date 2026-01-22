@@ -49,4 +49,3 @@ tests:
             persistentVolumeClaim:
               claimName: metagrid-postgresql-data
         template: templates/postgresql/deployment.yaml
-
