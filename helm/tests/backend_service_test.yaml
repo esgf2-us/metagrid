@@ -1,0 +1,35 @@
+suite: test backend service
+templates:
+  - templates/backend/service.yaml
+release:
+  name: metagrid
+  namespace: production
+chart:
+  version: v1.0.0
+  appVersion: v1.0.0
+set:
+  django:
+    secretKey: abcd1234 # need static for checksum
+tests:
+  - it: should create a default service
+    template: templates/backend/service.yaml
+    asserts:
+      - matchSnapshot: {}
+  - it: should create a service
+    template: templates/backend/service.yaml
+    set:
+      backend:
+        service:
+          type: LoadBalancer
+          port: 1111
+    asserts:
+      - equal:
+          path: spec.type
+          value: LoadBalancer
+      - contains:
+          path: spec.ports
+          content:
+            name: http
+            port: 1111
+            protocol: TCP
+            targetPort: http

@@ -1,5 +1,5 @@
-{{- if .Values.backend.migrateJob.enabled -}}
-{{- with .Values.backend.projects }}
+{{- if .Values.django.migrateJob.enabled -}}
+{{- with .Values.django.projects }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -7,10 +7,10 @@ metadata:
   namespace: {{ $.Release.Namespace }}
   labels:
     app.kubernetes.io/component: migrate-job
-    {{- include "metagrid.labels" . | nindent 4 }}
+    {{- include "metagrid.labels" $ | nindent 4 }}
 data:
   initial_projects_data.py: |
-  {{ $.Values.backend.projects | nindent 4 }}
+  {{ $.Values.django.projects | nindent 4 }}
 ---
 {{- end }}
 apiVersion: batch/v1
@@ -27,7 +27,7 @@ metadata:
     "helm.sh/hook-weight": "-5"
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
-  backoffLimit: {{ .Values.backend.migrateJob.backoffLimit }}
+  backoffLimit: {{ .Values.django.migrateJob.backoffLimit }}
   template:
     spec:
       restartPolicy: OnFailure
@@ -55,7 +55,7 @@ spec:
         resources:
           {{- toYaml .Values.backend.resources | nindent 12 }}
         volumeMounts:
-        {{- with .Values.backend.projects}}
+        {{- if .Values.django.projects }}
         - name: projects
           mountPath: /app/metagrid/initial_projects_data.py
           subPath: initial_projects_data.py
@@ -64,9 +64,11 @@ spec:
           {{- toYaml . | nindent 12 }}
         {{- end }}
       volumes:
+      {{- if .Values.django.projects }}
       - name: projects
         configMap:
           name: {{ include "metagrid.fullname" . }}-projects
+      {{- end }}
       {{- with .Values.backend.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}

@@ -64,8 +64,30 @@ django:
   secretKey:
   adminUrl:
   admins:
+  createSuperUser: false
   # should be fully qualified uri postgresql://<user>:<password>@<host>:<port>/<dbname>
   databaseUri:
+  migrateJob:
+    enabled: true
+    backoffLimit: 4
+  projects:
+  # Example projects
+  #
+  # projects: |
+  #   group_descriptions = {
+  #     "General": "Least verbose, typically returns many results",
+  #   }
+  #   projects = [
+  #     {
+  #       "name": "Example",
+  #       "full_name": "Example project",
+  #       ...
+  #       "facets_by_group": {
+  #         "General": ["activity_id", "data_node"],
+  #       }
+  #     }
+  #   ]
+
 
 frontend:
   replicaCount: 1
@@ -115,29 +137,6 @@ frontend:
   affinity: {}
 
 backend:
-  admin:
-    create: false
-  migrateJob:
-    enabled: true
-    backoffLimit: 4
-
-  projects: # Example projects
-  #
-  # projects: |
-  #   group_descriptions = {
-  #     "General": "Least verbose, typically returns many results",
-  #   }
-  #   projects = [
-  #     {
-  #       "name": "Example",
-  #       "full_name": "Example project",
-  #       ...
-  #       "facets_by_group": {
-  #         "General": ["activity_id", "data_node"],
-  #       }
-  #     }
-  #   ]
-
   replicaCount: 1
 
   image:

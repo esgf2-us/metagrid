@@ -1,4 +1,4 @@
-{{- if .Values.backend.admin.create }}
+{{- if .Values.django.createSuperUser }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -13,7 +13,7 @@ metadata:
     "helm.sh/hook-weight": "-5"
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
-  backoffLimit: {{ .Values.backend.migrateJob.backoffLimit }}
+  backoffLimit: {{ .Values.django.migrateJob.backoffLimit }}
   template:
     spec:
       restartPolicy: OnFailure
@@ -31,8 +31,10 @@ spec:
         image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
         envFrom:
+        - configMapRef:
+            name: {{ include "metagrid.fullname" . }}
         - secretRef:
-            name: {{ include "metagrid.fullname" . }}-config
+            name: {{ include "metagrid.fullname" . }}
         command: ['/bin/bash', '-c']
         args:
         - python manage.py createsuperuser --noinput

@@ -1,0 +1,52 @@
+should create a configmap:
+  1: |
+    apiVersion: v1
+    data:
+      DJANGO_GUNICORN_WORKERS: "10"
+      METAGRID_BANNER_TEXT: |
+        this is a message for users
+      METAGRID_DATA_UPLOAD_MAX_NUMBER_FIELDS: "10"
+      METAGRID_FOOTER_TEXT: |
+        Footer text, check out this markdown [link](https://esgf.neworg.io)
+      METAGRID_GLOBUS_NODES: '["esgf.neworg.io"]'
+      METAGRID_GLOBUS_PUBLIC_INDEX_ENDPOINT_ID: abcd1234
+      METAGRID_SEARCH_URL: https://esgf.neworg.io/bridge
+      METAGRID_STAC_URL: https://esgf.neworg.io/stac
+      METAGRID_SUPPORT_INFO: |
+        Contact <name> (<email>)
+      METAGRID_WGET_MAX_DIR_LENGTH: "20"
+      METAGRID_WGET_SCRIPT_FILE_DEFAULT_LIMIT: "2"
+      METAGRID_WGET_SCRIPT_FILE_MAX_LIMIT: "20"
+      METAGRID_WGET_URL: https://wget.neworg.io
+    kind: ConfigMap
+    metadata:
+      labels:
+        app.kubernetes.io/component: backend
+        app.kubernetes.io/instance: metagrid
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: metagrid
+        app.kubernetes.io/version: v1.0.0
+        helm.sh/chart: metagrid-v1.0.0
+      name: metagrid
+should create a default configmap:
+  1: |
+    apiVersion: v1
+    data:
+      DJANGO_GUNICORN_WORKERS: "2"
+      METAGRID_DATA_UPLOAD_MAX_NUMBER_FIELDS: "1024"
+      METAGRID_GLOBUS_NODES: '["esgf-node.ornl.gov","eagle.alcf.anl.gov","esgf-data.nersc.gov"]'
+      METAGRID_GLOBUS_PUBLIC_INDEX_ENDPOINT_ID: a8ef4320-9e5a-4793-837b-c45161ca1845
+      METAGRID_SEARCH_URL: https://esgf-node.ornl.gov/esgf-1-5-bridge
+      METAGRID_WGET_MAX_DIR_LENGTH: "50"
+      METAGRID_WGET_SCRIPT_FILE_DEFAULT_LIMIT: "9999"
+      METAGRID_WGET_SCRIPT_FILE_MAX_LIMIT: "100000"
+    kind: ConfigMap
+    metadata:
+      labels:
+        app.kubernetes.io/component: backend
+        app.kubernetes.io/instance: metagrid
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: metagrid
+        app.kubernetes.io/version: v1.0.0
+        helm.sh/chart: metagrid-v1.0.0
+      name: metagrid
