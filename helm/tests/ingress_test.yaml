@@ -34,4 +34,4 @@ tests:
           path: spec.template.spec.containers[0].env
           content:
             name: DJANGO_ALLOWED_HOSTS
-            value: '["localhost", "$(THIS_POD_IP)", "metagrid.neworg.io", "metagrid-backup.neworg.io"]'
+            value: '["localhost","$(THIS_POD_IP)","metagrid.neworg.io","metagrid-backup.neworg.io"]'

@@ -37,7 +37,7 @@ should have a deployment:
                     fieldRef:
                       fieldPath: status.podIP
                 - name: DJANGO_ALLOWED_HOSTS
-                  value: '["localhost", "$(THIS_POD_IP)", "", ""]'
+                  value: '["localhost","$(THIS_POD_IP)"]'
               envFrom:
                 - secretRef:
                     name: metagrid
