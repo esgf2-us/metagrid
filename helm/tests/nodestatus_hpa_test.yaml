@@ -1,0 +1,27 @@
+suite: test node_status hpa
+templates:
+  - templates/node_status/hpa.yaml
+release:
+  name: metagrid
+  namespace: production
+chart:
+  version: v1.0.0
+  appVersion: v1.0.0
+set:
+  django:
+    secretKey: abcd1234 # need static for checksum
+  nodeStatusBackend:
+    enabled: true
+tests:
+  - it: should create horizontal pod autoscaler
+    template: templates/node_status/hpa.yaml
+    set:
+      nodeStatusBackend:
+        autoscaling:
+          enabled: true
+          minReplicas: 2
+          maxReplicas: 10
+          targetCPUUtilizationPercentage: 45
+          targetMemoryUtilizationPercentage: 500Mi
+    asserts:
+      - matchSnapshot: {}
