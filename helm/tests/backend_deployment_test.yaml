@@ -1,5 +1,6 @@
 suite: test backend deployment
 templates:
+  - templates/backend/configmap.yaml
   - templates/backend/secret.yaml
   - templates/backend/deployment.yaml
 release:
