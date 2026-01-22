@@ -93,4 +93,5 @@ should create a ingress:
         - hosts:
             - metagrid.neworg.io
             - metagrid-backup.neworg.io
+            - metagrid-backup2.neworg.io
           secretName: metagrid-ingress-cert

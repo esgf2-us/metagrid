@@ -55,8 +55,8 @@ spec:
           {{- if .Values.ingress.host }}
             {{- $hosts = append $hosts .Values.ingress.host }}
           {{- end }}
-          {{- if .Values.ingress.additionalHost }}
-            {{- $hosts = append $hosts .Values.ingress.additionalHost }}
+          {{- range $host := .Values.ingress.additionalHosts }}
+            {{- $hosts = append $hosts $host }}
           {{- end }}
           value: {{ toJson $hosts | quote }}
         ports:

@@ -20,7 +20,9 @@ tests:
     set:
       ingress:
         host: metagrid.neworg.io
-        additionalHost: metagrid-backup.neworg.io
+        additionalHosts:
+          - metagrid-backup.neworg.io
+          - metagrid-backup2.neworg.io
         className: traefik
         labels:
           router: main
@@ -34,4 +36,4 @@ tests:
           path: spec.template.spec.containers[0].env
           content:
             name: DJANGO_ALLOWED_HOSTS
-            value: '["localhost","$(THIS_POD_IP)","metagrid.neworg.io","metagrid-backup.neworg.io"]'
+            value: '["localhost","$(THIS_POD_IP)","metagrid.neworg.io","metagrid-backup.neworg.io","metagrid-backup2.neworg.io"]'
