@@ -20,6 +20,9 @@ spec:
   tls:
   - hosts:
     - {{ .Values.ingress.host | quote }}
+    {{- if .Values.ingress.additionalHost }}
+    - {{ .Values.ingress.additionalHost }}
+    {{- end }}
     secretName: {{ include "metagrid.fullname" . }}-ingress-cert
   {{- end }}
   rules:

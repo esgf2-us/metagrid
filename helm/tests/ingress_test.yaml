@@ -1,0 +1,37 @@
+suite: test ingress
+templates:
+  - templates/backend/secret.yaml
+  - templates/backend/deployment.yaml
+  - templates/ingress.yaml
+release:
+  name: metagrid
+  namespace: production
+chart:
+  version: v1.0.0
+  appVersion: v1.0.0
+set:
+  ingress:
+    enabled: true
+  django:
+    secretKey: abcd1234 # need static for checksum
+tests:
+  - it: should create a ingress
+    template: templates/ingress.yaml
+    set:
+      ingress:
+        host: metagrid.neworg.io
+        additionalHost: metagrid-backup.neworg.io
+        className: traefik
+        labels:
+          router: main
+        annotations:
+          redundaunt: router3
+        tls: true
+    asserts:
+      - matchSnapshot: {}
+      - template: templates/backend/deployment.yaml
+        contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: DJANGO_ALLOWED_HOSTS
+            value: '["localhost", "$(THIS_POD_IP)", "metagrid.neworg.io", "metagrid-backup.neworg.io"]'

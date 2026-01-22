@@ -51,7 +51,7 @@ spec:
             fieldRef:
               fieldPath: status.podIP
         - name: DJANGO_ALLOWED_HOSTS
-          value: '["localhost", "$(THIS_POD_IP)", "{{ .Values.ingress.host }}", "{{ .Values.ingress.additionalAllowedHost }}"]'
+          value: '["localhost", "$(THIS_POD_IP)", "{{ .Values.ingress.host }}", "{{ .Values.ingress.additionalHost }}"]'
         ports:
         - name: http
           containerPort: {{ .Values.backend.service.port }}
