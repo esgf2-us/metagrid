@@ -1,5 +1,6 @@
 suite: test postgresql deployment
 templates:
+  - templates/backend/secret.yaml
   - templates/postgresql/secret.yaml
   - templates/postgresql/deployment.yaml
 release:
@@ -173,3 +174,23 @@ tests:
             operator: "Equal"
             value: "10"
             effect: "NoExecute"
+  - it: should disable postgresql
+    template: templates/postgresql/deployment.yaml
+    set:
+      django:
+        databaseUri: postgresql://admin:password@maindb:1111/metagrid-production
+      postgresql:
+        enabled: false
+    asserts:
+      - containsDocument:
+          kind: Deployment
+        not: true
+      - template: templates/backend/secret.yaml
+        isSubset:
+          path: stringData
+          content:
+            DATABASE_URL: postgresql://admin:password@maindb:1111/metagrid-production
+            DJANGO_SECRET_KEY: abcd1234
+            METAGRID_AUTHENTICATION_METHOD: globus
+            METAGRID_SOCIAL_AUTH_GLOBUS_KEY: null
+            METAGRID_SOCIAL_AUTH_GLOBUS_SECRET: null
