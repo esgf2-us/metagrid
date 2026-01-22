@@ -5,7 +5,8 @@
     - [Start the Kubernetes cluster](#start-the-kubernetes-cluster)
     - [Deploy Metagrid + Traefik](#deploy-metagrid--traefik)
     - [Use minikube](#use-minikube)
-3. [Helm Chart `values.yaml` Configuration](#helm-chart-valuesyaml-configuration)
+3. [Testing the chart](#testing-the-chart)
+4. [Helm Chart `values.yaml` Configuration](#helm-chart-valuesyaml-configuration)
     - [Top-Level Configuration](#top-level-configuration)
     - [Ingress](#ingress)
     - [Config](#config)
@@ -13,9 +14,9 @@
     - [Backend](#backend)
     - [PostgreSQL](#postgresql)
     - [Node Status Backend](#node-status-backend)
-4. [Creating a backend admin account](#creating-a-backend-admin-account)
-5. [FAQ](#faq)
-6. [Upgrading](#upgrading)
+5. [Creating a backend admin account](#creating-a-backend-admin-account)
+6. [FAQ](#faq)
+7. [Upgrading](#upgrading)
     - [v1.5.3 -> v1.5.4](#v153---v154)
 
 ## Install
@@ -57,6 +58,22 @@ After launching the tunnel you can open https://localhost/search
 
 ```shell
 minikube tunnel
+```
+
+## Testing the chart
+This chart has a number of tests that can be run to verify functionality.
+The tests are run using the [`helm-unittest`](https://github.com/helm-unittest/helm-unittest) plugin.
+
+### Install the plugin
+To install the plugin, run the following command:
+```shell
+helm plugin install https://github.com/helm-unittest/helm-unittest
+```
+
+### Run the tests
+To run the tests execute the following command from the project's root directory:
+```shell
+helm unittest helm/
 ```
 
 # Helm Chart `values.yaml` Configuration
@@ -324,4 +341,6 @@ kubectl exec -it $DB_POD -- psql -h localhost -U $DB_USER -d $DB_NAME -c "REINDE
 # restart backend pod
 kubectl delete $BACKEND_POD
 ```
+
+
 
