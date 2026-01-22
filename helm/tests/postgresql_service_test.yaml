@@ -1,0 +1,35 @@
+suite: test postgresql service
+templates:
+  - templates/postgresql/service.yaml
+release:
+  name: metagrid
+  namespace: production
+chart:
+  version: v1.0.0
+  appVersion: v1.0.0
+set:
+  django:
+    secretKey: abcd1234 # need static for checksum
+tests:
+  - it: should create a default service
+    template: templates/postgresql/service.yaml
+    asserts:
+      - matchSnapshot: {}
+  - it: should create a service
+    template: templates/postgresql/service.yaml
+    set:
+      postgresql:
+        service:
+          type: LoadBalancer
+          port: 1111
+    asserts:
+      - equal:
+          path: spec.type
+          value: LoadBalancer
+      - contains:
+          path: spec.ports
+          content:
+            name: db
+            port: 1111
+            protocol: TCP
+            targetPort: db

@@ -1,0 +1,52 @@
+suite: test postgresql pvc
+templates:
+  - templates/postgresql/secret.yaml
+  - templates/postgresql/pvc.yaml
+  - templates/postgresql/deployment.yaml
+release:
+  name: metagrid
+  namespace: production
+chart:
+  version: v1.0.0
+  appVersion: v1.0.0
+set:
+  django:
+    secretKey: abcd1234 # need static for checksum
+tests:
+  - it: should create a default pvc
+    template: templates/postgresql/pvc.yaml
+    asserts:
+      - matchSnapshot: {}
+  - it: should create a pvc
+    template: templates/postgresql/pvc.yaml
+    set:
+      postgresql:
+        persistence:
+          accessMode: ReadWriteMany
+          size: 22Gi
+          storageClassName: longhorn
+    asserts:
+      - isSubset:
+          path: spec
+          content:
+            accessModes:
+            - ReadWriteMany
+            resources:
+              requests:
+                storage: 22Gi
+            storageClassName: longhorn
+            volumeMode: Filesystem
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            mountPath: /var/lib/postgresql/data
+            name: pgdata
+        template: templates/postgresql/deployment.yaml
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: pgdata
+            persistentVolumeClaim:
+              claimName: metagrid-postgresql-data
+        template: templates/postgresql/deployment.yaml
+

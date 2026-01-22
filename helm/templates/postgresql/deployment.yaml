@@ -14,7 +14,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/backend/secret.yaml") . | sha256sum }}
+        checksum/config: {{ include (print $.Template.BasePath "/postgresql/secret.yaml") . | sha256sum }}
       {{- with .Values.postgresql.podAnnotations }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -51,14 +51,14 @@ spec:
           tcpSocket:
             port: {{ .Values.postgresql.service.port }}
         resources:
-          {{- toYaml .Values.postgresql.resources | nindent 12 }}
+          {{- toYaml .Values.postgresql.resources | nindent 10 }}
         volumeMounts:
         {{- if .Values.postgresql.persistence.enabled }}
         - name: pgdata
           mountPath: /var/lib/postgresql/data
         {{- end }}
         {{- with .Values.postgresql.volumeMounts }}
-          {{- toYaml . | nindent 12 }}
+          {{- toYaml . | nindent 8 }}
         {{- end }}
       volumes:
       {{- if .Values.postgresql.persistence.enabled }}
@@ -67,7 +67,7 @@ spec:
           claimName: {{ include "metagrid.fullname" . }}-postgresql-data
       {{- end }}
       {{- with .Values.postgresql.volumes }}
-        {{- toYaml . | nindent 8 }}
+        {{- toYaml . | nindent 6 }}
       {{- end }}
       {{- with .Values.postgresql.nodeSelector }}
       nodeSelector:
