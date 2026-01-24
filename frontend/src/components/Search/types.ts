@@ -28,6 +28,7 @@ export type ActiveSearchQuery = {
   filenameVars: TextInputs | [];
   activeFacets: ActiveFacets;
   textInputs: TextInputs | [];
+  globusOnly: boolean;
 };
 
 export type RawSearchResult = {

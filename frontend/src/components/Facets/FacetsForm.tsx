@@ -273,6 +273,22 @@ const FacetsForm: React.FC = () => {
   const handleOnGlobusReadyChanged = (event: RadioChangeEvent): void => {
     const globusOnly = event.target.value as boolean;
     setGlobusReadyOnly(globusOnly);
+
+    if (currentProject.isSTAC) {
+      if (globusOnly) {
+        setActiveSearchQuery({
+          ...activeSearchQuery,
+          globusOnly: true,
+        });
+      } else {
+        setActiveSearchQuery({
+          ...activeSearchQuery,
+          globusOnly: false,
+        });
+      }
+      return;
+    }
+
     if (globusOnly) {
       setActiveSearchQuery({
         ...activeSearchQuery,
@@ -330,6 +346,8 @@ const FacetsForm: React.FC = () => {
         )
       ) {
         setGlobusReadyOnly(true);
+      } else if (activeSearchQuery.globusOnly) {
+        setGlobusReadyOnly(activeSearchQuery.globusOnly);
       } else {
         setGlobusReadyOnly(false);
       }
@@ -491,7 +509,7 @@ const FacetsForm: React.FC = () => {
           ...activeSearchQuery.activeFacets,
         }}
       >
-        {window.METAGRID.GLOBUS_NODES.length > 0 && !currentProject.isSTAC && (
+        {window.METAGRID.GLOBUS_NODES.length > 0 && (
           <div className={leftSidebarTargets.filterByGlobusTransfer.class()}>
             <h3>Filter By Transfer Options</h3>
             <Row>

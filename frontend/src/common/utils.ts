@@ -78,6 +78,7 @@ export const projectBaseQuery = (
   filenameVars: [],
   activeFacets: {},
   textInputs: [],
+  globusOnly: false,
 });
 
 const bodySider = {
@@ -282,6 +283,7 @@ export const getAltSearchFromUrl = (url?: string): ActiveSearchQuery => {
     filenameVars: [],
     activeFacets: {},
     textInputs: [],
+    globusOnly: false,
   };
 
   const params = new URLSearchParams(url || window.location.search);
@@ -312,6 +314,7 @@ export const getSearchFromUrl = (url?: string): ActiveSearchQuery => {
     filenameVars: [],
     activeFacets: {},
     textInputs: [],
+    globusOnly: false,
   };
 
   const params = new URLSearchParams(url || window.location.search);

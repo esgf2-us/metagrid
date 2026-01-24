@@ -438,7 +438,9 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
                 <div className={topDataRowTargets.globusReadyStatusIcon.class()}>
                   <GlobusToolTip
                     dataNode={data_node}
-                    stacGlobusAvailable={getStacGlobusHref(record) !== null}
+                    stacGlobusAvailable={
+                      getStacGlobusHref(record.assets) !== null || record.globusHrefs !== undefined
+                    }
                   />
                 </div>
               );

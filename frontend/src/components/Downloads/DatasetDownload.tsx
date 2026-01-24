@@ -37,7 +37,7 @@ import {
   MAX_TASK_LIST_LENGTH,
   GlobusEndpointSearchResults,
   GlobusEndpoint,
-} from './types';
+} from '../Globus/types';
 import { getCurrentAppPage, showError, showNotice } from '../../common/utils';
 import { RawTourState, ReactJoyrideContext } from '../../contexts/ReactJoyrideContext';
 import apiRoutes from '../../api/routes';
@@ -104,7 +104,13 @@ function redirectToRootUrl(): void {
   }
 }
 
-const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
+interface DatasetDownloadFormProps {
+  globusHrefs?: string[];
+}
+
+const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormProps>> = (
+  props: DatasetDownloadFormProps,
+) => {
   const [messageApi, contextHolder] = message.useMessage();
 
   const location = useLocation();
@@ -174,6 +180,16 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
   const handleWgetDownload = (): void => {
     setDownloadIsLoading(true);
+
+    if (props.globusHrefs && props.globusHrefs.length > 0) {
+      // Handle direct hrefs download
+      // generateWgetScriptSTAC(
+      //   stacResults.features.map((feature: StacFeature) => convertStacToRawSearchResult(feature)),
+      //   getUrlFromSearch(activeSearchQuery),
+      // );
+      setDownloadIsLoading(false);
+      return;
+    }
 
     const cleanedSelections = itemSelections.filter((item) => {
       return item !== undefined && item !== null;
@@ -303,33 +319,35 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
   const handleGlobusDownload = (endpoint: GlobusEndpoint, authCode?: string): void => {
     const ids = itemSelections?.map((item) => (item ? item.id : '')) ?? [];
-
     const globusHrefs: string[] = [];
 
     if (itemSelections) {
       itemSelections.forEach((item) => {
-        const href = getStacGlobusHref(item);
+        const href = getStacGlobusHref(item.assets);
         if (href !== null) {
           globusHrefs.push(href);
         }
       });
+    } else if (props.globusHrefs && props.globusHrefs.length > 0) {
+      globusHrefs.push(...props.globusHrefs);
     }
 
     setDownloadIsLoading(true);
 
+    const params = JSON.stringify({
+      authCode,
+      authRedirectUrl: `${window.location.origin}/cart/items`,
+      authScope: getCurrentScope(),
+      endpointId: endpoint.id,
+      path: endpoint.path || '',
+      dataset_id: props.globusHrefs ? [] : ids,
+      globus_hrefs: globusHrefs,
+    });
+
+    console.log('Globus download params:', params);
+
     axios
-      .post<SubmissionResult>(
-        apiRoutes.globusTransfer.path,
-        JSON.stringify({
-          authCode,
-          authRedirectUrl: `${window.location.origin}/cart/items`,
-          authScope: getCurrentScope(),
-          endpointId: endpoint.id,
-          path: endpoint.path || '',
-          dataset_id: ids,
-          globus_hrefs: globusHrefs,
-        }),
-      )
+      .post<SubmissionResult>(apiRoutes.globusTransfer.path, params)
       .then((resp) => {
         return resp.data;
       })
@@ -409,7 +427,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             resetCookiesAndTokens();
             endDownloadSteps();
             break;
-
           default:
             await showNotice(
               messageApi,
@@ -476,7 +493,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         const dataNode = selection.data_node as string;
         if (dataNode && window.METAGRID.GLOBUS_NODES.includes(dataNode)) {
           globusReadyItems.push(selection);
-        } else if (selection.isStac && getStacGlobusHref(selection)) {
+        } else if (selection.isStac && getStacGlobusHref(selection.assets)) {
           globusReadyItems.push(selection);
         }
       }
@@ -884,7 +901,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           className={cartTourTargets.downloadAllType.class()}
           defaultValue={downloadOptions[0]}
           data-testid="downloadTypeSelector"
-          style={{ width: 235 }}
+          style={{ width: 135, textAlign: 'center' }}
           onSelect={(rawType) => {
             const downloadType: string = rawType;
             if (downloadType) {
@@ -909,7 +926,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             notFoundContent={null}
             placeholder="Select Globus Collection"
             showSearch
-            style={{ width: '450px' }}
+            style={{ width: '400px', textAlign: 'center' }}
             value={chosenGlobusEndpoint?.display_name}
             options={[
               {

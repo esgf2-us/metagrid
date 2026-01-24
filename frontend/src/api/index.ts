@@ -424,6 +424,7 @@ export const generateSearchURLQuery = (
     maxVersionDate,
     activeFacets,
     textInputs,
+    globusOnly,
   } = activeSearchQuery;
 
   const { isSTAC } = activeSearchQuery.project;
@@ -446,6 +447,9 @@ export const generateSearchURLQuery = (
   }
   if (maxVersionDate) {
     baseParams += `max_version=${maxVersionDate}&`;
+  }
+  if (globusOnly) {
+    baseParams += `globusOnly=${globusOnly}&`;
   }
 
   let textInputsParams = 'query=*';

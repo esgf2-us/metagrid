@@ -7,7 +7,7 @@ import { CSSinJS } from '../../common/types';
 import Button from '../General/Button';
 import Table from '../Search/Table';
 import { RawSearchResults } from '../Search/types';
-import DatasetDownload from '../Globus/DatasetDownload';
+import DatasetDownload from '../Downloads/DatasetDownload';
 import { UserCart } from './types';
 import { AuthContext } from '../../contexts/AuthContext';
 import { updateUserCart } from '../../api';

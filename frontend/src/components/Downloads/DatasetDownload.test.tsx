@@ -14,7 +14,7 @@ import {
   AtomWrapper,
 } from '../../test/jestTestFunctions';
 import App from '../App/App';
-import { GlobusEndpoint, GlobusTaskItem } from './types';
+import { GlobusEndpoint, GlobusTaskItem } from '../Globus/types';
 import { globusEndpointFixture, globusAuthScopeFixure } from '../../test/mock/fixtures';
 import apiRoutes from '../../api/routes';
 import DatasetDownloadForm, { GlobusGoals } from './DatasetDownload';

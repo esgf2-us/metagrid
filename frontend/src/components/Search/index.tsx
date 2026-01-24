@@ -41,6 +41,7 @@ import {
   createEsgpullCommand,
   createIntakeEsgfSearch,
   createSearchRouteURL,
+  formatBytes,
   getCachedPagination,
   getStyle,
   getUrlFromSearch,
@@ -60,6 +61,7 @@ import {
   RawSearchResult,
   RawSearchResults,
   ResultType,
+  StacAsset,
   StacFeature,
   StacResponse,
   TextInputs,
@@ -70,10 +72,10 @@ import { AuthContext } from '../../contexts/AuthContext';
 import {
   convertSearchParamsIntoStacFilter,
   convertStacToRawSearchResult,
-  generateWgetScriptSTAC,
   getDownloadSizeFromSTACsearch,
   getFileCountFromSTACsearch,
 } from '../../common/STAC';
+import DownloadModal from '../Downloads/DownloadModal';
 
 const tooltipText = {
   featureNotAvailableInStac: 'This feature is not compatible with STAC projects.',
@@ -198,6 +200,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   const [currentRequestURL, setCurrentRequestURL] = useAtom(currentRequestQueryAtom);
 
+  const [showDownloadAllForm, setShowDownloadAllForm] = React.useState<boolean>(false);
+
   const currentProject = useAtomValue(currentProjectAtom);
 
   const isDarkMode = useAtomValue<boolean>(isDarkModeAtom);
@@ -286,15 +290,6 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     setAvailableFacets(parsedFacets as ParsedFacets);
   }, [parsedFacets, setAvailableFacets]);
 
-  const handleDownloadAllSearchResults = (): void => {
-    const stacResults = (results as StacResponse).search;
-
-    generateWgetScriptSTAC(
-      stacResults.features.map((feature: StacFeature) => convertStacToRawSearchResult(feature)),
-      getUrlFromSearch(activeSearchQuery),
-    );
-  };
-
   const handleClearFilters = (): void => {
     setActiveSearchQuery(projectBaseQuery(activeSearchQuery.project));
   };
@@ -312,6 +307,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       filenameVars: activeSearchQuery.filenameVars,
       activeFacets: activeSearchQuery.activeFacets,
       textInputs: activeSearchQuery.textInputs,
+      globusOnly: activeSearchQuery.globusOnly,
       url,
       resultsCount: numFound,
       searchTime: Date.now(),
@@ -386,6 +382,72 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         icon: <CodeOutlined />,
       });
     }
+  };
+
+  const handleDownloadAllSearchResults = (fileCount: number, totalFilesSize: number): void => {
+    const stacResults = (results as StacResponse).search;
+    const rawSearchResults = stacResults.features.map((feature: StacFeature) =>
+      convertStacToRawSearchResult(feature),
+    );
+
+    // setShowDownloadAllForm(true);
+
+    if (stacResults.features.length > 0) {
+      const assets: { [id: string]: StacAsset } = {};
+      const hrefsSet: Set<string> = new Set();
+      const globusHrefsSet: Set<string> = new Set();
+      stacResults.features.forEach((feature: StacFeature, idx: number) => {
+        if (feature.assets) {
+          // const globusHref = getStacGlobusHref(feature.assets);
+          // if (feature.assets.globus) {
+          //   globusAssets.push(feature.assets.globus);
+          //   globusHrefsSet.add(feature.assets.globus.href);
+          // }
+          Object.values(feature.assets).forEach((asset, innerIdx) => {
+            assets[`asset_${idx}_${innerIdx}`] = {
+              ...asset,
+              id: `asset_${idx}_${innerIdx}`,
+            };
+            if (asset.type && asset.type === 'text/html') {
+              globusHrefsSet.add(asset.href);
+            } else if (asset.href && asset.href.startsWith('http') && asset.href.endsWith('.nc')) {
+              hrefsSet.add(asset.href);
+            }
+          });
+        }
+      });
+
+      // const assets: {
+      //   [name: string]: StacAsset;
+      // } = {};
+      // globusAssets.forEach((asset, idx) => {
+      //   assets[`globus_link_${idx}`] = {
+      //     ...asset,
+      //     id: `globus_link_${idx}`,
+      //     title: `Globus Asset ${idx}`,
+      //   };
+      // });
+
+      const singleSTACitem: RawSearchResult = {
+        id: 'all_search_results',
+        master_id: `Search Results (${fileCount.toLocaleString()} Files - Size: ${formatBytes(totalFilesSize)})`,
+        size: totalFilesSize,
+        number_of_files: fileCount,
+        access: ['Globus'],
+        isStac: true,
+        assets,
+        wgetHrefs: hrefsSet,
+        globusHrefs: globusHrefsSet,
+        title: `All search results for ${getUrlFromSearch(activeSearchQuery)}`,
+      };
+
+      onUpdateCart([singleSTACitem], 'add');
+    }
+
+    // generateWgetScriptSTAC(
+    //   stacResults.features.map((feature: StacFeature) => convertStacToRawSearchResult(feature)),
+    //   getUrlFromSearch(activeSearchQuery),
+    // );
   };
 
   const handleRemoveFilter = (removedTag: TagValue, type: TagType): void => {
@@ -473,7 +535,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   let numFound = 0;
   let fileCount = 0;
-  let totalFilesSize = 'N/A';
+  let totalFilesSize = 0;
   let docs: RawSearchResults = [];
   type LoadedResults = {
     cachedURL: string;
@@ -628,22 +690,30 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           {results && (
             <Space>
               {currentProject.isSTAC && (
-                <Tooltip
-                  placement="bottom"
-                  title="Generates a wget download script for the current search results. The total file count and total download size are shown on the button."
-                >
-                  <Button
-                    type="default"
-                    shape="round"
-                    className={searchTableTargets.downloadSearchBtn.class()}
-                    onClick={handleDownloadAllSearchResults}
-                    disabled={isLoading || numFound === 0}
+                <>
+                  <Tooltip
+                    placement="bottom"
+                    title="Generates a wget download script for the current search results. The total file count and total download size are shown on the button."
                   >
-                    <DownloadOutlined />
-                    Download All Results ({fileCount.toLocaleString()} Files - Size:{' '}
-                    {totalFilesSize})
-                  </Button>{' '}
-                </Tooltip>
+                    <Button
+                      type="default"
+                      shape="round"
+                      className={searchTableTargets.downloadSearchBtn.class()}
+                      onClick={() => {
+                        handleDownloadAllSearchResults(fileCount, totalFilesSize);
+                      }}
+                      disabled={isLoading || numFound === 0}
+                    >
+                      <DownloadOutlined />
+                      Download All Results ({fileCount.toLocaleString()} Files - Size:{' '}
+                      {formatBytes(totalFilesSize)})
+                    </Button>{' '}
+                  </Tooltip>
+                  <DownloadModal
+                    show={showDownloadAllForm}
+                    hide={() => setShowDownloadAllForm(false)}
+                  />
+                </>
               )}
               <Tooltip placement="bottom" title="Add the selected datasets to your download cart.">
                 <Button

@@ -60,6 +60,13 @@ const buildDisplayData = (
       );
     }
     if (Array.isArray(value)) {
+      if (typeof value[0] === 'string' || typeof value[0] === 'number') {
+        return (
+          <div key={`top-${key}`} style={{ margin: 0 }}>
+            <span style={{ fontWeight: 'bold' }}>{title}</span>: {`[${value.join(', ')}]`}
+          </div>
+        );
+      }
       return (
         <div key={`top-${key}`} style={{ margin: 0 }}>
           <span style={{ fontWeight: 'bold' }}>{title}</span>:
@@ -71,10 +78,10 @@ const buildDisplayData = (
               listStyle: 'none',
             }}
           >
-            {value.map((item, idx) => (
+            {value.map((item, idx) => {
               // eslint-disable-next-line react/no-array-index-key
-              <li key={idx}>{buildElement(`${key}-${idx}`, `${title}[${idx}]`, item)}</li>
-            ))}
+              return <li key={idx}>{buildElement(`${key}-${idx}`, `${title}[${idx}]`, item)}</li>;
+            })}
           </ul>
         </div>
       );
