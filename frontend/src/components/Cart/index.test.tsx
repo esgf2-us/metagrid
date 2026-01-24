@@ -3,30 +3,33 @@ import React from 'react';
 import { screen } from '@testing-library/react';
 import Cart, { Props } from './index';
 import customRender from '../../test/custom-render';
+import { vi } from 'vitest';
+
+// hoist navigate mock for vi.mock (vitest hoists mocks)
+const mockNavigate = vi.fn();
+
+vi.mock('react-router', async () => {
+  const actual = await vi.importActual('react-router');
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  } as Record<string, unknown>;
+});
 
 const defaultProps: Props = {
-  onUpdateCart: jest.fn(),
+  onUpdateCart: vi.fn(),
 };
 
 const user = userEvent.setup();
 
-let mockNavigate: () => void;
+// Global timeout configured in vitest.config.ts
+
 beforeEach(() => {
-  mockNavigate = jest.fn();
-  jest.mock(
-    'react-router',
-    () =>
-      ({
-        ...jest.requireActual('react-router'),
-        useNavigate: () => ({
-          push: mockNavigate,
-        }),
-      } as Record<string, unknown>)
-  );
+  mockNavigate.mockClear();
 });
 
 afterEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 it('handles tab switching and saved search actions', async () => {
@@ -72,4 +75,4 @@ it('handles tab switching and saved search actions', async () => {
   expect(deleteBtn).toBeTruthy();
 
   await user.click(deleteBtn);
-});
+}, 120000);

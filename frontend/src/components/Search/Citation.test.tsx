@@ -7,7 +7,7 @@ import customRender from '../../test/custom-render';
 
 // Reset all mocks after each test
 afterEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 describe('test Citation component', () => {

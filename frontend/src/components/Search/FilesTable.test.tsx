@@ -147,7 +147,7 @@ describe('test FilesTable component', () => {
 
     // Wait for component to re-render
     await screen.findByTestId('filesTable');
-  });
+  }, 120000);
 
   it('handles pagination and page size changes', async () => {
     // Update api to return 20 search results, which enables pagination if 10/page selected

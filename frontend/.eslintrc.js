@@ -21,7 +21,22 @@ module.exports = {
   ignorePatterns: ['*.test.tsx'],
   rules: {
     'prettier/prettier': ['error'],
-    'import/no-extraneous-dependencies': ['error', { devDependencies: true }],
+    'import/no-extraneous-dependencies': [
+      'error',
+      {
+        devDependencies: [
+          '**/src/test/**',
+          '**/src/**/*.test.{js,jsx,ts,tsx}',
+          '**/*.spec.{js,jsx,ts,tsx}',
+          'src/vitest.setup.*.ts',
+          'vite.config.*',
+          'vitest.config.*',
+          'vitest.config.ts',
+          'src/**/setupTests.*.ts',
+        ],
+        packageDir: [__dirname],
+      },
+    ],
     'react/destructuring-assignment': 'off',
     'react/jsx-filename-extension': [1, { extensions: ['.js', '.jsx', '.ts', '.tsx'] }],
     'react/jsx-props-no-spreading': 'off',
@@ -59,4 +74,28 @@ module.exports = {
     'react/jsx-no-constructed-context-values': 'off',
     'import/no-import-module-exports': 'off',
   },
+  overrides: [
+    {
+      files: [
+        'src/**/*.test.{js,jsx,ts,tsx}',
+        'src/**/*.spec.{js,jsx,ts,tsx}',
+        'src/test/**',
+        'src/**/setupTests.*.ts',
+        'src/vitest.setup.*.ts',
+        'vitest.config.*',
+        'vitest.config.ts',
+      ],
+      rules: {
+        '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/no-unsafe-assignment': 'off',
+        '@typescript-eslint/no-unsafe-member-access': 'off',
+        '@typescript-eslint/no-unsafe-call': 'off',
+        '@typescript-eslint/no-unsafe-return': 'off',
+        '@typescript-eslint/no-unsafe-argument': 'off',
+        'no-underscore-dangle': 'off',
+        '@typescript-eslint/naming-convention': 'off',
+        'import/no-extraneous-dependencies': 'off',
+      },
+    },
+  ],
 };

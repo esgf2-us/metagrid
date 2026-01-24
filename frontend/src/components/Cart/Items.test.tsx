@@ -1,4 +1,5 @@
 import { within, screen } from '@testing-library/react';
+import { vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { rest, server } from '../../test/mock/server';
@@ -12,12 +13,14 @@ import { AppStateKeys } from '../../common/atoms';
 import { AtomWrapper } from '../../test/jestTestFunctions';
 
 const defaultProps: Props = {
-  onUpdateCart: jest.fn(),
+  onUpdateCart: vi.fn(),
 };
 
 const user = userEvent.setup();
 
 const activeSearch: ActiveSearchQuery = getSearchFromUrl('project=test1');
+
+// Global timeout configured in vitest.config.ts
 describe('test the cart items component', () => {
   it('renders message that the cart is empty when no items are added', async () => {
     AtomWrapper.modifyAtomValue(AppStateKeys.userCart, []);
@@ -26,7 +29,7 @@ describe('test the cart items component', () => {
     // Check empty cart text renders
     const emptyCart = await screen.findByText('Your cart is empty');
     expect(emptyCart).toBeTruthy();
-  });
+  }, 120000);
 
   it('removes all items from the cart when confirming the popconfirm', async () => {
     customRender(<App searchQuery={activeSearch} />);
@@ -58,7 +61,7 @@ describe('test the cart items component', () => {
 
     // Expect cart to now be empty
     expect(await screen.findByText('Your cart is empty')).toBeTruthy();
-  });
+  }, 120000);
 
   it('handles selecting items in the cart and downloading them via wget', async () => {
     AtomWrapper.modifyAtomValue(AppStateKeys.userCart, []);
@@ -100,7 +103,7 @@ describe('test the cart items component', () => {
     });
     expect(downloadBtn).toBeTruthy();
     await user.click(downloadBtn);
-  });
+  }, 120000);
 
   it('handles error selecting items in the cart and downloading them via wget', async () => {
     // Override route HTTP response
@@ -127,5 +130,5 @@ describe('test the cart items component', () => {
         { exact: false }
       )
     ).toBeTruthy();
-  });
+  }, 120000);
 });

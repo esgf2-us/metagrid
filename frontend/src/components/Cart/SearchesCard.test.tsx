@@ -8,28 +8,31 @@ import SearchesCard, { Props } from './SearchesCard';
 import customRender from '../../test/custom-render';
 import { waitFor } from '@testing-library/react';
 import { stacSearchResultsFixture, stacAggregationsFixture } from '../../test/mock/fixtures';
+import { vi } from 'vitest';
+
+// hoist navigate mock for vi.mock (vitest hoists mocks)
+const mockNavigate = vi.fn();
+
+vi.mock(
+  'react-router',
+  async () =>
+    ({
+      ...(await vi.importActual('react-router')),
+      useNavigate: () => mockNavigate,
+    } as Record<string, unknown>),
+);
 
 const user = userEvent.setup();
 
 const defaultProps: Props = {
   searchQuery: userSearchQueryFixture(),
-  updateSearchQuery: jest.fn(),
-  onHandleRemoveSearchQuery: jest.fn(),
+  updateSearchQuery: vi.fn(),
+  onHandleRemoveSearchQuery: vi.fn(),
   index: 0,
 };
 
 beforeEach(() => {
-  const mockNavigate = jest.fn();
-  jest.mock(
-    'react-router',
-    () =>
-      ({
-        ...jest.requireActual('react-router'),
-        useNavigate: () => ({
-          push: mockNavigate,
-        }),
-      }) as Record<string, unknown>,
-  );
+  mockNavigate.mockClear();
 });
 
 it('renders components', async () => {
@@ -89,8 +92,8 @@ it('updates searchQuery with STAC numMatched when project is STAC', async () => 
     ),
   );
 
-  const mockUpdate = jest.fn();
-  const mockRemove = jest.fn();
+  const mockUpdate = vi.fn();
+  const mockRemove = vi.fn();
 
   // Create a search query that indicates a STAC project and forces re-fetch
   const baseQuery = userSearchQueryFixture();

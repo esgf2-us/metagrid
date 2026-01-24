@@ -40,6 +40,7 @@ import { Provider, useAtom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
 import { mockConfig } from '../test/jestTestFunctions';
 import { localStorageMock, sessionStorageMock, tempStorageGetMock } from '../test/mock/mockStorage';
+import { vi } from 'vitest';
 
 describe('Test objectIsEmpty', () => {
   it('returns true with empty object', () => {
@@ -281,21 +282,21 @@ describe('Test combineCarts', () => {
     id: 'firstResult',
     url: ['test1'],
     access: [],
-    isStac: false
+    isStac: false,
   };
   const secondResult: RawSearchResult = {
     key: undefined,
     id: 'secondResult',
     url: ['test2'],
     access: [],
-    isStac: false
+    isStac: false,
   };
   const thirdResult: RawSearchResult = {
     key: undefined,
     id: 'thirdResult',
     url: ['test3'],
     access: [],
-    isStac: false
+    isStac: false,
   };
   const emptySearchResults: RawSearchResults = [];
   const searchResults1: RawSearchResults = [firstResult, secondResult];
@@ -619,8 +620,8 @@ describe('Test cacheSearchResults, getCachedSearchResults, and clearCachedSearch
     expect(tempStorageGetMock('cachedSearchResults')).toBeTruthy();
 
     // Simulate time passing
-    jest.useFakeTimers();
-    jest.setSystemTime(Date.now() + 60 * 60 * 2000); // Move time forward by 2 hours
+    vi.useFakeTimers();
+    vi.setSystemTime(Date.now() + 60 * 60 * 2000); // Move time forward by 2 hours
     const cached = getCachedSearchResults();
     expect(cached).toEqual({});
 

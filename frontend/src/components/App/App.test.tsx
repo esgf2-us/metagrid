@@ -5,7 +5,7 @@
  * in order to mock their behaviors.
  *
  */
-import { fireEvent, within, screen } from '@testing-library/react';
+import { fireEvent, within, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import userEvent from '@testing-library/user-event';
 import { rest, server } from '../../test/mock/server';
@@ -17,8 +17,13 @@ import App from './App';
 import { activeSearch, AtomWrapper, submitKeywordSearch } from '../../test/jestTestFunctions';
 import { AppStateKeys } from '../../common/atoms';
 import { delay } from '../../common/joyrideTutorials/reactJoyrideSteps';
+import { vi } from 'vitest';
 
 const user = userEvent.setup();
+
+// Ensure this test file uses a longer timeout under Vitest
+// Global timeout configured in vitest.config.ts
+// per-test timeouts used for known slow tests (keep global defaults for others)
 
 describe('test main components', () => {
   it('renders App component', async () => {
@@ -32,9 +37,7 @@ describe('test main components', () => {
     expect(await screen.findByTestId('search')).toBeTruthy();
   });
 
-  it('renders an error page when window.METAGRID is undefined', async () => {
-
-  });
+  it('renders an error page when window.METAGRID is undefined', async () => {});
 
   it('renders App component with undefined search query', async () => {
     customRender(<App searchQuery={undefined as unknown as ActiveSearchQuery} />, {
@@ -72,11 +75,11 @@ describe('test main components', () => {
     // Check error message appears that input has already been applied
     const errorMsg = await screen.findByText(`Input "${input}" has already been applied`);
     expect(errorMsg).toBeTruthy();
-  });
+  }, 120000);
 
   // This test is currently skipped because the filename search feature was recently
   // removed. It can be re-enabled if the feature is re-introduced.
-  xit('handles setting filename searches and duplicates', async () => {
+  it.skip('handles setting filename searches and duplicates', async () => {
     customRender(<App searchQuery={activeSearch} />);
 
     // Check applicable components render
@@ -149,7 +152,7 @@ describe('test main components', () => {
 
     // Wait for components to rerender
     await screen.findByTestId('search');
-  });
+  }, 120000);
 
   it('handles applying general facets', async () => {
     customRender(<App searchQuery={activeSearch} />);
@@ -173,7 +176,7 @@ describe('test main components', () => {
     await screen.findByTestId('facets-form');
 
     await screen.findByTestId('search');
-  });
+  }, 120000);
 
   it('handles applying and removing project facets', async () => {
     customRender(<App searchQuery={activeSearch} />);
@@ -199,8 +202,11 @@ describe('test main components', () => {
     expect(facetFormSelect).toBeTruthy();
     fireEvent.mouseDown(facetFormSelect.firstElementChild as HTMLInputElement);
 
-    // Select the first facet option
-    const facetOption = await screen.findByTestId('data_node_aims3.llnl.gov');
+    // Select the first facet option (use waitFor to avoid timing/order flakiness)
+    const facetOption = await waitFor(
+      () => screen.getByTestId('data_node_aims3.llnl.gov'),
+      { timeout: 120000 },
+    );
     expect(facetOption).toBeTruthy();
     await userEvent.click(facetOption);
 
@@ -244,15 +250,15 @@ describe('test main components', () => {
 
     // Wait for component to rerender
     await screen.findByTestId('search');
-  });
+  }, 120000);
 
-  xit('fetches the data node status every defined interval', async () => {
-    jest.useFakeTimers();
+  it.skip('fetches the data node status every defined interval', async () => {
+    vi.useFakeTimers();
 
     customRender(<App searchQuery={activeSearch} />);
 
-    jest.advanceTimersByTime(295000);
-    jest.useRealTimers();
+    vi.advanceTimersByTime(295000);
+    vi.useRealTimers();
 
     // Check applicable components render
     const facetsComponent = await screen.findByTestId('search-facets');
@@ -340,7 +346,7 @@ describe('User cart', () => {
     // Check empty alert renders
     const emptyAlert = await screen.findByText('Your cart is empty');
     expect(emptyAlert).toBeTruthy();
-  });
+  }, 120000);
 
   it('handles anonymous user adding and removing items from cart', async () => {
     // Render component as anonymous
@@ -418,7 +424,7 @@ describe('User cart', () => {
     // Check empty alert renders
     const emptyAlert = await screen.findByText('Your cart is empty');
     expect(emptyAlert).toBeTruthy();
-  });
+  }, 120000);
 
   it('resets cart totals and selections to 0 when all items are removed', async () => {
     AtomWrapper.modifyAtomValue(AppStateKeys.userCart, []);
@@ -488,7 +494,7 @@ describe('User cart', () => {
     // Check empty alert renders
     const emptyAlert = await screen.findByText('Your cart is empty');
     expect(emptyAlert).toBeTruthy();
-  });
+  }, 120000);
 });
 
 describe('Error handling', () => {
@@ -562,7 +568,7 @@ describe('User search library', () => {
 
     // Wait for components to rerender
     await screen.findByTestId('search');
-  });
+  }, 120000);
 
   it('handles authenticated user removing searches from the search library', async () => {
     customRender(<App searchQuery={activeSearch} />, {
@@ -608,7 +614,7 @@ describe('User search library', () => {
     // Check removed message appears
     const removeText = await screen.findByText('Your search library is empty');
     expect(removeText).toBeTruthy();
-  });
+  }, 120000);
 
   it('handles anonymous user saving and applying searches', async () => {
     // Render component as anonymous
@@ -651,7 +657,7 @@ describe('User search library', () => {
 
     // Wait for components to rerender
     await screen.findByTestId('search-facets');
-  });
+  }, 120000);
 
   it('handles anonymous user removing searches from the search library', async () => {
     // Render component as anonymous
@@ -689,7 +695,7 @@ describe('User search library', () => {
     await userEvent.click(deleteBtn);
 
     await screen.findByTestId('cart');
-  });
+  }, 120000);
 
   it('handles anonymous user copying search to clipboard', async () => {
     customRender(<App searchQuery={activeSearch} />, { authenticated: false });
@@ -713,7 +719,7 @@ describe('User search library', () => {
     expect(copySearch).toBeTruthy();
 
     await userEvent.click(copySearch);
-  });
+  }, 120000);
 
   describe('Error handling', () => {
     it('displays error message after failing to fetch authenticated user"s saved search queries', async () => {
@@ -793,7 +799,7 @@ describe('User search library', () => {
 
       const errorMsg = await screen.findAllByText(apiRoutes.userSearch.handleErrorMsg(404));
       expect(errorMsg).toBeTruthy();
-    });
+    }, 120000);
   });
 });
 
@@ -818,7 +824,7 @@ describe('User support', () => {
     const closeBtn = await screen.findByText('Close Support');
 
     await userEvent.click(closeBtn);
-  });
+  }, 120000);
 });
 
 describe('Data node status page', () => {
@@ -837,7 +843,7 @@ describe('Data node status page', () => {
 
     const nodeStatusPage = await screen.findByTestId('node-status');
     expect(nodeStatusPage).toBeTruthy();
-  });
+  }, 120000);
 });
 
 describe('Theme switch', () => {
@@ -880,5 +886,5 @@ describe('Theme switch', () => {
 
     // Check if the light mode class is applied
     expect(navComponent).not.toHaveClass('dark-mode');
-  });
+  }, 120000);
 });

@@ -19,12 +19,6 @@ export const GlobusAuthProvider: React.FC<Props> = ({ children }) => {
     deferFn: fetchGlobusAuth as unknown as DeferFn<RawUserAuth>,
   });
 
-  /**
-   * Fetch the MetaGrid auth tokens with valid Globus access token.
-   *
-   * The runFetchGlobusUserAuth function is set to run approximately every 5 minutes
-   * to ensure the user does not encounter an expired token.
-   */
   React.useEffect(() => {
     runFetchGlobusAuth();
     const interval = setInterval(() => {
@@ -49,26 +43,17 @@ export const GlobusAuthProvider: React.FC<Props> = ({ children }) => {
 };
 
 export const KeycloakAuthProvider: React.FC<Props> = ({ children }) => {
-  // Keycloak instance
   const { keycloak } = useKeycloak();
 
-  // MetaGrid authenticated user tokens
   const { data: userAuth, run: runFetchUserAuth } = useAsync({
     deferFn: fetchUserAuth as unknown as DeferFn<RawUserAuth>,
   });
 
-  // MetaGrid authenticated user info
   const { data: userInfo, run: runFetchUserInfo } = useAsync({
     deferFn: fetchUserInfo as unknown as DeferFn<RawUserInfo>,
   });
 
-  /**
-   * Fetch the MetaGrid auth tokens with valid Keycloak access token.
-   *
-   * The runFetchUserAuth function is set to run approximately every 5 minutes
-   * to ensure the user does not encounter an expired token.
-   */
-  /* istanbul ignore next */
+  /* istanbul ignore start */
   React.useEffect(() => {
     if (keycloak.token) {
       runFetchUserAuth(keycloak.token);
@@ -79,17 +64,17 @@ export const KeycloakAuthProvider: React.FC<Props> = ({ children }) => {
     }
     return undefined;
   }, [runFetchUserAuth, keycloak.token]);
+  /* istanbul ignore end */
 
-  /**
-   * Fetch the authenticated user's information with valid MetaGrid access token.
-   */
+  /* istanbul ignore start */
   React.useEffect(() => {
-    /* istanbul ignore next */
     if (userAuth?.access_token) {
       userAuth.is_authenticated = true;
       runFetchUserInfo(userAuth.access_token);
     }
   }, [runFetchUserInfo, userAuth]);
+  /* istanbul ignore end */
+
   return (
     <AuthContext.Provider
       value={{

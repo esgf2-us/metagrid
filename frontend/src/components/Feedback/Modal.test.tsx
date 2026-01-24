@@ -5,7 +5,7 @@ import customRender from '../../test/custom-render';
 
 it('renders the component', async () => {
   customRender(
-    <Modal onClose={jest.fn} open closeText="Close Text">
+    <Modal onClose={vi.fn()} open closeText="Close Text">
       <p>Test text</p>
     </Modal>
   );

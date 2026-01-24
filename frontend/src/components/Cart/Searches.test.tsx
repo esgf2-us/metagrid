@@ -10,7 +10,7 @@ import { UserSearchQueries } from './types';
 import { localStorageMock } from '../../test/mock/mockStorage';
 
 afterEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 it('renders component with empty savedSearches', async () => {

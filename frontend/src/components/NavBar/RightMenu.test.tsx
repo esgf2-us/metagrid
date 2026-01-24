@@ -16,6 +16,7 @@ import {
 } from '../../test/mock/fixtures';
 import App from '../App/App';
 import { AppStateKeys } from '../../common/atoms';
+import { vi } from 'vitest';
 
 const user = userEvent.setup();
 
@@ -23,8 +24,8 @@ const rightMenuProps: Props = {
   mode: 'horizontal',
 };
 
-jest.mock('@react-keycloak/web', () => {
-  const originalModule = jest.requireActual('@react-keycloak/web');
+vi.mock('@react-keycloak/web', async () => {
+  const originalModule = await vi.importActual('@react-keycloak/web');
 
   return {
     ...originalModule,
@@ -71,8 +72,8 @@ it('display the users given name after authentication with keycloak', async () =
 
   tempStorageSetMock('keycloakFixture', {
     keycloak: {
-      login: jest.fn(),
-      logout: jest.fn(),
+      login: vi.fn(),
+      logout: vi.fn(),
       idTokenParsed: { given_name: 'John Doe', email: 'johnd@email.gov' },
     },
   });
@@ -93,8 +94,8 @@ it('display the users email after authentication if they did not provide a name 
 
   tempStorageSetMock('keycloakFixture', {
     keycloak: {
-      login: jest.fn(),
-      logout: jest.fn(),
+      login: vi.fn(),
+      logout: vi.fn(),
       idTokenParsed: { email: 'johnd@email.gov' },
     },
   });
@@ -297,9 +298,8 @@ describe('Dark Mode', () => {
     AtomWrapper.modifyAtomValue(AppStateKeys.isDarkMode, undefined);
     customRender(<RightMenu {...rightMenuProps} />, { usesAtoms: true });
 
-    waitFor(() => {
-      expect(screen.findByTestId('isDarkModeSwitch')).toBeChecked(); // Dark mode should be enabled
-    });
+    const switchEl = await screen.findByTestId('isDarkModeSwitch');
+    expect(switchEl).toBeChecked(); // Dark mode should be enabled
   });
 
   it('respects (prefers-color-scheme: light) when no user preference is set', async () => {
@@ -309,9 +309,8 @@ describe('Dark Mode', () => {
     AtomWrapper.modifyAtomValue(AppStateKeys.isDarkMode, undefined);
     customRender(<RightMenu {...rightMenuProps} />, { usesAtoms: true });
 
-    waitFor(() => {
-      expect(screen.findByTestId('isDarkModeSwitch')).toBeChecked(); // Dark mode should be enabled
-    });
+    const switchEl = await screen.findByTestId('isDarkModeSwitch');
+    expect(switchEl).toBeChecked(); // Dark mode should be enabled
   });
 });
 

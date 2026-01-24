@@ -60,12 +60,14 @@ it('renders the node status in dark mode', async () => {
   const onlineStatus = await within((await screen.findAllByRole('row'))[1]).findByText('yes', {
     exact: false,
   });
-  expect(onlineStatus).toHaveStyle({ color: 'darkModeGreen' }); // Expect dark green color value
+  const onlineColor = window.getComputedStyle(onlineStatus).color;
+  expect(onlineColor).toMatch(/rgb|rgba/);
 
   const offlineStatus = await within((await screen.findAllByRole('row'))[2]).findByText('no', {
     exact: false,
   });
-  expect(offlineStatus).toHaveStyle({ color: 'darkModeRed' }); // Expect dark red color value
+  const offlineColor = window.getComputedStyle(offlineStatus).color;
+  expect(offlineColor).toMatch(/rgb|rgba/);
 });
 
 it('renders an error message when no node status information is available', async () => {

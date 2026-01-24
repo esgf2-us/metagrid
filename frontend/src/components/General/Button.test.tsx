@@ -15,7 +15,7 @@ it('renders component', async () => {
 });
 
 it('returns string "clicked" onClick', async () => {
-  customRender(<Button type="primary" onClick={jest.fn()}></Button>);
+  customRender(<Button type="primary" onClick={vi.fn()}></Button>);
 
   // Click on the button
   const button = await screen.findByRole('button');

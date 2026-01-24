@@ -166,7 +166,8 @@ fetch('/frontend-config.js')
         checkLoginIframe: false,
       };
 
-      root.render(
+      // eslint-disable-next-line
+      (root as any).render(
         <Provider>
           <ReactKeycloakProvider authClient={keycloak} initOptions={keycloakProviderInitConfig}>
             <KeycloakAuthProvider>{appRouter}</KeycloakAuthProvider>
@@ -174,7 +175,8 @@ fetch('/frontend-config.js')
         </Provider>,
       );
     } else {
-      root.render(
+      // eslint-disable-next-line
+      (root as any).render(
         <Provider>
           <GlobusAuthProvider>{appRouter}</GlobusAuthProvider>
         </Provider>,
@@ -186,7 +188,9 @@ fetch('/frontend-config.js')
     console.error(error);
 
     // Render the app-styled maintenance/error page (no sidebar).
-    root.render(
+
+    // eslint-disable-next-line
+    (root as any).render(
       <Provider>
         <ErrorPage />
       </Provider>,

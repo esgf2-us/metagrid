@@ -8,7 +8,7 @@ const user = userEvent.setup();
 
 it('renders component with onClose prop', async () => {
   customRender(
-    <Tag value="foo" type="filenameVar" onClose={jest.fn()}>
+    <Tag value="foo" type="filenameVar" onClose={vi.fn()}>
       tag
     </Tag>
   );

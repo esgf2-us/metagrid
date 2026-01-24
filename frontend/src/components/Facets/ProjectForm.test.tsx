@@ -12,7 +12,7 @@ const defaultProps: Props = {
   projectsFetched: { results: projectsFixture() },
   apiIsLoading: false,
   apiError: undefined,
-  onFinish: jest.fn(),
+  onFinish: vi.fn(),
 };
 
 const user = userEvent.setup();
