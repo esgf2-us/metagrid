@@ -1,0 +1,185 @@
+suite: test backend deployment
+templates:
+  - templates/backend/configmap.yaml
+  - templates/backend/secret.yaml
+  - templates/backend/deployment.yaml
+release:
+  name: metagrid
+  namespace: production
+chart:
+  version: v1.0.0
+  appVersion: v1.0.0
+set:
+  django:
+    secretKey: abcd1234 # need static for checksum
+tests:
+  - it: should have a deployment
+    template: templates/backend/deployment.yaml
+    asserts:
+      - matchSnapshot: {}
+  - it: should set replicas
+    template: templates/backend/deployment.yaml
+    set:
+      backend:
+        replicaCount: 20
+    asserts:
+      - equal:
+          path: spec.replicas
+          value: 20
+  - it: should append pod annotations and labels
+    template: templates/backend/deployment.yaml
+    set:
+      backend:
+        podAnnotations:
+          datacenter/rack: 10
+        podLabels:
+          router/direction: egress
+    asserts:
+      - isSubset:
+          path: spec.template.metadata.annotations
+          content:
+            datacenter/rack: 10
+      - isSubset:
+          path: spec.template.metadata.labels
+          content:
+            router/direction: egress
+  - it: should add imagePullSecrets
+    template: templates/backend/deployment.yaml
+    set:
+      backend:
+        imagePullSecrets:
+          - name: harbor
+    asserts:
+      - contains:
+          path: spec.template.spec.imagePullSecrets
+          content:
+            name: harbor
+  - it: should set securityContext
+    template: templates/backend/deployment.yaml
+    set:
+      backend:
+        securityContext:
+          allowPrivilegeEscalation: false
+        podSecurityContext:
+          runAsUser: 100
+          runAsGroup: 99
+    asserts:
+      - isSubset:
+          path: spec.template.spec.securityContext
+          content:
+            runAsUser: 100
+            runAsGroup: 99
+      - isSubset:
+          path: spec.template.spec.containers[0].securityContext
+          content:
+            allowPrivilegeEscalation: false
+  - it: should set backend image
+    template: templates/backend/deployment.yaml
+    set:
+      backend:
+        image:
+          repository: ghcr.io/neworg/metagrid
+          tag: v10.0.0
+          pullPolicy: Always
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: ghcr.io/neworg/metagrid:v10.0.0
+      - equal:
+          path: spec.template.spec.containers[0].imagePullPolicy
+          value: Always
+  - it: should set resources
+    template: templates/backend/deployment.yaml
+    set:
+      backend:
+        resources:
+          requests:
+            cpu: 1
+          limit:
+            cpu: 2
+    asserts:
+      - isSubset:
+          path: spec.template.spec.containers[0].resources
+          content:
+            requests:
+              cpu: 1
+            limit:
+              cpu: 2
+  - it: should set volume and volumeMounts
+    template: templates/backend/deployment.yaml
+    set:
+      backend:
+        volumeMounts:
+          - name: config
+            mountPath: /config
+        volumes:
+          - name: config
+            configMap:
+              name: test-config
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: config
+            mountPath: /config
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: config
+            configMap:
+              name: test-config
+  - it: should set nodeSelector
+    template: templates/backend/deployment.yaml
+    set:
+      backend:
+        nodeSelector:
+          datacenter/rack: 10
+    asserts:
+      - isSubset:
+          path: spec.template.spec.nodeSelector
+          content:
+            datacenter/rack: 10
+  - it: should set affinity
+    template: templates/backend/deployment.yaml
+    set:
+      backend:
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: topology.kubernetes.io/zone
+                  operator: In
+                  values:
+                  - antarctica-east1
+                  - antarctica-west1
+    asserts:
+      - isSubset:
+          path: spec.template.spec.affinity
+          content:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                - matchExpressions:
+                  - key: topology.kubernetes.io/zone
+                    operator: In
+                    values:
+                    - antarctica-east1
+                    - antarctica-west1
+  - it: should set tolerations
+    template: templates/backend/deployment.yaml
+    set:
+      backend:
+        tolerations:
+          - key: "datacenter/rack"
+            operator: "Equal"
+            value: "10"
+            effect: "NoExecute"
+    asserts:
+      - contains:
+          path: spec.template.spec.tolerations
+          content:
+            key: "datacenter/rack"
+            operator: "Equal"
+            value: "10"
+            effect: "NoExecute"

@@ -1,0 +1,87 @@
+should have a deployment:
+  1: |
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      labels:
+        app.kubernetes.io/component: node-status-backend
+        app.kubernetes.io/instance: metagrid
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: metagrid
+        app.kubernetes.io/version: v1.0.0
+        helm.sh/chart: metagrid-v1.0.0
+      name: metagrid-node-status-backend
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app.kubernetes.io/component: node-status-backend
+          app.kubernetes.io/instance: metagrid
+          app.kubernetes.io/name: metagrid
+      template:
+        metadata:
+          annotations:
+            checksum/config: baee65a30c2f85612b023bf8c5675dc00e312504d1fd4a208774fdb1c2694a64
+          labels:
+            app.kubernetes.io/component: node-status-backend
+            app.kubernetes.io/instance: metagrid
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: metagrid
+            app.kubernetes.io/version: v1.0.0
+            helm.sh/chart: metagrid-v1.0.0
+        spec:
+          containers:
+            - image: quay.io/prometheus/prometheus:latest
+              imagePullPolicy: IfNotPresent
+              livenessProbe:
+                httpGet:
+                  path: /-/healthy
+                  port: http
+                  scheme: HTTP
+              name: prometheus
+              ports:
+                - containerPort: 9090
+                  name: http
+                  protocol: TCP
+              readinessProbe:
+                httpGet:
+                  path: /-/ready
+                  port: http
+                  scheme: HTTP
+              resources: {}
+              securityContext: {}
+              volumeMounts:
+                - mountPath: /etc/prometheus/prometheus.yml
+                  name: config-volume
+                  subPath: prometheus.yml
+                - mountPath: /etc/prometheus/esgf_node_status_targets.yml
+                  name: config-volume
+                  subPath: esgf_node_status_targets.yml
+                - mountPath: /prometheus
+                  name: prom-data
+            - image: quay.io/prometheus/blackbox-exporter:latest
+              imagePullPolicy: IfNotPresent
+              livenessProbe:
+                failureThreshold: 3
+                httpGet:
+                  path: /-/healthy
+                  port: blackbox-http
+              name: blackbox
+              ports:
+                - containerPort: 9115
+                  name: blackbox-http
+                  protocol: TCP
+              readinessProbe:
+                httpGet:
+                  path: /-/healthy
+                  port: blackbox-http
+              resources: {}
+              securityContext: {}
+          securityContext: {}
+          serviceAccountName: metagrid-node-status-backend
+          volumes:
+            - configMap:
+                name: metagrid-node-status-backend-config
+              name: config-volume
+            - emptyDir: {}
+              name: prom-data

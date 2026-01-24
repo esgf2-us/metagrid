@@ -16,7 +16,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/backend/secret.yaml") . | sha256sum }}
+        checksum/config: {{ list (include (print $.Template.BasePath "/backend/secret.yaml") .) (include (print $.Template.BasePath "/backend/configmap.yaml") .) | join "_" | sha256sum }}
       {{- with .Values.backend.podAnnotations }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -51,7 +51,14 @@ spec:
             fieldRef:
               fieldPath: status.podIP
         - name: DJANGO_ALLOWED_HOSTS
-          value: '["localhost", "$(THIS_POD_IP)", "{{ .Values.ingress.host }}", "{{ .Values.ingress.additionalAllowedHost }}"]'
+          {{- $hosts := list "localhost" "$(THIS_POD_IP)" }}
+          {{- if .Values.ingress.host }}
+            {{- $hosts = append $hosts .Values.ingress.host }}
+          {{- end }}
+          {{- range $host := .Values.ingress.additionalHosts }}
+            {{- $hosts = append $hosts $host }}
+          {{- end }}
+          value: {{ toJson $hosts | quote }}
         ports:
         - name: http
           containerPort: {{ .Values.backend.service.port }}
