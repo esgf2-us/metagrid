@@ -68,7 +68,7 @@ import Banner from '../Messaging/Banner';
 const useHotjar = (): void => {
   if (window.METAGRID.HOTJAR_ID != null && window.METAGRID.HOTJAR_SV != null) {
     React.useEffect(() => {
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       hotjar.initialize({
         id: Number(window.METAGRID.HOTJAR_ID),
         sv: Number(window.METAGRID.HOTJAR_SV),
@@ -142,7 +142,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
         .then((rawUserSearches) => {
           const databaseItems = rawUserSearches.results;
           const searchQueriesToAdd = unsavedLocalSearches(databaseItems, userSearchQueries);
-          /* istanbul ignore next */
+          /* istanbul ignore next -- @preserve */
           searchQueriesToAdd.forEach((query) => {
             addUserSearchQuery(pk, accessToken, query);
           });
@@ -189,14 +189,14 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
           const rawProj: RawProject | undefined = data.results.find((proj) => {
             return proj.name.toLowerCase() === (projectName as string).toLowerCase();
           });
-          /* istanbul ignore next */
+          /* istanbul ignore next -- @preserve */
           if (rawProj) {
             setActiveSearchQuery({ ...searchQuery, project: rawProj });
           }
         }
       })
       .catch(
-        /* istanbul ignore next */
+        /* istanbul ignore next -- @preserve */
         (error: ResponseError) => {
           showError(messageApi, error.message);
         },

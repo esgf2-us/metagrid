@@ -46,23 +46,23 @@ export async function showNotice(
   switch (config?.type) {
     case 'success':
       await msgApi.success(msgConfig);
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       return;
     case 'warning':
       await msgApi.warning(msgConfig);
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       return;
     case 'error':
       await msgApi.error(msgConfig);
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       return;
     case 'info':
       await msgApi.info(msgConfig);
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       return;
     default:
       await msgApi.info(msgConfig);
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       break;
   }
 }
@@ -116,7 +116,7 @@ export async function showError(
 ): Promise<void> {
   let msg = errorMsg;
 
-  /* istanbul ignore next */
+  /* istanbul ignore next -- @preserve */
   if (!errorMsg || errorMsg === '') {
     msg = 'An unknown error has occurred.';
   }

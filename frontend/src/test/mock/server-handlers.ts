@@ -150,7 +150,7 @@ const handlers = [
           ),
         );
       }
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       if (citationUrl === 'citation_b') {
         return res(
           ctx.status(200),

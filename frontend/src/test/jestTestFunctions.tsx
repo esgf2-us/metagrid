@@ -97,23 +97,23 @@ export async function showNoticeStatic(
   switch (config?.type) {
     case 'success':
       await message.success(msgConfig);
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       return;
     case 'warning':
       await message.warning(msgConfig);
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       return;
     case 'error':
       await message.error(msgConfig);
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       return;
     case 'info':
       await message.info(msgConfig);
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       return;
     default:
       await message.info(msgConfig);
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       break;
   }
 }

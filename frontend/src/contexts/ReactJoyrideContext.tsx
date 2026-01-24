@@ -1,4 +1,3 @@
-/* istanbul ignore file */
 import React from 'react';
 import Joyride, { ACTIONS, CallBackProps, EVENTS, STATUS } from 'react-joyride';
 import { useNavigate } from 'react-router';
@@ -16,6 +15,7 @@ export type RawTourState = {
   startSpecificTour: (tour: JoyrideTour) => void;
 };
 
+/* istanbul ignore next -- @preserve */
 const emptyTour = {
   getTour: new JoyrideTour('Empty Tour'),
   setTour: () => {},
@@ -38,6 +38,7 @@ export const ReactJoyrideProvider: React.FC<React.PropsWithChildren<Props>> = ({
 
   const isDarkMode = useAtomValue<boolean>(isDarkModeAtom);
 
+  /* istanbul ignore next -- @preserve */
   const nextStep = (index: number): void => {
     const stepCount = getTour.getSteps().length;
     try {
@@ -50,6 +51,7 @@ export const ReactJoyrideProvider: React.FC<React.PropsWithChildren<Props>> = ({
     }
   };
 
+  /* istanbul ignore next -- @preserve */
   const previousStep = (index: number): void => {
     try {
       if (index >= 0) {
@@ -61,6 +63,7 @@ export const ReactJoyrideProvider: React.FC<React.PropsWithChildren<Props>> = ({
     }
   };
 
+  /* istanbul ignore next -- @preserve */
   const handleJoyrideCallback = async (data: CallBackProps): Promise<void> => {
     const { status, index, type, action } = data;
     const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
@@ -84,6 +87,7 @@ export const ReactJoyrideProvider: React.FC<React.PropsWithChildren<Props>> = ({
     }
   };
 
+  /* istanbul ignore else -- @preserve */
   const startTour = (): void => {
     if (getTour) {
       setStepIndex(0);
@@ -91,6 +95,7 @@ export const ReactJoyrideProvider: React.FC<React.PropsWithChildren<Props>> = ({
     setRunning(true);
   };
 
+  /* istanbul ignore next -- @preserve */
   const setCurrentAppPage = (page: AppPage): void => {
     if (getCurrentAppPage() !== page) {
       setTimeout(() => {

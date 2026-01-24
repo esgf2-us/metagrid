@@ -1,7 +1,6 @@
 import { vi } from 'vitest';
 
 // Early setup for Vitest: provide lightweight mocks
-// Global test timeout is configured via `vitest.config.ts`.
 
 // Provide a simple clipboard mock to avoid per-test duplication
 if (typeof navigator !== 'undefined') {

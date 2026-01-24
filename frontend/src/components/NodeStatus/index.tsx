@@ -30,9 +30,9 @@ const NodeStatus: React.FC<React.PropsWithChildren<Props>> = ({ apiError, isLoad
   let offlineCol = lightModeRed;
 
   if (isDarkMode) {
-    /* istanbul ignore next */
+    /* istanbul ignore next -- @preserve */
     onlineCol = darkModeGreen;
-    /* istanbul ignore next */
+    /* istanbul ignore next -- @preserve */
     offlineCol = darkModeRed;
   }
 

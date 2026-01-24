@@ -145,12 +145,12 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     content: '',
 
     onCancelAction:
-      // istanbul ignore next
+      // istanbul ignore next -- @preserve
       () => {
         setAlertPopupState({ ...alertPopupState, show: false });
       },
     onOkAction:
-      // istanbul ignore next
+      // istanbul ignore next -- @preserve
       () => {
         setAlertPopupState({ ...alertPopupState, show: false });
       },

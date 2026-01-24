@@ -68,7 +68,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
         type="text"
         icon={<UserOutlined style={{ fontSize: '18px', margin: 0 }} />}
         onClick={
-          /* istanbul ignore next */ () => {
+          /* istanbul ignore next -- @preserve */ () => {
             keycloak.login();
           }
         }
@@ -80,7 +80,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
       <Button
         type="text"
         onClick={
-          /* istanbul ignore next */ () => {
+          /* istanbul ignore next -- @preserve */ () => {
             keycloak.logout();
           }
         }

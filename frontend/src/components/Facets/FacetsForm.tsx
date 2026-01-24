@@ -97,7 +97,7 @@ export const generateStacFacetOptions = (
 
     // If the option output name is very long, use a tooltip
     const varLength = variable.toString().length;
-    /* istanbul ignore next */
+    /* istanbul ignore next -- @preserve */
     if (varLength >= maxItemLength) {
       const innerTitle = variable[0].substring(0, maxItemLength - varLength);
       optionOutput = (
@@ -119,13 +119,13 @@ export const generateFacetOptions = (
   facet: string,
   facetOptions: [string, number][] | string[],
 ): { key: string; value: string; label: JSX.Element }[] => {
-  /* istanbul ignore next */
+  /* istanbul ignore next -- @preserve */
   if (facetOptions.length > 0 && typeof facetOptions[0] === 'string') {
     return generateStacFacetOptions(facet, facetOptions as string[]);
   }
 
   return facetOptions.map((variable) => {
-    /* istanbul ignore next */
+    /* istanbul ignore next -- @preserve */
     if (typeof variable[0] !== 'string') {
       clearCachedSearchResults();
     }
@@ -139,7 +139,7 @@ export const generateFacetOptions = (
     // If the option output name is very long, use a tooltip
     const vLength = variable[0].length - 2;
     const cLength = variable[1].toString().length * 1.5 + 2;
-    /* istanbul ignore next */
+    /* istanbul ignore next -- @preserve */
     if (vLength > maxItemLength - cLength) {
       const innerTitle = variable[0].substring(0, maxItemLength - cLength);
       optionOutput = (
@@ -359,11 +359,11 @@ const FacetsForm: React.FC = () => {
   }, [dropdownIsOpen, activeDropdownValue, setActiveDropdownValue]);
 
   function getLongestStringLengthReduce(arr: [string, number][]): number {
-    /* istanbul ignore next */
+    /* istanbul ignore next -- @preserve */
     if (arr.length === 0) {
       return 0; // Handle empty array case
     }
-    /* istanbul ignore next */
+    /* istanbul ignore next -- @preserve */
     return arr.reduce((maxLength, currentString) => {
       if (currentString[0] === undefined || currentString[1] === undefined) {
         return maxLength;

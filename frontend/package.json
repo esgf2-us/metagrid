@@ -25,36 +25,11 @@
     ]
   },
   "eslintConfig": {
-    "extends": "react-app",
-    "eslintIgnore": [
-      "src/test/**",
-      "src/**/*.test.ts",
-      "src/**/*.test.tsx"
+    "extends": [
+      "react-app",
+      "airbnb",
+      "@kesills/airbnb-typescript"
     ]
-  },
-  "vitest": {
-    "test": {
-      "environment": "jsdom",
-      "timeout": 120000,
-      "globals": true,
-      "setupFiles": [
-        "src/vitest.setup.global.ts",
-        "src/setupTests.ts"
-      ],
-      "coverage": {
-        "provider": "v8",
-        "reporter": [
-          "text",
-          "lcov"
-        ],
-        "exclude": [
-          "src/index.tsx",
-          "src/test/**",
-          "src/assets",
-          "**/lib/**"
-        ]
-      }
-    }
   },
   "dependencies": {
     "@ant-design/icons": "6.0.0",
@@ -81,10 +56,11 @@
     "react-markdown": "10.1.0",
     "react-router": "7.6.0",
     "setimmediate": "1.0.5",
-    "typescript": "5.8.3",
+    "typescript": "5.7.3",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@kesills/eslint-config-airbnb-typescript": "^20.0.0",
     "@swc/core": "^1.11.24",
     "@testing-library/dom": "10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
@@ -97,14 +73,13 @@
     "@types/react": "18.2.0",
     "@types/react-dom": "18.2.0",
     "@types/uuid": "9.0.8",
-    "@typescript-eslint/eslint-plugin": "8.33.0",
-    "@typescript-eslint/parser": "8.33.0",
+    "@typescript-eslint/eslint-plugin": "8.20.0",
+    "@typescript-eslint/parser": "8.20.0",
     "@vitejs/plugin-react": "^4.4.1",
     "@vitest/coverage-istanbul": "^4.0.18",
     "cross-fetch": "^4.1.0",
     "eslint": "8.57.1",
-    "eslint-config-airbnb": "18.0.0",
-    "eslint-config-airbnb-typescript": "18.0.0",
+    "eslint-config-airbnb": "19.0.4",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-import": "2.29.1",
     "eslint-plugin-jsx-a11y": "6.10.2",

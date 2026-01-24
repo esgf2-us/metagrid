@@ -57,7 +57,7 @@ const StartPopup: React.FC<React.PropsWithChildren<unknown>> = () => {
   };
 
   const showMessage = (msgId: string): void => {
-    /* istanbul ignore next */
+    /* istanbul ignore next -- @preserve */
     const actions: MessageActions = {
       close: hideMessage,
       viewChanges: (): void => showMessage(startData.messageToShow),

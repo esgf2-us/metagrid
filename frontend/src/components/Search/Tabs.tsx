@@ -33,7 +33,7 @@ export type QualityFlagProps = { index: string; color: string };
 
 export const QualityFlag: React.FC<
   React.PropsWithChildren<QualityFlagProps>
-> = /* istanbul ignore next */ ({ index, color }) => (
+> = /* istanbul ignore next -- @preserve */ ({ index, color }) => (
   <div
     data-testid={`qualityFlag${index}`}
     style={{ ...styles.flagColorBox, backgroundColor: color }}
@@ -246,7 +246,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
             }))}
             placeholder="Lookup a key..."
             filterOption={
-              /* istanbul ignore next */ (inputValue, option) => {
+              /* istanbul ignore next -- @preserve */ (inputValue, option) => {
                 return option?.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1;
               }
             }

@@ -203,10 +203,7 @@ describe('test main components', () => {
     fireEvent.mouseDown(facetFormSelect.firstElementChild as HTMLInputElement);
 
     // Select the first facet option (use waitFor to avoid timing/order flakiness)
-    const facetOption = await waitFor(
-      () => screen.getByTestId('data_node_aims3.llnl.gov'),
-      { timeout: 120000 },
-    );
+    const facetOption = await screen.findByTestId('data_node_aims3.llnl.gov');
     expect(facetOption).toBeTruthy();
     await userEvent.click(facetOption);
 
