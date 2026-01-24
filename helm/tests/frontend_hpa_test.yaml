@@ -1,0 +1,25 @@
+suite: test frontend hpa
+templates:
+  - templates/frontend/hpa.yaml
+release:
+  name: metagrid
+  namespace: production
+chart:
+  version: v1.0.0
+  appVersion: v1.0.0
+set:
+  django:
+    secretKey: abcd1234 # need static for checksum
+tests:
+  - it: should create horizontal pod autoscaler
+    template: templates/frontend/hpa.yaml
+    set:
+      frontend:
+        autoscaling:
+          enabled: true
+          minReplicas: 2
+          maxReplicas: 10
+          targetCPUUtilizationPercentage: 45
+          targetMemoryUtilizationPercentage: 500Mi
+    asserts:
+      - matchSnapshot: {}
