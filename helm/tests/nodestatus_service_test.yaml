@@ -1,0 +1,37 @@
+suite: test node_status service
+templates:
+  - templates/node_status/service.yaml
+release:
+  name: metagrid
+  namespace: production
+chart:
+  version: v1.0.0
+  appVersion: v1.0.0
+set:
+  django:
+    secretKey: abcd1234 # need static for checksum
+  nodeStatusBackend:
+    enabled: true
+tests:
+  - it: should create a default service
+    template: templates/node_status/service.yaml
+    asserts:
+      - matchSnapshot: {}
+  - it: should create a service
+    template: templates/node_status/service.yaml
+    set:
+      nodeStatusBackend:
+        service:
+          type: LoadBalancer
+          port: 1111
+    asserts:
+      - equal:
+          path: spec.type
+          value: LoadBalancer
+      - contains:
+          path: spec.ports
+          content:
+            name: http
+            port: 1111
+            protocol: TCP
+            targetPort: http

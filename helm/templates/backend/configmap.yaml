@@ -16,7 +16,7 @@ data:
   METAGRID_WGET_URL: {{ .Values.wget.url }}
   {{- end }}
   METAGRID_DATA_UPLOAD_MAX_NUMBER_FIELDS: {{ .Values.wget.uploadMaxFields | quote }}
-  METAGRID_GLOBUS_PUBLIX_INDEX_ENDPOINT_ID: {{ .Values.wget.globusPublixIndex | quote }}
+  METAGRID_GLOBUS_PUBLIC_INDEX_ENDPOINT_ID: {{ .Values.wget.globusPublicIndex | quote }}
   METAGRID_WGET_SCRIPT_FILE_DEFAULT_LIMIT: {{ .Values.wget.limit.default | quote }}
   METAGRID_WGET_SCRIPT_FILE_MAX_LIMIT: {{ .Values.wget.limit.max | quote }}
   METAGRID_WGET_MAX_DIR_LENGTH: {{ .Values.wget.maxDirLength | quote }}

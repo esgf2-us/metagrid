@@ -1,0 +1,270 @@
+should create a configmap:
+  1: |
+    apiVersion: v1
+    data:
+      DJANGO_GUNICORN_WORKERS: "10"
+      METAGRID_BANNER_TEXT: |
+        this is a message for users
+      METAGRID_DATA_UPLOAD_MAX_NUMBER_FIELDS: "10"
+      METAGRID_FOOTER_TEXT: |
+        Footer text, check out this markdown [link](https://esgf.neworg.io)
+      METAGRID_GLOBUS_NODES: '["esgf.neworg.io"]'
+      METAGRID_GLOBUS_PUBLIC_INDEX_ENDPOINT_ID: abcd1234
+      METAGRID_SEARCH_URL: https://esgf.neworg.io/bridge
+      METAGRID_STAC_URL: https://esgf.neworg.io/stac
+      METAGRID_SUPPORT_INFO: |
+        Contact <name> (<email>)
+      METAGRID_WGET_MAX_DIR_LENGTH: "20"
+      METAGRID_WGET_SCRIPT_FILE_DEFAULT_LIMIT: "2"
+      METAGRID_WGET_SCRIPT_FILE_MAX_LIMIT: "20"
+      METAGRID_WGET_URL: https://wget.neworg.io
+    kind: ConfigMap
+    metadata:
+      labels:
+        app.kubernetes.io/component: backend
+        app.kubernetes.io/instance: metagrid
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: metagrid
+        app.kubernetes.io/version: v1.0.0
+        helm.sh/chart: metagrid-v1.0.0
+      name: metagrid
+should create a default configmap:
+  1: |
+    apiVersion: v1
+    data:
+      DJANGO_GUNICORN_WORKERS: "2"
+      METAGRID_DATA_UPLOAD_MAX_NUMBER_FIELDS: "1024"
+      METAGRID_GLOBUS_NODES: '["esgf-node.ornl.gov","eagle.alcf.anl.gov","esgf-data.nersc.gov"]'
+      METAGRID_GLOBUS_PUBLIC_INDEX_ENDPOINT_ID: a8ef4320-9e5a-4793-837b-c45161ca1845
+      METAGRID_SEARCH_URL: https://esgf-node.ornl.gov/esgf-1-5-bridge
+      METAGRID_WGET_MAX_DIR_LENGTH: "50"
+      METAGRID_WGET_SCRIPT_FILE_DEFAULT_LIMIT: "9999"
+      METAGRID_WGET_SCRIPT_FILE_MAX_LIMIT: "100000"
+    kind: ConfigMap
+    metadata:
+      labels:
+        app.kubernetes.io/component: backend
+        app.kubernetes.io/instance: metagrid
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: metagrid
+        app.kubernetes.io/version: v1.0.0
+        helm.sh/chart: metagrid-v1.0.0
+      name: metagrid
+should create a default secret:
+  1: |
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      labels:
+        app.kubernetes.io/component: backend
+        app.kubernetes.io/instance: metagrid
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: metagrid
+        app.kubernetes.io/version: v1.0.0
+        helm.sh/chart: metagrid-v1.0.0
+      name: metagrid
+    stringData:
+      DATABASE_URL: postgresql://postgres:postgres@metagrid-postgresql.production.svc:5432/postgres
+      DJANGO_SECRET_KEY: abcd1234
+      METAGRID_AUTHENTICATION_METHOD: globus
+      METAGRID_SOCIAL_AUTH_GLOBUS_KEY: null
+      METAGRID_SOCIAL_AUTH_GLOBUS_SECRET: null
+should create a default service:
+  1: |
+    apiVersion: v1
+    kind: Service
+    metadata:
+      labels:
+        app.kubernetes.io/component: backend
+        app.kubernetes.io/instance: metagrid
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: metagrid
+        app.kubernetes.io/version: v1.0.0
+        helm.sh/chart: metagrid-v1.0.0
+      name: metagrid-backend
+    spec:
+      ports:
+        - name: http
+          port: 5000
+          protocol: TCP
+          targetPort: http
+      selector:
+        app.kubernetes.io/component: backend
+        app.kubernetes.io/instance: metagrid
+        app.kubernetes.io/name: metagrid
+      type: ClusterIP
+should create a job to create django super user:
+  1: |
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      annotations:
+        helm.sh/hook: post-install
+        helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+        helm.sh/hook-weight: "-5"
+      labels:
+        app.kubernetes.io/component: migrate-job
+        app.kubernetes.io/instance: metagrid
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: metagrid
+        app.kubernetes.io/version: v1.0.0
+        helm.sh/chart: metagrid-v1.0.0
+      name: metagrid-create-django-superuser
+    spec:
+      backoffLimit: 4
+      template:
+        spec:
+          containers:
+            - args:
+                - python manage.py createsuperuser --noinput
+              command:
+                - /bin/bash
+                - -c
+              envFrom:
+                - configMapRef:
+                    name: metagrid
+                - secretRef:
+                    name: metagrid
+              image: ghcr.io/esgf2-us/metagrid-backend:v1.0.0
+              imagePullPolicy: IfNotPresent
+              name: migrations
+              resources: {}
+              securityContext: {}
+          restartPolicy: OnFailure
+          securityContext: {}
+          serviceAccountName: metagrid-backend
+should create a secret:
+  1: |
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      labels:
+        app.kubernetes.io/component: backend
+        app.kubernetes.io/instance: metagrid
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: metagrid
+        app.kubernetes.io/version: v1.0.0
+        helm.sh/chart: metagrid-v1.0.0
+      name: metagrid
+    stringData:
+      DATABASE_URL: postgresql://postgres:postgres@metagrid-postgresql.production.svc:5432/postgres
+      DJANGO_SECRET_KEY: abcd1234
+      METAGRID_ADMIN_URL: /admin
+      METAGRID_ADMINS: '["user1"]'
+      METAGRID_AUTHENTICATION_METHOD: globus
+      METAGRID_GOOGLE_ANALYTICS_TRACKING_ID: abcd1234
+      METAGRID_HOTJAR_ID: 10
+      METAGRID_HOTJAR_SV: 20
+      METAGRID_SOCIAL_AUTH_GLOBUS_KEY: null
+      METAGRID_SOCIAL_AUTH_GLOBUS_SECRET: null
+should create horizontal pod autoscaler:
+  1: |
+    apiVersion: autoscaling/v2
+    kind: HorizontalPodAutoscaler
+    metadata:
+      labels:
+        app.kubernetes.io/component: backend
+        app.kubernetes.io/instance: metagrid
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: metagrid
+        app.kubernetes.io/version: v1.0.0
+        helm.sh/chart: metagrid-v1.0.0
+      name: metagrid-backend
+    spec:
+      maxReplicas: 10
+      metrics:
+        - resource:
+            name: cpu
+            target:
+              averageUtilization: 45
+              type: Utilization
+          type: Resource
+        - resource:
+            name: memory
+            target:
+              averageUtilization: 500Mi
+              type: Utilization
+          type: Resource
+      minReplicas: 2
+      scaleTargetRef:
+        apiVersion: apps/v1
+        kind: Deployment
+        name: metagrid-backend
+should create service default account:
+  1: |
+    apiVersion: v1
+    automountServiceAccountToken: false
+    kind: ServiceAccount
+    metadata:
+      labels:
+        app.kubernetes.io/component: backend
+        app.kubernetes.io/instance: metagrid
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: metagrid
+        app.kubernetes.io/version: v1.0.0
+        helm.sh/chart: metagrid-v1.0.0
+      name: metagrid-backend
+should have a deployment:
+  1: |
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      labels:
+        app.kubernetes.io/component: backend
+        app.kubernetes.io/instance: metagrid
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: metagrid
+        app.kubernetes.io/version: v1.0.0
+        helm.sh/chart: metagrid-v1.0.0
+      name: metagrid-backend
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app.kubernetes.io/component: backend
+          app.kubernetes.io/instance: metagrid
+          app.kubernetes.io/name: metagrid
+      template:
+        metadata:
+          annotations:
+            checksum/config: 4bfb04239c1e8bc485b97f98f495ea2d6896aa9d31ceec311c0632344848c92c
+          labels:
+            app.kubernetes.io/component: backend
+            app.kubernetes.io/instance: metagrid
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: metagrid
+            app.kubernetes.io/version: v1.0.0
+            helm.sh/chart: metagrid-v1.0.0
+        spec:
+          containers:
+            - env:
+                - name: THIS_POD_IP
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: status.podIP
+                - name: DJANGO_ALLOWED_HOSTS
+                  value: '["localhost", "$(THIS_POD_IP)", "", ""]'
+              envFrom:
+                - secretRef:
+                    name: metagrid
+                - configMapRef:
+                    name: metagrid
+              image: ghcr.io/esgf2-us/metagrid-backend:v1.0.0
+              imagePullPolicy: IfNotPresent
+              livenessProbe:
+                httpGet:
+                  path: /liveness
+                  port: http
+              name: backend
+              ports:
+                - containerPort: 5000
+                  name: http
+                  protocol: TCP
+              readinessProbe:
+                httpGet:
+                  path: /readiness
+                  port: http
+              resources: {}
+              securityContext: {}
+          securityContext: {}
+          serviceAccountName: metagrid-backend
