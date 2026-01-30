@@ -38,18 +38,16 @@ const NodeStatus: React.FC<React.PropsWithChildren<Props>> = ({ apiError, isLoad
 
   if (isLoading) {
     return (
-      <>
-        <TableD
-          title={() => (
-            <div style={styles.headerContainer}>
-              <h1>Fetching latest node status...</h1>
-            </div>
-          )}
-          loading={isLoading}
-          data-testid="nodeStatusTable"
-          size="small"
-        />
-      </>
+      <TableD
+        title={() => (
+          <div style={styles.headerContainer}>
+            <h1>Fetching latest node status...</h1>
+          </div>
+        )}
+        loading={isLoading}
+        data-testid="nodeStatusTable"
+        size="small"
+      />
     );
   }
 

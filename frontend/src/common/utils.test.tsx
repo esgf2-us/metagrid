@@ -2,6 +2,9 @@ import { render } from '@testing-library/react';
 import React from 'react';
 import { MessageInstance } from 'antd/es/message/interface';
 import { message } from 'antd';
+import { Provider, useAtom } from 'jotai';
+import { atomWithStorage } from 'jotai/utils';
+import { vi } from 'vitest';
 import { rawProjectFixture } from '../test/mock/fixtures';
 import { UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
 import { ActiveSearchQuery, RawSearchResult, RawSearchResults } from '../components/Search/types';
@@ -36,11 +39,8 @@ import {
   createIntakeEsgfSearch,
 } from './utils';
 import { AppPage } from './types';
-import { Provider, useAtom } from 'jotai';
-import { atomWithStorage } from 'jotai/utils';
 import { mockConfig } from '../test/jestTestFunctions';
 import { localStorageMock, sessionStorageMock, tempStorageGetMock } from '../test/mock/mockStorage';
-import { vi } from 'vitest';
 
 describe('Test objectIsEmpty', () => {
   it('returns true with empty object', () => {
@@ -373,7 +373,7 @@ describe('Test unsavedLocal searches', () => {
 
 describe('Test getCurrentAppPage', () => {
   it('returns appropriate page name based on window location', () => {
-    expect(getCurrentAppPage()).toEqual(-1);
+    expect(getCurrentAppPage()).toEqual(AppPage.Unknown);
 
     // eslint-disable-next-line
     window = Object.create(window);
@@ -397,7 +397,7 @@ describe('Test getCurrentAppPage', () => {
     window.location.pathname = 'testing/cart/nodes';
     expect(getCurrentAppPage()).toEqual(AppPage.NodeStatus);
     window.location.pathname = 'testing/bad';
-    expect(getCurrentAppPage()).toEqual(-1);
+    expect(getCurrentAppPage()).toEqual(AppPage.Unknown);
   });
 });
 

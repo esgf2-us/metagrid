@@ -123,7 +123,7 @@ export async function showError(
   await showNotice(msgApi, msg, { duration: 5, type: 'error' });
 }
 
-export const getCurrentAppPage = (): number => {
+export const getCurrentAppPage = (): AppPage => {
   const { pathname } = window.location;
   if (pathname.endsWith('/search') || pathname.includes('/search/')) {
     return AppPage.Main;
@@ -137,7 +137,7 @@ export const getCurrentAppPage = (): number => {
   if (pathname.endsWith('/cart/searches')) {
     return AppPage.SavedSearches;
   }
-  return -1;
+  return AppPage.Unknown;
 };
 
 /** Creates a route that will access the JSON search results */

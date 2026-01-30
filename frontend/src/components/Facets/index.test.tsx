@@ -53,7 +53,7 @@ it120('handles facets form auto-filtering', async () => {
 
   // Check facet select form exists and mouseDown to expand list of options
   const facetFormSelect = document.querySelector(
-    '[data-testid=data_node-form-select] > .ant-select-selector'
+    '[data-testid=data_node-form-select] > .ant-select-selector',
   ) as HTMLInputElement;
   expect(facetFormSelect).toBeTruthy();
   fireEvent.mouseDown(facetFormSelect);
@@ -106,7 +106,7 @@ it120('handles facets form submission, including a facet key that is undefined',
 
   // Check facet select form exists and mouseDown to expand list of options
   const facetFormSelect = document.querySelector(
-    '[data-testid=data_node-form-select] > .ant-select-selector'
+    '[data-testid=data_node-form-select] > .ant-select-selector',
   ) as HTMLInputElement;
   expect(facetFormSelect).toBeTruthy();
   fireEvent.mouseDown(facetFormSelect);
@@ -132,7 +132,7 @@ it120('handles facets form submission, including a facet key that is undefined',
   // This will result in an undefined value for the form item (ant-design logic)
   // Check facet select form exists and mouseDown to expand list of options
   const facetFormSelect2 = document.querySelector(
-    '[data-testid=facet2-form-select] > .ant-select-selector'
+    '[data-testid=facet2-form-select] > .ant-select-selector',
   ) as HTMLInputElement;
   expect(facetFormSelect2).toBeTruthy();
   fireEvent.mouseDown(facetFormSelect2);
@@ -141,30 +141,33 @@ it120('handles facets form submission, including a facet key that is undefined',
   await screen.findByTestId('facets-form');
 });
 
-it120('handles project change when selectedProject.pk !== activeSearchQuery.project.pk', async () => {
-  customRender(<App searchQuery={activeSearch} />, {
-    usesAtoms: true,
-  });
+it120(
+  'handles project change when selectedProject.pk !== activeSearchQuery.project.pk',
+  async () => {
+    customRender(<App searchQuery={activeSearch} />, {
+      usesAtoms: true,
+    });
 
-  // Wait for components to rerender
-  await screen.findByTestId('main-query-string-label');
+    // Wait for components to rerender
+    await screen.findByTestId('main-query-string-label');
 
-  // Check FacetsForm component renders
-  const facetsForm = await screen.findByTestId('search-facets');
-  expect(facetsForm).toBeTruthy();
+    // Check FacetsForm component renders
+    const facetsForm = await screen.findByTestId('search-facets');
+    expect(facetsForm).toBeTruthy();
 
-  // Expect the current selected project to be test1
-  const test1 = await within(facetsForm).findByText('test1 Data Info');
-  expect(test1).toBeTruthy();
+    // Expect the current selected project to be test1
+    const test1 = await within(facetsForm).findByText('test1 Data Info');
+    expect(test1).toBeTruthy();
 
-  // Open the project dropdown
-  const option1 = await within(facetsForm).findByText('test1');
-  await user.click(option1);
+    // Open the project dropdown
+    const option1 = await within(facetsForm).findByText('test1');
+    await user.click(option1);
 
-  // Click the test2 ptoject from the dropdown
-  await user.click(await screen.findByTitle('test2'));
+    // Click the test2 ptoject from the dropdown
+    await user.click(await screen.findByTitle('test2'));
 
-  // Expect the current selected project to now be test2
-  const test2 = await within(facetsForm).findByText('test2 Data Info');
-  expect(test2).toBeTruthy();
-});
+    // Expect the current selected project to now be test2
+    const test2 = await within(facetsForm).findByText('test2 Data Info');
+    expect(test2).toBeTruthy();
+  },
+);

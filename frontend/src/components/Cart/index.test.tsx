@@ -1,9 +1,9 @@
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { screen } from '@testing-library/react';
+import { vi } from 'vitest';
 import Cart, { Props } from './index';
 import customRender from '../../test/custom-render';
-import { vi } from 'vitest';
 
 // hoist navigate mock for vi.mock (vitest hoists mocks)
 const mockNavigate = vi.fn();

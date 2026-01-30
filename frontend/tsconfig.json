@@ -24,7 +24,6 @@
     "src/test/__mocks__/js-pkce.ts",
     "vite.config.js",
     "vite.config.ts",
-    "vitest.config.ts",
-    ".eslintrc.js"
+    "vitest.config.ts"
   ]
 }

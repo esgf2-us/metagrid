@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import Joyride, { ACTIONS, CallBackProps, EVENTS, STATUS } from 'react-joyride';
 import { useNavigate } from 'react-router';
 import { useAtomValue } from 'jotai';
@@ -32,27 +32,30 @@ const defaultTour = new JoyrideTour('Empty Tour');
 
 export const ReactJoyrideProvider: React.FC<React.PropsWithChildren<Props>> = ({ children }) => {
   const navigate = useNavigate();
-  const [running, setRunning] = React.useState<boolean>(false);
-  const [getTour, setTour] = React.useState<JoyrideTour>(defaultTour);
-  const [getStepIndex, setStepIndex] = React.useState<number>(0);
+  const [running, setRunning] = useState<boolean>(false);
+  const [getTour, setTour] = useState<JoyrideTour>(defaultTour);
+  const [getStepIndex, setStepIndex] = useState<number>(0);
 
   const isDarkMode = useAtomValue<boolean>(isDarkModeAtom);
 
   /* istanbul ignore next -- @preserve */
-  const nextStep = (index: number): void => {
-    const stepCount = getTour.getSteps().length;
-    try {
-      if (index < stepCount) {
-        setStepIndex(index + 1);
+  const nextStep = useCallback(
+    (index: number): void => {
+      const stepCount = getTour.getSteps().length;
+      try {
+        if (index < stepCount) {
+          setStepIndex(index + 1);
+        }
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(error);
       }
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
-    }
-  };
+    },
+    [getTour],
+  );
 
   /* istanbul ignore next -- @preserve */
-  const previousStep = (index: number): void => {
+  const previousStep = useCallback((index: number): void => {
     try {
       if (index >= 0) {
         setStepIndex(index - 1);
@@ -61,14 +64,14 @@ export const ReactJoyrideProvider: React.FC<React.PropsWithChildren<Props>> = ({
       // eslint-disable-next-line no-console
       console.error(error);
     }
-  };
+  }, []);
 
   /* istanbul ignore next -- @preserve */
   const handleJoyrideCallback = async (data: CallBackProps): Promise<void> => {
     const { status, index, type, action } = data;
     const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
     if (finishedStatuses.includes(status)) {
-      await getTour.onFinish(); // Run the callback for finished tour
+      await getTour.onFinish();
 
       setRunning(false);
       setStepIndex(0);
@@ -78,7 +81,6 @@ export const ReactJoyrideProvider: React.FC<React.PropsWithChildren<Props>> = ({
     } else if (type === EVENTS.STEP_AFTER) {
       const stepAction = getTour.getActionByStepIndex(index);
       if (stepAction) {
-        // If an action exists, perform the action
         await stepAction.action();
       }
       nextStep(index);
@@ -88,53 +90,59 @@ export const ReactJoyrideProvider: React.FC<React.PropsWithChildren<Props>> = ({
   };
 
   /* istanbul ignore else -- @preserve */
-  const startTour = (): void => {
-    if (getTour) {
-      setStepIndex(0);
-    }
+  const startTour = useCallback((): void => {
+    setStepIndex(0);
     setRunning(true);
-  };
+  }, []);
 
   /* istanbul ignore next -- @preserve */
-  const setCurrentAppPage = (page: AppPage): void => {
-    if (getCurrentAppPage() !== page) {
-      setTimeout(() => {
-        if (navigate) {
-          switch (page) {
-            case AppPage.Main:
-              navigate('/search');
-              break;
-            case AppPage.Cart:
-              navigate('/cart/items');
-              break;
-            case AppPage.NodeStatus:
-              navigate('/nodes');
-              break;
-            case AppPage.SavedSearches:
-              navigate('/cart/searches');
-              break;
-            default:
+  const setCurrentAppPage = useCallback(
+    (page: AppPage): void => {
+      if (getCurrentAppPage() !== page) {
+        setTimeout(() => {
+          if (navigate) {
+            switch (page) {
+              case AppPage.Main:
+                navigate('/search');
+                break;
+              case AppPage.Cart:
+                navigate('/cart/items');
+                break;
+              case AppPage.NodeStatus:
+                navigate('/nodes');
+                break;
+              case AppPage.SavedSearches:
+                navigate('/cart/searches');
+                break;
+              default:
+                break;
+            }
           }
-        }
-      }, 100);
-    }
-  };
+        }, 100);
+      }
+    },
+    [navigate],
+  );
 
-  const startSpecificTour = (tour: JoyrideTour): void => {
+  const startSpecificTour = useCallback((tour: JoyrideTour): void => {
     setTour(tour);
-    startTour();
-  };
+    setStepIndex(0);
+    setRunning(true);
+  }, []);
+
+  const contextValue = useMemo(
+    () => ({
+      getTour,
+      setTour,
+      startTour,
+      setCurrentAppPage,
+      startSpecificTour,
+    }),
+    [getTour, startTour, setCurrentAppPage, startSpecificTour],
+  );
 
   return (
-    <ReactJoyrideContext.Provider
-      value={{
-        getTour,
-        setTour,
-        startTour,
-        setCurrentAppPage,
-        startSpecificTour,
-      }}
-    >
+    <ReactJoyrideContext.Provider value={contextValue}>
       <Joyride
         steps={getTour.getSteps()}
         stepIndex={getStepIndex}
@@ -163,3 +171,4 @@ export const ReactJoyrideProvider: React.FC<React.PropsWithChildren<Props>> = ({
     </ReactJoyrideContext.Provider>
   );
 };
+export default ReactJoyrideContext;

@@ -1,14 +1,16 @@
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { userSearchQueryFixture } from '../../test/mock/fixtures';
+import { vi } from 'vitest';
+import {
+  userSearchQueryFixture,
+  stacSearchResultsFixture,
+  stacAggregationsFixture,
+} from '../../test/mock/fixtures';
 import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import SearchesCard, { Props } from './SearchesCard';
 import customRender from '../../test/custom-render';
-import { waitFor } from '@testing-library/react';
-import { stacSearchResultsFixture, stacAggregationsFixture } from '../../test/mock/fixtures';
-import { vi } from 'vitest';
 
 // hoist navigate mock for vi.mock (vitest hoists mocks)
 const mockNavigate = vi.fn();
@@ -19,7 +21,7 @@ vi.mock(
     ({
       ...(await vi.importActual('react-router')),
       useNavigate: () => mockNavigate,
-    } as Record<string, unknown>),
+    }) as Record<string, unknown>,
 );
 
 const user = userEvent.setup();

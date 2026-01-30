@@ -1,9 +1,9 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import Searches from './Searches';
 import customRender from '../../test/custom-render';
 import { userSearchQueryFixture } from '../../test/mock/fixtures';
-import userEvent from '@testing-library/user-event';
 import { AppStateKeys } from '../../common/atoms';
 import { AtomWrapper } from '../../test/jestTestFunctions';
 import { UserSearchQueries } from './types';

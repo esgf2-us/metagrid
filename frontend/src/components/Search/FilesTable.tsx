@@ -352,7 +352,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
                         margin: 0,
                         verticalAlign: 'middle',
                       })}
-                    ></Button>
+                    />
                   </Form.Item>
                 </Tooltip>
               )}

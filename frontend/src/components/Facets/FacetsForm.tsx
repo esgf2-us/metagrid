@@ -93,7 +93,7 @@ export const generateStacFacetOptions = (
   facetOptions: string[],
 ): { key: string; value: string; label: JSX.Element }[] => {
   return facetOptions.map((variable) => {
-    let optionOutput: string | React.ReactElement = <>{variable}</>;
+    let optionOutput: string | React.ReactElement = <div>{variable}</div>;
 
     // If the option output name is very long, use a tooltip
     const varLength = variable.toString().length;
@@ -437,7 +437,7 @@ const FacetsForm: React.FC = () => {
                           });
                         }
                       }}
-                    ></Button>
+                    />
                   </div>
                 }
                 style={{ marginBottom: 0 }}
@@ -775,7 +775,7 @@ const FacetsForm: React.FC = () => {
                       type="primary"
                       htmlType="submit"
                       icon={<SearchOutlined data-testid="left-menu-keyword-search-submit" />}
-                    ></Button>
+                    />
                   </Form.Item>
                 </Space>
               ),

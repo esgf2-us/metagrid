@@ -96,7 +96,11 @@ describe('test main table UI', () => {
 
     // Check the dataset title include retracted warning (use flexible matcher)
     const cells = await within(table).findAllByText((_, node) =>
-      Boolean(node?.textContent && node.textContent.includes('foo') && node.textContent.includes('IMPORTANT!')),
+      Boolean(
+        node?.textContent &&
+        node.textContent.includes('foo') &&
+        node.textContent.includes('IMPORTANT!'),
+      ),
     );
     expect(cells.length).toBeGreaterThan(0);
 

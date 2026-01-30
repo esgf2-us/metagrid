@@ -37,7 +37,7 @@ const StartPopup: React.FC<React.PropsWithChildren<unknown>> = () => {
   const startData = messageDisplayData;
   // Startup visibility
   const [open, setVisible] = React.useState<boolean>(false);
-  const [title, setTitle] = React.useState<JSX.Element>(<></>);
+  const [title, setTitle] = React.useState<JSX.Element>(<div />);
   const [style, setStyle] = React.useState<CSSProperties>();
 
   // Tutorial state

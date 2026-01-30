@@ -83,10 +83,7 @@ const ErrorPage: React.FC = () => {
           </div>
         </nav>
         <Layout id="body-layout">
-          <Layout.Sider
-            style={styles.bodySider}
-            width={styles.bodySider.width as number}
-          ></Layout.Sider>
+          <Layout.Sider style={styles.bodySider} width={styles.bodySider.width as number} />
           <Layout.Content
             style={{
               ...styles.bodyContent,

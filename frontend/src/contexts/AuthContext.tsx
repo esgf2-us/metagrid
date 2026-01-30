@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { useKeycloak } from '@react-keycloak/web';
 import { DeferFn, useAsync } from 'react-async';
 import { fetchGlobusAuth, fetchUserAuth, fetchUserInfo } from '../api';
@@ -19,7 +19,7 @@ export const GlobusAuthProvider: React.FC<Props> = ({ children }) => {
     deferFn: fetchGlobusAuth as unknown as DeferFn<RawUserAuth>,
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     runFetchGlobusAuth();
     const interval = setInterval(() => {
       runFetchGlobusAuth();
@@ -27,19 +27,19 @@ export const GlobusAuthProvider: React.FC<Props> = ({ children }) => {
     return () => clearInterval(interval);
   }, [runFetchGlobusAuth, userAuth?.is_authenticated]);
 
-  return (
-    <AuthContext.Provider
-      value={{
-        access_token: userAuth?.access_token || null,
-        email: (userAuth?.email as string) || null,
-        is_authenticated: (userAuth?.is_authenticated as boolean) || false,
-        refresh_token: userAuth?.refresh_token || null,
-        pk: (userAuth?.pk as string) || null,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+  // Memoize the context value to prevent unnecessary re-renders
+  const contextValue = useMemo(
+    () => ({
+      access_token: userAuth?.access_token || null,
+      email: (userAuth?.email as string) || null,
+      is_authenticated: (userAuth?.is_authenticated as boolean) || false,
+      refresh_token: userAuth?.refresh_token || null,
+      pk: (userAuth?.pk as string) || null,
+    }),
+    [userAuth],
   );
+
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 };
 
 export const KeycloakAuthProvider: React.FC<Props> = ({ children }) => {
@@ -54,7 +54,7 @@ export const KeycloakAuthProvider: React.FC<Props> = ({ children }) => {
   });
 
   /* istanbul ignore start */
-  React.useEffect(() => {
+  useEffect(() => {
     if (keycloak.token) {
       runFetchUserAuth(keycloak.token);
       const interval = setInterval(() => {
@@ -67,7 +67,7 @@ export const KeycloakAuthProvider: React.FC<Props> = ({ children }) => {
   /* istanbul ignore end */
 
   /* istanbul ignore start */
-  React.useEffect(() => {
+  useEffect(() => {
     if (userAuth?.access_token) {
       userAuth.is_authenticated = true;
       runFetchUserInfo(userAuth.access_token);
@@ -75,17 +75,17 @@ export const KeycloakAuthProvider: React.FC<Props> = ({ children }) => {
   }, [runFetchUserInfo, userAuth]);
   /* istanbul ignore end */
 
-  return (
-    <AuthContext.Provider
-      value={{
-        access_token: userAuth?.access_token || null,
-        email: (userAuth?.email as string) || null,
-        is_authenticated: userAuth?.is_authenticated || false,
-        refresh_token: userAuth?.refresh_token || null,
-        pk: userInfo?.pk || null,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const contextValue = useMemo(
+    () => ({
+      access_token: userAuth?.access_token || null,
+      email: (userAuth?.email as string) || null,
+      is_authenticated: userAuth?.is_authenticated || false,
+      refresh_token: userAuth?.refresh_token || null,
+      pk: userInfo?.pk || null,
+    }),
+    [userAuth, userInfo],
   );
+
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 };
+export default AuthContext;

@@ -52,10 +52,8 @@ import apiRoutes, { HTTPCodeType } from './routes';
 const genericNetworkErrorMsg = 'Failed to Connect';
 
 vi.mock('../common/utils', async () => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const originalModule = await vi.importActual('../common/utils');
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return {
     __esModule: true,
     ...originalModule,

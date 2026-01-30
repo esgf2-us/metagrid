@@ -16,7 +16,7 @@ const defaultProps: Props = {
 };
 
 it('renders the loading table', async () => {
-  customRender(<NodeStatus isLoading></NodeStatus>);
+  customRender(<NodeStatus isLoading />);
 
   const header = await screen.findByRole('heading', {
     name: 'Fetching latest node status...',
@@ -25,7 +25,7 @@ it('renders the loading table', async () => {
 });
 
 it('renders the node status and columns sort', async () => {
-  customRender(<NodeStatus {...defaultProps}></NodeStatus>);
+  customRender(<NodeStatus {...defaultProps} />);
 
   const header = await screen.findByRole('heading', {
     name: 'Status as of Wed, 21 Oct 2020 21:23:50 GMT',
@@ -50,7 +50,7 @@ it('renders the node status and columns sort', async () => {
 
 it('renders the node status in dark mode', async () => {
   AtomWrapper.modifyAtomValue(AppStateKeys.isDarkMode, true);
-  customRender(<NodeStatus {...defaultProps}></NodeStatus>);
+  customRender(<NodeStatus {...defaultProps} />);
 
   const header = await screen.findByRole('heading', {
     name: 'Status as of Wed, 21 Oct 2020 21:23:50 GMT',
@@ -82,10 +82,9 @@ it('renders an error message when there is an api error', async () => {
   const errorMsg = 'Node status information is currently unavailable.';
 
   AtomWrapper.modifyAtomValue(AppStateKeys.nodeStatus, []);
-  customRender(
-    <NodeStatus isLoading={false} apiError={Error(errorMsg) as ResponseError}></NodeStatus>,
-    { usesAtoms: true }
-  );
+  customRender(<NodeStatus isLoading={false} apiError={Error(errorMsg) as ResponseError} />, {
+    usesAtoms: true,
+  });
 
   const alertMsg = await screen.findByRole('alert');
   expect(alertMsg).toBeTruthy();
@@ -113,7 +112,7 @@ it('renders error message that feature is disabled', async () => {
 it('renders fallback network error msg', async () => {
   const errorMsg = apiRoutes.nodeStatus.handleErrorMsg('generic');
 
-  AtomWrapper.modifyAtomValue(AppStateKeys.nodeStatus, (undefined as unknown) as []);
+  AtomWrapper.modifyAtomValue(AppStateKeys.nodeStatus, undefined as unknown as []);
   customRender(<NodeStatus isLoading={false} />);
 
   const alertMsg = await screen.findByRole('alert');

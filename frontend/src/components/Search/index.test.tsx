@@ -1,6 +1,7 @@
 import { within, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
+import { vi } from 'vitest';
 import {
   activeSearchQueryFixture,
   ESGFSearchAPIFixture,
@@ -16,7 +17,6 @@ import Search, { checkFiltersExist, parseFacets, Props, stringifyFilters } from 
 import { ActiveSearchQuery, RawSearchResult, ResultType, TextInputs, VersionType } from './types';
 import { openDropdownList, AtomWrapper } from '../../test/jestTestFunctions';
 import { AppStateKeys } from '../../common/atoms';
-import { vi } from 'vitest';
 
 const user = userEvent.setup();
 
@@ -580,14 +580,14 @@ describe('STAC project behavior', () => {
     // Open save search dropdown to reveal disabled buttons
     // Wait for the dropdown trigger to be in the DOM then click it
     await waitFor(() => {
-      const el = document.querySelector('.ant-dropdown-trigger') as HTMLElement | null;
+      const el = document.querySelector('.ant-dropdown-trigger');
       if (!el) throw new Error('dropdown trigger not found');
     });
     const copyDropDownIcon = document.querySelector('.ant-dropdown-trigger') as HTMLElement;
     await userEvent.hover(copyDropDownIcon);
 
     // result count should reflect STAC numMatched
-    const numMatched = stacSearchResultsFixture().search.numMatched;
+    const { numMatched } = stacSearchResultsFixture().search;
     expect(
       await screen.findByText(
         (content) => content.includes(`${numMatched}`) && content.includes('results found for'),

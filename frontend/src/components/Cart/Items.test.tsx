@@ -127,8 +127,8 @@ describe('test the cart items component', () => {
     expect(
       await screen.findByText(
         'The requested resource at the ESGF wget API service was invalid. Please contact support.',
-        { exact: false }
-      )
+        { exact: false },
+      ),
     ).toBeTruthy();
   }, 120000);
 });

@@ -6,8 +6,8 @@
     "start": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint './src/**/*.{js,jsx,ts,tsx,json}' --fix --max-warnings=0 --no-error-on-unmatched-pattern && tsc --noemit",
-    "precommit": "eslint './src/**/*.{js,jsx,ts,tsx,json}' --max-warnings=0 --no-error-on-unmatched-pattern",
+    "lint": "eslint . --fix --max-warnings=0 && tsc --noemit",
+    "precommit": "eslint . --max-warnings=0",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest"
@@ -22,13 +22,6 @@
       "last 1 chrome version",
       "last 1 firefox version",
       "last 1 safari version"
-    ]
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "airbnb",
-      "@kesills/airbnb-typescript"
     ]
   },
   "dependencies": {
@@ -60,7 +53,11 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@eslint/compat": "^2.0.1",
+    "@eslint/eslintrc": "^3.3.3",
+    "@eslint/js": "^9.39.2",
     "@kesills/eslint-config-airbnb-typescript": "^20.0.0",
+    "@stylistic/eslint-plugin": "^5.7.1",
     "@swc/core": "^1.11.24",
     "@testing-library/dom": "10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
@@ -73,25 +70,28 @@
     "@types/react": "18.2.0",
     "@types/react-dom": "18.2.0",
     "@types/uuid": "9.0.8",
-    "@typescript-eslint/eslint-plugin": "8.20.0",
-    "@typescript-eslint/parser": "8.20.0",
+    "@typescript-eslint/eslint-plugin": "^8.54.0",
+    "@typescript-eslint/parser": "^8.54.0",
     "@vitejs/plugin-react": "^4.4.1",
     "@vitest/coverage-istanbul": "^4.0.18",
     "cross-fetch": "^4.1.0",
-    "eslint": "8.57.1",
+    "eslint": "^9.39.2",
     "eslint-config-airbnb": "19.0.4",
-    "eslint-config-prettier": "8.5.0",
+    "eslint-config-airbnb-typescript": "^18.0.0",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "2.29.1",
     "eslint-plugin-jsx-a11y": "6.10.2",
-    "eslint-plugin-prettier": "5.4.0",
+    "eslint-plugin-prettier": "^5.5.5",
     "eslint-plugin-react": "7.37.5",
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-testing-library": "7.2.2",
+    "globals": "^17.2.0",
     "jsdom": "^27.4.0",
     "mock-match-media": "^0.4.3",
     "msw": "1.3.5",
     "postcss": "8.5.3",
     "prettier": "^3.5.3",
+    "typescript-eslint": "^8.54.0",
     "vite": "^6.3.5",
     "vitest": "^4.0.18"
   }

@@ -1,17 +1,15 @@
 import {
   CodeOutlined,
   DatabaseTwoTone,
-  DownCircleOutlined,
   DownloadOutlined,
   MinusOutlined,
   PlusOutlined,
-  RightCircleOutlined,
 } from '@ant-design/icons';
-import { Form, Select, Table as TableD, Tooltip, message } from 'antd';
+import { Form, GetProp, Select, Table as TableD, Tooltip, message } from 'antd';
 import type { TableColumnsType } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
-import { TablePaginationConfig } from 'antd/lib/table';
-import React from 'react';
+import { TablePaginationConfig, TableProps } from 'antd/lib/table';
+import React, { useCallback } from 'react';
 import { useAtomValue } from 'jotai';
 import stacIcon from '../../assets/img/STAC-favicon.png';
 import { fetchWgetScript, ResponseError } from '../../api';
@@ -43,6 +41,7 @@ import { userCartAtom } from '../../common/atoms';
 import { AppPage } from '../../common/types';
 import { createCustomIcon } from '../NavBar';
 import { getStacGlobusHref, generateWgetScriptSTAC } from '../../common/STAC';
+import TableExpandIcon, { TableExpandIconProps } from './TableExpandIcon';
 
 export type Props = {
   loading: boolean;
@@ -89,6 +88,33 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
     setSortedInfo(sorter as Sorts);
   };
 
+  const renderPageSizeOption = useCallback(
+    (option: { value: string | number; label: React.ReactNode }) => (
+      <span data-testid={`pageSize-option-${option.value}`}>{option.label}</span>
+    ),
+    [],
+  );
+
+  const renderExpandedRow = useCallback(
+    (record: RawSearchResult) => (
+      <Tabs data-test-id="extra-tabs" record={record} filenameVars={filenameVars} />
+    ),
+    [filenameVars],
+  );
+
+  type ExpandIconType = GetProp<TableProps<RawSearchResult>, 'expandable'>['expandIcon'];
+
+  const renderExpandIcon: ExpandIconType = useCallback(
+    (props: JSX.IntrinsicAttributes & TableExpandIconProps) => (
+      <TableExpandIcon
+        {...props}
+        contractClass={topDataRowTargets.searchResultsRowContractIcon.class()}
+        expandClass={topDataRowTargets.searchResultsRowExpandIcon.class()}
+      />
+    ),
+    [],
+  );
+
   let cachedPage: number | undefined;
   let cachedSize: number | undefined;
 
@@ -112,43 +138,15 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       pageSize: cachedSize,
       position: ['bottomCenter'],
       showSizeChanger: {
-        optionRender: (option) => {
-          return <span data-testid={`pageSize-option-${option.value}`}>{option.label}</span>;
-        },
+        optionRender: renderPageSizeOption,
       },
       onChange: (page: number, pageSize: number) => onPageChange && onPageChange(page, pageSize),
       onShowSizeChange: (_current: number, size: number) =>
         onPageSizeChange && onPageSizeChange(size),
     } as TablePaginationConfig,
     expandable: {
-      expandedRowRender: (record: RawSearchResult) => (
-        <Tabs data-test-id="extra-tabs" record={record} filenameVars={filenameVars}></Tabs>
-      ),
-      expandIcon: ({
-        expanded,
-        onExpand,
-        record,
-      }: {
-        expanded: boolean;
-        onExpand: (
-          rowRecord: RawSearchResult,
-          e: React.MouseEvent<HTMLSpanElement, MouseEvent>,
-        ) => void;
-        record: RawSearchResult;
-      }): React.ReactNode =>
-        expanded ? (
-          <DownCircleOutlined
-            className={topDataRowTargets.searchResultsRowContractIcon.class()}
-            onClick={(e) => onExpand(record, e)}
-          />
-        ) : (
-          <Tooltip title="View this dataset's metadata, files or additional info." trigger="hover">
-            <RightCircleOutlined
-              className={topDataRowTargets.searchResultsRowExpandIcon.class()}
-              onClick={(e) => onExpand(record, e)}
-            />
-          </Tooltip>
-        ),
+      expandedRowRender: renderExpandedRow,
+      expandIcon: renderExpandIcon,
     },
     rowSelection: {
       selectedRowKeys: selections?.map((item) => {
@@ -417,7 +415,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
                   type="default"
                   htmlType="submit"
                   icon={<DownloadOutlined />}
-                ></Button>
+                />
               </Form.Item>
             </Form>
           </>
@@ -457,7 +455,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
           title: '',
           dataIndex: 'data_node',
           key: 'globus_enabled',
-          render: () => <></>,
+          render: () => null,
         },
   ];
 

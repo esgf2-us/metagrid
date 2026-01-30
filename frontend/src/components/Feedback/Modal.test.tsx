@@ -7,7 +7,7 @@ it('renders the component', async () => {
   customRender(
     <Modal onClose={vi.fn()} open closeText="Close Text">
       <p>Test text</p>
-    </Modal>
+    </Modal>,
   );
   // Check component renders
   const text = await screen.findByText('Test text');

@@ -8,7 +8,7 @@ it('renders component with default exclamation circle', async () => {
   customRender(
     <Popconfirm onConfirm={vi.fn()}>
       <p>Click here</p>
-    </Popconfirm>
+    </Popconfirm>,
   );
 
   // Check component renders

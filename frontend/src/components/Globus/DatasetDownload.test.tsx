@@ -1,6 +1,7 @@
 import React from 'react';
 import userEvent from '@testing-library/user-event';
 import { within, screen, waitFor } from '@testing-library/react';
+import { vi } from 'vitest';
 import customRender from '../../test/custom-render';
 import { rest, server } from '../../test/mock/server';
 import { getSearchFromUrl } from '../../common/utils';
@@ -26,7 +27,6 @@ import {
 import { AppPage } from '../../common/types';
 import { CartStateKeys, GlobusStateKeys } from '../../common/atoms';
 import { getCookie, setCookie } from '../../api';
-import { vi } from 'vitest';
 
 Object.defineProperty(window, 'location', {
   value: {
@@ -66,10 +66,8 @@ const mockSaveValue = mockFunction((key: unknown, value: unknown) => {
 });
 
 vi.mock('../../api/index', async () => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const originalModule = await vi.importActual('../../api/index');
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return {
     __esModule: true,
     ...originalModule,
@@ -85,10 +83,8 @@ vi.mock('../../api/index', async () => {
 });
 
 vi.mock('../../common/utils', async () => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const originalModule = await vi.importActual('../../common/utils');
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return {
     __esModule: true,
     ...originalModule,
@@ -518,7 +514,7 @@ describe('DatasetDownload form tests', () => {
     });
 
     // Click Transfer button
-    let globusTransferBtn = await screen.findByTestId('downloadDatasetTransferBtn');
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetTransferBtn');
     expect(globusTransferBtn).toBeTruthy();
     await user.click(globusTransferBtn);
 
@@ -564,7 +560,7 @@ describe('DatasetDownload form tests', () => {
     });
 
     // Click Transfer button
-    let globusTransferBtn = await screen.findByTestId('downloadDatasetTransferBtn');
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetTransferBtn');
     expect(globusTransferBtn).toBeTruthy();
     await user.click(globusTransferBtn);
 
@@ -926,44 +922,47 @@ describe('DatasetDownload form tests', () => {
     expect(tourModal).toBeInTheDocument();
   });
 
-  it120('Shows an alert when a collection search fails in the manage collections form', async () => {
-    server.use(
-      rest.get(apiRoutes.globusSearchEndpoints.path, (_req, res, ctx) => res(ctx.status(500))),
-    );
+  it120(
+    'Shows an alert when a collection search fails in the manage collections form',
+    async () => {
+      server.use(
+        rest.get(apiRoutes.globusSearchEndpoints.path, (_req, res, ctx) => res(ctx.status(500))),
+      );
 
-    await initializeComponentForTest({
-      ...defaultTestConfig,
-      savedEndpoints: [],
-      chosenEndpoint: null,
-    });
+      await initializeComponentForTest({
+        ...defaultTestConfig,
+        savedEndpoints: [],
+        chosenEndpoint: null,
+      });
 
-    // Open download dropdown
-    const collectionDropdown = await screen.findByTestId('searchCollectionInput');
-    const selectEndpoint = await within(collectionDropdown).findByRole('combobox');
-    await openDropdownList(user, selectEndpoint);
+      // Open download dropdown
+      const collectionDropdown = await screen.findByTestId('searchCollectionInput');
+      const selectEndpoint = await within(collectionDropdown).findByRole('combobox');
+      await openDropdownList(user, selectEndpoint);
 
-    // Select manage collections
-    const manageEndpointsBtn = await screen.findByText('Manage Collections');
-    expect(manageEndpointsBtn).toBeTruthy();
+      // Select manage collections
+      const manageEndpointsBtn = await screen.findByText('Manage Collections');
+      expect(manageEndpointsBtn).toBeTruthy();
 
-    await user.click(manageEndpointsBtn);
+      await user.click(manageEndpointsBtn);
 
-    const manageCollectionsForm = await screen.findByTestId('manageCollectionsForm');
-    expect(manageCollectionsForm).toBeTruthy();
+      const manageCollectionsForm = await screen.findByTestId('manageCollectionsForm');
+      expect(manageCollectionsForm).toBeTruthy();
 
-    // Type in endpoint search text
-    const endpointSearchInput = await screen.findByPlaceholderText(
-      'Search for a Globus Collection',
-    );
-    expect(endpointSearchInput).toBeTruthy();
-    await user.type(endpointSearchInput, 'lc public{enter}');
+      // Type in endpoint search text
+      const endpointSearchInput = await screen.findByPlaceholderText(
+        'Search for a Globus Collection',
+      );
+      expect(endpointSearchInput).toBeTruthy();
+      await user.type(endpointSearchInput, 'lc public{enter}');
 
-    // Expect an alert to show up
-    const alertPopup = await screen.findByText(
-      'An error occurred while searching for collections. Please try again later.',
-    );
-    expect(alertPopup).toBeTruthy();
-  });
+      // Expect an alert to show up
+      const alertPopup = await screen.findByText(
+        'An error occurred while searching for collections. Please try again later.',
+      );
+      expect(alertPopup).toBeTruthy();
+    },
+  );
 
   it120('removes all tasks when clicking the Clear All button', async () => {
     await initializeComponentForTest({

@@ -195,11 +195,11 @@ afterEach(() => {
   try {
     // TypeScript complains with error TS2790: The operand of a 'delete' operator must be optional.
     // https://github.com/facebook/jest/issues/890#issuecomment-776112686
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
     // @ts-ignore
     delete (window as any).location;
     // Restore saved location (if possible)
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
     // @ts-ignore
     window.location = JSON.parse(location) as unknown as string & Location; // Reset location
     window.location.replace = vi.fn(); // Don't do anything with redirects

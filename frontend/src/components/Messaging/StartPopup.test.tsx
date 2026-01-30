@@ -1,13 +1,13 @@
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { screen } from '@testing-library/react';
+import { vi } from 'vitest';
 import StartPopup from './StartPopup';
 import StartupMessages from './messageDisplayData';
 import customRender from '../../test/custom-render';
 import { rest, server } from '../../test/mock/server';
 import { TourTitles } from '../../common/joyrideTutorials/reactJoyrideSteps';
 import { localStorageMock } from '../../test/mock/mockStorage';
-import { vi } from 'vitest';
 
 const { defaultMessageId, messageToShow } = StartupMessages;
 
@@ -20,7 +20,7 @@ vi.mock(
     ({
       ...(await vi.importActual('react-router')),
       useNavigate: () => mockNavigate,
-    } as Record<string, unknown>),
+    }) as Record<string, unknown>,
 );
 
 beforeEach(() => {

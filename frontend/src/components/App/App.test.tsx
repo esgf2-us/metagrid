@@ -8,6 +8,7 @@
 import { fireEvent, within, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import userEvent from '@testing-library/user-event';
+import { vi } from 'vitest';
 import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import { getSearchFromUrl } from '../../common/utils';
@@ -17,7 +18,6 @@ import App from './App';
 import { activeSearch, AtomWrapper, submitKeywordSearch } from '../../test/jestTestFunctions';
 import { AppStateKeys } from '../../common/atoms';
 import { delay } from '../../common/joyrideTutorials/reactJoyrideSteps';
-import { vi } from 'vitest';
 
 const user = userEvent.setup();
 

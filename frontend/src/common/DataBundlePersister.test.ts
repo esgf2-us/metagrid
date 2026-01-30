@@ -16,10 +16,8 @@ const mockSaveValue = mockFunction((key: unknown, value: unknown) => {
 });
 
 vi.mock('../api/index', async () => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const originalModule = await vi.importActual('../api/index');
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return {
     __esModule: true,
     ...originalModule,

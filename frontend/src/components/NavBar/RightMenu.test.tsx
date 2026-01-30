@@ -1,10 +1,9 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import customRender from '../../test/custom-render';
 import { matchMedia, setMedia } from 'mock-match-media';
+import { vi } from 'vitest';
+import customRender from '../../test/custom-render';
 import RightMenu, { Props } from './RightMenu';
 import { mockConfig, mockKeycloakToken, AtomWrapper } from '../../test/jestTestFunctions';
 import { localStorageMock, tempStorageSetMock } from '../../test/mock/mockStorage';
@@ -16,7 +15,6 @@ import {
 } from '../../test/mock/fixtures';
 import App from '../App/App';
 import { AppStateKeys } from '../../common/atoms';
-import { vi } from 'vitest';
 
 const user = userEvent.setup();
 
@@ -272,7 +270,7 @@ describe('Dark Mode', () => {
     expect(matchMedia('(prefers-color-scheme: dark)').matches).toBe(true);
 
     AtomWrapper.modifyAtomValue(AppStateKeys.isDarkMode, false);
-    customRender(<RightMenu mode="vertical"></RightMenu>, { usesAtoms: true });
+    customRender(<RightMenu mode="vertical" />, { usesAtoms: true });
     waitFor(() => {
       expect(screen.getByTestId('isDarkModeSwitch')).toBeChecked();
     });
@@ -280,7 +278,7 @@ describe('Dark Mode', () => {
 
   it('stores preference when selected', async () => {
     AtomWrapper.modifyAtomValue(AppStateKeys.isDarkMode, true);
-    customRender(<RightMenu mode="vertical"></RightMenu>, { usesAtoms: true });
+    customRender(<RightMenu mode="vertical" />, { usesAtoms: true });
 
     const isDarkModeSwitch = await screen.findByTestId('isDarkModeSwitch');
     expect(isDarkModeSwitch).not.toBeChecked();
