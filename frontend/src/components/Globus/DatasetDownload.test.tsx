@@ -44,14 +44,11 @@ const user = userEvent.setup();
 
 beforeAll(() => {
   try {
-    (vi as any).setTimeout(120000);
   } catch (e) {
     // ignore if not available
   }
 });
 
-// helper for long tests
-const it120 = (name: string, fn: any) => it(name, fn, 120000);
 
 const mockLoadValue = mockFunction((key: unknown) => {
   return Promise.resolve(tempStorageGetMock(key as string));
@@ -693,7 +690,7 @@ describe('DatasetDownload form tests', () => {
     expect(userChosenEndpoint?.path).toEqual(testEndpointPath);
   });
 
-  it120('Performs endpoint search and selects and saves the endpoint.', async () => {
+  it('Performs endpoint search and selects and saves the endpoint.', async () => {
     await initializeComponentForTest({
       ...defaultTestConfig,
       savedEndpoints: [],
@@ -808,9 +805,9 @@ describe('DatasetDownload form tests', () => {
     expect(tempStorageGetMock(GlobusStateKeys.globusTransferGoalsState)).toEqual(
       GlobusGoals.SetEndpointPath,
     );
-  }, 120000);
+  });
 
-  it120('displays 10 tasks at most in the submit history', async () => {
+  it('displays 10 tasks at most in the submit history', async () => {
     await initializeComponentForTest({
       ...defaultTestConfig,
       renderFullApp: true,
@@ -904,7 +901,7 @@ describe('DatasetDownload form tests', () => {
     expect(taskItemsNow[1].innerHTML).toEqual('Submitted: 3/4/2025, 3:55:00 PM');
   });
 
-  it120('shows the Manage Collections tour', async () => {
+  it('shows the Manage Collections tour', async () => {
     customRender(<DatasetDownloadForm />);
     // Open download dropdown
     const collectionDropdown = await screen.findByTestId('searchCollectionInput');
@@ -922,7 +919,7 @@ describe('DatasetDownload form tests', () => {
     expect(tourModal).toBeInTheDocument();
   });
 
-  it120(
+  it(
     'Shows an alert when a collection search fails in the manage collections form',
     async () => {
       server.use(
@@ -964,7 +961,7 @@ describe('DatasetDownload form tests', () => {
     },
   );
 
-  it120('removes all tasks when clicking the Clear All button', async () => {
+  it('removes all tasks when clicking the Clear All button', async () => {
     await initializeComponentForTest({
       ...defaultTestConfig,
       renderFullApp: true,
@@ -1039,9 +1036,9 @@ describe('DatasetDownload form tests', () => {
       /If you ran into some issues, it may help to reset tokens so you can request new ones. Click 'Ok' if you wish to to reset tokens./i,
     );
     expect(confirmationDialog).toBeTruthy();
-  }, 120000);
+  });
 
-  it120('resets globus tokens when Reset tokens confirmation dialog Ok is clicked', async () => {
+  it('resets globus tokens when Reset tokens confirmation dialog Ok is clicked', async () => {
     await initializeComponentForTest();
 
     // Open the dropdown menu

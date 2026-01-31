@@ -9,10 +9,8 @@ import App from '../App/App';
 
 const user = userEvent.setup();
 
-// Global timeout configured in vitest.config.ts
 
 // helper to run long tests
-const it120 = (name: string, fn: any) => it(name, fn, 120000);
 
 it('renders component', async () => {
   customRender(<Facets />);
@@ -26,7 +24,7 @@ it('renders component', async () => {
   expect(projectForm).toBeTruthy();
 });
 
-it120('handles facets form auto-filtering', async () => {
+it('handles facets form auto-filtering', async () => {
   customRender(<Facets />, {
     usesAtoms: true,
   });
@@ -79,7 +77,7 @@ it120('handles facets form auto-filtering', async () => {
   await screen.findByTestId('facets-form');
 });
 
-it120('handles facets form submission, including a facet key that is undefined', async () => {
+it('handles facets form submission, including a facet key that is undefined', async () => {
   customRender(<Facets />, {
     usesAtoms: true,
   });
@@ -141,7 +139,7 @@ it120('handles facets form submission, including a facet key that is undefined',
   await screen.findByTestId('facets-form');
 });
 
-it120(
+it(
   'handles project change when selectedProject.pk !== activeSearchQuery.project.pk',
   async () => {
     customRender(<App searchQuery={activeSearch} />, {

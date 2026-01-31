@@ -13,8 +13,6 @@ import { AppStateKeys } from '../../common/atoms';
 
 const user = userEvent.setup();
 
-// per-test timeouts only for slow tests below
-
 const defaultProps: Props = {
   loading: false,
   results: rawSearchResultsFixture(),
@@ -26,9 +24,6 @@ const defaultProps: Props = {
 };
 
 describe('test main table UI', () => {
-  // Global timeout configured in vitest.config.ts
-  // helper for long tests
-  const it120 = (name: string, fn: any) => it(name, fn, 120000);
   it('renders component', async () => {
     customRender(<Table {...defaultProps} />);
 
@@ -61,7 +56,7 @@ describe('test main table UI', () => {
       })
     )[0];
     expect(databaseIcon).toBeTruthy();
-  }, 120000);
+  });
 
   it('renders not available for total size and number of files columns when dataset doesn"t have those attributes', async () => {
     customRender(
@@ -124,7 +119,7 @@ describe('test main table UI', () => {
     expect(expandableRow).toBeTruthy();
   });
 
-  it120('renders record metadata in an expandable panel', async () => {
+  it('renders record metadata in an expandable panel', async () => {
     customRender(<Table {...defaultProps} />);
 
     // Check table exists
@@ -228,7 +223,7 @@ describe('test main table UI', () => {
     const firstInfoBtn = await within(expandableRow).findByText('ES-DOC');
     expect(firstPidBtn).toBeTruthy();
     expect(firstInfoBtn).toBeTruthy();
-  }, 120000);
+  });
 
   it('renders quality control flags for obs4MIPs datasets when the record has the respective attribute', async () => {
     const results = [...defaultProps.results];
@@ -285,7 +280,7 @@ describe('test main table UI', () => {
 
     const lastFlag = await within(expandableRow).findByTestId('qualityFlag5');
     expect(lastFlag).toBeTruthy();
-  }, 120000);
+  });
 
   it('renders add or remove button for items in or not in the cart respectively, and handles clicking them', async () => {
     AtomWrapper.modifyAtomValue(AppStateKeys.userCart, [defaultProps.results[0]]);
@@ -315,7 +310,7 @@ describe('test main table UI', () => {
     expect(addBtn).toBeTruthy();
 
     await user.click(addBtn);
-  }, 120000);
+  });
 
   it('handles when clicking the select checkbox for a row', async () => {
     AtomWrapper.modifyAtomValue(AppStateKeys.userCart, []);
@@ -419,6 +414,7 @@ describe('test main table UI', () => {
     const errorMsg = await screen.findByText(apiRoutes.wget.handleErrorMsg(404));
     expect(errorMsg).toBeTruthy();
   });
+
   it('does not render Globus Ready column when globusEnabledNodes is empty', async () => {
     // Set names of the globus enabled nodes
     mockConfig.GLOBUS_NODES = [];
@@ -452,7 +448,7 @@ describe('test main table UI', () => {
     // The STAC icon is rendered as an img with accessible name 'STAC'
     const stacIcon = await within(table).findByRole('img', { name: 'STAC' });
     expect(stacIcon).toBeTruthy();
-  }, 120000);
+  });
 });
 
 describe('test QualityFlag', () => {
@@ -551,7 +547,7 @@ describe('test column sorting', () => {
 
     // Verify sorting by checking the row value changed
     expect(updatedCell).toHaveTextContent('7');
-  }, 120000);
+  });
 
   it('sorts by Total Size column', async () => {
     const colIdx = 6; // The column that Total Size is in
@@ -639,7 +635,7 @@ describe('test column sorting', () => {
 
     // Verify sorting by checking the row value changed
     expect(updatedCell).toHaveTextContent('1234');
-  }, 120000);
+  });
 
   it('Handles sorting without breaking even if values are undefined', async () => {
     customRender(

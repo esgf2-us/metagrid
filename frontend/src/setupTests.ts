@@ -42,14 +42,6 @@ import {
   currentProjectAtom,
 } from './common/atoms';
 import { localStorageMock, sessionStorageMock } from './test/mock/mockStorage';
-// Ensure Vitest uses a longer global timeout for long-running tests
-// Use the global `vi` if available in the setup environment.
-// @ts-ignore
-const _globalVi = (globalThis as any).vi;
-if (_globalVi && typeof _globalVi.setTimeout === 'function') {
-  _globalVi.setTimeout(120000);
-}
-// Use Vitest's `vi` directly in tests.
 
 // Minimal matchMedia polyfill for jsdom / Vitest
 if (typeof window.matchMedia === 'undefined') {

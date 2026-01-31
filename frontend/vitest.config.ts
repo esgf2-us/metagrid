@@ -7,9 +7,9 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
-    timeout: 120000,
+    testTimeout: 120000,
     // Ensure the early setup file runs before the heavier setup files
-    setupFiles: ['src/vitest.setup.early.ts', 'src/vitest.setup.global.ts', 'src/setupTests.ts'],
+    setupFiles: ['src/vitest.setup.early.ts', 'src/setupTests.ts'],
     coverage: {
       provider: 'istanbul',
       reporter: ['text', 'lcov'],

@@ -21,9 +21,6 @@ import { delay } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
 const user = userEvent.setup();
 
-// Ensure this test file uses a longer timeout under Vitest
-// Global timeout configured in vitest.config.ts
-// per-test timeouts used for known slow tests (keep global defaults for others)
 
 describe('test main components', () => {
   it('renders App component', async () => {
@@ -75,7 +72,7 @@ describe('test main components', () => {
     // Check error message appears that input has already been applied
     const errorMsg = await screen.findByText(`Input "${input}" has already been applied`);
     expect(errorMsg).toBeTruthy();
-  }, 120000);
+  });
 
   // This test is currently skipped because the filename search feature was recently
   // removed. It can be re-enabled if the feature is re-introduced.
@@ -152,7 +149,7 @@ describe('test main components', () => {
 
     // Wait for components to rerender
     await screen.findByTestId('search');
-  }, 120000);
+  });
 
   it('handles applying general facets', async () => {
     customRender(<App searchQuery={activeSearch} />);
@@ -176,7 +173,7 @@ describe('test main components', () => {
     await screen.findByTestId('facets-form');
 
     await screen.findByTestId('search');
-  }, 120000);
+  });
 
   it('handles applying and removing project facets', async () => {
     customRender(<App searchQuery={activeSearch} />);
@@ -247,7 +244,7 @@ describe('test main components', () => {
 
     // Wait for component to rerender
     await screen.findByTestId('search');
-  }, 120000);
+  });
 
   it.skip('fetches the data node status every defined interval', async () => {
     vi.useFakeTimers();
@@ -290,7 +287,7 @@ describe('User cart', () => {
     // Check 'Removed items(s) from the cart' message appears
     const removeText = await screen.findByText('Removed item(s) from your cart');
     expect(removeText).toBeTruthy();
-  }, 120000);
+  });
 
   it("displays authenticated user's number of files in the cart summary and handles clearing the cart", async () => {
     customRender(<App searchQuery={activeSearch} />);
@@ -343,7 +340,7 @@ describe('User cart', () => {
     // Check empty alert renders
     const emptyAlert = await screen.findByText('Your cart is empty');
     expect(emptyAlert).toBeTruthy();
-  }, 120000);
+  });
 
   it('handles anonymous user adding and removing items from cart', async () => {
     // Render component as anonymous
@@ -364,7 +361,7 @@ describe('User cart', () => {
     expect(removeBtn).toBeTruthy();
 
     await userEvent.click(removeBtn);
-  }, 120000);
+  });
 
   it('displays anonymous user"s number of files in the cart summary and handles clearing the cart', async () => {
     customRender(<App searchQuery={activeSearch} />, { usesAtoms: true, authenticated: false });
@@ -421,7 +418,7 @@ describe('User cart', () => {
     // Check empty alert renders
     const emptyAlert = await screen.findByText('Your cart is empty');
     expect(emptyAlert).toBeTruthy();
-  }, 120000);
+  });
 
   it('resets cart totals and selections to 0 when all items are removed', async () => {
     AtomWrapper.modifyAtomValue(AppStateKeys.userCart, []);
@@ -491,7 +488,7 @@ describe('User cart', () => {
     // Check empty alert renders
     const emptyAlert = await screen.findByText('Your cart is empty');
     expect(emptyAlert).toBeTruthy();
-  }, 120000);
+  });
 });
 
 describe('Error handling', () => {
@@ -565,7 +562,7 @@ describe('User search library', () => {
 
     // Wait for components to rerender
     await screen.findByTestId('search');
-  }, 120000);
+  });
 
   it('handles authenticated user removing searches from the search library', async () => {
     customRender(<App searchQuery={activeSearch} />, {
@@ -611,7 +608,7 @@ describe('User search library', () => {
     // Check removed message appears
     const removeText = await screen.findByText('Your search library is empty');
     expect(removeText).toBeTruthy();
-  }, 120000);
+  });
 
   it('handles anonymous user saving and applying searches', async () => {
     // Render component as anonymous
@@ -654,7 +651,7 @@ describe('User search library', () => {
 
     // Wait for components to rerender
     await screen.findByTestId('search-facets');
-  }, 120000);
+  });
 
   it('handles anonymous user removing searches from the search library', async () => {
     // Render component as anonymous
@@ -692,7 +689,7 @@ describe('User search library', () => {
     await userEvent.click(deleteBtn);
 
     await screen.findByTestId('cart');
-  }, 120000);
+  });
 
   it('handles anonymous user copying search to clipboard', async () => {
     customRender(<App searchQuery={activeSearch} />, { authenticated: false });
@@ -716,7 +713,7 @@ describe('User search library', () => {
     expect(copySearch).toBeTruthy();
 
     await userEvent.click(copySearch);
-  }, 120000);
+  });
 
   describe('Error handling', () => {
     it('displays error message after failing to fetch authenticated user"s saved search queries', async () => {
@@ -796,7 +793,7 @@ describe('User search library', () => {
 
       const errorMsg = await screen.findAllByText(apiRoutes.userSearch.handleErrorMsg(404));
       expect(errorMsg).toBeTruthy();
-    }, 120000);
+    });
   });
 });
 
@@ -821,7 +818,7 @@ describe('User support', () => {
     const closeBtn = await screen.findByText('Close Support');
 
     await userEvent.click(closeBtn);
-  }, 120000);
+  });
 });
 
 describe('Data node status page', () => {
@@ -840,7 +837,7 @@ describe('Data node status page', () => {
 
     const nodeStatusPage = await screen.findByTestId('node-status');
     expect(nodeStatusPage).toBeTruthy();
-  }, 120000);
+  });
 });
 
 describe('Theme switch', () => {
@@ -883,5 +880,5 @@ describe('Theme switch', () => {
 
     // Check if the light mode class is applied
     expect(navComponent).not.toHaveClass('dark-mode');
-  }, 120000);
+  });
 });

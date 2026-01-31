@@ -21,7 +21,6 @@ import { AppStateKeys } from '../../common/atoms';
 const user = userEvent.setup();
 
 // helper to run long tests
-const it120 = (name: string, fn: any) => it(name, fn, 120000);
 
 const defaultProps: Props = {
   onUpdateCart: vi.fn(),
@@ -68,7 +67,7 @@ describe('test Search component', () => {
     expect(alert).toBeTruthy();
   });
 
-  it120(
+  it(
     'runs the side effect to set the current url when there is an activeProject object with a facetsUrl key',
     async () => {
       customRender(<Search {...defaultProps} />);
@@ -170,7 +169,7 @@ describe('test Search component', () => {
     await userEvent.click(await screen.findByTestId('pageSize-option-20'));
 
     expect(screen.getByTestId('cart-items-row-11')).toBeInTheDocument();
-  }, 120000);
+  });
 
   it('handles selecting a row"s checkbox in the table and adding to the cart', async () => {
     AtomWrapper.modifyAtomValue(AppStateKeys.userCart, []);
@@ -206,7 +205,7 @@ describe('test Search component', () => {
 
     // Wait for search component to re-render
     await screen.findByTestId('search');
-  }, 120000);
+  });
 
   it('disables the "Add Selected to Cart" button when no items are in the cart', async () => {
     customRender(<Search {...defaultProps} />);
@@ -224,7 +223,7 @@ describe('test Search component', () => {
     });
     expect(addCartBtn).toBeTruthy();
     expect(addCartBtn).toBeDisabled();
-  }, 120000);
+  });
 
   it('disables the "Add Selected to Cart" button when all rows are already in the cart', async () => {
     // Render the component with userCart full
@@ -237,7 +236,7 @@ describe('test Search component', () => {
 
     expect(addCartBtn).toBeTruthy();
     expect(addCartBtn).toBeDisabled();
-  }, 120000);
+  });
 
   it('handles saving a search query', async () => {
     AtomWrapper.modifyAtomValue(AppStateKeys.userSearchQueries, []);
@@ -280,7 +279,7 @@ describe('test Search component', () => {
     await screen.findByTestId('search');
   });
 
-  it120('handles copying search query to clipboard', async () => {
+  it('handles copying search query to clipboard', async () => {
     customRender(<Search {...defaultProps} />);
 
     // Check search component renders
@@ -311,7 +310,7 @@ describe('test Search component', () => {
     await screen.findByTestId('search');
   });
 
-  it120('handles copying esgpull search query to clipboard', async () => {
+  it('handles copying esgpull search query to clipboard', async () => {
     customRender(<Search {...defaultProps} />);
 
     // Check search component renders
@@ -345,7 +344,7 @@ esgpull search project:'\"test1\"' [\"foo\"] --latest true`;
     await screen.findByTestId('search');
   });
 
-  it120('handles copying esgpull download command to clipboard', async () => {
+  it('handles copying esgpull download command to clipboard', async () => {
     customRender(<Search {...defaultProps} />);
 
     // Check search component renders
@@ -379,7 +378,7 @@ esgpull search project:'\"test1\"' [\"foo\"] --latest true`;
     await screen.findByTestId('search');
   });
 
-  it120('handles copying intake search query to clipboard', async () => {
+  it('handles copying intake search query to clipboard', async () => {
     customRender(<Search {...defaultProps} />);
 
     // Check search component renders

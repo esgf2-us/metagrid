@@ -22,7 +22,6 @@ const defaultProps: Props = {
 
 const user = userEvent.setup();
 
-// Global timeout configured in vitest.config.ts
 
 beforeEach(() => {
   mockNavigate.mockClear();
@@ -75,4 +74,4 @@ it('handles tab switching and saved search actions', async () => {
   expect(deleteBtn).toBeTruthy();
 
   await user.click(deleteBtn);
-}, 120000);
+});

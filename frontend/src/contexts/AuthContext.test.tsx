@@ -30,7 +30,7 @@ describe('test AuthProvider', () => {
 
     // previously advanced fake timers here; with real timers this is unnecessary
     await screen.findByTestId('authProvider');
-  }, 120000);
+  });
 
   it('renders using globus auth provider', async () => {
     mockConfig.AUTHENTICATION_METHOD = 'globus';
@@ -57,5 +57,5 @@ describe('test AuthProvider', () => {
 
     // previously advanced fake timers here; with real timers this is unnecessary
     await screen.findByTestId('authProvider');
-  }, 120000);
+  });
 });
