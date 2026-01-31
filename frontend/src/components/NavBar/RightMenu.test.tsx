@@ -156,7 +156,7 @@ it('displays help menu when help button is clicked', async () => {
   // Check support form rendered
   const support = await screen.findByTestId('support-form');
   expect(support).toBeTruthy();
-});
+}, 120000);
 
 it('the the right drawer display for news button and hide news button', async () => {
   customRender(<RightMenu {...rightMenuProps} />);

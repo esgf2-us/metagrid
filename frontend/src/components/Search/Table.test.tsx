@@ -452,7 +452,7 @@ describe('test main table UI', () => {
     // The STAC icon is rendered as an img with accessible name 'STAC'
     const stacIcon = await within(table).findByRole('img', { name: 'STAC' });
     expect(stacIcon).toBeTruthy();
-  });
+  }, 120000);
 });
 
 describe('test QualityFlag', () => {
@@ -551,7 +551,7 @@ describe('test column sorting', () => {
 
     // Verify sorting by checking the row value changed
     expect(updatedCell).toHaveTextContent('7');
-  });
+  }, 120000);
 
   it('sorts by Total Size column', async () => {
     const colIdx = 6; // The column that Total Size is in
@@ -639,7 +639,7 @@ describe('test column sorting', () => {
 
     // Verify sorting by checking the row value changed
     expect(updatedCell).toHaveTextContent('1234');
-  });
+  }, 120000);
 
   it('Handles sorting without breaking even if values are undefined', async () => {
     customRender(

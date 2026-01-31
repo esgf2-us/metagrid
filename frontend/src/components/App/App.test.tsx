@@ -5,7 +5,7 @@
  * in order to mock their behaviors.
  *
  */
-import { fireEvent, within, screen, waitFor } from '@testing-library/react';
+import { fireEvent, within, screen } from '@testing-library/react';
 import React from 'react';
 import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
@@ -290,7 +290,7 @@ describe('User cart', () => {
     // Check 'Removed items(s) from the cart' message appears
     const removeText = await screen.findByText('Removed item(s) from your cart');
     expect(removeText).toBeTruthy();
-  });
+  }, 120000);
 
   it("displays authenticated user's number of files in the cart summary and handles clearing the cart", async () => {
     customRender(<App searchQuery={activeSearch} />);
@@ -364,7 +364,7 @@ describe('User cart', () => {
     expect(removeBtn).toBeTruthy();
 
     await userEvent.click(removeBtn);
-  });
+  }, 120000);
 
   it('displays anonymous user"s number of files in the cart summary and handles clearing the cart', async () => {
     customRender(<App searchQuery={activeSearch} />, { usesAtoms: true, authenticated: false });

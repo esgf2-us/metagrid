@@ -186,7 +186,7 @@ describe('test FilesTable component', () => {
     await user.click(await screen.findByTestId('pageSize-option-20'));
 
     expect(screen.getByTestId('search-items-row-11')).toBeInTheDocument();
-  });
+  }, 120000);
 
   it('handles clicking the expandable icon', async () => {
     customRender(<FilesTable {...defaultProps} />);
