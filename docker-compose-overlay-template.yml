@@ -66,6 +66,11 @@ services:
       METAGRID_KEYCLOAK_REALM: <METAGRID_KEYCLOAK_REALM>
       METAGRID_KEYCLOAK_CLIENT_ID: <METAGRID_KEYCLOAK_CLIENT_ID>
 
+  react:
+    environment:
+      # Frontend-specific Vite environment variables
+      VITE_FEDERATED_NODES_URL: 'https://esgf.github.io/nodes.html'
+
   keycloak:
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin

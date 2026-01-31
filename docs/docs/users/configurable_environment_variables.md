@@ -152,6 +152,17 @@
 >     `6aWj3gBYsxUBO++cSXtPzbl4n/sGJdhAmtn70XRoUMA=`
 <!-- end generated backend settings markdown -->
 <!-- start generated frontend settings markdown -->
+#### `VITE_FEDERATED_NODES_URL`
+
+> !!! example "*Optional*"
+>     __Default:__ `https://esgf.github.io/nodes.html`
+>
+>     The URL for the federated nodes link displayed in the frontend navigation bar. This allows users to access federated nodes as well as other Metagrid services hosted elsewhere in the federation. Unlike other settings, this is set directly on the `react` service as a Vite environment variable and works independently of the backend.
+>
+>     __Example Values__
+>
+>     `https://esgf.github.io/nodes.html`
+
 #### `METAGRID_AUTHENTICATION_METHOD`
 
 > !!! example "*Optional*"
