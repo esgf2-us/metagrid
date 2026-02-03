@@ -8,9 +8,9 @@ const user = userEvent.setup();
 
 it('renders component with onClose prop', async () => {
   customRender(
-    <Tag value="foo" type="filenameVar" onClose={jest.fn()}>
+    <Tag value="foo" type="filenameVar" onClose={vi.fn()}>
       tag
-    </Tag>
+    </Tag>,
   );
 
   const closeBtn = await screen.findByRole('img', { name: 'Close' });
@@ -23,7 +23,7 @@ it('renders component without onClose prop', async () => {
   customRender(
     <Tag value="foo" type="filenameVar">
       tag
-    </Tag>
+    </Tag>,
   );
 
   const closeBtn = await screen.findByRole('img', { name: 'Close' });

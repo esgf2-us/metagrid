@@ -7,6 +7,7 @@ export enum AppPage {
   'Cart',
   'SavedSearches',
   'NodeStatus',
+  'Unknown',
 }
 
 export type FrontendConfig = {

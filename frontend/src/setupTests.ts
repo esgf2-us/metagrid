@@ -2,14 +2,15 @@
 // allows you to do things like:
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
+/* eslint-disable */
 import '@testing-library/jest-dom';
+import { vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import { TextEncoder } from 'util';
 import { server } from './test/mock/server';
 import messageDisplayData from './components/Messaging/messageDisplayData';
 import { mockConfig, originalGlobusEnabledNodes, AtomWrapper } from './test/jestTestFunctions';
 import 'cross-fetch/polyfill';
-import 'mock-match-media/jest-setup';
 import {
   activeSearchQueryFixture,
   parsedFacetsFixture,
@@ -42,7 +43,46 @@ import {
 } from './common/atoms';
 import { localStorageMock, sessionStorageMock } from './test/mock/mockStorage';
 
-jest.setTimeout(120000);
+// Minimal matchMedia polyfill for jsdom / Vitest
+if (typeof window.matchMedia === 'undefined') {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    configurable: true,
+    value: (query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    }),
+  });
+}
+
+// Shim jsdom getComputedStyle for pseudo-elements (Vitest/jsdom shows "Not implemented" warnings)
+// Return a proxy that gracefully handles pseudo-element requests and getPropertyValue calls.
+const _originalGetComputedStyle = window.getComputedStyle.bind(window);
+window.getComputedStyle = (elt: Element, pseudoElt?: string | null) => {
+  const style = _originalGetComputedStyle(elt);
+  if (!pseudoElt) return style;
+  // For pseudo elements, return a proxy that returns empty strings for properties not present
+  return new Proxy(style, {
+    get(target, prop) {
+      if (prop === 'getPropertyValue') {
+        return (name: string) => {
+          try {
+            return (target as any).getPropertyValue(name) || '';
+          } catch (e) {
+            return '';
+          }
+        };
+      }
+      return (target as any)[prop];
+    },
+  }) as unknown as CSSStyleDeclaration;
+};
 
 // Used to restore window.location after each test
 const location = JSON.stringify(window.location);
@@ -53,8 +93,8 @@ Object.defineProperty(window, 'METAGRID', { value: mockConfig });
 
 // Assign TextEncoder polyfill only if not present to avoid type conflicts
 if (typeof globalThis.TextEncoder === 'undefined') {
-  // @ts-expect-error: Assigning polyfill for test environment
-  globalThis.TextEncoder = TextEncoder;
+  // work around TS mismatch between DOM and Node TextEncoder types
+  (globalThis as any).TextEncoder = TextEncoder;
 }
 
 beforeAll(() => {
@@ -143,17 +183,35 @@ afterEach(() => {
   // https://stackoverflow.com/a/54222110
   // https://stackoverflow.com/questions/59892304/cant-get-memoryrouter-to-work-with-testing-library-react
 
-  // TypeScript complains with error TS2790: The operand of a 'delete' operator must be optional.
-  // https://github.com/facebook/jest/issues/890#issuecomment-776112686
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  delete window.location;
-  window.location = JSON.parse(location) as unknown as string & Location; // Reset location
-  window.location.replace = jest.fn(); // Don't do anything with redirects
-  window.location.assign = jest.fn();
-  window.URL.createObjectURL = jest.fn();
+  // Reset window.location (some environments disallow delete) — tolerate failures.
+  try {
+    // TypeScript complains with error TS2790: The operand of a 'delete' operator must be optional.
+    // https://github.com/facebook/jest/issues/890#issuecomment-776112686
 
-  HTMLAnchorElement.prototype.click = jest.fn();
+    // @ts-ignore
+    delete (window as any).location;
+    // Restore saved location (if possible)
+
+    // @ts-ignore
+    window.location = JSON.parse(location) as unknown as string & Location; // Reset location
+    window.location.replace = vi.fn(); // Don't do anything with redirects
+    window.location.assign = vi.fn();
+  } catch (e) {
+    // Fallback: try to set location.href and stub replace/assign
+    try {
+      const loc = JSON.parse(location);
+      if (loc && loc.href) {
+        window.location.href = loc.href;
+      }
+    } catch (ee) {
+      // ignore
+    }
+    (window.location as any).replace = vi.fn();
+    (window.location as any).assign = vi.fn();
+  }
+  window.URL.createObjectURL = vi.fn();
+
+  HTMLAnchorElement.prototype.click = vi.fn();
 
   // Reset mock values
   window.METAGRID.GLOBUS_NODES = originalGlobusEnabledNodes;
@@ -163,7 +221,7 @@ afterEach(() => {
   sessionStorageMock.clear();
 
   // Reset all mocks after each test
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 
   server.resetHandlers();
 

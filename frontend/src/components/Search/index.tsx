@@ -322,7 +322,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           saveSuccess();
         })
         .catch(
-          /* istanbul ignore next */
+          /* istanbul ignore next -- @preserve */
           (respError: ResponseError) => {
             showError(messageApi, respError.message);
           },
@@ -430,7 +430,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   // Used cached results if the request fails
   if (error) {
-    /* istanbul ignore next */
+    /* istanbul ignore next -- @preserve */
     if (error.cause === 422) {
       // Handle unlikely case where the requested page is not available
       setTimeout(() => {
@@ -487,7 +487,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     selectedItems.filter(
       (item: RawSearchResult) =>
         !userCart.some(
-          /* istanbul ignore next */
+          /* istanbul ignore next -- @preserve */
           (dataset: RawSearchResult) => dataset.id === item.id,
         ),
     ).length === 0;

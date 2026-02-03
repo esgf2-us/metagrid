@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 /**
  * This file contains fixtures to pre-populate server-handlers with dummy data.
  * Fixtures allows tests to be maintainable (especially in the case of updated

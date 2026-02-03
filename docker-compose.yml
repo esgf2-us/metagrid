@@ -69,6 +69,7 @@ services:
     image: metagrid_local_react
     environment:
       PORT: 8080
+      VITE_FEDERATED_NODES_URL: 'https://esgf.github.io/nodes.html'
     depends_on:
       - django
     volumes:
