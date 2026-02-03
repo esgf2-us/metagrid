@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import Facets from './index';
 import customRender from '../../test/custom-render';
-import { activeSearch } from '../../test/jestTestFunctions';
+import { activeSearch } from '../../test/testFunctions';
 import App from '../App/App';
 
 const user = userEvent.setup();

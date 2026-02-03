@@ -6,7 +6,7 @@ import { projectsFixture } from '../../test/mock/fixtures';
 import { mapHTTPErrorCodes } from '../../api/routes';
 import ProjectsForm, { Props } from './ProjectForm';
 import customRender from '../../test/custom-render';
-import { showNoticeStatic } from '../../test/jestTestFunctions';
+import { showNoticeStatic } from '../../test/testFunctions';
 
 const defaultProps: Props = {
   projectsFetched: { results: projectsFixture() },

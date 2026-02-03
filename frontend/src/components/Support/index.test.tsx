@@ -5,7 +5,7 @@ import { AppPage } from '../../common/types';
 import Support from './index';
 import customRender from '../../test/custom-render';
 import { getCurrentAppPage } from '../../common/utils';
-import { AtomWrapper } from '../../test/jestTestFunctions';
+import { AtomWrapper } from '../../test/testFunctions';
 import { AppStateKeys } from '../../common/atoms';
 import { TourTitles } from '../../common/joyrideTutorials/reactJoyrideSteps';
 

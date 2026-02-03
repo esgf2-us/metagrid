@@ -2,7 +2,7 @@ import { within, screen } from '@testing-library/react';
 import React from 'react';
 import NodeSummary from './NodeSummary';
 import customRender from '../../test/custom-render';
-import { AtomWrapper } from '../../test/jestTestFunctions';
+import { AtomWrapper } from '../../test/testFunctions';
 import { darkModeGreen, darkModeRed } from './StatusToolTip';
 import { AppStateKeys } from '../../common/atoms';
 import { localStorageMock } from '../../test/mock/mockStorage';

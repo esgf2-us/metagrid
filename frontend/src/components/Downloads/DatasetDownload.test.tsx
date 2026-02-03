@@ -13,7 +13,7 @@ import {
   mockFunction,
   openDropdownList,
   AtomWrapper,
-} from '../../test/jestTestFunctions';
+} from '../../test/testFunctions';
 import App from '../App/App';
 import { GlobusEndpoint, GlobusTaskItem } from '../Globus/types';
 import { globusEndpointFixture, globusAuthScopeFixure } from '../../test/mock/fixtures';
