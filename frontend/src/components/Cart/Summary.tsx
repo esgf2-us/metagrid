@@ -104,44 +104,42 @@ const Summary: React.FC = () => {
       <Divider />
 
       {taskItems.length > 0 && (
-        <>
-          <Collapse
-            items={[
-              {
-                key: '1',
-                label: (
-                  <Title level={5} style={{ margin: 0 }}>
-                    Task Submit History
-                    <Button size="small" danger style={{ float: 'right' }} onClick={clearAllTasks}>
-                      <span data-testid="clear-all-submitted-globus-tasks">Clear All</span>
-                    </Button>
-                  </Title>
-                ),
-                children: (
-                  <List
-                    itemLayout="vertical"
-                    dataSource={taskItems}
-                    style={styles.taskListContainer}
-                    renderItem={(task) => (
-                      <List.Item key={task.taskId} style={{ padding: '5px' }}>
-                        <Card size="small">
-                          <List.Item.Meta
-                            title={`Submitted: ${task.submitDate}`}
-                            description={
-                              <Link href={task.taskStatusURL} target="_blank" rel="noreferrer">
-                                View Task In Globus
-                              </Link>
-                            }
-                          />
-                        </Card>
-                      </List.Item>
-                    )}
-                  />
-                ),
-              },
-            ]}
-          />
-        </>
+        <Collapse
+          items={[
+            {
+              key: '1',
+              label: (
+                <Title level={5} style={{ margin: 0 }}>
+                  Task Submit History
+                  <Button size="small" danger style={{ float: 'right' }} onClick={clearAllTasks}>
+                    <span data-testid="clear-all-submitted-globus-tasks">Clear All</span>
+                  </Button>
+                </Title>
+              ),
+              children: (
+                <List
+                  itemLayout="vertical"
+                  dataSource={taskItems}
+                  style={styles.taskListContainer}
+                  renderItem={(task) => (
+                    <List.Item key={task.taskId} style={{ padding: '5px' }}>
+                      <Card size="small">
+                        <List.Item.Meta
+                          title={`Submitted: ${task.submitDate}`}
+                          description={
+                            <Link href={task.taskStatusURL} target="_blank" rel="noreferrer">
+                              View Task In Globus
+                            </Link>
+                          }
+                        />
+                      </Card>
+                    </List.Item>
+                  )}
+                />
+              ),
+            },
+          ]}
+        />
       )}
     </div>
   );

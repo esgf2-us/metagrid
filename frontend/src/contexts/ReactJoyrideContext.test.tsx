@@ -146,7 +146,7 @@ describe('test ReactJoyrideProvider', () => {
     expect(tourModal).toBeTruthy();
 
     // Verify button styling in dark mode
-    let nextBtn = await screen.findByRole('button', { name: 'Next' });
+    const nextBtn = await screen.findByRole('button', { name: 'Next' });
     expect(nextBtn).toBeTruthy();
     expect(nextBtn).toHaveStyle('background-color: #eee');
     expect(nextBtn).toHaveStyle('color: #b00');

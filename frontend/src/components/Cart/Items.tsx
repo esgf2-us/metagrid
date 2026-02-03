@@ -57,7 +57,7 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   return (
     <div data-testid="cartItems">
-      {userCart.length === 0 && <Empty description="Your cart is empty"></Empty>}
+      {userCart.length === 0 && <Empty description="Your cart is empty" />}
       {userCart.length > 0 && (
         <>
           <div style={styles.summary}>

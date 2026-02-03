@@ -113,7 +113,7 @@ export const errorMsgBasedOnHTTPStatusCode = (error: ResponseError, route: ApiRo
   // Indicates that an HTTP response status code was returned from the server
   if (error.response) {
     // Normalize status to a number when possible
-    /* istanbul ignore next */
+    /* istanbul ignore next -- @preserve */
     const statusNum = Number(error.response.status) || 0;
 
     // For server errors (5xx) return the generic error message for the route
@@ -558,7 +558,7 @@ export const fetchSearchResults = async (
 
   // Get cached search results
   const cachedResults = getCachedSearchResults();
-  /* istanbul ignore next */
+  /* istanbul ignore next -- @preserve */
   const cachedURL = (cachedResults?.cachedURL as string) || '';
   const reqUrlOffset = reqUrlStr.match(/offset=\d+/)?.[0];
   const cachedUrlOffset = cachedURL.match(/offset=\d+/)?.[0];
@@ -572,7 +572,7 @@ export const fetchSearchResults = async (
   let finalUrl = reqUrlStr;
   const cachedPagination = getCachedPagination();
   // If the change to the request URL was not the offset, reset the offset to 0
-  /* istanbul ignore next */
+  /* istanbul ignore next -- @preserve */
   if (reqUrlOffset === cachedUrlOffset || (!reqUrlOffset && cachedUrlOffset)) {
     finalUrl = reqUrlStr.replace(/offset=\d+/, 'offset=0');
     // Cache the new offset value so it is reflected in the pagination
@@ -592,7 +592,7 @@ export const fetchSearchResults = async (
         // Prevent breaking the app if the response is not successful
         if (results.status !== 200) {
           // Handle the case where status is 422 due to a offset value that is too high
-          /* istanbul ignore next */
+          /* istanbul ignore next -- @preserve */
           if (results.status === 422) {
             cachePagination({
               page: 1,
@@ -605,7 +605,7 @@ export const fetchSearchResults = async (
         return results;
       })
       .catch((error: ResponseError) => {
-        /* istanbul ignore next */
+        /* istanbul ignore next -- @preserve */
         if (error.cause === 422) {
           throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearchSTAC), {
             cause: 422,
@@ -791,7 +791,7 @@ export const loadSessionValue = async <T>(key: string): Promise<T | null> => {
       return null;
     })
     .catch(
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       (error: ResponseError) => {
         throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.tempStorageGet));
       },
@@ -812,7 +812,7 @@ export const saveSessionValue = async <T>(key: string, value: T): Promise<AxiosR
       return res.data;
     })
     .catch(
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       (error: ResponseError) => {
         throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.tempStorageSet));
       },

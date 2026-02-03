@@ -25,7 +25,7 @@ const welcomeMessage: MessageData = {
   },
 };
 
-/* istanbul ignore next */
+/* istanbul ignore next -- @preserve */
 const startupMessages: StartPopupData = {
   messageToShow: messageDataJSON.changelogVersions[0] || '', // Version in footer
   defaultMessageId: 'welcome',

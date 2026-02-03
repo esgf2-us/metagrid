@@ -58,7 +58,7 @@ const LeftMenu: React.FC<React.PropsWithChildren<Props>> = ({
   if (apiIsLoading) {
     return (
       <Form form={form}>
-        <Spin style={styles.spin}></Spin>
+        <Spin style={styles.spin} />
       </Form>
     );
   }
@@ -104,7 +104,7 @@ const LeftMenu: React.FC<React.PropsWithChildren<Props>> = ({
                 type="primary"
                 htmlType="submit"
                 icon={<SearchOutlined data-testid="left-menu-keyword-search-submit" />}
-              ></Button>
+              />
             </Form.Item>
           </Space>
         </Form>
