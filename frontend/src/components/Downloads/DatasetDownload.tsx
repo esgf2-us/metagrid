@@ -31,17 +31,16 @@ import {
   startSearchGlobusEndpoints,
   SubmissionResult,
 } from '../../api';
-import { RawSearchResults } from '../Search/types';
+import { RawSearchResults, StacFeature, StacSearchResponse } from '../Search/types';
 import {
   GlobusTaskItem,
   MAX_TASK_LIST_LENGTH,
   GlobusEndpointSearchResults,
   GlobusEndpoint,
 } from '../Globus/types';
-import { getCurrentAppPage, showError, showNotice } from '../../common/utils';
+import { showError, showNotice } from '../../common/utils';
 import { RawTourState, ReactJoyrideContext } from '../../contexts/ReactJoyrideContext';
 import apiRoutes from '../../api/routes';
-import { AppPage } from '../../common/types';
 import {
   cartDownloadIsLoadingAtom,
   cartItemSelectionsAtom,
@@ -55,7 +54,11 @@ import {
   manageCollectionsTourTargets,
   createCollectionsFormTour,
 } from '../../common/joyrideTutorials/reactJoyrideSteps';
-import { getStacGlobusHref, generateWgetScriptSTAC } from '../../common/STAC';
+import {
+  getStacGlobusHref,
+  generateWgetScriptSTAC,
+  convertStacToRawSearchResult,
+} from '../../common/STAC';
 
 const GLOBUS_REDIRECT_URL = `${window.location.origin}/cart/items`;
 
@@ -105,7 +108,9 @@ function redirectToRootUrl(): void {
 }
 
 interface DatasetDownloadFormProps {
-  globusHrefs?: string[];
+  stacResults?: StacSearchResponse;
+  searchURL?: string;
+  onDownloadFinish?: () => void;
 }
 
 const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormProps>> = (
@@ -168,6 +173,10 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
     setLoadingPage(false);
     setDownloadIsLoading(false);
 
+    if (props.onDownloadFinish) {
+      props.onDownloadFinish();
+    }
+
     setChosenGlobusEndpoint(null);
     setItemSelections([]);
     redirectToRootUrl();
@@ -181,12 +190,12 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
   const handleWgetDownload = (): void => {
     setDownloadIsLoading(true);
 
-    if (props.globusHrefs && props.globusHrefs.length > 0) {
+    if (props.stacResults && props.stacResults.features.length > 0) {
+      const searchItems = props.stacResults.features.map((feature: StacFeature) =>
+        convertStacToRawSearchResult(feature),
+      );
       // Handle direct hrefs download
-      // generateWgetScriptSTAC(
-      //   stacResults.features.map((feature: StacFeature) => convertStacToRawSearchResult(feature)),
-      //   getUrlFromSearch(activeSearchQuery),
-      // );
+      generateWgetScriptSTAC(searchItems, props.searchURL);
       setDownloadIsLoading(false);
       return;
     }
@@ -318,18 +327,26 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
   };
 
   const handleGlobusDownload = (endpoint: GlobusEndpoint, authCode?: string): void => {
-    const ids = itemSelections?.map((item) => (item ? item.id : '')) ?? [];
+    const ids: string[] = [];
     const globusHrefs: string[] = [];
 
     if (itemSelections) {
+      ids.concat(itemSelections?.map((item) => (item ? item.id : '')));
       itemSelections.forEach((item) => {
         const href = getStacGlobusHref(item.assets);
         if (href !== null) {
           globusHrefs.push(href);
         }
       });
-    } else if (props.globusHrefs && props.globusHrefs.length > 0) {
-      globusHrefs.push(...props.globusHrefs);
+    }
+
+    if (props.stacResults) {
+      props.stacResults.features.forEach((feature) => {
+        const href = getStacGlobusHref(feature.assets);
+        if (href !== null) {
+          globusHrefs.push(href);
+        }
+      });
     }
 
     setDownloadIsLoading(true);
@@ -340,11 +357,9 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
       authScope: getCurrentScope(),
       endpointId: endpoint.id,
       path: endpoint.path || '',
-      dataset_id: props.globusHrefs ? [] : ids,
+      dataset_id: ids,
       globus_hrefs: globusHrefs,
     });
-
-    console.log('Globus download params:', params);
 
     axios
       .post<SubmissionResult>(apiRoutes.globusTransfer.path, params)
@@ -549,13 +564,16 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
     if (downloadType === 'wget') {
       handleWgetDownload();
     } else if (downloadType === 'Globus') {
-      const itemsReady = checkItemsAreGlobusEnabled();
+      let itemsReady = false;
+      if (props.stacResults && props.stacResults.features) {
+        itemsReady = true;
+      } else {
+        itemsReady = checkItemsAreGlobusEnabled();
+      }
+
       if (itemsReady) {
-        const prepareDownload = (): void => {
-          setCurrentGoal(GlobusGoals.DoGlobusTransfer);
-          performStepsForGlobusGoals();
-        };
-        prepareDownload();
+        setCurrentGoal(GlobusGoals.DoGlobusTransfer);
+        performStepsForGlobusGoals();
       }
     }
   };
@@ -687,10 +705,9 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
 
   function getCurrentGoal(): GlobusGoals {
     const urlParams = new URLSearchParams(window.location.search);
-    const curPage = getCurrentAppPage();
 
     // If cancelled key is in URL, set goal to none
-    if (urlParams.has('cancelled') || curPage !== AppPage.Cart) {
+    if (urlParams.has('cancelled')) {
       setCurrentGoal(GlobusGoals.None);
       return GlobusGoals.None;
     }
@@ -985,7 +1002,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
                 handleDownloadForm('Globus');
               }}
               disabled={
-                itemSelections.length === 0 ||
+                (itemSelections.length === 0 && !props.stacResults) ||
                 !chosenGlobusEndpoint ||
                 savedGlobusEndpoints.length === 0
               }
@@ -1010,7 +1027,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
                 handleDownloadForm('wget');
               }}
               icon={<DownloadOutlined />}
-              disabled={itemSelections.length === 0}
+              disabled={itemSelections.length === 0 && !props.stacResults}
               loading={downloadIsLoading}
             >
               Download
