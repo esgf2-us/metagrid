@@ -40,7 +40,8 @@ jobs:
           python-version: 3.12
 
       - name: Install requirements
-        run: pip3 install --upgrade pip
+        run: 
+          pip3 install --upgrade pip
           pip3 install setuptools --upgrade
           pip3 install --no-cache-dir -r backend/requirements/local.txt
 
