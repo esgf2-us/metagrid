@@ -838,7 +838,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
   };
 
   const handleDownloadForm = (downloadType: 'wget' | 'Globus'): void => {
-    // istanbul ignore else
+    /* istanbul ignore else -- @preserve */
     if (downloadType === 'wget') {
       handleWgetDownload();
     } else if (downloadType === 'Globus') {

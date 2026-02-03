@@ -663,7 +663,7 @@ export const createCartItemsTour = (setCurrentPage: (page: number) => void): Joy
       'Clicking this would switch you to the search library tab. However we will stay in the data cart for this tour.',
     );
 
-  /* istanbul ignore if */
+  /* istanbul ignore if -- @preserve */
   // Add steps if the cart or search library is empty, which will add needed items
   if (cartIsEmpty()) {
     cartItemsAdded = true;
@@ -683,7 +683,7 @@ export const createCartItemsTour = (setCurrentPage: (page: number) => void): Joy
         'This is the main search page where we will load a project to add a dataset...',
         'center',
       );
-    /* istanbul ignore if */
+    /* istanbul ignore if -- @preserve */
     // If the main search page is empty, select a project
     if (mainTableEmpty()) {
       tour
@@ -871,7 +871,7 @@ export const createSearchCardTour = (setCurrentPage: (page: number) => void): Jo
     );
 
   // Add steps if the cart or search library is empty, which will add needed items
-  /* istanbul ignore if */
+  /* istanbul ignore if -- @preserve */
   if (searchLibraryIsEmpty()) {
     searchSaved = true;
     tour
@@ -891,7 +891,7 @@ export const createSearchCardTour = (setCurrentPage: (page: number) => void): Jo
       );
 
     // If the main search page is empty, select a project
-    /* istanbul ignore if */
+    /* istanbul ignore if -- @preserve */
     if (mainTableEmpty()) {
       tour
         .addNextStep(

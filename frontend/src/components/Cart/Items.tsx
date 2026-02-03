@@ -49,7 +49,7 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     setUserCart([]);
     setItemSelections([]);
 
-    /* istanbul ignore else */
+    /* istanbul ignore else -- @preserve */
     if (isAuthenticated) {
       updateUserCart(pk, accessToken, []);
     }

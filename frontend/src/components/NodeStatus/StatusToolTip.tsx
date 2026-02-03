@@ -33,7 +33,7 @@ const StatusToolTip: React.FC<React.PropsWithChildren<Props>> = ({ dataNode, chi
       obj.name.includes(dataNode),
     ) as unknown as NodeStatusElement;
 
-    /* istanbul ignore else */
+    /* istanbul ignore else -- @preserve */
     if (node) {
       const { isOnline, timestamp } = node;
 

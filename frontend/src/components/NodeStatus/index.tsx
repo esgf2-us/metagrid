@@ -51,7 +51,7 @@ const NodeStatus: React.FC<React.PropsWithChildren<Props>> = ({ apiError, isLoad
     );
   }
 
-  /* istanbul ignore else */
+  /* istanbul ignore else -- @preserve */
   if (nodeStatus && !featureIsDisabled) {
     // Since the timestamp is the same for all node objects, use the first one
     const { timestamp } = nodeStatus[0];

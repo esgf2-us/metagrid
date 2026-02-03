@@ -172,13 +172,13 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
     supdata: { label: 'Supplemental Data', url: null },
     'Tech Note': { label: 'Technical Notes', url: null },
   };
-  /* istanbul ignore else */
+  /* istanbul ignore else -- @preserve */
   if (objectHasKey(record, 'xlink')) {
     const { xlink } = record;
 
     (xlink as string[]).forEach((link) => {
       const [url, , linkType] = splitStringByChar(link, '|') as string[];
-      /* istanbul ignore else */
+      /* istanbul ignore else -- @preserve */
       if (Object.keys(xlinkTypesToOutput).includes(linkType)) {
         xlinkTypesToOutput[linkType].url = url;
       }
@@ -188,7 +188,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
   // Have to parse and format since 'quality_control_flags' attribute is
   // poorly structured in the Search API
   const qualityFlags: Record<string, string> = {};
-  /* istanbul ignore else */
+  /* istanbul ignore else -- @preserve */
   if (objectHasKey(record, 'quality_control_flags')) {
     const { quality_control_flags: qcFlags } = record;
 

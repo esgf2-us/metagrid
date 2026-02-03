@@ -246,7 +246,7 @@ const FacetsForm: React.FC = () => {
     let newMinVersionDate = null;
     let newMaxVersionDate = null;
 
-    /* istanbul ignore else */
+    /* istanbul ignore else -- @preserve */
     if (versionDateRange) {
       const [minDate, maxDate] = versionDateRange;
       if (minDate) {
@@ -358,7 +358,7 @@ const FacetsForm: React.FC = () => {
     if (!dropdownIsOpen && activeDropdownValue) {
       const [facet, options] = activeDropdownValue;
       const newActiveFacets: ActiveFacets = activeSearchQuery.activeFacets;
-      /* istanbul ignore else */
+      /* istanbul ignore else -- @preserve */
       if (options.length === 0) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [facet]: remove, ...updatedFacets } = newActiveFacets;
@@ -441,7 +441,7 @@ const FacetsForm: React.FC = () => {
                       }
                       onClick={() => {
                         // copy link to clipboard
-                        /* istanbul ignore else */
+                        /* istanbul ignore else -- @preserve */
                         if (navigator && navigator.clipboard) {
                           navigator.clipboard.writeText(
                             facetOptions
