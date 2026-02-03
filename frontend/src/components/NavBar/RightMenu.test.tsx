@@ -1,10 +1,9 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import customRender from '../../test/custom-render';
 import { matchMedia, setMedia } from 'mock-match-media';
+import { vi } from 'vitest';
+import customRender from '../../test/custom-render';
 import RightMenu, { Props } from './RightMenu';
 import { mockConfig, mockKeycloakToken, AtomWrapper } from '../../test/jestTestFunctions';
 import { localStorageMock, tempStorageSetMock } from '../../test/mock/mockStorage';
@@ -23,8 +22,8 @@ const rightMenuProps: Props = {
   mode: 'horizontal',
 };
 
-jest.mock('@react-keycloak/web', () => {
-  const originalModule = jest.requireActual('@react-keycloak/web');
+vi.mock('@react-keycloak/web', async () => {
+  const originalModule = await vi.importActual('@react-keycloak/web');
 
   return {
     ...originalModule,
@@ -71,8 +70,8 @@ it('display the users given name after authentication with keycloak', async () =
 
   tempStorageSetMock('keycloakFixture', {
     keycloak: {
-      login: jest.fn(),
-      logout: jest.fn(),
+      login: vi.fn(),
+      logout: vi.fn(),
       idTokenParsed: { given_name: 'John Doe', email: 'johnd@email.gov' },
     },
   });
@@ -93,8 +92,8 @@ it('display the users email after authentication if they did not provide a name 
 
   tempStorageSetMock('keycloakFixture', {
     keycloak: {
-      login: jest.fn(),
-      logout: jest.fn(),
+      login: vi.fn(),
+      logout: vi.fn(),
       idTokenParsed: { email: 'johnd@email.gov' },
     },
   });
@@ -271,7 +270,7 @@ describe('Dark Mode', () => {
     expect(matchMedia('(prefers-color-scheme: dark)').matches).toBe(true);
 
     AtomWrapper.modifyAtomValue(AppStateKeys.isDarkMode, false);
-    customRender(<RightMenu mode="vertical"></RightMenu>, { usesAtoms: true });
+    customRender(<RightMenu mode="vertical" />, { usesAtoms: true });
     waitFor(() => {
       expect(screen.getByTestId('isDarkModeSwitch')).toBeChecked();
     });
@@ -279,7 +278,7 @@ describe('Dark Mode', () => {
 
   it('stores preference when selected', async () => {
     AtomWrapper.modifyAtomValue(AppStateKeys.isDarkMode, true);
-    customRender(<RightMenu mode="vertical"></RightMenu>, { usesAtoms: true });
+    customRender(<RightMenu mode="vertical" />, { usesAtoms: true });
 
     const isDarkModeSwitch = await screen.findByTestId('isDarkModeSwitch');
     expect(isDarkModeSwitch).not.toBeChecked();
@@ -297,9 +296,8 @@ describe('Dark Mode', () => {
     AtomWrapper.modifyAtomValue(AppStateKeys.isDarkMode, undefined);
     customRender(<RightMenu {...rightMenuProps} />, { usesAtoms: true });
 
-    waitFor(() => {
-      expect(screen.findByTestId('isDarkModeSwitch')).toBeChecked(); // Dark mode should be enabled
-    });
+    const switchEl = await screen.findByTestId('isDarkModeSwitch');
+    expect(switchEl).toBeChecked(); // Dark mode should be enabled
   });
 
   it('respects (prefers-color-scheme: light) when no user preference is set', async () => {
@@ -309,9 +307,8 @@ describe('Dark Mode', () => {
     AtomWrapper.modifyAtomValue(AppStateKeys.isDarkMode, undefined);
     customRender(<RightMenu {...rightMenuProps} />, { usesAtoms: true });
 
-    waitFor(() => {
-      expect(screen.findByTestId('isDarkModeSwitch')).toBeChecked(); // Dark mode should be enabled
-    });
+    const switchEl = await screen.findByTestId('isDarkModeSwitch');
+    expect(switchEl).toBeChecked(); // Dark mode should be enabled
   });
 });
 

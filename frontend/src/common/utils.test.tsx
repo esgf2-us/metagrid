@@ -2,6 +2,9 @@ import { render } from '@testing-library/react';
 import React from 'react';
 import { MessageInstance } from 'antd/es/message/interface';
 import { message } from 'antd';
+import { Provider, useAtom } from 'jotai';
+import { atomWithStorage } from 'jotai/utils';
+import { vi } from 'vitest';
 import { rawProjectFixture } from '../test/mock/fixtures';
 import { UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
 import { ActiveSearchQuery, RawSearchResult, RawSearchResults } from '../components/Search/types';
@@ -36,8 +39,6 @@ import {
   createIntakeEsgfSearch,
 } from './utils';
 import { AppPage } from './types';
-import { Provider, useAtom } from 'jotai';
-import { atomWithStorage } from 'jotai/utils';
 import { mockConfig } from '../test/jestTestFunctions';
 import { localStorageMock, sessionStorageMock, tempStorageGetMock } from '../test/mock/mockStorage';
 
@@ -281,21 +282,21 @@ describe('Test combineCarts', () => {
     id: 'firstResult',
     url: ['test1'],
     access: [],
-    isStac: false
+    isStac: false,
   };
   const secondResult: RawSearchResult = {
     key: undefined,
     id: 'secondResult',
     url: ['test2'],
     access: [],
-    isStac: false
+    isStac: false,
   };
   const thirdResult: RawSearchResult = {
     key: undefined,
     id: 'thirdResult',
     url: ['test3'],
     access: [],
-    isStac: false
+    isStac: false,
   };
   const emptySearchResults: RawSearchResults = [];
   const searchResults1: RawSearchResults = [firstResult, secondResult];
@@ -372,7 +373,7 @@ describe('Test unsavedLocal searches', () => {
 
 describe('Test getCurrentAppPage', () => {
   it('returns appropriate page name based on window location', () => {
-    expect(getCurrentAppPage()).toEqual(-1);
+    expect(getCurrentAppPage()).toEqual(AppPage.Unknown);
 
     // eslint-disable-next-line
     window = Object.create(window);
@@ -396,7 +397,7 @@ describe('Test getCurrentAppPage', () => {
     window.location.pathname = 'testing/cart/nodes';
     expect(getCurrentAppPage()).toEqual(AppPage.NodeStatus);
     window.location.pathname = 'testing/bad';
-    expect(getCurrentAppPage()).toEqual(-1);
+    expect(getCurrentAppPage()).toEqual(AppPage.Unknown);
   });
 });
 
@@ -619,8 +620,8 @@ describe('Test cacheSearchResults, getCachedSearchResults, and clearCachedSearch
     expect(tempStorageGetMock('cachedSearchResults')).toBeTruthy();
 
     // Simulate time passing
-    jest.useFakeTimers();
-    jest.setSystemTime(Date.now() + 60 * 60 * 2000); // Move time forward by 2 hours
+    vi.useFakeTimers();
+    vi.setSystemTime(Date.now() + 60 * 60 * 2000); // Move time forward by 2 hours
     const cached = getCachedSearchResults();
     expect(cached).toEqual({});
 

@@ -8,6 +8,7 @@
 import { fireEvent, within, screen } from '@testing-library/react';
 import React from 'react';
 import userEvent from '@testing-library/user-event';
+import { vi } from 'vitest';
 import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import { getSearchFromUrl } from '../../common/utils';
@@ -19,6 +20,7 @@ import { AppStateKeys } from '../../common/atoms';
 import { delay } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
 const user = userEvent.setup();
+
 
 describe('test main components', () => {
   it('renders App component', async () => {
@@ -32,9 +34,7 @@ describe('test main components', () => {
     expect(await screen.findByTestId('search')).toBeTruthy();
   });
 
-  it('renders an error page when window.METAGRID is undefined', async () => {
-
-  });
+  it('renders an error page when window.METAGRID is undefined', async () => {});
 
   it('renders App component with undefined search query', async () => {
     customRender(<App searchQuery={undefined as unknown as ActiveSearchQuery} />, {
@@ -76,7 +76,7 @@ describe('test main components', () => {
 
   // This test is currently skipped because the filename search feature was recently
   // removed. It can be re-enabled if the feature is re-introduced.
-  xit('handles setting filename searches and duplicates', async () => {
+  it.skip('handles setting filename searches and duplicates', async () => {
     customRender(<App searchQuery={activeSearch} />);
 
     // Check applicable components render
@@ -199,7 +199,7 @@ describe('test main components', () => {
     expect(facetFormSelect).toBeTruthy();
     fireEvent.mouseDown(facetFormSelect.firstElementChild as HTMLInputElement);
 
-    // Select the first facet option
+    // Select the first facet option (use waitFor to avoid timing/order flakiness)
     const facetOption = await screen.findByTestId('data_node_aims3.llnl.gov');
     expect(facetOption).toBeTruthy();
     await userEvent.click(facetOption);
@@ -246,13 +246,13 @@ describe('test main components', () => {
     await screen.findByTestId('search');
   });
 
-  xit('fetches the data node status every defined interval', async () => {
-    jest.useFakeTimers();
+  it.skip('fetches the data node status every defined interval', async () => {
+    vi.useFakeTimers();
 
     customRender(<App searchQuery={activeSearch} />);
 
-    jest.advanceTimersByTime(295000);
-    jest.useRealTimers();
+    vi.advanceTimersByTime(295000);
+    vi.useRealTimers();
 
     // Check applicable components render
     const facetsComponent = await screen.findByTestId('search-facets');

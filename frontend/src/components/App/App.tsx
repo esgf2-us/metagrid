@@ -67,8 +67,9 @@ import Banner from '../Messaging/Banner';
 
 const useHotjar = (): void => {
   if (window.METAGRID.HOTJAR_ID != null && window.METAGRID.HOTJAR_SV != null) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     React.useEffect(() => {
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       hotjar.initialize({
         id: Number(window.METAGRID.HOTJAR_ID),
         sv: Number(window.METAGRID.HOTJAR_SV),
@@ -142,7 +143,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
         .then((rawUserSearches) => {
           const databaseItems = rawUserSearches.results;
           const searchQueriesToAdd = unsavedLocalSearches(databaseItems, userSearchQueries);
-          /* istanbul ignore next */
+          /* istanbul ignore next -- @preserve */
           searchQueriesToAdd.forEach((query) => {
             addUserSearchQuery(pk, accessToken, query);
           });
@@ -189,14 +190,14 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
           const rawProj: RawProject | undefined = data.results.find((proj) => {
             return proj.name.toLowerCase() === (projectName as string).toLowerCase();
           });
-          /* istanbul ignore next */
+          /* istanbul ignore next -- @preserve */
           if (rawProj) {
             setActiveSearchQuery({ ...searchQuery, project: rawProj });
           }
         }
       })
       .catch(
-        /* istanbul ignore next */
+        /* istanbul ignore next -- @preserve */
         (error: ResponseError) => {
           showError(messageApi, error.message);
         },
@@ -261,7 +262,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     >
       <Layout>
         <Routes>
-          <Route path="*" element={<NavBar></NavBar>} />
+          <Route path="*" element={<NavBar />} />
         </Routes>
         <Layout id="body-layout">
           {contextHolder}
@@ -331,7 +332,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
                           },
                           { title: 'Data Node Status' },
                         ]}
-                      ></Breadcrumb>
+                      />
                       <NodeStatus
                         apiError={nodeStatusApiError as ResponseError}
                         isLoading={nodeStatusIsLoading}
@@ -359,7 +360,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
                     </>
                   }
                 >
-                  <Route path="*" element={<></>} />
+                  <Route path="*" element={<div />} />
                 </Route>
                 <Route
                   path="*"
@@ -397,7 +398,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
             style={{ width: '48px', height: '48px' }}
             icon={<QuestionOutlined style={{ fontSize: '28px', marginLeft: '-5px' }} />}
             onClick={() => setSupportModalVisible(true)}
-          ></FloatButton>
+          />
         </Affix>
         <Support />
         <StartPopup />

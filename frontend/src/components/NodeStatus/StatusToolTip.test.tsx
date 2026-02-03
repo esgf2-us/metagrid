@@ -46,7 +46,7 @@ describe('test status tooltip used in the facets form on the left.', () => {
     customRender(
       <StatusToolTip dataNode="'aims3.llnl.gov'">
         <p>Child</p>
-      </StatusToolTip>
+      </StatusToolTip>,
     );
 
     const nodeStat = await screen.findByRole('img', {
@@ -59,7 +59,7 @@ describe('test status tooltip used in the facets form on the left.', () => {
     customRender(
       <StatusToolTip dataNode="'aims3.llnl.gov'">
         <p>Child</p>
-      </StatusToolTip>
+      </StatusToolTip>,
     );
 
     const nodeStat = await screen.findByRole('img', {
@@ -72,7 +72,7 @@ describe('test status tooltip used in the facets form on the left.', () => {
     customRender(
       <StatusToolTip dataNode="aims3.llnl.gov">
         <p>Child</p>
-      </StatusToolTip>
+      </StatusToolTip>,
     );
 
     const nodeStat = await screen.findByRole('img', {
@@ -85,7 +85,7 @@ describe('test status tooltip used in the facets form on the left.', () => {
     customRender(
       <StatusToolTip dataNode="esgf1.dkrz.de">
         <p>Child</p>
-      </StatusToolTip>
+      </StatusToolTip>,
     );
 
     const nodeStat = await screen.findByRole('img', {

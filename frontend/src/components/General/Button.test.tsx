@@ -7,7 +7,7 @@ import customRender from '../../test/custom-render';
 const user = userEvent.setup();
 
 it('renders component', async () => {
-  customRender(<Button type="primary"></Button>);
+  customRender(<Button type="primary" />);
 
   // Check button rendered
   const button = await screen.findByRole('button');
@@ -15,7 +15,7 @@ it('renders component', async () => {
 });
 
 it('returns string "clicked" onClick', async () => {
-  customRender(<Button type="primary" onClick={jest.fn()}></Button>);
+  customRender(<Button type="primary" onClick={vi.fn()} />);
 
   // Click on the button
   const button = await screen.findByRole('button');

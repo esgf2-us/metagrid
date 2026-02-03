@@ -12,7 +12,7 @@ const defaultProps: Props = {
   projectsFetched: { results: projectsFixture() },
   apiIsLoading: false,
   apiError: undefined,
-  onFinish: jest.fn(),
+  onFinish: vi.fn(),
 };
 
 const user = userEvent.setup();
@@ -36,7 +36,7 @@ it('Runs project form submit when changing projects', async () => {
           type: 'success',
         });
       }}
-    />
+    />,
   );
 
   // First project should be selected by default, calling 'onFinish'
@@ -62,7 +62,7 @@ it('renders error message when projects can"t be fetched', async () => {
     <ProjectsForm
       {...defaultProps}
       apiError={new Error(mapHTTPErrorCodes('service', 'generic')) as ResponseError}
-    />
+    />,
   );
 
   const alertComponent = await screen.findByRole('img', {

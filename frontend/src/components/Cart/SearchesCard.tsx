@@ -77,7 +77,7 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
     if (!isLoading && data) {
       let loadedCount = 0;
       if (project.isSTAC) {
-        /* istanbul ignore next */
+        /* istanbul ignore next -- @preserve */
         loadedCount = (data as { search?: { numMatched?: number } }).search?.numMatched || 0;
       } else {
         loadedCount = (data as { numFound?: number }).numFound || 0;

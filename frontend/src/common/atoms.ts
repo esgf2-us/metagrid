@@ -36,7 +36,10 @@ export enum GlobusStateKeys {
   savedGlobusEndpoints = 'savedGlobusEndpoints',
 }
 
-const darkModeDefault = window.matchMedia('(prefers-color-scheme: dark)').matches;
+const darkModeDefault =
+  typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+    ? window.matchMedia('(prefers-color-scheme: dark)').matches
+    : false;
 
 export const supportModalVisibleAtom = atom<boolean>(false);
 

@@ -28,6 +28,8 @@ import { FrontendConfig } from './common/types';
 const container = document.getElementById('root');
 const root = createRoot(container!);
 const { Link } = Typography;
+const federatedNodesUrl =
+  import.meta.env.VITE_FEDERATED_NODES_URL || 'https://esgf.github.io/nodes.html';
 
 const appRouter: JSX.Element = (
   <BrowserRouter>
@@ -62,7 +64,7 @@ const ErrorPage: React.FC = () => {
           <div className="navbar-container">
             <div className="navbar-logo">
               <Link
-                href="https://esgf.github.io/nodes.html"
+                href={federatedNodesUrl}
                 target="_blank"
                 style={{
                   fontWeight: 'bold',
@@ -81,10 +83,7 @@ const ErrorPage: React.FC = () => {
           </div>
         </nav>
         <Layout id="body-layout">
-          <Layout.Sider
-            style={styles.bodySider}
-            width={styles.bodySider.width as number}
-          ></Layout.Sider>
+          <Layout.Sider style={styles.bodySider} width={styles.bodySider.width as number} />
           <Layout.Content
             style={{
               ...styles.bodyContent,
@@ -110,7 +109,7 @@ const ErrorPage: React.FC = () => {
                       Retry This Page
                     </Button>
 
-                    <Button type="primary" href="https://esgf.github.io/nodes.html" target="_blank">
+                    <Button type="primary" href={federatedNodesUrl} target="_blank">
                       Other Federated Nodes
                     </Button>
                   </>
@@ -164,7 +163,8 @@ fetch('/frontend-config.js')
         checkLoginIframe: false,
       };
 
-      root.render(
+      // eslint-disable-next-line
+      (root as any).render(
         <Provider>
           <ReactKeycloakProvider authClient={keycloak} initOptions={keycloakProviderInitConfig}>
             <KeycloakAuthProvider>{appRouter}</KeycloakAuthProvider>
@@ -172,7 +172,8 @@ fetch('/frontend-config.js')
         </Provider>,
       );
     } else {
-      root.render(
+      // eslint-disable-next-line
+      (root as any).render(
         <Provider>
           <GlobusAuthProvider>{appRouter}</GlobusAuthProvider>
         </Provider>,
@@ -184,7 +185,9 @@ fetch('/frontend-config.js')
     console.error(error);
 
     // Render the app-styled maintenance/error page (no sidebar).
-    root.render(
+
+    // eslint-disable-next-line
+    (root as any).render(
       <Provider>
         <ErrorPage />
       </Provider>,
