@@ -33,13 +33,13 @@ const StatusToolTip: React.FC<React.PropsWithChildren<Props>> = ({ dataNode, chi
       obj.name.includes(dataNode),
     ) as unknown as NodeStatusElement;
 
-    /* istanbul ignore else*/
+    /* istanbul ignore else */
     if (node) {
       const { isOnline, timestamp } = node;
 
       if (children) {
         return (
-          <>
+          <div>
             {isOnline ? (
               <Tooltip
                 title={
@@ -69,12 +69,12 @@ const StatusToolTip: React.FC<React.PropsWithChildren<Props>> = ({ dataNode, chi
                 </span>
               </Tooltip>
             )}
-          </>
+          </div>
         );
       }
 
       return (
-        <>
+        <div>
           {isOnline ? (
             <Tooltip
               title={
@@ -104,7 +104,7 @@ const StatusToolTip: React.FC<React.PropsWithChildren<Props>> = ({ dataNode, chi
               </span>
             </Tooltip>
           )}
-        </>
+        </div>
       );
     }
   }

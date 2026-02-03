@@ -8,7 +8,7 @@ const ChangeLogTemplate: React.FC<React.PropsWithChildren<TemplateProps>> = ({ t
     <>
       <h1 data-testid="changelogTemplate">New with Metagrid {props.version}</h1>
       <div style={{ maxHeight: '650px', overflow: 'auto' }}>
-        {props.changesFile && <MessageCard fileName={props.changesFile}></MessageCard>}
+        {props.changesFile && <MessageCard fileName={props.changesFile} />}
       </div>
     </>
   );

@@ -33,11 +33,11 @@ export type QualityFlagProps = { index: string; color: string };
 
 export const QualityFlag: React.FC<
   React.PropsWithChildren<QualityFlagProps>
-> = /* istanbul ignore next */ ({ index, color }) => (
+> = /* istanbul ignore next -- @preserve */ ({ index, color }) => (
   <div
     data-testid={`qualityFlag${index}`}
     style={{ ...styles.flagColorBox, backgroundColor: color }}
-  ></div>
+  />
 );
 
 const buildDisplayData = (
@@ -253,7 +253,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
             }))}
             placeholder="Lookup a key..."
             filterOption={
-              /* istanbul ignore next */ (inputValue, option) => {
+              /* istanbul ignore next -- @preserve */ (inputValue, option) => {
                 return option?.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1;
               }
             }
@@ -274,12 +274,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
       key: '3',
       disabled: record.retracted === true,
       label: <div className={innerDataRowTargets.citationTab.class()}>Citation</div>,
-      children: (
-        <Citation
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          url={record.citation_url![0]}
-        />
-      ),
+      children: <Citation url={record.citation_url![0]} />,
     });
   }
 
@@ -292,12 +287,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
         <>
           {showAdditionalLinks && additionalLinks}
           {showESDOC !== '' && (
-            <Button
-              type="link"
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              href={showESDOC}
-              target="_blank"
-            >
+            <Button type="link" href={showESDOC} target="_blank">
               ES-DOC
             </Button>
           )}
@@ -309,7 +299,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
             >
               <Popover
                 placement="topLeft"
-                content={<img src={qualityFlagsImg} alt="Quality Flags Indicator"></img>}
+                content={<img src={qualityFlagsImg} alt="Quality Flags Indicator" />}
               >
                 <span style={styles.qualityFlagsRow}>
                   {Object.keys(qualityFlags).map((key) => (

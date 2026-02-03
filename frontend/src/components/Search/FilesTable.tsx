@@ -166,7 +166,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
   let stacDocs: StacAsset[] = [];
 
   if (data) {
-    /* istanbul ignore next */
+    /* istanbul ignore next -- @preserve */
     if (isSTAC && inputRecord?.assets) {
       stacDocs = Object.values(inputRecord.assets);
     } else {
@@ -309,7 +309,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
                   <Button
                     type="primary"
                     onClick={() => {
-                      /* istanbul ignore next */
+                      /* istanbul ignore next -- @preserve */
                       if (navigator && navigator.clipboard) {
                         navigator.clipboard
                           .writeText(downloadUrls.HTTPServer)
@@ -334,7 +334,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
                     <Button
                       type="primary"
                       onClick={() => {
-                        /* istanbul ignore next */
+                        /* istanbul ignore next -- @preserve */
                         if (navigator && navigator.clipboard) {
                           navigator.clipboard
                             .writeText(downloadUrls.OPENDAP)
@@ -352,7 +352,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
                         margin: 0,
                         verticalAlign: 'middle',
                       })}
-                    ></Button>
+                    />
                   </Form.Item>
                 </Tooltip>
               )}
@@ -385,7 +385,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
       title: 'Size',
       dataIndex: 'file:size',
       key: 'size',
-      sorter: /* istanbul ignore next */ (a: RawSearchResult, b: RawSearchResult) =>
+      sorter: /* istanbul ignore next -- @preserve */ (a: RawSearchResult, b: RawSearchResult) =>
         (a.size || 0) - (b.size || 0),
       sortOrder: sortedInfo.columnKey === 'size' ? sortedInfo.order : null,
       render: (size: number) => {
@@ -426,9 +426,9 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
                 <Form.Item className={innerDataRowTargets.copyUrlBtn.class()}>
                   <Button
                     type="primary"
-                    /* istanbul ignore next */
+                    /* istanbul ignore next -- @preserve */
                     onClick={
-                      /* istanbul ignore next */ () => {
+                      /* istanbul ignore next -- @preserve */ () => {
                         if (navigator && navigator.clipboard) {
                           navigator.clipboard
                             .writeText(record.href)

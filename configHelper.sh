@@ -150,6 +150,9 @@ prompt_optional HOTJAR_ID "Enter Hotjar ID (optional)" "" "(Optional) The Hotjar
 prompt_optional HOTJAR_SV "Enter Hotjar SV (optional)" "" "(Optional) The Hotjar SV for tracking user interactions."
 prompt_optional GOOGLE_ANALYTICS_TRACKING_ID "Enter Google Analytics Tracking ID (optional)" "" "(Optional) The Google Analytics tracking ID."
 
+# Frontend-specific Vite environment variables
+prompt_optional VITE_FEDERATED_NODES_URL "Enter Federated Nodes URL (optional)" "https://esgf.github.io/nodes.html" "The URL for the federated nodes link displayed in the frontend navigation bar. This allows users to access federated nodes and other Metagrid services hosted elsewhere in the federation."
+
 # Prompt for Keycloak deployment
 echo "(Optional) Do you wish to add Keycloak social auth settings? ('yes' or 'no', default: 'no')"
 read -r USE_KEYCLOAK
@@ -230,6 +233,12 @@ append_if_set KEYCLOAK_CLIENT_ID METAGRID_KEYCLOAK_CLIENT_ID
 append_if_set GLOBUS_CLIENT_KEY METAGRID_SOCIAL_AUTH_GLOBUS_KEY
 append_if_set GLOBUS_CLIENT_SECRET METAGRID_SOCIAL_AUTH_GLOBUS_SECRET
 
+# Build frontend environment lines for react service
+REACT_ENV_LINES=""
+if [ "${VITE_FEDERATED_NODES_URL__IS_DEFAULT:-true}" = "false" ]; then
+  REACT_ENV_LINES="${REACT_ENV_LINES}      VITE_FEDERATED_NODES_URL: '$VITE_FEDERATED_NODES_URL'\n"
+fi
+
 # Prompt for output file name
 echo
 echo "Enter the name for this overlay.yml file (default: docker-compose-local-overlay.yml):"
@@ -256,6 +265,16 @@ services:
       METAGRID_SEARCH_URL: $SEARCH_URL
 $(printf '%b' "$ENV_LINES")$( [ -n "$FOOTER_BLOCK" ] && printf '%s\n' "$FOOTER_BLOCK" )$( [ -n "$BANNER_BLOCK" ] && printf '%s\n' "$BANNER_BLOCK" )$( [ -n "$SUPPORT_BLOCK" ] && printf '%s\n' "$SUPPORT_BLOCK" )
 EOF
+
+# Add react service section if there are frontend-specific environment variables
+if [ -n "$REACT_ENV_LINES" ]; then
+cat <<EOF >>$OUTPUT_FILE
+
+  react:
+    environment:
+$(printf '%b' "$REACT_ENV_LINES")
+EOF
+fi
 
 if [ "$USE_KEYCLOAK" == "yes" ]; then
     cat <<EOF >>$OUTPUT_FILE

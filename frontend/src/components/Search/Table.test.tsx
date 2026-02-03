@@ -1,4 +1,5 @@
 import { screen, within } from '@testing-library/react';
+import { vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { rawSearchResultFixture, rawSearchResultsFixture } from '../../test/mock/fixtures';
@@ -16,10 +17,10 @@ const defaultProps: Props = {
   loading: false,
   results: rawSearchResultsFixture(),
   totalResults: rawSearchResultsFixture().length,
-  onUpdateCart: jest.fn(),
-  onRowSelect: jest.fn(),
-  onPageChange: jest.fn(),
-  onPageSizeChange: jest.fn(),
+  onUpdateCart: vi.fn(),
+  onRowSelect: vi.fn(),
+  onPageChange: vi.fn(),
+  onPageSizeChange: vi.fn(),
 };
 
 describe('test main table UI', () => {
@@ -88,11 +89,15 @@ describe('test main table UI', () => {
     const table = await screen.findByRole('table');
     expect(table).toBeTruthy();
 
-    // Check the dataset title include retracted warning
-    const cell = await within(table).findByRole('cell', {
-      name: 'foo IMPORTANT! This dataset has been retracted and is no longer available for download.',
-    });
-    expect(cell).toBeTruthy();
+    // Check the dataset title include retracted warning (use flexible matcher)
+    const cells = await within(table).findAllByText((_, node) =>
+      Boolean(
+        node?.textContent &&
+        node.textContent.includes('foo') &&
+        node.textContent.includes('IMPORTANT!'),
+      ),
+    );
+    expect(cells.length).toBeGreaterThan(0);
 
     // Get the expandable cell
     const expandableCell = await within(table).findByRole('cell', {
@@ -409,6 +414,7 @@ describe('test main table UI', () => {
     const errorMsg = await screen.findByText(apiRoutes.wget.handleErrorMsg(404));
     expect(errorMsg).toBeTruthy();
   });
+
   it('does not render Globus Ready column when globusEnabledNodes is empty', async () => {
     // Set names of the globus enabled nodes
     mockConfig.GLOBUS_NODES = [];

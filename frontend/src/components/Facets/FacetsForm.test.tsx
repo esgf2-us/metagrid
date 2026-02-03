@@ -64,7 +64,7 @@ describe('generate facet option helpers', () => {
 
 describe('test FacetsForm component', () => {
   // Filename search is currently disabled
-  xit('handles submitting filename', async () => {
+  it.skip('handles submitting filename', async () => {
     customRender(<FacetsForm />);
 
     // Open filename collapse panel
@@ -88,7 +88,7 @@ describe('test FacetsForm component', () => {
   });
 
   // Filename search is currently disabled
-  xit('handles case when filename var is already set in the active search query.', async () => {
+  it.skip('handles case when filename var is already set in the active search query.', async () => {
     customRender(<FacetsForm />);
 
     // Open filename collapse panel

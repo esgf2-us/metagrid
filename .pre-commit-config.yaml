@@ -9,7 +9,7 @@ repos:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
-        exclude: traefik/*.yml|helm/templates/.*|helm/deploy/.*|helm/values.yaml
+        exclude: traefik/.*\.yml|helm/templates/.*|helm/deploy/.*|helm/values\.yaml
 
   # Back-end
   # ------------------------------------------------------------------------------

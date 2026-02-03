@@ -1,23 +1,21 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { DownloadOutlined, QuestionOutlined, SearchOutlined } from '@ant-design/icons';
 import {
   Alert,
   Button,
   Card,
   Collapse,
-  Divider,
   Dropdown,
   Input,
   Modal,
   Select,
+  SelectProps,
   Space,
   Spin,
   Table,
   Tooltip,
   message,
 } from 'antd';
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useAtom } from 'jotai';
 import axios from 'axios';
 import { useLocation } from 'react-router';
@@ -59,6 +57,7 @@ import {
   generateWgetScriptSTAC,
   convertStacToRawSearchResult,
 } from '../../common/STAC';
+import GlobusEndpointOption, { GlobusEndpointOptionData } from '../Globus/GlobusEndpointOption';
 
 const GLOBUS_REDIRECT_URL = `${window.location.origin}/cart/items`;
 
@@ -156,26 +155,26 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
     content: '',
 
     onCancelAction:
-      // istanbul ignore next
+      // istanbul ignore next -- @preserve
       () => {
         setAlertPopupState({ ...alertPopupState, show: false });
       },
     onOkAction:
-      // istanbul ignore next
+      // istanbul ignore next -- @preserve
       () => {
         setAlertPopupState({ ...alertPopupState, show: false });
       },
     show: false,
   });
 
+  function setCurrentGoal(goal: GlobusGoals): void {
+    localStorage.setItem(GlobusStateKeys.globusTransferGoalsState, goal);
+  }
+
   function endDownloadSteps(): void {
     setCurrentGoal(GlobusGoals.None);
     setLoadingPage(false);
     setDownloadIsLoading(false);
-
-    if (props.onDownloadFinish) {
-      props.onDownloadFinish();
-    }
 
     setChosenGlobusEndpoint(null);
     setItemSelections([]);
@@ -221,6 +220,10 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
 
     if (stacSelections.length > 0) {
       stacSuccess = generateWgetScriptSTAC(stacSelections);
+
+      if (props.onDownloadFinish) {
+        props.onDownloadFinish();
+      }
 
       if (nonStacSelections.length === 0) {
         setDownloadIsLoading(false);
@@ -486,96 +489,11 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
         endDownloadSteps();
       })
       .finally(() => {
+        if (props.onDownloadFinish) {
+          props.onDownloadFinish();
+        }
         setDownloadIsLoading(false);
       });
-  };
-
-  /**
-   *
-   * @returns False if one or more items are not Globus Ready
-   */
-  const checkItemsAreGlobusEnabled = (): boolean => {
-    if (window.METAGRID.GLOBUS_NODES.length === 0) {
-      return true;
-    }
-    const globusReadyItems: RawSearchResults = [];
-
-    itemSelections.filter((item) => {
-      return item !== undefined && item !== null;
-    });
-    itemSelections.forEach((selection) => {
-      if (selection) {
-        const dataNode = selection.data_node as string;
-        if (dataNode && window.METAGRID.GLOBUS_NODES.includes(dataNode)) {
-          globusReadyItems.push(selection);
-        } else if (selection.isStac && getStacGlobusHref(selection.assets)) {
-          globusReadyItems.push(selection);
-        }
-      }
-    });
-
-    // If there are non-Globus Ready selections, show alert
-    const globusDisabledCount = itemSelections.length - globusReadyItems.length;
-
-    if (globusDisabledCount > 0) {
-      let state = 'One';
-      if (globusDisabledCount > 1) {
-        state = 'Some';
-      }
-      let content = `${state} of your selected items cannot be transferred via Globus. Would you like to continue the Globus transfer with the 'Globus Ready' items?`;
-
-      if (globusDisabledCount === itemSelections.length) {
-        state = 'None';
-        content =
-          "None of your selected items can be transferred via Globus at this time. When choosing the Globus Transfer option, make sure your selections are 'Globus Ready'.";
-      }
-
-      const newAlertPopupState: AlertModalState = {
-        content,
-        onCancelAction: () => {
-          setAlertPopupState({ ...alertPopupState, show: false });
-          setCurrentGoal(GlobusGoals.None);
-        },
-        onOkAction: () => {
-          if (state === 'None') {
-            setAlertPopupState({ ...alertPopupState, show: false });
-            setCurrentGoal(GlobusGoals.None);
-          } else {
-            setAlertPopupState({ ...alertPopupState, show: false });
-            setItemSelections(globusReadyItems);
-            setCurrentGoal(GlobusGoals.DoGlobusTransfer);
-            performStepsForGlobusGoals();
-          }
-        },
-        show: true,
-      };
-
-      if (!alertPopupState.show) {
-        setAlertPopupState(newAlertPopupState);
-      }
-      return false;
-    }
-
-    return true;
-  };
-
-  const handleDownloadForm = (downloadType: 'wget' | 'Globus'): void => {
-    // istanbul ignore else
-    if (downloadType === 'wget') {
-      handleWgetDownload();
-    } else if (downloadType === 'Globus') {
-      let itemsReady = false;
-      if (props.stacResults && props.stacResults.features) {
-        itemsReady = true;
-      } else {
-        itemsReady = checkItemsAreGlobusEnabled();
-      }
-
-      if (itemsReady) {
-        setCurrentGoal(GlobusGoals.DoGlobusTransfer);
-        performStepsForGlobusGoals();
-      }
-    }
   };
 
   /* https://docs.globus.org/globus-connect-server/v5/application/ */
@@ -616,7 +534,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
     setSavedGlobusEndpoints(newEndpointsList);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const changeGlobusEndpoint = (value: string): void => {
     if (value === '') {
       setEndpointSearchValue('');
@@ -718,10 +635,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
     }
 
     return GlobusGoals.None;
-  }
-
-  function setCurrentGoal(goal: GlobusGoals): void {
-    localStorage.setItem(GlobusStateKeys.globusTransferGoalsState, goal);
   }
 
   function performStepsForGlobusGoals(): void {
@@ -855,6 +768,94 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
     }
   }
 
+  /**
+   *
+   * @returns False if one or more items are not Globus Ready
+   */
+  const checkItemsAreGlobusEnabled = (): boolean => {
+    if (window.METAGRID.GLOBUS_NODES.length === 0) {
+      return true;
+    }
+    const globusReadyItems: RawSearchResults = [];
+
+    itemSelections.filter((item) => {
+      return item !== undefined && item !== null;
+    });
+    itemSelections.forEach((selection) => {
+      if (selection) {
+        const dataNode = selection.data_node as string;
+        if (dataNode && window.METAGRID.GLOBUS_NODES.includes(dataNode)) {
+          globusReadyItems.push(selection);
+        } else if (selection.isStac && getStacGlobusHref(selection.assets)) {
+          globusReadyItems.push(selection);
+        }
+      }
+    });
+
+    // If there are non-Globus Ready selections, show alert
+    const globusDisabledCount = itemSelections.length - globusReadyItems.length;
+
+    if (globusDisabledCount > 0) {
+      let state = 'One';
+      if (globusDisabledCount > 1) {
+        state = 'Some';
+      }
+      let content = `${state} of your selected items cannot be transferred via Globus. Would you like to continue the Globus transfer with the 'Globus Ready' items?`;
+
+      if (globusDisabledCount === itemSelections.length) {
+        state = 'None';
+        content =
+          "None of your selected items can be transferred via Globus at this time. When choosing the Globus Transfer option, make sure your selections are 'Globus Ready'.";
+      }
+
+      const newAlertPopupState: AlertModalState = {
+        content,
+        onCancelAction: () => {
+          setAlertPopupState({ ...alertPopupState, show: false });
+          setCurrentGoal(GlobusGoals.None);
+        },
+        onOkAction: () => {
+          if (state === 'None') {
+            setAlertPopupState({ ...alertPopupState, show: false });
+            setCurrentGoal(GlobusGoals.None);
+          } else {
+            setAlertPopupState({ ...alertPopupState, show: false });
+            setItemSelections(globusReadyItems);
+            setCurrentGoal(GlobusGoals.DoGlobusTransfer);
+            performStepsForGlobusGoals();
+          }
+        },
+        show: true,
+      };
+
+      if (!alertPopupState.show) {
+        setAlertPopupState(newAlertPopupState);
+      }
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleDownloadForm = (downloadType: 'wget' | 'Globus'): void => {
+    // istanbul ignore else
+    if (downloadType === 'wget') {
+      handleWgetDownload();
+    } else if (downloadType === 'Globus') {
+      let itemsReady = false;
+      if (props.stacResults && props.stacResults.features) {
+        itemsReady = true;
+      } else {
+        itemsReady = checkItemsAreGlobusEnabled();
+      }
+
+      if (itemsReady) {
+        setCurrentGoal(GlobusGoals.DoGlobusTransfer);
+        performStepsForGlobusGoals();
+      }
+    }
+  };
+
   const downloadBtnTooltip = (): string => {
     if (itemSelections.length === 0) {
       return 'Please select at least one dataset to download in your cart above.';
@@ -910,6 +911,18 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
     initializePage();
   }, []);
 
+  type OptionRenderType = Required<SelectProps<string, GlobusEndpointOptionData>>['optionRender'];
+  const renderGlobusOption: OptionRenderType = useCallback((option) => {
+    // Now 'option.data' is correctly typed as MyGlobusOption
+    return (
+      <GlobusEndpointOption
+        label={option.label}
+        value={option.value ?? ''}
+        endpoint={option.data.endpoint}
+      />
+    );
+  }, []);
+
   return (
     <>
       {contextHolder}
@@ -951,47 +964,19 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
                 value: '',
                 path: '',
                 label: 'Manage Collections',
+                endpoint: {} as GlobusEndpoint,
               },
-              ...savedGlobusEndpoints.map((endpoint: GlobusEndpoint) => {
-                return {
-                  key: endpoint.id,
-                  value: endpoint.id,
-                  path: endpoint.path,
-                  label: endpoint.display_name,
-                };
-              }),
+              ...savedGlobusEndpoints.map((endpoint: GlobusEndpoint) => ({
+                key: endpoint.id,
+                value: endpoint.id,
+                path: endpoint.path,
+                label: endpoint.display_name,
+                endpoint,
+              })),
             ]}
             optionLabelProp="label"
-            optionRender={(option) =>
-              option.key === '' ? (
-                <strong>{option.label}</strong>
-              ) : (
-                <>
-                  <strong>{option.label}</strong>
-                  <br />
-                  ID: {option.key}
-                  <br />
-                  <span>
-                    {(option.data as unknown as GlobusEndpoint)?.path &&
-                      `Path: ${(option.data as unknown as GlobusEndpoint)?.path}`}
-                    {(option.data as unknown as GlobusEndpoint)?.path && <br />}
-                    {(option.data as unknown as GlobusEndpoint)?.entity_type ===
-                      'GCSv5_mapped_collection' &&
-                      (option.data as unknown as GlobusEndpoint)?.subscription_id !== '' &&
-                      'Managed '}
-                    {(option.data as unknown as GlobusEndpoint)?.entity_type ===
-                    'GCSv5_guest_collection'
-                      ? 'Guest Collection'
-                      : 'Mapped Collection'}{' '}
-                    <br />
-                    {(option.data as unknown as GlobusEndpoint)?.contact_email !== null &&
-                      (option.data as unknown as GlobusEndpoint)?.contact_email}
-                  </span>
-                  <Divider style={{ marginBottom: '0px', marginTop: '0px' }} />
-                </>
-              )
-            }
-          ></Select>
+            optionRender={renderGlobusOption}
+          />
         )}
         {selectedDownloadType === 'Globus' ? (
           <Tooltip title={downloadBtnTooltip()} placement="top">

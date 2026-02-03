@@ -13,7 +13,7 @@ const Banner: React.FC = () => {
   const bannerText = window.METAGRID.BANNER_TEXT;
 
   if (!isVisible) {
-    return <></>;
+    return <div />;
   }
 
   return (

@@ -1,4 +1,5 @@
 import { within, screen } from '@testing-library/react';
+import { vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { rest, server } from '../../test/mock/server';
@@ -12,12 +13,13 @@ import { AppStateKeys } from '../../common/atoms';
 import { AtomWrapper } from '../../test/jestTestFunctions';
 
 const defaultProps: Props = {
-  onUpdateCart: jest.fn(),
+  onUpdateCart: vi.fn(),
 };
 
 const user = userEvent.setup();
 
 const activeSearch: ActiveSearchQuery = getSearchFromUrl('project=test1');
+
 describe('test the cart items component', () => {
   it('renders message that the cart is empty when no items are added', async () => {
     AtomWrapper.modifyAtomValue(AppStateKeys.userCart, []);
@@ -124,8 +126,8 @@ describe('test the cart items component', () => {
     expect(
       await screen.findByText(
         'The requested resource at the ESGF wget API service was invalid. Please contact support.',
-        { exact: false }
-      )
+        { exact: false },
+      ),
     ).toBeTruthy();
   });
 });

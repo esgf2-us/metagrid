@@ -62,13 +62,14 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
   let userInfo = { email: '', given_name: '' };
 
   if (window.METAGRID.AUTHENTICATION_METHOD === 'keycloak') {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     const { keycloak } = useKeycloak();
     loginBtn = (
       <Button
         type="text"
         icon={<UserOutlined style={{ fontSize: '18px', margin: 0 }} />}
         onClick={
-          /* istanbul ignore next */ () => {
+          /* istanbul ignore next -- @preserve */ () => {
             keycloak.login();
           }
         }
@@ -80,7 +81,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
       <Button
         type="text"
         onClick={
-          /* istanbul ignore next */ () => {
+          /* istanbul ignore next -- @preserve */ () => {
             keycloak.logout();
           }
         }
@@ -181,7 +182,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
             className="badge"
             offset={[-5, 3]}
             showZero
-          ></Badge>
+          />
           Cart
         </Link>
       ),
@@ -202,7 +203,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
             className="badge"
             offset={[-5, 3]}
             showZero
-          ></Badge>
+          />
           Saved Searches
         </Link>
       ),

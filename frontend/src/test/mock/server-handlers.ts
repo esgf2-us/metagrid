@@ -150,7 +150,7 @@ const handlers = [
           ),
         );
       }
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       if (citationUrl === 'citation_b') {
         return res(
           ctx.status(200),
@@ -185,7 +185,6 @@ const handlers = [
   }),
   // Default fallback handler
   rest.get('*', async (req, res, ctx) => {
-    // eslint-disable-next-line no-console
     // console.error(`Please add request handler for ${req.url.toString()}`);
     return res(ctx.status(500), ctx.json({ error: 'You must add request handler.' }));
   }),

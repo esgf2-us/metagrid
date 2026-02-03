@@ -46,23 +46,23 @@ export async function showNotice(
   switch (config?.type) {
     case 'success':
       await msgApi.success(msgConfig);
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       return;
     case 'warning':
       await msgApi.warning(msgConfig);
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       return;
     case 'error':
       await msgApi.error(msgConfig);
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       return;
     case 'info':
       await msgApi.info(msgConfig);
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       return;
     default:
       await msgApi.info(msgConfig);
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       break;
   }
 }
@@ -117,14 +117,14 @@ export async function showError(
 ): Promise<void> {
   let msg = errorMsg;
 
-  /* istanbul ignore next */
+  /* istanbul ignore next -- @preserve */
   if (!errorMsg || errorMsg === '') {
     msg = 'An unknown error has occurred.';
   }
   await showNotice(msgApi, msg, { duration: 5, type: 'error' });
 }
 
-export const getCurrentAppPage = (): number => {
+export const getCurrentAppPage = (): AppPage => {
   const { pathname } = window.location;
   if (pathname.endsWith('/search') || pathname.includes('/search/')) {
     return AppPage.Main;
@@ -138,7 +138,7 @@ export const getCurrentAppPage = (): number => {
   if (pathname.endsWith('/cart/searches')) {
     return AppPage.SavedSearches;
   }
-  return -1;
+  return AppPage.Unknown;
 };
 
 /** Creates a route that will access the JSON search results */

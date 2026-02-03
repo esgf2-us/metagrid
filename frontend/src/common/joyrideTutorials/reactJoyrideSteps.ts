@@ -47,12 +47,12 @@ export const unHoverFirstElement = (selector: string): boolean => {
   return false;
 };
 
-/* istanbul ignore next */
+/* istanbul ignore next -- @preserve  */
 const mainTableEmpty = (): boolean => {
   return elementExists('ant-empty-image');
 };
 
-/* istanbul ignore next */
+/* istanbul ignore next -- @preserve */
 const cartIsEmpty = (): boolean => {
   const elem = document.querySelector('#root .ant-tabs-tabpane-active .ant-empty-description');
   if (elem) {
@@ -61,7 +61,7 @@ const cartIsEmpty = (): boolean => {
   return false;
 };
 
-/* istanbul ignore next */
+/* istanbul ignore next -- @preserve */
 const searchLibraryIsEmpty = (): boolean => {
   const elem = document.querySelector('#root .ant-tabs-tabpane-active .ant-empty-description');
   if (elem) {
@@ -256,7 +256,7 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
       topDataRowTargets.searchResultsRowExpandIcon.selector(),
       'To view more information about a specific dataset, you can expand the row by clicking this little arrow icon...',
       'top-start',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
         clickFirstElement(topDataRowTargets.searchResultsRowExpandIcon.selector());
         await delay(500);
@@ -301,7 +301,7 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
       innerDataRowTargets.metadataTab.selector(),
       'This is the Metadata tab. If you click it, you can view metadata for the dataset...',
       'top-start',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
         await delay(300);
         clickFirstElement(innerDataRowTargets.metadataTab.selector());
@@ -311,7 +311,7 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
       innerDataRowTargets.metadataLookupField.selector(),
       'Besides seeing the metadata listed below, this field can help you search for a specific key/value pair of metadata.',
       'top-start',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
         await delay(300);
         if (elementExists(innerDataRowTargets.citationTab.class())) {
@@ -325,7 +325,7 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
       innerDataRowTargets.citationTab.selector(),
       'Citation information for the dataset can be viewed within this tab...',
       'top-start',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
         await delay(300);
         if (elementExists(innerDataRowTargets.additionalTab.class())) {
@@ -339,7 +339,7 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
       innerDataRowTargets.additionalTab.selector(),
       'You can view additional data and sources by clicking this tab.',
       'top-start',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
         clickFirstElement(topDataRowTargets.searchResultsRowContractIcon.selector());
         await delay(300);
@@ -460,7 +460,7 @@ export const createMainPageTour = (): JoyrideTour => {
       leftSidebarTargets.facetFormGeneral.selector(),
       'To filter by facets provided within this group, you would open this collapsable form by clicking on it...',
       'right-end',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
         // Open general facets
         clickFirstElement(leftSidebarTargets.facetFormGeneral.selector());
@@ -471,7 +471,7 @@ export const createMainPageTour = (): JoyrideTour => {
       leftSidebarTargets.facetFormFields.selector(),
       'These are facets that are available within this group. The drop-downs allow you to select multiple items you wish to include in your search. Note that you can search for elements in the drop-down by typing within the input area.',
       'right-start',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
         // Close general facets
         clickFirstElement(leftSidebarTargets.facetFormGeneral.selector());
@@ -487,7 +487,7 @@ export const createMainPageTour = (): JoyrideTour => {
       leftSidebarTargets.facetFormExpandAllBtn.selector(),
       "You can quickly expand all the facet panels by clicking this button. Note that there is a scroll bar on the right when the panels don't all fit on the page.",
       'right-end',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
         // Expand all facets
         clickFirstElement(leftSidebarTargets.facetFormExpandAllBtn.selector());
@@ -508,7 +508,7 @@ export const createMainPageTour = (): JoyrideTour => {
       leftSidebarTargets.facetFormCollapseAllBtn.selector(),
       'Clicking the collapse all button will close all the open facet panels.',
       'right-end',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
         // Open general facets
         clickFirstElement(leftSidebarTargets.facetFormCollapseAllBtn.selector());
@@ -520,7 +520,7 @@ export const createMainPageTour = (): JoyrideTour => {
     //   leftSidebarTargets.facetFormFilenameFields.selector(),
     //   'This section lets you filter your results to include a specific filename. To filter by filename, you would type in the name or names as a list of comma separated values then click the magnifying glass icon to add it as a search parameter.',
     //   'right-end',
-    //   /* istanbul ignore next */
+    //   /* istanbul ignore next -- @preserve */
     //   () => {
     //     // Close filename section
     //     clickFirstElement(leftSidebarTargets.facetFormFilename.selector());
@@ -546,7 +546,7 @@ export const createMainPageTour = (): JoyrideTour => {
       copySearchOptionsTargets.copyMenuBtn.selector(),
       'If you click on the copy icon, a drop-down menu will appear with various options for copying your search query into your clipboard.',
       'left-start',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
         // Open general facets
         hoverFirstElement(copySearchOptionsTargets.copyMenuBtn.selector());
@@ -572,7 +572,7 @@ export const createMainPageTour = (): JoyrideTour => {
       copySearchOptionsTargets.copyIntakeEsgfSearchBtn.selector(),
       'If you need an Intake ESGF search query version of your search, click this button. The python code will attempt to generate the code for a similar search and copy it to your clipboard.',
       'left-start',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
         // Open general facets
         unHoverFirstElement('.ant-dropdown');
@@ -593,7 +593,7 @@ export const createMainPageTour = (): JoyrideTour => {
       '#root .ant-checkbox',
       'You can select multiple datasets using these checkboxes...',
       'top',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
         clickFirstElement('#root .ant-checkbox');
         // Flag that the check boxes are on
@@ -605,7 +605,7 @@ export const createMainPageTour = (): JoyrideTour => {
       searchTableTargets.addSelectedToCartBtn.selector(),
       'Then to add them to your cart, you would click this button.',
       'bottom-start',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
         clickFirstElement('#root .ant-checkbox');
         // Flag that the check boxes are on
@@ -632,7 +632,7 @@ export const createMainPageTour = (): JoyrideTour => {
       'center',
     )
     .setOnFinish(
-      /* istanbul ignore next */ () => {
+      /* istanbul ignore next -- @preserve */ () => {
         return () => {
           // Clean-up step for when the tour is complete (or skipped)
           if (tour.getTourFlag('boxes-checked')) {
@@ -709,7 +709,7 @@ export const createCartItemsTour = (setCurrentPage: (page: number) => void): Joy
         searchTableTargets.searchResultsTable.selector(),
         "Let's go ahead and add some datasets to the cart...",
         'top-start',
-        /* istanbul ignore next */
+        /* istanbul ignore next -- @preserve */
         async () => {
           clickFirstElement(topDataRowTargets.cartAddBtn.selector('plus'));
           await delay(500);
@@ -721,7 +721,7 @@ export const createCartItemsTour = (setCurrentPage: (page: number) => void): Joy
         navBarTargets.cartPageBtn.selector(),
         'Now that there are datasets in the cart, we will go view them in the cart page...',
         'bottom',
-        /* istanbul ignore next */
+        /* istanbul ignore next -- @preserve */
         async (): Promise<void> => {
           setCurrentPage(AppPage.Cart);
           await delay(1000);
@@ -750,7 +750,7 @@ export const createCartItemsTour = (setCurrentPage: (page: number) => void): Joy
       '#root .ant-checkbox',
       'You can select which datasets to download by clicking their checkboxes, or to select them all, click the top checkbox like so...',
       'top-start',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
         clickFirstElement('#root .ant-checkbox');
         // Flag that the check boxes are on
@@ -767,7 +767,7 @@ export const createCartItemsTour = (setCurrentPage: (page: number) => void): Joy
       cartTourTargets.downloadAllType.selector(),
       'This will select which download method to use. The Globus download method is the default.',
       'top-start',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
         clickFirstElement(cartTourTargets.downloadAllType.selector());
         await delay(500);
@@ -782,7 +782,7 @@ export const createCartItemsTour = (setCurrentPage: (page: number) => void): Joy
       cartTourTargets.downloadTransferBtn.selector(),
       'After selecting your collection, click this button to start the download for your selected cart items.',
       'top-start',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
         clickFirstElement('#root .ant-checkbox');
         // Flag that the check boxes are on
@@ -792,7 +792,7 @@ export const createCartItemsTour = (setCurrentPage: (page: number) => void): Joy
     )
     .addNextStep('body', 'This concludes the cart page tour.', 'center')
     .setOnFinish(
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       () => {
         // Clean-up step for when the tour is complete (or skipped)
         return async () => {
@@ -827,7 +827,7 @@ export const createCollectionsFormTour = (): JoyrideTour => {
       manageCollectionsTourTargets.globusSearchResults.selector(),
       "The search results will be displayed in this table, where you can click 'Add' for the collections you wish to save.",
       'auto',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
         clickFirstElement(manageCollectionsTourTargets.mySavedCollectionsPanel.selector());
         await delay(500);
@@ -840,7 +840,7 @@ export const createCollectionsFormTour = (): JoyrideTour => {
     )
     .addNextStep('body', 'This concludes the cart page tour.', 'center')
     .setOnFinish(
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       () => {
         // Clean-up step for when the tour is complete (or skipped)
         return async () => {
@@ -918,7 +918,7 @@ export const createSearchCardTour = (setCurrentPage: (page: number) => void): Jo
         searchTableTargets.saveSearchBtn.selector(),
         'To save the current search to the library, we need to click this button...',
         'bottom-start',
-        /* istanbul ignore next */
+        /* istanbul ignore next -- @preserve */
         async () => {
           clickFirstElement(searchTableTargets.saveSearchBtn.selector());
           await delay(500);
@@ -928,7 +928,7 @@ export const createSearchCardTour = (setCurrentPage: (page: number) => void): Jo
         navBarTargets.savedSearchPageBtn.selector(),
         'We can now go back to the search library and view our recently added search...',
         'bottom',
-        /* istanbul ignore next */
+        /* istanbul ignore next -- @preserve */
         async (): Promise<void> => {
           setCurrentPage(AppPage.SavedSearches);
           await delay(1000);
@@ -970,7 +970,7 @@ export const createSearchCardTour = (setCurrentPage: (page: number) => void): Jo
     )
     .addNextStep('body', 'This concludes the search library tour.', 'center')
     .setOnFinish(
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       () => {
         // Clean-up step for when the tour is complete (or skipped)
         return async () => {
@@ -1004,7 +1004,7 @@ export const createNodeStatusTour = (): JoyrideTour => {
       nodeTourTargets.nodeColHeader.selector(),
       'This column lists the various nodes that are registered to serve the data with Metagrid. Clicking the header will toggle the sort between ascending and descending like so...',
       'top',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
         clickFirstElement(nodeTourTargets.nodeColHeader.selector());
         await delay(500);
@@ -1014,7 +1014,7 @@ export const createNodeStatusTour = (): JoyrideTour => {
       nodeTourTargets.onlineColHeader.selector(),
       'This column shows the online status of each node. A green check-mark indicates the node is online whereas a red x mark indicates it is offline. As with the node column, you can click this to sort by node status like so...',
       'top',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
         clickFirstElement(nodeTourTargets.onlineColHeader.selector());
         await delay(700);
