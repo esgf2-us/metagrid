@@ -380,7 +380,7 @@ export const createMainPageTour = (): JoyrideTour => {
     )
     .addNextStep(
       navBarTargets.searchPageBtn.selector(),
-      "Clicking this button takes you to the main search page (Metagrid's home page.)",
+      "Clicking this button takes you to the main search page (Metagrid's home page).",
       'bottom',
     )
     .addNextStep(
@@ -400,12 +400,12 @@ export const createMainPageTour = (): JoyrideTour => {
     )
     .addNextStep(
       navBarTargets.newsBtn.selector(),
-      "Clicking the news button will open up the message center to the right, where you'll find important notes from the admins and developers. You can also view changelog information regarding the latest version of Metagrid",
+      "Clicking the news button will open up the message center to the right, where you'll find important notes from the admins and developers. You can also view changelog information regarding the latest version of Metagrid.",
       'bottom',
     )
     .addNextStep(
       navBarTargets.signInBtn.selector(),
-      'Clicking this button will allow you to sign in to your profile. Or if you are already signed in, it will display you user name.',
+      'Clicking this button will allow you to sign in to your profile. Or if you are already signed in, it will display your user name.',
       'bottom',
     )
     .addNextStep(
@@ -435,7 +435,7 @@ export const createMainPageTour = (): JoyrideTour => {
     tour
       .addNextStep(
         leftSidebarTargets.filterByGlobusTransfer.selector(),
-        'This section allows you to filter search results based on globus transfer availability. There are a set of data nodes that provide the Globus Transfer option, however not all do. You can filter to show all datasets, or only those that can be transferred via globus.',
+        'This section allows you to filter search results based on Globus transfer availability. There are a set of data nodes that provide the Globus Transfer option, however not all do. You can filter to show all datasets, or only those that can be transferred via Globus.',
         'right',
       )
       .addNextStep(
@@ -458,7 +458,7 @@ export const createMainPageTour = (): JoyrideTour => {
     )
     .addNextStep(
       leftSidebarTargets.facetFormGeneral.selector(),
-      'To filter by facets provided within this group, you would open this collapsable form by clicking on it...',
+      'To filter by facets provided within this group, you would open this collapsible form by clicking on it...',
       'right-end',
       /* istanbul ignore next -- @preserve */
       async () => {
@@ -586,7 +586,7 @@ export const createMainPageTour = (): JoyrideTour => {
     )
     .addNextStep(
       searchTableTargets.downloadSearchBtn.selector(),
-      'The Download All Results button allows you to download a wget script that will download all datasets returned by your search.',
+      'The Download All Search button allows you to skip the data cart and download all the datasets returned by your search!',
       'bottom',
     )
     .addNextStep(
@@ -615,7 +615,7 @@ export const createMainPageTour = (): JoyrideTour => {
     )
     .addNextStep(
       topDataRowTargets.cartAddBtn.selector('plus'),
-      "You can also directly add a specific dataset to the cart by clicking it's plus button here.",
+      'You can also directly add a specific dataset to the cart by clicking its plus button here.',
       'top-start',
     )
     .addNextStep(
@@ -697,7 +697,7 @@ export const createCartItemsTour = (setCurrentPage: (page: number) => void): Joy
         )
         .addNextStep(
           leftSidebarTargets.projectSelectLeftSideBtn.selector(),
-          "NOTE: The search results may take a few seconds to load... Click 'next' to continue.",
+          "NOTE: The search results may take a few seconds to load... Click 'Next' to continue.",
           'right',
           async () => {
             await delay(1000);
@@ -838,7 +838,7 @@ export const createCollectionsFormTour = (): JoyrideTour => {
       "Your currently saved collections are displayed in this table, where you can also 'Set' or 'Update' the file path to use for a specific collection. If the path is set for a specific collection, you won't have to set the path again when doing transfers to that collection.",
       'auto',
     )
-    .addNextStep('body', 'This concludes the cart page tour.', 'center')
+    .addNextStep('body', 'This concludes the manage collections tour.', 'center')
     .setOnFinish(
       /* istanbul ignore next -- @preserve */
       () => {
@@ -904,7 +904,7 @@ export const createSearchCardTour = (setCurrentPage: (page: number) => void): Jo
         )
         .addNextStep(
           leftSidebarTargets.projectSelectLeftSideBtn.selector(),
-          "NOTE: The search results may take a few seconds to load... Click 'next' to continue.",
+          "NOTE: The search results may take a few seconds to load... Click 'Next' to continue.",
           'right',
           async () => {
             if (cartIsEmpty()) {
@@ -1012,7 +1012,7 @@ export const createNodeStatusTour = (): JoyrideTour => {
     )
     .addNextStep(
       nodeTourTargets.onlineColHeader.selector(),
-      'This column shows the online status of each node. A green check-mark indicates the node is online whereas a red x mark indicates it is offline. As with the node column, you can click this to sort by node status like so...',
+      'This column shows the online status of each node. A green checkmark indicates the node is online whereas a red X mark indicates it is offline. As with the node column, you can click this to sort by node status like so...',
       'top',
       /* istanbul ignore next -- @preserve */
       async () => {
