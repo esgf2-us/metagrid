@@ -13,6 +13,11 @@ import {
   createCartItemsTour,
   createSearchCardTour,
   createNodeStatusTour,
+  createNavBarTour,
+  createFacetsPanelTour,
+  createSearchFeaturesTour,
+  createSearchResultsTour,
+  createDatasetDetailsTour,
   TourTitles,
 } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
@@ -43,6 +48,31 @@ const Support: React.FC = () => {
 
   const startNodeStatusTour = (): void => {
     startSpecificTour(createNodeStatusTour());
+    setSupportModalVisible(false);
+  };
+
+  const startNavBarTour = (): void => {
+    startSpecificTour(createNavBarTour());
+    setSupportModalVisible(false);
+  };
+
+  const startFacetsPanelTour = (): void => {
+    startSpecificTour(createFacetsPanelTour());
+    setSupportModalVisible(false);
+  };
+
+  const startSearchFeaturesTour = (): void => {
+    startSpecificTour(createSearchFeaturesTour());
+    setSupportModalVisible(false);
+  };
+
+  const startSearchResultsTour = (): void => {
+    startSpecificTour(createSearchResultsTour());
+    setSupportModalVisible(false);
+  };
+
+  const startDatasetDetailsTour = (): void => {
+    startSpecificTour(createDatasetDetailsTour());
     setSupportModalVisible(false);
   };
 
@@ -79,23 +109,37 @@ const Support: React.FC = () => {
           <h3>User Interface Tours</h3>
           <p style={{ fontSize: '14px' }}>
             If you are new to Metagrid, you can familiarize yourself with the user interface of this
-            page by clicking on the tour below.
+            page by clicking on any of the tours below.
           </p>
           <Card title="">
-            <div style={{ display: 'flex', gap: 10 }}>
-              {curPage === AppPage.Main && (
-                <Button onClick={startMainPageTour}>{TourTitles.Main}</Button>
-              )}
-              {curPage === AppPage.Cart && (
-                <Button onClick={startCartPageTour}>{TourTitles.Cart}</Button>
-              )}
-              {curPage === AppPage.SavedSearches && (
-                <Button onClick={startSearchCardTour}>{TourTitles.Searches}</Button>
-              )}
-              {curPage === AppPage.NodeStatus && (
-                <Button onClick={startNodeStatusTour}>{TourTitles.Node}</Button>
-              )}
-            </div>
+            {curPage === AppPage.Main && (
+              <div>
+                <div style={{ marginBottom: '12px' }}>
+                  <Button onClick={startMainPageTour} type="primary">
+                    {TourTitles.Main}
+                  </Button>
+                </div>
+                <div style={{ fontSize: '14px', marginBottom: '8px', fontWeight: 'bold' }}>
+                  Or choose a specific topic:
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  <Button onClick={startNavBarTour}>{TourTitles.NavBar}</Button>
+                  <Button onClick={startFacetsPanelTour}>{TourTitles.FacetsPanel}</Button>
+                  <Button onClick={startSearchFeaturesTour}>{TourTitles.SearchFeatures}</Button>
+                  <Button onClick={startSearchResultsTour}>{TourTitles.SearchResults}</Button>
+                  <Button onClick={startDatasetDetailsTour}>{TourTitles.DatasetDetails}</Button>
+                </div>
+              </div>
+            )}
+            {curPage === AppPage.Cart && (
+              <Button onClick={startCartPageTour}>{TourTitles.Cart}</Button>
+            )}
+            {curPage === AppPage.SavedSearches && (
+              <Button onClick={startSearchCardTour}>{TourTitles.Searches}</Button>
+            )}
+            {curPage === AppPage.NodeStatus && (
+              <Button onClick={startNodeStatusTour}>{TourTitles.Node}</Button>
+            )}
           </Card>
           {window.METAGRID.SUPPORT_INFO && (
             <>
