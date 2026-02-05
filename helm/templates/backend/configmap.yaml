@@ -41,3 +41,6 @@ data:
   {{- range $key, $value := .Values.django.config }}
   {{ $key }}: {{ $value | quote }}
   {{- end }}
+  {{- if .Values.ingress.tls.enabled }}
+  DJANGO_SOCIAL_AUTH_REDIRECT_IS_HTTPS: "true"
+  {{- end }}

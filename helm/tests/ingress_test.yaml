@@ -68,3 +68,14 @@ tests:
         equal:
           path: spec.tls[0].secretName
           value: tls-cert
+  - it: should set DJANGO_SOCIAL_AUTH_REDIRECT_IS_HTTPS when ingress tls is enabled
+    set:
+      ingress:
+        tls:
+          enabled: true
+    asserts:
+      - template: templates/backend/configmap.yaml
+        isSubset:
+          path: data
+          content:
+            DJANGO_SOCIAL_AUTH_REDIRECT_IS_HTTPS: "true"
