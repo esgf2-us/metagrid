@@ -89,6 +89,152 @@ should create a ingress:
                       number: 5000
                 path: /globus
                 pathType: ImplementationSpecific
+        - host: metagrid-backup.neworg.io
+          http:
+            paths:
+              - backend:
+                  service:
+                    name: metagrid-frontend
+                    port:
+                      number: 8080
+                path: /
+                pathType: ImplementationSpecific
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /frontend-config.js
+                pathType: ImplementationSpecific
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /api
+                pathType: ImplementationSpecific
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /accounts
+                pathType: ImplementationSpecific
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /account-confirm-email
+                pathType: ImplementationSpecific
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /proxy
+                pathType: ImplementationSpecific
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /tempStorage
+                pathType: ImplementationSpecific
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /login
+                pathType: ImplementationSpecific
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /complete
+                pathType: ImplementationSpecific
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /globus
+                pathType: ImplementationSpecific
+        - host: metagrid-backup2.neworg.io
+          http:
+            paths:
+              - backend:
+                  service:
+                    name: metagrid-frontend
+                    port:
+                      number: 8080
+                path: /
+                pathType: ImplementationSpecific
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /frontend-config.js
+                pathType: ImplementationSpecific
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /api
+                pathType: ImplementationSpecific
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /accounts
+                pathType: ImplementationSpecific
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /account-confirm-email
+                pathType: ImplementationSpecific
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /proxy
+                pathType: ImplementationSpecific
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /tempStorage
+                pathType: ImplementationSpecific
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /login
+                pathType: ImplementationSpecific
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /complete
+                pathType: ImplementationSpecific
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /globus
+                pathType: ImplementationSpecific
       tls:
         - hosts:
             - metagrid.neworg.io

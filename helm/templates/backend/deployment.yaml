@@ -52,11 +52,8 @@ spec:
               fieldPath: status.podIP
         - name: DJANGO_ALLOWED_HOSTS
           {{- $hosts := list "localhost" "$(THIS_POD_IP)" }}
-          {{- if .Values.ingress.host }}
-            {{- $hosts = append $hosts .Values.ingress.host }}
-          {{- end }}
-          {{- range $host := .Values.ingress.additionalHosts }}
-            {{- $hosts = append $hosts $host }}
+          {{- range .Values.ingress.hosts }}
+            {{- $hosts = append $hosts . }}
           {{- end }}
           value: {{ toJson $hosts | quote }}
         ports:

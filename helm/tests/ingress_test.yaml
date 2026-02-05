@@ -16,12 +16,30 @@ set:
   django:
     secretKey: abcd1234 # need static for checksum
 tests:
-  - it: should create a ingress
+  - it: should fail when host is set
     template: templates/ingress.yaml
     set:
       ingress:
         host: metagrid.neworg.io
+    asserts:
+      - failedTemplate:
+          errorMessage: 'Deprecation: ingress.host is replaced with ingress.hosts'
+  - it: should fail when additionalHosts is set
+    template: templates/ingress.yaml
+    set:
+      ingress:
         additionalHosts:
+          - metagrid-backup.neworg.io
+          - metagrid-backup2.neworg.io
+    asserts:
+      - failedTemplate:
+          errorMessage: 'Deprecation: ingress.additionalHosts is replaced with ingress.hosts'
+  - it: should create a ingress
+    template: templates/ingress.yaml
+    set:
+      ingress:
+        hosts:
+          - metagrid.neworg.io
           - metagrid-backup.neworg.io
           - metagrid-backup2.neworg.io
         className: traefik
