@@ -38,3 +38,14 @@ tests:
         gunicornWorkers: 10
     asserts:
       - matchSnapshot: {}
+  - it: should append additional config
+    template: templates/backend/configmap.yaml
+    set:
+      django:
+        config:
+          DJANGO_SOCIAL_AUTH_REDIRECT_IS_HTTPS: true
+    asserts:
+      - isSubset:
+          path: data
+          content:
+            DJANGO_SOCIAL_AUTH_REDIRECT_IS_HTTPS: "true"
