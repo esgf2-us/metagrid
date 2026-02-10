@@ -1,7 +1,7 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
 import Footer from './Footer';
-import { mockConfig } from '../../test/jestTestFunctions';
+import { mockConfig } from '../../test/testFunctions';
 import startupDisplayData from '../Messaging/messageDisplayData';
 import customRender from '../../test/custom-render';
 

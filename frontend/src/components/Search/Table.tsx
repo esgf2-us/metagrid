@@ -155,14 +155,14 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       }),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onSelect: (_record: any, _selected: any, selectedRows: any) => {
-        /* istanbul ignore else */
+        /* istanbul ignore else -- @preserve */
         if (onRowSelect) {
           onRowSelect(selectedRows as RawSearchResults);
         }
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onSelectAll: (_selected: any, selectedRows: any) => {
-        /* istanbul ignore else */
+        /* istanbul ignore else -- @preserve */
         if (onRowSelect) {
           onRowSelect(selectedRows as RawSearchResults);
         }
@@ -335,7 +335,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
          * Handle the download form for datasets
          */
         const handleDownloadForm = (downloadType: DatasetDownloadTypes): void => {
-          /* istanbul ignore else */
+          /* istanbul ignore else -- @preserve */
           if (downloadType === 'wget') {
             if (record.isStac) {
               // Generate file for STAC selections
@@ -436,7 +436,9 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
                 <div className={topDataRowTargets.globusReadyStatusIcon.class()}>
                   <GlobusToolTip
                     dataNode={data_node}
-                    stacGlobusAvailable={getStacGlobusHref(record) !== null}
+                    stacGlobusAvailable={
+                      getStacGlobusHref(record.assets) !== null || record.globusHrefs !== undefined
+                    }
                   />
                 </div>
               );

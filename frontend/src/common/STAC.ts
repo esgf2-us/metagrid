@@ -6,7 +6,7 @@ import {
   StacAsset,
   StacAggregations,
 } from '../components/Search/types';
-import { downloadFileForUser } from './utils';
+import { downloadFileForUser, formatBytes } from './utils';
 
 export const STAC_PROJECTS: RawProject[] = [
   {
@@ -96,9 +96,11 @@ export const STAC_AGGREGATION_FACETS: { [key: string]: string[] } = {
   ],
 };
 
-export const getStacGlobusHref = (record: RawSearchResult): string | null => {
-  if (record.assets && record.assets.globus && record.assets.globus.href) {
-    return record.assets.globus.href;
+export const getStacGlobusHref = (
+  assets: { [name: string]: StacAsset } | undefined,
+): string | null => {
+  if (assets && assets.globus && assets.globus.href) {
+    return assets.globus.href;
   }
   return null;
 };
@@ -123,7 +125,10 @@ export const convertStacToRawSearchResult = (stacResult: StacFeature): RawSearch
   const { id, assets, bbox, geometry, links, properties, stac_version, type } = stacResult;
   const { access, citation_url, further_info_url, version, project } = properties;
 
-  const numberOfFiles = Object.keys(assets).filter((key) => key !== 'globus').length;
+  const numberOfFiles = Object.values(assets).reduce(
+    (acc, asset) => acc + (asset['file:size'] > 0 ? 1 : 0),
+    0,
+  );
   const size = Object.values(assets).reduce((acc, asset) => acc + (asset['file:size'] || 0), 0);
 
   const updatedAssets: {
@@ -212,24 +217,27 @@ export const convertSearchParamsIntoStacFilter = (
     validFacets.push('latest');
   }
 
+  const globusOnly = params.get('globusOnly');
   const versionParams = paramKeys.filter((key) => ['min_version', 'max_version'].includes(key));
 
-  let facetsFilter;
+  const mainFilters = [];
 
   // Create a filter for facets, if there are valid facets
   if (validFacets.length > 0) {
     // If there are more than one valid params, create an AND filter between each
     if (validFacets.length > 1) {
-      facetsFilter = createAndFilter(
-        validFacets.map((param) => {
-          const values = params.get(param)?.split(',') || [];
-          const mappedParam = STAC_PROJECT_FACET_MAPPING.CMIP6[param] || param;
-          if (values.length > 1) {
-            // If there are multiple values for a parameter, create an OR filter
-            return createOrFilter(values.map((value) => createEqualsFilter(mappedParam, value)));
-          }
-          return createEqualsFilter(mappedParam, values[0]);
-        }),
+      mainFilters.push(
+        createAndFilter(
+          validFacets.map((param) => {
+            const values = params.get(param)?.split(',') || [];
+            const mappedParam = STAC_PROJECT_FACET_MAPPING.CMIP6[param] || param;
+            if (values.length > 1) {
+              // If there are multiple values for a parameter, create an OR filter
+              return createOrFilter(values.map((value) => createEqualsFilter(mappedParam, value)));
+            }
+            return createEqualsFilter(mappedParam, values[0]);
+          }),
+        ),
       );
     } else {
       const param = validFacets[0];
@@ -238,65 +246,103 @@ export const convertSearchParamsIntoStacFilter = (
 
       if (values.length > 1) {
         // If there are multiple values for a parameter, create an OR filter
-        facetsFilter = createOrFilter(
-          values.map((value) => createEqualsFilter(mappedParam, value)),
+        mainFilters.push(
+          createOrFilter(values.map((value) => createEqualsFilter(mappedParam, value))),
         );
       } else {
-        facetsFilter = createEqualsFilter(mappedParam, values[0]);
+        mainFilters.push(createEqualsFilter(mappedParam, values[0]));
       }
     }
   }
 
-  let versionFilter;
   // Create a filter for version range, if version params exist
   if (versionParams.length > 0) {
     // If there are more than one version params, create an AND filter between each
     if (versionParams.length > 1) {
       const minVersion = params.get('min_version');
       const maxVersion = params.get('max_version');
-      versionFilter = createAndFilter([
-        { op: '>=', args: [{ property: 'version' }, minVersion] },
-        { op: '<=', args: [{ property: 'version' }, maxVersion] },
-      ]);
+      mainFilters.push(
+        createAndFilter([
+          { op: '>=', args: [{ property: 'version' }, minVersion] },
+          { op: '<=', args: [{ property: 'version' }, maxVersion] },
+        ]),
+      );
     } else {
       const param = versionParams[0];
       const value = params.get(param);
       if (param === 'min_version' && value) {
-        versionFilter = { op: '>=', args: [{ property: 'version' }, value] };
+        mainFilters.push({ op: '>=', args: [{ property: 'version' }, value] });
       }
       if (param === 'max_version' && value) {
-        versionFilter = { op: '<=', args: [{ property: 'version' }, value] };
+        mainFilters.push({ op: '<=', args: [{ property: 'version' }, value] });
       }
     }
   }
 
-  if (facetsFilter && versionFilter) {
-    return createAndFilter([facetsFilter, versionFilter]);
+  // Create a filter for globusOnly if specified
+  if (globusOnly && globusOnly === 'true') {
+    mainFilters.push(createEqualsFilter('properties.access', 'Globus'));
   }
-  if (facetsFilter) {
-    return facetsFilter;
+
+  if (mainFilters.length > 1) {
+    return createAndFilter(mainFilters.filter((f) => f !== undefined));
   }
-  if (versionFilter) {
-    return versionFilter;
+
+  if (mainFilters.length === 1) {
+    return mainFilters[0];
   }
 
   return undefined;
 };
 
-export function generateWgetScriptSTAC(searchResults: RawSearchResult[]): boolean {
+export function getFileCountFromSTACsearch(features: StacFeature[]): number {
+  let totalCount = 0;
+
+  features.forEach((feature: StacFeature) => {
+    totalCount += Object.values(feature.assets).reduce(
+      (acc, asset) => acc + (asset['file:size'] > 0 ? 1 : 0),
+      0,
+    );
+  });
+
+  return totalCount;
+}
+
+export function getDownloadSizeFromSTACsearch(features: StacFeature[]): number {
+  let totalSize = 0;
+
+  features.forEach((feature: StacFeature) => {
+    totalSize += Object.values(feature.assets).reduce(
+      (acc, asset) => acc + (asset['file:size'] > 0 ? asset['file:size'] : 0),
+      0,
+    );
+  });
+
+  return totalSize;
+}
+
+export function generateWgetScriptSTAC(
+  searchResults: RawSearchResult[],
+  searchURL?: string,
+): boolean {
   const d = new Date();
   const date_string = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}_${d.getHours()}-${d.getMinutes()}-${d.getSeconds()}`;
   const fileName = `wget_stac_script_${date_string}.sh`;
 
   let script = '#!/bin/bash\n\n';
   script += '##############################################################################\n';
-  script += '# ESGF wget download script\n';
-  script += '#\n';
+  script += '# ESGF wget download script\n#\n';
+  if (searchURL) {
+    script += `# Search URL: ${searchURL}\n#\n`;
+  }
+  script += `# Total Files: TOTAL_FILES\n`;
+  script += `# Total Download Size: TOTAL_SIZE\n#\n`;
   script += `# Generated by Metagrid - ${new Date().toISOString()}\n`;
   script += '#\n';
   script += '##############################################################################\n\n';
 
   let hrefs = 0;
+  let fileSize = 0;
 
   searchResults.forEach((result) => {
     if (result.assets) {
@@ -305,10 +351,16 @@ export function generateWgetScriptSTAC(searchResults: RawSearchResult[]): boolea
         if (href && href.startsWith('http') && href.endsWith('.nc')) {
           script += `wget ${href}\n`;
           hrefs += 1;
+          if (asset['file:size']) {
+            fileSize += asset['file:size'];
+          }
         }
       });
     }
   });
+
+  script = script.replace('TOTAL_FILES', hrefs.toString());
+  script = script.replace('TOTAL_SIZE', formatBytes(fileSize));
 
   if (hrefs > 0) {
     downloadFileForUser(fileName, script);

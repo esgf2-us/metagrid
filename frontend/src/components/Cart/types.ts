@@ -41,6 +41,7 @@ export type UserSearchQuery = {
   resultType: ResultType;
   minVersionDate: VersionDate;
   maxVersionDate: VersionDate;
+  globusOnly: boolean;
   filenameVars: TextInputs | [];
   activeFacets: ActiveFacets;
   textInputs: TextInputs | [];
