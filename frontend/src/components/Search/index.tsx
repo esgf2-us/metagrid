@@ -2,6 +2,7 @@ import {
   BookOutlined,
   CodeOutlined,
   CopyOutlined,
+  DownloadOutlined,
   ExportOutlined,
   SaveOutlined,
   ShareAltOutlined,
@@ -67,6 +68,7 @@ import {
 } from './types';
 import { AuthContext } from '../../contexts/AuthContext';
 import { convertSearchParamsIntoStacFilter, convertStacToRawSearchResult } from '../../common/STAC';
+import DownloadModal from '../Downloads/DownloadModal';
 
 const tooltipText = {
   featureNotAvailableInStac: 'This feature is not compatible with STAC projects.',
@@ -191,6 +193,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   const [currentRequestURL, setCurrentRequestURL] = useAtom(currentRequestQueryAtom);
 
+  const [showDownloadAllForm, setShowDownloadAllForm] = React.useState<boolean>(false);
+
   const currentProject = useAtomValue(currentProjectAtom);
 
   const isDarkMode = useAtomValue<boolean>(isDarkModeAtom);
@@ -260,7 +264,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   React.useEffect(() => {
     if (results && currentRequestURL && !objectIsEmpty(results)) {
       cacheSearchResults(results, paginationOptions, currentRequestURL);
-      /* istanbul ignore else */
+      /* istanbul ignore else -- @preserve */
       if (results.facet_counts) {
         const { facet_fields: facetFields } = (
           results as {
@@ -296,6 +300,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       filenameVars: activeSearchQuery.filenameVars,
       activeFacets: activeSearchQuery.activeFacets,
       textInputs: activeSearchQuery.textInputs,
+      globusOnly: activeSearchQuery.globusOnly,
       url,
       resultsCount: numFound,
       searchTime: Date.now(),
@@ -333,7 +338,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   };
 
   const handleShareSearchQuery = (): void => {
-    /* istanbul ignore else */
+    /* istanbul ignore else -- @preserve */
     if (navigator && navigator.clipboard) {
       navigator.clipboard.writeText(getUrlFromSearch(activeSearchQuery));
       showNotice(messageApi, 'Metagrid search URL copied to clipboard!', {
@@ -343,7 +348,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   };
 
   const handleEsgpullSearchQuery = (): void => {
-    /* istanbul ignore else */
+    /* istanbul ignore else -- @preserve */
     if (navigator && navigator.clipboard) {
       navigator.clipboard.writeText(createEsgpullCommand(activeSearchQuery, false));
       showNotice(messageApi, 'Esgpull search query copied to clipboard!', {
@@ -353,7 +358,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   };
 
   const handleEsgpullDownloadCmd = (): void => {
-    /* istanbul ignore else */
+    /* istanbul ignore else -- @preserve */
     if (navigator && navigator.clipboard) {
       navigator.clipboard.writeText(createEsgpullCommand(activeSearchQuery, true));
       showNotice(messageApi, 'Esgpull download command copied to clipboard!', {
@@ -363,7 +368,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   };
 
   const handleIntakeEsgfSearch = (): void => {
-    /* istanbul ignore else */
+    /* istanbul ignore else -- @preserve */
     if (navigator && navigator.clipboard) {
       navigator.clipboard.writeText(createIntakeEsgfSearch(activeSearchQuery));
       showNotice(messageApi, 'Intake-ESGF search command copied to clipboard!', {
@@ -373,7 +378,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   };
 
   const handleRemoveFilter = (removedTag: TagValue, type: TagType): void => {
-    /* istanbul ignore else */
+    /* istanbul ignore else -- @preserve */
     if (type === 'text') {
       setActiveSearchQuery({
         ...activeSearchQuery,
@@ -607,20 +612,49 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         <div>
           {results && (
             <Space>
-              <Button
-                type="default"
-                className={searchTableTargets.addSelectedToCartBtn.class()}
-                onClick={() => onUpdateCart(selectedItems, 'add')}
-                disabled={
-                  isLoading ||
-                  numFound === 0 ||
-                  selectedItems.length === 0 ||
-                  allSelectedItemsInCart
-                }
-              >
-                <ShoppingCartOutlined />
-                Add Selected to Cart
-              </Button>{' '}
+              {currentProject.isSTAC && (
+                <>
+                  <Tooltip
+                    placement="bottom"
+                    title="Open form to download the current search results."
+                  >
+                    <Button
+                      type="default"
+                      shape="round"
+                      className={searchTableTargets.downloadSearchBtn.class()}
+                      onClick={() => {
+                        setShowDownloadAllForm(true);
+                      }}
+                      disabled={isLoading || numFound === 0}
+                    >
+                      <DownloadOutlined />
+                      Download All Results{' '}
+                    </Button>{' '}
+                  </Tooltip>
+                  <DownloadModal
+                    show={showDownloadAllForm}
+                    hide={() => setShowDownloadAllForm(false)}
+                    searchURL={getUrlFromSearch(activeSearchQuery)}
+                    stacResults={(results as StacResponse).search}
+                  />
+                </>
+              )}
+              <Tooltip placement="bottom" title="Add the selected datasets to your download cart.">
+                <Button
+                  type="default"
+                  className={searchTableTargets.addSelectedToCartBtn.class()}
+                  onClick={() => onUpdateCart(selectedItems, 'add')}
+                  disabled={
+                    isLoading ||
+                    numFound === 0 ||
+                    selectedItems.length === 0 ||
+                    allSelectedItemsInCart
+                  }
+                >
+                  <ShoppingCartOutlined />
+                  Add Selected to Cart
+                </Button>{' '}
+              </Tooltip>
               <Dropdown.Button
                 data-testid="save-search-dropdown-btn"
                 className={searchTableTargets.saveSearchBtn.class()}
@@ -631,9 +665,14 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                 placement="bottom"
                 icon={<CopyOutlined className={copySearchOptionsTargets.copyMenuBtn.class()} />}
               >
-                <SaveOutlined data-testid="save-search-btn" />
-                Save Search
-              </Dropdown.Button>
+                <Tooltip
+                  placement="bottom"
+                  title="Saves your current search parameters to Saved Searches for later use."
+                >
+                  <SaveOutlined data-testid="save-search-btn" />
+                  Save Search
+                </Tooltip>
+              </Dropdown.Button>{' '}
             </Space>
           )}
         </div>

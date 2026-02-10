@@ -50,7 +50,7 @@
 > !!! example "*Optional*"
 >     __Default:__ `a8ef4320-9e5a-4793-837b-c45161ca1845`
 >
->     The Globus index ID for the public ESGF2 data.
+>     If WGET_URL is none, then you need this to specify the Globus index ID for the public ESGF2 data that integrated wget would use.
 >
 >     __Example Values__
 >

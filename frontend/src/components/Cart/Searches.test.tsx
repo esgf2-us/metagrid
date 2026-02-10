@@ -5,7 +5,7 @@ import Searches from './Searches';
 import customRender from '../../test/custom-render';
 import { userSearchQueryFixture } from '../../test/mock/fixtures';
 import { AppStateKeys } from '../../common/atoms';
-import { AtomWrapper } from '../../test/jestTestFunctions';
+import { AtomWrapper } from '../../test/testFunctions';
 import { UserSearchQueries } from './types';
 import { localStorageMock } from '../../test/mock/mockStorage';
 

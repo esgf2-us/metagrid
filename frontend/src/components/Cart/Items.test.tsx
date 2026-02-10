@@ -10,7 +10,7 @@ import { getSearchFromUrl } from '../../common/utils';
 import App from '../App/App';
 import { ActiveSearchQuery } from '../Search/types';
 import { AppStateKeys } from '../../common/atoms';
-import { AtomWrapper } from '../../test/jestTestFunctions';
+import { AtomWrapper } from '../../test/testFunctions';
 
 const defaultProps: Props = {
   onUpdateCart: vi.fn(),

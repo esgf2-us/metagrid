@@ -29,7 +29,7 @@ import {
 import { STAC_PROJECTS, generateWgetScriptSTAC } from '../common/STAC';
 import { downloadFileForUser } from '../common/utils';
 import { ActiveSearchQuery, Pagination, RawCitation, ResultType } from '../components/Search/types';
-import { mockConfig } from '../test/jestTestFunctions';
+import { mockConfig } from '../test/testFunctions';
 import {
   activeSearchQueryFixture,
   ESGFSearchAPIFixture,

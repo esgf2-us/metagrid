@@ -8,7 +8,7 @@ import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
 import Table, { Props } from './Table';
 import { QualityFlag } from './Tabs';
-import { AtomWrapper, mockConfig } from '../../test/jestTestFunctions';
+import { AtomWrapper, mockConfig } from '../../test/testFunctions';
 import { AppStateKeys } from '../../common/atoms';
 
 const user = userEvent.setup();

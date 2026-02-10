@@ -15,7 +15,7 @@ import { getSearchFromUrl } from '../../common/utils';
 import customRender from '../../test/custom-render';
 import { ActiveSearchQuery } from '../Search/types';
 import App from './App';
-import { activeSearch, AtomWrapper, submitKeywordSearch } from '../../test/jestTestFunctions';
+import { activeSearch, AtomWrapper, submitKeywordSearch } from '../../test/testFunctions';
 import { AppStateKeys } from '../../common/atoms';
 import { delay } from '../../common/joyrideTutorials/reactJoyrideSteps';
 

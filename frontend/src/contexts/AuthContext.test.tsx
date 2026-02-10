@@ -2,7 +2,7 @@ import { screen } from '@testing-library/react';
 import React from 'react';
 import { vi } from 'vitest';
 import customRender from '../test/custom-render';
-import { mockConfig } from '../test/jestTestFunctions';
+import { mockConfig } from '../test/testFunctions';
 
 describe('test AuthProvider', () => {
   it('renders using keycloak provider', async () => {

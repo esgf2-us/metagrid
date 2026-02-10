@@ -5,7 +5,7 @@ import { matchMedia, setMedia } from 'mock-match-media';
 import { vi } from 'vitest';
 import customRender from '../../test/custom-render';
 import RightMenu, { Props } from './RightMenu';
-import { mockConfig, mockKeycloakToken, AtomWrapper } from '../../test/jestTestFunctions';
+import { mockConfig, mockKeycloakToken, AtomWrapper } from '../../test/testFunctions';
 import { localStorageMock, tempStorageSetMock } from '../../test/mock/mockStorage';
 import {
   activeSearchQueryFixture,

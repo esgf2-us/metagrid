@@ -53,7 +53,7 @@ export const KeycloakAuthProvider: React.FC<Props> = ({ children }) => {
     deferFn: fetchUserInfo as unknown as DeferFn<RawUserInfo>,
   });
 
-  /* istanbul ignore start */
+  /* istanbul ignore start -- @preserve */
   useEffect(() => {
     if (keycloak.token) {
       runFetchUserAuth(keycloak.token);
@@ -64,16 +64,16 @@ export const KeycloakAuthProvider: React.FC<Props> = ({ children }) => {
     }
     return undefined;
   }, [runFetchUserAuth, keycloak.token]);
-  /* istanbul ignore end */
+  /* istanbul ignore end -- @preserve */
 
-  /* istanbul ignore start */
+  /* istanbul ignore start -- @preserve */
   useEffect(() => {
     if (userAuth?.access_token) {
       userAuth.is_authenticated = true;
       runFetchUserInfo(userAuth.access_token);
     }
   }, [runFetchUserInfo, userAuth]);
-  /* istanbul ignore end */
+  /* istanbul ignore end -- @preserve */
 
   const contextValue = useMemo(
     () => ({

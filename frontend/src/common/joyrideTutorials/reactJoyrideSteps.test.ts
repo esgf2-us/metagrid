@@ -1,5 +1,5 @@
 import { vi } from 'vitest';
-import { mockConfig } from '../../test/jestTestFunctions';
+import { mockConfig } from '../../test/testFunctions';
 import {
   delay,
   elementExists,

@@ -52,12 +52,12 @@ const Facets: React.FC = () => {
   };
 
   const handleSubmitProjectForm = (selectedProject: string): void => {
-    /* istanbul ignore else */
+    /* istanbul ignore else -- @preserve */
     if (data) {
       const selectedProj: RawProject | undefined = data.results.find(
         (obj: RawProject) => obj.name === selectedProject,
       );
-      /* istanbul ignore else */
+      /* istanbul ignore else -- @preserve */
       if (selectedProj && activeSearchQuery.textInputs) {
         handleProjectChange(selectedProj);
       }

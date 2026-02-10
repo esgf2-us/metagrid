@@ -60,6 +60,13 @@ const buildDisplayData = (
       );
     }
     if (Array.isArray(value)) {
+      if (typeof value[0] === 'string' || typeof value[0] === 'number') {
+        return (
+          <div key={`top-${key}`} style={{ margin: 0 }}>
+            <span style={{ fontWeight: 'bold' }}>{title}</span>: {`[${value.join(', ')}]`}
+          </div>
+        );
+      }
       return (
         <div key={`top-${key}`} style={{ margin: 0 }}>
           <span style={{ fontWeight: 'bold' }}>{title}</span>:
@@ -71,10 +78,10 @@ const buildDisplayData = (
               listStyle: 'none',
             }}
           >
-            {value.map((item, idx) => (
+            {value.map((item, idx) => {
               // eslint-disable-next-line react/no-array-index-key
-              <li key={idx}>{buildElement(`${key}-${idx}`, `${title}[${idx}]`, item)}</li>
-            ))}
+              return <li key={idx}>{buildElement(`${key}-${idx}`, `${title}[${idx}]`, item)}</li>;
+            })}
           </ul>
         </div>
       );
@@ -165,13 +172,13 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
     supdata: { label: 'Supplemental Data', url: null },
     'Tech Note': { label: 'Technical Notes', url: null },
   };
-  /* istanbul ignore else */
+  /* istanbul ignore else -- @preserve */
   if (objectHasKey(record, 'xlink')) {
     const { xlink } = record;
 
     (xlink as string[]).forEach((link) => {
       const [url, , linkType] = splitStringByChar(link, '|') as string[];
-      /* istanbul ignore else */
+      /* istanbul ignore else -- @preserve */
       if (Object.keys(xlinkTypesToOutput).includes(linkType)) {
         xlinkTypesToOutput[linkType].url = url;
       }
@@ -181,7 +188,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
   // Have to parse and format since 'quality_control_flags' attribute is
   // poorly structured in the Search API
   const qualityFlags: Record<string, string> = {};
-  /* istanbul ignore else */
+  /* istanbul ignore else -- @preserve */
   if (objectHasKey(record, 'quality_control_flags')) {
     const { quality_control_flags: qcFlags } = record;
 

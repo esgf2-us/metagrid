@@ -7,7 +7,7 @@ import { CSSinJS } from '../../common/types';
 import Button from '../General/Button';
 import Table from '../Search/Table';
 import { RawSearchResults } from '../Search/types';
-import DatasetDownload from '../Globus/DatasetDownload';
+import DatasetDownload from '../Downloads/DatasetDownload';
 import { UserCart } from './types';
 import { AuthContext } from '../../contexts/AuthContext';
 import { updateUserCart } from '../../api';
@@ -49,7 +49,7 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     setUserCart([]);
     setItemSelections([]);
 
-    /* istanbul ignore else */
+    /* istanbul ignore else -- @preserve */
     if (isAuthenticated) {
       updateUserCart(pk, accessToken, []);
     }

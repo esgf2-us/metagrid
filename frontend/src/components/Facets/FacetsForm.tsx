@@ -246,7 +246,7 @@ const FacetsForm: React.FC = () => {
     let newMinVersionDate = null;
     let newMaxVersionDate = null;
 
-    /* istanbul ignore else */
+    /* istanbul ignore else -- @preserve */
     if (versionDateRange) {
       const [minDate, maxDate] = versionDateRange;
       if (minDate) {
@@ -273,6 +273,22 @@ const FacetsForm: React.FC = () => {
   const handleOnGlobusReadyChanged = (event: RadioChangeEvent): void => {
     const globusOnly = event.target.value as boolean;
     setGlobusReadyOnly(globusOnly);
+
+    if (currentProject.isSTAC) {
+      if (globusOnly) {
+        setActiveSearchQuery({
+          ...activeSearchQuery,
+          globusOnly: true,
+        });
+      } else {
+        setActiveSearchQuery({
+          ...activeSearchQuery,
+          globusOnly: false,
+        });
+      }
+      return;
+    }
+
     if (globusOnly) {
       setActiveSearchQuery({
         ...activeSearchQuery,
@@ -330,6 +346,8 @@ const FacetsForm: React.FC = () => {
         )
       ) {
         setGlobusReadyOnly(true);
+      } else if (activeSearchQuery.globusOnly) {
+        setGlobusReadyOnly(activeSearchQuery.globusOnly);
       } else {
         setGlobusReadyOnly(false);
       }
@@ -340,7 +358,7 @@ const FacetsForm: React.FC = () => {
     if (!dropdownIsOpen && activeDropdownValue) {
       const [facet, options] = activeDropdownValue;
       const newActiveFacets: ActiveFacets = activeSearchQuery.activeFacets;
-      /* istanbul ignore else */
+      /* istanbul ignore else -- @preserve */
       if (options.length === 0) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [facet]: remove, ...updatedFacets } = newActiveFacets;
@@ -423,7 +441,7 @@ const FacetsForm: React.FC = () => {
                       }
                       onClick={() => {
                         // copy link to clipboard
-                        /* istanbul ignore else */
+                        /* istanbul ignore else -- @preserve */
                         if (navigator && navigator.clipboard) {
                           navigator.clipboard.writeText(
                             facetOptions
@@ -491,7 +509,7 @@ const FacetsForm: React.FC = () => {
           ...activeSearchQuery.activeFacets,
         }}
       >
-        {window.METAGRID.GLOBUS_NODES.length > 0 && !currentProject.isSTAC && (
+        {window.METAGRID.GLOBUS_NODES.length > 0 && (
           <div className={leftSidebarTargets.filterByGlobusTransfer.class()}>
             <h3>Filter By Transfer Options</h3>
             <Row>
