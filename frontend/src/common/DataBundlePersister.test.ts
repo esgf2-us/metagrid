@@ -1,5 +1,5 @@
 import { vi } from 'vitest';
-import { mockFunction } from '../test/jestTestFunctions';
+import { mockFunction } from '../test/testFunctions';
 import { tempStorageGetMock, tempStorageSetMock } from '../test/mock/mockStorage';
 import DataBundlePersister from './DataBundlePersister';
 

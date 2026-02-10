@@ -2,7 +2,7 @@ import React from 'react';
 import { screen } from '@testing-library/react';
 import customRender from '../../test/custom-render';
 import GlobusToolTip from './GlobusToolTip';
-import { originalGlobusEnabledNodes } from '../../test/jestTestFunctions';
+import { originalGlobusEnabledNodes } from '../../test/testFunctions';
 
 describe('Testing the GlobusToolTip component', () => {
   it('Renders the GlobusToolTip component properly with empty node', async () => {

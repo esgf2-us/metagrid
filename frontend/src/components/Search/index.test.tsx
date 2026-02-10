@@ -15,7 +15,7 @@ import customRender from '../../test/custom-render';
 import { ActiveFacets, RawFacets } from '../Facets/types';
 import Search, { checkFiltersExist, parseFacets, Props, stringifyFilters } from './index';
 import { ActiveSearchQuery, RawSearchResult, ResultType, TextInputs, VersionType } from './types';
-import { openDropdownList, AtomWrapper } from '../../test/jestTestFunctions';
+import { openDropdownList, AtomWrapper } from '../../test/testFunctions';
 import { AppStateKeys } from '../../common/atoms';
 
 const user = userEvent.setup();

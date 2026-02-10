@@ -126,7 +126,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   const setNodeStatus = useSetAtom(nodeStatusAtom);
 
   React.useEffect(() => {
-    /* istanbul ignore else */
+    /* istanbul ignore else -- @preserve */
     if (isAuthenticated) {
       fetchUserCart(pk, accessToken)
         .then((rawUserCart) => {
@@ -168,7 +168,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   }, [isAuthenticated, pk, accessToken]);
 
   React.useEffect(() => {
-    /* istanbul ignore else */
+    /* istanbul ignore else -- @preserve */
     const showStatus = window.METAGRID.STATUS_URL !== null;
     if (showStatus) {
       runFetchNodeStatus();
@@ -185,7 +185,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     fetchProjects()
       .then((data) => {
         const projectName = searchQuery ? searchQuery.project.name : '';
-        /* istanbul ignore else */
+        /* istanbul ignore else -- @preserve */
         if (data && projectName && projectName !== '') {
           const rawProj: RawProject | undefined = data.results.find((proj) => {
             return proj.name.toLowerCase() === (projectName as string).toLowerCase();
@@ -214,7 +214,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     let newCart: UserCart = [];
     let newSelections: RawSearchResults = [];
 
-    /* istanbul ignore else */
+    /* istanbul ignore else -- @preserve */
     if (operation === 'add') {
       const itemsNotInCart = selectedItems.filter(
         (item: RawSearchResult) => !userCart.some((dataset) => dataset.id === item.id),
@@ -245,7 +245,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
       });
     }
 
-    /* istanbul ignore else */
+    /* istanbul ignore else -- @preserve */
     if (isAuthenticated) {
       updateUserCart(pk, accessToken, newCart);
     }

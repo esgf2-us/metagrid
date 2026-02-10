@@ -9,7 +9,7 @@ import { cleanup } from '@testing-library/react';
 import { TextEncoder } from 'util';
 import { server } from './test/mock/server';
 import messageDisplayData from './components/Messaging/messageDisplayData';
-import { mockConfig, originalGlobusEnabledNodes, AtomWrapper } from './test/jestTestFunctions';
+import { mockConfig, originalGlobusEnabledNodes, AtomWrapper } from './test/testFunctions';
 import 'cross-fetch/polyfill';
 import {
   activeSearchQueryFixture,

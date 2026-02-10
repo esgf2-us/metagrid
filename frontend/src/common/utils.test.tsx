@@ -37,9 +37,13 @@ import {
   clearDeprecatedStorageKeys,
   createEsgpullCommand,
   createIntakeEsgfSearch,
+  getLastMessageSeen,
+  setStartupMessageAsSeen,
+  searchAlreadyExists,
+  downloadFileForUser,
 } from './utils';
 import { AppPage } from './types';
-import { mockConfig } from '../test/jestTestFunctions';
+import { mockConfig } from '../test/testFunctions';
 import { localStorageMock, sessionStorageMock, tempStorageGetMock } from '../test/mock/mockStorage';
 
 describe('Test objectIsEmpty', () => {
@@ -776,5 +780,103 @@ describe('createIntakeEsgfSearch', () => {
     const cmd = createIntakeEsgfSearch(searchQuery);
     expect(cmd).toContain("realm='atmos'");
     expect(cmd).toContain('latest=True');
+  });
+});
+
+describe('Test getLastMessageSeen and setStartupMessageAsSeen', () => {
+  const messageKey = 'lastMessageSeen';
+
+  beforeEach(() => {
+    localStorageMock.removeItem(messageKey);
+  });
+
+  afterEach(() => {
+    localStorageMock.removeItem(messageKey);
+  });
+
+  it('returns null when no message has been seen', () => {
+    // localStorageMock returns undefined for non-existent keys, but real localStorage returns null
+    const result = getLastMessageSeen();
+    expect(result === null || result === undefined).toBe(true);
+  });
+
+  it('returns the last message seen from localStorage', () => {
+    localStorageMock.setItem(messageKey, 'Test message');
+    expect(getLastMessageSeen()).toBe('Test message');
+  });
+
+  it('sets the startup message as seen in localStorage', () => {
+    setStartupMessageAsSeen();
+    const message = localStorageMock.getItem(messageKey);
+    expect(message).toBeTruthy();
+  });
+});
+
+describe('Test searchAlreadyExists', () => {
+  it('returns true if search with same uuid exists', () => {
+    const existingSearches = [
+      {
+        uuid: '123',
+        search: { project: { name: 'CMIP6' }, activeFacets: {} },
+      },
+      {
+        uuid: '456',
+        search: { project: { name: 'CMIP5' }, activeFacets: {} },
+      },
+    ] as UserSearchQueries;
+
+    const newSearch = {
+      uuid: '123',
+      search: { project: { name: 'CMIP6' }, activeFacets: { activity_id: ['CFMIP'] } },
+    } as UserSearchQuery;
+
+    expect(searchAlreadyExists(existingSearches, newSearch)).toBe(true);
+  });
+
+  it('returns false if search does not exist', () => {
+    const existingSearches = [
+      {
+        uuid: '123',
+        search: { project: { name: 'CMIP6' }, activeFacets: {} },
+      },
+    ] as UserSearchQueries;
+
+    const newSearch = {
+      uuid: '789',
+      search: { project: { name: 'E3SM' }, activeFacets: {} },
+    } as UserSearchQuery;
+
+    expect(searchAlreadyExists(existingSearches, newSearch)).toBe(false);
+  });
+});
+
+describe('Test downloadFileForUser', () => {
+  it('creates a download link and triggers download', () => {
+    const filename = 'test.txt';
+    const content = 'Test file content';
+
+    // Create a real anchor element to avoid Node type errors
+    const mockAnchor = document.createElement('a');
+    const clickSpy = vi.spyOn(mockAnchor, 'click').mockImplementation(() => {});
+    const setAttributeSpy = vi.spyOn(mockAnchor, 'setAttribute');
+
+    const createElementSpy = vi.spyOn(document, 'createElement').mockReturnValue(mockAnchor);
+    const appendChildSpy = vi.spyOn(document.body, 'appendChild').mockImplementation(() => mockAnchor);
+    const removeChildSpy = vi.spyOn(document.body, 'removeChild').mockImplementation(() => mockAnchor);
+
+    downloadFileForUser(filename, content);
+
+    expect(createElementSpy).toHaveBeenCalledWith('a');
+    expect(setAttributeSpy).toHaveBeenCalledWith('href', expect.stringContaining('data:text/plain'));
+    expect(setAttributeSpy).toHaveBeenCalledWith('download', filename);
+    expect(clickSpy).toHaveBeenCalled();
+    expect(appendChildSpy).toHaveBeenCalled();
+    expect(removeChildSpy).toHaveBeenCalled();
+
+    createElementSpy.mockRestore();
+    appendChildSpy.mockRestore();
+    removeChildSpy.mockRestore();
+    clickSpy.mockRestore();
+    setAttributeSpy.mockRestore();
   });
 });

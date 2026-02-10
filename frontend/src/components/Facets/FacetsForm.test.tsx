@@ -8,7 +8,7 @@ import FacetsForm, {
   humanizeFacetNames,
 } from './FacetsForm';
 import customRender from '../../test/custom-render';
-import { AtomWrapper } from '../../test/jestTestFunctions';
+import { AtomWrapper } from '../../test/testFunctions';
 import { AppStateKeys } from '../../common/atoms';
 import { activeSearchQueryFixture } from '../../test/mock/fixtures';
 

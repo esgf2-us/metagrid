@@ -35,7 +35,7 @@ const LeftMenu: React.FC<React.PropsWithChildren<Props>> = ({
    * If the current route is not on search, push route update.
    */
   const onFinish = (values: { [key: string]: string }): void => {
-    /* istanbul ignore else */
+    /* istanbul ignore else -- @preserve */
     if (!location.pathname.endsWith('search')) {
       navigate('/search');
     }

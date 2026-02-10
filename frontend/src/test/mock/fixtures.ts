@@ -20,6 +20,8 @@ import {
   StacResponse,
   StacAggregations,
   StacAsset,
+  StacFeature,
+  StacSearchResponse,
 } from '../../components/Search/types';
 import { RawUserAuth, RawUserInfo } from '../../contexts/types';
 import { SubmissionResult } from '../../api';
@@ -315,54 +317,65 @@ export const globusEnabledDatasetFixture = (): RawSearchResult[] => {
   ];
 };
 
+export const stacFeatureFixture = (
+  id: string,
+  assetCount: number,
+  sizePerAsset: number,
+): StacFeature => ({
+  id,
+  bbox: [0, 0, 10, 10],
+  geometry: {
+    type: 'Polygon',
+    coordinates: [
+      [
+        [0, 0],
+        [10, 0],
+        [10, 10],
+        [0, 10],
+        [0, 0],
+      ],
+    ],
+  },
+  links: [{ rel: 'self', type: 'application/json', href: 'https://example.com/self' }],
+  type: 'Feature',
+  assets: Object.fromEntries(
+    Array.from({ length: assetCount }, (_, i) => [
+      `asset${i}`,
+      stacAssetFixture({
+        id: `asset${i}`,
+        name: `Asset ${i}`,
+        'file:size': sizePerAsset,
+        href: `https://example.com/asset${i}`,
+      }),
+    ]),
+  ),
+  properties: {
+    access: ['public'],
+    citation_url: 'https://example.com/citation',
+    further_info_url: 'https://example.com/info',
+    version: '1.0',
+  },
+  collection: ['test-collection'],
+  stac_version: '1.0.0',
+});
+
+export const stacSearchResponseFixture = (features: StacFeature[]): StacSearchResponse => ({
+  features,
+  links: [
+    {
+      rel: 'self',
+      type: 'application/json',
+      href: 'https://example.com/search',
+    },
+  ],
+  type: 'FeatureCollection',
+});
+
 export const stacSearchResultsFixture = (): StacResponse => ({
   search: {
-    features: [
-      {
-        id: 'test-id',
-        bbox: [0, 0, 10, 10],
-        geometry: {
-          type: 'Polygon',
-          coordinates: [
-            [
-              [0, 0],
-              [10, 0],
-              [10, 10],
-              [0, 10],
-              [0, 0],
-            ],
-          ],
-        },
-        links: [{ rel: 'self', type: 'application/json', href: 'https://example.com/self' }],
-        type: 'Feature',
-        assets: {
-          asset1: {
-            id: 'asset1',
-            access: ['public'],
-            description: 'Test asset',
-            alternatename: 'Alternate name',
-            name: 'Asset 1',
-            roles: ['data'],
-            href: 'https://example.com/asset1',
-            type: 'image/png',
-            'file:size': 2048,
-            'file:checksum': 'def456',
-            title: 'Asset 1 Title',
-          },
-        },
-        properties: {
-          access: ['public'],
-          citation_url: 'https://example.com/citation',
-          further_info_url: 'https://example.com/info',
-          version: '1.0',
-        },
-        collection: ['test-collection'],
-        stac_version: '1.0.0',
-      },
-    ],
+    ...stacSearchResponseFixture([stacFeatureFixture('test-id', 1, 2048)]),
     numMatched: 1,
     numReturned: 1,
-    type: 'FeatureCollection',
     links: [
       {
         rel: 'root',
