@@ -100,25 +100,34 @@ export const ReactJoyrideProvider: React.FC<React.PropsWithChildren<Props>> = ({
     (page: AppPage): void => {
       if (getCurrentAppPage() !== page) {
         setTimeout(() => {
-          if (navigate) {
-            switch (page) {
-              case AppPage.Main:
-                navigate('/search');
-                break;
-              case AppPage.Cart:
-                navigate('/cart/items');
-                break;
-              case AppPage.NodeStatus:
-                navigate('/nodes');
-                break;
-              case AppPage.SavedSearches:
-                navigate('/cart/searches');
-                break;
-              default:
-                break;
-            }
+          if (!navigate) {
+            // eslint-disable-next-line no-console
+            console.error('Navigate function is not available');
+            return;
           }
-        }, 100);
+
+          let targetPath = '';
+          switch (page) {
+            case AppPage.Main:
+              targetPath = '/search';
+              break;
+            case AppPage.Cart:
+              targetPath = '/cart/items';
+              break;
+            case AppPage.NodeStatus:
+              targetPath = '/nodes';
+              break;
+            case AppPage.SavedSearches:
+              targetPath = '/cart/searches';
+              break;
+            default:
+              break;
+          }
+
+          if (targetPath) {
+            navigate(targetPath);
+          }
+        }, 300);
       }
     },
     [navigate],

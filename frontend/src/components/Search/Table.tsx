@@ -54,6 +54,7 @@ export type Props = {
   onRowSelect?: (selectedRows: RawSearchResults | []) => void;
   onPageChange?: (page: number, pageSize: number) => void;
   onPageSizeChange?: (size: number) => void;
+  scroll?: { x?: string | number | true; y?: string | number };
 };
 
 const MAX_RESULTS = 10000;
@@ -69,6 +70,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
   onRowSelect,
   onPageChange,
   onPageSizeChange,
+  scroll,
 }) => {
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -469,7 +471,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       onChange={handleChange}
       rowKey="id"
       size="small"
-      scroll={{ x: 'max-content' }}
+      scroll={scroll || { x: 'max-content' }}
       tableLayout="auto"
       onRow={(record, rowIndex) => {
         return {

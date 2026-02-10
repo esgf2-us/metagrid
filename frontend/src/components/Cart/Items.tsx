@@ -83,18 +83,26 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
               </Popconfirm>
             )}
           </div>
-          <Row gutter={[24, 16]} justify="space-around">
-            <Col lg={24}>
-              <Table
-                loading={false}
-                canDisableRows={false}
-                results={userCart}
-                onUpdateCart={onUpdateCart}
-                onRowSelect={handleRowSelect}
-                selections={itemSelections}
-              />
-            </Col>
-          </Row>
+          <div
+            style={{
+              height: 'calc(100vh - 500px)',
+              marginBottom: '24px',
+            }}
+          >
+            <Row gutter={[24, 16]} justify="space-around">
+              <Col lg={24}>
+                <Table
+                  loading={false}
+                  canDisableRows={false}
+                  results={userCart}
+                  onUpdateCart={onUpdateCart}
+                  onRowSelect={handleRowSelect}
+                  selections={itemSelections}
+                  scroll={{ y: 'calc(100vh - 580px)', x: 'max-content' }}
+                />
+              </Col>
+            </Row>
+          </div>
           <div data-testid="downloadForm">
             <h1>
               <CloudDownloadOutlined /> Download Your Cart

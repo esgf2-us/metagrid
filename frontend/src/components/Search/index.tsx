@@ -590,7 +590,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   ];
 
   return (
-    <div data-testid="search" className={searchTableTargets.searchResultsTable.class()}>
+    <div data-testid="search">
       {contextHolder}
       <div style={styles.summary}>
         {objectIsEmpty(project) && (
@@ -736,41 +736,55 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         </Row>
       )}
 
-      <Row gutter={[24, 16]} justify="space-around">
-        <Col lg={24}>
-          <div data-testid="search-table">
-            {results && !isLoading ? (
-              <Table
-                loading={false}
-                results={docs}
-                totalResults={numFound}
-                filenameVars={activeSearchQuery.filenameVars}
-                onUpdateCart={onUpdateCart}
-                onRowSelect={handleRowSelect}
-                onPageChange={handlePageChange}
-                onPageSizeChange={handlePageSizeChange}
-              />
-            ) : (
-              <Table
-                loading={isLoading}
-                results={[]}
-                totalResults={paginationOptions.pageSize}
-                onUpdateCart={onUpdateCart}
-              />
-            )}
-          </div>
-        </Col>
-        {results && currentRequestURL && (
-          <Button
-            type="default"
-            href={createSearchRouteURL(currentRequestURL)}
-            target="_blank"
-            icon={<ExportOutlined />}
-          >
-            Open as JSON
-          </Button>
-        )}
-      </Row>
+      <div
+        style={{
+          height: 'calc(100vh - 380px)',
+          marginBottom: '24px',
+        }}
+      >
+        <Row gutter={[24, 16]} justify="space-around">
+          <Col lg={24}>
+            <div
+              data-testid="search-table"
+              className={searchTableTargets.searchResultsTable.class()}
+            >
+              {results && !isLoading ? (
+                <Table
+                  loading={false}
+                  results={docs}
+                  totalResults={numFound}
+                  filenameVars={activeSearchQuery.filenameVars}
+                  onUpdateCart={onUpdateCart}
+                  onRowSelect={handleRowSelect}
+                  onPageChange={handlePageChange}
+                  onPageSizeChange={handlePageSizeChange}
+                  scroll={{ y: 'calc(100vh - 480px)', x: 'max-content' }}
+                />
+              ) : (
+                <Table
+                  loading={isLoading}
+                  results={[]}
+                  totalResults={paginationOptions.pageSize}
+                  onUpdateCart={onUpdateCart}
+                  scroll={{ y: 'calc(100vh - 480px)', x: 'max-content' }}
+                />
+              )}
+            </div>
+          </Col>
+          {results && currentRequestURL && (
+            <Col lg={24} style={{ textAlign: 'center', marginTop: '16px' }}>
+              <Button
+                type="default"
+                href={createSearchRouteURL(currentRequestURL)}
+                target="_blank"
+                icon={<ExportOutlined />}
+              >
+                Open as JSON
+              </Button>
+            </Col>
+          )}
+        </Row>
+      </div>
     </div>
   );
 };

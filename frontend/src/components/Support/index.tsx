@@ -11,6 +11,8 @@ import { supportModalVisibleAtom } from '../../common/atoms';
 import {
   createMainPageTour,
   createCartItemsTour,
+  createCartDatasetDetailsTour,
+  createCartDownloadOptionsTour,
   createSearchCardTour,
   createNodeStatusTour,
   createNavBarTour,
@@ -76,6 +78,16 @@ const Support: React.FC = () => {
     setSupportModalVisible(false);
   };
 
+  const startCartDatasetDetailsTour = (): void => {
+    startSpecificTour(createCartDatasetDetailsTour(setCurrentAppPage));
+    setSupportModalVisible(false);
+  };
+
+  const startCartDownloadOptionsTour = (): void => {
+    startSpecificTour(createCartDownloadOptionsTour(setCurrentAppPage));
+    setSupportModalVisible(false);
+  };
+
   return (
     <div data-testid="support-form">
       <Modal
@@ -132,7 +144,24 @@ const Support: React.FC = () => {
               </div>
             )}
             {curPage === AppPage.Cart && (
-              <Button onClick={startCartPageTour}>{TourTitles.Cart}</Button>
+              <div>
+                <div style={{ marginBottom: '12px' }}>
+                  <Button onClick={startCartPageTour} type="primary">
+                    {TourTitles.Cart}
+                  </Button>
+                </div>
+                <div style={{ fontSize: '14px', marginBottom: '8px', fontWeight: 'bold' }}>
+                  Or choose a specific topic:
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  <Button onClick={startCartDatasetDetailsTour}>
+                    {TourTitles.CartDatasetDetails}
+                  </Button>
+                  <Button onClick={startCartDownloadOptionsTour}>
+                    {TourTitles.CartDownloadOptions}
+                  </Button>
+                </div>
+              </div>
             )}
             {curPage === AppPage.SavedSearches && (
               <Button onClick={startSearchCardTour}>{TourTitles.Searches}</Button>
