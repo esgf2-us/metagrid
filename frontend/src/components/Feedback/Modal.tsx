@@ -9,6 +9,13 @@ type Props = {
   centered?: boolean;
   children: React.ReactNode;
   style?: CSSProperties;
+  styles?: {
+    mask?: CSSProperties;
+    wrapper?: CSSProperties;
+    body?: CSSProperties;
+  };
+  transitionName?: string;
+  maskTransitionName?: string;
 };
 
 const Modal: React.FC<React.PropsWithChildren<Props>> = ({
@@ -19,13 +26,19 @@ const Modal: React.FC<React.PropsWithChildren<Props>> = ({
   centered,
   children,
   style,
+  styles,
+  transitionName,
+  maskTransitionName,
 }) => (
   <ModalD
     style={style}
+    styles={styles}
     open={open}
     title={title}
     onCancel={onClose}
     centered={centered}
+    transitionName={transitionName}
+    maskTransitionName={maskTransitionName}
     footer={[
       <Button key="submit" type="primary" onClick={onClose}>
         {closeText}

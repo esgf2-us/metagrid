@@ -35,6 +35,8 @@ export const ReactJoyrideProvider: React.FC<React.PropsWithChildren<Props>> = ({
   const [running, setRunning] = useState<boolean>(false);
   const [getTour, setTour] = useState<JoyrideTour>(defaultTour);
   const [getStepIndex, setStepIndex] = useState<number>(0);
+  const [actionRunning, setActionRunning] = useState<boolean>(false);
+  const [clickCount, setClickCount] = useState<number>(0);
 
   const isDarkMode = useAtomValue<boolean>(isDarkModeAtom);
 
@@ -76,18 +78,64 @@ export const ReactJoyrideProvider: React.FC<React.PropsWithChildren<Props>> = ({
       setRunning(false);
       setStepIndex(0);
       setTour(defaultTour);
+      setActionRunning(false);
+      setClickCount(0);
     } else if (action === ACTIONS.PREV && type === EVENTS.STEP_AFTER) {
       previousStep(index);
     } else if (type === EVENTS.STEP_AFTER) {
       const stepAction = getTour.getActionByStepIndex(index);
       if (stepAction) {
+        setActionRunning(true);
+        setClickCount(0);
         await stepAction.action();
+        setActionRunning(false);
+        setClickCount(0);
       }
       nextStep(index);
     } else if (type === EVENTS.TARGET_NOT_FOUND) {
       nextStep(index);
     }
   };
+
+  const handleOverlayClick = useCallback(() => {
+    setClickCount((prev) => prev + 1);
+  }, []);
+
+  // Inject loading message into Joyride tooltip when user clicks multiple times
+  React.useEffect(() => {
+    if (!actionRunning || clickCount < 2) return undefined;
+
+    const tooltip = document.querySelector('.react-joyride__tooltip') as HTMLElement;
+    if (!tooltip) return undefined;
+
+    // Check if message already exists
+    if (tooltip.querySelector('.loading-message')) return undefined;
+
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'loading-message';
+    messageDiv.style.cssText = `
+      margin-top: 12px;
+      padding: 12px 16px;
+      background-color: ${isDarkMode ? '#444' : '#f0f0f0'};
+      border-left: 4px solid ${isDarkMode ? '#666' : '#1890ff'};
+      border-radius: 4px;
+      font-size: 14px;
+      color: ${isDarkMode ? '#eee' : '#333'};
+      line-height: 1.5;
+    `;
+    // Use custom message if provided, otherwise use default
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+    const customMsg = (window as any).tourLoadingMessage as string | undefined;
+    messageDiv.innerHTML =
+      customMsg ||
+      '<strong>Note:</strong> U.I. elements are still loading... Please click <strong>Skip</strong> if you want to cancel the tutorial.';
+
+    tooltip.appendChild(messageDiv);
+
+    return () => {
+      messageDiv.remove();
+    };
+  }, [actionRunning, clickCount, isDarkMode]);
 
   /* istanbul ignore else -- @preserve */
   const startTour = useCallback((): void => {
@@ -176,6 +224,30 @@ export const ReactJoyrideProvider: React.FC<React.PropsWithChildren<Props>> = ({
         disableScrollParentFix
         continuous
       />
+      {actionRunning && (
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={handleOverlayClick}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              handleOverlayClick();
+            }
+          }}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 9999,
+            pointerEvents: 'auto',
+            cursor: 'pointer',
+          }}
+          aria-label="Loading overlay"
+        />
+      )}
       {children}
     </ReactJoyrideContext.Provider>
   );

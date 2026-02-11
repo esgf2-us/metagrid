@@ -592,149 +592,154 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   return (
     <div data-testid="search">
       {contextHolder}
-      <div style={styles.summary}>
-        {objectIsEmpty(project) && (
-          <Alert message="Select a project to search for results" type="info" showIcon />
-        )}
-        <h3>
-          {isLoading && <span style={styles.resultsHeader}>Loading latest results for </span>}
-          {results && !isLoading && (
-            <span
-              className={searchTableTargets.resultsFoundText.class()}
-              style={styles.resultsHeader}
-              data-testid="search-results-span"
-            >
-              {numFound.toLocaleString()} results found for{' '}
-            </span>
+      <div data-testid="search-features-wrapper">
+        <div style={styles.summary}>
+          {objectIsEmpty(project) && (
+            <Alert message="Select a project to search for results" type="info" showIcon />
           )}
-          <span style={styles.resultsHeader}>{(project as RawProject).name}</span>
-        </h3>
-        <div>
-          {results && (
-            <Space>
-              {currentProject.isSTAC && (
-                <>
-                  <Tooltip
-                    placement="bottom"
-                    title="Open form to download the current search results."
-                  >
-                    <Button
-                      type="default"
-                      shape="round"
-                      className={searchTableTargets.downloadSearchBtn.class()}
-                      onClick={() => {
-                        setShowDownloadAllForm(true);
-                      }}
-                      disabled={isLoading || numFound === 0}
-                    >
-                      <DownloadOutlined />
-                      Download All Results{' '}
-                    </Button>{' '}
-                  </Tooltip>
-                  <DownloadModal
-                    show={showDownloadAllForm}
-                    hide={() => setShowDownloadAllForm(false)}
-                    searchURL={getUrlFromSearch(activeSearchQuery)}
-                    stacResults={(results as StacResponse).search}
-                  />
-                </>
-              )}
-              <Tooltip placement="bottom" title="Add the selected datasets to your download cart.">
-                <Button
-                  type="default"
-                  className={searchTableTargets.addSelectedToCartBtn.class()}
-                  onClick={() => onUpdateCart(selectedItems, 'add')}
-                  disabled={
-                    isLoading ||
-                    numFound === 0 ||
-                    selectedItems.length === 0 ||
-                    allSelectedItemsInCart
-                  }
-                >
-                  <ShoppingCartOutlined />
-                  Add Selected to Cart
-                </Button>{' '}
-              </Tooltip>
-              <Dropdown.Button
-                data-testid="save-search-dropdown-btn"
-                className={searchTableTargets.saveSearchBtn.class()}
-                type="default"
-                onClick={() => handleSaveSearchQuery(currentRequestURL, numFound)}
-                disabled={isLoading || numFound === 0}
-                menu={{ items: searchActionsMenu }}
-                placement="bottom"
-                icon={<CopyOutlined className={copySearchOptionsTargets.copyMenuBtn.class()} />}
+          <h3>
+            {isLoading && <span style={styles.resultsHeader}>Loading latest results for </span>}
+            {results && !isLoading && (
+              <span
+                className={searchTableTargets.resultsFoundText.class()}
+                style={styles.resultsHeader}
+                data-testid="search-results-span"
               >
+                {numFound.toLocaleString()} results found for{' '}
+              </span>
+            )}
+            <span style={styles.resultsHeader}>{(project as RawProject).name}</span>
+          </h3>
+          <div>
+            {results && (
+              <Space>
+                {currentProject.isSTAC && (
+                  <>
+                    <Tooltip
+                      placement="bottom"
+                      title="Open form to download the current search results."
+                    >
+                      <Button
+                        type="default"
+                        shape="round"
+                        className={searchTableTargets.downloadSearchBtn.class()}
+                        onClick={() => {
+                          setShowDownloadAllForm(true);
+                        }}
+                        disabled={isLoading || numFound === 0}
+                      >
+                        <DownloadOutlined />
+                        Download All Results{' '}
+                      </Button>{' '}
+                    </Tooltip>
+                    <DownloadModal
+                      show={showDownloadAllForm}
+                      hide={() => setShowDownloadAllForm(false)}
+                      searchURL={getUrlFromSearch(activeSearchQuery)}
+                      stacResults={(results as StacResponse).search}
+                    />
+                  </>
+                )}
                 <Tooltip
                   placement="bottom"
-                  title="Saves your current search parameters to Saved Searches for later use."
+                  title="Add the selected datasets to your download cart."
                 >
-                  <SaveOutlined data-testid="save-search-btn" />
-                  Save Search
+                  <Button
+                    type="default"
+                    className={searchTableTargets.addSelectedToCartBtn.class()}
+                    onClick={() => onUpdateCart(selectedItems, 'add')}
+                    disabled={
+                      isLoading ||
+                      numFound === 0 ||
+                      selectedItems.length === 0 ||
+                      allSelectedItemsInCart
+                    }
+                  >
+                    <ShoppingCartOutlined />
+                    Add Selected to Cart
+                  </Button>{' '}
                 </Tooltip>
-              </Dropdown.Button>{' '}
-            </Space>
+                <Dropdown.Button
+                  data-testid="save-search-dropdown-btn"
+                  className={searchTableTargets.saveSearchBtn.class()}
+                  type="default"
+                  onClick={() => handleSaveSearchQuery(currentRequestURL, numFound)}
+                  disabled={isLoading || numFound === 0}
+                  menu={{ items: searchActionsMenu }}
+                  placement="bottom"
+                  icon={<CopyOutlined className={copySearchOptionsTargets.copyMenuBtn.class()} />}
+                >
+                  <Tooltip
+                    placement="bottom"
+                    title="Saves your current search parameters to Saved Searches for later use."
+                  >
+                    <SaveOutlined data-testid="save-search-btn" />
+                    Save Search
+                  </Tooltip>
+                </Dropdown.Button>{' '}
+              </Space>
+            )}
+          </div>
+        </div>
+        <div>
+          {results && (
+            <p>
+              <span style={styles.subtitles} data-testid="main-query-string-label">
+                {currentProject.isSTAC ? 'STAC Filter String:' : 'Query String:'}{' '}
+              </span>
+              <Typography.Text className={searchTableTargets.queryString.class()} code>
+                {stringifyFilters(
+                  currentProject.name,
+                  versionType,
+                  resultType,
+                  minVersionDate,
+                  maxVersionDate,
+                  activeFacets,
+                  textInputs,
+                  currentProject.isSTAC,
+                  currentRequestURL,
+                )}
+              </Typography.Text>
+            </p>
           )}
         </div>
-      </div>
-      <div>
-        {results && (
-          <p>
-            <span style={styles.subtitles} data-testid="main-query-string-label">
-              {currentProject.isSTAC ? 'STAC Filter String:' : 'Query String:'}{' '}
-            </span>
-            <Typography.Text className={searchTableTargets.queryString.class()} code>
-              {stringifyFilters(
-                currentProject.name,
-                versionType,
-                resultType,
-                minVersionDate,
-                maxVersionDate,
-                activeFacets,
-                textInputs,
-                currentProject.isSTAC,
-                currentRequestURL,
-              )}
-            </Typography.Text>
-          </p>
-        )}
-      </div>
 
-      {results && (
-        <Row style={styles.filtersContainer}>
-          {Object.keys(activeFacets).length !== 0 &&
-            Object.keys(activeFacets).map((facet: string) =>
-              activeFacets[facet].map((variable: string) => (
-                <div key={variable} data-testid={variable}>
-                  <Tag value={[facet, variable]} onClose={handleRemoveFilter} type="facet">
-                    {variable}
+        {results && (
+          <Row style={styles.filtersContainer}>
+            {Object.keys(activeFacets).length !== 0 &&
+              Object.keys(activeFacets).map((facet: string) =>
+                activeFacets[facet].map((variable: string) => (
+                  <div key={variable} data-testid={variable}>
+                    <Tag value={[facet, variable]} onClose={handleRemoveFilter} type="facet">
+                      {variable}
+                    </Tag>
+                  </div>
+                )),
+              )}
+            {textInputs.length !== 0 &&
+              (textInputs as TextInputs).map((input: string) => (
+                <div key={input} data-testid={input}>
+                  <Tag value={input} onClose={handleRemoveFilter} type="text">
+                    {input}
                   </Tag>
                 </div>
-              )),
+              ))}
+            {filenameVars.length !== 0 &&
+              (filenameVars as TextInputs).map((input: string) => (
+                <div key={input} data-testid={input}>
+                  <Tag value={input} onClose={handleRemoveFilter} type="filenameVar">
+                    Filename Search: {input}
+                  </Tag>
+                </div>
+              ))}
+            {filtersExist && (
+              <Button type="primary" danger size="small" onClick={handleClearFilters}>
+                Clear All
+              </Button>
             )}
-          {textInputs.length !== 0 &&
-            (textInputs as TextInputs).map((input: string) => (
-              <div key={input} data-testid={input}>
-                <Tag value={input} onClose={handleRemoveFilter} type="text">
-                  {input}
-                </Tag>
-              </div>
-            ))}
-          {filenameVars.length !== 0 &&
-            (filenameVars as TextInputs).map((input: string) => (
-              <div key={input} data-testid={input}>
-                <Tag value={input} onClose={handleRemoveFilter} type="filenameVar">
-                  Filename Search: {input}
-                </Tag>
-              </div>
-            ))}
-          {filtersExist && (
-            <Button type="primary" danger size="small" onClick={handleClearFilters}>
-              Clear All
-            </Button>
-          )}
-        </Row>
-      )}
+          </Row>
+        )}
+      </div>
 
       <div
         style={{

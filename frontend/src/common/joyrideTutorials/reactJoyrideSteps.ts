@@ -8,6 +8,56 @@ export const delay = (ms: number): Promise<void> => {
   });
 };
 
+/**
+ * Waits for an element to appear in the DOM, checking at regular intervals
+ * @param selector CSS selector for the element to wait for
+ * @param maxTimeout Maximum time to wait in milliseconds (default: 10000ms)
+ * @param checkInterval How often to check for the element in milliseconds (default: 500ms)
+ * @param customMessage Optional custom message to display when user clicks during wait
+ * @returns Promise that resolves to true if element found, false if timeout
+ */
+export const waitForElement = (
+  selector: string,
+  maxTimeout: number = 10000,
+  checkInterval: number = 500,
+  customMessage?: string,
+): Promise<boolean> => {
+  // Store custom message globally for React component to access
+  if (customMessage) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+    (window as any).tourLoadingMessage = customMessage;
+  }
+
+  return new Promise((resolve) => {
+    const startTime = Date.now();
+
+    const checkElement = (): void => {
+      const element = document.querySelector(selector);
+
+      if (element) {
+        // Clean up custom message when element is found
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+        delete (window as any).tourLoadingMessage;
+        resolve(true);
+        return;
+      }
+
+      const elapsedTime = Date.now() - startTime;
+      if (elapsedTime >= maxTimeout) {
+        // Clean up custom message on timeout
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+        delete (window as any).tourLoadingMessage;
+        resolve(false);
+        return;
+      }
+
+      setTimeout(checkElement, checkInterval);
+    };
+
+    checkElement();
+  });
+};
+
 export const elementExists = (className: string): boolean => {
   return document.getElementsByClassName(className).length > 0;
 };
@@ -160,6 +210,8 @@ export const cartTourTargets = {
   cartSummary: new TargetObject(),
   datasetBtn: new TargetObject(),
   libraryBtn: new TargetObject(),
+  cartItemsTable: new TargetObject(),
+  downloadForm: new TargetObject(),
   downloadAllType: new TargetObject(),
   downloadWgetBtn: new TargetObject(),
   downloadTransferBtn: new TargetObject(),
@@ -199,8 +251,8 @@ export const nodeTourTargets = {
 export enum TourTitles {
   Main = 'Main Search Page Tour',
   Cart = 'Data Cart Tour',
-  CartDatasetDetails = 'Cart Dataset Details Tour',
-  CartDownloadOptions = 'Cart Download Options Tour',
+  CartDatasetDetails = 'Cart Items Tour',
+  CartDownloadOptions = 'Download Options Tour',
   ManageCollections = 'Manage My Collections Tour',
   Searches = 'Saved Searches Tour',
   Node = 'Node Status Tour',
@@ -209,7 +261,6 @@ export enum TourTitles {
   FacetsPanel = 'Search Facets Panel Tour',
   SearchFeatures = 'Search Features Tour',
   SearchResults = 'Search Results Tour',
-  DatasetDetails = 'Dataset Details Tour',
 }
 
 const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
@@ -257,7 +308,7 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
     .addNextStep(
       topDataRowTargets.globusReadyStatusIcon.selector(),
       'This icon indicates whether the dataset can be transferred with Globus. A check mark means it is Globus Ready and can be transferred through Globus. When hovering over the icon you will see more detail as to what node this dataset is coming from and whether the node is Globus ready.',
-      'top-start',
+      'bottom-start',
     )
     .addNextStep(
       topDataRowTargets.searchResultsRowExpandIcon.selector(),
@@ -266,7 +317,14 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
       /* istanbul ignore next -- @preserve */
       async () => {
         clickFirstElement(topDataRowTargets.searchResultsRowExpandIcon.selector());
-        await delay(500);
+        // Wait for files table to load (max 10 seconds, check every 500ms)
+        await waitForElement(
+          innerDataRowTargets.filesTitle.selector(),
+          15000,
+          500,
+          '<strong>Note:</strong> The files table can take a few seconds to load. You can click <strong>Skip</strong> to exit the tour if you prefer not to wait.',
+        );
+        clickFirstElement(innerDataRowTargets.filesTab.selector());
       },
     )
     .addNextStep(
@@ -310,8 +368,9 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
       'top-start',
       /* istanbul ignore next -- @preserve */
       async () => {
-        await delay(300);
         clickFirstElement(innerDataRowTargets.metadataTab.selector());
+        // Wait for metadata content to load (max 10 seconds, check every 500ms)
+        await waitForElement(innerDataRowTargets.metadataLookupField.selector(), 10000, 500);
       },
     )
     .addNextStep(
@@ -320,9 +379,16 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
       'top-start',
       /* istanbul ignore next -- @preserve */
       async () => {
-        await delay(300);
         if (elementExists(innerDataRowTargets.citationTab.class())) {
           clickFirstElement(innerDataRowTargets.citationTab.selector());
+          // Wait for citation content to load (max 25 seconds, check every 500ms)
+          // Look for the Data Citation Page link (any anchor with target="_blank" and rel="noopener noreferrer")
+          await waitForElement(
+            'a[target="_blank"][rel="noopener noreferrer"]',
+            25000,
+            500,
+            '<strong>Note:</strong> Citations take a few seconds to load. You can click <strong>Skip</strong> to exit the tour if you prefer not to wait.',
+          );
         } else if (!elementExists(innerDataRowTargets.additionalTab.class())) {
           clickFirstElement(topDataRowTargets.searchResultsRowContractIcon.selector());
         }
@@ -334,7 +400,6 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
       'top-start',
       /* istanbul ignore next -- @preserve */
       async () => {
-        await delay(300);
         if (elementExists(innerDataRowTargets.additionalTab.class())) {
           clickFirstElement(innerDataRowTargets.additionalTab.selector());
         } else {
@@ -349,37 +414,15 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
       /* istanbul ignore next -- @preserve */
       async () => {
         clickFirstElement(topDataRowTargets.searchResultsRowContractIcon.selector());
-        await delay(300);
       },
     );
 
   return tour;
 };
 
-export const welcomeTour = new JoyrideTour(TourTitles.Welcome)
-  .addNextStep(
-    'body',
-    'Just a note: We are continually striving to improve the Metagrid user interface and make it more intuitive. However, if you ever feel stuck, please try out the interface tours. The following is a quick tour showing where you can access support.',
-    'center',
-  )
-  .addNextStep(
-    navBarTargets.helpBtn.selector(),
-    'This help button will open the Metagrid support dialog, which contains interface tours (like this one) as well as helpful resources.',
-    'bottom',
-  )
-  .addNextStep(
-    miscTargets.questionBtn.selector(),
-    'This question button will also open the Metagrid support dialog. Note that the tour button shown in the support dialog will be specific to the current page you are on.',
-    'top-end',
-  );
-
-export const createNavBarTour = (): JoyrideTour => {
-  const tour = new JoyrideTour(TourTitles.NavBar)
-    .addNextStep(
-      'body',
-      'This tour will guide you through the main navigation bar at the top of the page.',
-      'center',
-    )
+// Helper function to add navigation bar tour steps
+const addNavBarSteps = (tour: JoyrideTour): JoyrideTour => {
+  return tour
     .addNextStep(
       navBarTargets.topNavBar.selector(),
       'This area lets you navigate between pages of Metagrid.',
@@ -424,19 +467,12 @@ export const createNavBarTour = (): JoyrideTour => {
       navBarTargets.themeSwitchBtn.selector(),
       'This button allows you to switch between light and dark themes for Metagrid.',
       'bottom',
-    )
-    .addNextStep('body', 'This concludes the navigation bar tour.', 'center');
-
-  return tour;
+    );
 };
 
-export const createFacetsPanelTour = (): JoyrideTour => {
-  const tour = new JoyrideTour(TourTitles.FacetsPanel)
-    .addNextStep(
-      'body',
-      'This tour will guide you through the search facets panel on the left side of the page, where you can filter and refine your search results.',
-      'center',
-    )
+// Helper function to add facets panel tour steps
+const addFacetsPanelSteps = (tour: JoyrideTour): JoyrideTour => {
+  tour
     .addNextStep(
       leftSidebarTargets.selectProjectBtn.selector(),
       'To begin a search, you would first select a project from this drop-down.',
@@ -468,7 +504,7 @@ export const createFacetsPanelTour = (): JoyrideTour => {
       );
   }
 
-  tour
+  return tour
     .addNextStep(
       leftSidebarTargets.searchFacetsForm.selector(),
       'This area contains various groups of facets and parameters that you can use to filter results from your selected project.',
@@ -480,7 +516,6 @@ export const createFacetsPanelTour = (): JoyrideTour => {
       'right-end',
       /* istanbul ignore next -- @preserve */
       async () => {
-        // Open general facets
         clickFirstElement(leftSidebarTargets.facetFormGeneral.selector());
         await delay(300);
       },
@@ -491,7 +526,6 @@ export const createFacetsPanelTour = (): JoyrideTour => {
       'right-start',
       /* istanbul ignore next -- @preserve */
       async () => {
-        // Close general facets
         clickFirstElement(leftSidebarTargets.facetFormGeneral.selector());
         await delay(300);
         // Close facet panels if more than one is open
@@ -507,7 +541,6 @@ export const createFacetsPanelTour = (): JoyrideTour => {
       'right-end',
       /* istanbul ignore next -- @preserve */
       async () => {
-        // Expand all facets
         clickFirstElement(leftSidebarTargets.facetFormExpandAllBtn.selector());
         await delay(300);
       },
@@ -528,23 +561,15 @@ export const createFacetsPanelTour = (): JoyrideTour => {
       'right-end',
       /* istanbul ignore next -- @preserve */
       async () => {
-        // Close all facets
         clickFirstElement(leftSidebarTargets.facetFormCollapseAllBtn.selector());
         await delay(300);
       },
-    )
-    .addNextStep('body', 'This concludes the search facets panel tour.', 'center');
-
-  return tour;
+    );
 };
 
-export const createSearchFeaturesTour = (): JoyrideTour => {
-  const tour = new JoyrideTour(TourTitles.SearchFeatures)
-    .addNextStep(
-      'body',
-      'This tour will guide you through the search features available at the top of the search results, including saving, sharing, and exporting your search.',
-      'center',
-    )
+// Helper function to add search features tour steps
+const addSearchFeaturesSteps = (tour: JoyrideTour): JoyrideTour => {
+  return tour
     .addNextStep(
       searchTableTargets.queryString.selector(),
       "When performing a search, you'll be able to view the resulting query generated by your selections here.",
@@ -553,6 +578,11 @@ export const createSearchFeaturesTour = (): JoyrideTour => {
     .addNextStep(
       searchTableTargets.resultsFoundText.selector(),
       'This will display how many results were returned from your search.',
+      'bottom',
+    )
+    .addNextStep(
+      searchTableTargets.downloadSearchBtn.selector(),
+      'The Download All Search button allows you to skip the data cart and download all the datasets returned by your search!',
       'bottom',
     )
     .addNextStep(
@@ -594,28 +624,16 @@ export const createSearchFeaturesTour = (): JoyrideTour => {
         unHoverFirstElement('.ant-dropdown');
         await delay(200);
       },
-    )
-    .addNextStep('body', 'This concludes the search features tour.', 'center');
-
-  return tour;
+    );
 };
 
-export const createSearchResultsTour = (): JoyrideTour => {
-  const tour = new JoyrideTour(TourTitles.SearchResults)
-    .addNextStep(
-      'body',
-      'This tour will guide you through the search results table and how to interact with datasets.',
-      'center',
-    )
+// Helper function to add search results tour steps (without dataset details)
+const addSearchResultsSteps = (tour: JoyrideTour): JoyrideTour => {
+  return tour
     .addNextStep(
       searchTableTargets.searchResultsTable.selector(),
       'These are your search results! Each row in the results table is a specific dataset that matches your criteria.',
       'top-start',
-    )
-    .addNextStep(
-      searchTableTargets.downloadSearchBtn.selector(),
-      'The Download All Search button allows you to skip the data cart and download all the datasets returned by your search!',
-      'bottom',
     )
     .addNextStep(
       '#root .ant-checkbox',
@@ -650,299 +668,125 @@ export const createSearchResultsTour = (): JoyrideTour => {
       topDataRowTargets.cartAddBtn.selector('minus'),
       'Or you can remove a dataset from the cart by clicking its minus button here.',
       'top-start',
-    )
-    .addNextStep('body', 'This concludes the search results tour.', 'center')
-    .setOnFinish(
-      /* istanbul ignore next -- @preserve */ () => {
-        return () => {
-          // Clean-up step for when the tour is complete (or skipped)
-          if (tour.getTourFlag('boxes-checked')) {
-            clickFirstElement('#root .ant-checkbox');
-          }
-        };
-      },
     );
+};
+
+export const welcomeTour = new JoyrideTour(TourTitles.Welcome)
+  .addNextStep(
+    'body',
+    'Just a note: We are continually striving to improve the Metagrid user interface and make it more intuitive. However, if you ever feel stuck, please try out the interface tours. The following is a quick tour showing where you can access support.',
+    'center',
+  )
+  .addNextStep(
+    navBarTargets.helpBtn.selector(),
+    'This help button will open the Metagrid support dialog, which contains interface tours (like this one) as well as helpful resources.',
+    'bottom',
+  )
+  .addNextStep(
+    miscTargets.questionBtn.selector(),
+    'This question button will also open the Metagrid support dialog. Note that the tour button shown in the support dialog will be specific to the current page you are on.',
+    'top-end',
+  );
+
+export const createNavBarTour = (): JoyrideTour => {
+  const tour = new JoyrideTour(TourTitles.NavBar).addNextStep(
+    'body',
+    'This tour will guide you through the main navigation bar at the top of the page.',
+    'center',
+  );
+
+  addNavBarSteps(tour);
+
+  tour.addNextStep('body', 'This concludes the navigation bar tour.', 'center');
 
   return tour;
 };
 
-export const createDatasetDetailsTour = (): JoyrideTour => {
-  const tour = new JoyrideTour(TourTitles.DatasetDetails).addNextStep(
+export const createFacetsPanelTour = (): JoyrideTour => {
+  const tour = new JoyrideTour(TourTitles.FacetsPanel).addNextStep(
     'body',
-    'This tour will guide you through the detailed information available for each dataset in the search results.',
+    'This tour will guide you through the search facets panel on the left side of the page, where you can filter and refine your search results.',
     'center',
   );
 
-  // Add the data row tour steps
-  addDataRowTourSteps(tour).addNextStep(
+  addFacetsPanelSteps(tour);
+
+  tour.addNextStep('body', 'This concludes the search facets panel tour.', 'center');
+
+  return tour;
+};
+
+export const createSearchFeaturesTour = (): JoyrideTour => {
+  const tour = new JoyrideTour(TourTitles.SearchFeatures).addNextStep(
     'body',
-    'This concludes the dataset details tour.',
+    'This tour will guide you through the search features available at the top of the search results, including saving, sharing, and exporting your search.',
     'center',
+  );
+
+  addSearchFeaturesSteps(tour);
+
+  tour.addNextStep('body', 'This concludes the search features tour.', 'center');
+
+  return tour;
+};
+
+export const createSearchResultsTour = (): JoyrideTour => {
+  const tour = new JoyrideTour(TourTitles.SearchResults).addNextStep(
+    'body',
+    'This tour will guide you through the search results table and how to interact with datasets.',
+    'center' /* istanbul ignore next -- @preserve */,
+    async () => {
+      // Wait for search results table to load (max 30 seconds, check every 500ms)
+      await waitForElement(
+        'table tbody tr[id^="cart-items-row"]',
+        30000,
+        500,
+        '<strong>Note:</strong> The search results can take a few seconds to load. Click <strong>Skip</strong> to exit the tour if you prefer not to wait.',
+      );
+    },
+  );
+
+  addSearchResultsSteps(tour);
+  addDataRowTourSteps(tour);
+
+  tour.addNextStep('body', 'This concludes the search results tour.', 'center').setOnFinish(
+    /* istanbul ignore next -- @preserve */ () => {
+      return () => {
+        // Clean-up step for when the tour is complete (or skipped)
+        if (tour.getTourFlag('boxes-checked')) {
+          clickFirstElement('#root .ant-checkbox');
+        }
+      };
+    },
   );
 
   return tour;
 };
 
 export const createMainPageTour = (): JoyrideTour => {
-  const tour = new JoyrideTour(TourTitles.Main)
-    .addNextStep(
-      'body',
-      "Welcome to Metagrid! This tour will highlight the main controls and features of the search page. During the tour, click 'Next' to continue, or 'Skip' if you wish to cancel the tour. Let's begin!",
-      'center',
-    )
-    .addNextStep(
-      navBarTargets.topNavBar.selector(),
-      'This area lets you navigate between pages of Metagrid.',
-      'bottom',
-    )
-    .addNextStep(
-      navBarTargets.searchPageBtn.selector(),
-      "Clicking this button takes you to the main search page (Metagrid's home page).",
-      'bottom',
-    )
-    .addNextStep(
-      navBarTargets.cartPageBtn.selector(),
-      'This button takes you to the data cart page where you can view the data you have selected for download.',
-      'bottom',
-    )
-    .addNextStep(
-      navBarTargets.savedSearchPageBtn.selector(),
-      'To view your currently saved searches, you would click here.',
-      'bottom',
-    )
-    .addNextStep(
-      navBarTargets.nodeStatusBtn.selector(),
-      'If you are curious about data node status, you can visit the status page by clicking here.',
-      'bottom',
-    )
-    .addNextStep(
-      navBarTargets.newsBtn.selector(),
-      "Clicking the news button will open up the message center to the right, where you'll find important notes from the admins and developers. You can also view changelog information regarding the latest version of Metagrid.",
-      'bottom',
-    )
-    .addNextStep(
-      navBarTargets.signInBtn.selector(),
-      'Clicking this button will allow you to sign in to your profile. Or if you are already signed in, it will display your user name.',
-      'bottom',
-    )
-    .addNextStep(
-      navBarTargets.helpBtn.selector(),
-      "Clicking this 'Help' button will open the support dialog, where you can view interface tours (like this), or get links to helpful documentation.",
-      'bottom',
-    )
-    .addNextStep(
-      navBarTargets.themeSwitchBtn.selector(),
-      'This button allows you to switch between light and dark themes for Metagrid.',
-      'bottom',
-    )
-    .addNextStep(
-      leftSidebarTargets.selectProjectBtn.selector(),
-      'To begin a search, you would first select a project from this drop-down.',
-      'right',
-    );
-
-  tour.addNextStep(
-    leftSidebarTargets.projectWebsiteBtn.selector(),
-    'Once a project is selected, if you wish, you can go view the project website by clicking this button.',
-    'right',
+  const tour = new JoyrideTour(TourTitles.Main).addNextStep(
+    'body',
+    "Welcome to Metagrid! This tour will highlight the main controls and features of the search page. During the tour, click 'Next' to continue, or 'Skip' if you wish to cancel the tour. Let's begin!",
+    'center' /* istanbul ignore next -- @preserve */,
+    async () => {
+      // Wait for search results table to load (max 30 seconds, check every 500ms)
+      await waitForElement(
+        'table tbody tr[id^="cart-items-row"]',
+        30000,
+        500,
+        '<strong>Note:</strong> The search results can take a few seconds to load. Click <strong>Skip</strong> to exit the tour if you prefer not to wait.',
+      );
+    },
   );
 
-  // Add tour elements for globus ready filter (if globus enabled nodes has been configured)
-  if (window.METAGRID.GLOBUS_NODES.length > 0) {
-    tour
-      .addNextStep(
-        leftSidebarTargets.filterByGlobusTransfer.selector(),
-        'This section allows you to filter search results based on Globus transfer availability. There are a set of data nodes that provide the Globus Transfer option, however not all do. You can filter to show all datasets, or only those that can be transferred via Globus.',
-        'right',
-      )
-      .addNextStep(
-        leftSidebarTargets.filterByGlobusTransferAny.selector(),
-        'Selecting this option will leave the filter off and allow you to see all datasets, including ones that may not have Globus transfer as an option.',
-        'right',
-      )
-      .addNextStep(
-        leftSidebarTargets.filterByGlobusTransferOnly.selector(),
-        'Selecting this option will filter all datasets, so that only the ones that have Globus transfer as an option will be visible.',
-        'right',
-      );
-  }
+  // Add all the sub-tour steps without intro/outro messages
+  addNavBarSteps(tour);
+  addFacetsPanelSteps(tour);
+  addSearchFeaturesSteps(tour);
+  addSearchResultsSteps(tour);
+  addDataRowTourSteps(tour);
 
   tour
-    .addNextStep(
-      leftSidebarTargets.searchFacetsForm.selector(),
-      'This area contains various groups of facets and parameters that you can use to filter results from your selected project.',
-      'right',
-    )
-    .addNextStep(
-      leftSidebarTargets.facetFormGeneral.selector(),
-      'To filter by facets provided within this group, you would open this collapsible form by clicking on it...',
-      'right-end',
-      /* istanbul ignore next -- @preserve */
-      async () => {
-        // Open general facets
-        clickFirstElement(leftSidebarTargets.facetFormGeneral.selector());
-        await delay(300);
-      },
-    )
-    .addNextStep(
-      leftSidebarTargets.facetFormFields.selector(),
-      'These are facets that are available within this group. The drop-downs allow you to select multiple items you wish to include in your search. Note that you can search for elements in the drop-down by typing within the input area.',
-      'right-start',
-      /* istanbul ignore next -- @preserve */
-      async () => {
-        // Close general facets
-        clickFirstElement(leftSidebarTargets.facetFormGeneral.selector());
-        await delay(300);
-        // Close facet panels if more than one is open
-        if (elementExists(leftSidebarTargets.facetFormCollapseAllBtn.class())) {
-          clickFirstElement(leftSidebarTargets.facetFormCollapseAllBtn.selector());
-          await delay(50);
-        }
-      },
-    )
-    .addNextStep(
-      leftSidebarTargets.facetFormExpandAllBtn.selector(),
-      "You can quickly expand all the facet panels by clicking this button. Note that there is a scroll bar on the right when the panels don't all fit on the page.",
-      'right-end',
-      /* istanbul ignore next -- @preserve */
-      async () => {
-        // Expand all facets
-        clickFirstElement(leftSidebarTargets.facetFormExpandAllBtn.selector());
-        await delay(300);
-      },
-    )
-    .addNextStep(
-      leftSidebarTargets.facetFormAdditionalFields.selector(),
-      'This section contains additional properties that you can select to further refine your search results, including the Version Type, Result Type and Versions. Hovering over the question mark icon will further explain the parameter.',
-      'right-end',
-    )
-    .addNextStep(
-      leftSidebarTargets.facetFormKeywordSearch.selector(),
-      'This input lets you filter your results using a specific keyword. To filter by keyword, you would type in the field then click the magnifying glass icon to add it as a search parameter. Each additional keyword search will be added as an OR to your existing keyword search.',
-      'right-end',
-    )
-    .addNextStep(
-      leftSidebarTargets.facetFormCollapseAllBtn.selector(),
-      'Clicking the collapse all button will close all the open facet panels.',
-      'right-end',
-      /* istanbul ignore next -- @preserve */
-      async () => {
-        // Open general facets
-        clickFirstElement(leftSidebarTargets.facetFormCollapseAllBtn.selector());
-        await delay(300);
-      },
-    )
-    // Filename search currenty disabled
-    // .addNextStep(
-    //   leftSidebarTargets.facetFormFilenameFields.selector(),
-    //   'This section lets you filter your results to include a specific filename. To filter by filename, you would type in the name or names as a list of comma separated values then click the magnifying glass icon to add it as a search parameter.',
-    //   'right-end',
-    //   /* istanbul ignore next -- @preserve */
-    //   () => {
-    //     // Close filename section
-    //     clickFirstElement(leftSidebarTargets.facetFormFilename.selector());
-    //     window.scrollTo(0, 0);
-    //   },
-    // )
-    .addNextStep(
-      searchTableTargets.queryString.selector(),
-      "When performing a search, you'll be able to view the resulting query generated by your selections here.",
-      'bottom',
-    )
-    .addNextStep(
-      searchTableTargets.resultsFoundText.selector(),
-      'This will display how many results were returned from your search.',
-      'bottom',
-    )
-    .addNextStep(
-      searchTableTargets.saveSearchBtn.selector(),
-      'If you are happy with your search results and plan to perform this search again, you can save your search by clicking this button.',
-      'left',
-    )
-    .addNextStep(
-      copySearchOptionsTargets.copyMenuBtn.selector(),
-      'If you click on the copy icon, a drop-down menu will appear with various options for copying your search query into your clipboard.',
-      'left-start',
-      /* istanbul ignore next -- @preserve */
-      async () => {
-        // Open general facets
-        hoverFirstElement(copySearchOptionsTargets.copyMenuBtn.selector());
-        await delay(200);
-      },
-    )
-    .addNextStep(
-      copySearchOptionsTargets.copySearchLinkBtn.selector(),
-      'This option creates a shareable link for your search. The Metagrid URL will be copied to your clipboard for you to then paste at your convenience.',
-      'left-start',
-    )
-    .addNextStep(
-      copySearchOptionsTargets.copyEsgpullSearchQueryBtn.selector(),
-      'This option creates an esgpull search query version of your search and copies it to your clipboard. You can run the command in your shell where esgpull is installed.',
-      'left-start',
-    )
-    .addNextStep(
-      copySearchOptionsTargets.copyEsgpullDownloadCommandBtn.selector(),
-      'This option creates a simple esgpull download command to run a download. We highly recommend you review the command and test the search results beforehand with the esgpull search option first.',
-      'left-start',
-    )
-    .addNextStep(
-      copySearchOptionsTargets.copyIntakeEsgfSearchBtn.selector(),
-      'If you need an Intake ESGF search query version of your search, click this button. The python code will attempt to generate the code for a similar search and copy it to your clipboard.',
-      'left-start',
-      /* istanbul ignore next -- @preserve */
-      async () => {
-        // Open general facets
-        unHoverFirstElement('.ant-dropdown');
-        await delay(200);
-      },
-    )
-    .addNextStep(
-      searchTableTargets.searchResultsTable.selector(),
-      'These are your search results! Each row in the results table is a specific dataset that matches your criteria.',
-      'top-start',
-    )
-    .addNextStep(
-      searchTableTargets.downloadSearchBtn.selector(),
-      'The Download All Search button allows you to skip the data cart and download all the datasets returned by your search!',
-      'bottom',
-    )
-    .addNextStep(
-      '#root .ant-checkbox',
-      'You can select multiple datasets using these checkboxes...',
-      'top',
-      /* istanbul ignore next -- @preserve */
-      async () => {
-        clickFirstElement('#root .ant-checkbox');
-        // Flag that the check boxes are on
-        tour.setTourFlag('boxes-checked', true);
-        await delay(500);
-      },
-    )
-    .addNextStep(
-      searchTableTargets.addSelectedToCartBtn.selector(),
-      'Then to add them to your cart, you would click this button.',
-      'bottom-start',
-      /* istanbul ignore next -- @preserve */
-      async () => {
-        clickFirstElement('#root .ant-checkbox');
-        // Flag that the check boxes are on
-        tour.setTourFlag('boxes-checked', false);
-        await delay(500);
-      },
-    )
-    .addNextStep(
-      topDataRowTargets.cartAddBtn.selector('plus'),
-      'You can also directly add a specific dataset to the cart by clicking its plus button here.',
-      'top-start',
-    )
-    .addNextStep(
-      topDataRowTargets.cartAddBtn.selector('minus'),
-      'Or you can remove a dataset from the cart by clicking its minus button here.',
-      'top-start',
-    );
-
-  // This will add steps to tour through elements of a dataset row
-  addDataRowTourSteps(tour)
     .addNextStep(
       'body',
       'This concludes the main search page tour. To get a tour of other pages in the app, or repeat this tour again, you can click the big question mark button in the lower-right corner and select the tour in the Support pop-up menu.',

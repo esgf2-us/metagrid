@@ -84,6 +84,7 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
             )}
           </div>
           <div
+            className={cartTourTargets.cartItemsTable.class()}
             style={{
               height: 'calc(100vh - 500px)',
               marginBottom: '24px',
@@ -103,7 +104,7 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
               </Col>
             </Row>
           </div>
-          <div data-testid="downloadForm">
+          <div data-testid="downloadForm" className={cartTourTargets.downloadForm.class()}>
             <h1>
               <CloudDownloadOutlined /> Download Your Cart
             </h1>

@@ -435,7 +435,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
           render: (data_node: string, record: RawSearchResult) => {
             if (record.isStac) {
               return (
-                <div className={topDataRowTargets.globusReadyStatusIcon.class()}>
+                <div>
                   <GlobusToolTip
                     dataNode={data_node}
                     stacGlobusAvailable={
@@ -447,7 +447,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
             }
 
             return (
-              <div className={topDataRowTargets.globusReadyStatusIcon.class()}>
+              <div>
                 <GlobusToolTip dataNode={data_node} />
               </div>
             );
