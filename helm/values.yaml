@@ -3,7 +3,9 @@ fullnameOverride: ""
 
 ingress:
   enabled: false
-  tls: false
+  tls:
+    enabled: false
+    secretName:
   host:
   additionalHosts: []
   className: ""
@@ -87,6 +89,8 @@ django:
   #       }
   #     }
   #   ]
+  config:
+  secret:
 
 
 frontend:
