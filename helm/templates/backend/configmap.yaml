@@ -38,3 +38,9 @@ data:
   {{- end }}
   METAGRID_GLOBUS_NODES: {{ toJson .Values.globusNodes | quote }}
   DJANGO_GUNICORN_WORKERS: {{ .Values.django.gunicornWorkers | quote }}
+  {{- range $key, $value := .Values.django.config }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+  {{- if .Values.ingress.tls.enabled }}
+  DJANGO_SOCIAL_AUTH_REDIRECT_IS_HTTPS: "true"
+  {{- end }}

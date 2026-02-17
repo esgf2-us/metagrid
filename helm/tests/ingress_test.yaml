@@ -16,12 +16,30 @@ set:
   django:
     secretKey: abcd1234 # need static for checksum
 tests:
-  - it: should create a ingress
+  - it: should fail when host is set
     template: templates/ingress.yaml
     set:
       ingress:
         host: metagrid.neworg.io
+    asserts:
+      - failedTemplate:
+          errorMessage: 'Deprecation: ingress.host is replaced with ingress.hosts'
+  - it: should fail when additionalHosts is set
+    template: templates/ingress.yaml
+    set:
+      ingress:
         additionalHosts:
+          - metagrid-backup.neworg.io
+          - metagrid-backup2.neworg.io
+    asserts:
+      - failedTemplate:
+          errorMessage: 'Deprecation: ingress.additionalHosts is replaced with ingress.hosts'
+  - it: should create a ingress
+    template: templates/ingress.yaml
+    set:
+      ingress:
+        hosts:
+          - metagrid.neworg.io
           - metagrid-backup.neworg.io
           - metagrid-backup2.neworg.io
         className: traefik
@@ -29,7 +47,8 @@ tests:
           router: main
         annotations:
           redundaunt: router3
-        tls: true
+        tls:
+          enabled: true
     asserts:
       - matchSnapshot: {}
       - template: templates/backend/deployment.yaml
@@ -38,3 +57,25 @@ tests:
           content:
             name: DJANGO_ALLOWED_HOSTS
             value: '["localhost","$(THIS_POD_IP)","metagrid.neworg.io","metagrid-backup.neworg.io","metagrid-backup2.neworg.io"]'
+  - it: should use custom secret
+    set:
+      ingress:
+        tls:
+          enabled: true
+          secretName: tls-cert
+    asserts:
+      - template: templates/ingress.yaml
+        equal:
+          path: spec.tls[0].secretName
+          value: tls-cert
+  - it: should set DJANGO_SOCIAL_AUTH_REDIRECT_IS_HTTPS when ingress tls is enabled
+    set:
+      ingress:
+        tls:
+          enabled: true
+    asserts:
+      - template: templates/backend/configmap.yaml
+        isSubset:
+          path: data
+          content:
+            DJANGO_SOCIAL_AUTH_REDIRECT_IS_HTTPS: "true"
