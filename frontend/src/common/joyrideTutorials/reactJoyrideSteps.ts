@@ -141,6 +141,7 @@ export const navBarTargets = {
 };
 
 export const searchTableTargets = {
+  searchFeaturesArea: new TargetObject(),
   queryString: new TargetObject(),
   resultsFoundText: new TargetObject(),
   searchResultsTable: new TargetObject(),
@@ -253,13 +254,13 @@ export enum TourTitles {
   Cart = 'Data Cart Tour',
   CartDatasetDetails = 'Cart Items Tour',
   CartDownloadOptions = 'Download Options Tour',
-  ManageCollections = 'Manage My Collections Tour',
-  Searches = 'Saved Searches Tour',
-  Node = 'Node Status Tour',
+  CartManageCollections = 'Manage My Collections Tour',
+  SavedSearches = 'Saved Searches Tour',
+  NodeStatus = 'Node Status Tour',
   Welcome = 'Welcome Tour',
-  NavBar = 'Navigation Bar Tour',
-  FacetsPanel = 'Search Facets Panel Tour',
-  SearchFeatures = 'Search Features Tour',
+  MainNavBar = 'Navigation Bar Tour',
+  MainFacetsPanel = 'Search Facets Panel Tour',
+  MainSearchFeatures = 'Search Features Tour',
   SearchResults = 'Search Results Tour',
 }
 
@@ -689,7 +690,7 @@ export const welcomeTour = new JoyrideTour(TourTitles.Welcome)
   );
 
 export const createNavBarTour = (): JoyrideTour => {
-  const tour = new JoyrideTour(TourTitles.NavBar).addNextStep(
+  const tour = new JoyrideTour(TourTitles.MainNavBar).addNextStep(
     'body',
     'This tour will guide you through the main navigation bar at the top of the page.',
     'center',
@@ -703,7 +704,7 @@ export const createNavBarTour = (): JoyrideTour => {
 };
 
 export const createFacetsPanelTour = (): JoyrideTour => {
-  const tour = new JoyrideTour(TourTitles.FacetsPanel).addNextStep(
+  const tour = new JoyrideTour(TourTitles.MainFacetsPanel).addNextStep(
     'body',
     'This tour will guide you through the search facets panel on the left side of the page, where you can filter and refine your search results.',
     'center',
@@ -717,7 +718,7 @@ export const createFacetsPanelTour = (): JoyrideTour => {
 };
 
 export const createSearchFeaturesTour = (): JoyrideTour => {
-  const tour = new JoyrideTour(TourTitles.SearchFeatures).addNextStep(
+  const tour = new JoyrideTour(TourTitles.MainSearchFeatures).addNextStep(
     'body',
     'This tour will guide you through the search features available at the top of the search results, including saving, sharing, and exporting your search.',
     'center',
@@ -1202,7 +1203,7 @@ export const createCartDownloadOptionsTour = (
 };
 
 export const createCollectionsFormTour = (): JoyrideTour => {
-  const tour = new JoyrideTour(TourTitles.ManageCollections)
+  const tour = new JoyrideTour(TourTitles.CartManageCollections)
     .addNextStep(
       manageCollectionsTourTargets.globusCollectionsForm.selector(),
       "The 'Manage My Collections' form allows you to search for and save Globus collections which you can then select to perform Globus transfers.",
@@ -1253,7 +1254,7 @@ export const createCollectionsFormTour = (): JoyrideTour => {
 
 export const createSearchCardTour = (setCurrentPage: (page: number) => void): JoyrideTour => {
   let searchSaved = false;
-  const tour = new JoyrideTour(TourTitles.Searches)
+  const tour = new JoyrideTour(TourTitles.SavedSearches)
     .addNextStep(
       'body',
       'The search library allows you to manage previous searches that have been saved, so they can be applied in the future if desired. This tour will highlight the main features of the search library...',
@@ -1384,7 +1385,7 @@ export const createSearchCardTour = (setCurrentPage: (page: number) => void): Jo
 };
 
 export const createNodeStatusTour = (): JoyrideTour => {
-  const tour = new JoyrideTour(TourTitles.Node)
+  const tour = new JoyrideTour(TourTitles.NodeStatus)
     .addNextStep(
       'body',
       'This tour will provide a brief overview of the node status page.',

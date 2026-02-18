@@ -21,7 +21,6 @@ import { delay } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
 const user = userEvent.setup();
 
-
 describe('test main components', () => {
   it('renders App component', async () => {
     customRender(<App searchQuery={activeSearch} />);

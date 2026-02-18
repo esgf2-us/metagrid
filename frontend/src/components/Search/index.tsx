@@ -592,7 +592,10 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   return (
     <div data-testid="search">
       {contextHolder}
-      <div data-testid="search-features-wrapper">
+      <div
+        className={searchTableTargets.searchFeaturesArea.class()}
+        data-testid="search-features-wrapper"
+      >
         <div style={styles.summary}>
           {objectIsEmpty(project) && (
             <Alert message="Select a project to search for results" type="info" showIcon />

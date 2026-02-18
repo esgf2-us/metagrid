@@ -70,12 +70,12 @@ const WelcomeTemplate: React.FC<React.PropsWithChildren<TemplateProps>> = ({
           </Col>
           <Col span={12}>
             <Button style={{ marginLeft: '10px', width: '180px' }} onClick={startSearchCardTour}>
-              {TourTitles.Searches}
+              {TourTitles.SavedSearches}
             </Button>
           </Col>
           <Col span={12}>
             <Button style={{ marginLeft: '10px', width: '180px' }} onClick={startNodeStatusTour}>
-              {TourTitles.Node}
+              {TourTitles.NodeStatus}
             </Button>
           </Col>
         </Row>

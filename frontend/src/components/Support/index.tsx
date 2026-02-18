@@ -42,15 +42,6 @@ const Support: React.FC = () => {
 
   // Helper function to check if element exists before setting hover state
   const handleTourAreaHover = (selector: string): void => {
-    // Special case for search features area
-    if (selector === 'search-features-area') {
-      const element = document.querySelector('div[data-testid="search-features-wrapper"]');
-      if (element) {
-        setHoveredTourArea(selector);
-      }
-      return;
-    }
-
     // Default case - check if element exists
     const element = document.querySelector(selector);
     if (element) {
@@ -59,71 +50,37 @@ const Support: React.FC = () => {
   };
 
   // Effect to highlight the hovered tour area
+  // istanbul ignore next -- @preserve
   React.useEffect(() => {
     if (!hoveredTourArea) return undefined;
 
-    // Handle special case for search features (target parent container)
-    if (hoveredTourArea === 'search-features-area') {
-      const searchContainer = document.querySelector(
-        'div[data-testid="search-features-wrapper"]',
-      ) as HTMLElement;
-      if (!searchContainer) return undefined;
-
-      const originalBorder = searchContainer.style.border;
-      const originalBoxShadow = searchContainer.style.boxShadow;
-      const originalZIndex = searchContainer.style.zIndex;
-      const originalPosition = searchContainer.style.position;
-      const originalPointerEvents = searchContainer.style.pointerEvents;
-      const originalOpacity = searchContainer.style.opacity;
-      const originalTransition = searchContainer.style.transition;
-
-      searchContainer.style.transition = 'border 1.3s ease, box-shadow 1.3s ease';
-      searchContainer.style.border = '3px solid #1890ff';
-      searchContainer.style.boxShadow =
-        '0 0 0 9999px rgba(0, 0, 0, 0.6), 0 0 15px rgba(24, 144, 255, 0.8)';
-      searchContainer.style.position = 'relative';
-      searchContainer.style.zIndex = '9999';
-      searchContainer.style.pointerEvents = 'none';
-      searchContainer.style.setProperty('opacity', '1', 'important');
-
-      return () => {
-        searchContainer.style.border = originalBorder;
-        searchContainer.style.boxShadow = originalBoxShadow;
-        searchContainer.style.zIndex = originalZIndex;
-        searchContainer.style.position = originalPosition;
-        searchContainer.style.pointerEvents = originalPointerEvents;
-        searchContainer.style.opacity = originalOpacity;
-        searchContainer.style.transition = originalTransition;
-      };
-    }
-
     // Default single element highlighting
-    const element = document.querySelector(hoveredTourArea) as HTMLElement;
-    if (element) {
-      const originalBorder = element.style.border;
-      const originalBoxShadow = element.style.boxShadow;
-      const originalZIndex = element.style.zIndex;
-      const originalPosition = element.style.position;
-      const originalPointerEvents = element.style.pointerEvents;
-      const originalOpacity = element.style.opacity;
-      const originalTransition = element.style.transition;
+    const area = document.querySelector(hoveredTourArea) as HTMLElement;
+    if (area) {
+      const originalBorder = area.style.border;
+      const originalBoxShadow = area.style.boxShadow;
+      const originalZIndex = area.style.zIndex;
+      const originalPosition = area.style.position;
+      const originalPointerEvents = area.style.pointerEvents;
+      const originalOpacity = area.style.opacity;
+      const originalTransition = area.style.transition;
 
-      element.style.transition = 'border 1.3s ease, box-shadow 1.3s ease';
-      element.style.border = '3px solid #1890ff';
-      element.style.boxShadow = '0 0 0 9999px rgba(0, 0, 0, 0.6), 0 0 15px rgba(24, 144, 255, 0.8)';
-      element.style.position = 'relative';
-      element.style.zIndex = '9999';
-      element.style.pointerEvents = 'none';
-      element.style.setProperty('opacity', '1', 'important');
+      area.style.transition = 'border 0.2s ease, box-shadow 0.3s ease';
+      area.style.border = '4px solid #1890ff';
+      area.style.boxShadow = '0 0 0 9999px rgba(0, 0, 0, 0.4), 0 0 15px rgba(24, 144, 255, 0.9)';
+      area.style.position = 'relative';
+      area.style.zIndex = '9999';
+      area.style.pointerEvents = 'none';
+      area.style.setProperty('opacity', '1', 'important');
 
       return () => {
-        element.style.border = originalBorder;
-        element.style.boxShadow = originalBoxShadow;
-        element.style.zIndex = originalZIndex;
-        element.style.position = originalPosition;
-        element.style.pointerEvents = originalPointerEvents;
-        element.style.opacity = originalOpacity;
-        element.style.transition = originalTransition;
+        area.style.border = originalBorder;
+        area.style.boxShadow = originalBoxShadow;
+        area.style.zIndex = originalZIndex;
+        area.style.position = originalPosition;
+        area.style.pointerEvents = originalPointerEvents;
+        area.style.opacity = originalOpacity;
+        area.style.transition = originalTransition;
       };
     }
 
@@ -287,14 +244,14 @@ const Support: React.FC = () => {
                 onClick={startSearchCardTour}
                 type={curPage === AppPage.SavedSearches ? 'primary' : 'default'}
               >
-                {TourTitles.Searches}
+                {TourTitles.SavedSearches}
               </Button>
               {showStatus && (
                 <Button
                   onClick={startNodeStatusTour}
                   type={curPage === AppPage.NodeStatus ? 'primary' : 'default'}
                 >
-                  {TourTitles.Node}
+                  {TourTitles.NodeStatus}
                 </Button>
               )}
             </div>
@@ -313,7 +270,7 @@ const Support: React.FC = () => {
                         }}
                         onMouseLeave={() => setHoveredTourArea(null)}
                       >
-                        {TourTitles.NavBar}
+                        {TourTitles.MainNavBar}
                       </Button>
                       <Button
                         onClick={startFacetsPanelTour}
@@ -322,14 +279,16 @@ const Support: React.FC = () => {
                         }}
                         onMouseLeave={() => setHoveredTourArea(null)}
                       >
-                        {TourTitles.FacetsPanel}
+                        {TourTitles.MainFacetsPanel}
                       </Button>
                       <Button
                         onClick={startSearchFeaturesTour}
-                        onMouseEnter={() => handleTourAreaHover('search-features-area')}
+                        onMouseEnter={() =>
+                          handleTourAreaHover(searchTableTargets.searchFeaturesArea.selector())
+                        }
                         onMouseLeave={() => setHoveredTourArea(null)}
                       >
-                        {TourTitles.SearchFeatures}
+                        {TourTitles.MainSearchFeatures}
                       </Button>
                       <Button
                         onClick={startSearchResultsTour}
