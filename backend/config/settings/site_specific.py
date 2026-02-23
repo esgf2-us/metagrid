@@ -38,6 +38,18 @@ class MetagridBackendSettings(BaseSettings):
         examples=["https://esgf-node.llnl.gov/esg-search/wget"],
     )
 
+    GLOBUS_CLI_CLIENT_ID: Optional[str] = Field(
+        default=None,
+        examples=["94c44808-9efd-4236-bffd-1185b1071736"],
+        description="Note: This is necessary for the integrated WGET service and should match SOCIAL_AUTH_GLOBUS_KEY if that setting is configured. Globus The `Client UUID` obtained by registering a `portal, science gateway, or other application you host` with Globus at <https://app.globus.org/settings/developers>",
+    )
+
+    GLOBUS_CLI_CLIENT_SECRET: Optional[str] = Field(
+        default=None,
+        examples=["6aWj3gBYsxUBO++cSXtPzbl4n/sGJdhAmtn70XRoUMA="],
+        description="Note: This is necessary for the integrated WGET service and should match SOCIAL_AUTH_GLOBUS_SECRET if that setting is configured. A `Client Secret` associated with the Client UUID created for `GLOBUS_CLI_CLIENT_ID` at https://app.globus.org/settings/developers",
+    )
+
     GLOBUS_PUBLIC_INDEX_ENDPOINT_ID: str = Field(
         default="a8ef4320-9e5a-4793-837b-c45161ca1845",
         description="If WGET_URL is none, then you need this to specify the Globus index ID for the public ESGF2 data that integrated wget would use.",

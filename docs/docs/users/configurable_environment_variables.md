@@ -45,6 +45,28 @@
 >
 >     `https://esgf-node.llnl.gov/esg-search/wget`
 
+#### `METAGRID_GLOBUS_CLI_CLIENT_ID`
+
+> !!! example "*Optional*"
+>     __Default:__ `None`
+>
+>     Note: This is necessary for the integrated WGET service and should match SOCIAL_AUTH_GLOBUS_KEY if that setting is configured. Globus The `Client UUID` obtained by registering a `portal, science gateway, or other application you host` with Globus at <https://app.globus.org/settings/developers>
+>
+>     __Example Values__
+>
+>     `94c44808-9efd-4236-bffd-1185b1071736`
+
+#### `METAGRID_GLOBUS_CLI_CLIENT_SECRET`
+
+> !!! example "*Optional*"
+>     __Default:__ `None`
+>
+>     Note: This is necessary for the integrated WGET service and should match SOCIAL_AUTH_GLOBUS_SECRET if that setting is configured. A `Client Secret` associated with the Client UUID created for `GLOBUS_CLI_CLIENT_ID` at https://app.globus.org/settings/developers
+>
+>     __Example Values__
+>
+>     `6aWj3gBYsxUBO++cSXtPzbl4n/sGJdhAmtn70XRoUMA=`
+
 #### `METAGRID_GLOBUS_PUBLIC_INDEX_ENDPOINT_ID`
 
 > !!! example "*Optional*"
