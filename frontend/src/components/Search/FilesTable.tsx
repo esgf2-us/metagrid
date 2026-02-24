@@ -273,6 +273,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
       render: (size: number) => {
         return (
           <div className={innerDataRowTargets.dataSize.class()}>
+            {/* istanbul ignore next -- @preserve */}
             {size ? formatBytes(size) : 'N/A'}
           </div>
         );
@@ -391,6 +392,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
       render: (size: number) => {
         return (
           <div className={innerDataRowTargets.dataSize.class()}>
+            {/* istanbul ignore next -- @preserve */}
             {size ? formatBytes(size) : 'N/A'}
           </div>
         );

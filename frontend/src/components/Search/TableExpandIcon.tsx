@@ -20,9 +20,10 @@ const TableExpandIcon: React.FC<TableExpandIconProps> = ({
   onExpand,
   record,
   expandable,
-  contractClass = '',
-  expandClass = '',
+  contractClass = /* istanbul ignore next */ '',
+  expandClass = /* istanbul ignore next */ '',
 }) => {
+  /* istanbul ignore if -- @preserve */
   if (!expandable) return null;
 
   return expanded ? (

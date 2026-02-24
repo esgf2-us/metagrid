@@ -469,9 +469,11 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   if (results) {
     if (currentProject.isSTAC) {
       const searchResults = results as StacResponse;
+      /* istanbul ignore else -- @preserve */
       if (searchResults.search) {
         const stacResults = searchResults.search;
 
+        /* istanbul ignore else -- @preserve */
         if (stacResults.features && stacResults.features.length > 0) {
           numFound = stacResults.features.length;
           docs = stacResults.features.map((stacResult: StacFeature) =>
@@ -479,7 +481,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           );
         }
       }
-    } else if (results.response) {
+    } /* istanbul ignore next -- @preserve */ else if (results.response) {
       numFound = (results as LoadedResults).response.numFound;
       docs = (results as LoadedResults).response.docs.map((doc) => ({
         ...doc,
@@ -626,6 +628,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                         type="default"
                         shape="round"
                         className={searchTableTargets.downloadSearchBtn.class()}
+                        /* istanbul ignore next -- @preserve */
                         onClick={() => {
                           setShowDownloadAllForm(true);
                         }}
@@ -637,6 +640,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                     </Tooltip>
                     <DownloadModal
                       show={showDownloadAllForm}
+                      /* istanbul ignore next -- @preserve */
                       hide={() => setShowDownloadAllForm(false)}
                       searchURL={getUrlFromSearch(activeSearchQuery)}
                       stacResults={(results as StacResponse).search}

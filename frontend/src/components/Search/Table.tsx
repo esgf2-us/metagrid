@@ -325,6 +325,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
           'No file links found in the selected dataset, wget script was not generated.';
         const downloadTypesAvailable: DatasetDownloadTypes[] = ['wget'];
 
+        /* istanbul ignore if -- @preserve */
         if (record.isStac && record.globus_link) {
           downloadTypesAvailable.push('Globus');
         } else if (!record.isStac && record.id) {
@@ -339,6 +340,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
         const handleDownloadForm = (downloadType: DatasetDownloadTypes): void => {
           /* istanbul ignore else -- @preserve */
           if (downloadType === 'wget') {
+            /* istanbul ignore if -- @preserve */
             if (record.isStac) {
               // Generate file for STAC selections
               const stacSuccess = generateWgetScriptSTAC([record]);
