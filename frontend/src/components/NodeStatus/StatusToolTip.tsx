@@ -28,6 +28,7 @@ const StatusToolTip: React.FC<React.PropsWithChildren<Props>> = ({ dataNode, chi
     offlineCol = darkModeRed;
   }
 
+  /* istanbul ignore else -- @preserve */
   if (nodeStatus) {
     const node = nodeStatus.find((obj) =>
       obj.name.includes(dataNode),

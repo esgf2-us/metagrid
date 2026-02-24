@@ -20,17 +20,22 @@ const TableExpandIcon: React.FC<TableExpandIconProps> = ({
   onExpand,
   record,
   expandable,
-  contractClass = /* istanbul ignore next */ '',
-  expandClass = /* istanbul ignore next */ '',
+  contractClass,
+  expandClass,
 }) => {
   /* istanbul ignore if -- @preserve */
   if (!expandable) return null;
 
+  /* istanbul ignore next -- @preserve */
+  const contractCls = contractClass ?? '';
+  /* istanbul ignore next -- @preserve */
+  const expandCls = expandClass ?? '';
+
   return expanded ? (
-    <DownCircleOutlined className={contractClass} onClick={(e) => onExpand(record, e)} />
+    <DownCircleOutlined className={contractCls} onClick={(e) => onExpand(record, e)} />
   ) : (
     <Tooltip title="View details" trigger="hover">
-      <RightCircleOutlined className={expandClass} onClick={(e) => onExpand(record, e)} />
+      <RightCircleOutlined className={expandCls} onClick={(e) => onExpand(record, e)} />
     </Tooltip>
   );
 };

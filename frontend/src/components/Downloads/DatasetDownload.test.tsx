@@ -94,24 +94,24 @@ vi.mock('../../common/utils', async () => {
 const testEndpointPath = 'testPathValid';
 const testEndpointId = 'endpoint1';
 
-const validEndpointNoPathSet = globusEndpointFixture(
-  testEndpointId,
-  'Endpoint 1',
-  'GCSv5_mapped_collection',
-  'id1234567',
-  'ownerId123',
-  'subscriptId123',
-);
+const validEndpointNoPathSet = globusEndpointFixture({
+  canonical_name: testEndpointId,
+  display_name: 'Endpoint 1',
+  entity_type: 'GCSv5_mapped_collection',
+  id: 'id1234567',
+  owner_id: 'ownerId123',
+  subscription_id: 'subscriptId123',
+});
 
-const validEndpointWithPathSet = globusEndpointFixture(
-  'endpoint2',
-  'Endpoint 2',
-  'GCSv5_mapped_collection',
-  'id2345678',
-  'ownerId234',
-  'subscriptId234',
-  testEndpointPath,
-);
+const validEndpointWithPathSet = globusEndpointFixture({
+  canonical_name: 'endpoint2',
+  display_name: 'Endpoint 2',
+  entity_type: 'GCSv5_mapped_collection',
+  id: 'id2345678',
+  owner_id: 'ownerId234',
+  subscription_id: 'subscriptId234',
+  path: testEndpointPath,
+});
 
 const defaultTestConfig = {
   renderFullApp: false,

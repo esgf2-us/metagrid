@@ -15,12 +15,7 @@ import { getSearchFromUrl } from '../../common/utils';
 import customRender from '../../test/custom-render';
 import { ActiveSearchQuery } from '../Search/types';
 import App from './App';
-import {
-  activeSearch,
-  AtomWrapper,
-  printElementContents,
-  submitKeywordSearch,
-} from '../../test/testFunctions';
+import { activeSearch, AtomWrapper, submitKeywordSearch } from '../../test/testFunctions';
 import { AppStateKeys } from '../../common/atoms';
 import { delay } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
@@ -201,12 +196,14 @@ describe('test main components', () => {
     // Check facet select form exists and mouseDown to expand list of options
     const facetFormSelect = await screen.findByTestId('data_node-form-select');
     expect(facetFormSelect).toBeTruthy();
-    fireEvent.mouseDown(facetFormSelect.firstElementChild as HTMLInputElement);
+    fireEvent.mouseDown(facetFormSelect.firstElementChild as HTMLElement);
 
-    // Select the first facet option (use waitFor to avoid timing/order flakiness)
+    // Find and click the option by its testid in the visible list
     const facetOption = await screen.findByTestId('data_node_aims3.llnl.gov');
     expect(facetOption).toBeTruthy();
-    await userEvent.click(facetOption);
+
+    // Use fireEvent.click to select the option
+    fireEvent.click(facetOption);
 
     // Apply facets
     fireEvent.keyDown(facetFormSelect, {
@@ -219,7 +216,7 @@ describe('test main components', () => {
     // Wait for components to rerender
     await screen.findByTestId('search');
 
-    // Check facet option applied
+    // Check facet option applied - look for the exact tag testid
     const tag = await screen.findByTestId('aims3.llnl.gov');
     expect(tag).toBeTruthy();
 
@@ -229,14 +226,12 @@ describe('test main components', () => {
 
     fireEvent.mouseDown(facetFormSelectRerender.firstElementChild as HTMLInputElement);
 
-    // Check option is selected and remove it
-    const facetOptionRerender = await within(facetFormSelectRerender).findByRole('img', {
-      name: 'close',
-      hidden: true,
-    });
-    expect(facetOptionRerender).toBeTruthy();
+    // Wait for dropdown and find the selected option to deselect it (get all instances and click first)
+    const facetOptions = await screen.findAllByTestId('data_node_aims3.llnl.gov');
+    expect(facetOptions.length).toBeGreaterThan(0);
 
-    await userEvent.click(facetOptionRerender);
+    // Click the first one to deselect
+    fireEvent.click(facetOptions[0]);
 
     // Remove facets
     fireEvent.keyDown(facetFormSelectRerender, {

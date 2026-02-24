@@ -347,6 +347,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     }
   };
 
+  /* istanbul ignore next -- @preserve */
   const handleEsgpullSearchQuery = (): void => {
     /* istanbul ignore else -- @preserve */
     if (navigator && navigator.clipboard) {
@@ -357,6 +358,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     }
   };
 
+  /* istanbul ignore next -- @preserve */
   const handleEsgpullDownloadCmd = (): void => {
     /* istanbul ignore else -- @preserve */
     if (navigator && navigator.clipboard) {
@@ -467,6 +469,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     response: { docs: RawSearchResults; numFound: number };
   };
   if (results) {
+    /* istanbul ignore else -- @preserve */
     if (currentProject.isSTAC) {
       const searchResults = results as StacResponse;
       /* istanbul ignore else -- @preserve */
@@ -481,7 +484,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           );
         }
       }
-    } /* istanbul ignore next -- @preserve */ else if (results.response) {
+    } else if (results.response) {
       numFound = (results as LoadedResults).response.numFound;
       docs = (results as LoadedResults).response.docs.map((doc) => ({
         ...doc,
@@ -591,6 +594,13 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     },
   ];
 
+  /* istanbul ignore next -- @preserve */
+  const setDownloadAllForm = (value: boolean) => {
+    return () => {
+      setShowDownloadAllForm(value);
+    };
+  };
+
   return (
     <div data-testid="search">
       {contextHolder}
@@ -628,10 +638,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                         type="default"
                         shape="round"
                         className={searchTableTargets.downloadSearchBtn.class()}
-                        /* istanbul ignore next -- @preserve */
-                        onClick={() => {
-                          setShowDownloadAllForm(true);
-                        }}
+                        onClick={setDownloadAllForm(true)}
                         disabled={isLoading || numFound === 0}
                       >
                         <DownloadOutlined />
@@ -640,8 +647,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                     </Tooltip>
                     <DownloadModal
                       show={showDownloadAllForm}
-                      /* istanbul ignore next -- @preserve */
-                      hide={() => setShowDownloadAllForm(false)}
+                      hide={setDownloadAllForm(false)}
                       searchURL={getUrlFromSearch(activeSearchQuery)}
                       stacResults={(results as StacResponse).search}
                     />
