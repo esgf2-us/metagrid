@@ -16,7 +16,13 @@ import {
 } from '../../test/testFunctions';
 import App from '../App/App';
 import { GlobusEndpoint, GlobusTaskItem } from '../Globus/types';
-import { globusEndpointFixture, globusAuthScopeFixure } from '../../test/mock/fixtures';
+import {
+  globusEndpointFixture,
+  globusAuthScopeFixure,
+  stacFeatureFixture,
+  stacSearchResponseFixture,
+  rawSearchResultFixture,
+} from '../../test/mock/fixtures';
 import apiRoutes from '../../api/routes';
 import DatasetDownloadForm, { GlobusGoals } from './DatasetDownload';
 import {
@@ -26,7 +32,7 @@ import {
 } from '../../test/mock/mockStorage';
 import { AppPage } from '../../common/types';
 import { CartStateKeys, GlobusStateKeys } from '../../common/atoms';
-import { getCookie, setCookie } from '../../api';
+import { setCookie } from '../../api';
 
 Object.defineProperty(window, 'location', {
   value: {
@@ -48,7 +54,6 @@ beforeAll(() => {
     // ignore if not available
   }
 });
-
 
 const mockLoadValue = mockFunction((key: unknown) => {
   return Promise.resolve(tempStorageGetMock(key as string));
@@ -919,47 +924,44 @@ describe('DatasetDownload form tests', () => {
     expect(tourModal).toBeInTheDocument();
   });
 
-  it(
-    'Shows an alert when a collection search fails in the manage collections form',
-    async () => {
-      server.use(
-        rest.get(apiRoutes.globusSearchEndpoints.path, (_req, res, ctx) => res(ctx.status(500))),
-      );
+  it('Shows an alert when a collection search fails in the manage collections form', async () => {
+    server.use(
+      rest.get(apiRoutes.globusSearchEndpoints.path, (_req, res, ctx) => res(ctx.status(500))),
+    );
 
-      await initializeComponentForTest({
-        ...defaultTestConfig,
-        savedEndpoints: [],
-        chosenEndpoint: null,
-      });
+    await initializeComponentForTest({
+      ...defaultTestConfig,
+      savedEndpoints: [],
+      chosenEndpoint: null,
+    });
 
-      // Open download dropdown
-      const collectionDropdown = await screen.findByTestId('searchCollectionInput');
-      const selectEndpoint = await within(collectionDropdown).findByRole('combobox');
-      await openDropdownList(user, selectEndpoint);
+    // Open download dropdown
+    const collectionDropdown = await screen.findByTestId('searchCollectionInput');
+    const selectEndpoint = await within(collectionDropdown).findByRole('combobox');
+    await openDropdownList(user, selectEndpoint);
 
-      // Select manage collections
-      const manageEndpointsBtn = await screen.findByText('Manage Collections');
-      expect(manageEndpointsBtn).toBeTruthy();
+    // Select manage collections
+    const manageEndpointsBtn = await screen.findByText('Manage Collections');
+    expect(manageEndpointsBtn).toBeTruthy();
 
-      await user.click(manageEndpointsBtn);
+    await user.click(manageEndpointsBtn);
 
-      const manageCollectionsForm = await screen.findByTestId('manageCollectionsForm');
-      expect(manageCollectionsForm).toBeTruthy();
+    const manageCollectionsForm = await screen.findByTestId('manageCollectionsForm');
+    expect(manageCollectionsForm).toBeTruthy();
 
-      // Type in endpoint search text
-      const endpointSearchInput = await screen.findByPlaceholderText(
-        'Search for a Globus Collection',
-      );
-      expect(endpointSearchInput).toBeTruthy();
-      await user.type(endpointSearchInput, 'lc public{enter}');
+    // Type in endpoint search text
+    const endpointSearchInput = await screen.findByPlaceholderText(
+      'Search for a Globus Collection',
+    );
+    expect(endpointSearchInput).toBeTruthy();
+    await user.type(endpointSearchInput, 'lc public{enter}');
 
-      // Expect an alert to show up
-      const alertPopup = await screen.findByText(
-        'An error occurred while searching for collections. Please try again later.',
-      );
-      expect(alertPopup).toBeTruthy();
-    },
-  );
+    // Expect an alert to show up
+    const alertPopup = await screen.findByText(
+      'An error occurred while searching for collections. Please try again later.',
+    );
+    expect(alertPopup).toBeTruthy();
+  });
 
   it('removes all tasks when clicking the Clear All button', async () => {
     await initializeComponentForTest({
@@ -1078,5 +1080,109 @@ describe('DatasetDownload form tests', () => {
     // Expect reset notice to show
     const resetNotice = await screen.findByText('Globus tokens reset!', { exact: false });
     expect(resetNotice).toBeTruthy();
+  });
+
+  it('downloads wget script for STAC results passed via stacResults prop', async () => {
+    const stacResults: any = stacSearchResponseFixture([stacFeatureFixture('stac-id-1', 2, 1024)]);
+    const searchURL = 'https://test.com/search';
+
+    customRender(<DatasetDownloadForm stacResults={stacResults} searchURL={searchURL} />);
+
+    // Open download dropdown
+    const globusTransferDropdown = await within(
+      await screen.findByTestId('downloadTypeSelector'),
+    ).findByRole('combobox');
+
+    await openDropdownList(user, globusTransferDropdown);
+
+    // Select wget
+    const wgetOption = (await screen.findAllByText(/wget/i))[1];
+    expect(wgetOption).toBeTruthy();
+    await user.click(wgetOption);
+
+    // Start wget download
+    const downloadBtn = await screen.findByTestId('downloadDatasetWgetBtn');
+    expect(downloadBtn).toBeTruthy();
+    await user.click(downloadBtn);
+
+    // Expect success (component handles STAC results directly)
+    await waitFor(() => {
+      const downloadIsLoading = AtomWrapper.getAtomValue(CartStateKeys.cartDownloadIsLoading);
+      expect(downloadIsLoading).toBe(false);
+    });
+  });
+
+  it('downloads wget scripts for both STAC and non-STAC items', async () => {
+    const itemSelections = [
+      { ...rawSearchResultFixture({ id: 'stac-item-1', isStac: true }), isStac: true },
+      { ...rawSearchResultFixture({ id: 'non-stac-item-1', isStac: false }), isStac: false },
+    ];
+
+    await initializeComponentForTest({
+      ...defaultTestConfig,
+      itemSelections,
+    });
+
+    // Open download dropdown
+    const globusTransferDropdown = await within(
+      await screen.findByTestId('downloadTypeSelector'),
+    ).findByRole('combobox');
+
+    await openDropdownList(user, globusTransferDropdown);
+
+    // Select wget
+    const wgetOption = (await screen.findAllByText(/wget/i))[1];
+    expect(wgetOption).toBeTruthy();
+    await user.click(wgetOption);
+
+    // Start wget download
+    const downloadBtn = await screen.findByTestId('downloadDatasetWgetBtn');
+    expect(downloadBtn).toBeTruthy();
+    await user.click(downloadBtn);
+
+    // Expect success message for both types
+    const successMessage = await screen.findByText(/successfully/i, { exact: false });
+    expect(successMessage).toBeTruthy();
+  });
+
+  it('handles empty results from endpoint search', async () => {
+    server.use(
+      rest.get(apiRoutes.globusSearchEndpoints.path, (_req, res, ctx) =>
+        res(ctx.status(200), ctx.json([])),
+      ),
+    );
+
+    await initializeComponentForTest({
+      ...defaultTestConfig,
+      savedEndpoints: [],
+      chosenEndpoint: null,
+    });
+
+    // Open download dropdown
+    const collectionDropdown = await screen.findByTestId('searchCollectionInput');
+    const selectEndpoint = await within(collectionDropdown).findByRole('combobox');
+    await openDropdownList(user, selectEndpoint);
+
+    // Select manage collections
+    const manageEndpointsBtn = await screen.findByText('Manage Collections');
+    expect(manageEndpointsBtn).toBeTruthy();
+    await user.click(manageEndpointsBtn);
+
+    const manageCollectionsForm = await screen.findByTestId('manageCollectionsForm');
+    expect(manageCollectionsForm).toBeTruthy();
+
+    // Type in endpoint search text
+    const endpointSearchInput = await screen.findByPlaceholderText(
+      'Search for a Globus Collection',
+    );
+    expect(endpointSearchInput).toBeTruthy();
+    await user.type(endpointSearchInput, 'nonexistent{enter}');
+
+    // Wait for search to complete - verify empty state is shown (Ant Design empty table)
+    await waitFor(() => {
+      const results = screen.getByTestId('globusEndpointSearchResults');
+      // Verify the table exists and has the Ant Design empty class
+      expect(results).toHaveClass('ant-table-empty');
+    });
   });
 });
