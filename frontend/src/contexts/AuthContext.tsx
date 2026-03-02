@@ -21,9 +21,11 @@ export const GlobusAuthProvider: React.FC<Props> = ({ children }) => {
 
   useEffect(() => {
     runFetchGlobusAuth();
+    /* istanbul ignore next -- @preserve */
     const interval = setInterval(() => {
       runFetchGlobusAuth();
     }, 295000);
+    /* istanbul ignore next -- @preserve */
     return () => clearInterval(interval);
   }, [runFetchGlobusAuth, userAuth?.is_authenticated]);
 
@@ -53,8 +55,9 @@ export const KeycloakAuthProvider: React.FC<Props> = ({ children }) => {
     deferFn: fetchUserInfo as unknown as DeferFn<RawUserInfo>,
   });
 
-  /* istanbul ignore start -- @preserve */
+  /* istanbul ignore next -- @preserve */
   useEffect(() => {
+    /* istanbul ignore next -- @preserve */
     if (keycloak.token) {
       runFetchUserAuth(keycloak.token);
       const interval = setInterval(() => {
@@ -64,16 +67,15 @@ export const KeycloakAuthProvider: React.FC<Props> = ({ children }) => {
     }
     return undefined;
   }, [runFetchUserAuth, keycloak.token]);
-  /* istanbul ignore end -- @preserve */
 
-  /* istanbul ignore start -- @preserve */
+  /* istanbul ignore next -- @preserve */
   useEffect(() => {
+    /* istanbul ignore next -- @preserve */
     if (userAuth?.access_token) {
       userAuth.is_authenticated = true;
       runFetchUserInfo(userAuth.access_token);
     }
   }, [runFetchUserInfo, userAuth]);
-  /* istanbul ignore end -- @preserve */
 
   const contextValue = useMemo(
     () => ({

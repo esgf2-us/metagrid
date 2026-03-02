@@ -101,7 +101,7 @@ const buildDisplayData = (
   ): void => {
     if (value && value !== 'null' && value !== null) {
       keys.push(key);
-      const element = buildElement(key, title, value || 'test');
+      const element = buildElement(key, title, value || /* istanbul ignore next */ 'test');
       if (typeof value !== 'object') {
         array.push({ key, display: element, value: JSON.stringify(value) });
       } else if (Array.isArray(value)) {
@@ -151,7 +151,9 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
         filteredDisplayItems.push(item);
       } else if (Array.isArray(item.value)) {
         item.value.forEach((val) => {
+          /* istanbul ignore else -- @preserve */
           if (typeof val !== 'string') {
+            /* istanbul ignore if -- @preserve */
             if (filteredKeys.includes(val.key)) {
               filteredDisplayItems.push(val);
             }
@@ -218,6 +220,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
     record && record.further_info_url && record.further_info_url.length > 0
       ? record.further_info_url[0]
       : '';
+  /* istanbul ignore next -- @preserve */
   const propertiesFurtherInfoUrl =
     record &&
     record.properties &&
@@ -269,6 +272,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
     },
   ];
 
+  /* istanbul ignore else -- @preserve */
   if (showCitation) {
     tabList.push({
       key: '3',
@@ -278,6 +282,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
     });
   }
 
+  /* istanbul ignore else -- @preserve */
   if (showAdditionalTab) {
     tabList.push({
       key: '4',

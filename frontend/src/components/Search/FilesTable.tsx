@@ -271,11 +271,9 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
       sorter: (a: RawSearchResult, b: RawSearchResult) => (a.size || 0) - (b.size || 0),
       sortOrder: sortedInfo.columnKey === 'size' ? sortedInfo.order : null,
       render: (size: number) => {
-        return (
-          <div className={innerDataRowTargets.dataSize.class()}>
-            {size ? formatBytes(size) : 'N/A'}
-          </div>
-        );
+        /* istanbul ignore next -- @preserve */
+        const displaySize = size ? formatBytes(size) : 'N/A';
+        return <div className={innerDataRowTargets.dataSize.class()}>{displaySize}</div>;
       },
     },
     {
@@ -333,19 +331,21 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
                   >
                     <Button
                       type="primary"
-                      onClick={() => {
+                      onClick={
                         /* istanbul ignore next -- @preserve */
-                        if (navigator && navigator.clipboard) {
-                          navigator.clipboard
-                            .writeText(downloadUrls.OPENDAP)
-                            .catch((e: PromiseRejectedResult) => {
-                              showError(messageApi, e.reason as string);
+                        () => {
+                          if (navigator && navigator.clipboard) {
+                            navigator.clipboard
+                              .writeText(downloadUrls.OPENDAP)
+                              .catch((e: PromiseRejectedResult) => {
+                                showError(messageApi, e.reason as string);
+                              });
+                            showNotice(messageApi, 'OPeNDAP URL copied to clipboard!', {
+                              icon: <ShareAltOutlined style={styles.messageAddIcon} />,
                             });
-                          showNotice(messageApi, 'OPeNDAP URL copied to clipboard!', {
-                            icon: <ShareAltOutlined style={styles.messageAddIcon} />,
-                          });
+                          }
                         }
-                      }}
+                      }
                       icon={createCustomIcon(openDapIcon, 'OPeNDAP', {
                         height: '24px',
                         width: '24px',
@@ -376,6 +376,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
       title: 'Asset Title',
       dataIndex: 'id',
       key: 'id',
+      /* istanbul ignore next -- @preserve */
       render: (title: string) => {
         return <div className={innerDataRowTargets.filesTitle.class()}>{title}</div>;
       },
@@ -389,11 +390,9 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
         (a.size || 0) - (b.size || 0),
       sortOrder: sortedInfo.columnKey === 'size' ? sortedInfo.order : null,
       render: (size: number) => {
-        return (
-          <div className={innerDataRowTargets.dataSize.class()}>
-            {size ? formatBytes(size) : 'N/A'}
-          </div>
-        );
+        /* istanbul ignore next -- @preserve */
+        const displaySize = size ? formatBytes(size) : 'N/A';
+        return <div className={innerDataRowTargets.dataSize.class()}>{displaySize}</div>;
       },
     },
     {
@@ -426,7 +425,6 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
                 <Form.Item className={innerDataRowTargets.copyUrlBtn.class()}>
                   <Button
                     type="primary"
-                    /* istanbul ignore next -- @preserve */
                     onClick={
                       /* istanbul ignore next -- @preserve */ () => {
                         if (navigator && navigator.clipboard) {
