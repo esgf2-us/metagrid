@@ -151,4 +151,57 @@ describe('test ReactJoyrideProvider', () => {
     expect(nextBtn).toHaveStyle('background-color: #eee');
     expect(nextBtn).toHaveStyle('color: #b00');
   }, 145000);
+
+  it('displays loading message when user clicks twice during action loading', async () => {
+    // Create window object to set the pathname manually
+    // eslint-disable-next-line
+    window = Object.create(window);
+    const url = 'https://test.com/search';
+    Object.defineProperty(window, 'location', {
+      value: {
+        href: url,
+        pathname: 'testing/search',
+      },
+      writable: true,
+    });
+
+    // Set location
+    window.location.pathname = 'testing/search';
+    expect(getCurrentAppPage()).toEqual(AppPage.Main);
+
+    AtomWrapper.modifyAtomValue(AppStateKeys.supportModalVisible, true);
+    customRender(<Support />);
+
+    // Start the tutorial
+    const button = await screen.findByRole('button', { name: TourTitles.Main });
+    await user.click(button);
+
+    // Verify tour started
+    const tourModal = await screen.findByRole('heading', {
+      name: TourTitles.Main,
+    });
+    expect(tourModal).toBeTruthy();
+
+    // Click 'Next' to advance to a step with an action
+    const nextBtn = await screen.findByRole('button', { name: 'Next' });
+    await user.click(nextBtn);
+
+    // Wait for the action overlay to appear
+    const overlay = await screen.findByLabelText('Loading overlay');
+    expect(overlay).toBeTruthy();
+
+    // Click the overlay twice rapidly to trigger loading message
+    await user.click(overlay);
+    await user.click(overlay);
+
+    // Verify the loading message appears in the tooltip
+    const tooltip = document.querySelector('.react-joyride__tooltip');
+    expect(tooltip).toBeTruthy();
+
+    const loadingMessage = tooltip?.querySelector('.loading-message');
+    expect(loadingMessage).toBeTruthy();
+    // Check for either the custom message or the default message
+    expect(loadingMessage?.textContent).toMatch(/(U\.I\. elements are still loading|search results can take a few seconds to load)/);
+    expect(loadingMessage?.textContent).toContain('Skip');
+  }, 145000);
 });

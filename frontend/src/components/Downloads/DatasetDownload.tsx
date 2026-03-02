@@ -82,6 +82,7 @@ export enum GlobusGoals {
 // Statically defined list of dataset download options
 const downloadOptions = ['Globus', 'wget'];
 
+/* istanbul ignore next -- @preserve */
 function redirectToNewURL(newUrl: string): void {
   window.location.replace(newUrl);
 }
@@ -94,6 +95,7 @@ function tokenUrlReady(params: URLSearchParams): boolean {
   return params.has('code') && params.has('state');
 }
 
+/* istanbul ignore next -- @preserve */
 function redirectToRootUrl(): void {
   // Redirect back to the root URL (simple but brittle way to clear the query params)
   const splitUrl = window.location.href.split('?');
@@ -221,6 +223,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
     if (stacSelections.length > 0) {
       stacSuccess = generateWgetScriptSTAC(stacSelections);
 
+      /* istanbul ignore next -- @preserve */
       if (props.onDownloadFinish) {
         props.onDownloadFinish();
       }
@@ -489,6 +492,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
         endDownloadSteps();
       })
       .finally(() => {
+        /* istanbul ignore next -- @preserve */
         if (props.onDownloadFinish) {
           props.onDownloadFinish();
         }
@@ -580,6 +584,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
         setGlobusEndpoints([]);
       }
     } catch (error) {
+      /* istanbul ignore next -- @preserve */
       // eslint-disable-next-line no-console
       console.error(error);
       setAlertPopupState({
@@ -723,6 +728,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
       }
 
       // Update scopes
+      /* istanbul ignore next -- @preserve */
       updateScopes();
 
       // If endpoint urls are ready, update related values

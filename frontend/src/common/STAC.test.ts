@@ -113,6 +113,33 @@ describe('STAC utilities', () => {
     });
   });
 
+  it('convertSearchParamsIntoStacFilter handles multiple facets with multiple values', () => {
+    // Test case where we have multiple facets AND one of them has multiple values
+    // This covers line 234 in STAC.ts where values.length > 1 inside validFacets.length > 1
+    const urlMultiFacetsMultiValues =
+      'https://example.com/search?activity_id=CFMIP,CDRMIP&source_id=ACCESS-ESM1-5,CESM2';
+    const filter = convertSearchParamsIntoStacFilter(urlMultiFacetsMultiValues, 'CMIP6');
+    expect(filter).toEqual({
+      op: 'and',
+      args: [
+        {
+          op: 'or',
+          args: [
+            { op: '=', args: [{ property: 'properties.cmip6:activity_id' }, 'CFMIP'] },
+            { op: '=', args: [{ property: 'properties.cmip6:activity_id' }, 'CDRMIP'] },
+          ],
+        },
+        {
+          op: 'or',
+          args: [
+            { op: '=', args: [{ property: 'properties.cmip6:source_id' }, 'ACCESS-ESM1-5'] },
+            { op: '=', args: [{ property: 'properties.cmip6:source_id' }, 'CESM2'] },
+          ],
+        },
+      ],
+    });
+  });
+
   it('convertSearchParamsIntoStacFilter handles version parameters', () => {
     const urlMinVersion = 'https://example.com/search?activity_id=CFMIP&min_version=20200101';
     const filterMin = convertSearchParamsIntoStacFilter(urlMinVersion, 'CMIP6');

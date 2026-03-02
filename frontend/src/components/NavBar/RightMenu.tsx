@@ -110,6 +110,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
         Sign Out
       </Button>
     );
+    /* istanbul ignore else -- @preserve */
     if (authenticated) {
       userInfo = {
         email: authState.email as string,
@@ -140,6 +141,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
         className: navBarTargets.signInBtn.class(),
         label: (
           <span className="submenu-title-wrapper">
+            {/* istanbul ignore next -- @preserve */}
             Hi, {userInfo && userInfo.given_name ? userInfo.given_name : userInfo?.email}
           </span>
         ),

@@ -8,3 +8,29 @@
   width: 512px;
   max-width: 100%;
 }
+
+/* Reduce row heights for all tables */
+.ant-table-small .ant-table-thead > tr > th {
+  padding: 1px 8px;
+  line-height: 1.2;
+}
+
+.ant-table-small .ant-table-tbody > tr > td {
+  padding: 1px 8px;
+  line-height: 1.2;
+}
+
+/* Also reduce spacing in cells with forms/buttons */
+.ant-table-small .ant-table-tbody > tr > td .ant-form-inline {
+  margin: 0;
+}
+
+.ant-table-small .ant-table-tbody > tr > td .ant-btn {
+  line-height: 1.2;
+  padding: 2px 8px;
+}
+
+.ant-table-small .ant-table-tbody > tr > td p {
+  margin: 0;
+  line-height: 1.2;
+}

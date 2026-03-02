@@ -149,6 +149,7 @@ export const activeSearchQueryFixture = (
     resultType: 'all',
     minVersionDate: '20200101',
     maxVersionDate: '20201231',
+    globusOnly: false,
     filenameVars: ['var'],
     activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
     textInputs: ['foo'],
@@ -166,6 +167,7 @@ export const userSearchQueryFixture = (props: Partial<UserSearchQuery> = {}): Us
     resultType: 'all',
     minVersionDate: '20200101',
     maxVersionDate: '20201231',
+    globusOnly: false,
     filenameVars: ['var'],
     activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
     textInputs: ['foo'],
@@ -276,26 +278,52 @@ export const parsedNodeStatusFixture = (): NodeStatusArray => [
 export const globusAuthScopeFixure =
   'openid profile email urn:globus:auth:scope:transfer.api.globus.org:all urn:globus:auth:scope:transfer.api.globus.org:all[*https://auth.globus.org/scopes/id1234567/data_access *https://auth.globus.org/scopes/id2345678/data_access]';
 
-export const globusEndpointFixture = (
-  canonicalName?: string,
-  displayName?: string,
-  entityType?: string,
-  id?: string,
-  ownerId?: string,
-  subscriptionId?: string,
-  path?: string,
-): GlobusEndpoint => {
-  return {
-    canonical_name: canonicalName || '',
+export const globusEndpointFixture = (props: Partial<GlobusEndpoint> = {}): GlobusEndpoint => {
+  const defaults: GlobusEndpoint = {
+    canonical_name: 'test-endpoint',
     contact_email: 'globus-admin@llnl.gov',
-    display_name: displayName || 'LC Public',
-    entity_type: entityType || 'GCSv5_mapped_collection',
-    id: id || '0247816e-cc0d-4e03-a509-10903f6dde11',
-    owner_id: ownerId || '51245285-9ea1-4e56-a0c4-4de744f7c39f',
+    display_name: 'LC Public',
+    entity_type: 'GCSv5_mapped_collection',
+    id: '0247816e-cc0d-4e03-a509-10903f6dde11',
+    owner_id: '51245285-9ea1-4e56-a0c4-4de744f7c39f',
     owner_string: '51245285-9ea1-4e56-a0c4-4de744f7c39f@clients.auth.globus.org',
-    subscription_id: subscriptionId || '45620f77-bc3a-4e6f-b730-3ef5babe69ad',
-    path: path || null,
+    subscription_id: '45620f77-bc3a-4e6f-b730-3ef5babe69ad',
+    path: null,
   };
+  return { ...defaults, ...props };
+};
+
+// Helper fixture for Guest Collection
+export const globusGuestCollectionFixture = (
+  props: Partial<GlobusEndpoint> = {},
+): GlobusEndpoint => {
+  return globusEndpointFixture({
+    entity_type: 'GCSv5_guest_collection',
+    subscription_id: '',
+    ...props,
+  });
+};
+
+// Helper fixture for Managed Mapped Collection
+export const globusManagedCollectionFixture = (
+  props: Partial<GlobusEndpoint> = {},
+): GlobusEndpoint => {
+  return globusEndpointFixture({
+    entity_type: 'GCSv5_mapped_collection',
+    subscription_id: '45620f77-bc3a-4e6f-b730-3ef5babe69ad',
+    ...props,
+  });
+};
+
+// Helper fixture for Regular Mapped Collection (no subscription)
+export const globusMappedCollectionFixture = (
+  props: Partial<GlobusEndpoint> = {},
+): GlobusEndpoint => {
+  return globusEndpointFixture({
+    entity_type: 'GCSv5_mapped_collection',
+    subscription_id: '',
+    ...props,
+  });
 };
 
 export const globusEnabledDatasetFixture = (): RawSearchResult[] => {
