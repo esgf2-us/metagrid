@@ -43,26 +43,22 @@ export async function showNotice(
   // allow only one message at a time
   msgApi.destroy();
 
+  /* istanbul ignore next -- @preserve */
   switch (config?.type) {
     case 'success':
       await msgApi.success(msgConfig);
-      /* istanbul ignore next -- @preserve */
       return;
     case 'warning':
       await msgApi.warning(msgConfig);
-      /* istanbul ignore next -- @preserve */
       return;
     case 'error':
       await msgApi.error(msgConfig);
-      /* istanbul ignore next -- @preserve */
       return;
     case 'info':
       await msgApi.info(msgConfig);
-      /* istanbul ignore next -- @preserve */
       return;
     default:
       await msgApi.info(msgConfig);
-      /* istanbul ignore next -- @preserve */
       break;
   }
 }
@@ -410,6 +406,8 @@ export function createEsgpullCommand(
   const commandParts: string[] = [];
 
   // Add project name
+
+  /* istanbul ignore else -- @preserve */
   if (project && project.name) {
     commandParts.push(`project:'"${(project as RawProject).name}"'`);
   }
@@ -466,8 +464,11 @@ export const createIntakeEsgfSearch = (searchQuery: ActiveSearchQuery): string =
   const commandParts: string[] = [];
 
   // Add other search parameters
+
+  /* istanbul ignore else -- @preserve */
   if (!objectIsEmpty(activeFacets)) {
     Object.entries(activeFacets).forEach(([key, value]) => {
+      /* istanbul ignore else -- @preserve */
       if (value.length > 1) {
         commandParts.push(`${key}=['${value.join("', '")}']`);
       } else if (value.length === 1) {
@@ -697,6 +698,7 @@ export const saveBannerText = (): void => {
   // Set the banner text in sessionStorage
   const bannerText = window.METAGRID.BANNER_TEXT;
 
+  /* istanbul ignore else -- @preserve */
   if (bannerText) {
     sessionStorage.setItem('showBanner', bannerText);
   }

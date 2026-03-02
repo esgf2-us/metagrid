@@ -70,7 +70,7 @@ describe('Start popup tests', () => {
     const welcomeHeader = await screen.findByTestId('welcomeTemplate');
     expect(welcomeHeader).toBeTruthy();
 
-    const searchesTourBtn = await screen.findByText(TourTitles.Searches);
+    const searchesTourBtn = await screen.findByText(TourTitles.SavedSearches);
     expect(welcomeHeader).toBeTruthy();
 
     await userEvent.click(searchesTourBtn);
@@ -83,7 +83,7 @@ describe('Start popup tests', () => {
     const welcomeHeader = await screen.findByTestId('welcomeTemplate');
     expect(welcomeHeader).toBeTruthy();
 
-    const nodeTourBtn = await screen.findByText(TourTitles.Node);
+    const nodeTourBtn = await screen.findByText(TourTitles.NodeStatus);
     expect(welcomeHeader).toBeTruthy();
 
     await userEvent.click(nodeTourBtn);

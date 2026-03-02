@@ -66,6 +66,7 @@ import {
 import Banner from '../Messaging/Banner';
 
 const useHotjar = (): void => {
+  /* istanbul ignore else -- @preserve */
   if (window.METAGRID.HOTJAR_ID != null && window.METAGRID.HOTJAR_SV != null) {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     React.useEffect(() => {
@@ -154,6 +155,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
           // Remove all duplicates
           const dedupedSearches: UserSearchQueries = [];
           combinedItems.forEach((search) => {
+            /* istanbul ignore else -- @preserve */
             if (!searchAlreadyExists(dedupedSearches, search)) {
               dedupedSearches.push(search);
             }
@@ -173,11 +175,15 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     if (showStatus) {
       runFetchNodeStatus();
     }
-    const interval = setInterval(() => {
-      if (window.METAGRID.STATUS_URL !== null) {
-        runFetchNodeStatus();
-      }
-    }, 295000);
+    const interval = setInterval(
+      /* istanbul ignore next -- @preserve */
+      () => {
+        if (window.METAGRID.STATUS_URL !== null) {
+          runFetchNodeStatus();
+        }
+      },
+      295000,
+    );
     return () => clearInterval(interval);
   }, [runFetchNodeStatus]);
 

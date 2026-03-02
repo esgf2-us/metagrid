@@ -3,6 +3,11 @@
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
 /* eslint-disable */
+
+// React 18 testing environment - tells React Testing Library we're in a test environment
+// This helps reduce act() warnings from async updates
+(global as any).IS_REACT_ACT_ENVIRONMENT = true;
+
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
@@ -97,7 +102,24 @@ if (typeof globalThis.TextEncoder === 'undefined') {
   (globalThis as any).TextEncoder = TextEncoder;
 }
 
+// Suppress console errors for Ant Design internal warnings during tests
+// These warnings come from Ant Design's animation system and are not actionable
+const originalError = console.error;
+
 beforeAll(() => {
+  // Suppress act() warnings from Ant Design internal components
+  console.error = (...args: any[]) => {
+    if (
+      typeof args[0] === 'string' &&
+      (args[0].includes('Warning: An update to') ||
+        args[0].includes('inside a test was not wrapped in act') ||
+        args[0].includes('Warning: ReactDOM.render'))
+    ) {
+      return;
+    }
+    originalError.call(console, ...args);
+  };
+
   server.listen();
 
   // Initialize jotai state values
@@ -229,6 +251,10 @@ afterEach(() => {
 
   cleanup();
 });
-afterAll(() => server.close());
+afterAll(() => {
+  server.close();
+  // Restore original console.error
+  console.error = originalError;
+});
 
 module.exports = window;

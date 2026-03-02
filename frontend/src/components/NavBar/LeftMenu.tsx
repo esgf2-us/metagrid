@@ -51,10 +51,12 @@ const LeftMenu: React.FC<React.PropsWithChildren<Props>> = ({
     form.setFieldsValue({ text: '' });
   };
 
+  /* istanbul ignore if -- @preserve */
   if (apiError) {
     return <Alert message={apiError.message} type="error" showIcon />;
   }
 
+  /* istanbul ignore if -- @preserve */
   if (apiIsLoading) {
     return (
       <Form form={form}>

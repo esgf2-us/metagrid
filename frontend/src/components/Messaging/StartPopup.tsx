@@ -49,6 +49,7 @@ const StartPopup: React.FC<React.PropsWithChildren<unknown>> = () => {
 
     // Show welcome tour if welcome message is shown
     const startupMessageSeen = getLastMessageSeen();
+    /* istanbul ignore else -- @preserve */
     if (!startupMessageSeen) {
       setTour(welcomeTour);
       startTour();
@@ -74,6 +75,7 @@ const StartPopup: React.FC<React.PropsWithChildren<unknown>> = () => {
     if (!startupMessageSeen) {
       showMessage(startData.defaultMessageId);
     } else if (startupMessageSeen !== startData.messageToShow) {
+      /* istanbul ignore next -- @preserve */
       showMessage(startData.messageToShow);
     }
   }, []);

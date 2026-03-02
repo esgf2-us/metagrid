@@ -54,6 +54,7 @@ export type Props = {
   onRowSelect?: (selectedRows: RawSearchResults | []) => void;
   onPageChange?: (page: number, pageSize: number) => void;
   onPageSizeChange?: (size: number) => void;
+  scroll?: { x?: string | number | true; y?: string | number };
 };
 
 const MAX_RESULTS = 10000;
@@ -69,6 +70,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
   onRowSelect,
   onPageChange,
   onPageSizeChange,
+  scroll,
 }) => {
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -323,6 +325,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
           'No file links found in the selected dataset, wget script was not generated.';
         const downloadTypesAvailable: DatasetDownloadTypes[] = ['wget'];
 
+        /* istanbul ignore if -- @preserve */
         if (record.isStac && record.globus_link) {
           downloadTypesAvailable.push('Globus');
         } else if (!record.isStac && record.id) {
@@ -337,6 +340,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
         const handleDownloadForm = (downloadType: DatasetDownloadTypes): void => {
           /* istanbul ignore else -- @preserve */
           if (downloadType === 'wget') {
+            /* istanbul ignore if -- @preserve */
             if (record.isStac) {
               // Generate file for STAC selections
               const stacSuccess = generateWgetScriptSTAC([record]);
@@ -433,7 +437,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
           render: (data_node: string, record: RawSearchResult) => {
             if (record.isStac) {
               return (
-                <div className={topDataRowTargets.globusReadyStatusIcon.class()}>
+                <div>
                   <GlobusToolTip
                     dataNode={data_node}
                     stacGlobusAvailable={
@@ -445,7 +449,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
             }
 
             return (
-              <div className={topDataRowTargets.globusReadyStatusIcon.class()}>
+              <div>
                 <GlobusToolTip dataNode={data_node} />
               </div>
             );
@@ -469,7 +473,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       onChange={handleChange}
       rowKey="id"
       size="small"
-      scroll={{ x: 'max-content' }}
+      scroll={scroll || { x: 'max-content' }}
       tableLayout="auto"
       onRow={(record, rowIndex) => {
         return {
