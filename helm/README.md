@@ -344,5 +344,3 @@ kubectl exec -it $DB_POD -- psql -h localhost -U $DB_USER -d $DB_NAME -c "REINDE
 # restart backend pod
 kubectl delete $BACKEND_POD
 ```
-
-
