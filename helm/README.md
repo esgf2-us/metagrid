@@ -102,9 +102,10 @@ This document describes the configurable values available in the `values.yaml` f
 | Parameter | Description | Type | Default |
 |---|---|---|---|
 | `ingress.enabled` | Enable or disable ingress resources for the application. | `boolean`| `false` |
-| `ingress.tls` | Enable or disable TLS for ingress. | `boolean`| `false` |
-| `ingress.host` | Specify the hostname for ingress. | `string` | `""` |
-| `ingress.additionalHosts` | Specify a list of additional allowed hosts. | `array` | `[]` |
+| `ingress.pathType` | Path type for ingress (e.g., `Prefix`). | `string` | `"Prefix"` |
+| `ingress.tls.enabled` | Enable or disable TLS for ingress. | `boolean`| `false` |
+| `ingress.tls.secretName` | Secret name for TLS certificate. | `string` | `""` |
+| `ingress.hosts` | Specify the hostname(s) for ingress. | `array` | `[]` |
 | `ingress.className` | Set the ingress class name if required. | `string` | `""` |
 | `ingress.labels` | Custom labels for ingress resources. | `object` | `{}` |
 | `ingress.annotations` | Custom annotations for ingress resources. | `object` | `{}` |
@@ -118,6 +119,8 @@ This document describes the configurable values available in the `values.yaml` f
 | `wget.url` | External wget url. If empty, the internal wget feature is used. | `string` | `""` |
 | `wget.uploadMaxFields` | Maximum number of form fields allowed in a single upload. | `integer` | `1024` |
 | `wget.globusPublicIndex` | The Globus index ID for the public ESGF2 data. | `string` | `a8ef4320-9e5a-4793-837b-c45161ca1845` |
+| `wget.globusClientID` | Globus client ID for authentication. | `string` | `""` |
+| `wget.globusClientSecret` | Globus client secret for authentication. | `string` | `""` |
 | `wget.limit.default` | Default limit on the number of files allowed in a generated wget script. | `integer` | `9999` |
 | `wget.limit.max` | Maximum number of files allowed in a generated wget script. | `integer` | `100000` |
 | `wget.maxDirLength` | Maximum character length for facet values when creating directory names for wget downloads. | `integer` | `50` |
@@ -341,3 +344,5 @@ kubectl exec -it $DB_POD -- psql -h localhost -U $DB_USER -d $DB_NAME -c "REINDE
 # restart backend pod
 kubectl delete $BACKEND_POD
 ```
+
+
