@@ -406,10 +406,12 @@ export function createEsgpullCommand(
   const commandParts: string[] = [];
 
   // Add project name
-
-  /* istanbul ignore else -- @preserve */
-  if (project && project.name) {
-    commandParts.push(`project:'"${(project as RawProject).name}"'`);
+  if (project) {
+    if (project.isSTAC && project.projectName) {
+      commandParts.push(`project:'"${(project as RawProject).projectName}"'`);
+    } else if (project.name) {
+      commandParts.push(`project:'"${(project as RawProject).name}"'`);
+    }
   }
 
   // Check if some facets are invalid
@@ -459,7 +461,7 @@ export function createEsgpullCommand(
 }
 
 export const createIntakeEsgfSearch = (searchQuery: ActiveSearchQuery): string => {
-  const { versionType, activeFacets } = searchQuery;
+  const { versionType, activeFacets, project } = searchQuery;
 
   const commandParts: string[] = [];
 
@@ -484,7 +486,10 @@ export const createIntakeEsgfSearch = (searchQuery: ActiveSearchQuery): string =
     commandParts.push(`latest=True`);
   }
 
-  const intakeHeader = 'from intake_esgf import ESGFCatalog\ncat=ESGFCatalog()\n\n';
+  const configLine = project.isSTAC
+    ? `intake_esgf.conf.set(indices={"${window.METAGRID.STAC_URL}}":True})\n`
+    : '';
+  const intakeHeader = `from intake_esgf import ESGFCatalog\n\n${configLine}cat=ESGFCatalog()\n\n`;
   const catalogCmd = `metagrid_search=cat.search(${commandParts.join(', ')})`;
 
   return `${intakeHeader}${catalogCmd}`;
