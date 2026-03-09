@@ -397,7 +397,7 @@ esgpull search project:'\"test1\"' [\"foo\"] --latest true`;
 
     // Check clipboard content
     const expectedSearchText =
-      "from intake_esgf import ESGFCatalog\n\ncat=ESGFCatalog()\n\nmetagrid_search=cat.search(foo=['option1', 'option2'], baz='option1', latest=True)";
+      "from intake_esgf import ESGFCatalog\n\ncat=ESGFCatalog()\n\nmetagrid_search=cat.search(foo=['option1', 'option2'], baz='option1', latest=True)\nprint(metagrid_search)";
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith(expectedSearchText);
 
     // Wait for search component to re-render

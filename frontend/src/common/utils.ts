@@ -486,13 +486,16 @@ export const createIntakeEsgfSearch = (searchQuery: ActiveSearchQuery): string =
     commandParts.push(`latest=True`);
   }
 
-  const configLine = project.isSTAC
-    ? `intake_esgf.conf.set(indices={"${window.METAGRID.STAC_URL}}":True})\n`
+  const intakeImports = project.isSTAC
+    ? `import intake_esgf\n\n`
+    : 'from intake_esgf import ESGFCatalog\n\n';
+  const confSettings = project.isSTAC
+    ? `intake_esgf.conf.set(indices={"${window.METAGRID.STAC_URL}":True})\n\n`
     : '';
-  const intakeHeader = `from intake_esgf import ESGFCatalog\n\n${configLine}cat=ESGFCatalog()\n\n`;
-  const catalogCmd = `metagrid_search=cat.search(${commandParts.join(', ')})`;
+  const catalogCmd = `cat=${project.isSTAC ? 'intake_esgf.' : ''}ESGFCatalog()\n\n`;
+  const searchCmd = `metagrid_search=cat.search(${commandParts.join(', ')})`;
 
-  return `${intakeHeader}${catalogCmd}`;
+  return `${intakeImports}${confSettings}${catalogCmd}${searchCmd}\nprint(metagrid_search)`;
 };
 
 export const combineCarts = (
