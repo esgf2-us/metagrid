@@ -163,6 +163,7 @@ export const convertStacToRawSearchResult = (stacResult: StacFeature): RawSearch
     number_of_files: numberOfFiles,
     version: versionStr,
     properties,
+    retracted: properties.retracted,
     stac_version,
     type,
     size,
