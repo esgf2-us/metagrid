@@ -381,6 +381,7 @@ export const stacFeatureFixture = (
     access: ['public'],
     citation_url: 'https://example.com/citation',
     further_info_url: 'https://example.com/info',
+    retracted: false,
     version: '1.0',
   },
   collection: ['test-collection'],

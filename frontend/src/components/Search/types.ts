@@ -105,6 +105,7 @@ export type StacProperties = {
   access: string[];
   citation_url: string;
   further_info_url: string;
+  retracted: boolean;
   version: string;
   [key: string]: boolean | string | string[] | number | undefined;
 };
