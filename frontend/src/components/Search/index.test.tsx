@@ -67,20 +67,17 @@ describe('test Search component', () => {
     expect(alert).toBeTruthy();
   });
 
-  it(
-    'runs the side effect to set the current url when there is an activeProject object with a facetsUrl key',
-    async () => {
-      customRender(<Search {...defaultProps} />);
+  it('runs the side effect to set the current url when there is an activeProject object with a facetsUrl key', async () => {
+    customRender(<Search {...defaultProps} />);
 
-      // Check search component renders
-      const searchComponent = await screen.findByTestId('search');
-      expect(searchComponent).toBeTruthy();
+    // Check search component renders
+    const searchComponent = await screen.findByTestId('search');
+    expect(searchComponent).toBeTruthy();
 
-      // Check if the 'Open as Json' button renders
-      const jsonBtn = await screen.findByRole('img', { name: 'export' });
-      expect(jsonBtn).toBeTruthy();
-    },
-  );
+    // Check if the 'Open as Json' button renders
+    const jsonBtn = await screen.findByRole('img', { name: 'export' });
+    expect(jsonBtn).toBeTruthy();
+  });
 
   it('renders query string', async () => {
     customRender(<Search {...defaultProps} />);
@@ -400,7 +397,7 @@ esgpull search project:'\"test1\"' [\"foo\"] --latest true`;
 
     // Check clipboard content
     const expectedSearchText =
-      "from intake_esgf import ESGFCatalog\ncat=ESGFCatalog()\n\nmetagrid_search=cat.search(foo=['option1', 'option2'], baz='option1', latest=True)";
+      "from intake_esgf import ESGFCatalog\n\ncat=ESGFCatalog()\n\nmetagrid_search=cat.search(foo=['option1', 'option2'], baz='option1', latest=True)\nprint(metagrid_search)";
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith(expectedSearchText);
 
     // Wait for search component to re-render

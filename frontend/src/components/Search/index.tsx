@@ -523,20 +523,13 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     {
       key: '2',
       label: (
-        <Tooltip
-          placement="left"
-          title={
-            currentProject.isSTAC
-              ? tooltipText.featureNotAvailableInStac
-              : tooltipText.copyEsgpullSearch
-          }
-        >
+        <Tooltip placement="left" title={tooltipText.copyEsgpullSearch}>
           <span style={{ display: 'inline-block', cursor: 'not-allowed' }}>
             <Button
               type="default"
               className={copySearchOptionsTargets.copyEsgpullSearchQueryBtn.class()}
               onClick={handleEsgpullSearchQuery}
-              disabled={isLoading || numFound === 0 || currentProject.isSTAC}
+              disabled={isLoading || numFound === 0}
             >
               <CodeOutlined data-testid="copy-esgpull-search-btn" /> Copy esgpull search query
             </Button>
@@ -547,20 +540,13 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     {
       key: '3',
       label: (
-        <Tooltip
-          placement="left"
-          title={
-            currentProject.isSTAC
-              ? tooltipText.featureNotAvailableInStac
-              : tooltipText.copyEsgpullDownload
-          }
-        >
+        <Tooltip placement="left" title={tooltipText.copyEsgpullDownload}>
           <span style={{ display: 'inline-block', cursor: 'not-allowed' }}>
             <Button
               type="default"
               className={copySearchOptionsTargets.copyEsgpullDownloadCommandBtn.class()}
               onClick={handleEsgpullDownloadCmd}
-              disabled={isLoading || numFound === 0 || currentProject.isSTAC}
+              disabled={isLoading || numFound === 0}
             >
               <CodeOutlined data-testid="copy-esgpull-download-btn" /> Copy esgpull download command
             </Button>
@@ -571,20 +557,13 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     {
       key: '4',
       label: (
-        <Tooltip
-          placement="left"
-          title={
-            currentProject.isSTAC
-              ? tooltipText.featureNotAvailableInStac
-              : tooltipText.copyIntakeEsgfSearch
-          }
-        >
+        <Tooltip placement="left" title={tooltipText.copyIntakeEsgfSearch}>
           <span style={{ display: 'inline-block', cursor: 'not-allowed' }}>
             <Button
               type="default"
               className={copySearchOptionsTargets.copyIntakeEsgfSearchBtn.class()}
               onClick={handleIntakeEsgfSearch}
-              disabled={isLoading || numFound === 0 || currentProject.isSTAC}
+              disabled={isLoading || numFound === 0}
             >
               <CodeOutlined data-testid="copy-intake-search-btn" /> Copy Intake-ESGF search command
             </Button>
