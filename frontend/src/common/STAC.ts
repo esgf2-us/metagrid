@@ -133,7 +133,7 @@ export const aggregationsToFacetsData = (
 
   // Filter out facets that were empty
   const cleanedFacetsData = Object.fromEntries(
-    Object.entries(renamedFacets).filter(([_, value]) => Array.isArray(value) && value.length > 0),
+    Object.entries(renamedFacets).filter(([, value]) => Array.isArray(value) && value.length > 0),
   );
 
   return cleanedFacetsData;
