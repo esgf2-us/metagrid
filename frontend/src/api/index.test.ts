@@ -19,6 +19,7 @@ import {
   loadSessionValue,
   openDownloadURL,
   parseNodeStatus,
+  postSTACSearch,
   processCitation,
   resetGlobusTokens,
   saveSessionValue,
@@ -1048,6 +1049,14 @@ describe('STAC API functions', () => {
 
     await expect(fetchSTACAggregations('CMIP6', undefined)).rejects.toThrow(
       apiRoutes.esgfAggregationsSTAC.handleErrorMsg('generic' as HTTPCodeType),
+    );
+  });
+
+  it('throws error when STAC search fails', async () => {
+    server.use(rest.post(apiRoutes.esgfSearchSTAC.path, (_req, res, ctx) => res(ctx.status(500))));
+
+    await expect(postSTACSearch('CMIP6', 10)).rejects.toThrow(
+      apiRoutes.esgfSearchSTAC.handleErrorMsg('generic' as HTTPCodeType),
     );
   });
 

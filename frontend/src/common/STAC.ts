@@ -17,7 +17,7 @@ export const STAC_PROJECTS: RawProject[] = [
     fullName: 'Coupled Model Intercomparison Project Phase 6',
     projectUrl: 'https://pcmdi.llnl.gov/CMIP6/',
     facetsByGroup: {
-      General: ['activity_id', 'mip_era'],
+      General: ['activity_id', 'data_node', 'mip_era'],
       Identifiers: [
         'source_id',
         'source_type',
@@ -39,6 +39,7 @@ export const STAC_PROJECTS: RawProject[] = [
 /* istanbul ignore next -- @preserve */
 export const STAC_PROJECT_FACET_MAPPING: { [key: string]: Record<string, string> } = {
   CMIP6: {
+    data_node: 'alternate:name',
     latest: 'properties.latest',
     activity_id: 'properties.cmip6:activity_id',
     data_specs_version: 'properties.cmip6:data_specs_version',
@@ -65,6 +66,7 @@ export const STAC_PROJECT_FACET_MAPPING: { [key: string]: Record<string, string>
 export const STAC_AGGREGATION_FACETS: { [key: string]: string[] } = {
   // Values taken from 'aggregations' list : https://api.stac.esgf.ceda.ac.uk/collections/CMIP6
   CMIP6: [
+    'alternate_name_frequency',
     'cmip6_activity_id_frequency',
     'cmip6_data_specs_version_frequency',
     'cmip6_frequency_frequency',
@@ -118,7 +120,23 @@ export const aggregationsToFacetsData = (
     );
     facetsData[facetName] = facetValues;
   });
-  return facetsData;
+
+  // Rename some facets
+  /* istanbul ignore next -- @preserve */
+  const renamedFacets =
+    'alternate_name' in facetsData
+      ? (({ alternate_name, ...rest }) => ({
+          ...rest,
+          data_node: alternate_name,
+        }))(facetsData)
+      : facetsData;
+
+  // Filter out facets that were empty
+  const cleanedFacetsData = Object.fromEntries(
+    Object.entries(renamedFacets).filter(([_, value]) => Array.isArray(value) && value.length > 0),
+  );
+
+  return cleanedFacetsData;
 };
 
 export const convertStacToRawSearchResult = (stacResult: StacFeature): RawSearchResult => {
