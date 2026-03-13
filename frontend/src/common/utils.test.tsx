@@ -162,7 +162,7 @@ describe('Test getUrlFromSearch', () => {
           source_id: ['ACCESS-ESM1-5'],
         },
         textInputs: ['CSIRO'],
-      } as ActiveSearchQuery).includes(
+      } as unknown as ActiveSearchQuery).includes(
         '?project=CMIP6&filenameVars=%5B%22clt%22%2C%22tsc%22%5D&activeFacets=%7B%22activity_id%22%3A%5B%22CDRMIP%22%2C%22CFMIP%22%5D%2C%22source_id%22%3A%22ACCESS-ESM1-5%22%7D&textInputs=%5B%22CSIRO%22%5D',
       ),
     ).toBeTruthy();
@@ -266,7 +266,7 @@ describe('Test getUrlFromSearch', () => {
         source_id: ['ACCESS-ESM1-5'],
       },
       textInputs: ['CSIRO'],
-    } as ActiveSearchQuery);
+    } as unknown as ActiveSearchQuery);
     expect(url).toContain(
       '?project=CMIP6&filenameVars=%5B%22clt%22%2C%22tsc%22%5D&activeFacets=%7B%22activity_id%22%3A%5B%22CDRMIP%22%2C%22CFMIP%22%5D%2C%22source_id%22%3A%22ACCESS-ESM1-5%22%7D&textInputs=%5B%22CSIRO%22%5D',
     );
@@ -333,6 +333,7 @@ describe('Test unsavedLocal searches', () => {
     url: 'https://localhost/url.com',
     resultsCount: 200,
     searchTime: 100000,
+    globusOnly: false,
   };
   const secondResult: UserSearchQuery = {
     uuid: 'uuid2',
@@ -349,6 +350,7 @@ describe('Test unsavedLocal searches', () => {
     url: 'https://localhost/url.com',
     resultsCount: 200,
     searchTime: 100000,
+    globusOnly: false,
   };
   const thirdResult: UserSearchQuery = {
     uuid: 'uuid3',
@@ -365,6 +367,7 @@ describe('Test unsavedLocal searches', () => {
     url: 'https://localhost/url.com',
     resultsCount: 200,
     searchTime: 100000,
+    globusOnly: false,
   };
 
   const localResults: UserSearchQueries = [firstResult, secondResult];
@@ -677,7 +680,24 @@ describe('createEsgpullCommand', () => {
       filenameVars: [],
       activeFacets: { activity_id: ['CFMIP'], experiment_id: ['piControl'] },
       textInputs: [],
-    } as ActiveSearchQuery;
+    } as unknown as ActiveSearchQuery;
+    const cmd = createEsgpullCommand(searchQuery, false);
+    expect(cmd).toContain(
+      'esgpull search project:\'"CMIP6"\' activity_id:\'"CFMIP"\' experiment_id:\'"piControl"\' --latest true',
+    );
+  });
+
+  it('creates a STAC search command with project and facets', () => {
+    const searchQuery = {
+      project: { name: 'CMIP6 STAC', projectName: 'CMIP6', isSTAC: true },
+      versionType: 'latest',
+      resultType: 'all',
+      minVersionDate: null,
+      maxVersionDate: null,
+      filenameVars: [],
+      activeFacets: { activity_id: ['CFMIP'], experiment_id: ['piControl'] },
+      textInputs: [],
+    } as unknown as ActiveSearchQuery;
     const cmd = createEsgpullCommand(searchQuery, false);
     expect(cmd).toContain(
       'esgpull search project:\'"CMIP6"\' activity_id:\'"CFMIP"\' experiment_id:\'"piControl"\' --latest true',
@@ -728,7 +748,7 @@ describe('createEsgpullCommand', () => {
       filenameVars: [],
       activeFacets: {},
       textInputs: ['foo', 'bar'],
-    } as ActiveSearchQuery;
+    } as unknown as ActiveSearchQuery;
     const cmd = createEsgpullCommand(searchQuery, false);
     expect(cmd).toContain('["foo","bar"]');
   });
@@ -756,14 +776,36 @@ describe('createIntakeEsgfSearch', () => {
       filenameVars: [],
       activeFacets: { activity_id: ['CFMIP', 'CDRMIP'], experiment_id: ['piControl'] },
       textInputs: [],
-    } as ActiveSearchQuery;
+    } as unknown as ActiveSearchQuery;
     const cmd = createIntakeEsgfSearch(searchQuery);
-    expect(cmd).toContain("activity_id=['CFMIP', 'CDRMIP']");
-    expect(cmd).toContain("experiment_id='piControl'");
-    expect(cmd).toContain('latest=False');
     expect(cmd).toContain('from intake_esgf import ESGFCatalog');
     expect(cmd).toContain('cat=ESGFCatalog()');
     expect(cmd).toContain('metagrid_search=cat.search(');
+    expect(cmd).toContain("activity_id=['CFMIP', 'CDRMIP']");
+    expect(cmd).toContain("experiment_id='piControl'");
+    expect(cmd).toContain('latest=False');
+  });
+
+  it('creates a STAC intake-esgf search command with correct imports', () => {
+    const searchQuery = {
+      project: { name: 'CMIP6 STAC', isSTAC: true },
+      versionType: 'all',
+      resultType: 'all',
+      minVersionDate: null,
+      maxVersionDate: null,
+      filenameVars: [],
+      activeFacets: { activity_id: ['CFMIP', 'CDRMIP'], experiment_id: ['piControl'] },
+      textInputs: [],
+    } as unknown as ActiveSearchQuery;
+    const cmd = createIntakeEsgfSearch(searchQuery);
+    expect(cmd).toContain('import intake_esgf');
+    expect(cmd).toContain('intake_esgf.conf.set(indices={"');
+    expect(cmd).toContain('":True})');
+    expect(cmd).toContain('cat=intake_esgf.ESGFCatalog()');
+    expect(cmd).toContain('metagrid_search=cat.search(');
+    expect(cmd).toContain("activity_id=['CFMIP', 'CDRMIP']");
+    expect(cmd).toContain("experiment_id='piControl'");
+    expect(cmd).toContain('latest=False');
   });
 
   it('creates an intake-esgf search command with latest=True', () => {
@@ -776,7 +818,7 @@ describe('createIntakeEsgfSearch', () => {
       filenameVars: [],
       activeFacets: { realm: ['atmos'] },
       textInputs: [],
-    } as ActiveSearchQuery;
+    } as unknown as ActiveSearchQuery;
     const cmd = createIntakeEsgfSearch(searchQuery);
     expect(cmd).toContain("realm='atmos'");
     expect(cmd).toContain('latest=True');
@@ -823,12 +865,12 @@ describe('Test searchAlreadyExists', () => {
         uuid: '456',
         search: { project: { name: 'CMIP5' }, activeFacets: {} },
       },
-    ] as UserSearchQueries;
+    ] as unknown as UserSearchQueries;
 
     const newSearch = {
       uuid: '123',
       search: { project: { name: 'CMIP6' }, activeFacets: { activity_id: ['CFMIP'] } },
-    } as UserSearchQuery;
+    } as unknown as UserSearchQuery;
 
     expect(searchAlreadyExists(existingSearches, newSearch)).toBe(true);
   });
@@ -839,12 +881,12 @@ describe('Test searchAlreadyExists', () => {
         uuid: '123',
         search: { project: { name: 'CMIP6' }, activeFacets: {} },
       },
-    ] as UserSearchQueries;
+    ] as unknown as UserSearchQueries;
 
     const newSearch = {
       uuid: '789',
       search: { project: { name: 'E3SM' }, activeFacets: {} },
-    } as UserSearchQuery;
+    } as unknown as UserSearchQuery;
 
     expect(searchAlreadyExists(existingSearches, newSearch)).toBe(false);
   });
@@ -861,13 +903,20 @@ describe('Test downloadFileForUser', () => {
     const setAttributeSpy = vi.spyOn(mockAnchor, 'setAttribute');
 
     const createElementSpy = vi.spyOn(document, 'createElement').mockReturnValue(mockAnchor);
-    const appendChildSpy = vi.spyOn(document.body, 'appendChild').mockImplementation(() => mockAnchor);
-    const removeChildSpy = vi.spyOn(document.body, 'removeChild').mockImplementation(() => mockAnchor);
+    const appendChildSpy = vi
+      .spyOn(document.body, 'appendChild')
+      .mockImplementation(() => mockAnchor);
+    const removeChildSpy = vi
+      .spyOn(document.body, 'removeChild')
+      .mockImplementation(() => mockAnchor);
 
     downloadFileForUser(filename, content);
 
     expect(createElementSpy).toHaveBeenCalledWith('a');
-    expect(setAttributeSpy).toHaveBeenCalledWith('href', expect.stringContaining('data:text/plain'));
+    expect(setAttributeSpy).toHaveBeenCalledWith(
+      'href',
+      expect.stringContaining('data:text/plain'),
+    );
     expect(setAttributeSpy).toHaveBeenCalledWith('download', filename);
     expect(clickSpy).toHaveBeenCalled();
     expect(appendChildSpy).toHaveBeenCalled();
