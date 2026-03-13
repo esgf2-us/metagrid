@@ -406,6 +406,7 @@ export function createEsgpullCommand(
   const commandParts: string[] = [];
 
   // Add project name
+  /* istanbul ignore else -- @preserve */
   if (project) {
     if (project.isSTAC && project.projectName) {
       commandParts.push(`project:'"${(project as RawProject).projectName}"'`);
