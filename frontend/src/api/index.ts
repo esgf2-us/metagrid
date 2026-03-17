@@ -474,7 +474,7 @@ export const generateSearchURLQuery = (
   );
 
   if (isSTAC) {
-    return `${baseRoute}${baseParams}${`project_id=${(project as RawProject).projectName}`}&${activeFacetsParams}`;
+    return `${baseRoute}${baseParams}${`project_id=${(project as RawProject).projectName}`}&${textInputsParams}&${activeFacetsParams}`;
   }
 
   return `${baseRoute}${baseParams}${textInputsParams}&${activeFacetsParams}`;
@@ -487,12 +487,14 @@ export const generateSearchURLQuery = (
 export const postSTACSearch = async (
   projectName: string,
   limit: number,
+  q: TextInputs,
   filter: { op: string; args: unknown } | undefined = undefined,
 ): Promise<Record<string, unknown>> => {
   return axios
     .post(apiRoutes.esgfSearchSTAC.path, {
       collections: [projectName],
       limit,
+      q,
       filter,
     })
     .then((res) => res.data)
@@ -527,7 +529,17 @@ export const fetchSTACSearchResults = async (
 Promise<{ [key: string]: any }> => {
   let status = 200;
 
-  const filter = convertSearchParamsIntoStacFilter(reqUrlStr, projectName);
+  const stacProject =
+    STAC_PROJECTS.find((project) => project.projectName === projectName) || STAC_PROJECTS[0];
+  const filter = convertSearchParamsIntoStacFilter(reqUrlStr, stacProject);
+
+  const query = new URLSearchParams(reqUrlStr || '').get('query');
+  let textInputs: TextInputs = [];
+
+  // Add text search input
+  if (query && query !== '*') {
+    textInputs = textInputs.concat(query.split(','));
+  }
 
   const aggregations = await fetchSTACAggregations(projectName, filter)
     .then((res) => {
@@ -540,7 +552,7 @@ Promise<{ [key: string]: any }> => {
 
   const aggregationsToFacets = aggregationsToFacetsData(aggregations || { aggregations: [] });
 
-  const searchResults = await postSTACSearch(projectName, 9999, filter);
+  const searchResults = await postSTACSearch(projectName, 9999, textInputs, filter);
 
   const stacResponse: StacSearchResponse = searchResults as StacSearchResponse;
 
