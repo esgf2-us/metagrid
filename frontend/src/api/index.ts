@@ -487,15 +487,15 @@ export const generateSearchURLQuery = (
 export const postSTACSearch = async (
   projectName: string,
   limit: number,
-  q: TextInputs,
   filter: { op: string; args: unknown } | undefined = undefined,
+  q?: TextInputs,
 ): Promise<Record<string, unknown>> => {
   return axios
     .post(apiRoutes.esgfSearchSTAC.path, {
       collections: [projectName],
       limit,
-      q,
       filter,
+      q,
     })
     .then((res) => res.data)
     .catch((error: ResponseError) => {
@@ -534,11 +534,11 @@ Promise<{ [key: string]: any }> => {
   const filter = convertSearchParamsIntoStacFilter(reqUrlStr, stacProject);
 
   const query = new URLSearchParams(reqUrlStr || '').get('query');
-  let textInputs: TextInputs = [];
+  let textInputs: TextInputs | undefined;
 
   // Add text search input
   if (query && query !== '*') {
-    textInputs = textInputs.concat(query.split(','));
+    textInputs = query.split(',');
   }
 
   const aggregations = await fetchSTACAggregations(projectName, filter)
@@ -552,7 +552,7 @@ Promise<{ [key: string]: any }> => {
 
   const aggregationsToFacets = aggregationsToFacetsData(aggregations || { aggregations: [] });
 
-  const searchResults = await postSTACSearch(projectName, 9999, textInputs, filter);
+  const searchResults = await postSTACSearch(projectName, 9999, filter, textInputs);
 
   const stacResponse: StacSearchResponse = searchResults as StacSearchResponse;
 

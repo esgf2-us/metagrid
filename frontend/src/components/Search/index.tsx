@@ -142,8 +142,10 @@ export const stringifyFilters = (
     const stacProject =
       STAC_PROJECTS.find((project) => project.projectName === projectName) || STAC_PROJECTS[0];
     const stacFilter = convertSearchParamsIntoStacFilter(reqUrlStr, stacProject) || 'null';
-    const stacQueryBase = `{"collections": ["${stacProject.projectName}"], "filter": ${JSON.stringify(stacFilter)}, "q": ${JSON.stringify(textInputs)}}`;
-    return stacQueryBase || 'No filters applied';
+    const textInputsStr = textInputs.length > 0 ? `, "q": ${JSON.stringify(textInputs)}` : '';
+    const stacQueryBase = `{"collections": ["${stacProject.projectName}"], "filter": ${JSON.stringify(stacFilter)}${textInputsStr}`;
+
+    return stacQueryBase;
   }
 
   const filtersArr: string[] = [];
