@@ -37,70 +37,70 @@ spec:
     http:
       paths:
       - path: /
-        pathType: ImplementationSpecific
+        pathType: {{ $.Values.ingress.pathType }}
         backend:
           service:
             name: {{ $prefix }}-frontend
             port:
               number: {{ $.Values.frontend.service.port }}
       - path: /frontend-config.js
-        pathType: ImplementationSpecific
+        pathType: {{ $.Values.ingress.pathType }}
         backend:
           service:
             name: {{ $prefix }}-backend
             port:
               number: {{ $.Values.backend.service.port }}
       - path: /api
-        pathType: ImplementationSpecific
+        pathType: {{ $.Values.ingress.pathType }}
         backend:
           service:
             name: {{ $prefix }}-backend
             port:
               number: {{ $.Values.backend.service.port }}
       - path: /accounts
-        pathType: ImplementationSpecific
+        pathType: {{ $.Values.ingress.pathType }}
         backend:
           service:
             name: {{ $prefix }}-backend
             port:
               number: {{ $.Values.backend.service.port }}
       - path: /account-confirm-email
-        pathType: ImplementationSpecific
+        pathType: {{ $.Values.ingress.pathType }}
         backend:
           service:
             name: {{ $prefix }}-backend
             port:
               number: {{ $.Values.backend.service.port }}
       - path: /proxy
-        pathType: ImplementationSpecific
+        pathType: {{ $.Values.ingress.pathType }}
         backend:
           service:
             name: {{ $prefix }}-backend
             port:
               number: {{ $.Values.backend.service.port }}
       - path: /tempStorage
-        pathType: ImplementationSpecific
+        pathType: {{ $.Values.ingress.pathType }}
         backend:
           service:
             name: {{ $prefix }}-backend
             port:
               number: {{ $.Values.backend.service.port }}
       - path: /login
-        pathType: ImplementationSpecific
+        pathType: {{ $.Values.ingress.pathType }}
         backend:
           service:
             name: {{ $prefix }}-backend
             port:
               number: {{ $.Values.backend.service.port }}
       - path: /complete
-        pathType: ImplementationSpecific
+        pathType: {{ $.Values.ingress.pathType }}
         backend:
           service:
             name: {{ $prefix }}-backend
             port:
               number: {{ $.Values.backend.service.port }}
       - path: /globus
-        pathType: ImplementationSpecific
+        pathType: {{ $.Values.ingress.pathType }}
         backend:
           service:
             name: {{ $prefix }}-backend
