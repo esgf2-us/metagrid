@@ -21,7 +21,7 @@ should have a deployment:
       template:
         metadata:
           annotations:
-            checksum/config: 1a31bddf08490eaf469c9eb04f4bd7b3dce7e1fbf3a4c57bf7b4162f44ca31e7
+            checksum/config: 1f8ad3d8b936e84e6aa122bd452fa0fa70f20047a2a83dd4c605957cdcb0a41c
           labels:
             app.kubernetes.io/component: backend
             app.kubernetes.io/instance: metagrid
