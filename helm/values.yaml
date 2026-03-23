@@ -3,11 +3,11 @@ fullnameOverride: ""
 
 ingress:
   enabled: false
+  pathType: Prefix
   tls:
     enabled: false
     secretName:
-  host:
-  additionalHosts: []
+  hosts:
   className: ""
   labels: {}
   annotations: {}
@@ -27,6 +27,9 @@ wget:
     max: 100000
 
   maxDirLength: 50
+
+  globusClientID:
+  globusClientSecret:
 
 stacUrl:
 searchUrl: https://esgf-node.ornl.gov/esgf-1-5-bridge
