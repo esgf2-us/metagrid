@@ -5,7 +5,8 @@
     - [Start the Kubernetes cluster](#start-the-kubernetes-cluster)
     - [Deploy Metagrid + Traefik](#deploy-metagrid--traefik)
     - [Use minikube](#use-minikube)
-3. [Helm Chart `values.yaml` Configuration](#helm-chart-valuesyaml-configuration)
+3. [Testing the chart](#testing-the-chart)
+4. [Helm Chart `values.yaml` Configuration](#helm-chart-valuesyaml-configuration)
     - [Top-Level Configuration](#top-level-configuration)
     - [Ingress](#ingress)
     - [Config](#config)
@@ -13,7 +14,10 @@
     - [Backend](#backend)
     - [PostgreSQL](#postgresql)
     - [Node Status Backend](#node-status-backend)
-4. [Creating a backend admin account](#creating-a-backend-admin-account)
+5. [Creating a backend admin account](#creating-a-backend-admin-account)
+6. [FAQ](#faq)
+7. [Upgrading](#upgrading)
+    - [v1.5.3 -> v1.5.4](#v153---v154)
 
 ## Install
 ```shell
@@ -56,59 +60,106 @@ After launching the tunnel you can open https://localhost/search
 minikube tunnel
 ```
 
+## Testing the chart
+This chart has a number of tests that can be run to verify functionality.
+The tests are run using the [`helm-unittest`](https://github.com/helm-unittest/helm-unittest) plugin.
+
+### Install the plugin
+To install the plugin, run the following command:
+```shell
+helm plugin install https://github.com/helm-unittest/helm-unittest
+```
+
+### Run the tests
+To run the tests execute the following command from the project's root directory:
+```shell
+helm unittest helm/
+```
+
 # Helm Chart `values.yaml` Configuration
 
 This document describes the configurable values available in the `values.yaml` for the Helm chart. These values can be customized to meet your deployment needs for various components such as ingress, backend services, frontend services, PostgreSQL, and more.
 
 ## Top-Level Configuration
 
-| Parameter         | Description                         |
-|-------------------|-------------------------------------|
-| `nameOverride`    | Override the name of the release.   |
-| `fullnameOverride`| Override the full name of the release. |
+| Parameter | Description | Type | Default |
+|---|---|---|---|
+| `nameOverride` | Override the name of the release. | `string`| `""` |
+| `fullnameOverride`| Override the full name of the release. | `string`| `""` |
+| `nodeStatusUrl` | External node status url, only used if `nodeStatusBackend.enabled` is false. | `string`| `""` |
+| `stacUrl` | URL for the STAC API endpoint. | `string` | `""` |
+| `searchUrl` | URL for the Metagrid search service. | `string` | `https://esgf-node.ornl.gov/esgf-1-5-bridge` |
+| `bannerText` | Text to display as a banner. | `string` | `""` |
+| `supportInfo` | Text to display site administrator support information. | `string` | `""` |
+| `footerText` | Text to display in the footer. | `string` | `""` |
+| `googleAnalyticsTrackingId` | Google Analytics tracking ID. | `string` | `""` |
+| `globusNodes` | List of Globus nodes to display. | `array` | `["esgf-node.ornl.gov", "eagle.alcf.anl.gov", "esgf-data.nersc.gov"]` |
 
 ---
 
 ## Ingress
 
-| Parameter             | Description                                                       | Type     | Default |
-|-----------------------|-------------------------------------------------------------------|----------|---------|
-| `ingress.enabled`     | Enable or disable ingress resources for the application.          | `boolean`| `false` |
-| `ingress.tls`         | Enable or disable TLS for ingress.                                | `boolean`| `false` |
-| `ingress.host`        | Specify the hostname for ingress.                                 | `string` | N/A     |
-| `ingress.additionalAllowedHost` | Specify an additional allowed host.                     | `string` | N/A     |
-| `ingress.className`   | Set the ingress class name if required.                           | `string` | N/A     |
-| `ingress.labels`      | Custom labels for ingress resources.                              | `object` | `{}`    |
-| `ingress.annotations` | Custom annotations for ingress resources.                         | `object` | `{}`    |
+| Parameter | Description | Type | Default |
+|---|---|---|---|
+| `ingress.enabled` | Enable or disable ingress resources for the application. | `boolean`| `false` |
+| `ingress.tls` | Enable or disable TLS for ingress. | `boolean`| `false` |
+| `ingress.host` | Specify the hostname for ingress. | `string` | `""` |
+| `ingress.additionalHosts` | Specify a list of additional allowed hosts. | `array` | `[]` |
+| `ingress.className` | Set the ingress class name if required. | `string` | `""` |
+| `ingress.labels` | Custom labels for ingress resources. | `object` | `{}` |
+| `ingress.annotations` | Custom annotations for ingress resources. | `object` | `{}` |
 
 ---
-## Features
 
-| Parameter                          | Description                                                                | Type        | Default |
-|------------------------------------|----------------------------------------------------------------------------|-------------|---------|
-| `features.nodeStatus.enabled`      | Enables node status feature, deploying Prometheus and blackbox exporter.   | `boolean`   | `true`  |
-| `features.nodeStatus.url`          | Overrides and disables the default Prometheus deployment.                  | `string`    | N/A     |
-| `features.wget.enabled`            | Enables builtin Wget freature.                                             | `boolean`   | `true`  |
-| `features.wget.uploadMaxFields`    | Maximum number of form fields allowed in a single upload.                  | `integer`   | `1024`  |
-| `features.wget.globusPublixIndex`  | The Globus index ID for the public ESGF2 data.                             | `string`    | `a8ef4320-9e5a-4793-837b-c45161ca1845` |
-| `features.wget.limit.default`      | Default limit on the number of files allowed in a generated wget script.   | `integer`   | `9999`  |
-| `features.wget.limit.max`          | Maximum number of files allowed in a generated wget script.                | `integer`   | `100000` |
-| `features.wget.maxDirLength`       | Maximum character length for facet values when creating directory names for wget downloads. | `integer` | `50` |
+## Wget
+
+| Parameter | Description | Type | Default |
+|---|---|---|---|
+| `wget.url` | External wget url. If empty, the internal wget feature is used. | `string` | `""` |
+| `wget.uploadMaxFields` | Maximum number of form fields allowed in a single upload. | `integer` | `1024` |
+| `wget.globusPublicIndex` | The Globus index ID for the public ESGF2 data. | `string` | `a8ef4320-9e5a-4793-837b-c45161ca1845` |
+| `wget.limit.default` | Default limit on the number of files allowed in a generated wget script. | `integer` | `9999` |
+| `wget.limit.max` | Maximum number of files allowed in a generated wget script. | `integer` | `100000` |
+| `wget.maxDirLength` | Maximum character length for facet values when creating directory names for wget downloads. | `integer` | `50` |
 
 ---
-## Config
 
-| Parameter                                 | Description                                                                                      | Type     | Default                                         |
-|-------------------------------------------|--------------------------------------------------------------------------------------------------|----------|-------------------------------------------------|
-| `config.GUNICORN_WORKERS`                 | Number of Gunicorn workers for handling requests.                                                 | `string` | `'2'`                                           |
-| `config.METAGRID_SEARCH_URL`              | URL for the Metagrid search service.                                                              | `string` | `https://esgf-node.ornl.gov/esgf-1-5-bridge`   |
-| `config.METAGRID_WGET_URL`                | URL for external Wget service.                                                                | `string` | N/A    |
-| `config.METAGRID_SOCIAL_AUTH_GLOBUS_KEY`  | Placeholder key for Globus authentication.                                                        | `string` | `"key"`                                        |
-| `config.METAGRID_SOCIAL_AUTH_GLOBUS_SECRET`| Placeholder secret for Globus authentication.                                                     | `string` | `"secret"`                                     |
-| `config.DATABASE_URL`                     | Optional database URL for self-managed database, see [django-environ docs](https://django-environ.readthedocs.io/en/latest/types.html#term-PostgreSQL). | `string` | `` |
-| `config.BANNER_TEXT`                      | Text to display as a banner.   | `string` | N/A |
-| `config.SUPPORT_INFO`                     | Text to display site administrator support information.   | `string` | N/A |
-| `config.FOOTER_TEXT`                      | Text to display in the footer.                | `string` | N/A |
+## Authentication
+
+| Parameter | Description | Type | Default |
+|---|---|---|---|
+| `auth.enabled` | Enable authentication features. | `boolean` | `true` |
+| `auth.type` | Authentication type. Options are `globus` or `keycloak`. | `string` | `globus` |
+| `auth.globus.key` | Globus application key. | `string` | `""` |
+| `auth.globus.secret` | Globus application secret. | `string` | `""` |
+| `auth.keycloak.url` | Keycloak server URL. | `string` | `""` |
+| `auth.keycloak.realm` | Keycloak realm. | `string` | `""` |
+| `auth.keycloak.clientId` | Keycloak client ID. | `string` | `""` |
+
+---
+
+## Hotjar Integration
+
+| Parameter | Description | Type | Default |
+|---|---|---|---|
+| `hotjar.id` | Hotjar site ID. | `string` | `""` |
+| `hotjar.sv` | Hotjar snippet version. | `string` | `""` |
+
+---
+
+## Django (Backend)
+
+| Parameter | Description | Type | Default |
+|---|---|---|---|
+| `django.gunicornWorkers` | Number of Gunicorn workers for handling requests. | `string` | `'2'` |
+| `django.secretKey` | Django secret key. | `string` | `""` |
+| `django.adminUrl` | URL for the Django admin interface. | `string` | `""` |
+| `django.admins` | A list of admins. | `string` | `""` |
+| `django.createSuperUser` | Whether to create an admin user for the backend. | `boolean` | `false` |
+| `django.databaseUri` | Optional database URI for self-managed database, e.g. `postgresql://<user>:<password>@<host>:<port>/<dbname>`. See [django-environ docs](https://django-environ.readthedocs.io/en/latest/types.html#term-PostgreSQL). | `string` | `""` |
+| `django.migrateJob.enabled` | Whether to enable the database migration job. | `boolean` | `true` |
+| `django.migrateJob.backoffLimit` | Maximum number of retries for the migration job. | `integer` | `4` |
+| `django.projects` | Configuration for defining backend projects. | `string` | `""` |
 
 ---
 ## Frontend
@@ -118,7 +169,7 @@ This document describes the configurable values available in the `values.yaml` f
 | `frontend.replicaCount`                 | Number of frontend replicas.                                          | `integer`  | `1`         |
 | `frontend.image.repository`             | The repository for the frontend image.                                | `string`   | `ghcr.io/esgf2-us/metagrid-frontend` |
 | `frontend.image.pullPolicy`             | The pull policy for the image.                                        | `string`   | `IfNotPresent` |
-| `frontend.image.tag`                    | The image tag.                                                        | `string`   | N/A         |
+| `frontend.image.tag`                    | The image tag. Defaults to chart appVersion.                          | `string`   | `""`         |
 | `frontend.imagePullSecrets`             | Image pull secrets for accessing private repositories.                | `array`    | `[]`        |
 | `frontend.serviceAccount.create`        | Whether to create a service account.                                  | `boolean`  | `true`      |
 | `frontend.serviceAccount.automount`     | Whether to automount service account token.                           | `boolean`  | `false`     |
@@ -146,14 +197,10 @@ This document describes the configurable values available in the `values.yaml` f
 
 | Parameter                                  | Description                                                                | Type      | Default   |
 |--------------------------------------------|----------------------------------------------------------------------------|-----------|-----------|
-| `backend.admin.create`                     | Whether to create an admin user for the backend.                           | `boolean` | `false`   |
-| `backend.migrateJob.enabled`               | Whether to enable the migration job.                                      | `boolean` | `true`    |
-| `backend.migrateJob.backoffLimit`          | Maximum number of retries for the migration job.                          | `integer` | `4`       |
-| `backend.projects`                         | Example configuration for defining backend projects.                       | `string`  | N/A       |
 | `backend.replicaCount`                     | Number of backend replicas.                                               | `integer` | `1`       |
 | `backend.image.repository`                 | The repository for the backend image.                                     | `string`  | `ghcr.io/esgf2-us/metagrid-backend` |
 | `backend.image.pullPolicy`                 | The pull policy for the backend image.                                     | `string`  | `IfNotPresent` |
-| `backend.image.tag`                        | The image tag for the backend image.                                       | `string`  | N/A       |
+| `backend.image.tag`                        | The image tag for the backend image. Defaults to chart appVersion.         | `string`  | `""`      |
 | `backend.imagePullSecrets`                 | Image pull secrets for accessing private repositories.                     | `array`   | `[]`      |
 | `backend.serviceAccount.create`            | Whether to create a service account for the backend pods.                  | `boolean` | `true`    |
 | `backend.serviceAccount.automount`         | Whether to automount the service account token.                           | `boolean` | `false`   |
@@ -194,7 +241,7 @@ This document describes the configurable values available in the `values.yaml` f
 | `postgresql.persistence.enabled`          | Enable PostgreSQL persistence. | `boolean` | `true` |
 | `postgresql.persistence.accessMode`       | Access mode for PVC.  | `string` | `ReadWriteOnce` |
 | `postgresql.persistence.size`             | Size of the PostgreSQL PVC. | `string` | `8Gi` |
-| `postgresql.persistence.storageClassName` | Name of the PVC storage class. | `string` | N/A |
+| `postgresql.persistence.storageClassName` | Name of the PVC storage class. | `string` | `""` |
 | `postgresql.volumes`                      | List of additional volumes. | `array` | `[]` |
 | `postgresql.volumeMounts`                 | List of additional volume mounts. | `array` | `[]` |
 | `postgresql.nodeSelector`                 | List of node selectors. | `array` | `[]` |
@@ -207,7 +254,7 @@ This document describes the configurable values available in the `values.yaml` f
 
 | Parameter                                  | Description                                                       | Type      | Default     |
 |--------------------------------------------|-------------------------------------------------------------------|-----------|-------------|
-| `nodeStatusBackend.enabled`                | Enable the node status backend.                                   | `boolean` | `true`      |
+| `nodeStatusBackend.enabled`                | Enable the node status backend.                                   | `boolean` | `false`      |
 | `nodeStatusBackend.replicaCount`           | Number of replicas for node status backend.                        | `integer` | `1`         |
 | `nodeStatusBackend.podAnnotations`         | Annotations for node status backend pods.                          | `object`  | `{}`        |
 | `nodeStatusBackend.podLabels`              | Labels for node status backend pods.                               | `object`  | `{}`        |
@@ -253,9 +300,25 @@ Set the following environment variables under `config:` and enable the account c
 | `config.DJANGO_SUPERUSER_USERNAME`                   | The username for the superuser account.                                  | `admin`            |
 | `config.DJANGO_SUPERUSER_EMAIL`                      | The email address for the superuser account.                             | `admin@example.com` |
 
+# FAQ
+
+#### Globus login fails with `Mismatching redirect URI` error.
+
+> Ensure your Globus auth configuration has the correct redirects.
+> - `https://<host>/cart/items`
+> - `https://<host>/complete/globus/`.
+>
+> **Ensure you have the correct paths, including the trailing slash.**
+>
+> If Metagrid is behind a reverse proxy you may need to set `config.DJANGO_SOCIAL_AUTH_REDIRECT_IS_HTTPS: 'true'` in your Helm chart configuration.
+
+#### Globus login or transfers are not working.
+
+> Ensure you have created the Globus auth application using the `Advanced Registration` type. Check that your redirects are correct as seen above.
+
 # Upgrading
 
-# v1.5.3 -> v1.5.4
+##  v1.5.3 -> v1.5.4
 When upgrading to `v1.5.4` from `v1.5.3` there may be a `collation mismatch` error from PostgreSQL. This issue may be remediated by running two SQL commands.
 
 ```bash
