@@ -1,0 +1,58 @@
+should have a deployment:
+  1: |
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      labels:
+        app.kubernetes.io/component: database
+        app.kubernetes.io/instance: metagrid
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: metagrid
+        app.kubernetes.io/version: v1.0.0
+        helm.sh/chart: metagrid-v1.0.0
+      name: metagrid-postgresql
+    spec:
+      selector:
+        matchLabels:
+          app.kubernetes.io/component: database
+          app.kubernetes.io/instance: metagrid
+          app.kubernetes.io/name: metagrid
+      template:
+        metadata:
+          annotations:
+            checksum/config: 9e14a3b09d3c7261b2b2e0250f1df091315a17dc313453e91bb22bb0ba5c465c
+          labels:
+            app.kubernetes.io/component: database
+            app.kubernetes.io/instance: metagrid
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: metagrid
+            app.kubernetes.io/version: v1.0.0
+            helm.sh/chart: metagrid-v1.0.0
+        spec:
+          containers:
+            - envFrom:
+                - secretRef:
+                    name: metagrid-postgresql-config
+              image: postgres:16.10-bookworm
+              imagePullPolicy: IfNotPresent
+              livenessProbe:
+                tcpSocket:
+                  port: 5432
+              name: postgresql
+              ports:
+                - containerPort: 5432
+                  name: db
+                  protocol: TCP
+              readinessProbe:
+                tcpSocket:
+                  port: 5432
+              resources: null
+              securityContext: null
+              volumeMounts:
+                - mountPath: /var/lib/postgresql/data
+                  name: pgdata
+          securityContext: null
+          volumes:
+            - name: pgdata
+              persistentVolumeClaim:
+                claimName: metagrid-postgresql-data
