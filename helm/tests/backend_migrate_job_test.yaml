@@ -1,0 +1,34 @@
+suite: test backend create superuser job
+templates:
+  - templates/backend/migrate-job.yaml
+release:
+  name: metagrid
+  namespace: production
+chart:
+  version: v1.0.0
+  appVersion: v1.0.0
+set:
+  django:
+    secretKey: abcd1234 # need static for checksum
+tests:
+  - it: should create a job to create django super user
+    asserts:
+      - matchSnapshot: {}
+  - it: should migrate projects
+    set:
+      django:
+        projects: |
+          group_descriptions = {
+            "General": "Least verbose, typically returns many results",
+          }
+          projects = [
+            {
+              "name": "Example",
+              "full_name": "Example Project",
+              "facets_by_group": {
+                "General": ["activity_id", "data_node"]
+              }
+            }
+          ]
+    asserts:
+      - matchSnapshot: {}
