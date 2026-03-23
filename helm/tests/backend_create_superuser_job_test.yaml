@@ -1,0 +1,20 @@
+suite: test backend create superuser job
+templates:
+  - templates/backend/create-superuser-job.yaml
+release:
+  name: metagrid
+  namespace: production
+chart:
+  version: v1.0.0
+  appVersion: v1.0.0
+set:
+  django:
+    secretKey: abcd1234 # need static for checksum
+tests:
+  - it: should create a job to create django super user
+    template: templates/backend/create-superuser-job.yaml
+    set:
+      django:
+        createSuperUser: true
+    asserts:
+      - matchSnapshot: {}
