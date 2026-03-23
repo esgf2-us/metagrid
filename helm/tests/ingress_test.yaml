@@ -1,4 +1,4 @@
-suite: test ingress
+
 templates:
   - templates/backend/configmap.yaml
   - templates/backend/secret.yaml
@@ -11,6 +11,9 @@ chart:
   version: v1.0.0
   appVersion: v1.0.0
 set:
+  wget:
+    globusClientID: test1234
+    globusClientSecret: test1234
   ingress:
     enabled: true
   django:
@@ -79,3 +82,15 @@ tests:
           path: data
           content:
             DJANGO_SOCIAL_AUTH_REDIRECT_IS_HTTPS: "true"
+  - it: it should set pathType
+    set:
+      ingress:
+        enabled: true
+        hosts:
+          - metagrid.io
+        pathType: ImplementationSpecific
+    asserts:
+      - template: templates/ingress.yaml
+        equal:
+          path: spec.rules[0].http.paths[0].pathType
+          value: ImplementationSpecific
