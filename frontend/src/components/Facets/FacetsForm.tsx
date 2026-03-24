@@ -1,7 +1,7 @@
 import {
   CopyOutlined,
   InfoCircleOutlined,
-  RightCircleOutlined,
+  // RightCircleOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
 import {
@@ -16,6 +16,7 @@ import {
   Tooltip,
   RadioChangeEvent,
   message,
+  Space,
 } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 import advancedFormat from 'dayjs/plugin/advancedFormat';
@@ -33,7 +34,7 @@ import StatusToolTip from '../NodeStatus/StatusToolTip';
 import { ActiveSearchQuery, ResultType, VersionType } from '../Search/types';
 import { ActiveFacets, ParsedFacets } from './types';
 import { clearCachedSearchResults, showError, showNotice } from '../../common/utils';
-import { activeSearchQueryAtom, availableFacetsAtom } from '../../common/atoms';
+import { activeSearchQueryAtom, availableFacetsAtom, currentProjectAtom } from '../../common/atoms';
 import { leftSidebarTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
 dayjs.extend(customParseFormat);
@@ -53,6 +54,10 @@ const styles: CSSinJS = {
   applyBtn: { marginBottom: '12px' },
   collapseContainer: { marginTop: '5px' },
 };
+
+// Used to control text length of the drop-down items
+// Tooltip is shown if the length is above this threshold
+const maxItemLength = 75;
 
 /**
  * Converts facet names from snake_case to human readable.
@@ -83,18 +88,99 @@ export const formatDate = (date: string | Dayjs, toString: boolean): string | Da
   return dayjs(date, format);
 };
 
+export const generateStacFacetOptions = (
+  facet: string,
+  facetOptions: string[],
+): { key: string; value: string; label: JSX.Element }[] => {
+  return facetOptions.map((variable) => {
+    let optionOutput: string | React.ReactElement = <>{variable}</>;
+
+    // If the option output name is very long, use a tooltip
+    const varLength = variable.toString().length;
+    /* istanbul ignore next */
+    if (varLength >= maxItemLength) {
+      const innerTitle = variable[0].substring(0, maxItemLength - varLength);
+      optionOutput = (
+        <Tooltip styles={{ body: { width: 'max-content' } }} title={variable}>
+          {innerTitle}...
+        </Tooltip>
+      );
+    }
+
+    return {
+      key: variable,
+      value: variable,
+      label: <span data-testid={`${facet}_${variable}`}>{optionOutput}</span>,
+    };
+  });
+};
+
+export const generateFacetOptions = (
+  facet: string,
+  facetOptions: [string, number][] | string[],
+): { key: string; value: string; label: JSX.Element }[] => {
+  /* istanbul ignore next */
+  if (facetOptions.length > 0 && typeof facetOptions[0] === 'string') {
+    return generateStacFacetOptions(facet, facetOptions as string[]);
+  }
+
+  return facetOptions.map((variable) => {
+    /* istanbul ignore next */
+    if (typeof variable[0] !== 'string') {
+      clearCachedSearchResults();
+    }
+    let optionOutput: string | React.ReactNode = (
+      <>
+        {variable[0]}
+        <span style={styles.facetCount}>({variable[1]})</span>
+      </>
+    );
+
+    // If the option output name is very long, use a tooltip
+    const vLength = variable[0].length - 2;
+    const cLength = variable[1].toString().length * 1.5 + 2;
+    /* istanbul ignore next */
+    if (vLength > maxItemLength - cLength) {
+      const innerTitle = variable[0].substring(0, maxItemLength - cLength);
+      optionOutput = (
+        <Tooltip styles={{ body: { width: 'max-content' } }} title={variable[0]}>
+          {innerTitle}...
+          <span style={styles.facetCount}>({variable[1]})</span>
+        </Tooltip>
+      );
+    }
+
+    // The data node facet has a unique tooltip overlay to show the status of the highlighted node
+    if (facet === 'data_node') {
+      optionOutput = (
+        <StatusToolTip dataNode={variable[0]}>
+          <span style={styles.facetCount}>({variable[1]})</span>
+        </StatusToolTip>
+      );
+    }
+    return {
+      key: variable[0],
+      value: variable[0],
+      label: <span data-testid={`${facet}_${variable[0]}`}>{optionOutput}</span>,
+    };
+  });
+};
+
 const FacetsForm: React.FC = () => {
   // Global states
   const [activeSearchQuery, setActiveSearchQuery] =
     useAtom<ActiveSearchQuery>(activeSearchQueryAtom);
 
+  const currentProject = useAtomValue(currentProjectAtom);
+
   // Local variables
   const [messageApi, contextHolder] = message.useMessage();
 
+  // const [filenameVarForm] = Form.useForm();
+  // const [filenameVars, setFilenameVars] = React.useState<string>('');
   const [generalFacetsForm] = Form.useForm();
   const [availableFacetsForm] = Form.useForm();
-  const [filenameVarForm] = Form.useForm();
-  const [filenameVars, setFilenameVar] = React.useState('');
+  const [keywordSearchForm] = Form.useForm();
   const [globusReadyOnly, setGlobusReadyOnly] = React.useState(false);
 
   // Manually handles the state of individual dropdowns to capture all selected
@@ -109,10 +195,13 @@ const FacetsForm: React.FC = () => {
   const [dropdownIsOpen, setDropdownIsOpen] = React.useState<boolean>(false);
 
   // Handles the expand and collapse all feature of the facets panels
-  const [activePanels, setActivePanels] = React.useState<
-    string | number | (string | number)[] | undefined
-  >([]);
   const [expandAll, setExpandAll] = React.useState<boolean>(true);
+
+  const [activePanels, setActivePanels] = React.useState<string[]>([]);
+  // Controls the additional_properties and keyword-search Collapse panels
+  const [secondaryActivePanels, setSecondaryActivePanels] = React.useState<string[]>([]);
+
+  const [keywordSearch, setKeywordSearch] = React.useState('');
 
   const availableFacets: ParsedFacets = useAtomValue(availableFacetsAtom) as ParsedFacets;
 
@@ -129,19 +218,19 @@ const FacetsForm: React.FC = () => {
     maxVersionDate ? formatDate(maxVersionDate, false) : (maxVersionDate as null),
   ];
 
-  const handleOnFinishFilenameVarForm = (values: { [key: string]: string }): void => {
-    if (activeSearchQuery.filenameVars.includes(values.filenameVar as never)) {
-      showError(messageApi, `Input "${values.filenameVar}" has already been applied`);
-    } else {
-      setActiveSearchQuery({
-        ...activeSearchQuery,
-        filenameVars: [...activeSearchQuery.filenameVars, values.filenameVar],
-      });
-    }
+  // const handleOnFinishFilenameVarForm = (values: { [key: string]: string }): void => {
+  //   if (activeSearchQuery.filenameVars.includes(values.filenameVar as never)) {
+  //     showError(messageApi, `Input "${values.filenameVar}" has already been applied`);
+  //   } else {
+  //     setActiveSearchQuery({
+  //       ...activeSearchQuery,
+  //       filenameVars: [...activeSearchQuery.filenameVars, values.filenameVar],
+  //     });
+  //   }
 
-    setFilenameVar('');
-    filenameVarForm.setFieldsValue({ filenameVar: '' });
-  };
+  //   setFilenameVars('');
+  //   filenameVarForm.setFieldsValue({ filenameVar: '' });
+  // };
 
   const handleOnChangeGeneralFacetsForm = (selectedFacets: {
     versionType: VersionType;
@@ -206,6 +295,25 @@ const FacetsForm: React.FC = () => {
   };
 
   /**
+   * Sets the keyword search value using the keyword search form.
+   */
+  const onKeywordSearch = (values: { [key: string]: string }): void => {
+    if (activeSearchQuery.textInputs.includes(values.text as never)) {
+      showError(messageApi, `Input "${values.text}" has already been applied`);
+    } else {
+      setActiveSearchQuery({
+        ...activeSearchQuery,
+        project: currentProject,
+        textInputs: [...activeSearchQuery.textInputs, values.text],
+      });
+    }
+
+    // Reset the controlled state and form field
+    setKeywordSearch('');
+    keywordSearchForm.setFieldsValue({ text: '' });
+  };
+
+  /**
    * Need to reset the form fields when the active search query updates to
    * capture the correct number of facet counts per option
    */
@@ -250,9 +358,129 @@ const FacetsForm: React.FC = () => {
     }
   }, [dropdownIsOpen, activeDropdownValue, setActiveDropdownValue]);
 
-  // Used to control text length of the drop-down items
-  // Tooltip is shown if the length is above this threshold
-  const maxItemLength = 22;
+  function getLongestStringLengthReduce(arr: [string, number][]): number {
+    /* istanbul ignore next */
+    if (arr.length === 0) {
+      return 0; // Handle empty array case
+    }
+    /* istanbul ignore next */
+    return arr.reduce((maxLength, currentString) => {
+      if (currentString[0] === undefined || currentString[1] === undefined) {
+        return maxLength;
+      }
+      return Math.max(maxLength, currentString[0].length + currentString[1].toString().length + 1);
+    }, 0); // Initialize maxLength to 0
+  }
+
+  const generateFacetGroups = (): {
+    key: string;
+    label: JSX.Element;
+    className: string;
+    children: (JSX.Element | null)[];
+  }[] => {
+    if (!facetsByGroup) {
+      return [];
+    }
+    return Object.keys(facetsByGroup).map((group) => {
+      return {
+        key: group,
+        label: (
+          <div className={leftSidebarTargets.facetFormGeneral.class()}>
+            {humanizeFacetNames(group)}
+          </div>
+        ),
+        className: `site-collapse-custom-collapse ${leftSidebarTargets.facetFormFields.class()}`,
+        children: Object.keys(availableFacets).map((facet) => {
+          if (facetsByGroup[group].includes(facet)) {
+            const facetOptions = availableFacets[facet];
+
+            const isOptionalForDatasets =
+              facetOptions.length > 0 && facetOptions[0].includes('none');
+            const facetNameHumanized = humanizeFacetNames(facet);
+
+            const longestFacetName = getLongestStringLengthReduce(facetOptions);
+            const standardWidth = 320;
+            const extendedWidth = 600;
+            let dropDownStyle: React.CSSProperties = { width: `${standardWidth}px` };
+            if (longestFacetName * 8 + 40 > standardWidth) {
+              dropDownStyle = { width: `${extendedWidth}px`, position: 'fixed', left: '20px' };
+            }
+
+            return (
+              <Form.Item
+                key={facet}
+                name={facet}
+                label={
+                  <div>
+                    {humanizeFacetNames(facet)}
+                    <Button
+                      size="small"
+                      style={{ marginLeft: '5px' }}
+                      icon={
+                        <Tooltip title={`Copy ${facetNameHumanized}s to clipboard`}>
+                          <CopyOutlined style={{ fontSize: '12px' }} />
+                        </Tooltip>
+                      }
+                      onClick={() => {
+                        // copy link to clipboard
+                        /* istanbul ignore else */
+                        if (navigator && navigator.clipboard) {
+                          navigator.clipboard.writeText(
+                            facetOptions
+                              .map((item) => {
+                                return `${item[0]} (${item[1]})`;
+                              })
+                              .join('\n'),
+                          );
+                          showNotice(messageApi, `${facetNameHumanized}s copied to clipboard!`, {
+                            icon: <CopyOutlined style={styles.messageAddIcon} />,
+                          });
+                        }
+                      }}
+                    ></Button>
+                  </div>
+                }
+                style={{ marginBottom: 0 }}
+                tooltip={
+                  isOptionalForDatasets
+                    ? {
+                        title:
+                          'Selecting the "none" option filters for datasets that do not use this facet.',
+                        icon: <InfoCircleOutlined />,
+                      }
+                    : undefined
+                }
+              >
+                <Select
+                  data-testid={`${facet}-form-select`}
+                  size="small"
+                  placeholder="Select option(s)"
+                  mode="multiple"
+                  style={{ width: '100%' }}
+                  styles={{
+                    popup: {
+                      root: dropDownStyle,
+                    },
+                  }}
+                  tokenSeparators={[',']}
+                  getPopupContainer={(triggerNode) =>
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
+                    triggerNode.parentElement
+                  }
+                  onOpenChange={(open) => setDropdownIsOpen(open)}
+                  onChange={(value: string[] | []) => {
+                    handleOnSelectAvailableFacetsForm(facet, value);
+                  }}
+                  options={generateFacetOptions(facet, facetOptions)}
+                />
+              </Form.Item>
+            );
+          }
+          return null;
+        }),
+      };
+    });
+  };
 
   return (
     <div data-testid="facets-form">
@@ -263,7 +491,7 @@ const FacetsForm: React.FC = () => {
           ...activeSearchQuery.activeFacets,
         }}
       >
-        {window.METAGRID.GLOBUS_NODES.length > 0 && (
+        {window.METAGRID.GLOBUS_NODES.length > 0 && !currentProject.isSTAC && (
           <div className={leftSidebarTargets.filterByGlobusTransfer.class()}>
             <h3>Filter By Transfer Options</h3>
             <Row>
@@ -299,7 +527,10 @@ const FacetsForm: React.FC = () => {
                 className={leftSidebarTargets.facetFormExpandAllBtn.class()}
                 size="small"
                 onClick={() => {
-                  setActivePanels(Object.keys(facetsByGroup).map((panel) => panel));
+                  const keys = Object.keys(facetsByGroup).map((panel) => panel);
+                  setActivePanels(keys);
+                  // also expand additional_properties and keyword-search
+                  setSecondaryActivePanels(['additional_properties', 'keyword-search']);
                   setExpandAll(false);
                 }}
               >
@@ -311,6 +542,8 @@ const FacetsForm: React.FC = () => {
                 size="small"
                 onClick={() => {
                   setActivePanels([]);
+                  // also collapse additional_properties and keyword-search
+                  setSecondaryActivePanels([]);
                   setExpandAll(true);
                 }}
               >
@@ -324,152 +557,20 @@ const FacetsForm: React.FC = () => {
             activeKey={activePanels}
             onChange={(change) => {
               setActivePanels(change);
-              if (change.length === 0) {
+              if (change.length + secondaryActivePanels.length === 0) {
                 setExpandAll(true);
-              } else if (change.length > 1) {
+              } else if (change.length + secondaryActivePanels.length > 1) {
                 setExpandAll(false);
               }
             }}
-            items={Object.keys(facetsByGroup).map((group) => {
-              return {
-                key: group,
-                label: (
-                  <div className={leftSidebarTargets.facetFormGeneral.class()}>
-                    {humanizeFacetNames(group)}
-                  </div>
-                ),
-                className: `site-collapse-custom-collapse ${leftSidebarTargets.facetFormFields.class()}`,
-                children: Object.keys(availableFacets).map((facet) => {
-                  if (facetsByGroup[group].includes(facet)) {
-                    const facetOptions = availableFacets[facet];
-
-                    const isOptionalforDatasets =
-                      facetOptions.length > 0 && facetOptions[0].includes('none');
-                    const facetNameHumanized = humanizeFacetNames(facet);
-                    return (
-                      <Form.Item
-                        key={facet}
-                        name={facet}
-                        label={
-                          <div>
-                            {humanizeFacetNames(facet)}
-                            <Button
-                              size="small"
-                              style={{ marginLeft: '5px' }}
-                              icon={
-                                <Tooltip title={`Copy ${facetNameHumanized}s to clipboard`}>
-                                  <CopyOutlined style={{ fontSize: '12px' }} />
-                                </Tooltip>
-                              }
-                              onClick={() => {
-                                // copy link to clipboard
-                                /* istanbul ignore else */
-                                if (navigator && navigator.clipboard) {
-                                  navigator.clipboard.writeText(
-                                    facetOptions
-                                      .map((item) => {
-                                        return `${item[0]} (${item[1]})`;
-                                      })
-                                      .join('\n'),
-                                  );
-                                  showNotice(
-                                    messageApi,
-                                    `${facetNameHumanized}s copied to clipboard!`,
-                                    {
-                                      icon: <CopyOutlined style={styles.messageAddIcon} />,
-                                    },
-                                  );
-                                }
-                              }}
-                            ></Button>
-                          </div>
-                        }
-                        style={{ marginBottom: 0 }}
-                        tooltip={
-                          isOptionalforDatasets
-                            ? {
-                                title:
-                                  'Selecting the "none" option filters for datasets that do not use this facet.',
-                                icon: <InfoCircleOutlined />,
-                              }
-                            : undefined
-                        }
-                      >
-                        <Select
-                          data-testid={`${facet}-form-select`}
-                          size="small"
-                          placeholder="Select option(s)"
-                          mode="multiple"
-                          style={{ width: '100%' }}
-                          tokenSeparators={[',']}
-                          getPopupContainer={(triggerNode) =>
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
-                            triggerNode.parentElement
-                          }
-                          onDropdownVisibleChange={(open) => setDropdownIsOpen(open)}
-                          onChange={(value: string[] | []) => {
-                            handleOnSelectAvailableFacetsForm(facet, value);
-                          }}
-                          options={facetOptions.map((variable) => {
-                            // In rare bug, is the variable is not a string, clear the cached search results
-                            /* istanbul ignore next */
-                            if (typeof variable[0] !== 'string') {
-                              clearCachedSearchResults();
-                            }
-                            let optionOutput: string | React.ReactNode = (
-                              <>
-                                {variable[0]}
-                                <span style={styles.facetCount}>({variable[1]})</span>
-                              </>
-                            );
-
-                            // If the option output name is very long, use a tooltip
-                            const vLength = variable[0].length - 2;
-                            const cLength = variable[1].toString().length * 1.5 + 2;
-                            if (vLength > maxItemLength - cLength) {
-                              const innerTitle = variable[0].substring(0, maxItemLength - cLength);
-                              optionOutput = (
-                                <Tooltip
-                                  styles={{ body: { width: 'max-content' } }}
-                                  title={variable[0]}
-                                >
-                                  {innerTitle}...
-                                  <span style={styles.facetCount}>({variable[1]})</span>
-                                </Tooltip>
-                              );
-                            }
-
-                            // The data node facet has a unique tooltip overlay to show the status of the highlighted node
-                            if (facet === 'data_node') {
-                              optionOutput = (
-                                <StatusToolTip dataNode={variable[0]}>
-                                  <span style={styles.facetCount}>({variable[1]})</span>
-                                </StatusToolTip>
-                              );
-                            }
-                            return {
-                              key: variable[0],
-                              value: variable[0],
-                              label: (
-                                <span data-testid={`${facet}_${variable[0]}`}>{optionOutput} </span>
-                              ),
-                            };
-                          })}
-                        />
-                      </Form.Item>
-                    );
-                  }
-                  return null;
-                }),
-              };
-            })}
+            items={generateFacetGroups()}
           />
         </div>
       </Form>
       <Form
         form={generalFacetsForm}
         layout="horizontal"
-        size="small"
+        hidden={currentProject.isSTAC}
         initialValues={{
           ...activeSearchQuery.activeFacets,
           versionType: activeSearchQuery.versionType,
@@ -481,81 +582,98 @@ const FacetsForm: React.FC = () => {
           handleOnChangeGeneralFacetsForm(allValues);
         }}
       >
-        <Collapse
-          defaultActiveKey="additional_properties"
-          items={[
-            {
-              key: 'additional_properties',
-              className: `site-collapse-custom-collapse ${leftSidebarTargets.facetFormAdditionalFields.class()}`,
-              label: (
-                <div className={leftSidebarTargets.facetFormAdditional.class()}>
-                  {humanizeFacetNames('additional_properties')}
-                </div>
-              ),
-              children: (
-                <>
-                  <Form.Item
-                    label="Version Type"
-                    name="versionType"
-                    tooltip={{
-                      title: 'By default, only the latest version of a dataset is returned',
-                      trigger: 'hover',
-                    }}
-                  >
-                    <Select
-                      data-testid="version-type-form-select"
-                      options={[
-                        { value: 'latest' as ResultType, label: 'Latest' },
-                        { value: 'all' as ResultType, label: 'All' },
-                      ]}
-                    />
-                  </Form.Item>
-                  <Form.Item
-                    label="Result Type"
-                    name="resultType"
-                    tooltip={{
-                      title:
-                        'Datasets can be replicated from the source node (original) to other nodes (replica)',
-                      trigger: 'hover',
-                    }}
-                  >
-                    <Select
-                      data-testid="result-type-form-select"
-                      options={[
-                        {
-                          value: 'all' as ResultType,
-                          label: 'Originals and Replicas',
-                        },
-                        {
-                          value: 'originals only' as ResultType,
-                          label: 'Originals Only',
-                        },
-                        {
-                          value: 'replicas only' as ResultType,
-                          label: 'Replicas Only',
-                        },
-                      ]}
-                    />
-                  </Form.Item>
-                  <Form.Item
-                    data-testid="version-range-datepicker"
-                    label="Version Date Range"
-                    name="versionDateRange"
-                    tooltip={{
-                      title:
-                        'Specify the versions of datasets using a single min/max date or a date range. ',
-                      trigger: 'hover',
-                    }}
-                  >
-                    <DatePicker.RangePicker allowEmpty={[true, true]} />
-                  </Form.Item>
-                </>
-              ),
-            },
-          ]}
-        />
+        <div style={styles.container}>
+          <Collapse
+            activeKey={secondaryActivePanels}
+            onChange={(change) => {
+              setSecondaryActivePanels(change);
+              if (change.length + activePanels.length === 0) {
+                setExpandAll(true);
+              } else if (change.length + activePanels.length > 1) {
+                setExpandAll(false);
+              }
+            }}
+            items={[
+              {
+                key: 'additional_properties',
+                className: `site-collapse-custom-collapse ${leftSidebarTargets.facetFormAdditionalFields.class()}`,
+                label: (
+                  <div className={leftSidebarTargets.facetFormAdditional.class()}>
+                    {humanizeFacetNames('additional_properties')}
+                  </div>
+                ),
+                children: (
+                  <>
+                    <Form.Item
+                      label="Version Type"
+                      name="versionType"
+                      style={{ marginBottom: 0 }}
+                      tooltip={{
+                        title: 'By default, only the latest version of a dataset is returned',
+                        trigger: 'hover',
+                      }}
+                    >
+                      <Select
+                        data-testid="version-type-form-select"
+                        size="small"
+                        options={[
+                          { value: 'latest' as ResultType, label: 'Latest' },
+                          { value: 'all' as ResultType, label: 'All' },
+                        ]}
+                      />
+                    </Form.Item>
+                    <Form.Item
+                      label="Result Type"
+                      name="resultType"
+                      style={{ marginBottom: 0 }}
+                      tooltip={{
+                        title:
+                          'Datasets can be replicated from the source node (original) to other nodes (replica)',
+                        trigger: 'hover',
+                      }}
+                    >
+                      <Select
+                        data-testid="result-type-form-select"
+                        size="small"
+                        options={[
+                          {
+                            value: 'all' as ResultType,
+                            label: 'Originals and Replicas',
+                          },
+                          {
+                            value: 'originals only' as ResultType,
+                            label: 'Originals Only',
+                          },
+                          {
+                            value: 'replicas only' as ResultType,
+                            label: 'Replicas Only',
+                          },
+                        ]}
+                      />
+                    </Form.Item>
+                    <Form.Item
+                      data-testid="version-range-datepicker"
+                      label="Versions"
+                      name="versionDateRange"
+                      style={{ marginBottom: 0 }}
+                      tooltip={{
+                        title:
+                          'Specify the versions of datasets using a single min/max date or a date range. ',
+                        trigger: 'hover',
+                      }}
+                    >
+                      <DatePicker.RangePicker size="small" allowEmpty={[true, true]} />
+                    </Form.Item>
+                  </>
+                ),
+              },
+            ]}
+          />
+        </div>
       </Form>
-      <Form
+      {/*
+        The filename var filter is currently disabled.
+        <Form
         form={filenameVarForm}
         layout="horizontal"
         size="small"
@@ -597,7 +715,7 @@ const FacetsForm: React.FC = () => {
                         data-testid="filename-search-input"
                         value={filenameVars}
                         style={{ width: '140px' }}
-                        onChange={(e) => setFilenameVar(e.target.value)}
+                        onChange={(e) => setFilenameVars(e.target.value)}
                       />
                     </Col>
                     <Col>
@@ -609,6 +727,57 @@ const FacetsForm: React.FC = () => {
                     </Col>
                   </Row>
                 </Form.Item>
+              ),
+            },
+          ]}
+        />
+      </Form> */}
+      <Form
+        initialValues={{}}
+        style={styles.searchForm}
+        hidden={currentProject.isSTAC}
+        form={keywordSearchForm}
+        onFinish={onKeywordSearch}
+      >
+        <Collapse
+          activeKey={secondaryActivePanels}
+          onChange={(change) => {
+            setSecondaryActivePanels(change);
+            if (change.length + activePanels.length === 0) {
+              setExpandAll(true);
+            } else if (change.length + activePanels.length > 1) {
+              setExpandAll(false);
+            }
+          }}
+          items={[
+            {
+              key: 'keyword-search',
+              label: <div data-testid="keyword-search-collapse">Keyword Search</div>,
+              className: `site-collapse-custom-collapse ${leftSidebarTargets.facetFormKeywordSearch.class()}`,
+              children: (
+                <Space size="small">
+                  <Form.Item
+                    name="text"
+                    style={{ marginBottom: 0 }}
+                    rules={[{ required: true, message: 'Text is required' }]}
+                  >
+                    <Input
+                      data-testid="keyword-search-input"
+                      size="small"
+                      style={{ minWidth: '285px' }}
+                      value={keywordSearch}
+                      onChange={(e) => setKeywordSearch(e.target.value)}
+                      placeholder="Search for a keyword"
+                    />
+                  </Form.Item>
+                  <Form.Item style={{ marginBottom: 0 }}>
+                    <Button
+                      type="primary"
+                      htmlType="submit"
+                      icon={<SearchOutlined data-testid="left-menu-keyword-search-submit" />}
+                    ></Button>
+                  </Form.Item>
+                </Space>
               ),
             },
           ]}

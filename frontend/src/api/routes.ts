@@ -27,6 +27,7 @@ export type ApiRoute = {
 
 type ApiRoutes = {
   globusAuth: ApiRoute;
+  globusResetTokens: ApiRoute;
   keycloakAuth: ApiRoute;
   globusSearchEndpoints: ApiRoute;
   globusTransfer: ApiRoute;
@@ -36,6 +37,8 @@ type ApiRoutes = {
   userSearch: ApiRoute;
   projects: ApiRoute;
   esgfSearch: ApiRoute;
+  esgfSearchSTAC: ApiRoute;
+  esgfAggregationsSTAC: ApiRoute;
   citation: ApiRoute;
   wget: ApiRoute;
   nodeStatus: ApiRoute;
@@ -51,6 +54,10 @@ const apiRoutes: ApiRoutes = {
   // Globus APIs
   globusAuth: {
     path: `${window.location.origin}/proxy/globus-auth/`,
+    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Globus', HTTPCode),
+  },
+  globusResetTokens: {
+    path: `${window.location.origin}/proxy/globus-reset-tokens/`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('Globus', HTTPCode),
   },
   globusSearchEndpoints: {
@@ -90,6 +97,16 @@ const apiRoutes: ApiRoutes = {
   esgfSearch: {
     path: `${window.location.origin}/proxy/search`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('ESGF Search API', HTTPCode),
+  },
+  // ESGF STAC Search API
+  esgfSearchSTAC: {
+    path: `${window.location.origin}/proxy/stac/search`,
+    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('ESGF STAC Search API', HTTPCode),
+  },
+  // ESGF STAC Aggregations
+  esgfAggregationsSTAC: {
+    path: `${window.location.origin}/proxy/stac/aggregations`,
+    handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('ESGF STAC Aggregations API', HTTPCode),
   },
   // ESGF Citation API (uses dummy path 'citation_url' for testing since the
   // URL is included in each Search API dataset result)

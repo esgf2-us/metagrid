@@ -1,8 +1,11 @@
 services:
+  traefik:
+    volumes:
+      - ./traefik/traefik.keycloak.local.yml:/etc/traefik/traefik.yml
+
   django:
-    profiles: [ "keycloak" ]
     environment:
-      METAGRID_KEYCLOAK_CLIENT_ID: metagrid-localhost
+      METAGRID_KEYCLOAK_CLIENT_ID: frontend
       METAGRID_KEYCLOAK_REALM: metagrid
-      METAGRID_KEYCLOAK_URL: http://localhost:1337/auth
+      METAGRID_KEYCLOAK_URL: http://localhost:1337/
       METAGRID_AUTHENTICATION_METHOD: keycloak

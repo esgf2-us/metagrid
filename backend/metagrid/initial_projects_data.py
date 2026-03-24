@@ -138,7 +138,7 @@ projects = [
         },
     },
     {
-        "name": "E3SM",
+        "name": "CMIP6-E3SM-Ext",
         "full_name": "Energy Exascale Earth System Model",
         "project_url": "https://e3sm.org/",
         "description": (
@@ -237,6 +237,7 @@ projects = [
                 "institution_id",
                 "region",
                 "source_type",
+                "cmor_version",
             ],
             GROUPS[4]: [
                 "variable",
@@ -302,36 +303,21 @@ projects = [
         },
     },
     {
-        "name": "All (except CMIP6)",
-        "description": "Cross project search for all projects except CMIP6.",
+        "name": "WrPMIP",
+        "description": "The Warming Permafrost Model Intercomparison Project",
+        "project_url": "https://warmingpermafrost.nau.edu/",
         "facets_by_group": {
-            GROUPS[0]: [
-                "project",
-                "product",
-                "institute",
-                "model",
-                "data_node",
-            ],
-            GROUPS[1]: [
+            "Properties": [
+                "institution_id",
                 "source_id",
-                "experiment",
-                "experiment_family",
-            ],
-            GROUPS[4]: [
-                "time_frequency",
+                "experiment_id",
                 "realm",
-                "cmor_table",
-                "ensemble",
-                "variable",
+                "variable_id",
                 "variable_long_name",
                 "cf_standard_name",
-                "driving_model",
-            ],
-            "CORDEX": [
-                "domain",
-                "rcm_name",
-                "rcm_version",
-            ],
+                "data_node",
+                "grid_label",
+            ]
         },
     },
 ]

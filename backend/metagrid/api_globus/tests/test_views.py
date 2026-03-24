@@ -4,41 +4,87 @@ from unittest.mock import patch
 import pytest
 import responses
 from django.conf import settings
+from django.http import HttpRequest
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APIClient
 
+from metagrid.api_globus import views
 from metagrid.api_globus.views import globus_info_from_doc, search_files
+from metagrid.api_proxy import views as proxy_views
 
-
-@responses.activate
-@pytest.mark.django_db
-def test_get_access_token(api_client: APIClient):
-    responses.add(responses.POST, "https://auth.globus.org/v2/oauth2/token")
-
-    response = api_client.post(reverse("globus_auth"), {})
-
-    assert response.status_code == status.HTTP_200_OK
-
-
-@pytest.mark.django_db
-@pytest.mark.parametrize(
-    "missing_param", ("access_token", "refresh_token", "endpointId", "path")
+default_scope = (
+    "openid profile email urn:globus:auth:scope:transfer.api.globus.org:all"
 )
-def test_globus_transfer_missing_required_parameter_returns_400(
-    missing_param, api_client
-):
-    url = reverse("globus_transfer")
 
-    postdata = {
-        "access_token": "",
-        "refresh_token": "",
-        "endpointId": "test",
-        "path": "bad/path",
-    }
-    del postdata[missing_param]
-    response = api_client.post(url, postdata, format="json")
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
+REFRESH_KEY_NAME = "globus_refresh_token"
+
+
+# Dummy classes for reuse in tests
+class DummyResp:
+
+    def __getitem__(self, item):
+        return self.get(item)
+
+    def get(self, item):
+        return {item: "dummy-submission-id"}
+
+
+class DummyGlobusHTTPResponse:
+    def __init__(self):
+        self.status_code = 200
+        self.data = {"task_id": "1234"}
+
+
+class DummyTransferClient:
+    def get_submission_id(self):
+        # Simulate the real TransferClient.get_submission_id
+        return DummyResp()
+
+    def operation_ls(self, endpoint, path="/"):
+        raise NotImplementedError("Override in test as needed.")
+
+    def submit_transfer(self, data):
+        # Simulate the real TransferClient.submit_transfer
+        return DummyGlobusHTTPResponse()
+
+
+# class DummyTokens:
+#     by_resource_server = {
+#         "transfer.api.globus.org": {
+#             "access_token": "abc123",
+#             "refresh_token": "xyz456",
+#         }
+#     }
+
+
+class InfoNoConsent:
+    consent_required = None
+
+
+class TransferAPIErrorNoConsent(Exception):
+    def __init__(self):
+        self.info = InfoNoConsent()
+
+    def __str__(self):
+        return "No consent required"
+
+
+class DummyTransferClient2:
+    def operation_ls(self, endpoint, path="/"):
+        raise TransferAPIErrorNoConsent()
+
+
+class ConsentRequiredInfo:
+    required_scopes = ["scope1", "scope2"]
+
+
+class Info:
+    consent_required = ConsentRequiredInfo()
+
+
+class TransferAPIErrorWithConsent(Exception):
+    def __init__(self):
+        self.info = Info()
 
 
 @responses.activate
@@ -50,70 +96,7 @@ def test_globus_transfer_missing_required_parameter_returns_400(
 def test_globus_multi_transfer_submits_tasks(
     submit_mock, json_fixture, api_client
 ):
-    responses.add(responses.GET, settings.SEARCH_URL, json=json_fixture)
-    responses.add(
-        responses.GET,
-        "https://transfer.api.globus.org/v0.10/submission_id",
-        json={"value": "someid"},
-    )
-
-    api_client.post(
-        reverse("globus_transfer"),
-        data={
-            "access_token": "test_access_token",
-            "refresh_token": "test_refresh_token",
-            "endpointId": "test_endpoint_id",
-            "path": "test_path",
-            "project": "CMIP6",
-        },
-        format="json",
-    )
-
-    assert submit_mock.called_with(
-        {
-            "DATA_TYPE": "transfer",
-            "DATA": [
-                {
-                    "DATA_TYPE": "transfer_item",
-                    "source_path": "/css03_data/CMIP6/AerChemMIP/EC-Earth-Consortium/EC-Earth3-AerChem/histSST-piAer/r1i1p1f1/Amon/prsn/gr/v20210831/prsn_Amon_EC-Earth3-AerChem_histSST-piAer_r1i1p1f1_gr_199901-199912.nc",
-                    "destination_path": "test_path/prsn_Amon_EC-Earth3-AerChem_histSST-piAer_r1i1p1f1_gr_199901-199912.nc",
-                },
-                {
-                    "DATA_TYPE": "transfer_item",
-                    "source_path": "/css03_data/CMIP6/AerChemMIP/EC-Earth-Consortium/EC-Earth3-AerChem/histSST-piAer/r1i1p1f1/Amon/prsn/gr/v20210831/prsn_Amon_EC-Earth3-AerChem_histSST-piAer_r1i1p1f1_gr_200001-200012.nc",
-                    "destination_path": "test_path/prsn_Amon_EC-Earth3-AerChem_histSST-piAer_r1i1p1f1_gr_200001-200012.nc",
-                },
-            ],
-            "source_endpoint": "dea29ae8-bb92-4c63-bdbc-260522c92fe8",
-            "destination_endpoint": "test_endpoint_id",
-            "submission_id": "someid",
-            "deadline": "2025-01-06 02:21:50.311298+00:00",
-            "verify_checksum": False,
-            "preserve_timestamp": False,
-            "encrypt_data": False,
-            "skip_source_errors": False,
-            "fail_on_quota_errors": False,
-            "delete_destination_extra": False,
-            "notify_on_succeeded": True,
-            "notify_on_failed": True,
-            "notify_on_inactive": True,
-        }
-    )
-
-
-@responses.activate
-@pytest.mark.django_db
-@patch(
-    "globus_sdk.TransferClient.submit_transfer",
-    side_effect=ValueError(),
-)
-@pytest.mark.parametrize(
-    "json_fixture", ["esgsearch_multiple_results.json"], indirect=True
-)
-def test_globus_transfer_returns_207_when_submission_errors(
-    submit_mock, json_fixture, api_client
-):
-    responses.add(responses.GET, settings.SEARCH_URL, json=json_fixture)
+    responses.add(responses.POST, settings.SEARCH_URL, json=json_fixture)
     responses.add(
         responses.GET,
         "https://transfer.api.globus.org/v0.10/submission_id",
@@ -133,6 +116,53 @@ def test_globus_transfer_returns_207_when_submission_errors(
     )
 
     assert response.status_code == status.HTTP_207_MULTI_STATUS
+    data = response.json()
+    assert data.get("status") == 207
+    assert data.get("successes") == []
+    assert data.get("failures") == []
+    assert "auth_url" in data
+
+    # Ensure auth_url contains a client_id query parameter (value may vary)
+    from urllib.parse import parse_qs, urlparse
+
+    parsed = urlparse(data["auth_url"])
+    qs = parse_qs(parsed.query)
+    assert (
+        "client_id" in qs and qs["client_id"]
+    ), "auth_url must include a client_id"
+    assert "scope" in qs and qs["scope"], "auth_url must include a scope"
+
+
+@responses.activate
+@pytest.mark.django_db
+@patch(
+    "globus_sdk.TransferClient.submit_transfer",
+    side_effect=ValueError(),
+)
+@pytest.mark.parametrize(
+    "json_fixture", ["esgsearch_multiple_results.json"], indirect=True
+)
+def test_globus_transfer_returns_207_when_submission_errors(
+    submit_mock, json_fixture, api_client
+):
+    responses.add(responses.POST, settings.SEARCH_URL, json=json_fixture)
+    responses.add(
+        responses.GET,
+        "https://transfer.api.globus.org/v0.10/submission_id",
+        json={"value": "someid"},
+    )
+
+    response = api_client.post(
+        reverse("globus_transfer"),
+        data={
+            "authScope": default_scope,
+            "endpointId": "test_endpoint_id",
+            "path": "test_path",
+        },
+        format="json",
+    )
+
+    assert response.status_code == status.HTTP_207_MULTI_STATUS
 
 
 @responses.activate
@@ -140,10 +170,10 @@ def test_globus_transfer_returns_207_when_submission_errors(
 @pytest.mark.parametrize(
     "json_fixture", ["esgsearch_multiple_results.json"], indirect=True
 )
-def test_globus_transfer_returns_200_when_submissions_all_succeed(
+def test_globus_transfer_returns_207_when_tokens_are_missing(
     json_fixture, api_client
 ):
-    responses.add(responses.GET, settings.SEARCH_URL, json=json_fixture)
+    responses.add(responses.POST, settings.SEARCH_URL, json=json_fixture)
     responses.add(
         responses.GET,
         "https://transfer.api.globus.org/v0.10/submission_id",
@@ -159,41 +189,15 @@ def test_globus_transfer_returns_200_when_submissions_all_succeed(
     response = api_client.post(
         reverse("globus_transfer"),
         data={
-            "access_token": "test_access_token",
-            "refresh_token": "test_refresh_token",
+            "authCode": "test_auth_code",
+            "authScope": default_scope,
             "endpointId": "test_endpoint_id",
             "path": "test_path",
-            "project": "CMIP6",
         },
         format="json",
     )
 
-    assert response.status_code == status.HTTP_200_OK
-
-
-@responses.activate
-@pytest.mark.django_db
-@pytest.mark.parametrize(
-    "json_fixture", ["esgsearch_invalid_globus_url.json"], indirect=True
-)
-def test_globus_transfer_returns_502_for_invalid_endpoint_id(
-    json_fixture, api_client
-):
-    responses.add(responses.GET, settings.SEARCH_URL, json=json_fixture)
-
-    response = api_client.post(
-        reverse("globus_transfer"),
-        data={
-            "access_token": "test_access_token",
-            "refresh_token": "test_refresh_token",
-            "endpointId": "test_endpoint_id",
-            "path": "test_path",
-            "project": "CMIP6",
-        },
-        format="json",
-    )
-
-    assert response.status_code == status.HTTP_502_BAD_GATEWAY
+    assert response.status_code == status.HTTP_207_MULTI_STATUS
 
 
 @pytest.mark.parametrize(
@@ -332,6 +336,48 @@ def test_globus_info_from_doc_raises_value_error():
 
 
 @patch("requests.get")
+def test_do_request_get_success(mock_get):
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.text = '{"result": "ok"}'
+    request = HttpRequest()
+    request.method = "GET"
+    request.GET = {}
+    response = proxy_views.do_request(request, "http://example.com/api")
+    assert response.status_code == 200
+    assert "ok" in response.content.decode()
+
+
+@patch("requests.get", side_effect=Exception("fail"))
+def test_do_request_get_exception(mock_get):
+    request = HttpRequest()
+    request.method = "GET"
+    request.GET = {}
+    response = proxy_views.do_request(request, "http://example.com/api")
+    assert response.status_code == 400
+    assert "Error during GET request" in response.content.decode()
+
+
+@patch("requests.get")
+def test_do_request_get_non_200_status(mock_get):
+    mock_get.return_value.status_code = 404
+    mock_get.return_value.text = '{"error": "not found"}'
+    request = HttpRequest()
+    request.method = "GET"
+    request.GET = {}
+    response = proxy_views.do_request(request, "http://example.com/api")
+    assert response.status_code == 404
+    assert "not found" in response.content.decode()
+
+
+def test_do_request_invalid_method():
+    request = HttpRequest()
+    request.method = "PUT"
+    response = proxy_views.do_request(request, "http://example.com/api")
+    assert response.status_code == 400
+    assert "Request method must be POST or GET" in response.content.decode()
+
+
+@patch("requests.get")
 def test_search_files_raises_value_error_when_no_response_or_docs(mock_get):
     # Simulate a response with missing 'response' and 'docs'
     mock_get.return_value.text = '{"unexpected": "structure"}'
@@ -356,3 +402,195 @@ def test_search_files_json_decode_error(mock_get):
         match="ESGF search did not return results: not a json string",
     ):
         list(search_files({"project": "CMIP6"}))
+
+
+@pytest.mark.django_db
+def test_globus_download_request_rejects_non_post(api_client):
+    # Simulate GET request
+    response = api_client.get(reverse("globus_transfer"))
+    assert response.status_code == 405
+
+
+@pytest.mark.django_db
+def test_globus_download_request_returns_auth_url(api_client, monkeypatch):
+    # Patch GlobusTransferAuthFlow to always return None for get_transfer_client and set an auth_url
+    class DummyAuthFlow:
+        def __init__(self, *a, **k):
+            self.auth_url = "https://auth.globus.org/authorize"
+
+        def get_transfer_client(self, *a, **k):
+            return None
+
+    monkeypatch.setattr(views, "GlobusTransferAuthFlow", DummyAuthFlow)
+    response = api_client.post(
+        reverse("globus_transfer"),
+        data={
+            "authScope": "test_scope",
+            "authRedirectUrl": "http://localhost:8080/cart/items",
+            "endpointId": "test_endpoint_id",
+            "path": "test_path",
+        },
+        format="json",
+    )
+    assert response.status_code == 207
+    data = response.json()
+    assert "auth_url" in data
+    assert data["auth_url"] == "https://auth.globus.org/authorize"
+
+
+def test_globus_info_from_doc_invalid_url_type():
+    # url is not a list
+    doc = {
+        "url": "not_a_list",
+        "data_node": "some_node",
+    }
+    with pytest.raises(Exception):
+        views.globus_info_from_doc(doc)  # Should raise TypeError
+
+
+def test_search_files_empty_response(monkeypatch):
+    # Patch requests.get to return empty docs
+    class DummyResp:
+        def __init__(self):
+            self.text = '{"response": {"docs": []}}'
+            self.status_code = 200
+
+        def json(self):
+            return {"response": {"docs": []}}
+
+    monkeypatch.setattr(views.requests, "get", lambda *a, **k: DummyResp())
+    result = list(views.search_files({"project": "CMIP6"}))
+    assert result == []
+
+
+def test_submit_transfer_handles_exception(monkeypatch):
+    # Patch search_files to raise
+    def raise_exc(*a, **k):
+        raise Exception("fail!")
+
+    monkeypatch.setattr(views, "search_files", raise_exc)
+
+    class DummyClient:
+        pass
+
+    resp = views.submit_transfer({}, DummyClient(), "endpoint", "folder")
+    assert resp.status_code == 502
+    assert b"fail!" in resp.content
+
+
+def test_get_transfer_client_from_auth_code_returns_transfer_client(
+    monkeypatch,
+):
+    # Setup dummy tokens and TransferClient
+    class DummyTokens:
+        by_resource_server = {
+            "transfer.api.globus.org": {
+                "access_token": "abc123",
+                "refresh_token": "xyz456",
+            }
+        }
+
+    class DummyAuthClient:
+
+        def __init__(self, *a, **k):
+            pass
+
+        def oauth2_start_flow(self, *a, **k):
+            pass
+
+        def oauth2_exchange_code_for_tokens(self, code):
+            assert code == "test_auth_code"
+            return DummyTokens()
+
+    class DummyAuthorizer:
+        def __init__(self, *a, **k):
+            pass
+
+    class DummyTransferClient:
+
+        def __init__(self, authorizer):
+            self.authorizer = authorizer
+
+    monkeypatch.setattr(
+        views,
+        "ConfidentialAppAuthClient",
+        lambda *a, **k: DummyAuthClient(),
+    )
+    monkeypatch.setattr(
+        views,
+        "RefreshTokenAuthorizer",
+        lambda *a, **k: DummyAuthorizer(),
+    )
+    monkeypatch.setattr(views, "TransferClient", DummyTransferClient)
+
+    flow = views.GlobusTransferAuthFlow(
+        clientId="id",
+        clientSecret="secret",
+        auth_redirect_url="url",
+    )
+    client = flow.get_transfer_client_from_auth_code("test_auth_code")
+    assert isinstance(client, DummyTransferClient)
+    assert isinstance(client.authorizer, DummyAuthorizer)
+
+
+def test_check_for_consent_required(monkeypatch):
+    # Patch views.TransferAPIError to our custom error so isinstance works
+
+    monkeypatch.setattr(views, "TransferAPIError", TransferAPIErrorWithConsent)
+
+    class DummyTransferClient:
+        def operation_ls(self, endpoint, path="/"):
+            raise TransferAPIErrorWithConsent()
+
+    flow = views.GlobusTransferAuthFlow(
+        clientId="id",
+        clientSecret="secret",
+        auth_redirect_url="url",
+        target_endpoint="endpoint",
+    )
+    flow.check_for_consent_required(DummyTransferClient())
+    assert flow.consent_required_scopes == ["scope1", "scope2"]
+
+    # Case 2: consent_required is falsy (should print error)
+    monkeypatch.setattr(views, "TransferAPIError", TransferAPIErrorNoConsent)
+
+    flow2 = views.GlobusTransferAuthFlow(
+        clientId="id", clientSecret="secret", auth_redirect_url="url"
+    )
+    flow2.target_endpoint = "endpoint"
+    flow2.check_for_consent_required(DummyTransferClient2())
+    assert flow2.consent_required_scopes == []
+
+
+@pytest.mark.django_db
+def test_globus_download_request_calls_submit_transfer_on_first_try(
+    api_client, monkeypatch
+):
+    # Patch GlobusTransferAuthFlow to return a dummy transfer client on first try
+    class DummyAuthFlowForTest:
+        def __init__(self, *a, **k):
+            pass
+
+        def get_transfer_client(self, *a, **k):
+            return DummyTransferClient()
+
+    # Patch search_files to yield one file
+    monkeypatch.setattr(views, "GlobusTransferAuthFlow", DummyAuthFlowForTest)
+    monkeypatch.setattr(
+        views, "search_files", lambda *a, **k: [("ep", "/file")]
+    )
+    response = api_client.post(
+        reverse("globus_transfer"),
+        data={
+            "authScope": "scope",
+            "authRedirectUrl": "url",
+            "endpointId": "ep",
+            "path": "/dest",
+        },
+        format="json",
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert "successes" in data
+    assert isinstance(data["successes"], list)
+    assert data["successes"][0]["task_id"] == "1234"

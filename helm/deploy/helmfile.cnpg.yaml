@@ -1,0 +1,40 @@
+repositories:
+- name: traefik
+  url: https://traefik.github.io/charts
+- name: cnpg
+  url: https://cloudnative-pg.github.io/charts
+
+releases:
+- name: traefik
+  chart: traefik/traefik
+  version: v34.4.0
+- name: cnpg
+  namespace: cnpg-system
+  chart: cnpg/cloudnative-pg
+  version: "0.26.1"
+  wait: true
+  hooks:
+    # remove cnpg resources
+    - events: [preuninstall]
+      command: bash
+      showlogs: true
+      args: ["./cnpg.sh", "delete"]
+    # add cnpg 3 node cluster, waits for cluster to deploy
+    - events: [postsync]
+      command: bash
+      showlogs: true
+      args: ["./cnpg.sh", "apply"]
+- name: metagrid
+  chart: ../
+  version: "1.5.3"
+  values:
+    - config:
+        DATABASE_URL: "postgresql://metagrid:metagrid@metagrid-cluster-rw.default.svc:5432/metagrid"
+    - ingress:
+        enabled: true
+        tls: false
+        host: localhost
+        className: traefik
+  needs:
+    - traefik
+    - cnpg-system/cnpg

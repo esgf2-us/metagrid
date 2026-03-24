@@ -14,6 +14,8 @@ import {
   rawCitationFixture,
   rawNodeStatusFixture,
   rawUserCartFixture,
+  stacAggregationsFixture,
+  stacSearchResultsFixture,
   userAuthFixture,
   userInfoFixture,
   userSearchQueriesFixture,
@@ -27,6 +29,9 @@ const handlers = [
   ),
   rest.get(apiRoutes.globusAuth.path, async (_req, res, ctx) =>
     res(ctx.status(200), ctx.json(userAuthFixture())),
+  ),
+  rest.get(apiRoutes.globusResetTokens.path, async (_req, res, ctx) =>
+    res(ctx.status(200), ctx.json({ status: 'success', message: 'Tokens reset successfully.' })),
   ),
   rest.get(apiRoutes.globusSearchEndpoints.path, async (_req, res, ctx) => {
     // For testing multiple search results
@@ -172,6 +177,12 @@ const handlers = [
   rest.get(apiRoutes.introMarkdown.path, async (_req, res, ctx) =>
     res(ctx.status(200), ctx.body('Some Markdown')),
   ),
+  rest.get(apiRoutes.esgfSearchSTAC.path, async (_req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(stacSearchResultsFixture()));
+  }),
+  rest.get(apiRoutes.esgfAggregationsSTAC.path, async (_req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(stacAggregationsFixture()));
+  }),
   // Default fallback handler
   rest.get('*', async (req, res, ctx) => {
     // eslint-disable-next-line no-console

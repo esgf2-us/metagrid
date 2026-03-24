@@ -1,4 +1,4 @@
-{{- if .Values.features.nodeStatus.enabled }}
+{{- if .Values.nodeStatusBackend.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -17,7 +17,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: {{ include (print $.Template.BasePath "/node_status/secret.yaml") . | sha256sum }}
+        checksum/config: {{ include (print $.Template.BasePath "/node_status/configmap.yaml") . | sha256sum }}
       {{- with .Values.nodeStatusBackend.podAnnotations }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -38,7 +38,7 @@ spec:
       containers:
       - name: prometheus
         securityContext:
-          {{- toYaml .Values.nodeStatusBackend.prometheus.securityContext | nindent 12 }}
+          {{- toYaml .Values.nodeStatusBackend.prometheus.securityContext | nindent 10 }}
         image: "{{ .Values.nodeStatusBackend.prometheus.image.repository }}:{{ .Values.nodeStatusBackend.prometheus.image.tag }}"
         imagePullPolicy: {{ .Values.nodeStatusBackend.prometheus.image.pullPolicy }}
         ports:
@@ -56,7 +56,7 @@ spec:
             port: http
             scheme: HTTP
         resources:
-          {{- toYaml .Values.nodeStatusBackend.prometheus.resources | nindent 12 }}
+          {{- toYaml .Values.nodeStatusBackend.prometheus.resources | nindent 10 }}
         volumeMounts:
         - name: config-volume
           mountPath: /etc/prometheus/prometheus.yml
@@ -67,40 +67,40 @@ spec:
         - name: prom-data
           mountPath: /prometheus
         {{- with .Values.nodeStatusBackend.prometheus.volumeMounts }}
-          {{- toYaml . | nindent 12 }}
+          {{- toYaml . | nindent 8 }}
         {{- end }}
       - name: blackbox
         securityContext:
-          {{- toYaml .Values.nodeStatusBackend.blackbox.securityContext | nindent 12 }}
+          {{- toYaml .Values.nodeStatusBackend.blackbox.securityContext | nindent 10 }}
         image: "{{ .Values.nodeStatusBackend.blackbox.image.repository }}:{{ .Values.nodeStatusBackend.blackbox.image.tag }}"
         imagePullPolicy: {{ .Values.nodeStatusBackend.blackbox.image.pullPolicy }}
         ports:
-        - name: http
+        - name: blackbox-http
           containerPort: 9115
           protocol: TCP
         livenessProbe:
           httpGet:
             path: /-/healthy
-            port: http
+            port: blackbox-http
           failureThreshold: 3
         readinessProbe:
           httpGet:
             path: /-/healthy
-            port: http
+            port: blackbox-http
         resources:
-          {{- toYaml .Values.nodeStatusBackend.blackbox.resources | nindent 12 }}
+          {{- toYaml .Values.nodeStatusBackend.blackbox.resources | nindent 10 }}
         {{- with .Values.nodeStatusBackend.blackbox.volumeMounts }}
         volumeMounts:
-          {{- toYaml . | nindent 12 }}
+          {{- toYaml . | nindent 8 }}
         {{- end }}
       volumes:
       - name: config-volume
-        secret:
-          secretName: {{ include "metagrid.fullname" . }}-node-status-backend-config
+        configMap:
+          name: {{ include "metagrid.fullname" . }}-node-status-backend-config
       - name: prom-data
         emptyDir: {}
       {{- with .Values.nodeStatusBackend.volumes }}
-        {{- toYaml . | nindent 8 }}
+        {{- toYaml . | nindent 6 }}
       {{- end }}
       {{- with .Values.nodeStatusBackend.nodeSelector }}
       nodeSelector:

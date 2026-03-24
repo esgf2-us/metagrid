@@ -6,6 +6,8 @@ import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import SearchesCard, { Props } from './SearchesCard';
 import customRender from '../../test/custom-render';
+import { waitFor } from '@testing-library/react';
+import { stacSearchResultsFixture, stacAggregationsFixture } from '../../test/mock/fixtures';
 
 const user = userEvent.setup();
 
@@ -26,7 +28,7 @@ beforeEach(() => {
         useNavigate: () => ({
           push: mockNavigate,
         }),
-      } as Record<string, unknown>)
+      }) as Record<string, unknown>,
   );
 });
 
@@ -55,7 +57,7 @@ it('displays alert error when api fails to return response', async () => {
     <SearchesCard
       {...defaultProps}
       searchQuery={userSearchQueryFixture({ resultsCount: undefined })}
-    />
+    />,
   );
 
   // Check alert renders
@@ -69,9 +71,51 @@ it('displays "N/A" for Filename Searches when none are applied', async () => {
       {...defaultProps}
       searchQuery={userSearchQueryFixture({ filenameVars: undefined })}
     />,
-    { usesAtoms: true }
+    { usesAtoms: true },
   );
   // Shows number of files
   const filenameSearchesField = (await screen.findByText('Filename Searches:')).parentNode;
   expect(filenameSearchesField?.textContent).toEqual('Filename Searches: N/A');
+});
+
+it('updates searchQuery with STAC numMatched when project is STAC', async () => {
+  // Mock STAC aggregations and STAC search responses
+  server.use(
+    rest.post(apiRoutes.esgfAggregationsSTAC.path, (_req, res, ctx) =>
+      res(ctx.status(200), ctx.json(stacAggregationsFixture())),
+    ),
+    rest.post(apiRoutes.esgfSearchSTAC.path, (_req, res, ctx) =>
+      res(ctx.status(200), ctx.json(stacSearchResultsFixture().search)),
+    ),
+  );
+
+  const mockUpdate = jest.fn();
+  const mockRemove = jest.fn();
+
+  // Create a search query that indicates a STAC project and forces re-fetch
+  const baseQuery = userSearchQueryFixture();
+  const stacProject = { ...baseQuery.project, isSTAC: true, projectName: 'CMIP6' };
+  const stacQuery = {
+    ...baseQuery,
+    project: stacProject,
+    resultsCount: 2,
+    searchTime: null,
+    search: { numMatched: 2 },
+  };
+
+  customRender(
+    <SearchesCard
+      searchQuery={stacQuery}
+      updateSearchQuery={mockUpdate}
+      onHandleRemoveSearchQuery={mockRemove}
+      index={0}
+    />,
+  );
+
+  // Wait for the component to fetch and call updateSearchQuery
+  await waitFor(() => expect(mockUpdate).toHaveBeenCalled());
+
+  // Verify updateSearchQuery was called with resultsCount equal to numMatched
+  const calledArg = mockUpdate.mock.calls[0][0];
+  expect(calledArg.resultsCount).toBe(stacSearchResultsFixture().search.numMatched);
 });

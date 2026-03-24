@@ -1,7 +1,12 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import FacetsForm, { formatDate, humanizeFacetNames } from './FacetsForm';
+import FacetsForm, {
+  formatDate,
+  generateFacetOptions,
+  generateStacFacetOptions,
+  humanizeFacetNames,
+} from './FacetsForm';
 import customRender from '../../test/custom-render';
 import { AtomWrapper } from '../../test/jestTestFunctions';
 import { AppStateKeys } from '../../common/atoms';
@@ -29,8 +34,37 @@ describe('formatDate', () => {
   });
 });
 
+describe('generate facet option helpers', () => {
+  it('generateStacFacetOptions returns proper option objects', () => {
+    const facet = 'stac_var';
+    const opts = generateStacFacetOptions(facet, ['optA', 'optB']);
+    expect(opts).toHaveLength(2);
+    expect(opts[0].key).toBe('optA');
+    expect(opts[0].value).toBe('optA');
+    // label is a React element with data-testid
+    // @ts-ignore access element props for test
+    expect(opts[0].label.props['data-testid']).toBe('stac_var_optA');
+  });
+
+  it('generateFacetOptions returns proper option objects for tuple input', () => {
+    const facet = 'data_node';
+    const tupleOpts: [string, number][] = [
+      ['node1.example', 3],
+      ['node2.example', 5],
+    ];
+    const opts = generateFacetOptions(facet, tupleOpts);
+    expect(opts).toHaveLength(2);
+    expect(opts[0].key).toBe('node1.example');
+    expect(opts[0].value).toBe('node1.example');
+    // label is a React element with data-testid
+    // @ts-ignore access element props for test
+    expect(opts[0].label.props['data-testid']).toBe('data_node_node1.example');
+  });
+});
+
 describe('test FacetsForm component', () => {
-  it('handles submitting filename', async () => {
+  // Filename search is currently disabled
+  xit('handles submitting filename', async () => {
     customRender(<FacetsForm />);
 
     // Open filename collapse panel
@@ -53,13 +87,12 @@ describe('test FacetsForm component', () => {
     await waitFor(() => expect(input.value).toEqual(''));
   });
 
-  it('handles case when filename var is already set in the active search query.', async () => {
+  // Filename search is currently disabled
+  xit('handles case when filename var is already set in the active search query.', async () => {
     customRender(<FacetsForm />);
 
     // Open filename collapse panel
-    const filenameSearchPanel = await screen.findByRole('button', {
-      name: 'collapsed Filename',
-    });
+    const filenameSearchPanel = await screen.findByText('Filename');
 
     await user.click(filenameSearchPanel);
 
@@ -77,6 +110,61 @@ describe('test FacetsForm component', () => {
 
     // Check that notice was given that variable was already applied
     expect(await screen.findByText('Input "var" has already been applied')).toBeTruthy();
+  });
+
+  it('handles submitting keyword search', async () => {
+    customRender(<FacetsForm />);
+
+    // Open filename collapse panel
+    const keywordSearchPanel = await screen.findByText('Keyword Search');
+
+    await user.click(keywordSearchPanel);
+
+    // Change form field values
+    const input: HTMLInputElement = await screen.findByTestId('keyword-search-input');
+    fireEvent.change(input, { target: { value: 'clt' } });
+    expect(input.value).toEqual('clt');
+
+    // Submit the form
+    const searchBtn = await screen.findByTestId('left-menu-keyword-search-submit');
+    await user.click(searchBtn);
+
+    // Check if the input value resets back to blank
+    await waitFor(() => expect(input.value).toEqual(''));
+  });
+
+  it('handles case when keyword search is already set in the active search query.', async () => {
+    customRender(<FacetsForm />);
+
+    // Open filename collapse panel
+    const keywordSearchPanel = await screen.findByText('Keyword Search');
+
+    await user.click(keywordSearchPanel);
+
+    // Change form field values
+    const input: HTMLInputElement = await screen.findByTestId('keyword-search-input');
+    fireEvent.change(input, { target: { value: 'clt' } });
+    expect(input.value).toEqual('clt');
+
+    // Submit the form
+    const searchBtn = await screen.findByTestId('left-menu-keyword-search-submit');
+    await user.click(searchBtn);
+
+    // Check if the input value resets back to blank
+    await waitFor(() => expect(input.value).toEqual(''));
+
+    // Change form field values again to same value
+    fireEvent.change(input, { target: { value: 'clt' } });
+    expect(input.value).toEqual('clt');
+
+    // Submit the form again
+    await user.click(searchBtn);
+
+    // Check if the input value resets back to blank
+    await waitFor(() => expect(input.value).toEqual(''));
+
+    // Check that notice was given that variable was already applied
+    expect(await screen.findByText('Input "clt" has already been applied')).toBeTruthy();
   });
 
   it('handles setting the globusReady option on and off', async () => {
@@ -176,14 +264,12 @@ describe('test FacetsForm component', () => {
   it('Shows empty range if activeSearchQuery has no min and max version date range set', async () => {
     AtomWrapper.modifyAtomValue(
       AppStateKeys.activeSearchQuery,
-      activeSearchQueryFixture({ minVersionDate: undefined, maxVersionDate: undefined })
+      activeSearchQueryFixture({ minVersionDate: undefined, maxVersionDate: undefined }),
     );
     customRender(<FacetsForm />);
 
     // Open additional properties collapse panel
-    const additionalPropertiesPanel = await screen.findByRole('button', {
-      name: 'expanded Additional Properties',
-    });
+    const additionalPropertiesPanel = await screen.findByText('Additional Properties');
 
     await user.click(additionalPropertiesPanel);
 
@@ -202,9 +288,7 @@ describe('test FacetsForm component', () => {
     customRender(<FacetsForm />);
 
     // Open additional properties collapse panel
-    const additionalPropertiesPanel = await screen.findByRole('button', {
-      name: 'expanded Additional Properties',
-    });
+    const additionalPropertiesPanel = await screen.findByText('Additional Properties');
 
     await user.click(additionalPropertiesPanel);
 
