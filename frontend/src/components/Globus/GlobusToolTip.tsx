@@ -2,7 +2,12 @@ import { CheckCircleTwoTone, CloseCircleTwoTone } from '@ant-design/icons';
 import React from 'react';
 import { Tooltip } from 'antd';
 import { useAtomValue } from 'jotai';
-import { lightModeGreen, lightModeRed, darkModeGreen, darkModeRed } from './StatusToolTip';
+import {
+  lightModeGreen,
+  lightModeRed,
+  darkModeGreen,
+  darkModeRed,
+} from '../NodeStatus/StatusToolTip';
 import { isDarkModeAtom } from '../../common/atoms';
 
 export type Props = { dataNode: string };
@@ -29,7 +34,11 @@ const GlobusToolTip: React.FC<Props> = ({ dataNode }) => {
       color={color}
       title={
         <>
-          Data Node:<div>{dataNode}</div>
+          {dataNode && (
+            <>
+              Data Node:<div>{dataNode}</div>
+            </>
+          )}
           {title}
         </>
       }

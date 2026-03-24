@@ -1,0 +1,13 @@
+should create a default pvc:
+  1: |
+    apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      name: metagrid-postgresql-data
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 8Gi
+      volumeMode: Filesystem

@@ -12,15 +12,20 @@ from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 from rest_framework.routers import DefaultRouter
 
-from metagrid.api_globus.views import create_globus_transfer, get_access_token
+from metagrid.api_globus.views import (
+    do_globus_reset_tokens,
+    globus_download_request,
+)
 from metagrid.api_proxy.views import (
     do_citation,
     do_globus_auth,
     do_globus_logout,
     do_globus_search_endpoints,
     do_search,
+    do_stac_search,
     do_status,
     do_wget,
+    fetch_stac_aggregations,
     get_frontend_config,
     get_temp_storage,
     set_temp_storage,
@@ -60,6 +65,11 @@ urlpatterns = [
     path("proxy/globus-logout/", do_globus_logout, name="globus-logout"),
     path("proxy/globus-auth/", do_globus_auth, name="globus-auth"),
     path(
+        "proxy/globus-reset-tokens/",
+        do_globus_reset_tokens,
+        name="globus_reset_tokens",
+    ),
+    path(
         "proxy/globus-search-endpoints/",
         do_globus_search_endpoints,
         name="globus-search-endpoints",
@@ -69,6 +79,12 @@ urlpatterns = [
     # dj-rest-auth
     re_path(r"^dj-rest-auth/", include("dj_rest_auth.urls")),
     path("proxy/search", do_search, name="do-search"),
+    path("proxy/stac/search", do_stac_search, name="do-stac-search"),
+    path(
+        "proxy/stac/aggregations",
+        fetch_stac_aggregations,
+        name="fetch-stac-aggregations",
+    ),
     path("proxy/citation", do_citation, name="do-citation"),
     path("proxy/wget", do_wget, name="do-wget"),
     path("proxy/status", do_status, name="do-status"),
@@ -77,8 +93,7 @@ urlpatterns = [
     ),
     path("tempStorage/get", get_temp_storage, name="temp_storage_get"),
     path("tempStorage/set", set_temp_storage, name="temp_storage_set"),
-    path("globus/auth", get_access_token, name="globus_auth"),
-    path("globus/transfer", create_globus_transfer, name="globus_transfer"),
+    path("globus/transfer", globus_download_request, name="globus_transfer"),
     path("frontend-config.js", get_frontend_config, name="frontend_config"),
     path("liveness", liveness, name="liveness"),
     path("readiness", readiness, name="readiness"),

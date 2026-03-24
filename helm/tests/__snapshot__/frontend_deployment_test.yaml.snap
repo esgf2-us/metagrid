@@ -1,0 +1,50 @@
+should have a deployment:
+  1: |
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      labels:
+        app.kubernetes.io/component: frontend
+        app.kubernetes.io/instance: metagrid
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: metagrid
+        app.kubernetes.io/version: v1.0.0
+        helm.sh/chart: metagrid-v1.0.0
+      name: metagrid-frontend
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app.kubernetes.io/component: frontend
+          app.kubernetes.io/instance: metagrid
+          app.kubernetes.io/name: metagrid
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/component: frontend
+            app.kubernetes.io/instance: metagrid
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: metagrid
+            app.kubernetes.io/version: v1.0.0
+            helm.sh/chart: metagrid-v1.0.0
+        spec:
+          containers:
+            - image: ghcr.io/esgf2-us/metagrid-frontend:v1.0.0
+              imagePullPolicy: IfNotPresent
+              livenessProbe:
+                httpGet:
+                  path: /
+                  port: http
+              name: frontend
+              ports:
+                - containerPort: 8080
+                  name: http
+                  protocol: TCP
+              readinessProbe:
+                httpGet:
+                  path: /
+                  port: http
+              resources: {}
+              securityContext: {}
+          securityContext: {}
+          serviceAccountName: metagrid-frontend

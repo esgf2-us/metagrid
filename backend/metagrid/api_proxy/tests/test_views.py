@@ -80,8 +80,22 @@ class TestProxyViewSet(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_302_FOUND)
 
     @responses.activate
+    def test_search(self):
+        url = reverse("do-search")
+        postdata = {"project": "CMIP6", "limit": 0}
+        responses.get(settings.SEARCH_URL)
+        response = self.client.get(url, postdata)
+        assert response.status_code == status.HTTP_200_OK
+
+    @responses.activate
     def test_wget(self):
         url = reverse("do-wget")
+        if settings.WGET_URL is None:
+            # If WGET_URL is None, skip the test
+            import pytest
+
+            pytest.skip("settings.WGET_URL is not set")
+
         responses.get(settings.WGET_URL)
         response = self.client.get(
             url,
@@ -92,17 +106,19 @@ class TestProxyViewSet(APITestCase):
         assert response.status_code == status.HTTP_200_OK
 
     @responses.activate
-    def test_search(self):
-        url = reverse("do-search")
-        postdata = {"project": "CMIP6", "limit": 0}
-        responses.get(settings.SEARCH_URL)
-        response = self.client.get(url, postdata)
-        assert response.status_code == status.HTTP_200_OK
+    def test_stac_search(self):
+        url = reverse("do-stac-search")
+        postdata = {"collections": "CMIP6", "limit": 10}
+        # Only run if settings.STAC_URL is set
+        if getattr(settings, "STAC_URL", None):
+            responses.post(settings.STAC_URL + "/search", json={})
+            response = self.client.post(url, postdata, format="json")
+            assert response.status_code == status.HTTP_200_OK
+        else:
+            # If STAC_URL is None, just skip the test
+            import pytest
 
-    # def test_status(self):
-    #     url = reverse("do-status")
-    #     response = self.client.get(url)
-    #     assert response.status_code == status.HTTP_200_OK
+            pytest.skip("settings.STAC_URL is not set")
 
     @responses.activate
     def test_citation(self):

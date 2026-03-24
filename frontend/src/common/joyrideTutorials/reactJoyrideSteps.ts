@@ -29,6 +29,24 @@ export const clickFirstElement = (selector: string): boolean => {
   return false;
 };
 
+export const hoverFirstElement = (selector: string): boolean => {
+  const elem = document.querySelector(selector) as HTMLElement;
+  if (elem) {
+    elem.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+    return true;
+  }
+  return false;
+};
+
+export const unHoverFirstElement = (selector: string): boolean => {
+  const elem = document.querySelector(selector) as HTMLElement;
+  if (elem) {
+    elem.dispatchEvent(new MouseEvent('mouseout', { bubbles: true }));
+    return true;
+  }
+  return false;
+};
+
 /* istanbul ignore next */
 const mainTableEmpty = (): boolean => {
   return elementExists('ant-empty-image');
@@ -78,7 +96,14 @@ export const searchTableTargets = {
   searchResultsTable: new TargetObject(),
   addSelectedToCartBtn: new TargetObject(),
   saveSearchBtn: new TargetObject(),
+};
+
+export const copySearchOptionsTargets = {
+  copyMenuBtn: new TargetObject(),
   copySearchLinkBtn: new TargetObject(),
+  copyEsgpullSearchQueryBtn: new TargetObject(),
+  copyEsgpullDownloadCommandBtn: new TargetObject(),
+  copyIntakeEsgfSearchBtn: new TargetObject(),
 };
 
 export const leftSidebarTargets = {
@@ -96,8 +121,9 @@ export const leftSidebarTargets = {
   facetFormExpandAllBtn: new TargetObject(),
   facetFormAdditional: new TargetObject(),
   facetFormAdditionalFields: new TargetObject(),
-  facetFormFilename: new TargetObject(),
-  facetFormFilenameFields: new TargetObject(),
+  facetFormKeywordSearch: new TargetObject(),
+  // facetFormFilename: new TargetObject(),
+  // facetFormFilenameFields: new TargetObject(),
 };
 
 export const topDataRowTargets = {
@@ -341,11 +367,6 @@ export const createMainPageTour = (): JoyrideTour => {
       'center',
     )
     .addNextStep(
-      navBarTargets.topSearchBar.selector(),
-      'This is the top search bar! You can select a project, then enter a search term and click the magnifying glass button to quickly start your search and view results in the table below.',
-      'bottom',
-    )
-    .addNextStep(
       navBarTargets.topNavBar.selector(),
       'This area lets you navigate between pages of Metagrid.',
       'bottom',
@@ -457,7 +478,7 @@ export const createMainPageTour = (): JoyrideTour => {
     )
     .addNextStep(
       leftSidebarTargets.facetFormExpandAllBtn.selector(),
-      'You can quickly expand all the facet panels by clicking this button.',
+      "You can quickly expand all the facet panels by clicking this button. Note that there is a scroll bar on the right when the panels don't all fit on the page.",
       'right-end',
       /* istanbul ignore next */
       async () => {
@@ -467,8 +488,18 @@ export const createMainPageTour = (): JoyrideTour => {
       },
     )
     .addNextStep(
+      leftSidebarTargets.facetFormAdditionalFields.selector(),
+      'This section contains additional properties that you can select to further refine your search results, including the Version Type, Result Type and Versions. Hovering over the question mark icon will further explain the parameter.',
+      'right-end',
+    )
+    .addNextStep(
+      leftSidebarTargets.facetFormKeywordSearch.selector(),
+      'This input lets you filter your results using a specific keyword. To filter by keyword, you would type in the field then click the magnifying glass icon to add it as a search parameter. Each additional keyword search will be added as an OR to your existing keyword search.',
+      'right-end',
+    )
+    .addNextStep(
       leftSidebarTargets.facetFormCollapseAllBtn.selector(),
-      "Note that there is a scroll bar on the right when the panels don't all fit on the page. Clicking the collapse all button will close all the open facet panels.",
+      'Clicking the collapse all button will close all the open facet panels.',
       'right-end',
       /* istanbul ignore next */
       async () => {
@@ -477,28 +508,18 @@ export const createMainPageTour = (): JoyrideTour => {
         await delay(300);
       },
     )
-    .addNextStep(
-      leftSidebarTargets.facetFormAdditionalFields.selector(),
-      'This section contains additional properties that you can select to further refine your search results, including the Version Type, Result Type and Version Date Range. Hovering over the question mark icon will further explain the parameter.',
-      'right-end',
-      /* istanbul ignore next */
-      async () => {
-        // Open filename section
-        clickFirstElement(leftSidebarTargets.facetFormFilename.selector());
-        await delay(300);
-      },
-    )
-    .addNextStep(
-      leftSidebarTargets.facetFormFilenameFields.selector(),
-      'This section lets you filter your results to include a specific filename. To filter by filename, you would type in the name or names as a list of comma separated values then click the magnifying glass icon to add it as a search parameter.',
-      'right-end',
-      /* istanbul ignore next */
-      () => {
-        // Close filename section
-        clickFirstElement(leftSidebarTargets.facetFormFilename.selector());
-        window.scrollTo(0, 0);
-      },
-    )
+    // Filename search currenty disabled
+    // .addNextStep(
+    //   leftSidebarTargets.facetFormFilenameFields.selector(),
+    //   'This section lets you filter your results to include a specific filename. To filter by filename, you would type in the name or names as a list of comma separated values then click the magnifying glass icon to add it as a search parameter.',
+    //   'right-end',
+    //   /* istanbul ignore next */
+    //   () => {
+    //     // Close filename section
+    //     clickFirstElement(leftSidebarTargets.facetFormFilename.selector());
+    //     window.scrollTo(0, 0);
+    //   },
+    // )
     .addNextStep(
       searchTableTargets.queryString.selector(),
       "When performing a search, you'll be able to view the resulting query generated by your selections here.",
@@ -515,9 +536,41 @@ export const createMainPageTour = (): JoyrideTour => {
       'left',
     )
     .addNextStep(
-      searchTableTargets.copySearchLinkBtn.selector(),
-      'You can also share your search with others as a specific URL by clicking this button. The button will copy the link to your clipboard for you to then paste at your convenience.',
-      'bottom-start',
+      copySearchOptionsTargets.copyMenuBtn.selector(),
+      'If you click on the copy icon, a drop-down menu will appear with various options for copying your search query into your clipboard.',
+      'left-start',
+      /* istanbul ignore next */
+      async () => {
+        // Open general facets
+        hoverFirstElement(copySearchOptionsTargets.copyMenuBtn.selector());
+        await delay(200);
+      },
+    )
+    .addNextStep(
+      copySearchOptionsTargets.copySearchLinkBtn.selector(),
+      'This option creates a shareable link for your search. The Metagrid URL will be copied to your clipboard for you to then paste at your convenience.',
+      'left-start',
+    )
+    .addNextStep(
+      copySearchOptionsTargets.copyEsgpullSearchQueryBtn.selector(),
+      'This option creates an esgpull search query version of your search and copies it to your clipboard. You can run the command in your shell where esgpull is installed.',
+      'left-start',
+    )
+    .addNextStep(
+      copySearchOptionsTargets.copyEsgpullDownloadCommandBtn.selector(),
+      'This option creates a simple esgpull download command to run a download. We highly recommend you review the command and test the search results beforehand with the esgpull search option first.',
+      'left-start',
+    )
+    .addNextStep(
+      copySearchOptionsTargets.copyIntakeEsgfSearchBtn.selector(),
+      'If you need an Intake ESGF search query version of your search, click this button. The python code will attempt to generate the code for a similar search and copy it to your clipboard.',
+      'left-start',
+      /* istanbul ignore next */
+      async () => {
+        // Open general facets
+        unHoverFirstElement('.ant-dropdown');
+        await delay(200);
+      },
     )
     .addNextStep(
       searchTableTargets.searchResultsTable.selector(),

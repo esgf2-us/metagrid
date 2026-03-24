@@ -9,6 +9,8 @@ import {
   createSearchCardTour,
   createNodeStatusTour,
   defaultTarget,
+  hoverFirstElement,
+  unHoverFirstElement,
 } from './reactJoyrideSteps';
 
 describe('Test reactJoyrideStep util functions', () => {
@@ -85,5 +87,36 @@ describe('Test reactJoyrideStep util functions', () => {
 
   it('defaultTarget should have correct selector', () => {
     expect(defaultTarget.selector()).toBe('#root .navbar-logo');
+  });
+});
+
+describe('hoverFirstElement and unHoverFirstElement', () => {
+  it('should dispatch mouseover event on element', () => {
+    const elem = document.createElement('div');
+    elem.className = 'hover-test';
+    document.body.appendChild(elem);
+
+    const mouseOverSpy = jest.fn();
+    elem.addEventListener('mouseover', mouseOverSpy);
+
+    expect(hoverFirstElement('.hover-test')).toBe(true);
+    expect(mouseOverSpy).toHaveBeenCalled();
+  });
+
+  it('should dispatch mouseout event on element', () => {
+    const elem = document.createElement('div');
+    elem.className = 'unhover-test';
+    document.body.appendChild(elem);
+
+    const mouseOutSpy = jest.fn();
+    elem.addEventListener('mouseout', mouseOutSpy);
+
+    expect(unHoverFirstElement('.unhover-test')).toBe(true);
+    expect(mouseOutSpy).toHaveBeenCalled();
+  });
+
+  it('should return false if element not found', () => {
+    expect(hoverFirstElement('.notfound')).toBe(false);
+    expect(unHoverFirstElement('.notfound')).toBe(false);
   });
 });

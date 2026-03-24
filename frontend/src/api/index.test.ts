@@ -9,6 +9,7 @@ import {
   fetchNodeStatus,
   fetchProjects,
   fetchSearchResults,
+  fetchSTACAggregations,
   fetchUserAuth,
   fetchUserCart,
   fetchUserInfo,
@@ -19,12 +20,16 @@ import {
   openDownloadURL,
   parseNodeStatus,
   processCitation,
+  resetGlobusTokens,
   saveSessionValue,
   saveSessionValues,
   startSearchGlobusEndpoints,
   updateUserCart,
 } from '.';
+import { STAC_PROJECTS, generateWgetScriptSTAC } from '../common/STAC';
+import { downloadFileForUser } from '../common/utils';
 import { ActiveSearchQuery, Pagination, RawCitation, ResultType } from '../components/Search/types';
+import { mockConfig } from '../test/jestTestFunctions';
 import {
   activeSearchQueryFixture,
   ESGFSearchAPIFixture,
@@ -33,16 +38,30 @@ import {
   projectsFixture,
   rawCitationFixture,
   rawNodeStatusFixture,
+  rawStacAssetFixture,
   rawUserCartFixture,
+  stacAssetFixture,
   userAuthFixture,
   userInfoFixture,
   userSearchQueriesFixture,
   userSearchQueryFixture,
 } from '../test/mock/fixtures';
 import { rest, server } from '../test/mock/server';
-import apiRoutes from './routes';
+import apiRoutes, { HTTPCodeType } from './routes';
 
 const genericNetworkErrorMsg = 'Failed to Connect';
+
+jest.mock('../common/utils', () => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const originalModule = jest.requireActual('../common/utils');
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return {
+    __esModule: true,
+    ...originalModule,
+    downloadFileForUser: jest.fn(),
+  };
+});
 
 describe('test fetching user authentication with globus', () => {
   it('returns user authentication tokens', async () => {
@@ -107,9 +126,18 @@ describe('test fetching user info', () => {
 });
 
 describe('test fetching projects', () => {
-  it('returns projects', async () => {
-    const projects = await fetchProjects();
-    expect(projects).toEqual({ results: projectsFixture() });
+  it('returns projects including STAC projects', async () => {
+    const projects = (await fetchProjects()).results;
+
+    expect(projects).toEqual([...projectsFixture(), ...STAC_PROJECTS]);
+  });
+
+  it('returns projects without including STAC projects', async () => {
+    // Set STAC URL to empty string to not include STAC projects
+    mockConfig.STAC_URL = null;
+    const projects = (await fetchProjects()).results;
+
+    expect(projects).toEqual([...projectsFixture()]);
   });
 
   it('catches and throws an error based on HTTP status code', async () => {
@@ -122,6 +150,23 @@ describe('test fetching projects', () => {
       rest.get(apiRoutes.projects.path, (_req, res) => res.networkError(genericNetworkErrorMsg)),
     );
     await expect(fetchProjects()).rejects.toThrow(apiRoutes.projects.handleErrorMsg('generic'));
+  });
+
+  it('returns additional STAC projects when backend returns no results field', async () => {
+    // Ensure STAC inclusion is enabled
+    window.METAGRID.STAC_URL = 'https://stac.example';
+
+    // Mock the projects endpoint to return an object without `results`
+    server.use(
+      rest.get(apiRoutes.projects.path, (_req, res, ctx) =>
+        res(ctx.status(200), ctx.json({ count: 0 })),
+      ),
+    );
+
+    const projects = (await fetchProjects()).results;
+
+    // When backend returns no results, fetchProjects should return only the additional STAC_PROJECTS
+    expect(projects).toEqual([...STAC_PROJECTS]);
   });
 });
 
@@ -912,5 +957,149 @@ describe('test fetching temp storage set', () => {
     await expect(saveSessionValue('testKey', 'testValue')).rejects.toThrow(
       apiRoutes.tempStorageSet.handleErrorMsg('generic'),
     );
+  });
+});
+
+describe('resetGlobusTokens', () => {
+  it('calls the reset tokens function', async () => {
+    const response = await resetGlobusTokens();
+    expect(response.data).toEqual({ status: 'success', message: 'Tokens reset successfully.' });
+  });
+
+  it('throws an error when request fails', async () => {
+    server.use(
+      rest.get(apiRoutes.globusResetTokens.path, (_req, res) =>
+        res.networkError(genericNetworkErrorMsg),
+      ),
+    );
+    await expect(resetGlobusTokens()).rejects.toThrow();
+  });
+});
+
+describe('STAC API functions', () => {
+  it('posts STAC filter and returns facets + search results', async () => {
+    const aggregationsResp = {
+      aggregations: [
+        {
+          name: 'cmip6_activity_id_frequency',
+          buckets: [{ key: 'CFMIP', frequency: 5 }],
+        },
+      ],
+    };
+
+    const stacSearchResp = {
+      type: 'FeatureCollection',
+      features: [{ id: 'feat1' }],
+    };
+
+    let capturedAggBody: unknown = null;
+    let capturedSearchBody: { collections: string[]; filter: unknown } | null = null;
+
+    server.use(
+      rest.post(apiRoutes.esgfAggregationsSTAC.path, async (req, res, ctx) => {
+        capturedAggBody = await req.json();
+        return res(ctx.status(200), ctx.json(aggregationsResp));
+      }),
+      rest.post(apiRoutes.esgfSearchSTAC.path, async (req, res, ctx) => {
+        capturedSearchBody = await req.json();
+        return res(ctx.status(200), ctx.json(stacSearchResp));
+      }),
+    );
+
+    const reqUrl = `${apiRoutes.esgfSearchSTAC.path}?project_id=CMIP6&activity_id=CFMIP`;
+    const result = await fetchSearchResults({ reqUrl });
+
+    expect(result.stac).toBe(true);
+    // facets built from aggregations
+    const facets = result.facets as Record<string, [string, number][]>;
+    expect(facets.activity_id).toEqual([['CFMIP', 5]]);
+    // search payload posted should include collections and filter
+    expect(capturedSearchBody).toBeDefined();
+    const csb = capturedSearchBody!;
+    expect(csb.collections).toContain('CMIP6');
+    expect(csb.filter).toBeDefined();
+
+    expect(capturedAggBody).toBeDefined();
+    const cab = capturedAggBody as { filter: unknown; aggregations: string[] };
+    expect(cab.aggregations).toContain('cmip6_activity_id_frequency');
+    expect(cab.filter).toBeDefined();
+  });
+
+  it('returns stac result with empty facets when aggregations endpoint errors (status set accordingly)', async () => {
+    // make aggregations endpoint return 500, search returns an empty feature collection
+    server.use(
+      rest.post(apiRoutes.esgfAggregationsSTAC.path, (_req, res, ctx) => res(ctx.status(500))),
+      rest.post(apiRoutes.esgfSearchSTAC.path, (_req, res, ctx) =>
+        res(ctx.status(200), ctx.json({ type: 'FeatureCollection', features: [] })),
+      ),
+    );
+
+    const reqUrl = `${apiRoutes.esgfSearchSTAC.path}?project_id=CMIP6`;
+    const result = await fetchSearchResults({ reqUrl });
+
+    // stac flag still true, facets empty because aggregations failed
+    expect(result.stac).toBe(true);
+    expect(result.facets).toEqual({});
+    // status should reflect aggregation failure (fetchSTACSearchResults sets non-200 status)
+    expect(result.status).toBe(500);
+  });
+
+  it('throws error when STAC aggregations fails', async () => {
+    server.use(
+      rest.post(apiRoutes.esgfAggregationsSTAC.path, (_req, res, ctx) => res(ctx.status(500))),
+    );
+
+    await expect(fetchSTACAggregations('CMIP6', undefined)).rejects.toThrow(
+      apiRoutes.esgfAggregationsSTAC.handleErrorMsg('generic' as HTTPCodeType),
+    );
+  });
+
+  it('throws error when STAC search endpoint fails', async () => {
+    server.use(rest.post(apiRoutes.esgfSearchSTAC.path, (_req, res, ctx) => res(ctx.status(500))));
+
+    const reqUrl = `${apiRoutes.esgfSearchSTAC.path}?project_id=CMIP6`;
+    await expect(fetchSearchResults({ reqUrl })).rejects.toThrow(
+      apiRoutes.esgfSearchSTAC.handleErrorMsg('generic' as HTTPCodeType),
+    );
+  });
+
+  it('generateWgetScriptSTAC downloads script when assets contain .nc hrefs', () => {
+    const searchResults = [
+      rawStacAssetFixture({
+        id: 'bar',
+        title: 'Bar Title',
+        assets: {
+          a1: stacAssetFixture({ id: 'a1', href: 'http://example.com/file1.nc' }),
+          a2: stacAssetFixture({ id: 'a2', href: 'http://example.com/file2.txt' }),
+        },
+      }),
+    ];
+
+    const result = generateWgetScriptSTAC(searchResults);
+    expect(result).toBe(true);
+    expect(downloadFileForUser).toHaveBeenCalledTimes(1);
+    expect(downloadFileForUser).toHaveBeenCalledWith(
+      expect.stringContaining('wget_stac_script'),
+      expect.stringContaining('wget http://example.com/file1.nc'),
+    );
+  });
+
+  it('generateWgetScriptSTAC returns false when no .nc hrefs present', () => {
+    const searchResults = [
+      rawStacAssetFixture({
+        id: 'foo',
+        title: 'Foo Title',
+        assets: {
+          a: stacAssetFixture({ id: 'a', href: 'http://example.com/file2.txt' }),
+        },
+      }),
+    ];
+
+    const spy = jest.fn(downloadFileForUser).mockImplementation(() => {});
+    const result = generateWgetScriptSTAC(searchResults);
+    expect(result).toBe(false);
+    expect(spy).not.toHaveBeenCalled();
+
+    spy.mockRestore();
   });
 });

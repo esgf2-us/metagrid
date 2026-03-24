@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import customRender from '../../test/custom-render';
@@ -8,7 +8,12 @@ import { matchMedia, setMedia } from 'mock-match-media';
 import RightMenu, { Props } from './RightMenu';
 import { mockConfig, mockKeycloakToken, AtomWrapper } from '../../test/jestTestFunctions';
 import { localStorageMock, tempStorageSetMock } from '../../test/mock/mockStorage';
-import { activeSearchQueryFixture } from '../../test/mock/fixtures';
+import {
+  activeSearchQueryFixture,
+  rawSearchResultFixture,
+  rawStacAssetFixture,
+  userSearchQueryFixture,
+} from '../../test/mock/fixtures';
 import App from '../App/App';
 import { AppStateKeys } from '../../common/atoms';
 
@@ -202,6 +207,63 @@ it('displays correct cart and saved searches badge counts', async () => {
   expect(savedSearchesBadge).toBeTruthy();
 });
 
+it('counts STAC items and STAC saved searches when STAC is enabled', async () => {
+  // Prepare cart items: one non-STAC and one STAC asset
+  const nonStacItem = rawSearchResultFixture({ id: 'non-stac', isStac: false });
+  const stacItem = rawStacAssetFixture({ id: 'stac-asset' });
+
+  // Set the atom values for userCart
+  AtomWrapper.modifyAtomValue(AppStateKeys.userCart, [nonStacItem, stacItem]);
+
+  // Prepare saved searches: one non-STAC and one STAC
+  const nonStacSearch = userSearchQueryFixture({ project: { name: 'test', isSTAC: false } as any });
+  const stacSearch = userSearchQueryFixture({ project: { name: 'CMIP6', isSTAC: true } as any });
+
+  AtomWrapper.modifyAtomValue(AppStateKeys.userSearchQueries, [nonStacSearch, stacSearch]);
+
+  // Render with atoms enabled
+  customRender(<RightMenu {...rightMenuProps} />, { usesAtoms: true });
+
+  // Scope checks to specific link elements to avoid ambiguous matches
+  const cartLink = await screen.findByTestId('cartPageLink');
+  expect(cartLink).toBeTruthy();
+  expect(within(cartLink).getByText('2')).toBeTruthy(); // only non-STAC item counted
+
+  const savedSearchesLink = await screen.findByText('Saved Searches');
+  expect(savedSearchesLink).toBeTruthy();
+  expect(within(savedSearchesLink).getByText('2')).toBeTruthy(); // only non-STAC saved searches counted
+});
+
+it('does not count STAC items and STAC saved searches when STAC is disabled', async () => {
+  // Disable STAC
+  window.METAGRID.STAC_URL = '';
+
+  // Prepare cart items: one non-STAC and one STAC asset
+  const nonStacItem = rawSearchResultFixture({ id: 'non-stac', isStac: false });
+  const stacItem = rawStacAssetFixture({ id: 'stac-asset' });
+
+  // Set the atom values for userCart
+  AtomWrapper.modifyAtomValue(AppStateKeys.userCart, [nonStacItem, stacItem]);
+
+  // Prepare saved searches: one non-STAC and one STAC
+  const nonStacSearch = userSearchQueryFixture({ project: { name: 'test', isSTAC: false } as any });
+  const stacSearch = userSearchQueryFixture({ project: { name: 'CMIP6', isSTAC: true } as any });
+
+  AtomWrapper.modifyAtomValue(AppStateKeys.userSearchQueries, [nonStacSearch, stacSearch]);
+
+  // Render with atoms enabled
+  customRender(<RightMenu {...rightMenuProps} />, { usesAtoms: true });
+
+  // Scope checks to specific link elements to avoid ambiguous matches
+  const cartLink = await screen.findByTestId('cartPageLink');
+  expect(cartLink).toBeTruthy();
+  expect(within(cartLink).getByText('1')).toBeTruthy(); // only non-STAC item counted
+
+  const savedSearchesLink = await screen.findByText('Saved Searches');
+  expect(savedSearchesLink).toBeTruthy();
+  expect(within(savedSearchesLink).getByText('1')).toBeTruthy(); // only non-STAC saved searches counted
+});
+
 describe('Dark Mode', () => {
   it('gives precedence to stored preference over prefers-color-scheme', () => {
     // Set the initial preference to dark mode
@@ -251,4 +313,19 @@ describe('Dark Mode', () => {
       expect(screen.findByTestId('isDarkModeSwitch')).toBeChecked(); // Dark mode should be enabled
     });
   });
+});
+
+it("does not display sign in when authentication method is 'none'", async () => {
+  // Ensure auth method is set to none
+  mockConfig.AUTHENTICATION_METHOD = 'none';
+
+  customRender(<RightMenu {...rightMenuProps} />);
+
+  // Ensure component rendered
+  const rightMenuComponent = await screen.findByTestId('right-menu');
+  expect(rightMenuComponent).toBeTruthy();
+
+  // There should be no sign-in user icon rendered
+  const signInIcon = screen.queryByRole('img', { name: 'user' });
+  expect(signInIcon).not.toBeInTheDocument();
 });

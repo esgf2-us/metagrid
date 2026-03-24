@@ -1,7 +1,7 @@
 import { atomWithStorage } from 'jotai/utils';
 import { atom } from 'jotai';
 import { UserCart, UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
-import { ParsedFacets } from '../components/Facets/types';
+import { ParsedFacets, RawProject } from '../components/Facets/types';
 import { GlobusTaskItem, GlobusEndpoint } from '../components/Globus/types';
 import { NodeStatusArray } from '../components/NodeStatus/types';
 import { ActiveSearchQuery, RawSearchResults } from '../components/Search/types';
@@ -9,7 +9,9 @@ import { projectBaseQuery } from './utils';
 
 export enum AppStateKeys {
   isDarkMode = 'isDarkMode',
+  currentProject = 'currentProject',
   userCart = 'userCart',
+  userChosenEndpoint = 'userChosenEndpoint',
   userSearchQueries = 'userSearchQueries',
   activeSearchQuery = 'activeSearchQuery',
   currentRequestURL = 'currentRequestURL',
@@ -28,7 +30,7 @@ export enum GlobusStateKeys {
   accessToken = 'globusAccessToken',
   userChosenEndpoint = 'globusChosenEndpoint',
   globusTransferGoalsState = 'globusTransferGoalsState',
-  globusAuth = 'globusAuth',
+  globusAuthScope = 'globusAuthScope',
   globusTaskItems = 'globusTaskItems',
   transferToken = 'globusTransferToken',
   savedGlobusEndpoints = 'savedGlobusEndpoints',
@@ -61,6 +63,13 @@ export const currentRequestQueryAtom = atomWithStorage<string>(
 export const isDarkModeAtom = atomWithStorage<boolean>(
   AppStateKeys.isDarkMode,
   darkModeDefault,
+  undefined,
+  { getOnInit: true },
+);
+
+export const currentProjectAtom = atomWithStorage<RawProject>(
+  AppStateKeys.currentProject,
+  {} as RawProject,
   undefined,
   { getOnInit: true },
 );
@@ -100,6 +109,13 @@ export const globusTaskItemsAtom = atomWithStorage<GlobusTaskItem[]>(
 export const savedGlobusEndpointsAtom = atomWithStorage<GlobusEndpoint[]>(
   GlobusStateKeys.savedGlobusEndpoints,
   [],
+  undefined,
+  { getOnInit: true },
+);
+
+export const userChosenEndpointAtom = atomWithStorage<GlobusEndpoint | null>(
+  AppStateKeys.userChosenEndpoint,
+  null,
   undefined,
   { getOnInit: true },
 );

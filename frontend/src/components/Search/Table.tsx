@@ -1,4 +1,5 @@
 import {
+  CodeOutlined,
   DatabaseTwoTone,
   DownCircleOutlined,
   DownloadOutlined,
@@ -7,12 +8,15 @@ import {
   RightCircleOutlined,
 } from '@ant-design/icons';
 import { Form, Select, Table as TableD, Tooltip, message } from 'antd';
+import type { TableColumnsType } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React from 'react';
 import { useAtomValue } from 'jotai';
+import stacIcon from '../../assets/img/STAC-favicon.png';
 import { fetchWgetScript, ResponseError } from '../../api';
 import {
+  createEsgpullCommand,
   formatBytes,
   getCachedPagination,
   getCurrentAppPage,
@@ -33,10 +37,12 @@ import {
   Sorts,
   TextInputs,
 } from './types';
-import GlobusToolTip from '../NodeStatus/GlobusToolTip';
+import GlobusToolTip from '../Globus/GlobusToolTip';
 import { topDataRowTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 import { userCartAtom } from '../../common/atoms';
 import { AppPage } from '../../common/types';
+import { createCustomIcon } from '../NavBar';
+import { generateWgetScriptSTAC } from '../../common/STAC';
 
 export type Props = {
   loading: boolean;
@@ -74,12 +80,10 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
 
   const showStatus = window.METAGRID.STATUS_URL !== null;
 
-  // Add options to this constant as needed
-  type DatasetDownloadTypes = 'wget' | 'Globus';
+  const stacDisabled = window.METAGRID.STAC_URL === '' || window.METAGRID.STAC_URL === null;
 
-  // If a record supports downloads from the allowed downloads, it will render
-  // in the drop downs
-  const allowedDownloadTypes: DatasetDownloadTypes[] = ['wget'];
+  // Add options to this constant as needed
+  type DatasetDownloadTypes = 'wget' | 'Globus' | 'esgpull';
 
   const handleChange: OnChange = (pagination, filters, sorter) => {
     setSortedInfo(sorter as Sorts);
@@ -87,6 +91,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
 
   let cachedPage: number | undefined;
   let cachedSize: number | undefined;
+
   if (getCurrentAppPage() !== AppPage.Cart) {
     const pagination = getCachedPagination();
     cachedPage = pagination.page;
@@ -95,6 +100,8 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
 
   // Clamp the results count to a maximum of 10,000
   const clampedResultCount = totalResults ? Math.min(totalResults, MAX_RESULTS) : undefined;
+
+  const filteredResults = results.filter((result) => !result.isStac || !stacDisabled);
 
   const tableConfig = {
     size: 'small' as SizeType,
@@ -168,17 +175,16 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
           (userCart.some((item) => item.id === record.id) || record.retracted === true),
       }),
     },
-    hasData: results.length > 0,
+    hasData: filteredResults.length > 0,
   };
 
-  const columns = [
+  const columns: TableColumnsType<RawSearchResult> = [
     {
       align: 'right' as AlignType,
       fixed: 'left' as FixedType,
       title: 'Cart',
       key: 'cart',
-      width: 50,
-      render: (value: string, record: RawSearchResult, index: number) => {
+      render: (value: unknown, record: RawSearchResult, index: number) => {
         if (userCart.some((dataset: RawSearchResult) => dataset.id === record.id)) {
           return (
             <Button
@@ -206,8 +212,18 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       title: '',
       dataIndex: 'data_node',
       key: 'node_status',
-      width: 35,
-      render: (data_node: string) => {
+      render: (data_node: string, record: RawSearchResult) => {
+        if (record.isStac) {
+          return (
+            <Tooltip title="STAC Dataset">
+              {createCustomIcon(stacIcon, 'STAC', {
+                height: '24px',
+                width: '32px',
+                marginRight: '0',
+              })}
+            </Tooltip>
+          );
+        }
         if (!showStatus) {
           return (
             <Tooltip
@@ -277,9 +293,11 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
         return (a.size || 0) - (b.size || 0);
       },
       sortOrder: sortedInfo.columnKey === 'size' ? sortedInfo.order : null,
-      render: (size: number) => (
-        <p className={topDataRowTargets.totalSize.class()}>{size ? formatBytes(size) : 'N/A'}</p>
-      ),
+      render: (size: number) => {
+        return (
+          <p className={topDataRowTargets.totalSize.class()}>{size ? formatBytes(size) : 'N/A'}</p>
+        );
+      },
     },
     {
       align: 'center' as AlignType,
@@ -293,7 +311,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       },
       sortOrder: sortedInfo.columnKey === 'version' ? sortedInfo.order : null,
       render: (version: string) => (
-        <p className={topDataRowTargets.versionText.class()}>{version}</p>
+        <p className={topDataRowTargets.versionText.class()}>{version || 'N/A'}</p>
       ),
     },
     {
@@ -301,8 +319,18 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       fixed: 'right' as FixedType,
       title: 'Download Options',
       key: 'download',
-      width: 180,
       render: (record: RawSearchResult) => {
+        const SUCCESS_MSG = 'Wget script generated successfully!';
+        const STAC_ERROR_MSG =
+          'No file links found in the selected dataset, wget script was not generated.';
+        const downloadTypesAvailable: DatasetDownloadTypes[] = ['wget'];
+
+        if (record.isStac && record.globus_link) {
+          downloadTypesAvailable.push('Globus');
+        } else if (!record.isStac && record.id) {
+          downloadTypesAvailable.push('esgpull');
+        }
+
         const formKey = `download-${record.id}`;
 
         /**
@@ -311,20 +339,48 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
         const handleDownloadForm = (downloadType: DatasetDownloadTypes): void => {
           /* istanbul ignore else */
           if (downloadType === 'wget') {
-            showNotice(messageApi, 'The wget script is generating, please wait momentarily.', {
-              duration: 3,
-              type: 'info',
-            });
-            fetchWgetScript([record.id], filenameVars)
-              .then(() => {
-                showNotice(messageApi, 'Wget script downloaded successfully!', {
-                  duration: 3,
+            if (record.isStac) {
+              // Generate file for STAC selections
+              const stacSuccess = generateWgetScriptSTAC([record]);
+
+              if (stacSuccess) {
+                showNotice(messageApi, SUCCESS_MSG, {
+                  duration: 4,
                   type: 'success',
                 });
-              })
-              .catch((error: ResponseError) => {
-                showError(messageApi, error.message);
+              } else {
+                showError(messageApi, STAC_ERROR_MSG);
+              }
+            } else {
+              showNotice(messageApi, 'The wget script is generating, please wait momentarily.', {
+                duration: 3,
+                type: 'info',
               });
+              fetchWgetScript([record.id], filenameVars)
+                .then(() => {
+                  showNotice(messageApi, SUCCESS_MSG, {
+                    duration: 3,
+                    type: 'success',
+                  });
+                })
+                .catch((error: ResponseError) => {
+                  showError(messageApi, error.message);
+                });
+            }
+          } else if (downloadType === 'esgpull' && record.id) {
+            if (navigator && navigator.clipboard && typeof record.master_id === 'string') {
+              navigator.clipboard
+                .writeText(createEsgpullCommand({}, true, record.master_id))
+                .then(() => {
+                  showNotice(messageApi, 'Esgpull download dataset command copied to clipboard!', {
+                    duration: 3,
+                    type: 'success',
+                    icon: <CodeOutlined />,
+                  });
+                });
+            }
+          } else if (downloadType === 'Globus' && record.globus_link) {
+            window.open(record.globus_link, '_blank');
           }
         };
 
@@ -338,14 +394,14 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
               onFinish={({ [formKey]: download }) =>
                 handleDownloadForm(download as DatasetDownloadTypes)
               }
-              initialValues={{ [formKey]: allowedDownloadTypes[0] }}
+              initialValues={{ [formKey]: downloadTypesAvailable[0] }}
             >
               <Form.Item name={formKey}>
                 <Select
                   disabled={record.retracted === true}
                   className={topDataRowTargets.downloadScriptOptions.class()}
                   style={{ width: 100 }}
-                  options={allowedDownloadTypes.map((option) => {
+                  options={downloadTypesAvailable.map((option) => {
                     return {
                       key: `${formKey}-${option}`,
                       value: option,
@@ -388,8 +444,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
           title: '',
           dataIndex: 'data_node',
           key: 'globus_enabled',
-          width: 1,
-          render: () => <div></div>,
+          render: () => <></>,
         },
   ];
 
@@ -397,11 +452,12 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
     <TableD
       {...tableConfig}
       columns={columns}
-      dataSource={results}
+      dataSource={filteredResults}
       onChange={handleChange}
       rowKey="id"
       size="small"
       scroll={{ x: 'max-content' }}
+      tableLayout="auto"
       onRow={(record, rowIndex) => {
         return {
           id: `cart-items-row-${rowIndex}`,

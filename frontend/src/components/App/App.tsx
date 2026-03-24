@@ -95,8 +95,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   const [userSearchQueries, setUserSearchQueries] =
     useAtom<UserSearchQueries>(userSearchQueriesAtom);
 
-  const [activeSearchQuery, setActiveSearchQuery] =
-    useAtom<ActiveSearchQuery>(activeSearchQueryAtom);
+  const setActiveSearchQuery = useSetAtom(activeSearchQueryAtom);
 
   const setSupportModalVisible = useSetAtom(supportModalVisibleAtom);
 
@@ -210,18 +209,6 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     }
   }, [loadedNodeStatus]);
 
-  const handleTextSearch = (selectedProject: RawProject, text: string): void => {
-    if (activeSearchQuery.textInputs.includes(text as never)) {
-      showError(messageApi, `Input "${text}" has already been applied`);
-    } else {
-      setActiveSearchQuery({
-        ...activeSearchQuery,
-        project: selectedProject,
-        textInputs: [...activeSearchQuery.textInputs, text],
-      });
-    }
-  };
-
   const handleUpdateCart = (selectedItems: RawSearchResults, operation: 'add' | 'remove'): void => {
     let newCart: UserCart = [];
     let newSelections: RawSearchResults = [];
@@ -274,7 +261,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     >
       <Layout>
         <Routes>
-          <Route path="*" element={<NavBar onTextSearch={handleTextSearch}></NavBar>} />
+          <Route path="*" element={<NavBar></NavBar>} />
         </Routes>
         <Layout id="body-layout">
           {contextHolder}

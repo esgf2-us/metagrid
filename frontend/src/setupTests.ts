@@ -18,7 +18,7 @@ import {
   userSearchQueriesFixture,
 } from './test/mock/fixtures';
 import { ActiveSearchQuery, RawSearchResults } from './components/Search/types';
-import { ParsedFacets } from './components/Facets/types';
+import { ParsedFacets, RawProject } from './components/Facets/types';
 import { NodeStatusArray } from './components/NodeStatus/types';
 import { UserCart, UserSearchQueries } from './components/Cart/types';
 import { GlobusEndpoint, GlobusTaskItem } from './components/Globus/types';
@@ -37,6 +37,8 @@ import {
   CartStateKeys,
   GlobusStateKeys,
   userCartAtom,
+  userChosenEndpointAtom,
+  currentProjectAtom,
 } from './common/atoms';
 import { localStorageMock, sessionStorageMock } from './test/mock/mockStorage';
 
@@ -49,7 +51,11 @@ Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 Object.defineProperty(window, 'sessionStorage', { value: sessionStorageMock });
 Object.defineProperty(window, 'METAGRID', { value: mockConfig });
 
-globalThis.TextEncoder = TextEncoder;
+// Assign TextEncoder polyfill only if not present to avoid type conflicts
+if (typeof globalThis.TextEncoder === 'undefined') {
+  // @ts-expect-error: Assigning polyfill for test environment
+  globalThis.TextEncoder = TextEncoder;
+}
 
 beforeAll(() => {
   server.listen();
@@ -80,6 +86,12 @@ beforeAll(() => {
     false,
   );
   AtomWrapper.setAtomValue<boolean>(isDarkModeAtom, AppStateKeys.isDarkMode, false, true);
+  AtomWrapper.setAtomValue<RawProject>(
+    currentProjectAtom,
+    AppStateKeys.currentProject,
+    {} as RawProject,
+    false,
+  );
   AtomWrapper.setAtomValue<UserCart>(userCartAtom, AppStateKeys.userCart, userCartFixture(), true);
   AtomWrapper.setAtomValue<UserSearchQueries>(
     userSearchQueriesAtom,
@@ -97,6 +109,12 @@ beforeAll(() => {
     cartItemSelectionsAtom,
     CartStateKeys.cartItemSelections,
     [],
+    true,
+  );
+  AtomWrapper.setAtomValue<GlobusEndpoint | null>(
+    userChosenEndpointAtom,
+    GlobusStateKeys.userChosenEndpoint,
+    null,
     true,
   );
   AtomWrapper.setAtomValue<GlobusEndpoint[]>(
