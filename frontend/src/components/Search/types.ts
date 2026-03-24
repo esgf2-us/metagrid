@@ -58,10 +58,10 @@ export type Pagination = {
   pageSize: number;
 };
 
-export type OnChange = NonNullable<TableProps<RawSearchResult>['onChange']>;
+export type OnChange<T> = NonNullable<TableProps<T>['onChange']>;
 
 export type GetSingle<T> = T extends (infer U)[] ? U : never;
-export type Sorts = GetSingle<Parameters<OnChange>[2]>;
+export type Sorts<T> = GetSingle<Parameters<OnChange<T>>[2]>;
 
 export type AlignType = 'left' | 'center' | 'right';
 export type FixedType = 'left' | 'right' | boolean;
@@ -80,7 +80,7 @@ export type StacAsset = {
   id: string;
   access: string[];
   description: string;
-  alternatename: string;
+  alternateName: string;
   name: string;
   roles: string[];
   href: string;
@@ -88,7 +88,8 @@ export type StacAsset = {
   'file:size': number;
   'file:checksum': string;
   title?: string;
-  [key: string]: boolean | string | string[] | number | undefined;
+  alternate?: { [key: string]: StacAsset };
+  [key: string]: boolean | string | string[] | { [key: string]: StacAsset } | number | undefined;
 };
 
 export type StacAggregations = {

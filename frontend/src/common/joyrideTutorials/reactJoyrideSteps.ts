@@ -208,6 +208,7 @@ export const innerDataRowTargets = {
   citationTab: new TargetObject(),
   additionalTab: new TargetObject(),
   filesTitle: new TargetObject(),
+  dataNode: new TargetObject(),
   dataSize: new TargetObject(),
   downloadDataBtn: new TargetObject(),
   copyOPeNDAPBtn: new TargetObject(),

@@ -14,7 +14,13 @@ import { useAtomValue } from 'jotai';
 import openDapIcon from '../../assets/img/opendap_logo.png';
 import { fetchDatasetFiles, openDownloadURL } from '../../api';
 import { CSSinJS } from '../../common/types';
-import { formatBytes, showError, showNotice, splitStringByChar } from '../../common/utils';
+import {
+  formatBytes,
+  objectHasKey,
+  showError,
+  showNotice,
+  splitStringByChar,
+} from '../../common/utils';
 import Button from '../General/Button';
 import {
   AlignType,
@@ -29,6 +35,7 @@ import {
 import { innerDataRowTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 import { currentProjectAtom } from '../../common/atoms';
 import { createCustomIcon } from '../NavBar';
+import SubFilesTable from './SubFilesTable';
 
 export type DownloadUrls = {
   HTTPServer: string;
@@ -88,6 +95,7 @@ const metadataKeysToDisplay = [
   'alternate:name',
   'cf_standard_name',
   'checksum_type',
+  'created',
   'dataset_id',
   'description',
   'href',
@@ -97,7 +105,9 @@ const metadataKeysToDisplay = [
   'name',
   'roles',
   'timestamp',
+  'title',
   'type',
+  'updated',
   'variable',
   'variable_id',
   'variable_long_name',
@@ -106,7 +116,7 @@ const metadataKeysToDisplay = [
 ];
 
 const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, filenameVars }) => {
-  const [sortedInfo, setSortedInfo] = useState<Sorts>({});
+  const [sortedInfo, setSortedInfo] = useState<Sorts<RawSearchResult>>({});
 
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -139,8 +149,8 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
     runFetchDatasetFiles();
   }, [runFetchDatasetFiles, inputRecord, paginationOptions, filenameVars]);
 
-  const handleChange: OnChange = (pagination, filters, sorter) => {
-    setSortedInfo(sorter as Sorts);
+  const handleChange: OnChange<RawSearchResult> = (pagination, filters, sorter) => {
+    setSortedInfo(sorter as Sorts<RawSearchResult>);
   };
 
   const handlePageChange = (page: number, pageSize: number): void => {
@@ -214,17 +224,30 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
       onShowSizeChange: (_current: number, size: number) => handlePageSizeChange(size),
     } as TablePaginationConfig,
     expandable: {
-      expandedRowRender: (record: RawSearchResult) =>
-        Object.keys(record).map((key) => {
-          if (record[key] && record[key] !== 'null' && metadataKeysToDisplay.includes(key)) {
-            return (
-              <p key={key} style={{ margin: 0 }}>
-                <span style={{ fontWeight: 'bold' }}>{key}</span>: {JSON.stringify(record[key])}
-              </p>
-            );
-          }
-          return null;
-        }),
+      expandedRowRender: (record: RawSearchResult) => {
+        let subTable = null;
+        if (objectHasKey(record, 'alternate')) {
+          const { alternate } = record;
+          subTable = <SubFilesTable alternate={alternate as { [key: string]: StacAsset }} />;
+        }
+
+        return (
+          <>
+            {Object.keys(record).map((key) => {
+              if (record[key] && record[key] !== 'null' && metadataKeysToDisplay.includes(key)) {
+                return (
+                  <p key={key} style={{ margin: 0 }}>
+                    <span style={{ fontWeight: 'bold' }}>{key}</span>: {JSON.stringify(record[key])}
+                  </p>
+                );
+              }
+              return null;
+            })}
+            <br />
+            {subTable}
+          </>
+        );
+      },
 
       expandIcon: ({
         expanded,
@@ -379,6 +402,24 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
       /* istanbul ignore next -- @preserve */
       render: (title: string) => {
         return <div className={innerDataRowTargets.filesTitle.class()}>{title}</div>;
+      },
+    },
+    {
+      title: 'Replica Nodes',
+      dataIndex: 'alternate',
+      key: 'dataNode',
+      /* istanbul ignore next -- @preserve */
+      render: (alternates: object, record: RawSearchResult) => {
+        const mainDataNode = record['alternate:name'] as string;
+        if (!alternates || Object.keys(alternates).length === 0) {
+          return <div>{mainDataNode}</div>;
+        }
+
+        return (
+          <div className={innerDataRowTargets.dataNode.class()}>
+            {[mainDataNode, ...Object.keys(alternates)].toString().replaceAll(',', ', ')}
+          </div>
+        );
       },
     },
     {
