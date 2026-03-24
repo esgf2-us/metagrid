@@ -16,19 +16,31 @@ import {
   UserSearchQueries,
   UserSearchQuery,
 } from '../components/Cart/types';
-import { ActiveFacets, RawProjects } from '../components/Facets/types';
+import { ActiveFacets, RawProject, RawProjects } from '../components/Facets/types';
 import { NodeStatusArray, RawNodeStatus } from '../components/NodeStatus/types';
 import {
   ActiveSearchQuery,
   Pagination,
   RawCitation,
   ResultType,
+  StacAggregations,
   TextInputs,
 } from '../components/Search/types';
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
 import apiRoutes, { ApiRoute, HTTPCodeType } from './routes';
 import { GlobusEndpointSearchResults } from '../components/Globus/types';
-import { cachePagination, getCachedPagination, getCachedSearchResults } from '../common/utils';
+import {
+  cachePagination,
+  downloadFileForUser,
+  getCachedPagination,
+  getCachedSearchResults,
+} from '../common/utils';
+import {
+  aggregationsToFacetsData,
+  convertSearchParamsIntoStacFilter,
+  STAC_AGGREGATION_FACETS,
+  STAC_PROJECTS,
+} from '../common/STAC';
 
 export interface ResponseError extends Error {
   status?: number;
@@ -40,22 +52,39 @@ export interface SubmissionResult {
   status: number;
   successes: Record<string, unknown>[];
   failures: string[];
+  auth_url: string | undefined;
 }
 
-const getCookie = (name: string): null | string => {
+export const getCookie = (name: string): null | string => {
   let cookieValue = null;
+  const cookieName = name === 'csrftoken' ? 'csrftoken' : `metagrid_${name}`;
   if (document && document.cookie && document.cookie !== '') {
     const cookies = document.cookie.split(';');
     for (let i = 0; i < cookies.length; i += 1) {
       const cookie = cookies[i].trim();
       // Does this cookie string begin with the name we want?
-      if (cookie.substring(0, name.length + 1) === `${name}=`) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+      if (cookie.substring(0, cookieName.length + 1) === `${cookieName}=`) {
+        cookieValue = decodeURIComponent(cookie.substring(cookieName.length + 1));
         break;
       }
     }
   }
   return cookieValue;
+};
+
+export const setCookie = (name: string, value: string, expDays = 7, path = '/'): void => {
+  let expires = '';
+  if (expDays) {
+    const date = new Date();
+    date.setTime(date.getTime() + expDays * 24 * 60 * 60 * 1000);
+    expires = `expires=${date.toUTCString()}`;
+  }
+  const cookieSettings = 'Secure; SameSite=None;';
+  document.cookie = `metagrid_${name}=${encodeURIComponent(value)}; ${expires}; path=${path}; ${cookieSettings}`;
+};
+
+export const deleteCookie = (name: string, path = '/'): void => {
+  document.cookie = `metagrid_${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path};`;
 };
 
 /**
@@ -83,6 +112,15 @@ export const openDownloadURL = (url: string): void => {
 export const errorMsgBasedOnHTTPStatusCode = (error: ResponseError, route: ApiRoute): string => {
   // Indicates that an HTTP response status code was returned from the server
   if (error.response) {
+    // Normalize status to a number when possible
+    /* istanbul ignore next */
+    const statusNum = Number(error.response.status) || 0;
+
+    // For server errors (5xx) return the generic error message for the route
+    if (statusNum >= 500) {
+      return route.handleErrorMsg('generic');
+    }
+    // For other HTTP statuses return the mapped message (may be empty string for some codes)
     return route.handleErrorMsg(error.response.status);
   }
 
@@ -310,14 +348,26 @@ export const fetchProjects = async (): Promise<{
         }
       },
     })
-    .then(
-      (res) =>
-        res.data as Promise<{
-          results: RawProjects;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          [key: string]: any;
-        }>,
-    )
+    .then(async (res) => {
+      const data = (await res.data) as {
+        results: RawProjects;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        [key: string]: any;
+      };
+
+      const additionalProjects = window.METAGRID.STAC_URL ? STAC_PROJECTS : [];
+
+      if (data.results) {
+        return {
+          ...res,
+          results: [
+            ...data.results.filter((p) => p.name !== 'All (except CMIP6)'),
+            ...additionalProjects,
+          ],
+        };
+      }
+      return { ...res, results: additionalProjects };
+    })
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.projects));
     });
@@ -372,7 +422,11 @@ export const generateSearchURLQuery = (
     activeFacets,
     textInputs,
   } = activeSearchQuery;
-  const baseRoute = `${apiRoutes.esgfSearch.path}?`;
+
+  const { isSTAC } = activeSearchQuery.project;
+
+  const baseRoute = isSTAC ? `${apiRoutes.esgfSearchSTAC.path}?` : `${apiRoutes.esgfSearch.path}?`;
+
   const replicaParam = convertResultTypeToReplicaParam(resultType);
 
   // The base params include facet fields to return for each dataset and the pagination options
@@ -408,7 +462,75 @@ export const generateSearchURLQuery = (
     },
   );
 
+  if (isSTAC) {
+    return `${baseRoute}${baseParams}${`project_id=${(project as RawProject).projectName}`}&${activeFacetsParams}`;
+  }
+
   return `${baseRoute}${baseParams}${textInputsParams}&${activeFacetsParams}`;
+};
+
+/**
+ * HTTP Request Method: POST
+ * HTTP Response Code: 200 OK
+ */
+export const postSTACSearch = async (
+  projectName: string,
+  limit: number,
+  filter: { op: string; args: unknown } | undefined = undefined,
+): Promise<Record<string, unknown>> => {
+  return axios
+    .post(apiRoutes.esgfSearchSTAC.path, {
+      collections: [projectName],
+      limit,
+      filter,
+    })
+    .then((res) => res.data)
+    .catch((error: ResponseError) => {
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearchSTAC));
+    });
+};
+
+export const fetchSTACAggregations = async (
+  projectId: string,
+  filter: { op: string; args: unknown } | undefined,
+): Promise<StacAggregations> => {
+  return axios
+    .post(`${apiRoutes.esgfAggregationsSTAC.path}`, {
+      collections: [projectId],
+      aggregations: STAC_AGGREGATION_FACETS[projectId],
+      filter,
+      'filter-lang': 'cql2-json',
+    })
+    .then((res) => {
+      return res.data;
+    })
+    .catch((error: ResponseError) => {
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfAggregationsSTAC));
+    });
+};
+
+export const fetchSTACSearchResults = async (
+  reqUrlStr: string,
+  projectName: string,
+): // eslint-disable-next-line @typescript-eslint/no-explicit-any
+Promise<{ [key: string]: any }> => {
+  let status = 200;
+
+  const filter = convertSearchParamsIntoStacFilter(reqUrlStr, projectName);
+
+  const aggregations = await fetchSTACAggregations(projectName, filter)
+    .then((res) => {
+      return res;
+    })
+    .catch((error: ResponseError) => {
+      status = error.cause === 422 ? 422 : (error.cause as number) || 500;
+    });
+
+  const aggregationsToFacets = aggregationsToFacetsData(aggregations || { aggregations: [] });
+
+  const searchResults = await postSTACSearch(projectName, 9999, filter);
+
+  return { search: searchResults, facets: aggregationsToFacets, stac: true, status };
 };
 
 /**
@@ -450,13 +572,48 @@ export const fetchSearchResults = async (
   let finalUrl = reqUrlStr;
   const cachedPagination = getCachedPagination();
   // If the change to the request URL was not the offset, reset the offset to 0
-  if (reqUrlOffset === cachedUrlOffset) {
+  /* istanbul ignore next */
+  if (reqUrlOffset === cachedUrlOffset || (!reqUrlOffset && cachedUrlOffset)) {
     finalUrl = reqUrlStr.replace(/offset=\d+/, 'offset=0');
     // Cache the new offset value so it is reflected in the pagination
     cachePagination({
       page: 1,
       pageSize: cachedPagination.pageSize,
     });
+  }
+
+  if (finalUrl.includes('/stac/search?')) {
+    // If the request URL is for STAC search, fetch results using the STAC API
+    const params = new URLSearchParams(reqUrlStr.split('?')[1]);
+    const projectName = params.get('project_id') || 'CMIP6';
+
+    return fetchSTACSearchResults(finalUrl, projectName)
+      .then((results) => {
+        // Prevent breaking the app if the response is not successful
+        if (results.status !== 200) {
+          // Handle the case where status is 422 due to a offset value that is too high
+          /* istanbul ignore next */
+          if (results.status === 422) {
+            cachePagination({
+              page: 1,
+              pageSize: cachedPagination.pageSize,
+            });
+            throw new Error('', { cause: 422 });
+          }
+        }
+
+        return results;
+      })
+      .catch((error: ResponseError) => {
+        /* istanbul ignore next */
+        if (error.cause === 422) {
+          throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearchSTAC), {
+            cause: 422,
+          });
+        } else {
+          throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearchSTAC));
+        }
+      });
   }
 
   return fetch(finalUrl)
@@ -472,7 +629,10 @@ export const fetchSearchResults = async (
           throw new Error('', { cause: 422 });
         }
       }
-      return results.json();
+
+      const resultsJson = results.json();
+
+      return resultsJson;
     })
     .catch((error: ResponseError) => {
       if (error.cause === 422) {
@@ -542,7 +702,7 @@ export type FetchDatasetFilesProps = {
  * HTTP Request Method: GET
  * HTTP Response: 200 OK
  *
- * This function is invokved by react-async package's deferFn method.
+ * This function is invoked by react-async package's deferFn method.
  * https://docs.react-async.com/api/options#deferfn
  *
  * Example output: https://esgf-node.llnl.gov/esg-search/search/?dataset_id=cmip5.output1.BCC.bcc-csm1-1.abrupt4xCO2.mon.ocean.Omon.r2i1p1.v20120202%7Caims3.llnl.gov&format=application%2Fsolr%2Bjson&type=File&query=hfds,Omon
@@ -592,26 +752,6 @@ export const fetchDatasetFiles = async (
     });
 };
 
-const returnFileToUser = (fileContent: string): void => {
-  const d = new Date();
-  const fileName = `wget_script_${d.getFullYear()}-${
-    d.getMonth() + 1
-  }-${d.getDate()}_${d.getHours()}-${d.getMinutes()}-${d.getSeconds()}.sh`;
-  const downloadLinkNode = document.createElement('a');
-  downloadLinkNode.setAttribute(
-    'href',
-    `data:text/plain;charset=utf-8,${encodeURIComponent(fileContent)}`,
-  );
-  downloadLinkNode.setAttribute('download', fileName);
-
-  downloadLinkNode.style.display = 'none';
-  document.body.appendChild(downloadLinkNode);
-
-  downloadLinkNode.click();
-
-  document.body.removeChild(downloadLinkNode);
-};
-
 /**
  * Performs wget request from the API.
  *
@@ -622,9 +762,14 @@ export const fetchWgetScript = async (ids: string[], filenameVars?: string[]): P
     query: filenameVars,
   };
 
+  const d = new Date();
+  const fileName = `wget_script_${d.getFullYear()}-${
+    d.getMonth() + 1
+  }-${d.getDate()}_${d.getHours()}-${d.getMinutes()}-${d.getSeconds()}.sh`;
+
   return axios
     .post(apiRoutes.wget.path, data)
-    .then((resp) => returnFileToUser(resp.data as string))
+    .then((resp) => downloadFileForUser(fileName, resp.data as string))
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.wget));
     });
@@ -681,6 +826,17 @@ export const saveSessionValues = async (data: { key: string; value: unknown }[])
   });
 
   await Promise.all(saveFuncs);
+};
+
+export const resetGlobusTokens = async (): Promise<AxiosResponse> => {
+  return axios
+    .get(apiRoutes.globusResetTokens.path)
+    .then((res) => {
+      return res;
+    })
+    .catch((error: ResponseError) => {
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusResetTokens));
+    });
 };
 
 export const startSearchGlobusEndpoints = async (

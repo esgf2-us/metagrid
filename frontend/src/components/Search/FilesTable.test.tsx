@@ -5,9 +5,15 @@ import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import FilesTable, { DownloadUrls, genDownloadUrls, Props } from './FilesTable';
 import customRender from '../../test/custom-render';
-import { ESGFSearchAPIFixture, rawSearchResultFixture } from '../../test/mock/fixtures';
+import {
+  ESGFSearchAPIFixture,
+  rawProjectFixture,
+  rawSearchResultFixture,
+  rawStacAssetFixture,
+} from '../../test/mock/fixtures';
 import { RawSearchResult, RawSearchResults } from './types';
-import { openDropdownList } from '../../test/jestTestFunctions';
+import { AtomWrapper, openDropdownList, printElementContents } from '../../test/jestTestFunctions';
+import { AppStateKeys } from '../../common/atoms';
 
 const user = userEvent.setup();
 
@@ -80,13 +86,18 @@ describe('test genDownloadUrls()', () => {
 });
 
 const defaultProps: Props = {
-  id: 'id',
-  numResults: 1,
+  inputRecord: rawSearchResultFixture(),
+  filenameVars: [],
 };
 
 describe('test FilesTable component', () => {
   it('renders an empty data table when no results are available', async () => {
-    customRender(<FilesTable {...defaultProps} numResults={undefined} />);
+    customRender(
+      <FilesTable
+        {...defaultProps}
+        inputRecord={rawSearchResultFixture({ number_of_files: undefined })}
+      />,
+    );
 
     const component = await screen.findByRole('table');
     expect(component).toBeTruthy();
@@ -144,7 +155,7 @@ describe('test FilesTable component', () => {
 
     const docs = new Array(20)
       .fill(rawSearchResultFixture())
-      .map((obj, index) => ({ ...obj, id: `id_${index}` } as RawSearchResult));
+      .map((obj, index) => ({ ...obj, id: `id_${index}` }) as RawSearchResult);
     const numFound = docs.length;
     const response = {
       ...data,
@@ -155,11 +166,16 @@ describe('test FilesTable component', () => {
     };
     server.use(
       rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
-        res(ctx.status(200), ctx.json(response))
-      )
+        res(ctx.status(200), ctx.json(response)),
+      ),
     );
 
-    customRender(<FilesTable {...defaultProps} numResults={numFound} />);
+    customRender(
+      <FilesTable
+        {...defaultProps}
+        inputRecord={rawSearchResultFixture({ number_of_files: numFound })}
+      />,
+    );
 
     // Select the combobox drop down and update its value to render options
     const paginationList = await screen.findByRole('list');
@@ -209,6 +225,48 @@ describe('test FilesTable component', () => {
 
     await user.click(expandableDownIcon);
   });
+
+  it('renders files table using STAC search results', async () => {
+    const stacRecord = rawStacAssetFixture({
+      assets: {
+        asset1: {
+          id: 'asset1',
+          access: ['public'],
+          description: 'Test asset 1',
+          type: 'image/png',
+          alternatename: 'alternate_foo',
+          name: 'foo',
+          roles: ['data'],
+          href: 'https://example.com/file1.nc',
+          'file:size': 1024,
+          'file:checksum': 'zyx321',
+        },
+        asset2: {
+          id: 'asset2',
+          access: ['public'],
+          description: 'Test asset 2',
+          type: 'image/png',
+          alternatename: 'alternate_foo',
+          name: 'foo',
+          roles: ['data'],
+          href: 'https://example.com/file2.nc',
+          'file:size': 7,
+          'file:checksum': '',
+        },
+      },
+      number_of_files: 2,
+    });
+
+    AtomWrapper.modifyAtomValue(AppStateKeys.currentProject, rawProjectFixture({ isSTAC: true }));
+    customRender(<FilesTable {...defaultProps} inputRecord={stacRecord} />);
+
+    // Table should render and show the asset titles (ids)
+    const table = await screen.findByRole('table');
+    expect(table).toBeTruthy();
+
+    expect(await screen.findByText('asset1')).toBeTruthy();
+    expect(await screen.findByText('asset2')).toBeTruthy();
+  });
 });
 
 describe('test column sorting', () => {
@@ -237,11 +295,13 @@ describe('test column sorting', () => {
   it('sorts by File Title column', async () => {
     server.use(
       rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
-        res(ctx.status(200), ctx.json(response))
-      )
+        res(ctx.status(200), ctx.json(response)),
+      ),
     );
     const colIdx = 1; // The column that File Title is in
-    customRender(<FilesTable id="test" numResults={2} />);
+    customRender(
+      <FilesTable inputRecord={rawSearchResultFixture({ id: 'test', number_of_files: 2 })} />,
+    );
 
     // Check table exists
     const table = await screen.findByRole('table');
@@ -260,8 +320,12 @@ describe('test column sorting', () => {
     expect(cell).toBeTruthy();
     expect(cell).toHaveTextContent('zyx');
 
+    // Get the header row
+    const headerRow = (await screen.findAllByRole('row'))[0];
+    expect(headerRow).toBeTruthy();
+
     // Click on the column header to sort
-    const tableHeader = await screen.findByText('File Title');
+    const tableHeader = await within(headerRow).findByText('File Title');
     expect(tableHeader).toBeTruthy();
     await user.click(tableHeader);
 
@@ -280,11 +344,13 @@ describe('test column sorting', () => {
   it('sorts by Size column', async () => {
     server.use(
       rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
-        res(ctx.status(200), ctx.json(response))
-      )
+        res(ctx.status(200), ctx.json(response)),
+      ),
     );
     const colIdx = 2; // The column that Size is in
-    customRender(<FilesTable {...defaultProps} numResults={2} />);
+    customRender(
+      <FilesTable {...defaultProps} inputRecord={rawSearchResultFixture({ number_of_files: 2 })} />,
+    );
 
     // Check table exists
     const table = await screen.findByRole('table');
@@ -303,8 +369,12 @@ describe('test column sorting', () => {
     expect(cell).toBeTruthy();
     expect(cell).toHaveTextContent('5.54 KB');
 
+    // Get the header row
+    const headerRow = (await screen.findAllByRole('row'))[0];
+    expect(headerRow).toBeTruthy();
+
     // Click on the column header to sort
-    const tableHeader = await screen.findByText('Size');
+    const tableHeader = await within(headerRow).findByText('Size');
     expect(tableHeader).toBeTruthy();
     await user.click(tableHeader);
 
@@ -345,26 +415,28 @@ describe('test column sorting', () => {
 
     server.use(
       rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
-        res(ctx.status(200), ctx.json(response))
-      )
+        res(ctx.status(200), ctx.json(response)),
+      ),
     );
-    customRender(<FilesTable {...defaultProps} numResults={2} />);
+    customRender(
+      <FilesTable {...defaultProps} inputRecord={rawSearchResultFixture({ number_of_files: 2 })} />,
+    );
 
     // Check table exists
     const table = await screen.findByRole('table');
     expect(table).toBeTruthy();
 
     // First row in table
-    const firstRow = (await screen.findAllByRole('row'))[1];
-    expect(firstRow).toBeTruthy();
+    const headerRow = (await screen.findAllByRole('row'))[0];
+    expect(headerRow).toBeTruthy();
 
     // Click on the column header to sort
-    const tableDatasetId = await screen.findByText('File Title');
+    const tableDatasetId = await within(headerRow).findByText('File Title');
     expect(tableDatasetId).toBeTruthy();
     await user.click(tableDatasetId);
 
     // Click on the column header to sort
-    const files = await screen.findByText('Size');
+    const files = await within(headerRow).findByText('Size');
     expect(files).toBeTruthy();
     await user.click(files);
   });

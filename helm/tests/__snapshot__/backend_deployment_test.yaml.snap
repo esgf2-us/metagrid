@@ -1,0 +1,64 @@
+should have a deployment:
+  1: |
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      labels:
+        app.kubernetes.io/component: backend
+        app.kubernetes.io/instance: metagrid
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: metagrid
+        app.kubernetes.io/version: v1.0.0
+        helm.sh/chart: metagrid-v1.0.0
+      name: metagrid-backend
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app.kubernetes.io/component: backend
+          app.kubernetes.io/instance: metagrid
+          app.kubernetes.io/name: metagrid
+      template:
+        metadata:
+          annotations:
+            checksum/config: 1f8ad3d8b936e84e6aa122bd452fa0fa70f20047a2a83dd4c605957cdcb0a41c
+          labels:
+            app.kubernetes.io/component: backend
+            app.kubernetes.io/instance: metagrid
+            app.kubernetes.io/managed-by: Helm
+            app.kubernetes.io/name: metagrid
+            app.kubernetes.io/version: v1.0.0
+            helm.sh/chart: metagrid-v1.0.0
+        spec:
+          containers:
+            - env:
+                - name: THIS_POD_IP
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: status.podIP
+                - name: DJANGO_ALLOWED_HOSTS
+                  value: '["localhost","$(THIS_POD_IP)"]'
+              envFrom:
+                - secretRef:
+                    name: metagrid
+                - configMapRef:
+                    name: metagrid
+              image: ghcr.io/esgf2-us/metagrid-backend:v1.0.0
+              imagePullPolicy: IfNotPresent
+              livenessProbe:
+                httpGet:
+                  path: /liveness
+                  port: http
+              name: backend
+              ports:
+                - containerPort: 5000
+                  name: http
+                  protocol: TCP
+              readinessProbe:
+                httpGet:
+                  path: /readiness
+                  port: http
+              resources: {}
+              securityContext: {}
+          securityContext: {}
+          serviceAccountName: metagrid-backend

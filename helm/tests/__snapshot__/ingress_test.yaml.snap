@@ -1,0 +1,243 @@
+should create a ingress:
+  1: |
+    apiVersion: networking.k8s.io/v1
+    kind: Ingress
+    metadata:
+      annotations:
+        redundaunt: router3
+      labels:
+        app.kubernetes.io/instance: metagrid
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: metagrid
+        app.kubernetes.io/version: v1.0.0
+        helm.sh/chart: metagrid-v1.0.0
+        router: main
+      name: metagrid
+    spec:
+      ingressClassName: traefik
+      rules:
+        - host: metagrid.neworg.io
+          http:
+            paths:
+              - backend:
+                  service:
+                    name: metagrid-frontend
+                    port:
+                      number: 8080
+                path: /
+                pathType: Prefix
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /frontend-config.js
+                pathType: Prefix
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /api
+                pathType: Prefix
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /accounts
+                pathType: Prefix
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /account-confirm-email
+                pathType: Prefix
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /proxy
+                pathType: Prefix
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /tempStorage
+                pathType: Prefix
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /login
+                pathType: Prefix
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /complete
+                pathType: Prefix
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /globus
+                pathType: Prefix
+        - host: metagrid-backup.neworg.io
+          http:
+            paths:
+              - backend:
+                  service:
+                    name: metagrid-frontend
+                    port:
+                      number: 8080
+                path: /
+                pathType: Prefix
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /frontend-config.js
+                pathType: Prefix
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /api
+                pathType: Prefix
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /accounts
+                pathType: Prefix
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /account-confirm-email
+                pathType: Prefix
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /proxy
+                pathType: Prefix
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /tempStorage
+                pathType: Prefix
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /login
+                pathType: Prefix
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /complete
+                pathType: Prefix
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /globus
+                pathType: Prefix
+        - host: metagrid-backup2.neworg.io
+          http:
+            paths:
+              - backend:
+                  service:
+                    name: metagrid-frontend
+                    port:
+                      number: 8080
+                path: /
+                pathType: Prefix
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /frontend-config.js
+                pathType: Prefix
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /api
+                pathType: Prefix
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /accounts
+                pathType: Prefix
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /account-confirm-email
+                pathType: Prefix
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /proxy
+                pathType: Prefix
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /tempStorage
+                pathType: Prefix
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /login
+                pathType: Prefix
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /complete
+                pathType: Prefix
+              - backend:
+                  service:
+                    name: metagrid-backend
+                    port:
+                      number: 5000
+                path: /globus
+                pathType: Prefix
+      tls:
+        - hosts:
+            - metagrid.neworg.io
+            - metagrid-backup.neworg.io
+            - metagrid-backup2.neworg.io
+          secretName: metagrid-ingress-cert

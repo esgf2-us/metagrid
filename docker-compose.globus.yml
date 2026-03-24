@@ -1,0 +1,4 @@
+services:
+  django:
+    environment:
+      METAGRID_AUTHENTICATION_METHOD: globus

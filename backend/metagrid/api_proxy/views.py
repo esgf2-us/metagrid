@@ -15,6 +15,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from config.settings.site_specific import MetagridFrontendSettings
+from metagrid.wget.views import do_wget_integrated
 
 
 @api_view()
@@ -45,7 +46,7 @@ def do_globus_auth(request):
 @csrf_exempt
 def do_globus_logout(request):
     logout(request)
-    return redirect(settings.LOGOUT_REDIRECT_URL)
+    return redirect(request.GET.get("next", settings.LOGOUT_REDIRECT_URL))
 
 
 @api_view()
@@ -53,7 +54,10 @@ def do_globus_logout(request):
 def do_globus_search_endpoints(request):
     search_text = request.GET.get("search_text", None)
 
-    if request.user.is_authenticated:
+    if (
+        request.user.is_authenticated
+        and settings.AUTHENTICATION_METHOD == "globus"
+    ):
         tc = load_transfer_client(request.user)  # pragma: no cover
     else:
         client = globus_sdk.ConfidentialAppAuthClient(
@@ -79,26 +83,59 @@ def do_search(request):
 
 @require_http_methods(["POST"])
 @csrf_exempt
+def do_stac_search(request):
+    print("STAC Search Request:", request.method, request.body)
+
+    if settings.STAC_URL is None:
+        return HttpResponseBadRequest("STAC URL not configured.")
+
+    return do_post(request, settings.STAC_URL + "/search")
+
+
+@require_http_methods(["POST"])
+@csrf_exempt
+def fetch_stac_aggregations(request):
+    if settings.STAC_URL is None:
+        return HttpResponseBadRequest("STAC URL not configured.")
+
+    try:
+        summaries = do_post(request, settings.STAC_URL + "/aggregate")
+    except Exception as e:  # pragma: no cover
+        print("Error fetching STAC aggregations:\n", e)
+
+    print("STAC Aggregations:", summaries)
+
+    return summaries
+
+
+@require_http_methods(["POST"])
+@csrf_exempt
 def do_citation(request):
     jo = {}
     try:
         jo = json.loads(request.body)
     except Exception:  # pragma: no cover
+        print(f"ERROR could not load request: {request.body}")
         return HttpResponseBadRequest()
 
     if "citurl" not in jo:  # pragma: no cover
+        print(f"ERROR no citurl in jo {jo}")
         return HttpResponseBadRequest()
 
     url = jo["citurl"]
-
     parsed_url = urlparse(url)
 
-    if not parsed_url.hostname == "cera-www.dkrz.de":
+    if not (
+        parsed_url.hostname
+        in ["cera-www.dkrz.de", "raw.githubusercontent.com"]
+    ):
+        print(f"ERROR hostname {parsed_url.hostname} not in whitelist")
         return HttpResponseBadRequest()
 
     try:
         resp = requests.get(url, verify=False)
-    except Exception:  # pragma: no cover
+    except Exception as e:  # pragma: no cover
+        print(f"ERROR cound not fetch {url} {e}")
         return HttpResponseBadRequest()
 
     httpresp = HttpResponse(resp.text)
@@ -119,7 +156,36 @@ def do_status(request):
 @require_http_methods(["GET", "POST"])
 @csrf_exempt
 def do_wget(request):
+    if not settings.WGET_URL:
+        return do_wget_integrated(request)
+
     return do_request(request, settings.WGET_URL, True)
+
+
+def do_post(request, urlbase):
+    """Helper function to handle POST requests."""
+    if request.method != "POST":  # pragma: no cover
+        return HttpResponseBadRequest("Request method must be POST.")
+
+    try:
+        jo = json.loads(request.body)
+    except json.JSONDecodeError:  # pragma: no cover
+        return HttpResponseBadRequest("Invalid JSON in request body.")
+
+    try:
+        resp = requests.post(urlbase, json=jo)
+    except Exception as e:  # pragma: no cover
+        return HttpResponseBadRequest(f"Error during POST request: {e}")
+
+    if resp.status_code != 200:  # pragma: no cover
+        return HttpResponseBadRequest(
+            f"Request failed with status {resp.status_code}: {resp.text}"
+        )
+
+    httpresp = HttpResponse(resp.text, content_type="text/json")
+    httpresp.status_code = resp.status_code
+
+    return httpresp
 
 
 def do_request(request, urlbase, useBody=False):
@@ -137,13 +203,26 @@ def do_request(request, urlbase, useBody=False):
                 jo["query"] = query[0]
         if "dataset_id" in jo:
             jo["dataset_id"] = ",".join(jo["dataset_id"])
-        resp = requests.post(urlbase, data=jo)
+        try:
+            resp = requests.post(urlbase, data=jo)
+            print("resp", resp)
+        except Exception as e:
+            print(f"Error during POST request: {e}")
+            return HttpResponseBadRequest(f"Error during POST request: {e}")
 
     elif request.method == "GET":
         url_params = request.GET.copy()
-        resp = requests.get(urlbase, params=url_params)
+        try:
+            resp = requests.get(urlbase, params=url_params)
+        except Exception as e:
+            print(f"Error during GET request: {e}")
+            return HttpResponseBadRequest(f"Error during GET request: {e}")
     else:  # pragma: no cover
+        print("Request method must be POST or GET.")
         return HttpResponseBadRequest("Request method must be POST or GET.")
+
+    if resp.status_code != 200:
+        print(f"Request failed with status {resp.status_code}: {resp.text}")
 
     httpresp = HttpResponse(resp.text, content_type="text/json")
     httpresp.status_code = resp.status_code

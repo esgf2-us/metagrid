@@ -1,0 +1,42 @@
+suite: test node_status configmap
+templates:
+  - templates/node_status/configmap.yaml
+release:
+  name: metagrid
+  namespace: production
+chart:
+  version: v1.0.0
+  appVersion: v1.0.0
+set:
+  django:
+    secretKey: abcd1234 # need static for checksum
+  nodeStatusBackend:
+    enabled: true
+tests:
+  - it: should create a default configmap
+    template: templates/node_status/configmap.yaml
+    asserts:
+      - matchSnapshot: {}
+  - it: should create a configmap
+    template: templates/node_status/configmap.yaml
+    set:
+      wget:
+        url: https://wget.neworg.io
+        uploadMaxFields: 10
+        globusPublicIndex: abcd1234
+        limit:
+          default: 2
+          max: 20
+        maxDirLength: 20
+      globusNodes:
+        - esgf.neworg.io
+      searchUrl: https://esgf.neworg.io/bridge
+      stacUrl: https://esgf.neworg.io/stac
+      bannerText: |
+        this is a message for users
+      supportInfo: Contact <name> (<email>)
+      footerText: Footer text, check out this markdown [link](https://esgf.neworg.io)
+      django:
+        gunicornWorkers: 10
+    asserts:
+      - matchSnapshot: {}

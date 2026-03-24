@@ -1,6 +1,6 @@
 {
   "name": "frontend",
-  "version": "1.5.2",
+  "version": "1.5.4",
   "private": true,
   "scripts": {
     "start": "vite",
@@ -67,9 +67,9 @@
     "@ant-design/icons": "6.0.0",
     "@ctrl/tinycolor": "^4.1.0",
     "@react-keycloak/web": "3.4.0",
-    "antd": "^5.25.1",
+    "antd": "^5.29.1",
     "autoprefixer": "10.4.21",
-    "axios": "1.9.0",
+    "axios": "1.13.2",
     "dayjs": "1.11.13",
     "dotenv": "16.5.0",
     "humps": "2.0.1",

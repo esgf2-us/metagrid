@@ -1,28 +1,27 @@
 import { MenuUnfoldOutlined } from '@ant-design/icons';
 import { Drawer, Typography } from 'antd';
-import React from 'react';
-import { useAsync } from 'react-async';
+import React, { CSSProperties, ReactNode } from 'react';
 import { useAtomValue } from 'jotai';
-import { fetchProjects, ResponseError } from '../../api';
 import esgfLogo from '../../assets/img/esgf.png';
-import { RawProject } from '../Facets/types';
 import Button from '../General/Button';
-import LeftMenu from './LeftMenu';
 import './NavBar.css';
 import RightMenu from './RightMenu';
 import { isDarkModeAtom } from '../../common/atoms';
 
 const { Link } = Typography;
 
-export type Props = {
-  onTextSearch: (selectedProject: RawProject, text: string) => void;
-};
+export function createCustomIcon(src: string, alt: string, style?: CSSProperties): ReactNode {
+  return (
+    <div>
+      <img src={src} alt={alt} style={style} />
+    </div>
+  );
+}
 
-const NavBar: React.FC<React.PropsWithChildren<Props>> = ({ onTextSearch }) => {
+const NavBar: React.FC = () => {
   // Global states
   const isDarkMode = useAtomValue<boolean>(isDarkModeAtom);
 
-  const { data, error, isLoading } = useAsync(fetchProjects);
   const [showDrawer, setShowDrawer] = React.useState(false);
 
   let className = 'navbar';
@@ -33,7 +32,7 @@ const NavBar: React.FC<React.PropsWithChildren<Props>> = ({ onTextSearch }) => {
   return (
     <nav data-testid="nav-bar" className={className}>
       <div className="navbar-container">
-        <div className="navbar-logo">
+        <div className="navbar-logo" data-testid="nav-bar-logo">
           <Link
             href="https://esgf.github.io/nodes.html"
             target="_blank"
@@ -42,28 +41,16 @@ const NavBar: React.FC<React.PropsWithChildren<Props>> = ({ onTextSearch }) => {
               fontSize: '.9em',
             }}
           >
-            <img
-              style={{
-                height: '82px',
-                marginLeft: '-5px',
-                marginBottom: '-30px',
-                marginTop: '-20px',
-              }}
-              src={esgfLogo}
-              alt="ESGF Federated Nodes"
-            />
-            <br />
+            {createCustomIcon(esgfLogo, 'ESGF Federated Nodes', {
+              height: '82px',
+              marginLeft: '-5px',
+              marginBottom: '-30px',
+              marginTop: '-20px',
+            })}
             Federated Nodes
           </Link>
         </div>
-        <div className="navbar-left">
-          <LeftMenu
-            projects={data ? data.results : undefined}
-            apiError={error as ResponseError}
-            apiIsLoading={isLoading}
-            onTextSearch={onTextSearch}
-          ></LeftMenu>
-        </div>
+        <div className="navbar-left"></div>
         <div className="navbar-right">
           <RightMenu mode="horizontal"></RightMenu>
         </div>

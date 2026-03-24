@@ -7,13 +7,13 @@ releases:
   chart: traefik/traefik
   version: v34.4.0
 - name: metagrid
-  chart: .
-  version: "1.5.2"
+  chart: ../
+  version: "1.5.4"
   values:
     - ingress:
         enabled: true
         tls: false
-        host: localhost
+        additionalAllowedHost: "*"
         className: traefik
   needs:
     - traefik
