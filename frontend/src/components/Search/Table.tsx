@@ -74,7 +74,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
 }) => {
   const [messageApi, contextHolder] = message.useMessage();
 
-  const [sortedInfo, setSortedInfo] = React.useState<Sorts>({});
+  const [sortedInfo, setSortedInfo] = React.useState<Sorts<RawSearchResult>>({});
 
   // Global states
   const userCart = useAtomValue<UserCart>(userCartAtom);
@@ -86,8 +86,8 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
   // Add options to this constant as needed
   type DatasetDownloadTypes = 'wget' | 'Globus' | 'esgpull';
 
-  const handleChange: OnChange = (pagination, filters, sorter) => {
-    setSortedInfo(sorter as Sorts);
+  const handleChange: OnChange<RawSearchResult> = (pagination, filters, sorter) => {
+    setSortedInfo(sorter as Sorts<RawSearchResult>);
   };
 
   const renderPageSizeOption = useCallback(
