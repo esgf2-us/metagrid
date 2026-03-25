@@ -10,6 +10,7 @@ import {
   getFileCountFromSTACsearch,
   getDownloadSizeFromSTACsearch,
   generateWgetScriptSTAC,
+  STAC_PROJECTS,
 } from './STAC';
 
 describe('STAC utilities', () => {
@@ -93,7 +94,7 @@ describe('STAC utilities', () => {
 
   it('convertSearchParamsIntoStacFilter maps query params to STAC filters (OR for multi, AND for multiple params)', () => {
     const urlMulti = 'https://example.com/search?activity_id=CFMIP,CDRMIP';
-    const filterMulti = convertSearchParamsIntoStacFilter(urlMulti, 'CMIP6');
+    const filterMulti = convertSearchParamsIntoStacFilter(urlMulti, STAC_PROJECTS[0]);
     expect(filterMulti).toEqual({
       op: 'or',
       args: [
@@ -103,7 +104,7 @@ describe('STAC utilities', () => {
     });
 
     const urlAnd = 'https://example.com/search?activity_id=CFMIP&source_id=ACCESS-ESM1-5';
-    const filterAnd = convertSearchParamsIntoStacFilter(urlAnd, 'CMIP6');
+    const filterAnd = convertSearchParamsIntoStacFilter(urlAnd, STAC_PROJECTS[0]);
     expect(filterAnd).toEqual({
       op: 'and',
       args: [
@@ -118,7 +119,7 @@ describe('STAC utilities', () => {
     // This covers line 234 in STAC.ts where values.length > 1 inside validFacets.length > 1
     const urlMultiFacetsMultiValues =
       'https://example.com/search?activity_id=CFMIP,CDRMIP&source_id=ACCESS-ESM1-5,CESM2';
-    const filter = convertSearchParamsIntoStacFilter(urlMultiFacetsMultiValues, 'CMIP6');
+    const filter = convertSearchParamsIntoStacFilter(urlMultiFacetsMultiValues, STAC_PROJECTS[0]);
     expect(filter).toEqual({
       op: 'and',
       args: [
@@ -142,7 +143,7 @@ describe('STAC utilities', () => {
 
   it('convertSearchParamsIntoStacFilter handles version parameters', () => {
     const urlMinVersion = 'https://example.com/search?activity_id=CFMIP&min_version=20200101';
-    const filterMin = convertSearchParamsIntoStacFilter(urlMinVersion, 'CMIP6');
+    const filterMin = convertSearchParamsIntoStacFilter(urlMinVersion, STAC_PROJECTS[0]);
     expect(filterMin).toEqual({
       op: 'and',
       args: [
@@ -152,7 +153,7 @@ describe('STAC utilities', () => {
     });
 
     const urlMaxVersion = 'https://example.com/search?activity_id=CFMIP&max_version=20220101';
-    const filterMax = convertSearchParamsIntoStacFilter(urlMaxVersion, 'CMIP6');
+    const filterMax = convertSearchParamsIntoStacFilter(urlMaxVersion, STAC_PROJECTS[0]);
     expect(filterMax).toEqual({
       op: 'and',
       args: [
@@ -162,7 +163,7 @@ describe('STAC utilities', () => {
     });
 
     const urlBothVersions = 'https://example.com/search?min_version=20200101&max_version=20220101';
-    const filterBoth = convertSearchParamsIntoStacFilter(urlBothVersions, 'CMIP6');
+    const filterBoth = convertSearchParamsIntoStacFilter(urlBothVersions, STAC_PROJECTS[0]);
     expect(filterBoth).toEqual({
       op: 'and',
       args: [
@@ -174,7 +175,7 @@ describe('STAC utilities', () => {
 
   it('convertSearchParamsIntoStacFilter handles globusOnly parameter', () => {
     const urlGlobusOnly = 'https://example.com/search?activity_id=CFMIP&globusOnly=true';
-    const filter = convertSearchParamsIntoStacFilter(urlGlobusOnly, 'CMIP6');
+    const filter = convertSearchParamsIntoStacFilter(urlGlobusOnly, STAC_PROJECTS[0]);
     expect(filter).toEqual({
       op: 'and',
       args: [

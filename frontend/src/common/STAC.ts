@@ -224,15 +224,13 @@ export const createOrFilter = (
 
 export const convertSearchParamsIntoStacFilter = (
   reqUrlStr: string,
-  projectName: string | undefined,
+  project: RawProject,
 ): { op: string; args: unknown } | undefined => {
   const params: URLSearchParams = new URLSearchParams(reqUrlStr.split('?')[1] || '');
 
   const paramKeys = Array.from(params.keys());
 
-  const stacProject =
-    STAC_PROJECTS.find((project) => project.projectName === projectName) || STAC_PROJECTS[0];
-  const facetsByGroup = stacProject.facetsByGroup as Record<string, string[]>;
+  const facetsByGroup = project.facetsByGroup as Record<string, string[]>;
   const allFacets: string[] = Object.values(facetsByGroup).flat();
   const validFacets = paramKeys.filter((key) => allFacets.includes(key));
 

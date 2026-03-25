@@ -761,7 +761,6 @@ const FacetsForm: React.FC = () => {
       <Form
         initialValues={{}}
         style={styles.searchForm}
-        hidden={currentProject.isSTAC}
         form={keywordSearchForm}
         onFinish={onKeywordSearch}
       >
