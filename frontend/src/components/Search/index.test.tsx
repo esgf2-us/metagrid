@@ -571,7 +571,7 @@ describe('STAC project behavior', () => {
     await screen.findByTestId('search-table');
 
     // STAC label should be shown
-    expect(await screen.findByText('STAC Filter String:')).toBeTruthy();
+    expect(await screen.findByText('STAC Query String', { exact: false })).toBeTruthy();
 
     // Open save search dropdown to reveal disabled buttons
     // Wait for the dropdown trigger to be in the DOM then click it
