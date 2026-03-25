@@ -67,7 +67,11 @@ import {
   VersionType,
 } from './types';
 import { AuthContext } from '../../contexts/AuthContext';
-import { convertSearchParamsIntoStacFilter, convertStacToRawSearchResult } from '../../common/STAC';
+import {
+  convertSearchParamsIntoStacFilter,
+  convertStacToRawSearchResult,
+  STAC_PROJECTS,
+} from '../../common/STAC';
 import DownloadModal from '../Downloads/DownloadModal';
 
 const tooltipText = {
@@ -135,8 +139,13 @@ export const stringifyFilters = (
   reqUrlStr: string = '',
 ): string => {
   if (isSTAC) {
-    const stacFilter = convertSearchParamsIntoStacFilter(reqUrlStr, projectName);
-    return JSON.stringify(stacFilter) || 'No filters applied';
+    const stacProject =
+      STAC_PROJECTS.find((project) => project.projectName === projectName) || STAC_PROJECTS[0];
+    const stacFilter = convertSearchParamsIntoStacFilter(reqUrlStr, stacProject) || 'null';
+    const textInputsStr = textInputs.length > 0 ? `, "q": ${JSON.stringify(textInputs)}` : '';
+    const stacQueryBase = `{"collections": ["${stacProject.projectName}"], "filter": ${JSON.stringify(stacFilter)}${textInputsStr}`;
+
+    return stacQueryBase;
   }
 
   const filtersArr: string[] = [];
@@ -580,6 +589,18 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     };
   };
 
+  const queryString = stringifyFilters(
+    currentProject.name,
+    versionType,
+    resultType,
+    minVersionDate,
+    maxVersionDate,
+    activeFacets,
+    textInputs,
+    currentProject.isSTAC,
+    currentRequestURL,
+  );
+
   return (
     <div data-testid="search">
       {contextHolder}
@@ -677,25 +698,37 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           {results && (
             <p>
               <span style={styles.subtitles} data-testid="main-query-string-label">
-                {currentProject.isSTAC ? 'STAC Filter String:' : 'Query String:'}{' '}
+                {currentProject.isSTAC ? 'STAC Query String' : 'Query String'}
+                <Button
+                  size="small"
+                  style={{
+                    marginLeft: '5px',
+                    display: `${currentProject.isSTAC ? 'inherit' : 'none'}`,
+                  }}
+                  icon={
+                    <Tooltip title="Copy query to clipboard">
+                      <CopyOutlined style={{ fontSize: '12px' }} />
+                    </Tooltip>
+                  }
+                  onClick={() => {
+                    // copy link to clipboard
+                    /* istanbul ignore else -- @preserve */
+                    if (navigator && navigator.clipboard) {
+                      navigator.clipboard.writeText(queryString);
+                      showNotice(messageApi, 'Query copied to clipboard!', {
+                        icon: <CopyOutlined style={styles.messageAddIcon} />,
+                      });
+                    }
+                  }}
+                />{' '}
+                :
               </span>
               <Typography.Text className={searchTableTargets.queryString.class()} code>
-                {stringifyFilters(
-                  currentProject.name,
-                  versionType,
-                  resultType,
-                  minVersionDate,
-                  maxVersionDate,
-                  activeFacets,
-                  textInputs,
-                  currentProject.isSTAC,
-                  currentRequestURL,
-                )}
+                {queryString}
               </Typography.Text>
             </p>
           )}
         </div>
-
         {results && (
           <Row style={styles.filtersContainer}>
             {Object.keys(activeFacets).length !== 0 &&
