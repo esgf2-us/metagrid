@@ -2,6 +2,9 @@ import { render } from '@testing-library/react';
 import React from 'react';
 import { MessageInstance } from 'antd/es/message/interface';
 import { message } from 'antd';
+import { Provider, useAtom } from 'jotai';
+import { atomWithStorage } from 'jotai/utils';
+import { vi } from 'vitest';
 import { rawProjectFixture } from '../test/mock/fixtures';
 import { UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
 import { ActiveSearchQuery, RawSearchResult, RawSearchResults } from '../components/Search/types';
@@ -34,11 +37,13 @@ import {
   clearDeprecatedStorageKeys,
   createEsgpullCommand,
   createIntakeEsgfSearch,
+  getLastMessageSeen,
+  setStartupMessageAsSeen,
+  searchAlreadyExists,
+  downloadFileForUser,
 } from './utils';
 import { AppPage } from './types';
-import { Provider, useAtom } from 'jotai';
-import { atomWithStorage } from 'jotai/utils';
-import { mockConfig } from '../test/jestTestFunctions';
+import { mockConfig } from '../test/testFunctions';
 import { localStorageMock, sessionStorageMock, tempStorageGetMock } from '../test/mock/mockStorage';
 
 describe('Test objectIsEmpty', () => {
@@ -157,7 +162,7 @@ describe('Test getUrlFromSearch', () => {
           source_id: ['ACCESS-ESM1-5'],
         },
         textInputs: ['CSIRO'],
-      } as ActiveSearchQuery).includes(
+      } as unknown as ActiveSearchQuery).includes(
         '?project=CMIP6&filenameVars=%5B%22clt%22%2C%22tsc%22%5D&activeFacets=%7B%22activity_id%22%3A%5B%22CDRMIP%22%2C%22CFMIP%22%5D%2C%22source_id%22%3A%22ACCESS-ESM1-5%22%7D&textInputs=%5B%22CSIRO%22%5D',
       ),
     ).toBeTruthy();
@@ -261,7 +266,7 @@ describe('Test getUrlFromSearch', () => {
         source_id: ['ACCESS-ESM1-5'],
       },
       textInputs: ['CSIRO'],
-    } as ActiveSearchQuery);
+    } as unknown as ActiveSearchQuery);
     expect(url).toContain(
       '?project=CMIP6&filenameVars=%5B%22clt%22%2C%22tsc%22%5D&activeFacets=%7B%22activity_id%22%3A%5B%22CDRMIP%22%2C%22CFMIP%22%5D%2C%22source_id%22%3A%22ACCESS-ESM1-5%22%7D&textInputs=%5B%22CSIRO%22%5D',
     );
@@ -281,21 +286,21 @@ describe('Test combineCarts', () => {
     id: 'firstResult',
     url: ['test1'],
     access: [],
-    isStac: false
+    isStac: false,
   };
   const secondResult: RawSearchResult = {
     key: undefined,
     id: 'secondResult',
     url: ['test2'],
     access: [],
-    isStac: false
+    isStac: false,
   };
   const thirdResult: RawSearchResult = {
     key: undefined,
     id: 'thirdResult',
     url: ['test3'],
     access: [],
-    isStac: false
+    isStac: false,
   };
   const emptySearchResults: RawSearchResults = [];
   const searchResults1: RawSearchResults = [firstResult, secondResult];
@@ -328,6 +333,7 @@ describe('Test unsavedLocal searches', () => {
     url: 'https://localhost/url.com',
     resultsCount: 200,
     searchTime: 100000,
+    globusOnly: false,
   };
   const secondResult: UserSearchQuery = {
     uuid: 'uuid2',
@@ -344,6 +350,7 @@ describe('Test unsavedLocal searches', () => {
     url: 'https://localhost/url.com',
     resultsCount: 200,
     searchTime: 100000,
+    globusOnly: false,
   };
   const thirdResult: UserSearchQuery = {
     uuid: 'uuid3',
@@ -360,6 +367,7 @@ describe('Test unsavedLocal searches', () => {
     url: 'https://localhost/url.com',
     resultsCount: 200,
     searchTime: 100000,
+    globusOnly: false,
   };
 
   const localResults: UserSearchQueries = [firstResult, secondResult];
@@ -372,7 +380,7 @@ describe('Test unsavedLocal searches', () => {
 
 describe('Test getCurrentAppPage', () => {
   it('returns appropriate page name based on window location', () => {
-    expect(getCurrentAppPage()).toEqual(-1);
+    expect(getCurrentAppPage()).toEqual(AppPage.Unknown);
 
     // eslint-disable-next-line
     window = Object.create(window);
@@ -396,7 +404,7 @@ describe('Test getCurrentAppPage', () => {
     window.location.pathname = 'testing/cart/nodes';
     expect(getCurrentAppPage()).toEqual(AppPage.NodeStatus);
     window.location.pathname = 'testing/bad';
-    expect(getCurrentAppPage()).toEqual(-1);
+    expect(getCurrentAppPage()).toEqual(AppPage.Unknown);
   });
 });
 
@@ -619,8 +627,8 @@ describe('Test cacheSearchResults, getCachedSearchResults, and clearCachedSearch
     expect(tempStorageGetMock('cachedSearchResults')).toBeTruthy();
 
     // Simulate time passing
-    jest.useFakeTimers();
-    jest.setSystemTime(Date.now() + 60 * 60 * 2000); // Move time forward by 2 hours
+    vi.useFakeTimers();
+    vi.setSystemTime(Date.now() + 60 * 60 * 2000); // Move time forward by 2 hours
     const cached = getCachedSearchResults();
     expect(cached).toEqual({});
 
@@ -672,7 +680,24 @@ describe('createEsgpullCommand', () => {
       filenameVars: [],
       activeFacets: { activity_id: ['CFMIP'], experiment_id: ['piControl'] },
       textInputs: [],
-    } as ActiveSearchQuery;
+    } as unknown as ActiveSearchQuery;
+    const cmd = createEsgpullCommand(searchQuery, false);
+    expect(cmd).toContain(
+      'esgpull search project:\'"CMIP6"\' activity_id:\'"CFMIP"\' experiment_id:\'"piControl"\' --latest true',
+    );
+  });
+
+  it('creates a STAC search command with project and facets', () => {
+    const searchQuery = {
+      project: { name: 'CMIP6 STAC', projectName: 'CMIP6', isSTAC: true },
+      versionType: 'latest',
+      resultType: 'all',
+      minVersionDate: null,
+      maxVersionDate: null,
+      filenameVars: [],
+      activeFacets: { activity_id: ['CFMIP'], experiment_id: ['piControl'] },
+      textInputs: [],
+    } as unknown as ActiveSearchQuery;
     const cmd = createEsgpullCommand(searchQuery, false);
     expect(cmd).toContain(
       'esgpull search project:\'"CMIP6"\' activity_id:\'"CFMIP"\' experiment_id:\'"piControl"\' --latest true',
@@ -723,7 +748,7 @@ describe('createEsgpullCommand', () => {
       filenameVars: [],
       activeFacets: {},
       textInputs: ['foo', 'bar'],
-    } as ActiveSearchQuery;
+    } as unknown as ActiveSearchQuery;
     const cmd = createEsgpullCommand(searchQuery, false);
     expect(cmd).toContain('["foo","bar"]');
   });
@@ -751,14 +776,36 @@ describe('createIntakeEsgfSearch', () => {
       filenameVars: [],
       activeFacets: { activity_id: ['CFMIP', 'CDRMIP'], experiment_id: ['piControl'] },
       textInputs: [],
-    } as ActiveSearchQuery;
+    } as unknown as ActiveSearchQuery;
     const cmd = createIntakeEsgfSearch(searchQuery);
-    expect(cmd).toContain("activity_id=['CFMIP', 'CDRMIP']");
-    expect(cmd).toContain("experiment_id='piControl'");
-    expect(cmd).toContain('latest=False');
     expect(cmd).toContain('from intake_esgf import ESGFCatalog');
     expect(cmd).toContain('cat=ESGFCatalog()');
     expect(cmd).toContain('metagrid_search=cat.search(');
+    expect(cmd).toContain("activity_id=['CFMIP', 'CDRMIP']");
+    expect(cmd).toContain("experiment_id='piControl'");
+    expect(cmd).toContain('latest=False');
+  });
+
+  it('creates a STAC intake-esgf search command with correct imports', () => {
+    const searchQuery = {
+      project: { name: 'CMIP6 STAC', isSTAC: true },
+      versionType: 'all',
+      resultType: 'all',
+      minVersionDate: null,
+      maxVersionDate: null,
+      filenameVars: [],
+      activeFacets: { activity_id: ['CFMIP', 'CDRMIP'], experiment_id: ['piControl'] },
+      textInputs: [],
+    } as unknown as ActiveSearchQuery;
+    const cmd = createIntakeEsgfSearch(searchQuery);
+    expect(cmd).toContain('import intake_esgf');
+    expect(cmd).toContain('intake_esgf.conf.set(indices={"');
+    expect(cmd).toContain('":True})');
+    expect(cmd).toContain('cat=intake_esgf.ESGFCatalog()');
+    expect(cmd).toContain('metagrid_search=cat.search(');
+    expect(cmd).toContain("activity_id=['CFMIP', 'CDRMIP']");
+    expect(cmd).toContain("experiment_id='piControl'");
+    expect(cmd).toContain('latest=False');
   });
 
   it('creates an intake-esgf search command with latest=True', () => {
@@ -771,9 +818,114 @@ describe('createIntakeEsgfSearch', () => {
       filenameVars: [],
       activeFacets: { realm: ['atmos'] },
       textInputs: [],
-    } as ActiveSearchQuery;
+    } as unknown as ActiveSearchQuery;
     const cmd = createIntakeEsgfSearch(searchQuery);
     expect(cmd).toContain("realm='atmos'");
     expect(cmd).toContain('latest=True');
+  });
+});
+
+describe('Test getLastMessageSeen and setStartupMessageAsSeen', () => {
+  const messageKey = 'lastMessageSeen';
+
+  beforeEach(() => {
+    localStorageMock.removeItem(messageKey);
+  });
+
+  afterEach(() => {
+    localStorageMock.removeItem(messageKey);
+  });
+
+  it('returns null when no message has been seen', () => {
+    // localStorageMock returns undefined for non-existent keys, but real localStorage returns null
+    const result = getLastMessageSeen();
+    expect(result === null || result === undefined).toBe(true);
+  });
+
+  it('returns the last message seen from localStorage', () => {
+    localStorageMock.setItem(messageKey, 'Test message');
+    expect(getLastMessageSeen()).toBe('Test message');
+  });
+
+  it('sets the startup message as seen in localStorage', () => {
+    setStartupMessageAsSeen();
+    const message = localStorageMock.getItem(messageKey);
+    expect(message).toBeTruthy();
+  });
+});
+
+describe('Test searchAlreadyExists', () => {
+  it('returns true if search with same uuid exists', () => {
+    const existingSearches = [
+      {
+        uuid: '123',
+        search: { project: { name: 'CMIP6' }, activeFacets: {} },
+      },
+      {
+        uuid: '456',
+        search: { project: { name: 'CMIP5' }, activeFacets: {} },
+      },
+    ] as unknown as UserSearchQueries;
+
+    const newSearch = {
+      uuid: '123',
+      search: { project: { name: 'CMIP6' }, activeFacets: { activity_id: ['CFMIP'] } },
+    } as unknown as UserSearchQuery;
+
+    expect(searchAlreadyExists(existingSearches, newSearch)).toBe(true);
+  });
+
+  it('returns false if search does not exist', () => {
+    const existingSearches = [
+      {
+        uuid: '123',
+        search: { project: { name: 'CMIP6' }, activeFacets: {} },
+      },
+    ] as unknown as UserSearchQueries;
+
+    const newSearch = {
+      uuid: '789',
+      search: { project: { name: 'E3SM' }, activeFacets: {} },
+    } as unknown as UserSearchQuery;
+
+    expect(searchAlreadyExists(existingSearches, newSearch)).toBe(false);
+  });
+});
+
+describe('Test downloadFileForUser', () => {
+  it('creates a download link and triggers download', () => {
+    const filename = 'test.txt';
+    const content = 'Test file content';
+
+    // Create a real anchor element to avoid Node type errors
+    const mockAnchor = document.createElement('a');
+    const clickSpy = vi.spyOn(mockAnchor, 'click').mockImplementation(() => {});
+    const setAttributeSpy = vi.spyOn(mockAnchor, 'setAttribute');
+
+    const createElementSpy = vi.spyOn(document, 'createElement').mockReturnValue(mockAnchor);
+    const appendChildSpy = vi
+      .spyOn(document.body, 'appendChild')
+      .mockImplementation(() => mockAnchor);
+    const removeChildSpy = vi
+      .spyOn(document.body, 'removeChild')
+      .mockImplementation(() => mockAnchor);
+
+    downloadFileForUser(filename, content);
+
+    expect(createElementSpy).toHaveBeenCalledWith('a');
+    expect(setAttributeSpy).toHaveBeenCalledWith(
+      'href',
+      expect.stringContaining('data:text/plain'),
+    );
+    expect(setAttributeSpy).toHaveBeenCalledWith('download', filename);
+    expect(clickSpy).toHaveBeenCalled();
+    expect(appendChildSpy).toHaveBeenCalled();
+    expect(removeChildSpy).toHaveBeenCalled();
+
+    createElementSpy.mockRestore();
+    appendChildSpy.mockRestore();
+    removeChildSpy.mockRestore();
+    clickSpy.mockRestore();
+    setAttributeSpy.mockRestore();
   });
 });

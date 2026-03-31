@@ -9,6 +9,7 @@ import {
   darkModeRed,
 } from '../NodeStatus/StatusToolTip';
 import { isDarkModeAtom } from '../../common/atoms';
+import { topDataRowTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
 export type Props = { dataNode: string; stacGlobusAvailable?: boolean };
 
@@ -43,7 +44,7 @@ const GlobusToolTip: React.FC<Props> = ({ dataNode, stacGlobusAvailable }) => {
         </>
       }
     >
-      <span>{icon}</span>
+      <span className={topDataRowTargets.globusReadyStatusIcon.class()}>{icon}</span>
     </Tooltip>
   );
 };

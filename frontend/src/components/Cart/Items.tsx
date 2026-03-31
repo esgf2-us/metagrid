@@ -7,7 +7,7 @@ import { CSSinJS } from '../../common/types';
 import Button from '../General/Button';
 import Table from '../Search/Table';
 import { RawSearchResults } from '../Search/types';
-import DatasetDownload from '../Globus/DatasetDownload';
+import DatasetDownload from '../Downloads/DatasetDownload';
 import { UserCart } from './types';
 import { AuthContext } from '../../contexts/AuthContext';
 import { updateUserCart } from '../../api';
@@ -49,7 +49,7 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     setUserCart([]);
     setItemSelections([]);
 
-    /* istanbul ignore else */
+    /* istanbul ignore else -- @preserve */
     if (isAuthenticated) {
       updateUserCart(pk, accessToken, []);
     }
@@ -57,7 +57,7 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   return (
     <div data-testid="cartItems">
-      {userCart.length === 0 && <Empty description="Your cart is empty"></Empty>}
+      {userCart.length === 0 && <Empty description="Your cart is empty" />}
       {userCart.length > 0 && (
         <>
           <div style={styles.summary}>
@@ -83,19 +83,28 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
               </Popconfirm>
             )}
           </div>
-          <Row gutter={[24, 16]} justify="space-around">
-            <Col lg={24}>
-              <Table
-                loading={false}
-                canDisableRows={false}
-                results={userCart}
-                onUpdateCart={onUpdateCart}
-                onRowSelect={handleRowSelect}
-                selections={itemSelections}
-              />
-            </Col>
-          </Row>
-          <div data-testid="downloadForm">
+          <div
+            className={cartTourTargets.cartItemsTable.class()}
+            style={{
+              height: 'calc(100vh - 500px)',
+              marginBottom: '24px',
+            }}
+          >
+            <Row gutter={[24, 16]} justify="space-around">
+              <Col lg={24}>
+                <Table
+                  loading={false}
+                  canDisableRows={false}
+                  results={userCart}
+                  onUpdateCart={onUpdateCart}
+                  onRowSelect={handleRowSelect}
+                  selections={itemSelections}
+                  scroll={{ y: 'calc(100vh - 580px)', x: 'max-content' }}
+                />
+              </Col>
+            </Row>
+          </div>
+          <div data-testid="downloadForm" className={cartTourTargets.downloadForm.class()}>
             <h1>
               <CloudDownloadOutlined /> Download Your Cart
             </h1>

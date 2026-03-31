@@ -2,6 +2,7 @@ import {
   BookOutlined,
   CodeOutlined,
   CopyOutlined,
+  DownloadOutlined,
   ExportOutlined,
   SaveOutlined,
   ShareAltOutlined,
@@ -66,7 +67,12 @@ import {
   VersionType,
 } from './types';
 import { AuthContext } from '../../contexts/AuthContext';
-import { convertSearchParamsIntoStacFilter, convertStacToRawSearchResult } from '../../common/STAC';
+import {
+  convertSearchParamsIntoStacFilter,
+  convertStacToRawSearchResult,
+  STAC_PROJECTS,
+} from '../../common/STAC';
+import DownloadModal from '../Downloads/DownloadModal';
 
 const tooltipText = {
   featureNotAvailableInStac: 'This feature is not compatible with STAC projects.',
@@ -133,8 +139,13 @@ export const stringifyFilters = (
   reqUrlStr: string = '',
 ): string => {
   if (isSTAC) {
-    const stacFilter = convertSearchParamsIntoStacFilter(reqUrlStr, projectName);
-    return JSON.stringify(stacFilter) || 'No filters applied';
+    const stacProject =
+      STAC_PROJECTS.find((project) => project.projectName === projectName) || STAC_PROJECTS[0];
+    const stacFilter = convertSearchParamsIntoStacFilter(reqUrlStr, stacProject) || 'null';
+    const textInputsStr = textInputs.length > 0 ? `, "q": ${JSON.stringify(textInputs)}` : '';
+    const stacQueryBase = `{"collections": ["${stacProject.projectName}"], "filter": ${JSON.stringify(stacFilter)}${textInputsStr}`;
+
+    return stacQueryBase;
   }
 
   const filtersArr: string[] = [];
@@ -190,6 +201,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   const [activeSearchQuery, setActiveSearchQuery] = useAtom(activeSearchQueryAtom);
 
   const [currentRequestURL, setCurrentRequestURL] = useAtom(currentRequestQueryAtom);
+
+  const [showDownloadAllForm, setShowDownloadAllForm] = React.useState<boolean>(false);
 
   const currentProject = useAtomValue(currentProjectAtom);
 
@@ -260,7 +273,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   React.useEffect(() => {
     if (results && currentRequestURL && !objectIsEmpty(results)) {
       cacheSearchResults(results, paginationOptions, currentRequestURL);
-      /* istanbul ignore else */
+      /* istanbul ignore else -- @preserve */
       if (results.facet_counts) {
         const { facet_fields: facetFields } = (
           results as {
@@ -296,6 +309,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       filenameVars: activeSearchQuery.filenameVars,
       activeFacets: activeSearchQuery.activeFacets,
       textInputs: activeSearchQuery.textInputs,
+      globusOnly: activeSearchQuery.globusOnly,
       url,
       resultsCount: numFound,
       searchTime: Date.now(),
@@ -322,7 +336,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           saveSuccess();
         })
         .catch(
-          /* istanbul ignore next */
+          /* istanbul ignore next -- @preserve */
           (respError: ResponseError) => {
             showError(messageApi, respError.message);
           },
@@ -333,7 +347,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   };
 
   const handleShareSearchQuery = (): void => {
-    /* istanbul ignore else */
+    /* istanbul ignore else -- @preserve */
     if (navigator && navigator.clipboard) {
       navigator.clipboard.writeText(getUrlFromSearch(activeSearchQuery));
       showNotice(messageApi, 'Metagrid search URL copied to clipboard!', {
@@ -342,8 +356,9 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     }
   };
 
+  /* istanbul ignore next -- @preserve */
   const handleEsgpullSearchQuery = (): void => {
-    /* istanbul ignore else */
+    /* istanbul ignore else -- @preserve */
     if (navigator && navigator.clipboard) {
       navigator.clipboard.writeText(createEsgpullCommand(activeSearchQuery, false));
       showNotice(messageApi, 'Esgpull search query copied to clipboard!', {
@@ -352,8 +367,9 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     }
   };
 
+  /* istanbul ignore next -- @preserve */
   const handleEsgpullDownloadCmd = (): void => {
-    /* istanbul ignore else */
+    /* istanbul ignore else -- @preserve */
     if (navigator && navigator.clipboard) {
       navigator.clipboard.writeText(createEsgpullCommand(activeSearchQuery, true));
       showNotice(messageApi, 'Esgpull download command copied to clipboard!', {
@@ -363,7 +379,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   };
 
   const handleIntakeEsgfSearch = (): void => {
-    /* istanbul ignore else */
+    /* istanbul ignore else -- @preserve */
     if (navigator && navigator.clipboard) {
       navigator.clipboard.writeText(createIntakeEsgfSearch(activeSearchQuery));
       showNotice(messageApi, 'Intake-ESGF search command copied to clipboard!', {
@@ -373,7 +389,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   };
 
   const handleRemoveFilter = (removedTag: TagValue, type: TagType): void => {
-    /* istanbul ignore else */
+    /* istanbul ignore else -- @preserve */
     if (type === 'text') {
       setActiveSearchQuery({
         ...activeSearchQuery,
@@ -430,7 +446,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   // Used cached results if the request fails
   if (error) {
-    /* istanbul ignore next */
+    /* istanbul ignore next -- @preserve */
     if (error.cause === 422) {
       // Handle unlikely case where the requested page is not available
       setTimeout(() => {
@@ -462,11 +478,14 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     response: { docs: RawSearchResults; numFound: number };
   };
   if (results) {
+    /* istanbul ignore else -- @preserve */
     if (currentProject.isSTAC) {
       const searchResults = results as StacResponse;
+      /* istanbul ignore else -- @preserve */
       if (searchResults.search) {
         const stacResults = searchResults.search;
 
+        /* istanbul ignore else -- @preserve */
         if (stacResults.features && stacResults.features.length > 0) {
           numFound = stacResults.features.length;
           docs = stacResults.features.map((stacResult: StacFeature) =>
@@ -487,7 +506,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     selectedItems.filter(
       (item: RawSearchResult) =>
         !userCart.some(
-          /* istanbul ignore next */
+          /* istanbul ignore next -- @preserve */
           (dataset: RawSearchResult) => dataset.id === item.id,
         ),
     ).length === 0;
@@ -513,20 +532,13 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     {
       key: '2',
       label: (
-        <Tooltip
-          placement="left"
-          title={
-            currentProject.isSTAC
-              ? tooltipText.featureNotAvailableInStac
-              : tooltipText.copyEsgpullSearch
-          }
-        >
+        <Tooltip placement="left" title={tooltipText.copyEsgpullSearch}>
           <span style={{ display: 'inline-block', cursor: 'not-allowed' }}>
             <Button
               type="default"
               className={copySearchOptionsTargets.copyEsgpullSearchQueryBtn.class()}
               onClick={handleEsgpullSearchQuery}
-              disabled={isLoading || numFound === 0 || currentProject.isSTAC}
+              disabled={isLoading || numFound === 0}
             >
               <CodeOutlined data-testid="copy-esgpull-search-btn" /> Copy esgpull search query
             </Button>
@@ -537,20 +549,13 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     {
       key: '3',
       label: (
-        <Tooltip
-          placement="left"
-          title={
-            currentProject.isSTAC
-              ? tooltipText.featureNotAvailableInStac
-              : tooltipText.copyEsgpullDownload
-          }
-        >
+        <Tooltip placement="left" title={tooltipText.copyEsgpullDownload}>
           <span style={{ display: 'inline-block', cursor: 'not-allowed' }}>
             <Button
               type="default"
               className={copySearchOptionsTargets.copyEsgpullDownloadCommandBtn.class()}
               onClick={handleEsgpullDownloadCmd}
-              disabled={isLoading || numFound === 0 || currentProject.isSTAC}
+              disabled={isLoading || numFound === 0}
             >
               <CodeOutlined data-testid="copy-esgpull-download-btn" /> Copy esgpull download command
             </Button>
@@ -561,20 +566,13 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     {
       key: '4',
       label: (
-        <Tooltip
-          placement="left"
-          title={
-            currentProject.isSTAC
-              ? tooltipText.featureNotAvailableInStac
-              : tooltipText.copyIntakeEsgfSearch
-          }
-        >
+        <Tooltip placement="left" title={tooltipText.copyIntakeEsgfSearch}>
           <span style={{ display: 'inline-block', cursor: 'not-allowed' }}>
             <Button
               type="default"
               className={copySearchOptionsTargets.copyIntakeEsgfSearchBtn.class()}
               onClick={handleIntakeEsgfSearch}
-              disabled={isLoading || numFound === 0 || currentProject.isSTAC}
+              disabled={isLoading || numFound === 0}
             >
               <CodeOutlined data-testid="copy-intake-search-btn" /> Copy Intake-ESGF search command
             </Button>
@@ -584,154 +582,239 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     },
   ];
 
+  /* istanbul ignore next -- @preserve */
+  const setDownloadAllForm = (value: boolean) => {
+    return () => {
+      setShowDownloadAllForm(value);
+    };
+  };
+
+  const queryString = stringifyFilters(
+    currentProject.name,
+    versionType,
+    resultType,
+    minVersionDate,
+    maxVersionDate,
+    activeFacets,
+    textInputs,
+    currentProject.isSTAC,
+    currentRequestURL,
+  );
+
   return (
-    <div data-testid="search" className={searchTableTargets.searchResultsTable.class()}>
+    <div data-testid="search">
       {contextHolder}
-      <div style={styles.summary}>
-        {objectIsEmpty(project) && (
-          <Alert message="Select a project to search for results" type="info" showIcon />
-        )}
-        <h3>
-          {isLoading && <span style={styles.resultsHeader}>Loading latest results for </span>}
-          {results && !isLoading && (
-            <span
-              className={searchTableTargets.resultsFoundText.class()}
-              style={styles.resultsHeader}
-              data-testid="search-results-span"
-            >
-              {numFound.toLocaleString()} results found for{' '}
-            </span>
+      <div
+        className={searchTableTargets.searchFeaturesArea.class()}
+        data-testid="search-features-wrapper"
+      >
+        <div style={styles.summary}>
+          {objectIsEmpty(project) && (
+            <Alert message="Select a project to search for results" type="info" showIcon />
           )}
-          <span style={styles.resultsHeader}>{(project as RawProject).name}</span>
-        </h3>
-        <div>
-          {results && (
-            <Space>
-              <Button
-                type="default"
-                className={searchTableTargets.addSelectedToCartBtn.class()}
-                onClick={() => onUpdateCart(selectedItems, 'add')}
-                disabled={
-                  isLoading ||
-                  numFound === 0 ||
-                  selectedItems.length === 0 ||
-                  allSelectedItemsInCart
-                }
+          <h3>
+            {isLoading && <span style={styles.resultsHeader}>Loading latest results for </span>}
+            {results && !isLoading && (
+              <span
+                className={searchTableTargets.resultsFoundText.class()}
+                style={styles.resultsHeader}
+                data-testid="search-results-span"
               >
-                <ShoppingCartOutlined />
-                Add Selected to Cart
-              </Button>{' '}
-              <Dropdown.Button
-                data-testid="save-search-dropdown-btn"
-                className={searchTableTargets.saveSearchBtn.class()}
-                type="default"
-                onClick={() => handleSaveSearchQuery(currentRequestURL, numFound)}
-                disabled={isLoading || numFound === 0}
-                menu={{ items: searchActionsMenu }}
-                placement="bottom"
-                icon={<CopyOutlined className={copySearchOptionsTargets.copyMenuBtn.class()} />}
-              >
-                <SaveOutlined data-testid="save-search-btn" />
-                Save Search
-              </Dropdown.Button>
-            </Space>
-          )}
-        </div>
-      </div>
-      <div>
-        {results && (
-          <p>
-            <span style={styles.subtitles} data-testid="main-query-string-label">
-              {currentProject.isSTAC ? 'STAC Filter String:' : 'Query String:'}{' '}
-            </span>
-            <Typography.Text className={searchTableTargets.queryString.class()} code>
-              {stringifyFilters(
-                currentProject.name,
-                versionType,
-                resultType,
-                minVersionDate,
-                maxVersionDate,
-                activeFacets,
-                textInputs,
-                currentProject.isSTAC,
-                currentRequestURL,
-              )}
-            </Typography.Text>
-          </p>
-        )}
-      </div>
-
-      {results && (
-        <Row style={styles.filtersContainer}>
-          {Object.keys(activeFacets).length !== 0 &&
-            Object.keys(activeFacets).map((facet: string) =>
-              activeFacets[facet].map((variable: string) => (
-                <div key={variable} data-testid={variable}>
-                  <Tag value={[facet, variable]} onClose={handleRemoveFilter} type="facet">
-                    {variable}
-                  </Tag>
-                </div>
-              )),
+                {numFound.toLocaleString()} results found for{' '}
+              </span>
             )}
-          {textInputs.length !== 0 &&
-            (textInputs as TextInputs).map((input: string) => (
-              <div key={input} data-testid={input}>
-                <Tag value={input} onClose={handleRemoveFilter} type="text">
-                  {input}
-                </Tag>
-              </div>
-            ))}
-          {filenameVars.length !== 0 &&
-            (filenameVars as TextInputs).map((input: string) => (
-              <div key={input} data-testid={input}>
-                <Tag value={input} onClose={handleRemoveFilter} type="filenameVar">
-                  Filename Search: {input}
-                </Tag>
-              </div>
-            ))}
-          {filtersExist && (
-            <Button type="primary" danger size="small" onClick={handleClearFilters}>
-              Clear All
-            </Button>
-          )}
-        </Row>
-      )}
-
-      <Row gutter={[24, 16]} justify="space-around">
-        <Col lg={24}>
-          <div data-testid="search-table">
-            {results && !isLoading ? (
-              <Table
-                loading={false}
-                results={docs}
-                totalResults={numFound}
-                filenameVars={activeSearchQuery.filenameVars}
-                onUpdateCart={onUpdateCart}
-                onRowSelect={handleRowSelect}
-                onPageChange={handlePageChange}
-                onPageSizeChange={handlePageSizeChange}
-              />
-            ) : (
-              <Table
-                loading={isLoading}
-                results={[]}
-                totalResults={paginationOptions.pageSize}
-                onUpdateCart={onUpdateCart}
-              />
+            <span style={styles.resultsHeader}>{(project as RawProject).name}</span>
+          </h3>
+          <div>
+            {results && (
+              <Space>
+                {currentProject.isSTAC && (
+                  <>
+                    <Tooltip
+                      placement="bottom"
+                      title="Open form to download the current search results."
+                    >
+                      <Button
+                        type="default"
+                        shape="round"
+                        className={searchTableTargets.downloadSearchBtn.class()}
+                        onClick={setDownloadAllForm(true)}
+                        disabled={isLoading || numFound === 0}
+                      >
+                        <DownloadOutlined />
+                        Download All Results{' '}
+                      </Button>{' '}
+                    </Tooltip>
+                    <DownloadModal
+                      show={showDownloadAllForm}
+                      hide={setDownloadAllForm(false)}
+                      searchURL={getUrlFromSearch(activeSearchQuery)}
+                      stacResults={(results as StacResponse).search}
+                    />
+                  </>
+                )}
+                <Tooltip
+                  placement="bottom"
+                  title="Add the selected datasets to your download cart."
+                >
+                  <Button
+                    type="default"
+                    className={searchTableTargets.addSelectedToCartBtn.class()}
+                    onClick={() => onUpdateCart(selectedItems, 'add')}
+                    disabled={
+                      isLoading ||
+                      numFound === 0 ||
+                      selectedItems.length === 0 ||
+                      allSelectedItemsInCart
+                    }
+                  >
+                    <ShoppingCartOutlined />
+                    Add Selected to Cart
+                  </Button>{' '}
+                </Tooltip>
+                <Dropdown.Button
+                  data-testid="save-search-dropdown-btn"
+                  className={searchTableTargets.saveSearchBtn.class()}
+                  type="default"
+                  onClick={() => handleSaveSearchQuery(currentRequestURL, numFound)}
+                  disabled={isLoading || numFound === 0}
+                  menu={{ items: searchActionsMenu }}
+                  placement="bottom"
+                  icon={<CopyOutlined className={copySearchOptionsTargets.copyMenuBtn.class()} />}
+                >
+                  <Tooltip
+                    placement="bottom"
+                    title="Saves your current search parameters to Saved Searches for later use."
+                  >
+                    <SaveOutlined data-testid="save-search-btn" />
+                    Save Search
+                  </Tooltip>
+                </Dropdown.Button>{' '}
+              </Space>
             )}
           </div>
-        </Col>
-        {results && currentRequestURL && (
-          <Button
-            type="default"
-            href={createSearchRouteURL(currentRequestURL)}
-            target="_blank"
-            icon={<ExportOutlined />}
-          >
-            Open as JSON
-          </Button>
+        </div>
+        <div>
+          {results && (
+            <p>
+              <span style={styles.subtitles} data-testid="main-query-string-label">
+                {currentProject.isSTAC ? 'STAC Query String' : 'Query String'}
+                <Button
+                  size="small"
+                  style={{
+                    marginLeft: '5px',
+                    display: `${currentProject.isSTAC ? 'inherit' : 'none'}`,
+                  }}
+                  icon={
+                    <Tooltip title="Copy query to clipboard">
+                      <CopyOutlined style={{ fontSize: '12px' }} />
+                    </Tooltip>
+                  }
+                  onClick={() => {
+                    // copy link to clipboard
+                    /* istanbul ignore else -- @preserve */
+                    if (navigator && navigator.clipboard) {
+                      navigator.clipboard.writeText(queryString);
+                      showNotice(messageApi, 'Query copied to clipboard!', {
+                        icon: <CopyOutlined style={styles.messageAddIcon} />,
+                      });
+                    }
+                  }}
+                />{' '}
+                :
+              </span>
+              <Typography.Text className={searchTableTargets.queryString.class()} code>
+                {queryString}
+              </Typography.Text>
+            </p>
+          )}
+        </div>
+        {results && (
+          <Row style={styles.filtersContainer}>
+            {Object.keys(activeFacets).length !== 0 &&
+              Object.keys(activeFacets).map((facet: string) =>
+                activeFacets[facet].map((variable: string) => (
+                  <div key={variable} data-testid={variable}>
+                    <Tag value={[facet, variable]} onClose={handleRemoveFilter} type="facet">
+                      {variable}
+                    </Tag>
+                  </div>
+                )),
+              )}
+            {textInputs.length !== 0 &&
+              (textInputs as TextInputs).map((input: string) => (
+                <div key={input} data-testid={input}>
+                  <Tag value={input} onClose={handleRemoveFilter} type="text">
+                    {input}
+                  </Tag>
+                </div>
+              ))}
+            {filenameVars.length !== 0 &&
+              (filenameVars as TextInputs).map((input: string) => (
+                <div key={input} data-testid={input}>
+                  <Tag value={input} onClose={handleRemoveFilter} type="filenameVar">
+                    Filename Search: {input}
+                  </Tag>
+                </div>
+              ))}
+            {filtersExist && (
+              <Button type="primary" danger size="small" onClick={handleClearFilters}>
+                Clear All
+              </Button>
+            )}
+          </Row>
         )}
-      </Row>
+      </div>
+
+      <div
+        style={{
+          height: 'calc(100vh - 380px)',
+          marginBottom: '24px',
+        }}
+      >
+        <Row gutter={[24, 16]} justify="space-around">
+          <Col lg={24}>
+            <div
+              data-testid="search-table"
+              className={searchTableTargets.searchResultsTable.class()}
+            >
+              {results && !isLoading ? (
+                <Table
+                  loading={false}
+                  results={docs}
+                  totalResults={numFound}
+                  filenameVars={activeSearchQuery.filenameVars}
+                  onUpdateCart={onUpdateCart}
+                  onRowSelect={handleRowSelect}
+                  onPageChange={handlePageChange}
+                  onPageSizeChange={handlePageSizeChange}
+                  scroll={{ y: 'calc(100vh - 480px)', x: 'max-content' }}
+                />
+              ) : (
+                <Table
+                  loading={isLoading}
+                  results={[]}
+                  totalResults={paginationOptions.pageSize}
+                  onUpdateCart={onUpdateCart}
+                  scroll={{ y: 'calc(100vh - 480px)', x: 'max-content' }}
+                />
+              )}
+            </div>
+          </Col>
+          {results && currentRequestURL && (
+            <Col lg={24} style={{ textAlign: 'center', marginTop: '16px' }}>
+              <Button
+                type="default"
+                href={createSearchRouteURL(currentRequestURL)}
+                target="_blank"
+                icon={<ExportOutlined />}
+              >
+                Open as JSON
+              </Button>
+            </Col>
+          )}
+        </Row>
+      </div>
     </div>
   );
 };

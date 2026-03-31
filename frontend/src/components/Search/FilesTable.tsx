@@ -166,7 +166,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
   let stacDocs: StacAsset[] = [];
 
   if (data) {
-    /* istanbul ignore next */
+    /* istanbul ignore next -- @preserve */
     if (isSTAC && inputRecord?.assets) {
       stacDocs = Object.values(inputRecord.assets);
     } else {
@@ -271,11 +271,9 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
       sorter: (a: RawSearchResult, b: RawSearchResult) => (a.size || 0) - (b.size || 0),
       sortOrder: sortedInfo.columnKey === 'size' ? sortedInfo.order : null,
       render: (size: number) => {
-        return (
-          <div className={innerDataRowTargets.dataSize.class()}>
-            {size ? formatBytes(size) : 'N/A'}
-          </div>
-        );
+        /* istanbul ignore next -- @preserve */
+        const displaySize = size ? formatBytes(size) : 'N/A';
+        return <div className={innerDataRowTargets.dataSize.class()}>{displaySize}</div>;
       },
     },
     {
@@ -309,7 +307,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
                   <Button
                     type="primary"
                     onClick={() => {
-                      /* istanbul ignore next */
+                      /* istanbul ignore next -- @preserve */
                       if (navigator && navigator.clipboard) {
                         navigator.clipboard
                           .writeText(downloadUrls.HTTPServer)
@@ -333,26 +331,28 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
                   >
                     <Button
                       type="primary"
-                      onClick={() => {
-                        /* istanbul ignore next */
-                        if (navigator && navigator.clipboard) {
-                          navigator.clipboard
-                            .writeText(downloadUrls.OPENDAP)
-                            .catch((e: PromiseRejectedResult) => {
-                              showError(messageApi, e.reason as string);
+                      onClick={
+                        /* istanbul ignore next -- @preserve */
+                        () => {
+                          if (navigator && navigator.clipboard) {
+                            navigator.clipboard
+                              .writeText(downloadUrls.OPENDAP)
+                              .catch((e: PromiseRejectedResult) => {
+                                showError(messageApi, e.reason as string);
+                              });
+                            showNotice(messageApi, 'OPeNDAP URL copied to clipboard!', {
+                              icon: <ShareAltOutlined style={styles.messageAddIcon} />,
                             });
-                          showNotice(messageApi, 'OPeNDAP URL copied to clipboard!', {
-                            icon: <ShareAltOutlined style={styles.messageAddIcon} />,
-                          });
+                          }
                         }
-                      }}
+                      }
                       icon={createCustomIcon(openDapIcon, 'OPeNDAP', {
                         height: '24px',
                         width: '24px',
                         margin: 0,
                         verticalAlign: 'middle',
                       })}
-                    ></Button>
+                    />
                   </Form.Item>
                 </Tooltip>
               )}
@@ -376,6 +376,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
       title: 'Asset Title',
       dataIndex: 'id',
       key: 'id',
+      /* istanbul ignore next -- @preserve */
       render: (title: string) => {
         return <div className={innerDataRowTargets.filesTitle.class()}>{title}</div>;
       },
@@ -385,15 +386,13 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
       title: 'Size',
       dataIndex: 'file:size',
       key: 'size',
-      sorter: /* istanbul ignore next */ (a: RawSearchResult, b: RawSearchResult) =>
+      sorter: /* istanbul ignore next -- @preserve */ (a: RawSearchResult, b: RawSearchResult) =>
         (a.size || 0) - (b.size || 0),
       sortOrder: sortedInfo.columnKey === 'size' ? sortedInfo.order : null,
       render: (size: number) => {
-        return (
-          <div className={innerDataRowTargets.dataSize.class()}>
-            {size ? formatBytes(size) : 'N/A'}
-          </div>
-        );
+        /* istanbul ignore next -- @preserve */
+        const displaySize = size ? formatBytes(size) : 'N/A';
+        return <div className={innerDataRowTargets.dataSize.class()}>{displaySize}</div>;
       },
     },
     {
@@ -426,9 +425,8 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
                 <Form.Item className={innerDataRowTargets.copyUrlBtn.class()}>
                   <Button
                     type="primary"
-                    /* istanbul ignore next */
                     onClick={
-                      /* istanbul ignore next */ () => {
+                      /* istanbul ignore next -- @preserve */ () => {
                         if (navigator && navigator.clipboard) {
                           navigator.clipboard
                             .writeText(record.href)

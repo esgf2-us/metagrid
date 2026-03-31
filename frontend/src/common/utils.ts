@@ -43,26 +43,22 @@ export async function showNotice(
   // allow only one message at a time
   msgApi.destroy();
 
+  /* istanbul ignore next -- @preserve */
   switch (config?.type) {
     case 'success':
       await msgApi.success(msgConfig);
-      /* istanbul ignore next */
       return;
     case 'warning':
       await msgApi.warning(msgConfig);
-      /* istanbul ignore next */
       return;
     case 'error':
       await msgApi.error(msgConfig);
-      /* istanbul ignore next */
       return;
     case 'info':
       await msgApi.info(msgConfig);
-      /* istanbul ignore next */
       return;
     default:
       await msgApi.info(msgConfig);
-      /* istanbul ignore next */
       break;
   }
 }
@@ -78,6 +74,7 @@ export const projectBaseQuery = (
   filenameVars: [],
   activeFacets: {},
   textInputs: [],
+  globusOnly: false,
 });
 
 const bodySider = {
@@ -116,14 +113,14 @@ export async function showError(
 ): Promise<void> {
   let msg = errorMsg;
 
-  /* istanbul ignore next */
+  /* istanbul ignore next -- @preserve */
   if (!errorMsg || errorMsg === '') {
     msg = 'An unknown error has occurred.';
   }
   await showNotice(msgApi, msg, { duration: 5, type: 'error' });
 }
 
-export const getCurrentAppPage = (): number => {
+export const getCurrentAppPage = (): AppPage => {
   const { pathname } = window.location;
   if (pathname.endsWith('/search') || pathname.includes('/search/')) {
     return AppPage.Main;
@@ -137,7 +134,7 @@ export const getCurrentAppPage = (): number => {
   if (pathname.endsWith('/cart/searches')) {
     return AppPage.SavedSearches;
   }
-  return -1;
+  return AppPage.Unknown;
 };
 
 /** Creates a route that will access the JSON search results */
@@ -282,6 +279,7 @@ export const getAltSearchFromUrl = (url?: string): ActiveSearchQuery => {
     filenameVars: [],
     activeFacets: {},
     textInputs: [],
+    globusOnly: false,
   };
 
   const params = new URLSearchParams(url || window.location.search);
@@ -312,6 +310,7 @@ export const getSearchFromUrl = (url?: string): ActiveSearchQuery => {
     filenameVars: [],
     activeFacets: {},
     textInputs: [],
+    globusOnly: false,
   };
 
   const params = new URLSearchParams(url || window.location.search);
@@ -407,8 +406,13 @@ export function createEsgpullCommand(
   const commandParts: string[] = [];
 
   // Add project name
-  if (project && project.name) {
-    commandParts.push(`project:'"${(project as RawProject).name}"'`);
+  /* istanbul ignore else -- @preserve */
+  if (project) {
+    if (project.isSTAC && project.projectName) {
+      commandParts.push(`project:'"${(project as RawProject).projectName}"'`);
+    } else if (project.name) {
+      commandParts.push(`project:'"${(project as RawProject).name}"'`);
+    }
   }
 
   // Check if some facets are invalid
@@ -458,13 +462,16 @@ export function createEsgpullCommand(
 }
 
 export const createIntakeEsgfSearch = (searchQuery: ActiveSearchQuery): string => {
-  const { versionType, activeFacets } = searchQuery;
+  const { versionType, activeFacets, project } = searchQuery;
 
   const commandParts: string[] = [];
 
   // Add other search parameters
+
+  /* istanbul ignore else -- @preserve */
   if (!objectIsEmpty(activeFacets)) {
     Object.entries(activeFacets).forEach(([key, value]) => {
+      /* istanbul ignore else -- @preserve */
       if (value.length > 1) {
         commandParts.push(`${key}=['${value.join("', '")}']`);
       } else if (value.length === 1) {
@@ -480,10 +487,16 @@ export const createIntakeEsgfSearch = (searchQuery: ActiveSearchQuery): string =
     commandParts.push(`latest=True`);
   }
 
-  const intakeHeader = 'from intake_esgf import ESGFCatalog\ncat=ESGFCatalog()\n\n';
-  const catalogCmd = `metagrid_search=cat.search(${commandParts.join(', ')})`;
+  const intakeImports = project.isSTAC
+    ? `import intake_esgf\n\n`
+    : 'from intake_esgf import ESGFCatalog\n\n';
+  const confSettings = project.isSTAC
+    ? `intake_esgf.conf.set(indices={"${window.METAGRID.STAC_URL}":True})\n\n`
+    : '';
+  const catalogCmd = `cat=${project.isSTAC ? 'intake_esgf.' : ''}ESGFCatalog()\n\n`;
+  const searchCmd = `metagrid_search=cat.search(${commandParts.join(', ')})`;
 
-  return `${intakeHeader}${catalogCmd}`;
+  return `${intakeImports}${confSettings}${catalogCmd}${searchCmd}\nprint(metagrid_search)`;
 };
 
 export const combineCarts = (
@@ -694,6 +707,7 @@ export const saveBannerText = (): void => {
   // Set the banner text in sessionStorage
   const bannerText = window.METAGRID.BANNER_TEXT;
 
+  /* istanbul ignore else -- @preserve */
   if (bannerText) {
     sessionStorage.setItem('showBanner', bannerText);
   }

@@ -1,0 +1,199 @@
+suite: test postgresql deployment
+templates:
+  - templates/backend/secret.yaml
+  - templates/postgresql/secret.yaml
+  - templates/postgresql/deployment.yaml
+release:
+  name: metagrid
+  namespace: production
+chart:
+  version: v1.0.0
+  appVersion: v1.0.0
+set:
+  wget:
+    globusClientID: test1234
+    globusClientSecret: test1234
+  django:
+    secretKey: abcd1234 # need static for checksum
+tests:
+  - it: should have a deployment
+    template: templates/postgresql/deployment.yaml
+    asserts:
+      - matchSnapshot: {}
+  - it: should append pod annotations and labels
+    template: templates/postgresql/deployment.yaml
+    set:
+      postgresql:
+        podAnnotations:
+          datacenter/rack: 10
+        podLabels:
+          router/direction: egress
+    asserts:
+      - isSubset:
+          path: spec.template.metadata.annotations
+          content:
+            datacenter/rack: 10
+      - isSubset:
+          path: spec.template.metadata.labels
+          content:
+            router/direction: egress
+  - it: should add imagePullSecrets
+    template: templates/postgresql/deployment.yaml
+    set:
+      postgresql:
+        imagePullSecrets:
+          - name: harbor
+    asserts:
+      - contains:
+          path: spec.template.spec.imagePullSecrets
+          content:
+            name: harbor
+  - it: should set securityContext
+    template: templates/postgresql/deployment.yaml
+    set:
+      postgresql:
+        securityContext:
+          allowPrivilegeEscalation: false
+        podSecurityContext:
+          runAsUser: 100
+          runAsGroup: 99
+    asserts:
+      - isSubset:
+          path: spec.template.spec.securityContext
+          content:
+            runAsUser: 100
+            runAsGroup: 99
+      - isSubset:
+          path: spec.template.spec.containers[0].securityContext
+          content:
+            allowPrivilegeEscalation: false
+  - it: should set postgresql image
+    template: templates/postgresql/deployment.yaml
+    set:
+      postgresql:
+        image:
+          repository: ghcr.io/neworg/metagrid
+          tag: v10.0.0
+          pullPolicy: Always
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: ghcr.io/neworg/metagrid:v10.0.0
+      - equal:
+          path: spec.template.spec.containers[0].imagePullPolicy
+          value: Always
+  - it: should set resources
+    template: templates/postgresql/deployment.yaml
+    set:
+      postgresql:
+        resources:
+          requests:
+            cpu: 1
+          limit:
+            cpu: 2
+    asserts:
+      - isSubset:
+          path: spec.template.spec.containers[0].resources
+          content:
+            requests:
+              cpu: 1
+            limit:
+              cpu: 2
+  - it: should set volume and volumeMounts
+    template: templates/postgresql/deployment.yaml
+    set:
+      postgresql:
+        volumeMounts:
+          - name: config
+            mountPath: /config
+        volumes:
+          - name: config
+            configMap:
+              name: test-config
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: config
+            mountPath: /config
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: config
+            configMap:
+              name: test-config
+  - it: should set nodeSelector
+    template: templates/postgresql/deployment.yaml
+    set:
+      postgresql:
+        nodeSelector:
+          datacenter/rack: 10
+    asserts:
+      - isSubset:
+          path: spec.template.spec.nodeSelector
+          content:
+            datacenter/rack: 10
+  - it: should set affinity
+    template: templates/postgresql/deployment.yaml
+    set:
+      postgresql:
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: topology.kubernetes.io/zone
+                  operator: In
+                  values:
+                  - antarctica-east1
+                  - antarctica-west1
+    asserts:
+      - isSubset:
+          path: spec.template.spec.affinity
+          content:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                - matchExpressions:
+                  - key: topology.kubernetes.io/zone
+                    operator: In
+                    values:
+                    - antarctica-east1
+                    - antarctica-west1
+  - it: should set tolerations
+    template: templates/postgresql/deployment.yaml
+    set:
+      postgresql:
+        tolerations:
+          - key: "datacenter/rack"
+            operator: "Equal"
+            value: "10"
+            effect: "NoExecute"
+    asserts:
+      - contains:
+          path: spec.template.spec.tolerations
+          content:
+            key: "datacenter/rack"
+            operator: "Equal"
+            value: "10"
+            effect: "NoExecute"
+  - it: should disable postgresql
+    template: templates/postgresql/deployment.yaml
+    set:
+      django:
+        databaseUri: postgresql://admin:password@maindb:1111/metagrid-production
+      postgresql:
+        enabled: false
+    asserts:
+      - containsDocument:
+          kind: Deployment
+        not: true
+      - template: templates/backend/secret.yaml
+        isSubset:
+          path: stringData
+          content:
+            DATABASE_URL: postgresql://admin:password@maindb:1111/metagrid-production
+            DJANGO_SECRET_KEY: abcd1234
+            METAGRID_AUTHENTICATION_METHOD: globus
+            METAGRID_SOCIAL_AUTH_GLOBUS_KEY: null
+            METAGRID_SOCIAL_AUTH_GLOBUS_SECRET: null

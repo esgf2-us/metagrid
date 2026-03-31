@@ -1,4 +1,5 @@
-import { mockConfig } from '../../test/jestTestFunctions';
+import { vi } from 'vitest';
+import { mockConfig } from '../../test/testFunctions';
 import {
   delay,
   elementExists,
@@ -96,7 +97,7 @@ describe('hoverFirstElement and unHoverFirstElement', () => {
     elem.className = 'hover-test';
     document.body.appendChild(elem);
 
-    const mouseOverSpy = jest.fn();
+    const mouseOverSpy = vi.fn();
     elem.addEventListener('mouseover', mouseOverSpy);
 
     expect(hoverFirstElement('.hover-test')).toBe(true);
@@ -108,7 +109,7 @@ describe('hoverFirstElement and unHoverFirstElement', () => {
     elem.className = 'unhover-test';
     document.body.appendChild(elem);
 
-    const mouseOutSpy = jest.fn();
+    const mouseOutSpy = vi.fn();
     elem.addEventListener('mouseout', mouseOutSpy);
 
     expect(unHoverFirstElement('.unhover-test')).toBe(true);

@@ -19,6 +19,7 @@ import {
   loadSessionValue,
   openDownloadURL,
   parseNodeStatus,
+  postSTACSearch,
   processCitation,
   resetGlobusTokens,
   saveSessionValue,
@@ -29,7 +30,7 @@ import {
 import { STAC_PROJECTS, generateWgetScriptSTAC } from '../common/STAC';
 import { downloadFileForUser } from '../common/utils';
 import { ActiveSearchQuery, Pagination, RawCitation, ResultType } from '../components/Search/types';
-import { mockConfig } from '../test/jestTestFunctions';
+import { mockConfig } from '../test/testFunctions';
 import {
   activeSearchQueryFixture,
   ESGFSearchAPIFixture,
@@ -51,15 +52,13 @@ import apiRoutes, { HTTPCodeType } from './routes';
 
 const genericNetworkErrorMsg = 'Failed to Connect';
 
-jest.mock('../common/utils', () => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const originalModule = jest.requireActual('../common/utils');
+vi.mock('../common/utils', async () => {
+  const originalModule = await vi.importActual('../common/utils');
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return {
     __esModule: true,
     ...originalModule,
-    downloadFileForUser: jest.fn(),
+    downloadFileForUser: vi.fn(),
   };
 });
 
@@ -577,13 +576,12 @@ describe('test fetching wget script', () => {
 });
 
 describe('test opening download url', () => {
-  let windowSpy: jest.SpyInstance;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let mockedOpen: jest.Mock<any, any>;
+  let windowSpy: any;
+  let mockedOpen: any;
 
   beforeEach(() => {
-    mockedOpen = jest.fn();
-    windowSpy = jest.spyOn(global, 'window', 'get');
+    mockedOpen = vi.fn();
+    windowSpy = vi.spyOn(global, 'window', 'get');
   });
 
   afterEach(() => {
@@ -1054,6 +1052,14 @@ describe('STAC API functions', () => {
     );
   });
 
+  it('throws error when STAC search fails', async () => {
+    server.use(rest.post(apiRoutes.esgfSearchSTAC.path, (_req, res, ctx) => res(ctx.status(500))));
+
+    await expect(postSTACSearch('CMIP6', 10)).rejects.toThrow(
+      apiRoutes.esgfSearchSTAC.handleErrorMsg('generic' as HTTPCodeType),
+    );
+  });
+
   it('throws error when STAC search endpoint fails', async () => {
     server.use(rest.post(apiRoutes.esgfSearchSTAC.path, (_req, res, ctx) => res(ctx.status(500))));
 
@@ -1095,7 +1101,7 @@ describe('STAC API functions', () => {
       }),
     ];
 
-    const spy = jest.fn(downloadFileForUser).mockImplementation(() => {});
+    const spy = vi.fn(downloadFileForUser).mockImplementation(() => {});
     const result = generateWgetScriptSTAC(searchResults);
     expect(result).toBe(false);
     expect(spy).not.toHaveBeenCalled();

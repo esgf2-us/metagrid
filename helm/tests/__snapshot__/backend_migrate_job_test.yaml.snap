@@ -1,0 +1,117 @@
+should create a job to create django super user:
+  1: |
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      annotations:
+        helm.sh/hook: post-install,post-upgrade
+        helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+        helm.sh/hook-weight: "-5"
+      labels:
+        app.kubernetes.io/component: migrate-job
+        app.kubernetes.io/instance: metagrid
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: metagrid
+        app.kubernetes.io/version: v1.0.0
+        helm.sh/chart: metagrid-v1.0.0
+      name: metagrid-django-migrate
+    spec:
+      backoffLimit: 4
+      template:
+        spec:
+          containers:
+            - args:
+                - python manage.py migrate
+              command:
+                - /bin/bash
+                - -c
+              envFrom:
+                - secretRef:
+                    name: metagrid
+                - configMapRef:
+                    name: metagrid
+              image: ghcr.io/esgf2-us/metagrid-backend:v1.0.0
+              imagePullPolicy: IfNotPresent
+              name: migrations
+              resources: {}
+              securityContext: {}
+              volumeMounts: null
+          restartPolicy: OnFailure
+          securityContext: {}
+          serviceAccountName: metagrid-backend
+          volumes: null
+should migrate projects:
+  1: |
+    apiVersion: v1
+    data:
+      initial_projects_data.py: |
+        group_descriptions = {
+          "General": "Least verbose, typically returns many results",
+        }
+        projects = [
+          {
+            "name": "Example",
+            "full_name": "Example Project",
+            "facets_by_group": {
+              "General": ["activity_id", "data_node"]
+            }
+          }
+        ]
+    kind: ConfigMap
+    metadata:
+      labels:
+        app.kubernetes.io/component: migrate-job
+        app.kubernetes.io/instance: metagrid
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: metagrid
+        app.kubernetes.io/version: v1.0.0
+        helm.sh/chart: metagrid-v1.0.0
+      name: metagrid-projects
+      namespace: production
+  2: |
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      annotations:
+        helm.sh/hook: post-install,post-upgrade
+        helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+        helm.sh/hook-weight: "-5"
+      labels:
+        app.kubernetes.io/component: migrate-job
+        app.kubernetes.io/instance: metagrid
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: metagrid
+        app.kubernetes.io/version: v1.0.0
+        helm.sh/chart: metagrid-v1.0.0
+      name: metagrid-django-migrate
+    spec:
+      backoffLimit: 4
+      template:
+        spec:
+          containers:
+            - args:
+                - python manage.py migrate
+              command:
+                - /bin/bash
+                - -c
+              envFrom:
+                - secretRef:
+                    name: metagrid
+                - configMapRef:
+                    name: metagrid
+              image: ghcr.io/esgf2-us/metagrid-backend:v1.0.0
+              imagePullPolicy: IfNotPresent
+              name: migrations
+              resources: {}
+              securityContext: {}
+              volumeMounts:
+                - mountPath: /app/metagrid/initial_projects_data.py
+                  name: projects
+                  subPath: initial_projects_data.py
+          restartPolicy: OnFailure
+          securityContext: {}
+          serviceAccountName: metagrid-backend
+          volumes:
+            - configMap:
+                name: metagrid-projects
+              name: projects

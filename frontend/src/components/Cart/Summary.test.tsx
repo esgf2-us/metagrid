@@ -5,7 +5,7 @@ import { rawSearchResultFixture, userCartFixture } from '../../test/mock/fixture
 import Summary from './Summary';
 import customRender from '../../test/custom-render';
 import { AppStateKeys, CartStateKeys, GlobusStateKeys } from '../../common/atoms';
-import { AtomWrapper } from '../../test/jestTestFunctions';
+import { AtomWrapper } from '../../test/testFunctions';
 
 test('renders component', async () => {
   customRender(<Summary />);

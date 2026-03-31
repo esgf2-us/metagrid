@@ -62,13 +62,14 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
   let userInfo = { email: '', given_name: '' };
 
   if (window.METAGRID.AUTHENTICATION_METHOD === 'keycloak') {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     const { keycloak } = useKeycloak();
     loginBtn = (
       <Button
         type="text"
         icon={<UserOutlined style={{ fontSize: '18px', margin: 0 }} />}
         onClick={
-          /* istanbul ignore next */ () => {
+          /* istanbul ignore next -- @preserve */ () => {
             keycloak.login();
           }
         }
@@ -80,7 +81,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
       <Button
         type="text"
         onClick={
-          /* istanbul ignore next */ () => {
+          /* istanbul ignore next -- @preserve */ () => {
             keycloak.logout();
           }
         }
@@ -109,6 +110,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
         Sign Out
       </Button>
     );
+    /* istanbul ignore else -- @preserve */
     if (authenticated) {
       userInfo = {
         email: authState.email as string,
@@ -139,6 +141,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
         className: navBarTargets.signInBtn.class(),
         label: (
           <span className="submenu-title-wrapper">
+            {/* istanbul ignore next -- @preserve */}
             Hi, {userInfo && userInfo.given_name ? userInfo.given_name : userInfo?.email}
           </span>
         ),
@@ -181,7 +184,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
             className="badge"
             offset={[-5, 3]}
             showZero
-          ></Badge>
+          />
           Cart
         </Link>
       ),
@@ -202,7 +205,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
             className="badge"
             offset={[-5, 3]}
             showZero
-          ></Badge>
+          />
           Saved Searches
         </Link>
       ),

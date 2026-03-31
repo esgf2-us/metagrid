@@ -1,0 +1,33 @@
+should create horizontal pod autoscaler:
+  1: |
+    apiVersion: autoscaling/v2
+    kind: HorizontalPodAutoscaler
+    metadata:
+      labels:
+        app.kubernetes.io/component: frontend
+        app.kubernetes.io/instance: metagrid
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: metagrid
+        app.kubernetes.io/version: v1.0.0
+        helm.sh/chart: metagrid-v1.0.0
+      name: metagrid-frontend
+    spec:
+      maxReplicas: 10
+      metrics:
+        - resource:
+            name: cpu
+            target:
+              averageUtilization: 45
+              type: Utilization
+          type: Resource
+        - resource:
+            name: memory
+            target:
+              averageUtilization: 500Mi
+              type: Utilization
+          type: Resource
+      minReplicas: 2
+      scaleTargetRef:
+        apiVersion: apps/v1
+        kind: Deployment
+        name: metagrid

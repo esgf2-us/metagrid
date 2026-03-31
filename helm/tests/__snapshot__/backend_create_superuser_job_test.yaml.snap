@@ -1,0 +1,40 @@
+should create a job to create django super user:
+  1: |
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      annotations:
+        helm.sh/hook: post-install
+        helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+        helm.sh/hook-weight: "-5"
+      labels:
+        app.kubernetes.io/component: migrate-job
+        app.kubernetes.io/instance: metagrid
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: metagrid
+        app.kubernetes.io/version: v1.0.0
+        helm.sh/chart: metagrid-v1.0.0
+      name: metagrid-create-django-superuser
+    spec:
+      backoffLimit: 4
+      template:
+        spec:
+          containers:
+            - args:
+                - python manage.py createsuperuser --noinput
+              command:
+                - /bin/bash
+                - -c
+              envFrom:
+                - configMapRef:
+                    name: metagrid
+                - secretRef:
+                    name: metagrid
+              image: ghcr.io/esgf2-us/metagrid-backend:v1.0.0
+              imagePullPolicy: IfNotPresent
+              name: migrations
+              resources: {}
+              securityContext: {}
+          restartPolicy: OnFailure
+          securityContext: {}
+          serviceAccountName: metagrid-backend
