@@ -41,7 +41,8 @@ import {
 import {
   aggregationsToFacetsData,
   convertSearchParamsIntoStacFilter,
-  STAC_AGGREGATION_FACETS,
+  getAggregationsList,
+  getStacProject,
   STAC_PROJECTS,
 } from '../common/STAC';
 
@@ -308,7 +309,7 @@ export const addUserSearchQuery = async (
         'X-CSRFToken': getCookie('csrftoken'),
       },
     })
-    .then((res) => res.data as Promise<RawUserSearchQuery>)
+    .then((response) => response.data as Promise<RawUserSearchQuery>)
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userSearches));
     });
@@ -353,8 +354,8 @@ export const fetchProjects = async (): Promise<{
         }
       },
     })
-    .then(async (res) => {
-      const data = (await res.data) as {
+    .then(async (response) => {
+      const data = (await response.data) as {
         results: RawProjects;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         [key: string]: any;
@@ -364,14 +365,14 @@ export const fetchProjects = async (): Promise<{
 
       if (data.results) {
         return {
-          ...res,
+          ...response,
           results: [
             ...data.results.filter((p) => p.name !== 'All (except CMIP6)'),
             ...additionalProjects,
           ],
         };
       }
-      return { ...res, results: additionalProjects };
+      return { ...response, results: additionalProjects };
     })
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.projects));
@@ -474,7 +475,9 @@ export const generateSearchURLQuery = (
   );
 
   if (isSTAC) {
-    return `${baseRoute}${baseParams}${`project_id=${(project as RawProject).projectName}`}&${textInputsParams}&${activeFacetsParams}`;
+    const url = `${baseRoute}${baseParams}${`project_id=${(project as RawProject).projectName}`}&${textInputsParams}&${activeFacetsParams}`;
+
+    return url;
   }
 
   return `${baseRoute}${baseParams}${textInputsParams}&${activeFacetsParams}`;
@@ -504,16 +507,18 @@ export const postSTACSearch = async (
 };
 
 export const fetchSTACAggregations = async (
-  projectId: string,
+  projectName: string,
   filter: { op: string; args: unknown } | undefined,
 ): Promise<StacAggregations> => {
+  const payload = {
+    collections: [projectName],
+    aggregations: getAggregationsList(projectName),
+    filter,
+    'filter-lang': 'cql2-json',
+  };
+
   return axios
-    .post(`${apiRoutes.esgfAggregationsSTAC.path}`, {
-      collections: [projectId],
-      aggregations: STAC_AGGREGATION_FACETS[projectId],
-      filter,
-      'filter-lang': 'cql2-json',
-    })
+    .post(`${apiRoutes.esgfAggregationsSTAC.path}`, payload)
     .then((res) => {
       return res.data;
     })
@@ -529,9 +534,7 @@ export const fetchSTACSearchResults = async (
 Promise<{ [key: string]: any }> => {
   let status = 200;
 
-  const stacProject =
-    STAC_PROJECTS.find((project) => project.projectName === projectName) || STAC_PROJECTS[0];
-  const filter = convertSearchParamsIntoStacFilter(reqUrlStr, stacProject);
+  const filter = convertSearchParamsIntoStacFilter(reqUrlStr, getStacProject(projectName));
 
   const query = new URLSearchParams(reqUrlStr || '').get('query');
   let textInputs: TextInputs | undefined;
@@ -542,15 +545,18 @@ Promise<{ [key: string]: any }> => {
   }
 
   const aggregations = await fetchSTACAggregations(projectName, filter)
-    .then((res) => {
-      return res;
+    .then((response) => {
+      // Convert aggregations response into facet data for Metagrid
+      const aggregationsToFacets = aggregationsToFacetsData(
+        projectName,
+        response || { aggregations: [] },
+      );
+      return aggregationsToFacets;
     })
     .catch((error: ResponseError) => {
       /* istanbul ignore next -- @preserve */
       status = error.cause === 422 ? 422 : (error.cause as number) || 500;
     });
-
-  const aggregationsToFacets = aggregationsToFacetsData(aggregations || { aggregations: [] });
 
   const searchResults = await postSTACSearch(projectName, 9999, filter, textInputs);
 
@@ -580,7 +586,7 @@ Promise<{ [key: string]: any }> => {
 
   stacResponse.features = filteredFeatures;
 
-  return { search: searchResults, facets: aggregationsToFacets, stac: true, status };
+  return { search: searchResults, facets: aggregations, stac: true, status };
 };
 
 /**
