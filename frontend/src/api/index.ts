@@ -497,7 +497,7 @@ export const postSTACSearch = async (
     .post(apiRoutes.esgfSearchSTAC.path, {
       collections: [projectName],
       limit,
-      _filter: filter,
+      filter,
       q,
     })
     .then((res) => res.data)
@@ -513,7 +513,7 @@ export const fetchSTACAggregations = async (
   const payload = {
     collections: [projectName],
     aggregations: getAggregationsList(projectName),
-    _filter: filter,
+    filter,
   };
 
   return axios
