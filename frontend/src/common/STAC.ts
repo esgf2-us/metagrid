@@ -21,12 +21,12 @@ function buildStacProject(
     ...STAC_DEFAULT_PROJECT.facetsByGroup,
   };
 
-  for (const groupName of Object.keys(facetsByGroup)) {
+  Object.keys(facetsByGroup).forEach((groupName) => {
     mergedFacetsByGroup[groupName] = [
       ...(mergedFacetsByGroup[groupName] ?? []),
       ...(facetsByGroup[groupName] ?? []),
     ];
-  }
+  });
 
   return {
     ...STAC_DEFAULT_PROJECT,
@@ -59,13 +59,13 @@ export function getFacetFilterName(projectName: string | undefined, facetName: s
       return 'alternate:name';
     case 'latest':
       return 'properties.latest';
+    default:
+      return `properties.${projectName?.toLowerCase() || 'cmip6'}:${facetName}`;
   }
-
-  return `properties.${projectName || 'CMIP6'}:${facetName}`;
 }
 
 export function getAggregationsList(projectName: string): string[] {
-  const facetsByGroup = getStacProject(projectName).facetsByGroup;
+  const { facetsByGroup } = getStacProject(projectName);
   return Object.values(facetsByGroup)
     .flat()
     .map((element) => {
@@ -77,9 +77,9 @@ export function getAggregationsList(projectName: string): string[] {
       switch (element.facet) {
         case 'alternate_name':
           return 'alternate_name_frequency';
+        default:
+          return `${projectName.toLowerCase()}_${element.facet}_frequency`;
       }
-
-      return `${projectName.toLowerCase()}_${element.facet}_frequency`;
     });
 }
 
@@ -109,12 +109,12 @@ export const aggregationsToFacetsData = (
     facetsData[facetName] = facetValues;
   });
 
-  let updatedFacets = facetsData;
+  let updatedFacets = { ...facetsData };
 
   // Rename some facets
   /* istanbul ignore next -- @preserve */
-  if ('alternate_name' in facetsData) {
-    const { alternate_name, ...rest } = facetsData;
+  if ('alternate_name' in updatedFacets) {
+    const { alternate_name, ...rest } = updatedFacets;
     updatedFacets = { ...rest, data_node: alternate_name };
   }
 

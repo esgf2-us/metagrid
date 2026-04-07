@@ -497,7 +497,7 @@ export const postSTACSearch = async (
     .post(apiRoutes.esgfSearchSTAC.path, {
       collections: [projectName],
       limit,
-      filter,
+      _filter: filter,
       q,
     })
     .then((res) => res.data)
@@ -513,8 +513,7 @@ export const fetchSTACAggregations = async (
   const payload = {
     collections: [projectName],
     aggregations: getAggregationsList(projectName),
-    filter,
-    'filter-lang': 'cql2-json',
+    _filter: filter,
   };
 
   return axios
@@ -586,7 +585,7 @@ Promise<{ [key: string]: any }> => {
 
   stacResponse.features = filteredFeatures;
 
-  return { search: searchResults, facets: aggregations, stac: true, status };
+  return { search: searchResults, facets: aggregations || {}, stac: true, status };
 };
 
 /**

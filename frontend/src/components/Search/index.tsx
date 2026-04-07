@@ -143,7 +143,7 @@ export const stringifyFilters = (
 
     const stacFilter = convertSearchParamsIntoStacFilter(reqUrlStr, stacProject) || 'null';
     const textInputsStr = textInputs.length > 0 ? `, "q": ${JSON.stringify(textInputs)}` : '';
-    const stacQueryBase = `{"collections": ["${stacProject.projectName}"], "filter": ${JSON.stringify(stacFilter)}${textInputsStr}}`;
+    const stacQueryBase = `{"collections": ["${stacProject.projectName}"], "_filter": ${JSON.stringify(stacFilter)}${textInputsStr}}`;
 
     return stacQueryBase;
   }
