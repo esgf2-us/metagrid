@@ -45,7 +45,7 @@ export type RawSearchResult = {
   properties?: StacProperties;
   links?: StacLink[];
   globus_link?: string;
-  assets?: { [name: string]: StacAsset };
+  assets?: StacAssetDict;
   version?: string | number;
   isStac: boolean;
   [key: string]: unknown;
@@ -76,6 +76,15 @@ export type StacLink = {
   href: string;
 };
 
+export function isStacAsset(value: StacAssetDict | StacAsset): value is StacAsset {
+  return (
+    value &&
+    typeof value === 'object' &&
+    typeof value.href === 'string' &&
+    typeof value.id === 'string'
+  );
+}
+
 export type StacAsset = {
   id: string;
   access: string[];
@@ -88,9 +97,20 @@ export type StacAsset = {
   'file:size': number;
   'file:checksum': string;
   title?: string;
-  alternate?: { [key: string]: StacAsset };
-  [key: string]: boolean | string | string[] | { [key: string]: StacAsset } | number | undefined;
+  alternate?: StacAssetDict;
+  [key: string]: boolean | string | string[] | StacAssetDict | number | undefined;
 };
+
+export function isStacAssetDict(value: StacAssetDict | StacAsset): value is StacAssetDict {
+  return (
+    value &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    Object.values(value).every(isStacAsset)
+  );
+}
+
+export type StacAssetDict = { [key: string]: StacAsset };
 
 export type StacAggregations = {
   aggregations: {

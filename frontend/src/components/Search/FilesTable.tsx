@@ -5,7 +5,7 @@ import {
   RightCircleOutlined,
   ShareAltOutlined,
 } from '@ant-design/icons';
-import { Alert, Form, Table as TableD, Tooltip, message } from 'antd';
+import { Alert, Form, TableColumnsType, Table as TableD, Tooltip, message } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React, { useState } from 'react';
@@ -36,6 +36,7 @@ import { innerDataRowTargets } from '../../common/joyrideTutorials/reactJoyrideS
 import { currentProjectAtom } from '../../common/atoms';
 import { createCustomIcon } from '../NavBar';
 import SubFilesTable from './SubFilesTable';
+import { getReplicaNodelsList } from '../../common/STAC';
 
 export type DownloadUrls = {
   HTTPServer: string;
@@ -271,7 +272,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
     },
   };
 
-  const columns = [
+  const columns: TableColumnsType<RawSearchResult> = [
     {
       title: 'File Title',
       dataIndex: 'title',
@@ -303,8 +304,8 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
       align: 'center' as AlignType,
       title: 'Download / Copy URL',
       key: 'download',
-      render: (record: { url: string[] }) => {
-        const downloadUrls = genDownloadUrls(record.url);
+      render: (record: RawSearchResult) => {
+        const downloadUrls = genDownloadUrls(record.url || []);
         return (
           <span style={{ alignItems: 'center' }}>
             {contextHolder}
@@ -394,7 +395,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
     },
   ];
 
-  const stacColumns = [
+  const stacColumns: TableColumnsType<RawSearchResult> = [
     {
       title: 'Asset Title',
       dataIndex: 'id',
@@ -406,18 +407,14 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
     },
     {
       title: 'Replica Nodes',
-      dataIndex: 'alternate',
       key: 'dataNode',
       /* istanbul ignore next -- @preserve */
-      render: (alternates: object, record: RawSearchResult) => {
-        const mainDataNode = record['alternate:name'] as string;
-        if (!alternates || Object.keys(alternates).length === 0) {
-          return <div>{mainDataNode}</div>;
-        }
+      render: (asset: StacAsset) => {
+        const replicaNodes = getReplicaNodelsList(asset);
 
         return (
           <div className={innerDataRowTargets.dataNode.class()}>
-            {[mainDataNode, ...Object.keys(alternates)].toString().replaceAll(',', ', ')}
+            {replicaNodes.toString().replaceAll(',', ', ')}
           </div>
         );
       },
@@ -447,7 +444,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
     {
       title: 'Download / Copy URL',
       key: 'download',
-      render: (record: { href: string }) => {
+      render: (asset: { href: string }) => {
         return (
           <span style={{ alignItems: 'center' }}>
             {contextHolder}
@@ -456,7 +453,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
                 <Form.Item className={innerDataRowTargets.downloadDataBtn.class()}>
                   <Button
                     type="primary"
-                    href={record.href}
+                    href={asset.href}
                     target="_blank"
                     icon={<DownloadOutlined />}
                   />
@@ -470,7 +467,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
                       /* istanbul ignore next -- @preserve */ () => {
                         if (navigator && navigator.clipboard) {
                           navigator.clipboard
-                            .writeText(record.href)
+                            .writeText(asset.href)
                             .catch((e: PromiseRejectedResult) => {
                               showError(messageApi, e.reason as string);
                             });

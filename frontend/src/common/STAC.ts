@@ -5,6 +5,8 @@ import {
   RawSearchResult,
   StacAsset,
   StacAggregations,
+  StacAssetDict,
+  isStacAsset,
 } from '../components/Search/types';
 import { downloadFileForUser, formatBytes } from './utils';
 
@@ -105,6 +107,27 @@ export const getStacGlobusHref = (
     return assets.globus.href;
   }
   return null;
+};
+
+export const getReplicaNodelsList = (assets: StacAssetDict | StacAsset | undefined): string[] => {
+  if (!assets) {
+    return [];
+  }
+
+  let asset: StacAsset;
+
+  if (isStacAsset(assets)) {
+    asset = assets;
+  } else {
+    [asset] = Object.values(assets);
+  }
+
+  const alternates = asset.alternate;
+  const name = asset.alternateName || (asset['alternate:name'] as string);
+  if (!alternates || Object.keys(alternates).length === 0) {
+    return [name];
+  }
+  return [name, ...Object.keys(alternates)];
 };
 
 export const aggregationsToFacetsData = (

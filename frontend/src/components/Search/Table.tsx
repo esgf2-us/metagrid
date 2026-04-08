@@ -33,6 +33,7 @@ import {
   RawSearchResult,
   RawSearchResults,
   Sorts,
+  StacAsset,
   TextInputs,
 } from './types';
 import GlobusToolTip from '../Globus/GlobusToolTip';
@@ -40,7 +41,7 @@ import { topDataRowTargets } from '../../common/joyrideTutorials/reactJoyrideSte
 import { userCartAtom } from '../../common/atoms';
 import { AppPage } from '../../common/types';
 import { createCustomIcon } from '../NavBar';
-import { getStacGlobusHref, generateWgetScriptSTAC } from '../../common/STAC';
+import { getStacGlobusHref, generateWgetScriptSTAC, getReplicaNodelsList } from '../../common/STAC';
 import TableExpandIcon, { TableExpandIconProps } from './TableExpandIcon';
 
 export type Props = {
@@ -314,6 +315,67 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
         <p className={topDataRowTargets.versionText.class()}>{version || 'N/A'}</p>
       ),
     },
+    window.METAGRID.GLOBUS_NODES.length > 0
+      ? {
+          align: 'center' as AlignType,
+          title: 'Globus Ready',
+          dataIndex: 'data_node',
+          key: 'globus_enabled',
+          width: 110,
+          render: (data_node: string, record: RawSearchResult) => {
+            if (record.isStac) {
+              return (
+                <div>
+                  <GlobusToolTip
+                    dataNode={data_node}
+                    stacGlobusAvailable={
+                      getStacGlobusHref(record.assets) !== null || record.globusHrefs !== undefined
+                    }
+                  />
+                </div>
+              );
+            }
+
+            return (
+              <div>
+                <GlobusToolTip dataNode={data_node} />
+              </div>
+            );
+          },
+        }
+      : {
+          align: 'center' as AlignType,
+          fixed: 'right' as FixedType,
+          title: '',
+          dataIndex: 'data_node',
+          key: 'globus_enabled',
+          render: () => null,
+        },
+    {
+      align: 'center' as AlignType,
+      fixed: 'right' as FixedType,
+      title: 'Node Options',
+      key: 'dataNodes',
+      render: (record: RawSearchResult) => {
+        const nodes = getReplicaNodelsList(record.assets);
+
+        if (nodes.length <= 1) {
+          return 'N/A';
+        }
+
+        return (
+          <Select
+            defaultValue={nodes[0]}
+            disabled={record.retracted === true}
+            // className={topDataRowTargets.downloadScriptOptions.class()}
+            style={{ width: 200 }}
+            options={nodes.map((dataNode) => {
+              return { title: dataNode, value: dataNode };
+            })}
+          />
+        );
+      },
+    },
     {
       align: 'center' as AlignType,
       fixed: 'right' as FixedType,
@@ -426,43 +488,6 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
         );
       },
     },
-    window.METAGRID.GLOBUS_NODES.length > 0
-      ? {
-          align: 'center' as AlignType,
-          fixed: 'right' as FixedType,
-          title: 'Globus Ready',
-          dataIndex: 'data_node',
-          key: 'globus_enabled',
-          width: 110,
-          render: (data_node: string, record: RawSearchResult) => {
-            if (record.isStac) {
-              return (
-                <div>
-                  <GlobusToolTip
-                    dataNode={data_node}
-                    stacGlobusAvailable={
-                      getStacGlobusHref(record.assets) !== null || record.globusHrefs !== undefined
-                    }
-                  />
-                </div>
-              );
-            }
-
-            return (
-              <div>
-                <GlobusToolTip dataNode={data_node} />
-              </div>
-            );
-          },
-        }
-      : {
-          align: 'center' as AlignType,
-          fixed: 'right' as FixedType,
-          title: '',
-          dataIndex: 'data_node',
-          key: 'globus_enabled',
-          render: () => null,
-        },
   ];
 
   return (
