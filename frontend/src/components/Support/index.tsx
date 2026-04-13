@@ -3,6 +3,7 @@ import { GithubOutlined } from '@ant-design/icons';
 import { Button, Card } from 'antd';
 import React from 'react';
 import { useAtom } from 'jotai';
+import Markdown from 'react-markdown';
 import { AppPage } from '../../common/types';
 import { RawTourState, ReactJoyrideContext } from '../../contexts/ReactJoyrideContext';
 import Modal from '../Feedback/Modal';
@@ -341,9 +342,9 @@ const Support: React.FC = () => {
             )}
           </Card>
           {window.METAGRID.SUPPORT_INFO && (
-            <div>
+            <div style={{ fontSize: '14px' }}>
               <h3>Site Admin Support</h3>
-              <p style={{ fontSize: '14px' }}>{window.METAGRID.SUPPORT_INFO}</p>
+              <Markdown>{window.METAGRID.SUPPORT_INFO}</Markdown>
             </div>
           )}
           <div>
