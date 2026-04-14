@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Tag } from 'antd';
 import { CloseSquareTwoTone } from '@ant-design/icons';
 import { useAtomValue } from 'jotai';
+import Markdown from 'react-markdown';
 import { isDarkModeAtom } from '../../common/atoms';
 import { darkModeRed, lightModeRed } from '../NodeStatus/StatusToolTip';
 import { showBanner, saveBannerText } from '../../common/utils';
@@ -10,7 +11,7 @@ const Banner: React.FC = () => {
   const isDarkMode = useAtomValue<boolean>(isDarkModeAtom);
 
   const [isVisible, setIsVisible] = useState(showBanner());
-  const bannerText = window.METAGRID.BANNER_TEXT;
+  const bannerText = `${window.METAGRID.BANNER_TEXT}`;
 
   if (!isVisible) {
     return <div />;
@@ -18,7 +19,7 @@ const Banner: React.FC = () => {
 
   return (
     <Tag style={{ width: '100%', marginBottom: '10px' }}>
-      <h2>
+      <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
         <CloseSquareTwoTone
           twoToneColor={isDarkMode ? darkModeRed : lightModeRed}
           style={{ fontSize: '20px' }}
@@ -27,8 +28,8 @@ const Banner: React.FC = () => {
             // Save the banner text so it doesn't show again
             saveBannerText();
           }}
-        />{' '}
-        {bannerText}
+        />
+        <Markdown>{bannerText}</Markdown>
       </h2>
     </Tag>
   );
