@@ -45,7 +45,7 @@ const STAC_PROJECT_LIST: StacProject[] = [
     },
   },
   {
-    name: 'CMIP7 STAC',
+    name: 'CMIP7',
     projectName: 'CMIP7',
     fullName: 'Coupled Model Intercomparison Project Phase 7',
     projectUrl: 'https://WCRP_CMIP.org/CMIP7',
