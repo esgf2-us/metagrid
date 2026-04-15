@@ -11,6 +11,7 @@ export enum AppStateKeys {
   isDarkMode = 'isDarkMode',
   currentProject = 'currentProject',
   userCart = 'userCart',
+  nodePreferences = 'nodePreferences',
   userChosenEndpoint = 'userChosenEndpoint',
   userSearchQueries = 'userSearchQueries',
   activeSearchQuery = 'activeSearchQuery',
@@ -48,6 +49,13 @@ export const savedSearchQueryAtom = atom<UserSearchQuery | undefined>();
 export const availableFacetsAtom = atom<ParsedFacets | Record<string, unknown>>({});
 
 export const nodeStatusAtom = atom<NodeStatusArray>([]);
+
+export const nodePreferencesAtom = atomWithStorage<string[]>(
+  AppStateKeys.nodePreferences,
+  [],
+  undefined,
+  { getOnInit: true },
+);
 
 export const activeSearchQueryAtom = atomWithStorage<ActiveSearchQuery>(
   AppStateKeys.activeSearchQuery,

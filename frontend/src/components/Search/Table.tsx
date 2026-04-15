@@ -354,13 +354,17 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
     {
       align: 'center' as AlignType,
       fixed: 'right' as FixedType,
-      title: 'Node Options',
+      title: 'Available Nodes',
       key: 'dataNodes',
       render: (record: RawSearchResult) => {
-        const nodes = getReplicaNodelsList(record.assets);
+        const nodes = getReplicaNodelsList(record);
 
-        if (nodes.length <= 1) {
+        if (nodes.length < 1) {
           return 'N/A';
+        }
+
+        if (nodes.length === 1) {
+          return nodes[0];
         }
 
         return (

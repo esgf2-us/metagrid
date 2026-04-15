@@ -8,10 +8,12 @@ import Button from '../General/Button';
 import Table from '../Search/Table';
 import { RawSearchResults } from '../Search/types';
 import DatasetDownload from '../Downloads/DatasetDownload';
+import PreferredNodesModal from '../Downloads/PreferredNodesModal';
 import { UserCart } from './types';
 import { AuthContext } from '../../contexts/AuthContext';
 import { updateUserCart } from '../../api';
 import { cartItemSelectionsAtom, userCartAtom } from '../../common/atoms';
+import { getReplicaNodelsList } from '../../common/STAC';
 
 const styles: CSSinJS = {
   summary: {
@@ -41,6 +43,9 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   const [itemSelections, setItemSelections] = useAtom<RawSearchResults>(cartItemSelectionsAtom);
 
+  // Preferred Nodes Modal
+  const [showPreferredNodesModal, setShowPreferredNodesModal] = React.useState(false);
+
   const handleRowSelect = (selectedRows: RawSearchResults): void => {
     setItemSelections(selectedRows);
   };
@@ -55,6 +60,25 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     }
   };
 
+  // Extract unique nodes from userCart
+  const getAvailableNodes = (): string[] => {
+    const nodesSet = new Set<string>();
+
+    userCart.forEach((item) => {
+      const nodes = getReplicaNodelsList(item);
+      nodes.forEach((node) => {
+        if (node) {
+          nodesSet.add(node);
+        }
+      });
+    });
+
+    return Array.from(nodesSet);
+  };
+
+  const availableNodes = getAvailableNodes();
+  const hasNodes = availableNodes.length > 0;
+
   return (
     <div data-testid="cartItems">
       {userCart.length === 0 && <Empty description="Your cart is empty" />}
@@ -62,25 +86,34 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         <>
           <div style={styles.summary}>
             {userCart.length > 0 && (
-              <Popconfirm
-                title={
-                  <p>
-                    Do you wish to remove all
-                    <br /> items from your cart?
-                  </p>
-                }
-                icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
-                onConfirm={handleClearCart}
-                okButtonProps={{
-                  'data-testid': 'clear-all-cart-items-confirm-button',
-                }}
-              >
-                <span data-testid="clear-cart-button">
-                  <Button className={cartTourTargets.removeItemsBtn.class()} danger>
-                    Remove All Items
+              <>
+                <div>
+                  <Popconfirm
+                    title={
+                      <p>
+                        Do you wish to remove all
+                        <br /> items from your cart?
+                      </p>
+                    }
+                    icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
+                    onConfirm={handleClearCart}
+                    okButtonProps={{
+                      'data-testid': 'clear-all-cart-items-confirm-button',
+                    }}
+                  >
+                    <span data-testid="clear-cart-button">
+                      <Button className={cartTourTargets.removeItemsBtn.class()} danger>
+                        Remove All Items
+                      </Button>
+                    </span>
+                  </Popconfirm>
+                </div>
+                <div>
+                  <Button onClick={() => setShowPreferredNodesModal(true)} disabled={!hasNodes}>
+                    Set Preferred Nodes
                   </Button>
-                </span>
-              </Popconfirm>
+                </div>
+              </>
             )}
           </div>
           <div
@@ -114,6 +147,11 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
             </p>
             <DatasetDownload />
           </div>
+          <PreferredNodesModal
+            show={showPreferredNodesModal}
+            hide={() => setShowPreferredNodesModal(false)}
+            availableNodes={availableNodes}
+          />
         </>
       )}
     </div>

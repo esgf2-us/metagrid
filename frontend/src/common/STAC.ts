@@ -109,26 +109,82 @@ export const getStacGlobusHref = (
   return null;
 };
 
-export const getReplicaNodelsList = (assets: StacAssetDict | StacAsset | undefined): string[] => {
-  if (!assets) {
-    return [];
-  }
+// Function to extract nodes from STAC assets
+const getNodesFromStacAsset = (assets: StacAssetDict | StacAsset): string[] => {
+  const nodesSet = new Set<string>();
 
-  let asset: StacAsset;
-
+  // If it's a single asset, process it
   if (isStacAsset(assets)) {
-    asset = assets;
+    const asset = assets;
+    const name = asset.alternateName || (asset['alternate:name'] as string);
+    if (name) {
+      nodesSet.add(name);
+    }
+
+    // Add alternate nodes
+    const alternates = asset.alternate;
+    if (alternates && typeof alternates === 'object') {
+      Object.keys(alternates).forEach((altKey) => nodesSet.add(altKey));
+    }
   } else {
-    [asset] = Object.values(assets);
+    // It's a StacAssetDict - iterate through ALL assets to collect nodes
+    Object.values(assets).forEach((asset: StacAsset) => {
+      const name = asset.alternateName || (asset['alternate:name'] as string);
+      if (name) {
+        nodesSet.add(name);
+      }
+
+      // Add alternate nodes from this asset
+      const alternates = asset.alternate;
+      if (alternates && typeof alternates === 'object') {
+        Object.keys(alternates).forEach((altKey) => nodesSet.add(altKey));
+      }
+    });
   }
 
-  const alternates = asset.alternate;
-  const name = asset.alternateName || (asset['alternate:name'] as string);
-  if (!alternates || Object.keys(alternates).length === 0) {
-    return [name];
-  }
-  return [name, ...Object.keys(alternates)];
+  return Array.from(nodesSet);
 };
+
+// Type guard to check if obj is a RawSearchResult
+const isRawSearchResult = (obj: unknown): obj is RawSearchResult => {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    'id' in obj &&
+    'master_id' in obj &&
+    ('isStac' in obj || 'data_node' in obj)
+  );
+};
+
+// Overloaded function signature
+export function getReplicaNodelsList(record: RawSearchResult): string[];
+export function getReplicaNodelsList(assets: StacAssetDict | StacAsset): string[];
+export function getReplicaNodelsList(
+  recordOrAssets: RawSearchResult | StacAssetDict | StacAsset,
+): string[] {
+  if (isRawSearchResult(recordOrAssets)) {
+    const record = recordOrAssets;
+
+    // Handle non-STAC items
+    if (!record.isStac) {
+      const dataNode = record.data_node as string | undefined;
+      if (dataNode && typeof dataNode === 'string') {
+        return [dataNode];
+      }
+      return [];
+    }
+
+    // Handle STAC items
+    const { assets } = record;
+    if (!assets) {
+      return [];
+    }
+    return getNodesFromStacAsset(assets);
+  }
+
+  // StacAssetDict or StacAsset use helper function to get nodes
+  return getNodesFromStacAsset(recordOrAssets);
+}
 
 export const aggregationsToFacetsData = (
   aggregations: StacAggregations,
