@@ -28,7 +28,7 @@ django-extensions==4.1  # https://github.com/django-extensions/django-extensions
 
 # Code quality
 # ------------------------------------------------------------------------------
-pre-commit==3.7.1  # https://github.com/pre-commit/pre-commit
+pre-commit==4.5.1  # https://github.com/pre-commit/pre-commit
 
 # Model Tools
 # ------------------------------------------------------------------------------
@@ -40,7 +40,7 @@ globus-cli==3.39.0  #
 
 # SBOM
 # ------------------------------------------------------------------------------
-cyclonedx-bom==4.5.0  # https://github.com/CycloneDX/cyclonedx-python/
+cyclonedx-bom==7.3.0  # https://github.com/CycloneDX/cyclonedx-python/
 
 # Configuration
 # ------------------------------------------------------------------------------
