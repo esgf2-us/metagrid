@@ -70,7 +70,7 @@ import { AuthContext } from '../../contexts/AuthContext';
 import {
   convertSearchParamsIntoStacFilter,
   convertStacToRawSearchResult,
-  STAC_PROJECTS,
+  getStacProject,
 } from '../../common/STAC';
 import DownloadModal from '../Downloads/DownloadModal';
 
@@ -139,11 +139,11 @@ export const stringifyFilters = (
   reqUrlStr: string = '',
 ): string => {
   if (isSTAC) {
-    const stacProject =
-      STAC_PROJECTS.find((project) => project.projectName === projectName) || STAC_PROJECTS[0];
+    const stacProject = getStacProject(projectName as string);
+
     const stacFilter = convertSearchParamsIntoStacFilter(reqUrlStr, stacProject) || 'null';
     const textInputsStr = textInputs.length > 0 ? `, "q": ${JSON.stringify(textInputs)}` : '';
-    const stacQueryBase = `{"collections": ["${stacProject.projectName}"], "filter": ${JSON.stringify(stacFilter)}${textInputsStr}`;
+    const stacQueryBase = `{"collections": ["${stacProject.projectName}"], "filter": ${JSON.stringify(stacFilter)}${textInputsStr}}`;
 
     return stacQueryBase;
   }
@@ -590,7 +590,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   };
 
   const queryString = stringifyFilters(
-    currentProject.name,
+    currentProject.projectName,
     versionType,
     resultType,
     minVersionDate,

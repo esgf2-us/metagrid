@@ -1,8 +1,14 @@
+export type TitledFacet = {
+  title: string;
+  facet: string;
+};
+export type StacProjectFacet = string | TitledFacet;
+export type FacetsByGroup = { [key: string]: StacProjectFacet[] };
 export type RawProject = {
   pk: string;
   name: string;
   projectUrl: string;
-  facetsByGroup: { [key: string]: string[] };
+  facetsByGroup: FacetsByGroup;
   facetsUrl: string;
   fullName: string;
   isSTAC: boolean;

@@ -182,7 +182,7 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
           <span style={styles.category}>Query String: </span>
           <Typography.Text code>
             {stringifyFilters(
-              project.name,
+              project.projectName,
               versionType,
               resultType,
               minVersionDate,

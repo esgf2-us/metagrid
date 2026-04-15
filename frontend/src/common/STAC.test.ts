@@ -31,7 +31,7 @@ describe('STAC utilities', () => {
       ],
     } as unknown as StacAggregations;
 
-    const result = aggregationsToFacetsData(aggregations);
+    const result = aggregationsToFacetsData('CMIP6', aggregations);
     expect(result.activity_id).toEqual([
       ['CFMIP', 5],
       ['CDRMIP', 3],

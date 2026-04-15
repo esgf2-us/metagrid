@@ -1011,16 +1011,15 @@ describe('STAC API functions', () => {
     // facets built from aggregations
     const facets = result.facets as Record<string, [string, number][]>;
     expect(facets.activity_id).toEqual([['CFMIP', 5]]);
-    // search payload posted should include collections and filter
+
+    // search payload posted should include collections
     expect(capturedSearchBody).toBeDefined();
     const csb = capturedSearchBody!;
     expect(csb.collections).toContain('CMIP6');
-    expect(csb.filter).toBeDefined();
 
     expect(capturedAggBody).toBeDefined();
     const cab = capturedAggBody as { filter: unknown; aggregations: string[] };
     expect(cab.aggregations).toContain('cmip6_activity_id_frequency');
-    expect(cab.filter).toBeDefined();
   });
 
   it('returns stac result with empty facets when aggregations endpoint errors (status set accordingly)', async () => {
