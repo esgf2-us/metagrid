@@ -12,6 +12,19 @@ from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 from rest_framework.routers import DefaultRouter
 
+
+class LegacyRouter(DefaultRouter):
+    """
+    Custom router that allows multiple viewsets with the same basename.
+    This maintains backward compatibility with the existing URL structure
+    where UserViewSet and UserCreateViewSet both use basename='user'.
+    """
+
+    def is_already_registered(self, basename):
+        """Override to allow duplicate basenames for user viewsets."""
+        return False
+
+
 from metagrid.api_globus.views import (
     do_globus_reset_tokens,
     globus_download_request,
@@ -35,9 +48,9 @@ from metagrid.observability.views import liveness, readiness
 from metagrid.projects.views import ProjectsViewSet
 from metagrid.users.views import UserCreateViewSet, UserViewSet
 
-router = DefaultRouter()
-router.register(r"users", UserViewSet)
-router.register(r"users", UserCreateViewSet)
+router = LegacyRouter()
+router.register(r"users", UserViewSet, basename="user")
+router.register(r"users", UserCreateViewSet, basename="user")
 router.register(r"projects", ProjectsViewSet)
 router.register(r"carts/datasets", CartViewSet)
 router.register(r"carts/searches", SearchViewSet)
