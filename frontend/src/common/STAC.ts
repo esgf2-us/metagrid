@@ -1,102 +1,87 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { RawProject } from '../components/Facets/types';
+import { FacetsByGroup, RawProject } from '../components/Facets/types';
 import {
   StacFeature,
   RawSearchResult,
   StacAsset,
   StacAggregations,
 } from '../components/Search/types';
+import STAC_PROJECT_LIST, { STAC_DEFAULT_PROJECT, StacProject } from './STAC_Projects';
 import { downloadFileForUser, formatBytes } from './utils';
 
-export const STAC_PROJECTS: RawProject[] = [
-  {
-    pk: '9',
-    name: 'CMIP6 STAC',
-    projectName: 'CMIP6',
+// This is the pk for the first stac project assuming we have 8 non-stac projects listed before it.
+const FirstStacPK = 9;
+
+// Creates a RawProject from pk and StacProject data, using a default project
+function buildStacProject(
+  pk: string,
+  { name, fullName, projectUrl, projectName, facetsByGroup }: StacProject,
+): RawProject {
+  const mergedFacetsByGroup: FacetsByGroup = {
+    ...STAC_DEFAULT_PROJECT.facetsByGroup,
+  };
+
+  Object.keys(facetsByGroup).forEach((groupName) => {
+    mergedFacetsByGroup[groupName] = [
+      ...(mergedFacetsByGroup[groupName] ?? []),
+      ...(facetsByGroup[groupName] ?? []),
+    ];
+  });
+
+  return {
+    ...STAC_DEFAULT_PROJECT,
+    pk,
+    name,
+    fullName,
     facetsUrl: 'offset=0&limit=0',
-    fullName: 'Coupled Model Intercomparison Project Phase 6',
-    projectUrl: 'https://pcmdi.llnl.gov/CMIP6/',
-    facetsByGroup: {
-      General: ['activity_id', 'data_node', 'mip_era'],
-      Identifiers: [
-        'source_id',
-        'source_type',
-        'instance_id',
-        'institution_id',
-        'experiment_id',
-        'sub_experiment_id',
-      ],
-      Labels: ['variant_label', 'grid_label'],
-      Classifications: ['table_id', 'frequency', 'variable_id', 'cf_standard_name'],
-    },
+    projectUrl,
+    projectName,
+    facetsByGroup: mergedFacetsByGroup,
     isSTAC: true,
-  },
-];
+  };
+}
 
-/** This mapping is necessary in most cases since the facet names
- * are prepended with the project name for CMIP6
- */
-/* istanbul ignore next -- @preserve */
-export const STAC_PROJECT_FACET_MAPPING: { [key: string]: Record<string, string> } = {
-  CMIP6: {
-    data_node: 'alternate:name',
-    latest: 'properties.latest',
-    activity_id: 'properties.cmip6:activity_id',
-    data_specs_version: 'properties.cmip6:data_specs_version',
-    mip_era: 'properties.cmip6:mip_era',
-    grid: 'properties.cmip6:grid',
-    source_id: 'properties.cmip6:source_id',
-    source_type: 'properties.cmip6:source_type',
-    instance_id: 'properties.instance_id',
-    institution_id: 'properties.cmip6:institution_id',
-    experiment_id: 'properties.cmip6:experiment_id',
-    sub_experiment_id: 'properties.cmip6:sub_experiment_id',
-    variant_label: 'properties.cmip6:variant_label',
-    grid_label: 'properties.cmip6:grid_label',
-    experiment_title: 'properties.experiment',
-    table_id: 'properties.cmip6:table_id',
-    frequency: 'properties.cmip6:frequency',
-    variable_id: 'properties.cmip6:variable_id',
-    cf_standard_name: 'properties.cf_standard_name',
-    variable_units: 'properties.variable_units',
-  },
-};
+export const STAC_PROJECTS = STAC_PROJECT_LIST.map((project, idx) => {
+  const newPK: string = `${FirstStacPK + idx}`;
+  return buildStacProject(newPK, project);
+});
 
-/* istanbul ignore next -- @preserve */
-export const STAC_AGGREGATION_FACETS: { [key: string]: string[] } = {
-  // Values taken from 'aggregations' list : https://api.stac.esgf.ceda.ac.uk/collections/CMIP6
-  CMIP6: [
-    'alternate_name_frequency',
-    'cmip6_activity_id_frequency',
-    'cmip6_data_specs_version_frequency',
-    'cmip6_frequency_frequency',
-    'cmip6_further_info_url_frequency',
-    'cmip6_grid_frequency',
-    'cmip6_grid_label_frequency',
-    'cmip6_institution_id_frequency',
-    'cmip6_mip_era_frequency',
-    'cmip6_source_id_frequency',
-    'cmip6_source_type_frequency',
-    'cmip6_experiment_id_frequency',
-    'cmip6_sub_experiment_id_frequency',
-    'cmip6_nominal_resolution_frequency',
-    'cmip6_table_id_frequency',
-    'cmip6_variable_id_frequency',
-    'cmip6_variant_label_frequency',
-    'cmip6_realm_frequency',
-    // 'cmip6_Conventions_frequency',
-    'cmip6_experiment_frequency',
-    // 'cmip6_forcing_index_frequency', These caused a 500 error
-    // 'cmip6_initialization_index_frequency', These caused a 500 error
-    // 'cmip6_realization_index_frequency', These caused a 500 error
-    // 'cmip6_physics_index_frequency', These caused a 500 error
-    // 'cmip6_institution_frequency',
-    // 'cmip6_license_frequency',
-    // 'cmip6_source_frequency',
-    'cmip6_sub_experiment_frequency',
-    // 'cmip6_tracking_id_frequency',
-  ],
-};
+export function getStacProject(projectName: string): RawProject {
+  const stacProject = STAC_PROJECTS.find((project) => (project.projectName || '') === projectName);
+
+  return stacProject || STAC_PROJECTS[0];
+}
+
+export function getFacetFilterName(projectName: string | undefined, facetName: string): string {
+  // Exceptions defined here
+  switch (facetName) {
+    case 'data_node':
+      return 'alternate:name';
+    case 'latest':
+      return 'properties.latest';
+    default:
+      return `properties.${projectName?.toLowerCase() || 'cmip6'}:${facetName}`;
+  }
+}
+
+export function getAggregationsList(projectName: string): string[] {
+  const { facetsByGroup } = getStacProject(projectName);
+  return Object.values(facetsByGroup)
+    .flat()
+    .map((element) => {
+      if (typeof element === 'string') {
+        return `${projectName.toLowerCase()}_${element}_frequency`;
+      }
+
+      // Exceptions defined here
+      switch (element.facet) {
+        case 'alternate_name':
+          return 'alternate_name_frequency';
+        default:
+          return `${projectName.toLowerCase()}_${element.facet}_frequency`;
+      }
+    });
+}
 
 export const getStacGlobusHref = (
   assets: { [name: string]: StacAsset } | undefined,
@@ -108,32 +93,34 @@ export const getStacGlobusHref = (
 };
 
 export const aggregationsToFacetsData = (
+  projectName: string,
   aggregations: StacAggregations,
 ): {
   [x: string]: [string, number][];
 } => {
   const facetsData: { [x: string]: [string, number][] } = {};
   aggregations.aggregations.forEach((aggregation) => {
-    const facetName = aggregation.name.replace('cmip6_', '').replace('_frequency', '');
+    const facetName = aggregation.name
+      .replace(`${projectName.toLocaleLowerCase()}_`, '')
+      .replace('_frequency', '');
     const facetValues = aggregation.buckets.map(
       (bucket) => [bucket.key, bucket.frequency] as [string, number],
     );
     facetsData[facetName] = facetValues;
   });
 
+  let updatedFacets = { ...facetsData };
+
   // Rename some facets
   /* istanbul ignore next -- @preserve */
-  const renamedFacets =
-    'alternate_name' in facetsData
-      ? (({ alternate_name, ...rest }) => ({
-          ...rest,
-          data_node: alternate_name,
-        }))(facetsData)
-      : facetsData;
+  if ('alternate_name' in updatedFacets) {
+    const { alternate_name, ...rest } = updatedFacets;
+    updatedFacets = { ...rest, data_node: alternate_name };
+  }
 
   // Filter out facets that were empty
   const cleanedFacetsData = Object.fromEntries(
-    Object.entries(renamedFacets).filter(([, value]) => Array.isArray(value) && value.length > 0),
+    Object.entries(updatedFacets).filter(([, value]) => Array.isArray(value) && value.length > 0),
   );
 
   return cleanedFacetsData;
@@ -254,29 +241,31 @@ export const convertSearchParamsIntoStacFilter = (
             /* istanbul ignore next -- @preserve */
             const values = params.get(param)?.split(',') || [];
             /* istanbul ignore next -- @preserve */
-            const mappedParam = STAC_PROJECT_FACET_MAPPING.CMIP6[param] || param;
+            const filterParam = getFacetFilterName(project.projectName, param);
+
             if (values.length > 1) {
               // If there are multiple values for a parameter, create an OR filter
-              return createOrFilter(values.map((value) => createEqualsFilter(mappedParam, value)));
+              return createOrFilter(values.map((value) => createEqualsFilter(filterParam, value)));
             }
-            return createEqualsFilter(mappedParam, values[0]);
+            return createEqualsFilter(filterParam, values[0]);
           }),
         ),
       );
     } else {
       const param = validFacets[0];
       /* istanbul ignore next -- @preserve */
-      const mappedParam = STAC_PROJECT_FACET_MAPPING.CMIP6[param] || param;
+      const filterParam = getFacetFilterName(project.projectName, param);
+
       /* istanbul ignore next -- @preserve */
       const values = params.get(param)?.split(',') || [];
 
       if (values.length > 1) {
         // If there are multiple values for a parameter, create an OR filter
         mainFilters.push(
-          createOrFilter(values.map((value) => createEqualsFilter(mappedParam, value))),
+          createOrFilter(values.map((value) => createEqualsFilter(filterParam, value))),
         );
       } else {
-        mainFilters.push(createEqualsFilter(mappedParam, values[0]));
+        mainFilters.push(createEqualsFilter(filterParam, values[0]));
       }
     }
   }
