@@ -79,7 +79,7 @@ export const projectBaseQuery = (
 
 const bodySider = {
   padding: '12px 12px 12px 12px',
-  width: '384px',
+  width: '400px',
   marginRight: '2px',
 };
 
