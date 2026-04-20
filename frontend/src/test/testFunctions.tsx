@@ -121,8 +121,8 @@ export async function showNoticeStatic(
 export const globusReadyNode: string = 'nodeIsGlobusReady';
 export const nodeNotGlobusReady: string = 'nodeIsNotGlobusReady';
 
-type AnyWritableAtom = WritableAtom<unknown, never[], unknown>;
-export type InitialAtomValues = Array<readonly [AnyWritableAtom, unknown]>;
+type AnyWritableAtom = WritableAtom<unknown, any[], any>;
+export type InitialAtomValues = Array<readonly [AnyWritableAtom, ...unknown[]]>;
 
 const HydrateAtoms = ({
   children,
@@ -131,7 +131,7 @@ const HydrateAtoms = ({
   children: React.ReactElement;
   initialValues: InitialAtomValues;
 }): React.ReactElement => {
-  useHydrateAtoms(new Map(initialValues));
+  useHydrateAtoms(initialValues);
   return <>{children}</>;
 };
 
