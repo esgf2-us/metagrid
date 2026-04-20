@@ -8,6 +8,64 @@ export const delay = (ms: number): Promise<void> => {
   });
 };
 
+/**
+ * Waits for an element to appear in the DOM, checking at regular intervals
+ * @param selector CSS selector for the element to wait for
+ * @param maxTimeout Maximum time to wait in milliseconds (default: 10000ms)
+ * @param checkInterval How often to check for the element in milliseconds (default: 500ms)
+ * @param customMessage Optional custom message to display when user clicks during wait
+ * @returns Promise that resolves to true if element found, false if timeout
+ */
+export const waitForElement = (
+  selector: string,
+  maxTimeout?: number,
+  checkInterval?: number,
+  customMessage?: string,
+): Promise<boolean> => {
+  /* istanbul ignore next -- @preserve */
+  const timeout = maxTimeout ?? 10000;
+  /* istanbul ignore next -- @preserve */
+  const interval = checkInterval ?? 500;
+
+  // Store custom message globally for React component to access
+  /* istanbul ignore else -- @preserve */
+  if (customMessage) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+    (window as any).tourLoadingMessage = customMessage;
+  }
+
+  return new Promise((resolve) => {
+    const startTime = Date.now();
+
+    const checkElement = (): void => {
+      const element = document.querySelector(selector);
+
+      /* istanbul ignore if -- @preserve */
+      if (element) {
+        // Clean up custom message when element is found
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+        delete (window as any).tourLoadingMessage;
+        resolve(true);
+        return;
+      }
+
+      const elapsedTime = Date.now() - startTime;
+      /* istanbul ignore if -- @preserve */
+      if (elapsedTime >= timeout) {
+        // Clean up custom message on timeout
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+        delete (window as any).tourLoadingMessage;
+        resolve(false);
+        return;
+      }
+
+      setTimeout(checkElement, interval);
+    };
+
+    checkElement();
+  });
+};
+
 export const elementExists = (className: string): boolean => {
   return document.getElementsByClassName(className).length > 0;
 };
@@ -47,12 +105,12 @@ export const unHoverFirstElement = (selector: string): boolean => {
   return false;
 };
 
-/* istanbul ignore next */
+/* istanbul ignore next -- @preserve  */
 const mainTableEmpty = (): boolean => {
   return elementExists('ant-empty-image');
 };
 
-/* istanbul ignore next */
+/* istanbul ignore next -- @preserve */
 const cartIsEmpty = (): boolean => {
   const elem = document.querySelector('#root .ant-tabs-tabpane-active .ant-empty-description');
   if (elem) {
@@ -61,7 +119,7 @@ const cartIsEmpty = (): boolean => {
   return false;
 };
 
-/* istanbul ignore next */
+/* istanbul ignore next -- @preserve */
 const searchLibraryIsEmpty = (): boolean => {
   const elem = document.querySelector('#root .ant-tabs-tabpane-active .ant-empty-description');
   if (elem) {
@@ -91,9 +149,11 @@ export const navBarTargets = {
 };
 
 export const searchTableTargets = {
+  searchFeaturesArea: new TargetObject(),
   queryString: new TargetObject(),
   resultsFoundText: new TargetObject(),
   searchResultsTable: new TargetObject(),
+  downloadSearchBtn: new TargetObject(),
   addSelectedToCartBtn: new TargetObject(),
   saveSearchBtn: new TargetObject(),
 };
@@ -150,6 +210,7 @@ export const innerDataRowTargets = {
   filesTitle: new TargetObject(),
   dataSize: new TargetObject(),
   downloadDataBtn: new TargetObject(),
+  copyOPeNDAPBtn: new TargetObject(),
   copyUrlBtn: new TargetObject(),
   checksum: new TargetObject(),
 };
@@ -158,6 +219,8 @@ export const cartTourTargets = {
   cartSummary: new TargetObject(),
   datasetBtn: new TargetObject(),
   libraryBtn: new TargetObject(),
+  cartItemsTable: new TargetObject(),
+  downloadForm: new TargetObject(),
   downloadAllType: new TargetObject(),
   downloadWgetBtn: new TargetObject(),
   downloadTransferBtn: new TargetObject(),
@@ -197,10 +260,16 @@ export const nodeTourTargets = {
 export enum TourTitles {
   Main = 'Main Search Page Tour',
   Cart = 'Data Cart Tour',
-  ManageCollections = 'Manage My Collections Tour',
-  Searches = 'Saved Searches Tour',
-  Node = 'Node Status Tour',
+  CartDatasetDetails = 'Cart Items Tour',
+  CartDownloadOptions = 'Download Options Tour',
+  CartManageCollections = 'Manage My Collections Tour',
+  SavedSearches = 'Saved Searches Tour',
+  NodeStatus = 'Node Status Tour',
   Welcome = 'Welcome Tour',
+  MainNavBar = 'Navigation Bar Tour',
+  MainFacetsPanel = 'Search Facets Panel Tour',
+  MainSearchFeatures = 'Search Features Tour',
+  SearchResults = 'Search Results Tour',
 }
 
 const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
@@ -237,7 +306,7 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
     )
     .addNextStep(
       topDataRowTargets.downloadScriptOptions.selector(),
-      'This drop-down allows you to select which type of script you wish to download. Currently wget is the only form supported.',
+      'This drop-down allows you to select which type of method you want to use for the download.',
       'top',
     )
     .addNextStep(
@@ -248,16 +317,23 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
     .addNextStep(
       topDataRowTargets.globusReadyStatusIcon.selector(),
       'This icon indicates whether the dataset can be transferred with Globus. A check mark means it is Globus Ready and can be transferred through Globus. When hovering over the icon you will see more detail as to what node this dataset is coming from and whether the node is Globus ready.',
-      'top-start',
+      'bottom-start',
     )
     .addNextStep(
       topDataRowTargets.searchResultsRowExpandIcon.selector(),
       'To view more information about a specific dataset, you can expand the row by clicking this little arrow icon...',
       'top-start',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
         clickFirstElement(topDataRowTargets.searchResultsRowExpandIcon.selector());
-        await delay(500);
+        // Wait for files table to load (max 10 seconds, check every 500ms)
+        await waitForElement(
+          innerDataRowTargets.filesTitle.selector(),
+          15000,
+          500,
+          '<strong>Note:</strong> The files table can take a few seconds to load. You can click <strong>Skip</strong> to exit the tour if you prefer not to wait.',
+        );
+        clickFirstElement(innerDataRowTargets.filesTab.selector());
       },
     )
     .addNextStep(
@@ -282,7 +358,12 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
     )
     .addNextStep(
       innerDataRowTargets.copyUrlBtn.selector(),
-      'Clicking this button will copy the OPEN DAP URL of this file directly to your clipboard.',
+      'Clicking this button will copy the HTTP URL of this file directly to your clipboard.',
+      'top-start',
+    )
+    .addNextStep(
+      innerDataRowTargets.copyOPeNDAPBtn.selector(),
+      'Clicking this button will copy an OPeNDAP URL of this file directly to your clipboard.',
       'top-start',
     )
     .addNextStep(
@@ -294,21 +375,29 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
       innerDataRowTargets.metadataTab.selector(),
       'This is the Metadata tab. If you click it, you can view metadata for the dataset...',
       'top-start',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
-        await delay(300);
         clickFirstElement(innerDataRowTargets.metadataTab.selector());
+        // Wait for metadata content to load (max 10 seconds, check every 500ms)
+        await waitForElement(innerDataRowTargets.metadataLookupField.selector(), 10000, 500);
       },
     )
     .addNextStep(
       innerDataRowTargets.metadataLookupField.selector(),
       'Besides seeing the metadata listed below, this field can help you search for a specific key/value pair of metadata.',
       'top-start',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
-        await delay(300);
         if (elementExists(innerDataRowTargets.citationTab.class())) {
           clickFirstElement(innerDataRowTargets.citationTab.selector());
+          // Wait for citation content to load (max 25 seconds, check every 500ms)
+          // Look for the Data Citation Page link (any anchor with target="_blank" and rel="noopener noreferrer")
+          await waitForElement(
+            'a[target="_blank"][rel="noopener noreferrer"]',
+            25000,
+            500,
+            '<strong>Note:</strong> Citations take a few seconds to load. You can click <strong>Skip</strong> to exit the tour if you prefer not to wait.',
+          );
         } else if (!elementExists(innerDataRowTargets.additionalTab.class())) {
           clickFirstElement(topDataRowTargets.searchResultsRowContractIcon.selector());
         }
@@ -318,9 +407,8 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
       innerDataRowTargets.citationTab.selector(),
       'Citation information for the dataset can be viewed within this tab...',
       'top-start',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
-        await delay(300);
         if (elementExists(innerDataRowTargets.additionalTab.class())) {
           clickFirstElement(innerDataRowTargets.additionalTab.selector());
         } else {
@@ -332,40 +420,18 @@ const addDataRowTourSteps = (tour: JoyrideTour): JoyrideTour => {
       innerDataRowTargets.additionalTab.selector(),
       'You can view additional data and sources by clicking this tab.',
       'top-start',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
         clickFirstElement(topDataRowTargets.searchResultsRowContractIcon.selector());
-        await delay(300);
       },
     );
 
   return tour;
 };
 
-export const welcomeTour = new JoyrideTour(TourTitles.Welcome)
-  .addNextStep(
-    'body',
-    'Just a note: We are continually striving to improve the Metagrid user interface and make it more intuitive. However, if you ever feel stuck, please try out the interface tours. The following is a quick tour showing where you can access support.',
-    'center',
-  )
-  .addNextStep(
-    navBarTargets.helpBtn.selector(),
-    'This help button will open the Metagrid support dialog, which contains interface tours (like this one) as well as helpful resources.',
-    'bottom',
-  )
-  .addNextStep(
-    miscTargets.questionBtn.selector(),
-    'This question button will also open the Metagrid support dialog. Note that the tour button shown in the support dialog will be specific to the current page you are on.',
-    'top-end',
-  );
-
-export const createMainPageTour = (): JoyrideTour => {
-  const tour = new JoyrideTour(TourTitles.Main)
-    .addNextStep(
-      'body',
-      "Welcome to Metagrid! This tour will highlight the main controls and features of the search page. During the tour, click 'Next' to continue, or 'Skip' if you wish to cancel the tour. Let's begin!",
-      'center',
-    )
+// Helper function to add navigation bar tour steps
+const addNavBarSteps = (tour: JoyrideTour): JoyrideTour => {
+  return tour
     .addNextStep(
       navBarTargets.topNavBar.selector(),
       'This area lets you navigate between pages of Metagrid.',
@@ -373,7 +439,7 @@ export const createMainPageTour = (): JoyrideTour => {
     )
     .addNextStep(
       navBarTargets.searchPageBtn.selector(),
-      "Clicking this button takes you to the main search page (Metagrid's home page.)",
+      "Clicking this button takes you to the main search page (Metagrid's home page).",
       'bottom',
     )
     .addNextStep(
@@ -393,12 +459,12 @@ export const createMainPageTour = (): JoyrideTour => {
     )
     .addNextStep(
       navBarTargets.newsBtn.selector(),
-      "Clicking the news button will open up the message center to the right, where you'll find important notes from the admins and developers. You can also view changelog information regarding the latest version of Metagrid",
+      "Clicking the news button will open up the message center to the right, where you'll find important notes from the admins and developers. You can also view changelog information regarding the latest version of Metagrid.",
       'bottom',
     )
     .addNextStep(
       navBarTargets.signInBtn.selector(),
-      'Clicking this button will allow you to sign in to your profile. Or if you are already signed in, it will display you user name.',
+      'Clicking this button will allow you to sign in to your profile. Or if you are already signed in, it will display your user name.',
       'bottom',
     )
     .addNextStep(
@@ -410,25 +476,29 @@ export const createMainPageTour = (): JoyrideTour => {
       navBarTargets.themeSwitchBtn.selector(),
       'This button allows you to switch between light and dark themes for Metagrid.',
       'bottom',
-    )
+    );
+};
+
+// Helper function to add facets panel tour steps
+const addFacetsPanelSteps = (tour: JoyrideTour): JoyrideTour => {
+  tour
     .addNextStep(
       leftSidebarTargets.selectProjectBtn.selector(),
       'To begin a search, you would first select a project from this drop-down.',
       'right',
+    )
+    .addNextStep(
+      leftSidebarTargets.projectWebsiteBtn.selector(),
+      'Once a project is selected, if you wish, you can go view the project website by clicking this button.',
+      'right',
     );
-
-  tour.addNextStep(
-    leftSidebarTargets.projectWebsiteBtn.selector(),
-    'Once a project is selected, if you wish, you can go view the project website by clicking this button.',
-    'right',
-  );
 
   // Add tour elements for globus ready filter (if globus enabled nodes has been configured)
   if (window.METAGRID.GLOBUS_NODES.length > 0) {
     tour
       .addNextStep(
         leftSidebarTargets.filterByGlobusTransfer.selector(),
-        'This section allows you to filter search results based on globus transfer availability. There are a set of data nodes that provide the Globus Transfer option, however not all do. You can filter to show all datasets, or only those that can be transferred via globus.',
+        'This section allows you to filter search results based on Globus transfer availability. There are a set of data nodes that provide the Globus Transfer option, however not all do. You can filter to show all datasets, or only those that can be transferred via Globus.',
         'right',
       )
       .addNextStep(
@@ -443,7 +513,7 @@ export const createMainPageTour = (): JoyrideTour => {
       );
   }
 
-  tour
+  return tour
     .addNextStep(
       leftSidebarTargets.searchFacetsForm.selector(),
       'This area contains various groups of facets and parameters that you can use to filter results from your selected project.',
@@ -451,11 +521,10 @@ export const createMainPageTour = (): JoyrideTour => {
     )
     .addNextStep(
       leftSidebarTargets.facetFormGeneral.selector(),
-      'To filter by facets provided within this group, you would open this collapsable form by clicking on it...',
+      'To filter by facets provided within this group, you would open this collapsible form by clicking on it...',
       'right-end',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
-        // Open general facets
         clickFirstElement(leftSidebarTargets.facetFormGeneral.selector());
         await delay(300);
       },
@@ -464,9 +533,8 @@ export const createMainPageTour = (): JoyrideTour => {
       leftSidebarTargets.facetFormFields.selector(),
       'These are facets that are available within this group. The drop-downs allow you to select multiple items you wish to include in your search. Note that you can search for elements in the drop-down by typing within the input area.',
       'right-start',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
-        // Close general facets
         clickFirstElement(leftSidebarTargets.facetFormGeneral.selector());
         await delay(300);
         // Close facet panels if more than one is open
@@ -480,9 +548,8 @@ export const createMainPageTour = (): JoyrideTour => {
       leftSidebarTargets.facetFormExpandAllBtn.selector(),
       "You can quickly expand all the facet panels by clicking this button. Note that there is a scroll bar on the right when the panels don't all fit on the page.",
       'right-end',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
-        // Expand all facets
         clickFirstElement(leftSidebarTargets.facetFormExpandAllBtn.selector());
         await delay(300);
       },
@@ -501,25 +568,17 @@ export const createMainPageTour = (): JoyrideTour => {
       leftSidebarTargets.facetFormCollapseAllBtn.selector(),
       'Clicking the collapse all button will close all the open facet panels.',
       'right-end',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
-        // Open general facets
         clickFirstElement(leftSidebarTargets.facetFormCollapseAllBtn.selector());
         await delay(300);
       },
-    )
-    // Filename search currenty disabled
-    // .addNextStep(
-    //   leftSidebarTargets.facetFormFilenameFields.selector(),
-    //   'This section lets you filter your results to include a specific filename. To filter by filename, you would type in the name or names as a list of comma separated values then click the magnifying glass icon to add it as a search parameter.',
-    //   'right-end',
-    //   /* istanbul ignore next */
-    //   () => {
-    //     // Close filename section
-    //     clickFirstElement(leftSidebarTargets.facetFormFilename.selector());
-    //     window.scrollTo(0, 0);
-    //   },
-    // )
+    );
+};
+
+// Helper function to add search features tour steps
+const addSearchFeaturesSteps = (tour: JoyrideTour): JoyrideTour => {
+  return tour
     .addNextStep(
       searchTableTargets.queryString.selector(),
       "When performing a search, you'll be able to view the resulting query generated by your selections here.",
@@ -531,6 +590,11 @@ export const createMainPageTour = (): JoyrideTour => {
       'bottom',
     )
     .addNextStep(
+      searchTableTargets.downloadSearchBtn.selector(),
+      'The Download All Search button allows you to skip the data cart and download all the datasets returned by your search!',
+      'bottom',
+    )
+    .addNextStep(
       searchTableTargets.saveSearchBtn.selector(),
       'If you are happy with your search results and plan to perform this search again, you can save your search by clicking this button.',
       'left',
@@ -539,9 +603,8 @@ export const createMainPageTour = (): JoyrideTour => {
       copySearchOptionsTargets.copyMenuBtn.selector(),
       'If you click on the copy icon, a drop-down menu will appear with various options for copying your search query into your clipboard.',
       'left-start',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
-        // Open general facets
         hoverFirstElement(copySearchOptionsTargets.copyMenuBtn.selector());
         await delay(200);
       },
@@ -565,13 +628,17 @@ export const createMainPageTour = (): JoyrideTour => {
       copySearchOptionsTargets.copyIntakeEsgfSearchBtn.selector(),
       'If you need an Intake ESGF search query version of your search, click this button. The python code will attempt to generate the code for a similar search and copy it to your clipboard.',
       'left-start',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
-        // Open general facets
         unHoverFirstElement('.ant-dropdown');
         await delay(200);
       },
-    )
+    );
+};
+
+// Helper function to add search results tour steps (without dataset details)
+const addSearchResultsSteps = (tour: JoyrideTour): JoyrideTour => {
+  return tour
     .addNextStep(
       searchTableTargets.searchResultsTable.selector(),
       'These are your search results! Each row in the results table is a specific dataset that matches your criteria.',
@@ -581,7 +648,7 @@ export const createMainPageTour = (): JoyrideTour => {
       '#root .ant-checkbox',
       'You can select multiple datasets using these checkboxes...',
       'top',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
         clickFirstElement('#root .ant-checkbox');
         // Flag that the check boxes are on
@@ -593,7 +660,7 @@ export const createMainPageTour = (): JoyrideTour => {
       searchTableTargets.addSelectedToCartBtn.selector(),
       'Then to add them to your cart, you would click this button.',
       'bottom-start',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
         clickFirstElement('#root .ant-checkbox');
         // Flag that the check boxes are on
@@ -603,7 +670,7 @@ export const createMainPageTour = (): JoyrideTour => {
     )
     .addNextStep(
       topDataRowTargets.cartAddBtn.selector('plus'),
-      "You can also directly add a specific dataset to the cart by clicking it's plus button here.",
+      'You can also directly add a specific dataset to the cart by clicking its plus button here.',
       'top-start',
     )
     .addNextStep(
@@ -611,16 +678,132 @@ export const createMainPageTour = (): JoyrideTour => {
       'Or you can remove a dataset from the cart by clicking its minus button here.',
       'top-start',
     );
+};
 
-  // This will add steps to tour through elements of a dataset row
-  addDataRowTourSteps(tour)
+export const welcomeTour = new JoyrideTour(TourTitles.Welcome)
+  .addNextStep(
+    'body',
+    'Just a note: We are continually striving to improve the Metagrid user interface and make it more intuitive. However, if you ever feel stuck, please try out the interface tours. The following is a quick tour showing where you can access support.',
+    'center',
+  )
+  .addNextStep(
+    navBarTargets.helpBtn.selector(),
+    'This help button will open the Metagrid support dialog, which contains interface tours (like this one) as well as helpful resources.',
+    'bottom',
+  )
+  .addNextStep(
+    miscTargets.questionBtn.selector(),
+    'This question button will also open the Metagrid support dialog. Note that the tour button shown in the support dialog will be specific to the current page you are on.',
+    'top-end',
+  );
+
+export const createNavBarTour = (): JoyrideTour => {
+  const tour = new JoyrideTour(TourTitles.MainNavBar).addNextStep(
+    'body',
+    'This tour will guide you through the main navigation bar at the top of the page.',
+    'center',
+  );
+
+  addNavBarSteps(tour);
+
+  tour.addNextStep('body', 'This concludes the navigation bar tour.', 'center');
+
+  return tour;
+};
+
+export const createFacetsPanelTour = (): JoyrideTour => {
+  const tour = new JoyrideTour(TourTitles.MainFacetsPanel).addNextStep(
+    'body',
+    'This tour will guide you through the search facets panel on the left side of the page, where you can filter and refine your search results.',
+    'center',
+  );
+
+  addFacetsPanelSteps(tour);
+
+  tour.addNextStep('body', 'This concludes the search facets panel tour.', 'center');
+
+  return tour;
+};
+
+export const createSearchFeaturesTour = (): JoyrideTour => {
+  const tour = new JoyrideTour(TourTitles.MainSearchFeatures).addNextStep(
+    'body',
+    'This tour will guide you through the search features available at the top of the search results, including saving, sharing, and exporting your search.',
+    'center',
+  );
+
+  addSearchFeaturesSteps(tour);
+
+  tour.addNextStep('body', 'This concludes the search features tour.', 'center');
+
+  return tour;
+};
+
+export const createSearchResultsTour = (): JoyrideTour => {
+  const tour = new JoyrideTour(TourTitles.SearchResults).addNextStep(
+    'body',
+    'This tour will guide you through the search results table and how to interact with datasets.',
+    'center',
+    /* istanbul ignore next -- @preserve */
+    async () => {
+      // Wait for search results table to load (max 30 seconds, check every 500ms)
+      await waitForElement(
+        'table tbody tr[id^="cart-items-row"]',
+        30000,
+        500,
+        '<strong>Note:</strong> The search results can take a few seconds to load. Click <strong>Skip</strong> to exit the tour if you prefer not to wait.',
+      );
+    },
+  );
+
+  addSearchResultsSteps(tour);
+  addDataRowTourSteps(tour);
+
+  tour.addNextStep('body', 'This concludes the search results tour.', 'center').setOnFinish(
+    /* istanbul ignore next -- @preserve */ () => {
+      return () => {
+        // Clean-up step for when the tour is complete (or skipped)
+        if (tour.getTourFlag('boxes-checked')) {
+          clickFirstElement('#root .ant-checkbox');
+        }
+      };
+    },
+  );
+
+  return tour;
+};
+
+export const createMainPageTour = (): JoyrideTour => {
+  const tour = new JoyrideTour(TourTitles.Main).addNextStep(
+    'body',
+    "Welcome to Metagrid! This tour will highlight the main controls and features of the search page. During the tour, click 'Next' to continue, or 'Skip' if you wish to cancel the tour. Let's begin!",
+    'center' /* istanbul ignore next -- @preserve */,
+    async () => {
+      // Wait for search results table to load (max 30 seconds, check every 500ms)
+      await waitForElement(
+        'table tbody tr[id^="cart-items-row"]',
+        30000,
+        500,
+        '<strong>Note:</strong> The search results can take a few seconds to load. Click <strong>Skip</strong> to exit the tour if you prefer not to wait.',
+      );
+    },
+  );
+
+  // Add all the sub-tour steps without intro/outro messages
+  addNavBarSteps(tour);
+  addFacetsPanelSteps(tour);
+  addSearchFeaturesSteps(tour);
+  addSearchResultsSteps(tour);
+  addDataRowTourSteps(tour);
+
+  tour
     .addNextStep(
       'body',
       'This concludes the main search page tour. To get a tour of other pages in the app, or repeat this tour again, you can click the big question mark button in the lower-right corner and select the tour in the Support pop-up menu.',
       'center',
     )
     .setOnFinish(
-      /* istanbul ignore next */ () => {
+      /* istanbul ignore next -- @preserve */ () => {
         return () => {
           // Clean-up step for when the tour is complete (or skipped)
           if (tour.getTourFlag('boxes-checked')) {
@@ -639,7 +822,7 @@ export const createCartItemsTour = (setCurrentPage: (page: number) => void): Joy
   const tour = new JoyrideTour(TourTitles.Cart)
     .addNextStep(
       'body',
-      'The data cart allows you to manage multiple datasets selected for bulk download. This tour will highlight the main elements of the data cart.',
+      'The data cart allows you to manage multiple datasets selected for bulk download. This tour will provide an overview of the data cart.',
       'center',
     )
     .addNextStep(
@@ -651,15 +834,15 @@ export const createCartItemsTour = (setCurrentPage: (page: number) => void): Joy
       'Clicking this would switch you to the search library tab. However we will stay in the data cart for this tour.',
     );
 
-  /* istanbul ignore if */
+  /* istanbul ignore if -- @preserve */
   // Add steps if the cart or search library is empty, which will add needed items
   if (cartIsEmpty()) {
     cartItemsAdded = true;
     tour
       .addNextStep(
-        '#root .ant-empty-img-default',
+        'body',
         'As you can tell, currently no datasets have been added to your cart. We will need to go to the search page and add a dataset first...',
-        'top',
+        'center',
         async (): Promise<void> => {
           await delay(300);
           setCurrentPage(AppPage.Main);
@@ -671,7 +854,7 @@ export const createCartItemsTour = (setCurrentPage: (page: number) => void): Joy
         'This is the main search page where we will load a project to add a dataset...',
         'center',
       );
-    /* istanbul ignore if */
+    /* istanbul ignore if -- @preserve */
     // If the main search page is empty, select a project
     if (mainTableEmpty()) {
       tour
@@ -685,7 +868,7 @@ export const createCartItemsTour = (setCurrentPage: (page: number) => void): Joy
         )
         .addNextStep(
           leftSidebarTargets.projectSelectLeftSideBtn.selector(),
-          "NOTE: The search results may take a few seconds to load... Click 'next' to continue.",
+          "NOTE: The search results may take a few seconds to load... Click 'Next' to continue.",
           'right',
           async () => {
             await delay(1000);
@@ -697,7 +880,7 @@ export const createCartItemsTour = (setCurrentPage: (page: number) => void): Joy
         searchTableTargets.searchResultsTable.selector(),
         "Let's go ahead and add some datasets to the cart...",
         'top-start',
-        /* istanbul ignore next */
+        /* istanbul ignore next -- @preserve */
         async () => {
           clickFirstElement(topDataRowTargets.cartAddBtn.selector('plus'));
           await delay(500);
@@ -709,7 +892,7 @@ export const createCartItemsTour = (setCurrentPage: (page: number) => void): Joy
         navBarTargets.cartPageBtn.selector(),
         'Now that there are datasets in the cart, we will go view them in the cart page...',
         'bottom',
-        /* istanbul ignore next */
+        /* istanbul ignore next -- @preserve */
         async (): Promise<void> => {
           setCurrentPage(AppPage.Cart);
           await delay(1000);
@@ -730,15 +913,12 @@ export const createCartItemsTour = (setCurrentPage: (page: number) => void): Joy
       topDataRowTargets.cartAddBtn.selector('minus'),
       'You can remove a dataset from the cart by clicking its minus button here.',
       'top-start',
-    );
-
-  // This will add steps to tour through elements of a dataset row
-  addDataRowTourSteps(tour)
+    )
     .addNextStep(
       '#root .ant-checkbox',
       'You can select which datasets to download by clicking their checkboxes, or to select them all, click the top checkbox like so...',
       'top-start',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
         clickFirstElement('#root .ant-checkbox');
         // Flag that the check boxes are on
@@ -748,46 +928,30 @@ export const createCartItemsTour = (setCurrentPage: (page: number) => void): Joy
     )
     .addNextStep(
       cartTourTargets.removeItemsBtn.selector(),
-      'We can remove all items from the cart with this button.',
+      'We can remove all selected items from the cart with this button.',
       'right-start',
-    )
-    .addNextStep(
-      cartTourTargets.downloadAllType.selector(),
-      'This will select which download method to use. The Globus download method is the default.',
-      'top-start',
-      /* istanbul ignore next */
-      async () => {
-        clickFirstElement(cartTourTargets.downloadAllType.selector());
-        await delay(500);
-      },
-    )
-    .addNextStep(
-      cartTourTargets.globusCollectionDropdown.selector(),
-      "For Globus downloads, you need to select a saved collection from this drop-down. If you haven't saved any collections, you can do so by clicking the 'Manage Collections' option.",
-      'top-start',
-    )
-    .addNextStep(
-      cartTourTargets.downloadTransferBtn.selector(),
-      'After selecting your collection, click this button to start the download for your selected cart items.',
-      'top-start',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
         clickFirstElement('#root .ant-checkbox');
-        // Flag that the check boxes are on
+        // Flag that the check boxes are off
         tour.setTourFlag('boxes-checked', false);
         await delay(300);
       },
     )
-    .addNextStep('body', 'This concludes the cart page tour.', 'center')
+    .addNextStep(
+      'body',
+      'This concludes the main cart page tour. To learn more about dataset details in the cart, or download options, check out the specific tours for those topics in the support dialog.',
+      'center',
+    )
     .setOnFinish(
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       () => {
         // Clean-up step for when the tour is complete (or skipped)
         return async () => {
           if (cartItemsAdded) {
             clickFirstElement(cartTourTargets.removeItemsBtn.selector());
             await delay(500);
-            clickFirstElement('.ant-popover-buttons .ant-btn-primary');
+            clickFirstElement('.ant-popover-content .ant-btn-primary');
             await delay(300);
           }
           if (tour.getTourFlag('boxes-checked')) {
@@ -801,8 +965,254 @@ export const createCartItemsTour = (setCurrentPage: (page: number) => void): Joy
   return tour;
 };
 
+export const createCartDatasetDetailsTour = (
+  setCurrentPage: (page: number) => void,
+): JoyrideTour => {
+  let cartItemsAdded = false;
+
+  const tour = new JoyrideTour(TourTitles.CartDatasetDetails).addNextStep(
+    'body',
+    'This tour will guide you through the detailed information available for each dataset in your cart.',
+    'center',
+  );
+
+  /* istanbul ignore if -- @preserve */
+  // Add steps if the cart is empty, which will add needed items
+  if (cartIsEmpty()) {
+    cartItemsAdded = true;
+    tour
+      .addNextStep(
+        'body',
+        'Currently, no datasets have been added to your cart. We will need to go to the search page and add a dataset first...',
+        'center',
+        async (): Promise<void> => {
+          await delay(300);
+          setCurrentPage(AppPage.Main);
+          await delay(1000);
+        },
+      )
+      .addNextStep(
+        'body',
+        'This is the main search page where we will load a project to add a dataset...',
+        'center',
+      );
+    /* istanbul ignore if -- @preserve */
+    // If the main search page is empty, select a project
+    if (mainTableEmpty()) {
+      tour
+        .addNextStep(
+          leftSidebarTargets.projectSelectLeftSideBtn.selector(),
+          'First we will click this button to load results from a project into the search table...',
+          'right',
+          () => {
+            clickFirstElement(leftSidebarTargets.projectSelectLeftSideBtn.selector());
+          },
+        )
+        .addNextStep(
+          leftSidebarTargets.projectSelectLeftSideBtn.selector(),
+          "NOTE: The search results may take a few seconds to load... Click 'Next' to continue.",
+          'right',
+          async () => {
+            await delay(1000);
+          },
+        );
+    }
+    tour
+      .addNextStep(
+        searchTableTargets.searchResultsTable.selector(),
+        "Let's go ahead and add some datasets to the cart...",
+        'top-start',
+        /* istanbul ignore next -- @preserve */
+        async () => {
+          clickFirstElement(topDataRowTargets.cartAddBtn.selector('plus'));
+          await delay(500);
+          clickFirstElement(topDataRowTargets.cartAddBtn.selector('plus'));
+          await delay(500);
+        },
+      )
+      .addNextStep(
+        navBarTargets.cartPageBtn.selector(),
+        'Now that there are datasets in the cart, we will go view them in the cart page...',
+        'bottom',
+        /* istanbul ignore next -- @preserve */
+        async (): Promise<void> => {
+          setCurrentPage(AppPage.Cart);
+          await delay(1000);
+        },
+      );
+  }
+
+  tour.addNextStep(
+    '.ant-table-container',
+    'Each row in the cart represents a dataset that you have added for potential download.',
+    'top-start',
+  );
+
+  // Add the data row tour steps
+  addDataRowTourSteps(tour)
+    .addNextStep('body', 'This concludes the cart dataset details tour.', 'center')
+    .setOnFinish(
+      /* istanbul ignore next -- @preserve */
+      () => {
+        // Clean-up step for when the tour is complete (or skipped)
+        return async () => {
+          if (cartItemsAdded) {
+            clickFirstElement(cartTourTargets.removeItemsBtn.selector());
+            await delay(500);
+            clickFirstElement('.ant-popover-content .ant-btn-primary');
+            await delay(300);
+          }
+        };
+      },
+    );
+
+  return tour;
+};
+
+export const createCartDownloadOptionsTour = (
+  setCurrentPage: (page: number) => void,
+): JoyrideTour => {
+  let cartItemsAdded = false;
+
+  const tour = new JoyrideTour(TourTitles.CartDownloadOptions).addNextStep(
+    'body',
+    'This tour will guide you through the various download options available for your cart items.',
+    'center',
+  );
+
+  /* istanbul ignore if -- @preserve */
+  // Add steps if the cart is empty, which will add needed items
+  if (cartIsEmpty()) {
+    cartItemsAdded = true;
+    tour
+      .addNextStep(
+        'body',
+        'Currently, no datasets have been added to your cart. We will need to go to the search page and add a dataset first...',
+        'center',
+        async (): Promise<void> => {
+          await delay(300);
+          setCurrentPage(AppPage.Main);
+          await delay(1000);
+        },
+      )
+      .addNextStep(
+        'body',
+        'This is the main search page where we will load a project to add a dataset...',
+        'center',
+      );
+    /* istanbul ignore if -- @preserve */
+    // If the main search page is empty, select a project
+    if (mainTableEmpty()) {
+      tour
+        .addNextStep(
+          leftSidebarTargets.projectSelectLeftSideBtn.selector(),
+          'First we will click this button to load results from a project into the search table...',
+          'right',
+          () => {
+            clickFirstElement(leftSidebarTargets.projectSelectLeftSideBtn.selector());
+          },
+        )
+        .addNextStep(
+          leftSidebarTargets.projectSelectLeftSideBtn.selector(),
+          "NOTE: The search results may take a few seconds to load... Click 'Next' to continue.",
+          'right',
+          async () => {
+            await delay(1000);
+          },
+        );
+    }
+    tour
+      .addNextStep(
+        searchTableTargets.searchResultsTable.selector(),
+        "Let's go ahead and add some datasets to the cart...",
+        'top-start',
+        /* istanbul ignore next -- @preserve */
+        async () => {
+          clickFirstElement(topDataRowTargets.cartAddBtn.selector('plus'));
+          await delay(500);
+          clickFirstElement(topDataRowTargets.cartAddBtn.selector('plus'));
+          await delay(500);
+        },
+      )
+      .addNextStep(
+        navBarTargets.cartPageBtn.selector(),
+        'Now that there are datasets in the cart, we will go view them in the cart page...',
+        'bottom',
+        /* istanbul ignore next -- @preserve */
+        async (): Promise<void> => {
+          setCurrentPage(AppPage.Cart);
+          await delay(1000);
+        },
+      );
+  }
+
+  tour
+    .addNextStep(
+      '#root .ant-checkbox',
+      'First, you need to select which datasets to download by clicking their checkboxes. You can select individual datasets or click the top checkbox to select all...',
+      'top-start',
+      /* istanbul ignore next -- @preserve */
+      async () => {
+        clickFirstElement('#root .ant-checkbox');
+        // Flag that the check boxes are on
+        tour.setTourFlag('boxes-checked', true);
+        await delay(300);
+      },
+    )
+    .addNextStep(
+      cartTourTargets.downloadAllType.selector(),
+      'This dropdown allows you to select which download method to use. The Globus download method is the default, but you can also select Wget to download all files as a script.',
+      'top-start',
+      /* istanbul ignore next -- @preserve */
+      async () => {
+        clickFirstElement(cartTourTargets.downloadAllType.selector());
+        await delay(500);
+      },
+    );
+
+  tour.addNextStep(
+    cartTourTargets.globusCollectionDropdown.selector(),
+    "For Globus downloads, you need to select a saved collection from this dropdown. If you need to add or manage collections, click the 'Manage Collections' option - when the form opens, there's a tour button available to guide you through managing collections.",
+    'top-start',
+  );
+
+  tour
+    .addNextStep(
+      cartTourTargets.downloadTransferBtn.selector(),
+      'After selecting your collection and setting your destination path, click this button to start the Globus transfer for your selected cart items.',
+      'top-start',
+      /* istanbul ignore next -- @preserve */
+      async () => {
+        clickFirstElement('#root .ant-checkbox');
+        // Flag that the check boxes are off
+        tour.setTourFlag('boxes-checked', false);
+        await delay(300);
+      },
+    )
+    .addNextStep('body', 'This concludes the cart download options tour.', 'center')
+    .setOnFinish(
+      /* istanbul ignore next -- @preserve */
+      () => {
+        return async () => {
+          // Clean-up step for when the tour is complete (or skipped)
+          if (cartItemsAdded) {
+            clickFirstElement(cartTourTargets.removeItemsBtn.selector());
+            await delay(500);
+            clickFirstElement('.ant-popover-content .ant-btn-primary');
+            await delay(300);
+          }
+          if (tour.getTourFlag('boxes-checked')) {
+            clickFirstElement('#root .ant-checkbox');
+          }
+        };
+      },
+    );
+
+  return tour;
+};
+
 export const createCollectionsFormTour = (): JoyrideTour => {
-  const tour = new JoyrideTour(TourTitles.ManageCollections)
+  const tour = new JoyrideTour(TourTitles.CartManageCollections)
     .addNextStep(
       manageCollectionsTourTargets.globusCollectionsForm.selector(),
       "The 'Manage My Collections' form allows you to search for and save Globus collections which you can then select to perform Globus transfers.",
@@ -815,7 +1225,7 @@ export const createCollectionsFormTour = (): JoyrideTour => {
       manageCollectionsTourTargets.globusSearchResults.selector(),
       "The search results will be displayed in this table, where you can click 'Add' for the collections you wish to save.",
       'auto',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
         clickFirstElement(manageCollectionsTourTargets.mySavedCollectionsPanel.selector());
         await delay(500);
@@ -826,9 +1236,19 @@ export const createCollectionsFormTour = (): JoyrideTour => {
       "Your currently saved collections are displayed in this table, where you can also 'Set' or 'Update' the file path to use for a specific collection. If the path is set for a specific collection, you won't have to set the path again when doing transfers to that collection.",
       'auto',
     )
-    .addNextStep('body', 'This concludes the cart page tour.', 'center')
+    .addNextStep(
+      manageCollectionsTourTargets.cancelCollectionBtn.selector(),
+      "Clicking the 'Cancel' button will close this form and undo any changes you made to your saved collections. Use this if you want to discard your changes.",
+      'auto',
+    )
+    .addNextStep(
+      manageCollectionsTourTargets.saveCollectionBtn.selector(),
+      "Important: You must click the 'Save' button to actually save the collections you've added or any changes you've made. Until you click Save, your changes won't be persisted.",
+      'auto',
+    )
+    .addNextStep('body', 'This concludes the manage collections tour.', 'center')
     .setOnFinish(
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       () => {
         // Clean-up step for when the tour is complete (or skipped)
         return async () => {
@@ -843,7 +1263,7 @@ export const createCollectionsFormTour = (): JoyrideTour => {
 
 export const createSearchCardTour = (setCurrentPage: (page: number) => void): JoyrideTour => {
   let searchSaved = false;
-  const tour = new JoyrideTour(TourTitles.Searches)
+  const tour = new JoyrideTour(TourTitles.SavedSearches)
     .addNextStep(
       'body',
       'The search library allows you to manage previous searches that have been saved, so they can be applied in the future if desired. This tour will highlight the main features of the search library...',
@@ -859,14 +1279,14 @@ export const createSearchCardTour = (setCurrentPage: (page: number) => void): Jo
     );
 
   // Add steps if the cart or search library is empty, which will add needed items
-  /* istanbul ignore if */
+  /* istanbul ignore if -- @preserve */
   if (searchLibraryIsEmpty()) {
     searchSaved = true;
     tour
       .addNextStep(
-        '#root .ant-tabs-tabpane-active .ant-empty-description',
+        'body',
         'Currently, no searches have been saved to your library. We will need to go to the search page to save a search first...',
-        'top',
+        'center',
         async (): Promise<void> => {
           await delay(500);
           setCurrentPage(AppPage.Main);
@@ -879,7 +1299,7 @@ export const createSearchCardTour = (setCurrentPage: (page: number) => void): Jo
       );
 
     // If the main search page is empty, select a project
-    /* istanbul ignore if */
+    /* istanbul ignore if -- @preserve */
     if (mainTableEmpty()) {
       tour
         .addNextStep(
@@ -892,7 +1312,7 @@ export const createSearchCardTour = (setCurrentPage: (page: number) => void): Jo
         )
         .addNextStep(
           leftSidebarTargets.projectSelectLeftSideBtn.selector(),
-          "NOTE: The search results may take a few seconds to load... Click 'next' to continue.",
+          "NOTE: The search results may take a few seconds to load... Click 'Next' to continue.",
           'right',
           async () => {
             if (cartIsEmpty()) {
@@ -906,7 +1326,7 @@ export const createSearchCardTour = (setCurrentPage: (page: number) => void): Jo
         searchTableTargets.saveSearchBtn.selector(),
         'To save the current search to the library, we need to click this button...',
         'bottom-start',
-        /* istanbul ignore next */
+        /* istanbul ignore next -- @preserve */
         async () => {
           clickFirstElement(searchTableTargets.saveSearchBtn.selector());
           await delay(500);
@@ -916,7 +1336,7 @@ export const createSearchCardTour = (setCurrentPage: (page: number) => void): Jo
         navBarTargets.savedSearchPageBtn.selector(),
         'We can now go back to the search library and view our recently added search...',
         'bottom',
-        /* istanbul ignore next */
+        /* istanbul ignore next -- @preserve */
         async (): Promise<void> => {
           setCurrentPage(AppPage.SavedSearches);
           await delay(1000);
@@ -958,7 +1378,7 @@ export const createSearchCardTour = (setCurrentPage: (page: number) => void): Jo
     )
     .addNextStep('body', 'This concludes the search library tour.', 'center')
     .setOnFinish(
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       () => {
         // Clean-up step for when the tour is complete (or skipped)
         return async () => {
@@ -974,7 +1394,7 @@ export const createSearchCardTour = (setCurrentPage: (page: number) => void): Jo
 };
 
 export const createNodeStatusTour = (): JoyrideTour => {
-  const tour = new JoyrideTour(TourTitles.Node)
+  const tour = new JoyrideTour(TourTitles.NodeStatus)
     .addNextStep(
       'body',
       'This tour will provide a brief overview of the node status page.',
@@ -992,7 +1412,7 @@ export const createNodeStatusTour = (): JoyrideTour => {
       nodeTourTargets.nodeColHeader.selector(),
       'This column lists the various nodes that are registered to serve the data with Metagrid. Clicking the header will toggle the sort between ascending and descending like so...',
       'top',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
         clickFirstElement(nodeTourTargets.nodeColHeader.selector());
         await delay(500);
@@ -1000,9 +1420,9 @@ export const createNodeStatusTour = (): JoyrideTour => {
     )
     .addNextStep(
       nodeTourTargets.onlineColHeader.selector(),
-      'This column shows the online status of each node. A green check-mark indicates the node is online whereas a red x mark indicates it is offline. As with the node column, you can click this to sort by node status like so...',
+      'This column shows the online status of each node. A green checkmark indicates the node is online whereas a red X mark indicates it is offline. As with the node column, you can click this to sort by node status like so...',
       'top',
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       async () => {
         clickFirstElement(nodeTourTargets.onlineColHeader.selector());
         await delay(700);

@@ -1,20 +1,13 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { rest, server } from '../../test/mock/server';
-import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
-import NavBar, { Props } from './index';
-import { printElementContents } from '../../test/jestTestFunctions';
+import NavBar from './index';
 
 const user = userEvent.setup();
 
-const defaultProps: Props = {
-  onTextSearch: jest.fn(),
-};
-
 it('renders LeftMenu and RightMenu components', async () => {
-  customRender(<NavBar {...defaultProps} />);
+  customRender(<NavBar />);
 
   const rightMenuComponent = await screen.findByTestId('right-menu');
   expect(rightMenuComponent).toBeTruthy();
@@ -24,7 +17,7 @@ it('renders LeftMenu and RightMenu components', async () => {
 });
 
 it('opens the drawer onClick and closes with onClose', async () => {
-  customRender(<NavBar {...defaultProps} />);
+  customRender(<NavBar />);
   const leftMenu = await screen.findByTestId('nav-bar-logo');
   expect(leftMenu).toBeTruthy();
   expect(await screen.findByTestId('right-menu')).toBeTruthy();

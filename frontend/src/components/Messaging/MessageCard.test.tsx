@@ -6,7 +6,7 @@ import { rest, server } from '../../test/mock/server';
 
 it('renders message component with default markdown when file is wrong.', async () => {
   server.use(rest.get('badFile.md', (_req, res, ctx) => res(ctx.status(404))));
-  const consoleErrorMock = jest.spyOn(console, 'error').mockImplementation();
+  const consoleErrorMock = vi.spyOn(console, 'error').mockImplementation(() => {});
 
   customRender(<MessageCard fileName="badFile.md" />);
 

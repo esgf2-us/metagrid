@@ -1,9 +1,8 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es6",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
-    "downlevelIteration": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -16,7 +15,14 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "noFallthroughCasesInSwitch": true,
+    "types": ["vitest", "vitest/globals", "node"],
     "sourceMap": true
   },
-  "include": ["src", "src/test/__mocks__/js-pkce.ts", "vite.config.js", ".eslintrc.js"]
+  "include": [
+    "src",
+    "src/test/__mocks__/js-pkce.ts",
+    "vite.config.js",
+    "vite.config.ts",
+    "vitest.config.ts"
+  ]
 }

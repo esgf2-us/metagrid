@@ -7,7 +7,7 @@ import { Provider } from 'jotai';
 import { GlobusAuthProvider, AuthContext, KeycloakAuthProvider } from '../contexts/AuthContext';
 import { ReactJoyrideProvider } from '../contexts/ReactJoyrideContext';
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
-import { AtomWrapper } from './jestTestFunctions';
+import { AtomWrapper } from './testFunctions';
 
 /**
  * Wraps components in all implemented React Context Providers for testing using keycloak or globus

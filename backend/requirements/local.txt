@@ -2,26 +2,26 @@
 
 # Code quality
 # ------------------------------------------------------------------------------
-flake8==7.1.1  # https://github.com/PyCQA/flake8
+flake8==7.3.0  # https://github.com/PyCQA/flake8
 flake8-isort==6.1.1  # https://github.com/gforcada/flake8-isort
 black==24.10.0  # https://github.com/ambv/black
-mypy==1.12.0  # https://github.com/python/mypy
-mypy-extensions==1.0.0 # https://pypi.org/project/mypy-extensions/
+mypy==1.20.1  # https://github.com/python/mypy
+mypy-extensions==1.1.0 # https://pypi.org/project/mypy-extensions/
 
 # Testing
 # ------------------------------------------------------------------------------
 django-stubs==5.0.2  # https://github.com/typeddjango/django-stubs
 pytest==8.2.2  # https://github.com/pytest-dev/pytest
 pytest-cov==5.0.0  # https://github.com/pytest-dev/pytest-cov
-pytest-django==4.8.0  # https://github.com/pytest-dev/pytest-django
-pytest-sugar==1.0.0  # https://github.com/Frozenball/pytest-sugar
+pytest-django==4.12.0  # https://github.com/pytest-dev/pytest-django
+pytest-sugar==1.1.1  # https://github.com/Frozenball/pytest-sugar
 pytest-watch==4.2.0  # https://github.com/joeyespo/pytest-watch
-factory-boy==3.3.0  # https://github.com/FactoryBoy/factory_boy
-responses==0.25.0  # https://github.com/getsentry/responses
+factory-boy==3.3.3  # https://github.com/FactoryBoy/factory_boy
+responses==0.26.0  # https://github.com/getsentry/responses
 
 # Developer Tools
 # ------------------------------------------------------------------------------
 ipdb==0.13.13  # https://github.com/gotcha/ipdb
-ipython==8.26.0  # https://github.com/ipython/ipython
-django-extensions==3.2.3  # https://github.com/django-extensions/django-extensions
-settings-doc==4.3.1  # https://github.com/radeklat/settings-doc
+ipython==9.10.1  # https://github.com/ipython/ipython
+django-extensions==4.1  # https://github.com/django-extensions/django-extensions
+settings-doc==4.3.2  # https://github.com/radeklat/settings-doc

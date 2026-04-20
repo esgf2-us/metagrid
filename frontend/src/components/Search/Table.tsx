@@ -1,17 +1,15 @@
 import {
   CodeOutlined,
   DatabaseTwoTone,
-  DownCircleOutlined,
   DownloadOutlined,
   MinusOutlined,
   PlusOutlined,
-  RightCircleOutlined,
 } from '@ant-design/icons';
-import { Form, Select, Table as TableD, Tooltip, message } from 'antd';
+import { Form, GetProp, Select, Table as TableD, Tooltip, message } from 'antd';
 import type { TableColumnsType } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
-import { TablePaginationConfig } from 'antd/lib/table';
-import React from 'react';
+import { TablePaginationConfig, TableProps } from 'antd/lib/table';
+import React, { useCallback } from 'react';
 import { useAtomValue } from 'jotai';
 import stacIcon from '../../assets/img/STAC-favicon.png';
 import { fetchWgetScript, ResponseError } from '../../api';
@@ -42,7 +40,8 @@ import { topDataRowTargets } from '../../common/joyrideTutorials/reactJoyrideSte
 import { userCartAtom } from '../../common/atoms';
 import { AppPage } from '../../common/types';
 import { createCustomIcon } from '../NavBar';
-import { generateWgetScriptSTAC } from '../../common/STAC';
+import { getStacGlobusHref, generateWgetScriptSTAC } from '../../common/STAC';
+import TableExpandIcon, { TableExpandIconProps } from './TableExpandIcon';
 
 export type Props = {
   loading: boolean;
@@ -55,6 +54,7 @@ export type Props = {
   onRowSelect?: (selectedRows: RawSearchResults | []) => void;
   onPageChange?: (page: number, pageSize: number) => void;
   onPageSizeChange?: (size: number) => void;
+  scroll?: { x?: string | number | true; y?: string | number };
 };
 
 const MAX_RESULTS = 10000;
@@ -70,6 +70,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
   onRowSelect,
   onPageChange,
   onPageSizeChange,
+  scroll,
 }) => {
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -88,6 +89,33 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
   const handleChange: OnChange = (pagination, filters, sorter) => {
     setSortedInfo(sorter as Sorts);
   };
+
+  const renderPageSizeOption = useCallback(
+    (option: { value: string | number; label: React.ReactNode }) => (
+      <span data-testid={`pageSize-option-${option.value}`}>{option.label}</span>
+    ),
+    [],
+  );
+
+  const renderExpandedRow = useCallback(
+    (record: RawSearchResult) => (
+      <Tabs data-test-id="extra-tabs" record={record} filenameVars={filenameVars} />
+    ),
+    [filenameVars],
+  );
+
+  type ExpandIconType = GetProp<TableProps<RawSearchResult>, 'expandable'>['expandIcon'];
+
+  const renderExpandIcon: ExpandIconType = useCallback(
+    (props: JSX.IntrinsicAttributes & TableExpandIconProps) => (
+      <TableExpandIcon
+        {...props}
+        contractClass={topDataRowTargets.searchResultsRowContractIcon.class()}
+        expandClass={topDataRowTargets.searchResultsRowExpandIcon.class()}
+      />
+    ),
+    [],
+  );
 
   let cachedPage: number | undefined;
   let cachedSize: number | undefined;
@@ -112,59 +140,31 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       pageSize: cachedSize,
       position: ['bottomCenter'],
       showSizeChanger: {
-        optionRender: (option) => {
-          return <span data-testid={`pageSize-option-${option.value}`}>{option.label}</span>;
-        },
+        optionRender: renderPageSizeOption,
       },
       onChange: (page: number, pageSize: number) => onPageChange && onPageChange(page, pageSize),
       onShowSizeChange: (_current: number, size: number) =>
         onPageSizeChange && onPageSizeChange(size),
     } as TablePaginationConfig,
     expandable: {
-      expandedRowRender: (record: RawSearchResult) => (
-        <Tabs data-test-id="extra-tabs" record={record} filenameVars={filenameVars}></Tabs>
-      ),
-      expandIcon: ({
-        expanded,
-        onExpand,
-        record,
-      }: {
-        expanded: boolean;
-        onExpand: (
-          rowRecord: RawSearchResult,
-          e: React.MouseEvent<HTMLSpanElement, MouseEvent>,
-        ) => void;
-        record: RawSearchResult;
-      }): React.ReactNode =>
-        expanded ? (
-          <DownCircleOutlined
-            className={topDataRowTargets.searchResultsRowContractIcon.class()}
-            onClick={(e) => onExpand(record, e)}
-          />
-        ) : (
-          <Tooltip title="View this dataset's metadata, files or additional info." trigger="hover">
-            <RightCircleOutlined
-              className={topDataRowTargets.searchResultsRowExpandIcon.class()}
-              onClick={(e) => onExpand(record, e)}
-            />
-          </Tooltip>
-        ),
+      expandedRowRender: renderExpandedRow,
+      expandIcon: renderExpandIcon,
     },
     rowSelection: {
       selectedRowKeys: selections?.map((item) => {
-        /* istanbul ignore next */
+        /* istanbul ignore next -- @preserve */
         return item ? item.id : '';
       }),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onSelect: (_record: any, _selected: any, selectedRows: any) => {
-        /* istanbul ignore else */
+        /* istanbul ignore else -- @preserve */
         if (onRowSelect) {
           onRowSelect(selectedRows as RawSearchResults);
         }
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onSelectAll: (_selected: any, selectedRows: any) => {
-        /* istanbul ignore else */
+        /* istanbul ignore else -- @preserve */
         if (onRowSelect) {
           onRowSelect(selectedRows as RawSearchResults);
         }
@@ -325,6 +325,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
           'No file links found in the selected dataset, wget script was not generated.';
         const downloadTypesAvailable: DatasetDownloadTypes[] = ['wget'];
 
+        /* istanbul ignore if -- @preserve */
         if (record.isStac && record.globus_link) {
           downloadTypesAvailable.push('Globus');
         } else if (!record.isStac && record.id) {
@@ -337,8 +338,9 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
          * Handle the download form for datasets
          */
         const handleDownloadForm = (downloadType: DatasetDownloadTypes): void => {
-          /* istanbul ignore else */
+          /* istanbul ignore else -- @preserve */
           if (downloadType === 'wget') {
+            /* istanbul ignore if -- @preserve */
             if (record.isStac) {
               // Generate file for STAC selections
               const stacSuccess = generateWgetScriptSTAC([record]);
@@ -417,7 +419,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
                   type="default"
                   htmlType="submit"
                   icon={<DownloadOutlined />}
-                ></Button>
+                />
               </Form.Item>
             </Form>
           </>
@@ -432,11 +434,26 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
           dataIndex: 'data_node',
           key: 'globus_enabled',
           width: 110,
-          render: (data_node: string) => (
-            <div className={topDataRowTargets.globusReadyStatusIcon.class()}>
-              <GlobusToolTip dataNode={data_node} />
-            </div>
-          ),
+          render: (data_node: string, record: RawSearchResult) => {
+            if (record.isStac) {
+              return (
+                <div>
+                  <GlobusToolTip
+                    dataNode={data_node}
+                    stacGlobusAvailable={
+                      getStacGlobusHref(record.assets) !== null || record.globusHrefs !== undefined
+                    }
+                  />
+                </div>
+              );
+            }
+
+            return (
+              <div>
+                <GlobusToolTip dataNode={data_node} />
+              </div>
+            );
+          },
         }
       : {
           align: 'center' as AlignType,
@@ -444,7 +461,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
           title: '',
           dataIndex: 'data_node',
           key: 'globus_enabled',
-          render: () => <></>,
+          render: () => null,
         },
   ];
 
@@ -456,7 +473,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       onChange={handleChange}
       rowKey="id"
       size="small"
-      scroll={{ x: 'max-content' }}
+      scroll={scroll || { x: 'max-content' }}
       tableLayout="auto"
       onRow={(record, rowIndex) => {
         return {

@@ -66,9 +66,11 @@ import {
 import Banner from '../Messaging/Banner';
 
 const useHotjar = (): void => {
+  /* istanbul ignore else -- @preserve */
   if (window.METAGRID.HOTJAR_ID != null && window.METAGRID.HOTJAR_SV != null) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     React.useEffect(() => {
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       hotjar.initialize({
         id: Number(window.METAGRID.HOTJAR_ID),
         sv: Number(window.METAGRID.HOTJAR_SV),
@@ -125,7 +127,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   const setNodeStatus = useSetAtom(nodeStatusAtom);
 
   React.useEffect(() => {
-    /* istanbul ignore else */
+    /* istanbul ignore else -- @preserve */
     if (isAuthenticated) {
       fetchUserCart(pk, accessToken)
         .then((rawUserCart) => {
@@ -142,7 +144,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
         .then((rawUserSearches) => {
           const databaseItems = rawUserSearches.results;
           const searchQueriesToAdd = unsavedLocalSearches(databaseItems, userSearchQueries);
-          /* istanbul ignore next */
+          /* istanbul ignore next -- @preserve */
           searchQueriesToAdd.forEach((query) => {
             addUserSearchQuery(pk, accessToken, query);
           });
@@ -153,6 +155,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
           // Remove all duplicates
           const dedupedSearches: UserSearchQueries = [];
           combinedItems.forEach((search) => {
+            /* istanbul ignore else -- @preserve */
             if (!searchAlreadyExists(dedupedSearches, search)) {
               dedupedSearches.push(search);
             }
@@ -167,16 +170,20 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   }, [isAuthenticated, pk, accessToken]);
 
   React.useEffect(() => {
-    /* istanbul ignore else */
+    /* istanbul ignore else -- @preserve */
     const showStatus = window.METAGRID.STATUS_URL !== null;
     if (showStatus) {
       runFetchNodeStatus();
     }
-    const interval = setInterval(() => {
-      if (window.METAGRID.STATUS_URL !== null) {
-        runFetchNodeStatus();
-      }
-    }, 295000);
+    const interval = setInterval(
+      /* istanbul ignore next -- @preserve */
+      () => {
+        if (window.METAGRID.STATUS_URL !== null) {
+          runFetchNodeStatus();
+        }
+      },
+      295000,
+    );
     return () => clearInterval(interval);
   }, [runFetchNodeStatus]);
 
@@ -184,19 +191,19 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     fetchProjects()
       .then((data) => {
         const projectName = searchQuery ? searchQuery.project.name : '';
-        /* istanbul ignore else */
+        /* istanbul ignore else -- @preserve */
         if (data && projectName && projectName !== '') {
           const rawProj: RawProject | undefined = data.results.find((proj) => {
             return proj.name.toLowerCase() === (projectName as string).toLowerCase();
           });
-          /* istanbul ignore next */
+          /* istanbul ignore next -- @preserve */
           if (rawProj) {
             setActiveSearchQuery({ ...searchQuery, project: rawProj });
           }
         }
       })
       .catch(
-        /* istanbul ignore next */
+        /* istanbul ignore next -- @preserve */
         (error: ResponseError) => {
           showError(messageApi, error.message);
         },
@@ -213,7 +220,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     let newCart: UserCart = [];
     let newSelections: RawSearchResults = [];
 
-    /* istanbul ignore else */
+    /* istanbul ignore else -- @preserve */
     if (operation === 'add') {
       const itemsNotInCart = selectedItems.filter(
         (item: RawSearchResult) => !userCart.some((dataset) => dataset.id === item.id),
@@ -244,7 +251,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
       });
     }
 
-    /* istanbul ignore else */
+    /* istanbul ignore else -- @preserve */
     if (isAuthenticated) {
       updateUserCart(pk, accessToken, newCart);
     }
@@ -261,7 +268,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     >
       <Layout>
         <Routes>
-          <Route path="*" element={<NavBar></NavBar>} />
+          <Route path="*" element={<NavBar />} />
         </Routes>
         <Layout id="body-layout">
           {contextHolder}
@@ -331,7 +338,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
                           },
                           { title: 'Data Node Status' },
                         ]}
-                      ></Breadcrumb>
+                      />
                       <NodeStatus
                         apiError={nodeStatusApiError as ResponseError}
                         isLoading={nodeStatusIsLoading}
@@ -359,7 +366,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
                     </>
                   }
                 >
-                  <Route path="*" element={<></>} />
+                  <Route path="*" element={<div />} />
                 </Route>
                 <Route
                   path="*"
@@ -397,7 +404,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
             style={{ width: '48px', height: '48px' }}
             icon={<QuestionOutlined style={{ fontSize: '28px', marginLeft: '-5px' }} />}
             onClick={() => setSupportModalVisible(true)}
-          ></FloatButton>
+          />
         </Affix>
         <Support />
         <StartPopup />

@@ -12,7 +12,7 @@ import {
   rawStacAssetFixture,
 } from '../../test/mock/fixtures';
 import { RawSearchResult, RawSearchResults } from './types';
-import { AtomWrapper, openDropdownList, printElementContents } from '../../test/jestTestFunctions';
+import { AtomWrapper, openDropdownList } from '../../test/testFunctions';
 import { AppStateKeys } from '../../common/atoms';
 
 const user = userEvent.setup();

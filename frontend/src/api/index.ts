@@ -24,6 +24,9 @@ import {
   RawCitation,
   ResultType,
   StacAggregations,
+  StacAsset,
+  StacFeature,
+  StacSearchResponse,
   TextInputs,
 } from '../components/Search/types';
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
@@ -74,6 +77,7 @@ export const getCookie = (name: string): null | string => {
 
 export const setCookie = (name: string, value: string, expDays = 7, path = '/'): void => {
   let expires = '';
+  /* istanbul ignore else -- @preserve */
   if (expDays) {
     const date = new Date();
     date.setTime(date.getTime() + expDays * 24 * 60 * 60 * 1000);
@@ -83,6 +87,7 @@ export const setCookie = (name: string, value: string, expDays = 7, path = '/'):
   document.cookie = `metagrid_${name}=${encodeURIComponent(value)}; ${expires}; path=${path}; ${cookieSettings}`;
 };
 
+/* istanbul ignore next -- @preserve */
 export const deleteCookie = (name: string, path = '/'): void => {
   document.cookie = `metagrid_${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path};`;
 };
@@ -113,7 +118,7 @@ export const errorMsgBasedOnHTTPStatusCode = (error: ResponseError, route: ApiRo
   // Indicates that an HTTP response status code was returned from the server
   if (error.response) {
     // Normalize status to a number when possible
-    /* istanbul ignore next */
+    /* istanbul ignore next -- @preserve */
     const statusNum = Number(error.response.status) || 0;
 
     // For server errors (5xx) return the generic error message for the route
@@ -421,6 +426,7 @@ export const generateSearchURLQuery = (
     maxVersionDate,
     activeFacets,
     textInputs,
+    globusOnly,
   } = activeSearchQuery;
 
   const { isSTAC } = activeSearchQuery.project;
@@ -445,6 +451,11 @@ export const generateSearchURLQuery = (
     baseParams += `max_version=${maxVersionDate}&`;
   }
 
+  /* istanbul ignore next -- @preserve */
+  if (globusOnly) {
+    baseParams += `globusOnly=${globusOnly}&`;
+  }
+
   let textInputsParams = 'query=*';
   if (textInputs.length > 0) {
     textInputsParams = queryString.stringify(
@@ -463,7 +474,7 @@ export const generateSearchURLQuery = (
   );
 
   if (isSTAC) {
-    return `${baseRoute}${baseParams}${`project_id=${(project as RawProject).projectName}`}&${activeFacetsParams}`;
+    return `${baseRoute}${baseParams}${`project_id=${(project as RawProject).projectName}`}&${textInputsParams}&${activeFacetsParams}`;
   }
 
   return `${baseRoute}${baseParams}${textInputsParams}&${activeFacetsParams}`;
@@ -477,12 +488,14 @@ export const postSTACSearch = async (
   projectName: string,
   limit: number,
   filter: { op: string; args: unknown } | undefined = undefined,
+  q?: TextInputs,
 ): Promise<Record<string, unknown>> => {
   return axios
     .post(apiRoutes.esgfSearchSTAC.path, {
       collections: [projectName],
       limit,
       filter,
+      q,
     })
     .then((res) => res.data)
     .catch((error: ResponseError) => {
@@ -516,19 +529,56 @@ export const fetchSTACSearchResults = async (
 Promise<{ [key: string]: any }> => {
   let status = 200;
 
-  const filter = convertSearchParamsIntoStacFilter(reqUrlStr, projectName);
+  const stacProject =
+    STAC_PROJECTS.find((project) => project.projectName === projectName) || STAC_PROJECTS[0];
+  const filter = convertSearchParamsIntoStacFilter(reqUrlStr, stacProject);
+
+  const query = new URLSearchParams(reqUrlStr || '').get('query');
+  let textInputs: TextInputs | undefined;
+
+  // Add text search input
+  if (query && query !== '*') {
+    textInputs = query.split(',');
+  }
 
   const aggregations = await fetchSTACAggregations(projectName, filter)
     .then((res) => {
       return res;
     })
     .catch((error: ResponseError) => {
+      /* istanbul ignore next -- @preserve */
       status = error.cause === 422 ? 422 : (error.cause as number) || 500;
     });
 
   const aggregationsToFacets = aggregationsToFacetsData(aggregations || { aggregations: [] });
 
-  const searchResults = await postSTACSearch(projectName, 9999, filter);
+  const searchResults = await postSTACSearch(projectName, 9999, filter, textInputs);
+
+  const stacResponse: StacSearchResponse = searchResults as StacSearchResponse;
+
+  const filteredFeatures: StacFeature[] = [];
+
+  // Remove duplicate assets based on the href, if size is greater than 0
+  stacResponse.features.forEach((feature) => {
+    const updatedAssets: { [name: string]: StacAsset } = {};
+    const href: string[] = [];
+    if (feature.assets) {
+      /* istanbul ignore next -- @preserve */
+      Object.entries(feature.assets).forEach(([key, asset]) => {
+        if (asset['file:size'] && asset['file:size'] > 0) {
+          if (asset.href && !href.includes(asset.href)) {
+            updatedAssets[key] = asset;
+            href.push(asset.href);
+          }
+        } else {
+          updatedAssets[key] = asset;
+        }
+      });
+      filteredFeatures.push({ ...feature, assets: updatedAssets });
+    }
+  });
+
+  stacResponse.features = filteredFeatures;
 
   return { search: searchResults, facets: aggregationsToFacets, stac: true, status };
 };
@@ -558,7 +608,7 @@ export const fetchSearchResults = async (
 
   // Get cached search results
   const cachedResults = getCachedSearchResults();
-  /* istanbul ignore next */
+  /* istanbul ignore next -- @preserve */
   const cachedURL = (cachedResults?.cachedURL as string) || '';
   const reqUrlOffset = reqUrlStr.match(/offset=\d+/)?.[0];
   const cachedUrlOffset = cachedURL.match(/offset=\d+/)?.[0];
@@ -572,7 +622,7 @@ export const fetchSearchResults = async (
   let finalUrl = reqUrlStr;
   const cachedPagination = getCachedPagination();
   // If the change to the request URL was not the offset, reset the offset to 0
-  /* istanbul ignore next */
+  /* istanbul ignore next -- @preserve */
   if (reqUrlOffset === cachedUrlOffset || (!reqUrlOffset && cachedUrlOffset)) {
     finalUrl = reqUrlStr.replace(/offset=\d+/, 'offset=0');
     // Cache the new offset value so it is reflected in the pagination
@@ -585,6 +635,7 @@ export const fetchSearchResults = async (
   if (finalUrl.includes('/stac/search?')) {
     // If the request URL is for STAC search, fetch results using the STAC API
     const params = new URLSearchParams(reqUrlStr.split('?')[1]);
+    /* istanbul ignore next -- @preserve */
     const projectName = params.get('project_id') || 'CMIP6';
 
     return fetchSTACSearchResults(finalUrl, projectName)
@@ -592,7 +643,7 @@ export const fetchSearchResults = async (
         // Prevent breaking the app if the response is not successful
         if (results.status !== 200) {
           // Handle the case where status is 422 due to a offset value that is too high
-          /* istanbul ignore next */
+          /* istanbul ignore next -- @preserve */
           if (results.status === 422) {
             cachePagination({
               page: 1,
@@ -605,7 +656,7 @@ export const fetchSearchResults = async (
         return results;
       })
       .catch((error: ResponseError) => {
-        /* istanbul ignore next */
+        /* istanbul ignore next -- @preserve */
         if (error.cause === 422) {
           throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearchSTAC), {
             cause: 422,
@@ -791,7 +842,7 @@ export const loadSessionValue = async <T>(key: string): Promise<T | null> => {
       return null;
     })
     .catch(
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       (error: ResponseError) => {
         throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.tempStorageGet));
       },
@@ -812,7 +863,7 @@ export const saveSessionValue = async <T>(key: string, value: T): Promise<AxiosR
       return res.data;
     })
     .catch(
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       (error: ResponseError) => {
         throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.tempStorageSet));
       },

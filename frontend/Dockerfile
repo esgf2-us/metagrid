@@ -1,5 +1,5 @@
 # Pull official base image
-FROM node:23.1.0-slim AS build
+FROM node:24.12.0 AS build
 
 # Set working directory
 WORKDIR /app

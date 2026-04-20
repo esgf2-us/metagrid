@@ -3,10 +3,12 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import Facets from './index';
 import customRender from '../../test/custom-render';
-import { activeSearch } from '../../test/jestTestFunctions';
+import { activeSearch } from '../../test/testFunctions';
 import App from '../App/App';
 
 const user = userEvent.setup();
+
+// helper to run long tests
 
 it('renders component', async () => {
   customRender(<Facets />);
@@ -47,7 +49,7 @@ it('handles facets form auto-filtering', async () => {
 
   // Check facet select form exists and mouseDown to expand list of options
   const facetFormSelect = document.querySelector(
-    '[data-testid=data_node-form-select] > .ant-select-selector'
+    '[data-testid=data_node-form-select] > .ant-select-selector',
   ) as HTMLInputElement;
   expect(facetFormSelect).toBeTruthy();
   fireEvent.mouseDown(facetFormSelect);
@@ -100,7 +102,7 @@ it('handles facets form submission, including a facet key that is undefined', as
 
   // Check facet select form exists and mouseDown to expand list of options
   const facetFormSelect = document.querySelector(
-    '[data-testid=data_node-form-select] > .ant-select-selector'
+    '[data-testid=data_node-form-select] > .ant-select-selector',
   ) as HTMLInputElement;
   expect(facetFormSelect).toBeTruthy();
   fireEvent.mouseDown(facetFormSelect);
@@ -126,7 +128,7 @@ it('handles facets form submission, including a facet key that is undefined', as
   // This will result in an undefined value for the form item (ant-design logic)
   // Check facet select form exists and mouseDown to expand list of options
   const facetFormSelect2 = document.querySelector(
-    '[data-testid=facet2-form-select] > .ant-select-selector'
+    '[data-testid=facet2-form-select] > .ant-select-selector',
   ) as HTMLInputElement;
   expect(facetFormSelect2).toBeTruthy();
   fireEvent.mouseDown(facetFormSelect2);
