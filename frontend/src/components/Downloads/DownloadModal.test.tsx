@@ -178,6 +178,10 @@ describe('DownloadModal component tests', () => {
       assets: {},
       properties: {
         access: ['public'],
+        citation_url: 'https://example.com/citation',
+        further_info_url: 'https://example.com/info',
+        retracted: false,
+        version: '1.0.0',
       },
       collection: ['test-collection'],
       stac_version: '1.0.0',
@@ -412,6 +416,10 @@ describe('DownloadModal component tests', () => {
       },
       properties: {
         access: ['public'],
+        citation_url: 'https://example.com/citation',
+        further_info_url: 'https://example.com/info',
+        retracted: false,
+        version: '1.0.0',
       },
       collection: ['test-collection'],
       stac_version: '1.0.0',
