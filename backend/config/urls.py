@@ -35,9 +35,22 @@ from metagrid.observability.views import liveness, readiness
 from metagrid.projects.views import ProjectsViewSet
 from metagrid.users.views import UserCreateViewSet, UserViewSet
 
-router = DefaultRouter()
-router.register(r"users", UserViewSet)
-router.register(r"users", UserCreateViewSet)
+
+class LegacyRouter(DefaultRouter):
+    """
+    Custom router that allows multiple viewsets with the same basename.
+    This maintains backward compatibility with the existing URL structure
+    where UserViewSet and UserCreateViewSet both use basename='user'.
+    """
+
+    def is_already_registered(self, _basename):
+        """Override to allow duplicate basenames for user viewsets."""
+        return False
+
+
+router = LegacyRouter()
+router.register(r"users", UserViewSet, basename="user")
+router.register(r"users", UserCreateViewSet, basename="user")
 router.register(r"projects", ProjectsViewSet)
 router.register(r"carts/datasets", CartViewSet)
 router.register(r"carts/searches", SearchViewSet)
