@@ -1,7 +1,7 @@
 import { CloudDownloadOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { Col, Empty, Popconfirm, Row } from 'antd';
 import React from 'react';
-import { useAtom } from 'jotai';
+import { useAtom, useSetAtom } from 'jotai';
 import { cartTourTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import Button from '../General/Button';
@@ -48,10 +48,7 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   const [itemSelections, setItemSelections] = useAtom<RawSearchResults>(cartItemSelectionsAtom);
 
-  const [selectedNodes, setSelectedNodes] = useAtom(selectedNodesAtom) as unknown as [
-    Record<string, string>,
-    (value: Record<string, string>) => void,
-  ];
+  const setSelectedNodes = useSetAtom(selectedNodesAtom);
 
   const [downloadSelections] = useAtom(downloadSelectionsAtom) as unknown as [
     Record<string, 'wget' | 'Globus' | 'esgpull'>,

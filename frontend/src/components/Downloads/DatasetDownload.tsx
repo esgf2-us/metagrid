@@ -145,10 +145,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
     userChosenEndpointAtom,
   );
 
-  const [selectedNodes] = useAtom(selectedNodesAtom) as unknown as [
-    Record<string, string>,
-    (value: Record<string, string>) => void,
-  ];
+  const [selectedNodes] = useAtom<Record<string, string>>(selectedNodesAtom);
 
   const [downloadSelections] = useAtom(downloadSelectionsAtom) as unknown as [
     Record<string, 'wget' | 'Globus' | 'esgpull'>,
