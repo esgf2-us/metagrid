@@ -25,6 +25,8 @@ export enum AppStateKeys {
 export enum CartStateKeys {
   cartItemSelections = 'cartItemSelections',
   cartDownloadIsLoading = 'downloadIsLoading',
+  selectedNodes = 'selectedNodes',
+  downloadSelections = 'downloadSelections',
 }
 
 export enum GlobusStateKeys {
@@ -130,3 +132,14 @@ export const userChosenEndpointAtom = atomWithStorage<GlobusEndpoint | null>(
   undefined,
   { getOnInit: true },
 );
+
+export const selectedNodesAtom = atomWithStorage<Record<string, string>>(
+  CartStateKeys.selectedNodes,
+  {},
+  undefined,
+  { getOnInit: true },
+);
+
+export const downloadSelectionsAtom = atomWithStorage<
+  Record<string, 'wget' | 'Globus' | 'esgpull'>
+>(CartStateKeys.downloadSelections, {}, undefined, { getOnInit: true });

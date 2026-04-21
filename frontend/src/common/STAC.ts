@@ -518,7 +518,7 @@ export function getDownloadSizeFromSTACsearch(features: StacFeature[]): number {
 export function generateWgetScriptSTAC(
   searchResults: RawSearchResult[],
   searchURL?: string,
-  selectedNode?: string,
+  selectedNode?: string | Record<string, string>,
 ): boolean {
   const d = new Date();
   const date_string = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}_${d.getHours()}-${d.getMinutes()}-${d.getSeconds()}`;
@@ -532,7 +532,7 @@ export function generateWgetScriptSTAC(
     script += `# Search URL: ${searchURL}\n#\n`;
   }
 
-  if (selectedNode) {
+  if (selectedNode && typeof selectedNode === 'string') {
     script += `# Specified node: ${selectedNode}\n#\n`;
   }
 
@@ -548,17 +548,28 @@ export function generateWgetScriptSTAC(
   searchResults.forEach((result) => {
     /* istanbul ignore else -- @preserve */
     if (result.assets) {
+      // Determine the node to use for this specific result
+      let nodeForThisResult: string | undefined;
+
+      if (typeof selectedNode === 'string') {
+        // Single node specified for all results
+        nodeForThisResult = selectedNode;
+      } else if (selectedNode && typeof selectedNode === 'object') {
+        // Map of nodes per result ID
+        nodeForThisResult = selectedNode[result.id];
+      }
+
       Object.values(result.assets).forEach((asset) => {
         if (!asset) {
           return;
         }
 
-        // If a specific node is selected, only include hrefs from that node
-        if (selectedNode) {
+        // If a specific node is selected for this result, only include hrefs from that node
+        if (nodeForThisResult) {
           const assetNode = asset.alternateName || (asset['alternate:name'] as string);
 
           // Check if this asset's main href matches the selected node
-          if (assetNode === selectedNode) {
+          if (assetNode === nodeForThisResult) {
             const { href } = asset;
             if (href && href.startsWith('http') && href.endsWith('.nc')) {
               script += `wget ${href}\n`;
@@ -573,7 +584,7 @@ export function generateWgetScriptSTAC(
           // Check alternates for the selected node
           const alternates = asset.alternate;
           if (alternates && typeof alternates === 'object') {
-            const altAsset = alternates[selectedNode];
+            const altAsset = alternates[nodeForThisResult];
             if (altAsset && altAsset.href?.endsWith('.nc')) {
               script += `wget ${altAsset.href}\n`;
               hrefs += 1;
@@ -584,7 +595,7 @@ export function generateWgetScriptSTAC(
             }
           }
         } else {
-          // No specific node selected, include all .nc hrefs (original behavior)
+          // No specific node selected, include all .nc hrefs
           const { href } = asset;
           if (href && href.startsWith('http') && href.endsWith('.nc')) {
             script += `wget ${href}\n`;

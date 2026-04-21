@@ -29,7 +29,12 @@ import {
   startSearchGlobusEndpoints,
   SubmissionResult,
 } from '../../api';
-import { RawSearchResults, StacFeature, StacSearchResponse } from '../Search/types';
+import {
+  RawSearchResult,
+  RawSearchResults,
+  StacFeature,
+  StacSearchResponse,
+} from '../Search/types';
 import {
   GlobusTaskItem,
   MAX_TASK_LIST_LENGTH,
@@ -46,6 +51,9 @@ import {
   globusTaskItemsAtom,
   GlobusStateKeys,
   userChosenEndpointAtom,
+  selectedNodesAtom,
+  downloadSelectionsAtom,
+  nodePreferencesAtom,
 } from '../../common/atoms';
 import {
   cartTourTargets,
@@ -56,6 +64,7 @@ import {
   getStacGlobusHref,
   generateWgetScriptSTAC,
   convertStacToRawSearchResult,
+  getNodesListByDownloadType,
 } from '../../common/STAC';
 import GlobusEndpointOption, { GlobusEndpointOptionData } from '../Globus/GlobusEndpointOption';
 
@@ -136,6 +145,18 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
     userChosenEndpointAtom,
   );
 
+  const [selectedNodes] = useAtom(selectedNodesAtom) as unknown as [
+    Record<string, string>,
+    (value: Record<string, string>) => void,
+  ];
+
+  const [downloadSelections] = useAtom(downloadSelectionsAtom) as unknown as [
+    Record<string, 'wget' | 'Globus' | 'esgpull'>,
+    (value: Record<string, 'wget' | 'Globus' | 'esgpull'>) => void,
+  ];
+
+  const [nodePreferences] = useAtom<string[]>(nodePreferencesAtom);
+
   const [loadingPage, setLoadingPage] = React.useState<boolean>(false);
 
   const [endpointSearchOpen, setEndpointSearchOpen] = React.useState<boolean>(false);
@@ -183,6 +204,41 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
     redirectToRootUrl();
   }
 
+  /**
+   * Determine which node to use for a given item based on:
+   * 1. Selected node if wget is the download option for this item
+   * 2. Preferred nodes list as fallback
+   * 3. First available node as final fallback
+   */
+  const getNodeChoiceForItem = (
+    item: RawSearchResult,
+    downloadType: 'wget' | 'Globus',
+  ): string | undefined => {
+    if (!item.isStac) {
+      return undefined; // Non-STAC items don't need node selection
+    }
+
+    // Check if user has explicitly selected wget for this item and has a selected node
+    const itemDownloadType = downloadSelections[item.id];
+    if (itemDownloadType === downloadType && selectedNodes[item.id]) {
+      return selectedNodes[item.id];
+    }
+
+    // Fall back to preferred nodes list
+    const availableNodes = getNodesListByDownloadType(item, downloadType);
+
+    // Find the first preferred node that's available
+    if (nodePreferences.length > 0) {
+      const preferredNode = nodePreferences.find((node) => availableNodes.includes(node));
+      if (preferredNode) {
+        return preferredNode;
+      }
+    }
+
+    // Final fallback: use first available node
+    return availableNodes[0];
+  };
+
   function resetCookiesAndTokens(): void {
     deleteCookie(GlobusStateKeys.globusAuthScope, '/cart/items');
     resetGlobusTokens();
@@ -221,7 +277,16 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
     let stacSuccess = false;
 
     if (stacSelections.length > 0) {
-      stacSuccess = generateWgetScriptSTAC(stacSelections);
+      // Build a map of item ID to selected node for wget
+      const nodeMap: Record<string, string> = {};
+      stacSelections.forEach((item) => {
+        const node = getNodeChoiceForItem(item, 'wget');
+        if (node) {
+          nodeMap[item.id] = node;
+        }
+      });
+
+      stacSuccess = generateWgetScriptSTAC(stacSelections, undefined, nodeMap);
 
       /* istanbul ignore next -- @preserve */
       if (props.onDownloadFinish) {
@@ -332,6 +397,70 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
     return REQUESTED_SCOPES;
   };
 
+  /**
+   * Get Globus href for an item based on selected node or preferences
+   */
+  const getGlobusHrefForItem = (item: RawSearchResult): string | null => {
+    if (!item.isStac || !item.assets) {
+      // Non-STAC items use the globus_link property directly
+      return item.globus_link || null;
+    }
+
+    // Determine which node to use
+    const selectedNode = getNodeChoiceForItem(item, 'Globus');
+
+    if (!selectedNode) {
+      // Fall back to default behavior
+      return getStacGlobusHref(item.assets);
+    }
+
+    // Search for Globus href from the selected node
+    const foundAsset = Object.values(item.assets).find((asset) => {
+      if (!asset) {
+        return false;
+      }
+
+      const assetNode = asset.alternateName || (asset['alternate:name'] as string);
+
+      // Check main asset
+      if (assetNode === selectedNode && asset.href?.startsWith('https://app.globus.org')) {
+        return true;
+      }
+
+      // Check alternates
+      const alternates = asset.alternate;
+      if (alternates && typeof alternates === 'object') {
+        const altAsset = alternates[selectedNode];
+        if (altAsset && altAsset.href?.startsWith('https://app.globus.org')) {
+          return true;
+        }
+      }
+
+      return false;
+    });
+
+    if (foundAsset) {
+      const assetNode = foundAsset.alternateName || (foundAsset['alternate:name'] as string);
+
+      // Return main href if it matches
+      if (assetNode === selectedNode && foundAsset.href?.startsWith('https://app.globus.org')) {
+        return foundAsset.href;
+      }
+
+      // Return alternate href
+      const alternates = foundAsset.alternate;
+      if (alternates && typeof alternates === 'object') {
+        const altAsset = alternates[selectedNode];
+        if (altAsset && altAsset.href?.startsWith('https://app.globus.org')) {
+          return altAsset.href;
+        }
+      }
+    }
+
+    // Fallback to default if no specific node href found
+    return getStacGlobusHref(item.assets);
+  };
+
   const handleGlobusDownload = (endpoint: GlobusEndpoint, authCode?: string): void => {
     const ids: string[] = [];
     const globusHrefs: string[] = [];
@@ -339,7 +468,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
     if (itemSelections) {
       ids.concat(itemSelections?.map((item) => (item ? item.id : '')));
       itemSelections.forEach((item) => {
-        const href = getStacGlobusHref(item.assets);
+        const href = getGlobusHrefForItem(item);
         if (href !== null) {
           globusHrefs.push(href);
         }
@@ -348,7 +477,8 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
 
     if (props.stacResults) {
       props.stacResults.features.forEach((feature) => {
-        const href = getStacGlobusHref(feature.assets);
+        const convertedItem = convertStacToRawSearchResult(feature);
+        const href = getGlobusHrefForItem(convertedItem);
         if (href !== null) {
           globusHrefs.push(href);
         }

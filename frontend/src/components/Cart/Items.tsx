@@ -12,8 +12,13 @@ import PreferredNodesModal from '../Downloads/PreferredNodesModal';
 import { UserCart } from './types';
 import { AuthContext } from '../../contexts/AuthContext';
 import { updateUserCart } from '../../api';
-import { cartItemSelectionsAtom, userCartAtom } from '../../common/atoms';
-import { getReplicaNodelsList } from '../../common/STAC';
+import {
+  cartItemSelectionsAtom,
+  userCartAtom,
+  selectedNodesAtom,
+  downloadSelectionsAtom,
+} from '../../common/atoms';
+import { getReplicaNodelsList, getNodesListByDownloadType } from '../../common/STAC';
 
 const styles: CSSinJS = {
   summary: {
@@ -42,6 +47,16 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   const [userCart, setUserCart] = useAtom<UserCart>(userCartAtom);
 
   const [itemSelections, setItemSelections] = useAtom<RawSearchResults>(cartItemSelectionsAtom);
+
+  const [selectedNodes, setSelectedNodes] = useAtom(selectedNodesAtom) as unknown as [
+    Record<string, string>,
+    (value: Record<string, string>) => void,
+  ];
+
+  const [downloadSelections] = useAtom(downloadSelectionsAtom) as unknown as [
+    Record<string, 'wget' | 'Globus' | 'esgpull'>,
+    (value: Record<string, 'wget' | 'Globus' | 'esgpull'>) => void,
+  ];
 
   // Preferred Nodes Modal
   const [showPreferredNodesModal, setShowPreferredNodesModal] = React.useState(false);
@@ -78,6 +93,37 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   const availableNodes = getAvailableNodes();
   const hasNodes = availableNodes.length > 0;
+
+  /**
+   * Apply node preferences to all cart items
+   * For each item, select the highest priority node from the user's preferences
+   * that is available for that item's current download type
+   */
+  const handleApplyNodePreferences = (preferences: string[]): void => {
+    const newSelectedNodes: Record<string, string> = {};
+
+    userCart.forEach((item) => {
+      // Get the current download type for this item (default to 'wget')
+      const downloadType = downloadSelections[item.id] || 'wget';
+
+      // Get available nodes for this item based on its download type
+      const availableNodesForItem = getNodesListByDownloadType(item, downloadType);
+
+      // Find the highest priority node that's available
+      const selectedNode = preferences.find((preferredNode) =>
+        availableNodesForItem.includes(preferredNode),
+      );
+
+      // Set the selected node (use preferred or fallback to first available)
+      const nodeToUse = selectedNode || availableNodesForItem[0];
+      if (nodeToUse) {
+        newSelectedNodes[item.id] = nodeToUse;
+      }
+    });
+
+    // Update the selected nodes state
+    setSelectedNodes(newSelectedNodes);
+  };
 
   return (
     <div data-testid="cartItems">
@@ -151,6 +197,7 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
             show={showPreferredNodesModal}
             hide={() => setShowPreferredNodesModal(false)}
             availableNodes={availableNodes}
+            onApply={handleApplyNodePreferences}
           />
         </>
       )}

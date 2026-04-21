@@ -10,7 +10,7 @@ import type { TableColumnsType } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig, TableProps } from 'antd/lib/table';
 import React, { useCallback } from 'react';
-import { useAtomValue } from 'jotai';
+import { useAtomValue, useAtom } from 'jotai';
 import stacIcon from '../../assets/img/STAC-favicon.png';
 import { fetchWgetScript, ResponseError } from '../../api';
 import {
@@ -37,10 +37,14 @@ import {
 } from './types';
 import GlobusToolTip from '../Globus/GlobusToolTip';
 import { topDataRowTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
-import { userCartAtom } from '../../common/atoms';
+import { userCartAtom, selectedNodesAtom, downloadSelectionsAtom } from '../../common/atoms';
 import { AppPage } from '../../common/types';
 import { createCustomIcon } from '../NavBar';
-import { getStacGlobusHref, generateWgetScriptSTAC, getNodesListByDownloadType } from '../../common/STAC';
+import {
+  getStacGlobusHref,
+  generateWgetScriptSTAC,
+  getNodesListByDownloadType,
+} from '../../common/STAC';
 import TableExpandIcon, { TableExpandIconProps } from './TableExpandIcon';
 
 export type Props = {
@@ -82,14 +86,15 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
 
   const [sortedInfo, setSortedInfo] = React.useState<Sorts<RawSearchResult>>({});
 
-  // Track download type selection per dataset row
-  const [downloadSelections, setDownloadSelections] = React.useState<Record<string, DatasetDownloadTypes>>({});
-
-  // Track selected node per dataset row
-  const [selectedNodes, setSelectedNodes] = React.useState<Record<string, string>>({});
-
   // Global states
   const userCart = useAtomValue<UserCart>(userCartAtom);
+
+  // Track download type selection per dataset row (shared state for cart)
+  const [downloadSelections, setDownloadSelections] =
+    useAtom<Record<string, DatasetDownloadTypes>>(downloadSelectionsAtom);
+
+  // Track selected node per dataset row (shared state for cart)
+  const [selectedNodes, setSelectedNodes] = useAtom<Record<string, string>>(selectedNodesAtom);
 
   const showStatus = window.METAGRID.STATUS_URL !== null;
 

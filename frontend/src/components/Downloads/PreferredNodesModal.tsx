@@ -26,6 +26,7 @@ interface PreferredNodesModalProps {
   show: boolean;
   hide: () => void;
   availableNodes: string[];
+  onApply?: (preferences: string[]) => void;
 }
 
 interface SortableItemProps {
@@ -68,6 +69,7 @@ const PreferredNodesModal = ({
   show,
   hide,
   availableNodes,
+  onApply,
 }: PreferredNodesModalProps): React.ReactElement => {
   const [preferredNodes, setPreferredNodes] = useAtom<string[]>(nodePreferencesAtom);
   const [localNodes, setLocalNodes] = useState<string[]>([]);
@@ -111,6 +113,9 @@ const PreferredNodesModal = ({
 
   const handleApply = () => {
     setPreferredNodes(localNodes);
+    if (onApply) {
+      onApply(localNodes);
+    }
     hide();
   };
 
