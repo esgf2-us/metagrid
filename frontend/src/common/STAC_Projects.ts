@@ -66,8 +66,12 @@ const STAC_PROJECT_LIST: StacProject[] = [
     facetsByGroup: {
       General: ['mip_era'],
       Classifications: ['domain', 'domain_id', 'version_realisation'],
-      DrivingIDs: ['driving_experiment_id', 'driving_source_id',
-         'driving_institution_id', 'driving_variant_label']
+      DrivingIDs: [
+        'driving_experiment_id',
+        'driving_source_id',
+        'driving_institution_id',
+        'driving_variant_label',
+      ],
     },
   },
 ];
