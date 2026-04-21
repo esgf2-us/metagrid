@@ -38,7 +38,7 @@ const STAC_PROJECT_LIST: StacProject[] = [
     name: 'CMIP6 STAC',
     projectName: 'CMIP6',
     fullName: 'Coupled Model Intercomparison Project Phase 6',
-    projectUrl: 'https://pcmdi.llnl.gov/CMIP6/',
+    projectUrl: 'https://wcrp-cmip.org/cmip-phases/cmip6/',
     facetsByGroup: {
       General: ['mip_era'],
       Classifications: ['table_id'],
@@ -48,7 +48,7 @@ const STAC_PROJECT_LIST: StacProject[] = [
     name: 'CMIP7',
     projectName: 'CMIP7',
     fullName: 'Coupled Model Intercomparison Project Phase 7',
-    projectUrl: 'https://WCRP_CMIP.org/CMIP7',
+    projectUrl: 'https://wcrp-cmip.org/cmip-phases/cmip7/',
     facetsByGroup: {
       General: ['mip_era'],
       Classifications: [
@@ -56,6 +56,18 @@ const STAC_PROJECT_LIST: StacProject[] = [
         { title: 'variable_suffix', facet: 'variable_branding_suffix' },
       ],
       Labels: ['area_label', 'vertical_label', 'temporal_label', 'horizontal_label'],
+    },
+  },
+  {
+    name: 'CORDEX-CMIP6',
+    projectName: 'CORDEX-CMIP6',
+    fullName: 'Coordinated Regional Climate Downscaling Experiment from CMIP6',
+    projectUrl: 'https://cordex.org/',
+    facetsByGroup: {
+      General: ['mip_era'],
+      Classifications: ['domain', 'domain_id', 'version_realisation'],
+      DrivingIDs: ['driving_experiment_id', 'driving_source_id',
+         'driving_institution_id', 'driving_variant_label']
     },
   },
 ];
