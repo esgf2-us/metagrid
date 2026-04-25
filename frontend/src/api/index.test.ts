@@ -1,6 +1,5 @@
 import {
   addUserSearchQuery,
-  convertResultTypeToReplicaParam,
   deleteUserSearchQuery,
   fetchDatasetCitation,
   fetchDatasetFiles,
@@ -28,7 +27,7 @@ import {
   updateUserCart,
 } from '.';
 import { STAC_PROJECTS, generateWgetScriptSTAC } from '../common/STAC';
-import { downloadFileForUser } from '../common/utils';
+import { convertResultTypeToReplicaParam, downloadFileForUser } from '../common/utils';
 import { ActiveSearchQuery, Pagination, RawCitation, ResultType } from '../components/Search/types';
 import { mockConfig } from '../test/testFunctions';
 import {
