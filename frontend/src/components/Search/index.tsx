@@ -9,7 +9,6 @@ import {
   ShoppingCartOutlined,
 } from '@ant-design/icons';
 import { Alert, Col, Dropdown, message, Row, Space, Tooltip, Typography } from 'antd';
-import humps from 'humps';
 import React from 'react';
 import { DeferFn, useAsync } from 'react-async';
 import { v4 as uuidv4 } from 'uuid';
@@ -25,7 +24,6 @@ import {
 } from '../../common/atoms';
 import {
   addUserSearchQuery,
-  convertResultTypeToReplicaParam,
   fetchSearchResults,
   generateSearchURLQuery,
   ResponseError,
@@ -59,19 +57,12 @@ import {
   Pagination,
   RawSearchResult,
   RawSearchResults,
-  ResultType,
   StacFeature,
   StacResponse,
   TextInputs,
-  VersionDate,
-  VersionType,
 } from './types';
 import { AuthContext } from '../../contexts/AuthContext';
-import {
-  convertSearchParamsIntoStacFilter,
-  convertStacToRawSearchResult,
-  getStacProject,
-} from '../../common/STAC';
+import { convertStacToRawSearchResult, stringifyApiRequest } from '../../common/STAC';
 import DownloadModal from '../Downloads/DownloadModal';
 
 const tooltipText = {
@@ -121,64 +112,6 @@ export const parseFacets = (facets: RawFacets): ParsedFacets => {
     );
   });
   return res;
-};
-
-/**
- * Stringifies the active filters to output in a formatted structure.
- * Example: '(Text Input = 'Solar') AND (source_type = AER OR AOGCM OR BGC)'
- */
-export const stringifyFilters = (
-  projectName: string | undefined,
-  versionType: VersionType,
-  resultType: ResultType,
-  minVersionDate: VersionDate,
-  maxVersionDate: VersionDate,
-  activeFacets: ActiveFacets,
-  textInputs: TextInputs | [],
-  isSTAC: boolean = false,
-  reqUrlStr: string = '',
-): string => {
-  if (isSTAC) {
-    const stacProject = getStacProject(projectName as string);
-
-    const stacFilter = convertSearchParamsIntoStacFilter(reqUrlStr, stacProject) || 'null';
-    const textInputsStr = textInputs.length > 0 ? `, "q": ${JSON.stringify(textInputs)}` : '';
-    const stacQueryBase = `{"collections": ["${stacProject.projectName}"], "filter": ${JSON.stringify(stacFilter)}${textInputsStr}}`;
-
-    return stacQueryBase;
-  }
-
-  const filtersArr: string[] = [];
-
-  if (versionType === 'latest') {
-    filtersArr.push('latest = true');
-  }
-
-  const replicaParam = convertResultTypeToReplicaParam(resultType, true);
-  if (replicaParam) {
-    filtersArr.push(replicaParam);
-  }
-
-  if (minVersionDate) {
-    filtersArr.push(`min_version = ${minVersionDate}`);
-  }
-
-  if (maxVersionDate) {
-    filtersArr.push(`max_version = ${maxVersionDate}`);
-  }
-
-  if (textInputs.length > 0) {
-    filtersArr.push(`(Text Input = ${textInputs.join(' OR ')})`);
-  }
-
-  if (!objectIsEmpty(activeFacets)) {
-    Object.keys(activeFacets).forEach((key: string) => {
-      filtersArr.push(`(${humps.decamelize(key)} = ${activeFacets[key].join(' OR ')})`);
-    });
-  }
-
-  const filtersStr = filtersArr.length > 0 ? `${filtersArr.join(' AND ')}` : 'No filters applied';
-  return filtersStr;
 };
 
 export const checkFiltersExist = (
@@ -258,6 +191,21 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     setFiltersExist(checkFiltersExist(activeFacets, textInputs));
   }, [activeFacets, textInputs]);
 
+  // Track previous project name to detect actual project changes (not just remounts)
+  const prevProjectNameRef = React.useRef<string | undefined>(currentProject.name);
+
+  // Clear parsed facets only when project actually changes (not on remount)
+  React.useEffect(() => {
+    if (
+      prevProjectNameRef.current !== undefined &&
+      prevProjectNameRef.current !== currentProject.name
+    ) {
+      setParsedFacets({});
+      setAvailableFacets({});
+    }
+    prevProjectNameRef.current = currentProject.name;
+  }, [currentProject.name, setAvailableFacets]);
+
   // Fetch search results
   React.useEffect(() => {
     if (!objectIsEmpty(project) && currentRequestURL) {
@@ -289,7 +237,11 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   }, [results]);
 
   React.useEffect(() => {
-    setAvailableFacets(parsedFacets as ParsedFacets);
+    // Only update availableFacets if parsedFacets is not empty
+    // This prevents clearing facets UI when navigating back to search page
+    if (!objectIsEmpty(parsedFacets)) {
+      setAvailableFacets(parsedFacets as ParsedFacets);
+    }
   }, [parsedFacets, setAvailableFacets]);
 
   const handleClearFilters = (): void => {
@@ -589,16 +541,15 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     };
   };
 
-  const queryString = stringifyFilters(
-    currentProject.projectName,
+  const queryString = stringifyApiRequest(
+    currentProject,
+    currentRequestURL,
+    textInputs,
     versionType,
     resultType,
     minVersionDate,
     maxVersionDate,
     activeFacets,
-    textInputs,
-    currentProject.isSTAC,
-    currentRequestURL,
   );
 
   return (

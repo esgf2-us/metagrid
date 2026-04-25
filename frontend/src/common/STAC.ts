@@ -1,13 +1,23 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { FacetsByGroup, RawProject } from '../components/Facets/types';
+import humps from 'humps';
+import { ActiveFacets, FacetsByGroup, RawProject } from '../components/Facets/types';
 import {
   StacFeature,
   RawSearchResult,
   StacAsset,
   StacAggregations,
+  ResultType,
+  TextInputs,
+  VersionDate,
+  VersionType,
 } from '../components/Search/types';
 import STAC_PROJECT_LIST, { STAC_DEFAULT_PROJECT, StacProject } from './STAC_Projects';
-import { downloadFileForUser, formatBytes } from './utils';
+import {
+  convertResultTypeToReplicaParam,
+  downloadFileForUser,
+  formatBytes,
+  objectIsEmpty,
+} from './utils';
 
 // This is the pk for the first stac project assuming we have 8 non-stac projects listed before it.
 const FirstStacPK = 9;
@@ -311,6 +321,78 @@ export const convertSearchParamsIntoStacFilter = (
   /* istanbul ignore next -- @preserve */
   return undefined;
 };
+
+/**
+ * Stringifies an API request for display as a query string.
+ * Automatically handles both STAC and non-STAC projects based on project.isSTAC.
+ *
+ * For STAC projects:
+ * - Returns JSON string with collections, filter, optional q (text inputs), and optional aggregations
+ *
+ * For non-STAC projects:
+ * - Returns human-readable query string like: 'latest = true AND (Text Input = foo) AND (facet = value1 OR value2)'
+ */
+export function stringifyApiRequest(
+  project: RawProject,
+  reqUrlStr: string,
+  textInputs?: TextInputs | [],
+  versionType?: VersionType,
+  resultType?: ResultType,
+  minVersionDate?: VersionDate,
+  maxVersionDate?: VersionDate,
+  activeFacets?: ActiveFacets,
+  aggregations?: string[],
+): string {
+  if (project.isSTAC) {
+    // STAC path
+    const stacProject = getStacProject(project.projectName as string);
+    const stacFilter = convertSearchParamsIntoStacFilter(reqUrlStr, stacProject) || 'null';
+    const textInputsArray = textInputs || [];
+    const textInputsStr =
+      textInputsArray.length > 0 ? `, "q": ${JSON.stringify(textInputsArray)}` : '';
+    const aggregationsArray = aggregations || [];
+    const aggregationsStr =
+      aggregationsArray.length > 0 ? `, "aggregations": ${JSON.stringify(aggregationsArray)}` : '';
+
+    return `{"collections": ["${stacProject.projectName}"], "filter": ${JSON.stringify(stacFilter)}${textInputsStr}${aggregationsStr}}`;
+  }
+
+  // Non-STAC path
+  const filtersArr: string[] = [];
+  const textInputsArray = textInputs || [];
+
+  if (versionType === 'latest') {
+    filtersArr.push('latest = true');
+  }
+
+  if (resultType) {
+    const replicaParam = convertResultTypeToReplicaParam(resultType, true);
+    if (replicaParam) {
+      filtersArr.push(replicaParam);
+    }
+  }
+
+  if (minVersionDate) {
+    filtersArr.push(`min_version = ${minVersionDate}`);
+  }
+
+  if (maxVersionDate) {
+    filtersArr.push(`max_version = ${maxVersionDate}`);
+  }
+
+  if (textInputsArray.length > 0) {
+    filtersArr.push(`(Text Input = ${textInputsArray.join(' OR ')})`);
+  }
+
+  if (activeFacets && !objectIsEmpty(activeFacets)) {
+    Object.keys(activeFacets).forEach((key: string) => {
+      filtersArr.push(`(${humps.decamelize(key)} = ${activeFacets[key].join(' OR ')})`);
+    });
+  }
+
+  const filtersStr = filtersArr.length > 0 ? `${filtersArr.join(' AND ')}` : 'No filters applied';
+  return filtersStr;
+}
 
 export function getFileCountFromSTACsearch(features: StacFeature[]): number {
   let totalCount = 0;

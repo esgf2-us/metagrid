@@ -12,9 +12,10 @@ import {
 import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
-import { ActiveFacets, RawFacets } from '../Facets/types';
-import Search, { checkFiltersExist, parseFacets, Props, stringifyFilters } from './index';
+import { ActiveFacets, RawFacets, RawProject } from '../Facets/types';
+import Search, { checkFiltersExist, parseFacets, Props } from './index';
 import { ActiveSearchQuery, RawSearchResult, ResultType, TextInputs, VersionType } from './types';
+import { stringifyApiRequest } from '../../common/utils';
 import { openDropdownList, AtomWrapper } from '../../test/testFunctions';
 import { AppStateKeys } from '../../common/atoms';
 
@@ -433,7 +434,26 @@ describe('test stringifyFilters()', () => {
   const resultType: ResultType = 'originals only';
   const minVersionDate = '20200101';
   const maxVersionDate = '20201231';
-  const projectName = 'testProject';
+  const nonStacProject: RawProject = {
+    pk: '1',
+    name: 'testProject',
+    projectUrl: 'http://example.com',
+    facetsByGroup: {},
+    facetsUrl: '',
+    fullName: 'Test Project',
+    isSTAC: false,
+    projectName: 'testProject',
+  };
+  const stacProject: RawProject = {
+    pk: '2',
+    name: 'CMIP6',
+    projectUrl: 'http://example.com',
+    facetsByGroup: {},
+    facetsUrl: '',
+    fullName: 'CMIP6',
+    isSTAC: true,
+    projectName: 'CMIP6',
+  };
   let activeFacets: ActiveFacets;
   let textInputs: TextInputs;
 
@@ -446,60 +466,128 @@ describe('test stringifyFilters()', () => {
   });
 
   it('generates output', () => {
-    const strFilters = stringifyFilters(
-      projectName,
+    const strFilters = stringifyApiRequest(
+      nonStacProject,
+      '',
+      textInputs,
       versionType,
       resultType,
       minVersionDate,
       maxVersionDate,
       activeFacets,
-      textInputs,
     );
     expect(strFilters).toEqual(
       'latest = true AND replica = false AND min_version = 20200101 AND max_version = 20201231 AND (Text Input = foo OR bar) AND (facet_1 = option1 OR option2) AND (facet_2 = option1 OR option2)',
     );
   });
   it('generates output w/o textInputs', () => {
-    const strFilters = stringifyFilters(
-      projectName,
+    const strFilters = stringifyApiRequest(
+      nonStacProject,
+      '',
+      [],
       versionType,
       resultType,
       minVersionDate,
       maxVersionDate,
       activeFacets,
-      [],
     );
     expect(strFilters).toEqual(
       'latest = true AND replica = false AND min_version = 20200101 AND max_version = 20201231 AND (facet_1 = option1 OR option2) AND (facet_2 = option1 OR option2)',
     );
   });
   it('generates output w/o activeFacets', () => {
-    const strFilters = stringifyFilters(
-      projectName,
+    const strFilters = stringifyApiRequest(
+      nonStacProject,
+      '',
+      textInputs,
       versionType,
       resultType,
       minVersionDate,
       maxVersionDate,
       {},
-      textInputs,
     );
     expect(strFilters).toEqual(
       'latest = true AND replica = false AND min_version = 20200101 AND max_version = 20201231 AND (Text Input = foo OR bar)',
     );
   });
   it('generates output w/o version type', () => {
-    const strFilters = stringifyFilters(
-      projectName,
+    const strFilters = stringifyApiRequest(
+      nonStacProject,
+      '',
+      textInputs,
       'all',
       resultType,
       minVersionDate,
       maxVersionDate,
       {},
-      textInputs,
     );
     expect(strFilters).toEqual(
       'replica = false AND min_version = 20200101 AND max_version = 20201231 AND (Text Input = foo OR bar)',
     );
+  });
+
+  it('generates STAC query string with text inputs', () => {
+    const reqUrlStr = 'https://example.com/search?activity_id=CFMIP&source_id=ACCESS-ESM1-5';
+    const strFilters = stringifyApiRequest(
+      stacProject,
+      reqUrlStr,
+      textInputs,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    );
+
+    // Should return a JSON string with collections, filter, and q
+    expect(strFilters).toContain('"collections":');
+    expect(strFilters).toContain('"filter":');
+    expect(strFilters).toContain('"q":');
+    expect(strFilters).toContain('foo');
+    expect(strFilters).toContain('bar');
+  });
+
+  it('generates STAC query string without text inputs', () => {
+    const reqUrlStr = 'https://example.com/search?activity_id=CFMIP';
+    const strFilters = stringifyApiRequest(
+      stacProject,
+      reqUrlStr,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    );
+
+    // Should return a JSON string with collections and filter but no q
+    expect(strFilters).toContain('"collections":');
+    expect(strFilters).toContain('"filter":');
+    expect(strFilters).not.toContain('"q":');
+  });
+
+  it('generates STAC query string with aggregations', () => {
+    const reqUrlStr = 'https://example.com/search?activity_id=CFMIP';
+    const aggregations = ['cmip6_source_id_frequency', 'cmip6_experiment_id_frequency'];
+    const strFilters = stringifyApiRequest(
+      stacProject,
+      reqUrlStr,
+      textInputs,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      aggregations,
+    );
+
+    // Should return a JSON string with collections, filter, q, and aggregations
+    expect(strFilters).toContain('"collections":');
+    expect(strFilters).toContain('"filter":');
+    expect(strFilters).toContain('"q":');
+    expect(strFilters).toContain('"aggregations":');
+    expect(strFilters).toContain('cmip6_source_id_frequency');
+    expect(strFilters).toContain('cmip6_experiment_id_frequency');
   });
 });
 

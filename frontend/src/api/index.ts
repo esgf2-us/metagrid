@@ -22,7 +22,6 @@ import {
   ActiveSearchQuery,
   Pagination,
   RawCitation,
-  ResultType,
   StacAggregations,
   StacAsset,
   StacFeature,
@@ -34,6 +33,7 @@ import apiRoutes, { ApiRoute, HTTPCodeType } from './routes';
 import { GlobusEndpointSearchResults } from '../components/Globus/types';
 import {
   cachePagination,
+  convertResultTypeToReplicaParam,
   downloadFileForUser,
   getCachedPagination,
   getCachedSearchResults,
@@ -378,28 +378,6 @@ export const fetchProjects = async (): Promise<{
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.projects));
     });
 
-/**
- * replica param indicates whether the record is the 'master' copy, or a replica.
- * - By default, no replica param is specified (return both replicas and originals)
- * - replica=false to return only originals
- * - replica=true to return only replicas
- *
- * https://github.com/ESGF/esgf.github.io/wiki/ESGF_Search_REST_API#core-facets
- */
-export const convertResultTypeToReplicaParam = (
-  resultType: ResultType,
-  isLabel?: boolean,
-): string | undefined => {
-  const replicaParams = {
-    all: undefined,
-    'originals only': 'replica=false',
-    'replicas only': 'replica=true',
-  };
-
-  const param = replicaParams[resultType] as ResultType;
-  return param && isLabel ? param.replace('=', ' = ') : param;
-};
-
 export const updatePaginationParams = (url: string, pagination: Pagination): string => {
   const paginationOffset = pagination.page > 1 ? (pagination.page - 1) * pagination.pageSize : 0;
 
@@ -506,20 +484,80 @@ export const postSTACSearch = async (
     });
 };
 
+// Cache for STAC aggregations to avoid refetching when only pagination changes
+const stacAggregationsCache = new Map<string, StacAggregations>();
+
+/**
+ * Normalizes the request URL by removing pagination parameters (offset, limit)
+ * This allows us to cache aggregations based on filter params only
+ */
+const normalizeReqUrlForCache = (reqUrl: string): string => {
+  const url = new URL(reqUrl, 'http://dummy-base.com');
+  const params = new URLSearchParams(url.search);
+
+  // Remove pagination-related parameters
+  params.delete('offset');
+  params.delete('limit');
+
+  // Sort parameters for consistent cache keys
+  const sortedParams = Array.from(params.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${key}=${value}`)
+    .join('&');
+
+  return sortedParams;
+};
+
+/**
+ * Creates a cache key from the relevant parameters
+ */
+const createAggregationsCacheKey = (
+  projectName: string,
+  normalizedUrl: string,
+  filter: { op: string; args: unknown } | undefined,
+): string => {
+  const filterStr = filter ? JSON.stringify(filter) : 'null';
+  return `${projectName}|${normalizedUrl}|${filterStr}`;
+};
+
+/**
+ * Clears the STAC aggregations cache
+ */
+export const clearSTACAggregationsCache = (): void => {
+  stacAggregationsCache.clear();
+};
+
 export const fetchSTACAggregations = async (
   projectName: string,
+  reqUrl: string,
   filter: { op: string; args: unknown } | undefined,
 ): Promise<StacAggregations> => {
+  // Create cache key based on non-pagination parameters
+  const normalizedUrl = normalizeReqUrlForCache(reqUrl);
+  const cacheKey = createAggregationsCacheKey(projectName, normalizedUrl, filter);
+
+  // Check if we have cached results for this query
+  const cachedResult = stacAggregationsCache.get(cacheKey);
+  if (cachedResult) {
+    return Promise.resolve(cachedResult);
+  }
+
+  // No cache hit, fetch from API
+  const aggregationsList = getAggregationsList(projectName);
+
   const payload = {
     collections: [projectName],
-    aggregations: getAggregationsList(projectName),
+    aggregations: aggregationsList,
     filter,
   };
 
   return axios
     .post(`${apiRoutes.esgfAggregationsSTAC.path}`, payload)
     .then((res) => {
-      return res.data;
+      const data = res.data as StacAggregations;
+      // Cache the result for future use
+      stacAggregationsCache.set(cacheKey, data);
+      return data;
     })
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfAggregationsSTAC));
@@ -543,7 +581,7 @@ Promise<{ [key: string]: any }> => {
     textInputs = query.split(',');
   }
 
-  const aggregations = await fetchSTACAggregations(projectName, filter)
+  const aggregations = await fetchSTACAggregations(projectName, reqUrlStr, filter)
     .then((response) => {
       // Convert aggregations response into facet data for Metagrid
       const aggregationsToFacets = aggregationsToFacetsData(

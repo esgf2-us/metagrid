@@ -26,14 +26,14 @@ import weekday from 'dayjs/plugin/weekday';
 import weekOfYear from 'dayjs/plugin/weekOfYear';
 import weekYear from 'dayjs/plugin/weekYear';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useAtom, useAtomValue } from 'jotai';
 import { CSSinJS } from '../../common/types';
 import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
 import { ActiveSearchQuery, ResultType, VersionType } from '../Search/types';
 import { ActiveFacets, ParsedFacets } from './types';
-import { clearCachedSearchResults, showError, showNotice } from '../../common/utils';
+import { clearCachedSearchResults, objectIsEmpty, showError, showNotice } from '../../common/utils';
 import { activeSearchQueryAtom, availableFacetsAtom, currentProjectAtom } from '../../common/atoms';
 import { leftSidebarTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
@@ -395,13 +395,13 @@ const FacetsForm: React.FC = () => {
     }, 0); // Initialize maxLength to 0
   }
 
-  const generateFacetGroups = (): {
+  const generateFacetGroups = useMemo((): {
     key: string;
     label: JSX.Element;
     className: string;
     children: (JSX.Element | null)[];
   }[] => {
-    if (!facetsByGroup) {
+    if (!facetsByGroup || objectIsEmpty(facetsByGroup) || objectIsEmpty(availableFacets)) {
       return [];
     }
     return Object.keys(facetsByGroup).map((group) => {
@@ -503,7 +503,7 @@ const FacetsForm: React.FC = () => {
         }),
       };
     });
-  };
+  }, [activeSearchQuery.project.facetsByGroup, availableFacets, messageApi]);
 
   return (
     <div data-testid="facets-form">
@@ -587,7 +587,7 @@ const FacetsForm: React.FC = () => {
                 setExpandAll(false);
               }
             }}
-            items={generateFacetGroups()}
+            items={generateFacetGroups}
           />
         </div>
       </Form>

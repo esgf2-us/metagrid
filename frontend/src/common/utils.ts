@@ -77,6 +77,13 @@ export const projectBaseQuery = (
   globusOnly: false,
 });
 
+/**
+ * Checks if an object is empty.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const objectIsEmpty = (obj: Record<any, any>): boolean =>
+  !obj || Object.keys(obj).length === 0;
+
 const bodySider = {
   padding: '12px 12px 12px 12px',
   width: '400px',
@@ -145,13 +152,6 @@ export const createSearchRouteURL = (url: string): string => {
 };
 
 /**
- * Checks if an object is empty.
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const objectIsEmpty = (obj: Record<any, any>): boolean =>
-  !obj || Object.keys(obj).length === 0;
-
-/**
  * Checks if the specified key is in the object
  */
 export const objectHasKey = (
@@ -213,6 +213,28 @@ export const formatBytes = (bytes: number, decimals = 2): string => {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
   return `${parseFloat((bytes / k ** i).toFixed(dm))} ${sizes[i]}`;
+};
+
+/**
+ * replica param indicates whether the record is the 'master' copy, or a replica.
+ * - By default, no replica param is specified (return both replicas and originals)
+ * - replica=false to return only originals
+ * - replica=true to return only replicas
+ *
+ * https://github.com/ESGF/esgf.github.io/wiki/ESGF_Search_REST_API#core-facets
+ */
+export const convertResultTypeToReplicaParam = (
+  resultType: ResultType,
+  isLabel?: boolean,
+): string | undefined => {
+  const replicaParams = {
+    all: undefined,
+    'originals only': 'replica=false',
+    'replicas only': 'replica=true',
+  };
+
+  const param = replicaParams[resultType] as ResultType;
+  return param && isLabel ? param.replace('=', ' = ') : param;
 };
 
 export const getUrlFromSearch = (search: ActiveSearchQuery): string => {
