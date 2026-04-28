@@ -244,61 +244,73 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     }
   }, [parsedFacets, setAvailableFacets]);
 
-  const handleClearFilters = (): void => {
+  const handleClearFilters = React.useCallback((): void => {
     setActiveSearchQuery(projectBaseQuery(activeSearchQuery.project));
-  };
+  }, [activeSearchQuery.project, setActiveSearchQuery]);
 
-  const handleSaveSearchQuery = (url: string, numFound: number): void => {
-    const savedSearch: UserSearchQuery = {
-      uuid: uuidv4(),
-      user: pk,
-      project: activeSearchQuery.project as RawProject,
-      projectId: activeSearchQuery.project.pk as string,
-      versionType: activeSearchQuery.versionType,
-      resultType: activeSearchQuery.resultType,
-      minVersionDate: activeSearchQuery.minVersionDate,
-      maxVersionDate: activeSearchQuery.maxVersionDate,
-      filenameVars: activeSearchQuery.filenameVars,
-      activeFacets: activeSearchQuery.activeFacets,
-      textInputs: activeSearchQuery.textInputs,
-      globusOnly: activeSearchQuery.globusOnly,
-      url,
-      resultsCount: numFound,
-      searchTime: Date.now(),
-    };
+  const handleSaveSearchQuery = React.useCallback(
+    (url: string, numFound: number): void => {
+      const savedSearch: UserSearchQuery = {
+        uuid: uuidv4(),
+        user: pk,
+        project: activeSearchQuery.project as RawProject,
+        projectId: activeSearchQuery.project.pk as string,
+        versionType: activeSearchQuery.versionType,
+        resultType: activeSearchQuery.resultType,
+        minVersionDate: activeSearchQuery.minVersionDate,
+        maxVersionDate: activeSearchQuery.maxVersionDate,
+        filenameVars: activeSearchQuery.filenameVars,
+        activeFacets: activeSearchQuery.activeFacets,
+        textInputs: activeSearchQuery.textInputs,
+        globusOnly: activeSearchQuery.globusOnly,
+        url,
+        resultsCount: numFound,
+        searchTime: Date.now(),
+      };
 
-    if (searchAlreadyExists(userSearchQueries, savedSearch)) {
-      showNotice(messageApi, 'Search query is already in your library', {
-        icon: <BookOutlined style={appStyles.messageAddIcon} />,
-        type: 'info',
-      });
-      return;
-    }
+      if (searchAlreadyExists(userSearchQueries, savedSearch)) {
+        showNotice(messageApi, 'Search query is already in your library', {
+          icon: <BookOutlined style={appStyles.messageAddIcon} />,
+          type: 'info',
+        });
+        return;
+      }
 
-    const saveSuccess = (): void => {
-      setUserSearchQueries([...userSearchQueries, savedSearch]);
-      showNotice(messageApi, 'Saved search query to your library', {
-        icon: <BookOutlined style={appStyles.messageAddIcon} />,
-      });
-    };
+      const saveSuccess = (): void => {
+        setUserSearchQueries([...userSearchQueries, savedSearch]);
+        showNotice(messageApi, 'Saved search query to your library', {
+          icon: <BookOutlined style={appStyles.messageAddIcon} />,
+        });
+      };
 
-    if (isAuthenticated) {
-      addUserSearchQuery(pk, accessToken, savedSearch)
-        .then(() => {
-          saveSuccess();
-        })
-        .catch(
-          /* istanbul ignore next -- @preserve */
-          (respError: ResponseError) => {
-            showError(messageApi, respError.message);
-          },
-        );
-    } else {
-      saveSuccess();
-    }
-  };
+      if (isAuthenticated) {
+        addUserSearchQuery(pk, accessToken, savedSearch)
+          .then(() => {
+            saveSuccess();
+          })
+          .catch(
+            /* istanbul ignore next -- @preserve */
+            (respError: ResponseError) => {
+              showError(messageApi, respError.message);
+            },
+          );
+      } else {
+        saveSuccess();
+      }
+    },
+    [
+      pk,
+      activeSearchQuery,
+      userSearchQueries,
+      messageApi,
+      appStyles.messageAddIcon,
+      isAuthenticated,
+      accessToken,
+      setUserSearchQueries,
+    ],
+  );
 
-  const handleShareSearchQuery = (): void => {
+  const handleShareSearchQuery = React.useCallback((): void => {
     /* istanbul ignore else -- @preserve */
     if (navigator && navigator.clipboard) {
       navigator.clipboard.writeText(getUrlFromSearch(activeSearchQuery));
@@ -306,10 +318,10 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         icon: <ShareAltOutlined />,
       });
     }
-  };
+  }, [activeSearchQuery, messageApi]);
 
   /* istanbul ignore next -- @preserve */
-  const handleEsgpullSearchQuery = (): void => {
+  const handleEsgpullSearchQuery = React.useCallback((): void => {
     /* istanbul ignore else -- @preserve */
     if (navigator && navigator.clipboard) {
       navigator.clipboard.writeText(createEsgpullCommand(activeSearchQuery, false));
@@ -317,10 +329,10 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         icon: <CodeOutlined />,
       });
     }
-  };
+  }, [activeSearchQuery, messageApi]);
 
   /* istanbul ignore next -- @preserve */
-  const handleEsgpullDownloadCmd = (): void => {
+  const handleEsgpullDownloadCmd = React.useCallback((): void => {
     /* istanbul ignore else -- @preserve */
     if (navigator && navigator.clipboard) {
       navigator.clipboard.writeText(createEsgpullCommand(activeSearchQuery, true));
@@ -328,9 +340,9 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         icon: <CodeOutlined />,
       });
     }
-  };
+  }, [activeSearchQuery, messageApi]);
 
-  const handleIntakeEsgfSearch = (): void => {
+  const handleIntakeEsgfSearch = React.useCallback((): void => {
     /* istanbul ignore else -- @preserve */
     if (navigator && navigator.clipboard) {
       navigator.clipboard.writeText(createIntakeEsgfSearch(activeSearchQuery));
@@ -338,7 +350,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         icon: <CodeOutlined />,
       });
     }
-  };
+  }, [activeSearchQuery, messageApi]);
 
   const handleRemoveFilter = (removedTag: TagValue, type: TagType): void => {
     /* istanbul ignore else -- @preserve */
@@ -395,6 +407,41 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   const handlePageSizeChange = (pageSize: number): void => {
     setPaginationOptions({ page: 1, pageSize });
   };
+
+  // Memoize stringifyApiRequest to avoid recalculating on every render
+  const queryString = React.useMemo(
+    () =>
+      stringifyApiRequest(
+        currentProject,
+        currentRequestURL,
+        textInputs,
+        versionType,
+        resultType,
+        minVersionDate,
+        maxVersionDate,
+        activeFacets,
+      ),
+    [
+      currentProject,
+      currentRequestURL,
+      textInputs,
+      versionType,
+      resultType,
+      minVersionDate,
+      maxVersionDate,
+      activeFacets,
+    ],
+  );
+
+  // Memoize allSelectedItemsInCart check
+  const allSelectedItemsInCart = React.useMemo(
+    () =>
+      selectedItems.filter(
+        (item: RawSearchResult) =>
+          !userCart.some((dataset: RawSearchResult) => dataset.id === item.id),
+      ).length === 0,
+    [selectedItems, userCart],
+  );
 
   // Used cached results if the request fails
   if (error) {
@@ -456,15 +503,6 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       }));
     }
   }
-
-  const allSelectedItemsInCart =
-    selectedItems.filter(
-      (item: RawSearchResult) =>
-        !userCart.some(
-          /* istanbul ignore next -- @preserve */
-          (dataset: RawSearchResult) => dataset.id === item.id,
-        ),
-    ).length === 0;
 
   const searchActionsMenu = [
     {
@@ -543,17 +581,6 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       setShowDownloadAllForm(value);
     };
   };
-
-  const queryString = stringifyApiRequest(
-    currentProject,
-    currentRequestURL,
-    textInputs,
-    versionType,
-    resultType,
-    minVersionDate,
-    maxVersionDate,
-    activeFacets,
-  );
 
   return (
     <div data-testid="search">
