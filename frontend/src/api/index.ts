@@ -595,7 +595,7 @@ Promise<{ [key: string]: any }> => {
       status = error.cause === 422 ? 422 : (error.cause as number) || 500;
     });
 
-  const searchResults = await postSTACSearch(projectName, 9999, filter, textInputs);
+  const searchResults = await postSTACSearch(projectName, 100, filter, textInputs);
 
   const stacResponse: StacSearchResponse = searchResults as StacSearchResponse;
 

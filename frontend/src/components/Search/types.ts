@@ -126,8 +126,8 @@ export type StacFeature = {
 export type StacSearchResponse = {
   features: StacFeature[];
   links: StacLink[];
-  // numMatched: number; These were missing from search response
-  // numReturned: number;
+  numMatched: number;
+  numReturned: number;
   type: string;
   [key: string]: unknown;
 };

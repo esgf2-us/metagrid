@@ -423,12 +423,14 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     );
   }
 
-  let numFound = 0;
+  let numMatched = 0;
+  let numReturned = numMatched;
   let docs: RawSearchResults = [];
   type LoadedResults = {
     cachedURL: string;
     response: { docs: RawSearchResults; numFound: number };
   };
+
   if (results) {
     /* istanbul ignore else -- @preserve */
     if (currentProject.isSTAC) {
@@ -439,14 +441,15 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
         /* istanbul ignore else -- @preserve */
         if (stacResults.features && stacResults.features.length > 0) {
-          numFound = stacResults.features.length;
+          numMatched = stacResults.numMatched || numMatched;
+          numReturned = stacResults.numReturned || stacResults.features.length;
           docs = stacResults.features.map((stacResult: StacFeature) =>
             convertStacToRawSearchResult(stacResult),
           );
         }
       }
     } else if (results.response) {
-      numFound = (results as LoadedResults).response.numFound;
+      numMatched = (results as LoadedResults).response.numFound;
       docs = (results as LoadedResults).response.docs.map((doc) => ({
         ...doc,
         isStac: false,
@@ -473,7 +476,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
               type="default"
               className={copySearchOptionsTargets.copySearchLinkBtn.class()}
               onClick={handleShareSearchQuery}
-              disabled={isLoading || numFound === 0}
+              disabled={isLoading || numMatched === 0}
             >
               <ShareAltOutlined data-testid="share-search-btn" /> Copy Metagrid search URL
             </Button>
@@ -490,7 +493,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
               type="default"
               className={copySearchOptionsTargets.copyEsgpullSearchQueryBtn.class()}
               onClick={handleEsgpullSearchQuery}
-              disabled={isLoading || numFound === 0}
+              disabled={isLoading || numMatched === 0}
             >
               <CodeOutlined data-testid="copy-esgpull-search-btn" /> Copy esgpull search query
             </Button>
@@ -507,7 +510,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
               type="default"
               className={copySearchOptionsTargets.copyEsgpullDownloadCommandBtn.class()}
               onClick={handleEsgpullDownloadCmd}
-              disabled={isLoading || numFound === 0}
+              disabled={isLoading || numMatched === 0}
             >
               <CodeOutlined data-testid="copy-esgpull-download-btn" /> Copy esgpull download command
             </Button>
@@ -524,7 +527,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
               type="default"
               className={copySearchOptionsTargets.copyIntakeEsgfSearchBtn.class()}
               onClick={handleIntakeEsgfSearch}
-              disabled={isLoading || numFound === 0}
+              disabled={isLoading || numMatched === 0}
             >
               <CodeOutlined data-testid="copy-intake-search-btn" /> Copy Intake-ESGF search command
             </Button>
@@ -571,7 +574,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                 style={styles.resultsHeader}
                 data-testid="search-results-span"
               >
-                {numFound.toLocaleString()} results found for{' '}
+                {numMatched.toLocaleString()} results found for{' '}
               </span>
             )}
             <span style={styles.resultsHeader}>{(project as RawProject).name}</span>
@@ -590,7 +593,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                         shape="round"
                         className={searchTableTargets.downloadSearchBtn.class()}
                         onClick={setDownloadAllForm(true)}
-                        disabled={isLoading || numFound === 0}
+                        disabled={isLoading || numMatched === 0}
                       >
                         <DownloadOutlined />
                         Download All Results{' '}
@@ -614,7 +617,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                     onClick={() => onUpdateCart(selectedItems, 'add')}
                     disabled={
                       isLoading ||
-                      numFound === 0 ||
+                      numMatched === 0 ||
                       selectedItems.length === 0 ||
                       allSelectedItemsInCart
                     }
@@ -627,8 +630,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                   data-testid="save-search-dropdown-btn"
                   className={searchTableTargets.saveSearchBtn.class()}
                   type="default"
-                  onClick={() => handleSaveSearchQuery(currentRequestURL, numFound)}
-                  disabled={isLoading || numFound === 0}
+                  onClick={() => handleSaveSearchQuery(currentRequestURL, numMatched)}
+                  disabled={isLoading || numMatched === 0}
                   menu={{ items: searchActionsMenu }}
                   placement="bottom"
                   icon={<CopyOutlined className={copySearchOptionsTargets.copyMenuBtn.class()} />}
@@ -733,7 +736,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                 <Table
                   loading={false}
                   results={docs}
-                  totalResults={numFound}
+                  totalResults={currentProject.isSTAC ? numReturned : numMatched}
                   filenameVars={activeSearchQuery.filenameVars}
                   onUpdateCart={onUpdateCart}
                   onRowSelect={handleRowSelect}
