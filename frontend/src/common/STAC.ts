@@ -19,8 +19,8 @@ import {
 } from './utils';
 import { STAC_DEFAULT_PROJECT, STAC_PROJECT_LIST, StacProject } from './useProjectsConfig';
 
-// PK for the first STAC project (assuming 8 non-STAC projects precede it)
-const FirstStacPK = 9;
+// Global variable to store configured additional projects
+let configuredAdditionalProjects: RawProject[] = [];
 
 // Creates a RawProject from pk and StacProject data
 function buildStacProject(
@@ -51,24 +51,53 @@ function buildStacProject(
   };
 }
 
+// Default STAC projects built with PK starting from 1000 (high number to avoid conflicts)
 export const STAC_PROJECTS = STAC_PROJECT_LIST.map((project, idx) => {
-  const newPK: string = `${FirstStacPK + idx}`;
+  const newPK: string = `${1000 + idx}`;
   return buildStacProject(newPK, project);
 });
 
 /**
- * Builds projects from a custom list of StacProject configurations
+ * Builds projects from a custom list of StacProject configurations.
+ * @param projectList - Array of StacProject configurations
+ * @param startPk - Starting PK number (should be backendProjectCount + 1)
+ * @returns Array of RawProject objects with sequential PKs
  */
-export function buildStacProjects(projectList: StacProject[]): RawProject[] {
+export function buildStacProjects(
+  projectList: StacProject[],
+  startPk: number = 1000,
+): RawProject[] {
   return projectList.map((project, idx) => {
-    const newPK: string = `${FirstStacPK + idx}`;
+    const newPK: string = `${startPk + idx}`;
     return buildStacProject(newPK, project);
   });
 }
 
-export function getStacProject(projectName: string): RawProject {
-  const stacProject = STAC_PROJECTS.find((project) => (project.projectName || '') === projectName);
+/**
+ * Sets the configured additional projects globally
+ */
+export function setConfiguredAdditionalProjects(projects: RawProject[]): void {
+  configuredAdditionalProjects = projects;
+}
 
+/**
+ * Gets a STAC project by project name.
+ * First checks the configured additional projects,
+ * then falls back to default STAC_PROJECTS if not found.
+ */
+export function getStacProject(projectName: string): RawProject {
+  // Try to find in configured projects first
+  if (configuredAdditionalProjects.length > 0) {
+    const stacProject = configuredAdditionalProjects.find(
+      (project: RawProject) => (project.projectName || '') === projectName,
+    );
+    if (stacProject) {
+      return stacProject;
+    }
+  }
+
+  // Fall back to default STAC_PROJECTS
+  const stacProject = STAC_PROJECTS.find((project) => (project.projectName || '') === projectName);
   return stacProject || STAC_PROJECTS[0];
 }
 

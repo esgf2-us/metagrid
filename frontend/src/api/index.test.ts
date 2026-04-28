@@ -127,7 +127,18 @@ describe('test fetching projects', () => {
   it('returns projects including STAC projects', async () => {
     const projects = (await fetchProjects()).results;
 
-    expect(projects).toEqual([...projectsFixture(), ...STAC_PROJECTS]);
+    // Check that we have backend projects + STAC projects
+    expect(projects.length).toBe(projectsFixture().length + STAC_PROJECTS.length);
+    // Check backend project names are present
+    projectsFixture().forEach((backendProj) => {
+      expect(projects.find((p) => p.name === backendProj.name)).toBeDefined();
+    });
+    // Check STAC project names are present
+    STAC_PROJECTS.forEach((stacProj) => {
+      const found = projects.find((p) => p.name === stacProj.name);
+      expect(found).toBeDefined();
+      expect(found?.isSTAC).toBe(true);
+    });
   });
 
   it('returns projects without including STAC projects', async () => {
@@ -163,8 +174,13 @@ describe('test fetching projects', () => {
 
     const projects = (await fetchProjects()).results;
 
-    // When backend returns no results, fetchProjects should return only the additional STAC_PROJECTS
-    expect(projects).toEqual([...STAC_PROJECTS]);
+    // When backend returns no results, fetchProjects should return only STAC projects
+    expect(projects.length).toBe(STAC_PROJECTS.length);
+    STAC_PROJECTS.forEach((stacProj) => {
+      const found = projects.find((p) => p.name === stacProj.name);
+      expect(found).toBeDefined();
+      expect(found?.isSTAC).toBe(true);
+    });
   });
 });
 

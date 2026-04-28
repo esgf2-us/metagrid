@@ -43,10 +43,10 @@ import {
   convertSearchParamsIntoStacFilter,
   getAggregationsList,
   getStacProject,
-  STAC_PROJECTS,
   buildStacProjects,
+  setConfiguredAdditionalProjects,
 } from '../common/STAC';
-import { ProjectsConfig } from '../common/useProjectsConfig';
+import { ProjectsConfig, STAC_PROJECT_LIST } from '../common/useProjectsConfig';
 
 export interface ResponseError extends Error {
   status?: number;
@@ -399,17 +399,25 @@ export const fetchProjects = async (
         [key: string]: any;
       };
 
+      // Calculate starting PK for additional projects
+      const backendProjects = data.results
+        ? data.results.filter((p) => p.name !== 'All (except CMIP6)')
+        : [];
+      const startPk = backendProjects.length + 1;
+
       // Build additional projects list (if configured or using defaults)
       let additionalProjects: RawProjects = [];
       if (window.METAGRID.STAC_URL) {
         const configProjects = config?.additionalProjects;
         if (configProjects && configProjects.length > 0) {
           // Use additional projects from config
-          additionalProjects = buildStacProjects(configProjects);
+          additionalProjects = buildStacProjects(configProjects, startPk);
         } else {
-          // Use default STAC projects
-          additionalProjects = STAC_PROJECTS;
+          // Use default STAC projects with correct starting PK
+          additionalProjects = buildStacProjects(STAC_PROJECT_LIST, startPk);
         }
+        // Store the additional projects globally
+        setConfiguredAdditionalProjects(additionalProjects);
       }
 
       // Get filter configuration
@@ -417,18 +425,7 @@ export const fetchProjects = async (
       const blacklist = config?.blacklist || [];
 
       // Combine backend database projects with additional projects
-      let allProjects: RawProjects = [];
-
-      if (data.results) {
-        // Combine backend database projects (excluding deprecated ones) with additional projects
-        allProjects = [
-          ...data.results.filter((p) => p.name !== 'All (except CMIP6)'),
-          ...additionalProjects,
-        ];
-      } else {
-        // If backend returns no results, use only additional projects
-        allProjects = additionalProjects;
-      }
+      const allProjects: RawProjects = [...backendProjects, ...additionalProjects];
 
       // Apply whitelist/blacklist filters to the combined list
       const filteredProjects = applyProjectFilters(allProjects, whitelist, blacklist);
