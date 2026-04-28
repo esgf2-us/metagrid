@@ -44,7 +44,9 @@ import {
   getAggregationsList,
   getStacProject,
   STAC_PROJECTS,
+  buildStacProjects,
 } from '../common/STAC';
+import { ProjectsConfig } from '../common/useProjectsConfig';
 
 export interface ResponseError extends Error {
   status?: number;
@@ -336,10 +338,46 @@ export const deleteUserSearchQuery = async (pk: string, accessToken: string): Pr
     });
 
 /**
+ * Applies whitelist/blacklist filtering to the combined list of projects.
+ * @param projects - Combined list of all projects (backend + additional)
+ * @param whitelist - Project names to show (if specified, ONLY these are shown)
+ * @param blacklist - Project names to hide (ignored if whitelist is specified)
+ * @returns Filtered list of projects
+ */
+const applyProjectFilters = (
+  projects: RawProjects,
+  whitelist: string[],
+  blacklist: string[],
+): RawProjects => {
+  let filtered = projects;
+
+  // Apply whitelist (if not empty, only show whitelisted projects)
+  if (whitelist.length > 0) {
+    filtered = filtered.filter((p) => whitelist.includes(p.name));
+  }
+
+  // Apply blacklist (hide blacklisted projects)
+  if (blacklist.length > 0) {
+    filtered = filtered.filter((p) => !blacklist.includes(p.name));
+  }
+
+  return filtered;
+};
+
+/**
+ * Fetches projects from the backend database and optionally adds configured projects.
+ * Applies whitelist/blacklist filtering to the combined list if configured.
+ *
  * HTTP Request Method: GET
  * HTTP Response: 200 OK
+ * @param config - Optional projects configuration:
+ *   - additionalProjects: Additional projects to add to backend projects
+ *   - whitelist: Show only these projects (applies to ALL projects: backend + additional)
+ *   - blacklist: Hide these projects (applies to ALL projects: backend + additional)
  */
-export const fetchProjects = async (): Promise<{
+export const fetchProjects = async (
+  config?: ProjectsConfig,
+): Promise<{
   results: RawProjects;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
@@ -361,18 +399,47 @@ export const fetchProjects = async (): Promise<{
         [key: string]: any;
       };
 
-      const additionalProjects = window.METAGRID.STAC_URL ? STAC_PROJECTS : [];
+      // Build additional projects list (if configured or using defaults)
+      let additionalProjects: RawProjects = [];
+      if (window.METAGRID.STAC_URL) {
+        const configProjects = config?.additionalProjects;
+        if (configProjects && configProjects.length > 0) {
+          // Use additional projects from config
+          additionalProjects = buildStacProjects(configProjects);
+        } else {
+          // Use default STAC projects
+          additionalProjects = STAC_PROJECTS;
+        }
+      }
+
+      // Get filter configuration
+      const whitelist = config?.whitelist || [];
+      const blacklist = config?.blacklist || [];
+
+      // Combine backend database projects with additional projects
+      let allProjects: RawProjects = [];
+
+      if (data.results) {
+        // Combine backend database projects (excluding deprecated ones) with additional projects
+        allProjects = [
+          ...data.results.filter((p) => p.name !== 'All (except CMIP6)'),
+          ...additionalProjects,
+        ];
+      } else {
+        // If backend returns no results, use only additional projects
+        allProjects = additionalProjects;
+      }
+
+      // Apply whitelist/blacklist filters to the combined list
+      const filteredProjects = applyProjectFilters(allProjects, whitelist, blacklist);
 
       if (data.results) {
         return {
           ...response,
-          results: [
-            ...data.results.filter((p) => p.name !== 'All (except CMIP6)'),
-            ...additionalProjects,
-          ],
+          results: filteredProjects,
         };
       }
-      return { ...response, results: additionalProjects };
+      return { ...response, results: filteredProjects };
     })
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.projects));

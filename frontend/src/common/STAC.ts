@@ -11,18 +11,18 @@ import {
   VersionDate,
   VersionType,
 } from '../components/Search/types';
-import STAC_PROJECT_LIST, { STAC_DEFAULT_PROJECT, StacProject } from './STAC_Projects';
 import {
   convertResultTypeToReplicaParam,
   downloadFileForUser,
   formatBytes,
   objectIsEmpty,
 } from './utils';
+import { STAC_DEFAULT_PROJECT, STAC_PROJECT_LIST, StacProject } from './useProjectsConfig';
 
-// This is the pk for the first stac project assuming we have 8 non-stac projects listed before it.
+// PK for the first STAC project (assuming 8 non-STAC projects precede it)
 const FirstStacPK = 9;
 
-// Creates a RawProject from pk and StacProject data, using a default project
+// Creates a RawProject from pk and StacProject data
 function buildStacProject(
   pk: string,
   { name, fullName, projectUrl, projectName, facetsByGroup }: StacProject,
@@ -55,6 +55,16 @@ export const STAC_PROJECTS = STAC_PROJECT_LIST.map((project, idx) => {
   const newPK: string = `${FirstStacPK + idx}`;
   return buildStacProject(newPK, project);
 });
+
+/**
+ * Builds projects from a custom list of StacProject configurations
+ */
+export function buildStacProjects(projectList: StacProject[]): RawProject[] {
+  return projectList.map((project, idx) => {
+    const newPK: string = `${FirstStacPK + idx}`;
+    return buildStacProject(newPK, project);
+  });
+}
 
 export function getStacProject(projectName: string): RawProject {
   const stacProject = STAC_PROJECTS.find((project) => (project.projectName || '') === projectName);

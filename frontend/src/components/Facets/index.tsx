@@ -14,6 +14,7 @@ import {
   currentProjectAtom,
 } from '../../common/atoms';
 import { leftSidebarTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
+import { useProjectsConfig } from '../../common/useProjectsConfig';
 
 const styles = {
   form: {
@@ -22,7 +23,16 @@ const styles = {
 };
 
 const Facets: React.FC = () => {
-  const { data, error, isLoading } = useAsync(fetchProjects);
+  const { config: projectsConfig, loading: configLoading } = useProjectsConfig();
+  const { data, error, isLoading, run } = useAsync({
+    deferFn: () => fetchProjects(projectsConfig),
+  });
+
+  React.useEffect(() => {
+    if (!configLoading) {
+      run();
+    }
+  }, [configLoading]);
 
   const { Title } = Typography;
 
