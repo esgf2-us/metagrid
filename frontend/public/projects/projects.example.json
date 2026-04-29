@@ -31,6 +31,7 @@
     "additionalProjects": "Additional projects to add to the dropdown (in addition to backend database projects).",
     "whitelist": "Show ONLY these projects. Leave empty to show all.",
     "blacklist": "Hide these projects. Ignored if whitelist is set.",
+    "stac_replacement": "STAC projects (names containing ' STAC') automatically replace legacy counterparts when the legacy version is filtered out. For example, if 'CMIP6' is blacklisted but 'CMIP6 STAC' is not, 'CMIP6 STAC' will display as 'CMIP6' (without the ' STAC' suffix). See projects.README.md for details.",
     "examples": {
       "show_only_cmip": {
         "description": "Show only CMIP-related projects from both backend and additional sources",
@@ -43,6 +44,15 @@
       "site_specific": {
         "description": "Show only projects relevant to your institution",
         "whitelist": ["CMIP6 STAC", "obs4MIPs", "E3SM"]
+      },
+      "replace_legacy_with_stac": {
+        "description": "Retire legacy CMIP6 and replace with STAC version (displays as 'CMIP6' without ' STAC' suffix)",
+        "blacklist": ["CMIP6"]
+      },
+      "transition_period": {
+        "description": "During transition, show both legacy and STAC versions (both names visible for user choice)",
+        "whitelist": ["CMIP6", "CMIP6 STAC", "CMIP7"],
+        "note": "CMIP6 STAC will keep full name since legacy CMIP6 is also present"
       }
     }
   }

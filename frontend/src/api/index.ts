@@ -365,6 +365,39 @@ const applyProjectFilters = (
 };
 
 /**
+ * Handles STAC project name replacement for legacy projects.
+ * If a STAC project (name contains " STAC") exists but its legacy counterpart
+ * (same name without " STAC") is not in the filtered list, the STAC project
+ * replaces the legacy one by removing " STAC" from its name.
+ *
+ * @param projects - The filtered projects list
+ * @returns Projects list with STAC names adjusted if needed
+ */
+const handleStacProjectReplacement = (projects: RawProjects): RawProjects => {
+  return projects.map((project) => {
+    // Check if this is a STAC project (has " STAC" in the name)
+    if (project.name.includes(' STAC')) {
+      // Determine what the legacy project name would be
+      const legacyName = project.name.replace(' STAC', '');
+
+      // Check if the legacy project exists in the filtered list
+      const legacyExists = projects.some((p) => p.name === legacyName);
+
+      // If legacy doesn't exist, this STAC project replaces it - remove " STAC" from name
+      if (!legacyExists) {
+        return {
+          ...project,
+          name: legacyName,
+        };
+      }
+    }
+
+    // Return project unchanged (either not STAC, or legacy counterpart exists)
+    return project;
+  });
+};
+
+/**
  * Fetches projects from the backend database and optionally adds configured projects.
  * Applies whitelist/blacklist filtering to the combined list if configured.
  *
@@ -428,7 +461,10 @@ export const fetchProjects = async (
       const allProjects: RawProjects = [...backendProjects, ...additionalProjects];
 
       // Apply whitelist/blacklist filters to the combined list
-      const filteredProjects = applyProjectFilters(allProjects, whitelist, blacklist);
+      let filteredProjects = applyProjectFilters(allProjects, whitelist, blacklist);
+
+      // Handle STAC project name replacement for filtered-out legacy projects
+      filteredProjects = handleStacProjectReplacement(filteredProjects);
 
       if (data.results) {
         return {

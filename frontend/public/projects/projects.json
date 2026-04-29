@@ -11,7 +11,7 @@
       }
     },
     {
-      "name": "CMIP7",
+      "name": "CMIP7 STAC",
       "projectName": "CMIP7",
       "fullName": "Coupled Model Intercomparison Project Phase 7",
       "projectUrl": "https://wcrp-cmip.org/cmip-phases/cmip7/",
@@ -42,5 +42,5 @@
     }
   ],
   "whitelist": [],
-  "blacklist": ["CMIP6Plus"]
+  "blacklist": ["CMIP6", "CMIP6Plus"]
 }

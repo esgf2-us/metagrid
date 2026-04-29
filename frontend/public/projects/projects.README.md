@@ -65,6 +65,95 @@ An array of project names to hide from the dropdown.
 - Ignored if whitelist is specified.
 - Can include backend project names and/or additional project names.
 
+## STAC Project Replacement for Legacy Projects
+
+MetaGrid supports automatic project name replacement for STAC projects when legacy counterparts are filtered out. This feature helps manage transitions from legacy to modern STAC-based projects.
+
+### How It Works
+
+When a STAC project (name contains " STAC") exists in the filtered list, but its legacy counterpart (same name without " STAC") does not exist, the STAC project automatically replaces the legacy one by removing " STAC" from its display name.
+
+### Use Cases
+
+#### Scenario 1: Retiring a Legacy Project
+
+When you're ready to retire a legacy project and replace it with its STAC version:
+
+```json
+{
+  "additionalProjects": [
+    {
+      "name": "CMIP6 STAC",
+      "projectName": "CMIP6",
+      "fullName": "Coupled Model Intercomparison Project Phase 6",
+      "projectUrl": "https://wcrp-cmip.org/cmip-phases/cmip6/",
+      "facetsByGroup": {
+        "General": ["mip_era"],
+        "Classifications": ["table_id"]
+      }
+    }
+  ],
+  "whitelist": [],
+  "blacklist": ["CMIP6"]
+}
+```
+
+**Result:** The dropdown shows "CMIP6" (actually the STAC version with " STAC" removed), not "CMIP6 STAC". This provides a seamless transition for users.
+
+#### Scenario 2: Both Legacy and STAC Available
+
+During transition periods when both versions need to be available:
+
+```json
+{
+  "additionalProjects": [
+    {
+      "name": "CMIP6 STAC",
+      "projectName": "CMIP6",
+      "fullName": "Coupled Model Intercomparison Project Phase 6 (STAC)",
+      "projectUrl": "https://wcrp-cmip.org/cmip-phases/cmip6/",
+      "facetsByGroup": {
+        "General": ["mip_era"],
+        "Classifications": ["table_id"]
+      }
+    }
+  ],
+  "whitelist": [],
+  "blacklist": []
+}
+```
+
+**Result:** The dropdown shows both "CMIP6" (legacy) and "CMIP6 STAC" (new), allowing users to choose.
+
+#### Scenario 3: Whitelist Only STAC Version
+
+Using whitelist to show only the STAC version:
+
+```json
+{
+  "additionalProjects": [],
+  "whitelist": ["CMIP6 STAC", "CMIP7"],
+  "blacklist": []
+}
+```
+
+**Result:** The dropdown shows "CMIP6" (STAC version with " STAC" removed) and "CMIP7", since the legacy CMIP6 is not in the whitelist.
+
+### Key Behaviors
+
+1. **Automatic Renaming**: STAC projects are only renamed when their legacy counterpart is absent from the filtered list
+2. **Differentiation**: When both legacy and STAC versions are present, the STAC version keeps its full name (including " STAC") to differentiate them
+3. **Applies to All Filters**: Works with both blacklist and whitelist configurations
+4. **Case Sensitive**: The replacement logic looks for the exact pattern " STAC" (with a space before STAC)
+
+### Examples of Projects That Support Replacement
+
+- "CMIP6 STAC" → "CMIP6" (when legacy CMIP6 is filtered out)
+- "CMIP7 STAC" → "CMIP7" (when legacy CMIP7 is filtered out)
+- "Custom Project STAC" → "Custom Project" (when legacy Custom Project is filtered out)
+
+This feature ensures that project names remain clean and intuitive for end users, regardless of whether the underlying implementation is legacy or STAC-based.
+
 ## Example Configurations
 
 ### Example 1: Using Default Projects (No Configuration Needed)
