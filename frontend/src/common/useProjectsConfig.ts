@@ -98,17 +98,22 @@ export const useProjectsConfig = () => {
     fetch('/projects/projects.json')
       .then((response) => {
         if (!response.ok) {
-          return DEFAULT_CONFIG;
+          // File not found or other HTTP error - use defaults
+          setConfig(DEFAULT_CONFIG);
+          setLoading(false);
+          return null;
         }
         return response.json() as Promise<ProjectsConfig>;
       })
-      .then((data: ProjectsConfig) => {
-        setConfig({
-          additionalProjects: data.additionalProjects || [],
-          whitelist: data.whitelist || [],
-          blacklist: data.blacklist || [],
-        });
-        setLoading(false);
+      .then((data: ProjectsConfig | null) => {
+        if (data) {
+          setConfig({
+            additionalProjects: data.additionalProjects || [],
+            whitelist: data.whitelist || [],
+            blacklist: data.blacklist || [],
+          });
+          setLoading(false);
+        }
       })
       .catch((err: Error) => {
         // eslint-disable-next-line no-console

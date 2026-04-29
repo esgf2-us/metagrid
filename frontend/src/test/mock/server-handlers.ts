@@ -183,6 +183,9 @@ const handlers = [
   rest.get(apiRoutes.esgfAggregationsSTAC.path, async (_req, res, ctx) => {
     return res(ctx.status(200), ctx.json(stacAggregationsFixture()));
   }),
+  rest.get('/projects/projects.json', async (_req, res, ctx) => {
+    return res(ctx.status(404));
+  }),
   // Default fallback handler
   rest.get('*', async (req, res, ctx) => {
     // console.error(`Please add request handler for ${req.url.toString()}`);

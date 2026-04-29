@@ -81,7 +81,7 @@ const Facets: React.FC = () => {
       setCurProject(selectedProj);
       handleProjectChange(selectedProj);
     }
-  }, [isLoading]);
+  }, [isLoading, data]);
 
   return (
     <div
