@@ -5,6 +5,8 @@ import {
   RawSearchResult,
   StacAsset,
   StacAggregations,
+  StacAssetDict,
+  isStacAsset,
 } from '../components/Search/types';
 import STAC_PROJECT_LIST, { STAC_DEFAULT_PROJECT, StacProject } from './STAC_Projects';
 import { downloadFileForUser, formatBytes } from './utils';
@@ -91,6 +93,181 @@ export const getStacGlobusHref = (
   }
   return null;
 };
+
+// Function to extract nodes from STAC assets
+const getNodesFromStacAsset = (assets: StacAssetDict | StacAsset): string[] => {
+  const nodesSet = new Set<string>();
+
+  // If it's a single asset, process it
+  if (isStacAsset(assets)) {
+    const asset = assets;
+    if (asset) {
+      const name = asset.alternateName || (asset['alternate:name'] as string);
+      if (name) {
+        nodesSet.add(name);
+      }
+
+      // Add alternate nodes
+      const alternates = asset.alternate;
+      if (alternates && typeof alternates === 'object') {
+        Object.keys(alternates).forEach((altKey) => nodesSet.add(altKey));
+      }
+    }
+  } else {
+    // It's a StacAssetDict - iterate through ALL assets to collect nodes
+    Object.values(assets).forEach((asset: StacAsset) => {
+      if (!asset) {
+        return;
+      }
+
+      const name = asset.alternateName || (asset['alternate:name'] as string);
+      if (name) {
+        nodesSet.add(name);
+      }
+
+      // Add alternate nodes from this asset
+      const alternates = asset.alternate;
+      if (alternates && typeof alternates === 'object') {
+        Object.keys(alternates).forEach((altKey) => nodesSet.add(altKey));
+      }
+    });
+  }
+
+  return Array.from(nodesSet);
+};
+
+/**
+ * Function to get nodes filtered by download type availability
+ * @param assets - The STAC asset dictionary
+ * @param downloadType - The download type to filter by ('wget' or 'Globus')
+ * @returns Array of node names that have the specified download type available
+ */
+const getNodesFromStacAssetByDownloadType = (
+  assets: StacAssetDict,
+  downloadType: 'wget' | 'Globus',
+): string[] => {
+  const nodesSet = new Set<string>();
+
+  // Define the href validator based on download type
+  const isValidHref = (href: string | undefined): boolean => {
+    if (!href) {
+      return false;
+    }
+    return downloadType === 'wget'
+      ? href.endsWith('.nc')
+      : href.startsWith('https://app.globus.org');
+  };
+
+  // Check if there's a dedicated globus asset (only for Globus type)
+  if (downloadType === 'Globus' && assets.globus && isValidHref(assets.globus.href)) {
+    const name = assets.globus.alternateName || (assets.globus['alternate:name'] as string);
+    if (name) {
+      nodesSet.add(name);
+    }
+  }
+
+  // Check all assets for matching hrefs
+  Object.values(assets).forEach((asset: StacAsset) => {
+    if (!asset) {
+      return;
+    }
+
+    // Check if main asset has a valid link
+    if (isValidHref(asset.href)) {
+      const name = asset.alternateName || (asset['alternate:name'] as string);
+      if (name) {
+        nodesSet.add(name);
+      }
+    }
+
+    // Check alternates for valid links
+    const alternates = asset.alternate;
+    if (alternates && typeof alternates === 'object') {
+      Object.entries(alternates).forEach(([altKey, altAsset]) => {
+        if (isValidHref(altAsset.href)) {
+          nodesSet.add(altKey);
+        }
+      });
+    }
+  });
+
+  return Array.from(nodesSet);
+};
+
+// Type guard to check if obj is a RawSearchResult
+const isRawSearchResult = (obj: unknown): obj is RawSearchResult => {
+  return (
+    typeof obj === 'object' &&
+    obj !== null &&
+    'id' in obj &&
+    'master_id' in obj &&
+    ('isStac' in obj || 'data_node' in obj)
+  );
+};
+
+// Overloaded function signature
+export function getReplicaNodelsList(record: RawSearchResult): string[];
+export function getReplicaNodelsList(assets: StacAssetDict | StacAsset): string[];
+export function getReplicaNodelsList(
+  recordOrAssets: RawSearchResult | StacAssetDict | StacAsset,
+): string[] {
+  if (isRawSearchResult(recordOrAssets)) {
+    const record = recordOrAssets;
+
+    // Handle non-STAC items
+    if (!record.isStac) {
+      const dataNode = record.data_node as string | undefined;
+      if (dataNode && typeof dataNode === 'string') {
+        return [dataNode];
+      }
+      return [];
+    }
+
+    // Handle STAC items
+    const { assets } = record;
+    if (!assets) {
+      return [];
+    }
+    return getNodesFromStacAsset(assets);
+  }
+
+  // StacAssetDict or StacAsset use helper function to get nodes
+  return getNodesFromStacAsset(recordOrAssets);
+}
+
+/**
+ * Get list of nodes filtered by download type availability
+ * @param record - The search result record
+ * @param downloadType - The download type to filter by ('wget', 'Globus', or 'esgpull')
+ * @returns Array of node names that support the specified download type
+ */
+export function getNodesListByDownloadType(
+  record: RawSearchResult,
+  downloadType: 'wget' | 'Globus' | 'esgpull',
+): string[] {
+  // Handle non-STAC items - esgpull only applies to non-STAC records
+  if (!record.isStac) {
+    const dataNode = record.data_node as string | undefined;
+    if (dataNode && typeof dataNode === 'string') {
+      return [dataNode];
+    }
+    return [];
+  }
+
+  // Handle STAC items
+  const { assets } = record;
+  if (!assets) {
+    return [];
+  }
+
+  // Filter nodes based on download type
+  if (downloadType === 'Globus' || downloadType === 'wget') {
+    return getNodesFromStacAssetByDownloadType(assets, downloadType);
+  }
+
+  // For any other type (like esgpull), return all nodes
+  return getNodesFromStacAsset(assets);
+}
 
 export const aggregationsToFacetsData = (
   projectName: string,
@@ -341,6 +518,7 @@ export function getDownloadSizeFromSTACsearch(features: StacFeature[]): number {
 export function generateWgetScriptSTAC(
   searchResults: RawSearchResult[],
   searchURL?: string,
+  selectedNode?: string | Record<string, string>,
 ): boolean {
   const d = new Date();
   const date_string = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}_${d.getHours()}-${d.getMinutes()}-${d.getSeconds()}`;
@@ -349,9 +527,15 @@ export function generateWgetScriptSTAC(
   let script = '#!/bin/bash\n\n';
   script += '##############################################################################\n';
   script += '# ESGF wget download script\n#\n';
+
   if (searchURL) {
     script += `# Search URL: ${searchURL}\n#\n`;
   }
+
+  if (selectedNode && typeof selectedNode === 'string') {
+    script += `# Specified node: ${selectedNode}\n#\n`;
+  }
+
   script += `# Total Files: TOTAL_FILES\n`;
   script += `# Total Download Size: TOTAL_SIZE\n#\n`;
   script += `# Generated by Metagrid - ${new Date().toISOString()}\n`;
@@ -364,14 +548,62 @@ export function generateWgetScriptSTAC(
   searchResults.forEach((result) => {
     /* istanbul ignore else -- @preserve */
     if (result.assets) {
+      // Determine the node to use for this specific result
+      let nodeForThisResult: string | undefined;
+
+      if (typeof selectedNode === 'string') {
+        // Single node specified for all results
+        nodeForThisResult = selectedNode;
+      } else if (selectedNode && typeof selectedNode === 'object') {
+        // Map of nodes per result ID
+        nodeForThisResult = selectedNode[result.id];
+      }
+
       Object.values(result.assets).forEach((asset) => {
-        const { href } = asset;
-        if (href && href.startsWith('http') && href.endsWith('.nc')) {
-          script += `wget ${href}\n`;
-          hrefs += 1;
-          /* istanbul ignore else -- @preserve */
-          if (asset['file:size']) {
-            fileSize += asset['file:size'];
+        if (!asset) {
+          return;
+        }
+
+        // If a specific node is selected for this result, only include hrefs from that node
+        if (nodeForThisResult) {
+          const assetNode = asset.alternateName || (asset['alternate:name'] as string);
+
+          // Check if this asset's main href matches the selected node
+          if (assetNode === nodeForThisResult) {
+            const { href } = asset;
+            if (href && href.startsWith('http') && href.endsWith('.nc')) {
+              script += `wget ${href}\n`;
+              hrefs += 1;
+              /* istanbul ignore else -- @preserve */
+              if (asset['file:size']) {
+                fileSize += asset['file:size'];
+              }
+            }
+          }
+
+          // Check alternates for the selected node
+          const alternates = asset.alternate;
+          if (alternates && typeof alternates === 'object') {
+            const altAsset = alternates[nodeForThisResult];
+            if (altAsset && altAsset.href?.endsWith('.nc')) {
+              script += `wget ${altAsset.href}\n`;
+              hrefs += 1;
+              /* istanbul ignore else -- @preserve */
+              if (altAsset['file:size']) {
+                fileSize += altAsset['file:size'];
+              }
+            }
+          }
+        } else {
+          // No specific node selected, include all .nc hrefs
+          const { href } = asset;
+          if (href && href.startsWith('http') && href.endsWith('.nc')) {
+            script += `wget ${href}\n`;
+            hrefs += 1;
+            /* istanbul ignore else -- @preserve */
+            if (asset['file:size']) {
+              fileSize += asset['file:size'];
+            }
           }
         }
       });
