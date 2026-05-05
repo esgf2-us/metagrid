@@ -10,8 +10,11 @@ import {
   getFileCountFromSTACsearch,
   getDownloadSizeFromSTACsearch,
   generateWgetScriptSTAC,
+  getReplicaNodelsList,
+  getNodesListByDownloadType,
   STAC_PROJECTS,
 } from './STAC';
+import { rawSearchResultFixture, stacAssetFixture } from '../test/mock/fixtures';
 
 describe('STAC utilities', () => {
   it('aggregationsToFacetsData converts aggregations to facet map', () => {
@@ -304,5 +307,383 @@ describe('STAC utilities', () => {
 
     const result = generateWgetScriptSTAC(searchResults);
     expect(result).toBe(false);
+  });
+
+  describe('getReplicaNodelsList', () => {
+    it('returns data_node for non-STAC items', () => {
+      const nonStacItem = rawSearchResultFixture({
+        data_node: 'aims3.llnl.gov',
+        isStac: false,
+      });
+
+      const nodes = getReplicaNodelsList(nonStacItem);
+      expect(nodes).toEqual(['aims3.llnl.gov']);
+    });
+
+    it('returns empty array for non-STAC item without data_node', () => {
+      const nonStacItem = rawSearchResultFixture({
+        data_node: undefined,
+        isStac: false,
+      });
+
+      const nodes = getReplicaNodelsList(nonStacItem);
+      expect(nodes).toEqual([]);
+    });
+
+    it('returns nodes from STAC assets', () => {
+      const stacItem = rawSearchResultFixture({
+        isStac: true,
+        assets: {
+          asset1: stacAssetFixture({
+            alternateName: 'node-a.example.com',
+            'alternate:name': 'node-a.example.com',
+          }),
+          asset2: stacAssetFixture({
+            alternateName: 'node-b.example.com',
+            'alternate:name': 'node-b.example.com',
+          }),
+        },
+      });
+
+      const nodes = getReplicaNodelsList(stacItem);
+      expect(nodes).toContain('node-a.example.com');
+      expect(nodes).toContain('node-b.example.com');
+    });
+
+    it('returns nodes from STAC asset alternates', () => {
+      const stacItem = rawSearchResultFixture({
+        isStac: true,
+        assets: {
+          asset1: stacAssetFixture({
+            alternateName: 'node-a.example.com',
+            'alternate:name': 'node-a.example.com',
+            alternate: {
+              'node-b.example.com': stacAssetFixture({
+                alternateName: 'node-b.example.com',
+                'alternate:name': 'node-b.example.com',
+                href: 'https://node-b.example.com/file.nc',
+              }),
+              'node-c.example.com': stacAssetFixture({
+                alternateName: 'node-c.example.com',
+                'alternate:name': 'node-c.example.com',
+                href: 'https://node-c.example.com/file.nc',
+              }),
+            },
+          }),
+        },
+      });
+
+      const nodes = getReplicaNodelsList(stacItem);
+      expect(nodes).toContain('node-a.example.com');
+      expect(nodes).toContain('node-b.example.com');
+      expect(nodes).toContain('node-c.example.com');
+    });
+
+    it('returns empty array for STAC item without assets', () => {
+      const stacItem = rawSearchResultFixture({
+        isStac: true,
+        assets: undefined,
+      });
+
+      const nodes = getReplicaNodelsList(stacItem);
+      expect(nodes).toEqual([]);
+    });
+
+    it('works with StacAsset directly', () => {
+      const asset = stacAssetFixture({
+        alternateName: 'node-a.example.com',
+        'alternate:name': 'node-a.example.com',
+      });
+
+      const nodes = getReplicaNodelsList(asset);
+      expect(nodes).toContain('node-a.example.com');
+    });
+
+    it('works with StacAssetDict', () => {
+      const assets = {
+        asset1: stacAssetFixture({
+          alternateName: 'node-a.example.com',
+          'alternate:name': 'node-a.example.com',
+        }),
+        asset2: stacAssetFixture({
+          alternateName: 'node-b.example.com',
+          'alternate:name': 'node-b.example.com',
+        }),
+      };
+
+      const nodes = getReplicaNodelsList(assets);
+      expect(nodes).toContain('node-a.example.com');
+      expect(nodes).toContain('node-b.example.com');
+    });
+  });
+
+  describe('getNodesListByDownloadType', () => {
+    it('returns data_node for non-STAC items regardless of download type', () => {
+      const nonStacItem = rawSearchResultFixture({
+        data_node: 'aims3.llnl.gov',
+        isStac: false,
+      });
+
+      expect(getNodesListByDownloadType(nonStacItem, 'wget')).toEqual(['aims3.llnl.gov']);
+      expect(getNodesListByDownloadType(nonStacItem, 'Globus')).toEqual(['aims3.llnl.gov']);
+      expect(getNodesListByDownloadType(nonStacItem, 'esgpull')).toEqual(['aims3.llnl.gov']);
+    });
+
+    it('returns empty array for non-STAC item without data_node', () => {
+      const nonStacItem = rawSearchResultFixture({
+        data_node: undefined,
+        isStac: false,
+      });
+
+      expect(getNodesListByDownloadType(nonStacItem, 'wget')).toEqual([]);
+      expect(getNodesListByDownloadType(nonStacItem, 'Globus')).toEqual([]);
+    });
+
+    it('returns nodes with .nc files for wget download type', () => {
+      const stacItem = rawSearchResultFixture({
+        isStac: true,
+        assets: {
+          asset1: stacAssetFixture({
+            alternateName: 'node-a.example.com',
+            'alternate:name': 'node-a.example.com',
+            href: 'https://node-a.example.com/file.nc',
+          }),
+          asset2: stacAssetFixture({
+            alternateName: 'node-b.example.com',
+            'alternate:name': 'node-b.example.com',
+            href: 'https://node-b.example.com/metadata.json',
+          }),
+        },
+      });
+
+      const nodes = getNodesListByDownloadType(stacItem, 'wget');
+      expect(nodes).toContain('node-a.example.com');
+      expect(nodes).not.toContain('node-b.example.com');
+    });
+
+    it('returns nodes with Globus URLs for Globus download type', () => {
+      const stacItem = rawSearchResultFixture({
+        isStac: true,
+        assets: {
+          asset1: stacAssetFixture({
+            alternateName: 'node-a.example.com',
+            'alternate:name': 'node-a.example.com',
+            href: 'https://app.globus.org/file-manager?origin_id=abc123',
+          }),
+          asset2: stacAssetFixture({
+            alternateName: 'node-b.example.com',
+            'alternate:name': 'node-b.example.com',
+            href: 'https://node-b.example.com/file.nc',
+          }),
+        },
+      });
+
+      const nodes = getNodesListByDownloadType(stacItem, 'Globus');
+      expect(nodes).toContain('node-a.example.com');
+      expect(nodes).not.toContain('node-b.example.com');
+    });
+
+    it('returns nodes from alternates for wget', () => {
+      const stacItem = rawSearchResultFixture({
+        isStac: true,
+        assets: {
+          asset1: stacAssetFixture({
+            alternateName: 'node-a.example.com',
+            'alternate:name': 'node-a.example.com',
+            href: 'https://node-a.example.com/file.nc',
+            alternate: {
+              'node-b.example.com': stacAssetFixture({
+                alternateName: 'node-b.example.com',
+                'alternate:name': 'node-b.example.com',
+                href: 'https://node-b.example.com/file.nc',
+              }),
+              'node-c.example.com': stacAssetFixture({
+                alternateName: 'node-c.example.com',
+                'alternate:name': 'node-c.example.com',
+                href: 'https://node-c.example.com/metadata.json',
+              }),
+            },
+          }),
+        },
+      });
+
+      const nodes = getNodesListByDownloadType(stacItem, 'wget');
+      expect(nodes).toContain('node-a.example.com');
+      expect(nodes).toContain('node-b.example.com');
+      expect(nodes).not.toContain('node-c.example.com');
+    });
+
+    it('includes dedicated globus asset for Globus download type', () => {
+      const stacItem = rawSearchResultFixture({
+        isStac: true,
+        assets: {
+          globus: stacAssetFixture({
+            alternateName: 'globus-node.example.com',
+            'alternate:name': 'globus-node.example.com',
+            href: 'https://app.globus.org/file-manager?origin_id=xyz789',
+          }),
+          data: stacAssetFixture({
+            alternateName: 'http-node.example.com',
+            'alternate:name': 'http-node.example.com',
+            href: 'https://http-node.example.com/file.nc',
+          }),
+        },
+      });
+
+      const nodes = getNodesListByDownloadType(stacItem, 'Globus');
+      expect(nodes).toContain('globus-node.example.com');
+      expect(nodes).not.toContain('http-node.example.com');
+    });
+
+    it('returns all nodes for esgpull download type', () => {
+      const stacItem = rawSearchResultFixture({
+        isStac: true,
+        assets: {
+          asset1: stacAssetFixture({
+            alternateName: 'node-a.example.com',
+            'alternate:name': 'node-a.example.com',
+            href: 'https://node-a.example.com/file.nc',
+          }),
+          asset2: stacAssetFixture({
+            alternateName: 'node-b.example.com',
+            'alternate:name': 'node-b.example.com',
+            href: 'https://node-b.example.com/metadata.json',
+          }),
+        },
+      });
+
+      const nodes = getNodesListByDownloadType(stacItem, 'esgpull');
+      expect(nodes).toContain('node-a.example.com');
+      expect(nodes).toContain('node-b.example.com');
+    });
+
+    it('returns empty array for STAC item without assets', () => {
+      const stacItem = rawSearchResultFixture({
+        isStac: true,
+        assets: undefined,
+      });
+
+      expect(getNodesListByDownloadType(stacItem, 'wget')).toEqual([]);
+      expect(getNodesListByDownloadType(stacItem, 'Globus')).toEqual([]);
+    });
+  });
+
+  describe('generateWgetScriptSTAC with node selection', () => {
+    it('filters files by selected node when string is provided', () => {
+      const mockDownload = vi.fn();
+      const originalDownload = global.URL.createObjectURL;
+      global.URL.createObjectURL = mockDownload;
+
+      const searchResults = [
+        {
+          id: 'test1',
+          assets: {
+            data1: {
+              alternateName: 'node-a.example.com',
+              'alternate:name': 'node-a.example.com',
+              href: 'https://node-a.example.com/file1.nc',
+              'file:size': 1024,
+            },
+            data2: {
+              alternateName: 'node-b.example.com',
+              'alternate:name': 'node-b.example.com',
+              href: 'https://node-b.example.com/file2.nc',
+              'file:size': 2048,
+            },
+          },
+        },
+      ] as any[];
+
+      const result = generateWgetScriptSTAC(
+        searchResults,
+        'https://example.com/search',
+        'node-a.example.com',
+      );
+      expect(result).toBe(true);
+
+      global.URL.createObjectURL = originalDownload;
+    });
+
+    it('filters files by node map when object is provided', () => {
+      const mockDownload = vi.fn();
+      const originalDownload = global.URL.createObjectURL;
+      global.URL.createObjectURL = mockDownload;
+
+      const searchResults = [
+        {
+          id: 'test1',
+          assets: {
+            data1: {
+              alternateName: 'node-a.example.com',
+              'alternate:name': 'node-a.example.com',
+              href: 'https://node-a.example.com/file1.nc',
+              'file:size': 1024,
+            },
+            data2: {
+              alternateName: 'node-b.example.com',
+              'alternate:name': 'node-b.example.com',
+              href: 'https://node-b.example.com/file2.nc',
+              'file:size': 2048,
+            },
+          },
+        },
+        {
+          id: 'test2',
+          assets: {
+            data3: {
+              alternateName: 'node-c.example.com',
+              'alternate:name': 'node-c.example.com',
+              href: 'https://node-c.example.com/file3.nc',
+              'file:size': 512,
+            },
+          },
+        },
+      ] as any[];
+
+      const nodeMap = {
+        test1: 'node-a.example.com',
+        test2: 'node-c.example.com',
+      };
+
+      const result = generateWgetScriptSTAC(searchResults, undefined, nodeMap);
+      expect(result).toBe(true);
+
+      global.URL.createObjectURL = originalDownload;
+    });
+
+    it('includes files from alternates when node matches', () => {
+      const mockDownload = vi.fn();
+      const originalDownload = global.URL.createObjectURL;
+      global.URL.createObjectURL = mockDownload;
+
+      const searchResults = [
+        {
+          id: 'test1',
+          assets: {
+            data1: {
+              alternateName: 'node-a.example.com',
+              'alternate:name': 'node-a.example.com',
+              href: 'https://node-a.example.com/file1.nc',
+              'file:size': 1024,
+              alternate: {
+                'node-b.example.com': {
+                  href: 'https://node-b.example.com/file1.nc',
+                  'file:size': 1024,
+                },
+              },
+            },
+          },
+        },
+      ] as any[];
+
+      const result = generateWgetScriptSTAC(
+        searchResults,
+        undefined,
+        'node-b.example.com',
+      );
+      expect(result).toBe(true);
+
+      global.URL.createObjectURL = originalDownload;
+    });
   });
 });
