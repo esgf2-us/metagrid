@@ -445,7 +445,7 @@ export const stacAssetFixture = (props: Partial<StacAsset> = {}): StacAsset => {
     access: ['public'],
     description: 'test',
     type: 'image/png',
-    alternatename: 'alternate_foo',
+    alternateName: 'alternate_foo',
     name: 'foo',
     roles: ['data'],
     href: 'http://test.com/foo',
