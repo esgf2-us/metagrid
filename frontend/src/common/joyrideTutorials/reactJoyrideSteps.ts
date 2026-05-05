@@ -130,12 +130,12 @@ const searchLibraryIsEmpty = (): boolean => {
 
 export const defaultTarget = new TargetObject('navbar-logo');
 
-export const miscTargets = {
+export const miscTargets: Record<string, TargetObject> = {
   defaultTarget,
   questionBtn: new TargetObject(),
 };
 
-export const navBarTargets = {
+export const navBarTargets: Record<string, TargetObject> = {
   topSearchBar: new TargetObject(),
   topNavBar: new TargetObject(),
   searchPageBtn: new TargetObject(),
@@ -148,7 +148,7 @@ export const navBarTargets = {
   themeSwitchBtn: new TargetObject(),
 };
 
-export const searchTableTargets = {
+export const searchTableTargets: Record<string, TargetObject> = {
   searchFeaturesArea: new TargetObject(),
   queryString: new TargetObject(),
   resultsFoundText: new TargetObject(),
@@ -158,7 +158,7 @@ export const searchTableTargets = {
   saveSearchBtn: new TargetObject(),
 };
 
-export const copySearchOptionsTargets = {
+export const copySearchOptionsTargets: Record<string, TargetObject> = {
   copyMenuBtn: new TargetObject(),
   copySearchLinkBtn: new TargetObject(),
   copyEsgpullSearchQueryBtn: new TargetObject(),
@@ -166,7 +166,7 @@ export const copySearchOptionsTargets = {
   copyIntakeEsgfSearchBtn: new TargetObject(),
 };
 
-export const leftSidebarTargets = {
+export const leftSidebarTargets: Record<string, TargetObject> = {
   leftSideBar: new TargetObject(),
   selectProjectBtn: new TargetObject(),
   projectSelectLeftSideBtn: new TargetObject(),
@@ -186,7 +186,7 @@ export const leftSidebarTargets = {
   // facetFormFilenameFields: new TargetObject(),
 };
 
-export const topDataRowTargets = {
+export const topDataRowTargets: Record<string, TargetObject> = {
   searchResultsRowExpandIcon: new TargetObject(),
   searchResultsRowContractIcon: new TargetObject(),
   cartAddBtn: new TargetObject(),
@@ -201,13 +201,14 @@ export const topDataRowTargets = {
   globusReadyStatusIcon: new TargetObject(),
 };
 
-export const innerDataRowTargets = {
+export const innerDataRowTargets: Record<string, TargetObject> = {
   filesTab: new TargetObject(),
   metadataTab: new TargetObject(),
   metadataLookupField: new TargetObject(),
   citationTab: new TargetObject(),
   additionalTab: new TargetObject(),
   filesTitle: new TargetObject(),
+  dataNode: new TargetObject(),
   dataSize: new TargetObject(),
   downloadDataBtn: new TargetObject(),
   copyOPeNDAPBtn: new TargetObject(),
@@ -215,7 +216,7 @@ export const innerDataRowTargets = {
   checksum: new TargetObject(),
 };
 
-export const cartTourTargets = {
+export const cartTourTargets: Record<string, TargetObject> = {
   cartSummary: new TargetObject(),
   datasetBtn: new TargetObject(),
   libraryBtn: new TargetObject(),
@@ -228,7 +229,7 @@ export const cartTourTargets = {
   removeItemsBtn: new TargetObject(),
 };
 
-export const manageCollectionsTourTargets = {
+export const manageCollectionsTourTargets: Record<string, TargetObject> = {
   globusCollectionsForm: new TargetObject(),
   searchCollectionInput: new TargetObject(),
   globusSearchResultsPanel: new TargetObject(),
@@ -239,7 +240,7 @@ export const manageCollectionsTourTargets = {
   cancelCollectionBtn: new TargetObject(),
 };
 
-export const savedSearchTourTargets = {
+export const savedSearchTourTargets: Record<string, TargetObject> = {
   savedSearches: new TargetObject(),
   projectDescription: new TargetObject(),
   searchQueryString: new TargetObject(),
@@ -248,7 +249,7 @@ export const savedSearchTourTargets = {
   removeBtn: new TargetObject(),
 };
 
-export const nodeTourTargets = {
+export const nodeTourTargets: Record<string, TargetObject> = {
   updateTime: new TargetObject(),
   nodeStatusSummary: new TargetObject(),
   nodeColHeader: new TargetObject(),

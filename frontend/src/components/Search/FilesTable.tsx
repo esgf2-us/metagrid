@@ -5,7 +5,7 @@ import {
   RightCircleOutlined,
   ShareAltOutlined,
 } from '@ant-design/icons';
-import { Alert, Form, Table as TableD, Tooltip, message } from 'antd';
+import { Alert, Form, TableColumnsType, Table as TableD, Tooltip, message } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React, { useState } from 'react';
@@ -14,7 +14,13 @@ import { useAtomValue } from 'jotai';
 import openDapIcon from '../../assets/img/opendap_logo.png';
 import { fetchDatasetFiles, openDownloadURL } from '../../api';
 import { CSSinJS } from '../../common/types';
-import { formatBytes, showError, showNotice, splitStringByChar } from '../../common/utils';
+import {
+  formatBytes,
+  objectHasKey,
+  showError,
+  showNotice,
+  splitStringByChar,
+} from '../../common/utils';
 import Button from '../General/Button';
 import {
   AlignType,
@@ -29,6 +35,8 @@ import {
 import { innerDataRowTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 import { currentProjectAtom } from '../../common/atoms';
 import { createCustomIcon } from '../NavBar';
+import SubFilesTable from './SubFilesTable';
+import { getReplicaNodelsList } from '../../common/STAC';
 
 export type DownloadUrls = {
   HTTPServer: string;
@@ -88,6 +96,7 @@ const metadataKeysToDisplay = [
   'alternate:name',
   'cf_standard_name',
   'checksum_type',
+  'created',
   'dataset_id',
   'description',
   'href',
@@ -97,7 +106,9 @@ const metadataKeysToDisplay = [
   'name',
   'roles',
   'timestamp',
+  'title',
   'type',
+  'updated',
   'variable',
   'variable_id',
   'variable_long_name',
@@ -106,7 +117,7 @@ const metadataKeysToDisplay = [
 ];
 
 const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, filenameVars }) => {
-  const [sortedInfo, setSortedInfo] = useState<Sorts>({});
+  const [sortedInfo, setSortedInfo] = useState<Sorts<RawSearchResult>>({});
 
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -139,8 +150,8 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
     runFetchDatasetFiles();
   }, [runFetchDatasetFiles, inputRecord, paginationOptions, filenameVars]);
 
-  const handleChange: OnChange = (pagination, filters, sorter) => {
-    setSortedInfo(sorter as Sorts);
+  const handleChange: OnChange<RawSearchResult> = (pagination, filters, sorter) => {
+    setSortedInfo(sorter as Sorts<RawSearchResult>);
   };
 
   const handlePageChange = (page: number, pageSize: number): void => {
@@ -214,17 +225,30 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
       onShowSizeChange: (_current: number, size: number) => handlePageSizeChange(size),
     } as TablePaginationConfig,
     expandable: {
-      expandedRowRender: (record: RawSearchResult) =>
-        Object.keys(record).map((key) => {
-          if (record[key] && record[key] !== 'null' && metadataKeysToDisplay.includes(key)) {
-            return (
-              <p key={key} style={{ margin: 0 }}>
-                <span style={{ fontWeight: 'bold' }}>{key}</span>: {JSON.stringify(record[key])}
-              </p>
-            );
-          }
-          return null;
-        }),
+      expandedRowRender: (record: RawSearchResult) => {
+        let subTable = null;
+        if (objectHasKey(record, 'alternate')) {
+          const { alternate } = record;
+          subTable = <SubFilesTable alternate={alternate as { [key: string]: StacAsset }} />;
+        }
+
+        return (
+          <>
+            {Object.keys(record).map((key) => {
+              if (record[key] && record[key] !== 'null' && metadataKeysToDisplay.includes(key)) {
+                return (
+                  <p key={key} style={{ margin: 0 }}>
+                    <span style={{ fontWeight: 'bold' }}>{key}</span>: {JSON.stringify(record[key])}
+                  </p>
+                );
+              }
+              return null;
+            })}
+            <br />
+            {subTable}
+          </>
+        );
+      },
 
       expandIcon: ({
         expanded,
@@ -248,7 +272,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
     },
   };
 
-  const columns = [
+  const columns: TableColumnsType<RawSearchResult> = [
     {
       title: 'File Title',
       dataIndex: 'title',
@@ -280,8 +304,8 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
       align: 'center' as AlignType,
       title: 'Download / Copy URL',
       key: 'download',
-      render: (record: { url: string[] }) => {
-        const downloadUrls = genDownloadUrls(record.url);
+      render: (record: RawSearchResult) => {
+        const downloadUrls = genDownloadUrls(record.url || []);
         return (
           <span style={{ alignItems: 'center' }}>
             {contextHolder}
@@ -371,7 +395,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
     },
   ];
 
-  const stacColumns = [
+  const stacColumns: TableColumnsType<RawSearchResult> = [
     {
       title: 'Asset Title',
       dataIndex: 'id',
@@ -379,6 +403,20 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
       /* istanbul ignore next -- @preserve */
       render: (title: string) => {
         return <div className={innerDataRowTargets.filesTitle.class()}>{title}</div>;
+      },
+    },
+    {
+      title: 'Replica Nodes',
+      key: 'dataNode',
+      /* istanbul ignore next -- @preserve */
+      render: (asset: StacAsset) => {
+        const replicaNodes = getReplicaNodelsList(asset);
+
+        return (
+          <div className={innerDataRowTargets.dataNode.class()}>
+            {replicaNodes.toString().replaceAll(',', ', ')}
+          </div>
+        );
       },
     },
     {
@@ -406,7 +444,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
     {
       title: 'Download / Copy URL',
       key: 'download',
-      render: (record: { href: string }) => {
+      render: (asset: { href: string }) => {
         return (
           <span style={{ alignItems: 'center' }}>
             {contextHolder}
@@ -415,7 +453,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
                 <Form.Item className={innerDataRowTargets.downloadDataBtn.class()}>
                   <Button
                     type="primary"
-                    href={record.href}
+                    href={asset.href}
                     target="_blank"
                     icon={<DownloadOutlined />}
                   />
@@ -429,7 +467,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
                       /* istanbul ignore next -- @preserve */ () => {
                         if (navigator && navigator.clipboard) {
                           navigator.clipboard
-                            .writeText(record.href)
+                            .writeText(asset.href)
                             .catch((e: PromiseRejectedResult) => {
                               showError(messageApi, e.reason as string);
                             });
