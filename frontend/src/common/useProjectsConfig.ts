@@ -15,12 +15,14 @@ export const STAC_DEFAULT_PROJECT: StacProject = {
   fullName: '',
   projectUrl: '',
   facetsByGroup: {
-    General: [{ title: 'data_node', facet: 'alternate_name' }],
+    General: [
+      // { title: 'data_node', facet: 'alternate_name' }
+    ],
     Identifiers: [
       'activity_id',
       'source_id',
       'source_type',
-      'instance_id',
+      // 'instance_id',
       'institution_id',
       'experiment_id',
       'sub_experiment_id',
@@ -29,7 +31,7 @@ export const STAC_DEFAULT_PROJECT: StacProject = {
     Classifications: [
       'frequency',
       'variable_id',
-      { title: 'cf_standard_name', facet: 'variable_cf_standard_name' },
+      // { title: 'cf_standard_name', facet: 'variable_cf_standard_name' },
     ],
   },
 };

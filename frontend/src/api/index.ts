@@ -45,6 +45,7 @@ import {
   getStacProject,
   buildStacProjects,
   setConfiguredAdditionalProjects,
+  stringifyApiRequest,
 } from '../common/STAC';
 import { ProjectsConfig, STAC_PROJECT_LIST } from '../common/useProjectsConfig';
 
@@ -60,6 +61,8 @@ export interface SubmissionResult {
   failures: string[];
   auth_url: string | undefined;
 }
+
+export const STAC_BATCH_SIZE = 100;
 
 export const getCookie = (name: string): null | string => {
   let cookieValue = null;
@@ -570,14 +573,31 @@ export const postSTACSearch = async (
   limit: number,
   filter: { op: string; args: unknown } | undefined = undefined,
   q?: TextInputs,
+  token?: string,
 ): Promise<Record<string, unknown>> => {
+  const requestBody: {
+    collections: string[];
+    limit: number;
+    filter?: { op: string; args: unknown };
+    q?: TextInputs;
+    token?: string;
+  } = {
+    collections: [projectName],
+    limit,
+  };
+
+  if (filter) {
+    requestBody.filter = filter;
+  }
+  if (q) {
+    requestBody.q = q;
+  }
+  if (token && typeof token === 'string' && token.length > 0) {
+    requestBody.token = token;
+  }
+
   return axios
-    .post(apiRoutes.esgfSearchSTAC.path, {
-      collections: [projectName],
-      limit,
-      filter,
-      q,
-    })
+    .post(apiRoutes.esgfSearchSTAC.path, requestBody)
     .then((res) => res.data)
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearchSTAC));
@@ -651,6 +671,21 @@ export const fetchSTACAggregations = async (
     filter,
   };
 
+  const project = getStacProject(projectName);
+  const aggregationsQuery = stringifyApiRequest(
+    project,
+    reqUrl,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    aggregationsList,
+  );
+
+  console.log(aggregationsQuery);
+
   return axios
     .post(`${apiRoutes.esgfAggregationsSTAC.path}`, payload)
     .then((res) => {
@@ -667,6 +702,7 @@ export const fetchSTACAggregations = async (
 export const fetchSTACSearchResults = async (
   reqUrlStr: string,
   projectName: string,
+  token?: string,
 ): // eslint-disable-next-line @typescript-eslint/no-explicit-any
 Promise<{ [key: string]: any }> => {
   let status = 200;
@@ -695,7 +731,13 @@ Promise<{ [key: string]: any }> => {
       status = error.cause === 422 ? 422 : (error.cause as number) || 500;
     });
 
-  const searchResults = await postSTACSearch(projectName, 100, filter, textInputs);
+  const searchResults = await postSTACSearch(
+    projectName,
+    STAC_BATCH_SIZE,
+    filter,
+    textInputs,
+    token,
+  );
 
   const stacResponse: StacSearchResponse = searchResults as StacSearchResponse;
 
@@ -738,6 +780,7 @@ Promise<{ [key: string]: any }> => {
  */
 export const fetchSearchResults = async (
   args: [string] | Record<string, string>,
+  token?: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<{ [key: string]: any }> => {
   // Check if the request URL is passed in as an array or an object
@@ -781,7 +824,7 @@ export const fetchSearchResults = async (
     /* istanbul ignore next -- @preserve */
     const projectName = params.get('project_id') || 'CMIP6';
 
-    return fetchSTACSearchResults(finalUrl, projectName)
+    return fetchSTACSearchResults(finalUrl, projectName, token)
       .then((results) => {
         // Prevent breaking the app if the response is not successful
         if (results.status !== 200) {

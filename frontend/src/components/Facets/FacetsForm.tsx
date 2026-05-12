@@ -124,46 +124,52 @@ export const generateFacetOptions = (
     return generateStacFacetOptions(facet, facetOptions as string[]);
   }
 
-  return facetOptions.map((variable) => {
-    /* istanbul ignore next -- @preserve */
-    if (typeof variable[0] !== 'string') {
-      clearCachedSearchResults();
-    }
-    let optionOutput: string | React.ReactNode = (
-      <>
-        {variable[0]}
-        <span style={styles.facetCount}>({variable[1]})</span>
-      </>
-    );
-
-    // If the option output name is very long, use a tooltip
-    const vLength = variable[0].length - 2;
-    const cLength = variable[1].toString().length * 1.5 + 2;
-    /* istanbul ignore next -- @preserve */
-    if (vLength > maxItemLength - cLength) {
-      const innerTitle = variable[0].substring(0, maxItemLength - cLength);
-      optionOutput = (
-        <Tooltip styles={{ body: { width: 'max-content' } }} title={variable[0]}>
-          {innerTitle}...
-          <span style={styles.facetCount}>({variable[1]})</span>
-        </Tooltip>
+  return facetOptions
+    .filter((variable) => {
+      // Filter out invalid entries - must have string name and valid count
+      return (
+        variable &&
+        variable.length >= 2 &&
+        typeof variable[0] === 'string' &&
+        variable[1] !== undefined
       );
-    }
-
-    // The data node facet has a unique tooltip overlay to show the status of the highlighted node
-    if (facet === 'data_node') {
-      optionOutput = (
-        <StatusToolTip dataNode={variable[0]}>
+    })
+    .map((variable) => {
+      let optionOutput: string | React.ReactNode = (
+        <>
+          {variable[0]}
           <span style={styles.facetCount}>({variable[1]})</span>
-        </StatusToolTip>
+        </>
       );
-    }
-    return {
-      key: variable[0],
-      value: variable[0],
-      label: <span data-testid={`${facet}_${variable[0]}`}>{optionOutput}</span>,
-    };
-  });
+
+      // If the option output name is very long, use a tooltip
+      const vLength = (variable[0] as string).length - 2;
+      const cLength = variable[1].toString().length * 1.5 + 2;
+      /* istanbul ignore next -- @preserve */
+      if (vLength > maxItemLength - cLength) {
+        const innerTitle = (variable[0] as string).substring(0, maxItemLength - cLength);
+        optionOutput = (
+          <Tooltip styles={{ body: { width: 'max-content' } }} title={variable[0]}>
+            {innerTitle}...
+            <span style={styles.facetCount}>({variable[1]})</span>
+          </Tooltip>
+        );
+      }
+
+      // The data node facet has a unique tooltip overlay to show the status of the highlighted node
+      if (facet === 'data_node') {
+        optionOutput = (
+          <StatusToolTip dataNode={variable[0]}>
+            <span style={styles.facetCount}>({variable[1]})</span>
+          </StatusToolTip>
+        );
+      }
+      return {
+        key: variable[0],
+        value: variable[0],
+        label: <span data-testid={`${facet}_${variable[0]}`}>{optionOutput}</span>,
+      };
+    });
 };
 
 const FacetsForm: React.FC = () => {

@@ -147,8 +147,10 @@ export type StacFeature = {
 export type StacSearchResponse = {
   features: StacFeature[];
   links: StacLink[];
-  numMatched: number;
-  numReturned: number;
+  numMatched?: number;
+  numberMatched?: number;
+  numReturned?: number;
+  numberReturned?: number;
   type: string;
   [key: string]: unknown;
 };
