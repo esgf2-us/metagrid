@@ -594,6 +594,9 @@ export const postSTACSearch = async (
   }
   if (token && typeof token === 'string' && token.length > 0) {
     requestBody.token = token;
+    console.log('[postSTACSearch] Sending request WITH token:', token.substring(0, 30));
+  } else {
+    console.log('[postSTACSearch] Sending request WITHOUT token');
   }
 
   return axios
@@ -779,31 +782,52 @@ Promise<{ [key: string]: any }> => {
  * Source: https://docs.react-async.com/api/options#deferfn
  */
 export const fetchSearchResults = async (
-  args: [string] | Record<string, string>,
+  args: [string, string?] | Record<string, string>,
   token?: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<{ [key: string]: any }> => {
   // Check if the request URL is passed in as an array or an object
-  let reqUrlStr;
+  let reqUrlStr: string;
+  let tokenToUse = token;
+
   if (Array.isArray(args)) {
-    // eslint-disable-next-line prefer-destructuring
-    reqUrlStr = args[0];
+    // Check if args[0] is itself an array (when called as run([url, token]))
+    if (Array.isArray(args[0])) {
+      // Unwrap: args = [[url, token]] → [url, token]
+      const [url, tok] = args[0];
+      reqUrlStr = url;
+      if (tok && typeof tok === 'string') {
+        tokenToUse = tok;
+      }
+    } else {
+      // Normal case: args = [url] or [url, token]
+      const [url, tok] = args;
+      reqUrlStr = url;
+      if (tok && typeof tok === 'string') {
+        tokenToUse = tok;
+      }
+    }
   } else {
     reqUrlStr = args.reqUrl;
   }
 
-  // Get cached search results
-  const cachedResults = getCachedSearchResults();
-  /* istanbul ignore next -- @preserve */
-  const cachedURL = (cachedResults?.cachedURL as string) || '';
-  const reqUrlOffset = reqUrlStr.match(/offset=\d+/)?.[0];
-  const cachedUrlOffset = cachedURL.match(/offset=\d+/)?.[0];
+  // Get cached search results - but skip cache if we have a token (STAC pagination)
+  if (!tokenToUse) {
+    const cachedResults = getCachedSearchResults();
+    /* istanbul ignore next -- @preserve */
+    const cachedURL = (cachedResults?.cachedURL as string) || '';
 
-  // If reqest URL matches the one in local storage, return the cached results
-  if (reqUrlStr === cachedURL) {
-    // If there was no change to the request URL, return the cached results
-    return cachedResults;
+    // If reqest URL matches the one in local storage, return the cached results
+    if (reqUrlStr === cachedURL) {
+      // If there was no change to the request URL, return the cached results
+      return cachedResults;
+    }
   }
+
+  const reqUrlOffset = reqUrlStr.match(/offset=\d+/)?.[0];
+  const cachedResults = getCachedSearchResults();
+  const cachedURL = (cachedResults?.cachedURL as string) || '';
+  const cachedUrlOffset = cachedURL.match(/offset=\d+/)?.[0];
 
   let finalUrl = reqUrlStr;
   const cachedPagination = getCachedPagination();
@@ -824,7 +848,7 @@ export const fetchSearchResults = async (
     /* istanbul ignore next -- @preserve */
     const projectName = params.get('project_id') || 'CMIP6';
 
-    return fetchSTACSearchResults(finalUrl, projectName, token)
+    return fetchSTACSearchResults(finalUrl, projectName, tokenToUse)
       .then((results) => {
         // Prevent breaking the app if the response is not successful
         if (results.status !== 200) {

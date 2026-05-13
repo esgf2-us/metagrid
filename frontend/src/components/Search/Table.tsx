@@ -404,10 +404,8 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
         return idA.toString().localeCompare(idB.toString());
       },
       sortOrder: sortedInfo.columnKey === 'title' ? sortedInfo.order : null,
-      render: (title: string, record: RawSearchResult, index: number) => {
-        // Calculate global index for testing purposes
-        // const globalIndex = (safePage - 1) * safeSize + index + 1;
-        const displayTitle = `${record.id} ${title}`;
+      render: (title: string, record: RawSearchResult) => {
+        const displayTitle = `${title}`;
 
         if (record && record.retracted) {
           const msg =

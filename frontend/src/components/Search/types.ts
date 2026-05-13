@@ -74,6 +74,11 @@ export type StacLink = {
   rel: string;
   type: string;
   href: string;
+  body?: {
+    token?: string;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
 };
 
 export function isStacAsset(value: StacAssetDict | StacAsset): value is StacAsset {
