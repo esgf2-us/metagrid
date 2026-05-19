@@ -37,11 +37,15 @@ import { CSSinJS } from '../../common/types';
 import {
   cachePagination,
   cacheSearchResults,
+  cacheStacBatches,
   clearCachedSearchResults,
+  clearCachedStacBatches,
   createEsgpullCommand,
   createIntakeEsgfSearch,
   createSearchRouteURL,
   getCachedPagination,
+  getCachedSearchResults,
+  getCachedStacBatches,
   getStyle,
   getUrlFromSearch,
   objectIsEmpty,
@@ -186,59 +190,91 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   const [paginationOptions, setPaginationOptions] =
     React.useState<Pagination>(getCachedPagination());
 
-  // STAC pagination state
-  const [stacLoadedBatches, setStacLoadedBatches] = React.useState<StacBatchLoading>({
-    results: [],
-    nextToken: undefined,
-    projectName: '',
-    loadedBatches: 0,
-    loadNextBatch: false,
-    totalMatched: 0,
-    loading: false,
-    loaded: false,
+  // Initialize STAC state with cached batches if available
+  const [stacLoadedBatches, setStacLoadedBatches] = React.useState<StacBatchLoading>(() => {
+    try {
+      /* eslint-disable-next-line @typescript-eslint/no-unsafe-call */
+      const cachedStac = getCachedStacBatches() as StacBatchLoading | null;
+
+      if (
+        cachedStac &&
+        cachedStac.projectName &&
+        Array.isArray(cachedStac.results) &&
+        cachedStac.results.length > 0
+      ) {
+        return cachedStac;
+      }
+    } catch (err) {
+      /* eslint-disable-next-line @typescript-eslint/no-unsafe-call */
+      clearCachedStacBatches();
+    }
+
+    return {
+      results: [],
+      nextToken: undefined,
+      projectName: '',
+      loadedBatches: 0,
+      loadNextBatch: false,
+      totalMatched: 0,
+      loading: false,
+      loaded: false,
+    };
   });
 
-  // Track whether current fetch is background (silent) or user-initiated (show loading)
   const [isBackgroundFetch, setIsBackgroundFetch] = React.useState<boolean>(false);
-
-  // Track the last batch we triggered to prevent duplicate auto-preloads
   const lastPreloadedBatchRef = React.useRef<number>(-1);
+  const prevProjectNameRef = React.useRef<string>('');
 
-  const results: Record<string, unknown> | undefined = data;
+  // For non-STAC: hold cached results loaded synchronously
+  const [cachedResults, setCachedResults] = React.useState<Record<string, unknown> | undefined>(
+    undefined,
+  );
 
-  // Reset state when project changes
+  const results: Record<string, unknown> | undefined = data || cachedResults;
+
+  // Cache STAC batches when they change
   React.useEffect(() => {
-    // Reset background fetch flag for all projects
-    setIsBackgroundFetch(false);
-    lastPreloadedBatchRef.current = -1;
-
-    if (currentProject.isSTAC) {
-      const currentProjectName = (project.name as string) || '';
-
-      clearCachedSearchResults();
-      setStacLoadedBatches({
-        results: [],
-        nextToken: undefined,
-        projectName: currentProjectName,
-        loadedBatches: 0,
-        loadNextBatch: false,
-        totalMatched: 0,
-        loading: false,
-        loaded: false,
-      });
-
-      // Reset pagination to page 1
-      setPaginationOptions({ page: 1, pageSize: paginationOptions.pageSize });
+    if (currentProject.isSTAC && stacLoadedBatches.loaded && stacLoadedBatches.results.length > 0) {
+      cacheStacBatches(stacLoadedBatches);
     }
-  }, [activeSearchQuery, currentProject.isSTAC, project.name, paginationOptions.pageSize]);
+  }, [currentProject.isSTAC, stacLoadedBatches]);
 
-  // Generate the current request URL based on filters
+  // Reset cache and pagination when switching projects
+  React.useEffect(() => {
+    const currentProjectName = (project.name as string) || '';
+    const projectActuallyChanged =
+      prevProjectNameRef.current !== '' && prevProjectNameRef.current !== currentProjectName;
+
+    if (projectActuallyChanged) {
+      setIsBackgroundFetch(false);
+      lastPreloadedBatchRef.current = -1;
+      clearCachedSearchResults();
+      /* eslint-disable-next-line @typescript-eslint/no-unsafe-call */
+      clearCachedStacBatches();
+      setCachedResults(undefined);
+      setPaginationOptions({ page: 1, pageSize: paginationOptions.pageSize });
+
+      if (currentProject.isSTAC) {
+        setStacLoadedBatches({
+          results: [],
+          nextToken: undefined,
+          projectName: currentProjectName,
+          loadedBatches: 0,
+          loadNextBatch: false,
+          totalMatched: 0,
+          loading: false,
+          loaded: false,
+        });
+      }
+    }
+
+    prevProjectNameRef.current = currentProjectName;
+  }, [currentProject.isSTAC, project.name, paginationOptions.pageSize]);
+
+  // Generate search URL and cache pagination
   React.useEffect(() => {
     if (!objectIsEmpty(project)) {
-      // Cache the pagination options in case they were changed
       cachePagination(paginationOptions);
-
-      // Generate the search URL
       const reqUrl = generateSearchURLQuery(activeSearchQuery, paginationOptions);
       setCurrentRequestURL(reqUrl);
     }
@@ -248,26 +284,31 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     setFiltersExist(checkFiltersExist(activeFacets, textInputs));
   }, [activeFacets, textInputs]);
 
-  // Fetch search results
+  // Fetch search results (skips if cache is loaded)
   React.useEffect(() => {
     if (!objectIsEmpty(project) && currentRequestURL) {
       if (currentProject.isSTAC) {
-        // For STAC: Only fetch initial batch, other batches triggered from handlers
         if (stacLoadedBatches.results.length < 1 && !stacLoadedBatches.loading) {
           run(currentRequestURL);
         }
       } else {
-        // For non-STAC, fetch normally on URL change
-        run(currentRequestURL);
+        const cached = getCachedSearchResults();
+        const cachedURL = (cached?.cachedURL as string) || '';
+
+        if (currentRequestURL === cachedURL) {
+          setCachedResults(cached);
+        } else {
+          setCachedResults(undefined);
+          run(currentRequestURL);
+        }
       }
     }
   }, [run, currentRequestURL, project, currentProject.isSTAC]);
 
-  // Update the available facets based on the returned results
+  // Process results and update facets
   React.useEffect(() => {
     if (results && currentRequestURL && !objectIsEmpty(results)) {
       cacheSearchResults(results, paginationOptions, currentRequestURL);
-      /* istanbul ignore else -- @preserve */
       if (results.facet_counts) {
         const { facet_fields: facetFields } = (
           results as {
@@ -280,7 +321,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         setParsedFacets(facets);
       }
 
-      // Extract STAC pagination tokens and accumulate results
+      // Extract STAC tokens and accumulate batches
       if (currentProject.isSTAC && results.stac && results.search) {
         const stacResponse = results as StacResponse;
         const { links, features } = stacResponse.search;
@@ -323,148 +364,16 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           loaded: true,
         });
       }
-
-      // Original commented code below
-      // if (results.stac && results.search) {
-      //   const stacResponse = results as StacResponse;
-      //   const { links, features } = stacResponse.search;
-
-      //   // Store total matched count
-      //   const searchData = stacResponse.search as {
-      //     numberMatched?: number;
-      //     numMatched?: number;
-      //     features?: StacFeature[];
-      //   };
-      //   const totalMatched = searchData.numberMatched || searchData.numMatched || 0;
-      //   setStacTotalMatched(totalMatched);
-
-      //   // Convert and accumulate results
-      //   let loadedBatch = -1;
-      //   let shouldPreloadNext = false;
-
-      //   if (features && features.length > 0) {
-      //     // IMPORTANT: Check if these results are for the current project
-      //     // Compare the project in the current activeSearchQuery with what's accumulated
-      //     const currentProjectName = (project.name as string) || '';
-      //     const previousProjectName = accumulatedResultsProjectRef.current || '';
-
-      //     // Simple rule: only accumulate if no previous project or same project
-      //     const canAccumulate = !previousProjectName || previousProjectName === currentProjectName;
-
-      //     if (!canAccumulate) {
-      //       // These results are from a different project, skip accumulation
-      //       return;
-      //     }
-
-      //     const newDocs = features.map((stacResult: StacFeature) =>
-      //       convertStacToRawSearchResult(stacResult),
-      //     );
-
-      //     // Use stacLoadingBatch to determine where these results belong
-      //     loadedBatch = stacLoadingBatch;
-
-      //     // If stacLoadingBatch is still -1 (hasn't updated yet), treat as batch 0
-      //     if (loadedBatch === -1) {
-      //       loadedBatch = 0;
-      //     }
-
-      //     // Check if we've already processed this batch
-      //     if (loadedBatch > stacHighestBatchLoaded || loadedBatch === 0) {
-      //       // Accumulate results - append sequentially as batches load
-      //       setStacLoadedBatches((prev) => {
-      //         const startIndex = loadedBatch * STAC_BATCH_SIZE;
-
-      //         if (loadedBatch === 0) {
-      //           // First batch - just set it
-      //           return newDocs;
-      //         }
-      //         if (prev.length === startIndex) {
-      //           // Next sequential batch - append it
-      //           return [...prev, ...newDocs];
-      //         }
-      //         if (prev.length > startIndex) {
-      //           // Already have data at this position - replace it
-      //           const newAccumulated = [...prev];
-      //           newAccumulated.splice(startIndex, newDocs.length, ...newDocs);
-      //           return newAccumulated;
-      //         }
-      //         // Gap exists - this means we skipped batches (shouldn't happen with sequential loading)
-      //         // Just append to avoid null placeholders
-      //         return [...prev, ...newDocs];
-      //       });
-
-      //       // Track that these accumulated results belong to the current project AND URL
-      //       accumulatedResultsProjectRef.current = (project.name as string) || '';
-      //       setStacAccumulatedProject((project.name as string) || ''); // Update state too
-      //       lastFetchedUrlRef.current = currentRequestURL || '';
-      //     }
-
-      //     // Update highest batch loaded
-      //     setStacHighestBatchLoaded((prev) => Math.max(prev, loadedBatch));
-
-      //     // Determine if we should preload next batch
-      //     // Only preload if the user is close to viewing the data we just loaded
-      //     // Check current pagination to see if we're approaching the end of loaded data
-      //     const currentPage = paginationOptions.page || 1;
-      //     const currentPageSize = paginationOptions.pageSize || 10;
-      //     const currentEndIndex = currentPage * currentPageSize;
-      //     const loadedDataCount = (loadedBatch + 1) * STAC_BATCH_SIZE;
-
-      //     // Preload if user is within 1 batch (100 records) of the end of loaded data
-      //     const isApproachingEnd = currentEndIndex > loadedDataCount - STAC_BATCH_SIZE;
-
-      //     shouldPreloadNext = loadedBatch >= stacHighestBatchLoaded && isApproachingEnd;
-      //   }
-
-      //   // Extract next token and handle auto-preload
-      //   if (links && Array.isArray(links)) {
-      //     const nextLink = links.find((link) => link.rel === 'next');
-      //     const nextToken = nextLink?.body?.token;
-
-      //     setStacNextToken(typeof nextToken === 'string' ? nextToken : undefined);
-
-      //     // Auto-preload next batch in background for better UX
-      //     // Only if: we have token, we loaded features, we should preload, and haven't already triggered this batch
-      //     const nextBatch = loadedBatch + 1;
-      //     const willPreload =
-      //       nextToken &&
-      //       typeof nextToken === 'string' &&
-      //       shouldPreloadNext &&
-      //       loadedBatch >= 0 &&
-      //       preloadTriggeredRef.current !== nextBatch;
-
-      //     if (willPreload) {
-      //       // Mark this batch as triggered
-      //       preloadTriggeredRef.current = nextBatch;
-      //       // Trigger next batch load immediately
-      //       setStacLoadingBatch(nextBatch);
-      //       setStacTokenToUse(nextToken);
-      //     } else {
-      //       // Not preloading - just update loading batch to indicate we're done
-      //       setStacLoadingBatch(loadedBatch);
-      //     }
-      //   } else {
-      //     // No links means we're at the end or there's only one page
-      //     setStacNextToken(undefined);
-      //     setStacLoadingBatch(loadedBatch);
-      //   }
-      // } else {
-      //   // Clear tokens if not a STAC search
-      //   setStacNextToken(undefined);
-      //   setStacTokenToUse(undefined);
-      // }
     }
   }, [results]);
 
   React.useEffect(() => {
-    // Only update availableFacets if parsedFacets is not empty
-    // This prevents clearing facets UI when navigating back to search page
     if (!objectIsEmpty(parsedFacets)) {
       setAvailableFacets(parsedFacets as ParsedFacets);
     }
   }, [parsedFacets, setAvailableFacets]);
 
-  // Auto-load next batch after initial load completes (for STAC)
+  // Auto-load next STAC batch when user reaches last page
   React.useEffect(() => {
     if (
       !currentProject.isSTAC ||
@@ -759,7 +668,9 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     response: { docs: RawSearchResults; numFound: number };
   };
 
-  if (results) {
+  // For STAC, check if we have loaded batches (from cache or API)
+  // For non-STAC, check if we have results from API/cache
+  if (currentProject.isSTAC || results) {
     if (currentProject.isSTAC) {
       const currentProjectName = (project.name as string) || '';
 
@@ -777,7 +688,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
       // Only show pages for data that's already loaded
       paginationTotal = loadedCount;
-    } else if (results.response) {
+    } else if (results && results.response) {
       numMatched = (results as LoadedResults).response.numFound;
       paginationTotal = numMatched;
       docs = (results as LoadedResults).response.docs.map((doc) => ({

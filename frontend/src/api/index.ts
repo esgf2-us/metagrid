@@ -594,9 +594,6 @@ export const postSTACSearch = async (
   }
   if (token && typeof token === 'string' && token.length > 0) {
     requestBody.token = token;
-    console.log('[postSTACSearch] Sending request WITH token:', token.substring(0, 30));
-  } else {
-    console.log('[postSTACSearch] Sending request WITHOUT token');
   }
 
   return axios
@@ -817,30 +814,14 @@ export const fetchSearchResults = async (
     /* istanbul ignore next -- @preserve */
     const cachedURL = (cachedResults?.cachedURL as string) || '';
 
-    // If reqest URL matches the one in local storage, return the cached results
+    // If request URL matches the one in local storage, return the cached results
     if (reqUrlStr === cachedURL) {
-      // If there was no change to the request URL, return the cached results
       return cachedResults;
     }
   }
 
-  const reqUrlOffset = reqUrlStr.match(/offset=\d+/)?.[0];
-  const cachedResults = getCachedSearchResults();
-  const cachedURL = (cachedResults?.cachedURL as string) || '';
-  const cachedUrlOffset = cachedURL.match(/offset=\d+/)?.[0];
-
-  let finalUrl = reqUrlStr;
   const cachedPagination = getCachedPagination();
-  // If the change to the request URL was not the offset, reset the offset to 0
-  /* istanbul ignore next -- @preserve */
-  if (reqUrlOffset === cachedUrlOffset || (!reqUrlOffset && cachedUrlOffset)) {
-    finalUrl = reqUrlStr.replace(/offset=\d+/, 'offset=0');
-    // Cache the new offset value so it is reflected in the pagination
-    cachePagination({
-      page: 1,
-      pageSize: cachedPagination.pageSize,
-    });
-  }
+  const finalUrl = reqUrlStr;
 
   if (finalUrl.includes('/stac/search?')) {
     // If the request URL is for STAC search, fetch results using the STAC API

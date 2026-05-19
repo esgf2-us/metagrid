@@ -701,9 +701,39 @@ export const getCachedSearchResults = (): Record<string, unknown> => {
 };
 
 export const clearCachedSearchResults = (): void => {
-  // Clear the cached search results from sessionStorage
+  // Clear the cached search results from localStorage
   localStorage.removeItem('cachedSearchResults');
   localStorage.removeItem('cachedSearchPagination');
+};
+
+// STAC batch cache functions
+export const cacheStacBatches = (stacBatches: Record<string, unknown>): void => {
+  saveToLocalStorage(
+    'cachedStacBatches',
+    {
+      batches: stacBatches,
+      expires: Date.now() + 60 * 60 * 1000, // Expires after an hour
+    },
+    true,
+  );
+};
+
+export const getCachedStacBatches = (): Record<string, unknown> | null => {
+  const cached: Record<string, unknown> = getFromLocalStorage('cachedStacBatches', true) || {};
+  const now = Date.now();
+
+  if (cached.expires && now > (cached.expires as number)) {
+    // If expired, remove from localStorage
+    clearCachedStacBatches();
+    return null;
+  }
+
+  // If not expired, return the cached batches
+  return (cached.batches as Record<string, unknown>) || null;
+};
+
+export const clearCachedStacBatches = (): void => {
+  localStorage.removeItem('cachedStacBatches');
 };
 
 export const showBanner = (): boolean => {
