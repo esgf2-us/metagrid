@@ -143,11 +143,11 @@ export const generateFacetOptions = (
       );
 
       // If the option output name is very long, use a tooltip
-      const vLength = (variable[0] as string).length - 2;
+      const vLength = variable[0].length - 2;
       const cLength = variable[1].toString().length * 1.5 + 2;
       /* istanbul ignore next -- @preserve */
       if (vLength > maxItemLength - cLength) {
-        const innerTitle = (variable[0] as string).substring(0, maxItemLength - cLength);
+        const innerTitle = variable[0].substring(0, maxItemLength - cLength);
         optionOutput = (
           <Tooltip styles={{ body: { width: 'max-content' } }} title={variable[0]}>
             {innerTitle}...

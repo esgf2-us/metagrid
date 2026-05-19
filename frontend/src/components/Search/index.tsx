@@ -198,12 +198,16 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     loaded: false,
   });
 
+  // Track whether current fetch is background (silent) or user-initiated (show loading)
+  const [isBackgroundFetch, setIsBackgroundFetch] = React.useState<boolean>(false);
+
   const results: Record<string, unknown> | undefined = data;
 
   // Reset STAC state when project changes
   React.useEffect(() => {
     if (currentProject.isSTAC) {
       const currentProjectName = (project.name as string) || '';
+      setIsBackgroundFetch(false);
 
       clearCachedSearchResults();
       setStacLoadedBatches({
@@ -331,7 +335,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         const isApproachingEnd = currentEndIndex > loadedDataCount - STAC_BATCH_SIZE;
 
         if (nextToken && isApproachingEnd) {
-          console.log('[Auto-preload] Preloading next batch');
+          console.log('[Auto-preload] Preloading next batch in background');
+          setIsBackgroundFetch(true);
           setTimeout(() => {
             run([currentRequestURL, nextToken]);
           }, 100);
@@ -647,10 +652,10 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       const needsMore = endIndex > loadedCount && stacLoadedBatches.nextToken;
 
       if (needsMore && !stacLoadedBatches.loading) {
-        // Trigger next batch fetch with the token
+        // User-initiated fetch - show loading indicator
         const token = stacLoadedBatches.nextToken;
-        console.log('[Page Change] Fetching next batch with token:', token?.substring(0, 30));
-        // Pass both URL and token as separate arguments
+        console.log('[Page Change] User clicked page, fetching next batch');
+        setIsBackgroundFetch(false);
         run([currentRequestURL, token]);
       }
     }
@@ -848,6 +853,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     };
   };
 
+  const isLoadingInBackground = currentProject.isSTAC && isBackgroundFetch;
+
   return (
     <div data-testid="search">
       {contextHolder}
@@ -860,8 +867,10 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
             <Alert message="Select a project to search for results" type="info" showIcon />
           )}
           <h3>
-            {isLoading && <span style={styles.resultsHeader}>Loading latest results for </span>}
-            {results && !isLoading && (
+            {isLoading && !isBackgroundFetch && (
+              <span style={styles.resultsHeader}>Loading latest results for </span>
+            )}
+            {results && (!isLoading || isBackgroundFetch) && (
               <span
                 className={searchTableTargets.resultsFoundText.class()}
                 style={styles.resultsHeader}
@@ -1025,7 +1034,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
               data-testid="search-table"
               className={searchTableTargets.searchResultsTable.class()}
             >
-              {results && !isLoading ? (
+              {results && (!isLoading || isLoadingInBackground) ? (
                 <Table
                   loading={false}
                   results={docs}
