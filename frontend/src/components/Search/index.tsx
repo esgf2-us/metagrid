@@ -201,13 +201,19 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   // Track whether current fetch is background (silent) or user-initiated (show loading)
   const [isBackgroundFetch, setIsBackgroundFetch] = React.useState<boolean>(false);
 
+  // Track the last batch we triggered to prevent duplicate auto-preloads
+  const lastPreloadedBatchRef = React.useRef<number>(-1);
+
   const results: Record<string, unknown> | undefined = data;
 
-  // Reset STAC state when project changes
+  // Reset state when project changes
   React.useEffect(() => {
+    // Reset background fetch flag for all projects
+    setIsBackgroundFetch(false);
+    lastPreloadedBatchRef.current = -1;
+
     if (currentProject.isSTAC) {
       const currentProjectName = (project.name as string) || '';
-      setIsBackgroundFetch(false);
 
       clearCachedSearchResults();
       setStacLoadedBatches({
@@ -300,18 +306,10 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           nextToken = typeof nextLink?.body?.token === 'string' ? nextLink.body.token : undefined;
         }
 
-        console.log('[Result Processing] Batch received, count:', newDocs.length);
-        console.log('[Result Processing] First ID:', newDocs[0]?.id);
-        console.log('[Result Processing] Last ID:', newDocs[newDocs.length - 1]?.id);
-        console.log('[Result Processing] Next token:', nextToken?.substring(0, 30));
-
         // Accumulate results: append new batch to existing results
         const currentBatch = stacLoadedBatches.loadedBatches;
         const accumulatedResults =
           currentBatch === 0 ? newDocs : [...stacLoadedBatches.results, ...newDocs];
-
-        console.log('[Result Processing] Current batch number:', currentBatch);
-        console.log('[Result Processing] Total accumulated:', accumulatedResults.length);
 
         // Update state with accumulated results
         setStacLoadedBatches({
@@ -324,23 +322,6 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           loading: false,
           loaded: true,
         });
-
-        // Auto-preload next batch if user is approaching end of loaded data
-        const currentPage = paginationOptions.page || 1;
-        const currentPageSize = paginationOptions.pageSize || 10;
-        const currentEndIndex = currentPage * currentPageSize;
-        const loadedDataCount = accumulatedResults.length;
-
-        // Preload if user is within 1 batch (100 records) of the end of loaded data
-        const isApproachingEnd = currentEndIndex > loadedDataCount - STAC_BATCH_SIZE;
-
-        if (nextToken && isApproachingEnd) {
-          console.log('[Auto-preload] Preloading next batch in background');
-          setIsBackgroundFetch(true);
-          setTimeout(() => {
-            run([currentRequestURL, nextToken]);
-          }, 100);
-        }
       }
 
       // Original commented code below
@@ -482,6 +463,51 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       setAvailableFacets(parsedFacets as ParsedFacets);
     }
   }, [parsedFacets, setAvailableFacets]);
+
+  // Auto-load next batch after initial load completes (for STAC)
+  React.useEffect(() => {
+    if (
+      !currentProject.isSTAC ||
+      !stacLoadedBatches.loaded ||
+      stacLoadedBatches.loading ||
+      !stacLoadedBatches.nextToken ||
+      isLoading
+    ) {
+      return;
+    }
+
+    const currentPage = paginationOptions.page || 1;
+    const currentPageSize = paginationOptions.pageSize || 10;
+    const loadedCount = stacLoadedBatches.results.length;
+    const totalLoadedPages = Math.ceil(loadedCount / currentPageSize);
+    const currentBatch = stacLoadedBatches.loadedBatches;
+
+    // If we're on the last page and haven't already preloaded this batch
+    if (
+      currentPage === totalLoadedPages &&
+      !isBackgroundFetch &&
+      lastPreloadedBatchRef.current !== currentBatch
+    ) {
+      lastPreloadedBatchRef.current = currentBatch;
+      setIsBackgroundFetch(true);
+      setTimeout(() => {
+        run([currentRequestURL, stacLoadedBatches.nextToken]);
+      }, 100);
+    }
+  }, [
+    currentProject.isSTAC,
+    stacLoadedBatches.loaded,
+    stacLoadedBatches.loading,
+    stacLoadedBatches.nextToken,
+    stacLoadedBatches.results.length,
+    stacLoadedBatches.loadedBatches,
+    paginationOptions.page,
+    paginationOptions.pageSize,
+    isLoading,
+    isBackgroundFetch,
+    currentRequestURL,
+    run,
+  ]);
 
   const handleClearFilters = React.useCallback((): void => {
     setActiveSearchQuery(projectBaseQuery(activeSearchQuery.project));
@@ -642,21 +668,19 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   const handlePageChange = (page: number, pageSize: number): void => {
     setPaginationOptions({ page, pageSize });
 
-    // For STAC: Check if we need to load more data
-    if (currentProject.isSTAC) {
-      const startIndex = (page - 1) * pageSize;
-      const endIndex = startIndex + pageSize;
+    // For STAC: Auto-load next batch if user navigated to the last available page
+    if (currentProject.isSTAC && stacLoadedBatches.nextToken) {
       const loadedCount = stacLoadedBatches.results.length;
+      const totalLoadedPages = Math.ceil(loadedCount / pageSize);
+      const currentBatch = stacLoadedBatches.loadedBatches;
 
-      // Need more data if the page requires data beyond what we've loaded
-      const needsMore = endIndex > loadedCount && stacLoadedBatches.nextToken;
-
-      if (needsMore && !stacLoadedBatches.loading) {
-        // User-initiated fetch - show loading indicator
-        const token = stacLoadedBatches.nextToken;
-        console.log('[Page Change] User clicked page, fetching next batch');
-        setIsBackgroundFetch(false);
-        run([currentRequestURL, token]);
+      // If user is on the last page and we haven't preloaded this batch yet
+      if (page === totalLoadedPages && lastPreloadedBatchRef.current !== currentBatch) {
+        lastPreloadedBatchRef.current = currentBatch;
+        setIsBackgroundFetch(true);
+        setTimeout(() => {
+          run([currentRequestURL, stacLoadedBatches.nextToken]);
+        }, 100);
       }
     }
   };
@@ -736,7 +760,6 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   };
 
   if (results) {
-    /* istanbul ignore else -- @preserve */
     if (currentProject.isSTAC) {
       const currentProjectName = (project.name as string) || '';
 
@@ -748,23 +771,12 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
       docs = projectMatches ? stacLoadedBatches.results : [];
       const loadedCount = docs.length;
-      const hasMore = !!stacLoadedBatches.nextToken;
 
       // Use total matched from API for display
       numMatched = stacLoadedBatches.totalMatched || loadedCount;
 
-      // For pagination: show loaded data + one more batch if token exists
-      // This allows the user to click the next page to trigger loading
-      if (hasMore) {
-        paginationTotal = loadedCount + STAC_BATCH_SIZE;
-      } else {
-        paginationTotal = loadedCount;
-      }
-
-      // Cap at actual total if known
-      if (stacLoadedBatches.totalMatched > 0 && paginationTotal > stacLoadedBatches.totalMatched) {
-        paginationTotal = stacLoadedBatches.totalMatched;
-      }
+      // Only show pages for data that's already loaded
+      paginationTotal = loadedCount;
     } else if (results.response) {
       numMatched = (results as LoadedResults).response.numFound;
       paginationTotal = numMatched;
@@ -852,8 +864,6 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       setShowDownloadAllForm(value);
     };
   };
-
-  const isLoadingInBackground = currentProject.isSTAC && isBackgroundFetch;
 
   return (
     <div data-testid="search">
@@ -1034,28 +1044,19 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
               data-testid="search-table"
               className={searchTableTargets.searchResultsTable.class()}
             >
-              {results && (!isLoading || isLoadingInBackground) ? (
-                <Table
-                  loading={false}
-                  results={docs}
-                  totalResults={currentProject.isSTAC ? paginationTotal : numMatched}
-                  filenameVars={activeSearchQuery.filenameVars}
-                  isStac={currentProject.isSTAC}
-                  onUpdateCart={onUpdateCart}
-                  onRowSelect={handleRowSelect}
-                  onPageChange={handlePageChange}
-                  onPageSizeChange={handlePageSizeChange}
-                  scroll={{ y: 'calc(100vh - 480px)', x: 'max-content' }}
-                />
-              ) : (
-                <Table
-                  loading={isLoading}
-                  results={[]}
-                  totalResults={paginationOptions.pageSize}
-                  onUpdateCart={onUpdateCart}
-                  scroll={{ y: 'calc(100vh - 480px)', x: 'max-content' }}
-                />
-              )}
+              <Table
+                loading={isLoading && !isBackgroundFetch}
+                results={docs}
+                totalResults={currentProject.isSTAC ? paginationTotal : numMatched}
+                currentPage={paginationOptions.page}
+                filenameVars={activeSearchQuery.filenameVars}
+                isStac={currentProject.isSTAC}
+                onUpdateCart={onUpdateCart}
+                onRowSelect={handleRowSelect}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
+                scroll={{ y: 'calc(100vh - 480px)', x: 'max-content' }}
+              />
             </div>
           </Col>
           {results && currentRequestURL && (

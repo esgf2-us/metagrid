@@ -52,6 +52,7 @@ export type Props = {
   canDisableRows?: boolean;
   results: RawSearchResults | [];
   totalResults?: number;
+  currentPage?: number;
   selections?: RawSearchResults | [];
   filenameVars?: TextInputs | [];
   isStac?: boolean;
@@ -75,6 +76,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
   canDisableRows = true,
   results,
   totalResults,
+  currentPage,
   selections,
   filenameVars,
   isStac = false,
@@ -141,6 +143,10 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
     cachedPage = pagination.page;
     cachedSize = pagination.pageSize;
   }
+
+  // Use prop if provided, otherwise fall back to cache
+  const safePage = currentPage ?? cachedPage ?? 1;
+  const safeSize = cachedSize ?? 10;
 
   // Clamp the results count to a maximum of 10,000
   const clampedResultCount = totalResults ? Math.min(totalResults, MAX_RESULTS) : undefined;
@@ -253,9 +259,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
     }
   };
 
-  // For STAC: calculate which batch we're in
-  const safePage = cachedPage ?? 1;
-  const safeSize = cachedSize ?? 10;
+  // For STAC: calculate which batch we're in (safePage and safeSize defined above)
   const currentBatch = isStac ? Math.floor(((safePage - 1) * safeSize) / STAC_BATCH_SIZE) : 0;
 
   const tableConfig = {
