@@ -48,6 +48,7 @@ import {
   getCachedStacBatches,
   getStyle,
   getUrlFromSearch,
+  isEqual,
   objectIsEmpty,
   projectBaseQuery,
   searchAlreadyExists,
@@ -60,6 +61,7 @@ import { ActiveFacets, ParsedFacets, RawFacets, RawProject } from '../Facets/typ
 import Button from '../General/Button'; // Note, tooltips do not work for this button
 import Table from './Table';
 import {
+  ActiveSearchQuery,
   Pagination,
   RawSearchResult,
   RawSearchResults,
@@ -133,11 +135,9 @@ export type StacBatchLoading = {
   results: RawSearchResults;
   nextToken: string | undefined;
   projectName: string;
-  loadedBatches: number;
-  loadNextBatch: boolean;
   totalMatched: number;
-  loading: boolean;
-  loaded: boolean;
+  searchQuery: ActiveSearchQuery | null;
+  cacheRestored: boolean;
 };
 
 const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
@@ -190,7 +190,6 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   const [paginationOptions, setPaginationOptions] =
     React.useState<Pagination>(getCachedPagination());
 
-  // Initialize STAC state with cached batches if available
   const [stacLoadedBatches, setStacLoadedBatches] = React.useState<StacBatchLoading>(() => {
     try {
       /* eslint-disable-next-line @typescript-eslint/no-unsafe-call */
@@ -213,11 +212,9 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       results: [],
       nextToken: undefined,
       projectName: '',
-      loadedBatches: 0,
-      loadNextBatch: false,
       totalMatched: 0,
-      loading: false,
-      loaded: false,
+      searchQuery: null,
+      cacheRestored: false,
     };
   });
 
@@ -225,21 +222,21 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   const lastPreloadedBatchRef = React.useRef<number>(-1);
   const prevProjectNameRef = React.useRef<string>('');
 
-  // For non-STAC: hold cached results loaded synchronously
   const [cachedResults, setCachedResults] = React.useState<Record<string, unknown> | undefined>(
     undefined,
   );
 
   const results: Record<string, unknown> | undefined = data || cachedResults;
+  const hasStacResults = stacLoadedBatches.results.length > 0;
 
-  // Cache STAC batches when they change
+  // Cache STAC batches to localStorage for navigation persistence
   React.useEffect(() => {
-    if (currentProject.isSTAC && stacLoadedBatches.loaded && stacLoadedBatches.results.length > 0) {
+    if (currentProject.isSTAC && hasStacResults) {
       cacheStacBatches(stacLoadedBatches);
     }
-  }, [currentProject.isSTAC, stacLoadedBatches]);
+  }, [currentProject.isSTAC, stacLoadedBatches, hasStacResults]);
 
-  // Reset cache and pagination when switching projects
+  // Reset all caches and pagination when switching between projects
   React.useEffect(() => {
     const currentProjectName = (project.name as string) || '';
     const projectActuallyChanged =
@@ -259,11 +256,9 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           results: [],
           nextToken: undefined,
           projectName: currentProjectName,
-          loadedBatches: 0,
-          loadNextBatch: false,
           totalMatched: 0,
-          loading: false,
-          loaded: false,
+          searchQuery: null,
+          cacheRestored: false,
         });
       }
     }
@@ -271,7 +266,6 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     prevProjectNameRef.current = currentProjectName;
   }, [currentProject.isSTAC, project.name, paginationOptions.pageSize]);
 
-  // Generate search URL and cache pagination
   React.useEffect(() => {
     if (!objectIsEmpty(project)) {
       cachePagination(paginationOptions);
@@ -284,11 +278,60 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     setFiltersExist(checkFiltersExist(activeFacets, textInputs));
   }, [activeFacets, textInputs]);
 
-  // Fetch search results (skips if cache is loaded)
+  // Handle STAC cache restoration and query change detection
+  // When returning from another page, restore cached query once, then allow modifications
+  React.useEffect(() => {
+    if (currentProject.isSTAC && stacLoadedBatches.searchQuery && hasStacResults) {
+      const cachedQuery = stacLoadedBatches.searchQuery;
+      const currentProjectName = (project.name as string) || '';
+
+      /* eslint-disable @typescript-eslint/no-unsafe-call */
+      const queryChanged =
+        !isEqual(activeSearchQuery.activeFacets, cachedQuery.activeFacets) ||
+        !isEqual(activeSearchQuery.textInputs, cachedQuery.textInputs) ||
+        !isEqual(activeSearchQuery.filenameVars, cachedQuery.filenameVars);
+      /* eslint-enable @typescript-eslint/no-unsafe-call */
+
+      if (queryChanged && stacLoadedBatches.projectName === currentProjectName) {
+        if (!stacLoadedBatches.cacheRestored) {
+          // First time after loading cache: restore the cached query to UI
+          setActiveSearchQuery(cachedQuery);
+          setStacLoadedBatches({
+            ...stacLoadedBatches,
+            cacheRestored: true,
+          });
+        } else {
+          // After restoration: user modified query, reset batches and fetch new results
+          setStacLoadedBatches({
+            results: [],
+            nextToken: undefined,
+            projectName: currentProjectName,
+            totalMatched: 0,
+            searchQuery: activeSearchQuery,
+            cacheRestored: false,
+          });
+          /* eslint-disable-next-line @typescript-eslint/no-unsafe-call */
+          clearCachedStacBatches();
+          setPaginationOptions({ page: 1, pageSize: paginationOptions.pageSize });
+        }
+      }
+    }
+  }, [
+    currentProject.isSTAC,
+    activeSearchQuery.activeFacets,
+    activeSearchQuery.textInputs,
+    activeSearchQuery.filenameVars,
+    project.name,
+    paginationOptions.pageSize,
+    data,
+    hasStacResults,
+    stacLoadedBatches.cacheRestored,
+  ]);
+
   React.useEffect(() => {
     if (!objectIsEmpty(project) && currentRequestURL) {
       if (currentProject.isSTAC) {
-        if (stacLoadedBatches.results.length < 1 && !stacLoadedBatches.loading) {
+        if (!hasStacResults) {
           run(currentRequestURL);
         }
       } else {
@@ -303,9 +346,9 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         }
       }
     }
-  }, [run, currentRequestURL, project, currentProject.isSTAC]);
+  }, [run, currentRequestURL, project, currentProject.isSTAC, hasStacResults]);
 
-  // Process results and update facets
+  // Process API results: cache, parse facets, and accumulate STAC batches
   React.useEffect(() => {
     if (results && currentRequestURL && !objectIsEmpty(results)) {
       cacheSearchResults(results, paginationOptions, currentRequestURL);
@@ -321,12 +364,11 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         setParsedFacets(facets);
       }
 
-      // Extract STAC tokens and accumulate batches
+      // For STAC: accumulate batches with cursor-based pagination
       if (currentProject.isSTAC && results.stac && results.search) {
         const stacResponse = results as StacResponse;
         const { links, features } = stacResponse.search;
 
-        // Get total matched count
         const searchData = stacResponse.search as {
           numberMatched?: number;
           numMatched?: number;
@@ -334,34 +376,29 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         };
         const totalMatched = searchData.numberMatched || searchData.numMatched || 0;
 
-        // Convert STAC features to our format
         const newDocs =
           features && features.length > 0
             ? features.map((stacResult: StacFeature) => convertStacToRawSearchResult(stacResult))
             : [];
 
-        // Extract next token
+        // Extract next token for fetching additional batches
         let nextToken: string | undefined;
         if (links && Array.isArray(links)) {
           const nextLink = links.find((link) => link.rel === 'next');
           nextToken = typeof nextLink?.body?.token === 'string' ? nextLink.body.token : undefined;
         }
 
-        // Accumulate results: append new batch to existing results
-        const currentBatch = stacLoadedBatches.loadedBatches;
+        const loadedBatches = Math.ceil(stacLoadedBatches.results.length / STAC_BATCH_SIZE);
         const accumulatedResults =
-          currentBatch === 0 ? newDocs : [...stacLoadedBatches.results, ...newDocs];
+          loadedBatches === 0 ? newDocs : [...stacLoadedBatches.results, ...newDocs];
 
-        // Update state with accumulated results
         setStacLoadedBatches({
           results: accumulatedResults,
           nextToken,
           projectName: (project.name as string) || '',
-          loadedBatches: currentBatch + 1,
-          loadNextBatch: false,
           totalMatched,
-          loading: false,
-          loaded: true,
+          searchQuery: activeSearchQuery,
+          cacheRestored: true,
         });
       }
     }
@@ -373,14 +410,14 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     }
   }, [parsedFacets, setAvailableFacets]);
 
-  // Auto-load next STAC batch when user reaches last page
+  // Auto-preload next STAC batch when user reaches last page
   React.useEffect(() => {
     if (
       !currentProject.isSTAC ||
-      !stacLoadedBatches.loaded ||
-      stacLoadedBatches.loading ||
+      !hasStacResults ||
       !stacLoadedBatches.nextToken ||
-      isLoading
+      isLoading ||
+      isBackgroundFetch
     ) {
       return;
     }
@@ -389,14 +426,10 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     const currentPageSize = paginationOptions.pageSize || 10;
     const loadedCount = stacLoadedBatches.results.length;
     const totalLoadedPages = Math.ceil(loadedCount / currentPageSize);
-    const currentBatch = stacLoadedBatches.loadedBatches;
+    const currentBatch = Math.ceil(loadedCount / STAC_BATCH_SIZE);
 
-    // If we're on the last page and haven't already preloaded this batch
-    if (
-      currentPage === totalLoadedPages &&
-      !isBackgroundFetch &&
-      lastPreloadedBatchRef.current !== currentBatch
-    ) {
+    // Preload next batch in background for smooth pagination
+    if (currentPage === totalLoadedPages && lastPreloadedBatchRef.current !== currentBatch) {
       lastPreloadedBatchRef.current = currentBatch;
       setIsBackgroundFetch(true);
       setTimeout(() => {
@@ -405,11 +438,9 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     }
   }, [
     currentProject.isSTAC,
-    stacLoadedBatches.loaded,
-    stacLoadedBatches.loading,
+    hasStacResults,
     stacLoadedBatches.nextToken,
     stacLoadedBatches.results.length,
-    stacLoadedBatches.loadedBatches,
     paginationOptions.page,
     paginationOptions.pageSize,
     isLoading,
@@ -563,11 +594,6 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   };
 
   const handleRowSelect = (selectedRows: RawSearchResults | []): void => {
-    // If you select rows on one page of the table, then go to another page
-    // and select more rows, the rows from the previous page transform from
-    // objects to undefined in the array. To work around this, filter out the
-    // undefined values.
-    // https://github.com/ant-design/ant-design/issues/24243
     const rows = (selectedRows as RawSearchResults).filter(
       (row: RawSearchResult) => row !== undefined,
     );
@@ -577,13 +603,11 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   const handlePageChange = (page: number, pageSize: number): void => {
     setPaginationOptions({ page, pageSize });
 
-    // For STAC: Auto-load next batch if user navigated to the last available page
     if (currentProject.isSTAC && stacLoadedBatches.nextToken) {
       const loadedCount = stacLoadedBatches.results.length;
       const totalLoadedPages = Math.ceil(loadedCount / pageSize);
-      const currentBatch = stacLoadedBatches.loadedBatches;
+      const currentBatch = Math.ceil(loadedCount / STAC_BATCH_SIZE);
 
-      // If user is on the last page and we haven't preloaded this batch yet
       if (page === totalLoadedPages && lastPreloadedBatchRef.current !== currentBatch) {
         lastPreloadedBatchRef.current = currentBatch;
         setIsBackgroundFetch(true);
@@ -598,7 +622,6 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     setPaginationOptions({ page: 1, pageSize });
   };
 
-  // Memoize stringifyApiRequest to avoid recalculating on every render
   const queryString = React.useMemo(
     () =>
       stringifyApiRequest(
@@ -623,7 +646,6 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     ],
   );
 
-  // Memoize allSelectedItemsInCart check
   const allSelectedItemsInCart = React.useMemo(
     () =>
       selectedItems.filter(
@@ -668,13 +690,9 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     response: { docs: RawSearchResults; numFound: number };
   };
 
-  // For STAC, check if we have loaded batches (from cache or API)
-  // For non-STAC, check if we have results from API/cache
   if (currentProject.isSTAC || results) {
     if (currentProject.isSTAC) {
       const currentProjectName = (project.name as string) || '';
-
-      // Check if loaded results match current project
       const projectMatches =
         currentProjectName &&
         stacLoadedBatches.projectName === currentProjectName &&
@@ -682,11 +700,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
       docs = projectMatches ? stacLoadedBatches.results : [];
       const loadedCount = docs.length;
-
-      // Use total matched from API for display
       numMatched = stacLoadedBatches.totalMatched || loadedCount;
-
-      // Only show pages for data that's already loaded
       paginationTotal = loadedCount;
     } else if (results && results.response) {
       numMatched = (results as LoadedResults).response.numFound;
@@ -791,19 +805,20 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
             {isLoading && !isBackgroundFetch && (
               <span style={styles.resultsHeader}>Loading latest results for </span>
             )}
-            {results && (!isLoading || isBackgroundFetch) && (
-              <span
-                className={searchTableTargets.resultsFoundText.class()}
-                style={styles.resultsHeader}
-                data-testid="search-results-span"
-              >
-                {numMatched.toLocaleString()} results found for{' '}
-              </span>
-            )}
+            {(results || (currentProject.isSTAC && hasStacResults)) &&
+              (!isLoading || isBackgroundFetch) && (
+                <span
+                  className={searchTableTargets.resultsFoundText.class()}
+                  style={styles.resultsHeader}
+                  data-testid="search-results-span"
+                >
+                  {numMatched.toLocaleString()} results found for{' '}
+                </span>
+              )}
             <span style={styles.resultsHeader}>{(project as RawProject).name}</span>
           </h3>
           <div>
-            {results && (
+            {(results || (currentProject.isSTAC && hasStacResults)) && (
               <Space>
                 {currentProject.isSTAC && (
                   <>
@@ -826,7 +841,15 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                       show={showDownloadAllForm}
                       hide={setDownloadAllForm(false)}
                       searchURL={getUrlFromSearch(activeSearchQuery)}
-                      stacResults={(results as StacResponse).search}
+                      stacResults={
+                        results
+                          ? (results as StacResponse).search
+                          : {
+                              features: [],
+                              links: [],
+                              type: 'FeatureCollection',
+                            }
+                      }
                     />
                   </>
                 )}
@@ -872,7 +895,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           </div>
         </div>
         <div>
-          {results && (
+          {(results || (currentProject.isSTAC && hasStacResults)) && (
             <p>
               <span style={styles.subtitles} data-testid="main-query-string-label">
                 {currentProject.isSTAC ? 'STAC Query String' : 'Query String'}
@@ -906,7 +929,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
             </p>
           )}
         </div>
-        {results && (
+        {(results || (currentProject.isSTAC && hasStacResults)) && (
           <Row style={styles.filtersContainer}>
             {Object.keys(activeFacets).length !== 0 &&
               Object.keys(activeFacets).map((facet: string) =>

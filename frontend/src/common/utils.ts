@@ -84,6 +84,13 @@ export const projectBaseQuery = (
 export const objectIsEmpty = (obj: Record<any, any>): boolean =>
   !obj || Object.keys(obj).length === 0;
 
+/**
+ * Deep equality comparison using JSON serialization.
+ * Useful for comparing objects, arrays, or primitives.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const isEqual = (a: any, b: any): boolean => JSON.stringify(a) === JSON.stringify(b);
+
 const bodySider = {
   padding: '12px 12px 12px 12px',
   width: '400px',
