@@ -192,7 +192,6 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   const [stacLoadedBatches, setStacLoadedBatches] = React.useState<StacBatchLoading>(() => {
     try {
-      /* eslint-disable-next-line @typescript-eslint/no-unsafe-call */
       const cachedStac = getCachedStacBatches() as StacBatchLoading | null;
 
       if (
@@ -204,7 +203,6 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         return cachedStac;
       }
     } catch (err) {
-      /* eslint-disable-next-line @typescript-eslint/no-unsafe-call */
       clearCachedStacBatches();
     }
 
@@ -246,10 +244,10 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       setIsBackgroundFetch(false);
       lastPreloadedBatchRef.current = -1;
       clearCachedSearchResults();
-      /* eslint-disable-next-line @typescript-eslint/no-unsafe-call */
       clearCachedStacBatches();
       setCachedResults(undefined);
       setPaginationOptions({ page: 1, pageSize: paginationOptions.pageSize });
+      setAvailableFacets({});
 
       if (currentProject.isSTAC) {
         setStacLoadedBatches({
@@ -264,7 +262,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     }
 
     prevProjectNameRef.current = currentProjectName;
-  }, [currentProject.isSTAC, project.name, paginationOptions.pageSize]);
+  }, [currentProject.isSTAC, project.name, paginationOptions.pageSize, setAvailableFacets]);
 
   React.useEffect(() => {
     if (!objectIsEmpty(project)) {
@@ -285,12 +283,10 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       const cachedQuery = stacLoadedBatches.searchQuery;
       const currentProjectName = (project.name as string) || '';
 
-      /* eslint-disable @typescript-eslint/no-unsafe-call */
       const queryChanged =
         !isEqual(activeSearchQuery.activeFacets, cachedQuery.activeFacets) ||
         !isEqual(activeSearchQuery.textInputs, cachedQuery.textInputs) ||
         !isEqual(activeSearchQuery.filenameVars, cachedQuery.filenameVars);
-      /* eslint-enable @typescript-eslint/no-unsafe-call */
 
       if (queryChanged && stacLoadedBatches.projectName === currentProjectName) {
         if (!stacLoadedBatches.cacheRestored) {
@@ -310,8 +306,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
             searchQuery: activeSearchQuery,
             cacheRestored: false,
           });
-          /* eslint-disable-next-line @typescript-eslint/no-unsafe-call */
           clearCachedStacBatches();
+          setAvailableFacets({});
           setPaginationOptions({ page: 1, pageSize: paginationOptions.pageSize });
         }
       }
