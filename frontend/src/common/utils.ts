@@ -344,6 +344,10 @@ export const getSearchFromUrl = (url?: string): ActiveSearchQuery => {
 
   const params = new URLSearchParams(url || window.location.search);
 
+  if (params.size < 1) {
+    return searchQuery;
+  }
+
   const projName = params.get('project');
   const versionType = params.get('versionType');
   const resultType = params.get('resultType');
@@ -495,11 +499,22 @@ export const createIntakeEsgfSearch = (searchQuery: ActiveSearchQuery): string =
 
   const commandParts: string[] = [];
 
-  // Add other search parameters
+  // Add project parameter (intake-esgf defaults to CMIP6 if not specified)
+  const projectName = (project.name as string)?.toLowerCase();
+  if (projectName && !project.isSTAC) {
+    commandParts.push(`project='${projectName}'`);
+  }
+
+  // Facets to exclude from intake-esgf (node-specific or intake-esgf handles differently)
+  const excludedFacets = ['data_node', 'index_node'];
 
   /* istanbul ignore else -- @preserve */
   if (!objectIsEmpty(activeFacets)) {
     Object.entries(activeFacets).forEach(([key, value]) => {
+      // Skip excluded facets
+      if (excludedFacets.includes(key)) {
+        return;
+      }
       /* istanbul ignore else -- @preserve */
       if (value.length > 1) {
         commandParts.push(`${key}=['${value.join("', '")}']`);
@@ -516,16 +531,37 @@ export const createIntakeEsgfSearch = (searchQuery: ActiveSearchQuery): string =
     commandParts.push(`latest=True`);
   }
 
-  const intakeImports = project.isSTAC
-    ? `import intake_esgf\n\n`
-    : 'from intake_esgf import ESGFCatalog\n\n';
-  const confSettings = project.isSTAC
-    ? `intake_esgf.conf.set(indices={"${window.METAGRID.STAC_URL}":True})\n\n`
-    : '';
-  const catalogCmd = `cat=${project.isSTAC ? 'intake_esgf.' : ''}ESGFCatalog()\n\n`;
-  const searchCmd = `metagrid_search=cat.search(${commandParts.join(', ')})`;
+  const intakeImports = `import intake_esgf\nfrom intake_esgf import supported_projects\n\n`;
 
-  return `${intakeImports}${confSettings}${catalogCmd}${searchCmd}\nprint(metagrid_search)`;
+  const projectValidation = project.isSTAC
+    ? ''
+    : `# Validate project is supported by intake-esgf
+supported = supported_projects()
+project_name = '${projectName}'
+if project_name not in supported:
+    print(f"Warning: '{project_name}' not in supported projects: {supported}")
+    print("Attempting search anyway...")
+
+`;
+
+  const confSettings = project.isSTAC
+    ? `intake_esgf.conf.set(indices={"${window.METAGRID.STAC_URL}":True})\n`
+    : `intake_esgf.conf.set(all_indices=True)\n`;
+
+  const catalogCmd = `\ncat=intake_esgf.ESGFCatalog()\n\n`;
+
+  const searchCmd =
+    commandParts.length > 0
+      ? `try:
+    metagrid_search=cat.search(${commandParts.join(', ')})
+    print(metagrid_search)
+except Exception as e:
+    print(f"Search failed: {e}")
+    print("Tip: Facet names may differ between the web interface and intake-esgf.")
+    print("Try removing some facets or checking intake-esgf documentation.")`
+      : `metagrid_search=cat.search(latest=True)\nprint(metagrid_search)`;
+
+  return `${intakeImports}${projectValidation}${confSettings}${catalogCmd}${searchCmd}`;
 };
 
 export const combineCarts = (
@@ -670,6 +706,7 @@ export const cacheSearchResults = (
   fetchedResults: Record<string, unknown> | undefined,
   pagination: Pagination,
   cachedURL: string,
+  searchQuery?: ActiveSearchQuery,
 ): void => {
   if (fetchedResults && !Object.hasOwn(fetchedResults, 'cachedURL')) {
     saveToLocalStorage(
@@ -677,6 +714,7 @@ export const cacheSearchResults = (
       {
         results: fetchedResults,
         cachedURL,
+        searchQuery, // Cache the actual query object instead of trying to parse URL
         expires: Date.now() + 60 * 60 * 1000, // Expires after an hour
       },
       true,
@@ -701,6 +739,7 @@ export const getCachedSearchResults = (): Record<string, unknown> => {
   // If not expired, return the cached results
   return {
     cachedURL: fetchedResults.cachedURL,
+    searchQuery: fetchedResults.searchQuery,
     ...(typeof fetchedResults.results === 'object' && fetchedResults.results !== null
       ? fetchedResults.results
       : {}),
@@ -786,4 +825,112 @@ export const downloadFileForUser = (filename: string, fileContent: string): void
   downloadLinkNode.click();
 
   document.body.removeChild(downloadLinkNode);
+};
+
+/**
+ * Parses raw facets from the API into a structured format.
+ * Joins adjacent elements of the facets object into tuples [facetValue, count].
+ */
+export const parseFacets = (
+  facets: Record<string, (string | number)[]>,
+): Record<string, [string, number][]> => {
+  const res = facets as unknown as Record<string, [string, number][]>;
+  const keys: string[] = Object.keys(facets);
+
+  keys.forEach((key) => {
+    res[key] = res[key].reduce(
+      (r, a, i) => {
+        if (i % 2) {
+          r[r.length - 1].push(a as unknown as number);
+        } else {
+          r.push([a] as never);
+        }
+        return r;
+      },
+      [] as unknown as [string, number][],
+    );
+  });
+  return res;
+};
+
+/**
+ * Checks if any filters (facets or text inputs) are active.
+ */
+export const checkFiltersExist = (
+  activeFacets: ActiveFacets | Record<string, unknown>,
+  textInputs: TextInputs,
+): boolean => !(objectIsEmpty(activeFacets) && textInputs.length === 0);
+
+/**
+ * Identifies facets that might have caused a search error by comparing
+ * the current query with the last successful query.
+ * Returns a Set of facet keys in the format "facetName:facetValue".
+ */
+export const identifyProblematicFacets = (
+  currentQuery: ActiveSearchQuery,
+  lastSuccessfulQuery: ActiveSearchQuery | null,
+): Set<string> => {
+  const problematicFacets = new Set<string>();
+
+  if (!lastSuccessfulQuery) {
+    return problematicFacets;
+  }
+
+  const currentFacets = currentQuery.activeFacets;
+  const lastFacets = lastSuccessfulQuery.activeFacets;
+
+  // Find facets that are new or have new values
+  Object.keys(currentFacets).forEach((facetKey) => {
+    const currentValues = currentFacets[facetKey] || [];
+    const lastValues = lastFacets[facetKey] || [];
+
+    // Check if this is a new facet key or has new values
+    if (!lastFacets[facetKey]) {
+      // Entire facet is new
+      currentValues.forEach((value) => {
+        problematicFacets.add(`${facetKey}:${value}`);
+      });
+    } else {
+      // Check for new values in existing facet
+      currentValues.forEach((value) => {
+        if (!lastValues.includes(value)) {
+          problematicFacets.add(`${facetKey}:${value}`);
+        }
+      });
+    }
+  });
+
+  return problematicFacets;
+};
+
+/**
+ * Derives query and facets from cached search results.
+ * Extracts the search query from the cache and parses facets from the results.
+ * Prefers the directly cached searchQuery over parsing the URL.
+ */
+export const deriveCachedSearchData = (cache: Record<string, unknown>): {
+  results: Record<string, unknown>;
+  query: ActiveSearchQuery | null;
+  facets: Record<string, [string, number][]>;
+} => {
+  // Prefer directly cached query over parsing URL (which can be unreliable for SOLR URLs)
+  let query = cache.searchQuery as ActiveSearchQuery | null;
+
+  // Fallback to URL parsing only for legacy caches or user-shareable URLs
+  if (!query) {
+    const cachedURL = cache.cachedURL as string;
+    query = cachedURL ? getSearchFromUrl(cachedURL) : null;
+  }
+
+  let facets: Record<string, [string, number][]> = {};
+  if (cache.facet_counts) {
+    const { facet_fields: facetFields } = cache.facet_counts as {
+      facet_fields: Record<string, (string | number)[]>;
+    };
+    facets = parseFacets(facetFields);
+  } else if (cache.facets) {
+    facets = cache.facets as Record<string, [string, number][]>;
+  }
+
+  return { results: cache, query, facets };
 };

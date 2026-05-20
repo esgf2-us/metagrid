@@ -1,5 +1,5 @@
 import { TableProps } from 'antd';
-import { ActiveFacets, RawProject } from '../Facets/types';
+import { ActiveFacets, ParsedFacets, RawProject } from '../Facets/types';
 
 export type TextInputs = string[];
 
@@ -168,4 +168,10 @@ export type StacResponse = {
   facets: StacFacetsData;
   search: StacSearchResponse;
   stac: boolean;
+};
+
+export type CachedSearchData = {
+  results: Record<string, unknown> | undefined;
+  query: ActiveSearchQuery | null;
+  facets: ParsedFacets | Record<string, unknown>;
 };

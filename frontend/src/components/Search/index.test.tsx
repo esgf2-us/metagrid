@@ -13,11 +13,12 @@ import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
 import { ActiveFacets, RawFacets, RawProject } from '../Facets/types';
-import Search, { checkFiltersExist, parseFacets, Props } from './index';
+import Search, { Props } from './index';
 import { ActiveSearchQuery, RawSearchResult, ResultType, TextInputs, VersionType } from './types';
 import { openDropdownList, AtomWrapper } from '../../test/testFunctions';
 import { AppStateKeys } from '../../common/atoms';
 import { stringifyApiRequest } from '../../common/STAC';
+import { checkFiltersExist, parseFacets } from '../../common/utils';
 
 const user = userEvent.setup();
 
