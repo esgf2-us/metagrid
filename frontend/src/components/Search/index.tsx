@@ -325,7 +325,10 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   ]);
 
   React.useEffect(() => {
-    if (!objectIsEmpty(project) && currentRequestURL) {
+    // Don't run search until we have a full project object (not just { name: "..." })
+    const hasFullProject = project.pk !== undefined && project.name !== undefined;
+
+    if (!objectIsEmpty(project) && hasFullProject && currentRequestURL) {
       if (currentProject.isSTAC) {
         if (!hasStacResults) {
           run(currentRequestURL);
