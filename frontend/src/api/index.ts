@@ -45,7 +45,6 @@ import {
   getStacProject,
   buildStacProjects,
   setConfiguredAdditionalProjects,
-  stringifyApiRequest,
 } from '../common/STAC';
 import { ProjectsConfig, STAC_PROJECT_LIST } from '../common/useProjectsConfig';
 
@@ -460,8 +459,8 @@ export const fetchProjects = async (
       const whitelist = config?.whitelist || [];
       const blacklist = config?.blacklist || [];
 
-      // Combine backend database projects with additional projects
-      const allProjects: RawProjects = [...backendProjects, ...additionalProjects];
+      // Combine projects with additional projects first (at top of dropdown)
+      const allProjects: RawProjects = [...additionalProjects, ...backendProjects];
 
       // Apply whitelist/blacklist filters to the combined list
       let filteredProjects = applyProjectFilters(allProjects, whitelist, blacklist);
@@ -670,21 +669,6 @@ export const fetchSTACAggregations = async (
     aggregations: aggregationsList,
     filter,
   };
-
-  const project = getStacProject(projectName);
-  const aggregationsQuery = stringifyApiRequest(
-    project,
-    reqUrl,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    aggregationsList,
-  );
-
-  console.log(aggregationsQuery);
 
   return axios
     .post(`${apiRoutes.esgfAggregationsSTAC.path}`, payload)

@@ -34,8 +34,14 @@ import StatusToolTip from '../NodeStatus/StatusToolTip';
 import { ActiveSearchQuery, ResultType, VersionType } from '../Search/types';
 import { ActiveFacets, ParsedFacets } from './types';
 import { clearCachedSearchResults, objectIsEmpty, showError, showNotice } from '../../common/utils';
-import { activeSearchQueryAtom, availableFacetsAtom, currentProjectAtom } from '../../common/atoms';
+import {
+  activeSearchQueryAtom,
+  availableFacetsAtom,
+  currentProjectAtom,
+  currentRequestQueryAtom,
+} from '../../common/atoms';
 import { leftSidebarTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
+import { getAggregationsList, stringifyApiRequest } from '../../common/STAC';
 
 dayjs.extend(customParseFormat);
 dayjs.extend(advancedFormat);
@@ -178,6 +184,7 @@ const FacetsForm: React.FC = () => {
     useAtom<ActiveSearchQuery>(activeSearchQueryAtom);
 
   const currentProject = useAtomValue(currentProjectAtom);
+  const currentRequestURL = useAtomValue(currentRequestQueryAtom);
 
   // Local variables
   const [messageApi, contextHolder] = message.useMessage();
@@ -223,6 +230,26 @@ const FacetsForm: React.FC = () => {
     minVersionDate ? formatDate(minVersionDate, false) : (minVersionDate as null),
     maxVersionDate ? formatDate(maxVersionDate, false) : (maxVersionDate as null),
   ];
+
+  // Generate aggregations query string for STAC projects
+  const aggregationsQueryString = useMemo(() => {
+    if (!currentProject.isSTAC || !currentProject.projectName || !currentRequestURL) {
+      return '';
+    }
+
+    const aggregationsList = getAggregationsList(currentProject.projectName);
+    return stringifyApiRequest(
+      currentProject,
+      currentRequestURL,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      aggregationsList,
+    );
+  }, [currentProject, currentRequestURL]);
 
   // const handleOnFinishFilenameVarForm = (values: { [key: string]: string }): void => {
   //   if (activeSearchQuery.filenameVars.includes(values.filenameVar as never)) {
@@ -548,7 +575,33 @@ const FacetsForm: React.FC = () => {
         )}
         <Row justify="end" gutter={8}>
           <Col span={16}>
-            <h3>Filter with Facets</h3>
+            <h3>
+              Filter with Facets
+              {currentProject.isSTAC && aggregationsQueryString && (
+                <Tooltip
+                  title={
+                    <Space direction="horizontal" size="small">
+                      <span>Copy STAC aggregate request:</span>
+                      <Button
+                        size="small"
+                        icon={<CopyOutlined />}
+                        onClick={() => {
+                          if (navigator && navigator.clipboard) {
+                            navigator.clipboard.writeText(aggregationsQueryString);
+                            showNotice(messageApi, 'Aggregations query copied to clipboard!');
+                          }
+                        }}
+                      />
+                    </Space>
+                  }
+                  placement="right"
+                >
+                  <InfoCircleOutlined
+                    style={{ marginLeft: '8px', fontSize: '14px', cursor: 'pointer' }}
+                  />
+                </Tooltip>
+              )}
+            </h3>
           </Col>
           <Col span={8} style={{ textAlign: 'right' }}>
             {expandAll ? (
