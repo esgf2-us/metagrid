@@ -158,6 +158,10 @@ export const searchTableTargets: Record<string, TargetObject> = {
   saveSearchBtn: new TargetObject(),
 };
 
+export const downloadAllModalTargets: Record<string, TargetObject> = {
+  setPreferredNodesBtn: new TargetObject(),
+};
+
 export const copySearchOptionsTargets: Record<string, TargetObject> = {
   copyMenuBtn: new TargetObject(),
   copySearchLinkBtn: new TargetObject(),
@@ -227,6 +231,7 @@ export const cartTourTargets: Record<string, TargetObject> = {
   downloadTransferBtn: new TargetObject(),
   globusCollectionDropdown: new TargetObject(),
   removeItemsBtn: new TargetObject(),
+  setPreferredNodesBtn: new TargetObject(),
 };
 
 export const manageCollectionsTourTargets: Record<string, TargetObject> = {
@@ -592,7 +597,7 @@ const addSearchFeaturesSteps = (tour: JoyrideTour): JoyrideTour => {
     )
     .addNextStep(
       searchTableTargets.downloadSearchBtn.selector(),
-      'The Download All Search button allows you to skip the data cart and download all the datasets returned by your search!',
+      'The Download All Results button allows you to skip the data cart and download all the datasets returned by your search! After clicking this button, you can set preferred data nodes and choose between wget script or Globus transfer.',
       'bottom',
     )
     .addNextStep(
@@ -1158,6 +1163,38 @@ export const createCartDownloadOptionsTour = (
         // Flag that the check boxes are on
         tour.setTourFlag('boxes-checked', true);
         await delay(300);
+      },
+    )
+    .addNextStep(
+      cartTourTargets.setPreferredNodesBtn.selector(),
+      'If your datasets are available from multiple data nodes, you can use the "Set Preferred Nodes" button to prioritize which nodes to download from. This helps ensure you get the fastest or most reliable downloads based on your location and preferences.',
+      'bottom',
+      /* istanbul ignore next -- @preserve */
+      async () => {
+        // Only open the modal if the button is not disabled (i.e., if nodes are available)
+        const button = document.querySelector(
+          cartTourTargets.setPreferredNodesBtn.selector(),
+        ) as HTMLButtonElement;
+        if (button && !button.disabled) {
+          clickFirstElement(cartTourTargets.setPreferredNodesBtn.selector());
+          await delay(500);
+        }
+      },
+    )
+    .addNextStep(
+      '[data-testid="preferredNodesModalForm"]',
+      'The Preferred Nodes modal lets you drag and drop data nodes to set your preferred order. When downloading, the system will use your top preference first, then fall back to the next available node if needed. Click "Apply" to save your preferences or "Cancel" to close without changes.',
+      'auto',
+      /* istanbul ignore next -- @preserve */
+      async () => {
+        // Close the modal by clicking Cancel button
+        const cancelButton = document.querySelector(
+          '[data-testid="preferredNodesModalForm"] [data-testid="cancelButton"]',
+        ) as HTMLButtonElement;
+        if (cancelButton) {
+          clickFirstElement('[data-testid="preferredNodesModalForm"] [data-testid="cancelButton"]');
+          await delay(300);
+        }
       },
     )
     .addNextStep(

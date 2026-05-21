@@ -17,6 +17,7 @@ import {
 import { formatBytes } from '../../common/utils';
 import { postSTACSearch } from '../../api';
 import { selectedNodesAtom } from '../../common/atoms';
+import { downloadAllModalTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 
 // Threshold for showing large download warning
 export const LARGE_DOWNLOAD_WARNING_THRESHOLD = 10000;
@@ -198,6 +199,7 @@ const DownloadModal = ({
                   {allResults && (
                     <Button
                       type="primary"
+                      className={downloadAllModalTargets.setPreferredNodesBtn.class()}
                       onClick={() => setShowPreferredNodesModal(true)}
                       disabled={!hasNodes}
                       data-testid="setPreferredNodesBtn"

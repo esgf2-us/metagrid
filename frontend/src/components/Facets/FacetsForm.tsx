@@ -33,7 +33,7 @@ import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
 import { ActiveSearchQuery, ResultType, VersionType } from '../Search/types';
 import { ActiveFacets, ParsedFacets } from './types';
-import { clearCachedSearchResults, objectIsEmpty, showError, showNotice } from '../../common/utils';
+import { objectIsEmpty, showError, showNotice } from '../../common/utils';
 import {
   activeSearchQueryAtom,
   availableFacetsAtom,
