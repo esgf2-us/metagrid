@@ -1,17 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button, Card, Modal, Spin } from 'antd';
+import { useSetAtom } from 'jotai';
 import CloudDownloadOutlined from '@ant-design/icons/lib/icons/CloudDownloadOutlined';
 import WarningOutlined from '@ant-design/icons/lib/icons/WarningOutlined';
 import DatasetDownload from './DatasetDownload';
-import { ActiveSearchQuery, StacSearchResponse } from '../Search/types';
+import PreferredNodesModal from './PreferredNodesModal';
+import { ActiveSearchQuery, StacSearchResponse, StacFeature } from '../Search/types';
 import {
   getDownloadSizeFromSTACsearch,
   getFileCountFromSTACsearch,
   convertSearchParamsIntoStacFilter,
   getStacProject,
+  getReplicaNodelsList,
+  convertStacToRawSearchResult,
 } from '../../common/STAC';
 import { formatBytes } from '../../common/utils';
 import { postSTACSearch } from '../../api';
+import { selectedNodesAtom } from '../../common/atoms';
 
 // Threshold for showing large download warning
 export const LARGE_DOWNLOAD_WARNING_THRESHOLD = 10000;
@@ -37,6 +42,9 @@ const DownloadModal = ({
   const [loadingAllResults, setLoadingAllResults] = useState(false);
   const [allResults, setAllResults] = useState<StacSearchResponse | null>(null);
   const [loadWarningAcknowledged, setLoadWarningAcknowledged] = useState(false);
+  const [showPreferredNodesModal, setShowPreferredNodesModal] = useState(false);
+
+  const setSelectedNodes = useSetAtom(selectedNodesAtom);
 
   // Reset state when modal is closed
   useEffect(() => {
@@ -48,7 +56,29 @@ const DownloadModal = ({
     }
   }, [show]);
 
-  // Fetch all results function - defined before useEffect that calls it
+  // Extract unique nodes from search results
+  const availableNodes = useMemo(() => {
+    if (!allResults || !allResults.features) {
+      return [];
+    }
+
+    const nodesSet = new Set<string>();
+
+    allResults.features.forEach((feature: StacFeature) => {
+      const item = convertStacToRawSearchResult(feature);
+      const nodes = getReplicaNodelsList(item);
+      nodes.forEach((node) => {
+        if (node) {
+          nodesSet.add(node);
+        }
+      });
+    });
+
+    return Array.from(nodesSet);
+  }, [allResults]);
+
+  const hasNodes = availableNodes.length > 0;
+
   const handleFetchAllResults = React.useCallback(async () => {
     setLoadingAllResults(true);
 
@@ -71,14 +101,13 @@ const DownloadModal = ({
       /* istanbul ignore next -- @preserve */
       // eslint-disable-next-line no-console
       console.error('Error fetching all results:', error);
-      // On error, fall back to using the partial results
       setAllResults(stacResults);
     } finally {
       setLoadingAllResults(false);
     }
   }, [activeSearchQuery, searchURL, totalMatched, stacResults]);
 
-  // Automatically fetch all results when modal opens (for <= 1000 results) or after warning acknowledged
+  // Automatically fetch all results for <= 1000 results or after warning acknowledged
   useEffect(() => {
     if (show && !allResults && !loadingAllResults) {
       // If <= 1000 results, fetch immediately without warning
@@ -152,6 +181,9 @@ const DownloadModal = ({
                 </p>
                 <div
                   style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
                     padding: '8px',
                     marginBottom: '12px',
                     borderRadius: '4px',
@@ -163,6 +195,16 @@ const DownloadModal = ({
                     <br />
                     <i>Note: Actual results may vary based on data availability.</i>
                   </div>
+                  {allResults && (
+                    <Button
+                      type="primary"
+                      onClick={() => setShowPreferredNodesModal(true)}
+                      disabled={!hasNodes}
+                      data-testid="setPreferredNodesBtn"
+                    >
+                      Set Preferred Nodes
+                    </Button>
+                  )}
                 </div>
               </div>
             )}
@@ -239,6 +281,36 @@ const DownloadModal = ({
           </Card>
         </Spin>
       </div>
+      <PreferredNodesModal
+        show={showPreferredNodesModal}
+        hide={() => setShowPreferredNodesModal(false)}
+        availableNodes={availableNodes}
+        onApply={(preferences) => {
+          // Apply node preferences to all search results
+          if (!allResults || !allResults.features) return;
+
+          const newSelectedNodes: Record<string, string> = {};
+
+          allResults.features.forEach((feature: StacFeature) => {
+            const item = convertStacToRawSearchResult(feature);
+            const availableNodesForItem = getReplicaNodelsList(item);
+
+            // Find the highest priority node that's available
+            const selectedNode = preferences.find((preferredNode) =>
+              availableNodesForItem.includes(preferredNode),
+            );
+
+            // Set the selected node (use preferred or fallback to first available)
+            const nodeToUse = selectedNode || availableNodesForItem[0];
+            if (nodeToUse) {
+              newSelectedNodes[item.id] = nodeToUse;
+            }
+          });
+
+          // Update the selected nodes state
+          setSelectedNodes(newSelectedNodes);
+        }}
+      />
     </Modal>
   );
 };

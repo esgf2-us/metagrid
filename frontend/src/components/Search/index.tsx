@@ -333,7 +333,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       const queryChanged =
         !isEqual(activeSearchQuery.activeFacets, cachedQuery.activeFacets) ||
         !isEqual(activeSearchQuery.textInputs, cachedQuery.textInputs) ||
-        !isEqual(activeSearchQuery.filenameVars, cachedQuery.filenameVars);
+        !isEqual(activeSearchQuery.filenameVars, cachedQuery.filenameVars) ||
+        activeSearchQuery.globusOnly !== cachedQuery.globusOnly;
 
       if (queryChanged && stacLoadedBatches.projectName === currentProjectName) {
         if (!stacLoadedBatches.cacheRestored) {
@@ -362,6 +363,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     activeSearchQuery.activeFacets,
     activeSearchQuery.textInputs,
     activeSearchQuery.filenameVars,
+    activeSearchQuery.globusOnly,
     project.name,
     paginationOptions.pageSize,
     data,
