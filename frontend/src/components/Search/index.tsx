@@ -968,14 +968,18 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                   <>
                     <Tooltip
                       placement="bottom"
-                      title="Open form to download the current search results."
+                      title={
+                        numMatched >= 10000
+                          ? 'To use the Download All feature, please narrow down your search to less than 10,000 results.'
+                          : 'Open form to download the current search results.'
+                      }
                     >
                       <Button
                         type="default"
                         shape="round"
                         className={searchTableTargets.downloadSearchBtn.class()}
                         onClick={setDownloadAllForm(true)}
-                        disabled={isLoading || numMatched === 0}
+                        disabled={isLoading || numMatched === 0 || numMatched >= 10000}
                       >
                         <DownloadOutlined />
                         Download All Results{' '}
@@ -994,6 +998,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                               type: 'FeatureCollection',
                             }
                       }
+                      totalMatched={numMatched}
+                      activeSearchQuery={activeSearchQuery}
                     />
                   </>
                 )}

@@ -903,17 +903,13 @@ export const identifyProblematicFacets = (
   return problematicFacets;
 };
 
-/**
- * Derives query and facets from cached search results.
- * Extracts the search query from the cache and parses facets from the results.
- * Prefers the directly cached searchQuery over parsing the URL.
- */
-export const deriveCachedSearchData = (cache: Record<string, unknown>): {
+export const deriveCachedSearchData = (
+  cache: Record<string, unknown>,
+): {
   results: Record<string, unknown>;
   query: ActiveSearchQuery | null;
   facets: Record<string, [string, number][]>;
 } => {
-  // Prefer directly cached query over parsing URL (which can be unreliable for SOLR URLs)
   let query = cache.searchQuery as ActiveSearchQuery | null;
 
   // Fallback to URL parsing only for legacy caches or user-shareable URLs
