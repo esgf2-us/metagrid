@@ -778,8 +778,9 @@ describe('createIntakeEsgfSearch', () => {
       textInputs: [],
     } as unknown as ActiveSearchQuery;
     const cmd = createIntakeEsgfSearch(searchQuery);
-    expect(cmd).toContain('from intake_esgf import ESGFCatalog');
-    expect(cmd).toContain('cat=ESGFCatalog()');
+    expect(cmd).toContain('import intake_esgf');
+    expect(cmd).toContain('from intake_esgf import supported_projects');
+    expect(cmd).toContain('cat=intake_esgf.ESGFCatalog()');
     expect(cmd).toContain('metagrid_search=cat.search(');
     expect(cmd).toContain("activity_id=['CFMIP', 'CDRMIP']");
     expect(cmd).toContain("experiment_id='piControl'");

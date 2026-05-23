@@ -39,6 +39,7 @@ export const rawProjectFixture = (props: Partial<RawProject> = {}): RawProject =
     projectUrl: 'https://esgf-dev1.llnl.gov/metagrid/search',
     fullName: 'test1',
     isSTAC: false,
+    projectName: 'test1',
   };
   return { ...defaults, ...props } as RawProject;
 };
@@ -422,7 +423,6 @@ export const stacSearchResultsFixture = (): StacResponse => ({
   stac: true,
 });
 
-// New fixture: STAC aggregations used by tests
 export const stacAggregationsFixture = (): StacAggregations => ({
   aggregations: [
     {

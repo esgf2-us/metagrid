@@ -9,12 +9,25 @@ import {
   stacAssetFixture,
   stacFeatureFixture,
   stacSearchResponseFixture,
+  activeSearchQueryFixture,
 } from '../../test/mock/fixtures';
+import { rest, server } from '../../test/mock/server';
+import apiRoutes from '../../api/routes';
 
 const user = userEvent.setup();
 
 const mockHide = vi.fn();
 const mockSearchURL = 'https://test.com/search?project=CMIP6';
+const mockActiveSearchQuery = activeSearchQueryFixture();
+
+// Helper function to mock STAC search responses
+const mockStacSearchResponse = (stacResults: StacSearchResponse) => {
+  server.use(
+    rest.post(apiRoutes.esgfSearchSTAC.path, (_req, res, ctx) =>
+      res(ctx.status(200), ctx.json(stacResults)),
+    ),
+  );
+};
 
 describe('DownloadModal component tests', () => {
   beforeEach(() => {
@@ -23,6 +36,7 @@ describe('DownloadModal component tests', () => {
 
   it('renders the modal when show is true', async () => {
     const stacResults = stacSearchResponseFixture([stacFeatureFixture('feature1', 3, 1024)]);
+    mockStacSearchResponse(stacResults);
 
     customRender(
       <DownloadModal
@@ -30,6 +44,8 @@ describe('DownloadModal component tests', () => {
         hide={mockHide}
         searchURL={mockSearchURL}
         stacResults={stacResults}
+        totalMatched={3}
+        activeSearchQuery={mockActiveSearchQuery}
       />,
     );
 
@@ -42,6 +58,7 @@ describe('DownloadModal component tests', () => {
 
   it('does not render the modal when show is false', () => {
     const stacResults = stacSearchResponseFixture([stacFeatureFixture('feature1', 3, 1024)]);
+    mockStacSearchResponse(stacResults);
 
     customRender(
       <DownloadModal
@@ -49,6 +66,8 @@ describe('DownloadModal component tests', () => {
         hide={mockHide}
         searchURL={mockSearchURL}
         stacResults={stacResults}
+        totalMatched={3}
+        activeSearchQuery={mockActiveSearchQuery}
       />,
     );
 
@@ -58,6 +77,7 @@ describe('DownloadModal component tests', () => {
 
   it('displays the correct file count for a single feature', async () => {
     const stacResults = stacSearchResponseFixture([stacFeatureFixture('feature1', 5, 2048)]);
+    mockStacSearchResponse(stacResults);
 
     customRender(
       <DownloadModal
@@ -65,6 +85,8 @@ describe('DownloadModal component tests', () => {
         hide={mockHide}
         searchURL={mockSearchURL}
         stacResults={stacResults}
+        totalMatched={10}
+        activeSearchQuery={mockActiveSearchQuery}
       />,
     );
 
@@ -78,6 +100,7 @@ describe('DownloadModal component tests', () => {
       stacFeatureFixture('feature2', 4, 2048),
       stacFeatureFixture('feature3', 2, 512),
     ]);
+    mockStacSearchResponse(stacResults);
 
     customRender(
       <DownloadModal
@@ -85,6 +108,8 @@ describe('DownloadModal component tests', () => {
         hide={mockHide}
         searchURL={mockSearchURL}
         stacResults={stacResults}
+        totalMatched={10}
+        activeSearchQuery={mockActiveSearchQuery}
       />,
     );
 
@@ -96,6 +121,7 @@ describe('DownloadModal component tests', () => {
   it('displays the correct total download size', async () => {
     // Create features with specific sizes: 3 files × 1024 bytes = 3072 bytes
     const stacResults = stacSearchResponseFixture([stacFeatureFixture('feature1', 3, 1024)]);
+    mockStacSearchResponse(stacResults);
 
     customRender(
       <DownloadModal
@@ -103,6 +129,8 @@ describe('DownloadModal component tests', () => {
         hide={mockHide}
         searchURL={mockSearchURL}
         stacResults={stacResults}
+        totalMatched={10}
+        activeSearchQuery={mockActiveSearchQuery}
       />,
     );
 
@@ -118,6 +146,7 @@ describe('DownloadModal component tests', () => {
     // Create features with larger sizes: 2 files × 1GB = 2GB
     const oneGB = 1024 * 1024 * 1024;
     const stacResults = stacSearchResponseFixture([stacFeatureFixture('feature1', 2, oneGB)]);
+    mockStacSearchResponse(stacResults);
 
     customRender(
       <DownloadModal
@@ -125,6 +154,8 @@ describe('DownloadModal component tests', () => {
         hide={mockHide}
         searchURL={mockSearchURL}
         stacResults={stacResults}
+        totalMatched={10}
+        activeSearchQuery={mockActiveSearchQuery}
       />,
     );
 
@@ -137,6 +168,7 @@ describe('DownloadModal component tests', () => {
 
   it('handles empty stacResults with no features', async () => {
     const stacResults = stacSearchResponseFixture([]);
+    mockStacSearchResponse(stacResults);
 
     customRender(
       <DownloadModal
@@ -144,6 +176,8 @@ describe('DownloadModal component tests', () => {
         hide={mockHide}
         searchURL={mockSearchURL}
         stacResults={stacResults}
+        totalMatched={10}
+        activeSearchQuery={mockActiveSearchQuery}
       />,
     );
 
@@ -188,6 +222,7 @@ describe('DownloadModal component tests', () => {
     };
 
     const stacResults = stacSearchResponseFixture([featureWithNoAssets]);
+    mockStacSearchResponse(stacResults);
 
     customRender(
       <DownloadModal
@@ -195,6 +230,8 @@ describe('DownloadModal component tests', () => {
         hide={mockHide}
         searchURL={mockSearchURL}
         stacResults={stacResults}
+        totalMatched={10}
+        activeSearchQuery={mockActiveSearchQuery}
       />,
     );
 
@@ -203,12 +240,21 @@ describe('DownloadModal component tests', () => {
   });
 
   it('handles null stacResults gracefully', async () => {
+    // Override STAC search to return empty results
+    server.use(
+      rest.post(apiRoutes.esgfSearchSTAC.path, (_req, res, ctx) =>
+        res(ctx.status(200), ctx.json({ features: [], links: [], type: 'FeatureCollection' })),
+      ),
+    );
+
     customRender(
       <DownloadModal
         show={true}
         hide={mockHide}
         searchURL={mockSearchURL}
         stacResults={null as unknown as StacSearchResponse}
+        totalMatched={10}
+        activeSearchQuery={mockActiveSearchQuery}
       />,
     );
 
@@ -228,6 +274,12 @@ describe('DownloadModal component tests', () => {
       links: [],
       type: 'FeatureCollection',
     } as unknown as StacSearchResponse;
+    // Override STAC search to return empty results
+    server.use(
+      rest.post(apiRoutes.esgfSearchSTAC.path, (_req, res, ctx) =>
+        res(ctx.status(200), ctx.json({ features: [], links: [], type: 'FeatureCollection' })),
+      ),
+    );
 
     customRender(
       <DownloadModal
@@ -235,6 +287,8 @@ describe('DownloadModal component tests', () => {
         hide={mockHide}
         searchURL={mockSearchURL}
         stacResults={stacResults}
+        totalMatched={10}
+        activeSearchQuery={mockActiveSearchQuery}
       />,
     );
 
@@ -244,6 +298,7 @@ describe('DownloadModal component tests', () => {
 
   it('calls hide callback when modal is closed', async () => {
     const stacResults = stacSearchResponseFixture([stacFeatureFixture('feature1', 3, 1024)]);
+    mockStacSearchResponse(stacResults);
 
     customRender(
       <DownloadModal
@@ -251,6 +306,8 @@ describe('DownloadModal component tests', () => {
         hide={mockHide}
         searchURL={mockSearchURL}
         stacResults={stacResults}
+        totalMatched={10}
+        activeSearchQuery={mockActiveSearchQuery}
       />,
     );
 
@@ -263,6 +320,7 @@ describe('DownloadModal component tests', () => {
 
   it('displays the CloudDownloadOutlined icon in the title', async () => {
     const stacResults = stacSearchResponseFixture([stacFeatureFixture('feature1', 3, 1024)]);
+    mockStacSearchResponse(stacResults);
 
     customRender(
       <DownloadModal
@@ -270,6 +328,8 @@ describe('DownloadModal component tests', () => {
         hide={mockHide}
         searchURL={mockSearchURL}
         stacResults={stacResults}
+        totalMatched={10}
+        activeSearchQuery={mockActiveSearchQuery}
       />,
     );
 
@@ -284,6 +344,7 @@ describe('DownloadModal component tests', () => {
 
   it('renders DatasetDownload component with correct props', async () => {
     const stacResults = stacSearchResponseFixture([stacFeatureFixture('feature1', 3, 1024)]);
+    mockStacSearchResponse(stacResults);
 
     customRender(
       <DownloadModal
@@ -291,6 +352,8 @@ describe('DownloadModal component tests', () => {
         hide={mockHide}
         searchURL={mockSearchURL}
         stacResults={stacResults}
+        totalMatched={10}
+        activeSearchQuery={mockActiveSearchQuery}
       />,
     );
 
@@ -302,6 +365,7 @@ describe('DownloadModal component tests', () => {
 
   it('displays the disclaimer text about cart bypass', async () => {
     const stacResults = stacSearchResponseFixture([stacFeatureFixture('feature1', 3, 1024)]);
+    mockStacSearchResponse(stacResults);
 
     customRender(
       <DownloadModal
@@ -309,6 +373,8 @@ describe('DownloadModal component tests', () => {
         hide={mockHide}
         searchURL={mockSearchURL}
         stacResults={stacResults}
+        totalMatched={10}
+        activeSearchQuery={mockActiveSearchQuery}
       />,
     );
 
@@ -318,6 +384,7 @@ describe('DownloadModal component tests', () => {
 
   it('displays the metadata disclaimer text', async () => {
     const stacResults = stacSearchResponseFixture([stacFeatureFixture('feature1', 3, 1024)]);
+    mockStacSearchResponse(stacResults);
 
     customRender(
       <DownloadModal
@@ -325,6 +392,8 @@ describe('DownloadModal component tests', () => {
         hide={mockHide}
         searchURL={mockSearchURL}
         stacResults={stacResults}
+        totalMatched={10}
+        activeSearchQuery={mockActiveSearchQuery}
       />,
     );
 
@@ -337,6 +406,7 @@ describe('DownloadModal component tests', () => {
   it('formats large file counts with locale string', async () => {
     // Create a feature with many files
     const stacResults = stacSearchResponseFixture([stacFeatureFixture('feature1', 1234, 1024)]);
+    mockStacSearchResponse(stacResults);
 
     customRender(
       <DownloadModal
@@ -344,6 +414,8 @@ describe('DownloadModal component tests', () => {
         hide={mockHide}
         searchURL={mockSearchURL}
         stacResults={stacResults}
+        totalMatched={10}
+        activeSearchQuery={mockActiveSearchQuery}
       />,
     );
 
@@ -360,6 +432,7 @@ describe('DownloadModal component tests', () => {
       stacFeatureFixture('feature2', 5, 2048), // 10 KB
       stacFeatureFixture('feature3', 3, 4096), // 12 KB
     ]);
+    mockStacSearchResponse(stacResults);
 
     customRender(
       <DownloadModal
@@ -367,6 +440,8 @@ describe('DownloadModal component tests', () => {
         hide={mockHide}
         searchURL={mockSearchURL}
         stacResults={stacResults}
+        totalMatched={10}
+        activeSearchQuery={mockActiveSearchQuery}
       />,
     );
 
@@ -426,6 +501,7 @@ describe('DownloadModal component tests', () => {
     };
 
     const stacResults = stacSearchResponseFixture([featureWithZeroSizeAssets]);
+    mockStacSearchResponse(stacResults);
 
     customRender(
       <DownloadModal
@@ -433,6 +509,8 @@ describe('DownloadModal component tests', () => {
         hide={mockHide}
         searchURL={mockSearchURL}
         stacResults={stacResults}
+        totalMatched={10}
+        activeSearchQuery={mockActiveSearchQuery}
       />,
     );
 
@@ -449,6 +527,7 @@ describe('DownloadModal component tests', () => {
 
   it('has a modal with width 800', async () => {
     const stacResults = stacSearchResponseFixture([stacFeatureFixture('feature1', 3, 1024)]);
+    mockStacSearchResponse(stacResults);
 
     customRender(
       <DownloadModal
@@ -456,6 +535,8 @@ describe('DownloadModal component tests', () => {
         hide={mockHide}
         searchURL={mockSearchURL}
         stacResults={stacResults}
+        totalMatched={10}
+        activeSearchQuery={mockActiveSearchQuery}
       />,
     );
 
@@ -469,6 +550,7 @@ describe('DownloadModal component tests', () => {
 
   it('renders with Card component wrapping the content', async () => {
     const stacResults = stacSearchResponseFixture([stacFeatureFixture('feature1', 3, 1024)]);
+    mockStacSearchResponse(stacResults);
 
     customRender(
       <DownloadModal
@@ -476,6 +558,8 @@ describe('DownloadModal component tests', () => {
         hide={mockHide}
         searchURL={mockSearchURL}
         stacResults={stacResults}
+        totalMatched={10}
+        activeSearchQuery={mockActiveSearchQuery}
       />,
     );
 
@@ -489,6 +573,7 @@ describe('DownloadModal component tests', () => {
 
   it('passes stacResults to DatasetDownload component', async () => {
     const stacResults = stacSearchResponseFixture([stacFeatureFixture('feature1', 3, 1024)]);
+    mockStacSearchResponse(stacResults);
 
     customRender(
       <DownloadModal
@@ -496,6 +581,8 @@ describe('DownloadModal component tests', () => {
         hide={mockHide}
         searchURL={mockSearchURL}
         stacResults={stacResults}
+        totalMatched={10}
+        activeSearchQuery={mockActiveSearchQuery}
       />,
     );
 
@@ -511,6 +598,7 @@ describe('DownloadModal component tests', () => {
   it('passes searchURL to DatasetDownload component', async () => {
     const testURL = 'https://custom-test-url.com/search?custom=param';
     const stacResults = stacSearchResponseFixture([stacFeatureFixture('feature1', 3, 1024)]);
+    mockStacSearchResponse(stacResults);
 
     customRender(
       <DownloadModal show={true} hide={mockHide} searchURL={testURL} stacResults={stacResults} />,
@@ -527,6 +615,7 @@ describe('DownloadModal component tests', () => {
     const stacResults = stacSearchResponseFixture([
       stacFeatureFixture('feature1', LARGE_DOWNLOAD_WARNING_THRESHOLD, 1024),
     ]);
+    mockStacSearchResponse(stacResults);
 
     customRender(
       <DownloadModal
@@ -534,6 +623,8 @@ describe('DownloadModal component tests', () => {
         hide={mockHide}
         searchURL={mockSearchURL}
         stacResults={stacResults}
+        totalMatched={100}
+        activeSearchQuery={mockActiveSearchQuery}
       />,
     );
 
@@ -556,6 +647,7 @@ describe('DownloadModal component tests', () => {
     const stacResults = stacSearchResponseFixture([
       stacFeatureFixture('feature1', LARGE_DOWNLOAD_WARNING_THRESHOLD - 1, 1024),
     ]);
+    mockStacSearchResponse(stacResults);
 
     customRender(
       <DownloadModal
@@ -563,6 +655,8 @@ describe('DownloadModal component tests', () => {
         hide={mockHide}
         searchURL={mockSearchURL}
         stacResults={stacResults}
+        totalMatched={100}
+        activeSearchQuery={mockActiveSearchQuery}
       />,
     );
 
@@ -584,6 +678,7 @@ describe('DownloadModal component tests', () => {
     const stacResults = stacSearchResponseFixture([
       stacFeatureFixture('feature1', LARGE_DOWNLOAD_WARNING_THRESHOLD + 5000, 2048),
     ]);
+    mockStacSearchResponse(stacResults);
 
     customRender(
       <DownloadModal
@@ -591,6 +686,8 @@ describe('DownloadModal component tests', () => {
         hide={mockHide}
         searchURL={mockSearchURL}
         stacResults={stacResults}
+        totalMatched={100}
+        activeSearchQuery={mockActiveSearchQuery}
       />,
     );
 
@@ -615,6 +712,7 @@ describe('DownloadModal component tests', () => {
     const stacResults = stacSearchResponseFixture([
       stacFeatureFixture('feature1', LARGE_DOWNLOAD_WARNING_THRESHOLD + 10000, 1024),
     ]);
+    mockStacSearchResponse(stacResults);
 
     customRender(
       <DownloadModal
@@ -622,6 +720,8 @@ describe('DownloadModal component tests', () => {
         hide={mockHide}
         searchURL={mockSearchURL}
         stacResults={stacResults}
+        totalMatched={100}
+        activeSearchQuery={mockActiveSearchQuery}
       />,
     );
 
@@ -642,6 +742,7 @@ describe('DownloadModal component tests', () => {
     const stacResults = stacSearchResponseFixture([
       stacFeatureFixture('feature1', LARGE_DOWNLOAD_WARNING_THRESHOLD + 15000, oneGB),
     ]);
+    mockStacSearchResponse(stacResults);
 
     customRender(
       <DownloadModal
@@ -649,6 +750,8 @@ describe('DownloadModal component tests', () => {
         hide={mockHide}
         searchURL={mockSearchURL}
         stacResults={stacResults}
+        totalMatched={10}
+        activeSearchQuery={mockActiveSearchQuery}
       />,
     );
 

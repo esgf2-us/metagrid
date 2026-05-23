@@ -517,7 +517,11 @@ export const generateSearchURLQuery = (
   const replicaParam = convertResultTypeToReplicaParam(resultType);
 
   // The base params include facet fields to return for each dataset and the pagination options
-  let baseParams = updatePaginationParams(project.facetsUrl as string, pagination);
+  const facetsUrl =
+    'facetsUrl' in project && typeof project.facetsUrl === 'string'
+      ? project.facetsUrl
+      : 'offset=0&limit=0';
+  let baseParams = updatePaginationParams(facetsUrl, pagination);
 
   if (versionType === 'latest') {
     baseParams += `latest=true&`;
