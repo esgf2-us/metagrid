@@ -379,7 +379,11 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       currentRequestQueryRef.current = activeSearchQuery;
 
       if (currentProject.isSTAC) {
-        if (!hasStacResults) {
+        const cached = getCachedStacBatches();
+        const cachedURL = cached?.searchURL || '';
+
+        // Run search if no results OR if URL changed
+        if (!hasStacResults || currentRequestURL !== cachedURL) {
           run(currentRequestURL);
         }
       } else {
