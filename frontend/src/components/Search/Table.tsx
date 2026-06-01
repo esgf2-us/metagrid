@@ -12,7 +12,8 @@ import { TablePaginationConfig, TableProps } from 'antd/lib/table';
 import React, { useCallback } from 'react';
 import { useAtomValue, useAtom } from 'jotai';
 import stacIcon from '../../assets/img/STAC-favicon.png';
-import { fetchWgetScript, ResponseError, STAC_BATCH_SIZE } from '../../api';
+import { fetchWgetScript, ResponseError } from '../../api';
+import { STAC_BATCH_SIZE } from './searchHelpers';
 import {
   createEsgpullCommand,
   formatBytes,

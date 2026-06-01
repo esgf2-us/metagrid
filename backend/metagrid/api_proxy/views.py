@@ -95,17 +95,55 @@ def do_stac_search(request):
 @require_http_methods(["POST"])
 @csrf_exempt
 def fetch_stac_aggregations(request):
+
     if settings.STAC_URL is None:
         return HttpResponseBadRequest("STAC URL not configured.")
 
     try:
-        summaries = do_post(request, settings.STAC_URL + "/aggregate")
+        payload = json.loads(request.body)
+
+        collection = "CMIP6"  # Default collection
+        aggregations = []
+        if payload["collections"]:
+            collection = payload["collections"][0]
+
+        if payload["aggregations"]:
+            aggregations = payload["aggregations"]
+
+        # Fetch available/valid aggregations
+        response_data = requests.get(
+            settings.STAC_URL + "/collections/" + collection + "/aggregations"
+        ).json()
+
+        # Create the fast-lookup set
+        valid_aggregations_set = []
+        if response_data["aggregations"]:
+            valid_aggregations_set = {
+                item["name"] for item in response_data["aggregations"]
+            }
+
+        # Filter aggregations
+        filtered_list = [
+            item
+            for item in payload["aggregations"]
+            if item in valid_aggregations_set
+        ]
+
+        # If the filtered list is empty, then use the valid list as backup value
+        if len(filtered_list) == 0:
+            filtered_list = list(valid_aggregations_set)
+
+        payload["aggregations"] = filtered_list
+
+        response = requests.post(
+            settings.STAC_URL + "/aggregate", json=payload
+        )
+        summaries = response.json()
+
+        return JsonResponse(summaries, safe=False)
     except Exception as e:  # pragma: no cover
         print("Error fetching STAC aggregations:\n", e)
-
-    print("STAC Aggregations:", summaries)
-
-    return summaries
+        return HttpResponseBadRequest("Error fetching STAC aggregations:\n", e)
 
 
 @require_http_methods(["POST"])

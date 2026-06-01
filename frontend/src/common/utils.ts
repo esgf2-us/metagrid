@@ -1,7 +1,6 @@
 import { CSSProperties, ReactNode } from 'react';
 import { MessageInstance } from 'antd/es/message/interface';
 import LZString from 'lz-string';
-import { UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
 import { ActiveFacets, RawProject } from '../components/Facets/types';
 import {
   ActiveSearchQuery,
@@ -575,53 +574,6 @@ export const combineCarts = (
   return combinedItems;
 };
 
-const convertSearchToHash = (query: UserSearchQuery): number => {
-  /* eslint-disable */
-  let hash: number = 0;
-  const nonUniqueQuery: UserSearchQuery = {
-    ...query,
-    resultsCount: 0,
-    searchTime: null,
-    uuid: '',
-    user: null,
-    url: '',
-  };
-  const queryStr = JSON.stringify(nonUniqueQuery);
-  let i, chr;
-
-  for (i = 0; i < queryStr.length; i++) {
-    chr = queryStr.charCodeAt(i);
-    hash = (hash << 5) - hash + chr;
-    hash |= 0; // Convert to 32bit integer
-  }
-  return hash;
-};
-
-export const searchAlreadyExists = (
-  existingSearches: UserSearchQueries,
-  newSearch: UserSearchQuery,
-): boolean => {
-  const hashValueLocal = convertSearchToHash(newSearch);
-  return existingSearches.some((search) => {
-    if (search.uuid === newSearch.uuid) {
-      return true;
-    }
-    const hashValueDatabase = convertSearchToHash(search);
-
-    return hashValueDatabase === hashValueLocal;
-  });
-};
-
-export const unsavedLocalSearches = (
-  databaseItems: UserSearchQueries,
-  localItems: UserSearchQueries,
-): UserSearchQueries => {
-  const itemsNotInDatabase = localItems.filter(
-    (localSearchQuery: UserSearchQuery) => !searchAlreadyExists(databaseItems, localSearchQuery),
-  );
-  return itemsNotInDatabase;
-};
-
 export const getLastMessageSeen = (): string | null => {
   return localStorage.getItem('lastMessageSeen');
 };
@@ -659,8 +611,7 @@ export function compressData<T>(data: T): string {
 export function decompressData<T>(compressedStr: string): T {
   // Decompress the data
   const decompressedStr = LZString.decompress(compressedStr);
-  const decompressedData = JSON.parse(decompressedStr);
-  return decompressedData as T;
+  return JSON.parse(decompressedStr) as T;
 }
 
 export function saveToLocalStorage<T>(key: string, value: T, compress = false): void {
@@ -700,86 +651,6 @@ export const getCachedPagination = (): Pagination => {
       pageSize: 10,
     }
   );
-};
-
-export const cacheSearchResults = (
-  fetchedResults: Record<string, unknown> | undefined,
-  pagination: Pagination,
-  cachedURL: string,
-  searchQuery?: ActiveSearchQuery,
-): void => {
-  if (fetchedResults && !Object.hasOwn(fetchedResults, 'cachedURL')) {
-    saveToLocalStorage(
-      'cachedSearchResults',
-      {
-        results: fetchedResults,
-        cachedURL,
-        searchQuery, // Cache the actual query object instead of trying to parse URL
-        expires: Date.now() + 60 * 60 * 1000, // Expires after an hour
-      },
-      true,
-    );
-
-    // Cache the pagination
-    cachePagination(pagination);
-  }
-};
-
-export const getCachedSearchResults = (): Record<string, unknown> => {
-  const fetchedResults: Record<string, unknown> =
-    getFromLocalStorage('cachedSearchResults', true) || {};
-  const now = Date.now();
-  if (fetchedResults.expires && now > (fetchedResults.expires as number)) {
-    // If expired, remove from session storage
-    clearCachedSearchResults();
-
-    return {};
-  }
-
-  // If not expired, return the cached results
-  return {
-    cachedURL: fetchedResults.cachedURL,
-    searchQuery: fetchedResults.searchQuery,
-    ...(typeof fetchedResults.results === 'object' && fetchedResults.results !== null
-      ? fetchedResults.results
-      : {}),
-  };
-};
-
-export const clearCachedSearchResults = (): void => {
-  // Clear the cached search results from localStorage
-  localStorage.removeItem('cachedSearchResults');
-  localStorage.removeItem('cachedSearchPagination');
-};
-
-// STAC batch cache functions
-export const cacheStacBatches = (stacBatches: Record<string, unknown>): void => {
-  saveToLocalStorage(
-    'cachedStacBatches',
-    {
-      batches: stacBatches,
-      expires: Date.now() + 60 * 60 * 1000, // Expires after an hour
-    },
-    true,
-  );
-};
-
-export const getCachedStacBatches = (): Record<string, unknown> | null => {
-  const cached: Record<string, unknown> = getFromLocalStorage('cachedStacBatches', true) || {};
-  const now = Date.now();
-
-  if (cached.expires && now > (cached.expires as number)) {
-    // If expired, remove from localStorage
-    clearCachedStacBatches();
-    return null;
-  }
-
-  // If not expired, return the cached batches
-  return (cached.batches as Record<string, unknown>) || null;
-};
-
-export const clearCachedStacBatches = (): void => {
-  localStorage.removeItem('cachedStacBatches');
 };
 
 export const showBanner = (): boolean => {
@@ -825,108 +696,4 @@ export const downloadFileForUser = (filename: string, fileContent: string): void
   downloadLinkNode.click();
 
   document.body.removeChild(downloadLinkNode);
-};
-
-/**
- * Parses raw facets from the API into a structured format.
- * Joins adjacent elements of the facets object into tuples [facetValue, count].
- */
-export const parseFacets = (
-  facets: Record<string, (string | number)[]>,
-): Record<string, [string, number][]> => {
-  const res = facets as unknown as Record<string, [string, number][]>;
-  const keys: string[] = Object.keys(facets);
-
-  keys.forEach((key) => {
-    res[key] = res[key].reduce(
-      (r, a, i) => {
-        if (i % 2) {
-          r[r.length - 1].push(a as unknown as number);
-        } else {
-          r.push([a] as never);
-        }
-        return r;
-      },
-      [] as unknown as [string, number][],
-    );
-  });
-  return res;
-};
-
-/**
- * Checks if any filters (facets or text inputs) are active.
- */
-export const checkFiltersExist = (
-  activeFacets: ActiveFacets | Record<string, unknown>,
-  textInputs: TextInputs,
-): boolean => !(objectIsEmpty(activeFacets) && textInputs.length === 0);
-
-/**
- * Identifies facets that might have caused a search error by comparing
- * the current query with the last successful query.
- * Returns a Set of facet keys in the format "facetName:facetValue".
- */
-export const identifyProblematicFacets = (
-  currentQuery: ActiveSearchQuery,
-  lastSuccessfulQuery: ActiveSearchQuery | null,
-): Set<string> => {
-  const problematicFacets = new Set<string>();
-
-  if (!lastSuccessfulQuery) {
-    return problematicFacets;
-  }
-
-  const currentFacets = currentQuery.activeFacets;
-  const lastFacets = lastSuccessfulQuery.activeFacets;
-
-  // Find facets that are new or have new values
-  Object.keys(currentFacets).forEach((facetKey) => {
-    const currentValues = currentFacets[facetKey] || [];
-    const lastValues = lastFacets[facetKey] || [];
-
-    // Check if this is a new facet key or has new values
-    if (!lastFacets[facetKey]) {
-      // Entire facet is new
-      currentValues.forEach((value) => {
-        problematicFacets.add(`${facetKey}:${value}`);
-      });
-    } else {
-      // Check for new values in existing facet
-      currentValues.forEach((value) => {
-        if (!lastValues.includes(value)) {
-          problematicFacets.add(`${facetKey}:${value}`);
-        }
-      });
-    }
-  });
-
-  return problematicFacets;
-};
-
-export const deriveCachedSearchData = (
-  cache: Record<string, unknown>,
-): {
-  results: Record<string, unknown>;
-  query: ActiveSearchQuery | null;
-  facets: Record<string, [string, number][]>;
-} => {
-  let query = cache.searchQuery as ActiveSearchQuery | null;
-
-  // Fallback to URL parsing only for legacy caches or user-shareable URLs
-  if (!query) {
-    const cachedURL = cache.cachedURL as string;
-    query = cachedURL ? getSearchFromUrl(cachedURL) : null;
-  }
-
-  let facets: Record<string, [string, number][]> = {};
-  if (cache.facet_counts) {
-    const { facet_fields: facetFields } = cache.facet_counts as {
-      facet_fields: Record<string, (string | number)[]>;
-    };
-    facets = parseFacets(facetFields);
-  } else if (cache.facets) {
-    facets = cache.facets as Record<string, [string, number][]>;
-  }
-
-  return { results: cache, query, facets };
 };

@@ -36,7 +36,6 @@ import {
   convertResultTypeToReplicaParam,
   downloadFileForUser,
   getCachedPagination,
-  getCachedSearchResults,
 } from '../common/utils';
 import {
   aggregationsToFacetsData,
@@ -47,6 +46,7 @@ import {
   setConfiguredAdditionalProjects,
 } from '../common/STAC';
 import { ProjectsConfig, STAC_PROJECT_LIST } from '../common/useProjectsConfig';
+import { getCachedSearchResults, STAC_BATCH_SIZE } from '../components/Search/searchHelpers';
 
 export interface ResponseError extends Error {
   status?: number;
@@ -60,8 +60,6 @@ export interface SubmissionResult {
   failures: string[];
   auth_url: string | undefined;
 }
-
-export const STAC_BATCH_SIZE = 100;
 
 export const getCookie = (name: string): null | string => {
   let cookieValue = null;
@@ -666,11 +664,11 @@ export const fetchSTACAggregations = async (
   }
 
   // No cache hit, fetch from API
-  const aggregationsList = getAggregationsList(projectName);
+  const aggregations = getAggregationsList(projectName);
 
   const payload = {
     collections: [projectName],
-    aggregations: aggregationsList,
+    aggregations,
     filter,
   };
 
