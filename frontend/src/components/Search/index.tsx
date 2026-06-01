@@ -1,6 +1,6 @@
 import {
   BookOutlined,
-  // CodeOutlined,
+  CodeOutlined,
   CopyOutlined,
   DownloadOutlined,
   ExportOutlined,
@@ -41,8 +41,8 @@ import {
   checkFiltersExist,
   clearCachedSearchResults,
   clearCachedStacBatches,
-  // createEsgpullCommand,
-  // createIntakeEsgfSearch,
+  createEsgpullCommand,
+  createIntakeEsgfSearch,
   createSearchRouteURL,
   deriveCachedSearchData,
   getCachedPagination,
@@ -115,6 +115,17 @@ export type StacBatchLoading = {
   totalMatched: number;
   searchQuery: ActiveSearchQuery | null;
   cacheRestored: boolean;
+  searchURL: string;
+};
+
+const EMPTY_STAC_BATCHES: StacBatchLoading = {
+  results: [],
+  nextToken: undefined,
+  projectName: '',
+  totalMatched: 0,
+  searchQuery: null,
+  cacheRestored: false,
+  searchURL: '',
 };
 
 const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
@@ -183,14 +194,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       clearCachedStacBatches();
     }
 
-    return {
-      results: [],
-      nextToken: undefined,
-      projectName: '',
-      totalMatched: 0,
-      searchQuery: null,
-      cacheRestored: false,
-    };
+    return EMPTY_STAC_BATCHES;
   });
 
   const [isBackgroundFetch, setIsBackgroundFetch] = React.useState<boolean>(false);
@@ -270,6 +274,24 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   const showCachedResultsOnError = error && fallbackResults && !objectIsEmpty(fallbackResults);
   const resultsToDisplay = showCachedResultsOnError ? fallbackResults : results;
 
+  // Helper function to reset STAC state for a fresh search
+  const resetStacState = React.useCallback((projectName = '') => {
+    clearCachedStacBatches();
+    setStacLoadedBatches({ ...EMPTY_STAC_BATCHES, projectName });
+    setIsBackgroundFetch(false);
+    lastPreloadedBatchRef.current = -1;
+  }, []);
+
+  // Helper function to clear all caches
+  const clearAllCaches = React.useCallback(() => {
+    setCachedResults(undefined);
+    clearCachedSearchResults();
+    setIsBackgroundFetch(false);
+    if (currentProject.isSTAC) {
+      resetStacState((project.name as string) || '');
+    }
+  }, [currentProject.isSTAC, project.name, resetStacState]);
+
   // Cache STAC batches for navigation persistence
   React.useEffect(() => {
     if (currentProject.isSTAC && hasStacResults) {
@@ -284,24 +306,9 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       prevProjectNameRef.current !== '' && prevProjectNameRef.current !== currentProjectName;
 
     if (projectActuallyChanged) {
-      setIsBackgroundFetch(false);
-      lastPreloadedBatchRef.current = -1;
-      clearCachedSearchResults();
-      clearCachedStacBatches();
-      setCachedResults(undefined);
+      clearAllCaches();
       setPaginationOptions({ page: 1, pageSize: paginationOptions.pageSize });
       setAvailableFacets({});
-
-      if (currentProject.isSTAC) {
-        setStacLoadedBatches({
-          results: [],
-          nextToken: undefined,
-          projectName: currentProjectName,
-          totalMatched: 0,
-          searchQuery: null,
-          cacheRestored: false,
-        });
-      }
     }
 
     prevProjectNameRef.current = currentProjectName;
@@ -344,15 +351,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
             cacheRestored: true,
           });
         } else {
-          setStacLoadedBatches({
-            results: [],
-            nextToken: undefined,
-            projectName: currentProjectName,
-            totalMatched: 0,
-            searchQuery: activeSearchQuery,
-            cacheRestored: false,
-          });
-          clearCachedStacBatches();
+          resetStacState(currentProjectName);
           setAvailableFacets({});
           setPaginationOptions({ page: 1, pageSize: paginationOptions.pageSize });
         }
@@ -384,6 +383,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
         // Run search if no results OR if URL changed
         if (!hasStacResults || currentRequestURL !== cachedURL) {
+          setIsBackgroundFetch(false); // Reset background fetch for new search
+          lastPreloadedBatchRef.current = -1; // Reset preload tracking for new search
           run(currentRequestURL);
         }
       } else {
@@ -459,6 +460,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           totalMatched,
           searchQuery: activeSearchQuery,
           cacheRestored: true,
+          searchURL: currentRequestURL,
         });
       }
     }
@@ -533,10 +535,9 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   ]);
 
   const handleClearFilters = React.useCallback((): void => {
-    setCachedResults(undefined); // Clear cache to force fresh search
-    clearCachedSearchResults();
+    clearAllCaches();
     setActiveSearchQuery(projectBaseQuery(activeSearchQuery.project));
-  }, [activeSearchQuery.project, setActiveSearchQuery]);
+  }, [activeSearchQuery.project, clearAllCaches, setActiveSearchQuery]);
 
   const handleSaveSearchQuery = React.useCallback(
     (url: string, numFound: number): void => {
@@ -611,39 +612,40 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   }, [activeSearchQuery, messageApi]);
 
   /* istanbul ignore next -- @preserve */
-  // Hidden until better clarity on facet mapping
-  // const handleEsgpullSearchQuery = React.useCallback((): void => {
-  //   /* istanbul ignore else -- @preserve */
-  //   if (navigator && navigator.clipboard) {
-  //     navigator.clipboard.writeText(createEsgpullCommand(activeSearchQuery, false));
-  //     showNotice(messageApi, 'Esgpull search query copied to clipboard!', {
-  //       icon: <CodeOutlined />,
-  //     });
-  //   }
-  // }, [activeSearchQuery, messageApi]);
+  const handleEsgpullSearchQuery = React.useCallback((): void => {
+    /* istanbul ignore else -- @preserve */
+    if (navigator && navigator.clipboard) {
+      navigator.clipboard.writeText(createEsgpullCommand(activeSearchQuery, false));
+      showNotice(messageApi, 'Esgpull search query copied to clipboard!', {
+        icon: <CodeOutlined />,
+      });
+    }
+  }, [activeSearchQuery, messageApi]);
 
   /* istanbul ignore next -- @preserve */
-  // const handleEsgpullDownloadCmd = React.useCallback((): void => {
-  //   /* istanbul ignore else -- @preserve */
-  //   if (navigator && navigator.clipboard) {
-  //     navigator.clipboard.writeText(createEsgpullCommand(activeSearchQuery, true));
-  //     showNotice(messageApi, 'Esgpull download command copied to clipboard!', {
-  //       icon: <CodeOutlined />,
-  //     });
-  //   }
-  // }, [activeSearchQuery, messageApi]);
+  const handleEsgpullDownloadCmd = React.useCallback((): void => {
+    /* istanbul ignore else -- @preserve */
+    if (navigator && navigator.clipboard) {
+      navigator.clipboard.writeText(createEsgpullCommand(activeSearchQuery, true));
+      showNotice(messageApi, 'Esgpull download command copied to clipboard!', {
+        icon: <CodeOutlined />,
+      });
+    }
+  }, [activeSearchQuery, messageApi]);
 
-  // const handleIntakeEsgfSearch = React.useCallback((): void => {
-  //   /* istanbul ignore else -- @preserve */
-  //   if (navigator && navigator.clipboard) {
-  //     navigator.clipboard.writeText(createIntakeEsgfSearch(activeSearchQuery));
-  //     showNotice(messageApi, 'Intake-ESGF search command copied to clipboard!', {
-  //       icon: <CodeOutlined />,
-  //     });
-  //   }
-  // }, [activeSearchQuery, messageApi]);
+  const handleIntakeEsgfSearch = React.useCallback((): void => {
+    /* istanbul ignore else -- @preserve */
+    if (navigator && navigator.clipboard) {
+      navigator.clipboard.writeText(createIntakeEsgfSearch(activeSearchQuery));
+      showNotice(messageApi, 'Intake-ESGF search command copied to clipboard!', {
+        icon: <CodeOutlined />,
+      });
+    }
+  }, [activeSearchQuery, messageApi]);
 
   const handleRemoveFilter = (removedTag: TagValue, type: TagType): void => {
+    clearAllCaches();
+
     /* istanbul ignore else -- @preserve */
     if (type === 'text') {
       setActiveSearchQuery({
@@ -823,58 +825,57 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         </Tooltip>
       ),
     },
-    // Hidden until better clarity on facet mapping between web interface and esgpull/intake-esgf
-    // {
-    //   key: '2',
-    //   label: (
-    //     <Tooltip placement="left" title={tooltipText.copyEsgpullSearch}>
-    //       <span style={{ display: 'inline-block', cursor: 'not-allowed' }}>
-    //         <Button
-    //           type="default"
-    //           className={copySearchOptionsTargets.copyEsgpullSearchQueryBtn.class()}
-    //           onClick={handleEsgpullSearchQuery}
-    //           disabled={isLoading || numMatched === 0}
-    //         >
-    //           <CodeOutlined data-testid="copy-esgpull-search-btn" /> Copy esgpull search query
-    //         </Button>
-    //       </span>
-    //     </Tooltip>
-    //   ),
-    // },
-    // {
-    //   key: '3',
-    //   label: (
-    //     <Tooltip placement="left" title={tooltipText.copyEsgpullDownload}>
-    //       <span style={{ display: 'inline-block', cursor: 'not-allowed' }}>
-    //         <Button
-    //           type="default"
-    //           className={copySearchOptionsTargets.copyEsgpullDownloadCommandBtn.class()}
-    //           onClick={handleEsgpullDownloadCmd}
-    //           disabled={isLoading || numMatched === 0}
-    //         >
-    //           <CodeOutlined data-testid="copy-esgpull-download-btn" /> Copy esgpull download command
-    //         </Button>
-    //       </span>
-    //     </Tooltip>
-    //   ),
-    // },
-    // {
-    //   key: '4',
-    //   label: (
-    //     <Tooltip placement="left" title={tooltipText.copyIntakeEsgfSearch}>
-    //       <span style={{ display: 'inline-block', cursor: 'not-allowed' }}>
-    //         <Button
-    //           type="default"
-    //           className={copySearchOptionsTargets.copyIntakeEsgfSearchBtn.class()}
-    //           onClick={handleIntakeEsgfSearch}
-    //           disabled={isLoading || numMatched === 0}
-    //         >
-    //           <CodeOutlined data-testid="copy-intake-search-btn" /> Copy Intake-ESGF search command
-    //         </Button>
-    //       </span>
-    //     </Tooltip>
-    //   ),
-    // },
+    {
+      key: '2',
+      label: (
+        <Tooltip placement="left" title={tooltipText.copyEsgpullSearch}>
+          <span style={{ display: 'inline-block', cursor: 'not-allowed' }}>
+            <Button
+              type="default"
+              className={copySearchOptionsTargets.copyEsgpullSearchQueryBtn.class()}
+              onClick={handleEsgpullSearchQuery}
+              disabled={isLoading || numMatched === 0}
+            >
+              <CodeOutlined data-testid="copy-esgpull-search-btn" /> Copy esgpull search query
+            </Button>
+          </span>
+        </Tooltip>
+      ),
+    },
+    {
+      key: '3',
+      label: (
+        <Tooltip placement="left" title={tooltipText.copyEsgpullDownload}>
+          <span style={{ display: 'inline-block', cursor: 'not-allowed' }}>
+            <Button
+              type="default"
+              className={copySearchOptionsTargets.copyEsgpullDownloadCommandBtn.class()}
+              onClick={handleEsgpullDownloadCmd}
+              disabled={isLoading || numMatched === 0}
+            >
+              <CodeOutlined data-testid="copy-esgpull-download-btn" /> Copy esgpull download command
+            </Button>
+          </span>
+        </Tooltip>
+      ),
+    },
+    {
+      key: '4',
+      label: (
+        <Tooltip placement="left" title={tooltipText.copyIntakeEsgfSearch}>
+          <span style={{ display: 'inline-block', cursor: 'not-allowed' }}>
+            <Button
+              type="default"
+              className={copySearchOptionsTargets.copyIntakeEsgfSearchBtn.class()}
+              onClick={handleIntakeEsgfSearch}
+              disabled={isLoading || numMatched === 0}
+            >
+              <CodeOutlined data-testid="copy-intake-search-btn" /> Copy Intake-ESGF search command
+            </Button>
+          </span>
+        </Tooltip>
+      ),
+    },
   ];
 
   /* istanbul ignore next -- @preserve */

@@ -521,7 +521,8 @@ export const generateSearchURLQuery = (
     'facetsUrl' in project && typeof project.facetsUrl === 'string'
       ? project.facetsUrl
       : 'offset=0&limit=0';
-  let baseParams = updatePaginationParams(facetsUrl, pagination);
+  // For STAC projects, don't update pagination params since pagination is client-side
+  let baseParams = isSTAC ? `${facetsUrl}&` : updatePaginationParams(facetsUrl, pagination);
 
   if (versionType === 'latest') {
     baseParams += `latest=true&`;
