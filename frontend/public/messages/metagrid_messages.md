@@ -1,7 +1,11 @@
-# Welcome to the Metagrid Release v1.5.5
+# Welcome to the Metagrid Release v1.6.0
 
 To view the latest documentation and FAQ, please visit this page:
 [https://esgf.github.io/esgf-user-support/metagrid.html](https://esgf.github.io/esgf-user-support/metagrid.html)
+
+## Release of ESGF-NG / STAC ; New project data coming soon
+
+Several of our newest data projects namely CMIP7 and CORDEX-CMIP6 use the [STAC](https://stacspec.org/) standards for APIs and Metadata organization.  These project displays will show some differences in appearance and behavior.  Additonal projects will migrate to this standard including CMIP6 and CMIP6Plus.  If you discover any functionality not working, please open the help window and open an issue.
 
 ## Pyesgf package deprecation
 
