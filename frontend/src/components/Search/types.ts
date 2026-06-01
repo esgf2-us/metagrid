@@ -1,5 +1,5 @@
 import { TableProps } from 'antd';
-import { ActiveFacets, ParsedFacets, RawProject } from '../Facets/types';
+import { ActiveFacets, ParsedFacets, RawFacets, RawProject } from '../Facets/types';
 
 export type TextInputs = string[];
 
@@ -53,6 +53,29 @@ export type RawSearchResult = {
 
 export type RawSearchResults = Array<RawSearchResult>;
 
+export type SearchResponse = {
+  expires: number;
+  status: number;
+  searchUrl: string;
+  searchQuery: ActiveSearchQuery;
+  batchedResults: BatchedSearchResults;
+  searchFacets: ParsedFacets | Record<string, unknown>;
+};
+
+export type NonStacResponse = {
+  facet_counts: { facet_fields: RawFacets };
+  response: { docs: RawSearchResults; numFound: number };
+  stac: boolean;
+};
+
+export type BatchedSearchResults = {
+  isStac: boolean;
+  batches: { batchNumber: number; nextToken?: string }[];
+  batchSize: number;
+  totalMatched: number;
+  accumulatedResults: RawSearchResults | StacFeature[];
+};
+
 export type Pagination = {
   page: number;
   pageSize: number;
@@ -67,8 +90,6 @@ export type AlignType = 'left' | 'center' | 'right';
 export type FixedType = 'left' | 'right' | boolean;
 
 // STAC RELATED TYPES
-
-export type SearchResults = { [key: string]: unknown };
 
 export type StacLink = {
   rel: string;
@@ -168,10 +189,4 @@ export type StacResponse = {
   facets: StacFacetsData;
   search: StacSearchResponse;
   stac: boolean;
-};
-
-export type CachedSearchData = {
-  results: Record<string, unknown> | undefined;
-  query: ActiveSearchQuery | null;
-  facets: ParsedFacets | Record<string, unknown>;
 };

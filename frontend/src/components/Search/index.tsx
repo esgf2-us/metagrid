@@ -24,7 +24,7 @@ import {
 } from '../../common/atoms';
 import {
   addUserSearchQuery,
-  fetchSearchResults,
+  alternateFetchSearchResults,
   generateSearchURLQuery,
   ResponseError,
 } from '../../api';
@@ -34,17 +34,21 @@ import {
 } from '../../common/joyrideTutorials/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import {
-  cachePagination,
+  baseSearchResponse,
+  basePagination,
+  // cachePagination,
   createEsgpullCommand,
   createIntakeEsgfSearch,
   createSearchRouteURL,
-  getCachedPagination,
+  // getCachedPagination,
   getStyle,
   getUrlFromSearch,
+  // isEqual,
   objectIsEmpty,
   projectBaseQuery,
   showError,
   showNotice,
+  isEqual,
 } from '../../common/utils';
 import { UserCart, UserSearchQuery } from '../Cart/types';
 import { Tag, TagType, TagValue } from '../DataDisplay/Tag';
@@ -53,10 +57,11 @@ import Button from '../General/Button'; // Note, tooltips do not work for this b
 import Table from './Table';
 import {
   ActiveSearchQuery,
-  CachedSearchData,
+  NonStacResponse,
   Pagination,
   RawSearchResult,
   RawSearchResults,
+  SearchResponse,
   StacFeature,
   StacResponse,
   TextInputs,
@@ -65,15 +70,20 @@ import { AuthContext } from '../../contexts/AuthContext';
 import { convertStacToRawSearchResult, stringifyApiRequest } from '../../common/STAC';
 import DownloadModal from '../Downloads/DownloadModal';
 import {
-  cacheSearchResults,
   checkFiltersExist,
-  clearCachedSearchResults,
-  deriveCachedSearchData,
-  getCachedSearchResults,
+  convertActiveSearchToHash,
+  // clearCachedSearchResults,
+  // deriveCachedSearchData,
+  // getCachedSearchResults,
   identifyProblematicFacets,
+  // memoizedCacheSearchResults,
   parseFacets,
+  SEARCH_BATCH_SIZE,
   searchAlreadyExists,
+  searchesMatch,
 } from './searchHelpers';
+
+const MAX_NON_STAC_RESULTS = 10000;
 
 const tooltipText = {
   featureNotAvailableInStac: 'This feature is not compatible with STAC projects.',
@@ -143,8 +153,14 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   const appStyles = getStyle(isDarkMode);
 
-  const { data, error, isLoading, run } = useAsync({
-    deferFn: fetchSearchResults as unknown as DeferFn<Record<string, unknown>>,
+  const { data, error, isLoading, run } = useAsync<Record<string, unknown>>({
+    deferFn: async ([search, pagination, token]) => {
+      return alternateFetchSearchResults(
+        search as ActiveSearchQuery,
+        pagination as Pagination,
+        token as string | undefined,
+      );
+    },
   });
   const [filtersExist, setFiltersExist] = React.useState<boolean>(false);
   const [parsedFacets, setParsedFacets] = React.useState<ParsedFacets | Record<string, unknown>>(
@@ -152,203 +168,195 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   );
   const [selectedItems, setSelectedItems] = React.useState<RawSearchResults | []>([]);
 
-  const [paginationOptions, setPaginationOptions] =
-    React.useState<Pagination>(getCachedPagination());
+  // const [cachedData, setCachedData] = useAtom<FullSearchData>(cachedSearchDataAtom);
 
-  const [cachedResults, setCachedResults] = React.useState<Record<string, unknown> | undefined>(
-    () => {
-      // Initialize from localStorage on mount
-      const cached = getCachedSearchResults();
-      return cached && !objectIsEmpty(cached) ? cached : undefined;
-    },
+  const [paginationOptions, setPaginationOptions] = React.useState<Pagination>(
+    basePagination /* getCachedPagination() */,
   );
+
+  // const [cachedResults, setCachedResults] = React.useState<Record<string, unknown> | undefined>(
+  //   () => {
+  //     // Initialize from localStorage on mount
+  //     const cached = getCachedSearchResults();
+  //     return cached && !objectIsEmpty(cached) ? cached : undefined;
+  //   },
+  // );
 
   // Track the query that was active when making the current request
-  const currentRequestQueryRef = React.useRef<ActiveSearchQuery | null>(null);
+  // const currentRequestQueryRef = React.useRef<ActiveSearchQuery | null>(null);
 
   // State for last successful search
-  const [lastSuccessfulSearch, setLastSuccessfulSearch] = React.useState<CachedSearchData>({
-    results: undefined,
-    query: null,
-    facets: {},
-  });
+  // const [lastSuccessfulSearch, setLastSuccessfulSearch] = React.useState<CachedSearchData>({
+  //   results: {},
+  //   query: getCachedSearchResults().searchQuery,
+  //   facets: {},
+  //   pagination: getCachedPagination(),
+  // });
 
-  // State for fallback data - used when errors occur
-  const [fallbackData, setFallbackData] = React.useState<CachedSearchData>({
-    results: undefined,
-    query: null,
-    facets: {},
-  });
+  const dataResponse: SearchResponse | undefined = data as SearchResponse | undefined; // || cachedResults;
 
-  const results: Record<string, unknown> | undefined = data || cachedResults;
+  // const {
+  //   pagination: cachedPagination,
+  //   expires: cacheExpires,
+  //   searchQuery: cachedQuery,
+  //   batchedResults: cachedResults,
+  //   searchFacets: cachedFacets,
+  // } = cachedData;
 
-  // Helper to fix incomplete project objects in cached queries
-  const fixProjectInQuery = React.useCallback(
-    (derived: CachedSearchData): CachedSearchData => {
-      if (!derived.query || !currentProject.name) return derived;
-
-      const projectNamesMatch =
-        currentProject.name === derived.query.project.name ||
-        currentProject.name?.toLowerCase() ===
-          (derived.query.project as RawProject).name?.toLowerCase();
-
-      if (projectNamesMatch || !derived.query.project.facetsUrl) {
-        return {
-          ...derived,
-          query: { ...derived.query, project: currentProject },
-        };
+  // const showCachedResultsOnError = error && cachedResults && !objectIsEmpty(cachedResults);
+  const resultsToDisplay = /* showCachedResultsOnError ? cachedResults : */ dataResponse;
+  const { expires, status, searchQuery, searchUrl, batchedResults, searchFacets } =
+    React.useMemo(() => {
+      if (dataResponse && dataResponse.status === 200) {
+        const facets = dataResponse.searchFacets;
+        if (!objectIsEmpty(facets)) {
+          setAvailableFacets(facets);
+          setPaginationOptions({ page: 1, pageSize: paginationOptions.pageSize });
+        }
+        return dataResponse;
       }
-      return derived;
-    },
-    [currentProject],
-  );
+      return baseSearchResponse;
+    }, [dataResponse]);
 
-  // Update fallback data: multi-tier fallback (memory → localStorage → session)
-  React.useEffect(() => {
-    if (lastSuccessfulSearch.results && !objectIsEmpty(lastSuccessfulSearch.results)) {
-      setFallbackData(lastSuccessfulSearch);
-      return;
-    }
-
-    const localStorageCache = getCachedSearchResults();
-    if (localStorageCache && !objectIsEmpty(localStorageCache)) {
-      setFallbackData(fixProjectInQuery(deriveCachedSearchData(localStorageCache)));
-      return;
-    }
-
-    if (cachedResults && !objectIsEmpty(cachedResults)) {
-      setFallbackData(fixProjectInQuery(deriveCachedSearchData(cachedResults)));
-      return;
-    }
-
-    setFallbackData({ results: undefined, query: null, facets: {} });
-  }, [lastSuccessfulSearch, cachedResults, fixProjectInQuery, error]);
-
-  const { results: fallbackResults, query: fallbackQuery, facets: fallbackFacets } = fallbackData;
-
-  const showCachedResultsOnError = error && fallbackResults && !objectIsEmpty(fallbackResults);
-  const resultsToDisplay = showCachedResultsOnError ? fallbackResults : results;
+  const { totalMatched, batches, batchSize, isStac, accumulatedResults } = React.useMemo(() => {
+    return batchedResults;
+  }, [batchedResults]);
 
   // Reset caches when switching projects
-  const prevProjectNameRef = React.useRef<string>('');
-  React.useEffect(() => {
-    const currentProjectName = (project.name as string) || '';
-    const projectActuallyChanged =
-      prevProjectNameRef.current !== '' && prevProjectNameRef.current !== currentProjectName;
+  const prevProjectRef = React.useRef<RawProject>({} as RawProject);
 
-    if (projectActuallyChanged) {
-      clearCachedSearchResults();
-      setCachedResults(undefined);
-      setPaginationOptions({ page: 1, pageSize: paginationOptions.pageSize });
-      setAvailableFacets({});
+  // Ensures we don't re-run our requests when currentUrl was already run
+  const lastActiveSearchQuery = React.useRef<ActiveSearchQuery>({} as ActiveSearchQuery);
+
+  // Calculate the results we need to load for the current page
+  const loadedPageResults: RawSearchResults = React.useMemo(() => {
+    const offset = (paginationOptions.page - 1) * paginationOptions.pageSize;
+    const batchRequested = Math.floor(offset / batchSize);
+    const batchAlreadyLoaded = batches.find((batch) => batch.batchNumber === batchRequested);
+
+    if (batchAlreadyLoaded) {
+      const startIdx = offset % batchSize;
+      const endIdx = startIdx + (paginationOptions.pageSize - 1);
+      const records = accumulatedResults.slice(startIdx, endIdx);
+
+      const searchResults: RawSearchResults = (
+        isStac
+          ? records.map((feature) => convertStacToRawSearchResult(feature as StacFeature))
+          : records
+      ) as RawSearchResults;
+      return searchResults;
     }
 
-    prevProjectNameRef.current = currentProjectName;
-  }, [project.name, paginationOptions.pageSize, setAvailableFacets]);
+    return [];
+  }, [accumulatedResults, batches, batchSize, paginationOptions]);
 
-  // Update request url when activeSearchQuery, project, currentProject or pagination changes
-  React.useEffect(() => {
-    if (!objectIsEmpty(project) && project.facetsUrl) {
-      cachePagination(paginationOptions);
-
-      const queryWithCompleteProject = {
-        ...activeSearchQuery,
-        project: currentProject,
-      };
-      const reqUrl = generateSearchURLQuery(queryWithCompleteProject, paginationOptions);
-      setCurrentRequestURL(reqUrl);
-    }
-  }, [activeSearchQuery, project, paginationOptions, currentProject]);
-
-  // Check if a text filter has already been applied
-  React.useEffect(() => {
-    setFiltersExist(checkFiltersExist(activeFacets, textInputs));
-  }, [activeFacets, textInputs]);
-
-  // Run each time currentRequestURL is changed, project is changed or request is run
-  React.useEffect(() => {
-    const hasFullProject = project.pk !== undefined && project.name !== undefined;
-
-    if (!objectIsEmpty(project) && hasFullProject && currentRequestURL) {
-      // Capture the current query when making the request
-      currentRequestQueryRef.current = activeSearchQuery;
-
-      const cached = getCachedSearchResults();
-      const cachedURL = (cached?.cachedURL as string) || '';
-
-      if (currentRequestURL === cachedURL) {
-        setCachedResults(cached);
-      } else {
-        setCachedResults(undefined);
-        run(currentRequestURL);
-      }
-    }
-  }, [run, currentRequestURL]);
-
-  // Process results: cache and parse facets
-  React.useEffect(() => {
-    if (error) {
-      return;
-    }
-
-    if (results && currentRequestURL && !objectIsEmpty(results)) {
-      cacheSearchResults(
-        results,
-        paginationOptions,
+  const queryString = React.useMemo(
+    () =>
+      stringifyApiRequest(
+        currentProject,
         currentRequestURL,
-        currentRequestQueryRef.current || activeSearchQuery,
-      );
+        textInputs,
+        versionType,
+        resultType,
+        minVersionDate,
+        maxVersionDate,
+        activeFacets,
+      ),
+    [
+      currentProject,
+      currentRequestURL,
+      textInputs,
+      versionType,
+      resultType,
+      minVersionDate,
+      maxVersionDate,
+      activeFacets,
+    ],
+  );
 
-      // Non-STAC: facet_counts format
-      if (results.facet_counts) {
-        const { facet_fields: facetFields } = (
-          results as {
-            facet_counts: { facet_fields: RawFacets };
-          }
-        ).facet_counts;
-        setParsedFacets(parseFacets(facetFields));
-      }
-      // STAC or generic facets format
-      else if (results.facets) {
-        const { facets } = results as { facets: ParsedFacets | Record<string, unknown> };
-        setParsedFacets(facets);
-      }
-    }
-  }, [results, error, currentRequestURL, paginationOptions, activeSearchQuery, project.name]);
+  const allSelectedItemsInCart = React.useMemo(
+    () =>
+      selectedItems.filter(
+        (item: RawSearchResult) =>
+          !userCart.some((dataset: RawSearchResult) => dataset.id === item.id),
+      ).length === 0,
+    [selectedItems, userCart],
+  );
 
-  React.useEffect(() => {
-    if (!objectIsEmpty(parsedFacets)) {
-      setAvailableFacets(parsedFacets);
-    }
-  }, [parsedFacets, setAvailableFacets]);
+  // Identify problematic facets by comparing with last successful query
+  // const problematicFacets = React.useMemo(() => {
+  //   if (error && /* fallbackQuery */) {
+  //     return identifyProblematicFacets(activeSearchQuery, fallbackQuery);
+  //   }
+  //   return new Set<string>();
+  // }, [error, activeSearchQuery, fallbackQuery]);
 
-  // Update lastSuccessfulSearch only when new data arrives successfully
-  React.useEffect(() => {
-    if (
-      !error &&
-      data &&
-      !objectIsEmpty(data) &&
-      !objectIsEmpty(parsedFacets) &&
-      currentRequestQueryRef.current
-    ) {
-      setLastSuccessfulSearch({
-        results: data,
-        query: currentRequestQueryRef.current, // Use the query that was active when request was made
-        facets: parsedFacets,
-      });
-    }
-  }, [data, error, parsedFacets]);
+  // const { numMatched, resultCount, docs } = React.useMemo(() => {
+  //   if (!resultsToDisplay) {
+  //     return { numMatched: 0, docs: [] };
+  //   }
 
-  // Use fallback facets on error
-  React.useEffect(() => {
-    if (showCachedResultsOnError && !objectIsEmpty(fallbackFacets)) {
-      setAvailableFacets(fallbackFacets);
-    }
-  }, [showCachedResultsOnError, fallbackFacets, setAvailableFacets]);
+  //   // Non-stac search results returned
+  //   if (!resultsToDisplay.stac && resultsToDisplay.response) {
+  //     const { docs: responseDocs, numFound } = (resultsToDisplay as NonStacResponse).response;
+  //     return {
+  //       numMatched: numFound,
+  //       resultCount: responseDocs.length,
+  //       docs: responseDocs.map((doc) => ({ ...doc, isStac: currentProject.isSTAC })),
+  //     };
+  //   }
+
+  //   // STAC Search results returned
+  //   if (resultsToDisplay.stac && resultsToDisplay.search) {
+  //     const stacResponse = resultsToDisplay as StacResponse;
+  //     const { features, links } = stacResponse.search;
+
+  //     const searchData = stacResponse.search as {
+  //       numberMatched?: number;
+  //       numMatched?: number;
+  //     };
+  //     const totalMatched = searchData.numberMatched || searchData.numMatched || 0;
+
+  //     const stacDocs =
+  //       features && features.length > 0
+  //         ? features.map((stacFeature: StacFeature) => convertStacToRawSearchResult(stacFeature))
+  //         : [];
+
+  //     return {
+  //       numMatched: totalMatched,
+  //       resultCount: features.length,
+  //       docs: stacDocs,
+  //     };
+  //   }
+
+  //   // No results returned
+  //   return { numMatched: 0, docs: [] };
+  // }, [resultsToDisplay, currentProject.isSTAC]);
+
+  // Helper to fix incomplete project objects in cached queries
+  // const fixProjectInQuery = React.useCallback(
+  //   (derived: CachedSearchData): CachedSearchData => {
+  //     if (!derived.query || !currentProject.name) return derived;
+
+  //     const projectNamesMatch =
+  //       currentProject.name === derived.query.project.name ||
+  //       currentProject.name?.toLowerCase() ===
+  //         (derived.query.project as RawProject).name?.toLowerCase();
+
+  //     if (projectNamesMatch || !derived.query.project.facetsUrl) {
+  //       return {
+  //         ...derived,
+  //         query: { ...derived.query, project: currentProject },
+  //       };
+  //     }
+  //     return derived;
+  //   },
+  //   [currentProject],
+  // );
 
   const handleClearFilters = React.useCallback((): void => {
-    setCachedResults(undefined); // Clear cache to force fresh search
-    clearCachedSearchResults();
+    // setCachedResults(undefined); // Clear cache to force fresh search
+    // clearCachedSearchResults();
     setActiveSearchQuery(projectBaseQuery(activeSearchQuery.project));
   }, [activeSearchQuery.project, setActiveSearchQuery]);
 
@@ -457,6 +465,199 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     }
   }, [activeSearchQuery, messageApi]);
 
+  // const handleRevertToLastSuccessfulQuery = React.useCallback((): void => {
+  //   if (fallbackQuery) {
+  //     // Clear cache to force fresh search with reverted query
+  //     setCachedResults(undefined);
+  //     clearCachedSearchResults();
+
+  //     // Merge with current project from atom to preserve full project object
+  //     setActiveSearchQuery({
+  //       ...fallbackQuery,
+  //       project: currentProject, // Use full project object from atom
+  //     });
+
+  //     showNotice(messageApi, 'Reverted to last successful search', {
+  //       icon: <BookOutlined style={appStyles.messageAddIcon} />,
+  //     });
+  //   }
+  // }, [fallbackQuery, currentProject, setActiveSearchQuery, messageApi, appStyles.messageAddIcon]);
+
+  // Update fallback data: multi-tier fallback (memory → localStorage → session)
+  // React.useEffect(() => {
+  //   if (lastSuccessfulSearch.results && !objectIsEmpty(lastSuccessfulSearch.results)) {
+  //     setFallbackData(lastSuccessfulSearch);
+  //     return;
+  //   }
+
+  //   const localStorageCache = getCachedSearchResults();
+  //   if (localStorageCache && !objectIsEmpty(localStorageCache)) {
+  //     setFallbackData(fixProjectInQuery(deriveCachedSearchData(localStorageCache)));
+  //     return;
+  //   }
+
+  //   if (cachedResults && !objectIsEmpty(cachedResults)) {
+  //     setFallbackData(fixProjectInQuery(deriveCachedSearchData(cachedResults)));
+  //     return;
+  //   }
+
+  //   setFallbackData({ results: undefined, query: null, facets: {} });
+  // }, [lastSuccessfulSearch, cachedResults, fixProjectInQuery, error]);
+
+  // Resets the cached results, pagination, and facets, if project is changed
+  // React.useEffect(() => {
+  //   const projectActuallyChanged =
+  //     prevProjectRef.current.pk !== '' && prevProjectRef.current.pk !== currentProject.pk;
+
+  //   if (projectActuallyChanged) {
+  //     // clearCachedSearchResults();
+  //     // setCachedResults(undefined);
+  //     // setCachedData(baseCachedData);
+  //     // prevProjectRef.current = currentProject;
+  //     // setAvailableFacets({});
+  //     // setPaginationOptions({ page: 1, pageSize: paginationOptions.pageSize });
+  //     setActiveSearchQuery(projectBaseQuery(currentProject));
+  //   }
+  // }, [project]);
+
+  // Update facets when project is loaded
+
+  // Update request url when activeSearchQuery, project, currentProject or pagination changes
+  // React.useEffect(() => {
+  //   if (!objectIsEmpty(project) && project.facetsUrl) {
+  //     // cachePagination(paginationOptions);
+  //     // setCachedData({ ...cachedData, pagination: paginationOptions });
+
+  //     const queryWithCompleteProject = {
+  //       ...activeSearchQuery,
+  //       project: currentProject,
+  //     };
+  //     const reqUrl = generateSearchURLQuery(queryWithCompleteProject, paginationOptions);
+  //     setCurrentRequestURL(reqUrl);
+  //   }
+  // }, [activeSearchQuery, project, paginationOptions, currentProject]);
+
+  // Check if a text filter has already been applied
+  React.useEffect(() => {
+    setFiltersExist(checkFiltersExist(activeFacets, textInputs));
+  }, [activeFacets, textInputs]);
+
+  // Run each time activeQuery, project or paginations is changed
+  React.useEffect(() => {
+    const hasFullProject = project.pk !== undefined && project.name !== undefined;
+
+    if (hasFullProject && !isEqual(activeSearchQuery, lastActiveSearchQuery.current)) {
+      // Capture the current query when making the request
+      // currentRequestQueryRef.current = activeSearchQuery;
+
+      // const cached = getCachedSearchResults();
+      // const cachedURL = (cached?.cachedURL as string) || '';
+
+      // if (currentRequestURL === cachedURL) {
+      //   setCachedResults(cached);
+      // } else {
+      //   setCachedResults(undefined);
+
+      let newSearchQuery = activeSearchQuery;
+
+      // If project changed, reset the active search query to base
+      if (
+        objectIsEmpty(lastActiveSearchQuery.current) ||
+        activeSearchQuery.project.pk !== lastActiveSearchQuery.current.project.pk
+      ) {
+        newSearchQuery = projectBaseQuery(activeSearchQuery.project);
+      }
+
+      lastActiveSearchQuery.current = newSearchQuery;
+
+      // Note, since we're running a new search query, we reset to page 1
+      run(newSearchQuery, { ...paginationOptions, page: 1 });
+
+      // }
+    }
+  }, [run, activeSearchQuery, paginationOptions, project]);
+
+  // // Process results: cache and parse facets
+  // React.useEffect(() => {
+  //   if (error) {
+  //     return;
+  //   }
+
+  //   if (dataResponse && !objectIsEmpty(dataResponse)) {
+  //     setParsedFacets(dataResponse.searchFacets);
+  //   }
+  // }, [dataResponse, error]);
+
+  // Process results: cache and parse facets
+  // React.useEffect(() => {
+  //   if (error) {
+  //     return;
+  //   }
+
+  //   if (dataResponse && !objectIsEmpty(dataResponse)) {
+  //     // memoizedCacheSearchResults(
+  //     //   results,
+  //     //   paginationOptions,
+  //     //   currentRequestURL,
+  //     //   currentRequestQueryRef.current || activeSearchQuery,
+  //     // );
+
+  //     // Non-STAC: facet_counts format
+  //     if (dataResponse.facet_counts) {
+  //       const { facet_fields: facetFields } = (
+  //         dataResponse as {
+  //           facet_counts: { facet_fields: RawFacets };
+  //         }
+  //       ).facet_counts;
+  //       setParsedFacets(parseFacets(facetFields));
+  //     }
+  //     // STAC or generic facets format
+  //     else if (dataResponse.facets) {
+  //       const { facets } = dataResponse as { facets: ParsedFacets | Record<string, unknown> };
+  //       setParsedFacets(facets);
+  //     }
+
+  //     // setCachedData({
+  //     //   ...cachedData,
+  //     //   searchFacets: parsedFacets,
+  //     //   pagination: paginationOptions,
+  //     //   searchQuery: activeSearchQuery,
+  //     //   searchHash: convertActiveSearchToHash(activeSearchQuery),
+  //     // });
+  //   }
+  // }, [dataResponse, error, currentRequestURL, paginationOptions, activeSearchQuery, project.name]);
+
+  // Update the facets list
+  // React.useEffect(() => {
+  //   if (!objectIsEmpty(parsedFacets)) {
+  //     setAvailableFacets(parsedFacets);
+  //   }
+  // }, [parsedFacets, setAvailableFacets]);
+
+  // Update lastSuccessfulSearch only when new data arrives successfully
+  // React.useEffect(() => {
+  //   if (
+  //     !error &&
+  //     data &&
+  //     !objectIsEmpty(data) &&
+  //     !objectIsEmpty(parsedFacets) &&
+  //     currentRequestQueryRef.current
+  //   ) {
+  //     setLastSuccessfulSearch({
+  //       results: data,
+  //       query: currentRequestQueryRef.current, // Use the query that was active when request was made
+  //       facets: parsedFacets,
+  //     });
+  //   }
+  // }, [data, error, parsedFacets]);
+
+  // Use fallback facets on error
+  // React.useEffect(() => {
+  //   if (showCachedResultsOnError && !objectIsEmpty(fallbackFacets)) {
+  //     setAvailableFacets(fallbackFacets);
+  //   }
+  // }, [showCachedResultsOnError, fallbackFacets, setAvailableFacets]);
+
   const handleRemoveFilter = (removedTag: TagValue, type: TagType): void => {
     /* istanbul ignore else -- @preserve */
     if (type === 'text') {
@@ -508,110 +709,6 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     setPaginationOptions({ page: 1, pageSize });
   };
 
-  const queryString = React.useMemo(
-    () =>
-      stringifyApiRequest(
-        currentProject,
-        currentRequestURL,
-        textInputs,
-        versionType,
-        resultType,
-        minVersionDate,
-        maxVersionDate,
-        activeFacets,
-      ),
-    [
-      currentProject,
-      currentRequestURL,
-      textInputs,
-      versionType,
-      resultType,
-      minVersionDate,
-      maxVersionDate,
-      activeFacets,
-    ],
-  );
-
-  const allSelectedItemsInCart = React.useMemo(
-    () =>
-      selectedItems.filter(
-        (item: RawSearchResult) =>
-          !userCart.some((dataset: RawSearchResult) => dataset.id === item.id),
-      ).length === 0,
-    [selectedItems, userCart],
-  );
-
-  // Identify problematic facets by comparing with last successful query
-  const problematicFacets = React.useMemo(() => {
-    if (error && fallbackQuery) {
-      return identifyProblematicFacets(activeSearchQuery, fallbackQuery);
-    }
-    return new Set<string>();
-  }, [error, activeSearchQuery, fallbackQuery]);
-
-  const handleRevertToLastSuccessfulQuery = React.useCallback((): void => {
-    if (fallbackQuery) {
-      // Clear cache to force fresh search with reverted query
-      setCachedResults(undefined);
-      clearCachedSearchResults();
-
-      // Merge with current project from atom to preserve full project object
-      setActiveSearchQuery({
-        ...fallbackQuery,
-        project: currentProject, // Use full project object from atom
-      });
-
-      showNotice(messageApi, 'Reverted to last successful search', {
-        icon: <BookOutlined style={appStyles.messageAddIcon} />,
-      });
-    }
-  }, [fallbackQuery, currentProject, setActiveSearchQuery, messageApi, appStyles.messageAddIcon]);
-
-  type LoadedResults = {
-    cachedURL: string;
-    response: { docs: RawSearchResults; numFound: number };
-  };
-
-  const { numMatched, docs } = React.useMemo(() => {
-    if (!resultsToDisplay) {
-      return { numMatched: 0, docs: [] };
-    }
-
-    // Non-stac search results returned
-    if (!resultsToDisplay.stac && resultsToDisplay.response) {
-      const { docs: responseDocs, numFound } = (resultsToDisplay as LoadedResults).response;
-      return {
-        numMatched: numFound,
-        docs: responseDocs.map((doc) => ({ ...doc, isStac: currentProject.isSTAC })),
-      };
-    }
-
-    // STAC Search results returned
-    if (resultsToDisplay.stac && resultsToDisplay.search) {
-      const stacResponse = resultsToDisplay as StacResponse;
-      const { features } = stacResponse.search;
-
-      const searchData = stacResponse.search as {
-        numberMatched?: number;
-        numMatched?: number;
-      };
-      const totalMatched = searchData.numberMatched || searchData.numMatched || 0;
-
-      const stacDocs =
-        features && features.length > 0
-          ? features.map((stacFeature: StacFeature) => convertStacToRawSearchResult(stacFeature))
-          : [];
-
-      return {
-        numMatched: totalMatched,
-        docs: stacDocs,
-      };
-    }
-
-    // No results returned
-    return { numMatched: 0, docs: [] };
-  }, [resultsToDisplay, currentProject.isSTAC]);
-
   const searchActionsMenu = [
     {
       key: '1',
@@ -622,7 +719,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
               type="default"
               className={copySearchOptionsTargets.copySearchLinkBtn.class()}
               onClick={handleShareSearchQuery}
-              disabled={isLoading || numMatched === 0}
+              disabled={isLoading || totalMatched === 0}
             >
               <ShareAltOutlined data-testid="share-search-btn" /> Copy Metagrid search URL
             </Button>
@@ -639,7 +736,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
               type="default"
               className={copySearchOptionsTargets.copyEsgpullSearchQueryBtn.class()}
               onClick={handleEsgpullSearchQuery}
-              disabled={isLoading || numMatched === 0}
+              disabled={isLoading || totalMatched === 0}
             >
               <CodeOutlined data-testid="copy-esgpull-search-btn" /> Copy esgpull search query
             </Button>
@@ -656,7 +753,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
               type="default"
               className={copySearchOptionsTargets.copyEsgpullDownloadCommandBtn.class()}
               onClick={handleEsgpullDownloadCmd}
-              disabled={isLoading || numMatched === 0}
+              disabled={isLoading || totalMatched === 0}
             >
               <CodeOutlined data-testid="copy-esgpull-download-btn" /> Copy esgpull download command
             </Button>
@@ -673,7 +770,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
               type="default"
               className={copySearchOptionsTargets.copyIntakeEsgfSearchBtn.class()}
               onClick={handleIntakeEsgfSearch}
-              disabled={isLoading || numMatched === 0}
+              disabled={isLoading || totalMatched === 0}
             >
               <CodeOutlined data-testid="copy-intake-search-btn" /> Copy Intake-ESGF search command
             </Button>
@@ -686,42 +783,42 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   /* istanbul ignore next -- @preserve */
   const setDownloadAllForm = (value: boolean) => () => setShowDownloadAllForm(value);
 
-  const errorDescription = React.useMemo(() => {
-    if (!showCachedResultsOnError) return null;
+  // const errorDescription = React.useMemo(() => {
+  //   if (!showCachedResultsOnError) return null;
 
-    const problematicFacetsList = Array.from(problematicFacets);
-    const is422Error = error?.cause === 422;
+  //   const problematicFacetsList = Array.from(problematicFacets);
+  //   const is422Error = error?.cause === 422;
 
-    if (problematicFacetsList.length > 0 && is422Error) {
-      const facetList = problematicFacetsList
-        .map((facet) => {
-          const [key, value] = facet.split(':');
-          return `${key}: "${value}"`;
-        })
-        .join(', ');
+  //   if (problematicFacetsList.length > 0 && is422Error) {
+  //     const facetList = problematicFacetsList
+  //       .map((facet) => {
+  //         const [key, value] = facet.split(':');
+  //         return `${key}: "${value}"`;
+  //       })
+  //       .join(', ');
 
-      return (
-        <>
-          Unable to fetch results. The following facet(s) may be causing the error:{' '}
-          <strong>{facetList}</strong>. These are highlighted below.{' '}
-          <Button type="link" size="small" onClick={handleRevertToLastSuccessfulQuery}>
-            Revert to last successful search
-          </Button>
-          .
-        </>
-      );
-    }
+  //     return (
+  //       <>
+  //         Unable to fetch results. The following facet(s) may be causing the error:{' '}
+  //         <strong>{facetList}</strong>. These are highlighted below.{' '}
+  //         <Button type="link" size="small" onClick={handleRevertToLastSuccessfulQuery}>
+  //           Revert to last successful search
+  //         </Button>
+  //         .
+  //       </>
+  //     );
+  //   }
 
-    return <>Unable to fetch latest results. Displaying last successful search.</>;
-  }, [
-    showCachedResultsOnError,
-    problematicFacets,
-    error,
-    fallbackQuery,
-    handleRevertToLastSuccessfulQuery,
-  ]);
+  //   return <>Unable to fetch latest results. Displaying last successful search.</>;
+  // }, [
+  //   showCachedResultsOnError,
+  //   problematicFacets,
+  //   error,
+  //   fallbackQuery,
+  //   handleRevertToLastSuccessfulQuery,
+  // ]);
 
-  if (error && !showCachedResultsOnError) {
+  if (error /* && !showCachedResultsOnError */) {
     const errorMessage =
       error.cause === 422
         ? 'Invalid search query. Try adjusting filters or selecting a different project.'
@@ -738,7 +835,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   return (
     <div data-testid="search">
       {contextHolder}
-      {showCachedResultsOnError && (
+      {/* {showCachedResultsOnError && (
         <Alert
           message="Search Error - Showing Previous Results"
           description={errorDescription}
@@ -748,7 +845,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           style={{ marginBottom: 16 }}
           data-testid="cached-results-warning"
         />
-      )}
+      )} */}
       <div
         className={searchTableTargets.searchFeaturesArea.class()}
         data-testid="search-features-wrapper"
@@ -765,7 +862,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                 style={styles.resultsHeader}
                 data-testid="search-results-span"
               >
-                {numMatched.toLocaleString()} results found for{' '}
+                {totalMatched.toLocaleString()} results found for{' '}
               </span>
             )}
             <span style={styles.resultsHeader}>{(project as RawProject).name}</span>
@@ -778,7 +875,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                     <Tooltip
                       placement="bottom"
                       title={
-                        numMatched >= 10000
+                        totalMatched >= 10000
                           ? 'To use the Download All feature, please narrow down your search to less than 10,000 results.'
                           : 'Open form to download the current search results.'
                       }
@@ -788,7 +885,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                         shape="round"
                         className={searchTableTargets.downloadSearchBtn.class()}
                         onClick={setDownloadAllForm(true)}
-                        disabled={isLoading || numMatched === 0 || numMatched >= 10000}
+                        disabled={isLoading || totalMatched === 0 || totalMatched >= 10000}
                       >
                         <DownloadOutlined />
                         Download All Results{' '}
@@ -798,16 +895,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                       show={showDownloadAllForm}
                       hide={setDownloadAllForm(false)}
                       searchURL={getUrlFromSearch(activeSearchQuery)}
-                      stacResults={
-                        resultsToDisplay && (resultsToDisplay as StacResponse).search
-                          ? (resultsToDisplay as StacResponse).search
-                          : {
-                              features: [],
-                              links: [],
-                              type: 'FeatureCollection',
-                            }
-                      }
-                      totalMatched={numMatched}
+                      stacResults={isStac ? (accumulatedResults as StacFeature[]) : []}
+                      totalMatched={totalMatched}
                       activeSearchQuery={activeSearchQuery}
                     />
                   </>
@@ -822,7 +911,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                     onClick={() => onUpdateCart(selectedItems, 'add')}
                     disabled={
                       isLoading ||
-                      numMatched === 0 ||
+                      totalMatched === 0 ||
                       selectedItems.length === 0 ||
                       allSelectedItemsInCart
                     }
@@ -835,8 +924,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                   data-testid="save-search-dropdown-btn"
                   className={searchTableTargets.saveSearchBtn.class()}
                   type="default"
-                  onClick={() => handleSaveSearchQuery(currentRequestURL, numMatched)}
-                  disabled={isLoading || numMatched === 0}
+                  onClick={() => handleSaveSearchQuery(currentRequestURL, totalMatched)}
+                  disabled={isLoading || totalMatched === 0}
                   menu={{ items: searchActionsMenu }}
                   placement="bottom"
                   icon={<CopyOutlined className={copySearchOptionsTargets.copyMenuBtn.class()} />}
@@ -888,16 +977,16 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
             </p>
           )}
         </div>
-        {(resultsToDisplay || showCachedResultsOnError) && (
+        {resultsToDisplay /* || showCachedResultsOnError */ && (
           <Row style={styles.filtersContainer}>
             {Object.keys(activeFacets).length !== 0 &&
               Object.keys(activeFacets).map((facet: string) =>
                 activeFacets[facet].map((variable: string) => {
                   const facetKey = `${facet}:${variable}`;
-                  const isProblematic = problematicFacets.has(facetKey);
+                  // const isProblematic = problematicFacets.has(facetKey);
                   return (
                     <div key={variable} data-testid={variable}>
-                      {isProblematic ? (
+                      {/* {isProblematic ? (
                         <Tooltip
                           title="This facet may be causing the search error. Try removing it to see if the search succeeds."
                           placement="top"
@@ -913,11 +1002,11 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                             </Tag>
                           </span>
                         </Tooltip>
-                      ) : (
-                        <Tag value={[facet, variable]} onClose={handleRemoveFilter} type="facet">
-                          {variable}
-                        </Tag>
-                      )}
+                      ) : ( */}
+                      <Tag value={[facet, variable]} onClose={handleRemoveFilter} type="facet">
+                        {variable}
+                      </Tag>
+                      {/* )} */}
                     </div>
                   );
                 }),
@@ -961,9 +1050,10 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
             >
               <Table
                 loading={isLoading}
-                results={docs}
-                totalResults={numMatched}
+                results={loadedPageResults}
+                totalResults={Math.min(totalMatched, isStac ? batchSize : MAX_NON_STAC_RESULTS)}
                 currentPage={paginationOptions.page}
+                currentPageSize={paginationOptions.pageSize}
                 filenameVars={activeSearchQuery.filenameVars}
                 isStac={currentProject.isSTAC}
                 onUpdateCart={onUpdateCart}

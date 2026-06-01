@@ -6,10 +6,12 @@ import {
   cachePagination,
   objectIsEmpty,
   getSearchFromUrl,
+  memoizeByArgs,
+  convertObjectToHash,
 } from '../../common/utils';
 import { ActiveFacets } from '../Facets/types';
 
-export const STAC_BATCH_SIZE = 100;
+export const SEARCH_BATCH_SIZE = 100;
 
 export type StacBatchLoading = {
   batches: { nextToken: string | undefined; results: RawSearchResults }[];
@@ -38,9 +40,18 @@ export const cacheSearchResults = (
     );
 
     // Cache the pagination
-    cachePagination(pagination);
+    // cachePagination(pagination);
   }
 };
+
+export const memoizedCacheSearchResults = memoizeByArgs(
+  cacheSearchResults,
+  (_fetchedResults, cachedURL, searchQuery) =>
+    JSON.stringify({
+      cachedURL,
+      searchQuery,
+    }),
+);
 
 export const clearCachedSearchResults = (): void => {
   // Clear the cached search results from localStorage
@@ -174,28 +185,6 @@ export const deriveCachedSearchData = (
 };
 
 /**
- * Generic function to convert any object to a hash number for efficient comparison.
- * Uses a 32-bit integer hash algorithm for consistent results.
- *
- * @param obj - Object to hash
- * @returns Hash number representing the object
- */
-export const convertObjectToHash = <T>(obj: T): number => {
-  /* eslint-disable */
-  let hash: number = 0;
-  const queryStr = JSON.stringify(obj);
-  let i, chr;
-
-  for (i = 0; i < queryStr.length; i++) {
-    chr = queryStr.charCodeAt(i);
-    hash = (hash << 5) - hash + chr;
-    hash |= 0; // Convert to 32bit integer
-  }
-  return hash;
-  /* eslint-enable */
-};
-
-/**
  * Converts an ActiveSearchQuery to a hash number for efficient comparison.
  * Includes all search criteria: facets, text inputs, version filters, result type, etc.
  *
@@ -275,7 +264,7 @@ export const clearCachedStacBatches = (): void => {
   localStorage.removeItem('cachedStacBatches');
 };
 
-export const cacheStacBatches = (stacBatches: Record<string, unknown>): void => {
+export const cacheStacBatches = (stacBatches: StacBatchLoading): void => {
   saveToLocalStorage(
     'cachedStacBatches',
     {
@@ -391,7 +380,7 @@ export const shouldTriggerPreload = (params: {
   const { currentPage, loadedCount, pageSize, nextToken, lastPreloadedBatch } = params;
 
   const totalLoadedPages = Math.ceil(loadedCount / pageSize);
-  const currentBatch = Math.ceil(loadedCount / STAC_BATCH_SIZE);
+  const currentBatch = Math.ceil(loadedCount / SEARCH_BATCH_SIZE);
 
   const shouldTrigger =
     !!nextToken && currentPage === totalLoadedPages && lastPreloadedBatch !== currentBatch;

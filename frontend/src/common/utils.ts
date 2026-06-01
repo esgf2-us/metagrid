@@ -1,13 +1,15 @@
 import { CSSProperties, ReactNode } from 'react';
 import { MessageInstance } from 'antd/es/message/interface';
 import LZString from 'lz-string';
-import { ActiveFacets, RawProject } from '../components/Facets/types';
+import { ActiveFacets, ParsedFacets, RawProject } from '../components/Facets/types';
 import {
   ActiveSearchQuery,
+  BatchedSearchResults,
   Pagination,
   RawSearchResult,
   RawSearchResults,
   ResultType,
+  SearchResponse,
   TextInputs,
   VersionType,
 } from '../components/Search/types';
@@ -62,6 +64,11 @@ export async function showNotice(
   }
 }
 
+export const basePagination: Pagination = {
+  page: 1,
+  pageSize: 10,
+};
+
 export const projectBaseQuery = (
   project: Record<string, unknown> | RawProject,
 ): ActiveSearchQuery => ({
@@ -76,6 +83,25 @@ export const projectBaseQuery = (
   globusOnly: false,
 });
 
+export const baseBatchedResults: BatchedSearchResults = {
+  batches: [],
+  batchSize: 0,
+  totalMatched: 0,
+  accumulatedResults: [],
+  isStac: false,
+};
+
+export const baseSearchResponse: SearchResponse = {
+  expires: 0,
+  batchedResults: baseBatchedResults,
+  searchUrl: '',
+  searchQuery: projectBaseQuery({}),
+  searchFacets: {} as ParsedFacets,
+  status: 200,
+};
+
+// Search results batching functions
+
 /**
  * Checks if an object is empty.
  */
@@ -89,6 +115,28 @@ export const objectIsEmpty = (obj: Record<any, any>): boolean =>
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const isEqual = (a: any, b: any): boolean => JSON.stringify(a) === JSON.stringify(b);
+
+/**
+ * Generic function to convert any object to a hash number for efficient comparison.
+ * Uses a 32-bit integer hash algorithm for consistent results.
+ *
+ * @param obj - Object to hash
+ * @returns Hash number representing the object
+ */
+export const convertObjectToHash = <T>(obj: T): number => {
+  /* eslint-disable */
+  let hash: number = 0;
+  const queryStr = JSON.stringify(obj);
+  let i, chr;
+
+  for (i = 0; i < queryStr.length; i++) {
+    chr = queryStr.charCodeAt(i);
+    hash = (hash << 5) - hash + chr;
+    hash |= 0; // Convert to 32bit integer
+  }
+  return hash;
+  /* eslint-enable */
+};
 
 const bodySider = {
   padding: '12px 12px 12px 12px',
@@ -242,6 +290,25 @@ export const convertResultTypeToReplicaParam = (
   const param = replicaParams[resultType] as ResultType;
   return param && isLabel ? param.replace('=', ' = ') : param;
 };
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function memoizeByArgs<T extends (...args: any[]) => void>(
+  fn: T,
+  getKey: (...args: Parameters<T>) => string,
+): T {
+  let lastKey: string | undefined;
+
+  return ((...args: Parameters<T>) => {
+    const key = getKey(...args);
+
+    if (key === lastKey) {
+      return;
+    }
+
+    lastKey = key;
+    fn(...args);
+  }) as T;
+}
 
 export const getUrlFromSearch = (search: ActiveSearchQuery): string => {
   const urlString = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;

@@ -13,7 +13,7 @@ import React, { useCallback } from 'react';
 import { useAtomValue, useAtom } from 'jotai';
 import stacIcon from '../../assets/img/STAC-favicon.png';
 import { fetchWgetScript, ResponseError } from '../../api';
-import { STAC_BATCH_SIZE } from './searchHelpers';
+import { SEARCH_BATCH_SIZE } from './searchHelpers';
 import {
   createEsgpullCommand,
   formatBytes,
@@ -54,6 +54,7 @@ export type Props = {
   results: RawSearchResults | [];
   totalResults?: number;
   currentPage?: number;
+  currentPageSize?: number;
   selections?: RawSearchResults | [];
   filenameVars?: TextInputs | [];
   isStac?: boolean;
@@ -67,7 +68,6 @@ export type Props = {
 // Add options to this constant as needed
 type DatasetDownloadTypes = 'wget' | 'Globus' | 'esgpull';
 
-const MAX_RESULTS = 10000;
 const SUCCESS_MSG = 'Wget script generated successfully!';
 const STAC_ERROR_MSG =
   'No file links found in the selected dataset, wget script was not generated.';
@@ -78,6 +78,7 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
   results,
   totalResults,
   currentPage,
+  currentPageSize,
   selections,
   filenameVars,
   isStac = false,
@@ -136,21 +137,21 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
     [],
   );
 
-  let cachedPage: number | undefined;
-  let cachedSize: number | undefined;
+  // let cachedPage: number | undefined;
+  // let cachedSize: number | undefined;
 
-  if (getCurrentAppPage() !== AppPage.Cart) {
-    const pagination = getCachedPagination();
-    cachedPage = pagination.page;
-    cachedSize = pagination.pageSize;
-  }
+  // if (getCurrentAppPage() !== AppPage.Cart) {
+  //   const pagination = getCachedPagination();
+  //   cachedPage = pagination.page;
+  //   cachedSize = pagination.pageSize;
+  // }
 
   // Use prop if provided, otherwise fall back to cache
-  const safePage = currentPage ?? cachedPage ?? 1;
-  const safeSize = cachedSize ?? 10;
+  const safePage = currentPage /* ?? cachedPage  */ ?? 1;
+  const safeSize = currentPageSize ?? 10; // cachedSize ?? 10;
 
   // Clamp the results count to a maximum of 10,000
-  const clampedResultCount = totalResults ? Math.min(totalResults, MAX_RESULTS) : undefined;
+  // const clampedResultCount = totalResults ? Math.min(totalResults, MAX_RESULTS) : undefined;
 
   const filteredResults = results.filter((result) => !result.isStac || !stacDisabled);
 
@@ -261,15 +262,15 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
   };
 
   // For STAC: calculate which batch we're in (safePage and safeSize defined above)
-  const currentBatch = isStac ? Math.floor(((safePage - 1) * safeSize) / STAC_BATCH_SIZE) : 0;
+  // const currentBatch = isStac ? Math.floor(((safePage - 1) * safeSize) / STAC_BATCH_SIZE) : 0;
 
   const tableConfig = {
     size: 'small' as SizeType,
     loading,
     pagination: {
-      total: clampedResultCount,
-      current: safePage,
-      pageSize: safeSize,
+      total: totalResults, // clampedResultCount,
+      current: currentPage,
+      pageSize: currentPageSize,
       position: ['bottomCenter'],
       showSizeChanger: {
         optionRender: renderPageSizeOption,
@@ -280,20 +281,20 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       onChange: (page: number, pageSize: number) => {
         if (!onPageChange) return;
 
-        if (isStac) {
-          // For STAC, check if clicking on a page outside current batch
-          const pageBatch = Math.floor(((page - 1) * pageSize) / STAC_BATCH_SIZE);
-          if (pageBatch !== currentBatch) {
-            // Switching batches - trigger fetch
-            onPageChange(page, pageSize);
-          } else {
-            // Same batch - just update page (client-side pagination)
-            onPageChange(page, pageSize);
-          }
-        } else {
-          // Non-STAC: pass through directly
-          onPageChange(page, pageSize);
-        }
+        // if (isStac) {
+        //   // For STAC, check if clicking on a page outside current batch
+        //   const pageBatch = Math.floor(((page - 1) * pageSize) / STAC_BATCH_SIZE);
+        //   if (pageBatch !== currentBatch) {
+        //     // Switching batches - trigger fetch
+        //     onPageChange(page, pageSize);
+        //   } else {
+        //     // Same batch - just update page (client-side pagination)
+        //     onPageChange(page, pageSize);
+        //   }
+        // } else {
+        // Non-STAC: pass through directly
+        onPageChange(page, pageSize);
+        // }
       },
       onShowSizeChange: (_current: number, size: number) => {
         if (onPageSizeChange) {
