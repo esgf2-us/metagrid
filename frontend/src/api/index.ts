@@ -22,8 +22,10 @@ import {
   ActiveSearchQuery,
   Pagination,
   RawCitation,
-  ResultType,
   StacAggregations,
+  StacAsset,
+  StacFeature,
+  StacSearchResponse,
   TextInputs,
 } from '../components/Search/types';
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
@@ -31,6 +33,7 @@ import apiRoutes, { ApiRoute, HTTPCodeType } from './routes';
 import { GlobusEndpointSearchResults } from '../components/Globus/types';
 import {
   cachePagination,
+  convertResultTypeToReplicaParam,
   downloadFileForUser,
   getCachedPagination,
   getCachedSearchResults,
@@ -38,9 +41,12 @@ import {
 import {
   aggregationsToFacetsData,
   convertSearchParamsIntoStacFilter,
-  STAC_AGGREGATION_FACETS,
-  STAC_PROJECTS,
+  getAggregationsList,
+  getStacProject,
+  buildStacProjects,
+  setConfiguredAdditionalProjects,
 } from '../common/STAC';
+import { ProjectsConfig, STAC_PROJECT_LIST } from '../common/useProjectsConfig';
 
 export interface ResponseError extends Error {
   status?: number;
@@ -54,6 +60,8 @@ export interface SubmissionResult {
   failures: string[];
   auth_url: string | undefined;
 }
+
+export const STAC_BATCH_SIZE = 100;
 
 export const getCookie = (name: string): null | string => {
   let cookieValue = null;
@@ -74,6 +82,7 @@ export const getCookie = (name: string): null | string => {
 
 export const setCookie = (name: string, value: string, expDays = 7, path = '/'): void => {
   let expires = '';
+  /* istanbul ignore else -- @preserve */
   if (expDays) {
     const date = new Date();
     date.setTime(date.getTime() + expDays * 24 * 60 * 60 * 1000);
@@ -83,6 +92,7 @@ export const setCookie = (name: string, value: string, expDays = 7, path = '/'):
   document.cookie = `metagrid_${name}=${encodeURIComponent(value)}; ${expires}; path=${path}; ${cookieSettings}`;
 };
 
+/* istanbul ignore next -- @preserve */
 export const deleteCookie = (name: string, path = '/'): void => {
   document.cookie = `metagrid_${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path};`;
 };
@@ -113,7 +123,7 @@ export const errorMsgBasedOnHTTPStatusCode = (error: ResponseError, route: ApiRo
   // Indicates that an HTTP response status code was returned from the server
   if (error.response) {
     // Normalize status to a number when possible
-    /* istanbul ignore next */
+    /* istanbul ignore next -- @preserve */
     const statusNum = Number(error.response.status) || 0;
 
     // For server errors (5xx) return the generic error message for the route
@@ -303,7 +313,7 @@ export const addUserSearchQuery = async (
         'X-CSRFToken': getCookie('csrftoken'),
       },
     })
-    .then((res) => res.data as Promise<RawUserSearchQuery>)
+    .then((response) => response.data as Promise<RawUserSearchQuery>)
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userSearches));
     });
@@ -330,10 +340,79 @@ export const deleteUserSearchQuery = async (pk: string, accessToken: string): Pr
     });
 
 /**
+ * Applies whitelist/blacklist filtering to the combined list of projects.
+ * @param projects - Combined list of all projects (backend + additional)
+ * @param whitelist - Project names to show (if specified, ONLY these are shown)
+ * @param blacklist - Project names to hide (ignored if whitelist is specified)
+ * @returns Filtered list of projects
+ */
+const applyProjectFilters = (
+  projects: RawProjects,
+  whitelist: string[],
+  blacklist: string[],
+): RawProjects => {
+  let filtered = projects;
+
+  // Apply whitelist (if not empty, only show whitelisted projects)
+  if (whitelist.length > 0) {
+    filtered = filtered.filter((p) => whitelist.includes(p.name));
+  }
+
+  // Apply blacklist (hide blacklisted projects)
+  if (blacklist.length > 0) {
+    filtered = filtered.filter((p) => !blacklist.includes(p.name));
+  }
+
+  return filtered;
+};
+
+/**
+ * Handles STAC project name replacement for legacy projects.
+ * If a STAC project (name contains " STAC") exists but its legacy counterpart
+ * (same name without " STAC") is not in the filtered list, the STAC project
+ * replaces the legacy one by removing " STAC" from its name.
+ *
+ * @param projects - The filtered projects list
+ * @returns Projects list with STAC names adjusted if needed
+ */
+const handleStacProjectReplacement = (projects: RawProjects): RawProjects => {
+  return projects.map((project) => {
+    // Check if this is a STAC project (has " STAC" in the name)
+    if (project.name.includes(' STAC')) {
+      // Determine what the legacy project name would be
+      const legacyName = project.name.replace(' STAC', '');
+
+      // Check if the legacy project exists in the filtered list
+      const legacyExists = projects.some((p) => p.name === legacyName);
+
+      // If legacy doesn't exist, this STAC project replaces it - remove " STAC" from name
+      if (!legacyExists) {
+        return {
+          ...project,
+          name: legacyName,
+        };
+      }
+    }
+
+    // Return project unchanged (either not STAC, or legacy counterpart exists)
+    return project;
+  });
+};
+
+/**
+ * Fetches projects from the backend database and optionally adds configured projects.
+ * Applies whitelist/blacklist filtering to the combined list if configured.
+ *
  * HTTP Request Method: GET
  * HTTP Response: 200 OK
+ * @param config - Optional projects configuration:
+ *   - additionalProjects: Additional projects to add to backend projects
+ *   - whitelist: Show only these projects (applies to ALL projects: backend + additional)
+ *   - blacklist: Hide these projects (applies to ALL projects: backend + additional)
  */
-export const fetchProjects = async (): Promise<{
+export const fetchProjects = async (
+  config?: ProjectsConfig,
+): Promise<{
   results: RawProjects;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
@@ -348,51 +427,58 @@ export const fetchProjects = async (): Promise<{
         }
       },
     })
-    .then(async (res) => {
-      const data = (await res.data) as {
+    .then(async (response) => {
+      const data = (await response.data) as {
         results: RawProjects;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         [key: string]: any;
       };
 
-      const additionalProjects = window.METAGRID.STAC_URL ? STAC_PROJECTS : [];
+      // Calculate starting PK for additional projects
+      const backendProjects = data.results
+        ? data.results.filter((p) => p.name !== 'All (except CMIP6)')
+        : [];
+      const startPk = backendProjects.length + 1;
+
+      // Build additional projects list (if configured or using defaults)
+      let additionalProjects: RawProjects = [];
+      if (window.METAGRID.STAC_URL) {
+        const configProjects = config?.additionalProjects;
+        if (configProjects && configProjects.length > 0) {
+          // Use additional projects from config
+          additionalProjects = buildStacProjects(configProjects, startPk);
+        } else {
+          // Use default STAC projects with correct starting PK
+          additionalProjects = buildStacProjects(STAC_PROJECT_LIST, startPk);
+        }
+        // Store the additional projects globally
+        setConfiguredAdditionalProjects(additionalProjects);
+      }
+
+      // Get filter configuration
+      const whitelist = config?.whitelist || [];
+      const blacklist = config?.blacklist || [];
+
+      // Combine projects with additional projects first (at top of dropdown)
+      const allProjects: RawProjects = [...additionalProjects, ...backendProjects];
+
+      // Apply whitelist/blacklist filters to the combined list
+      let filteredProjects = applyProjectFilters(allProjects, whitelist, blacklist);
+
+      // Handle STAC project name replacement for filtered-out legacy projects
+      filteredProjects = handleStacProjectReplacement(filteredProjects);
 
       if (data.results) {
         return {
-          ...res,
-          results: [
-            ...data.results.filter((p) => p.name !== 'All (except CMIP6)'),
-            ...additionalProjects,
-          ],
+          ...response,
+          results: filteredProjects,
         };
       }
-      return { ...res, results: additionalProjects };
+      return { ...response, results: filteredProjects };
     })
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.projects));
     });
-
-/**
- * replica param indicates whether the record is the 'master' copy, or a replica.
- * - By default, no replica param is specified (return both replicas and originals)
- * - replica=false to return only originals
- * - replica=true to return only replicas
- *
- * https://github.com/ESGF/esgf.github.io/wiki/ESGF_Search_REST_API#core-facets
- */
-export const convertResultTypeToReplicaParam = (
-  resultType: ResultType,
-  isLabel?: boolean,
-): string | undefined => {
-  const replicaParams = {
-    all: undefined,
-    'originals only': 'replica=false',
-    'replicas only': 'replica=true',
-  };
-
-  const param = replicaParams[resultType] as ResultType;
-  return param && isLabel ? param.replace('=', ' = ') : param;
-};
 
 export const updatePaginationParams = (url: string, pagination: Pagination): string => {
   const paginationOffset = pagination.page > 1 ? (pagination.page - 1) * pagination.pageSize : 0;
@@ -421,6 +507,7 @@ export const generateSearchURLQuery = (
     maxVersionDate,
     activeFacets,
     textInputs,
+    globusOnly,
   } = activeSearchQuery;
 
   const { isSTAC } = activeSearchQuery.project;
@@ -429,8 +516,14 @@ export const generateSearchURLQuery = (
 
   const replicaParam = convertResultTypeToReplicaParam(resultType);
 
-  // The base params include facet fields to return for each dataset and the pagination options
-  let baseParams = updatePaginationParams(project.facetsUrl as string, pagination);
+  const facetsUrl =
+    'facetsUrl' in project && typeof project.facetsUrl === 'string'
+      ? project.facetsUrl
+      : 'offset=0&limit=0';
+  // STAC uses fixed batch size for client-side pagination; non-STAC uses server-side pagination
+  let baseParams = isSTAC
+    ? `${facetsUrl.replace('limit=0', `limit=${STAC_BATCH_SIZE}`)}&`
+    : updatePaginationParams(facetsUrl, pagination);
 
   if (versionType === 'latest') {
     baseParams += `latest=true&`;
@@ -443,6 +536,11 @@ export const generateSearchURLQuery = (
   }
   if (maxVersionDate) {
     baseParams += `max_version=${maxVersionDate}&`;
+  }
+
+  /* istanbul ignore next -- @preserve */
+  if (globusOnly) {
+    baseParams += `globusOnly=${globusOnly}&`;
   }
 
   let textInputsParams = 'query=*';
@@ -463,7 +561,9 @@ export const generateSearchURLQuery = (
   );
 
   if (isSTAC) {
-    return `${baseRoute}${baseParams}${`project_id=${(project as RawProject).projectName}`}&${activeFacetsParams}`;
+    const url = `${baseRoute}${baseParams}${`project_id=${(project as RawProject).projectName}`}&${textInputsParams}&${activeFacetsParams}`;
+
+    return url;
   }
 
   return `${baseRoute}${baseParams}${textInputsParams}&${activeFacetsParams}`;
@@ -477,32 +577,112 @@ export const postSTACSearch = async (
   projectName: string,
   limit: number,
   filter: { op: string; args: unknown } | undefined = undefined,
+  q?: TextInputs,
+  token?: string,
 ): Promise<Record<string, unknown>> => {
+  const requestBody: {
+    collections: string[];
+    limit: number;
+    filter?: { op: string; args: unknown };
+    q?: TextInputs;
+    token?: string;
+  } = {
+    collections: [projectName],
+    limit,
+  };
+
+  if (filter) {
+    requestBody.filter = filter;
+  }
+  if (q) {
+    requestBody.q = q;
+  }
+  if (token && typeof token === 'string' && token.length > 0) {
+    requestBody.token = token;
+  }
+
   return axios
-    .post(apiRoutes.esgfSearchSTAC.path, {
-      collections: [projectName],
-      limit,
-      filter,
-    })
+    .post(apiRoutes.esgfSearchSTAC.path, requestBody)
     .then((res) => res.data)
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearchSTAC));
     });
 };
 
+// Cache for STAC aggregations to avoid refetching when only pagination changes
+const stacAggregationsCache = new Map<string, StacAggregations>();
+
+/**
+ * Normalizes the request URL by removing pagination parameters (offset, limit)
+ * This allows us to cache aggregations based on filter params only
+ */
+const normalizeReqUrlForCache = (reqUrl: string): string => {
+  const url = new URL(reqUrl, 'http://dummy-base.com');
+  const params = new URLSearchParams(url.search);
+
+  // Remove pagination-related parameters
+  params.delete('offset');
+  params.delete('limit');
+
+  // Sort parameters for consistent cache keys
+  const sortedParams = Array.from(params.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${key}=${value}`)
+    .join('&');
+
+  return sortedParams;
+};
+
+/**
+ * Creates a cache key from the relevant parameters
+ */
+const createAggregationsCacheKey = (
+  projectName: string,
+  normalizedUrl: string,
+  filter: { op: string; args: unknown } | undefined,
+): string => {
+  const filterStr = filter ? JSON.stringify(filter) : 'null';
+  return `${projectName}|${normalizedUrl}|${filterStr}`;
+};
+
+/**
+ * Clears the STAC aggregations cache
+ */
+export const clearSTACAggregationsCache = (): void => {
+  stacAggregationsCache.clear();
+};
+
 export const fetchSTACAggregations = async (
-  projectId: string,
+  projectName: string,
+  reqUrl: string,
   filter: { op: string; args: unknown } | undefined,
 ): Promise<StacAggregations> => {
+  // Create cache key based on non-pagination parameters
+  const normalizedUrl = normalizeReqUrlForCache(reqUrl);
+  const cacheKey = createAggregationsCacheKey(projectName, normalizedUrl, filter);
+
+  // Check if we have cached results for this query
+  const cachedResult = stacAggregationsCache.get(cacheKey);
+  if (cachedResult) {
+    return Promise.resolve(cachedResult);
+  }
+
+  // No cache hit, fetch from API
+  const aggregationsList = getAggregationsList(projectName);
+
+  const payload = {
+    collections: [projectName],
+    aggregations: aggregationsList,
+    filter,
+  };
+
   return axios
-    .post(`${apiRoutes.esgfAggregationsSTAC.path}`, {
-      collections: [projectId],
-      aggregations: STAC_AGGREGATION_FACETS[projectId],
-      filter,
-      'filter-lang': 'cql2-json',
-    })
+    .post(`${apiRoutes.esgfAggregationsSTAC.path}`, payload)
     .then((res) => {
-      return res.data;
+      const data = res.data as StacAggregations;
+      // Cache the result for future use
+      stacAggregationsCache.set(cacheKey, data);
+      return data;
     })
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfAggregationsSTAC));
@@ -512,25 +692,70 @@ export const fetchSTACAggregations = async (
 export const fetchSTACSearchResults = async (
   reqUrlStr: string,
   projectName: string,
+  token?: string,
 ): // eslint-disable-next-line @typescript-eslint/no-explicit-any
 Promise<{ [key: string]: any }> => {
   let status = 200;
 
-  const filter = convertSearchParamsIntoStacFilter(reqUrlStr, projectName);
+  const filter = convertSearchParamsIntoStacFilter(reqUrlStr, getStacProject(projectName));
 
-  const aggregations = await fetchSTACAggregations(projectName, filter)
-    .then((res) => {
-      return res;
+  const query = new URLSearchParams(reqUrlStr || '').get('query');
+  let textInputs: TextInputs | undefined;
+
+  // Add text search input
+  if (query && query !== '*') {
+    textInputs = query.split(',');
+  }
+
+  const aggregations = await fetchSTACAggregations(projectName, reqUrlStr, filter)
+    .then((response) => {
+      // Convert aggregations response into facet data for Metagrid
+      const aggregationsToFacets = aggregationsToFacetsData(
+        projectName,
+        response || { aggregations: [] },
+      );
+      return aggregationsToFacets;
     })
     .catch((error: ResponseError) => {
+      /* istanbul ignore next -- @preserve */
       status = error.cause === 422 ? 422 : (error.cause as number) || 500;
     });
 
-  const aggregationsToFacets = aggregationsToFacetsData(aggregations || { aggregations: [] });
+  const searchResults = await postSTACSearch(
+    projectName,
+    STAC_BATCH_SIZE,
+    filter,
+    textInputs,
+    token,
+  );
 
-  const searchResults = await postSTACSearch(projectName, 9999, filter);
+  const stacResponse: StacSearchResponse = searchResults as StacSearchResponse;
 
-  return { search: searchResults, facets: aggregationsToFacets, stac: true, status };
+  const filteredFeatures: StacFeature[] = [];
+
+  // Remove duplicate assets based on the href, if size is greater than 0
+  stacResponse.features.forEach((feature) => {
+    const updatedAssets: { [name: string]: StacAsset } = {};
+    const href: string[] = [];
+    if (feature.assets) {
+      /* istanbul ignore next -- @preserve */
+      Object.entries(feature.assets).forEach(([key, asset]) => {
+        if (asset['file:size'] && asset['file:size'] > 0) {
+          if (asset.href && !href.includes(asset.href)) {
+            updatedAssets[key] = asset;
+            href.push(asset.href);
+          }
+        } else {
+          updatedAssets[key] = asset;
+        }
+      });
+      filteredFeatures.push({ ...feature, assets: updatedAssets });
+    }
+  });
+
+  stacResponse.features = filteredFeatures;
+
+  return { search: searchResults, facets: aggregations || {}, stac: true, status };
 };
 
 /**
@@ -544,55 +769,62 @@ Promise<{ [key: string]: any }> => {
  * Source: https://docs.react-async.com/api/options#deferfn
  */
 export const fetchSearchResults = async (
-  args: [string] | Record<string, string>,
+  args: [string, string?] | Record<string, string>,
+  token?: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<{ [key: string]: any }> => {
   // Check if the request URL is passed in as an array or an object
-  let reqUrlStr;
+  let reqUrlStr: string;
+  let tokenToUse = token;
+
   if (Array.isArray(args)) {
-    // eslint-disable-next-line prefer-destructuring
-    reqUrlStr = args[0];
+    // Check if args[0] is itself an array (when called as run([url, token]))
+    if (Array.isArray(args[0])) {
+      // Unwrap: args = [[url, token]] → [url, token]
+      const [url, tok] = args[0];
+      reqUrlStr = url;
+      if (tok && typeof tok === 'string') {
+        tokenToUse = tok;
+      }
+    } else {
+      // Normal case: args = [url] or [url, token]
+      const [url, tok] = args;
+      reqUrlStr = url;
+      if (tok && typeof tok === 'string') {
+        tokenToUse = tok;
+      }
+    }
   } else {
     reqUrlStr = args.reqUrl;
   }
 
-  // Get cached search results
-  const cachedResults = getCachedSearchResults();
-  /* istanbul ignore next */
-  const cachedURL = (cachedResults?.cachedURL as string) || '';
-  const reqUrlOffset = reqUrlStr.match(/offset=\d+/)?.[0];
-  const cachedUrlOffset = cachedURL.match(/offset=\d+/)?.[0];
+  // Get cached search results - but skip cache if we have a token (STAC pagination)
+  if (!tokenToUse) {
+    const cachedResults = getCachedSearchResults();
+    /* istanbul ignore next -- @preserve */
+    const cachedURL = (cachedResults?.cachedURL as string) || '';
 
-  // If reqest URL matches the one in local storage, return the cached results
-  if (reqUrlStr === cachedURL) {
-    // If there was no change to the request URL, return the cached results
-    return cachedResults;
+    // If request URL matches the one in local storage, return the cached results
+    if (reqUrlStr === cachedURL) {
+      return cachedResults;
+    }
   }
 
-  let finalUrl = reqUrlStr;
   const cachedPagination = getCachedPagination();
-  // If the change to the request URL was not the offset, reset the offset to 0
-  /* istanbul ignore next */
-  if (reqUrlOffset === cachedUrlOffset || (!reqUrlOffset && cachedUrlOffset)) {
-    finalUrl = reqUrlStr.replace(/offset=\d+/, 'offset=0');
-    // Cache the new offset value so it is reflected in the pagination
-    cachePagination({
-      page: 1,
-      pageSize: cachedPagination.pageSize,
-    });
-  }
+  const finalUrl = reqUrlStr;
 
   if (finalUrl.includes('/stac/search?')) {
     // If the request URL is for STAC search, fetch results using the STAC API
     const params = new URLSearchParams(reqUrlStr.split('?')[1]);
+    /* istanbul ignore next -- @preserve */
     const projectName = params.get('project_id') || 'CMIP6';
 
-    return fetchSTACSearchResults(finalUrl, projectName)
+    return fetchSTACSearchResults(finalUrl, projectName, tokenToUse)
       .then((results) => {
         // Prevent breaking the app if the response is not successful
         if (results.status !== 200) {
           // Handle the case where status is 422 due to a offset value that is too high
-          /* istanbul ignore next */
+          /* istanbul ignore next -- @preserve */
           if (results.status === 422) {
             cachePagination({
               page: 1,
@@ -605,7 +837,7 @@ export const fetchSearchResults = async (
         return results;
       })
       .catch((error: ResponseError) => {
-        /* istanbul ignore next */
+        /* istanbul ignore next -- @preserve */
         if (error.cause === 422) {
           throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearchSTAC), {
             cause: 422,
@@ -791,7 +1023,7 @@ export const loadSessionValue = async <T>(key: string): Promise<T | null> => {
       return null;
     })
     .catch(
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       (error: ResponseError) => {
         throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.tempStorageGet));
       },
@@ -812,7 +1044,7 @@ export const saveSessionValue = async <T>(key: string, value: T): Promise<AxiosR
       return res.data;
     })
     .catch(
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       (error: ResponseError) => {
         throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.tempStorageSet));
       },

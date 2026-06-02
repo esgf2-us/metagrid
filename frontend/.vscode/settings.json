@@ -38,9 +38,9 @@
   // ESLint
   // -----------------------------
   "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
-  // Jest
+  // Vitest
   // -----------------------------
-  "jest.pathToJest": "yarn test:watch",
+  "jest.pathToJest": "pnpm test:watch",
   // HTML, CSS, JSON
   // -----------------------------
   "[html]": {

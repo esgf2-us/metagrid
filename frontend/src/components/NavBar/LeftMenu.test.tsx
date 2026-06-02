@@ -9,7 +9,7 @@ const defaultProps: Props = {
   projects: projectsFixture(),
   apiIsLoading: false,
   apiError: undefined,
-  onTextSearch: jest.fn(),
+  onTextSearch: vi.fn(),
 };
 
 const user = userEvent.setup();

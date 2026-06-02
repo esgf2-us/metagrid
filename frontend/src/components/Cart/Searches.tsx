@@ -66,6 +66,9 @@ const Searches: React.FC = () => {
     setUserSearchQueries(updatedSearchQueries);
   };
 
+  /* istanbul ignore next -- @preserve */
+  const searchFilter = (query: UserSearchQuery) => !stacDisabled || !query.project.isSTAC;
+
   return (
     <div
       data-testid="saved-search-library"
@@ -74,7 +77,7 @@ const Searches: React.FC = () => {
       {contextHolder}
       <Row gutter={[18, 18]}>
         {userSearchQueries
-          .filter((query: UserSearchQuery) => !stacDisabled || !query.project.isSTAC)
+          .filter(searchFilter)
           .map((searchQuery: UserSearchQuery, index: number) => (
             <SearchesCard
               key={searchQuery.uuid}

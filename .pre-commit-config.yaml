@@ -9,7 +9,7 @@ repos:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
-        exclude: traefik/*.yml|helm/templates/.*|helm/deploy/.*|helm/values.yaml
+        exclude: traefik/.*\.yml|helm/templates/.*|helm/deploy/.*|helm/values\.yaml
 
   # Back-end
   # ------------------------------------------------------------------------------
@@ -82,4 +82,4 @@ repos:
         name: eslint_and_tsc
         language: system
         files: .+(js|jsx|ts|tsx|json)$
-        entry: bash -c 'cd frontend && yarn precommit'
+        entry: bash -c 'cd frontend && pnpm precommit'

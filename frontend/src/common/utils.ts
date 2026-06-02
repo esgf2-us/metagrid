@@ -43,26 +43,22 @@ export async function showNotice(
   // allow only one message at a time
   msgApi.destroy();
 
+  /* istanbul ignore next -- @preserve */
   switch (config?.type) {
     case 'success':
       await msgApi.success(msgConfig);
-      /* istanbul ignore next */
       return;
     case 'warning':
       await msgApi.warning(msgConfig);
-      /* istanbul ignore next */
       return;
     case 'error':
       await msgApi.error(msgConfig);
-      /* istanbul ignore next */
       return;
     case 'info':
       await msgApi.info(msgConfig);
-      /* istanbul ignore next */
       return;
     default:
       await msgApi.info(msgConfig);
-      /* istanbul ignore next */
       break;
   }
 }
@@ -78,11 +74,26 @@ export const projectBaseQuery = (
   filenameVars: [],
   activeFacets: {},
   textInputs: [],
+  globusOnly: false,
 });
+
+/**
+ * Checks if an object is empty.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const objectIsEmpty = (obj: Record<any, any>): boolean =>
+  !obj || Object.keys(obj).length === 0;
+
+/**
+ * Deep equality comparison using JSON serialization.
+ * Useful for comparing objects, arrays, or primitives.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const isEqual = (a: any, b: any): boolean => JSON.stringify(a) === JSON.stringify(b);
 
 const bodySider = {
   padding: '12px 12px 12px 12px',
-  width: '384px',
+  width: '400px',
   marginRight: '2px',
 };
 
@@ -116,14 +127,14 @@ export async function showError(
 ): Promise<void> {
   let msg = errorMsg;
 
-  /* istanbul ignore next */
+  /* istanbul ignore next -- @preserve */
   if (!errorMsg || errorMsg === '') {
     msg = 'An unknown error has occurred.';
   }
   await showNotice(msgApi, msg, { duration: 5, type: 'error' });
 }
 
-export const getCurrentAppPage = (): number => {
+export const getCurrentAppPage = (): AppPage => {
   const { pathname } = window.location;
   if (pathname.endsWith('/search') || pathname.includes('/search/')) {
     return AppPage.Main;
@@ -137,22 +148,58 @@ export const getCurrentAppPage = (): number => {
   if (pathname.endsWith('/cart/searches')) {
     return AppPage.SavedSearches;
   }
-  return -1;
-};
-
-/** Creates a route that will access the JSON search results */
-export const createSearchRouteURL = (url: string): string => {
-  const { searchParams } = new URL(url);
-
-  return `${window.METAGRID.SEARCH_URL}?${searchParams.toString()}`;
+  return AppPage.Unknown;
 };
 
 /**
- * Checks if an object is empty.
+ * Creates a route that will access the JSON search results
+ * @param url - The internal search URL
+ * @param stacFilter - Optional STAC filter object (required for STAC searches)
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const objectIsEmpty = (obj: Record<any, any>): boolean =>
-  !obj || Object.keys(obj).length === 0;
+export const createSearchRouteURL = (
+  url: string,
+  stacFilter?: { op: string; args: unknown } | null,
+): string => {
+  // Detect if this is a STAC search URL
+  const isStacUrl = url.includes('/stac/search');
+
+  const urlObj = new URL(url);
+  const { searchParams } = urlObj;
+
+  if (!isStacUrl) {
+    return `${window.METAGRID.SEARCH_URL}?${searchParams.toString()}`;
+  }
+
+  // STAC: Convert to external STAC API format
+  const newParams = new URLSearchParams();
+
+  // Get project name from project_id parameter
+  const projectId = searchParams.get('project_id');
+  if (projectId) {
+    newParams.set('collections', projectId);
+  }
+
+  // Get limit (remove offset as STAC API doesn't use it, uses token-based pagination instead)
+  const limit = searchParams.get('limit');
+  if (limit) {
+    newParams.set('limit', limit);
+  }
+
+  // Add STAC filter if provided
+  if (stacFilter) {
+    // URL-encode the filter object as JSON
+    newParams.set('filter', JSON.stringify(stacFilter));
+    newParams.set('filter-lang', 'cql2-json');
+  }
+
+  // Handle text search query parameter
+  const query = searchParams.get('query');
+  if (query && query !== '*') {
+    newParams.set('q', query);
+  }
+
+  return `${window.METAGRID.STAC_URL}/search?${newParams.toString()}`;
+};
 
 /**
  * Checks if the specified key is in the object
@@ -216,6 +263,28 @@ export const formatBytes = (bytes: number, decimals = 2): string => {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
   return `${parseFloat((bytes / k ** i).toFixed(dm))} ${sizes[i]}`;
+};
+
+/**
+ * replica param indicates whether the record is the 'master' copy, or a replica.
+ * - By default, no replica param is specified (return both replicas and originals)
+ * - replica=false to return only originals
+ * - replica=true to return only replicas
+ *
+ * https://github.com/ESGF/esgf.github.io/wiki/ESGF_Search_REST_API#core-facets
+ */
+export const convertResultTypeToReplicaParam = (
+  resultType: ResultType,
+  isLabel?: boolean,
+): string | undefined => {
+  const replicaParams = {
+    all: undefined,
+    'originals only': 'replica=false',
+    'replicas only': 'replica=true',
+  };
+
+  const param = replicaParams[resultType] as ResultType;
+  return param && isLabel ? param.replace('=', ' = ') : param;
 };
 
 export const getUrlFromSearch = (search: ActiveSearchQuery): string => {
@@ -282,6 +351,7 @@ export const getAltSearchFromUrl = (url?: string): ActiveSearchQuery => {
     filenameVars: [],
     activeFacets: {},
     textInputs: [],
+    globusOnly: false,
   };
 
   const params = new URLSearchParams(url || window.location.search);
@@ -312,9 +382,14 @@ export const getSearchFromUrl = (url?: string): ActiveSearchQuery => {
     filenameVars: [],
     activeFacets: {},
     textInputs: [],
+    globusOnly: false,
   };
 
   const params = new URLSearchParams(url || window.location.search);
+
+  if (params.size < 1) {
+    return searchQuery;
+  }
 
   const projName = params.get('project');
   const versionType = params.get('versionType');
@@ -407,8 +482,13 @@ export function createEsgpullCommand(
   const commandParts: string[] = [];
 
   // Add project name
-  if (project && project.name) {
-    commandParts.push(`project:'"${(project as RawProject).name}"'`);
+  /* istanbul ignore else -- @preserve */
+  if (project) {
+    if (project.isSTAC && project.projectName) {
+      commandParts.push(`project:'"${(project as RawProject).projectName}"'`);
+    } else if (project.name) {
+      commandParts.push(`project:'"${(project as RawProject).name}"'`);
+    }
   }
 
   // Check if some facets are invalid
@@ -458,13 +538,27 @@ export function createEsgpullCommand(
 }
 
 export const createIntakeEsgfSearch = (searchQuery: ActiveSearchQuery): string => {
-  const { versionType, activeFacets } = searchQuery;
+  const { versionType, activeFacets, project } = searchQuery;
 
   const commandParts: string[] = [];
 
-  // Add other search parameters
+  // Add project parameter (intake-esgf defaults to CMIP6 if not specified)
+  const projectName = (project.name as string)?.toLowerCase();
+  if (projectName && !project.isSTAC) {
+    commandParts.push(`project='${projectName}'`);
+  }
+
+  // Facets to exclude from intake-esgf (node-specific or intake-esgf handles differently)
+  const excludedFacets = ['data_node', 'index_node'];
+
+  /* istanbul ignore else -- @preserve */
   if (!objectIsEmpty(activeFacets)) {
     Object.entries(activeFacets).forEach(([key, value]) => {
+      // Skip excluded facets
+      if (excludedFacets.includes(key)) {
+        return;
+      }
+      /* istanbul ignore else -- @preserve */
       if (value.length > 1) {
         commandParts.push(`${key}=['${value.join("', '")}']`);
       } else if (value.length === 1) {
@@ -480,10 +574,37 @@ export const createIntakeEsgfSearch = (searchQuery: ActiveSearchQuery): string =
     commandParts.push(`latest=True`);
   }
 
-  const intakeHeader = 'from intake_esgf import ESGFCatalog\ncat=ESGFCatalog()\n\n';
-  const catalogCmd = `metagrid_search=cat.search(${commandParts.join(', ')})`;
+  const intakeImports = `import intake_esgf\nfrom intake_esgf import supported_projects\n\n`;
 
-  return `${intakeHeader}${catalogCmd}`;
+  const projectValidation = project.isSTAC
+    ? ''
+    : `# Validate project is supported by intake-esgf
+supported = supported_projects()
+project_name = '${projectName}'
+if project_name not in supported:
+    print(f"Warning: '{project_name}' not in supported projects: {supported}")
+    print("Attempting search anyway...")
+
+`;
+
+  const confSettings = project.isSTAC
+    ? `intake_esgf.conf.set(indices={"${window.METAGRID.STAC_URL}":True})\n`
+    : `intake_esgf.conf.set(all_indices=True)\n`;
+
+  const catalogCmd = `\ncat=intake_esgf.ESGFCatalog()\n\n`;
+
+  const searchCmd =
+    commandParts.length > 0
+      ? `try:
+    metagrid_search=cat.search(${commandParts.join(', ')})
+    print(metagrid_search)
+except Exception as e:
+    print(f"Search failed: {e}")
+    print("Tip: Facet names may differ between the web interface and intake-esgf.")
+    print("Try removing some facets or checking intake-esgf documentation.")`
+      : `metagrid_search=cat.search(latest=True)\nprint(metagrid_search)`;
+
+  return `${intakeImports}${projectValidation}${confSettings}${catalogCmd}${searchCmd}`;
 };
 
 export const combineCarts = (
@@ -628,6 +749,7 @@ export const cacheSearchResults = (
   fetchedResults: Record<string, unknown> | undefined,
   pagination: Pagination,
   cachedURL: string,
+  searchQuery?: ActiveSearchQuery,
 ): void => {
   if (fetchedResults && !Object.hasOwn(fetchedResults, 'cachedURL')) {
     saveToLocalStorage(
@@ -635,6 +757,7 @@ export const cacheSearchResults = (
       {
         results: fetchedResults,
         cachedURL,
+        searchQuery, // Cache the actual query object instead of trying to parse URL
         expires: Date.now() + 60 * 60 * 1000, // Expires after an hour
       },
       true,
@@ -659,6 +782,7 @@ export const getCachedSearchResults = (): Record<string, unknown> => {
   // If not expired, return the cached results
   return {
     cachedURL: fetchedResults.cachedURL,
+    searchQuery: fetchedResults.searchQuery,
     ...(typeof fetchedResults.results === 'object' && fetchedResults.results !== null
       ? fetchedResults.results
       : {}),
@@ -666,9 +790,39 @@ export const getCachedSearchResults = (): Record<string, unknown> => {
 };
 
 export const clearCachedSearchResults = (): void => {
-  // Clear the cached search results from sessionStorage
+  // Clear the cached search results from localStorage
   localStorage.removeItem('cachedSearchResults');
   localStorage.removeItem('cachedSearchPagination');
+};
+
+// STAC batch cache functions
+export const cacheStacBatches = (stacBatches: Record<string, unknown>): void => {
+  saveToLocalStorage(
+    'cachedStacBatches',
+    {
+      batches: stacBatches,
+      expires: Date.now() + 60 * 60 * 1000, // Expires after an hour
+    },
+    true,
+  );
+};
+
+export const getCachedStacBatches = (): Record<string, unknown> | null => {
+  const cached: Record<string, unknown> = getFromLocalStorage('cachedStacBatches', true) || {};
+  const now = Date.now();
+
+  if (cached.expires && now > (cached.expires as number)) {
+    // If expired, remove from localStorage
+    clearCachedStacBatches();
+    return null;
+  }
+
+  // If not expired, return the cached batches
+  return (cached.batches as Record<string, unknown>) || null;
+};
+
+export const clearCachedStacBatches = (): void => {
+  localStorage.removeItem('cachedStacBatches');
 };
 
 export const showBanner = (): boolean => {
@@ -694,6 +848,7 @@ export const saveBannerText = (): void => {
   // Set the banner text in sessionStorage
   const bannerText = window.METAGRID.BANNER_TEXT;
 
+  /* istanbul ignore else -- @preserve */
   if (bannerText) {
     sessionStorage.setItem('showBanner', bannerText);
   }
@@ -713,4 +868,108 @@ export const downloadFileForUser = (filename: string, fileContent: string): void
   downloadLinkNode.click();
 
   document.body.removeChild(downloadLinkNode);
+};
+
+/**
+ * Parses raw facets from the API into a structured format.
+ * Joins adjacent elements of the facets object into tuples [facetValue, count].
+ */
+export const parseFacets = (
+  facets: Record<string, (string | number)[]>,
+): Record<string, [string, number][]> => {
+  const res = facets as unknown as Record<string, [string, number][]>;
+  const keys: string[] = Object.keys(facets);
+
+  keys.forEach((key) => {
+    res[key] = res[key].reduce(
+      (r, a, i) => {
+        if (i % 2) {
+          r[r.length - 1].push(a as unknown as number);
+        } else {
+          r.push([a] as never);
+        }
+        return r;
+      },
+      [] as unknown as [string, number][],
+    );
+  });
+  return res;
+};
+
+/**
+ * Checks if any filters (facets or text inputs) are active.
+ */
+export const checkFiltersExist = (
+  activeFacets: ActiveFacets | Record<string, unknown>,
+  textInputs: TextInputs,
+): boolean => !(objectIsEmpty(activeFacets) && textInputs.length === 0);
+
+/**
+ * Identifies facets that might have caused a search error by comparing
+ * the current query with the last successful query.
+ * Returns a Set of facet keys in the format "facetName:facetValue".
+ */
+export const identifyProblematicFacets = (
+  currentQuery: ActiveSearchQuery,
+  lastSuccessfulQuery: ActiveSearchQuery | null,
+): Set<string> => {
+  const problematicFacets = new Set<string>();
+
+  if (!lastSuccessfulQuery) {
+    return problematicFacets;
+  }
+
+  const currentFacets = currentQuery.activeFacets;
+  const lastFacets = lastSuccessfulQuery.activeFacets;
+
+  // Find facets that are new or have new values
+  Object.keys(currentFacets).forEach((facetKey) => {
+    const currentValues = currentFacets[facetKey] || [];
+    const lastValues = lastFacets[facetKey] || [];
+
+    // Check if this is a new facet key or has new values
+    if (!lastFacets[facetKey]) {
+      // Entire facet is new
+      currentValues.forEach((value) => {
+        problematicFacets.add(`${facetKey}:${value}`);
+      });
+    } else {
+      // Check for new values in existing facet
+      currentValues.forEach((value) => {
+        if (!lastValues.includes(value)) {
+          problematicFacets.add(`${facetKey}:${value}`);
+        }
+      });
+    }
+  });
+
+  return problematicFacets;
+};
+
+export const deriveCachedSearchData = (
+  cache: Record<string, unknown>,
+): {
+  results: Record<string, unknown>;
+  query: ActiveSearchQuery | null;
+  facets: Record<string, [string, number][]>;
+} => {
+  let query = cache.searchQuery as ActiveSearchQuery | null;
+
+  // Fallback to URL parsing only for legacy caches or user-shareable URLs
+  if (!query) {
+    const cachedURL = cache.cachedURL as string;
+    query = cachedURL ? getSearchFromUrl(cachedURL) : null;
+  }
+
+  let facets: Record<string, [string, number][]> = {};
+  if (cache.facet_counts) {
+    const { facet_fields: facetFields } = cache.facet_counts as {
+      facet_fields: Record<string, (string | number)[]>;
+    };
+    facets = parseFacets(facetFields);
+  } else if (cache.facets) {
+    facets = cache.facets as Record<string, [string, number][]>;
+  }
+
+  return { results: cache, query, facets };
 };

@@ -1,3 +1,16 @@
+# Detect container runtime (Docker or Podman)
+if command -v docker &> /dev/null && docker ps &> /dev/null 2>&1; then
+    CONTAINER_CMD="docker"
+elif command -v podman &> /dev/null; then
+    CONTAINER_CMD="podman"
+else
+    echo "Error: Neither Docker nor Podman is available or running."
+    echo "Please install Docker or Podman and ensure the service is running."
+    exit 1
+fi
+
+echo "Using container runtime: $CONTAINER_CMD"
+
 # Constants
 LOCAL_COMPOSE="-f docker-compose.yml"
 PROD_COMPOSE="-f docker-compose.yml -f docker-compose.prod.yml"
@@ -26,21 +39,21 @@ function startProductionService() {
     case $auth_choice in
     1)
         echo "Starting Metagrid production deployment with Globus"
-        docker compose $PROD_COMPOSE $PROD_OVERLAY $GLOBUS_COMPOSE up --build -d
+        $CONTAINER_CMD compose $PROD_COMPOSE $PROD_OVERLAY $GLOBUS_COMPOSE up --build -d
         echo "Command used:"
-        echo "docker compose $PROD_COMPOSE $PROD_OVERLAY $GLOBUS_COMPOSE up --build -d"
+        echo "$CONTAINER_CMD compose $PROD_COMPOSE $PROD_OVERLAY $GLOBUS_COMPOSE up --build -d"
         ;;
     2)
         echo "Starting Metagrid production deployment with Keycloak"
-        docker compose $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $PROD_OVERLAY --profile keycloak up --build -d
+        $CONTAINER_CMD compose $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $PROD_OVERLAY --profile keycloak up --build -d
         echo "Command used:"
-        echo "docker compose $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $PROD_OVERLAY --profile keycloak up --build -d"
+        echo "$CONTAINER_CMD compose $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $PROD_OVERLAY --profile keycloak up --build -d"
         ;;
     3)
         echo "Starting Metagrid production deployment with no auth"
-        docker compose $PROD_COMPOSE $PROD_OVERLAY up --build -d
+        $CONTAINER_CMD compose $PROD_COMPOSE $PROD_OVERLAY up --build -d
         echo "Command used:"
-        echo "docker compose $PROD_COMPOSE $PROD_OVERLAY up --build -d"
+        echo "$CONTAINER_CMD compose $PROD_COMPOSE $PROD_OVERLAY up --build -d"
         ;;
     *)
         echo "Invalid choice. Please select 1, 2, or 3."
@@ -66,21 +79,21 @@ function startLocalService() {
     case $auth_choice in
     1)
         echo "Starting Metagrid with Globus auth"
-        docker compose $LOCAL_COMPOSE $LOCAL_OVERLAY $GLOBUS_COMPOSE --profile docs up --build -d
+        $CONTAINER_CMD compose $LOCAL_COMPOSE $LOCAL_OVERLAY $GLOBUS_COMPOSE --profile docs up --build -d
         echo "Command used:"
-        echo "docker compose $LOCAL_COMPOSE $LOCAL_OVERLAY $GLOBUS_COMPOSE --profile docs up --build -d"
+        echo "$CONTAINER_CMD compose $LOCAL_COMPOSE $LOCAL_OVERLAY $GLOBUS_COMPOSE --profile docs up --build -d"
         ;;
     2)
         echo "Starting Metagrid with Keycloak auth"
-        docker compose $LOCAL_COMPOSE $KEYCLOAK_COMPOSE $LOCAL_OVERLAY  --profile keycloak --profile docs up --build -d
+        $CONTAINER_CMD compose $LOCAL_COMPOSE $KEYCLOAK_COMPOSE $LOCAL_OVERLAY  --profile keycloak --profile docs up --build -d
         echo "Command used:"
-        echo "docker compose $LOCAL_COMPOSE $KEYCLOAK_COMPOSE $LOCAL_OVERLAY --profile keycloak --profile docs up --build -d"
+        echo "$CONTAINER_CMD compose $LOCAL_COMPOSE $KEYCLOAK_COMPOSE $LOCAL_OVERLAY --profile keycloak --profile docs up --build -d"
         ;;
     3)
         echo "Starting Metagrid with no auth"
-        docker compose $LOCAL_COMPOSE $LOCAL_OVERLAY --profile docs up --build -d
+        $CONTAINER_CMD compose $LOCAL_COMPOSE $LOCAL_OVERLAY --profile docs up --build -d
         echo "Command used:"
-        echo "docker compose $LOCAL_COMPOSE $LOCAL_OVERLAY --profile docs up --build -d"
+        echo "$CONTAINER_CMD compose $LOCAL_COMPOSE $LOCAL_OVERLAY --profile docs up --build -d"
         ;;
     *)
         echo "Invalid choice. Please select 1, 2, or 3."
@@ -91,13 +104,13 @@ function startLocalService() {
 
 function stopDockerContainers() {
     echo "Stopping Metagrid"
-    docker compose --profile "*" down --remove-orphans
+    $CONTAINER_CMD compose --profile "*" down --remove-orphans
 }
 
 function toggleLocalContainers() {
     clear
     # If frontend container is up, stop all services
-    if docker ps -a --format '{{.Names}}' | grep "react"; then
+    if $CONTAINER_CMD ps -a --format '{{.Names}}' | grep "react"; then
         stopDockerContainers
     else
         # Otherwise stop any remaining services and start them up again
@@ -108,7 +121,7 @@ function toggleLocalContainers() {
 function installPackagesForLocalDev() {
     clear
     pip install -r backend/requirements/local.txt
-    yarn install --cwd frontend
+    pnpm install --dir frontend
     echo "Packages installed"
 }
 
@@ -156,7 +169,7 @@ function refreshPostgresCollation() {
         mkdir -p "$backup_dir"
 
         echo "Ensuring postgres container is running for backup..."
-        if ! docker compose $COMPOSE up -d postgres; then
+        if ! $CONTAINER_CMD compose $COMPOSE up -d postgres; then
             echo "Failed to start postgres container in $ENV_NAME compose. Aborting backup."
             return 1
         fi
@@ -164,11 +177,11 @@ function refreshPostgresCollation() {
         backup_path="$backup_dir/$backup_file"
         echo "Creating SQL backup to: $backup_path"
         # Run pg_dumpall inside container and redirect to host file
-        if docker compose $COMPOSE exec -T postgres pg_dumpall -U postgres > "$backup_path"; then
+        if $CONTAINER_CMD compose $COMPOSE exec -T postgres pg_dumpall -U postgres > "$backup_path"; then
             echo "Backup created at $backup_path"
         else
             echo "Backup failed. Check postgres logs:"
-            echo "  docker compose $COMPOSE logs postgres"
+            echo "  $CONTAINER_CMD compose $COMPOSE logs postgres"
             return 1
         fi
     fi
@@ -182,19 +195,19 @@ function refreshPostgresCollation() {
     fi
 
     echo "Ensuring postgres container is running..."
-    if ! docker compose $COMPOSE up -d postgres; then
+    if ! $CONTAINER_CMD compose $COMPOSE up -d postgres; then
         echo "Failed to start postgres container for $ENV_NAME. Aborting."
         return 1
     fi
 
     echo "Executing collation refresh and reindex inside the postgres container..."
-    if docker compose $COMPOSE exec -T postgres bash -lc \
+    if $CONTAINER_CMD compose $COMPOSE exec -T postgres bash -lc \
         "psql -U postgres -d postgres -c \"ALTER DATABASE postgres REFRESH COLLATION VERSION;\" && \
          psql -U postgres -d postgres -c \"REINDEX DATABASE postgres;\""; then
         echo "Collation refreshed and database reindexed successfully for $ENV_NAME."
     else
         echo "Operation failed. Check postgres container logs for details:"
-        echo "  docker compose $COMPOSE logs postgres"
+        echo "  $CONTAINER_CMD compose $COMPOSE logs postgres"
         return 1
     fi
 }
@@ -209,12 +222,12 @@ function runMigrations() {
     case $env_choice in
     1)
         stopDockerContainers
-        docker compose $LOCAL_COMPOSE $LOCAL_OVERLAY run --rm django python manage.py migrate
+        $CONTAINER_CMD compose $LOCAL_COMPOSE $LOCAL_OVERLAY run --rm django python manage.py migrate
         stopDockerContainers
         ;;
     2)
         stopDockerContainers
-        docker compose $PROD_COMPOSE $PROD_OVERLAY run --rm django python manage.py migrate
+        $CONTAINER_CMD compose $PROD_COMPOSE $PROD_OVERLAY run --rm django python manage.py migrate
         stopDockerContainers
         ;;
     *)
@@ -234,16 +247,16 @@ function updateProjectTable() {
     case $env_choice in
     1)
         stopDockerContainers
-        docker compose $LOCAL_COMPOSE $LOCAL_OVERLAY build django
-        docker compose $LOCAL_COMPOSE $LOCAL_OVERLAY run --rm django python manage.py migrate --fake projects 0001_initial
-        docker compose $LOCAL_COMPOSE $LOCAL_OVERLAY run --rm django python manage.py migrate projects
+        $CONTAINER_CMD compose $LOCAL_COMPOSE $LOCAL_OVERLAY build django
+        $CONTAINER_CMD compose $LOCAL_COMPOSE $LOCAL_OVERLAY run --rm django python manage.py migrate --fake projects 0001_initial
+        $CONTAINER_CMD compose $LOCAL_COMPOSE $LOCAL_OVERLAY run --rm django python manage.py migrate projects
         stopDockerContainers
         ;;
     2)
         stopDockerContainers
-        docker compose $PROD_COMPOSE $PROD_OVERLAY build django
-        docker compose $PROD_COMPOSE $PROD_OVERLAY run --rm django python manage.py migrate --fake projects 0001_initial
-        docker compose $PROD_COMPOSE $PROD_OVERLAY run --rm django python manage.py migrate projects
+        $CONTAINER_CMD compose $PROD_COMPOSE $PROD_OVERLAY build django
+        $CONTAINER_CMD compose $PROD_COMPOSE $PROD_OVERLAY run --rm django python manage.py migrate --fake projects 0001_initial
+        $CONTAINER_CMD compose $PROD_COMPOSE $PROD_OVERLAY run --rm django python manage.py migrate projects
         stopDockerContainers
         ;;
     *)
@@ -261,7 +274,7 @@ function runPreCommit() {
 function runBackendTests() {
     clear
     stopDockerContainers
-    if ! docker compose $LOCAL_COMPOSE $LOCAL_OVERLAY --profile docs run --rm django pytest; then
+    if ! $CONTAINER_CMD compose $LOCAL_COMPOSE $LOCAL_OVERLAY --profile docs run --rm django pytest; then
         echo "Some backend tests failed!"
         stopDockerContainers
         return 1
@@ -273,7 +286,7 @@ function runBackendTests() {
 function runFrontendTests() {
     clear
     cd frontend
-    if ! yarn run test; then
+    if ! pnpm test; then
         echo "Some frontend tests failed!"
         cd ..
         return 1
@@ -305,8 +318,8 @@ function updateVersion() {
     echo "Updated helm/README.md version to $new_version"
 
     # Update helm/helmfile.yaml
-    sed -i '' "11s/^  version:.*/  version: \"$package_version\"/" helm/helmfile.yaml
-    echo "Updated helm/helmfile.yaml version to $package_version"
+    sed -i '' "11s/^  version:.*/  version: \"$package_version\"/" helm/deploy/helmfile.yaml
+    echo "Updated helm/deploy/helmfile.yaml version to $package_version"
 
     # Create new changelog file
     changelog_file="frontend/public/changelog/$new_version.md"

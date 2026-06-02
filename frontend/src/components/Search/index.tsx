@@ -2,13 +2,13 @@ import {
   BookOutlined,
   CodeOutlined,
   CopyOutlined,
+  DownloadOutlined,
   ExportOutlined,
   SaveOutlined,
   ShareAltOutlined,
   ShoppingCartOutlined,
 } from '@ant-design/icons';
 import { Alert, Col, Dropdown, message, Row, Space, Tooltip, Typography } from 'antd';
-import humps from 'humps';
 import React from 'react';
 import { DeferFn, useAsync } from 'react-async';
 import { v4 as uuidv4 } from 'uuid';
@@ -24,10 +24,10 @@ import {
 } from '../../common/atoms';
 import {
   addUserSearchQuery,
-  convertResultTypeToReplicaParam,
   fetchSearchResults,
   generateSearchURLQuery,
   ResponseError,
+  STAC_BATCH_SIZE,
 } from '../../api';
 import {
   copySearchOptionsTargets,
@@ -37,13 +37,23 @@ import { CSSinJS } from '../../common/types';
 import {
   cachePagination,
   cacheSearchResults,
+  cacheStacBatches,
+  checkFiltersExist,
+  clearCachedSearchResults,
+  clearCachedStacBatches,
   createEsgpullCommand,
   createIntakeEsgfSearch,
   createSearchRouteURL,
+  deriveCachedSearchData,
   getCachedPagination,
+  getCachedSearchResults,
+  getCachedStacBatches,
   getStyle,
   getUrlFromSearch,
+  identifyProblematicFacets,
+  isEqual,
   objectIsEmpty,
+  parseFacets,
   projectBaseQuery,
   searchAlreadyExists,
   showError,
@@ -51,22 +61,22 @@ import {
 } from '../../common/utils';
 import { UserCart, UserSearchQuery } from '../Cart/types';
 import { Tag, TagType, TagValue } from '../DataDisplay/Tag';
-import { ActiveFacets, ParsedFacets, RawFacets, RawProject } from '../Facets/types';
+import { ParsedFacets, RawFacets, RawProject } from '../Facets/types';
 import Button from '../General/Button'; // Note, tooltips do not work for this button
 import Table from './Table';
 import {
+  ActiveSearchQuery,
+  CachedSearchData,
   Pagination,
   RawSearchResult,
   RawSearchResults,
-  ResultType,
   StacFeature,
   StacResponse,
   TextInputs,
-  VersionDate,
-  VersionType,
 } from './types';
 import { AuthContext } from '../../contexts/AuthContext';
-import { convertSearchParamsIntoStacFilter, convertStacToRawSearchResult } from '../../common/STAC';
+import { convertStacToRawSearchResult, stringifyApiRequest } from '../../common/STAC';
+import DownloadModal from '../Downloads/DownloadModal';
 
 const tooltipText = {
   featureNotAvailableInStac: 'This feature is not compatible with STAC projects.',
@@ -93,90 +103,31 @@ const styles: CSSinJS = {
     marginBottom: 10,
   },
 };
-/**
- * Joins adjacent elements of the facets obj into a tuple using reduce().
- * https://stackoverflow.com/questions/37270508/javascript-function-that-converts-array-to-array-of-2-tuples
- */
-export const parseFacets = (facets: RawFacets): ParsedFacets => {
-  const res = facets as unknown as ParsedFacets;
-  const keys: string[] = Object.keys(facets);
 
-  keys.forEach((key) => {
-    res[key] = res[key].reduce(
-      (r, a, i) => {
-        if (i % 2) {
-          r[r.length - 1].push(a as unknown as number);
-        } else {
-          r.push([a] as never);
-        }
-        return r;
-      },
-      [] as unknown as [string, number][],
-    );
-  });
-  return res;
-};
-
-/**
- * Stringifies the active filters to output in a formatted structure.
- * Example: '(Text Input = 'Solar') AND (source_type = AER OR AOGCM OR BGC)'
- */
-export const stringifyFilters = (
-  projectName: string | undefined,
-  versionType: VersionType,
-  resultType: ResultType,
-  minVersionDate: VersionDate,
-  maxVersionDate: VersionDate,
-  activeFacets: ActiveFacets,
-  textInputs: TextInputs | [],
-  isSTAC: boolean = false,
-  reqUrlStr: string = '',
-): string => {
-  if (isSTAC) {
-    const stacFilter = convertSearchParamsIntoStacFilter(reqUrlStr, projectName);
-    return JSON.stringify(stacFilter) || 'No filters applied';
-  }
-
-  const filtersArr: string[] = [];
-
-  if (versionType === 'latest') {
-    filtersArr.push('latest = true');
-  }
-
-  const replicaParam = convertResultTypeToReplicaParam(resultType, true);
-  if (replicaParam) {
-    filtersArr.push(replicaParam);
-  }
-
-  if (minVersionDate) {
-    filtersArr.push(`min_version = ${minVersionDate}`);
-  }
-
-  if (maxVersionDate) {
-    filtersArr.push(`max_version = ${maxVersionDate}`);
-  }
-
-  if (textInputs.length > 0) {
-    filtersArr.push(`(Text Input = ${textInputs.join(' OR ')})`);
-  }
-
-  if (!objectIsEmpty(activeFacets)) {
-    Object.keys(activeFacets).forEach((key: string) => {
-      filtersArr.push(`(${humps.decamelize(key)} = ${activeFacets[key].join(' OR ')})`);
-    });
-  }
-
-  const filtersStr = filtersArr.length > 0 ? `${filtersArr.join(' AND ')}` : 'No filters applied';
-  return filtersStr;
-};
-
-export const checkFiltersExist = (
-  activeFacets: ActiveFacets | Record<string, unknown>,
-  textInputs: TextInputs,
-): boolean => !(objectIsEmpty(activeFacets) && textInputs.length === 0);
+const MAX_RESULTS = 10000;
 
 export type Props = {
   onUpdateCart: (selectedItems: RawSearchResults, operation: 'add' | 'remove') => void;
+};
+
+export type StacBatchLoading = {
+  results: RawSearchResults;
+  nextToken: string | undefined;
+  projectName: string;
+  totalMatched: number;
+  searchQuery: ActiveSearchQuery | null;
+  cacheRestored: boolean;
+  searchURL: string;
+};
+
+const EMPTY_STAC_BATCHES: StacBatchLoading = {
+  results: [],
+  nextToken: undefined,
+  projectName: '',
+  totalMatched: 0,
+  searchQuery: null,
+  cacheRestored: false,
+  searchURL: '',
 };
 
 const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
@@ -190,6 +141,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   const [activeSearchQuery, setActiveSearchQuery] = useAtom(activeSearchQueryAtom);
 
   const [currentRequestURL, setCurrentRequestURL] = useAtom(currentRequestQueryAtom);
+
+  const [showDownloadAllForm, setShowDownloadAllForm] = React.useState<boolean>(false);
 
   const currentProject = useAtomValue(currentProjectAtom);
 
@@ -227,40 +180,241 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   const [paginationOptions, setPaginationOptions] =
     React.useState<Pagination>(getCachedPagination());
 
-  const results: Record<string, unknown> | undefined = data;
+  const [stacLoadedBatches, setStacLoadedBatches] = React.useState<StacBatchLoading>(() => {
+    try {
+      const cachedStac = getCachedStacBatches() as StacBatchLoading | null;
 
-  // Generate the current request URL based on filters
+      if (
+        cachedStac &&
+        cachedStac.projectName &&
+        Array.isArray(cachedStac.results) &&
+        cachedStac.results.length > 0
+      ) {
+        return cachedStac;
+      }
+    } catch (err) {
+      clearCachedStacBatches();
+    }
+
+    return EMPTY_STAC_BATCHES;
+  });
+
+  const [isBackgroundFetch, setIsBackgroundFetch] = React.useState<boolean>(false);
+  const lastPreloadedBatchRef = React.useRef<number>(-1);
+  const prevProjectNameRef = React.useRef<string>('');
+  const currentRequestQueryRef = React.useRef<ActiveSearchQuery | null>(null);
+
+  const [cachedResults, setCachedResults] = React.useState<Record<string, unknown> | undefined>(
+    () => {
+      // Initialize from localStorage on mount
+      const cached = getCachedSearchResults();
+      return cached && !objectIsEmpty(cached) ? cached : undefined;
+    },
+  );
+
+  // State for last successful search
+  const [lastSuccessfulSearch, setLastSuccessfulSearch] = React.useState<CachedSearchData>({
+    results: undefined,
+    query: null,
+    facets: {},
+  });
+
+  // State for fallback data - used when errors occur
+  const [fallbackData, setFallbackData] = React.useState<CachedSearchData>({
+    results: undefined,
+    query: null,
+    facets: {},
+  });
+
+  const results: Record<string, unknown> | undefined = data || cachedResults;
+  const hasStacResults = stacLoadedBatches.results.length > 0;
+
+  // Helper to fix incomplete project objects in cached queries
+  const fixProjectInQuery = React.useCallback(
+    (derived: CachedSearchData): CachedSearchData => {
+      if (!derived.query || !currentProject.name) return derived;
+
+      const projectNamesMatch =
+        currentProject.name === derived.query.project.name ||
+        currentProject.name?.toLowerCase() ===
+          (derived.query.project as RawProject).name?.toLowerCase();
+
+      if (projectNamesMatch || !derived.query.project.facetsUrl) {
+        return {
+          ...derived,
+          query: { ...derived.query, project: currentProject },
+        };
+      }
+      return derived;
+    },
+    [currentProject],
+  );
+
+  // Update fallback data: multi-tier fallback (memory → localStorage → session)
   React.useEffect(() => {
-    if (!objectIsEmpty(project)) {
-      // Cache the pagination options in case they were changed
+    if (lastSuccessfulSearch.results && !objectIsEmpty(lastSuccessfulSearch.results)) {
+      setFallbackData(lastSuccessfulSearch);
+      return;
+    }
+
+    const localStorageCache = getCachedSearchResults();
+    if (localStorageCache && !objectIsEmpty(localStorageCache)) {
+      setFallbackData(fixProjectInQuery(deriveCachedSearchData(localStorageCache)));
+      return;
+    }
+
+    if (cachedResults && !objectIsEmpty(cachedResults)) {
+      setFallbackData(fixProjectInQuery(deriveCachedSearchData(cachedResults)));
+      return;
+    }
+
+    setFallbackData({ results: undefined, query: null, facets: {} });
+  }, [lastSuccessfulSearch, cachedResults, fixProjectInQuery, error]);
+
+  const { results: fallbackResults, query: fallbackQuery, facets: fallbackFacets } = fallbackData;
+
+  const showCachedResultsOnError = error && fallbackResults && !objectIsEmpty(fallbackResults);
+  const resultsToDisplay = showCachedResultsOnError ? fallbackResults : results;
+
+  // Reset STAC state for a fresh search
+  const resetStacState = React.useCallback((projectName = '') => {
+    clearCachedStacBatches();
+    setStacLoadedBatches({ ...EMPTY_STAC_BATCHES, projectName });
+    setIsBackgroundFetch(false);
+    lastPreloadedBatchRef.current = -1;
+  }, []);
+
+  // Clear all caches and reset background fetch state
+  const clearAllCaches = React.useCallback(() => {
+    setCachedResults(undefined);
+    clearCachedSearchResults();
+    setIsBackgroundFetch(false);
+    if (currentProject.isSTAC) {
+      resetStacState((project.name as string) || '');
+    }
+  }, [currentProject.isSTAC, project.name, resetStacState]);
+
+  // Cache STAC batches for navigation persistence
+  React.useEffect(() => {
+    if (currentProject.isSTAC && hasStacResults) {
+      cacheStacBatches(stacLoadedBatches);
+    }
+  }, [currentProject.isSTAC, stacLoadedBatches, hasStacResults]);
+
+  // Reset caches when switching projects
+  React.useEffect(() => {
+    const currentProjectName = (project.name as string) || '';
+    const projectActuallyChanged =
+      prevProjectNameRef.current !== '' && prevProjectNameRef.current !== currentProjectName;
+
+    if (projectActuallyChanged) {
+      clearAllCaches();
+      setPaginationOptions({ page: 1, pageSize: paginationOptions.pageSize });
+      setAvailableFacets({});
+    }
+
+    prevProjectNameRef.current = currentProjectName;
+  }, [currentProject.isSTAC, project.name, paginationOptions.pageSize, setAvailableFacets]);
+
+  React.useEffect(() => {
+    if (!objectIsEmpty(project) && project.facetsUrl) {
       cachePagination(paginationOptions);
 
-      // Generate the search URL
-      const reqUrl = generateSearchURLQuery(activeSearchQuery, paginationOptions);
+      const queryWithCompleteProject = {
+        ...activeSearchQuery,
+        project: currentProject,
+      };
+      const reqUrl = generateSearchURLQuery(queryWithCompleteProject, paginationOptions);
       setCurrentRequestURL(reqUrl);
     }
-  }, [activeSearchQuery, project, paginationOptions]);
+  }, [activeSearchQuery, project, paginationOptions, currentProject]);
 
   React.useEffect(() => {
     setFiltersExist(checkFiltersExist(activeFacets, textInputs));
   }, [activeFacets, textInputs]);
 
-  // Fetch search results
+  // STAC cache restoration: restore once on navigation, reset on query change
   React.useEffect(() => {
-    if (!objectIsEmpty(project) && currentRequestURL) {
-      // Fetch search results (cached or not)
-      run(currentRequestURL);
+    if (currentProject.isSTAC && stacLoadedBatches.searchQuery && hasStacResults) {
+      const cachedQuery = stacLoadedBatches.searchQuery;
+      const currentProjectName = (project.name as string) || '';
 
-      // Update displayed pagination in case the cachedPagination was changed
-      setPaginationOptions(getCachedPagination());
+      const queryChanged =
+        !isEqual(activeSearchQuery.activeFacets, cachedQuery.activeFacets) ||
+        !isEqual(activeSearchQuery.textInputs, cachedQuery.textInputs) ||
+        !isEqual(activeSearchQuery.filenameVars, cachedQuery.filenameVars) ||
+        activeSearchQuery.globusOnly !== cachedQuery.globusOnly;
+
+      if (queryChanged && stacLoadedBatches.projectName === currentProjectName) {
+        if (!stacLoadedBatches.cacheRestored) {
+          setActiveSearchQuery(cachedQuery);
+          setStacLoadedBatches({
+            ...stacLoadedBatches,
+            cacheRestored: true,
+          });
+        } else {
+          resetStacState(currentProjectName);
+          setAvailableFacets({});
+          setPaginationOptions({ page: 1, pageSize: paginationOptions.pageSize });
+        }
+      }
     }
-  }, [run, currentRequestURL, project]);
+  }, [
+    currentProject.isSTAC,
+    activeSearchQuery.activeFacets,
+    activeSearchQuery.textInputs,
+    activeSearchQuery.filenameVars,
+    activeSearchQuery.globusOnly,
+    project.name,
+    paginationOptions.pageSize,
+    data,
+    hasStacResults,
+    stacLoadedBatches.cacheRestored,
+  ]);
 
-  // Update the available facets based on the returned results
   React.useEffect(() => {
+    const hasFullProject = project.pk !== undefined && project.name !== undefined;
+
+    if (!objectIsEmpty(project) && hasFullProject && currentRequestURL) {
+      // Capture the current query when making the request
+      currentRequestQueryRef.current = activeSearchQuery;
+
+      if (currentProject.isSTAC) {
+        const cached = getCachedStacBatches();
+        const cachedURL = cached?.searchURL || '';
+
+        if (!hasStacResults || currentRequestURL !== cachedURL) {
+          setIsBackgroundFetch(false);
+          lastPreloadedBatchRef.current = -1;
+          run(currentRequestURL);
+        }
+      } else {
+        const cached = getCachedSearchResults();
+        const cachedURL = (cached?.cachedURL as string) || '';
+
+        if (currentRequestURL === cachedURL) {
+          setCachedResults(cached);
+        } else {
+          setCachedResults(undefined);
+          run(currentRequestURL);
+        }
+      }
+    }
+  }, [run, currentRequestURL, project, currentProject.isSTAC, hasStacResults, activeSearchQuery]);
+
+  // Process results: cache, parse facets, accumulate STAC batches
+  React.useEffect(() => {
+    if (error) {
+      return;
+    }
+
     if (results && currentRequestURL && !objectIsEmpty(results)) {
-      cacheSearchResults(results, paginationOptions, currentRequestURL);
-      /* istanbul ignore else */
+      cacheSearchResults(
+        results,
+        paginationOptions,
+        currentRequestURL,
+        currentRequestQueryRef.current || activeSearchQuery,
+      );
       if (results.facet_counts) {
         const { facet_fields: facetFields } = (
           results as {
@@ -269,111 +423,231 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         ).facet_counts;
         setParsedFacets(parseFacets(facetFields));
       } else {
-        const { facets } = results as { facets: RawFacets };
+        const { facets } = results as { facets: ParsedFacets | Record<string, unknown> };
         setParsedFacets(facets);
       }
+
+      // STAC: accumulate batches only when receiving new data from API
+      if (currentProject.isSTAC && data && results.stac && results.search) {
+        const stacResponse = results as StacResponse;
+        const { links, features } = stacResponse.search;
+
+        const searchData = stacResponse.search as {
+          numberMatched?: number;
+          numMatched?: number;
+          features?: StacFeature[];
+        };
+        const totalMatched = searchData.numberMatched || searchData.numMatched || 0;
+
+        const newDocs =
+          features && features.length > 0
+            ? features.map((stacResult: StacFeature) => convertStacToRawSearchResult(stacResult))
+            : [];
+
+        let nextToken: string | undefined;
+        if (links && Array.isArray(links)) {
+          const nextLink = links.find((link) => link.rel === 'next');
+          nextToken = typeof nextLink?.body?.token === 'string' ? nextLink.body.token : undefined;
+        }
+
+        const loadedBatches = Math.ceil(stacLoadedBatches.results.length / STAC_BATCH_SIZE);
+        const accumulatedResults =
+          loadedBatches === 0 ? newDocs : [...stacLoadedBatches.results, ...newDocs];
+
+        setStacLoadedBatches({
+          results: accumulatedResults,
+          nextToken,
+          projectName: (project.name as string) || '',
+          totalMatched,
+          searchQuery: activeSearchQuery,
+          cacheRestored: true,
+          searchURL: currentRequestURL,
+        });
+      }
     }
-  }, [results]);
+  }, [results, data]);
 
   React.useEffect(() => {
-    setAvailableFacets(parsedFacets as ParsedFacets);
+    if (!objectIsEmpty(parsedFacets)) {
+      setAvailableFacets(parsedFacets);
+    }
   }, [parsedFacets, setAvailableFacets]);
 
-  const handleClearFilters = (): void => {
-    setActiveSearchQuery(projectBaseQuery(activeSearchQuery.project));
-  };
-
-  const handleSaveSearchQuery = (url: string, numFound: number): void => {
-    const savedSearch: UserSearchQuery = {
-      uuid: uuidv4(),
-      user: pk,
-      project: activeSearchQuery.project as RawProject,
-      projectId: activeSearchQuery.project.pk as string,
-      versionType: activeSearchQuery.versionType,
-      resultType: activeSearchQuery.resultType,
-      minVersionDate: activeSearchQuery.minVersionDate,
-      maxVersionDate: activeSearchQuery.maxVersionDate,
-      filenameVars: activeSearchQuery.filenameVars,
-      activeFacets: activeSearchQuery.activeFacets,
-      textInputs: activeSearchQuery.textInputs,
-      url,
-      resultsCount: numFound,
-      searchTime: Date.now(),
-    };
-
-    if (searchAlreadyExists(userSearchQueries, savedSearch)) {
-      showNotice(messageApi, 'Search query is already in your library', {
-        icon: <BookOutlined style={appStyles.messageAddIcon} />,
-        type: 'info',
+  // Update lastSuccessfulSearch only when new data arrives successfully
+  React.useEffect(() => {
+    if (
+      !error &&
+      data &&
+      !objectIsEmpty(data) &&
+      !objectIsEmpty(parsedFacets) &&
+      currentRequestQueryRef.current
+    ) {
+      setLastSuccessfulSearch({
+        results: data,
+        query: currentRequestQueryRef.current, // Use the query that was active when request was made
+        facets: parsedFacets,
       });
+    }
+  }, [data, error, parsedFacets]);
+
+  // Use fallback facets on error
+  React.useEffect(() => {
+    if (showCachedResultsOnError && !objectIsEmpty(fallbackFacets)) {
+      setAvailableFacets(fallbackFacets);
+    }
+  }, [showCachedResultsOnError, fallbackFacets, setAvailableFacets]);
+
+  // Preload next STAC batch when reaching last page
+  React.useEffect(() => {
+    if (
+      !currentProject.isSTAC ||
+      !hasStacResults ||
+      !stacLoadedBatches.nextToken ||
+      isLoading ||
+      isBackgroundFetch
+    ) {
       return;
     }
 
-    const saveSuccess = (): void => {
-      setUserSearchQueries([...userSearchQueries, savedSearch]);
-      showNotice(messageApi, 'Saved search query to your library', {
-        icon: <BookOutlined style={appStyles.messageAddIcon} />,
-      });
-    };
+    const currentPage = paginationOptions.page || 1;
+    const currentPageSize = paginationOptions.pageSize || 10;
+    const loadedCount = stacLoadedBatches.results.length;
+    const totalLoadedPages = Math.ceil(loadedCount / currentPageSize);
+    const currentBatch = Math.ceil(loadedCount / STAC_BATCH_SIZE);
 
-    if (isAuthenticated) {
-      addUserSearchQuery(pk, accessToken, savedSearch)
-        .then(() => {
-          saveSuccess();
-        })
-        .catch(
-          /* istanbul ignore next */
-          (respError: ResponseError) => {
-            showError(messageApi, respError.message);
-          },
-        );
-    } else {
-      saveSuccess();
+    if (currentPage === totalLoadedPages && lastPreloadedBatchRef.current !== currentBatch) {
+      lastPreloadedBatchRef.current = currentBatch;
+      setIsBackgroundFetch(true);
+      setTimeout(() => {
+        run([currentRequestURL, stacLoadedBatches.nextToken]);
+      }, 100);
     }
-  };
+  }, [
+    currentProject.isSTAC,
+    hasStacResults,
+    stacLoadedBatches.nextToken,
+    stacLoadedBatches.results.length,
+    paginationOptions.page,
+    paginationOptions.pageSize,
+    isLoading,
+    isBackgroundFetch,
+    currentRequestURL,
+    run,
+  ]);
 
-  const handleShareSearchQuery = (): void => {
-    /* istanbul ignore else */
+  const handleClearFilters = React.useCallback((): void => {
+    clearAllCaches();
+    setActiveSearchQuery(projectBaseQuery(activeSearchQuery.project));
+  }, [activeSearchQuery.project, clearAllCaches, setActiveSearchQuery]);
+
+  const handleSaveSearchQuery = React.useCallback(
+    (url: string, numFound: number): void => {
+      const savedSearch: UserSearchQuery = {
+        uuid: uuidv4(),
+        user: pk,
+        project: activeSearchQuery.project as RawProject,
+        projectId: activeSearchQuery.project.pk as string,
+        versionType: activeSearchQuery.versionType,
+        resultType: activeSearchQuery.resultType,
+        minVersionDate: activeSearchQuery.minVersionDate,
+        maxVersionDate: activeSearchQuery.maxVersionDate,
+        filenameVars: activeSearchQuery.filenameVars,
+        activeFacets: activeSearchQuery.activeFacets,
+        textInputs: activeSearchQuery.textInputs,
+        globusOnly: activeSearchQuery.globusOnly,
+        url,
+        resultsCount: numFound,
+        searchTime: Date.now(),
+      };
+
+      if (searchAlreadyExists(userSearchQueries, savedSearch)) {
+        showNotice(messageApi, 'Search query is already in your library', {
+          icon: <BookOutlined style={appStyles.messageAddIcon} />,
+          type: 'info',
+        });
+        return;
+      }
+
+      const saveSuccess = (): void => {
+        setUserSearchQueries([...userSearchQueries, savedSearch]);
+        showNotice(messageApi, 'Saved search query to your library', {
+          icon: <BookOutlined style={appStyles.messageAddIcon} />,
+        });
+      };
+
+      if (isAuthenticated) {
+        addUserSearchQuery(pk, accessToken, savedSearch)
+          .then(() => {
+            saveSuccess();
+          })
+          .catch(
+            /* istanbul ignore next -- @preserve */
+            (respError: ResponseError) => {
+              showError(messageApi, respError.message);
+            },
+          );
+      } else {
+        saveSuccess();
+      }
+    },
+    [
+      pk,
+      activeSearchQuery,
+      userSearchQueries,
+      messageApi,
+      appStyles.messageAddIcon,
+      isAuthenticated,
+      accessToken,
+      setUserSearchQueries,
+    ],
+  );
+
+  const handleShareSearchQuery = React.useCallback((): void => {
+    /* istanbul ignore else -- @preserve */
     if (navigator && navigator.clipboard) {
       navigator.clipboard.writeText(getUrlFromSearch(activeSearchQuery));
       showNotice(messageApi, 'Metagrid search URL copied to clipboard!', {
         icon: <ShareAltOutlined />,
       });
     }
-  };
+  }, [activeSearchQuery, messageApi]);
 
-  const handleEsgpullSearchQuery = (): void => {
-    /* istanbul ignore else */
+  /* istanbul ignore next -- @preserve */
+  const handleEsgpullSearchQuery = React.useCallback((): void => {
+    /* istanbul ignore else -- @preserve */
     if (navigator && navigator.clipboard) {
       navigator.clipboard.writeText(createEsgpullCommand(activeSearchQuery, false));
       showNotice(messageApi, 'Esgpull search query copied to clipboard!', {
         icon: <CodeOutlined />,
       });
     }
-  };
+  }, [activeSearchQuery, messageApi]);
 
-  const handleEsgpullDownloadCmd = (): void => {
-    /* istanbul ignore else */
+  /* istanbul ignore next -- @preserve */
+  const handleEsgpullDownloadCmd = React.useCallback((): void => {
+    /* istanbul ignore else -- @preserve */
     if (navigator && navigator.clipboard) {
       navigator.clipboard.writeText(createEsgpullCommand(activeSearchQuery, true));
       showNotice(messageApi, 'Esgpull download command copied to clipboard!', {
         icon: <CodeOutlined />,
       });
     }
-  };
+  }, [activeSearchQuery, messageApi]);
 
-  const handleIntakeEsgfSearch = (): void => {
-    /* istanbul ignore else */
+  const handleIntakeEsgfSearch = React.useCallback((): void => {
+    /* istanbul ignore else -- @preserve */
     if (navigator && navigator.clipboard) {
       navigator.clipboard.writeText(createIntakeEsgfSearch(activeSearchQuery));
       showNotice(messageApi, 'Intake-ESGF search command copied to clipboard!', {
         icon: <CodeOutlined />,
       });
     }
-  };
+  }, [activeSearchQuery, messageApi]);
 
   const handleRemoveFilter = (removedTag: TagValue, type: TagType): void => {
-    /* istanbul ignore else */
+    clearAllCaches();
+
+    /* istanbul ignore else -- @preserve */
     if (type === 'text') {
       setActiveSearchQuery({
         ...activeSearchQuery,
@@ -409,11 +683,6 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   };
 
   const handleRowSelect = (selectedRows: RawSearchResults | []): void => {
-    // If you select rows on one page of the table, then go to another page
-    // and select more rows, the rows from the previous page transform from
-    // objects to undefined in the array. To work around this, filter out the
-    // undefined values.
-    // https://github.com/ant-design/ant-design/issues/24243
     const rows = (selectedRows as RawSearchResults).filter(
       (row: RawSearchResult) => row !== undefined,
     );
@@ -422,75 +691,124 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   const handlePageChange = (page: number, pageSize: number): void => {
     setPaginationOptions({ page, pageSize });
+
+    if (currentProject.isSTAC && stacLoadedBatches.nextToken) {
+      const loadedCount = stacLoadedBatches.results.length;
+      const totalLoadedPages = Math.ceil(loadedCount / pageSize);
+      const currentBatch = Math.ceil(loadedCount / STAC_BATCH_SIZE);
+
+      if (page === totalLoadedPages && lastPreloadedBatchRef.current !== currentBatch) {
+        lastPreloadedBatchRef.current = currentBatch;
+        setIsBackgroundFetch(true);
+        setTimeout(() => {
+          run([currentRequestURL, stacLoadedBatches.nextToken]);
+        }, 100);
+      }
+    }
   };
 
   const handlePageSizeChange = (pageSize: number): void => {
     setPaginationOptions({ page: 1, pageSize });
   };
 
-  // Used cached results if the request fails
-  if (error) {
-    /* istanbul ignore next */
-    if (error.cause === 422) {
-      // Handle unlikely case where the requested page is not available
-      setTimeout(() => {
-        window.location.reload();
-      }, 5000);
+  const queryString = React.useMemo(
+    () =>
+      stringifyApiRequest(
+        currentProject,
+        currentRequestURL,
+        textInputs,
+        versionType,
+        resultType,
+        minVersionDate,
+        maxVersionDate,
+        activeFacets,
+      ),
+    [
+      currentProject,
+      currentRequestURL,
+      textInputs,
+      versionType,
+      resultType,
+      minVersionDate,
+      maxVersionDate,
+      activeFacets,
+    ],
+  );
 
-      showError(messageApi, 'The requested page value was unavailable. Resetting to page 1.');
-      return (
-        <div data-testid="alert-fetching">
-          {contextHolder}
-          <Alert message="There was an issue fetching results for requested page." type="error" />
-        </div>
-      );
+  const allSelectedItemsInCart = React.useMemo(
+    () =>
+      selectedItems.filter(
+        (item: RawSearchResult) =>
+          !userCart.some((dataset: RawSearchResult) => dataset.id === item.id),
+      ).length === 0,
+    [selectedItems, userCart],
+  );
+
+  // Identify problematic facets by comparing with last successful query
+  const problematicFacets = React.useMemo(() => {
+    if (error && fallbackQuery) {
+      return identifyProblematicFacets(activeSearchQuery, fallbackQuery);
     }
-    return (
-      <div data-testid="alert-fetching">
-        <Alert
-          message="There was an issue fetching search results. Please contact support or try again later."
-          type="error"
-        />
-      </div>
-    );
-  }
+    return new Set<string>();
+  }, [error, activeSearchQuery, fallbackQuery]);
 
-  let numFound = 0;
-  let docs: RawSearchResults = [];
+  const handleRevertToLastSuccessfulQuery = React.useCallback((): void => {
+    if (fallbackQuery) {
+      // Clear cache to force fresh search with reverted query
+      setCachedResults(undefined);
+      clearCachedSearchResults();
+
+      // Merge with current project from atom to preserve full project object
+      setActiveSearchQuery({
+        ...fallbackQuery,
+        project: currentProject, // Use full project object from atom
+      });
+
+      showNotice(messageApi, 'Reverted to last successful search', {
+        icon: <BookOutlined style={appStyles.messageAddIcon} />,
+      });
+    }
+  }, [fallbackQuery, currentProject, setActiveSearchQuery, messageApi, appStyles.messageAddIcon]);
+
   type LoadedResults = {
     cachedURL: string;
     response: { docs: RawSearchResults; numFound: number };
   };
-  if (results) {
-    if (currentProject.isSTAC) {
-      const searchResults = results as StacResponse;
-      if (searchResults.search) {
-        const stacResults = searchResults.search;
 
-        if (stacResults.features && stacResults.features.length > 0) {
-          numFound = stacResults.features.length;
-          docs = stacResults.features.map((stacResult: StacFeature) =>
-            convertStacToRawSearchResult(stacResult),
-          );
-        }
-      }
-    } else if (results.response) {
-      numFound = (results as LoadedResults).response.numFound;
-      docs = (results as LoadedResults).response.docs.map((doc) => ({
-        ...doc,
-        isStac: false,
-      }));
+  const { numMatched, docs, paginationTotal } = React.useMemo(() => {
+    if (!resultsToDisplay) {
+      return { numMatched: 0, docs: [], paginationTotal: 0 };
     }
-  }
 
-  const allSelectedItemsInCart =
-    selectedItems.filter(
-      (item: RawSearchResult) =>
-        !userCart.some(
-          /* istanbul ignore next */
-          (dataset: RawSearchResult) => dataset.id === item.id,
-        ),
-    ).length === 0;
+    if (currentProject.isSTAC) {
+      const currentProjectName = (project.name as string) || '';
+      const projectMatches =
+        currentProjectName &&
+        stacLoadedBatches.projectName === currentProjectName &&
+        stacLoadedBatches.results.length > 0;
+
+      const stacDocs = projectMatches ? stacLoadedBatches.results : [];
+      const loadedCount = stacDocs.length;
+      const clampedTotal = Math.min(stacLoadedBatches.totalMatched || loadedCount, MAX_RESULTS);
+      return {
+        docs: stacDocs,
+        numMatched: stacLoadedBatches.totalMatched || loadedCount,
+        paginationTotal: Math.min(loadedCount, clampedTotal),
+      };
+    }
+
+    if (resultsToDisplay.response) {
+      const { docs: responseDocs, numFound } = (resultsToDisplay as LoadedResults).response;
+      const clampedTotal = Math.min(numFound, MAX_RESULTS);
+      return {
+        numMatched: numFound,
+        paginationTotal: clampedTotal,
+        docs: responseDocs.map((doc) => ({ ...doc, isStac: false })),
+      };
+    }
+
+    return { numMatched: 0, docs: [], paginationTotal: 0 };
+  }, [resultsToDisplay, currentProject.isSTAC, project.name, stacLoadedBatches]);
 
   const searchActionsMenu = [
     {
@@ -502,7 +820,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
               type="default"
               className={copySearchOptionsTargets.copySearchLinkBtn.class()}
               onClick={handleShareSearchQuery}
-              disabled={isLoading || numFound === 0}
+              disabled={isLoading || numMatched === 0}
             >
               <ShareAltOutlined data-testid="share-search-btn" /> Copy Metagrid search URL
             </Button>
@@ -513,20 +831,13 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     {
       key: '2',
       label: (
-        <Tooltip
-          placement="left"
-          title={
-            currentProject.isSTAC
-              ? tooltipText.featureNotAvailableInStac
-              : tooltipText.copyEsgpullSearch
-          }
-        >
+        <Tooltip placement="left" title={tooltipText.copyEsgpullSearch}>
           <span style={{ display: 'inline-block', cursor: 'not-allowed' }}>
             <Button
               type="default"
               className={copySearchOptionsTargets.copyEsgpullSearchQueryBtn.class()}
               onClick={handleEsgpullSearchQuery}
-              disabled={isLoading || numFound === 0 || currentProject.isSTAC}
+              disabled={isLoading || numMatched === 0}
             >
               <CodeOutlined data-testid="copy-esgpull-search-btn" /> Copy esgpull search query
             </Button>
@@ -537,20 +848,13 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     {
       key: '3',
       label: (
-        <Tooltip
-          placement="left"
-          title={
-            currentProject.isSTAC
-              ? tooltipText.featureNotAvailableInStac
-              : tooltipText.copyEsgpullDownload
-          }
-        >
+        <Tooltip placement="left" title={tooltipText.copyEsgpullDownload}>
           <span style={{ display: 'inline-block', cursor: 'not-allowed' }}>
             <Button
               type="default"
               className={copySearchOptionsTargets.copyEsgpullDownloadCommandBtn.class()}
               onClick={handleEsgpullDownloadCmd}
-              disabled={isLoading || numFound === 0 || currentProject.isSTAC}
+              disabled={isLoading || numMatched === 0}
             >
               <CodeOutlined data-testid="copy-esgpull-download-btn" /> Copy esgpull download command
             </Button>
@@ -561,20 +865,13 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     {
       key: '4',
       label: (
-        <Tooltip
-          placement="left"
-          title={
-            currentProject.isSTAC
-              ? tooltipText.featureNotAvailableInStac
-              : tooltipText.copyIntakeEsgfSearch
-          }
-        >
+        <Tooltip placement="left" title={tooltipText.copyIntakeEsgfSearch}>
           <span style={{ display: 'inline-block', cursor: 'not-allowed' }}>
             <Button
               type="default"
               className={copySearchOptionsTargets.copyIntakeEsgfSearchBtn.class()}
               onClick={handleIntakeEsgfSearch}
-              disabled={isLoading || numFound === 0 || currentProject.isSTAC}
+              disabled={isLoading || numMatched === 0}
             >
               <CodeOutlined data-testid="copy-intake-search-btn" /> Copy Intake-ESGF search command
             </Button>
@@ -584,154 +881,316 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     },
   ];
 
+  /* istanbul ignore next -- @preserve */
+  const setDownloadAllForm = (value: boolean) => () => setShowDownloadAllForm(value);
+
+  const errorDescription = React.useMemo(() => {
+    if (!showCachedResultsOnError) return null;
+
+    const problematicFacetsList = Array.from(problematicFacets);
+    const is422Error = error?.cause === 422;
+
+    if (problematicFacetsList.length > 0 && is422Error) {
+      const facetList = problematicFacetsList
+        .map((facet) => {
+          const [key, value] = facet.split(':');
+          return `${key}: "${value}"`;
+        })
+        .join(', ');
+
+      return (
+        <>
+          Unable to fetch results. The following facet(s) may be causing the error:{' '}
+          <strong>{facetList}</strong>. These are highlighted below.{' '}
+          <Button type="link" size="small" onClick={handleRevertToLastSuccessfulQuery}>
+            Revert to last successful search
+          </Button>
+          .
+        </>
+      );
+    }
+
+    return <>Unable to fetch latest results. Displaying last successful search.</>;
+  }, [
+    showCachedResultsOnError,
+    problematicFacets,
+    error,
+    fallbackQuery,
+    handleRevertToLastSuccessfulQuery,
+  ]);
+
+  if (error && !showCachedResultsOnError) {
+    const errorMessage =
+      error.cause === 422
+        ? 'Invalid search query. Try adjusting filters or selecting a different project.'
+        : 'Failed to fetch results. Try again or select a different project.';
+
+    return (
+      <div data-testid="alert-fetching">
+        {contextHolder}
+        <Alert message={errorMessage} type="error" showIcon />
+      </div>
+    );
+  }
+
   return (
-    <div data-testid="search" className={searchTableTargets.searchResultsTable.class()}>
+    <div data-testid="search">
       {contextHolder}
-      <div style={styles.summary}>
-        {objectIsEmpty(project) && (
-          <Alert message="Select a project to search for results" type="info" showIcon />
-        )}
-        <h3>
-          {isLoading && <span style={styles.resultsHeader}>Loading latest results for </span>}
-          {results && !isLoading && (
-            <span
-              className={searchTableTargets.resultsFoundText.class()}
-              style={styles.resultsHeader}
-              data-testid="search-results-span"
-            >
-              {numFound.toLocaleString()} results found for{' '}
-            </span>
+      {showCachedResultsOnError && (
+        <Alert
+          message="Search Error - Showing Previous Results"
+          description={errorDescription}
+          type="warning"
+          showIcon
+          closable
+          style={{ marginBottom: 16 }}
+          data-testid="cached-results-warning"
+        />
+      )}
+      <div
+        className={searchTableTargets.searchFeaturesArea.class()}
+        data-testid="search-features-wrapper"
+      >
+        <div style={styles.summary}>
+          {objectIsEmpty(project) && (
+            <Alert message="Select a project to search for results" type="info" showIcon />
           )}
-          <span style={styles.resultsHeader}>{(project as RawProject).name}</span>
-        </h3>
+          <h3>
+            {isLoading && !isBackgroundFetch && (
+              <span style={styles.resultsHeader}>Loading latest results for </span>
+            )}
+            {(resultsToDisplay || (currentProject.isSTAC && hasStacResults)) &&
+              (!isLoading || isBackgroundFetch) && (
+                <span
+                  className={searchTableTargets.resultsFoundText.class()}
+                  style={styles.resultsHeader}
+                  data-testid="search-results-span"
+                >
+                  {numMatched.toLocaleString()} results found for{' '}
+                </span>
+              )}
+            <span style={styles.resultsHeader}>{(project as RawProject).name}</span>
+          </h3>
+          <div>
+            {(resultsToDisplay || (currentProject.isSTAC && hasStacResults)) && (
+              <Space>
+                {currentProject.isSTAC && (
+                  <>
+                    <Tooltip
+                      placement="bottom"
+                      title={
+                        numMatched >= 10000
+                          ? 'To use the Download All feature, please narrow down your search to less than 10,000 results.'
+                          : 'Open form to download the current search results.'
+                      }
+                    >
+                      <Button
+                        type="default"
+                        shape="round"
+                        className={searchTableTargets.downloadSearchBtn.class()}
+                        onClick={setDownloadAllForm(true)}
+                        disabled={isLoading || numMatched === 0 || numMatched >= 10000}
+                      >
+                        <DownloadOutlined />
+                        Download All Results{' '}
+                      </Button>{' '}
+                    </Tooltip>
+                    <DownloadModal
+                      show={showDownloadAllForm}
+                      hide={setDownloadAllForm(false)}
+                      searchURL={getUrlFromSearch(activeSearchQuery)}
+                      stacResults={
+                        resultsToDisplay
+                          ? (resultsToDisplay as StacResponse).search
+                          : {
+                              features: [],
+                              links: [],
+                              type: 'FeatureCollection',
+                            }
+                      }
+                      totalMatched={numMatched}
+                      activeSearchQuery={activeSearchQuery}
+                    />
+                  </>
+                )}
+                <Tooltip
+                  placement="bottom"
+                  title="Add the selected datasets to your download cart."
+                >
+                  <Button
+                    type="default"
+                    className={searchTableTargets.addSelectedToCartBtn.class()}
+                    onClick={() => onUpdateCart(selectedItems, 'add')}
+                    disabled={
+                      isLoading ||
+                      numMatched === 0 ||
+                      selectedItems.length === 0 ||
+                      allSelectedItemsInCart
+                    }
+                  >
+                    <ShoppingCartOutlined />
+                    Add Selected to Cart
+                  </Button>{' '}
+                </Tooltip>
+                <Dropdown.Button
+                  data-testid="save-search-dropdown-btn"
+                  className={searchTableTargets.saveSearchBtn.class()}
+                  type="default"
+                  onClick={() => handleSaveSearchQuery(currentRequestURL, numMatched)}
+                  disabled={isLoading || numMatched === 0}
+                  menu={{ items: searchActionsMenu }}
+                  placement="bottom"
+                  icon={<CopyOutlined className={copySearchOptionsTargets.copyMenuBtn.class()} />}
+                >
+                  <Tooltip
+                    placement="bottom"
+                    title="Saves your current search parameters to Saved Searches for later use."
+                  >
+                    <SaveOutlined data-testid="save-search-btn" />
+                    Save Search
+                  </Tooltip>
+                </Dropdown.Button>{' '}
+              </Space>
+            )}
+          </div>
+        </div>
         <div>
-          {results && (
-            <Space>
-              <Button
-                type="default"
-                className={searchTableTargets.addSelectedToCartBtn.class()}
-                onClick={() => onUpdateCart(selectedItems, 'add')}
-                disabled={
-                  isLoading ||
-                  numFound === 0 ||
-                  selectedItems.length === 0 ||
-                  allSelectedItemsInCart
-                }
-              >
-                <ShoppingCartOutlined />
-                Add Selected to Cart
-              </Button>{' '}
-              <Dropdown.Button
-                data-testid="save-search-dropdown-btn"
-                className={searchTableTargets.saveSearchBtn.class()}
-                type="default"
-                onClick={() => handleSaveSearchQuery(currentRequestURL, numFound)}
-                disabled={isLoading || numFound === 0}
-                menu={{ items: searchActionsMenu }}
-                placement="bottom"
-                icon={<CopyOutlined className={copySearchOptionsTargets.copyMenuBtn.class()} />}
-              >
-                <SaveOutlined data-testid="save-search-btn" />
-                Save Search
-              </Dropdown.Button>
-            </Space>
+          {(resultsToDisplay || (currentProject.isSTAC && hasStacResults)) && (
+            <p>
+              <span style={styles.subtitles} data-testid="main-query-string-label">
+                {currentProject.isSTAC ? 'STAC Query String' : 'Query String'}
+                <Button
+                  size="small"
+                  style={{
+                    marginLeft: '5px',
+                    display: `${currentProject.isSTAC ? 'inherit' : 'none'}`,
+                  }}
+                  icon={
+                    <Tooltip title="Copy query to clipboard">
+                      <CopyOutlined style={{ fontSize: '12px' }} />
+                    </Tooltip>
+                  }
+                  onClick={() => {
+                    // copy link to clipboard
+                    /* istanbul ignore else -- @preserve */
+                    if (navigator && navigator.clipboard) {
+                      navigator.clipboard.writeText(queryString);
+                      showNotice(messageApi, 'Query copied to clipboard!', {
+                        icon: <CopyOutlined style={styles.messageAddIcon} />,
+                      });
+                    }
+                  }}
+                />{' '}
+                :
+              </span>
+              <Typography.Text className={searchTableTargets.queryString.class()} code>
+                {queryString}
+              </Typography.Text>
+            </p>
           )}
         </div>
-      </div>
-      <div>
-        {results && (
-          <p>
-            <span style={styles.subtitles} data-testid="main-query-string-label">
-              {currentProject.isSTAC ? 'STAC Filter String:' : 'Query String:'}{' '}
-            </span>
-            <Typography.Text className={searchTableTargets.queryString.class()} code>
-              {stringifyFilters(
-                currentProject.name,
-                versionType,
-                resultType,
-                minVersionDate,
-                maxVersionDate,
-                activeFacets,
-                textInputs,
-                currentProject.isSTAC,
-                currentRequestURL,
+        {(resultsToDisplay || (currentProject.isSTAC && hasStacResults)) && (
+          <Row style={styles.filtersContainer}>
+            {Object.keys(activeFacets).length !== 0 &&
+              Object.keys(activeFacets).map((facet: string) =>
+                activeFacets[facet].map((variable: string) => {
+                  const facetKey = `${facet}:${variable}`;
+                  const isProblematic = problematicFacets.has(facetKey);
+                  return (
+                    <div key={variable} data-testid={variable}>
+                      {isProblematic ? (
+                        <Tooltip
+                          title="This facet may be causing the search error. Try removing it to see if the search succeeds."
+                          placement="top"
+                        >
+                          <span>
+                            <Tag
+                              value={[facet, variable]}
+                              onClose={handleRemoveFilter}
+                              type="facet"
+                              color="warning"
+                            >
+                              {variable}
+                            </Tag>
+                          </span>
+                        </Tooltip>
+                      ) : (
+                        <Tag value={[facet, variable]} onClose={handleRemoveFilter} type="facet">
+                          {variable}
+                        </Tag>
+                      )}
+                    </div>
+                  );
+                }),
               )}
-            </Typography.Text>
-          </p>
+            {textInputs.length !== 0 &&
+              (textInputs as TextInputs).map((input: string) => (
+                <div key={input} data-testid={input}>
+                  <Tag value={input} onClose={handleRemoveFilter} type="text">
+                    {input}
+                  </Tag>
+                </div>
+              ))}
+            {filenameVars.length !== 0 &&
+              (filenameVars as TextInputs).map((input: string) => (
+                <div key={input} data-testid={input}>
+                  <Tag value={input} onClose={handleRemoveFilter} type="filenameVar">
+                    Filename Search: {input}
+                  </Tag>
+                </div>
+              ))}
+            {filtersExist && (
+              <Button type="primary" danger size="small" onClick={handleClearFilters}>
+                Clear All
+              </Button>
+            )}
+          </Row>
         )}
       </div>
 
-      {results && (
-        <Row style={styles.filtersContainer}>
-          {Object.keys(activeFacets).length !== 0 &&
-            Object.keys(activeFacets).map((facet: string) =>
-              activeFacets[facet].map((variable: string) => (
-                <div key={variable} data-testid={variable}>
-                  <Tag value={[facet, variable]} onClose={handleRemoveFilter} type="facet">
-                    {variable}
-                  </Tag>
-                </div>
-              )),
-            )}
-          {textInputs.length !== 0 &&
-            (textInputs as TextInputs).map((input: string) => (
-              <div key={input} data-testid={input}>
-                <Tag value={input} onClose={handleRemoveFilter} type="text">
-                  {input}
-                </Tag>
-              </div>
-            ))}
-          {filenameVars.length !== 0 &&
-            (filenameVars as TextInputs).map((input: string) => (
-              <div key={input} data-testid={input}>
-                <Tag value={input} onClose={handleRemoveFilter} type="filenameVar">
-                  Filename Search: {input}
-                </Tag>
-              </div>
-            ))}
-          {filtersExist && (
-            <Button type="primary" danger size="small" onClick={handleClearFilters}>
-              Clear All
-            </Button>
-          )}
-        </Row>
-      )}
-
-      <Row gutter={[24, 16]} justify="space-around">
-        <Col lg={24}>
-          <div data-testid="search-table">
-            {results && !isLoading ? (
+      <div
+        style={{
+          height: 'calc(100vh - 380px)',
+          marginBottom: '24px',
+        }}
+      >
+        <Row gutter={[24, 16]} justify="space-around">
+          <Col lg={24}>
+            <div
+              data-testid="search-table"
+              className={searchTableTargets.searchResultsTable.class()}
+            >
               <Table
-                loading={false}
+                loading={isLoading && !isBackgroundFetch}
                 results={docs}
-                totalResults={numFound}
+                totalResults={paginationTotal}
+                currentPage={paginationOptions.page}
+                pageSize={paginationOptions.pageSize}
+                showQuickJumper={!currentProject.isSTAC}
+                showLessItems={currentProject.isSTAC}
                 filenameVars={activeSearchQuery.filenameVars}
                 onUpdateCart={onUpdateCart}
                 onRowSelect={handleRowSelect}
                 onPageChange={handlePageChange}
                 onPageSizeChange={handlePageSizeChange}
+                scroll={{ y: 'calc(100vh - 480px)', x: 'max-content' }}
               />
-            ) : (
-              <Table
-                loading={isLoading}
-                results={[]}
-                totalResults={paginationOptions.pageSize}
-                onUpdateCart={onUpdateCart}
-              />
-            )}
-          </div>
-        </Col>
-        {results && currentRequestURL && (
-          <Button
-            type="default"
-            href={createSearchRouteURL(currentRequestURL)}
-            target="_blank"
-            icon={<ExportOutlined />}
-          >
-            Open as JSON
-          </Button>
-        )}
-      </Row>
+            </div>
+          </Col>
+          {resultsToDisplay && currentRequestURL && (
+            <Col lg={24} style={{ textAlign: 'center', marginTop: '16px' }}>
+              <Button
+                type="default"
+                href={createSearchRouteURL(currentRequestURL)}
+                target="_blank"
+                icon={<ExportOutlined />}
+              >
+                Open as JSON
+              </Button>
+            </Col>
+          )}
+        </Row>
+      </div>
     </div>
   );
 };

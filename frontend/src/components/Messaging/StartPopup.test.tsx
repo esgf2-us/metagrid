@@ -1,6 +1,7 @@
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { screen } from '@testing-library/react';
+import { vi } from 'vitest';
 import StartPopup from './StartPopup';
 import StartupMessages from './messageDisplayData';
 import customRender from '../../test/custom-render';
@@ -10,20 +11,20 @@ import { localStorageMock } from '../../test/mock/mockStorage';
 
 const { defaultMessageId, messageToShow } = StartupMessages;
 
-let mockNavigate: () => void;
+// hoist navigate mock for vi.mock (vitest hoists mocks)
+const mockNavigate = vi.fn();
+
+vi.mock(
+  'react-router',
+  async () =>
+    ({
+      ...(await vi.importActual('react-router')),
+      useNavigate: () => mockNavigate,
+    }) as Record<string, unknown>,
+);
 
 beforeEach(() => {
-  mockNavigate = jest.fn();
-  jest.mock(
-    'react-router',
-    () =>
-      ({
-        ...jest.requireActual('react-router'),
-        useNavigate: () => ({
-          push: mockNavigate,
-        }),
-      } as Record<string, unknown>)
-  );
+  mockNavigate.mockClear();
   localStorageMock.clear();
 });
 
@@ -69,7 +70,7 @@ describe('Start popup tests', () => {
     const welcomeHeader = await screen.findByTestId('welcomeTemplate');
     expect(welcomeHeader).toBeTruthy();
 
-    const searchesTourBtn = await screen.findByText(TourTitles.Searches);
+    const searchesTourBtn = await screen.findByText(TourTitles.SavedSearches);
     expect(welcomeHeader).toBeTruthy();
 
     await userEvent.click(searchesTourBtn);
@@ -82,7 +83,7 @@ describe('Start popup tests', () => {
     const welcomeHeader = await screen.findByTestId('welcomeTemplate');
     expect(welcomeHeader).toBeTruthy();
 
-    const nodeTourBtn = await screen.findByText(TourTitles.Node);
+    const nodeTourBtn = await screen.findByText(TourTitles.NodeStatus);
     expect(welcomeHeader).toBeTruthy();
 
     await userEvent.click(nodeTourBtn);

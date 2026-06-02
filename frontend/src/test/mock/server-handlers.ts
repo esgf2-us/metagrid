@@ -49,31 +49,31 @@ const handlers = [
         return res(
           ctx.status(200),
           ctx.json([
-            globusEndpointFixture(
-              'endpoint1',
-              'Endpoint 1',
-              'GCSv5_mapped_collection',
-              'id1234567',
-              'ownerId123',
-              'subscriptId123',
-            ),
-            globusEndpointFixture(
-              'endpoint2',
-              'Endpoint 2',
-              'GCSv5_endpoint',
-              'id2345678',
-              'ownerId234',
-              'subscriptId234',
-              'path2',
-            ),
-            globusEndpointFixture(
-              'endpoint3',
-              'Endpoint 3',
-              'unknown',
-              'id1234567',
-              'ownerId123',
-              '',
-            ),
+            globusEndpointFixture({
+              canonical_name: 'endpoint1',
+              display_name: 'Endpoint 1',
+              entity_type: 'GCSv5_mapped_collection',
+              id: 'id1234567',
+              owner_id: 'ownerId123',
+              subscription_id: 'subscriptId123',
+            }),
+            globusEndpointFixture({
+              canonical_name: 'endpoint2',
+              display_name: 'Endpoint 2',
+              entity_type: 'GCSv5_endpoint',
+              id: 'id2345678',
+              owner_id: 'ownerId234',
+              subscription_id: 'subscriptId234',
+              path: 'path2',
+            }),
+            globusEndpointFixture({
+              canonical_name: 'endpoint3',
+              display_name: 'Endpoint 3',
+              entity_type: 'unknown',
+              id: 'id1234567',
+              owner_id: 'ownerId123',
+              subscription_id: '',
+            }),
           ]),
         );
       case 'error404':
@@ -150,7 +150,7 @@ const handlers = [
           ),
         );
       }
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       if (citationUrl === 'citation_b') {
         return res(
           ctx.status(200),
@@ -180,12 +180,28 @@ const handlers = [
   rest.get(apiRoutes.esgfSearchSTAC.path, async (_req, res, ctx) => {
     return res(ctx.status(200), ctx.json(stacSearchResultsFixture()));
   }),
+  rest.post(apiRoutes.esgfSearchSTAC.path, async (_req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(stacSearchResultsFixture().search));
+  }),
   rest.get(apiRoutes.esgfAggregationsSTAC.path, async (_req, res, ctx) => {
     return res(ctx.status(200), ctx.json(stacAggregationsFixture()));
   }),
+  rest.post(apiRoutes.esgfAggregationsSTAC.path, async (_req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(stacAggregationsFixture()));
+  }),
+  rest.get('/projects/projects.json', async (_req, res, ctx) => {
+    // Return a valid empty config (tests will use default projects)
+    return res(
+      ctx.status(200),
+      ctx.json({
+        additionalProjects: [],
+        whitelist: [],
+        blacklist: [],
+      }),
+    );
+  }),
   // Default fallback handler
   rest.get('*', async (req, res, ctx) => {
-    // eslint-disable-next-line no-console
     // console.error(`Please add request handler for ${req.url.toString()}`);
     return res(ctx.status(500), ctx.json({ error: 'You must add request handler.' }));
   }),

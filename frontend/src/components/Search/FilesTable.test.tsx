@@ -12,7 +12,7 @@ import {
   rawStacAssetFixture,
 } from '../../test/mock/fixtures';
 import { RawSearchResult, RawSearchResults } from './types';
-import { AtomWrapper, openDropdownList, printElementContents } from '../../test/jestTestFunctions';
+import { AtomWrapper, openDropdownList } from '../../test/testFunctions';
 import { AppStateKeys } from '../../common/atoms';
 
 const user = userEvent.setup();
@@ -234,7 +234,7 @@ describe('test FilesTable component', () => {
           access: ['public'],
           description: 'Test asset 1',
           type: 'image/png',
-          alternatename: 'alternate_foo',
+          alternateName: 'alternate_foo',
           name: 'foo',
           roles: ['data'],
           href: 'https://example.com/file1.nc',
@@ -246,7 +246,7 @@ describe('test FilesTable component', () => {
           access: ['public'],
           description: 'Test asset 2',
           type: 'image/png',
-          alternatename: 'alternate_foo',
+          alternateName: 'alternate_foo',
           name: 'foo',
           roles: ['data'],
           href: 'https://example.com/file2.nc',

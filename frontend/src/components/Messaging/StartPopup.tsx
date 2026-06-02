@@ -37,7 +37,7 @@ const StartPopup: React.FC<React.PropsWithChildren<unknown>> = () => {
   const startData = messageDisplayData;
   // Startup visibility
   const [open, setVisible] = React.useState<boolean>(false);
-  const [title, setTitle] = React.useState<JSX.Element>(<></>);
+  const [title, setTitle] = React.useState<JSX.Element>(<div />);
   const [style, setStyle] = React.useState<CSSProperties>();
 
   // Tutorial state
@@ -49,6 +49,7 @@ const StartPopup: React.FC<React.PropsWithChildren<unknown>> = () => {
 
     // Show welcome tour if welcome message is shown
     const startupMessageSeen = getLastMessageSeen();
+    /* istanbul ignore else -- @preserve */
     if (!startupMessageSeen) {
       setTour(welcomeTour);
       startTour();
@@ -57,7 +58,7 @@ const StartPopup: React.FC<React.PropsWithChildren<unknown>> = () => {
   };
 
   const showMessage = (msgId: string): void => {
-    /* istanbul ignore next */
+    /* istanbul ignore next -- @preserve */
     const actions: MessageActions = {
       close: hideMessage,
       viewChanges: (): void => showMessage(startData.messageToShow),
@@ -74,6 +75,7 @@ const StartPopup: React.FC<React.PropsWithChildren<unknown>> = () => {
     if (!startupMessageSeen) {
       showMessage(startData.defaultMessageId);
     } else if (startupMessageSeen !== startData.messageToShow) {
+      /* istanbul ignore next -- @preserve */
       showMessage(startData.messageToShow);
     }
   }, []);

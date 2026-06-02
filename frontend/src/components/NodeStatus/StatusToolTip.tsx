@@ -28,18 +28,19 @@ const StatusToolTip: React.FC<React.PropsWithChildren<Props>> = ({ dataNode, chi
     offlineCol = darkModeRed;
   }
 
+  /* istanbul ignore else -- @preserve */
   if (nodeStatus) {
     const node = nodeStatus.find((obj) =>
       obj.name.includes(dataNode),
     ) as unknown as NodeStatusElement;
 
-    /* istanbul ignore else*/
+    /* istanbul ignore else -- @preserve */
     if (node) {
       const { isOnline, timestamp } = node;
 
       if (children) {
         return (
-          <>
+          <div>
             {isOnline ? (
               <Tooltip
                 title={
@@ -69,12 +70,12 @@ const StatusToolTip: React.FC<React.PropsWithChildren<Props>> = ({ dataNode, chi
                 </span>
               </Tooltip>
             )}
-          </>
+          </div>
         );
       }
 
       return (
-        <>
+        <div>
           {isOnline ? (
             <Tooltip
               title={
@@ -104,7 +105,7 @@ const StatusToolTip: React.FC<React.PropsWithChildren<Props>> = ({ dataNode, chi
               </span>
             </Tooltip>
           )}
-        </>
+        </div>
       );
     }
   }

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 /**
  * This file contains fixtures to pre-populate server-handlers with dummy data.
  * Fixtures allows tests to be maintainable (especially in the case of updated
@@ -21,6 +20,8 @@ import {
   StacResponse,
   StacAggregations,
   StacAsset,
+  StacFeature,
+  StacSearchResponse,
 } from '../../components/Search/types';
 import { RawUserAuth, RawUserInfo } from '../../contexts/types';
 import { SubmissionResult } from '../../api';
@@ -38,6 +39,7 @@ export const rawProjectFixture = (props: Partial<RawProject> = {}): RawProject =
     projectUrl: 'https://esgf-dev1.llnl.gov/metagrid/search',
     fullName: 'test1',
     isSTAC: false,
+    projectName: 'test1',
   };
   return { ...defaults, ...props } as RawProject;
 };
@@ -148,6 +150,7 @@ export const activeSearchQueryFixture = (
     resultType: 'all',
     minVersionDate: '20200101',
     maxVersionDate: '20201231',
+    globusOnly: false,
     filenameVars: ['var'],
     activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
     textInputs: ['foo'],
@@ -165,6 +168,7 @@ export const userSearchQueryFixture = (props: Partial<UserSearchQuery> = {}): Us
     resultType: 'all',
     minVersionDate: '20200101',
     maxVersionDate: '20201231',
+    globusOnly: false,
     filenameVars: ['var'],
     activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
     textInputs: ['foo'],
@@ -275,26 +279,52 @@ export const parsedNodeStatusFixture = (): NodeStatusArray => [
 export const globusAuthScopeFixure =
   'openid profile email urn:globus:auth:scope:transfer.api.globus.org:all urn:globus:auth:scope:transfer.api.globus.org:all[*https://auth.globus.org/scopes/id1234567/data_access *https://auth.globus.org/scopes/id2345678/data_access]';
 
-export const globusEndpointFixture = (
-  canonicalName?: string,
-  displayName?: string,
-  entityType?: string,
-  id?: string,
-  ownerId?: string,
-  subscriptionId?: string,
-  path?: string,
-): GlobusEndpoint => {
-  return {
-    canonical_name: canonicalName || '',
+export const globusEndpointFixture = (props: Partial<GlobusEndpoint> = {}): GlobusEndpoint => {
+  const defaults: GlobusEndpoint = {
+    canonical_name: 'test-endpoint',
     contact_email: 'globus-admin@llnl.gov',
-    display_name: displayName || 'LC Public',
-    entity_type: entityType || 'GCSv5_mapped_collection',
-    id: id || '0247816e-cc0d-4e03-a509-10903f6dde11',
-    owner_id: ownerId || '51245285-9ea1-4e56-a0c4-4de744f7c39f',
+    display_name: 'LC Public',
+    entity_type: 'GCSv5_mapped_collection',
+    id: '0247816e-cc0d-4e03-a509-10903f6dde11',
+    owner_id: '51245285-9ea1-4e56-a0c4-4de744f7c39f',
     owner_string: '51245285-9ea1-4e56-a0c4-4de744f7c39f@clients.auth.globus.org',
-    subscription_id: subscriptionId || '45620f77-bc3a-4e6f-b730-3ef5babe69ad',
-    path: path || null,
+    subscription_id: '45620f77-bc3a-4e6f-b730-3ef5babe69ad',
+    path: null,
   };
+  return { ...defaults, ...props };
+};
+
+// Helper fixture for Guest Collection
+export const globusGuestCollectionFixture = (
+  props: Partial<GlobusEndpoint> = {},
+): GlobusEndpoint => {
+  return globusEndpointFixture({
+    entity_type: 'GCSv5_guest_collection',
+    subscription_id: '',
+    ...props,
+  });
+};
+
+// Helper fixture for Managed Mapped Collection
+export const globusManagedCollectionFixture = (
+  props: Partial<GlobusEndpoint> = {},
+): GlobusEndpoint => {
+  return globusEndpointFixture({
+    entity_type: 'GCSv5_mapped_collection',
+    subscription_id: '45620f77-bc3a-4e6f-b730-3ef5babe69ad',
+    ...props,
+  });
+};
+
+// Helper fixture for Regular Mapped Collection (no subscription)
+export const globusMappedCollectionFixture = (
+  props: Partial<GlobusEndpoint> = {},
+): GlobusEndpoint => {
+  return globusEndpointFixture({
+    entity_type: 'GCSv5_mapped_collection',
+    subscription_id: '',
+    ...props,
+  });
 };
 
 export const globusEnabledDatasetFixture = (): RawSearchResult[] => {
@@ -316,54 +346,66 @@ export const globusEnabledDatasetFixture = (): RawSearchResult[] => {
   ];
 };
 
+export const stacFeatureFixture = (
+  id: string,
+  assetCount: number,
+  sizePerAsset: number,
+): StacFeature => ({
+  id,
+  bbox: [0, 0, 10, 10],
+  geometry: {
+    type: 'Polygon',
+    coordinates: [
+      [
+        [0, 0],
+        [10, 0],
+        [10, 10],
+        [0, 10],
+        [0, 0],
+      ],
+    ],
+  },
+  links: [{ rel: 'self', type: 'application/json', href: 'https://example.com/self' }],
+  type: 'Feature',
+  assets: Object.fromEntries(
+    Array.from({ length: assetCount }, (_, i) => [
+      `asset${i}`,
+      stacAssetFixture({
+        id: `asset${i}`,
+        name: `Asset ${i}`,
+        'file:size': sizePerAsset,
+        href: `https://example.com/asset${i}`,
+      }),
+    ]),
+  ),
+  properties: {
+    access: ['public'],
+    citation_url: 'https://example.com/citation',
+    further_info_url: 'https://example.com/info',
+    retracted: false,
+    version: '1.0',
+  },
+  collection: ['test-collection'],
+  stac_version: '1.0.0',
+});
+
+export const stacSearchResponseFixture = (features: StacFeature[]): StacSearchResponse => ({
+  features,
+  links: [
+    {
+      rel: 'self',
+      type: 'application/json',
+      href: 'https://example.com/search',
+    },
+  ],
+  type: 'FeatureCollection',
+});
+
 export const stacSearchResultsFixture = (): StacResponse => ({
   search: {
-    features: [
-      {
-        id: 'test-id',
-        bbox: [0, 0, 10, 10],
-        geometry: {
-          type: 'Polygon',
-          coordinates: [
-            [
-              [0, 0],
-              [10, 0],
-              [10, 10],
-              [0, 10],
-              [0, 0],
-            ],
-          ],
-        },
-        links: [{ rel: 'self', type: 'application/json', href: 'https://example.com/self' }],
-        type: 'Feature',
-        assets: {
-          asset1: {
-            id: 'asset1',
-            access: ['public'],
-            description: 'Test asset',
-            alternatename: 'Alternate name',
-            name: 'Asset 1',
-            roles: ['data'],
-            href: 'https://example.com/asset1',
-            type: 'image/png',
-            'file:size': 2048,
-            'file:checksum': 'def456',
-            title: 'Asset 1 Title',
-          },
-        },
-        properties: {
-          access: ['public'],
-          citation_url: 'https://example.com/citation',
-          further_info_url: 'https://example.com/info',
-          version: '1.0',
-        },
-        collection: ['test-collection'],
-        stac_version: '1.0.0',
-      },
-    ],
+    ...stacSearchResponseFixture([stacFeatureFixture('test-id', 1, 2048)]),
     numMatched: 1,
     numReturned: 1,
-    type: 'FeatureCollection',
     links: [
       {
         rel: 'root',
@@ -381,7 +423,6 @@ export const stacSearchResultsFixture = (): StacResponse => ({
   stac: true,
 });
 
-// New fixture: STAC aggregations used by tests
 export const stacAggregationsFixture = (): StacAggregations => ({
   aggregations: [
     {
@@ -404,7 +445,7 @@ export const stacAssetFixture = (props: Partial<StacAsset> = {}): StacAsset => {
     access: ['public'],
     description: 'test',
     type: 'image/png',
-    alternatename: 'alternate_foo',
+    alternateName: 'alternate_foo',
     name: 'foo',
     roles: ['data'],
     href: 'http://test.com/foo',

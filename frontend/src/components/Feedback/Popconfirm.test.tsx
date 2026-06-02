@@ -6,9 +6,9 @@ import customRender from '../../test/custom-render';
 
 it('renders component with default exclamation circle', async () => {
   customRender(
-    <Popconfirm onConfirm={jest.fn}>
+    <Popconfirm onConfirm={vi.fn()}>
       <p>Click here</p>
-    </Popconfirm>
+    </Popconfirm>,
   );
 
   // Check component renders

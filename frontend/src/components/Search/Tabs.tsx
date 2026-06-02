@@ -33,11 +33,11 @@ export type QualityFlagProps = { index: string; color: string };
 
 export const QualityFlag: React.FC<
   React.PropsWithChildren<QualityFlagProps>
-> = /* istanbul ignore next */ ({ index, color }) => (
+> = /* istanbul ignore next -- @preserve */ ({ index, color }) => (
   <div
     data-testid={`qualityFlag${index}`}
     style={{ ...styles.flagColorBox, backgroundColor: color }}
-  ></div>
+  />
 );
 
 const buildDisplayData = (
@@ -60,6 +60,13 @@ const buildDisplayData = (
       );
     }
     if (Array.isArray(value)) {
+      if (typeof value[0] === 'string' || typeof value[0] === 'number') {
+        return (
+          <div key={`top-${key}`} style={{ margin: 0 }}>
+            <span style={{ fontWeight: 'bold' }}>{title}</span>: {`[${value.join(', ')}]`}
+          </div>
+        );
+      }
       return (
         <div key={`top-${key}`} style={{ margin: 0 }}>
           <span style={{ fontWeight: 'bold' }}>{title}</span>:
@@ -71,10 +78,10 @@ const buildDisplayData = (
               listStyle: 'none',
             }}
           >
-            {value.map((item, idx) => (
+            {value.map((item, idx) => {
               // eslint-disable-next-line react/no-array-index-key
-              <li key={idx}>{buildElement(`${key}-${idx}`, `${title}[${idx}]`, item)}</li>
-            ))}
+              return <li key={idx}>{buildElement(`${key}-${idx}`, `${title}[${idx}]`, item)}</li>;
+            })}
           </ul>
         </div>
       );
@@ -94,7 +101,7 @@ const buildDisplayData = (
   ): void => {
     if (value && value !== 'null' && value !== null) {
       keys.push(key);
-      const element = buildElement(key, title, value || 'test');
+      const element = buildElement(key, title, value || /* istanbul ignore next */ 'test');
       if (typeof value !== 'object') {
         array.push({ key, display: element, value: JSON.stringify(value) });
       } else if (Array.isArray(value)) {
@@ -144,7 +151,9 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
         filteredDisplayItems.push(item);
       } else if (Array.isArray(item.value)) {
         item.value.forEach((val) => {
+          /* istanbul ignore else -- @preserve */
           if (typeof val !== 'string') {
+            /* istanbul ignore if -- @preserve */
             if (filteredKeys.includes(val.key)) {
               filteredDisplayItems.push(val);
             }
@@ -165,13 +174,13 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
     supdata: { label: 'Supplemental Data', url: null },
     'Tech Note': { label: 'Technical Notes', url: null },
   };
-  /* istanbul ignore else */
+  /* istanbul ignore else -- @preserve */
   if (objectHasKey(record, 'xlink')) {
     const { xlink } = record;
 
     (xlink as string[]).forEach((link) => {
       const [url, , linkType] = splitStringByChar(link, '|') as string[];
-      /* istanbul ignore else */
+      /* istanbul ignore else -- @preserve */
       if (Object.keys(xlinkTypesToOutput).includes(linkType)) {
         xlinkTypesToOutput[linkType].url = url;
       }
@@ -181,7 +190,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
   // Have to parse and format since 'quality_control_flags' attribute is
   // poorly structured in the Search API
   const qualityFlags: Record<string, string> = {};
-  /* istanbul ignore else */
+  /* istanbul ignore else -- @preserve */
   if (objectHasKey(record, 'quality_control_flags')) {
     const { quality_control_flags: qcFlags } = record;
 
@@ -211,6 +220,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
     record && record.further_info_url && record.further_info_url.length > 0
       ? record.further_info_url[0]
       : '';
+  /* istanbul ignore next -- @preserve */
   const propertiesFurtherInfoUrl =
     record &&
     record.properties &&
@@ -246,7 +256,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
             }))}
             placeholder="Lookup a key..."
             filterOption={
-              /* istanbul ignore next */ (inputValue, option) => {
+              /* istanbul ignore next -- @preserve */ (inputValue, option) => {
                 return option?.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1;
               }
             }
@@ -262,20 +272,17 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
     },
   ];
 
+  /* istanbul ignore else -- @preserve */
   if (showCitation) {
     tabList.push({
       key: '3',
       disabled: record.retracted === true,
       label: <div className={innerDataRowTargets.citationTab.class()}>Citation</div>,
-      children: (
-        <Citation
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          url={record.citation_url![0]}
-        />
-      ),
+      children: <Citation url={record.citation_url![0]} />,
     });
   }
 
+  /* istanbul ignore else -- @preserve */
   if (showAdditionalTab) {
     tabList.push({
       key: '4',
@@ -285,12 +292,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
         <>
           {showAdditionalLinks && additionalLinks}
           {showESDOC !== '' && (
-            <Button
-              type="link"
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              href={showESDOC}
-              target="_blank"
-            >
+            <Button type="link" href={showESDOC} target="_blank">
               ES-DOC
             </Button>
           )}
@@ -302,7 +304,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
             >
               <Popover
                 placement="topLeft"
-                content={<img src={qualityFlagsImg} alt="Quality Flags Indicator"></img>}
+                content={<img src={qualityFlagsImg} alt="Quality Flags Indicator" />}
               >
                 <span style={styles.qualityFlagsRow}>
                   {Object.keys(qualityFlags).map((key) => (

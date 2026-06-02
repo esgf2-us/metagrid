@@ -61,6 +61,7 @@ export class JoyrideTour {
    * @param content The content of the tour window
    * @param placement Default location for displaying the window
    * @param action A function to call when the tour passes this step
+   * @param disableScrolling Set to true to prevent automatic scrolling to the target element (Default: true)
    * @returns This tour object
    */
   addNextStep(
@@ -68,6 +69,7 @@ export class JoyrideTour {
     content: string,
     placement?: Placement | 'auto' | 'center',
     action?: () => void | Promise<void>,
+    disableScrolling?: boolean,
   ): JoyrideTour {
     this.actions.push({
       stepIndex: this.stepCount,
@@ -79,7 +81,7 @@ export class JoyrideTour {
         hideBackButton: true,
         hideCloseButton: true,
         disableBeacon: true,
-        disableScrolling: false,
+        disableScrolling: disableScrolling ?? true,
         placement,
         styles: {
           options: {

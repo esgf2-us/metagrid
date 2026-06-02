@@ -7,7 +7,7 @@ import customRender from '../../test/custom-render';
 
 // Reset all mocks after each test
 afterEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 describe('test Citation component', () => {
@@ -47,7 +47,7 @@ describe('test Citation component', () => {
   it('renders Alert error fetching citation data ', async () => {
     server.use(
       // ESGF Citation API (uses dummy link)
-      rest.post(apiRoutes.citation.path, (_req, res, ctx) => res(ctx.status(404)))
+      rest.post(apiRoutes.citation.path, (_req, res, ctx) => res(ctx.status(404))),
     );
     customRender(<Citation url="citation_a" />);
 

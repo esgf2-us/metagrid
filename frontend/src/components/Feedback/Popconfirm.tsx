@@ -23,7 +23,7 @@ type Props = {
   children: React.ReactNode;
 };
 
-/* istanbul ignore next */
+/* istanbul ignore next -- @preserve */
 const Popconfirm: React.FC<React.PropsWithChildren<Props>> = ({
   title = 'Are you sure?',
   icon = <ExclamationCircleOutlined />,

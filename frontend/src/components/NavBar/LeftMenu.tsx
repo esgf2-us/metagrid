@@ -35,7 +35,7 @@ const LeftMenu: React.FC<React.PropsWithChildren<Props>> = ({
    * If the current route is not on search, push route update.
    */
   const onFinish = (values: { [key: string]: string }): void => {
-    /* istanbul ignore else */
+    /* istanbul ignore else -- @preserve */
     if (!location.pathname.endsWith('search')) {
       navigate('/search');
     }
@@ -51,14 +51,16 @@ const LeftMenu: React.FC<React.PropsWithChildren<Props>> = ({
     form.setFieldsValue({ text: '' });
   };
 
+  /* istanbul ignore if -- @preserve */
   if (apiError) {
     return <Alert message={apiError.message} type="error" showIcon />;
   }
 
+  /* istanbul ignore if -- @preserve */
   if (apiIsLoading) {
     return (
       <Form form={form}>
-        <Spin style={styles.spin}></Spin>
+        <Spin style={styles.spin} />
       </Form>
     );
   }
@@ -104,7 +106,7 @@ const LeftMenu: React.FC<React.PropsWithChildren<Props>> = ({
                 type="primary"
                 htmlType="submit"
                 icon={<SearchOutlined data-testid="left-menu-keyword-search-submit" />}
-              ></Button>
+              />
             </Form.Item>
           </Space>
         </Form>

@@ -1,5 +1,5 @@
 import { TableProps } from 'antd';
-import { ActiveFacets, RawProject } from '../Facets/types';
+import { ActiveFacets, ParsedFacets, RawProject } from '../Facets/types';
 
 export type TextInputs = string[];
 
@@ -28,6 +28,7 @@ export type ActiveSearchQuery = {
   filenameVars: TextInputs | [];
   activeFacets: ActiveFacets;
   textInputs: TextInputs | [];
+  globusOnly: boolean;
 };
 
 export type RawSearchResult = {
@@ -44,7 +45,7 @@ export type RawSearchResult = {
   properties?: StacProperties;
   links?: StacLink[];
   globus_link?: string;
-  assets?: { [name: string]: StacAsset };
+  assets?: StacAssetDict;
   version?: string | number;
   isStac: boolean;
   [key: string]: unknown;
@@ -57,10 +58,10 @@ export type Pagination = {
   pageSize: number;
 };
 
-export type OnChange = NonNullable<TableProps<RawSearchResult>['onChange']>;
+export type OnChange<T> = NonNullable<TableProps<T>['onChange']>;
 
 export type GetSingle<T> = T extends (infer U)[] ? U : never;
-export type Sorts = GetSingle<Parameters<OnChange>[2]>;
+export type Sorts<T> = GetSingle<Parameters<OnChange<T>>[2]>;
 
 export type AlignType = 'left' | 'center' | 'right';
 export type FixedType = 'left' | 'right' | boolean;
@@ -73,13 +74,27 @@ export type StacLink = {
   rel: string;
   type: string;
   href: string;
+  body?: {
+    token?: string;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
 };
+
+export function isStacAsset(value: StacAssetDict | StacAsset): value is StacAsset {
+  return (
+    value &&
+    typeof value === 'object' &&
+    typeof value.href === 'string' &&
+    typeof value.id === 'string'
+  );
+}
 
 export type StacAsset = {
   id: string;
   access: string[];
   description: string;
-  alternatename: string;
+  alternateName: string;
   name: string;
   roles: string[];
   href: string;
@@ -87,8 +102,20 @@ export type StacAsset = {
   'file:size': number;
   'file:checksum': string;
   title?: string;
-  [key: string]: boolean | string | string[] | number | undefined;
+  alternate?: StacAssetDict;
+  [key: string]: boolean | string | string[] | StacAssetDict | number | undefined;
 };
+
+export function isStacAssetDict(value: StacAssetDict | StacAsset): value is StacAssetDict {
+  return (
+    value &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    Object.values(value).every(isStacAsset)
+  );
+}
+
+export type StacAssetDict = { [key: string]: StacAsset };
 
 export type StacAggregations = {
   aggregations: {
@@ -104,6 +131,7 @@ export type StacProperties = {
   access: string[];
   citation_url: string;
   further_info_url: string;
+  retracted: boolean;
   version: string;
   [key: string]: boolean | string | string[] | number | undefined;
 };
@@ -124,8 +152,10 @@ export type StacFeature = {
 export type StacSearchResponse = {
   features: StacFeature[];
   links: StacLink[];
-  // numMatched: number; These were missing from search response
-  // numReturned: number;
+  numMatched?: number;
+  numberMatched?: number;
+  numReturned?: number;
+  numberReturned?: number;
   type: string;
   [key: string]: unknown;
 };
@@ -138,4 +168,10 @@ export type StacResponse = {
   facets: StacFacetsData;
   search: StacSearchResponse;
   stac: boolean;
+};
+
+export type CachedSearchData = {
+  results: Record<string, unknown> | undefined;
+  query: ActiveSearchQuery | null;
+  facets: ParsedFacets | Record<string, unknown>;
 };
