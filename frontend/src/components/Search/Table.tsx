@@ -12,15 +12,8 @@ import { TablePaginationConfig, TableProps } from 'antd/lib/table';
 import React, { useCallback } from 'react';
 import { useAtomValue, useAtom } from 'jotai';
 import stacIcon from '../../assets/img/STAC-favicon.png';
-import { fetchWgetScript, ResponseError, STAC_BATCH_SIZE } from '../../api';
-import {
-  createEsgpullCommand,
-  formatBytes,
-  getCachedPagination,
-  getCurrentAppPage,
-  showError,
-  showNotice,
-} from '../../common/utils';
+import { fetchWgetScript, ResponseError } from '../../api';
+import { createEsgpullCommand, formatBytes, showError, showNotice } from '../../common/utils';
 import { UserCart } from '../Cart/types';
 import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
@@ -38,7 +31,6 @@ import {
 import GlobusToolTip from '../Globus/GlobusToolTip';
 import { topDataRowTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 import { userCartAtom, selectedNodesAtom, downloadSelectionsAtom } from '../../common/atoms';
-import { AppPage } from '../../common/types';
 import { createCustomIcon } from '../NavBar';
 import {
   getStacGlobusHref,
@@ -53,9 +45,11 @@ export type Props = {
   results: RawSearchResults | [];
   totalResults?: number;
   currentPage?: number;
+  pageSize?: number;
+  showQuickJumper?: boolean;
+  showLessItems?: boolean;
   selections?: RawSearchResults | [];
   filenameVars?: TextInputs | [];
-  isStac?: boolean;
   onUpdateCart: (item: RawSearchResults, operation: 'add' | 'remove') => void;
   onRowSelect?: (selectedRows: RawSearchResults | []) => void;
   onPageChange?: (page: number, pageSize: number) => void;
@@ -66,7 +60,6 @@ export type Props = {
 // Add options to this constant as needed
 type DatasetDownloadTypes = 'wget' | 'Globus' | 'esgpull';
 
-const MAX_RESULTS = 10000;
 const SUCCESS_MSG = 'Wget script generated successfully!';
 const STAC_ERROR_MSG =
   'No file links found in the selected dataset, wget script was not generated.';
@@ -77,9 +70,11 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
   results,
   totalResults,
   currentPage,
+  pageSize,
+  showQuickJumper = true,
+  showLessItems = false,
   selections,
   filenameVars,
-  isStac = false,
   onUpdateCart,
   onRowSelect,
   onPageChange,
@@ -134,22 +129,6 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
     ),
     [],
   );
-
-  let cachedPage: number | undefined;
-  let cachedSize: number | undefined;
-
-  if (getCurrentAppPage() !== AppPage.Cart) {
-    const pagination = getCachedPagination();
-    cachedPage = pagination.page;
-    cachedSize = pagination.pageSize;
-  }
-
-  // Use prop if provided, otherwise fall back to cache
-  const safePage = currentPage ?? cachedPage ?? 1;
-  const safeSize = cachedSize ?? 10;
-
-  // Clamp the results count to a maximum of 10,000
-  const clampedResultCount = totalResults ? Math.min(totalResults, MAX_RESULTS) : undefined;
 
   const filteredResults = results.filter((result) => !result.isStac || !stacDisabled);
 
@@ -259,39 +238,22 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
     }
   };
 
-  // For STAC: calculate which batch we're in (safePage and safeSize defined above)
-  const currentBatch = isStac ? Math.floor(((safePage - 1) * safeSize) / STAC_BATCH_SIZE) : 0;
-
   const tableConfig = {
     size: 'small' as SizeType,
     loading,
     pagination: {
-      total: clampedResultCount,
-      current: safePage,
-      pageSize: safeSize,
+      total: totalResults,
+      current: currentPage,
+      pageSize,
       position: ['bottomCenter'],
       showSizeChanger: {
         optionRender: renderPageSizeOption,
       },
-      // showPrevNextJumpers: !isStac,
-      showQuickJumper: !isStac,
-      showLessItems: isStac, // For STAC: hide "..." and far-ahead page numbers
-      onChange: (page: number, pageSize: number) => {
-        if (!onPageChange) return;
-
-        if (isStac) {
-          // For STAC, check if clicking on a page outside current batch
-          const pageBatch = Math.floor(((page - 1) * pageSize) / STAC_BATCH_SIZE);
-          if (pageBatch !== currentBatch) {
-            // Switching batches - trigger fetch
-            onPageChange(page, pageSize);
-          } else {
-            // Same batch - just update page (client-side pagination)
-            onPageChange(page, pageSize);
-          }
-        } else {
-          // Non-STAC: pass through directly
-          onPageChange(page, pageSize);
+      showQuickJumper,
+      showLessItems,
+      onChange: (page: number, newPageSize: number) => {
+        if (onPageChange) {
+          onPageChange(page, newPageSize);
         }
       },
       onShowSizeChange: (_current: number, size: number) => {
