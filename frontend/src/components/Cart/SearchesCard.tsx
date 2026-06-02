@@ -6,7 +6,7 @@ import {
 } from '@ant-design/icons';
 import { Alert, Card, Col, Skeleton, Typography, Tooltip } from 'antd';
 import React, { useEffect } from 'react';
-import { useAsync } from 'react-async';
+import { DeferFn, useAsync } from 'react-async';
 import { useNavigate } from 'react-router';
 import { useSetAtom } from 'jotai';
 import { fetchSearchResults, generateSearchURLQuery } from '../../api';
@@ -15,7 +15,11 @@ import { UserSearchQuery } from './types';
 import { createSearchRouteURL } from '../../common/utils';
 import { savedSearchQueryAtom } from '../../common/atoms';
 import { savedSearchTourTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
-import { stringifyApiRequest } from '../../common/STAC';
+import {
+  stringifyApiRequest,
+  convertSearchParamsIntoStacFilter,
+  getStacProject,
+} from '../../common/STAC';
 
 const styles: CSSinJS = {
   category: {
@@ -57,7 +61,7 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
 
   const setSavedSearchQuery = useSetAtom(savedSearchQueryAtom);
 
-  // Only call useAsync if resultsCount is null or searchTime is an hour old
+  // Only fetch resultCount if resultsCount is null or searchTime is an hour old
   const expirationTime = (searchTime || 0) + 60 * 60 * 1000; // Expires after an hour
   const getUrlResults: boolean = !resultsCount || expirationTime < Date.now();
   const numResultsUrl = getUrlResults
@@ -67,10 +71,16 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
       })
     : null;
 
-  const { data, isLoading, error } = useAsync({
-    promiseFn: numResultsUrl ? fetchSearchResults : undefined,
-    reqUrl: numResultsUrl,
+  const { data, isLoading, error, run } = useAsync({
+    deferFn: fetchSearchResults as unknown as DeferFn<Record<string, unknown>>,
   });
+
+  // Automatically fetch results when component mounts if needed
+  useEffect(() => {
+    if (numResultsUrl) {
+      run(numResultsUrl);
+    }
+  }, [numResultsUrl]);
 
   // Update the search query with the results count if it was fetched
   useEffect(() => {
@@ -156,7 +166,12 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
           <Tooltip title="View results in JSON format">
             <a
               className={savedSearchTourTargets.jsonBtn.class()}
-              href={createSearchRouteURL(url)}
+              href={createSearchRouteURL(
+                url,
+                project.isSTAC && project.projectName
+                  ? convertSearchParamsIntoStacFilter(url, getStacProject(project.projectName))
+                  : null,
+              )}
               rel="noopener noreferrer"
               target="blank_"
             >
