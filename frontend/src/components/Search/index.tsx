@@ -274,7 +274,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   const showCachedResultsOnError = error && fallbackResults && !objectIsEmpty(fallbackResults);
   const resultsToDisplay = showCachedResultsOnError ? fallbackResults : results;
 
-  // Helper function to reset STAC state for a fresh search
+  // Reset STAC state for a fresh search
   const resetStacState = React.useCallback((projectName = '') => {
     clearCachedStacBatches();
     setStacLoadedBatches({ ...EMPTY_STAC_BATCHES, projectName });
@@ -282,7 +282,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     lastPreloadedBatchRef.current = -1;
   }, []);
 
-  // Helper function to clear all caches
+  // Clear all caches and reset background fetch state
   const clearAllCaches = React.useCallback(() => {
     setCachedResults(undefined);
     clearCachedSearchResults();
@@ -381,10 +381,9 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         const cached = getCachedStacBatches();
         const cachedURL = cached?.searchURL || '';
 
-        // Run search if no results OR if URL changed
         if (!hasStacResults || currentRequestURL !== cachedURL) {
-          setIsBackgroundFetch(false); // Reset background fetch for new search
-          lastPreloadedBatchRef.current = -1; // Reset preload tracking for new search
+          setIsBackgroundFetch(false);
+          lastPreloadedBatchRef.current = -1;
           run(currentRequestURL);
         }
       } else {
@@ -426,8 +425,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         setParsedFacets(facets);
       }
 
-      // STAC: accumulate batches with cursor pagination
-      if (currentProject.isSTAC && results.stac && results.search) {
+      // STAC: accumulate batches only when receiving new data from API
+      if (currentProject.isSTAC && data && results.stac && results.search) {
         const stacResponse = results as StacResponse;
         const { links, features } = stacResponse.search;
 
@@ -464,7 +463,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         });
       }
     }
-  }, [results]);
+  }, [results, data]);
 
   React.useEffect(() => {
     if (!objectIsEmpty(parsedFacets)) {

@@ -516,13 +516,14 @@ export const generateSearchURLQuery = (
 
   const replicaParam = convertResultTypeToReplicaParam(resultType);
 
-  // The base params include facet fields to return for each dataset and the pagination options
   const facetsUrl =
     'facetsUrl' in project && typeof project.facetsUrl === 'string'
       ? project.facetsUrl
       : 'offset=0&limit=0';
-  // For STAC projects, don't update pagination params since pagination is client-side
-  let baseParams = isSTAC ? `${facetsUrl}&` : updatePaginationParams(facetsUrl, pagination);
+  // STAC uses fixed batch size for client-side pagination; non-STAC uses server-side pagination
+  let baseParams = isSTAC
+    ? `${facetsUrl.replace('limit=0', `limit=${STAC_BATCH_SIZE}`)}&`
+    : updatePaginationParams(facetsUrl, pagination);
 
   if (versionType === 'latest') {
     baseParams += `latest=true&`;
