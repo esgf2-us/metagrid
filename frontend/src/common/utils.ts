@@ -151,11 +151,54 @@ export const getCurrentAppPage = (): AppPage => {
   return AppPage.Unknown;
 };
 
-/** Creates a route that will access the JSON search results */
-export const createSearchRouteURL = (url: string): string => {
-  const { searchParams } = new URL(url);
+/**
+ * Creates a route that will access the JSON search results
+ * @param url - The internal search URL
+ * @param stacFilter - Optional STAC filter object (required for STAC searches)
+ */
+export const createSearchRouteURL = (
+  url: string,
+  stacFilter?: { op: string; args: unknown } | null,
+): string => {
+  // Detect if this is a STAC search URL
+  const isStacUrl = url.includes('/stac/search');
 
-  return `${window.METAGRID.SEARCH_URL}?${searchParams.toString()}`;
+  const urlObj = new URL(url);
+  const { searchParams } = urlObj;
+
+  if (!isStacUrl) {
+    return `${window.METAGRID.SEARCH_URL}?${searchParams.toString()}`;
+  }
+
+  // STAC: Convert to external STAC API format
+  const newParams = new URLSearchParams();
+
+  // Get project name from project_id parameter
+  const projectId = searchParams.get('project_id');
+  if (projectId) {
+    newParams.set('collections', projectId);
+  }
+
+  // Get limit (remove offset as STAC API doesn't use it, uses token-based pagination instead)
+  const limit = searchParams.get('limit');
+  if (limit) {
+    newParams.set('limit', limit);
+  }
+
+  // Add STAC filter if provided
+  if (stacFilter) {
+    // URL-encode the filter object as JSON
+    newParams.set('filter', JSON.stringify(stacFilter));
+    newParams.set('filter-lang', 'cql2-json');
+  }
+
+  // Handle text search query parameter
+  const query = searchParams.get('query');
+  if (query && query !== '*') {
+    newParams.set('q', query);
+  }
+
+  return `${window.METAGRID.STAC_URL}/search?${newParams.toString()}`;
 };
 
 /**

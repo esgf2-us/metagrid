@@ -104,6 +104,8 @@ const styles: CSSinJS = {
   },
 };
 
+const MAX_RESULTS = 10000;
+
 export type Props = {
   onUpdateCart: (selectedItems: RawSearchResults, operation: 'add' | 'remove') => void;
 };
@@ -787,18 +789,20 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
       const stacDocs = projectMatches ? stacLoadedBatches.results : [];
       const loadedCount = stacDocs.length;
+      const clampedTotal = Math.min(stacLoadedBatches.totalMatched || loadedCount, MAX_RESULTS);
       return {
         docs: stacDocs,
         numMatched: stacLoadedBatches.totalMatched || loadedCount,
-        paginationTotal: loadedCount,
+        paginationTotal: Math.min(loadedCount, clampedTotal),
       };
     }
 
     if (resultsToDisplay.response) {
       const { docs: responseDocs, numFound } = (resultsToDisplay as LoadedResults).response;
+      const clampedTotal = Math.min(numFound, MAX_RESULTS);
       return {
         numMatched: numFound,
-        paginationTotal: numFound,
+        paginationTotal: clampedTotal,
         docs: responseDocs.map((doc) => ({ ...doc, isStac: false })),
       };
     }
@@ -1159,10 +1163,12 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
               <Table
                 loading={isLoading && !isBackgroundFetch}
                 results={docs}
-                totalResults={currentProject.isSTAC ? paginationTotal : numMatched}
+                totalResults={paginationTotal}
                 currentPage={paginationOptions.page}
+                pageSize={paginationOptions.pageSize}
+                showQuickJumper={!currentProject.isSTAC}
+                showLessItems={currentProject.isSTAC}
                 filenameVars={activeSearchQuery.filenameVars}
-                isStac={currentProject.isSTAC}
                 onUpdateCart={onUpdateCart}
                 onRowSelect={handleRowSelect}
                 onPageChange={handlePageChange}
