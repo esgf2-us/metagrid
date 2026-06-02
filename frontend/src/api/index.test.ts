@@ -1,6 +1,5 @@
 import {
   addUserSearchQuery,
-  convertResultTypeToReplicaParam,
   deleteUserSearchQuery,
   fetchDatasetCitation,
   fetchDatasetFiles,
@@ -28,7 +27,7 @@ import {
   updateUserCart,
 } from '.';
 import { STAC_PROJECTS, generateWgetScriptSTAC } from '../common/STAC';
-import { downloadFileForUser } from '../common/utils';
+import { convertResultTypeToReplicaParam, downloadFileForUser } from '../common/utils';
 import { ActiveSearchQuery, Pagination, RawCitation, ResultType } from '../components/Search/types';
 import { mockConfig } from '../test/testFunctions';
 import {
@@ -128,7 +127,20 @@ describe('test fetching projects', () => {
   it('returns projects including STAC projects', async () => {
     const projects = (await fetchProjects()).results;
 
-    expect(projects).toEqual([...projectsFixture(), ...STAC_PROJECTS]);
+    // Check that we have backend projects + STAC projects
+    expect(projects.length).toBe(projectsFixture().length + STAC_PROJECTS.length);
+    // Check backend project names are present
+    projectsFixture().forEach((backendProj) => {
+      expect(projects.find((p) => p.name === backendProj.name)).toBeDefined();
+    });
+    // Check that all STAC projects are present (they may be renamed)
+    STAC_PROJECTS.forEach((stacProj) => {
+      // Find by either original name or renamed (without " STAC" suffix)
+      const possibleNames = [stacProj.name, stacProj.name.replace(' STAC', '')];
+      const found = projects.find((p) => possibleNames.includes(p.name) && p.isSTAC);
+      expect(found).toBeDefined();
+      expect(found?.isSTAC).toBe(true);
+    });
   });
 
   it('returns projects without including STAC projects', async () => {
@@ -164,8 +176,94 @@ describe('test fetching projects', () => {
 
     const projects = (await fetchProjects()).results;
 
-    // When backend returns no results, fetchProjects should return only the additional STAC_PROJECTS
-    expect(projects).toEqual([...STAC_PROJECTS]);
+    // When backend returns no results, fetchProjects should return only STAC projects
+    expect(projects.length).toBe(STAC_PROJECTS.length);
+    STAC_PROJECTS.forEach((stacProj) => {
+      // Find by either original name or renamed (without " STAC" suffix)
+      const possibleNames = [stacProj.name, stacProj.name.replace(' STAC', '')];
+      const found = projects.find((p) => possibleNames.includes(p.name) && p.isSTAC);
+      expect(found).toBeDefined();
+      expect(found?.isSTAC).toBe(true);
+    });
+  });
+
+  it('replaces legacy project name when STAC project exists but legacy is blacklisted', async () => {
+    // Ensure STAC inclusion is enabled
+    window.METAGRID.STAC_URL = 'https://stac.example';
+
+    // Create config that blacklists CMIP6 but not CMIP6 STAC
+    const config = {
+      additionalProjects: [],
+      whitelist: [],
+      blacklist: ['CMIP6'],
+    };
+
+    const projects = (await fetchProjects(config)).results;
+
+    // CMIP6 should be filtered out
+    const legacyCMIP6 = projects.find((p) => p.name === 'CMIP6' && !p.isSTAC);
+    expect(legacyCMIP6).toBeUndefined();
+
+    // CMIP6 STAC should exist and be renamed to just "CMIP6"
+    const stacCMIP6 = projects.find((p) => p.name === 'CMIP6' && p.isSTAC);
+    expect(stacCMIP6).toBeDefined();
+    expect(stacCMIP6?.isSTAC).toBe(true);
+  });
+
+  it('keeps STAC suffix when both legacy and STAC projects are present', async () => {
+    // Ensure STAC inclusion is enabled
+    window.METAGRID.STAC_URL = 'https://stac.example';
+
+    // Mock backend to include a legacy CMIP6 project
+    server.use(
+      rest.get(apiRoutes.projects.path, (_req, res, ctx) =>
+        res(
+          ctx.status(200),
+          ctx.json({
+            results: [
+              ...projectsFixture(),
+              { pk: '4', name: 'CMIP6', fullName: 'CMIP6 Legacy', isSTAC: false },
+            ],
+          }),
+        ),
+      ),
+    );
+
+    // No blacklist - both CMIP6 and CMIP6 STAC should be present
+    const config = {
+      additionalProjects: [],
+      whitelist: [],
+      blacklist: [],
+    };
+
+    const projects = (await fetchProjects(config)).results;
+
+    // Both should exist
+    const legacyCMIP6 = projects.find((p) => p.name === 'CMIP6' && !p.isSTAC);
+    const stacCMIP6 = projects.find((p) => p.name === 'CMIP6 STAC' && p.isSTAC);
+
+    expect(legacyCMIP6).toBeDefined();
+    expect(stacCMIP6).toBeDefined();
+    expect(stacCMIP6?.name).toBe('CMIP6 STAC'); // Name should keep " STAC" suffix
+  });
+
+  it('replaces legacy project name when using whitelist that excludes legacy', async () => {
+    // Ensure STAC inclusion is enabled
+    window.METAGRID.STAC_URL = 'https://stac.example';
+
+    // Whitelist only includes CMIP6 STAC, not legacy CMIP6
+    const config = {
+      additionalProjects: [],
+      whitelist: ['CMIP6 STAC'],
+      blacklist: [],
+    };
+
+    const projects = (await fetchProjects(config)).results;
+
+    // Should only have CMIP6 STAC, renamed to CMIP6
+    expect(projects.length).toBe(1);
+    expect(projects[0].name).toBe('CMIP6');
+    expect(projects[0].isSTAC).toBe(true);
   });
 });
 

@@ -127,7 +127,7 @@ frontend
 ├── tsconfig.json
 ├── vite.config.js
 ├── vitest.config.ts
-└── yarn.lock
+└── pnpm-lock.yaml
 ```
 
 - `Dockerfile` - The Dockerfile used by docker compose for the frontend
@@ -160,7 +160,7 @@ frontend
 - `.prettierrc` - configuration file for prettier
 - `tsconfig.json` - configuration file for TypeScript
 - `vitest.config.ts` - configuration file for Vitest test runner
-- `yarn.lock` - the purpose of a lock file is to lock down the versions of the dependencies specified in a package.json file. This means that in a yarn.lock file, there is an identifier for every dependency and sub dependency that is used for a project
+- `pnpm-lock.yaml` - the purpose of a lock file is to lock down the versions of the dependencies specified in a package.json file. This lock file uses YAML format and ensures all dependencies and sub-dependencies are at exact versions across all environments
 
 ### React Components
 
@@ -223,7 +223,7 @@ Run a command inside the docker container:
 docker compose run --rm react [command]
 ```
 
-### `yarn start`
+### `pnpm start`
 
 Runs the app in the development mode using the Vite dev server<br />
 Open <http://localhost:9443> to view it in the browser.
@@ -231,31 +231,31 @@ Open <http://localhost:9443> to view it in the browser.
 The page will reload if you make edits.<br />
 You will also see any lint errors in the console.
 
-### `yarn test`
+### `pnpm test`
 
 Launches the Vitest test runner for a single run without coverage report.<br />
 See the [Vitest documentation](https://vitest.dev/) for more information.
 
-### `yarn test:coverage`
+### `pnpm test:coverage`
 
 Launches the Vitest test runner for a single run with coverage reporting.<br />
 See the [Vitest coverage documentation](https://vitest.dev/guide/coverage) for more information.
 
-### `yarn test:watch`
+### `pnpm test:watch`
 
 Launches the Vitest test runner in the interactive watch mode.<br />
 See the [Vitest documentation](https://vitest.dev/) for more information.
 
-### `yarn lint`
+### `pnpm lint`
 
 Runs linters to display violations.<br />
 
-### `yarn precommit`
+### `pnpm precommit`
 
 Runs linters against staged git files and attempts to fix as many issues as possible.<br />
 https://github.com/okonet/lint-staged
 
-### `yarn run build`
+### `pnpm build`
 
 Builds the app for production using Vite.<br />
 It correctly bundles React in production mode and optimizes the build for the best performance.

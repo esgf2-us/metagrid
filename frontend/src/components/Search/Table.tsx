@@ -12,7 +12,7 @@ import { TablePaginationConfig, TableProps } from 'antd/lib/table';
 import React, { useCallback } from 'react';
 import { useAtomValue, useAtom } from 'jotai';
 import stacIcon from '../../assets/img/STAC-favicon.png';
-import { fetchWgetScript, ResponseError } from '../../api';
+import { fetchWgetScript, ResponseError, STAC_BATCH_SIZE } from '../../api';
 import {
   createEsgpullCommand,
   formatBytes,
@@ -52,8 +52,10 @@ export type Props = {
   canDisableRows?: boolean;
   results: RawSearchResults | [];
   totalResults?: number;
+  currentPage?: number;
   selections?: RawSearchResults | [];
   filenameVars?: TextInputs | [];
+  isStac?: boolean;
   onUpdateCart: (item: RawSearchResults, operation: 'add' | 'remove') => void;
   onRowSelect?: (selectedRows: RawSearchResults | []) => void;
   onPageChange?: (page: number, pageSize: number) => void;
@@ -74,8 +76,10 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
   canDisableRows = true,
   results,
   totalResults,
+  currentPage,
   selections,
   filenameVars,
+  isStac = false,
   onUpdateCart,
   onRowSelect,
   onPageChange,
@@ -139,6 +143,10 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
     cachedPage = pagination.page;
     cachedSize = pagination.pageSize;
   }
+
+  // Use prop if provided, otherwise fall back to cache
+  const safePage = currentPage ?? cachedPage ?? 1;
+  const safeSize = cachedSize ?? 10;
 
   // Clamp the results count to a maximum of 10,000
   const clampedResultCount = totalResults ? Math.min(totalResults, MAX_RESULTS) : undefined;
@@ -251,20 +259,46 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
     }
   };
 
+  // For STAC: calculate which batch we're in (safePage and safeSize defined above)
+  const currentBatch = isStac ? Math.floor(((safePage - 1) * safeSize) / STAC_BATCH_SIZE) : 0;
+
   const tableConfig = {
     size: 'small' as SizeType,
     loading,
     pagination: {
       total: clampedResultCount,
-      current: cachedPage,
-      pageSize: cachedSize,
+      current: safePage,
+      pageSize: safeSize,
       position: ['bottomCenter'],
       showSizeChanger: {
         optionRender: renderPageSizeOption,
       },
-      onChange: (page: number, pageSize: number) => onPageChange && onPageChange(page, pageSize),
-      onShowSizeChange: (_current: number, size: number) =>
-        onPageSizeChange && onPageSizeChange(size),
+      // showPrevNextJumpers: !isStac,
+      showQuickJumper: !isStac,
+      showLessItems: isStac, // For STAC: hide "..." and far-ahead page numbers
+      onChange: (page: number, pageSize: number) => {
+        if (!onPageChange) return;
+
+        if (isStac) {
+          // For STAC, check if clicking on a page outside current batch
+          const pageBatch = Math.floor(((page - 1) * pageSize) / STAC_BATCH_SIZE);
+          if (pageBatch !== currentBatch) {
+            // Switching batches - trigger fetch
+            onPageChange(page, pageSize);
+          } else {
+            // Same batch - just update page (client-side pagination)
+            onPageChange(page, pageSize);
+          }
+        } else {
+          // Non-STAC: pass through directly
+          onPageChange(page, pageSize);
+        }
+      },
+      onShowSizeChange: (_current: number, size: number) => {
+        if (onPageSizeChange) {
+          onPageSizeChange(size);
+        }
+      },
     } as TablePaginationConfig,
     expandable: {
       expandedRowRender: renderExpandedRow,
@@ -375,20 +409,22 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
       },
       sortOrder: sortedInfo.columnKey === 'title' ? sortedInfo.order : null,
       render: (title: string, record: RawSearchResult) => {
+        const displayTitle = `${title}`;
+
         if (record && record.retracted) {
           const msg =
             'IMPORTANT! This dataset has been retracted and is no longer available for download.';
           return (
             <div className={topDataRowTargets.datasetTitle.class()}>
               <p>
-                <span style={{ textDecoration: 'line-through' }}>{title}</span>
+                <span style={{ textDecoration: 'line-through' }}>{displayTitle}</span>
                 <br />
                 <span style={{ color: 'red' }}>{msg}</span>
               </p>
             </div>
           );
         }
-        return <div className={topDataRowTargets.datasetTitle.class()}>{title}</div>;
+        return <div className={topDataRowTargets.datasetTitle.class()}>{displayTitle}</div>;
       },
     },
     {
