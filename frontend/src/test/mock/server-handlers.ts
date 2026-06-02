@@ -180,8 +180,25 @@ const handlers = [
   rest.get(apiRoutes.esgfSearchSTAC.path, async (_req, res, ctx) => {
     return res(ctx.status(200), ctx.json(stacSearchResultsFixture()));
   }),
+  rest.post(apiRoutes.esgfSearchSTAC.path, async (_req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(stacSearchResultsFixture().search));
+  }),
   rest.get(apiRoutes.esgfAggregationsSTAC.path, async (_req, res, ctx) => {
     return res(ctx.status(200), ctx.json(stacAggregationsFixture()));
+  }),
+  rest.post(apiRoutes.esgfAggregationsSTAC.path, async (_req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(stacAggregationsFixture()));
+  }),
+  rest.get('/projects/projects.json', async (_req, res, ctx) => {
+    // Return a valid empty config (tests will use default projects)
+    return res(
+      ctx.status(200),
+      ctx.json({
+        additionalProjects: [],
+        whitelist: [],
+        blacklist: [],
+      }),
+    );
   }),
   // Default fallback handler
   rest.get('*', async (req, res, ctx) => {

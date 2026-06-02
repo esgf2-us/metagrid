@@ -26,16 +26,22 @@ import weekday from 'dayjs/plugin/weekday';
 import weekOfYear from 'dayjs/plugin/weekOfYear';
 import weekYear from 'dayjs/plugin/weekYear';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useAtom, useAtomValue } from 'jotai';
 import { CSSinJS } from '../../common/types';
 import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
 import { ActiveSearchQuery, ResultType, VersionType } from '../Search/types';
 import { ActiveFacets, ParsedFacets } from './types';
-import { clearCachedSearchResults, showError, showNotice } from '../../common/utils';
-import { activeSearchQueryAtom, availableFacetsAtom, currentProjectAtom } from '../../common/atoms';
+import { objectIsEmpty, showError, showNotice } from '../../common/utils';
+import {
+  activeSearchQueryAtom,
+  availableFacetsAtom,
+  currentProjectAtom,
+  currentRequestQueryAtom,
+} from '../../common/atoms';
 import { leftSidebarTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
+import { getAggregationsList, stringifyApiRequest } from '../../common/STAC';
 
 dayjs.extend(customParseFormat);
 dayjs.extend(advancedFormat);
@@ -124,46 +130,52 @@ export const generateFacetOptions = (
     return generateStacFacetOptions(facet, facetOptions as string[]);
   }
 
-  return facetOptions.map((variable) => {
-    /* istanbul ignore next -- @preserve */
-    if (typeof variable[0] !== 'string') {
-      clearCachedSearchResults();
-    }
-    let optionOutput: string | React.ReactNode = (
-      <>
-        {variable[0]}
-        <span style={styles.facetCount}>({variable[1]})</span>
-      </>
-    );
-
-    // If the option output name is very long, use a tooltip
-    const vLength = variable[0].length - 2;
-    const cLength = variable[1].toString().length * 1.5 + 2;
-    /* istanbul ignore next -- @preserve */
-    if (vLength > maxItemLength - cLength) {
-      const innerTitle = variable[0].substring(0, maxItemLength - cLength);
-      optionOutput = (
-        <Tooltip styles={{ body: { width: 'max-content' } }} title={variable[0]}>
-          {innerTitle}...
-          <span style={styles.facetCount}>({variable[1]})</span>
-        </Tooltip>
+  return facetOptions
+    .filter((variable) => {
+      // Filter out invalid entries - must have string name and valid count
+      return (
+        variable &&
+        variable.length >= 2 &&
+        typeof variable[0] === 'string' &&
+        variable[1] !== undefined
       );
-    }
-
-    // The data node facet has a unique tooltip overlay to show the status of the highlighted node
-    if (facet === 'data_node') {
-      optionOutput = (
-        <StatusToolTip dataNode={variable[0]}>
+    })
+    .map((variable) => {
+      let optionOutput: string | React.ReactNode = (
+        <>
+          {variable[0]}
           <span style={styles.facetCount}>({variable[1]})</span>
-        </StatusToolTip>
+        </>
       );
-    }
-    return {
-      key: variable[0],
-      value: variable[0],
-      label: <span data-testid={`${facet}_${variable[0]}`}>{optionOutput}</span>,
-    };
-  });
+
+      // If the option output name is very long, use a tooltip
+      const vLength = variable[0].length - 2;
+      const cLength = variable[1].toString().length * 1.5 + 2;
+      /* istanbul ignore next -- @preserve */
+      if (vLength > maxItemLength - cLength) {
+        const innerTitle = variable[0].substring(0, maxItemLength - cLength);
+        optionOutput = (
+          <Tooltip styles={{ body: { width: 'max-content' } }} title={variable[0]}>
+            {innerTitle}...
+            <span style={styles.facetCount}>({variable[1]})</span>
+          </Tooltip>
+        );
+      }
+
+      // The data node facet has a unique tooltip overlay to show the status of the highlighted node
+      if (facet === 'data_node') {
+        optionOutput = (
+          <StatusToolTip dataNode={variable[0]}>
+            <span style={styles.facetCount}>({variable[1]})</span>
+          </StatusToolTip>
+        );
+      }
+      return {
+        key: variable[0],
+        value: variable[0],
+        label: <span data-testid={`${facet}_${variable[0]}`}>{optionOutput}</span>,
+      };
+    });
 };
 
 const FacetsForm: React.FC = () => {
@@ -172,6 +184,7 @@ const FacetsForm: React.FC = () => {
     useAtom<ActiveSearchQuery>(activeSearchQueryAtom);
 
   const currentProject = useAtomValue(currentProjectAtom);
+  const currentRequestURL = useAtomValue(currentRequestQueryAtom);
 
   // Local variables
   const [messageApi, contextHolder] = message.useMessage();
@@ -217,6 +230,26 @@ const FacetsForm: React.FC = () => {
     minVersionDate ? formatDate(minVersionDate, false) : (minVersionDate as null),
     maxVersionDate ? formatDate(maxVersionDate, false) : (maxVersionDate as null),
   ];
+
+  // Generate aggregations query string for STAC projects
+  const aggregationsQueryString = useMemo(() => {
+    if (!currentProject.isSTAC || !currentProject.projectName || !currentRequestURL) {
+      return '';
+    }
+
+    const aggregationsList = getAggregationsList(currentProject.projectName);
+    return stringifyApiRequest(
+      currentProject,
+      currentRequestURL,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      aggregationsList,
+    );
+  }, [currentProject, currentRequestURL]);
 
   // const handleOnFinishFilenameVarForm = (values: { [key: string]: string }): void => {
   //   if (activeSearchQuery.filenameVars.includes(values.filenameVar as never)) {
@@ -395,13 +428,13 @@ const FacetsForm: React.FC = () => {
     }, 0); // Initialize maxLength to 0
   }
 
-  const generateFacetGroups = (): {
+  const generateFacetGroups = useMemo((): {
     key: string;
     label: JSX.Element;
     className: string;
     children: (JSX.Element | null)[];
   }[] => {
-    if (!facetsByGroup) {
+    if (!facetsByGroup || objectIsEmpty(facetsByGroup) || objectIsEmpty(availableFacets)) {
       return [];
     }
     return Object.keys(facetsByGroup).map((group) => {
@@ -503,7 +536,7 @@ const FacetsForm: React.FC = () => {
         }),
       };
     });
-  };
+  }, [activeSearchQuery.project.facetsByGroup, availableFacets, messageApi]);
 
   return (
     <div data-testid="facets-form">
@@ -542,7 +575,33 @@ const FacetsForm: React.FC = () => {
         )}
         <Row justify="end" gutter={8}>
           <Col span={16}>
-            <h3>Filter with Facets</h3>
+            <h3>
+              Filter with Facets
+              {currentProject.isSTAC && aggregationsQueryString && (
+                <Tooltip
+                  title={
+                    <Space direction="horizontal" size="small">
+                      <span>Copy STAC aggregate request:</span>
+                      <Button
+                        size="small"
+                        icon={<CopyOutlined />}
+                        onClick={() => {
+                          if (navigator && navigator.clipboard) {
+                            navigator.clipboard.writeText(aggregationsQueryString);
+                            showNotice(messageApi, 'Aggregations query copied to clipboard!');
+                          }
+                        }}
+                      />
+                    </Space>
+                  }
+                  placement="right"
+                >
+                  <InfoCircleOutlined
+                    style={{ marginLeft: '8px', fontSize: '14px', cursor: 'pointer' }}
+                  />
+                </Tooltip>
+              )}
+            </h3>
           </Col>
           <Col span={8} style={{ textAlign: 'right' }}>
             {expandAll ? (
@@ -587,7 +646,7 @@ const FacetsForm: React.FC = () => {
                 setExpandAll(false);
               }
             }}
-            items={generateFacetGroups()}
+            items={generateFacetGroups}
           />
         </div>
       </Form>

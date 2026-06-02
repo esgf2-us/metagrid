@@ -732,9 +732,10 @@ describe('User search library', () => {
     // Wait for components to rerender
     await screen.findByTestId('search');
 
-    // Open copy dropdown
-    const copyDropDownIcon = await screen.findByRole('img', { name: 'copy' });
-    await userEvent.click(copyDropDownIcon);
+    // Open copy dropdown - use getAllByRole since there may be multiple copy icons
+    const copyIcons = await screen.findAllByRole('img', { name: 'copy' });
+    // Click the first one which should be the dropdown trigger
+    await userEvent.click(copyIcons[0]);
 
     // Check Save Search button exists and click it
     const copySearch = await screen.findByTestId('share-search-btn');
