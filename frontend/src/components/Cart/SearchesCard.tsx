@@ -67,9 +67,11 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
       })
     : null;
 
-  const { data, isLoading, error } = useAsync({
-    promiseFn: numResultsUrl ? fetchSearchResults : undefined,
-    reqUrl: numResultsUrl,
+  const { data, isLoading, error } = useAsync<{ [key: string]: unknown }>({
+    promiseFn: numResultsUrl
+      ? (props) => fetchSearchResults(props as { reqUrl: string })
+      : undefined,
+    reqUrl: numResultsUrl || undefined,
   });
 
   // Update the search query with the results count if it was fetched

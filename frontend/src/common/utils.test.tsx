@@ -520,6 +520,8 @@ describe('Test localStorageEffect', () => {
 
 describe('Test createSearchRouteURL', () => {
   window.METAGRID.SEARCH_URL = 'https://example.com';
+  window.METAGRID.STAC_URL = 'https://stac.example.com';
+
   it('returns the correct URL with search parameters', () => {
     const url = 'https://example.com/path?param1=value1&param2=value2';
     const result = createSearchRouteURL(url);
@@ -536,6 +538,44 @@ describe('Test createSearchRouteURL', () => {
     const url = 'https://example.com/search?param1=value1&param2=value2&param3=value3';
     const result = createSearchRouteURL(url);
     expect(result).toBe('https://example.com?param1=value1&param2=value2&param3=value3');
+  });
+
+  it('converts STAC URL to external STAC API format with filter', () => {
+    const url =
+      'https://example.com/stac/search?offset=0&limit=100&project_id=CMIP6&latest=true&mip_era=CMIP6';
+    const result = createSearchRouteURL(url);
+
+    // Parse the result URL to check components
+    const resultUrl = new URL(result);
+    expect(resultUrl.origin + resultUrl.pathname).toBe('https://stac.example.com/search');
+    expect(resultUrl.searchParams.get('collections')).toBe('CMIP6');
+    expect(resultUrl.searchParams.get('limit')).toBe('100');
+    expect(resultUrl.searchParams.get('filter-lang')).toBe('cql2-json');
+
+    // Check that filter parameter exists and is valid JSON
+    const filterParam = resultUrl.searchParams.get('filter');
+    expect(filterParam).toBeTruthy();
+    const filter = JSON.parse(filterParam as string);
+    expect(filter).toHaveProperty('op');
+    expect(filter).toHaveProperty('args');
+  });
+
+  it('converts STAC URL with text query', () => {
+    const url = 'https://example.com/stac/search?project_id=CMIP6&limit=100&query=test';
+    const result = createSearchRouteURL(url);
+
+    const resultUrl = new URL(result);
+    expect(resultUrl.searchParams.get('collections')).toBe('CMIP6');
+    expect(resultUrl.searchParams.get('q')).toBe('test');
+  });
+
+  it('excludes offset parameter for STAC URLs', () => {
+    const url = 'https://example.com/stac/search?offset=100&limit=100&project_id=CMIP6';
+    const result = createSearchRouteURL(url);
+
+    const resultUrl = new URL(result);
+    expect(resultUrl.searchParams.has('offset')).toBe(false);
+    expect(resultUrl.searchParams.get('limit')).toBe('100');
   });
 });
 
