@@ -108,7 +108,7 @@ function toggleLocalContainers() {
 function installPackagesForLocalDev() {
     clear
     pip install -r backend/requirements/local.txt
-    yarn install --cwd frontend
+    pnpm install --dir frontend
     echo "Packages installed"
 }
 
@@ -273,7 +273,7 @@ function runBackendTests() {
 function runFrontendTests() {
     clear
     cd frontend
-    if ! yarn run test; then
+    if ! pnpm test; then
         echo "Some frontend tests failed!"
         cd ..
         return 1

@@ -5,7 +5,7 @@ import { message } from 'antd';
 import { Provider, useAtom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
 import { vi } from 'vitest';
-import { rawProjectFixture } from '../test/mock/fixtures';
+import { rawProjectFixture, activeSearchQueryFixture } from '../test/mock/fixtures';
 import { UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
 import { ActiveSearchQuery, RawSearchResult, RawSearchResults } from '../components/Search/types';
 import {
@@ -41,6 +41,7 @@ import {
   setStartupMessageAsSeen,
   searchAlreadyExists,
   downloadFileForUser,
+  identifyProblematicFacets,
 } from './utils';
 import { AppPage } from './types';
 import { mockConfig } from '../test/testFunctions';
@@ -553,14 +554,102 @@ describe('Test compressData and decompressData', () => {
     const decompressed = decompressData<typeof obj>(compressed);
     expect(decompressed).toEqual(obj);
   });
+
+  it('should handle compression of invalid data', () => {
+    // Circular reference that can't be JSON.stringified
+    const circularData: any = { a: 1 };
+    circularData.self = circularData;
+
+    expect(() => {
+      compressData(circularData);
+    }).toThrow();
+  });
+
+  it('should return null for decompression of invalid string', () => {
+    // LZString.decompress returns null for invalid input, JSON.parse(null) = null
+    const result = decompressData('not-a-compressed-string');
+    expect(result).toBeNull();
+  });
+
+  it('should return null for decompression of empty string', () => {
+    // decompress('') returns null, JSON.parse(null) = null
+    const result = decompressData('');
+    expect(result).toBeNull();
+  });
+
+  it('should return null for decompression of corrupted base64', () => {
+    // LZString returns null for invalid base64, JSON.parse(null) = null
+    const result = decompressData('!!!invalid-base64!!!');
+    expect(result).toBeNull();
+  });
+
+  it('should handle compression of large datasets', () => {
+    const largeData = {
+      items: new Array(1000).fill({ id: 1, name: 'test', data: 'sample data' }),
+    };
+
+    const compressed = compressData(largeData);
+    expect(compressed).toBeTruthy();
+
+    const decompressed = decompressData<typeof largeData>(compressed);
+    expect(decompressed.items).toHaveLength(1000);
+  });
+
+  it('should handle compression of empty objects', () => {
+    const emptyData = {};
+
+    const compressed = compressData(emptyData);
+    expect(compressed).toBeTruthy();
+
+    const decompressed = decompressData(compressed);
+    expect(decompressed).toEqual(emptyData);
+  });
+
+  it('should handle compression of null values', () => {
+    const dataWithNull = { value: null };
+
+    const compressed = compressData(dataWithNull);
+    const decompressed = decompressData(compressed);
+
+    expect(decompressed).toEqual(dataWithNull);
+  });
+
+  it('should handle compression of arrays', () => {
+    const arrayData = [1, 2, 3, 'four', { five: 5 }];
+
+    const compressed = compressData(arrayData);
+    const decompressed = decompressData(compressed);
+
+    expect(decompressed).toEqual(arrayData);
+  });
+
+  it('should handle compression of special characters', () => {
+    const specialData = {
+      text: 'Special chars: é, ñ, 中文, emoji: 🎉',
+    };
+
+    const compressed = compressData(specialData);
+    const decompressed = decompressData(compressed);
+
+    expect(decompressed).toEqual(specialData);
+  });
 });
 
 describe('Test saveToLocalStorage and getFromLocalStorage', () => {
   const key = 'testLocalKey';
   const value = { a: 1, b: 2 };
+  const originalLocalStorage = global.localStorage;
 
   afterEach(() => {
-    localStorage.removeItem(key);
+    // Restore original localStorage if it was mocked
+    Object.defineProperty(global, 'localStorage', {
+      value: originalLocalStorage,
+      writable: true,
+    });
+    // Clean up only if localStorage exists
+    if (localStorage && localStorage.removeItem) {
+      localStorage.removeItem(key);
+    }
   });
 
   it('saves and retrieves JSON data', () => {
@@ -577,6 +666,137 @@ describe('Test saveToLocalStorage and getFromLocalStorage', () => {
 
   it('returns null if key does not exist', () => {
     expect(getFromLocalStorage('nonexistent')).toBeNull();
+  });
+
+  it('returns null for empty string from localStorage', () => {
+    const mockGetItem = vi.fn(() => '');
+
+    Object.defineProperty(global, 'localStorage', {
+      value: {
+        setItem: vi.fn(),
+        getItem: mockGetItem,
+        removeItem: vi.fn(),
+        clear: vi.fn(),
+        key: vi.fn(),
+        length: 0,
+      },
+      writable: true,
+    });
+
+    const result = getFromLocalStorage('empty-key');
+    expect(result).toBeNull();
+  });
+
+  it('returns null for corrupted compressed data (decompress returns null)', () => {
+    const mockGetItem = vi.fn(() => 'invalid-compressed-data');
+
+    Object.defineProperty(global, 'localStorage', {
+      value: {
+        setItem: vi.fn(),
+        getItem: mockGetItem,
+        removeItem: vi.fn(),
+        clear: vi.fn(),
+        key: vi.fn(),
+        length: 0,
+      },
+      writable: true,
+    });
+
+    // LZString.decompress returns null for invalid input, JSON.parse(null) returns null
+    const result = getFromLocalStorage('test-key', true);
+    expect(result).toBeNull();
+  });
+
+  describe('Error scenarios (documents current behavior)', () => {
+    it('should throw quota exceeded error (no current error handling)', () => {
+      // Mock localStorage to throw quota exceeded error
+      const mockSetItem = vi.fn(() => {
+        const error: any = new Error('QuotaExceededError');
+        error.name = 'QuotaExceededError';
+        throw error;
+      });
+
+      Object.defineProperty(global, 'localStorage', {
+        value: {
+          setItem: mockSetItem,
+          getItem: vi.fn(),
+          removeItem: vi.fn(),
+          clear: vi.fn(),
+          key: vi.fn(),
+          length: 0,
+        },
+        writable: true,
+      });
+
+      // Currently throws - documents that error handling could be improved
+      expect(() => {
+        saveToLocalStorage('test-key', { data: 'test' });
+      }).toThrow('QuotaExceededError');
+
+      expect(mockSetItem).toHaveBeenCalled();
+    });
+
+    it('should throw on corrupted JSON data (no current error handling)', () => {
+      const mockGetItem = vi.fn(() => '{invalid json}');
+
+      Object.defineProperty(global, 'localStorage', {
+        value: {
+          setItem: vi.fn(),
+          getItem: mockGetItem,
+          removeItem: vi.fn(),
+          clear: vi.fn(),
+          key: vi.fn(),
+          length: 0,
+        },
+        writable: true,
+      });
+
+      // Currently throws - documents that error handling could be improved
+      expect(() => {
+        getFromLocalStorage('test-key');
+      }).toThrow();
+
+      expect(mockGetItem).toHaveBeenCalledWith('test-key');
+    });
+
+    it('should throw when localStorage is undefined (no current error handling)', () => {
+      // Mock localStorage as undefined
+      Object.defineProperty(global, 'localStorage', {
+        value: undefined,
+        writable: true,
+      });
+
+      // Currently throws when localStorage is unavailable
+      expect(() => {
+        saveToLocalStorage('test-key', { data: 'test' });
+      }).toThrow();
+
+      expect(() => {
+        getFromLocalStorage('test-key');
+      }).toThrow();
+    });
+
+    it('should throw security errors (no current error handling)', () => {
+      const mockSetItem = vi.fn(() => {
+        throw new DOMException('SecurityError', 'SecurityError');
+      });
+
+      Object.defineProperty(global, 'localStorage', {
+        value: {
+          setItem: mockSetItem,
+          getItem: vi.fn(),
+          removeItem: vi.fn(),
+          clear: vi.fn(),
+          key: vi.fn(),
+          length: 0,
+        },
+        writable: true,
+      });
+
+      expect(() => {
+        saveToLocalStorage('test-key', { data: 'test' });
+      }).toThrow();
+    });
   });
 });
 
@@ -778,8 +998,9 @@ describe('createIntakeEsgfSearch', () => {
       textInputs: [],
     } as unknown as ActiveSearchQuery;
     const cmd = createIntakeEsgfSearch(searchQuery);
-    expect(cmd).toContain('from intake_esgf import ESGFCatalog');
-    expect(cmd).toContain('cat=ESGFCatalog()');
+    expect(cmd).toContain('import intake_esgf');
+    expect(cmd).toContain('from intake_esgf import supported_projects');
+    expect(cmd).toContain('cat=intake_esgf.ESGFCatalog()');
     expect(cmd).toContain('metagrid_search=cat.search(');
     expect(cmd).toContain("activity_id=['CFMIP', 'CDRMIP']");
     expect(cmd).toContain("experiment_id='piControl'");
@@ -927,5 +1148,323 @@ describe('Test downloadFileForUser', () => {
     removeChildSpy.mockRestore();
     clickSpy.mockRestore();
     setAttributeSpy.mockRestore();
+  });
+});
+
+describe('Test identifyProblematicFacets', () => {
+  it('should identify new facets that were not in last successful query', () => {
+    const lastSuccessfulQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1', 'value2'],
+      },
+    });
+
+    const currentQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1', 'value2'],
+        facet2: ['value3'], // New facet
+      },
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, lastSuccessfulQuery);
+
+    expect(problematic.has('facet2:value3')).toBe(true);
+    expect(problematic.size).toBe(1);
+  });
+
+  it('should identify new values in existing facets', () => {
+    const lastSuccessfulQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1'],
+      },
+    });
+
+    const currentQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1', 'value2'], // Added value2
+      },
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, lastSuccessfulQuery);
+
+    expect(problematic.has('facet1:value2')).toBe(true);
+    expect(problematic.has('facet1:value1')).toBe(false); // value1 was in successful query
+    expect(problematic.size).toBe(1);
+  });
+
+  it('should identify multiple problematic facets', () => {
+    const lastSuccessfulQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1'],
+      },
+    });
+
+    const currentQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1', 'value2'], // New value
+        facet2: ['value3'], // New facet
+        facet3: ['value4', 'value5'], // New facet with multiple values
+      },
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, lastSuccessfulQuery);
+
+    expect(problematic.has('facet1:value2')).toBe(true);
+    expect(problematic.has('facet2:value3')).toBe(true);
+    expect(problematic.has('facet3:value4')).toBe(true);
+    expect(problematic.has('facet3:value5')).toBe(true);
+    expect(problematic.size).toBe(4);
+  });
+
+  it('should return empty set when there are no problematic facets', () => {
+    const lastSuccessfulQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1', 'value2'],
+      },
+    });
+
+    const currentQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1', 'value2'], // Same as successful query
+      },
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, lastSuccessfulQuery);
+
+    expect(problematic.size).toBe(0);
+  });
+
+  it('should return empty set when lastSuccessfulQuery is null', () => {
+    const currentQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1'],
+      },
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, null);
+
+    expect(problematic.size).toBe(0);
+  });
+
+  it('should handle removed facets (should not mark as problematic)', () => {
+    const lastSuccessfulQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1'],
+        facet2: ['value2'],
+      },
+    });
+
+    const currentQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1'], // facet2 removed
+      },
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, lastSuccessfulQuery);
+
+    // Removing facets shouldn't be marked as problematic
+    expect(problematic.size).toBe(0);
+  });
+
+  it('should handle empty facets in current query', () => {
+    const lastSuccessfulQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1'],
+      },
+    });
+
+    const currentQuery = activeSearchQueryFixture({
+      activeFacets: {}, // All facets removed
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, lastSuccessfulQuery);
+
+    expect(problematic.size).toBe(0);
+  });
+
+  it('should handle empty facets in last successful query', () => {
+    const lastSuccessfulQuery = activeSearchQueryFixture({
+      activeFacets: {}, // No facets
+    });
+
+    const currentQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1'], // All facets are new
+      },
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, lastSuccessfulQuery);
+
+    expect(problematic.has('facet1:value1')).toBe(true);
+    expect(problematic.size).toBe(1);
+  });
+
+  it('should handle facets with array of values', () => {
+    const lastSuccessfulQuery = activeSearchQueryFixture({
+      activeFacets: {
+        experiment: ['historical'],
+      },
+    });
+
+    const currentQuery = activeSearchQueryFixture({
+      activeFacets: {
+        experiment: ['historical', 'rcp85', 'ssp585'], // Added two new values
+      },
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, lastSuccessfulQuery);
+
+    expect(problematic.has('experiment:rcp85')).toBe(true);
+    expect(problematic.has('experiment:ssp585')).toBe(true);
+    expect(problematic.has('experiment:historical')).toBe(false);
+    expect(problematic.size).toBe(2);
+  });
+
+  it('should be case-sensitive when comparing facet values', () => {
+    const lastSuccessfulQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1'],
+      },
+    });
+
+    const currentQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['Value1'], // Different case
+      },
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, lastSuccessfulQuery);
+
+    // Case difference should be treated as a new value
+    expect(problematic.has('facet1:Value1')).toBe(true);
+    expect(problematic.size).toBe(1);
+  });
+
+  it('should handle whitespace differences in facet values', () => {
+    const lastSuccessfulQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1'],
+      },
+    });
+
+    const currentQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: [' value1 '], // With extra whitespace
+      },
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, lastSuccessfulQuery);
+
+    // Whitespace difference should be treated as different
+    expect(problematic.has('facet1: value1 ')).toBe(true);
+    expect(problematic.size).toBe(1);
+  });
+
+  it('should handle special characters in facet names and values', () => {
+    const lastSuccessfulQuery = activeSearchQueryFixture({
+      activeFacets: {
+        'facet-with-dash': ['value.with.dots'],
+      },
+    });
+
+    const currentQuery = activeSearchQueryFixture({
+      activeFacets: {
+        'facet-with-dash': ['value.with.dots', 'value:with:colons'],
+      },
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, lastSuccessfulQuery);
+
+    expect(problematic.has('facet-with-dash:value:with:colons')).toBe(true);
+    expect(problematic.size).toBe(1);
+  });
+
+  it('should handle complex real-world CMIP6 scenario', () => {
+    const lastSuccessfulQuery = activeSearchQueryFixture({
+      project: rawProjectFixture({ name: 'CMIP6' }),
+      activeFacets: {
+        source_id: ['CESM2', 'GFDL-ESM4'],
+        experiment_id: ['historical'],
+        variable: ['tas'],
+        frequency: ['mon'],
+      },
+    });
+
+    const currentQuery = activeSearchQueryFixture({
+      project: rawProjectFixture({ name: 'CMIP6' }),
+      activeFacets: {
+        source_id: ['CESM2', 'GFDL-ESM4', 'INVALID-MODEL'], // Added invalid model
+        experiment_id: ['historical', 'ssp585'], // Added new experiment
+        variable: ['tas'],
+        frequency: ['mon'],
+        // realm removed, which is fine
+      },
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, lastSuccessfulQuery);
+
+    expect(problematic.has('source_id:INVALID-MODEL')).toBe(true);
+    expect(problematic.has('experiment_id:ssp585')).toBe(true);
+    expect(problematic.size).toBe(2);
+  });
+
+  it('should handle when current query has subset of successful facets', () => {
+    const lastSuccessfulQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1', 'value2', 'value3'],
+      },
+    });
+
+    const currentQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1', 'value2'], // Subset of successful values
+      },
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, lastSuccessfulQuery);
+
+    // Using a subset shouldn't be problematic
+    expect(problematic.size).toBe(0);
+  });
+
+  it('should correctly format facet identifiers with colon separator', () => {
+    const lastSuccessfulQuery = activeSearchQueryFixture({
+      activeFacets: {},
+    });
+
+    const currentQuery = activeSearchQueryFixture({
+      activeFacets: {
+        model: ['CESM2'],
+        institution: ['NCAR'],
+      },
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, lastSuccessfulQuery);
+
+    // Verify the format is "facetKey:facetValue"
+    const problematicArray = Array.from(problematic);
+    expect(problematicArray).toContain('model:CESM2');
+    expect(problematicArray).toContain('institution:NCAR');
+    expect(problematic.size).toBe(2);
+  });
+
+  it('should handle empty arrays for facet values', () => {
+    const lastSuccessfulQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: [],
+      },
+    });
+
+    const currentQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1'],
+      },
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, lastSuccessfulQuery);
+
+    // Empty array in last successful means value1 is new
+    expect(problematic.has('facet1:value1')).toBe(true);
+    expect(problematic.size).toBe(1);
   });
 });

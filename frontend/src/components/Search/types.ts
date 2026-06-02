@@ -1,5 +1,5 @@
 import { TableProps } from 'antd';
-import { ActiveFacets, RawProject } from '../Facets/types';
+import { ActiveFacets, ParsedFacets, RawProject } from '../Facets/types';
 
 export type TextInputs = string[];
 
@@ -74,6 +74,11 @@ export type StacLink = {
   rel: string;
   type: string;
   href: string;
+  body?: {
+    token?: string;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
 };
 
 export function isStacAsset(value: StacAssetDict | StacAsset): value is StacAsset {
@@ -147,8 +152,10 @@ export type StacFeature = {
 export type StacSearchResponse = {
   features: StacFeature[];
   links: StacLink[];
-  // numMatched: number; These were missing from search response
-  // numReturned: number;
+  numMatched?: number;
+  numberMatched?: number;
+  numReturned?: number;
+  numberReturned?: number;
   type: string;
   [key: string]: unknown;
 };
@@ -161,4 +168,10 @@ export type StacResponse = {
   facets: StacFacetsData;
   search: StacSearchResponse;
   stac: boolean;
+};
+
+export type CachedSearchData = {
+  results: Record<string, unknown> | undefined;
+  query: ActiveSearchQuery | null;
+  facets: ParsedFacets | Record<string, unknown>;
 };

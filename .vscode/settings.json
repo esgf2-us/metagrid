@@ -53,10 +53,10 @@
   // -----------------------------
   "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
   "eslint.workingDirectories": ["./frontend/"],
-  // Jest
+  // Vitest
   // -----------------------------
   "jest.rootPath": "./frontend/src",
-  "jest.jestCommandLine": "yarn jest",
+  "jest.jestCommandLine": "pnpm vitest",
   "jest.monitorLongRun": "off",
   "jest.enable": true,
   "jest.runMode": {

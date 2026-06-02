@@ -1,20 +1,20 @@
 import { Button, Tooltip, Typography } from 'antd';
 import React, { useEffect } from 'react';
 import { useAsync } from 'react-async';
-import { useAtom, useAtomValue } from 'jotai';
+import { useAtom } from 'jotai';
 import { fetchProjects, ResponseError } from '../../api';
-import { objectIsEmpty, projectBaseQuery } from '../../common/utils';
+import { projectBaseQuery } from '../../common/utils';
 import Divider from '../General/Divider';
 import FacetsForm from './FacetsForm';
 import ProjectForm from './ProjectForm';
 import { RawProject } from './types';
 import {
-  availableFacetsAtom,
   activeSearchQueryAtom,
   savedSearchQueryAtom,
   currentProjectAtom,
 } from '../../common/atoms';
 import { leftSidebarTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
+import { useProjectsConfig } from '../../common/useProjectsConfig';
 
 const styles = {
   form: {
@@ -23,11 +23,18 @@ const styles = {
 };
 
 const Facets: React.FC = () => {
-  const { data, error, isLoading } = useAsync(fetchProjects);
+  const { config: projectsConfig, loading: configLoading } = useProjectsConfig();
+  const { data, error, isLoading, run } = useAsync({
+    deferFn: () => fetchProjects(projectsConfig),
+  });
+
+  React.useEffect(() => {
+    if (!configLoading) {
+      run();
+    }
+  }, [configLoading]);
 
   const { Title } = Typography;
-
-  const availableFacets = useAtomValue(availableFacetsAtom);
 
   const [activeSearchQuery, setActiveSearchQuery] = useAtom(activeSearchQueryAtom);
 
@@ -74,7 +81,7 @@ const Facets: React.FC = () => {
       setCurProject(selectedProj);
       handleProjectChange(selectedProj);
     }
-  }, [isLoading]);
+  }, [isLoading, data]);
 
   return (
     <div
@@ -102,11 +109,9 @@ const Facets: React.FC = () => {
         </Tooltip>
       )}
       <Divider />
-      {!objectIsEmpty(availableFacets) && (
-        <div className={leftSidebarTargets.searchFacetsForm.class()}>
-          <FacetsForm />
-        </div>
-      )}
+      <div className={leftSidebarTargets.searchFacetsForm.class()}>
+        <FacetsForm />
+      </div>
     </div>
   );
 };

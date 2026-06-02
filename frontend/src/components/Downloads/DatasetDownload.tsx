@@ -248,8 +248,18 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
       const searchItems = props.stacResults.features.map((feature: StacFeature) =>
         convertStacToRawSearchResult(feature),
       );
+
+      // Build a map of item ID to selected node for wget
+      const nodeMap: Record<string, string> = {};
+      searchItems.forEach((item) => {
+        const node = getNodeChoiceForItem(item, 'wget');
+        if (node) {
+          nodeMap[item.id] = node;
+        }
+      });
+
       // Handle direct hrefs download
-      generateWgetScriptSTAC(searchItems, props.searchURL);
+      generateWgetScriptSTAC(searchItems, props.searchURL, nodeMap);
       setDownloadIsLoading(false);
       return;
     }

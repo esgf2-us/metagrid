@@ -18,18 +18,29 @@ const Banner: React.FC = () => {
   }
 
   return (
-    <Tag style={{ width: '100%', marginBottom: '10px' }}>
-      <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+    <Tag style={{ width: '100%', marginBottom: '10px', padding: '10px' }}>
+      <h2 style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', margin: 0 }}>
         <CloseSquareTwoTone
           twoToneColor={isDarkMode ? darkModeRed : lightModeRed}
-          style={{ fontSize: '20px' }}
+          style={{ fontSize: '20px', flexShrink: 0, cursor: 'pointer' }}
           onClick={() => {
             setIsVisible(false);
             // Save the banner text so it doesn't show again
             saveBannerText();
           }}
         />
-        <Markdown>{bannerText}</Markdown>
+        <Markdown
+          components={{
+            p: ({ children }) => <p style={{ margin: 0, whiteSpace: 'normal' }}>{children}</p>,
+            a: ({ children, ...props }) => (
+              <a {...props} style={{ color: '#1890ff' }} target="_blank" rel="noopener noreferrer">
+                {children}
+              </a>
+            ),
+          }}
+        >
+          {bannerText}
+        </Markdown>
       </h2>
     </Tag>
   );

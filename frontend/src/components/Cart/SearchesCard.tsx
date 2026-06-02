@@ -11,11 +11,11 @@ import { useNavigate } from 'react-router';
 import { useSetAtom } from 'jotai';
 import { fetchSearchResults, generateSearchURLQuery } from '../../api';
 import { CSSinJS } from '../../common/types';
-import { stringifyFilters } from '../Search';
 import { UserSearchQuery } from './types';
 import { createSearchRouteURL } from '../../common/utils';
 import { savedSearchQueryAtom } from '../../common/atoms';
 import { savedSearchTourTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
+import { stringifyApiRequest } from '../../common/STAC';
 
 const styles: CSSinJS = {
   category: {
@@ -78,7 +78,9 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
       let loadedCount = 0;
       if (project.isSTAC) {
         /* istanbul ignore next -- @preserve */
-        loadedCount = (data as { search?: { numMatched?: number } }).search?.numMatched || 0;
+        const searchData = (data as { search?: { numMatched?: number; numberMatched?: number } })
+          .search;
+        loadedCount = searchData?.numMatched || searchData?.numberMatched || 0;
       } else {
         loadedCount = (data as { numFound?: number }).numFound || 0;
       }
@@ -181,16 +183,15 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
         <p className={savedSearchTourTargets.searchQueryString.class()}>
           <span style={styles.category}>Query String: </span>
           <Typography.Text code>
-            {stringifyFilters(
-              project.projectName,
+            {stringifyApiRequest(
+              project,
+              url,
+              textInputs,
               versionType,
               resultType,
               minVersionDate,
               maxVersionDate,
               activeFacets,
-              textInputs,
-              project.isSTAC,
-              url,
             )}
           </Typography.Text>
         </p>

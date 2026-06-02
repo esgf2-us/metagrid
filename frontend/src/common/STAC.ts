@@ -1,20 +1,30 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { FacetsByGroup, RawProject } from '../components/Facets/types';
+import humps from 'humps';
+import { ActiveFacets, FacetsByGroup, RawProject } from '../components/Facets/types';
 import {
   StacFeature,
   RawSearchResult,
   StacAsset,
   StacAggregations,
+  ResultType,
+  TextInputs,
+  VersionDate,
+  VersionType,
   StacAssetDict,
   isStacAsset,
 } from '../components/Search/types';
-import STAC_PROJECT_LIST, { STAC_DEFAULT_PROJECT, StacProject } from './STAC_Projects';
-import { downloadFileForUser, formatBytes } from './utils';
+import {
+  convertResultTypeToReplicaParam,
+  downloadFileForUser,
+  formatBytes,
+  objectIsEmpty,
+} from './utils';
+import { STAC_DEFAULT_PROJECT, STAC_PROJECT_LIST, StacProject } from './useProjectsConfig';
 
-// This is the pk for the first stac project assuming we have 8 non-stac projects listed before it.
-const FirstStacPK = 9;
+// Global variable to store configured additional projects
+let configuredAdditionalProjects: RawProject[] = [];
 
-// Creates a RawProject from pk and StacProject data, using a default project
+// Creates a RawProject from pk and StacProject data
 function buildStacProject(
   pk: string,
   { name, fullName, projectUrl, projectName, facetsByGroup }: StacProject,
@@ -43,14 +53,53 @@ function buildStacProject(
   };
 }
 
+// Default STAC projects built with PK starting from 1000 (high number to avoid conflicts)
 export const STAC_PROJECTS = STAC_PROJECT_LIST.map((project, idx) => {
-  const newPK: string = `${FirstStacPK + idx}`;
+  const newPK: string = `${1000 + idx}`;
   return buildStacProject(newPK, project);
 });
 
-export function getStacProject(projectName: string): RawProject {
-  const stacProject = STAC_PROJECTS.find((project) => (project.projectName || '') === projectName);
+/**
+ * Builds projects from a custom list of StacProject configurations.
+ * @param projectList - Array of StacProject configurations
+ * @param startPk - Starting PK number (should be backendProjectCount + 1)
+ * @returns Array of RawProject objects with sequential PKs
+ */
+export function buildStacProjects(
+  projectList: StacProject[],
+  startPk: number = 1000,
+): RawProject[] {
+  return projectList.map((project, idx) => {
+    const newPK: string = `${startPk + idx}`;
+    return buildStacProject(newPK, project);
+  });
+}
 
+/**
+ * Sets the configured additional projects globally
+ */
+export function setConfiguredAdditionalProjects(projects: RawProject[]): void {
+  configuredAdditionalProjects = projects;
+}
+
+/**
+ * Gets a STAC project by project name.
+ * First checks the configured additional projects,
+ * then falls back to default STAC_PROJECTS if not found.
+ */
+export function getStacProject(projectName: string): RawProject {
+  // Try to find in configured projects first
+  if (configuredAdditionalProjects.length > 0) {
+    const stacProject = configuredAdditionalProjects.find(
+      (project: RawProject) => (project.projectName || '') === projectName,
+    );
+    if (stacProject) {
+      return stacProject;
+    }
+  }
+
+  // Fall back to default STAC_PROJECTS
+  const stacProject = STAC_PROJECTS.find((project) => (project.projectName || '') === projectName);
   return stacProject || STAC_PROJECTS[0];
 }
 
@@ -488,6 +537,78 @@ export const convertSearchParamsIntoStacFilter = (
   /* istanbul ignore next -- @preserve */
   return undefined;
 };
+
+/**
+ * Stringifies an API request for display as a query string.
+ * Automatically handles both STAC and non-STAC projects based on project.isSTAC.
+ *
+ * For STAC projects:
+ * - Returns JSON string with collections, filter, optional q (text inputs), and optional aggregations
+ *
+ * For non-STAC projects:
+ * - Returns human-readable query string like: 'latest = true AND (Text Input = foo) AND (facet = value1 OR value2)'
+ */
+export function stringifyApiRequest(
+  project: RawProject,
+  reqUrlStr: string,
+  textInputs?: TextInputs | [],
+  versionType?: VersionType,
+  resultType?: ResultType,
+  minVersionDate?: VersionDate,
+  maxVersionDate?: VersionDate,
+  activeFacets?: ActiveFacets,
+  aggregations?: string[],
+): string {
+  if (project.isSTAC) {
+    // STAC path
+    const stacProject = getStacProject(project.projectName as string);
+    const stacFilter = convertSearchParamsIntoStacFilter(reqUrlStr, stacProject) || 'null';
+    const textInputsArray = textInputs || [];
+    const textInputsStr =
+      textInputsArray.length > 0 ? `, "q": ${JSON.stringify(textInputsArray)}` : '';
+    const aggregationsArray = aggregations || [];
+    const aggregationsStr =
+      aggregationsArray.length > 0 ? `, "aggregations": ${JSON.stringify(aggregationsArray)}` : '';
+
+    return `{"collections": ["${stacProject.projectName}"], "filter": ${JSON.stringify(stacFilter)}${textInputsStr}${aggregationsStr}}`;
+  }
+
+  // Non-STAC path
+  const filtersArr: string[] = [];
+  const textInputsArray = textInputs || [];
+
+  if (versionType === 'latest') {
+    filtersArr.push('latest = true');
+  }
+
+  if (resultType) {
+    const replicaParam = convertResultTypeToReplicaParam(resultType, true);
+    if (replicaParam) {
+      filtersArr.push(replicaParam);
+    }
+  }
+
+  if (minVersionDate) {
+    filtersArr.push(`min_version = ${minVersionDate}`);
+  }
+
+  if (maxVersionDate) {
+    filtersArr.push(`max_version = ${maxVersionDate}`);
+  }
+
+  if (textInputsArray.length > 0) {
+    filtersArr.push(`(Text Input = ${textInputsArray.join(' OR ')})`);
+  }
+
+  if (activeFacets && !objectIsEmpty(activeFacets)) {
+    Object.keys(activeFacets).forEach((key: string) => {
+      filtersArr.push(`(${humps.decamelize(key)} = ${activeFacets[key].join(' OR ')})`);
+    });
+  }
+
+  const filtersStr = filtersArr.length > 0 ? `${filtersArr.join(' AND ')}` : 'No filters applied';
+  return filtersStr;
+}
 
 export function getFileCountFromSTACsearch(features: StacFeature[]): number {
   let totalCount = 0;

@@ -38,6 +38,7 @@ import {
   showNotice,
   unsavedLocalSearches,
 } from '../../common/utils';
+import { useProjectsConfig } from '../../common/useProjectsConfig';
 import { AuthContext } from '../../contexts/AuthContext';
 import Cart from '../Cart';
 import Summary from '../Cart/Summary';
@@ -100,6 +101,9 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   const setActiveSearchQuery = useSetAtom(activeSearchQueryAtom);
 
   const setSupportModalVisible = useSetAtom(supportModalVisibleAtom);
+
+  // Load projects configuration (includes STAC projects from projects.json)
+  const { config: projectsConfig, loading: configLoading } = useProjectsConfig();
 
   // Third-party tool integration
   useHotjar();
@@ -188,7 +192,12 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   }, [runFetchNodeStatus]);
 
   React.useEffect(() => {
-    fetchProjects()
+    // Wait for projects config to load before fetching projects
+    if (configLoading) {
+      return;
+    }
+
+    fetchProjects(projectsConfig)
       .then((data) => {
         const projectName = searchQuery ? searchQuery.project.name : '';
         /* istanbul ignore else -- @preserve */
@@ -199,6 +208,13 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
           /* istanbul ignore next -- @preserve */
           if (rawProj) {
             setActiveSearchQuery({ ...searchQuery, project: rawProj });
+          } else if (!searchQuery.project.pk) {
+            // Only show error if we have a project name from URL but it's not a full project object yet
+            // (This prevents showing error if activeSearchQuery was already set elsewhere)
+            showError(
+              messageApi,
+              `Project "${projectName as string}" not found. Please select a valid project from the dropdown.`,
+            );
           }
         }
       })
@@ -208,7 +224,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
           showError(messageApi, error.message);
         },
       );
-  }, [fetchProjects]);
+  }, [configLoading, projectsConfig]);
 
   React.useEffect(() => {
     if (loadedNodeStatus) {

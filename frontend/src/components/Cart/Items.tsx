@@ -152,7 +152,11 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                   </Popconfirm>
                 </div>
                 <div>
-                  <Button onClick={() => setShowPreferredNodesModal(true)} disabled={!hasNodes}>
+                  <Button
+                    className={cartTourTargets.setPreferredNodesBtn.class()}
+                    onClick={() => setShowPreferredNodesModal(true)}
+                    disabled={!hasNodes}
+                  >
                     Set Preferred Nodes
                   </Button>
                 </div>
