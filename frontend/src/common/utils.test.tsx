@@ -543,7 +543,14 @@ describe('Test createSearchRouteURL', () => {
   it('converts STAC URL to external STAC API format with filter', () => {
     const url =
       'https://example.com/stac/search?offset=0&limit=100&project_id=CMIP6&latest=true&mip_era=CMIP6';
-    const result = createSearchRouteURL(url);
+    const stacFilter = {
+      op: 'and',
+      args: [
+        { op: '=', args: [{ property: 'properties.cmip6:mip_era' }, 'CMIP6'] },
+        { op: '=', args: [{ property: 'properties.latest' }, 'true'] },
+      ],
+    };
+    const result = createSearchRouteURL(url, stacFilter);
 
     // Parse the result URL to check components
     const resultUrl = new URL(result);
@@ -562,7 +569,11 @@ describe('Test createSearchRouteURL', () => {
 
   it('converts STAC URL with text query', () => {
     const url = 'https://example.com/stac/search?project_id=CMIP6&limit=100&query=test';
-    const result = createSearchRouteURL(url);
+    const stacFilter = {
+      op: '=',
+      args: [{ property: 'properties.latest' }, 'true'],
+    };
+    const result = createSearchRouteURL(url, stacFilter);
 
     const resultUrl = new URL(result);
     expect(resultUrl.searchParams.get('collections')).toBe('CMIP6');
@@ -571,11 +582,22 @@ describe('Test createSearchRouteURL', () => {
 
   it('excludes offset parameter for STAC URLs', () => {
     const url = 'https://example.com/stac/search?offset=100&limit=100&project_id=CMIP6';
-    const result = createSearchRouteURL(url);
+    const result = createSearchRouteURL(url, null);
 
     const resultUrl = new URL(result);
     expect(resultUrl.searchParams.has('offset')).toBe(false);
     expect(resultUrl.searchParams.get('limit')).toBe('100');
+  });
+
+  it('converts STAC URL without filter when not provided', () => {
+    const url = 'https://example.com/stac/search?project_id=CMIP6&limit=100';
+    const result = createSearchRouteURL(url);
+
+    const resultUrl = new URL(result);
+    expect(resultUrl.searchParams.get('collections')).toBe('CMIP6');
+    expect(resultUrl.searchParams.get('limit')).toBe('100');
+    expect(resultUrl.searchParams.has('filter')).toBe(false);
+    expect(resultUrl.searchParams.has('filter-lang')).toBe(false);
   });
 });
 

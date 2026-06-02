@@ -14,7 +14,6 @@ import {
 } from '../components/Search/types';
 import messageDisplayData from '../components/Messaging/messageDisplayData';
 import { AppPage, CSSinJS } from './types';
-import { convertSearchParamsIntoStacFilter, getStacProject } from './STAC';
 
 export type NotificationType = 'success' | 'info' | 'warning' | 'error';
 
@@ -152,8 +151,15 @@ export const getCurrentAppPage = (): AppPage => {
   return AppPage.Unknown;
 };
 
-/** Creates a route that will access the JSON search results */
-export const createSearchRouteURL = (url: string): string => {
+/**
+ * Creates a route that will access the JSON search results
+ * @param url - The internal search URL
+ * @param stacFilter - Optional STAC filter object (required for STAC searches)
+ */
+export const createSearchRouteURL = (
+  url: string,
+  stacFilter?: { op: string; args: unknown } | null,
+): string => {
   // Detect if this is a STAC search URL
   const isStacUrl = url.includes('/stac/search');
 
@@ -179,16 +185,11 @@ export const createSearchRouteURL = (url: string): string => {
     newParams.set('limit', limit);
   }
 
-  // Convert the URL parameters into a STAC filter object
-  if (projectId) {
-    const stacProject = getStacProject(projectId);
-    const filter = convertSearchParamsIntoStacFilter(url, stacProject);
-
-    if (filter) {
-      // URL-encode the filter object as JSON
-      newParams.set('filter', JSON.stringify(filter));
-      newParams.set('filter-lang', 'cql2-json');
-    }
+  // Add STAC filter if provided
+  if (stacFilter) {
+    // URL-encode the filter object as JSON
+    newParams.set('filter', JSON.stringify(stacFilter));
+    newParams.set('filter-lang', 'cql2-json');
   }
 
   // Handle text search query parameter
