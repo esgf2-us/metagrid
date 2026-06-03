@@ -11,6 +11,10 @@ ingress:
   className: ""
   labels: {}
   annotations: {}
+  admin:
+    enabled: true
+    # Annotations specific to the admin ingress for e.g. an IP whitelist
+    annotations: {}
 
 # External node status url, used when `nodeStatusBackend.enabled` is false.
 nodeStatusUrl:

@@ -56,6 +56,13 @@ spec:
             {{- $hosts = append $hosts . }}
           {{- end }}
           value: {{ toJson $hosts | quote }}
+        - name: DJANGO_CSRF_TRUSTED_ORIGINS
+          {{- $uris := list "http://localhost" "http://$(THIS_POD_IP)" }}
+          {{- range .Values.ingress.hosts }}
+            {{- $uri := print "https://" . }}
+            {{- $uris = append $uris $uri }}
+          {{- end }}
+          value: {{ toJson $uris | quote }}
         ports:
         - name: http
           containerPort: {{ .Values.backend.service.port }}
