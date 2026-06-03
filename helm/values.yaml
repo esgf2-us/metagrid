@@ -12,7 +12,7 @@ ingress:
   labels: {}
   annotations: {}
   admin:
-    enabled: true
+    enabled: false
     # Annotations specific to the admin ingress for e.g. an IP whitelist
     annotations: {}
 
