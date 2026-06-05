@@ -116,11 +116,26 @@ tests:
             configMap:
               name: test-config
     asserts:
+      # Should have both the projects-config mount and the custom mount
+      - contains:
+          path: spec.template.spec.containers[0].volumeMounts
+          content:
+            name: projects-config
+            mountPath: /usr/share/nginx/html/projects/projects.json
+            subPath: projects.json
+            readOnly: true
       - contains:
           path: spec.template.spec.containers[0].volumeMounts
           content:
             name: config
             mountPath: /config
+      # Should have both the projects-config volume and the custom volume
+      - contains:
+          path: spec.template.spec.volumes
+          content:
+            name: projects-config
+            configMap:
+              name: metagrid-projects-config
       - contains:
           path: spec.template.spec.volumes
           content:
