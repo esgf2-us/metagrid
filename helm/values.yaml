@@ -1,6 +1,14 @@
 nameOverride: ""
 fullnameOverride: ""
 
+# Projects configuration for the frontend
+# Controls which projects are shown in the project dropdown
+# Format should match frontend/public/projects/projects.json structure
+projectsConfig:
+  additionalProjects: []
+  whitelist: []
+  blacklist: []
+
 ingress:
   enabled: false
   pathType: Prefix
