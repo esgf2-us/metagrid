@@ -95,7 +95,9 @@ export const useProjectsConfig = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/projects/projects.json')
+    fetch('/projects/projects.json', {
+      cache: 'no-cache',
+    })
       .then((response) => {
         if (!response.ok) {
           // File not found or other HTTP error - use defaults
