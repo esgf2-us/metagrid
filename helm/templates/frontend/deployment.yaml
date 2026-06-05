@@ -53,12 +53,19 @@ spec:
             port: http
         resources:
           {{- toYaml .Values.frontend.resources | nindent 12 }}
-        {{- with .Values.frontend.volumeMounts }}
         volumeMounts:
-          {{- toYaml . | nindent 12 }}
+        - name: projects-config
+          mountPath: /usr/share/nginx/html/projects/projects.json
+          subPath: projects.json
+          readOnly: true
+        {{- with .Values.frontend.volumeMounts }}
+          {{- toYaml . | nindent 10 }}
         {{- end }}
-      {{- with .Values.frontend.volumes }}
       volumes:
+      - name: projects-config
+        configMap:
+          name: {{ include "metagrid.fullname" . }}-projects-config
+      {{- with .Values.frontend.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
       {{- with .Values.frontend.nodeSelector }}
