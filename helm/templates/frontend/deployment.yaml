@@ -58,16 +58,16 @@ spec:
           mountPath: /usr/share/nginx/html/projects/projects.json
           subPath: projects.json
           readOnly: true
-        {{- with .Values.frontend.volumeMounts }}
-          {{- toYaml . | nindent 10 }}
-        {{- end }}
+{{- with .Values.frontend.volumeMounts }}
+        {{- toYaml . | nindent 8 }}
+{{- end }}
       volumes:
       - name: projects-config
         configMap:
           name: {{ include "metagrid.fullname" . }}-projects-config
-      {{- with .Values.frontend.volumes }}
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+{{- with .Values.frontend.volumes }}
+      {{- toYaml . | nindent 6 }}
+{{- end }}
       {{- with .Values.frontend.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
