@@ -46,5 +46,14 @@ should have a deployment:
                   port: http
               resources: {}
               securityContext: {}
+              volumeMounts:
+                - mountPath: /usr/share/nginx/html/projects/projects.json
+                  name: projects-config
+                  readOnly: true
+                  subPath: projects.json
           securityContext: {}
           serviceAccountName: metagrid-frontend
+          volumes:
+            - configMap:
+                name: metagrid-projects-config
+              name: projects-config
