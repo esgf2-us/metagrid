@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "metagrid.fullname" . }}-projects-config
+  labels:
+    app.kubernetes.io/component: frontend
+    {{- include "metagrid.labels" . | nindent 4 }}
+data:
+  projects.json: {{ toJson .Values.projectsConfig | quote }}

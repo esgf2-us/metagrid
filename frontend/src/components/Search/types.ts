@@ -190,3 +190,9 @@ export type StacResponse = {
   search: StacSearchResponse;
   stac: boolean;
 };
+
+export type CachedSearchData = {
+  results: Record<string, unknown> | undefined;
+  query: ActiveSearchQuery | null;
+  facets: ParsedFacets | Record<string, unknown>;
+};

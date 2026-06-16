@@ -18,7 +18,7 @@ import { ActiveSearchQuery, RawSearchResult, ResultType, TextInputs, VersionType
 import { openDropdownList, AtomWrapper } from '../../test/testFunctions';
 import { AppStateKeys } from '../../common/atoms';
 import { stringifyApiRequest } from '../../common/STAC';
-import { parseFacets, checkFiltersExist } from './searchHelpers';
+import { checkFiltersExist, parseFacets } from '../../common/utils';
 
 const user = userEvent.setup();
 

@@ -5,6 +5,8 @@ import { message } from 'antd';
 import { Provider, useAtom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
 import { vi } from 'vitest';
+import { rawProjectFixture, activeSearchQueryFixture } from '../test/mock/fixtures';
+import { UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
 import { ActiveSearchQuery, RawSearchResult, RawSearchResults } from '../components/Search/types';
 import {
   combineCarts,
@@ -34,6 +36,7 @@ import {
   getLastMessageSeen,
   setStartupMessageAsSeen,
   downloadFileForUser,
+  identifyProblematicFacets,
 } from './utils';
 import { AppPage } from './types';
 import { mockConfig } from '../test/testFunctions';
@@ -451,6 +454,8 @@ describe('Test localStorageEffect', () => {
 
 describe('Test createSearchRouteURL', () => {
   window.METAGRID.SEARCH_URL = 'https://example.com';
+  window.METAGRID.STAC_URL = 'https://stac.example.com';
+
   it('returns the correct URL with search parameters', () => {
     const url = 'https://example.com/path?param1=value1&param2=value2';
     const result = createSearchRouteURL(url);
@@ -467,6 +472,66 @@ describe('Test createSearchRouteURL', () => {
     const url = 'https://example.com/search?param1=value1&param2=value2&param3=value3';
     const result = createSearchRouteURL(url);
     expect(result).toBe('https://example.com?param1=value1&param2=value2&param3=value3');
+  });
+
+  it('converts STAC URL to external STAC API format with filter', () => {
+    const url =
+      'https://example.com/stac/search?offset=0&limit=100&project_id=CMIP6&latest=true&mip_era=CMIP6';
+    const stacFilter = {
+      op: 'and',
+      args: [
+        { op: '=', args: [{ property: 'properties.cmip6:mip_era' }, 'CMIP6'] },
+        { op: '=', args: [{ property: 'properties.latest' }, 'true'] },
+      ],
+    };
+    const result = createSearchRouteURL(url);
+
+    // Parse the result URL to check components
+    const resultUrl = new URL(result);
+    expect(resultUrl.origin + resultUrl.pathname).toBe('https://stac.example.com/search');
+    expect(resultUrl.searchParams.get('collections')).toBe('CMIP6');
+    expect(resultUrl.searchParams.get('limit')).toBe('100');
+    expect(resultUrl.searchParams.get('filter-lang')).toBe('cql2-json');
+
+    // Check that filter parameter exists and is valid JSON
+    const filterParam = resultUrl.searchParams.get('filter');
+    expect(filterParam).toBeTruthy();
+    const filter = JSON.parse(filterParam as string);
+    expect(filter).toHaveProperty('op');
+    expect(filter).toHaveProperty('args');
+  });
+
+  it('converts STAC URL with text query', () => {
+    const url = 'https://example.com/stac/search?project_id=CMIP6&limit=100&query=test';
+    const stacFilter = {
+      op: '=',
+      args: [{ property: 'properties.latest' }, 'true'],
+    };
+    const result = createSearchRouteURL(url);
+
+    const resultUrl = new URL(result);
+    expect(resultUrl.searchParams.get('collections')).toBe('CMIP6');
+    expect(resultUrl.searchParams.get('q')).toBe('test');
+  });
+
+  it('excludes offset parameter for STAC URLs', () => {
+    const url = 'https://example.com/stac/search?offset=100&limit=100&project_id=CMIP6';
+    const result = createSearchRouteURL(url);
+
+    const resultUrl = new URL(result);
+    expect(resultUrl.searchParams.has('offset')).toBe(false);
+    expect(resultUrl.searchParams.get('limit')).toBe('100');
+  });
+
+  it('converts STAC URL without filter when not provided', () => {
+    const url = 'https://example.com/stac/search?project_id=CMIP6&limit=100';
+    const result = createSearchRouteURL(url);
+
+    const resultUrl = new URL(result);
+    expect(resultUrl.searchParams.get('collections')).toBe('CMIP6');
+    expect(resultUrl.searchParams.get('limit')).toBe('100');
+    expect(resultUrl.searchParams.has('filter')).toBe(false);
+    expect(resultUrl.searchParams.has('filter-lang')).toBe(false);
   });
 });
 
@@ -1001,5 +1066,323 @@ describe('Test downloadFileForUser', () => {
     removeChildSpy.mockRestore();
     clickSpy.mockRestore();
     setAttributeSpy.mockRestore();
+  });
+});
+
+describe('Test identifyProblematicFacets', () => {
+  it('should identify new facets that were not in last successful query', () => {
+    const lastSuccessfulQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1', 'value2'],
+      },
+    });
+
+    const currentQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1', 'value2'],
+        facet2: ['value3'], // New facet
+      },
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, lastSuccessfulQuery);
+
+    expect(problematic.has('facet2:value3')).toBe(true);
+    expect(problematic.size).toBe(1);
+  });
+
+  it('should identify new values in existing facets', () => {
+    const lastSuccessfulQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1'],
+      },
+    });
+
+    const currentQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1', 'value2'], // Added value2
+      },
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, lastSuccessfulQuery);
+
+    expect(problematic.has('facet1:value2')).toBe(true);
+    expect(problematic.has('facet1:value1')).toBe(false); // value1 was in successful query
+    expect(problematic.size).toBe(1);
+  });
+
+  it('should identify multiple problematic facets', () => {
+    const lastSuccessfulQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1'],
+      },
+    });
+
+    const currentQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1', 'value2'], // New value
+        facet2: ['value3'], // New facet
+        facet3: ['value4', 'value5'], // New facet with multiple values
+      },
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, lastSuccessfulQuery);
+
+    expect(problematic.has('facet1:value2')).toBe(true);
+    expect(problematic.has('facet2:value3')).toBe(true);
+    expect(problematic.has('facet3:value4')).toBe(true);
+    expect(problematic.has('facet3:value5')).toBe(true);
+    expect(problematic.size).toBe(4);
+  });
+
+  it('should return empty set when there are no problematic facets', () => {
+    const lastSuccessfulQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1', 'value2'],
+      },
+    });
+
+    const currentQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1', 'value2'], // Same as successful query
+      },
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, lastSuccessfulQuery);
+
+    expect(problematic.size).toBe(0);
+  });
+
+  it('should return empty set when lastSuccessfulQuery is null', () => {
+    const currentQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1'],
+      },
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, null);
+
+    expect(problematic.size).toBe(0);
+  });
+
+  it('should handle removed facets (should not mark as problematic)', () => {
+    const lastSuccessfulQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1'],
+        facet2: ['value2'],
+      },
+    });
+
+    const currentQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1'], // facet2 removed
+      },
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, lastSuccessfulQuery);
+
+    // Removing facets shouldn't be marked as problematic
+    expect(problematic.size).toBe(0);
+  });
+
+  it('should handle empty facets in current query', () => {
+    const lastSuccessfulQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1'],
+      },
+    });
+
+    const currentQuery = activeSearchQueryFixture({
+      activeFacets: {}, // All facets removed
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, lastSuccessfulQuery);
+
+    expect(problematic.size).toBe(0);
+  });
+
+  it('should handle empty facets in last successful query', () => {
+    const lastSuccessfulQuery = activeSearchQueryFixture({
+      activeFacets: {}, // No facets
+    });
+
+    const currentQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1'], // All facets are new
+      },
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, lastSuccessfulQuery);
+
+    expect(problematic.has('facet1:value1')).toBe(true);
+    expect(problematic.size).toBe(1);
+  });
+
+  it('should handle facets with array of values', () => {
+    const lastSuccessfulQuery = activeSearchQueryFixture({
+      activeFacets: {
+        experiment: ['historical'],
+      },
+    });
+
+    const currentQuery = activeSearchQueryFixture({
+      activeFacets: {
+        experiment: ['historical', 'rcp85', 'ssp585'], // Added two new values
+      },
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, lastSuccessfulQuery);
+
+    expect(problematic.has('experiment:rcp85')).toBe(true);
+    expect(problematic.has('experiment:ssp585')).toBe(true);
+    expect(problematic.has('experiment:historical')).toBe(false);
+    expect(problematic.size).toBe(2);
+  });
+
+  it('should be case-sensitive when comparing facet values', () => {
+    const lastSuccessfulQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1'],
+      },
+    });
+
+    const currentQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['Value1'], // Different case
+      },
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, lastSuccessfulQuery);
+
+    // Case difference should be treated as a new value
+    expect(problematic.has('facet1:Value1')).toBe(true);
+    expect(problematic.size).toBe(1);
+  });
+
+  it('should handle whitespace differences in facet values', () => {
+    const lastSuccessfulQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1'],
+      },
+    });
+
+    const currentQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: [' value1 '], // With extra whitespace
+      },
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, lastSuccessfulQuery);
+
+    // Whitespace difference should be treated as different
+    expect(problematic.has('facet1: value1 ')).toBe(true);
+    expect(problematic.size).toBe(1);
+  });
+
+  it('should handle special characters in facet names and values', () => {
+    const lastSuccessfulQuery = activeSearchQueryFixture({
+      activeFacets: {
+        'facet-with-dash': ['value.with.dots'],
+      },
+    });
+
+    const currentQuery = activeSearchQueryFixture({
+      activeFacets: {
+        'facet-with-dash': ['value.with.dots', 'value:with:colons'],
+      },
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, lastSuccessfulQuery);
+
+    expect(problematic.has('facet-with-dash:value:with:colons')).toBe(true);
+    expect(problematic.size).toBe(1);
+  });
+
+  it('should handle complex real-world CMIP6 scenario', () => {
+    const lastSuccessfulQuery = activeSearchQueryFixture({
+      project: rawProjectFixture({ name: 'CMIP6' }),
+      activeFacets: {
+        source_id: ['CESM2', 'GFDL-ESM4'],
+        experiment_id: ['historical'],
+        variable: ['tas'],
+        frequency: ['mon'],
+      },
+    });
+
+    const currentQuery = activeSearchQueryFixture({
+      project: rawProjectFixture({ name: 'CMIP6' }),
+      activeFacets: {
+        source_id: ['CESM2', 'GFDL-ESM4', 'INVALID-MODEL'], // Added invalid model
+        experiment_id: ['historical', 'ssp585'], // Added new experiment
+        variable: ['tas'],
+        frequency: ['mon'],
+        // realm removed, which is fine
+      },
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, lastSuccessfulQuery);
+
+    expect(problematic.has('source_id:INVALID-MODEL')).toBe(true);
+    expect(problematic.has('experiment_id:ssp585')).toBe(true);
+    expect(problematic.size).toBe(2);
+  });
+
+  it('should handle when current query has subset of successful facets', () => {
+    const lastSuccessfulQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1', 'value2', 'value3'],
+      },
+    });
+
+    const currentQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1', 'value2'], // Subset of successful values
+      },
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, lastSuccessfulQuery);
+
+    // Using a subset shouldn't be problematic
+    expect(problematic.size).toBe(0);
+  });
+
+  it('should correctly format facet identifiers with colon separator', () => {
+    const lastSuccessfulQuery = activeSearchQueryFixture({
+      activeFacets: {},
+    });
+
+    const currentQuery = activeSearchQueryFixture({
+      activeFacets: {
+        model: ['CESM2'],
+        institution: ['NCAR'],
+      },
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, lastSuccessfulQuery);
+
+    // Verify the format is "facetKey:facetValue"
+    const problematicArray = Array.from(problematic);
+    expect(problematicArray).toContain('model:CESM2');
+    expect(problematicArray).toContain('institution:NCAR');
+    expect(problematic.size).toBe(2);
+  });
+
+  it('should handle empty arrays for facet values', () => {
+    const lastSuccessfulQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: [],
+      },
+    });
+
+    const currentQuery = activeSearchQueryFixture({
+      activeFacets: {
+        facet1: ['value1'],
+      },
+    });
+
+    const problematic = identifyProblematicFacets(currentQuery, lastSuccessfulQuery);
+
+    // Empty array in last successful means value1 is new
+    expect(problematic.has('facet1:value1')).toBe(true);
+    expect(problematic.size).toBe(1);
   });
 });

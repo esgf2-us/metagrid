@@ -1,16 +1,6 @@
 {
   "additionalProjects": [
     {
-      "name": "CMIP6 STAC",
-      "projectName": "CMIP6",
-      "fullName": "Coupled Model Intercomparison Project Phase 6",
-      "projectUrl": "https://wcrp-cmip.org/cmip-phases/cmip6/",
-      "facetsByGroup": {
-        "General": ["mip_era"],
-        "Classifications": ["table_id"]
-      }
-    },
-    {
       "name": "CMIP7 STAC",
       "projectName": "CMIP7",
       "fullName": "Coupled Model Intercomparison Project Phase 7",
@@ -39,8 +29,18 @@
           "driving_variant_label"
         ]
       }
+    },
+    {
+      "name": "CMIP6Plus STAC",
+      "projectName": "CMIP6Plus",
+      "fullName": "Coupled Model Intercomparison Project Phase 6",
+      "projectUrl": "https://wcrp-cmip.org/cmip-phases/cmip6/",
+      "facetsByGroup": {
+        "General": ["mip_era"],
+        "Classifications": ["table_id"]
+      }
     }
   ],
   "whitelist": [],
-  "blacklist": ["CMIP6", "CMIP6Plus"]
+  "blacklist": []
 }

@@ -83,6 +83,20 @@ export const projectBaseQuery = (
   globusOnly: false,
 });
 
+/**
+ * Checks if an object is empty.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const objectIsEmpty = (obj: Record<any, any>): boolean =>
+  !obj || Object.keys(obj).length === 0;
+
+/**
+ * Deep equality comparison using JSON serialization.
+ * Useful for comparing objects, arrays, or primitives.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const isEqual = (a: any, b: any): boolean => JSON.stringify(a) === JSON.stringify(b);
+
 export const baseBatchedResults: BatchedSearchResults = {
   batches: [],
   batchSize: 0,
@@ -99,22 +113,6 @@ export const baseSearchResponse: SearchResponse = {
   searchFacets: {} as ParsedFacets,
   status: 200,
 };
-
-// Search results batching functions
-
-/**
- * Checks if an object is empty.
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const objectIsEmpty = (obj: Record<any, any>): boolean =>
-  !obj || Object.keys(obj).length === 0;
-
-/**
- * Deep equality comparison using JSON serialization.
- * Useful for comparing objects, arrays, or primitives.
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const isEqual = (a: any, b: any): boolean => JSON.stringify(a) === JSON.stringify(b);
 
 /**
  * Generic function to convert any object to a hash number for efficient comparison.
@@ -720,6 +718,53 @@ export const getCachedPagination = (): Pagination => {
   );
 };
 
+export const cacheSearchResults = (
+  fetchedResults: Record<string, unknown> | undefined,
+  pagination: Pagination,
+  cachedURL: string,
+): void => {
+  if (fetchedResults && !Object.hasOwn(fetchedResults, 'cachedURL')) {
+    saveToLocalStorage(
+      'cachedSearchResults',
+      {
+        results: fetchedResults,
+        cachedURL,
+        expires: Date.now() + 60 * 60 * 1000, // Expires after an hour
+      },
+      true,
+    );
+
+    // Cache the pagination
+    cachePagination(pagination);
+  }
+};
+
+export const clearCachedSearchResults = (): void => {
+  // Clear the cached search results from sessionStorage
+  localStorage.removeItem('cachedSearchResults');
+  localStorage.removeItem('cachedSearchPagination');
+};
+
+export const getCachedSearchResults = (): Record<string, unknown> => {
+  const fetchedResults: Record<string, unknown> =
+    getFromLocalStorage('cachedSearchResults', true) || {};
+  const now = Date.now();
+  if (fetchedResults.expires && now > (fetchedResults.expires as number)) {
+    // If expired, remove from session storage
+    clearCachedSearchResults();
+
+    return {};
+  }
+
+  // If not expired, return the cached results
+  return {
+    cachedURL: fetchedResults.cachedURL,
+    ...(typeof fetchedResults.results === 'object' && fetchedResults.results !== null
+      ? fetchedResults.results
+      : {}),
+  };
+};
+
 export const showBanner = (): boolean => {
   const currentBannerText = sessionStorage.getItem('showBanner');
 
@@ -763,4 +808,108 @@ export const downloadFileForUser = (filename: string, fileContent: string): void
   downloadLinkNode.click();
 
   document.body.removeChild(downloadLinkNode);
+};
+
+/**
+ * Parses raw facets from the API into a structured format.
+ * Joins adjacent elements of the facets object into tuples [facetValue, count].
+ */
+export const parseFacets = (
+  facets: Record<string, (string | number)[]>,
+): Record<string, [string, number][]> => {
+  const res = facets as unknown as Record<string, [string, number][]>;
+  const keys: string[] = Object.keys(facets);
+
+  keys.forEach((key) => {
+    res[key] = res[key].reduce(
+      (r, a, i) => {
+        if (i % 2) {
+          r[r.length - 1].push(a as unknown as number);
+        } else {
+          r.push([a] as never);
+        }
+        return r;
+      },
+      [] as unknown as [string, number][],
+    );
+  });
+  return res;
+};
+
+/**
+ * Checks if any filters (facets or text inputs) are active.
+ */
+export const checkFiltersExist = (
+  activeFacets: ActiveFacets | Record<string, unknown>,
+  textInputs: TextInputs,
+): boolean => !(objectIsEmpty(activeFacets) && textInputs.length === 0);
+
+/**
+ * Identifies facets that might have caused a search error by comparing
+ * the current query with the last successful query.
+ * Returns a Set of facet keys in the format "facetName:facetValue".
+ */
+export const identifyProblematicFacets = (
+  currentQuery: ActiveSearchQuery,
+  lastSuccessfulQuery: ActiveSearchQuery | null,
+): Set<string> => {
+  const problematicFacets = new Set<string>();
+
+  if (!lastSuccessfulQuery) {
+    return problematicFacets;
+  }
+
+  const currentFacets = currentQuery.activeFacets;
+  const lastFacets = lastSuccessfulQuery.activeFacets;
+
+  // Find facets that are new or have new values
+  Object.keys(currentFacets).forEach((facetKey) => {
+    const currentValues = currentFacets[facetKey] || [];
+    const lastValues = lastFacets[facetKey] || [];
+
+    // Check if this is a new facet key or has new values
+    if (!lastFacets[facetKey]) {
+      // Entire facet is new
+      currentValues.forEach((value) => {
+        problematicFacets.add(`${facetKey}:${value}`);
+      });
+    } else {
+      // Check for new values in existing facet
+      currentValues.forEach((value) => {
+        if (!lastValues.includes(value)) {
+          problematicFacets.add(`${facetKey}:${value}`);
+        }
+      });
+    }
+  });
+
+  return problematicFacets;
+};
+
+export const deriveCachedSearchData = (
+  cache: Record<string, unknown>,
+): {
+  results: Record<string, unknown>;
+  query: ActiveSearchQuery | null;
+  facets: Record<string, [string, number][]>;
+} => {
+  let query = cache.searchQuery as ActiveSearchQuery | null;
+
+  // Fallback to URL parsing only for legacy caches or user-shareable URLs
+  if (!query) {
+    const cachedURL = cache.cachedURL as string;
+    query = cachedURL ? getSearchFromUrl(cachedURL) : null;
+  }
+
+  let facets: Record<string, [string, number][]> = {};
+  if (cache.facet_counts) {
+    const { facet_fields: facetFields } = cache.facet_counts as {
+      facet_fields: Record<string, (string | number)[]>;
+    };
+    facets = parseFacets(facetFields);
+  } else if (cache.facets) {
+    facets = cache.facets as Record<string, [string, number][]>;
+  }
+
+  return { results: cache, query, facets };
 };

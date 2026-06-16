@@ -13,15 +13,7 @@ import React, { useCallback } from 'react';
 import { useAtomValue, useAtom } from 'jotai';
 import stacIcon from '../../assets/img/STAC-favicon.png';
 import { fetchWgetScript, ResponseError } from '../../api';
-import { SEARCH_BATCH_SIZE } from './searchHelpers';
-import {
-  createEsgpullCommand,
-  formatBytes,
-  getCachedPagination,
-  getCurrentAppPage,
-  showError,
-  showNotice,
-} from '../../common/utils';
+import { createEsgpullCommand, formatBytes, showError, showNotice } from '../../common/utils';
 import { UserCart } from '../Cart/types';
 import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
@@ -39,7 +31,6 @@ import {
 import GlobusToolTip from '../Globus/GlobusToolTip';
 import { topDataRowTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 import { userCartAtom, selectedNodesAtom, downloadSelectionsAtom } from '../../common/atoms';
-import { AppPage } from '../../common/types';
 import { createCustomIcon } from '../NavBar';
 import {
   getStacGlobusHref,
@@ -55,6 +46,9 @@ export type Props = {
   totalResults?: number;
   currentPage?: number;
   currentPageSize?: number;
+  pageSize?: number;
+  showQuickJumper?: boolean;
+  showLessItems?: boolean;
   selections?: RawSearchResults | [];
   filenameVars?: TextInputs | [];
   isStac?: boolean;
@@ -78,10 +72,10 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
   results,
   totalResults,
   currentPage,
-  currentPageSize,
+  showQuickJumper = true,
+  showLessItems = false,
   selections,
   filenameVars,
-  isStac = false,
   onUpdateCart,
   onRowSelect,
   onPageChange,
@@ -136,22 +130,6 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
     ),
     [],
   );
-
-  // let cachedPage: number | undefined;
-  // let cachedSize: number | undefined;
-
-  // if (getCurrentAppPage() !== AppPage.Cart) {
-  //   const pagination = getCachedPagination();
-  //   cachedPage = pagination.page;
-  //   cachedSize = pagination.pageSize;
-  // }
-
-  // Use prop if provided, otherwise fall back to cache
-  const safePage = currentPage /* ?? cachedPage  */ ?? 1;
-  const safeSize = currentPageSize ?? 10; // cachedSize ?? 10;
-
-  // Clamp the results count to a maximum of 10,000
-  // const clampedResultCount = totalResults ? Math.min(totalResults, MAX_RESULTS) : undefined;
 
   const filteredResults = results.filter((result) => !result.isStac || !stacDisabled);
 
@@ -270,31 +248,16 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
     pagination: {
       total: totalResults, // clampedResultCount,
       current: currentPage,
-      pageSize: currentPageSize,
       position: ['bottomCenter'],
       showSizeChanger: {
         optionRender: renderPageSizeOption,
       },
-      // showPrevNextJumpers: !isStac,
-      showQuickJumper: !isStac,
-      showLessItems: isStac, // For STAC: hide "..." and far-ahead page numbers
-      onChange: (page: number, pageSize: number) => {
-        if (!onPageChange) return;
-
-        // if (isStac) {
-        //   // For STAC, check if clicking on a page outside current batch
-        //   const pageBatch = Math.floor(((page - 1) * pageSize) / STAC_BATCH_SIZE);
-        //   if (pageBatch !== currentBatch) {
-        //     // Switching batches - trigger fetch
-        //     onPageChange(page, pageSize);
-        //   } else {
-        //     // Same batch - just update page (client-side pagination)
-        //     onPageChange(page, pageSize);
-        //   }
-        // } else {
-        // Non-STAC: pass through directly
-        onPageChange(page, pageSize);
-        // }
+      showQuickJumper,
+      showLessItems,
+      onChange: (page: number, newPageSize: number) => {
+        if (onPageChange) {
+          onPageChange(page, newPageSize);
+        }
       },
       onShowSizeChange: (_current: number, size: number) => {
         if (onPageSizeChange) {

@@ -6,7 +6,7 @@ import {
 } from '@ant-design/icons';
 import { Alert, Card, Col, Skeleton, Typography, Tooltip } from 'antd';
 import React, { useEffect } from 'react';
-import { useAsync } from 'react-async';
+import { DeferFn, useAsync } from 'react-async';
 import { useNavigate } from 'react-router';
 import { useSetAtom } from 'jotai';
 import { alternateFetchSearchResults, generateSearchURLQuery } from '../../api';
@@ -58,7 +58,7 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
 
   const setSavedSearchQuery = useSetAtom(savedSearchQueryAtom);
 
-  // Only call useAsync if resultsCount is null or searchTime is an hour old
+  // Only fetch resultCount if resultsCount is null or searchTime is an hour old
   const expirationTime = (searchTime || 0) + 60 * 60 * 1000; // Expires after an hour
   const getUrlResults: boolean = !resultsCount || expirationTime < Date.now();
   // const numResultsUrl = getUrlResults ? generateSearchURLQuery(searchQuery, basePagination) : null;

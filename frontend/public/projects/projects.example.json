@@ -1,4 +1,5 @@
 {
+  "_comment": "Example projects.json configuration - copy and customize as needed",
   "additionalProjects": [
     {
       "name": "CMIP6 STAC",
