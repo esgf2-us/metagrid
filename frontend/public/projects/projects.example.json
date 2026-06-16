@@ -5,25 +5,56 @@
       "name": "CMIP6 STAC",
       "projectName": "CMIP6",
       "fullName": "Coupled Model Intercomparison Project Phase 6",
-      "projectUrl": "https://wcrp-cmip.org/cmip-phases/cmip6/",
+      "projectUrl": "https://pcmdi.llnl.gov/CMIP6/",
       "facetsByGroup": {
-        "General": ["mip_era", "activity_id"],
-        "Classifications": ["table_id", "variable_id", "frequency"],
-        "Identifiers": ["source_id", "experiment_id", "institution_id"]
+        "General": ["mip_era"],
+        "Classifications": ["table_id"]
       }
     },
     {
-      "name": "Custom Regional Model",
-      "projectName": "REGIONAL",
-      "fullName": "Custom Regional Climate Model Project",
-      "projectUrl": "https://example.org/regional-model",
+      "name": "CMIP7",
+      "projectName": "CMIP7",
+      "fullName": "Coupled Model Intercomparison Project Phase 7",
+      "projectUrl": "https://WCRP_CMIP.org/CMIP7",
       "facetsByGroup": {
-        "General": ["region", "model"],
-        "Classifications": ["variable_id", "frequency"],
-        "Spatial": ["domain", "grid_resolution"]
+        "General": ["mip_era"],
+        "Classifications": [
+          "table_id",
+          { "title": "variable_suffix", "facet": "variable_branding_suffix" }
+        ],
+        "Labels": ["area_label", "vertical_label", "temporal_label", "horizontal_label"]
       }
     }
   ],
   "whitelist": [],
-  "blacklist": []
+  "blacklist": [],
+  "_comments": {
+    "additionalProjects": "Additional projects to add to the dropdown (in addition to backend database projects).",
+    "whitelist": "Show ONLY these projects. Leave empty to show all.",
+    "blacklist": "Hide these projects. Ignored if whitelist is set.",
+    "stac_replacement": "STAC projects (names containing ' STAC') automatically replace legacy counterparts when the legacy version is filtered out. For example, if 'CMIP6' is blacklisted but 'CMIP6 STAC' is not, 'CMIP6 STAC' will display as 'CMIP6' (without the ' STAC' suffix). See projects.README.md for details.",
+    "examples": {
+      "show_only_cmip": {
+        "description": "Show only CMIP-related projects from both backend and additional sources",
+        "whitelist": ["CMIP5", "CMIP6", "CMIP6 STAC", "CMIP7"]
+      },
+      "hide_legacy": {
+        "description": "Hide legacy or deprecated projects from any source",
+        "blacklist": ["All (except CMIP6)", "CMIP3", "TAMIP"]
+      },
+      "site_specific": {
+        "description": "Show only projects relevant to your institution",
+        "whitelist": ["CMIP6 STAC", "obs4MIPs", "E3SM"]
+      },
+      "replace_legacy_with_stac": {
+        "description": "Retire legacy CMIP6 and replace with STAC version (displays as 'CMIP6' without ' STAC' suffix)",
+        "blacklist": ["CMIP6"]
+      },
+      "transition_period": {
+        "description": "During transition, show both legacy and STAC versions (both names visible for user choice)",
+        "whitelist": ["CMIP6", "CMIP6 STAC", "CMIP7"],
+        "note": "CMIP6 STAC will keep full name since legacy CMIP6 is also present"
+      }
+    }
+  }
 }

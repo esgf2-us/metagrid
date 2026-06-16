@@ -176,6 +176,8 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                   loading={false}
                   canDisableRows={false}
                   results={userCart}
+                  // currentPage={paginationOptions.page}
+                  // currentPageSize={paginationOptions.pageSize}
                   onUpdateCart={onUpdateCart}
                   onRowSelect={handleRowSelect}
                   selections={itemSelections}

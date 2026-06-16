@@ -33,10 +33,8 @@ import {
   clearDeprecatedStorageKeys,
   combineCarts,
   getStyle,
-  searchAlreadyExists,
   showError,
   showNotice,
-  unsavedLocalSearches,
 } from '../../common/utils';
 import { useProjectsConfig } from '../../common/useProjectsConfig';
 import { AuthContext } from '../../contexts/AuthContext';
@@ -65,6 +63,7 @@ import {
   nodeStatusAtom,
 } from '../../common/atoms';
 import Banner from '../Messaging/Banner';
+import { unsavedLocalSearches, searchAlreadyExists } from '../Search/searchHelpers';
 
 const useHotjar = (): void => {
   /* istanbul ignore else -- @preserve */

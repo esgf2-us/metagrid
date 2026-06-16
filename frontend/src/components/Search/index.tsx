@@ -10,7 +10,7 @@ import {
 } from '@ant-design/icons';
 import { Alert, Col, Dropdown, message, Row, Space, Tooltip, Typography } from 'antd';
 import React from 'react';
-import { DeferFn, useAsync } from 'react-async';
+import { useAsync } from 'react-async';
 import { v4 as uuidv4 } from 'uuid';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import {
@@ -24,10 +24,9 @@ import {
 } from '../../common/atoms';
 import {
   addUserSearchQuery,
-  fetchSearchResults,
+  alternateFetchSearchResults,
   generateSearchURLQuery,
   ResponseError,
-  STAC_BATCH_SIZE,
 } from '../../api';
 import {
   copySearchOptionsTargets,
@@ -37,27 +36,20 @@ import { CSSinJS } from '../../common/types';
 import {
   cachePagination,
   cacheSearchResults,
-  cacheStacBatches,
-  checkFiltersExist,
   clearCachedSearchResults,
-  clearCachedStacBatches,
   createEsgpullCommand,
   createIntakeEsgfSearch,
   createSearchRouteURL,
   deriveCachedSearchData,
-  getCachedPagination,
   getCachedSearchResults,
-  getCachedStacBatches,
   getStyle,
   getUrlFromSearch,
-  identifyProblematicFacets,
-  isEqual,
   objectIsEmpty,
-  parseFacets,
   projectBaseQuery,
-  searchAlreadyExists,
   showError,
   showNotice,
+  isEqual,
+  basePagination,
 } from '../../common/utils';
 import { UserCart, UserSearchQuery } from '../Cart/types';
 import { Tag, TagType, TagValue } from '../DataDisplay/Tag';
@@ -77,6 +69,16 @@ import {
 import { AuthContext } from '../../contexts/AuthContext';
 import { convertStacToRawSearchResult, stringifyApiRequest } from '../../common/STAC';
 import DownloadModal from '../Downloads/DownloadModal';
+import {
+  cacheStacBatches,
+  checkFiltersExist,
+  clearCachedStacBatches,
+  getCachedStacBatches,
+  identifyProblematicFacets,
+  parseFacets,
+  SEARCH_BATCH_SIZE,
+  searchAlreadyExists,
+} from './searchHelpers';
 
 const tooltipText = {
   featureNotAvailableInStac: 'This feature is not compatible with STAC projects.',
@@ -168,8 +170,14 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   const appStyles = getStyle(isDarkMode);
 
-  const { data, error, isLoading, run } = useAsync({
-    deferFn: fetchSearchResults as unknown as DeferFn<Record<string, unknown>>,
+  const { data, error, isLoading, run } = useAsync<Record<string, unknown>>({
+    deferFn: async ([search, pagination, token]) => {
+      return alternateFetchSearchResults(
+        search as ActiveSearchQuery,
+        pagination as Pagination,
+        token as string | undefined,
+      );
+    },
   });
   const [filtersExist, setFiltersExist] = React.useState<boolean>(false);
   const [parsedFacets, setParsedFacets] = React.useState<ParsedFacets | Record<string, unknown>>(
@@ -177,8 +185,11 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   );
   const [selectedItems, setSelectedItems] = React.useState<RawSearchResults | []>([]);
 
-  const [paginationOptions, setPaginationOptions] =
-    React.useState<Pagination>(getCachedPagination());
+  // const [cachedData, setCachedData] = useAtom<FullSearchData>(cachedSearchDataAtom);
+
+  const [paginationOptions, setPaginationOptions] = React.useState<Pagination>(
+    basePagination /* getCachedPagination() */,
+  );
 
   const [stacLoadedBatches, setStacLoadedBatches] = React.useState<StacBatchLoading>(() => {
     try {
@@ -297,7 +308,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   // Cache STAC batches for navigation persistence
   React.useEffect(() => {
     if (currentProject.isSTAC && hasStacResults) {
-      cacheStacBatches(stacLoadedBatches);
+      cacheStacBatches({ ...stacLoadedBatches, searchHash: 909, batches: [] });
     }
   }, [currentProject.isSTAC, stacLoadedBatches, hasStacResults]);
 
@@ -409,12 +420,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     }
 
     if (results && currentRequestURL && !objectIsEmpty(results)) {
-      cacheSearchResults(
-        results,
-        paginationOptions,
-        currentRequestURL,
-        currentRequestQueryRef.current || activeSearchQuery,
-      );
+      cacheSearchResults(results, paginationOptions, currentRequestURL);
       if (results.facet_counts) {
         const { facet_fields: facetFields } = (
           results as {
@@ -450,7 +456,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           nextToken = typeof nextLink?.body?.token === 'string' ? nextLink.body.token : undefined;
         }
 
-        const loadedBatches = Math.ceil(stacLoadedBatches.results.length / STAC_BATCH_SIZE);
+        const loadedBatches = Math.ceil(stacLoadedBatches.results.length / SEARCH_BATCH_SIZE);
         const accumulatedResults =
           loadedBatches === 0 ? newDocs : [...stacLoadedBatches.results, ...newDocs];
 
@@ -513,7 +519,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     const currentPageSize = paginationOptions.pageSize || 10;
     const loadedCount = stacLoadedBatches.results.length;
     const totalLoadedPages = Math.ceil(loadedCount / currentPageSize);
-    const currentBatch = Math.ceil(loadedCount / STAC_BATCH_SIZE);
+    const currentBatch = Math.ceil(loadedCount / SEARCH_BATCH_SIZE);
 
     if (currentPage === totalLoadedPages && lastPreloadedBatchRef.current !== currentBatch) {
       lastPreloadedBatchRef.current = currentBatch;
@@ -695,7 +701,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     if (currentProject.isSTAC && stacLoadedBatches.nextToken) {
       const loadedCount = stacLoadedBatches.results.length;
       const totalLoadedPages = Math.ceil(loadedCount / pageSize);
-      const currentBatch = Math.ceil(loadedCount / STAC_BATCH_SIZE);
+      const currentBatch = Math.ceil(loadedCount / SEARCH_BATCH_SIZE);
 
       if (page === totalLoadedPages && lastPreloadedBatchRef.current !== currentBatch) {
         lastPreloadedBatchRef.current = currentBatch;
@@ -1000,13 +1006,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                       hide={setDownloadAllForm(false)}
                       searchURL={getUrlFromSearch(activeSearchQuery)}
                       stacResults={
-                        resultsToDisplay
-                          ? (resultsToDisplay as StacResponse).search
-                          : {
-                              features: [],
-                              links: [],
-                              type: 'FeatureCollection',
-                            }
+                        resultsToDisplay ? (resultsToDisplay as StacResponse).search.features : []
                       }
                       totalMatched={numMatched}
                       activeSearchQuery={activeSearchQuery}

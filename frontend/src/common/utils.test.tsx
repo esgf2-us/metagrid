@@ -20,7 +20,6 @@ import {
   showError,
   showNotice,
   splitStringByChar,
-  unsavedLocalSearches,
   createSearchRouteURL,
   getStrSizeInKb,
   compressData,
@@ -29,9 +28,6 @@ import {
   getFromLocalStorage,
   cachePagination,
   getCachedPagination,
-  cacheSearchResults,
-  getCachedSearchResults,
-  clearCachedSearchResults,
   showBanner,
   saveBannerText,
   clearDeprecatedStorageKeys,
@@ -39,7 +35,6 @@ import {
   createIntakeEsgfSearch,
   getLastMessageSeen,
   setStartupMessageAsSeen,
-  searchAlreadyExists,
   downloadFileForUser,
   identifyProblematicFacets,
 } from './utils';
@@ -318,67 +313,6 @@ describe('Test combineCarts', () => {
   });
 });
 
-describe('Test unsavedLocal searches', () => {
-  const firstResult: UserSearchQuery = {
-    uuid: 'uuid1',
-    user: 'user',
-    project: rawProjectFixture(),
-    projectId: '1',
-    versionType: 'latest',
-    resultType: 'all',
-    minVersionDate: '20200101',
-    maxVersionDate: '20201231',
-    filenameVars: ['var'],
-    activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
-    textInputs: ['foo'],
-    url: 'https://localhost/url.com',
-    resultsCount: 200,
-    searchTime: 100000,
-    globusOnly: false,
-  };
-  const secondResult: UserSearchQuery = {
-    uuid: 'uuid2',
-    user: 'user',
-    project: rawProjectFixture(),
-    projectId: '2',
-    versionType: 'latest',
-    resultType: 'all',
-    minVersionDate: '20200101',
-    maxVersionDate: '20201231',
-    filenameVars: ['var'],
-    activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
-    textInputs: ['foo'],
-    url: 'https://localhost/url.com',
-    resultsCount: 200,
-    searchTime: 100000,
-    globusOnly: false,
-  };
-  const thirdResult: UserSearchQuery = {
-    uuid: 'uuid3',
-    user: 'user',
-    project: rawProjectFixture(),
-    projectId: '3',
-    versionType: 'latest',
-    resultType: 'all',
-    minVersionDate: '20200101',
-    maxVersionDate: '20201231',
-    filenameVars: ['var'],
-    activeFacets: { foo: ['option1', 'option2'], baz: ['option1'] },
-    textInputs: ['foo'],
-    url: 'https://localhost/url.com',
-    resultsCount: 200,
-    searchTime: 100000,
-    globusOnly: false,
-  };
-
-  const localResults: UserSearchQueries = [firstResult, secondResult];
-  const databaseResults: UserSearchQueries = [secondResult, thirdResult];
-
-  it('returns the first result because it is not currently in database', () => {
-    expect(unsavedLocalSearches(databaseResults, localResults)).toEqual([firstResult]);
-  });
-});
-
 describe('Test getCurrentAppPage', () => {
   it('returns appropriate page name based on window location', () => {
     expect(getCurrentAppPage()).toEqual(AppPage.Unknown);
@@ -550,7 +484,7 @@ describe('Test createSearchRouteURL', () => {
         { op: '=', args: [{ property: 'properties.latest' }, 'true'] },
       ],
     };
-    const result = createSearchRouteURL(url, stacFilter);
+    const result = createSearchRouteURL(url);
 
     // Parse the result URL to check components
     const resultUrl = new URL(result);
@@ -573,7 +507,7 @@ describe('Test createSearchRouteURL', () => {
       op: '=',
       args: [{ property: 'properties.latest' }, 'true'],
     };
-    const result = createSearchRouteURL(url, stacFilter);
+    const result = createSearchRouteURL(url);
 
     const resultUrl = new URL(result);
     expect(resultUrl.searchParams.get('collections')).toBe('CMIP6');
@@ -582,7 +516,7 @@ describe('Test createSearchRouteURL', () => {
 
   it('excludes offset parameter for STAC URLs', () => {
     const url = 'https://example.com/stac/search?offset=100&limit=100&project_id=CMIP6';
-    const result = createSearchRouteURL(url, null);
+    const result = createSearchRouteURL(url);
 
     const resultUrl = new URL(result);
     expect(resultUrl.searchParams.has('offset')).toBe(false);
@@ -880,46 +814,6 @@ describe('Test cachePagination and getCachedPagination', () => {
   });
 });
 
-describe('Test cacheSearchResults, getCachedSearchResults, and clearCachedSearchResults', () => {
-  const results = { response: { docs: [], numFound: 0 } };
-  const pagination = { page: 1, pageSize: 10 };
-  const cachedURL = 'http://test.com';
-
-  afterEach(() => {
-    clearCachedSearchResults();
-  });
-
-  it('caches and retrieves search results', () => {
-    cacheSearchResults(results, pagination, cachedURL);
-    const cached = getCachedSearchResults();
-    expect(cached.cachedURL).toBe(cachedURL);
-    expect(cached.response).toBeDefined();
-  });
-
-  it('clears cached search results', () => {
-    cacheSearchResults(results, pagination, cachedURL);
-    clearCachedSearchResults();
-    expect(getCachedSearchResults()).toEqual({});
-  });
-
-  it('clears cache when expired', () => {
-    cacheSearchResults(results, pagination, cachedURL);
-
-    // Expect the cache to be set
-    expect(tempStorageGetMock('cachedSearchResults')).toBeTruthy();
-
-    // Simulate time passing
-    vi.useFakeTimers();
-    vi.setSystemTime(Date.now() + 60 * 60 * 2000); // Move time forward by 2 hours
-    const cached = getCachedSearchResults();
-    expect(cached).toEqual({});
-
-    // Should also remove from localStorage
-    const cachedItem = tempStorageGetMock('cachedSearchResults');
-    expect(cachedItem).toBeUndefined();
-  });
-});
-
 describe('Test showBanner and saveBannerText', () => {
   beforeEach(() => {
     mockConfig.BANNER_TEXT = 'Test Banner';
@@ -1134,44 +1028,6 @@ describe('Test getLastMessageSeen and setStartupMessageAsSeen', () => {
     setStartupMessageAsSeen();
     const message = localStorageMock.getItem(messageKey);
     expect(message).toBeTruthy();
-  });
-});
-
-describe('Test searchAlreadyExists', () => {
-  it('returns true if search with same uuid exists', () => {
-    const existingSearches = [
-      {
-        uuid: '123',
-        search: { project: { name: 'CMIP6' }, activeFacets: {} },
-      },
-      {
-        uuid: '456',
-        search: { project: { name: 'CMIP5' }, activeFacets: {} },
-      },
-    ] as unknown as UserSearchQueries;
-
-    const newSearch = {
-      uuid: '123',
-      search: { project: { name: 'CMIP6' }, activeFacets: { activity_id: ['CFMIP'] } },
-    } as unknown as UserSearchQuery;
-
-    expect(searchAlreadyExists(existingSearches, newSearch)).toBe(true);
-  });
-
-  it('returns false if search does not exist', () => {
-    const existingSearches = [
-      {
-        uuid: '123',
-        search: { project: { name: 'CMIP6' }, activeFacets: {} },
-      },
-    ] as unknown as UserSearchQueries;
-
-    const newSearch = {
-      uuid: '789',
-      search: { project: { name: 'E3SM' }, activeFacets: {} },
-    } as unknown as UserSearchQuery;
-
-    expect(searchAlreadyExists(existingSearches, newSearch)).toBe(false);
   });
 });
 

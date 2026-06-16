@@ -1,14 +1,15 @@
 import { CSSProperties, ReactNode } from 'react';
 import { MessageInstance } from 'antd/es/message/interface';
 import LZString from 'lz-string';
-import { UserSearchQueries, UserSearchQuery } from '../components/Cart/types';
-import { ActiveFacets, RawProject } from '../components/Facets/types';
+import { ActiveFacets, ParsedFacets, RawProject } from '../components/Facets/types';
 import {
   ActiveSearchQuery,
+  BatchedSearchResults,
   Pagination,
   RawSearchResult,
   RawSearchResults,
   ResultType,
+  SearchResponse,
   TextInputs,
   VersionType,
 } from '../components/Search/types';
@@ -63,6 +64,11 @@ export async function showNotice(
   }
 }
 
+export const basePagination: Pagination = {
+  page: 1,
+  pageSize: 10,
+};
+
 export const projectBaseQuery = (
   project: Record<string, unknown> | RawProject,
 ): ActiveSearchQuery => ({
@@ -90,6 +96,45 @@ export const objectIsEmpty = (obj: Record<any, any>): boolean =>
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const isEqual = (a: any, b: any): boolean => JSON.stringify(a) === JSON.stringify(b);
+
+export const baseBatchedResults: BatchedSearchResults = {
+  batches: [],
+  batchSize: 0,
+  totalMatched: 0,
+  accumulatedResults: [],
+  isStac: false,
+};
+
+export const baseSearchResponse: SearchResponse = {
+  expires: 0,
+  batchedResults: baseBatchedResults,
+  searchUrl: '',
+  searchQuery: projectBaseQuery({}),
+  searchFacets: {} as ParsedFacets,
+  status: 200,
+};
+
+/**
+ * Generic function to convert any object to a hash number for efficient comparison.
+ * Uses a 32-bit integer hash algorithm for consistent results.
+ *
+ * @param obj - Object to hash
+ * @returns Hash number representing the object
+ */
+export const convertObjectToHash = <T>(obj: T): number => {
+  /* eslint-disable */
+  let hash: number = 0;
+  const queryStr = JSON.stringify(obj);
+  let i, chr;
+
+  for (i = 0; i < queryStr.length; i++) {
+    chr = queryStr.charCodeAt(i);
+    hash = (hash << 5) - hash + chr;
+    hash |= 0; // Convert to 32bit integer
+  }
+  return hash;
+  /* eslint-enable */
+};
 
 const bodySider = {
   padding: '12px 12px 12px 12px',
@@ -151,54 +196,11 @@ export const getCurrentAppPage = (): AppPage => {
   return AppPage.Unknown;
 };
 
-/**
- * Creates a route that will access the JSON search results
- * @param url - The internal search URL
- * @param stacFilter - Optional STAC filter object (required for STAC searches)
- */
-export const createSearchRouteURL = (
-  url: string,
-  stacFilter?: { op: string; args: unknown } | null,
-): string => {
-  // Detect if this is a STAC search URL
-  const isStacUrl = url.includes('/stac/search');
+/** Creates a route that will access the JSON search results */
+export const createSearchRouteURL = (url: string): string => {
+  const { searchParams } = new URL(url);
 
-  const urlObj = new URL(url);
-  const { searchParams } = urlObj;
-
-  if (!isStacUrl) {
-    return `${window.METAGRID.SEARCH_URL}?${searchParams.toString()}`;
-  }
-
-  // STAC: Convert to external STAC API format
-  const newParams = new URLSearchParams();
-
-  // Get project name from project_id parameter
-  const projectId = searchParams.get('project_id');
-  if (projectId) {
-    newParams.set('collections', projectId);
-  }
-
-  // Get limit (remove offset as STAC API doesn't use it, uses token-based pagination instead)
-  const limit = searchParams.get('limit');
-  if (limit) {
-    newParams.set('limit', limit);
-  }
-
-  // Add STAC filter if provided
-  if (stacFilter) {
-    // URL-encode the filter object as JSON
-    newParams.set('filter', JSON.stringify(stacFilter));
-    newParams.set('filter-lang', 'cql2-json');
-  }
-
-  // Handle text search query parameter
-  const query = searchParams.get('query');
-  if (query && query !== '*') {
-    newParams.set('q', query);
-  }
-
-  return `${window.METAGRID.STAC_URL}/search?${newParams.toString()}`;
+  return `${window.METAGRID.SEARCH_URL}?${searchParams.toString()}`;
 };
 
 /**
@@ -286,6 +288,25 @@ export const convertResultTypeToReplicaParam = (
   const param = replicaParams[resultType] as ResultType;
   return param && isLabel ? param.replace('=', ' = ') : param;
 };
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function memoizeByArgs<T extends (...args: any[]) => void>(
+  fn: T,
+  getKey: (...args: Parameters<T>) => string,
+): T {
+  let lastKey: string | undefined;
+
+  return ((...args: Parameters<T>) => {
+    const key = getKey(...args);
+
+    if (key === lastKey) {
+      return;
+    }
+
+    lastKey = key;
+    fn(...args);
+  }) as T;
+}
 
 export const getUrlFromSearch = (search: ActiveSearchQuery): string => {
   const urlString = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
@@ -618,53 +639,6 @@ export const combineCarts = (
   return combinedItems;
 };
 
-const convertSearchToHash = (query: UserSearchQuery): number => {
-  /* eslint-disable */
-  let hash: number = 0;
-  const nonUniqueQuery: UserSearchQuery = {
-    ...query,
-    resultsCount: 0,
-    searchTime: null,
-    uuid: '',
-    user: null,
-    url: '',
-  };
-  const queryStr = JSON.stringify(nonUniqueQuery);
-  let i, chr;
-
-  for (i = 0; i < queryStr.length; i++) {
-    chr = queryStr.charCodeAt(i);
-    hash = (hash << 5) - hash + chr;
-    hash |= 0; // Convert to 32bit integer
-  }
-  return hash;
-};
-
-export const searchAlreadyExists = (
-  existingSearches: UserSearchQueries,
-  newSearch: UserSearchQuery,
-): boolean => {
-  const hashValueLocal = convertSearchToHash(newSearch);
-  return existingSearches.some((search) => {
-    if (search.uuid === newSearch.uuid) {
-      return true;
-    }
-    const hashValueDatabase = convertSearchToHash(search);
-
-    return hashValueDatabase === hashValueLocal;
-  });
-};
-
-export const unsavedLocalSearches = (
-  databaseItems: UserSearchQueries,
-  localItems: UserSearchQueries,
-): UserSearchQueries => {
-  const itemsNotInDatabase = localItems.filter(
-    (localSearchQuery: UserSearchQuery) => !searchAlreadyExists(databaseItems, localSearchQuery),
-  );
-  return itemsNotInDatabase;
-};
-
 export const getLastMessageSeen = (): string | null => {
   return localStorage.getItem('lastMessageSeen');
 };
@@ -702,8 +676,7 @@ export function compressData<T>(data: T): string {
 export function decompressData<T>(compressedStr: string): T {
   // Decompress the data
   const decompressedStr = LZString.decompress(compressedStr);
-  const decompressedData = JSON.parse(decompressedStr);
-  return decompressedData as T;
+  return JSON.parse(decompressedStr) as T;
 }
 
 export function saveToLocalStorage<T>(key: string, value: T, compress = false): void {
@@ -749,7 +722,6 @@ export const cacheSearchResults = (
   fetchedResults: Record<string, unknown> | undefined,
   pagination: Pagination,
   cachedURL: string,
-  searchQuery?: ActiveSearchQuery,
 ): void => {
   if (fetchedResults && !Object.hasOwn(fetchedResults, 'cachedURL')) {
     saveToLocalStorage(
@@ -757,7 +729,6 @@ export const cacheSearchResults = (
       {
         results: fetchedResults,
         cachedURL,
-        searchQuery, // Cache the actual query object instead of trying to parse URL
         expires: Date.now() + 60 * 60 * 1000, // Expires after an hour
       },
       true,
@@ -766,6 +737,12 @@ export const cacheSearchResults = (
     // Cache the pagination
     cachePagination(pagination);
   }
+};
+
+export const clearCachedSearchResults = (): void => {
+  // Clear the cached search results from sessionStorage
+  localStorage.removeItem('cachedSearchResults');
+  localStorage.removeItem('cachedSearchPagination');
 };
 
 export const getCachedSearchResults = (): Record<string, unknown> => {
@@ -782,47 +759,10 @@ export const getCachedSearchResults = (): Record<string, unknown> => {
   // If not expired, return the cached results
   return {
     cachedURL: fetchedResults.cachedURL,
-    searchQuery: fetchedResults.searchQuery,
     ...(typeof fetchedResults.results === 'object' && fetchedResults.results !== null
       ? fetchedResults.results
       : {}),
   };
-};
-
-export const clearCachedSearchResults = (): void => {
-  // Clear the cached search results from localStorage
-  localStorage.removeItem('cachedSearchResults');
-  localStorage.removeItem('cachedSearchPagination');
-};
-
-// STAC batch cache functions
-export const cacheStacBatches = (stacBatches: Record<string, unknown>): void => {
-  saveToLocalStorage(
-    'cachedStacBatches',
-    {
-      batches: stacBatches,
-      expires: Date.now() + 60 * 60 * 1000, // Expires after an hour
-    },
-    true,
-  );
-};
-
-export const getCachedStacBatches = (): Record<string, unknown> | null => {
-  const cached: Record<string, unknown> = getFromLocalStorage('cachedStacBatches', true) || {};
-  const now = Date.now();
-
-  if (cached.expires && now > (cached.expires as number)) {
-    // If expired, remove from localStorage
-    clearCachedStacBatches();
-    return null;
-  }
-
-  // If not expired, return the cached batches
-  return (cached.batches as Record<string, unknown>) || null;
-};
-
-export const clearCachedStacBatches = (): void => {
-  localStorage.removeItem('cachedStacBatches');
 };
 
 export const showBanner = (): boolean => {

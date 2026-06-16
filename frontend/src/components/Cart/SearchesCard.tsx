@@ -9,17 +9,14 @@ import React, { useEffect } from 'react';
 import { DeferFn, useAsync } from 'react-async';
 import { useNavigate } from 'react-router';
 import { useSetAtom } from 'jotai';
-import { fetchSearchResults, generateSearchURLQuery } from '../../api';
+import { alternateFetchSearchResults, generateSearchURLQuery } from '../../api';
 import { CSSinJS } from '../../common/types';
 import { UserSearchQuery } from './types';
-import { createSearchRouteURL } from '../../common/utils';
+import { basePagination, createSearchRouteURL } from '../../common/utils';
 import { savedSearchQueryAtom } from '../../common/atoms';
 import { savedSearchTourTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
-import {
-  stringifyApiRequest,
-  convertSearchParamsIntoStacFilter,
-  getStacProject,
-} from '../../common/STAC';
+import { stringifyApiRequest } from '../../common/STAC';
+import { ActiveSearchQuery, Pagination } from '../Search/types';
 
 const styles: CSSinJS = {
   category: {
@@ -64,23 +61,26 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
   // Only fetch resultCount if resultsCount is null or searchTime is an hour old
   const expirationTime = (searchTime || 0) + 60 * 60 * 1000; // Expires after an hour
   const getUrlResults: boolean = !resultsCount || expirationTime < Date.now();
-  const numResultsUrl = getUrlResults
-    ? generateSearchURLQuery(searchQuery, {
-        page: 0,
-        pageSize: 0,
-      })
-    : null;
+  // const numResultsUrl = getUrlResults ? generateSearchURLQuery(searchQuery, basePagination) : null;
 
-  const { data, isLoading, error, run } = useAsync({
-    deferFn: fetchSearchResults as unknown as DeferFn<Record<string, unknown>>,
+  const { data, error, isLoading, run } = useAsync<Record<string, unknown>>({
+    deferFn: async ([search, pagination, token]) => {
+      return alternateFetchSearchResults(
+        search as ActiveSearchQuery,
+        pagination as Pagination,
+        token as string | undefined,
+      );
+    },
   });
 
-  // Automatically fetch results when component mounts if needed
+  // Update results if getUrlResults is true
   useEffect(() => {
-    if (numResultsUrl) {
-      run(numResultsUrl);
+    if (!getUrlResults) {
+      return;
     }
-  }, [numResultsUrl]);
+
+    run(searchQuery, basePagination);
+  }, [getUrlResults, run]);
 
   // Update the search query with the results count if it was fetched
   useEffect(() => {
@@ -166,12 +166,7 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
           <Tooltip title="View results in JSON format">
             <a
               className={savedSearchTourTargets.jsonBtn.class()}
-              href={createSearchRouteURL(
-                url,
-                project.isSTAC && project.projectName
-                  ? convertSearchParamsIntoStacFilter(url, getStacProject(project.projectName))
-                  : null,
-              )}
+              href={createSearchRouteURL(url)}
               rel="noopener noreferrer"
               target="blank_"
             >

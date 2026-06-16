@@ -45,11 +45,13 @@ export type Props = {
   results: RawSearchResults | [];
   totalResults?: number;
   currentPage?: number;
+  currentPageSize?: number;
   pageSize?: number;
   showQuickJumper?: boolean;
   showLessItems?: boolean;
   selections?: RawSearchResults | [];
   filenameVars?: TextInputs | [];
+  isStac?: boolean;
   onUpdateCart: (item: RawSearchResults, operation: 'add' | 'remove') => void;
   onRowSelect?: (selectedRows: RawSearchResults | []) => void;
   onPageChange?: (page: number, pageSize: number) => void;
@@ -70,7 +72,6 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
   results,
   totalResults,
   currentPage,
-  pageSize,
   showQuickJumper = true,
   showLessItems = false,
   selections,
@@ -238,13 +239,15 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
     }
   };
 
+  // For STAC: calculate which batch we're in (safePage and safeSize defined above)
+  // const currentBatch = isStac ? Math.floor(((safePage - 1) * safeSize) / STAC_BATCH_SIZE) : 0;
+
   const tableConfig = {
     size: 'small' as SizeType,
     loading,
     pagination: {
-      total: totalResults,
+      total: totalResults, // clampedResultCount,
       current: currentPage,
-      pageSize,
       position: ['bottomCenter'],
       showSizeChanger: {
         optionRender: renderPageSizeOption,

@@ -4,8 +4,8 @@ import { UserCart, UserSearchQueries, UserSearchQuery } from '../components/Cart
 import { ParsedFacets, RawProject } from '../components/Facets/types';
 import { GlobusTaskItem, GlobusEndpoint } from '../components/Globus/types';
 import { NodeStatusArray } from '../components/NodeStatus/types';
-import { ActiveSearchQuery, RawSearchResults } from '../components/Search/types';
-import { projectBaseQuery } from './utils';
+import { ActiveSearchQuery, RawSearchResults, SearchResponse } from '../components/Search/types';
+import { baseSearchResponse, projectBaseQuery } from './utils';
 
 export enum AppStateKeys {
   isDarkMode = 'isDarkMode',
@@ -20,6 +20,7 @@ export enum AppStateKeys {
   savedSearchQuery = 'savedSearchQuery',
   availableFacets = 'availableFacets',
   nodeStatus = 'nodeStatus',
+  cachedSearchData = 'cachedSearchData',
 }
 
 export enum CartStateKeys {
@@ -58,6 +59,13 @@ export const nodePreferencesAtom = atomWithStorage<string[]>(
   undefined,
   { getOnInit: true },
 );
+
+// export const cachedSearchDataAtom = atomWithStorage<SearchResponse>(
+//   AppStateKeys.cachedSearchData,
+//   baseCachedData,
+//   undefined,
+//   { getOnInit: true },
+// );
 
 export const activeSearchQueryAtom = atomWithStorage<ActiveSearchQuery>(
   AppStateKeys.activeSearchQuery,

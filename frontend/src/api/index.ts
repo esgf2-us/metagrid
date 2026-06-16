@@ -16,15 +16,19 @@ import {
   UserSearchQueries,
   UserSearchQuery,
 } from '../components/Cart/types';
-import { ActiveFacets, RawProject, RawProjects } from '../components/Facets/types';
+import { ActiveFacets, RawFacets, RawProject, RawProjects } from '../components/Facets/types';
 import { NodeStatusArray, RawNodeStatus } from '../components/NodeStatus/types';
 import {
   ActiveSearchQuery,
+  BatchedSearchResults,
+  NonStacResponse,
   Pagination,
   RawCitation,
+  SearchResponse,
   StacAggregations,
   StacAsset,
   StacFeature,
+  StacLink,
   StacSearchResponse,
   TextInputs,
 } from '../components/Search/types';
@@ -33,10 +37,10 @@ import apiRoutes, { ApiRoute, HTTPCodeType } from './routes';
 import { GlobusEndpointSearchResults } from '../components/Globus/types';
 import {
   cachePagination,
+  convertObjectToHash,
   convertResultTypeToReplicaParam,
   downloadFileForUser,
   getCachedPagination,
-  getCachedSearchResults,
 } from '../common/utils';
 import {
   aggregationsToFacetsData,
@@ -45,9 +49,17 @@ import {
   getStacProject,
   buildStacProjects,
   setConfiguredAdditionalProjects,
+  convertStacToRawSearchResult,
 } from '../common/STAC';
 import { ProjectsConfig, STAC_PROJECT_LIST } from '../common/useProjectsConfig';
+import {
+  convertActiveSearchToHash,
+  getCachedSearchResults,
+  parseFacets,
+  SEARCH_BATCH_SIZE,
+} from '../components/Search/searchHelpers';
 
+type Search = ActiveSearchQuery | UserSearchQuery;
 export interface ResponseError extends Error {
   status?: number;
   /* eslint-disable @typescript-eslint/no-redundant-type-constituents */
@@ -60,8 +72,6 @@ export interface SubmissionResult {
   failures: string[];
   auth_url: string | undefined;
 }
-
-export const STAC_BATCH_SIZE = 100;
 
 export const getCookie = (name: string): null | string => {
   let cookieValue = null;
@@ -484,7 +494,7 @@ export const updatePaginationParams = (url: string, pagination: Pagination): str
   const paginationOffset = pagination.page > 1 ? (pagination.page - 1) * pagination.pageSize : 0;
 
   const baseParams = url
-    .replace('limit=0', `limit=${pagination.pageSize}`)
+    .replace('limit=0', `limit=${SEARCH_BATCH_SIZE}`)
     .replace('offset=0', `offset=${paginationOffset}`);
 
   return `${baseParams}&`;
@@ -516,14 +526,12 @@ export const generateSearchURLQuery = (
 
   const replicaParam = convertResultTypeToReplicaParam(resultType);
 
+  // The base params include facet fields to return for each dataset and the pagination options
   const facetsUrl =
     'facetsUrl' in project && typeof project.facetsUrl === 'string'
       ? project.facetsUrl
       : 'offset=0&limit=0';
-  // STAC uses fixed batch size for client-side pagination; non-STAC uses server-side pagination
-  let baseParams = isSTAC
-    ? `${facetsUrl.replace('limit=0', `limit=${STAC_BATCH_SIZE}`)}&`
-    : updatePaginationParams(facetsUrl, pagination);
+  let baseParams = updatePaginationParams(facetsUrl, pagination);
 
   if (versionType === 'latest') {
     baseParams += `latest=true&`;
@@ -652,6 +660,13 @@ export const clearSTACAggregationsCache = (): void => {
   stacAggregationsCache.clear();
 };
 
+/**
+ * Clears the STAC results cache
+ */
+export const clearSTACResultsCache = (): void => {
+  stacAggregationsCache.clear();
+};
+
 export const fetchSTACAggregations = async (
   projectName: string,
   reqUrl: string,
@@ -668,11 +683,11 @@ export const fetchSTACAggregations = async (
   }
 
   // No cache hit, fetch from API
-  const aggregationsList = getAggregationsList(projectName);
+  const aggregations = getAggregationsList(projectName);
 
   const payload = {
     collections: [projectName],
-    aggregations: aggregationsList,
+    aggregations,
     filter,
   };
 
@@ -689,12 +704,63 @@ export const fetchSTACAggregations = async (
     });
 };
 
+// This stores the search batches for a STAC search
+// export const batchedResults: {
+//   batches: { nextToken: string | undefined; features: StacFeature[] }[];
+//   featureCount: number;
+//   queryHash: number;
+// } = { batches: [], featureCount: 0, queryHash: 0 };
+
+// const updateBatchedResults = (
+//   projectName: string,
+//   nextToken: string | undefined,
+//   nextBatchOfFeatures: StacFeature[],
+//   filter:
+//     | {
+//         op: string;
+//         args: unknown;
+//       }
+//     | undefined,
+//   textInputs?: TextInputs,
+// ): void => {
+//   const currentHash = convertObjectToHash({ projectName, filter, textInputs });
+
+//   if (currentHash === batchedResults.queryHash) {
+//     // Exit if the current token is already stored
+//     if (batchedResults.batches.some((batch) => batch.nextToken === nextToken)) {
+//       return;
+//     }
+//     // This is the same search, just more features requested
+//     batchedResults.batches.push({ nextToken, features: nextBatchOfFeatures });
+//     batchedResults.featureCount += nextBatchOfFeatures.length;
+//   } else {
+//     // This is a new search, let's override existing batchedResults
+//     batchedResults.batches = [{ nextToken, features: nextBatchOfFeatures }];
+//     batchedResults.featureCount = nextBatchOfFeatures.length;
+//     batchedResults.queryHash = currentHash;
+//   }
+// };
+
+// const getFeaturesFromBatchedResults = (): StacFeature[] => {
+//   return batchedResults.batches.flatMap((batch) => batch.features);
+// };
+
+export const getNextToken = (links: StacLink[]): string | undefined => {
+  const nextLink = links.find((link) => link.rel === 'next');
+
+  if (nextLink && nextLink.body && nextLink.body.token) {
+    return nextLink.body.token;
+  }
+
+  return undefined;
+};
+
 export const fetchSTACSearchResults = async (
+  search: ActiveSearchQuery,
   reqUrlStr: string,
   projectName: string,
   token?: string,
-): // eslint-disable-next-line @typescript-eslint/no-explicit-any
-Promise<{ [key: string]: any }> => {
+): Promise<SearchResponse> => {
   let status = 200;
 
   const filter = convertSearchParamsIntoStacFilter(reqUrlStr, getStacProject(projectName));
@@ -723,11 +789,14 @@ Promise<{ [key: string]: any }> => {
 
   const searchResults = await postSTACSearch(
     projectName,
-    STAC_BATCH_SIZE,
+    SEARCH_BATCH_SIZE,
     filter,
     textInputs,
     token,
-  );
+  ).catch((error: ResponseError) => {
+    /* istanbul ignore next -- @preserve */
+    status = error.cause === 422 ? 422 : (error.cause as number) || 500;
+  });
 
   const stacResponse: StacSearchResponse = searchResults as StacSearchResponse;
 
@@ -753,9 +822,118 @@ Promise<{ [key: string]: any }> => {
     }
   });
 
+  // updateBatchedResults(
+  //   projectName,
+  //   getNextToken(stacResponse.links),
+  //   filteredFeatures,
+  //   filter,
+  //   textInputs,
+  // );
+
+  // stacResponse.features = getFeaturesFromBatchedResults();
+
   stacResponse.features = filteredFeatures;
 
-  return { search: searchResults, facets: aggregations || {}, stac: true, status };
+  return {
+    expires: Date.now() + 60 * 60 * 1000,
+    searchUrl: reqUrlStr,
+    searchQuery: search,
+    searchFacets: aggregations || {},
+    batchedResults: {
+      isStac: true,
+      batches: [
+        {
+          batchNumber: 0,
+          nextToken: getNextToken(stacResponse.links),
+        },
+      ],
+      batchSize: SEARCH_BATCH_SIZE,
+      totalMatched: stacResponse.numMatched ?? stacResponse.numberMatched ?? 0,
+      accumulatedResults: stacResponse.features,
+    },
+    status,
+  };
+
+  // return {
+  //   search: stacResponse,
+  //   facets: aggregations || {},
+  //   nextToken: getNextToken(stacResponse.links),
+  //   stac: true,
+  //   status,
+  // };
+};
+
+export const fetchNonSTACSearchResults = async (
+  search: ActiveSearchQuery,
+  reqUrlStr: string,
+): Promise<SearchResponse> => {
+  const searchResults = await axios
+    .get(reqUrlStr)
+    .then((res) => res.data)
+    .catch((error: ResponseError) => {
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearch));
+    });
+
+  // return searchResults
+  //   .then((results) => {
+  // Prevent breaking the app if the response is not successful
+  // if (results.status !== 200) {
+  //   // Handle the case where status is 422 due to a offset value that is too high
+  //   if (results.status === 422) {
+  //     // cachePagination({
+  //     //   page: 1,
+  //     //   pageSize: cachedPagination.pageSize,
+  //     // });
+  //     throw new Error('', { cause: 422 });
+  //   }
+  // }
+
+  const nonStacResults: NonStacResponse = searchResults as NonStacResponse;
+
+  // return {
+  //   expires: Date.now() + 60 * 60 * 1000,
+  //   searchQuery: search,
+  //   searchFacets: resultsJson,
+  //   batchedResults: {
+  //     isStac: false,
+  //     batches: [{ pageIndex: pagination.page - 1 }],
+  //     batchSize: SEARCH_BATCH_SIZE,
+  //     totalMatched: stacResponse.numMatched ?? stacResponse.numberMatched ?? 0,
+  //     accumulatedResults: stacResponse.features.map((feature) =>
+  //       convertStacToRawSearchResult(feature),
+  //     ),
+  //   },
+  //   status: results.status,
+  // };
+
+  const facetCounts = nonStacResults.facet_counts;
+  const facetFields = facetCounts.facet_fields;
+  const parsedFacets = parseFacets(facetFields);
+
+  return {
+    expires: Date.now() + 60 * 60 * 1000,
+    searchUrl: reqUrlStr,
+    searchQuery: search,
+    searchFacets: parsedFacets,
+    batchedResults: {
+      isStac: false,
+      batches: [{ batchNumber: 0 }],
+      batchSize: SEARCH_BATCH_SIZE,
+      totalMatched: nonStacResults.response.numFound,
+      accumulatedResults: nonStacResults.response.docs,
+    },
+    status: 200,
+  };
+  // })
+  // .catch((error: ResponseError) => {
+  //   if (error.cause === 422) {
+  //     throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearch), {
+  //       cause: 422,
+  //     });
+  //   } else {
+  //     throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearch));
+  //   }
+  // });
 };
 
 /**
@@ -768,68 +946,31 @@ Promise<{ [key: string]: any }> => {
  * With DeferFn, arguments are passed in as an array ([string]).
  * Source: https://docs.react-async.com/api/options#deferfn
  */
-export const fetchSearchResults = async (
-  args: [string, string?] | Record<string, string>,
+export const alternateFetchSearchResults = async (
+  search: ActiveSearchQuery,
+  pagination: Pagination,
   token?: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Promise<{ [key: string]: any }> => {
+): Promise<SearchResponse> => {
   // Check if the request URL is passed in as an array or an object
-  let reqUrlStr: string;
-  let tokenToUse = token;
+  const reqUrlStr: string = generateSearchURLQuery(search, pagination);
 
-  if (Array.isArray(args)) {
-    // Check if args[0] is itself an array (when called as run([url, token]))
-    if (Array.isArray(args[0])) {
-      // Unwrap: args = [[url, token]] → [url, token]
-      const [url, tok] = args[0];
-      reqUrlStr = url;
-      if (tok && typeof tok === 'string') {
-        tokenToUse = tok;
-      }
-    } else {
-      // Normal case: args = [url] or [url, token]
-      const [url, tok] = args;
-      reqUrlStr = url;
-      if (tok && typeof tok === 'string') {
-        tokenToUse = tok;
-      }
-    }
-  } else {
-    reqUrlStr = args.reqUrl;
-  }
-
-  // Get cached search results - but skip cache if we have a token (STAC pagination)
-  if (!tokenToUse) {
-    const cachedResults = getCachedSearchResults();
-    /* istanbul ignore next -- @preserve */
-    const cachedURL = (cachedResults?.cachedURL as string) || '';
-
-    // If request URL matches the one in local storage, return the cached results
-    if (reqUrlStr === cachedURL) {
-      return cachedResults;
-    }
-  }
-
-  const cachedPagination = getCachedPagination();
-  const finalUrl = reqUrlStr;
-
-  if (finalUrl.includes('/stac/search?')) {
+  if (reqUrlStr.includes('/stac/search?')) {
     // If the request URL is for STAC search, fetch results using the STAC API
     const params = new URLSearchParams(reqUrlStr.split('?')[1]);
     /* istanbul ignore next -- @preserve */
     const projectName = params.get('project_id') || 'CMIP6';
 
-    return fetchSTACSearchResults(finalUrl, projectName, tokenToUse)
+    return fetchSTACSearchResults(search, reqUrlStr, projectName, token)
       .then((results) => {
         // Prevent breaking the app if the response is not successful
         if (results.status !== 200) {
           // Handle the case where status is 422 due to a offset value that is too high
           /* istanbul ignore next -- @preserve */
           if (results.status === 422) {
-            cachePagination({
-              page: 1,
-              pageSize: cachedPagination.pageSize,
-            });
+            // cachePagination({
+            //   page: 1,
+            //   pageSize: cachedPagination.pageSize,
+            // });
             throw new Error('', { cause: 422 });
           }
         }
@@ -848,25 +989,25 @@ export const fetchSearchResults = async (
       });
   }
 
-  return fetch(finalUrl)
+  return fetchNonSTACSearchResults(search, reqUrlStr)
     .then((results) => {
       // Prevent breaking the app if the response is not successful
       if (results.status !== 200) {
         // Handle the case where status is 422 due to a offset value that is too high
+        /* istanbul ignore next -- @preserve */
         if (results.status === 422) {
-          cachePagination({
-            page: 1,
-            pageSize: cachedPagination.pageSize,
-          });
+          // cachePagination({
+          //   page: 1,
+          //   pageSize: cachedPagination.pageSize,
+          // });
           throw new Error('', { cause: 422 });
         }
       }
 
-      const resultsJson = results.json();
-
-      return resultsJson;
+      return results;
     })
     .catch((error: ResponseError) => {
+      /* istanbul ignore next -- @preserve */
       if (error.cause === 422) {
         throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearch), {
           cause: 422,
@@ -876,6 +1017,124 @@ export const fetchSearchResults = async (
       }
     });
 };
+
+/**
+ * HTTP Request Method: GET
+ * HTTP Response: 200 OK
+ *
+ * This function can be called with either PromiseFn or DeferFn.
+ * With PromiseFn, arguments are passed in as an object ({reqUrl: string}).
+ * Source: https://docs.react-async.com/api/options#promisefn
+ * With DeferFn, arguments are passed in as an array ([string]).
+ * Source: https://docs.react-async.com/api/options#deferfn
+ */
+// export const fetchSearchResults = async (
+//   args: [string, string?] | Record<string, string>,
+//   token?: string,
+// ): Promise<{ [key: string]: unknown }> => {
+//   // Check if the request URL is passed in as an array or an object
+//   let reqUrlStr: string;
+//   let tokenToUse = token;
+
+//   if (Array.isArray(args)) {
+//     // Check if args[0] is itself an array (when called as run([url, token]))
+//     if (Array.isArray(args[0])) {
+//       // Unwrap: args = [[url, token]] → [url, token]
+//       const [url, tok] = args[0];
+//       reqUrlStr = url;
+//       if (tok && typeof tok === 'string') {
+//         tokenToUse = tok;
+//       }
+//     } else {
+//       // Normal case: args = [url] or [url, token]
+//       const [url, tok] = args;
+//       reqUrlStr = url;
+//       if (tok && typeof tok === 'string') {
+//         tokenToUse = tok;
+//       }
+//     }
+//   } else {
+//     reqUrlStr = args.reqUrl;
+//   }
+
+//   // Get cached search results - but skip cache if we have a token (STAC pagination)
+//   // if (!tokenToUse) {
+//   //   const cachedResults = getCachedSearchResults();
+//   //   /* istanbul ignore next -- @preserve */
+//   //   const cachedURL = (cachedResults?.cachedURL as string) || '';
+
+//   //   // If request URL matches the one in local storage, return the cached results
+//   //   if (reqUrlStr === cachedURL) {
+//   //     return cachedResults;
+//   //   }
+//   // }
+
+//   // const cachedPagination = getCachedPagination();
+//   const finalUrl = reqUrlStr;
+
+//   if (finalUrl.includes('/stac/search?')) {
+//     // If the request URL is for STAC search, fetch results using the STAC API
+//     const params = new URLSearchParams(reqUrlStr.split('?')[1]);
+//     /* istanbul ignore next -- @preserve */
+//     const projectName = params.get('project_id') || 'CMIP6';
+
+//     return fetchSTACSearchResults(finalUrl, projectName, tokenToUse)
+//       .then((results) => {
+//         // Prevent breaking the app if the response is not successful
+//         if (results.status !== 200) {
+//           // Handle the case where status is 422 due to a offset value that is too high
+//           /* istanbul ignore next -- @preserve */
+//           if (results.status === 422) {
+//             // cachePagination({
+//             //   page: 1,
+//             //   pageSize: cachedPagination.pageSize,
+//             // });
+//             throw new Error('', { cause: 422 });
+//           }
+//         }
+
+//         return results;
+//       })
+//       .catch((error: ResponseError) => {
+//         /* istanbul ignore next -- @preserve */
+//         if (error.cause === 422) {
+//           throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearchSTAC), {
+//             cause: 422,
+//           });
+//         } else {
+//           throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearchSTAC));
+//         }
+//       });
+//   }
+
+//   return fetch(finalUrl)
+//     .then((results) => {
+//       // Prevent breaking the app if the response is not successful
+//       if (results.status !== 200) {
+//         // Handle the case where status is 422 due to a offset value that is too high
+//         if (results.status === 422) {
+//           // cachePagination({
+//           //   page: 1,
+//           //   pageSize: cachedPagination.pageSize,
+//           // });
+//           throw new Error('', { cause: 422 });
+//         }
+//       }
+
+//       const resultsJson = results.json();
+
+//       return resultsJson;
+//     })
+//     .catch((error: ResponseError) => {
+//       if (error.cause === 422) {
+//         throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearch), {
+//           cause: 422,
+//         });
+//       } else {
+//         throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearch));
+//       }
+//     });
+// };
 
 /**
  * Performs processing on citation objects.
