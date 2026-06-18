@@ -5,7 +5,7 @@ import { vi } from 'vitest';
 import customRender from '../../test/custom-render';
 import { rest, server } from '../../test/mock/server';
 import { getSearchFromUrl } from '../../common/utils';
-import { ActiveSearchQuery } from '../Search/types';
+import { ActiveSearchQuery, StacSearchResponse } from '../Search/types';
 import {
   globusReadyNode,
   makeCartItem,
@@ -1083,10 +1083,12 @@ describe('DatasetDownload form tests', () => {
   });
 
   it('downloads wget script for STAC results passed via stacResults prop', async () => {
-    const stacResults: any = stacSearchResponseFixture([stacFeatureFixture('stac-id-1', 2, 1024)]);
+    const stacResults: StacSearchResponse = stacSearchResponseFixture([
+      stacFeatureFixture('stac-id-1', 2, 1024),
+    ]);
     const searchURL = 'https://test.com/search';
 
-    customRender(<DatasetDownloadForm stacResults={stacResults} searchURL={searchURL} />);
+    customRender(<DatasetDownloadForm stacFeatures={stacResults.features} searchURL={searchURL} />);
 
     // Open download dropdown
     const globusTransferDropdown = await within(
@@ -1190,7 +1192,7 @@ describe('DatasetDownload form tests', () => {
     it('uses preferred node when downloading wget script with STAC items', async () => {
       // Create STAC items with multiple nodes available
       const stacItem1 = stacFeatureFixture('stac-id-1', 3, 1024);
-      const stacResults: any = stacSearchResponseFixture([stacItem1]);
+      const stacResults: StacSearchResponse = stacSearchResponseFixture([stacItem1]);
       const searchURL = 'https://test.com/search';
 
       // Set preferred nodes in order
@@ -1200,7 +1202,9 @@ describe('DatasetDownload form tests', () => {
         'node1.example.com',
       ]);
 
-      customRender(<DatasetDownloadForm stacResults={stacResults} searchURL={searchURL} />);
+      customRender(
+        <DatasetDownloadForm stacFeatures={stacResults.features} searchURL={searchURL} />,
+      );
 
       // Open download dropdown and select wget
       const globusTransferDropdown = await within(
@@ -1227,7 +1231,7 @@ describe('DatasetDownload form tests', () => {
 
     it('falls back to first available node when no preferred nodes match', async () => {
       const stacItem1 = stacFeatureFixture('stac-id-1', 2, 1024);
-      const stacResults: any = stacSearchResponseFixture([stacItem1]);
+      const stacResults: StacSearchResponse = stacSearchResponseFixture([stacItem1]);
       const searchURL = 'https://test.com/search';
 
       // Set preferred nodes that don't exist in the STAC item
@@ -1236,7 +1240,9 @@ describe('DatasetDownload form tests', () => {
         'another-missing.example.com',
       ]);
 
-      customRender(<DatasetDownloadForm stacResults={stacResults} searchURL={searchURL} />);
+      customRender(
+        <DatasetDownloadForm stacFeatures={stacResults.features} searchURL={searchURL} />,
+      );
 
       // Open download dropdown and select wget
       const globusTransferDropdown = await within(
@@ -1260,13 +1266,15 @@ describe('DatasetDownload form tests', () => {
 
     it('handles empty preferred nodes list', async () => {
       const stacItem1 = stacFeatureFixture('stac-id-1', 2, 1024);
-      const stacResults: any = stacSearchResponseFixture([stacItem1]);
+      const stacResults: StacSearchResponse = stacSearchResponseFixture([stacItem1]);
       const searchURL = 'https://test.com/search';
 
       // Set empty preferred nodes list
       AtomWrapper.modifyAtomValue('nodePreferences', []);
 
-      customRender(<DatasetDownloadForm stacResults={stacResults} searchURL={searchURL} />);
+      customRender(
+        <DatasetDownloadForm stacFeatures={stacResults.features} searchURL={searchURL} />,
+      );
 
       // Open download dropdown and select wget
       const globusTransferDropdown = await within(

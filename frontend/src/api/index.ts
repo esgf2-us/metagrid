@@ -22,6 +22,7 @@ import {
   ActiveSearchQuery,
   Pagination,
   RawCitation,
+  SearchResults,
   StacAggregations,
   StacAsset,
   StacFeature,
@@ -693,8 +694,7 @@ export const fetchSTACSearchResults = async (
   reqUrlStr: string,
   projectName: string,
   token?: string,
-): // eslint-disable-next-line @typescript-eslint/no-explicit-any
-Promise<{ [key: string]: any }> => {
+): Promise<SearchResults> => {
   let status = 200;
 
   const filter = convertSearchParamsIntoStacFilter(reqUrlStr, getStacProject(projectName));
@@ -771,8 +771,7 @@ Promise<{ [key: string]: any }> => {
 export const fetchSearchResults = async (
   args: [string, string?] | Record<string, string>,
   token?: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Promise<{ [key: string]: any }> => {
+): Promise<SearchResults> => {
   // Check if the request URL is passed in as an array or an object
   let reqUrlStr: string;
   let tokenToUse = token;
@@ -911,7 +910,7 @@ export const fetchDatasetCitation = async ({
   url,
 }: {
   [key: string]: string;
-}): Promise<{ [key: string]: unknown }> =>
+}): Promise<SearchResults> =>
   axios
     .post('proxy/citation', {
       citurl: url,

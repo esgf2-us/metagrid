@@ -339,13 +339,10 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       const cachedQuery = stacLoadedBatches.searchQuery;
       const currentProjectName = (project.name as string) || '';
 
-      const queryChanged =
-        !isEqual(activeSearchQuery.activeFacets, cachedQuery.activeFacets) ||
-        !isEqual(activeSearchQuery.textInputs, cachedQuery.textInputs) ||
-        !isEqual(activeSearchQuery.filenameVars, cachedQuery.filenameVars) ||
-        activeSearchQuery.globusOnly !== cachedQuery.globusOnly;
-
-      if (queryChanged && stacLoadedBatches.projectName === currentProjectName) {
+      if (
+        !isEqual(activeSearchQuery, cachedQuery) &&
+        stacLoadedBatches.projectName === currentProjectName
+      ) {
         if (!stacLoadedBatches.cacheRestored) {
           setActiveSearchQuery(cachedQuery);
           setStacLoadedBatches({
@@ -999,14 +996,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                       show={showDownloadAllForm}
                       hide={setDownloadAllForm(false)}
                       searchURL={getUrlFromSearch(activeSearchQuery)}
-                      stacResults={
-                        resultsToDisplay
-                          ? (resultsToDisplay as StacResponse).search
-                          : {
-                              features: [],
-                              links: [],
-                              type: 'FeatureCollection',
-                            }
+                      stacFeatures={
+                        resultsToDisplay ? (resultsToDisplay as StacResponse).search?.features : []
                       }
                       totalMatched={numMatched}
                       activeSearchQuery={activeSearchQuery}

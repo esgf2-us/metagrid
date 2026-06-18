@@ -67,7 +67,6 @@ export type AlignType = 'left' | 'center' | 'right';
 export type FixedType = 'left' | 'right' | boolean;
 
 // STAC RELATED TYPES
-
 export type SearchResults = { [key: string]: unknown };
 
 export type StacLink = {
