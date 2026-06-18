@@ -66,8 +66,27 @@ export type Sorts<T> = GetSingle<Parameters<OnChange<T>>[2]>;
 export type AlignType = 'left' | 'center' | 'right';
 export type FixedType = 'left' | 'right' | boolean;
 
-// STAC RELATED TYPES
-export type SearchResults = { [key: string]: unknown };
+// SEARCH RESULTS TYPES
+export type SearchResults = Record<string, unknown>;
+
+// Non-STAC search response structure
+export type NonStacSearchResponse = SearchResults & {
+  response: {
+    docs: RawSearchResults;
+    numFound: number;
+  };
+};
+
+// STAC batch loading state
+export type StacBatchLoading = {
+  results: RawSearchResults;
+  nextToken: string | undefined;
+  projectName: string;
+  totalMatched: number;
+  searchQuery: ActiveSearchQuery | null;
+  cacheRestored: boolean;
+  searchURL: string;
+};
 
 export type StacLink = {
   rel: string;
@@ -170,7 +189,7 @@ export type StacResponse = {
 };
 
 export type CachedSearchData = {
-  results: Record<string, unknown> | undefined;
+  results: SearchResults | undefined;
   query: ActiveSearchQuery | null;
   facets: ParsedFacets | Record<string, unknown>;
 };

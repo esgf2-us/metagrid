@@ -20,6 +20,7 @@ import { ActiveFacets, RawProject, RawProjects } from '../components/Facets/type
 import { NodeStatusArray, RawNodeStatus } from '../components/NodeStatus/types';
 import {
   ActiveSearchQuery,
+  NonStacSearchResponse,
   Pagination,
   RawCitation,
   SearchResults,
@@ -38,6 +39,8 @@ import {
   downloadFileForUser,
   getCachedPagination,
   getCachedSearchResults,
+  getCachedNonStacBatch,
+  cacheNonStacBatch,
 } from '../common/utils';
 import {
   aggregationsToFacetsData,
@@ -62,7 +65,7 @@ export interface SubmissionResult {
   auth_url: string | undefined;
 }
 
-export const STAC_BATCH_SIZE = 100;
+export const SEARCH_BATCH_SIZE = 100;
 
 export const getCookie = (name: string): null | string => {
   let cookieValue = null;
@@ -521,9 +524,9 @@ export const generateSearchURLQuery = (
     'facetsUrl' in project && typeof project.facetsUrl === 'string'
       ? project.facetsUrl
       : 'offset=0&limit=0';
-  // STAC uses fixed batch size for client-side pagination; non-STAC uses server-side pagination
+  // STAC uses fixed batch size; non-STAC uses regular pagination params
   let baseParams = isSTAC
-    ? `${facetsUrl.replace('limit=0', `limit=${STAC_BATCH_SIZE}`)}&`
+    ? `${facetsUrl.replace('limit=0', `limit=${SEARCH_BATCH_SIZE}`)}&`
     : updatePaginationParams(facetsUrl, pagination);
 
   if (versionType === 'latest') {
@@ -723,7 +726,7 @@ export const fetchSTACSearchResults = async (
 
   const searchResults = await postSTACSearch(
     projectName,
-    STAC_BATCH_SIZE,
+    SEARCH_BATCH_SIZE,
     filter,
     textInputs,
     token,
@@ -847,7 +850,49 @@ export const fetchSearchResults = async (
       });
   }
 
-  return fetch(finalUrl)
+  // Extract offset and limit from URL
+  const urlParams = new URLSearchParams(finalUrl.split('?')[1]);
+  const requestedOffset = parseInt(urlParams.get('offset') || '0', 10);
+  const requestedLimit = parseInt(urlParams.get('limit') || '0', 10);
+
+  // Calculate which batch this request falls into
+  const batchOffset = Math.floor(requestedOffset / SEARCH_BATCH_SIZE) * SEARCH_BATCH_SIZE;
+
+  // Create a normalized URL for caching (without offset/limit for batch key)
+  const normalizedUrl = finalUrl.replace(/[&?]offset=\d+/, '').replace(/[&?]limit=\d+/, '');
+
+  // Build the batch URL (fetch full batch of STAC_BATCH_SIZE)
+  const batchUrl = finalUrl
+    .replace(/offset=\d+/, `offset=${batchOffset}`)
+    .replace(/limit=\d+/, `limit=${SEARCH_BATCH_SIZE}`);
+
+  // Helper function to slice batch results for the requested page
+  const sliceBatchForPage = (batchResults: NonStacSearchResponse): NonStacSearchResponse => {
+    if (!batchResults.response) return batchResults;
+
+    const startIndex = requestedOffset - batchOffset;
+    const endIndex = startIndex + requestedLimit;
+    const slicedDocs = batchResults.response.docs.slice(startIndex, endIndex);
+
+    return {
+      ...batchResults,
+      response: {
+        ...batchResults.response,
+        docs: slicedDocs,
+      },
+    };
+  };
+
+  // Check batch cache before making API call
+  const cachedBatch = getCachedNonStacBatch(normalizedUrl, batchOffset);
+  if (cachedBatch?.results) {
+    const fullBatch = cachedBatch.results as NonStacSearchResponse;
+    const slicedResults = sliceBatchForPage(fullBatch);
+    return Promise.resolve(slicedResults as SearchResults);
+  }
+
+  // Fetch the batch from the API
+  return fetch(batchUrl)
     .then((results) => {
       // Prevent breaking the app if the response is not successful
       if (results.status !== 200) {
@@ -861,9 +906,18 @@ export const fetchSearchResults = async (
         }
       }
 
-      const resultsJson = results.json();
+      return results.json() as Promise<NonStacSearchResponse>;
+    })
+    .then((resultsJson: NonStacSearchResponse) => {
+      // Cache the full batch
+      if (resultsJson.response) {
+        const { numFound } = resultsJson.response;
+        cacheNonStacBatch(normalizedUrl, batchOffset, resultsJson, numFound);
+      }
 
-      return resultsJson;
+      // Return only the requested page slice
+      const slicedResults = sliceBatchForPage(resultsJson);
+      return slicedResults as SearchResults;
     })
     .catch((error: ResponseError) => {
       if (error.cause === 422) {
