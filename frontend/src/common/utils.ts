@@ -87,9 +87,20 @@ export const objectIsEmpty = (obj: Record<any, any>): boolean =>
 /**
  * Deep equality comparison using JSON serialization.
  * Useful for comparing objects, arrays, or primitives.
+ * @param a - First value to compare
+ * @param b - Second value to compare
+ * @param normalize - Optional function to normalize values before comparison (e.g., to exclude certain properties)
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const isEqual = (a: any, b: any): boolean => JSON.stringify(a) === JSON.stringify(b);
+export const isEqual = (a: any, b: any, normalize?: (value: any) => any): boolean => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const valueA = normalize ? normalize(a) : a;
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const valueB = normalize ? normalize(b) : b;
+
+  return JSON.stringify(valueA) === JSON.stringify(valueB);
+};
 
 const bodySider = {
   padding: '12px 12px 12px 12px',
@@ -618,22 +629,23 @@ export const combineCarts = (
   return combinedItems;
 };
 
-const convertSearchToHash = (query: UserSearchQuery): number => {
+/**
+ * Generates a 32-bit hash from any value using JSON serialization.
+ * Useful for creating efficient comparison keys for complex objects.
+ * @param value - The value to hash (will be JSON stringified)
+ * @param normalize - Optional function to normalize the value before hashing
+ * @returns A 32-bit integer hash
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const hashObject = (value: any, normalize?: (val: any) => any): number => {
   /* eslint-disable */
   let hash: number = 0;
-  const nonUniqueQuery: UserSearchQuery = {
-    ...query,
-    resultsCount: 0,
-    searchTime: null,
-    uuid: '',
-    user: null,
-    url: '',
-  };
-  const queryStr = JSON.stringify(nonUniqueQuery);
+  const normalizedValue = normalize ? normalize(value) : value;
+  const valueStr = JSON.stringify(normalizedValue);
   let i, chr;
 
-  for (i = 0; i < queryStr.length; i++) {
-    chr = queryStr.charCodeAt(i);
+  for (i = 0; i < valueStr.length; i++) {
+    chr = valueStr.charCodeAt(i);
     hash = (hash << 5) - hash + chr;
     hash |= 0; // Convert to 32bit integer
   }
@@ -644,14 +656,23 @@ export const searchAlreadyExists = (
   existingSearches: UserSearchQueries,
   newSearch: UserSearchQuery,
 ): boolean => {
-  const hashValueLocal = convertSearchToHash(newSearch);
   return existingSearches.some((search) => {
     if (search.uuid === newSearch.uuid) {
       return true;
     }
-    const hashValueDatabase = convertSearchToHash(search);
 
-    return hashValueDatabase === hashValueLocal;
+    // Normalize a search query by removing instance-specific properties
+    // that don't affect the search semantics (uuid, timestamps, user, etc.)
+    const normalizeSearchQuery = (query: UserSearchQuery): Partial<UserSearchQuery> => ({
+      ...query,
+      resultsCount: 0,
+      searchTime: null,
+      uuid: '',
+      user: null,
+      url: '',
+    });
+
+    return isEqual(search, newSearch, normalizeSearchQuery);
   });
 };
 

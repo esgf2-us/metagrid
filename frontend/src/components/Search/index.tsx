@@ -339,10 +339,18 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       const cachedQuery = stacLoadedBatches.searchQuery;
       const currentProjectName = (project.name as string) || '';
 
-      if (
-        !isEqual(activeSearchQuery, cachedQuery) &&
-        stacLoadedBatches.projectName === currentProjectName
-      ) {
+      // Normalize queries for comparison by keeping only search-relevant project properties
+      const normalizeQueryForComparison = (query: ActiveSearchQuery) => ({
+        ...query,
+        project: {
+          name: query.project.name,
+          pk: query.project.pk,
+        },
+      });
+
+      const queryChanged = !isEqual(activeSearchQuery, cachedQuery, normalizeQueryForComparison);
+
+      if (queryChanged && stacLoadedBatches.projectName === currentProjectName) {
         if (!stacLoadedBatches.cacheRestored) {
           setActiveSearchQuery(cachedQuery);
           setStacLoadedBatches({
