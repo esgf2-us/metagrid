@@ -67,6 +67,139 @@ export interface SubmissionResult {
 
 export const SEARCH_BATCH_SIZE = 100;
 
+// Generic memoization cache with TTL
+type MemoizedEntry<T> = {
+  result: T;
+  timestamp: number;
+};
+
+// Track all memoization caches for clearing
+const memoizationCaches: Array<Map<string, MemoizedEntry<unknown>>> = [];
+
+// In-memory cache for fetchProjects with in-flight promise tracking
+const fetchProjectsCache: Map<
+  string,
+  {
+    promise?: Promise<{ results: RawProjects; [key: string]: unknown }>;
+    result?: { results: RawProjects; [key: string]: unknown };
+    timestamp?: number;
+  }
+> = new Map();
+
+// Track the current expected project for STAC requests
+// Set when switching projects to invalidate requests for the old project
+let currentStacProject: string | null = null;
+
+// Cache for STAC search with in-flight promise tracking
+const stacSearchCache = new Map<
+  string,
+  {
+    promise?: Promise<Record<string, unknown>>;
+    result?: Record<string, unknown>;
+    timestamp?: number;
+  }
+>();
+
+const STAC_SEARCH_CACHE_TTL = 60000; // 1 minute
+
+// Cache for STAC aggregations with in-flight promise tracking
+const stacAggregationsCache = new Map<
+  string,
+  {
+    promise?: Promise<StacAggregations>;
+    result?: StacAggregations;
+    timestamp?: number;
+  }
+>();
+
+const STAC_AGGREGATIONS_CACHE_TTL = 300000; // 5 minutes (aggregations change less frequently)
+
+// Cache for Globus auth with in-flight promise tracking
+let globusAuthCache: {
+  promise?: Promise<RawUserAuth>;
+  result?: RawUserAuth;
+  timestamp?: number;
+} = {};
+
+/**
+ * Creates a memoized version of an async function with time-based cache expiration.
+ *
+ * This provides in-memory request deduplication to prevent redundant API calls when:
+ * - The same request is made multiple times in quick succession
+ * - Component re-renders trigger duplicate requests
+ * - Race conditions cause overlapping identical requests
+ *
+ * Note: This is separate from localStorage-based caching which persists across sessions.
+ *
+ * @param fn - The async function to memoize
+ * @param ttl - Time to live in milliseconds (default: 60000ms = 1 minute)
+ * @param keyGenerator - Optional function to generate cache key from arguments
+ */
+export function memoizeAsync<TArgs extends unknown[], TReturn>(
+  fn: (...args: TArgs) => Promise<TReturn>,
+  ttl = 60000,
+  keyGenerator?: (...args: TArgs) => string,
+): (...args: TArgs) => Promise<TReturn> {
+  const cache = new Map<string, MemoizedEntry<TReturn>>();
+  memoizationCaches.push(cache as Map<string, MemoizedEntry<unknown>>);
+
+  return async (...args: TArgs): Promise<TReturn> => {
+    // Generate cache key
+    const key = keyGenerator ? keyGenerator(...args) : JSON.stringify(args);
+
+    // Check if we have a valid cached entry
+    const cached = cache.get(key);
+    const now = Date.now();
+
+    if (cached && now - cached.timestamp < ttl) {
+      return cached.result;
+    }
+
+    // Call the function and cache the result
+    const result = await fn(...args);
+    cache.set(key, { result, timestamp: now });
+
+    // Clean up expired entries periodically (every 10 entries)
+    if (cache.size % 10 === 0) {
+      Array.from(cache.entries()).forEach(([k, entry]) => {
+        if (now - entry.timestamp >= ttl) {
+          cache.delete(k);
+        }
+      });
+    }
+
+    return result;
+  };
+}
+
+/**
+ * Clears all memoization caches
+ * Useful for testing or when you want to force fresh API calls
+ */
+export const clearAllMemoizationCaches = (): void => {
+  memoizationCaches.forEach((cache) => cache.clear());
+  fetchProjectsCache.clear();
+  stacSearchCache.clear();
+  stacAggregationsCache.clear();
+  globusAuthCache = {};
+};
+
+/**
+ * Clears only the STAC-specific caches (search and aggregations)
+ * Use this when switching between STAC projects to prevent stale data
+ * Sets the expected project name so requests for the old project are ignored
+ */
+export const clearStacCaches = (newProjectName?: string): void => {
+  // eslint-disable-next-line no-console
+  console.log('[clearStacCaches] Clearing STAC caches, new project:', newProjectName || 'unknown');
+
+  // Set the expected project name
+  currentStacProject = newProjectName || null;
+
+  stacSearchCache.clear();
+  stacAggregationsCache.clear();
+};
+
 export const getCookie = (name: string): null | string => {
   let cookieValue = null;
   const cookieName = name === 'csrftoken' ? 'csrftoken' : `metagrid_${name}`;
@@ -142,19 +275,52 @@ export const errorMsgBasedOnHTTPStatusCode = (error: ResponseError, route: ApiRo
   return route.handleErrorMsg('generic');
 };
 
+const GLOBUS_AUTH_CACHE_TTL = 60000; // 1 minute
+
 /**
  * HTTP Request Method: GET
  * HTTP Response Code: 200 OK
+ *
+ * Cached with in-flight promise tracking to prevent duplicate auth requests
  */
-export const fetchGlobusAuth = async (): Promise<RawUserAuth> =>
-  axios
+export const fetchGlobusAuth = async (): Promise<RawUserAuth> => {
+  const now = Date.now();
+
+  // Return cached result if still valid
+  if (
+    globusAuthCache.result &&
+    globusAuthCache.timestamp &&
+    now - globusAuthCache.timestamp < GLOBUS_AUTH_CACHE_TTL
+  ) {
+    return Promise.resolve(globusAuthCache.result);
+  }
+
+  // Return in-flight promise if already fetching
+  if (globusAuthCache.promise) {
+    return globusAuthCache.promise;
+  }
+
+  // Start new fetch and cache the promise
+  globusAuthCache.promise = axios
     .get(apiRoutes.globusAuth.path, { withCredentials: true })
     .then((resp) => {
-      return resp.data as Promise<RawUserAuth>;
+      const data = resp.data as RawUserAuth;
+      // Cache the result
+      globusAuthCache = {
+        result: data,
+        timestamp: Date.now(),
+        promise: undefined,
+      };
+      return data;
     })
     .catch((error: ResponseError) => {
+      // Clear the promise on error so it can be retried
+      globusAuthCache.promise = undefined;
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusAuth));
     });
+
+  return globusAuthCache.promise;
+};
 
 /**
  * HTTP Request Method: POST
@@ -404,6 +570,7 @@ const handleStacProjectReplacement = (projects: RawProjects): RawProjects => {
 };
 
 /**
+ * Internal implementation of fetchProjects without memoization
  * Fetches projects from the backend database and optionally adds configured projects.
  * Applies whitelist/blacklist filtering to the combined list if configured.
  *
@@ -414,7 +581,7 @@ const handleStacProjectReplacement = (projects: RawProjects): RawProjects => {
  *   - whitelist: Show only these projects (applies to ALL projects: backend + additional)
  *   - blacklist: Hide these projects (applies to ALL projects: backend + additional)
  */
-export const fetchProjects = async (
+const fetchProjectsImpl = async (
   config?: ProjectsConfig,
 ): Promise<{
   results: RawProjects;
@@ -483,6 +650,81 @@ export const fetchProjects = async (
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.projects));
     });
+
+const FETCH_PROJECTS_CACHE_TTL = 60000; // 1 minute
+
+/**
+ * Generates a cache key for fetchProjects based on config parameters
+ */
+const generateProjectsCacheKey = (config?: ProjectsConfig): string => {
+  if (!config) {
+    return 'default|none|none';
+  }
+  const additionalProjsKey = config.additionalProjects?.length
+    ? JSON.stringify(config.additionalProjects.map((p) => p.name))
+    : 'default';
+  const whitelistKey = config.whitelist?.length ? JSON.stringify(config.whitelist) : 'none';
+  const blacklistKey = config.blacklist?.length ? JSON.stringify(config.blacklist) : 'none';
+  return `${additionalProjsKey}|${whitelistKey}|${blacklistKey}`;
+};
+
+/**
+ * Memoized version of fetchProjects with 1-minute cache and in-flight promise tracking
+ *
+ * This in-memory cache prevents duplicate API calls when:
+ * - Component re-renders trigger the same fetchProjects call
+ * - Multiple components request projects configuration simultaneously
+ * - User navigates between pages without leaving the application
+ *
+ * In-flight promise tracking ensures that if multiple components call fetchProjects
+ * at the same time, they all share the same promise and only one API call is made.
+ */
+export const fetchProjects = async (
+  config?: ProjectsConfig,
+): Promise<{
+  results: RawProjects;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
+}> => {
+  const cacheKey = generateProjectsCacheKey(config);
+  const now = Date.now();
+  const cached = fetchProjectsCache.get(cacheKey);
+
+  // Return cached result if still valid
+  if (cached?.result && cached.timestamp && now - cached.timestamp < FETCH_PROJECTS_CACHE_TTL) {
+    return Promise.resolve(cached.result);
+  }
+
+  // Return in-flight promise if already fetching
+  if (cached?.promise) {
+    return cached.promise;
+  }
+
+  // Start new fetch and cache the promise
+  const promise = fetchProjectsImpl(config)
+    .then((result) => {
+      // Cache the result
+      fetchProjectsCache.set(cacheKey, {
+        result,
+        timestamp: Date.now(),
+        promise: undefined,
+      });
+      return result;
+    })
+    .catch((error) => {
+      // Clear the promise on error so it can be retried
+      const entry = fetchProjectsCache.get(cacheKey);
+      if (entry) {
+        entry.promise = undefined;
+      }
+      throw error;
+    });
+
+  // Cache the in-flight promise
+  fetchProjectsCache.set(cacheKey, { promise });
+
+  return promise;
+};
 
 export const updatePaginationParams = (url: string, pagination: Pagination): string => {
   const paginationOffset = pagination.page > 1 ? (pagination.page - 1) * pagination.pageSize : 0;
@@ -576,8 +818,9 @@ export const generateSearchURLQuery = (
 /**
  * HTTP Request Method: POST
  * HTTP Response Code: 200 OK
+ * Internal implementation - use memoized version below
  */
-export const postSTACSearch = async (
+const postSTACSearchImpl = async (
   projectName: string,
   limit: number,
   filter: { op: string; args: unknown } | undefined = undefined,
@@ -613,8 +856,131 @@ export const postSTACSearch = async (
     });
 };
 
-// Cache for STAC aggregations to avoid refetching when only pagination changes
-const stacAggregationsCache = new Map<string, StacAggregations>();
+/**
+ * Generates a cache key for postSTACSearch based on search parameters
+ */
+const generateStacSearchCacheKey = (
+  projectName: string,
+  limit: number,
+  filter: { op: string; args: unknown } | undefined,
+  q?: TextInputs,
+  token?: string,
+): string => {
+  const filterStr = filter ? JSON.stringify(filter) : 'null';
+  const qStr = q ? JSON.stringify(q) : 'null';
+
+  // Handle token properly - it could be a string, object, or undefined
+  let tokenStr = 'null';
+  if (token !== undefined && token !== null) {
+    tokenStr = typeof token === 'object' ? JSON.stringify(token) : token;
+  }
+
+  return `${projectName}|${limit}|${filterStr}|${qStr}|${tokenStr}`;
+};
+
+/**
+ * Memoized version of postSTACSearch with 1-minute cache and in-flight promise tracking
+ *
+ * This in-memory cache prevents duplicate API calls when:
+ * - Component re-renders trigger the same search
+ * - User rapidly switches between pages with same token
+ * - Race conditions cause multiple identical requests
+ * - Multiple components request the same search simultaneously
+ *
+ * In-flight promise tracking ensures that if multiple components call postSTACSearch
+ * at the same time with the same parameters, they all share the same promise and
+ * only one API call is made.
+ */
+export const postSTACSearch = async (
+  projectName: string,
+  limit: number,
+  filter: { op: string; args: unknown } | undefined = undefined,
+  q?: TextInputs,
+  token?: string,
+): Promise<Record<string, unknown>> => {
+  // eslint-disable-next-line no-console
+  console.log('[postSTACSearch] Request for project:', projectName);
+  // eslint-disable-next-line no-console
+  console.log('[postSTACSearch] Current expected project:', currentStacProject);
+
+  // Check if this request is for a stale project BEFORE doing anything
+  if (currentStacProject !== null && currentStacProject !== projectName) {
+    // eslint-disable-next-line no-console
+    console.log(
+      '[postSTACSearch] ✗ BLOCKING stale request for:',
+      projectName,
+      `(expected: ${currentStacProject})`,
+    );
+    // Return a promise that never resolves - it will be abandoned when component re-renders
+    // This avoids triggering error handlers in the UI
+    return new Promise(() => {
+      // Never resolves or rejects - just hangs until garbage collected
+    });
+  }
+
+  const cacheKey = generateStacSearchCacheKey(projectName, limit, filter, q, token);
+  const now = Date.now();
+  const cached = stacSearchCache.get(cacheKey);
+
+  // eslint-disable-next-line no-console
+  console.log('[postSTACSearch] FULL Cache key:', cacheKey);
+  // eslint-disable-next-line no-console
+  console.log('[postSTACSearch] Cache has', stacSearchCache.size, 'entries');
+  // eslint-disable-next-line no-console
+  console.log('[postSTACSearch] Cache lookup result:', cached ? 'FOUND' : 'NOT FOUND');
+
+  // Return cached result if still valid
+  if (cached?.result && cached.timestamp && now - cached.timestamp < STAC_SEARCH_CACHE_TTL) {
+    const age = Math.round((now - cached.timestamp) / 1000);
+    // eslint-disable-next-line no-console
+    console.log(`[postSTACSearch] ✓ Returning CACHED result for: ${projectName} (age: ${age}s)`);
+    return Promise.resolve(cached.result);
+  }
+
+  // Return in-flight promise if already fetching
+  if (cached?.promise) {
+    // eslint-disable-next-line no-console
+    console.log('[postSTACSearch] ⏳ Returning IN-FLIGHT promise for:', projectName);
+    return cached.promise;
+  }
+
+  // eslint-disable-next-line no-console
+  console.log('[postSTACSearch] → Making NEW request for:', projectName);
+
+  // Start new fetch and cache the promise
+  const promise = postSTACSearchImpl(projectName, limit, filter, q, token)
+    .then((result) => {
+      // eslint-disable-next-line no-console
+      console.log('[postSTACSearch] ✓ Request completed for:', projectName);
+      // eslint-disable-next-line no-console
+      console.log(
+        '[postSTACSearch] 💾 CACHING result with key:',
+        `${cacheKey.substring(0, 80)}...`,
+      );
+      // Cache the result
+      stacSearchCache.set(cacheKey, {
+        result,
+        timestamp: Date.now(),
+        promise: undefined,
+      });
+      return result;
+    })
+    .catch((error) => {
+      // eslint-disable-next-line no-console
+      console.error('[postSTACSearch] ✗ Request failed for:', projectName, error);
+      // Clear the promise on error so it can be retried
+      const entry = stacSearchCache.get(cacheKey);
+      if (entry) {
+        entry.promise = undefined;
+      }
+      throw error;
+    });
+
+  // Cache the in-flight promise
+  stacSearchCache.set(cacheKey, { promise });
+
+  return promise;
+};
 
 /**
  * Normalizes the request URL by removing pagination parameters (offset, limit)
@@ -661,15 +1027,49 @@ export const fetchSTACAggregations = async (
   reqUrl: string,
   filter: { op: string; args: unknown } | undefined,
 ): Promise<StacAggregations> => {
+  // eslint-disable-next-line no-console
+  console.log('[fetchSTACAggregations] Request for project:', projectName);
+  // eslint-disable-next-line no-console
+  console.log('[fetchSTACAggregations] Current expected project:', currentStacProject);
+
+  // Check if this request is for a stale project BEFORE doing anything
+  if (currentStacProject !== null && currentStacProject !== projectName) {
+    // eslint-disable-next-line no-console
+    console.log(
+      '[fetchSTACAggregations] ✗ BLOCKING stale request for:',
+      projectName,
+      `(expected: ${currentStacProject})`,
+    );
+    // Return a promise that never resolves - it will be abandoned when component re-renders
+    // This avoids triggering error handlers in the UI
+    return new Promise(() => {
+      // Never resolves or rejects - just hangs until garbage collected
+    });
+  }
+
   // Create cache key based on non-pagination parameters
   const normalizedUrl = normalizeReqUrlForCache(reqUrl);
   const cacheKey = createAggregationsCacheKey(projectName, normalizedUrl, filter);
 
-  // Check if we have cached results for this query
-  const cachedResult = stacAggregationsCache.get(cacheKey);
-  if (cachedResult) {
-    return Promise.resolve(cachedResult);
+  const now = Date.now();
+  const cached = stacAggregationsCache.get(cacheKey);
+
+  // Return cached result if available and not expired
+  if (cached?.result && cached.timestamp && now - cached.timestamp < STAC_AGGREGATIONS_CACHE_TTL) {
+    // eslint-disable-next-line no-console
+    console.log('[fetchSTACAggregations] ✓ Returning CACHED result for:', projectName);
+    return Promise.resolve(cached.result);
   }
+
+  // Return in-flight promise if already fetching
+  if (cached?.promise) {
+    // eslint-disable-next-line no-console
+    console.log('[fetchSTACAggregations] ⏳ Returning IN-FLIGHT promise for:', projectName);
+    return cached.promise;
+  }
+
+  // eslint-disable-next-line no-console
+  console.log('[fetchSTACAggregations] → Making NEW request for:', projectName);
 
   // No cache hit, fetch from API
   const aggregationsList = getAggregationsList(projectName);
@@ -680,17 +1080,32 @@ export const fetchSTACAggregations = async (
     filter,
   };
 
-  return axios
+  const promise = axios
     .post(`${apiRoutes.esgfAggregationsSTAC.path}`, payload)
     .then((res) => {
+      // eslint-disable-next-line no-console
+      console.log('[fetchSTACAggregations] ✓ Request completed for:', projectName);
       const data = res.data as StacAggregations;
-      // Cache the result for future use
-      stacAggregationsCache.set(cacheKey, data);
+      // Cache the result with timestamp
+      stacAggregationsCache.set(cacheKey, {
+        result: data,
+        timestamp: Date.now(),
+      });
       return data;
     })
     .catch((error: ResponseError) => {
+      // Clear the promise on error so it can be retried
+      const entry = stacAggregationsCache.get(cacheKey);
+      if (entry) {
+        entry.promise = undefined;
+      }
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfAggregationsSTAC));
     });
+
+  // Cache the in-flight promise
+  stacAggregationsCache.set(cacheKey, { promise });
+
+  return promise;
 };
 
 export const fetchSTACSearchResults = async (
@@ -800,16 +1215,34 @@ export const fetchSearchResults = async (
     reqUrlStr = args.reqUrl;
   }
 
+  // eslint-disable-next-line no-console
+  console.log('[fetchSearchResults] tokenToUse:', tokenToUse, 'type:', typeof tokenToUse);
+
   // Get cached search results - but skip cache if we have a token (STAC pagination)
   if (!tokenToUse) {
     const cachedResults = getCachedSearchResults();
     /* istanbul ignore next -- @preserve */
     const cachedURL = (cachedResults?.cachedURL as string) || '';
 
+    // eslint-disable-next-line no-console
+    console.log('[fetchSearchResults] Checking localStorage cache');
+    // eslint-disable-next-line no-console
+    console.log('[fetchSearchResults] Request URL:', reqUrlStr);
+    // eslint-disable-next-line no-console
+    console.log('[fetchSearchResults] Cached URL:', cachedURL);
+
     // If request URL matches the one in local storage, return the cached results
     if (reqUrlStr === cachedURL) {
+      // eslint-disable-next-line no-console
+      console.log('[fetchSearchResults] ✓ Returning LOCALSTORAGE cached results');
       return cachedResults;
     }
+
+    // eslint-disable-next-line no-console
+    console.log('[fetchSearchResults] ✗ URL mismatch, will fetch fresh data');
+  } else {
+    // eslint-disable-next-line no-console
+    console.log('[fetchSearchResults] Skipping localStorage check (has token)');
   }
 
   const cachedPagination = getCachedPagination();
@@ -820,6 +1253,11 @@ export const fetchSearchResults = async (
     const params = new URLSearchParams(reqUrlStr.split('?')[1]);
     /* istanbul ignore next -- @preserve */
     const projectName = params.get('project_id') || 'CMIP6';
+
+    // eslint-disable-next-line no-console
+    console.log('[fetchSearchResults] URL says project_id:', params.get('project_id'));
+    // eslint-disable-next-line no-console
+    console.log('[fetchSearchResults] → Fetching STAC results for project:', projectName);
 
     return fetchSTACSearchResults(finalUrl, projectName, tokenToUse)
       .then((results) => {
@@ -869,6 +1307,11 @@ export const fetchSearchResults = async (
   // Helper function to slice batch results for the requested page
   const sliceBatchForPage = (batchResults: NonStacSearchResponse): NonStacSearchResponse => {
     if (!batchResults.response) return batchResults;
+
+    // If limit is 0 or not specified, return all results without slicing
+    if (requestedLimit === 0) {
+      return batchResults;
+    }
 
     const startIndex = requestedOffset - batchOffset;
     const endIndex = startIndex + requestedLimit;

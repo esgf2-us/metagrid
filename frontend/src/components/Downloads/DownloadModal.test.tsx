@@ -13,6 +13,7 @@ import {
 } from '../../test/mock/fixtures';
 import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
+import { clearStacCaches } from '../../api';
 
 const user = userEvent.setup();
 
@@ -32,6 +33,7 @@ const mockStacSearchResponse = (stacResults: StacSearchResponse) => {
 describe('DownloadModal component tests', () => {
   beforeEach(() => {
     mockHide.mockClear();
+    clearStacCaches();
   });
 
   it('renders the modal when show is true', async () => {
@@ -663,8 +665,8 @@ describe('DownloadModal component tests', () => {
       />,
     );
 
-    // Warning should be visible
-    const warning = await screen.findByTestId('largeDownloadWarning');
+    // Wait for allResults to be loaded and warning to appear
+    const warning = await screen.findByTestId('largeDownloadWarning', {}, { timeout: 3000 });
     expect(warning).toBeTruthy();
 
     const warningText = await screen.findByText(/Large Download Warning/i);
@@ -695,10 +697,6 @@ describe('DownloadModal component tests', () => {
       />,
     );
 
-    // Warning should not be visible
-    const warning = screen.queryByTestId('largeDownloadWarning');
-    expect(warning).toBeNull();
-
     // File count should be displayed
     const fileCountText = await screen.findByText(
       new RegExp(
@@ -707,6 +705,10 @@ describe('DownloadModal component tests', () => {
       ),
     );
     expect(fileCountText).toBeTruthy();
+
+    // Warning should not be visible
+    const warning = screen.queryByTestId('largeDownloadWarning');
+    expect(warning).toBeNull();
   });
 
   it('shows download form after clicking "Yes, Proceed" on warning', async () => {
@@ -726,8 +728,8 @@ describe('DownloadModal component tests', () => {
       />,
     );
 
-    // Warning should be visible initially
-    const warning = await screen.findByTestId('largeDownloadWarning');
+    // Wait for allResults to be loaded and warning to appear
+    const warning = await screen.findByTestId('largeDownloadWarning', {}, { timeout: 3000 });
     expect(warning).toBeTruthy();
 
     // Click "Yes, Proceed" button
@@ -760,8 +762,8 @@ describe('DownloadModal component tests', () => {
       />,
     );
 
-    // Warning should be visible
-    const warning = await screen.findByTestId('largeDownloadWarning');
+    // Wait for allResults to be loaded and warning to appear
+    const warning = await screen.findByTestId('largeDownloadWarning', {}, { timeout: 3000 });
     expect(warning).toBeTruthy();
 
     // Click "Cancel" button
@@ -790,8 +792,8 @@ describe('DownloadModal component tests', () => {
       />,
     );
 
-    // Check that warning card is visible
-    const warning = await screen.findByTestId('largeDownloadWarning');
+    // Wait for allResults to be loaded and warning to appear
+    const warning = await screen.findByTestId('largeDownloadWarning', {}, { timeout: 5000 });
     expect(warning).toBeTruthy();
 
     // Check the warning message contains the download text

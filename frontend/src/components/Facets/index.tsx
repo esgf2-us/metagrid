@@ -2,7 +2,7 @@ import { Button, Tooltip, Typography } from 'antd';
 import React, { useEffect } from 'react';
 import { useAsync } from 'react-async';
 import { useAtom } from 'jotai';
-import { fetchProjects, ResponseError } from '../../api';
+import { fetchProjects, ResponseError, clearStacCaches } from '../../api';
 import { projectBaseQuery } from '../../common/utils';
 import Divider from '../General/Divider';
 import FacetsForm from './FacetsForm';
@@ -51,6 +51,10 @@ const Facets: React.FC = () => {
     }
 
     if (selectedProject.pk !== activeSearchQuery.project.pk) {
+      // Clear STAC caches when switching to a different project
+      // Pass the new project name so stale requests for the old project are ignored
+      const newProjectName = (selectedProject.projectName as string) || selectedProject.name;
+      clearStacCaches(newProjectName);
       setActiveSearchQuery(projectBaseQuery(selectedProject));
     } else {
       setActiveSearchQuery({ ...activeSearchQuery, project: selectedProject });
