@@ -9,6 +9,8 @@ import {
   RawSearchResult,
   RawSearchResults,
   ResultType,
+  SearchResults,
+  StacBatchLoading,
   TextInputs,
   VersionType,
 } from '../components/Search/types';
@@ -87,9 +89,20 @@ export const objectIsEmpty = (obj: Record<any, any>): boolean =>
 /**
  * Deep equality comparison using JSON serialization.
  * Useful for comparing objects, arrays, or primitives.
+ * @param a - First value to compare
+ * @param b - Second value to compare
+ * @param normalize - Optional function to normalize values before comparison (e.g., to exclude certain properties)
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const isEqual = (a: any, b: any): boolean => JSON.stringify(a) === JSON.stringify(b);
+export const isEqual = (a: any, b: any, normalize?: (value: any) => any): boolean => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const valueA = normalize ? normalize(a) : a;
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const valueB = normalize ? normalize(b) : b;
+
+  return JSON.stringify(valueA) === JSON.stringify(valueB);
+};
 
 const bodySider = {
   padding: '12px 12px 12px 12px',
@@ -618,22 +631,23 @@ export const combineCarts = (
   return combinedItems;
 };
 
-const convertSearchToHash = (query: UserSearchQuery): number => {
+/**
+ * Generates a 32-bit hash from any value using JSON serialization.
+ * Useful for creating efficient comparison keys for complex objects.
+ * @param value - The value to hash (will be JSON stringified)
+ * @param normalize - Optional function to normalize the value before hashing
+ * @returns A 32-bit integer hash
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const hashObject = (value: any, normalize?: (val: any) => any): number => {
   /* eslint-disable */
   let hash: number = 0;
-  const nonUniqueQuery: UserSearchQuery = {
-    ...query,
-    resultsCount: 0,
-    searchTime: null,
-    uuid: '',
-    user: null,
-    url: '',
-  };
-  const queryStr = JSON.stringify(nonUniqueQuery);
+  const normalizedValue = normalize ? normalize(value) : value;
+  const valueStr = JSON.stringify(normalizedValue);
   let i, chr;
 
-  for (i = 0; i < queryStr.length; i++) {
-    chr = queryStr.charCodeAt(i);
+  for (i = 0; i < valueStr.length; i++) {
+    chr = valueStr.charCodeAt(i);
     hash = (hash << 5) - hash + chr;
     hash |= 0; // Convert to 32bit integer
   }
@@ -644,14 +658,23 @@ export const searchAlreadyExists = (
   existingSearches: UserSearchQueries,
   newSearch: UserSearchQuery,
 ): boolean => {
-  const hashValueLocal = convertSearchToHash(newSearch);
   return existingSearches.some((search) => {
     if (search.uuid === newSearch.uuid) {
       return true;
     }
-    const hashValueDatabase = convertSearchToHash(search);
 
-    return hashValueDatabase === hashValueLocal;
+    // Normalize a search query by removing instance-specific properties
+    // that don't affect the search semantics (uuid, timestamps, user, etc.)
+    const normalizeSearchQuery = (query: UserSearchQuery): Partial<UserSearchQuery> => ({
+      ...query,
+      resultsCount: 0,
+      searchTime: null,
+      uuid: '',
+      user: null,
+      url: '',
+    });
+
+    return isEqual(search, newSearch, normalizeSearchQuery);
   });
 };
 
@@ -746,7 +769,7 @@ export const getCachedPagination = (): Pagination => {
 };
 
 export const cacheSearchResults = (
-  fetchedResults: Record<string, unknown> | undefined,
+  fetchedResults: SearchResults | undefined,
   pagination: Pagination,
   cachedURL: string,
   searchQuery?: ActiveSearchQuery,
@@ -768,9 +791,9 @@ export const cacheSearchResults = (
   }
 };
 
-export const getCachedSearchResults = (): Record<string, unknown> => {
-  const fetchedResults: Record<string, unknown> =
-    getFromLocalStorage('cachedSearchResults', true) || {};
+export const getCachedSearchResults = (): SearchResults => {
+  const fetchedResults: SearchResults =
+    (getFromLocalStorage('cachedSearchResults', true) as SearchResults) || {};
   const now = Date.now();
   if (fetchedResults.expires && now > (fetchedResults.expires as number)) {
     // If expired, remove from session storage
@@ -796,7 +819,7 @@ export const clearCachedSearchResults = (): void => {
 };
 
 // STAC batch cache functions
-export const cacheStacBatches = (stacBatches: Record<string, unknown>): void => {
+export const cacheStacBatches = (stacBatches: StacBatchLoading): void => {
   saveToLocalStorage(
     'cachedStacBatches',
     {
@@ -807,22 +830,112 @@ export const cacheStacBatches = (stacBatches: Record<string, unknown>): void => 
   );
 };
 
-export const getCachedStacBatches = (): Record<string, unknown> | null => {
-  const cached: Record<string, unknown> = getFromLocalStorage('cachedStacBatches', true) || {};
+export const getCachedStacBatches = (): StacBatchLoading | null => {
+  const cached = getFromLocalStorage('cachedStacBatches', true) as {
+    batches?: StacBatchLoading;
+    expires?: number;
+  } | null;
+
+  if (!cached) return null;
+
   const now = Date.now();
 
-  if (cached.expires && now > (cached.expires as number)) {
+  if (cached.expires && now > cached.expires) {
     // If expired, remove from localStorage
     clearCachedStacBatches();
     return null;
   }
 
   // If not expired, return the cached batches
-  return (cached.batches as Record<string, unknown>) || null;
+  return cached.batches || null;
 };
 
 export const clearCachedStacBatches = (): void => {
   localStorage.removeItem('cachedStacBatches');
+};
+
+// Non-STAC batch cache functions - stores multiple on-demand batches by offset
+export type NonStacBatchCache = {
+  batches: {
+    [offset: number]: {
+      results: unknown;
+      numFound: number;
+      fetchedAt: number;
+    };
+  };
+  searchURL: string;
+  expires: number;
+};
+
+export const cacheNonStacBatch = (
+  searchURL: string,
+  offset: number,
+  results: unknown,
+  numFound: number,
+): void => {
+  const cached = getNonStacBatchCache();
+  const now = Date.now();
+
+  // If the search URL changed, clear old cache and start fresh
+  if (cached && cached.searchURL !== searchURL) {
+    clearNonStacBatchCache();
+  }
+
+  const existingBatches = cached?.searchURL === searchURL ? cached.batches : {};
+
+  saveToLocalStorage(
+    'cachedNonStacBatches',
+    {
+      batches: {
+        ...existingBatches,
+        [offset]: {
+          results,
+          numFound,
+          fetchedAt: now,
+        },
+      },
+      searchURL,
+      expires: now + 60 * 60 * 1000, // Expires after an hour
+    },
+    true,
+  );
+};
+
+export const getNonStacBatchCache = (): NonStacBatchCache | null => {
+  const cached: Record<string, unknown> = getFromLocalStorage('cachedNonStacBatches', true) || {};
+  const now = Date.now();
+
+  if (cached.expires && now > (cached.expires as number)) {
+    clearNonStacBatchCache();
+    return null;
+  }
+
+  return cached as NonStacBatchCache;
+};
+
+export const getCachedNonStacBatch = (
+  searchURL: string,
+  offset: number,
+): { results: unknown; numFound: number } | null => {
+  const cache = getNonStacBatchCache();
+
+  if (!cache || cache.searchURL !== searchURL) {
+    return null;
+  }
+
+  const batch = cache.batches[offset];
+  if (!batch) {
+    return null;
+  }
+
+  return {
+    results: batch.results,
+    numFound: batch.numFound,
+  };
+};
+
+export const clearNonStacBatchCache = (): void => {
+  localStorage.removeItem('cachedNonStacBatches');
 };
 
 export const showBanner = (): boolean => {

@@ -13,6 +13,7 @@ import {
 } from '../../test/mock/fixtures';
 import { rest, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
+import { clearStacCaches } from '../../api';
 
 const user = userEvent.setup();
 
@@ -32,10 +33,13 @@ const mockStacSearchResponse = (stacResults: StacSearchResponse) => {
 describe('DownloadModal component tests', () => {
   beforeEach(() => {
     mockHide.mockClear();
+    clearStacCaches();
   });
 
   it('renders the modal when show is true', async () => {
-    const stacResults = stacSearchResponseFixture([stacFeatureFixture('feature1', 3, 1024)]);
+    const stacResults: StacSearchResponse = stacSearchResponseFixture([
+      stacFeatureFixture('feature1', 3, 1024),
+    ]);
     mockStacSearchResponse(stacResults);
 
     customRender(
@@ -43,7 +47,7 @@ describe('DownloadModal component tests', () => {
         show={true}
         hide={mockHide}
         searchURL={mockSearchURL}
-        stacResults={stacResults}
+        stacFeatures={stacResults.features}
         totalMatched={3}
         activeSearchQuery={mockActiveSearchQuery}
       />,
@@ -57,7 +61,9 @@ describe('DownloadModal component tests', () => {
   });
 
   it('does not render the modal when show is false', () => {
-    const stacResults = stacSearchResponseFixture([stacFeatureFixture('feature1', 3, 1024)]);
+    const stacResults: StacSearchResponse = stacSearchResponseFixture([
+      stacFeatureFixture('feature1', 3, 1024),
+    ]);
     mockStacSearchResponse(stacResults);
 
     customRender(
@@ -65,7 +71,7 @@ describe('DownloadModal component tests', () => {
         show={false}
         hide={mockHide}
         searchURL={mockSearchURL}
-        stacResults={stacResults}
+        stacFeatures={stacResults.features}
         totalMatched={3}
         activeSearchQuery={mockActiveSearchQuery}
       />,
@@ -84,7 +90,7 @@ describe('DownloadModal component tests', () => {
         show={true}
         hide={mockHide}
         searchURL={mockSearchURL}
-        stacResults={stacResults}
+        stacFeatures={stacResults.features}
         totalMatched={10}
         activeSearchQuery={mockActiveSearchQuery}
       />,
@@ -95,7 +101,7 @@ describe('DownloadModal component tests', () => {
   });
 
   it('displays the correct file count for multiple features', async () => {
-    const stacResults = stacSearchResponseFixture([
+    const stacResults: StacSearchResponse = stacSearchResponseFixture([
       stacFeatureFixture('feature1', 3, 1024),
       stacFeatureFixture('feature2', 4, 2048),
       stacFeatureFixture('feature3', 2, 512),
@@ -107,7 +113,7 @@ describe('DownloadModal component tests', () => {
         show={true}
         hide={mockHide}
         searchURL={mockSearchURL}
-        stacResults={stacResults}
+        stacFeatures={stacResults.features}
         totalMatched={10}
         activeSearchQuery={mockActiveSearchQuery}
       />,
@@ -120,7 +126,9 @@ describe('DownloadModal component tests', () => {
 
   it('displays the correct total download size', async () => {
     // Create features with specific sizes: 3 files × 1024 bytes = 3072 bytes
-    const stacResults = stacSearchResponseFixture([stacFeatureFixture('feature1', 3, 1024)]);
+    const stacResults: StacSearchResponse = stacSearchResponseFixture([
+      stacFeatureFixture('feature1', 3, 1024),
+    ]);
     mockStacSearchResponse(stacResults);
 
     customRender(
@@ -128,7 +136,7 @@ describe('DownloadModal component tests', () => {
         show={true}
         hide={mockHide}
         searchURL={mockSearchURL}
-        stacResults={stacResults}
+        stacFeatures={stacResults.features}
         totalMatched={10}
         activeSearchQuery={mockActiveSearchQuery}
       />,
@@ -145,7 +153,9 @@ describe('DownloadModal component tests', () => {
   it('displays the correct total download size for large files', async () => {
     // Create features with larger sizes: 2 files × 1GB = 2GB
     const oneGB = 1024 * 1024 * 1024;
-    const stacResults = stacSearchResponseFixture([stacFeatureFixture('feature1', 2, oneGB)]);
+    const stacResults: StacSearchResponse = stacSearchResponseFixture([
+      stacFeatureFixture('feature1', 2, oneGB),
+    ]);
     mockStacSearchResponse(stacResults);
 
     customRender(
@@ -153,7 +163,7 @@ describe('DownloadModal component tests', () => {
         show={true}
         hide={mockHide}
         searchURL={mockSearchURL}
-        stacResults={stacResults}
+        stacFeatures={stacResults.features}
         totalMatched={10}
         activeSearchQuery={mockActiveSearchQuery}
       />,
@@ -167,7 +177,7 @@ describe('DownloadModal component tests', () => {
   });
 
   it('handles empty stacResults with no features', async () => {
-    const stacResults = stacSearchResponseFixture([]);
+    const stacResults: StacSearchResponse = stacSearchResponseFixture([]);
     mockStacSearchResponse(stacResults);
 
     customRender(
@@ -175,7 +185,7 @@ describe('DownloadModal component tests', () => {
         show={true}
         hide={mockHide}
         searchURL={mockSearchURL}
-        stacResults={stacResults}
+        stacFeatures={stacResults.features}
         totalMatched={10}
         activeSearchQuery={mockActiveSearchQuery}
       />,
@@ -221,7 +231,7 @@ describe('DownloadModal component tests', () => {
       stac_version: '1.0.0',
     };
 
-    const stacResults = stacSearchResponseFixture([featureWithNoAssets]);
+    const stacResults: StacSearchResponse = stacSearchResponseFixture([featureWithNoAssets]);
     mockStacSearchResponse(stacResults);
 
     customRender(
@@ -229,7 +239,7 @@ describe('DownloadModal component tests', () => {
         show={true}
         hide={mockHide}
         searchURL={mockSearchURL}
-        stacResults={stacResults}
+        stacFeatures={stacResults.features}
         totalMatched={10}
         activeSearchQuery={mockActiveSearchQuery}
       />,
@@ -252,7 +262,7 @@ describe('DownloadModal component tests', () => {
         show={true}
         hide={mockHide}
         searchURL={mockSearchURL}
-        stacResults={null as unknown as StacSearchResponse}
+        stacFeatures={null as unknown as StacFeature[]}
         totalMatched={10}
         activeSearchQuery={mockActiveSearchQuery}
       />,
@@ -286,7 +296,7 @@ describe('DownloadModal component tests', () => {
         show={true}
         hide={mockHide}
         searchURL={mockSearchURL}
-        stacResults={stacResults}
+        stacFeatures={stacResults.features}
         totalMatched={10}
         activeSearchQuery={mockActiveSearchQuery}
       />,
@@ -297,7 +307,9 @@ describe('DownloadModal component tests', () => {
   });
 
   it('calls hide callback when modal is closed', async () => {
-    const stacResults = stacSearchResponseFixture([stacFeatureFixture('feature1', 3, 1024)]);
+    const stacResults: StacSearchResponse = stacSearchResponseFixture([
+      stacFeatureFixture('feature1', 3, 1024),
+    ]);
     mockStacSearchResponse(stacResults);
 
     customRender(
@@ -305,7 +317,7 @@ describe('DownloadModal component tests', () => {
         show={true}
         hide={mockHide}
         searchURL={mockSearchURL}
-        stacResults={stacResults}
+        stacFeatures={stacResults.features}
         totalMatched={10}
         activeSearchQuery={mockActiveSearchQuery}
       />,
@@ -319,7 +331,9 @@ describe('DownloadModal component tests', () => {
   });
 
   it('displays the CloudDownloadOutlined icon in the title', async () => {
-    const stacResults = stacSearchResponseFixture([stacFeatureFixture('feature1', 3, 1024)]);
+    const stacResults: StacSearchResponse = stacSearchResponseFixture([
+      stacFeatureFixture('feature1', 3, 1024),
+    ]);
     mockStacSearchResponse(stacResults);
 
     customRender(
@@ -327,7 +341,7 @@ describe('DownloadModal component tests', () => {
         show={true}
         hide={mockHide}
         searchURL={mockSearchURL}
-        stacResults={stacResults}
+        stacFeatures={stacResults.features}
         totalMatched={10}
         activeSearchQuery={mockActiveSearchQuery}
       />,
@@ -343,7 +357,9 @@ describe('DownloadModal component tests', () => {
   });
 
   it('renders DatasetDownload component with correct props', async () => {
-    const stacResults = stacSearchResponseFixture([stacFeatureFixture('feature1', 3, 1024)]);
+    const stacResults: StacSearchResponse = stacSearchResponseFixture([
+      stacFeatureFixture('feature1', 3, 1024),
+    ]);
     mockStacSearchResponse(stacResults);
 
     customRender(
@@ -351,7 +367,7 @@ describe('DownloadModal component tests', () => {
         show={true}
         hide={mockHide}
         searchURL={mockSearchURL}
-        stacResults={stacResults}
+        stacFeatures={stacResults.features}
         totalMatched={10}
         activeSearchQuery={mockActiveSearchQuery}
       />,
@@ -364,7 +380,9 @@ describe('DownloadModal component tests', () => {
   });
 
   it('displays the disclaimer text about cart bypass', async () => {
-    const stacResults = stacSearchResponseFixture([stacFeatureFixture('feature1', 3, 1024)]);
+    const stacResults: StacSearchResponse = stacSearchResponseFixture([
+      stacFeatureFixture('feature1', 3, 1024),
+    ]);
     mockStacSearchResponse(stacResults);
 
     customRender(
@@ -372,7 +390,7 @@ describe('DownloadModal component tests', () => {
         show={true}
         hide={mockHide}
         searchURL={mockSearchURL}
-        stacResults={stacResults}
+        stacFeatures={stacResults.features}
         totalMatched={10}
         activeSearchQuery={mockActiveSearchQuery}
       />,
@@ -383,7 +401,9 @@ describe('DownloadModal component tests', () => {
   });
 
   it('displays the metadata disclaimer text', async () => {
-    const stacResults = stacSearchResponseFixture([stacFeatureFixture('feature1', 3, 1024)]);
+    const stacResults: StacSearchResponse = stacSearchResponseFixture([
+      stacFeatureFixture('feature1', 3, 1024),
+    ]);
     mockStacSearchResponse(stacResults);
 
     customRender(
@@ -391,7 +411,7 @@ describe('DownloadModal component tests', () => {
         show={true}
         hide={mockHide}
         searchURL={mockSearchURL}
-        stacResults={stacResults}
+        stacFeatures={stacResults.features}
         totalMatched={10}
         activeSearchQuery={mockActiveSearchQuery}
       />,
@@ -405,7 +425,9 @@ describe('DownloadModal component tests', () => {
 
   it('formats large file counts with locale string', async () => {
     // Create a feature with many files
-    const stacResults = stacSearchResponseFixture([stacFeatureFixture('feature1', 1234, 1024)]);
+    const stacResults: StacSearchResponse = stacSearchResponseFixture([
+      stacFeatureFixture('feature1', 1234, 1024),
+    ]);
     mockStacSearchResponse(stacResults);
 
     customRender(
@@ -413,7 +435,7 @@ describe('DownloadModal component tests', () => {
         show={true}
         hide={mockHide}
         searchURL={mockSearchURL}
-        stacResults={stacResults}
+        stacFeatures={stacResults.features}
         totalMatched={10}
         activeSearchQuery={mockActiveSearchQuery}
       />,
@@ -427,7 +449,7 @@ describe('DownloadModal component tests', () => {
   });
 
   it('correctly calculates totals across multiple features with varying sizes', async () => {
-    const stacResults = stacSearchResponseFixture([
+    const stacResults: StacSearchResponse = stacSearchResponseFixture([
       stacFeatureFixture('feature1', 10, 1024), // 10 KB
       stacFeatureFixture('feature2', 5, 2048), // 10 KB
       stacFeatureFixture('feature3', 3, 4096), // 12 KB
@@ -439,7 +461,7 @@ describe('DownloadModal component tests', () => {
         show={true}
         hide={mockHide}
         searchURL={mockSearchURL}
-        stacResults={stacResults}
+        stacFeatures={stacResults.features}
         totalMatched={10}
         activeSearchQuery={mockActiveSearchQuery}
       />,
@@ -500,7 +522,7 @@ describe('DownloadModal component tests', () => {
       stac_version: '1.0.0',
     };
 
-    const stacResults = stacSearchResponseFixture([featureWithZeroSizeAssets]);
+    const stacResults: StacSearchResponse = stacSearchResponseFixture([featureWithZeroSizeAssets]);
     mockStacSearchResponse(stacResults);
 
     customRender(
@@ -508,7 +530,7 @@ describe('DownloadModal component tests', () => {
         show={true}
         hide={mockHide}
         searchURL={mockSearchURL}
-        stacResults={stacResults}
+        stacFeatures={stacResults.features}
         totalMatched={10}
         activeSearchQuery={mockActiveSearchQuery}
       />,
@@ -526,7 +548,9 @@ describe('DownloadModal component tests', () => {
   });
 
   it('has a modal with width 800', async () => {
-    const stacResults = stacSearchResponseFixture([stacFeatureFixture('feature1', 3, 1024)]);
+    const stacResults: StacSearchResponse = stacSearchResponseFixture([
+      stacFeatureFixture('feature1', 3, 1024),
+    ]);
     mockStacSearchResponse(stacResults);
 
     customRender(
@@ -534,7 +558,7 @@ describe('DownloadModal component tests', () => {
         show={true}
         hide={mockHide}
         searchURL={mockSearchURL}
-        stacResults={stacResults}
+        stacFeatures={stacResults.features}
         totalMatched={10}
         activeSearchQuery={mockActiveSearchQuery}
       />,
@@ -549,7 +573,9 @@ describe('DownloadModal component tests', () => {
   });
 
   it('renders with Card component wrapping the content', async () => {
-    const stacResults = stacSearchResponseFixture([stacFeatureFixture('feature1', 3, 1024)]);
+    const stacResults: StacSearchResponse = stacSearchResponseFixture([
+      stacFeatureFixture('feature1', 3, 1024),
+    ]);
     mockStacSearchResponse(stacResults);
 
     customRender(
@@ -557,7 +583,7 @@ describe('DownloadModal component tests', () => {
         show={true}
         hide={mockHide}
         searchURL={mockSearchURL}
-        stacResults={stacResults}
+        stacFeatures={stacResults.features}
         totalMatched={10}
         activeSearchQuery={mockActiveSearchQuery}
       />,
@@ -572,7 +598,9 @@ describe('DownloadModal component tests', () => {
   });
 
   it('passes stacResults to DatasetDownload component', async () => {
-    const stacResults = stacSearchResponseFixture([stacFeatureFixture('feature1', 3, 1024)]);
+    const stacResults: StacSearchResponse = stacSearchResponseFixture([
+      stacFeatureFixture('feature1', 3, 1024),
+    ]);
     mockStacSearchResponse(stacResults);
 
     customRender(
@@ -580,7 +608,7 @@ describe('DownloadModal component tests', () => {
         show={true}
         hide={mockHide}
         searchURL={mockSearchURL}
-        stacResults={stacResults}
+        stacFeatures={stacResults.features}
         totalMatched={10}
         activeSearchQuery={mockActiveSearchQuery}
       />,
@@ -597,11 +625,20 @@ describe('DownloadModal component tests', () => {
 
   it('passes searchURL to DatasetDownload component', async () => {
     const testURL = 'https://custom-test-url.com/search?custom=param';
-    const stacResults = stacSearchResponseFixture([stacFeatureFixture('feature1', 3, 1024)]);
+    const stacResults: StacSearchResponse = stacSearchResponseFixture([
+      stacFeatureFixture('feature1', 3, 1024),
+    ]);
     mockStacSearchResponse(stacResults);
 
     customRender(
-      <DownloadModal show={true} hide={mockHide} searchURL={testURL} stacResults={stacResults} />,
+      <DownloadModal
+        show={true}
+        hide={mockHide}
+        searchURL={testURL}
+        stacFeatures={stacResults.features}
+        totalMatched={10}
+        activeSearchQuery={mockActiveSearchQuery}
+      />,
     );
 
     await screen.findByText('Download Search Results');
@@ -612,7 +649,7 @@ describe('DownloadModal component tests', () => {
   });
 
   it('shows warning when file count is at or above threshold', async () => {
-    const stacResults = stacSearchResponseFixture([
+    const stacResults: StacSearchResponse = stacSearchResponseFixture([
       stacFeatureFixture('feature1', LARGE_DOWNLOAD_WARNING_THRESHOLD, 1024),
     ]);
     mockStacSearchResponse(stacResults);
@@ -622,14 +659,14 @@ describe('DownloadModal component tests', () => {
         show={true}
         hide={mockHide}
         searchURL={mockSearchURL}
-        stacResults={stacResults}
+        stacFeatures={stacResults.features}
         totalMatched={100}
         activeSearchQuery={mockActiveSearchQuery}
       />,
     );
 
-    // Warning should be visible
-    const warning = await screen.findByTestId('largeDownloadWarning');
+    // Wait for allResults to be loaded and warning to appear
+    const warning = await screen.findByTestId('largeDownloadWarning', {}, { timeout: 3000 });
     expect(warning).toBeTruthy();
 
     const warningText = await screen.findByText(/Large Download Warning/i);
@@ -644,7 +681,7 @@ describe('DownloadModal component tests', () => {
   });
 
   it('does not show warning when file count is below threshold', async () => {
-    const stacResults = stacSearchResponseFixture([
+    const stacResults: StacSearchResponse = stacSearchResponseFixture([
       stacFeatureFixture('feature1', LARGE_DOWNLOAD_WARNING_THRESHOLD - 1, 1024),
     ]);
     mockStacSearchResponse(stacResults);
@@ -654,15 +691,11 @@ describe('DownloadModal component tests', () => {
         show={true}
         hide={mockHide}
         searchURL={mockSearchURL}
-        stacResults={stacResults}
+        stacFeatures={stacResults.features}
         totalMatched={100}
         activeSearchQuery={mockActiveSearchQuery}
       />,
     );
-
-    // Warning should not be visible
-    const warning = screen.queryByTestId('largeDownloadWarning');
-    expect(warning).toBeNull();
 
     // File count should be displayed
     const fileCountText = await screen.findByText(
@@ -672,10 +705,14 @@ describe('DownloadModal component tests', () => {
       ),
     );
     expect(fileCountText).toBeTruthy();
+
+    // Warning should not be visible
+    const warning = screen.queryByTestId('largeDownloadWarning');
+    expect(warning).toBeNull();
   });
 
   it('shows download form after clicking "Yes, Proceed" on warning', async () => {
-    const stacResults = stacSearchResponseFixture([
+    const stacResults: StacSearchResponse = stacSearchResponseFixture([
       stacFeatureFixture('feature1', LARGE_DOWNLOAD_WARNING_THRESHOLD + 5000, 2048),
     ]);
     mockStacSearchResponse(stacResults);
@@ -685,14 +722,14 @@ describe('DownloadModal component tests', () => {
         show={true}
         hide={mockHide}
         searchURL={mockSearchURL}
-        stacResults={stacResults}
+        stacFeatures={stacResults.features}
         totalMatched={100}
         activeSearchQuery={mockActiveSearchQuery}
       />,
     );
 
-    // Warning should be visible initially
-    const warning = await screen.findByTestId('largeDownloadWarning');
+    // Wait for allResults to be loaded and warning to appear
+    const warning = await screen.findByTestId('largeDownloadWarning', {}, { timeout: 3000 });
     expect(warning).toBeTruthy();
 
     // Click "Yes, Proceed" button
@@ -709,7 +746,7 @@ describe('DownloadModal component tests', () => {
   });
 
   it('calls hide when clicking "Cancel" on warning', async () => {
-    const stacResults = stacSearchResponseFixture([
+    const stacResults: StacSearchResponse = stacSearchResponseFixture([
       stacFeatureFixture('feature1', LARGE_DOWNLOAD_WARNING_THRESHOLD + 10000, 1024),
     ]);
     mockStacSearchResponse(stacResults);
@@ -719,14 +756,14 @@ describe('DownloadModal component tests', () => {
         show={true}
         hide={mockHide}
         searchURL={mockSearchURL}
-        stacResults={stacResults}
+        stacFeatures={stacResults.features}
         totalMatched={100}
         activeSearchQuery={mockActiveSearchQuery}
       />,
     );
 
-    // Warning should be visible
-    const warning = await screen.findByTestId('largeDownloadWarning');
+    // Wait for allResults to be loaded and warning to appear
+    const warning = await screen.findByTestId('largeDownloadWarning', {}, { timeout: 3000 });
     expect(warning).toBeTruthy();
 
     // Click "Cancel" button
@@ -739,7 +776,7 @@ describe('DownloadModal component tests', () => {
 
   it('displays correct file count and size in warning message', async () => {
     const oneGB = 1024 * 1024 * 1024;
-    const stacResults = stacSearchResponseFixture([
+    const stacResults: StacSearchResponse = stacSearchResponseFixture([
       stacFeatureFixture('feature1', LARGE_DOWNLOAD_WARNING_THRESHOLD + 15000, oneGB),
     ]);
     mockStacSearchResponse(stacResults);
@@ -749,14 +786,14 @@ describe('DownloadModal component tests', () => {
         show={true}
         hide={mockHide}
         searchURL={mockSearchURL}
-        stacResults={stacResults}
+        stacFeatures={stacResults.features}
         totalMatched={10}
         activeSearchQuery={mockActiveSearchQuery}
       />,
     );
 
-    // Check that warning card is visible
-    const warning = await screen.findByTestId('largeDownloadWarning');
+    // Wait for allResults to be loaded and warning to appear
+    const warning = await screen.findByTestId('largeDownloadWarning', {}, { timeout: 5000 });
     expect(warning).toBeTruthy();
 
     // Check the warning message contains the download text

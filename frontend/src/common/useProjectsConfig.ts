@@ -90,23 +90,72 @@ const DEFAULT_CONFIG: ProjectsConfig = {
   blacklist: [],
 };
 
+// In-memory cache for projects.json to prevent duplicate fetches
+const projectsJsonCache: {
+  promise?: Promise<ProjectsConfig | null>;
+  result?: ProjectsConfig;
+  timestamp?: number;
+} = {};
+
+const PROJECTS_JSON_CACHE_TTL = 60000; // 1 minute
+
+/**
+ * Fetches projects.json with in-memory caching to prevent duplicate requests.
+ * This helps avoid redundant network calls on page refresh or component re-mounts.
+ */
+const fetchProjectsJson = (): Promise<ProjectsConfig | null> => {
+  const now = Date.now();
+
+  // Return cached result if still valid
+  if (
+    projectsJsonCache.result &&
+    projectsJsonCache.timestamp &&
+    now - projectsJsonCache.timestamp < PROJECTS_JSON_CACHE_TTL
+  ) {
+    return Promise.resolve(projectsJsonCache.result);
+  }
+
+  // Return in-flight promise if already fetching
+  if (projectsJsonCache.promise) {
+    return projectsJsonCache.promise;
+  }
+
+  // Start new fetch and cache the promise
+  projectsJsonCache.promise = fetch('/projects/projects.json', {
+    cache: 'no-cache',
+  })
+    .then((response) => {
+      if (!response.ok) {
+        // File not found or other HTTP error - use defaults
+        return null;
+      }
+      return response.json() as Promise<ProjectsConfig>;
+    })
+    .then((data: ProjectsConfig | null) => {
+      // Cache the result
+      projectsJsonCache.result = data || DEFAULT_CONFIG;
+      projectsJsonCache.timestamp = Date.now();
+      projectsJsonCache.promise = undefined;
+      return data;
+    })
+    .catch((err: Error) => {
+      // eslint-disable-next-line no-console
+      console.warn('Failed to load projects.json, using defaults:', err);
+      projectsJsonCache.result = DEFAULT_CONFIG;
+      projectsJsonCache.timestamp = Date.now();
+      projectsJsonCache.promise = undefined;
+      return null;
+    });
+
+  return projectsJsonCache.promise;
+};
+
 export const useProjectsConfig = () => {
   const [config, setConfig] = useState<ProjectsConfig>(DEFAULT_CONFIG);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/projects/projects.json', {
-      cache: 'no-cache',
-    })
-      .then((response) => {
-        if (!response.ok) {
-          // File not found or other HTTP error - use defaults
-          setConfig(DEFAULT_CONFIG);
-          setLoading(false);
-          return null;
-        }
-        return response.json() as Promise<ProjectsConfig>;
-      })
+    fetchProjectsJson()
       .then((data: ProjectsConfig | null) => {
         if (data) {
           setConfig({
@@ -114,12 +163,13 @@ export const useProjectsConfig = () => {
             whitelist: data.whitelist || [],
             blacklist: data.blacklist || [],
           });
-          setLoading(false);
+        } else {
+          setConfig(DEFAULT_CONFIG);
         }
+        setLoading(false);
       })
-      .catch((err: Error) => {
-        // eslint-disable-next-line no-console
-        console.warn('Failed to load projects.json, using defaults:', err);
+      .catch(() => {
+        // Fallback to defaults if promise rejects
         setConfig(DEFAULT_CONFIG);
         setLoading(false);
       });
