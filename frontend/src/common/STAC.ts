@@ -27,7 +27,7 @@ let configuredAdditionalProjects: RawProject[] = [];
 // Creates a RawProject from pk and StacProject data
 function buildStacProject(
   pk: string,
-  { name, fullName, projectUrl, projectName, facetsByGroup }: StacProject,
+  { name, fullName, projectUrl, projectName, facetsByGroup, stacApiUrl }: StacProject,
 ): RawProject {
   const mergedFacetsByGroup: FacetsByGroup = {
     ...STAC_DEFAULT_PROJECT.facetsByGroup,
@@ -50,6 +50,7 @@ function buildStacProject(
     projectName,
     facetsByGroup: mergedFacetsByGroup,
     isSTAC: true,
+    stacApiUrl,
   };
 }
 

@@ -107,9 +107,13 @@ const Facets: React.FC = () => {
             <div>
               <b>Project Url</b>:<br />
               {curProject.projectUrl}
-              <br />
-              <br />
-              <b>STAC Api Url</b>:<br /> https://integration-testing.api.stac.esgf-west.org
+              {curProject.stacApiUrl && (
+                <div>
+                  <br />
+                  <b>STAC Api Url</b>:<br />
+                  {curProject.stacApiUrl}
+                </div>
+              )}
             </div>
           }
         >

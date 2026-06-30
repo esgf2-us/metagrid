@@ -121,6 +121,20 @@ class TestProxyViewSet(APITestCase):
             pytest.skip("settings.STAC_URL is not set")
 
     @responses.activate
+    def test_stac_search_with_custom_url(self):
+        url = reverse("do-stac-search")
+        custom_stac_url = "https://custom-stac.example.com"
+        postdata = {
+            "collections": "CMIP7",
+            "limit": 10,
+            "stacApiUrl": custom_stac_url,
+        }
+        # Mock the custom STAC URL
+        responses.post(custom_stac_url + "/search", json={})
+        response = self.client.post(url, postdata, format="json")
+        assert response.status_code == status.HTTP_200_OK
+
+    @responses.activate
     def test_citation(self):
         url = reverse("do-citation")
         jo = {

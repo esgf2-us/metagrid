@@ -200,6 +200,15 @@ export const clearStacCaches = (newProjectName?: string): void => {
   stacAggregationsCache.clear();
 };
 
+/**
+ * Resolves the STAC API URL to use for a project.
+ * Returns the project's custom stacApiUrl if set, otherwise undefined
+ * (which will cause the caller to use the default proxy routes).
+ */
+const getStacApiUrl = (project: RawProject): string | undefined => {
+  return project.stacApiUrl;
+};
+
 export const getCookie = (name: string): null | string => {
   let cookieValue = null;
   const cookieName = name === 'csrftoken' ? 'csrftoken' : `metagrid_${name}`;
@@ -826,6 +835,7 @@ const postSTACSearchImpl = async (
   filter: { op: string; args: unknown } | undefined = undefined,
   q?: TextInputs,
   token?: string,
+  stacApiUrl?: string,
 ): Promise<Record<string, unknown>> => {
   const requestBody: {
     collections: string[];
@@ -833,6 +843,7 @@ const postSTACSearchImpl = async (
     filter?: { op: string; args: unknown };
     q?: TextInputs;
     token?: string;
+    stacApiUrl?: string;
   } = {
     collections: [projectName],
     limit,
@@ -846,6 +857,9 @@ const postSTACSearchImpl = async (
   }
   if (token && typeof token === 'string' && token.length > 0) {
     requestBody.token = token;
+  }
+  if (stacApiUrl) {
+    requestBody.stacApiUrl = stacApiUrl;
   }
 
   return axios
@@ -1026,6 +1040,7 @@ export const fetchSTACAggregations = async (
   projectName: string,
   reqUrl: string,
   filter: { op: string; args: unknown } | undefined,
+  stacApiUrl?: string,
 ): Promise<StacAggregations> => {
   // eslint-disable-next-line no-console
   console.log('[fetchSTACAggregations] Request for project:', projectName);
@@ -1074,11 +1089,20 @@ export const fetchSTACAggregations = async (
   // No cache hit, fetch from API
   const aggregationsList = getAggregationsList(projectName);
 
-  const payload = {
+  const payload: {
+    collections: string[];
+    aggregations: string[];
+    filter: { op: string; args: unknown } | undefined;
+    stacApiUrl?: string;
+  } = {
     collections: [projectName],
     aggregations: aggregationsList,
     filter,
   };
+
+  if (stacApiUrl) {
+    payload.stacApiUrl = stacApiUrl;
+  }
 
   const promise = axios
     .post(`${apiRoutes.esgfAggregationsSTAC.path}`, payload)
@@ -1115,7 +1139,9 @@ export const fetchSTACSearchResults = async (
 ): Promise<SearchResults> => {
   let status = 200;
 
-  const filter = convertSearchParamsIntoStacFilter(reqUrlStr, getStacProject(projectName));
+  const project = getStacProject(projectName);
+  const filter = convertSearchParamsIntoStacFilter(reqUrlStr, project);
+  const stacApiUrl = getStacApiUrl(project);
 
   const query = new URLSearchParams(reqUrlStr || '').get('query');
   let textInputs: TextInputs | undefined;
@@ -1125,7 +1151,7 @@ export const fetchSTACSearchResults = async (
     textInputs = query.split(',');
   }
 
-  const aggregations = await fetchSTACAggregations(projectName, reqUrlStr, filter)
+  const aggregations = await fetchSTACAggregations(projectName, reqUrlStr, filter, stacApiUrl)
     .then((response) => {
       // Convert aggregations response into facet data for Metagrid
       const aggregationsToFacets = aggregationsToFacetsData(
