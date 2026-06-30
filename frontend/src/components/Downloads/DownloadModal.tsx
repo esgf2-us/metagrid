@@ -26,7 +26,7 @@ interface DownloadModalProps {
   show: boolean;
   hide: () => void;
   searchURL: string;
-  stacResults: StacSearchResponse;
+  stacFeatures: StacFeature[];
   totalMatched: number;
   activeSearchQuery: ActiveSearchQuery;
 }
@@ -35,13 +35,13 @@ const DownloadModal = ({
   show,
   hide,
   searchURL,
-  stacResults,
+  stacFeatures,
   totalMatched,
   activeSearchQuery,
 }: DownloadModalProps): React.ReactElement => {
   const [warningAcknowledged, setWarningAcknowledged] = useState(false);
   const [loadingAllResults, setLoadingAllResults] = useState(false);
-  const [allResults, setAllResults] = useState<StacSearchResponse | null>(null);
+  const [allResults, setAllResults] = useState<StacFeature[] | null>(null);
   const [loadWarningAcknowledged, setLoadWarningAcknowledged] = useState(false);
   const [showPreferredNodesModal, setShowPreferredNodesModal] = useState(false);
 
@@ -59,13 +59,13 @@ const DownloadModal = ({
 
   // Extract unique nodes from search results
   const availableNodes = useMemo(() => {
-    if (!allResults || !allResults.features) {
+    if (!allResults) {
       return [];
     }
 
     const nodesSet = new Set<string>();
 
-    allResults.features.forEach((feature: StacFeature) => {
+    allResults.forEach((feature: StacFeature) => {
       const item = convertStacToRawSearchResult(feature);
       const nodes = getReplicaNodelsList(item);
       nodes.forEach((node) => {
@@ -97,16 +97,16 @@ const DownloadModal = ({
       // Fetch all results by setting limit to totalMatched
       const response = await postSTACSearch(projectName, totalMatched, filter, textInputs);
 
-      setAllResults(response as StacSearchResponse);
+      setAllResults((response as StacSearchResponse).features);
     } catch (error) {
       /* istanbul ignore next -- @preserve */
       // eslint-disable-next-line no-console
       console.error('Error fetching all results:', error);
-      setAllResults(stacResults);
+      setAllResults(stacFeatures);
     } finally {
       setLoadingAllResults(false);
     }
-  }, [activeSearchQuery, searchURL, totalMatched, stacResults]);
+  }, [activeSearchQuery, searchURL, totalMatched, stacFeatures]);
 
   // Automatically fetch all results for <= 1000 results or after warning acknowledged
   useEffect(() => {
@@ -133,9 +133,9 @@ const DownloadModal = ({
   let fileCount = 0;
   let totalFileSize = 0;
 
-  if (allResults && allResults.features) {
-    fileCount = getFileCountFromSTACsearch(allResults.features);
-    totalFileSize = getDownloadSizeFromSTACsearch(allResults.features);
+  if (allResults) {
+    fileCount = getFileCountFromSTACsearch(allResults);
+    totalFileSize = getDownloadSizeFromSTACsearch(allResults);
   }
 
   const showLargeDownloadWarning =
@@ -276,7 +276,7 @@ const DownloadModal = ({
             {!showLoadWarning && !showLargeDownloadWarning && allResults && (
               <DatasetDownload
                 searchURL={searchURL}
-                stacResults={allResults}
+                stacFeatures={allResults}
                 onDownloadFinish={hide}
               />
             )}
@@ -289,11 +289,11 @@ const DownloadModal = ({
         availableNodes={availableNodes}
         onApply={(preferences) => {
           // Apply node preferences to all search results
-          if (!allResults || !allResults.features) return;
+          if (!allResults) return;
 
           const newSelectedNodes: Record<string, string> = {};
 
-          allResults.features.forEach((feature: StacFeature) => {
+          allResults.forEach((feature: StacFeature) => {
             const item = convertStacToRawSearchResult(feature);
             const availableNodesForItem = getReplicaNodelsList(item);
 

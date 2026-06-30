@@ -1,5 +1,6 @@
 import {
   addUserSearchQuery,
+  clearAllMemoizationCaches,
   deleteUserSearchQuery,
   fetchDatasetCitation,
   fetchDatasetFiles,
@@ -62,6 +63,10 @@ vi.mock('../common/utils', async () => {
 });
 
 describe('test fetching user authentication with globus', () => {
+  beforeEach(() => {
+    clearAllMemoizationCaches();
+  });
+
   it('returns user authentication tokens', async () => {
     const userAuth = await fetchGlobusAuth();
     expect(userAuth).toEqual(userAuthFixture());
@@ -124,6 +129,10 @@ describe('test fetching user info', () => {
 });
 
 describe('test fetching projects', () => {
+  beforeEach(() => {
+    clearAllMemoizationCaches();
+  });
+
   it('returns projects including STAC projects', async () => {
     const projects = (await fetchProjects()).results;
 
@@ -375,6 +384,7 @@ describe('test fetching search results', () => {
   let reqUrl: string;
 
   beforeEach(() => {
+    clearAllMemoizationCaches();
     reqUrl = apiRoutes.esgfSearch.path;
   });
   it('returns results', async () => {
@@ -1073,6 +1083,10 @@ describe('resetGlobusTokens', () => {
 });
 
 describe('STAC API functions', () => {
+  beforeEach(() => {
+    clearAllMemoizationCaches();
+  });
+
   it('posts STAC filter and returns facets + search results', async () => {
     const aggregationsResp = {
       aggregations: [
@@ -1144,7 +1158,7 @@ describe('STAC API functions', () => {
       rest.post(apiRoutes.esgfAggregationsSTAC.path, (_req, res, ctx) => res(ctx.status(500))),
     );
 
-    await expect(fetchSTACAggregations('CMIP6', undefined)).rejects.toThrow(
+    await expect(fetchSTACAggregations('CMIP6', 'test-url', undefined)).rejects.toThrow(
       apiRoutes.esgfAggregationsSTAC.handleErrorMsg('generic' as HTTPCodeType),
     );
   });
@@ -1152,7 +1166,7 @@ describe('STAC API functions', () => {
   it('throws error when STAC search fails', async () => {
     server.use(rest.post(apiRoutes.esgfSearchSTAC.path, (_req, res, ctx) => res(ctx.status(500))));
 
-    await expect(postSTACSearch('CMIP6', 10)).rejects.toThrow(
+    await expect(postSTACSearch('CMIP6', 10, undefined, undefined, undefined)).rejects.toThrow(
       apiRoutes.esgfSearchSTAC.handleErrorMsg('generic' as HTTPCodeType),
     );
   });

@@ -20,6 +20,7 @@ import {
   convertSearchParamsIntoStacFilter,
   getStacProject,
 } from '../../common/STAC';
+import { SearchResults } from '../Search/types';
 
 const styles: CSSinJS = {
   category: {
@@ -72,7 +73,7 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
     : null;
 
   const { data, isLoading, error, run } = useAsync({
-    deferFn: fetchSearchResults as unknown as DeferFn<Record<string, unknown>>,
+    deferFn: fetchSearchResults as unknown as DeferFn<SearchResults>,
   });
 
   // Automatically fetch results when component mounts if needed
