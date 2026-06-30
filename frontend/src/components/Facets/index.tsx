@@ -97,7 +97,18 @@ const Facets: React.FC = () => {
         onFinish={handleSubmitProjectForm}
       />
       {curProject && curProject.projectUrl && (
-        <Tooltip title={curProject.projectUrl}>
+        <Tooltip
+          style={{ minWidth: '500px', width: '500px' }}
+          title={
+            <div>
+              <b>Project Url</b>:<br />
+              {curProject.projectUrl}
+              <br />
+              <br />
+              <b>STAC Api Url</b>:<br /> https://integration-testing.api.stac.esgf-west.org
+            </div>
+          }
+        >
           <Button
             href={curProject.projectUrl}
             className={leftSidebarTargets.projectWebsiteBtn.class()}
