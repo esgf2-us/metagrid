@@ -135,6 +135,122 @@ class TestProxyViewSet(APITestCase):
         assert response.status_code == status.HTTP_200_OK
 
     @responses.activate
+    def test_stac_search_with_custom_url_with_trailing_slash(self):
+        """Test that custom STAC URLs work correctly even with trailing slashes"""
+        url = reverse("do-stac-search")
+        custom_stac_url = "https://custom-stac.example.com/"
+        postdata = {
+            "collections": "CMIP7",
+            "limit": 10,
+            "stacApiUrl": custom_stac_url,
+        }
+        # Mock the custom STAC URL (with trailing slash in postdata, endpoint adds /search)
+        responses.post(custom_stac_url + "search", json={})
+        response = self.client.post(url, postdata, format="json")
+        assert response.status_code == status.HTTP_200_OK
+
+    @responses.activate
+    def test_stac_aggregations(self):
+        """Test STAC aggregations with default settings.STAC_URL"""
+        url = reverse("fetch-stac-aggregations")
+        postdata = {"collections": "CMIP6", "aggregations": ["test_agg"]}
+        # Only run if settings.STAC_URL is set
+        if getattr(settings, "STAC_URL", None):
+            responses.post(settings.STAC_URL + "/aggregate", json={})
+            response = self.client.post(url, postdata, format="json")
+            assert response.status_code == status.HTTP_200_OK
+        else:
+            # If STAC_URL is None, just skip the test
+            import pytest
+
+            pytest.skip("settings.STAC_URL is not set")
+
+    @responses.activate
+    def test_stac_aggregations_with_custom_url(self):
+        """Test STAC aggregations with custom stacApiUrl in request"""
+        url = reverse("fetch-stac-aggregations")
+        custom_stac_url = "https://custom-stac.example.com"
+        postdata = {
+            "collections": "CMIP7",
+            "aggregations": ["test_agg"],
+            "stacApiUrl": custom_stac_url,
+        }
+        # Mock the custom STAC URL
+        responses.post(custom_stac_url + "/aggregate", json={})
+        response = self.client.post(url, postdata, format="json")
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_stac_search_with_invalid_json(self):
+        """Test that invalid JSON in request body returns 400"""
+        url = reverse("do-stac-search")
+        response = self.client.post(
+            url, "invalid json", content_type="application/json"
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    def test_stac_aggregations_with_invalid_json(self):
+        """Test that invalid JSON in aggregations request body returns 400"""
+        url = reverse("fetch-stac-aggregations")
+        response = self.client.post(
+            url, "invalid json", content_type="application/json"
+        )
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    @responses.activate
+    def test_stac_search_request_exception(self):
+        """Test that network errors during STAC search are handled"""
+        url = reverse("do-stac-search")
+        custom_stac_url = "https://custom-stac.example.com"
+        postdata = {
+            "collections": "CMIP7",
+            "limit": 10,
+            "stacApiUrl": custom_stac_url,
+        }
+        # Mock a failing request
+        responses.post(
+            custom_stac_url + "/search",
+            body=Exception("Network error"),
+        )
+        response = self.client.post(url, postdata, format="json")
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    @responses.activate
+    def test_stac_aggregations_request_exception(self):
+        """Test that network errors during STAC aggregations are handled"""
+        url = reverse("fetch-stac-aggregations")
+        custom_stac_url = "https://custom-stac.example.com"
+        postdata = {
+            "collections": "CMIP7",
+            "aggregations": ["test_agg"],
+            "stacApiUrl": custom_stac_url,
+        }
+        # Mock a failing request
+        responses.post(
+            custom_stac_url + "/aggregate",
+            body=Exception("Network error"),
+        )
+        response = self.client.post(url, postdata, format="json")
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    @responses.activate
+    @override_settings(STAC_URL=None)
+    def test_stac_search_no_stac_url_configured(self):
+        """Test that missing STAC_URL returns 400"""
+        url = reverse("do-stac-search")
+        postdata = {"collections": "CMIP6", "limit": 10}
+        response = self.client.post(url, postdata, format="json")
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    @responses.activate
+    @override_settings(STAC_URL=None)
+    def test_stac_aggregations_no_stac_url_configured(self):
+        """Test that missing STAC_URL returns 400 for aggregations"""
+        url = reverse("fetch-stac-aggregations")
+        postdata = {"collections": "CMIP6", "aggregations": ["test_agg"]}
+        response = self.client.post(url, postdata, format="json")
+        assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    @responses.activate
     def test_citation(self):
         url = reverse("do-citation")
         jo = {

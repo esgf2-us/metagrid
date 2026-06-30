@@ -200,15 +200,6 @@ export const clearStacCaches = (newProjectName?: string): void => {
   stacAggregationsCache.clear();
 };
 
-/**
- * Resolves the STAC API URL to use for a project.
- * Returns the project's custom stacApiUrl if set, otherwise undefined
- * (which will cause the caller to use the default proxy routes).
- */
-const getStacApiUrl = (project: RawProject): string | undefined => {
-  return project.stacApiUrl;
-};
-
 export const getCookie = (name: string): null | string => {
   let cookieValue = null;
   const cookieName = name === 'csrftoken' ? 'csrftoken' : `metagrid_${name}`;
@@ -1141,7 +1132,7 @@ export const fetchSTACSearchResults = async (
 
   const project = getStacProject(projectName);
   const filter = convertSearchParamsIntoStacFilter(reqUrlStr, project);
-  const stacApiUrl = getStacApiUrl(project);
+  const { stacApiUrl } = project;
 
   const query = new URLSearchParams(reqUrlStr || '').get('query');
   let textInputs: TextInputs | undefined;

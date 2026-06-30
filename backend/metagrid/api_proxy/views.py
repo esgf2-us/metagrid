@@ -95,6 +95,10 @@ def do_stac_search(request):
         custom_stac_url = jo.pop("stacApiUrl", None)
         stac_url = custom_stac_url if custom_stac_url else settings.STAC_URL
 
+        # Strip trailing slash to avoid double slashes
+        if stac_url and stac_url.endswith("/"):
+            stac_url = stac_url.rstrip("/")
+
         # Forward the request to the STAC server (without stacApiUrl field)
         try:
             resp = requests.post(stac_url + "/search", json=jo)
@@ -120,6 +124,10 @@ def fetch_stac_aggregations(request):
         jo = json.loads(request.body)
         custom_stac_url = jo.pop("stacApiUrl", None)
         stac_url = custom_stac_url if custom_stac_url else settings.STAC_URL
+
+        # Strip trailing slash to avoid double slashes
+        if stac_url and stac_url.endswith("/"):
+            stac_url = stac_url.rstrip("/")
 
         # Forward the request to the STAC server (without stacApiUrl field)
         try:
