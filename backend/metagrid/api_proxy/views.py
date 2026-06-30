@@ -86,17 +86,18 @@ def do_search(request):
 def do_stac_search(request):
     print("STAC Search Request:", request.method, request.body)
 
-    if settings.STAC_URL is None:
-        return HttpResponseBadRequest("STAC URL not configured.")
-
     # Check if a custom STAC URL is provided in the request body
     try:
         jo = json.loads(request.body)
         custom_stac_url = jo.pop("stacApiUrl", None)
         stac_url = custom_stac_url if custom_stac_url else settings.STAC_URL
 
+        # Check if we have a STAC URL (either custom or from settings)
+        if stac_url is None:
+            return HttpResponseBadRequest("STAC URL not configured.")
+
         # Strip trailing slash to avoid double slashes
-        if stac_url and stac_url.endswith("/"):
+        if stac_url.endswith("/"):
             stac_url = stac_url.rstrip("/")
 
         # Forward the request to the STAC server (without stacApiUrl field)
@@ -116,17 +117,18 @@ def do_stac_search(request):
 @require_http_methods(["POST"])
 @csrf_exempt
 def fetch_stac_aggregations(request):
-    if settings.STAC_URL is None:
-        return HttpResponseBadRequest("STAC URL not configured.")
-
     # Check if a custom STAC URL is provided in the request body
     try:
         jo = json.loads(request.body)
         custom_stac_url = jo.pop("stacApiUrl", None)
         stac_url = custom_stac_url if custom_stac_url else settings.STAC_URL
 
+        # Check if we have a STAC URL (either custom or from settings)
+        if stac_url is None:
+            return HttpResponseBadRequest("STAC URL not configured.")
+
         # Strip trailing slash to avoid double slashes
-        if stac_url and stac_url.endswith("/"):
+        if stac_url.endswith("/"):
             stac_url = stac_url.rstrip("/")
 
         # Forward the request to the STAC server (without stacApiUrl field)
