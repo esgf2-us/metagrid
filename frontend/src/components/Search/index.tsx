@@ -27,7 +27,7 @@ import {
   fetchSearchResults,
   generateSearchURLQuery,
   ResponseError,
-  STAC_BATCH_SIZE,
+  SEARCH_BATCH_SIZE,
 } from '../../api';
 import {
   copySearchOptionsTargets,
@@ -41,6 +41,7 @@ import {
   checkFiltersExist,
   clearCachedSearchResults,
   clearCachedStacBatches,
+  clearNonStacBatchCache,
   createEsgpullCommand,
   createIntakeEsgfSearch,
   createSearchRouteURL,
@@ -70,6 +71,8 @@ import {
   Pagination,
   RawSearchResult,
   RawSearchResults,
+  SearchResults,
+  StacBatchLoading,
   StacFeature,
   StacResponse,
   TextInputs,
@@ -108,16 +111,6 @@ const MAX_RESULTS = 10000;
 
 export type Props = {
   onUpdateCart: (selectedItems: RawSearchResults, operation: 'add' | 'remove') => void;
-};
-
-export type StacBatchLoading = {
-  results: RawSearchResults;
-  nextToken: string | undefined;
-  projectName: string;
-  totalMatched: number;
-  searchQuery: ActiveSearchQuery | null;
-  cacheRestored: boolean;
-  searchURL: string;
 };
 
 const EMPTY_STAC_BATCHES: StacBatchLoading = {
@@ -169,7 +162,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   const appStyles = getStyle(isDarkMode);
 
   const { data, error, isLoading, run } = useAsync({
-    deferFn: fetchSearchResults as unknown as DeferFn<Record<string, unknown>>,
+    deferFn: fetchSearchResults as unknown as DeferFn<SearchResults>,
   });
   const [filtersExist, setFiltersExist] = React.useState<boolean>(false);
   const [parsedFacets, setParsedFacets] = React.useState<ParsedFacets | Record<string, unknown>>(
@@ -182,7 +175,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   const [stacLoadedBatches, setStacLoadedBatches] = React.useState<StacBatchLoading>(() => {
     try {
-      const cachedStac = getCachedStacBatches() as StacBatchLoading | null;
+      const cachedStac = getCachedStacBatches();
 
       if (
         cachedStac &&
@@ -204,13 +197,11 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   const prevProjectNameRef = React.useRef<string>('');
   const currentRequestQueryRef = React.useRef<ActiveSearchQuery | null>(null);
 
-  const [cachedResults, setCachedResults] = React.useState<Record<string, unknown> | undefined>(
-    () => {
-      // Initialize from localStorage on mount
-      const cached = getCachedSearchResults();
-      return cached && !objectIsEmpty(cached) ? cached : undefined;
-    },
-  );
+  const [cachedResults, setCachedResults] = React.useState<SearchResults | undefined>(() => {
+    // Initialize from localStorage on mount
+    const cached = getCachedSearchResults();
+    return cached && !objectIsEmpty(cached) ? cached : undefined;
+  });
 
   // State for last successful search
   const [lastSuccessfulSearch, setLastSuccessfulSearch] = React.useState<CachedSearchData>({
@@ -226,7 +217,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     facets: {},
   });
 
-  const results: Record<string, unknown> | undefined = data || cachedResults;
+  const results: SearchResults | undefined = data || cachedResults;
   const hasStacResults = stacLoadedBatches.results.length > 0;
 
   // Helper to fix incomplete project objects in cached queries
@@ -291,6 +282,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     setIsBackgroundFetch(false);
     if (currentProject.isSTAC) {
       resetStacState((project.name as string) || '');
+    } else {
+      clearNonStacBatchCache();
     }
   }, [currentProject.isSTAC, project.name, resetStacState]);
 
@@ -339,11 +332,16 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       const cachedQuery = stacLoadedBatches.searchQuery;
       const currentProjectName = (project.name as string) || '';
 
-      const queryChanged =
-        !isEqual(activeSearchQuery.activeFacets, cachedQuery.activeFacets) ||
-        !isEqual(activeSearchQuery.textInputs, cachedQuery.textInputs) ||
-        !isEqual(activeSearchQuery.filenameVars, cachedQuery.filenameVars) ||
-        activeSearchQuery.globusOnly !== cachedQuery.globusOnly;
+      // Normalize queries for comparison by keeping only search-relevant project properties
+      const normalizeQueryForComparison = (query: ActiveSearchQuery) => ({
+        ...query,
+        project: {
+          name: query.project.name,
+          pk: query.project.pk,
+        },
+      });
+
+      const queryChanged = !isEqual(activeSearchQuery, cachedQuery, normalizeQueryForComparison);
 
       if (queryChanged && stacLoadedBatches.projectName === currentProjectName) {
         if (!stacLoadedBatches.cacheRestored) {
@@ -450,7 +448,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           nextToken = typeof nextLink?.body?.token === 'string' ? nextLink.body.token : undefined;
         }
 
-        const loadedBatches = Math.ceil(stacLoadedBatches.results.length / STAC_BATCH_SIZE);
+        const loadedBatches = Math.ceil(stacLoadedBatches.results.length / SEARCH_BATCH_SIZE);
         const accumulatedResults =
           loadedBatches === 0 ? newDocs : [...stacLoadedBatches.results, ...newDocs];
 
@@ -513,7 +511,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     const currentPageSize = paginationOptions.pageSize || 10;
     const loadedCount = stacLoadedBatches.results.length;
     const totalLoadedPages = Math.ceil(loadedCount / currentPageSize);
-    const currentBatch = Math.ceil(loadedCount / STAC_BATCH_SIZE);
+    const currentBatch = Math.ceil(loadedCount / SEARCH_BATCH_SIZE);
 
     if (currentPage === totalLoadedPages && lastPreloadedBatchRef.current !== currentBatch) {
       lastPreloadedBatchRef.current = currentBatch;
@@ -695,7 +693,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     if (currentProject.isSTAC && stacLoadedBatches.nextToken) {
       const loadedCount = stacLoadedBatches.results.length;
       const totalLoadedPages = Math.ceil(loadedCount / pageSize);
-      const currentBatch = Math.ceil(loadedCount / STAC_BATCH_SIZE);
+      const currentBatch = Math.ceil(loadedCount / SEARCH_BATCH_SIZE);
 
       if (page === totalLoadedPages && lastPreloadedBatchRef.current !== currentBatch) {
         lastPreloadedBatchRef.current = currentBatch;
@@ -999,14 +997,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                       show={showDownloadAllForm}
                       hide={setDownloadAllForm(false)}
                       searchURL={getUrlFromSearch(activeSearchQuery)}
-                      stacResults={
-                        resultsToDisplay
-                          ? (resultsToDisplay as StacResponse).search
-                          : {
-                              features: [],
-                              links: [],
-                              type: 'FeatureCollection',
-                            }
+                      stacFeatures={
+                        resultsToDisplay ? (resultsToDisplay as StacResponse).search?.features : []
                       }
                       totalMatched={numMatched}
                       activeSearchQuery={activeSearchQuery}

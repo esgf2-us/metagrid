@@ -29,12 +29,7 @@ import {
   startSearchGlobusEndpoints,
   SubmissionResult,
 } from '../../api';
-import {
-  RawSearchResult,
-  RawSearchResults,
-  StacFeature,
-  StacSearchResponse,
-} from '../Search/types';
+import { RawSearchResult, RawSearchResults, StacFeature } from '../Search/types';
 import {
   GlobusTaskItem,
   MAX_TASK_LIST_LENGTH,
@@ -118,7 +113,7 @@ function redirectToRootUrl(): void {
 }
 
 interface DatasetDownloadFormProps {
-  stacResults?: StacSearchResponse;
+  stacFeatures?: StacFeature[];
   searchURL?: string;
   onDownloadFinish?: () => void;
 }
@@ -244,8 +239,8 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
   const handleWgetDownload = (): void => {
     setDownloadIsLoading(true);
 
-    if (props.stacResults && props.stacResults.features.length > 0) {
-      const searchItems = props.stacResults.features.map((feature: StacFeature) =>
+    if (props.stacFeatures && props.stacFeatures.length > 0) {
+      const searchItems = props.stacFeatures.map((feature: StacFeature) =>
         convertStacToRawSearchResult(feature),
       );
 
@@ -482,8 +477,8 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
       });
     }
 
-    if (props.stacResults) {
-      props.stacResults.features.forEach((feature) => {
+    if (props.stacFeatures) {
+      props.stacFeatures.forEach((feature) => {
         const convertedItem = convertStacToRawSearchResult(feature);
         const href = getGlobusHrefForItem(convertedItem);
         if (href !== null) {
@@ -986,7 +981,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
       handleWgetDownload();
     } else if (downloadType === 'Globus') {
       let itemsReady = false;
-      if (props.stacResults && props.stacResults.features) {
+      if (props.stacFeatures) {
         itemsReady = true;
       } else {
         itemsReady = checkItemsAreGlobusEnabled();
@@ -1130,7 +1125,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
                 handleDownloadForm('Globus');
               }}
               disabled={
-                (itemSelections.length === 0 && !props.stacResults) ||
+                (itemSelections.length === 0 && !props.stacFeatures) ||
                 !chosenGlobusEndpoint ||
                 savedGlobusEndpoints.length === 0
               }
@@ -1155,7 +1150,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
                 handleDownloadForm('wget');
               }}
               icon={<DownloadOutlined />}
-              disabled={itemSelections.length === 0 && !props.stacResults}
+              disabled={itemSelections.length === 0 && !props.stacFeatures}
               loading={downloadIsLoading}
             >
               Download
