@@ -172,6 +172,7 @@ export const getCurrentAppPage = (): AppPage => {
 export const createSearchRouteURL = (
   url: string,
   stacFilter?: { op: string; args: unknown } | null,
+  stacApiUrl?: string,
 ): string => {
   // Detect if this is a STAC search URL
   const isStacUrl = url.includes('/stac/search');
@@ -211,7 +212,9 @@ export const createSearchRouteURL = (
     newParams.set('q', query);
   }
 
-  return `${window.METAGRID.STAC_URL}/search?${newParams.toString()}`;
+  // Use project-specific STAC URL if provided, otherwise use default
+  const baseUrl = stacApiUrl || window.METAGRID.STAC_URL;
+  return `${baseUrl}/search?${newParams.toString()}`;
 };
 
 /**
