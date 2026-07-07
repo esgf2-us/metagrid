@@ -14,6 +14,7 @@ export type RawProject = {
   isSTAC: boolean;
   projectName?: string;
   stacApiUrl?: string;
+  projectHash?: string;
 };
 export type RawProjects = Array<RawProject>;
 

@@ -807,7 +807,11 @@ export const generateSearchURLQuery = (
   );
 
   if (isSTAC) {
-    const url = `${baseRoute}${baseParams}${`project_id=${(project as RawProject).projectName}`}&${textInputsParams}&${activeFacetsParams}`;
+    const rawProject = project as RawProject;
+    const projectHashParam = rawProject.projectHash
+      ? `&project_hash=${rawProject.projectHash}`
+      : '';
+    const url = `${baseRoute}${baseParams}${`project_id=${rawProject.projectName}`}${projectHashParam}&${textInputsParams}&${activeFacetsParams}`;
 
     return url;
   }
@@ -863,6 +867,7 @@ const postSTACSearchImpl = async (
 
 /**
  * Generates a cache key for postSTACSearch based on search parameters
+ * Includes stacApiUrl to differentiate between projects with same projectName but different URLs
  */
 const generateStacSearchCacheKey = (
   projectName: string,
@@ -870,6 +875,7 @@ const generateStacSearchCacheKey = (
   filter: { op: string; args: unknown } | undefined,
   q?: TextInputs,
   token?: string,
+  stacApiUrl?: string,
 ): string => {
   const filterStr = filter ? JSON.stringify(filter) : 'null';
   const qStr = q ? JSON.stringify(q) : 'null';
@@ -880,7 +886,9 @@ const generateStacSearchCacheKey = (
     tokenStr = typeof token === 'object' ? JSON.stringify(token) : token;
   }
 
-  return `${projectName}|${limit}|${filterStr}|${qStr}|${tokenStr}`;
+  const urlStr = stacApiUrl || 'default';
+
+  return `${projectName}|${limit}|${filterStr}|${qStr}|${tokenStr}|${urlStr}`;
 };
 
 /**
@@ -902,6 +910,7 @@ export const postSTACSearch = async (
   filter: { op: string; args: unknown } | undefined = undefined,
   q?: TextInputs,
   token?: string,
+  stacApiUrl?: string,
 ): Promise<Record<string, unknown>> => {
   // eslint-disable-next-line no-console
   console.log('[postSTACSearch] Request for project:', projectName);
@@ -923,7 +932,7 @@ export const postSTACSearch = async (
     });
   }
 
-  const cacheKey = generateStacSearchCacheKey(projectName, limit, filter, q, token);
+  const cacheKey = generateStacSearchCacheKey(projectName, limit, filter, q, token, stacApiUrl);
   const now = Date.now();
   const cached = stacSearchCache.get(cacheKey);
 
@@ -953,7 +962,7 @@ export const postSTACSearch = async (
   console.log('[postSTACSearch] → Making NEW request for:', projectName);
 
   // Start new fetch and cache the promise
-  const promise = postSTACSearchImpl(projectName, limit, filter, q, token)
+  const promise = postSTACSearchImpl(projectName, limit, filter, q, token, stacApiUrl)
     .then((result) => {
       // eslint-disable-next-line no-console
       console.log('[postSTACSearch] ✓ Request completed for:', projectName);
@@ -1010,14 +1019,17 @@ const normalizeReqUrlForCache = (reqUrl: string): string => {
 
 /**
  * Creates a cache key from the relevant parameters
+ * Includes stacApiUrl to differentiate between projects with same projectName but different URLs
  */
 const createAggregationsCacheKey = (
   projectName: string,
   normalizedUrl: string,
   filter: { op: string; args: unknown } | undefined,
+  stacApiUrl?: string,
 ): string => {
   const filterStr = filter ? JSON.stringify(filter) : 'null';
-  return `${projectName}|${normalizedUrl}|${filterStr}`;
+  const urlStr = stacApiUrl || 'default';
+  return `${projectName}|${normalizedUrl}|${filterStr}|${urlStr}`;
 };
 
 /**
@@ -1055,7 +1067,7 @@ export const fetchSTACAggregations = async (
 
   // Create cache key based on non-pagination parameters
   const normalizedUrl = normalizeReqUrlForCache(reqUrl);
-  const cacheKey = createAggregationsCacheKey(projectName, normalizedUrl, filter);
+  const cacheKey = createAggregationsCacheKey(projectName, normalizedUrl, filter, stacApiUrl);
 
   const now = Date.now();
   const cached = stacAggregationsCache.get(cacheKey);
@@ -1127,10 +1139,11 @@ export const fetchSTACSearchResults = async (
   reqUrlStr: string,
   projectName: string,
   token?: string,
+  projectHash?: string,
 ): Promise<SearchResults> => {
   let status = 200;
 
-  const project = getStacProject(projectName);
+  const project = getStacProject(projectName, projectHash);
   const filter = convertSearchParamsIntoStacFilter(reqUrlStr, project);
   const { stacApiUrl } = project;
 
@@ -1162,6 +1175,7 @@ export const fetchSTACSearchResults = async (
     filter,
     textInputs,
     token,
+    stacApiUrl,
   );
 
   const stacResponse: StacSearchResponse = searchResults as StacSearchResponse;
@@ -1270,13 +1284,16 @@ export const fetchSearchResults = async (
     const params = new URLSearchParams(reqUrlStr.split('?')[1]);
     /* istanbul ignore next -- @preserve */
     const projectName = params.get('project_id') || 'CMIP6';
+    const projectHash = params.get('project_hash');
 
     // eslint-disable-next-line no-console
     console.log('[fetchSearchResults] URL says project_id:', params.get('project_id'));
     // eslint-disable-next-line no-console
+    console.log('[fetchSearchResults] URL says project_hash:', projectHash);
+    // eslint-disable-next-line no-console
     console.log('[fetchSearchResults] → Fetching STAC results for project:', projectName);
 
-    return fetchSTACSearchResults(finalUrl, projectName, tokenToUse)
+    return fetchSTACSearchResults(finalUrl, projectName, tokenToUse, projectHash || undefined)
       .then((results) => {
         // Prevent breaking the app if the response is not successful
         if (results.status !== 200) {

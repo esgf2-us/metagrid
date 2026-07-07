@@ -24,6 +24,28 @@ import { STAC_DEFAULT_PROJECT, STAC_PROJECT_LIST, StacProject } from './useProje
 // Global variable to store configured additional projects
 let configuredAdditionalProjects: RawProject[] = [];
 
+/**
+ * Generates a unique hash identifier for a project based on name, projectName, and stacApiUrl.
+ * This ensures we can differentiate between projects with the same projectName but different URLs.
+ */
+export function generateProjectHash(
+  name: string,
+  projectName: string,
+  stacApiUrl?: string,
+): string {
+  const hashInput = `${name}|${projectName}|${stacApiUrl || 'default'}`;
+  // Simple hash function for browser compatibility
+  /* eslint-disable no-plusplus, no-bitwise */
+  let hash = 0;
+  for (let i = 0; i < hashInput.length; i++) {
+    const char = hashInput.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash &= hash; // Convert to 32bit integer
+  }
+  /* eslint-enable no-plusplus, no-bitwise */
+  return Math.abs(hash).toString(36);
+}
+
 // Creates a RawProject from pk and StacProject data
 function buildStacProject(
   pk: string,
@@ -40,6 +62,9 @@ function buildStacProject(
     ];
   });
 
+  // Generate unique hash for this project configuration
+  const projectHash = generateProjectHash(name, projectName, stacApiUrl);
+
   return {
     ...STAC_DEFAULT_PROJECT,
     pk,
@@ -51,6 +76,7 @@ function buildStacProject(
     facetsByGroup: mergedFacetsByGroup,
     isSTAC: true,
     stacApiUrl,
+    projectHash,
   };
 }
 
@@ -85,12 +111,25 @@ export function setConfiguredAdditionalProjects(projects: RawProject[]): void {
 
 /**
  * Gets a STAC project by project name.
+ * If projectHash is provided, looks up by the unique hash identifier first.
+ * Otherwise looks up by 'projectName' field (returns first match).
  * First checks the configured additional projects,
  * then falls back to default STAC_PROJECTS if not found.
  */
-export function getStacProject(projectName: string): RawProject {
+export function getStacProject(projectName: string, projectHash?: string): RawProject {
   // Try to find in configured projects first
   if (configuredAdditionalProjects.length > 0) {
+    // If we have the unique hash, use it for exact match
+    if (projectHash) {
+      const stacProject = configuredAdditionalProjects.find(
+        (project: RawProject) => project.projectHash === projectHash,
+      );
+      if (stacProject) {
+        return stacProject;
+      }
+    }
+
+    // Fall back to projectName lookup (returns first match)
     const stacProject = configuredAdditionalProjects.find(
       (project: RawProject) => (project.projectName || '') === projectName,
     );
@@ -100,6 +139,13 @@ export function getStacProject(projectName: string): RawProject {
   }
 
   // Fall back to default STAC_PROJECTS
+  if (projectHash) {
+    const stacProject = STAC_PROJECTS.find((project) => project.projectHash === projectHash);
+    if (stacProject) {
+      return stacProject;
+    }
+  }
+
   const stacProject = STAC_PROJECTS.find((project) => (project.projectName || '') === projectName);
   return stacProject || STAC_PROJECTS[0];
 }
