@@ -1182,9 +1182,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                   currentProject.isSTAC
                     ? convertSearchParamsIntoStacFilter(currentRequestURL, currentProject)
                     : null,
-                  'stacApiUrl' in currentProject
-                    ? (currentProject.stacApiUrl as string | undefined)
-                    : undefined,
+                  'stacApiUrl' in currentProject ? currentProject.stacApiUrl : undefined,
                 )}
                 target="_blank"
                 icon={<ExportOutlined />}

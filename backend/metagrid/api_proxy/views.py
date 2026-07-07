@@ -84,8 +84,6 @@ def do_search(request):
 @require_http_methods(["POST"])
 @csrf_exempt
 def do_stac_search(request):
-    print("STAC Search Request:", request.method, request.body)
-
     # Check if a custom STAC URL is provided in the request body
     try:
         jo = json.loads(request.body)
@@ -135,10 +133,7 @@ def fetch_stac_aggregations(request):
         try:
             resp = requests.post(stac_url + "/aggregate", json=jo)
         except Exception as e:
-            print("Error fetching STAC aggregations:\n", e)
             return HttpResponseBadRequest(f"Error during POST request: {e}")
-
-        print("STAC Aggregations:", resp.text)
 
         httpresp = HttpResponse(resp.text, content_type="text/json")
         httpresp.status_code = resp.status_code
