@@ -7,6 +7,7 @@ export type StacProject = {
   projectUrl: string;
   projectName: string;
   facetsByGroup: FacetsByGroup;
+  stacApiUrl?: string;
 };
 
 export const STAC_DEFAULT_PROJECT: StacProject = {

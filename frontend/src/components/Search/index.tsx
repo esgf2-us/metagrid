@@ -78,7 +78,11 @@ import {
   TextInputs,
 } from './types';
 import { AuthContext } from '../../contexts/AuthContext';
-import { convertStacToRawSearchResult, stringifyApiRequest } from '../../common/STAC';
+import {
+  convertSearchParamsIntoStacFilter,
+  convertStacToRawSearchResult,
+  stringifyApiRequest,
+} from '../../common/STAC';
 import DownloadModal from '../Downloads/DownloadModal';
 
 const tooltipText = {
@@ -1173,7 +1177,13 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
             <Col lg={24} style={{ textAlign: 'center', marginTop: '16px' }}>
               <Button
                 type="default"
-                href={createSearchRouteURL(currentRequestURL)}
+                href={createSearchRouteURL(
+                  currentRequestURL,
+                  currentProject.isSTAC
+                    ? convertSearchParamsIntoStacFilter(currentRequestURL, currentProject)
+                    : null,
+                  'stacApiUrl' in currentProject ? currentProject.stacApiUrl : undefined,
+                )}
                 target="_blank"
                 icon={<ExportOutlined />}
               >
