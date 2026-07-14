@@ -11,34 +11,202 @@ Metagrid now fully supports **Podman** as a drop-in replacement for Docker. The 
 - **Docker-compatible**: Compatible with Docker CLI commands and docker-compose files
 - **OCI compliance**: Works with Docker images and registries
 
+## Quick Start (Nothing Installed Yet?)
+
+If you're starting from scratch with no container runtime installed:
+
+1. **Choose your setup approach:**
+   - **Recommended for most users:** Follow **Option 1: Podman + docker-compose** below
+   - **If using recent Podman (4.1+):** Try **Option 2: Native compose plugin** first
+   - **Python users:** Consider **Option 3: podman-compose**
+
+2. **Follow the detailed installation steps** for your chosen option in the "Complete Setup Instructions" section below
+
+3. **Once installed, deploy Metagrid:**
+   ```bash
+   cd /path/to/metagrid
+   ./manage_metagrid.sh
+   ```
+   The script will automatically detect and use Podman.
+
 ## Requirements
 
-### Option 1: Podman with compose plugin (Recommended)
+You'll need either Podman with docker-compose, or Podman with the native compose plugin. Below are complete installation instructions for both approaches.
 
+### Prerequisites
+
+- **macOS**: Homebrew (install from https://brew.sh if not already installed)
+- **Linux**: Package manager access (apt, dnf, or yum)
+- **All platforms**: Python 3.6+ (for docker-compose installation if needed)
+
+### Complete Setup Instructions
+
+#### Option 1: Podman + docker-compose (Works on all platforms)
+
+This approach uses the standalone docker-compose CLI tool with podman.
+
+**macOS:**
 ```bash
-# macOS
+# 1. Install Podman
 brew install podman
+
+# 2. Initialize and start Podman machine
 podman machine init
 podman machine start
 
-# Linux (Fedora/RHEL/CentOS)
-sudo dnf install podman
+# 3. Install docker-compose
+brew install docker-compose
 
-# Linux (Ubuntu/Debian)
-sudo apt-get install podman
+# 4. Configure Podman socket for docker-compose compatibility
+# Start the Podman socket service
+podman machine ssh "sudo systemctl enable --now podman.socket"
+
+# 5. Set up Docker environment variables to point to Podman
+export DOCKER_HOST="unix:///var/run/podman/podman.sock"
+# Add this to your ~/.zshrc or ~/.bashrc to make it permanent:
+echo 'export DOCKER_HOST="unix:///var/run/podman/podman.sock"' >> ~/.zshrc
+
+# 6. Create a symlink for docker-compose to work with podman
+# (Optional but helps with compatibility)
+podman system connection default podman-machine-default-root
+
+# 7. Verify installation
+podman --version
+docker-compose --version
+podman ps
+```
+
+**Linux (Ubuntu/Debian):**
+```bash
+# 1. Install Podman
+sudo apt-get update
+sudo apt-get install -y podman
+
+# 2. Install docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod 755 /usr/local/bin/docker-compose
+
+# OR install via pip:
+# sudo pip3 install docker-compose
+
+# 3. Enable Podman socket
+sudo systemctl enable --now podman.socket
+sudo systemctl status podman.socket
+
+# 4. Set up Docker environment variables to point to Podman
+export DOCKER_HOST="unix:///run/podman/podman.sock"
+# Add this to your ~/.bashrc to make it permanent:
+echo 'export DOCKER_HOST="unix:///run/podman/podman.sock"' >> ~/.bashrc
+
+# 5. Verify installation
+podman --version
+docker-compose --version
+podman ps
+```
+
+**Linux (Fedora/RHEL/CentOS):**
+```bash
+# 1. Install Podman
+sudo dnf install -y podman
+
+# 2. Install docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod 755 /usr/local/bin/docker-compose
+
+# OR install via pip:
+# sudo pip3 install docker-compose
+
+# 3. Enable Podman socket
+sudo systemctl enable --now podman.socket
+sudo systemctl status podman.socket
+
+# 4. Set up Docker environment variables to point to Podman
+export DOCKER_HOST="unix:///run/podman/podman.sock"
+# Add this to your ~/.bashrc to make it permanent:
+echo 'export DOCKER_HOST="unix:///run/podman/podman.sock"' >> ~/.bashrc
+
+# 5. Verify installation
+podman --version
+docker-compose --version
+podman ps
+```
+
+#### Option 2: Podman with native compose plugin (Recommended if available)
+
+The native `podman compose` command is built into recent versions of Podman.
+
+**macOS:**
+```bash
+# 1. Install Podman
+brew install podman
+
+# 2. Initialize and start Podman machine
+podman machine init
+podman machine start
+
+# 3. Verify compose plugin is available
+podman compose version
+
+# If not available, try updating:
+# brew upgrade podman
+```
+
+**Linux:**
+```bash
+# Install Podman (includes compose plugin in recent versions)
+# Ubuntu/Debian:
+sudo apt-get update
+sudo apt-get install -y podman
+
+# Fedora/RHEL/CentOS:
+sudo dnf install -y podman
 
 # Verify compose plugin
 podman compose version
+
+# If compose plugin is not available, you may need to install it separately
+# or use Option 1 (docker-compose) or Option 3 (podman-compose) instead
 ```
 
-### Option 2: Podman with podman-compose
+#### Option 3: Podman with podman-compose (Alternative)
+
+This is a Python-based alternative that mimics docker-compose behavior.
 
 ```bash
-# Install podman-compose
-pip install podman-compose
+# 1. Install Podman (see Option 1 or 2 above for platform-specific commands)
 
-# Verify installation
+# 2. Install podman-compose via pip
+pip3 install podman-compose
+
+# OR on some systems:
+# sudo pip3 install podman-compose
+
+# 3. Verify installation
 podman-compose --version
+```
+
+### Testing Your Installation
+
+After completing one of the setup options above, test that everything works:
+
+```bash
+# 1. Verify Podman is running
+podman ps
+
+# 2. Test compose functionality (use the appropriate command for your setup):
+# For Option 1 (docker-compose):
+docker-compose --version
+
+# For Option 2 (native plugin):
+podman compose version
+
+# For Option 3 (podman-compose):
+podman-compose --version
+
+# 3. Test that the management script detects your setup
+cd /path/to/metagrid
+./manage_metagrid.sh
+# You should see: "Using container runtime: podman"
 ```
 
 ## How It Works
@@ -132,11 +300,49 @@ Podman handles volumes similarly to Docker, but:
 podman machine start
 ```
 
+### docker-compose can't connect to Podman socket
+
+**Error:** `Cannot connect to the Docker daemon at unix:///var/run/docker.sock`
+
+**Solution:**
+```bash
+# Check that the Podman socket is running
+podman machine ssh "systemctl status podman.socket"
+
+# If not running, enable it:
+podman machine ssh "sudo systemctl enable --now podman.socket"
+
+# Make sure DOCKER_HOST is set correctly
+export DOCKER_HOST="unix:///var/run/podman/podman.sock"
+
+# For macOS, you may need to use SSH forwarding:
+podman machine ssh "sudo ln -s /run/podman/podman.sock /var/run/docker.sock" || true
+
+# Verify connection
+docker-compose --version
+```
+
+### docker-compose shows "permission denied"
+
+```bash
+# Linux: Add your user to the podman group or use rootless mode
+# Check current user permissions
+id
+
+# Enable rootless Podman (recommended)
+sudo loginctl enable-linger $USER
+
+# Or add user to podman group (not recommended for security)
+# sudo usermod -aG podman $USER
+# newgrp podman
+```
+
 ### Compose plugin not found
 ```bash
 # Install podman-compose as fallback
 pip install podman-compose
 
+# Or install docker-compose (see setup instructions above)
 # Or follow instructions at: https://github.com/docker/compose
 ```
 

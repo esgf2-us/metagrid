@@ -7,17 +7,24 @@ elif command -v podman &> /dev/null; then
     # Check if podman compose plugin is available
     if ! podman compose version &> /dev/null; then
         echo "Warning: Podman detected but 'podman compose' is not available."
-        echo "Please install podman-compose or the compose plugin:"
-        echo "  - For podman-compose: pip install podman-compose"
-        echo "  - For compose plugin: Follow instructions at https://github.com/docker/compose"
 
+        # Check if standalone docker-compose is available
+        if command -v docker-compose &> /dev/null; then
+            echo "Using standalone docker-compose with Podman..."
+            CONTAINER_CMD="docker-compose"
+            # docker-compose doesn't use 'compose' subcommand
+            USE_COMPOSE_SUBCOMMAND=false
         # Check if podman-compose is available as fallback
-        if command -v podman-compose &> /dev/null; then
+        elif command -v podman-compose &> /dev/null; then
             echo "Using podman-compose as fallback..."
             CONTAINER_CMD="podman-compose"
             # Remove 'compose' from all compose commands since podman-compose doesn't use it
             USE_COMPOSE_SUBCOMMAND=false
         else
+            echo "Please install one of the following:"
+            echo "  - For standalone docker-compose: Follow instructions at https://docs.docker.com/compose/install/"
+            echo "  - For podman-compose: pip install podman-compose"
+            echo "  - For compose plugin: Follow instructions at https://github.com/docker/compose"
             exit 1
         fi
     else
