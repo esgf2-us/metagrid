@@ -2,15 +2,58 @@
 
 !!! note
 
-    If you're new to Docker, please be aware that some resources are cached system-wide
+    If you're new to Docker or Podman, please be aware that some resources (volumes, networks) are cached system-wide
     and might reappear if you generate a project multiple times with the same name (e.g.
-    this issue with Postgres `<docker-postgres-auth-failed>`).
+    this issue with Postgres `<docker-postgres-auth-failed>`). This applies to both Docker and Podman.
 
 ## Prerequisites
 
-- [Docker](https://docs.docker.com/get-docker/)
-- [docker-compose](https://docs.docker.com/compose/install/)
+- Container Runtime:
+  - [Docker](https://docs.docker.com/get-docker/) with [docker-compose](https://docs.docker.com/compose/install/), **OR**
+  - [Podman](https://podman.io/getting-started/installation) with the [compose plugin](https://github.com/docker/compose) or [podman-compose](https://github.com/containers/podman-compose)
 - Python >= 3.8 to create virtual environment for `pre-commit` package
+
+### Using Podman Instead of Docker
+
+Metagrid fully supports [Podman](https://podman.io/) as a drop-in replacement for Docker. Podman is a daemonless container engine that's compatible with Docker commands and can be used rootless for improved security.
+
+#### Installing Podman
+
+**macOS:**
+```bash
+brew install podman
+podman machine init
+podman machine start
+```
+
+**Linux:**
+```bash
+# Fedora/RHEL/CentOS
+sudo dnf install podman podman-compose
+
+# Ubuntu/Debian
+sudo apt-get install podman podman-compose
+```
+
+**Windows:**
+Follow the [official Podman installation guide](https://podman.io/getting-started/installation#windows).
+
+#### Compose Plugin Setup
+
+Podman supports Docker Compose through either:
+
+1. **Podman Compose plugin** (recommended):
+   ```bash
+   # Verify it's working
+   podman compose version
+   ```
+
+2. **podman-compose** (alternative):
+   ```bash
+   pip install podman-compose
+   ```
+
+The `manage_metagrid.sh` script automatically detects whether Docker or Podman is available and uses the appropriate command.
 
 ## 1. Clone your fork and keep in sync with upstream `master`
 
@@ -95,11 +138,25 @@ pre-commit run <hook_id>.
 
 ### 3.1 Build and Run the Stack
 
-This can take a while, especially the first time you run this particular command on your development system but subsequent runs will occur quickly:
+This can take a while, especially the first time you run this particular command on your development system but subsequent runs will occur quickly.
 
+**Using the management script (recommended):**
+```bash
+./manage_metagrid.sh
+# Select option 3 for "Start / Stop Local Dev Containers"
+```
+
+**Manual command (Docker):**
 ```bash
 docker compose up --build
 ```
+
+**Manual command (Podman):**
+```bash
+podman compose up --build
+```
+
+The `manage_metagrid.sh` script automatically detects your container runtime (Docker or Podman) and uses the appropriate commands.
 
 ### 3.2 Additional Configuration
 
@@ -166,10 +223,21 @@ Source:
 
 ### 4.1 Build and Run the Stack
 
-This can take a while, especially the first time you run this particular command on your development system but subsequent runs will occur quickly:
+This can take a while, especially the first time you run this particular command on your development system but subsequent runs will occur quickly.
 
+**Using the management script (recommended):**
 ```bash
+./manage_metagrid.sh
+# Select option 3 for "Start / Stop Local Dev Containers"
+```
+
+**Manual command:**
+```bash
+# Docker
 docker compose up --build
+
+# Podman
+podman compose up --build
 ```
 
 ### 4.2 Accessible Services

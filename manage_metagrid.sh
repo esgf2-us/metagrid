@@ -3,10 +3,35 @@ if command -v docker &> /dev/null && docker ps &> /dev/null 2>&1; then
     CONTAINER_CMD="docker"
 elif command -v podman &> /dev/null; then
     CONTAINER_CMD="podman"
+
+    # Check if podman compose plugin is available
+    if ! podman compose version &> /dev/null; then
+        echo "Warning: Podman detected but 'podman compose' is not available."
+        echo "Please install podman-compose or the compose plugin:"
+        echo "  - For podman-compose: pip install podman-compose"
+        echo "  - For compose plugin: Follow instructions at https://github.com/docker/compose"
+
+        # Check if podman-compose is available as fallback
+        if command -v podman-compose &> /dev/null; then
+            echo "Using podman-compose as fallback..."
+            CONTAINER_CMD="podman-compose"
+            # Remove 'compose' from all compose commands since podman-compose doesn't use it
+            USE_COMPOSE_SUBCOMMAND=false
+        else
+            exit 1
+        fi
+    else
+        USE_COMPOSE_SUBCOMMAND=true
+    fi
 else
     echo "Error: Neither Docker nor Podman is available or running."
     echo "Please install Docker or Podman and ensure the service is running."
     exit 1
+fi
+
+# Set default for docker
+if [ -z "$USE_COMPOSE_SUBCOMMAND" ]; then
+    USE_COMPOSE_SUBCOMMAND=true
 fi
 
 echo "Using container runtime: $CONTAINER_CMD"
@@ -21,6 +46,17 @@ LOCAL_OVERLAY="-f docker-compose-local-overlay.yml"
 PROD_OVERLAY="-f docker-compose-prod-overlay.yml"
 
 set -e
+
+# Helper function to run compose commands
+# This handles both "docker compose" and "podman-compose" syntax
+function compose_cmd() {
+    if [ "$USE_COMPOSE_SUBCOMMAND" = true ]; then
+        $CONTAINER_CMD compose "$@"
+    else
+        # podman-compose doesn't use 'compose' subcommand
+        $CONTAINER_CMD "$@"
+    fi
+}
 
 #Custom functions
 function startProductionService() {
@@ -39,21 +75,21 @@ function startProductionService() {
     case $auth_choice in
     1)
         echo "Starting Metagrid production deployment with Globus"
-        $CONTAINER_CMD compose $PROD_COMPOSE $PROD_OVERLAY $GLOBUS_COMPOSE up --build -d
+        compose_cmd $PROD_COMPOSE $PROD_OVERLAY $GLOBUS_COMPOSE up --build -d
         echo "Command used:"
-        echo "$CONTAINER_CMD compose $PROD_COMPOSE $PROD_OVERLAY $GLOBUS_COMPOSE up --build -d"
+        echo "compose_cmd $PROD_COMPOSE $PROD_OVERLAY $GLOBUS_COMPOSE up --build -d"
         ;;
     2)
         echo "Starting Metagrid production deployment with Keycloak"
-        $CONTAINER_CMD compose $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $PROD_OVERLAY --profile keycloak up --build -d
+        compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $PROD_OVERLAY --profile keycloak up --build -d
         echo "Command used:"
-        echo "$CONTAINER_CMD compose $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $PROD_OVERLAY --profile keycloak up --build -d"
+        echo "compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $PROD_OVERLAY --profile keycloak up --build -d"
         ;;
     3)
         echo "Starting Metagrid production deployment with no auth"
-        $CONTAINER_CMD compose $PROD_COMPOSE $PROD_OVERLAY up --build -d
+        compose_cmd $PROD_COMPOSE $PROD_OVERLAY up --build -d
         echo "Command used:"
-        echo "$CONTAINER_CMD compose $PROD_COMPOSE $PROD_OVERLAY up --build -d"
+        echo "compose_cmd $PROD_COMPOSE $PROD_OVERLAY up --build -d"
         ;;
     *)
         echo "Invalid choice. Please select 1, 2, or 3."
@@ -79,21 +115,21 @@ function startLocalService() {
     case $auth_choice in
     1)
         echo "Starting Metagrid with Globus auth"
-        $CONTAINER_CMD compose $LOCAL_COMPOSE $LOCAL_OVERLAY $GLOBUS_COMPOSE --profile docs up --build -d
+        compose_cmd $LOCAL_COMPOSE $LOCAL_OVERLAY $GLOBUS_COMPOSE --profile docs up --build -d
         echo "Command used:"
-        echo "$CONTAINER_CMD compose $LOCAL_COMPOSE $LOCAL_OVERLAY $GLOBUS_COMPOSE --profile docs up --build -d"
+        echo "compose_cmd $LOCAL_COMPOSE $LOCAL_OVERLAY $GLOBUS_COMPOSE --profile docs up --build -d"
         ;;
     2)
         echo "Starting Metagrid with Keycloak auth"
-        $CONTAINER_CMD compose $LOCAL_COMPOSE $KEYCLOAK_COMPOSE $LOCAL_OVERLAY  --profile keycloak --profile docs up --build -d
+        compose_cmd $LOCAL_COMPOSE $KEYCLOAK_COMPOSE $LOCAL_OVERLAY  --profile keycloak --profile docs up --build -d
         echo "Command used:"
-        echo "$CONTAINER_CMD compose $LOCAL_COMPOSE $KEYCLOAK_COMPOSE $LOCAL_OVERLAY --profile keycloak --profile docs up --build -d"
+        echo "compose_cmd $LOCAL_COMPOSE $KEYCLOAK_COMPOSE $LOCAL_OVERLAY --profile keycloak --profile docs up --build -d"
         ;;
     3)
         echo "Starting Metagrid with no auth"
-        $CONTAINER_CMD compose $LOCAL_COMPOSE $LOCAL_OVERLAY --profile docs up --build -d
+        compose_cmd $LOCAL_COMPOSE $LOCAL_OVERLAY --profile docs up --build -d
         echo "Command used:"
-        echo "$CONTAINER_CMD compose $LOCAL_COMPOSE $LOCAL_OVERLAY --profile docs up --build -d"
+        echo "compose_cmd $LOCAL_COMPOSE $LOCAL_OVERLAY --profile docs up --build -d"
         ;;
     *)
         echo "Invalid choice. Please select 1, 2, or 3."
@@ -104,7 +140,7 @@ function startLocalService() {
 
 function stopDockerContainers() {
     echo "Stopping Metagrid"
-    $CONTAINER_CMD compose --profile "*" down --remove-orphans
+    compose_cmd --profile "*" down --remove-orphans
 }
 
 function toggleLocalContainers() {
@@ -169,7 +205,7 @@ function refreshPostgresCollation() {
         mkdir -p "$backup_dir"
 
         echo "Ensuring postgres container is running for backup..."
-        if ! $CONTAINER_CMD compose $COMPOSE up -d postgres; then
+        if ! compose_cmd $COMPOSE up -d postgres; then
             echo "Failed to start postgres container in $ENV_NAME compose. Aborting backup."
             return 1
         fi
@@ -177,11 +213,11 @@ function refreshPostgresCollation() {
         backup_path="$backup_dir/$backup_file"
         echo "Creating SQL backup to: $backup_path"
         # Run pg_dumpall inside container and redirect to host file
-        if $CONTAINER_CMD compose $COMPOSE exec -T postgres pg_dumpall -U postgres > "$backup_path"; then
+        if compose_cmd $COMPOSE exec -T postgres pg_dumpall -U postgres > "$backup_path"; then
             echo "Backup created at $backup_path"
         else
             echo "Backup failed. Check postgres logs:"
-            echo "  $CONTAINER_CMD compose $COMPOSE logs postgres"
+            echo "  compose_cmd $COMPOSE logs postgres"
             return 1
         fi
     fi
@@ -195,19 +231,19 @@ function refreshPostgresCollation() {
     fi
 
     echo "Ensuring postgres container is running..."
-    if ! $CONTAINER_CMD compose $COMPOSE up -d postgres; then
+    if ! compose_cmd $COMPOSE up -d postgres; then
         echo "Failed to start postgres container for $ENV_NAME. Aborting."
         return 1
     fi
 
     echo "Executing collation refresh and reindex inside the postgres container..."
-    if $CONTAINER_CMD compose $COMPOSE exec -T postgres bash -lc \
+    if compose_cmd $COMPOSE exec -T postgres bash -lc \
         "psql -U postgres -d postgres -c \"ALTER DATABASE postgres REFRESH COLLATION VERSION;\" && \
          psql -U postgres -d postgres -c \"REINDEX DATABASE postgres;\""; then
         echo "Collation refreshed and database reindexed successfully for $ENV_NAME."
     else
         echo "Operation failed. Check postgres container logs for details:"
-        echo "  $CONTAINER_CMD compose $COMPOSE logs postgres"
+        echo "  compose_cmd $COMPOSE logs postgres"
         return 1
     fi
 }
@@ -222,12 +258,12 @@ function runMigrations() {
     case $env_choice in
     1)
         stopDockerContainers
-        $CONTAINER_CMD compose $LOCAL_COMPOSE $LOCAL_OVERLAY run --rm django python manage.py migrate
+        compose_cmd $LOCAL_COMPOSE $LOCAL_OVERLAY run --rm django python manage.py migrate
         stopDockerContainers
         ;;
     2)
         stopDockerContainers
-        $CONTAINER_CMD compose $PROD_COMPOSE $PROD_OVERLAY run --rm django python manage.py migrate
+        compose_cmd $PROD_COMPOSE $PROD_OVERLAY run --rm django python manage.py migrate
         stopDockerContainers
         ;;
     *)
@@ -247,16 +283,16 @@ function updateProjectTable() {
     case $env_choice in
     1)
         stopDockerContainers
-        $CONTAINER_CMD compose $LOCAL_COMPOSE $LOCAL_OVERLAY build django
-        $CONTAINER_CMD compose $LOCAL_COMPOSE $LOCAL_OVERLAY run --rm django python manage.py migrate --fake projects 0001_initial
-        $CONTAINER_CMD compose $LOCAL_COMPOSE $LOCAL_OVERLAY run --rm django python manage.py migrate projects
+        compose_cmd $LOCAL_COMPOSE $LOCAL_OVERLAY build django
+        compose_cmd $LOCAL_COMPOSE $LOCAL_OVERLAY run --rm django python manage.py migrate --fake projects 0001_initial
+        compose_cmd $LOCAL_COMPOSE $LOCAL_OVERLAY run --rm django python manage.py migrate projects
         stopDockerContainers
         ;;
     2)
         stopDockerContainers
-        $CONTAINER_CMD compose $PROD_COMPOSE $PROD_OVERLAY build django
-        $CONTAINER_CMD compose $PROD_COMPOSE $PROD_OVERLAY run --rm django python manage.py migrate --fake projects 0001_initial
-        $CONTAINER_CMD compose $PROD_COMPOSE $PROD_OVERLAY run --rm django python manage.py migrate projects
+        compose_cmd $PROD_COMPOSE $PROD_OVERLAY build django
+        compose_cmd $PROD_COMPOSE $PROD_OVERLAY run --rm django python manage.py migrate --fake projects 0001_initial
+        compose_cmd $PROD_COMPOSE $PROD_OVERLAY run --rm django python manage.py migrate projects
         stopDockerContainers
         ;;
     *)
@@ -274,7 +310,7 @@ function runPreCommit() {
 function runBackendTests() {
     clear
     stopDockerContainers
-    if ! $CONTAINER_CMD compose $LOCAL_COMPOSE $LOCAL_OVERLAY --profile docs run --rm django pytest; then
+    if ! compose_cmd $LOCAL_COMPOSE $LOCAL_OVERLAY --profile docs run --rm django pytest; then
         echo "Some backend tests failed!"
         stopDockerContainers
         return 1
