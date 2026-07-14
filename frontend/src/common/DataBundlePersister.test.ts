@@ -1,4 +1,5 @@
-import { mockFunction } from '../test/jestTestFunctions';
+import { vi } from 'vitest';
+import { mockFunction } from '../test/testFunctions';
 import { tempStorageGetMock, tempStorageSetMock } from '../test/mock/mockStorage';
 import DataBundlePersister from './DataBundlePersister';
 
@@ -14,11 +15,9 @@ const mockSaveValue = mockFunction((key: unknown, value: unknown) => {
   });
 });
 
-jest.mock('../api/index', () => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const originalModule = jest.requireActual('../api/index');
+vi.mock('../api/index', async () => {
+  const originalModule = await vi.importActual('../api/index');
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return {
     __esModule: true,
     ...originalModule,
@@ -94,7 +93,7 @@ describe('DataBundlePersister', () => {
       testKey: {
         key: 'testKey',
         value: 'testValue',
-        setter: jest.fn(),
+        setter: vi.fn(),
       },
     };
     db.initializeDataStore(dataStore);
@@ -105,7 +104,7 @@ describe('DataBundlePersister', () => {
   it('should not update the value if it is the same as the current value', () => {
     const key = 'testKey';
     const value = 'testValue';
-    const setterFunc = jest.fn();
+    const setterFunc = vi.fn();
     db.addVar(key, value, setterFunc);
 
     db.set(key, value);
@@ -137,7 +136,7 @@ describe('DataBundlePersister', () => {
     const newValue = 'newValue';
     db.addVar(key, initialValue);
 
-    const setterSpy = jest.spyOn(db.peekAtDataStore()[key], 'setter');
+    const setterSpy = vi.spyOn(db.peekAtDataStore()[key], 'setter');
     db.set(key, newValue);
 
     expect(setterSpy).toHaveBeenCalledWith(newValue);
@@ -157,7 +156,7 @@ describe('DataBundlePersister', () => {
   it('should handle adding a variable with a setter function', () => {
     const key = 'testKey';
     const value = 'testValue';
-    const setterFunc = jest.fn();
+    const setterFunc = vi.fn();
     db.addVar(key, value, setterFunc);
 
     expect(db.get(key, null)).toBe(value);

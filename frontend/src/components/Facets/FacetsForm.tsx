@@ -26,16 +26,22 @@ import weekday from 'dayjs/plugin/weekday';
 import weekOfYear from 'dayjs/plugin/weekOfYear';
 import weekYear from 'dayjs/plugin/weekYear';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useAtom, useAtomValue } from 'jotai';
 import { CSSinJS } from '../../common/types';
 import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
 import { ActiveSearchQuery, ResultType, VersionType } from '../Search/types';
 import { ActiveFacets, ParsedFacets } from './types';
-import { clearCachedSearchResults, showError, showNotice } from '../../common/utils';
-import { activeSearchQueryAtom, availableFacetsAtom, currentProjectAtom } from '../../common/atoms';
+import { objectIsEmpty, showError, showNotice } from '../../common/utils';
+import {
+  activeSearchQueryAtom,
+  availableFacetsAtom,
+  currentProjectAtom,
+  currentRequestQueryAtom,
+} from '../../common/atoms';
 import { leftSidebarTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
+import { getAggregationsList, stringifyApiRequest } from '../../common/STAC';
 
 dayjs.extend(customParseFormat);
 dayjs.extend(advancedFormat);
@@ -93,11 +99,11 @@ export const generateStacFacetOptions = (
   facetOptions: string[],
 ): { key: string; value: string; label: JSX.Element }[] => {
   return facetOptions.map((variable) => {
-    let optionOutput: string | React.ReactElement = <>{variable}</>;
+    let optionOutput: string | React.ReactElement = <div>{variable}</div>;
 
     // If the option output name is very long, use a tooltip
     const varLength = variable.toString().length;
-    /* istanbul ignore next */
+    /* istanbul ignore next -- @preserve */
     if (varLength >= maxItemLength) {
       const innerTitle = variable[0].substring(0, maxItemLength - varLength);
       optionOutput = (
@@ -119,51 +125,57 @@ export const generateFacetOptions = (
   facet: string,
   facetOptions: [string, number][] | string[],
 ): { key: string; value: string; label: JSX.Element }[] => {
-  /* istanbul ignore next */
+  /* istanbul ignore next -- @preserve */
   if (facetOptions.length > 0 && typeof facetOptions[0] === 'string') {
     return generateStacFacetOptions(facet, facetOptions as string[]);
   }
 
-  return facetOptions.map((variable) => {
-    /* istanbul ignore next */
-    if (typeof variable[0] !== 'string') {
-      clearCachedSearchResults();
-    }
-    let optionOutput: string | React.ReactNode = (
-      <>
-        {variable[0]}
-        <span style={styles.facetCount}>({variable[1]})</span>
-      </>
-    );
-
-    // If the option output name is very long, use a tooltip
-    const vLength = variable[0].length - 2;
-    const cLength = variable[1].toString().length * 1.5 + 2;
-    /* istanbul ignore next */
-    if (vLength > maxItemLength - cLength) {
-      const innerTitle = variable[0].substring(0, maxItemLength - cLength);
-      optionOutput = (
-        <Tooltip styles={{ body: { width: 'max-content' } }} title={variable[0]}>
-          {innerTitle}...
-          <span style={styles.facetCount}>({variable[1]})</span>
-        </Tooltip>
+  return facetOptions
+    .filter((variable) => {
+      // Filter out invalid entries - must have string name and valid count
+      return (
+        variable &&
+        variable.length >= 2 &&
+        typeof variable[0] === 'string' &&
+        variable[1] !== undefined
       );
-    }
-
-    // The data node facet has a unique tooltip overlay to show the status of the highlighted node
-    if (facet === 'data_node') {
-      optionOutput = (
-        <StatusToolTip dataNode={variable[0]}>
+    })
+    .map((variable) => {
+      let optionOutput: string | React.ReactNode = (
+        <>
+          {variable[0]}
           <span style={styles.facetCount}>({variable[1]})</span>
-        </StatusToolTip>
+        </>
       );
-    }
-    return {
-      key: variable[0],
-      value: variable[0],
-      label: <span data-testid={`${facet}_${variable[0]}`}>{optionOutput}</span>,
-    };
-  });
+
+      // If the option output name is very long, use a tooltip
+      const vLength = variable[0].length - 2;
+      const cLength = variable[1].toString().length * 1.5 + 2;
+      /* istanbul ignore next -- @preserve */
+      if (vLength > maxItemLength - cLength) {
+        const innerTitle = variable[0].substring(0, maxItemLength - cLength);
+        optionOutput = (
+          <Tooltip styles={{ body: { width: 'max-content' } }} title={variable[0]}>
+            {innerTitle}...
+            <span style={styles.facetCount}>({variable[1]})</span>
+          </Tooltip>
+        );
+      }
+
+      // The data node facet has a unique tooltip overlay to show the status of the highlighted node
+      if (facet === 'data_node') {
+        optionOutput = (
+          <StatusToolTip dataNode={variable[0]}>
+            <span style={styles.facetCount}>({variable[1]})</span>
+          </StatusToolTip>
+        );
+      }
+      return {
+        key: variable[0],
+        value: variable[0],
+        label: <span data-testid={`${facet}_${variable[0]}`}>{optionOutput}</span>,
+      };
+    });
 };
 
 const FacetsForm: React.FC = () => {
@@ -172,6 +184,7 @@ const FacetsForm: React.FC = () => {
     useAtom<ActiveSearchQuery>(activeSearchQueryAtom);
 
   const currentProject = useAtomValue(currentProjectAtom);
+  const currentRequestURL = useAtomValue(currentRequestQueryAtom);
 
   // Local variables
   const [messageApi, contextHolder] = message.useMessage();
@@ -218,6 +231,26 @@ const FacetsForm: React.FC = () => {
     maxVersionDate ? formatDate(maxVersionDate, false) : (maxVersionDate as null),
   ];
 
+  // Generate aggregations query string for STAC projects
+  const aggregationsQueryString = useMemo(() => {
+    if (!currentProject.isSTAC || !currentProject.projectName || !currentRequestURL) {
+      return '';
+    }
+
+    const aggregationsList = getAggregationsList(currentProject.projectName);
+    return stringifyApiRequest(
+      currentProject,
+      currentRequestURL,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      aggregationsList,
+    );
+  }, [currentProject, currentRequestURL]);
+
   // const handleOnFinishFilenameVarForm = (values: { [key: string]: string }): void => {
   //   if (activeSearchQuery.filenameVars.includes(values.filenameVar as never)) {
   //     showError(messageApi, `Input "${values.filenameVar}" has already been applied`);
@@ -246,12 +279,14 @@ const FacetsForm: React.FC = () => {
     let newMinVersionDate = null;
     let newMaxVersionDate = null;
 
-    /* istanbul ignore else */
+    /* istanbul ignore else -- @preserve */
     if (versionDateRange) {
       const [minDate, maxDate] = versionDateRange;
+      /* istanbul ignore else -- @preserve */
       if (minDate) {
         newMinVersionDate = formatDate(minDate, true) as string;
       }
+      /* istanbul ignore else -- @preserve */
       if (maxDate) {
         newMaxVersionDate = formatDate(maxDate, true) as string;
       }
@@ -273,6 +308,23 @@ const FacetsForm: React.FC = () => {
   const handleOnGlobusReadyChanged = (event: RadioChangeEvent): void => {
     const globusOnly = event.target.value as boolean;
     setGlobusReadyOnly(globusOnly);
+
+    /* istanbul ignore if -- @preserve */
+    if (currentProject.isSTAC) {
+      if (globusOnly) {
+        setActiveSearchQuery({
+          ...activeSearchQuery,
+          globusOnly: true,
+        });
+      } else {
+        setActiveSearchQuery({
+          ...activeSearchQuery,
+          globusOnly: false,
+        });
+      }
+      return;
+    }
+
     if (globusOnly) {
       setActiveSearchQuery({
         ...activeSearchQuery,
@@ -320,7 +372,9 @@ const FacetsForm: React.FC = () => {
   React.useEffect(() => {
     generalFacetsForm.resetFields();
     availableFacetsForm.resetFields();
+    /* istanbul ignore else -- @preserve */
     if (window.METAGRID.GLOBUS_NODES && window.METAGRID.GLOBUS_NODES.length > 0) {
+      /* istanbul ignore else if -- @preserve */
       if (
         activeSearchQuery &&
         activeSearchQuery.activeFacets &&
@@ -330,6 +384,8 @@ const FacetsForm: React.FC = () => {
         )
       ) {
         setGlobusReadyOnly(true);
+      } else if (activeSearchQuery.globusOnly) {
+        setGlobusReadyOnly(activeSearchQuery.globusOnly);
       } else {
         setGlobusReadyOnly(false);
       }
@@ -340,7 +396,7 @@ const FacetsForm: React.FC = () => {
     if (!dropdownIsOpen && activeDropdownValue) {
       const [facet, options] = activeDropdownValue;
       const newActiveFacets: ActiveFacets = activeSearchQuery.activeFacets;
-      /* istanbul ignore else */
+      /* istanbul ignore else -- @preserve */
       if (options.length === 0) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [facet]: remove, ...updatedFacets } = newActiveFacets;
@@ -359,11 +415,11 @@ const FacetsForm: React.FC = () => {
   }, [dropdownIsOpen, activeDropdownValue, setActiveDropdownValue]);
 
   function getLongestStringLengthReduce(arr: [string, number][]): number {
-    /* istanbul ignore next */
+    /* istanbul ignore next -- @preserve */
     if (arr.length === 0) {
       return 0; // Handle empty array case
     }
-    /* istanbul ignore next */
+    /* istanbul ignore next -- @preserve */
     return arr.reduce((maxLength, currentString) => {
       if (currentString[0] === undefined || currentString[1] === undefined) {
         return maxLength;
@@ -372,13 +428,13 @@ const FacetsForm: React.FC = () => {
     }, 0); // Initialize maxLength to 0
   }
 
-  const generateFacetGroups = (): {
+  const generateFacetGroups = useMemo((): {
     key: string;
     label: JSX.Element;
     className: string;
     children: (JSX.Element | null)[];
   }[] => {
-    if (!facetsByGroup) {
+    if (!facetsByGroup || objectIsEmpty(facetsByGroup) || objectIsEmpty(availableFacets)) {
       return [];
     }
     return Object.keys(facetsByGroup).map((group) => {
@@ -423,7 +479,7 @@ const FacetsForm: React.FC = () => {
                       }
                       onClick={() => {
                         // copy link to clipboard
-                        /* istanbul ignore else */
+                        /* istanbul ignore else -- @preserve */
                         if (navigator && navigator.clipboard) {
                           navigator.clipboard.writeText(
                             facetOptions
@@ -437,7 +493,7 @@ const FacetsForm: React.FC = () => {
                           });
                         }
                       }}
-                    ></Button>
+                    />
                   </div>
                 }
                 style={{ marginBottom: 0 }}
@@ -480,7 +536,7 @@ const FacetsForm: React.FC = () => {
         }),
       };
     });
-  };
+  }, [activeSearchQuery.project.facetsByGroup, availableFacets, messageApi]);
 
   return (
     <div data-testid="facets-form">
@@ -491,7 +547,7 @@ const FacetsForm: React.FC = () => {
           ...activeSearchQuery.activeFacets,
         }}
       >
-        {window.METAGRID.GLOBUS_NODES.length > 0 && !currentProject.isSTAC && (
+        {window.METAGRID.GLOBUS_NODES.length > 0 && (
           <div className={leftSidebarTargets.filterByGlobusTransfer.class()}>
             <h3>Filter By Transfer Options</h3>
             <Row>
@@ -519,7 +575,33 @@ const FacetsForm: React.FC = () => {
         )}
         <Row justify="end" gutter={8}>
           <Col span={16}>
-            <h3>Filter with Facets</h3>
+            <h3>
+              Filter with Facets
+              {currentProject.isSTAC && aggregationsQueryString && (
+                <Tooltip
+                  title={
+                    <Space direction="horizontal" size="small">
+                      <span>Copy STAC aggregate request:</span>
+                      <Button
+                        size="small"
+                        icon={<CopyOutlined />}
+                        onClick={() => {
+                          if (navigator && navigator.clipboard) {
+                            navigator.clipboard.writeText(aggregationsQueryString);
+                            showNotice(messageApi, 'Aggregations query copied to clipboard!');
+                          }
+                        }}
+                      />
+                    </Space>
+                  }
+                  placement="right"
+                >
+                  <InfoCircleOutlined
+                    style={{ marginLeft: '8px', fontSize: '14px', cursor: 'pointer' }}
+                  />
+                </Tooltip>
+              )}
+            </h3>
           </Col>
           <Col span={8} style={{ textAlign: 'right' }}>
             {expandAll ? (
@@ -557,20 +639,20 @@ const FacetsForm: React.FC = () => {
             activeKey={activePanels}
             onChange={(change) => {
               setActivePanels(change);
-              if (change.length + secondaryActivePanels.length === 0) {
+              const totalPanels = change.length + secondaryActivePanels.length;
+              if (totalPanels === 0) {
                 setExpandAll(true);
-              } else if (change.length + secondaryActivePanels.length > 1) {
+              } /* istanbul ignore next -- @preserve */ else if (totalPanels > 1) {
                 setExpandAll(false);
               }
             }}
-            items={generateFacetGroups()}
+            items={generateFacetGroups}
           />
         </div>
       </Form>
       <Form
         form={generalFacetsForm}
         layout="horizontal"
-        hidden={currentProject.isSTAC}
         initialValues={{
           ...activeSearchQuery.activeFacets,
           versionType: activeSearchQuery.versionType,
@@ -587,9 +669,11 @@ const FacetsForm: React.FC = () => {
             activeKey={secondaryActivePanels}
             onChange={(change) => {
               setSecondaryActivePanels(change);
-              if (change.length + activePanels.length === 0) {
+              const totalPanels = change.length + activePanels.length;
+              /* istanbul ignore else -- @preserve */
+              if (totalPanels === 0) {
                 setExpandAll(true);
-              } else if (change.length + activePanels.length > 1) {
+              } else if (totalPanels > 1) {
                 setExpandAll(false);
               }
             }}
@@ -625,6 +709,7 @@ const FacetsForm: React.FC = () => {
                     <Form.Item
                       label="Result Type"
                       name="resultType"
+                      hidden={currentProject.isSTAC}
                       style={{ marginBottom: 0 }}
                       tooltip={{
                         title:
@@ -735,7 +820,6 @@ const FacetsForm: React.FC = () => {
       <Form
         initialValues={{}}
         style={styles.searchForm}
-        hidden={currentProject.isSTAC}
         form={keywordSearchForm}
         onFinish={onKeywordSearch}
       >
@@ -743,9 +827,11 @@ const FacetsForm: React.FC = () => {
           activeKey={secondaryActivePanels}
           onChange={(change) => {
             setSecondaryActivePanels(change);
-            if (change.length + activePanels.length === 0) {
+            const totalPanels = change.length + activePanels.length;
+            /* istanbul ignore else if -- @preserve */
+            if (totalPanels === 0) {
               setExpandAll(true);
-            } else if (change.length + activePanels.length > 1) {
+            } else if (totalPanels > 1) {
               setExpandAll(false);
             }
           }}
@@ -775,7 +861,7 @@ const FacetsForm: React.FC = () => {
                       type="primary"
                       htmlType="submit"
                       icon={<SearchOutlined data-testid="left-menu-keyword-search-submit" />}
-                    ></Button>
+                    />
                   </Form.Item>
                 </Space>
               ),

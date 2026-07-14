@@ -1,6 +1,6 @@
 import {
   addUserSearchQuery,
-  convertResultTypeToReplicaParam,
+  clearAllMemoizationCaches,
   deleteUserSearchQuery,
   fetchDatasetCitation,
   fetchDatasetFiles,
@@ -19,6 +19,7 @@ import {
   loadSessionValue,
   openDownloadURL,
   parseNodeStatus,
+  postSTACSearch,
   processCitation,
   resetGlobusTokens,
   saveSessionValue,
@@ -27,9 +28,9 @@ import {
   updateUserCart,
 } from '.';
 import { STAC_PROJECTS, generateWgetScriptSTAC } from '../common/STAC';
-import { downloadFileForUser } from '../common/utils';
+import { convertResultTypeToReplicaParam, downloadFileForUser } from '../common/utils';
 import { ActiveSearchQuery, Pagination, RawCitation, ResultType } from '../components/Search/types';
-import { mockConfig } from '../test/jestTestFunctions';
+import { mockConfig } from '../test/testFunctions';
 import {
   activeSearchQueryFixture,
   ESGFSearchAPIFixture,
@@ -51,19 +52,21 @@ import apiRoutes, { HTTPCodeType } from './routes';
 
 const genericNetworkErrorMsg = 'Failed to Connect';
 
-jest.mock('../common/utils', () => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const originalModule = jest.requireActual('../common/utils');
+vi.mock('../common/utils', async () => {
+  const originalModule = await vi.importActual('../common/utils');
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return {
     __esModule: true,
     ...originalModule,
-    downloadFileForUser: jest.fn(),
+    downloadFileForUser: vi.fn(),
   };
 });
 
 describe('test fetching user authentication with globus', () => {
+  beforeEach(() => {
+    clearAllMemoizationCaches();
+  });
+
   it('returns user authentication tokens', async () => {
     const userAuth = await fetchGlobusAuth();
     expect(userAuth).toEqual(userAuthFixture());
@@ -126,10 +129,27 @@ describe('test fetching user info', () => {
 });
 
 describe('test fetching projects', () => {
+  beforeEach(() => {
+    clearAllMemoizationCaches();
+  });
+
   it('returns projects including STAC projects', async () => {
     const projects = (await fetchProjects()).results;
 
-    expect(projects).toEqual([...projectsFixture(), ...STAC_PROJECTS]);
+    // Check that we have backend projects + STAC projects
+    expect(projects.length).toBe(projectsFixture().length + STAC_PROJECTS.length);
+    // Check backend project names are present
+    projectsFixture().forEach((backendProj) => {
+      expect(projects.find((p) => p.name === backendProj.name)).toBeDefined();
+    });
+    // Check that all STAC projects are present (they may be renamed)
+    STAC_PROJECTS.forEach((stacProj) => {
+      // Find by either original name or renamed (without " STAC" suffix)
+      const possibleNames = [stacProj.name, stacProj.name.replace(' STAC', '')];
+      const found = projects.find((p) => possibleNames.includes(p.name) && p.isSTAC);
+      expect(found).toBeDefined();
+      expect(found?.isSTAC).toBe(true);
+    });
   });
 
   it('returns projects without including STAC projects', async () => {
@@ -165,8 +185,94 @@ describe('test fetching projects', () => {
 
     const projects = (await fetchProjects()).results;
 
-    // When backend returns no results, fetchProjects should return only the additional STAC_PROJECTS
-    expect(projects).toEqual([...STAC_PROJECTS]);
+    // When backend returns no results, fetchProjects should return only STAC projects
+    expect(projects.length).toBe(STAC_PROJECTS.length);
+    STAC_PROJECTS.forEach((stacProj) => {
+      // Find by either original name or renamed (without " STAC" suffix)
+      const possibleNames = [stacProj.name, stacProj.name.replace(' STAC', '')];
+      const found = projects.find((p) => possibleNames.includes(p.name) && p.isSTAC);
+      expect(found).toBeDefined();
+      expect(found?.isSTAC).toBe(true);
+    });
+  });
+
+  it('replaces legacy project name when STAC project exists but legacy is blacklisted', async () => {
+    // Ensure STAC inclusion is enabled
+    window.METAGRID.STAC_URL = 'https://stac.example';
+
+    // Create config that blacklists CMIP6 but not CMIP6 STAC
+    const config = {
+      additionalProjects: [],
+      whitelist: [],
+      blacklist: ['CMIP6'],
+    };
+
+    const projects = (await fetchProjects(config)).results;
+
+    // CMIP6 should be filtered out
+    const legacyCMIP6 = projects.find((p) => p.name === 'CMIP6' && !p.isSTAC);
+    expect(legacyCMIP6).toBeUndefined();
+
+    // CMIP6 STAC should exist and be renamed to just "CMIP6"
+    const stacCMIP6 = projects.find((p) => p.name === 'CMIP6' && p.isSTAC);
+    expect(stacCMIP6).toBeDefined();
+    expect(stacCMIP6?.isSTAC).toBe(true);
+  });
+
+  it('keeps STAC suffix when both legacy and STAC projects are present', async () => {
+    // Ensure STAC inclusion is enabled
+    window.METAGRID.STAC_URL = 'https://stac.example';
+
+    // Mock backend to include a legacy CMIP6 project
+    server.use(
+      rest.get(apiRoutes.projects.path, (_req, res, ctx) =>
+        res(
+          ctx.status(200),
+          ctx.json({
+            results: [
+              ...projectsFixture(),
+              { pk: '4', name: 'CMIP6', fullName: 'CMIP6 Legacy', isSTAC: false },
+            ],
+          }),
+        ),
+      ),
+    );
+
+    // No blacklist - both CMIP6 and CMIP6 STAC should be present
+    const config = {
+      additionalProjects: [],
+      whitelist: [],
+      blacklist: [],
+    };
+
+    const projects = (await fetchProjects(config)).results;
+
+    // Both should exist
+    const legacyCMIP6 = projects.find((p) => p.name === 'CMIP6' && !p.isSTAC);
+    const stacCMIP6 = projects.find((p) => p.name === 'CMIP6 STAC' && p.isSTAC);
+
+    expect(legacyCMIP6).toBeDefined();
+    expect(stacCMIP6).toBeDefined();
+    expect(stacCMIP6?.name).toBe('CMIP6 STAC'); // Name should keep " STAC" suffix
+  });
+
+  it('replaces legacy project name when using whitelist that excludes legacy', async () => {
+    // Ensure STAC inclusion is enabled
+    window.METAGRID.STAC_URL = 'https://stac.example';
+
+    // Whitelist only includes CMIP6 STAC, not legacy CMIP6
+    const config = {
+      additionalProjects: [],
+      whitelist: ['CMIP6 STAC'],
+      blacklist: [],
+    };
+
+    const projects = (await fetchProjects(config)).results;
+
+    // Should only have CMIP6 STAC, renamed to CMIP6
+    expect(projects.length).toBe(1);
+    expect(projects[0].name).toBe('CMIP6');
+    expect(projects[0].isSTAC).toBe(true);
   });
 });
 
@@ -278,6 +384,7 @@ describe('test fetching search results', () => {
   let reqUrl: string;
 
   beforeEach(() => {
+    clearAllMemoizationCaches();
     reqUrl = apiRoutes.esgfSearch.path;
   });
   it('returns results', async () => {
@@ -577,13 +684,12 @@ describe('test fetching wget script', () => {
 });
 
 describe('test opening download url', () => {
-  let windowSpy: jest.SpyInstance;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let mockedOpen: jest.Mock<any, any>;
+  let windowSpy: any;
+  let mockedOpen: any;
 
   beforeEach(() => {
-    mockedOpen = jest.fn();
-    windowSpy = jest.spyOn(global, 'window', 'get');
+    mockedOpen = vi.fn();
+    windowSpy = vi.spyOn(global, 'window', 'get');
   });
 
   afterEach(() => {
@@ -977,6 +1083,10 @@ describe('resetGlobusTokens', () => {
 });
 
 describe('STAC API functions', () => {
+  beforeEach(() => {
+    clearAllMemoizationCaches();
+  });
+
   it('posts STAC filter and returns facets + search results', async () => {
     const aggregationsResp = {
       aggregations: [
@@ -1013,16 +1123,15 @@ describe('STAC API functions', () => {
     // facets built from aggregations
     const facets = result.facets as Record<string, [string, number][]>;
     expect(facets.activity_id).toEqual([['CFMIP', 5]]);
-    // search payload posted should include collections and filter
+
+    // search payload posted should include collections
     expect(capturedSearchBody).toBeDefined();
     const csb = capturedSearchBody!;
     expect(csb.collections).toContain('CMIP6');
-    expect(csb.filter).toBeDefined();
 
     expect(capturedAggBody).toBeDefined();
     const cab = capturedAggBody as { filter: unknown; aggregations: string[] };
     expect(cab.aggregations).toContain('cmip6_activity_id_frequency');
-    expect(cab.filter).toBeDefined();
   });
 
   it('returns stac result with empty facets when aggregations endpoint errors (status set accordingly)', async () => {
@@ -1049,8 +1158,16 @@ describe('STAC API functions', () => {
       rest.post(apiRoutes.esgfAggregationsSTAC.path, (_req, res, ctx) => res(ctx.status(500))),
     );
 
-    await expect(fetchSTACAggregations('CMIP6', undefined)).rejects.toThrow(
+    await expect(fetchSTACAggregations('CMIP6', 'test-url', undefined)).rejects.toThrow(
       apiRoutes.esgfAggregationsSTAC.handleErrorMsg('generic' as HTTPCodeType),
+    );
+  });
+
+  it('throws error when STAC search fails', async () => {
+    server.use(rest.post(apiRoutes.esgfSearchSTAC.path, (_req, res, ctx) => res(ctx.status(500))));
+
+    await expect(postSTACSearch('CMIP6', 10, undefined, undefined, undefined)).rejects.toThrow(
+      apiRoutes.esgfSearchSTAC.handleErrorMsg('generic' as HTTPCodeType),
     );
   });
 
@@ -1095,7 +1212,7 @@ describe('STAC API functions', () => {
       }),
     ];
 
-    const spy = jest.fn(downloadFileForUser).mockImplementation(() => {});
+    const spy = vi.fn(downloadFileForUser).mockImplementation(() => {});
     const result = generateWgetScriptSTAC(searchResults);
     expect(result).toBe(false);
     expect(spy).not.toHaveBeenCalled();

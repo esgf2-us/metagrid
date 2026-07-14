@@ -163,7 +163,7 @@ This project uses [GitHub Actions](https://github.com/aims-group/metagrid/action
 
 1. Pre-commit Checks - runs formatters and linters
 2. Back-end CI - runs a `pytest` test suite and uploads coverage report
-3. Front-end CI - runs a `jest` + `react-testing-library` test suite and uploads a coverage report
+3. Front-end CI - runs a `vitest` + `react-testing-library` test suite and uploads a coverage report
 
 ### How do I Know What to Test?
 

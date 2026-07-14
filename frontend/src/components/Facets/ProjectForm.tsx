@@ -48,7 +48,7 @@ const ProjectsForm: React.FC<React.PropsWithChildren<Props>> = ({
   if (apiIsLoading) {
     return (
       <Form form={projectForm}>
-        <Spin></Spin>
+        <Spin />
       </Form>
     );
   }
@@ -93,7 +93,7 @@ const ProjectsForm: React.FC<React.PropsWithChildren<Props>> = ({
     );
   }
   // Need to return an empty form to avoid linting errors
-  return <Form form={projectForm}></Form>;
+  return <Form form={projectForm} />;
 };
 
 export default ProjectsForm;

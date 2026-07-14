@@ -2,7 +2,7 @@ import React from 'react';
 import { screen, fireEvent } from '@testing-library/react';
 import customRender from '../../test/custom-render';
 import Banner from './Banner';
-import { AtomWrapper, mockConfig } from '../../test/jestTestFunctions';
+import { AtomWrapper, mockConfig } from '../../test/testFunctions';
 import { darkModeRed, lightModeRed } from '../NodeStatus/StatusToolTip';
 import { tempSessionStorageSetMock } from '../../test/mock/mockStorage';
 

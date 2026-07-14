@@ -1,20 +1,20 @@
 import { Button, Tooltip, Typography } from 'antd';
 import React, { useEffect } from 'react';
 import { useAsync } from 'react-async';
-import { useAtom, useAtomValue } from 'jotai';
-import { fetchProjects, ResponseError } from '../../api';
-import { objectIsEmpty, projectBaseQuery } from '../../common/utils';
+import { useAtom } from 'jotai';
+import { fetchProjects, ResponseError, clearStacCaches } from '../../api';
+import { projectBaseQuery } from '../../common/utils';
 import Divider from '../General/Divider';
 import FacetsForm from './FacetsForm';
 import ProjectForm from './ProjectForm';
 import { RawProject } from './types';
 import {
-  availableFacetsAtom,
   activeSearchQueryAtom,
   savedSearchQueryAtom,
   currentProjectAtom,
 } from '../../common/atoms';
 import { leftSidebarTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
+import { useProjectsConfig } from '../../common/useProjectsConfig';
 
 const styles = {
   form: {
@@ -23,11 +23,18 @@ const styles = {
 };
 
 const Facets: React.FC = () => {
-  const { data, error, isLoading } = useAsync(fetchProjects);
+  const { config: projectsConfig, loading: configLoading } = useProjectsConfig();
+  const { data, error, isLoading, run } = useAsync({
+    deferFn: () => fetchProjects(projectsConfig),
+  });
+
+  React.useEffect(() => {
+    if (!configLoading) {
+      run();
+    }
+  }, [configLoading]);
 
   const { Title } = Typography;
-
-  const availableFacets = useAtomValue(availableFacetsAtom);
 
   const [activeSearchQuery, setActiveSearchQuery] = useAtom(activeSearchQueryAtom);
 
@@ -44,6 +51,10 @@ const Facets: React.FC = () => {
     }
 
     if (selectedProject.pk !== activeSearchQuery.project.pk) {
+      // Clear STAC caches when switching to a different project
+      // Pass the new project name so stale requests for the old project are ignored
+      const newProjectName = (selectedProject.projectName as string) || selectedProject.name;
+      clearStacCaches(newProjectName);
       setActiveSearchQuery(projectBaseQuery(selectedProject));
     } else {
       setActiveSearchQuery({ ...activeSearchQuery, project: selectedProject });
@@ -52,12 +63,12 @@ const Facets: React.FC = () => {
   };
 
   const handleSubmitProjectForm = (selectedProject: string): void => {
-    /* istanbul ignore else */
+    /* istanbul ignore else -- @preserve */
     if (data) {
       const selectedProj: RawProject | undefined = data.results.find(
         (obj: RawProject) => obj.name === selectedProject,
       );
-      /* istanbul ignore else */
+      /* istanbul ignore else -- @preserve */
       if (selectedProj && activeSearchQuery.textInputs) {
         handleProjectChange(selectedProj);
       }
@@ -74,7 +85,7 @@ const Facets: React.FC = () => {
       setCurProject(selectedProj);
       handleProjectChange(selectedProj);
     }
-  }, [isLoading]);
+  }, [isLoading, data]);
 
   return (
     <div
@@ -90,7 +101,22 @@ const Facets: React.FC = () => {
         onFinish={handleSubmitProjectForm}
       />
       {curProject && curProject.projectUrl && (
-        <Tooltip title={curProject.projectUrl}>
+        <Tooltip
+          style={{ minWidth: '500px', width: '500px' }}
+          title={
+            <div>
+              <b>Project Url</b>:<br />
+              {curProject.projectUrl}
+              {curProject.stacApiUrl && (
+                <div>
+                  <br />
+                  <b>STAC Api Url</b>:<br />
+                  {curProject.stacApiUrl}
+                </div>
+              )}
+            </div>
+          }
+        >
           <Button
             href={curProject.projectUrl}
             className={leftSidebarTargets.projectWebsiteBtn.class()}
@@ -102,11 +128,9 @@ const Facets: React.FC = () => {
         </Tooltip>
       )}
       <Divider />
-      {!objectIsEmpty(availableFacets) && (
-        <div className={leftSidebarTargets.searchFacetsForm.class()}>
-          <FacetsForm />
-        </div>
-      )}
+      <div className={leftSidebarTargets.searchFacetsForm.class()}>
+        <FacetsForm />
+      </div>
     </div>
   );
 };

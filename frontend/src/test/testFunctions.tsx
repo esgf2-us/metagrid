@@ -7,6 +7,7 @@
  *
  */
 import { screen } from '@testing-library/react';
+import { vi } from 'vitest';
 import { message } from 'antd';
 import React, { ReactNode, CSSProperties } from 'react';
 import { UserEvent } from '@testing-library/user-event';
@@ -53,17 +54,15 @@ export const mockKeycloakToken = mockFunction(() => {
   }
   return {
     keycloak: {
-      login: jest.fn(),
-      logout: jest.fn(),
+      login: vi.fn(),
+      logout: vi.fn(),
       idTokenParsed: { given_name: 'John' },
     },
   };
 });
 
-export function mockFunction<T extends (...args: unknown[]) => unknown>(
-  fn: T,
-): jest.MockedFunction<T> {
-  return fn as jest.MockedFunction<T>;
+export function mockFunction<T extends (...args: unknown[]) => unknown>(fn: T): T {
+  return fn;
 }
 
 export function printElementContents(element: HTMLElement | undefined = undefined): void {
@@ -98,23 +97,23 @@ export async function showNoticeStatic(
   switch (config?.type) {
     case 'success':
       await message.success(msgConfig);
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       return;
     case 'warning':
       await message.warning(msgConfig);
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       return;
     case 'error':
       await message.error(msgConfig);
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       return;
     case 'info':
       await message.info(msgConfig);
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       return;
     default:
       await message.info(msgConfig);
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       break;
   }
 }
@@ -122,8 +121,8 @@ export async function showNoticeStatic(
 export const globusReadyNode: string = 'nodeIsGlobusReady';
 export const nodeNotGlobusReady: string = 'nodeIsNotGlobusReady';
 
-type AnyWritableAtom = WritableAtom<unknown, never[], unknown>;
-export type InitialAtomValues = Array<readonly [AnyWritableAtom, unknown]>;
+type AnyWritableAtom = WritableAtom<unknown, any[], any>;
+export type InitialAtomValues = Array<readonly [AnyWritableAtom, ...unknown[]]>;
 
 const HydrateAtoms = ({
   children,
@@ -132,7 +131,7 @@ const HydrateAtoms = ({
   children: React.ReactElement;
   initialValues: InitialAtomValues;
 }): React.ReactElement => {
-  useHydrateAtoms(new Map(initialValues));
+  useHydrateAtoms(initialValues);
   return <>{children}</>;
 };
 

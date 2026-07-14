@@ -5,7 +5,7 @@ volumes:
 services:
   traefik:
     container_name: traefik
-    image: traefik:3.3
+    image: traefik:3.6
     volumes:
       - ./traefik/traefik.local.yml:/etc/traefik/traefik.yml
     environment:
@@ -69,6 +69,7 @@ services:
     image: metagrid_local_react
     environment:
       PORT: 8080
+      VITE_FEDERATED_NODES_URL: 'https://esgf.github.io/nodes.html'
     depends_on:
       - django
     volumes:

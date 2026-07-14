@@ -5,6 +5,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Generator, Sequence, TypedDict
+from urllib.parse import parse_qs, urlparse
 
 import requests
 from django.conf import settings
@@ -431,6 +432,14 @@ def submit_transfer(
     )
 
     try:
+        globus_hrefs = request_body.pop("globus_hrefs", None)
+        if globus_hrefs is not None:
+            for href in globus_hrefs:
+                query_params = parse_qs(urlparse(href).query)
+                endpoint = query_params.get("origin_id")[0]
+                path = query_params.get("origin_path")[0]
+                client.add_transfer(endpoint, path)
+
         for endpoint, path in search_files(request_body):
             client.add_transfer(endpoint, path)
 

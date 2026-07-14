@@ -34,7 +34,7 @@ const NavBar: React.FC = () => {
       <div className="navbar-container">
         <div className="navbar-logo" data-testid="nav-bar-logo">
           <Link
-            href="https://esgf.github.io/nodes.html"
+            href={import.meta.env.VITE_FEDERATED_NODES_URL || 'https://esgf.github.io/nodes.html'}
             target="_blank"
             style={{
               fontWeight: 'bold',
@@ -50,9 +50,9 @@ const NavBar: React.FC = () => {
             Federated Nodes
           </Link>
         </div>
-        <div className="navbar-left"></div>
+        <div className="navbar-left" />
         <div className="navbar-right">
-          <RightMenu mode="horizontal"></RightMenu>
+          <RightMenu mode="horizontal" />
         </div>
         <Button className="navbar-mobile-button" type="default" onClick={() => setShowDrawer(true)}>
           <MenuUnfoldOutlined />
@@ -64,7 +64,7 @@ const NavBar: React.FC = () => {
           onClose={() => setShowDrawer(false)}
           open={showDrawer}
         >
-          <RightMenu mode="inline"></RightMenu>
+          <RightMenu mode="inline" />
         </Drawer>
       </div>
     </nav>

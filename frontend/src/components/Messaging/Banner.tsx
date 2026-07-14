@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Tag } from 'antd';
 import { CloseSquareTwoTone } from '@ant-design/icons';
 import { useAtomValue } from 'jotai';
+import Markdown from 'react-markdown';
 import { isDarkModeAtom } from '../../common/atoms';
 import { darkModeRed, lightModeRed } from '../NodeStatus/StatusToolTip';
 import { showBanner, saveBannerText } from '../../common/utils';
@@ -10,25 +11,36 @@ const Banner: React.FC = () => {
   const isDarkMode = useAtomValue<boolean>(isDarkModeAtom);
 
   const [isVisible, setIsVisible] = useState(showBanner());
-  const bannerText = window.METAGRID.BANNER_TEXT;
+  const bannerText = `${window.METAGRID.BANNER_TEXT}`;
 
   if (!isVisible) {
-    return <></>;
+    return <div />;
   }
 
   return (
-    <Tag style={{ width: '100%', marginBottom: '10px' }}>
-      <h2>
+    <Tag style={{ width: '100%', marginBottom: '10px', padding: '10px' }}>
+      <h2 style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', margin: 0 }}>
         <CloseSquareTwoTone
           twoToneColor={isDarkMode ? darkModeRed : lightModeRed}
-          style={{ fontSize: '20px' }}
+          style={{ fontSize: '20px', flexShrink: 0, cursor: 'pointer' }}
           onClick={() => {
             setIsVisible(false);
             // Save the banner text so it doesn't show again
             saveBannerText();
           }}
-        />{' '}
-        {bannerText}
+        />
+        <Markdown
+          components={{
+            p: ({ children }) => <p style={{ margin: 0, whiteSpace: 'normal' }}>{children}</p>,
+            a: ({ children, ...props }) => (
+              <a {...props} style={{ color: '#1890ff' }} target="_blank" rel="noopener noreferrer">
+                {children}
+              </a>
+            ),
+          }}
+        >
+          {bannerText}
+        </Markdown>
       </h2>
     </Tag>
   );

@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 import userEvent from '@testing-library/user-event';
-import { isDarkModeAtom } from './atoms';
 import { Provider, useAtom } from 'jotai';
+import { isDarkModeAtom } from './atoms';
 import { localStorageMock } from '../test/mock/mockStorage';
 
 const TestComponent = (): JSX.Element => {

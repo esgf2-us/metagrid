@@ -111,7 +111,8 @@ jobs:
       with:
         version: 'v3.19.2'
     - name: Helm | Install unittest plugin
-      run: helm plugin install https://github.com/helm-unittest/helm-unittest.git
+      run: |
+        helm plugin install https://github.com/helm-unittest/helm-unittest.git --version 0.6.2
     - name: Helm | Run chart unittests
       working-directory: helm/
       run: helm unittest .

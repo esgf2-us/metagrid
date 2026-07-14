@@ -20,7 +20,7 @@ This page will show you how to contribute to MetaGrid's front-end. You'll learn 
 
 ### Testing/QA
 
-- [Jest](https://jestjs.io/) (with code coverage via [Istanbul](https://istanbul.js.org/docs/tutorials/jest/))
+- [Vitest](https://vitest.dev/) (with code coverage via [Istanbul](https://istanbul.js.org/docs/tutorials/jest/))
 - [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
 
 ### DevOps
@@ -57,19 +57,24 @@ frontend
 │ ├── assets
 │ │ └── img
 │ ├── common
-│ │ ├── JoyrideTour.test.ts
-│ │ ├── JoyrideTour.ts
-│ │ ├── reactJoyrideSteps.test.ts
-│ │ ├── reactJoyrideSteps.ts
-│ │ ├── TourTargets.test.ts
-│ │ ├── TourTargets.ts
+│ │ ├── joyrideTutorials
+│ │ │ ├── JoyrideTour.test.ts
+│ │ │ ├── JoyrideTour.ts
+│ │ │ ├── reactJoyrideSteps.test.ts
+│ │ │ ├── reactJoyrideSteps.ts
+│ │ │ ├── TargetObject.test.ts
+│ │ │ └── TargetObject.ts
+│ │ ├── atoms.test.tsx
+│ │ ├── atoms.ts
+│ │ ├── DataBundlePersister.test.ts
+│ │ ├── DataBundlePersister.ts
+│ │ ├── STAC.test.ts
+│ │ ├── STAC.ts
 │ │ ├── types.ts
-│ │ ├── utils.test.ts
+│ │ ├── utils.test.tsx
 │ │ └── utils.ts
 │ ├── components
 │ │ ├── App
-│ │ │ ├── recoil
-│ │ │ │ └── atoms.ts
 │ │ │ ├── App.css
 │ │ │ ├── App.test.tsx
 │ │ │ └── App.tsx
@@ -82,11 +87,8 @@ frontend
 │ │ ├── ReactJoyrideContext.tsx
 │ │ └── types.ts
 │ ├── lib
-│ │ ├── axios
-│ │ │ ├── axios.d.ts
-│ │ │ └── index.ts
-│ │ ├── keycloak
-│ │ │ └── index.ts
+│ │ └── keycloak
+│ │     └── index.ts
 │ ├── test
 │ │ ├── __mocks__
 │ │ │ ├── assetFileMock.js
@@ -105,14 +107,17 @@ frontend
 │ ├── types
 │ │ └── globals.ts
 │ ├── index.css
+│ ├── index.test.tsx
 │ ├── index.tsx
-│ └── setupTests.ts
+│ ├── setupTests.ts
+│ ├── vite-env.d.ts
+│ └── vitest.setup.early.ts
 ├── .dockerignore
-├── .eslintrc.js
 ├── .gitignore
 ├── .prettierignore
 ├── .prettierrc
 ├── Dockerfile
+├── eslint.config.mjs
 ├── index.html
 ├── Makefile
 ├── messageData.json
@@ -121,7 +126,8 @@ frontend
 ├── README.md
 ├── tsconfig.json
 ├── vite.config.js
-└── yarn.lock
+├── vitest.config.ts
+└── pnpm-lock.yaml
 ```
 
 - `Dockerfile` - The Dockerfile used by docker compose for the frontend
@@ -135,7 +141,7 @@ frontend
   - `components/` - contains React components and related files.
     Follow [React Components File Structure](#file-structure)
   - `contexts/` - stores React [Context](https://reactjs.org/docs/context.html) components, such as for authentication state
-  - `lib/` - stores initialized instances of third party library that are exported for use in the codebase (e.g. Axios, Keycloak)
+  - `lib/` - stores initialized instances of third party library that are exported for use in the codebase (e.g. Keycloak)
   - `test/` - contains related files and functions shared among tests
     - `__mocks__/` - Directory containing mock versions of required dependencies to ensure they work with tests
       - `js-pkce.ts` - A mock of the js-pkce.ts library used for Globus transfer steps
@@ -149,11 +155,12 @@ frontend
     - `jestTestFunctions.tsx` - contains a set of helper functions that are used by various tests
   - `setupTests.ts` - configuration for additional test environment settings for jest
 - `.dockerignore` - files and folders to ignore when building docker containers
-- `.eslintrc.js` - configuration file for ESLint
+- `eslint.config.mjs` - configuration file for ESLint
 - `.prettierignore` - files and folders to ignore when running prettier
 - `.prettierrc` - configuration file for prettier
 - `tsconfig.json` - configuration file for TypeScript
-- `yarn.lock` - the purpose of a lock file is to lock down the versions of the dependencies specified in a package.json file. This means that in a yarn.lock file, there is an identifier for every dependency and sub dependency that is used for a project
+- `vitest.config.ts` - configuration file for Vitest test runner
+- `pnpm-lock.yaml` - the purpose of a lock file is to lock down the versions of the dependencies specified in a package.json file. This lock file uses YAML format and ensures all dependencies and sub-dependencies are at exact versions across all environments
 
 ### React Components
 
@@ -216,7 +223,7 @@ Run a command inside the docker container:
 docker compose run --rm react [command]
 ```
 
-### `yarn start`
+### `pnpm start`
 
 Runs the app in the development mode using the Vite dev server<br />
 Open <http://localhost:9443> to view it in the browser.
@@ -224,39 +231,39 @@ Open <http://localhost:9443> to view it in the browser.
 The page will reload if you make edits.<br />
 You will also see any lint errors in the console.
 
-### `yarn test`
+### `pnpm test`
 
-Launches the test runner for a single run without coverage report.<br />
-See the section about [running tests](https://create-react-app.dev/docs/running-tests/) for more information.
+Launches the Vitest test runner for a single run without coverage report.<br />
+See the [Vitest documentation](https://vitest.dev/) for more information.
 
-### `yarn test:coverage`
+### `pnpm test:coverage`
 
-Launches the test runner for a single run with coverage reporting.<br />
-See the section about [running tests with coverage](https://create-react-app.dev/docs/running-tests/#coverage-reporting) for more information.
+Launches the Vitest test runner for a single run with coverage reporting.<br />
+See the [Vitest coverage documentation](https://vitest.dev/guide/coverage) for more information.
 
-### `yarn test:watch`
+### `pnpm test:watch`
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://create-react-app.devv/docs/running-tests/) for more information.
+Launches the Vitest test runner in the interactive watch mode.<br />
+See the [Vitest documentation](https://vitest.dev/) for more information.
 
-### `yarn lint`
+### `pnpm lint`
 
 Runs linters to display violations.<br />
 
-### `yarn precommit`
+### `pnpm precommit`
 
 Runs linters against staged git files and attempts to fix as many issues as possible.<br />
 https://github.com/okonet/lint-staged
 
-### `yarn run build`
+### `pnpm build`
 
-Builds the app for production to the `build` folder.<br />
+Builds the app for production using Vite.<br />
 It correctly bundles React in production mode and optimizes the build for the best performance.
 
 The build is minified and the filenames include the hashes.<br />
 Your app is ready to be deployed!
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+See the [Vite documentation](https://vitejs.dev/guide/build.html) for more information.
 
 ## New Contributor Resources
 

@@ -20,7 +20,12 @@ services:
       METAGRID_STATUS_URL: https://esgf-node.llnl.gov/proxy/status
       METAGRID_SOCIAL_AUTH_GLOBUS_KEY: 94c44808-9efd-4236-bffd-1185b1071736
       METAGRID_SOCIAL_AUTH_GLOBUS_SECRET: 34364292-2752-4d5e-8295
+  react:
+    environment:
+      VITE_FEDERATED_NODES_URL: 'https://esgf.github.io/nodes.html'
 ```
+
+Note that frontend-specific settings (prefixed with `VITE_`) should be set under the `react` service, while backend settings are set under the `django` service.
 ## Bringing up the stack in production
 Note: you will need to run admin related commands with sudo.
 Now that you have your site overlay file created, you'll use it and the provided Production overlay to bring the stack online:
@@ -44,6 +49,9 @@ services:
       METAGRID_STATUS_URL: https://esgf-node.llnl.gov/proxy/status
       METAGRID_SOCIAL_AUTH_GLOBUS_KEY: 94c44808-9efd-4236-bffd-1185b1071736
       METAGRID_SOCIAL_AUTH_GLOBUS_SECRET: 34364292-2752-4d5e-8295
+  react:
+    environment:
+      VITE_FEDERATED_NODES_URL: 'https://esgf.github.io/nodes.html'
   traefik:
     environment:
       DOMAIN_NAME: my-domain.com

@@ -40,7 +40,7 @@ class MetagridBackendSettings(BaseSettings):
 
     GLOBUS_PUBLIC_INDEX_ENDPOINT_ID: str = Field(
         default="a8ef4320-9e5a-4793-837b-c45161ca1845",
-        description="The Globus index ID for the public ESGF2 data.",
+        description="If WGET_URL is none, then you need this to specify the Globus index ID for the public ESGF2 data that integrated wget would use.",
         examples=["a8ef4320-9e5a-4793-837b-c45161ca1845"],
     )
 
