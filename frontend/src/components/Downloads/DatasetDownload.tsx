@@ -468,8 +468,10 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormP
     const globusHrefs: string[] = [];
 
     if (itemSelections) {
-      ids.concat(itemSelections?.map((item) => (item ? item.id : '')));
       itemSelections.forEach((item) => {
+        if (item?.id) {
+          ids.push(item.id);
+        }
         const href = getGlobusHrefForItem(item);
         if (href !== null) {
           globusHrefs.push(href);
