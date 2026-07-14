@@ -89,16 +89,20 @@ sudo chmod 755 /usr/local/bin/docker-compose
 # OR install via pip:
 # sudo pip3 install docker-compose
 
-# 3. Enable Podman socket
-sudo systemctl enable --now podman.socket
-sudo systemctl status podman.socket
+# 3. Enable rootless Podman socket (recommended for security)
+systemctl --user enable --now podman.socket
+systemctl --user status podman.socket
 
-# 4. Set up Docker environment variables to point to Podman
-export DOCKER_HOST="unix:///run/podman/podman.sock"
+# 4. Enable lingering so user services persist after logout
+sudo loginctl enable-linger $USER
+
+# 5. Set up Docker environment variables to point to Podman user socket
+export DOCKER_HOST="unix:///run/user/$UID/podman/podman.sock"
 # Add this to your ~/.bashrc to make it permanent:
-echo 'export DOCKER_HOST="unix:///run/podman/podman.sock"' >> ~/.bashrc
+echo 'export DOCKER_HOST="unix:///run/user/$UID/podman/podman.sock"' >> ~/.bashrc
+source ~/.bashrc
 
-# 5. Verify installation
+# 6. Verify installation
 podman --version
 docker-compose --version
 podman ps
@@ -116,16 +120,20 @@ sudo chmod 755 /usr/local/bin/docker-compose
 # OR install via pip:
 # sudo pip3 install docker-compose
 
-# 3. Enable Podman socket
-sudo systemctl enable --now podman.socket
-sudo systemctl status podman.socket
+# 3. Enable rootless Podman socket (recommended for security)
+systemctl --user enable --now podman.socket
+systemctl --user status podman.socket
 
-# 4. Set up Docker environment variables to point to Podman
-export DOCKER_HOST="unix:///run/podman/podman.sock"
+# 4. Enable lingering so user services persist after logout
+sudo loginctl enable-linger $USER
+
+# 5. Set up Docker environment variables to point to Podman user socket
+export DOCKER_HOST="unix:///run/user/$UID/podman/podman.sock"
 # Add this to your ~/.bashrc to make it permanent:
-echo 'export DOCKER_HOST="unix:///run/podman/podman.sock"' >> ~/.bashrc
+echo 'export DOCKER_HOST="unix:///run/user/$UID/podman/podman.sock"' >> ~/.bashrc
+source ~/.bashrc
 
-# 5. Verify installation
+# 6. Verify installation
 podman --version
 docker-compose --version
 podman ps
@@ -322,20 +330,161 @@ podman machine ssh "sudo ln -s /run/podman/podman.sock /var/run/docker.sock" || 
 docker-compose --version
 ```
 
-### docker-compose shows "permission denied"
+### docker-compose shows "permission denied" connecting to socket
+
+**Error:** `permission denied while trying to connect to the docker API at unix:///run/podman/podman.sock`
+
+This means docker-compose is trying to connect to the root Podman socket but your user doesn't have permission. **Solution: Use rootless Podman socket instead:**
 
 ```bash
-# Linux: Add your user to the podman group or use rootless mode
-# Check current user permissions
-id
+# 1. Stop the system (root) Podman socket if running
+sudo systemctl stop podman.socket
+sudo systemctl disable podman.socket
 
-# Enable rootless Podman (recommended)
+# 2. Enable the user Podman socket
+systemctl --user enable --now podman.socket
+
+# 3. Enable lingering so user services persist
 sudo loginctl enable-linger $USER
 
-# Or add user to podman group (not recommended for security)
-# sudo usermod -aG podman $USER
-# newgrp podman
+# 4. Update DOCKER_HOST to use the user socket
+export DOCKER_HOST="unix:///run/user/$UID/podman/podman.sock"
+echo 'export DOCKER_HOST="unix:///run/user/$UID/podman/podman.sock"' >> ~/.bashrc
+source ~/.bashrc
+
+# 5. Verify the user socket is running
+systemctl --user status podman.socket
+
+# 6. Test docker-compose connection
+docker-compose --version
+podman ps
 ```
+
+**Why rootless?** Rootless Podman is more secure and doesn't require root privileges to run containers. It's the recommended approach for development environments.
+
+### SELinux labeling errors (RHEL/Fedora/CentOS)
+
+**Error:** `lsetxattr(label=...) operation not supported` during image builds
+
+This happens when the filesystem doesn't support SELinux extended attributes. **Solution: Disable SELinux labeling for your user (user-specific, safe for shared servers):**
+
+```bash
+# 1. Create Podman storage configuration (user-specific)
+mkdir -p ~/.config/containers
+cat > ~/.config/containers/storage.conf << 'EOF'
+[storage]
+driver = "overlay"
+
+[storage.options]
+mount_program = "/usr/bin/fuse-overlayfs"
+
+[storage.options.overlay]
+ignore_chown_errors = "true"
+mountopt = "nodev,metacopy=on"
+EOF
+
+# 2. Disable SELinux labeling for your containers (user-specific)
+cat > ~/.config/containers/containers.conf << 'EOF'
+[containers]
+label = false
+EOF
+
+# 3. Install fuse-overlayfs if not already installed (may need admin)
+# Check if it's available:
+which fuse-overlayfs
+# If not found, ask your system administrator to install:
+# sudo dnf install -y fuse-overlayfs
+
+# 4. Reset YOUR Podman storage (only affects your user, not others)
+podman system reset --force
+
+# 5. Restart YOUR user Podman socket (only affects your user)
+systemctl --user restart podman.socket
+
+# 6. Verify SELinux labeling is disabled
+podman info | grep -i selinux
+# Should show "selinuxEnabled: false"
+
+# 7. Try building again
+./manage_metagrid.sh
+```
+
+**Alternative (⚠️ SYSTEM-WIDE - requires admin coordination on shared servers):**
+
+If you're on a dedicated/single-user system, you can set SELinux to permissive for containers:
+```bash
+# WARNING: This affects ALL users on the system
+sudo semanage permissive -a container_t
+```
+
+**Note for shared servers:** The first solution (storage configuration) is recommended as it only affects your user account and doesn't impact other users on the system.
+
+### Shared servers without subuid/subgid configured
+
+**Error:** `cannot find UID/GID for user: no subuid ranges found in /etc/subuid`
+
+On shared servers, your user may not have subordinate UID/GID ranges configured, which are required for rootless Podman. You have two options:
+
+**Option A: Ask your administrator to configure subuid/subgid (Recommended)**
+
+Send this to your system administrator:
+```bash
+# Admin command to enable rootless Podman for user 'downie4'
+sudo usermod --add-subuids 100000-165535 --add-subgids 100000-165535 downie4
+```
+
+After this is configured, follow the rootless setup instructions above.
+
+**Option B: Use rootful Podman with sudo (Workaround)**
+
+If rootless isn't feasible, you can use Podman with sudo. Note: This requires sudo access and containers will run as root.
+
+```bash
+# 1. Update DOCKER_HOST to use system socket
+export DOCKER_HOST="unix:///run/podman/podman.sock"
+echo 'export DOCKER_HOST="unix:///run/podman/podman.sock"' >> ~/.bashrc
+source ~/.bashrc
+
+# 2. Enable the system Podman socket
+sudo systemctl enable --now podman.socket
+
+# 3. Verify the socket is running
+sudo systemctl status podman.socket
+# Press 'q' to quit the status view
+
+# 4. Ensure docker-compose is in sudo's PATH
+# Check if sudo can find docker-compose:
+sudo which docker-compose
+
+# If it returns "no docker-compose", create a symlink:
+sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+
+# Verify sudo can now find it:
+sudo which docker-compose
+
+# 5. Run manage_metagrid with sudo
+cd /path/to/metagrid
+sudo -E ./manage_metagrid.sh
+# The -E flag preserves your environment variables
+```
+
+**Using rootful Podman:**
+```bash
+# View running containers
+sudo podman ps
+
+# View logs
+sudo podman logs <container_name>
+
+# Stop containers
+sudo ./manage_metagrid.sh
+# Select the stop option from the menu
+
+# Execute commands in containers
+sudo podman exec -it django bash
+```
+
+**Note:** When using rootful Podman, all `podman` commands must be run with `sudo`. Container files and volumes will be owned by root.
 
 ### Compose plugin not found
 ```bash
