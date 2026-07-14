@@ -496,7 +496,7 @@ describe('DatasetDownload form tests', () => {
     );
   });
 
-  it('mock handler returns empty successes when dataset_id and globus_hrefs are empty (Bug #2 scenario)', async () => {
+  it('mock handler returns empty successes when dataset_id and globus_hrefs are empty.', async () => {
     // This test verifies that the mock handler properly validates the request
     // If Bug #2 existed (ids.concat not populating array), this would be the result
     let requestReceived = false;
