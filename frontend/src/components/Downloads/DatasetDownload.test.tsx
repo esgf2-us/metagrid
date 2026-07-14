@@ -22,6 +22,7 @@ import {
   stacFeatureFixture,
   stacSearchResponseFixture,
   rawSearchResultFixture,
+  globusTransferResponseFixture,
 } from '../../test/mock/fixtures';
 import apiRoutes from '../../api/routes';
 import DatasetDownloadForm, { GlobusGoals } from './DatasetDownload';
@@ -493,6 +494,145 @@ describe('DatasetDownload form tests', () => {
         ),
       { timeout: 5000 },
     );
+  });
+
+  it('mock handler returns empty successes when dataset_id and globus_hrefs are empty (Bug #2 scenario)', async () => {
+    // This test verifies that the mock handler properly validates the request
+    // If Bug #2 existed (ids.concat not populating array), this would be the result
+    let requestReceived = false;
+
+    server.use(
+      rest.post(apiRoutes.globusTransfer.path, async (req, res, ctx) => {
+        requestReceived = true;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const body = (await req.json()) as any;
+
+        // Simulate a request with empty arrays (Bug #2 scenario)
+        // Override whatever the component sends
+        body.dataset_id = [];
+        body.globus_hrefs = [];
+
+        // The mock handler should detect empty arrays and return empty successes
+        const hasData =
+          (body.dataset_id && body.dataset_id.length > 0) ||
+          (body.globus_hrefs && body.globus_hrefs.length > 0);
+
+        if (!hasData) {
+          return res(
+            ctx.status(200),
+            ctx.json({
+              status: 200,
+              successes: [],
+              failures: [],
+            }),
+          );
+        }
+
+        return res(ctx.status(200), ctx.json(globusTransferResponseFixture()));
+      }),
+    );
+
+    await initializeComponentForTest();
+
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetTransferBtn');
+    await user.click(globusTransferBtn);
+
+    // Should display warning about no transfer occurring
+    const warningMsg = await screen.findByText(
+      'Globus download requested, however no transfer occurred.',
+    );
+    expect(warningMsg).toBeTruthy();
+    expect(requestReceived).toBe(true);
+  });
+
+  it('validates that dataset_id array is populated for non-STAC items', async () => {
+    let requestBody: {
+      dataset_id?: string[];
+      globus_hrefs?: string[];
+      endpointId?: string;
+      path?: string;
+    } | null = null;
+
+    // Capture the request body
+    server.use(
+      rest.post(apiRoutes.globusTransfer.path, async (req, res, ctx) => {
+        requestBody = (await req.json()) as {
+          dataset_id?: string[];
+          globus_hrefs?: string[];
+          endpointId?: string;
+          path?: string;
+        };
+        return res(ctx.status(200), ctx.json(globusTransferResponseFixture()));
+      }),
+    );
+
+    await initializeComponentForTest();
+
+    // Click Transfer button
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetTransferBtn');
+    await user.click(globusTransferBtn);
+
+    // Wait for request to be sent and captured
+    await waitFor(
+      () => {
+        expect(requestBody).not.toBeNull();
+      },
+      { timeout: 3000 },
+    );
+
+    // Verify request body has dataset IDs (would fail if Bug #2 existed)
+    expect(requestBody).not.toBeNull();
+    expect(requestBody!.dataset_id).toBeDefined();
+    expect(requestBody!.dataset_id?.length).toBeGreaterThan(0);
+    // Verify the actual IDs from the test config are present
+    expect(requestBody!.dataset_id).toContain('globusReadyItem1');
+    expect(requestBody!.dataset_id).toContain('globusReadyItem2');
+  });
+
+  it('validates that required fields are present in transfer request', async () => {
+    let requestBody: {
+      dataset_id?: string[];
+      globus_hrefs?: string[];
+      endpointId?: string;
+      path?: string;
+    } | null = null;
+
+    // Capture the request body
+    server.use(
+      rest.post(apiRoutes.globusTransfer.path, async (req, res, ctx) => {
+        requestBody = (await req.json()) as {
+          dataset_id?: string[];
+          globus_hrefs?: string[];
+          endpointId?: string;
+          path?: string;
+        };
+        return res(ctx.status(200), ctx.json(globusTransferResponseFixture()));
+      }),
+    );
+
+    await initializeComponentForTest();
+
+    // Click Transfer button
+    const globusTransferBtn = await screen.findByTestId('downloadDatasetTransferBtn');
+    await user.click(globusTransferBtn);
+
+    // Wait for request to be sent and captured
+    await waitFor(
+      () => {
+        expect(requestBody).not.toBeNull();
+      },
+      { timeout: 3000 },
+    );
+
+    // Verify all required fields are present
+    expect(requestBody).not.toBeNull();
+    expect(requestBody!.endpointId).toBeDefined();
+    expect(requestBody!.endpointId).toBe('id2345678'); // validEndpointWithPathSet.id
+    expect(requestBody!.path).toBeDefined();
+    expect(requestBody!.path).toBe(testEndpointPath);
+    // Also verify data arrays are present
+    expect(requestBody!.dataset_id).toBeDefined();
+    expect(requestBody!.dataset_id?.length).toBeGreaterThan(0);
   });
 
   it('prompts user for consents if there is no auth code and transfer was denied due to permissions, then redirects to auth url when clicking OK', async () => {

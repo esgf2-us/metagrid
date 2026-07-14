@@ -379,7 +379,10 @@ export const getAltSearchFromUrl = (url?: string): ActiveSearchQuery => {
     activeFacets[key] = [paramEntries[key]];
   });
 
-  const projName = (url || window.location.pathname).split('/').filter(Boolean).at(-1);
+  const pathname = url || window.location.pathname;
+  // Only extract project name from pathname if we're on a search-related route
+  const isSearchRoute = pathname.includes('/search');
+  const projName = isSearchRoute ? pathname.split('/').filter(Boolean).at(-1) : undefined;
 
   if (projName) {
     searchQuery = { ...searchQuery, project: { name: projName }, activeFacets };
