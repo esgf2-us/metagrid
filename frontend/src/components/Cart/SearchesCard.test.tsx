@@ -7,7 +7,8 @@ import {
   stacSearchResultsFixture,
   stacAggregationsFixture,
 } from '../../test/mock/fixtures';
-import { rest, server } from '../../test/mock/server';
+import { http, server } from '../../test/mock/server';
+import { HttpResponse } from 'msw';
 import apiRoutes from '../../api/routes';
 import SearchesCard, { Props } from './SearchesCard';
 import customRender from '../../test/custom-render';
@@ -56,7 +57,11 @@ it('renders components', async () => {
 });
 
 it('displays alert error when api fails to return response', async () => {
-  server.use(rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) => res(ctx.status(404))));
+  server.use(
+    http.get(apiRoutes.esgfSearch.path, () => {
+      return new HttpResponse(null, { status: 404 });
+    })
+  );
 
   customRender(
     <SearchesCard
@@ -86,12 +91,12 @@ it('displays "N/A" for Filename Searches when none are applied', async () => {
 it('updates searchQuery with STAC numMatched when project is STAC', async () => {
   // Mock STAC aggregations and STAC search responses
   server.use(
-    rest.post(apiRoutes.esgfAggregationsSTAC.path, (_req, res, ctx) =>
-      res(ctx.status(200), ctx.json(stacAggregationsFixture())),
-    ),
-    rest.post(apiRoutes.esgfSearchSTAC.path, (_req, res, ctx) =>
-      res(ctx.status(200), ctx.json(stacSearchResultsFixture().search)),
-    ),
+    http.post(apiRoutes.esgfAggregationsSTAC.path, () => {
+      return HttpResponse.json(stacAggregationsFixture());
+    })
+    http.post(apiRoutes.esgfSearchSTAC.path, () => {
+      return HttpResponse.json(stacSearchResultsFixture().search);
+    })
   );
 
   const mockUpdate = vi.fn();

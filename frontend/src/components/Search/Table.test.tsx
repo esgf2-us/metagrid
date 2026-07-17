@@ -3,7 +3,8 @@ import { vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { rawSearchResultFixture, rawSearchResultsFixture } from '../../test/mock/fixtures';
-import { rest, server } from '../../test/mock/server';
+import { http, server } from '../../test/mock/server';
+import { HttpResponse } from 'msw';
 import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
 import Table, { Props } from './Table';
@@ -387,7 +388,11 @@ describe('test main table UI', () => {
   });
 
   it('displays an error when unable to access download via wget', async () => {
-    server.use(rest.post(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404))));
+    server.use(
+      http.post(apiRoutes.wget.path, () => {
+        return new HttpResponse(null, { status: 404 });
+      })
+    );
 
     AtomWrapper.modifyAtomValue(AppStateKeys.userCart, [defaultProps.results[0]]);
     customRender(<Table {...defaultProps} />);
