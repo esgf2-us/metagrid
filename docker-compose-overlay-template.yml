@@ -5,8 +5,27 @@
 
 services:
   traefik:
+    # SSL Certificate Configuration - Choose ONE option:
+    #
+    # OPTION 1: Let's Encrypt (automatic SSL, default)
+    # Uncomment the LETSENCRYPT_EMAIL line below:
     environment:
       DOMAIN_NAME: <DOMAIN_NAME>
+      LETSENCRYPT_EMAIL: <YOUR_EMAIL>
+    #
+    # OPTION 2: Use your own SSL certificate
+    # 1. Comment out or remove the LETSENCRYPT_EMAIL line above
+    # 2. Replace the traefik config volume mount to use traefik.prod.custom-ssl.yml:
+    #    - ./traefik/traefik.prod.custom-ssl.yml:/etc/traefik/traefik.yml
+    # 3. Uncomment and configure the lines below:
+    # environment:
+    #   DOMAIN_NAME: <DOMAIN_NAME>
+    #   SSL_CERT_FILE: /etc/traefik/certs/certificate.crt
+    #   SSL_KEY_FILE: /etc/traefik/certs/private.key
+    # volumes:
+    #   - /path/on/host/to/certificate.crt:/etc/traefik/certs/certificate.crt:ro
+    #   - /path/on/host/to/private.key:/etc/traefik/certs/private.key:ro
+    #   - ./traefik/traefik.prod.custom-ssl.yml:/etc/traefik/traefik.yml
 
   postgres:
     # Keep the postgres service so overlays can set password / healthcheck consistently
