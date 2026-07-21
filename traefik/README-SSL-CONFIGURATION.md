@@ -27,9 +27,23 @@ services:
 
 2. Ensure port 80 is accessible from the internet (required for Let's Encrypt HTTP challenge)
 
-3. Deploy with `docker compose`:
+3. Deploy with your container runtime:
+
+**Using the management script (recommended):**
 ```bash
+./manage_metagrid.sh
+# Select option 1 for "Start Metagrid - Production"
+```
+
+**Manual deployment:**
+```bash
+# Docker
 docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose-<site>-overlay.yml up -d
+
+# Podman
+podman compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose-<site>-overlay.yml up -d
+# or with podman-compose
+podman-compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose-<site>-overlay.yml up -d
 ```
 
 Let's Encrypt will automatically obtain and renew certificates. Certificate data is stored in the `traefik_certs` volume.
@@ -73,8 +87,22 @@ services:
 3. **Important**: Remove or comment out any `LETSENCRYPT_EMAIL` variable
 
 4. Deploy:
+
+**Using the management script (recommended):**
 ```bash
+./manage_metagrid.sh
+# Select option 1 for "Start Metagrid - Production"
+```
+
+**Manual deployment:**
+```bash
+# Docker
 docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose-<site>-overlay.yml up -d
+
+# Podman
+podman compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose-<site>-overlay.yml up -d
+# or with podman-compose
+podman-compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose-<site>-overlay.yml up -d
 ```
 
 ### Security Notes:
@@ -105,7 +133,16 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compos
 
 - **Rate limits**: Let's Encrypt has rate limits. Check [their documentation](https://letsencrypt.org/docs/rate-limits/)
 - **Port 80 blocked**: Ensure port 80 is accessible from the internet
-- **Logs**: Check Traefik logs: `docker compose logs traefik`
+- **Logs**: Check Traefik logs:
+  ```bash
+  # Docker
+  docker compose logs traefik
+  
+  # Podman
+  podman compose logs traefik
+  # or
+  podman logs <container-name>
+  ```
 
 ### Custom Certificate Issues:
 

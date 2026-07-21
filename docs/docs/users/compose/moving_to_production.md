@@ -27,10 +27,54 @@ services:
 
 Note that frontend-specific settings (prefixed with `VITE_`) should be set under the `react` service, while backend settings are set under the `django` service.
 ## Bringing up the stack in production
-Note: you will need to run admin related commands with sudo.
-Now that you have your site overlay file created, you'll use it and the provided Production overlay to bring the stack online:
+
+### Prerequisites
+
+**For Docker:**
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.SITENAME-overlay.yml up
+docker compose version
+```
+
+**For Podman (RHEL/CentOS/Fedora):**
+
+Podman requires either the compose plugin or `podman-compose`. The `manage_metagrid.sh` script will automatically detect which is available.
+
+**Option 1: Install podman-compose (recommended for RHEL):**
+```bash
+pip3 install --user podman-compose
+# Verify installation
+podman-compose --version
+```
+
+**Option 2: Use built-in compose plugin (RHEL 9+):**
+```bash
+# Check if available
+podman compose version
+
+# If not available, install podman-plugins
+sudo dnf install podman-plugins
+```
+
+### Starting the Stack
+
+**Using the management script (recommended):**
+```bash
+./manage_metagrid.sh
+# Select option 1 for "Start Metagrid - Production"
+```
+
+The script automatically detects your container runtime and uses the appropriate commands.
+
+**Manual command:**
+```bash
+# Docker
+docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.SITENAME-overlay.yml up -d
+
+# Podman with compose plugin
+podman compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.SITENAME-overlay.yml up -d
+
+# Podman with podman-compose
+podman-compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.SITENAME-overlay.yml up -d
 ```
 
 With the stack running in production mode, you should be able to access the frontend at <https://sitename.com>
@@ -75,11 +119,62 @@ docker compose -f docker-compose.yml -f docker-compose.SITENAME-overlay.yml run 
 ### Check logs
 
 ```bash
+# Docker
 docker compose -f docker-compose.yml -f docker-compose.SITENAME-overlay.yml logs
+
+# Podman
+podman compose -f docker-compose.yml -f docker-compose.SITENAME-overlay.yml logs
+# or
+podman-compose -f docker-compose.yml -f docker-compose.SITENAME-overlay.yml logs
 ```
 
 ### Check status of containers
 
 ```bash
+# Docker
 docker compose -f docker-compose.yml -f docker-compose.SITENAME-overlay.yml ps
+
+# Podman
+podman compose -f docker-compose.yml -f docker-compose.SITENAME-overlay.yml ps
+# or
+podman-compose -f docker-compose.yml -f docker-compose.SITENAME-overlay.yml ps
 ```
+
+## Podman-Specific Notes
+
+### Rootless vs Rootful Mode
+
+Podman can run in two modes:
+
+- **Rootless (recommended)**: Containers run as your user without sudo. Requires `podman-compose` or the compose plugin.
+- **Rootful (with sudo)**: Containers run as root. May cause networking issues where the browser cannot connect to services.
+
+**Always prefer rootless mode** by installing `podman-compose` as shown above.
+
+### Troubleshooting Podman
+
+**Issue: "Cannot connect to the Docker daemon at unix:///run/user/*/podman/podman.sock"**
+
+This indicates the Podman socket is not running or `podman-compose` is not installed.
+
+**Solution:**
+```bash
+# Install podman-compose
+pip3 install --user podman-compose
+
+# Verify
+podman-compose --version
+
+# Then run the management script
+./manage_metagrid.sh
+```
+
+**Issue: "trigger-limit-hit" on podman.socket**
+
+This occurs when using `docker-compose` with Podman socket API compatibility. The solution is to use `podman-compose` instead:
+
+```bash
+pip3 install --user podman-compose
+```
+
+The `manage_metagrid.sh` script will automatically prefer `podman-compose` over socket-based alternatives.

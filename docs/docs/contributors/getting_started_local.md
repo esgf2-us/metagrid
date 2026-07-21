@@ -42,18 +42,38 @@ Follow the [official Podman installation guide](https://podman.io/getting-starte
 
 Podman supports Docker Compose through either:
 
-1. **Podman Compose plugin** (recommended):
+1. **podman-compose** (recommended for RHEL/production):
+   ```bash
+   # Install with pip
+   pip3 install --user podman-compose
+   
+   # Verify it's working
+   podman-compose --version
+   ```
+
+2. **Podman Compose plugin** (alternative):
    ```bash
    # Verify it's working
    podman compose version
+   
+   # If not available on RHEL 9+
+   sudo dnf install podman-plugins
    ```
 
-2. **podman-compose** (alternative):
-   ```bash
-   pip install podman-compose
-   ```
+The `manage_metagrid.sh` script automatically detects whether Docker or Podman is available and uses the appropriate command. It prioritizes `podman-compose` when available to avoid socket-related issues.
 
-The `manage_metagrid.sh` script automatically detects whether Docker or Podman is available and uses the appropriate command.
+#### Rootless Podman (Recommended)
+
+Run Podman in rootless mode (without sudo) for better security:
+```bash
+# Test rootless mode works
+podman ps
+
+# If you get permission errors, ensure podman-compose is installed
+pip3 install --user podman-compose
+```
+
+**Avoid running with sudo** - rootful Podman can cause networking issues where the browser cannot connect to services.
 
 ## 1. Clone your fork and keep in sync with upstream `master`
 
