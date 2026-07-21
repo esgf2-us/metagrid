@@ -52,7 +52,19 @@ sudo pip3 install podman-compose
 sudo podman --version
 sudo podman-compose --version
 
-# 3. Enable system Podman socket
+# 3. Configure Podman for root (disable SELinux, configure DNS)
+# Since we use sudo, configure for root user
+sudo mkdir -p /root/.config/containers
+sudo bash -c 'cat > /root/.config/containers/containers.conf << "EOF"
+[containers]
+label = false
+
+[network]
+# Use Google DNS (or replace with your organization's DNS servers)
+dns_servers = ["8.8.8.8", "8.8.4.4"]
+EOF'
+
+# 4. Enable system Podman socket
 sudo systemctl enable --now podman.socket
 
 # That's it! Use sudo with the management script.

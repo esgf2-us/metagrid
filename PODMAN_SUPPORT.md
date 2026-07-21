@@ -22,12 +22,16 @@ sudo dnf install -y podman fuse-overlayfs python3-pip
 # 2. Install podman-compose
 sudo pip3 install podman-compose
 
-# 3. Disable SELinux labeling for containers (user-specific)
-mkdir -p ~/.config/containers
-cat > ~/.config/containers/containers.conf << 'EOF'
+# 3. Configure Podman for root (since we use sudo)
+sudo mkdir -p /root/.config/containers
+sudo bash -c 'cat > /root/.config/containers/containers.conf << "EOF"
 [containers]
 label = false
-EOF
+
+[network]
+# Use Google DNS (or replace with your organization's DNS servers)
+dns_servers = ["8.8.8.8", "8.8.4.4"]
+EOF'
 
 # 4. Navigate to your Metagrid directory and deploy
 cd /path/to/metagrid

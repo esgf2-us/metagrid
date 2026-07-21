@@ -4,7 +4,6 @@
       "name": "CMIP7 STAC PROD",
       "projectName": "CMIP7",
       "fullName": "Coupled Model Intercomparison Project Phase 7",
-      "stacApiUrl": "https://discovery.integration.esgf-west.org",
       "projectUrl": "https://wcrp-cmip.org/cmip-phases/cmip7/",
       "facetsByGroup": {
         "General": ["mip_era"],
@@ -19,7 +18,7 @@
       "name": "CMIP7 STAC TEST",
       "projectName": "CMIP7",
       "fullName": "Coupled Model Intercomparison Project Phase 7",
-      "stacApiUrl": "https://api.stac.esgf.ceda.ac.uk",
+      "stacApiUrl": "https://discovery.integration.esgf-west.org",
       "projectUrl": "https://wcrp-cmip.org/cmip-phases/cmip7/",
       "facetsByGroup": {
         "General": ["mip_era"],
@@ -34,7 +33,6 @@
       "name": "CMIP6 STAC PROD",
       "projectName": "CMIP6",
       "fullName": "Coupled Model Intercomparison Project Phase 6",
-      "stacApiUrl": "https://discovery.integration.esgf-west.org",
       "projectUrl": "https://wcrp-cmip.org/cmip-phases/cmip6/",
       "facetsByGroup": {
         "General": ["mip_era"],
@@ -49,7 +47,7 @@
       "name": "CMIP6 STAC TEST",
       "projectName": "CMIP6",
       "fullName": "Coupled Model Intercomparison Project Phase 6",
-      "stacApiUrl": "https://api.stac.esgf.ceda.ac.uk",
+      "stacApiUrl": "https://discovery.integration.esgf-west.org",
       "projectUrl": "https://wcrp-cmip.org/cmip-phases/cmip6/",
       "facetsByGroup": {
         "General": ["mip_era"],
@@ -81,6 +79,7 @@
       "name": "CMIP6Plus STAC",
       "projectName": "CMIP6Plus",
       "fullName": "Coupled Model Intercomparison Project Phase 6",
+      "stacApiUrl": "https://discovery.integration.esgf-west.org",
       "projectUrl": "https://wcrp-cmip.org/cmip-phases/cmip6/",
       "facetsByGroup": {
         "General": ["mip_era"],
