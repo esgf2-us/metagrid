@@ -5,12 +5,15 @@ While the stack runs out of the box, there are some settings you'll want to chan
 ## Creating your site overlay file
 
 Create a new file for your overlay; the name is arbitrary but by convention is usually `docker-compose.SITENAME-overlay.yml`. Begin with the following content:
+
 ```yaml
 services:
   django:
     environment:
 ```
+
 Read through the following configurable environment variables and set them as keys under the `environment` key of your site-specific overlay. For example:
+
 ```yaml
 services:
   django:
@@ -26,54 +29,75 @@ services:
 ```
 
 Note that frontend-specific settings (prefixed with `VITE_`) should be set under the `react` service, while backend settings are set under the `django` service.
+
 ## Bringing up the stack in production
 
 ### Prerequisites
 
 **For Docker:**
+
 ```bash
 docker compose version
 ```
 
-**For Podman (RHEL/CentOS/Fedora):**
+**The simplest approach is rootful Podman with sudo:**
 
-Podman requires either the compose plugin or `podman-compose`. The `manage_metagrid.sh` script will automatically detect which is available.
-
-**Option 1: Install podman-compose (recommended for RHEL):**
 ```bash
-pip3 install --user podman-compose
-# Verify installation
-podman-compose --version
+# 1. Install Podman and podman-compose
+sudo dnf install -y podman fuse-overlayfs
+sudo dnf install -y python3-pip || sudo yum install -y python3-pip
+sudo pip3 install podman-compose
+
+# 2. Verify installation
+sudo podman --version
+sudo podman-compose --version
+
+# 3. Enable system Podman socket
+sudo systemctl enable --now podman.socket
+
+# That's it! Use sudo with the management script.
+sudo ./manage_metagrid.sh
 ```
 
-**Option 2: Use built-in compose plugin (RHEL 9+):**
-```bash
-# Check if available
-podman compose version
+**For development/testing with rootless Podman (requires admin setup):**
 
-# If not available, install podman-plugins
-sudo dnf install podman-plugins
+If you need rootless mode, ask your system administrator to configure subuid/subgid ranges first:
+
+```bash
+# Admin runs:
+sudo usermod --add-subuids 100000-165535 --add-subgids 100000-165535 <username>
 ```
+
+Then follow the rootless setup in the PODMAN_SUPPORT.md documentation.
 
 ### Starting the Stack
 
-**Using the management script (recommended):**
+**Using the management script with Podman (recommended for RHEL):**
+
 ```bash
-./manage_metagrid.sh
+sudo ./manage_metagrid.sh
 # Select option 1 for "Start Metagrid - Production"
 ```
 
 The script automatically detects your container runtime and uses the appropriate commands.
 
-**Manual command:**
+**Using the management script with Docker:**
+
+```bash
+./manage_metagrid.sh
+# Select option 1 for "Start Metagrid - Production"
+```
+
+**Manual commands:**
+
 ```bash
 # Docker
 docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.SITENAME-overlay.yml up -d
 
-# Podman with compose plugin
-podman compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.SITENAME-overlay.yml up -d
+# Podman (rootful with sudo - recommended for RHEL)
+sudo podman-compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.SITENAME-overlay.yml up -d
 
-# Podman with podman-compose
+# Podman (rootless - requires subuid/subgid configuration)
 podman-compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.SITENAME-overlay.yml up -d
 ```
 
@@ -84,6 +108,7 @@ With the stack running in production mode, you should be able to access the fron
 You can use the provided Traefik configuration to serve as a reverse proxy and provide a Let's Encrypt certificate (provided you have a public DNS entry pointed to port 80 on the machine running the stack that Let's Encrypt can use to verify control of the domain).
 
 Modify your site overlay to set the DOMAIN_NAME environment variable and service ports for Traefik:
+
 ```yaml
 services:
   django:
@@ -100,8 +125,8 @@ services:
     environment:
       DOMAIN_NAME: my-domain.com
     ports:
-    - 80:9080
-    - 443:9443
+      - 80:9080
+      - 443:9443
 ```
 
 And Traefik should now be serving on 80 and 443
@@ -122,59 +147,77 @@ docker compose -f docker-compose.yml -f docker-compose.SITENAME-overlay.yml run 
 # Docker
 docker compose -f docker-compose.yml -f docker-compose.SITENAME-overlay.yml logs
 
-# Podman
-podman compose -f docker-compose.yml -f docker-compose.SITENAME-overlay.yml logs
+# Podman (rootful - use sudo)
+sudo podman logs <container-name>
 # or
-podman-compose -f docker-compose.yml -f docker-compose.SITENAME-overlay.yml logs
+sudo podman-compose -f docker-compose.yml -f docker-compose.SITENAME-overlay.yml logs
 ```
 
 ### Check status of containers
 
 ```bash
 # Docker
-docker compose -f docker-compose.yml -f docker-compose.SITENAME-overlay.yml ps
+docker compose ps
 
-# Podman
-podman compose -f docker-compose.yml -f docker-compose.SITENAME-overlay.yml ps
+# Podman (rootful - use sudo)
+sudo podman ps
 # or
-podman-compose -f docker-compose.yml -f docker-compose.SITENAME-overlay.yml ps
+sudo podman-compose ps
 ```
 
-## Podman-Specific Notes
+## Podman-Specific Notes for RHEL Production
 
-### Rootless vs Rootful Mode
+### Rootful vs Rootless Mode
 
 Podman can run in two modes:
 
-- **Rootless (recommended)**: Containers run as your user without sudo. Requires `podman-compose` or the compose plugin.
-- **Rootful (with sudo)**: Containers run as root. May cause networking issues where the browser cannot connect to services.
+- **Rootful (with sudo) - Recommended for RHEL production**: Containers run as root. Works reliably on NFS home directories and shared servers without additional configuration. Browser access works normally when ports are bound to `0.0.0.0`.
 
-**Always prefer rootless mode** by installing `podman-compose` as shown above.
+- **Rootless (without sudo) - Requires admin setup**: Containers run as your user. Requires:
+  - Subuid/subgid ranges configured by system administrator
+  - Local (non-NFS) storage or special NFS configuration
+  - More complex troubleshooting for SELinux/filesystem issues
 
-### Troubleshooting Podman
+**For typical RHEL production environments with NFS home directories, use rootful mode with sudo.**
 
-**Issue: "Cannot connect to the Docker daemon at unix:///run/user/*/podman/podman.sock"**
+### Troubleshooting Podman on RHEL
 
-This indicates the Podman socket is not running or `podman-compose` is not installed.
+**Issue: "cannot find UID/GID for user: no subuid ranges found"**
 
-**Solution:**
-```bash
-# Install podman-compose
-pip3 install --user podman-compose
-
-# Verify
-podman-compose --version
-
-# Then run the management script
-./manage_metagrid.sh
-```
-
-**Issue: "trigger-limit-hit" on podman.socket**
-
-This occurs when using `docker-compose` with Podman socket API compatibility. The solution is to use `podman-compose` instead:
+This is expected on RHEL servers. Use rootful Podman with sudo instead:
 
 ```bash
-pip3 install --user podman-compose
+sudo ./manage_metagrid.sh
 ```
 
-The `manage_metagrid.sh` script will automatically prefer `podman-compose` over socket-based alternatives.
+**Issue: "lsetxattr(label=...) operation not supported" or SELinux errors**
+
+Your filesystem doesn't support SELinux extended attributes (common with NFS). Disable SELinux for your containers:
+
+```bash
+# Create containers config
+mkdir -p ~/.config/containers
+cat > ~/.config/containers/containers.conf << 'EOF'
+[containers]
+label = false
+EOF
+
+# Reset Podman storage
+sudo podman system reset --force
+
+# Try again
+sudo ./manage_metagrid.sh
+```
+
+**Issue: "Network file system detected as backing store"**
+
+This is a warning, not an error. Your home directory is on NFS, which is normal for RHEL servers. The warning can be safely ignored, or you can silence it by adding `force_mask = "700"` to your storage.conf.
+
+**Issue: Browser cannot connect to services**
+
+Check that:
+
+1. Services are actually running: `sudo podman ps`
+2. Ports are bound to `0.0.0.0` (not 127.0.0.1)
+3. Firewall allows traffic: `sudo firewall-cmd --list-ports`
+4. SELinux is not blocking (check logs): `sudo ausearch -m avc -ts recent`

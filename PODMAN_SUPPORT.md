@@ -11,14 +11,40 @@ Metagrid now fully supports **Podman** as a drop-in replacement for Docker. The 
 - **Docker-compatible**: Compatible with Docker CLI commands and docker-compose files
 - **OCI compliance**: Works with Docker images and registries
 
-## Quick Start (Nothing Installed Yet?)
+## Quick Start for RHEL Production
 
-If you're starting from scratch with no container runtime installed:
+If you're deploying on a typical RHEL production server (NFS home directories, no subuid/subgid configured):
+
+```bash
+# 1. Install Podman and dependencies
+sudo dnf install -y podman fuse-overlayfs python3-pip
+
+# 2. Install podman-compose
+sudo pip3 install podman-compose
+
+# 3. Disable SELinux labeling for containers (user-specific)
+mkdir -p ~/.config/containers
+cat > ~/.config/containers/containers.conf << 'EOF'
+[containers]
+label = false
+EOF
+
+# 4. Navigate to your Metagrid directory and deploy
+cd /path/to/metagrid
+sudo ./manage_metagrid.sh
+# Select option 1 for "Start Metagrid - Production"
+```
+
+That's it! Browser access will work normally at https://your-domain.com
+
+## Quick Start for Other Platforms
+
+If you're starting from scratch on non-RHEL systems:
 
 1. **Choose your setup approach:**
-   - **Recommended for most users:** Follow **Option 1: Podman + docker-compose** below
-   - **If using recent Podman (4.1+):** Try **Option 2: Native compose plugin** first
-   - **Python users:** Consider **Option 3: podman-compose**
+   - **macOS/Linux workstation:** Follow **Option 1: Podman + podman-compose** below
+   - **If using recent Podman (4.1+):** Try **Option 2: Native compose plugin** as an alternative
+   - **Not recommended:** Option 3 (docker-compose with Podman socket) can cause rate-limit issues
 
 2. **Follow the detailed installation steps** for your chosen option in the "Complete Setup Instructions" section below
 
@@ -31,21 +57,22 @@ If you're starting from scratch with no container runtime installed:
 
 ## Requirements
 
-You'll need either Podman with docker-compose, or Podman with the native compose plugin. Below are complete installation instructions for both approaches.
+You'll need Podman with either podman-compose, the native compose plugin, or docker-compose. Below are complete installation instructions for all approaches.
 
 ### Prerequisites
 
 - **macOS**: Homebrew (install from https://brew.sh if not already installed)
 - **Linux**: Package manager access (apt, dnf, or yum)
-- **All platforms**: Python 3.6+ (for docker-compose installation if needed)
+- **All platforms**: Python 3.6+ (for podman-compose installation)
 
 ### Complete Setup Instructions
 
-#### Option 1: Podman + docker-compose (Works on all platforms)
+#### Option 1: Podman + podman-compose (Recommended for RHEL/Production)
 
-This approach uses the standalone docker-compose CLI tool with podman.
+This Python-based tool works reliably with rootless Podman and avoids socket-related issues.
 
 **macOS:**
+
 ```bash
 # 1. Install Podman
 brew install podman
@@ -54,89 +81,69 @@ brew install podman
 podman machine init
 podman machine start
 
-# 3. Install docker-compose
-brew install docker-compose
+# 3. Install podman-compose
+pip3 install podman-compose
 
-# 4. Configure Podman socket for docker-compose compatibility
-# Start the Podman socket service
-podman machine ssh "sudo systemctl enable --now podman.socket"
+# 4. Add to PATH if needed
+export PATH="$HOME/Library/Python/3.*/bin:$PATH"
+echo 'export PATH="$HOME/Library/Python/3.*/bin:$PATH"' >> ~/.zshrc
 
-# 5. Set up Docker environment variables to point to Podman
-export DOCKER_HOST="unix:///var/run/podman/podman.sock"
-# Add this to your ~/.zshrc or ~/.bashrc to make it permanent:
-echo 'export DOCKER_HOST="unix:///var/run/podman/podman.sock"' >> ~/.zshrc
-
-# 6. Create a symlink for docker-compose to work with podman
-# (Optional but helps with compatibility)
-podman system connection default podman-machine-default-root
-
-# 7. Verify installation
+# 5. Verify installation
 podman --version
-docker-compose --version
+podman-compose --version
 podman ps
 ```
 
 **Linux (Ubuntu/Debian):**
+
 ```bash
 # 1. Install Podman
 sudo apt-get update
 sudo apt-get install -y podman
 
-# 2. Install docker-compose
-sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod 755 /usr/local/bin/docker-compose
+# 2. Install podman-compose
+pip3 install --user podman-compose
 
-# OR install via pip:
-# sudo pip3 install docker-compose
-
-# 3. Enable rootless Podman socket (recommended for security)
-systemctl --user enable --now podman.socket
-systemctl --user status podman.socket
-
-# 4. Enable lingering so user services persist after logout
-sudo loginctl enable-linger $USER
-
-# 5. Set up Docker environment variables to point to Podman user socket
-export DOCKER_HOST="unix:///run/user/$UID/podman/podman.sock"
-# Add this to your ~/.bashrc to make it permanent:
-echo 'export DOCKER_HOST="unix:///run/user/$UID/podman/podman.sock"' >> ~/.bashrc
+# 3. Add to PATH if needed
+export PATH="$HOME/.local/bin:$PATH"
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
 source ~/.bashrc
 
-# 6. Verify installation
+# 4. Enable lingering so user services persist after logout (optional)
+sudo loginctl enable-linger $USER
+
+# 5. Verify installation
 podman --version
-docker-compose --version
+podman-compose --version
 podman ps
 ```
 
-**Linux (Fedora/RHEL/CentOS):**
+**Linux (Fedora/RHEL/CentOS) - RECOMMENDED FOR PRODUCTION:**
+
 ```bash
 # 1. Install Podman
 sudo dnf install -y podman
 
-# 2. Install docker-compose
-sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod 755 /usr/local/bin/docker-compose
+# 2. Install podman-compose
+pip3 install --user podman-compose
 
-# OR install via pip:
-# sudo pip3 install docker-compose
-
-# 3. Enable rootless Podman socket (recommended for security)
-systemctl --user enable --now podman.socket
-systemctl --user status podman.socket
-
-# 4. Enable lingering so user services persist after logout
-sudo loginctl enable-linger $USER
-
-# 5. Set up Docker environment variables to point to Podman user socket
-export DOCKER_HOST="unix:///run/user/$UID/podman/podman.sock"
-# Add this to your ~/.bashrc to make it permanent:
-echo 'export DOCKER_HOST="unix:///run/user/$UID/podman/podman.sock"' >> ~/.bashrc
+# 3. Add to PATH
+export PATH="$HOME/.local/bin:$PATH"
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
 source ~/.bashrc
 
-# 6. Verify installation
+# 4. Enable lingering so user services persist after logout (optional)
+sudo loginctl enable-linger $USER
+
+# 5. Verify installation
 podman --version
-docker-compose --version
+podman-compose --version
 podman ps
+
+# 6. Make sure DOCKER_HOST is NOT set (podman-compose doesn't need it)
+unset DOCKER_HOST
+# Remove any DOCKER_HOST lines from your bashrc if present
+sed -i '/DOCKER_HOST/d' ~/.bashrc
 ```
 
 #### Option 2: Podman with native compose plugin (Recommended if available)
@@ -144,6 +151,7 @@ podman ps
 The native `podman compose` command is built into recent versions of Podman.
 
 **macOS:**
+
 ```bash
 # 1. Install Podman
 brew install podman
@@ -160,6 +168,7 @@ podman compose version
 ```
 
 **Linux:**
+
 ```bash
 # Install Podman (includes compose plugin in recent versions)
 # Ubuntu/Debian:
@@ -176,22 +185,13 @@ podman compose version
 # or use Option 1 (docker-compose) or Option 3 (podman-compose) instead
 ```
 
-#### Option 3: Podman with podman-compose (Alternative)
+#### Option 3: Podman + docker-compose (Not Recommended)
 
-This is a Python-based alternative that mimics docker-compose behavior.
+⚠️ **Warning**: This approach uses docker-compose with Podman's socket API and can cause systemd rate-limit issues on RHEL/Linux. Only use if podman-compose and the native plugin are not available.
 
-```bash
-# 1. Install Podman (see Option 1 or 2 above for platform-specific commands)
+**If you must use this approach:**
 
-# 2. Install podman-compose via pip
-pip3 install podman-compose
-
-# OR on some systems:
-# sudo pip3 install podman-compose
-
-# 3. Verify installation
-podman-compose --version
-```
+See the detailed instructions in the Troubleshooting section below for configuring the Podman socket. However, **we strongly recommend Option 1 (podman-compose) instead** for production deployments.
 
 ### Testing Your Installation
 
@@ -223,7 +223,7 @@ The `manage_metagrid.sh` script includes automatic container runtime detection:
 
 1. **Docker Detection**: First checks if Docker is available and running
 2. **Podman Detection**: Falls back to Podman if Docker is not available
-3. **Compose Command Handling**: 
+3. **Compose Command Handling**:
    - Uses `docker compose` or `podman compose` for native compose support
    - Falls back to `podman-compose` if the compose plugin is not available
 
@@ -287,32 +287,73 @@ podman compose -f docker-compose.yml -f docker-compose-local-overlay.yml run --r
 ## Differences from Docker
 
 ### Volume Mounts
+
 Podman handles volumes similarly to Docker, but:
+
 - Volumes are stored in `~/.local/share/containers/storage/volumes/` (Linux)
 - On macOS, volumes are inside the Podman machine VM
 
 ### Networking
+
 - Podman uses different network drivers but is compatible with docker-compose networking
 - Container-to-container communication works the same way
 - Port bindings work identically
 
 ### Performance
+
 - Podman generally has similar performance to Docker
 - On macOS, both use a VM, so performance is comparable
 - On Linux, Podman may have slightly better performance due to its daemonless architecture
 
 ## Troubleshooting
 
+### ⚠️ Common Issue: Socket trigger-limit-hit (RHEL/Linux)
+
+**Error:** `podman.socket: Trigger limit hit, refusing further activation` or `Cannot connect to the Docker daemon at unix:///run/user/*/podman/podman.sock`
+
+**Cause:** Using `docker-compose` with Podman socket API causes rapid connection attempts that trigger systemd's rate limiting.
+
+**Solution: Install podman-compose (recommended):**
+
+```bash
+# 1. Stop and disable the problematic socket
+systemctl --user stop podman.socket
+systemctl --user disable podman.socket
+systemctl --user reset-failed
+
+# 2. Remove DOCKER_HOST environment variable
+unset DOCKER_HOST
+sed -i '/DOCKER_HOST/d' ~/.bashrc
+source ~/.bashrc
+
+# 3. Install podman-compose
+pip3 install --user podman-compose
+
+# 4. Add to PATH
+export PATH="$HOME/.local/bin:$PATH"
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+
+# 5. Verify installation
+podman-compose --version
+
+# 6. Run the management script
+./manage_metagrid.sh
+```
+
+The script will automatically detect and use `podman-compose`, avoiding all socket-related issues.
+
 ### Podman machine not started (macOS)
+
 ```bash
 podman machine start
 ```
 
-### docker-compose can't connect to Podman socket
+### docker-compose can't connect to Podman socket (Legacy approach)
 
 **Error:** `Cannot connect to the Docker daemon at unix:///var/run/docker.sock`
 
 **Solution:**
+
 ```bash
 # Check that the Podman socket is running
 podman machine ssh "systemctl status podman.socket"
@@ -412,6 +453,7 @@ podman info | grep -i selinux
 **Alternative (⚠️ SYSTEM-WIDE - requires admin coordination on shared servers):**
 
 If you're on a dedicated/single-user system, you can set SELinux to permissive for containers:
+
 ```bash
 # WARNING: This affects ALL users on the system
 sudo semanage permissive -a container_t
@@ -428,6 +470,7 @@ On shared servers, your user may not have subordinate UID/GID ranges configured,
 **Option A: Ask your administrator to configure subuid/subgid (Recommended)**
 
 Send this to your system administrator:
+
 ```bash
 # Admin command to enable rootless Podman for user 'downie4'
 sudo usermod --add-subuids 100000-165535 --add-subgids 100000-165535 downie4
@@ -469,6 +512,7 @@ sudo -E ./manage_metagrid.sh
 ```
 
 **Using rootful Podman:**
+
 ```bash
 # View running containers
 sudo podman ps
@@ -487,6 +531,7 @@ sudo podman exec -it django bash
 **Note:** When using rootful Podman, all `podman` commands must be run with `sudo`. Container files and volumes will be owned by root.
 
 ### Compose plugin not found
+
 ```bash
 # Install podman-compose as fallback
 pip install podman-compose
@@ -496,6 +541,7 @@ pip install podman-compose
 ```
 
 ### Permission issues
+
 ```bash
 # Podman supports rootless mode (recommended)
 podman info
@@ -536,21 +582,24 @@ podman volume prune
 To verify Podman support works correctly:
 
 1. **Ensure Docker is not running** (if you want to force Podman usage):
+
    ```bash
    # macOS/Linux
    docker ps  # Should fail or show Docker is not running
    ```
 
 2. **Start Podman** (macOS):
+
    ```bash
    podman machine start
    ```
 
 3. **Run the management script**:
+
    ```bash
    ./manage_metagrid.sh
    ```
-   
+
    You should see: `Using container runtime: podman`
 
 4. **Start local services** and verify they work correctly.
@@ -560,11 +609,13 @@ To verify Podman support works correctly:
 If you're switching from Docker to Podman:
 
 1. **Stop Docker containers**:
+
    ```bash
    docker compose down
    ```
 
 2. **Start Podman machine** (macOS):
+
    ```bash
    podman machine init
    podman machine start
@@ -583,6 +634,7 @@ If you're switching from Docker to Podman:
 Volumes are not automatically migrated between Docker and Podman. If you need to preserve data:
 
 1. **Export data from Docker**:
+
    ```bash
    docker compose exec -T postgres pg_dumpall -U postgres > backup.sql
    ```

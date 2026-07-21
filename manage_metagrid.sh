@@ -14,26 +14,17 @@ elif command -v podman &> /dev/null; then
             CONTAINER_CMD="podman-compose"
             # Remove 'compose' from all compose commands since podman-compose doesn't use it
             USE_COMPOSE_SUBCOMMAND=false
-        # Check if standalone docker-compose is available and configure it for Podman
+        # Check if standalone docker-compose is available
         elif command -v docker-compose &> /dev/null; then
-            echo "Using standalone docker-compose with Podman..."
-            # Set DOCKER_HOST to use Podman socket (rootless)
-            export DOCKER_HOST="unix:///run/user/$(id -u)/podman/podman.sock"
-
-            # Verify the socket exists, if not try to start it
-            if [ ! -S "/run/user/$(id -u)/podman/podman.sock" ]; then
-                echo "Podman socket not found. Attempting to start podman.service..."
-                systemctl --user start podman.service 2>/dev/null || {
-                    echo "Warning: Could not start podman.service automatically."
-                    echo "Please run: systemctl --user start podman.service"
-                    echo "Or install podman-compose: pip3 install --user podman-compose"
-                    exit 1
-                }
-                sleep 2  # Give the service time to create the socket
-            fi
+            echo "WARNING: docker-compose detected but podman-compose is not installed."
+            echo "Using docker-compose with Podman can cause socket rate-limit issues."
+            echo ""
+            echo "RECOMMENDED: Install podman-compose for reliable operation:"
+            echo "  pip3 install --user podman-compose"
+            echo ""
+            echo "Attempting to use docker-compose anyway (may fail)..."
 
             CONTAINER_CMD="docker-compose"
-            # docker-compose doesn't use 'compose' subcommand
             USE_COMPOSE_SUBCOMMAND=false
         else
             echo "Please install one of the following:"
