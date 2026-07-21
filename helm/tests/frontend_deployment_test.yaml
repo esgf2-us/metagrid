@@ -104,6 +104,31 @@ tests:
               cpu: 1
             limit:
               cpu: 2
+  - it: should set probe configuration
+    template: templates/frontend/deployment.yaml
+    set:
+      frontend:
+        livenessProbe:
+          timeoutSeconds: 5
+          periodSeconds: 30
+          failureThreshold: 6
+        readinessProbe:
+          timeoutSeconds: 7
+          periodSeconds: 40
+          failureThreshold: 8
+    asserts:
+      - isSubset:
+          path: spec.template.spec.containers[0].livenessProbe
+          content:
+            timeoutSeconds: 5
+            periodSeconds: 30
+            failureThreshold: 6
+      - isSubset:
+          path: spec.template.spec.containers[0].readinessProbe
+          content:
+            timeoutSeconds: 7
+            periodSeconds: 40
+            failureThreshold: 8
   - it: should set volume and volumeMounts
     template: templates/frontend/deployment.yaml
     set:

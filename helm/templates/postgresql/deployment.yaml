@@ -47,9 +47,15 @@ spec:
         livenessProbe:
           tcpSocket:
             port: {{ .Values.postgresql.service.port }}
+          timeoutSeconds: {{ .Values.postgresql.livenessProbe.timeoutSeconds }}
+          periodSeconds: {{ .Values.postgresql.livenessProbe.periodSeconds }}
+          failureThreshold: {{ .Values.postgresql.livenessProbe.failureThreshold }}
         readinessProbe:
           tcpSocket:
             port: {{ .Values.postgresql.service.port }}
+          timeoutSeconds: {{ .Values.postgresql.readinessProbe.timeoutSeconds }}
+          periodSeconds: {{ .Values.postgresql.readinessProbe.periodSeconds }}
+          failureThreshold: {{ .Values.postgresql.readinessProbe.failureThreshold }}
         resources:
           {{- toYaml .Values.postgresql.resources | nindent 10 }}
         volumeMounts:

@@ -109,6 +109,53 @@ tests:
               cpu: 1
             limit:
               cpu: 2
+  - it: should set probe configuration
+    template: templates/node_status/deployment.yaml
+    set:
+      nodeStatusBackend:
+        prometheus:
+          livenessProbe:
+            timeoutSeconds: 5
+            periodSeconds: 30
+            failureThreshold: 6
+          readinessProbe:
+            timeoutSeconds: 7
+            periodSeconds: 40
+            failureThreshold: 8
+        blackbox:
+          livenessProbe:
+            timeoutSeconds: 9
+            periodSeconds: 50
+            failureThreshold: 10
+          readinessProbe:
+            timeoutSeconds: 11
+            periodSeconds: 60
+            failureThreshold: 12
+    asserts:
+      - isSubset:
+          path: spec.template.spec.containers[0].livenessProbe
+          content:
+            timeoutSeconds: 5
+            periodSeconds: 30
+            failureThreshold: 6
+      - isSubset:
+          path: spec.template.spec.containers[0].readinessProbe
+          content:
+            timeoutSeconds: 7
+            periodSeconds: 40
+            failureThreshold: 8
+      - isSubset:
+          path: spec.template.spec.containers[1].livenessProbe
+          content:
+            timeoutSeconds: 9
+            periodSeconds: 50
+            failureThreshold: 10
+      - isSubset:
+          path: spec.template.spec.containers[1].readinessProbe
+          content:
+            timeoutSeconds: 11
+            periodSeconds: 60
+            failureThreshold: 12
   - it: should set volume and volumeMounts
     template: templates/node_status/deployment.yaml
     set:

@@ -47,10 +47,16 @@ spec:
           httpGet:
             path: /
             port: http
+          timeoutSeconds: {{ .Values.frontend.livenessProbe.timeoutSeconds }}
+          periodSeconds: {{ .Values.frontend.livenessProbe.periodSeconds }}
+          failureThreshold: {{ .Values.frontend.livenessProbe.failureThreshold }}
         readinessProbe:
           httpGet:
             path: /
             port: http
+          timeoutSeconds: {{ .Values.frontend.readinessProbe.timeoutSeconds }}
+          periodSeconds: {{ .Values.frontend.readinessProbe.periodSeconds }}
+          failureThreshold: {{ .Values.frontend.readinessProbe.failureThreshold }}
         resources:
           {{- toYaml .Values.frontend.resources | nindent 12 }}
         volumeMounts:

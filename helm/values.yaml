@@ -139,6 +139,16 @@ django:
 frontend:
   replicaCount: 1
 
+  livenessProbe:
+    timeoutSeconds: 1
+    periodSeconds: 10
+    failureThreshold: 3
+
+  readinessProbe:
+    timeoutSeconds: 1
+    periodSeconds: 10
+    failureThreshold: 3
+
   image:
     repository: ghcr.io/esgf2-us/metagrid-frontend
     pullPolicy: IfNotPresent
@@ -186,6 +196,16 @@ frontend:
 backend:
   replicaCount: 1
 
+  livenessProbe:
+    timeoutSeconds: 1
+    periodSeconds: 10
+    failureThreshold: 3
+
+  readinessProbe:
+    timeoutSeconds: 1
+    periodSeconds: 10
+    failureThreshold: 3
+
   image:
     repository: ghcr.io/esgf2-us/metagrid-backend
     pullPolicy: IfNotPresent
@@ -226,6 +246,16 @@ backend:
 
 postgresql:
   enabled: true
+
+  livenessProbe:
+    timeoutSeconds: 1
+    periodSeconds: 10
+    failureThreshold: 3
+
+  readinessProbe:
+    timeoutSeconds: 1
+    periodSeconds: 10
+    failureThreshold: 3
 
   username: postgres
   password: postgres
@@ -290,6 +320,16 @@ nodeStatusBackend:
     # targetMemoryUtilizationPercentage: 80
 
   prometheus:
+    livenessProbe:
+      timeoutSeconds: 1
+      periodSeconds: 10
+      failureThreshold: 3
+
+    readinessProbe:
+      timeoutSeconds: 1
+      periodSeconds: 10
+      failureThreshold: 3
+
     image:
       repository: quay.io/prometheus/prometheus
       pullPolicy: IfNotPresent
@@ -300,6 +340,16 @@ nodeStatusBackend:
     resources: {}
 
   blackbox:
+    livenessProbe:
+      timeoutSeconds: 1
+      periodSeconds: 10
+      failureThreshold: 3
+
+    readinessProbe:
+      timeoutSeconds: 1
+      periodSeconds: 10
+      failureThreshold: 3
+
     image:
       repository: quay.io/prometheus/blackbox-exporter
       pullPolicy: IfNotPresent

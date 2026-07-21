@@ -64,10 +64,16 @@ spec:
           httpGet:
             path: /liveness
             port: http
+          timeoutSeconds: {{ .Values.backend.livenessProbe.timeoutSeconds }}
+          periodSeconds: {{ .Values.backend.livenessProbe.periodSeconds }}
+          failureThreshold: {{ .Values.backend.livenessProbe.failureThreshold }}
         readinessProbe:
           httpGet:
             path: /readiness
             port: http
+          timeoutSeconds: {{ .Values.backend.readinessProbe.timeoutSeconds }}
+          periodSeconds: {{ .Values.backend.readinessProbe.periodSeconds }}
+          failureThreshold: {{ .Values.backend.readinessProbe.failureThreshold }}
         resources:
           {{- toYaml .Values.backend.resources | nindent 12 }}
         {{- with .Values.backend.volumeMounts }}

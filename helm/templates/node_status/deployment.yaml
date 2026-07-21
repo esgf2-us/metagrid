@@ -50,11 +50,17 @@ spec:
             path: /-/healthy
             port: http
             scheme: HTTP
+          timeoutSeconds: {{ .Values.nodeStatusBackend.prometheus.livenessProbe.timeoutSeconds }}
+          periodSeconds: {{ .Values.nodeStatusBackend.prometheus.livenessProbe.periodSeconds }}
+          failureThreshold: {{ .Values.nodeStatusBackend.prometheus.livenessProbe.failureThreshold }}
         readinessProbe:
           httpGet:
             path: /-/ready
             port: http
             scheme: HTTP
+          timeoutSeconds: {{ .Values.nodeStatusBackend.prometheus.readinessProbe.timeoutSeconds }}
+          periodSeconds: {{ .Values.nodeStatusBackend.prometheus.readinessProbe.periodSeconds }}
+          failureThreshold: {{ .Values.nodeStatusBackend.prometheus.readinessProbe.failureThreshold }}
         resources:
           {{- toYaml .Values.nodeStatusBackend.prometheus.resources | nindent 10 }}
         volumeMounts:
@@ -82,11 +88,16 @@ spec:
           httpGet:
             path: /-/healthy
             port: blackbox-http
-          failureThreshold: 3
+          timeoutSeconds: {{ .Values.nodeStatusBackend.blackbox.livenessProbe.timeoutSeconds }}
+          periodSeconds: {{ .Values.nodeStatusBackend.blackbox.livenessProbe.periodSeconds }}
+          failureThreshold: {{ .Values.nodeStatusBackend.blackbox.livenessProbe.failureThreshold }}
         readinessProbe:
           httpGet:
             path: /-/healthy
             port: blackbox-http
+          timeoutSeconds: {{ .Values.nodeStatusBackend.blackbox.readinessProbe.timeoutSeconds }}
+          periodSeconds: {{ .Values.nodeStatusBackend.blackbox.readinessProbe.periodSeconds }}
+          failureThreshold: {{ .Values.nodeStatusBackend.blackbox.readinessProbe.failureThreshold }}
         resources:
           {{- toYaml .Values.nodeStatusBackend.blackbox.resources | nindent 10 }}
         {{- with .Values.nodeStatusBackend.blackbox.volumeMounts }}
