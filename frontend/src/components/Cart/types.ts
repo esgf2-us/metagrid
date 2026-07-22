@@ -51,3 +51,23 @@ export type UserSearchQuery = {
 };
 
 export type UserSearchQueries = Array<UserSearchQuery>;
+
+export type ChangeType = 'new' | 'updated';
+
+export type DatasetChange = {
+  field: string;
+  oldValue: string | number;
+  newValue: string | number;
+};
+
+export type ChangedDataset = {
+  id: string;
+  changeType: ChangeType;
+  datasetName: string;
+  version?: string | number;
+  previousVersion?: string | number;
+  size?: number;
+  numberOfFiles?: number;
+  lastModified?: string;
+  changes?: DatasetChange[];
+};

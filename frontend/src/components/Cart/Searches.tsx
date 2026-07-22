@@ -1,4 +1,4 @@
-import { Empty, message, Row } from 'antd';
+import { Empty, message, Row, theme } from 'antd';
 import React from 'react';
 import { DeleteOutlined } from '@ant-design/icons';
 import { useAtom, useAtomValue } from 'jotai';
@@ -9,9 +9,11 @@ import { showNotice, showError, getStyle } from '../../common/utils';
 import { AuthContext } from '../../contexts/AuthContext';
 import { isDarkModeAtom, userSearchQueriesAtom } from '../../common/atoms';
 import { savedSearchTourTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
+import './SearchesCard.css';
 
 const Searches: React.FC = () => {
   const [messageApi, contextHolder] = message.useMessage();
+  const { token } = theme.useToken();
 
   // User's authentication state
   const authState = React.useContext(AuthContext);
@@ -75,19 +77,31 @@ const Searches: React.FC = () => {
       className={savedSearchTourTargets.savedSearches.class()}
     >
       {contextHolder}
-      <Row gutter={[18, 18]}>
-        {userSearchQueries
-          .filter(searchFilter)
-          .map((searchQuery: UserSearchQuery, index: number) => (
-            <SearchesCard
-              key={searchQuery.uuid}
-              updateSearchQuery={updateSearchQuery}
-              searchQuery={searchQuery}
-              index={index}
-              onHandleRemoveSearchQuery={handleRemoveSearchQuery}
-            />
-          ))}
-      </Row>
+      <div
+        style={{
+          height: 'calc(100vh - 300px)',
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          padding: '16px',
+          border: `1px solid ${token.colorBorder}`,
+          backgroundColor: token.colorBgLayout,
+        }}
+        className="custom-scrollbar"
+      >
+        <Row gutter={[18, 18]}>
+          {userSearchQueries
+            .filter(searchFilter)
+            .map((searchQuery: UserSearchQuery, index: number) => (
+              <SearchesCard
+                key={searchQuery.uuid}
+                updateSearchQuery={updateSearchQuery}
+                searchQuery={searchQuery}
+                index={index}
+                onHandleRemoveSearchQuery={handleRemoveSearchQuery}
+              />
+            ))}
+        </Row>
+      </div>
     </div>
   );
 };

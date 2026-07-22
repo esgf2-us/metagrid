@@ -282,7 +282,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
         algorithm: isDarkMode ? darkAlgorithm : defaultAlgorithm,
       }}
     >
-      <Layout>
+      <Layout className={isDarkMode ? 'dark-mode' : ''}>
         <Routes>
           <Route path="*" element={<NavBar />} />
         </Routes>
