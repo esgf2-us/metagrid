@@ -1,11 +1,23 @@
 import {
   BellFilled,
+  CopyOutlined,
   DeleteOutlined,
   FileSearchOutlined,
   LinkOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
-import { Alert, Badge, Button, Card, Col, Skeleton, theme, Typography, Tooltip } from 'antd';
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Col,
+  message,
+  Skeleton,
+  theme,
+  Typography,
+  Tooltip,
+} from 'antd';
 import React, { useEffect } from 'react';
 import { DeferFn, useAsync } from 'react-async';
 import { useNavigate } from 'react-router';
@@ -14,7 +26,7 @@ import { fetchSearchResults, generateSearchURLQuery } from '../../api';
 import { CSSinJS } from '../../common/types';
 import { UserSearchQuery, ChangedDataset } from './types';
 import ChangesDialog from './ChangesDialog';
-import { createSearchRouteURL } from '../../common/utils';
+import { createSearchRouteURL, showNotice } from '../../common/utils';
 import { savedSearchQueryAtom } from '../../common/atoms';
 import { savedSearchTourTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 import {
@@ -49,6 +61,7 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
 }) => {
   const navigate = useNavigate();
   const { token } = theme.useToken();
+  const [messageApi, contextHolder] = message.useMessage();
   const {
     uuid,
     project,
@@ -151,6 +164,7 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
 
   return (
     <Col key={uuid} xs={20} sm={16} md={12} lg={10} xl={8} style={{ minWidth: '300px' }}>
+      {contextHolder}
       <Card
         hoverable
         title={
@@ -245,7 +259,37 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
           </p>
 
           <div className={savedSearchTourTargets.searchQueryString.class()}>
-            <span style={styles.category}>Query String: </span>
+            <span style={styles.category}>
+              Query String:{' '}
+              <Button
+                type="primary"
+                size="small"
+                style={{ marginLeft: '5px' }}
+                icon={
+                  <Tooltip title="Copy query to clipboard">
+                    <CopyOutlined style={{ fontSize: '12px' }} />
+                  </Tooltip>
+                }
+                onClick={() => {
+                  const queryText = stringifyApiRequest(
+                    project,
+                    url,
+                    textInputs,
+                    versionType,
+                    resultType,
+                    minVersionDate,
+                    maxVersionDate,
+                    activeFacets,
+                  );
+                  if (navigator && navigator.clipboard) {
+                    navigator.clipboard.writeText(queryText);
+                    showNotice(messageApi, 'Query copied to clipboard!', {
+                      icon: <CopyOutlined style={styles.messageAddIcon} />,
+                    });
+                  }
+                }}
+              />
+            </span>
             <Typography.Text code style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
               {stringifyApiRequest(
                 project,
