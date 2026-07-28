@@ -50,6 +50,9 @@ export type UserSearchQuery = {
   url: string;
   resultsCount: number | null;
   searchTime: number | null;
+  isSubscribed?: boolean;
+  lastCheckedTime?: number | null;
+  filterCreatedSince?: string | null;
 };
 
 export type UserSearchQueries = Array<UserSearchQuery>;

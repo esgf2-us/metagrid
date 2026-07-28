@@ -6,25 +6,14 @@ import {
   LinkOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
-import {
-  Alert,
-  Badge,
-  Button,
-  Card,
-  Col,
-  message,
-  Skeleton,
-  theme,
-  Typography,
-  Tooltip,
-} from 'antd';
+import { Alert, Button, Card, Col, message, Skeleton, theme, Typography, Tooltip } from 'antd';
 import React, { useEffect } from 'react';
 import { DeferFn, useAsync } from 'react-async';
 import { useNavigate } from 'react-router';
 import { useSetAtom } from 'jotai';
 import { fetchSearchResults, generateSearchURLQuery } from '../../api';
 import { CSSinJS } from '../../common/types';
-import { UserSearchQuery, ChangedDataset } from './types';
+import { UserSearchQuery } from './types';
 import ChangesDialog from './ChangesDialog';
 import { createSearchRouteURL, showNotice } from '../../common/utils';
 import { savedSearchQueryAtom } from '../../common/atoms';
@@ -79,14 +68,10 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
 
   const setSavedSearchQuery = useSetAtom(savedSearchQueryAtom);
 
-  // State for changes dialog and subscription
+  // State for changes dialog
   const [showChangesDialog, setShowChangesDialog] = React.useState(false);
-  const [isSubscribed, setIsSubscribed] = React.useState(false);
-  const mockChangedDatasets: ChangedDataset[] = [];
-  const lastCheckedTime: number | null = null;
 
-  const hasChanges = mockChangedDatasets.length > 0;
-  const changeCount = mockChangedDatasets.length;
+  const isSubscribed = searchQuery.isSubscribed || false;
 
   // Only fetch resultCount if resultsCount is null or searchTime is an hour old
   const expirationTime = (searchTime || 0) + 60 * 60 * 1000; // Expires after an hour
@@ -129,6 +114,24 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
     }
   }, [isLoading, data]);
 
+  // Handle subscription toggle
+  const handleSubscriptionToggle = () => {
+    const newIsSubscribed = !isSubscribed;
+    const newLastCheckedTime = newIsSubscribed ? Date.now() : null;
+
+    updateSearchQuery({
+      ...searchQuery,
+      isSubscribed: newIsSubscribed,
+      lastCheckedTime: newLastCheckedTime,
+    });
+
+    if (newIsSubscribed) {
+      showNotice(messageApi, 'Subscribed to search changes');
+    } else {
+      showNotice(messageApi, 'Unsubscribed from search changes');
+    }
+  };
+
   let numResultsText;
 
   if (!resultsCount) {
@@ -170,33 +173,29 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
         title={
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Tooltip
-                title={
-                  isSubscribed ? 'Unsubscribe from change tracking' : 'Subscribe to track changes'
-                }
-              >
-                <BellFilled
-                  data-testid={`subscribe-${index + 1}`}
-                  onClick={() => setIsSubscribed(!isSubscribed)}
-                  style={{
-                    cursor: 'pointer',
-                    fontSize: '18px',
-                    color: isSubscribed ? '#1890ff' : '#d9d9d9',
-                  }}
-                />
-              </Tooltip>
-              <FileSearchOutlined /> Search #{index + 1}
+              {project.isSTAC && (
+                <Tooltip
+                  title={
+                    isSubscribed ? 'Unsubscribe from change tracking' : 'Subscribe to track changes'
+                  }
+                >
+                  <BellFilled
+                    data-testid={`subscribe-${index + 1}`}
+                    onClick={handleSubscriptionToggle}
+                    style={{
+                      cursor: 'pointer',
+                      fontSize: '18px',
+                      color: isSubscribed ? '#1890ff' : '#d9d9d9',
+                    }}
+                  />
+                </Tooltip>
+              )}
+              <FileSearchOutlined /> Search #{searchQuery.uuid.slice(0, 8)}
             </div>
             {isSubscribed && (
-              <Badge count={changeCount} showZero={false} offset={[-175, 22]}>
-                <Button
-                  type="primary"
-                  onClick={() => setShowChangesDialog(true)}
-                  disabled={!hasChanges}
-                >
-                  View Search Changes
-                </Button>
-              </Badge>
+              <Button type="primary" onClick={() => setShowChangesDialog(true)}>
+                View Search Changes
+              </Button>
             )}
           </div>
         }
@@ -257,7 +256,14 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
             <span style={styles.category}>Project: </span>
             {project.fullName}
           </p>
-
+          {project.isSTAC && project.stacApiUrl && (
+            <p>
+              <span style={styles.category}>STAC API URL: </span>
+              <Typography.Text code style={{ fontSize: '12px' }}>
+                {project.stacApiUrl}
+              </Typography.Text>
+            </p>
+          )}
           <div className={savedSearchTourTargets.searchQueryString.class()}>
             <span style={styles.category}>
               Query String:{' '}
@@ -311,13 +317,13 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
           </p>
         </div>
       </Card>
-      <ChangesDialog
-        open={showChangesDialog}
-        onClose={() => setShowChangesDialog(false)}
-        searchQuery={searchQuery}
-        changedDatasets={mockChangedDatasets}
-        lastCheckedTime={lastCheckedTime}
-      />
+      {project.isSTAC && (
+        <ChangesDialog
+          open={showChangesDialog}
+          onClose={() => setShowChangesDialog(false)}
+          searchQuery={searchQuery}
+        />
+      )}
     </Col>
   );
 };

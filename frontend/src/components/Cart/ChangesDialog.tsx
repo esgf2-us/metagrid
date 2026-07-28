@@ -1,130 +1,127 @@
 import React from 'react';
-import { Modal, Table, Empty, Badge, Tag, Alert, Button } from 'antd';
-import { BellOutlined, PlusCircleOutlined, SyncOutlined } from '@ant-design/icons';
-import type { TableColumnsType } from 'antd';
-import { formatBytes } from '../../common/utils';
-import { ChangedDataset, ChangeType, UserSearchQuery } from './types';
+import {
+  Modal,
+  Alert,
+  Button,
+  Space,
+  Input,
+  Radio,
+  Spin,
+  Typography,
+  message,
+  Tooltip,
+} from 'antd';
+import { BellOutlined, SearchOutlined, CopyOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router';
+import { useSetAtom } from 'jotai';
+import { UserSearchQuery } from './types';
+import { savedSearchQueryAtom } from '../../common/atoms';
+import { fetchSearchResults, generateSearchURLQuery } from '../../api';
+import { stringifyApiRequest } from '../../common/STAC';
+import { showNotice } from '../../common/utils';
 
 export type ChangesDialogProps = {
   open: boolean;
   onClose: () => void;
   searchQuery: UserSearchQuery;
-  changedDatasets: ChangedDataset[];
-  lastCheckedTime?: number | null;
 };
 
-const ChangesDialog: React.FC<ChangesDialogProps> = ({
-  open,
-  onClose,
-  searchQuery,
-  changedDatasets,
-  lastCheckedTime,
-}) => {
-  const hasChanges = changedDatasets.length > 0;
+const ChangesDialog: React.FC<ChangesDialogProps> = ({ open, onClose, searchQuery }) => {
+  const navigate = useNavigate();
+  const setSavedSearchQuery = useSetAtom(savedSearchQueryAtom);
+  const [messageApi, contextHolder] = message.useMessage();
 
-  const columns: TableColumnsType<ChangedDataset> = [
-    {
-      title: 'Status',
-      key: 'changeType',
-      dataIndex: 'changeType',
-      width: 100,
-      render: (changeType: ChangeType) => {
-        if (changeType === 'new') {
-          return (
-            <Badge
-              status="success"
-              text={
-                <Tag color="green" icon={<PlusCircleOutlined />}>
-                  New
-                </Tag>
-              }
-            />
-          );
-        }
-        return (
-          <Badge
-            status="processing"
-            text={
-              <Tag color="blue" icon={<SyncOutlined />}>
-                Updated
-              </Tag>
-            }
-          />
-        );
-      },
-      filters: [
-        { text: 'New', value: 'new' },
-        { text: 'Updated', value: 'updated' },
-      ],
-      onFilter: (value, record) => record.changeType === value,
-    },
-    {
-      title: 'Dataset ID',
-      key: 'id',
-      dataIndex: 'id',
-      ellipsis: true,
-      width: 250,
-      render: (id: string) => (
-        <span style={{ fontFamily: 'monospace', fontSize: '12px' }}>{id}</span>
-      ),
-    },
-    {
-      title: 'Version',
-      key: 'version',
-      dataIndex: 'version',
-      width: 120,
-      render: (version: string | number | undefined, record: ChangedDataset) => {
-        if (record.changeType === 'updated' && record.previousVersion) {
-          return (
-            <div>
-              <div style={{ textDecoration: 'line-through', color: '#999' }}>
-                {record.previousVersion}
-              </div>
-              <div style={{ color: '#52c41a', fontWeight: 'bold' }}>{version}</div>
-            </div>
-          );
-        }
-        return <span>{version || 'N/A'}</span>;
-      },
-    },
-    {
-      title: 'Size',
-      key: 'size',
-      dataIndex: 'size',
-      width: 100,
-      render: (size: number | undefined) => (size ? formatBytes(size) : 'N/A'),
-    },
-    {
-      title: 'Files',
-      key: 'numberOfFiles',
-      dataIndex: 'numberOfFiles',
-      width: 80,
-      render: (count: number | undefined) => (count ? count.toLocaleString() : 'N/A'),
-    },
-  ];
+  const [timeRange, setTimeRange] = React.useState<string>('subscription');
+  const [customTimestamp, setCustomTimestamp] = React.useState<string>('');
+  const [newDatasetsCount, setNewDatasetsCount] = React.useState<number>(0);
+  const [isChecking, setIsChecking] = React.useState(false);
+  const [hasChecked, setHasChecked] = React.useState(false);
 
-  const getEmptyState = () => (
-    <Empty
-      image={Empty.PRESENTED_IMAGE_SIMPLE}
-      description={
-        <div style={{ padding: '20px' }}>
-          <p style={{ fontSize: '16px', marginBottom: '8px' }}>No changes detected</p>
-          <p style={{ fontSize: '14px', color: '#8c8c8c' }}>
-            {lastCheckedTime
-              ? `Last checked: ${new Date(lastCheckedTime).toLocaleString('en-US', {
-                  month: '2-digit',
-                  day: '2-digit',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  hour12: true,
-                })}`
-              : 'This feature is not yet configured. Change tracking will be enabled in a future update.'}
-          </p>
-        </div>
-      }
-    />
-  );
+  const lastCheckedTime = searchQuery.lastCheckedTime || null;
+
+  // Calculate timestamp based on selected time range
+  const getTimestampForRange = (range: string): string | null => {
+    const now = new Date();
+    switch (range) {
+      case 'yesterday':
+        now.setDate(now.getDate() - 1);
+        return now.toISOString();
+      case 'lastWeek':
+        now.setDate(now.getDate() - 7);
+        return now.toISOString();
+      case 'lastMonth':
+        now.setMonth(now.getMonth() - 1);
+        return now.toISOString();
+      case 'custom':
+        return customTimestamp || null;
+      case 'subscription':
+        return lastCheckedTime ? new Date(lastCheckedTime).toISOString() : null;
+      default:
+        return null;
+    }
+  };
+
+  const currentTimestamp = getTimestampForRange(timeRange);
+
+  // Check for new datasets with the current timestamp
+  const checkForNewDatasets = React.useCallback(async () => {
+    if (!currentTimestamp) return;
+
+    setIsChecking(true);
+    setHasChecked(false);
+    try {
+      const checkUrl = generateSearchURLQuery(
+        { ...searchQuery, filterCreatedSince: currentTimestamp },
+        { page: 0, pageSize: 0 },
+      );
+
+      const response = await fetchSearchResults([checkUrl]);
+      const searchData = (response as { search?: { numMatched?: number; numberMatched?: number } })
+        .search;
+      const count = searchData?.numMatched || searchData?.numberMatched || 0;
+      setNewDatasetsCount(count);
+      setHasChecked(true);
+    } catch (err) {
+      setNewDatasetsCount(0);
+      setHasChecked(true);
+    } finally {
+      setIsChecking(false);
+    }
+  }, [currentTimestamp, searchQuery]);
+
+  // Auto-check when dialog opens or time range changes
+  React.useEffect(() => {
+    if (open && currentTimestamp) {
+      checkForNewDatasets();
+    }
+  }, [open, currentTimestamp, checkForNewDatasets]);
+
+  const handleViewFilteredResults = () => {
+    if (!currentTimestamp) return;
+
+    const modifiedSearchQuery = {
+      ...searchQuery,
+      filterCreatedSince: currentTimestamp,
+      searchTime: 0,
+    };
+
+    setSavedSearchQuery(modifiedSearchQuery);
+    navigate('/search');
+    onClose();
+  };
+
+  const formatTimestamp = (ts: string | number | null) => {
+    if (!ts) return 'N/A';
+    const date = typeof ts === 'string' ? new Date(ts) : new Date(ts);
+    return date.toLocaleString('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    });
+  };
 
   return (
     <Modal
@@ -136,80 +133,176 @@ const ChangesDialog: React.FC<ChangesDialogProps> = ({
       }
       open={open}
       onCancel={onClose}
-      width={900}
+      width={750}
       footer={[
-        <Button key="close" type="primary" onClick={onClose}>
+        <Button key="close" onClick={onClose}>
           Close
         </Button>,
       ]}
     >
-      <div style={{ marginBottom: '16px' }}>
-        <Alert
-          message={
-            hasChanges
-              ? `${changedDatasets.length} dataset${changedDatasets.length !== 1 ? 's have' : ' has'} changed`
-              : 'No changes detected'
-          }
-          description={
-            hasChanges
-              ? `Changes detected since ${lastCheckedTime ? new Date(lastCheckedTime).toLocaleString() : 'last check'}`
-              : undefined
-          }
-          type={hasChanges ? 'info' : 'success'}
-          showIcon
-          style={{ marginBottom: '16px' }}
-        />
-
+      {contextHolder}
+      <div>
         <div style={{ fontSize: '14px', marginBottom: '16px' }}>
           <strong>Project:</strong> {searchQuery.project.fullName}
+          {searchQuery.project.isSTAC && searchQuery.project.stacApiUrl && (
+            <>
+              <br />
+              <strong>STAC API URL:</strong>{' '}
+              <span style={{ fontFamily: 'monospace', fontSize: '12px' }}>
+                {searchQuery.project.stacApiUrl}
+              </span>
+            </>
+          )}
         </div>
-      </div>
-
-      {hasChanges ? (
-        <Table
-          columns={columns}
-          dataSource={changedDatasets}
-          rowKey="id"
-          size="small"
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: (total) => `Total ${total} changed datasets`,
-          }}
-          expandable={{
-            expandedRowRender: (record: ChangedDataset) => {
-              if (record.changeType === 'updated' && record.changes) {
-                return (
-                  <div style={{ padding: '12px', background: '#fafafa' }}>
-                    <strong>Changes detected:</strong>
-                    <ul style={{ marginTop: '8px', marginBottom: 0 }}>
-                      {record.changes.map((change) => (
-                        <li key={`${record.id}-${change.field}`}>
-                          <strong>{change.field}:</strong>{' '}
-                          <span style={{ textDecoration: 'line-through', color: '#999' }}>
-                            {change.oldValue}
-                          </span>
-                          {' → '}
-                          <span style={{ color: '#52c41a', fontWeight: 'bold' }}>
-                            {change.newValue}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                );
+        <div style={{ fontSize: '14px', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+            <strong>Query String:</strong>
+            <Tooltip title="Copy query to clipboard">
+              <Button
+                type="primary"
+                size="small"
+                icon={<CopyOutlined style={{ fontSize: '12px' }} />}
+                onClick={() => {
+                  let modifiedUrl = searchQuery.url;
+                  if (currentTimestamp) {
+                    const urlParams = new URLSearchParams(searchQuery.url.split('?')[1] || '');
+                    urlParams.set('filterCreatedSince', currentTimestamp);
+                    modifiedUrl = `${searchQuery.url.split('?')[0]}?${urlParams.toString()}`;
+                  }
+                  const queryText = stringifyApiRequest(
+                    searchQuery.project,
+                    modifiedUrl,
+                    searchQuery.textInputs,
+                    searchQuery.versionType,
+                    searchQuery.resultType,
+                    searchQuery.minVersionDate,
+                    searchQuery.maxVersionDate,
+                    searchQuery.activeFacets,
+                  );
+                  if (navigator && navigator.clipboard) {
+                    navigator.clipboard.writeText(queryText);
+                    showNotice(messageApi, 'Query copied to clipboard!', {
+                      icon: <CopyOutlined />,
+                    });
+                  }
+                }}
+              />
+            </Tooltip>
+          </div>
+          <Typography.Text
+            code
+            style={{
+              display: 'block',
+              padding: '8px',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+              backgroundColor: '#f5f5f5',
+              borderRadius: '4px',
+            }}
+          >
+            {(() => {
+              let modifiedUrl = searchQuery.url;
+              if (currentTimestamp) {
+                const urlParams = new URLSearchParams(searchQuery.url.split('?')[1] || '');
+                urlParams.set('filterCreatedSince', currentTimestamp);
+                modifiedUrl = `${searchQuery.url.split('?')[0]}?${urlParams.toString()}`;
               }
-              return null;
-            },
-            rowExpandable: (record) =>
-              record.changeType === 'updated' &&
-              record.changes !== undefined &&
-              record.changes.length > 0,
-          }}
-        />
-      ) : (
-        getEmptyState()
-      )}
+              return stringifyApiRequest(
+                searchQuery.project,
+                modifiedUrl,
+                searchQuery.textInputs,
+                searchQuery.versionType,
+                searchQuery.resultType,
+                searchQuery.minVersionDate,
+                searchQuery.maxVersionDate,
+                searchQuery.activeFacets,
+              );
+            })()}
+          </Typography.Text>
+        </div>
+        <div style={{ marginBottom: '16px' }}>
+          <div style={{ marginBottom: '12px' }}>
+            <strong>Select Time Range:</strong>
+          </div>
+          <Radio.Group
+            value={timeRange}
+            onChange={(e) => {
+              const newValue = e.target.value as string;
+              setTimeRange(newValue);
+            }}
+            style={{ marginBottom: '12px', width: '100%' }}
+          >
+            <Space direction="vertical" style={{ width: '100%' }}>
+              {lastCheckedTime && (
+                <Radio value="subscription">
+                  Since Subscription ({formatTimestamp(lastCheckedTime)})
+                </Radio>
+              )}
+              <Radio value="yesterday">Yesterday</Radio>
+              <Radio value="lastWeek">Last Week</Radio>
+              <Radio value="lastMonth">Last Month</Radio>
+              <Radio value="custom">Custom Timestamp</Radio>
+            </Space>
+          </Radio.Group>
+          {timeRange === 'custom' && (
+            <Input
+              placeholder="YYYY-MM-DDTHH:mm:ss.sssZ"
+              value={customTimestamp}
+              onChange={(e) => setCustomTimestamp(e.target.value)}
+              style={{ fontFamily: 'monospace', marginBottom: '12px' }}
+            />
+          )}
+          {currentTimestamp && (
+            <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
+              Filtering for datasets created since:{' '}
+              <strong>{formatTimestamp(currentTimestamp)}</strong>
+            </div>
+          )}
+        </div>
+        {isChecking && (
+          <div style={{ textAlign: 'center', padding: '40px 0' }}>
+            <Spin size="large" />
+            <p style={{ marginTop: '16px', color: '#666' }}>Checking for new datasets...</p>
+          </div>
+        )}
+        {!isChecking && hasChecked && (
+          <>
+            <Alert
+              message={
+                newDatasetsCount > 0
+                  ? `${newDatasetsCount} new dataset${newDatasetsCount !== 1 ? 's' : ''} found`
+                  : 'No new datasets detected'
+              }
+              description={
+                newDatasetsCount > 0
+                  ? `Found datasets created since ${formatTimestamp(currentTimestamp)}`
+                  : `No datasets were created since ${formatTimestamp(currentTimestamp)}`
+              }
+              type={newDatasetsCount > 0 ? 'info' : 'success'}
+              showIcon
+              style={{ marginBottom: '16px' }}
+            />
+            {newDatasetsCount > 0 && (
+              <div style={{ marginTop: '16px', textAlign: 'center' }}>
+                <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                  <p style={{ fontSize: '14px', color: '#666' }}>
+                    Click below to view these datasets on the search page with the time filter
+                    applied.
+                  </p>
+                  <Button
+                    type="primary"
+                    icon={<SearchOutlined />}
+                    size="large"
+                    onClick={handleViewFilteredResults}
+                  >
+                    View New Datasets in Search
+                  </Button>
+                </Space>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </Modal>
   );
 };

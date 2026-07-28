@@ -770,6 +770,9 @@ export const generateSearchURLQuery = (
     globusOnly,
   } = activeSearchQuery;
 
+  const filterCreatedSince =
+    'filterCreatedSince' in activeSearchQuery ? activeSearchQuery.filterCreatedSince : null;
+
   const { isSTAC } = activeSearchQuery.project;
 
   const baseRoute = isSTAC ? `${apiRoutes.esgfSearchSTAC.path}?` : `${apiRoutes.esgfSearch.path}?`;
@@ -825,7 +828,10 @@ export const generateSearchURLQuery = (
     const projectHashParam = rawProject.projectHash
       ? `&project_hash=${rawProject.projectHash}`
       : '';
-    const url = `${baseRoute}${baseParams}${`project_id=${rawProject.projectName}`}${projectHashParam}&${textInputsParams}&${activeFacetsParams}`;
+    const filterCreatedSinceParam = filterCreatedSince
+      ? `&filterCreatedSince=${encodeURIComponent(filterCreatedSince)}`
+      : '';
+    const url = `${baseRoute}${baseParams}${`project_id=${rawProject.projectName}`}${projectHashParam}&${textInputsParams}&${activeFacetsParams}${filterCreatedSinceParam}`;
 
     return url;
   }

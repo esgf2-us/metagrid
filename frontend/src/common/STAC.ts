@@ -513,6 +513,7 @@ export const convertSearchParamsIntoStacFilter = (
 
   const globusOnly = params.get('globusOnly');
   const versionParams = paramKeys.filter((key) => ['min_version', 'max_version'].includes(key));
+  const filterCreatedSince = params.get('filterCreatedSince');
 
   const mainFilters = [];
 
@@ -582,6 +583,14 @@ export const convertSearchParamsIntoStacFilter = (
   // Create a filter for globusOnly if specified
   if (globusOnly && globusOnly === 'true') {
     mainFilters.push(createEqualsFilter('properties.access', 'Globus'));
+  }
+
+  // Create a filter for properties.created if filterCreatedSince is specified
+  if (filterCreatedSince) {
+    mainFilters.push({
+      op: '>=',
+      args: [{ property: 'properties.created' }, filterCreatedSince],
+    });
   }
 
   if (mainFilters.length > 1) {
