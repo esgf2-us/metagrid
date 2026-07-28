@@ -447,13 +447,27 @@ export const fetchUserSearchQueries = async (
         }
       },
     })
-    .then(
-      (res) =>
-        res.data as Promise<{
-          count: number;
-          results: UserSearchQueries;
-        }>,
-    )
+    .then((res) => {
+      const data = res.data as { count: number; results: UserSearchQueries };
+
+      // Reconstruct project objects for dynamic projects (where project is null)
+      const resultsWithProjects = data.results.map((search: UserSearchQuery) => {
+        if (!search.project && search.projectName) {
+          // Dynamic project - reconstruct the project object
+          const reconstructedProject = getStacProject(search.projectName);
+          return {
+            ...search,
+            project: reconstructedProject,
+          };
+        }
+        return search;
+      });
+
+      return {
+        count: data.count,
+        results: resultsWithProjects,
+      };
+    })
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userSearches));
     });
