@@ -85,8 +85,8 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
   const mockChangedDatasets: ChangedDataset[] = [];
   const lastCheckedTime: number | null = null;
 
-  const hasChanges = mockChangedDatasets.length > 0;
-  const changeCount = mockChangedDatasets.length;
+  const hasChanges = mockChangedDatasets.length + 1 > 0;
+  const changeCount = mockChangedDatasets.length + 1;
 
   // Only fetch resultCount if resultsCount is null or searchTime is an hour old
   const expirationTime = (searchTime || 0) + 60 * 60 * 1000; // Expires after an hour
@@ -188,7 +188,7 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
               <FileSearchOutlined /> Search #{index + 1}
             </div>
             {isSubscribed && (
-              <Badge count={changeCount} showZero={false} offset={[-10, 0]}>
+              <Badge count={changeCount} showZero={false} offset={[-175, 22]}>
                 <Button
                   type="primary"
                   onClick={() => setShowChangesDialog(true)}

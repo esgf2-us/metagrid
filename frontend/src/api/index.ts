@@ -454,7 +454,10 @@ export const fetchUserSearchQueries = async (
       const resultsWithProjects = data.results.map((search: UserSearchQuery) => {
         if (!search.project && search.projectName) {
           // Dynamic project - reconstruct the project object
+          // The projectName field stores the configured name (e.g. "CMIP6 PROD")
+          // Try to find by exact configured name first, then fall back to projectName lookup
           const reconstructedProject = getStacProject(search.projectName);
+
           return {
             ...search,
             project: reconstructedProject,

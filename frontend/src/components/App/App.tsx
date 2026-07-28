@@ -147,13 +147,21 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
       fetchUserSearchQueries(accessToken)
         .then((rawUserSearches) => {
           const databaseItems = rawUserSearches.results;
-          const searchQueriesToAdd = unsavedLocalSearches(databaseItems, userSearchQueries);
+
+          // Repair or remove corrupted local searches before syncing
+          const repairedLocalSearches = userSearchQueries.filter((query) => {
+            // Basic validation - if missing critical fields, remove it
+            return query.project && query.project.name && query.uuid && query.url;
+          });
+
+          const searchQueriesToAdd = unsavedLocalSearches(databaseItems, repairedLocalSearches);
+
           /* istanbul ignore next -- @preserve */
           searchQueriesToAdd.forEach((query) => {
             addUserSearchQuery(pk, accessToken, query);
           });
 
-          // Combine local and database saved searches
+          // Combine repaired local and database saved searches
           const combinedItems = [...searchQueriesToAdd, ...databaseItems];
 
           // Remove all duplicates
@@ -166,6 +174,15 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
           });
 
           setUserSearchQueries(dedupedSearches);
+
+          // Show message if any local searches were removed during sync
+          const removedCount = userSearchQueries.length - repairedLocalSearches.length;
+          if (removedCount > 0) {
+            showError(
+              messageApi,
+              `Removed ${removedCount} corrupted search${removedCount > 1 ? 'es' : ''} during sync`,
+            );
+          }
         })
         .catch((error: ResponseError) => {
           showError(messageApi, error.message);

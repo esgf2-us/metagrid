@@ -129,8 +129,16 @@ export function getStacProject(projectName: string, projectHash?: string): RawPr
       }
     }
 
-    // Fall back to projectName lookup (returns first match)
-    const stacProject = configuredAdditionalProjects.find(
+    // Try to match by configured name (e.g., "CMIP6 PROD")
+    let stacProject = configuredAdditionalProjects.find(
+      (project: RawProject) => project.name === projectName,
+    );
+    if (stacProject) {
+      return stacProject;
+    }
+
+    // Fall back to projectName lookup (underlying project name, e.g., "CMIP6")
+    stacProject = configuredAdditionalProjects.find(
       (project: RawProject) => (project.projectName || '') === projectName,
     );
     if (stacProject) {
@@ -146,7 +154,11 @@ export function getStacProject(projectName: string, projectHash?: string): RawPr
     }
   }
 
-  const stacProject = STAC_PROJECTS.find((project) => (project.projectName || '') === projectName);
+  // Try configured name first, then projectName
+  let stacProject = STAC_PROJECTS.find((project) => project.name === projectName);
+  if (!stacProject) {
+    stacProject = STAC_PROJECTS.find((project) => (project.projectName || '') === projectName);
+  }
   return stacProject || STAC_PROJECTS[0];
 }
 
