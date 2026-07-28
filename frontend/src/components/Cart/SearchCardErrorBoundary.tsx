@@ -70,9 +70,7 @@ class SearchCardErrorBoundary extends React.Component<Props, State> {
                   </p>
                 )}
                 <p style={{ marginTop: 8, fontSize: '12px', color: '#999' }}>
-                  <Text type="secondary">
-                    Error: {this.state.errorMessage}
-                  </Text>
+                  <Text type="secondary">Error: {this.state.errorMessage}</Text>
                 </p>
                 <p style={{ marginTop: 8 }}>
                   <Text type="warning">

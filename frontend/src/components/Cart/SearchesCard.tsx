@@ -85,8 +85,8 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
   const mockChangedDatasets: ChangedDataset[] = [];
   const lastCheckedTime: number | null = null;
 
-  const hasChanges = mockChangedDatasets.length + 1 > 0;
-  const changeCount = mockChangedDatasets.length + 1;
+  const hasChanges = mockChangedDatasets.length > 0;
+  const changeCount = mockChangedDatasets.length;
 
   // Only fetch resultCount if resultsCount is null or searchTime is an hour old
   const expirationTime = (searchTime || 0) + 60 * 60 * 1000; // Expires after an hour
