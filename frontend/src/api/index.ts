@@ -765,6 +765,8 @@ export const generateSearchURLQuery = (
     resultType,
     minVersionDate,
     maxVersionDate,
+    minCreatedDate,
+    maxCreatedDate,
     activeFacets,
     textInputs,
     globusOnly,
@@ -799,6 +801,12 @@ export const generateSearchURLQuery = (
   }
   if (maxVersionDate) {
     baseParams += `max_version=${maxVersionDate}&`;
+  }
+  if (minCreatedDate && isSTAC) {
+    baseParams += `min_created=${minCreatedDate}&`;
+  }
+  if (maxCreatedDate && isSTAC) {
+    baseParams += `max_created=${maxCreatedDate}&`;
   }
 
   /* istanbul ignore next -- @preserve */

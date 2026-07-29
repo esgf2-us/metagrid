@@ -8,7 +8,7 @@ import {
   StacAggregations,
   ResultType,
   TextInputs,
-  VersionDate,
+  DateString,
   VersionType,
   StacAssetDict,
   isStacAsset,
@@ -513,6 +513,7 @@ export const convertSearchParamsIntoStacFilter = (
 
   const globusOnly = params.get('globusOnly');
   const versionParams = paramKeys.filter((key) => ['min_version', 'max_version'].includes(key));
+  const createdParams = paramKeys.filter((key) => ['min_created', 'max_created'].includes(key));
   const filterCreatedSince = params.get('filterCreatedSince');
 
   const mainFilters = [];
@@ -580,6 +581,30 @@ export const convertSearchParamsIntoStacFilter = (
     }
   }
 
+  // Create a filter for created date range, if created params exist
+  if (createdParams.length > 0) {
+    // If there are more than one created params, create an AND filter between each
+    if (createdParams.length > 1) {
+      const minCreated = params.get('min_created');
+      const maxCreated = params.get('max_created');
+      mainFilters.push(
+        createAndFilter([
+          { op: '>=', args: [{ property: 'properties.created' }, minCreated] },
+          { op: '<=', args: [{ property: 'properties.created' }, maxCreated] },
+        ]),
+      );
+    } else {
+      const param = createdParams[0];
+      const value = params.get(param);
+      if (param === 'min_created' && value) {
+        mainFilters.push({ op: '>=', args: [{ property: 'properties.created' }, value] });
+      }
+      if (param === 'max_created' && value) {
+        mainFilters.push({ op: '<=', args: [{ property: 'properties.created' }, value] });
+      }
+    }
+  }
+
   // Create a filter for globusOnly if specified
   if (globusOnly && globusOnly === 'true') {
     mainFilters.push(createEqualsFilter('properties.access', 'Globus'));
@@ -622,8 +647,8 @@ export function stringifyApiRequest(
   textInputs?: TextInputs | [],
   versionType?: VersionType,
   resultType?: ResultType,
-  minVersionDate?: VersionDate,
-  maxVersionDate?: VersionDate,
+  minVersionDate?: DateString,
+  maxVersionDate?: DateString,
   activeFacets?: ActiveFacets,
   aggregations?: string[],
 ): string {

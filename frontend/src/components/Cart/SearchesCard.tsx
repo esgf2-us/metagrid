@@ -190,7 +190,10 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
                   />
                 </Tooltip>
               )}
-              <FileSearchOutlined /> Search #{searchQuery.uuid.slice(0, 8)}
+              <FileSearchOutlined /> Search #
+              {project.isSTAC
+                ? searchQuery.uuid.slice(0, 8)
+                : `${searchQuery.uuid.slice(0, 8)} (Legacy)`}
             </div>
             {isSubscribed && (
               <Button type="primary" onClick={() => setShowChangesDialog(true)}>

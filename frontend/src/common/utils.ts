@@ -73,6 +73,8 @@ export const projectBaseQuery = (
   resultType: 'all',
   minVersionDate: null,
   maxVersionDate: null,
+  minCreatedDate: null,
+  maxCreatedDate: null,
   filenameVars: [],
   activeFacets: {},
   textInputs: [],
@@ -368,6 +370,8 @@ export const getAltSearchFromUrl = (url?: string): ActiveSearchQuery => {
     activeFacets: {},
     textInputs: [],
     globusOnly: false,
+    minCreatedDate: null,
+    maxCreatedDate: null,
   };
 
   const params = new URLSearchParams(url || window.location.search);
@@ -402,6 +406,8 @@ export const getSearchFromUrl = (url?: string): ActiveSearchQuery => {
     activeFacets: {},
     textInputs: [],
     globusOnly: false,
+    minCreatedDate: null,
+    maxCreatedDate: null,
   };
 
   const params = new URLSearchParams(url || window.location.search);
