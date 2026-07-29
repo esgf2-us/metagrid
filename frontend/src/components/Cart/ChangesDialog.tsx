@@ -193,11 +193,8 @@ const ChangesDialog: React.FC<ChangesDialogProps> = ({ open, onClose, searchQuer
             code
             style={{
               display: 'block',
-              padding: '8px',
               whiteSpace: 'pre-wrap',
               wordBreak: 'break-word',
-              backgroundColor: '#f5f5f5',
-              borderRadius: '4px',
             }}
           >
             {(() => {
