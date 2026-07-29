@@ -5,14 +5,18 @@ import { useAtom, useAtomValue } from 'jotai';
 import SearchesCard from './SearchesCard';
 import SearchCardErrorBoundary from './SearchCardErrorBoundary';
 import { UserSearchQueries, UserSearchQuery } from './types';
-import { deleteUserSearchQuery, ResponseError } from '../../api';
+import { deleteUserSearchQuery, updateUserSearchQuery, ResponseError } from '../../api';
 import { showNotice, showError, getStyle } from '../../common/utils';
 import { AuthContext } from '../../contexts/AuthContext';
 import { isDarkModeAtom, userSearchQueriesAtom } from '../../common/atoms';
 import { savedSearchTourTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 import './SearchesCard.css';
 
-const Searches: React.FC = () => {
+export type Props = {
+  onClearButtonMount?: (element: React.ReactNode) => void;
+};
+
+const Searches: React.FC<Props> = ({ onClearButtonMount }) => {
   const [messageApi, contextHolder] = message.useMessage();
   const { token } = theme.useToken();
 
@@ -27,7 +31,7 @@ const Searches: React.FC = () => {
   const [userSearchQueries, setUserSearchQueries] =
     useAtom<UserSearchQueries>(userSearchQueriesAtom);
 
-  const appStyles = getStyle(isDarkMode);
+  const appStyles = React.useMemo(() => getStyle(isDarkMode), [isDarkMode]);
 
   const stacDisabled = window.METAGRID.STAC_URL === '' || window.METAGRID.STAC_URL === null;
 
@@ -55,17 +59,39 @@ const Searches: React.FC = () => {
     }
   }, []); // Only run once on mount
 
-  const handleClearAll = (): void => {
-    setUserSearchQueries([]);
-    localStorage.removeItem('userSearchQueries');
-    showNotice(messageApi, 'Cleared all saved searches', {
-      icon: <ClearOutlined style={appStyles.messageRemoveIcon} />,
-    });
-  };
+  const handleClearAll = React.useCallback((): void => {
+    if (isAuthenticated) {
+      // Delete all searches from backend
+      const deletePromises = userSearchQueries.map((query) =>
+        deleteUserSearchQuery(query.uuid, accessToken),
+      );
 
-  if (userSearchQueries.length === 0) {
-    return <Empty description="Your search library is empty" />;
-  }
+      Promise.all(deletePromises)
+        .then(() => {
+          setUserSearchQueries([]);
+          localStorage.removeItem('userSearchQueries');
+          showNotice(messageApi, 'Cleared all saved searches', {
+            icon: <ClearOutlined style={appStyles.messageRemoveIcon} />,
+          });
+        })
+        .catch((error: ResponseError) => {
+          showError(messageApi, error.message);
+        });
+    } else {
+      setUserSearchQueries([]);
+      localStorage.removeItem('userSearchQueries');
+      showNotice(messageApi, 'Cleared all saved searches', {
+        icon: <ClearOutlined style={appStyles.messageRemoveIcon} />,
+      });
+    }
+  }, [
+    isAuthenticated,
+    userSearchQueries,
+    accessToken,
+    setUserSearchQueries,
+    messageApi,
+    appStyles,
+  ]);
 
   // Handles removing a search query
   const handleRemoveSearchQuery = (searchUUID: string): void => {
@@ -99,18 +125,24 @@ const Searches: React.FC = () => {
       return query;
     });
     setUserSearchQueries(updatedSearchQueries);
+
+    // Sync with backend if authenticated
+    if (isAuthenticated) {
+      updateUserSearchQuery(searchQuery.uuid, accessToken, searchQuery).catch(
+        (error: ResponseError) => {
+          showError(messageApi, error.message);
+        },
+      );
+    }
   };
 
   /* istanbul ignore next -- @preserve */
   const searchFilter = (query: UserSearchQuery) => !stacDisabled || !query.project.isSTAC;
 
-  return (
-    <div
-      data-testid="saved-search-library"
-      className={savedSearchTourTargets.savedSearches.class()}
-    >
-      {contextHolder}
-      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'flex-end' }}>
+  // Create the clear button element (memoized to prevent infinite loops)
+  const clearButton = React.useMemo(
+    () =>
+      userSearchQueries.length > 0 ? (
         <Popconfirm
           title={
             <p>
@@ -128,7 +160,38 @@ const Searches: React.FC = () => {
             Remove All Searches
           </Button>
         </Popconfirm>
+      ) : null,
+    [userSearchQueries.length, handleClearAll],
+  );
+
+  // Pass the button to parent to render in tab bar
+  React.useEffect(() => {
+    if (onClearButtonMount) {
+      onClearButtonMount(clearButton);
+    }
+    return () => {
+      if (onClearButtonMount) {
+        onClearButtonMount(null);
+      }
+    };
+  }, [clearButton, onClearButtonMount]);
+
+  // Show empty state if no searches
+  if (userSearchQueries.length === 0) {
+    return (
+      <div data-testid="saved-search-library">
+        {contextHolder}
+        <Empty description="Your search library is empty" />
       </div>
+    );
+  }
+
+  return (
+    <div
+      data-testid="saved-search-library"
+      className={savedSearchTourTargets.savedSearches.class()}
+    >
+      {contextHolder}
       <div
         style={{
           height: 'calc(100vh - 300px)',

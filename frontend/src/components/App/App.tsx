@@ -28,6 +28,7 @@ import {
   fetchUserSearchQueries,
   ResponseError,
   updateUserCart,
+  updateUserSearchQuery,
 } from '../../api';
 import {
   clearDeprecatedStorageKeys,
@@ -36,7 +37,6 @@ import {
   searchAlreadyExists,
   showError,
   showNotice,
-  unsavedLocalSearches,
 } from '../../common/utils';
 import { useProjectsConfig } from '../../common/useProjectsConfig';
 import { AuthContext } from '../../contexts/AuthContext';
@@ -154,19 +154,54 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
             return query.project && query.project.name && query.uuid && query.url;
           });
 
-          const searchQueriesToAdd = unsavedLocalSearches(databaseItems, repairedLocalSearches);
+          // Separate local searches into new ones and updates to existing database items
+          const searchQueriesToAdd: UserSearchQueries = [];
+          const searchQueriesToUpdate: UserSearchQueries = [];
+
+          repairedLocalSearches.forEach((localQuery) => {
+            const dbMatch = databaseItems.find((dbQuery) => dbQuery.uuid === localQuery.uuid);
+            if (dbMatch) {
+              // Check if local version has newer subscription data or other changes
+              const hasChanges =
+                localQuery.isSubscribed !== dbMatch.isSubscribed ||
+                localQuery.lastCheckedTime !== dbMatch.lastCheckedTime ||
+                localQuery.minCreatedDate !== dbMatch.minCreatedDate ||
+                localQuery.maxCreatedDate !== dbMatch.maxCreatedDate ||
+                localQuery.filterCreatedSince !== dbMatch.filterCreatedSince;
+
+              if (hasChanges) {
+                searchQueriesToUpdate.push(localQuery);
+              }
+            } else if (!searchAlreadyExists(databaseItems, localQuery)) {
+              // This is a new search that doesn't exist in database
+              searchQueriesToAdd.push(localQuery);
+            }
+          });
 
           /* istanbul ignore next -- @preserve */
+          // Add new searches to database
           searchQueriesToAdd.forEach((query) => {
             addUserSearchQuery(pk, accessToken, query);
           });
 
-          // Combine repaired local and database saved searches
+          /* istanbul ignore next -- @preserve */
+          // Update existing searches in database with local changes
+          searchQueriesToUpdate.forEach((query) => {
+            updateUserSearchQuery(query.uuid, accessToken, query);
+          });
+
+          // Combine all searches: updated local + new local + database items
           const combinedItems = [...searchQueriesToAdd, ...databaseItems];
+
+          // Apply updates from local to database items
+          const updatedItems = combinedItems.map((item) => {
+            const updateMatch = searchQueriesToUpdate.find((upd) => upd.uuid === item.uuid);
+            return updateMatch || item;
+          });
 
           // Remove all duplicates
           const dedupedSearches: UserSearchQueries = [];
-          combinedItems.forEach((search) => {
+          updatedItems.forEach((search) => {
             /* istanbul ignore else -- @preserve */
             if (!searchAlreadyExists(dedupedSearches, search)) {
               dedupedSearches.push(search);

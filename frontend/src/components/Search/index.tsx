@@ -573,6 +573,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         resultType: activeSearchQuery.resultType,
         minVersionDate: activeSearchQuery.minVersionDate,
         maxVersionDate: activeSearchQuery.maxVersionDate,
+        minCreatedDate: activeSearchQuery.minCreatedDate,
+        maxCreatedDate: activeSearchQuery.maxCreatedDate,
         filenameVars: activeSearchQuery.filenameVars,
         activeFacets: activeSearchQuery.activeFacets,
         textInputs: activeSearchQuery.textInputs,

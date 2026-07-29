@@ -33,10 +33,15 @@ class SearchSerializer(serializers.ModelSerializer):
             "result_type",
             "min_version_date",
             "max_version_date",
+            "min_created_date",
+            "max_created_date",
             "filename_vars",
             "active_facets",
             "text_inputs",
             "url",
+            "is_subscribed",
+            "last_checked_time",
+            "filter_created_since",
         )
 
     def validate(self, data):

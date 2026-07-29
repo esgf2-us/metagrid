@@ -504,12 +504,37 @@ export const addUserSearchQuery = async (
 };
 
 /**
+ * HTTP Request Method: PATCH
+ * HTTP Response: 200 OK
+ */
+export const updateUserSearchQuery = async (
+  uuid: string,
+  accessToken: string,
+  payload: Partial<UserSearchQuery>,
+): Promise<RawUserSearchQuery> => {
+  const decamelizedPayload = humps.decamelizeKeys(payload);
+  return axios
+    .patch(`${apiRoutes.userSearch.path.replace(':uuid', uuid)}`, decamelizedPayload, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+    })
+    .then((response) => response.data as Promise<RawUserSearchQuery>)
+    .catch((error: ResponseError) => {
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userSearch));
+    });
+};
+
+/**
  * HTTP Request Method: DELETE
  * HTTP Response: 204 No Content
  */
-export const deleteUserSearchQuery = async (pk: string, accessToken: string): Promise<''> =>
+export const deleteUserSearchQuery = async (uuid: string, accessToken: string): Promise<''> =>
   axios
-    .delete(`${apiRoutes.userSearch.path.replace(':pk', pk)}`, {
+    .delete(`${apiRoutes.userSearch.path.replace(':uuid', uuid)}`, {
       data: {},
       headers: {
         Authorization: `Bearer ${accessToken}`,

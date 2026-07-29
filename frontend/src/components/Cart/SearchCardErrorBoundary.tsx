@@ -36,6 +36,8 @@ class SearchCardErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
+    // Log error for debugging
+    // eslint-disable-next-line no-console
     console.error('SearchCard rendering error for UUID:', this.props.uuid, error, errorInfo);
   }
 
