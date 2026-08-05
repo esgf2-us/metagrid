@@ -27,7 +27,7 @@ import {
   startSearchGlobusEndpoints,
   updateUserCart,
 } from '.';
-import { STAC_PROJECTS, generateWgetScriptSTAC } from '../common/STAC';
+import { STAC_PROJECTS, generateWgetScriptSTAC, buildStacProjects, setConfiguredAdditionalProjects } from '../common/STAC';
 import { convertResultTypeToReplicaParam, downloadFileForUser } from '../common/utils';
 import { ActiveSearchQuery, Pagination, RawCitation, ResultType } from '../components/Search/types';
 import { mockConfig } from '../test/testFunctions';
@@ -1085,6 +1085,21 @@ describe('resetGlobusTokens', () => {
 describe('STAC API functions', () => {
   beforeEach(() => {
     clearAllMemoizationCaches();
+
+    // Set up a test project with facets for STAC tests
+    const testProjects = buildStacProjects([
+      {
+        name: 'CMIP6 Test',
+        projectName: 'CMIP6',
+        fullName: 'Test CMIP6 Project',
+        projectUrl: 'https://example.com',
+        facetsByGroup: {
+          General: ['activity_id'],
+          Identifiers: ['source_id', 'experiment_id'],
+        },
+      },
+    ], 1);
+    setConfiguredAdditionalProjects(testProjects);
   });
 
   it('posts STAC filter and returns facets + search results', async () => {
@@ -1103,7 +1118,7 @@ describe('STAC API functions', () => {
     };
 
     let capturedAggBody: unknown = null;
-    let capturedSearchBody: { collections: string[]; filter: unknown } | null = null;
+    let capturedSearchBody: { collections: string[]; filter?: unknown } | null = null;
 
     server.use(
       rest.post(apiRoutes.esgfAggregationsSTAC.path, async (req, res, ctx) => {
