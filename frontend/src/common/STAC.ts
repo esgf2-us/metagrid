@@ -162,13 +162,13 @@ export function getFacetFilterName(projectName: string | undefined, facetName: s
   }
 }
 
-export function getAggregationsList(projectName: string): string[] {
-  const { facetsByGroup } = getStacProject(projectName);
+export function getAggregationsList(projectName: string, projectHash?: string): string[] {
+  const { facetsByGroup } = getStacProject(projectName, projectHash);
   return Object.values(facetsByGroup)
     .flat()
     .map((element) => {
       if (typeof element === 'string') {
-        return `${projectName.toLowerCase()}_${element}_frequency`;
+        return `${projectName.replace('-', '_').toLowerCase()}_${element}_frequency`;
       }
 
       // Exceptions defined here
@@ -176,7 +176,7 @@ export function getAggregationsList(projectName: string): string[] {
         case 'alternate_name':
           return 'alternate_name_frequency';
         default:
-          return `${projectName.toLowerCase()}_${element.facet}_frequency`;
+          return `${projectName.replace('-', '_').toLowerCase()}_${element.facet}_frequency`;
       }
     });
 }
@@ -372,9 +372,13 @@ export const aggregationsToFacetsData = (
   [x: string]: [string, number][];
 } => {
   const facetsData: { [x: string]: [string, number][] } = {};
+
+  // Convert project name to match aggregation format (lowercase, hyphens to underscores)
+  const normalizedProjectName = projectName.replace('-', '_').toLowerCase();
+
   aggregations.aggregations.forEach((aggregation) => {
     const facetName = aggregation.name
-      .replace(`${projectName.toLocaleLowerCase()}_`, '')
+      .replace(`${normalizedProjectName}_`, '')
       .replace('_frequency', '');
     const facetValues = aggregation.buckets.map(
       (bucket) => [bucket.key, bucket.frequency] as [string, number],
@@ -490,8 +494,17 @@ export const convertSearchParamsIntoStacFilter = (
 
   const paramKeys = Array.from(params.keys());
 
-  const facetsByGroup = project.facetsByGroup as Record<string, string[]>;
-  const allFacets: string[] = Object.values(facetsByGroup).flat();
+  const { facetsByGroup } = project;
+  // Extract all facet names, handling both string and { title, facet } object formats
+  const allFacets: string[] = Object.values(facetsByGroup)
+    .flat()
+    .map((facetEntry) => {
+      if (typeof facetEntry === 'string') {
+        return facetEntry;
+      }
+      // For titled facets, use the title (e.g., "data_node")
+      return facetEntry.title;
+    });
   const validFacets = paramKeys.filter((key) => allFacets.includes(key));
 
   /* istanbul ignore next -- @preserve */
@@ -608,16 +621,17 @@ export function stringifyApiRequest(
 ): string {
   if (project.isSTAC) {
     // STAC path
-    const stacProject = getStacProject(project.projectName as string);
-    const stacFilter = convertSearchParamsIntoStacFilter(reqUrlStr, stacProject) || 'null';
+    const stacProject = getStacProject(project.projectName as string, project.projectHash);
+    const stacFilter = convertSearchParamsIntoStacFilter(reqUrlStr, stacProject);
     const textInputsArray = textInputs || [];
     const textInputsStr =
       textInputsArray.length > 0 ? `, "q": ${JSON.stringify(textInputsArray)}` : '';
     const aggregationsArray = aggregations || [];
     const aggregationsStr =
       aggregationsArray.length > 0 ? `, "aggregations": ${JSON.stringify(aggregationsArray)}` : '';
+    const filterStr = stacFilter ? `, "filter": ${JSON.stringify(stacFilter)}` : '';
 
-    return `{"collections": ["${stacProject.projectName}"], "filter": ${JSON.stringify(stacFilter)}${textInputsStr}${aggregationsStr}}`;
+    return `{"collections": ["${stacProject.projectName}"]${filterStr}${textInputsStr}${aggregationsStr}}`;
   }
 
   // Non-STAC path
