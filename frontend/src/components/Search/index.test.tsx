@@ -475,7 +475,10 @@ describe('test stringifyFilters()', () => {
     pk: '2',
     name: 'CMIP6',
     projectUrl: 'http://example.com',
-    facetsByGroup: {},
+    facetsByGroup: {
+      General: ['activity_id'],
+      Identifiers: ['source_id', 'experiment_id'],
+    },
     facetsUrl: '',
     fullName: 'CMIP6',
     isSTAC: true,

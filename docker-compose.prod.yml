@@ -46,6 +46,9 @@ services:
       # The prod build target includes a production ready nginx server
       target: prod
     restart: unless-stopped
+    volumes:
+      # Mount projects.json so changes don't require rebuild
+      - ./frontend/public/projects/projects.json:/usr/share/nginx/html/projects/projects.json:ro
 
   keycloak:
     profiles: ['keycloak']
