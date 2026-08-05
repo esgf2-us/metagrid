@@ -47,7 +47,7 @@ export function generateProjectHash(
 }
 
 // Creates a RawProject from pk and StacProject data
-function buildStacProject(
+export function buildStacProject(
   pk: string,
   { name, fullName, projectUrl, projectName, facetsByGroup, stacApiUrl }: StacProject,
 ): RawProject {
@@ -621,8 +621,8 @@ export function stringifyApiRequest(
 ): string {
   if (project.isSTAC) {
     // STAC path
-    const stacProject = getStacProject(project.projectName as string, project.projectHash);
-    const stacFilter = convertSearchParamsIntoStacFilter(reqUrlStr, stacProject);
+    // Use the project passed in, which already has the correct facetsByGroup
+    const stacFilter = convertSearchParamsIntoStacFilter(reqUrlStr, project);
     const textInputsArray = textInputs || [];
     const textInputsStr =
       textInputsArray.length > 0 ? `, "q": ${JSON.stringify(textInputsArray)}` : '';
@@ -631,7 +631,7 @@ export function stringifyApiRequest(
       aggregationsArray.length > 0 ? `, "aggregations": ${JSON.stringify(aggregationsArray)}` : '';
     const filterStr = stacFilter ? `, "filter": ${JSON.stringify(stacFilter)}` : '';
 
-    return `{"collections": ["${stacProject.projectName}"]${filterStr}${textInputsStr}${aggregationsStr}}`;
+    return `{"collections": ["${project.projectName}"]${filterStr}${textInputsStr}${aggregationsStr}}`;
   }
 
   // Non-STAC path
