@@ -15,24 +15,7 @@ export const STAC_DEFAULT_PROJECT: StacProject = {
   projectName: '',
   fullName: '',
   projectUrl: '',
-  facetsByGroup: {
-    General: [{ title: 'data_node', facet: 'alternate_name' }],
-    Identifiers: [
-      'activity_id',
-      'source_id',
-      'source_type',
-      'instance_id',
-      'institution_id',
-      'experiment_id',
-      'sub_experiment_id',
-    ],
-    Labels: ['variant_label', 'grid_label'],
-    Classifications: [
-      'frequency',
-      'variable_id',
-      { title: 'cf_standard_name', facet: 'variable_cf_standard_name' },
-    ],
-  },
+  facetsByGroup: {},
 };
 
 export const STAC_PROJECT_LIST: StacProject[] = [
@@ -40,25 +23,22 @@ export const STAC_PROJECT_LIST: StacProject[] = [
     name: 'CMIP6 STAC',
     projectName: 'CMIP6',
     fullName: 'Coupled Model Intercomparison Project Phase 6',
-    projectUrl: 'https://pcmdi.llnl.gov/CMIP6/',
-    facetsByGroup: {
-      General: ['mip_era'],
-      Classifications: ['table_id'],
-    },
+    projectUrl: 'https://wcrp-cmip.org/cmip-phases/cmip6/',
+    facetsByGroup: {},
   },
   {
     name: 'CMIP7',
     projectName: 'CMIP7',
     fullName: 'Coupled Model Intercomparison Project Phase 7',
-    projectUrl: 'https://WCRP_CMIP.org/CMIP7',
-    facetsByGroup: {
-      General: ['mip_era'],
-      Classifications: [
-        'table_id',
-        { title: 'variable_suffix', facet: 'variable_branding_suffix' },
-      ],
-      Labels: ['area_label', 'vertical_label', 'temporal_label', 'horizontal_label'],
-    },
+    projectUrl: 'https://wcrp-cmip.org/cmip-phases/cmip7/',
+    facetsByGroup: {},
+  },
+  {
+    name: 'CORDEX CMIP6',
+    projectName: 'CORDEX-CMIP6',
+    fullName: 'Coordinated Regional Climate Downscaling Experiment from CMIP6',
+    projectUrl: 'https://cordex.org/',
+    facetsByGroup: {},
   },
 ];
 

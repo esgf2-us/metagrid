@@ -481,7 +481,6 @@ export function createEsgpullCommand(
     'frequency',
     'grid_label',
     'index_node',
-    'instance_id',
     'institution_id',
     'master_id',
     'member_id',
