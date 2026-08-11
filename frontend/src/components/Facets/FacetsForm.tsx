@@ -545,10 +545,7 @@ const FacetsForm: React.FC = () => {
                     },
                   }}
                   tokenSeparators={[',']}
-                  getPopupContainer={(triggerNode) =>
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
-                    triggerNode.parentElement
-                  }
+                  getPopupContainer={(triggerNode) => triggerNode.parentElement}
                   onOpenChange={(open) => setDropdownIsOpen(open)}
                   onChange={(value: string[] | []) => {
                     handleOnSelectAvailableFacetsForm(facet, value);
@@ -687,7 +684,6 @@ const FacetsForm: React.FC = () => {
           createdDateRange: initialCreatedDateRange,
         }}
         onValuesChange={(_changedValues, allValues) => {
-          // eslint-disable-next-line
           handleOnChangeGeneralFacetsForm(allValues);
         }}
       >

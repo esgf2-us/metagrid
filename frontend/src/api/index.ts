@@ -2,9 +2,6 @@
  * This file contains HTTP Request functions.
  */
 
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-
 import 'setimmediate'; // Added because in Jest 27, setImmediate is not defined, causing test errors
 import humps from 'humps';
 import queryString from 'query-string';
@@ -1519,7 +1516,6 @@ export const loadSessionValue = async <T>(key: string): Promise<T | null> => {
     .then((resp: AxiosResponse) => {
       const { data } = resp;
       if (data && key in data) {
-        // eslint-disable-next-line
         const value: T | null = data[key];
         if ((value as unknown) === 'None') {
           return null;

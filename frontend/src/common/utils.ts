@@ -97,10 +97,7 @@ export const objectIsEmpty = (obj: Record<any, any>): boolean =>
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const isEqual = (a: any, b: any, normalize?: (value: any) => any): boolean => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const valueA = normalize ? normalize(a) : a;
-
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const valueB = normalize ? normalize(b) : b;
 
   return JSON.stringify(valueA) === JSON.stringify(valueB);
