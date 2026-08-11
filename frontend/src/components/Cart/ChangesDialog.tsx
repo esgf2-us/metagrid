@@ -4,14 +4,15 @@ import {
   Alert,
   Button,
   Space,
-  Input,
   Radio,
   Spin,
   Typography,
   message,
   Tooltip,
+  DatePicker,
 } from 'antd';
 import { BellOutlined, SearchOutlined, CopyOutlined } from '@ant-design/icons';
+import type { Dayjs } from 'dayjs';
 import { useNavigate } from 'react-router';
 import { useSetAtom } from 'jotai';
 import { UserSearchQuery } from './types';
@@ -32,7 +33,9 @@ const ChangesDialog: React.FC<ChangesDialogProps> = ({ open, onClose, searchQuer
   const [messageApi, contextHolder] = message.useMessage();
 
   const [timeRange, setTimeRange] = React.useState<string>('subscription');
-  const [customTimestamp, setCustomTimestamp] = React.useState<string>('');
+  const [customDateRange, setCustomDateRange] = React.useState<[Dayjs | null, Dayjs | null] | null>(
+    null,
+  );
   const [newDatasetsCount, setNewDatasetsCount] = React.useState<number>(0);
   const [isChecking, setIsChecking] = React.useState(false);
   const [hasChecked, setHasChecked] = React.useState(false);
@@ -40,9 +43,10 @@ const ChangesDialog: React.FC<ChangesDialogProps> = ({ open, onClose, searchQuer
   const lastCheckedTime = searchQuery.lastCheckedTime || null;
 
   // Calculate timestamp based on selected time range
-  const getTimestampForRange = (range: string): string | null => {
+  // Memoize to prevent recalculating on every render (which causes flicker)
+  const currentTimestamp = React.useMemo(() => {
     const now = new Date();
-    switch (range) {
+    switch (timeRange) {
       case 'yesterday':
         now.setDate(now.getDate() - 1);
         return now.toISOString();
@@ -53,15 +57,17 @@ const ChangesDialog: React.FC<ChangesDialogProps> = ({ open, onClose, searchQuer
         now.setMonth(now.getMonth() - 1);
         return now.toISOString();
       case 'custom':
-        return customTimestamp || null;
+        // Use the start date from the range picker
+        if (customDateRange && customDateRange[0]) {
+          return customDateRange[0].toISOString();
+        }
+        return null;
       case 'subscription':
         return lastCheckedTime ? new Date(lastCheckedTime).toISOString() : null;
       default:
         return null;
     }
-  };
-
-  const currentTimestamp = getTimestampForRange(timeRange);
+  }, [timeRange, customDateRange, lastCheckedTime]);
 
   // Check for new datasets with the current timestamp
   const checkForNewDatasets = React.useCallback(async () => {
@@ -238,20 +244,21 @@ const ChangesDialog: React.FC<ChangesDialogProps> = ({ open, onClose, searchQuer
               <Radio value="yesterday">Yesterday</Radio>
               <Radio value="lastWeek">Last Week</Radio>
               <Radio value="lastMonth">Last Month</Radio>
-              <Radio value="custom">Custom Timestamp</Radio>
+              <Radio value="custom">Custom Publication Date</Radio>
             </Space>
           </Radio.Group>
           {timeRange === 'custom' && (
-            <Input
-              placeholder="YYYY-MM-DDTHH:mm:ss.sssZ"
-              value={customTimestamp}
-              onChange={(e) => setCustomTimestamp(e.target.value)}
-              style={{ fontFamily: 'monospace', marginBottom: '12px' }}
+            <DatePicker.RangePicker
+              size="small"
+              allowEmpty={[true, true]}
+              value={customDateRange}
+              onChange={(dates) => setCustomDateRange(dates)}
+              style={{ marginBottom: '12px' }}
             />
           )}
           {currentTimestamp && (
             <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
-              Filtering for datasets created since:{' '}
+              Filtering for datasets published since:{' '}
               <strong>{formatTimestamp(currentTimestamp)}</strong>
             </div>
           )}
@@ -272,8 +279,8 @@ const ChangesDialog: React.FC<ChangesDialogProps> = ({ open, onClose, searchQuer
               }
               description={
                 newDatasetsCount > 0
-                  ? `Found datasets created since ${formatTimestamp(currentTimestamp)}`
-                  : `No datasets were created since ${formatTimestamp(currentTimestamp)}`
+                  ? `Found datasets published since ${formatTimestamp(currentTimestamp)}`
+                  : `No datasets were published since ${formatTimestamp(currentTimestamp)}`
               }
               type={newDatasetsCount > 0 ? 'info' : 'success'}
               showIcon

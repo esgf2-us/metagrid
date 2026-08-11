@@ -779,12 +779,12 @@ const FacetsForm: React.FC = () => {
                     {currentProject.isSTAC && (
                       <Form.Item
                         data-testid="created-range-datepicker"
-                        label="Created Date"
+                        label="Publication Date"
                         name="createdDateRange"
                         style={{ marginBottom: 0 }}
                         tooltip={{
                           title:
-                            'Filter datasets by when they were created/added to the catalog using a single min/max date or a date range.',
+                            'Filter datasets by when they were published/added to the catalog using a single min/max date or a date range.',
                           trigger: 'hover',
                         }}
                       >
