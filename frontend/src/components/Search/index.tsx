@@ -544,11 +544,17 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   const handleSaveSearchQuery = React.useCallback(
     (url: string, numFound: number): void => {
+      // For dynamic projects, use project_name instead of project_id
+      const projectPk = activeSearchQuery.project.pk;
+      const isStaticProject = projectPk && (projectPk as number) <= 10; // Static projects are IDs 1-10
+
       const savedSearch: UserSearchQuery = {
         uuid: uuidv4(),
         user: pk,
         project: activeSearchQuery.project as RawProject,
-        projectId: activeSearchQuery.project.pk as string,
+        ...(isStaticProject
+          ? { projectId: projectPk as string }
+          : { projectName: activeSearchQuery.project.name as string }),
         versionType: activeSearchQuery.versionType,
         resultType: activeSearchQuery.resultType,
         minVersionDate: activeSearchQuery.minVersionDate,
