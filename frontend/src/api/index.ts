@@ -451,10 +451,7 @@ export const fetchUserSearchQueries = async (
       const resultsWithProjects = data.results.map((search: UserSearchQuery) => {
         if (!search.project && search.projectName) {
           // Dynamic project - reconstruct the project object
-          // The projectName field stores the configured name (e.g. "CMIP6 PROD")
-          // Try to find by exact configured name first, then fall back to projectName lookup
           const reconstructedProject = getStacProject(search.projectName);
-
           return {
             ...search,
             project: reconstructedProject,
@@ -927,11 +924,11 @@ const generateStacSearchCacheKey = (
   token?: string,
   stacApiUrl?: string,
 ): string => {
-  const filterStr = filter ? JSON.stringify(filter) : 'null';
-  const qStr = q ? JSON.stringify(q) : 'null';
+  const filterStr = filter ? JSON.stringify(filter) : '';
+  const qStr = q ? JSON.stringify(q) : '';
 
   // Handle token properly - it could be a string, object, or undefined
-  let tokenStr = 'null';
+  let tokenStr = '';
   if (token !== undefined && token !== null) {
     tokenStr = typeof token === 'object' ? JSON.stringify(token) : token;
   }
@@ -1042,7 +1039,7 @@ const createAggregationsCacheKey = (
   filter: { op: string; args: unknown } | undefined,
   stacApiUrl?: string,
 ): string => {
-  const filterStr = filter ? JSON.stringify(filter) : 'null';
+  const filterStr = filter ? JSON.stringify(filter) : '';
   const urlStr = stacApiUrl || 'default';
   return `${projectName}|${normalizedUrl}|${filterStr}|${urlStr}`;
 };
@@ -1059,6 +1056,7 @@ export const fetchSTACAggregations = async (
   reqUrl: string,
   filter: { op: string; args: unknown } | undefined,
   stacApiUrl?: string,
+  projectHash?: string,
 ): Promise<StacAggregations> => {
   // Check if this request is for a stale project BEFORE doing anything
   if (currentStacProject !== null && currentStacProject !== projectName) {
@@ -1087,18 +1085,21 @@ export const fetchSTACAggregations = async (
   }
 
   // No cache hit, fetch from API
-  const aggregationsList = getAggregationsList(projectName);
+  const aggregationsList = getAggregationsList(projectName, projectHash);
 
   const payload: {
     collections: string[];
     aggregations: string[];
-    filter: { op: string; args: unknown } | undefined;
+    filter?: { op: string; args: unknown };
     stacApiUrl?: string;
   } = {
     collections: [projectName],
     aggregations: aggregationsList,
-    filter,
   };
+
+  if (filter) {
+    payload.filter = filter;
+  }
 
   if (stacApiUrl) {
     payload.stacApiUrl = stacApiUrl;
@@ -1150,7 +1151,13 @@ export const fetchSTACSearchResults = async (
     textInputs = query.split(',');
   }
 
-  const aggregations = await fetchSTACAggregations(projectName, reqUrlStr, filter, stacApiUrl)
+  const aggregations = await fetchSTACAggregations(
+    projectName,
+    reqUrlStr,
+    filter,
+    stacApiUrl,
+    projectHash,
+  )
     .then((response) => {
       // Convert aggregations response into facet data for Metagrid
       const aggregationsToFacets = aggregationsToFacetsData(

@@ -242,7 +242,10 @@ const FacetsForm: React.FC = () => {
       return '';
     }
 
-    const aggregationsList = getAggregationsList(currentProject.projectName);
+    const aggregationsList = getAggregationsList(
+      currentProject.projectName,
+      currentProject.projectHash,
+    );
     return stringifyApiRequest(
       currentProject,
       currentRequestURL,
@@ -473,7 +476,19 @@ const FacetsForm: React.FC = () => {
         ),
         className: `site-collapse-custom-collapse ${leftSidebarTargets.facetFormFields.class()}`,
         children: Object.keys(availableFacets).map((facet) => {
-          if (facetsByGroup[group].includes(facet)) {
+          // Check if this facet is in the group's facets list
+          // Handle both string format and object format { title, facet }
+          const isInGroup = facetsByGroup[group].some(
+            (groupFacet: string | { title: string; facet: string }) => {
+              if (typeof groupFacet === 'string') {
+                return groupFacet === facet;
+              }
+              // For titled facets, check the title field (e.g., "data_node")
+              return groupFacet.title === facet;
+            },
+          );
+
+          if (isInGroup) {
             const facetOptions = availableFacets[facet];
 
             const isOptionalForDatasets =
