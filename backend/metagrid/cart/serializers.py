@@ -41,6 +41,12 @@ class SearchSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """Ensure either project_id or project_name is provided."""
+        # For partial updates (PATCH), only validate if project fields are being updated
+        if self.partial:
+            # If neither project field is in the update, skip validation
+            if "project_id" not in data and "project_name" not in data:
+                return data
+
         project_id = data.get("project_id")
         project_name = data.get("project_name")
 
