@@ -173,7 +173,8 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
         title={
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              {project.isSTAC && (
+              {/* THIS SUBSCRIPTION FEATURE MAY BE ACTIVATED AT A LATER TIME
+               {project.isSTAC && (
                 <Tooltip
                   title={
                     isSubscribed ? 'Unsubscribe from change tracking' : 'Subscribe to track changes'
@@ -189,7 +190,7 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
                     }}
                   />
                 </Tooltip>
-              )}
+              )} */}
               <FileSearchOutlined /> Search #
               {project.isSTAC
                 ? searchQuery.uuid.slice(0, 8)
