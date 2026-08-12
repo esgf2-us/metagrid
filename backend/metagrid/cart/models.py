@@ -45,7 +45,18 @@ class Search(models.Model):
 
     uuid = models.UUIDField(default=uuid.uuid4)
     user = models.ForeignKey("users.User", on_delete=models.CASCADE)
-    project = models.ForeignKey("projects.Project", on_delete=models.CASCADE)
+    project = models.ForeignKey(
+        "projects.Project",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        help_text="Reference to a project in the database (for static projects)",
+    )
+    project_name = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Project name for dynamic projects not in the database",
+    )
     version_type = models.CharField(
         max_length=255, default=LATEST, choices=VERSION_TYPE_CHOICES
     )
