@@ -21,7 +21,8 @@ export type RawUserSearchQuery = {
     full_name: string;
     project_url: string;
   };
-  project_id: number;
+  project_id?: number;
+  project_name?: string;
   version_type: VersionType;
   result_type: ResultType;
   min_version_date: VersionDate;
@@ -36,7 +37,8 @@ export type UserSearchQuery = {
   uuid: string;
   user: string | null;
   project: RawProject;
-  projectId: string;
+  projectId?: string;
+  projectName?: string;
   versionType: VersionType;
   resultType: ResultType;
   minVersionDate: VersionDate;
