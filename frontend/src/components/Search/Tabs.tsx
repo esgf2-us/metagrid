@@ -215,20 +215,48 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
     return null;
   });
 
-  const showCitation = record.citation_url !== undefined && record.citation_url.length > 0;
+  // Extract citation and ES-DOC URLs from STAC links array if available
+  let citationUrl = '';
+  let esDocUrl = '';
+
+  /* istanbul ignore else -- @preserve */
+  if (record.links && Array.isArray(record.links)) {
+    const citationLink = record.links.find(
+      (link: { rel?: string; title?: string; href?: string }) =>
+        link.rel === 'cite-as' || link.title === 'Citation URL',
+    );
+    const esDocLink = record.links.find(
+      (link: { rel?: string; title?: string; href?: string }) =>
+        link.rel === 'describedby' || link.title === 'ES-DOC',
+    );
+
+    if (citationLink && citationLink.href) {
+      citationUrl = citationLink.href;
+    }
+    if (esDocLink && esDocLink.href) {
+      esDocUrl = esDocLink.href;
+    }
+  }
+
+  // Legacy project citation URL
+  const legacyCitationUrl =
+    record.citation_url !== undefined && record.citation_url.length > 0
+      ? record.citation_url[0]
+      : '';
+
+  // Use STAC citation if available, otherwise fall back to legacy
+  const showCitation = citationUrl || legacyCitationUrl;
+  const finalCitationUrl = citationUrl || legacyCitationUrl;
+
+  // Legacy project further info URL
   const furtherInfoUrl =
     record && record.further_info_url && record.further_info_url.length > 0
       ? record.further_info_url[0]
       : '';
-  /* istanbul ignore next -- @preserve */
-  const propertiesFurtherInfoUrl =
-    record &&
-    record.properties &&
-    record.properties['cmip6:further_info_url'] &&
-    record.properties['cmip6:further_info_url'] !== ''
-      ? (record.properties['cmip6:further_info_url'] as string)
-      : '';
-  const showESDOC = furtherInfoUrl || propertiesFurtherInfoUrl;
+
+  // Use STAC ES-DOC if available, otherwise fall back to legacy
+  const showESDOC = esDocUrl || furtherInfoUrl;
+  const finalEsDocUrl = esDocUrl || furtherInfoUrl;
   const showQualityFlags = Object.keys(qualityFlags).length > 0;
   const showAdditionalLinks = urlCount > 0;
   const showAdditionalTab = showESDOC !== '' || showQualityFlags || showAdditionalLinks;
@@ -278,7 +306,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
       key: '3',
       disabled: record.retracted === true,
       label: <div className={innerDataRowTargets.citationTab.class()}>Citation</div>,
-      children: <Citation url={record.citation_url![0]} />,
+      children: <Citation url={finalCitationUrl} />,
     });
   }
 
@@ -291,8 +319,8 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
       children: (
         <>
           {showAdditionalLinks && additionalLinks}
-          {showESDOC !== '' && (
-            <Button type="link" href={showESDOC} target="_blank">
+          {showESDOC && (
+            <Button type="link" href={finalEsDocUrl} target="_blank">
               ES-DOC
             </Button>
           )}
