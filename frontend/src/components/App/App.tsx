@@ -39,7 +39,6 @@ import {
   showNotice,
 } from '../../common/utils';
 import { useProjectsConfig } from '../../common/useProjectsConfig';
-import { getStacProject } from '../../common/STAC';
 import { AuthContext } from '../../contexts/AuthContext';
 import Cart from '../Cart';
 import Summary from '../Cart/Summary';
