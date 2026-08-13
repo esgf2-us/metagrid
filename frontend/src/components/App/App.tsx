@@ -39,6 +39,7 @@ import {
   showNotice,
 } from '../../common/utils';
 import { useProjectsConfig } from '../../common/useProjectsConfig';
+import { getStacProject } from '../../common/STAC';
 import { AuthContext } from '../../contexts/AuthContext';
 import Cart from '../Cart';
 import Summary from '../Cart/Summary';
@@ -105,6 +106,9 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   // Load projects configuration (includes STAC projects from projects.json)
   const { config: projectsConfig, loading: configLoading } = useProjectsConfig();
 
+  // Track whether projects have been fetched and configured
+  const [projectsLoaded, setProjectsLoaded] = React.useState(false);
+
   // Third-party tool integration
   useHotjar();
 
@@ -132,7 +136,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
 
   React.useEffect(() => {
     /* istanbul ignore else -- @preserve */
-    if (isAuthenticated) {
+    if (isAuthenticated && projectsLoaded) {
       fetchUserCart(pk, accessToken)
         .then((rawUserCart) => {
           const databaseItems = rawUserCart.items as RawSearchResults;
@@ -223,7 +227,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
           showError(messageApi, error.message);
         });
     }
-  }, [isAuthenticated, pk, accessToken]);
+  }, [isAuthenticated, pk, accessToken, projectsLoaded]);
 
   React.useEffect(() => {
     /* istanbul ignore else -- @preserve */
@@ -251,6 +255,9 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
 
     fetchProjects(projectsConfig)
       .then((data) => {
+        // Mark projects as loaded so authentication effect can proceed
+        setProjectsLoaded(true);
+
         const projectName = searchQuery ? searchQuery.project.name : '';
         /* istanbul ignore else -- @preserve */
         if (data && projectName && projectName !== '') {
@@ -268,6 +275,33 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
               `Project "${projectName as string}" not found. Please select a valid project from the dropdown.`,
             );
           }
+        }
+
+        // After fetchProjects completes, update saved searches with correct project configurations
+        // This handles the case where searches were loaded before projects finished configuring
+        if (isAuthenticated && userSearchQueries.length > 0) {
+          const updatedSearches = userSearchQueries.map((search) => {
+            // For STAC projects, get the updated project configuration with correct facets
+            if (search.projectName || (search.project && search.project.isSTAC)) {
+              const projectToLookup = search.projectName || search.project.name;
+              const projectHash = search.project?.projectHash;
+              // Find the matching project from the newly fetched data
+              const updatedProject = data.results.find(
+                (proj) =>
+                  proj.name === projectToLookup ||
+                  proj.projectName === projectToLookup ||
+                  (projectHash && proj.projectHash === projectHash),
+              );
+              if (updatedProject) {
+                return {
+                  ...search,
+                  project: updatedProject,
+                };
+              }
+            }
+            return search;
+          });
+          setUserSearchQueries(updatedSearches);
         }
       })
       .catch(

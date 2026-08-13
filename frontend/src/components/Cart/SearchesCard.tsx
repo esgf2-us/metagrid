@@ -1,5 +1,4 @@
 import {
-  BellFilled,
   CopyOutlined,
   DeleteOutlined,
   FileSearchOutlined,
@@ -114,23 +113,24 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
     }
   }, [isLoading, data]);
 
+  // THIS SUBSCRIPTION FEATURE MAY BE ACTIVATED AT A LATER TIME
   // Handle subscription toggle
-  const handleSubscriptionToggle = () => {
-    const newIsSubscribed = !isSubscribed;
-    const newLastCheckedTime = newIsSubscribed ? Date.now() : null;
+  // const handleSubscriptionToggle = () => {
+  //   const newIsSubscribed = !isSubscribed;
+  //   const newLastCheckedTime = newIsSubscribed ? Date.now() : null;
 
-    updateSearchQuery({
-      ...searchQuery,
-      isSubscribed: newIsSubscribed,
-      lastCheckedTime: newLastCheckedTime,
-    });
+  //   updateSearchQuery({
+  //     ...searchQuery,
+  //     isSubscribed: newIsSubscribed,
+  //     lastCheckedTime: newLastCheckedTime,
+  //   });
 
-    if (newIsSubscribed) {
-      showNotice(messageApi, 'Subscribed to search changes');
-    } else {
-      showNotice(messageApi, 'Unsubscribed from search changes');
-    }
-  };
+  //   if (newIsSubscribed) {
+  //     showNotice(messageApi, 'Subscribed to search changes');
+  //   } else {
+  //     showNotice(messageApi, 'Unsubscribed from search changes');
+  //   }
+  // };
 
   let numResultsText;
 
