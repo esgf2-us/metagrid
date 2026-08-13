@@ -33,24 +33,34 @@ class SearchSerializer(serializers.ModelSerializer):
             "result_type",
             "min_version_date",
             "max_version_date",
+            "min_created_date",
+            "max_created_date",
             "filename_vars",
             "active_facets",
             "text_inputs",
             "url",
+            "is_subscribed",
+            "last_checked_time",
+            "filter_created_since",
         )
 
     def validate(self, data):
         """Ensure either project_id or project_name is provided."""
-        # For partial updates (PATCH), only validate if project fields are being updated
-        if self.partial:
-            # If neither project field is in the update, skip validation
-            if "project_id" not in data and "project_name" not in data:
-                return data
-
+        # Only validate on creation (POST) or when project fields are being updated
+        # For PATCH requests with partial data, skip this validation if project fields aren't included
+        is_partial_update = self.partial
         project_id = data.get("project_id")
         project_name = data.get("project_name")
 
-        # At least one must be provided
+        # If this is a partial update and neither project field is being updated, skip validation
+        if (
+            is_partial_update
+            and "project_id" not in data
+            and "project_name" not in data
+        ):
+            return data
+
+        # For creation or when updating project fields, at least one must be provided
         if not project_id and not project_name:
             raise serializers.ValidationError(
                 "Either project_id or project_name must be provided"

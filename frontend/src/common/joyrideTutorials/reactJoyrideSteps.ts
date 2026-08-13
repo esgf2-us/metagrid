@@ -30,7 +30,7 @@ export const waitForElement = (
   // Store custom message globally for React component to access
   /* istanbul ignore else -- @preserve */
   if (customMessage) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).tourLoadingMessage = customMessage;
   }
 
@@ -43,7 +43,7 @@ export const waitForElement = (
       /* istanbul ignore if -- @preserve */
       if (element) {
         // Clean up custom message when element is found
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         delete (window as any).tourLoadingMessage;
         resolve(true);
         return;
@@ -53,7 +53,7 @@ export const waitForElement = (
       /* istanbul ignore if -- @preserve */
       if (elapsedTime >= timeout) {
         // Clean up custom message on timeout
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         delete (window as any).tourLoadingMessage;
         resolve(false);
         return;
