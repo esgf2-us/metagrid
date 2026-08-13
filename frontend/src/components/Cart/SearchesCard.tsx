@@ -1,4 +1,5 @@
 import {
+  BellFilled,
   CopyOutlined,
   DeleteOutlined,
   FileSearchOutlined,
@@ -113,24 +114,23 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
     }
   }, [isLoading, data]);
 
-  // THIS SUBSCRIPTION FEATURE MAY BE ACTIVATED AT A LATER TIME
   // Handle subscription toggle
-  // const handleSubscriptionToggle = () => {
-  //   const newIsSubscribed = !isSubscribed;
-  //   const newLastCheckedTime = newIsSubscribed ? Date.now() : null;
+  const handleSubscriptionToggle = () => {
+    const newIsSubscribed = !isSubscribed;
+    const newLastCheckedTime = newIsSubscribed ? Date.now() : null;
 
-  //   updateSearchQuery({
-  //     ...searchQuery,
-  //     isSubscribed: newIsSubscribed,
-  //     lastCheckedTime: newLastCheckedTime,
-  //   });
+    updateSearchQuery({
+      ...searchQuery,
+      isSubscribed: newIsSubscribed,
+      lastCheckedTime: newLastCheckedTime,
+    });
 
-  //   if (newIsSubscribed) {
-  //     showNotice(messageApi, 'Subscribed to search changes');
-  //   } else {
-  //     showNotice(messageApi, 'Unsubscribed from search changes');
-  //   }
-  // };
+    if (newIsSubscribed) {
+      showNotice(messageApi, 'Subscribed to search changes');
+    } else {
+      showNotice(messageApi, 'Unsubscribed from search changes');
+    }
+  };
 
   let numResultsText;
 
@@ -173,8 +173,7 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
         title={
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              {/* THIS SUBSCRIPTION FEATURE MAY BE ACTIVATED AT A LATER TIME
-               {project.isSTAC && (
+              {project.isSTAC && (
                 <Tooltip
                   title={
                     isSubscribed ? 'Unsubscribe from change tracking' : 'Subscribe to track changes'
@@ -190,7 +189,7 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
                     }}
                   />
                 </Tooltip>
-              )} */}
+              )}
               <FileSearchOutlined /> Search #
               {project.isSTAC
                 ? searchQuery.uuid.slice(0, 8)
