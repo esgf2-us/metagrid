@@ -17,14 +17,16 @@ export type RawCitation = {
 
 export type VersionType = 'all' | 'latest';
 export type ResultType = 'all' | 'originals only' | 'replicas only';
-export type VersionDate = string | null;
+export type DateString = string | null;
 
 export type ActiveSearchQuery = {
   project: RawProject | Record<string, unknown>;
   versionType: VersionType;
   resultType: ResultType;
-  minVersionDate: VersionDate;
-  maxVersionDate: VersionDate;
+  minVersionDate: DateString;
+  maxVersionDate: DateString;
+  minCreatedDate: DateString;
+  maxCreatedDate: DateString;
   filenameVars: TextInputs | [];
   activeFacets: ActiveFacets;
   textInputs: TextInputs | [];
