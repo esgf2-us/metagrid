@@ -13,6 +13,7 @@ export type Props = {
 
 const Cart: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   const [activeTab, setActiveTab] = React.useState<string>('items');
+  const [clearButtonElement, setClearButtonElement] = React.useState<React.ReactNode>(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -48,13 +49,19 @@ const Cart: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           Search Library
         </span>
       ),
-      children: <Searches />,
+      children: <Searches onClearButtonMount={setClearButtonElement} />,
     },
   ];
 
   return (
     <div data-testid="cart">
-      <Tabs activeKey={activeTab} animated={false} onTabClick={handleTabClick} items={tabItems} />
+      <Tabs
+        activeKey={activeTab}
+        animated={false}
+        onTabClick={handleTabClick}
+        items={tabItems}
+        tabBarExtraContent={activeTab === 'searches' ? clearButtonElement : null}
+      />
     </div>
   );
 };

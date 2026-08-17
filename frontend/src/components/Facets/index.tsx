@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import { useAsync } from 'react-async';
 import { useAtom } from 'jotai';
 import { fetchProjects, ResponseError, clearStacCaches } from '../../api';
-import { projectBaseQuery } from '../../common/utils';
+import { projectBaseQuery, clearCachedStacBatches } from '../../common/utils';
 import Divider from '../General/Divider';
 import FacetsForm from './FacetsForm';
 import ProjectForm from './ProjectForm';
@@ -46,6 +46,13 @@ const Facets: React.FC = () => {
     if (savedSearchQuery) {
       setSavedSearchQuery(undefined);
       setCurProject(savedSearchQuery.project);
+      // Clear STAC caches when applying a saved search to prevent old results from showing
+      if (savedSearchQuery.project.isSTAC) {
+        const projectName =
+          (savedSearchQuery.project.projectName as string) || savedSearchQuery.project.name;
+        clearStacCaches(projectName);
+        clearCachedStacBatches(); // Clear localStorage cache to force fresh results
+      }
       setActiveSearchQuery(savedSearchQuery);
       return;
     }
