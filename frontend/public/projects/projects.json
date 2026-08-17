@@ -1,10 +1,9 @@
 {
   "additionalProjects": [
     {
-      "name": "CMIP7 STAC WEST",
+      "name": "CMIP7 STAC",
       "projectName": "CMIP7",
       "fullName": "Coupled Model Intercomparison Project Phase 7",
-      "stacApiUrl": "https://discovery.west.esgf.io/",
       "projectUrl": "https://wcrp-cmip.org/cmip-phases/cmip7/",
       "facetsByGroup": {
         "General": ["mip_era", { "title": "data_node", "facet": "alternate_name" }, "activity_id"],
@@ -29,38 +28,9 @@
       }
     },
     {
-      "name": "CMIP7 STAC EAST",
-      "projectName": "CMIP7",
-      "fullName": "Coupled Model Intercomparison Project Phase 7",
-      "stacApiUrl": "https://api.stac.esgf.ceda.ac.uk",
-      "projectUrl": "https://wcrp-cmip.org/cmip-phases/cmip7/",
-      "facetsByGroup": {
-        "General": ["mip_era", { "title": "data_node", "facet": "alternate_name" }, "activity_id"],
-        "Identifiers": ["source_id", "institution_id", "experiment_id"],
-        "Classifications": [
-          "frequency",
-          "variable_id",
-          { "title": "cf_standard_name", "facet": "variable_cf_standard_name" },
-          { "title": "variable_suffix", "facet": "variable_branding_suffix" },
-          "region",
-          "realm"
-        ],
-        "Resolutions": ["nominal_resolution"],
-        "Labels": [
-          "area_label",
-          "vertical_label",
-          "temporal_label",
-          "horizontal_label",
-          "variant_label",
-          "grid_label"
-        ]
-      }
-    },
-    {
-      "name": "CMIP6 STAC WEST",
+      "name": "CMIP6 STAC",
       "projectName": "CMIP6",
       "fullName": "Coupled Model Intercomparison Project Phase 6",
-      "stacApiUrl": "https://discovery.west.esgf.io/",
       "projectUrl": "https://wcrp-cmip.org/cmip-phases/cmip6/",
       "facetsByGroup": {
         "General": ["mip_era", { "title": "data_node", "facet": "alternate_name" }, "activity_id"],
@@ -83,44 +53,9 @@
       }
     },
     {
-      "name": "CMIP6 STAC EAST",
-      "projectName": "CMIP6",
-      "fullName": "Coupled Model Intercomparison Project Phase 6",
-      "stacApiUrl": "https://api.stac.esgf.ceda.ac.uk",
-      "projectUrl": "https://wcrp-cmip.org/cmip-phases/cmip6/",
-      "facetsByGroup": {
-        "General": [{ "title": "data_node", "facet": "alternate_name" }]
-      }
-    },
-    {
-      "name": "CORDEX CMIP6 WEST",
+      "name": "CORDEX CMIP6",
       "projectName": "CORDEX-CMIP6",
       "fullName": "Coordinated Regional Climate Downscaling Experiment from CMIP6",
-      "stacApiUrl": "https://discovery.west.esgf.io/",
-      "projectUrl": "https://cordex.org/",
-      "facetsByGroup": {
-        "General": [{ "title": "data_node", "facet": "alternate_name" }],
-        "Identifiers": ["institution_id", "source_id", "source_type"],
-        "Classifications": [
-          "domain_id",
-          "frequency",
-          "variable_id",
-          { "title": "cf_standard_name", "facet": "variable_cf_standard_name" }
-        ],
-        "DrivingIDs": [
-          "driving_experiment_id",
-          "driving_source_id",
-          "driving_institution_id",
-          "driving_variant_label"
-        ],
-        "Labels": ["version_realization"]
-      }
-    },
-    {
-      "name": "CORDEX CMIP6 EAST",
-      "projectName": "CORDEX-CMIP6",
-      "fullName": "Coordinated Regional Climate Downscaling Experiment from CMIP6",
-      "stacApiUrl": "https://api.stac.esgf.ceda.ac.uk",
       "projectUrl": "https://cordex.org/",
       "facetsByGroup": {
         "General": ["mip_era", { "title": "data_node", "facet": "alternate_name" }, "activity_id"],
@@ -141,36 +76,9 @@
       }
     },
     {
-      "name": "CMIP6Plus STAC WEST",
+      "name": "CMIP6Plus STAC",
       "projectName": "CMIP6Plus",
       "fullName": "Coupled Model Intercomparison Project Phase 6",
-      "stacApiUrl": "https://discovery.west.esgf.io/",
-      "projectUrl": "https://wcrp-cmip.org/cmip-phases/cmip6/",
-      "facetsByGroup": {
-        "General": ["mip_era", { "title": "data_node", "facet": "alternate_name" }, "activity_id"],
-        "Identifiers": [
-          "source_id",
-          "source_type",
-          "experiment_id",
-          "sub_experiment_id",
-          "institution_id"
-        ],
-        "Classifications": [
-          "frequency",
-          "variable_id",
-          { "title": "cf_standard_name", "facet": "variable_cf_standard_name" },
-          "table_id",
-          "realm"
-        ],
-        "Resolutions": ["nominal_resolution"],
-        "Labels": ["grid_label", "variant_label"]
-      }
-    },
-    {
-      "name": "CMIP6Plus STAC EAST",
-      "projectName": "CMIP6Plus",
-      "fullName": "Coupled Model Intercomparison Project Phase 6",
-      "stacApiUrl": "https://api.stac.esgf.ceda.ac.uk",
       "projectUrl": "https://wcrp-cmip.org/cmip-phases/cmip6/",
       "facetsByGroup": {
         "General": ["mip_era", { "title": "data_node", "facet": "alternate_name" }, "activity_id"],

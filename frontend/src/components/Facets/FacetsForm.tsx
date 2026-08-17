@@ -225,10 +225,15 @@ const FacetsForm: React.FC = () => {
   };
 
   // Convert using moment.js to for the initial value of the date picker
-  const { minVersionDate, maxVersionDate } = activeSearchQuery;
+  const { minVersionDate, maxVersionDate, minCreatedDate, maxCreatedDate } = activeSearchQuery;
   const initialVersionDateRange = [
     minVersionDate ? formatDate(minVersionDate, false) : (minVersionDate as null),
     maxVersionDate ? formatDate(maxVersionDate, false) : (maxVersionDate as null),
+  ];
+  // Created dates use ISO format, not YYYYMMDD
+  const initialCreatedDateRange = [
+    minCreatedDate ? dayjs(minCreatedDate) : (minCreatedDate as null),
+    maxCreatedDate ? dayjs(maxCreatedDate) : (maxCreatedDate as null),
   ];
 
   // Generate aggregations query string for STAC projects
@@ -272,15 +277,19 @@ const FacetsForm: React.FC = () => {
     versionType: VersionType;
     resultType: ResultType;
     versionDateRange: DatePickerReturnType;
+    createdDateRange: DatePickerReturnType;
     [key: string]: VersionType | ResultType | ActiveFacets | [] | DatePickerReturnType;
   }): void => {
     const {
       versionType: newVersionType,
       resultType: newResultType,
       versionDateRange,
+      createdDateRange,
     } = selectedFacets;
     let newMinVersionDate = null;
     let newMaxVersionDate = null;
+    let newMinCreatedDate = null;
+    let newMaxCreatedDate = null;
 
     /* istanbul ignore else -- @preserve */
     if (versionDateRange) {
@@ -295,12 +304,29 @@ const FacetsForm: React.FC = () => {
       }
     }
 
+    /* istanbul ignore else -- @preserve */
+    if (createdDateRange) {
+      const [minDate, maxDate] = createdDateRange;
+      /* istanbul ignore else -- @preserve */
+      if (minDate) {
+        // Convert to ISO format for created dates
+        newMinCreatedDate = minDate.toISOString();
+      }
+      /* istanbul ignore else -- @preserve */
+      if (maxDate) {
+        // Convert to ISO format for created dates
+        newMaxCreatedDate = maxDate.toISOString();
+      }
+    }
+
     setActiveSearchQuery({
       ...activeSearchQuery,
       versionType: newVersionType,
       resultType: newResultType,
       minVersionDate: newMinVersionDate,
       maxVersionDate: newMaxVersionDate,
+      minCreatedDate: newMinCreatedDate,
+      maxCreatedDate: newMaxCreatedDate,
     });
   };
 
@@ -534,10 +560,7 @@ const FacetsForm: React.FC = () => {
                     },
                   }}
                   tokenSeparators={[',']}
-                  getPopupContainer={(triggerNode) =>
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
-                    triggerNode.parentElement
-                  }
+                  getPopupContainer={(triggerNode) => triggerNode.parentElement}
                   onOpenChange={(open) => setDropdownIsOpen(open)}
                   onChange={(value: string[] | []) => {
                     handleOnSelectAvailableFacetsForm(facet, value);
@@ -673,9 +696,9 @@ const FacetsForm: React.FC = () => {
           versionType: activeSearchQuery.versionType,
           resultType: activeSearchQuery.resultType,
           versionDateRange: initialVersionDateRange,
+          createdDateRange: initialCreatedDateRange,
         }}
         onValuesChange={(_changedValues, allValues) => {
-          // eslint-disable-next-line
           handleOnChangeGeneralFacetsForm(allValues);
         }}
       >
@@ -764,6 +787,21 @@ const FacetsForm: React.FC = () => {
                     >
                       <DatePicker.RangePicker size="small" allowEmpty={[true, true]} />
                     </Form.Item>
+                    {currentProject.isSTAC && (
+                      <Form.Item
+                        data-testid="created-range-datepicker"
+                        label="Publication Date"
+                        name="createdDateRange"
+                        style={{ marginBottom: 0 }}
+                        tooltip={{
+                          title:
+                            'Filter datasets by when they were published/added to the catalog using a single min/max date or a date range.',
+                          trigger: 'hover',
+                        }}
+                      >
+                        <DatePicker.RangePicker size="small" allowEmpty={[true, true]} />
+                      </Form.Item>
+                    )}
                   </>
                 ),
               },

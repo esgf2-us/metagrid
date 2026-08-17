@@ -1,11 +1,5 @@
 import { ActiveFacets, RawProject } from '../Facets/types';
-import {
-  RawSearchResults,
-  ResultType,
-  TextInputs,
-  VersionDate,
-  VersionType,
-} from '../Search/types';
+import { RawSearchResults, ResultType, TextInputs, DateString, VersionType } from '../Search/types';
 
 export type UserCart = RawSearchResults;
 export type RawUserCart = {
@@ -25,11 +19,16 @@ export type RawUserSearchQuery = {
   project_name?: string;
   version_type: VersionType;
   result_type: ResultType;
-  min_version_date: VersionDate;
-  max_version_date: VersionDate;
+  min_version_date: DateString;
+  max_version_date: DateString;
+  min_created_date?: DateString;
+  max_created_date?: DateString;
   filename_vars: TextInputs | [];
   active_facets: ActiveFacets;
   text_inputs: TextInputs;
+  is_subscribed?: boolean;
+  last_checked_time?: number | null;
+  filter_created_since?: string | null;
 };
 
 // camelCase version of the raw API results
@@ -41,8 +40,10 @@ export type UserSearchQuery = {
   projectName?: string;
   versionType: VersionType;
   resultType: ResultType;
-  minVersionDate: VersionDate;
-  maxVersionDate: VersionDate;
+  minVersionDate: DateString;
+  maxVersionDate: DateString;
+  minCreatedDate: DateString;
+  maxCreatedDate: DateString;
   globusOnly: boolean;
   filenameVars: TextInputs | [];
   activeFacets: ActiveFacets;
@@ -50,6 +51,29 @@ export type UserSearchQuery = {
   url: string;
   resultsCount: number | null;
   searchTime: number | null;
+  isSubscribed?: boolean;
+  lastCheckedTime?: number | null;
+  filterCreatedSince?: string | null;
 };
 
 export type UserSearchQueries = Array<UserSearchQuery>;
+
+export type ChangeType = 'new' | 'updated';
+
+export type DatasetChange = {
+  field: string;
+  oldValue: string | number;
+  newValue: string | number;
+};
+
+export type ChangedDataset = {
+  id: string;
+  changeType: ChangeType;
+  datasetName: string;
+  version?: string | number;
+  previousVersion?: string | number;
+  size?: number;
+  numberOfFiles?: number;
+  lastModified?: string;
+  changes?: DatasetChange[];
+};

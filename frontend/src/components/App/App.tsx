@@ -28,6 +28,7 @@ import {
   fetchUserSearchQueries,
   ResponseError,
   updateUserCart,
+  updateUserSearchQuery,
 } from '../../api';
 import {
   clearDeprecatedStorageKeys,
@@ -36,7 +37,6 @@ import {
   searchAlreadyExists,
   showError,
   showNotice,
-  unsavedLocalSearches,
 } from '../../common/utils';
 import { useProjectsConfig } from '../../common/useProjectsConfig';
 import { AuthContext } from '../../contexts/AuthContext';
@@ -105,6 +105,9 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   // Load projects configuration (includes STAC projects from projects.json)
   const { config: projectsConfig, loading: configLoading } = useProjectsConfig();
 
+  // Track whether projects have been fetched and configured
+  const [projectsLoaded, setProjectsLoaded] = React.useState(false);
+
   // Third-party tool integration
   useHotjar();
 
@@ -132,7 +135,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
 
   React.useEffect(() => {
     /* istanbul ignore else -- @preserve */
-    if (isAuthenticated) {
+    if (isAuthenticated && projectsLoaded) {
       fetchUserCart(pk, accessToken)
         .then((rawUserCart) => {
           const databaseItems = rawUserCart.items as RawSearchResults;
@@ -147,18 +150,61 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
       fetchUserSearchQueries(accessToken)
         .then((rawUserSearches) => {
           const databaseItems = rawUserSearches.results;
-          const searchQueriesToAdd = unsavedLocalSearches(databaseItems, userSearchQueries);
+
+          // Repair or remove corrupted local searches before syncing
+          const repairedLocalSearches = userSearchQueries.filter((query) => {
+            // Basic validation - if missing critical fields, remove it
+            return query.project && query.project.name && query.uuid && query.url;
+          });
+
+          // Separate local searches into new ones and updates to existing database items
+          const searchQueriesToAdd: UserSearchQueries = [];
+          const searchQueriesToUpdate: UserSearchQueries = [];
+
+          repairedLocalSearches.forEach((localQuery) => {
+            const dbMatch = databaseItems.find((dbQuery) => dbQuery.uuid === localQuery.uuid);
+            if (dbMatch) {
+              // Check if local version has newer subscription data or other changes
+              const hasChanges =
+                localQuery.isSubscribed !== dbMatch.isSubscribed ||
+                localQuery.lastCheckedTime !== dbMatch.lastCheckedTime ||
+                localQuery.minCreatedDate !== dbMatch.minCreatedDate ||
+                localQuery.maxCreatedDate !== dbMatch.maxCreatedDate ||
+                localQuery.filterCreatedSince !== dbMatch.filterCreatedSince;
+
+              if (hasChanges) {
+                searchQueriesToUpdate.push(localQuery);
+              }
+            } else if (!searchAlreadyExists(databaseItems, localQuery)) {
+              // This is a new search that doesn't exist in database
+              searchQueriesToAdd.push(localQuery);
+            }
+          });
+
           /* istanbul ignore next -- @preserve */
+          // Add new searches to database
           searchQueriesToAdd.forEach((query) => {
             addUserSearchQuery(pk, accessToken, query);
           });
 
-          // Combine local and database saved searches
+          /* istanbul ignore next -- @preserve */
+          // Update existing searches in database with local changes
+          searchQueriesToUpdate.forEach((query) => {
+            updateUserSearchQuery(query.uuid, accessToken, query);
+          });
+
+          // Combine all searches: updated local + new local + database items
           const combinedItems = [...searchQueriesToAdd, ...databaseItems];
+
+          // Apply updates from local to database items
+          const updatedItems = combinedItems.map((item) => {
+            const updateMatch = searchQueriesToUpdate.find((upd) => upd.uuid === item.uuid);
+            return updateMatch || item;
+          });
 
           // Remove all duplicates
           const dedupedSearches: UserSearchQueries = [];
-          combinedItems.forEach((search) => {
+          updatedItems.forEach((search) => {
             /* istanbul ignore else -- @preserve */
             if (!searchAlreadyExists(dedupedSearches, search)) {
               dedupedSearches.push(search);
@@ -166,12 +212,21 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
           });
 
           setUserSearchQueries(dedupedSearches);
+
+          // Show message if any local searches were removed during sync
+          const removedCount = userSearchQueries.length - repairedLocalSearches.length;
+          if (removedCount > 0) {
+            showError(
+              messageApi,
+              `Removed ${removedCount} corrupted search${removedCount > 1 ? 'es' : ''} during sync`,
+            );
+          }
         })
         .catch((error: ResponseError) => {
           showError(messageApi, error.message);
         });
     }
-  }, [isAuthenticated, pk, accessToken]);
+  }, [isAuthenticated, pk, accessToken, projectsLoaded]);
 
   React.useEffect(() => {
     /* istanbul ignore else -- @preserve */
@@ -199,6 +254,9 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
 
     fetchProjects(projectsConfig)
       .then((data) => {
+        // Mark projects as loaded so authentication effect can proceed
+        setProjectsLoaded(true);
+
         const projectName = searchQuery ? searchQuery.project.name : '';
         /* istanbul ignore else -- @preserve */
         if (data && projectName && projectName !== '') {
@@ -216,6 +274,33 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
               `Project "${projectName as string}" not found. Please select a valid project from the dropdown.`,
             );
           }
+        }
+
+        // After fetchProjects completes, update saved searches with correct project configurations
+        // This handles the case where searches were loaded before projects finished configuring
+        if (isAuthenticated && userSearchQueries.length > 0) {
+          const updatedSearches = userSearchQueries.map((search) => {
+            // For STAC projects, get the updated project configuration with correct facets
+            if (search.projectName || (search.project && search.project.isSTAC)) {
+              const projectToLookup = search.projectName || search.project.name;
+              const projectHash = search.project?.projectHash;
+              // Find the matching project from the newly fetched data
+              const updatedProject = data.results.find(
+                (proj) =>
+                  proj.name === projectToLookup ||
+                  proj.projectName === projectToLookup ||
+                  (projectHash && proj.projectHash === projectHash),
+              );
+              if (updatedProject) {
+                return {
+                  ...search,
+                  project: updatedProject,
+                };
+              }
+            }
+            return search;
+          });
+          setUserSearchQueries(updatedSearches);
         }
       })
       .catch(
@@ -282,7 +367,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
         algorithm: isDarkMode ? darkAlgorithm : defaultAlgorithm,
       }}
     >
-      <Layout>
+      <Layout className={isDarkMode ? 'dark-mode' : ''}>
         <Routes>
           <Route path="*" element={<NavBar />} />
         </Routes>
