@@ -261,7 +261,8 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
   const finalEsDocUrl = esDocUrl || furtherInfoUrl;
   const showQualityFlags = Object.keys(qualityFlags).length > 0;
   const showAdditionalLinks = urlCount > 0;
-  const showAdditionalTab = !!(showESDOC && showESDOC !== '') || showQualityFlags || showAdditionalLinks;
+  const showAdditionalTab =
+    !!(showESDOC && showESDOC !== '') || showQualityFlags || showAdditionalLinks;
 
   const tabList = [
     {
