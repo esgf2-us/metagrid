@@ -73,6 +73,8 @@ export const projectBaseQuery = (
   resultType: 'all',
   minVersionDate: null,
   maxVersionDate: null,
+  minCreatedDate: null,
+  maxCreatedDate: null,
   filenameVars: [],
   activeFacets: {},
   textInputs: [],
@@ -95,10 +97,7 @@ export const objectIsEmpty = (obj: Record<any, any>): boolean =>
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const isEqual = (a: any, b: any, normalize?: (value: any) => any): boolean => {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const valueA = normalize ? normalize(a) : a;
-
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const valueB = normalize ? normalize(b) : b;
 
   return JSON.stringify(valueA) === JSON.stringify(valueB);
@@ -368,6 +367,8 @@ export const getAltSearchFromUrl = (url?: string): ActiveSearchQuery => {
     activeFacets: {},
     textInputs: [],
     globusOnly: false,
+    minCreatedDate: null,
+    maxCreatedDate: null,
   };
 
   const params = new URLSearchParams(url || window.location.search);
@@ -402,6 +403,8 @@ export const getSearchFromUrl = (url?: string): ActiveSearchQuery => {
     activeFacets: {},
     textInputs: [],
     globusOnly: false,
+    minCreatedDate: null,
+    maxCreatedDate: null,
   };
 
   const params = new URLSearchParams(url || window.location.search);
@@ -481,7 +484,6 @@ export function createEsgpullCommand(
     'frequency',
     'grid_label',
     'index_node',
-    'instance_id',
     'institution_id',
     'master_id',
     'member_id',

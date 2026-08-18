@@ -452,9 +452,23 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           nextToken = typeof nextLink?.body?.token === 'string' ? nextLink.body.token : undefined;
         }
 
+        // Determine if this is a new search or pagination of existing search
+        // If the search URL changed (filters/facets changed), replace results instead of appending
+        const isSameSearch =
+          stacLoadedBatches.searchURL &&
+          currentRequestURL &&
+          stacLoadedBatches.searchURL === currentRequestURL;
+
+        // Sanity check: if appending would exceed totalMatched, it's a different query
+        const wouldExceedTotal =
+          stacLoadedBatches.results.length > 0 &&
+          stacLoadedBatches.results.length + newDocs.length > totalMatched;
+
         const loadedBatches = Math.ceil(stacLoadedBatches.results.length / SEARCH_BATCH_SIZE);
-        const accumulatedResults =
-          loadedBatches === 0 ? newDocs : [...stacLoadedBatches.results, ...newDocs];
+        const shouldAppend = isSameSearch && loadedBatches > 0 && !wouldExceedTotal;
+        const accumulatedResults = shouldAppend
+          ? [...stacLoadedBatches.results, ...newDocs]
+          : newDocs;
 
         setStacLoadedBatches({
           results: accumulatedResults,
@@ -544,15 +558,23 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   const handleSaveSearchQuery = React.useCallback(
     (url: string, numFound: number): void => {
+      // For dynamic projects, use project_name instead of project_id
+      const projectPk = activeSearchQuery.project.pk;
+      const isStaticProject = projectPk && (projectPk as number) <= 10; // Static projects are IDs 1-10
+
       const savedSearch: UserSearchQuery = {
         uuid: uuidv4(),
         user: pk,
         project: activeSearchQuery.project as RawProject,
-        projectId: activeSearchQuery.project.pk as string,
+        ...(isStaticProject
+          ? { projectId: projectPk as string }
+          : { projectName: activeSearchQuery.project.name as string }),
         versionType: activeSearchQuery.versionType,
         resultType: activeSearchQuery.resultType,
         minVersionDate: activeSearchQuery.minVersionDate,
         maxVersionDate: activeSearchQuery.maxVersionDate,
+        minCreatedDate: activeSearchQuery.minCreatedDate,
+        maxCreatedDate: activeSearchQuery.maxCreatedDate,
         filenameVars: activeSearchQuery.filenameVars,
         activeFacets: activeSearchQuery.activeFacets,
         textInputs: activeSearchQuery.textInputs,

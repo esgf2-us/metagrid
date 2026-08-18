@@ -128,7 +128,7 @@ export const ReactJoyrideProvider: React.FC<React.PropsWithChildren<Props>> = ({
       line-height: 1.5;
     `;
     // Use custom message if provided, otherwise use default
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const customMsg = (window as any).tourLoadingMessage as string | undefined;
     /* istanbul ignore next -- @preserve */
     messageDiv.innerHTML =

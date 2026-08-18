@@ -8,7 +8,7 @@ import {
   StacAggregations,
   ResultType,
   TextInputs,
-  VersionDate,
+  DateString,
   VersionType,
   StacAssetDict,
   isStacAsset,
@@ -47,7 +47,7 @@ export function generateProjectHash(
 }
 
 // Creates a RawProject from pk and StacProject data
-function buildStacProject(
+export function buildStacProject(
   pk: string,
   { name, fullName, projectUrl, projectName, facetsByGroup, stacApiUrl }: StacProject,
 ): RawProject {
@@ -129,8 +129,16 @@ export function getStacProject(projectName: string, projectHash?: string): RawPr
       }
     }
 
-    // Fall back to projectName lookup (returns first match)
-    const stacProject = configuredAdditionalProjects.find(
+    // Try to match by configured name (e.g., "CMIP6 PROD")
+    let stacProject = configuredAdditionalProjects.find(
+      (project: RawProject) => project.name === projectName,
+    );
+    if (stacProject) {
+      return stacProject;
+    }
+
+    // Fall back to projectName lookup (underlying project name, e.g., "CMIP6")
+    stacProject = configuredAdditionalProjects.find(
       (project: RawProject) => (project.projectName || '') === projectName,
     );
     if (stacProject) {
@@ -146,7 +154,11 @@ export function getStacProject(projectName: string, projectHash?: string): RawPr
     }
   }
 
-  const stacProject = STAC_PROJECTS.find((project) => (project.projectName || '') === projectName);
+  // Try configured name first, then projectName
+  let stacProject = STAC_PROJECTS.find((project) => project.name === projectName);
+  if (!stacProject) {
+    stacProject = STAC_PROJECTS.find((project) => (project.projectName || '') === projectName);
+  }
   return stacProject || STAC_PROJECTS[0];
 }
 
@@ -162,13 +174,13 @@ export function getFacetFilterName(projectName: string | undefined, facetName: s
   }
 }
 
-export function getAggregationsList(projectName: string): string[] {
-  const { facetsByGroup } = getStacProject(projectName);
+export function getAggregationsList(projectName: string, projectHash?: string): string[] {
+  const { facetsByGroup } = getStacProject(projectName, projectHash);
   return Object.values(facetsByGroup)
     .flat()
     .map((element) => {
       if (typeof element === 'string') {
-        return `${projectName.toLowerCase()}_${element}_frequency`;
+        return `${projectName.replace('-', '_').toLowerCase()}_${element}_frequency`;
       }
 
       // Exceptions defined here
@@ -176,7 +188,7 @@ export function getAggregationsList(projectName: string): string[] {
         case 'alternate_name':
           return 'alternate_name_frequency';
         default:
-          return `${projectName.toLowerCase()}_${element.facet}_frequency`;
+          return `${projectName.replace('-', '_').toLowerCase()}_${element.facet}_frequency`;
       }
     });
 }
@@ -372,9 +384,13 @@ export const aggregationsToFacetsData = (
   [x: string]: [string, number][];
 } => {
   const facetsData: { [x: string]: [string, number][] } = {};
+
+  // Convert project name to match aggregation format (lowercase, hyphens to underscores)
+  const normalizedProjectName = projectName.replace('-', '_').toLowerCase();
+
   aggregations.aggregations.forEach((aggregation) => {
     const facetName = aggregation.name
-      .replace(`${projectName.toLocaleLowerCase()}_`, '')
+      .replace(`${normalizedProjectName}_`, '')
       .replace('_frequency', '');
     const facetValues = aggregation.buckets.map(
       (bucket) => [bucket.key, bucket.frequency] as [string, number],
@@ -490,8 +506,17 @@ export const convertSearchParamsIntoStacFilter = (
 
   const paramKeys = Array.from(params.keys());
 
-  const facetsByGroup = project.facetsByGroup as Record<string, string[]>;
-  const allFacets: string[] = Object.values(facetsByGroup).flat();
+  const { facetsByGroup } = project;
+  // Extract all facet names, handling both string and { title, facet } object formats
+  const allFacets: string[] = Object.values(facetsByGroup)
+    .flat()
+    .map((facetEntry) => {
+      if (typeof facetEntry === 'string') {
+        return facetEntry;
+      }
+      // For titled facets, use the title (e.g., "data_node")
+      return facetEntry.title;
+    });
   const validFacets = paramKeys.filter((key) => allFacets.includes(key));
 
   /* istanbul ignore next -- @preserve */
@@ -501,6 +526,8 @@ export const convertSearchParamsIntoStacFilter = (
 
   const globusOnly = params.get('globusOnly');
   const versionParams = paramKeys.filter((key) => ['min_version', 'max_version'].includes(key));
+  const createdParams = paramKeys.filter((key) => ['min_created', 'max_created'].includes(key));
+  const filterCreatedSince = params.get('filterCreatedSince');
 
   const mainFilters = [];
 
@@ -567,9 +594,41 @@ export const convertSearchParamsIntoStacFilter = (
     }
   }
 
+  // Create a filter for created date range, if created params exist
+  if (createdParams.length > 0) {
+    // If there are more than one created params, create an AND filter between each
+    if (createdParams.length > 1) {
+      const minCreated = params.get('min_created');
+      const maxCreated = params.get('max_created');
+      mainFilters.push(
+        createAndFilter([
+          { op: '>=', args: [{ property: 'properties.created' }, minCreated] },
+          { op: '<=', args: [{ property: 'properties.created' }, maxCreated] },
+        ]),
+      );
+    } else {
+      const param = createdParams[0];
+      const value = params.get(param);
+      if (param === 'min_created' && value) {
+        mainFilters.push({ op: '>=', args: [{ property: 'properties.created' }, value] });
+      }
+      if (param === 'max_created' && value) {
+        mainFilters.push({ op: '<=', args: [{ property: 'properties.created' }, value] });
+      }
+    }
+  }
+
   // Create a filter for globusOnly if specified
   if (globusOnly && globusOnly === 'true') {
     mainFilters.push(createEqualsFilter('properties.access', 'Globus'));
+  }
+
+  // Create a filter for properties.created if filterCreatedSince is specified
+  if (filterCreatedSince) {
+    mainFilters.push({
+      op: '>=',
+      args: [{ property: 'properties.created' }, filterCreatedSince],
+    });
   }
 
   if (mainFilters.length > 1) {
@@ -601,23 +660,24 @@ export function stringifyApiRequest(
   textInputs?: TextInputs | [],
   versionType?: VersionType,
   resultType?: ResultType,
-  minVersionDate?: VersionDate,
-  maxVersionDate?: VersionDate,
+  minVersionDate?: DateString,
+  maxVersionDate?: DateString,
   activeFacets?: ActiveFacets,
   aggregations?: string[],
 ): string {
   if (project.isSTAC) {
     // STAC path
-    const stacProject = getStacProject(project.projectName as string);
-    const stacFilter = convertSearchParamsIntoStacFilter(reqUrlStr, stacProject) || 'null';
+    // Use the project passed in, which already has the correct facetsByGroup
+    const stacFilter = convertSearchParamsIntoStacFilter(reqUrlStr, project);
     const textInputsArray = textInputs || [];
     const textInputsStr =
       textInputsArray.length > 0 ? `, "q": ${JSON.stringify(textInputsArray)}` : '';
     const aggregationsArray = aggregations || [];
     const aggregationsStr =
       aggregationsArray.length > 0 ? `, "aggregations": ${JSON.stringify(aggregationsArray)}` : '';
+    const filterStr = stacFilter ? `, "filter": ${JSON.stringify(stacFilter)}` : '';
 
-    return `{"collections": ["${stacProject.projectName}"], "filter": ${JSON.stringify(stacFilter)}${textInputsStr}${aggregationsStr}}`;
+    return `{"collections": ["${project.projectName}"]${filterStr}${textInputsStr}${aggregationsStr}}`;
   }
 
   // Non-STAC path

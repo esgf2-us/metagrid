@@ -2,9 +2,6 @@
  * This file contains HTTP Request functions.
  */
 
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-
 import 'setimmediate'; // Added because in Jest 27, setImmediate is not defined, causing test errors
 import humps from 'humps';
 import queryString from 'query-string';
@@ -447,13 +444,27 @@ export const fetchUserSearchQueries = async (
         }
       },
     })
-    .then(
-      (res) =>
-        res.data as Promise<{
-          count: number;
-          results: UserSearchQueries;
-        }>,
-    )
+    .then((res) => {
+      const data = res.data as { count: number; results: UserSearchQueries };
+
+      // Reconstruct project objects for dynamic projects (where project is null)
+      const resultsWithProjects = data.results.map((search: UserSearchQuery) => {
+        if (!search.project && search.projectName) {
+          // Dynamic project - reconstruct the project object
+          const reconstructedProject = getStacProject(search.projectName);
+          return {
+            ...search,
+            project: reconstructedProject,
+          };
+        }
+        return search;
+      });
+
+      return {
+        count: data.count,
+        results: resultsWithProjects,
+      };
+    })
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userSearches));
     });
@@ -487,12 +498,37 @@ export const addUserSearchQuery = async (
 };
 
 /**
+ * HTTP Request Method: PATCH
+ * HTTP Response: 200 OK
+ */
+export const updateUserSearchQuery = async (
+  uuid: string,
+  accessToken: string,
+  payload: Partial<UserSearchQuery>,
+): Promise<RawUserSearchQuery> => {
+  const decamelizedPayload = humps.decamelizeKeys(payload);
+  return axios
+    .patch(`${apiRoutes.userSearch.path.replace(':uuid', uuid)}`, decamelizedPayload, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+    })
+    .then((response) => response.data as Promise<RawUserSearchQuery>)
+    .catch((error: ResponseError) => {
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userSearch));
+    });
+};
+
+/**
  * HTTP Request Method: DELETE
  * HTTP Response: 204 No Content
  */
-export const deleteUserSearchQuery = async (pk: string, accessToken: string): Promise<''> =>
+export const deleteUserSearchQuery = async (uuid: string, accessToken: string): Promise<''> =>
   axios
-    .delete(`${apiRoutes.userSearch.path.replace(':pk', pk)}`, {
+    .delete(`${apiRoutes.userSearch.path.replace(':uuid', uuid)}`, {
       data: {},
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -748,10 +784,15 @@ export const generateSearchURLQuery = (
     resultType,
     minVersionDate,
     maxVersionDate,
+    minCreatedDate,
+    maxCreatedDate,
     activeFacets,
     textInputs,
     globusOnly,
   } = activeSearchQuery;
+
+  const filterCreatedSince =
+    'filterCreatedSince' in activeSearchQuery ? activeSearchQuery.filterCreatedSince : null;
 
   const { isSTAC } = activeSearchQuery.project;
 
@@ -779,6 +820,12 @@ export const generateSearchURLQuery = (
   }
   if (maxVersionDate) {
     baseParams += `max_version=${maxVersionDate}&`;
+  }
+  if (minCreatedDate && isSTAC) {
+    baseParams += `min_created=${minCreatedDate}&`;
+  }
+  if (maxCreatedDate && isSTAC) {
+    baseParams += `max_created=${maxCreatedDate}&`;
   }
 
   /* istanbul ignore next -- @preserve */
@@ -808,7 +855,10 @@ export const generateSearchURLQuery = (
     const projectHashParam = rawProject.projectHash
       ? `&project_hash=${rawProject.projectHash}`
       : '';
-    const url = `${baseRoute}${baseParams}${`project_id=${rawProject.projectName}`}${projectHashParam}&${textInputsParams}&${activeFacetsParams}`;
+    const filterCreatedSinceParam = filterCreatedSince
+      ? `&filterCreatedSince=${encodeURIComponent(filterCreatedSince)}`
+      : '';
+    const url = `${baseRoute}${baseParams}${`project_id=${rawProject.projectName}`}${projectHashParam}&${textInputsParams}&${activeFacetsParams}${filterCreatedSinceParam}`;
 
     return url;
   }
@@ -874,11 +924,11 @@ const generateStacSearchCacheKey = (
   token?: string,
   stacApiUrl?: string,
 ): string => {
-  const filterStr = filter ? JSON.stringify(filter) : 'null';
-  const qStr = q ? JSON.stringify(q) : 'null';
+  const filterStr = filter ? JSON.stringify(filter) : '';
+  const qStr = q ? JSON.stringify(q) : '';
 
   // Handle token properly - it could be a string, object, or undefined
-  let tokenStr = 'null';
+  let tokenStr = '';
   if (token !== undefined && token !== null) {
     tokenStr = typeof token === 'object' ? JSON.stringify(token) : token;
   }
@@ -989,7 +1039,7 @@ const createAggregationsCacheKey = (
   filter: { op: string; args: unknown } | undefined,
   stacApiUrl?: string,
 ): string => {
-  const filterStr = filter ? JSON.stringify(filter) : 'null';
+  const filterStr = filter ? JSON.stringify(filter) : '';
   const urlStr = stacApiUrl || 'default';
   return `${projectName}|${normalizedUrl}|${filterStr}|${urlStr}`;
 };
@@ -1006,6 +1056,7 @@ export const fetchSTACAggregations = async (
   reqUrl: string,
   filter: { op: string; args: unknown } | undefined,
   stacApiUrl?: string,
+  projectHash?: string,
 ): Promise<StacAggregations> => {
   // Check if this request is for a stale project BEFORE doing anything
   if (currentStacProject !== null && currentStacProject !== projectName) {
@@ -1034,18 +1085,21 @@ export const fetchSTACAggregations = async (
   }
 
   // No cache hit, fetch from API
-  const aggregationsList = getAggregationsList(projectName);
+  const aggregationsList = getAggregationsList(projectName, projectHash);
 
   const payload: {
     collections: string[];
     aggregations: string[];
-    filter: { op: string; args: unknown } | undefined;
+    filter?: { op: string; args: unknown };
     stacApiUrl?: string;
   } = {
     collections: [projectName],
     aggregations: aggregationsList,
-    filter,
   };
+
+  if (filter) {
+    payload.filter = filter;
+  }
 
   if (stacApiUrl) {
     payload.stacApiUrl = stacApiUrl;
@@ -1097,7 +1151,13 @@ export const fetchSTACSearchResults = async (
     textInputs = query.split(',');
   }
 
-  const aggregations = await fetchSTACAggregations(projectName, reqUrlStr, filter, stacApiUrl)
+  const aggregations = await fetchSTACAggregations(
+    projectName,
+    reqUrlStr,
+    filter,
+    stacApiUrl,
+    projectHash,
+  )
     .then((response) => {
       // Convert aggregations response into facet data for Metagrid
       const aggregationsToFacets = aggregationsToFacetsData(
@@ -1463,7 +1523,6 @@ export const loadSessionValue = async <T>(key: string): Promise<T | null> => {
     .then((resp: AxiosResponse) => {
       const { data } = resp;
       if (data && key in data) {
-        // eslint-disable-next-line
         const value: T | null = data[key];
         if ((value as unknown) === 'None') {
           return null;
