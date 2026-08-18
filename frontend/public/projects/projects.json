@@ -74,6 +74,31 @@
           "driving_variant_label"
         ]
       }
+    },
+    {
+      "name": "CMIP6Plus STAC",
+      "projectName": "CMIP6Plus",
+      "fullName": "Coupled Model Intercomparison Project Phase 6",
+      "projectUrl": "https://wcrp-cmip.org/cmip-phases/cmip6/",
+      "facetsByGroup": {
+        "General": ["mip_era", { "title": "data_node", "facet": "alternate_name" }, "activity_id"],
+        "Identifiers": [
+          "source_id",
+          "source_type",
+          "experiment_id",
+          "sub_experiment_id",
+          "institution_id"
+        ],
+        "Classifications": [
+          "frequency",
+          "variable_id",
+          { "title": "cf_standard_name", "facet": "variable_cf_standard_name" },
+          "table_id",
+          "realm"
+        ],
+        "Resolutions": ["nominal_resolution"],
+        "Labels": ["grid_label", "variant_label"]
+      }
     }
   ],
   "whitelist": [],

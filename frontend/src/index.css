@@ -1,8 +1,9 @@
 body {
   margin: 0;
   height: auto;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
-    'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell',
+    'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -13,4 +14,58 @@ code {
 
 .site-collapse-custom-collapse .ant-collapse-content-box {
   background-color: rgba(237, 240, 255, 0.25);
+}
+
+/* Generalized scrollbar styling - apply with .custom-scrollbar class */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 16px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  margin: 0 4px;
+  border-left: 1px solid #d9d9d9;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  border: 4px solid transparent;
+  background-clip: content-box;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  background-clip: content-box;
+}
+
+.custom-scrollbar::-webkit-scrollbar-corner {
+  background: #f0f0f0;
+  border-left: 1px solid #d9d9d9;
+  border-bottom: 1px solid #d9d9d9;
+}
+
+/* Dark mode scrollbar */
+.dark-mode .custom-scrollbar::-webkit-scrollbar-track {
+  background: #2a2a2a;
+  border-left: 1px solid #434343;
+}
+
+.dark-mode .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #4a4a4a;
+  border-radius: 8px;
+  background-clip: content-box;
+}
+
+.dark-mode .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #5a5a5a;
+  border-radius: 8px;
+  background-clip: content-box;
+}
+
+.dark-mode .custom-scrollbar::-webkit-scrollbar-corner {
+  background: #2a2a2a;
+  border-left: 1px solid #434343;
+  border-bottom: 1px solid #434343;
 }
