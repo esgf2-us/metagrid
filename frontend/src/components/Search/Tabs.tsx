@@ -202,18 +202,20 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
   }
 
   let urlCount = 0;
-  const additionalLinks = Object.keys(xlinkTypesToOutput).map((linkType) => {
-    const { label, url } = xlinkTypesToOutput[linkType];
-    if (url) {
-      urlCount += 1;
-      return (
-        <Button type="link" href={url} target="_blank" key={label}>
-          <span>{label}</span>
-        </Button>
-      );
-    }
-    return null;
-  });
+  const additionalLinks = Object.keys(xlinkTypesToOutput)
+    .map((linkType) => {
+      const { label, url } = xlinkTypesToOutput[linkType];
+      if (url) {
+        urlCount += 1;
+        return (
+          <Button type="link" href={url} target="_blank" key={label}>
+            <span>{label}</span>
+          </Button>
+        );
+      }
+      return null;
+    })
+    .filter(Boolean); // Remove null/undefined values
 
   // Extract citation and ES-DOC URLs from STAC links array if available
   let citationUrl = '';
@@ -259,7 +261,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
   const finalEsDocUrl = esDocUrl || furtherInfoUrl;
   const showQualityFlags = Object.keys(qualityFlags).length > 0;
   const showAdditionalLinks = urlCount > 0;
-  const showAdditionalTab = showESDOC !== '' || showQualityFlags || showAdditionalLinks;
+  const showAdditionalTab = !!(showESDOC && showESDOC !== '') || showQualityFlags || showAdditionalLinks;
 
   const tabList = [
     {

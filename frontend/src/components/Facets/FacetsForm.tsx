@@ -790,7 +790,7 @@ const FacetsForm: React.FC = () => {
                     {currentProject.isSTAC && (
                       <Form.Item
                         data-testid="created-range-datepicker"
-                        label="Publication Date"
+                        label="Publish Date"
                         name="createdDateRange"
                         style={{ marginBottom: 0 }}
                         tooltip={{
