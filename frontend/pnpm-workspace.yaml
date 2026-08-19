@@ -1,0 +1,5 @@
+# pnpm-workspace.yaml
+allowBuilds:
+  '@swc/core': true
+  'esbuild': true
+  'msw': true
