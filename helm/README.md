@@ -164,6 +164,8 @@ This document describes the configurable values available in the `values.yaml` f
 | `django.migrateJob.backoffLimit` | Maximum number of retries for the migration job. | `integer` | `4` |
 | `django.projects` | Configuration for defining backend projects. | `string` | `""` |
 
+Gunicorn auto-reload is disabled by default for production deployments. If you need it for development-style workflows, set `django.config.GUNICORN_RELOAD: "true"` in your Helm values.
+
 ---
 ## Frontend
 
