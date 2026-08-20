@@ -2,7 +2,7 @@ should create a configmap:
   1: |
     apiVersion: v1
     data:
-      DJANGO_GUNICORN_WORKERS: "10"
+      GUNICORN_WORKERS: "10"
       METAGRID_BANNER_TEXT: |
         this is a message for users
       METAGRID_DATA_UPLOAD_MAX_NUMBER_FIELDS: "10"
@@ -32,7 +32,7 @@ should create a default configmap:
   1: |
     apiVersion: v1
     data:
-      DJANGO_GUNICORN_WORKERS: "2"
+      GUNICORN_WORKERS: "2"
       METAGRID_DATA_UPLOAD_MAX_NUMBER_FIELDS: "1024"
       METAGRID_GLOBUS_NODES: '["esgf-node.ornl.gov","eagle.alcf.anl.gov","esgf-data.nersc.gov"]'
       METAGRID_GLOBUS_PUBLIC_INDEX_ENDPOINT_ID: a8ef4320-9e5a-4793-837b-c45161ca1845

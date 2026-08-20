@@ -154,7 +154,7 @@ This document describes the configurable values available in the `values.yaml` f
 
 | Parameter | Description | Type | Default |
 |---|---|---|---|
-| `django.gunicornWorkers` | Number of Gunicorn workers for handling requests. | `string` | `'2'` |
+| `django.gunicornWorkers` | Number of Gunicorn workers for handling requests. Rendered to the backend as `GUNICORN_WORKERS`. | `string` | `'2'` |
 | `django.secretKey` | Django secret key. | `string` | `""` |
 | `django.adminUrl` | URL for the Django admin interface. | `string` | `""` |
 | `django.admins` | A list of admins. | `string` | `""` |
