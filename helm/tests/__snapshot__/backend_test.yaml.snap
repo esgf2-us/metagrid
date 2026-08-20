@@ -251,10 +251,24 @@ should have a deployment:
                     name: metagrid
               image: ghcr.io/esgf2-us/metagrid-backend:v1.0.0
               imagePullPolicy: IfNotPresent
+              startupProbe:
+                httpGet:
+                  path: /readiness
+                  port: http
+                initialDelaySeconds: 0
+                periodSeconds: 10
+                timeoutSeconds: 5
+                failureThreshold: 18
+                successThreshold: 1
               livenessProbe:
                 httpGet:
                   path: /liveness
                   port: http
+                initialDelaySeconds: 0
+                periodSeconds: 30
+                timeoutSeconds: 5
+                failureThreshold: 3
+                successThreshold: 1
               name: backend
               ports:
                 - containerPort: 5000
@@ -264,6 +278,11 @@ should have a deployment:
                 httpGet:
                   path: /readiness
                   port: http
+                initialDelaySeconds: 0
+                periodSeconds: 10
+                timeoutSeconds: 5
+                failureThreshold: 6
+                successThreshold: 1
               resources: {}
               securityContext: {}
           securityContext: {}

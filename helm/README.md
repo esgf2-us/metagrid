@@ -216,6 +216,9 @@ Gunicorn auto-reload is disabled by default for production deployments. If you n
 | `backend.securityContext`                  | Security context for the backend pods.                                    | `object`  | `{}`      |
 | `backend.service.type`                     | The type of service (e.g., `ClusterIP`).                                  | `string`  | `ClusterIP` |
 | `backend.service.port`                     | The service port for the backend.                                         | `integer` | `5000`    |
+| `backend.startupProbe.*`                   | Startup probe settings for the backend pod. Supports `enabled`, `path`, `initialDelaySeconds`, `periodSeconds`, `timeoutSeconds`, `failureThreshold`, and `successThreshold`. Defaults to a production-safe `/readiness` probe with a longer startup window. | `object`  | `{ enabled: true, path: /readiness, initialDelaySeconds: 0, periodSeconds: 10, timeoutSeconds: 5, failureThreshold: 18, successThreshold: 1 }` |
+| `backend.livenessProbe.*`                  | Liveness probe settings for the backend pod. Supports `enabled`, `path`, `initialDelaySeconds`, `periodSeconds`, `timeoutSeconds`, `failureThreshold`, and `successThreshold`. Defaults to a shallow `/liveness` probe. | `object`  | `{ enabled: true, path: /liveness, initialDelaySeconds: 0, periodSeconds: 30, timeoutSeconds: 5, failureThreshold: 3, successThreshold: 1 }` |
+| `backend.readinessProbe.*`                 | Readiness probe settings for the backend pod. Supports `enabled`, `path`, `initialDelaySeconds`, `periodSeconds`, `timeoutSeconds`, `failureThreshold`, and `successThreshold`. Defaults to a dependency-aware `/readiness` probe. | `object`  | `{ enabled: true, path: /readiness, initialDelaySeconds: 0, periodSeconds: 10, timeoutSeconds: 5, failureThreshold: 6, successThreshold: 1 }` |
 | `backend.resources`                        | Resource requests and limits for the backend pod.                         | `object`  | `{}`      |
 | `backend.autoscaling.enabled`               | Whether autoscaling is enabled for the backend service.                    | `boolean` | `false`   |
 | `backend.autoscaling.minReplicas`          | Minimum number of replicas for autoscaling.                               | `integer` | `1`       |
@@ -226,6 +229,8 @@ Gunicorn auto-reload is disabled by default for production deployments. If you n
 | `backend.nodeSelector`                     | Node selectors for the backend pods.                                      | `object`  | `{}`      |
 | `backend.tolerations`                      | Tolerations for the backend pods.                                         | `array`   | `[]`      |
 | `backend.affinity`                         | Affinity rules for the backend pods.                                      | `object`  | `{}`      |
+
+The backend probes are intentionally split by responsibility: `/liveness` stays shallow and process-oriented, while `/readiness` remains dependency-aware. The default startup probe also targets `/readiness` so pods get additional time to finish booting and establish database connectivity before normal readiness and liveness checks take over.
 
 ---
 

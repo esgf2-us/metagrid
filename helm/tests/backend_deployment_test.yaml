@@ -20,6 +20,77 @@ tests:
     template: templates/backend/deployment.yaml
     asserts:
       - matchSnapshot: {}
+  - it: should configure backend probes
+    template: templates/backend/deployment.yaml
+    set:
+      backend:
+        startupProbe:
+          enabled: true
+          path: /readiness
+          initialDelaySeconds: 3
+          periodSeconds: 15
+          timeoutSeconds: 7
+          failureThreshold: 20
+          successThreshold: 1
+        livenessProbe:
+          enabled: true
+          path: /liveness
+          initialDelaySeconds: 4
+          periodSeconds: 45
+          timeoutSeconds: 6
+          failureThreshold: 4
+          successThreshold: 1
+        readinessProbe:
+          enabled: true
+          path: /readiness
+          initialDelaySeconds: 5
+          periodSeconds: 12
+          timeoutSeconds: 8
+          failureThreshold: 9
+          successThreshold: 2
+    asserts:
+      - isSubset:
+          path: spec.template.spec.containers[0].startupProbe
+          content:
+            httpGet:
+              path: /readiness
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 15
+            timeoutSeconds: 7
+            failureThreshold: 20
+            successThreshold: 1
+      - isSubset:
+          path: spec.template.spec.containers[0].livenessProbe
+          content:
+            httpGet:
+              path: /liveness
+              port: http
+            initialDelaySeconds: 4
+            periodSeconds: 45
+            timeoutSeconds: 6
+            failureThreshold: 4
+            successThreshold: 1
+      - isSubset:
+          path: spec.template.spec.containers[0].readinessProbe
+          content:
+            httpGet:
+              path: /readiness
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 12
+            timeoutSeconds: 8
+            failureThreshold: 9
+            successThreshold: 2
+  - it: should omit startup probe when disabled
+    template: templates/backend/deployment.yaml
+    set:
+      backend:
+        startupProbe:
+          enabled: false
+    asserts:
+      - notExists:
+          path: spec.template.spec.containers[0].startupProbe
   - it: should set replicas
     template: templates/backend/deployment.yaml
     set:
