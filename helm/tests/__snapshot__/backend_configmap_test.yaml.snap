@@ -3,16 +3,16 @@ should create a configmap:
     apiVersion: v1
     data:
       GUNICORN_WORKERS: "10"
-      METAGRID_BANNER_TEXT: |2
+      METAGRID_BANNER_TEXT: |
         this is a message for users
       METAGRID_DATA_UPLOAD_MAX_NUMBER_FIELDS: "10"
-      METAGRID_FOOTER_TEXT: |2
+      METAGRID_FOOTER_TEXT: |
         Footer text, check out this markdown [link](https://esgf.neworg.io)
       METAGRID_GLOBUS_NODES: '["esgf.neworg.io"]'
       METAGRID_GLOBUS_PUBLIC_INDEX_ENDPOINT_ID: abcd1234
       METAGRID_SEARCH_URL: https://esgf.neworg.io/bridge
       METAGRID_STAC_URL: https://esgf.neworg.io/stac
-      METAGRID_SUPPORT_INFO: |2
+      METAGRID_SUPPORT_INFO: |
         Contact <name> (<email>)
       METAGRID_WGET_MAX_DIR_LENGTH: "20"
       METAGRID_WGET_SCRIPT_FILE_DEFAULT_LIMIT: "2"

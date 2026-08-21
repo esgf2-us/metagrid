@@ -21,7 +21,7 @@ should have a deployment:
       template:
         metadata:
           annotations:
-            checksum/config: 1f8ad3d8b936e84e6aa122bd452fa0fa70f20047a2a83dd4c605957cdcb0a41c
+            checksum/config: b41be586b96f795a0eba06a9bb0badafbbbe965369da2d8573e7df4e7dcc5262
           labels:
             app.kubernetes.io/component: backend
             app.kubernetes.io/instance: metagrid
@@ -45,39 +45,39 @@ should have a deployment:
                     name: metagrid
               image: ghcr.io/esgf2-us/metagrid-backend:v1.0.0
               imagePullPolicy: IfNotPresent
-              startupProbe:
-                httpGet:
-                  path: /readiness
-                  port: http
-                initialDelaySeconds: 0
-                periodSeconds: 10
-                timeoutSeconds: 5
-                failureThreshold: 18
-                successThreshold: 1
               livenessProbe:
+                failureThreshold: 3
                 httpGet:
                   path: /liveness
                   port: http
                 initialDelaySeconds: 0
                 periodSeconds: 30
-                timeoutSeconds: 5
-                failureThreshold: 3
                 successThreshold: 1
+                timeoutSeconds: 5
               name: backend
               ports:
                 - containerPort: 5000
                   name: http
                   protocol: TCP
               readinessProbe:
+                failureThreshold: 6
                 httpGet:
                   path: /readiness
                   port: http
                 initialDelaySeconds: 0
                 periodSeconds: 10
-                timeoutSeconds: 5
-                failureThreshold: 6
                 successThreshold: 1
+                timeoutSeconds: 5
               resources: {}
               securityContext: {}
+              startupProbe:
+                failureThreshold: 18
+                httpGet:
+                  path: /readiness
+                  port: http
+                initialDelaySeconds: 0
+                periodSeconds: 10
+                successThreshold: 1
+                timeoutSeconds: 5
           securityContext: {}
           serviceAccountName: metagrid-backend
