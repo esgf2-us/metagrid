@@ -33,7 +33,7 @@
     "@react-keycloak/web": "3.4.0",
     "antd": "^5.29.1",
     "autoprefixer": "10.4.21",
-    "axios": "1.17.0",
+    "axios": "1.19.0",
     "dayjs": "1.11.20",
     "dotenv": "16.5.0",
     "humps": "2.0.1",
