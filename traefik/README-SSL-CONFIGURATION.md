@@ -137,7 +137,7 @@ podman-compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compos
   ```bash
   # Docker
   docker compose logs traefik
-  
+
   # Podman
   podman compose logs traefik
   # or

@@ -6,7 +6,7 @@ NAMESPACE="metagrid"
 RELEASE="metagrid"
 VALUES_FILE="nersc-dev.yaml"
 CHART_PATH="./helm/"
-FALLBACK_TAG="v1.5.5"
+FALLBACK_TAG="v1.6.3-rc2"
 
 DETECTED_PR_TAG=""
 DEFAULT_TAG=""

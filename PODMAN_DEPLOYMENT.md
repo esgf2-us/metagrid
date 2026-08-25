@@ -101,7 +101,7 @@ You should see:
    ```bash
    ./manage_metagrid.sh
    ```
-   
+
    Choose:
    - **1** - Start Metagrid - Production
    - **1** - Use pre-built images ← Recommended!

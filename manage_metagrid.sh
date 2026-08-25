@@ -58,6 +58,7 @@ KEYCLOAK_PROD_OVERLAY="-f docker-compose.keycloak.prod.yml"
 LOCAL_OVERLAY="-f docker-compose-local-overlay.yml"
 PROD_OVERLAY="-f docker-compose-prod-overlay.yml"
 PREBUILT_OVERLAY="-f docker-compose.prebuilt.yml"
+FALLBACK_TAG="v1.6.3-rc2"
 
 set -e
 
@@ -70,6 +71,79 @@ function compose_cmd() {
         # podman-compose doesn't use 'compose' subcommand
         $CONTAINER_CMD "$@"
     fi
+}
+
+# Helper functions for image tag detection
+function detect_pr_tag() {
+    local branch pr_number
+
+    branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")"
+
+    # Ask GitHub CLI for the PR attached to this branch
+    if command -v gh >/dev/null 2>&1 && [ -n "$branch" ]; then
+        pr_number="$(gh pr list --head "$branch" --json number --jq '.[0].number' 2>/dev/null || true)"
+
+        if [[ "$pr_number" =~ ^[0-9]+$ ]]; then
+            echo "pr-$pr_number"
+            return 0
+        fi
+    fi
+
+    return 1
+}
+
+function get_latest_release_tag() {
+    if command -v gh >/dev/null 2>&1; then
+        gh release list --limit 1 --json tagName --jq '.[0].tagName' 2>/dev/null || echo ""
+    fi
+}
+
+function get_default_tag() {
+    local detected latest_release
+
+    # Try to detect PR tag first
+    detected="$(detect_pr_tag || true)"
+    if [ -n "$detected" ]; then
+        echo "$detected"
+        return
+    fi
+
+    # Try to get latest release
+    latest_release="$(get_latest_release_tag || true)"
+    if [ -n "$latest_release" ]; then
+        echo "$latest_release"
+        return
+    fi
+
+    # Ultimate fallback - uses constant defined at top of script
+    echo "$FALLBACK_TAG"
+}
+
+function format_tag() {
+    local input="$1"
+    local default_tag="$2"
+
+    if [ -z "$input" ]; then
+        echo "$default_tag"
+        return
+    fi
+
+    # If user enters just a number, assume it's a PR number
+    if [[ "$input" =~ ^[0-9]+$ ]]; then
+        echo "pr-$input"
+        return
+    fi
+
+    echo "$input"
+}
+
+function prompt_tag() {
+    local default_tag
+    default_tag="$(get_default_tag)"
+
+    local input
+    read -r -p "Enter image tag (PR number or full tag) [${default_tag}]: " input
+    format_tag "$input" "$default_tag"
 }
 
 #Custom functions
@@ -85,31 +159,24 @@ function startProductionService() {
         build_choice=1
     fi
 
-    # Determine image tag to use (current branch, PR number, or fallback)
-    local image_tag="latest"
-    if command -v git &> /dev/null; then
-        local branch_name=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
-        # Try to extract PR number from branch name or use gh CLI
-        if command -v gh &> /dev/null && [ -n "$branch_name" ]; then
-            local pr_number=$(gh pr list --head "$branch_name" --json number --jq '.[0].number' 2>/dev/null || echo "")
-            if [[ "$pr_number" =~ ^[0-9]+$ ]]; then
-                image_tag="pr-$pr_number"
-            fi
-        fi
-    fi
-
     local build_flag=""
     local prebuilt_overlay=""
+    local image_tag
 
     if [ "$build_choice" = "2" ]; then
         build_flag="--build"
         echo "Will build images locally from source"
+        echo ""
     else
         echo "Will use pre-built images from ghcr.io/esgf2-us"
-        echo "Image tag: $image_tag"
         echo ""
 
-        # Set IMAGE_TAG environment variable for docker-compose-prebuilt-overlay.yml
+        # Prompt user for tag
+        image_tag="$(prompt_tag)"
+        echo "Using image tag: $image_tag"
+        echo ""
+
+        # Set IMAGE_TAG environment variable for docker-compose.prebuilt.yml
         export IMAGE_TAG="$image_tag"
 
         # Add prebuilt overlay to use GHCR images
@@ -118,11 +185,15 @@ function startProductionService() {
         # Pull images first
         echo "Pulling images..."
         compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY pull || {
-            echo "Warning: Failed to pull some images. They may not exist in the registry."
-            echo "You can:"
-            echo "  1. Build locally instead (option 2)"
-            echo "  2. Check if tag '$image_tag' exists at ghcr.io/esgf2-us"
-            echo "  3. Specify a different tag by setting IMAGE_TAG environment variable"
+            echo ""
+            echo "Warning: Failed to pull images with tag '$image_tag'"
+            echo "The images may not exist in the registry."
+            echo ""
+            echo "Options:"
+            echo "  1. Check available tags at: https://github.com/esgf2-us/metagrid/pkgs/container/metagrid-frontend"
+            echo "  2. Try a different tag (restart and enter a different tag)"
+            echo "  3. Build locally instead (choose option 2)"
+            echo ""
             read -p "Press Enter to continue anyway or Ctrl+C to abort..."
         }
     fi
