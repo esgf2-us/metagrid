@@ -19,11 +19,49 @@ Choose the section that matches your deployment scenario:
 ### Prerequisites
 
 - Podman installed
-- podman-compose installed: `pip3 install --user podman-compose`
+- **podman-compose 1.6.0+** required: `pip3 install --user podman-compose>=1.6.0`
+  - Check version: `podman-compose --version`
+  - If multiple versions exist, ensure `~/.local/bin` is first in PATH
 - Internet access to ghcr.io (no authentication needed)
 - Linux amd64 architecture (pre-built images not available for ARM64)
 
-### One-Time Setup: Configure Podman for NFS
+### One-Time Setup: Configure Podman Storage
+
+**CRITICAL:** Rootless Podman on NFS has severe limitations. **Strongly recommended: use local disk for storage.**
+
+#### Option A: Use Local Disk (Recommended)
+
+If you have local disk available (check with `df -h /var/tmp`):
+
+```bash
+mkdir -p ~/.config/containers
+
+# Configure Podman to use local disk instead of NFS
+cat > ~/.config/containers/storage.conf << 'EOF'
+[storage]
+driver = "overlay"
+graphroot = "/var/tmp/podman-$USER"
+
+[storage.options.overlay]
+mount_program = "/usr/bin/fuse-overlayfs"
+EOF
+
+# Reset storage to apply new configuration
+podman system reset --force
+
+# Verify new location
+podman info | grep graphRoot
+# Should show: graphRoot: /var/tmp/podman-<username>
+```
+
+**Benefits:**
+- No permission issues with postgres/database volumes
+- Faster performance
+- Standard Podman behavior
+
+#### Option B: Stay on NFS (Not Recommended)
+
+If local disk is unavailable, configure for NFS (expect permission issues):
 
 **Step 1: Create Podman Configuration Files**
 
@@ -93,6 +131,23 @@ Choose:
 - Your auth method (Globus, Keycloak, or None)
 
 **Deployment time:** 2-5 minutes (vs 15-25 minutes if building locally)
+
+### Accessing the Site
+
+Rootless Podman deployments use **unprivileged ports** (automatically configured):
+
+- **HTTP:** `http://your-server:8080`
+- **HTTPS:** `https://your-server:8443`
+
+If you need standard ports (80/443), you must run rootful Podman with `sudo` or enable unprivileged port binding:
+
+```bash
+# Option 1: Run rootful (recommended if available)
+sudo ./manage_metagrid.sh
+
+# Option 2: Enable unprivileged ports system-wide (requires admin)
+sudo sysctl net.ipv4.ip_unprivileged_port_start=80
+```
 
 ### About Pre-built Images
 

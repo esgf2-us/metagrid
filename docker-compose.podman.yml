@@ -1,0 +1,28 @@
+# Podman-specific overrides for rootless deployment
+# Use with: -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.podman.yml
+#
+# This overlay addresses two main Podman rootless issues:
+# 1. Systemd healthchecks don't work properly in rootless mode
+# 2. Rootless Podman cannot bind to privileged ports (< 1024)
+
+services:
+  # Remove healthcheck dependency for Podman (systemd healthchecks don't work in rootless)
+  django:
+    depends_on:
+      postgres:
+        condition: service_started  # Changed from service_healthy to service_started
+
+  # Simplify postgres healthcheck
+  postgres:
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres || exit 1']
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Use unprivileged ports for rootless Podman (8080/8443 instead of 80/443)
+  traefik:
+    ports:
+      - '0.0.0.0:8080:9080'  # HTTP on 8080 (rootless compatible)
+      - '0.0.0.0:8443:9443'  # HTTPS on 8443 (rootless compatible)

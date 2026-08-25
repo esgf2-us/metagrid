@@ -34,7 +34,16 @@ elif command -v podman &> /dev/null; then
             exit 1
         fi
     else
-        USE_COMPOSE_SUBCOMMAND=true
+        # podman compose is available, but check if it delegates to external podman-compose
+        if command -v podman-compose &> /dev/null; then
+            # podman compose will delegate to external podman-compose which doesn't support --profile "*"
+            # Update CONTAINER_CMD so compose_cmd uses podman-compose directly
+            CONTAINER_CMD=podman-compose
+            USE_COMPOSE_SUBCOMMAND=false
+            echo "Note: Using podman-compose (detected via podman compose delegation)"
+        else
+            USE_COMPOSE_SUBCOMMAND=true
+        fi
     fi
 else
     echo "Error: Neither Docker nor Podman is available or running."
@@ -59,6 +68,14 @@ LOCAL_OVERLAY="-f docker-compose-local-overlay.yml"
 PROD_OVERLAY="-f docker-compose-prod-overlay.yml"
 PREBUILT_OVERLAY="-f docker-compose.prebuilt.yml"
 FALLBACK_TAG="v1.6.3-rc2"
+
+# Add Podman-specific overlay if using podman-compose
+if [ "$CONTAINER_CMD" = "podman-compose" ] || [ "$CONTAINER_CMD" = "podman" ]; then
+    PODMAN_OVERLAY="-f docker-compose.podman.yml"
+    echo "Using Podman overlay for compatibility"
+else
+    PODMAN_OVERLAY=""
+fi
 
 set -e
 
@@ -215,21 +232,21 @@ function startProductionService() {
     case $auth_choice in
     1)
         echo "Starting Metagrid production deployment with Globus"
-        compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY $GLOBUS_COMPOSE up $build_flag -d
+        compose_cmd $PROD_COMPOSE $prebuilt_overlay $PODMAN_OVERLAY $PROD_OVERLAY $GLOBUS_COMPOSE up $build_flag -d
         echo "Command used:"
-        echo "compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY $GLOBUS_COMPOSE up $build_flag -d"
+        echo "compose_cmd $PROD_COMPOSE $prebuilt_overlay $PODMAN_OVERLAY $PROD_OVERLAY $GLOBUS_COMPOSE up $build_flag -d"
         ;;
     2)
         echo "Starting Metagrid production deployment with Keycloak"
-        compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $PROD_OVERLAY --profile keycloak up $build_flag -d
+        compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $PODMAN_OVERLAY $PROD_OVERLAY --profile keycloak up $build_flag -d
         echo "Command used:"
-        echo "compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $PROD_OVERLAY --profile keycloak up $build_flag -d"
+        echo "compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $PODMAN_OVERLAY $PROD_OVERLAY --profile keycloak up $build_flag -d"
         ;;
     3)
         echo "Starting Metagrid production deployment with no auth"
-        compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY up $build_flag -d
+        compose_cmd $PROD_COMPOSE $prebuilt_overlay $PODMAN_OVERLAY $PROD_OVERLAY up $build_flag -d
         echo "Command used:"
-        echo "compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY up $build_flag -d"
+        echo "compose_cmd $PROD_COMPOSE $prebuilt_overlay $PODMAN_OVERLAY $PROD_OVERLAY up $build_flag -d"
         ;;
     *)
         echo "Invalid choice. Please select 1, 2, or 3."
@@ -280,11 +297,11 @@ function startLocalService() {
 
 function stopDockerContainers() {
     echo "Stopping Metagrid"
-    if [ "$CONTAINER_CMD" = "podman-compose" ]; then
-        # podman-compose doesn't support --profile "*" wildcard
+    if [ "$USE_COMPOSE_SUBCOMMAND" = "false" ]; then
+        # podman-compose or docker-compose standalone doesn't support --profile "*" wildcard
         compose_cmd down --remove-orphans
     else
-        # docker compose supports wildcard profiles
+        # docker compose or podman compose plugin supports wildcard profiles
         compose_cmd --profile "*" down --remove-orphans
     fi
 }
