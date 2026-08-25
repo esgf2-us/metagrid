@@ -1,0 +1,19 @@
+# Overlay for using pre-built images from GHCR instead of building locally
+# Usage: Include this file when deploying with pre-built images
+#
+# The IMAGE_TAG environment variable controls which tag to pull (default: latest)
+# Examples:
+#   IMAGE_TAG=pr-937 ./manage_metagrid.sh
+#   IMAGE_TAG=v1.6.3 ./manage_metagrid.sh
+#   IMAGE_TAG=latest ./manage_metagrid.sh
+
+services:
+  react:
+    image: ghcr.io/esgf2-us/metagrid-frontend:${IMAGE_TAG:-latest}
+    # Disable local build - use pre-built image
+    build: {}
+
+  django:
+    image: ghcr.io/esgf2-us/metagrid-backend:${IMAGE_TAG:-latest}
+    # Disable local build - use pre-built image
+    build: {}

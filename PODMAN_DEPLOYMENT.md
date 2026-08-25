@@ -31,9 +31,9 @@ This guide covers deploying Metagrid using Podman, especially on systems with NF
 
 If your Podman storage is on NFS (common in HPC environments), configure it once:
 
-### Step 1: Create Storage Configuration
+### Step 1: Create Podman Configuration Files
 
-Create `~/.config/containers/storage.conf`:
+Create storage configuration:
 
 ```bash
 mkdir -p ~/.config/containers
@@ -49,6 +49,17 @@ mount_program = "/usr/bin/fuse-overlayfs"
 force_mask = "0700"
 ignore_chown_errors = "true"
 skip_mount_home = "false"
+mountopt = "nodev"
+EOF
+```
+
+Create container configuration to disable SELinux labeling:
+
+```bash
+cat > ~/.config/containers/containers.conf << 'EOF'
+[containers]
+# Disable SELinux labeling (required for NFS)
+label = false
 EOF
 ```
 

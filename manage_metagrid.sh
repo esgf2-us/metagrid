@@ -57,6 +57,7 @@ GLOBUS_COMPOSE="-f docker-compose.globus.yml"
 KEYCLOAK_PROD_OVERLAY="-f docker-compose.keycloak.prod.yml"
 LOCAL_OVERLAY="-f docker-compose-local-overlay.yml"
 PROD_OVERLAY="-f docker-compose-prod-overlay.yml"
+PREBUILT_OVERLAY="-f docker-compose.prebuilt.yml"
 
 set -e
 
@@ -98,6 +99,8 @@ function startProductionService() {
     fi
 
     local build_flag=""
+    local prebuilt_overlay=""
+
     if [ "$build_choice" = "2" ]; then
         build_flag="--build"
         echo "Will build images locally from source"
@@ -106,33 +109,20 @@ function startProductionService() {
         echo "Image tag: $image_tag"
         echo ""
 
-        # Override image names to use GHCR registry
-        export COMPOSE_PROJECT_NAME=metagrid
-        export FRONTEND_IMAGE="ghcr.io/esgf2-us/metagrid-frontend:${image_tag}"
-        export BACKEND_IMAGE="ghcr.io/esgf2-us/metagrid-backend:${image_tag}"
+        # Set IMAGE_TAG environment variable for docker-compose-prebuilt-overlay.yml
+        export IMAGE_TAG="$image_tag"
 
-        # Create a temporary compose override file for image substitution
-        local REGISTRY_OVERRIDE=$(mktemp)
-        cat > "$REGISTRY_OVERRIDE" << EOF
-services:
-  react:
-    image: ${FRONTEND_IMAGE}
-  django:
-    image: ${BACKEND_IMAGE}
-EOF
-
-        # Add override file to compose command
-        PROD_COMPOSE="$PROD_COMPOSE -f $REGISTRY_OVERRIDE"
+        # Add prebuilt overlay to use GHCR images
+        prebuilt_overlay="$PREBUILT_OVERLAY"
 
         # Pull images first
         echo "Pulling images..."
-        compose_cmd $PROD_COMPOSE $PROD_OVERLAY pull || {
+        compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY pull || {
             echo "Warning: Failed to pull some images. They may not exist in the registry."
             echo "You can:"
             echo "  1. Build locally instead (option 2)"
             echo "  2. Check if tag '$image_tag' exists at ghcr.io/esgf2-us"
             echo "  3. Specify a different tag by setting IMAGE_TAG environment variable"
-            rm -f "$REGISTRY_OVERRIDE"
             read -p "Press Enter to continue anyway or Ctrl+C to abort..."
         }
     fi
@@ -152,21 +142,21 @@ EOF
     case $auth_choice in
     1)
         echo "Starting Metagrid production deployment with Globus"
-        compose_cmd $PROD_COMPOSE $PROD_OVERLAY $GLOBUS_COMPOSE up $build_flag -d
+        compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY $GLOBUS_COMPOSE up $build_flag -d
         echo "Command used:"
-        echo "compose_cmd $PROD_COMPOSE $PROD_OVERLAY $GLOBUS_COMPOSE up $build_flag -d"
+        echo "compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY $GLOBUS_COMPOSE up $build_flag -d"
         ;;
     2)
         echo "Starting Metagrid production deployment with Keycloak"
-        compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $PROD_OVERLAY --profile keycloak up $build_flag -d
+        compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $PROD_OVERLAY --profile keycloak up $build_flag -d
         echo "Command used:"
-        echo "compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $PROD_OVERLAY --profile keycloak up $build_flag -d"
+        echo "compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $PROD_OVERLAY --profile keycloak up $build_flag -d"
         ;;
     3)
         echo "Starting Metagrid production deployment with no auth"
-        compose_cmd $PROD_COMPOSE $PROD_OVERLAY up $build_flag -d
+        compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY up $build_flag -d
         echo "Command used:"
-        echo "compose_cmd $PROD_COMPOSE $PROD_OVERLAY up $build_flag -d"
+        echo "compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY up $build_flag -d"
         ;;
     *)
         echo "Invalid choice. Please select 1, 2, or 3."
@@ -174,11 +164,6 @@ EOF
         return
         ;;
     esac
-
-    # Cleanup temporary override file if created
-    if [ "$build_choice" = "1" ] && [ -n "$REGISTRY_OVERRIDE" ]; then
-        rm -f "$REGISTRY_OVERRIDE"
-    fi
 }
 
 function startLocalService() {
