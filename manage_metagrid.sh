@@ -182,11 +182,11 @@ function startProductionService() {
         # Add prebuilt overlay to use GHCR images
         prebuilt_overlay="$PREBUILT_OVERLAY"
 
-        # Pull images first
-        echo "Pulling images..."
-        compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY pull || {
+        # Pull only frontend and backend images (the services with pre-built images)
+        echo "Pulling frontend and backend images..."
+        if ! compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY pull react django; then
             echo ""
-            echo "Warning: Failed to pull images with tag '$image_tag'"
+            echo "Error: Failed to pull images with tag '$image_tag'"
             echo "The images may not exist in the registry."
             echo ""
             echo "Options:"
@@ -195,7 +195,9 @@ function startProductionService() {
             echo "  3. Build locally instead (choose option 2)"
             echo ""
             read -p "Press Enter to continue anyway or Ctrl+C to abort..."
-        }
+        else
+            echo "Successfully pulled images for tag: $image_tag"
+        fi
     fi
 
     echo ""
