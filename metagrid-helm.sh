@@ -207,7 +207,7 @@ upgrade_tag() {
   helm upgrade -f "$VALUES_FILE" "$RELEASE" "$CHART_PATH" \
     --set frontend.image.tag="$tag" \
     --set backend.image.tag="$tag" \
-    --namespace "$NAMESPACE" --atomic --timeout 10m
+    --namespace "$NAMESPACE" --rollback-on-failure --timeout 10m
 }
 
 upgrade_tag_fresh() {
@@ -230,7 +230,7 @@ upgrade_tag_fresh() {
     --set backend.image.tag="$tag" \
     --set frontend.image.pullPolicy=Always \
     --set backend.image.pullPolicy=Always \
-    --namespace "$NAMESPACE" --atomic --timeout 10m
+    --namespace "$NAMESPACE" --rollback-on-failure --timeout 10m
 }
 
 redeploy_values() {
@@ -243,7 +243,7 @@ redeploy_values() {
   fi
 
   helm upgrade -f "$VALUES_FILE" "$RELEASE" "$CHART_PATH" \
-    --namespace "$NAMESPACE" --atomic --timeout 10m
+    --namespace "$NAMESPACE" --rollback-on-failure --timeout 10m
 }
 
 rollback_prev() {

@@ -67,6 +67,7 @@ services:
       context: frontend
       target: build
     image: metagrid_local_react
+    command: pnpm start
     environment:
       PORT: 8080
       VITE_FEDERATED_NODES_URL: 'https://esgf.github.io/nodes.html'
