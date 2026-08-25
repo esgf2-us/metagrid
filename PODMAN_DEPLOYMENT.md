@@ -1,42 +1,36 @@
 # Podman Deployment Guide
 
-This guide covers deploying Metagrid using Podman, especially on systems with NFS storage.
+Metagrid fully supports **Podman** as a drop-in replacement for Docker. The `manage_metagrid.sh` script automatically detects your container runtime and adapts accordingly.
 
-## Quick Start (Recommended)
+## Quick Start
 
-**For Podman deployments, use pre-built images to avoid NFS build issues:**
+Choose the section that matches your deployment scenario:
 
-```bash
-# 1. Configure Podman for NFS (one-time setup - see below)
-# 2. Run deployment script
-./manage_metagrid.sh
-# Choose 1: Start Production
-# Choose 1: Use pre-built images ← Recommended!
-# Choose auth method
-```
+- **[NFS Storage / RHEL Production](#nfs-deployment-rhel-production)** - For servers with NFS home directories (most HPC environments)
+- **[Standard Linux/macOS](#standard-deployment)** - For local development or servers with local storage
+- **[Installation](#installation)** - First-time Podman setup
 
-**Why pre-built images?**
-- ✅ Fast: 2-5 minutes vs 15-25+ minutes building
-- ✅ Reliable: Avoids NFS + SELinux build failures
-- ✅ No auth required: Images are public on GHCR
+---
 
-## Prerequisites
+## NFS Deployment (RHEL Production)
+
+**For servers with NFS storage (common in HPC/shared environments), use pre-built images to avoid build issues.**
+
+### Prerequisites
 
 - Podman installed
 - podman-compose installed: `pip3 install --user podman-compose`
-- Access to the deployment server
-- **For pre-built images:** Internet access to ghcr.io (no authentication needed)
+- Internet access to ghcr.io (no authentication needed)
+- Linux amd64 architecture (pre-built images not available for ARM64)
 
-## One-Time Setup: Configure Podman for NFS
+### One-Time Setup: Configure Podman for NFS
 
-If your Podman storage is on NFS (common in HPC environments), configure it once:
-
-### Step 1: Create Podman Configuration Files
-
-Create storage configuration:
+**Step 1: Create Podman Configuration Files**
 
 ```bash
 mkdir -p ~/.config/containers
+
+# Storage configuration
 cat > ~/.config/containers/storage.conf << 'EOF'
 [storage]
 driver = "overlay"
@@ -51,11 +45,8 @@ ignore_chown_errors = "true"
 skip_mount_home = "false"
 mountopt = "nodev"
 EOF
-```
 
-Create container configuration to disable SELinux labeling:
-
-```bash
+# Container configuration to disable SELinux labeling
 cat > ~/.config/containers/containers.conf << 'EOF'
 [containers]
 # Disable SELinux labeling (required for NFS)
@@ -63,15 +54,15 @@ label = false
 EOF
 ```
 
-### Step 2: Reset Podman Storage
+**Step 2: Reset Podman Storage**
 
-**⚠️ WARNING:** This will delete all existing containers, images, and volumes.
+⚠️ **WARNING:** This will delete all existing containers, images, and volumes.
 
 ```bash
 podman system reset --force
 ```
 
-### Step 3: Verify Configuration
+**Step 3: Verify Configuration**
 
 ```bash
 podman info | grep -A 5 "store"
@@ -81,101 +72,239 @@ You should see:
 - `force_mask: "0700"`
 - `Backing Filesystem: nfs`
 - `mount_program: fuse-overlayfs`
+- `selinuxEnabled: false`
 
-**Done!** Now you can deploy.
+### Deploy with Pre-built Images
 
----
+```bash
+# Clone and checkout
+git clone https://github.com/esgf2-us/metagrid.git
+cd metagrid
+git checkout <branch-or-tag>
 
-## Deployment Steps
+# Deploy
+./manage_metagrid.sh
+```
 
-### Standard Deployment (Recommended)
+Choose:
+- **1** - Start Metagrid - Production
+- **1** - Use pre-built images ← Recommended for NFS!
+- Enter image tag (or press Enter for auto-detected default)
+- Your auth method (Globus, Keycloak, or None)
 
-1. **Clone and checkout:**
-   ```bash
-   git clone https://github.com/esgf2-us/metagrid.git
-   cd metagrid
-   git checkout <branch-or-tag>
-   ```
+**Deployment time:** 2-5 minutes (vs 15-25 minutes if building locally)
 
-2. **Deploy:**
-   ```bash
-   ./manage_metagrid.sh
-   ```
+### About Pre-built Images
 
-   Choose:
-   - **1** - Start Metagrid - Production
-   - **1** - Use pre-built images ← Recommended!
-   - Your auth method (Globus, Keycloak, or None)
-
-3. **Wait 2-5 minutes** for deployment to complete
-
-The script automatically detects your branch/PR and pulls the corresponding images from GHCR.
-
-## About Pre-built Images
-
-Pre-built images are automatically created by the development team and published to GitHub Container Registry (GHCR). They are **public** and require no authentication to pull.
+Pre-built images are automatically created by the development team and published to GitHub Container Registry (GHCR). They are **public** and require no authentication.
 
 **Available tags:**
-- `pr-XXX` - Specific pull request builds
-- `vX.X.X` - Release versions (e.g., v1.6.3)
-- `latest` - Most recent build
+- `pr-XXX` - Specific pull request builds (e.g., pr-937)
+- `vX.X.X` - Release versions (e.g., v1.6.3-rc2)
 
 **View available images:**
 - Frontend: https://github.com/esgf2-us/metagrid/pkgs/container/metagrid-frontend
 - Backend: https://github.com/esgf2-us/metagrid/pkgs/container/metagrid-backend
 
-### Using Specific Tags
+**The script automatically detects your PR/branch** and suggests the appropriate tag.
 
-The script auto-detects your branch/PR, but you can override:
+---
+
+## Standard Deployment
+
+For local development or servers **without NFS storage**, you can build images locally.
+
+### Deploy
 
 ```bash
-# Deploy a specific version
-export IMAGE_TAG=v1.6.3
-./manage_metagrid.sh
-
-# Or use latest
-export IMAGE_TAG=latest
 ./manage_metagrid.sh
 ```
 
-## Podman-Specific Considerations
+Choose:
+- **1** - Start Metagrid - Production (or **3** for local dev)
+- **2** - Build images locally
+- Your auth method
 
-### Storage Location
+The script automatically detects and uses Podman.
 
-By default, Podman stores data in `~/.local/share/containers/storage/`.
+---
 
-If this is on NFS, you **must** configure storage.conf as shown above.
+## Installation
 
-To use local disk instead of NFS:
+### Prerequisites
+
+- **macOS**: Homebrew (https://brew.sh)
+- **Linux**: Package manager access (apt, dnf, or yum)
+- **All platforms**: Python 3.6+
+
+### Option 1: Podman + podman-compose (Recommended)
+
+**macOS:**
 
 ```bash
-cat > ~/.config/containers/storage.conf << 'EOF'
-[storage]
-driver = "overlay"
-graphroot = "/local/disk/path/containers/storage"  # Change to local path
+# Install Podman
+brew install podman
 
-[storage.options.overlay]
-mount_program = "/usr/bin/fuse-overlayfs"
-EOF
+# Initialize and start Podman machine
+podman machine init
+podman machine start
+
+# Install podman-compose
+pip3 install podman-compose
+
+# Add to PATH if needed
+export PATH="$HOME/Library/Python/3.*/bin:$PATH"
+echo 'export PATH="$HOME/Library/Python/3.*/bin:$PATH"' >> ~/.zshrc
+
+# Verify
+podman --version
+podman-compose --version
 ```
 
-Then reset storage: `podman system reset --force`
+**Linux (RHEL/Fedora/CentOS):**
 
-### Rootless vs Rootful
+```bash
+# Install Podman
+sudo dnf install -y podman fuse-overlayfs
 
-Metagrid runs in **rootless mode** by default (recommended).
+# Install podman-compose
+pip3 install --user podman-compose
 
-The manage_metagrid.sh script automatically detects and uses rootless Podman.
+# Add to PATH
+export PATH="$HOME/.local/bin:$PATH"
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
 
-### Differences from Docker
+# Enable lingering (optional - keeps user services running after logout)
+sudo loginctl enable-linger $USER
 
-The manage_metagrid.sh script handles these automatically:
+# Verify
+podman --version
+podman-compose --version
+```
 
-1. **Profile wildcards:** `--profile "*"` → removed for podman-compose
-2. **exec -T flag:** Handled differently in podman-compose
-3. **Compose syntax:** Detects `podman compose` vs `podman-compose`
+**Linux (Ubuntu/Debian):**
+
+```bash
+# Install Podman
+sudo apt-get update
+sudo apt-get install -y podman
+
+# Install podman-compose
+pip3 install --user podman-compose
+
+# Add to PATH
+export PATH="$HOME/.local/bin:$PATH"
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+
+# Verify
+podman --version
+podman-compose --version
+```
+
+### Option 2: Podman with Native Compose Plugin
+
+Recent versions of Podman include a built-in compose plugin:
+
+```bash
+# Check if available
+podman compose version
+
+# If available, you're all set!
+# If not, use Option 1 (podman-compose) instead
+```
+
+---
+
+## How It Works
+
+The `manage_metagrid.sh` script includes automatic detection:
+
+1. **Checks for Docker** - Uses Docker if available and running
+2. **Falls back to Podman** - Detects Podman if Docker isn't available
+3. **Selects compose method**:
+   - Native `podman compose` plugin (preferred)
+   - Falls back to `podman-compose` standalone tool
+4. **Handles compatibility**:
+   - Profile wildcards (`--profile "*"`)
+   - exec -T flag differences
+   - Volume creation on NFS
+
+All compose commands go through a `compose_cmd()` helper that handles syntax differences automatically.
+
+---
 
 ## Troubleshooting
+
+### Volume Creation Fails with "operation not supported"
+
+**Error:** `lsetxattr(label=...) operation not supported`
+
+**Solution:** You're on NFS storage. Follow the [NFS deployment setup](#nfs-deployment-rhel-production) above, specifically creating the `containers.conf` with `label = false`.
+
+### Pre-built Images Not Found
+
+**Symptoms:** Failed to pull `ghcr.io/esgf2-us/metagrid-frontend:pr-XXX`
+
+**Solutions:**
+
+1. **Check if images exist:**
+   - Visit: https://github.com/esgf2-us/metagrid/pkgs/container/metagrid-frontend
+   - Verify the tag exists for both frontend and backend
+
+2. **Try a different tag:**
+   ```bash
+   export IMAGE_TAG=v1.6.3-rc2
+   ./manage_metagrid.sh
+   ```
+
+3. **Build locally instead:**
+   - Choose option 2 when prompted for deployment method
+
+### Socket Trigger Limit Hit (RHEL/Linux)
+
+**Error:** `podman.socket: Trigger limit hit, refusing further activation`
+
+**Solution:** Use `podman-compose` instead of `docker-compose`:
+
+```bash
+# Stop and disable problematic socket
+systemctl --user stop podman.socket
+systemctl --user disable podman.socket
+systemctl --user reset-failed
+
+# Remove DOCKER_HOST
+unset DOCKER_HOST
+sed -i '/DOCKER_HOST/d' ~/.bashrc
+
+# Install podman-compose
+pip3 install --user podman-compose
+export PATH="$HOME/.local/bin:$PATH"
+
+# Verify
+podman-compose --version
+```
+
+### Build Takes Forever (15+ minutes)
+
+**Cause:** Building on NFS is extremely slow.
+
+**Solution:** Use pre-built images (deployment method option 1) instead of building locally.
+
+### ARM64 Architecture Mismatch (Mac M1/M2)
+
+**Error:** `no matching manifest for linux/arm64/v8`
+
+**Cause:** Pre-built images are Linux amd64 only.
+
+**Solution:** On Mac, use local build (option 2). Pre-built images are only for Linux deployment servers.
+
+### Podman Machine Not Started (macOS)
+
+```bash
+podman machine start
+```
 
 ### Check Podman Info
 
@@ -186,6 +315,7 @@ podman info
 Look for:
 - Storage backend location
 - Overlay driver options
+- SELinux status
 - File system type
 
 ### View Logs
@@ -208,37 +338,77 @@ podman-compose -f docker-compose.yml -f docker-compose.prod.yml logs django
 # Remove all containers/images (fresh start)
 podman system reset --force
 
-# Rebuild and start
+# Redeploy
 ./manage_metagrid.sh  # Choose option 1
 ```
 
-### Common Error: "exit status 125"
+---
 
-This usually means:
-1. SELinux/NFS issue → Follow Issue 1 solution
-2. Permission problem → Check file ownership
-3. Storage corruption → Reset storage
+## Advanced Configuration
 
-## Performance Tips
+### Storage Location
 
-1. **Use local storage** if possible (not NFS)
-2. **Increase ulimits** if you see "too many open files"
-3. **Enable HTTP cache** for faster image pulls
+By default, Podman stores data in `~/.local/share/containers/storage/`.
 
-## Security Notes
+**To use local disk instead of NFS:**
 
-- Storage on NFS requires `ignore_chown_errors = "true"`
-- This is safe for development/test environments
-- For production, consider using local disk storage
-- Rootless Podman provides good security isolation
+```bash
+cat > ~/.config/containers/storage.conf << 'EOF'
+[storage]
+driver = "overlay"
+graphroot = "/local/disk/path/containers/storage"  # Change to local path
+
+[storage.options.overlay]
+mount_program = "/usr/bin/fuse-overlayfs"
+EOF
+
+# Reset storage
+podman system reset --force
+```
+
+### Rootless vs Rootful
+
+Metagrid runs in **rootless mode** by default (recommended for security).
+
+The manage_metagrid.sh script automatically detects and uses rootless Podman.
+
+### Performance Tips
+
+1. **Use local storage** instead of NFS when possible
+2. **Use pre-built images** on NFS to avoid slow builds
+3. **Increase ulimits** if you see "too many open files"
+4. **Enable lingering** on Linux: `sudo loginctl enable-linger $USER`
+
+---
+
+## Differences from Docker
+
+The manage_metagrid.sh script handles these automatically:
+
+1. **Profile wildcards:** `--profile "*"` → removed for podman-compose
+2. **exec -T flag:** Handled differently in podman-compose  
+3. **Compose syntax:** Detects `podman compose` vs `podman-compose`
+4. **Volume mounts:** Stored in different locations but work identically
+5. **Networking:** Uses different drivers but compatible with compose networking
+
+---
+
+## Additional Resources
+
+- [Podman Documentation](https://docs.podman.io/)
+- [Podman Desktop](https://podman-desktop.io/) - GUI for managing Podman
+- [Rootless Containers](https://rootlesscontaine.rs/)
+- [Metagrid Documentation](https://metagrid.readthedocs.io/)
+
+---
 
 ## Getting Help
 
-If you encounter issues not covered here:
+If you encounter issues:
 
 1. Check Podman version: `podman --version`
-2. Check storage config: `cat ~/.config/containers/storage.conf`
+2. Check configuration: `cat ~/.config/containers/storage.conf`
 3. View full logs: `podman-compose logs`
 4. Check system resources: `df -h` and `free -h`
-
-For project-specific issues, refer to the main README.md.
+5. Review this guide's troubleshooting section
+6. Open an issue: https://github.com/esgf2-us/metagrid/issues
