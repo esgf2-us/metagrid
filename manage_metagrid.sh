@@ -74,6 +74,70 @@ function compose_cmd() {
 #Custom functions
 function startProductionService() {
     clear
+    echo "Choose deployment method:"
+    echo "1 Use pre-built images from registry (faster, recommended for Podman/NFS)"
+    echo "2 Build images locally from source (slower)"
+    read -r build_choice
+
+    # Default to 1 (pull) if no value is entered
+    if [ -z "$build_choice" ]; then
+        build_choice=1
+    fi
+
+    # Determine image tag to use (current branch, PR number, or fallback)
+    local image_tag="latest"
+    if command -v git &> /dev/null; then
+        local branch_name=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+        # Try to extract PR number from branch name or use gh CLI
+        if command -v gh &> /dev/null && [ -n "$branch_name" ]; then
+            local pr_number=$(gh pr list --head "$branch_name" --json number --jq '.[0].number' 2>/dev/null || echo "")
+            if [[ "$pr_number" =~ ^[0-9]+$ ]]; then
+                image_tag="pr-$pr_number"
+            fi
+        fi
+    fi
+
+    local build_flag=""
+    if [ "$build_choice" = "2" ]; then
+        build_flag="--build"
+        echo "Will build images locally from source"
+    else
+        echo "Will use pre-built images from ghcr.io/esgf2-us"
+        echo "Image tag: $image_tag"
+        echo ""
+
+        # Override image names to use GHCR registry
+        export COMPOSE_PROJECT_NAME=metagrid
+        export FRONTEND_IMAGE="ghcr.io/esgf2-us/metagrid-frontend:${image_tag}"
+        export BACKEND_IMAGE="ghcr.io/esgf2-us/metagrid-backend:${image_tag}"
+
+        # Create a temporary compose override file for image substitution
+        local REGISTRY_OVERRIDE=$(mktemp)
+        cat > "$REGISTRY_OVERRIDE" << EOF
+services:
+  react:
+    image: ${FRONTEND_IMAGE}
+  django:
+    image: ${BACKEND_IMAGE}
+EOF
+
+        # Add override file to compose command
+        PROD_COMPOSE="$PROD_COMPOSE -f $REGISTRY_OVERRIDE"
+
+        # Pull images first
+        echo "Pulling images..."
+        compose_cmd $PROD_COMPOSE $PROD_OVERLAY pull || {
+            echo "Warning: Failed to pull some images. They may not exist in the registry."
+            echo "You can:"
+            echo "  1. Build locally instead (option 2)"
+            echo "  2. Check if tag '$image_tag' exists at ghcr.io/esgf2-us"
+            echo "  3. Specify a different tag by setting IMAGE_TAG environment variable"
+            rm -f "$REGISTRY_OVERRIDE"
+            read -p "Press Enter to continue anyway or Ctrl+C to abort..."
+        }
+    fi
+
+    echo ""
     echo "Choose authentication method:"
     echo "1 Globus - default"
     echo "2 Keycloak"
@@ -88,21 +152,21 @@ function startProductionService() {
     case $auth_choice in
     1)
         echo "Starting Metagrid production deployment with Globus"
-        compose_cmd $PROD_COMPOSE $PROD_OVERLAY $GLOBUS_COMPOSE up --build -d
+        compose_cmd $PROD_COMPOSE $PROD_OVERLAY $GLOBUS_COMPOSE up $build_flag -d
         echo "Command used:"
-        echo "compose_cmd $PROD_COMPOSE $PROD_OVERLAY $GLOBUS_COMPOSE up --build -d"
+        echo "compose_cmd $PROD_COMPOSE $PROD_OVERLAY $GLOBUS_COMPOSE up $build_flag -d"
         ;;
     2)
         echo "Starting Metagrid production deployment with Keycloak"
-        compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $PROD_OVERLAY --profile keycloak up --build -d
+        compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $PROD_OVERLAY --profile keycloak up $build_flag -d
         echo "Command used:"
-        echo "compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $PROD_OVERLAY --profile keycloak up --build -d"
+        echo "compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $PROD_OVERLAY --profile keycloak up $build_flag -d"
         ;;
     3)
         echo "Starting Metagrid production deployment with no auth"
-        compose_cmd $PROD_COMPOSE $PROD_OVERLAY up --build -d
+        compose_cmd $PROD_COMPOSE $PROD_OVERLAY up $build_flag -d
         echo "Command used:"
-        echo "compose_cmd $PROD_COMPOSE $PROD_OVERLAY up --build -d"
+        echo "compose_cmd $PROD_COMPOSE $PROD_OVERLAY up $build_flag -d"
         ;;
     *)
         echo "Invalid choice. Please select 1, 2, or 3."
@@ -110,6 +174,11 @@ function startProductionService() {
         return
         ;;
     esac
+
+    # Cleanup temporary override file if created
+    if [ "$build_choice" = "1" ] && [ -n "$REGISTRY_OVERRIDE" ]; then
+        rm -f "$REGISTRY_OVERRIDE"
+    fi
 }
 
 function startLocalService() {
@@ -153,7 +222,13 @@ function startLocalService() {
 
 function stopDockerContainers() {
     echo "Stopping Metagrid"
-    compose_cmd --profile "*" down --remove-orphans
+    if [ "$CONTAINER_CMD" = "podman-compose" ]; then
+        # podman-compose doesn't support --profile "*" wildcard
+        compose_cmd down --remove-orphans
+    else
+        # docker compose supports wildcard profiles
+        compose_cmd --profile "*" down --remove-orphans
+    fi
 }
 
 function toggleLocalContainers() {
@@ -226,12 +301,24 @@ function refreshPostgresCollation() {
         backup_path="$backup_dir/$backup_file"
         echo "Creating SQL backup to: $backup_path"
         # Run pg_dumpall inside container and redirect to host file
-        if compose_cmd $COMPOSE exec -T postgres pg_dumpall -U postgres > "$backup_path"; then
-            echo "Backup created at $backup_path"
+        if [ "$CONTAINER_CMD" = "podman-compose" ]; then
+            # podman-compose: exec without -T flag
+            if compose_cmd $COMPOSE exec postgres pg_dumpall -U postgres > "$backup_path"; then
+                echo "Backup created at $backup_path"
+            else
+                echo "Backup failed. Check postgres logs:"
+                echo "  compose_cmd $COMPOSE logs postgres"
+                return 1
+            fi
         else
-            echo "Backup failed. Check postgres logs:"
-            echo "  compose_cmd $COMPOSE logs postgres"
-            return 1
+            # docker compose: use -T flag to disable TTY
+            if compose_cmd $COMPOSE exec -T postgres pg_dumpall -U postgres > "$backup_path"; then
+                echo "Backup created at $backup_path"
+            else
+                echo "Backup failed. Check postgres logs:"
+                echo "  compose_cmd $COMPOSE logs postgres"
+                return 1
+            fi
         fi
     fi
 
@@ -250,14 +337,28 @@ function refreshPostgresCollation() {
     fi
 
     echo "Executing collation refresh and reindex inside the postgres container..."
-    if compose_cmd $COMPOSE exec -T postgres bash -lc \
-        "psql -U postgres -d postgres -c \"ALTER DATABASE postgres REFRESH COLLATION VERSION;\" && \
-         psql -U postgres -d postgres -c \"REINDEX DATABASE postgres;\""; then
-        echo "Collation refreshed and database reindexed successfully for $ENV_NAME."
+    if [ "$CONTAINER_CMD" = "podman-compose" ]; then
+        # podman-compose: exec without -T flag
+        if compose_cmd $COMPOSE exec postgres bash -lc \
+            "psql -U postgres -d postgres -c \"ALTER DATABASE postgres REFRESH COLLATION VERSION;\" && \
+             psql -U postgres -d postgres -c \"REINDEX DATABASE postgres;\""; then
+            echo "Collation refreshed and database reindexed successfully for $ENV_NAME."
+        else
+            echo "Operation failed. Check postgres container logs for details:"
+            echo "  compose_cmd $COMPOSE logs postgres"
+            return 1
+        fi
     else
-        echo "Operation failed. Check postgres container logs for details:"
-        echo "  compose_cmd $COMPOSE logs postgres"
-        return 1
+        # docker compose: use -T flag to disable TTY
+        if compose_cmd $COMPOSE exec -T postgres bash -lc \
+            "psql -U postgres -d postgres -c \"ALTER DATABASE postgres REFRESH COLLATION VERSION;\" && \
+             psql -U postgres -d postgres -c \"REINDEX DATABASE postgres;\""; then
+            echo "Collation refreshed and database reindexed successfully for $ENV_NAME."
+        else
+            echo "Operation failed. Check postgres container logs for details:"
+            echo "  compose_cmd $COMPOSE logs postgres"
+            return 1
+        fi
     fi
 }
 
