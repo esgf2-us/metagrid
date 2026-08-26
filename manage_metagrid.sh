@@ -232,21 +232,21 @@ function startProductionService() {
     case $auth_choice in
     1)
         echo "Starting Metagrid production deployment with Globus"
-        compose_cmd $PROD_COMPOSE $prebuilt_overlay $PODMAN_OVERLAY $PROD_OVERLAY $GLOBUS_COMPOSE up $build_flag -d
+        compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY $GLOBUS_COMPOSE $PODMAN_OVERLAY up $build_flag -d
         echo "Command used:"
-        echo "compose_cmd $PROD_COMPOSE $prebuilt_overlay $PODMAN_OVERLAY $PROD_OVERLAY $GLOBUS_COMPOSE up $build_flag -d"
+        echo "compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY $GLOBUS_COMPOSE $PODMAN_OVERLAY up $build_flag -d"
         ;;
     2)
         echo "Starting Metagrid production deployment with Keycloak"
-        compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $PODMAN_OVERLAY $PROD_OVERLAY --profile keycloak up $build_flag -d
+        compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $PROD_OVERLAY --profile keycloak $PODMAN_OVERLAY up $build_flag -d
         echo "Command used:"
-        echo "compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $PODMAN_OVERLAY $PROD_OVERLAY --profile keycloak up $build_flag -d"
+        echo "compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $PROD_OVERLAY --profile keycloak $PODMAN_OVERLAY up $build_flag -d"
         ;;
     3)
         echo "Starting Metagrid production deployment with no auth"
-        compose_cmd $PROD_COMPOSE $prebuilt_overlay $PODMAN_OVERLAY $PROD_OVERLAY up $build_flag -d
+        compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY $PODMAN_OVERLAY up $build_flag -d
         echo "Command used:"
-        echo "compose_cmd $PROD_COMPOSE $prebuilt_overlay $PODMAN_OVERLAY $PROD_OVERLAY up $build_flag -d"
+        echo "compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY $PODMAN_OVERLAY up $build_flag -d"
         ;;
     *)
         echo "Invalid choice. Please select 1, 2, or 3."

@@ -22,7 +22,10 @@ services:
       retries: 3
 
   # Use unprivileged ports for rootless Podman (8080/8443 instead of 80/443)
+  # Must explicitly set ports as empty array first to override docker-compose.prod.yml
   traefik:
     ports:
       - '0.0.0.0:8080:9080'  # HTTP on 8080 (rootless compatible)
       - '0.0.0.0:8443:9443'  # HTTPS on 8443 (rootless compatible)
+      - '0.0.0.0:9080:9080'  # Keep internal port accessible
+      - '0.0.0.0:9443:9443'  # Keep internal port accessible
