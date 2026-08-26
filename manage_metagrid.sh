@@ -60,7 +60,6 @@ echo "Using container runtime: $CONTAINER_CMD"
 
 # Constants
 LOCAL_COMPOSE="-f docker-compose.yml"
-PROD_COMPOSE="-f docker-compose.yml -f docker-compose.prod.yml"
 KEYCLOAK_COMPOSE="-f docker-compose.keycloak.yml"
 GLOBUS_COMPOSE="-f docker-compose.globus.yml"
 KEYCLOAK_PROD_OVERLAY="-f docker-compose.keycloak.prod.yml"
@@ -69,11 +68,15 @@ PROD_OVERLAY="-f docker-compose-prod-overlay.yml"
 PREBUILT_OVERLAY="-f docker-compose.prebuilt.yml"
 FALLBACK_TAG="v1.6.3-rc2"
 
-# Add Podman-specific overlay if using podman-compose
+# Configure compose files based on container runtime
 if [ "$CONTAINER_CMD" = "podman-compose" ] || [ "$CONTAINER_CMD" = "podman" ]; then
-    PODMAN_OVERLAY="-f docker-compose.podman.yml"
-    echo "Using Podman overlay for compatibility"
+    # For Podman: use podman.yml instead of prod.yml (avoids port merging issue)
+    PROD_COMPOSE="-f docker-compose.yml -f docker-compose.podman.yml"
+    PODMAN_OVERLAY=""  # Already included in PROD_COMPOSE
+    echo "Using Podman-specific compose configuration (rootless compatible ports)"
 else
+    # For Docker: use standard prod.yml
+    PROD_COMPOSE="-f docker-compose.yml -f docker-compose.prod.yml"
     PODMAN_OVERLAY=""
 fi
 
@@ -232,21 +235,21 @@ function startProductionService() {
     case $auth_choice in
     1)
         echo "Starting Metagrid production deployment with Globus"
-        compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY $GLOBUS_COMPOSE $PODMAN_OVERLAY up $build_flag -d
+        compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY $GLOBUS_COMPOSE up $build_flag -d
         echo "Command used:"
-        echo "compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY $GLOBUS_COMPOSE $PODMAN_OVERLAY up $build_flag -d"
+        echo "compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY $GLOBUS_COMPOSE up $build_flag -d"
         ;;
     2)
         echo "Starting Metagrid production deployment with Keycloak"
-        compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $PROD_OVERLAY --profile keycloak $PODMAN_OVERLAY up $build_flag -d
+        compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $PROD_OVERLAY --profile keycloak up $build_flag -d
         echo "Command used:"
-        echo "compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $PROD_OVERLAY --profile keycloak $PODMAN_OVERLAY up $build_flag -d"
+        echo "compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $PROD_OVERLAY --profile keycloak up $build_flag -d"
         ;;
     3)
         echo "Starting Metagrid production deployment with no auth"
-        compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY $PODMAN_OVERLAY up $build_flag -d
+        compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY up $build_flag -d
         echo "Command used:"
-        echo "compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY $PODMAN_OVERLAY up $build_flag -d"
+        echo "compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY up $build_flag -d"
         ;;
     *)
         echo "Invalid choice. Please select 1, 2, or 3."

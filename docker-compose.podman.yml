@@ -1,19 +1,38 @@
-# Podman-specific overrides for rootless deployment
-# Use with: -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.podman.yml
+# Podman-specific production configuration for rootless deployment
+# Replaces docker-compose.prod.yml for Podman deployments
 #
-# This overlay addresses two main Podman rootless issues:
-# 1. Systemd healthchecks don't work properly in rootless mode
-# 2. Rootless Podman cannot bind to privileged ports (< 1024)
+# This file addresses Podman rootless limitations:
+# 1. Systemd healthchecks don't work properly
+# 2. Cannot bind to privileged ports (< 1024)
+# 3. podman-compose merges port arrays (cannot override with layers)
+#
+# Use with: -f docker-compose.yml -f docker-compose.podman.yml
+# (NOT with docker-compose.prod.yml - this replaces it)
+
+volumes:
+  traefik_certs: {}
 
 services:
-  # Remove healthcheck dependency for Podman (systemd healthchecks don't work in rootless)
-  django:
-    depends_on:
-      postgres:
-        condition: service_started  # Changed from service_healthy to service_started
+  traefik:
+    restart: unless-stopped
+    volumes:
+      - traefik_certs:/etc/traefik/acme
+      - ./traefik/traefik.prod.yml:/etc/traefik/traefik.yml
+    ports:
+      - '0.0.0.0:8080:9080'   # HTTP on 8080 (rootless compatible)
+      - '0.0.0.0:8443:9443'   # HTTPS on 8443 (rootless compatible)
 
-  # Simplify postgres healthcheck
+  docs:
+    profiles: ['docs']
+    restart: unless-stopped
+
   postgres:
+    restart: unless-stopped
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+    # Simplified healthcheck for rootless Podman
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres || exit 1']
       start_period: 10s
@@ -21,11 +40,40 @@ services:
       timeout: 5s
       retries: 3
 
-  # Use unprivileged ports for rootless Podman (8080/8443 instead of 80/443)
-  # Must explicitly set ports as empty array first to override docker-compose.prod.yml
-  traefik:
-    ports:
-      - '0.0.0.0:8080:9080'  # HTTP on 8080 (rootless compatible)
-      - '0.0.0.0:8443:9443'  # HTTPS on 8443 (rootless compatible)
-      - '0.0.0.0:9080:9080'  # Keep internal port accessible
-      - '0.0.0.0:9443:9443'  # Keep internal port accessible
+  django:
+    restart: unless-stopped
+    environment:
+      DJANGO_DEBUG: False
+      DJANGO_SECRET_KEY: ''
+      DJANGO_EMAIL_BACKEND: 'django.core.mail.backends.smtp.EmailBackend'
+      DJANGO_SOCIAL_AUTH_REDIRECT_IS_HTTPS: True
+      DJANGO_SECURE_PROXY_SSL_HEADER: '["HTTP_X_FORWARDED_PROTO", "https"]'
+      DJANGO_SECURE_SSL_REDIRECT: True
+      DJANGO_SESSION_COOKIE_SECURE: True
+      DJANGO_CSRF_COOKIE_SECURE: True
+      DJANGO_SECURE_HSTS_SECONDS: 518400
+      DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS: True
+      DJANGO_SECURE_HSTS_PRELOAD: True
+      DJANGO_DATABASE_URL: 'postgres://postgres:postgres@postgres:5432/postgres'
+    volumes:
+      - ./backend:/app/staticfiles
+    # service_started instead of service_healthy (systemd healthchecks fail in rootless)
+    depends_on:
+      postgres:
+        condition: service_started
+
+  react:
+    image: metagrid_prod_react
+    build:
+      context: ./frontend
+      target: prod
+    command: []
+    restart: unless-stopped
+    volumes:
+      - ./frontend/public/projects/projects.json:/usr/share/nginx/html/projects/projects.json:ro
+
+  keycloak:
+    profiles: ['keycloak']
+    command: start --import-realm
+    volumes: []
+    restart: unless-stopped
