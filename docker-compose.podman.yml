@@ -19,8 +19,8 @@ services:
       - traefik_certs:/etc/traefik/acme
       - ./traefik/traefik.prod.yml:/etc/traefik/traefik.yml
     ports:
-      - '0.0.0.0:8080:9080'   # HTTP on 8080 (rootless compatible)
-      - '0.0.0.0:8443:9443'   # HTTPS on 8443 (rootless compatible)
+      - '0.0.0.0:8090:9080'   # HTTP on 8090 (avoids conflict with react dev server on 8080)
+      - '0.0.0.0:8493:9443'   # HTTPS on 8493 (rootless compatible)
 
   docs:
     profiles: ['docs']
@@ -32,6 +32,7 @@ services:
       POSTGRES_HOST_AUTH_METHOD: scram-sha-256
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
+    ports: []  # Remove port binding - internal access only
     # Simplified healthcheck for rootless Podman
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres || exit 1']
@@ -57,6 +58,7 @@ services:
       DJANGO_DATABASE_URL: 'postgres://postgres:postgres@postgres:5432/postgres'
     volumes:
       - ./backend:/app/staticfiles
+    ports: []  # Remove port binding - accessed through traefik only
     # service_started instead of service_healthy (systemd healthchecks fail in rootless)
     depends_on:
       postgres:
@@ -71,6 +73,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./frontend/public/projects/projects.json:/usr/share/nginx/html/projects/projects.json:ro
+    ports: []  # Remove port binding - accessed through traefik only
 
   keycloak:
     profiles: ['keycloak']

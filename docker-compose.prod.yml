@@ -17,6 +17,7 @@ services:
 
   postgres:
     restart: unless-stopped
+    ports: []  # Remove dev port binding - internal access only
     environment:
       POSTGRES_HOST_AUTH_METHOD: scram-sha-256
       POSTGRES_PASSWORD: postgres
@@ -24,6 +25,7 @@ services:
 
   django:
     restart: unless-stopped
+    ports: []  # Remove dev port binding - accessed through traefik only
     environment:
       DJANGO_DEBUG: False
       DJANGO_SECRET_KEY: ''
@@ -47,6 +49,7 @@ services:
       target: prod
     command: []
     restart: unless-stopped
+    ports: []  # Remove dev port binding - accessed through traefik only
     volumes:
       # Mount projects.json so changes don't require rebuild
       - ./frontend/public/projects/projects.json:/usr/share/nginx/html/projects/projects.json:ro

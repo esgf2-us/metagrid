@@ -136,8 +136,10 @@ Choose:
 
 Rootless Podman deployments use **unprivileged ports** (automatically configured):
 
-- **HTTP:** `http://your-server:8080`
-- **HTTPS:** `https://your-server:8443`
+- **HTTP:** `http://your-server:8090`
+- **HTTPS:** `https://your-server:8493`
+
+**Note:** Ports 8090/8493 are used to avoid conflicts with react dev server (port 8080) when running production and development deployments on the same server.
 
 If you need standard ports (80/443), you must run rootful Podman with `sudo` or enable unprivileged port binding:
 
