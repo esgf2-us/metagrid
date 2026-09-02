@@ -526,12 +526,42 @@ export const convertSearchParamsIntoStacFilter = (
 
   const globusOnly = params.get('globusOnly');
   const versionParams = paramKeys.filter((key) => ['min_version', 'max_version'].includes(key));
-  const createdParams = paramKeys.filter((key) => ['min_created', 'max_created'].includes(key));
+  // Support both min_created/max_created and minCreatedDate/maxCreatedDate
+  const createdParams = paramKeys.filter((key) =>
+    ['min_created', 'max_created', 'minCreatedDate', 'maxCreatedDate'].includes(key),
+  );
   const filterCreatedSince = params.get('filterCreatedSince');
+
+  // Parse activeFacets if present (JSON-encoded object)
+  const activeFacetsParam = params.get('activeFacets');
+  let activeFacets: Record<string, string | string[]> = {};
+  if (activeFacetsParam) {
+    try {
+      activeFacets = JSON.parse(decodeURIComponent(activeFacetsParam));
+    } catch (e) {
+      // If parsing fails, ignore
+    }
+  }
 
   const mainFilters = [];
 
-  // Create a filter for facets, if there are valid facets
+  // Create filters from activeFacets object (if present)
+  if (Object.keys(activeFacets).length > 0) {
+    Object.entries(activeFacets).forEach(([facetKey, facetValue]) => {
+      const filterParam = getFacetFilterName(project.projectName, facetKey);
+      const values = Array.isArray(facetValue) ? facetValue : [facetValue];
+
+      if (values.length > 1) {
+        mainFilters.push(
+          createOrFilter(values.map((value) => createEqualsFilter(filterParam, value))),
+        );
+      } else {
+        mainFilters.push(createEqualsFilter(filterParam, values[0]));
+      }
+    });
+  }
+
+  // Create a filter for facets from individual URL params, if there are valid facets
   if (validFacets.length > 0) {
     // If there are more than one valid params, create an AND filter between each
     if (validFacets.length > 1) {
@@ -596,25 +626,28 @@ export const convertSearchParamsIntoStacFilter = (
 
   // Create a filter for created date range, if created params exist
   if (createdParams.length > 0) {
-    // If there are more than one created params, create an AND filter between each
-    if (createdParams.length > 1) {
-      const minCreated = params.get('min_created');
-      const maxCreated = params.get('max_created');
-      mainFilters.push(
-        createAndFilter([
-          { op: '>=', args: [{ property: 'properties.created' }, minCreated] },
-          { op: '<=', args: [{ property: 'properties.created' }, maxCreated] },
-        ]),
-      );
-    } else {
-      const param = createdParams[0];
-      const value = params.get(param);
-      if (param === 'min_created' && value) {
-        mainFilters.push({ op: '>=', args: [{ property: 'properties.created' }, value] });
-      }
-      if (param === 'max_created' && value) {
-        mainFilters.push({ op: '<=', args: [{ property: 'properties.created' }, value] });
-      }
+    // Support both min_created/max_created and minCreatedDate/maxCreatedDate
+    const minCreated = params.get('min_created') || params.get('minCreatedDate');
+    const maxCreated = params.get('max_created') || params.get('maxCreatedDate');
+
+    const dateFilters = [];
+    if (minCreated) {
+      dateFilters.push({
+        op: '>=',
+        args: [{ property: 'properties.created' }, minCreated],
+      });
+    }
+    if (maxCreated) {
+      dateFilters.push({
+        op: '<=',
+        args: [{ property: 'properties.created' }, maxCreated],
+      });
+    }
+
+    if (dateFilters.length > 1) {
+      mainFilters.push(createAndFilter(dateFilters));
+    } else if (dateFilters.length === 1) {
+      mainFilters.push(dateFilters[0]);
     }
   }
 
@@ -721,10 +754,19 @@ export function getFileCountFromSTACsearch(features: StacFeature[]): number {
   let totalCount = 0;
 
   features.forEach((feature: StacFeature) => {
-    totalCount += Object.values(feature.assets).reduce(
-      (acc, asset) => acc + (asset['file:size'] > 0 ? 1 : 0),
-      0,
-    );
+    // Prefer the advertised number_of_files from STAC properties if available
+    if (
+      feature.properties?.number_of_files &&
+      typeof feature.properties.number_of_files === 'number'
+    ) {
+      totalCount += feature.properties.number_of_files;
+    } else {
+      // Fallback to counting assets with file:size > 0
+      totalCount += Object.values(feature.assets).reduce(
+        (acc, asset) => acc + (asset['file:size'] > 0 ? 1 : 0),
+        0,
+      );
+    }
   });
 
   return totalCount;
