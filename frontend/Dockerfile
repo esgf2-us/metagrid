@@ -1,8 +1,11 @@
 # Pull official base image
-FROM node:23.1.0-slim AS build
+FROM node:24.12.0 AS build
 
 # Set working directory
 WORKDIR /app
+
+# Install pnpm
+RUN npm install -g pnpm@10
 
 # Add `/app/node_modules/.bin` to $PATH
 ENV PATH=/app/node_modules/.bin:$PATH
@@ -10,13 +13,13 @@ ENV GENERATE_SOURCEMAP=false
 
 # Install app dependencies
 COPY package.json ./
-COPY yarn.lock ./
-RUN yarn install --frozen-lock-file --network-timeout=1000000
+COPY pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 
 # Add app
 COPY . ./
-RUN yarn build
-CMD [ "yarn", "start" ]
+RUN pnpm build
+CMD [ "pnpm", "start" ]
 
 # Build production environment
 FROM nginxinc/nginx-unprivileged:stable AS prod

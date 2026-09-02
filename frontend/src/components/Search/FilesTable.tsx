@@ -5,15 +5,22 @@ import {
   RightCircleOutlined,
   ShareAltOutlined,
 } from '@ant-design/icons';
-import { Alert, Form, Table as TableD, Tooltip, message } from 'antd';
+import { Alert, Form, TableColumnsType, Table as TableD, Tooltip, message } from 'antd';
 import { SizeType } from 'antd/lib/config-provider/SizeContext';
 import { TablePaginationConfig } from 'antd/lib/table';
 import React, { useState } from 'react';
 import { DeferFn, useAsync } from 'react-async';
 import { useAtomValue } from 'jotai';
+import openDapIcon from '../../assets/img/opendap_logo.png';
 import { fetchDatasetFiles, openDownloadURL } from '../../api';
 import { CSSinJS } from '../../common/types';
-import { formatBytes, showError, showNotice, splitStringByChar } from '../../common/utils';
+import {
+  formatBytes,
+  objectHasKey,
+  showError,
+  showNotice,
+  splitStringByChar,
+} from '../../common/utils';
 import Button from '../General/Button';
 import {
   AlignType,
@@ -27,6 +34,9 @@ import {
 } from './types';
 import { innerDataRowTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 import { currentProjectAtom } from '../../common/atoms';
+import { createCustomIcon } from '../NavBar';
+import SubFilesTable from './SubFilesTable';
+import { getReplicaNodelsList } from '../../common/STAC';
 
 export type DownloadUrls = {
   HTTPServer: string;
@@ -86,6 +96,7 @@ const metadataKeysToDisplay = [
   'alternate:name',
   'cf_standard_name',
   'checksum_type',
+  'created',
   'dataset_id',
   'description',
   'href',
@@ -95,7 +106,9 @@ const metadataKeysToDisplay = [
   'name',
   'roles',
   'timestamp',
+  'title',
   'type',
+  'updated',
   'variable',
   'variable_id',
   'variable_long_name',
@@ -104,7 +117,7 @@ const metadataKeysToDisplay = [
 ];
 
 const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, filenameVars }) => {
-  const [sortedInfo, setSortedInfo] = useState<Sorts>({});
+  const [sortedInfo, setSortedInfo] = useState<Sorts<RawSearchResult>>({});
 
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -137,8 +150,8 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
     runFetchDatasetFiles();
   }, [runFetchDatasetFiles, inputRecord, paginationOptions, filenameVars]);
 
-  const handleChange: OnChange = (pagination, filters, sorter) => {
-    setSortedInfo(sorter as Sorts);
+  const handleChange: OnChange<RawSearchResult> = (pagination, filters, sorter) => {
+    setSortedInfo(sorter as Sorts<RawSearchResult>);
   };
 
   const handlePageChange = (page: number, pageSize: number): void => {
@@ -164,7 +177,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
   let stacDocs: StacAsset[] = [];
 
   if (data) {
-    /* istanbul ignore next */
+    /* istanbul ignore next -- @preserve */
     if (isSTAC && inputRecord?.assets) {
       stacDocs = Object.values(inputRecord.assets);
     } else {
@@ -212,17 +225,30 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
       onShowSizeChange: (_current: number, size: number) => handlePageSizeChange(size),
     } as TablePaginationConfig,
     expandable: {
-      expandedRowRender: (record: RawSearchResult) =>
-        Object.keys(record).map((key) => {
-          if (record[key] && record[key] !== 'null' && metadataKeysToDisplay.includes(key)) {
-            return (
-              <p key={key} style={{ margin: 0 }}>
-                <span style={{ fontWeight: 'bold' }}>{key}</span>: {JSON.stringify(record[key])}
-              </p>
-            );
-          }
-          return null;
-        }),
+      expandedRowRender: (record: RawSearchResult) => {
+        let subTable = null;
+        if (objectHasKey(record, 'alternate')) {
+          const { alternate } = record;
+          subTable = <SubFilesTable alternate={alternate as { [key: string]: StacAsset }} />;
+        }
+
+        return (
+          <>
+            {Object.keys(record).map((key) => {
+              if (record[key] && record[key] !== 'null' && metadataKeysToDisplay.includes(key)) {
+                return (
+                  <p key={key} style={{ margin: 0 }}>
+                    <span style={{ fontWeight: 'bold' }}>{key}</span>: {JSON.stringify(record[key])}
+                  </p>
+                );
+              }
+              return null;
+            })}
+            <br />
+            {subTable}
+          </>
+        );
+      },
 
       expandIcon: ({
         expanded,
@@ -246,7 +272,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
     },
   };
 
-  const columns = [
+  const columns: TableColumnsType<RawSearchResult> = [
     {
       title: 'File Title',
       dataIndex: 'title',
@@ -269,19 +295,17 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
       sorter: (a: RawSearchResult, b: RawSearchResult) => (a.size || 0) - (b.size || 0),
       sortOrder: sortedInfo.columnKey === 'size' ? sortedInfo.order : null,
       render: (size: number) => {
-        return (
-          <div className={innerDataRowTargets.dataSize.class()}>
-            {size ? formatBytes(size) : 'N/A'}
-          </div>
-        );
+        /* istanbul ignore next -- @preserve */
+        const displaySize = size ? formatBytes(size) : 'N/A';
+        return <div className={innerDataRowTargets.dataSize.class()}>{displaySize}</div>;
       },
     },
     {
       align: 'center' as AlignType,
       title: 'Download / Copy URL',
       key: 'download',
-      render: (record: { url: string[] }) => {
-        const downloadUrls = genDownloadUrls(record.url);
+      render: (record: RawSearchResult) => {
+        const downloadUrls = genDownloadUrls(record.url || []);
         return (
           <span style={{ alignItems: 'center' }}>
             {contextHolder}
@@ -299,29 +323,60 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
                   <Button type="primary" htmlType="submit" icon={<DownloadOutlined />} />
                 </Form.Item>
               </Tooltip>
+              <Tooltip title="Copy the HTTP URL to the clipboard." trigger="hover">
+                <Form.Item
+                  style={{ margin: '0 0 0 15px' }}
+                  className={innerDataRowTargets.copyUrlBtn.class()}
+                >
+                  <Button
+                    type="primary"
+                    onClick={() => {
+                      /* istanbul ignore next -- @preserve */
+                      if (navigator && navigator.clipboard) {
+                        navigator.clipboard
+                          .writeText(downloadUrls.HTTPServer)
+                          .catch((e: PromiseRejectedResult) => {
+                            showError(messageApi, e.reason as string);
+                          });
+                        showNotice(messageApi, 'HTTP URL copied to clipboard!', {
+                          icon: <ShareAltOutlined style={styles.messageAddIcon} />,
+                        });
+                      }
+                    }}
+                    icon={<CopyOutlined />}
+                  />
+                </Form.Item>
+              </Tooltip>
               {downloadUrls.OPENDAP !== '' && (
-                <Tooltip title="Copy a shareable OPENDAP URL to the clipboard." trigger="hover">
+                <Tooltip title="Copy a shareable OPeNDAP URL to the clipboard." trigger="hover">
                   <Form.Item
                     style={{ margin: '0 0 0 15px' }}
-                    className={innerDataRowTargets.copyUrlBtn.class()}
+                    className={innerDataRowTargets.copyOPeNDAPBtn.class()}
                   >
                     <Button
                       type="primary"
-                      onClick={() => {
-                        /* istanbul ignore next */
-                        if (navigator && navigator.clipboard) {
-                          navigator.clipboard
-                            .writeText(downloadUrls.OPENDAP)
-                            .catch((e: PromiseRejectedResult) => {
-                              showError(messageApi, e.reason as string);
+                      onClick={
+                        /* istanbul ignore next -- @preserve */
+                        () => {
+                          if (navigator && navigator.clipboard) {
+                            navigator.clipboard
+                              .writeText(downloadUrls.OPENDAP)
+                              .catch((e: PromiseRejectedResult) => {
+                                showError(messageApi, e.reason as string);
+                              });
+                            showNotice(messageApi, 'OPeNDAP URL copied to clipboard!', {
+                              icon: <ShareAltOutlined style={styles.messageAddIcon} />,
                             });
-                          showNotice(messageApi, 'OPENDAP URL copied to clipboard!', {
-                            icon: <ShareAltOutlined style={styles.messageAddIcon} />,
-                          });
+                          }
                         }
-                      }}
-                      icon={<CopyOutlined />}
-                    ></Button>
+                      }
+                      icon={createCustomIcon(openDapIcon, 'OPeNDAP', {
+                        height: '24px',
+                        width: '24px',
+                        margin: 0,
+                        verticalAlign: 'middle',
+                      })}
+                    />
                   </Form.Item>
                 </Tooltip>
               )}
@@ -340,13 +395,28 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
     },
   ];
 
-  const stacColumns = [
+  const stacColumns: TableColumnsType<RawSearchResult> = [
     {
       title: 'Asset Title',
       dataIndex: 'id',
       key: 'id',
+      /* istanbul ignore next -- @preserve */
       render: (title: string) => {
         return <div className={innerDataRowTargets.filesTitle.class()}>{title}</div>;
+      },
+    },
+    {
+      title: 'Replica Nodes',
+      key: 'dataNode',
+      /* istanbul ignore next -- @preserve */
+      render: (asset: StacAsset) => {
+        const replicaNodes = getReplicaNodelsList(asset);
+
+        return (
+          <div className={innerDataRowTargets.dataNode.class()}>
+            {replicaNodes.toString().replaceAll(',', ', ')}
+          </div>
+        );
       },
     },
     {
@@ -354,15 +424,13 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
       title: 'Size',
       dataIndex: 'file:size',
       key: 'size',
-      sorter: /* istanbul ignore next */ (a: RawSearchResult, b: RawSearchResult) =>
+      sorter: /* istanbul ignore next -- @preserve */ (a: RawSearchResult, b: RawSearchResult) =>
         (a.size || 0) - (b.size || 0),
       sortOrder: sortedInfo.columnKey === 'size' ? sortedInfo.order : null,
       render: (size: number) => {
-        return (
-          <div className={innerDataRowTargets.dataSize.class()}>
-            {size ? formatBytes(size) : 'N/A'}
-          </div>
-        );
+        /* istanbul ignore next -- @preserve */
+        const displaySize = size ? formatBytes(size) : 'N/A';
+        return <div className={innerDataRowTargets.dataSize.class()}>{displaySize}</div>;
       },
     },
     {
@@ -376,7 +444,7 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
     {
       title: 'Download / Copy URL',
       key: 'download',
-      render: (record: { href: string }) => {
+      render: (asset: { href: string }) => {
         return (
           <span style={{ alignItems: 'center' }}>
             {contextHolder}
@@ -385,22 +453,21 @@ const FilesTable: React.FC<React.PropsWithChildren<Props>> = ({ inputRecord, fil
                 <Form.Item className={innerDataRowTargets.downloadDataBtn.class()}>
                   <Button
                     type="primary"
-                    href={record.href}
+                    href={asset.href}
                     target="_blank"
                     icon={<DownloadOutlined />}
                   />
                 </Form.Item>
               </Tooltip>
-              <Tooltip title="Copy a shareable URL to the clipboard." trigger="hover">
+              <Tooltip title="Copy the HTTP URL to the clipboard." trigger="hover">
                 <Form.Item className={innerDataRowTargets.copyUrlBtn.class()}>
                   <Button
                     type="primary"
-                    /* istanbul ignore next */
                     onClick={
-                      /* istanbul ignore next */ () => {
+                      /* istanbul ignore next -- @preserve */ () => {
                         if (navigator && navigator.clipboard) {
                           navigator.clipboard
-                            .writeText(record.href)
+                            .writeText(asset.href)
                             .catch((e: PromiseRejectedResult) => {
                               showError(messageApi, e.reason as string);
                             });

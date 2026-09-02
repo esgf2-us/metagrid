@@ -45,7 +45,18 @@ class Search(models.Model):
 
     uuid = models.UUIDField(default=uuid.uuid4)
     user = models.ForeignKey("users.User", on_delete=models.CASCADE)
-    project = models.ForeignKey("projects.Project", on_delete=models.CASCADE)
+    project = models.ForeignKey(
+        "projects.Project",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        help_text="Reference to a project in the database (for static projects)",
+    )
+    project_name = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Project name for dynamic projects not in the database",
+    )
     version_type = models.CharField(
         max_length=255, default=LATEST, choices=VERSION_TYPE_CHOICES
     )
@@ -58,6 +69,9 @@ class Search(models.Model):
     # Version date fields format is 'YYYYMMDD' (e.g. 20200101)
     min_version_date = models.CharField(max_length=255, blank=True, null=True)
     max_version_date = models.CharField(max_length=255, blank=True, null=True)
+    # Created date fields for STAC searches (ISO datetime format)
+    min_created_date = models.DateTimeField(blank=True, null=True)
+    max_created_date = models.DateTimeField(blank=True, null=True)
     filename_vars = ArrayField(
         models.CharField(max_length=255, blank=True),
         blank=True,
@@ -74,6 +88,12 @@ class Search(models.Model):
         size=1,
     )
     url = models.URLField(max_length=2000)
+    # Subscription fields for tracking new datasets (STAC only)
+    is_subscribed = models.BooleanField(default=False)
+    last_checked_time = models.BigIntegerField(blank=True, null=True)
+    filter_created_since = models.CharField(
+        max_length=255, blank=True, null=True
+    )
 
     class Meta:
         """Meta definition for Search."""

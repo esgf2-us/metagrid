@@ -2,9 +2,6 @@
  * This file contains HTTP Request functions.
  */
 
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-
 import 'setimmediate'; // Added because in Jest 27, setImmediate is not defined, causing test errors
 import humps from 'humps';
 import queryString from 'query-string';
@@ -20,10 +17,14 @@ import { ActiveFacets, RawProject, RawProjects } from '../components/Facets/type
 import { NodeStatusArray, RawNodeStatus } from '../components/NodeStatus/types';
 import {
   ActiveSearchQuery,
+  NonStacSearchResponse,
   Pagination,
   RawCitation,
-  ResultType,
+  SearchResults,
   StacAggregations,
+  StacAsset,
+  StacFeature,
+  StacSearchResponse,
   TextInputs,
 } from '../components/Search/types';
 import { RawUserAuth, RawUserInfo } from '../contexts/types';
@@ -31,16 +32,22 @@ import apiRoutes, { ApiRoute, HTTPCodeType } from './routes';
 import { GlobusEndpointSearchResults } from '../components/Globus/types';
 import {
   cachePagination,
+  convertResultTypeToReplicaParam,
   downloadFileForUser,
   getCachedPagination,
   getCachedSearchResults,
+  getCachedNonStacBatch,
+  cacheNonStacBatch,
 } from '../common/utils';
 import {
   aggregationsToFacetsData,
   convertSearchParamsIntoStacFilter,
-  STAC_AGGREGATION_FACETS,
-  STAC_PROJECTS,
+  getAggregationsList,
+  getStacProject,
+  buildStacProjects,
+  setConfiguredAdditionalProjects,
 } from '../common/STAC';
+import { ProjectsConfig, STAC_PROJECT_LIST } from '../common/useProjectsConfig';
 
 export interface ResponseError extends Error {
   status?: number;
@@ -54,6 +61,138 @@ export interface SubmissionResult {
   failures: string[];
   auth_url: string | undefined;
 }
+
+export const SEARCH_BATCH_SIZE = 100;
+
+// Generic memoization cache with TTL
+type MemoizedEntry<T> = {
+  result: T;
+  timestamp: number;
+};
+
+// Track all memoization caches for clearing
+const memoizationCaches: Array<Map<string, MemoizedEntry<unknown>>> = [];
+
+// In-memory cache for fetchProjects with in-flight promise tracking
+const fetchProjectsCache: Map<
+  string,
+  {
+    promise?: Promise<{ results: RawProjects; [key: string]: unknown }>;
+    result?: { results: RawProjects; [key: string]: unknown };
+    timestamp?: number;
+  }
+> = new Map();
+
+// Track the current expected project for STAC requests
+// Set when switching projects to invalidate requests for the old project
+let currentStacProject: string | null = null;
+
+// Cache for STAC search with in-flight promise tracking
+const stacSearchCache = new Map<
+  string,
+  {
+    promise?: Promise<Record<string, unknown>>;
+    result?: Record<string, unknown>;
+    timestamp?: number;
+  }
+>();
+
+const STAC_SEARCH_CACHE_TTL = 60000; // 1 minute
+
+// Cache for STAC aggregations with in-flight promise tracking
+const stacAggregationsCache = new Map<
+  string,
+  {
+    promise?: Promise<StacAggregations>;
+    result?: StacAggregations;
+    timestamp?: number;
+  }
+>();
+
+const STAC_AGGREGATIONS_CACHE_TTL = 300000; // 5 minutes (aggregations change less frequently)
+
+// Cache for Globus auth with in-flight promise tracking
+let globusAuthCache: {
+  promise?: Promise<RawUserAuth>;
+  result?: RawUserAuth;
+  timestamp?: number;
+} = {};
+
+/**
+ * Creates a memoized version of an async function with time-based cache expiration.
+ *
+ * This provides in-memory request deduplication to prevent redundant API calls when:
+ * - The same request is made multiple times in quick succession
+ * - Component re-renders trigger duplicate requests
+ * - Race conditions cause overlapping identical requests
+ *
+ * Note: This is separate from localStorage-based caching which persists across sessions.
+ *
+ * @param fn - The async function to memoize
+ * @param ttl - Time to live in milliseconds (default: 60000ms = 1 minute)
+ * @param keyGenerator - Optional function to generate cache key from arguments
+ */
+export function memoizeAsync<TArgs extends unknown[], TReturn>(
+  fn: (...args: TArgs) => Promise<TReturn>,
+  ttl = 60000,
+  keyGenerator?: (...args: TArgs) => string,
+): (...args: TArgs) => Promise<TReturn> {
+  const cache = new Map<string, MemoizedEntry<TReturn>>();
+  memoizationCaches.push(cache as Map<string, MemoizedEntry<unknown>>);
+
+  return async (...args: TArgs): Promise<TReturn> => {
+    // Generate cache key
+    const key = keyGenerator ? keyGenerator(...args) : JSON.stringify(args);
+
+    // Check if we have a valid cached entry
+    const cached = cache.get(key);
+    const now = Date.now();
+
+    if (cached && now - cached.timestamp < ttl) {
+      return cached.result;
+    }
+
+    // Call the function and cache the result
+    const result = await fn(...args);
+    cache.set(key, { result, timestamp: now });
+
+    // Clean up expired entries periodically (every 10 entries)
+    if (cache.size % 10 === 0) {
+      Array.from(cache.entries()).forEach(([k, entry]) => {
+        if (now - entry.timestamp >= ttl) {
+          cache.delete(k);
+        }
+      });
+    }
+
+    return result;
+  };
+}
+
+/**
+ * Clears all memoization caches
+ * Useful for testing or when you want to force fresh API calls
+ */
+export const clearAllMemoizationCaches = (): void => {
+  memoizationCaches.forEach((cache) => cache.clear());
+  fetchProjectsCache.clear();
+  stacSearchCache.clear();
+  stacAggregationsCache.clear();
+  globusAuthCache = {};
+};
+
+/**
+ * Clears only the STAC-specific caches (search and aggregations)
+ * Use this when switching between STAC projects to prevent stale data
+ * Sets the expected project name so requests for the old project are ignored
+ */
+export const clearStacCaches = (newProjectName?: string): void => {
+  // Set the expected project name
+  currentStacProject = newProjectName || null;
+
+  stacSearchCache.clear();
+  stacAggregationsCache.clear();
+};
 
 export const getCookie = (name: string): null | string => {
   let cookieValue = null;
@@ -74,6 +213,7 @@ export const getCookie = (name: string): null | string => {
 
 export const setCookie = (name: string, value: string, expDays = 7, path = '/'): void => {
   let expires = '';
+  /* istanbul ignore else -- @preserve */
   if (expDays) {
     const date = new Date();
     date.setTime(date.getTime() + expDays * 24 * 60 * 60 * 1000);
@@ -83,6 +223,7 @@ export const setCookie = (name: string, value: string, expDays = 7, path = '/'):
   document.cookie = `metagrid_${name}=${encodeURIComponent(value)}; ${expires}; path=${path}; ${cookieSettings}`;
 };
 
+/* istanbul ignore next -- @preserve */
 export const deleteCookie = (name: string, path = '/'): void => {
   document.cookie = `metagrid_${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${path};`;
 };
@@ -113,7 +254,7 @@ export const errorMsgBasedOnHTTPStatusCode = (error: ResponseError, route: ApiRo
   // Indicates that an HTTP response status code was returned from the server
   if (error.response) {
     // Normalize status to a number when possible
-    /* istanbul ignore next */
+    /* istanbul ignore next -- @preserve */
     const statusNum = Number(error.response.status) || 0;
 
     // For server errors (5xx) return the generic error message for the route
@@ -128,19 +269,52 @@ export const errorMsgBasedOnHTTPStatusCode = (error: ResponseError, route: ApiRo
   return route.handleErrorMsg('generic');
 };
 
+const GLOBUS_AUTH_CACHE_TTL = 60000; // 1 minute
+
 /**
  * HTTP Request Method: GET
  * HTTP Response Code: 200 OK
+ *
+ * Cached with in-flight promise tracking to prevent duplicate auth requests
  */
-export const fetchGlobusAuth = async (): Promise<RawUserAuth> =>
-  axios
+export const fetchGlobusAuth = async (): Promise<RawUserAuth> => {
+  const now = Date.now();
+
+  // Return cached result if still valid
+  if (
+    globusAuthCache.result &&
+    globusAuthCache.timestamp &&
+    now - globusAuthCache.timestamp < GLOBUS_AUTH_CACHE_TTL
+  ) {
+    return Promise.resolve(globusAuthCache.result);
+  }
+
+  // Return in-flight promise if already fetching
+  if (globusAuthCache.promise) {
+    return globusAuthCache.promise;
+  }
+
+  // Start new fetch and cache the promise
+  globusAuthCache.promise = axios
     .get(apiRoutes.globusAuth.path, { withCredentials: true })
     .then((resp) => {
-      return resp.data as Promise<RawUserAuth>;
+      const data = resp.data as RawUserAuth;
+      // Cache the result
+      globusAuthCache = {
+        result: data,
+        timestamp: Date.now(),
+        promise: undefined,
+      };
+      return data;
     })
     .catch((error: ResponseError) => {
+      // Clear the promise on error so it can be retried
+      globusAuthCache.promise = undefined;
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.globusAuth));
     });
+
+  return globusAuthCache.promise;
+};
 
 /**
  * HTTP Request Method: POST
@@ -270,13 +444,27 @@ export const fetchUserSearchQueries = async (
         }
       },
     })
-    .then(
-      (res) =>
-        res.data as Promise<{
-          count: number;
-          results: UserSearchQueries;
-        }>,
-    )
+    .then((res) => {
+      const data = res.data as { count: number; results: UserSearchQueries };
+
+      // Reconstruct project objects for dynamic projects (where project is null)
+      const resultsWithProjects = data.results.map((search: UserSearchQuery) => {
+        if (!search.project && search.projectName) {
+          // Dynamic project - reconstruct the project object
+          const reconstructedProject = getStacProject(search.projectName);
+          return {
+            ...search,
+            project: reconstructedProject,
+          };
+        }
+        return search;
+      });
+
+      return {
+        count: data.count,
+        results: resultsWithProjects,
+      };
+    })
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userSearches));
     });
@@ -303,9 +491,34 @@ export const addUserSearchQuery = async (
         'X-CSRFToken': getCookie('csrftoken'),
       },
     })
-    .then((res) => res.data as Promise<RawUserSearchQuery>)
+    .then((response) => response.data as Promise<RawUserSearchQuery>)
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userSearches));
+    });
+};
+
+/**
+ * HTTP Request Method: PATCH
+ * HTTP Response: 200 OK
+ */
+export const updateUserSearchQuery = async (
+  uuid: string,
+  accessToken: string,
+  payload: Partial<UserSearchQuery>,
+): Promise<RawUserSearchQuery> => {
+  const decamelizedPayload = humps.decamelizeKeys(payload);
+  return axios
+    .patch(`${apiRoutes.userSearch.path.replace(':uuid', uuid)}`, decamelizedPayload, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+    })
+    .then((response) => response.data as Promise<RawUserSearchQuery>)
+    .catch((error: ResponseError) => {
+      throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.userSearch));
     });
 };
 
@@ -313,9 +526,9 @@ export const addUserSearchQuery = async (
  * HTTP Request Method: DELETE
  * HTTP Response: 204 No Content
  */
-export const deleteUserSearchQuery = async (pk: string, accessToken: string): Promise<''> =>
+export const deleteUserSearchQuery = async (uuid: string, accessToken: string): Promise<''> =>
   axios
-    .delete(`${apiRoutes.userSearch.path.replace(':pk', pk)}`, {
+    .delete(`${apiRoutes.userSearch.path.replace(':uuid', uuid)}`, {
       data: {},
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -330,10 +543,80 @@ export const deleteUserSearchQuery = async (pk: string, accessToken: string): Pr
     });
 
 /**
+ * Applies whitelist/blacklist filtering to the combined list of projects.
+ * @param projects - Combined list of all projects (backend + additional)
+ * @param whitelist - Project names to show (if specified, ONLY these are shown)
+ * @param blacklist - Project names to hide (ignored if whitelist is specified)
+ * @returns Filtered list of projects
+ */
+const applyProjectFilters = (
+  projects: RawProjects,
+  whitelist: string[],
+  blacklist: string[],
+): RawProjects => {
+  let filtered = projects;
+
+  // Apply whitelist (if not empty, only show whitelisted projects)
+  if (whitelist.length > 0) {
+    filtered = filtered.filter((p) => whitelist.includes(p.name));
+  }
+
+  // Apply blacklist (hide blacklisted projects)
+  if (blacklist.length > 0) {
+    filtered = filtered.filter((p) => !blacklist.includes(p.name));
+  }
+
+  return filtered;
+};
+
+/**
+ * Handles STAC project name replacement for legacy projects.
+ * If a STAC project (name contains " STAC") exists but its legacy counterpart
+ * (same name without " STAC") is not in the filtered list, the STAC project
+ * replaces the legacy one by removing " STAC" from its name.
+ *
+ * @param projects - The filtered projects list
+ * @returns Projects list with STAC names adjusted if needed
+ */
+const handleStacProjectReplacement = (projects: RawProjects): RawProjects => {
+  return projects.map((project) => {
+    // Check if this is a STAC project (has " STAC" in the name)
+    if (project.name.includes(' STAC')) {
+      // Determine what the legacy project name would be
+      const legacyName = project.name.replace(' STAC', '');
+
+      // Check if the legacy project exists in the filtered list
+      const legacyExists = projects.some((p) => p.name === legacyName);
+
+      // If legacy doesn't exist, this STAC project replaces it - remove " STAC" from name
+      if (!legacyExists) {
+        return {
+          ...project,
+          name: legacyName,
+        };
+      }
+    }
+
+    // Return project unchanged (either not STAC, or legacy counterpart exists)
+    return project;
+  });
+};
+
+/**
+ * Internal implementation of fetchProjects without memoization
+ * Fetches projects from the backend database and optionally adds configured projects.
+ * Applies whitelist/blacklist filtering to the combined list if configured.
+ *
  * HTTP Request Method: GET
  * HTTP Response: 200 OK
+ * @param config - Optional projects configuration:
+ *   - additionalProjects: Additional projects to add to backend projects
+ *   - whitelist: Show only these projects (applies to ALL projects: backend + additional)
+ *   - blacklist: Hide these projects (applies to ALL projects: backend + additional)
  */
-export const fetchProjects = async (): Promise<{
+const fetchProjectsImpl = async (
+  config?: ProjectsConfig,
+): Promise<{
   results: RawProjects;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
@@ -348,50 +631,132 @@ export const fetchProjects = async (): Promise<{
         }
       },
     })
-    .then(async (res) => {
-      const data = (await res.data) as {
+    .then(async (response) => {
+      const data = (await response.data) as {
         results: RawProjects;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         [key: string]: any;
       };
 
-      const additionalProjects = window.METAGRID.STAC_URL ? STAC_PROJECTS : [];
+      // Calculate starting PK for additional projects
+      const backendProjects = data.results
+        ? data.results.filter((p) => p.name !== 'All (except CMIP6)')
+        : [];
+      const startPk = backendProjects.length + 1;
+
+      // Build additional projects list (if configured or using defaults)
+      let additionalProjects: RawProjects = [];
+      if (window.METAGRID.STAC_URL) {
+        const configProjects = config?.additionalProjects;
+        if (configProjects && configProjects.length > 0) {
+          // Use additional projects from config
+          additionalProjects = buildStacProjects(configProjects, startPk);
+        } else {
+          // Use default STAC projects with correct starting PK
+          additionalProjects = buildStacProjects(STAC_PROJECT_LIST, startPk);
+        }
+        // Store the additional projects globally
+        setConfiguredAdditionalProjects(additionalProjects);
+      }
+
+      // Get filter configuration
+      const whitelist = config?.whitelist || [];
+      const blacklist = config?.blacklist || [];
+
+      // Combine projects with additional projects first (at top of dropdown)
+      const allProjects: RawProjects = [...additionalProjects, ...backendProjects];
+
+      // Apply whitelist/blacklist filters to the combined list
+      let filteredProjects = applyProjectFilters(allProjects, whitelist, blacklist);
+
+      // Handle STAC project name replacement for filtered-out legacy projects
+      filteredProjects = handleStacProjectReplacement(filteredProjects);
 
       if (data.results) {
         return {
-          ...res,
-          results: [
-            ...data.results.filter((p) => p.name !== 'All (except CMIP6)'),
-            ...additionalProjects,
-          ],
+          ...response,
+          results: filteredProjects,
         };
       }
-      return { ...res, results: additionalProjects };
+      return { ...response, results: filteredProjects };
     })
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.projects));
     });
 
-/**
- * replica param indicates whether the record is the 'master' copy, or a replica.
- * - By default, no replica param is specified (return both replicas and originals)
- * - replica=false to return only originals
- * - replica=true to return only replicas
- *
- * https://github.com/ESGF/esgf.github.io/wiki/ESGF_Search_REST_API#core-facets
- */
-export const convertResultTypeToReplicaParam = (
-  resultType: ResultType,
-  isLabel?: boolean,
-): string | undefined => {
-  const replicaParams = {
-    all: undefined,
-    'originals only': 'replica=false',
-    'replicas only': 'replica=true',
-  };
+const FETCH_PROJECTS_CACHE_TTL = 60000; // 1 minute
 
-  const param = replicaParams[resultType] as ResultType;
-  return param && isLabel ? param.replace('=', ' = ') : param;
+/**
+ * Generates a cache key for fetchProjects based on config parameters
+ */
+const generateProjectsCacheKey = (config?: ProjectsConfig): string => {
+  if (!config) {
+    return 'default|none|none';
+  }
+  const additionalProjsKey = config.additionalProjects?.length
+    ? JSON.stringify(config.additionalProjects.map((p) => p.name))
+    : 'default';
+  const whitelistKey = config.whitelist?.length ? JSON.stringify(config.whitelist) : 'none';
+  const blacklistKey = config.blacklist?.length ? JSON.stringify(config.blacklist) : 'none';
+  return `${additionalProjsKey}|${whitelistKey}|${blacklistKey}`;
+};
+
+/**
+ * Memoized version of fetchProjects with 1-minute cache and in-flight promise tracking
+ *
+ * This in-memory cache prevents duplicate API calls when:
+ * - Component re-renders trigger the same fetchProjects call
+ * - Multiple components request projects configuration simultaneously
+ * - User navigates between pages without leaving the application
+ *
+ * In-flight promise tracking ensures that if multiple components call fetchProjects
+ * at the same time, they all share the same promise and only one API call is made.
+ */
+export const fetchProjects = async (
+  config?: ProjectsConfig,
+): Promise<{
+  results: RawProjects;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any;
+}> => {
+  const cacheKey = generateProjectsCacheKey(config);
+  const now = Date.now();
+  const cached = fetchProjectsCache.get(cacheKey);
+
+  // Return cached result if still valid
+  if (cached?.result && cached.timestamp && now - cached.timestamp < FETCH_PROJECTS_CACHE_TTL) {
+    return Promise.resolve(cached.result);
+  }
+
+  // Return in-flight promise if already fetching
+  if (cached?.promise) {
+    return cached.promise;
+  }
+
+  // Start new fetch and cache the promise
+  const promise = fetchProjectsImpl(config)
+    .then((result) => {
+      // Cache the result
+      fetchProjectsCache.set(cacheKey, {
+        result,
+        timestamp: Date.now(),
+        promise: undefined,
+      });
+      return result;
+    })
+    .catch((error) => {
+      // Clear the promise on error so it can be retried
+      const entry = fetchProjectsCache.get(cacheKey);
+      if (entry) {
+        entry.promise = undefined;
+      }
+      throw error;
+    });
+
+  // Cache the in-flight promise
+  fetchProjectsCache.set(cacheKey, { promise });
+
+  return promise;
 };
 
 export const updatePaginationParams = (url: string, pagination: Pagination): string => {
@@ -419,9 +784,15 @@ export const generateSearchURLQuery = (
     resultType,
     minVersionDate,
     maxVersionDate,
+    minCreatedDate,
+    maxCreatedDate,
     activeFacets,
     textInputs,
+    globusOnly,
   } = activeSearchQuery;
+
+  const filterCreatedSince =
+    'filterCreatedSince' in activeSearchQuery ? activeSearchQuery.filterCreatedSince : null;
 
   const { isSTAC } = activeSearchQuery.project;
 
@@ -429,8 +800,14 @@ export const generateSearchURLQuery = (
 
   const replicaParam = convertResultTypeToReplicaParam(resultType);
 
-  // The base params include facet fields to return for each dataset and the pagination options
-  let baseParams = updatePaginationParams(project.facetsUrl as string, pagination);
+  const facetsUrl =
+    'facetsUrl' in project && typeof project.facetsUrl === 'string'
+      ? project.facetsUrl
+      : 'offset=0&limit=0';
+  // STAC uses fixed batch size; non-STAC uses regular pagination params
+  let baseParams = isSTAC
+    ? `${facetsUrl.replace('limit=0', `limit=${SEARCH_BATCH_SIZE}`)}&`
+    : updatePaginationParams(facetsUrl, pagination);
 
   if (versionType === 'latest') {
     baseParams += `latest=true&`;
@@ -443,6 +820,17 @@ export const generateSearchURLQuery = (
   }
   if (maxVersionDate) {
     baseParams += `max_version=${maxVersionDate}&`;
+  }
+  if (minCreatedDate && isSTAC) {
+    baseParams += `min_created=${minCreatedDate}&`;
+  }
+  if (maxCreatedDate && isSTAC) {
+    baseParams += `max_created=${maxCreatedDate}&`;
+  }
+
+  /* istanbul ignore next -- @preserve */
+  if (globusOnly) {
+    baseParams += `globusOnly=${globusOnly}&`;
   }
 
   let textInputsParams = 'query=*';
@@ -463,7 +851,16 @@ export const generateSearchURLQuery = (
   );
 
   if (isSTAC) {
-    return `${baseRoute}${baseParams}${`project_id=${(project as RawProject).projectName}`}&${activeFacetsParams}`;
+    const rawProject = project as RawProject;
+    const projectHashParam = rawProject.projectHash
+      ? `&project_hash=${rawProject.projectHash}`
+      : '';
+    const filterCreatedSinceParam = filterCreatedSince
+      ? `&filterCreatedSince=${encodeURIComponent(filterCreatedSince)}`
+      : '';
+    const url = `${baseRoute}${baseParams}${`project_id=${rawProject.projectName}`}${projectHashParam}&${textInputsParams}&${activeFacetsParams}${filterCreatedSinceParam}`;
+
+    return url;
   }
 
   return `${baseRoute}${baseParams}${textInputsParams}&${activeFacetsParams}`;
@@ -472,65 +869,344 @@ export const generateSearchURLQuery = (
 /**
  * HTTP Request Method: POST
  * HTTP Response Code: 200 OK
+ * Internal implementation - use memoized version below
  */
-export const postSTACSearch = async (
+const postSTACSearchImpl = async (
   projectName: string,
   limit: number,
   filter: { op: string; args: unknown } | undefined = undefined,
+  q?: TextInputs,
+  token?: string,
+  stacApiUrl?: string,
 ): Promise<Record<string, unknown>> => {
+  const requestBody: {
+    collections: string[];
+    limit: number;
+    filter?: { op: string; args: unknown };
+    q?: TextInputs;
+    token?: string;
+    stacApiUrl?: string;
+  } = {
+    collections: [projectName],
+    limit,
+  };
+
+  if (filter) {
+    requestBody.filter = filter;
+  }
+  if (q) {
+    requestBody.q = q;
+  }
+  if (token && typeof token === 'string' && token.length > 0) {
+    requestBody.token = token;
+  }
+  if (stacApiUrl) {
+    requestBody.stacApiUrl = stacApiUrl;
+  }
+
   return axios
-    .post(apiRoutes.esgfSearchSTAC.path, {
-      collections: [projectName],
-      limit,
-      filter,
-    })
+    .post(apiRoutes.esgfSearchSTAC.path, requestBody)
     .then((res) => res.data)
     .catch((error: ResponseError) => {
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearchSTAC));
     });
 };
 
-export const fetchSTACAggregations = async (
-  projectId: string,
+/**
+ * Generates a cache key for postSTACSearch based on search parameters
+ * Includes stacApiUrl to differentiate between projects with same projectName but different URLs
+ */
+const generateStacSearchCacheKey = (
+  projectName: string,
+  limit: number,
   filter: { op: string; args: unknown } | undefined,
-): Promise<StacAggregations> => {
-  return axios
-    .post(`${apiRoutes.esgfAggregationsSTAC.path}`, {
-      collections: [projectId],
-      aggregations: STAC_AGGREGATION_FACETS[projectId],
-      filter,
-      'filter-lang': 'cql2-json',
+  q?: TextInputs,
+  token?: string,
+  stacApiUrl?: string,
+): string => {
+  const filterStr = filter ? JSON.stringify(filter) : '';
+  const qStr = q ? JSON.stringify(q) : '';
+
+  // Handle token properly - it could be a string, object, or undefined
+  let tokenStr = '';
+  if (token !== undefined && token !== null) {
+    tokenStr = typeof token === 'object' ? JSON.stringify(token) : token;
+  }
+
+  const urlStr = stacApiUrl || 'default';
+
+  return `${projectName}|${limit}|${filterStr}|${qStr}|${tokenStr}|${urlStr}`;
+};
+
+/**
+ * Memoized version of postSTACSearch with 1-minute cache and in-flight promise tracking
+ *
+ * This in-memory cache prevents duplicate API calls when:
+ * - Component re-renders trigger the same search
+ * - User rapidly switches between pages with same token
+ * - Race conditions cause multiple identical requests
+ * - Multiple components request the same search simultaneously
+ *
+ * In-flight promise tracking ensures that if multiple components call postSTACSearch
+ * at the same time with the same parameters, they all share the same promise and
+ * only one API call is made.
+ */
+export const postSTACSearch = async (
+  projectName: string,
+  limit: number,
+  filter: { op: string; args: unknown } | undefined = undefined,
+  q?: TextInputs,
+  token?: string,
+  stacApiUrl?: string,
+): Promise<Record<string, unknown>> => {
+  // Check if this request is for a stale project BEFORE doing anything
+  if (currentStacProject !== null && currentStacProject !== projectName) {
+    // Return a promise that never resolves - it will be abandoned when component re-renders
+    // This avoids triggering error handlers in the UI
+    return new Promise(() => {
+      // Never resolves or rejects - just hangs until garbage collected
+    });
+  }
+
+  const cacheKey = generateStacSearchCacheKey(projectName, limit, filter, q, token, stacApiUrl);
+  const now = Date.now();
+  const cached = stacSearchCache.get(cacheKey);
+
+  // Return cached result if still valid
+  if (cached?.result && cached.timestamp && now - cached.timestamp < STAC_SEARCH_CACHE_TTL) {
+    return Promise.resolve(cached.result);
+  }
+
+  // Return in-flight promise if already fetching
+  if (cached?.promise) {
+    return cached.promise;
+  }
+
+  // Start new fetch and cache the promise
+  const promise = postSTACSearchImpl(projectName, limit, filter, q, token, stacApiUrl)
+    .then((result) => {
+      // Cache the result
+      stacSearchCache.set(cacheKey, {
+        result,
+        timestamp: Date.now(),
+        promise: undefined,
+      });
+      return result;
     })
+    .catch((error) => {
+      // Clear the promise on error so it can be retried
+      const entry = stacSearchCache.get(cacheKey);
+      if (entry) {
+        entry.promise = undefined;
+      }
+      throw error;
+    });
+
+  // Cache the in-flight promise
+  stacSearchCache.set(cacheKey, { promise });
+
+  return promise;
+};
+
+/**
+ * Normalizes the request URL by removing pagination parameters (offset, limit)
+ * This allows us to cache aggregations based on filter params only
+ */
+const normalizeReqUrlForCache = (reqUrl: string): string => {
+  const url = new URL(reqUrl, 'http://dummy-base.com');
+  const params = new URLSearchParams(url.search);
+
+  // Remove pagination-related parameters
+  params.delete('offset');
+  params.delete('limit');
+
+  // Sort parameters for consistent cache keys
+  const sortedParams = Array.from(params.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${key}=${value}`)
+    .join('&');
+
+  return sortedParams;
+};
+
+/**
+ * Creates a cache key from the relevant parameters
+ * Includes stacApiUrl to differentiate between projects with same projectName but different URLs
+ */
+const createAggregationsCacheKey = (
+  projectName: string,
+  normalizedUrl: string,
+  filter: { op: string; args: unknown } | undefined,
+  stacApiUrl?: string,
+): string => {
+  const filterStr = filter ? JSON.stringify(filter) : '';
+  const urlStr = stacApiUrl || 'default';
+  return `${projectName}|${normalizedUrl}|${filterStr}|${urlStr}`;
+};
+
+/**
+ * Clears the STAC aggregations cache
+ */
+export const clearSTACAggregationsCache = (): void => {
+  stacAggregationsCache.clear();
+};
+
+export const fetchSTACAggregations = async (
+  projectName: string,
+  reqUrl: string,
+  filter: { op: string; args: unknown } | undefined,
+  stacApiUrl?: string,
+  projectHash?: string,
+): Promise<StacAggregations> => {
+  // Check if this request is for a stale project BEFORE doing anything
+  if (currentStacProject !== null && currentStacProject !== projectName) {
+    // Return a promise that never resolves - it will be abandoned when component re-renders
+    // This avoids triggering error handlers in the UI
+    return new Promise(() => {
+      // Never resolves or rejects - just hangs until garbage collected
+    });
+  }
+
+  // Create cache key based on non-pagination parameters
+  const normalizedUrl = normalizeReqUrlForCache(reqUrl);
+  const cacheKey = createAggregationsCacheKey(projectName, normalizedUrl, filter, stacApiUrl);
+
+  const now = Date.now();
+  const cached = stacAggregationsCache.get(cacheKey);
+
+  // Return cached result if available and not expired
+  if (cached?.result && cached.timestamp && now - cached.timestamp < STAC_AGGREGATIONS_CACHE_TTL) {
+    return Promise.resolve(cached.result);
+  }
+
+  // Return in-flight promise if already fetching
+  if (cached?.promise) {
+    return cached.promise;
+  }
+
+  // No cache hit, fetch from API
+  const aggregationsList = getAggregationsList(projectName, projectHash);
+
+  const payload: {
+    collections: string[];
+    aggregations: string[];
+    filter?: { op: string; args: unknown };
+    stacApiUrl?: string;
+  } = {
+    collections: [projectName],
+    aggregations: aggregationsList,
+  };
+
+  if (filter) {
+    payload.filter = filter;
+  }
+
+  if (stacApiUrl) {
+    payload.stacApiUrl = stacApiUrl;
+  }
+
+  const promise = axios
+    .post(`${apiRoutes.esgfAggregationsSTAC.path}`, payload)
     .then((res) => {
-      return res.data;
+      const data = res.data as StacAggregations;
+      // Cache the result with timestamp
+      stacAggregationsCache.set(cacheKey, {
+        result: data,
+        timestamp: Date.now(),
+      });
+      return data;
     })
     .catch((error: ResponseError) => {
+      // Clear the promise on error so it can be retried
+      const entry = stacAggregationsCache.get(cacheKey);
+      if (entry) {
+        entry.promise = undefined;
+      }
       throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfAggregationsSTAC));
     });
+
+  // Cache the in-flight promise
+  stacAggregationsCache.set(cacheKey, { promise });
+
+  return promise;
 };
 
 export const fetchSTACSearchResults = async (
   reqUrlStr: string,
   projectName: string,
-): // eslint-disable-next-line @typescript-eslint/no-explicit-any
-Promise<{ [key: string]: any }> => {
+  token?: string,
+  projectHash?: string,
+): Promise<SearchResults> => {
   let status = 200;
 
-  const filter = convertSearchParamsIntoStacFilter(reqUrlStr, projectName);
+  const project = getStacProject(projectName, projectHash);
+  const filter = convertSearchParamsIntoStacFilter(reqUrlStr, project);
+  const { stacApiUrl } = project;
 
-  const aggregations = await fetchSTACAggregations(projectName, filter)
-    .then((res) => {
-      return res;
+  const query = new URLSearchParams(reqUrlStr || '').get('query');
+  let textInputs: TextInputs | undefined;
+
+  // Add text search input
+  if (query && query !== '*') {
+    textInputs = query.split(',');
+  }
+
+  const aggregations = await fetchSTACAggregations(
+    projectName,
+    reqUrlStr,
+    filter,
+    stacApiUrl,
+    projectHash,
+  )
+    .then((response) => {
+      // Convert aggregations response into facet data for Metagrid
+      const aggregationsToFacets = aggregationsToFacetsData(
+        projectName,
+        response || { aggregations: [] },
+      );
+      return aggregationsToFacets;
     })
     .catch((error: ResponseError) => {
+      /* istanbul ignore next -- @preserve */
       status = error.cause === 422 ? 422 : (error.cause as number) || 500;
     });
 
-  const aggregationsToFacets = aggregationsToFacetsData(aggregations || { aggregations: [] });
+  const searchResults = await postSTACSearch(
+    projectName,
+    SEARCH_BATCH_SIZE,
+    filter,
+    textInputs,
+    token,
+    stacApiUrl,
+  );
 
-  const searchResults = await postSTACSearch(projectName, 9999, filter);
+  const stacResponse: StacSearchResponse = searchResults as StacSearchResponse;
 
-  return { search: searchResults, facets: aggregationsToFacets, stac: true, status };
+  const filteredFeatures: StacFeature[] = [];
+
+  // Remove duplicate assets based on the href, if size is greater than 0
+  stacResponse.features.forEach((feature) => {
+    const updatedAssets: { [name: string]: StacAsset } = {};
+    const href: string[] = [];
+    if (feature.assets) {
+      /* istanbul ignore next -- @preserve */
+      Object.entries(feature.assets).forEach(([key, asset]) => {
+        if (asset['file:size'] && asset['file:size'] > 0) {
+          if (asset.href && !href.includes(asset.href)) {
+            updatedAssets[key] = asset;
+            href.push(asset.href);
+          }
+        } else {
+          updatedAssets[key] = asset;
+        }
+      });
+      filteredFeatures.push({ ...feature, assets: updatedAssets });
+    }
+  });
+
+  stacResponse.features = filteredFeatures;
+
+  return { search: searchResults, facets: aggregations || {}, stac: true, status };
 };
 
 /**
@@ -544,55 +1220,65 @@ Promise<{ [key: string]: any }> => {
  * Source: https://docs.react-async.com/api/options#deferfn
  */
 export const fetchSearchResults = async (
-  args: [string] | Record<string, string>,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Promise<{ [key: string]: any }> => {
+  args: [string, string?] | Record<string, string>,
+  token?: string,
+): Promise<SearchResults> => {
   // Check if the request URL is passed in as an array or an object
-  let reqUrlStr;
+  let reqUrlStr: string;
+  let tokenToUse = token;
+
   if (Array.isArray(args)) {
-    // eslint-disable-next-line prefer-destructuring
-    reqUrlStr = args[0];
+    // Check if args[0] is itself an array (when called as run([url, token]))
+    if (Array.isArray(args[0])) {
+      // Unwrap: args = [[url, token]] → [url, token]
+      const [url, tok] = args[0];
+      reqUrlStr = url;
+      if (tok && typeof tok === 'string') {
+        tokenToUse = tok;
+      }
+    } else {
+      // Normal case: args = [url] or [url, token]
+      const [url, tok] = args;
+      reqUrlStr = url;
+      if (tok && typeof tok === 'string') {
+        tokenToUse = tok;
+      }
+    }
   } else {
     reqUrlStr = args.reqUrl;
   }
 
-  // Get cached search results
-  const cachedResults = getCachedSearchResults();
-  /* istanbul ignore next */
-  const cachedURL = (cachedResults?.cachedURL as string) || '';
-  const reqUrlOffset = reqUrlStr.match(/offset=\d+/)?.[0];
-  const cachedUrlOffset = cachedURL.match(/offset=\d+/)?.[0];
+  // eslint-disable-next-line no-console
+  console.log('[fetchSearchResults] tokenToUse:', tokenToUse, 'type:', typeof tokenToUse);
 
-  // If reqest URL matches the one in local storage, return the cached results
-  if (reqUrlStr === cachedURL) {
-    // If there was no change to the request URL, return the cached results
-    return cachedResults;
+  // Get cached search results - but skip cache if we have a token (STAC pagination)
+  if (!tokenToUse) {
+    const cachedResults = getCachedSearchResults();
+    /* istanbul ignore next -- @preserve */
+    const cachedURL = (cachedResults?.cachedURL as string) || '';
+
+    // If request URL matches the one in local storage, return the cached results
+    if (reqUrlStr === cachedURL) {
+      return cachedResults;
+    }
   }
 
-  let finalUrl = reqUrlStr;
   const cachedPagination = getCachedPagination();
-  // If the change to the request URL was not the offset, reset the offset to 0
-  /* istanbul ignore next */
-  if (reqUrlOffset === cachedUrlOffset || (!reqUrlOffset && cachedUrlOffset)) {
-    finalUrl = reqUrlStr.replace(/offset=\d+/, 'offset=0');
-    // Cache the new offset value so it is reflected in the pagination
-    cachePagination({
-      page: 1,
-      pageSize: cachedPagination.pageSize,
-    });
-  }
+  const finalUrl = reqUrlStr;
 
   if (finalUrl.includes('/stac/search?')) {
     // If the request URL is for STAC search, fetch results using the STAC API
     const params = new URLSearchParams(reqUrlStr.split('?')[1]);
+    /* istanbul ignore next -- @preserve */
     const projectName = params.get('project_id') || 'CMIP6';
+    const projectHash = params.get('project_hash');
 
-    return fetchSTACSearchResults(finalUrl, projectName)
+    return fetchSTACSearchResults(finalUrl, projectName, tokenToUse, projectHash || undefined)
       .then((results) => {
         // Prevent breaking the app if the response is not successful
         if (results.status !== 200) {
           // Handle the case where status is 422 due to a offset value that is too high
-          /* istanbul ignore next */
+          /* istanbul ignore next -- @preserve */
           if (results.status === 422) {
             cachePagination({
               page: 1,
@@ -605,7 +1291,7 @@ export const fetchSearchResults = async (
         return results;
       })
       .catch((error: ResponseError) => {
-        /* istanbul ignore next */
+        /* istanbul ignore next -- @preserve */
         if (error.cause === 422) {
           throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.esgfSearchSTAC), {
             cause: 422,
@@ -616,7 +1302,54 @@ export const fetchSearchResults = async (
       });
   }
 
-  return fetch(finalUrl)
+  // Extract offset and limit from URL
+  const urlParams = new URLSearchParams(finalUrl.split('?')[1]);
+  const requestedOffset = parseInt(urlParams.get('offset') || '0', 10);
+  const requestedLimit = parseInt(urlParams.get('limit') || '0', 10);
+
+  // Calculate which batch this request falls into
+  const batchOffset = Math.floor(requestedOffset / SEARCH_BATCH_SIZE) * SEARCH_BATCH_SIZE;
+
+  // Create a normalized URL for caching (without offset/limit for batch key)
+  const normalizedUrl = finalUrl.replace(/[&?]offset=\d+/, '').replace(/[&?]limit=\d+/, '');
+
+  // Build the batch URL (fetch full batch of STAC_BATCH_SIZE)
+  const batchUrl = finalUrl
+    .replace(/offset=\d+/, `offset=${batchOffset}`)
+    .replace(/limit=\d+/, `limit=${SEARCH_BATCH_SIZE}`);
+
+  // Helper function to slice batch results for the requested page
+  const sliceBatchForPage = (batchResults: NonStacSearchResponse): NonStacSearchResponse => {
+    if (!batchResults.response) return batchResults;
+
+    // If limit is 0 or not specified, return all results without slicing
+    if (requestedLimit === 0) {
+      return batchResults;
+    }
+
+    const startIndex = requestedOffset - batchOffset;
+    const endIndex = startIndex + requestedLimit;
+    const slicedDocs = batchResults.response.docs.slice(startIndex, endIndex);
+
+    return {
+      ...batchResults,
+      response: {
+        ...batchResults.response,
+        docs: slicedDocs,
+      },
+    };
+  };
+
+  // Check batch cache before making API call
+  const cachedBatch = getCachedNonStacBatch(normalizedUrl, batchOffset);
+  if (cachedBatch?.results) {
+    const fullBatch = cachedBatch.results as NonStacSearchResponse;
+    const slicedResults = sliceBatchForPage(fullBatch);
+    return Promise.resolve(slicedResults as SearchResults);
+  }
+
+  // Fetch the batch from the API
+  return fetch(batchUrl)
     .then((results) => {
       // Prevent breaking the app if the response is not successful
       if (results.status !== 200) {
@@ -630,9 +1363,18 @@ export const fetchSearchResults = async (
         }
       }
 
-      const resultsJson = results.json();
+      return results.json() as Promise<NonStacSearchResponse>;
+    })
+    .then((resultsJson: NonStacSearchResponse) => {
+      // Cache the full batch
+      if (resultsJson.response) {
+        const { numFound } = resultsJson.response;
+        cacheNonStacBatch(normalizedUrl, batchOffset, resultsJson, numFound);
+      }
 
-      return resultsJson;
+      // Return only the requested page slice
+      const slicedResults = sliceBatchForPage(resultsJson);
+      return slicedResults as SearchResults;
     })
     .catch((error: ResponseError) => {
       if (error.cause === 422) {
@@ -679,7 +1421,7 @@ export const fetchDatasetCitation = async ({
   url,
 }: {
   [key: string]: string;
-}): Promise<{ [key: string]: unknown }> =>
+}): Promise<SearchResults> =>
   axios
     .post('proxy/citation', {
       citurl: url,
@@ -781,7 +1523,6 @@ export const loadSessionValue = async <T>(key: string): Promise<T | null> => {
     .then((resp: AxiosResponse) => {
       const { data } = resp;
       if (data && key in data) {
-        // eslint-disable-next-line
         const value: T | null = data[key];
         if ((value as unknown) === 'None') {
           return null;
@@ -791,7 +1532,7 @@ export const loadSessionValue = async <T>(key: string): Promise<T | null> => {
       return null;
     })
     .catch(
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       (error: ResponseError) => {
         throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.tempStorageGet));
       },
@@ -812,7 +1553,7 @@ export const saveSessionValue = async <T>(key: string, value: T): Promise<AxiosR
       return res.data;
     })
     .catch(
-      /* istanbul ignore next */
+      /* istanbul ignore next -- @preserve */
       (error: ResponseError) => {
         throw new Error(errorMsgBasedOnHTTPStatusCode(error, apiRoutes.tempStorageSet));
       },

@@ -86,7 +86,7 @@ const apiRoutes: ApiRoutes = {
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('user saved searches', HTTPCode),
   },
   userSearch: {
-    path: `${window.location.origin}/api/v1/carts/searches/:pk/`,
+    path: `${window.location.origin}/api/v1/carts/searches/:uuid/`,
     handleErrorMsg: (HTTPCode) => mapHTTPErrorCodes('user saved searches', HTTPCode),
   },
   projects: {

@@ -29,7 +29,10 @@ class DjangoStaticSettings(BaseSettings):
         case_sensitive=True,
     )
 
-    DEBUG: bool = Field(default=True)
+    DEBUG: bool = Field(
+        default=False,
+        description="Enable debug mode for development. Should NEVER be True in production as it exposes sensitive information.",
+    )
     APPEND_SLASH: bool = False
     TIME_ZONE: str = "UTC"
     LANGUAGE_CODE: str = "en-us"

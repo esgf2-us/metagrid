@@ -2,18 +2,18 @@ import React from 'react';
 import { screen } from '@testing-library/react';
 import customRender from '../../test/custom-render';
 import GlobusToolTip from './GlobusToolTip';
-import { originalGlobusEnabledNodes } from '../../test/jestTestFunctions';
+import { originalGlobusEnabledNodes } from '../../test/testFunctions';
 
 describe('Testing the GlobusToolTip component', () => {
   it('Renders the GlobusToolTip component properly with empty node', async () => {
-    customRender(<GlobusToolTip dataNode=""></GlobusToolTip>);
+    customRender(<GlobusToolTip dataNode="" />);
     // Should show globus unavailable status
     const status = await screen.findByRole('img', { name: 'close-circle' });
     expect(status).toBeTruthy();
   });
 
   it('Renders the GlobusToolTip component properly with globus enabled node', async () => {
-    customRender(<GlobusToolTip dataNode={originalGlobusEnabledNodes[0]}></GlobusToolTip>);
+    customRender(<GlobusToolTip dataNode={originalGlobusEnabledNodes[0]} />);
     // Should show globus as available status
     const status = await screen.findByRole('img', { name: 'check-circle' });
     expect(status).toBeTruthy();

@@ -23,6 +23,7 @@ services:
       DJANGO_ALLOWED_HOSTS: '["<DOMAIN_NAME>", "localhost"]'
       DJANGO_SECRET_KEY: <DJANGO_SECRET_KEY>
       DJANGO_DATABASE_URL: "postgresql://<POSTGRES_USER>:<POSTGRES_PASSWORD>@postgres:5432/postgres"
+      # Note: DJANGO_DEBUG defaults to False. Only set to True for local/test environments.
 
       # Backend / frontend integration URLs (use defaults where known, otherwise placeholders)
       METAGRID_SEARCH_URL: https://esgf-node.ornl.gov/esgf-1-5-bridge
@@ -32,7 +33,6 @@ services:
 
       # Globus / auth
       METAGRID_GLOBUS_NODES: '["esgf-node.ornl.gov", "eagle.alcf.anl.gov", "esgf-data.nersc.gov"]'
-      METAGRID_GLOBUS_CLIENT_ID: <METAGRID_GLOBUS_CLIENT_ID>
       METAGRID_SOCIAL_AUTH_GLOBUS_KEY: <METAGRID_SOCIAL_AUTH_GLOBUS_KEY>
       METAGRID_SOCIAL_AUTH_GLOBUS_SECRET: <METAGRID_SOCIAL_AUTH_GLOBUS_SECRET>
       METAGRID_AUTHENTICATION_METHOD: none
@@ -65,6 +65,11 @@ services:
       METAGRID_KEYCLOAK_URL: <METAGRID_KEYCLOAK_URL>
       METAGRID_KEYCLOAK_REALM: <METAGRID_KEYCLOAK_REALM>
       METAGRID_KEYCLOAK_CLIENT_ID: <METAGRID_KEYCLOAK_CLIENT_ID>
+
+  react:
+    environment:
+      # Frontend-specific Vite environment variables
+      VITE_FEDERATED_NODES_URL: 'https://esgf.github.io/nodes.html'
 
   keycloak:
     environment:

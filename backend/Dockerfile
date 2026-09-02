@@ -25,7 +25,7 @@ RUN pip3 install --no-cache-dir -r /requirements/local.txt
 COPY . /app
 
 RUN mkdir -p /app/staticfiles/.well-known \
-    && cyclonedx-py requirements requirements/base.txt --output-format json --outfile /app/staticfiles/.well-known/bom
+    && cyclonedx-py requirements requirements/base.txt --output-format json --output-file /app/staticfiles/.well-known/bom
 
 WORKDIR /app
 USER django

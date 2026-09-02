@@ -1,23 +1,21 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { DownloadOutlined, QuestionOutlined, SearchOutlined } from '@ant-design/icons';
 import {
   Alert,
   Button,
   Card,
   Collapse,
-  Divider,
   Dropdown,
   Input,
   Modal,
   Select,
+  SelectProps,
   Space,
   Spin,
   Table,
   Tooltip,
   message,
 } from 'antd';
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useAtom } from 'jotai';
 import axios from 'axios';
 import { useLocation } from 'react-router';
@@ -31,17 +29,16 @@ import {
   startSearchGlobusEndpoints,
   SubmissionResult,
 } from '../../api';
-import { RawSearchResults } from '../Search/types';
+import { RawSearchResult, RawSearchResults, StacFeature } from '../Search/types';
 import {
   GlobusTaskItem,
   MAX_TASK_LIST_LENGTH,
   GlobusEndpointSearchResults,
   GlobusEndpoint,
-} from './types';
-import { getCurrentAppPage, showError, showNotice } from '../../common/utils';
+} from '../Globus/types';
+import { showError, showNotice } from '../../common/utils';
 import { RawTourState, ReactJoyrideContext } from '../../contexts/ReactJoyrideContext';
 import apiRoutes from '../../api/routes';
-import { AppPage } from '../../common/types';
 import {
   cartDownloadIsLoadingAtom,
   cartItemSelectionsAtom,
@@ -49,22 +46,29 @@ import {
   globusTaskItemsAtom,
   GlobusStateKeys,
   userChosenEndpointAtom,
+  selectedNodesAtom,
+  downloadSelectionsAtom,
+  nodePreferencesAtom,
 } from '../../common/atoms';
 import {
   cartTourTargets,
   manageCollectionsTourTargets,
   createCollectionsFormTour,
 } from '../../common/joyrideTutorials/reactJoyrideSteps';
-import { generateWgetScriptSTAC } from '../../common/STAC';
+import {
+  getStacGlobusHref,
+  generateWgetScriptSTAC,
+  convertStacToRawSearchResult,
+  getNodesListByDownloadType,
+} from '../../common/STAC';
+import GlobusEndpointOption, { GlobusEndpointOptionData } from '../Globus/GlobusEndpointOption';
 
 const GLOBUS_REDIRECT_URL = `${window.location.origin}/cart/items`;
 
 const COLLECTION_SEARCH_PAGE_SIZE = 5;
 
 // Reference: https://github.com/bpedroza/js-pkce
-/* istanbul ignore next */
-export const REQUESTED_SCOPES =
-  'openid profile email urn:globus:auth:scope:transfer.api.globus.org:all';
+const REQUESTED_SCOPES = 'openid profile email urn:globus:auth:scope:transfer.api.globus.org:all';
 
 type AlertModalState = {
   onCancelAction: () => void;
@@ -82,6 +86,7 @@ export enum GlobusGoals {
 // Statically defined list of dataset download options
 const downloadOptions = ['Globus', 'wget'];
 
+/* istanbul ignore next -- @preserve */
 function redirectToNewURL(newUrl: string): void {
   window.location.replace(newUrl);
 }
@@ -94,6 +99,7 @@ function tokenUrlReady(params: URLSearchParams): boolean {
   return params.has('code') && params.has('state');
 }
 
+/* istanbul ignore next -- @preserve */
 function redirectToRootUrl(): void {
   // Redirect back to the root URL (simple but brittle way to clear the query params)
   const splitUrl = window.location.href.split('?');
@@ -106,7 +112,15 @@ function redirectToRootUrl(): void {
   }
 }
 
-const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
+interface DatasetDownloadFormProps {
+  stacFeatures?: StacFeature[];
+  searchURL?: string;
+  onDownloadFinish?: () => void;
+}
+
+const DatasetDownloadForm: React.FC<React.PropsWithChildren<DatasetDownloadFormProps>> = (
+  props: DatasetDownloadFormProps,
+) => {
   const [messageApi, contextHolder] = message.useMessage();
 
   const location = useLocation();
@@ -125,6 +139,15 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
   const [chosenGlobusEndpoint, setChosenGlobusEndpoint] = useAtom<GlobusEndpoint | null>(
     userChosenEndpointAtom,
   );
+
+  const [selectedNodes] = useAtom<Record<string, string>>(selectedNodesAtom);
+
+  const [downloadSelections] = useAtom(downloadSelectionsAtom) as unknown as [
+    Record<string, 'wget' | 'Globus' | 'esgpull'>,
+    (value: Record<string, 'wget' | 'Globus' | 'esgpull'>) => void,
+  ];
+
+  const [nodePreferences] = useAtom<string[]>(nodePreferencesAtom);
 
   const [loadingPage, setLoadingPage] = React.useState<boolean>(false);
 
@@ -147,17 +170,21 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     content: '',
 
     onCancelAction:
-      // istanbul ignore next
+      // istanbul ignore next -- @preserve
       () => {
         setAlertPopupState({ ...alertPopupState, show: false });
       },
     onOkAction:
-      // istanbul ignore next
+      // istanbul ignore next -- @preserve
       () => {
         setAlertPopupState({ ...alertPopupState, show: false });
       },
     show: false,
   });
+
+  function setCurrentGoal(goal: GlobusGoals): void {
+    localStorage.setItem(GlobusStateKeys.globusTransferGoalsState, goal);
+  }
 
   function endDownloadSteps(): void {
     setCurrentGoal(GlobusGoals.None);
@@ -169,6 +196,41 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     redirectToRootUrl();
   }
 
+  /**
+   * Determine which node to use for a given item based on:
+   * 1. Selected node if wget is the download option for this item
+   * 2. Preferred nodes list as fallback
+   * 3. First available node as final fallback
+   */
+  const getNodeChoiceForItem = (
+    item: RawSearchResult,
+    downloadType: 'wget' | 'Globus',
+  ): string | undefined => {
+    if (!item.isStac) {
+      return undefined; // Non-STAC items don't need node selection
+    }
+
+    // Check if user has explicitly selected wget for this item and has a selected node
+    const itemDownloadType = downloadSelections[item.id];
+    if (itemDownloadType === downloadType && selectedNodes[item.id]) {
+      return selectedNodes[item.id];
+    }
+
+    // Fall back to preferred nodes list
+    const availableNodes = getNodesListByDownloadType(item, downloadType);
+
+    // Find the first preferred node that's available
+    if (nodePreferences.length > 0) {
+      const preferredNode = nodePreferences.find((node) => availableNodes.includes(node));
+      if (preferredNode) {
+        return preferredNode;
+      }
+    }
+
+    // Final fallback: use first available node
+    return availableNodes[0];
+  };
+
   function resetCookiesAndTokens(): void {
     deleteCookie(GlobusStateKeys.globusAuthScope, '/cart/items');
     resetGlobusTokens();
@@ -176,6 +238,26 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
   const handleWgetDownload = (): void => {
     setDownloadIsLoading(true);
+
+    if (props.stacFeatures && props.stacFeatures.length > 0) {
+      const searchItems = props.stacFeatures.map((feature: StacFeature) =>
+        convertStacToRawSearchResult(feature),
+      );
+
+      // Build a map of item ID to selected node for wget
+      const nodeMap: Record<string, string> = {};
+      searchItems.forEach((item) => {
+        const node = getNodeChoiceForItem(item, 'wget');
+        if (node) {
+          nodeMap[item.id] = node;
+        }
+      });
+
+      // Handle direct hrefs download
+      generateWgetScriptSTAC(searchItems, props.searchURL, nodeMap);
+      setDownloadIsLoading(false);
+      return;
+    }
 
     const cleanedSelections = itemSelections.filter((item) => {
       return item !== undefined && item !== null;
@@ -197,7 +279,21 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     let stacSuccess = false;
 
     if (stacSelections.length > 0) {
-      stacSuccess = generateWgetScriptSTAC(stacSelections);
+      // Build a map of item ID to selected node for wget
+      const nodeMap: Record<string, string> = {};
+      stacSelections.forEach((item) => {
+        const node = getNodeChoiceForItem(item, 'wget');
+        if (node) {
+          nodeMap[item.id] = node;
+        }
+      });
+
+      stacSuccess = generateWgetScriptSTAC(stacSelections, undefined, nodeMap);
+
+      /* istanbul ignore next -- @preserve */
+      if (props.onDownloadFinish) {
+        props.onDownloadFinish();
+      }
 
       if (nonStacSelections.length === 0) {
         setDownloadIsLoading(false);
@@ -303,23 +399,110 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     return REQUESTED_SCOPES;
   };
 
+  /**
+   * Get Globus href for an item based on selected node or preferences
+   */
+  const getGlobusHrefForItem = (item: RawSearchResult): string | null => {
+    if (!item.isStac || !item.assets) {
+      // Non-STAC items use the globus_link property directly
+      return item.globus_link || null;
+    }
+
+    // Determine which node to use
+    const selectedNode = getNodeChoiceForItem(item, 'Globus');
+
+    if (!selectedNode) {
+      // Fall back to default behavior
+      return getStacGlobusHref(item.assets);
+    }
+
+    // Search for Globus href from the selected node
+    const foundAsset = Object.values(item.assets).find((asset) => {
+      if (!asset) {
+        return false;
+      }
+
+      const assetNode = asset.alternateName || (asset['alternate:name'] as string);
+
+      // Check main asset
+      if (assetNode === selectedNode && asset.href?.startsWith('https://app.globus.org')) {
+        return true;
+      }
+
+      // Check alternates
+      const alternates = asset.alternate;
+      if (alternates && typeof alternates === 'object') {
+        const altAsset = alternates[selectedNode];
+        if (altAsset && altAsset.href?.startsWith('https://app.globus.org')) {
+          return true;
+        }
+      }
+
+      return false;
+    });
+
+    if (foundAsset) {
+      const assetNode = foundAsset.alternateName || (foundAsset['alternate:name'] as string);
+
+      // Return main href if it matches
+      if (assetNode === selectedNode && foundAsset.href?.startsWith('https://app.globus.org')) {
+        return foundAsset.href;
+      }
+
+      // Return alternate href
+      const alternates = foundAsset.alternate;
+      if (alternates && typeof alternates === 'object') {
+        const altAsset = alternates[selectedNode];
+        if (altAsset && altAsset.href?.startsWith('https://app.globus.org')) {
+          return altAsset.href;
+        }
+      }
+    }
+
+    // Fallback to default if no specific node href found
+    return getStacGlobusHref(item.assets);
+  };
+
   const handleGlobusDownload = (endpoint: GlobusEndpoint, authCode?: string): void => {
-    const ids = itemSelections?.map((item) => (item ? item.id : '')) ?? [];
+    const ids: string[] = [];
+    const globusHrefs: string[] = [];
+
+    if (itemSelections) {
+      itemSelections.forEach((item) => {
+        if (item?.id) {
+          ids.push(item.id);
+        }
+        const href = getGlobusHrefForItem(item);
+        if (href !== null) {
+          globusHrefs.push(href);
+        }
+      });
+    }
+
+    if (props.stacFeatures) {
+      props.stacFeatures.forEach((feature) => {
+        const convertedItem = convertStacToRawSearchResult(feature);
+        const href = getGlobusHrefForItem(convertedItem);
+        if (href !== null) {
+          globusHrefs.push(href);
+        }
+      });
+    }
 
     setDownloadIsLoading(true);
 
+    const params = JSON.stringify({
+      authCode,
+      authRedirectUrl: `${window.location.origin}/cart/items`,
+      authScope: getCurrentScope(),
+      endpointId: endpoint.id,
+      path: endpoint.path || '',
+      dataset_id: ids,
+      globus_hrefs: globusHrefs,
+    });
+
     axios
-      .post<SubmissionResult>(
-        apiRoutes.globusTransfer.path,
-        JSON.stringify({
-          authCode,
-          authRedirectUrl: `${window.location.origin}/cart/items`,
-          authScope: getCurrentScope(),
-          endpointId: endpoint.id,
-          path: endpoint.path || '',
-          dataset_id: ids,
-        }),
-      )
+      .post<SubmissionResult>(apiRoutes.globusTransfer.path, params)
       .then((resp) => {
         return resp.data;
       })
@@ -399,7 +582,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             resetCookiesAndTokens();
             endDownloadSteps();
             break;
-
           default:
             await showNotice(
               messageApi,
@@ -444,91 +626,12 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         endDownloadSteps();
       })
       .finally(() => {
+        /* istanbul ignore next -- @preserve */
+        if (props.onDownloadFinish) {
+          props.onDownloadFinish();
+        }
         setDownloadIsLoading(false);
       });
-  };
-
-  /**
-   *
-   * @returns False if one or more items are not Globus Ready
-   */
-  const checkItemsAreGlobusEnabled = (): boolean => {
-    if (window.METAGRID.GLOBUS_NODES.length === 0) {
-      return true;
-    }
-    const globusReadyItems: RawSearchResults = [];
-
-    itemSelections.filter((item) => {
-      return item !== undefined && item !== null;
-    });
-    itemSelections.forEach((selection) => {
-      if (selection) {
-        const dataNode = selection.data_node as string;
-        if (dataNode && window.METAGRID.GLOBUS_NODES.includes(dataNode)) {
-          globusReadyItems.push(selection);
-        }
-      }
-    });
-
-    // If there are non-Globus Ready selections, show alert
-    const globusDisabledCount = itemSelections.length - globusReadyItems.length;
-
-    if (globusDisabledCount > 0) {
-      let state = 'One';
-      if (globusDisabledCount > 1) {
-        state = 'Some';
-      }
-      let content = `${state} of your selected items cannot be transferred via Globus. Would you like to continue the Globus transfer with the 'Globus Ready' items?`;
-
-      if (globusDisabledCount === itemSelections.length) {
-        state = 'None';
-        content =
-          "None of your selected items can be transferred via Globus at this time. When choosing the Globus Transfer option, make sure your selections are 'Globus Ready'.";
-      }
-
-      const newAlertPopupState: AlertModalState = {
-        content,
-        onCancelAction: () => {
-          setAlertPopupState({ ...alertPopupState, show: false });
-          setCurrentGoal(GlobusGoals.None);
-        },
-        onOkAction: () => {
-          if (state === 'None') {
-            setAlertPopupState({ ...alertPopupState, show: false });
-            setCurrentGoal(GlobusGoals.None);
-          } else {
-            setAlertPopupState({ ...alertPopupState, show: false });
-            setItemSelections(globusReadyItems);
-            setCurrentGoal(GlobusGoals.DoGlobusTransfer);
-            performStepsForGlobusGoalsTest();
-          }
-        },
-        show: true,
-      };
-
-      if (!alertPopupState.show) {
-        setAlertPopupState(newAlertPopupState);
-      }
-      return false;
-    }
-
-    return true;
-  };
-
-  const handleDownloadForm = (downloadType: 'wget' | 'Globus'): void => {
-    // istanbul ignore else
-    if (downloadType === 'wget') {
-      handleWgetDownload();
-    } else if (downloadType === 'Globus') {
-      const itemsReady = checkItemsAreGlobusEnabled();
-      if (itemsReady) {
-        const prepareDownload = (): void => {
-          setCurrentGoal(GlobusGoals.DoGlobusTransfer);
-          performStepsForGlobusGoalsTest();
-        };
-        prepareDownload();
-      }
-    }
   };
 
   /* https://docs.globus.org/globus-connect-server/v5/application/ */
@@ -569,7 +672,6 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     setSavedGlobusEndpoints(newEndpointsList);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const changeGlobusEndpoint = (value: string): void => {
     if (value === '') {
       setEndpointSearchValue('');
@@ -616,6 +718,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
         setGlobusEndpoints([]);
       }
     } catch (error) {
+      /* istanbul ignore next -- @preserve */
       // eslint-disable-next-line no-console
       console.error(error);
       setAlertPopupState({
@@ -658,10 +761,9 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
 
   function getCurrentGoal(): GlobusGoals {
     const urlParams = new URLSearchParams(window.location.search);
-    const curPage = getCurrentAppPage();
 
     // If cancelled key is in URL, set goal to none
-    if (urlParams.has('cancelled') || curPage !== AppPage.Cart) {
+    if (urlParams.has('cancelled')) {
       setCurrentGoal(GlobusGoals.None);
       return GlobusGoals.None;
     }
@@ -674,19 +776,17 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     return GlobusGoals.None;
   }
 
-  function setCurrentGoal(goal: GlobusGoals): void {
-    localStorage.setItem(GlobusStateKeys.globusTransferGoalsState, goal);
-  }
-
-  function performStepsForGlobusGoalsTest(): void {
+  function performStepsForGlobusGoals(): void {
     const goal = getCurrentGoal();
 
     // Obtain URL params if applicable
     const urlParams = new URLSearchParams(window.location.search);
     const eUrlReady = endpointUrlReady(urlParams);
 
-    if (urlParams.size > 0) {
-      if (chosenGlobusEndpoint && urlParams.has('state') && urlParams.has('code')) {
+    const urlParamsSize = Array.from(urlParams).length;
+
+    if (urlParamsSize > 0) {
+      if (chosenGlobusEndpoint && tokenUrlReady(urlParams)) {
         handleGlobusDownload(chosenGlobusEndpoint, urlParams.get('code') || undefined);
         return;
       }
@@ -762,6 +862,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       }
 
       // Update scopes
+      /* istanbul ignore next -- @preserve */
       updateScopes();
 
       // If endpoint urls are ready, update related values
@@ -806,6 +907,94 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
       }
     }
   }
+
+  /**
+   *
+   * @returns False if one or more items are not Globus Ready
+   */
+  const checkItemsAreGlobusEnabled = (): boolean => {
+    if (window.METAGRID.GLOBUS_NODES.length === 0) {
+      return true;
+    }
+    const globusReadyItems: RawSearchResults = [];
+
+    itemSelections.filter((item) => {
+      return item !== undefined && item !== null;
+    });
+    itemSelections.forEach((selection) => {
+      if (selection) {
+        const dataNode = selection.data_node as string;
+        if (dataNode && window.METAGRID.GLOBUS_NODES.includes(dataNode)) {
+          globusReadyItems.push(selection);
+        } else if (selection.isStac && getStacGlobusHref(selection.assets)) {
+          globusReadyItems.push(selection);
+        }
+      }
+    });
+
+    // If there are non-Globus Ready selections, show alert
+    const globusDisabledCount = itemSelections.length - globusReadyItems.length;
+
+    if (globusDisabledCount > 0) {
+      let state = 'One';
+      if (globusDisabledCount > 1) {
+        state = 'Some';
+      }
+      let content = `${state} of your selected items cannot be transferred via Globus. Would you like to continue the Globus transfer with the 'Globus Ready' items?`;
+
+      if (globusDisabledCount === itemSelections.length) {
+        state = 'None';
+        content =
+          "None of your selected items can be transferred via Globus at this time. When choosing the Globus Transfer option, make sure your selections are 'Globus Ready'.";
+      }
+
+      const newAlertPopupState: AlertModalState = {
+        content,
+        onCancelAction: () => {
+          setAlertPopupState({ ...alertPopupState, show: false });
+          setCurrentGoal(GlobusGoals.None);
+        },
+        onOkAction: () => {
+          if (state === 'None') {
+            setAlertPopupState({ ...alertPopupState, show: false });
+            setCurrentGoal(GlobusGoals.None);
+          } else {
+            setAlertPopupState({ ...alertPopupState, show: false });
+            setItemSelections(globusReadyItems);
+            setCurrentGoal(GlobusGoals.DoGlobusTransfer);
+            performStepsForGlobusGoals();
+          }
+        },
+        show: true,
+      };
+
+      if (!alertPopupState.show) {
+        setAlertPopupState(newAlertPopupState);
+      }
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleDownloadForm = (downloadType: 'wget' | 'Globus'): void => {
+    /* istanbul ignore else -- @preserve */
+    if (downloadType === 'wget') {
+      handleWgetDownload();
+    } else if (downloadType === 'Globus') {
+      let itemsReady = false;
+      if (props.stacFeatures) {
+        itemsReady = true;
+      } else {
+        itemsReady = checkItemsAreGlobusEnabled();
+      }
+
+      if (itemsReady) {
+        setCurrentGoal(GlobusGoals.DoGlobusTransfer);
+        performStepsForGlobusGoals();
+      }
+    }
+  };
 
   const downloadBtnTooltip = (): string => {
     if (itemSelections.length === 0) {
@@ -857,9 +1046,21 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
     const initializePage = (): void => {
       setLoadingPage(true);
 
-      performStepsForGlobusGoalsTest();
+      performStepsForGlobusGoals();
     };
     initializePage();
+  }, []);
+
+  type OptionRenderType = Required<SelectProps<string, GlobusEndpointOptionData>>['optionRender'];
+  const renderGlobusOption: OptionRenderType = useCallback((option) => {
+    // Now 'option.data' is correctly typed as MyGlobusOption
+    return (
+      <GlobusEndpointOption
+        label={option.label}
+        value={option.value ?? ''}
+        endpoint={option.data.endpoint}
+      />
+    );
   }, []);
 
   return (
@@ -870,7 +1071,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
           className={cartTourTargets.downloadAllType.class()}
           defaultValue={downloadOptions[0]}
           data-testid="downloadTypeSelector"
-          style={{ width: 235 }}
+          style={{ width: 135, textAlign: 'center' }}
           onSelect={(rawType) => {
             const downloadType: string = rawType;
             if (downloadType) {
@@ -895,7 +1096,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
             notFoundContent={null}
             placeholder="Select Globus Collection"
             showSearch
-            style={{ width: '450px' }}
+            style={{ width: '400px', textAlign: 'center' }}
             value={chosenGlobusEndpoint?.display_name}
             options={[
               {
@@ -903,47 +1104,19 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                 value: '',
                 path: '',
                 label: 'Manage Collections',
+                endpoint: {} as GlobusEndpoint,
               },
-              ...savedGlobusEndpoints.map((endpoint: GlobusEndpoint) => {
-                return {
-                  key: endpoint.id,
-                  value: endpoint.id,
-                  path: endpoint.path,
-                  label: endpoint.display_name,
-                };
-              }),
+              ...savedGlobusEndpoints.map((endpoint: GlobusEndpoint) => ({
+                key: endpoint.id,
+                value: endpoint.id,
+                path: endpoint.path,
+                label: endpoint.display_name,
+                endpoint,
+              })),
             ]}
             optionLabelProp="label"
-            optionRender={(option) =>
-              option.key === '' ? (
-                <strong>{option.label}</strong>
-              ) : (
-                <>
-                  <strong>{option.label}</strong>
-                  <br />
-                  ID: {option.key}
-                  <br />
-                  <span>
-                    {(option.data as unknown as GlobusEndpoint)?.path &&
-                      `Path: ${(option.data as unknown as GlobusEndpoint)?.path}`}
-                    {(option.data as unknown as GlobusEndpoint)?.path && <br />}
-                    {(option.data as unknown as GlobusEndpoint)?.entity_type ===
-                      'GCSv5_mapped_collection' &&
-                      (option.data as unknown as GlobusEndpoint)?.subscription_id !== '' &&
-                      'Managed '}
-                    {(option.data as unknown as GlobusEndpoint)?.entity_type ===
-                    'GCSv5_guest_collection'
-                      ? 'Guest Collection'
-                      : 'Mapped Collection'}{' '}
-                    <br />
-                    {(option.data as unknown as GlobusEndpoint)?.contact_email !== null &&
-                      (option.data as unknown as GlobusEndpoint)?.contact_email}
-                  </span>
-                  <Divider style={{ marginBottom: '0px', marginTop: '0px' }} />
-                </>
-              )
-            }
-          ></Select>
+            optionRender={renderGlobusOption}
+          />
         )}
         {selectedDownloadType === 'Globus' ? (
           <Tooltip title={downloadBtnTooltip()} placement="top">
@@ -954,7 +1127,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                 handleDownloadForm('Globus');
               }}
               disabled={
-                itemSelections.length === 0 ||
+                (itemSelections.length === 0 && !props.stacFeatures) ||
                 !chosenGlobusEndpoint ||
                 savedGlobusEndpoints.length === 0
               }
@@ -979,7 +1152,7 @@ const DatasetDownloadForm: React.FC<React.PropsWithChildren<unknown>> = () => {
                 handleDownloadForm('wget');
               }}
               icon={<DownloadOutlined />}
-              disabled={itemSelections.length === 0}
+              disabled={itemSelections.length === 0 && !props.stacFeatures}
               loading={downloadIsLoading}
             >
               Download

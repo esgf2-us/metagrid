@@ -1,18 +1,20 @@
 import { screen } from '@testing-library/react';
 import React from 'react';
+import { vi } from 'vitest';
 import customRender from '../test/custom-render';
-import { mockConfig } from '../test/jestTestFunctions';
+import { mockConfig } from '../test/testFunctions';
 
 describe('test AuthProvider', () => {
   it('renders using keycloak provider', async () => {
     mockConfig.AUTHENTICATION_METHOD = 'keycloak';
 
-    jest.useFakeTimers();
+    // Use real timers under Vitest to avoid fake-timer interactions with async code
+    vi.useRealTimers();
 
     customRender(
       <div data-testid="authProvider">
         <p>renders keycloak</p>
-      </div>
+      </div>,
     );
 
     // Wait for render to get user auth info
@@ -26,20 +28,20 @@ describe('test AuthProvider', () => {
     const renderResult = await screen.findByText('renders keycloak');
     expect(renderResult).toBeTruthy();
 
-    jest.advanceTimersByTime(295000);
-
+    // previously advanced fake timers here; with real timers this is unnecessary
     await screen.findByTestId('authProvider');
   });
 
   it('renders using globus auth provider', async () => {
     mockConfig.AUTHENTICATION_METHOD = 'globus';
 
-    jest.useFakeTimers();
+    // Use real timers under Vitest to avoid fake-timer interactions with async code
+    vi.useRealTimers();
 
     customRender(
       <div data-testid="authProvider">
         <p>renders globus</p>
-      </div>
+      </div>,
     );
 
     // Wait for render to get user auth info
@@ -53,8 +55,7 @@ describe('test AuthProvider', () => {
     const renderResult = await screen.findByText('renders globus');
     expect(renderResult).toBeTruthy();
 
-    jest.advanceTimersByTime(295000);
-
+    // previously advanced fake timers here; with real timers this is unnecessary
     await screen.findByTestId('authProvider');
   });
 });

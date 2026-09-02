@@ -1,17 +1,24 @@
 import { CloudDownloadOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { Col, Empty, Popconfirm, Row } from 'antd';
 import React from 'react';
-import { useAtom } from 'jotai';
+import { useAtom, useSetAtom } from 'jotai';
 import { cartTourTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 import { CSSinJS } from '../../common/types';
 import Button from '../General/Button';
 import Table from '../Search/Table';
 import { RawSearchResults } from '../Search/types';
-import DatasetDownload from '../Globus/DatasetDownload';
+import DatasetDownload from '../Downloads/DatasetDownload';
+import PreferredNodesModal from '../Downloads/PreferredNodesModal';
 import { UserCart } from './types';
 import { AuthContext } from '../../contexts/AuthContext';
 import { updateUserCart } from '../../api';
-import { cartItemSelectionsAtom, userCartAtom } from '../../common/atoms';
+import {
+  cartItemSelectionsAtom,
+  userCartAtom,
+  selectedNodesAtom,
+  downloadSelectionsAtom,
+} from '../../common/atoms';
+import { getReplicaNodelsList, getNodesListByDownloadType } from '../../common/STAC';
 
 const styles: CSSinJS = {
   summary: {
@@ -41,6 +48,16 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
 
   const [itemSelections, setItemSelections] = useAtom<RawSearchResults>(cartItemSelectionsAtom);
 
+  const setSelectedNodes = useSetAtom(selectedNodesAtom);
+
+  const [downloadSelections] = useAtom(downloadSelectionsAtom) as unknown as [
+    Record<string, 'wget' | 'Globus' | 'esgpull'>,
+    (value: Record<string, 'wget' | 'Globus' | 'esgpull'>) => void,
+  ];
+
+  // Preferred Nodes Modal
+  const [showPreferredNodesModal, setShowPreferredNodesModal] = React.useState(false);
+
   const handleRowSelect = (selectedRows: RawSearchResults): void => {
     setItemSelections(selectedRows);
   };
@@ -49,53 +66,125 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     setUserCart([]);
     setItemSelections([]);
 
-    /* istanbul ignore else */
+    /* istanbul ignore else -- @preserve */
     if (isAuthenticated) {
       updateUserCart(pk, accessToken, []);
     }
   };
 
+  // Extract unique nodes from userCart
+  const getAvailableNodes = (): string[] => {
+    const nodesSet = new Set<string>();
+
+    userCart.forEach((item) => {
+      const nodes = getReplicaNodelsList(item);
+      nodes.forEach((node) => {
+        if (node) {
+          nodesSet.add(node);
+        }
+      });
+    });
+
+    return Array.from(nodesSet);
+  };
+
+  const availableNodes = getAvailableNodes();
+  const hasNodes = availableNodes.length > 0;
+
+  /**
+   * Apply node preferences to all cart items
+   * For each item, select the highest priority node from the user's preferences
+   * that is available for that item's current download type
+   */
+  const handleApplyNodePreferences = (preferences: string[]): void => {
+    const newSelectedNodes: Record<string, string> = {};
+
+    userCart.forEach((item) => {
+      // Get the current download type for this item (default to 'wget')
+      const downloadType = downloadSelections[item.id] || 'wget';
+
+      // Get available nodes for this item based on its download type
+      const availableNodesForItem = getNodesListByDownloadType(item, downloadType);
+
+      // Find the highest priority node that's available
+      const selectedNode = preferences.find((preferredNode) =>
+        availableNodesForItem.includes(preferredNode),
+      );
+
+      // Set the selected node (use preferred or fallback to first available)
+      const nodeToUse = selectedNode || availableNodesForItem[0];
+      if (nodeToUse) {
+        newSelectedNodes[item.id] = nodeToUse;
+      }
+    });
+
+    // Update the selected nodes state
+    setSelectedNodes(newSelectedNodes);
+  };
+
   return (
     <div data-testid="cartItems">
-      {userCart.length === 0 && <Empty description="Your cart is empty"></Empty>}
+      {userCart.length === 0 && <Empty description="Your cart is empty" />}
       {userCart.length > 0 && (
         <>
           <div style={styles.summary}>
             {userCart.length > 0 && (
-              <Popconfirm
-                title={
-                  <p>
-                    Do you wish to remove all
-                    <br /> items from your cart?
-                  </p>
-                }
-                icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
-                onConfirm={handleClearCart}
-                okButtonProps={{
-                  'data-testid': 'clear-all-cart-items-confirm-button',
-                }}
-              >
-                <span data-testid="clear-cart-button">
-                  <Button className={cartTourTargets.removeItemsBtn.class()} danger>
-                    Remove All Items
+              <>
+                <div>
+                  <Popconfirm
+                    title={
+                      <p>
+                        Do you wish to remove all
+                        <br /> items from your cart?
+                      </p>
+                    }
+                    icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
+                    onConfirm={handleClearCart}
+                    okButtonProps={{
+                      'data-testid': 'clear-all-cart-items-confirm-button',
+                    }}
+                  >
+                    <span data-testid="clear-cart-button">
+                      <Button className={cartTourTargets.removeItemsBtn.class()} danger>
+                        Remove All Items
+                      </Button>
+                    </span>
+                  </Popconfirm>
+                </div>
+                <div>
+                  <Button
+                    className={cartTourTargets.setPreferredNodesBtn.class()}
+                    onClick={() => setShowPreferredNodesModal(true)}
+                    disabled={!hasNodes}
+                  >
+                    Set Preferred Nodes
                   </Button>
-                </span>
-              </Popconfirm>
+                </div>
+              </>
             )}
           </div>
-          <Row gutter={[24, 16]} justify="space-around">
-            <Col lg={24}>
-              <Table
-                loading={false}
-                canDisableRows={false}
-                results={userCart}
-                onUpdateCart={onUpdateCart}
-                onRowSelect={handleRowSelect}
-                selections={itemSelections}
-              />
-            </Col>
-          </Row>
-          <div data-testid="downloadForm">
+          <div
+            className={cartTourTargets.cartItemsTable.class()}
+            style={{
+              height: 'calc(100vh - 500px)',
+              marginBottom: '24px',
+            }}
+          >
+            <Row gutter={[24, 16]} justify="space-around">
+              <Col lg={24}>
+                <Table
+                  loading={false}
+                  canDisableRows={false}
+                  results={userCart}
+                  onUpdateCart={onUpdateCart}
+                  onRowSelect={handleRowSelect}
+                  selections={itemSelections}
+                  scroll={{ y: 'calc(100vh - 580px)', x: 'max-content' }}
+                />
+              </Col>
+            </Row>
+          </div>
+          <div data-testid="downloadForm" className={cartTourTargets.downloadForm.class()}>
             <h1>
               <CloudDownloadOutlined /> Download Your Cart
             </h1>
@@ -105,6 +194,12 @@ const Items: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
             </p>
             <DatasetDownload />
           </div>
+          <PreferredNodesModal
+            show={showPreferredNodesModal}
+            hide={() => setShowPreferredNodesModal(false)}
+            availableNodes={availableNodes}
+            onApply={handleApplyNodePreferences}
+          />
         </>
       )}
     </div>

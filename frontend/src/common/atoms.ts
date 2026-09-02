@@ -11,6 +11,7 @@ export enum AppStateKeys {
   isDarkMode = 'isDarkMode',
   currentProject = 'currentProject',
   userCart = 'userCart',
+  nodePreferences = 'nodePreferences',
   userChosenEndpoint = 'userChosenEndpoint',
   userSearchQueries = 'userSearchQueries',
   activeSearchQuery = 'activeSearchQuery',
@@ -24,6 +25,8 @@ export enum AppStateKeys {
 export enum CartStateKeys {
   cartItemSelections = 'cartItemSelections',
   cartDownloadIsLoading = 'downloadIsLoading',
+  selectedNodes = 'selectedNodes',
+  downloadSelections = 'downloadSelections',
 }
 
 export enum GlobusStateKeys {
@@ -36,7 +39,10 @@ export enum GlobusStateKeys {
   savedGlobusEndpoints = 'savedGlobusEndpoints',
 }
 
-const darkModeDefault = window.matchMedia('(prefers-color-scheme: dark)').matches;
+const darkModeDefault =
+  typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+    ? window.matchMedia('(prefers-color-scheme: dark)').matches
+    : false;
 
 export const supportModalVisibleAtom = atom<boolean>(false);
 
@@ -45,6 +51,13 @@ export const savedSearchQueryAtom = atom<UserSearchQuery | undefined>();
 export const availableFacetsAtom = atom<ParsedFacets | Record<string, unknown>>({});
 
 export const nodeStatusAtom = atom<NodeStatusArray>([]);
+
+export const nodePreferencesAtom = atomWithStorage<string[]>(
+  AppStateKeys.nodePreferences,
+  [],
+  undefined,
+  { getOnInit: true },
+);
 
 export const activeSearchQueryAtom = atomWithStorage<ActiveSearchQuery>(
   AppStateKeys.activeSearchQuery,
@@ -119,3 +132,14 @@ export const userChosenEndpointAtom = atomWithStorage<GlobusEndpoint | null>(
   undefined,
   { getOnInit: true },
 );
+
+export const selectedNodesAtom = atomWithStorage<Record<string, string>>(
+  CartStateKeys.selectedNodes,
+  {},
+  undefined,
+  { getOnInit: true },
+);
+
+export const downloadSelectionsAtom = atomWithStorage<
+  Record<string, 'wget' | 'Globus' | 'esgpull'>
+>(CartStateKeys.downloadSelections, {}, undefined, { getOnInit: true });

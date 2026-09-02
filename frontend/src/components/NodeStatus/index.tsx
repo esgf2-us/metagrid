@@ -30,30 +30,28 @@ const NodeStatus: React.FC<React.PropsWithChildren<Props>> = ({ apiError, isLoad
   let offlineCol = lightModeRed;
 
   if (isDarkMode) {
-    /* istanbul ignore next */
+    /* istanbul ignore next -- @preserve */
     onlineCol = darkModeGreen;
-    /* istanbul ignore next */
+    /* istanbul ignore next -- @preserve */
     offlineCol = darkModeRed;
   }
 
   if (isLoading) {
     return (
-      <>
-        <TableD
-          title={() => (
-            <div style={styles.headerContainer}>
-              <h1>Fetching latest node status...</h1>
-            </div>
-          )}
-          loading={isLoading}
-          data-testid="nodeStatusTable"
-          size="small"
-        />
-      </>
+      <TableD
+        title={() => (
+          <div style={styles.headerContainer}>
+            <h1>Fetching latest node status...</h1>
+          </div>
+        )}
+        loading={isLoading}
+        data-testid="nodeStatusTable"
+        size="small"
+      />
     );
   }
 
-  /* istanbul ignore else */
+  /* istanbul ignore else -- @preserve */
   if (nodeStatus && !featureIsDisabled) {
     // Since the timestamp is the same for all node objects, use the first one
     const { timestamp } = nodeStatus[0];

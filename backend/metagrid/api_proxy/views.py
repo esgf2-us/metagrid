@@ -84,28 +84,63 @@ def do_search(request):
 @require_http_methods(["POST"])
 @csrf_exempt
 def do_stac_search(request):
-    print("STAC Search Request:", request.method, request.body)
+    # Check if a custom STAC URL is provided in the request body
+    try:
+        jo = json.loads(request.body)
+        custom_stac_url = jo.pop("stacApiUrl", None)
+        stac_url = custom_stac_url if custom_stac_url else settings.STAC_URL
 
-    if settings.STAC_URL is None:
-        return HttpResponseBadRequest("STAC URL not configured.")
+        # Check if we have a STAC URL (either custom or from settings)
+        if stac_url is None:
+            return HttpResponseBadRequest("STAC URL not configured.")
 
-    return do_post(request, settings.STAC_URL + "/search")
+        # Strip trailing slash to avoid double slashes
+        if stac_url.endswith("/"):
+            stac_url = stac_url.rstrip("/")
+
+        # Forward the request to the STAC server (without stacApiUrl field)
+        try:
+            resp = requests.post(stac_url + "/search", json=jo)
+        except Exception as e:
+            return HttpResponseBadRequest(f"Error during POST request: {e}")
+
+        httpresp = HttpResponse(resp.text, content_type="text/json")
+        httpresp.status_code = resp.status_code
+        return httpresp
+
+    except json.JSONDecodeError:
+        return HttpResponseBadRequest("Invalid JSON in request body.")
 
 
 @require_http_methods(["POST"])
 @csrf_exempt
 def fetch_stac_aggregations(request):
-    if settings.STAC_URL is None:
-        return HttpResponseBadRequest("STAC URL not configured.")
-
+    # Check if a custom STAC URL is provided in the request body
     try:
-        summaries = do_post(request, settings.STAC_URL + "/aggregate")
-    except Exception as e:  # pragma: no cover
-        print("Error fetching STAC aggregations:\n", e)
+        jo = json.loads(request.body)
+        custom_stac_url = jo.pop("stacApiUrl", None)
+        stac_url = custom_stac_url if custom_stac_url else settings.STAC_URL
 
-    print("STAC Aggregations:", summaries)
+        # Check if we have a STAC URL (either custom or from settings)
+        if stac_url is None:
+            return HttpResponseBadRequest("STAC URL not configured.")
 
-    return summaries
+        # Strip trailing slash to avoid double slashes
+        if stac_url.endswith("/"):
+            stac_url = stac_url.rstrip("/")
+
+        # Forward the request to the STAC server (without stacApiUrl field)
+        try:
+            resp = requests.post(stac_url + "/aggregate", json=jo)
+        except Exception as e:
+            return HttpResponseBadRequest(f"Error during POST request: {e}")
+
+        httpresp = HttpResponse(resp.text, content_type="text/json")
+        httpresp.status_code = resp.status_code
+        return httpresp
+
+    except json.JSONDecodeError:
+        return HttpResponseBadRequest("Invalid JSON in request body.")
 
 
 @require_http_methods(["POST"])

@@ -1,21 +1,29 @@
 import {
+  CopyOutlined,
   DeleteOutlined,
   FileSearchOutlined,
   LinkOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
-import { Alert, Card, Col, Skeleton, Typography, Tooltip } from 'antd';
+import { Alert, Button, Card, Col, message, Skeleton, theme, Typography, Tooltip } from 'antd';
 import React, { useEffect } from 'react';
-import { useAsync } from 'react-async';
+import { DeferFn, useAsync } from 'react-async';
 import { useNavigate } from 'react-router';
 import { useSetAtom } from 'jotai';
 import { fetchSearchResults, generateSearchURLQuery } from '../../api';
 import { CSSinJS } from '../../common/types';
-import { stringifyFilters } from '../Search';
 import { UserSearchQuery } from './types';
-import { createSearchRouteURL } from '../../common/utils';
+import ChangesDialog from './ChangesDialog';
+import { createSearchRouteURL, showNotice } from '../../common/utils';
 import { savedSearchQueryAtom } from '../../common/atoms';
 import { savedSearchTourTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
+import {
+  stringifyApiRequest,
+  convertSearchParamsIntoStacFilter,
+  getStacProject,
+} from '../../common/STAC';
+import { SearchResults } from '../Search/types';
+import './SearchesCard.css';
 
 const styles: CSSinJS = {
   category: {
@@ -40,6 +48,8 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
   index,
 }) => {
   const navigate = useNavigate();
+  const { token } = theme.useToken();
+  const [messageApi, contextHolder] = message.useMessage();
   const {
     uuid,
     project,
@@ -57,7 +67,12 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
 
   const setSavedSearchQuery = useSetAtom(savedSearchQueryAtom);
 
-  // Only call useAsync if resultsCount is null or searchTime is an hour old
+  // State for changes dialog
+  const [showChangesDialog, setShowChangesDialog] = React.useState(false);
+
+  const isSubscribed = searchQuery.isSubscribed || false;
+
+  // Only fetch resultCount if resultsCount is null or searchTime is an hour old
   const expirationTime = (searchTime || 0) + 60 * 60 * 1000; // Expires after an hour
   const getUrlResults: boolean = !resultsCount || expirationTime < Date.now();
   const numResultsUrl = getUrlResults
@@ -67,18 +82,26 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
       })
     : null;
 
-  const { data, isLoading, error } = useAsync({
-    promiseFn: numResultsUrl ? fetchSearchResults : undefined,
-    reqUrl: numResultsUrl,
+  const { data, isLoading, error, run } = useAsync({
+    deferFn: fetchSearchResults as unknown as DeferFn<SearchResults>,
   });
+
+  // Automatically fetch results when component mounts if needed
+  useEffect(() => {
+    if (numResultsUrl) {
+      run(numResultsUrl);
+    }
+  }, [numResultsUrl]);
 
   // Update the search query with the results count if it was fetched
   useEffect(() => {
     if (!isLoading && data) {
       let loadedCount = 0;
       if (project.isSTAC) {
-        /* istanbul ignore next */
-        loadedCount = (data as { search?: { numMatched?: number } }).search?.numMatched || 0;
+        /* istanbul ignore next -- @preserve */
+        const searchData = (data as { search?: { numMatched?: number; numberMatched?: number } })
+          .search;
+        loadedCount = searchData?.numMatched || searchData?.numberMatched || 0;
       } else {
         loadedCount = (data as { numFound?: number }).numFound || 0;
       }
@@ -89,6 +112,25 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
       });
     }
   }, [isLoading, data]);
+
+  // THIS SUBSCRIPTION FEATURE MAY BE ACTIVATED AT A LATER TIME
+  // Handle subscription toggle
+  // const handleSubscriptionToggle = () => {
+  //   const newIsSubscribed = !isSubscribed;
+  //   const newLastCheckedTime = newIsSubscribed ? Date.now() : null;
+
+  //   updateSearchQuery({
+  //     ...searchQuery,
+  //     isSubscribed: newIsSubscribed,
+  //     lastCheckedTime: newLastCheckedTime,
+  //   });
+
+  //   if (newIsSubscribed) {
+  //     showNotice(messageApi, 'Subscribed to search changes');
+  //   } else {
+  //     showNotice(messageApi, 'Unsubscribed from search changes');
+  //   }
+  // };
 
   let numResultsText;
 
@@ -124,13 +166,42 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
   }
 
   return (
-    <Col key={uuid} xs={20} sm={16} md={12} lg={10} xl={8}>
+    <Col key={uuid} xs={20} sm={16} md={12} lg={10} xl={8} style={{ minWidth: '300px' }}>
+      {contextHolder}
       <Card
         hoverable
         title={
-          <>
-            <FileSearchOutlined /> Search #{index + 1}
-          </>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {/* THIS SUBSCRIPTION FEATURE MAY BE ACTIVATED AT A LATER TIME
+               {project.isSTAC && (
+                <Tooltip
+                  title={
+                    isSubscribed ? 'Unsubscribe from change tracking' : 'Subscribe to track changes'
+                  }
+                >
+                  <BellFilled
+                    data-testid={`subscribe-${index + 1}`}
+                    onClick={handleSubscriptionToggle}
+                    style={{
+                      cursor: 'pointer',
+                      fontSize: '18px',
+                      color: isSubscribed ? '#1890ff' : '#d9d9d9',
+                    }}
+                  />
+                </Tooltip>
+              )} */}
+              <FileSearchOutlined /> Search #
+              {project.isSTAC
+                ? searchQuery.uuid.slice(0, 8)
+                : `${searchQuery.uuid.slice(0, 8)} (Legacy)`}
+            </div>
+            {isSubscribed && (
+              <Button type="primary" onClick={() => setShowChangesDialog(true)}>
+                View Search Changes
+              </Button>
+            )}
+          </div>
         }
         actions={[
           <Tooltip title="Apply search query and view results" trigger="hover">
@@ -154,7 +225,12 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
           <Tooltip title="View results in JSON format">
             <a
               className={savedSearchTourTargets.jsonBtn.class()}
-              href={createSearchRouteURL(url)}
+              href={createSearchRouteURL(
+                url,
+                project.isSTAC && project.projectName
+                  ? convertSearchParamsIntoStacFilter(url, getStacProject(project.projectName))
+                  : null,
+              )}
               rel="noopener noreferrer"
               target="blank_"
             >
@@ -172,35 +248,86 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
           </Tooltip>,
         ]}
       >
-        {numResultsText}
-        <p className={savedSearchTourTargets.projectDescription.class()}>
-          <span style={styles.category}>Project: </span>
-          {project.fullName}
-        </p>
-
-        <p className={savedSearchTourTargets.searchQueryString.class()}>
-          <span style={styles.category}>Query String: </span>
-          <Typography.Text code>
-            {stringifyFilters(
-              project.name,
-              versionType,
-              resultType,
-              minVersionDate,
-              maxVersionDate,
-              activeFacets,
-              textInputs,
-              project.isSTAC,
-              url,
-            )}
-          </Typography.Text>
-        </p>
-        <p>
-          <span style={styles.category}>Filename Searches: </span>
-          <Typography.Text code>
-            {filenameVars && filenameVars.length > 0 ? filenameVars.join(', ') : 'N/A'}
-          </Typography.Text>
-        </p>
+        <div
+          className="search-card-content custom-scrollbar"
+          style={{
+            border: `1px solid ${token.colorBorder}`,
+            backgroundColor: token.colorBgContainer,
+          }}
+        >
+          {numResultsText}
+          <p className={savedSearchTourTargets.projectDescription.class()}>
+            <span style={styles.category}>Project: </span>
+            {project.fullName}
+          </p>
+          {project.isSTAC && project.stacApiUrl && (
+            <p>
+              <span style={styles.category}>STAC API URL: </span>
+              <Typography.Text code style={{ fontSize: '12px' }}>
+                {project.stacApiUrl}
+              </Typography.Text>
+            </p>
+          )}
+          <div className={savedSearchTourTargets.searchQueryString.class()}>
+            <span style={styles.category}>
+              Query String:{' '}
+              <Button
+                type="primary"
+                size="small"
+                style={{ marginLeft: '5px' }}
+                icon={
+                  <Tooltip title="Copy query to clipboard">
+                    <CopyOutlined style={{ fontSize: '12px' }} />
+                  </Tooltip>
+                }
+                onClick={() => {
+                  const queryText = stringifyApiRequest(
+                    project,
+                    url,
+                    textInputs,
+                    versionType,
+                    resultType,
+                    minVersionDate,
+                    maxVersionDate,
+                    activeFacets,
+                  );
+                  if (navigator && navigator.clipboard) {
+                    navigator.clipboard.writeText(queryText);
+                    showNotice(messageApi, 'Query copied to clipboard!', {
+                      icon: <CopyOutlined style={styles.messageAddIcon} />,
+                    });
+                  }
+                }}
+              />
+            </span>
+            <Typography.Text code style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+              {stringifyApiRequest(
+                project,
+                url,
+                textInputs,
+                versionType,
+                resultType,
+                minVersionDate,
+                maxVersionDate,
+                activeFacets,
+              )}
+            </Typography.Text>
+          </div>
+          <p>
+            <span style={styles.category}>Filename Searches: </span>
+            <Typography.Text code>
+              {filenameVars && filenameVars.length > 0 ? filenameVars.join(', ') : 'N/A'}
+            </Typography.Text>
+          </p>
+        </div>
       </Card>
+      {project.isSTAC && (
+        <ChangesDialog
+          open={showChangesDialog}
+          onClose={() => setShowChangesDialog(false)}
+          searchQuery={searchQuery}
+        />
+      )}
     </Col>
   );
 };
