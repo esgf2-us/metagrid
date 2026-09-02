@@ -9,15 +9,15 @@ import { ActiveSearchQuery, StacSearchResponse, StacFeature } from '../Search/ty
 import {
   getDownloadSizeFromSTACsearch,
   getFileCountFromSTACsearch,
-  convertSearchParamsIntoStacFilter,
-  getStacProject,
   getReplicaNodelsList,
   convertStacToRawSearchResult,
+  convertSearchParamsIntoStacFilter,
 } from '../../common/STAC';
 import { formatBytes } from '../../common/utils';
 import { postSTACSearch } from '../../api';
 import { selectedNodesAtom } from '../../common/atoms';
 import { downloadAllModalTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
+import { RawProject } from '../Facets/types';
 
 // Threshold for showing large download warning
 export const LARGE_DOWNLOAD_WARNING_THRESHOLD = 10000;
@@ -68,6 +68,7 @@ const DownloadModal = ({
     allResults.forEach((feature: StacFeature) => {
       const item = convertStacToRawSearchResult(feature);
       const nodes = getReplicaNodelsList(item);
+
       nodes.forEach((node) => {
         if (node) {
           nodesSet.add(node);
@@ -84,24 +85,34 @@ const DownloadModal = ({
     setLoadingAllResults(true);
 
     try {
-      const projectName = activeSearchQuery.project.projectName as string;
-      const filter = convertSearchParamsIntoStacFilter(searchURL, getStacProject(projectName));
+      const project = activeSearchQuery.project as RawProject;
+      const projectName = project.projectName as string;
+      const { stacApiUrl } = project;
 
-      const query = new URLSearchParams(searchURL).get('query');
-      let textInputs: string[] | undefined;
+      const filter = convertSearchParamsIntoStacFilter(searchURL, project);
 
-      if (query && query !== '*') {
-        textInputs = query.split(',');
-      }
+      // Use text inputs from activeSearchQuery
+      const textInputs =
+        activeSearchQuery.textInputs && activeSearchQuery.textInputs.length > 0
+          ? activeSearchQuery.textInputs
+          : undefined;
 
-      // Fetch all results by setting limit to totalMatched
-      const response = await postSTACSearch(projectName, totalMatched, filter, textInputs);
+      // Fetch all results by setting limit to totalMatched (bypass batching)
+      const response = await postSTACSearch(
+        projectName,
+        totalMatched,
+        filter,
+        textInputs,
+        undefined, // token
+        stacApiUrl, // stacApiUrl - ensures we query the same API as the search results
+      );
+      const { features } = response as StacSearchResponse;
 
-      setAllResults((response as StacSearchResponse).features);
+      setAllResults(features);
     } catch (error) {
       /* istanbul ignore next -- @preserve */
       // eslint-disable-next-line no-console
-      console.error('Error fetching all results:', error);
+      console.error('[DownloadModal] Error fetching results:', error);
       setAllResults(stacFeatures);
     } finally {
       setLoadingAllResults(false);
