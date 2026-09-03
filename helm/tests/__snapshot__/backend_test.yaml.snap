@@ -2,7 +2,7 @@ should create a configmap:
   1: |
     apiVersion: v1
     data:
-      DJANGO_GUNICORN_WORKERS: "10"
+      GUNICORN_WORKERS: "10"
       METAGRID_BANNER_TEXT: |
         this is a message for users
       METAGRID_DATA_UPLOAD_MAX_NUMBER_FIELDS: "10"
@@ -32,7 +32,7 @@ should create a default configmap:
   1: |
     apiVersion: v1
     data:
-      DJANGO_GUNICORN_WORKERS: "2"
+      GUNICORN_WORKERS: "2"
       METAGRID_DATA_UPLOAD_MAX_NUMBER_FIELDS: "1024"
       METAGRID_GLOBUS_NODES: '["esgf-node.ornl.gov","eagle.alcf.anl.gov","esgf-data.nersc.gov"]'
       METAGRID_GLOBUS_PUBLIC_INDEX_ENDPOINT_ID: a8ef4320-9e5a-4793-837b-c45161ca1845
@@ -251,10 +251,24 @@ should have a deployment:
                     name: metagrid
               image: ghcr.io/esgf2-us/metagrid-backend:v1.0.0
               imagePullPolicy: IfNotPresent
+              startupProbe:
+                httpGet:
+                  path: /readiness
+                  port: http
+                initialDelaySeconds: 0
+                periodSeconds: 10
+                timeoutSeconds: 5
+                failureThreshold: 18
+                successThreshold: 1
               livenessProbe:
                 httpGet:
                   path: /liveness
                   port: http
+                initialDelaySeconds: 0
+                periodSeconds: 30
+                timeoutSeconds: 5
+                failureThreshold: 3
+                successThreshold: 1
               name: backend
               ports:
                 - containerPort: 5000
@@ -264,6 +278,11 @@ should have a deployment:
                 httpGet:
                   path: /readiness
                   port: http
+                initialDelaySeconds: 0
+                periodSeconds: 10
+                timeoutSeconds: 5
+                failureThreshold: 6
+                successThreshold: 1
               resources: {}
               securityContext: {}
           securityContext: {}

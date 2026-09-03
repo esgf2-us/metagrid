@@ -208,6 +208,31 @@ backend:
     type: ClusterIP
     port: 5000
 
+  startupProbe:
+    enabled: true
+    path: /readiness
+    initialDelaySeconds: 0
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 18
+
+  livenessProbe:
+    enabled: true
+    path: /liveness
+    initialDelaySeconds: 0
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  readinessProbe:
+    enabled: true
+    path: /readiness
+    initialDelaySeconds: 0
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 6
+    successThreshold: 1
+
   resources: {}
 
   autoscaling:
