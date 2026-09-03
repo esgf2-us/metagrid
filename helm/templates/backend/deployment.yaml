@@ -69,7 +69,7 @@ spec:
           periodSeconds: {{ .Values.backend.startupProbe.periodSeconds }}
           timeoutSeconds: {{ .Values.backend.startupProbe.timeoutSeconds }}
           failureThreshold: {{ .Values.backend.startupProbe.failureThreshold }}
-          successThreshold: {{ .Values.backend.startupProbe.successThreshold }}
+          successThreshold: 1
         {{- end }}
         {{- if .Values.backend.livenessProbe.enabled }}
         livenessProbe:
@@ -80,7 +80,7 @@ spec:
           periodSeconds: {{ .Values.backend.livenessProbe.periodSeconds }}
           timeoutSeconds: {{ .Values.backend.livenessProbe.timeoutSeconds }}
           failureThreshold: {{ .Values.backend.livenessProbe.failureThreshold }}
-          successThreshold: {{ .Values.backend.livenessProbe.successThreshold }}
+          successThreshold: 1
         {{- end }}
         {{- if .Values.backend.readinessProbe.enabled }}
         readinessProbe:

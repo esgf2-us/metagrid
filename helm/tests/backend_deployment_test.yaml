@@ -31,7 +31,7 @@ tests:
           periodSeconds: 15
           timeoutSeconds: 7
           failureThreshold: 20
-          successThreshold: 1
+          successThreshold: 5
         livenessProbe:
           enabled: true
           path: /liveness
@@ -39,7 +39,7 @@ tests:
           periodSeconds: 45
           timeoutSeconds: 6
           failureThreshold: 4
-          successThreshold: 1
+          successThreshold: 7
         readinessProbe:
           enabled: true
           path: /readiness

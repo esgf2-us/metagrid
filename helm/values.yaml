@@ -215,7 +215,6 @@ backend:
     periodSeconds: 10
     timeoutSeconds: 5
     failureThreshold: 18
-    successThreshold: 1
 
   livenessProbe:
     enabled: true
@@ -224,7 +223,6 @@ backend:
     periodSeconds: 30
     timeoutSeconds: 5
     failureThreshold: 3
-    successThreshold: 1
 
   readinessProbe:
     enabled: true
