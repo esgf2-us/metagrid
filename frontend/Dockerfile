@@ -1,11 +1,14 @@
 # Pull official base image
-FROM node:24.12.0 AS build
+FROM node:24-alpine AS build
+
+# Update Alpine packages for security patches
+RUN apk upgrade --no-cache
 
 # Set working directory
 WORKDIR /app
 
 # Install pnpm
-RUN npm install -g pnpm@10
+RUN npm install -g pnpm@11.26.0
 
 # Add `/app/node_modules/.bin` to $PATH
 ENV PATH=/app/node_modules/.bin:$PATH
@@ -14,6 +17,7 @@ ENV GENERATE_SOURCEMAP=false
 # Install app dependencies
 COPY package.json ./
 COPY pnpm-lock.yaml ./
+COPY pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 
 # Add app
