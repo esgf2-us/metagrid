@@ -17,7 +17,7 @@ describe('index bootstrap - frontend-config error', () => {
       Promise.resolve({
         ok: false,
         status: 503,
-        json: async () => ({}),
+        json: async () => ({})
       }),
     );
 

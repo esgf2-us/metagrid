@@ -9,7 +9,7 @@ import {
   stacSearchResultsFixture,
   stacAggregationsFixture,
 } from '../../test/mock/fixtures';
-import { rest, server } from '../../test/mock/server';
+import { http, HttpResponse, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
 import { ActiveFacets, RawFacets, RawProject } from '../Facets/types';
@@ -69,8 +69,8 @@ describe('test Search component', () => {
     window.localStorage.setItem('searchResults', JSON.stringify(cachedData));
 
     server.use(
-      rest.get(apiRoutes.esgfSearch.path, async (_req, res) => {
-        return res.networkError('Failed to fetch');
+      http.get(apiRoutes.esgfSearch.path, async (_req) => {
+        return HttpResponse.error();
       }),
     );
 
@@ -178,8 +178,8 @@ describe('test Search component', () => {
     };
 
     server.use(
-      rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
-        res(ctx.status(200), ctx.json(response)),
+      http.get(apiRoutes.esgfSearch.path, ({ request }) =>
+        HttpResponse.json(response, { status: 200 }),
       ),
     );
 
@@ -677,11 +677,11 @@ describe('STAC project behavior', () => {
 
     // Mock STAC aggregations and STAC search endpoints
     server.use(
-      rest.post(apiRoutes.esgfAggregationsSTAC.path, (_req, res, ctx) =>
-        res(ctx.status(200), ctx.json(stacAggregationsFixture())),
+      http.post(apiRoutes.esgfAggregationsSTAC.path, ({ request }) =>
+        HttpResponse.json(stacAggregationsFixture(), { status: 200 }),
       ),
-      rest.post(apiRoutes.esgfSearchSTAC.path, (_req, res, ctx) =>
-        res(ctx.status(200), ctx.json(stacSearchResultsFixture().search)),
+      http.post(apiRoutes.esgfSearchSTAC.path, ({ request }) =>
+        HttpResponse.json(stacSearchResultsFixture().search, { status: 200 }),
       ),
     );
 
