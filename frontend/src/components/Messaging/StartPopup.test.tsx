@@ -5,7 +5,7 @@ import { vi } from 'vitest';
 import StartPopup from './StartPopup';
 import StartupMessages from './messageDisplayData';
 import customRender from '../../test/custom-render';
-import { rest, server } from '../../test/mock/server';
+import { http, HttpResponse, server } from '../../test/mock/server';
 import { TourTitles } from '../../common/joyrideTutorials/reactJoyrideSteps';
 import { localStorageMock } from '../../test/mock/mockStorage';
 
@@ -100,7 +100,7 @@ describe('Start popup tests', () => {
   });
 
   it('renders start popup with wrong version specified', async () => {
-    server.use(rest.get('/changelog/v*.md', (_req, res, ctx) => res(ctx.body('Some changes'))));
+    server.use(http.get('/changelog/v*.md', () => HttpResponse.text('Some changes')));
 
     localStorageMock.setItem('lastMessageSeen', 'test');
     customRender(<StartPopup />);

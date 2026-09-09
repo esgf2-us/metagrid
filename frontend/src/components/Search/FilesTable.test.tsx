@@ -1,7 +1,7 @@
 import { within, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { rest, server } from '../../test/mock/server';
+import { http, HttpResponse, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import FilesTable, { DownloadUrls, genDownloadUrls, Props } from './FilesTable';
 import customRender from '../../test/custom-render';
@@ -104,7 +104,7 @@ describe('test FilesTable component', () => {
   });
 
   it('returns Alert when there is an error fetching files', async () => {
-    server.use(rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) => res(ctx.status(404))));
+    server.use(http.get(apiRoutes.esgfSearch.path, () => new HttpResponse(null, { status: 404 })));
 
     customRender(<FilesTable {...defaultProps} />);
     const alertMsg = await screen.findByRole('img', {
@@ -165,8 +165,8 @@ describe('test FilesTable component', () => {
       },
     };
     server.use(
-      rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
-        res(ctx.status(200), ctx.json(response)),
+      http.get(apiRoutes.esgfSearch.path, ({ request }) =>
+        HttpResponse.json(response, { status: 200 }),
       ),
     );
 
@@ -294,8 +294,8 @@ describe('test column sorting', () => {
 
   it('sorts by File Title column', async () => {
     server.use(
-      rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
-        res(ctx.status(200), ctx.json(response)),
+      http.get(apiRoutes.esgfSearch.path, ({ request }) =>
+        HttpResponse.json(response, { status: 200 }),
       ),
     );
     const colIdx = 1; // The column that File Title is in
@@ -343,8 +343,8 @@ describe('test column sorting', () => {
 
   it('sorts by Size column', async () => {
     server.use(
-      rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
-        res(ctx.status(200), ctx.json(response)),
+      http.get(apiRoutes.esgfSearch.path, ({ request }) =>
+        HttpResponse.json(response, { status: 200 }),
       ),
     );
     const colIdx = 2; // The column that Size is in
@@ -414,8 +414,8 @@ describe('test column sorting', () => {
     };
 
     server.use(
-      rest.get(apiRoutes.esgfSearch.path, (_req, res, ctx) =>
-        res(ctx.status(200), ctx.json(response)),
+      http.get(apiRoutes.esgfSearch.path, ({ request }) =>
+        HttpResponse.json(response, { status: 200 }),
       ),
     );
     customRender(
