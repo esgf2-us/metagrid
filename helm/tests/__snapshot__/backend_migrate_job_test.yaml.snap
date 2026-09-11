@@ -44,7 +44,7 @@ should migrate projects:
   1: |
     apiVersion: v1
     data:
-      initial_projects_data.py: |2
+      initial_projects_data.py: |
         group_descriptions = {
           "General": "Least verbose, typically returns many results",
         }
