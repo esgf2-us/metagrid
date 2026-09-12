@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { within, screen, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 import customRender from '../../test/custom-render';
-import { rest, server } from '../../test/mock/server';
+import { http, HttpResponse, server } from '../../test/mock/server';
 import { getSearchFromUrl } from '../../common/utils';
 import { ActiveSearchQuery, StacSearchResponse } from '../Search/types';
 import {
@@ -260,7 +260,7 @@ describe('DatasetDownload form tests', () => {
 
   it('displays an error when wget script fails to fetch', async () => {
     await initializeComponentForTest();
-    server.use(rest.post(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404))));
+    server.use(http.post(apiRoutes.wget.path, () => new HttpResponse(null, { status: 404 })));
 
     // Open download dropdown
     const globusTransferDropdown = await within(
@@ -453,7 +453,9 @@ describe('DatasetDownload form tests', () => {
   });
 
   it('displays an error when Globus Transfer submission fails to reach backend', async () => {
-    server.use(rest.post(apiRoutes.globusTransfer.path, (_req, res, ctx) => res(ctx.status(404))));
+    server.use(
+      http.post(apiRoutes.globusTransfer.path, () => new HttpResponse(null, { status: 404 })),
+    );
 
     await initializeComponentForTest();
 
@@ -468,10 +470,10 @@ describe('DatasetDownload form tests', () => {
 
   it('displays an error when one or more Globus Transfer submissions fail', async () => {
     server.use(
-      rest.post(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
-        res(
-          ctx.status(207),
-          ctx.json({ status: 207, successes: [], failures: ['transfer failed'] }),
+      http.post(apiRoutes.globusTransfer.path, () =>
+        HttpResponse.json(
+          { status: 207, successes: [], failures: ['transfer failed'] },
+          { status: 207 },
         ),
       ),
     );
@@ -502,7 +504,7 @@ describe('DatasetDownload form tests', () => {
     let requestReceived = false;
 
     server.use(
-      rest.post(apiRoutes.globusTransfer.path, async (req, res, ctx) => {
+      http.post(apiRoutes.globusTransfer.path, async ({ request: req }) => {
         requestReceived = true;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const body = (await req.json()) as any;
@@ -518,17 +520,17 @@ describe('DatasetDownload form tests', () => {
           (body.globus_hrefs && body.globus_hrefs.length > 0);
 
         if (!hasData) {
-          return res(
-            ctx.status(200),
-            ctx.json({
+          return HttpResponse.json(
+            {
               status: 200,
               successes: [],
               failures: [],
-            }),
+            },
+            { status: 200 },
           );
         }
 
-        return res(ctx.status(200), ctx.json(globusTransferResponseFixture()));
+        return HttpResponse.json(globusTransferResponseFixture(), { status: 200 });
       }),
     );
 
@@ -555,14 +557,14 @@ describe('DatasetDownload form tests', () => {
 
     // Capture the request body
     server.use(
-      rest.post(apiRoutes.globusTransfer.path, async (req, res, ctx) => {
+      http.post(apiRoutes.globusTransfer.path, async ({ request: req }) => {
         requestBody = (await req.json()) as {
           dataset_id?: string[];
           globus_hrefs?: string[];
           endpointId?: string;
           path?: string;
         };
-        return res(ctx.status(200), ctx.json(globusTransferResponseFixture()));
+        return HttpResponse.json(globusTransferResponseFixture(), { status: 200 });
       }),
     );
 
@@ -599,14 +601,14 @@ describe('DatasetDownload form tests', () => {
 
     // Capture the request body
     server.use(
-      rest.post(apiRoutes.globusTransfer.path, async (req, res, ctx) => {
+      http.post(apiRoutes.globusTransfer.path, async ({ request: req }) => {
         requestBody = (await req.json()) as {
           dataset_id?: string[];
           globus_hrefs?: string[];
           endpointId?: string;
           path?: string;
         };
-        return res(ctx.status(200), ctx.json(globusTransferResponseFixture()));
+        return HttpResponse.json(globusTransferResponseFixture(), { status: 200 });
       }),
     );
 
@@ -637,15 +639,15 @@ describe('DatasetDownload form tests', () => {
 
   it('prompts user for consents if there is no auth code and transfer was denied due to permissions, then redirects to auth url when clicking OK', async () => {
     server.use(
-      rest.post(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
-        res(
-          ctx.status(207),
-          ctx.json({
+      http.post(apiRoutes.globusTransfer.path, () =>
+        HttpResponse.json(
+          {
             status: 207,
             successes: [],
             failures: ['permission denied'],
             auth_url: 'http://test.globus.org/auth',
-          }),
+          },
+          { status: 207 },
         ),
       ),
     );
@@ -683,15 +685,15 @@ describe('DatasetDownload form tests', () => {
 
   it('prompts user for consents if there is no auth code and transfer was denied due to permissions, then cancels', async () => {
     server.use(
-      rest.post(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
-        res(
-          ctx.status(207),
-          ctx.json({
+      http.post(apiRoutes.globusTransfer.path, () =>
+        HttpResponse.json(
+          {
             status: 207,
             successes: [],
             failures: ['permission denied'],
             auth_url: 'http://test.globus.org/auth',
-          }),
+          },
+          { status: 207 },
         ),
       ),
     );
@@ -726,15 +728,15 @@ describe('DatasetDownload form tests', () => {
 
   it('provides error message when permission was denied after receiving auth code', async () => {
     server.use(
-      rest.post(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
-        res(
-          ctx.status(207),
-          ctx.json({
+      http.post(apiRoutes.globusTransfer.path, () =>
+        HttpResponse.json(
+          {
             status: 207,
             successes: [],
             failures: ['permission denied'],
             auth_url: 'http://test.globus.org/auth',
-          }),
+          },
+          { status: 207 },
         ),
       ),
     );
@@ -760,8 +762,8 @@ describe('DatasetDownload form tests', () => {
 
   it('displays an error when Globus Transfer returns unhandled status code', async () => {
     server.use(
-      rest.post(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
-        res(ctx.status(207), ctx.json({ status: 500, successes: [], failures: [] })),
+      http.post(apiRoutes.globusTransfer.path, ({ request }) =>
+        HttpResponse.json({ status: 500, successes: [], failures: [] }, { status: 207 }),
       ),
     );
 
@@ -791,8 +793,8 @@ describe('DatasetDownload form tests', () => {
 
   it('shows a warning message when Globus transfer response has no data in successes or failures', async () => {
     server.use(
-      rest.post(apiRoutes.globusTransfer.path, (_req, res, ctx) =>
-        res(ctx.status(200), ctx.json({ status: 200, successes: [], failures: [] })),
+      http.post(apiRoutes.globusTransfer.path, ({ request }) =>
+        HttpResponse.json({ status: 200, successes: [], failures: [] }, { status: 200 }),
       ),
     );
 
@@ -1066,7 +1068,7 @@ describe('DatasetDownload form tests', () => {
 
   it('Shows an alert when a collection search fails in the manage collections form', async () => {
     server.use(
-      rest.get(apiRoutes.globusSearchEndpoints.path, (_req, res, ctx) => res(ctx.status(500))),
+      http.get(apiRoutes.globusSearchEndpoints.path, () => new HttpResponse(null, { status: 500 })),
     );
 
     await initializeComponentForTest({
@@ -1289,8 +1291,8 @@ describe('DatasetDownload form tests', () => {
 
   it('handles empty results from endpoint search', async () => {
     server.use(
-      rest.get(apiRoutes.globusSearchEndpoints.path, (_req, res, ctx) =>
-        res(ctx.status(200), ctx.json([])),
+      http.get(apiRoutes.globusSearchEndpoints.path, ({ request }) =>
+        HttpResponse.json([], { status: 200 }),
       ),
     );
 

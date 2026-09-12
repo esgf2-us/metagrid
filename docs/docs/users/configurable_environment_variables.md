@@ -307,8 +307,8 @@ These environment variables are set directly on the frontend service (e.g., as V
 
 #### `VITE_FEDERATED_NODES_URL`
 
-> !!! example "*Optional*"
->     __Default:__ `https://esgf.github.io/nodes.html`
+> !!! example "_Optional_"
+> **Default:** `https://esgf.github.io/nodes.html`
 >
 >     The URL for the federated nodes link displayed in the frontend navigation bar. This allows users to access federated nodes as well as other Metagrid services hosted elsewhere in the federation. Unlike other settings, this is set directly on the `react` service as a Vite environment variable and works independently of the backend.
 >

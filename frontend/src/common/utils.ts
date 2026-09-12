@@ -353,6 +353,18 @@ export const getUrlFromSearch = (search: ActiveSearchQuery): string => {
     params.set('textInputs', JSON.stringify(newSearch.textInputs));
   }
 
+  if (newSearch.minCreatedDate) {
+    params.set('minCreatedDate', newSearch.minCreatedDate);
+  }
+
+  if (newSearch.maxCreatedDate) {
+    params.set('maxCreatedDate', newSearch.maxCreatedDate);
+  }
+
+  if (newSearch.globusOnly) {
+    params.set('globusOnly', 'true');
+  }
+
   return `${urlString}?${params.toString()}`;
 };
 
