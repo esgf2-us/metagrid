@@ -250,7 +250,10 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
 
   // Legacy project further info URL
   const furtherInfoUrl =
-    record && record.further_info_url && record.further_info_url.length > 0
+    record &&
+    record.further_info_url &&
+    record.further_info_url.length > 0 &&
+    record.further_info_url[0] !== 'undefined'
       ? record.further_info_url[0]
       : '';
 
@@ -259,7 +262,9 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
   const finalEsDocUrl = esDocUrl || furtherInfoUrl;
   const showQualityFlags = Object.keys(qualityFlags).length > 0;
   const showAdditionalLinks = urlCount > 0;
-  const showAdditionalTab = showESDOC !== '' || showQualityFlags || showAdditionalLinks;
+  // Filter out invalid URLs like the string 'undefined'
+  const hasValidESDOC = showESDOC && showESDOC !== '' && showESDOC !== 'undefined';
+  const showAdditionalTab = hasValidESDOC || showQualityFlags || showAdditionalLinks;
 
   const tabList = [
     {
@@ -319,7 +324,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
       children: (
         <>
           {showAdditionalLinks && additionalLinks}
-          {showESDOC && (
+          {hasValidESDOC && (
             <Button type="link" href={finalEsDocUrl} target="_blank">
               ES-DOC
             </Button>
