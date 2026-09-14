@@ -154,7 +154,7 @@ This document describes the configurable values available in the `values.yaml` f
 
 | Parameter | Description | Type | Default |
 |---|---|---|---|
-| `django.gunicornWorkers` | Number of Gunicorn workers for handling requests. | `string` | `'2'` |
+| `django.gunicornWorkers` | Number of Gunicorn workers for handling requests. Rendered to the backend as `GUNICORN_WORKERS`. | `string` | `'2'` |
 | `django.secretKey` | Django secret key. | `string` | `""` |
 | `django.adminUrl` | URL for the Django admin interface. | `string` | `""` |
 | `django.admins` | A list of admins. | `string` | `""` |
@@ -163,6 +163,8 @@ This document describes the configurable values available in the `values.yaml` f
 | `django.migrateJob.enabled` | Whether to enable the database migration job. | `boolean` | `true` |
 | `django.migrateJob.backoffLimit` | Maximum number of retries for the migration job. | `integer` | `4` |
 | `django.projects` | Configuration for defining backend projects. | `string` | `""` |
+
+Gunicorn auto-reload is disabled by default for production deployments. If you need it for development-style workflows, set `django.config.GUNICORN_RELOAD: "true"` in your Helm values.
 
 ---
 ## Frontend
@@ -214,6 +216,9 @@ This document describes the configurable values available in the `values.yaml` f
 | `backend.securityContext`                  | Security context for the backend pods.                                    | `object`  | `{}`      |
 | `backend.service.type`                     | The type of service (e.g., `ClusterIP`).                                  | `string`  | `ClusterIP` |
 | `backend.service.port`                     | The service port for the backend.                                         | `integer` | `5000`    |
+| `backend.startupProbe.*`                   | Startup probe settings for the backend pod. Supports `enabled`, `path`, `initialDelaySeconds`, `periodSeconds`, `timeoutSeconds`, and `failureThreshold`. `successThreshold` is fixed to `1` to satisfy Kubernetes validation. Defaults to a production-safe `/readiness` probe with a longer startup window. | `object`  | `{ enabled: true, path: /readiness, initialDelaySeconds: 0, periodSeconds: 10, timeoutSeconds: 5, failureThreshold: 18 }` |
+| `backend.livenessProbe.*`                  | Liveness probe settings for the backend pod. Supports `enabled`, `path`, `initialDelaySeconds`, `periodSeconds`, `timeoutSeconds`, and `failureThreshold`. `successThreshold` is fixed to `1` to satisfy Kubernetes validation. Defaults to a shallow `/liveness` probe. | `object`  | `{ enabled: true, path: /liveness, initialDelaySeconds: 0, periodSeconds: 30, timeoutSeconds: 5, failureThreshold: 3 }` |
+| `backend.readinessProbe.*`                 | Readiness probe settings for the backend pod. Supports `enabled`, `path`, `initialDelaySeconds`, `periodSeconds`, `timeoutSeconds`, `failureThreshold`, and `successThreshold`. Defaults to a dependency-aware `/readiness` probe. | `object`  | `{ enabled: true, path: /readiness, initialDelaySeconds: 0, periodSeconds: 10, timeoutSeconds: 5, failureThreshold: 6, successThreshold: 1 }` |
 | `backend.resources`                        | Resource requests and limits for the backend pod.                         | `object`  | `{}`      |
 | `backend.autoscaling.enabled`               | Whether autoscaling is enabled for the backend service.                    | `boolean` | `false`   |
 | `backend.autoscaling.minReplicas`          | Minimum number of replicas for autoscaling.                               | `integer` | `1`       |
@@ -224,6 +229,8 @@ This document describes the configurable values available in the `values.yaml` f
 | `backend.nodeSelector`                     | Node selectors for the backend pods.                                      | `object`  | `{}`      |
 | `backend.tolerations`                      | Tolerations for the backend pods.                                         | `array`   | `[]`      |
 | `backend.affinity`                         | Affinity rules for the backend pods.                                      | `object`  | `{}`      |
+
+The backend probes are intentionally split by responsibility: `/liveness` stays shallow and process-oriented, while `/readiness` remains dependency-aware. The default startup probe also targets `/readiness` so pods get additional time to finish booting and establish database connectivity before normal readiness and liveness checks take over.
 
 ---
 
