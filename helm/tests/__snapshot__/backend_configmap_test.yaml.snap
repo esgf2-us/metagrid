@@ -2,7 +2,7 @@ should create a configmap:
   1: |
     apiVersion: v1
     data:
-      DJANGO_GUNICORN_WORKERS: "10"
+      GUNICORN_WORKERS: "10"
       METAGRID_BANNER_TEXT: |
         this is a message for users
       METAGRID_CITATION_ALLOWED_HOSTS: '["cera-www.dkrz.de","raw.githubusercontent.com","cmip7-citations.ceda.ac.uk"]'
@@ -33,7 +33,7 @@ should create a default configmap:
   1: |
     apiVersion: v1
     data:
-      DJANGO_GUNICORN_WORKERS: "2"
+      GUNICORN_WORKERS: "2"
       METAGRID_CITATION_ALLOWED_HOSTS: '["cera-www.dkrz.de","raw.githubusercontent.com","cmip7-citations.ceda.ac.uk"]'
       METAGRID_DATA_UPLOAD_MAX_NUMBER_FIELDS: "1024"
       METAGRID_GLOBUS_NODES: '["esgf-node.ornl.gov","eagle.alcf.anl.gov","esgf-data.nersc.gov"]'
