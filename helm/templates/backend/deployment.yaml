@@ -60,14 +60,39 @@ spec:
         - name: http
           containerPort: {{ .Values.backend.service.port }}
           protocol: TCP
+        {{- if .Values.backend.startupProbe.enabled }}
+        startupProbe:
+          httpGet:
+            path: {{ .Values.backend.startupProbe.path }}
+            port: http
+          initialDelaySeconds: {{ .Values.backend.startupProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.backend.startupProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.backend.startupProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.backend.startupProbe.failureThreshold }}
+          successThreshold: 1
+        {{- end }}
+        {{- if .Values.backend.livenessProbe.enabled }}
         livenessProbe:
           httpGet:
-            path: /liveness
+            path: {{ .Values.backend.livenessProbe.path }}
             port: http
+          initialDelaySeconds: {{ .Values.backend.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.backend.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.backend.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.backend.livenessProbe.failureThreshold }}
+          successThreshold: 1
+        {{- end }}
+        {{- if .Values.backend.readinessProbe.enabled }}
         readinessProbe:
           httpGet:
-            path: /readiness
+            path: {{ .Values.backend.readinessProbe.path }}
             port: http
+          initialDelaySeconds: {{ .Values.backend.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.backend.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.backend.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.backend.readinessProbe.failureThreshold }}
+          successThreshold: {{ .Values.backend.readinessProbe.successThreshold }}
+        {{- end }}
         resources:
           {{- toYaml .Values.backend.resources | nindent 12 }}
         {{- with .Values.backend.volumeMounts }}
