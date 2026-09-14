@@ -42,6 +42,51 @@ describe('test Tab component', () => {
     const tabList = await screen.findByRole('tablist');
     expect(tabList).toBeTruthy();
   });
+  it('shows Additional tab when further_info_url has valid URL', async () => {
+    customRender(
+      <Tabs
+        filenameVars={undefined}
+        record={{
+          ...rawSearchResultFixture(),
+          // Set these to empty arrays to isolate the test to only further_info_url
+          xlink: [],
+          citation_url: [],
+          quality_control_flags: [],
+          links: [],
+          further_info_url: ['https://example.com/valid-url'],
+        }}
+      />,
+    );
+
+    const tabList = await screen.findByRole('tablist');
+    expect(tabList).toBeTruthy();
+    // Additional tab should be present since further_info_url has a valid URL
+    const additionalTab = screen.queryByText('Additional');
+    expect(additionalTab).not.toBeNull();
+  });
+  it('does not show Additional tab when further_info_url is "undefined"', async () => {
+    customRender(
+      <Tabs
+        filenameVars={undefined}
+        record={{
+          ...rawSearchResultFixture(),
+          // Set these to empty arrays/undefined to isolate the test to only further_info_url
+          xlink: [],
+          citation_url: [],
+          quality_control_flags: [],
+          links: [],
+          further_info_url: ['undefined'],
+        }}
+      />,
+    );
+
+    const tabList = await screen.findByRole('tablist');
+    expect(tabList).toBeTruthy();
+    // Additional tab should not be present since further_info_url is "undefined"
+    // and there are no other sources for Additional tab content
+    const additionalTab = screen.queryByText('Additional');
+    expect(additionalTab).toBeNull();
+  });
   it('renders tab component with retracted = true in record', async () => {
     customRender(
       <Tabs

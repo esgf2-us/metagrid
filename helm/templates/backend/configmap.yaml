@@ -36,6 +36,9 @@ data:
   METAGRID_FOOTER_TEXT: |
   {{ .Values.footerText | nindent 4 }}
   {{- end }}
+  {{- if .Values.citationAllowedHosts }}
+  METAGRID_CITATION_ALLOWED_HOSTS: {{ toJson .Values.citationAllowedHosts | quote }}
+  {{- end }}
   METAGRID_GLOBUS_NODES: {{ toJson .Values.globusNodes | quote }}
   GUNICORN_WORKERS: {{ .Values.django.gunicornWorkers | quote }}
   {{- range $key, $value := .Values.django.config }}

@@ -52,16 +52,20 @@ const Citation: React.FC<React.PropsWithChildren<CitationProps>> = ({ url }) => 
       )}
       {data && (
         <div>
-          <CitationInfo title="Identifier DOI">
-            <a href={data.identifierDOI} rel="noopener noreferrer" target="_blank">
-              {data.identifierDOI}
-            </a>
-          </CitationInfo>
-          <CitationInfo title="Creators">{data.creatorsList}</CitationInfo>
-          <CitationInfo title="Titles">{data.titles}</CitationInfo>
-          <CitationInfo title="Publisher">{data.publisher}</CitationInfo>
-          <CitationInfo title="Publication Year">{data.publicationYear}</CitationInfo>
-          <CitationInfo title="License">{data.license}</CitationInfo>
+          {data.identifierDOI && (
+            <CitationInfo title="Identifier DOI">
+              <a href={data.identifierDOI} rel="noopener noreferrer" target="_blank">
+                {data.identifierDOI}
+              </a>
+            </CitationInfo>
+          )}
+          {data.creatorsList && <CitationInfo title="Creators">{data.creatorsList}</CitationInfo>}
+          {data.titles && <CitationInfo title="Titles">{data.titles}</CitationInfo>}
+          {data.publisher && <CitationInfo title="Publisher">{data.publisher}</CitationInfo>}
+          {data.publicationYear > 0 && (
+            <CitationInfo title="Publication Year">{data.publicationYear}</CitationInfo>
+          )}
+          {data.license && <CitationInfo title="License">{data.license}</CitationInfo>}
         </div>
       )}
     </div>
