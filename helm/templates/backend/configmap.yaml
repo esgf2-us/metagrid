@@ -37,7 +37,7 @@ data:
   {{ .Values.footerText | nindent 4 }}
   {{- end }}
   METAGRID_GLOBUS_NODES: {{ toJson .Values.globusNodes | quote }}
-  DJANGO_GUNICORN_WORKERS: {{ .Values.django.gunicornWorkers | quote }}
+  GUNICORN_WORKERS: {{ .Values.django.gunicornWorkers | quote }}
   {{- range $key, $value := .Values.django.config }}
   {{ $key }}: {{ $value | quote }}
   {{- end }}
