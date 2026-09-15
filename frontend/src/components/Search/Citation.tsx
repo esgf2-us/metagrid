@@ -24,20 +24,33 @@ type CitationProps = {
   url: string;
 };
 
+/**
+ * Removes the httpAccept parameter from a URL if present
+ */
+const removeHttpAcceptParam = (url: string): string => {
+  try {
+    const urlObj = new URL(url);
+    urlObj.searchParams.delete('httpAccept');
+    return urlObj.toString();
+  } catch (e) {
+    // If URL parsing fails, return the original URL
+    return url;
+  }
+};
+
 const Citation: React.FC<React.PropsWithChildren<CitationProps>> = ({ url }) => {
   const { data, error, isLoading } = useAsync({
     promiseFn: fetchDatasetCitation as unknown as PromiseFn<RawCitation>,
     url,
   });
 
+  // Remove .json extension and httpAccept parameter for the display link
+  const displayUrl = removeHttpAcceptParam(splitStringByChar(url, '.json', '0') as string);
+
   return (
     <div>
       <div>
-        <a
-          href={splitStringByChar(url, '.json', '0') as string}
-          rel="noopener noreferrer"
-          target="_blank"
-        >
+        <a href={displayUrl} rel="noopener noreferrer" target="_blank">
           Data Citation Page
         </a>
       </div>
