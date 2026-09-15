@@ -16,7 +16,7 @@ import type { Dayjs } from 'dayjs';
 import { useNavigate } from 'react-router';
 import { useSetAtom } from 'jotai';
 import { UserSearchQuery } from './types';
-import { savedSearchQueryAtom } from '../../common/atoms';
+import { savedSearchQueryAtom, searchChangesMapAtom } from '../../common/atoms';
 import { fetchSearchResults, generateSearchURLQuery } from '../../api';
 import { stringifyApiRequest } from '../../common/STAC';
 import { showNotice } from '../../common/utils';
@@ -25,14 +25,56 @@ export type ChangesDialogProps = {
   open: boolean;
   onClose: () => void;
   searchQuery: UserSearchQuery;
+  detectedChangesTimestamp?: number;
 };
 
-const ChangesDialog: React.FC<ChangesDialogProps> = ({ open, onClose, searchQuery }) => {
+const ChangesDialog: React.FC<ChangesDialogProps> = ({
+  open,
+  onClose,
+  searchQuery,
+  detectedChangesTimestamp,
+}) => {
   const navigate = useNavigate();
   const setSavedSearchQuery = useSetAtom(savedSearchQueryAtom);
+  const setSearchChangesMap = useSetAtom(searchChangesMapAtom);
   const [messageApi, contextHolder] = message.useMessage();
 
-  const [timeRange, setTimeRange] = React.useState<string>('subscription');
+  const [timeRange, setTimeRange] = React.useState<string>(
+    detectedChangesTimestamp ? 'lastCheck' : 'subscription',
+  );
+
+  // Reset timeRange when dialog opens to ensure correct default is selected
+  React.useEffect(() => {
+    if (open) {
+      // Set the appropriate default based on what's available
+      if (detectedChangesTimestamp) {
+        setTimeRange('lastCheck');
+      } else if (searchQuery.lastCheckedTime) {
+        setTimeRange('subscription');
+      }
+
+      // Clear the badge count but keep the timestamp for future reference
+      if (detectedChangesTimestamp) {
+        setSearchChangesMap((prev) => {
+          const updated = { ...prev };
+          if (updated[searchQuery.uuid]) {
+            updated[searchQuery.uuid] = {
+              count: 0, // Clear count to hide badge
+              checkedSince: updated[searchQuery.uuid].checkedSince, // Keep timestamp
+            };
+          }
+          return updated;
+        });
+      }
+    }
+  }, [
+    open,
+    detectedChangesTimestamp,
+    searchQuery.lastCheckedTime,
+    searchQuery.uuid,
+    setSearchChangesMap,
+  ]);
+
   const [customDateRange, setCustomDateRange] = React.useState<[Dayjs | null, Dayjs | null] | null>(
     null,
   );
@@ -62,12 +104,14 @@ const ChangesDialog: React.FC<ChangesDialogProps> = ({ open, onClose, searchQuer
           return customDateRange[0].toISOString();
         }
         return null;
+      case 'lastCheck':
+        return detectedChangesTimestamp ? new Date(detectedChangesTimestamp).toISOString() : null;
       case 'subscription':
         return lastCheckedTime ? new Date(lastCheckedTime).toISOString() : null;
       default:
         return null;
     }
-  }, [timeRange, customDateRange, lastCheckedTime]);
+  }, [timeRange, customDateRange, lastCheckedTime, detectedChangesTimestamp]);
 
   // Check for new datasets with the current timestamp
   const checkForNewDatasets = React.useCallback(async () => {
@@ -127,6 +171,26 @@ const ChangesDialog: React.FC<ChangesDialogProps> = ({ open, onClose, searchQuer
       minute: '2-digit',
       hour12: true,
     });
+  };
+
+  const getAlertDescription = () => {
+    if (!currentTimestamp) {
+      return 'Please select a time range to check for changes';
+    }
+
+    if (newDatasetsCount > 0) {
+      return (
+        <>
+          Found datasets published since <strong>{formatTimestamp(currentTimestamp)}</strong>
+        </>
+      );
+    }
+
+    return (
+      <>
+        No datasets were published since <strong>{formatTimestamp(currentTimestamp)}</strong>
+      </>
+    );
   };
 
   return (
@@ -236,6 +300,11 @@ const ChangesDialog: React.FC<ChangesDialogProps> = ({ open, onClose, searchQuer
             style={{ marginBottom: '12px', width: '100%' }}
           >
             <Space direction="vertical" style={{ width: '100%' }}>
+              {detectedChangesTimestamp && (
+                <Radio value="lastCheck">
+                  Since Last Check ({formatTimestamp(detectedChangesTimestamp)})
+                </Radio>
+              )}
               {lastCheckedTime && (
                 <Radio value="subscription">
                   Since Subscription ({formatTimestamp(lastCheckedTime)})
@@ -256,12 +325,6 @@ const ChangesDialog: React.FC<ChangesDialogProps> = ({ open, onClose, searchQuer
               style={{ marginBottom: '12px' }}
             />
           )}
-          {currentTimestamp && (
-            <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
-              Filtering for datasets published since:{' '}
-              <strong>{formatTimestamp(currentTimestamp)}</strong>
-            </div>
-          )}
         </div>
         {isChecking && (
           <div style={{ textAlign: 'center', padding: '40px 0' }}>
@@ -277,11 +340,7 @@ const ChangesDialog: React.FC<ChangesDialogProps> = ({ open, onClose, searchQuer
                   ? `${newDatasetsCount} new dataset${newDatasetsCount !== 1 ? 's' : ''} found`
                   : 'No new datasets detected'
               }
-              description={
-                newDatasetsCount > 0
-                  ? `Found datasets published since ${formatTimestamp(currentTimestamp)}`
-                  : `No datasets were published since ${formatTimestamp(currentTimestamp)}`
-              }
+              description={getAlertDescription()}
               type={newDatasetsCount > 0 ? 'info' : 'success'}
               showIcon
               style={{ marginBottom: '16px' }}

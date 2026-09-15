@@ -6,17 +6,28 @@ import {
   LinkOutlined,
   SearchOutlined,
 } from '@ant-design/icons';
-import { Alert, Button, Card, Col, message, Skeleton, theme, Typography, Tooltip } from 'antd';
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Col,
+  message,
+  Skeleton,
+  theme,
+  Typography,
+  Tooltip,
+} from 'antd';
 import React, { useEffect } from 'react';
 import { DeferFn, useAsync } from 'react-async';
 import { useNavigate } from 'react-router';
-import { useSetAtom } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { fetchSearchResults, generateSearchURLQuery } from '../../api';
 import { CSSinJS } from '../../common/types';
 import { UserSearchQuery } from './types';
 import ChangesDialog from './ChangesDialog';
 import { createSearchRouteURL, showNotice } from '../../common/utils';
-import { savedSearchQueryAtom } from '../../common/atoms';
+import { savedSearchQueryAtom, searchChangesMapAtom } from '../../common/atoms';
 import { savedSearchTourTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 import {
   stringifyApiRequest,
@@ -68,10 +79,14 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
 
   const setSavedSearchQuery = useSetAtom(savedSearchQueryAtom);
 
+  const searchChangesMap = useAtomValue(searchChangesMapAtom);
+
   // State for changes dialog
   const [showChangesDialog, setShowChangesDialog] = React.useState(false);
 
   const isSubscribed = searchQuery.isSubscribed || false;
+  const changeInfo = searchChangesMap[uuid];
+  const hasChanges = changeInfo && changeInfo.count > 0;
 
   // Only fetch resultCount if resultsCount is null or searchTime is an hour old
   const expirationTime = (searchTime || 0) + 60 * 60 * 1000; // Expires after an hour
@@ -198,6 +213,13 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
             {isSubscribed && (
               <Button type="primary" onClick={() => setShowChangesDialog(true)}>
                 View Search Changes
+                {hasChanges && (
+                  <Badge
+                    count={changeInfo.count}
+                    style={{ backgroundColor: '#52c41a', marginLeft: '8px' }}
+                    title={`${changeInfo.count} new dataset${changeInfo.count > 1 ? 's' : ''}`}
+                  />
+                )}
               </Button>
             )}
           </div>
@@ -325,6 +347,7 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
           open={showChangesDialog}
           onClose={() => setShowChangesDialog(false)}
           searchQuery={searchQuery}
+          detectedChangesTimestamp={changeInfo?.checkedSince}
         />
       )}
     </Col>
