@@ -21,12 +21,12 @@ import Button from '../General/Button';
 import RightDrawer from '../Messaging/RightDrawer';
 
 import { AuthContext } from '../../contexts/AuthContext';
-import { UserCart, UserSearchQueries, UserSearchQuery } from '../Cart/types';
+import { UserCart } from '../Cart/types';
 import {
   isDarkModeAtom,
   userCartAtom,
-  userSearchQueriesAtom,
   supportModalVisibleAtom,
+  searchChangesMapAtom,
 } from '../../common/atoms';
 
 const menuItemStyling: CSSProperties = { margin: '8px' };
@@ -41,7 +41,7 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
 
   const userCart = useAtomValue<UserCart>(userCartAtom);
 
-  const userSearchQueries = useAtomValue<UserSearchQueries>(userSearchQueriesAtom);
+  const searchChangesMap = useAtomValue(searchChangesMapAtom);
 
   const setSupportModalVisible = useSetAtom(supportModalVisibleAtom);
 
@@ -56,6 +56,9 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
   const authenticated = accessToken && pk;
 
   const stacDisabled = window.METAGRID.STAC_URL === '' || window.METAGRID.STAC_URL === null;
+
+  const searchesWithChanges = Object.keys(searchChangesMap).length;
+  const hasChanges = searchesWithChanges > 0;
 
   let loginBtn: JSX.Element;
   let logoutBtn: JSX.Element;
@@ -196,16 +199,17 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
       label: (
         <Link to="/cart/searches">
           <FileSearchOutlined style={{ fontSize: '20px' }} />{' '}
-          <Badge
-            count={
-              userSearchQueries.filter(
-                (query: UserSearchQuery) => !stacDisabled || !query.project.isSTAC,
-              ).length
-            }
-            className="badge"
-            offset={[-5, 3]}
-            showZero
-          />
+          {hasChanges && (
+            <Badge
+              count={searchesWithChanges}
+              className="badge"
+              offset={[-5, 3]}
+              style={{
+                backgroundColor: '#52c41a',
+              }}
+              title={`${searchesWithChanges} search${searchesWithChanges > 1 ? 'es' : ''} with changes`}
+            />
+          )}
           Saved Searches
         </Link>
       ),
