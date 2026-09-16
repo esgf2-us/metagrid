@@ -288,6 +288,7 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
         }
       })
       .catch((error) => {
+        // eslint-disable-next-line no-console
         console.error('Background check failed:', error);
       });
 
@@ -297,7 +298,6 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
     isAuthenticated,
     accessToken,
     projectsLoaded,
-    userSearchQueries,
     lastAppLoadTime,
     setSearchChangesMap,
     setUserSearchQueries,

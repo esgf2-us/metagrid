@@ -54,6 +54,7 @@ export const runBackgroundChecks = async (
           changesMap[search.uuid] = result;
         }
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error(`Failed to check search ${search.uuid}:`, error);
       }
     }),
