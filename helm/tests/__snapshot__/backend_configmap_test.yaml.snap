@@ -5,6 +5,7 @@ should create a configmap:
       GUNICORN_WORKERS: "10"
       METAGRID_BANNER_TEXT: |2
         this is a message for users
+      METAGRID_CITATION_ALLOWED_HOSTS: '["cera-www.dkrz.de","raw.githubusercontent.com","cmip7-citations.ceda.ac.uk"]'
       METAGRID_DATA_UPLOAD_MAX_NUMBER_FIELDS: "10"
       METAGRID_FOOTER_TEXT: |2
         Footer text, check out this markdown [link](https://esgf.neworg.io)
@@ -33,6 +34,7 @@ should create a default configmap:
     apiVersion: v1
     data:
       GUNICORN_WORKERS: "2"
+      METAGRID_CITATION_ALLOWED_HOSTS: '["cera-www.dkrz.de","raw.githubusercontent.com","cmip7-citations.ceda.ac.uk"]'
       METAGRID_DATA_UPLOAD_MAX_NUMBER_FIELDS: "1024"
       METAGRID_GLOBUS_NODES: '["esgf-node.ornl.gov","eagle.alcf.anl.gov","esgf-data.nersc.gov"]'
       METAGRID_GLOBUS_PUBLIC_INDEX_ENDPOINT_ID: a8ef4320-9e5a-4793-837b-c45161ca1845

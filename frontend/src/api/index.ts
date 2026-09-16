@@ -1389,25 +1389,128 @@ export const fetchSearchResults = async (
 
 /**
  * Performs processing on citation objects.
+ * Handles both CMIP6 (DataCite) and CMIP7 (CEDA) citation formats.
  */
 export const processCitation = (citation: RawCitation): RawCitation => {
   const newCitation = citation;
 
-  newCitation.identifierDOI = `http://${newCitation.identifier.identifierType.toLowerCase()}.org/${
-    newCitation.identifier.id
-  }`;
+  // Check if this is CMIP7/CEDA format (has doi_url, drs_url fields instead of identifier)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const citationAny = citation as any;
 
-  newCitation.license = newCitation.rightsList.map((elem) => elem.rights).join('; ');
+  if (citationAny.doi_url !== undefined || citationAny.drs_url !== undefined) {
+    // CMIP7 format - normalize to CMIP6 format
 
-  // Allow a max of 3 creators to be displayed
-  if (newCitation.creators.length > 3) {
-    newCitation.creatorsList = newCitation.creators
-      .slice(0, 3)
-      .map((elem) => elem.creatorName)
-      .join('; ')
-      .concat('; et al.');
+    // Handle DOI - prefer doi_url if available
+    if (citationAny.doi_url && citationAny.doi_url.length > 0) {
+      newCitation.identifierDOI = citationAny.doi_url;
+      // Extract DOI identifier from URL
+      const doiMatch = citationAny.doi_url.match(/doi\.org\/(.*)/);
+      newCitation.identifier = {
+        id: doiMatch ? doiMatch[1] : citationAny.id || '',
+        identifierType: 'DOI',
+      };
+    } else if (citationAny.id) {
+      // No DOI URL, but we have an ID field
+      newCitation.identifier = {
+        id: citationAny.id,
+        identifierType: 'ID',
+      };
+      newCitation.identifierDOI = '';
+    } else {
+      // No DOI or ID available - leave empty for conditional rendering
+      newCitation.identifier = { id: '', identifierType: '' };
+      newCitation.identifierDOI = '';
+    }
+
+    // Handle title
+    newCitation.titles = citationAny.title || '';
+
+    // Handle publication year - only set if we have a valid timestamp
+    if (citationAny.publication_timestamp) {
+      const year = new Date(citationAny.publication_timestamp).getFullYear();
+      // Only set if year is valid (not NaN and reasonable)
+      if (!Number.isNaN(year) && year > 1900 && year <= new Date().getFullYear() + 10) {
+        newCitation.publicationYear = year;
+      } else {
+        newCitation.publicationYear = 0;
+      }
+    } else {
+      // No timestamp - leave as 0 for conditional rendering
+      newCitation.publicationYear = 0;
+    }
+
+    // Handle publisher - extract from institutions or use project_id
+    if (citationAny.institutions && citationAny.institutions.length > 0) {
+      newCitation.publisher = citationAny.institutions
+        .map((inst: { name: string }) => inst.name)
+        .join('; ');
+    } else if (citationAny.project_id) {
+      newCitation.publisher = citationAny.project_id;
+    } else {
+      // No publisher info - leave empty for conditional rendering
+      newCitation.publisher = '';
+    }
+
+    // Handle creators - use primary contact as the creator
+    if (citationAny.primary) {
+      const primaryContact = citationAny.primary;
+      const fullName =
+        `${primaryContact.first_name || ''} ${primaryContact.last_name || ''}`.trim();
+      if (fullName) {
+        newCitation.creators = [{ creatorName: fullName }];
+        newCitation.creatorsList = fullName;
+      } else {
+        // Primary exists but no name - leave empty for conditional rendering
+        newCitation.creators = [];
+        newCitation.creatorsList = '';
+      }
+    } else if (citationAny.contacts && citationAny.contacts.length > 0) {
+      // Fallback to contacts if primary is not available
+      newCitation.creators = citationAny.contacts
+        .map((contact: { first_name: string; last_name: string }) => ({
+          creatorName: `${contact.first_name || ''} ${contact.last_name || ''}`.trim(),
+        }))
+        .filter((c: { creatorName: string }) => c.creatorName.length > 0);
+      if (newCitation.creators.length > 0) {
+        newCitation.creatorsList = newCitation.creators
+          .slice(0, 3)
+          .map((elem) => elem.creatorName)
+          .join('; ');
+        if (citationAny.contacts.length > 3) {
+          newCitation.creatorsList += '; et al.';
+        }
+      } else {
+        // Contacts exist but no names - leave empty for conditional rendering
+        newCitation.creatorsList = '';
+      }
+    } else {
+      // No creator info - leave empty for conditional rendering
+      newCitation.creators = [];
+      newCitation.creatorsList = '';
+    }
+
+    // Handle license/rights
+    newCitation.license = citationAny.license || citationAny.rights || '';
+    newCitation.rightsList = newCitation.license ? [{ rights: newCitation.license }] : [];
   } else {
-    newCitation.creatorsList = newCitation.creators.map((elem) => elem.creatorName).join('; ');
+    // CMIP6 format - original processing
+    newCitation.identifierDOI = `http://${newCitation.identifier.identifierType.toLowerCase()}.org/${
+      newCitation.identifier.id
+    }`;
+
+    newCitation.license = newCitation.rightsList.map((elem) => elem.rights).join('; ');
+
+    // Allow a max of 3 creators to be displayed
+    if (newCitation.creators.length > 3) {
+      newCitation.creatorsList = newCitation.creators
+        .slice(0, 3)
+        .map((elem) => elem.creatorName)
+        .join('; ')
+        .concat('; et al.');
+    } else {
+      newCitation.creatorsList = newCitation.creators.map((elem) => elem.creatorName).join('; ');
+    }
   }
 
   return newCitation;

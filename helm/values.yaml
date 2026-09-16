@@ -93,6 +93,11 @@ bannerText:
 supportInfo:
 footerText:
 
+citationAllowedHosts:
+  - cera-www.dkrz.de
+  - raw.githubusercontent.com
+  - cmip7-citations.ceda.ac.uk
+
 globusNodes:
   - esgf-node.ornl.gov
   - eagle.alcf.anl.gov
