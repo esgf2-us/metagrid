@@ -1,0 +1,82 @@
+# Podman-specific production configuration for rootless deployment
+# Replaces docker-compose.prod.yml for Podman deployments
+#
+# This file addresses Podman rootless limitations:
+# 1. Systemd healthchecks don't work properly
+# 2. Cannot bind to privileged ports (< 1024)
+# 3. podman-compose merges port arrays (cannot override with layers)
+#
+# Use with: -f docker-compose.yml -f docker-compose.podman.yml
+# (NOT with docker-compose.prod.yml - this replaces it)
+
+volumes:
+  traefik_certs: {}
+
+services:
+  traefik:
+    restart: unless-stopped
+    volumes:
+      - traefik_certs:/etc/traefik/acme
+      - ./traefik/traefik.prod.yml:/etc/traefik/traefik.yml
+    ports:
+      - '0.0.0.0:8090:9080'   # HTTP on 8090 (avoids conflict with react dev server on 8080)
+      - '0.0.0.0:8493:9443'   # HTTPS on 8493 (rootless compatible)
+
+  docs:
+    profiles: ['docs']
+    restart: unless-stopped
+
+  postgres:
+    restart: unless-stopped
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+    ports: []  # Remove port binding - internal access only
+    # Simplified healthcheck for rootless Podman
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres || exit 1']
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  django:
+    restart: unless-stopped
+    environment:
+      DJANGO_DEBUG: False
+      DJANGO_SECRET_KEY: ''
+      DJANGO_EMAIL_BACKEND: 'django.core.mail.backends.smtp.EmailBackend'
+      DJANGO_SOCIAL_AUTH_REDIRECT_IS_HTTPS: True
+      DJANGO_SECURE_PROXY_SSL_HEADER: '["HTTP_X_FORWARDED_PROTO", "https"]'
+      DJANGO_SECURE_SSL_REDIRECT: True
+      DJANGO_SESSION_COOKIE_SECURE: True
+      DJANGO_CSRF_COOKIE_SECURE: True
+      DJANGO_SECURE_HSTS_SECONDS: 518400
+      DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS: True
+      DJANGO_SECURE_HSTS_PRELOAD: True
+      DJANGO_DATABASE_URL: 'postgres://postgres:postgres@postgres:5432/postgres'
+    volumes:
+      - ./backend:/app/staticfiles
+    ports: []  # Remove port binding - accessed through traefik only
+    # service_started instead of service_healthy (systemd healthchecks fail in rootless)
+    depends_on:
+      postgres:
+        condition: service_started
+
+  react:
+    image: metagrid_prod_react
+    build:
+      context: ./frontend
+      target: prod
+    command: []
+    restart: unless-stopped
+    volumes:
+      - ./frontend/public/projects/projects.json:/usr/share/nginx/html/projects/projects.json:ro
+    ports: []  # Remove port binding - accessed through traefik only
+
+  keycloak:
+    profiles: ['keycloak']
+    command: start --import-realm
+    volumes: []
+    restart: unless-stopped
