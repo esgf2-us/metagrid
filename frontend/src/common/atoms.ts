@@ -21,6 +21,7 @@ export enum AppStateKeys {
   availableFacets = 'availableFacets',
   nodeStatus = 'nodeStatus',
   lastAppLoadTime = 'lastAppLoadTime',
+  searchChangesMap = 'searchChangesMap',
 }
 
 export enum CartStateKeys {
@@ -152,6 +153,6 @@ export const lastAppLoadTimeAtom = atomWithStorage<number | null>(
   { getOnInit: true },
 );
 
-export const searchChangesMapAtom = atom<Record<string, { count: number; checkedSince: number }>>(
-  {},
-);
+export const searchChangesMapAtom = atomWithStorage<
+  Record<string, { count: number; checkedSince: number }>
+>(AppStateKeys.searchChangesMap, {}, undefined, { getOnInit: true });

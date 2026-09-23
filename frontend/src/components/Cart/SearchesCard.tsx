@@ -215,9 +215,9 @@ const SearchesCard: React.FC<React.PropsWithChildren<Props>> = ({
                 View Search Changes
                 {hasChanges && (
                   <Badge
-                    count={changeInfo.count}
+                    count="!"
                     style={{ backgroundColor: '#52c41a', marginLeft: '8px' }}
-                    title={`${changeInfo.count} new dataset${changeInfo.count > 1 ? 's' : ''}`}
+                    title={`${changeInfo.count} new dataset${changeInfo.count > 1 ? 's' : ''} detected`}
                   />
                 )}
               </Button>

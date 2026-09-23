@@ -57,7 +57,9 @@ const RightMenu: React.FC<React.PropsWithChildren<Props>> = ({ mode }) => {
 
   const stacDisabled = window.METAGRID.STAC_URL === '' || window.METAGRID.STAC_URL === null;
 
-  const searchesWithChanges = Object.keys(searchChangesMap).length;
+  const searchesWithChanges = Object.values(searchChangesMap).filter(
+    (change) => change.count > 0,
+  ).length;
   const hasChanges = searchesWithChanges > 0;
 
   let loginBtn: JSX.Element;

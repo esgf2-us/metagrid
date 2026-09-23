@@ -113,38 +113,56 @@ const ChangesDialog: React.FC<ChangesDialogProps> = ({
     }
   }, [timeRange, customDateRange, lastCheckedTime, detectedChangesTimestamp]);
 
-  // Check for new datasets with the current timestamp
-  const checkForNewDatasets = React.useCallback(async () => {
-    if (!currentTimestamp) return;
-
-    setIsChecking(true);
-    setHasChecked(false);
-    try {
-      const checkUrl = generateSearchURLQuery(
-        { ...searchQuery, filterCreatedSince: currentTimestamp },
-        { page: 0, pageSize: 0 },
-      );
-
-      const response = await fetchSearchResults([checkUrl]);
-      const searchData = (response as { search?: { numMatched?: number; numberMatched?: number } })
-        .search;
-      const count = searchData?.numMatched || searchData?.numberMatched || 0;
-      setNewDatasetsCount(count);
-      setHasChecked(true);
-    } catch (err) {
-      setNewDatasetsCount(0);
-      setHasChecked(true);
-    } finally {
-      setIsChecking(false);
-    }
-  }, [currentTimestamp, searchQuery]);
-
   // Auto-check when dialog opens or time range changes
   React.useEffect(() => {
+    let mounted = true;
+    let timeoutId: NodeJS.Timeout;
+
     if (open && currentTimestamp) {
-      checkForNewDatasets();
+      // Reset state before checking
+      setIsChecking(true);
+      setHasChecked(false);
+
+      // Use a small delay to debounce rapid changes
+      timeoutId = setTimeout(async () => {
+        if (mounted) {
+          try {
+            const checkUrl = generateSearchURLQuery(
+              { ...searchQuery, filterCreatedSince: currentTimestamp },
+              { page: 0, pageSize: 0 },
+            );
+
+            const response = await fetchSearchResults([checkUrl]);
+            const searchData = (
+              response as { search?: { numMatched?: number; numberMatched?: number } }
+            ).search;
+            const count = searchData?.numMatched || searchData?.numberMatched || 0;
+
+            if (mounted) {
+              setNewDatasetsCount(count);
+              setHasChecked(true);
+              setIsChecking(false);
+            }
+          } catch (err) {
+            if (mounted) {
+              setNewDatasetsCount(0);
+              setHasChecked(true);
+              setIsChecking(false);
+            }
+          }
+        }
+      }, 100);
     }
-  }, [open, currentTimestamp, checkForNewDatasets]);
+
+    return () => {
+      mounted = false;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      // Ensure loading state is cleared on unmount
+      setIsChecking(false);
+    };
+  }, [open, currentTimestamp, searchQuery]);
 
   const handleViewFilteredResults = () => {
     if (!currentTimestamp) return;
