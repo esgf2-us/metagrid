@@ -93,6 +93,61 @@ function compose_cmd() {
 #Custom functions
 function startProductionService() {
     clear
+    echo "Choose deployment method:"
+    echo "1 Use pre-built images from registry (faster, recommended for Podman/NFS)"
+    echo "2 Build images locally from source (slower)"
+    read -r build_choice
+
+    # Default to 1 (pre-built) if no value is entered
+    if [ -z "$build_choice" ]; then
+        build_choice=1
+    fi
+
+    local build_flag=""
+    local prebuilt_overlay=""
+
+    if [ "$build_choice" = "2" ]; then
+        build_flag="--build"
+        echo "Will build images locally from source"
+    else
+        echo "Will use pre-built images from ghcr.io/esgf2-us"
+
+        # Determine image tag to use (latest as default)
+        local image_tag="latest"
+
+        # Try to detect PR number from branch
+        if command -v git &> /dev/null; then
+            local branch_name=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+            if command -v gh &> /dev/null && [ -n "$branch_name" ]; then
+                local pr_number=$(gh pr list --head "$branch_name" --json number --jq '.[0].number' 2>/dev/null || echo "")
+                if [[ "$pr_number" =~ ^[0-9]+$ ]]; then
+                    image_tag="pr-$pr_number"
+                fi
+            fi
+        fi
+
+        echo "Image tag: $image_tag"
+        echo ""
+
+        # Set IMAGE_TAG environment variable for docker-compose.prebuilt.yml
+        export IMAGE_TAG="$image_tag"
+
+        # Add prebuilt overlay
+        prebuilt_overlay="$PREBUILT_OVERLAY"
+
+        # Pull images first
+        echo "Pulling images..."
+        compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY pull || {
+            echo "Warning: Failed to pull some images. They may not exist in the registry."
+            echo "You can:"
+            echo "  1. Build locally instead (option 2)"
+            echo "  2. Check if tag '$image_tag' exists at ghcr.io/esgf2-us"
+            echo "  3. Specify a different tag by setting IMAGE_TAG environment variable"
+            read -p "Press Enter to continue anyway or Ctrl+C to abort..."
+        }
+    fi
+
+    clear
     echo "Choose authentication method:"
     echo "1 Globus - default"
     echo "2 Keycloak"
@@ -107,21 +162,21 @@ function startProductionService() {
     case $auth_choice in
     1)
         echo "Starting Metagrid production deployment with Globus"
-        compose_cmd $PROD_COMPOSE $PROD_OVERLAY $GLOBUS_COMPOSE up --build -d
+        compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY $GLOBUS_COMPOSE up $build_flag -d
         echo "Command used:"
-        echo "compose_cmd $PROD_COMPOSE $PROD_OVERLAY $GLOBUS_COMPOSE up --build -d"
+        echo "compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY $GLOBUS_COMPOSE up $build_flag -d"
         ;;
     2)
         echo "Starting Metagrid production deployment with Keycloak"
-        compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $PROD_OVERLAY --profile keycloak up --build -d
+        compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $PROD_OVERLAY --profile keycloak up $build_flag -d
         echo "Command used:"
-        echo "compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $PROD_OVERLAY --profile keycloak up --build -d"
+        echo "compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $PROD_OVERLAY --profile keycloak up $build_flag -d"
         ;;
     3)
         echo "Starting Metagrid production deployment with no auth"
-        compose_cmd $PROD_COMPOSE $PROD_OVERLAY up --build -d
+        compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY up $build_flag -d
         echo "Command used:"
-        echo "compose_cmd $PROD_COMPOSE $PROD_OVERLAY up --build -d"
+        echo "compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY up $build_flag -d"
         ;;
     *)
         echo "Invalid choice. Please select 1, 2, or 3."

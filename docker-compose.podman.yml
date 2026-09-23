@@ -71,6 +71,7 @@ services:
       target: prod
     command: []
     restart: unless-stopped
+    user: "101:101"  # nginx-unprivileged runs as uid/gid 101
     volumes:
       - ./frontend/public/projects/projects.json:/usr/share/nginx/html/projects/projects.json:ro
     ports: []  # Remove port binding - accessed through traefik only

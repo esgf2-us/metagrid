@@ -46,6 +46,9 @@ graphroot = "/var/tmp/podman-$USER"
 mount_program = "/usr/bin/fuse-overlayfs"
 EOF
 
+# If you get an error about pause process, run this first:
+podman system migrate
+
 # Reset storage to apply new configuration
 podman system reset --force
 
@@ -53,6 +56,8 @@ podman system reset --force
 podman info | grep graphRoot
 # Should show: graphRoot: /var/tmp/podman-<username>
 ```
+
+**Note:** These commands should be run as your regular user (no sudo). Podman runs in rootless mode by default. If you get permission errors on the verification step, the migrate command above should resolve them.
 
 **Benefits:**
 - No permission issues with postgres/database volumes
