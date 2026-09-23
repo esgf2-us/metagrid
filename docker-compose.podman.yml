@@ -18,6 +18,8 @@ services:
     volumes:
       - traefik_certs:/etc/traefik/acme
       - ./traefik/traefik.prod.yml:/etc/traefik/traefik.yml
+      # Mount custom certificates directory if using custom certs (traefik.customcert.yml)
+      - ./traefik/certs:/etc/traefik/certs:ro
     ports:
       - '0.0.0.0:8090:9080'   # HTTP on 8090 (avoids conflict with react dev server on 8080)
       - '0.0.0.0:8493:9443'   # HTTPS on 8493 (rootless compatible)
@@ -33,16 +35,12 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
     ports: []  # Remove port binding - internal access only
-    # Simplified healthcheck for rootless Podman
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres || exit 1']
-      start_period: 10s
-      interval: 10s
-      timeout: 5s
-      retries: 3
+    # Healthchecks removed - don't work reliably in rootless Podman
+    # Django will handle connection retries anyway
 
   django:
     restart: unless-stopped
+    user: "0:0"  # Run as root in container (still unprivileged in rootless Podman)
     environment:
       DJANGO_DEBUG: False
       DJANGO_SECRET_KEY: ''
@@ -71,7 +69,7 @@ services:
       target: prod
     command: []
     restart: unless-stopped
-    user: "101:101"  # nginx-unprivileged runs as uid/gid 101
+    user: "0:0"  # Run as root in container (still unprivileged in rootless Podman)
     volumes:
       - ./frontend/public/projects/projects.json:/usr/share/nginx/html/projects/projects.json:ro
     ports: []  # Remove port binding - accessed through traefik only

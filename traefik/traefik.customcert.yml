@@ -1,0 +1,140 @@
+# Traefik configuration for using custom SSL certificates (DigiCert, etc.)
+# instead of Let's Encrypt ACME
+#
+# Usage: Selected via manage_metagrid.sh production deployment option
+#
+# Prerequisites:
+# 1. Copy your certificate files to traefik/certs/:
+#    - traefik/certs/cert.crt (or cert.pem) - Your SSL certificate
+#    - traefik/certs/cert.key - Your private key
+#    - traefik/certs/ca-bundle.crt (optional) - CA chain/intermediate certificates
+# 2. Ensure proper permissions:
+#    chmod 644 traefik/certs/*.crt
+#    chmod 600 traefik/certs/*.key
+
+log:
+  level: INFO
+
+entryPoints:
+  web:
+    # http
+    address: ':9080'
+
+  web-secure:
+    # https
+    address: ':9443'
+
+# No ACME/Let's Encrypt configuration - using provided certificates
+
+http:
+  routers:
+    backend:
+      service: django
+      rule: >-
+        Host(`{{ env "DOMAIN_NAME" }}`) &&   (
+        PathPrefix(`/account-confirm-email`) ||
+        PathPrefix(`/accounts`)              ||
+        PathPrefix(`/api`)                   ||
+        PathPrefix(`/complete`)              ||
+        PathPrefix(`/frontend-config.js`)    ||
+        PathPrefix(`/globus`)                ||
+        PathPrefix(`/login`)                 ||
+        PathPrefix(`/proxy`)                 ||
+        PathPrefix(`/redoc`)                 ||
+        PathPrefix(`/swagger`)               ||
+        PathPrefix(`/tempStorage`)            )
+      entryPoints:
+        - web
+      middlewares:
+        - redirect
+        - csrf
+
+    backend-secure:
+      service: django
+      rule: >-
+        Host(`{{ env "DOMAIN_NAME" }}`) &&   (
+        PathPrefix(`/account-confirm-email`) ||
+        PathPrefix(`/accounts`)              ||
+        PathPrefix(`/api`)                   ||
+        PathPrefix(`/complete`)              ||
+        PathPrefix(`/frontend-config.js`)    ||
+        PathPrefix(`/globus`)                ||
+        PathPrefix(`/login`)                 ||
+        PathPrefix(`/proxy`)                 ||
+        PathPrefix(`/redoc`)                 ||
+        PathPrefix(`/swagger`)               ||
+        PathPrefix(`/tempStorage`)            )
+      entryPoints:
+        - web-secure
+      middlewares:
+        - csrf
+        - secure-headers
+      tls: {}  # Use certificate defined in tls.certificates section
+
+    frontend:
+      service: react
+      rule: >-
+        Host(`{{ env "DOMAIN_NAME" }}`) && PathPrefix(`/`)
+
+      entryPoints:
+        - web
+      middlewares:
+        - redirect
+
+    frontend-secure:
+      service: react
+      rule: >-
+        Host(`{{ env "DOMAIN_NAME" }}`) && PathPrefix(`/`)
+
+      entryPoints:
+        - web-secure
+      middlewares:
+        - secure-headers
+      tls: {}  # Use certificate defined in tls.certificates section
+
+  middlewares:
+    redirect:
+      redirectScheme:
+        scheme: https
+        permanent: true
+    secure-headers:
+      headers:
+        stsPreload: true
+        stsIncludeSubdomains: true
+        stsSeconds: 31536000
+        forceSTSHeader: true
+    csrf:
+      headers:
+        hostsProxyHeaders: ['X-CSRFToken']
+  services:
+    django:
+      loadBalancer:
+        servers:
+          - url: http://django:5000
+    react:
+      loadBalancer:
+        servers:
+          - url: http://react:8080
+
+providers:
+  file:
+    filename: /etc/traefik/traefik.yml
+    watch: true
+
+tls:
+  # Define your custom certificate here
+  # Update the file names to match your actual certificate files
+  certificates:
+    - certFile: /etc/traefik/certs/cert.crt
+      keyFile: /etc/traefik/certs/cert.key
+
+  options:
+    default:
+      minVersion: VersionTLS12
+      cipherSuites:
+        - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
+        - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305

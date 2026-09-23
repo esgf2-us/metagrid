@@ -66,6 +66,7 @@ KEYCLOAK_PROD_OVERLAY="-f docker-compose.keycloak.prod.yml"
 LOCAL_OVERLAY="-f docker-compose-local-overlay.yml"
 PROD_OVERLAY="-f docker-compose-prod-overlay.yml"
 PREBUILT_OVERLAY="-f docker-compose.prebuilt.yml"
+CUSTOMCERT_OVERLAY="-f docker-compose.customcert.yml"
 
 # Configure compose files based on container runtime
 if [ "$CONTAINER_CMD" = "podman-compose" ] || [ "$CONTAINER_CMD" = "podman" ]; then
@@ -148,6 +149,33 @@ function startProductionService() {
     fi
 
     clear
+    echo "Choose SSL certificate method:"
+    echo "1 Let's Encrypt (automatic, free, requires ports 80/443 open)"
+    echo "2 Custom certificate (DigiCert, etc. - requires cert files in traefik/certs/)"
+    read -r ssl_choice
+
+    # Default to 1 (Let's Encrypt) if no value is entered
+    if [ -z "$ssl_choice" ]; then
+        ssl_choice=1
+    fi
+
+    local customcert_overlay=""
+    if [ "$ssl_choice" = "2" ]; then
+        customcert_overlay="$CUSTOMCERT_OVERLAY"
+        echo "Using custom SSL certificate from traefik/certs/"
+        echo "Make sure you have placed your certificate files:"
+        echo "  - traefik/certs/cert.crt (or cert.pem)"
+        echo "  - traefik/certs/cert.key"
+        if [ ! -f "traefik/certs/cert.crt" ] && [ ! -f "traefik/certs/cert.pem" ]; then
+            echo ""
+            echo "WARNING: Certificate files not found in traefik/certs/"
+            read -p "Press Enter to continue anyway or Ctrl+C to abort..."
+        fi
+    else
+        echo "Using Let's Encrypt for automatic SSL certificates"
+    fi
+
+    clear
     echo "Choose authentication method:"
     echo "1 Globus - default"
     echo "2 Keycloak"
@@ -162,21 +190,21 @@ function startProductionService() {
     case $auth_choice in
     1)
         echo "Starting Metagrid production deployment with Globus"
-        compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY $GLOBUS_COMPOSE up $build_flag -d
+        compose_cmd $PROD_COMPOSE $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $GLOBUS_COMPOSE up $build_flag -d
         echo "Command used:"
-        echo "compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY $GLOBUS_COMPOSE up $build_flag -d"
+        echo "compose_cmd $PROD_COMPOSE $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $GLOBUS_COMPOSE up $build_flag -d"
         ;;
     2)
         echo "Starting Metagrid production deployment with Keycloak"
-        compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $PROD_OVERLAY --profile keycloak up $build_flag -d
+        compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $customcert_overlay $PROD_OVERLAY --profile keycloak up $build_flag -d
         echo "Command used:"
-        echo "compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $PROD_OVERLAY --profile keycloak up $build_flag -d"
+        echo "compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $customcert_overlay $PROD_OVERLAY --profile keycloak up $build_flag -d"
         ;;
     3)
         echo "Starting Metagrid production deployment with no auth"
-        compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY up $build_flag -d
+        compose_cmd $PROD_COMPOSE $prebuilt_overlay $customcert_overlay $PROD_OVERLAY up $build_flag -d
         echo "Command used:"
-        echo "compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY up $build_flag -d"
+        echo "compose_cmd $PROD_COMPOSE $prebuilt_overlay $customcert_overlay $PROD_OVERLAY up $build_flag -d"
         ;;
     *)
         echo "Invalid choice. Please select 1, 2, or 3."
