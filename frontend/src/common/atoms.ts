@@ -20,6 +20,8 @@ export enum AppStateKeys {
   savedSearchQuery = 'savedSearchQuery',
   availableFacets = 'availableFacets',
   nodeStatus = 'nodeStatus',
+  lastAppLoadTime = 'lastAppLoadTime',
+  searchChangesMap = 'searchChangesMap',
 }
 
 export enum CartStateKeys {
@@ -143,3 +145,14 @@ export const selectedNodesAtom = atomWithStorage<Record<string, string>>(
 export const downloadSelectionsAtom = atomWithStorage<
   Record<string, 'wget' | 'Globus' | 'esgpull'>
 >(CartStateKeys.downloadSelections, {}, undefined, { getOnInit: true });
+
+export const lastAppLoadTimeAtom = atomWithStorage<number | null>(
+  AppStateKeys.lastAppLoadTime,
+  null,
+  undefined,
+  { getOnInit: true },
+);
+
+export const searchChangesMapAtom = atomWithStorage<
+  Record<string, { count: number; checkedSince: number }>
+>(AppStateKeys.searchChangesMap, {}, undefined, { getOnInit: true });
