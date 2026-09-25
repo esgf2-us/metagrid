@@ -21,8 +21,8 @@ services:
       # Mount custom certificates directory if using custom certs (traefik.customcert.yml)
       - ./traefik/certs:/etc/traefik/certs:ro
     ports:
-      - '0.0.0.0:8090:9080'   # HTTP on 8090 (avoids conflict with react dev server on 8080)
-      - '0.0.0.0:8493:9443'   # HTTPS on 8493 (rootless compatible)
+      - '0.0.0.0:80:9080'    # HTTP on standard port
+      - '0.0.0.0:443:9443'   # HTTPS on standard port
 
   docs:
     profiles: ['docs']
@@ -40,7 +40,6 @@ services:
 
   django:
     restart: unless-stopped
-    user: "0:0"  # Run as root in container (still unprivileged in rootless Podman)
     environment:
       DJANGO_DEBUG: False
       DJANGO_SECRET_KEY: ''
@@ -56,7 +55,7 @@ services:
       DJANGO_DATABASE_URL: 'postgres://postgres:postgres@postgres:5432/postgres'
     volumes:
       - ./backend:/app/staticfiles
-    ports: []  # Remove port binding - accessed through traefik only
+    ports: []  # Remove port binding - accessed through traefik only via container network
     # service_started instead of service_healthy (systemd healthchecks fail in rootless)
     depends_on:
       postgres:

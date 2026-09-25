@@ -70,9 +70,15 @@ CUSTOMCERT_OVERLAY="-f docker-compose.customcert.yml"
 
 # Configure compose files based on container runtime
 if [ "$CONTAINER_CMD" = "podman-compose" ] || [ "$CONTAINER_CMD" = "podman" ]; then
-    # For Podman: use podman.yml instead of prod.yml (avoids port merging issue)
+    # For Podman: use podman.yml (works for both rootful and rootless)
+    # Rootful (sudo): uses standard ports 80/443
+    # Rootless: requires firewall port forwarding or non-standard ports
     PROD_COMPOSE="-f docker-compose.yml -f docker-compose.podman.yml"
-    echo "Using Podman-specific compose configuration (rootless compatible ports)"
+    if [ "$EUID" -eq 0 ]; then
+        echo "Using Podman with standard ports 80/443 (running as root)"
+    else
+        echo "Using Podman with standard ports 80/443 (requires root or firewall forwarding)"
+    fi
 else
     # For Docker: use standard prod.yml
     PROD_COMPOSE="-f docker-compose.yml -f docker-compose.prod.yml"

@@ -124,6 +124,12 @@ providers:
 tls:
   # Define your custom certificate here
   # Update the file names to match your actual certificate files
+  stores:
+    default:
+      defaultCertificate:
+        certFile: /etc/traefik/certs/cert.crt
+        keyFile: /etc/traefik/certs/cert.key
+
   certificates:
     - certFile: /etc/traefik/certs/cert.crt
       keyFile: /etc/traefik/certs/cert.key
