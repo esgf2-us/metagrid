@@ -40,6 +40,7 @@ services:
 
   django:
     restart: unless-stopped
+    user: "0:0"  # Run as root in container to avoid permission issues with pre-built images
     environment:
       DJANGO_DEBUG: False
       DJANGO_SECRET_KEY: ''
@@ -68,7 +69,7 @@ services:
       target: prod
     command: []
     restart: unless-stopped
-    user: "0:0"  # Run as root in container (still unprivileged in rootless Podman)
+    user: "0:0"  # Run as root in container to avoid permission issues with pre-built images
     volumes:
       - ./frontend/public/projects/projects.json:/usr/share/nginx/html/projects/projects.json:ro
     ports: []  # Remove port binding - accessed through traefik only

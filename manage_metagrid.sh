@@ -193,24 +193,32 @@ function startProductionService() {
         auth_choice=1
     fi
 
+    # For Podman, we need the base compose files, then overlays, then podman.yml LAST
+    # so that podman.yml's ports: [] override wins over prod-overlay's port bindings
+    local base_files="-f docker-compose.yml"
+    local podman_file=""
+    if [ "$CONTAINER_CMD" = "podman-compose" ] || [ "$CONTAINER_CMD" = "podman" ]; then
+        podman_file="-f docker-compose.podman.yml"
+    fi
+
     case $auth_choice in
     1)
         echo "Starting Metagrid production deployment with Globus"
-        compose_cmd $PROD_COMPOSE $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $GLOBUS_COMPOSE up $build_flag -d
+        compose_cmd $base_files $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $GLOBUS_COMPOSE $podman_file up $build_flag -d
         echo "Command used:"
-        echo "compose_cmd $PROD_COMPOSE $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $GLOBUS_COMPOSE up $build_flag -d"
+        echo "compose_cmd $base_files $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $GLOBUS_COMPOSE $podman_file up $build_flag -d"
         ;;
     2)
         echo "Starting Metagrid production deployment with Keycloak"
-        compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $customcert_overlay $PROD_OVERLAY --profile keycloak up $build_flag -d
+        compose_cmd $base_files $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $podman_file --profile keycloak up $build_flag -d
         echo "Command used:"
-        echo "compose_cmd $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $customcert_overlay $PROD_OVERLAY --profile keycloak up $build_flag -d"
+        echo "compose_cmd $base_files $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $podman_file --profile keycloak up $build_flag -d"
         ;;
     3)
         echo "Starting Metagrid production deployment with no auth"
-        compose_cmd $PROD_COMPOSE $prebuilt_overlay $customcert_overlay $PROD_OVERLAY up $build_flag -d
+        compose_cmd $base_files $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $podman_file up $build_flag -d
         echo "Command used:"
-        echo "compose_cmd $PROD_COMPOSE $prebuilt_overlay $customcert_overlay $PROD_OVERLAY up $build_flag -d"
+        echo "compose_cmd $base_files $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $podman_file up $build_flag -d"
         ;;
     *)
         echo "Invalid choice. Please select 1, 2, or 3."
