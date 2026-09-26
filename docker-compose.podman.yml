@@ -1,13 +1,5 @@
-# Podman-specific production configuration for rootless deployment
+# Podman-specific production configuration
 # Replaces docker-compose.prod.yml for Podman deployments
-#
-# This file addresses Podman rootless limitations:
-# 1. Systemd healthchecks don't work properly
-# 2. Cannot bind to privileged ports (< 1024)
-# 3. podman-compose merges port arrays (cannot override with layers)
-#
-# Use with: -f docker-compose.yml -f docker-compose.podman.yml
-# (NOT with docker-compose.prod.yml - this replaces it)
 
 volumes:
   traefik_certs: {}
@@ -15,14 +7,18 @@ volumes:
 services:
   traefik:
     restart: unless-stopped
+    # Explicitly set DNS for Alpine Linux compatibility with CNI dnsname plugin
+    dns:
+      - 10.89.0.1 # CNI bridge gateway running dnsmasq
+    dns_search:
+      - dns.podman
     volumes:
       - traefik_certs:/etc/traefik/acme
-      - ./traefik/traefik.prod.yml:/etc/traefik/traefik.yml
       # Mount custom certificates directory if using custom certs (traefik.customcert.yml)
       - ./traefik/certs:/etc/traefik/certs:ro
     ports:
-      - '0.0.0.0:80:9080'    # HTTP on standard port
-      - '0.0.0.0:443:9443'   # HTTPS on standard port
+      - '0.0.0.0:80:9080' # HTTP on standard port
+      - '0.0.0.0:443:9443' # HTTPS on standard port
 
   docs:
     profiles: ['docs']
@@ -34,30 +30,12 @@ services:
       POSTGRES_HOST_AUTH_METHOD: scram-sha-256
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
-    ports: []  # Remove port binding - internal access only
-    # Healthchecks removed - don't work reliably in rootless Podman
-    # Django will handle connection retries anyway
+    ports: [] # Remove port binding - internal access only
 
   django:
     restart: unless-stopped
-    user: "0:0"  # Run as root in container to avoid permission issues with pre-built images
-    environment:
-      DJANGO_DEBUG: False
-      DJANGO_SECRET_KEY: ''
-      DJANGO_EMAIL_BACKEND: 'django.core.mail.backends.smtp.EmailBackend'
-      DJANGO_SOCIAL_AUTH_REDIRECT_IS_HTTPS: True
-      DJANGO_SECURE_PROXY_SSL_HEADER: '["HTTP_X_FORWARDED_PROTO", "https"]'
-      DJANGO_SECURE_SSL_REDIRECT: True
-      DJANGO_SESSION_COOKIE_SECURE: True
-      DJANGO_CSRF_COOKIE_SECURE: True
-      DJANGO_SECURE_HSTS_SECONDS: 518400
-      DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS: True
-      DJANGO_SECURE_HSTS_PRELOAD: True
-      DJANGO_DATABASE_URL: 'postgres://postgres:postgres@postgres:5432/postgres'
-    volumes:
-      - ./backend:/app/staticfiles
-    ports: []  # Remove port binding - accessed through traefik only via container network
-    # service_started instead of service_healthy (systemd healthchecks fail in rootless)
+    user: '0:0' # Run as root in container to avoid permission issues with pre-built images
+    ports: [] # Remove port binding - accessed through traefik only via container network
     depends_on:
       postgres:
         condition: service_started
@@ -69,10 +47,10 @@ services:
       target: prod
     command: []
     restart: unless-stopped
-    user: "0:0"  # Run as root in container to avoid permission issues with pre-built images
+    user: '0:0' # Run as root in container to avoid permission issues with pre-built images
     volumes:
       - ./frontend/public/projects/projects.json:/usr/share/nginx/html/projects/projects.json:ro
-    ports: []  # Remove port binding - accessed through traefik only
+    ports: [] # Remove port binding - accessed through traefik only
 
   keycloak:
     profiles: ['keycloak']
