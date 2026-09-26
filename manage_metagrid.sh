@@ -67,6 +67,7 @@ LOCAL_OVERLAY="-f docker-compose-local-overlay.yml"
 PROD_OVERLAY="-f docker-compose-prod-overlay.yml"
 PREBUILT_OVERLAY="-f docker-compose.prebuilt.yml"
 CUSTOMCERT_OVERLAY="-f docker-compose.customcert.yml"
+PODMAN_CUSTOMCERT_OVERLAY="-f docker-compose.podman.customcert.yml"
 
 # Configure compose files based on container runtime
 if [ "$CONTAINER_CMD" = "podman-compose" ] || [ "$CONTAINER_CMD" = "podman" ]; then
@@ -167,7 +168,12 @@ function startProductionService() {
 
     local customcert_overlay=""
     if [ "$ssl_choice" = "2" ]; then
-        customcert_overlay="$CUSTOMCERT_OVERLAY"
+        # Use Podman-specific customcert overlay if using Podman
+        if [ "$CONTAINER_CMD" = "podman-compose" ] || [ "$CONTAINER_CMD" = "podman" ]; then
+            customcert_overlay="$PODMAN_CUSTOMCERT_OVERLAY"
+        else
+            customcert_overlay="$CUSTOMCERT_OVERLAY"
+        fi
         echo "Using custom SSL certificate from traefik/certs/"
         echo "Make sure you have placed your certificate files:"
         echo "  - traefik/certs/cert.crt (or cert.pem)"

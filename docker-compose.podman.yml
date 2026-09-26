@@ -1,5 +1,11 @@
 # Podman-specific production configuration
-# Replaces docker-compose.prod.yml for Podman deployments
+# Applies Podman-specific settings on top of base compose files
+#
+# Key differences from Docker deployment:
+# - Traefik uses Docker provider with Podman socket (bypasses DNS issues)
+# - Containers run as root (user: 0:0) for pre-built image compatibility
+# - Standard ports 80/443 (requires rootful Podman with sudo)
+# - Traefik labels for dynamic service discovery via Podman API
 
 volumes:
   traefik_certs: {}
@@ -9,6 +15,10 @@ services:
     restart: unless-stopped
     volumes:
       - traefik_certs:/etc/traefik/acme
+      # Use Podman-specific config with Docker provider (bypasses DNS)
+      - ./traefik/traefik.podman.yml:/etc/traefik/traefik.yml:ro
+      # Mount Podman socket for Docker provider
+      - /run/podman/podman.sock:/var/run/podman/podman.sock:ro
       # Mount custom certificates directory if using custom certs (traefik.customcert.yml)
       - ./traefik/certs:/etc/traefik/certs:ro
     ports:
@@ -34,6 +44,13 @@ services:
     depends_on:
       postgres:
         condition: service_started
+    # Traefik Docker provider labels
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.django.rule=Host(`${DOMAIN_NAME}`) && (PathPrefix(`/account-confirm-email`) || PathPrefix(`/accounts`) || PathPrefix(`/api`) || PathPrefix(`/complete`) || PathPrefix(`/frontend-config.js`) || PathPrefix(`/globus`) || PathPrefix(`/login`) || PathPrefix(`/proxy`) || PathPrefix(`/redoc`) || PathPrefix(`/swagger`) || PathPrefix(`/tempStorage`))"
+      - "traefik.http.routers.django.entrypoints=web-secure"
+      - "traefik.http.routers.django.tls=true"
+      - "traefik.http.services.django.loadbalancer.server.port=5000"
 
   react:
     image: metagrid_prod_react
@@ -46,6 +63,13 @@ services:
     volumes:
       - ./frontend/public/projects/projects.json:/usr/share/nginx/html/projects/projects.json:ro
     ports: [] # Remove port binding - accessed through traefik only
+    # Traefik Docker provider labels
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.react.rule=Host(`${DOMAIN_NAME}`)"
+      - "traefik.http.routers.react.entrypoints=web-secure"
+      - "traefik.http.routers.react.tls=true"
+      - "traefik.http.services.react.loadbalancer.server.port=8080"
 
   keycloak:
     profiles: ['keycloak']

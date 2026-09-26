@@ -18,12 +18,17 @@ Choose the section that matches your deployment scenario:
 
 ### Prerequisites
 
-- Podman installed
+- **Podman 4.0+** installed
+  - Install: `sudo dnf install -y podman`
+  - The Podman overlay uses Traefik's Docker provider to discover containers via the Podman socket, so DNS resolution is not required
 - **podman-compose 1.6.0+** required: `pip3 install --user podman-compose>=1.6.0`
   - Check version: `podman-compose --version`
   - If multiple versions exist, ensure `~/.local/bin` is first in PATH
+- **Podman socket enabled** (rootful mode): `sudo systemctl enable --now podman.socket`
 - Internet access to ghcr.io (no authentication needed)
 - Linux amd64 architecture (pre-built images not available for ARM64)
+
+**Note on networking:** Metagrid's Podman deployment uses Traefik's Docker provider, which queries the Podman API directly for container IPs. This bypasses the DNS resolution issues that Alpine-based containers (like Traefik) have with Podman's network backends (both CNI and netavark).
 
 ### One-Time Setup: Configure Podman Storage
 
@@ -139,21 +144,16 @@ Choose:
 
 ### Accessing the Site
 
-Rootless Podman deployments use **unprivileged ports** (automatically configured):
+The Podman deployment uses **rootful mode** (run with `sudo`) to bind to standard ports:
 
-- **HTTP:** `http://your-server:8090`
-- **HTTPS:** `https://your-server:8493`
+- **HTTP:** `http://your-server` (port 80)
+- **HTTPS:** `https://your-server` (port 443)
 
-**Note:** Ports 8090/8493 are used to avoid conflicts with react dev server (port 8080) when running production and development deployments on the same server.
-
-If you need standard ports (80/443), you must run rootful Podman with `sudo` or enable unprivileged port binding:
+**Always run the manage script with sudo for Podman deployments:**
 
 ```bash
-# Option 1: Run rootful (recommended if available)
 sudo ./manage_metagrid.sh
 
-# Option 2: Enable unprivileged ports system-wide (requires admin)
-sudo sysctl net.ipv4.ip_unprivileged_port_start=80
 ```
 
 ### About Pre-built Images

@@ -1,0 +1,17 @@
+# Podman + Custom Certificate overlay
+# Use this when deploying with Podman AND custom SSL certificates
+# Applied after docker-compose.podman.yml to add certificate configuration
+
+services:
+  traefik:
+    environment:
+      # Signal to traefik that custom certs should be used
+      - CERT_PATH=/etc/traefik/certs/cert.crt
+      - KEY_PATH=/etc/traefik/certs/cert.key
+    command:
+      - "--certificatesresolvers.letsencrypt.acme.email=disabled@example.com"
+      - "--providers.file.filename=/etc/traefik/dynamic-certs.yml"
+      - "--providers.file.watch=false"
+    volumes:
+      # Add dynamic config for custom certificates
+      - ./traefik/traefik.podman.customcert-dynamic.yml:/etc/traefik/dynamic-certs.yml:ro

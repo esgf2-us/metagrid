@@ -1,0 +1,13 @@
+# Traefik dynamic configuration for custom SSL certificates in Podman
+# This file is loaded as a file provider alongside the main traefik.podman.yml
+
+tls:
+  stores:
+    default:
+      defaultCertificate:
+        certFile: /etc/traefik/certs/cert.crt
+        keyFile: /etc/traefik/certs/cert.key
+
+  certificates:
+    - certFile: /etc/traefik/certs/cert.crt
+      keyFile: /etc/traefik/certs/cert.key
