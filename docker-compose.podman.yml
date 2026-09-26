@@ -13,10 +13,14 @@ volumes:
 services:
   traefik:
     restart: unless-stopped
+    # Add Docker provider via command-line to bypass DNS issues
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.endpoint=unix:///var/run/podman/podman.sock"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=metagrid_default"
     volumes:
       - traefik_certs:/etc/traefik/acme
-      # Use Podman-specific config with Docker provider (bypasses DNS)
-      - ./traefik/traefik.podman.yml:/etc/traefik/traefik.yml:ro
       # Mount Podman socket for Docker provider
       - /run/podman/podman.sock:/var/run/podman/podman.sock:ro
       # Mount custom certificates directory if using custom certs (traefik.customcert.yml)

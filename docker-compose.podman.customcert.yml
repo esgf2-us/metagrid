@@ -4,12 +4,12 @@
 
 services:
   traefik:
-    environment:
-      # Signal to traefik that custom certs should be used
-      - CERT_PATH=/etc/traefik/certs/cert.crt
-      - KEY_PATH=/etc/traefik/certs/cert.key
     command:
-      - "--certificatesresolvers.letsencrypt.acme.email=disabled@example.com"
+      # Inherit Docker provider commands from podman.yml, add cert config
+      - "--providers.docker=true"
+      - "--providers.docker.endpoint=unix:///var/run/podman/podman.sock"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=metagrid_default"
       - "--providers.file.filename=/etc/traefik/dynamic-certs.yml"
       - "--providers.file.watch=false"
     volumes:

@@ -168,10 +168,9 @@ function startProductionService() {
 
     local customcert_overlay=""
     if [ "$ssl_choice" = "2" ]; then
-        # Use Podman-specific customcert overlay if using Podman
-        if [ "$CONTAINER_CMD" = "podman-compose" ] || [ "$CONTAINER_CMD" = "podman" ]; then
-            customcert_overlay="$PODMAN_CUSTOMCERT_OVERLAY"
-        else
+        # For Docker, use the standard customcert overlay
+        # For Podman, we'll add podman.customcert.yml separately after podman.yml
+        if [ "$CONTAINER_CMD" != "podman-compose" ] && [ "$CONTAINER_CMD" != "podman" ]; then
             customcert_overlay="$CUSTOMCERT_OVERLAY"
         fi
         echo "Using custom SSL certificate from traefik/certs/"
@@ -199,30 +198,35 @@ function startProductionService() {
         auth_choice=1
     fi
 
-    # For Podman, we need the base compose files, then overlays, then podman.yml LAST
-    # so that podman.yml's ports: [] override wins over prod-overlay's port bindings
+    # For Podman, we need the base compose files, then overlays, then podman.yml, then podman customcert
+    # Order matters for proper override precedence
     local base_files="-f docker-compose.yml"
     local podman_file=""
+    local podman_customcert_file=""
     if [ "$CONTAINER_CMD" = "podman-compose" ] || [ "$CONTAINER_CMD" = "podman" ]; then
         podman_file="-f docker-compose.podman.yml"
+        # If using custom certs with Podman, add the podman customcert overlay AFTER podman base
+        if [ "$ssl_choice" = "2" ]; then
+            podman_customcert_file="-f docker-compose.podman.customcert.yml"
+        fi
     fi
 
     case $auth_choice in
     1)
         echo "Starting Metagrid production deployment with Globus"
-        compose_cmd $base_files $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $GLOBUS_COMPOSE $podman_file up $build_flag -d
+        compose_cmd $base_files $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $GLOBUS_COMPOSE $podman_file $podman_customcert_file up $build_flag -d
         echo "Command used:"
-        echo "compose_cmd $base_files $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $GLOBUS_COMPOSE $podman_file up $build_flag -d"
+        echo "compose_cmd $base_files $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $GLOBUS_COMPOSE $podman_file $podman_customcert_file up $build_flag -d"
         ;;
     2)
         echo "Starting Metagrid production deployment with Keycloak"
-        compose_cmd $base_files $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $podman_file --profile keycloak up $build_flag -d
+        compose_cmd $base_files $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $podman_file $podman_customcert_file --profile keycloak up $build_flag -d
         echo "Command used:"
-        echo "compose_cmd $base_files $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $podman_file --profile keycloak up $build_flag -d"
+        echo "compose_cmd $base_files $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $podman_file $podman_customcert_file --profile keycloak up $build_flag -d"
         ;;
     3)
         echo "Starting Metagrid production deployment with no auth"
-        compose_cmd $base_files $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $podman_file up $build_flag -d
+        compose_cmd $base_files $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $podman_file $podman_customcert_file up $build_flag -d
         echo "Command used:"
         echo "compose_cmd $base_files $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $podman_file up $build_flag -d"
         ;;
