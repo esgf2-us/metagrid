@@ -7,11 +7,6 @@ volumes:
 services:
   traefik:
     restart: unless-stopped
-    # Explicitly set DNS for Alpine Linux compatibility with CNI dnsname plugin
-    dns:
-      - 10.89.0.1 # CNI bridge gateway running dnsmasq
-    dns_search:
-      - dns.podman
     volumes:
       - traefik_certs:/etc/traefik/acme
       # Mount custom certificates directory if using custom certs (traefik.customcert.yml)

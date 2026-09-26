@@ -269,7 +269,12 @@ function startLocalService() {
 
 function stopDockerContainers() {
     echo "Stopping Metagrid"
-    compose_cmd --profile "*" down --remove-orphans
+    # podman-compose doesn't support --profile "*" wildcard, omit it
+    if [ "$CONTAINER_CMD" = "podman-compose" ] || [ "$CONTAINER_CMD" = "podman" ]; then
+        compose_cmd down --remove-orphans
+    else
+        compose_cmd --profile "*" down --remove-orphans
+    fi
 }
 
 function toggleLocalContainers() {
