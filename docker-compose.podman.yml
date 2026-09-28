@@ -10,6 +10,12 @@
 volumes:
   traefik_certs: {}
 
+networks:
+  default:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: metagrid_br
+
 services:
   traefik:
     restart: unless-stopped
@@ -28,6 +34,10 @@ services:
     ports:
       - '0.0.0.0:80:9080' # HTTP on standard port
       - '0.0.0.0:443:9443' # HTTPS on standard port
+    networks:
+      default:
+        aliases:
+          - traefik
 
   docs:
     profiles: ['docs']
@@ -48,6 +58,10 @@ services:
     depends_on:
       postgres:
         condition: service_started
+    networks:
+      default:
+        aliases:
+          - django
     # Traefik Docker provider labels
     labels:
       - "traefik.enable=true"
@@ -55,6 +69,8 @@ services:
       - "traefik.http.routers.django.entrypoints=web-secure"
       - "traefik.http.routers.django.tls=true"
       - "traefik.http.services.django.loadbalancer.server.port=5000"
+      - "traefik.docker.network=metagrid_default"
+      - "traefik.http.routers.django.priority=10"
 
   react:
     image: metagrid_prod_react
@@ -67,6 +83,10 @@ services:
     volumes:
       - ./frontend/public/projects/projects.json:/usr/share/nginx/html/projects/projects.json:ro
     ports: [] # Remove port binding - accessed through traefik only
+    networks:
+      default:
+        aliases:
+          - react
     # Traefik Docker provider labels
     labels:
       - "traefik.enable=true"
@@ -74,6 +94,8 @@ services:
       - "traefik.http.routers.react.entrypoints=web-secure"
       - "traefik.http.routers.react.tls=true"
       - "traefik.http.services.react.loadbalancer.server.port=8080"
+      - "traefik.docker.network=metagrid_default"
+      - "traefik.http.routers.react.priority=1"
 
   keycloak:
     profiles: ['keycloak']
