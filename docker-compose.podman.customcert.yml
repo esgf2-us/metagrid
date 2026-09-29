@@ -4,14 +4,8 @@
 
 services:
   traefik:
-    command:
-      # Inherit Docker provider commands from podman.yml, add cert config
-      - "--providers.docker=true"
-      - "--providers.docker.endpoint=unix:///var/run/podman/podman.sock"
-      - "--providers.docker.exposedbydefault=false"
-      - "--providers.docker.network=metagrid_default"
-      - "--providers.file.filename=/etc/traefik/dynamic-certs.yml"
-      - "--providers.file.watch=false"
     volumes:
-      # Add dynamic config for custom certificates
+      # Override to use custom cert config (no ACME)
+      - ./traefik/traefik.podman.customcert.yml:/etc/traefik/traefik.yml
+      # Mount dynamic cert configuration
       - ./traefik/traefik.podman.customcert-dynamic.yml:/etc/traefik/dynamic-certs.yml:ro

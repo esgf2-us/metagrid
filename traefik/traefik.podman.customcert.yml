@@ -1,0 +1,37 @@
+# Traefik configuration for Podman with custom certificates
+# Uses Podman socket for service discovery, custom certs instead of Let's Encrypt
+
+log:
+  level: INFO
+
+entryPoints:
+  web:
+    address: ':9080'
+  web-secure:
+    address: ':9443'
+
+providers:
+  # Use Docker provider to discover containers via Podman socket
+  docker:
+    endpoint: "unix:///var/run/podman/podman.sock"
+    exposedByDefault: false
+    network: "metagrid_default"
+
+  # File provider for custom certificates
+  file:
+    filename: /etc/traefik/dynamic-certs.yml
+    watch: false
+
+# No ACME/Let's Encrypt - using custom certificates defined in dynamic config
+
+tls:
+  options:
+    default:
+      minVersion: VersionTLS12
+      cipherSuites:
+        - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
+        - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305
