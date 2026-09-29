@@ -36,6 +36,10 @@ services:
     ports:
       - '0.0.0.0:80:9080' # HTTP on standard port
       - '0.0.0.0:443:9443' # HTTPS on standard port
+    # Add external DNS for Let's Encrypt API access (fallback after aardvark-dns)
+    dns:
+      - 10.89.1.1  # aardvark-dns for container names
+      - 8.8.8.8    # Google DNS for external domains
     networks:
       default:
         aliases:
