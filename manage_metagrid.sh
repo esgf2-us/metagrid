@@ -214,10 +214,14 @@ function startProductionService() {
         # This is needed because Podman compose evaluates ${DOMAIN_NAME} in labels at compose-time
         # We extract it from docker-compose-prod-overlay.yml if it exists
         if [ -f "docker-compose-prod-overlay.yml" ]; then
-            DOMAIN_NAME=$(grep -A 1 "traefik:" docker-compose-prod-overlay.yml | grep "DOMAIN_NAME:" | sed 's/.*DOMAIN_NAME: //' | tr -d ' ')
+            # Extract first occurrence of DOMAIN_NAME value
+            DOMAIN_NAME=$(grep "DOMAIN_NAME:" docker-compose-prod-overlay.yml | head -1 | sed 's/.*DOMAIN_NAME: *//' | tr -d ' ')
             if [ -n "$DOMAIN_NAME" ]; then
                 export DOMAIN_NAME
                 echo "Using DOMAIN_NAME=$DOMAIN_NAME for Traefik routing"
+            else
+                echo "Warning: Could not extract DOMAIN_NAME from docker-compose-prod-overlay.yml"
+                echo "Traefik routing may not work without DOMAIN_NAME set"
             fi
         fi
     fi

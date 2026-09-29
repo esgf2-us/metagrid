@@ -27,6 +27,8 @@ services:
       - "--providers.docker.network=metagrid_default"
     volumes:
       - traefik_certs:/etc/traefik/acme
+      # Mount Podman-specific Traefik config
+      - ./traefik/traefik.podman.yml:/etc/traefik/traefik.yml
       # Mount Podman socket for Docker provider
       - /run/podman/podman.sock:/var/run/podman/podman.sock:ro
       # Mount custom certificates directory if using custom certs (traefik.customcert.yml)
