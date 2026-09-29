@@ -5,8 +5,8 @@
 services:
   django:
     labels:
-      - "traefik.http.routers.django.tls.certresolver=letsencrypt"
+      - 'traefik.http.routers.django.tls.certresolver=letsencrypt'
 
   react:
     labels:
-      - "traefik.http.routers.react.tls.certresolver=letsencrypt"
+      - 'traefik.http.routers.react.tls.certresolver=letsencrypt'

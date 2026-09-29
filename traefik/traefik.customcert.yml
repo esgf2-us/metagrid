@@ -69,7 +69,7 @@ http:
       middlewares:
         - csrf
         - secure-headers
-      tls: {}  # Use certificate defined in tls.certificates section
+      tls: {} # Use certificate defined in tls.certificates section
 
     frontend:
       service: react
@@ -90,7 +90,7 @@ http:
         - web-secure
       middlewares:
         - secure-headers
-      tls: {}  # Use certificate defined in tls.certificates section
+      tls: {} # Use certificate defined in tls.certificates section
 
   middlewares:
     redirect:

@@ -21,10 +21,10 @@ services:
     restart: unless-stopped
     # Add Docker provider via command-line to bypass DNS issues
     command:
-      - "--providers.docker=true"
-      - "--providers.docker.endpoint=unix:///var/run/podman/podman.sock"
-      - "--providers.docker.exposedbydefault=false"
-      - "--providers.docker.network=metagrid_default"
+      - '--providers.docker=true'
+      - '--providers.docker.endpoint=unix:///var/run/podman/podman.sock'
+      - '--providers.docker.exposedbydefault=false'
+      - '--providers.docker.network=metagrid_default'
     volumes:
       - traefik_certs:/etc/traefik/acme
       # Mount Podman-specific Traefik config
@@ -33,13 +33,12 @@ services:
       - /run/podman/podman.sock:/var/run/podman/podman.sock:ro
       # Mount custom certificates directory if using custom certs (traefik.customcert.yml)
       - ./traefik/certs:/etc/traefik/certs:ro
+      # Mount host resolv.conf to bypass aardvark-dns for external lookups
+      # Container names still resolved via Docker provider (Podman API)
+      - /etc/resolv.conf:/etc/resolv.conf:ro
     ports:
       - '0.0.0.0:80:9080' # HTTP on standard port
       - '0.0.0.0:443:9443' # HTTPS on standard port
-    # Add external DNS for Let's Encrypt API access (fallback after aardvark-dns)
-    dns:
-      - 10.89.1.1  # aardvark-dns for container names
-      - 8.8.8.8    # Google DNS for external domains
     networks:
       default:
         aliases:
@@ -70,13 +69,13 @@ services:
           - django
     # Traefik Docker provider labels
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.django.rule=Host(`${DOMAIN_NAME}`) && (PathPrefix(`/account-confirm-email`) || PathPrefix(`/accounts`) || PathPrefix(`/api`) || PathPrefix(`/complete`) || PathPrefix(`/frontend-config.js`) || PathPrefix(`/globus`) || PathPrefix(`/login`) || PathPrefix(`/proxy`) || PathPrefix(`/redoc`) || PathPrefix(`/swagger`) || PathPrefix(`/tempStorage`))"
-      - "traefik.http.routers.django.entrypoints=web-secure"
-      - "traefik.http.routers.django.tls=true"
-      - "traefik.http.services.django.loadbalancer.server.port=5000"
-      - "traefik.docker.network=metagrid_default"
-      - "traefik.http.routers.django.priority=10"
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.django.rule=Host(`${DOMAIN_NAME}`) && (PathPrefix(`/account-confirm-email`) || PathPrefix(`/accounts`) || PathPrefix(`/api`) || PathPrefix(`/complete`) || PathPrefix(`/frontend-config.js`) || PathPrefix(`/globus`) || PathPrefix(`/login`) || PathPrefix(`/proxy`) || PathPrefix(`/redoc`) || PathPrefix(`/swagger`) || PathPrefix(`/tempStorage`))'
+      - 'traefik.http.routers.django.entrypoints=web-secure'
+      - 'traefik.http.routers.django.tls=true'
+      - 'traefik.http.services.django.loadbalancer.server.port=5000'
+      - 'traefik.docker.network=metagrid_default'
+      - 'traefik.http.routers.django.priority=10'
 
   react:
     image: metagrid_prod_react
@@ -95,13 +94,13 @@ services:
           - react
     # Traefik Docker provider labels
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.react.rule=Host(`${DOMAIN_NAME}`)"
-      - "traefik.http.routers.react.entrypoints=web-secure"
-      - "traefik.http.routers.react.tls=true"
-      - "traefik.http.services.react.loadbalancer.server.port=8080"
-      - "traefik.docker.network=metagrid_default"
-      - "traefik.http.routers.react.priority=1"
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.react.rule=Host(`${DOMAIN_NAME}`)'
+      - 'traefik.http.routers.react.entrypoints=web-secure'
+      - 'traefik.http.routers.react.tls=true'
+      - 'traefik.http.services.react.loadbalancer.server.port=8080'
+      - 'traefik.docker.network=metagrid_default'
+      - 'traefik.http.routers.react.priority=1'
 
   keycloak:
     profiles: ['keycloak']

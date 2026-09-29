@@ -17,15 +17,15 @@ entryPoints:
 providers:
   # Use Docker provider to discover containers via Podman socket
   docker:
-    endpoint: "unix:///var/run/podman/podman.sock"
+    endpoint: 'unix:///var/run/podman/podman.sock'
     exposedByDefault: false
-    network: "metagrid_default"
+    network: 'metagrid_default'
 
 # Certificate resolver for Let's Encrypt
 certificatesResolvers:
   letsencrypt:
     acme:
-      email: "admin@example.com"
+      email: ''
       storage: /etc/traefik/acme/acme.json
       tlsChallenge: {}
 

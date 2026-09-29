@@ -13,9 +13,9 @@ entryPoints:
 providers:
   # Use Docker provider to discover containers via Podman socket
   docker:
-    endpoint: "unix:///var/run/podman/podman.sock"
+    endpoint: 'unix:///var/run/podman/podman.sock'
     exposedByDefault: false
-    network: "metagrid_default"
+    network: 'metagrid_default'
 
   # File provider for custom certificates
   file:
