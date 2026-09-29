@@ -68,6 +68,7 @@ PROD_OVERLAY="-f docker-compose-prod-overlay.yml"
 PREBUILT_OVERLAY="-f docker-compose.prebuilt.yml"
 CUSTOMCERT_OVERLAY="-f docker-compose.customcert.yml"
 PODMAN_CUSTOMCERT_OVERLAY="-f docker-compose.podman.customcert.yml"
+PODMAN_LETSENCRYPT_OVERLAY="-f docker-compose.podman.letsencrypt.yml"
 
 # Configure compose files based on container runtime
 if [ "$CONTAINER_CMD" = "podman-compose" ] || [ "$CONTAINER_CMD" = "podman" ]; then
@@ -198,16 +199,20 @@ function startProductionService() {
         auth_choice=1
     fi
 
-    # For Podman, we need the base compose files, then overlays, then podman.yml, then podman customcert
+    # For Podman, we need the base compose files, then overlays, then podman.yml, then podman cert overlay
     # Order matters for proper override precedence
     local base_files="-f docker-compose.yml"
     local podman_file=""
-    local podman_customcert_file=""
+    local podman_cert_overlay=""
     if [ "$CONTAINER_CMD" = "podman-compose" ] || [ "$CONTAINER_CMD" = "podman" ]; then
         podman_file="-f docker-compose.podman.yml"
-        # If using custom certs with Podman, add the podman customcert overlay AFTER podman base
+        # Add Podman-specific cert overlay based on SSL choice
         if [ "$ssl_choice" = "2" ]; then
-            podman_customcert_file="-f docker-compose.podman.customcert.yml"
+            # Custom certificates
+            podman_cert_overlay="$PODMAN_CUSTOMCERT_OVERLAY"
+        else
+            # Let's Encrypt (default)
+            podman_cert_overlay="$PODMAN_LETSENCRYPT_OVERLAY"
         fi
 
         # For Podman: Export DOMAIN_NAME so it's available for label substitution
@@ -229,21 +234,21 @@ function startProductionService() {
     case $auth_choice in
     1)
         echo "Starting Metagrid production deployment with Globus"
-        compose_cmd $base_files $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $GLOBUS_COMPOSE $podman_file $podman_customcert_file up $build_flag -d
+        compose_cmd $base_files $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $GLOBUS_COMPOSE $podman_file $podman_cert_overlay up $build_flag -d
         echo "Command used:"
-        echo "compose_cmd $base_files $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $GLOBUS_COMPOSE $podman_file $podman_customcert_file up $build_flag -d"
+        echo "compose_cmd $base_files $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $GLOBUS_COMPOSE $podman_file $podman_cert_overlay up $build_flag -d"
         ;;
     2)
         echo "Starting Metagrid production deployment with Keycloak"
-        compose_cmd $base_files $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $podman_file $podman_customcert_file --profile keycloak up $build_flag -d
+        compose_cmd $base_files $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $podman_file $podman_cert_overlay --profile keycloak up $build_flag -d
         echo "Command used:"
-        echo "compose_cmd $base_files $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $podman_file $podman_customcert_file --profile keycloak up $build_flag -d"
+        echo "compose_cmd $base_files $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $podman_file $podman_cert_overlay --profile keycloak up $build_flag -d"
         ;;
     3)
         echo "Starting Metagrid production deployment with no auth"
-        compose_cmd $base_files $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $podman_file $podman_customcert_file up $build_flag -d
+        compose_cmd $base_files $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $podman_file $podman_cert_overlay up $build_flag -d
         echo "Command used:"
-        echo "compose_cmd $base_files $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $podman_file up $build_flag -d"
+        echo "compose_cmd $base_files $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $podman_file $podman_cert_overlay up $build_flag -d"
         ;;
     *)
         echo "Invalid choice. Please select 1, 2, or 3."
