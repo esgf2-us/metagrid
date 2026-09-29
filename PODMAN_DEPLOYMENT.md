@@ -1,47 +1,252 @@
-# Podman Deployment Guide
+# Podman Production Deployment Guide
 
-Metagrid fully supports **Podman** as a drop-in replacement for Docker. The `manage_metagrid.sh` script automatically detects your container runtime and adapts accordingly.
-
-## Quick Start
-
-Choose the section that matches your deployment scenario:
-
-- **[NFS Storage / RHEL Production](#nfs-deployment-rhel-production)** - For servers with NFS home directories (most HPC environments)
-- **[Standard Linux/macOS](#standard-deployment)** - For local development or servers with local storage
-- **[Installation](#installation)** - First-time Podman setup
+Metagrid fully supports **Podman** as a drop-in replacement for Docker on production servers.
 
 ---
 
-## NFS Deployment (RHEL Production)
+## Quick Start (5 Steps)
 
-**For servers with NFS storage (common in HPC/shared environments), use pre-built images to avoid build issues.**
+For experienced admins who want to deploy immediately:
 
-### Prerequisites
+```bash
+# 1. Install and enable Podman socket
+sudo dnf install -y podman podman-compose
+sudo systemctl enable --now podman.socket
 
-- **Podman 4.0+** installed
-  - Install: `sudo dnf install -y podman`
-  - The Podman overlay uses Traefik's Docker provider to discover containers via the Podman socket, so DNS resolution is not required
-- **podman-compose 1.6.0+** required: `pip3 install --user podman-compose>=1.6.0`
-  - Check version: `podman-compose --version`
-  - If multiple versions exist, ensure `~/.local/bin` is first in PATH
-- **Podman socket enabled** (rootful mode): `sudo systemctl enable --now podman.socket`
-- Internet access to ghcr.io (no authentication needed)
-- Linux amd64 architecture (pre-built images not available for ARM64)
+# 2. Configure firewall (CRITICAL - DNS won't work without this)
+sudo firewall-cmd --zone=trusted --add-interface=metagrid_br --permanent
+sudo firewall-cmd --reload
 
-**Note on networking:** Metagrid's Podman deployment uses Traefik's Docker provider, which queries the Podman API directly for container IPs. This bypasses the DNS resolution issues that Alpine-based containers (like Traefik) have with Podman's network backends (both CNI and netavark).
+# 3. Clone and configure
+git clone https://github.com/esgf2-us/metagrid.git
+cd metagrid
+cp docker-compose-overlay-template.yml docker-compose-prod-overlay.yml
+# Edit docker-compose-prod-overlay.yml - set your DOMAIN_NAME
 
-### One-Time Setup: Configure Podman Storage
+# 4. (Optional) Add SSL certificates for custom cert deployment
+mkdir -p traefik/certs
+# Copy your cert.crt and cert.key to traefik/certs/
 
-**CRITICAL:** Rootless Podman on NFS has severe limitations. **Strongly recommended: use local disk for storage.**
+# 5. Deploy
+sudo ./manage_metagrid.sh
+# Choose: Production (1), Pre-built images (1), SSL method (1 or 2), Auth (1)
+```
 
-#### Option A: Use Local Disk (Recommended)
+**Deployment time:** 2-5 minutes with pre-built images
 
-If you have local disk available (check with `df -h /var/tmp`):
+**Default ports:** HTTP (80), HTTPS (443)
+
+**Troubleshooting?** See [detailed sections below](#troubleshooting).
+
+---
+
+## Prerequisites Checklist
+
+Before deploying, ensure you have:
+
+- [ ] **Podman 4.0+** installed: `podman --version`
+- [ ] **podman-compose 1.6.0+**: `podman-compose --version`
+- [ ] **Podman socket running**: `sudo systemctl status podman.socket`
+- [ ] **Firewall configured**: `sudo firewall-cmd --zone=trusted --add-interface=metagrid_br`
+- [ ] **docker-compose-prod-overlay.yml** created with your DOMAIN_NAME
+- [ ] **SSL certificates** ready (Let's Encrypt or custom)
+- [ ] **Ports 80 and 443** publicly accessible
+- [ ] **DNS** pointing to your server
+
+**Need help?** See [detailed prerequisite setup](#detailed-prerequisites) below.
+
+---
+
+## SSL Certificate Options
+
+Choose one option when running `./manage_metagrid.sh`:
+
+### Option 1: Let's Encrypt (Automatic, Free)
+
+**Requirements:**
+- Domain resolves to your server's public IP
+- Ports 80 and 443 publicly accessible
+- Server can reach `acme-v02.api.letsencrypt.org`
+
+**How to use:**
+```bash
+sudo ./manage_metagrid.sh
+# Choose option 1 for SSL when prompted
+```
+
+**Certificate issued automatically** within 1-2 minutes.
+
+### Option 2: Custom Certificates
+
+**For internal servers or existing certificates (DigiCert, InCommon, etc.):**
+
+```bash
+# 1. Place certificates
+mkdir -p traefik/certs
+cp /path/to/your/cert.crt traefik/certs/
+cp /path/to/your/cert.key traefik/certs/
+chmod 644 traefik/certs/*.crt
+chmod 600 traefik/certs/*.key
+
+# 2. Deploy
+sudo ./manage_metagrid.sh
+# Choose option 2 for SSL when prompted
+```
+
+**File requirements:**
+- `traefik/certs/cert.crt` - Your SSL certificate
+- `traefik/certs/cert.key` - Your private key
+
+---
+
+## Verifying Deployment
+
+After deployment completes:
+
+```bash
+# 1. Check all containers are running
+sudo podman ps
+# Expected: traefik, react, django, postgres all "Up"
+
+# 2. Test container DNS
+sudo podman exec traefik ping -c 2 react
+sudo podman exec traefik ping -c 2 django
+
+# 3. Test external DNS (for Let's Encrypt)
+sudo podman exec traefik ping -c 2 google.com
+
+# 4. Check Traefik logs for errors
+sudo podman logs traefik | grep -i error
+
+# 5. Access your site
+curl -k https://your-domain.example.com
+# Should return HTML (not 404)
+
+# 6. Check SSL certificate
+curl -vI https://your-domain.example.com 2>&1 | grep -i "issuer\|subject"
+```
+
+**All tests pass?** ✅ Deployment successful!  
+**Something failed?** See [Troubleshooting](#troubleshooting) below.
+
+---
+
+## Detailed Prerequisites
+
+### 1. Install Podman and podman-compose
+
+**RHEL/Fedora/CentOS:**
+```bash
+sudo dnf install -y podman podman-compose fuse-overlayfs
+podman --version
+podman-compose --version
+```
+
+**Ubuntu/Debian:**
+```bash
+sudo apt-get update
+sudo apt-get install -y podman
+pip3 install --user podman-compose
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+### 2. Enable Podman Socket (CRITICAL)
+
+**Required for Traefik service discovery:**
+
+```bash
+# Enable and start
+sudo systemctl enable --now podman.socket
+
+# Verify it's running
+sudo systemctl status podman.socket
+sudo ls -lh /run/podman/podman.sock
+# Should show: srw-rw---- (socket file, not a directory)
+```
+
+**Why needed:** Traefik uses the Docker provider to discover containers via the Podman API socket.
+
+**If socket fails to start:** The path may exist as an empty directory:
+```bash
+sudo rmdir /run/podman/podman.sock  # Remove if it's a directory
+sudo systemctl start podman.socket
+```
+
+### 3. Configure Firewall (CRITICAL)
+
+**Required for container DNS and Let's Encrypt:**
+
+```bash
+# Add Podman bridge to trusted zone (temporary test)
+sudo firewall-cmd --zone=trusted --add-interface=metagrid_br
+
+# Verify
+sudo firewall-cmd --zone=trusted --list-all
+# Should show: interfaces: metagrid_br
+
+# Test deployment works
+sudo ./manage_metagrid.sh  # Start services
+
+# If successful, make permanent
+sudo firewall-cmd --zone=trusted --add-interface=metagrid_br --permanent
+sudo firewall-cmd --reload
+```
+
+**Why needed:**
+- Without this, containers cannot resolve each other's hostnames
+- External DNS queries timeout (breaks Let's Encrypt)
+- Firewall blocks DNS forwarding from the Podman bridge network
+
+**IMPORTANT:** Add firewall rule BEFORE starting containers. If added after:
+```bash
+sudo ./manage_metagrid.sh  # Stop (option 2)
+sudo podman network rm metagrid_default  # Clear network state
+sudo ./manage_metagrid.sh  # Start (recreates network)
+```
+
+### 4. Create Production Configuration
+
+**Required for Traefik routing:**
+
+```bash
+# Use template as starting point
+cp docker-compose-overlay-template.yml docker-compose-prod-overlay.yml
+
+# Edit with your settings
+nano docker-compose-prod-overlay.yml
+```
+
+**Minimum required settings:**
+```yaml
+services:
+  traefik:
+    environment:
+      DOMAIN_NAME: your-domain.example.com
+
+  django:
+    environment:
+      DOMAIN_NAME: your-domain.example.com
+      DJANGO_ALLOWED_HOSTS: '["your-domain.example.com", "your-server-ip", "localhost"]'
+      DJANGO_SECRET_KEY: 'generate-a-secure-random-key-here'
+```
+
+**The manage_metagrid.sh script automatically extracts DOMAIN_NAME** for Traefik routing labels.
+
+---
+
+## Deployment for NFS Storage (HPC/Shared Environments)
+
+**For servers with NFS home directories, use pre-built images to avoid slow builds.**
+
+### Storage Configuration (Choose One)
+
+#### Option A: Local Disk (Recommended)
+
+If you have local disk available (`df -h /var/tmp`):
 
 ```bash
 mkdir -p ~/.config/containers
 
-# Configure Podman to use local disk instead of NFS
 cat > ~/.config/containers/storage.conf << 'EOF'
 [storage]
 driver = "overlay"
@@ -51,29 +256,19 @@ graphroot = "/var/tmp/podman-$USER"
 mount_program = "/usr/bin/fuse-overlayfs"
 EOF
 
-# If you get an error about pause process, run this first:
-podman system migrate
-
-# Reset storage to apply new configuration
+# Reset storage to apply configuration
 podman system reset --force
 
-# Verify new location
+# Verify
 podman info | grep graphRoot
 # Should show: graphRoot: /var/tmp/podman-<username>
 ```
 
-**Note:** These commands should be run as your regular user (no sudo). Podman runs in rootless mode by default. If you get permission errors on the verification step, the migrate command above should resolve them.
+**Benefits:** No permission issues, faster performance, standard Podman behavior.
 
-**Benefits:**
-- No permission issues with postgres/database volumes
-- Faster performance
-- Standard Podman behavior
+#### Option B: NFS Storage (Not Recommended)
 
-#### Option B: Stay on NFS (Not Recommended)
-
-If local disk is unavailable, configure for NFS (expect permission issues):
-
-**Step 1: Create Podman Configuration Files**
+If local disk unavailable:
 
 ```bash
 mkdir -p ~/.config/containers
@@ -87,371 +282,295 @@ driver = "overlay"
 mount_program = "/usr/bin/fuse-overlayfs"
 
 [storage.options.overlay]
-# Required for NFS - disable SELinux labeling
 force_mask = "0700"
 ignore_chown_errors = "true"
 skip_mount_home = "false"
 mountopt = "nodev"
 EOF
 
-# Container configuration to disable SELinux labeling
+# Disable SELinux labeling (required for NFS)
 cat > ~/.config/containers/containers.conf << 'EOF'
 [containers]
-# Disable SELinux labeling (required for NFS)
 label = false
 EOF
-```
 
-**Step 2: Reset Podman Storage**
-
-⚠️ **WARNING:** This will delete all existing containers, images, and volumes.
-
-```bash
+# Reset storage
 podman system reset --force
-```
 
-**Step 3: Verify Configuration**
-
-```bash
+# Verify
 podman info | grep -A 5 "store"
+# Should show: force_mask: "0700", selinuxEnabled: false
 ```
-
-You should see:
-- `force_mask: "0700"`
-- `Backing Filesystem: nfs`
-- `mount_program: fuse-overlayfs`
-- `selinuxEnabled: false`
 
 ### Deploy with Pre-built Images
 
 ```bash
-# Clone and checkout
 git clone https://github.com/esgf2-us/metagrid.git
 cd metagrid
 git checkout <branch-or-tag>
 
+# Create production config
+cp docker-compose-overlay-template.yml docker-compose-prod-overlay.yml
+# Edit docker-compose-prod-overlay.yml with your settings
+
 # Deploy
-./manage_metagrid.sh
+sudo ./manage_metagrid.sh
 ```
 
 Choose:
 - **1** - Start Metagrid - Production
-- **1** - Use pre-built images ← Recommended for NFS!
-- Enter image tag (or press Enter for auto-detected default)
-- Your auth method (Globus, Keycloak, or None)
+- **1** - Use pre-built images ← Recommended for NFS
+- Press Enter for auto-detected image tag
+- Choose auth method
 
-**Deployment time:** 2-5 minutes (vs 15-25 minutes if building locally)
-
-### Accessing the Site
-
-The Podman deployment uses **rootful mode** (run with `sudo`) to bind to standard ports:
-
-- **HTTP:** `http://your-server` (port 80)
-- **HTTPS:** `https://your-server` (port 443)
-
-**Always run the manage script with sudo for Podman deployments:**
-
-```bash
-sudo ./manage_metagrid.sh
-
-```
-
-### About Pre-built Images
-
-Pre-built images are automatically created by the development team and published to GitHub Container Registry (GHCR). They are **public** and require no authentication.
-
-**Available tags:**
-- `pr-XXX` - Specific pull request builds (e.g., pr-937)
-- `vX.X.X` - Release versions (e.g., v1.6.3-rc2)
-
-**View available images:**
-- Frontend: https://github.com/esgf2-us/metagrid/pkgs/container/metagrid-frontend
-- Backend: https://github.com/esgf2-us/metagrid/pkgs/container/metagrid-backend
-
-**The script automatically detects your PR/branch** and suggests the appropriate tag.
-
----
-
-## Standard Deployment
-
-For local development or servers **without NFS storage**, you can build images locally.
-
-### Deploy
-
-```bash
-./manage_metagrid.sh
-```
-
-Choose:
-- **1** - Start Metagrid - Production (or **3** for local dev)
-- **2** - Build images locally
-- Your auth method
-
-The script automatically detects and uses Podman.
-
----
-
-## Installation
-
-### Prerequisites
-
-- **macOS**: Homebrew (https://brew.sh)
-- **Linux**: Package manager access (apt, dnf, or yum)
-- **All platforms**: Python 3.6+
-
-### Option 1: Podman + podman-compose (Recommended)
-
-**macOS:**
-
-```bash
-# Install Podman
-brew install podman
-
-# Initialize and start Podman machine
-podman machine init
-podman machine start
-
-# Install podman-compose
-pip3 install podman-compose
-
-# Add to PATH if needed
-export PATH="$HOME/Library/Python/3.*/bin:$PATH"
-echo 'export PATH="$HOME/Library/Python/3.*/bin:$PATH"' >> ~/.zshrc
-
-# Verify
-podman --version
-podman-compose --version
-```
-
-**Linux (RHEL/Fedora/CentOS):**
-
-```bash
-# Install Podman
-sudo dnf install -y podman fuse-overlayfs
-
-# Install podman-compose
-pip3 install --user podman-compose
-
-# Add to PATH
-export PATH="$HOME/.local/bin:$PATH"
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-source ~/.bashrc
-
-# Enable lingering (optional - keeps user services running after logout)
-sudo loginctl enable-linger $USER
-
-# Verify
-podman --version
-podman-compose --version
-```
-
-**Linux (Ubuntu/Debian):**
-
-```bash
-# Install Podman
-sudo apt-get update
-sudo apt-get install -y podman
-
-# Install podman-compose
-pip3 install --user podman-compose
-
-# Add to PATH
-export PATH="$HOME/.local/bin:$PATH"
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-source ~/.bashrc
-
-# Verify
-podman --version
-podman-compose --version
-```
-
-### Option 2: Podman with Native Compose Plugin
-
-Recent versions of Podman include a built-in compose plugin:
-
-```bash
-# Check if available
-podman compose version
-
-# If available, you're all set!
-# If not, use Option 1 (podman-compose) instead
-```
+**Deployment time:** 2-5 minutes (vs 15-25 minutes building locally)
 
 ---
 
 ## How It Works
 
-The `manage_metagrid.sh` script includes automatic detection:
+### Automatic Container Runtime Detection
 
-1. **Checks for Docker** - Uses Docker if available and running
-2. **Falls back to Podman** - Detects Podman if Docker isn't available
-3. **Selects compose method**:
+The `manage_metagrid.sh` script automatically detects your environment:
+
+1. Checks for Docker - uses if available and running
+2. Falls back to Podman if Docker isn't available
+3. Selects compose method:
    - Native `podman compose` plugin (preferred)
    - Falls back to `podman-compose` standalone tool
-4. **Handles compatibility**:
-   - Profile wildcards (`--profile "*"`)
-   - exec -T flag differences
-   - Volume creation on NFS
 
-All compose commands go through a `compose_cmd()` helper that handles syntax differences automatically.
+### Compose File Layering
+
+Files are layered in this order (Podman production):
+
+1. `docker-compose.yml` - Base configuration
+2. `docker-compose.prebuilt.yml` - Pre-built image tags (if chosen)
+3. `docker-compose-prod-overlay.yml` - Your production settings
+4. `docker-compose.globus.yml` - Auth configuration
+5. `docker-compose.podman.yml` - Podman-specific overrides
+6. `docker-compose.podman.letsencrypt.yml` OR `docker-compose.podman.customcert.yml` - SSL config
+
+**Each file overrides settings from previous files.**
+
+### Networking
+
+**Container discovery:** Traefik's Docker provider queries the Podman API for container IPs and metadata via the socket (`/run/podman/podman.sock`).
+
+**Container-to-container DNS:** Handled by aardvark-dns (e.g., `traefik` reaching `react` by hostname).
+
+**External DNS:** Containers use aardvark-dns (10.89.1.1) with Google DNS (8.8.8.8) as fallback for Let's Encrypt and external queries.
 
 ---
 
 ## Troubleshooting
 
-### Volume Creation Fails with "operation not supported"
+### Traefik Shows 404 Error
 
-**Error:** `lsetxattr(label=...) operation not supported`
-
-**Solution:** You're on NFS storage. Follow the [NFS deployment setup](#nfs-deployment-rhel-production) above, specifically creating the `containers.conf` with `label = false`.
-
-### Pre-built Images Not Found
-
-**Symptoms:** Failed to pull `ghcr.io/esgf2-us/metagrid-frontend:pr-XXX`
+**Symptoms:** Site loads but shows "page not found"
 
 **Solutions:**
 
-1. **Check if images exist:**
-   - Visit: https://github.com/esgf2-us/metagrid/pkgs/container/metagrid-frontend
-   - Verify the tag exists for both frontend and backend
-
-2. **Try a different tag:**
-   ```bash
-   export IMAGE_TAG=v1.6.3-rc2
-   ./manage_metagrid.sh
-   ```
-
-3. **Build locally instead:**
-   - Choose option 2 when prompted for deployment method
-
-### Socket Trigger Limit Hit (RHEL/Linux)
-
-**Error:** `podman.socket: Trigger limit hit, refusing further activation`
-
-**Solution:** Use `podman-compose` instead of `docker-compose`:
-
 ```bash
-# Stop and disable problematic socket
-systemctl --user stop podman.socket
-systemctl --user disable podman.socket
-systemctl --user reset-failed
+# 1. Verify DOMAIN_NAME is configured
+grep "DOMAIN_NAME:" docker-compose-prod-overlay.yml
 
-# Remove DOCKER_HOST
-unset DOCKER_HOST
-sed -i '/DOCKER_HOST/d' ~/.bashrc
+# 2. Check firewall
+sudo firewall-cmd --zone=trusted --list-all | grep metagrid_br
 
-# Install podman-compose
-pip3 install --user podman-compose
-export PATH="$HOME/.local/bin:$PATH"
+# 3. Verify Traefik can reach services
+sudo podman exec traefik ping -c 2 react
+sudo podman exec traefik ping -c 2 django
 
-# Verify
-podman-compose --version
+# 4. Check Traefik logs
+sudo podman logs traefik | tail -50
+
+# 5. Verify router labels
+sudo podman inspect react --format='{{range $k,$v := .Config.Labels}}{{println $k "=" $v}}{{end}}' | grep traefik
 ```
 
-### Build Takes Forever (15+ minutes)
+### Let's Encrypt Certificate Fails
 
-**Cause:** Building on NFS is extremely slow.
+**Symptoms:** Browser shows "Not Secure" or certificate warning
 
-**Solution:** Use pre-built images (deployment method option 1) instead of building locally.
+**Cause 1: External DNS not working**
 
-### ARM64 Architecture Mismatch (Mac M1/M2)
+```bash
+# Test external DNS
+sudo podman exec traefik ping -c 2 google.com
+
+# If fails, check firewall configuration above
+```
+
+**Cause 2: Port 443 not accessible**
+
+```bash
+# Test from external machine
+telnet your-domain.example.com 443
+
+# Or use: https://letsdebug.net/your-domain.example.com
+```
+
+**Workaround:** Use custom certificates (see SSL Options above)
+
+### Container Can't Resolve Other Containers
+
+**Symptoms:**
+- Traefik logs: `dial tcp: lookup react: read udp ... i/o timeout`
+- 404 errors or bad gateway
+
+**Solution:** The `metagrid_br` interface must be in firewall trusted zone. See [Firewall Configuration](#3-configure-firewall-critical) above.
+
+### Podman Socket Fails to Start
+
+**Error:** `Socket trigger limit hit` or socket directory exists
+
+```bash
+# If socket path exists as directory
+sudo rmdir /run/podman/podman.sock
+
+# Restart socket
+sudo systemctl restart podman.socket
+
+# Verify
+sudo ls -lh /run/podman/podman.sock
+# Should show: srw-rw---- (socket file)
+```
+
+### Volume Creation Fails (NFS)
+
+**Error:** `lsetxattr(label=...) operation not supported`
+
+**Solution:** You're on NFS. Follow [NFS Storage Configuration](#option-b-nfs-storage-not-recommended) to disable SELinux labeling.
+
+### Pre-built Images Not Found
+
+**Error:** Failed to pull `ghcr.io/esgf2-us/metagrid-frontend:pr-XXX`
+
+**Solutions:**
+
+1. Check images exist: https://github.com/esgf2-us/metagrid/pkgs/container/metagrid-frontend
+2. Try different tag: `export IMAGE_TAG=v1.6.3-rc2`
+3. Build locally: Choose option 2 when prompted
+
+### Build Takes Too Long (15+ minutes)
+
+**Cause:** Building on NFS is extremely slow
+
+**Solution:** Use pre-built images (option 1) instead
+
+### Infinite Recursion / Segmentation Fault
+
+**Symptoms:** `./manage_metagrid.sh` crashes immediately
+
+**Solution:**
+```bash
+git pull  # Get latest manage_metagrid.sh with bug fix
+./manage_metagrid.sh
+```
+
+### ARM64 Architecture Mismatch
 
 **Error:** `no matching manifest for linux/arm64/v8`
 
-**Cause:** Pre-built images are Linux amd64 only.
+**Cause:** Pre-built images are Linux amd64 only
 
-**Solution:** On Mac, use local build (option 2). Pre-built images are only for Linux deployment servers.
-
-### Podman Machine Not Started (macOS)
-
-```bash
-podman machine start
-```
-
-### Check Podman Info
-
-```bash
-podman info
-```
-
-Look for:
-- Storage backend location
-- Overlay driver options
-- SELinux status
-- File system type
-
-### View Logs
-
-```bash
-# All containers
-podman-compose -f docker-compose.yml -f docker-compose.prod.yml logs
-
-# Specific service
-podman-compose -f docker-compose.yml -f docker-compose.prod.yml logs react
-podman-compose -f docker-compose.yml -f docker-compose.prod.yml logs django
-```
-
-### Cleanup and Restart
-
-```bash
-# Stop everything
-./manage_metagrid.sh  # Choose option 2
-
-# Remove all containers/images (fresh start)
-podman system reset --force
-
-# Redeploy
-./manage_metagrid.sh  # Choose option 1
-```
+**Solution:** On ARM64 (Mac M1/M2), build locally (option 2)
 
 ---
 
-## Advanced Configuration
+## Advanced Topics
 
-### Storage Location
+### Rootful vs Rootless
 
-By default, Podman stores data in `~/.local/share/containers/storage/`.
+**Local Development (`./manage_metagrid.sh` option 3):**  
+- Rootless mode - no sudo required
+- Uses high ports (9080/9443)
 
-**To use local disk instead of NFS:**
+**Production Deployment (`./manage_metagrid.sh` option 1):**  
+- Rootful mode - requires sudo
+- Uses standard ports (80/443)
+
+```bash
+# Always use sudo for production
+sudo ./manage_metagrid.sh  # Option 1
+
+# Local development doesn't need sudo
+./manage_metagrid.sh  # Option 3
+```
+
+**Why rootful for production:**
+- Ports 80 and 443 require root privileges
+- Ensures consistent behavior
+- Simplifies firewall configuration
+
+### Custom Storage Location
 
 ```bash
 cat > ~/.config/containers/storage.conf << 'EOF'
 [storage]
 driver = "overlay"
-graphroot = "/local/disk/path/containers/storage"  # Change to local path
+graphroot = "/custom/path/containers/storage"
 
 [storage.options.overlay]
 mount_program = "/usr/bin/fuse-overlayfs"
 EOF
 
-# Reset storage
+# Apply
 podman system reset --force
 ```
 
-### Rootless vs Rootful
-
-Metagrid runs in **rootless mode** by default (recommended for security).
-
-The manage_metagrid.sh script automatically detects and uses rootless Podman.
-
 ### Performance Tips
 
-1. **Use local storage** instead of NFS when possible
+1. **Use local storage** instead of NFS
 2. **Use pre-built images** on NFS to avoid slow builds
-3. **Increase ulimits** if you see "too many open files"
+3. **Increase ulimits** if seeing "too many open files"
 4. **Enable lingering** on Linux: `sudo loginctl enable-linger $USER`
 
 ---
 
-## Differences from Docker
+## Cleanup and Restart
 
-The manage_metagrid.sh script handles these automatically:
+```bash
+# Stop all services
+sudo ./manage_metagrid.sh  # Choose option 2
 
-1. **Profile wildcards:** `--profile "*"` → removed for podman-compose
-2. **exec -T flag:** Handled differently in podman-compose  
-3. **Compose syntax:** Detects `podman compose` vs `podman-compose`
-4. **Volume mounts:** Stored in different locations but work identically
-5. **Networking:** Uses different drivers but compatible with compose networking
+# Complete reset (removes all containers/images)
+sudo podman system reset --force
+
+# Redeploy
+sudo ./manage_metagrid.sh  # Choose option 1
+```
+
+---
+
+## Viewing Logs
+
+```bash
+# All containers
+sudo podman logs traefik
+sudo podman logs django
+sudo podman logs react
+sudo podman logs postgres
+
+# Follow logs
+sudo podman logs -f traefik
+
+# Using compose
+cd metagrid
+sudo podman-compose -f docker-compose.yml -f docker-compose.podman.yml logs
+```
+
+---
+
+## Getting Help
+
+If you encounter issues:
+
+1. Check [Troubleshooting](#troubleshooting) section above
+2. Verify Podman version: `podman --version` (need 4.0+)
+3. Check configuration: `cat ~/.config/containers/storage.conf`
+4. View system resources: `df -h` and `free -h`
+5. Open an issue: https://github.com/esgf2-us/metagrid/issues
 
 ---
 
@@ -461,16 +580,3 @@ The manage_metagrid.sh script handles these automatically:
 - [Podman Desktop](https://podman-desktop.io/) - GUI for managing Podman
 - [Rootless Containers](https://rootlesscontaine.rs/)
 - [Metagrid Documentation](https://metagrid.readthedocs.io/)
-
----
-
-## Getting Help
-
-If you encounter issues:
-
-1. Check Podman version: `podman --version`
-2. Check configuration: `cat ~/.config/containers/storage.conf`
-3. View full logs: `podman-compose logs`
-4. Check system resources: `df -h` and `free -h`
-5. Review this guide's troubleshooting section
-6. Open an issue: https://github.com/esgf2-us/metagrid/issues

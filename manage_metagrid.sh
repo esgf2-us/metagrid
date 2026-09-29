@@ -92,7 +92,8 @@ set -e
 # This handles both "docker compose" and "podman-compose" syntax
 function compose_cmd() {
     if [ "$USE_COMPOSE_SUBCOMMAND" = true ]; then
-        compose_cmd "$@"
+        # Docker uses "docker compose" subcommand
+        $CONTAINER_CMD compose "$@"
     else
         # podman-compose doesn't use 'compose' subcommand
         $CONTAINER_CMD "$@"
