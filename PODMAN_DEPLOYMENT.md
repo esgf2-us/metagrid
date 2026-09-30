@@ -126,7 +126,7 @@ curl -k https://your-domain.example.com
 curl -vI https://your-domain.example.com 2>&1 | grep -i "issuer\|subject"
 ```
 
-**All tests pass?** ✅ Deployment successful!  
+**All tests pass?** ✅ Deployment successful!
 **Something failed?** See [Troubleshooting](#troubleshooting) below.
 
 ---
@@ -482,11 +482,11 @@ git pull  # Get latest manage_metagrid.sh with bug fix
 
 ### Rootful vs Rootless
 
-**Local Development (`./manage_metagrid.sh` option 3):**  
+**Local Development (`./manage_metagrid.sh` option 3):**
 - Rootless mode - no sudo required
 - Uses high ports (9080/9443)
 
-**Production Deployment (`./manage_metagrid.sh` option 1):**  
+**Production Deployment (`./manage_metagrid.sh` option 1):**
 - Rootful mode - requires sudo
 - Uses standard ports (80/443)
 

@@ -55,9 +55,9 @@ These files are maintained by the project and updated via git:
 ### Files You Edit
 
 #### `docker-compose-prod-overlay.yml` ⚠️ USER-CREATED
-**Purpose:** Your actual production configuration (overrides template)  
-**Contains:** Real DOMAIN_NAME, secrets, database passwords, email settings  
-**Status:** **NOT in git** - each deployment creates their own  
+**Purpose:** Your actual production configuration (overrides template)
+**Contains:** Real DOMAIN_NAME, secrets, database passwords, email settings
+**Status:** **NOT in git** - each deployment creates their own
 **Required for:** Production deployments
 
 **Example:**
@@ -74,8 +74,8 @@ services:
 ```
 
 #### `docker-compose-overlay-template.yml`
-**Purpose:** Template showing what settings users need to configure  
-**Action:** Copy to `docker-compose-prod-overlay.yml` and customize  
+**Purpose:** Template showing what settings users need to configure
+**Action:** Copy to `docker-compose-prod-overlay.yml` and customize
 **Contains:** Placeholders for DOMAIN_NAME, secrets, email addresses
 
 **How to use:**
@@ -85,8 +85,8 @@ cp docker-compose-overlay-template.yml docker-compose-prod-overlay.yml
 ```
 
 #### `docker-compose-local-overlay.yml`
-**Purpose:** Customize local development settings  
-**Contains:** Local volume mounts, development environment variables, ports  
+**Purpose:** Customize local development settings
+**Contains:** Local volume mounts, development environment variables, ports
 **Used by:** Local development deployments
 
 **Common customizations:**
@@ -100,8 +100,8 @@ cp docker-compose-overlay-template.yml docker-compose-prod-overlay.yml
 ### Core Files (Project-Managed)
 
 #### `docker-compose.yml`
-**Purpose:** Base configuration for all services  
-**Contains:** Service definitions, local development ports, volume mounts, basic environment  
+**Purpose:** Base configuration for all services
+**Contains:** Service definitions, local development ports, volume mounts, basic environment
 **Used by:** All deployments (local, production, Docker, Podman)
 
 **Key settings:**
@@ -111,7 +111,7 @@ cp docker-compose-overlay-template.yml docker-compose-prod-overlay.yml
 - Base health checks
 
 #### `docker-compose.prod.yml`
-**Purpose:** Production-specific settings  
+**Purpose:** Production-specific settings
 **Contains:**
 - Restart policies (`unless-stopped`)
 - Production environment variables (DEBUG=False, SSL settings)
@@ -121,7 +121,7 @@ cp docker-compose-overlay-template.yml docker-compose-prod-overlay.yml
 **Used by:** Production deployments only (not local dev)
 
 #### `docker-compose.podman.yml`
-**Purpose:** Podman-specific overrides  
+**Purpose:** Podman-specific overrides
 **Contains:**
 - Traefik config mount (`traefik.podman.yml`)
 - Docker provider configuration (Podman socket)
@@ -138,7 +138,7 @@ cp docker-compose-overlay-template.yml docker-compose-prod-overlay.yml
 ### Image Source File (Project-Managed)
 
 #### `docker-compose.prebuilt.yml`
-**Purpose:** Use pre-built images from GitHub Container Registry  
+**Purpose:** Use pre-built images from GitHub Container Registry
 **Contains:** Image pull specifications with `${IMAGE_TAG}` variable
 
 **Used when:** Choosing "pre-built images" option (recommended for NFS/HPC)
@@ -154,18 +154,18 @@ cp docker-compose-overlay-template.yml docker-compose-prod-overlay.yml
 ### Authentication Files (Project-Managed)
 
 #### `docker-compose.globus.yml`
-**Purpose:** Enable Globus authentication  
-**Contains:** Environment variables for Globus OAuth  
+**Purpose:** Enable Globus authentication
+**Contains:** Environment variables for Globus OAuth
 **Used when:** Choosing Globus auth option (default)
 
 #### `docker-compose.keycloak.yml`
-**Purpose:** Enable Keycloak for local development  
-**Contains:** Keycloak container configuration, dev settings  
+**Purpose:** Enable Keycloak for local development
+**Contains:** Keycloak container configuration, dev settings
 **Used when:** Choosing Keycloak auth + local development
 
 #### `docker-compose.keycloak.prod.yml`
-**Purpose:** Enable Keycloak for production  
-**Contains:** Keycloak production configuration  
+**Purpose:** Enable Keycloak for production
+**Contains:** Keycloak production configuration
 **Used when:** Choosing Keycloak auth + production deployment
 
 ---
@@ -173,8 +173,8 @@ cp docker-compose-overlay-template.yml docker-compose-prod-overlay.yml
 ### SSL Certificate Files (Project-Managed)
 
 #### `docker-compose.customcert.yml`
-**Purpose:** Use custom SSL certificates with Docker  
-**Contains:** Traefik config mount for custom cert configuration  
+**Purpose:** Use custom SSL certificates with Docker
+**Contains:** Traefik config mount for custom cert configuration
 **Used when:** Docker + custom certificates option
 
 **Requires:** Files in `traefik/certs/`:
@@ -182,14 +182,14 @@ cp docker-compose-overlay-template.yml docker-compose-prod-overlay.yml
 - `cert.key` - Your private key
 
 #### `docker-compose.podman.customcert.yml`
-**Purpose:** Use custom SSL certificates with Podman  
+**Purpose:** Use custom SSL certificates with Podman
 **Contains:** Traefik custom cert config mount, dynamic certificate configuration
 
 **Used when:** Podman + custom certificates option (option 2)
 
 #### `docker-compose.podman.letsencrypt.yml`
-**Purpose:** Use Let's Encrypt automatic certificates with Podman  
-**Contains:** Certresolver labels for Traefik routers  
+**Purpose:** Use Let's Encrypt automatic certificates with Podman
+**Contains:** Certresolver labels for Traefik routers
 
 **Used when:** Podman + Let's Encrypt SSL
 
@@ -302,7 +302,7 @@ services:
   traefik:
     ports:
       - '9080:9080'
-    
+
 # docker-compose.podman.yml (OVERRIDES ports)
 services:
   traefik:
@@ -337,7 +337,7 @@ services:
         compose_env:
           IMAGE_TAG: "{{ image_tag }}"
           DOMAIN_NAME: "{{ domain_name }}"
-    
+
     - name: Deploy Metagrid
       community.docker.docker_compose:
         project_src: /path/to/metagrid
@@ -401,7 +401,7 @@ Deployment type?
 
 ### "File not found: docker-compose-prod-overlay.yml"
 
-**Cause:** You haven't created your production config yet  
+**Cause:** You haven't created your production config yet
 **Solution:**
 ```bash
 cp docker-compose-overlay-template.yml docker-compose-prod-overlay.yml
@@ -410,7 +410,7 @@ cp docker-compose-overlay-template.yml docker-compose-prod-overlay.yml
 
 ### "Which file sets DOMAIN_NAME?"
 
-**Answer:** `docker-compose-prod-overlay.yml` (user-created)  
+**Answer:** `docker-compose-prod-overlay.yml` (user-created)
 The manage script extracts it from there and exports it for Podman label substitution.
 
 ### "Why so many Podman files?"
