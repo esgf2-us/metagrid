@@ -121,9 +121,10 @@ function startProductionService() {
         echo "Will build images locally from source"
     else
         echo "Will use pre-built images from ghcr.io/esgf2-us"
+        echo ""
 
-        # Determine image tag to use (latest as default)
-        local image_tag="latest"
+        # Determine image tag to use (v1.6.4 as default, matching docker-compose.prebuilt.yml)
+        local image_tag="v1.6.4"
 
         # Try to detect PR number from branch
         if command -v git &> /dev/null; then
@@ -136,7 +137,20 @@ function startProductionService() {
             fi
         fi
 
-        echo "Image tag: $image_tag"
+        echo "Detected image tag: $image_tag"
+        echo ""
+        echo "Available options:"
+        echo "  - Press Enter to use detected tag: $image_tag"
+        echo "  - Or enter a different tag (e.g., pr-967, v1.6.4, latest)"
+        read -r custom_tag
+
+        # Use custom tag if provided, otherwise keep detected/default tag
+        if [ -n "$custom_tag" ]; then
+            image_tag="$custom_tag"
+            echo "Using custom image tag: $image_tag"
+        else
+            echo "Using image tag: $image_tag"
+        fi
         echo ""
 
         # Set IMAGE_TAG environment variable for docker-compose.prebuilt.yml

@@ -78,10 +78,6 @@ services:
       - 'traefik.http.routers.django.priority=10'
 
   react:
-    image: metagrid_prod_react
-    build:
-      context: ./frontend
-      target: prod
     command: []
     restart: unless-stopped
     user: '0:0' # Run as root in container to avoid permission issues with pre-built images
