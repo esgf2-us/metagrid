@@ -167,7 +167,7 @@ function startProductionService() {
             local backend_exists=false
 
             if command -v skopeo &> /dev/null; then
-                # Use skopeo if available (more reliable)
+                # Use skopeo if available (most reliable)
                 if skopeo inspect docker://ghcr.io/esgf2-us/metagrid-frontend:${image_tag} &> /dev/null; then
                     frontend_exists=true
                 fi
@@ -175,11 +175,26 @@ function startProductionService() {
                     backend_exists=true
                 fi
             else
-                # Fallback: try pulling with docker/podman manifest inspect
-                if $CONTAINER_CMD manifest inspect ghcr.io/esgf2-us/metagrid-frontend:${image_tag} &> /dev/null; then
-                    frontend_exists=true
+                # Determine actual container runtime (not compose wrapper)
+                local runtime_cmd=""
+                if command -v docker &> /dev/null && docker ps &> /dev/null 2>&1; then
+                    runtime_cmd="docker"
+                elif command -v podman &> /dev/null; then
+                    runtime_cmd="podman"
                 fi
-                if $CONTAINER_CMD manifest inspect ghcr.io/esgf2-us/metagrid-backend:${image_tag} &> /dev/null; then
+
+                # Try manifest inspect with the runtime (not podman-compose)
+                if [ -n "$runtime_cmd" ]; then
+                    if $runtime_cmd manifest inspect ghcr.io/esgf2-us/metagrid-frontend:${image_tag} &> /dev/null; then
+                        frontend_exists=true
+                    fi
+                    if $runtime_cmd manifest inspect ghcr.io/esgf2-us/metagrid-backend:${image_tag} &> /dev/null; then
+                        backend_exists=true
+                    fi
+                else
+                    # Can't check - skip validation
+                    echo "  (Cannot verify - skopeo, docker, and podman not available)"
+                    frontend_exists=true
                     backend_exists=true
                 fi
             fi
@@ -189,17 +204,22 @@ function startProductionService() {
                 tag_valid=true
             else
                 echo ""
-                echo "✗ Warning: Image tag '$image_tag' not found in registry"
+                echo "✗ Warning: Could not verify image tag '$image_tag' exists in registry"
                 if [ "$frontend_exists" = false ]; then
-                    echo "  - metagrid-frontend:${image_tag} does not exist"
+                    echo "  - metagrid-frontend:${image_tag} - not verified"
                 fi
                 if [ "$backend_exists" = false ]; then
-                    echo "  - metagrid-backend:${image_tag} does not exist"
+                    echo "  - metagrid-backend:${image_tag} - not verified"
                 fi
+                echo ""
+                echo "This could mean:"
+                echo "  - The images don't exist for this tag"
+                echo "  - Network/authentication issue preventing verification"
+                echo "  - The verification command failed (try installing 'skopeo' for better checks)"
                 echo ""
                 echo "Please choose an option:"
                 echo "  1. Try a different tag"
-                echo "  2. Continue anyway (pull will likely fail)"
+                echo "  2. Continue anyway (recommended if you know the tag exists)"
                 echo "  3. Abort and build locally instead"
                 read -r retry_choice
 
@@ -208,7 +228,7 @@ function startProductionService() {
                         # Loop will continue, prompting for a new tag
                         ;;
                     2)
-                        echo "Continuing with tag '$image_tag' (may fail during pull)..."
+                        echo "Continuing with tag '$image_tag'..."
                         tag_valid=true
                         ;;
                     3)
