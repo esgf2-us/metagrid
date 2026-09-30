@@ -3,27 +3,340 @@ if command -v docker &> /dev/null && docker ps &> /dev/null 2>&1; then
     CONTAINER_CMD="docker"
 elif command -v podman &> /dev/null; then
     CONTAINER_CMD="podman"
+
+    # Check if podman compose plugin is available
+    if ! podman compose version &> /dev/null; then
+        echo "Warning: Podman detected but 'podman compose' is not available."
+
+        # Check if podman-compose is available as primary fallback
+        if command -v podman-compose &> /dev/null; then
+            echo "Using podman-compose as fallback..."
+            CONTAINER_CMD="podman-compose"
+            # Remove 'compose' from all compose commands since podman-compose doesn't use it
+            USE_COMPOSE_SUBCOMMAND=false
+        # Check if standalone docker-compose is available
+        elif command -v docker-compose &> /dev/null; then
+            echo "WARNING: docker-compose detected but podman-compose is not installed."
+            echo "Using docker-compose with Podman can cause socket rate-limit issues."
+            echo ""
+            echo "RECOMMENDED: Install podman-compose for reliable operation:"
+            echo "  pip3 install --user podman-compose"
+            echo ""
+            echo "Attempting to use docker-compose anyway (may fail)..."
+
+            CONTAINER_CMD="docker-compose"
+            USE_COMPOSE_SUBCOMMAND=false
+        else
+            echo "Please install one of the following:"
+            echo "  - For podman-compose (recommended): pip3 install --user podman-compose"
+            echo "  - For standalone docker-compose: Follow instructions at https://docs.docker.com/compose/install/"
+            echo "  - For compose plugin: Follow instructions at https://github.com/docker/compose"
+            exit 1
+        fi
+    else
+        # podman compose is available, but check if it delegates to external podman-compose
+        if command -v podman-compose &> /dev/null; then
+            # podman compose will delegate to external podman-compose which doesn't support --profile "*"
+            # Update CONTAINER_CMD so compose_cmd uses podman-compose directly
+            CONTAINER_CMD=podman-compose
+            USE_COMPOSE_SUBCOMMAND=false
+            echo "Note: Using podman-compose (detected via podman compose delegation)"
+        else
+            USE_COMPOSE_SUBCOMMAND=true
+        fi
+    fi
 else
     echo "Error: Neither Docker nor Podman is available or running."
     echo "Please install Docker or Podman and ensure the service is running."
     exit 1
 fi
 
+# Set default for docker
+if [ -z "$USE_COMPOSE_SUBCOMMAND" ]; then
+    USE_COMPOSE_SUBCOMMAND=true
+fi
+
 echo "Using container runtime: $CONTAINER_CMD"
 
 # Constants
 LOCAL_COMPOSE="-f docker-compose.yml"
-PROD_COMPOSE="-f docker-compose.yml -f docker-compose.prod.yml"
 KEYCLOAK_COMPOSE="-f docker-compose.keycloak.yml"
 GLOBUS_COMPOSE="-f docker-compose.globus.yml"
 KEYCLOAK_PROD_OVERLAY="-f docker-compose.keycloak.prod.yml"
 LOCAL_OVERLAY="-f docker-compose-local-overlay.yml"
 PROD_OVERLAY="-f docker-compose-prod-overlay.yml"
+PREBUILT_OVERLAY="-f docker-compose.prebuilt.yml"
+CUSTOMCERT_OVERLAY="-f docker-compose.customcert.yml"
+PODMAN_CUSTOMCERT_OVERLAY="-f docker-compose.podman.customcert.yml"
+PODMAN_LETSENCRYPT_OVERLAY="-f docker-compose.podman.letsencrypt.yml"
+
+# Configure compose files based on container runtime
+if [ "$CONTAINER_CMD" = "podman-compose" ] || [ "$CONTAINER_CMD" = "podman" ]; then
+    # For Podman: use podman.yml (works for both rootful and rootless)
+    # Rootful (sudo): uses standard ports 80/443
+    # Rootless: requires firewall port forwarding or non-standard ports
+    PROD_COMPOSE="-f docker-compose.yml -f docker-compose.podman.yml"
+    if [ "$EUID" -eq 0 ]; then
+        echo "Using Podman with standard ports 80/443 (running as root)"
+    else
+        echo "Using Podman with standard ports 80/443 (requires root or firewall forwarding)"
+    fi
+else
+    # For Docker: use standard prod.yml
+    PROD_COMPOSE="-f docker-compose.yml -f docker-compose.prod.yml"
+fi
 
 set -e
 
+# Helper function to run compose commands
+# This handles both "docker compose" and "podman-compose" syntax
+function compose_cmd() {
+    if [ "$USE_COMPOSE_SUBCOMMAND" = true ]; then
+        # Docker uses "docker compose" subcommand
+        $CONTAINER_CMD compose "$@"
+    else
+        # podman-compose doesn't use 'compose' subcommand
+        $CONTAINER_CMD "$@"
+    fi
+}
+
 #Custom functions
+function ensure_podman_network() {
+    # Check if we're using Podman and network needs DNS configuration
+    if [ "$CONTAINER_CMD" = "podman-compose" ] || [ "$CONTAINER_CMD" = "podman" ]; then
+        # Check if network exists
+        if ! podman network exists metagrid_default 2>/dev/null; then
+            echo "Creating metagrid_default network with DNS configuration..."
+            podman network create \
+              --driver bridge \
+              --opt com.docker.network.bridge.name=metagrid_br \
+              --dns 8.8.8.8 \
+              --dns 8.8.4.4 \
+              metagrid_default
+            echo "Network created successfully."
+        else
+            # Check if network has DNS configured
+            local has_dns=$(podman network inspect metagrid_default 2>/dev/null | grep -c "network_dns_servers")
+            if [ "$has_dns" -eq 0 ]; then
+                echo ""
+                echo "WARNING: Existing network 'metagrid_default' has no DNS servers configured."
+                echo "This will prevent Django from reaching external STAC/ESGF APIs."
+                echo ""
+                echo "Would you like to recreate the network with DNS configuration?"
+                echo "1. Yes - recreate network (recommended)"
+                echo "2. No - continue with existing network"
+                read -r recreate_choice
+
+                if [ "$recreate_choice" = "1" ]; then
+                    echo "Removing old network..."
+                    podman network rm metagrid_default
+                    echo "Creating network with DNS configuration..."
+                    podman network create \
+                      --driver bridge \
+                      --opt com.docker.network.bridge.name=metagrid_br \
+                      --dns 8.8.8.8 \
+                      --dns 8.8.4.4 \
+                      metagrid_default
+                    echo "Network created successfully."
+                fi
+            fi
+        fi
+    fi
+}
+
 function startProductionService() {
+    # Ensure network is configured for Podman deployments
+    ensure_podman_network
+
+    clear
+    echo "Choose deployment method:"
+    echo "1 Use pre-built images from registry (faster, recommended for Podman/NFS)"
+    echo "2 Build images locally from source (slower)"
+    read -r build_choice
+
+    # Default to 1 (pre-built) if no value is entered
+    if [ -z "$build_choice" ]; then
+        build_choice=1
+    fi
+
+    local build_flag=""
+    local prebuilt_overlay=""
+
+    if [ "$build_choice" = "2" ]; then
+        build_flag="--build"
+        echo "Will build images locally from source"
+    else
+        echo "Will use pre-built images from ghcr.io/esgf2-us"
+        echo ""
+
+        # Read version from package.json as default
+        local image_tag="v1.6.3"
+        if [ -f "frontend/package.json" ]; then
+            local pkg_version=$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' frontend/package.json | cut -d'"' -f4)
+            if [ -n "$pkg_version" ]; then
+                image_tag="v${pkg_version}"
+            fi
+        fi
+
+        # Try to detect PR number from branch
+        if command -v git &> /dev/null; then
+            local branch_name=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+            if command -v gh &> /dev/null && [ -n "$branch_name" ]; then
+                local pr_number=$(gh pr list --head "$branch_name" --json number --jq '.[0].number' 2>/dev/null || echo "")
+                if [[ "$pr_number" =~ ^[0-9]+$ ]]; then
+                    image_tag="pr-$pr_number"
+                fi
+            fi
+        fi
+
+        # Loop to allow user to select a valid image tag
+        local tag_valid=false
+        while [ "$tag_valid" = false ]; do
+            echo "Detected image tag: $image_tag"
+            echo ""
+            echo "Available options:"
+            echo "  - Press Enter to use detected tag: $image_tag"
+            echo "  - Or enter a different tag (e.g., pr-967, v1.6.4, latest)"
+            read -r custom_tag
+
+            # Use custom tag if provided, otherwise keep detected/default tag
+            if [ -n "$custom_tag" ]; then
+                image_tag="$custom_tag"
+            fi
+
+            echo ""
+            echo "Checking if image tag '$image_tag' exists in registry..."
+
+            # Check if the image exists in GHCR
+            # Try to get manifest for both frontend and backend images
+            local frontend_exists=false
+            local backend_exists=false
+
+            if command -v skopeo &> /dev/null; then
+                # Use skopeo if available (most reliable)
+                if skopeo inspect docker://ghcr.io/esgf2-us/metagrid-frontend:${image_tag} &> /dev/null; then
+                    frontend_exists=true
+                fi
+                if skopeo inspect docker://ghcr.io/esgf2-us/metagrid-backend:${image_tag} &> /dev/null; then
+                    backend_exists=true
+                fi
+            else
+                # Determine actual container runtime (not compose wrapper)
+                local runtime_cmd=""
+                if command -v docker &> /dev/null && docker ps &> /dev/null 2>&1; then
+                    runtime_cmd="docker"
+                elif command -v podman &> /dev/null; then
+                    runtime_cmd="podman"
+                fi
+
+                # Try manifest inspect with the runtime (not podman-compose)
+                if [ -n "$runtime_cmd" ]; then
+                    if $runtime_cmd manifest inspect ghcr.io/esgf2-us/metagrid-frontend:${image_tag} &> /dev/null; then
+                        frontend_exists=true
+                    fi
+                    if $runtime_cmd manifest inspect ghcr.io/esgf2-us/metagrid-backend:${image_tag} &> /dev/null; then
+                        backend_exists=true
+                    fi
+                else
+                    # Can't check - skip validation
+                    echo "  (Cannot verify - skopeo, docker, and podman not available)"
+                    frontend_exists=true
+                    backend_exists=true
+                fi
+            fi
+
+            if [ "$frontend_exists" = true ] && [ "$backend_exists" = true ]; then
+                echo "✓ Image tag '$image_tag' found in registry"
+                tag_valid=true
+            else
+                echo ""
+                echo "✗ Warning: Could not verify image tag '$image_tag' exists in registry"
+                if [ "$frontend_exists" = false ]; then
+                    echo "  - metagrid-frontend:${image_tag} - not verified"
+                fi
+                if [ "$backend_exists" = false ]; then
+                    echo "  - metagrid-backend:${image_tag} - not verified"
+                fi
+                echo ""
+                echo "This could mean:"
+                echo "  - The images don't exist for this tag"
+                echo "  - Network/authentication issue preventing verification"
+                echo "  - The verification command failed (try installing 'skopeo' for better checks)"
+                echo ""
+                echo "Please choose an option:"
+                echo "  1. Try a different tag"
+                echo "  2. Continue anyway (recommended if you know the tag exists)"
+                echo "  3. Abort and build locally instead"
+                read -r retry_choice
+
+                case $retry_choice in
+                    1)
+                        # Loop will continue, prompting for a new tag
+                        ;;
+                    2)
+                        echo "Continuing with tag '$image_tag'..."
+                        tag_valid=true
+                        ;;
+                    3)
+                        echo "Aborting pre-built deployment. Please restart and choose option 2 to build locally."
+                        return
+                        ;;
+                    *)
+                        echo "Invalid choice. Please try again."
+                        ;;
+                esac
+            fi
+        done
+
+        echo "Using image tag: $image_tag"
+        echo ""
+
+        # Set IMAGE_TAG environment variable for docker-compose.prebuilt.yml
+        export IMAGE_TAG="$image_tag"
+
+        # Add prebuilt overlay
+        prebuilt_overlay="$PREBUILT_OVERLAY"
+
+        # Pull images first
+        echo "Pulling images..."
+        compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY pull || {
+            echo "Warning: Failed to pull some images."
+            echo "This may indicate the images don't exist or there's a network issue."
+            read -p "Press Enter to continue anyway or Ctrl+C to abort..."
+        }
+    fi
+
+    clear
+    echo "Choose SSL certificate method:"
+    echo "1 Let's Encrypt (automatic, free, requires ports 80/443 open)"
+    echo "2 Custom certificate (DigiCert, etc. - requires cert files in traefik/certs/)"
+    read -r ssl_choice
+
+    # Default to 1 (Let's Encrypt) if no value is entered
+    if [ -z "$ssl_choice" ]; then
+        ssl_choice=1
+    fi
+
+    local customcert_overlay=""
+    if [ "$ssl_choice" = "2" ]; then
+        # For Docker, use the standard customcert overlay
+        # For Podman, we'll add podman.customcert.yml separately after podman.yml
+        if [ "$CONTAINER_CMD" != "podman-compose" ] && [ "$CONTAINER_CMD" != "podman" ]; then
+            customcert_overlay="$CUSTOMCERT_OVERLAY"
+        fi
+        echo "Using custom SSL certificate from traefik/certs/"
+        echo "Make sure you have placed your certificate files:"
+        echo "  - traefik/certs/cert.crt (or cert.pem)"
+        echo "  - traefik/certs/cert.key"
+        if [ ! -f "traefik/certs/cert.crt" ] && [ ! -f "traefik/certs/cert.pem" ]; then
+            echo ""
+            echo "WARNING: Certificate files not found in traefik/certs/"
+            read -p "Press Enter to continue anyway or Ctrl+C to abort..."
+        fi
+    else
+        echo "Using Let's Encrypt for automatic SSL certificates"
+    fi
+
     clear
     echo "Choose authentication method:"
     echo "1 Globus - default"
@@ -36,24 +349,56 @@ function startProductionService() {
         auth_choice=1
     fi
 
+    # For Podman, we need the base compose files, then overlays, then podman.yml, then podman cert overlay
+    # Order matters for proper override precedence
+    local base_files="-f docker-compose.yml"
+    local podman_file=""
+    local podman_cert_overlay=""
+    if [ "$CONTAINER_CMD" = "podman-compose" ] || [ "$CONTAINER_CMD" = "podman" ]; then
+        podman_file="-f docker-compose.podman.yml"
+        # Add Podman-specific cert overlay based on SSL choice
+        if [ "$ssl_choice" = "2" ]; then
+            # Custom certificates
+            podman_cert_overlay="$PODMAN_CUSTOMCERT_OVERLAY"
+        else
+            # Let's Encrypt (default)
+            podman_cert_overlay="$PODMAN_LETSENCRYPT_OVERLAY"
+        fi
+
+        # For Podman: Export DOMAIN_NAME so it's available for label substitution
+        # This is needed because Podman compose evaluates ${DOMAIN_NAME} in labels at compose-time
+        # We extract it from docker-compose-prod-overlay.yml if it exists
+        if [ -f "docker-compose-prod-overlay.yml" ]; then
+            # Extract first occurrence of DOMAIN_NAME value
+            DOMAIN_NAME=$(grep "DOMAIN_NAME:" docker-compose-prod-overlay.yml | head -1 | sed 's/.*DOMAIN_NAME: *//' | tr -d ' ')
+            if [ -n "$DOMAIN_NAME" ]; then
+                export DOMAIN_NAME
+                echo "Using DOMAIN_NAME=$DOMAIN_NAME for Traefik routing"
+            else
+                echo "Warning: Could not extract DOMAIN_NAME from docker-compose-prod-overlay.yml"
+                echo "Traefik routing may not work without DOMAIN_NAME set"
+            fi
+        fi
+    fi
+
     case $auth_choice in
     1)
         echo "Starting Metagrid production deployment with Globus"
-        $CONTAINER_CMD compose $PROD_COMPOSE $PROD_OVERLAY $GLOBUS_COMPOSE up --build -d
+        compose_cmd $base_files $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $GLOBUS_COMPOSE $podman_file $podman_cert_overlay up $build_flag -d
         echo "Command used:"
-        echo "$CONTAINER_CMD compose $PROD_COMPOSE $PROD_OVERLAY $GLOBUS_COMPOSE up --build -d"
+        echo "compose_cmd $base_files $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $GLOBUS_COMPOSE $podman_file $podman_cert_overlay up $build_flag -d"
         ;;
     2)
         echo "Starting Metagrid production deployment with Keycloak"
-        $CONTAINER_CMD compose $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $PROD_OVERLAY --profile keycloak up --build -d
+        compose_cmd $base_files $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $podman_file $podman_cert_overlay --profile keycloak up $build_flag -d
         echo "Command used:"
-        echo "$CONTAINER_CMD compose $PROD_COMPOSE $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $PROD_OVERLAY --profile keycloak up --build -d"
+        echo "compose_cmd $base_files $KEYCLOAK_COMPOSE $KEYCLOAK_PROD_OVERLAY $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $podman_file $podman_cert_overlay --profile keycloak up $build_flag -d"
         ;;
     3)
         echo "Starting Metagrid production deployment with no auth"
-        $CONTAINER_CMD compose $PROD_COMPOSE $PROD_OVERLAY up --build -d
+        compose_cmd $base_files $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $podman_file $podman_cert_overlay up $build_flag -d
         echo "Command used:"
-        echo "$CONTAINER_CMD compose $PROD_COMPOSE $PROD_OVERLAY up --build -d"
+        echo "compose_cmd $base_files $prebuilt_overlay $customcert_overlay $PROD_OVERLAY $podman_file $podman_cert_overlay up $build_flag -d"
         ;;
     *)
         echo "Invalid choice. Please select 1, 2, or 3."
@@ -79,21 +424,21 @@ function startLocalService() {
     case $auth_choice in
     1)
         echo "Starting Metagrid with Globus auth"
-        $CONTAINER_CMD compose $LOCAL_COMPOSE $LOCAL_OVERLAY $GLOBUS_COMPOSE --profile docs up --build -d
+        compose_cmd $LOCAL_COMPOSE $LOCAL_OVERLAY $GLOBUS_COMPOSE --profile docs up --build -d
         echo "Command used:"
-        echo "$CONTAINER_CMD compose $LOCAL_COMPOSE $LOCAL_OVERLAY $GLOBUS_COMPOSE --profile docs up --build -d"
+        echo "compose_cmd $LOCAL_COMPOSE $LOCAL_OVERLAY $GLOBUS_COMPOSE --profile docs up --build -d"
         ;;
     2)
         echo "Starting Metagrid with Keycloak auth"
-        $CONTAINER_CMD compose $LOCAL_COMPOSE $KEYCLOAK_COMPOSE $LOCAL_OVERLAY  --profile keycloak --profile docs up --build -d
+        compose_cmd $LOCAL_COMPOSE $KEYCLOAK_COMPOSE $LOCAL_OVERLAY  --profile keycloak --profile docs up --build -d
         echo "Command used:"
-        echo "$CONTAINER_CMD compose $LOCAL_COMPOSE $KEYCLOAK_COMPOSE $LOCAL_OVERLAY --profile keycloak --profile docs up --build -d"
+        echo "compose_cmd $LOCAL_COMPOSE $KEYCLOAK_COMPOSE $LOCAL_OVERLAY --profile keycloak --profile docs up --build -d"
         ;;
     3)
         echo "Starting Metagrid with no auth"
-        $CONTAINER_CMD compose $LOCAL_COMPOSE $LOCAL_OVERLAY --profile docs up --build -d
+        compose_cmd $LOCAL_COMPOSE $LOCAL_OVERLAY --profile docs up --build -d
         echo "Command used:"
-        echo "$CONTAINER_CMD compose $LOCAL_COMPOSE $LOCAL_OVERLAY --profile docs up --build -d"
+        echo "compose_cmd $LOCAL_COMPOSE $LOCAL_OVERLAY --profile docs up --build -d"
         ;;
     *)
         echo "Invalid choice. Please select 1, 2, or 3."
@@ -104,7 +449,12 @@ function startLocalService() {
 
 function stopDockerContainers() {
     echo "Stopping Metagrid"
-    $CONTAINER_CMD compose --profile "*" down --remove-orphans
+    # podman-compose doesn't support --profile "*" wildcard, omit it
+    if [ "$CONTAINER_CMD" = "podman-compose" ] || [ "$CONTAINER_CMD" = "podman" ]; then
+        compose_cmd down --remove-orphans
+    else
+        compose_cmd --profile "*" down --remove-orphans
+    fi
 }
 
 function toggleLocalContainers() {
@@ -169,7 +519,7 @@ function refreshPostgresCollation() {
         mkdir -p "$backup_dir"
 
         echo "Ensuring postgres container is running for backup..."
-        if ! $CONTAINER_CMD compose $COMPOSE up -d postgres; then
+        if ! compose_cmd $COMPOSE up -d postgres; then
             echo "Failed to start postgres container in $ENV_NAME compose. Aborting backup."
             return 1
         fi
@@ -177,11 +527,11 @@ function refreshPostgresCollation() {
         backup_path="$backup_dir/$backup_file"
         echo "Creating SQL backup to: $backup_path"
         # Run pg_dumpall inside container and redirect to host file
-        if $CONTAINER_CMD compose $COMPOSE exec -T postgres pg_dumpall -U postgres > "$backup_path"; then
+        if compose_cmd $COMPOSE exec -T postgres pg_dumpall -U postgres > "$backup_path"; then
             echo "Backup created at $backup_path"
         else
             echo "Backup failed. Check postgres logs:"
-            echo "  $CONTAINER_CMD compose $COMPOSE logs postgres"
+            echo "  compose_cmd $COMPOSE logs postgres"
             return 1
         fi
     fi
@@ -195,19 +545,19 @@ function refreshPostgresCollation() {
     fi
 
     echo "Ensuring postgres container is running..."
-    if ! $CONTAINER_CMD compose $COMPOSE up -d postgres; then
+    if ! compose_cmd $COMPOSE up -d postgres; then
         echo "Failed to start postgres container for $ENV_NAME. Aborting."
         return 1
     fi
 
     echo "Executing collation refresh and reindex inside the postgres container..."
-    if $CONTAINER_CMD compose $COMPOSE exec -T postgres bash -lc \
+    if compose_cmd $COMPOSE exec -T postgres bash -lc \
         "psql -U postgres -d postgres -c \"ALTER DATABASE postgres REFRESH COLLATION VERSION;\" && \
          psql -U postgres -d postgres -c \"REINDEX DATABASE postgres;\""; then
         echo "Collation refreshed and database reindexed successfully for $ENV_NAME."
     else
         echo "Operation failed. Check postgres container logs for details:"
-        echo "  $CONTAINER_CMD compose $COMPOSE logs postgres"
+        echo "  compose_cmd $COMPOSE logs postgres"
         return 1
     fi
 }
@@ -222,12 +572,12 @@ function runMigrations() {
     case $env_choice in
     1)
         stopDockerContainers
-        $CONTAINER_CMD compose $LOCAL_COMPOSE $LOCAL_OVERLAY run --rm django python manage.py migrate
+        compose_cmd $LOCAL_COMPOSE $LOCAL_OVERLAY run --rm django python manage.py migrate
         stopDockerContainers
         ;;
     2)
         stopDockerContainers
-        $CONTAINER_CMD compose $PROD_COMPOSE $PROD_OVERLAY run --rm django python manage.py migrate
+        compose_cmd $PROD_COMPOSE $PROD_OVERLAY run --rm django python manage.py migrate
         stopDockerContainers
         ;;
     *)
@@ -247,16 +597,16 @@ function updateProjectTable() {
     case $env_choice in
     1)
         stopDockerContainers
-        $CONTAINER_CMD compose $LOCAL_COMPOSE $LOCAL_OVERLAY build django
-        $CONTAINER_CMD compose $LOCAL_COMPOSE $LOCAL_OVERLAY run --rm django python manage.py migrate --fake projects 0001_initial
-        $CONTAINER_CMD compose $LOCAL_COMPOSE $LOCAL_OVERLAY run --rm django python manage.py migrate projects
+        compose_cmd $LOCAL_COMPOSE $LOCAL_OVERLAY build django
+        compose_cmd $LOCAL_COMPOSE $LOCAL_OVERLAY run --rm django python manage.py migrate --fake projects 0001_initial
+        compose_cmd $LOCAL_COMPOSE $LOCAL_OVERLAY run --rm django python manage.py migrate projects
         stopDockerContainers
         ;;
     2)
         stopDockerContainers
-        $CONTAINER_CMD compose $PROD_COMPOSE $PROD_OVERLAY build django
-        $CONTAINER_CMD compose $PROD_COMPOSE $PROD_OVERLAY run --rm django python manage.py migrate --fake projects 0001_initial
-        $CONTAINER_CMD compose $PROD_COMPOSE $PROD_OVERLAY run --rm django python manage.py migrate projects
+        compose_cmd $PROD_COMPOSE $PROD_OVERLAY build django
+        compose_cmd $PROD_COMPOSE $PROD_OVERLAY run --rm django python manage.py migrate --fake projects 0001_initial
+        compose_cmd $PROD_COMPOSE $PROD_OVERLAY run --rm django python manage.py migrate projects
         stopDockerContainers
         ;;
     *)
@@ -274,7 +624,7 @@ function runPreCommit() {
 function runBackendTests() {
     clear
     stopDockerContainers
-    if ! $CONTAINER_CMD compose $LOCAL_COMPOSE $LOCAL_OVERLAY --profile docs run --rm django pytest; then
+    if ! compose_cmd $LOCAL_COMPOSE $LOCAL_OVERLAY --profile docs run --rm django pytest; then
         echo "Some backend tests failed!"
         stopDockerContainers
         return 1

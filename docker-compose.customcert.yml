@@ -1,0 +1,8 @@
+# Docker Compose overlay for using custom SSL certificates
+# Use this with: docker-compose ... -f docker-compose.customcert.yml ...
+
+services:
+  traefik:
+    volumes:
+      # Override traefik config to use custom certificate configuration
+      - ./traefik/traefik.customcert.yml:/etc/traefik/traefik.yml
