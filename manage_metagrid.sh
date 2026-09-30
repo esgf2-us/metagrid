@@ -123,8 +123,14 @@ function startProductionService() {
         echo "Will use pre-built images from ghcr.io/esgf2-us"
         echo ""
 
-        # Determine image tag to use (v1.6.4 as default, matching docker-compose.prebuilt.yml)
-        local image_tag="v1.6.4"
+        # Read version from package.json as default
+        local image_tag="v1.6.3"
+        if [ -f "frontend/package.json" ]; then
+            local pkg_version=$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' frontend/package.json | cut -d'"' -f4)
+            if [ -n "$pkg_version" ]; then
+                image_tag="v${pkg_version}"
+            fi
+        fi
 
         # Try to detect PR number from branch
         if command -v git &> /dev/null; then
@@ -137,20 +143,86 @@ function startProductionService() {
             fi
         fi
 
-        echo "Detected image tag: $image_tag"
-        echo ""
-        echo "Available options:"
-        echo "  - Press Enter to use detected tag: $image_tag"
-        echo "  - Or enter a different tag (e.g., pr-967, v1.6.4, latest)"
-        read -r custom_tag
+        # Loop to allow user to select a valid image tag
+        local tag_valid=false
+        while [ "$tag_valid" = false ]; do
+            echo "Detected image tag: $image_tag"
+            echo ""
+            echo "Available options:"
+            echo "  - Press Enter to use detected tag: $image_tag"
+            echo "  - Or enter a different tag (e.g., pr-967, v1.6.4, latest)"
+            read -r custom_tag
 
-        # Use custom tag if provided, otherwise keep detected/default tag
-        if [ -n "$custom_tag" ]; then
-            image_tag="$custom_tag"
-            echo "Using custom image tag: $image_tag"
-        else
-            echo "Using image tag: $image_tag"
-        fi
+            # Use custom tag if provided, otherwise keep detected/default tag
+            if [ -n "$custom_tag" ]; then
+                image_tag="$custom_tag"
+            fi
+
+            echo ""
+            echo "Checking if image tag '$image_tag' exists in registry..."
+
+            # Check if the image exists in GHCR
+            # Try to get manifest for both frontend and backend images
+            local frontend_exists=false
+            local backend_exists=false
+
+            if command -v skopeo &> /dev/null; then
+                # Use skopeo if available (more reliable)
+                if skopeo inspect docker://ghcr.io/esgf2-us/metagrid-frontend:${image_tag} &> /dev/null; then
+                    frontend_exists=true
+                fi
+                if skopeo inspect docker://ghcr.io/esgf2-us/metagrid-backend:${image_tag} &> /dev/null; then
+                    backend_exists=true
+                fi
+            else
+                # Fallback: try pulling with docker/podman manifest inspect
+                if $CONTAINER_CMD manifest inspect ghcr.io/esgf2-us/metagrid-frontend:${image_tag} &> /dev/null; then
+                    frontend_exists=true
+                fi
+                if $CONTAINER_CMD manifest inspect ghcr.io/esgf2-us/metagrid-backend:${image_tag} &> /dev/null; then
+                    backend_exists=true
+                fi
+            fi
+
+            if [ "$frontend_exists" = true ] && [ "$backend_exists" = true ]; then
+                echo "✓ Image tag '$image_tag' found in registry"
+                tag_valid=true
+            else
+                echo ""
+                echo "✗ Warning: Image tag '$image_tag' not found in registry"
+                if [ "$frontend_exists" = false ]; then
+                    echo "  - metagrid-frontend:${image_tag} does not exist"
+                fi
+                if [ "$backend_exists" = false ]; then
+                    echo "  - metagrid-backend:${image_tag} does not exist"
+                fi
+                echo ""
+                echo "Please choose an option:"
+                echo "  1. Try a different tag"
+                echo "  2. Continue anyway (pull will likely fail)"
+                echo "  3. Abort and build locally instead"
+                read -r retry_choice
+
+                case $retry_choice in
+                    1)
+                        # Loop will continue, prompting for a new tag
+                        ;;
+                    2)
+                        echo "Continuing with tag '$image_tag' (may fail during pull)..."
+                        tag_valid=true
+                        ;;
+                    3)
+                        echo "Aborting pre-built deployment. Please restart and choose option 2 to build locally."
+                        return
+                        ;;
+                    *)
+                        echo "Invalid choice. Please try again."
+                        ;;
+                esac
+            fi
+        done
+
+        echo "Using image tag: $image_tag"
         echo ""
 
         # Set IMAGE_TAG environment variable for docker-compose.prebuilt.yml
@@ -162,11 +234,8 @@ function startProductionService() {
         # Pull images first
         echo "Pulling images..."
         compose_cmd $PROD_COMPOSE $prebuilt_overlay $PROD_OVERLAY pull || {
-            echo "Warning: Failed to pull some images. They may not exist in the registry."
-            echo "You can:"
-            echo "  1. Build locally instead (option 2)"
-            echo "  2. Check if tag '$image_tag' exists at ghcr.io/esgf2-us"
-            echo "  3. Specify a different tag by setting IMAGE_TAG environment variable"
+            echo "Warning: Failed to pull some images."
+            echo "This may indicate the images don't exist or there's a network issue."
             read -p "Press Enter to continue anyway or Ctrl+C to abort..."
         }
     fi
