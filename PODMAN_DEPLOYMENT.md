@@ -15,19 +15,28 @@ sudo systemctl enable --now podman.socket
 
 # 2. Configure firewall (CRITICAL - DNS won't work without this)
 sudo firewall-cmd --zone=trusted --add-interface=metagrid_br --permanent
+sudo firewall-cmd --zone=trusted --add-forward --permanent
 sudo firewall-cmd --reload
 
-# 3. Clone and configure
+# 3. Create network with DNS configuration (CRITICAL - enables external API access)
+sudo podman network create \
+  --driver bridge \
+  --opt com.docker.network.bridge.name=metagrid_br \
+  --dns 8.8.8.8 \
+  --dns 8.8.4.4 \
+  metagrid_default
+
+# 4. Clone and configure
 git clone https://github.com/esgf2-us/metagrid.git
 cd metagrid
 cp docker-compose-overlay-template.yml docker-compose-prod-overlay.yml
 # Edit docker-compose-prod-overlay.yml - set your DOMAIN_NAME
 
-# 4. (Optional) Add SSL certificates for custom cert deployment
+# 5. (Optional) Add SSL certificates for custom cert deployment
 mkdir -p traefik/certs
 # Copy your cert.crt and cert.key to traefik/certs/
 
-# 5. Deploy
+# 6. Deploy
 sudo ./manage_metagrid.sh
 # Choose: Production (1), Pre-built images (1), SSL method (1 or 2), Auth (1)
 ```
@@ -174,28 +183,36 @@ sudo systemctl start podman.socket
 
 ### 3. Configure Firewall (CRITICAL)
 
-**Required for container DNS and Let's Encrypt:**
+**Required for container DNS and external API access:**
 
 ```bash
-# Add Podman bridge to trusted zone (temporary test)
+# Add Podman bridge to trusted zone and enable forwarding
 sudo firewall-cmd --zone=trusted --add-interface=metagrid_br
+sudo firewall-cmd --zone=trusted --add-forward
 
-# Verify
+# Verify configuration
 sudo firewall-cmd --zone=trusted --list-all
-# Should show: interfaces: metagrid_br
+# Should show:
+#   interfaces: metagrid_br
+#   forward: yes
+#   masquerade: yes
 
 # Test deployment works
 sudo ./manage_metagrid.sh  # Start services
 
 # If successful, make permanent
 sudo firewall-cmd --zone=trusted --add-interface=metagrid_br --permanent
+sudo firewall-cmd --zone=trusted --add-forward --permanent
 sudo firewall-cmd --reload
 ```
 
 **Why needed:**
+- **add-interface:** Assigns the metagrid bridge to the trusted zone
+- **add-forward:** Allows DNS queries to be forwarded from containers to external DNS servers
+- **masquerade:** Enables NAT so responses can return to containers
 - Without this, containers cannot resolve each other's hostnames
 - External DNS queries timeout (breaks Let's Encrypt)
-- Firewall blocks DNS forwarding from the Podman bridge network
+- **Django cannot reach external STAC/ESGF APIs** (esgf-node.ornl.gov, etc.)
 
 **IMPORTANT:** Add firewall rule BEFORE starting containers. If added after:
 ```bash
@@ -204,7 +221,42 @@ sudo podman network rm metagrid_default  # Clear network state
 sudo ./manage_metagrid.sh  # Start (recreates network)
 ```
 
-### 4. Create Production Configuration
+### 4. Create Network with DNS Configuration (CRITICAL)
+
+**Required for external API access (STAC, ESGF):**
+
+```bash
+# Create the network with explicit DNS servers before first deployment
+sudo podman network create \
+  --driver bridge \
+  --opt com.docker.network.bridge.name=metagrid_br \
+  --dns 8.8.8.8 \
+  --dns 8.8.4.4 \
+  metagrid_default
+
+# Verify DNS is configured
+sudo podman network inspect metagrid_default | grep network_dns_servers
+# Should show: "network_dns_servers": [ "8.8.8.8", "8.8.4.4" ]
+```
+
+**Why needed:**
+- Configures aardvark-dns with upstream DNS servers
+- Without this, containers can resolve each other but NOT external domains
+- Django needs this to reach external STAC and ESGF APIs
+- Use your organization's DNS servers instead of 8.8.8.8 if required
+
+**For networks with internal DNS:**
+```bash
+# Use your internal DNS as primary, Google DNS as fallback
+sudo podman network create \
+  --driver bridge \
+  --opt com.docker.network.bridge.name=metagrid_br \
+  --dns <your-internal-dns-ip> \
+  --dns 8.8.8.8 \
+  metagrid_default
+```
+
+### 5. Create Production Configuration
 
 **Required for Traefik routing:**
 

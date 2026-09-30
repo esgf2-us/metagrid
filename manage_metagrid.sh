@@ -101,7 +101,53 @@ function compose_cmd() {
 }
 
 #Custom functions
+function ensure_podman_network() {
+    # Check if we're using Podman and network needs DNS configuration
+    if [ "$CONTAINER_CMD" = "podman-compose" ] || [ "$CONTAINER_CMD" = "podman" ]; then
+        # Check if network exists
+        if ! podman network exists metagrid_default 2>/dev/null; then
+            echo "Creating metagrid_default network with DNS configuration..."
+            podman network create \
+              --driver bridge \
+              --opt com.docker.network.bridge.name=metagrid_br \
+              --dns 8.8.8.8 \
+              --dns 8.8.4.4 \
+              metagrid_default
+            echo "Network created successfully."
+        else
+            # Check if network has DNS configured
+            local has_dns=$(podman network inspect metagrid_default 2>/dev/null | grep -c "network_dns_servers")
+            if [ "$has_dns" -eq 0 ]; then
+                echo ""
+                echo "WARNING: Existing network 'metagrid_default' has no DNS servers configured."
+                echo "This will prevent Django from reaching external STAC/ESGF APIs."
+                echo ""
+                echo "Would you like to recreate the network with DNS configuration?"
+                echo "1. Yes - recreate network (recommended)"
+                echo "2. No - continue with existing network"
+                read -r recreate_choice
+
+                if [ "$recreate_choice" = "1" ]; then
+                    echo "Removing old network..."
+                    podman network rm metagrid_default
+                    echo "Creating network with DNS configuration..."
+                    podman network create \
+                      --driver bridge \
+                      --opt com.docker.network.bridge.name=metagrid_br \
+                      --dns 8.8.8.8 \
+                      --dns 8.8.4.4 \
+                      metagrid_default
+                    echo "Network created successfully."
+                fi
+            fi
+        fi
+    fi
+}
+
 function startProductionService() {
+    # Ensure network is configured for Podman deployments
+    ensure_podman_network
+
     clear
     echo "Choose deployment method:"
     echo "1 Use pre-built images from registry (faster, recommended for Podman/NFS)"
