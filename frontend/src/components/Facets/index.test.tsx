@@ -1,4 +1,4 @@
-import { fireEvent, within, screen } from '@testing-library/react';
+import { fireEvent, within, screen, prettyDOM } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import Facets from './index';
@@ -65,7 +65,7 @@ it('handles facets form auto-filtering', async () => {
 
   // De-select the first facet option
   const closeFacetOption = await screen.findByRole('img', {
-    name: 'close',
+    name: 'Close',
     hidden: true,
   });
 

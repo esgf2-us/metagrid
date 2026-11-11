@@ -49,7 +49,15 @@ export function generateProjectHash(
 // Creates a RawProject from pk and StacProject data
 export function buildStacProject(
   pk: string,
-  { name, fullName, projectUrl, projectName, facetsByGroup, stacApiUrl }: StacProject,
+  {
+    name,
+    fullName,
+    projectUrl,
+    projectName,
+    facetsByGroup,
+    stacApiUrl,
+    clickableFacets,
+  }: StacProject,
 ): RawProject {
   const mergedFacetsByGroup: FacetsByGroup = {
     ...STAC_DEFAULT_PROJECT.facetsByGroup,
@@ -77,6 +85,7 @@ export function buildStacProject(
     isSTAC: true,
     stacApiUrl,
     projectHash,
+    clickableFacets,
   };
 }
 

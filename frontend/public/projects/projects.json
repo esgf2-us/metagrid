@@ -25,6 +25,11 @@
           "variant_label",
           "grid_label"
         ]
+      },
+      "clickableFacets": {
+        "source_id": {
+          "urlTemplate": "https://emd.wcrp-cmip.org/docs/Data_Users/Model_viewer/?model={value}"
+        }
       }
     },
     {

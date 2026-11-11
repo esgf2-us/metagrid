@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FacetsByGroup } from '../components/Facets/types';
+import { ClickableFacets, FacetsByGroup } from '../components/Facets/types';
 
 export type StacProject = {
   name: string;
@@ -8,6 +8,7 @@ export type StacProject = {
   projectName: string;
   facetsByGroup: FacetsByGroup;
   stacApiUrl?: string;
+  clickableFacets?: ClickableFacets;
 };
 
 export const STAC_DEFAULT_PROJECT: StacProject = {
