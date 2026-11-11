@@ -505,7 +505,9 @@ const FacetsForm: React.FC = () => {
 
       // Find the count for this value from availableFacets
       const facetOptions = availableFacets[facet] || [];
-      const matchingOption = facetOptions.find((option) => option[0] === value);
+      const matchingOption = facetOptions.find(
+        (option) => Array.isArray(option) && option[0] === value,
+      );
       const count = matchingOption ? matchingOption[1] : null;
 
       if (clickableConfig) {
