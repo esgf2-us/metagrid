@@ -1092,9 +1092,11 @@ export const fetchSTACAggregations = async (
     aggregations: string[];
     filter?: { op: string; args: unknown };
     stacApiUrl?: string;
+    size: number;
   } = {
     collections: [projectName],
     aggregations: aggregationsList,
+    size: 2000,
   };
 
   if (filter) {
