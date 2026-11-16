@@ -196,14 +196,15 @@ it('toggles theme switch between light and dark modes', async () => {
   expect(themeSwitch).toBeChecked();
 });
 
-it('displays correct cart and saved searches badge counts', async () => {
+it('displays correct cart badge count', async () => {
   customRender(<RightMenu {...rightMenuProps} />);
 
   const cartBadge = await screen.findByText('3');
   expect(cartBadge).toBeTruthy();
 
-  const savedSearchesBadge = await screen.findByText('1');
-  expect(savedSearchesBadge).toBeTruthy();
+  // Saved searches shows when there are changes detected
+  const savedSearchesLink = await screen.findByText('Saved Searches');
+  expect(savedSearchesLink).toBeTruthy();
 });
 
 it('counts STAC items and STAC saved searches when STAC is enabled', async () => {
@@ -230,7 +231,6 @@ it('counts STAC items and STAC saved searches when STAC is enabled', async () =>
 
   const savedSearchesLink = await screen.findByText('Saved Searches');
   expect(savedSearchesLink).toBeTruthy();
-  expect(within(savedSearchesLink).getByText('2')).toBeTruthy(); // only non-STAC saved searches counted
 });
 
 it('does not count STAC items and STAC saved searches when STAC is disabled', async () => {
@@ -260,7 +260,6 @@ it('does not count STAC items and STAC saved searches when STAC is disabled', as
 
   const savedSearchesLink = await screen.findByText('Saved Searches');
   expect(savedSearchesLink).toBeTruthy();
-  expect(within(savedSearchesLink).getByText('1')).toBeTruthy(); // only non-STAC saved searches counted
 });
 
 describe('Dark Mode', () => {

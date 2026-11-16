@@ -63,7 +63,10 @@ import {
   activeSearchQueryAtom,
   supportModalVisibleAtom,
   nodeStatusAtom,
+  lastAppLoadTimeAtom,
+  searchChangesMapAtom,
 } from '../../common/atoms';
+import { shouldRunBackgroundCheck, runBackgroundChecks } from '../../common/backgroundCheckUtils';
 import Banner from '../Messaging/Banner';
 
 const useHotjar = (): void => {
@@ -101,6 +104,10 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
   const setActiveSearchQuery = useSetAtom(activeSearchQueryAtom);
 
   const setSupportModalVisible = useSetAtom(supportModalVisibleAtom);
+
+  const [lastAppLoadTime, setLastAppLoadTime] = useAtom(lastAppLoadTimeAtom);
+
+  const setSearchChangesMap = useSetAtom(searchChangesMapAtom);
 
   // Load projects configuration (includes STAC projects from projects.json)
   const { config: projectsConfig, loading: configLoading } = useProjectsConfig();
@@ -227,6 +234,76 @@ const App: React.FC<React.PropsWithChildren<Props>> = ({ searchQuery }) => {
         });
     }
   }, [isAuthenticated, pk, accessToken, projectsLoaded]);
+
+  // Background check for subscribed searches
+  React.useEffect(() => {
+    // Only require projectsLoaded and userSearchQueries - works with or without auth
+    if (!projectsLoaded || userSearchQueries.length === 0) {
+      return;
+    }
+
+    // Check if we should run background check (8+ hours since last load)
+    const shouldRun = shouldRunBackgroundCheck(lastAppLoadTime);
+
+    if (!shouldRun) {
+      return;
+    }
+
+    // Run background checks for subscribed searches
+    runBackgroundChecks(userSearchQueries)
+      .then((changesMap) => {
+        // Store the changes map in state
+        setSearchChangesMap(changesMap);
+
+        // Update lastCheckedTime for each search that was checked
+        const now = Date.now();
+        const updatedSearches = userSearchQueries.map((search) => {
+          if (search.isSubscribed && search.project.isSTAC) {
+            const updatedSearch = {
+              ...search,
+              lastCheckedTime: now,
+            };
+
+            // Update backend if authenticated
+            if (isAuthenticated && accessToken) {
+              updateUserSearchQuery(search.uuid, accessToken, updatedSearch);
+            }
+
+            return updatedSearch;
+          }
+          return search;
+        });
+
+        // Update local state (works for both authenticated and anonymous users)
+        setUserSearchQueries(updatedSearches);
+
+        // Show notification if changes were detected
+        const totalSearchesWithChanges = Object.keys(changesMap).length;
+        if (totalSearchesWithChanges > 0) {
+          showNotice(
+            messageApi,
+            `${totalSearchesWithChanges} subscribed search${totalSearchesWithChanges > 1 ? 'es have' : ' has'} new datasets`,
+            { duration: 10 },
+          );
+        }
+      })
+      .catch((error) => {
+        // eslint-disable-next-line no-console
+        console.error('Background check failed:', error);
+      });
+
+    // Update last app load time
+    setLastAppLoadTime(Date.now());
+  }, [
+    isAuthenticated,
+    accessToken,
+    projectsLoaded,
+    lastAppLoadTime,
+    setSearchChangesMap,
+    setUserSearchQueries,
+    setLastAppLoadTime,
+    messageApi,
+  ]);
 
   React.useEffect(() => {
     /* istanbul ignore else -- @preserve */
