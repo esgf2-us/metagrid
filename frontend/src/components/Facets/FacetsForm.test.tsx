@@ -264,7 +264,7 @@ describe('test FacetsForm component', () => {
   it('Shows empty range if activeSearchQuery has no min and max version date range set', async () => {
     AtomWrapper.modifyAtomValue(
       AppStateKeys.activeSearchQuery,
-      activeSearchQueryFixture({ minVersionDate: undefined, maxVersionDate: undefined }),
+      activeSearchQueryFixture({ minVersionDate: undefined, maxVersionDate: undefined })
     );
     customRender(<FacetsForm />);
 

@@ -129,7 +129,7 @@ describe('Test getUrlFromSearch', () => {
         maxVersionDate: null,
         filenameVars: [],
         activeFacets: {},
-        textInputs: [],
+        textInputs: []
       } as ActiveSearchQuery).includes('?project=CMIP6'),
     ).toBeTruthy();
   });
@@ -143,7 +143,7 @@ describe('Test getUrlFromSearch', () => {
         maxVersionDate: '20210413',
         filenameVars: [],
         activeFacets: {},
-        textInputs: [],
+        textInputs: []
       } as ActiveSearchQuery).includes(
         '?project=CMIP6&minVersionDate=20210309&maxVersionDate=20210413',
       ),
@@ -234,7 +234,7 @@ describe('Test getUrlFromSearch', () => {
         maxVersionDate: null,
         filenameVars: [],
         activeFacets: {},
-        textInputs: [],
+        textInputs: []
       } as ActiveSearchQuery).includes('?project=CMIP6'),
     ).toBeTruthy();
   });
@@ -248,7 +248,7 @@ describe('Test getUrlFromSearch', () => {
         maxVersionDate: '20210413',
         filenameVars: [],
         activeFacets: {},
-        textInputs: [],
+        textInputs: []
       } as ActiveSearchQuery).includes(
         '?project=CMIP6&minVersionDate=20210309&maxVersionDate=20210413',
       ),
@@ -653,7 +653,7 @@ describe('Test compressData and decompressData', () => {
 
   it('should handle compression of large datasets', () => {
     const largeData = {
-      items: new Array(1000).fill({ id: 1, name: 'test', data: 'sample data' }),
+      items: new Array(1000).fill({ id: 1, name: 'test', data: 'sample data' })
     };
 
     const compressed = compressData(largeData);
@@ -967,7 +967,7 @@ describe('createEsgpullCommand', () => {
       maxVersionDate: null,
       filenameVars: [],
       activeFacets: { activity_id: ['CFMIP'], experiment_id: ['piControl'] },
-      textInputs: [],
+      textInputs: []
     } as unknown as ActiveSearchQuery;
     const cmd = createEsgpullCommand(searchQuery, false);
     expect(cmd).toContain(
@@ -984,7 +984,7 @@ describe('createEsgpullCommand', () => {
       maxVersionDate: null,
       filenameVars: [],
       activeFacets: { activity_id: ['CFMIP'], experiment_id: ['piControl'] },
-      textInputs: [],
+      textInputs: []
     } as unknown as ActiveSearchQuery;
     const cmd = createEsgpullCommand(searchQuery, false);
     expect(cmd).toContain(
@@ -1001,7 +1001,7 @@ describe('createEsgpullCommand', () => {
       maxVersionDate: null,
       filenameVars: [],
       activeFacets: {},
-      textInputs: [],
+      textInputs: []
     } as ActiveSearchQuery;
     const cmd = createEsgpullCommand(searchQuery, true);
     expect(cmd).toContain('esgpull add project:\'"CMIP6"\' --replica false');
@@ -1018,7 +1018,7 @@ describe('createEsgpullCommand', () => {
       maxVersionDate: null,
       filenameVars: [],
       activeFacets: {},
-      textInputs: [],
+      textInputs: []
     } as ActiveSearchQuery;
     const cmd = createEsgpullCommand(searchQuery, true);
     expect(cmd).toContain('esgpull add project:\'"CMIP6"\' --replica true');
@@ -1063,7 +1063,7 @@ describe('createIntakeEsgfSearch', () => {
       maxVersionDate: null,
       filenameVars: [],
       activeFacets: { activity_id: ['CFMIP', 'CDRMIP'], experiment_id: ['piControl'] },
-      textInputs: [],
+      textInputs: []
     } as unknown as ActiveSearchQuery;
     const cmd = createIntakeEsgfSearch(searchQuery);
     expect(cmd).toContain('import intake_esgf');
@@ -1084,7 +1084,7 @@ describe('createIntakeEsgfSearch', () => {
       maxVersionDate: null,
       filenameVars: [],
       activeFacets: { activity_id: ['CFMIP', 'CDRMIP'], experiment_id: ['piControl'] },
-      textInputs: [],
+      textInputs: []
     } as unknown as ActiveSearchQuery;
     const cmd = createIntakeEsgfSearch(searchQuery);
     expect(cmd).toContain('import intake_esgf');
@@ -1106,7 +1106,7 @@ describe('createIntakeEsgfSearch', () => {
       maxVersionDate: null,
       filenameVars: [],
       activeFacets: { realm: ['atmos'] },
-      textInputs: [],
+      textInputs: []
     } as unknown as ActiveSearchQuery;
     const cmd = createIntakeEsgfSearch(searchQuery);
     expect(cmd).toContain("realm='atmos'");
@@ -1269,8 +1269,8 @@ describe('Test identifyProblematicFacets', () => {
 
     const currentQuery = activeSearchQueryFixture({
       activeFacets: {
-        facet1: ['value1', 'value2'], // New value
-        facet2: ['value3'], // New facet
+        facet1: ['value1', 'value2'], // New value,
+        facet2: ['value3'], // New facet,
         facet3: ['value4', 'value5'], // New facet with multiple values
       },
     });
@@ -1461,8 +1461,8 @@ describe('Test identifyProblematicFacets', () => {
     const currentQuery = activeSearchQueryFixture({
       project: rawProjectFixture({ name: 'CMIP6' }),
       activeFacets: {
-        source_id: ['CESM2', 'GFDL-ESM4', 'INVALID-MODEL'], // Added invalid model
-        experiment_id: ['historical', 'ssp585'], // Added new experiment
+        source_id: ['CESM2', 'GFDL-ESM4', 'INVALID-MODEL'], // Added invalid model,
+        experiment_id: ['historical', 'ssp585'], // Added new experiment,
         variable: ['tas'],
         frequency: ['mon'],
         // realm removed, which is fine
@@ -1519,7 +1519,7 @@ describe('Test identifyProblematicFacets', () => {
   it('should handle empty arrays for facet values', () => {
     const lastSuccessfulQuery = activeSearchQueryFixture({
       activeFacets: {
-        facet1: [],
+        facet1: []
       },
     });
 

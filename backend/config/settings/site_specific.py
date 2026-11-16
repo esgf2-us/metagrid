@@ -107,6 +107,15 @@ class MetagridBackendSettings(BaseSettings):
         description="A `Client Secret` associated with the Client UUID created for `SOCIAL_AUTH_GLOBUS_KEY` at https://app.globus.org/settings/developers",
     )
 
+    CITATION_ALLOWED_HOSTS: Sequence[str] = Field(
+        default=[
+            "cera-www.dkrz.de",
+            "raw.githubusercontent.com",
+            "cmip7-citations.ceda.ac.uk",
+        ],
+        description="The list of hostnames allowed for citation URL fetching. Citation URLs must be from one of these hosts for security purposes.",
+    )
+
 
 class MetagridFrontendSettings(BaseSettings):
     """Settings retrieved by the Metagrid frontend.

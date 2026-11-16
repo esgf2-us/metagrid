@@ -77,7 +77,7 @@ describe('shows the correct selected datasets and files', () => {
 
   it('when items are selected but number_of_files and size are undefined', async () => {
     AtomWrapper.modifyAtomValue(CartStateKeys.cartItemSelections, [
-      rawSearchResultFixture({ number_of_files: undefined, size: undefined }),
+      rawSearchResultFixture({ number_of_files: undefined, size: undefined })
     ]);
     customRender(<Summary />);
 

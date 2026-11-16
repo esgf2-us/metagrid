@@ -1,5 +1,6 @@
-import { AutoComplete, Button, Divider, Popover, Tabs as TabsD } from 'antd';
+import { AutoComplete, Button, Divider, message, Popover, Tabs as TabsD, Tooltip } from 'antd';
 import React from 'react';
+import { CopyOutlined } from '@ant-design/icons';
 import { objectHasKey, splitStringByChar } from '../../common/utils';
 import qualityFlagsImg from '../../assets/img/climate_indicators_table.png';
 import Citation from './Citation';
@@ -129,6 +130,7 @@ const buildDisplayData = (
 
 const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }) => {
   const [metaDataDisplayed, setMetaDataDisplayed] = React.useState<DisplayMetaData[]>();
+  const [messageApi, contextHolder] = message.useMessage();
 
   const { keys, displayData } = buildDisplayData(record);
 
@@ -163,6 +165,57 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
     });
 
     setMetaDataDisplayed(filteredDisplayItems);
+  };
+
+  // Function to copy all metadata to clipboard
+  const handleCopyMetadata = (): void => {
+    let metadataObj: Record<string, unknown>;
+
+    if (metaDataDisplayed && metaDataDisplayed.length > 0) {
+      metadataObj = {};
+
+      metaDataDisplayed.forEach((item) => {
+        const keyParts = item.key.split('-');
+        const topLevelKey = keyParts[0];
+
+        if (keyParts.length === 2) {
+          if (topLevelKey in record) {
+            metadataObj[topLevelKey] = record[topLevelKey as keyof RawSearchResult];
+          }
+        } else if (keyParts.length > 2) {
+          const nestedKey = keyParts.slice(2).join('-');
+
+          // Initialize the parent object if it doesn't exist
+          if (!(topLevelKey in metadataObj)) {
+            metadataObj[topLevelKey] = {};
+          }
+
+          // Add the nested property
+          if (topLevelKey in record) {
+            const parentValue = record[topLevelKey as keyof RawSearchResult];
+            if (
+              typeof parentValue === 'object' &&
+              parentValue !== null &&
+              !Array.isArray(parentValue)
+            ) {
+              (metadataObj[topLevelKey] as Record<string, unknown>)[nestedKey] = (
+                parentValue as Record<string, unknown>
+              )[nestedKey];
+            }
+          }
+        }
+      });
+    } else {
+      // If no filter applied, copy the entire record
+      metadataObj = record;
+    }
+
+    const metadataText = JSON.stringify(metadataObj, null, 2);
+    /* istanbul ignore else -- @preserve */
+    if (navigator && navigator.clipboard) {
+      navigator.clipboard.writeText(metadataText);
+      messageApi.success('Metadata copied to clipboard!');
+    }
   };
 
   // Have to parse and format since 'xlink' attribute is poorly structured
@@ -250,7 +303,10 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
 
   // Legacy project further info URL
   const furtherInfoUrl =
-    record && record.further_info_url && record.further_info_url.length > 0
+    record &&
+    record.further_info_url &&
+    record.further_info_url.length > 0 &&
+    record.further_info_url[0] !== 'undefined'
       ? record.further_info_url[0]
       : '';
 
@@ -259,7 +315,9 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
   const finalEsDocUrl = esDocUrl || furtherInfoUrl;
   const showQualityFlags = Object.keys(qualityFlags).length > 0;
   const showAdditionalLinks = urlCount > 0;
-  const showAdditionalTab = showESDOC !== '' || showQualityFlags || showAdditionalLinks;
+  // Filter out invalid URLs like the string 'undefined'
+  const hasValidESDOC = showESDOC && showESDOC !== '' && showESDOC !== 'undefined';
+  const showAdditionalTab = hasValidESDOC || showQualityFlags || showAdditionalLinks;
 
   const tabList = [
     {
@@ -274,7 +332,21 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
       label: <div className={innerDataRowTargets.metadataTab.class()}>Metadata</div>,
       children: (
         <>
-          <h4>Displaying {Object.keys(record).length} keys</h4>
+          {contextHolder}
+          <h4>
+            Displaying {metaDataDisplayed ? metaDataDisplayed.length : Object.keys(record).length}{' '}
+            keys
+            <Button
+              size="small"
+              style={{ marginLeft: '8px' }}
+              icon={
+                <Tooltip title="Copy all metadata to clipboard">
+                  <CopyOutlined style={{ fontSize: '12px' }} />
+                </Tooltip>
+              }
+              onClick={handleCopyMetadata}
+            />
+          </h4>
           <AutoComplete
             style={{ width: '100%' }}
             className={innerDataRowTargets.metadataLookupField.class()}
@@ -319,7 +391,7 @@ const Tabs: React.FC<React.PropsWithChildren<Props>> = ({ record, filenameVars }
       children: (
         <>
           {showAdditionalLinks && additionalLinks}
-          {showESDOC && (
+          {hasValidESDOC && (
             <Button type="link" href={finalEsDocUrl} target="_blank">
               ES-DOC
             </Button>

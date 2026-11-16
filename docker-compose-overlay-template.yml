@@ -31,6 +31,9 @@ services:
       METAGRID_WGET_URL: <METAGRID_WGET_URL>
       METAGRID_STATUS_URL: <METAGRID_STATUS_URL>
 
+      # Citation URLs allowed for fetching citation data
+      METAGRID_CITATION_ALLOWED_HOSTS: '["cera-www.dkrz.de", "raw.githubusercontent.com", "cmip7-citations.ceda.ac.uk"]'
+
       # Globus / auth
       METAGRID_GLOBUS_NODES: '["esgf-node.ornl.gov", "eagle.alcf.anl.gov", "esgf-data.nersc.gov"]'
       METAGRID_SOCIAL_AUTH_GLOBUS_KEY: <METAGRID_SOCIAL_AUTH_GLOBUS_KEY>

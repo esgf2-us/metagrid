@@ -2,7 +2,7 @@ import { within, screen, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { rest, server } from '../../test/mock/server';
+import { http, HttpResponse, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
 import Items, { Props } from './Items';
@@ -107,7 +107,7 @@ describe('test the cart items component', () => {
 
   it('handles error selecting items in the cart and downloading them via wget', async () => {
     // Override route HTTP response
-    server.use(rest.post(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404))));
+    server.use(http.post(apiRoutes.wget.path, () => new HttpResponse(null, { status: 404 })));
 
     customRender(<Items {...defaultProps} />);
 
@@ -120,7 +120,7 @@ describe('test the cart items component', () => {
     const downloadBtn = (
       await within(firstRow).findAllByRole('button', {
         name: 'download',
-      })
+      }),
     )[0];
     await userEvent.click(downloadBtn);
 

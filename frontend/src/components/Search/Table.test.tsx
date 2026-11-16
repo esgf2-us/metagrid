@@ -3,7 +3,7 @@ import { vi } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { rawSearchResultFixture, rawSearchResultsFixture } from '../../test/mock/fixtures';
-import { rest, server } from '../../test/mock/server';
+import { http, HttpResponse, server } from '../../test/mock/server';
 import apiRoutes from '../../api/routes';
 import customRender from '../../test/custom-render';
 import Table, { Props } from './Table';
@@ -53,7 +53,7 @@ describe('test main table UI', () => {
     const databaseIcon = (
       await screen.findAllByRole('img', {
         name: 'database',
-      })
+      }),
     )[0];
     expect(databaseIcon).toBeTruthy();
   });
@@ -387,7 +387,7 @@ describe('test main table UI', () => {
   });
 
   it('displays an error when unable to access download via wget', async () => {
-    server.use(rest.post(apiRoutes.wget.path, (_req, res, ctx) => res(ctx.status(404))));
+    server.use(http.post(apiRoutes.wget.path, () => new HttpResponse(null, { status: 404 })));
 
     AtomWrapper.modifyAtomValue(AppStateKeys.userCart, [defaultProps.results[0]]);
     customRender(<Table {...defaultProps} />);
@@ -512,7 +512,7 @@ describe('test column sorting', () => {
         {...defaultProps}
         results={[
           rawSearchResultFixture({ id: 'foo', number_of_files: 18 }),
-          rawSearchResultFixture({ id: 'bar', number_of_files: 7 }),
+          rawSearchResultFixture({ id: 'bar', number_of_files: 7 })
         ]}
       />,
     );
@@ -556,7 +556,7 @@ describe('test column sorting', () => {
         {...defaultProps}
         results={[
           rawSearchResultFixture({ id: 'foo', size: 5678 }),
-          rawSearchResultFixture({ id: 'bar', size: 1234 }),
+          rawSearchResultFixture({ id: 'bar', size: 1234 })
         ]}
       />,
     );
@@ -600,7 +600,7 @@ describe('test column sorting', () => {
         {...defaultProps}
         results={[
           rawSearchResultFixture({ id: 'foo', version: '5678' }),
-          rawSearchResultFixture({ id: 'bar', version: '1234' }),
+          rawSearchResultFixture({ id: 'bar', version: '1234' })
         ]}
       />,
     );
