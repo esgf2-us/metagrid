@@ -62,6 +62,7 @@ import {
 } from '../../common/utils';
 import { UserCart, UserSearchQuery } from '../Cart/types';
 import { Tag, TagType, TagValue } from '../DataDisplay/Tag';
+import { FacetTag } from '../DataDisplay/FacetTag';
 import { ParsedFacets, RawFacets, RawProject } from '../Facets/types';
 import Button from '../General/Button'; // Note, tooltips do not work for this button
 import Table from './Table';
@@ -1114,6 +1115,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                 activeFacets[facet].map((variable: string) => {
                   const facetKey = `${facet}:${variable}`;
                   const isProblematic = problematicFacets.has(facetKey);
+                  const clickableConfig = currentProject.clickableFacets?.[facet];
                   return (
                     <div key={variable} data-testid={variable}>
                       {isProblematic ? (
@@ -1122,20 +1124,22 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                           placement="top"
                         >
                           <span>
-                            <Tag
-                              value={[facet, variable]}
-                              onClose={handleRemoveFilter}
-                              type="facet"
+                            <FacetTag
+                              facet={facet}
+                              value={variable}
+                              clickableConfig={clickableConfig}
+                              onClose={() => handleRemoveFilter([facet, variable], 'facet')}
                               color="warning"
-                            >
-                              {variable}
-                            </Tag>
+                            />
                           </span>
                         </Tooltip>
                       ) : (
-                        <Tag value={[facet, variable]} onClose={handleRemoveFilter} type="facet">
-                          {variable}
-                        </Tag>
+                        <FacetTag
+                          facet={facet}
+                          value={variable}
+                          clickableConfig={clickableConfig}
+                          onClose={() => handleRemoveFilter([facet, variable], 'facet')}
+                        />
                       )}
                     </div>
                   );

@@ -13,7 +13,6 @@ import {
   Radio,
   Row,
   Select,
-  Tag,
   Tooltip,
   RadioChangeEvent,
   message,
@@ -32,6 +31,7 @@ import { useAtom, useAtomValue } from 'jotai';
 import { CSSinJS } from '../../common/types';
 import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
+import { FacetTag } from '../DataDisplay/FacetTag';
 import { ActiveSearchQuery, ResultType, VersionType } from '../Search/types';
 import { ActiveFacets, ParsedFacets } from './types';
 import { objectIsEmpty, showError, showNotice } from '../../common/utils';
@@ -510,45 +510,16 @@ const FacetsForm: React.FC = () => {
       );
       const count = matchingOption ? matchingOption[1] : null;
 
-      if (clickableConfig) {
-        const url = clickableConfig.urlTemplate.replace('{value}', String(value).toLowerCase());
-        return (
-          <Tag
-            onMouseDown={onPreventMouseDown}
-            closable={closable}
-            onClose={onClose}
-            style={{ marginRight: 3 }}
-          >
-            <Tooltip title={`View ${value} documentation`}>
-              <a
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  color: '#1890ff',
-                  textDecoration: 'none',
-                  cursor: 'pointer',
-                }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                {value}
-              </a>
-            </Tooltip>
-            {count !== null && <span> ({count})</span>}
-          </Tag>
-        );
-      }
-
       return (
-        <Tag
-          onMouseDown={onPreventMouseDown}
+        <FacetTag
+          facet={facet}
+          value={value}
+          clickableConfig={clickableConfig}
           closable={closable}
           onClose={onClose}
-          style={{ marginRight: 3 }}
-        >
-          {value}
-          {count !== null && <span> ({count})</span>}
-        </Tag>
+          onMouseDown={onPreventMouseDown}
+          count={count}
+        />
       );
     };
   };
