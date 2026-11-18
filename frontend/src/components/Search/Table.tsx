@@ -174,9 +174,10 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
           });
       }
     } else if (downloadType === 'esgpull' && record.id) {
-      if (navigator && navigator.clipboard && typeof record.master_id === 'string') {
-        navigator.clipboard.writeText(createEsgpullCommand({}, true, record.master_id)).then(() => {
-          showNotice(messageApi, 'Esgpull download dataset command copied to clipboard!', {
+      if (navigator && navigator.clipboard) {
+        // Generate search command (not download) since we can't guarantee exact dataset match without ID
+        navigator.clipboard.writeText(createEsgpullCommand(record, false)).then(() => {
+          showNotice(messageApi, 'Esgpull search command copied to clipboard!', {
             duration: 3,
             type: 'success',
             icon: <CodeOutlined />,
@@ -521,9 +522,12 @@ const Table: React.FC<React.PropsWithChildren<Props>> = ({
         /* istanbul ignore if -- @preserve */
         if (record.isStac && record.globus_link) {
           downloadTypesAvailable.push('Globus');
-        } else if (!record.isStac && record.id) {
-          downloadTypesAvailable.push('esgpull');
         }
+
+        // Note: esgpull option removed for individual datasets because:
+        // - master_id/dataset_id are not valid search parameters
+        // - Cannot reliably extract all facets from record to create specific search
+        // - Users should use the main "Copy esgpull download command" button instead
 
         const formKey = `download-${record.id}`;
         const currentSelection = downloadSelections[record.id] || downloadTypesAvailable[0];

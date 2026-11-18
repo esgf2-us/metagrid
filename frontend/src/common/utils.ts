@@ -473,31 +473,33 @@ export const getSearchFromUrl = (url?: string): ActiveSearchQuery => {
 export function createEsgpullCommand(
   searchQuery: ActiveSearchQuery | Record<string, unknown>,
   downloadCmd: boolean,
-  datasetId?: string,
 ): string {
-  // If it's a single dataset, just use dataset_id
-  if (datasetId && datasetId !== '') {
-    return `# Esgpull Dataset Download Command:\n\`esgpull add master_id:'"${datasetId}"' --track | tail -n1\`; esgpull download --disable-ssl`;
-  }
-
+  // Early return if searchQuery is empty
   if (objectIsEmpty(searchQuery)) {
     return '';
   }
 
-  const { project, versionType, resultType, activeFacets, textInputs } =
-    searchQuery as ActiveSearchQuery;
+  const { project, resultType, activeFacets, textInputs, isStac } =
+    searchQuery as ActiveSearchQuery & {
+      isStac?: boolean;
+    };
 
-  // Commented out values were causing KeyError during search
+  // Determine if this is a STAC project (from project.isSTAC or record.isStac)
+  const isStacProject = project?.isSTAC === true || isStac === true;
+
+  // Default undefined values to empty array/object
+  const safeFacets = activeFacets || {};
+  const safeTextInputs = textInputs || [];
+
+  // Valid facets for esgpull search (excluding master_id and dataset_id which are output-only)
   const validFacets: string[] = [
     'activity_id',
     'data_node',
-    'dataset_id',
     'experiment_id',
     'frequency',
     'grid_label',
     'index_node',
     'institution_id',
-    'master_id',
     'member_id',
     'mip_era',
     'nominal_resolution',
@@ -505,8 +507,6 @@ export function createEsgpullCommand(
     'realm',
     'source_id',
     'table_id',
-    'title',
-    'url',
     'variable',
     'variable_id',
     'variable_long_name',
@@ -518,9 +518,9 @@ export function createEsgpullCommand(
   /* istanbul ignore else -- @preserve */
   if (project) {
     if (project.isSTAC && project.projectName) {
-      commandParts.push(`project:'"${(project as RawProject).projectName}"'`);
+      commandParts.push(`project:${(project as RawProject).projectName}`);
     } else if (project.name) {
-      commandParts.push(`project:'"${(project as RawProject).name}"'`);
+      commandParts.push(`project:${(project as RawProject).name}`);
     }
   }
 
@@ -528,28 +528,63 @@ export function createEsgpullCommand(
   const invalidFacets: string[] = [];
 
   // Add other search parameters
-  if (!objectIsEmpty(activeFacets)) {
-    Object.entries(activeFacets).forEach(([key, value]) => {
+  if (!objectIsEmpty(safeFacets)) {
+    // Case 1: ActiveSearchQuery with activeFacets object
+    Object.entries(safeFacets).forEach(([key, value]) => {
       if (validFacets.includes(key) && value.length > 0) {
-        commandParts.push(`${key}:'"${value.join(',')}"'`);
+        commandParts.push(`${key}:${value.join(',')}`);
       } else {
-        invalidFacets.push(`${key}:'"${value.join(',')}"'`);
+        invalidFacets.push(`${key}:${value.join(',')}`);
+      }
+    });
+  } else {
+    // Case 2: Raw record object - extract facets directly from searchQuery properties
+
+    // For STAC backend, project is required - try to extract from record or master_id
+    if (isStacProject) {
+      const recordProject = (searchQuery as Record<string, unknown>).project;
+      const masterId = (searchQuery as Record<string, unknown>).master_id;
+
+      if (recordProject && typeof recordProject === 'string') {
+        commandParts.push(`project:${recordProject}`);
+      } else if (masterId && typeof masterId === 'string') {
+        // Extract project from master_id (first segment before first dot)
+        const projectFromId = masterId.split('.')[0];
+        if (projectFromId) {
+          commandParts.push(`project:${projectFromId}`);
+        }
+      }
+    }
+
+    Object.entries(searchQuery).forEach(([key, value]) => {
+      // Skip project if we already added it above
+      if (key === 'project' && isStacProject) {
+        return;
+      }
+
+      if (validFacets.includes(key) && value && typeof value === 'string') {
+        commandParts.push(`${key}:${value}`);
+      } else if (validFacets.includes(key) && Array.isArray(value) && value.length > 0) {
+        const stringValues = value.filter((v) => typeof v === 'string');
+        if (stringValues.length > 0) {
+          commandParts.push(`${key}:${stringValues.join(',')}`);
+        }
       }
     });
   }
 
+  // Validate that we have at least some search criteria after extraction
+  if (commandParts.length === 0 && safeTextInputs.length === 0) {
+    return '';
+  }
+
   // Add text inputs
-  if (textInputs.length > 0) {
-    commandParts.push(`${JSON.stringify(textInputs)}`);
+  if (safeTextInputs.length > 0) {
+    commandParts.push(`${JSON.stringify(safeTextInputs)}`);
   }
 
-  // Update result type
-  if (versionType && versionType === 'latest') {
-    commandParts.push(`--latest true`);
-  }
-
-  // Update result type
-  if (resultType && resultType !== 'all') {
+  // Add replica flag for non-STAC projects only (STAC backend ignores --replica, --latest, --distrib)
+  if (!isStacProject && resultType && resultType !== 'all') {
     if (resultType === 'originals only') {
       commandParts.push(`--replica false`);
     } else {
@@ -559,15 +594,18 @@ export function createEsgpullCommand(
 
   const ignoredFacetsMsg =
     invalidFacets.length > 0
-      ? `#${'='.repeat(79)}\n# Facets listed below WERE NOT applied (not supported in Esgpull):\n# UNAPPLIED: ${invalidFacets.join('\n# UNAPPLIED: ')}\n#${'='.repeat(79)}\n`
+      ? `echo "⚠️  Unapplied facets (not supported in Esgpull): ${invalidFacets.join(', ')}"; `
       : '';
-  const pullCmd = `esgpull ${downloadCmd ? 'add' : 'search'} ${commandParts.join(' ')}`;
+
+  // Use appropriate backend: stac for STAC projects, solr (default) for others
+  const backend = isStacProject ? '-b stac' : '-b solr';
+  const pullCmd = `esgpull ${downloadCmd ? 'add' : 'search'} ${backend} ${commandParts.join(' ')}`;
 
   if (downloadCmd) {
-    return `${ignoredFacetsMsg}# Espull Download Command:\n\`${pullCmd} --track | tail -n1\`; esgpull download --disable-ssl`;
+    return `${ignoredFacetsMsg}id=$(${pullCmd} --track | grep -o '<[a-z0-9]*>' | tr -d '<>' | head -n1); esgpull update $id; esgpull download $id --disable-ssl`;
   }
 
-  return `${ignoredFacetsMsg}# Esgpull Search Query:\n${pullCmd}`;
+  return `${ignoredFacetsMsg}${pullCmd}`;
 }
 
 export const createIntakeEsgfSearch = (searchQuery: ActiveSearchQuery): string => {
