@@ -1,0 +1,105 @@
+# Podman-specific production configuration
+# Applies Podman-specific settings on top of base compose files
+#
+# Key differences from Docker deployment:
+# - Traefik uses Docker provider with Podman socket (bypasses DNS issues)
+# - Containers run as root (user: 0:0) for pre-built image compatibility
+# - Standard ports 80/443 (requires rootful Podman with sudo)
+# - Traefik labels for dynamic service discovery via Podman API
+
+volumes:
+  traefik_certs: {}
+
+networks:
+  default:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: metagrid_br
+
+services:
+  traefik:
+    restart: unless-stopped
+    # Add Docker provider via command-line to bypass DNS issues
+    command:
+      - '--providers.docker=true'
+      - '--providers.docker.endpoint=unix:///var/run/podman/podman.sock'
+      - '--providers.docker.exposedbydefault=false'
+      - '--providers.docker.network=metagrid_default'
+    volumes:
+      - traefik_certs:/etc/traefik/acme
+      # Mount Podman-specific Traefik config
+      - ./traefik/traefik.podman.yml:/etc/traefik/traefik.yml
+      # Mount Podman socket for Docker provider
+      - /run/podman/podman.sock:/var/run/podman/podman.sock:ro
+      # Mount custom certificates directory if using custom certs (traefik.customcert.yml)
+      - ./traefik/certs:/etc/traefik/certs:ro
+      # Mount host resolv.conf to bypass aardvark-dns for external lookups
+      # Container names still resolved via Docker provider (Podman API)
+      - /etc/resolv.conf:/etc/resolv.conf:ro
+    ports:
+      - '0.0.0.0:80:9080' # HTTP on standard port
+      - '0.0.0.0:443:9443' # HTTPS on standard port
+    networks:
+      default:
+        aliases:
+          - traefik
+
+  docs:
+    profiles: ['docs']
+    restart: unless-stopped
+
+  postgres:
+    restart: unless-stopped
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+    ports: [] # Remove port binding - internal access only
+
+  django:
+    restart: unless-stopped
+    user: '0:0' # Run as root in container to avoid permission issues with pre-built images
+    ports: [] # Remove port binding - accessed through traefik only via container network
+    depends_on:
+      postgres:
+        condition: service_started
+    networks:
+      default:
+        aliases:
+          - django
+    # Traefik Docker provider labels
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.django.rule=Host(`${DOMAIN_NAME}`) && (PathPrefix(`/account-confirm-email`) || PathPrefix(`/accounts`) || PathPrefix(`/api`) || PathPrefix(`/complete`) || PathPrefix(`/frontend-config.js`) || PathPrefix(`/globus`) || PathPrefix(`/login`) || PathPrefix(`/proxy`) || PathPrefix(`/redoc`) || PathPrefix(`/swagger`) || PathPrefix(`/tempStorage`))'
+      - 'traefik.http.routers.django.entrypoints=web-secure'
+      - 'traefik.http.routers.django.tls=true'
+      - 'traefik.http.services.django.loadbalancer.server.port=5000'
+      - 'traefik.docker.network=metagrid_default'
+      - 'traefik.http.routers.django.priority=10'
+
+  react:
+    command: []
+    restart: unless-stopped
+    user: '0:0' # Run as root in container to avoid permission issues with pre-built images
+    volumes:
+      - ./frontend/public/projects/projects.json:/usr/share/nginx/html/projects/projects.json:ro
+    ports: [] # Remove port binding - accessed through traefik only
+    networks:
+      default:
+        aliases:
+          - react
+    # Traefik Docker provider labels
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.react.rule=Host(`${DOMAIN_NAME}`)'
+      - 'traefik.http.routers.react.entrypoints=web-secure'
+      - 'traefik.http.routers.react.tls=true'
+      - 'traefik.http.services.react.loadbalancer.server.port=8080'
+      - 'traefik.docker.network=metagrid_default'
+      - 'traefik.http.routers.react.priority=1'
+
+  keycloak:
+    profiles: ['keycloak']
+    command: start --import-realm
+    volumes: []
+    restart: unless-stopped

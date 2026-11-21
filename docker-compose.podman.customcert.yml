@@ -1,0 +1,11 @@
+# Podman + Custom Certificate overlay
+# Use this when deploying with Podman AND custom SSL certificates
+# Applied after docker-compose.podman.yml to add certificate configuration
+
+services:
+  traefik:
+    volumes:
+      # Override to use custom cert config (no ACME)
+      - ./traefik/traefik.podman.customcert.yml:/etc/traefik/traefik.yml
+      # Mount dynamic cert configuration
+      - ./traefik/traefik.podman.customcert-dynamic.yml:/etc/traefik/dynamic-certs.yml:ro

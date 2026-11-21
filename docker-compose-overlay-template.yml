@@ -22,7 +22,7 @@ services:
       DOMAIN_NAME: <DOMAIN_NAME>
       DJANGO_ALLOWED_HOSTS: '["<DOMAIN_NAME>", "localhost"]'
       DJANGO_SECRET_KEY: <DJANGO_SECRET_KEY>
-      DJANGO_DATABASE_URL: "postgresql://<POSTGRES_USER>:<POSTGRES_PASSWORD>@postgres:5432/postgres"
+      DJANGO_DATABASE_URL: 'postgresql://<POSTGRES_USER>:<POSTGRES_PASSWORD>@postgres:5432/postgres'
       # Note: DJANGO_DEBUG defaults to False. Only set to True for local/test environments.
 
       # Backend / frontend integration URLs (use defaults where known, otherwise placeholders)

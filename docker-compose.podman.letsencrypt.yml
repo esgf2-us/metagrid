@@ -1,0 +1,12 @@
+# Podman + Let's Encrypt overlay
+# Use this when deploying with Podman AND Let's Encrypt certificates
+# Applied after docker-compose.podman.yml to add Let's Encrypt certificate resolver
+
+services:
+  django:
+    labels:
+      - 'traefik.http.routers.django.tls.certresolver=letsencrypt'
+
+  react:
+    labels:
+      - 'traefik.http.routers.react.tls.certresolver=letsencrypt'
