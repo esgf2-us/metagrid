@@ -4,6 +4,12 @@ export type TitledFacet = {
 };
 export type StacProjectFacet = string | TitledFacet;
 export type FacetsByGroup = { [key: string]: StacProjectFacet[] };
+export type ClickableFacetConfig = {
+  urlTemplate: string;
+};
+export type ClickableFacets = {
+  [facetName: string]: ClickableFacetConfig;
+};
 export type RawProject = {
   pk: string;
   name: string;
@@ -15,6 +21,7 @@ export type RawProject = {
   projectName?: string;
   stacApiUrl?: string;
   projectHash?: string;
+  clickableFacets?: ClickableFacets;
 };
 export type RawProjects = Array<RawProject>;
 
