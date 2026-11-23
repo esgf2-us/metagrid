@@ -651,10 +651,21 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   const handleEsgpullDownloadCmd = React.useCallback((): void => {
     /* istanbul ignore else -- @preserve */
     if (navigator && navigator.clipboard) {
-      navigator.clipboard.writeText(createEsgpullCommand(activeSearchQuery, true));
-      showNotice(messageApi, 'Esgpull download command copied to clipboard!', {
-        icon: <CodeOutlined />,
-      });
+      const command = createEsgpullCommand(activeSearchQuery, true);
+      if (command) {
+        navigator.clipboard.writeText(command);
+        showNotice(messageApi, 'Esgpull download command copied to clipboard!', {
+          icon: <CodeOutlined />,
+        });
+      } else {
+        showNotice(
+          messageApi,
+          'Unable to generate esgpull command. Please ensure search criteria are set.',
+          {
+            type: 'warning',
+          },
+        );
+      }
     }
   }, [activeSearchQuery, messageApi]);
 
