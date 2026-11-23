@@ -202,6 +202,11 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   const prevProjectNameRef = React.useRef<string>('');
   const currentRequestQueryRef = React.useRef<ActiveSearchQuery | null>(null);
 
+  // Request ID tracking to prevent race conditions
+  // Incremented whenever search parameters change, so we can discard stale responses
+  const requestIdRef = React.useRef<number>(0);
+  const lastProcessedRequestIdRef = React.useRef<number>(-1);
+
   const [cachedResults, setCachedResults] = React.useState<SearchResults | undefined>(() => {
     // Initialize from localStorage on mount
     const cached = getCachedSearchResults();
@@ -331,6 +336,47 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     setFiltersExist(checkFiltersExist(activeFacets, textInputs));
   }, [activeFacets, textInputs]);
 
+  // Track search parameter changes and increment request ID to prevent race conditions
+  // This runs whenever any search parameter changes (facets, project, text inputs, etc.)
+  React.useEffect(() => {
+    // Increment request ID to invalidate any in-flight requests
+    requestIdRef.current += 1;
+
+    // Clear all caches immediately when search parameters change
+    // This ensures we never use stale cached data
+    if (requestIdRef.current > 1) {
+      // Don't clear on initial mount (requestId = 1)
+      setCachedResults(undefined);
+      clearCachedSearchResults();
+
+      if (currentProject.isSTAC) {
+        // For STAC, clear batch cache when query changes
+        const currentProjectName = (project.name as string) || '';
+        if (stacLoadedBatches.projectName === currentProjectName) {
+          // Only clear if we're in the same project (facet/filter change)
+          clearCachedStacBatches();
+          setStacLoadedBatches({ ...EMPTY_STAC_BATCHES, projectName: currentProjectName });
+        }
+      } else {
+        clearNonStacBatchCache();
+      }
+    }
+  }, [
+    activeFacets,
+    textInputs,
+    filenameVars,
+    versionType,
+    resultType,
+    minVersionDate,
+    maxVersionDate,
+    project.name,
+    project.pk,
+    activeSearchQuery.globusOnly,
+    activeSearchQuery.minCreatedDate,
+    activeSearchQuery.maxCreatedDate,
+    currentProject.isSTAC,
+  ]);
+
   // STAC cache restoration: restore once on navigation, reset on query change
   React.useEffect(() => {
     if (currentProject.isSTAC && stacLoadedBatches.searchQuery && hasStacResults) {
@@ -379,14 +425,22 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     const hasFullProject = project.pk !== undefined && project.name !== undefined;
 
     if (!objectIsEmpty(project) && hasFullProject && currentRequestURL) {
-      // Capture the current query when making the request
+      // Capture the current query and request ID when making the request
       currentRequestQueryRef.current = activeSearchQuery;
+      const currentRequestId = requestIdRef.current;
 
       if (currentProject.isSTAC) {
         const cached = getCachedStacBatches();
         const cachedURL = cached?.searchURL || '';
 
-        if (!hasStacResults || currentRequestURL !== cachedURL) {
+        // For STAC, only use cache if URL matches AND it's not a fresh search
+        // Don't use cache if search parameters just changed (new request ID)
+        const canUseCache =
+          hasStacResults &&
+          currentRequestURL === cachedURL &&
+          currentRequestId === lastProcessedRequestIdRef.current;
+
+        if (!canUseCache) {
           setIsBackgroundFetch(false);
           lastPreloadedBatchRef.current = -1;
           run(currentRequestURL);
@@ -395,7 +449,11 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         const cached = getCachedSearchResults();
         const cachedURL = (cached?.cachedURL as string) || '';
 
-        if (currentRequestURL === cachedURL) {
+        // For non-STAC, only use cache if URL matches AND request ID hasn't changed
+        if (
+          currentRequestURL === cachedURL &&
+          currentRequestId === lastProcessedRequestIdRef.current
+        ) {
           setCachedResults(cached);
         } else {
           setCachedResults(undefined);
@@ -412,6 +470,20 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     }
 
     if (results && currentRequestURL && !objectIsEmpty(results)) {
+      // Check if this response is for the current request
+      // If the request ID has changed since we started the request, discard these results
+      const currentRequestId = requestIdRef.current;
+
+      // Skip processing if a newer request has been initiated
+      // This prevents race conditions where slow responses arrive after the user has changed filters
+      if (lastProcessedRequestIdRef.current >= currentRequestId) {
+        // We've already processed results for this request ID or a newer one
+        return;
+      }
+
+      // Mark this request as processed
+      lastProcessedRequestIdRef.current = currentRequestId;
+
       cacheSearchResults(
         results,
         paginationOptions,
@@ -454,11 +526,16 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         }
 
         // Determine if this is a new search or pagination of existing search
-        // If the search URL changed (filters/facets changed), replace results instead of appending
+        // Compare both URL and the actual search query to prevent cache pollution
         const isSameSearch =
           stacLoadedBatches.searchURL &&
           currentRequestURL &&
-          stacLoadedBatches.searchURL === currentRequestURL;
+          stacLoadedBatches.searchURL === currentRequestURL &&
+          stacLoadedBatches.searchQuery &&
+          isEqual(activeSearchQuery, stacLoadedBatches.searchQuery, (query: ActiveSearchQuery) => ({
+            ...query,
+            project: { name: query.project.name, pk: query.project.pk },
+          }));
 
         // Sanity check: if appending would exceed totalMatched, it's a different query
         const wouldExceedTotal =
