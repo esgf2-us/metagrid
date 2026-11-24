@@ -169,6 +169,9 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   const { data, error, isLoading, run } = useAsync({
     deferFn: fetchSearchResults as unknown as DeferFn<SearchResults>,
   });
+
+  // Track the URL that produced the current data
+  const dataUrlRef = React.useRef<string>('');
   const [filtersExist, setFiltersExist] = React.useState<boolean>(false);
   const [parsedFacets, setParsedFacets] = React.useState<ParsedFacets | Record<string, unknown>>(
     {},
@@ -449,6 +452,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           lastRequestedIdRef.current = currentRequestId;
           // Map this URL to the current request ID
           urlToRequestIdRef.current.set(currentRequestURL, currentRequestId);
+          // Track which URL we're fetching so we can validate the response
+          dataUrlRef.current = currentRequestURL;
           run(currentRequestURL);
         }
       } else {
@@ -467,6 +472,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           lastRequestedIdRef.current = currentRequestId;
           // Map this URL to the current request ID
           urlToRequestIdRef.current.set(currentRequestURL, currentRequestId);
+          // Track which URL we're fetching so we can validate the response
+          dataUrlRef.current = currentRequestURL;
           run(currentRequestURL);
         }
       }
@@ -479,11 +486,20 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       return;
     }
 
-    if (results && currentRequestURL && !objectIsEmpty(results)) {
-      // Get the request ID that corresponds to this URL
-      const expectedRequestId = urlToRequestIdRef.current.get(currentRequestURL);
+    if (results && !objectIsEmpty(results)) {
+      // Check if this data is for the URL we most recently requested
+      // dataUrlRef tracks which URL the current 'data' corresponds to
+      const dataUrl = dataUrlRef.current;
 
-      // If we don't have a request ID for this URL, or it's already been processed, skip
+      if (!dataUrl) {
+        // No URL tracked, skip processing
+        return;
+      }
+
+      // Get the request ID that corresponds to the URL that produced this data
+      const expectedRequestId = urlToRequestIdRef.current.get(dataUrl);
+
+      // If we don't have a request ID for this URL, it's stale
       if (expectedRequestId === undefined) {
         // This URL was never requested in this session, discard
         return;
@@ -506,10 +522,13 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       // Mark this request as processed
       lastProcessedRequestIdRef.current = expectedRequestId;
 
+      // Use dataUrl (the URL that produced this data) instead of currentRequestURL for caching
+      const urlForCaching = dataUrl;
+
       cacheSearchResults(
         results,
         paginationOptions,
-        currentRequestURL,
+        urlForCaching,
         currentRequestQueryRef.current || activeSearchQuery,
       );
       if (results.facet_counts) {
@@ -551,8 +570,8 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         // Compare both URL and the actual search query to prevent cache pollution
         const isSameSearch =
           stacLoadedBatches.searchURL &&
-          currentRequestURL &&
-          stacLoadedBatches.searchURL === currentRequestURL &&
+          dataUrl &&
+          stacLoadedBatches.searchURL === dataUrl &&
           stacLoadedBatches.searchQuery &&
           isEqual(activeSearchQuery, stacLoadedBatches.searchQuery, (query: ActiveSearchQuery) => ({
             ...query,
@@ -577,7 +596,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           totalMatched,
           searchQuery: activeSearchQuery,
           cacheRestored: true,
-          searchURL: currentRequestURL,
+          searchURL: dataUrl,
         });
       }
     }
