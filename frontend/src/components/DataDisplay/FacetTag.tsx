@@ -3,7 +3,6 @@ import React from 'react';
 import { ClickableFacetConfig } from '../Facets/types';
 
 type Props = {
-  facet: string;
   value: string;
   clickableConfig?: ClickableFacetConfig;
   closable?: boolean;
@@ -18,8 +17,7 @@ type Props = {
  * A reusable component for rendering facet tags with optional clickable links and counts.
  * Used in both facet dropdowns and the search results filter display.
  */
-export const FacetTag: React.FC<Props> = ({
-  facet,
+const FacetTag: React.FC<Props> = ({
   value,
   clickableConfig,
   closable = true,
@@ -66,3 +64,5 @@ export const FacetTag: React.FC<Props> = ({
     </Tag>
   );
 };
+
+export default FacetTag;

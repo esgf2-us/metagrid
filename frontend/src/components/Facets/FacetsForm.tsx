@@ -31,7 +31,6 @@ import { useAtom, useAtomValue } from 'jotai';
 import { CSSinJS } from '../../common/types';
 import Button from '../General/Button';
 import StatusToolTip from '../NodeStatus/StatusToolTip';
-import { FacetTag } from '../DataDisplay/FacetTag';
 import { ActiveSearchQuery, ResultType, VersionType } from '../Search/types';
 import { ActiveFacets, ParsedFacets } from './types';
 import { objectIsEmpty, showError, showNotice } from '../../common/utils';
@@ -43,6 +42,7 @@ import {
 } from '../../common/atoms';
 import { leftSidebarTargets } from '../../common/joyrideTutorials/reactJoyrideSteps';
 import { getAggregationsList, stringifyApiRequest } from '../../common/STAC';
+import FacetTag from '../DataDisplay/FacetTag';
 
 dayjs.extend(customParseFormat);
 dayjs.extend(advancedFormat);
@@ -512,7 +512,6 @@ const FacetsForm: React.FC = () => {
 
       return (
         <FacetTag
-          facet={facet}
           value={value}
           clickableConfig={clickableConfig}
           closable={closable}

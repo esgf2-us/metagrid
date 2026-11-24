@@ -62,7 +62,6 @@ import {
 } from '../../common/utils';
 import { UserCart, UserSearchQuery } from '../Cart/types';
 import { Tag, TagType, TagValue } from '../DataDisplay/Tag';
-import { FacetTag } from '../DataDisplay/FacetTag';
 import { ParsedFacets, RawFacets, RawProject } from '../Facets/types';
 import Button from '../General/Button'; // Note, tooltips do not work for this button
 import Table from './Table';
@@ -85,6 +84,7 @@ import {
   stringifyApiRequest,
 } from '../../common/STAC';
 import DownloadModal from '../Downloads/DownloadModal';
+import FacetTag from '../DataDisplay/FacetTag';
 
 const tooltipText = {
   featureNotAvailableInStac: 'This feature is not compatible with STAC projects.',
@@ -1213,7 +1213,6 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                         >
                           <span>
                             <FacetTag
-                              facet={facet}
                               value={variable}
                               clickableConfig={clickableConfig}
                               onClose={() => handleRemoveFilter([facet, variable], 'facet')}
@@ -1223,7 +1222,6 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
                         </Tooltip>
                       ) : (
                         <FacetTag
-                          facet={facet}
                           value={variable}
                           clickableConfig={clickableConfig}
                           onClose={() => handleRemoveFilter([facet, variable], 'facet')}
