@@ -206,6 +206,10 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   // Incremented whenever search parameters change, so we can discard stale responses
   const requestIdRef = React.useRef<number>(0);
   const lastProcessedRequestIdRef = React.useRef<number>(-1);
+  // Track the request ID that was active when the most recent fetch was initiated
+  const lastRequestedIdRef = React.useRef<number>(-1);
+  // Map to track which request ID corresponds to which URL
+  const urlToRequestIdRef = React.useRef<Map<string, number>>(new Map());
 
   const [cachedResults, setCachedResults] = React.useState<SearchResults | undefined>(() => {
     // Initialize from localStorage on mount
@@ -350,13 +354,11 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       clearCachedSearchResults();
 
       if (currentProject.isSTAC) {
-        // For STAC, clear batch cache when query changes
+        // For STAC, always clear batch cache when query changes
+        // This prevents any stale STAC results from being displayed
+        clearCachedStacBatches();
         const currentProjectName = (project.name as string) || '';
-        if (stacLoadedBatches.projectName === currentProjectName) {
-          // Only clear if we're in the same project (facet/filter change)
-          clearCachedStacBatches();
-          setStacLoadedBatches({ ...EMPTY_STAC_BATCHES, projectName: currentProjectName });
-        }
+        setStacLoadedBatches({ ...EMPTY_STAC_BATCHES, projectName: currentProjectName });
       } else {
         clearNonStacBatchCache();
       }
@@ -443,6 +445,10 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
         if (!canUseCache) {
           setIsBackgroundFetch(false);
           lastPreloadedBatchRef.current = -1;
+          // Store the request ID that's being initiated
+          lastRequestedIdRef.current = currentRequestId;
+          // Map this URL to the current request ID
+          urlToRequestIdRef.current.set(currentRequestURL, currentRequestId);
           run(currentRequestURL);
         }
       } else {
@@ -457,6 +463,10 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           setCachedResults(cached);
         } else {
           setCachedResults(undefined);
+          // Store the request ID that's being initiated
+          lastRequestedIdRef.current = currentRequestId;
+          // Map this URL to the current request ID
+          urlToRequestIdRef.current.set(currentRequestURL, currentRequestId);
           run(currentRequestURL);
         }
       }
@@ -470,19 +480,31 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     }
 
     if (results && currentRequestURL && !objectIsEmpty(results)) {
-      // Check if this response is for the current request
-      // If the request ID has changed since we started the request, discard these results
-      const currentRequestId = requestIdRef.current;
+      // Get the request ID that corresponds to this URL
+      const expectedRequestId = urlToRequestIdRef.current.get(currentRequestURL);
 
-      // Skip processing if a newer request has been initiated
+      // If we don't have a request ID for this URL, or it's already been processed, skip
+      if (expectedRequestId === undefined) {
+        // This URL was never requested in this session, discard
+        return;
+      }
+
+      // Skip processing if this response is for an outdated request
       // This prevents race conditions where slow responses arrive after the user has changed filters
-      if (lastProcessedRequestIdRef.current >= currentRequestId) {
+      if (lastProcessedRequestIdRef.current >= expectedRequestId) {
         // We've already processed results for this request ID or a newer one
+        // This means these results are stale, so discard them
+        return;
+      }
+
+      // Additional safety check: only process if this is the most recent request ID
+      if (expectedRequestId !== lastRequestedIdRef.current) {
+        // This response is for an older request, discard it
         return;
       }
 
       // Mark this request as processed
-      lastProcessedRequestIdRef.current = currentRequestId;
+      lastProcessedRequestIdRef.current = expectedRequestId;
 
       cacheSearchResults(
         results,
