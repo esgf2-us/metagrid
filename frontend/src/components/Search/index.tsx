@@ -169,9 +169,6 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   const { data, error, isLoading, run, cancel } = useAsync({
     deferFn: fetchSearchResults as unknown as DeferFn<SearchResults>,
   });
-
-  // Track the URL that produced the current data
-  const dataUrlRef = React.useRef<string>('');
   const [filtersExist, setFiltersExist] = React.useState<boolean>(false);
   const [parsedFacets, setParsedFacets] = React.useState<ParsedFacets | Record<string, unknown>>(
     {},
@@ -204,15 +201,6 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
   const lastPreloadedBatchRef = React.useRef<number>(-1);
   const prevProjectNameRef = React.useRef<string>('');
   const currentRequestQueryRef = React.useRef<ActiveSearchQuery | null>(null);
-
-  // Request ID tracking to prevent race conditions
-  // Incremented whenever search parameters change, so we can discard stale responses
-  const requestIdRef = React.useRef<number>(0);
-  const lastProcessedRequestIdRef = React.useRef<number>(-1);
-  // Track the request ID that was active when the most recent fetch was initiated
-  const lastRequestedIdRef = React.useRef<number>(-1);
-  // Map to track which request ID corresponds to which URL
-  const urlToRequestIdRef = React.useRef<Map<string, number>>(new Map());
 
   const [cachedResults, setCachedResults] = React.useState<SearchResults | undefined>(() => {
     // Initialize from localStorage on mount
@@ -379,30 +367,49 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     setFiltersExist(checkFiltersExist(activeFacets, textInputs));
   }, [activeFacets, textInputs]);
 
-  // Track search parameter changes and increment request ID to prevent race conditions
-  // This runs whenever any search parameter changes (facets, project, text inputs, etc.)
+  // Clear STAC batches when ANY search parameter changes
+  // This ensures new search results start fresh on page 1, not appended to old results
+  const previousSearchParamsRef = React.useRef<string>('');
   React.useEffect(() => {
-    // Increment request ID to invalidate any in-flight requests
-    requestIdRef.current += 1;
+    if (!currentProject.isSTAC) {
+      return;
+    }
 
-    // Clear all caches immediately when search parameters change
-    // This ensures we never use stale cached data
-    if (requestIdRef.current > 1) {
-      // Don't clear on initial mount (requestId = 1)
+    // Create a stable string representation of all search parameters
+    const currentSearchParams = JSON.stringify({
+      activeFacets,
+      textInputs,
+      filenameVars,
+      versionType,
+      resultType,
+      minVersionDate,
+      maxVersionDate,
+      minCreatedDate: activeSearchQuery.minCreatedDate,
+      maxCreatedDate: activeSearchQuery.maxCreatedDate,
+      globusOnly: activeSearchQuery.globusOnly,
+      projectName: project.name,
+      projectPk: project.pk,
+    });
+
+    // Check if this is the first run (initialization)
+    if (previousSearchParamsRef.current === '') {
+      previousSearchParamsRef.current = currentSearchParams;
+      return;
+    }
+
+    if (previousSearchParamsRef.current !== currentSearchParams) {
+      cancel(); // Cancel in-flight requests
+      clearCachedStacBatches();
+      setStacLoadedBatches({
+        ...EMPTY_STAC_BATCHES,
+        projectName: (project.name as string) || '',
+      });
       setCachedResults(undefined);
       clearCachedSearchResults();
-
-      if (currentProject.isSTAC) {
-        // For STAC, always clear batch cache when query changes
-        // This prevents any stale STAC results from being displayed
-        clearCachedStacBatches();
-        const currentProjectName = (project.name as string) || '';
-        setStacLoadedBatches({ ...EMPTY_STAC_BATCHES, projectName: currentProjectName });
-      } else {
-        clearNonStacBatchCache();
-      }
+      previousSearchParamsRef.current = currentSearchParams;
     }
   }, [
+    currentProject.isSTAC,
     activeFacets,
     textInputs,
     filenameVars,
@@ -410,12 +417,11 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     resultType,
     minVersionDate,
     maxVersionDate,
-    project.name,
-    project.pk,
-    activeSearchQuery.globusOnly,
     activeSearchQuery.minCreatedDate,
     activeSearchQuery.maxCreatedDate,
-    currentProject.isSTAC,
+    activeSearchQuery.globusOnly,
+    project.name,
+    project.pk,
   ]);
 
   // STAC cache restoration: restore once on navigation, reset on query change
@@ -466,50 +472,25 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
     const hasFullProject = project.pk !== undefined && project.name !== undefined;
 
     if (!objectIsEmpty(project) && hasFullProject && currentRequestURL) {
-      // Capture the current query and request ID when making the request
+      // Capture the current query when making the request
       currentRequestQueryRef.current = activeSearchQuery;
-      const currentRequestId = requestIdRef.current;
-
       if (currentProject.isSTAC) {
         const cached = getCachedStacBatches();
         const cachedURL = cached?.searchURL || '';
 
-        // For STAC, only use cache if URL matches AND it's not a fresh search
-        // Don't use cache if search parameters just changed (new request ID)
-        const canUseCache =
-          hasStacResults &&
-          currentRequestURL === cachedURL &&
-          currentRequestId === lastProcessedRequestIdRef.current;
-
-        if (!canUseCache) {
+        if (!hasStacResults || currentRequestURL !== cachedURL) {
           setIsBackgroundFetch(false);
           lastPreloadedBatchRef.current = -1;
-          // Store the request ID that's being initiated
-          lastRequestedIdRef.current = currentRequestId;
-          // Map this URL to the current request ID
-          urlToRequestIdRef.current.set(currentRequestURL, currentRequestId);
-          // Track which URL we're fetching so we can validate the response
-          dataUrlRef.current = currentRequestURL;
           run(currentRequestURL);
         }
       } else {
         const cached = getCachedSearchResults();
         const cachedURL = (cached?.cachedURL as string) || '';
 
-        // For non-STAC, only use cache if URL matches AND request ID hasn't changed
-        if (
-          currentRequestURL === cachedURL &&
-          currentRequestId === lastProcessedRequestIdRef.current
-        ) {
+        if (currentRequestURL === cachedURL) {
           setCachedResults(cached);
         } else {
           setCachedResults(undefined);
-          // Store the request ID that's being initiated
-          lastRequestedIdRef.current = currentRequestId;
-          // Map this URL to the current request ID
-          urlToRequestIdRef.current.set(currentRequestURL, currentRequestId);
-          // Track which URL we're fetching so we can validate the response
-          dataUrlRef.current = currentRequestURL;
           run(currentRequestURL);
         }
       }
@@ -522,49 +503,11 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
       return;
     }
 
-    if (results && !objectIsEmpty(results)) {
-      // Check if this data is for the URL we most recently requested
-      // dataUrlRef tracks which URL the current 'data' corresponds to
-      const dataUrl = dataUrlRef.current;
-
-      if (!dataUrl) {
-        // No URL tracked, skip processing
-        return;
-      }
-
-      // Get the request ID that corresponds to the URL that produced this data
-      const expectedRequestId = urlToRequestIdRef.current.get(dataUrl);
-
-      // If we don't have a request ID for this URL, it's stale
-      if (expectedRequestId === undefined) {
-        // This URL was never requested in this session, discard
-        return;
-      }
-
-      // Skip processing if this response is for an outdated request
-      // This prevents race conditions where slow responses arrive after the user has changed filters
-      if (lastProcessedRequestIdRef.current >= expectedRequestId) {
-        // We've already processed results for this request ID or a newer one
-        // This means these results are stale, so discard them
-        return;
-      }
-
-      // Additional safety check: only process if this is the most recent request ID
-      if (expectedRequestId !== lastRequestedIdRef.current) {
-        // This response is for an older request, discard it
-        return;
-      }
-
-      // Mark this request as processed
-      lastProcessedRequestIdRef.current = expectedRequestId;
-
-      // Use dataUrl (the URL that produced this data) instead of currentRequestURL for caching
-      const urlForCaching = dataUrl;
-
+    if (results && currentRequestURL && !objectIsEmpty(results)) {
       cacheSearchResults(
         results,
         paginationOptions,
-        urlForCaching,
+        currentRequestURL,
         currentRequestQueryRef.current || activeSearchQuery,
       );
       if (results.facet_counts) {
@@ -602,17 +545,11 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           nextToken = typeof nextLink?.body?.token === 'string' ? nextLink.body.token : undefined;
         }
 
-        // Determine if this is a new search or pagination of existing search
-        // Compare both URL and the actual search query to prevent cache pollution
+        // Determine if we should append (pagination) or replace (new search)
         const isSameSearch =
           stacLoadedBatches.searchURL &&
-          dataUrl &&
-          stacLoadedBatches.searchURL === dataUrl &&
-          stacLoadedBatches.searchQuery &&
-          isEqual(activeSearchQuery, stacLoadedBatches.searchQuery, (query: ActiveSearchQuery) => ({
-            ...query,
-            project: { name: query.project.name, pk: query.project.pk },
-          }));
+          currentRequestURL &&
+          stacLoadedBatches.searchURL === currentRequestURL;
 
         const wouldExceedTotal =
           stacLoadedBatches.results.length > 0 &&
@@ -656,7 +593,7 @@ const Search: React.FC<React.PropsWithChildren<Props>> = ({ onUpdateCart }) => {
           totalMatched,
           searchQuery: activeSearchQuery,
           cacheRestored: true,
-          searchURL: dataUrl,
+          searchURL: currentRequestURL,
         });
       }
     }
